@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/08/10 19:36:16  dennis
+ *  Added methods to parse command line arguments and show usage.
+ *  Also added methods to get/set the TCP port, get the server and
+ *  log file names.
+ *  Added error checking to methods that set the TCP port and server
+ *  and log file names.
+ *
  *  Revision 1.3  2001/08/09 21:45:47  dennis
  *  Added start_TCP() method to start the TCPServer.
  *
@@ -49,6 +56,7 @@ package NetComm;
 
 import java.io.*;
 import java.util.*;
+import DataSetTools.util.*;
 
 /**
  *  This is a base class for servers that receive TCP requests from clients
@@ -77,21 +85,23 @@ public class TCPServer implements ITCPUser
   public static final String INVALID_STRING       = "Bad user_name or password";
   public static final String INVALID_COMMAND      = "Invalid Command";
 
-  public static final int    DEFAULT_SERVER_PORT_NUMBER = 6088;
-  public static final String DEFAULT_PASSWORD = "IPNS";
+  public static final int    DEFAULT_SERVER_TCP_PORT = 6088;
+  public static final String DEFAULT_PASSWORD        = "IPNS";
 
   public static boolean debug_server = false;
 
+                                            // NOTE: password & user checking
+                                            //       is not yet impelemented.
   private    boolean password_ok = false;
   private    boolean user_ok     = false;
   private    String  user_name   = UNKNOWN_USER;
 
   private    Hashtable log;
-  private    String    log_filename = "TCPServerLog.txt";
-  protected  String    server_name  = "TCPServer";
-  private    int       current_port = DEFAULT_SERVER_PORT_NUMBER;
-  private    String    start_time   = "";
-  protected  String    data_name    = "NONE";       // identifier for last
+  private    String    log_filename     = "TCPServerLog.txt";
+  private    String    server_name      = "TCPServer";
+  private    int       current_tcp_port = DEFAULT_SERVER_TCP_PORT;
+  private    String    start_time       = "";
+  protected  String    data_name        = "NONE";   // identifier for last
                                                     // data processed.   
 
   /* ---------------------------- Constructor -------------------------- */
@@ -114,8 +124,20 @@ public class TCPServer implements ITCPUser
    */
    public void setServerName( String name )
    {
-     server_name = name;
+     if ( name.length() > 0 )
+       server_name = name;
    }
+
+  /* --------------------------- getServerName ------------------------- */
+  /**
+   *  Get name for this server that will be used in the log file.
+   *
+   */
+   public String getServerName()
+   {
+     return server_name;
+   }
+
 
   /* --------------------------- setLogFilename ------------------------- */
   /**
@@ -125,29 +147,113 @@ public class TCPServer implements ITCPUser
    */
    public void setLogFilename( String name )
    {
-     log_filename = name;
+     if ( name.length() > 0 )
+       log_filename = name;
    }
 
 
-  /* ----------------------------- start_TCP --------------------------- */
+  /* --------------------------- getLogFilename ------------------------- */
   /**
-   *   Start the TCP server running, listening for clients on the specified
-   *   port.  If the port number is negative, the current_port set by 
-   *   parsing arguments, or a previous call to start will be used. 
+   *  Get name of the log file used for this run of the server.
    *
-   *   @param port  The port number to use.
    */
-   public void start_TCP( int port )
+   public String getLogFilename()
    {
-     if ( port < 0 )
-       port = current_port;
+     return log_filename;
+   }
 
-     System.out.println("Starting TCP server on port " + port );
+
+  /* ---------------------------- setTCPport --------------------------- */
+  /**
+   *  Set the TCP port number to use when the server is started.  To be 
+   *  effective this must be called before starting the server and the 
+   *  specified port number must be positive.
+   *
+   *  @param  port  The port number to used when the server is started.
+   */
+  public void setTCPport( int port )
+  {
+     if ( port <= 0 )
+       current_tcp_port = DEFAULT_SERVER_TCP_PORT;
+     else
+       current_tcp_port = port;
+  }
+
+
+  /* ---------------------------- getTCPport --------------------------- */
+  /**
+   *  Get the TCP port used for this run of the server.
+   *
+   public String getTCPport()
+   {
+     return current_tcp_port;
+   }
+
+
+  /* ------------------------- parseArgs ----------------------------- */
+  /**
+   *  Parse a list of command line arguments to extract values for the
+   *  server name, log file name and TCP port.  This will typically be 
+   *  used instead of separately calling the methods to set these individually,
+   *  if the values are specified on a command line.  Commands supported at
+   *  this level are -L, -S, -T to specify the Logfile name, Server name and
+   *  TCP port respectively.  Commands to control usernames and passwords 
+   *  may be added to this level later. 
+   *
+   *  @param args  Array of strings from the command line, containing 
+   *               command characters and arguments.
+   *
+   *  @see  showTCPServerUsage
+   */ 
+   public void parseArgs( String args[] )
+   {
+     if ( StringUtil.commandPresent("-h", args ) ||
+          StringUtil.commandPresent("-H", args )  )
+       showTCPServerUsage();
+
+     setLogFilename( StringUtil.getCommand( 1, "-L", args ) );
+     setServerName( StringUtil.getCommand( 1, "-S", args ) );
+
+     String command = StringUtil.getCommand( 1, "-T", args );
+     if ( command.length() > 0 )
+     {
+       try
+       {
+         int value = Integer.parseInt(command);
+         setTCPport( value ); 
+       }
+       catch ( NumberFormatException e )
+       {
+       }
+     }
+   } 
+
+
+  /* ------------------------ showTCPServerUsage -------------------------- */
+  /**
+   *  Print list of supported commands.
+   */  
+   public static void showTCPServerUsage()
+   {
+     System.out.println("  -h,-H            Help");
+     System.out.println("  -T<port>         Set TCP port to use");
+     System.out.println("  -L<file name>    Set name of log file");
+     System.out.println("  -S<name>         Set name for server in log file");
+   }
+
+
+  /* ----------------------------- startTCP --------------------------- */
+  /**
+   *  Start the TCP server running, listening for clients on the last
+   *  port that was specified using setTCPport, or the default port if
+   *  none was specified.
+   */
+   public void startTCP( )
+   {
+     System.out.println("Starting TCP server on port " + current_tcp_port );
      TCPServiceInit TCPinit;
-     TCPinit = new TCPServiceInit( this, port );
+     TCPinit = new TCPServiceInit( this, current_tcp_port );
      TCPinit.start();
-
-     current_port = port;
    }
 
 
@@ -171,7 +277,7 @@ public class TCPServer implements ITCPUser
       }
       catch ( Exception e )
       {
-        System.out.println("Error: DataSetServer command: " + command);
+        System.out.println("Error: TCPServer command: " + command);
         System.out.println("Error: couldn't send data "+e );
       }
    }
@@ -288,6 +394,7 @@ public class TCPServer implements ITCPUser
 
   }
 
+
   /* ---------------------------- getArgument --------------------------- */
   /**
    *  Get the argument String from a command string, assuming that the 
@@ -310,6 +417,7 @@ public class TCPServer implements ITCPUser
 
     return argument;
   }
+
 
   /* ----------------------------------------------------------------------
    *
@@ -440,8 +548,14 @@ public class TCPServer implements ITCPUser
     System.out.println("TCPServer starting:");
 
     TCPServer server= new TCPServer();
+
+    server.parseArgs( args );                  // get options from command
+/*
+                                               // set hard coded values 
     server.setServerName( "TestServer" );
     server.setLogFilename( "TestLog.txt" );
-    server.start_TCP( -1 );
+    server.setTCPport( 6091 );
+*/
+    server.startTCP();
   }
 }
