@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/08/04 23:11:18  dennis
+ * Removed redundant MouseMotionListener.
+ * "Center" point is now just changed by changing the VRP, since the
+ * AltAz view controller was updated to adjust the COP when the VRP
+ * is set.
+ *
  * Revision 1.8  2004/07/30 18:55:09  dennis
  * Now ignores threshold values that are less than 3.
  * The initialize() method now uses the SetThresholdScale method.
@@ -461,8 +467,8 @@ public class GL_RecipPlaneView
     threshold_slider.addChangeListener( new ThresholdScaleEventHandler() );
     vec_Q_space.getDisplayComponent().addMouseListener( 
                  new ViewMouseInputAdapter() );
-    vec_Q_space.getDisplayComponent().addMouseMotionListener( 
-                 new ViewMouseInputAdapter() );
+//    vec_Q_space.getDisplayComponent().addMouseMotionListener( 
+//                 new ViewMouseInputAdapter() );
 
     ReadoutListener listener = new ReadoutListener();
     origin_vec.addActionListener( listener );
@@ -482,6 +488,8 @@ public class GL_RecipPlaneView
     vec_q_transformer = new Vector();
     data_sets = new Vector();
     all_peaks = new Vector();
+
+    Redraw();
   }
 
 
@@ -708,6 +716,8 @@ public class GL_RecipPlaneView
 
     if ( extract_peaks )
       ExtractPeaks();
+
+    Redraw();
   }
 
 
@@ -2589,14 +2599,12 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
    private void handle_event( MouseEvent e )
    {
      int index = vec_Q_space.pickID( e.getX(), e.getY(), 5 );
-     System.out.println("++++ ViewMouseInputAdapter: pickID = " + index );
      if ( index != last_index )
      {
        last_index = index;
        if ( index != GL_Shape.INVALID_PICK_ID )
        {
          Vector3D position = vec_Q_space.pickedPoint( e.getX(), e.getY() );
-         System.out.println("++++ View Mouse: pickedPoint = " + position );
          if ( position != null )
          {
            float coords[] = position.get();
@@ -2726,25 +2734,16 @@ private class ReadoutListener implements ActionListener
      String              action  = e.getActionCommand();
      SimpleVectorReadout readout = (SimpleVectorReadout)e.getSource();
 
-     System.out.println("+++++++++ ReadoutListener called " + action );
      if ( action.startsWith( "Select" ) )
      {
        Vector3D position = vec_Q_space.pickedPoint();
-       System.out.println("++++ ReadoutListener: pickedPoint = " + position );
        if ( position == null || position.length() > 30 )
        {
          if ( readout.getTitle().equals(ORIGIN) )      // origin defaults to
          {
            readout.setVector( new Vector3D(0,0,0) );   // (0,0,0)
-           Vector3D cop = new Vector3D( controller.getCOP() );
-           Vector3D vrp = new Vector3D( controller.getVRP() );
            position = new Vector3D(0,0,0);
-           Vector3D shift = new Vector3D( position );
-           shift.subtract( vrp );
-           cop.add( shift );
-           controller.setCOP( cop );
            controller.setVRP( position );
-           //##############
          }
          else
            readout.setVector( null );
@@ -2754,14 +2753,7 @@ private class ReadoutListener implements ActionListener
          if ( readout.getTitle().equals(ORIGIN) )
          {
            readout.setVector( position );              // just move the origin
-           Vector3D cop = new Vector3D( controller.getCOP() );
-           Vector3D vrp = new Vector3D( controller.getVRP() );
-           Vector3D shift = new Vector3D( position );
-           shift.subtract( vrp );
-           cop.add( shift );
-           controller.setCOP( cop );
            controller.setVRP( position );
-           //##############
          }
          else                                          // get vector relative
          {                                             // to the origin
@@ -2800,10 +2792,7 @@ private class PlaneListener implements ActionListener
          return;
  
        Vector3D e1 = new Vector3D( v1 );
-//       e1.subtract( origin );
- 
        Vector3D e2 = new Vector3D( v2 );
-//       e2.subtract( origin );
 
        Vector3D normal = new Vector3D();
        normal.cross( e1, e2 );
@@ -2827,6 +2816,7 @@ private class PlaneListener implements ActionListener
        plane_ui.set_normal( value );
        plane_ui.set_d_sigma( d_spacing, sigma );
      }
+
      else if ( action.equals( LatticePlaneUI.FFT_SET) )
      {
        LatticePlaneUI plane_ui = (LatticePlaneUI)e.getSource();
@@ -2849,7 +2839,8 @@ private class PlaneListener implements ActionListener
        plane_ui.set_normal( value );      
        plane_ui.set_d_sigma( d_spacing, sigma );
      }
-     else
+
+     else                              // must be request to extract slice 
      {
        LatticePlaneUI plane_ui = (LatticePlaneUI)e.getSource();
        float miller_index = plane_ui.get_miller_index();
@@ -2901,11 +2892,12 @@ private class PlaneListener implements ActionListener
        origin.multiply((float)(miller_index * Math.PI * 2/d_spacing) );
        float image[][] = make_slice( origin, normal, base, up );
        VirtualArray2D va2d = new VirtualArray2D( image );
-// ##### patch
-    va2d.setAxisInfo( AxisInfo.X_AXIS, -10.0f, 10.0f,
-                        "X","Uncalibrated Units", true );
-    va2d.setAxisInfo( AxisInfo.Y_AXIS, -10.0f, 10.0f,
-                        "Y","Uncalibrated Units", false );
+
+       // ##### patch
+       va2d.setAxisInfo( AxisInfo.X_AXIS, -10.0f, 10.0f,
+                         "X","Uncalibrated Units", true );
+       va2d.setAxisInfo( AxisInfo.Y_AXIS, -10.0f, 10.0f,
+                         "Y","Uncalibrated Units", false );
 
        va2d.setTitle( title );
        if ( frame == null )
