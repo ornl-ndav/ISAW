@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/06/17 20:26:53  bouzekc
+ * Updated documentation.
+ *
  * Revision 1.15  2003/06/16 23:05:26  bouzekc
  * Now implements PropertyChanger.
  *
@@ -490,7 +493,7 @@ public abstract class Form extends Operator implements Serializable,
   /**
    *  Convenience method for subclassed Forms to return an
    *  "invalid" message to the Wizard, and output an appropriate
-   *  error message to the user as well as invalidating a Form.
+   *  error message to the user as well as invalidating a parameter.
    *
    *  @param  param                The IParameterGUI to set invalid.
    *
