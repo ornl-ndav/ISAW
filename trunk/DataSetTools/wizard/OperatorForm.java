@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.25  2003/07/09 22:24:28  bouzekc
+ * Now overrides getTitle().
+ *
  * Revision 1.24  2003/07/09 21:19:56  bouzekc
  * Added getDocumentation() to return the internal Operators
  * documentation.
@@ -407,6 +410,15 @@ public class OperatorForm extends Form implements HiddenOperator {
     }
 
     return result;
+  }
+
+  /**
+   * Gets the internal Operator's title.
+   *
+   * @return String consisting of internal Operator's title.
+   */
+  public String getTitle(  ) {
+    return form_op.getTitle(  );
   }
 
   /**
