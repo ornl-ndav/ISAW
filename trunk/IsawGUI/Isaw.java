@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.119  2002/12/03 17:47:44  pfpeterson
+ *  Now uses InstrumentViewMenu for the instrument links. Deleted code which
+ *  used to serve this purpose. Commented out code for the instrument macro
+ *  menu items since the instrument macro menu is commented out.
+ *
  *  Revision 1.118  2002/11/27 23:27:07  pfpeterson
  *  standardized header
  *
@@ -345,20 +350,6 @@ public class Isaw
   private static final String FTP_LINK        = "ftp://zuul.pns.anl.gov/isaw/";
   private static final String USERMAN_LINK    = "ftp://zuul.pns.anl.gov/isaw/Documents/";
 
-  private static final String CHEXS_LINK_MI  = "CHEXS Link";
-  private static final String GLAD_LINK_MI   = "GLAD Link";
-  private static final String GPPD_LINK_MI   = "GPPD Link";
-  private static final String HIPD_LINK_MI   = "HIPD Link";
-  private static final String HRMECS_LINK_MI = "HRMECS Link";
-  private static final String LRMECS_LINK_MI = "LRMECS Link";
-  private static final String POSY1_LINK_MI  = "POSY1 Link";
-  private static final String POSY2_LINK_MI  = "POSY2 Link";
-  private static final String QENS_LINK_MI   = "QENS Link";
-  private static final String SAD_LINK_MI    = "SAD Link";
-  private static final String SAND_LINK_MI   = "SAND Link";
-  private static final String SCD_LINK_MI    = "SCD Link";
-  private static final String SEPD_LINK_MI   = "SEPD Link";
-       
   private static final String CHEXS_MACRO_MI  = "CHEXS";
   private static final String GLAD_MACRO_MI   = "GLAD";
   private static final String GPPD_MACRO_MI   = "GPPD";
@@ -381,20 +372,6 @@ public class Isaw
   private static final String DATA_DIR_ENV = "Data_Directory";
 
   private static final String IPNS_URL   = "http://www.pns.anl.gov/";
-  private static final String INST_URL   = IPNS_URL+"instruments/";
-  private static final String CHEX_URL   = INST_URL+"CHEX/";
-  private static final String GLAD_URL   = INST_URL+"GLAD/";
-  private static final String GPPD_URL   = INST_URL+"GPPD/";
-  private static final String HIPD_URL   = INST_URL+"HIPD/";
-  private static final String HRMECS_URL = INST_URL+"HRMECS/";
-  private static final String LRMECS_URL = INST_URL+"LRMECS/";
-  private static final String POSY2_URL  = INST_URL+"POSY2/";
-  private static final String POSY_URL   = INST_URL+"POSY/";
-  private static final String QENS_URL   = INST_URL+"QENS/";
-  private static final String SAD_URL    = INST_URL+"SAD/";
-  private static final String SAND_URL   = INST_URL+"SAND/";
-  private static final String SCD_URL    = INST_URL+"SCD/";
-  private static final String SEPD_URL   = INST_URL+"SEPD/";
   private static final String DB_URL     = IPNS_URL+"computing/ISAW/";
   private static final String WIN_ID     = "Windows";
 
@@ -632,7 +609,12 @@ public class Isaw
        }
     JMenuItem contourView = new JMenuItem( CONTOUR_VIEW_MI );
     JMenuItem logView = new JMenuItem( LOG_VIEW_MI );
-    JMenu instrumentInfoView = new JMenu( INSTR_VIEW_M );
+    JMenu instrumentInfoView = null;
+    try{
+      instrumentInfoView = new InstrumentViewMenu( INSTR_VIEW_M );
+    }catch(InstantiationException e){
+      // leave instrumentInfoView as null so it is not added to the menus
+    }
 
 
     Script_Class_List_Handler SP = new Script_Class_List_Handler();      
@@ -660,33 +642,19 @@ public class Isaw
     JMenuItem ftpLink         = new JMenuItem( FTP_LINK_MI );
     JMenuItem docLink         = new JMenuItem( USERMAN_LINK_MI );
 
-    JMenuItem HRMECS = new JMenuItem( HRMECS_LINK_MI );
-    JMenuItem LRMECS = new JMenuItem( LRMECS_LINK_MI );
-    JMenuItem HIPD   = new JMenuItem( HIPD_LINK_MI );
-    JMenuItem SAD    = new JMenuItem( SAD_LINK_MI );
-    JMenuItem SCD    = new JMenuItem( SCD_LINK_MI );
-    JMenuItem SAND   = new JMenuItem( SAND_LINK_MI );
-    JMenuItem POSY1  = new JMenuItem( POSY1_LINK_MI );
-    JMenuItem POSY2  = new JMenuItem( POSY2_LINK_MI );
-    JMenuItem GLAD   = new JMenuItem( GLAD_LINK_MI );
-    JMenuItem QENS   = new JMenuItem( QENS_LINK_MI );
-    JMenuItem GPPD   = new JMenuItem( GPPD_LINK_MI );
-    JMenuItem SEPD   = new JMenuItem( SEPD_LINK_MI );
-    JMenuItem CHEXS  = new JMenuItem( CHEXS_LINK_MI );
-         
-    JMenuItem m_HRMECS = new JMenuItem( HRMECS_MACRO_MI );
-    JMenuItem m_LRMECS = new JMenuItem( LRMECS_MACRO_MI );
-    JMenuItem m_HIPD   = new JMenuItem( HIPD_MACRO_MI );
-    JMenuItem m_SAD    = new JMenuItem( SAD_MACRO_MI );
-    JMenuItem m_SCD    = new JMenuItem( SCD_MACRO_MI );
-    JMenuItem m_SAND   = new JMenuItem( SAND_MACRO_MI );
-    JMenuItem m_POSY1  = new JMenuItem( POSY1_MACRO_MI );
-    JMenuItem m_POSY2  = new JMenuItem( POSY2_MACRO_MI );
-    JMenuItem m_GLAD   = new JMenuItem( GLAD_MACRO_MI );
-    JMenuItem m_QENS   = new JMenuItem( QENS_MACRO_MI );
-    JMenuItem m_GPPD   = new JMenuItem( GPPD_MACRO_MI );
-    JMenuItem m_SEPD   = new JMenuItem( SEPD_MACRO_MI );
-    JMenuItem m_CHEXS  = new JMenuItem( CHEXS_MACRO_MI );
+    /*JMenuItem m_HRMECS = new JMenuItem( HRMECS_MACRO_MI );
+      JMenuItem m_LRMECS = new JMenuItem( LRMECS_MACRO_MI );
+      JMenuItem m_HIPD   = new JMenuItem( HIPD_MACRO_MI );
+      JMenuItem m_SAD    = new JMenuItem( SAD_MACRO_MI );
+      JMenuItem m_SCD    = new JMenuItem( SCD_MACRO_MI );
+      JMenuItem m_SAND   = new JMenuItem( SAND_MACRO_MI );
+      JMenuItem m_POSY1  = new JMenuItem( POSY1_MACRO_MI );
+      JMenuItem m_POSY2  = new JMenuItem( POSY2_MACRO_MI );
+      JMenuItem m_GLAD   = new JMenuItem( GLAD_MACRO_MI );
+      JMenuItem m_QENS   = new JMenuItem( QENS_MACRO_MI );
+      JMenuItem m_GPPD   = new JMenuItem( GPPD_MACRO_MI );
+      JMenuItem m_SEPD   = new JMenuItem( SEPD_MACRO_MI );
+      JMenuItem m_CHEXS  = new JMenuItem( CHEXS_MACRO_MI );*/
  
     //fMenu.add(dbload);
     fMenu.add(fileLoadDataset);
@@ -713,22 +681,6 @@ public class Isaw
     eMenu.add(setGroupAttributes);
     eMenu.add(clearSelection);
       
-
-         
-    instrumentInfoView.add(HRMECS);
-    instrumentInfoView.add(GPPD);
-    instrumentInfoView.add(SEPD);
-    instrumentInfoView.add(LRMECS);
-    instrumentInfoView.add(SAD);
-    instrumentInfoView.add(SAND);
-    instrumentInfoView.add(SCD);
-    instrumentInfoView.add(GLAD);
-    instrumentInfoView.add(HIPD);
-    instrumentInfoView.add(POSY1);
-    instrumentInfoView.add(POSY2);
-    instrumentInfoView.add(QENS);
-    instrumentInfoView.add(CHEXS);
-    
     boolean found =true;
     for( int ii=1;  ii<14 && found;  ii++ )
     {
@@ -755,7 +707,8 @@ public class Isaw
     vMenu.add( Tables );
     vMenu.add( tableView );
     //vMenu.add( logView );
-    vMenu.add(instrumentInfoView);         
+    if(instrumentInfoView!=null)
+      vMenu.add(instrumentInfoView);         
       
     hMenu.add(helpAbout);
     hMenu.add(helpOperations);
@@ -787,40 +740,23 @@ public class Isaw
     tableView.addActionListener(new MenuItemHandler());  
     contourView.addActionListener(new MenuItemHandler());  
     logView.addActionListener(new MenuItemHandler());      
-    HRMECS.addActionListener(new MenuItemHandler());
-    LRMECS.addActionListener(new MenuItemHandler());
-    HIPD.addActionListener(new MenuItemHandler());
     
-    GPPD.addActionListener(new MenuItemHandler());
-    SEPD.addActionListener(new MenuItemHandler());
-    SAND.addActionListener(new MenuItemHandler());
+    /*m_HRMECS.addActionListener(new MenuItemHandler());
+      m_LRMECS.addActionListener(new MenuItemHandler());
+      m_HIPD.addActionListener(new MenuItemHandler());
+      
+      m_GPPD.addActionListener(new MenuItemHandler());
+      m_SEPD.addActionListener(new MenuItemHandler());
+      m_SAND.addActionListener(new MenuItemHandler());
     
-    SAD.addActionListener(new MenuItemHandler());
-    SCD.addActionListener(new MenuItemHandler());
-    POSY1.addActionListener(new MenuItemHandler());
+      m_SAD.addActionListener(new MenuItemHandler());
+      m_SCD.addActionListener(new MenuItemHandler());
+      m_POSY1.addActionListener(new MenuItemHandler());
     
-    POSY2.addActionListener(new MenuItemHandler());
-    QENS.addActionListener(new MenuItemHandler());
-    GLAD.addActionListener(new MenuItemHandler());
-    CHEXS.addActionListener(new MenuItemHandler());
-    
-    
-    m_HRMECS.addActionListener(new MenuItemHandler());
-    m_LRMECS.addActionListener(new MenuItemHandler());
-    m_HIPD.addActionListener(new MenuItemHandler());
-    
-    m_GPPD.addActionListener(new MenuItemHandler());
-    m_SEPD.addActionListener(new MenuItemHandler());
-    m_SAND.addActionListener(new MenuItemHandler());
-    
-    m_SAD.addActionListener(new MenuItemHandler());
-    m_SCD.addActionListener(new MenuItemHandler());
-    m_POSY1.addActionListener(new MenuItemHandler());
-    
-    m_POSY2.addActionListener(new MenuItemHandler());
-    m_QENS.addActionListener(new MenuItemHandler());
-    m_GLAD.addActionListener(new MenuItemHandler());
-    m_CHEXS.addActionListener(new MenuItemHandler());
+      m_POSY2.addActionListener(new MenuItemHandler());
+      m_QENS.addActionListener(new MenuItemHandler());
+      m_GLAD.addActionListener(new MenuItemHandler());
+      m_CHEXS.addActionListener(new MenuItemHandler());*/
 
 
     fileLoadDataset.addActionListener(new MenuItemHandler());
@@ -1292,65 +1228,23 @@ public class Isaw
           return;
         }
       }
-                       
-                          //the next 13 or so menu options 
-                          //open links to the various 
-                          //instrument web sites
-      if( s.equals(HRMECS_LINK_MI) )
-        bc.displayURL( HRMECS_URL );
 
-      if( s.equals(LRMECS_LINK_MI) )
-        bc.displayURL( LRMECS_URL );
-                       
-      if( s.equals(HIPD_LINK_MI) )
-        bc.displayURL( HIPD_URL ); 
-        
-      if( s.equals(QENS_LINK_MI) )
-        bc.displayURL( QENS_URL );
-                       
-      if( s.equals(POSY1_LINK_MI) )
-        bc.displayURL( POSY_URL );
-                       
-      if( s.equals(POSY2_LINK_MI) )
-        bc.displayURL( POSY2_URL );
-                       
-      if( s.equals(SCD_LINK_MI) )
-        bc.displayURL( SCD_URL );
-                       
-      if( s.equals(SAND_LINK_MI) )
-        bc.displayURL( SAND_URL );
-                        
-      if( s.equals(SAD_LINK_MI) )
-        bc.displayURL( SAD_URL );
-                       
-      if( s.equals(SEPD_LINK_MI) )
-        bc.displayURL( SEPD_URL );
-                       
-      if( s.equals(GPPD_LINK_MI) )
-        bc.displayURL( GPPD_URL );
-                       
-      if( s.equals(GLAD_LINK_MI) )
-        bc.displayURL( GLAD_URL );
-                       
-      if( s.equals(CHEXS_LINK_MI) )
-        bc.displayURL( CHEX_URL );
-                       
                                        //the next 13 menu options
                                        //execute instrument-specific
                                        //macros on various forms of data
 
 
-      if( s.equals(CHEXS_MACRO_MI) ) 
+      /*if( s.equals(CHEXS_MACRO_MI) ) 
         SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
-      if( s.equals(GLAD_MACRO_MI) ) 
+        if( s.equals(GLAD_MACRO_MI) ) 
         SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
-      if( s.equals(GPPD_MACRO_MI) ) 
+        if( s.equals(GPPD_MACRO_MI) ) 
         SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
-      if( s.equals(HRMECS_MACRO_MI) )
-      { 
+        if( s.equals(HRMECS_MACRO_MI) )
+        { */
      /* fd.show();
         File f = new File(  fd.getDirectory(), fd.getFile()  );
         String dir = fd.getDirectory();
@@ -1358,35 +1252,35 @@ public class Isaw
         fs.setSize(700,700);
         fs.setVisible(true);
       */
-      }
+      /*}
 
       if( s.equals(HIPD_MACRO_MI) )  
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
+      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(LRMECS_MACRO_MI) ) 
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
+      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(POSY1_MACRO_MI) ) 
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
+      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(POSY2_MACRO_MI) ) 
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
+      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(QENS_MACRO_MI) ) 
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
+      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SAD_MACRO_MI) ) 
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
+      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SAND_MACRO_MI) ) 
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
+      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SCD_MACRO_MI) ) 
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
+      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SEPD_MACRO_MI) ) 
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
+      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
+      */
  
 
  
