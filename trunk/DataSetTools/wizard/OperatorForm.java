@@ -29,6 +29,10 @@
  *
  *
  * $Log$
+ * Revision 1.24  2003/07/09 21:19:56  bouzekc
+ * Added getDocumentation() to return the internal Operators
+ * documentation.
+ *
  * Revision 1.23  2003/07/07 20:35:14  bouzekc
  * Now implicitly sets HAS_CONSTANTS by way of
  * setConstantParamIndices().  setConstantParamIndices() no
@@ -286,6 +290,18 @@ public class OperatorForm extends Form implements HiddenOperator {
       setParamTypes( constIndices, var_indices, new int[]{ num_params } );
     } else {
       setParamTypes( null, var_indices, new int[]{ num_params } );
+    }
+  }
+
+  /**
+   * @return the documentation for this OperatorForm in standard javadoc and
+   *         HTML formatting.
+   */
+  public String getDocumentation(  ) {
+    if( form_op != null ) {
+      return form_op.getDocumentation(  );
+    } else {
+      return Operator.DEFAULT_DOCS;
     }
   }
 
