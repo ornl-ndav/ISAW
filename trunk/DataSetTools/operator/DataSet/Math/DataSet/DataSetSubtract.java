@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/11/19 22:03:49  dennis
+ *  Added getDocumentation() method, main test program.  Also,
+ *  now checks that units match before subtracting. (Chris Bouzek)
+ *
  *  Revision 1.3  2002/09/19 16:02:19  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -100,13 +104,16 @@
  *
  *  99/08/16   Added constructor to allow
  *             calling operator directly
+ * 
  */
 
 package DataSetTools.operator.DataSet.Math.DataSet;
 
 import  java.io.*;
 import  java.util.Vector;
+import  DataSetTools.viewer.*;
 import  DataSetTools.dataset.*;
+import  DataSetTools.operator.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
@@ -172,16 +179,16 @@ public class DataSetSubtract extends  DataSetOp
    * @return	the command name to be used with script processor: 
    *            in this case, Sub
    */
-   public String getCommand()
-   {
-     return "Sub";
-   }
+  public String getCommand()
+  {
+    return "Sub";
+  }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
- /**
-  *  Set the parameters to default values.
-  */
+  /* -------------------------- setDefaultParameters ------------------------- */
+  /**
+   *  Set the parameters to default values.
+   */
   public void setDefaultParameters()
   {
     parameters = new Vector();  // must do this to clear any old parameters
@@ -194,14 +201,56 @@ public class DataSetSubtract extends  DataSetOp
     addParameter( parameter );
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator subtracts one DataSet from another.");
+    s.append("@assumptions The units on the two DataSets are compatible.");
+    s.append("@algorithm Uses the binary subtract from DSOpsImplementation.");
+    s.append("This is a standard binary subtract.");
+    s.append("@param The DataSet for the operation.");
+    s.append("@param The DataSet which you want to subtract.");
+    s.append("@param A boolean value of true if you want a new DataSet to be ");
+    s.append("created, or false if you want the operation performed on the ");
+    s.append("original DataSet.");
+    s.append("@return The DataSet which is the result of subtracting the ");
+    s.append("second DataSet from the first");
+    s.append("@return An error if the units of the two DataSets do not match.");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+   *  @return    The DataSet which is the result of subtracting one DataSet
+   *             from a second DataSet.  
+   */   
 
   public Object getResult()
   {
+    // get the parameters which determine whether a new DataSet should be made
+    // and the DataSet to subtract.
+    Boolean make_new = (Boolean)this.getParameter(1).getValue();
+    DataSet ds_to_subtract = (DataSet)this.getParameter(0).getValue();
+    DataSet current_ds = this.getDataSet();
+
+    //if units do not match
+    if( !current_ds.getX_units().equals(ds_to_subtract.getX_units()) || 
+	!current_ds.getY_units().equals(ds_to_subtract.getY_units()) )
+	return new 
+               ErrorString("ERROR: The units on the DataSets do not match.");
+
+    if( !make_new.booleanValue() )
+      current_ds.getOp_log().addEntry("Subtracted " + ds_to_subtract.toString()
+                                       + " from this DataSet.");
+
+    //if the units do match
     return DSOpsImplementation.DoDSBinaryOp( this );
   }
-
 
   /* ------------------------------ clone ------------------------------- */
   /**
@@ -220,4 +269,19 @@ public class DataSetSubtract extends  DataSetOp
     return new_op;
   }
 
-}
+  /* ---------------------------- main --------------------------------- */
+  /**
+   *  Main method for testing purposes.
+   */
+
+  public static void main( String[] args )
+  {
+    DataSet ds1 = DataSetFactory.getTestDataSet(); //create the first test DataSet
+    DataSet ds2 = DataSetFactory.getTestDataSet(); //create the second test DataSet
+    ViewManager viewer = new ViewManager(ds1, ViewManager.IMAGE);
+    Operator op = new DataSetSubtract( ds1, ds2, true );
+    DataSet new_ds = (DataSet)op.getResult();
+    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);
+  }//main()
+
+}//DataSetSubtract
