@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2003/07/09 15:35:06  dennis
+ *  The XConversions table for the image now uses the new form of
+ *  DataSetXConversionsTable.showConversions() method, which rebins
+ *  to a specified XScale.  The conversions table now shows the
+ *  correct counts at a pixel, when the viewer has constructed a
+ *  rebinned data set.
+ *
  *  Revision 1.42  2003/07/05 19:17:09  dennis
  *  Adapted to the new form of the setNamedColorModel() method from the
  *  ImageJPanel class.
@@ -256,7 +263,10 @@ public void redraw( String reason )
 
         SyncVImageScrollBar();
         if ( index != DataSet.INVALID_INDEX && x != Float.NaN )
-          image_table.showConversions( x, index );
+        {
+          XScale new_scale = getXConversionScale();
+          image_table.showConversions( x, index, new_scale );
+        }
 
         image_Jpanel.set_crosshair_WC( pt );
         getState().set_int( ViewerState.POINTED_AT_INDEX, index );
@@ -865,14 +875,15 @@ private void SetHorizontalScrolling( boolean state )
 }
 
 
-
 /* -------------------------- UpdateImageReadout ------------------------- */
 
 private void UpdateImageReadout( int row )
 {
   floatPoint2D float_pt = image_Jpanel.getCurrent_WC_point();
-  image_table.showConversions( float_pt.x, row );
+  XScale new_scale = getXConversionScale();
+  image_table.showConversions( float_pt.x, row, new_scale );
 }
+
 
 /* -------------------------- SetGraphCursorFromImage ---------------------- */
 
