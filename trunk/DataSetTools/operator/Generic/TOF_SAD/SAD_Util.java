@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/03/30 01:46:54  dennis
+ * Removed unneeded semicolon.
+ *
  * Revision 1.7  2004/08/02 21:13:42  rmikk
  * Removed unused imports
  *
@@ -109,7 +112,8 @@ public class SAD_Util
    /**
     *  Don't instantiate this class
     */
-   private SAD_Util() {};
+   private SAD_Util() 
+   {}
 
 
   /* ----------------------------- SumQs_2D -------------------------------- */
