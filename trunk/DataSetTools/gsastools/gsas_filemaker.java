@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/06/25 20:11:44  chatter
+ *  Added the header info in the GSAS output file
+ *
  *  Revision 1.3  2001/06/08 23:24:25  chatter
  *  Fixed GSAS write file for SEPD
  *
@@ -47,7 +50,7 @@ import java.io.*;
 import javax.swing.*;
 import java.text.DateFormat;
 import java.text.*;
-
+import DataSetTools.math.*;
 
 /**
  * Transfer diffractometer Data Set histogram to GSAS file format.
@@ -67,8 +70,38 @@ public class gsas_filemaker
         OutputStreamWriter opw = new OutputStreamWriter(op);
          System.out.println("the file name isx " +filename);
          String S = ds.getTitle();
-        // opw.write("#" + "     BANK" + "    Ref Angle" + "     Total length");
-        // opw.write("\n");
+        
+
+
+        opw.write("#" + "     BANK" + "     Ref Angle" + "     Total length");
+        opw.write("\n"); 
+ 	   int ein= ds.getNum_entries();
+        
+         for(int i=1; i<=ein; i++)
+        {
+
+            DataSetTools.dataset.Data dd = ds.getData_entry(i-1);
+            AttributeList attr_list = dd.getAttributeList();
+             DetectorPosition position=(DetectorPosition)
+                       attr_list.getAttributeValue( Attribute.DETECTOR_POS);
+
+             Float initial_path_obj=(Float)
+                        attr_list.getAttributeValue(Attribute.INITIAL_PATH);
+
+    		float initial_path       = initial_path_obj.floatValue();
+    		float spherical_coords[] = position.getSphericalCoords();
+    		float total_length       = initial_path + spherical_coords[0];
+            float cylindrical_coords[] = position.getCylindricalCoords();
+            float ref_angle = (float)(cylindrical_coords[1]*180.0/(java.lang.Math.PI));
+
+            opw.write ("#" + "     "+i+"     "+ref_angle+"     "+total_length);
+            opw.write("\n");
+           System.out.println("Inside header");
+        }
+
+
+
+
          for (int j = ds.getTitle().length(); j<80; j++)
              S = S +" ";
          System.out.println("filename length="+S.length());
