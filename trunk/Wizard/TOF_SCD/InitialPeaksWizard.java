@@ -30,7 +30,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/06/11 22:44:31  bouzekc
+ * Added Wizard help message.
+ *
  * Revision 1.1  2003/06/10 21:06:15  bouzekc
+ *
  * Added to CVS
  *
  *
@@ -78,6 +82,13 @@ public class InitialPeaksWizard extends Wizard
   {
     super("Initial SCD Peaks Wizard", standalone);
     this.createAllForms();
+
+    StringBuffer s = new StringBuffer();
+    s.append("This Wizard is designed to be used as an initial\n");
+    s.append("tool for finding peaks from SCD run files.  It\n");
+    s.append("applies BlindJ, IndexJ, ScalarJ, and LsqrsJ\n");
+    s.append("to the output .peaks file from the first Form.\n");
+    this.setHelpMessage(s.toString());
   }
 
   /**
