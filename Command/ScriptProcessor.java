@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/06/04 20:14:51  rmikk
+ * Updated Documentation.
+ * Fixed Title = so no space after = needed
+ *
  * Revision 1.4  2001/06/04 14:08:54  rmikk
  * Fixed error in SetDefaultParameters to allow space after
  * the = in the "parameter"  Title=
@@ -1052,10 +1056,10 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
   *
   * NOTE: The result can be used by the execute( Parameter ) method
   *
-  * @see #CommandPane( javax.swing.text.Document , DataSetTools.util.IObserver)  Constructor
-  * @see #addDataSet( DataSetTools.dataSet.DataSet ) addDataSet
-  * @see #getErrorCharPos()
-  *@see #getErrorMessage()
+  * @see Command.CommandPane()  Constructor
+  * @see ScriptProcessor.addDataSet( DataSetTools.dataSet.DataSet ) addDataSet
+  * @see ScriptProcessor.getErrorCharPos()
+  *@see ScriptProcessor.getErrorMessage()
   * Sample Code Segment
   *<Pre> 
    *    Document D = new util().Open( filename);  
@@ -1415,7 +1419,7 @@ public void setDefaultParameters()
 *  Gives the Command to use this script in the as a function in this ScriptProcessor.<BR> NOT USED  
 *
 * NOTE: ScriptOperators are used for functions in this scriptProcessor
-*@see #ScriptOperator
+*@see  Command.ScriptOperator
 */
 public String getCommand()
   { return command;
@@ -1431,7 +1435,7 @@ public String getTitle()
 
 /** Executes the whole script then returns the result
 *@return  the result.  If there is an error the result is a subclass of ErrorString
-*@see #DataSetTools.util.ErrorString
+*@see DataSetTools.util.ErrorString
 
 */
 public Object getResult()
@@ -1541,7 +1545,7 @@ public void addPropertyChangeListener( PropertyChangeListener P)
 /**
 * Executed when an IObservable notifies this IObserver
 *
-*@see #DataSetTools.util.IObserver
+*@see DataSetTools.util.IObserver
 */ 
 public  void   update(  Object observed_obj ,  Object reason ) 
     {OL.notifyIObservers( this  ,  reason  ) ; 
@@ -1608,3 +1612,4 @@ private int findQuote(String S, int dir ,int start, String SrchChars,String brcp
 
 
 }
+
