@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/03/15 06:10:56  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.11  2003/06/16 23:08:26  dennis
  *  Now checks whether operator is instance of XAxisConversionOp
  *  instead of comparing result of getCategory with
@@ -57,14 +60,11 @@
 package DataSetTools.viewer.util;
 
 import java.io.*;
-import java.awt.*;
-import java.awt.event.*;
 import DataSetTools.parameter.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.operator.DataSet.*;
-import DataSetTools.util.*;
 
 /**
  *  The DS_Util class implements static methods that manipulate DataSeta

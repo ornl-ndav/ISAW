@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/03/15 06:10:38  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.1  2003/02/18 19:00:20  dennis
  *  Initial version.
  *
@@ -38,7 +41,6 @@
 package  DataSetTools.dataset;
 
 import DataSetTools.instruments.*;
-import DataSetTools.dataset.*;
 import java.io.*;
 
 /**

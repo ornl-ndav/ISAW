@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/03/15 06:10:56  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.4  2004/03/15 03:29:04  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -44,10 +47,8 @@ package DataSetTools.viewer.util;
 import gov.anl.ipns.Util.Messaging.*;
 
 import java.io.*;
-import java.awt.*;
 import java.awt.event.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
 
 /**
  *  The KeySelect class implements the keyboard based spectrum selection

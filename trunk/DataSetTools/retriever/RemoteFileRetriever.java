@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 06:10:52  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.6  2003/02/24 13:42:31  dennis
  *  Switched to use CommandObject instead of compound String command.
  *
@@ -42,9 +45,6 @@ package DataSetTools.retriever;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import java.io.*;
-import java.net.*;
-import java.util.*;
-import NetComm.*;
 
 /**
  *  This class is a base class for retrievers that get data from a 

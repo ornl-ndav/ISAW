@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/03/15 06:10:34  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.7  2004/03/15 03:28:04  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -56,12 +59,10 @@ import gov.anl.ipns.ViewTools.UI.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.io.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
 
 /**
  * An XScaleChooserUI bject allows the user to specify an XScale by specifying

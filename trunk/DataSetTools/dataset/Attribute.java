@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2004/03/15 06:10:35  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.42  2004/03/15 03:28:04  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -151,8 +154,7 @@ import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
-import  DataSetTools.util.*;
-import  DataSetTools.math.*;
+
 
 /**
  * The abstract root class for attributes used in data objects.  Attribute

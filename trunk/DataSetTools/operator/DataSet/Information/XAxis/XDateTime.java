@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/15 06:10:48  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.7  2004/01/24 19:33:43  bouzekc
  * Removed unused variables in main().
  *
@@ -64,8 +67,6 @@ import  java.io.*;
 import  java.util.*;
 import  java.text.*;
 import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
 import  DataSetTools.viewer.*;

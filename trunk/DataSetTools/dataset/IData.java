@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 06:10:37  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.6  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -56,8 +59,6 @@ package  DataSetTools.dataset;
 
 import DataSetTools.dataset.XScale;
 import DataSetTools.dataset.IAttributeList;
-import DataSetTools.dataset.AttributeList;
-import DataSetTools.dataset.Attribute;
 
 public interface IData extends IAttributeList 
 {

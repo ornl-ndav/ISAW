@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/03/15 06:10:58  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.8  2003/10/14 22:03:16  dennis
  *  Fixed javadoc comment to build cleanly with jdk 1.4.2
  *
@@ -42,9 +45,7 @@
 package NetComm;
 
 import java.net.*;
-import java.lang.*;
 import java.io.*;
-import NetComm.*;
 
 /**
  *  Class that contains a thread that can receive an object via TCP and 

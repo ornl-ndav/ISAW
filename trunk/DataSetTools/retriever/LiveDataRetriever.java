@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2004/03/15 06:10:51  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.24  2003/03/04 20:32:00  dennis
  *  Added method to get the name of any of the DataSets on the server,
  *  using the new command object.
@@ -54,8 +57,6 @@ package DataSetTools.retriever;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import java.io.*;
-import java.net.*;
-import java.util.*;
 import NetComm.*;
 
 /**

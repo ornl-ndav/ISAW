@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.9  2004/03/15 06:10:40  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.8  2004/03/15 03:28:21  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -74,7 +77,6 @@ package DataSetTools.math;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Sys.*;
-import DataSetTools.util.*;
 
 /**
  *  This contains basic conversions for time-of-flight neutron scattering
