@@ -102,27 +102,28 @@ public class CreateMultiFilesForm extends    Form
     for( int i = 0; i < run_numbers.length; i++ )
     {
       file_name = run_dir + inst_name + run_numbers[i] + ".RUN";
-	     op = new LoadOneRunfile(file_name, "0");
-	     result = op.getResult();
-	  
-	     if( result instanceof DataSet[] )
-	     {
+      op = new LoadOneRunfile(file_name, "0");
+      result = op.getResult();
+      
+      if( result instanceof DataSet[] )
+      {
         //add the runfile
         result_sets = (DataSet[])result;
         apg.addItem(result_sets);
         //let the user know the runfile was added successfully
         SharedData.addmsg(file_name + " added successfully.\n");
+        apg.setValid(true);
       }
-      else
+      else // something went wrong
       {
-	       if( result instanceof ErrorString )
-	         SharedData.addmsg(result.toString() + "\n");
-	       else
-                 SharedData.addmsg("Could not load " + file_name + ".\n");
+        if( result instanceof ErrorString )
+          SharedData.addmsg(result.toString() + "\n");
+        else
+          SharedData.addmsg("Could not load " + file_name + ".\n");
+        return false;
       }
 
     }//for
-    apg.setValid(true);
     
     SharedData.addmsg("Finished loading DataSets from runfiles.\n\n");
 	   
