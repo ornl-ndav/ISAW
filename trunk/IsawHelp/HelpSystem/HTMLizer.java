@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/12/02 17:26:16  pfpeterson
+ * Made the html file creation *slightly* more robust. Also checks for empty/default
+ * documentation and returns more appropriate message.
+ *
  * Revision 1.3  2002/11/27 23:27:28  pfpeterson
  * standardized header
  *
@@ -302,19 +306,18 @@ public class HTMLizer
      */
     public boolean writeFile(String operator_class, String body)
     {
-	try
-	{
-	    help_out = new File(help_dir, operator_class + "Help.html"); 
-	    out = new FileWriter(help_out);
-	    out.write(body);
-	    out.close();
-	    return true;
-	}
-	catch(Exception e)
-	{
-	    e.printStackTrace();
-	    return false;
-	}
+      try{
+        help_out = new File(help_dir, operator_class + "Help.html"); 
+        out = new FileWriter(help_out);
+        out.write(body);
+        out.close();
+        return true;
+      }catch( FileNotFoundException e){
+        return false;
+      }catch(Exception e){
+        e.printStackTrace();
+        return false;
+      }
     }
 
     /* --------------------------- convertToHTML() -------------------------- */
@@ -326,6 +329,10 @@ public class HTMLizer
      */
     private String convertToHTML(String m)
     {
+        // check that there is something to work with
+        if( m==null || m.length()==0 || m.equals(Operator.DEFAULT_DOCS) )
+          return "Documentation not written";
+
 	//eliminate "garbage" information
 	m = m.substring(m.indexOf('@'));
 
