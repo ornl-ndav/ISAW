@@ -27,6 +27,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/02/24 22:06:07  pfpeterson
+ * Changed the means of initializing the IntArrayPG.
+ *
  * Revision 1.1  2003/02/24 15:58:16  pfpeterson
  * Renaming from Blindd
  *
@@ -158,9 +161,7 @@ public class BlindJ extends  GenericTOF_SCD {
     peaksfilepg.setFilter(new PeaksFilter());
     addParameter(peaksfilepg);
 
-    int[] intAr= new int[5];
-    intAr[0]=30;intAr[1]=31;intAr[2]=32; intAr[3]=40;intAr[4]=42; 
-    addParameter( new IntArrayPG("Seq nums",intAr ) );
+    addParameter( new IntArrayPG("Seq nums","20:32,40,42") );
 
     SaveFilePG matfilepg=new SaveFilePG("Matrix filename","" );
     matfilepg.setFilter(new MatrixFilter());
