@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2003/09/16 22:43:30  bouzekc
+ *  Clarified documentation for class users and subclass writers.
+ *
  *  Revision 1.26  2003/09/16 22:31:41  bouzekc
  *  Added documentation indicating the convention of using
  *  PropertyChangeListeners for listening to events.
@@ -153,16 +156,23 @@ import javax.swing.*;
  * GUI.  In addition, to set the type of this ParameterGUI, the constructor
  * MUST perform a this.type = "SOMETYPE" assignment. <br>
  * <br>
- * NOTE: the convention for listening to GUI events (mouse clicks, etc.) is
- * through PropertyChangeListeners and PropertyChangeEvents.  The EntryWidget
- * class takes care of firing off PropertyChangeEvents for GUI components, so
- * if all your external class cares about is whether or not the value changed,
- * adding the class as a PropertyChangeListener will work fine. You may,
- * however, wish to set the property name to IParameter.VALUE to filter out
- * some events.  If you care about the old and/or new values, the subclassed
- * ParameterGUI MUST override propertyChange() and use the protected topPCS
- * PropertyChangeSupport to propagate events upward, in addition to the code
- * you need to implement for acquiring old and new values.
+ * NOTE FOR USERS OF THIS CLASS HIERARCHY:<br>
+ * <br>
+ * The convention for listening to GUI events (mouse clicks, etc.) is through
+ * PropertyChangeListeners and PropertyChangeEvents.  The EntryWidget class
+ * takes care of firing off PropertyChangeEvents for GUI components, so if all
+ * your external class cares about is whether or not the value changed, adding
+ * the class as a PropertyChangeListener will work fine. This works because
+ * the EntryWidget, by default, has "this" added as a  PropertyChangeListener
+ * along with the property name IParameter.VALUE.  You may, however, wish to
+ * remove this listener and/or add other PropertyChangeListeners.  If you do
+ * so, you should specify the property name  in order to filter the events.   <br>
+ * <br>
+ * NOTE FOR THOSE SUBCLASSING THIS CLASS: If you want to retrieve the old and
+ * new values correctly all the time, the  subclassed ParameterGUI may need to
+ * override propertyChange().  If it does  so, use the protected topPCS
+ * PropertyChangeSupport to propagate events upward,  in addition to the code
+ * needed for acquiring old and new values.
  */
 public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   PropertyChangeListener, java.io.Serializable {
@@ -401,7 +411,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    */
   public Object clone(  ) {
     return this.clone(  );
-
     /*ParameterGUI pg=new ParameterGUI(this.name,this.value,this.valid);
        pg.setDrawValid(this.getDrawValid());
        pg.initialized=false;
