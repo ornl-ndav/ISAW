@@ -9,6 +9,34 @@
  *  2000/06/09  This operator was renamed from SumSelectedData 
  *             
  *  $Log$
+ *  Revision 1.3  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
+ *
  *  Revision 1.2  2000/11/07 15:42:19  dennis
  *  Replaced "Data blocks" with "Groups" in operator title.
  *
@@ -51,7 +79,7 @@ import  DataSetTools.util.*;
   *  selected Data blocks with a specified attribute in a specified range.
   */
 
-public class SumByAttribute extends    DataSetOperator 
+public class SumByAttribute extends    DataSetOp 
                                        implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -241,6 +269,21 @@ public class SumByAttribute extends    DataSetOperator
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    SumByAttribute op = new SumByAttribute();
+
+    String list[] = op.getCategoryList();
+    System.out.println( "Categories are: " );
+    for ( int i = 0; i < list.length; i++ )
+      System.out.println( list[i] );
+
   }
 
 }

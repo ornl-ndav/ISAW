@@ -1,13 +1,3 @@
-package  DataSetTools.operator;
-
-import  java.io.*;
-import  java.util.Vector;
-import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
-import  DataSetTools.retriever.*;
-import  ChopTools.*;
-
 /**
  * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
  * Macro to Calibrate,    Evaluate, Normalize Chopper Spectrometer Data
@@ -28,10 +18,52 @@ import  ChopTools.*;
 // * @see SpectrometerGrouper
  * @see SpectrometerNormalizer
  * @see SpectrometerTofToEnergyLoss
+ *
+ * $Log$
+ * Revision 1.6  2000/11/10 22:41:34  dennis
+ *    Introduced additional abstract classes to better categorize the operators.
+ * Existing operators were modified to be derived from one of the new abstract
+ * classes.  The abstract base class hierarchy is now:
+ *
+ *  Operator
+ *
+ *   -GenericOperator
+ *      --GenericLoad
+ *      --GenericBatch
+ *
+ *   -DataSetOperator
+ *     --DS_EditList
+ *     --DS_Math
+ *        ---ScalarOp
+ *        ---DataSetOp
+ *        ---AnalyzeOp
+ *     --DS_Attribute
+ *     --DS_Conversion
+ *        ---XAxisConversionOp
+ *        ---YAxisConversionOp
+ *        ---XYAxesConversionOp
+ *     --DS_Special
+ *
+ *    To allow for automatic generation of hierarchial menus, each new operator
+ * should fall into one of these categories, or a new category should be
+ * constructed within this hierarchy for the new operator.
+ *
+ *
  */
 
-public class SpectrometerMacro extends    DataSetOperator 
-                                  implements Serializable
+package  DataSetTools.operator;
+
+import  java.io.*;
+import  java.util.Vector;
+import  DataSetTools.dataset.*;
+import  DataSetTools.math.*;
+import  DataSetTools.util.*;
+import  DataSetTools.retriever.*;
+import  ChopTools.*;
+
+
+public class SpectrometerMacro extends    DS_Special 
+                               implements Serializable
 {
   /**
    * Constructor of macro

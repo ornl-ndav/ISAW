@@ -2,6 +2,34 @@
  * @(#)LoadOneRunfile.java     0.2  2000/07/21  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.4  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
+ *
  *  Revision 1.3  2000/07/21 21:38:15  dennis
  *  Removed one unused variable and fixed documentation
  *
@@ -31,7 +59,7 @@ import IPNS.Runfile.*;
  * @see Operator
  */
 
-public class LoadOneRunfile extends    Operator 
+public class LoadOneRunfile extends    GenericLoad 
                             implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */

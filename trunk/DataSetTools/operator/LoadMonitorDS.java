@@ -2,6 +2,34 @@
  * @(#)LoadMonitorDS.java     0.1  2000/07/21  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
+ *
  *  Revision 1.1  2000/07/21 21:39:41  dennis
  *  Operators to load monitors separately
  *
@@ -25,7 +53,7 @@ import IPNS.Runfile.*;
  * @see Operator
  */
 
-public class LoadMonitorDS extends    Operator 
+public class LoadMonitorDS extends    GenericLoad 
                            implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */

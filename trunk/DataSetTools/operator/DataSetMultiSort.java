@@ -3,8 +3,35 @@
  *                                  99/08/16   Added constructor to allow
  *                                             calling operator directly
  *             
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.6  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
+ *
  *  Revision 1.5  2000/11/07 15:59:06  dennis
  *  Replaced "groups" with "Groups" in operator title.
  *
@@ -41,7 +68,7 @@ import  DataSetTools.dataset.*;
   * entries.
   */
 
-public class DataSetMultiSort  extends    DataSetOperator 
+public class DataSetMultiSort  extends    DS_EditList 
                                implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */

@@ -5,6 +5,34 @@
  *                 attribute class.
  *
  *  $Log$
+ *  Revision 1.4  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
+ *
  *  Revision 1.3  2000/10/03 21:51:40  dennis
  *  Replaced vector.clear() with vector.removeAllElements() for
  *  compatibility with Java 1.1.8
@@ -48,6 +76,30 @@ import java.io.*;
 
 abstract public class Operator implements Serializable
 {
+                                 // Constants giving operator category names
+                                 // for the inheritance hierarchy of operators.
+                                 // The strings returned in the getCategoryList
+                                 // method are chosen from these and used to
+                                 // generate menus.
+   public static final String  OPERATOR                 = "Operator";
+   public static final String    GENERIC                = "Generic";
+   public static final String      LOAD                 = "Load";
+   public static final String      BATCH                = "Batch";
+   public static final String    DATA_SET_OPERATOR      = "DataSet Operator";
+   public static final String      EDIT_LIST            = "Edit List";
+   public static final String      MATH                 = "Math";
+   public static final String        SCALAR             = "Scalar";
+   public static final String        DATA_SET_OP        = "DataSet";
+   public static final String        ANALYZE            = "Analyze";
+   public static final String      ATTRIBUTE            = "Attribute";
+   public static final String      CONVERSION           = "Conversion";
+   public static final String        X_AXIS_CONVERSION  = "X Axis Conversion";
+   public static final String        Y_AXIS_CONVERSION  = "Y Axis Conversion";
+   public static final String        XY_AXIS_CONVERSION = "XY Axes Conversion";
+   public static final String      SPECIAL              = "Special";
+
+
+
    private   String    title;
    protected Vector    parameters;
 
@@ -95,6 +147,59 @@ abstract public class Operator implements Serializable
    */
    abstract public String getCommand();
 
+
+  /* -------------------------- getCategory -------------------------------- */
+  /**
+   * Get the category of this operator
+   *
+   * @return  A String specifying the category of this operator.  This is
+   *          actually the category of the abstract base class from which
+   *          the current operator is directly derived.
+   */
+  public String getCategory()
+  {
+    return OPERATOR;
+  }
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names of base
+   * classes for this operator.  The first entry in the array is the string:
+   *
+   *      Operator.OPERATOR 
+   *
+   * The last entry is the category of the last abstract base class that is
+   * is a base class for the current operator.
+   *
+   * @return  A list of Strings specifying the category names of the abstract 
+   * base classes from which this operator is derived.
+   */
+  public String[] getCategoryList()
+  {
+    String list[] = new String[1];
+    list[0] = OPERATOR;
+    return list;
+  }
+
+  /* -------------------------- AppendCategory ---------------------------- */
+  /**
+   *  Utility function to append an extra operator category onto an array of
+   *  operators.
+   */
+  String[] AppendCategory( String category, String[] partial_list )
+  {
+                          // get a new array with an extra space, copy the
+                          // original array and append the new category
+
+    String list[] = new String[ partial_list.length + 1 ];
+
+    for ( int i = 0; i < partial_list.length; i++ )
+      list[i] = partial_list[i];
+
+    list[ partial_list.length ] = category;
+ 
+    return list;
+  }
 
    /* ---------------------------- addParameter ---------------------------- */
    /**

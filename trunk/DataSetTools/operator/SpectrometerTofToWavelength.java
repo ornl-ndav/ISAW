@@ -6,9 +6,37 @@
  *                               2000/04/21   Added methods to set better
  *                                            default parameters. Now it
  *                                            is derived from the class
- *                                            XAxisConversionOperator
+ *                                            XAxisConversionOp
  *             
  * $Log$
+ * Revision 1.7  2000/11/10 22:41:34  dennis
+ *    Introduced additional abstract classes to better categorize the operators.
+ * Existing operators were modified to be derived from one of the new abstract
+ * classes.  The abstract base class hierarchy is now:
+ *
+ *  Operator
+ *
+ *   -GenericOperator
+ *      --GenericLoad
+ *      --GenericBatch
+ *
+ *   -DataSetOperator
+ *     --DS_EditList
+ *     --DS_Math
+ *        ---ScalarOp
+ *        ---DataSetOp
+ *        ---AnalyzeOp
+ *     --DS_Attribute
+ *     --DS_Conversion
+ *        ---XAxisConversionOp
+ *        ---YAxisConversionOp
+ *        ---XYAxesConversionOp
+ *     --DS_Special
+ *
+ *    To allow for automatic generation of hierarchial menus, each new operator
+ * should fall into one of these categories, or a new category should be
+ * constructed within this hierarchy for the new operator.
+ *
  * Revision 1.6  2000/08/08 21:20:21  dennis
  * Now propagate errors, rather than set them to SQRT(counts)
  *
@@ -56,7 +84,7 @@ import  DataSetTools.util.*;
  *
  */
 
-public class SpectrometerTofToWavelength extends    XAxisConversionOperator 
+public class SpectrometerTofToWavelength extends    XAxisConversionOp 
                                          implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
