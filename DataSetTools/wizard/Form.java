@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2003/07/18 14:37:12  bouzekc
+ * Now uses a Box for each parameter panel.
+ *
  * Revision 1.33  2003/07/14 20:56:53  bouzekc
  * Fixed incorrect code documentation.
  *
@@ -536,19 +539,22 @@ public abstract class Form extends Operator implements PropertyChanger {
       return null;
     }
 
-    JPanel sub_panel    = new JPanel(  );
+    JPanel sub_panel = new JPanel(  );
+    Box subBox       = Box.createVerticalBox(  );
+
+    sub_panel.add( subBox );
+
     TitledBorder border;
 
     border = new TitledBorder( LineBorder.createBlackLineBorder(  ), title );
 
     sub_panel.setBorder( border );
-    sub_panel.setLayout( new GridLayout( num.length, 1 ) );
 
     for( int i = 0; i < num.length; i++ ) {
       IParameterGUI param = ( IParameterGUI )getParameter( num[i] );
 
       param.init(  );
-      sub_panel.add( param.getGUIPanel(  ) );
+      subBox.add( param.getGUIPanel(  ) );
     }
 
     return sub_panel;
