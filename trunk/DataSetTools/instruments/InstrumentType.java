@@ -3,6 +3,9 @@
  *
  *
  *  $Log$
+ *  Revision 1.4  2000/07/13 14:28:28  dennis
+ *  Changed formIPNSFileName() method to NOT include the path
+ *
  *  Revision 1.3  2000/07/12 18:33:29  dennis
  *  Added method formIPNSFileName() to construct a IPNS runfile
  *  name from the path, instrument name and run number.
@@ -189,12 +192,8 @@ public class InstrumentType implements Serializable
   }
 
  /**
-  *  Form an IPNS runfile name from a directory path, instrument name and
-  *  run number.
+  *  Form an IPNS runfile name from an instrument name and run number.
   *
-  *  @param  path         Directory path for the runfile.  This must include
-  *                       the trailing path separator character, such as:
-  *                       /home/ipns_data/  NOT  /home/ipns_data
   *  @param  instrument   The instrument name, such as HRCS or gppd.  If the
   *                       first letter of the name is capitalized, all letters
   *                       in the file name will be capitalized, otherwise,
@@ -203,12 +202,10 @@ public class InstrumentType implements Serializable
   *                       less than 4 digits, leading zeros will prepended on
   *                       number when forming the file name.
   *
-  *  @return  The full file name for the run file, such as 
-  *           /home/ipns_data/HRCS0978.RUN
+  *  @return  The full file name for the run file, such as HRCS0978.RUN
   */
   
-  public static String formIPNSFileName( String path, 
-                                         String instrument,
+  public static String formIPNSFileName( String instrument,
                                          int    run_num )
   {
     String num = ""+run_num;
@@ -218,9 +215,9 @@ public class InstrumentType implements Serializable
       num = "0"+num;
 
     if ( Character.isUpperCase( instrument.charAt(0) ) )
-      file_name = path+instrument+num+".RUN";
+      file_name = instrument+num+".RUN";
     else
-      file_name = path+instrument+num+".run";
+      file_name = instrument+num+".run";
 
     return file_name;
   }
