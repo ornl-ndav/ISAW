@@ -31,23 +31,27 @@
  * Modified:  
  *  
  * $Log$
+ * Revision 1.2  2002/08/19 17:06:59  pfpeterson
+ * Reformated file to make it easier to read.
+ *
  * Revision 1.1  2002/01/10 16:02:30  rmikk
  * Initial Checkin
  * 
 */
 package Command;
 
-/** Implementers of this interface can accept a StatusPane to which
-*  Values can be reported or can be cleared
-*
-*NOTE: DataSetTools.util.SharedData.status_pane is the "Global" StatusPane.
-*      
-*/
-public interface IusesStatusPane
-{
- /** Adds one Status Pane to the Object.
- * Currently the Object can only have one StatusPane. Setting it to
- * null should eliminate writing to this status pane
+/**
+ * Implementers of this interface can accept a StatusPane to which
+ * Values can be reported or can be cleared
+ *
+ *NOTE: DataSetTools.util.SharedData.status_pane is the "Global" StatusPane.
  */
- public void addStatusPane( StatusPane sp );
+
+public interface IusesStatusPane{
+    /**
+     * Adds one Status Pane to the Object.  Currently the Object can
+     * only have one StatusPane. Setting it to null should eliminate
+     * writing to this status pane
+     */
+    public void addStatusPane( StatusPane sp );
 }
