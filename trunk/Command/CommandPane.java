@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.36  2002/02/22 20:33:36  pfpeterson
+ * Operator Reorganization.
+ *
  * Revision 1.35  2002/01/10 15:38:33  rmikk
  * Now uses the Global StatusPane
  *     ( DataSetTools.util.SharedData.status_pane)
@@ -195,6 +198,7 @@ import javax.swing.text.*;
 import java.awt.event.*; 
 import javax.swing.border.*; 
 import DataSetTools.operator.*; 
+import DataSetTools.operator.Generic.*;
 import java.beans.*; 
 import java.util.Vector;
 import Command.*;

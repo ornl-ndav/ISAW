@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2002/02/22 20:33:41  pfpeterson
+ * Operator Reorganization.
+ *
  * Revision 1.15  2001/11/12 21:27:55  dennis
  *   1. Supports  GROUP1_HOME, GROUP2_HOME, etc. These will be separated
  *      under IsawGUI's Macros menu into  Group Scripts, Group1 Scripts,
@@ -93,6 +96,7 @@ import javax.swing.text.*;
 import java.lang.*;
 import java.awt.event.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.*;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.util.*;
 import java.beans.*;

@@ -1,5 +1,6 @@
 package Command;
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ParametersGUI.*;

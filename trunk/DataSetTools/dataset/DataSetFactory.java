@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2002/02/22 20:35:07  pfpeterson
+ *  Operator Reorganization.
+ *
  *  Revision 1.17  2001/08/16 19:36:19  dennis
  *  Added Ruth's PlotterOp instead of Dongfengs SpectrometerPlotter.
  *
@@ -101,6 +104,17 @@ package  DataSetTools.dataset;
 
 import java.io.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.*;
+import DataSetTools.operator.DataSet.Special.*;
+import DataSetTools.operator.DataSet.TOF_DG_Spectrometer.*;
+import DataSetTools.operator.DataSet.Conversion.XAxis.*;
+import DataSetTools.operator.DataSet.Conversion.YAxis.*;
+import DataSetTools.operator.DataSet.Conversion.XYAxis.*;
+import DataSetTools.operator.DataSet.Math.Scalar.*;
+import DataSetTools.operator.DataSet.Math.DataSet.*;
+import DataSetTools.operator.DataSet.Math.Analyze.*;
+import DataSetTools.operator.DataSet.Attribute.*;
+import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.instruments.*;
 
 /**
