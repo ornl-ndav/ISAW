@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/07/25 16:36:18  rmikk
+ * Now can Print transmission files. A parameter is added
+ * to select transmission type.
+ *
  * Revision 1.2  2003/07/22 16:27:02  dennis
  * Fixed formatting.
  *
@@ -64,8 +68,9 @@ public class PrintFlood  extends GenericTOF_SAD{
     *   @ param   EfficiencyDS  The Efficiency Data Set
     *                          the Mask are all the entries that are zero
     *   @param   Outfilename    The filename to print the information to
+    *   @param   fileType      "Flood" or "Transmission"
     */
-    public PrintFlood( DataSet EfficiencyDS ,String Outfilename) {
+    public PrintFlood( DataSet EfficiencyDS ,String Outfilename, String fileType) {
        this();
        parameters = new Vector();
        addParameter( new DataSetPG("Efficiency DataSet", EfficiencyDS ) );
@@ -78,6 +83,9 @@ public class PrintFlood  extends GenericTOF_SAD{
       parameters = new Vector();
       addParameter( new DataSetPG("Efficiency DataSet", null ) );
       addParameter( new SaveFilePG("Output FileName", null) );
+      ChoiceListPG list= new ChoiceListPG("File Type", "Flood");
+      list.addItem("Transmission");
+      addParameter( list);
    }
 
 
@@ -90,7 +98,7 @@ public class PrintFlood  extends GenericTOF_SAD{
    public Object getResult(){
      DataSet Efficiency = ((DataSetPG)getParameter(0)).getDataSetValue();
      String  Outfilename    =  ((SaveFilePG)getParameter(1)).getStringValue();
-    
+     String FileType = ((ChoiceListPG)getParameter(2)).getValue().toString();
      int n = Efficiency.getNum_entries();
      IDataGrid EffGrid = getDataGrid( Efficiency);
     
@@ -105,6 +113,7 @@ public class PrintFlood  extends GenericTOF_SAD{
      float[] Vals = new float[ n];
      float[] Mask = new float[n];
      int  i=0;
+     if( FileType.equals("Flood")){
      for( int row = 1; row <= nrows; row++)
         for( int col = 1; col <= ncols; col++){
            Vals[i] = EffGrid.getData_entry(row, col).getY_values()[0];
@@ -114,8 +123,14 @@ public class PrintFlood  extends GenericTOF_SAD{
               Mask[i] = 1f;
            i++;
         }
+     }else{
+        Mask = null;
+        Vals = Efficiency.getData_entry(0).getY_values();
+     }
          
      String Format = "F10.7,F10.7,F10.7,F10.7,F10.7,F10.7,F10.7,F10.7,/";
+     if( FileType.equals( "Transmission"))
+         Format = "E15.5,E15.5,E15.5,E15.5,E15.5,/";
      Vector V = new Vector();
      V.addElement( Vals);
      Object R = FileIO.Write( Outfilename,false,true, V, Format);
@@ -128,11 +143,14 @@ public class PrintFlood  extends GenericTOF_SAD{
 
      //Get and print the errors of the Efficiency DataSet
      i=0;
+     if( FileType.equals("Flood"))
      for( int row = 1; row <= nrows; row++)
         for( int col = 1; col <= ncols; col++)
             {Vals[i] = EffGrid.getData_entry(row,col).getErrors()[0];
               i++;
             }
+     else
+        Vals=Efficiency.getData_entry(0).getErrors();
 
      V = new Vector();
      V.addElement( Vals);
@@ -143,6 +161,10 @@ public class PrintFlood  extends GenericTOF_SAD{
      else if( R instanceof Integer)
        if(((Integer) R).intValue() != n)
        SharedData.addmsg("Not all data written");
+
+
+     if(! FileType.equals("Flood"))
+          return  PrintTailer( Efficiency, Outfilename); 
 
      Format ="I10,I10,I10,I10,I10,I10,I10,I10,/";
 
@@ -198,7 +220,25 @@ public class PrintFlood  extends GenericTOF_SAD{
       return plist.pixel(0).DataGrid();
    }
 
+  //currently only transmission
+  private Object PrintTailer( DataSet ds, String Outfilename){
+   
+    String S = " ";
+    int[] runs = ((IntListAttribute)(ds.getAttribute( Attribute.RUN_NUM))).
+                getIntegerValue();
+   
+    for( int i = 0; i< runs.length; i++)
+         S =S+runs[i]+"-";
+     S = S+" (2)";
+    Vector V = new Vector();
+    V.addElement( S);
+    Object R = FileIO.Write( Outfilename,true,true, V, "S20");
+    if( R instanceof ErrorString)
+       if( R.toString() == FileIO.NO_MORE_DATA){}
+       else return R;
+     return "Success"; 
 
+  } 
    public String getDocumentation(){
       StringBuffer Res = new StringBuffer();
       Res.append("@overview  Prints the values followed by the errors of the");
