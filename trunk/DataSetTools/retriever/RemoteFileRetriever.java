@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/02/24 13:42:31  dennis
+ *  Switched to use CommandObject instead of compound String command.
+ *
  *  Revision 1.5  2002/11/27 23:23:16  pfpeterson
  *  standardized header
  *
@@ -69,14 +72,13 @@ public class RemoteFileRetriever extends    RemoteDataRetriever
     if ( isConnected() )             // load up the DataSet type array and
     {                                // make room for the DataSets.
 
-      Object obj = getObjectFromServer( DataSetServer.COMMAND_GET_DS_TYPES +
-                                        file_name );
+      Object obj = getObjectFromServer( getDS_Types(file_name) );
 
       if ( obj instanceof int[] )    
       {
         ds_type = (int[]) obj;
 
-        if ( debug_retriever )
+        if ( debug_remote )
         { 
           System.out.print("Got array of ints = ");
           for ( int i = 0; i < ds_type.length; i++ )
@@ -89,7 +91,7 @@ public class RemoteFileRetriever extends    RemoteDataRetriever
           data_set[i] = null;
       }
       else
-        if ( debug_retriever )
+        if ( debug_remote )
           System.out.println("Didn't get int[]");
     }
   }
@@ -110,14 +112,8 @@ public class RemoteFileRetriever extends    RemoteDataRetriever
   { 
     if ( ds_type == null )
     {
-      if ( server_alive && user_ok && password_ok )
+      if ( server_alive  )
         return BAD_FILE_NAME;
-
-      if ( server_alive && user_ok )
-        return BAD_PASSWORD;
-
-      if ( server_alive )
-        return BAD_USER_NAME;
 
       return SERVER_DOWN;
     }
@@ -173,9 +169,7 @@ public class RemoteFileRetriever extends    RemoteDataRetriever
     if ( !isConnected() )
       MakeConnection();
 
-    Object obj = getObjectFromServer( DataSetServer.COMMAND_GET_DS + 
-                                      file_name + " " +
-                                      data_set_num );
+    Object obj = getObjectFromServer( getDS( file_name, data_set_num ) );
     if ( obj != null && obj instanceof DataSet )
     {
       DataSet ds = (DataSet)obj;
