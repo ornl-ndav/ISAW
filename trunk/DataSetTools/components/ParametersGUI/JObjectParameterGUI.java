@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/03/08 16:20:46  pfpeterson
+ * Added method to disable the GUIs. This is to help out wizards.
+ *
  * Revision 1.5  2001/08/16 14:34:57  rmikk
  * Supports the data type IntListString
  *
@@ -111,6 +114,11 @@ public class JObjectParameterGUI extends    JParameterGUI
         return segment;
     }
 
+
+    public void setEnabled(boolean en){
+        this.intText.setEnabled(en);
+        this.Array.setEnabled(en);
+    }
 
     public Parameter getParameter()
     {   

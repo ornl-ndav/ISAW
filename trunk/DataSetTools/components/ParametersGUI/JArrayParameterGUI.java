@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/03/08 16:20:38  pfpeterson
+ * Added method to disable the GUIs. This is to help out wizards.
+ *
  * Revision 1.3  2001/06/26 18:37:21  dennis
  * Added Copyright and GPL license.
  * Removed un-needed imports and improved
@@ -75,6 +78,10 @@ public class JArrayParameterGUI extends    JParameterGUI
       return segment;
    }
 
+
+   public void setEnabled(boolean en){
+       this.arrayv.setEnabled(en);
+   }
 
    public Parameter getParameter()
    {

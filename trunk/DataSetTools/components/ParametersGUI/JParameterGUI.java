@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/03/08 16:20:48  pfpeterson
+ *  Added method to disable the GUIs. This is to help out wizards.
+ *
  *  Revision 1.4  2002/02/27 16:15:05  dennis
  *  Added the factory method: getInstance() to return an instance of an
  *  appropriate subclass of a JParameterGUI based on the data type of the
@@ -95,6 +98,11 @@ abstract public class JParameterGUI
     *          is determined by the concrete derived class.
     */
    abstract public JPanel getGUISegment();
+
+    /**
+     * Enable the Parameter GUI.
+     */
+    abstract public void setEnabled(boolean en);
 
 
    /**
