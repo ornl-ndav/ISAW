@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/08/13 23:29:59  dennis
+ *  Now has separate error messages for bad user name and bad password.
+ *  Added String form for error messages, and method error_message()
+ *  to convert from error code to String form.
+ *  Added implementation of a status() method.
+ *
  *  Revision 1.4  2001/08/10 19:50:55  dennis
  *  Switched to new name for the default tcp server port.
  *
@@ -66,14 +72,31 @@ abstract public class RemoteDataRetriever extends    Retriever
 {
   public static final int TIMEOUT_MS           = 60000;
   public static final int BAD_FILE_NAME        = -1;
-  public static final int BAD_USER_OR_PASSWORD = -2;
-  public static final int SERVER_DOWN          = -3;
-  public static final int WRONG_SERVER_TYPE    = -4;
+  public static final int BAD_USER_NAME        = -2;
+  public static final int BAD_PASSWORD         = -3;
+  public static final int SERVER_DOWN          = -4;
+  public static final int WRONG_SERVER_TYPE    = -5;
 
+  public static final String SERVER_OK_STRING         = "Server OK";
+  public static final String SERVER_ERROR_STRING      = "Server Error: ";
+  public static final String NO_DATA_SETS_STRING      = "No DataSets";
+  public static final String BAD_FILE_NAME_STRING     = "File Not Found";
+  public static final String BAD_USER_NAME_STRING     = "User Not Found";
+  public static final String BAD_PASSWORD_STRING      = "Wrong Password";
+  public static final String SERVER_DOWN_STRING       = "Server Down";
+  public static final String WRONG_SERVER_TYPE_STRING = "Wrong Server Type";
+
+  private static final String error_messages[] = { NO_DATA_SETS_STRING,
+                                                   BAD_FILE_NAME_STRING,
+                                                   BAD_USER_NAME_STRING,
+                                                   BAD_PASSWORD_STRING,
+                                                   SERVER_DOWN_STRING,
+                                                   WRONG_SERVER_TYPE_STRING };
   TCPComm tcp_io = null;
 
   protected boolean  server_alive = false;
-  protected boolean  user_pass_ok = false;
+  protected boolean  user_ok      = false;
+  protected boolean  password_ok  = false;
   protected String   password     = "RemoteDataRetriever";
   protected String   file_name    = "";
 
@@ -103,6 +126,33 @@ abstract public class RemoteDataRetriever extends    Retriever
     MakeConnection();
   }
 
+/* ----------------------------- error_message -------------------------- */
+/**
+ *  Return the error String associated with a given error flag, as returned
+ *  by the numDataSets() method.  
+ */
+ public static String error_message( int error_flag )
+ {
+   if ( error_flag > 0 )
+     return SERVER_OK_STRING;
+
+   if ( error_flag <= 0 && error_flag > -error_messages.length )
+     return error_messages[ -error_flag ];
+
+   return ( SERVER_ERROR_STRING + error_flag );
+ }
+  
+
+/* ------------------------------- status ------------------------------- */
+/**
+ *  Get a status message for the current retriever state.  By default, this
+ *  just returns a string message corresponding to an error code obtained
+ *  from the numDataSets method.  
+ */
+ public String status()
+ {
+   return error_message( numDataSets() );
+ }
 
 /* ---------------------------- isConnected ----------------------------- */
 /**
@@ -128,7 +178,8 @@ abstract public class RemoteDataRetriever extends    Retriever
   public boolean MakeConnection()
   {
     server_alive = false;
-    user_pass_ok = false;
+    user_ok      = false;
+    password_ok  = false;
 
     try
     {
@@ -144,7 +195,9 @@ abstract public class RemoteDataRetriever extends    Retriever
         server_alive = true;
 
       String answer = (String)obj;
-      if ( !answer.equals( DataSetServer.ANSWER_OK ) )
+      if ( answer.equals( DataSetServer.ANSWER_OK ) )
+        user_ok = true;
+      else
       {
         System.out.println("ERROR: user name not accepted by server " +
                             data_source_name );
@@ -153,14 +206,15 @@ abstract public class RemoteDataRetriever extends    Retriever
 
       answer = (String)
            getObjectFromServer( DataSetServer.COMMAND_PASSWORD_IS + password );
-      if ( !answer.equals( DataSetServer.ANSWER_OK ) )
+      if ( answer.equals( DataSetServer.ANSWER_OK ) )
+        password_ok = true;
+      else
       {
         System.out.println("ERROR: password not accepted by server " +
                             data_source_name );
         return false;
       }
 
-      user_pass_ok = true;
       return true;
     }
     catch( Exception e )
@@ -198,7 +252,8 @@ abstract public class RemoteDataRetriever extends    Retriever
       tcp_io = null;
     }
     server_alive = false;
-    user_pass_ok = false;
+    user_ok      = false;
+    password_ok  = false;
   }
 
 
