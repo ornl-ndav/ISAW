@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2005/01/10 16:40:28  rmikk
+ * Eliminated commented out code
+ *
  * Revision 1.13  2004/02/16 02:15:55  bouzekc
  * Removed unused import statements.
  *
@@ -110,13 +113,7 @@ public class Inst_Type{
   public Inst_Type(){
     if( HT == null ){
       HT = new Hashtable();
-      /*HT.put( "MonoNXPD", new Integer( 0 ) );
-      HT.put( "UNKNOWN", new Integer( 1 ) );
-      HT.put( "TOFNDGS", new Integer( 2 ) );
-      HT.put( "TOFNIGS", new Integer( 3 ) );
-      HT.put( "TOFNPD", new Integer( 4 ) );
-     */
-     for( int i = 0; i< NxNames.length; i++){
+      for( int i = 0; i< NxNames.length; i++){
         HT.put( NxNames[i], new Integer( Isaw_inst_types[i]));
      }
     }
@@ -403,20 +400,6 @@ public class Inst_Type{
     else 
       n = 5;
     int[] Result = new int[ n];
-    
-    /*if( n1 < 0 ){
-      // do nothing
-    }else if( n2 < 0 ) 
-      Result[0] = n1;
-    else if( n3 < 0 ) 
-      Result[1] = n2;
-    else if( n4 < 0 ) 
-      Result[2] = n3;
-    else if( n5 == 0 ) 
-      Result[3] = n4;
-    else 
-      Result[4] = n5;
-    */
      if( n1 >=0)
         Result[0] = n1;
 
