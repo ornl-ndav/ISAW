@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/08/05 23:03:25  dennis
+ *  Added constructor to allow calling the operator from Java.
+ *  Added javadocs and getDocumentation() method.
+ *
  *  Revision 1.1  2003/08/04 15:56:21  dennis
  *  Initial Version of SCD calibration operator.
  *
@@ -52,6 +56,23 @@ import IPNS.Runfile.*;
 
 
 /**
+ *  This operator uses data from a known crystal sample to calibrate various
+ *  instrument parameters for a single crystal neutron diffraction instrument
+ *  such as the SCD at IPNS.  A file listing the measured peak positions
+ *  (the peaks file) and one of the runfiles that was used to produce the
+ *  peaks file are needed, as well as the lattice parameters for the known
+ *  sample.  The calibration codes calculate where peaks should occur in
+ *  Q-space (theoretical positions) based on the lattice parameters, as well 
+ *  as where the measured peaks (observed peaks) occur in Q-space and then
+ *  adjusts the instrument parameters so that the observed peaks match the
+ *  theoretical peaks as closely as possible.  An implementation of the 
+ *  Marquardt-Levenberg optimization algorithm is used.  The user can specify
+ *  a maximum number of steps and tolerance to control when the algorithm
+ *  terminates.  The user can also choose which instrument parameters are 
+ *  adjusted.  Since the instrument parameters are related, it is NOT possible
+ *  to optimize the fit for all of them simultaneously.  For example, if
+ *  the detector distance is allowed to vary, the detector width and height
+ *  should be kept fixed.
  */
 public class SCDcalib extends GenericTOF_SCD 
 {
@@ -68,6 +89,126 @@ public class SCDcalib extends GenericTOF_SCD
     super( TITLE );
   }
 
+  /* --------------------------- constructor ------------------------------ */
+  /**
+   *  Creates operator with title "SCD Calibration" and the specified list
+   *  of parameters.  The getResult method must still be used to execute 
+   *  the operator.
+   *
+   *  @param  peaksfile   SCD peaks file containing the observed peaks. 
+   *  @param  runfile     Runfile for one of the runs that produced the
+   *                      peaks file (we assume all runs use the same 
+   *                      time bins and detector positions).
+   *  @param  a           Lattice parameter, 'a b c' must correspond to the
+   *                      order of the axes in the peaksfile. 
+   *  @param  b           Lattice parameter, 'a b c' must correspond to the
+   *                      order of the axes in the peaksfile. 
+   *  @param  c           Lattice parameter, 'a b c' must correspond to the
+   *                      order of the axes in the peaksfile. 
+   *  @param  alpha       Lattice parameter, 'alpha beta gamma' angles must
+   *                      correspond to the order of the axes in the peaks 
+   *                      file.
+   *  @param  beta        Lattice parameter, 'alpha beta gamma' angles must
+   *                      correspond to the order of the axes in the peaks 
+   *                      file.
+   *  @param  gamma       Lattice parameter, 'alpha beta gamma' angles must
+   *                      correspond to the order of the axes in the peaks 
+   *                      file.
+   *  @param  max_steps   The maximum number of iteration steps for the 
+   *                      optimization.                    
+   *  @param  tol_exp     The exponent for the tolerance.  The iteration stops
+   *                      when the normalized relative change in the parameters
+   *                      is less than 10^tol_exp.  Values of -10 to -16 
+   *                      should work.
+   *  @param use_L1       Flag indicating whether or not the value of L1 
+   *                      should be allowed to vary from it's nominal value.
+   *  @param use_t0       Flag indicating whether or not the value of t0 
+   *                      should be allowed to vary from it's nominal value.
+   *  @param use_A        Flag indicating whether or not the value of A 
+   *                      in the wavelength dependent time-of-flight shift
+   *                      equation calibrated_tof=A*tof+t0, should be allowed 
+   *                      to vary from it's nominal value of 1.
+   *  @param use_ssh      Flag indicating whether or not the sample position
+   *                      should be shifted from the center of the goniometer.
+   *                      The shift values SX, SY, SZ are shifts in the
+   *                      laboratory X,Y,Z coordinate system, when the
+   *                      goniometer angles are all set to 0. 
+   *  @param use_width    Flag indicating whether or not the width of the 
+   *                      detectors should be allowed to vary from their
+   *                      nominal values.
+   *  @param use_height   Flag indicating whether or not the height of the 
+   *                      detectors should be allowed to vary from their
+   *                      nominal values.
+   *  @param use_xoff     Flag indicating whether or not the detectors can
+   *                      be offset in the x direction in the xy coordinate
+   *                      system on the face of the detector, staying in the
+   *                      original plane of the detector.
+   *  @param use_yoff     Flag indicating whether or not the detectors can
+   *                      be offset in the y direction in the xy coordinate
+   *                      system on the face of the detector.
+   *  @param use_dist     Flag indicating whether or not the distance from 
+   *                      the detector to the sample can be varied, for each
+   *                      detector.
+   *  @param use_rot      Flag indicating whether or not an arbitrary rotation
+   *                      of each detector should be allowed, specified by
+   *                      Euler angles in the laboratory coordinate system.
+   */
+  public SCDcalib( String   peaksfile,
+                   String   runfile,
+                   float    a,
+                   float    b,
+                   float    c,
+                   float    alpha,
+                   float    beta,
+                   float    gamma,
+                   int      max_steps,
+                   int      tol_exp,
+                   boolean  use_L1,
+                   boolean  use_t0,
+                   boolean  use_A,
+                   boolean  use_ssh,
+                   boolean  use_width,
+                   boolean  use_height,
+                   boolean  use_xoff,
+                   boolean  use_yoff,
+                   boolean  use_dist,
+                   boolean  use_rot   )
+  {
+    this();
+    parameters = new Vector();
+
+    LoadFilePG lfpg = new LoadFilePG( peaksfile, null );
+    lfpg.setFilter( new PeaksFilter() );
+    addParameter( lfpg );
+
+    LoadFilePG rfpg = new LoadFilePG( runfile, null );
+    rfpg.setFilter( new RunfileFilter() );
+    addParameter( rfpg );
+
+    addParameter( new Parameter("lattice 'a'", new Float(a)) );
+    addParameter( new Parameter("lattice 'a'", new Float(b)) );
+    addParameter( new Parameter("lattice 'c'", new Float(c)) );
+    addParameter( new Parameter("lattice 'alpha'", new Float(alpha)) );
+    addParameter( new Parameter("lattice 'beta'",  new Float(beta)) );
+    addParameter( new Parameter("lattice 'gamma'", new Float(gamma)) );
+
+    addParameter( new Parameter("max steps", new Integer(max_steps)) );
+    addParameter( new Parameter("tolerance exponent", new Integer(tol_exp)) );
+
+    addParameter( new Parameter("Refine L1",  new Boolean(use_L1)) );
+    addParameter( new Parameter("Refine t0",  new Boolean(use_t0)) );
+    addParameter( new Parameter("Refine 'A'(tof=At+t0)", new Boolean(use_A)) );
+    addParameter( new Parameter("Refine sample shift", new Boolean(use_ssh)) );
+
+    addParameter( new Parameter("Refine det width",  new Boolean(use_width)) );
+    addParameter( new Parameter("Refine det height", new Boolean(use_height)) );
+    addParameter( new Parameter("Refine det x_offset", new Boolean(use_xoff)) );
+    addParameter( new Parameter("Refine det y_offset", new Boolean(use_yoff)) );
+    addParameter( new Parameter("Refine det distance", new Boolean(use_dist)) );
+    addParameter( new Parameter("Refine det rotation", new Boolean(use_rot)) );
+  }
+
+
   /* --------------------------- getCommand ------------------------------- */
   /**
    * Get the name of this operator to use in scripts
@@ -79,6 +220,106 @@ public class SCDcalib extends GenericTOF_SCD
   {
     return "SCDcalib";
   }
+
+  /* ------------------------ getDocumentation ---------------------------- */
+  /**
+   *  Get the documentation to be displayed by the help system.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator uses data from a known crystal ");
+    Res.append(" sample to calibrate various instrument parameters ");
+    Res.append(" for a single crystal neutron diffraction instrument ");
+    Res.append(" such as the SCD at IPNS.  A file listing the measured ");
+    Res.append(" peak positions (the peaks file) and one of the runfiles ");
+    Res.append(" that was used to produce the peaks file are needed, as ");
+    Res.append(" well as the lattice parameters for the known sample. ");
+    Res.append("@algorithm The calibration codes calculate where peaks ");
+    Res.append(" should occur in Q-space (theoretical positions) based ");
+    Res.append(" on the lattice parameters, as well as where the ");
+    Res.append(" measured peaks (observed peaks) occur in Q-space and ");
+    Res.append(" then adjusts the instrument parameters so that the ");
+    Res.append(" observed peaks match the theoretical peaks as closely ");
+    Res.append("  as possible.  An implementation of the Marquardt ");
+    Res.append(" optimization algorithm is used.  The user can specify ");
+    Res.append(" a maximum number of steps and tolerance to control ");
+    Res.append(" when the algorithm terminates.  The user can also ");
+    Res.append(" choose which instrument parameters are adjusted. ");
+    Res.append(" Since the instrument parameters are related, ");
+    Res.append(" it is NOT possible to optimize the fit for all ");
+    Res.append(" of them simultaneously.  For example, if the detector ");
+    Res.append(" distance is allowed to vary, the detector width and ");
+    Res.append(" height should be kept fixed. ");
+    Res.append("@param  peaksfile - SCD peaks file containing the ");
+    Res.append(" observed peaks.");
+    Res.append("@param  runfile - Runfile for one of the runs that ");
+    Res.append(" produced the peaks file (we assume all runs use the same ");
+    Res.append(" time bins and detector positions).");
+    Res.append("@param  a - Lattice parameter, 'a b c' must correspond ");
+    Res.append(" to the order of the axes in the peaksfile.");
+    Res.append("@param  b - Lattice parameter, 'a b c' must correspond ");
+    Res.append(" to the order of the axes in the peaksfile.");
+    Res.append("@param  c - Lattice parameter, 'a b c' must correspond ");
+    Res.append(" to the order of the axes in the peaksfile.");
+    Res.append("@param  alpha - Lattice parameter, 'alpha beta gamma' ");
+    Res.append(" angles must correspond to the order of the axes in the ");
+    Res.append(" peaks file");
+    Res.append("@param  beta - Lattice parameter, 'alpha beta gamma' ");
+    Res.append(" angles must correspond to the order of the axes in the ");
+    Res.append(" peaks file");
+    Res.append("@param  gamma - Lattice parameter, 'alpha beta gamma' ");
+    Res.append(" angles must correspond to the order of the axes in the ");
+    Res.append(" peaks file");
+    Res.append("@param  max_steps - The maximum number of iteration ");
+    Res.append(" steps for the optimization. ");
+    Res.append("@param  tol_exp - he exponent for the tolerance. ");
+    Res.append(" The iteration stops when the normalized relative ");
+    Res.append(" change in the parameters is less than 10^tol_exp.");
+    Res.append(" Values of -10 to -16 should work.");
+    Res.append("@param use_L1 - Flag indicating whether or not the ");
+    Res.append(" value of L1 should be allowed to vary from it's ");
+    Res.append(" nominal value.");
+    Res.append("@param use_t0 - Flag indicating whether or not the ");
+    Res.append(" value of t0 should be allowed to vary from it's ");
+    Res.append(" nominal value.");
+    Res.append("@param use_A - Flag indicating whether or not the ");
+    Res.append(" value of A in the wavelength dependent time-of-flight " );
+    Res.append(" shift equation (calibrated_tof=A*tof+t0), should be allowed ");
+    Res.append(" to vary from it's nominal value of 1.");
+    Res.append("@param use_ssh - Flag indicating whether or not the ");
+    Res.append(" sample position should be shifted from the center of the ");
+    Res.append(" goniometer. The shift values SX, SY, SZ are shifts in ");
+    Res.append(" the laboratory X,Y,Z coordinate system, when the ");
+    Res.append(" goniometer angles are all set to 0.");
+    Res.append("@param use_width - Flag indicating whether or not the ");
+    Res.append(" width of the detectors should be allowed to vary from ");
+    Res.append(" their nominal values. ");
+    Res.append("@param use_height - Flag indicating whether or not the ");
+    Res.append(" height of the detectors should be allowed to vary from ");
+    Res.append(" their nominal values. ");
+    Res.append("@param use_xoff - Flag indicating whether or not the ");
+    Res.append(" detectors can be offset in the x direction in the ");
+    Res.append(" xy coordinate system on the face of the detector, staying ");
+    Res.append(" in the original plane of the detector. ");
+    Res.append("@param use_yoff - Flag indicating whether or not the ");
+    Res.append(" detectors can be offset in the y direction in the ");
+    Res.append(" xy coordinate system on the face of the detector, staying ");
+    Res.append(" in the original plane of the detector. ");
+    Res.append("@param use_dist - Flag indicating whether or not the  ");
+    Res.append(" distance from the detector to the sample can be varied, ");
+    Res.append(" for each detector.");
+    Res.append("@param use_rot - Flag indicating whether or not an ");
+    Res.append(" arbitrary rotation of each detector should be allowed, ");
+    Res.append(" specified by Euler angles in the laboratory ");
+    Res.append(" coordinate system. ");
+    Res.append("@return A vector containing entries giving the ");
+    Res.append(" values of the instrument parameters followed by the ");
+    Res.append(" names of the instrument paramters.  Most of the results ");
+    Res.append(" are currently displayed on the system console. ");
+    return Res.toString();
+  }
+
 
   /* ----------------------- setDefaultParameters ------------------------- */
   /**
@@ -100,11 +341,11 @@ public class SCDcalib extends GenericTOF_SCD
     addParameter( rfpg );
 
     addParameter( new Parameter("lattice 'a'", new Float(4.9138f)) );
-    addParameter( new Parameter("lattice 'a'", new Float(5.4051f)) );
-    addParameter( new Parameter("lattice 'c'", new Float(4.9138f)) );
+    addParameter( new Parameter("lattice 'b'", new Float(4.9138f)) );
+    addParameter( new Parameter("lattice 'c'", new Float(5.4051f)) );
     addParameter( new Parameter("lattice 'alpha'", new Float(90)) );
-    addParameter( new Parameter("lattice 'beta'",  new Float(120)) );
-    addParameter( new Parameter("lattice 'gamma'", new Float(90)) );
+    addParameter( new Parameter("lattice 'beta'",  new Float(90)) );
+    addParameter( new Parameter("lattice 'gamma'", new Float(120)) );
 
     addParameter( new Parameter("max steps", new Integer(500)) );
     addParameter( new Parameter("tolerance exponent", new Integer(-12)) );
@@ -125,7 +366,12 @@ public class SCDcalib extends GenericTOF_SCD
 
 
   /**
-   * Uses the current values of the parameters to generate a result.
+   * Uses the current values of the parameters to calcuate calibrated values
+   * for the instrument parameters.
+   *
+   * @return A vector containing the calibrated values of all of the parameters
+   *           that could have been allowed to vary, followed by the names
+   *           of the parameters.
    */
   public Object getResult(  ) 
   {
