@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/11/30 02:32:14  bouzekc
+ * Calls wizardLoader instead of showForm().
+ *
  * Revision 1.6  2003/10/18 21:33:23  bouzekc
  * Removed call to setAboutMessage().
  *
@@ -112,6 +115,6 @@ public class ActivateWizard extends Wizard{
   public static void main(String args[])
   {
     ActivateWizard w = new ActivateWizard(true);
-    w.showForm(0);
+    w.wizardLoader( args );
   }
 }
