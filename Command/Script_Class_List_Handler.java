@@ -1,4 +1,3 @@
-
 /*
  * File:  Script_Class_List_Handler.java 
  *             
@@ -32,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2002/02/08 15:30:28  pfpeterson
+ * Extracted method to add directories to list of possible ones into
+ * separate method. Also added back the ability to parse GROUP_HOME
+ * that is File.pathSeparator delimited.
+ *
  * Revision 1.25  2002/01/24 23:14:05  pfpeterson
  * Adds ISAW_HOME to the classpath for loading operators if it is not already there.
  * This is done to make operators work easier for people that don't unpack ISAW.
@@ -175,107 +179,118 @@ public class Script_Class_List_Handler  implements OperatorHandler
            }
         catch( IOException s){}
        }
-     private void inittt()
-      {  if( !first)
-           return;
-         for( int i = 0 ; i < GenericOperatorList.getNum_operators(); i++)
-          {Operator op = GenericOperatorList.getOperator( i );
-            if( op instanceof GenericOperator)
-                 add( op );
-          }
-        first = false;  
-        toggleDebug(); 
 
-	Vector includeVec = new Vector();
-	// add $HOME/ISAW to the path
-        String ScrPaths2 = System.getProperty( "user.home" );
-        if( ScrPaths2 != null ){
-	    if( ScrPaths2.length() > 0){
-		ScrPaths2=ScrPaths2+'/'+"ISAW";
-		ScrPaths2=standardizeDir(ScrPaths2);
-		if(existDir(ScrPaths2)){
-		    if(existDir(ScrPaths2+"Operators")){
-			includeVec.add(ScrPaths2+"Operators");
-		    }
-		    if(existDir(ScrPaths2+"Scripts")){
-			includeVec.add(ScrPaths2+"Scripts");
-		    }
-		}
-	    }
-	}
-        int g = 0;
-	
-	// add the different GROUP#_HOMEs to the path
-	String ScrPaths1 = System.getProperty( "GROUP_HOME" );
-	while(ScrPaths1 != null){
-	    //if(!ScrPaths1.equals(ScrPaths2)){
-	    if(ScrPaths1.length()>0){
-		ScrPaths1=standardizeDir(ScrPaths1);
-		if(existDir(ScrPaths1)){
-		    if(existDir(ScrPaths1+"Operators")){
-			includeVec.add(ScrPaths1+"Operators");
-		    }
-		    if(existDir(ScrPaths1+"Scripts")){
-			includeVec.add(ScrPaths1+"Scripts");
-		    }
-		}
-	    }
-	    g++;
-	    String suff=""+g;
-	    suff=suff.trim();
- 	    ScrPaths1 = System.getProperty( "GROUP"+suff+"_HOME" );
-	}
-
-       
-	// add where ISAW lives to the path
-       String ScrPaths = System.getProperty( "ISAW_HOME" );
-       if( ScrPaths != null ){
-	   if(ScrPaths.length()>0){
-	       ScrPaths=standardizeDir(ScrPaths);
-		if(existDir(ScrPaths)){
-		    if(existDir(ScrPaths+"Operators")){
-			includeVec.add(ScrPaths+"Operators");
-		    }
-		    if(existDir(ScrPaths+"Scripts")){
-			includeVec.add(ScrPaths+"Scripts");
-		    }
-		}
-	   }
-       }
-       
-       /* System.out.println("********************");
-	  for( int i=0 ; i<includeVec.size() ; i++ ){
-	  System.out.println("* "+i+":"+includeVec.elementAt(i));
+      /** 
+       * Method for finding operators and scripts.
+       */
+      private void inittt(){  
+	  if( !first) return;
+	  for( int i = 0 ; i < GenericOperatorList.getNum_operators(); i++)
+	      {Operator op = GenericOperatorList.getOperator( i );
+	      if( op instanceof GenericOperator)
+		  add( op );
+	      }
+	  first = false;  
+	  toggleDebug(); 
+	  
+	  Vector includeVec = new Vector();
+	  // add $HOME/ISAW to the path
+	  String ScrPaths2 = System.getProperty( "user.home" );
+	  //String ScrPaths2 = "/IPNShome/hammonds";
+	  if( ScrPaths2 != null ){
+	      //System.out.print("**********\n"+"USER_HOME:");
+	      includeVec=addDir(ScrPaths2+File.separator+"ISAW",includeVec);
 	  }
-	  System.out.println("********************"); */
-
-       // remove redundant listings from the path
-       for( int i=0 ; i<includeVec.size() ; i++ ){
-	   for( int j=i ; j<includeVec.size() ; j++ ){
-	       if( i==j )continue; // do the next j loop
-	       // shorten some other lines in the inner for loop
-	       String ith=(String)includeVec.elementAt(i);
-	       String jth=(String)includeVec.elementAt(j);
-	       if( jth.indexOf(ith)==0 ){ // check that j does not start with i
-		   //System.out.println("REMOVING("+i+","+j+")"+jth);
-		   includeVec.remove(j);
-		   j--;
-	       }
-	   }
-       }
-
-       /* System.out.println("********************");
-	  for( int i=0 ; i<includeVec.size() ; i++ ){
-	  System.out.println("* "+i+":"+includeVec.elementAt(i));
+	  int g = 0;
+	  
+	  // add the different GROUP#_HOMEs to the path
+	  String ScrPaths1 = System.getProperty( "GROUP_HOME" );
+	  while(ScrPaths1 != null){
+	      //System.out.print("**********\n"+"GROUP"+g+"_HOME:");
+	      includeVec=addDir(ScrPaths1,includeVec);
+	      g++;
+	      String suff=""+g;
+	      suff=suff.trim();
+	      ScrPaths1 = System.getProperty( "GROUP"+suff+"_HOME" );
 	  }
-	  System.out.println("********************"); */
+	  
+	  
+	  // add where ISAW lives to the path
+	  String ScrPaths = System.getProperty( "ISAW_HOME" );
+	  if( ScrPaths != null ){
+	      //System.out.print("**********\n"+"ISAW_HOME:");
+	      includeVec=addDir(ScrPaths,includeVec);
+	  }
+	  
+	  /* System.out.println("********************");
+	     for( int i=0 ; i<includeVec.size() ; i++ ){
+	     System.out.println("* "+i+":"+includeVec.elementAt(i));
+	     }
+	     System.out.println("********************"); */
+	  
+	  // remove redundant listings from the path
+	  for( int i=0 ; i<includeVec.size() ; i++ ){
+	      for( int j=i ; j<includeVec.size() ; j++ ){
+		  if( i==j )continue; // do the next j loop
+		  // shorten some other lines in the inner for loop
+		  String ith=(String)includeVec.elementAt(i);
+		  String jth=(String)includeVec.elementAt(j);
+		   // check that j does not start with i
+		  if( jth.indexOf(ith)==0 ){
+		      //System.out.println("REMOVING("+i+","+j+")"+jth);
+		      includeVec.remove(j);
+		      j--;
+		  }
+	      }
+	  }
+	  
+	  /* System.out.println("********************");
+	     for( int i=0 ; i<includeVec.size() ; i++ ){
+	     System.out.println("* "+i+":"+includeVec.elementAt(i));
+	     }
+	     System.out.println("********************"); */
+	  
+	  for( int i=0 ; i<includeVec.size() ; i++ ){
+	      processPaths((String)includeVec.elementAt(i));
+	  }
 
-       for( int i=0 ; i<includeVec.size() ; i++ ){
-	   processPaths((String)includeVec.elementAt(i));
-       }
 
+	  toggleDebug(); 
+      }  // end of inittt()
 
-       toggleDebug(); 
+      /**
+       * Method to simplify code since all directories are parsed in
+       * the same manner. This adds the directories "dir/Operators"
+       * and "dir/Scripts" if they exist. The directory specified by
+       * the String can be a list seperator by File.pathSeparator.
+       */
+      private Vector addDir(String dir, Vector include){
+	  String path=new String(dir+File.pathSeparator);
+	  int last=path.indexOf(File.pathSeparator);
+
+	  //System.out.print("("+path+")");
+
+	  while(path.indexOf(File.pathSeparator)>0){
+	      dir=path.substring(0,last);
+	      path=path.substring(last+1,path.length());
+	      last=path.indexOf(File.pathSeparator);
+	      //System.out.println("PATH:"+path);
+	      if( dir!=null && dir.length()>0 ){
+		  dir=standardizeDir(dir);
+		  //System.out.println(dir);
+		  if(existDir(dir)){
+		      if(existDir(dir+"Operators")){
+			  //System.out.println(dir+"Operators");
+			  include.add(dir+"Operators");
+		      }
+		      if(existDir(dir+"Scripts")){
+			  //System.out.println(dir+"Scripts");
+			  include.add(dir+"Scripts");
+		      }
+		  }
+	      }		
+	  }	 
+	  return include;
       }
       private String standardizeDir( String dir ){
 	  // remove whitespace from the name
