@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2003/06/17 16:12:19  pfpeterson
+ *  Uses StringUtil.split to create the category list array.
+ *
  *  Revision 1.25  2003/06/16 19:01:02  pfpeterson
  *  Full reworking of getCategoryList() code. List is now synthesized from
  *  the package of the nearest abstract ancestor. The list is also static
@@ -88,6 +91,7 @@ package DataSetTools.operator;
 import java.util.Vector;
 import java.io.*;
 import DataSetTools.parameter.IParameter;
+import DataSetTools.util.StringUtil;
 
 /**
  * The base class for operators.  An operator object provides information about
@@ -232,24 +236,7 @@ abstract public class Operator implements Serializable
     String category=klass.getPackage().getName().substring(dstools_length);
 
     // split up into an array and return
-    int count=1;
-    int index=category.indexOf(".");
-    while(index>0){
-      index=category.indexOf(".",index+1);
-      count++;
-    }
-    String list[] = new String[count];
-
-    int start=0;
-    int end=category.indexOf(".");
-    for(int i=0 ; i<list.length ; i++ ){
-      list[i]=category.substring(start,end);
-      start=end+1;
-      end=category.indexOf(".",start);
-      if(end<0) end=category.length();
-    }
-
-    return list;
+    return StringUtil.split(category,".");
   }
 
   static private boolean isAbstract(Class klass){
