@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/02/03 21:36:39  pfpeterson
+ *  Made it possible for the JParameterDialog the is produced by this
+ *  class to have more than one FileFilter.
+ *
  *  Revision 1.3  2002/11/27 23:12:34  pfpeterson
  *  standardized header
  *
@@ -54,8 +58,8 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Vector;
 import javax.swing.filechooser.FileFilter;
-
     
 public class BrowseButtonListener implements ActionListener{
     public static int SAVE_FILE  = 1;
@@ -66,10 +70,11 @@ public class BrowseButtonListener implements ActionListener{
     private static final boolean DEBUG=false;
 
     private JFileChooser   jfc;
-    private FileFilter     file_filter;
+    //private FileFilter     file_filter;
     private JTextComponent textbox;
     private String         def_filename;
     private int            type;
+    private Vector         filters;
 
     public BrowseButtonListener( JTextComponent entry, int type ){
         this(entry,type,null);
@@ -79,7 +84,6 @@ public class BrowseButtonListener implements ActionListener{
                                  FileFilter filter ){
         this.textbox=entry;
         this.type=type;
-        this.file_filter=filter;
         this.jfc=null;
         this.def_filename=null;
         if(this.type==LOAD_MULTI){
@@ -87,6 +91,38 @@ public class BrowseButtonListener implements ActionListener{
                                +"-- using LOAD_FILE instead");
             this.type=LOAD_FILE;
         }
+        this.filters=null;
+        this.addFileFilter(filter);
+    }
+
+    public void addFileFilter( FileFilter filter ){
+      if(filter==null) return; // can't add nothing
+
+      if( this.filters==null ) // initialize the vector if necessary
+        this.filters=new Vector();
+
+      boolean has=false;
+      for( int i=0 ; i<this.filters.size() ; i++ ){
+        if( this.filters.elementAt(i).getClass().isInstance(filter) ){
+          has=true;
+          break;
+        }
+      }
+      
+      if( !has) this.filters.add(filter); // add if it isn't already there
+    }
+
+    public void removeFileFilter( FileFilter filter ){
+      if(filter==null) return; // can't remove nothing
+
+      if( this.filters==null ) return; // can't remove from nothing
+
+      for( int i=0 ; i<this.filters.size() ; i++ ){
+        if( this.filters.elementAt(i).getClass().isInstance(filter) ){
+          this.filters.remove(i);
+          return;
+        }
+      }
     }
 
     public void actionPerformed( ActionEvent evt){ 
@@ -99,8 +135,10 @@ public class BrowseButtonListener implements ActionListener{
                 jfc.setCurrentDirectory(new File(def_filename));
             }
             this.configureFileChooser();
-            if( file_filter != null)
-                jfc.addChoosableFileFilter( file_filter );
+            if( this.filters.size()>0 ){
+              for( int i=0 ; i<this.filters.size() ; i++ )
+                jfc.addChoosableFileFilter( (FileFilter)filters.elementAt(i) );
+            }
         }
         
         // set the text from the textbox
