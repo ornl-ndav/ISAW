@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2003/11/23 01:18:46  bouzekc
+ *  Now calls firePropertyChange() directly.
+ *
  *  Revision 1.24  2003/11/19 04:06:53  bouzekc
  *  This class is now a JavaBean.  Added code to clone() to copy all
  *  PropertyChangeListeners.
@@ -453,8 +456,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
     String propName            = pce.getPropertyName(  );
     PropertyChangeEvent newPCE = new PropertyChangeEvent( 
         this, propName, oldValue, getValue(  ) );
-    getPropertyChangeSupport(  )
-      .firePropertyChange( newPCE );
+    firePropertyChange( newPCE );
   }
 
   /**
