@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2002/03/18 21:14:29  dennis
+ * Now calculates max_radius as 0 if there are no detector groups
+ * or segments.
+ *
  * Revision 1.19  2002/03/13 16:11:08  dennis
  * Converted to new abstract Data class.
  *
@@ -607,8 +611,8 @@ private float draw_groups()
   DataSet ds     = getDataSet();
   int     n_data = ds.getNum_entries();
 
-  float   max_radius = 0.01f;
-  float   radius;
+  float   max_radius = 0;
+  float   radius = 0;
 
   Vector3D  points[] = new Vector3D[1];
   Vector3D  point;
@@ -667,8 +671,8 @@ private float draw_detectors()
   DataSet ds     = getDataSet();
   int     n_data = ds.getNum_entries();
 
-  float   max_radius = 0.01f;
-  float   radius;
+  float   max_radius = 0;
+  float   radius = 0;
 
   Position3D position;
   Vector3D  points[] = new Vector3D[1];
