@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/08/07 21:36:33  dennis
+ *  Added error_flag and error codes.
+ *
  *  Revision 1.9  2001/06/11 18:00:31  dennis
  *  Now calls Exit() and MakeConnection() on the retriever
  *  every time a data set is obtained to avoid a memory
@@ -94,6 +97,9 @@ import DataSetTools.util.*;
 public class LiveDataManager extends    Thread 
                              implements Serializable
 {
+  public static final int    NO_DATA_MANAGER = -10;
+  public static final int    NO_CONNECTION   = -11;
+
   public static final int    MIN_DELAY   = 10;       // minimum delay in seconds
   public static final int    MAX_DELAY   = 600;      // maximum delay in seconds
   public static final String RUN_CHANGED = "Run Changed";
@@ -107,7 +113,7 @@ public class LiveDataManager extends    Thread
                                                       // data sets won't be
                                                       // automatically updated
   private int               time_ms     = 3*MIN_DELAY*1000;
-
+  private int               error_flag  = NO_CONNECTION; 
 
 /* ----------------------------- Constructor ----------------------------- */
 /**
@@ -136,6 +142,9 @@ public class LiveDataManager extends    Thread
  */  
   public int numDataSets()
   { 
+    if ( error_flag < 0 )
+      return error_flag;
+
     return data_sets.length;
   }
 
@@ -359,6 +368,11 @@ public class LiveDataManager extends    Thread
     if ( retriever != null )
     {
       int num_ds      = retriever.numDataSets();
+
+      error_flag = num_ds; 
+      if ( num_ds < 0 )    
+        num_ds = 0;
+
       int num_to_save = Math.min( num_ds, data_sets.length );
 
       if ( num_ds != data_sets.length )           // we must resize our lists
