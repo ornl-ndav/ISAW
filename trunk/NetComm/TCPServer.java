@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2001/08/09 21:45:47  dennis
+ *  Added start_TCP() method to start the TCPServer.
+ *
  *  Revision 1.2  2001/08/09 15:33:18  dennis
  *  Added concept of "data_name" and now handles command to
  *  get the data_name.  Also added debug_server flag and
@@ -77,7 +80,7 @@ public class TCPServer implements ITCPUser
   public static final int    DEFAULT_SERVER_PORT_NUMBER = 6088;
   public static final String DEFAULT_PASSWORD = "IPNS";
 
-  public boolean debug_server = false;
+  public static boolean debug_server = false;
 
   private    boolean password_ok = false;
   private    boolean user_ok     = false;
@@ -86,6 +89,7 @@ public class TCPServer implements ITCPUser
   private    Hashtable log;
   private    String    log_filename = "TCPServerLog.txt";
   protected  String    server_name  = "TCPServer";
+  private    int       current_port = DEFAULT_SERVER_PORT_NUMBER;
   private    String    start_time   = "";
   protected  String    data_name    = "NONE";       // identifier for last
                                                     // data processed.   
@@ -122,6 +126,28 @@ public class TCPServer implements ITCPUser
    public void setLogFilename( String name )
    {
      log_filename = name;
+   }
+
+
+  /* ----------------------------- start_TCP --------------------------- */
+  /**
+   *   Start the TCP server running, listening for clients on the specified
+   *   port.  If the port number is negative, the current_port set by 
+   *   parsing arguments, or a previous call to start will be used. 
+   *
+   *   @param port  The port number to use.
+   */
+   public void start_TCP( int port )
+   {
+     if ( port < 0 )
+       port = current_port;
+
+     System.out.println("Starting TCP server on port " + port );
+     TCPServiceInit TCPinit;
+     TCPinit = new TCPServiceInit( this, port );
+     TCPinit.start();
+
+     current_port = port;
    }
 
 
@@ -416,14 +442,6 @@ public class TCPServer implements ITCPUser
     TCPServer server= new TCPServer();
     server.setServerName( "TestServer" );
     server.setLogFilename( "TestLog.txt" );
-                                         // Start the TCP server to listen 
-                                         // for clients requesting data
-    System.out.println("Starting TCP server...");
-    TCPServiceInit TCPinit;
-    TCPinit = new TCPServiceInit( server, DEFAULT_SERVER_PORT_NUMBER );
-
-    TCPinit.start();
-    System.out.println("TCP server started.");
-    System.out.println();
+    server.start_TCP( -1 );
   }
 }
