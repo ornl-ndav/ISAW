@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.61  2005/01/10 17:39:30  rmikk
+ * ELiminated a null pointer error
+ *
  * Revision 1.60  2005/01/07 17:48:15  rmikk
  * Added code to eliminate regular python scripts from being added as
  *   operators.  Python scripts must have a class
@@ -1030,8 +1033,9 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             op = null;
             if(LoadDebug) System.out.println( "Err="+e.toString());
           }
-          if( !((PyScriptOperator)op).isInstallableOperator())
-             op = null;
+          if(op != null)
+            if( !((PyScriptOperator)op).isInstallableOperator())
+               op = null;
           // add it to the proper lists
           if(op!=null){
             if(op instanceof GenericOperator){
