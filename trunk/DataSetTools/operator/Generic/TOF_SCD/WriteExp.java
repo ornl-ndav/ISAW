@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/02/18 20:21:01  dennis
+ * Switched to use SampleOrientation attribute instead of separate
+ * phi, chi and omega values.
+ *
  * Revision 1.7  2003/02/12 22:56:30  pfpeterson
  * Writes out as much of the crystal symmetry and orientation matrix
  * as possible rather than all or nothing.
@@ -591,7 +595,9 @@ public class WriteExp extends GenericTOF_SCD{
       getFloatValue(ds,Attribute.INITIAL_PATH);
 
     // the position of the chi motor
-    tempF=getFloatValue(ds,Attribute.SAMPLE_CHI);
+    SampleOrientation orientation =
+        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
+    tempF=orientation.getChi();
     sb.append(start_card+"CHI   "+Format.real(tempF,10,3)+end_line);
     // counts per pulse
     if( plsnum>0f )
@@ -647,10 +653,10 @@ public class WriteExp extends GenericTOF_SCD{
     tempI=mon.getNum_entries();
     sb.append(start_card+"NMON  "+Format.real(tempI,10)+end_line);
     // the position of the omega motor
-    tempF=getFloatValue(ds,Attribute.SAMPLE_OMEGA);
+    tempF=orientation.getOmega();
     sb.append(start_card+"OMEGA "+Format.real(tempF,10,3)+end_line);
     // the position of the phi motor
-    tempF=getFloatValue(ds,Attribute.SAMPLE_PHI);
+    tempF=orientation.getPhi();
     sb.append(start_card+"PHI   "+Format.real(tempF,10,3)+end_line);
     // the number of pulses
     sb.append(start_card+"PLSNUM"+Format.real((int)plsnum,10)+end_line);

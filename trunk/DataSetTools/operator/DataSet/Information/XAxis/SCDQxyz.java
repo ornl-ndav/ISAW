@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/02/18 20:22:16  dennis
+ * Switched to use SampleOrientation attribute instead of separate
+ * phi, chi and omega values.
+ *
  * Revision 1.8  2003/02/12 21:50:09  dennis
  * Changed to use PixelInfoList instead of SegmentInfoList
  *
@@ -263,12 +267,11 @@ public class SCDQxyz extends  XAxisInformationOp
      Q[2]=wl;
 
      // get the sample orientation
-     float chi=((Float)
-                ds.getAttributeValue(Attribute.SAMPLE_CHI)).floatValue();
-     float phi=((Float)
-                ds.getAttributeValue(Attribute.SAMPLE_PHI)).floatValue();
-     float omega=((Float)
-                  ds.getAttributeValue(Attribute.SAMPLE_OMEGA)).floatValue();
+     SampleOrientation orientation =
+        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
+     float phi  =orientation.getPhi();
+     float chi  =orientation.getChi();
+     float omega=orientation.getOmega();
      
      // do the actual conversion to 1/d
      Q=cmtoqs(detA,detD,wl,Q);

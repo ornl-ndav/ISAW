@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/02/18 20:19:53  dennis
+ * Switched to use SampleOrientation attribute instead of separate
+ * phi, chi and omega values.
+ *
  * Revision 1.10  2003/01/08 23:21:21  dennis
  * Slice size in pixels is now a named constant.  Slice is now properly
  * centered in ImageFrame.
@@ -527,22 +531,18 @@ public class SCDRecipLat
   }
 
 
- /* ------------------------ makeGoniometerRotation ------------------------ */
+ /* --------------------- makeGoniometerRotationInverse -------------------- */
  /*
   *  Make the cumulative rotation matrix to "unwind" the rotations by chi,
   *  phi and omega, to put the data into one common reference frame for the
   *  crystal.
   */
-  private Tran3D makeGoniometerRotation( DataSet ds )
+  private Tran3D makeGoniometerRotationInverse( DataSet ds )
   {
-      float omega = ((Float)ds.getAttributeValue(Attribute.SAMPLE_OMEGA))
-                         .floatValue();
-      float phi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_PHI))
-                         .floatValue();
-      float chi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_CHI))
-                         .floatValue();
+    SampleOrientation orientation = 
+        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
 
-      return tof_calc.makeEulerRotationInverse( phi, chi, -omega );
+      return orientation.getGoniometerRotationInverse();
   }
 
 
@@ -575,7 +575,7 @@ public class SCDRecipLat
       pts[0]         = new Vector3D();
       float aves[]   = findAverages( ds );
 
-      Tran3D combinedR = makeGoniometerRotation( ds );
+      Tran3D combinedR = makeGoniometerRotationInverse( ds );
 
       int n_data = ds.getNum_entries();
       d = ds.getData_entry(0);
