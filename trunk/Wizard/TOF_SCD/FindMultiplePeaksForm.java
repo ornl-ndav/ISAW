@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.21  2003/07/09 19:57:42  bouzekc
+ * Added pixel border restriction parameter.
+ *
  * Revision 1.20  2003/07/09 14:20:10  bouzekc
  * No longer has a specific default directory for the SCD
  * instprm.dat file.
@@ -199,42 +202,35 @@ public class FindMultiplePeaksForm extends Form {
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
 
-    //0
-    addParameter( new DataDirPG( "Raw Data Path", null, false ) );
+    addParameter( new DataDirPG( "Raw Data Path", null, false ) );  //0
 
-    //1
-    addParameter( new DataDirPG( "Peaks File Output Path", null, false ) );
+    addParameter( new DataDirPG( "Peaks File Output Path", null, false ) );  //1
 
-    //2
-    addParameter( new IntArrayPG( "Run Numbers", "6496:6498", false ) );
+    addParameter( new IntArrayPG( "Run Numbers", "6496:6498", false ) );  //2
 
-    //3
-    addParameter( new StringPG( "Experiment name", "quartz", false ) );
+    addParameter( new StringPG( "Experiment name", "quartz", false ) );  //3
 
-    //4
     addParameter( 
-      new IntegerPG( "Maximum Number of Peaks", new Integer( 30 ), false ) );
+      new IntegerPG( "Maximum Number of Peaks", new Integer( 30 ), false ) );  //4
 
-    //5
     addParameter( 
-      new IntegerPG( "Minimum Peak Intensity", new Integer( 3 ), false ) );
+      new IntegerPG( "Minimum Peak Intensity", new Integer( 3 ), false ) );  //5
 
-    //6
     addParameter( 
-      new BooleanPG( "Append Data to File?", new Boolean( false ), false ) );
+      new BooleanPG( "Append Data to File?", new Boolean( false ), false ) );  //6
 
-    //7
     addParameter( 
       new IntegerPG( 
-        "SCD Calibration File Line to Use", new Integer( -1 ), false ) );
+        "SCD Calibration File Line to Use", new Integer( -1 ), false ) );  //7
 
-    //8
-    addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );
+    addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );  //8
 
-    //9
-    addParameter( new LoadFilePG( "Peaks File", null, false ) );
+    addParameter( new LoadFilePG( "Peaks File", null, false ) );  //9
+
+    addParameter( 
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );  //10
     setParamTypes( 
-      null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8 }, new int[]{ 9 } );
+      null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 10 }, new int[]{ 9 } );
   }
 
   /**
@@ -267,6 +263,7 @@ public class FindMultiplePeaksForm extends Form {
     s.append( "@param line2use SCD calibration file line to use.\n" );
     s.append( "@param calibfile SCD calibration file.\n" );
     s.append( "@param peaksFile Peaks filename that data is written to.\n" );
+    s.append( "@param keepPixels The detector pixel range to keep.\n" );
     s.append( "@return A Boolean indicating success or failure of the Form's " );
     s.append( "execution.\n" );
     s.append( "@error If you specify that you want to append to the peaks " );
@@ -302,6 +299,8 @@ public class FindMultiplePeaksForm extends Form {
     int maxPeaks;
     int minIntensity;
     int SCDline;
+    int lowerLimit;
+    int upperLimit;
     Float monCount;
     String rawDir;
     String outputDir;
@@ -317,8 +316,10 @@ public class FindMultiplePeaksForm extends Form {
     DataSet histDS;
     DataSet monDS;
     Object obj;
+    Peak peak = null;
 
     int[] runsArray;
+    int[] keepRange;
 
     //get raw data directory
     param    = ( IParameterGUI )super.getParameter( 0 );
@@ -359,6 +360,21 @@ public class FindMultiplePeaksForm extends Form {
     param       = ( IParameterGUI )super.getParameter( 8 );
     calibFile   = param.getValue(  )
                        .toString(  );
+
+    //get the detector border range
+    keepRange = ( ( IntArrayPG )getParameter( 10 ) ).getArrayValue(  );
+
+    if( keepRange != null ) {
+      lowerLimit   = keepRange[0];  //lower limit of range
+
+      //upper limit of range
+      upperLimit = keepRange[keepRange.length - 1];
+    } else {  //shouldn't happen, but default to 0:MAX_VALUE
+      lowerLimit   = 0;
+      upperLimit   = Integer.MAX_VALUE;
+    }
+
+    //first time through the file
     first   = true;
 
     //the name for the saved file
@@ -443,6 +459,20 @@ public class FindMultiplePeaksForm extends Form {
         peaksVec = ( Vector )obj;
       } else {
         return errorOut( "FindPeaks failed: " + obj.toString(  ) );
+      }
+
+      // trim out edge peaks (defined by the "pixels to keep" parameter)
+      for( int k = peaksVec.size(  ) - 1; k >= 0; k-- ) {
+        peak = ( Peak )peaksVec.elementAt( k );
+
+        //see if the peak pixels are within the user defined array.  We are
+        //assuming a SQUARE detector, so we'll reject it if the x or y position
+        //is not within our range
+        if( 
+          ( peak.x(  ) > upperLimit ) || ( peak.x(  ) < lowerLimit ) ||
+            ( peak.y(  ) > upperLimit ) || ( peak.y(  ) < lowerLimit ) ) {
+          peaksVec.remove( k );
+        }
       }
 
       //"centroid" (find the center) the peaks
