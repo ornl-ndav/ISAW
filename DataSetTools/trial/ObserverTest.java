@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/05/10 22:46:53  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.6  2004/03/15 06:10:53  dennis
  * Removed unused import statements.
  *
@@ -131,10 +137,9 @@ public class ObserverTest extends    JFrame
                           "/usr/LOCAL/IPNS_Software/SampleRuns/gppd9898.run" );
         new_ds = rr.getDataSet( 1 );
         new_ds.removeData_entry( 0 );
-        ViewManager viewer = new ViewManager( new_ds, "IMAGE" );
+        new ViewManager( new_ds, "IMAGE" );
 
         new_ds = null;
-        viewer = null;
         System.runFinalization();
         System.gc();
       }
