@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/05/20 18:39:11  pfpeterson
+ * Major rewrite to allow for a second detector. This was done by shifting
+ * the code into a oop framework where the histograms and detectors are
+ * their own objects rather than contained in strings within this class.
+ *
  * Revision 1.11  2003/03/25 22:36:08  pfpeterson
  * Fixed the histogram renumbering when inserting at the beginning.
  *
@@ -79,34 +84,20 @@ import DataSetTools.instruments.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
 import DataSetTools.retriever.RunfileRetriever;
-//import java.util.*;
 import java.util.Vector;
-//import java.lang.reflect.Array;
-//import java.text.DecimalFormat;
 import java.io.*;
 
 /** 
  * This operator is a building block of an ISAW version of
  * A.J.Schultz's data reduction suite. This writes out an experiment
  * file in a format similar to GSAS.
+ *
+ * @see ExpDetector
+ * @see ExpHistogram
  */
 public class WriteExp extends GenericTOF_SCD{
   private static final String  TITLE      = "Write SCD Exp File";
   private static final boolean DEBUG      = false;
-  private              int     ncol       = 0;
-  private              int     nrow       = 0;
-  private              float   width      = 0f;
-  private              float   height     = 0f;
-  private              DataSet ds         = null;
-  private              DataSet mon        = null;
-  private              String  crystinfo  = null;
-  private              String  instinfo   = null;
-  private              String  exp_title  = null;
-  private              int     run_one    = 0;
-  private              int     run_num    = 0;
-  private              int[]   runs       = null;
-  private              String  user       = null;
-  private              String  exist_hist = null;
   
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -128,16 +119,15 @@ public class WriteExp extends GenericTOF_SCD{
    * @param monid Upstream monitor group id
    * @param append Whether or not to overwrite the file (if it exists)
    */
-  public WriteExp( DataSet ds, DataSet mon, String filename, String calibfile,
-                   int monid, boolean append){
+  public WriteExp( DataSet ds, DataSet mon, String filename, int monid,
+                   boolean append){
 
     this(); 
     getParameter(0).setValue(ds);
     getParameter(1).setValue(mon);
     getParameter(2).setValue(filename);
-    getParameter(3).setValue(calibfile);
-    getParameter(4).setValue(new Integer(monid));
-    getParameter(5).setValue(new Boolean(append));
+    getParameter(3).setValue(new Integer(monid));
+    getParameter(4).setValue(new Boolean(append));
   }
   
   /* --------------------------- getCommand ------------------------------- */ 
@@ -162,10 +152,11 @@ public class WriteExp extends GenericTOF_SCD{
               +"of A.J.Schultz's data reduction suite. This writes out an "
               +"experiment file in a format similar to GSAS.\n");
     sb.append("@assumptions There are several important assumptions made by "
-              +"this operator: there is only one detector, all of the needed "
-              +"attributes are present in the sample DataSet, and the user "
-              +"has write permission to the directory selected. In append "
-              +"mode the existing file is assumed to have the correct "
+              +"this operator: all of the needed attributes are present in "
+              +"the sample DataSet, the user has write permission to the "
+              +"directory selected, and the information in the file takes "
+              +"preceidence (instrument, orientation matrix, etc.) . In "
+              +"append mode the existing file is assumed to have the correct "
               +"user-name, crystal symmetry, orientation matrix and "
               +"instrument information.\n");
     sb.append("@param The DataSet containing most of information to be "
@@ -194,10 +185,8 @@ public class WriteExp extends GenericTOF_SCD{
   public void setDefaultParameters(){
     parameters = new Vector();
     addParameter( new Parameter("Data Set", new SampleDataSet() ) );
-    //addParameter( new Parameter("Data Set", DataSet.EMPTY_DATA_SET) );
     addParameter( new Parameter("Monitor", new MonitorDataSet() ) );
     addParameter( new Parameter("Filename", new SaveFileString("")));
-    addParameter( new Parameter("Calibration File", new LoadFileString("")));
     addParameter( new Parameter("Upstream Monitor ID", new Integer(1 )) );
     addParameter( new Parameter("Append",   Boolean.FALSE));
   }
@@ -211,103 +200,172 @@ public class WriteExp extends GenericTOF_SCD{
    */
   public Object getResult(){
     // get the parameters
-    this.ds  = (DataSet)(getParameter(0).getValue());
-    this.mon = (DataSet)(getParameter(1).getValue());
+    DataSet ds        = (DataSet)(getParameter(0).getValue());
+    DataSet mon       = (DataSet)(getParameter(1).getValue());
     String  filename  = getParameter(2).getValue().toString();
-    String  calibfile = getParameter(3).getValue().toString();
-    int     monid     = ((Integer)getParameter(4).getValue()).intValue();
-    boolean append    = ((Boolean)(getParameter(5).getValue())).booleanValue();
-    int change_run_one=0;
+    int     monid     = ((Integer)getParameter(3).getValue()).intValue();
+    boolean append    = ((Boolean)(getParameter(4).getValue())).booleanValue();
 
-    // read in the calibration if not in append mode
-    if(!append){
-      Operator DSop=null;
+
+    // ==================== create info for this dataset
+    // get the user name
+    String user=ds.getAttributeValue(Attribute.USER).toString();
+    if(user==null) user="";
+
+    // get the run title
+    String exp_title=ds.getAttributeValue(Attribute.RUN_TITLE).toString();
+    if(exp_title==null) exp_title="";
+
+    // create the crystal symmetry infomation
+    String crystinfo=getCrystSymmAndOrient(ds);
+    if(crystinfo==null) crystinfo="";
+
+    // create the instrument information
+    String instinfo=getInstrument(ds);
+
+    // determine list of detector numbers
+    int[] detNums=getDetNums(ds);
+    if( detNums==null )
+      return new ErrorString("Could not find any detector numbers");
+    if(DEBUG){
+      System.out.print("DET=");
+      for( int i=0 ; i<detNums.length ; i++ )
+        System.out.print(detNums[i]+" ");
+      System.out.println();
+    }
+
+    // create the detector and histogram objects
+    Vector detectors=new Vector();
+    Vector histograms=new Vector();
+    {
+      ExpDetector  det  = new ExpDetector(detNums[0],ds);
+      ExpHistogram hist = new ExpHistogram(detNums[0],ds,monid,mon);
+      detectors.add(det);
+      histograms.add(hist);
+      for( int i=1 ; i<detNums.length ; i++ ){
+        det  = new ExpDetector(detNums[i],ds);
+        hist = (ExpHistogram)hist.clone();
+        hist.setDetNum(detNums[i],ds);
+        detectors.add(det);
+        histograms.add(hist);
+      }
+    }
+
+    // ==================== read in the existing if necessary
+    if(append){
+      TextFileReader tfr=null;
+      String line=null;
+      int index=0;
+
       try{
-        DSop=new DataSetTools.operator.DataSet.Attribute.LoadSCDCalib(this.ds,
-                                                             calibfile,1,null);
-      }catch(NoClassDefFoundError e){ // just warn the user
-        System.out.println("WARN: unable to find LoadSCDCalib");
+        tfr=new TextFileReader(filename);
+        // get the title
+        line=tfr.read_line();
+        index=line.indexOf("DESCR");
+        if(index>=0)
+          exp_title=line.substring(index+5).trim();
+        else
+          throw new IOException("Invalid file while reading DESCR");
+        // skip the first run number
+        line=tfr.read_line();
+        // get the user name
+        line=tfr.read_line();
+        index=line.indexOf("USER");
+        if(index>=0)
+          user=line.substring(index+4).trim();
+        else
+          throw new IOException("Invalid file while reading USER");
+        // read in the crystal symmetry
+        {
+          String temp=getCrystSymmAndOrient(tfr);
+          if(temp!=null && temp.length()>0)
+            crystinfo=temp;
+        }
+        // read in the detectors
+        ExpDetector det=null;
+        while(!tfr.eof() && tfr.read_line().startsWith("DET")){
+          tfr.unread();
+          det=new ExpDetector(tfr);
+          addElement(det,detectors);
+        }
+        // read in the histograms
+        ExpHistogram hist=null;
+        int num_hist=0;
+        while(!tfr.eof() && tfr.read_line().startsWith("HST") && num_hist<100){
+          tfr.unread();
+          hist=new ExpHistogram(tfr);
+          System.out.println("hist"+hist.getRunNumber()+" "+hist.getDetNumber());
+          addElement(hist,histograms);
+          num_hist++;
+        }
+        // read in the instrument
+        if(!tfr.eof()){
+          StringBuffer sb=new StringBuffer(81);
+          line=tfr.read_line();
+          System.out.print("try:"+line);
+          while(line.indexOf("INST  ")>=0 && ! tfr.eof()){
+            sb.append(line+"\n");
+            line=tfr.read_line();
+          }
+          instinfo=sb.toString();
+        }
+      }catch(IOException e){
+        return new ErrorString(e.toString());
+      }finally{
+        if(tfr!=null){
+          try{
+            tfr.close();
+          }catch(IOException e){
+            // let it drop on the floor
+          }
+        }
       }
-      if(DSop!=null) System.out.println(DSop.getResult());
     }
 
-    // determine what run number we are dealing with
-    run_num=getIntValue(ds,Attribute.RUN_NUM);
+    // set the first run number
+    int first_run=((ExpHistogram)histograms.elementAt(0)).getRunNumber();
+    System.out.println(">"+exp_title+"<");
+    System.out.println(">"+first_run+"<");
+    System.out.println(">"+user+"<");
 
-    // get information out of the existing file
-    if(append){
-      ErrorString exist=readExisting(filename);
-      if(exist!=null) return exist;
-    }
-
-    // fill in missing information
-    if(exp_title==null)
-      exp_title=(String)ds.getAttributeValue(Attribute.RUN_TITLE);
-    if(run_one==0)
-      run_one=run_num;
-    else{
-      if(run_num<run_one){
-        change_run_one=run_one-run_num;
-        run_one=run_num;
-        exp_title=(String)ds.getAttributeValue(Attribute.RUN_TITLE);
-      }
-    }
-    if(user==null || user.length()==0 ){
-      user=(String)ds.getAttributeValue(Attribute.USER);
-      if(user==null || user.length()==0 )
-        user=null;
-    }
-    if(crystinfo==null)
-      getCrystSymmAndOrient(ds);
-    if(instinfo==null)
-      getInstrument(monid);
-
-    // remove the old version of the file (we have already read in the
-    // existing information
-    if(append){
-      File file=new File(filename);
-      if(file.exists()) file.delete();
-    }
-
-    // start writting the file
+    // ==================== start writting the file
     OutputStreamWriter out;
     try{
       // select writting to STDOUT if in debug mode
       if(DEBUG){
         out=new OutputStreamWriter(System.out);             // FOR TESTING ONLY
       }else{
-        FileOutputStream fos=new FileOutputStream(filename,append);
+        FileOutputStream fos=new FileOutputStream(filename,false);
         out=new OutputStreamWriter(fos);
       }
 
       // -------------------- generic information
-      out.write(general());
-      if(crystinfo!=null) out.write(crystinfo);
+      // first line is the title
+      out.write("      DESCR   "+Format.string(exp_title,66,false)+"\n");
+      // the second line is what the first run number is
+      out.write("      RUN1    "+Format.real(first_run,8)
+                +Format.string("\n",59));
+      // the third line is the user name
+      out.write("      USER  "+Format.string(user,68,false)+"\n");
 
-      // -------------------- previous data's information
-      if(append && exist_hist!=null && exist_hist.length()>0){
-        int index=findSplit(exist_hist,runs,run_num,run_one);
-        if(index<0){ // just append
-          out.write(exist_hist);
-          exist_hist=null;
-        }
+      // -------------------- orientation matrix and lattice parameters
+      out.write(crystinfo);
+
+      // -------------------- detectors
+      for( int i=0 ; i<detectors.size() ; i++ )
+        out.write(detectors.elementAt(i).toString());
+
+      // -------------------- histograms
+      for( int i=0 ; i<histograms.size() ; i++ ){
+        ExpHistogram hist=(ExpHistogram)histograms.elementAt(i);
+        hist.setHistNum(i+1);
+        out.write(hist.toString());
       }
 
-      // -------------------- this data's information
-      parseDetInfoList(ds);
-      out.write(histogram(run_num-run_one+1,monid));
+      // -------------------- instrument
+      out.write(instinfo);
 
-      // -------------------- following data's information
-      if(append && exist_hist!=null && exist_hist.length()>0){
-        if(change_run_one!=0)
-          out.write(fix_old(exist_hist,change_run_one));
-        else
-          out.write(exist_hist);
-      }
-
-      // -------------------- instrument information
-      if(instinfo!=null) out.write(instinfo);
-
+      // ==================== cleanup
       out.flush();
       out.close();
     }catch(IOException e){
@@ -315,12 +373,75 @@ public class WriteExp extends GenericTOF_SCD{
     }
 
     // release the DataSets
-    this.ds=null;
-    this.mon=null;
+    ds  = null;
+    mon = null;
 
     return filename;
   }
   
+  /**
+   * Inserts a comparable object into a vector. If two items are equal
+   * than the new replaces the old.
+   */
+  private static void addElement(Comparable obj, Vector vec){
+    for( int i=0 ; i<vec.size() ; i++ ){
+      int compare=obj.compareTo(vec.elementAt(i));
+      if(compare<0){
+        vec.insertElementAt(obj,i);
+        if(DEBUG)System.out.println("inserting object");
+        return;
+      }else if(compare==0){
+        vec.set(i,obj);
+        if(DEBUG)System.out.println("replacing object");
+        return;
+      }else{
+        if(i==vec.size()-1){
+          vec.add(obj);
+          if(DEBUG)System.out.println("adding object");
+          return;
+        }
+      }
+    }
+  }
+
+  /**
+   * Determine the detector numbers available in the dataset.
+   */
+  private static int[] getDetNums(DataSet ds){
+    // determine the unique detector numbers
+    Integer detNum=null;
+    Vector detNumbers=new Vector();
+    for( int i=0 ; i<ds.getNum_entries() ; i++ ){
+      detNum=new Integer(Util.detectorID(ds.getData_entry(i)));
+      if( ! detNumbers.contains(detNum) ) detNumbers.add(detNum);
+    }
+    if(detNumbers.size()<=0) return null;
+
+    // copy over to the return array
+    int[] detNums=new int[detNumbers.size()];
+    if(detNumbers.size()==1){
+      detNums[0]=((Integer)detNumbers.elementAt(0)).intValue();
+    }else{
+      // sort the results
+      while(! detNumbers.isEmpty()){
+        int minDet=1000;
+        int minEle=-1;
+        int tempDet=1000;
+        for( int i=0 ; i<detNumbers.size() ; i++ ){
+          tempDet=((Integer)detNumbers.elementAt(i)).intValue();
+          if(tempDet<minDet){
+            minDet=tempDet;
+            minEle=i;
+          }
+        }
+        detNums[detNums.length-detNumbers.size()]=minDet;
+        detNumbers.removeElementAt(minEle);
+      }
+    }
+
+    return detNums;
+  }
+
   /**
    * Determines the starting index of the first histogram that is
    * after the one being added. Returns -1 if it can't find the right
@@ -399,19 +520,18 @@ public class WriteExp extends GenericTOF_SCD{
   }
 
   /**
-   * Create the first three lines of the experiment file.
+   * Just returns any line that starts with "CRS"
    */
-  private String general(){
-    StringBuffer sb=new StringBuffer(3*80);
-    String temp=null;
-
-    // first line is the title
-    sb.append("      DESCR   "+Format.string(exp_title,66,false)+"\n");
-    // the second line is what the first run number is
-    sb.append("      RUN1    "+Format.real(run_one,8)+Format.string("\n",59));
-    // the third line is the user name
-    sb.append("      USER  "+Format.string(user,68)+"\n");
-
+  private static String getCrystSymmAndOrient(TextFileReader tfr)
+                                                            throws IOException{
+    String tag="CRS";
+    StringBuffer sb=new StringBuffer(81*5);
+    String line=tfr.read_line();
+    while( !tfr.eof() && line.startsWith(tag) ){
+      sb.append(line+"\n");
+      line=tfr.read_line();
+    }
+    tfr.unread();
     return sb.toString();
   }
 
@@ -419,16 +539,13 @@ public class WriteExp extends GenericTOF_SCD{
    * Gets the crystal summetry and orientation matrix from the DataSet
    * and put it (formatted) into the 'crystinfo' instance variable.
    */
-  private void getCrystSymmAndOrient(DataSet ds){
+  private static String getCrystSymmAndOrient(DataSet ds){
     StringBuffer sb     = new StringBuffer(3*80);
     Object       value  = null;
     float        vol    = 0f;
     float[]      latt   = new float[6];
     float[][]    orient = new float[3][3];
     
-    // return crystinfo that is already in the file
-    if( crystinfo!=null ) return;
-
     // get the unit cell volume
     value=ds.getAttributeValue(Attribute.CELL_VOLUME);
     if(value!=null && value instanceof Float){
@@ -468,446 +585,31 @@ public class WriteExp extends GenericTOF_SCD{
                 +Format.string("\n",39));
     }
 
-    // set the cystal symmetry info
-    crystinfo=sb.toString();
-    return;
-  }
-
-  /**
-   * Gets a simple float from the DataSet's attribute list. If it is
-   * not found in the DataSet then this looks in the first Data of the
-   * DataSet.
-   */
-  private static float getFloatValue(DataSet ds, String attr){
-    Object value=null;
-    
-    value=ds.getAttributeValue(attr);
-    if(value==null)
-      value=ds.getData_entry(0).getAttributeValue(attr);
-
-    if(value==null)
-      return 0f;
-
-    if(value instanceof Float)
-      return ((Float)value).floatValue();
-      
-    if(value instanceof Integer)
-      return (float)(((Integer)value).intValue());
-
-    return 0f;
-  }
-
-  /**
-   * Gets a simple int from the DataSet's attribute list. If it is not
-   * found in the DataSet then this looks in the first Data of the
-   * DataSet.
-   */
-  private static int getIntValue(DataSet ds, String attr){
-    Object value=null;
-
-    value=ds.getAttributeValue(attr);
-    if(value==null)
-      value=ds.getData_entry(0).getAttributeValue(attr);
-
-    if(value==null)
-      return 0;
-    
-    if(value instanceof Float)
-      return (int)(((Float)value).floatValue());
-    
-    if(value instanceof Integer)
-      return ((Integer)value).intValue();
-    
-    if(value instanceof int[])
-      return ((int[])value)[0];
-
-    return 0;
-  }
-
-  /**
-   * Does all of the work with the Detector info list for getting the
-   * size of the detector in rows and columns.
-   */
-  private void parseDetInfoList( DataSet ds ){
-    Attribute attr=ds.getData_entry(0).getAttribute(Attribute.PIXEL_INFO_LIST);
-
-    if ( attr != null && attr instanceof PixelInfoListAttribute )
-    {
-      PixelInfoList pil = (PixelInfoList)attr.getValue();
-      nrow = pil.pixel(0).DataGrid().num_rows();
-      ncol = pil.pixel(0).DataGrid().num_cols();
-    }
-    else
-      System.out.println("ERROR: no PixelInfoListAttribute in DataSet" );
-  }
-
-  /**
-   * Format the TOF entries for the experiment file.
-   */
-  private static String getTOF(String start_card, XScale xscale){
-    StringBuffer sb         = new StringBuffer(10*80);
-                 start_card = start_card+"TOF";
-    int          ncolPerRow = 8;
-    int          num_bin    = xscale.getNum_x()-1;// subtract one for histgrams
-    int          num_row    = num_bin/ncolPerRow;
-
-    if(num_bin%ncolPerRow>0) num_row++;
-
-    int col=0;
-    int row=0;
-    for( int i=0 ; i<num_bin ; i++ ){
-      if(col==0){
-        sb.append(start_card+Format.real(row+1,3));
-      }
-      sb.append(Format.real(xscale.getX(i),8,1));
-      if(col==ncolPerRow-1){
-        col=-1;
-        row++;
-        sb.append("    \n"); // bin boundaries
-      }
-      col++;
-    }
-
-    if(col>0)
-      sb.append(Format.string("\n",5+(ncolPerRow-col)*8));
-
-    return sb.toString();
-  }
-
-  /**
-   * Determine the total counts in the entire detector.
-   */
-  private static float getTotalCount(DataSet ds){
-    float count=0f;
-    Object value=null;
-
-    for( int i=0 ; i<ds.getNum_entries() ; i++ ){
-      value=ds.getData_entry(i).getAttributeValue(Attribute.TOTAL_COUNT);
-      if(value!=null && value instanceof Float)
-        count=count+((Float)value).floatValue();
-    }
-
-    return count;
-  }
-
-  /**
-   * Format the histogram section of the experiment file for the
-   * DataSet being placed in it.
-   */
-  private String histogram(int histnum, int monid){
-    StringBuffer sb         = new StringBuffer(40*80);
-    String       start_card = "HST"+Format.string(Integer.toString(histnum),3);
-    String       end_line   = Format.string("\n",59);
-    Object       value      = null;
-    String       tempS      = null;
-    Data         tempD      = null;
-    float        tempF      = 0f;
-    int          tempI      = 0;
-    float        sumtot     = getTotalCount(ds);
-    float        plsnum     = getFloatValue(ds,Attribute.NUMBER_OF_PULSES);
-    XScale       xscale     = ds.getData_entry(0).getX_scale();
-    float        tmin       = xscale.getX(0);
-    float        tmax       = xscale.getX(xscale.getNum_x()-1);
-    float        detd       = 
-      getFloatValue(ds,Attribute.DETECTOR_CEN_DISTANCE);
-    float        l1         =
-      getFloatValue(ds,Attribute.INITIAL_PATH);
-
-    // the position of the chi motor
-    SampleOrientation orientation =
-        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
-    tempF=orientation.getChi();
-    sb.append(start_card+"CHI   "+Format.real(tempF,10,3)+end_line);
-    // counts per pulse
-    if( plsnum>0f )
-      tempF=sumtot/plsnum;
-    else
-      tempF=0f;
-    sb.append(start_card+"CTSPLS"+Format.real(tempF,10,2)+end_line);
-    //  the angle of the detector center
-    tempF=getFloatValue(ds,Attribute.DETECTOR_CEN_ANGLE);
-    sb.append(start_card+"DETA  "+Format.real(tempF,10,3)+end_line);
-    // the secondary flight path of the detector center
-    sb.append(start_card+"DETD  "+Format.real(detd*100f,10,3)+end_line);
-    // the end date of the measurement
-    value=ds.getAttributeValue(Attribute.END_DATE);
-    if(value!=null && value instanceof String)
-      tempS=(String)value;
-    else
-      tempS=null;
-    sb.append(start_card+"ENDDAT"+Format.string(tempS,68,false)+"\n");
-    // the end time of the measurement
-    value=ds.getAttributeValue(Attribute.END_TIME);
-    if(value!=null && value instanceof String)
-      tempS=(String)value;
-    else
-      tempS=null;
-    sb.append(start_card+"ENDTIM"+Format.string(tempS,68,false)+"\n");
-    // number of channels in monitor spectrum
-    tempD=mon.getData_entry_with_id(monid);
-    if(tempD!=null){
-      tempI=tempD.getX_scale().getNum_x();
-    }else{
-      tempI=0;
-    }
-    sb.append(start_card+"MNNUM "+Format.real(tempI,10)+end_line);
-    // integrated monitor counts
-    value=
-     mon.getData_entry_with_id(monid).getAttributeValue(Attribute.TOTAL_COUNT);
-    if(value!=null){
-      if(value instanceof Float)
-        tempI=(int)(((Float)value).floatValue());
-      else if(value instanceof Integer)
-        tempI=((Integer)value).intValue();
-      else
-        tempI=0;
-    }else{
-      tempI=0;
-    }
-    sb.append(start_card+"MNSUM "+Format.real(tempI,10)+end_line);
-    // 
-    tempI=0;
-    sb.append(start_card+"NCH   "+Format.real(tempI,10)+end_line);
-    // number of 'monitors'
-    tempI=mon.getNum_entries();
-    sb.append(start_card+"NMON  "+Format.real(tempI,10)+end_line);
-    // the position of the omega motor
-    tempF=orientation.getOmega();
-    sb.append(start_card+"OMEGA "+Format.real(tempF,10,3)+end_line);
-    // the position of the phi motor
-    tempF=orientation.getPhi();
-    sb.append(start_card+"PHI   "+Format.real(tempF,10,3)+end_line);
-    // the number of pulses
-    sb.append(start_card+"PLSNUM"+Format.real((int)plsnum,10)+end_line);
-    // the run number of this dataset
-    tempI=getIntValue(ds,Attribute.RUN_NUM);
-    sb.append(start_card+"RUN#  "+Format.real(tempI,10)+end_line);
-    // the start date of the measurement
-    value=ds.getAttributeValue(Attribute.START_DATE);
-    if(value!=null && value instanceof String)
-      tempS=(String)value;
-    else
-      tempS=null;
-    sb.append(start_card+"STRDAT"+Format.string(tempS,68,false)+"\n");
-    // the start time of the measurement
-    value=ds.getAttributeValue(Attribute.START_TIME);
-    if(value!=null && value instanceof String)
-      tempS=(String)value;
-    else
-      tempS=null;
-    sb.append(start_card+"STRTIM"+Format.string(tempS,68,false)+"\n");
-    // the total counts
-    sb.append(start_card+"SUMTOT"+Format.real((int)sumtot,10)+end_line);
-    // the maximum time
-    sb.append(start_card+"TMAX  "+Format.real((int)tmax,10)+end_line);
-    // the minimum time
-    sb.append(start_card+"TMIN  "+Format.real((int)tmin,10)+end_line);
-    // the bin boundaries
-    sb.append(getTOF(start_card,xscale));
-    // maximum wavelength
-    tempF=tof_calc.Wavelength(detd+l1,tmax);
-    sb.append(start_card+"WLMAX "+Format.real(tempF,10,3)+end_line);
-    // minimum wavelength
-    tempF=tof_calc.Wavelength(detd+l1,tmin);
-    sb.append(start_card+"WLMIN "+Format.real(tempF,10,3)+end_line);
-    // the number of time channels
-    sb.append(start_card+"WLNUM"+Format.real(xscale.getNum_x()-1,11)+end_line);
-    // the number of columns
-    sb.append(start_card+"XNUM  "+Format.real(ncol,10)+end_line);
-    // the number of rows
-    sb.append(start_card+"YNUM  "+Format.real(nrow,10)+end_line);
-
+    // return the cystal symmetry info
     return sb.toString();
   }
 
   /**
    * Produce the instrument section of the experiment file.
    */
-  private void getInstrument(int monid){
-    StringBuffer sb         = new StringBuffer(24*80);
-    String       start_card = "INST  ";
-    String       end_line   = Format.string("\n",59);
+  private String getInstrument(DataSet ds){
+    String tag="INST  ";
+    StringBuffer sb= new StringBuffer(81);
+    Object attr_val=null;
 
-    Object       value      = null;
-    String       tempS      = null;
-    float        tempF      = 0f;
-    int          tempI      = 0;
-    float[]      calib      = null;
-    XScale       mon_xscale = mon.getData_entry_with_id(monid).getX_scale();
-
-    // the calibration
-    value=ds.getAttributeValue(Attribute.SCD_CALIB);
-    if(value==null){
-      value=ds.getData_entry(0).getAttributeValue(Attribute.SCD_CALIB);
+    // get primary flight path in cm
+    float l1=0f;
+    attr_val=ds.getAttributeValue(Attribute.INITIAL_PATH);
+    if(attr_val!=null && attr_val instanceof Float){
+      l1=((Float)attr_val).floatValue();
+    }else{
+      attr_val=ds.getData_entry(0).getAttributeValue(Attribute.INITIAL_PATH);
+      if(attr_val!=null && attr_val instanceof Float)
+        l1=((Float)attr_val).floatValue();
     }
-    if(value!=null && value instanceof float[]){
-      calib=(float[])value;
-    }else
-      calib=new float[5];
+    sb.append(tag+"L1    "+Format.real(100f*l1,10,3)+Format.string("\n",59));
 
-    // the width and height
-    width=ncol*calib[1];
-    height=nrow*calib[2];
-
-    // detector center angle
-    tempF=getFloatValue(ds,Attribute.DETECTOR_CEN_ANGLE);
-    sb.append(start_card+"DETA  "+Format.real(tempF,10,2)+end_line);
-    // detector center distance
-    tempF=getFloatValue(ds,Attribute.DETECTOR_CEN_DISTANCE);
-    sb.append(start_card+"DETD  "+Format.real(tempF*100f,10,2)+end_line);
-    // primary flight path
-    tempF=getFloatValue(ds,Attribute.INITIAL_PATH);
-    sb.append(start_card+"L1    "+Format.real(tempF*100f,10,3)+end_line);
-    // tmax of monitor spectrum
-    tempI=mon_xscale.getNum_x();
-    tempI=(int)mon_xscale.getX(tempI-1);
-    sb.append(start_card+"TMAX  "+Format.real(tempI,10)+end_line);
-    // tmin of monitor spectrum
-    tempI=(int)mon_xscale.getX(0);
-    sb.append(start_card+"TMIN  "+Format.real(tempI,10)+end_line);
-    // TZERO from the calibration
-    sb.append(start_card+"TZERO "+Format.real(calib[0],10,3)+end_line);
-    // X2CM from the calibration
-    sb.append(start_card+"X2CM  "+Format.real(calib[1],10,4)+end_line);
-    // XBIAS=XWDTH/2+XLEFT
-    tempF=width/2f+calib[3];
-    sb.append(start_card+"XBIAS "+Format.real(tempF,10,3)+end_line);
-    // XBOX85=1/X2CM
-    if(calib[1]!=0f) tempF=1/calib[1];
-    sb.append(start_card+"XBOX85"+Format.real(tempF,10,3)+end_line);
-    //
-    sb.append(start_card+"XDIS  "+Format.real(0f,10,3)+end_line);
-    // XOFFSET from the calibration
-    sb.append(start_card+"XLEFT "+Format.real(calib[3],10,3)+end_line);
-    // right extent of detector from calibration
-    sb.append(start_card+"XRIGHT"+Format.real(calib[3]+width,10,3)+end_line);
-    // detector width from calibration
-    sb.append(start_card+"XWDTH "+Format.real(width,10,3)+end_line);
-    // Y2CM from the calibration
-    sb.append(start_card+"Y2CM  "+Format.real(calib[2],10,4)+end_line);
-    // YBIAS=YHGT/2+YLOWER
-    tempF=height/2f+calib[4];
-    sb.append(start_card+"YBIAS "+Format.real(tempF,10,3)+end_line);
-    // YBOX85=1/Y2CM
-    if(calib[2]!=0f) tempF=1/calib[2];
-    sb.append(start_card+"YBOX85"+Format.real(tempF,10,3)+end_line);
-    //
-    sb.append(start_card+"YDIS  "+Format.real(0f,10,3)+end_line);
-    // detector height from calibration
-    sb.append(start_card+"YHGT  "+Format.real(height,10,3)+end_line);
-    // YOFFSET from the calibration
-    sb.append(start_card+"YLOWER"+Format.real(calib[4],10,3)+end_line);
-    // upper extent of detector from calibration
-    sb.append(start_card+"YUPPER"+Format.real(calib[4]+height,10,3)+end_line);
-
-    instinfo=sb.toString();
-    return;
-  }
-
-  /**
-   * Read in the existing experiment file. Tags that are not
-   * understood are brounght along and placed appropriately in the new
-   * version of the file.
-   */
-  private ErrorString readExisting(String filename){
-    File file=new File(filename);
-
-    if(!file.exists()) return null;
-    if(!file.canRead()) return new ErrorString("Cannot read "+filename);
-    file=null;
-    
-    String temp=null;
-    StringBuffer sb=new StringBuffer(8*81);
-    int index=0;
-    try{
-      TextFileReader tfr=new TextFileReader(filename);
-      // read in the experiment title
-      if(!tfr.eof()){
-        temp=tfr.read_line().trim();
-        index=temp.indexOf("DESCR");
-        if( index==0 )
-          exp_title=temp.substring(5).trim();
-        else
-          tfr.unread();
-      }
-      
-      // read in the first run number
-      if(!tfr.eof()){
-        temp=tfr.read_line().trim();
-        index=temp.indexOf("RUN1");
-        if( index==0 ){
-          temp=temp.substring(4).trim();
-          run_one=Integer.parseInt(temp);
-        }else{
-          tfr.unread();
-        }
-      }
-        
-      // read in the experiment title
-      if(!tfr.eof()){
-        temp=tfr.read_line().trim();
-        index=temp.indexOf("USER");
-        if( index==0 )
-          user=temp.substring(4).trim();
-        else
-          tfr.unread();
-      }
-      
-      // read in the crystal symmetry information
-      sb.delete(0,sb.length());
-      while(!tfr.eof()){
-        temp=tfr.read_line();
-        if(temp.indexOf("CRS")==0){
-          sb.append(temp+"\n");
-        }else{
-          tfr.unread();
-          break;
-        }
-      }
-      crystinfo=sb.toString();
-
-      // read in the histograms and all other stuff before INST information
-      Vector runV=new Vector();
-      sb.delete(0,sb.length());
-      while(!tfr.eof()){
-        temp=tfr.read_line();
-        if(temp.indexOf("INST")==0){
-          tfr.unread();
-          break;
-        }else{
-          if( temp.indexOf("HST")==0 && temp.indexOf("RUN#")==6){
-            runV.add(temp.substring(10).trim());
-          }
-          sb.append(temp+"\n");
-        }
-      }
-      exist_hist=sb.toString();
-      try{
-        runs=new int[runV.size()];
-        for( int i=0 ; i<runV.size() ; i++ ){
-          runs[i]=Integer.parseInt((String)runV.elementAt(i));
-        }
-      }catch(NumberFormatException e){
-        return new ErrorString(e.getMessage());
-      }
-      runV=null;
-
-      // read in the instrument information and everything untill then EOF
-      sb.delete(0,sb.length());
-      while(!tfr.eof()){
-        sb.append(tfr.read_line()+"\n");
-      }
-      instinfo=sb.toString();
-
-      // close the file
-      tfr.close();
-    }catch(IOException e){
-      return new ErrorString(e.getMessage());
-    }catch(NumberFormatException e){
-      return new ErrorString(e.getMessage());
-    }
-
-    return null;
+    return sb.toString();
   }
 
   /* ------------------------------- main --------------------------------- */ 
@@ -919,19 +621,22 @@ public class WriteExp extends GenericTOF_SCD{
    */
   public static void main( String args[] ){
     
-    String datadir      = "/IPNShome/pfpeterson/data/SCD/";
-    String datfile      = datadir+"SCD06496.RUN";
+    String datadir      = "/IPNShome/pfpeterson/data/SCD";
+    //String datfile      = datadir+"/SCD06496.RUN";
+    String datfile      = datadir+"/scd08299.run";
     RunfileRetriever rr = new RunfileRetriever(datfile);
     DataSet mds         = rr.getDataSet(0);
-    DataSet rds         = rr.getDataSet(1);
+    DataSet rds         = rr.getDataSet(2);
     Operator op         = null;
 
-    //op=new LoadSCDCalib(rds,datadir+"instprm.dat",2,null);
-    //System.out.println("LoadSCDCalib:"+op.getResult());
-    op=new LoadOrientation(rds,new LoadFileString(datadir+"blind.mat"));
+    op=new LoadSCDCalib(rds,datadir+"new/instprm.dat",2,null);
+    System.out.println("LoadSCDCalib:"+op.getResult());
+    op=new LoadSCDCalib(rds,datadir+"new/instprm.dat",1,null);
+    System.out.println("LoadSCDCalib:"+op.getResult());
+    op=new LoadOrientation(rds,new LoadFileString(datadir+"/8299/java/quartz.mat"));
     System.out.println("LoadOrientation:"+op.getResult());
     
-    op = new WriteExp( rds,mds,datadir+"test.x",datadir+"instprm.dat",1,false );
+    op = new WriteExp( rds, mds, datadir+"/test.x", 1, true );
     System.out.println("RESULT: "+op.getResult());
     
     System.exit(0);
