@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/10/16 00:14:34  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.7  2003/03/21 15:51:53  dennis
  *  Changed MONITOR_EXTENT_FACTOR to LOW_E_EXTENT factor
  *  (from tof_data_calc) when comparing energies to
@@ -99,13 +102,14 @@ public class SumRunfiles extends    GenericLoad
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
-   *  Construct an operator for with the specified parameter values so
+   *  Construct an operator to load and sum multiple IPNS runfiles 
+   *  using the specified parameter values so
    *  that the operation can be invoked immediately by calling getResult().
    *
    *  @param  path        The directory path to the data directory
    *  @param  instrument  The name of the instrument, as used in the prefix
    *                      for the file name.
-   *  @param  run_numbers A list of run numbers to be loaded
+   *  @param  runs        A list of run numbers to be loaded
    *  @param  group_mask  A list of group IDs that should be omitted
    *
    *  @param  compare_monitor_pulses

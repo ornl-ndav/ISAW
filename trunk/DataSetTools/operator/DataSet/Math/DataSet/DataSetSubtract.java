@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/10/16 00:11:00  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.6  2002/12/06 14:40:55  dennis
  *  getDocumentation() now includes name of parameter. (Chris Bouzek)
  *
@@ -91,12 +94,12 @@ public class DataSetSubtract extends  DataSetOp
    *  parameter values so that the operation can be invoked immediately
    *  by calling getResult().
    *
-   *  @param  ds            The DataSet to which the operation is applied
-   *  @param  ds_to_subract The DataSet to be subtracted from DataSet ds.
-   *  @param  make_new_ds   Flag that determines whether a new DataSet is
-   *                        constructed, or the Data blocks of the second
-   *                        DataSet are just subtracted from the Data blocks 
-   *                        of the first DataSet.
+   *  @param  ds             The DataSet to which the operation is applied
+   *  @param  ds_to_subtract The DataSet to be subtracted from DataSet ds.
+   *  @param  make_new_ds    Flag that determines whether a new DataSet is
+   *                         constructed, or the Data blocks of the second
+   *                         DataSet are just subtracted from the Data blocks 
+   *                         of the first DataSet.
    */
 
   public DataSetSubtract( DataSet   ds,

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/10/16 00:18:55  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.8  2002/11/27 23:22:56  pfpeterson
  *  standardized header
  *
@@ -245,8 +248,8 @@ public class HistogramDataPeak implements IPeak,
   /**
    *  Get the slope of the linear background for this peak.
    *
-   *  @param  slope        Specifies the slope of a linear background function
-   *                       for the peak.
+   *  @return  The current value of the slope of a linear background function
+   *           for this peak.
    */
   public float getSlope()
   {
@@ -255,6 +258,9 @@ public class HistogramDataPeak implements IPeak,
 
   /**
    *  Get the y-intercept of the linear background for this peak.
+   *
+   *  @return  The current value of the y-intercept of a linear background 
+   *           function for this peak.
    */
   public float getIntercept()
   {
