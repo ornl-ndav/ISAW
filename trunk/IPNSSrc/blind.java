@@ -53,6 +53,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/05/13 20:16:51  pfpeterson
+ * Code cleanup. This includes changing variable and method names
+ * related to blaue.
+ *
  * Revision 1.11  2003/05/12 19:23:35  pfpeterson
  * Removed code that is no longer used.
  *
@@ -100,6 +104,7 @@ package IPNSSrc;
 import java.util.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.dataset.*;
+import DataSetTools.math.LinearAlgebra;
 import DataSetTools.util.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import java.text.DecimalFormat;
@@ -108,11 +113,9 @@ import java.io.*;
 public class blind {
   private static final boolean DEBUG=false;
 
-  //orientation matrix
-  public double[][] UB=null;
-
-  public String errormessage="";
-  private StringBuffer logBuffer;
+  public  double[][]   UB           = null;
+  private String       errormessage = "";
+  private StringBuffer logBuffer    = null;
 
   public blind(){
     UB=null;
@@ -121,10 +124,7 @@ public class blind {
     // create the logfile contents
     logBuffer=new StringBuffer(50*19);
     int start=logBuffer.length();
-    logBuffer.append("\n");
-    logBuffer.append("  *******LAUE INDEXER*******\n");
-    logBuffer.append("\n");
-    logBuffer.append("    #  SEQ       XCM       YCM      WL\n");
+    logBuffer.append("\n  *******LAUE INDEXER*******\n\n");
     System.out.print(logBuffer.substring(start));
   }
 
@@ -133,127 +133,101 @@ public class blind {
    * The basis is manipulated so that B*Transpose(B) is "about" a
    * diagonal
    */ 
-  public void blaue (Vector peaks,double[] xx,double[] yy,double[] zz, 
-                            intW lmt, int[] seq) {
+  public ErrorString blaue (Vector peaks, double[] xx, double[] yy,
+                            double[] zz, int[] seq) {
     float[] angle= new float[ xx.length*3];
+    int length=peaks.size();
 
-    int _xx_offset=0;
-    int _yy_offset=0;
-    int _zz_offset=0;
-    int _seq_offset=0;
-    int j=0,k=0,ilog=0,hstnum=0;
-    double continuelmt= 0.0;
-    hstnum = 0;
-    // will get peaks and loop here
-    lmt.val = 1;
-    // NOW CALCULATE THE DIFFRACTION VECTORS XX,YY,ZZ FROM
-    // XCM, YCM, AND WL AND ROTATE THEM TO ALL ANGLES ZERO
-    // BY CALLING SUBROUTINE LAUE
     if(DEBUG) System.out.println("peaks size="+peaks.size());
-    for( int i=0;i< peaks.size();i++)
-      {
-        doubleW x1= new doubleW(0);
-        doubleW y1= new doubleW(0);
-        doubleW z1= new doubleW(0);
-        double xcm,ycm,wl;
-        float[] pk = (float[])(peaks.elementAt(i));
-        subs.chi=(double)(pk[0]);
-        subs.phi=(double)(pk[1]);
-        subs.omega=(double)(pk[2]);
-        subs.deta=(double)(pk[3]);
-        subs.detd=(double)(pk[4]);
-        int sgn=1;
-        if(pk[5]<0)sgn=-1;
-        int LL= (int)(.5*sgn+ 100*pk[5]);
-        xcm=(LL)/100.0;
-        if(pk[6]<0)sgn=-1; else sgn=1;
-        LL= (int)(.5*sgn+ 100*pk[6]);
-        ycm=(LL/100.0); 
-        if(pk[7]<0)sgn=-1;else sgn=1;
-        LL= (int)(.5*sgn+ 10000*pk[7]);
-        wl=(LL/10000.0);  
-        angle[i+0]= pk[5];
-        angle[i+1*xx.length]=pk[6];
-        angle[i+2*xx.length]=pk[7];
-        seq[lmt.val-1]= (int)pk[8];
-        if( wl > .00001)
-          {
-            //Calculate the Qx,Qy,Qz value for this peak
-            subs.laue((xcm),(ycm),(wl),x1,y1,z1);
-            String SS="";
-            if( Double.isNaN(xcm))SS+="xcm;";
-            if( Double.isNaN(ycm))SS+="ycm;";
-            if( Double.isNaN(wl))SS+="wl;";
-            // add the omeg phi, chi deta and detd values
-            //   xx[(lmt.val)- 1+ _xx_offset]=x1.val;
-            //   yy[(lmt.val)- 1+ _yy_offset]=y1.val;
-            //    zz[(lmt.val)- 1+ _zz_offset]=z1.val;
-            xx[lmt.val - 1]=x1.val;
-            yy[lmt.val-1]=y1.val;
-            zz[lmt.val-1]=z1.val;
-            if(DEBUG)
-              System.out.println("Q vals="+format(x1.val,10,4)+","
-                                 +format(y1.val,10,4)+","+format(z1.val,10,4));
-            if( Double.isNaN(xx[i]))SS+="xx";
-            if( Double.isNaN(yy[i]))SS+="yy";
-            if( Double.isNaN(zz[i]))SS+="zz";
-            if( SS.length() > 0)
-              if(DEBUG) System.out.println("Laue "+ i+"::"+SS);
-            lmt.val++;
-          }
-      }
-    lmt.val--;
 
-    // END OF REFLECTION INPUT
-    continuelmt = (double)(lmt.val-1);
-    if(DEBUG){
-      if( ilog!=1 ){
-        System.out.println("      #           X          Y         WL" );
-        for( j=0 ; j<lmt.val ; j++ ){
-          System.out.print(format(j,7,0)+" ");
-          for( k=0; k<3 ; k++ )
-            System.out.print(format(angle[j+k*xx.length],11,4));
-          System.out.print(format(xx[j+_xx_offset],9,4)
-                           +format(yy[j+ _yy_offset],9,4)
-                           +format(zz[j+ _zz_offset],9,4));
-          System.out.println();
-        }
-      } else {
-        System.out.println(" "+"\n"+"    #  SEQ       XCM       YCM      WL" );
-        System.out.println( "lmt seq.length="+lmt.val+","+seq.length);
-        for( j=0 ; j<lmt.val ; j++ ){
-          System.out.print((j+1)+" "+(seq[j+_seq_offset])+" ");
-          for( k=0 ; k<3 ; k++ )
-            System.out.print(angle[j+k*xx.length]+" ");
-          System.out.println();
-        }
-      }
+    // set up the Q-vector arrays (xx,yy,zz)
+    for( int i=0;i<length;i++){
+        // copy information about the peak into local variables
+        Peak peak=(Peak)peaks.elementAt(i);
+        angle[i+0]= peak.xcm();
+        angle[i+1*xx.length]=peak.ycm();
+        angle[i+2*xx.length]=peak.wl();
+        seq[i]= (int)peak.seqnum();
+        if( peak.wl() <= .00001) continue;
+
+        //Calculate the Qx,Qy,Qz value for this peak
+        double[] Qvec=peak.getUnrotQ();
+        String SS="";
+        xx[i]=Qvec[0];
+        yy[i]=Qvec[1];
+        zz[i]=Qvec[2];
+        // print out some debug info
+        if(DEBUG)
+          System.out.println("Q vals="+format(Qvec[0],10,4)+","
+                             +format(Qvec[1],10,4)+","+format(Qvec[2],10,4));
+        if(Double.isNaN(xx[i])) SS=SS+"xx";
+        if(Double.isNaN(yy[i])) SS=SS+"yy";
+        if(Double.isNaN(zz[i])) SS=SS+"zz";
+        if( DEBUG && SS.length()>0 ) System.out.println("Laue "+ i+"::"+SS);
     }
 
-    // Manipulates the basis(the first 3 elements of xx,yy,and zz) so
-    // B*Tranps(B) about diagonal
+    // print information about the peaks we are using
     int start=logBuffer.length();
-    for( j=0 ; j<lmt.val ; j++ ){
-      logBuffer.append(format(j+1,5,0)+format(seq[j+_seq_offset],5,0));
-      for( k=0 ; k<3 ; k++ ){
-        if(k!=2){
-          logBuffer.append(format(angle[j+k*xx.length],10,3));
-        }else{
-          logBuffer.append(format(angle[j+k*xx.length],10,4));
-        }
-      }
+    logBuffer.append("    #  SEQ       XCM       YCM      WL\n");
+    for( int j=0 ; j<length ; j++ ){
+      logBuffer.append(format(j+1,5,0)+format(seq[j],5,0));
+      for( int k=0 ; k<3 ; k++ )
+        logBuffer.append(format(angle[j+k*xx.length],10,4));
       logBuffer.append("\n");
     }
     logBuffer.append("\n");
     System.out.print(logBuffer.substring(start));
 
-    abid(lmt,xx,yy,zz);
-    if( errormessage.length()>0)
-      return;
+    // Manipulates the basis(the first 3 elements of xx,yy,and zz) so
+    // B*Tranps(B) about diagonal
+    abid(xx,yy,zz);
 
-    return;
+    // return the error message if necessary
+    if( errormessage.length()>0)
+      return new ErrorString(errormessage);
+    else
+      return null;
   }
 
+  /**
+   * Creates and returns an array that indexes the arrays from
+   * shortest (0th) to longest (nth).
+   */
+  private int[] sortQ(double[] Qx, double[] Qy, double[] Qz){
+    int      length  = Qx.length-3; // -3 b/c a couple are added for
+                                    // new basis vectors
+    // indexing arrays where 0th is the shortest
+    int[]    order   = new int[length+1];
+    double[] Qsq     = new double[length+1];
+    double   thisQsq = 0.;
+
+    // initialize the lengths of the Q
+    for( int i=0 ; i<length ; i++ )
+      Qsq[i] =1.0E9;
+    
+    //Index sort of w, the magnitude of the the peaks, with index l 
+    for( int i=0 ; i<length ; i++ ){
+      // determine the magnitude of the Q-vector
+      thisQsq = Qx[i]*Qx[i] + Qy[i]*Qy[i] + Qz[i]*Qz[i]; // Q dot Q
+      if( DEBUG && thisQsq>=1.0E9)
+        System.out.println("abid Qsq value  is very large");
+      if( Double.isNaN(thisQsq)) thisQsq = .9E9;
+      
+      for( int j=0 ; j<length ; j++ ){
+        if( thisQsq<Qsq[j] ){ // if Qsq is shorter than jth vector
+          for( int k=order.length-1 ; k>j ; k-- ){
+            Qsq[k]   = Qsq[k-1];
+            order[k] = order[k-1];
+          }
+          Qsq[j] = thisQsq;
+          order[j]   = i+1;
+          break;
+        }
+      }
+    }
+
+    return order;
+  }
 
 
   /**
@@ -263,189 +237,165 @@ public class blind {
    * in the first three positions of XX,YY, and ZZ. The other vectors
    * are all moved up d
    */
-  private void abid (intW lmt, double[] xx, double[] yy, double[] zz ) {
-    int _xx_offset=0;
-    int _yy_offset=0;
-    int _zz_offset=0;
-    int i=0,j=0,idum=0,m=0,k=0,Goto=0;
-    double hm=0.0,d=0.0;
-    double [] b= new double[(3) * (3)];
-    int [] ll= new int[(7)];
-    double [] vv= new double[(6)];
-    double [] ya= new double[(lmt.val)];
-    double [] za= new double[(lmt.val)];
-    double [] xa= new double[(lmt.val)];
-    double [] a= new double[(3) * (3)];
-    int [] l=new int[lmt.val+1];
-    double [] w=new double[lmt.val+1];
-    for( i=0 ; i<lmt.val ; i++ ){
-      l[i]=0;
-      w[i]=1.0E9;
+  private void abid (double[] Qx, double[] Qy, double[] Qz ) {
+    int length=Qx.length-3; // -3 b/c a couple are added for new basis vectors
+    double d=0.0;
+    double[][] UB=new double[3][3]; // the ub matrix
+    double [] ya= new double[length];
+    double [] za= new double[length];
+    double [] xa= new double[length];
+    int [] l=sortQ(Qx,Qy,Qz);
+
+    // initialize the sorted vector arrays
+    for( int j=0 ; j<length ; j++ ){ 
+      xa[j] = Qx[l[j]-1];
+      ya[j] = Qy[l[j]-1];
+      za[j] = Qz[l[j]-1];
     }
-
-    //Index sort of w, the magnitude of the the peaks, with index l 
-    for( i=0 ; i<lmt.val ; i++ ){
-      hm = xx[i+_xx_offset]*xx[i+_xx_offset]
-        +yy[i+_yy_offset]*yy[i+_yy_offset]
-        +zz[i+_zz_offset]*zz[i+_zz_offset];
-      if( hm >= 1.0E9)
-        if(DEBUG) System.out.println("abid hm value  is very large");
-      Goto = 0;
-      if( Double.isNaN(hm)) hm = .9E9;
-
-      for( j=0 ; (j<lmt.val)&&(Goto==0) ; j++ ){
-        if( (hm<w[j]) && (Goto==0) ){
-          for( idum=j ; idum<lmt.val ; idum++ ){
-            k=lmt.val+j-idum;
-            w[k] = w[k-1];
-            l[k] = l[k-1];
-          }
-
-          w[j] = hm;
-          l[j] = i+1;
-          Goto = 3;
-        }
-      }
-    }
-
-    for( j=0 ; j<lmt.val ; j++ ){ 
-      xa[j] = xx[l[j]-1+_xx_offset];
-      ya[j] = yy[l[j]-1+_yy_offset];
-      za[j] = zz[l[j]-1+_zz_offset];
-    }
-    k = 3;
-    Goto=6;
 
     //While the proposed basis vectors are coplanar
-    while( Goto==6){
-      Goto=0;
+    int k = 3;
+    while(true){
       k++;
-   
-      if (k > lmt.val)  {
+
+      if (k > length)  {
         int start=logBuffer.length();
         logBuffer.append(" ALL REFLECTIONS COPLANAR-PROGRAM TERMINATING\n");
         System.out.print(logBuffer.substring(start));
-        // 
-        for( i=0 ; i<3 ; i++ ){
-          if(DEBUG){
+        errormessage="ALL REFLECTIONS COPLANAR";
+
+        if(DEBUG){
+          for( int i=0 ; i<3 ; i++ ){
             System.out.println(" "+xa[i]+"    "+ya[i]+"    "+za[i]);
             System.out.println(" D="+d);
           }
         }
         return;
       }
-      for( i=0 ; i<3 ; i++ ){
-        b[i+0*3] = xa[i];
-        b[i+1*3] = ya[i];
-        b[i+2*3] = za[i];
-      }              //  Close for() loop. 
+      for( int i=0 ; i<3 ; i++ ){
+        UB[i][0]=xa[i];
+        UB[i][1]=ya[i];
+        UB[i][2]=za[i];
+      }
 
-      d=mi(b,a);
+      d=LinearAlgebra.determinant(UB);
+      if (Math.abs(d) >= 0.0001) break;
 
       // d is the determinant of the basis vectors if close to zero,
       // then basis are coplanar.  Interchange the kth peak with one
       // of the basis.
-      if (Math.abs(d) < 0.0001)  {
-        if (Math.abs(xa[0]*ya[1]-xa[1]*ya[0]) >= 0.05 
-            || Math.abs(xa[0]*za[1]-xa[1]*za[0]) >= 0.05 
-            || Math.abs(ya[0]*za[1]-ya[1]*za[0]) >= 0.05)  {
-          hm = xa[k-1];
-          xa[k-1] = xa[2];
-          xa[2] = hm;
-          hm = ya[k-1];
-          ya[k-1] = ya[2];
-          ya[2] = hm;
-          hm = za[k-1];
-          za[k-1] = za[2];
-          za[2] = hm;
-          m = l[k-1];
-          l[k-1] = l[2];
-          l[2] = m;
-          Goto = 6;
-        } else  {
-          hm = xa[k-1];
-          xa[k-1] = xa[1];
-          xa[1] = xa[2];
-          xa[2] = hm;
-          hm = ya[(k)- 1];
-          ya[k-1] = ya[1];
-          ya[1] = ya[2];
-          ya[2] = hm;
-          hm = za[k-1];
-          za[k-1] = za[1];
-          za[1] = za[2];
-          za[2] = hm;
-          m = l[k-1];
-          l[k-1] = l[1];
-          l[1] = m;
-          Goto = 6;
-        }
+      int    tempI=0;
+      double tempD=0.0;
+      if (Math.abs(xa[0]*ya[1]-xa[1]*ya[0]) >= 0.05 
+          || Math.abs(xa[0]*za[1]-xa[1]*za[0]) >= 0.05 
+          || Math.abs(ya[0]*za[1]-ya[1]*za[0]) >= 0.05)  {
+        swap(xa,k-1,2);
+        swap(ya,k-1,2);
+        swap(za,k-1,2);
+        swap(l,k-1,2);
+      } else  {
+        swap(xa,k-1,1);
+        swap(xa,1,2);
+        swap(ya,k-1,1);
+        swap(ya,1,2);
+        swap(za,k-1,1);
+        swap(za,1,2);
+        swap(l,k-1,1);
+        swap(l,1,2);
       }
     }
 
     //Manipulate b so that B*transpose(B) about diagonal
-    aarr(b,vv,ll);
+    aarr(UB);
 
-    for (idum = 1; idum <= lmt.val; idum++) {
-      i = lmt.val+1-idum;
-
-
-      xx[i+2+_xx_offset] = xx[i-1+_xx_offset];
-      yy[i+2+_yy_offset] = yy[i-1+_yy_offset];
-      zz[i+2+_zz_offset] = zz[i-1+_zz_offset];
+    // move the Q vectors to the end
+    for( int i=length-1 ; i>=0 ; i--){
+      Qx[i+3] = Qx[i];
+      Qy[i+3] = Qy[i];
+      Qz[i+3] = Qz[i];
     }
 
-    for( i=0 ; i<3 ; i++ ){
-      xx[i + _xx_offset] = b[i + 0*3];
-      yy[i + _yy_offset] = b[i + 1*3];
-      zz[i + _zz_offset] = b[i + 2*3];
+    // copy the orientation matrix into the first elements of the Q vector
+    for( int i=0 ; i<3 ; i++ ){
+      Qx[i] = UB[i][0];
+      Qy[i] = UB[i][1];
+      Qz[i] = UB[i][2];
     }
-    // 
-    lmt.val = lmt.val+3;
 
     return;
+  }
+
+  /**
+   * Swap the values of array at index1 and index2 with each other.
+   */
+  private void swap(double[] array, int index1, int index2){
+    double temp=array[index1];
+    array[index1]=array[index2];
+    array[index2]=temp;
+  }
+
+  /**
+   * Swap the values of array at index1 and index2 with each other.
+   */
+  private void swap(int[] array, int index1, int index2){
+    int temp=array[index1];
+    array[index1]=array[index2];
+    array[index2]=temp;
+  }
+
+  /**
+   * Manipulate basis ab so that ab*transpose(ab) about (integer) diagonal
+   */
+  private void aarr(double[][] ab){
+      int[]    ll = new int[7];
+      double[] vv = new double[6];
+      double [] b= new double[3*3];
+      for( int i=0 ; i<3 ; i++ )
+        for( int j=0 ; j<3 ; j++ )
+          b[i+j*3]=ab[i][j];
+      aarr(b,vv,ll);
+      for( int i=0 ; i<3 ; i++ )
+        for( int j=0 ; j<3 ; j++ )
+          ab[i][j]=b[i+j*3];
+    
   }
 
   /**
    * Manipulate basis ab so that ab*transpose(ab) about (integer) diagonal
    */
   public void aarr (double [] ab, double [] v, int [] l)  {
-    int j=0,m=0,k=0,i=0,kk=0;
+    int m=0;
+    int k=0;
+    int kk=0;
 
-    while(true){ // ADDed for goto 1 at bottom
-      for( j=0 ; j<6 ; j++ ){
-        v[j] = 0.0;
-      }
+    while(true){
+      // set v to zero
+      for( int i=0 ; i<v.length ; i++ )
+        v[i] = 0.0;
 
-      for( j=0 ; j<3 ; j++ ){
+      for( int j=0 ; j<3 ; j++ ){
         m = (j+1)%3;
-        for( i=0 ; i<3 ; i++ ){
+        for( int i=0 ; i<3 ; i++ ){
           v[j]=v[j]+ab[j+i*3]*ab[j+i*3];
           v[j+3]=v[j+3]+ab[j+i*3]*ab[m+i*3];
         }
       }
 
-      for( j=0 ; j<3; j++ ){
-        m = (j+1)%3;
-        if (v[j+3] >= 0.0)  {
-          l[j+0]=(int)(v[j+3]/v[j]+0.498);
-          l[j+3]=(int)(v[j+3]/v[m]+0.498);
-        } else {
-          l[j+0]=(int)(v[j+3]/v[j]-0.498);
-          l[j+3]=(int)(v[j+3]/v[m]-0.498);
-        }
+      for( int i=0 ; i<3; i++ ){
+        m = (i+1)%3;
+        double adder=0.498;
+        if (v[i+3] < 0.0) adder=-1.0*adder;
+        l[i+0]=(int)(v[i+3]/v[i]+adder);
+        l[i+3]=(int)(v[i+3]/v[m]+adder);
       }
 
       l[6] = 0;
 
-      for( j=0 ; j<6 ; j++) {
-        kk = l[j];
-        if (kk < 0)  {
-          kk = -kk;
-        }
-        if ((kk) > l[6])  {
-          l[6] = (kk);
-          k = j+1;
+      for( int i=0 ; i<6 ; i++) {
+        kk = (int)Math.abs(l[i]);
+        if( kk>l[6] ){
+          l[6] = kk;
+          k = i+1;
         }
       }
 
@@ -453,21 +403,21 @@ public class blind {
         return;
 
       if( k>=4 ){
-        for( j=0 ; j<3 ; j++ ){
+        for( int i=0 ; i<3 ; i++ ){
           m = (k-3)%3;
-          ab[(k-4)+j*3]=ab[(k-4)+j*3]-l[k-1]*ab[m+j*3];
+          ab[(k-4)+i*3]=ab[(k-4)+i*3]-l[k-1]*ab[m+i*3];
         }
       }else{
-        for( j=0 ; j<3 ; j++ ){
+        for( int i=0 ; i<3 ; i++ ){
           m = k%3;
-          ab[m+j*3]=ab[m+j*3]-l[k-1]*ab[k-1+j*3];
+          ab[m+i*3]=ab[m+i*3]-l[k-1]*ab[k-1+i*3];
         }
       }
     }
   }
 
   /**
-   * This method does mutate both parameters
+   * Determinant of ad. This method does mutate both parameters.
    */
   public double mi(double [] ad, double [] aid){
     int i=0,j=0,m=0,n=0,l=0,k=0;
@@ -519,14 +469,13 @@ public class blind {
   /**
    *
    */
-  public void bias (int lmt, double [] xx, double [] yy, double [] zz,
-                    double [] b, double mw, double den, doubleW dd,
-                    double dj, intW mj, int [] seq, int expnum, int hstnum){
-    int _xx_offset =0;
-    int _yy_offset =0;
-    int _zz_offset= 0;
-    int _b_offset = 0;
-    int _seq_offset =0;
+  public void bias (int lmt, double[] xx, double[] yy, double[] zz, int[] seq){
+    double mw=0;
+    double den=3;
+    double dj=4.0;
+    intW mj=new intW(0);
+    doubleW dd=new doubleW(.08);
+    double[] b=new double[9];
     double [] hh= new double[3 * lmt];
     double [] a = new double[3 * 3];
     double d= 0.0;
@@ -546,11 +495,10 @@ public class blind {
     Goto = 1;
     while( Goto==1){
       Goto=0;
-      Goto = 0;
       for( j=0 ; j<3 ; j++ ){
-        b[0+j*3+ _b_offset] = xx[j+ _xx_offset];
-        b[1+j*3+ _b_offset] = yy[j+ _yy_offset];
-        b[2+j*3+ _b_offset] = zz[j+ _zz_offset];
+        b[0+j*3] = xx[j];
+        b[1+j*3] = yy[j];
+        b[2+j*3] = zz[j];
       }
 
       d=mi(b,a);
@@ -558,8 +506,8 @@ public class blind {
       j = 0;
       for( j=0 ; j<3 ; j++ ){
         for( i=0 ; i<lmt ; i++ ) {
-          hh[j+i*3] = a[j+0*3]*xx[i+_xx_offset]
-            +a[j+1*3]*yy[i+_yy_offset]+a[j+2*3]*zz[i+ _zz_offset];
+          hh[j+i*3] = a[j+0*3]*xx[i]
+            +a[j+1*3]*yy[i]+a[j+2*3]*zz[i];
         }
       }
       mm = false;
@@ -605,7 +553,7 @@ public class blind {
     logBuffer.append(" ERROR LIMIT="+format(dd.val,5,2)+"\n\n");
     logBuffer.append(" REDUCED CELL\n\n");
     System.out.print(logBuffer.substring(start));
-    lst(hh,xx,yy,zz,a,jh,mw,b,d,lmt,seq,den,expnum,hstnum);
+    lst(hh,xx,yy,zz,a,jh,mw,b,d,lmt,seq,den);
     // 
     mj.val = -iz;
     return;
@@ -866,9 +814,6 @@ public class blind {
   }
 
   public void aair (double [] b, double [] a )  {
-    int _b_offset = 0;
-    int _a_offset = 0;
-
     double [] ab= new double[(3) * (3)];
     double [] v= new double[(6)];
     double d= 0.0;
@@ -915,9 +860,9 @@ public class blind {
                          +format(w[2],10,4)+","+format(w[3],10,4));
     }
     for( i=0 ; i<3 ; i++ ){
-      a[2+i*3+ _a_offset] = ab[l[0]-1+i*3];
-      a[0+i*3+ _a_offset] = ab[l[1]-1+i*3];
-      a[1+i*3+ _a_offset] = ab[l[2]-1+i*3];
+      a[2+i*3] = ab[l[0]-1+i*3];
+      a[0+i*3] = ab[l[1]-1+i*3];
+      a[1+i*3] = ab[l[2]-1+i*3];
     }
     printB("aft 3, A=",a);
 
@@ -926,7 +871,7 @@ public class blind {
     v[5] = w[3];
     if (v[l[0]+l[1]] > 0.0)  {
       for( i=0 ; i<3 ; i++ ){
-        a[0+i*3+ _a_offset] = -a[0+i*3+ _a_offset];
+        a[0+i*3] = -a[0+i*3];
         v[l[0]+l[1]] = -v[l[0]+l[1]];
         v[l[1]+l[2]] = -v[l[1]+l[2]];
       }
@@ -934,7 +879,7 @@ public class blind {
 
     if (v[l[2]+l[0]] > 0.0)  {
         for( i=0 ; i<3 ; i++ ){
-          a[1+i*3+ _a_offset] = -a[1+i*3+ _a_offset];
+          a[1+i*3] = -a[1+i*3];
           v[l[2]+l[0]] = -v[l[2]+l[0]];
           v[l[1]+l[2]] = -v[l[1]+l[2]];
       }
@@ -950,8 +895,8 @@ public class blind {
 
     for( i=0 ; i<3 ; i++ ){
       for( j=0 ; j<3 ; j++ ){
-        a[i+j*3+ _a_offset] = -a[i+j*3+ _a_offset];
-        b[i+j*3+ _b_offset] = -b[i+j*3+ _b_offset];
+        a[i+j*3] = -a[i+j*3];
+        b[i+j*3] = -b[i+j*3];
       }
     }
   }
@@ -961,11 +906,6 @@ public class blind {
    */
   public void aaio (double [] xx, double [] yy, double [] zz, 
                            double [] b, double [] hh, int lmt)  {
-    int _xx_offset=0;
-    int _yy_offset=0;
-    int _zz_offset=0;
-    int _b_offset=0;
-    int _hh_offset=0;
     double [] a= new double[(3) * (3)];
     double [] ai= new double[(3) * (3)];
     double d= 0.0;
@@ -979,19 +919,18 @@ public class blind {
     for( i=0 ; i<3 ; i++ ){
       for( j=0 ; j<3 ; j++ ){
         a[i+j*3] = 0.0;
-        b[i+j*3+ _b_offset] = 0.0;
+        b[i+j*3] = 0.0;
         for( k=0 ; k<lmt ; k++ ){
-          b[i+j*3+_b_offset]=
-            b[i+j*3+_b_offset]+hh[i+k*3+_hh_offset]*hh[j+k*3+_hh_offset];
+          b[i+j*3]=b[i+j*3]+hh[i+k*3]*hh[j+k*3];
         }
       }
     }
 
     for( i=0 ; i<3 ; i++ ){
       for( k=0 ; k<lmt ; k++ ){
-        a[0+i*3]=a[0+i*3]+xx[k+_xx_offset]*hh[i+k*3+_hh_offset];
-        a[1+i*3]=a[1+i*3]+yy[k+_yy_offset]*hh[i+k*3+_hh_offset];
-        a[2+i*3]=a[2+i*3]+zz[k+_zz_offset]*hh[i+k*3+_hh_offset];
+        a[0+i*3]=a[0+i*3]+xx[k]*hh[i+k*3];
+        a[1+i*3]=a[1+i*3]+yy[k]*hh[i+k*3];
+        a[2+i*3]=a[2+i*3]+zz[k]*hh[i+k*3];
       }
     }
 
@@ -999,9 +938,9 @@ public class blind {
 
     for( i=0 ; i<3 ; i++ ){
       for( j=0 ; j<3 ; j++ ){
-        b[i+j*3+_b_offset] = 0.0;
+        b[i+j*3] = 0.0;
         for( k=0 ; k<3 ; k++ ){
-            b[i+j*3+_b_offset]=b[i+j*3+_b_offset]+a[i+k*3]*ai[k+j*3];
+            b[i+j*3]=b[i+j*3]+a[i+k*3]*ai[k+j*3];
         }
       }
     }
@@ -1014,12 +953,6 @@ public class blind {
    */
   public boolean thh (double[] hh, double[] xx, double[] yy, double[] zz, 
                           double [] a,  int [] jh, double dd, int lmt){
-    int xx_offset=0;
-    int yy_offset=0;
-    int zz_offset=0;
-    int jh_offset=0;
-    int hh_offset=0;
-    int a_offset=0;
     int i= 0;
     int j= 0;
     int lb= 0;
@@ -1027,17 +960,16 @@ public class blind {
 
     for( i=3 ; i<lmt ; i++ ){
       for( j=0 ; j<3 ; j++ ){
-        hh[j+i*3+hh_offset]=a[j+0*3+a_offset]*xx[i+xx_offset]
-          +a[j+1*3+a_offset]*yy[i+yy_offset]+a[j+2*3+a_offset]*zz[i+zz_offset];
-        if (hh[j+i*3+hh_offset] >= 0.0)  {
-          lb = (int)(hh[j+i*3+hh_offset]+0.5);
+        hh[j+i*3]=a[j+0*3]*xx[i]+a[j+1*3]*yy[i]+a[j+2*3]*zz[i];
+        if (hh[j+i*3] >= 0.0)  {
+          lb = (int)(hh[j+i*3]+0.5);
         } else {
-          lb = (int)(hh[j+i*3+hh_offset]-0.5);
+          lb = (int)(hh[j+i*3]-0.5);
         }
-        if (Math.abs(hh[j+i*3+hh_offset]-lb) > dd)  {
+        if (Math.abs(hh[j+i*3]-lb) > dd)  {
           mm = true;
         }
-        jh[j+i*3+jh_offset] = lb;
+        jh[j+i*3] = lb;
       }
     }
 
@@ -1049,7 +981,7 @@ public class blind {
    */
   public void lst( double[] HH, double[] XX,double[] YY, double[] ZZ,
                    double[] A, int[] JH, double MW, double[] B,double D,
-                   int LMT,int[] SEQ, double DEN, int EXPNUM, int HSTNUM){
+                   int LMT,int[] SEQ, double DEN){
     double[] AI = new double[9];
     double[] abc=new double[7];
 
@@ -1258,16 +1190,15 @@ public class blind {
     xx = new double[V.size()+3];
     yy = new double[V.size()+3];
     zz = new double[V.size()+3];
-    intW LMT = new intW(0);
      
     blind BLIND=new blind();
 
-    BLIND.blaue( V,xx,yy,zz,LMT,seq);
-    double[] b= new double[9];
-    doubleW dd= new doubleW(.08);
-    intW mj= new intW(0);
-    
-    BLIND.bias(V.size()+3,xx,yy,zz,b,0,3,dd,4.0,mj,seq,123,0);
+    ErrorString error=BLIND.blaue( V,xx,yy,zz,seq);
+    if(error!=null){
+      System.out.println(error.toString());
+      System.exit(-1);
+    }
+    BLIND.bias(V.size()+3,xx,yy,zz,seq);
   }
 
   private static void printB(String label, Object b){
