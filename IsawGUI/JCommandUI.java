@@ -2,6 +2,11 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.14  2001/08/14 19:31:12  chatterjee
+ * Made use of class Command.JPanelWithToolbar  that will
+ * add  buttons at the top of a JTabbed component to exit or save the
+ * tabbed panes.
+ *
  * Revision 1.13  2001/08/09 19:04:28  rmikk
  * Removed Detector Info tab from the Command tabbed pane
  *
@@ -41,7 +46,7 @@ import java.util.*;
 import IPNS.Runfile.*;
 import javax.swing.border.*;
 import Command.*;
-
+import java.awt.event.*;
 
 /**
  * The class that displays various JTabbed panes containing 
@@ -92,7 +97,8 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
 
         Runtime rt = Runtime.getRuntime();         
      textArea = new JTextField(
-       "Build Date: "+ SharedData.BUILD_DATE + "\n" +
+       "Build Date: " + SharedData.BUILD_DATE + "\n" +
+
        "Total JVM Memory in bytes = "+ rt.totalMemory() + "\n" +
        "Free JVM Memory in bytes = "+ rt.freeMemory() + "\n" +
        "\n" +
@@ -144,7 +150,13 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
   public void setTab( String tab_title, JPanel obj )
   {
 //    jtp.addTab(tab_title, obj);
-    jtp.insertTab( tab_title, null, obj, null, 0 );
+    //jtp.insertTab( tab_title, null, obj, null, 0 );
+    jtp.insertTab( tab_title, null, 
+                  new JPanelwithToolBar( "EXIT",
+                   new MyHandler( obj )                      
+                   ,obj)
+                 , null, 0 );
+
   }
 
 
@@ -154,12 +166,26 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
   public void setTab( String tab_title, JScrollPane obj )
   {
 //    jtp.addTab(tab_title, obj);
-    jtp.insertTab( tab_title, null, obj, null, 0 );
+    jtp.insertTab( tab_title, null, 
+                  new JPanelwithToolBar( "EXIT",
+                   new MyHandler( obj )                      
+                   ,obj)
+                 , null, 0 );
   }
 
+class MyHandler implements ActionListener
+   {JComponent obj;
+    public MyHandler( JComponent obj )
+       {this.obj = obj;
+       }
+    public void actionPerformed(ActionEvent e)
+       { obj = null;
+         System.gc();
+         jtp.remove( jtp.getSelectedIndex()); 
+      }
+ }
 
-
-  public void showLog(DataSet ds)
+ public void showLog(DataSet ds)
   {
   if(ds == current_ds)    //Only draw the log for a different dataset.
    return;
