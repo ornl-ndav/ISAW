@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/07/03 14:13:02  bouzekc
+ * Added all missing javadoc comments and formatted existing
+ * comments.
+ *
  * Revision 1.1  2003/07/02 18:52:43  bouzekc
  * Added to CVS.
  *
@@ -42,26 +46,26 @@ import DataSetTools.util.FilenameUtil;
 
 
 /**
- * The JyScriptForm class is an extension of OperatorForm designed to work
- * with Jython scripts by using a Jython script to create an Operator and then
- * a Form.
+ * The JyScriptForm class is an extension of OperatorForm designed to work with
+ * Jython scripts by using a Jython script to create an Operator and then a
+ * Form.
  */
 public class JyScriptForm extends OperatorForm {
+  //~ Constructors *************************************************************
+
   /**
-   *  Construct an JyScriptForm with the title "JyScript Form."
-   *
+   * Construct an JyScriptForm with the title "JyScript Form."
    */
   public JyScriptForm(  ) {
     super( "Jython Script Form" );
   }
 
   /**
-   *  Construct a JyScriptForm with the given filename.  This uses
-   *  PyOperatorFactory to create an Operator and allows the use of that
-   *  Operator for the getResult() method.
+   * Construct a JyScriptForm with the given filename.  This uses
+   * PyOperatorFactory to create an Operator and allows the use of that
+   * Operator for the getResult() method.
    *
-   *  @param  filename           The Jython script file name to use.
-   *
+   * @param filename The Jython script file name to use.
    */
   public JyScriptForm( String filename ) {
     //must have super() call be the first, but we want only the Script
@@ -76,18 +80,13 @@ public class JyScriptForm extends OperatorForm {
   }
 
   /**
-   *  Construct a JyScriptForm with the given Jython script file name and
-   *  result parameter type.
+   * Construct a JyScriptForm with the given Jython script file name and result
+   * parameter type.
    *
-   *  @param  filename        The Jython script file name to use
-   *
-   *  @param  type            The IParameterGUI type of the result
-   *                          parameter.  e.g. for a LoadFilePG,
-   *                          use "LoadFile"
-   *
-   *  @param  name            The name of the result parameter.
-   *                          e.g. "log file"
-   *
+   * @param filename The Jython script file name to use
+   * @param type The IParameterGUI type of the result parameter.  e.g. for a
+   *        LoadFilePG, use "LoadFile"
+   * @param name The name of the result parameter. e.g. "log file"
    */
   public JyScriptForm( String filename, String type, String name ) {
     this( filename );
@@ -98,23 +97,16 @@ public class JyScriptForm extends OperatorForm {
   }
 
   /**
-   *  Construct a JyScriptForm with the given Jython script file name and
-   *  result parameter type. This constructor allows setting of the
-   *  constant parameters.
+   * Construct a JyScriptForm with the given Jython script file name and result
+   * parameter type. This constructor allows setting of the constant
+   * parameters.
    *
-   *  @param  filename        The Jython script file name to use for this form
-   *
-   *  @param  type            The IParameterGUI type of the result
-   *                          parameter.  e.g. for a LoadFilePG,
-   *                          use "LoadFile"
-   *
-   *  @param  name            The name of the result parameter.
-   *                          e.g. "log file"
-   *
-   *  @param indices          The array of indices that represent constant
-   *                          parameters for this Form.
-   *
-   *
+   * @param filename The Jython script file name to use for this form
+   * @param type The IParameterGUI type of the result parameter.  e.g. for a
+   *        LoadFilePG, use "LoadFile"
+   * @param name The name of the result parameter. e.g. "log file"
+   * @param indices The array of indices that represent constant parameters for
+   *        this Form.
    */
   public JyScriptForm( 
     String filename, String type, String name, int[] indices ) {
@@ -126,12 +118,14 @@ public class JyScriptForm extends OperatorForm {
     setDefaultParameters(  );
   }
 
+  //~ Methods ******************************************************************
+
   /**
-   *  Testbed.
+   * Testbed.
    */
   public static void main( String[] args ) {
     JyScriptForm form = new JyScriptForm( 
-        "/IPNShome/bouzekc/ISAW/Scripts/find_multiple_peaks.iss" );
+        "/IPNShome/bouzekc/JythonScripts/find_multiple_peaks2.py" );
 
     System.out.println( "The Script title is " + form.getTitle(  ) );
   }
