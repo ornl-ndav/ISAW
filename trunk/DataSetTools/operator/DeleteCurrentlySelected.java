@@ -31,6 +31,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.6  2001/07/16 22:48:21  dennis
+ *  Added log message listing the group IDs that were deleted
+ *  (or were left) if there is a non-trivial selected set.
+ *
  *  Revision 1.5  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -164,7 +168,8 @@ public class DeleteCurrentlySelected  extends    DS_EditList
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, DelSel
+   * @return	the command name to be used with script processor: 
+   *            in this case, DelSel
    */
    public String getCommand()
    {
@@ -203,13 +208,32 @@ public class DeleteCurrentlySelected  extends    DS_EditList
     if ( make_new_ds )               // or a clone of ds
       new_ds = (DataSet)ds.clone();
 
+    int selected_indices[] = ds.getSelectedIndices();
+    int selected_groups[] = new int[selected_indices.length];
+
+    int n_selected = selected_indices.length;
+    for ( int i = 0; i < n_selected; i++ )
+      selected_groups[i] = ds.getData_entry(selected_indices[i]).getGroup_ID();
+
+    if ( n_selected > 0 )
+      arrayUtil.sort( selected_groups );
+      
+    String selected = IntList.ToString( selected_groups );
+
     new_ds.removeSelected( status );
     new_ds.clearSelections();
 
     if ( status )
-      new_ds.addLog_entry( "Deleted selected Data blocks" );
+      if ( n_selected > 0 )
+        new_ds.addLog_entry( "Deleted selected Data, IDs: " + selected );
+      else
+        new_ds.addLog_entry( "Deleted selected Data, (none selected)");
     else
-      new_ds.addLog_entry( "Deleted un-selected Data blocks" );
+      if ( n_selected > 0 )
+        new_ds.addLog_entry( "Deleted un-selected Data, leaving IDs: " +
+                              selected );
+      else
+        new_ds.addLog_entry( "Deleted un-selected Data blocks, leaving none" );
 
     if ( make_new_ds )                           
       return new_ds;
