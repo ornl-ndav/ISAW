@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/09/15 18:27:16  dennis
+ *  Added test for this.vals != null in clone(). (Ruth Mikkelson)
+ *
  *  Revision 1.8  2003/09/09 23:06:30  bouzekc
  *  Implemented validateSelf().
  *
@@ -219,7 +222,10 @@ public class SampleDataSetPG extends DataSetPG{
      */
     public Object clone(){
         SampleDataSetPG pg=new SampleDataSetPG(this.name,this.value,this.valid);
-        pg.vals=(Vector)this.vals.clone();
+        if( this.vals != null)
+          pg.vals=(Vector)this.vals.clone();
+        else 
+          pg.vals = null;
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
         return pg;
