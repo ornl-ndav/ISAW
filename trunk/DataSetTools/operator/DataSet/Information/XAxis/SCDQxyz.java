@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/01/15 20:23:53  dennis
+ * Changed to use SegmentInfo and SegInfoListAttribute
+ *
  * Revision 1.6  2003/01/14 19:52:57  dennis
  * Added getDocumentation() and basic main test program.(Chris Bouzek)
  *
@@ -233,11 +236,11 @@ public class SCDQxyz extends  XAxisInformationOp
      Q[2]=x; // time is the time no matter what
      if(calib!=null){ // use the SCD calibration to get to real space
          // set up the initial position
-         DetInfoListAttribute detI=
-             (DetInfoListAttribute)d.getAttribute(Attribute.DETECTOR_INFO_LIST);
-         DetectorInfo det=((DetectorInfo[])detI.getValue())[0];
-         Q[0]=det.getColumn();
-         Q[1]=det.getRow();
+         SegInfoListAttribute segI=
+             (SegInfoListAttribute)d.getAttribute(Attribute.SEGMENT_INFO_LIST);
+         SegmentInfo seg=((SegmentInfo[])segI.getValue())[0];
+         Q[0]=seg.getColumn();
+         Q[1]=seg.getRow();
          
          // convert to real-space, the 100 is to convert from cm to m
          Q[0]=(calib[1]*(Q[0]-0.5f)+calib[3])/100f;
