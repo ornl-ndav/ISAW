@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.44  2003/11/25 03:02:33  bouzekc
+ * Now only tries to clone the Label if it has been initialized.
+ *
  * Revision 1.43  2003/11/23 02:12:18  bouzekc
  * Now properly clones the label.
  *
@@ -365,7 +368,6 @@ public abstract class VectorPG extends ParameterGUI
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );
-      pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
 
       ParameterGUI internalParam = this.getParam(  );
 
@@ -375,6 +377,7 @@ public abstract class VectorPG extends ParameterGUI
 
       if( this.getInitialized(  ) ) {
         pg.initGUI( new Vector(  ) );
+        pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
       }
 
       if( getPropListeners(  ) != null ) {

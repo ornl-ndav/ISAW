@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2003/11/25 03:02:32  bouzekc
+ *  Now only tries to clone the Label if it has been initialized.
+ *
  *  Revision 1.30  2003/11/23 02:12:17  bouzekc
  *  Now properly clones the label.
  *
@@ -210,10 +213,10 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
         pg.setDrawValid( this.getDrawValid(  ) );
         pg.setValid( this.getValid(  ) );
         pg.filter_vector = this.filter_vector;
-        pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
 
         if( this.getInitialized() ) {
           pg.initGUI( null );
+          pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
         }
 
         if( getPropListeners(  ) != null ) {

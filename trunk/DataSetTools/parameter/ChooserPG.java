@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.21  2003/11/25 03:02:32  bouzekc
+ *  Now only tries to clone the Label if it has been initialized.
+ *
  *  Revision 1.20  2003/11/23 02:12:17  bouzekc
  *  Now properly clones the label.
  *
@@ -265,7 +268,6 @@ abstract public class ChooserPG extends ParameterGUI{
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );
-      pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
 
       if((this.vals) == null)
         pg.vals = null;
@@ -274,6 +276,7 @@ abstract public class ChooserPG extends ParameterGUI{
 
       if( this.getInitialized() ) {
         pg.initGUI( new Vector(  ) );
+        pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
       }
 
       if( this.getPropListeners(  ) != null ) {

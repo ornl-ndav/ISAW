@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2003/11/25 03:02:32  bouzekc
+ *  Now only tries to clone the Label if it has been initialized.
+ *
  *  Revision 1.26  2003/11/23 02:12:18  bouzekc
  *  Now properly clones the label.
  *
@@ -376,7 +379,6 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );
-      pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
 
       if( radioChoices != null ) {
         pg.radioChoices = ( Hashtable )radioChoices.clone(  );
@@ -384,6 +386,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
       if( this.getInitialized(  ) ) {
         pg.initGUI( null );
+        pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
       }
 
       if( getPropListeners(  ) != null ) {
