@@ -1,26 +1,30 @@
 /*
- * @(#)DataSetSort.java   0.2  99/07/28   Dennis Mikkelson
- *                             99/08/16   Added constructor to allow
- *                                        calling operator directly
+ * @(#)DeleteCurrentlySelected.java   0.1  2000/03/16   Dennis Mikkelson
  *             
  * ---------------------------------------------------------------------------
  *  $Log$
- *  Revision 1.4  2000/07/10 22:36:00  dennis
+ *  Revision 1.1  2000/07/10 22:36:03  dennis
  *  July 10, 2000 version... many changes
  *
  *  Revision 1.9  2000/06/09 16:12:35  dennis
  *  Added getCommand() method to return the abbreviated command string for
  *  this operator
  *
- *  Revision 1.8  2000/06/08 15:25:59  dennis
- *  Changed type casting of attribute names from (SpecialString) to
- *  (AttributeNameString).
+ *  Revision 1.8  2000/06/08 15:25:10  dennis
+ *  hanged order of parameters to be more consistent with other operators.
  *
- *  Revision 1.7  2000/05/16 15:36:34  dennis
+ *  Revision 1.7  2000/05/25 19:03:38  dennis
+ *  Fixed interpretation of "Keep selected data".
+ *
+ *  Revision 1.6  2000/05/16 15:36:34  dennis
  *  Fixed clone() method to also copy the parameter values from
  *  the current operator.
  *
- *  Revision 1.6  2000/05/11 16:41:28  dennis
+ *  Revision 1.5  2000/05/15 21:43:45  dennis
+ *  now uses constant Parameter.NUM_BINS rather than the string
+ *  "Number of Bins"
+ *
+ *  Revision 1.4  2000/05/11 16:41:28  dennis
  *  Added RCS logging
  *
  *
@@ -30,15 +34,16 @@ package DataSetTools.operator;
 
 import  java.io.*;
 import  java.util.Vector;
-import  DataSetTools.util.*;
 import  DataSetTools.dataset.*;
+import  DataSetTools.util.*;
 
 /**
-  * This operator sorts a DataSet based on an attribute of the Data entries.
+  *  Remove Data blocks that are marked as selected, or that are not marked
+  *  as selected, depending on the paramters. 
   */
 
-public class DataSetSort  extends    DataSetOperator 
-                          implements Serializable
+public class DeleteCurrentlySelected  extends    DataSetOperator 
+                                       implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
@@ -49,9 +54,9 @@ public class DataSetSort  extends    DataSetOperator
    * to apply the operator to the DataSet this operator was added to.
    */
 
-  public DataSetSort( )
+  public DeleteCurrentlySelected( )
   {
-    super( "Sort on ONE group attribute" );
+    super( "Delete currently selected Data blocks" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -61,33 +66,31 @@ public class DataSetSort  extends    DataSetOperator
    *  by calling getResult().
    *
    *  @param  ds          The DataSet to which the operation is applied
-   *  @param  attr_name   The name of that attribute to be used for the
-   *                      sort criterion
-   *  @param  increasing  Flag that indicates whether the sort should put
-   *                      the Data blocks in increasing or decreasing order
-   *                      based on the specified attribute
-   *  @param  make_new_ds Flag that determines whether the sort creates a
-   *                      new DataSet and returns the new DataSet as a value,
-   *                      or just does the sort "in place" and just returns
-   *                      a message indicating the sort was done.
+   *
+   *  @param  status      Flag that determines whether the selected or 
+   *                      un-selected Data blocks are deleted.  
+   *                      If status==true, the selected blocks are deleted.
+   *                      If status==false, the un-selected blocks are deleted.
+   *
+   *  @param  make_new_ds Flag that determines whether removing the Data
+   *                      blocks makes a new DataSet and returns the new 
+   *                      DataSet as a value, or just removes the selected
+   *                      blocks from the current DataSet and returns a 
+   *                      message indicating that the remove operation was
+   *                      done.
    */
 
-  public DataSetSort( DataSet   ds,
-                      String    attr_name,
-                      boolean   increasing,
-                      boolean   make_new_ds   )
+  public DeleteCurrentlySelected( DataSet  ds,
+                                  boolean  status,
+                                  boolean  make_new_ds )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
-
     Parameter parameter = getParameter( 0 );
-    parameter.setValue( new AttributeNameString(attr_name) );
+    parameter.setValue( new Boolean( status ) );
 
     parameter = getParameter( 1 );
-    parameter.setValue( new Boolean( increasing ) );
-
-    parameter = getParameter( 2 );
     parameter.setValue( new Boolean( make_new_ds ) );
 
     setDataSet( ds );               // record reference to the DataSet that
@@ -101,7 +104,7 @@ public class DataSetSort  extends    DataSetOperator
    */
    public String getCommand()
    {
-     return "Sort";
+     return "DelSel";
    }
 
 
@@ -113,14 +116,11 @@ public class DataSetSort  extends    DataSetOperator
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter("Group Attribute to Sort on",
-                               new AttributeNameString(Attribute.RAW_ANGLE) );
+    Parameter parameter = new Parameter("Delete (or keep) selected groups?",
+                               new Boolean(true) );
     addParameter( parameter );
 
-    parameter = new Parameter("Sort in Increasing Order?", new Boolean(true) );
-    addParameter( parameter );
-
-    parameter = new Parameter("Create new DataSet?", new Boolean(false) );
+    parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
     addParameter( parameter );
   }
 
@@ -130,10 +130,8 @@ public class DataSetSort  extends    DataSetOperator
   public Object getResult()
   {                                  // get the parameters
 
-    String attr_name = 
-              ((AttributeNameString)getParameter(0).getValue()).toString();
-    boolean increasing  = ((Boolean)getParameter(1).getValue()).booleanValue();
-    boolean make_new_ds = ((Boolean)getParameter(2).getValue()).booleanValue();
+    boolean status      = ((Boolean)getParameter(0).getValue()).booleanValue();
+    boolean make_new_ds = ((Boolean)getParameter(1).getValue()).booleanValue();
 
     DataSet ds     = this.getDataSet();
 
@@ -141,37 +139,32 @@ public class DataSetSort  extends    DataSetOperator
     if ( make_new_ds )               // or a clone of ds
       new_ds = (DataSet)ds.clone();
 
+    new_ds.removeSelected( status );
+    new_ds.clearSelections();
 
-    if ( new_ds.Sort(attr_name, increasing) )
-    {                                          // if sort worked ok, return
-                                               // new_ds, or message string
-      new_ds.addLog_entry( "Sorted by " + attr_name );
-      if ( make_new_ds )                           
-        return new_ds;
-      else
-      {
-        new_ds.notifyIObservers( IObserver.DATA_REORDERED );
-        return new String("DataSet sorted");
-      }                           
-    }
+    if ( status )
+      new_ds.addLog_entry( "Deleted selected Data blocks" );
     else
-      {
-        ErrorString message = new ErrorString(
-                           "ERROR: Sort failed... no attribute: " + attr_name );
-        System.out.println( message );
-        return message;
-      }
+      new_ds.addLog_entry( "Deleted un-selected Data blocks" );
+
+    if ( make_new_ds )                           
+      return new_ds;
+    else
+    {
+      new_ds.notifyIObservers( IObserver.DATA_DELETED );
+      return new String("Specified Data blocks REMOVED");
+    }                           
   }  
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current DataSetSort Operator.  The list of 
+   * Get a copy of the current DeleteCurrentlySelected Operator.  The list of 
    * parameters and the reference to the DataSet to which it applies are 
    * also copied.
    */
   public Object clone()
   {
-    DataSetSort new_op    = new DataSetSort( );
+    DeleteCurrentlySelected new_op = new DeleteCurrentlySelected( );
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );

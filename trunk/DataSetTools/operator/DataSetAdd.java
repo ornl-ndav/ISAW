@@ -6,11 +6,34 @@
  * This operator adds two DataSets by adding the corresponding Data "blocks" in
  * the DataSets.
  *
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.3  2000/07/10 22:35:49  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.8  2000/06/14 21:21:54  dennis
+ *  getResult() method now calls DSOpsImplementation.DoDSBinaryOp( this )
+ *  so that add, subtract, multiply and divide can all share the same
+ *  basic implemention.
+ *
+ *  Revision 1.7  2000/06/09 16:12:35  dennis
+ *  Added getCommand() method to return the abbreviated command string for
+ *  this operator
+ *
+ *  Revision 1.6  2000/05/16 15:36:34  dennis
+ *  Fixed clone() method to also copy the parameter values from
+ *  the current operator.
+ *
+ *  Revision 1.5  2000/05/11 16:41:28  dennis
+ *  Added RCS logging
+ *
+ *
  */
 
 package DataSetTools.operator;
 
 import  java.io.*;
+import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 
@@ -42,10 +65,6 @@ public class DataSetAdd extends    DataSetOperator
   public DataSetAdd( )
   {
     super( "Add a DataSet" );
-
-    Parameter parameter = new Parameter( "DataSet to Add", 
-                              new DataSet("DataSetToAdd", "Empty DataSet") );
-    addParameter( parameter );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -56,10 +75,15 @@ public class DataSetAdd extends    DataSetOperator
    *
    *  @param  ds          The DataSet to which the operation is applied
    *  @parm   ds_to_add   The DataSet to be added to DataSet ds.
+   *  @param  make_new_ds Flag that determines whether a new DataSet is
+   *                      constructed, or the Data blocks of the second 
+   *                      DataSet are just added to the Data blocks of the
+   *                      first DataSet.
    */
 
   public DataSetAdd( DataSet    ds,
-                     DataSet    ds_to_add )
+                     DataSet    ds_to_add,
+                     boolean    make_new_ds )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -68,56 +92,45 @@ public class DataSetAdd extends    DataSetOperator
     Parameter parameter = getParameter( 0 );
     parameter.setValue( ds_to_add );
 
+    parameter = getParameter( 1 );
+    parameter.setValue( new Boolean( make_new_ds ) );
+
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
+  }
+
+  /* ---------------------------- getCommand ------------------------------- */
+  /**
+   * Returns the abbreviated command string for this operator.
+   */
+   public String getCommand()
+   {
+     return "Add";
+   }
+
+
+ /* -------------------------- setDefaultParmeters ------------------------- */
+ /**
+  *  Set the parameters to default values.
+  */
+  public void setDefaultParameters()
+  {
+    parameters = new Vector();  // must do this to clear any old parameters
+
+    Parameter parameter = new Parameter( "DataSet to Add",
+                              new DataSet("DataSetToAdd", "Empty DataSet") );
+    addParameter( parameter );
+
+    parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
+    addParameter( parameter );
   }
 
 
   /* ---------------------------- getResult ------------------------------- */
 
-                                     // Get the second DataSet from the 
-                                     // parameter list and add corresponding
-                                     // Data objects to Data objects from the
-                                     // current DataSet.
   public Object getResult()
-  {                                  // get the DataSet to add 
-    DataSet ds_to_add = (DataSet)(getParameter(0).getValue());
-
-                                     // get the current data set
-    DataSet ds = this.getDataSet();
-
-    if ( !ds.SameUnits( ds_to_add ) )// DataSets are NOT COMPATIBLE TO COMBINE
-      {
-        ErrorString message = new ErrorString(
-                           "ERROR: DataSets have different units" );
-        System.out.println( message );
-        return message;
-      }
-                                     // construct a new data set with the same
-                                     // title, units, and operations as the
-                                     // current DataSet, ds
-    DataSet new_ds = ds.empty_clone(); 
-    new_ds.addLog_entry( "Added " + ds_to_add );
-    new_ds.CombineAttributeList( ds_to_add );
-                                            // do the operation
-    int num_data = ds.getNum_entries();
-    Data data,
-         add_data,
-         new_data;
-    for ( int i = 0; i < num_data; i++ )
-    {
-      data = ds.getData_entry( i );        // get reference to the data entry
-
-      add_data = ds_to_add.getData_entry_with_id( data.getGroup_ID() );
- 
-      if ( add_data != null )              // there is a corresponding entry
-      {                                    // to try to add
-        new_data = data.add( add_data );  
-        if ( new_data != null )            // if they could be added
-          new_ds.addData_entry( new_data );      
-      }
-    }
-    return new_ds;
+  {       
+    return DSOpsImplementation.DoDSBinaryOp( this );
   }  
 
   /* ------------------------------ clone ------------------------------- */
@@ -131,6 +144,7 @@ public class DataSetAdd extends    DataSetOperator
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
+    new_op.CopyParametersFrom( this );
 
     return new_op;
   }

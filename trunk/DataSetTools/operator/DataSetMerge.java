@@ -6,11 +6,30 @@
  * This operator merges two DataSets by putting a copy of all spectra from
  * both DataSets into a new DataSet.  This will only be done if the X and Y
  * units match for the two DataSets being merged.
+ *
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.4  2000/07/10 22:35:52  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.5  2000/06/09 16:12:35  dennis
+ *  Added getCommand() method to return the abbreviated command string for
+ *  this operator
+ *
+ *  Revision 1.4  2000/05/16 15:36:34  dennis
+ *  Fixed clone() method to also copy the parameter values from
+ *  the current operator.
+ *
+ *  Revision 1.3  2000/05/11 16:41:28  dennis
+ *  Added RCS logging
+ *
+ *
  */
 
 package DataSetTools.operator;
 
 import  java.io.*;
+import  java.util.Vector;
 import  DataSetTools.dataset.*;
 
 /**
@@ -36,10 +55,6 @@ public class DataSetMerge extends    DataSetOperator
   public DataSetMerge( )
   {
     super( "Merge with a DataSet" );
-
-    Parameter parameter = new Parameter( "DataSet to Merge", 
-                              new DataSet("DataSetToMerge", "Empty DataSet") );
-    addParameter( parameter );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -64,6 +79,29 @@ public class DataSetMerge extends    DataSetOperator
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
+  }
+
+  /* ---------------------------- getCommand ------------------------------- */
+  /**
+   * Returns the abbreviated command string for this operator.
+   */
+   public String getCommand()
+   {
+     return "Merge";
+   }
+
+
+ /* -------------------------- setDefaultParmeters ------------------------- */
+ /**
+  *  Set the parameters to default values.
+  */
+  public void setDefaultParameters()
+  {
+    parameters = new Vector();  // must do this to clear any old parameters
+
+    Parameter parameter = new Parameter( "DataSet to Merge",
+                              new DataSet("DataSetToMerge", "Empty DataSet") );
+    addParameter( parameter );
   }
 
 
@@ -125,6 +163,7 @@ public class DataSetMerge extends    DataSetOperator
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
+    new_op.CopyParametersFrom( this );
 
     return new_op;
   }

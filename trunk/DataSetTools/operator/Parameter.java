@@ -1,10 +1,23 @@
 /*
  * @(#)Parameter.java     .1 99/06/04  Dennis Mikkelson
  *
+ *
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.2  2000/07/10 22:36:13  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.3  2000/05/15 21:43:01  dennis
+ *  removed DOS control-M characters.
+ *
+ *  Revision 1.2  2000/05/11 16:41:28  dennis
+ *  Added RCS logging
+ * 
  */
 
 package  DataSetTools.operator;
 import java.io.*;
+
 
 /**
  * The class Parameter groups a name and generic object that is used to 
@@ -15,6 +28,8 @@ import java.io.*;
 
 public class Parameter extends Object implements Serializable
 {
+  public static final String NUM_BINS = "Number of Bins";
+
   private String name;
   private Object value;
 
