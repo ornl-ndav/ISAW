@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.47  2003/07/14 16:49:10  rmikk
+ *  Added a more descriptive String for uncaught errors in
+ *     getResult and also printed a Stack Trace
+ *
  *  Revision 1.46  2003/07/07 21:48:34  rmikk
  *  -Returned exception information if getResult has an
  *    exception.
@@ -718,7 +722,8 @@ public class JParametersDialog implements Serializable,
               notifyListeners( OPERATION_THROUGH); 
               return Result;
             }catch(Throwable e){
-              Result= new ErrorString( e.getMessage());
+              Result= new ErrorString("Errrrr="+ e.toString());
+              e.printStackTrace();
               notifyListeners( OPERATION_THROUGH);
               return Result;
             }
@@ -870,8 +875,10 @@ public class JParametersDialog implements Serializable,
       jedPane.setEditable(false);
       jedPane.setEditorKit( new HTMLEditorKit() );
       jedPane.setText(SharedData.HTMLPageMaker.createHTML(op));
-      jf.getContentPane().add( new JScrollPane(jedPane) );
+      JScrollPane scroll =new JScrollPane( jedPane);
+      jf.getContentPane().add( scroll );
       jf.setSize( (int)(screenwidth/2), (int)(3*screenheight/4) );
+     
       jf.show();
     } 
   }
