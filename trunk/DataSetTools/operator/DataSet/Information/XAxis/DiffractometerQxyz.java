@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/01/10 15:30:44  dennis
+ * Removed empty statement.
+ *
  * Revision 1.7  2004/03/19 17:20:49  dennis
  * Removed unused variable(s)
  *
@@ -188,7 +191,7 @@ public class DiffractometerQxyz extends    XAxisInformationOp
 
      float xyz[] = q_pos.getCartesianCoords();
 
-     NumberFormat f = new DecimalFormat( "0.####E0" );;
+     NumberFormat f = new DecimalFormat( "0.####E0" );
 
      return f.format(xyz[0]) + "," + f.format(xyz[1]) + "," + f.format(xyz[2]);
    }

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2005/01/10 15:30:45  dennis
+ * Removed empty statement.
+ *
  * Revision 1.9  2004/06/11 17:03:59  dennis
  * Now references static method setDataEntriesInAllGrids() through the
  * class UniformGrid, rather than through an instance.
@@ -229,7 +232,7 @@ public class ReadFlood extends GenericTOF_SAD{
         pinf[0] = dpi;
         PixelInfoList pilist = new PixelInfoList(pinf);
         PixelInfoListAttribute pilistAt = new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST,
-               pilist);;
+               pilist);
         D.setAttribute( pilistAt);
        //------------------ Now work with the Mask DataSet
         yy = new float[1];
