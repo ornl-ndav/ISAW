@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.57  2004/01/21 17:56:43  bouzekc
+ * main() now only creates a PropertiesLoader (to load IsawProps.dat) and
+ * does not allocate storage for it.
+ *
  * Revision 1.56  2004/01/21 17:55:08  bouzekc
  * processPaths() now handles the case of an empty String path.
  *
@@ -1301,7 +1305,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * Test program for this module.  No arguments are used 
      */
     public static void main( String args[] ){
-        PropertiesLoader PL= new PropertiesLoader("IsawProps.dat"  );
+      //load up IsawProps.dat
+        new PropertiesLoader("IsawProps.dat"  );
         
         //Script_Class_List_Handler.LoadDebug = true;
         Script_Class_List_Handler BB = new Script_Class_List_Handler();
