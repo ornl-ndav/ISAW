@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2004/03/12 21:13:48  bouzekc
+ *  Added clear() method.
+ *
  *  Revision 1.33  2004/03/12 20:11:41  bouzekc
  *  Code reformat and added javadocs.
  *
@@ -250,15 +253,17 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets the String value of this PG.
    *
-   * @param value DOCUMENT ME!
+   * @param value The new String value.
    */
   public void setStringValue( String value ) {
     this.setValue( value );
   }
 
-  // ********** ParamUsesString requirements **********
+  /**
+   * @return The String value of this PG.
+   */
   public String getStringValue(  ) {
     return ( String )this.getValue(  );
   }
@@ -287,8 +292,6 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
     super.setValue( svalue );
   }
 
-  // ********** IParameter requirements **********
-
   /**
    * Returns the value of the parameter. While this is a generic object
    * specific parameters will return appropriate objects. There can also be a
@@ -310,6 +313,15 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
    */
   public void addFilter( FileFilter filefilter ) {
     filter_vector.add( filefilter );
+  }
+
+  /**
+   * Used to clear out the PG.  This resets to a default directory.
+   */
+  public void clear(  ) {
+    String datadir = SharedData.getProperty( "Data_Directory" );
+
+    setValue( datadir );
   }
 
   /**
@@ -357,8 +369,6 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
       throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
     }
   }
-
-  // ********** IParameterGUI requirements **********
 
   /**
    * Allows for initialization of the GUI after instantiation.

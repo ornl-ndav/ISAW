@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/03/12 21:13:49  bouzekc
+ *  Added clear() method.
+ *
  *  Revision 1.8  2004/03/12 19:54:38  bouzekc
  *  Code reformat.
  *
@@ -113,6 +116,12 @@ public interface IParameterGUI extends IParameter {
    * wizards.
    */
   boolean getValid(  );
+
+  /**
+   * Used to clear out the IParameterGUI, cleaning up data structures and
+   * releasing Objects along the way.
+   */
+  void clear(  );
 
   /**
    * Allows for initialization of the GUI after instantiation.

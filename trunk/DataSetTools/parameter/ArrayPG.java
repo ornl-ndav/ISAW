@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2004/03/12 21:13:48  bouzekc
+ *  Added clear() method.
+ *
  *  Revision 1.40  2004/01/31 23:26:24  bouzekc
  *  Now handles multidimensional arrays sent in to setValue() and
  *  initGUI().  Fixed initGUI() so that it doesn't discard the previously
@@ -428,21 +431,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   }
 
   /**
-   * Calls Vector.clear() on the value.
-   */
-  public void clearValue(  ) {
-    if( getValue(  ) == null ) {
-      return;
-    }
-    ( ( Vector )getValue(  ) ).clear(  );
-
-    if( getInitialized(  ) ) {
-      ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).setText( 
-        ArraytoString( ( Vector )getValue(  ) ) );
-    }
-  }
-
-  /**
    * Allows for initialization of the GUI after instantiation.
    *
    * @param init_values The Vector of values to initialize this ArrayPG to.
@@ -459,6 +447,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
         ( ( ( Vector )init_values ).size(  ) > 0 ) ) ) {
       setValue( init_values );
     }
+
     setEntryWidget( 
       new EntryWidget( 
         new JTextField( ArraytoString( ( Vector )getValue(  ) ) ) ) );
@@ -494,6 +483,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     int y       = 0;
     int dy      = 70;
     Vector vals = new Vector(  );
+
     vals.add( "C:\\\\Windows\\System" );
     vals.add( "C:\\\\Windows\\System\\My Documents" );
     vals.add( "/home/myhome/atIPNS" );
@@ -518,6 +508,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     for( int i = 1; i <= 20; i++ ) {
       vals.add( new Integer( i ) );
     }
+
     fpg = new ArrayPG( "c", vals, false );
     System.out.println( fpg );
     fpg.setEnabled( false );
@@ -529,6 +520,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     for( float f = 1f; f < 100; f *= 2 ) {
       vals.add( new Float( f ) );
     }
+
     fpg = new ArrayPG( "d", vals, true );
     System.out.println( fpg );
     fpg.setDrawValid( true );
@@ -545,6 +537,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
         }
       }
     }
+
     fpg = new ArrayPG( "e", array, true );
     System.out.println( fpg );
     fpg.setDrawValid( true );
@@ -554,12 +547,25 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   }
 
   /**
+   * Used to clear out the ArrayPG.  This resets the Vector to an empty Vector
+   * and clears the display.
+   */
+  public void clear(  ) {
+    if( getValue(  ) == null ) {
+      setValue( new Vector(  ) );
+    } else {
+      ( ( Vector )getValue(  ) ).clear(  );
+    }
+  }
+
+  /**
    * Remove an item based on its key.
    *
    * @param val The key of the item to remove.
    */
   public void removeItem( Object val ) {
     int index = ( ( Vector )getValue(  ) ).indexOf( val );
+
     removeItem( index );
 
     if( getInitialized(  ) ) {

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/03/12 21:13:48  bouzekc
+ *  Added clear() method.
+ *
  *  Revision 1.16  2004/03/12 20:55:41  bouzekc
  *  Code reformat and added javadocs.
  *
@@ -168,6 +171,13 @@ public class IntArrayPG extends StringEntryPG {
     super.setValue( val );
   }
 
+  /**
+   * Used to clear out the PG.  This sets the internal value to an empty String.
+   */
+  public void clear(  ) {
+    setStringValue( "" );
+  }
+
   /*
    * Testbed.
    */
@@ -189,6 +199,7 @@ public class IntArrayPG extends StringEntryPG {
     fpg.initGUI( null );
     fpg.showGUIPanel(  );
     fpg = new IntArrayPG( "d", "0:4", true );
+    fpg.clear(  );
     System.out.println( fpg );
     fpg.setDrawValid( true );
     fpg.initGUI( null );

@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/03/12 21:13:49  bouzekc
+ * Added clear() method.
+ *
  * Revision 1.11  2004/02/14 05:07:16  bouzekc
  * Made private members default access to avoid a performance hit with
  * synthetic accessor methods.
@@ -161,6 +164,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     this( name, null );
 
     UniformXScale scale = new UniformXScale( start, end, steps );
+
     setValue( scale );
     this.setType( TYPE );
   }
@@ -180,6 +184,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     this( name, null, valid );
 
     UniformXScale scale = new UniformXScale( start, end, steps );
+
     setValue( scale );
     this.setType( TYPE );
   }
@@ -270,6 +275,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
       end.setText( new Float( scale.getEnd_x(  ) ).toString(  ) );
       steps.setText( new Float( scale.getStep(  ) ).toString(  ) );
     }
+
     super.setValue( scale );
   }
 
@@ -310,6 +316,14 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
   }
 
   /**
+   * Used to clear out the PG.  This sets the value to a new UniformXScale with
+   * no elements.
+   */
+  public void clear(  ) {
+    setValue( new UniformXScale( 0, 0, 1 ) );
+  }
+
+  /**
    * Creates the GUI for this UniformXScalePG.
    *
    * @param vals The Vector of initial values.  Note that this follows the same
@@ -324,12 +338,15 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     if( vals != null ) {
       setValue( vals );
     }
+
     setEntryWidget( new EntryWidget(  ) );
 
     EntryWidget wijit = getEntryWidget(  );
+
     wijit.setLayout( new BorderLayout(  ) );
 
     JPanel innerPanel = new JPanel(  );
+
     innerPanel.setLayout( new GridLayout( 0, 2 ) );
     innerPanel.add( new JLabel( "Start value" ) );
     start = new StringEntry( "", new FloatFilter(  ) );
@@ -343,6 +360,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     wijit.add( innerPanel, BorderLayout.CENTER );
 
     JButton createButton = new JButton( CREATE_LABEL );
+
     wijit.add( createButton, BorderLayout.SOUTH );
     createButton.addActionListener( new UniformXScalePGListener(  ) );
     super.initGUI(  );
@@ -354,6 +372,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
   public static void main( String[] args ) {
     UniformXScalePG uxpg = new UniformXScalePG( "TestUniformXScalePG", null );
     Vector tester        = new Vector(  );
+
     tester.add( new Float( 1.6f ) );
     tester.add( new Float( 6.6f ) );
     tester.add( new Float( 11.6f ) );
@@ -365,7 +384,9 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     System.out.println( "With a UniformXScale value" );
 
     UniformXScale ux = new UniformXScale( 1.0f, 10.0f, 4 );
+
     uxpg.setValue( ux );
+    uxpg.clear(  );
     System.out.println( uxpg.getValue(  ) );
     System.out.println( uxpg.getXScaleValue(  ) );
     uxpg.initGUI( null );
@@ -383,6 +404,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
           new Class[]{ String.class, Object.class } );
       UniformXScalePG pg    = ( UniformXScalePG )construct.newInstance( 
           new Object[]{ null, null } );
+
       pg.setName( new String( this.getName(  ) ) );
       pg.setValue( pg.getXScaleValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
@@ -394,15 +416,13 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
       }
 
       if( getPropListeners(  ) != null ) {
-        java.util.Enumeration e    = getPropListeners(  )
-                                       .keys(  );
+        java.util.Enumeration e    = getPropListeners(  ).keys(  );
         PropertyChangeListener pcl = null;
         String propertyName        = null;
 
         while( e.hasMoreElements(  ) ) {
           pcl            = ( PropertyChangeListener )e.nextElement(  );
-          propertyName   = ( String )getPropListeners(  )
-                                       .get( pcl );
+          propertyName   = ( String )getPropListeners(  ).get( pcl );
           pg.addPropertyChangeListener( propertyName, pcl );
         }
       }
@@ -429,16 +449,22 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
   }
 
   /**
-   * Creates an XScale from the filled in GUI values.
+   * Creates an XScale from the filled in GUI values.  If the values hold
+   * non-parseable characters, this will return a new UniformXScale with no
+   * entries (0, 0, 1).
    *
    * @return The new UniformXScale.
    */
   final UniformXScale createXScaleFromGUIValues(  ) {
-    float startNum = Float.parseFloat( start.getText(  ) );
-    float endNum   = Float.parseFloat( end.getText(  ) );
-    int stepNum    = Integer.parseInt( steps.getText(  ) );
+    try {
+      float startNum = Float.parseFloat( start.getText(  ) );
+      float endNum   = Float.parseFloat( end.getText(  ) );
+      int stepNum    = Integer.parseInt( steps.getText(  ) );
 
-    return new UniformXScale( startNum, endNum, stepNum );
+      return new UniformXScale( startNum, endNum, stepNum );
+    } catch( NumberFormatException nfe ) {
+      return new UniformXScale( 0, 0, 1 );
+    }
   }
 
   //~ Inner Classes ************************************************************

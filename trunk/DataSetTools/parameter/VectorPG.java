@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.46  2004/03/12 21:13:49  bouzekc
+ * Added clear() method.
+ *
  * Revision 1.45  2003/12/15 02:44:08  bouzekc
  * Removed unused imports.
  *
@@ -221,16 +224,18 @@
  */
 package DataSetTools.parameter;
 
+import DataSetTools.components.ParametersGUI.ArrayEntryJFrame;
+import DataSetTools.components.ParametersGUI.EntryWidget;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+
 import java.util.Vector;
 
 import javax.swing.JButton;
-
-import DataSetTools.components.ParametersGUI.ArrayEntryJFrame;
-import DataSetTools.components.ParametersGUI.EntryWidget;
 
 
 /**
@@ -328,6 +333,7 @@ public abstract class VectorPG extends ParameterGUI
     } else {
       vecVal = new Vector(  );
     }
+
     super.setValue( vecVal );
 
     if( entryFrame != null ) {
@@ -353,6 +359,13 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   /**
+   * Used to clear out the PG.  This resets the GUI and clears out the values.
+   */
+  public void clear(  ) {
+    setValue( new Vector(  ) );
+  }
+
+  /**
    * Implements clone for this VectorPG.  Overridden due to the internal
    * ParameterGUI that VectorPG holds.
    *
@@ -365,6 +378,7 @@ public abstract class VectorPG extends ParameterGUI
           new Class[]{ String.class, Object.class } );
       VectorPG pg           = ( VectorPG )construct.newInstance( 
           new Object[]{ null, null } );
+
       pg.setName( new String( this.getName(  ) ) );
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
@@ -382,15 +396,13 @@ public abstract class VectorPG extends ParameterGUI
       }
 
       if( getPropListeners(  ) != null ) {
-        java.util.Enumeration e    = getPropListeners(  )
-                                       .keys(  );
+        java.util.Enumeration e    = getPropListeners(  ).keys(  );
         PropertyChangeListener pcl = null;
         String propertyName        = null;
 
         while( e.hasMoreElements(  ) ) {
           pcl            = ( PropertyChangeListener )e.nextElement(  );
-          propertyName   = ( String )getPropListeners(  )
-                                       .get( pcl );
+          propertyName   = ( String )getPropListeners(  ).get( pcl );
           pg.addPropertyChangeListener( propertyName, pcl );
         }
       }
@@ -425,13 +437,13 @@ public abstract class VectorPG extends ParameterGUI
     if( V != null ) {  // Usually is null so use the previous value
       setValue( V );
     }
+
     entryFrame = new ArrayEntryJFrame( innerParam );
     entryFrame.addPropertyChangeListener( DATA_CHANGED, this );
     entryFrame.setValue( getValue(  ) );
     vectorButton = new JButton( innerParam.getName(  ) );
     setEntryWidget( new EntryWidget(  ) );
-    getEntryWidget(  )
-      .add( vectorButton );
+    getEntryWidget(  ).add( vectorButton );
     vectorButton.addActionListener( entryFrame );
     super.initGUI(  );
   }
@@ -444,6 +456,7 @@ public abstract class VectorPG extends ParameterGUI
     if( pce.getPropertyName(  ) == DATA_CHANGED ) {
       setValue( pce.getNewValue(  ) );
     }
+
     super.propertyChange( pce );
   }
 
@@ -491,6 +504,7 @@ public abstract class VectorPG extends ParameterGUI
           allTheSame = false;
         }
       }
+
       setValid( allTheSame );
     } else {
       setValid( false );
