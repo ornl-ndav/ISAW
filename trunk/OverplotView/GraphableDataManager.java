@@ -10,6 +10,10 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.4  2001/06/29 16:29:25  neffk
+ * integrated ColorAttribute class for storing color information in
+ * GraphableData objects
+ *
  * Revision 1.3  2001/06/28 22:05:04  neffk
  * data is converted to GraphableData on redraw() instead of an explicit call.
  * also, the conversion function creates (subclasses of) Attributes to store
@@ -21,13 +25,11 @@ package OverplotView;
  * which forced redraw(...) and update(...).  these two functions are
  * redundant, as well as the IObserver interface.  this class not longer
  * implements IObserver, and update(...) has been removed.
- *
  * ----------
  */
 
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
-import DataSetTools.dataset.ColorAttribute;
 import DataSetTools.dataset.FloatAttribute;
 import DataSetTools.dataset.StringAttribute;
 import DataSetTools.dataset.Data;
@@ -38,6 +40,7 @@ import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Vector;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import OverplotView.GraphableData;
@@ -174,7 +177,9 @@ public class GraphableDataManager
                                        //the new graph that redraw() 
                                        //generates
     removeAll();
-    add(  graph.redraw()  );
+    JComponent graph_component = graph.redraw();
+    graph_component.doLayout();
+    add( graph_component );
 
                                        //ask swing to redraw our new
                                        //additions to the DataSetViewer
