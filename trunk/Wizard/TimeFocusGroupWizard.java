@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/06/30 16:17:10  bouzekc
+ * Now takes --nogui command line arguments.
+ *
  * Revision 1.12  2003/06/25 20:24:45  bouzekc
  * Unused private variables removed, reformatted for
  * consistency.
@@ -57,6 +60,9 @@
  *
  * Revision 1.4  2003/03/13 19:00:52  dennis
  * Added $Log$
+ * Added Revision 1.13  2003/06/30 16:17:10  bouzekc
+ * Added Now takes --nogui command line arguments.
+ * Added
  * Added Revision 1.12  2003/06/25 20:24:45  bouzekc
  * Added Unused private variables removed, reformatted for
  * Added consistency.
@@ -186,6 +192,15 @@ public class TimeFocusGroupWizard extends Wizard {
   public static void main( String[] args ) {
     TimeFocusGroupWizard w = new TimeFocusGroupWizard( true );
 
-    w.showForm( 0 );
+    //specified a --nogui switch but forgot to give a filename
+    if( args.length == 1 ) {
+      System.out.println( 
+        "USAGE: java Wizard.TimeFocusGroupWizard " +
+        "[--nogui] <Wizard Save File>" );
+    } else if( args.length == 2 ) {
+      w.executeNoGUI( args[1] );
+    } else {
+      w.showForm( 0 );
+    }
   }
 }
