@@ -452,7 +452,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
         Float Fangle=new Float(0f);
 	int total=0;
         //System.out.print("ANGLE="+angle);
-        Fangle=(Float)ds.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE);
+        Fangle=(Float)data.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE);
         if(Fangle!=null){
             angle=Fangle.floatValue();
         }
@@ -467,8 +467,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                 total++;
                 //System.out.println(total+":"+angle);
             }
+            angle=(180*angle)/((float)(total+1)*(float)Math.PI);
         }
-	angle=(180*angle)/((float)(total+1)*(float)Math.PI);
         //System.out.println("->"+angle);
 
 	return angle;
@@ -487,7 +487,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
         Float Fdistance=new Float(distance);
 	int total=0;
 
-        Fdistance=(Float)ds.getAttributeValue(Attribute.DETECTOR_CEN_DISTANCE);
+        Fdistance=(Float)data.getAttributeValue(Attribute.DETECTOR_CEN_DISTANCE);
         if(Fdistance!=null){
             distance=Fdistance.floatValue();
         }
@@ -507,10 +507,10 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                 distance+=angle*det.getPosition().getDistance();
                 total++;
             }
+            distance=distance/((float)(total+1));
 	}
-	distance=distance/((float)(total+1));
 
-	return distance;
+	return distance*100f;
     }
 
  /* ------------------------------- clone -------------------------------- */ 
