@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/06/19 20:51:39  bouzekc
+ * Now uses constant parameters for the OperatorForms.
+ *
  * Revision 1.3  2003/06/19 16:20:32  bouzekc
  * Now uses Wizard's linkFormParameters() to link the
  * parameters in the parameter table.
@@ -108,13 +111,13 @@ public class InitialPeaksWizard extends Wizard
     //the return types of all of these Operator Forms is LoadFilePG,
     //hence the "LoadFile"
     OperatorForm blindjform = new OperatorForm(new BlindJ(), LOADFILETYPE,
-                                               "Matrix file");
+                                               "Matrix file", new int[] {0});
     OperatorForm indexjform = new OperatorForm(new IndexJ(),LOADFILETYPE,
-                                               "IndexJ log file");
+                                               "IndexJ log file", new int[] {0,1});
     OperatorForm scalarjform = new OperatorForm(new ScalarJ(),LOADFILETYPE, 
-                                                "ScalarJ log file");
+                                                "ScalarJ log file", new int[] {0});
     OperatorForm lsqrsjform = new OperatorForm(new LsqrsJ(), LOADFILETYPE,
-                                               "LsqrsJ matrix file");
+                                               "LsqrsJ matrix file",new int[] {0});
 
     this.addForm(peaksform);
     this.addForm(blindjform );
