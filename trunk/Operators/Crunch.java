@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/07/07 15:55:43  bouzekc
+ * Added missing param tags in constructor and
+ * getDocumentation().  Fixed spelling error in parameter
+ * name.
+ *
  * Revision 1.7  2003/01/29 17:52:07  dennis
  * Added getDocumentation() method. (Chris Bouzek)
  *
@@ -76,8 +81,9 @@ public class Crunch extends GenericSpecial{
      *  be used to execute the operator.
      *
      *  @param  ds          Sample DataSet to remove dead detectors from.
-     *  @param  min_count   Minimum counts to keep bank
      *  @param  width       How many sigma around average to keep
+     *  @param  min_count   Minimum counts to keep bank
+     *  @param  new_ds      Whether to make a new DataSet.
      */
     public Crunch( DataSet ds, float width, float min_count, boolean new_ds ){
 
@@ -108,7 +114,7 @@ public class Crunch extends GenericSpecial{
     public void setDefaultParameters(){
 	parameters = new Vector();
 	addParameter(new Parameter("DataSet parameter",DataSet.EMPTY_DATA_SET ));
-	addParameter(new Parameter("Minum counts to keep", new Float(0.0f)));
+	addParameter(new Parameter("Minimum counts to keep", new Float(0.0f)));
 	addParameter(new Parameter("Number of sigma to keep",new Float(2.0f)));
         addParameter(new Parameter("Make new DataSet", new Boolean(false)));
     }
@@ -136,6 +142,7 @@ public class Crunch extends GenericSpecial{
       s.append("@param ds Sample DataSet to remove dead detectors from.\n");
       s.append("@param min_count Minimum counts to keep.\n");
       s.append("@param width How many sigma around the average to keep.\n");
+      s.append("@param new_ds Whether to make a new DataSet.\n");
       s.append("@return DataSet containing the the original DataSet minus the ");
       s.append("dead detectors.\n");
       s.append("@error Returns an error if the specified DataSet ds is null.\n");
