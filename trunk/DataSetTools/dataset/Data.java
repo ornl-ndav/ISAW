@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2002/06/10 22:32:01  dennis
+ *  Fixed some problems with error propagation that were introduced when
+ *  the Data object hierarchy was made.  Also made error propagation more
+ *  efficient for scalar operations when the error in the scalar is 0.
+ *
  *  Revision 1.24  2002/04/19 15:42:26  dennis
  *  Revised Documentation
  *
@@ -116,7 +121,8 @@ public abstract class Data implements IData,
   }
 
   /**
-   *  Create an instance of a Data object representing a function or histogram.    *  Since the x & y values are specified, this form of getInstance() returns
+   *  Create an instance of a Data object representing a function or histogram.    
+   *  Since the x & y values are specified, this form of getInstance() returns
    *  a TabulatedData object.  If there is one more x value than there are 
    *  y values a HistogramTable is returned.  Otherwise a FunctionTable is
    *  returned.  When constructing the FunctionTable, extra values will be 
@@ -691,10 +697,7 @@ public abstract class Data implements IData,
     if ( ! this.compatible( d ) )
       d.resample( x_scale, SMOOTH_LINEAR ); 
 
-    for ( int i = 0; i < temp.y_values.length; i++ )
-      temp.y_values[i] *= d.y_values[i];
-
-    if ( temp.errors != null && d.errors != null )
+    if ( temp.errors != null && d.errors != null )       // propagate errors 
       for ( int i = 0; i < temp.errors.length; i++ )
         temp.errors[i] = (float) Math.sqrt(
               temp.errors[i] * d.y_values[i] * temp.errors[i] * d.y_values[i] +
@@ -702,6 +705,9 @@ public abstract class Data implements IData,
     else
       temp.errors = null;
 
+    for ( int i = 0; i < temp.y_values.length; i++ ) // multiply values last
+      temp.y_values[i] *= d.y_values[i];             // since error calculation
+                                                     // needs original values 
     return temp;
   }
 
@@ -733,19 +739,26 @@ public abstract class Data implements IData,
     if ( !temp.compatible( d ) )
       d.resample( temp.x_scale, SMOOTH_LINEAR );
 
-    for ( int i = 0; i < temp.y_values.length; i++ )
-      if ( d.y_values[i] > 0.01 )                           // D.M. 6/7/2000
-        temp.y_values[i] /= d.y_values[i];
-      else
-        temp.y_values[i] = 0;
-
-    if ( temp.errors != null && d.errors != null )
+    if ( temp.errors != null && d.errors != null )          // errors set 
       for ( int i = 0; i < temp.errors.length; i++ )
-        temp.errors[i] = temp.y_values[i] * (float) Math.sqrt(
-          temp.errors[i] / temp.y_values[i] * temp.errors[i] / temp.y_values[i]+
-          d.errors[i] / d.y_values[i] * d.errors[i] / d.y_values[i] );
+        if ( temp.y_values[i] != 0 && d.y_values[i] != 0 ) 
+        { 
+          temp.errors[i] = Math.abs((temp.y_values[i]/d.y_values[i])) * 
+            (float) Math.sqrt(
+            temp.errors[i]/temp.y_values[i] * temp.errors[i]/temp.y_values[i]+
+                  d.errors[i]/d.y_values[i] * d.errors[i]/d.y_values[i] );
+        }
+        else                                                // error undefined
+          temp.errors[i] = 0;                               // so set to 0
     else
       temp.errors = null;
+
+    for ( int i = 0; i < temp.y_values.length; i++ ) // divide values last
+      if ( d.y_values[i] != 0 )                      // since error calculation
+        temp.y_values[i] /= d.y_values[i];           // needs original values
+      else
+        temp.y_values[i] = 0;                        // set value to 0 if we
+                                                     // would have divided by 0
 
     return temp;
   }
@@ -766,16 +779,14 @@ public abstract class Data implements IData,
   public Data add( float val, float err )
   {
     TabulatedData temp = (TabulatedData)this.clone();
-    for ( int i = 0; i < temp.y_values.length; i++ )
+
+    for ( int i = 0; i < temp.y_values.length; i++ )     // add values 
       temp.y_values[i] += val;
    
-    if ( temp.errors != null )
+    if ( temp.errors != null && err > 0 )                // adjust the errors
       for ( int i = 0; i < temp.errors.length; i++ )
         temp.errors[i] = (float) Math.sqrt( temp.errors[i] * temp.errors[i] +
                                                        err * err );
-    else
-      temp.errors = null;
-
     return temp;
   }
 
@@ -795,16 +806,14 @@ public abstract class Data implements IData,
   public Data subtract( float val, float err )
   {
     TabulatedData temp = TabulatedData.getInstance( this, this.group_id );
-    for ( int i = 0; i < temp.y_values.length; i++ )
+
+    for ( int i = 0; i < temp.y_values.length; i++ )     // subtract values
       temp.y_values[i] -= val;
 
-    if ( temp.errors != null )
+    if ( temp.errors != null && err > 0 )                // adjust the errors
       for ( int i = 0; i < temp.errors.length; i++ )
         temp.errors[i] = (float) Math.sqrt( temp.errors[i] * temp.errors[i] +
                                                        err * err );
-    else
-      temp.errors = null;
-
     return temp;
   }
 
@@ -824,17 +833,27 @@ public abstract class Data implements IData,
   public Data multiply( float val, float err )
   {
     TabulatedData temp = TabulatedData.getInstance( this, this.group_id );
-    for ( int i = 0; i < temp.y_values.length; i++ )
-      temp.y_values[i] *= val;
 
-    if ( temp.errors != null )
-      for ( int i = 0; i < temp.errors.length; i++ )
-        temp.errors[i] = (float) Math.sqrt(
-                         temp.errors[i] * val * temp.errors[i] * val +
-                         err * temp.y_values[i] * err * temp.y_values[i] );
-    else
-      temp.errors = null;
+    if ( temp.errors != null )                           // propagate errors
+    {
+      float abs_val = Math.abs(val);
 
+      if ( err <= 0 )                                    // invalid or 0 error
+        for ( int i = 0; i < temp.errors.length; i++ )
+          temp.errors[i] *= abs_val;
+
+      else
+        for ( int i = 0; i < temp.errors.length; i++ )
+          temp.errors[i] = (float) Math.sqrt(
+                             temp.errors[i] * val * temp.errors[i] * val +
+                           err * temp.y_values[i] * err * temp.y_values[i] );
+    }
+
+    for ( int i = 0; i < temp.y_values.length; i++ )    // multiply values must
+      temp.y_values[i] *= val;                          // be done AFTER the
+                                                        // errors, since error 
+                                                        // calculation needs
+                                                        // original y's
     return temp;
   }
 
@@ -849,6 +868,10 @@ public abstract class Data implements IData,
     * @param   val  The value to be divided into the y values of the current
     *               data object
     * @param   err  The error bound for the specified value "val".
+    *
+    * @return a new Data set with each y value divided by the given value. 
+    *         If the specified value is zero, division can't be done so 
+    *         this returns null.
     */
 
   public Data divide( float val, float err )
@@ -857,17 +880,30 @@ public abstract class Data implements IData,
       return null;
 
     TabulatedData temp = TabulatedData.getInstance( this, this.group_id );
-    for ( int i = 0; i < temp.y_values.length; i++ )
-      temp.y_values[i] /= val;
 
-    if ( temp.errors != null )
-      for ( int i = 0; i < temp.errors.length; i++ )
-        temp.errors[i] = temp.y_values[i] * (float) Math.sqrt(
-          temp.errors[i] / temp.y_values[i] * temp.errors[i] / temp.y_values[i]+
-          err / val * err / val );
-    else
-      temp.errors = null;
+    if ( temp.errors != null )                          // propagate errors 
+    {
+      float abs_val = Math.abs(val);
 
+      if ( err <= 0 )                                   // invalid or 0 error
+        for ( int i = 0; i < temp.errors.length; i++ )
+          temp.errors[i] /= abs_val;
+
+      else
+        for ( int i = 0; i < temp.errors.length; i++ )
+          if ( temp.y_values[i] != 0 ) 
+            temp.errors[i] = Math.abs((temp.y_values[i]/val))*(float)Math.sqrt(
+              temp.errors[i]/temp.y_values[i] * temp.errors[i]/temp.y_values[i]+
+              err/val * err/val );
+          else
+            temp.errors[i] = 0;                         // undefined 
+    }
+
+    for ( int i = 0; i < temp.y_values.length; i++ )    // divide values must 
+      temp.y_values[i] /= val;                          // be done AFTER the
+                                                        // errors since error 
+                                                        // calculation needs
+                                                        // original y's 
     return temp;
   }
 
