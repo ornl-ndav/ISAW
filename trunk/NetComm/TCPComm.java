@@ -8,6 +8,9 @@
  *               Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2001/03/01 21:03:00  dennis
+ *  Added detailed exception checking to the Recieve() method.
+ *
  *  Revision 1.2  2001/02/15 22:03:11  dennis
  *  Now handles time outs down to 0 ms, and treats values <= 0 as
  *  requests for an infinite time out period.
@@ -116,14 +119,57 @@ public class TCPComm
     {
       data_obj = obj_in_stream.readObject( );
     }
-    catch( Exception e )                   // if we can't receive, shut it down
-    { 
-      System.out.println("Exception in TCPComm.Receive is : " + e );
-      FreeResources();
-      throw( new IOException() );
-    };
+    catch( ClassNotFoundException e )
+    {
+      System.out.println("ClassNotFoundException reading Object " +
+                         "in TCPComm.Receive() " + e );
+      e.printStackTrace();
+      FreeResources();                 // if we can't receive, shut it down
+      throw( new IOException() );       
+    }
+    catch( InvalidClassException e )
+    {
+      System.out.println("InvalidClassException reading Object " +
+                         "in TCPComm.Receive() " + e );
+      e.printStackTrace();
+      FreeResources();                 // if we can't receive, shut it down
+      throw( new IOException() );       
+    }
+    catch( StreamCorruptedException e )
+    {
+      System.out.println("StreamCorruptedException reading Object " +
+                         "in TCPComm.Receive() " + e );
+      e.printStackTrace();
+      FreeResources();                 // if we can't receive, shut it down
+      throw( new IOException() );       
+    }
+    catch( OptionalDataException e )
+    {
+      System.out.println("OptionalDataException reading Object " +
+                         "in TCPComm.Receive() " + e );
+      e.printStackTrace();
+      FreeResources();                 // if we can't receive, shut it down
+      throw( new IOException() );       
+    }
+    catch( IOException e )
+    {
+      System.out.println("IOException reading Object " +
+                         "in TCPComm.Receive() " + e );
+      e.printStackTrace();
+      FreeResources();                 // if we can't receive, shut it down
+      throw( new IOException() );       
+    }
+    catch( Exception e )
+    {
+      System.out.println("Exception reading Object in TCPComm.Receive() " + e );
+      e.printStackTrace();
+      FreeResources();                 // if we can't receive, shut it down
+      throw( new IOException() );       
+    }
 
-    if ( data_obj instanceof TCPCommExitClass )       // Exit request received
+
+    if ( data_obj != null &&
+         data_obj instanceof TCPCommExitClass )       // Exit request received
     {                                                 // so shutdown connection
       System.out.println("'Exit' received, shutting down TCP connection");
       FreeResources();
@@ -211,4 +257,5 @@ public class TCPComm
     FreeResources();
     super.finalize();
   }
+
 }
