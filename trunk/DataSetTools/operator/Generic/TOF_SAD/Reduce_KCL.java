@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2004/05/25 12:38:51  rmikk
+ * Added the getDocumentation Method
+ *
  * Revision 1.29  2004/04/27 15:25:32  dennis
  * Removed "timer" code that was temporarily used for performance
  * testing.  Removed toVec() method used by main program... now uses
@@ -473,6 +476,55 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
         return V;
     }
+	public String getDocumentation() {
+
+			 StringBuffer Res = new StringBuffer();
+    
+			 Res.append("@overview  SMALL ANGLE NEUTRON SCATTERING ANALYSIS ROUTINE ");  
+			 Res.append("PRODUCE either A RADIALLY AVERAGED S(Q) VS Q ARRAY; SN(RUN#)");
+			 Res.append(".dat OR PRODUCING AN S(QX,QY) ARRAY.	SN@D(RUN#).BIN");
+			 Res.append("mask of pixels to be used, based on a flood fill data set.");
+ 
+			 Res.append("@algorithm  First the Neutron Delay is applied to all DataSets,");
+			 Res.append(" and all Time channels are converted to a common wavelength ");
+			 Res.append(" scale.");
+			 Res.append(" Next the offset of the Beam center is applied. The ratios:");
+			 Res.append(" (Samp/MonSamp-Cadmium/MonCadm)/(TransSamp*sens*eff) and");
+			 Res.append("(Back/MonBack-Cadmium/MonCadm)/(TransBack*sens*eff)  are ");
+			 Res.append(" applied");
+			 Res.append(" These are converted to Q(or Qx,Qy) and summed ofer the given ");
+			 Res.append(" Q or (Qx,Qy) bins with weighting of SampMonitor*sens*eff");
+    
+			 Res.append(" @param TransS   The sample Transmission data set");
+			 Res.append("  @param TransB   The background Transmission data set");
+			 Res.append("  @param  Eff     The Efficiency data set");
+			 Res.append("  @param Sens     The sensitivity data set");
+			 Res.append(" @param qu       The q bins if 1d or qxmin,qxmax, qymin, qymax");
+			 Res.append(" @param RUNSds0   the monitor  for the sample");
+
+			 Res.append(" @param RUNSds1   the Histogram  for the sample");
+			 Res.append(" @param RUNBds0  the  monitor for the Background");
+			 Res.append(" @param RUNBds1  the  Histogramfor the Background");
+			 Res.append(" @param RUNCds0  null or the monitor for the  Cadmium run");
+			 Res.append(" @param RUNCds1  null or the  Histogram for the  Cadmium run");
+			 Res.append(" @param BETADN  The delayed neutron fraction");
+			 Res.append(" @param SCALE   The scale factor to be applied to all data");
+			 Res.append(" @param  THICK  The sample thickness in m");
+			 Res.append(" @param  XOFF    The Xoffset of beam from the center in meters");
+			 Res.append(" @param  YOFF    The Yoffset of beam from center in meters");
+			 Res.append(" @param NQxBins  The number of Qx bins if 2D,otherwise use");
+			 Res.append("  a neg number");
+			 Res.append(" @param NQyBins  The number of Qx bins if 2D,otherwise use a");
+			 Res.append("  neg number"); 
+			 Res.append(" @param useTransB  Use the background Transmission run");
+		     Res.append(" @return The vector of three DataSets, the Sample,");
+		     Res.append(" Background, and Samp-Back S(Q) or S(Qx,Qy)for 2D,");
+
+		     Res.append(" if no errors are encountered, otherwise an");
+		     Res.append("  ErrorString will be returned.");
+			 return Res.toString();
+
+		}
      
 
   /* ----------------------------- Main ---------------------------------- */
