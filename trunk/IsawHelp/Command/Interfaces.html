@@ -1,6 +1,6 @@
 <html><body>
 <A href="CommandPane.html"> CONTENTS </a><P>
-<h1><Center> Interfaces of CommandPane to other programs</Center></h1>
+<h1><Center> Interfaces of ISAW and Script Systems</Center></h1>
 <ol Type ="A">
 <li> IsawGUI.ISAW<ul>
    This project was originally designed to integrate with Isaw.  Isaw has currently 
@@ -10,13 +10,14 @@
    </ul><P>
 <li> Batch file
   <ul> These are currently supported. See <a href ="Examples1.html#Batch">Example</a>.<BR>
-       The java programs Command.ScriptOperator can be used to run a 
+       <P>The java programs <B>Command.ScriptOperator</b> can be used to run a 
         script written in
        the Isaw Scripting Language and Jython outside of ISAW and
         the command pane.  Include the script filename on the command line as 
         the first argument.<P><P>
-        The program IsawGUI.IsawLite can run installed scripts in Python and in the 
-        Isaw Scripting language.  The argument requires the command name of the script. If
+        The program <B>IsawGUI.IsawLite</B> can run installed scripts in Python, in the 
+        Isaw Scripting language, or any Operator written with Java.  The argument requires the command name 
+        of the script. If
         the script is not installed use the -i option. Type java IsawGUI.IsawLite -help for
         more information.
   </ul><P>
