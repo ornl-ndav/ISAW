@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/01/24 19:58:59  bouzekc
+ *  Removed/commented out unused variables/imports.
+ *
  *  Revision 1.1  2003/03/12 22:17:13  dennis
  *  Modified version of detector normalization factor.  This version
  *  weights the experimentally derived normalization factors by
@@ -195,9 +198,7 @@ public class SpectrometerDetectorNormalizationFactor_test
   public Object getResult()
   {
     final float  ECON   = 5.2276f*1000000,
-                 LAMCON = 3.95541f/1000, 
-                 WVCON  = 1.5885f*1000,
-                 XKCON  = 0.086165f;
+                 LAMCON = 3.95541f/1000;
     
     float ELAM = ECON*LAMCON*LAMCON;
                                      // get the current data set
@@ -221,8 +222,7 @@ public class SpectrometerDetectorNormalizationFactor_test
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
    
-    Data             data,
-                     new_data;
+    Data             data;
     DetectorPosition position;
     float            energy_in;
     Float            energy_in_obj;
@@ -232,8 +232,7 @@ public class SpectrometerDetectorNormalizationFactor_test
     float            e_vals[];              // energy values at bin boundaries
                                             // calculated from tof bin bounds
     
-    XScale           E_scale;
-    float            spherical_coords[];
+    //float            spherical_coords[];
     float            scattering_angle;
     int              num_data = ds.getNum_entries();
     AttributeList    attr_list;
@@ -281,7 +280,7 @@ public class SpectrometerDetectorNormalizationFactor_test
         
         float EDUM = (float)(193.0f* Math.pow((energy_in/1000.0f), 0.36f));
         float EINTEG=EDUM;
-        float DUM = -EINTEG;
+        //float DUM = -EINTEG;
         
         float sum = 0.0f;
         int numofe = e_vals.length;
@@ -467,7 +466,7 @@ public class SpectrometerDetectorNormalizationFactor_test
     float SECOND;
     float ALPHA;
     float CA;
-    float SA;
+    //float SA;
     float CMU;
     float CM;
     float SM;
@@ -483,7 +482,7 @@ public class SpectrometerDetectorNormalizationFactor_test
     {
       ALPHA = ( (float)IAL-0.5f) * DALPHA;
       CA = (float)Math.cos(ALPHA);
-      SA = (float)Math.sin(ALPHA);
+      //SA = (float)Math.sin(ALPHA);
 
       // System.out.println("1.5.ALPHA CA SA : "+ALPHA+"  "+  CA +"  "+ SA);
 
