@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.44  2003/03/21 20:16:08  rmikk
+ * Deleted IObservers from some DataSets that leave the
+ *   scripting system
+ *
  * Revision 1.43  2003/03/21 17:23:36  rmikk
  * Added code to reduce memory needs for sequences of
  *   arrays with large DataSets
@@ -3043,9 +3047,21 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     }
 
     public void removeVar( String vname){
-      
+       /* if( ds != null)
+             if( ds.containsKey( vname.toUpperCase())){
+                 Object ds= getVal( vname.toUpperCase());
+                 if( ds != null)
+                     ((DataSet)ds).deleteIObserver( this);
+                 ds.remove( vname.toUpperCase());
+                 return;
+            } 
+     
+         */ 
         if( lds !=null)
             if( lds.containsKey( vname.toUpperCase())){
+                 Object ds= getVal( vname.toUpperCase());
+                 if( ds != null)
+                     ((DataSet)ds).deleteIObserver( this);
                  lds.remove( vname.toUpperCase());
                  return;
             } 
@@ -3381,14 +3397,17 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     }
 
     public void update( Object observed_obj , Object reason ){
+        
+
         if( observed_obj != null) 
             if( observed_obj instanceof DataSet)
                 if( reason instanceof String)
                     if( reason.equals( IObserver.DESTROY)){
                         long tag = ((DataSet)observed_obj).getTag();
                         ds.remove( "ISAWDS"+tag);
+                        (( DataSet)observed_obj).deleteIObserver( this );
                         observed_obj = null;
-                    } 
+                  } 
         if( reason instanceof DataSet)  //Send Command from a subscript
             OL.notifyIObservers( observed_obj , reason );
     } 
