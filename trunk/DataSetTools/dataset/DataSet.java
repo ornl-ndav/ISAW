@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/06/04 22:48:12  dennis
+ *  Added method getLastSortAttribute().
+ *
  *  Revision 1.13  2001/06/04 20:01:33  dennis
  *  Added Quick Sort option to Sort() method.
  *
@@ -140,8 +143,9 @@ public class DataSet implements IAttributeList,
   public static final int INVALID_GROUP_ID = -1;
   public static final int INVALID_INDEX    = -1;
 
-  public static final int Q_SORT           =  0;
-  public static final int BUBBLE_SORT      =  1;
+  public static final int NOT_SORTED  = -1;
+  public static final int Q_SORT      =  0;
+  public static final int BUBBLE_SORT =  1;
 
                                           // Some operators need a default 
                                           // DataSet to hold in a parameter.
@@ -167,6 +171,8 @@ public class DataSet implements IAttributeList,
   private Vector        operators;
   private OperationLog  op_log;
   private IObserverList observers;
+
+  private String        last_sort_attribute = "";
 
   /**
    * Constructs an empty data set with the specified title, initial log
@@ -1313,9 +1319,19 @@ public class DataSet implements IAttributeList,
 
     data = new_data;
 
+    last_sort_attribute = attr_name;
     return true;
   }
 
+  /**
+   *  Get the name of the last attribute that was used to sort this DataSet.
+   *
+   *  @return The name of the last attribute used for sorting. 
+   */
+  public String getLastSortAttribute()
+  {
+    return last_sort_attribute;
+  }
 
   /**
    * Combine the attribute list of the specified DataSet with the attribute
@@ -1432,7 +1448,8 @@ public class DataSet implements IAttributeList,
     AttributeList attr_list = getAttributeList();
     new_ds.setAttributeList( attr_list );
 
-    new_ds.pointed_at_index = pointed_at_index;
+    new_ds.pointed_at_index    = pointed_at_index;
+    new_ds.last_sort_attribute = last_sort_attribute;
 
     return new_ds;
   }
