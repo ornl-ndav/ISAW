@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2004/01/14 21:41:36  bouzekc
+ * Now allows math expressions, assignment from math expressions, and
+ * assignment to variables.
+ *
  * Revision 1.10  2004/01/14 19:59:09  bouzekc
  * Added ability to add comments.  Fixed bug where multiple double
  * initializations crashed.
@@ -550,6 +554,71 @@ TOKEN: {
 }
 
 //~----------------------------------------------------------------------------
+// FORTRAN EXPRESSIONS
+//~----------------------------------------------------------------------------
+
+//math operators
+TOKEN: {
+  < #OPERATOR: (
+    <OPT_WS> (
+      "+"| "-"| "*"| "/"
+    ) <OPT_WS> 
+  ) >
+}
+
+//operands for math operators
+TOKEN: {
+  < #OPERAND: (
+    <OPT_WS> (
+      <VARIABLE> | <DIGIT> | <FLOATING_POINT>
+    ) <OPT_WS>
+  ) >
+}
+    
+//essentially: a simple math expression consisting of at least two operands
+//and one operator, surrounded (optionally) by parentheses
+TOKEN: {
+  < #SIMPLE_EXPRESSION: (
+    <OPT_WS> ( "(" )?
+    <OPERAND> ( <OPERATOR> <OPERAND> )+
+    ( ")" )? <OPT_WS>
+  ) >
+}
+
+TOKEN: {
+  <#NESTED_EXPRESSION: (
+    <OPT_WS>
+    ( "(" )? ( <OPERAND> <OPERATOR> "(" )*
+    <SIMPLE_EXPRESSION>
+    ( ")" <OPERATOR> <OPERAND> )* ( ")" )?
+    <OPT_WS>
+  ) >
+}
+
+//the full set of expressions
+TOKEN: {
+  <FORTRAN_EXPRESSION: (
+    <OPT_WS> ( <VARIABLE> <EQ> )?
+    ( 
+      ( <SIMPLE_EXPRESSION> | <NESTED_EXPRESSION> )
+      ( <OPERATOR> 
+        ( <SIMPLE_EXPRESSION> | <NESTED_EXPRESSION> ) 
+      )* 
+    )
+    <OPT_WS>
+  ) >
+}
+
+//~----------------------------------------------------------------------------
+// FORTRAN VARIABLE ASSIGNMENTS
+//~----------------------------------------------------------------------------
+TOKEN: {
+  <VAR_ASSIGN: (
+    <VARIABLE> <EQ> <OPERAND>
+  ) >
+}
+
+//~----------------------------------------------------------------------------
 //FORTRAN VARIABLE TYPES
 //~----------------------------------------------------------------------------
 
@@ -720,6 +789,16 @@ String convertFortranTokens(  ) : {
     s = s.substring( 1, s.length(  ) );
     s = "//" + s;
     return s;
+  }
+|
+  //some kind of math expression
+  t = <FORTRAN_EXPRESSION> {
+    return t.image;
+  }
+|
+  //variable assignment
+  t = <VAR_ASSIGN> {
+    return t.image;
   }
 |
   //matched the absolute function
