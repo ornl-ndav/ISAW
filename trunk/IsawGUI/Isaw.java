@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.115  2002/09/30 20:54:27  pfpeterson
+ *  Changed default version number.
+ *
  *  Revision 1.114  2002/08/15 21:09:41  pfpeterson
  *  Updated links due to changes in IPNS website.
  *
@@ -714,7 +717,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version")){
-            version="1.4.1alpha";
+            version="1.4.1";
         }else{
             version=SharedData.VERSION;
         }
