@@ -6,6 +6,12 @@
  *  Basic time-of-flight calculations on DataSets and Data blocks
  *
  *  $Log$
+ *  Revision 1.5  2000/12/15 05:16:46  dennis
+ *  Fixed bugs in preliminary version:
+ *  1.Bank angles are really 2*theta
+ *  2.Now works for very small angle ranges, eg. one detector
+ *  3.New Data's Detector position was set wrong.
+ *
  *  Revision 1.4  2000/12/13 00:09:26  dennis
  *  Added static method IncSpecFocus to focus the incident spectrum
  *  to a bank of detectors for a powder diffractometer.
@@ -199,11 +205,13 @@ public static Data IncSpecFocus( Data    monitor_spec,
   float new_x[] = new_tof_scale.getXs();
   float new_y[] = new float[ new_x.length-1 ];
 
+                           // The angles specify the scattering angle "2 theta"
+                           // so divide by 2 when converting to radians.
   float path_length_ratio = path_length/new_path_length;
-  float min_theta_ratio   = (float)(Math.sin( theta_min * Math.PI/180.0 ) / 
-                                    Math.sin( theta * Math.PI/180.0 )     );
-  float max_theta_ratio   = (float)(Math.sin( theta_max * Math.PI/180.0 ) / 
-                                    Math.sin( theta * Math.PI/180.0 )     );
+  float min_theta_ratio   = (float)(Math.sin( theta_min * Math.PI/360.0 ) / 
+                                    Math.sin( theta * Math.PI/360.0 )     );
+  float max_theta_ratio   = (float)(Math.sin( theta_max * Math.PI/360.0 ) / 
+                                    Math.sin( theta * Math.PI/360.0 )     );
 
   float new_tof,
         min_tof,
@@ -232,27 +240,32 @@ public static Data IncSpecFocus( Data    monitor_spec,
 
     min_index = arrayUtil.get_index_of( min_tof, old_x );
     max_index = arrayUtil.get_index_of( max_tof, old_x );
+
     if ( min_index != -1 && max_index != -1 && max_index < new_x.length-1 )
     {
-                                             // sum up counts from part of first
-                                             // bin, all of the complete bins
+      if ( min_index == max_index )          // degenerates to one bin, use it
+        new_y[i] = old_y[ min_index ];
+      
+      else                                   // sum up counts from part of first
+      {                                      // bin, all of the complete bins
                                              // in the middle and part of last
                                              // bin
-      first_fraction =  ( old_x[ min_index + 1 ] - min_tof ) /
-                        ( old_x[ min_index + 1 ] - old_x[ min_index ] ) ;
-      total = first_fraction * old_y[ min_index ];
+        first_fraction = ( old_x[ min_index + 1 ] - min_tof ) /
+                         ( old_x[ min_index + 1 ] - old_x[ min_index ] ) ;
+        total = first_fraction * old_y[ min_index ];
 
-      for ( int j = min_index + 1; j < max_index; j++ )
-        total += old_y[j];
+        for ( int j = min_index + 1; j < max_index; j++ )
+          total += old_y[j];
 
-      last_fraction =  ( max_tof            - old_x[ max_index ] ) /
-                       ( old_x[ max_index + 1 ] - old_x[ max_index ] ) ;
-      total += last_fraction * old_y[ max_index ];
-                                             // divide by the number of bins 
-                                             // summed.  For non-uniform time
-                                             // scales this is NOT correct.
-      new_y[i] = total / 
+        last_fraction = ( max_tof            - old_x[ max_index ] ) /
+                        ( old_x[ max_index + 1 ] - old_x[ max_index ] ) ;
+        total += last_fraction * old_y[ max_index ];
+                                               // divide by the number of bins 
+                                               // summed.  For non-uniform time
+                                               // scales this is NOT correct.
+        new_y[i] = total / 
                  (first_fraction + max_index - min_index - 1 + last_fraction);
+      }
     }
     else
       new_y[i] = 0;
@@ -262,9 +275,19 @@ public static Data IncSpecFocus( Data    monitor_spec,
   new_data.setAttribute( new FloatAttribute( Attribute.INITIAL_PATH, 
                                              initial_path )); 
   DetectorPosition det_pos = new DetectorPosition();
-  det_pos.setSphericalCoords( new_path_length-initial_path, theta, 0 );
+  det_pos.setSphericalCoords( new_path_length-initial_path, 
+                             (float)(theta * Math.PI / 180.0), 
+                             (float)Math.PI/2  );
   new_data.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS,
                                               det_pos ) ); 
+//  System.out.println("radius = " + (new_path_length-initial_path) );
+//  System.out.println("theta  = " + theta );
+//  System.out.println("phi    = " + Math.PI/2  );
+//  System.out.println( "Detector Postion = " + det_pos );
+//  float junk[] = det_pos.getSphericalCoords();
+//  System.out.println( "Sphereical coords = " + junk[0] + 
+//                                        ", " + junk[1] + 
+//                                        ", " + junk[2]  );
   return new_data;
 }
  
