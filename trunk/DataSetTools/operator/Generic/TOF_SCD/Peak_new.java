@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/07/30 14:11:07  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.1  2004/07/14 16:07:49  rmikk
  * Initial Checkin.
  * This class finds peaks when detectors are not vertical
@@ -193,7 +196,10 @@ public class Peak_new extends Peak{
   /**
    * Mutator method for index
    *
-   * @param propagate whether or not to propagate the change in hkl to
+   * @param H   The H value
+   * @param K   The K value
+   * @param L   The L value
+   * NOTE: These values will be propogated unless UB==null
    * the other representations.
    */
   public void sethkl( float H, float K, float L){
