@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2003/07/15 22:57:22  bouzekc
+ *  getVectorValue() now calls getValue(), rather than just
+ *  returning the value.  Modified StringtoArray to handle
+ *  colons in non-numeric Strings.
+ *
  *  Revision 1.18  2003/07/11 21:29:36  bouzekc
  *  Removed a call to setValue() that prevented displaying the
  *  ArrayPG's value on occasion.
@@ -253,7 +258,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @return The Vector cast value of this ArrayPG.
    */
   public Vector getVectorValue(  ) {
-    return value;
+    return ( Vector )getValue(  );
   }
 
   /**
@@ -293,9 +298,12 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     //we'll parse the String into a Vector
     String temp          = S;
     String expansion;
+    String frontTemp;
+    String backTemp;
     Vector elements      = new Vector(  );
     Vector expanded;
     execOneLine execLine = new execOneLine(  );
+    int colIndex;
 
     //pull out the brackets
     temp   = temp.replace( '[', ' ' );
@@ -316,18 +324,33 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     //Backwards traverse so we can remove a:b elements and parse them
     for( int k = elements.size(  ) - 1; k >= 0; k-- ) {
       //ignore bad types...we will assume that they wanted a String
-      expansion = elements.elementAt( k )
-                          .toString(  );
+      expansion   = elements.elementAt( k )
+                            .toString(  );
+      colIndex = expansion.indexOf( ":" );
 
-      if( expansion.indexOf( ":" ) > 0 ) {
-        //yank it out
-        elements.remove( k );
+      if( colIndex > 0 ) {
+        //we need to trap things like C:\\windows
+        frontTemp   = expansion.substring( 0, colIndex );
+        backTemp    = expansion.substring( colIndex + 1, expansion.length(  ) );
 
-        //assuming this is an integer expansion, and execOneLine needs "[]"
-        expansion = "[" + expansion + "]";
+        try {
+          //try this as a digit:digit pair.  We don't care about the parse,
+          //just whether or not we can
+          Integer.parseInt( frontTemp );
+          Integer.parseInt( backTemp );
 
-        //add the Collection (i.e. new Vector)
-        elements.addAll( k, parseLine( execLine, expansion ) );
+          //if we got this far, we are good to go, so remove the element
+          elements.remove( k );
+
+          //assuming this is an integer expansion, and execOneLine needs "[]"
+          expansion = "[" + expansion + "]";
+
+          //add the Collection (i.e. new Vector)
+          elements.addAll( k, parseLine( execLine, expansion ) );
+        } catch( NumberFormatException nfe ) {
+          //not an expandable integer list, so just drop this exception on the
+          //floor
+        }
       }
     }
 
@@ -496,49 +519,47 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
 
     Vector vals = new Vector(  );
 
-    vals.add( "bob" );
-    vals.add( "bob" );
-    vals.add( "doug" );
+    vals.add( "C:\\\\Windows\\System" );
+    vals.add( "/home/myhome/atIPNS" );
+    vals.add( "some/more\\random@garbage!totry2" );
+    vals.add( "10:15" );
 
     fpg = new ArrayPG( "a", vals );
+    System.out.println( "Before calling init, the ArrayPG is " );
     System.out.println( fpg );
     fpg.init(  );
-    fpg.showGUIPanel( 0, y );
-    y += dy;
+    System.out.print( fpg.getValue(  ) + "\n" );
+    System.exit( 0 );
 
-    vals.add( new StringBuffer( "tim" ) );
-    fpg = new ArrayPG( "b", vals );
-    System.out.println( fpg );
-    fpg.setEnabled( false );
-    fpg.init(  );
-    fpg.showGUIPanel( 0, y );
-    y += dy;
-
-    vals = new Vector(  );
-
-    for( int i = 1; i <= 20; i++ ) {
-      vals.add( new Integer( i ) );
-    }
-
-    fpg = new ArrayPG( "c", vals, false );
-    System.out.println( fpg );
-    fpg.setEnabled( false );
-    fpg.init(  );
-    fpg.showGUIPanel( 0, y );
-    y += dy;
-
-    vals = new Vector(  );
-
-    for( float f = 1f; f < 100; f *= 2 ) {
-      vals.add( new Float( f ) );
-    }
-
-    fpg = new ArrayPG( "d", vals, true );
-    System.out.println( fpg );
-    fpg.setDrawValid( true );
-    fpg.init( vals );
-    fpg.showGUIPanel( 0, y );
-    y += dy;
+    /*fpg.showGUIPanel( 0, y );
+       y += dy;
+       vals.add( new StringBuffer( "tim" ) );
+       fpg = new ArrayPG( "b", vals );
+       System.out.println( fpg );
+       fpg.setEnabled( false );
+       fpg.init(  );
+       fpg.showGUIPanel( 0, y );
+       y += dy;
+       vals = new Vector(  );
+       for( int i = 1; i <= 20; i++ ) {
+         vals.add( new Integer( i ) );
+       }
+       fpg = new ArrayPG( "c", vals, false );
+       System.out.println( fpg );
+       fpg.setEnabled( false );
+       fpg.init(  );
+       fpg.showGUIPanel( 0, y );
+       y += dy;
+       vals = new Vector(  );
+       for( float f = 1f; f < 100; f *= 2 ) {
+         vals.add( new Float( f ) );
+       }
+       fpg = new ArrayPG( "d", vals, true );
+       System.out.println( fpg );
+       fpg.setDrawValid( true );
+       fpg.init( vals );
+       fpg.showGUIPanel( 0, y );
+       y += dy;*/
   }
 
   /**
