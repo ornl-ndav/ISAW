@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.75  2002/01/14 20:30:28  pfpeterson
+ *  Modified to use writer interface for GSAS files.
+ *  Removed menu item for explicit GSAS export. Done through 'Save As' now.
+ *
  *  Revision 1.74  2002/01/10 17:07:24  rmikk
  *  Now most SaveAs filechoosers remember the last Save
  *  directory
@@ -344,7 +348,7 @@ public class Isaw
   
 
   private static final String SAVE_ISAW_DATA_MI  = "Save As";
-  private static final String GSAS_EXPORT_MI     = "Export As GSAS Powder File";
+  //private static final String GSAS_EXPORT_MI     = "Export As GSAS Powder File";
   private static final String DB_IMPORT_MI       = "Search Database";
   private static final String EXIT_MI            = "Exit";
 
@@ -573,7 +577,7 @@ public class Isaw
      JMenuItem script_loader = new JMenuItem( LOAD_SCRIPT_MI );       
     
     JMenuItem fileSaveData = new JMenuItem( SAVE_ISAW_DATA_MI );
-    JMenuItem fileSaveDataAs = new JMenuItem( GSAS_EXPORT_MI );
+    //JMenuItem fileSaveDataAs = new JMenuItem( GSAS_EXPORT_MI );
     JMenuItem dbload = new JMenuItem( DB_IMPORT_MI );
     JMenuItem fileExit = new JMenuItem( EXIT_MI );
 
@@ -658,9 +662,9 @@ public class Isaw
 
     fMenu.add(script_loader);
     
-    fMenu.addSeparator();
+    //fMenu.addSeparator();
     fMenu.add(fileSaveData);
-    fMenu.add(fileSaveDataAs);
+    //fMenu.add(fileSaveDataAs);
     fMenu.addSeparator();
     
    // fMenu.addSeparator();
@@ -728,7 +732,7 @@ public class Isaw
     script_loader.addActionListener(  new ScriptLoadHandler(this)  );
 
     fileSaveData.addActionListener(   new MenuItemHandler()        );
-    fileSaveDataAs.addActionListener( new MenuItemHandler()        );
+    //fileSaveDataAs.addActionListener( new MenuItemHandler()        );
     dbload.addActionListener(         new MenuItemHandler()        );
     
     
@@ -1380,28 +1384,31 @@ public class Isaw
       if( s.equals( System.getProperty("Inst13_Name") )  )
         setupLiveDataServer( "Inst13_Path" );
  
-      if( s.equals(GSAS_EXPORT_MI) )
-      {
-        //fc = new JFileChooser(new File(System.getProperty("user.dir")) );
-        if( filename == null)
-           filename = System.getProperty("user.dir");
-        fc.setCurrentDirectory( new File(filename));          
-        int state = fc.showSaveDialog(null);
-        if (state ==0 && fc.getSelectedFile() != null)
-        {
-          File f = fc.getSelectedFile();
-          filename =f.toString();
-   
-          MutableTreeNode node = jdt.getSelectedNode();
-          if( node instanceof DataSetMutableTreeNode )
-          {
-            DataSet ds = ( (DataSetMutableTreeNode)node ).getUserObject();
-         	DataSet mon_ds = ( (DataSetMutableTreeNode)(node.getParent().getChildAt(0)) ).getUserObject();
-            
-		gsas_filemaker pdf_output = new gsas_filemaker( mon_ds, ds, filename);
-          }
-        }
-      }
+      /* if( s.equals(GSAS_EXPORT_MI) )
+	 {
+	 //fc = new JFileChooser(new File(System.getProperty("user.dir")) );
+	 if( filename == null)
+	 filename = System.getProperty("user.dir");
+	 fc.setCurrentDirectory( new File(filename));          
+	 int state = fc.showSaveDialog(null);
+	 if (state ==0 && fc.getSelectedFile() != null)
+	 {
+	 File f = fc.getSelectedFile();
+	 filename =f.toString();
+	 
+	 MutableTreeNode node = jdt.getSelectedNode();
+	 if( node instanceof DataSetMutableTreeNode )
+	 {
+	 DataSet ds = ( (DataSetMutableTreeNode)node ).getUserObject();
+	 DataSet mon_ds = 
+	 ( (DataSetMutableTreeNode)(node.getParent().getChildAt(0)) ).getUserObject();
+	 
+	 DataSetTools.writer.GsasWriter gw=
+	 new DataSetTools.writer.GsasWriter(filename);
+	 gw.writeDataSets(new DataSet[] {mon_ds,ds});
+	 }
+	 }
+	 } */
      
 
       if( s.equals(IMAGE_VIEW_MI) )
