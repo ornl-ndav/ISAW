@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2004/07/29 14:16:26  dennis
+ *  Changed default color scale to Heat 2.
+ *
  *  Revision 1.26  2004/06/18 20:32:54  rmikk
  *  Added eoln to the two new properties NSavedFiles and ShortSavedFilename
  *
@@ -324,7 +327,7 @@ public class DefaultProperties{
             .append("# Viewer Options").append(eol)
             .append("#").append(eol)
             .append("Default_Instrument=HRCS").append(eol)
-            .append("ColorScale=Optimal").append(eol)
+            .append("ColorScale=Heat 2").append(eol)
             .append("ViewDetectors=Filled").append(eol)
             .append("#ViewGroups=Medium").append(eol)
             .append("#RebinFlag=false").append(eol)
