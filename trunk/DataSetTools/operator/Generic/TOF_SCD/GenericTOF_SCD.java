@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2005/01/07 17:52:53  dennis
+ * Now sets category list based on instrument type String from Operator
+ * base class.
+ *
  * Revision 1.4  2003/06/16 19:07:38  pfpeterson
  * Removed old code and updated to work with new getCategoryList() code
  * in base operator class.
@@ -36,12 +40,12 @@
  * Revision 1.3  2002/11/27 23:22:20  pfpeterson
  * standardized header
  *
- *
  */
 
 package DataSetTools.operator.Generic.TOF_SCD;
 
 import java.io.*;
+import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.GenericOperator;
 
 /**
@@ -55,7 +59,7 @@ import DataSetTools.operator.Generic.GenericOperator;
  */
 
 abstract public class GenericTOF_SCD extends    GenericOperator 
-                                                 implements Serializable
+                                                implements Serializable
 {
    private static String[] categoryList=null;
    protected GenericTOF_SCD( String title )
@@ -79,7 +83,7 @@ abstract public class GenericTOF_SCD extends    GenericOperator
   public String[] getCategoryList()
   {
     if(categoryList==null)
-      categoryList=createCategoryList();
+      categoryList = Operator.TOF_NSCD;
 
     return categoryList;
   }

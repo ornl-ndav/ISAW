@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2005/01/07 17:52:52  dennis
+ *  Now sets category list based on instrument type String from Operator
+ *  base class.
+ *
  *  Revision 1.4  2003/06/16 19:07:16  pfpeterson
  *  Removed old code and updated to work with new getCategoryList() code
  *  in base operator class.
@@ -52,6 +56,7 @@
 package DataSetTools.operator.Generic.TOF_DG_Spectrometer;
 
 import java.io.*;
+import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.GenericOperator;
 
 /**
@@ -89,7 +94,7 @@ abstract public class GenericTOF_DG_Spectrometer extends    GenericOperator
   public String[] getCategoryList()
   {
     if(categoryList==null)
-      categoryList=createCategoryList();
+      categoryList = Operator.TOF_NDGS;
 
     return categoryList;
   }
