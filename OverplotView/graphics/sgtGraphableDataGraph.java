@@ -6,6 +6,11 @@ package OverplotView.graphics;
  * graphical output panel
  *
  * $Log$
+ * Revision 1.5  2001/06/29 15:06:55  neffk
+ * the correct labels, units, and title appear on the graph.  also, the number
+ * of spectra now correspond to the number of selections (fixed in previous
+ * revision).
+ *
  * Revision 1.4  2001/06/29 14:17:47  neffk
  * graph no longer has a stray line going from the origin to the end of the
  * spectra.  also, this class no longer extends JApplet.
@@ -50,7 +55,6 @@ import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 
 public class sgtGraphableDataGraph 
-//  extends JApplet
   implements IGraphableDataGraph
 { 
 
@@ -75,25 +79,24 @@ public class sgtGraphableDataGraph
   }
 
 
-
-
+  /**
+   * type converter.  this function converts GraphableData to SimpleLine
+   * objects.
+   */
   private SGTData convert_GraphableData_to_SGTData( GraphableData d )
   {
-
                                            //set up names and units
                                            //meta data for each line
-    String name = (String)d.getAttributeList().getAttributeValue( 
-                                                 GraphableData.NAME );
+    String x_label = (String)attrs.getAttributeValue( 
+                                                 IGraphableDataGraph.X_LABEL );
     String x_units = (String)attrs.getAttributeValue( 
                                                  IGraphableDataGraph.X_UNITS );
-    SGTMetaData x_meta = new SGTMetaData( name, x_units );
-    name = (String)d.getAttributeList().getAttributeValue( GraphableData.NAME );
+    String y_label = (String)attrs.getAttributeValue( 
+                                                 IGraphableDataGraph.Y_LABEL );
     String y_units = (String)attrs.getAttributeValue( 
-                                     IGraphableDataGraph.Y_UNITS );
-    SGTMetaData y_meta = new SGTMetaData( name, y_units );
-
-
-    System.out.println( "name: " + name );
+                                                 IGraphableDataGraph.Y_UNITS );
+    SGTMetaData x_meta = new SGTMetaData( x_label, x_units );
+    SGTMetaData y_meta = new SGTMetaData( y_label, y_units );
 
                                     //get the y-values and convert
                                     //them to double[]
@@ -121,10 +124,6 @@ public class sgtGraphableDataGraph
                                 //the x- or y-values will be fence posts, which
                                 //ever is larger by 1.
 
-                                //graph data as a tabulated function
-    if( !data_block.isHistogram()  )
-    {
-    }
 
                                 //graph histogram data.  there are a variety of
                                 //ways to do this... one could arbitrarily
@@ -132,7 +131,7 @@ public class sgtGraphableDataGraph
                                 //force it to correspond to the value, or find
                                 //the center of the bin, or actually draw it as
                                 //a histogram, with a 'bump' for every bin.
-    else                        
+    if( data_block.isHistogram()  )
     {
       double[] x = new double[  x_values.length * 2 - 2 ]; 
       double[] y = new double[  y_values.length * 2     ];
@@ -140,31 +139,30 @@ public class sgtGraphableDataGraph
       for( int i=0;  i<y_values.length;  i++ )
       {
 /*
-        //
-        // draws the histogram with sides.  if this is used in the
-        // future, increase the size of x[] and y[], and imcrement i by 2
-        //
+                         //draws the histogram with sides.  
+                         //if this is used in the future, 
+                         //increase the size of x[] and y[], 
         x[i] = x_values[j];    //left side of the bin
-        y[i]=0.0;                 
-        x[i+1] = x_values[j]; 
-        y[i+1] = y_values[j];
+        y[i]=0.0;              // ...  
+        x[i+1] = x_values[j];  // ...
+        y[i+1] = y_values[j];  // ...
 
         x[i+2] = x_values[j+1]; //top of bin
-        y[i+2] = y_values[j];
+        y[i+2] = y_values[j];   // ...
 
         x[i+3] = x_values[j+1];  //right side of the bin
-        y[i+3] = 0.0;
+        y[i+3] = 0.0;            // ...
 */
 
-        //
-        // draws the histogram as a series of connected horizontal lines
-        //
-        x[ i*2 ] = x_values[i];      //left end
-        y[ i*2 ] = y_values[i];      //  ...
-        x[ i*2 + 1 ] = x_values[i+1];  //right end
-        y[ i*2 + 1 ] = y_values[i];    //  ...
+                              //draws the histogram as a series 
+                              //of connected horizontal lines
+        x[ i*2 ] = x_values[i];
+        y[ i*2 ] = y_values[i];
+        x[ i*2 + 1 ] = x_values[i+1];
+        y[ i*2 + 1 ] = y_values[i];
 
       }
+
       x_values = x;
       y_values = y;
     }
@@ -247,7 +245,7 @@ public class sgtGraphableDataGraph
 
 
   /**
-   * set units and labels
+   * set units, labels, etc
    */
   public void setAttributeList( AttributeList l )
   {
