@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.182  2004/01/27 18:34:19  dennis
+ *  DataSet[0] tag prefix was removed from the "experiment" tree
+ *  node, when the DataSets are loaded from a file.  The file
+ *  suffix, such as .run, .nxs, .isd is still included.
+ *
  *  Revision 1.181  2004/01/26 17:05:07  rmikk
  *  The node name on the tree from the Latest Opened files now
  *     corresponds to the filename
@@ -1346,21 +1351,22 @@ public class Isaw
       }
 
                                   //loads a file that was stored using
-                                  //ISAW's proprietary file structure (?)
+                                  //ISAW's serialized data, file structure
                                   //instead of other neutron data formats.
                                   //hence, there is only one DataSet object
                                   //to be loaded.
       if( s.equals(LOAD_LOCAL_DATA_MI) )
       {
         try
-        { if( filename == null) filename= SharedData.getProperty("user.home");
+        { 
+          if( filename == null) filename= SharedData.getProperty("user.home");
                                              //create a file dialog box and get
                                              //which file to open
           String msg = new String( "Please choose the File to open" );
           FileDialog fc = new FileDialog(  new Frame(), 
                                            msg, 
                                            FileDialog.LOAD  );
-	  fc.setDirectory(  filename  );
+	  fc.setDirectory( filename );
           fc.show();
           File f = new File( fc.getDirectory(), fc.getFile() );
           filename = f.toString();
@@ -1369,9 +1375,9 @@ public class Isaw
                                 //add it to the tree and other 
                                 //dependants
           DataSet[] dss = new DataSet[1];  dss[0] = ds;
-          addNewDataSets(  dss, dss[0].toString()  );
-          if( dss != null) if( dss.length >0)AddNewFiles( filename);
-          
+          addNewDataSets( dss, dss[0].toString() );
+          if( dss != null && dss.length > 0 ) 
+            AddNewFiles(filename);
         }
         catch( Exception e )
         {
@@ -1959,7 +1965,6 @@ public class Isaw
  
       if( node == null ) 
       {
-
                     //this must be a new DataSet object...
                     //put it in the modified folder on 
                     //the tree and send to command pane
@@ -1976,13 +1981,12 @@ public class Isaw
     else if( reason instanceof DataSet[]){
        DataSet[] DSS = (DataSet[])reason;
        if( DSS != null) if(DSS.length > 0){
-           Object name = DSS[0].getAttributeValue( Attribute.FILE_NAME);
+           Object name = DSS[0].getAttributeValue(Attribute.FILE_NAME);
            if( name == null)
               name = DSS[0].toString();
            else
               name = (Object)(""+DSS[0].getTag()+":"+(new File(name.toString())).getName());
            addNewDataSets( DSS, name.toString());
-
        }
  
     }else
@@ -2146,11 +2150,8 @@ public class Isaw
          if( DSS != null)
            if( DSS.length > 0)
             {
-              addNewDataSets( DSS , 
-                         ""+DSS[0].getTag()+":"+files[i].getName()  );
-   
-               util.appendDoc(  sessionLog, "Load " + files[i].toString()  );
-              
+              addNewDataSets( DSS, files[i].getName() );
+              util.appendDoc(  sessionLog, "Load " + files[i].toString()  );
             }
 	}
     return;
