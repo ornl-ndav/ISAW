@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.50  2003/06/10 15:28:46  pfpeterson
+ * Added an explicit check to see if the file exists before trying to
+ * 'Load' it. Returns a more appropriate error message with this failure.
+ *
  * Revision 1.49  2003/06/10 15:20:05  pfpeterson
  * Fixed null pointer exception while loading.
  *
@@ -732,6 +736,15 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         int i,
             j;
         
+        {
+          File file=new File(filename);
+          if(! file.exists()){
+            seterror(1000, "File does not exist: "+filename);
+            return null;
+          }
+          file=null;
+        }
+
         Util util = new Util();
         filename = StringUtil.setFileSeparator(filename);
         String Ext;
