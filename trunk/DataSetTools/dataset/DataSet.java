@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2003/10/15 23:50:12  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.38  2003/07/07 20:33:30  dennis
  *  Added method to remove all operators from a DataSet.
  *
@@ -1609,8 +1612,8 @@ public class DataSet implements IAttributeList,
    * list of the current DataSet to obtain a new attribute list for the
    * current DataSet.
    *
-   *  @param  d    The DataSet whose attribute list is to be combined
-   *               with the current object's attribute list
+   *  @param  ds    The DataSet whose attribute list is to be combined
+   *                with the current object's attribute list
    */
    public void CombineAttributeList( DataSet ds )
    {
@@ -1802,7 +1805,7 @@ public class DataSet implements IAttributeList,
   * @param  mode    Either IXmlIO.Base64 to write spectra information 
   *                 efficiently or IXmlIO.Normal to produce ASCII values
   *
-  * @returns  true if successful otherwise false
+  * @return  true if successful otherwise false
   *
   * @see  #DataSet( boolean) Constructor
   *
