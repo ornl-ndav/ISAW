@@ -71,13 +71,18 @@ public class SpectrometerTofDataSetFactory extends    DataSetFactory
 
                                                     // add the list of TOF
                                                     // Spectrometer operations
-    new_ds.addOperator( new SpectrometerPlotter() );
-    new_ds.addOperator( new SpectrometerEvaluator() );
-    new_ds.addOperator( new SpectrometerNormalizer());
-    new_ds.addOperator( new SpectrometerMacro() );
+                                                    
+    
+   
     new_ds.addOperator( new SpectrometerTofToEnergyLoss() );
     new_ds.addOperator( new SpectrometerTofToEnergy() );
     new_ds.addOperator( new SpectrometerTofToWavelength() );
+    new_ds.addOperator( new SpectrometerTofToChannel() );
+    
+    
+    //new_ds.addOperator( new SpectrometerMacro() );
+ 
+    
     
     return new_ds;
   }
