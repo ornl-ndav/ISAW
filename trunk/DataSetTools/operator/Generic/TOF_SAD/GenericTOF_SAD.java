@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2005/01/07 17:52:52  dennis
+ * Now sets category list based on instrument type String from Operator
+ * base class.
+ *
  * Revision 1.1  2003/07/05 22:10:25  dennis
  * Base class for ISAW operators that process SAD data.
  *
@@ -35,6 +39,7 @@
 package DataSetTools.operator.Generic.TOF_SAD;
 
 import java.io.*;
+import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.GenericOperator;
 
 /**
@@ -71,7 +76,7 @@ abstract public class GenericTOF_SAD extends GenericOperator
   public String[] getCategoryList()
   {
     if(categoryList==null)
-      categoryList=createCategoryList();
+      categoryList = Operator.TOF_NSAS;
 
     return categoryList;
   }
