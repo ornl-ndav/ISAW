@@ -27,6 +27,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.8  2004/05/12 02:00:30  bouzekc
+ * Added code to reformat and display Python error messages.  Some errors
+ * are still not caught-some class using this one is reformatting them on its
+ * own.
+ *
  * Revision 1.7  2004/03/15 03:28:22  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -63,13 +68,13 @@ import DataSetTools.parameter.*;
 
 import DataSetTools.util.*;
 
-import org.python.core.*;
-
-import org.python.util.*;
-
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
+
+import org.python.core.*;
+
+import org.python.util.*;
 
 import java.beans.*;
 
@@ -94,20 +99,20 @@ import javax.swing.text.Document;
  */
 public class PyScriptOperator extends GenericOperator
   implements IScriptProcessor {
-  //~ Instance fields **********************************************************
+  //~ Instance fields ----------------------------------------------------------
 
-  private PythonInterpreter interp;
-  private PyScript script;
-  private String scriptFile;
-  private IObserverList obss;
-  private Vector Dsets;
+  private PythonInterpreter     interp;
+  private PyScript              script;
+  private String                scriptFile;
+  private IObserverList         obss;
+  private Vector                Dsets;
   private PropertyChangeSupport PS;
-  private String errormessage;
+  private String                errormessage;
   private ByteArrayOutputStream eos;
-  private boolean IAmOperator = false;
-  private int errLineNum = -1;
+  private boolean               IAmOperator = false;
+  private int                   errLineNum  = -1;
 
-  //~ Constructors *************************************************************
+  //~ Constructors -------------------------------------------------------------
 
   /**
    * Constructor for creating a PyScriptOperator out of a Document.
@@ -137,10 +142,8 @@ public class PyScriptOperator extends GenericOperator
     int numParams = oldPSO.getNum_parameters(  );
 
     for( int i = 0; i < numParams; i++ ) {
-      tempVal = oldPSO.getParameter( i )
-                      .getValue(  );
-      this.getParameter( i )
-          .setValue( tempVal );
+      tempVal = oldPSO.getParameter( i ).getValue(  );
+      this.getParameter( i ).setValue( tempVal );
     }
   }
 
@@ -158,7 +161,7 @@ public class PyScriptOperator extends GenericOperator
     initOperator(  );
   }
 
-  //~ Methods ******************************************************************
+  //~ Methods ------------------------------------------------------------------
 
   /**
    * Accessor method for the categoryList. Uses the internal interpreter to
@@ -208,7 +211,7 @@ public class PyScriptOperator extends GenericOperator
    *         internal  DataSet array.
    */
   public final DataSet[] getDataSets(  ) {
-    int numDsets = Dsets.size(  );
+    int       numDsets = Dsets.size(  );
     DataSet[] DS;
     DS = new DataSet[numDsets];
 
@@ -242,7 +245,8 @@ public class PyScriptOperator extends GenericOperator
     } catch( InstantiationError ie ) {
       //setDefaultParameters can be called before it is at all useful, so we
       //will catch the exception and print a message.
-      System.out.println( ie.getMessage(  ) );
+      System.out.println( "Error in setDefaultParameters in PyScriptOperator " +
+        ie.getMessage(  ) );
     }
   }
 
@@ -308,8 +312,11 @@ public class PyScriptOperator extends GenericOperator
     if( errormessage == null ) {
       return -1;
     }
-    if( errLineNum >=0)
-        return errLineNum;
+
+    if( errLineNum >= 0 ) {
+      return errLineNum;
+    }
+
     return 0;
   }
 
@@ -376,8 +383,8 @@ public class PyScriptOperator extends GenericOperator
     //set the parameter in the Jython namespace
     interp.set( "tempParam", param );
 
-    PyObject pyBool = interp.eval( 
-        "innerClass.setParameter( tempParam," + index + ")" );
+    PyObject pyBool = interp.eval( "innerClass.setParameter( tempParam," +
+        index + ")" );
 
     //convert the PyObject to a useful Java Object
     Boolean bVal = ( Boolean )pyBool.__tojava__( Boolean.class );
@@ -441,6 +448,7 @@ public class PyScriptOperator extends GenericOperator
    */
   public final Object getResult(  ) {
     errLineNum = -1;
+
     if( !IAmOperator ) {
       //we must be working with a document that does not have a class
       //definition, so we'll try to just execute the document text
@@ -456,16 +464,16 @@ public class PyScriptOperator extends GenericOperator
 
         //interpreter hit an error when processing the document, so return it
         if( eos.size(  ) > 0 ) {
-          errormessage = "Error:" + eos.toString(  );
+          errormessage = "Error " + eos.toString(  );
 
-          return new ErrorString( "Error:" + eos.toString(  ) );
+          return new ErrorString( errormessage );
         }
 
         //we don't really have an inner class to work with here, so we will
         //try to get the "Result" from the Jython code.  If we can't get it,
         //then we have to assume that no one set it, and continue on.
         PyObject pyResult = interp.get( "Result" );
-        Object result     = null;
+        Object   result = null;
 
         if( pyResult != null ) {
           result = ( Object )pyResult;
@@ -474,8 +482,10 @@ public class PyScriptOperator extends GenericOperator
         return result;
       } catch( PyException s ) {
         //hit some sort of Python syntax error
-        errormessage = "ERROR1:" + s.toString();
-        errLineNum = s.traceback.tb_lineno -1;
+        errormessage   = "ERROR1:" + s.toString(  );
+        errLineNum     = s.traceback.tb_lineno - 1;
+        SharedData.addmsg( reformatPythonError( s.value.toString(  ) ) );
+
         return new ErrorString( errormessage );
       } catch( Exception s ) {
         //some other exception-hopefully we don't ever hit this.
@@ -591,7 +601,7 @@ public class PyScriptOperator extends GenericOperator
 
     //convert the PyObject to a useful Java Object
     String stringRep = ( String )pyString.__tojava__( String.class );
-   
+
     return stringRep;
   }
 
@@ -658,8 +668,8 @@ public class PyScriptOperator extends GenericOperator
    * @param propName The name of the property.
    * @param pcl The PropertyChangeListener to add.
    */
-  public final void addPropertyChangeListener( 
-    String propName, PropertyChangeListener pcl ) {
+  public final void addPropertyChangeListener( String propName,
+    PropertyChangeListener pcl ) {
     PS.addPropertyChangeListener( propName, pcl );
   }
 
@@ -672,12 +682,13 @@ public class PyScriptOperator extends GenericOperator
    * @return A clone of this Operator.
    */
   public final Object clone(  ) {
-    DataSet[] newDS         = this.getDataSets(  );
+    DataSet[]        newDS  = this.getDataSets(  );
     PyScriptOperator newPSO = new PyScriptOperator( this );
 
     for( int i = 0; i < newDS.length; i++ ) {
       newPSO.addDataSet( newDS[i] );
     }
+
     newPSO.setIObserverList( obss );
 
     return newPSO;
@@ -728,12 +739,13 @@ public class PyScriptOperator extends GenericOperator
    *
    * @param pyInterp The PythonInterpreter to use to execute the statements.
    */
-  public final static void initImports( PythonInterpreter pyInterp ) {
+  public static final void initImports( PythonInterpreter pyInterp ) {
     String scriptsDir = SharedData.getProperty( "ISAW_HOME" );
 
     if( scriptsDir == null ) {
       return;
     }
+
     scriptsDir = StringUtil.setFileSeparator( scriptsDir + "/Scripts/" );
     pyInterp.execfile( scriptsDir + "default_imports.py" );
   }
@@ -746,8 +758,9 @@ public class PyScriptOperator extends GenericOperator
    */
   public final void propertyChange( PropertyChangeEvent e ) {
     if( PS == null ) {
-      return;  // no one to notify
+      return; // no one to notify
     }
+
     PS.firePropertyChange( e );
   }
 
@@ -772,6 +785,7 @@ public class PyScriptOperator extends GenericOperator
     } else {
       resetInterpreter(  );
     }
+
     resetVariables(  );
 
     //just reload the script if it already exists
@@ -781,14 +795,15 @@ public class PyScriptOperator extends GenericOperator
 
     if( IAmOperator ) {
       // execute the file (level 0) --> this throws the PyException
-      try {  // one is faster, the other throws exceptions with the right filename
+      try { // one is faster, the other throws exceptions with the right filename
         interp.exec( script.toString(  ) );
 
         //interp.execfile(script.getFilename());
       } catch( PyException e ) {
-        e.printStackTrace(  );
+        SharedData.addmsg( reformatPythonError( e.value.toString(  ) ) );
         throw PyScript.generateError( e, scriptFile );
       }
+
       interp.exec( "innerClass = " + script.getClassname(  ) + "(  )" );
     }
   }
@@ -863,7 +878,7 @@ public class PyScriptOperator extends GenericOperator
   private final void initInterpreter(  ) {
     // get preProperties, postProperties, and systemProperties
     Properties postProps = new Properties(  );
-    Properties sysProps  = System.getProperties(  );
+    Properties sysProps = System.getProperties(  );
 
     // put systemProperties (those set with -D) in postProps
     Enumeration e = sysProps.propertyNames(  );
@@ -892,10 +907,46 @@ public class PyScriptOperator extends GenericOperator
     } else {
       IAmOperator = false;
     }
+
     reset(  );
 
     if( IAmOperator ) {
       setDefaultParameters(  );
+    }
+  }
+
+  /**
+   * Utility method to reformat a PyException string to a friendlier value.
+   *
+   * @param err The error (PyException.value.toString(  )) to reformat.
+   */
+  private String reformatPythonError( String err ) {
+    StringBuffer myErr = new StringBuffer(  );
+
+    try {
+      //retrieve the message that was generated (e.g. invalid syntax).
+      String[] tokens = err.split( "," );
+
+      //error message/code
+      myErr.append( tokens[0].trim(  ).substring( 2, tokens[0].length(  ) - 1 ) );
+      myErr.append( " at line number " );
+
+      //line number
+      myErr.append( tokens[2].trim(  ) );
+      myErr.append( ", character " );
+
+      //character
+      myErr.append( tokens[3].trim(  ) );
+      myErr.append( " near code " );
+
+      //function name
+      myErr.append( tokens[4].trim(  ).substring( 1, tokens[4].length(  ) - 4 )
+        .trim(  ) );
+      myErr.append( "." );
+
+      return myErr.toString(  );
+    } catch( Exception e ) {
+      return "Could not generate a proper error message";
     }
   }
 
