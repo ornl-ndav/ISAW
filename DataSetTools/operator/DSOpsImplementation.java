@@ -1,23 +1,54 @@
 /*
- * @(#)DSOpsImplementation.java   0.1  2000/06/14   Dennis Mikkelson
+ * File:  DSOpsImplementation.java
  *             
+ * Copyright (C) 2000, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ *
  * This file contains static methods that actually implement operations
  * on DataSets such as add, subtract, multiply and divide for the 
  * corresponding operators.
  *
  *  $Log$
+ *  Revision 1.3  2001/04/26 19:04:34  dennis
+ *  Added copyright and GPL info at the start of the file.
+ *
  *  Revision 1.2  2000/07/21 19:33:33  dennis
  *  changed String comparisons from == to .equals()
  *
  *  Revision 1.1  2000/07/10 22:35:48  dennis
- *  July 10, 2000 version... many changes
+ *  Now Using CVS 
  *
  *  Revision 1.2  2000/06/15 16:24:59  dennis
  *  Added method DoDSScalarOps() to implement +,-,*,/ by scalars
  *
  *  Revision 1.1  2000/06/14 21:41:45  dennis
  *  Initial revision
- *
  *
  */
 
@@ -28,9 +59,15 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 
+/**
+ * This class contains static methods that actually implement operations
+ * on DataSets such as add, subtract, multiply and divide for the 
+ * corresponding operators.
+ */
+
 public final class DSOpsImplementation implements Serializable
 {
-  /**
+  /*
    *  Don't let anyone instantiate this class
    */
    private DSOpsImplementation(){}
