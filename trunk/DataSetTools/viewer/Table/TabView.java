@@ -31,13 +31,16 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.5  2001/08/13 14:50:03  rmikk
+ * Fixed misspelling of indicies
+ *
  * Revision 1.4  2001/08/13 14:38:02  rmikk
- * Improved a Menu title to indicate the indecies are used in
+ * Improved a Menu title to indicate the indicies are used in
  * selection.
  *
  * Revision 1.3  2001/08/09 21:49:59  rmikk
  * Added Documentation.
- * Incorporated Prompts to indicate that Group indecies are
+ * Incorporated Prompts to indicate that Group indicies are
  *    needed not Group ID's.
  * Added Displayable Fields- Raw Angle, Solid Angle, and
  *   Group Index
@@ -206,7 +209,7 @@ public class TabView extends DataSetViewer
                }
             op.setDefaultParameters();
             IntListString IString = new IntListString( "1,3:5" );        
-            Parameter PP = new Parameter( "Group Indecies=" , IString );        
+            Parameter PP = new Parameter( "Group Indicies=" , IString );        
             op.setParameter( PP , 1 );        
        
             DSSettableFieldString argument = new DSSettableFieldString( 
