@@ -4,6 +4,11 @@
  *  Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.10  2001/03/01 22:32:10  dennis
+ *  Now saves the last pointed at index and will redraw that
+ *  Data block ( if possible ) as the default Data block, when
+ *  a new DataSet is given to the viewer.
+ *
  *  Revision 1.9  2001/02/09 14:20:35  dennis
  *  Added last update time to graph title, if it is present as
  *  a Data attribute.
@@ -211,9 +216,12 @@ public void redraw( String reason )
     if ( n_data > 0 )
     {
       floatPoint2D pt = image_Jpanel.getCurrent_WC_point();
-      pt.y = getDataSet().getPointedAtIndex();
+      int  index = getDataSet().getPointedAtIndex();
+      pt.y = index;
       pt.y = pt.y * ( n_data - 1 )/ n_data + 0.5f;
       image_Jpanel.set_crosshair_WC( pt );
+
+      getState().setPointedAtIndex( index );
     }
   }
   else
@@ -930,18 +938,32 @@ private int DrawSelectedHGraphs()
 
 private void DrawDefaultDataBlock()
 {
-  if ( DrawSelectedHGraphs() <= 0 )      // try to draw selected graphs... if
-  {                                      // none, just draw the 0th one.
 
-    Data data_block = getDataSet().getData_entry(0);
+  if ( DrawSelectedHGraphs() <= 0 )      // try to draw selected graphs... if
+  {                                      // none, try to draw the last one
+                                         // that was pointed at.
+
+    int last_pointed_at = getState().getPointedAtIndex();
+    Data data_block     = getDataSet().getData_entry( last_pointed_at );
     if ( data_block != null )
     {
-      DrawHGraph( data_block, 0, false );
-      getDataSet().setPointedAtIndex(0);
+      DrawHGraph( data_block, 0, true );
+      getDataSet().setPointedAtIndex( last_pointed_at );
       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
     }
-    else
-      System.out.println("ERROR... no Data blocks in DataSet" );
+    else                                 // if none, try to draw data block 0
+    {
+      data_block = getDataSet().getData_entry(0);
+      if ( data_block != null )
+      {
+        DrawHGraph( data_block, 0, true );
+        getDataSet().setPointedAtIndex(0);
+        getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
+      }
+
+      else
+        System.out.println("ERROR... no Data blocks in DataSet" );
+    }
   }
 }
 
@@ -1066,6 +1088,7 @@ private Point ProcessImageMouseEvent( MouseEvent e,
     if ( getDataSet().getPointedAtIndex() != row )  // only change if needed
     { 
       getDataSet().setPointedAtIndex( row );
+      getState().setPointedAtIndex( row );
       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
     }
     DrawSelectedHGraphs();
