@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/04/22 21:51:41  hammonds
+ *  Fixed problem with CastClassExeption due to inconsistant use of Parameter vs iParameter(LoadFilePG) Class.
+ *
  *  Revision 1.3  2003/03/03 20:12:54  hammonds
  *  Documentation cleanup.  Convert to new Parameter types.
  *
@@ -113,7 +116,7 @@ public class LoadScriptArray extends GenericBatch implements Serializable
   public void setDefaultParameters()
   {
     parameters = new Vector();
-    Parameter inFile=new Parameter("Input File", new LoadFileString(""));
+    LoadFilePG inFile=new LoadFilePG("Input File", new LoadFileString(""));
     addParameter( inFile );
     IntegerPG head_in = new IntegerPG(" *# of header lines", 0);
     addParameter( head_in );
