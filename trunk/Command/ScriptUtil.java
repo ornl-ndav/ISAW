@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/09/08 18:25:16  rmikk
+ * Fixed the handling of special strings from scripts.
+ *
  * Revision 1.5  2003/06/27 16:28:58  rmikk
  * The displayType for displaying data sets is not case sensitive
  *   so it works with the viewManager
@@ -403,19 +406,17 @@ public class ScriptUtil{
   public static GenericOperator getOperator(String command,
                           Object[] param_vals) throws MissingResourceException{
     // initialize searching information
+    
     int num_vals=0;
     if(param_vals!=null) num_vals=param_vals.length;
-
     // determine possible operators
     int[] candidates=findOperator(command,num_vals);
-
     GenericOperator operator=null;
 
     // if there is only one choice our work is done
     if(candidates.length==1){
       // throws a ClassCastException if Operator not a GenericOperator
       operator=(GenericOperator)SCLH.getOperator(candidates[0]);
-
       // copy over the values into the parameters
       return (GenericOperator)configOperator(operator,param_vals);
     }
@@ -450,14 +451,13 @@ public class ScriptUtil{
 
     // determine possible operators
     int[] candidates=findOperator(command,num_vals);
-
     GenericOperator operator=null;
 
     // if there is only one choice our work is done
     if(candidates.length==1){
       // throws a ClassCastException if Operator not a GenericOperator
       operator=(GenericOperator)SCLH.getOperator(candidates[0]);
-
+      
       // copy over the values into the parameters
       return (GenericOperator)configOperator((Operator)operator.clone(),
                                                                    param_vals);
@@ -494,19 +494,19 @@ public class ScriptUtil{
       throw new IndexOutOfBoundsException("too many values for the number of "
                                           +"parameters");
     int max=Math.min(num_vals,num_param);
-
     // copy over the values into the parameters
+    
     IParameter param=null;
     for( int i=0 ; i<max ; i++ ){
       param=operator.getParameter(i);
       if(param instanceof IParameterGUI){
-        param.setValue(param_vals[i]);
+          param.setValue(param_vals[i]);
       }else{
         Object value=param.getValue();
         if( value instanceof String ){
           param.setValue(param_vals[i].toString());
         }else if( value instanceof SpecialString ){
-          param.setValue(param_vals[i].toString());
+          ((SpecialString)param.getValue()).setString(param_vals[i].toString());
         }else if(value instanceof Integer){
           param.setValue(new Integer(((Number)param_vals[i]).intValue()));
         }else if(value instanceof Float){
@@ -516,10 +516,8 @@ public class ScriptUtil{
         }else{
           param.setValue(param_vals[i]);
         }
-
       }
     }
-    
     // return the configured operator
     return operator;
   }
@@ -536,7 +534,6 @@ public class ScriptUtil{
     // make sure there are candidates
     if(candidates==null || candidates.length<=0)
       return -1;
-
     // if there is only one element return its value
     if(candidates.length==1)
       return candidates[0];
@@ -675,7 +672,6 @@ public class ScriptUtil{
     for( int i=0 ; i<result.length ; i++ ){
       result[i]=i+start;
     }
-
     return result;
   }
 
