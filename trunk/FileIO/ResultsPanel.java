@@ -31,7 +31,13 @@
  * Modified:
  *
  * $Log$
- * Revision 1.1  2003/12/10 19:10:27  bouzekc
+ * Revision 1.2  2004/01/23 16:00:38  dennis
+ * Modified by tworlton:
+ * Eliminated special characters from name of search results file.
+ * Underscores now replace all non-letters/numbers in the search string.
+ *
+ *
+ * Revision 1.10  2003/12/10 19:10:27  bouzekc
  * Added to CVS.
  *
  */
@@ -95,8 +101,14 @@ public class ResultsPanel extends JPanel {
     progress.setTitle("Search progress");
     progress.setSize(350,50);
     progress.show();
-
-    outname = searchPattern + "files.txt";
+// compose an output file name using legal file name characters
+    char[] chary = searchPattern.toCharArray();
+    char underscore = "_".charAt(0);
+    for (int i = 0; i < searchPattern.length(); i++)
+      if( !Character.isLetterOrDigit( chary[i] ))
+         chary[i] = underscore;
+    outname = new String(chary) + "_files.txt";
+    System.out.println("Search results stored in "+outname);
     File fout = new File(outname);
     if(fout.exists())
       fout.delete();
