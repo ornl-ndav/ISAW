@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/02/11 21:34:20  rmikk
+ *  Fixed a bug that occured with the new StringChoiceList Parameters.
+ *  This was a major change in the algorithm
+ *
  *  Revision 1.5  2001/11/27 18:39:07  dennis
  *  Set Editable to false. Only members of the list can be selected.(Ruth)
  *
@@ -96,7 +100,7 @@ public class JIStringListParameterGUI extends JParameterGUI
 
     public Parameter getParameter()
     {  
-        Class C = parameter.getValue().getClass();
+        /*Class C = parameter.getValue().getClass();
         
         try{
            SpecialString X = (SpecialString)(C.newInstance());            
@@ -107,6 +111,9 @@ public class JIStringListParameterGUI extends JParameterGUI
            }
         catch( Exception s)
          { System.out.println("Exception occurred "+ s);}
+        */
+        String s = (String)(combobox.getSelectedItem());
+        ((SpecialString)(parameter.getValue())).setString(s);
         return parameter;
     }
 }
