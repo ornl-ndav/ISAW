@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/07/07 20:34:32  bouzekc
+ * Now implicitly sets HAS_CONSTANTS by way of
+ * setConstantParamIndices().  Now takes Script name command
+ * line arguments.
+ *
  * Revision 1.11  2003/07/03 14:08:53  bouzekc
  * Added all missing javadoc comments and formatted existing
  * comments.
@@ -121,7 +126,6 @@ public class ScriptForm extends OperatorForm {
     this( filename );
     setParamClass( type );
     result_param.setName( name );
-    HAS_CONSTANTS = true;
     setConstantParamIndices( indices );
     setDefaultParameters(  );
   }
@@ -132,8 +136,7 @@ public class ScriptForm extends OperatorForm {
    * Testbed.
    */
   public static void main( String[] args ) {
-    ScriptForm form = new ScriptForm( 
-        "/IPNShome/bouzekc/ISAW/Scripts/find_multiple_peaks.iss" );
+    ScriptForm form = new ScriptForm( args[0] );
 
     System.out.println( "The Script title is " + form.getTitle(  ) );
   }
