@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.83  2003/09/18 19:59:14  bouzekc
+ * Now saves error files to the project directory, if it exists.  In addition,
+ * the day and month are recorded in the error file name.
+ *
  * Revision 1.82  2003/09/18 18:46:21  bouzekc
  * Fixed bug where loading a file from the command line would not show the
  * last valid Form.  Fixed bug where a file loaded from the menu would not
@@ -402,6 +406,8 @@ import java.beans.*;
 
 import java.io.*;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -473,9 +479,9 @@ import javax.swing.*;
  * <br>
  * int fpi[][] = {{5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3}};<br>
  * <br>
- * DON'T put a row of -1's in the parameter table.  There is no point to it,
- * since you are supposed to be linking parameters, so linking no parameters
- * at all makes no sense.<br><br>
+ * DON'T put a row of -1's in the parameter table.  There is no point to it.
+ * You are supposed to be linking parameters, so linking no parameters at all
+ * makes no sense.<br><br>
  * </p>
  *
  * @see Form
@@ -1157,6 +1163,20 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   }
 
   /**
+   * Returns the directory used for storing the error files to.
+   *
+   * @return The projects directory if not null, the user's home directory
+   *         otherwise.
+   */
+  private String getErrorDirectory(  ) {
+    if( getProjectsDirectory(  ) != null ) {
+      return getProjectsDirectory(  );
+    } else {
+      return SharedData.getProperty( "user.dir" );
+    }
+  }
+
+  /**
    * Opens a file for input or output.
    *
    * @param saving A boolean indicating whether you want to open the file for
@@ -1369,24 +1389,37 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   /**
    * Utility to display a JOptionPane with an error message when a file is not
    * loaded successfully.  Also writes the error to loadwizard.err in the
-   * current directory.
+   * error directory (given by getErrorDirectory()).
    *
    * @param e The Throwable generated when the attempt was made to load the WSF
    *        file.
-   * @param file The file the attempt was made to load.
+   * @param errFile The error file name to write to, without extension.
+   * @param errMess The message to display.
    */
-  private void displayAndSaveErrorMessage( Throwable e, File file ) {
+  private void displayAndSaveErrorMessage( 
+    Throwable e, String errFile, StringBuffer errMess ) {
+    String errDir         = getErrorDirectory(  );
+    StringBuffer message  = errMess;
+    GregorianCalendar cal = new GregorianCalendar(  );
+    int month             = cal.get( Calendar.MONTH );
+    int day               = cal.get( Calendar.DAY_OF_MONTH );
+    int minute            = cal.get( Calendar.MINUTE );
+    int second            = cal.get( Calendar.SECOND );
+    String time           = String.valueOf( month ) + "_" +
+      String.valueOf( day );
+
+    errFile               = errFile + time + ".err";
+    message.append( "\nPlease see the " );
+    message.append( errFile );
+    message.append( " file in\n" );
+    message.append( errDir );
+    message.append( " for more information.\n" );
     JOptionPane.showMessageDialog( 
-      save_frame,
-      "Error loading " + file.toString(  ) + ".\nThe file is possibly " +
-      "not correct for this Wizard.\nPlease see the loadWizard.err file in " +
-      "this directory for more information.\n", "ERROR",
-      JOptionPane.ERROR_MESSAGE );
+      null, message.toString(  ), "ERROR", JOptionPane.ERROR_MESSAGE );
 
-    String errFile = StringUtil.setFileSeparator( 
-        SharedData.getProperty( "user.dir" ) + "/loadWizard.err" );
+    String saveFile = StringUtil.setFileSeparator( errDir + "/" + errFile );
 
-    TextWriter.writeStackTrace( errFile, e );
+    TextWriter.writeStackTrace( saveFile, e );
   }
 
   /**
@@ -1510,10 +1543,19 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    * @param file The Wizard Save File to load information from.
    */
   private void loadForms( File file ) {
+    if( file == null ) {
+      return;
+    }
+
     char ca;
-    StringBuffer s     = new StringBuffer(  );
-    int good           = -1;
-    TextFileReader tfr = null;
+    StringBuffer s       = new StringBuffer(  );
+    int good             = -1;
+    TextFileReader tfr   = null;
+    StringBuffer message = new StringBuffer(  );
+
+    message.append( "Error loading " );
+    message.append( file.toString(  ) );
+    message.append( ".\nThe file is possibly not correct for this Wizard." );
 
     try {
       //set the property change checking for the Wizard to false, otherwise it
@@ -1531,9 +1573,9 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       //now convert the xml to usable data
       convertXMLtoParameters( s );
     } catch( IOException ioe ) {
-      displayAndSaveErrorMessage( ioe, file );
+      displayAndSaveErrorMessage( ioe, "loadWizard", message );
     } catch( StringIndexOutOfBoundsException sioe ) {
-      displayAndSaveErrorMessage( sioe, file );
+      displayAndSaveErrorMessage( sioe, "loadWizard", message );
     } finally {
       //now we want to return to a state where the Wizard can listen to
       //property changes
@@ -1957,19 +1999,13 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       } catch( Throwable e ) {
         //crashed hard when executing an outside Operator, Form, or Script
         //try to salvage what we can
-        JOptionPane.showMessageDialog( 
-          null,
-          "An error has occurred.  A copy of the error message has been\n" +
-          "printed to a file named \"wizard.err.\" in the current\n" +
-          "directory.  Please save the Wizard and send both the Wizard\n" +
-          "Save File and the wizard.err file to your developer.\n", "ERROR",
-          JOptionPane.ERROR_MESSAGE );
+        StringBuffer message = new StringBuffer(  );
+
+        message.append( "An error has occurred during execution.  Please\n" );
+        message.append( "save the Wizard and send both the Wizard Save\n" );
+        message.append( "File and the wizard.err file to your developer.\n" );
+        displayAndSaveErrorMessage( e, "wizard", message );
         initFileChooser(  );  //reset the file chooser
-
-        String errFile = StringUtil.setFileSeparator( 
-            SharedData.getProperty( "user.dir" ) + "/wizard.err" );
-
-        TextWriter.writeStackTrace( errFile, e );
 
         //reset the progress bars by re-showing the Form
         showForm( getCurrentFormNumber(  ) );
