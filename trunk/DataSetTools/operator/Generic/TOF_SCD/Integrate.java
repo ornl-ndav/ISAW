@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.24  2003/06/03 22:59:19  bouzekc
+ * Fixed full constructor to avoid excessive garbage
+ * collection.
+ *
  * Revision 1.23  2003/06/03 15:15:12  bouzekc
  * Fixed some documentation errors.
  * Reformatted getDocumentation() to stay within 80 columns.
@@ -198,19 +202,14 @@ public class Integrate extends GenericTOF_SCD{
   public Integrate( DataSet ds, String integfile, String matfile,
                     String slicerange, int slicedelta, int lognum,
                     boolean append){
-    this(); 
+    this(ds); 
 
-    setParameter(new DataSetPG("DataSet", ds, false), 0);
-    setParameter(new SaveFilePG("Integrate File", 
-                 integfile, false), 1);
-    setParameter(new LoadFilePG("Matrix File", 
-                 matfile, false), 2);
-    setParameter(new IntArrayPG("Time Slice Range", 
-                 slicerange, false), 4);
-    setParameter(new IntegerPG("Increase Slice Size by", 
-                 slicedelta, false), 5);
-    setParameter(new IntegerPG("Log every nth Peak",lognum, false), 6);
-    setParameter(new BooleanPG("Append",false), 7);
+    getParameter(1).setValue(integfile);
+    getParameter(2).setValue(matfile);
+    getParameter(4).setValue(slicerange);
+    getParameter(5).setValue(new Integer(slicedelta));
+    getParameter(6).setValue(new Integer(lognum));
+    getParameter(7).setValue(new Boolean(append));
   }
   
   /* --------------------------- getCommand ------------------------------- */ 
@@ -235,7 +234,7 @@ public class Integrate extends GenericTOF_SCD{
     if( choices==null || choices.size()==0 ) init_choices();
 
     // parameter(0)
-    addParameter( new DataSetPG("Data Set", new SampleDataSet(), false ) );
+    addParameter( new DataSetPG("Data Set", null, false ) );
     // parameter(1)
     SaveFilePG sfpg=new SaveFilePG("Integrate File",null);
     sfpg.setFilter(new IntegrateFilter());
