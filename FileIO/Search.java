@@ -28,9 +28,40 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ * NOTE: This file was modified from an example in the Sun Core Java
+ *       Technologies Tech Tips.  Used with permission of Sun Microsystems.
+ *
+ * Core Java Technologies Tech Tips, December 17, 2002
+ * Copyright 2002 Sun Microsystems, Inc. All rights reserved.
+ * 901 San Antonio Road, Palo Alto, California 94303 USA.
+ *
+ * This document is protected by copyright. For more information, see:
+ *
+ * http://java.sun.com/jdc/copyright.html
+ *
+ * IMPORTANT: Please read our Terms of Use, Privacy, and Licensing
+ * policies:
+ * http://www.sun.com/share/text/termsofuse.html
+ * http://www.sun.com/privacy/
+ * http://developer.java.sun.com/berkeley_license.html
+ *
+ * - ARCHIVES
+ *   You'll find the Core Java Technologies Tech Tips archives at:
+ *   http://java.sun.com/jdc/TechTips/index.html
+ *
+ * Sun, Sun Microsystems, Java, Java Developer Connection, J2SE,
+ * J2EE, and J2ME are trademarks or registered trademarks of Sun
+ * Microsystems, Inc. in the United States and other countries.
+ *
+ *
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/01/27 16:49:18  dennis
+ * Move source citation information (Sun Java Tech Tips) to top of file
+ * with other copyright and modification information.
+ * Converted from DOS to UNIX text.
+ *
  * Revision 1.2  2004/01/24 22:56:01  bouzekc
  * Made the default access action methods private and removed unused
  * variables.
@@ -252,61 +283,3 @@ public class Search extends JFrame {
     frame.show();
   }
 }
-
-//.  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//
-//IMPORTANT: Please read our Terms of Use, Privacy, and Licensing 
-//policies:
-//http://www.sun.com/share/text/termsofuse.html
-//http://www.sun.com/privacy/
-//http://developer.java.sun.com/berkeley_license.html
-
-//* FEEDBACK
-//  Comments? Send your feedback on the Core Java Technologies 
-//  Tech Tips to: 
-//  jdc-webmaster@sun.com
-
-//* SUBSCRIBE/UNSUBSCRIBE
-
-//  Subscribe to other Java developer Tech Tips:
-  
-//  - Enterprise Java Technologies Tech Tips. Get tips on using
-//    enterprise Java technologies and APIs, such as those in the
-//    Java 2 Platform, Enterprise Edition (J2EE(tm)).    
-//  - Wireless Developer Tech Tips. Get tips on using wireless
-//    Java technologies and APIs, such as those in the Java 2 
-//    Platform, Micro Edition (J2ME(tm)).
-    
-//  To subscribe to these and other JDC publications:
-//  - Go to the JDC Newsletters and Publications page,
-//    (http://developer.java.sun.com/subscription/), 
-//    choose the newsletters you want to subscribe to and click 
-//    "Update".
-//  - To unsubscribe, go to the subscriptions page,
-//    (http://developer.java.sun.com/subscription/), 
-//    uncheck the appropriate checkbox, and click "Update".
-//  - To use our one-click unsubscribe facility, see the link at 
-//    the end of this email:
-    
-//- ARCHIVES
-//You'll find the Core Java Technologies Tech Tips archives at:
-
-//http://java.sun.com/jdc/TechTips/index.html
-
-
-//- COPYRIGHT
-//Copyright 2002 Sun Microsystems, Inc. All rights reserved.
-//901 San Antonio Road, Palo Alto, California 94303 USA.
-
-//This document is protected by copyright. For more information, see:
-
-//http://java.sun.com/jdc/copyright.html
-
-
-//Core Java Technologies Tech Tips 
-//December 17, 2002
-
-//Sun, Sun Microsystems, Java, Java Developer Connection, J2SE, 
-//J2EE, and J2ME are trademarks or registered trademarks of Sun 
-//Microsystems, Inc. in the United States and other countries.
-
