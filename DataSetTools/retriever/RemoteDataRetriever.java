@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/02/24 13:42:31  dennis
+ *  Switched to use CommandObject instead of compound String command.
+ *
  *  Revision 1.8  2002/11/27 23:23:16  pfpeterson
  *  standardized header
  *
@@ -87,9 +90,8 @@ abstract public class RemoteDataRetriever extends    Retriever
                                                    NOT_CONNECTED_STRING };
   TCPComm tcp_io = null;
 
+  protected boolean  debug_remote = false;
   protected boolean  server_alive = false;
-  protected boolean  user_ok      = false;
-  protected boolean  password_ok  = false;
   protected String   password     = "RemoteDataRetriever";
   protected String   file_name    = "";
 
@@ -170,17 +172,12 @@ abstract public class RemoteDataRetriever extends    Retriever
  */
   public boolean MakeConnection()
   {
-    server_alive = false;
-    user_ok      = false;
-    password_ok  = false;
-
     try
     {
       Socket sock = new Socket( remote_machine, port );
       tcp_io      = new TCPComm( sock, TIMEOUT_MS );
 
-      Object obj = 
-               getObjectFromServer( DataSetServer.COMMAND_USER_IS + user_name );
+      Object obj = getObjectFromServer( getStatus() );
 
       if ( obj == null || !(obj instanceof String) )
         return false; 
@@ -189,31 +186,19 @@ abstract public class RemoteDataRetriever extends    Retriever
 
       String answer = (String)obj;
       if ( answer.equals( DataSetServer.ANSWER_OK ) )
-        user_ok = true;
+        return true;
       else
       {
-        System.out.println("ERROR: user name not accepted by server " +
-                            data_source_name );
+        if ( debug_remote )
+          System.out.println("ERROR: status request failed for " + 
+                              data_source_name );
         return false;
       }
-
-      answer = (String)
-           getObjectFromServer( DataSetServer.COMMAND_PASSWORD_IS + password );
-      if ( answer.equals( DataSetServer.ANSWER_OK ) )
-        password_ok = true;
-      else
-      {
-        System.out.println("ERROR: password not accepted by server " +
-                            data_source_name );
-        return false;
-      }
-
-      return true;
     }
     catch( Exception e )
     {
       tcp_io = null;
-      if ( debug_retriever )
+      if ( debug_remote )
       {
         System.out.println( "RemoteDataRetriever CONNECTION TO " +
                              remote_machine + " FAILED ON PORT " + port );
@@ -238,15 +223,13 @@ abstract public class RemoteDataRetriever extends    Retriever
       }
       catch ( Exception e )
       {
-        if ( debug_retriever )
+        if ( debug_remote )
           System.out.println( "Exception in RemoteDataRetriever.Exit():" + e );
       }
 
       tcp_io = null;
     }
     server_alive = false;
-    user_ok      = false;
-    password_ok  = false;
   }
 
 
@@ -254,17 +237,16 @@ abstract public class RemoteDataRetriever extends    Retriever
 /**
  *  Send command to server and get it's response as an object.
  *
- *  @param command   The command string to send to the server.  Appropriate
- *                   commands are given as strings in NetComm.DataSetServer
+ *  @param command   The CommandObject to send to the server. 
  *
  *  @return The object that was requested from the server, or null if the
  *          the server was not running, or could not provide the requested
  *          object.
  *
  */
- synchronized protected Object getObjectFromServer( String command )
+ synchronized protected Object getObjectFromServer( CommandObject command )
  {
-    if ( debug_retriever )
+    if ( debug_remote )
       System.out.println("getObjectFromServer called with " + command );
 
     if ( tcp_io == null )
@@ -272,7 +254,7 @@ abstract public class RemoteDataRetriever extends    Retriever
 
     if ( tcp_io == null )
     {
-      if ( debug_retriever )
+      if ( debug_remote )
       {
         System.out.println("RemoteDataRetriever can't send command:" + command);
         System.out.println("TCP Connection is null to " + data_source_name );
@@ -280,21 +262,21 @@ abstract public class RemoteDataRetriever extends    Retriever
       return null;
     }
 
-    if ( debug_retriever )
+    if ( debug_remote )
       System.out.println("RemoteDataRetriever sending command:" + command );
 
     boolean request_sent = false;
 
     try
     {
-      if ( debug_retriever )
+      if ( debug_remote )
         System.out.println( "Command sent: " + command );
       tcp_io.Send( command );
       request_sent = true;
     }
     catch ( Exception e )
     {
-      if ( debug_retriever )
+      if ( debug_remote )
       {
         System.out.println("EXCEPTION in RemoteDataRetriever:" + e );
         System.out.println("while sending command: " + command );
@@ -308,11 +290,14 @@ abstract public class RemoteDataRetriever extends    Retriever
       {
         Object obj = null;
         obj = tcp_io.Receive();
-        if ( debug_retriever )
+        if ( debug_remote )
           System.out.println( "Got " + obj );
 
-        if ( debug_retriever )
+        if ( debug_remote )
+        {
           System.out.println("RemoteDataRetriever finished command:"+command );
+          System.out.println("...got back object " + obj );
+        }
         return obj;
       }
       catch ( Exception e )
@@ -322,7 +307,7 @@ abstract public class RemoteDataRetriever extends    Retriever
       }
     }
 
-    if ( debug_retriever )
+    if ( debug_remote )
       System.out.println("RemoteDataRetriever failed command:" + command );
     return null;
   }
@@ -333,6 +318,96 @@ abstract public class RemoteDataRetriever extends    Retriever
  *
  */
 
+/**
+ *  Get a CommandObject configured with the GET_STATUS command
+ *
+ *  @return a CommandObject requesting the status of the server.
+ */
+  protected CommandObject getStatus()
+  {
+    String user_name = System.getProperty("user.name");    
+    String password  = "dummy password";
+    return new CommandObject( CommandObject.GET_STATUS, user_name, password );
+  }
+
+
+/**
+ *  Get a CommandObject configured with the GET_DS_TYPES.  If the server is
+ *  the LiveDataServer, the file name is ignored.
+ *
+ *  @param  file_name  String containing the fully qualified name of the
+ *                     file. 
+ *
+ *  @return a CommandObject requesting the list of DataSet types on
+ *          the LiveDataServer server.
+ */
+  protected CommandObject getDS_Types( String file_name )
+  {
+    String user_name = System.getProperty("user.name");
+    String password  = "dummy password";
+    return new GetDataCommand( CommandObject.GET_DS_TYPES,      
+                              user_name, password, 
+                              file_name, 
+                              0, 
+                              CommandObject.ALL_IDS,
+                              0,0, 
+                              1, 
+                              0 );
+  }
+
+/**
+ *  Get a CommandObject configured with the GET_DS_NAME command. If the 
+ *  server is the LiveDataServer, the file name is ignored. 
+ *
+ *  @param  file_name  String containing the fully qualified name of the
+ *                     file. 
+ *
+ *  @param  ds_num  the number of the DataSet whose name is requested.
+ * 
+ *  @return a CommandObject requesting the name of a DataSet on 
+ *          the LiveDataServer server.  
+ */ 
+  protected CommandObject getDS_Name( String file_name, int ds_num )
+  {
+    String user_name = System.getProperty("user.name");
+    String password  = "dummy password";
+    return new GetDataCommand( CommandObject.GET_DS_NAME,      
+                              user_name, password, 
+                              file_name, 
+                              ds_num, 
+                              CommandObject.ALL_IDS,
+                              0,0, 
+                              1, 
+                              0 );
+  }
+
+/**
+ *  Get a CommandObject configured to get an entier DataSet.  If the
+ *  server is a LiveDataServer, the file name is ignored.
+ *
+ *  @param  file_name  String containing the fully qualified name of the
+ *                     file. 
+ *
+ *  @param  ds_num  the number of the DataSet requested.
+ * 
+ *  @return a CommandObject requesting a complete DataSet on       
+ *          the LiveDataServer server.
+ */ 
+  protected CommandObject getDS( String file_name, int ds_num )
+  {
+    String user_name = System.getProperty("user.name");
+    String password  = "dummy password";
+    return new GetDataCommand( CommandObject.GET_DS, 
+                              user_name, password,
+                              file_name,
+                              ds_num,
+                              CommandObject.ALL_IDS,
+                              0,0, 
+                              1, 
+                              0 );
+  }
+
+
 /* ------------------------------ finalize ---------------------------- */
 /**
  *  Finalize method to make sure that the TCP connection is closed if this
@@ -340,7 +415,7 @@ abstract public class RemoteDataRetriever extends    Retriever
  */
   protected void finalize() throws IOException
   {
-     if ( debug_retriever )
+     if ( debug_remote )
        System.out.println("Retriever finalization");
 
      if ( isConnected() )
