@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.21  2003/05/20 19:19:44  pfpeterson
+ * Added append parameter.
+ *
  * Revision 1.20  2003/05/08 20:01:57  pfpeterson
  * Removed some debug statements.
  *
@@ -208,6 +211,8 @@ public class Integrate extends GenericTOF_SCD{
     addParameter(new IntegerPG("Increase slice size by",0));
     // parameter(6)
     addParameter(new IntegerPG("Log every nth Peak",3));
+    // parameter(7)
+    addParameter(new BooleanPG("Append",false));
   }
   
   /**
@@ -313,6 +318,8 @@ public class Integrate extends GenericTOF_SCD{
     // then how often to log a peak
     listNthPeak=((IntegerPG)getParameter(6)).getintValue();
 
+    // then whether to append
+    boolean append=((BooleanPG)getParameter(7)).getbooleanValue();
 
     // get list of detectors
     int[] det_number=null;
@@ -451,12 +458,12 @@ public class Integrate extends GenericTOF_SCD{
       int index=logfile.lastIndexOf("/");
       logfile=logfile.substring(0,index)+"/integrate.log";
     }
-    String errmsg=this.writeLog(logfile);
+    String errmsg=this.writeLog(logfile,append);
     if(errmsg!=null)
       SharedData.addmsg(errmsg);
 
     // write out the peaks
-    WritePeaks writer=new WritePeaks(integfile,peaks,Boolean.TRUE);
+    WritePeaks writer=new WritePeaks(integfile,peaks,new Boolean(append));
     return writer.getResult();
   }
 // ========== start of detector dependence
@@ -631,14 +638,14 @@ public class Integrate extends GenericTOF_SCD{
    *
    * @return a String if anything goes wrong, null otherwise.
    */
-  private String writeLog(String logfile){
+  private String writeLog(String logfile,boolean append){
     if( logBuffer==null || logBuffer.length()<=0 )
       return "No information in log buffer";
 
     FileOutputStream fout=null;
 
     try{
-      fout=new FileOutputStream(logfile);
+      fout=new FileOutputStream(logfile,append);
       fout.write(logBuffer.toString().getBytes());
       fout.flush();
     }catch(IOException e){
