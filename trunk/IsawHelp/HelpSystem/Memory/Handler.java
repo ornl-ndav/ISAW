@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/05/29 16:51:06  rmikk
+ * Removed an unused variable
+ *
  * Revision 1.7  2004/01/24 23:24:09  bouzekc
  * Removed unused imports.
  *
@@ -200,7 +203,7 @@ public class Handler extends URLStreamHandler
   public static void main( String args[])
     {
      JFrame jf= new JFrame( "Test");
-     Script_Class_List_Handler sh = new Script_Class_List_Handler();
+     new Script_Class_List_Handler();
      try{
         System.setProperty("java.protocol.handler.pkgs","test");//did not work
 	URLStreamHandler MyurlStreamHandler = (URLStreamHandler)(new Handler());
