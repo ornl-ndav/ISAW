@@ -36,6 +36,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/07/24 15:24:25  rmikk
+ *  Fixed so input POINTED_AT events do not send out
+ *    POINTED_AT events.
+ *
  *  Revision 1.6  2002/07/23 22:09:05  rmikk
  *  Implemented the PointedAt features to integrate with
  *    other viewers.
@@ -677,13 +681,14 @@ public class ContourView extends DataSetViewer
             try
             {
                int i = new Integer( event.getActionCommand() ).intValue();
-
-               sliderTime_index = i;
+               if( sliderTime_index == i)
+                 return;
+               
                if( i < 0 ) 
                  i=0;
                else if( i >= times.length )
                   i = times.length -1;;
-               
+               sliderTime_index = i;
                SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[i] ) );
                data_set.setPointedAtX( times[i]);
                data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
@@ -753,7 +758,21 @@ public class ContourView extends DataSetViewer
       }
    }
 
-
+   private int getPointedAtXindex()
+     {float X = getDataSet().getPointedAtX();
+      int index = java.util.Arrays.binarySearch( times, X);
+      if( index < 0)
+         index =-index-1;
+      if( index <=0)
+        return 0;
+      if( index >= times.length -1) 
+        return times.length -1;
+      if( (times[index] -X) <= (X-times[index-1] ))
+        return index;
+      else
+        return index -1;
+       
+      }
    public void redraw( String reason )
    {
       
@@ -779,10 +798,14 @@ public class ContourView extends DataSetViewer
       { 
         float x = data_set.getPointedAtX();
         int index =data_set.getPointedAtIndex();
-        
-        if( java.lang.Math.abs(cd.getTime() -x) >.00001)
-           ac.setFrameValue( x );
-        dct.showConversions( x, index );
+        int Xindex = getPointedAtXindex();
+        if( Xindex != sliderTime_index) // java.lang.Math.abs(cd.getTime() -x) >.00001)
+          { sliderTime_index = Xindex;
+            ac.setFrameNumber( Xindex );
+            //ac.stop();
+           }
+           
+        dct.showConversions( times[Xindex], index );
       }
       else if( reason == IObserver.GROUPS_CHANGED )
       {
