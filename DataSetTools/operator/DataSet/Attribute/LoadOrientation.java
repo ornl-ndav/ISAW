@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/03/06 23:21:05  pfpeterson
+ *  Changed call from fixSeparator to setForwardSlash
+ *
  *  Revision 1.9  2003/02/13 17:05:20  pfpeterson
  *  Removed diagnostic print statement.
  *
@@ -210,7 +213,7 @@ public class LoadOrientation extends    DS_Attribute {
     public Object getResult(){  
         DataSet ds = getDataSet();
         String iparm = getParameter(0).getValue().toString();
-        iparm=FilenameUtil.fixSeparator(iparm);
+        iparm=FilenameUtil.setForwardSlash(iparm);
         TextFileReader fr=null;
         boolean success=false;
 
