@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/03/07 22:47:55  dennis
+ *  Made convenience methods for getting particular commands
+ *  into static methods.
+ *  Added support for GET_DS_ID_RANGE and GET_DS_X_RANGE
+ *
  *  Revision 1.13  2003/03/05 20:46:49  dennis
  *  Changed default attribute mode to FULL_ATTRIBUTES in the utility
  *  methods that build Command objects.
@@ -344,7 +349,7 @@ abstract public class RemoteDataRetriever extends    Retriever
  *
  *  @return a CommandObject requesting the status of the server.
  */
-  protected CommandObject getStatus()
+  static public CommandObject getStatus()
   {
     String user_name = System.getProperty("user.name");    
     String password  = "dummy password";
@@ -360,9 +365,9 @@ abstract public class RemoteDataRetriever extends    Retriever
  *                     file. 
  *
  *  @return a GetDataCommand requesting the list of DataSet types from 
- *          the LiveDataServer server.
+ *          a remote data server.
  */
-  protected GetDataCommand getDS_Types( String file_name )
+  static public GetDataCommand getDS_Types( String file_name )
   {
     String user_name = System.getProperty("user.name");
     String password  = "dummy password";
@@ -386,9 +391,9 @@ abstract public class RemoteDataRetriever extends    Retriever
  *  @param  ds_num  the number of the DataSet whose name is requested.
  * 
  *  @return a GetDataCommand requesting the name of a DataSet from 
- *          the LiveDataServer server.  
+ *          a remote data server.  
  */ 
-  protected CommandObject getDS_Name( String file_name, int ds_num )
+  static public GetDataCommand getDS_Name( String file_name, int ds_num )
   {
     String user_name = System.getProperty("user.name");
     String password  = "dummy password";
@@ -402,6 +407,61 @@ abstract public class RemoteDataRetriever extends    Retriever
                               Attribute.FULL_ATTRIBUTES );
   }
 
+
+/**
+ *  Get a GetDataCommand object configured with the GET_DS_ID_RANGE command.
+ *  If the server is the LiveDataServer, the file name is ignored.
+ *
+ *  @param  file_name  String containing the fully qualified name of the
+ *                     file.
+ *
+ *  @param  ds_num  the number of the DataSet whose ID range is requested.
+ *
+ *  @return a GetDataCommand requesting the range of IDs of a DataSet from
+ *          a remote data server.
+ */
+  static public GetDataCommand getDS_ID_Range( String file_name, int ds_num )
+  {
+    String user_name = System.getProperty("user.name");
+    String password  = "dummy password";
+    return new GetDataCommand( CommandObject.GET_DS_ID_RANGE,
+                               user_name, password,
+                               file_name,
+                               ds_num,
+                               CommandObject.ALL_IDS,
+                               0,0,
+                               1,
+                               Attribute.FULL_ATTRIBUTES );
+  }
+
+
+/**
+ *  Get a GetDataCommand object configured with the GET_DS_X_RANGE command.
+ *  If the server is the LiveDataServer, the file name is ignored.
+ *
+ *  @param  file_name  String containing the fully qualified name of the
+ *                     file.
+ *
+ *  @param  ds_num  the number of the DataSet whose X range is requested.
+ *
+ *  @return a GetDataCommand requesting the range of X-values of a DataSet from
+ *          a remote data server.
+ */
+  static public GetDataCommand getDS_X_Range( String file_name, int ds_num )
+  {
+    String user_name = System.getProperty("user.name");
+    String password  = "dummy password";
+    return new GetDataCommand( CommandObject.GET_DS_X_RANGE,
+                               user_name, password,
+                               file_name,
+                               ds_num,
+                               CommandObject.ALL_IDS,
+                               0,0,
+                               1,
+                               Attribute.FULL_ATTRIBUTES );
+  }
+
+
 /**
  *  Get a GetDataCommand object configured to get an entire DataSet.  If the
  *  server is a LiveDataServer, the file name is ignored.
@@ -412,20 +472,20 @@ abstract public class RemoteDataRetriever extends    Retriever
  *  @param  ds_num  the number of the DataSet requested.
  * 
  *  @return a GetDataCommand requesting a complete DataSet from       
- *          the LiveDataServer server.
+ *          a remote data server.
  */ 
-  protected GetDataCommand getDS( String file_name, int ds_num )
+  static public GetDataCommand getDS( String file_name, int ds_num )
   {
     String user_name = System.getProperty("user.name");
     String password  = "dummy password";
     return new GetDataCommand( CommandObject.GET_DS, 
-                              user_name, password,
-                              file_name,
-                              ds_num,
-                              CommandObject.ALL_IDS,
-                              0,0, 
-                              1, 
-                              Attribute.FULL_ATTRIBUTES );
+                               user_name, password,
+                               file_name,
+                               ds_num,
+                               CommandObject.ALL_IDS,
+                               0,0, 
+                               1, 
+                               Attribute.FULL_ATTRIBUTES );
   }
 
 
@@ -451,26 +511,26 @@ abstract public class RemoteDataRetriever extends    Retriever
  *                           Attribute.FULL_ATTRIBUTES
  *
  *  @return a GetDataCommand requesting a portion of a DataSet from       
- *          the LiveDataServer server.
+ *          a remote data server.
  */
-  public GetDataCommand getDataSet( String file_name,
-                                    int    ds_num,
-                                    String group_ids,
-                                    float  min_x,
-                                    float  max_x,
-                                    int    rebin_factor,
-                                    int    attr_mode      )
+  static public GetDataCommand getDataSet( String file_name,
+                                           int    ds_num,
+                                           String group_ids,
+                                           float  min_x,
+                                           float  max_x,
+                                           int    rebin_factor,
+                                           int    attr_mode      )
   {
     String user_name = System.getProperty("user.name");
     String password  = "dummy password";
     return new GetDataCommand( CommandObject.GET_DS,
-                              user_name, password,
-                              file_name,
-                              ds_num,
-                              group_ids,
-                              min_x, max_x,
-                              rebin_factor,
-                              attr_mode );
+                               user_name, password,
+                               file_name,
+                               ds_num,
+                               group_ids,
+                               min_x, max_x,
+                               rebin_factor,
+                               attr_mode );
   }
 
 
