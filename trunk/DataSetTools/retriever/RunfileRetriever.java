@@ -1,20 +1,39 @@
 /*
- * @(#)RunfileRetriever.java
+ * File:  RunfileRetriever.java
  *
- * Programmer: Dennis Mikkelson
+ * Copyright (C) 1999, Dennis Mikkelson
  *
- * Modified:  
- *    Alok Chatterjee, Fall 1999.  Added number of pulses and total counts
- *                                 information.
- *    Dennis Mikkelson, 3/23/2000  Added code to all catch{} blocks to print 
- *                                 info about the exception.
- *                                 Fixed bug in getting the total counts...
- *                                   ( must pass group_id, NOT a detector id
- *                                      to Get1DSum( ) )
- *                                 Added documentation for all routines
- * ---------------------------------------------------------------------------
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2001/04/25 21:57:57  dennis
+ *  Added copyright and GPL info at the start of the file.
+ *
  *  Revision 1.22  2001/03/01 20:48:02  dennis
  *  Now gets the instrument type using the method InstrumentType()
  *  from the IPNS.Runfile.Runfile class, rather than parsing the
@@ -82,7 +101,7 @@
  *  Added private method to show information about the detectors in a group
  *
  *  Revision 1.3  2000/07/10 22:49:46  dennis
- *  July 10, 2000 version...many changes
+ *  Now Uses CVS 
  *
  *  Revision 1.22  2000/06/14 14:55:42  dennis
  *  Added getFirstDataSet(type) to return the first monitor or first
@@ -109,7 +128,15 @@
  *  Revision 1.16  2000/05/11 16:19:12  dennis
  *  added RCS logging
  *
- *
+ *  Dennis Mikkelson, 3/23/2000  Added code to all catch{} blocks to print
+ *                               info about the exception.
+ *                               Fixed bug in getting the total counts...
+ *                                 ( must pass group_id, NOT a detector id
+ *                                    to Get1DSum( ) )
+ *                               Added documentation for all routines
+ * 
+ *  Alok Chatterjee, Fall 1999.  Added number of pulses and total counts
+ *                               information.
  */
 package DataSetTools.retriever;
 
