@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/03/11 06:11:51  bouzekc
+ *  Added javadocs.
+ *
  *  Revision 1.16  2004/03/11 01:47:29  bouzekc
  *  Removed debug statement.
  *
@@ -99,13 +102,17 @@ import java.util.Vector;
 public class ChoiceListPG extends ChooserPG {
   //~ Static fields/initializers ***********************************************
 
-  // static variables
   private static String TYPE    = "ChoiceList";
   protected static int DEF_COLS = ChooserPG.DEF_COLS;
 
   //~ Constructors *************************************************************
 
-  // ********** Constructors **********
+  /**
+   * Creates a new ChoiceListPG object.
+   *
+   * @param name The name of this ChoiceListPG.
+   * @param value The initial value of this ChoiceListPG.
+   */
   public ChoiceListPG( String name, Object value ) {
     this( name, value, false );
     this.setDrawValid( false );
