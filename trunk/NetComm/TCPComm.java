@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/08/09 21:44:34  dennis
+ *  Made debug flag static so that it is shared and settable from
+ *  other classes.
+ *
  *  Revision 1.6  2001/08/09 15:30:04  dennis
  *  Added debug_tcp_comm flag and put debug prints in
  *  "if ( debug_tcp_comm )" blocks.
@@ -77,7 +81,8 @@ import java.io.*;
  */
 public class TCPComm
 {
-  public    boolean            debug_tcp_comm;
+  public static boolean        debug_tcp_comm;
+
   protected Socket             sock;
   private   String             last_address_string = "";
   private   InputStream        in_stream;
