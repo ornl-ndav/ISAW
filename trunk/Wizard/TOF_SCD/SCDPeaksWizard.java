@@ -77,61 +77,97 @@ public class SCDPeaksWizard extends Wizard
    */
   private void createAllForms()
   {
-    int fpi[][] = { {0,-1,-1,-1,-1,0}, 
-                    {1,-1,-1,-1,-1,1}, 
-                    {2,-1,-1,-1,-1,2}, 
-                    {3,-1,-1,-1,-1,3}, 
-                    {7,-1,-1,-1,-1,5}, 
-                    {8,0,0,-1,0,-1},
-                    {-1,2,1,0,4,8},
-                    {-1,-1,2,-1,1,-1}};
+    int fpi[][] = { {0,-1,-1,-1,-1,-1,-1,0}, //raw data path 
+                    {1,2,1,1,1,1,1,1},  //peaks file path
+                    {2,0,0,0,0,0,0,2},  //run numbers
+                    {3,1,2,4,4,2,2,3},  //experiment name
+                    {7,-1,-1,-1,-1,-1,-1,5}};  //SCD calibration file 
 
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm();
 
-    OperatorForm blindjform = new OperatorForm(new BlindJ());
-    OperatorForm indexjform = new OperatorForm(new IndexJ());
-    OperatorForm scalarjform = new OperatorForm(new ScalarJ());
-    OperatorForm lsqrsjform = new OperatorForm(new LsqrsJ());
+    BlindJForm blindjform = new BlindJForm();
+    IndexJForm blindindexjform = new IndexJForm();
+    IndexJForm lsqrsindexjform = new IndexJForm();
+    ScalarJForm scalarjform = new ScalarJForm();
+    LsqrsJForm lsqrsjform1 = new LsqrsJForm();
+    LsqrsJForm lsqrsjform2 = new LsqrsJForm();
 
     IntegrateMultiRunsForm integmultiform = new IntegrateMultiRunsForm();
+
     //constant params
     integmultiform.setHasConstants(true);
     integmultiform.setDefaultParameters();
 
-    //link the raw data path
-    integmultiform.setParameter(peaksform.getParameter(fpi[0][0]), fpi[0][5]);
+    blindjform.setHasConstants(true);
+    blindjform.setDefaultParameters();
 
-    //link the output path
-    integmultiform.setParameter(peaksform.getParameter(fpi[1][0]), fpi[1][5]);
+    scalarjform.setHasConstants(true);
+    scalarjform.setDefaultParameters();
+
+    blindindexjform.setHasConstants(true);
+    blindindexjform.setDefaultParameters();
+    
+    lsqrsindexjform.setHasConstants(true);
+    lsqrsindexjform.setDefaultParameters();
+
+    /*The first time we run lsqrsjform, we want to allow user inputs
+      for the transformation matrix.  Otherwise, we want to set it 
+      to the identity matrix.*/
+    lsqrsjform1.setFirstTime(true);
+    lsqrsjform2.setFirstTime(false);
+
+    lsqrsjform1.setHasConstants(true);
+    lsqrsjform1.setDefaultParameters();
+
+    lsqrsjform2.setHasConstants(true);
+    lsqrsjform2.setDefaultParameters();
+
+    /*The first time through, indexjform gets input from BlindJ.
+      On successive runs, it gets it from LsqrsJ.*/
+    blindindexjform.getParameter(5).setValue(IndexJForm.JBLIND);
+    lsqrsindexjform.getParameter(5).setValue(IndexJForm.JLSQRS);
+
+
+    //link the raw data path
+    integmultiform.setParameter(peaksform.getParameter(fpi[0][0]), fpi[0][7]);
+
+    //link the peaks path
+    blindjform.setParameter(peaksform.getParameter(fpi[1][0]), fpi[1][1]);
+    scalarjform.setParameter(peaksform.getParameter(fpi[1][0]), fpi[1][2]);
+    blindindexjform.setParameter(peaksform.getParameter(fpi[1][0]), fpi[1][3]);
+    lsqrsindexjform.setParameter(peaksform.getParameter(fpi[1][0]), fpi[1][4]);
+    lsqrsjform1.setParameter(peaksform.getParameter(fpi[1][0]), fpi[1][5]);
+    lsqrsjform2.setParameter(peaksform.getParameter(fpi[1][0]), fpi[1][6]);
+    integmultiform.setParameter(peaksform.getParameter(fpi[1][0]), fpi[1][7]);
 
     //link the run numbers
-    integmultiform.setParameter(peaksform.getParameter(fpi[2][0]), fpi[2][5]);
+    blindjform.setParameter(peaksform.getParameter(fpi[2][0]), fpi[2][1]);
+    scalarjform.setParameter(peaksform.getParameter(fpi[2][0]), fpi[2][2]);
+    blindindexjform.setParameter(peaksform.getParameter(fpi[2][0]), fpi[2][3]);
+    lsqrsindexjform.setParameter(peaksform.getParameter(fpi[2][0]), fpi[2][4]);
+    lsqrsjform1.setParameter(peaksform.getParameter(fpi[2][0]), fpi[2][5]);
+    lsqrsjform2.setParameter(peaksform.getParameter(fpi[2][0]), fpi[2][6]);
+    integmultiform.setParameter(peaksform.getParameter(fpi[2][0]), fpi[2][7]);
 
     //link the experiment name
-    integmultiform.setParameter(peaksform.getParameter(fpi[3][0]), fpi[3][5]);
+    blindjform.setParameter(peaksform.getParameter(fpi[3][0]), fpi[3][1]);
+    scalarjform.setParameter(peaksform.getParameter(fpi[3][0]), fpi[3][2]);
+    blindindexjform.setParameter(peaksform.getParameter(fpi[3][0]), fpi[3][3]);
+    lsqrsindexjform.setParameter(peaksform.getParameter(fpi[3][0]), fpi[3][4]);
+    lsqrsjform1.setParameter(peaksform.getParameter(fpi[3][0]), fpi[3][5]);
+    lsqrsjform2.setParameter(peaksform.getParameter(fpi[3][0]), fpi[3][6]);
+    integmultiform.setParameter(peaksform.getParameter(fpi[3][0]), fpi[3][7]);
 
     //link the SCD calibration file
-    integmultiform.setParameter(peaksform.getParameter(fpi[4][0]), fpi[4][5]);
-
-    //link the peaks file
-    blindjform.setParameter(peaksform.getParameter(fpi[5][0]), fpi[5][1]);
-    indexjform.setParameter(peaksform.getParameter(fpi[5][0]), fpi[5][2]);
-    lsqrsjform.setParameter(peaksform.getParameter(fpi[5][0]), fpi[5][4]);
-
-    //link the matrix file name
-    indexjform.setParameter(blindjform.getParameter(fpi[6][1]), fpi[6][2]);
-    scalarjform.setParameter(blindjform.getParameter(fpi[6][1]), fpi[6][3]);
-    lsqrsjform.setParameter(blindjform.getParameter(fpi[6][1]), fpi[6][4]);
-    integmultiform.setParameter(blindjform.getParameter(fpi[6][1]), fpi[6][5]);
-
-    //link the run restriction parameter
-    lsqrsjform.setParameter(indexjform.getParameter(fpi[7][2]), fpi[7][4]);
+    integmultiform.setParameter(peaksform.getParameter(fpi[4][0]), fpi[4][7]);
 
     this.addForm(peaksform);
     this.addForm(blindjform );
-    this.addForm(indexjform );
+    this.addForm(blindindexjform );
     this.addForm(scalarjform );
-    this.addForm(lsqrsjform );
+    this.addForm(lsqrsjform1 );  //first lsqrsjform
+    this.addForm(lsqrsindexjform );
+    this.addForm(lsqrsjform2 );  //second lsqrsjform
     this.addForm(integmultiform );
   }
 
