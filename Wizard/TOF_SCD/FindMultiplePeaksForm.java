@@ -284,7 +284,8 @@ public class FindMultiplePeaksForm extends Form
                .Format
                .integerPadWithZero(runsArray[i], RUN_NUMBER_WIDTH);
 
-      loadName = rawDir + SCDName + runNum + ".RUN";
+      loadName = rawDir + "/" + SCDName + runNum + ".RUN";
+      loadName = StringUtil.setFileSeparator(loadName);
 
       SharedData.addmsg("Loading " + loadName + ".");
 
