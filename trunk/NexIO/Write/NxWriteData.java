@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2005/02/12 17:50:22  rmikk
+ * Eliminated writing a deprecated node
+ *
  * Revision 1.16  2005/01/20 21:52:08  dennis
  * Fixed minor javadoc error.
  *
@@ -972,9 +975,9 @@ public class NxWriteData {
 
         NxWriteNode node = nxData.newChildNode("data", "SDS");
         int[] ranks = util.setRankArray(data,false);
-        float[]data1=(float[])Types.linearlizeArray(data,4,ranks,Types.Float);
-        ranks = util.setRankArray(data,true);
-        node.setNodeValue(data1, Types.Float,ranks);
+        //float[]data1=(float[])Types.linearlizeArray(data,4,ranks,Types.Float);
+        ranks = util.setRankArray(data,false);
+        node.setNodeValue(data, Types.Float,ranks);
         util.writeStringAttr(node, "units", DS.getX_units());
         util.writeStringAttr(node, "label", DS.getTitle());
         util.writeStringAttr(node, "link", DS.getTitle() + "_G2" + det);
@@ -982,9 +985,9 @@ public class NxWriteData {
 
         node = nxData.newChildNode("errors", "SDS");
         ranks = util.setRankArray(errors,false);
-        float[]errors1=(float[])Types.linearlizeArray(errors,4,ranks,Types.Float);
-        util.setRankArray(errors,true);
-        node.setNodeValue(errors1, Types.Float,ranks);
+        //float[]errors1=(float[])Types.linearlizeArray(errors,4,ranks,Types.Float);
+        util.setRankArray(errors,false);
+        node.setNodeValue(errors, Types.Float,ranks);
         util.writeStringAttr(node, "units", DS.getX_units());
 
         nxData.addLink(DS.getTitle() + "_G2" + det);
@@ -999,8 +1002,8 @@ public class NxWriteData {
                     util.setRankArray(col_cm,false));
         util.writeIntAttr(node, "axis", 3);
      
-        node = util.writeFA_SDS(nxData, "DetIDS", DetNums, 
-                    util.setRankArray(DetNums,false));
+        //node = util.writeFA_SDS(nxData, "DetIDS", DetNums, 
+        //            util.setRankArray(DetNums,false));
 
         return false;
 
