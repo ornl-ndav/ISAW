@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/10/20 22:27:44  bouzekc
+ *  Now sets the internal value when a String is encountered during setValue.
+ *
  *  Revision 1.15  2003/10/20 16:22:44  rmikk
  *  Used floatval for value in setValue
  *  Used super.getValue() to get initial value in getValue.  This checks the
@@ -196,10 +199,10 @@ public class FloatPG extends StringEntryPG {
     }
 
     public void setStringValue(String val) throws NumberFormatException{
-      if(initialized)
+      if(initialized) {
         super.setEntryValue(val);
-      else
-        this.setValue(new Float(val.trim()));
+      }
+      this.setValue(new Float(val.trim()));
     }
 
     /*
