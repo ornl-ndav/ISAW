@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2003/03/27 15:57:36  pfpeterson
+ * Notifies IObservers of DESTROY when multiple DataSets or an Experiment
+ * is DESTROYed.
+ *
  * Revision 1.17  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -362,13 +366,9 @@ public class JDataTree
    */
   public void deleteNodesWithPaths( TreePath[] tps )
   {
-    if( tps.length > 1 )
-      for( int i=0;  i<tps.length-1;  i++ )
-        deleteNode( tps[i], false );
+    for( int i=0;  i<tps.length;  i++ )   //this call takes care of
+      deleteNode( tps[i], true );         //observer notification
 
-                                        //this call takes care of
-                                        //observer notification
-    deleteNode(  tps[ tps.length-1 ], true  );
   }
 
 
@@ -419,6 +419,15 @@ public class JDataTree
         return;
       else
       {
+        if(notify){ // notify DataSet IObservers that they are going away
+          Enumeration kids=exp.children();
+          while(kids.hasMoreElements()){
+            ds=((DataSetMutableTreeNode)kids.nextElement()).getUserObject();
+            ds.deleteIObserver(this);
+            ds.notifyIObservers(IObserver.DESTROY);
+            ds.addIObserver(this);
+          }
+        }
         getMyModel().removeNodeFromParent( node );
         getMyModel().extinguishNode( node );
       }
