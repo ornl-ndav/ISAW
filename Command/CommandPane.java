@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.57  2003/06/02 22:29:46  rmikk
+ * -Reduced the adding of IObservers to a Script.  This
+ *  is done in the JParametersDialog, if the IObserver
+ * argument is not null
+ *
  * Revision 1.56  2003/06/02 14:28:05  rmikk
  * -Added setDefaultParameter after the Run button is pressed
  *   in case a new script was loaded in
@@ -407,7 +412,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                sp = new ScriptProcessor( Commands.getDocument() );
             sp.addPropertyChangeListener( this );
             SP = sp;  
-            SP.setIObserverList( IObslist );
+            //SP.setIObserverList( IObslist );
             SP.setPropertyChangeList( PC );           
             addDataSets( SP );
             if( Language != null)
@@ -433,18 +438,18 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
      * NOTE: This unit only notifies observers of a new DataSet
      */   
     public void addIObserver(IObserver iobs){
-        SP.addIObserver( iobs );
+        //SP.addIObserver( iobs );
         IObslist.addIObserver( iobs );
      
     }
     
     public void  deleteIObserver(IObserver iobs){
-        SP.deleteIObserver( iobs );
+        //SP.deleteIObserver( iobs );
         IObslist.deleteIObserver(iobs);
     }
     
     public void  deleteIObservers(){
-        SP.deleteIObservers();
+        //SP.deleteIObservers();
         IObslist.deleteIObservers();
     }
 
@@ -456,8 +461,9 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
             ds.deleteIObserver( this);
           
             while( DSList.removeElement( ds)){}
+            return;
            }
-
+     IObslist.notifyIObservers( observed_obj, reason);
     }
 
     
@@ -690,10 +696,13 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                          CP.SP.setTitle( "CommandPane");
                      JParametersDialog pDialog =
                          new JParametersDialog((GenericOperator)(CP.SP), SP, 
-                                              new PlainDocument(), null, true);
-                 }else
+                                              new PlainDocument(), CP, true);
+                 }else{
+                     CP.SP.setIObserverList( IObslist);
                      CP.SP.getResult();
-        
+                     CP.SP.deleteIObservers();
+                      }
+                     
                  if( CP.SP.getErrorCharPos() >= 0){
                      //new Util().appendDoc( StatusLine.getDocument(), 
                      CP.PC.firePropertyChange("Display", null,"Error "
@@ -764,7 +773,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                   SharedData.addmsg("Jython not found");
                  }
               SP = sp;
-              SP.setIObserverList( IObslist );
+              //SP.setIObserverList( IObslist );
               SP.setPropertyChangeList( PC );     
               addDataSets( SP );
               Language.setSelectedIndex( indx);
