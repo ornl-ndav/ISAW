@@ -29,6 +29,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2001/08/09 14:12:25  rmikk
+ *  Added a getResult method to the dialog box so that Java
+ *  programmers can actually get the result of an operation.
+ *  This could potentially make JParametersDialog into an
+ *  InputBox in Java Programs.
+ *
  *  Revision 1.11  2001/08/07 21:00:25  rmikk
  *  Changed opDialog's layout to a Box layout.  Fine tuned
  *  colors and centering.
@@ -88,6 +94,7 @@ public class JParametersDialog implements Serializable,
     Document sessionLog;  
     Vector vparamGUI = new Vector();
     JDialog opDialog;
+    Object Result = null;
     JLabel resultsLabel = new JLabel("    Result");
     ApplyButtonHandler APH;
     
@@ -341,7 +348,13 @@ public class JParametersDialog implements Serializable,
   {
     APH.deleteIObservers();
   }
-                
+  /** Returns the result of the last execution of the operator or
+ *    null if the Apply button was not pressed
+ *
+ */
+    public Object getLastResult()   
+     {return Result;
+     }           
 
   public class ApplyButtonHandler implements ActionListener,
                                   IObservable
@@ -401,7 +414,7 @@ public class JParametersDialog implements Serializable,
       opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
              
       Object result = op.getResult();
-
+      Result = result;
       opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       if (result == null)
       {
