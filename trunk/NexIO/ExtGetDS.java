@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2003/12/08 20:48:28  rmikk
+ * Added code to retrieve instrumentType, DataSet Type,Run title, title, Number of
+ *     pulses, End date, end time, etc
+ *
  * Revision 1.16  2003/12/08 17:29:13  rmikk
  * Added the DataSet operations to the data set
  *
@@ -87,6 +91,7 @@ import NexIO.Process.*;
 import NexIO.Util.*;
 import NexIO.Query.*;
 import DataSetTools.util.*;
+import NexIO.Util.*;
 
 /**  Class that retrieves DataSets from sources with an NxNode interface AND
  *  which
@@ -192,25 +197,35 @@ public class ExtGetDS{
    DataSetInfo dsInf = (DataSetInfo)(EntryToDSs.elementAt(data_set_num));
     
    NxNode EntryNode= dsInf.NxentryNode;
-   AttributeList AL = getGlobalAttributes() ;
+   AttributeList AL = getGlobalAttributes( EntryNode ) ;
    NxfileStateInfo FileState = new NxfileStateInfo( node);
    NxEntryStateInfo EntryState = new NxEntryStateInfo( EntryNode,FileState);
    DataSet DS;
-   int instrType = -1;
+   int instrType = -1; 
+   Inst_Type it = new Inst_Type();
+   
+   instrType = (new Inst_Type()).getIsawInstrNum( EntryState.description );
+   
    if( dsInf.NxdataNode != null){
-      Inst_Type it = new Inst_Type();
-    
-      instrType = (new Inst_Type()).getIsawInstrNum( EntryState.description );
- 
+     
   
       DataSetFactory DSF = new DataSetFactory( "" ) ;
       DS = DSF.getTofDataSet(instrType) ; 
+      DS.setAttributeList( AL ) ;
+      DataSetFactory.addOperators( DS,instrType );
       DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType)); 
+      DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,Attribute.SAMPLE_DATA));
+     
        
-   }else
+   }else{
       DS = new MonitorDataSet();
-   DS.setAttributeList( AL ) ;
- 
+      DS.setAttributeList( AL ) ;
+      DataSetFactory.addMonitorOperators( DS, instrType);
+      DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType)); 
+      DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,Attribute.MONITOR_DATA));
+   }
+   
+   DS.setAttribute( new StringAttribute(  Attribute.TITLE , EntryNode.getNodeName() ) ) ;
    FileState.Push( EntryState);
    IProcessNxEntry entry = QueryNxEntry.getNxEntryProcessor(FileState, dsInf.NxdataNode,
                  null, dsInf.startGroupID);
@@ -222,8 +237,7 @@ public class ExtGetDS{
       System.out.println("In ExtGetDS, errormessga="+errormessage);
       return null;
    }
-   DataSetFactory.addOperators( DS);
-   if( instrType >=0) DataSetFactory.addOperators( DS,instrType );
+  
    return DS;
 
   }
@@ -243,7 +257,7 @@ public class ExtGetDS{
     
     NxNode nd2 ;
     nd2= (((DataSetInfo)(EntryToDSs.elementAt(data_set_num))).NxentryNode);
-    AttributeList AL = getGlobalAttributes() ;
+    AttributeList AL = getGlobalAttributes( nd2 ) ;
     
     String Analysis = getAnalysis( nd2 );
     
@@ -302,17 +316,41 @@ public class ExtGetDS{
     
     if( i2 > i1+4)
       return true;
-    
+     
     return false;
   }
   
-  //  Returns an attribute list of the NeXus Global attributes that can then
+  //  Returns an attribute list of the NeXus  attributes that can then
   //   be added to a data set
-  private AttributeList getGlobalAttributes(){
+  private AttributeList getGlobalAttributes( NxNode EntryNode ){
     AttributeList Res = new AttributeList() ;
    
     Res.addAttribute( new StringAttribute(  Attribute.FILE_NAME , filename ) ) ;
-   
+    Attribute A = NexIO.Util.ConvertDataTypes.
+                    CreateStringAttribute(Attribute.USER, node.getAttrValue( "user"));
+    if( A != null)
+      Res.setAttribute(A);
+    
+    
+    NxNode ET = EntryNode.getChildNode("end_time");
+    String S = ConvertDataTypes.StringValue(ET.getNodeValue());
+    if( S != null){
+       Date D = NexIO.Util.ConvertDataTypes.parse(S);
+       if( D != null){
+         
+         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat();
+         sdf.applyPattern("MMM dd,yyyy");
+         Res.setAttribute( new StringAttribute( Attribute.END_DATE,
+               sdf.format( D)));
+         sdf.applyPattern("HH:mm:ss"); 
+         Res.setAttribute( new StringAttribute( Attribute.END_TIME,
+               sdf.format( D)));
+
+          
+       }
+    }
+    
+   // add user when I print it out
     return Res ;
   }
 
