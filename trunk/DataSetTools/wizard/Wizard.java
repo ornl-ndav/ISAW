@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/02/26 21:43:47  pfpeterson
+ * Changed reference to Form.setCompleted(false) to From.invalidate().
+ *
  * Revision 1.8  2003/02/26 17:20:43  rmikk
  * Now uses DataSetTools.util.SharedData.status_pane
  *
@@ -560,7 +563,7 @@ public class Wizard implements Serializable{
      */
     protected void invalidate(int start){
         for( int i=start ; i<forms.size() ; i++ ){
-            getForm(i).setCompleted(false);
+          getForm(i).invalidate();
         }
         progress.setValue(start);
     }
@@ -588,7 +591,7 @@ public class Wizard implements Serializable{
           if(DEBUG) System.out.println("EXECUTING "+i);
           //invalidate(i);
           boolean worked=f.execute();
-          f.setCompleted(worked);
+          if(!worked) f.invalidate();
           if(!worked || !f.done()){
             end=i-1;
             break;
