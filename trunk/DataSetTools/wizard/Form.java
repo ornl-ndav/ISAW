@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.37  2003/08/25 20:44:36  bouzekc
+ * Fixed spelling error in error message.
+ *
  * Revision 1.36  2003/08/21 17:31:55  bouzekc
  * Changed call from init() to initGUI(null) to correspond to new ParameterGUI.
  *
@@ -792,7 +795,7 @@ public abstract class Form extends Operator implements PropertyChanger {
         } else {
           return errorOut( 
             ipg,
-            "Parameter " + ipg.getName(  ) + " is invalid.  You" +
+            "Parameter " + ipg.getName(  ) + " is invalid.  You " +
             "must select a choice." );
         }
       } else if( ipg instanceof StringEntryPG ) {
