@@ -2,6 +2,9 @@
  * @(#)DoubleDifferentialCrossection.java   0.1  2000/07/25   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.4  2000/07/25 18:10:33  dennis
+ *  Fixed error with tsec in calculation
+ *
  *  Revision 1.3  2000/07/25 16:39:37  dennis
  *  Added monitor 1 peak area as a parameter and finished the calculation,
  *  including compensation for the scattered energy increment and the flux
@@ -153,6 +156,7 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
           tof,
           delta_tof,
           def,
+          tsec,
           eff,
           flux;
     float energy_in,
@@ -186,15 +190,15 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
                   attr_list.getAttributeValue(Attribute.DETECTOR_POS);
       spherical_coords = position.getSphericalCoords();
 
-                                        // need velocity in m/sec not m/us
-      velocity_in = tof_calc.VelocityFromEnergy( energy_in ) * 1000000;
+      tsec = num_pulses/30.0f;
+      velocity_in = tof_calc.VelocityFromEnergy( energy_in );
       flux = peak_area * velocity_in /
-             ( mon_1_area * (num_pulses/30.0f) * 0.0022f );
+             ( mon_1_area * tsec * 0.0022f );
             
                                         // compensate for solid angle subtended
                                         // the number of atoms in the, sample
                                         // and the incident beam flux 
-      scale_factor = 1000.0f / (solid_angle * atoms * flux);
+      scale_factor = 1000.0f / (solid_angle * atoms * flux * tsec);
 
       new_data = data.multiply( scale_factor );
                                             
