@@ -29,6 +29,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.5  2002/03/25 23:46:52  pfpeterson
+ * Changed exiting information dialog. Location of java no longer
+ * needed for mac clients.
+ *
  * Revision 1.4  2002/03/04 20:29:54  pfpeterson
  * Updated mac support.
  *
@@ -121,8 +125,8 @@ public class IsawInstaller extends JFrame
 	
 	// find the name of archive
 	zse.jarFileName=
-	    //"/IPNShome/pfpeterson/zipper/ISAW-111-beta-install.jar";
-	    zse.getJarFileName();
+	    "/IPNShome/pfpeterson/zipper/ISAW-111-beta-install.jar";
+	    //zse.getJarFileName();
 	
 	// set up the GUI
 	zse.init();
@@ -168,6 +172,7 @@ public class IsawInstaller extends JFrame
 	    operating_system=UNKNOWN_ID;
 	}
 	//operating_system=WIN_ID;
+	//operating_system=MAC_ID;
 	//operating_system=UNKNOWN_ID;
 
 	return operating_system;
@@ -245,8 +250,12 @@ public class IsawInstaller extends JFrame
 	location.setText(filename);
 
 	String batchfile=batch.getText();
-	batchfile=batchfile.substring(batchfile.lastIndexOf(File.separator));
-	batch.setText(filename+batchfile);
+        if(batchfile.equals(NO_BATCH)){
+            // do nothing
+        }else{
+            batchfile=batchfile.substring(batchfile.lastIndexOf(File.separator));
+            batch.setText(filename+batchfile);
+        }
 
         return filename;
     }
@@ -786,7 +795,7 @@ public class IsawInstaller extends JFrame
 	batchP.add(Box.createHorizontalGlue(),gbc);
 	gbc.weightx=0.0;   gbc.gridwidth=GridBagConstraints.REMAINDER;
 	batchP.add(batchFile,gbc);
-	if(operating_system.equals(WIN_ID)){
+	if(operating_system.equals(WIN_ID) || operating_system.equals(MAC_ID)){
 	    // do nothing
 	}else{
 	    // ========== put in a vertical space
@@ -872,11 +881,24 @@ public class IsawInstaller extends JFrame
      * Method to allow other threads to close the main GUI window.
      */
     void closeMain(int extracted){
-	String msg="Extracted "+extracted+" file"
+        String msg;
+
+
+        msg="Start ISAW using   : ";
+        if(batch.getText().equals(NO_BATCH)){
+            msg=msg+"java IsawGUI.Isaw";
+        }else{
+            if(operating_system.equals(MAC_ID))
+                msg=msg+"source ";
+            msg=msg+batch.getText();
+        }
+        msg=msg+"\n\n";
+
+	msg=msg+"Extracted "+extracted+" file"
 	    +((extracted > 1) ? "s":"")+"\n"
 	    +"from the archive   : "+jarFileName+"\n"
-	    +"into the directory : "+location.getText()+"\n"
-	    +"Start ISAW using   : "+batch.getText();
+	    +"into the directory : "+location.getText()+"\n";
+	    
 
 	JOptionPane.showMessageDialog(IsawInstaller.this,msg,
 				      "Zip Self Extractor",
