@@ -1,7 +1,8 @@
  /*
   * File:  Isaw.java
   *
-  * Copyright (C) 1999, Alok Chatterjee
+  * Copyright (C) 1999, Alok Chatterjee,
+  *                     Kevin Neff 
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -31,6 +32,9 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.46  2001/07/31 15:04:41  chatter
+  *  Increased the ISAW split pane width to .90 of the screen width
+  *
   *  Revision 1.45  2001/07/26 20:41:51  neffk
   *  fixed TreeListener to keep the 'Operator' menu current.  previously,
   *  whenever deletions (especially Experiment objects) were made, the
@@ -296,7 +300,7 @@ public class Isaw
   private static final String SEPD_MACRO_MI   = "SEPD";
 
   private final float RIGHT_WEIGHT = 0.6f;
-  private final float LEFT_WEIGHT  = 0.85f;
+  private final float LEFT_WEIGHT  = 0.90f;
 
   public static final String FILE_CMD = "-F";
 
