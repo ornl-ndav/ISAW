@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/07/15 14:40:20  rmikk
+ *  The Contour.Style property's initial value can now come
+ *    from the IsawProps.dat.  Also the default initial value is
+ *    now Raster
+ *
  *  Revision 1.7  2002/07/12 18:21:22  pfpeterson
  *  Added convenience methods to releave the duty of casting from
  *  the caller.
@@ -158,6 +163,10 @@ public class PropertiesLoader implements java.io.Serializable
             def="40";
         }else if( prop.equals(ViewerState.AUTO_SCALE) ){
             def="0";
+        }else if( prop.equals( ViewerState.CONTOUR_STYLE) ){
+           { def = ""+gov.noaa.pmel.sgt.GridAttribute.RASTER;
+             
+           }
         }
         return def;
     }
@@ -286,6 +295,7 @@ public class PropertiesLoader implements java.io.Serializable
      */
     protected Integer getInteger(String prop, String def){
         String property=this.get(prop,def);
+
         Integer val=null;
 
         if(property!=null)
