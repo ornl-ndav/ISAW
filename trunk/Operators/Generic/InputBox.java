@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/01/07 16:04:48  rmikk
+ * Input Box now disappears after pressing the Apply button
+ *
  * Revision 1.1  2002/12/23 17:12:58  rmikk
  * Initial Commit
  *
@@ -163,7 +166,8 @@ public class InputBox  extends GenericBatch
                        A,
                        new VectDataSetHandler( DataSetList ),
                        null, null, true);
-      return "Success"; 
+      return new DataSetTools.operator.Generic.Batch.ExitClass(); 
+ 
       
      }
 
@@ -252,7 +256,7 @@ class ArgOperator extends GenericBatch
 
      for( int i=0; i < super.parameters.size(); i++)
        InitValues.setElementAt( super.getParameter(i).getValue(), i);
-     return "Success";
+     return new DataSetTools.operator.Generic.Batch.ExitClass() ;
      }
 
  }//ArgOperator Class
