@@ -48,7 +48,9 @@ public class DataSetViewerMaker  extends DataSetViewer
       JComponent[] CompPcontrols = viewComp.getPrivateControls();
       if( CompPcontrols != null)
         for( int i=0; i< CompPcontrols.length; i++)
-          East.add( CompPcontrols[i]);      
+          East.add( CompPcontrols[i]);  
+
+      East.add( Box.createRigidArea(new Dimension(30,500)) );    
       viewArray.addActionListener( new ArrayActionListener());
       viewComp.addActionListener( new CompActionListener());
       setLayout( new GridLayout( 1,1));
