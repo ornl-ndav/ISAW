@@ -30,6 +30,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2004/04/21 19:30:14  dennis
+ * Now uses peaksform.APPEND_PARAM instead of '8' to refer back
+ * to the FindMultiplePeaksForm parameter for appending to a
+ * file.
+ *
  * Revision 1.12  2004/04/21 19:15:00  dennis
  * Changed to work with new FindMultiplePeaksForm that has the
  * min and max time channels as parameters.
@@ -130,8 +135,8 @@ public class DailyPeaksWizard extends Wizard {
     };
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
 
-    //A.J. Schultz wants the "update" parameter to default to true
-    peaksform.getParameter( 8 )
+    //A.J. Schultz wants the "append" parameter to default to true
+    peaksform.getParameter( peaksform.APPEND_PARAM )
              .setValue( Boolean.TRUE );
 
     //these Forms rely on previously calculated values, so set them
