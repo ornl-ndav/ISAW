@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.54  2003/06/19 22:29:55  pfpeterson
+ * Converted to use more of ScriptUtil. Removed dead code and commented
+ * out code.
+ *
  * Revision 1.53  2003/06/19 21:20:18  pfpeterson
  * Uses ScriptUtil for 'Display'.
  *
@@ -418,14 +422,10 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         
         if( Debug )
             System.out.println( "in execute String" + S + " , " + start );
-        if( S == null) 
+        if( S == null || S.length()<=0 ) 
             return 0;
-        if( start < 0 )
+        if( start < 0 || end<=0 )
             return 0; 
-        if( S.length() <= 0 )
-            return 0;
-        if( end <= 0 ) 
-            return 0;
         if( start >= end )
             return S.length();
         if( (start >= S.length()) || ( start >= end) )
@@ -468,25 +468,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
                 j=j1;
                 if(Debug)
                     System.out.println("[], C,j="+C+","+j);
-                /*
-                  C = C +  brackSub( S , j1 , end );
-                  if(Debug)
-                  System.out.println("aft brack sub C,err=" + C + perror);
-                  if(perror >=0) return j1;
-                  j = finddQuote( S , j1 + 1 , "]" , "[]()");
-                  if( j > end) j = end;
-                  if( (j < 0)  || ( (j >= S.length()) || ( j >= end)))
-                  { seterror( j1 , ER_MissingBracket+j+"A");
-                  return j1;
-                  }
-                  if( S.charAt( j ) != ']')
-                  { seterror( j1 , ER_MissingBracket+j+"B");
-                  return j1;
-                  }
-                  j = j + 1;
-                  j1 = skipspaces( S , 1 , j);
-                  if( j1 > end) j1 = end;
-                */ 
             }
         if( C.charAt(0) != '\"' )
             C = C.toUpperCase();
@@ -740,117 +721,15 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * filename and data set type.
      */
     public DataSet[] Load( String filename , String varname ){
-        DataSet DDs,
-            dss[];
-        int i,
-            j;
-        
-        Util util = new Util();
-        filename = StringUtil.setFileSeparator(filename);
-        String Ext;
-        i= filename.lastIndexOf(".");
-        if( i<0){ // Not supporting classnames yet
-            seterror( 1000, ER_ImproperArgument+" 1");
-            return null;
-        }
-        
-        Ext= filename.substring(i+1).toUpperCase();
-        
-        {
-          File file=new File(filename);
-          String error="File does not exist: "+filename;
-          if(!file.exists()){
-            if(Ext.equals("RUN")){ // try other cases for run files
-              int index=
-                filename.lastIndexOf(SharedData.getProperty("file.separator"));
-              if(index>=0){
-                filename=filename.substring(0,index)
-                                      +filename.substring(index).toUpperCase();
-                file=new File(filename);
-                if(! file.exists()){
-                  filename=filename.substring(0,index)
-                                      +filename.substring(index).toLowerCase();
-                  file=new File(filename);
-                  if(! file.exists()){
-                    seterror(1000, error);
-                    return null;
-                  }
-                }
-              }else{
-                seterror(1000, error);
-                return null;
-              }
-            }else{
-              seterror(1000, error);
-              return null;
-            }
-          }
-        }
-
-        if( Ext.equals("ISD")){
-            dss= new DataSet[1];
-            dss[0]= DataSet_IO.LoadDataSet(filename);
-            if(dss == null){
-                seterror( 1000 , "Data File Improper" );
-                return null;
-            }
-        }else if(Ext.equals("CLASS")){
-            try{       
-                Class X = Class.forName(filename.substring(0,i));               
-                Object O = X.newInstance();
-                if( !(O instanceof Operator)){
-                    seterror(1000,"Improper Class");
-                    return null;
-                }
-                MacroInfo.put( ((Operator)O).getCommand(), O);
-                return new DataSet[0];
-            }catch(Exception ss){
-                seterror(1000, "Unknown Class");
-                return null;
-            }
-        }else{ // (Ext.equals("RUN")or hdf or)
-            try{
-                if( varname != null)
-                  Assign(varname, new Nulll());
-                perror = -1;
-                dss = util.loadRunfile( filename );
-            }catch( Exception s){
-                dss = null;
-                seterror( 1000, s.toString());
-                return dss;
-            }
-            
-            util = null;
-            if( dss == null ){
-                seterror( 1000 , "Data File Improper" );
-                return null;
-            }
-            if( dss.length <= 0 ){
-                seterror( 1000 , "Data File Improper" );
-                return  null;
-            }
-        }
-     
-        for( i = 0 ; i < dss.length ; i++ ){
-            DDs = eliminateSpaces( dss[i] );
-
-            String vname=DDs.getTitle();
-            if( varname != null)
-                if( varname.length() > 0 )
-                    if( varname.toUpperCase().charAt(0) >'Z')
-		    {}
-                    else if( varname.toUpperCase().charAt(0) < 'A')
-                        {}
-                    else vname=(varname +"["+ new Integer(i).toString().trim()+"]");
-         
-            if( Debug) System.out.print("error="+perror+",");       
-
-            Assign( vname, DDs);
-           
-            if( Debug )
-                System.out.println("Assign Dat set=" + DDs.getTitle());
-        }
-	return dss;
+      DataSet[] DDs=null;
+      try{
+        DDs=ScriptUtil.load(filename);
+      }catch(IOException e){
+        seterror(1000,e.getMessage());
+        return null;
+      }
+      Load(DDs,varname);
+      return DDs;
     }
 
     /**
@@ -883,18 +762,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             return perror;
         if( V.size() == 0)
             return perror;
-        /*if( V.size() <=1 )
-          {PC.firePropertyChange( "Display"  , null , (Object)"(null)" );
-          Integer XX = new Integer(start);
-          if(V.size()> 0)
-          { XX = (Integer)(V.elementAt( V.size() - 1 ));            
-          } 
-          return XX.intValue();
-          }
-          else if( (V.size() == 2)&&(V.elementAt(0) == null ))
-          {PC.firePropertyChange( "Display"  , null , (Object)"(null)" );
-          return start;
-          }*/
 
         if( V.size() > 4){
             seterror( start, ER_ImproperArgument+"A" );
@@ -968,12 +835,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             return i;
         }
    
-
-        /* if( Result instanceof DataSet )
-           { new JDataViewUI().ShowDataSet( (DataSet)Result , "External Frame" , IViewManager.IMAGE );
-           
-           }
-           else*/
         String SS;
         SS = "";
         if( Result instanceof Integer )  
@@ -1118,20 +979,15 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      *
      */
     public void Save( DataSet ds , String filename ){
-        //System.out.println("Start Save Sub with ds, filename "+ ds +","+filename);
-        // try{  
-        /*FileOutputStream fos = new FileOutputStream(filename);
-          GZIPOutputStream gout = new GZIPOutputStream(fos);
-          ObjectOutputStream oos = new ObjectOutputStream(gout);
-          oos.writeObject(ds);
-          oos.close();
-        */
-        if(!( new DataSet_IO().SaveDataSet( ds , filename))){
-            seterror(1000, ER_OutputOperationInvalid);
-        }
-        /*catch(Exception s){
-          seterror(1000, ER_OutputOperationInvalid);
-          }*/
+      try{
+        ScriptUtil.save(filename,ds);
+      }catch(IOException e){
+        seterror(1000,e.getMessage());
+      }catch(IllegalArgumentException e){
+        seterror(1000,e.getMessage());
+      }catch(IndexOutOfBoundsException e){
+        seterror(1000,e.getMessage());
+      }
     }
 
     
@@ -1182,15 +1038,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             return S.length() + 2;
         if(Debug)
             System.out.print("Send after error");
-        /* if( !( Result instanceof DataSet ) )
-           {if(Debug)
-           System.out.println("in Not Correct Data Type");
-           seterror( start , ER_ImproperArgument );
-           return start;
-           }
-           if(Debug)
-           System.out.println("Send er observ");
-        */
         Object arg1,arg2;
         if( args.size() <= 2){
             arg1=this;
@@ -1217,6 +1064,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      *
      */
     public void Send( DataSet ds){
+      OL.notifyIObservers( this,ds );
     }
 
     /**
@@ -1244,9 +1092,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         }
         Enumeration D = ds.elements();//.toArray();
         DataSet DD[] ;
-        //D =  new DataSet[DO.length];
-        //if(Debug) System.out.println("sizes="+ds.size()+","+DO.length+","+D.length);
-        //for(int i=0; i<DO.length;i++)
+
         Vector VV= new Vector();
         int i;
         for( i=0; D.hasMoreElements(); i++){Object X=D.nextElement();}
@@ -1257,18 +1103,11 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             DD[i]=(DataSet)(D.nextElement());
         }
         
-        /* Collection dsvalues= ds.values();
-           if(Debug)System.out.println("getGlobalDSs nkeys="+dsvalues.size()
-           +","+dsvalues.getClass());
-           Object DO[]= dsvalues.toArray(new DataSet[0]);
-           if(Debug)System.out.println("getGlobalDSs"+DO.length);
-           DataSet[] D =(DataSet[])(DO);
-        */
         return DD;
     }
 
     /**
-     * Doe whole expression with And's, Or's, Not's, <, <=, and
+     * Do whole expression with And's, Or's, Not's, <, <=, and
      * Algebraic Expressions
      */
     private int execExpr(String S, int start, int end){
@@ -1630,7 +1469,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         if ( (j1 >= 0) && (j1 < S.length()) && ( j1 < end ) )
             if(  S.charAt( j1 ) == '[' ){                // Check for []
                 int j2=findfirst(S,1,j1+1,"]","[]");
-                //System.out.println("j2="+j2+","+j1+","+i+","+S);
                 if((j2>=end) ||( j2 >= S.length())){
                     seterror(j1,ER_MissingBracket +" at "+j1);
                     return j1;
@@ -1638,21 +1476,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
                 j1=j2+1;
                 C = S.substring(i,j1);
                 j=j1;
-                /*C = C +  brackSub( S , j1 , end );
-                if(perror >=0) return j1;
-                j = finddQuote( S , j1 + 1 , "]" , "[]()");
-                if( j> end) j = end;
-                if( (j < 0)  || ( (j >= S.length())||(j >= end)))
-                { seterror( j1 , ER_MissingBracket+j+"C");
-                return j1;
-                }
-                if( S.charAt( j ) != ']')
-                { seterror( j1 , ER_MissingBracket+j+"D");
-                return j1;
-                }
-                j = j + 1;
-                j1 = skipspaces( S , 1 , j);
-                */
             }
 
         if( (j1 < S.length()) && ( j1 < end ) )
@@ -2264,41 +2087,13 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     }
 
     private Operator getSHOp( Vector Args, String Command){
-        if(SH==null) SH=new Script_Class_List_Handler();
-        int i = SH.getOperatorPosition( Command );
-        if( i < 0)
-            return null;
-        int j = 0;
-        boolean done = false;
-        boolean found = false;
-        while( (!done) && (!found ) ){
-            int n = SH.getNumParameters( i );
-        
-            if( n == Args.size()){
-                found = true;
-                for( j = 0; (j < n) && found; j++){
-                    Object param = SH.getOperatorParameter( i , j );
-                    if( param == null){
-                    }else if( (Args.elementAt( j ) instanceof String)
-                              &&(param instanceof SpecialString)){
-                    }else if( (Args.elementAt(j) instanceof  Integer)
-                              &&(param instanceof  Float)){
-                    }else if( (Args.elementAt(j) instanceof  Float)
-                              &&(param instanceof  Integer)){
-                    }else if(Args.elementAt(j).getClass().isInstance(param)){
-                    }else found = false; 
-                }
-            }
-            if( found )
-                return SH.getOperator( i ) ;
-            i++;
-            String C1= SH.getOperatorCommand( i );
-            if( C1 == null)
-                done = true;
-            else if( ! C1.equals( Command ) )
-                done = true;
-        }
+      try{
+        return ScriptUtil.getNewOperator(Command,Args.toArray());
+      }catch(MissingResourceException e){
         return null;
+      }catch(ClassCastException e){
+        return null;
+      }
     }
 
     /**
@@ -2409,32 +2204,12 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         for( k = 0 ; k < op.getNum_parameters() ; k++ ){
             if( (Args.elementAt( k + start ) instanceof String)  &&  
                 (op.getParameter( k ).getValue( ) instanceof SpecialString) ){
-                /*try{ Object V=null;
-                  if( op.getParameter(k).getValue() instanceof hasCloneMethod)
-                  {V=((hasCloneMethod)( op.getParameter(k).getValue())).clone();
-                  }else{
-                  Class C = op.getParameter( k ).getValue().getClass();
-                  Class ArgsC[] = new Class[1];
-                  ArgsC[0] = Class.forName("java.lang.String");
-                  java.lang.reflect.Constructor Cons = C.getConstructor( ArgsC);
-                  Object Argvs[] = new Object[1];
-                  Argvs[0] = Args.elementAt( k + start ) ; 
-                  V =  Cons.newInstance(Argvs);          
-                  }
-                  SpecialString X =(SpecialString)V;
-                  X.setString((String)(Args.elementAt(k+start)));
-                  op.getParameter( k ).setValue( X );
-                */
                 if( op.getParameter(k).getValue() != null){
                     SpecialString X=(SpecialString)
                         (op.getParameter(k).getValue());
                     
 		    X.setString((String)(Args.elementAt(k+start)));
 		}
-                /* }catch( Exception s ){
-                   System.out.println("Internal ERROR XXXX"+ s+","
-                   +s.getMessage()+","+op.getClass()+", arg="+k);
-                   }*/
             }else if( op.getParameter(k).getValue() instanceof Float){
                 Float F = new Float(
                            ((Number)(Args.elementAt(k + start))).floatValue());
@@ -2446,18 +2221,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             }else{
                 op.getParameter( k ).setValue( Args.elementAt( k + start ) );
             }
-        }
-    }
-
-    private void SetOpParameters1 ( Operator op , Vector Args , int start ){
-        int k;
-        for( k = 0 ; k < op.getNum_parameters() ; k++ ){
-            if( (Args.elementAt( k + start ) instanceof String)  &&  
-                (op.getParameter(k).getValue() instanceof AttributeNameString))
-                op.getParameter( k ).setValue( new AttributeNameString( 
-                                       (String)( Args.elementAt(k + start))));
-            else
-                op.getParameter( k ).setValue( Args.elementAt( k + start ) );
         }
     }
 
@@ -2488,14 +2251,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             if(Debug)System.out.print("F");                    
             if(Debug)System.out.print("GG");
             if(fit){
-                /*for( k = 0 ; k < op.getNum_parameters() ; k++ )
-                  {if( Args.get( k + 1 ) instanceof String )
-                  op.getParameter( k ).setValue( new AttributeNameString(
-                  (String)( Args.get(k + 1) ) ));
-                  else
-                  op.getParameter( k ).setValue( Args.get( k + 1 ) );
-                  }
-                */
                 SetOpParameters( op , Args , 1);
 		Result = op.getResult();
 		op.setDefaultParameters();   
@@ -2562,10 +2317,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         }//while not done
         
         j = skipspaces( S , 1 , i + 1 );
-        // if( !( Args.get( 0 )instanceof DataSet ) )
-        //  {seterror(  i , ER_NotImplementedYet );
-	//  return i;
-        //  }
         
         if( Debug )
             System.out.println("Got to Here after arg");
@@ -2575,7 +2326,8 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         if(Debug){
             System.out.print("Args = " + Args.size());
             for(i2 = 0 ; i2 < Args.size() ; i2++)
-                System.out.print(Args.elementAt(i2) + "," + Args.elementAt(i2).getClass() + ",");
+                System.out.print(Args.elementAt(i2) + ","
+                                        + Args.elementAt(i2).getClass() + ",");
             System.out.println("");
         }
 	
@@ -2606,25 +2358,20 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         Vector V = getArgs(S, k+1, S.length());
         
         if(V == null)return null;
-        //System.out.print("C");
         int n = ((Integer)V.lastElement()).intValue();
         
-        //System.out.print("D"+","+n+","+k);
         if(k<0){
             seterror(1000, "Internal Error getValArry");
             return null; 
         }
         Vector d1 = (Vector)ArrayInfo.get(S.substring(0,k).toUpperCase());
-        //System.out.print("E");
         if( d1== null){
             seterror(1000,ER_NoSuchVariable);
             return null; 
         }
-        //System.out.print("F");
         Object d=d1;
         for(int i=0; i<V.size()-1; i++){
             O = V.elementAt(i);
-            //System.out.print("G"+O);
             if(O == null){
                 seterror(1000, ER_MissingArgument +" at index="+i);
                 return null; 
@@ -2644,9 +2391,13 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             }
             d =((Vector)d).elementAt(indx);
         } 
-        //System.out.println("getvalArray res="+d);
         return d;
     }
+
+  /**
+   * Takes care of null values. This allows variables to be garbage
+   * collected.
+   */
    class Nulll{
     }
 
@@ -2755,15 +2506,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * Eliminates spaces in the Title of ds1
      */
     private DataSet  eliminateSpaces( DataSet ds1 ){
-        int j;
-        /* DataSet ds;
-           ds = ds1;
-           ds.getTitle().trim();
-           for( j = ds.getTitle().indexOf(' ') ; ( j >= 0 ) && ( j < ds.getTitle().length() ) ; 
-           j = ds.getTitle().indexOf(' '))
-           {ds.setTitle( ds.getTitle().substring( 0 , j ) + ds.getTitle().substring( j + 1 ) );
-           }
-	*/
         return ds1;
     }
 
@@ -2946,54 +2688,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             return i;
     }
 
-
-    /**
-     * Used to replace sss[i] by sss0 or sss1 etc. whatever i contains.
-     *
-     * NOTE: Just returns the 0,1,2 in string form
-     */
-    private String brackSub( String S , int start , int end ){
-        Object R1, R2;
-        R1 = Result;
-        //System.out.print("in brackSub"+start); 
-        if((start < 0) || (start >= S.length())){
-            seterror( start , "Internal Error brackSub");
-            Result = R1;
-            return "";
-        }
-        //System.out.print("A");
-        if(S.charAt(start)!='['){
-            seterror( start , "Internal Error brackSub");
-            Result = R1;
-            return "";
-        }
-        //System.out.print("B");
-        int j=execute( S, start + 1, end );
-        if(perror >= 0){
-            Result = R1;
-            return "";
-        }
-        j=skipspaces( S , 1 , j);
-	//System.out.print("C"+Result+","+j);
-        if( (j < 0) || ( j >= S.length())){
-            seterror( start , ER_MissingBracket + j +"E");
-	    Result = R1;
-            return "";
-        } 
-	//System.out.print("D"+perror);
-        if(S.charAt(j) != ']' ){
-            seterror( start , ER_MissingBracket+j+"F");
-            Result = R1;
-            return "";
-        }
-	//System.out.print("E");
-        R2 = Result;
-        Result = R1;
-        if(R2 == null )
-	    return "";
-        return R2.toString();
-      }
-    
     private int finddQuote( String S, int start, String SrchChars,
                             String brcpairs ){
         int i, j, j1;
@@ -3049,31 +2743,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         return true;
         
     }
-    /* private boolean isInListDS( int i , DataSet Llist[] ){
-       if( i < 0 )
-       return false;
-       if( Llist == null )
-       return false;
-       if( i >= Llist.length )
-       return false;
-       if( Llist[i] == null )
-       return false;
-       return true;
-       }
-    */
-
-    /* private int finddDS( String SearchName, Hashtable Llist){
-       int i;
-       //System.out.println("in finddDS"+SearchName);
-       if( Llist == null )
-       return -1;
-       if(Llist.containsKey(SearchName.toUpperCase().trim() ))
-       return
-       else return -1;
-       return i;
-       }
-    */
-    
 
     private int findd(   String SearchName, Object SearchList[] ){
         if( SearchList == null )
@@ -3101,16 +2770,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     }
 
     public void removeVar( String vname){
-       /* if( ds != null)
-             if( ds.containsKey( vname.toUpperCase())){
-                 Object ds= getVal( vname.toUpperCase());
-                 if( ds != null)
-                     ((DataSet)ds).deleteIObserver( this);
-                 ds.remove( vname.toUpperCase());
-                 return;
-            } 
-     
-         */ 
         if( lds !=null)
             if( lds.containsKey( vname.toUpperCase())){
                  Object ds= getVal( vname.toUpperCase());
@@ -3181,6 +2840,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         }
       seterror( 1000 , ER_NoSuchVariable );
     }
+
     public void AssignArray(String vname, Object Result){
         String S = vname;//fixx(S1);
         Object O;
