@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/12/23 19:17:19  rmikk
+ * Now writes out the sample_orientation
+ *
  * Revision 1.5  2003/11/24 14:12:15  rmikk
  * Implemented NxWriteSample
  * Changed the signature on the processDS method
@@ -85,13 +88,15 @@ public class NxWriteSample{
     if( X !=  null){
       String Samp_name = NexIO.Util.ConvertDataTypes.StringValue( X);
       if( Samp_name != null){
+        
         NxWriteNode Instrnode = node.newChildNode( "sample", "NXsample");
         NxWriteNode nameNode = Instrnode.newChildNode( "name", "SDS");
         int[] ranks = new int[1];
         ranks[0] = Samp_name.length()+1;
         nameNode.setNodeValue( (Samp_name+(char)0).getBytes(),
                      NexIO.Types.Char,ranks);
-    }}
+       }
+    }
     NxWriteNode NxLognode = NxSampNode.newChildNode("Log_7","NXlog");
     NxWriteLog writelog = new NxWriteLog( 5);
     writelog.processDS( NxLognode, null, 7);
@@ -101,6 +106,30 @@ public class NxWriteSample{
     NxWriteNode beamNode = NxSampNode.newChildNode("Beam", "NXbeam");
     if( writeBeam.processDS( beamNode, DS))
         errormessage += writeBeam.getErrorMessage();
+        
+    float[] chi_phi_omega= new float[3];
+    DataSetTools.instruments.SampleOrientation ornt = (DataSetTools.
+                  instruments.SampleOrientation)
+                 DS.getAttributeValue( Attribute.SAMPLE_ORIENTATION);
+    if( ornt != null){             
+    
+      chi_phi_omega[1]=  ornt.getChi();
+      chi_phi_omega[0]= ornt.getPhi();
+      chi_phi_omega[2]= ornt.getOmega();
+    }else
+      chi_phi_omega[0] = chi_phi_omega[1] =chi_phi_omega[2] = Float.NaN;
+       
+    if( !Float.isNaN(chi_phi_omega[0]) && !Float.isNaN(chi_phi_omega[1]) &&
+           !Float.isNaN(chi_phi_omega[2]) ){
+      NxWriteNode orientNode = NxSampNode.newChildNode( "sample_orientation",
+                                              "SDS");
+      int[] ranks= new int[1];
+      ranks[0]=3;
+      orientNode.setNodeValue( chi_phi_omega, NexIO.Types.Float, ranks);
+      orientNode.addAttribute("units", ("degree"+(char)0).getBytes(),
+            NexIO.Types.Char, NexIO.Inst_Type.makeRankArray(9,-1,-1,-1,-1) );      
+    }
+    
     return false;
   }
 }
