@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2004/07/31 23:11:20  rmikk
+ * Removed unused imports
+ *
  * Revision 1.2  2004/07/29 14:02:12  rmikk
  * Fixed javadoc error
  *
@@ -59,10 +62,10 @@
 
 package Operators.TOF_SCD;
 
-import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
+//import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.parameter.*;
-import DataSetTools.util.FilenameUtil;
+//import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.Util.File.TextFileReader;
