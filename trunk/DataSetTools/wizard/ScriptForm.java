@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/07/02 18:24:41  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.8  2003/07/02 18:17:40  bouzekc
  * No longer implements Serializable.
  *
@@ -41,25 +44,7 @@ package DataSetTools.wizard;
 
 import Command.ScriptOperator;
 
-import DataSetTools.components.ParametersGUI.*;
-
-import DataSetTools.operator.*;
-
-import DataSetTools.parameter.*;
-
 import DataSetTools.util.*;
-
-import java.awt.*;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
 
 
 /**
