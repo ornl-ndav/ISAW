@@ -2,6 +2,8 @@
 # Script to load and save runfiles as gsas files
 # $Date$
 
+$Category=Operator, Instrument Type, TOF_NPD
+
 $ run_numbers         Array                  Enter run numbers like [1,2:5]
 $ inpath              DataDirectoryString    Data Directory
 $ outpath             DataDirectoryString    Output Directory

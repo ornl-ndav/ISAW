@@ -2,13 +2,15 @@
 # Define the variables for the script
 # $Date$
 #
+$Category=Operator, Instrument Type, TOF_NPD
+
 $ filepath   DataDirectoryString(c:/gppd_newdas_runs/)      Path
-$ inst       String(gppd)             Instrument
-$ vfile   Integer(8236)           Vanadium File number
-$ bfile   Integer(8237)           Background File number
-$ rod_radius Float(0.3175)            Vanadium rod radius in cm
-$ dn_t_min   Float(0.0)               Tmin for monitor integration
-$ dn_t_max   Float(35000.0)           Tmax for monitor integration
+$ inst       String(gppd)           Instrument
+$ vfile      Integer(8236)          Vanadium File number
+$ bfile      Integer(8237)          Background File number
+$ rod_radius Float(0.3175)          Vanadium rod radius in cm
+$ dn_t_min   Float(0.0)             Tmin for monitor integration
+$ dn_t_max   Float(35000.0)         Tmax for monitor integration
 $ summed     boolean(false)         Sum detector banks?
 
 #  Bring in the run file and Display the sample data

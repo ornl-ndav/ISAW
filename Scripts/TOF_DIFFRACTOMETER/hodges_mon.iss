@@ -2,6 +2,8 @@
 # Define the variables for the script
 # $Date$
 #
+$Category=Operator, Instrument Type, TOF_NPD
+
 $ filepath   DataDirectoryString     Path
 $ filename   String(sepd17123.run)   File name
 $ neutfrac   Float(0.0074)           Delayed neutron fraction
