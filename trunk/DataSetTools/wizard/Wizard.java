@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2003/04/29 14:08:37  pfpeterson
+ * Generate help page for Form from HTMLizer. (Chris Bouzek)
+ *
  * Revision 1.17  2003/04/28 16:17:58  pfpeterson
  * Now recalls save/load filename. (Chris Bouzek)
  *
@@ -115,6 +118,7 @@ import DataSetTools.parameter.*;
 import java.beans.*;
 import java.io.*;
 import DataSetTools.dataset.DataSet;
+import IsawHelp.HelpSystem.HTMLizer;
 
 /**
  *  The Wizard class provides the top level control for a sequence of
@@ -857,6 +861,22 @@ public abstract class Wizard implements PropertyChangeListener{
     }
 
     /**
+     *  Shows the JavaHelp HTML page for the current form.
+     *
+     */
+    private void ShowFormHelpMessage(){
+        HTMLizer form_htmlizer = new HTMLizer();
+        String html = form_htmlizer.createHTML(this.getCurrentForm());
+        JFrame help_frame = new JFrame(title);
+        Dimension screen_size = Toolkit.getDefaultToolkit().getScreenSize();
+        help_frame.setSize(new Dimension((int)(screen_size.getWidth() / 2), 
+                                         (int)(screen_size.getHeight() / 2)));
+        help_frame.getContentPane().add(
+          new JScrollPane(new JEditorPane("text/html", html)));
+        help_frame.show();
+    }
+
+    /**
      * Invalidate all forms starting with the number specified.
      */
     protected void invalidate(int start){
@@ -1028,7 +1048,7 @@ public abstract class Wizard implements PropertyChangeListener{
             }else if ( command.equals( FORM_HELP_COMMAND ) ){
                 Form f = getCurrentForm();
                 if ( f != null )
-                    ShowHelpMessage(f.getDocumentation(),"Help: "+f.getTitle());
+                    ShowFormHelpMessage();
             }else if ( command.equals( SAVE_WIZARD_COMMAND ) ){
                 save();
             }else if ( command.equals( LOAD_WIZARD_COMMAND ) ){
