@@ -82,8 +82,6 @@ abstract public class Attribute implements Serializable
 
   public static final String  END_TIME       = "End Time";
 
-
-
   public static final String  DETECTOR_POS   = "Detector Position";
 
   public static final String  RAW_ANGLE      = "Raw Detector Angle";
@@ -91,10 +89,7 @@ abstract public class Attribute implements Serializable
   public static final String  DETECTOR_IDS   = "Detector IDs";
 
   public static final String  GROUP_ID       = "Group ID";
-
-  public static final String  TOTAL_COUNT      = "Total Count";
-
-
+  
   public static final String  INITIAL_PATH   = "Initial Path";
 
   public static final String  ENERGY_IN      = "Energy In";
@@ -113,8 +108,9 @@ abstract public class Attribute implements Serializable
   
   public static final String  NUMBER_OF_PULSES    = "Number of Pulses";
 
-  public static final String  TOTAL_COUNTS    = "Total Counts";
+  public static final String  TOTAL_COUNT   = "Total Count";
 
+  public static final String  NUM_CHANNELS  = "Number of Channels";
 
   private String name;
 
