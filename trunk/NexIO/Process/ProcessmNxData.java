@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/12/09 14:40:34  rmikk
+ * Fixed javadoc warnings
+ *
  * Revision 1.2  2003/11/23 23:46:16  rmikk
  * Eliminated some Debugging prints
  *
@@ -84,7 +87,7 @@ public class ProcessmNxData implements IProcessNxData {
     *     @param NxinstrumentNode An NxNode with information on the NeXus 
     *                           NXinstrument class.
     *     @param DS    The DataSet(not null) that is to have info added to it
-    *     @param Params The linked list of state information
+    *     @param State The linked list of state information
     *     @param startGroupID The starting Group ID for the NEW data blocks that are
     *                          added
     */

@@ -23,7 +23,7 @@ public class NxWriteLog{
    * Extracts the information from the Data Set and writes it to the
    * NxBeam portion of a Nexus file
    *
-   * @param  node    A node whose class is NXlog
+   * @param  NxLognode    A node whose class is NXlog
    * @param  DS      The data set whose information is to be written
    * @return true if an error occurred otherwise false
    */
