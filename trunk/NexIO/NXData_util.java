@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2003/12/18 17:48:09  rmikk
+ * Added bounds checking for array references
+ *
  * Revision 1.20  2003/11/24 00:01:08  rmikk
  * Improved the test program in main
  *
@@ -482,34 +485,34 @@ public class NXData_util{
         DB.setAttribute( new FloatAttribute( Attribute.RAW_ANGLE, 
                 (float)(Raw_Angle[index-start_index]*180./java.lang.Math.PI)));
 
-      if( solidAngle != null )// if( index <solidAngle.length)
+      if( solidAngle != null )if( index -start_index <solidAngle.length)
         DB.setAttribute( new FloatAttribute(
                    Attribute.SOLID_ANGLE, solidAngle[ index - start_index] ) );
 
-      if( Total_Count != null )// if( index <Total_Count.length){
+      if( Total_Count != null )if( index -start_index <Total_Count.length)
         DB.setAttribute( new FloatAttribute(Attribute.TOTAL_COUNT,
                                             Total_Count[index-start_index]));
       else
         DB.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT,
                                              findTotCountDB(DB)) );
 
-      if( slot != null )// if( index <slot.length)
+      if( slot != null ) if( index-start_index <slot.length)
         if( slot[index - start_index] >= 0 )
           DB.setAttribute( new IntAttribute( Attribute.SLOT,
                                              (int)(slot[index-start_index])));
 
-      if( crate != null )// if( index <crate.length)
+      if( crate != null ) if( index-start_index <crate.length)
         if( crate[index - start_index] >= 0 )
           DB.setAttribute( new IntAttribute( Attribute.CRATE,
                                              (int)(crate[index-start_index])));
 
-      if( input != null )// if( index <input.length)
+      if( input != null ) if( index-start_index <input.length)
         if( input[index - start_index] >= 0 )
           DB.setAttribute( new IntAttribute( Attribute.INPUT,
                                              (int)(input[index-start_index])));
 
       float d, p, t, s,ra;
-      int   T;
+      int   T; 
 
       T = 0;
       d = p = t = 0.0f;
