@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/10/10 22:11:54  pfpeterson
+ *  Fixed a bug with the clone method not getting the choices copied over.
+ *
  *  Revision 1.3  2002/10/07 15:27:46  pfpeterson
  *  Another attempt to fix the clone() bug.
  *
@@ -48,6 +51,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.retriever.NexusRetriever;
 import DataSetTools.util.SharedData;
+import java.util.Vector;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -184,6 +188,7 @@ public class SampleDataSetPG extends DataSetPG{
      */
     public Object clone(){
         SampleDataSetPG pg=new SampleDataSetPG(this.name,this.value,this.valid);
+        pg.vals=(Vector)this.vals.clone();
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
         return pg;

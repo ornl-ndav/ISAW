@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/10/10 22:11:51  pfpeterson
+ *  Fixed a bug with the clone method not getting the choices copied over.
+ *
  *  Revision 1.2  2002/09/19 16:07:22  pfpeterson
  *  Changed to work with new system where operators get IParameters in stead of Parameters. Now support clone method.
  *
@@ -285,6 +288,8 @@ public class HashPG extends ParameterGUI{
      */
     public Object clone(){
         HashPG hpg=new HashPG(this.name,this.value,this.valid);
+        hpg.keys=(Vector)this.keys.clone();
+        hpg.vals=(Vector)this.vals.clone();
         hpg.setDrawValid(this.getDrawValid());
         hpg.initialized=false;
         return hpg;
