@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.48  2003/08/15 23:59:40  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI.
+ *
  *  Revision 1.47  2003/07/14 16:49:10  rmikk
  *  Added a more descriptive String for uncaught errors in
  *     getResult and also printed a Stack Trace
@@ -281,9 +284,9 @@ public class JParametersDialog implements Serializable,
            iparam = op.getParameter(i);
            if( iparam instanceof IParameterGUI)
              {if( iparam instanceof DataSetPG)
-                ((DataSetPG)iparam).init((Object[])(ds_src.getDataSets()));
+                ((DataSetPG)iparam).initGUI((Object[])(ds_src.getDataSets()));
               else
-                ((IParameterGUI)iparam).init();
+                ((IParameterGUI)iparam).initGUI(null);
 
               JComponent pp= ((IParameterGUI)iparam).getGUIPanel();
               if( pp == null)

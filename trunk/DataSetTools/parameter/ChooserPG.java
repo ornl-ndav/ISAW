@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.7  2003/08/15 23:56:23  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI.
+ *
  *  Revision 1.6  2003/08/15 03:55:34  bouzekc
  *  Removed unnecessary initialized=true statement.
  *
@@ -163,7 +166,7 @@ abstract public class ChooserPG extends ParameterGUI{
   /**
    * Allows for initialization of the GUI after instantiation.
    */
-  public void init(Vector init_values){
+  public void initGUI(Vector init_values){
     if(this.initialized) return;
     if(init_values!=null && init_values.size()>0){
       this.vals=new Vector();
@@ -193,12 +196,12 @@ abstract public class ChooserPG extends ParameterGUI{
    * Since this is an array parameter, better allow an array to
    * initialize the GUI.
    */
-  public void init(Object init_values[]){
+  public void initGUI(Object init_values[]){
     Vector init_vec=new Vector();
     for( int i=0 ; i<init_values.length ; i++ ){
       init_vec.add(init_values[i]);
     }
-    this.init(init_vec);
+    initGUI(init_vec);
   }
 
   /**
