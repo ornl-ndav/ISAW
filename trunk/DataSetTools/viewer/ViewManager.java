@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/08/14 15:17:44  dennis
+ *  Added check for num entries <=0 and dataSet null.
+ *
  *  Revision 1.15  2001/08/13 16:19:39  dennis
  *  Added Ruth's Table view
  *
@@ -448,7 +451,8 @@ public class ViewManager extends    JFrame
 
    private void makeTempDataSet( boolean use_default_conversion_range )
    {
-     if ( dataSet.getNum_entries() <= 0 )       // degnerate case, use original
+                                                // degnerate case, use original
+     if ( dataSet == null || dataSet.getNum_entries() <= 0 )       
      {
        tempDataSet = dataSet;
        return;
