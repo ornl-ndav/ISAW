@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.11  2003/06/17 17:06:30  bouzekc
+ * Now uses InstrumentType.formIPNSFileName to get the
+ * file name.  Changed to work with new PropChangeProgressBar.
+ *
  * Revision 1.10  2003/06/16 23:04:31  bouzekc
  * Now set up to use the multithreaded progress bar in
  * DataSetTools.components.ParametersGUI.
@@ -67,6 +71,7 @@ import  DataSetTools.operator.DataSet.Attribute.*;
 import  DataSetTools.dataset.DataSet;
 import  DataSetTools.operator.DataSet.Math.Analyze.*;
 import  DataSetTools.operator.Generic.Load.LoadOneHistogramDS;
+import  DataSetTools.instruments.InstrumentType;
 
 /**
  * 
@@ -252,9 +257,9 @@ public class IntegrateMultiRunsForm extends Form
     IParameterGUI param;
     Object obj;
     String outputDir, matrixName, calibFile, expName, rawDir, centerType;
-    String integName, sliceRange, loadName, runNum;
+    String integName, sliceRange, loadName, IPNSName;
     boolean append, first;
-    float increment;
+    float increment, oldPercent, newPercent;
     int timeSliceDelta, SCDline;
     DataSet histDS;
     int[] runsArray;
@@ -374,17 +379,13 @@ public class IntegrateMultiRunsForm extends Form
 
     //set the increment amount
     increment = (1.0f / runsArray.length) * 100.0f;
+    oldPercent = newPercent = increment;
 
     for(int i = 0; i < runsArray.length; i++)
     {
-      /*load the histogram and monitor for the current run. 
-        We don't want to remove the leading zeroes!*/
-      runNum = DataSetTools
-               .util
-               .Format
-               .integerPadWithZero(runsArray[i], RUN_NUMBER_WIDTH);
+      IPNSName = InstrumentType.formIPNSFileName(SCDName, runsArray[i]);
 
-      loadName = rawDir + SCDName + runNum + ".RUN";
+      loadName = rawDir + IPNSName;
 
       SharedData.addmsg("Loading " + loadName + ".");
 
@@ -407,11 +408,15 @@ public class IntegrateMultiRunsForm extends Form
       if(obj instanceof ErrorString)
         return errorOut("LoadSCDCalib failed: " + obj.toString());
 
-      /*Gets matrix file "lsxxxx.mat" for each run
-        The "1" means that every peak will be written to the integrate.log file.*/
-      matrixName = outputDir + "ls" + expName + runNum + ".mat";
+      //Gets matrix file "lsxxxx.mat" for each run
 
-      SharedData.addmsg("Integrating run number " + runNum + ".");
+      //pull the run number off of the IPNS name
+      IPNSName = IPNSName.substring(IPNSName.indexOf(SCDName) + SCDName.length(), 
+                                    IPNSName.indexOf('.'));
+      
+      matrixName = outputDir + "ls" + expName + IPNSName + ".mat";
+
+      SharedData.addmsg("Integrating run " + IPNSName + ".");
       
       integrate.getParameter(0).setValue(histDS);
       integrate.getParameter(2).setValue(matrixName);
@@ -427,9 +432,9 @@ public class IntegrateMultiRunsForm extends Form
       }
 
       //fire a property change event off to any listeners
-      //again, these are incremental changes in order to fit in with the
-      //overall Wizard progress bar
-      super.fireValueChangeEvent(-1, (int)increment);
+      oldPercent = newPercent;
+      newPercent += increment;
+      super.fireValueChangeEvent((int)oldPercent, (int)newPercent);
     }
     
     SharedData.addmsg("--- IntegrateMultiRunsForm is done. ---");
