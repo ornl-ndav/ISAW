@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/04/01 20:25:08  rmikk
+ * Improved Documentation
+ *
  * Revision 1.3  2001/07/24 20:07:35  rmikk
  * Eliminated code for raw Angle.
  *
@@ -66,6 +69,7 @@ public String getErrorMessage()
   *@param node  the current node positioned to an NXdata part of a datasource
   *@param  DS  the existing DataSet that is to be filled out
   *@return  error status: true if there is an error otherwise false
+  *NOT USED. Most of the NXdetector field read by setOtherAttributes in NXData_util.java
   */
 public boolean processDS( NxNode node ,  DataSet DS )
   {
