@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/09/15 20:48:05  bouzekc
+ * Fixed bug where getValue() would crash if no GUI existed.  getValue() now
+ * returns an empty Vector if the GUI does not exist.
+ *
  * Revision 1.10  2003/09/15 18:05:03  dennis
  * Changed defaults for End Q, Num Steps, and state of dq/q radio
  * button.  (For Alok)
@@ -212,6 +216,9 @@ public class QbinsPG  extends VectorPG{
     }
    
     public Object getValue(){
+       if( !this.initialized ) {
+         return new Vector(  );
+       }
        float s = (new Float(start.getText())).floatValue();
        float e = (new Float(end.getText())).floatValue();
        int n  = (new Integer(steps.getText())).intValue();
