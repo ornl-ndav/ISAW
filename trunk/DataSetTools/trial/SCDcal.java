@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/07/29 19:51:22  dennis
+ *  Constructor now accepts a list of boolean flags to indicate
+ *  which of the parameters are actually used in the optimization.
+ *
  *  Revision 1.3  2003/07/29 16:52:03  dennis
  *  Added more parameters, now fits initial path (L1), tof offset and
  *  scale (T0, A), sample shift (SX, SY, SZ), and Width, Height,
@@ -68,31 +72,36 @@ public class SCDcal   extends    OneVarParameterizedFunction
   public static final int DET_BASE_INDEX = 6;
   public static final int N_DET_PARAMS   = 7;   // number of params per detector
 
-  public static final double DET_Z    = 0.0;
+  private int    n_peaks;
+  private int    run[]; 
+  private int    id[];
+  private double hkl[][];      // list of hkl triples for ith point in ith row
+  private double tof[];
+  private int    row[];
+  private int    col[];
 
-  int    n_peaks;
-  int    run[]; 
-  int    id[];
-  double hkl[][];      // list of hkl triples for ith point in ith row
-  double tof[];
-  int    row[];
-  int    col[];
+  private double U_observed[][];
+  private double B_observed[][];
+  private double B_theoretical[][];
 
-  double U_observed[][];
-  double B_observed[][];
-  double B_theoretical[][];
+  private double qxyz_observed[][];
+  private double qxyz_theoretical[][];
 
-  double qxyz_observed[][];
-  double qxyz_theoretical[][];
+  private UniformGrid_d grid;
+  private int  eval_count = 0;
 
-  UniformGrid_d grid;
-  int  eval_count = 0;
+  private Hashtable gon_rotation_inverse;
+  private Hashtable gon_rotation;
+  private Hashtable grids;
+  private Vector    nominal_position;
 
-  Hashtable gon_rotation_inverse;
-  Hashtable gon_rotation;
-  Hashtable grids;
-  Vector    nominal_position;
+  private double    all_parameters[];   // full list of all possible params
+  private String    all_parameter_names[];
 
+  private int       all_p_index[];      // index into full list of all params,
+                                        // for each used parameter
+  private int       used_p_index[];     // index into list of params used, 
+                                        // for each possible parameter
   /**
    *  Construct a function defined on the grid of (x,y) values specified, 
    *  using the parameters and parameter names specified.  The grid points
@@ -109,28 +118,66 @@ public class SCDcal   extends    OneVarParameterizedFunction
                   int                 row[], 
                   int                 col[],
                   double              params[], 
-                  String              param_names[] )
+                  String              param_names[],
+                  int                 n_used,
+                  boolean             is_used[],
+                  double              lattice_params[] )
    {
-     super( "SCDcal", params, param_names );
+                                   // we only want to use some of the possible
+                                   // parameter, but the super constructor must
+                                   // be called first, so we have to pass in
+                                   // empty arrays and then change the values
+     super( "SCDcal", new double[n_used], new String[n_used] );
+
+     int used_index = 0;                        // set up copies of the 
+     for ( int i = 0; i < params.length; i++ )  // sub lists that are actually
+       if ( is_used[i] )                        // used for the optimization
+       {
+         parameters[used_index]      = params[i];
+         parameter_names[used_index] = param_names[i];
+         used_index++;
+       }
+
+     if ( used_index != n_used )
+     {
+       throw new InstantiationError(
+                  "ERROR: number of parameters used " + used_index + 
+                  " doesn't match number specified "  + n_used ); 
+     }
+                                                 // make tables of indices to
+     used_p_index = new int[params.length];      // switch between full list 
+     all_p_index  = new int[n_used];             // of parameters and sub lists 
+     used_index = 0;
+     for ( int i = 0; i < params.length; i++ )
+       if ( is_used[i] )
+       {
+         used_p_index[i] = used_index;
+         all_p_index[used_index] = i;
+         used_index++;
+       }
+       else
+         used_p_index[i] = -1;                  // invalid index, since not used
+
+                               // record references to these arrays and change
+                               // the values as the optimization proceeds
+     all_parameters = params;
+     all_parameter_names = param_names;
 
      n_peaks = run.length;
-     this.run = run;
-     this.id =  det_id;
+     this.run = copy( run );
+     this.id =  copy( det_id );
      this.grids = grids;
-     this.hkl = hkl;
-     this.tof = tof;
-     this.row = row;
-     this.col = col;
+     this.hkl = copy( hkl );
+     this.tof = copy( tof );
+     this.row = copy( row );
+     this.col = copy( col );       // to be really thorough, we should probably
+                                   // also copy the grids Hashtable and the
+                                   // orientation array, however, the order of
+                                   // the values in the grids hashtable is
+                                   // critical, and the copy may disturb it.
 
      // Lattice Parameters for Quartz
-     double a = 4.9138;
-     double b = 4.9138;
-     double c = 5.4051;
-     double alpha = 90;
-     double beta  = 90;
-     double gamma = 120;
-
-     B_theoretical = lattice_calc.A_matrix( a, b, c, alpha, beta, gamma );     
+     B_theoretical = lattice_calc.A_matrix( lattice_params );     
      System.out.println("Material Matrix = " );
      LinearAlgebra.print( B_theoretical );
      B_theoretical = LinearAlgebra.getInverse( B_theoretical ); 
@@ -179,7 +226,10 @@ public class SCDcal   extends    OneVarParameterizedFunction
 
      qxyz_theoretical = new double[n_peaks][3];
      qxyz_observed    = new double[n_peaks][3];
-     setParameters(params);
+
+     setParameters(parameters);   // This may seem circular, but it forces the
+                                  // local version to set up initial values
+                                  // for qxyz_theoretical, observed, UB, etd.
    }
 
   /**
@@ -216,6 +266,12 @@ public class SCDcal   extends    OneVarParameterizedFunction
   {
     super.setParameters( parameters );
 
+    // copy the parameters that are being used for optimization into to master
+    // list of parameters and then actually use all values from the master list.
+
+    for ( int i = 0; i < parameters.length; i++ )
+      all_parameters[ all_p_index[i] ] = parameters[i];
+
     int index = DET_BASE_INDEX;
     Enumeration e = grids.elements();
     int det_count = 0;
@@ -223,19 +279,19 @@ public class SCDcal   extends    OneVarParameterizedFunction
     {
       UniformGrid_d grid = (UniformGrid_d)e.nextElement();
       Vector3D_d nom_pos = (Vector3D_d)nominal_position.elementAt(det_count);
-      double width = parameters[ index ];
+      double width = all_parameters[ index ];
       index++;
-      double height = parameters[ index ];
+      double height = all_parameters[ index ];
       index++;
-      double x_off = parameters[ index ];
+      double x_off = all_parameters[ index ];
       index++;
-      double y_off = parameters[ index ];
+      double y_off = all_parameters[ index ];
       index++;
-      double phi = parameters[index];
+      double phi = all_parameters[index];
       index++;
-      double chi = parameters[index];
+      double chi = all_parameters[index];
       index++;
-      double omega = parameters[index];
+      double omega = all_parameters[index];
       index++;
 
       grid.setWidth( width );
@@ -294,12 +350,12 @@ public class SCDcal   extends    OneVarParameterizedFunction
    */
   private void find_qxyz_observed()
   {
-    double l1 = parameters[L1_INDEX];
-    double t0 = parameters[T0_INDEX];
-    double a  = parameters[A_INDEX];
-    double sx = parameters[SX_INDEX];
-    double sy = parameters[SY_INDEX];
-    double sz = parameters[SZ_INDEX];
+    double l1 = all_parameters[L1_INDEX];
+    double t0 = all_parameters[T0_INDEX];
+    double a  = all_parameters[A_INDEX];
+    double sx = all_parameters[SX_INDEX];
+    double sy = all_parameters[SY_INDEX];
+    double sz = all_parameters[SZ_INDEX];
 
     DetectorPosition_d pixel_position;
     Vector3D_d         pixel_vec;
@@ -356,6 +412,31 @@ public class SCDcal   extends    OneVarParameterizedFunction
     }
   }
 
+
+  /**
+   *  Make a copy of a one-dimensional array of doubles
+   */
+  private double[] copy( double A[] )
+  {
+    double M[] = new double[ A.length ];
+    for ( int i = 0; i < A.length; i++ )
+      M[i] = A[i];
+    return M;
+  }
+
+
+  /**
+   *  Make a copy of a one-dimensional array of ints
+   */
+  private int[] copy( int A[] )
+  {
+    int M[] = new int[ A.length ];
+    for ( int i = 0; i < A.length; i++ )
+      M[i] = A[i];
+    return M;
+  }
+
+
   /**
    *  Make a copy of a two-dimensional array of doubles
    */
@@ -406,13 +487,11 @@ public class SCDcal   extends    OneVarParameterizedFunction
 
   static private void show_parameter( String name, 
                                       double value, 
-                                      double sig1, 
-                                      double sig2 )
+                                      double sig1  )
   {
     System.out.print( Format.string(name,17)  );
     System.out.print( Format.real(value,17,9) + " +- " );
     System.out.print( Format.real(sig1, 17,9) + " +- " );
-    System.out.print( Format.real(sig2, 17,9) );
     System.out.println();
   }
 
@@ -423,6 +502,16 @@ public class SCDcal   extends    OneVarParameterizedFunction
   */
     public static void main(String[] args)
     {
+     // Lattice Parameters for Quartz
+      double lattice_params[] = new double[6];
+      lattice_params[0] = 4.9138;
+      lattice_params[1] = 4.9138;
+      lattice_params[2] = 5.4051;
+      lattice_params[3] = 90;
+      lattice_params[4] = 90;
+      lattice_params[5] = 120;
+
+
       final int N_ROWS      = 100;       // Detector parameters, used for 
       final int N_COLS      = 100;       // setting up DataGrids must come
       final double DET_SIZE = 0.15;      // from somewhere.
@@ -539,6 +628,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
 
       int n_params = DET_BASE_INDEX + N_DET_PARAMS * grids.size();
       System.out.println("NUMBER OF PARAMETERS = " + n_params );
+
       String parameter_names[]     = new String[n_params];
       parameter_names[ L1_INDEX ]  = "L1";
       parameter_names[ T0_INDEX ]  = "T0";
@@ -589,6 +679,19 @@ public class SCDcal   extends    OneVarParameterizedFunction
         parameters[index] = 0;
         index++;
       } 
+
+      boolean is_used[] = new boolean[n_params];
+      for ( int i = 0; i < n_params; i++ )
+        is_used[i] = true;
+                              // insert code at this point to mark some params
+      is_used[ A_INDEX ] = false;
+      //is_used[ 6 ] = false;
+      //is_used[ 7 ] = false;
+                              // now count the number that were used
+      int n_used = 0;
+      for ( int i = 0; i < n_params; i++ )
+        if ( is_used[i] )
+          n_used++;
                                                      // build the one variable
                                                      // function
       SCDcal error_f = new SCDcal( run, 
@@ -597,7 +700,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
                                    orientation,
                                    hkl,
                                    tof, row, col,
-                                   parameters, parameter_names ); 
+                                   parameters, parameter_names,
+                                   n_used, is_used,
+                                   lattice_params ); 
 
                                                      // build the array of 
                                                      // function values with  
@@ -608,7 +713,6 @@ public class SCDcal   extends    OneVarParameterizedFunction
       for ( int i = 0; i < n_peaks; i++ )
       {
         z_vals[i] = 0;
-//      sigmas[i] = 1.0/Math.sqrt( counts[i] );
 //      sigmas[i] = Math.sqrt( counts[i] );
         sigmas[i] = 1.0;
         x_index[i]  = i;
@@ -628,18 +732,16 @@ public class SCDcal   extends    OneVarParameterizedFunction
                                            // build the data fitter and display 
                                            // the results.
       MarquardtArrayFitter fitter = 
-      new MarquardtArrayFitter(error_f, x_index, z_vals, sigmas, 1.0e-16, 200);
+      new MarquardtArrayFitter(error_f, x_index, z_vals, sigmas, 1.0e-16, 100);
 
       double p_sigmas[];
-      double p_sigmas_2[];
       double coefs[];
       String names[];
       p_sigmas = fitter.getParameterSigmas();
-      p_sigmas_2 = fitter.getParameterSigmas_2();
       coefs = error_f.getParameters();
       names = error_f.getParameterNames();
       for ( int i = 0; i < error_f.numParameters(); i++ )
-        show_parameter( names[i], coefs[i], p_sigmas[i], p_sigmas_2[i] );
+        show_parameter( names[i], coefs[i], p_sigmas[i] );
 
       System.out.println();
       System.out.println("RESULTS -----------------------------------------"); 
@@ -671,21 +773,22 @@ public class SCDcal   extends    OneVarParameterizedFunction
         System.out.println("USING DETECTOR: " + grid.ID());
         System.out.println();
 
-        System.out.print( Format.real( 100*coefs[0], 9, 3 ) );
-        System.out.print( Format.real( coefs[1], 8, 3 ) );
-        double x2cm = 100*coefs[i]/N_COLS;             // this is step between
+        System.out.print( Format.real( 100*parameters[0], 9, 3 ) );
+        System.out.print( Format.real( parameters[1], 8, 3 ) );
+        double x2cm = 100*parameters[i]/N_COLS;        // this is step between
         i++;                                           // pixel centers
-        double y2cm = 100*coefs[i]/N_ROWS;  
+        double y2cm = 100*parameters[i]/N_ROWS;  
         i++;
-        double xLeft  = 100*coefs[i] - x2cm*N_COLS/2.0;//this is to edge of det
+                                                       //this is to edge of det
+        double xLeft  = 100*parameters[i] - x2cm*N_COLS/2.0;
         i++;                                           //not center of first pix
-        double yLower = 100*coefs[i] - y2cm*N_ROWS/2.0;
+        double yLower = 100*parameters[i] - y2cm*N_ROWS/2.0;
         i++;
-        phi = coefs[i];
+        phi = parameters[i];
         i++;
-        chi = coefs[i];
+        chi = parameters[i];
         i++;
-        omega = coefs[i];
+        omega = parameters[i];
         i++;
         System.out.print( Format.real( x2cm, 11, 6 ) );
         System.out.print( Format.real( y2cm, 11, 6 ) );
