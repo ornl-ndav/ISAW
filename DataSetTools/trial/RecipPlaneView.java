@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2004/09/16 18:12:10  dennis
+ * Made calibrations on both image axes linear and provided somewhat
+ * meaningful ranges of values ( |Q| ) for the axis calibrations.
+ *
  * Revision 1.24  2004/07/26 21:47:10  dennis
  * Changed name of PeakData to PeakData_d since PeakData_d uses
  * double precision.
@@ -778,7 +782,7 @@ public class RecipPlaneView
 
 
   /* ---------------------- getBaseLevels -------------------------- */
-  
+ /* 
   private float[] getBaseLevels( IDataGrid grid, int width )
   {
     width = 10;
@@ -823,7 +827,7 @@ public class RecipPlaneView
       }
 
       java.util.Arrays.sort( sort_list );
-/*
+
       if ( i == 10 )
       {
         System.out.println("sort list = " );
@@ -831,7 +835,7 @@ public class RecipPlaneView
           System.out.print( " " + sort_list[k] );
         System.out.println("END sort list = " );
       }
-*/      
+      
       levels[i] = sort_list[ sort_list.length/2 ] / (2*width + 1);
       levels[i] = levels[i] + 5*(float)Math.sqrt( levels[i] );
 //    System.out.print( " "+levels[i] );
@@ -839,6 +843,7 @@ public class RecipPlaneView
 
     return levels;
   }
+*/
 
   /* ---------------------- get_data_objects ----------------------- */
 
@@ -1960,10 +1965,10 @@ private class PlaneListener implements ActionListener
        float image[][] = make_slice( origin, normal, base, up );
        VirtualArray2D va2d = new VirtualArray2D( image );
 // ##### patch
-    va2d.setAxisInfo( AxisInfo.X_AXIS, -10.0f, 10.0f,
-                        "X","Uncalibrated Units", true );
-    va2d.setAxisInfo( AxisInfo.Y_AXIS, -10.0f, 10.0f,
-                        "Y","Uncalibrated Units", false );
+    va2d.setAxisInfo( AxisInfo.X_AXIS, -SLICE_SIZE_IN_Q, SLICE_SIZE_IN_Q,
+                        " ","Change in |Q|", AxisInfo.LINEAR );
+    va2d.setAxisInfo( AxisInfo.Y_AXIS, -SLICE_SIZE_IN_Q, SLICE_SIZE_IN_Q,
+                        " ","Change in |Q|", AxisInfo.LINEAR );
 
        va2d.setTitle( title );
        if ( frame == null )
