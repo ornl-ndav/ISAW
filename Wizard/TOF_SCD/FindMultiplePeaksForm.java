@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.8  2003/06/11 22:39:20  bouzekc
+ * Updated documentation.  Moved file separator "/" code out
+ * of loop.
+ *
  * Revision 1.7  2003/06/10 19:54:00  bouzekc
  * Fixed bug where the peaks file was not written with every
  * run.
@@ -138,7 +142,7 @@ public class FindMultiplePeaksForm extends Form
     //5
     addParameter(new IntegerPG( "Minimum Peak Intensity", new Integer(3), false));
     //6
-    addParameter(new BooleanPG( "Append to File?", new Boolean(false), false));
+    addParameter(new BooleanPG( "Append Data to File?", new Boolean(false), false));
     //7
     addParameter(new IntegerPG( "SCD Calibration File Line to Use", 
                                 new Integer(-1), false));
@@ -180,9 +184,10 @@ public class FindMultiplePeaksForm extends Form
     s.append("@param expname The experiment name (i.e. \"quartz\").\n");
     s.append("@param num_peaks The maximum number of peaks to return.\n");
     s.append("@param min_int The minimum peak intensity to look for.\n");
-    s.append("@param append Append to file (yes/no).\n");
+    s.append("@param append Whether to append data to the peaks file.\n");
     s.append("@param line2use SCD calibration file line to use.\n");
     s.append("@param calibfile SCD calibration file.\n");
+    s.append("@param peaksFile Peaks filename that data is written to.\n");
     s.append("@return A Boolean indicating success or failure of the Form's ");
     s.append("execution.\n");
     s.append("@error An error is returned if a valid experiment name is not ");
@@ -234,13 +239,15 @@ public class FindMultiplePeaksForm extends Form
     //get raw data directory
     //should be no need to check this for validity
     param = (IParameterGUI)super.getParameter( 0 );
-    rawDir = param.getValue().toString() + "/";
+    rawDir = StringUtil.setFileSeparator(
+                  param.getValue().toString() + "/");
     param.setValid(true);
 
     //get output directory
     //should be no need to check this for validity
     param = (IParameterGUI)super.getParameter( 1 );
-    outputDir = param.getValue().toString() + "/";
+    outputDir = StringUtil.setFileSeparator(
+                  param.getValue().toString() + "/");
     param.setValid(true);
 
     //gets the run numbers
@@ -340,8 +347,7 @@ public class FindMultiplePeaksForm extends Form
                .Format
                .integerPadWithZero(runsArray[i], RUN_NUMBER_WIDTH);
 
-      loadName = StringUtil.setFileSeparator(
-                   rawDir + "/" + SCDName + runNum + ".RUN");
+      loadName = rawDir + SCDName + runNum + ".RUN";
 
       SharedData.addmsg("Loading " + loadName + ".");
 
