@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2004/05/24 18:35:27  rmikk
+ *  Added properties ShortSavedFilename and NsavedFiles to the 
+ *  default IsawProps.dat
+ *
  *  Revision 1.23  2004/03/04 21:57:01  dennis
  *  Added two properties for controlling the size of a wizard.
  *
@@ -329,7 +333,10 @@ public class DefaultProperties{
             .append("# Wizard Options").append(eol)
             .append("#").append(eol)
             .append("WIZARD_WIDTH=700").append(eol)
-            .append("WIZARD_HEIGHT=600").append(eol);
+            .append("WIZARD_HEIGHT=600").append(eol)
+            .append("#NsavedFiles=0")
+            .append("#ShortSavedFilename=false");
+            
 
       /* This causes more problems with nexus than it fixes. These
          lines are taken from the original code that was inside Isaw.java.
