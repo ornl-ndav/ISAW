@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2003/04/14 16:14:05  pfpeterson
+ * Reworked code that integrates time slices to parameterize the number
+ * of slices to integrate.
+ *
  * Revision 1.13  2003/04/11 16:52:59  pfpeterson
  * Added parameter to specify how many peaks are listed in log file.
  *
@@ -565,10 +569,14 @@ public class Integrate extends GenericTOF_SCD{
     int cenY=(int)Math.round(peak.y());
     int cenZ=(int)Math.round(peak.z());
 
-    int[] zrange={cenZ,cenZ-1,cenZ+1,cenZ+2,cenZ+3};
-    int minZrange=zrange[0];
-    int maxZrange=zrange[0];
-    for( int i=1 ; i<zrange.length ; i++ ){
+    int minZrange=-1;
+    int maxZrange=3;
+    int[] zrange=new int[maxZrange-minZrange+1];
+    for( int i=0 ; i<zrange.length ; i++ )
+      zrange[i]=cenZ+i+minZrange;
+    minZrange=cenZ;
+    maxZrange=cenZ;
+    for( int i=0 ; i<zrange.length ; i++ ){
       if(zrange[i]<minZrange) minZrange=zrange[i];
       if(zrange[i]>maxZrange) maxZrange=zrange[i];
     }
@@ -587,47 +595,40 @@ public class Integrate extends GenericTOF_SCD{
                  +"  I/sigI   included?\n");
     }
 
-    float[][] IsigI=new float[zrange.length][2];
+    float[][] IsigI=new float[zrange.length][2]; // 2nd index is I,dI
     float Itot=0f;
     float dItot=0f;
 
-    // integrate each time slice and add (if appropriate)
+    // integrate each time slice
+    StringBuffer innerLog=new StringBuffer(40);
+    String[] integSliceLogs=new String[zrange.length];
     for( int k=0 ; k<zrange.length ; k++ ){
+      innerLog.delete(0,innerLog.length());
       if(zrange[k]<minZrange  || zrange[k]>maxZrange)
         continue;
-      if(log!=null)
-        log.append(formatInt(zrange[k]-cenZ)+"   "+formatInt(zrange[k])+"  ");
-      tempIsigI=integratePeakSlice(ds,ids,cenX,cenY,zrange[k],log);
-      if(log!=null) log.append(" "+formatFloat(tempIsigI[0])+"  "
-                               +formatFloat(tempIsigI[1]));
+      tempIsigI=integratePeakSlice(ds,ids,cenX,cenY,zrange[k],innerLog);
+      integSliceLogs[k]=innerLog.toString();
+      // update the list of integrals if intensity is positive
       if( tempIsigI[0]>0f ){
         IsigI[k][0]=tempIsigI[0];
         IsigI[k][1]=tempIsigI[1];
-        if(log!=null) log.append(" "+formatFloat(tempIsigI[0]/tempIsigI[1])
-                                 +"      ");
-      }else{
-        if(log!=null) log.append(" "+formatFloat(0f)+"      ");
-        if(k==0){  // if this is the peak's time slice then something
-                   // is wrong and we should just return
-          if(log!=null) log.append("No\n");
-          return;
+      }else{ // or shrink what is calculated
+        if(zrange[k]==cenZ){ // if this is the peak's time slice then something
+          break;             // is wrong and we should just return
+        }else if(zrange[k]<cenZ){
+          // do nothing
+        }else if(zrange[k]>cenZ){ // shrink the range
+            maxZrange=zrange[k];
         }
-        if(zrange[k]<zrange[0])
-          minZrange=zrange[k];
-        else if(zrange[k]>zrange[0])
-          maxZrange=zrange[k];
       }
-      if(k==0){
-        if(log!=null) log.append("Yes\n");
-        Itot=IsigI[k][0];
+      if(zrange[k]==cenZ){ // set the starting value for totals
+        Itot =IsigI[k][0];
         dItot=IsigI[k][1];
       }else{
-        if( compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
-          if(log!=null) log.append("Yes\n");
-          Itot=Itot+IsigI[k][0];
-          dItot=(float)Math.sqrt(dItot*dItot+IsigI[k][1]*IsigI[k][1]);
-        }else{
-          if(log!=null) log.append("No\n");
+        // shrink what is calculated if the slice would not be added
+                   // this is not fully correct since Itot and dItot aren't
+                   // changing when a slice should be added
+        if(! compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
           if(zrange[k]<zrange[0])
             minZrange=zrange[k];
           else if(zrange[k]>zrange[0])
@@ -635,8 +636,69 @@ public class Integrate extends GenericTOF_SCD{
         }
       }
     }
-    
+
+    // determine the range to bother trying to sum over
+    int indexZmin=0;
+    int indexZcen=0;
+    int indexZmax=0;
+    for( int i=0 ; i<zrange.length ; i++ ){
+      if(zrange[i]==minZrange) indexZmin=i;
+      if(zrange[i]==cenZ)      indexZcen=i;
+      if(zrange[i]==maxZrange) indexZmax=i;
+    }
+
+    // figure out what to add to the total
+
+    // cenZ has already been added (but do a quick check anyhow)
+    if( Itot==0f && dItot==0f){
+      indexZmin=indexZcen+1;
+      indexZmax=indexZcen-1;
+    }
+
+    // now the previous slices
+    for( int k=indexZcen-1 ; k>=indexZmin ; k-- ){
+      if( compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
+        Itot=Itot+IsigI[k][0];
+        dItot=(float)Math.sqrt(dItot*dItot+IsigI[k][1]*IsigI[k][1]);
+      }else{
+        minZrange=zrange[k];
+        indexZmin=k;
+      }
+    }
+
+    // now the following slices
+    for( int k=indexZcen+1 ; k<=indexZmax ; k++ ){
+      if( compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
+        Itot=Itot+IsigI[k][0];
+        dItot=(float)Math.sqrt(dItot*dItot+IsigI[k][1]*IsigI[k][1]);
+      }else{
+        maxZrange=zrange[k];
+        indexZmax=k;
+      }
+    }
+
+    // then add information to the log file
     if(log!=null){
+      // each time slice
+      for( int k=0 ; k<zrange.length ; k++ ){
+        log.append(formatInt(zrange[k]-cenZ)+"   "+formatInt(zrange[k])+"  ");
+        if(integSliceLogs[k]!=null)
+          log.append(integSliceLogs[k]);
+        else
+          log.append("-------- NOT INTEGRATED --------");
+        log.append(" "+formatFloat(IsigI[k][0]));
+        log.append("  "+formatFloat(IsigI[k][1]));
+        if(IsigI[k][1]>0f)
+          log.append(" "+formatFloat(IsigI[k][0]/IsigI[k][1])+"      ");
+        else
+          log.append(" "+formatFloat(0f)+"      ");
+        if( k>indexZmin && k<indexZmax )
+          log.append("Yes\n");
+        else
+          log.append("No\n");
+      }
+
+      // summary
       log.append("***** Final       Ihkl = "+formatFloat(Itot)+"       sigI = "
                  +formatFloat(dItot)+"       I/sigI = ");
       if(dItot>0f)
@@ -773,6 +835,7 @@ public class Integrate extends GenericTOF_SCD{
    */
   private static boolean compItoDI(float Itot, float dItot, float I, float dI){
     if(I<=0f || dI==0f) return false;
+    if(Itot==0f && dItot==0f) return true;
 
     float myItot=Itot+I;
     float myDItot=(float)Math.sqrt(dItot*dItot+dI*dI);
@@ -1110,10 +1173,7 @@ public class Integrate extends GenericTOF_SCD{
   }
 
   private static String formatInt(double num, int width){
-    StringBuffer text=new StringBuffer(Integer.toString((int)Math.round(num)));
-    while(text.length()<width)
-      text.insert(0," ");
-    return text.toString();
+    return Format.integer(num,width);
   }
 
   private static String formatFloat(double num){
