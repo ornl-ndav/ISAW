@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2003/05/06 16:03:47  pfpeterson
+ * Added multiple detector support.
+ *
  * Revision 1.17  2003/03/26 21:06:22  pfpeterson
  * Sets the reflection flag as discussed with A. Schultz.
  *
@@ -62,6 +65,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
 import DataSetTools.instruments.*;
+import DataSetTools.util.ErrorString;
 import DataSetTools.util.SharedData;
 import DataSetTools.retriever.RunfileRetriever;
 import java.util.*;
@@ -80,6 +84,8 @@ import java.text.DecimalFormat;
 public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   private static final String     TITLE                 = "Find Peaks";
   private              int        run_number            = -1;
+  private              int     maxNumPeaks              = 0;
+  private              int     min_count                = 0;
   
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -167,8 +173,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   public Object getResult(){
     DataSet data_set     =  (DataSet)(getParameter(0).getValue());
     float   moncount     =  ((Float)(getParameter(1).getValue())).floatValue();
-    int     maxNumPeaks  = ((Integer)(getParameter(2).getValue())).intValue();
-    int     min_count    = ((Integer)(getParameter(3).getValue())).intValue();
+    this.maxNumPeaks     = ((Integer)(getParameter(2).getValue())).intValue();
+    this.min_count       = ((Integer)(getParameter(3).getValue())).intValue();
     
     //System.out.print("====================================");
     //System.out.println("==================================");
@@ -176,34 +182,86 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     int numData=data_set.getNum_entries();
     PixelInfoListAttribute segI;
     IPixelInfo seg=null;
-    int det_number=0;
+    int[] det_number=null;
+    float init_path=0f;
 
     run_number=((int[])data_set.getAttributeValue(Attribute.RUN_NUM))[0];
+    init_path=((Float)data.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
+
+    // sample orientation
+    SampleOrientation orientation =
+    (SampleOrientation)data_set.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
+    float chi   = orientation.getChi();
+    float phi   = orientation.getPhi();
+    float omega = orientation.getOmega();
+
+    // the detector number array
+    {
+      // determine all unique detector numbers
+      Integer detNum=null;
+      Vector innerDetNum=new Vector();
+      for( int i=0 ; i< data_set.getNum_entries() ; i++ ){
+        detNum=new Integer(Util.detectorID(data_set.getData_entry(i)));
+        if( ! innerDetNum.contains(detNum) ) innerDetNum.add(detNum);
+      }
+      // copy them over to the detector number array
+      det_number=new int[innerDetNum.size()];
+      for( int j=0 ; j<det_number.length ; j++ )
+        det_number[j]=((Integer)innerDetNum.elementAt(j)).intValue();
+    }
+
+    // error out if don't have detector numbers
+    if(det_number==null)
+      return new ErrorString("Could not determine detector numbers");
+
+    // find the peaks
+    Vector peaks=new Vector();
+    PeakFactory pkfac=new PeakFactory(run_number,det_number[0],init_path,
+                                      0f,0f,0f);
+    pkfac.sample_orient(chi,phi,omega);
+    pkfac.monct(moncount);
+    pkfac.L1(init_path);
+    for( int i=0 ; i<det_number.length ; i++ ){
+      Vector innerPeakList=findPeaks(pkfac,data_set,det_number[i]);
+
+      if(innerPeakList!=null && innerPeakList.size()>0)
+        peaks.addAll(innerPeakList);
+    }
+
+    // error out if there are no peaks found
+    if(peaks.size()<=0) return new ErrorString("Did not find any peaks");
+
+    // renumber the peaks
+    Peak peak=null;
+    for( int i=0 ; i<peaks.size() ; i++ ){
+      peak=(Peak)peaks.elementAt(i);
+      peak.seqnum(i+1);
+    }
+
+    return peaks;
+  }
+
+  /**
+   * This does the real work of finding a bunch of peaks for a given
+   * detector number.
+   */
+  private Vector findPeaks(PeakFactory pkfac,DataSet data_set,int detNum){
+    pkfac.detnum(detNum);
 
     // create an array of for indexing into the data
-    int[][] ids=Util.createIdMap(data_set);
-    
-    float init_path=((Float)data.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
-
+    int[][] ids=Util.createIdMap(data_set,detNum);
+    Data data=null;
     int minColumn=1000;
     int maxColumn=0;
     int minRow=1000;
     int maxRow=0;
     int minTime=0;
-    int maxTime=(data.getCopyOfY_values()).length;
+    int maxTime=1000;
 
     // position of detector center
-    float detA  = Util.detector_angle(data_set);
-    float detA2 = Util.detector_angle2(data_set);
-    float detD  = Util.detector_distance(data_set,detA);
-
-    // sample orientation
-    SampleOrientation orientation =
-    (SampleOrientation)data_set.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
-
-    float chi   = orientation.getChi();
-    float phi   = orientation.getPhi();
-    float omega = orientation.getOmega();
+    float detA  = Util.detector_angle(data_set,detNum);
+    float detA2 = Util.detector_angle2(data_set,detNum);
+    float detD  = Util.detector_distance(data_set,detNum);
 
     // determine the minimum and maximum row and columns
     outer: for( int i=0 ; i<ids.length ; i++ ){
@@ -222,17 +280,9 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
         break outer;
       }
     }
+    data=data_set.getData_entry(ids[minColumn][minRow]);
+    maxTime=(data.getCopyOfY_values()).length;
 
-    // the detector number
-    if(seg!=null){
-      det_number=seg.DataGrid().ID();
-    }else{
-      segI=(PixelInfoListAttribute)
-           data_set.getData_entry(ids[minColumn][minRow])
-           .getAttribute(Attribute.PIXEL_INFO_LIST);
-      seg=((PixelInfoList)segI.getValue()).pixel(0);
-      det_number=seg.DataGrid().ID();
-    }
 
     SharedData.addmsg("Columns("+minColumn+"<"+maxColumn
                       +") Rows("+minRow+"<"+maxRow
@@ -242,24 +292,18 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
             Dpt=null, Dtt=null, Dnt=null,
  	    Dpn=null, Dtn=null, Dnn=null;
     
-    Peak peak=new Peak();
-    //int[] peak={0,0,0,0,0,0,0};
+    Peak peak=null;
     Vector peaks=new Vector();
     int peakNum=0;
     float[] calib=(float[])data_set.getData_entry(ids[minColumn][minRow])
       .getAttributeValue(Attribute.SCD_CALIB);
     XScale xscale=data_set.getData_entry(ids[minColumn][minRow])
       .getX_scale();
-    PeakFactory pkfac=new PeakFactory(run_number,det_number,init_path,
-                                      detD,detA,detA2);
     pkfac.time(xscale);
     pkfac.calib(calib);
     pkfac.detA(detA);
     pkfac.detA2(detA2);
     pkfac.detD(detD);
-    pkfac.sample_orient(chi,phi,omega);
-    pkfac.monct(moncount);
-    pkfac.L1(init_path);
 
     // stay off of the edges
     for( int i=minColumn+1 ; i<maxColumn-1 ; i++ ){  // loop over column
