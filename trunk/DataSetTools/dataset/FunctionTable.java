@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/06/19 22:40:01  dennis
+ *  Minor cleanup of format.
+ *
  *  Revision 1.5  2002/06/14 21:00:17  rmikk
  *  Implements IXmlIO interface
  *
@@ -127,19 +130,21 @@ public class FunctionTable extends    TabulatedData
     this.setErrors( errors );
   }
 
+
   /**
-  * Constructs a Data object with the specified X scale.  The Y values are all zero,
-  * the errors are null, and the group id's are -1<P>
-  * This constructor is needed to get the XMLread to read a Data Object.
-  *
-  * @param   x_scale   the list of x values for this data object 
-  * 
-  * @see TabulatedData#XMLread( java.io.InputStream ) 
-  */
-  public FunctionTable( XScale x_scale)
-  { super( x_scale, new float[ x_scale.getNum_x()], -1); 
- 
+   * Constructs a Data object with the specified X scale.  The Y values are 
+   * all zero, and the errors are null, and the group id's are -1. This 
+   * constructor is only needed for the XMLread to read a Data Object.
+   *
+   * @param   x_scale   the list of x values for this data object 
+   * 
+   * @see TabulatedData#XMLread( java.io.InputStream ) 
+   */
+  public FunctionTable( XScale x_scale )
+  { 
+    super( x_scale, new float[x_scale.getNum_x()], -1); 
   }
+
 
   /**
    * Constructs a FunctionTable Data object from another Data object.
@@ -155,7 +160,6 @@ public class FunctionTable extends    TabulatedData
   public FunctionTable( Data d, boolean divide, int group_id )
   {
     super( d.x_scale, null, group_id );
-     
     float old_x_values[] = null;
     
     if ( d.isHistogram() )                  // we need to convert to function
@@ -216,59 +220,59 @@ public class FunctionTable extends    TabulatedData
   }
 
 
-/**
- *  Get an approximate y value corresponding to the specified x_value in this 
- *  Data block. If the x_value is outside of the interval of x values
- *  for the Data, this returns 0.  In other cases, the approximation used is
- *  controlled by the smooth_flag.  
- *
- *  @param  x_value      the x value for which the corresponding y value is to
- *                       be interpolated
- *
- *  @param  smooth_flag  SMOOTH_NONE means that we will just use the value
- *                       at the last tabulated x that is less than or equal
- *                       to the specified x_value.  Currently, the only other
- *                       smoothing supported is linear interpolation, which
- *                       will be used if the smooth flag has any value other
- *                       than SMOOTH_NONE. ####
- *
- *  @return approximate y value at the specified x value
- */
-public float getY_value( float x_value, int smooth_flag )
-{
-  if ( x_value < x_scale.getStart_x() || 
-       x_value > x_scale.getEnd_x()    )
-    return 0;
+  /**
+   *  Get an approximate y value corresponding to the specified x_value in this 
+   *  Data block. If the x_value is outside of the interval of x values
+   *  for the Data, this returns 0.  In other cases, the approximation used is
+   *  controlled by the smooth_flag.  
+   *
+   *  @param  x_value      the x value for which the corresponding y value is to
+   *                       be interpolated
+   *
+   *  @param  smooth_flag  SMOOTH_NONE means that we will just use the value
+   *                       at the last tabulated x that is less than or equal
+   *                       to the specified x_value.  Currently, the only other
+   *                       smoothing supported is linear interpolation, which
+   *                       will be used if the smooth flag has any value other
+   *                       than SMOOTH_NONE. ####
+   *
+   *  @return approximate y value at the specified x value
+   */
+  public float getY_value( float x_value, int smooth_flag )
+  {
+    if ( x_value < x_scale.getStart_x() || 
+         x_value > x_scale.getEnd_x()    )
+      return 0;
 
-  float x_vals[] = x_scale.getXs();
-  int index = arrayUtil.get_index_of( x_value, x_vals );
+    float x_vals[] = x_scale.getXs();
+    int index = arrayUtil.get_index_of( x_value, x_vals );
 
-  if ( smooth_flag == IData.SMOOTH_NONE )
-    return y_values[index];
+    if ( smooth_flag == IData.SMOOTH_NONE )
+      return y_values[index];
 
-  if ( index == y_values.length - 1 )               // last value, so can't
-    return y_values[ y_values.length - 1 ];         // interpolate.
+    if ( index == y_values.length - 1 )               // last value, so can't
+      return y_values[ y_values.length - 1 ];         // interpolate.
   
-  float x1 = x_vals[index];  
-  float x2 = x_vals[index+1];
+    float x1 = x_vals[index];  
+    float x2 = x_vals[index+1];
 
-  if ( x1 == x2 )        
-    return y_values[index];                          // duplicate x values
+    if ( x1 == x2 )        
+      return y_values[index];                          // duplicate x values
 
-  float y1 = y_values[index];                        // otherwise, interpolate
-  float y2 = y_values[index+1];
-  return y1 + ( x_value - x1 )*( y2 - y1 ) / ( x2 - x1 );
-}
+    float y1 = y_values[index];                        // otherwise, interpolate
+    float y2 = y_values[index+1];
+    return y1 + ( x_value - x1 )*( y2 - y1 ) / ( x2 - x1 );
+  }
 
 
   /**
-    * Determine whether or not the current Data block has HISTOGRAM data.
-    * HISTOGRAM data records bin boundaries and a number of counts in each
-    * bin, so the number of x-values is one more than the number of y-values.
-    *
-    * @return  true if the number of x-values is one more than the number
-    *          of y-values.
-    */
+   * Determine whether or not the current Data block has HISTOGRAM data.
+   * HISTOGRAM data records bin boundaries and a number of counts in each
+   * bin, so the number of x-values is one more than the number of y-values.
+   *
+   * @return  true if the number of x-values is one more than the number
+   *          of y-values.
+   */
   public boolean isHistogram()
   {
     return false;

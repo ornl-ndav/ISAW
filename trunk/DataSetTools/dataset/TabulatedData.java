@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/06/19 22:37:00  dennis
+ *  Minor cleanup of format.
+ *
  *  Revision 1.5  2002/06/14 21:13:27  rmikk
  *  Implements IXmlIO interface
  *
@@ -322,7 +325,8 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
   *       are NOT TabulatedData but either HistogramTable or FunctionTable
   */
   public boolean XMLwrite( OutputStream stream, int mode)
-  { StringBuffer sb = new StringBuffer(1000);
+  { 
+    StringBuffer sb = new StringBuffer(1000);
     String DT = getClass().toString();
     DT = DT.substring(DT.lastIndexOf('.')+1);
     sb.append( "<"+DT+" ID=");
@@ -331,8 +335,10 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
     sb.append(""+getY_values().length+"\" >\n<yvals>");
     float[] yvals=getY_values();
     byte[] b = xml_utils.convertToB64(yvals);
+
     if( b== null)
       return xml_utils.setError( xml_utils.getErrorMessage());
+
     try
     {
       stream.write( sb.toString().getBytes());
@@ -356,12 +362,11 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
       stream.write(("</"+DT+">\n").getBytes());
     }
     catch( Exception s)
-    { return xml_utils.setError("Exception3="+s.getClass()+"::"+
+    { 
+      return xml_utils.setError("Exception3="+s.getClass()+"::"+
                        s.getMessage());
     }
     return true;  
-       
-
   }
 
 
@@ -468,5 +473,4 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
   public static void main( String argv[] )
   {
   }
-
 }
