@@ -29,6 +29,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/10/23 18:51:56  pfpeterson
+ *  Now supports a javax.swing.filechooser.FileFilter to be specified
+ *  for browsing options. Also fixed bug when the JFileChooser was
+ *  started and did not go to the proper location.
+ *
  *  Revision 1.1  2002/07/15 21:24:03  pfpeterson
  *  Added to CVS.
  *
@@ -83,23 +88,24 @@ public class BrowseButtonListener implements ActionListener{
         String filename=null;
         // configure the filechooser if we are on the first time
         if(jfc==null){
-            jfc = new JFileChooser( def_filename);
+            jfc=new JFileChooser(def_filename);
+            if(def_filename!=null){
+                jfc.setCurrentDirectory(new File(def_filename));
+            }
             this.configureFileChooser();
             if( file_filter != null)
                 jfc.addChoosableFileFilter( file_filter );
         }
-
+        
         // set the text from the textbox
         filename=textbox.getText();
         if(filename!=null && filename.length()>0){
-            if(this.type==SAVE_FILE){
-                jfc.setSelectedFile(new File(filename));
-            }else if(this.type==LOAD_FILE){
-                jfc.setSelectedFile(new File(filename));
-            }else if(this.type==LOAD_MULTI){
-                // do something special
-            }else if(this.type==DIR_ONLY){
-                jfc.setSelectedFile(new File(filename));
+            File file=new File(filename);
+            jfc.setCurrentDirectory(file);
+            if( this.type==DIR_ONLY){
+                jfc.setSelectedFile(file);
+            }else if( !file.isDirectory() ){
+                jfc.setSelectedFile(file);
             }
             filename=null;
         }
