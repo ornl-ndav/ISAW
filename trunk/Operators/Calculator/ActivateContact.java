@@ -69,17 +69,11 @@ public class ActivateContact extends GenericCalculator
   *  @param  current     Facility beam current
   *  @param  inst_fac    Instrument factor
   */
-  public ActivateContact( String sample,
-			  float mass,
-			  float  current,
-			  float  inst_fac)
-  {
+  public ActivateContact( String sample, float mass){
     this(); 
     parameters = new Vector();
     addParameter( new Parameter("Sample Composition", new String(sample) ) );
     addParameter( new Parameter("Sample Mass",        new Float(mass) ) );
-    addParameter( new Parameter("Beam Current",       new Float(current) ) );
-    addParameter( new Parameter("Instrument Factor",  new Float(inst_fac) ) );
   }
 
  /* ---------------------------- getCommand ------------------------------- */ 
@@ -104,8 +98,6 @@ public class ActivateContact extends GenericCalculator
     parameters = new Vector();
     addParameter( new Parameter("Sample Composition", new String("La,Mn,O_3")));
     addParameter( new Parameter("Sample Mass (in g)", new Float(5))  );
-    addParameter( new Parameter("Beam Current (in microAmp)", new Float(15))  );
-    addParameter( new Parameter("Instrument Factor (LANSCE HIPD=1.0)", new Float(0.5)) );
   }
 
  /* ----------------------------- getResult ------------------------------ */ 
@@ -118,8 +110,6 @@ public class ActivateContact extends GenericCalculator
   public Object getResult(){
 	String sample   = (String)(getParameter(0).getValue());
 	float  mass     = ((Float)(getParameter(1).getValue())).floatValue();
-	float  current  = ((Float)(getParameter(2).getValue())).floatValue();
-	float  inst_fac = ((Float)(getParameter(3).getValue())).floatValue();
 	String rs=null;
 
 	if(sample==null){
@@ -184,7 +174,7 @@ public class ActivateContact extends GenericCalculator
      // Test the operator by constructing and running it, specifyinge
      // values for all of the parameters.
      material="Ge";
-     ActivateContact op = new ActivateContact( material, 5.0f, 15.0f, 0.5f );
+     ActivateContact op = new ActivateContact( material, 5.0f);
      String output = (String)op.getResult();
      System.out.println("Using "+material+", the operator returned: ");
      System.out.println( output );
@@ -192,7 +182,7 @@ public class ActivateContact extends GenericCalculator
      // Test the operator by constructing and running it, specifyinge
      // values for all of the parameters.
      material="Si,Ge";
-     op = new ActivateContact( material, 5.0f, 15.0f, 0.5f );
+     op = new ActivateContact( material, 5.0f);
      output = (String)op.getResult();
      System.out.println("Using "+material+", the operator returned: ");
      System.out.println( output );
@@ -200,7 +190,7 @@ public class ActivateContact extends GenericCalculator
      // Test the operator by constructing and running it, specifyinge
      // values for all of the parameters.
      material="Y,Ba_2,Cu_3,O_7";
-     op = new ActivateContact( material, 5.0f, 75.0f, 0.025f );
+     op = new ActivateContact( material, 5.0f);
      output = (String)op.getResult();
      System.out.println("Using "+material+", the operator returned: ");
      System.out.println( output );
