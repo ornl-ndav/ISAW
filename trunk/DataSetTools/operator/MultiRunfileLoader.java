@@ -2,6 +2,10 @@
  * @(#)MultiRunfileLoader.java     0.1  2000/06/13  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.6  2000/07/19 21:49:33  dennis
+ *  Added some docs, a default constructor and changed full name to
+ *  Sum Multiple Runfiles
+ *
  *  Revision 1.5  2000/07/17 20:58:12  dennis
  *  Simplified some calculations for log message and removed some extra prints.
  *
@@ -49,13 +53,41 @@ import IPNS.Runfile.*;
 public class MultiRunfileLoader extends    Operator 
                                 implements Serializable
 {
+  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
+  /**
+   * Construct an operator with a default parameter list.  If this constructor
+   * is used, meaningful values for the parameters should be set before 
+   * calling getResult().
+   */
+   public MultiRunfileLoader( )
+   {
+     super( "Sum Multiple Runfiles" );
+   }
 
+
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct an operator for with the specified parameter values so 
+   *  that the operation can be invoked immediately by calling getResult().
+   *
+   *  @param  path        The directory path to the data directory 
+   *  @param  instrument  The name of the instrument, as used in the prefix
+   *                      for the file name.
+   *  @param  run_numbers The list of run numbers to be loaded
+   *
+   *  @param  compare_monitor_pulses
+   *                      Flag that determines wheter or not monitor pulses
+   *                      are to be compared and used as a criteria to 
+   *                      accept a run for summing.  This is normally passed
+   *                      in as true for chopper spectrometers such as HRCS,
+   *                      and false for other instruments.
+   */
    public MultiRunfileLoader( String   path, 
                               String   instrument, 
                               int      run_numbers[],
                               boolean  compare_monitor_pulses  )
    {
-      super( "Load Multiple Runfiles" );
+      super( "Sum Multiple Runfiles" );
 
       Parameter parameter = getParameter(0);
       parameter.setValue( path );
@@ -102,7 +134,7 @@ public class MultiRunfileLoader extends    Operator
    */
    public String getCommand()
    {
-     return "LoadMulti";
+     return "SumMulti";
    }
 
 
