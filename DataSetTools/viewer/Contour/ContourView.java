@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2004/03/15 23:57:40  dennis
+ *  Changed some instances to static methods to be through the
+ *  class name instead of an instance.
+ *
  *  Revision 1.42  2004/03/15 03:29:00  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -1817,7 +1821,7 @@ public class ContourView extends DataSetViewer
         S+="\n Intensity/error="+(Intensity/sigI);
 
           
-       (new JOptionPane()).showMessageDialog( null, S);
+       JOptionPane.showMessageDialog( null, S);
 
      }
    private float getValue( int axisLength,double[] Zvalues, int x, int y)

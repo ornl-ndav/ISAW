@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.57  2004/03/15 23:57:39  dennis
+ *  Changed some instances to static methods to be through the
+ *  class name instead of an instance.
+ *
  *  Revision 1.56  2004/03/15 03:27:22  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -273,9 +277,9 @@ public class JParametersDialog implements Serializable,
         JLabel Header = new JLabel(SS ,SwingConstants.CENTER);
         Header.setForeground( Color.black);
         JPanel HeaderPanel = new JPanel();
-        HeaderPanel.add( BB.createGlue());
+        HeaderPanel.add( Box.createGlue());
         HeaderPanel.add( Header );
-        HeaderPanel.add( BB.createGlue() );
+        HeaderPanel.add( Box.createGlue() );
         BB.add( HeaderPanel );
         Size1 = new JLabel( SS ).getPreferredSize().height;
         
