@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/02/10 15:27:33  pfpeterson
+ * Changed the 'title' and 'command' to be 'JIndex'.
+ *
  * Revision 1.2  2003/02/03 19:28:15  pfpeterson
  * Added a file filter to the matrix file parameter.
  *
@@ -58,7 +61,7 @@ public class IndexJ extends    GenericTOF_SCD {
    * Construct an operator with a default parameter list.
    */
   public IndexJ( ){
-    super( "Index" );
+    super( "JIndex" );
   }
   
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -124,7 +127,7 @@ public class IndexJ extends    GenericTOF_SCD {
    * this case Index.
    */
   public String getCommand(){
-    return "Index";
+    return "JIndex";
   }
   
   /* --------------------------- getResult ------------------------------- */
