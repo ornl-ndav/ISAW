@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/04/02 19:50:26  dennis
+ *  Added minimal getDocumentation() method. (Mike Miller)
+ *
  *  Revision 1.13  2003/02/18 22:59:00  pfpeterson
  *  Updated calls to deprecated method fixSparator.
  *
@@ -130,6 +133,28 @@ public class Blind extends    GenericTOF_SCD {
     lfpg.setFilter(new PeaksFilter());
     addParameter(lfpg);
     addParameter( new IntArrayPG("Sequence Numbers",null));
+  }
+
+ /* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns a string of the description/attributes of Blind
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer();
+                                                                              //      
+    s.append("@overview This operator is intended to run A.J. Schultz's ");
+    s.append("\"blind\" program. This is not heavily tested but works ");
+    s.append("fairly well.\n");
+
+    s.append("@algorithm (Sorry, no further documentation at this time.)\n");
+    
+    s.append("@param file  The peaks file to use with blind ");
+    s.append("@param seq_nums  The sequence numbers of peaks to use "); 
+    
+    return s.toString();
+    
   }
   
   /* --------------------------- getCommand ------------------------------ */
