@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2001/07/18 16:25:25  neffk
+ * changed the DataSet[] parameter to IDataSetListHandler, a more
+ * dynamic solution to having a current list of DataSet objects.
+ *
  * Revision 1.11  2001/06/27 18:39:13  rmikk
  * Added the setOpMenuLabel to change the label from "Operations:
  *
@@ -194,8 +198,10 @@ private class MActionListener implements ActionListener
                if( iobs != null)
                  ((IObservable)opn).addIObserver( iobs );
            
-            JParametersDialog JP= new JParametersDialog( opn , dss, 
-                       logdoc, null );
+            JParametersDialog JP = new JParametersDialog(  opn, 
+                                                           DS, 
+                                                           logdoc, 
+                                                           null  );
           
             if( opn instanceof IObservable)
                if( iobs != null)
