@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/10/10 22:12:56  pfpeterson
+ *  Fixed a bug with the clone method not getting the choices copied
+ *  over. Also simplified a constructor and implemented AddItems
+ *  rather than depending on inheritence.
+ *
  *  Revision 1.3  2002/10/07 15:27:34  pfpeterson
  *  Another attempt to fix the clone() bug.
  *
@@ -47,10 +52,11 @@ package DataSetTools.parameter;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.util.SharedData;
+import java.util.Vector;
 
 /**
- * This is a superclass to take care of many of the common details of
- * Array Parameter GUIs.
+ * This class represents a parameter where there is a list of Strings
+ * to choose from.
  */
 public class ChoiceListPG extends ArrayPG{
     // static variables
@@ -59,11 +65,9 @@ public class ChoiceListPG extends ArrayPG{
 
     // ********** Constructors **********
     public ChoiceListPG(String name, Object value){
-        super(name,value);
+        this(name,value,false);
+        this.setDrawValid(false);
         this.type=TYPE;
-        if(!(value instanceof String))
-            SharedData.addmsg("WARN: Non-String"
-                              +" in ChoiceListPG constructor");
     }
 
     public ChoiceListPG(String name, Object value, boolean valid){
@@ -83,6 +87,14 @@ public class ChoiceListPG extends ArrayPG{
      */
     public void addItem( Object val){
         if(val instanceof String) super.addItem(val);
+    }
+
+    public void addItems( Vector values){
+        Object obj;
+        for( int i=0 ; i<values.size() ; i++ ){
+            obj=values.elementAt(i);
+            if(obj!=null) this.addItem(obj);
+        }
     }
 
     /**
@@ -133,6 +145,7 @@ public class ChoiceListPG extends ArrayPG{
      */
     public Object clone(){
         ChoiceListPG pg=new ChoiceListPG(this.name,this.value,this.valid);
+        pg.vals=(Vector)this.vals.clone();
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
         return pg;
