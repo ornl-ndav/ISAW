@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.51  2003/06/18 18:17:26  pfpeterson
+ * Removed dead code and implemented PropertyChanger.
+ *
  * Revision 1.50  2003/06/17 16:34:04  pfpeterson
  * Uses new methods in IssScript for getCommand, getTitle, getDocumentation,
  * and getCategoryList.
@@ -185,7 +188,7 @@ import java.util.Vector;
  */
 public class ScriptProcessor  extends ScriptProcessorOperator 
                                implements  PropertyChangeListener, IObservable,
-                                                IObserver, IDataSetListHandler{
+                                IObserver, IDataSetListHandler,PropertyChanger{
   
   Command.execOneLine ExecLine ; 
   
@@ -224,7 +227,6 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     this();
     this.script=new IssScript(TextFileName);
     setDefaultParameters();
-    Title = TextFileName;
   }
   
   public ScriptProcessor( StringBuffer buffer ){
@@ -275,10 +277,6 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   public void setLogDoc( Document doc){
     logDocument = doc;
     ExecLine.setLogDoc( doc);
-  }
-  
-  public void setTitle( String title){
-    Title = title;
   }
   
   public void setDocument( Document doc){
@@ -1386,6 +1384,10 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     return this.script.getCommand();
   }
     
+  public String getFileName(){
+    return this.script.getFilename();
+  }
+
   /**
    * Gives the Title of this program document. The Title appears in
    * dialog boxes and menu items
@@ -1510,6 +1512,19 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     PL.addPropertyChangeListener(P);
   }
 
+  public void addPropertyChangeListener( String prop,PropertyChangeListener P){
+    if( ExecLine == null ) return;
+    ExecLine.addPropertyChangeListener( P );
+    if( PL == null )
+      PL = new PropertyChangeSupport((Object) this );
+    PL.addPropertyChangeListener(prop,P);
+  }
+
+  public void removePropertyChangeListener(PropertyChangeListener P){
+    if(PL!=null)
+      PL.removePropertyChangeListener(P);
+  }
+
   /**
    * Executed when an IObservable notifies this IObserver
    *
@@ -1531,50 +1546,4 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   public DataSet[] getDataSets(){
     return ExecLine.getGlobalDataset();
   } 
-
-  private int findQuote(String S, int dir ,int start, String SrchChars,
-                        String brcpairs){
-    int i, j, j1;
-    int brclevel;
-    boolean quote;
-        
-    if(S == null)
-      return -1;
-    if(SrchChars == null)  return -1;
-    if( ( start < 0 ) || ( start >= S.length() ) )
-      return S.length();
-    brclevel=0;
-    quote=false;          
-        
-    if( dir == 0 ) return start;
-    if( dir > 0 ) dir = 1;  else dir = -1;
-    for ( i = start ; (i < S.length()) &&( i >= 0) ; i += dir ){
-      char c = S.charAt(i);
-            
-      if( c == '\"' ){
-        if( ( !quote ) && ( brclevel == 0 ) &&
-            (SrchChars.indexOf(c) >= 0 ) )
-          return i;
-        quote = !quote;
-        if( i >= 1)
-          if( S.charAt( i - 1 )  =='\"' ){
-            quote = !quote;
-          }
-      }else if( quote ){
-      }else if(SrchChars.indexOf(c) >= 0){
-        if( brclevel == 0)
-          return i;
-      }
-      if( ( !quote ) && ( brcpairs != null ) ){
-        j = brcpairs.indexOf(c);
-        if(j<0) {}
-        else if( j == 2* (int)(j/2))
-          brclevel++;
-        else
-          brclevel--;
-      }
-      if(brclevel < 0) return i;
-    }
-    return i;
-  }
 }
