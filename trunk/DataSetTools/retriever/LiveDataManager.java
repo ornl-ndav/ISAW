@@ -4,6 +4,10 @@
  * Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/02/16 16:39:01  dennis
+ *  Do 20 small sleeps, to allow a changed sleep time to
+ *  take effect faster.  Added some @see comments.
+ *
  *  Revision 1.1  2001/02/15 23:25:23  dennis
  *  Class to control periodic updates to live data sets
  *  by periodically getting new data from a LiveDataServer.
@@ -24,6 +28,10 @@ import DataSetTools.util.*;
  *  This class constructs a LiveDataRetriever object for a specified source
  *  and periodically gets an updated version of the data from the 
  *  LiveDataRetriever.
+ *
+ *  @see NetComm.LiveDataServer
+ *  @see LiveDataRetriever
+ *  @see DataSetTools.components.ui.LiveDataMonitor
  */
 public class LiveDataManager extends    Thread 
                              implements Serializable
@@ -155,7 +163,7 @@ public class LiveDataManager extends    Thread
 
 
 /**
- *
+ *  This will sleep and periodically get new data from the LiveDataRetriever.
  */
  public void run()
  {
@@ -163,7 +171,11 @@ public class LiveDataManager extends    Thread
    {
      try
      {
-       sleep( time_ms );
+       for ( int step = 0; step < 20; step++ )      // Do 20 separate sleeps,
+         sleep( time_ms / 20 );                     // so a long sleep will
+                                                    // end sooner if time_ms
+                                                    // is altered. 
+
        for ( int i = 0; i < data_sets.length; i++ )
          if ( !ignore[i] )
            UpdateDataSetNow( i );
