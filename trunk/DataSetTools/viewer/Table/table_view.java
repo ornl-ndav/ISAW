@@ -1,5 +1,4 @@
-/*
- * File:  table_view.java 
+ /* File:  table_view.java 
  *
  * Copyright (C) 2001, Ruth Mikkelson
  *
@@ -31,6 +30,11 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.22  2002/04/24 20:26:52  rmikk
+ * Fixed the Select All in the JTable
+ * Fixed errors that prevented writing to console or saving to a file
+ * Fixed the list order options to be more responsive
+ *
  * Revision 1.21  2002/04/18 21:12:45  rmikk
  * Reverted back to the previous mode for selecting the ordering in the table.
  * Two new options have been added
@@ -425,8 +429,7 @@ public class table_view extends JPanel implements ActionListener
                          
                     };
         Order = new JComboBox( X  );
-        Order.addActionListener( new MyItemListener( DS ) );
-	//Order.addActionListener( new MyActionListener() );
+        Order.addItemListener( new MyItemListener( DS ) );
          Order.setSelectedIndex(0);
         //Order.setEditable( true );
         JPanel JJ = new JPanel();
@@ -757,15 +760,17 @@ public class table_view extends JPanel implements ActionListener
         JMenuBar JMB = new JMenuBar();
         JMB.add( JM );
         JF.setJMenuBar( JMB );
-        JMi.addActionListener( new MyActionListener() );
-        JCp.addActionListener( new MyActionListener() );
+
         // Tabbed pane
         JTabbedPane JtabPane = new JTabbedPane();
         // Table Pane
         DTM = new DefaultTableModel();
         JTb = new JTable( DTM );
+ 
         JTb.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
         EA = new ExcelAdapter( JTb );
+        JMi.addActionListener( new MyActionListener( JTb , DTM, EA) );
+        JCp.addActionListener( new MyActionListener( JTb , DTM, EA) );
         // The HeaderInfo Pane
         HeaderInfoPane = new JTextArea (20 , 50 );
         // Glue together
@@ -1086,7 +1091,7 @@ public class table_view extends JPanel implements ActionListener
        {Showw( mode , DSS , selModel , order , Groups ); 
         return;
        }
-        
+     this.selModel = selModel;   
      boolean has_Xcol = false;
      boolean XYCol = false;
      boolean DBCol = false;
@@ -1183,7 +1188,7 @@ public class table_view extends JPanel implements ActionListener
      
           }
         else
-          {Nexts[ 2 ] = new Next_t( DSS , 0 , useAll );
+          {Nexts[ 2 ] = new Next_t( DSS , 0 , useAll , Groups );
      
           }
 
@@ -1231,15 +1236,17 @@ public class table_view extends JPanel implements ActionListener
         JMenuBar JMB  = new JMenuBar();
         JMB.add( JM );
         JF.setJMenuBar( JMB );
-        JMi.addActionListener( new MyActionListener() );
-        JCp.addActionListener( new MyActionListener() );
+
         // Tabbed pane
         JTabbedPane JtabPane = new JTabbedPane();
         // Table Pane
       
         JTb = new JTable( GT );
+ 
         JTb.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
-         EA = new ExcelAdapter( JTb );
+        EA = new ExcelAdapter( JTb );
+        JMi.addActionListener( new MyActionListener( JTb , GT, EA) );
+        JCp.addActionListener( new MyActionListener( JTb, GT, EA ) );
         // The HeaderInfo Pane
         HeaderInfoPane = new JTextArea ( 20 , 50 );
         // Glue together
@@ -1952,9 +1959,9 @@ public class table_view extends JPanel implements ActionListener
     {DataSet DS ;
      int SelInd[];
 
-     public Next_Gr( DataSet DS )
+     public Next_Gr( DataSet DS , int[] Groups)
        {this.DS = DS;
-        SelInd = DS.getSelectedIndices();
+        SelInd = Groups;//DS.getSelectedIndices();
         if( SelInd == null )
           {min = -1;
            max = -1;
@@ -1993,10 +2000,10 @@ public class table_view extends JPanel implements ActionListener
      int Group,
          ll[]; //Group is index into selected indices
 
-     public Next_t( DataSet DSS[] , int DSindex , boolean useAll )
+     public Next_t( DataSet DSS[] , int DSindex , boolean useAll , int[] grps)
        {this.DS = DSS[ DSindex ];
         this.useAll = useAll;
-        ll = DS.getSelectedIndices();
+        ll = grps;// DS.getSelectedIndices();
         Group = -1;
         current = -1;
         min = -1;
@@ -2020,6 +2027,14 @@ public class table_view extends JPanel implements ActionListener
         if( !useAll )
            sGroup = ll[ Group ];
         min = 0;
+        if( sGroup < 0 ) 
+           {
+               return -1;
+           }
+        if( sGroup >= DS.getNum_entries()) 
+           {
+               return -1;
+           }
         max = DS.getData_entry( sGroup ).getX_scale().getXs().length - 1;
        
         current = 0;
@@ -2047,7 +2062,9 @@ public class table_view extends JPanel implements ActionListener
        }
 
      public void execute( int ntuple[] )
-       {if( ntuple == null ) return;
+       {
+            
+        if( ntuple == null ) return;
         if( ntuple.length != 4 ) return;
        
         int Field = ntuple[ 3 ];
@@ -2063,7 +2080,8 @@ public class table_view extends JPanel implements ActionListener
                        SharedData.status_pane.add( "Wrong Order Descriptor" );
            return;
           }
-        // System.out.println( "opn Grp tuple=" + Hist + "," + Group + "," + time + "," + Field + "," + columnHeader );
+        //System.out.println( "opn Grp tuple=" + Hist + "," + Group + "," + time + "," +
+        //          Field + "," + columnHeader );
        
         FieldInfo FF = ( FieldInfo )( selModel.getElementAt( Field ) );
         DataHandler dh = FF.getDataHandler();
@@ -2141,20 +2159,24 @@ public class table_view extends JPanel implements ActionListener
   //Action Listener for the MenuItems to Select all and copy select
   // in the JFrame containing the JTable
   public class MyActionListener implements ActionListener
-    {
-      
+    {JTable JTb;
+     ExcelAdapter EA;
+     TableModel DTM;
+     public MyActionListener( JTable JTb , TableModel DTM, ExcelAdapter EA )
+       {this.JTb = JTb;
+        this.DTM = DTM;
+        this.EA = EA;
+       }
      public void actionPerformed( ActionEvent e )
        {JMenuItem targ = ( JMenuItem ) e.getSource();
         if( targ.equals( JMi ) )
-          {JTb.setRowSelectionInterval( 0 , DTM.getRowCount() - 1 );
+          {
+            JTb.setRowSelectionInterval( 0 , DTM.getRowCount() - 1 );
            JTb.setColumnSelectionInterval( 0 , DTM.getColumnCount() - 1 );
           }
         else if( targ.equals( JCp ) )
           {EA.actionPerformed( new ActionEvent( JTb , 0 , "Copy" ) );
           }
-	else if( targ.equals( Order ) )
-	   {
-	   } 
        }
     }
 
@@ -3184,7 +3206,7 @@ public class table_view extends JPanel implements ActionListener
        }//Nrows
 
     }//Gen_TableModel
-  class MyItemListener implements ActionListener
+  class MyItemListener implements ItemListener
     {boolean hasRC;
 
      public MyItemListener( DataSet DS[] )
@@ -3207,7 +3229,7 @@ public class table_view extends JPanel implements ActionListener
           }  
        }
 
-     public void actionPerformed( ActionEvent e)
+     public void itemStateChanged(ItemEvent e)
        {Object O = Order.getSelectedItem();
         if( O instanceof String ) 
           {OrderSelector OS = new OrderSelector( hasRC , Worder );
