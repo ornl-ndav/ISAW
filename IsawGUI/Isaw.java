@@ -31,6 +31,9 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.28  2001/06/26 20:36:49  chatter
+  *  Made Splash window run in its own thread (Dennis)
+  *
   *  Revision 1.27  2001/06/25 23:14:57  chatter
   *  Added the 3D view menuitem
   *
@@ -2734,10 +2737,7 @@
               System.setProperties(isawProp);  
          //   System.getProperties().list(System.out);
               input.close();
-              
-              
-             
-
+            
         }
         catch (IOException ex) 
         {
@@ -2872,13 +2872,7 @@
                 System.setProperty("Inst13_Name", "CHEXS");
                 System.setProperty("Inst13_Path", "webproject-4.pns.anl.gov");
                 opw.write("\n"); 
- 
-          //      opw.write("neutron.nexus.JNEXUSLIB="+ipath+"jnexus.dll");
-          // String sss = "neutron.nexus.JNEXUSLIB"+ ipath+"jnexus.dll";
-          //      System.setProperty("neutron.nexus.JNEXUSLIB",ipath+"jnexus.dll");
-          //      opw.write("\n"); 
-               
-                                              
+                    
                 opw.flush();
                 opw.close(); 
               } catch(Exception d){}
@@ -2891,12 +2885,15 @@
 
 
 
-
+           
 
 
 
             SplashWindowFrame sp = new SplashWindowFrame();
-       	sp.dispose();
+            Thread splash_thread = new Thread(sp);
+            splash_thread.start();
+            splash_thread = null;
+       	sp = null;
  		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       	int window_height = (int)(screenSize.height*.9);
             int window_width = (int)(screenSize.width*.95);        
