@@ -29,6 +29,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.4  2003/09/27 00:53:32  bouzekc
+ * Main method now uses wizardLoader().  This is in keeping with the other
+ * wizards.
+ *
  * Revision 1.3  2003/07/09 23:16:52  bouzekc
  * Works with the new versions of ScriptForm and JyScriptForm.
  *
@@ -92,7 +96,7 @@ public class ScriptExampleWizard extends Wizard {
   public static void main( String[] args ) {
     ScriptExampleWizard w = new ScriptExampleWizard( true );
 
-    w.showForm( 0 );
+    w.wizardLoader( args );
   }
 
   /**
