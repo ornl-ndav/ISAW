@@ -31,6 +31,10 @@
  * Modified: 
  *
  * $Log$
+ * Revision 1.11  2003/06/19 16:19:59  bouzekc
+ * Now uses Wizard's linkFormParameters() to link the
+ * parameters in the parameter table.
+ *
  * Revision 1.10  2003/06/02 22:26:05  bouzekc
  * Fixed contact information.
  *
@@ -49,6 +53,10 @@
  *
  * Revision 1.4  2003/03/13 19:00:52  dennis
  * Added $Log$
+ * Added Revision 1.11  2003/06/19 16:19:59  bouzekc
+ * Added Now uses Wizard's linkFormParameters() to link the
+ * Added parameters in the parameter table.
+ * Added
  * Added Revision 1.10  2003/06/02 22:26:05  bouzekc
  * Added Fixed contact information.
  * Added
@@ -157,20 +165,11 @@ public class TimeFocusGroupWizard extends Wizard
     TimeFocusGroupForm tfgf = new TimeFocusGroupForm();
     SaveAsGSASForm sagf = new SaveAsGSASForm();
 
-    IParameterGUI ipg;
     this.addForm(lmhf);
     this.addForm(tfgf);
     this.addForm(sagf);
 
-    tfgf.setParameter(lmhf.getParameter(fpi[0][0]) ,fpi[0][1]);
-    //pass the time focus results to SaveAsGSAS
-    sagf.setParameter(tfgf.getParameter(fpi[1][1]), fpi[1][2]);
-    //pass the monitor DataSets to SaveAsGSAS
-    sagf.setParameter(lmhf.getParameter(fpi[2][0]), fpi[2][2]);
-    //pass the run numbers to SaveAsGSAS
-    sagf.setParameter(lmhf.getParameter(fpi[3][0]), fpi[3][2]);
-    //pass the instrument name to SaveAsGSAS
-    sagf.setParameter(lmhf.getParameter(fpi[4][0]), fpi[4][2]);
+    super.linkFormParameters(fpi);
   }
 
   /**

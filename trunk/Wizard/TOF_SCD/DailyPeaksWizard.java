@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/06/19 16:20:17  bouzekc
+ * Now uses Wizard's linkFormParameters() to link the
+ * parameters in the parameter table.
+ *
  * Revision 1.2  2003/06/11 22:37:23  bouzekc
  * Added Wizard help message.  Fixed parameter linking to work
  * with updated Forms.
@@ -110,38 +114,16 @@ public class DailyPeaksWizard extends Wizard
     LsqrsJForm lsqrsjform = new LsqrsJForm(true);
     IntegrateMultiRunsForm integmultiform = new IntegrateMultiRunsForm(true);
 
-    //link the raw data path
-    integmultiform.setParameter(peaksform.getParameter(fpi[0][0]), fpi[0][3]);
-
-    //link the peaks path
-    indexjform.setParameter(peaksform.getParameter(fpi[1][0]), fpi[1][1]);
-    lsqrsjform.setParameter(peaksform.getParameter(fpi[1][0]), fpi[1][2]);
-    integmultiform.setParameter(peaksform.getParameter(fpi[1][0]), fpi[1][3]);
-
-    //link the run numbers
-    indexjform.setParameter(peaksform.getParameter(fpi[2][0]), fpi[2][1]);
-    lsqrsjform.setParameter(peaksform.getParameter(fpi[2][0]), fpi[2][2]);
-    integmultiform.setParameter(peaksform.getParameter(fpi[2][0]), fpi[2][3]);
-
-    //link the experiment name
-    indexjform.setParameter(peaksform.getParameter(fpi[3][0]), fpi[3][1]);
-    lsqrsjform.setParameter(peaksform.getParameter(fpi[3][0]), fpi[3][2]);
-    integmultiform.setParameter(peaksform.getParameter(fpi[3][0]), fpi[3][3]);
-
-    //link the SCD calibration file
-    integmultiform.setParameter(peaksform.getParameter(fpi[4][0]),fpi[4][3]);
-
-    //link the SCD calibration file line
-    integmultiform.setParameter(peaksform.getParameter(fpi[5][0]),fpi[5][3]);
-
     this.addForm(peaksform);
     this.addForm(indexjform );
     this.addForm(lsqrsjform );  
     this.addForm(integmultiform );
+
+    super.linkFormParameters(fpi);
   }
 
   /**
-   *  Method for running the Time Focus Group wizard 
+   *  Method for running the Daily Peaks wizard 
    *   as standalone.
    */
   public static void main(String args[])
