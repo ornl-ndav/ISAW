@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.64  2003/02/17 18:43:13  dennis
+ *  Fixed bug (file with grouped data could not be loaded).
+ *  Also, now keep list of detector data grids, not detector data grid
+ *  attributes, since detector info is not stored directly as a DataSet
+ *  attribute, but only referred to from pixel attributes.
+ *
  *  Revision 1.63  2003/02/14 20:51:52  dennis
  *  Removed commented out SegmentInfo code.
  *  Now uses trimToSize() method on an AttributeList before
@@ -203,7 +209,7 @@ public class RunfileRetriever extends    Retriever
                             = new FloatAttribute(Attribute.EFFICIENCY_FACTOR,1);
   private Hashtable        det_cen_dist_attrs  = new Hashtable();
   private Hashtable        det_cen_angle_attrs = new Hashtable();
-  private Hashtable        det_data_grid_attrs = new Hashtable();
+  private Hashtable        det_data_grids      = new Hashtable();
 
 /**
  *  Construct a runfile retriever for a specific file.
@@ -684,13 +690,6 @@ private float CalculateEIn()
              !run_file.IsSubgroupBeamMonitor(group_id) &&
              !run_file.IsPulseHeight(group_id)                            )
        {
-                                             // Although the detector data grid
-                                             // is a DataSet attribute, we need
-                                             // a segment to get at the detID
-                                             // Also, we need a list of detectors
-         Add_DetectorDataGrid( data_set.getAttributeList(),
-                               group_segments[0].DetID() );
-
          tf_type = run_file.TimeFieldType(group_id);
          if ( tf_type != last_tf_type )      // only get the times if it's a
                                              // new time field type
@@ -699,7 +698,7 @@ private float CalculateEIn()
            num_times      = bin_boundaries.length;
            last_tf_type   = tf_type;
  
-           if ( is_pulse_height )          // change bin bounds to channel number
+           if ( is_pulse_height )         // change bin bounds to channel number
              for ( int chan=0; chan<num_times; chan ++ )
                bin_boundaries[chan] = chan;
 
@@ -1063,15 +1062,15 @@ private float CalculateEIn()
       PixelInfoList pil;
       for ( int i = 0; i < group_segments.length; i++ )
       {
+        Add_DetectorDataGrid( group_segments[i].DetID() );
+
         det_id = group_segments[i].DetID();
         seg_id = group_segments[i].SegID();
         row = (short)group_segments[i].Row();
         col = (short)group_segments[i].Column();
 
         key = new Integer(det_id);
-        DetectorDataGridAttribute data_grid_attr =
-                      (DetectorDataGridAttribute)det_data_grid_attrs.get( key );
-        data_grid = (IDataGrid)data_grid_attr.getValue(); 
+        data_grid = (IDataGrid)det_data_grids.get( key );
         list[i] = new DetectorPixelInfo( seg_id, row, col, data_grid );   
       }
       pil = new PixelInfoList(list);
@@ -1239,23 +1238,20 @@ private float CalculateEIn()
 
 
   /**
-   *  Add Detector data grid information as an attribute to the DataSet.
+   *  Add Detector data grid information to a list of all detectors.
    *
-   * @param attr_list The list of attributes to which the detector
-   *                  information is added.
    * @param id        Detector number.
    */
-    private void Add_DetectorDataGrid( AttributeList attr_list, int id )
+    private void Add_DetectorDataGrid( int id )
     {
-                             // to allow sharing the attributes, we keep them
+                             // to allow sharing the data grids, we keep them
                              // in a hash table, keyed by a string form of
                              // the detector id.  This will work for an
                              // arbitrary number of detectors.
        Integer key = new Integer(id);
 
-       DetectorDataGridAttribute data_grid_attr =
-                     (DetectorDataGridAttribute)det_data_grid_attrs.get( key );
-       if ( data_grid_attr == null )
+       IDataGrid data_grid = (IDataGrid)det_data_grids.get( key );
+       if ( data_grid == null )   // add new detector data grid to hashtable
        {
          float det_angle  = (float)run_file.RawDetectorAngle(id);
          float det_dist   = (float)run_file.RawFlightPath(id);
@@ -1288,19 +1284,15 @@ private float CalculateEIn()
          float height = DC5.LENGTH[ det_type ]/100;
          float depth  = DC5.DEPTH[ det_type ]/100;
 
-         UniformGrid  data_grid = new UniformGrid( id, "m",
-                                                   det_cen, x_vec, y_vec,
-                                                   width, height, depth,
-                                                   n_rows, n_cols );
+         data_grid = new UniformGrid( id, "m",
+                                      det_cen, x_vec, y_vec,
+                                      width, height, depth,
+                                      n_rows, n_cols );
 
-         //System.out.println("Uniform Grid = " + data_grid );
+        //System.out.println("Built Uniform Grid for detector # " + data_grid );
 
-         data_grid_attr = new DetectorDataGridAttribute( 
-                                   Attribute.DETECTOR_DATA_GRID,
-                                   data_grid );
-         det_data_grid_attrs.put( key, data_grid_attr );
+         det_data_grids.put( key, data_grid );
        }
-       attr_list.setAttribute( data_grid_attr );
     }
 
 
