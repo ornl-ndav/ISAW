@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.58  2001/08/23 15:06:17  chatterjee
+ *  Relocated a "return" statement that was causing the
+ *  loading of the files to stop after the first file was loaded into ISAW.
+ *
  *  Revision 1.57  2001/08/21 21:31:41  chatterjee
  *  Added separate file filters for .run and .nxs/hdf files
  *
@@ -253,6 +257,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel.*;
 import javax.swing.text.*;
 import javax.swing.tree.*;
 import NetComm.*;
+import NexIO.*;
  
 
  /**
@@ -360,8 +365,10 @@ public class Isaw
   private static final String SCD_URL    = "http://www.pns.anl.gov/SCD/";
   private static final String SEPD_URL   = "http://www.pns.anl.gov/SEPD/";
   private static final String DB_URL     = "http://www.pns.anl.gov/ISAW/";
+  private static final String WIN_ID     = "Windows";
 
-  JDataTree jdt;
+  JDataTree jdt;  
+
   JPropertiesUI jpui;
   JCommandUI jcui;
   JMenu oMenu = new JMenu( OPERATOR_M );
@@ -391,8 +398,6 @@ public class Isaw
     super( TITLE );
                       //used for loading runfiles
     util = new Util(); 
-
-
     Vector mm = util.listProperties();
     JScrollPane tt = util.viewProperties();
     cp = new Command.CommandPane();
@@ -1038,8 +1043,9 @@ public class Isaw
             fc.setCurrentDirectory(  new File( System.getProperty("user.home") )  );
             fc.setMultiSelectionEnabled( false );
             fc.addChoosableFileFilter(  new NeutronDataFileFilter( true )  ); 
+            fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
             fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
-            fc.addChoosableFileFilter(  new IPNS.Runfile.NexusfileFilter()  );
+            
             if(  (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION ) ) 
                 return;
              
@@ -1506,7 +1512,22 @@ public class Isaw
       }
     }
   }
- 
+   /**
+     * Try to determine whether this application is running under Windows
+     * or some other platform by examing the "os.name" property.
+     *
+     * @return true if this application is running under a Windows OS
+     */
+    public static boolean isWindowsPlatform()
+    {
+        String os = System.getProperty("os.name");
+
+        if ( os != null && os.startsWith(WIN_ID))
+            return true;
+        else
+            return false;
+    }
+
 
   /*
    * allows the user to edit the properties file in their home
@@ -1596,7 +1617,7 @@ public class Isaw
     Properties isawProp = new Properties(System.getProperties());
     String path = System.getProperty("user.home")+"\\";
     path = StringUtil.fixSeparator(path);
-
+    boolean windows = isWindowsPlatform();
 
     try 
     {
@@ -1655,17 +1676,86 @@ public class Isaw
         opw.write("\n");
         opw.write("Inst1_Name=HRMECS");
         opw.write("\n"); 
-        opw.write("Inst1_Path=zeus.pns.anl.gov");
+        opw.write("Inst1_Path=zeus.pns.anl.gov;6088");
         System.setProperty("Inst1_Name", "HRMECS");
-        System.setProperty("Inst1_Path", "zeus.pns.anl.gov");
+        System.setProperty("Inst1_Path", "zeus.pns.anl.gov;6088");
         opw.write("\n");  
 
-        opw.write("Inst2_Name=test");
+        opw.write("Inst2_Name=GPPD");
         opw.write("\n"); 
-        opw.write("Inst1_Path=dmikk.mscs.uwstout.edu");
-        System.setProperty("Inst2_Name", "test");
-        System.setProperty("Inst2_Path", "dmikk.mscs.uwstout.edu");
+        opw.write("Inst2_Path=gppd-pc.pns.anl.gov;6088");
+        System.setProperty("Inst2_Name", "GPPD");
+        System.setProperty("Inst2_Path", "gppd-pc.pns.anl.gov;6088");
         opw.write("\n");  
+
+        opw.write("IsawFileServer1_Name=IPNS(zeus)");
+        opw.write("\n"); 
+        opw.write("IsawFileServer1_Path=zeus.pns.anl.gov;6089");
+        System.setProperty("IsawFileServer1_Name", "IPNS");
+        System.setProperty("IsawFileServer1_Path", "zeus.pns.anl.gov;6089");
+        opw.write("\n");
+
+        opw.write("IsawFileServer2_Name=Test(dmikk-Isaw)");
+        opw.write("\n"); 
+        opw.write("IsawFileServer2_Path=dmikk.mscs.uwstout.edu;6091");
+        System.setProperty("IsawFileServer2_Name", "Test");
+        System.setProperty("IsawFileServer2_Path", "dmikk.mscs.uwstout.edu;6091");
+        opw.write("\n");
+
+        opw.write("NDSFileServer1_Name=Test(dmikk-NDS)");
+        opw.write("\n"); 
+        opw.write("NDSFileServer1_Path=dmikk.mscs.uwstout.edu;6008");
+        System.setProperty("NDSFileServer1_Name", "Test");
+        System.setProperty("NDSFileServer1_Path", "dmikk.mscs.uwstout.edu;6008");
+        opw.write("\n");
+
+        opw.write("ColorScale=Heat 2");
+        System.setProperty("ColorScale", "Heat 2");
+        opw.write("\n");  
+
+        opw.write("RebinFlag=false");
+        System.setProperty("RebinFlag", "false");
+        opw.write("\n"); 
+
+        opw.write("HScrollFlag=false");
+        System.setProperty("HScrollFlag", "false");
+        opw.write("\n"); 
+
+        opw.write("ViewAltitudeAngle=1.0");
+        System.setProperty("ViewAltitudeAngle", "1.0");
+        opw.write("\n"); 
+
+        opw.write("ViewAzimuthAngle=180");
+        System.setProperty("ViewAzimuthAngle", "180");
+        opw.write("\n"); 
+
+        opw.write("ViewDistance=0.9");
+        System.setProperty("ViewDistance", "0.9");
+        opw.write("\n"); 
+
+        opw.write("ViewGroups=NOT DRAWN");
+        System.setProperty("ViewGroups", "NOT DRAWN");
+        opw.write("\n"); 
+
+        opw.write("ViewDetectors=SOLID");
+        System.setProperty("ViewDetectors", "SOLID");
+        opw.write("\n"); 
+
+        opw.write("Brightness=40");
+        System.setProperty("Brightness", "40");
+        opw.write("\n"); 
+
+        opw.write("Auto-Scale=0.0");
+        System.setProperty("Auto-Scale", "0.0");
+        opw.write("\n"); 
+
+        if ( windows )
+        {
+          opw.write("neutron.nexus.JNEXUSLIB=C:/ISAW/jnexus.dll");
+          System.setProperty("neutron.nexus.JNEXUSLIB", "C:/ISAW/jnexus.dll");
+          opw.write("\n");   
+        }
+
 
 /* 
         opw.write("Inst2_Name=LRMECS");
@@ -1869,8 +1959,9 @@ public class Isaw
       fc.setCurrentDirectory(  new File( data_dir )  );
       fc.setMultiSelectionEnabled( true );
       fc.setFileFilter(  new NeutronDataFileFilter()  ); 
+      fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
       fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
-      fc.addChoosableFileFilter(  new IPNS.Runfile.NexusfileFilter()  );
+      
       if(  fc.showDialog(frame,null) == JFileChooser.APPROVE_OPTION  ) 
       {
         setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );
@@ -1958,9 +2049,10 @@ public class Isaw
                          ""+DSS[0].getTag()+":"+files[i].getName()  );
    
                util.appendDoc(  sessionLog, "Load " + files[i].toString()  );
-               return;
+              
             }
 	}
+    return;
   }
 
 
