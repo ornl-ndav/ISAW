@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/11/06 19:58:00  rmikk
+ * Changed the getGroups method to return the GroupIndex
+ *    with respect to the whole DataSet
+ *
  * Revision 1.14  2003/10/28 15:59:29  rmikk
  * Added setErrInd and setGroups public methods to set
  *   the selected Groups and whether the Error or Index
@@ -256,9 +260,9 @@ public class DS_XY_TableModel extends TableViewModel
           return new Float( time );
        if( Group < 0 )
           return "";
-       if( Group >= Groups.length)
-          return "";
-       Group = Groups[Group];
+       //if( Group >= Groups.length)
+       //   return "";
+       //Group = Groups[Group];
        XScale xscl = DS.getData_entry( Group ).getX_scale();
        int index1 = xscl.getI(  time );
      
@@ -369,7 +373,7 @@ public class DS_XY_TableModel extends TableViewModel
                dd = "Ind:Gr";
        else if( offset == 2 )
            dd = "Ind:Gr";
-       int ind = Groups[Gr];
+       int ind = Gr;//Groups[Gr];
        
        return dd + DS.getData_entry(  ind ).getGroup_ID();
    
@@ -492,8 +496,12 @@ public class DS_XY_TableModel extends TableViewModel
      { if( column <= 0 ) return -1;
        if( column >= getColumnCount() )
          return -1;
-        
-       return (  column-1 )/ncolsPgroup; 
+       int GroupIndex = (column-1)/ncolsPgroup;
+       if( GroupIndex < 0)
+          return -1;
+       if( GroupIndex >= Groups.length)
+          return -1;
+       return Groups[(  column-1 )/ncolsPgroup]; 
      
       }
 
