@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/05/30 14:15:06  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.5  2003/05/30 13:36:48  dennis
  * Changed the protocol name from "Memory" to "memory" so that the
  * dynamic generation of help pages works under JDK 1.4.1. (Ruth)
@@ -56,6 +59,7 @@ import javax.swing.tree.*;
 import java.awt.*;
 import Command.*;
 import java.io.*;
+import DataSetTools.util.SharedData;
 import DataSetTools.util.StringUtil;
 import DataSetTools.operator.*;
 
@@ -145,10 +149,10 @@ public class IsawOpHelpSet extends HelpSet
         helpPath = null;
         if( operatorsOnly) 
           return;
-        helpPath =fixUpHelpPath( System.getProperty( "Help_Directory"));
+        helpPath =fixUpHelpPath( SharedData.getProperty( "Help_Directory"));
         
         if( helpPath == null )
-          {helpPath = fixUpHelpPath(System.getProperty( "ISAW_HOME" ));
+          {helpPath = fixUpHelpPath(SharedData.getProperty( "ISAW_HOME" ));
            if( helpPath != null )
              if( "/\\".indexOf(helpPath.charAt(helpPath.length() - 1)) < 0)
                 helpPath += '/';
@@ -156,7 +160,7 @@ public class IsawOpHelpSet extends HelpSet
                helpPath+="IsawHelp";
            }
          if( helpPath == null)
-          helpPath = fixUpHelpPath(System.getProperty( "user.home" ) );
+          helpPath = fixUpHelpPath(SharedData.getProperty( "user.home" ) );
           
          if( helpPath == null)
            helpPath ="http://www.pns.anl.gov/isaw/IsawHelp/";
