@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.35  2004/03/02 17:15:55  dennis
+ * Moves some prints into  if (DEBUG) statement.
+ *
  * Revision 1.34  2004/03/01 20:51:22  dennis
  * Minor efficiency improvement in checkReal()
  * Removed extraneous {...} in integrateDetector()
@@ -545,10 +548,13 @@ public class Integrate extends GenericTOF_SCD{
       }
     }
 
-   System.out.println("use shoebox = " + use_shoebox );
-   System.out.println("X range = " + colXrange[0] + " to " + colXrange[1] );
-   System.out.println("Y range = " + rowYrange[0] + " to " + rowYrange[1] );
-   System.out.println("Z range = " + timeZrange[0] + " to " + timeZrange[1] );
+   if ( DEBUG )
+   {
+     System.out.println("use shoebox = " + use_shoebox );
+     System.out.println("X range = " + colXrange[0] + " to " + colXrange[1] );
+     System.out.println("Y range = " + rowYrange[0] + " to " + rowYrange[1] );
+     System.out.println("Z range = " + timeZrange[0] + " to " + timeZrange[1] );
+   }
 
     // get list of detectors
     int[] det_number=null;
