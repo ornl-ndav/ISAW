@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/30 20:13:40  rmikk
+ * added an(empty) show() method
+ *
  * Revision 1.1  2001/07/25 21:26:37  rmikk
  * Initial checkin
  *
@@ -556,6 +559,8 @@ private void SetDataLink( NexusFile nf , Hashtable LinkInfo , Vector children )
          }
       nf = null;
     }
+    public void show() 
+    {}
 
   private int convertArrayR( int rankoffset , Object value , int valueoffset ,
             int type , int ndims , int ranks[] , Object Result )
