@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.87  2005/02/17 16:42:39  dennis
+ *  Fixed off by one error when going through list of id's associated
+ *  with a particular histogram.  This caused the retriever to miss
+ *  the data in a run that had only a single monitor.
+ *
  *  Revision 1.86  2005/01/10 15:55:07  dennis
  *  Removed empty statement.
  *
@@ -357,7 +362,7 @@ public class RunfileRetriever extends    Retriever
           has_monitors     = false;
           has_detectors    = false;
           has_pulse_height = false;
-          for ( int group_id = first_id; group_id < last_id; group_id++ )
+          for ( int group_id = first_id; group_id <= last_id; group_id++ )
           {
             if ( run_file.IsSubgroupBeamMonitor(group_id) )
               has_monitors = true;
@@ -366,7 +371,6 @@ public class RunfileRetriever extends    Retriever
             else
               has_detectors = true;
           }
-
           if ( has_monitors )
           { 
             data_set_type[ num_data_sets ] = MONITOR_DATA_SET;
