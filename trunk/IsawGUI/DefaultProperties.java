@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/03/05 20:21:14  pfpeterson
+ *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  *  Revision 1.16  2003/02/13 21:45:13  pfpeterson
  *  Removed calls to deprecated function fixSeparator.
  *
@@ -111,7 +114,6 @@ public class DefaultProperties{
 
     private static String separator        = "/";
     private static String newline          = "\n";
-    private static final SharedData shared = new SharedData();
 
     /** **************************************************************
      * Constructor that does all of the work for you. Will find a
@@ -177,7 +179,7 @@ public class DefaultProperties{
             fos.flush();
             fos.close();
         }catch(Exception e){
-            shared.status_pane.add("Could not write file:"+e);
+            SharedData.addmsg("Could not write file:"+e);
             return false;
         }
 
@@ -208,7 +210,7 @@ public class DefaultProperties{
             System.setProperties(isawProp);
             fis.close();
         }catch(Exception e){
-            shared.status_pane.add("Could not read in file:"+e);
+            SharedData.addmsg("Could not read in file:"+e);
             return false;
         }
         return true;
