@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/05/28 20:53:39  pfpeterson
+ *  Changed System.getProperty to SharedData.getProperty
+ *
  *  Revision 1.7  2003/02/25 19:46:32  pfpeterson
  *  Changed reference to deprecated fixSeparator to new method.
  *
@@ -142,7 +145,7 @@ abstract public class JParameterGUI
 
      else if( param.getValue() instanceof DataDirectoryString )
      {
-       String DirPath = System.getProperty("Data_Directory");
+       String DirPath = SharedData.getProperty("Data_Directory");
        if( DirPath != null )
          DirPath = DataSetTools.util.StringUtil.setFileSeparator(DirPath+"\\");
        else
@@ -158,7 +161,7 @@ abstract public class JParameterGUI
 
      else if( param.getValue() instanceof InstrumentNameString)
      {
-       String XX = System.getProperty("DefaultInstrument");
+       String XX = SharedData.getProperty("DefaultInstrument");
 
        if ( XX == null )
          XX = "";

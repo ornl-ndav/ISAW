@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.33  2003/05/28 20:56:50  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.32  2003/03/03 16:58:52  pfpeterson
  * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -222,9 +225,9 @@ public class table_view extends JPanel implements ActionListener
       util = new IsawGUI.Util();
       Worder = new WString();
       Worder.value = "HGT,F";
-      filename = System.getProperty( "Data_Save_Directory" );
+      filename = SharedData.getProperty( "Data_Save_Directory" );
       if( filename == null )
-         filename = System.getProperty( "user.dir" );
+         filename = SharedData.getProperty( "user.dir" );
    }
 
 

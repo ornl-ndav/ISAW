@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2003/05/28 20:55:44  pfpeterson
+ *  Changed System.getProperty to SharedData.getProperty
+ *
  *  Revision 1.28  2003/05/19 15:18:55  rmikk
  *  -Added an addControl method for subclasses to add
  *      their own specialized controls to the control panel
@@ -972,7 +975,7 @@ public class ContourView extends DataSetViewer
       }
       if( C == null )
       {
-         C = System.getProperty( "ColorScale" );
+         C = SharedData.getProperty( "ColorScale" );
          if( C != null )
             ColorMap = C;
       }
