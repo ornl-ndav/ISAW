@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/04/29 21:15:42  dennis
+ * Now works if the DataSet has been converted to Energy or Energy Loss,
+ * as well as for time-of-flight DataSets.
+ *
  * Revision 1.8  2004/03/15 06:10:47  dennis
  * Removed unused import statements.
  *
@@ -263,6 +267,16 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     float max_E    = ( (Float)(getParameter(4).getValue()) ).floatValue();
     int   n_E_bins = ( (Integer)(getParameter(5).getValue()) ).intValue();
 
+                                        // find out if the units are time (us)
+    boolean is_tof;                     // or energy (meV) 
+    String x_units = ds.getX_units();
+    if ( x_units.equalsIgnoreCase( "meV" ) )
+      is_tof = false;
+    else if ( x_units.equalsIgnoreCase( "Time(us)" ) )
+      is_tof = true;
+    else
+      return new ErrorString( "Unsupported units in ToQE: " + x_units );
+
                                         // validate energy bounds
     if ( min_E > max_E )                // swap bounds to be in proper order
     {
@@ -283,7 +297,6 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     }
     else
      E_scale = new UniformXScale( min_E, max_E, n_E_bins );
-
 
                                         // validate Q bounds
     if ( min_Q > max_Q )                // swap bounds to be in proper order
@@ -341,8 +354,8 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     float            spherical_coords[];
     AttributeList    attr_list;
 
-    float            tof_vals[],
-                     center_tof;
+    float            x_vals[],
+                     center_x;
     float            y_vals[];
 
     //
@@ -353,14 +366,14 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     int num_data = ds.getNum_entries();
     for ( int i = 0; i < num_data; i++ )
     {
-      data             = ds.getData_entry(i);
+      data = ds.getData_entry(i);
                                               // first, get the position,
                                               // delta 2theta and initial
                                               // energy attributes for the
                                               // current spectrum
       attr_list = data.getAttributeList();
       position = (DetectorPosition)
-                  attr_list.getAttributeValue( Attribute.DETECTOR_POS);
+                  attr_list.getAttributeValue( Attribute.DETECTOR_POS );
       if ( position == null )
       {
         ErrorString message = new ErrorString(
@@ -390,15 +403,19 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
                                              // Now get the x and y values from
                                              // the spectrum and map them to
                                              // the Q,E plane
-      tof_vals = data.getX_scale().getXs();
+      x_vals = data.getX_scale().getXs();
       y_vals   = data.getY_values();
       for ( int col = 0; col < y_vals.length; col++ )
       {
-                                             // calculate the energy at the
-                                             // bin center
-        center_tof = (tof_vals[col] + tof_vals[col+1]) / 2.0f;
-        e_val = tof_calc.Energy( spherical_coords[0], center_tof );
+        if ( data.isHistogram() )            // use energy at the bin center
+          center_x = (x_vals[col] + x_vals[col+1]) / 2.0f;
+        else                                 // already at the bin center
+          center_x = x_vals[col];
 
+        if ( is_tof )
+          e_val = tof_calc.Energy( spherical_coords[0], center_x );
+        else
+          e_val = center_x;
                                              // calculate the q values at the
                                              // left and right edges of the
                                              // detector
