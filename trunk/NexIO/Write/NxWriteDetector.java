@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/12/23 19:59:14  rmikk
+ * Updated to write NeXus standard version 1.0 format.  NXgeometry and
+ * detector_number fields are used.
+ * Units now are singular and spelled out fully if possible
+ *
  * Revision 1.11  2004/05/14 15:03:52  rmikk
  * Removed unused variables
  *
@@ -332,14 +337,14 @@ public class NxWriteDetector{
       NxWriteNode nn = node.newChildNode("distance","SDS");
       nn.setNodeValue( distance,Types.Float,
                        Inst_Type.makeRankArray( distance.length,-1,-1,-1,-1));
-      nn.addAttribute("units", ("m"+(char)0).getBytes(),Types.Char,
+      nn.addAttribute("units", ("meter"+(char)0).getBytes(),Types.Char,
                       Inst_Type.makeRankArray(2,-1,-1,-1,-1));
     }
     if( phi!=null)if(!LinkAxisMatch("phi",instrType,1,4)){
       NxWriteNode nn = node.newChildNode("polar_angle","SDS");
          nn.setNodeValue( phi,Types.Float,
                           Inst_Type.makeRankArray( phi.length,-1,-1,-1,-1));
-         nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char,
+         nn.addAttribute("units", ("radian"+(char)0).getBytes(),Types.Char,
                          Inst_Type.makeRankArray(8,-1,-1,-1,-1));
       
     }
@@ -349,26 +354,26 @@ public class NxWriteDetector{
         NxWriteNode nn = node.newChildNode("solid_angle","SDS");
         nn.setNodeValue( solidAngle,Types.Float,
                       Inst_Type.makeRankArray( solidAngle.length,-1,-1,-1,-1));
-        nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char,
+        nn.addAttribute("units", ("radian"+(char)0).getBytes(),Types.Char,
                         Inst_Type.makeRankArray(8,-1,-1,-1,-1));
       }
     if(rawAngle !=null){
       NxWriteNode nn = node.newChildNode("raw_angle","SDS");
       nn.setNodeValue( rawAngle,Types.Float,
                        Inst_Type.makeRankArray( rawAngle.length,-1,-1,-1,-1));
-      nn.addAttribute("units", ("degrees"+(char)0).getBytes(),Types.Char,
+      nn.addAttribute("units", ("degree"+(char)0).getBytes(),Types.Char,
                       Inst_Type.makeRankArray(8,-1,-1,-1,-1));
     }
     if( Tot_Count != null){
       NxWriteNode nn = node.newChildNode("integral","SDS");
       nn.setNodeValue( Tot_Count,Types.Float,
                        Inst_Type.makeRankArray( Tot_Count.length,-1,-1,-1,-1));
-      nn.addAttribute("units", ("counts"+(char)0).getBytes(),Types.Char,
+      nn.addAttribute("units", ("count"+(char)0).getBytes(),Types.Char,
                       Inst_Type.makeRankArray(7,-1,-1,-1,-1));
     }
     if( Group_ID != null)
-      if( monitor || !LinkAxisMatch( "id",instrType, 1,5)){
-        NxWriteNode nn = node.newChildNode("id","SDS");
+      if( monitor || !LinkAxisMatch( "detector_number",instrType, 1,5)){
+        NxWriteNode nn = node.newChildNode("detector_number","SDS");
         nn.setNodeValue( Group_ID,Types.Int,
                          Inst_Type.makeRankArray(Group_ID.length,-1,-1,-1,-1));
       } 
@@ -376,7 +381,7 @@ public class NxWriteDetector{
       NxWriteNode nn = node.newChildNode("azimuthal_angle","SDS");
       nn.setNodeValue( theta,Types.Float,
                        Inst_Type.makeRankArray( theta.length,-1,-1,-1,-1));
-      nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char,
+      nn.addAttribute("units", ("radian"+(char)0).getBytes(),Types.Char,
                       Inst_Type.makeRankArray(8,-1,-1,-1,-1));
     }
     if( slot != null){
@@ -566,8 +571,8 @@ public class NxWriteDetector{
                        Types.Int , rank );
        
     if( Group_ID != null )if( Group_ID.length == rank[ 0 ] )
-      if( !LinkAxisMatch("id",instrType,1,5) )
-        n1.addAttribute( "id" , Group_ID ,Types.Int ,  rank );
+      if( !LinkAxisMatch("detector_number",instrType,1,5) )
+        n1.addAttribute( "detector_number" , Group_ID ,Types.Int ,  rank );
     if( Tot_Count != null )if( Tot_Count.length == rank[ 0 ] )
       n1.addAttribute( "total_count" , Tot_Count , Types.Float , rank );
     if( rawAngle != null )if( rawAngle.length == rank[ 0 ] )
@@ -772,87 +777,23 @@ public class NxWriteDetector{
          monitor = true;
      errormessage = "";
      //Time of flight done
-     SetUpIsawAttributes(node, startIndex,  endIndex, DS , monitor);
-     /* float distance[], phi[],theta[],solidAngle[],rawAngle[],
-        Det2Thet[], Tot_Count[];
-        int Group_ID[];
-        distance = new float[ endIndex - startIndex ];
-        phi = new float[endIndex-startIndex];
-        theta = new float[ endIndex - startIndex ];
-        solidAngle = new float[endIndex-startIndex];
-        rawAngle= new float[endIndex-startIndex];
-        Det2Thet= new float[endIndex-startIndex];
-        Tot_Count= new float[endIndex-startIndex];
-        Group_ID= new int[endIndex-startIndex];
-        
-        PackInfo(DS,distance, phi,theta, solidAngle,rawAngle, Det2Thet,
-        Tot_Count,  Group_ID, startIndex,endIndex);
-        
-        if( distance != null)
-        {NxWriteNode nn = node.newChildNode("distance","SDS");
-        nn.setNodeValue( distance,Types.Float,
-        Inst_Type.makeRankArray( distance.length,-1,-1,-1,-1));
-        nn.addAttribute("units", ("m"+(char)0).getBytes(),Types.Char,
-        Inst_Type.makeRankArray(2,-1,-1,-1,-1));
-        }
-        if( phi!=null)if(!LinkAxisMatch("phi",instrType,1,4))
-        {NxWriteNode nn = node.newChildNode("phi","SDS");
-         nn.setNodeValue( phi,Types.Float,
-         Inst_Type.makeRankArray( phi.length,-1,-1,-1,-1));
-         nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char,
-         Inst_Type.makeRankArray(8,-1,-1,-1,-1));
-         }
-      
-         if( !monitor)
-         if( solidAngle != null)
-         {NxWriteNode nn = node.newChildNode("solid_angle","SDS");
-         nn.setNodeValue( solidAngle,Types.Float,
-         Inst_Type.makeRankArray( solidAngle.length,-1,-1,-1,-1));
-         nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char,
-         Inst_Type.makeRankArray(8,-1,-1,-1,-1));
-         }
-         if(rawAngle !=null)
-         {NxWriteNode nn = node.newChildNode("raw_angle","SDS");
-         nn.setNodeValue( rawAngle,Types.Float,
-         Inst_Type.makeRankArray( rawAngle.length,-1,-1,-1,-1));
-         nn.addAttribute("units", ("degrees"+(char)0).getBytes(),Types.Char,
-         Inst_Type.makeRankArray(8,-1,-1,-1,-1));
-         }
-         if( Tot_Count != null)
-         {NxWriteNode nn = node.newChildNode("integral","SDS");
-         nn.setNodeValue( Tot_Count,Types.Float,
-         Inst_Type.makeRankArray( Tot_Count.length,-1,-1,-1,-1));
-         nn.addAttribute("units", ("counts"+(char)0).getBytes(),Types.Char,
-         Inst_Type.makeRankArray(7,-1,-1,-1,-1));
-         }
-         if( Group_ID != null)
-         if( monitor || LinkAxisMatch( "id",instrType, 1,5))
-         {NxWriteNode nn = node.newChildNode("id","SDS");
-         nn.setNodeValue( Group_ID,Types.Int,
-         Inst_Type.makeRankArray( Group_ID.length,-1,-1,-1,-1));
-        
-         } 
-         if( theta != null)
-         {NxWriteNode nn = node.newChildNode("theta","SDS");
-         nn.setNodeValue( theta,Types.Float,
-         Inst_Type.makeRankArray( theta.length,-1,-1,-1,-1));
-         nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char,
-         Inst_Type.makeRankArray(8,-1,-1,-1,-1));
-         }
-     */
-     return false;
+     SetUpIsawAttributes(node, startIndex,  endIndex, DS , monitor);     return false;
      //  Get efficiencies  
      //Get crate
    }
 
   private static boolean LinkAxisMatch( String axisName, int instrType,
                                         int minAxisNum, int maxAxisNum){
+                                          
     if(axisName ==  null) 
       return false;
+      
     for( int i=minAxisNum; i <=maxAxisNum; i++){
+      
       if( axisName.equals((new Inst_Type()).getLinkAxisName( instrType, i)))
         return true;
     }
+    
     return false;
   }
 
