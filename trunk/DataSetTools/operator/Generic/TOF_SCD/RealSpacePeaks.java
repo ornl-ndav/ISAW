@@ -34,7 +34,7 @@ package DataSetTools.operator.Generic.TOF_SCD;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.instruments.*;
-import DataSetTools.util.LoadFileString;
+//import DataSetTools.util.LoadFileString;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.TextFileReader;
 import DataSetTools.retriever.RunfileRetriever;
@@ -79,8 +79,8 @@ public class RealSpacePeaks extends GenericTOF_SCD{
   *  list of parameters. The getResult method must still be used to
   *  execute the operator.
   *
-  *  @param  data_set    DataSet to find peak in
-  *  @param  min_count   Minimum number of counts peak must have
+  *  @param  peaks        Peaks to convert to real space
+  *  @param  calib_file   Calibration file to use
   */
     public RealSpacePeaks( Vector peaks, String calib_file){
 	this(); 
@@ -110,7 +110,7 @@ public class RealSpacePeaks extends GenericTOF_SCD{
   {
     parameters = new Vector();
     addParameter( new Parameter("Vector of Peaks",  new Vector() ) );
-    addParameter( new Parameter("Calibration File", new LoadFileString() ) );
+    addParameter( new Parameter("Calibration File", new String() ) );
   }
 
  /* ----------------------------- getResult ------------------------------ */ 
@@ -123,7 +123,7 @@ public class RealSpacePeaks extends GenericTOF_SCD{
   public Object getResult()
   {
     Vector peaks      = (Vector)(getParameter(0).getValue());
-    String calib_file = ((LoadFileString)(getParameter(1).getValue())).toString();
+    String calib_file = (String)(getParameter(1).getValue());
 
     if(!this.readCalib(calib_file)){
 	return peaks;
@@ -172,8 +172,9 @@ public class RealSpacePeaks extends GenericTOF_SCD{
 	    reader.read_line();  // let the description drop on the floor
 	    reader.close();
 	}catch(FileNotFoundException e){
-	    shared.status_pane.add("FileNotFoundException: "+filename
-				   +" skipping calibration");
+	    shared.status_pane.add("skipping calibration: "
+                                   +"FileNotFoundException( "+filename+" )");
+
 	    return false;
 	}catch(IOException e){
 	    shared.status_pane.add("IOException in readCalib: "+e);
