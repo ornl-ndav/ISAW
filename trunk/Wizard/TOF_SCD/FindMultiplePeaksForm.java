@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.14  2003/06/18 23:34:23  bouzekc
+ * Parameter error checking now handled by superclass Form.
+ *
  * Revision 1.13  2003/06/18 19:56:09  bouzekc
  * Uses super.getResult() for initializing PropertyChanger
  * variables.
@@ -264,97 +267,31 @@ public class FindMultiplePeaksForm extends Form
     //get raw data directory
     param = (IParameterGUI)super.getParameter( 0 );
     rawDir = param.getValue().toString();
-    if(new File(rawDir).exists())
-      param.setValid(true);
-    else
-      param.setValid(false);
-
     //get output directory
     param = (IParameterGUI)super.getParameter( 1 );
     outputDir = param.getValue().toString();
-    if(new File(outputDir).exists())
-      param.setValid(true);
-    else
-      param.setValid(false);
-
     //gets the run numbers
     param = (IParameterGUI)super.getParameter(2);
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        runsArray = IntList.ToArray(obj.toString());
-        param.setValid(true);
-    }
-   else
-     return errorOut(param,
-       "ERROR: you must enter one or more valid run numbers.\n");
-
+    runsArray = IntList.ToArray(param.getValue().toString());
     //get experiment name
     param = (IParameterGUI)super.getParameter( 3 );
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        expName = obj.toString();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-         "ERROR: you must enter a valid experiment name.\n");
-
+    expName = param.getValue().toString();
     //get maximum number of peaks to find
     param = (IParameterGUI)super.getParameter( 4 );
-    obj = param.getValue();
-    if( obj != null && obj instanceof Integer )
-    {
-        maxPeaks = ((Integer)obj).intValue();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-         "ERROR: you must enter a valid number of peaks.\n");
-
+    maxPeaks = ((Integer)param.getValue()).intValue();
     //get minimum intensity of peaks
     param = (IParameterGUI)super.getParameter( 5 );
-    obj = param.getValue();
-    if( obj != null && obj instanceof Integer )
-    {
-        minIntensity = ((Integer)obj).intValue();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-         "ERROR: you must enter a valid minimum peak intensity.\n");
-
+    minIntensity = ((Integer)param.getValue()).intValue();
     //get append to file value
     param = (IParameterGUI)super.getParameter( 6 );
-    //this one doesn't need to be checked for validity
-    param.setValid(true);
     appendToFile = ((BooleanPG)param).getbooleanValue();
 
     //get line number for SCD calibration file
     param = (IParameterGUI)super.getParameter( 7 );
-    obj = param.getValue();
-    if( obj != null && obj instanceof Integer )
-    {
-        SCDline = ((Integer)obj).intValue();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-         "ERROR: you must enter a valid line number to use.\n");
-
+    SCDline = ((Integer)param.getValue()).intValue();
     //get calibration file name
     param = (IParameterGUI)super.getParameter( 8 );
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        calibFile = obj.toString();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-         "ERROR: you must enter a valid calibration file name.\n");
-
+    calibFile = param.getValue().toString();
     first = true;
     //the name for the saved file
     saveName = outputDir + expName + ".peaks";
@@ -366,7 +303,11 @@ public class FindMultiplePeaksForm extends Form
                              saveName, expFile, SCDline);
 
     //validate the parameters and set the progress bar variables
-    super.getResult();
+    Object superRes = super.getResult();
+
+    //had an error, so return
+    if(superRes instanceof ErrorString)  
+      return superRes;
 
     //set the increment amount
     increment = (1.0f / runsArray.length) * 100.0f;
