@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2002/04/01 20:45:41  rmikk
+ * Fixed Date Format exception report in jdk1.4
+ * Added some support for the Nexus NXChar type
+ *
  * Revision 1.8  2002/02/26 15:46:41  rmikk
  * Fixed the utility Showw routine
  * Added a utility routine to getConversion factors
@@ -120,15 +124,16 @@ public class NxNodeUtils
            for( int k = 0; k<Time_formats.length; k++ )
              {String pattern = Date_formats[ i]+" "+Time_formats[  k ];
              pattern= pattern.trim();              
-              fmt.applyPattern(  pattern  );
+             
               try{
+                  fmt.applyPattern(  pattern  );
                  Result = fmt.parse( DateString );
                  if( Result != null )
 		     {//System.out.println("format="+pattern);
                    return Result;
                   }
                  }
-               catch( ParseException s )
+               catch( Exception s )
                  {}
            /*    fmt.applyPattern( Date_formats[ i]    );
               try{
@@ -200,8 +205,9 @@ public class NxNodeUtils
 	else if( type == NexusFile.NX_INT8 ) 
             return X;
         else if( type == NexusFile.NX_CHAR )
-            {byte u[]; u =(byte[])X;
-             return DataSetTools.nexus.NexusUtils.StringFromBytes( u );
+            {//yte u[]; u =X;
+             return X;
+             //return DataSetTools.nexus.NexusUtils.StringFromBytes( u );
 	     /*if( u== null) return null;
              if( u.length < 1)return "";
             
@@ -287,6 +293,9 @@ public String ShowwArr( Object X )
      
     // System.out.println("int length="+u.length);
      }
+   else if( X instanceof char[])
+      {return new String( (char[])X);
+        }
    else if( X instanceof short[])
     {short u[] = (short[])X;
      //Res =("short"+u.length+":")+Res;
@@ -438,22 +447,24 @@ public String Showw( Object X  )
 */
 public static float getConversionFactor( String OldUnits, String NewUnits)
   { if( NewUnits.equals("radians"))
-          return AngleConversionFactor( OldUnits);
+          return AngleConversionFactor( OldUnits.trim());
     if( NewUnits.equals("meters"))
-          return LengthConversionFactor(OldUnits);
+          return LengthConversionFactor(OldUnits.trim());
     if(NewUnits.equals("Kelvin"))
-          return TempConversionFactor(OldUnits);
-    if( NewUnits.equals("second")) return TimeConversionFactor( OldUnits );
-    if( NewUnits.equals("grams")) return MassConversionFactor( OldUnits);
-    if( NewUnits.equals("Mev")) return EnergyConversionFactor( OldUnits );
+          return TempConversionFactor(OldUnits.trim());
+    //Solid angle
+    if( NewUnits.equals("second")) return TimeConversionFactor( OldUnits.trim() );
+    if( NewUnits.equals("grams")) return MassConversionFactor( OldUnits.trim());
+    if( NewUnits.equals("Mev")) return EnergyConversionFactor( OldUnits .trim());
     
     else return 1.0f;
   }
 
 public static float AngleConversionFactor(String OldUnits) //base radians
   {boolean hasDegree=false;
-   if("rad;radian;".indexOf(OldUnits+";")>=0)return 1.0f;
-   if("deg;degree;d;".indexOf(OldUnits+";")>=0) return (float)(java.lang.Math.PI/180.0);
+   
+   if(";rad;radian;r;".indexOf(";"+OldUnits+";")>=0)return 1.0f;
+   if(";deg;degree;degrees;d;".indexOf(";"+OldUnits+";")>=0) return (float)(java.lang.Math.PI/180.0);
    return 1.0f;
  
   }
