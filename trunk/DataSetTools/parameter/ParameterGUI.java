@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2004/04/03 06:19:34  bouzekc
+ *  Made a few protected methods final.
+ *
  *  Revision 1.40  2004/03/15 03:28:40  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -180,7 +183,6 @@ package DataSetTools.parameter;
 
 import DataSetTools.components.ParametersGUI.*;
 
-
 import gov.anl.ipns.Util.Messaging.PropertyChanger;
 
 import java.awt.*;
@@ -223,34 +225,33 @@ import javax.swing.*;
  */
 public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   PropertyChangeListener, java.io.Serializable {
-  //~ Static fields/initializers ***********************************************
+  //~ Static fields/initializers -----------------------------------------------
 
   private static String UNKNOWN_PROPERTY = "UNKNOWN_PROPERTY";
 
-  //~ Instance fields **********************************************************
+  //~ Instance fields ----------------------------------------------------------
 
   // instance variables for IParameter
-  private String name;
-  private Object value;
+  private String  name;
+  private Object  value;
   private boolean valid;
-  private String type;
+  private String  type;
 
   // instance variables for IParameterGUI
-  private JLabel label;
+  private JLabel      label;
   private EntryWidget entryWidget;
-  private JPanel gUIPanel;
-  private boolean enabled;
-  private boolean drawValid;
-  private JCheckBox validCheck;
+  private JPanel      gUIPanel;
+  private boolean     enabled;
+  private boolean     drawValid;
+  private JCheckBox   validCheck;
 
   // extra instance variables
-  private boolean initialized;
-  private boolean ignorePropertyChange;
-  private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( 
-      this );
-  private Hashtable propListeners        = new Hashtable(  );
+  private boolean               initialized;
+  private boolean               ignorePropertyChange;
+  private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
+  private Hashtable             propListeners         = new Hashtable(  );
 
-  //~ Constructors *************************************************************
+  //~ Constructors -------------------------------------------------------------
 
   /**
    * Constructor
@@ -280,7 +281,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     setIgnorePropertyChange( false );
   }
 
-  //~ Methods ******************************************************************
+  //~ Methods ------------------------------------------------------------------
 
   /**
    * Specify if the valid checkbox will be drawn.
@@ -326,6 +327,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
+   *
    * @return The entrywidget associated with this ParameterGUI.
    */
   public final EntryWidget getEntryWidget(  ) {
@@ -333,6 +335,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
+   *
    * @return The GUI panel upon which the entrywidget is drawn.
    */
   public final JPanel getGUIPanel(  ) {
@@ -380,6 +383,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
+   *
    * @return The label of this ParameterGUI.
    */
   public final JLabel getLabel(  ) {
@@ -406,6 +410,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
+   *
    * @return The name of the parameter. This is normally used as the title of
    *         the parameter.
    */
@@ -414,6 +419,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
+   *
    * @return The string used in scripts to denote the particular parameter.
    */
   public final String getType(  ) {
@@ -432,6 +438,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
+   *
    * @return Whether or not this ParameterGUI is valid.
    */
   public final boolean getValid(  ) {
@@ -483,8 +490,8 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @param prop The property to listen for.
    * @param pcl The property change listener to be added.
    */
-  public final void addPropertyChangeListener( 
-    String prop, PropertyChangeListener pcl ) {
+  public final void addPropertyChangeListener( String prop,
+    PropertyChangeListener pcl ) {
     propListeners.put( pcl, prop );
     propertyChangeSupport.addPropertyChangeListener( prop, pcl );
 
@@ -497,14 +504,23 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * Definition of the clone method.  Uses reflection so that derived classes
    * don't need to write their own clone methods, although they can if they
    * need to.
+   *
+   * @return A clone of this ParameterGUI.
+   *
+   * @throws InstantiationError
+   * @throws IllegalAccessError
+   * @throws NoSuchMethodError
+   * @throws RuntimeException
    */
   public Object clone(  ) {
     try {
-      Class klass           = this.getClass(  );
-      Constructor construct = klass.getConstructor( 
-          new Class[]{ String.class, Object.class } );
-      ParameterGUI pg       = ( ParameterGUI )construct.newInstance( 
-          new Object[]{ null, null } );
+      Class       klass     = this.getClass(  );
+      Constructor construct = klass.getConstructor( new Class[] {
+            String.class, Object.class
+          } );
+      ParameterGUI pg = ( ParameterGUI )construct.newInstance( new Object[] {
+            null, null
+          } );
 
       pg.setName( new String( this.getName(  ) ) );
       pg.setValue( this.getValue(  ) );
@@ -517,9 +533,9 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       }
 
       if( propListeners != null ) {
-        Enumeration e              = propListeners.keys(  );
-        PropertyChangeListener pcl = null;
-        String propertyName        = null;
+        Enumeration            e            = propListeners.keys(  );
+        PropertyChangeListener pcl          = null;
+        String                 propertyName = null;
 
         while( e.hasMoreElements(  ) ) {
           pcl            = ( PropertyChangeListener )e.nextElement(  );
@@ -573,6 +589,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
+   *
    * @return A String representation of this ParameterGUI consisting of its
    *         type, name, valid, and validity.
    */
@@ -591,16 +608,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   protected final void setEntryWidget( EntryWidget wijit ) {
     entryWidget = wijit;
   }
-
-  /**
-   * Accessor method for child classes to set the GUI panel.
-   *
-   * @param gPanel The new GUI panel to use.
-   */
-
-  /* protected final void setGUIPanel( JPanel gPanel ) {
-     this.gUIPanel = gPanel;
-     }*/
 
   /**
    * Mutator method for child classes to set the initialized state.
@@ -639,12 +646,31 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
+   * Method to return an Enumeration of the PropertyChangeListeners for this
+   * ParameterGUI.
+   *
+   * @return The Enumeration of PropertyChangeListeners.
+   */
+  protected final Enumeration getPropertyChangeListeners(  ) {
+    return propListeners.keys(  );
+  }
+
+  /**
    * Mutator method for derived classes to set the type.
    *
    * @param type The new type.
    */
   protected final void setType( String type ) {
     this.type = type;
+  }
+
+  /**
+   * Utility method to fire PropertyChangeEvents.
+   *
+   * @param event The event to fire.
+   */
+  protected final void firePropertyChange( PropertyChangeEvent event ) {
+    propertyChangeSupport.firePropertyChange( event );
   }
 
   /**
@@ -686,8 +712,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * Method to pack up everything in the frame.
    */
   protected final void packupGUI(  ) {
-    if( 
-      ( this.getLabel(  ) != null ) && ( this.getEntryWidget(  ) != null ) &&
+    if( ( this.getLabel(  ) != null ) && ( this.getEntryWidget(  ) != null ) &&
         ( this.validCheck != null ) ) {
       gUIPanel = new JPanel(  );
 
@@ -706,9 +731,8 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       gPanel.add( innerpanel, BorderLayout.CENTER );
       gPanel.add( checkpanel, BorderLayout.EAST );
     } else {
-      System.err.println( 
-        "cannot construct GUI component of " + this.getType(  ) + " " +
-        this.getName(  ) );
+      System.err.println( "cannot construct GUI component of " +
+        this.getType(  ) + " " + this.getName(  ) );
     }
   }
 
@@ -744,31 +768,12 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
-   * Method to return an Enumeration of the PropertyChangeListeners for this
-   * ParameterGUI.
-   *
-   * @return The Enumeration of PropertyChangeListeners.
-   */
-  protected Enumeration getPropertyChangeListeners(  ) {
-    return propListeners.keys(  );
-  }
-
-  /**
-   * Utility method to fire PropertyChangeEvents.
-   *
-   * @param event The event to fire.
-   */
-  protected void firePropertyChange( PropertyChangeEvent event ) {
-    propertyChangeSupport.firePropertyChange( event );
-  }
-
-  /**
    * When this is called, all of the internal PropertyChangeListeners will be
    * added to the entrywidget.
    */
   private void addPCLtoWidget(  ) {
     PropertyChangeListener pcl;
-    String propertyName;
+    String                 propertyName;
 
     //add the property change listeners
     Enumeration e = propListeners.keys(  );
@@ -793,7 +798,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       return;
     }
 
-    if( this.validCheck == null ) {  // make the checkbox if it dne
+    if( this.validCheck == null ) { // make the checkbox if it dne
       this.validCheck = new JCheckBox( "" );
     }
 
