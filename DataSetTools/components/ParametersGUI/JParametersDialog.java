@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2002/09/25 13:59:17  rmikk
+ *  Added a call to init methods for DataSetPG's and non
+ *    ArrayPG's so that the GUI is initialized
+ *
  *  Revision 1.27  2002/09/23 14:11:35  rmikk
  *  Added support for ExitClass produced by the ExitDialog
  *    operator and initial support( unsuccessful) for the new
@@ -254,12 +258,16 @@ public class JParametersDialog implements Serializable,
            if( iparam instanceof ParameterGUI)
              {if( iparam instanceof DataSetPG)
                 ((DataSetPG)iparam).init((Object[])(ds_src.getDataSets()));
-              JComponent pp= ((ParameterGUI)iparam).getEntryWidget();
+              else if( !(iparam instanceof ArrayPG))
+                ((ParameterGUI) iparam).init( null);
+            
+              JComponent pp= ((ParameterGUI)iparam).getGUIPanel();
               if( pp == null)
-                {System.out.println("GUIPanel null");
+                {System.out.println("GUIPanel null" + iparam.getClass());
                  return;
                 }
-              else System.out.println("GUI panel is not null");
+            
+              
               BB.add(pp);
               vparamGUI.addElement( null );
 
