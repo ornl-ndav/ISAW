@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/05/31 19:43:47  pfpeterson
+ *  Added empty init() requirement to implementing classes.
+ *
  *  Revision 1.1  2002/05/28 22:24:13  pfpeterson
  *  added to cvs
  *
@@ -48,6 +51,13 @@ public interface IParameterGUI extends IParameter{
      * Allows for initialization of the GUI after instantiation.
      */
     void                   init(java.util.Vector init_values);
+
+    /**
+     * Convenince method for initialization of the GUI after
+     * instantiation with null vector.
+     */
+    void                   init();
+
     /**
      * Method for producing an alternative layout of the GUI.
      */
