@@ -31,6 +31,13 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.45  2001/07/26 20:41:51  neffk
+  *  fixed TreeListener to keep the 'Operator' menu current.  previously,
+  *  whenever deletions (especially Experiment objects) were made, the
+  *  'Operator' menu became unusable because these deletions qualified
+  *  as unselect events, which were trapped and delt with by a block of
+  *  code that hadn't been updated to preserve the 'oMenu' reference.
+  *
   *  Revision 1.44  2001/07/26 16:19:48  neffk
   *  changed '==' to .equals() where appropriate for String objects.
   *  this fixes the problem of live data servers not working after a
@@ -219,126 +226,124 @@ import NetComm.*;
 public class Isaw 
   extends JFrame 
   implements Serializable, IObserver
- {
+{
      
-    private static final String TITLE              = "ISAW";
-    private static final String VERSION            = "Release 1.1";
+  private static final String TITLE              = "ISAW";
+  private static final String VERSION            = "Release 1.1";
 
-    private static final String FILE_M             = "File";
-    private static final String LOAD_DATA_MI       = "Load Data File(s)";
-    private static final String LOAD_LIVE_DATA_M   = "Load Live Data";
-    private static final String LOAD_SCRIPT_MI     = "Load Script";
-    private static final String LOAD_ISAW_DATA_MI  = "Load ISAW Data";
-    private static final String SAVE_ISAW_DATA_MI  = "Save ISAW Data";
-    private static final String GSAS_EXPORT_MI     = "Export GSAS File";
-    private static final String EXIT_MI            = "Exit";
+  private static final String FILE_M             = "File";
+  private static final String LOAD_DATA_MI       = "Load Data File(s)";
+  private static final String LOAD_LIVE_DATA_M   = "Load Live Data";
+  private static final String LOAD_SCRIPT_MI     = "Load Script";
+  private static final String LOAD_ISAW_DATA_MI  = "Load ISAW Data";
+  private static final String SAVE_ISAW_DATA_MI  = "Save ISAW Data";
+  private static final String GSAS_EXPORT_MI     = "Export GSAS File";
+  private static final String EXIT_MI            = "Exit";
 
-    private static final String EDIT_M             = "Edit";
-    private static final String SET_GLOBAL_ATTR_MI = "Set Attribute for All Groups";
-    private static final String SET_ATTR_MI        = "Set Attribute(s)";
-    private static final String EDIT_ATTR_MI       = "Edit Attribute(s)";
-    private static final String EDIT_PROPS_MI      = "Edit Properties File";
-    private static final String CLEAR_SELECTION_MI = "Clear Selection";
-    private static final String REMOVE_NODE_MI     = "Remove Selected Node(s)";
+  private static final String EDIT_M             = "Edit";
+  private static final String SET_GLOBAL_ATTR_MI = "Set Attribute for All Groups";
+  private static final String SET_ATTR_MI        = "Set Attribute(s)";
+  private static final String EDIT_ATTR_MI       = "Edit Attribute(s)";
+  private static final String EDIT_PROPS_MI      = "Edit Properties File";
+  private static final String CLEAR_SELECTION_MI = "Clear Selection";
+  private static final String REMOVE_NODE_MI     = "Remove Selected Node(s)";
 
-    private static final String VIEW_M             = "View";
-    private static final String IMAGE_VIEW_MI      = "Image View";
-    private static final String SCROLL_VIEW_MI     = "Scrolled Graph View";
-    private static final String SELECTED_VIEW_MI   = "Selected Graph View";
-    private static final String THREED_VIEW_MI     = "3D View";
-    private static final String INSTR_VIEW_M       = "Instrument Info";
+  private static final String VIEW_M             = "View";
+  private static final String IMAGE_VIEW_MI      = "Image View";
+  private static final String SCROLL_VIEW_MI     = "Scrolled Graph View";
+  private static final String SELECTED_VIEW_MI   = "Selected Graph View";
+  private static final String THREED_VIEW_MI     = "3D View";
+  private static final String INSTR_VIEW_M       = "Instrument Info";
 
-    private static final String MACRO_M            = "Macros";
+  private static final String MACRO_M            = "Macros";
 
-    private static final String OPTION_M           = "Options";
-    private static final String METAL_MI           = "Metal Look";
-    private static final String MOTIF_MI           = "Motif Look";
-    private static final String WINDOZE_MI         = "Windows Look";
- 
-    private static final String OPERATOR_M         = "Operations";
- 
-    private static final String HELP_M             = "Help";
-    private static final String ABOUT_MI           = "About ISAW";
+  private static final String OPTION_M           = "Options";
+  private static final String METAL_MI           = "Metal Look";
+  private static final String MOTIF_MI           = "Motif Look";
+  private static final String WINDOZE_MI         = "Windows Look";
 
-    private static final String CHEXS_LINK_MI  = "CHEXS Link";
-    private static final String GLAD_LINK_MI   = "GLAD Link";
-    private static final String GPPD_LINK_MI   = "GPPD Link";
-    private static final String HIPD_LINK_MI   = "HIPD Link";
-    private static final String HRMECS_LINK_MI = "HRMECS Link";
-    private static final String LRMECS_LINK_MI = "LRMECS Link";
-    private static final String POSY1_LINK_MI  = "POSY1 Link";
-    private static final String POSY2_LINK_MI  = "POSY2 Link";
-    private static final String QENS_LINK_MI   = "QENS Link";
-    private static final String SAD_LINK_MI    = "SAD Link";
-    private static final String SAND_LINK_MI   = "SAND Link";
-    private static final String SCD_LINK_MI    = "SCD Link";
-    private static final String SEPD_LINK_MI   = "SEPD Link";
-         
-    private static final String CHEXS_MACRO_MI  = "CHEXS";
-    private static final String GLAD_MACRO_MI   = "GLAD";
-    private static final String GPPD_MACRO_MI   = "GPPD";
-    private static final String HIPD_MACRO_MI   = "HIPD";
-    private static final String HRMECS_MACRO_MI = "HRMECS";
-    private static final String LRMECS_MACRO_MI = "LRMECS";
-    private static final String POSY1_MACRO_MI  = "POSY1";
-    private static final String POSY2_MACRO_MI  = "POSY2";
-    private static final String QENS_MACRO_MI   = "QENS";
-    private static final String SAD_MACRO_MI    = "SAD";
-    private static final String SAND_MACRO_MI   = "SAND";
-    private static final String SCD_MACRO_MI    = "SCD";
-    private static final String SEPD_MACRO_MI   = "SEPD";
- 
-    private final float RIGHT_WEIGHT = 0.6f;
-    private final float LEFT_WEIGHT  = 0.85f;
+  private static final String OPERATOR_M         = "Operations";
 
-    public static final String FILE_CMD = "-F";
+  private static final String HELP_M             = "Help";
+  private static final String ABOUT_MI           = "About ISAW";
 
-    private static final String DATA_DIR_ENV = "Data_Directory";
+  private static final String CHEXS_LINK_MI  = "CHEXS Link";
+  private static final String GLAD_LINK_MI   = "GLAD Link";
+  private static final String GPPD_LINK_MI   = "GPPD Link";
+  private static final String HIPD_LINK_MI   = "HIPD Link";
+  private static final String HRMECS_LINK_MI = "HRMECS Link";
+  private static final String LRMECS_LINK_MI = "LRMECS Link";
+  private static final String POSY1_LINK_MI  = "POSY1 Link";
+  private static final String POSY2_LINK_MI  = "POSY2 Link";
+  private static final String QENS_LINK_MI   = "QENS Link";
+  private static final String SAD_LINK_MI    = "SAD Link";
+  private static final String SAND_LINK_MI   = "SAND Link";
+  private static final String SCD_LINK_MI    = "SCD Link";
+  private static final String SEPD_LINK_MI   = "SEPD Link";
+       
+  private static final String CHEXS_MACRO_MI  = "CHEXS";
+  private static final String GLAD_MACRO_MI   = "GLAD";
+  private static final String GPPD_MACRO_MI   = "GPPD";
+  private static final String HIPD_MACRO_MI   = "HIPD";
+  private static final String HRMECS_MACRO_MI = "HRMECS";
+  private static final String LRMECS_MACRO_MI = "LRMECS";
+  private static final String POSY1_MACRO_MI  = "POSY1";
+  private static final String POSY2_MACRO_MI  = "POSY2";
+  private static final String QENS_MACRO_MI   = "QENS";
+  private static final String SAD_MACRO_MI    = "SAD";
+  private static final String SAND_MACRO_MI   = "SAND";
+  private static final String SCD_MACRO_MI    = "SCD";
+  private static final String SEPD_MACRO_MI   = "SEPD";
 
-    private static final String CHEX_URL   = "http://www.pns.anl.gov/CHEX/";
-    private static final String GLAD_URL   = "http://www.pns.anl.gov/GLAD/";
-    private static final String GPPD_URL   = "http://www.pns.anl.gov/GPPD/";
-    private static final String HIPD_URL   = "http://www.pns.anl.gov/hipd/";
-    private static final String HRMECS_URL = "http://www.pns.anl.gov/HRMECS/";
-    private static final String LRMECS_URL = "http://www.pns.anl.gov/LRMECS/";
-    private static final String POSY2_URL  = "http://www.pns.anl.gov/POSY2/";
-    private static final String POSY_URL   = "http://www.pns.anl.gov/POSY/";
-    private static final String QENS_URL   = "http://www.pns.anl.gov/qens/";
-    private static final String SAD_URL    = "http://www.pns.anl.gov/SAD/";
-    private static final String SAND_URL   = "http://www.pns.anl.gov/SAND/";
-    private static final String SCD_URL    = "http://www.pns.anl.gov/SCD/";
-    private static final String SEPD_URL   = "http://www.pns.anl.gov/SEPD/";
+  private final float RIGHT_WEIGHT = 0.6f;
+  private final float LEFT_WEIGHT  = 0.85f;
 
-    JDataTree jdt;
-    JPropertiesUI jpui;
-    JCommandUI jcui;
-    JMenu oMenu = new JMenu( OPERATOR_M );
-    CommandPane cp;
-    Util util;
-    IObserver my_Isaw;
-    Object Script_Path, 
-           Data_Directory, 
-           Help_Directory, 
-           Default_Instrument, 
-           Instrument_Macro_Path, 
-           User_Macro_Path, 
-           Image_Path;
-    Document sessionLog = new PlainDocument();
-    JTextArea propsText = new JTextArea(5,20);
-    JFrame kp;
+  public static final String FILE_CMD = "-F";
+
+  private static final String DATA_DIR_ENV = "Data_Directory";
+
+  private static final String CHEX_URL   = "http://www.pns.anl.gov/CHEX/";
+  private static final String GLAD_URL   = "http://www.pns.anl.gov/GLAD/";
+  private static final String GPPD_URL   = "http://www.pns.anl.gov/GPPD/";
+  private static final String HIPD_URL   = "http://www.pns.anl.gov/hipd/";
+  private static final String HRMECS_URL = "http://www.pns.anl.gov/HRMECS/";
+  private static final String LRMECS_URL = "http://www.pns.anl.gov/LRMECS/";
+  private static final String POSY2_URL  = "http://www.pns.anl.gov/POSY2/";
+  private static final String POSY_URL   = "http://www.pns.anl.gov/POSY/";
+  private static final String QENS_URL   = "http://www.pns.anl.gov/qens/";
+  private static final String SAD_URL    = "http://www.pns.anl.gov/SAD/";
+  private static final String SAND_URL   = "http://www.pns.anl.gov/SAND/";
+  private static final String SCD_URL    = "http://www.pns.anl.gov/SCD/";
+  private static final String SEPD_URL   = "http://www.pns.anl.gov/SEPD/";
+
+  JDataTree jdt;
+  JPropertiesUI jpui;
+  JCommandUI jcui;
+  JMenu oMenu = new JMenu( OPERATOR_M );
+  CommandPane cp;
+  Util util;
+  Object Script_Path, 
+         Data_Directory, 
+         Help_Directory, 
+         Default_Instrument, 
+         Instrument_Macro_Path, 
+         User_Macro_Path, 
+         Image_Path;
+  Document sessionLog = new PlainDocument();
+  JTextArea propsText = new JTextArea(5,20);
+  JFrame kp;
+
 
   /**
    * Creates a JFrame that displays different Isaw components.
    *
+   * @param args  an array of String objects that correspond
+   *              to the command line arguments, not including the
+   *              name of the program.
    */
   public Isaw( String[] args ) 
   {
     super( TITLE );
-    my_Isaw = this;   //what the heck is this supposed to be?
-                      //you can access 'this' from anywhere...
-                      //is this really necessary?
-
-
                       //used for loading runfiles
     util = new Util(); 
 
@@ -1295,14 +1300,14 @@ public class Isaw
                                                   //deal w/ unselection events
       if( e.getNewLeadSelectionPath() == null )
       {
-        oMenu = new JMenu( OPERATOR_M );
+        oMenu.removeAll();
         oMenu.add(  new JMenuItem( "[empty]" )  );
-        return; 
+        return;
       }
 
       if(  e.getPaths().length < 1  ) 
       {
-        oMenu = new JMenu( OPERATOR_M );
+        oMenu.removeAll();
         oMenu.add(  new JMenuItem( "[empty]" )  );
         return;
       }
@@ -1321,12 +1326,18 @@ public class Isaw
 
       else if(  node instanceof DataSetMutableTreeNode  )
       {
+
+        System.out.println( "DataSet selected, resetting 'Operator' menu" );
+
         DataSetMutableTreeNode dsmtn = (DataSetMutableTreeNode)node;
-        DataSet ds = (DataSet)dsmtn.getUserObject();  
+        DataSet ds = (DataSet)dsmtn.getUserObject();
+        
+        System.out.println( "dataset: " + ds.toString()  );
+
         jcui.showLog(ds);
 
-        JTable table = jcui.showDetectorInfo(ds);
-        table.hasFocus();  
+//        JTable table = jcui.showDetectorInfo(ds);
+//        table.hasFocus();  
         jpui.showAttributes( ds.getAttributeList() );
 
                               //since the Operations menu is sensitive
@@ -1334,8 +1345,10 @@ public class Isaw
                               //after keeping the menu up to date.  so,
                               //here we build a menu according to the
                               //class of the selected node.
-        oMenu.removeAll();
         int num_ops = ds.getNum_operators(); 
+
+//        System.out.println( "number of operators: " + num_ops );
+
         Operator ds_ops[] = new Operator[num_ops];
         for ( int i = 0; i < num_ops; i++ )
           ds_ops[i] = ds.getOperator(i);
@@ -1344,6 +1357,7 @@ public class Isaw
                                                               jdt, 
                                                               Isaw.this,
                                                               sessionLog );
+        oMenu.removeAll();
         OperatorMenu.build( oMenu, ds_ops, listener );
       }
 
@@ -1355,7 +1369,13 @@ public class Isaw
       }
 
       else
+      {
         System.out.println( "type not appropriate for operators" );
+
+        oMenu.removeAll();
+        oMenu.add(  new JMenuItem( "[empty]" )  );
+        return; 
+      }
     }
   }
  
@@ -1510,7 +1530,15 @@ public class Isaw
         System.setProperty("Inst1_Name", "HRMECS");
         System.setProperty("Inst1_Path", "zeus.pns.anl.gov");
         opw.write("\n");  
- 
+
+        opw.write("Inst2_Name=test");
+        opw.write("\n"); 
+        opw.write("Inst1_Path=dmikk.mscs.uwstout.edu");
+        System.setProperty("Inst2_Name", "test");
+        System.setProperty("Inst2_Path", "dmikk.mscs.uwstout.edu");
+        opw.write("\n");  
+
+/* 
         opw.write("Inst2_Name=LRMECS");
         opw.write("\n");  
         opw.write("Inst2_Path=webproject-4.pns.anl.gov");
@@ -1594,7 +1622,7 @@ public class Isaw
         System.setProperty("Inst13_Name", "CHEXS");
         System.setProperty("Inst13_Path", "webproject-4.pns.anl.gov");
         opw.write("\n"); 
-                    
+*/                    
         opw.flush();
         opw.close(); 
       } 
@@ -1895,7 +1923,7 @@ public class Isaw
              ringmaster.pointAtNode( tps[0] );
 
           else if( e.getClickCount() == 2 )
-            ringmaster.selectNode( tps );
+            jdt.selectNodesWithPaths( tps );
         }
       }
     }
