@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/07/29 13:54:33  rmikk
+ * redraw implemented
+ *
  * Revision 1.2  2004/07/28 19:52:23  dennis
  * Removed unused import and some unreachable code.
  *
@@ -43,7 +46,9 @@
 
 package DataSetTools.viewer;
 
+import Command.ScriptUtil;
 import DataSetTools.dataset.DataSet;
+import DataSetTools.viewer.Table.LargeJTableViewComponent;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.TwoD.*;
 import javax.swing.*;
@@ -53,6 +58,8 @@ import gov.anl.ipns.ViewTools.Components.Menu.*;
 import java.awt.*;
 import java.awt.event.*;
 import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.Messaging.*;
+
 /**
  * @author mikkelsonr
  * This class creates a DataSetViewer that can view a DataSet with two dimensions
@@ -73,9 +80,10 @@ public class ProffenViewController extends DataSetViewer implements
 	 * @param data_set  The DataSet to be viewed by this viewer
 	 */
 	public ProffenViewController(DataSet data_set) {
-		super(data_set);
+		super(data_set); 
         ArrayMaker = new DataSetGRCTArrayMaker(data_set, null);
         Viewer = new ImageViewComponent( new VirtualArray2D(10,10));
+    //Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
         Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
 		init();
 	}
@@ -90,6 +98,7 @@ public class ProffenViewController extends DataSetViewer implements
         viewerState = state;
         ArrayMaker = new DataSetGRCTArrayMaker(data_set, null);
         Viewer = new ImageViewComponent( new VirtualArray2D(10,10));
+       // Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
         Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
         init();
        
@@ -196,15 +205,21 @@ public class ProffenViewController extends DataSetViewer implements
          if( menu.getItem(i).getText().equals(item))
              return (JMenu)menu.getItem(i);
      return null;
+     
+   //------------------------ add Listeners----------------------------------
+  
    }
-   
 	/* 
 	 * @see DataSetTools.viewer.DataSetViewer#redraw(java.lang.String)
 	 */
-	public void redraw(String reason) {
-	
-	}
+   public void redraw(String reason) {
+     
+          if( reason == IObserver.POINTED_AT_CHANGED){
+            floatPoint2D fpt= ArrayMaker.redrawNewSelect(  reason );
+            Viewer.setPointedAt( fpt);
+          }	
 
+	}
 //--------------------IPreserveState Methods------------------
   /**
    *  Method required by the IPreserveState interface
@@ -287,6 +302,7 @@ public class ProffenViewController extends DataSetViewer implements
       if( evt.getActionCommand().equals(IArrayMaker.DATA_CHANGED)){
         Viewer.dataChanged( (IVirtualArray2D)(ArrayMaker.getArray()));
         repaint();
+        
       }  
    }
   }//ArrayMakerActionListener
