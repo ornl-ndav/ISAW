@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2003/02/19 21:55:49  dennis
+ *  Added flags for attribute "level of detail"
+ *
  *  Revision 1.38  2003/02/18 18:58:26  dennis
  *  Added SAMPLE_ORIENTATION attribute name.
  *
@@ -166,6 +169,12 @@ abstract public class Attribute implements Serializable,
   public  static final long serialVersionUID = 1L;
 
   public static final int     MAX_LABEL_LENGTH  = 80; 
+
+  // integer codes for the type of attributes that should be included in a
+  // DataSet or Data block.
+  public static final int  NO_ATTRIBUTES       = 0; 
+  public static final int  ANALYSIS_ATTRIBUTES = 1; 
+  public static final int  FULL_ATTRIBUTES     = 2; 
 
   // Suggested names for attributes for neutron scattering data sets:
 
