@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.3  2002/12/11 22:08:40  pfpeterson
+ * Switched output from (row,col) to (col,row) in both numbers and label.
+ *
  * Revision 1.2  2002/11/27 23:16:41  pfpeterson
  * standardized header
  *
@@ -53,7 +56,7 @@ import java.text.DecimalFormat;
 /** 
  *  
  */
-public class GetDetectorInfo_op extends DataSetTools.operator.DataSet.Attribute.DS_Attribute
+public class GetDetectorInfo_op extends DS_Attribute
                                 implements IDataBlockInfo
 
 {
@@ -138,8 +141,8 @@ public class GetDetectorInfo_op extends DataSetTools.operator.DataSet.Attribute.
       return  new DataSetTools.util.ErrorString( "Data block has no DetectorInfo Attribute");
     Vector V = new Vector();
     
-    V.addElement(new Integer(di[0].getRow()));
     V.addElement(new Integer(di[0].getColumn()));
+    V.addElement(new Integer(di[0].getRow()));
     return V;
     
   }
@@ -178,7 +181,7 @@ public class GetDetectorInfo_op extends DataSetTools.operator.DataSet.Attribute.
  /** Returns "Det Seg:Row,Col"
  */
  public String DataInfoLabel( int i )
-  { return "Row,Col";
+  { return "Col,Row";
    }
  /* ------------------------------- main --------------------------------- */ 
  /** 
