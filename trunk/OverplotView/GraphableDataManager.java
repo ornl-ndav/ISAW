@@ -10,6 +10,11 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.11  2001/12/13 18:59:49  dennis
+ * -Eliminated the AUX_EXIT option
+ * -Implemented the Data Label attribute to label spectra in the
+ *  selected graph view
+ *
  * Revision 1.10  2001/12/12 21:20:52  dennis
  * Fixed problem with redrawing display when selections were changed
  * in the ImageView. ( Ruth )
@@ -80,7 +85,7 @@ public class GraphableDataManager
   extends DataSetViewer
 {
 
-  public static final String AUX_EXIT = "Auxiliry Exit";
+  public static final String AUX_EXIT = "Auxiliary Exit";
 
   private Vector                graphable_data;
   private sgtGraphableDataGraph graph;
@@ -142,9 +147,9 @@ public class GraphableDataManager
     //modify the menu provided by DataSetViewer
     OptionMenuHandler option_menu_handler = new OptionMenuHandler();
     JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
-    JMenuItem exitButton = new JMenuItem( AUX_EXIT );
-    exitButton.addActionListener( option_menu_handler );
-    option_menu.add( exitButton );
+    //JMenuItem exitButton = new JMenuItem( AUX_EXIT );
+    //exitButton.addActionListener( option_menu_handler );
+    //option_menu.add( exitButton );
    
   }
 
@@ -325,8 +330,17 @@ public class GraphableDataManager
 
         FloatAttribute offset_attr = new FloatAttribute( GraphableData.OFFSET,
                                                          0.0f );
-        String name_str = new String( "Group # " + 
-                getDataSet().getData_entry(i).getGroup_ID() );
+	Data Dat = getDataSet().getData_entry(i);
+	Attribute O = Dat.getAttribute( "Label");
+	 						                
+        String name_str =null;
+	if( O != null)
+	  if( O instanceof StringAttribute)
+	     name_str= ((StringAttribute) O).getStringValue();
+	if( name_str == null)	
+	  name_str = new String( "Group # " + 
+                         getDataSet().getData_entry(i).getGroup_ID() );
+			 
         StringAttribute name_attr = new StringAttribute( GraphableData.NAME,
                                                          name_str );
         ColorAttribute color_attr = new ColorAttribute( GraphableData.COLOR,
@@ -355,7 +369,7 @@ public class GraphableDataManager
       String action = e.getActionCommand();
       System.out.println("The user selected : " + action );
       if(  action.equals( AUX_EXIT )  ) 
-        System.exit( 1 );
+       {}
       else if( action.equals("Graph"))
        {if( graph !=null)
          {JPlotLayout jp = graph.getJPane();
