@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/12/14 18:41:58  rmikk
+ * The Scattering angle column is now in degrees
+ *
  * Revision 1.4  2003/12/12 19:48:07  rmikk
  * Removed javadoc error
  * Increased the side of the Field selector window
@@ -570,7 +573,9 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
                 return Float.NaN;
             row = GroupSort[row].intValue();
             try {
-                return (new Float(TabModel.getValueAt(row, column).toString().trim())).floatValue();
+                float f =(new Float(TabModel.getValueAt(row, column).toString().trim())).floatValue();
+                if( Fields.elementAt(column).equals("Scat Ang")) f = (float)(f*180/Math.PI);
+                return f;
             } catch (Exception s) {
                 return Float.NaN;
             }
