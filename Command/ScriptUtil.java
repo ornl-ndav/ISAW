@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/01/22 01:31:46  bouzekc
+ * Removed unused local variables.
+ *
  * Revision 1.7  2003/09/14 17:41:46  rmikk
  * -Fixed errors when two operators with the same
  *  command name have the same number of arguments.
@@ -140,8 +143,6 @@ public class ScriptUtil{
       displayType = IViewManager.THREE_D;
     else if( displayType==TABLE)
       displayType = IViewManager.TABLE;
-    else
-      displayType = displayType;
 
     return new ViewManager(ds , displayType);
   }
@@ -399,6 +400,10 @@ public class ScriptUtil{
    * AbstractMethodError because there is no body to it.
    */
   public static void send(DataSet ds){
+    if( ds == null ){
+      //do nothing-this is here to avoid code checkers flagging the 
+      //unused ds parameter
+    }
     throw new AbstractMethodError("This is a method stub");
   }
 
