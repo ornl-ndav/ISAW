@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2003/11/18 03:11:54  bouzekc
+ *  Now really does use Hashtable for internal PropertyChangeListeners.
+ *
  *  Revision 1.29  2003/10/17 02:22:11  bouzekc
  *  Fixed javadoc errors.
  *
@@ -152,7 +155,7 @@ import java.beans.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import java.util.Vector;
+import java.util.*;
 
 import javax.swing.*;
 
@@ -185,6 +188,10 @@ import javax.swing.*;
  */
 public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   PropertyChangeListener, java.io.Serializable {
+  //~ Static fields/initializers ***********************************************
+
+  private static String UNKNOWN_PROPERTY = "UNKNOWN_PROPERTY";
+
   //~ Instance fields **********************************************************
 
   // instance variables for IParameter
@@ -205,11 +212,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   protected boolean initialized;
   protected boolean ignore_prop_change;
   protected PropertyChangeSupport topPCS;
-
-  //these are PARALLEL Vectors.  They must be added to and removed from
-  //simultaneously.
-  private Vector propListeners = new Vector(  );
-  private Vector nameList      = new Vector(  );
+  private Hashtable propListeners        = new Hashtable(  );
 
   //~ Constructors *************************************************************
 
@@ -388,7 +391,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @param pcl The property change listener to be added.
    */
   public void addPropertyChangeListener( PropertyChangeListener pcl ) {
-    addPCLToVector( pcl );
+    propListeners.put( pcl, UNKNOWN_PROPERTY );
     topPCS.addPropertyChangeListener( pcl );
 
     if( this.initialized ) {
@@ -407,7 +410,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    */
   public void addPropertyChangeListener( 
     String prop, PropertyChangeListener pcl ) {
-    addPCLToVector( prop, pcl );
+    propListeners.put( pcl, prop );
     topPCS.addPropertyChangeListener( prop, pcl );
 
     if( this.initialized ) {
@@ -471,7 +474,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @param pcl The property change listener to be removed.
    */
   public void removePropertyChangeListener( PropertyChangeListener pcl ) {
-    removePCLFromVector( pcl );
+    propListeners.remove( pcl );
     topPCS.removePropertyChangeListener( pcl );
 
     if( this.initialized ) {
@@ -579,62 +582,26 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
-   * Adds a PropertyChangeListener to the internal Vectors.
-   *
-   * @param pcl The PropertyChangeListener to remove.
-   */
-  private void addPCLToVector( PropertyChangeListener pcl ) {
-    propListeners.addElement( pcl );
-    nameList.addElement( null );
-  }
-
-  /**
-   * Adds a PropertyChangeListener to the internal Vectors.
-   *
-   * @param prop The property to listen for.
-   * @param pcl The PropertyChangeListener to remove.
-   */
-  private void addPCLToVector( String prop, PropertyChangeListener pcl ) {
-    propListeners.addElement( pcl );
-    nameList.addElement( prop );
-  }
-
-  /**
    * When this is called, all of the internal PropertyChangeListeners will be
    * added to the entrywidget.
    */
   private void addPCLtoWidget(  ) {
     String temp;
     PropertyChangeListener pcl;
+    String propertyName;
 
     //add the property change listeners
-    for( int i = 0; i < propListeners.size(  ); i++ ) {
-      if( nameList.elementAt( i ) instanceof String ) {
-        temp = ( String )nameList.elementAt( i );
-      } else {
-        temp = null;
-      }
-      pcl = ( PropertyChangeListener )propListeners.elementAt( i );
+    Enumeration e = propListeners.keys(  );
 
-      if( temp != null ) {
-        entrywidget.addPropertyChangeListener( temp, pcl );
-      } else {
+    while( e.hasMoreElements(  ) ) {
+      pcl            = ( PropertyChangeListener )e.nextElement(  );
+      propertyName   = ( String )propListeners.get( pcl );
+
+      if( propertyName == UNKNOWN_PROPERTY ) {
         entrywidget.addPropertyChangeListener( pcl );
+      } else {
+        entrywidget.addPropertyChangeListener( propertyName, pcl );
       }
-    }
-  }
-
-  /**
-   * Removes a PropertyChangeListener from the internal Vectors.
-   *
-   * @param pcl The PropertyChangeListener to remove.
-   */
-  private void removePCLFromVector( PropertyChangeListener pcl ) {
-    int nameIndex = propListeners.indexOf( pcl );
-    propListeners.remove( pcl );
-
-    if( nameIndex >= 0 ) {
-      nameList.removeElementAt( nameIndex );
     }
   }
 
