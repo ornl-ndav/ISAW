@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2005/01/02 18:03:19  rmikk
+ * Added code to indicate the location of the source code for ISAW Script
+ *    operators, PyscriptOperators, and Wrapped operators.
+ *
  * Revision 1.18  2003/07/03 16:25:56  bouzekc
  * Added all missing javadocs and rearranged methods according
  * to access privilege.
@@ -206,8 +210,9 @@ public class HTMLizer {
     int num_params;
 
     html         = new StringBuffer(  );
-    class_name   = op.getClass(  )
-                     .toString(  );
+    class_name   = op.getSource();
+                   //op.getClass(  )
+                   //  .toString(  );
     title        = op.getTitle(  );
     v            = this.getParameterInfoList( op );
     docs         = cleanDocumentation( op.getDocumentation(  ) );
@@ -237,8 +242,14 @@ public class HTMLizer {
     html.append( "</b></font></td>\n" );
     html.append( "</tr>\n" );
     html.append( "</table>\n\n<br>\n" );
-
-    html.append( "<b>Class:</b> " );
+    String opType="Class:";
+    if(op instanceof Command.ScriptOperator)
+      opType="ISAW Script:";
+    else if( op instanceof DataSetTools.operator.PyScriptOperator)
+      opType ="Python Script:";
+    else if( op instanceof DataSetTools.operator.JavaWrapperOperator)
+      opType ="Wrapped Class";
+    html.append( "<b>"+opType+"</b> " );
     html.append( class_name );
     html.append( "<br>\n" );
 
