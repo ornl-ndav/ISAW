@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2004/02/14 05:07:16  bouzekc
+ *  Made private members default access to avoid a performance hit with
+ *  synthetic accessor methods.
+ *
  *  Revision 1.30  2003/12/15 02:44:08  bouzekc
  *  Removed unused imports.
  *
@@ -180,7 +184,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
   //~ Instance fields **********************************************************
 
-  private String oldValue                   = null;
+  String oldValue                   = null;
   private RadioButtonPGListener rpgListener = new RadioButtonPGListener(  );
 
   //the Hashtables keys are the radio button names, its values are the radio
