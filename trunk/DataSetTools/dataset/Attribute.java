@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.40  2003/08/11 22:17:06  dennis
+ *  Added T0_SHIFT attribute, to record shift in T0 from SCD
+ *  calibration.
+ *
  *  Revision 1.39  2003/02/19 21:55:49  dennis
  *  Added flags for attribute "level of detail"
  *
@@ -227,6 +231,7 @@ abstract public class Attribute implements Serializable,
                                                 "Nominal Source to Sample TOF";
   public static final String  SOURCE_TO_SAMPLE_TOF = 
                                                   "Source to Sample TOF";
+  public static final String  T0_SHIFT          = "T0 shift";
 
   public static final String  SAMPLE_CHI        = "Sample Chi";
   public static final String  SAMPLE_PHI        = "Sample Phi";
