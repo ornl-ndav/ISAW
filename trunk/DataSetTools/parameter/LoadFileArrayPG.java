@@ -31,8 +31,7 @@ public class LoadFileArrayPG extends VectorPG
 
       }      
 
-  }
-class MyActionList implements ActionListener
+static class MyActionList implements ActionListener
   {
    LoadFileArrayPG  vpf;
    public MyActionList( LoadFileArrayPG vpg)
@@ -54,3 +53,4 @@ class MyActionList implements ActionListener
 
    }
 
+  }
