@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.137  2003/06/17 21:41:20  pfpeterson
+ *  Brought back the separate thread for initializing Script_Class_List_Handler.
+ *
  *  Revision 1.136  2003/06/17 16:08:36  pfpeterson
  *  Commented out mulit-threading code which breaks the initialization
  *  of Script_Class_List_Handler.
@@ -1737,13 +1740,10 @@ public class Isaw
    * Cuts a new thread to initialize Script_Class_List_Handler
    */
   private static void initScriptList(){
-/* Uncomment once synchronization is properly done in Script_Class_List_Handler
     ExtTools.SwingWorker worker=new ExtTools.SwingWorker(){
         public Object construct(){
           try{
-*/
             new Script_Class_List_Handler();
-/* Uncomment once synchronization is properly done in Script_Class_List_Handler
           }catch(RuntimeException e){
             // do nothing
           }finally{
@@ -1752,7 +1752,6 @@ public class Isaw
         }
       };
     worker.start();
-*/
   }
 
    /**
