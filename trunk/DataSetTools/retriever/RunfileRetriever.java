@@ -12,6 +12,9 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.12  2000/07/28 18:42:57  dennis
+ *  Added call to fixSeparator() for the file name.
+ *
  *  Revision 1.11  2000/07/26 19:12:41  dennis
  *  Compute detector positions for direct geometry spectrometers based on the
  *  raw detector angles and heights, but effective flight path.
@@ -79,6 +82,7 @@ import DataSetTools.operator.*;
 import DataSetTools.instruments.*;
 import IPNS.Runfile.*;
 import DataSetTools.math.*;
+import DataSetTools.util.*;
 import java.io.*;
 
 /**
@@ -111,10 +115,12 @@ public class RunfileRetriever extends    Retriever
     int       num_histograms;
     boolean   has_monitors;
     boolean   has_detectors;
+    String    file_name;
 
     try
     {
-      run_file         = new Runfile( data_source_name );
+      file_name        = StringUtil.fixSeparator( data_source_name );
+      run_file         = new Runfile( file_name );
       num_histograms   = run_file.NumOfHistograms();
       data_set_type    = new int[ 2 * num_histograms ];
       histogram        = new int[ 2 * num_histograms ];
