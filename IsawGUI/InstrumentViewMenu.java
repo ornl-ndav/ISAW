@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/02/13 21:45:13  pfpeterson
+ * Removed calls to deprecated function fixSeparator.
+ *
  * Revision 1.2  2002/12/11 15:57:20  pfpeterson
  * Fixed small bug where the tag used in the menu was not 'trim()'ed.
  *
@@ -84,7 +87,7 @@ class InstrumentViewMenu extends JMenu implements ActionListener{
     if(!initialized){
       // get the filename
       String file=SharedData.getProperty("ISAW_HOME")+"/"+filename;
-      file=FilenameUtil.fixSeparator(file);    
+      file=FilenameUtil.setForwardSlash(file);    
       if(DEBUG) System.out.println("FILE:"+file);
 
       // read in the information from the file

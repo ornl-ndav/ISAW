@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2003/02/13 21:45:13  pfpeterson
+ * Removed calls to deprecated function fixSeparator.
+ *
  * Revision 1.16  2002/12/20 20:00:04  pfpeterson
  * Now puts up a warning dialog when the save method is called with an
  * unknown file extension.
@@ -103,7 +106,7 @@ public class Util
    public DataSet[] loadRunfile( String filename )
    {
 
-      filename = StringUtil.fixSeparator( filename );
+      filename = StringUtil.setFileSeparator( filename );
 
       Retriever r;
 
@@ -371,7 +374,7 @@ public class Util
 
       String path = System.getProperty( "user.home" ) + "\\";
 
-      path = StringUtil.fixSeparator( path );
+      path = StringUtil.setFileSeparator( path );
       try
       {
          FileInputStream input = new FileInputStream( path + "IsawProps.dat" );
