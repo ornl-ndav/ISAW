@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/05/03 16:27:02  dennis
+ *  Removed unused local variables and two private methods that are
+ *  no longer used.
+ *
  *  Revision 1.15  2004/04/15 15:02:41  dennis
  *  Refined the calculation of the shifted detector center so it will
  *  also work for detectors not centered on the 'scattering plane'.
@@ -162,7 +166,6 @@ public class SCDcal   extends    OneVarParameterizedFunction
   private double qxyz_observed[][];
   private double qxyz_theoretical[][];
 
-  private UniformGrid_d grid;
   private int  eval_count = 0;
 
   private Hashtable gon_rotation_inverse;
@@ -553,30 +556,6 @@ public class SCDcal   extends    OneVarParameterizedFunction
 
 
   /**
-   *  Make a copy of a one-dimensional array of doubles
-   */
-  private double[] copy( double A[] )
-  {
-    double M[] = new double[ A.length ];
-    for ( int i = 0; i < A.length; i++ )
-      M[i] = A[i];
-    return M;
-  }
-
-
-  /**
-   *  Make a copy of a one-dimensional array of ints
-   */
-  private int[] copy( int A[] )
-  {
-    int M[] = new int[ A.length ];
-    for ( int i = 0; i < A.length; i++ )
-      M[i] = A[i];
-    return M;
-  }
-
-
-  /**
    *  Make a copy of a two-dimensional array of doubles
    */
   private double[][] copy( double A[][] )
@@ -667,19 +646,6 @@ public class SCDcal   extends    OneVarParameterizedFunction
   {
      double l1 = all_parameters[L1_INDEX];
      double t0 = all_parameters[T0_INDEX];
-     double a  = all_parameters[A_INDEX];
-     double sx = all_parameters[SX_INDEX];
-     double sy = all_parameters[SY_INDEX];
-     double sz = all_parameters[SZ_INDEX];
-
-     DetectorPosition_d pixel_position;
-     Vector3D_d         pixel_vec;
-     Vector3D_d         sample_shift;
-     double             sample_shift_array[] = {-sx, -sy, -sz};
-     double             rotation[][] = null;
-     double             rotation_inv[][] = null;
-     Position3D_d qxyz;
-     double       coords[] = new double[3];
 
      float positions[][] = new float[n_peaks][3];
      for ( int i = 0; i < n_peaks; i++ )
