@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/06/11 20:44:02  dennis
+ *  Removed classes that are not yet implemented from @see javadoc
+ *  comment.
+ *
  *  Revision 1.1  2002/04/08 15:37:57  dennis
  *  Base class for operators that provide information about the
  *  X, Y or X and Y Axes.
@@ -48,8 +52,6 @@ import DataSetTools.operator.DataSet.DataSetOperator;
  *
  * @see DataSetOperator
  * @see DataSetTools.operator.DataSet.Information.XAxis.XAxisInformationOp 
- * @see DataSetTools.operator.DataSet.Information.YAxis.YAxisInformationOp 
- * @see DataSetTools.operator.DataSet.Information.XYAxis.XYAxisInformationOp 
  */
 
 abstract public class DS_Information extends    DataSetOperator 
