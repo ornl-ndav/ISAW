@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/10/15 03:05:49  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.12  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -99,8 +102,7 @@ public class ExtGetDS{ //extends Retriever
   }
 
   /**
-   * Returns the type( Histogram , Monitor , Invalid , etc. ) of the
-   * dataset
+   * Returns the type of the DataSet. 
    * @param data_set_num  the data set whose type is desired
    *
    * @see DataSetTools.retriever.dataSource

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/10/15 03:05:46  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.9  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -65,8 +68,9 @@ import java.util.*;
 import java.text.*;
 
 
-/** This Class process the NXentry class nodes in a NXNode datasource<P>
- *NOTE: The datasource should follow the Nexus standard
+/** 
+ * This Class process the NXentry class nodes in a NXNode datasource.
+ * NOTE: The datasource should follow the Nexus standard
  */
 public class NXentry_TOFNDGS implements NXentry{
   String errormessage;
@@ -117,12 +121,11 @@ public class NXentry_TOFNDGS implements NXentry{
 
 
   /**
-   * adds fields to the data set DS. NOTE: The Monitors are retrieved
-   * and merged, The Other NXdata are merged
+   * Adds fields to the data set DS. NOTE: The Monitors are retrieved
+   * and merged, the other NXdata are merged.
    *
-   * @param DS the Data Set( already existing ) that is to be built
-   * @param index A given NXentry has several data sets. The index
-   * parameter tells which one is to be retrieved
+   * @param DS the Data Set( already existing ) that is to be built.
+   * @param NxData DOCUMENT ME!
    */
   public boolean processDS( DataSet DS, NxNode NxData ){
     NxNode datanode, instrNode;

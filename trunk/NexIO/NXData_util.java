@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2003/10/15 03:05:47  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.16  2003/06/18 20:33:42  pfpeterson
  * Changed calls for NxNodeUtils.Showw(Object) to
  * DataSetTools.util.StringUtil.toString(Object)
@@ -536,11 +539,12 @@ public class NXData_util{
    * datasource
    * @param instrNode The corresponding NXinstrument node for the
    * NXentry
-   * @param axis1, axis2, axis3 names for the three axes
+   * @param axis1 Name for axis 1
+   * @param axis2 Name for axis 2
    * @param dataname the name of the NxData's (signal=1) field.
    * @param DS the existing DataSet that is to be filled out
    *
-   * @return error status: true if there is an error otherwise false
+   * @return True if there an error ocurred during processing.
    */
    public boolean processDS( NxNode node, NxNode instrNode, String axis1,
                              String axis2, String dataname, DataSet DS ){
