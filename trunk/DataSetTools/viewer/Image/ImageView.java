@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2001/07/27 15:58:25  dennis
+ *  Removed debug print.
+ *
  *  Revision 1.25  2001/07/26 14:28:54  dennis
  *  Now preserves Brightness and Auto-Scale values in the
  *  ViewerState.
@@ -482,7 +485,6 @@ private void init()
   log_scale_slider = new JSlider();
   hgraph_scale_slider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
   int value = (int)(10 * getState().get_float( ViewerState.AUTO_SCALE ));
-  System.out.println("Image: auto-scale value = " + value );
   hgraph_scale_slider.setValue( value );
 
   main_split_pane = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
