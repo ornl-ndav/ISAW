@@ -3,6 +3,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.6  2001/07/31 16:02:32  neffk
+ * added the extinguish() method, which helps reclaim memory that this
+ * objects uses after it's severed from the tree.
+ *
  * Revision 1.5  2001/07/25 17:34:15  neffk
  * changed 'name' to represent the tag and title of the DataSet object.
  * the getTitle() method of DataSet returns the only the title, however
@@ -52,6 +56,21 @@ public class DataSetMutableTreeNode
     this.ds = ds;
     name = ds.toString();
     setUserObject( ds );
+  }
+
+ 
+  /**
+   * attempts to make all references null so we can relaim the
+   * memory that this obj is using.
+   */ 
+  public void extinguish()
+  {
+    ds = null;
+    name = null;
+    setParent( null );
+
+    for( int i=0;  i<data_nodes.size();  i++ )
+      ( (DataMutableTreeNode)data_nodes.get(i) ).extinguish();
   }
 
 
