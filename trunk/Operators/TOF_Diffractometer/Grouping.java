@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/04/17 20:37:47  pfpeterson
+ * Added more debug lines and a check that IntList returned a non-empty array.
+ *
  * Revision 1.8  2003/03/19 22:36:43  pfpeterson
  * Now carries over Data that was not grouped. Also added a parameter
  * for deciding whether a new DataSet is created or not.
@@ -190,9 +193,12 @@ public class Grouping extends GenericTOF_Diffractometer{
 
         // get the list of group ids
         int gid[] = IntList.ToArray( group_str );
-                
-        if(DEBUG)System.out.println("Grouping: "+gid[0]+" to "
-                                  +gid[gid.length-1]);
+        if(gid==null || gid.length==0)
+          return new ErrorString("Invalid Grouping specifier:"+group_str);
+
+        if(DEBUG) System.out.println("GRP_STR="+group_str);
+        if(DEBUG && gid!=null )System.out.println("Grouping:"+gid[0]+" to "
+                                                  +gid[gid.length-1]);
 
         // initialize the datablocks and positions
         Data d=null;
