@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2004/12/23 13:21:42  rmikk
+ * Eliminated some warnings
+ *
  * Revision 1.17  2004/05/21 13:48:02  rmikk
  * Added unused variables that call methods
  *
@@ -283,7 +286,7 @@ public class NexNode implements NxNode{
     errormessage = "";
     if( !open() )
       return null;
-	int n = getNChildNodes();//DO NOT DELETE sets up dirinfo variable
+	getNChildNodes();//DO NOT DELETE sets up dirinfo variable
     if( NodeName == null ){
       errormessage = "Null child not allowed in " + NodeName;
       return null;
@@ -934,7 +937,7 @@ public class NexNode implements NxNode{
       return null;
     if( AttrName == null )
       return null;
-    int n=getNAttributes();
+    getNAttributes();
     Object keyValue = ( attrlist.get( AttrName ) );
     
     if( keyValue == null ){
@@ -1061,7 +1064,7 @@ public class NexNode implements NxNode{
    * Test program for this module: NexNode
    */
   public static void main( String args[] ){
-    DataSetTools.util.SharedData UU = new DataSetTools.util.SharedData();
+    //DataSetTools.util.SharedData UU = new DataSetTools.util.SharedData();
     String filename = "C:\\SampleRuns\\Nex\\lrcs3000.nxs";
     
     if( args != null )if( args.length > 0 )
