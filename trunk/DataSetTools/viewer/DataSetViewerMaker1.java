@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/12/11 19:28:19  rmikk
+ *  Made a public field, ImagePortion, for the portion of the
+ *    split pane given to the View.
+ *
  *  Revision 1.4  2003/12/04 20:45:29  rmikk
  *  Added some input checking
  *
@@ -47,6 +51,10 @@
  *
  *  Revision 1.4  2003/08/08 15:48:24  dennis
  *  Added GPL copyright information and $Log$
+ *  Added GPL copyright information and Revision 1.5  2003/12/11 19:28:19  rmikk
+ *  Added GPL copyright information and Made a public field, ImagePortion, for the portion of the
+ *  Added GPL copyright information and   split pane given to the View.
+ *  Added GPL copyright information and
  *  Added GPL copyright information and Revision 1.4  2003/12/04 20:45:29  rmikk
  *  Added GPL copyright information and Added some input checking
  *  Added GPL copyright information and
@@ -104,7 +112,7 @@ public class DataSetViewerMaker1  extends DataSetViewer
    IViewComponent viewComp;
    DataSetData update_array;
    DataSetXConversionsTable  Conversions;
-
+   public float ImagePortion = .8f;
    /** 
    *   Constructor
    *   @param  ds  the DataSet that is to be viewed
@@ -176,7 +184,7 @@ public class DataSetViewerMaker1  extends DataSetViewer
      viewComp.addActionListener( new CompActionListener());
      setLayout( new GridLayout( 1,1));
      add( new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
-                  viewComp.getDisplayPanel(), East, .80f));
+                  viewComp.getDisplayPanel(), East, ImagePortion));
 
      invalidate();
     }
