@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/07/23 15:42:39  dennis
+ *  Now uses DataSet tile ( no tag ) for the filename to print to.
+ *
  *  Revision 1.14  2001/07/23 15:34:46  dennis
  *  Added infomational messages to catch block for printing
  *  to file.
@@ -255,7 +258,7 @@ public class DataSetPrint extends    GenericOperator
     if(OPtype==1)
     try
     {
-        filename = ds.toString()+"_"+index+".prt";
+        filename = ds.getTitle()+"_"+index+".prt";
         filename = StringUtil.fixSeparator( filename );
         File f = new File(filename);
         FileOutputStream op = new FileOutputStream(f);
