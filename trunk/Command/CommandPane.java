@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.55  2003/05/28 18:40:39  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.54  2003/05/16 15:21:27  pfpeterson
  * Removed a redundant call to setDefaultParameters() immediately after
  * an operator is instantiated (it is done in the constructor).
@@ -297,7 +300,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         add(JPS, BorderLayout.CENTER); 
 
         try{        
-            FilePath = System.getProperty("Script_Path");  
+            FilePath = SharedData.getProperty("Script_Path");  
             FilePath = StringUtil.setFileSeparator(FilePath);   
             if( Debug )
                 System.out.println( "FilePath is "+FilePath);   
@@ -783,7 +786,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                 HTMLPage H;
                 String S;
          
-                S = System.getProperty("Help_Directory");
+                S = SharedData.getProperty("Help_Directory");
                 if( S!= null){
                     S = StringUtil.setFileSeparator( S);     
 
@@ -798,7 +801,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                 } 
                 
                 if( S == null){
-                    S= System.getProperty("user.dir").trim();
+                    S= SharedData.getProperty("user.dir").trim();
                     
                     if( S!=null) 
                         if( S.length() > 0 ) 
@@ -817,7 +820,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                 if( S != null )
                     S = S + "Command/CommandPane.html";
                 else{
-                    String CP = System.getProperty("java.class.path")
+                    String CP = SharedData.getProperty("java.class.path")
                                                           .replace( '\\','/') ;
                     int s, t ;
                     //System.out.println("E");
