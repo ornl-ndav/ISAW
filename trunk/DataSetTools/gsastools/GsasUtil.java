@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/04/25 15:42:10  pfpeterson
+ *  Removed a debug print.
+ *
  *  Revision 1.4  2003/03/11 15:47:15  pfpeterson
  *  More checking when deciding what type of errors to use.
  *
@@ -129,7 +132,7 @@ public class GsasUtil{
 	    if((tol*(float)Math.sqrt((double)I[i])<dI[i])||(dI[i]==0.0f)){
                 // do nothing
             }else{
-                System.out.println((float)Math.sqrt(I[i])+">"+dI[i]);
+              //System.out.println((float)Math.sqrt(I[i])+">"+dI[i]);
                 return ESD;
 	    }
 	}
