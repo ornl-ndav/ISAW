@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2003/07/07 20:33:30  dennis
+ *  Added method to remove all operators from a DataSet.
+ *
  *  Revision 1.37  2003/03/04 20:42:24  dennis
  *  Added method "shallowCopy" that just copies the references
  *  to Data blocks, etc. from one DataSet to another.  While
@@ -1190,6 +1193,14 @@ public class DataSet implements IAttributeList,
     }
   }
 
+
+  /**
+   * Removes all operators from this DataSet.
+   */
+  public void removeAllOperators()
+  {
+    operators.clear();
+  }
 
 
   /**
