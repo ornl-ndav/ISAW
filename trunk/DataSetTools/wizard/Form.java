@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.41  2003/09/13 20:54:56  bouzekc
+ * Now properly adds external PropertyChangeListeners to a ParameterGUI when
+ * a property name is specified.
+ *
  * Revision 1.40  2003/09/11 21:20:54  bouzekc
  * Removed getResult() definition, changed validateParameterGUIs() to
  * validateSelf() to better reflect what it does.
@@ -245,9 +249,9 @@ public abstract class Form extends Operator implements PropertyChanger {
   public static final String[] PARAM_NAMES    = {
     CONS_FRAME_HEAD, VAR_FRAME_HEAD, RES_FRAME_HEAD
   };
-  public static final int CONST_PARAM  = 0;
-  public static final int VAR_PARAM    = 1;
-  public static final int RESULT_PARAM = 2;
+  public static final int CONST_PARAM         = 0;
+  public static final int VAR_PARAM           = 1;
+  public static final int RESULT_PARAM        = 2;
 
   //~ Instance fields **********************************************************
 
@@ -395,8 +399,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( propBind != null ) {
       propBind.addPropertyChangeListener( property, pcl );
     }
-
-    this.addListenerToParameters( pcl );
+    this.addListenerToParameters( property, pcl );
   }
 
   /**
@@ -410,8 +413,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( propBind != null ) {
       propBind.addPropertyChangeListener( pcl );
     }
-
-    this.addListenerToParameters( pcl );
+    this.addListenerToParameters( null, pcl );
   }
 
   /**
@@ -513,7 +515,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( ( result == null ) || ( result.length <= 0 ) ) {
       result = null;
     }
-
     param_ref = new int[][]{ constant, variable, result };
   }
 
@@ -547,18 +548,14 @@ public abstract class Form extends Operator implements PropertyChanger {
 
     JPanel sub_panel = new JPanel(  );
     Box subBox       = Box.createVerticalBox(  );
-
     sub_panel.add( subBox );
 
     TitledBorder border;
-
     border = new TitledBorder( LineBorder.createBlackLineBorder(  ), title );
-
     sub_panel.setBorder( border );
 
     for( int i = 0; i < num.length; i++ ) {
       IParameterGUI param = ( IParameterGUI )getParameter( num[i] );
-
       param.initGUI( null );
       subBox.add( param.getGUIPanel(  ) );
     }
@@ -607,7 +604,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( panel == null ) {
       panel = new JPanel(  );
     }
-
     panel.removeAll(  );
     panel.add( container );
   }
@@ -688,7 +684,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( DEBUG ) {
       box.setBackground( Color.red );
     }
-
     prepGUI( box );
 
     JPanel sub_panel;
@@ -703,20 +698,20 @@ public abstract class Form extends Operator implements PropertyChanger {
         }
       }
     }
-
     this.enableParameters(  );
   }
 
   /**
-   * Validates this Form by calling validate(  ) on each ParameterGUI.<br><br>.
-   * It also resets the progress bars.  Although it can be
-   * overwritten to provide a more customized approach to validating
-   * parameters, this should not usually be necessary, as the recommended
-   * approach is to retrieve all parameters, validate them using this method,
-   * then perform any special validations directly in the child class.  This
-   * method will check all variable parameters for validity, stopping only
-   * when it reaches the end of the list.  However, only the first invalid
-   * parameter will return an error message.
+   * Validates this Form by calling validate(  ) on each ParameterGUI.<br>
+   * <br>
+   * . It also resets the progress bars.  Although it can be overwritten to
+   * provide a more customized approach to validating parameters, this should
+   * not usually be necessary, as the recommended approach is to retrieve all
+   * parameters, validate them using this method, then perform any special
+   * validations directly in the child class.  This method will check all
+   * variable parameters for validity, stopping only when it reaches the end
+   * of the list.  However, only the first invalid parameter will return an
+   * error message.
    *
    * @return Either Boolean.TRUE or an ErrorString, depending on the whether
    *         the parameters successfully validated or not, respectively.
@@ -765,31 +760,51 @@ public abstract class Form extends Operator implements PropertyChanger {
   /**
    * Utility method to add a property change listener to the parameters.
    *
+   * @param name The name of the property to listen for.
    * @param listener The PropertyChangeListener to add.
    */
-  private void addListenerToParameters( PropertyChangeListener listener ) {
+  private void addListenerToParameters( 
+    String name, PropertyChangeListener listener ) {
+    int[] var_indices   = retrieveVarParamIndices(  );
+    IParameterGUI param;
+
+    if( var_indices != null ) {
+      for( int i = 0; i < var_indices.length; i++ ) {
+        param = ( IParameterGUI )this.getParameter( var_indices[i] );
+
+        if( param instanceof PropertyChanger ) {
+          if( name != null ) {
+            ( ( PropertyChanger )param ).addPropertyChangeListener( 
+              name, listener );
+          } else {
+            ( ( PropertyChanger )param ).addPropertyChangeListener( listener );
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Retrieves the list of variable parameters indices.
+   *
+   * @return The list of variable parameter indices for this Form.  If there
+   *         are none, returns null.
+   */
+  private int[] retrieveVarParamIndices(  ) {
     //add the listener to the parameter.  No parameters?  Don't listen to them 
     //then.
     if( this.getNum_parameters(  ) <= 0 ) {
-      return;
+      return null;
     }
 
     //add the listener to the Form's parameters-only listen to the variable
     //ones.
-    IParameterGUI param;
     int[] var_indices = this.getParamType( VAR_PARAM );
 
     if( ( var_indices == null ) || ( var_indices.length <= 0 ) ) {
-      return;
+      return null;
     }
 
-    for( int i = 0; i < var_indices.length; i++ ) {
-      param = ( IParameterGUI )this.getParameter( var_indices[i] );
-
-      if( param instanceof PropertyChanger ) {
-        ( ( PropertyChanger )param ).addPropertyChangeListener( 
-          IParameter.VALUE, listener );
-      }
-    }
+    return var_indices;
   }
 }
