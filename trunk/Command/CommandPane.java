@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.41  2002/11/01 20:29:33  pfpeterson
+ * Moved debuging statement to only print when debug flag is on.
+ *
  * Revision 1.40  2002/10/23 19:59:08  pfpeterson
  * When editing a file, the Save button now defaults to the file
  * being edited.
@@ -427,7 +430,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
             OpenFileToDocListener opn =
                 (OpenFileToDocListener)(evt.getSource());
             String filename = opn.getFileName();
-            System.out.println("CP:"+filename);
+            if(Debug) System.out.println("CP:"+filename);
             CommandSP.setBorder(new TitledBorder( "Prgm Editor:"+filename ));
             PC.firePropertyChange("filename", null, filename);
         }
