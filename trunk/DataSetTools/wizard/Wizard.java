@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2003/06/05 22:17:52  bouzekc
+ * Incremental improvement to more carefully define what
+ * should be listed in the Wizard's View menu.
+ *
  * Revision 1.21  2003/06/04 14:13:21  bouzekc
  * Improved the parameter checking for the <View> menu.
  *
@@ -977,8 +981,9 @@ public abstract class Wizard implements PropertyChangeListener{
           Form, should not be sent to the ParameterViewer. */
           if( (iparam instanceof DataSetPG)  ||
               (iparam instanceof ArrayPG)    ||
-              (iparam instanceof LoadFilePG) ||
-              (iparam instanceof SaveFilePG) )
+              /*(iparam instanceof LoadFilePG) ||
+              (iparam instanceof SaveFilePG) ||*/
+              (iparam instanceof BrowsePG) )
           {
             jmi = new JMenuItem(iparam.getName());
             view_menu.add(jmi);
