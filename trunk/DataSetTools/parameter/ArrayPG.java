@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/10/10 22:11:49  pfpeterson
+ *  Fixed a bug with the clone method not getting the choices copied over.
+ *
  *  Revision 1.2  2002/09/19 16:07:20  pfpeterson
  *  Changed to work with new system where operators get IParameters in stead of Parameters. Now support clone method.
  *
@@ -54,7 +57,7 @@ public class ArrayPG extends ParameterGUI{
     protected static int    DEF_COLS = 20;
 
     // instance variables
-    protected   Vector vals;
+    protected Vector vals=null;
 
     // ********** Constructors **********
     public ArrayPG(String name, Object value){
@@ -89,9 +92,9 @@ public class ArrayPG extends ParameterGUI{
     /**
      * Add a set of items to the vector of choices at once.
      */
-    public void addItems( Vector vals){
-        for( int i=0 ; i<vals.size() ; i++ ){
-            addItem(vals.elementAt(i));
+    public void addItems( Vector values){
+        for( int i=0 ; i<values.size() ; i++ ){
+            addItem(values.elementAt(i));
         }
     }
 
@@ -231,6 +234,7 @@ public class ArrayPG extends ParameterGUI{
      */
     public Object clone(){
         ArrayPG apg=new ArrayPG(this.name,this.value,this.valid);
+        apg.vals=(Vector)this.vals.clone();
         apg.setDrawValid(this.getDrawValid());
         apg.initialized=false;
         return apg;
