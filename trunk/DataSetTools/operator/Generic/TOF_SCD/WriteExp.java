@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2004/01/24 20:29:28  bouzekc
+ * Made two unused private methods into public static methods.
+ *
  * Revision 1.15  2003/12/15 02:33:25  bouzekc
  * Removed unused imports.
  *
@@ -467,7 +470,7 @@ public class WriteExp extends GenericTOF_SCD{
    * after the one being added. Returns -1 if it can't find the right
    * place
    */
-  private static int findSplit(String old_hist, int[] runs,int run_num,
+  public static int findSplit(String old_hist, int[] runs,int run_num,
                                                                  int run_zero){
     int num_early=0;
     for( int i=0 ; i<runs.length ; i++ ){
@@ -505,13 +508,13 @@ public class WriteExp extends GenericTOF_SCD{
   
   /* ------------------------- private methods ---------------------------- */ 
   /**
-   * Reformats a string containg the histogram section of an experment
+   * Reformats a string containg the histogram section of an experiment
    * file. The string is assumed to already be in the appropriate
    * format.
    *
    * @param old_hist The string to have the histogram number 'fixed'.
    */
-  private String fix_old(String old_hist, int change_run_one){
+  public static String fix_old(String old_hist, int change_run_one){
     // confirm that it makes sense to do this
     if(old_hist==null || old_hist.length()<=0) return old_hist;
     if(change_run_one==0) return old_hist;
