@@ -30,6 +30,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2003/03/04 20:42:24  dennis
+ *  Added method "shallowCopy" that just copies the references
+ *  to Data blocks, etc. from one DataSet to another.  While
+ *  this method is "dangerous" and should not generally be used,
+ *  it allows moving Data between the LiveDataRetriever and
+ *  LiveDataMonitor much more efficiently.  Less space and less
+ *  time is needed since the Data blocks are not cloned.
+ *
  *  Revision 1.36  2003/02/10 13:28:38  dennis
  *  getAttributeList() now returns a reference to the attribute list,
  *  not a clone.
@@ -1601,8 +1609,65 @@ public class DataSet implements IAttributeList,
 
   /**
    *  Copy the contents of another DataSet into the current DataSet.  This 
+   *  performs a shallow copy and just copies references to the Data 
+   *  blocks, Attribute list, etc from the specified DataSet into the 
+   *  current DataSet.   This is a dangerous process and should generally
+   *  NOT be used.  However in special cases, like the LiveDataManager, it
+   *  can be safely used and improves the efficiency for large DataSets.
+   *  The list of observers is unchanged and the observers of this DataSet 
+   *  are notified that the data was changed.  The numeric DataSet
+   *  tag of this DataSet is also unchanged.
+   *
+   *  @param  ds   The DataSet whose contents are to copied into this DataSet.
+   */
+  public void shallowCopy( DataSet ds )
+  {
+    if ( ds == null )
+      return;
+
+    if ( this.equals( ds ) )
+    {
+      this.notifyIObservers( IObserver.DATA_CHANGED );
+      return;
+    }
+
+    this.title               = ds.title;
+    this.x_units             = ds.x_units;
+    this.x_label             = ds.x_label;
+    this.y_units             = ds.y_units;
+    this.y_label             = ds.y_label;
+
+                                         // Note: we are NOT copying the ds_tag
+    this.pointed_at_index    = ds.pointed_at_index;
+    this.pointed_at_x        = ds.pointed_at_x;
+    this.selected_interval   = ds.selected_interval;
+    this.last_sort_attribute = ds.last_sort_attribute;
+
+    this.setAttributeList( ds.getAttributeList() );
+
+    this.data = new Vector(); 
+    int num_entries = ds.getNum_entries();
+
+    for ( int i = 0; i < num_entries; i++ )
+      this.addData_entry( ds.getData_entry( i ) );
+
+    this.operators = new Vector();
+    int num_ops = ds.getNum_operators(); 
+    for ( int i = 0; i < num_ops; i++ )
+      this.addOperator( ds.getOperator(i) );
+
+    this.op_log = ds.op_log;
+                                       // NOTE: We don't change the list of
+                                       //       observers, but rather notify
+                                       //       the observers of this DataSet
+                                       //       that it's contents changed.                              
+    this.notifyIObservers( IObserver.DATA_CHANGED );
+  }
+
+  /**
+   *  Copy the contents of another DataSet into the current DataSet.  This
    *  performs a complete "deep copy" EXCEPT for the list of observers and the
-   *  DataSet tag.  The list of observers is unchanged and the observers of 
+   *  DataSet tag.  The list of observers is unchanged and the observers of
    *  this DataSet are notified that the data was changed.  The numeric DataSet
    *  tag of this DataSet is also unchanged.
    *
@@ -1630,7 +1695,7 @@ public class DataSet implements IAttributeList,
 
     this.setAttributeList( ds.getAttributeList() );
 
-    this.data = new Vector(); 
+    this.data = new Vector();
     int num_entries = ds.getNum_entries();
 
     for ( int i = 0; i < num_entries; i++ )
@@ -1640,20 +1705,21 @@ public class DataSet implements IAttributeList,
     }
 
     this.operators = new Vector();
-    int num_ops = ds.getNum_operators(); 
+    int num_ops = ds.getNum_operators();
     for ( int i = 0; i < num_ops; i++ )
     {
       DataSetOperator op = (DataSetOperator)ds.getOperator(i).clone();
       this.addOperator( op );
-    }                                 
+    }
 
     this.op_log = (OperationLog)ds.op_log.clone();
                                        // NOTE: We don't change the list of
                                        //       observers, but rather notify
                                        //       the observers of this DataSet
-                                       //       that it's contents changed.                              
+                                       //       that it's contents changed.       
     this.notifyIObservers( IObserver.DATA_CHANGED );
   }
+
 
 
   /**
