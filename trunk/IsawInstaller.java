@@ -32,6 +32,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.26  2005/03/08 02:51:12  dennis
+ * Added jython.jar to the list of jar files included in the
+ * script to run Isaw that is written during the installation.
+ *
  * Revision 1.25  2005/01/10 15:55:01  dennis
  * Removed empty statement.
  *
@@ -611,13 +615,13 @@ public class IsawInstaller extends JFrame
 		+"path %PATH%;./lib"+newline
 		+"java -mx128m -cp \""+fixSeparator(isaw_home)
                 +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;jogl.jar;"
-                +"jhall.jar;.\" IsawGUI.Isaw"+newline
+                +"jhall.jar;jython.jar;.\" IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+ newline
 		+"rem --"+newline
 		+"rem java -mx128m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;jogl.jar;"
-		+"jhall.jar;.\" IsawGUI.Isaw"+newline;
+		+"jhall.jar;jython.jar;.\" IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
 		+"ISAW="+isaw_home+newline
@@ -626,7 +630,7 @@ public class IsawInstaller extends JFrame
 		+"cd $ISAW"+newline
 		+"$JAVA -mx128m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/jogl.jar"
-		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
+		+":$ISAW/jhall.jar:$ISAW/jython.jar:. IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(SUN_ID)){
 	    content="#!/bin/sh"+newline
 		+"ISAW="+isaw_home+newline
@@ -635,7 +639,7 @@ public class IsawInstaller extends JFrame
 		+"cd $ISAW"+newline
 		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/jogl.jar"
-		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
+		+":$ISAW/jhall.jar:$ISAW/jython.jar:. IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
                 +"      do script with command \"java -mx128m -cp "
@@ -648,6 +652,7 @@ public class IsawInstaller extends JFrame
                 +isaw_home+"/jnexus.jar:"
                 +isaw_home+"/sdds.jar:"
                 +isaw_home+"/jogl.jar:"
+                +isaw_home+"/jython.jar:"
                 +isaw_home+"/jhall.jar:. IsawGUI.Isaw\""+newline
                 +"end tell"+newline;
 	}else{
