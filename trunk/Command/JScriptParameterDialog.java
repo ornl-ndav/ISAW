@@ -51,7 +51,7 @@ public class JScriptParameterDialog implements Serializable
         this.V = V;
         if( this.V == null ) V = new Vector();
         opDialog = new JDialog(new JFrame(), "Data Entry" ,true);
-        opDialog.setSize(700,460);
+        opDialog.setSize(700,600);
         opDialog.getContentPane().add(new JLabel( (String)(V.firstElement() ) ));
         
         //Center the opdialog frame 
@@ -77,7 +77,7 @@ public class JScriptParameterDialog implements Serializable
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
             
             param =((JParameterGUI)( V.get(i+1))).getParameter();
-	   
+	    //System.out.println("JScrParGUI DT="+param.getValue());
             if( param.getValue() == null )
                  paramGUI = new JObjectParameterGUI(param);
             else if (param.getValue() instanceof Float)

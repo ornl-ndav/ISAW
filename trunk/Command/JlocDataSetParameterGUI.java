@@ -34,13 +34,14 @@ public class JlocDataSetParameterGUI extends JParameterGUI
     public JlocDataSetParameterGUI(Parameter parameter , DataSet ds[])
     { 
        super(parameter);
+       
      /*
        if(parameter != null )
-	   {System.out.print( parameter.getValue());
+	   {//System.out.print( parameter.getValue());
             if( parameter.getValue() != null)
-              System.out.println( parameter.getValue().getClass());
+              //System.out.println( parameter.getValue().getClass());
            }
-       System.out.println();
+      // System.out.println();
       */
         combobox = new JComboBox();
     
@@ -50,7 +51,7 @@ public class JlocDataSetParameterGUI extends JParameterGUI
   
         if( ds == null)
 	  {
-           System.out.println("Global data set is null");
+           //System.out.println("Global data set is null");
           }          
         else 
           for( int i=0; i< ds.length; i++)
@@ -58,7 +59,8 @@ public class JlocDataSetParameterGUI extends JParameterGUI
                combobox.addItem(ds[i]);
                      
              }
-        
+        if(ds !=null)if(ds.length>0) combobox.setSelectedIndex(0);
+        //else combobox.setSelectedIndex(-1);
         segment = new JPanel();
         segment.setLayout(new GridLayout(1,2));
        
@@ -80,13 +82,14 @@ public class JlocDataSetParameterGUI extends JParameterGUI
        DataSet ds = (DataSet)combobox.getSelectedItem();
        if( ds == null)
          ds = new DataSet("", "");
-      if( combobox.getItemCount() > 0)
-         ds = (DataSet)combobox.getItemAt( 0 );
+      //if( combobox.getItemCount() <= 0)
+      //   ds = (DataSet)combobox.getItemAt( 0 );
     // if there are no DataSets the combobox is not setup
 	  
        P = super.getParameter();
        
           P.setValue(ds);
+       // System.out.println("getParam locDSParamGUI"+ds);
           return P;
 	  
        
