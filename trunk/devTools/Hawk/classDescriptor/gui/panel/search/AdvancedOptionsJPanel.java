@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:28:35  kramer
+ * actionPerformed(ActionEvent event) does not call super.actionPerformed(event)
+ * any more.
+ *
  * Revision 1.3  2004/03/12 19:46:17  bouzekc
  * Changes since 03/10.
  *
@@ -191,7 +195,5 @@ public class AdvancedOptionsJPanel extends BasicOptionsJPanel implements ActionL
 			
 			frame.pack();
 		}
-		
-		super.actionPerformed(event);
 	}
 }
