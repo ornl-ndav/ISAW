@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2004/01/24 23:09:38  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.14  2003/12/09 23:19:15  dennis
  * The publicly accessible showAttributes() method now resets the
  * reference to the last Data whose attributes were shown.  This
@@ -65,15 +68,10 @@ package IsawGUI;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
 import javax.swing.*;
 
 import javax.swing.table.*;
 import java.util.*;
-import DataSetTools.operator.*;
-import DataSetTools.instruments.*;
-import java.util.zip.*; 
 import java.io.Serializable;
 import javax.swing.border.*;
 

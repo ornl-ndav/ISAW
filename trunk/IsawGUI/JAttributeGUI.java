@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2004/01/24 23:09:38  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.4  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -36,7 +39,6 @@
 package IsawGUI;
  
  import javax.swing.*;
- import DataSetTools.*;
  import DataSetTools.dataset.*;
 
 /**

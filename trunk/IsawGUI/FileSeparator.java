@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2004/01/24 23:09:37  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.4  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -50,7 +53,6 @@ public class FileSeparator extends JFrame implements ListSelectionListener
 	private Vector vrunfiles;
 	private Vector vsamplefiles;
 	private Vector vbackgroundfiles;
-	private String dir;
 	private DefaultListModel listModelA;  
 	private DefaultListModel listModelB;  
 	private DefaultListModel listModelC;  

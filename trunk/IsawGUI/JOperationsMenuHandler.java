@@ -32,6 +32,9 @@
  * each selection appropriatly.
  *
  * $Log$
+ * Revision 1.21  2004/01/24 23:09:38  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.20  2003/10/15 03:18:31  bouzekc
  * Fixed javadoc errors.
  *
@@ -47,15 +50,11 @@ package IsawGUI;
 
 import DataSetTools.dataset.DataSet;
 import DataSetTools.util.IObserver;
-import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.components.ParametersGUI.*;
 import java.awt.event.*;
-import javax.swing.*;
-import java.awt.*;
 import java.io.Serializable;
 import javax.swing.text.*; 
-import Command.*;
  
 /**
  * 

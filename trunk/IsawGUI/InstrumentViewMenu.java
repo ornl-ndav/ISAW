@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/01/24 23:09:38  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/02/13 21:45:13  pfpeterson
  * Removed calls to deprecated function fixSeparator.
  *
@@ -191,7 +194,7 @@ class InstrumentViewMenu extends JMenu implements ActionListener{
     if(bc==null) bc=new BrowserControl();
 
     // display the URL
-    bc.displayURL(url);
+    BrowserControl.displayURL(url);
   }
 
   /**
@@ -201,7 +204,7 @@ class InstrumentViewMenu extends JMenu implements ActionListener{
   public static void main(String[] args){
     try{
       InstrumentViewMenu.DEBUG=true;
-      InstrumentViewMenu ivm=new InstrumentViewMenu("TEST MENU");
+      new InstrumentViewMenu("TEST MENU");
     }catch(InstantiationException e){
       System.out.println(e.getMessage());
     }

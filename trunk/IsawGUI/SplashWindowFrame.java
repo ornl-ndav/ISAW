@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2004/01/24 23:09:39  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.18  2003/12/12 18:15:18  dennis
  *  Temporarily commented out code that waited for an image to finish
  *  loading, using a MediaTracker.  This permitted the splash pane to
@@ -71,7 +74,6 @@
 
 package IsawGUI;
 
-import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 import DataSetTools.util.*;

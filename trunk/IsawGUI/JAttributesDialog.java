@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/01/24 23:09:38  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.7  2002/11/27 23:27:07  pfpeterson
  *  standardized header
  *
@@ -47,11 +50,7 @@ import DataSetTools.dataset.*;
 import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
-import java.io.File;
 import java.io.*;
-import javax.swing.JDialog.*;
-import java.util.zip.*;
-import java.io.Serializable.* ;
 
 /**
  * This is the class for a dialog to edit attributes for a DataSet or
