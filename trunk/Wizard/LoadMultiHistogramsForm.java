@@ -41,6 +41,7 @@ import DataSetTools.operator.Generic.Load.LoadOneHistogramDS;
 import DataSetTools.operator.Generic.Load.LoadMonitorDS;
 import DataSetTools.operator.Operator;
 import java.util.Vector;
+import  DataSetTools.instruments.InstrumentType;
 
 /**
  *  This class defines a form for loading histograms from 
@@ -198,7 +199,7 @@ public class LoadMultiHistogramsForm extends Form
    */
   public Object getResult()
   {
-    SharedData.addmsg("Executing...\n");
+    SharedData.addmsg("Executing... " + super.getTitle());
     IParameterGUI param;
     ArrayPG histograms, monitors;
     int run_numbers[], h_num;
@@ -216,18 +217,18 @@ public class LoadMultiHistogramsForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
-         "ERROR: you must enter one or more valid run numbers.\n");
-       return new Boolean(false);
-    }
+      return errorOut(param, 
+         "You must enter one or more valid run numbers.");
 
     //get directory
-    //should be no need to check this for validity
     param = (IParameterGUI)super.getParameter( 1 );
-    run_dir = param.getValue().toString() + "/";
-    param.setValid(true);
+    run_dir = StringUtil.setFileSeparator(
+                param.getValue().toString() + "/");
+    if(new File(run_dir).exists())
+      param.setValid(true);
+    else
+      return errorOut(param,
+          "You must enter a valid run number directory.");
 
     //get instrument name
     param = (IParameterGUI)super.getParameter( 2 );
@@ -239,12 +240,8 @@ public class LoadMultiHistogramsForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
-         "ERROR: you must enter a valid instrument name.\n");
-       return new Boolean(false);
-    }
+      return errorOut(param, 
+         "You must enter a valid instrument name.");
 
     //get histogram number
     param = (IParameterGUI)super.getParameter( 3 );
@@ -255,12 +252,8 @@ public class LoadMultiHistogramsForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
-         "ERROR: you must enter a valid histogram number.\n");
-       return new Boolean(false);
-    }
+      return errorOut(param, 
+         "You must enter a valid histogram number.");
 
     //get group mask
     //how should I validate this?
@@ -272,12 +265,8 @@ public class LoadMultiHistogramsForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
-         "ERROR: you must enter a valid group mask.\n");
-       return new Boolean(false);
-    }
+      return errorOut(param, 
+         "You must enter a valid group mask.");
 
     //get the DataSet array
     histograms = (ArrayPG)super.getParameter( 5 );
@@ -286,14 +275,15 @@ public class LoadMultiHistogramsForm extends Form
     histograms.clearValue();
     monitors.clearValue();
 
+    super.getResult();
+
+    //set the increment amount
+    increment = (1.0f / run_numbers.length) * 100.0f;
+
     for( int i = 0; i < run_numbers.length; i++ )
     {
-      //don't want to remove the leading zeroes
-      run_num = DataSetTools
-                .util
-                .Format
-                .integerPadWithZero(run_numbers[i], RUN_NUMBER_WIDTH);
-      file_name = run_dir + inst_name + run_num + ".RUN";
+      file_name = run_dir + InstrumentType.formIPNSFileName(inst_name,
+                    run_numbers[i]);
       load = new LoadOneHistogramDS(file_name, h_num, g_mask);
       mon = new LoadMonitorDS(file_name);
       result = load.getResult();
@@ -308,28 +298,30 @@ public class LoadMultiHistogramsForm extends Form
         monitors.addItem(result_ds);
         //let the user know the DataSet was added successfully
         SharedData.addmsg(
-          result + " and " + mon_res + " added successfully.\n");
+          result + " and " + mon_res + " added successfully.");
       }
       else // something went wrong
       {
-        if( result instanceof ErrorString )
-          SharedData.addmsg(result.toString() + "\n");
-        else if (mon_res instanceof ErrorString )
-          SharedData.addmsg(result.toString() + "\n");
+        String errMessage = null;
+        if( result instanceof ErrorString || mon_res instanceof ErrorString)
+          errMessage = result.toString();
         else
-          SharedData.addmsg(
-            "Could not load histogram and/or monitor from "
-            + file_name + ".\n");
-        return new Boolean(false);
+            errMessage = 
+              "Could not load histogram and/or monitor from " + file_name;
+        return errorOut(errMessage); 
       }
 
+      //fire a property change event off to any listeners
+      oldPercent = newPercent;
+      newPercent += increment;
+      super.fireValueChangeEvent((int)oldPercent, (int)newPercent);
     }//for
     histograms.setValid(true);
     monitors.setValid(true);
 
-    SharedData.addmsg("Finished loading DataSets from runfiles.\n\n");
+    SharedData.addmsg("Finished loading DataSets from runfiles.\n");
 
-    return new Boolean(true);
+    return Boolean.TRUE;
   }
 
 }//class
