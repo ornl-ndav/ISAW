@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.29  2004/04/20 18:37:04  dennis
+ * Now checks returned value from BestFitMatrix and returns
+ * an error message if the BestFitMatrix calculation failed.
+ *
  * Revision 1.28  2004/04/20 17:42:15  dennis
  * Added check that at least three peaks are present before
  * calling BestFitMatrix() to find the matrix that most nearly
@@ -550,6 +554,9 @@ public class LsqrsJ extends GenericTOF_SCD {
       }
 
       chisq   = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
+      if ( chisq == Double.NaN )
+        return new ErrorString( "ERROR in LsqrsJ: " + 
+                                " BestFitMatrix calculation failed" );
       chisq   = 0.;  // reset chisq
       Thkl    = new double[3][peaks.size(  )];
 
