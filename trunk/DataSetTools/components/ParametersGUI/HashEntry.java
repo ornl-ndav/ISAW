@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/05/09 18:32:11  bouzekc
+ *  Added check for null selected value.
+ *
  *  Revision 1.6  2004/05/09 18:17:18  bouzekc
  *  Reformatted and added comments.
  *
@@ -111,7 +114,7 @@ public class HashEntry extends JComboBox implements PropertyChanger {
           HashEntry cb       = ( HashEntry )e.getSource(  );
           Object newSelected = cb.getSelectedItem(  );
 
-          if( !cb.lastSelected.equals( newSelected ) ) {
+          if( cb.lastSelected != null && !cb.lastSelected.equals( newSelected ) ) {
             cb.fireValueChange( cb.lastSelected, newSelected );
             cb.lastSelected = newSelected;
           }
