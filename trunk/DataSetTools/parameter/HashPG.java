@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/03/03 16:32:06  pfpeterson
+ *  Only creates GUI once init is called.
+ *
  *  Revision 1.4  2002/11/27 23:22:42  pfpeterson
  *  standardized header
  *
@@ -215,8 +218,7 @@ public class HashPG extends ParameterGUI{
         this.entrywidget=new HashEntry(keys);
         this.entrywidget.setEnabled(this.enabled);
         this.entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
-        this.packupGUI();
-        this.initialized=true;
+        super.initGUI();
     }
 
     /**

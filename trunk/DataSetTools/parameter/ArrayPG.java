@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
+ *  Only creates GUI once init is called.
+ *
  *  Revision 1.5  2003/02/24 21:01:36  pfpeterson
  *  Major reworking. This version is completely incompatible with previous
  *  versions. Value changed to a vector which cannot be changed in the GUI.
@@ -175,8 +178,7 @@ public class ArrayPG extends ParameterGUI{
         if(this.initialized) return; // don't initialize more than once
 
         this.entrywidget=new JLabel(this.stringVersion());
-        this.packupGUI();
-        this.initialized=true;
+        super.initGUI();
     }
 
     /**

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
+ *  Only creates GUI once init is called.
+ *
  *  Revision 1.5  2003/02/04 20:32:52  pfpeterson
  *  Now uses the MaterialFilter in the GUI.
  *
@@ -89,8 +92,7 @@ public class MaterialPG extends StringPG{
                                     new MaterialFilter());
         entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
         this.setEnabled(this.getEnabled());
-        this.packupGUI();
-        this.initialized=true;
+        super.initGUI();
     }
 
     static void main(String args[]){
