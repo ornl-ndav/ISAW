@@ -1,8 +1,12 @@
 /*
- * @(#)XScale.java     1.0  98/06/08  Dennis Mikkelson
+ * @(#)XScale.java     
  *
- * ---------------------------------------------------------------------------
+ *  Programmer:  Dennis Mikkelson
+ *
  *  $Log$
+ *  Revision 1.6  2000/12/07 22:30:33  dennis
+ *  Added method extend().
+ *
  *  Revision 1.5  2000/11/17 23:39:04  dennis
  *  Minor change to format of output in toString() method.
  *
@@ -17,7 +21,6 @@
  *
  *  Revision 1.2  2000/05/11 16:00:45  dennis
  *  Added RCS logging
- *
  *
  */
 
@@ -101,6 +104,24 @@ abstract public class XScale implements Serializable
    * as specified when the object was constructed.
    */
   abstract public float[] getXs();
+
+
+  /**
+   *  Constructs a new XScale that extends over the smallest interval
+   *  containing both this XScale and the specifed XScale.  The points of the
+   *  the current XScale are used, except for any interval covered by the
+   *  other XScale and NOT covered by the current XScale.  
+   *
+   *  @param  other_scale  The x scale that is used to extend the current XScale
+   *
+   *  @return  A new XScale of the same type ( Uniform or Variable ) as the
+   *           current XScale is returned.  The new XScale covers the union
+   *           of the intervals covered by the current XScale and the
+   *           other XScale.  See the subclasses for specific behavior.
+   */
+   abstract public XScale extend( XScale other_scale );
+
+
 
   /**
    * Creates a new instance of one of the concrete objects derived from
