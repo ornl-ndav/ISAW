@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/12/02 15:39:50  rmikk
+ * Gets the html page from the ..\HTMLizer  class
+ *
  * Revision 1.2  2002/11/27 23:27:38  pfpeterson
  * standardized header
  *
@@ -42,7 +45,9 @@ package IsawHelp.HelpSystem.Memory;
 import java.net.*;
 import java.io.*;
 import javax.swing.*;
-
+import Command.*;
+import DataSetTools.operator.*;
+import IsawHelp.HelpSystem.*;
 
 /** This a URLStreamHandler that is associated with a URLConnection that
  *   calculates the information at run time.  The protocol for this handler
@@ -75,7 +80,8 @@ public class Handler extends URLStreamHandler
   class MURLConnection extends URLConnection
   {
      URL  url;
-
+     Operator op;
+     String page;
     /** 
      *  Constructor for this URL connection.
      *  The url most be of the form Memory://Generic;xx.. or 
@@ -87,6 +93,22 @@ public class Handler extends URLStreamHandler
      {
         super(url);
         this.url=url;
+        Script_Class_List_Handler sh = new Script_Class_List_Handler();
+        String c = url.getHost();
+        int num = url.getPort();
+        if( c.equals("DataSet"))
+         op = sh.getDataSetOperator( num);
+        else if( c.equals( "Generic" ))
+         op = sh.getOperator( num );
+        else
+         op = null;
+
+       if( op == null )
+          page= "No Such Operator";
+       else
+          page = (new HTMLizer()). createHTML( op );
+
+       
         setDoInput(true);
      }
     
@@ -124,13 +146,7 @@ public class Handler extends URLStreamHandler
    */
   public  int getContentLength() 
   {
-    try{
-        return ((String)getContent()).length();
-       }
-   catch(IOException s)
-       {
-        return 0;
-        }
+    return page.length();
   }
 
 
@@ -149,8 +165,7 @@ public class Handler extends URLStreamHandler
    */
   public Object getContent() throws IOException
   {
-     return "<html><body> this is an html<P> page I hope<P>works"+
-          url.getHost()+":"+url.getPort()+"</body></html>";
+     return page;
   }
 
 }//class MURLConnection
