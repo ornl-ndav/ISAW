@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/15 20:30:15  dennis
+ * Changed to use RobustFileFilter from new package,
+ * gov.anl.ipns.Util.File
+ *
  * Revision 1.3  2004/03/12 19:46:17  bouzekc
  * Changes since 03/10.
  *
@@ -69,7 +73,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import DataSetTools.util.RobustFileFilter;
+import gov.anl.ipns.Util.File.RobustFileFilter;
 import devTools.Hawk.classDescriptor.gui.frame.InterfaceSelectorSaveAsGUI;
 import devTools.Hawk.classDescriptor.gui.internalFrame.JavadocsGUI;
 import devTools.Hawk.classDescriptor.gui.internalFrame.ShortenedSourceGUI;

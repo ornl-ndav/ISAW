@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/15 20:30:15  dennis
+ * Changed to use RobustFileFilter from new package,
+ * gov.anl.ipns.Util.File
+ *
  * Revision 1.3  2004/03/12 19:46:20  bouzekc
  * Changes since 03/10.
  *
@@ -67,7 +71,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import DataSetTools.util.RobustFileFilter;
+import gov.anl.ipns.Util.File.RobustFileFilter;
 import devTools.Hawk.classDescriptor.gui.frame.ProgressGUI;
 import devTools.Hawk.classDescriptor.gui.frame.UnableToLoadClassGUI;
 import devTools.Hawk.classDescriptor.modeledObjects.AttributeDefn;
