@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2004/03/15 06:10:54  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.2  2004/03/15 03:28:44  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -46,10 +49,6 @@ import gov.anl.ipns.MathTools.Functions.*;
 
 import java.io.*;
 import java.util.*;
-import DataSetTools.math.*;
-import DataSetTools.dataset.*;
-import DataSetTools.viewer.*;
-import DataSetTools.functions.*;
 
 /**
  * This class implements a parameterized "function" of two variables as a 

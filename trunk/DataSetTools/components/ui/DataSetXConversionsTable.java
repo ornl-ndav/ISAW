@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/03/15 06:10:34  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.13  2004/03/15 03:27:58  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -69,7 +72,6 @@
  *
  */
 
-
 package DataSetTools.components.ui;
 
 import gov.anl.ipns.ViewTools.UI.*;
@@ -80,12 +82,8 @@ import java.text.*;
 import javax.swing.*;
 import javax.swing.table.*;
 import DataSetTools.dataset.*;
-import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
-import DataSetTools.operator.DataSet.Conversion.XAxis.*;
-import DataSetTools.operator.DataSet.Information.XAxis.*;
 import DataSetTools.retriever.*;
-import DataSetTools.util.*;
 
 /**
  * This class provides a table listing quantitative information about data in 

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/03/15 06:10:51  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.4  2004/03/15 03:28:42  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -62,10 +65,8 @@ import gov.anl.ipns.Util.Numeric.*;
 import java.io.*;
 import java.util.Vector;
 import DataSetTools.dataset.*;
-import DataSetTools.math.*;
 import DataSetTools.instruments.*;
 import DataSetTools.viewer.*;
-import DataSetTools.util.*;
 
 /**
  * Class that retrieves IDEAS files and produces ISAW DataSets.

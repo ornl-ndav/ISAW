@@ -32,6 +32,9 @@
  * This operator sets a DataSet Attribute
  *
  *  $Log$
+ *  Revision 1.8  2004/03/15 06:10:44  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.7  2004/03/15 03:28:23  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -64,7 +67,6 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
-import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
 

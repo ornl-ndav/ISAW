@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/15 06:10:53  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.3  2004/03/15 03:28:43  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -48,14 +51,10 @@ package DataSetTools.trial;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.ViewTools.UI.*;
 
-import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.border.*;
-import DataSetTools.components.ui.*;
-import DataSetTools.util.*;
 
 public class LatticePlaneUI extends ActiveJPanel
 {

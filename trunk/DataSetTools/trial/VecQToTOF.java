@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2004/03/15 06:10:54  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.17  2004/03/15 03:28:45  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -133,16 +136,10 @@ package DataSetTools.trial;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Numeric.*;
 
-import java.io.*;
 import DataSetTools.math.*;
-import DataSetTools.util.*;
-import DataSetTools.components.ThreeD.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
-import DataSetTools.operator.*;
-import DataSetTools.operator.DataSet.Conversion.XAxis.*;
-import DataSetTools.operator.DataSet.Math.Analyze.*;
 
 /** 
  *  This class is responsible for mapping a vector Q point to an interpolated

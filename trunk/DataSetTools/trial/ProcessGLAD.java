@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/15 06:10:53  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.5  2004/03/14 20:23:46  dennis
  * Put in package DataSetTools.trial
  *
@@ -42,11 +45,8 @@
  */
 package DataSetTools.trial;
 
-import javax.swing.*;
-
 import DataSetTools.dataset.*;
 import DataSetTools.dataset.Data;
-import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.operator.DataSet.Math.Scalar.*;
@@ -54,7 +54,6 @@ import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
-import DataSetTools.util.*;
 
 /**
  *  Process data from Glad, doing normalization:  

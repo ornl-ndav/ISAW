@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/03/15 06:10:57  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.11  2004/03/15 03:35:22  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -68,11 +71,9 @@ package NetComm;
 
 import gov.anl.ipns.Util.Sys.*;
 
-import java.io.*;
 import java.util.*;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
-import DataSetTools.util.*;
 
 /**
  *  This class implements a remote file server for files that can be 

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/15 06:10:53  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.7  2004/03/15 03:28:44  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -51,14 +54,10 @@ package DataSetTools.trial;
 
 import gov.anl.ipns.MathTools.*;
 
-import javax.swing.*;
-
 import DataSetTools.dataset.*;
 import DataSetTools.dataset.Data;
-import DataSetTools.operator.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
-import DataSetTools.math.*;
 import DataSetTools.peak.*;
 
 /**

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/03/15 06:10:51  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.10  2004/03/15 03:28:41  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -56,10 +59,7 @@ import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
-import DataSetTools.math.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
-
 
 /**
  * This class encapsulates the basic data and operations on a peak given

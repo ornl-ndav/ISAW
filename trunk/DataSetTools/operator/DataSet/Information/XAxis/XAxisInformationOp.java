@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/15 06:10:48  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.5  2003/06/16 19:03:28  pfpeterson
  * Removed old code and updated to work with new getCategoryList() code
  * in base operator class.
@@ -55,8 +58,6 @@ package DataSetTools.operator.DataSet.Information.XAxis;
 
 import  java.io.*;
 import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.Information.DS_Information;
 

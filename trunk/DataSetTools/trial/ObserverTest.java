@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/15 06:10:53  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.5  2004/03/15 03:28:43  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -48,10 +51,8 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import DataSetTools.dataset.*;
-import DataSetTools.operator.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
-import DataSetTools.util.*;
 
 public class ObserverTest extends    JFrame
                           implements ActionListener

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2004/03/15 06:10:35  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.40  2004/03/15 03:28:05  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -134,7 +137,6 @@ import java.util.*;
 import java.io.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
-import DataSetTools.util.*;
 import DataSetTools.instruments.*;
 
 /**
@@ -1793,8 +1795,7 @@ public class DataSet implements IAttributeList,
     new_ds.setAttributeList( attr_list );
 
     new_ds.pointed_at_index    = pointed_at_index;
-    this.pointed_at_x          = pointed_at_x;
-    this.selected_interval     = selected_interval;
+    new_ds.selected_interval    = selected_interval;
     new_ds.last_sort_attribute = last_sort_attribute;
 
     return new_ds;

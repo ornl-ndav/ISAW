@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 06:10:56  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.6  2004/03/15 03:29:03  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -42,21 +45,16 @@
 package DataSetTools.viewer.ViewerTemplate;
 
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
 import DataSetTools.retriever.*;
-import DataSetTools.components.image.*;
 import DataSetTools.viewer.*;
 import gov.anl.ipns.ViewTools.Panels.Graph.*;
 import gov.anl.ipns.ViewTools.UI.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-import java.text.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.*;
 
 /**
  * Provides a mechanism for selecting and viewing portions of a Data Set using 

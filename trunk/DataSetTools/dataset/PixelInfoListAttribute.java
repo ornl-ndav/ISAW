@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2004/03/15 06:10:38  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.2  2004/03/15 03:28:08  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -41,7 +44,6 @@
 
 package  DataSetTools.dataset;
 
-import DataSetTools.math.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 
 import java.io.*;

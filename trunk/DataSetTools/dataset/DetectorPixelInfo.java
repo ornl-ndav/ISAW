@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2004/03/15 06:10:36  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.4  2004/03/15 03:28:06  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -51,7 +54,6 @@ package  DataSetTools.dataset;
 import gov.anl.ipns.MathTools.Geometry.*;
 
 import java.io.*;
-import DataSetTools.math.*;
 
 /**
  *   A DetectorPixelInfo object provides access to information about the 

@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.3  2004/03/15 06:10:40  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.2  2004/03/15 03:28:15  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -43,9 +46,7 @@ package  DataSetTools.instruments;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 
-import java.io.*;
 import DataSetTools.math.*;
-import java.util.*;
 
 /**
  *  This class stores the phi, chi and omega values and computes the 

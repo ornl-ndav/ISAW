@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/03/15 06:10:40  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.13  2004/03/15 03:28:15  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -53,8 +56,6 @@ package DataSetTools.instruments;
 import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
-import DataSetTools.util.*;
-import IPNS.Runfile.*;
 
 /**
  *  This class defines constants for various instrument types and provides

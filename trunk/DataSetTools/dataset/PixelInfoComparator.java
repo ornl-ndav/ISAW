@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/03/15 06:10:38  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.1  2003/02/07 19:01:52  dennis
  *  Initial Version
  *
@@ -39,7 +42,6 @@ package  DataSetTools.dataset;
 
 import  java.io.*;
 import  java.util.*;
-import  DataSetTools.instruments.*;
 
 /**
  * Comparator class for sorting list of IPixelInfo objects.

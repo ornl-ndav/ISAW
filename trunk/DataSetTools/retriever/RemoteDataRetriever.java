@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/03/15 06:10:51  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.15  2003/05/28 20:49:23  pfpeterson
  *  Changed System.getProperty to SharedData.getProperty
  *
@@ -65,10 +68,8 @@ package DataSetTools.retriever;
 
 import DataSetTools.dataset.*;
 import DataSetTools.util.SharedData;
-import DataSetTools.viewer.*;
 import java.io.*;
 import java.net.*;
-import java.util.*;
 import NetComm.*;
 
 /**

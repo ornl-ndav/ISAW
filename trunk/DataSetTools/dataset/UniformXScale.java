@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/03/15 06:10:39  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.13  2004/03/15 03:28:09  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -72,7 +75,6 @@ package DataSetTools.dataset;
 import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
-import DataSetTools.util.*;
 
 /**
  * The class for "X" scales that consist of evenly spaced points along a

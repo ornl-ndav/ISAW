@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.44  2004/03/15 06:10:58  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.43  2004/03/15 03:35:22  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -133,12 +136,9 @@ import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.Sys.*;
 
-import java.net.*;
 import java.util.*;
 import DataSetTools.dataset.*;
-import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
-import DataSetTools.util.*;
 import DataSetTools.instruments.*;
 
 /**

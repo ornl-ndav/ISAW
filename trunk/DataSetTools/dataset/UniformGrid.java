@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.11  2004/03/15 06:10:39  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.10  2004/03/15 03:28:09  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -81,7 +84,6 @@ package  DataSetTools.dataset;
 import gov.anl.ipns.MathTools.Geometry.*;
 
 import java.io.*;
-import DataSetTools.math.*;
 
 /**
  *   A UniformGrid is an abstraction of an area detector with equal size

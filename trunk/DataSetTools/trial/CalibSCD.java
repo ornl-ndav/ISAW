@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/03/15 06:10:52  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.4  2004/03/15 03:28:43  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -49,7 +52,6 @@
  */
 package DataSetTools.trial;
 
-import DataSetTools.functions.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.util.*;
 import DataSetTools.math.*;
@@ -59,7 +61,6 @@ import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
-import java.lang.Math.*;
 import java.util.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.dataset.*;

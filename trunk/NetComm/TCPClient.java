@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2004/03/15 06:10:58  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.2  2004/03/15 03:35:22  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -43,12 +46,9 @@ package NetComm;
 import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
-import java.util.*;
 import java.net.*;
-import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.util.*;
-import DataSetTools.operator.*;
 
 /**
  *  This is the base class for classes that communicate with a TCPServer.

@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.9  2004/03/15 06:10:37  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.8  2003/02/10 13:28:36  dennis
  *  getAttributeList() now returns a reference to the attribute list,
  *  not a clone.
@@ -43,8 +46,6 @@
  */
 
 package  DataSetTools.dataset;
-
-import java.io.*;
 
 /**
  * IAttributeList provides the interface to get/set a List of attributes 

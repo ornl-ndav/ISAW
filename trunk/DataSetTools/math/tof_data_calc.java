@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2004/03/15 06:10:41  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.23  2004/03/15 03:28:21  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -102,8 +105,6 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Numeric.*;
 import DataSetTools.peak.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
-import DataSetTools.instruments.*;
 
 /**
  *  Basic time-of-flight calculations on DataSets and Data blocks
