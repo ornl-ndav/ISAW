@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/06/10 14:42:21  rmikk
+ * Now implements ParamUsesString
+ * All GUI elements are now created first in init()
+ *
  * Revision 1.5  2003/06/09 22:35:52  rmikk
  * Changed JFrames to JDialog's in a JFrame so they work with
  *    the JParametersDialog system
@@ -74,7 +78,8 @@ import java.util.*;
 */
 abstract public class VectorPG extends ParameterGUI
                                               implements PropertyChangeListener,
-                                                         ActionListener
+                                                         ActionListener,
+                                                         ParamUsesString
                                                         
   {
     String typeName;
@@ -103,19 +108,30 @@ abstract public class VectorPG extends ParameterGUI
    public VectorPG( ParameterGUI param, String Prompt) 
       {super();
        typeName = param.getType()+"Array";
-       
        this.param = param;
        setName( Prompt);
        pcs = new PropertyChangeSupport( this);
+       GUI = null;  new MJPanel( param );
+       //GUI.addPropertyChangeListener( new MyPropertyChangeListener() );
+       //entrywidget = butt;
+       butt = null;//new JButton( param.getName());
+       buttonHolder = null;//new JPanel( new GridLayout( 1,1) );
+       //buttonHolder.add( butt );
+       //butt.addActionListener(  this );
+      }
 
+   public void init(){
        GUI = new MJPanel( param );
        GUI.addPropertyChangeListener( new MyPropertyChangeListener() );
        entrywidget = butt;
+       GUI.setValue( value);
        butt = new JButton( param.getName());
        buttonHolder = new JPanel( new GridLayout( 1,1) );
        buttonHolder.add( butt );
        butt.addActionListener(  this );
-      }
+   }
+
+     
 
    /**
    *    Adds property change listeners to listen for new Vector values
@@ -168,7 +184,18 @@ abstract public class VectorPG extends ParameterGUI
        GUI.removePropertyChangeListener( this );
       }
 
-
+  //*********** ParamUsesString methods *********************************
+   public String getStringValue(){
+     return ArrayPG.ArraytoString((Vector) value);
+   }
+   public void setStringValue(String value){
+     this.value = ArrayPG.StringtoArray( value);
+     checkValue();
+   }
+   protected void checkValue(){
+   }
+     
+ 
    // Receives notification of a new Vector value from the JFrame that pops up after
    //  the button is pressed
    class MyPropertyChangeListener implements PropertyChangeListener
@@ -203,9 +230,15 @@ abstract public class VectorPG extends ParameterGUI
    */
    public void setValue( Object valuee)
      {
-       
-       value = valuee;
-       GUI.setValue( value);
+       if( valuee instanceof Vector)
+         value = valuee;
+       else if( valuee instanceof String)
+         setStringValue( (String)valuee);
+       else
+         value = null;
+
+       if( GUI != null)
+           GUI.setValue( value);
 
       }
   
@@ -282,7 +315,7 @@ abstract public class VectorPG extends ParameterGUI
    public void init( Vector V)
      {
        value = ( V);
-       //super.init();
+       init();
 
      }
 
@@ -548,7 +581,6 @@ abstract public class VectorPG extends ParameterGUI
 
      public void setValue( Object valuee)
        {
-        
         if( jlistModel != null)
          {
             jlistModel.clear();
