@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/12/14 19:20:41  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.2  2002/11/27 23:12:34  pfpeterson
  *  standardized header
  *
@@ -47,15 +50,11 @@
 package DataSetTools.components.ParametersGUI;
 
 import javax.swing.*; 
-import javax.swing.text.*; 
 import java.awt.event.*;
-import java.awt.*;
-import java.util.Locale;
 import java.util.Vector;
 import java.beans.*;
 import DataSetTools.parameter.*;
 import DataSetTools.util.*;
-import DataSetTools.util.StringFilterer;
 
 /**
  * This class is intended to be used as a replacement for JTextField

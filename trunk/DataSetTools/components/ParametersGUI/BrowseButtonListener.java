@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/12/14 19:20:40  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.7  2003/06/16 14:51:52  bouzekc
  *  Added code so that if the FileFilter for BrowsePG (when
  *  masquerading as SaveFilePG) is a RobustFileFilter, the
@@ -64,10 +67,7 @@
 package DataSetTools.components.ParametersGUI;
 
 import javax.swing.*;
-import DataSetTools.operator.*;
-import javax.swing.filechooser.*;
 import javax.swing.text.*;
-import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;

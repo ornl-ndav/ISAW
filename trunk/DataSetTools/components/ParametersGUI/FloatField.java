@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/12/14 19:20:41  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.5  2003/08/14 19:11:48  bouzekc
  *  Made inner Toolkit transient.
  *
@@ -55,7 +58,6 @@ package DataSetTools.components.ParametersGUI;
 import javax.swing.*; 
 import javax.swing.text.*; 
 import java.awt.Toolkit;
-import java.util.Locale;
 import java.beans.*;
 import DataSetTools.parameter.*;
 

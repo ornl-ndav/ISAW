@@ -30,6 +30,9 @@
 
  *
  * $Log$
+ * Revision 1.5  2003/12/14 19:20:41  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.4  2002/11/27 23:12:34  pfpeterson
  * standardized header
  *
@@ -46,9 +49,7 @@ import java.awt.GridLayout;
 import javax.swing.JTextField;
 import javax.swing.JPanel;
 import DataSetTools.operator.Parameter;
-import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
-import DataSetTools.util.SpecialString;
 import javax.swing.JComboBox;
 
 public class JIntervalParameterGUI
