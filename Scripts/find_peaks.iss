@@ -6,6 +6,7 @@
 # data type and prompt string.  A dialog box will prompt the user for values
 # for these parameters
 
+$ CATEGORY = Operators,Generic,TOF_SCD
 $ datadir             DataDirectoryString       Output Path
 $ expname             String                 Experiment name
 # $ filename            SaveFileString         Save File (scd#####.peaks)
