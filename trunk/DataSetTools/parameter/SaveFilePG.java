@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/05/29 21:41:05  bouzekc
+ *  Removed the init(Vector init_values) method.  Now uses
+ *  BrowsePG's init method, and sets the file selection type
+ *  in the constructor.
+ *
  *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -61,6 +66,7 @@ import java.lang.String;
 import java.beans.*;
 import java.io.File;
 import DataSetTools.components.ParametersGUI.*;
+import DataSetTools.operator.Generic.TOF_SCD.*;
 
 /**
  * This is a particular case of the BrowsePG used for loading a single
@@ -78,64 +84,61 @@ public class SaveFilePG extends BrowsePG{
     public SaveFilePG(String name, Object value, boolean valid){
         super(name,value,valid);
         this.type=TYPE;
+        super.choosertype = BrowseButtonListener.SAVE_FILE;
     }
 
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    public void init(Vector init_values){
-        if(this.initialized) return; // don't initialize more than once
-        if(init_values!=null){
-            if(init_values.size()==1){
-                // the init_values is what to set as the value of the parameter
-                this.setValue(init_values.elementAt(0));
-            }else{
-                // something is not right, should throw an exception
-            }
-        }
-        innerEntry=new StringEntry(this.getStringValue(),BrowsePG.VIS_COLS);
-        innerEntry.addPropertyChangeListener(IParameter.VALUE, this);
-        browse=new JButton("Browse");
-        browse.addActionListener(new BrowseButtonListener(innerEntry,
-                                  BrowseButtonListener.SAVE_FILE,this.filter));
-        entrywidget=new JPanel();
-        entrywidget.add(innerEntry);
-        entrywidget.add(browse);
-        this.setEnabled(this.getEnabled());
-        super.initGUI();
-    }
-
-    static void main(String args[]){
+    public static void main(String args[]){
         SaveFilePG fpg;
+        //y position and delta y, so that multiple windows can 
+        //be displayed without too much overlap
         int y=0, dy=70;
-        String defString="/IPNShome/pfpeterson/IsawProps.dat";
+        
+        String defString="/IPNShome/bouzekc/IsawProps.dat";
 
-        fpg=new SaveFilePG("a",defString);
+        fpg=new SaveFilePG("Enabled, not valid, no filters",defString);
         System.out.println(fpg);
         fpg.init();
         fpg.showGUIPanel(0,y);
         y+=dy;
-
-        fpg=new SaveFilePG("b",defString);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new SaveFilePG("c",defString,false);
+        
+        //disabled browse button GUI
+        fpg=new SaveFilePG("Disabled, not valid, no filters",defString);
         System.out.println(fpg);
         fpg.setEnabled(false);
         fpg.init();
         fpg.showGUIPanel(0,y);
         y+=dy;
 
-        fpg=new SaveFilePG("d",defString,true);
+        fpg=new SaveFilePG("Disabled, not valid, no filters",defString,false);
+        System.out.println(fpg);
+        fpg.setEnabled(false);
+        fpg.init();
+        fpg.showGUIPanel(0,y);
+        y+=dy;
+
+        fpg=new SaveFilePG("Valid, enabled, no filters",defString,true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
         fpg.init();
         fpg.showGUIPanel(0,y);
 
+        fpg=new SaveFilePG("Enabled, not valid, multiple filters",defString);
+        System.out.println(fpg);
+        //add some FileFilters
+        fpg.addFilter(new ExpFilter());
+        fpg.addFilter(new IntegrateFilter());
+        fpg.addFilter(new MatrixFilter());
+        fpg.init();
+        fpg.showGUIPanel(0,y);
+        y+=dy;
+
+        fpg=new SaveFilePG("Enabled, not valid, one filter",defString);
+        System.out.println(fpg);
+        //add some FileFilters
+        fpg.addFilter(new IntegrateFilter());
+        fpg.init();
+        fpg.showGUIPanel(0,y);
+        y+=dy;
     }
 
     /**
@@ -145,7 +148,7 @@ public class SaveFilePG extends BrowsePG{
         SaveFilePG pg=new SaveFilePG(this.name,this.value,this.valid);
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
-        pg.filter=this.filter;
+        pg.filter_vector=this.filter_vector;
         return pg;
     }
 }
