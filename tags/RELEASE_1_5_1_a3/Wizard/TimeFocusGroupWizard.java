@@ -1,0 +1,185 @@
+/*
+ * File:  TimeFocusGroupWizard.java
+ *
+ * Copyright (C) 2003, Chris M. Bouzek
+ *
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ *           Chris M. Bouzek <coldfusion78@yahoo.com>
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0218882.
+ *
+ * Modified: 
+ *
+ * $Log$
+ * Revision 1.10  2003/06/02 22:26:05  bouzekc
+ * Fixed contact information.
+ *
+ * Revision 1.9  2003/04/29 15:45:37  pfpeterson
+ * Updated code which links parameters between forms. (Chris Bouzek)
+ *
+ * Revision 1.8  2003/04/24 19:00:58  pfpeterson
+ * Various small bug fixes. (Chris Bouzek)
+ *
+ * Revision 1.7  2003/04/02 15:02:46  pfpeterson
+ * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
+ *
+ * Revision 1.5  2003/03/19 15:08:33  pfpeterson
+ * Uses the TimeFocusGroupForm rather than TimeFocusForm and GroupingForm.
+ * (Chris Bouzek)
+ *
+ * Revision 1.4  2003/03/13 19:00:52  dennis
+ * Added $Log$
+ * Added Revision 1.10  2003/06/02 22:26:05  bouzekc
+ * Added Fixed contact information.
+ * Added
+ * Added Revision 1.9  2003/04/29 15:45:37  pfpeterson
+ * Added Updated code which links parameters between forms. (Chris Bouzek)
+ * Added
+ * Added Revision 1.8  2003/04/24 19:00:58  pfpeterson
+ * Added Various small bug fixes. (Chris Bouzek)
+ * Added
+ * Added Revision 1.5  2003/03/19 15:08:33  pfpeterson
+ * Added Uses the TimeFocusGroupForm rather than TimeFocusForm and GroupingForm.
+ * Added (Chris Bouzek)
+ * Added comment to include revision information.
+ *
+ */
+
+package Wizard;
+
+import java.util.Vector;
+import javax.swing.*;
+import DataSetTools.wizard.*;
+import DataSetTools.parameter.IParameterGUI;
+
+/**
+ *  This class has a main program that constructs a Wizard for time
+ *  focusing and grouping spectra in a DataSet.
+ */
+public class TimeFocusGroupWizard extends Wizard
+{
+  private static final int HISTOGRAMS         = 0;
+  private static final int MONITORS           = 1;
+  private static final int TIME_FOCUS_RESULTS = 2;
+  private static final int RUN_NUMBERS        = 3;
+  private static final int INSTRUMENT_NAME    = 4; 
+
+  /**
+   *
+   *  Default constructor.  Sets standalone in Wizard to true.
+   */
+  public TimeFocusGroupWizard()
+  {
+    this(true);
+  }
+
+  /**
+   *  Constructor for setting the standalone variable in Wizard.
+   *
+   *  @param standalone          Boolean indicating whether the
+   *                             Wizard stands alone (true) or
+   *                             is contained in something else
+   *                             (false).
+   */
+  public TimeFocusGroupWizard(boolean standalone)
+  {
+    super("Time Focus and Group Wizard", standalone);
+    this.createAllForms();
+  }
+
+  /**
+   *  Adds and coordinates the necessary Forms for this Wizard.
+   *
+   *  The referential links are arranged in a tabular format.
+   *  At some point, the Wizard base class will be automating the 
+   *  links, so please follow this format.  This particular wizard follows
+   *  this format.
+   * 
+   *  Note that:
+   *  LoadMultiHistogramsForm = lmhf
+   *  TimeFocusGroupForm = tfgf
+   *  SaveAsGSASForm = sagf
+   * 
+   *    lmhf    tfgf    sagf
+   *  |----------------------|
+   *  |   5   |   0   | -1   |
+   *  |----------------------|
+   *  |  -1   |  61   |  0   |
+   *  |----------------------|
+   *  |   6   |  -1   |  1   |
+   *  |----------------------|
+   *  |   0   |  -1   |  2   |
+   *  |----------------------|
+   *  |   2   |  -1   |  3   |
+   *  |----------------------|
+   *
+   *  The indices are accessed in the following manner, using [x][y]:
+   *  x = row, y = col
+   *  You must place the actual parameter number within the integer array.
+   *  For example, to set the link between LoadMultiHistogramForm's 5th 
+   *  parameter into TimeFocusGroupForm's 0th parameter, use the following:
+   *  (assuming fpi has already been declared as a two-dimensional integer 
+   *  array of sufficient size):
+   * 
+   *  fpi[0][0] = 5;
+   *  fpi[0][1] = 0;
+   *
+   *  Alternately, you may create the entire table  using Java's array 
+   *  initialization scheme, as shown:
+   * 
+   *   int fpi[][] = { {5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3} };
+   */
+  private void createAllForms()
+  {
+    int fpi[][] = { {5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3} };
+
+    LoadMultiHistogramsForm lmhf = new LoadMultiHistogramsForm();
+    TimeFocusGroupForm tfgf = new TimeFocusGroupForm();
+    SaveAsGSASForm sagf = new SaveAsGSASForm();
+
+    IParameterGUI ipg;
+    this.addForm(lmhf);
+    this.addForm(tfgf);
+    this.addForm(sagf);
+
+    tfgf.setParameter(lmhf.getParameter(fpi[0][0]) ,fpi[0][1]);
+    //pass the time focus results to SaveAsGSAS
+    sagf.setParameter(tfgf.getParameter(fpi[1][1]), fpi[1][2]);
+    //pass the monitor DataSets to SaveAsGSAS
+    sagf.setParameter(lmhf.getParameter(fpi[2][0]), fpi[2][2]);
+    //pass the run numbers to SaveAsGSAS
+    sagf.setParameter(lmhf.getParameter(fpi[3][0]), fpi[3][2]);
+    //pass the instrument name to SaveAsGSAS
+    sagf.setParameter(lmhf.getParameter(fpi[4][0]), fpi[4][2]);
+  }
+
+  /**
+   *  Method for running the Time Focus Group wizard 
+   *   as standalone.
+   */
+  public static void main(String args[])
+  {
+    TimeFocusGroupWizard w = new TimeFocusGroupWizard(true);
+    w.showForm(0);
+  }
+}
