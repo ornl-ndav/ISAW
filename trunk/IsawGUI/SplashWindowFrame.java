@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/02/13 17:28:33  pfpeterson
+ *  Moved decision making for image directory to PropertiesLoader.
+ *
  *  Revision 1.14  2003/02/12 21:20:02  pfpeterson
  *  Now checks properties for IMAGE_DIR before going to ISAW_HOME/images
  *  for the splashscreen image.
@@ -65,19 +68,8 @@ public class SplashWindowFrame extends    JFrame
   {
     super();
 
-    String ipath=null;
-    ipath=SharedData.getProperty("IMAGE_DIR");
-    if(ipath==null || ipath.length()<=0){
-      ipath = SharedData.getProperty("ISAW_HOME");
-      if ( ipath == null ){
-        System.out.println("WARNING: ISAW_HOME not defined in IsawProps.dat");
-        System.out.println("         Some help files, scripts and operators");
-        System.out.println("         may not be available.");
-        return;
-      }else{
-        ipath=ipath+"/images/";
-      }
-    }
+    String ipath=SharedData.getProperty("IMAGE_DIR");
+    if(ipath==null) return;
     ipath = StringUtil.fixSeparator(ipath);
     splashIm = Toolkit.getDefaultToolkit().getImage(ipath+"Isaw.gif");
     splashIm=splashIm.getScaledInstance(width,height,Image.SCALE_FAST);
