@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/10/17 02:49:45  bouzekc
+ *  Fixed javadoc errors and updated javadocs.
+ *
  *  Revision 1.2  2003/08/28 17:26:50  dennis
  *  First complete version.  This now produces DataSets, with the attributes
  *  needed for the SCD analysis routines.  The input file MUST be a concatenation
@@ -57,6 +60,7 @@ import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 
 /**
+ * Class that retrieves IDEAS files and produces ISAW DataSets.
  */
 
 public class IdeasRetriever extends Retriever{
@@ -70,11 +74,9 @@ public class IdeasRetriever extends Retriever{
 
   /* ------------------------ Constructor -------------------------- */
   /**
-   * Construct the retriever for the specified source name.
+   * Construct the retriever for the specified file name.
    *
-   * @param data_source_name   This identifies the data source.  For file
-   *                           data retrievers, this should be the fully 
-   *                           qualified file name
+   * @param filename   The fully qualified file name of the data source.
    */
   public IdeasRetriever( String filename )
   {
@@ -166,7 +168,7 @@ public class IdeasRetriever extends Retriever{
    * current data source.
    *
    *  @return The number of distinct DataSets available.  This function
-   *          may return values < 0 as an error code if there are no
+   *          may return values such as 0 as an error code if there are no
    *          DataSets available.
    */
   public int numDataSets()
@@ -223,6 +225,12 @@ public class IdeasRetriever extends Retriever{
   /* ----------------------------- ReadValue --------------------------- */
   /**
    *  Get the numeric value for a line of the type:  NAME = VALUE ....
+   *
+   *  @param tfr The TextFileReader to use for reading.
+   *
+   *  @return The numeric value for a line of NAME = VALUE...
+   *
+   *  @throws IOException if the TextFileReader encounters a read error.
    */
   private float ReadValue( TextFileReader tfr ) throws IOException
   {
@@ -237,8 +245,14 @@ public class IdeasRetriever extends Retriever{
 
   /* --------------------------- GetTimeRange --------------------------- */
   /**
-   *  Get the time range for the next slice in the file.  Return null if the
-   *  end of the file is reached.  The times will be returned in microseconds.
+   *  Get the time range for the next slice in the file.
+   *
+   *  @param tfr The TextFileReader to use for reading.
+   *
+   *  @return The time range (in microseconds) for the next slice in the file, 
+   *  null if EOF is reached.
+   *
+   *  @throws IOException if the TextFileReader encounters a read error.
    */
   private ClosedInterval GetTimeRange( TextFileReader tfr ) throws IOException
   {
@@ -276,6 +290,15 @@ public class IdeasRetriever extends Retriever{
 
   /* ------------------------------- GetSlice --------------------------- */
   /**
+   *  DOCUMENT ME!.
+   *
+   *  @param tfr The TextFileReader to use for reading.
+   *  @param n_rows DOCUMENT ME!.
+   *  @param n_cols DOCUMENT ME!.
+   *
+   *  @return DOCUMENT ME! 
+   *
+   *  @throws IOException if the TextFileReader encounters a read error.
    */
   private float[][] GetSlice( TextFileReader tfr, int n_rows, int n_cols ) 
                                                             throws IOException
@@ -304,9 +327,17 @@ public class IdeasRetriever extends Retriever{
 
 
   /* ----------------------------- BuildDataSet --------------------------- */
-  /*
+  /**
    *  Build a data set from the vector of time ranges, slice data and 
    *  data grid.
+   *
+   *  @param time_ranges The Vector of time ranges to use.
+   *  @param slices The Vector of slice data to use.
+   *  @param grid The data grid to use.
+   *  @param initial_path DOCUMENT ME!
+   *  @param detd Detector distance.
+   *  @param deta Detector angle.
+   *  
    */
   private DataSet BuildDataSet( Vector      time_ranges, 
                                 Vector      slices, 
