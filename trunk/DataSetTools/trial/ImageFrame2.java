@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/08/25 15:55:35  dennis
+ * No longer exits entire application when window is closed.
+ * Sets correct title on Frame, when axes change.
+ * Places all controls in box, and uses larger spacer panel
+ * to keep compomponents small.
+ *
  * Revision 1.3  2003/08/14 17:05:37  millermi
  * - Changed how controls are selected for display.
  *
@@ -98,7 +104,7 @@ public class ImageFrame2 extends JFrame
     menu_bar.add(new JMenu("File")); 
     menu_bar.add(new JMenu("Options"));
     
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setBounds(0,0,700,500);
     
     setData(iva);
@@ -162,6 +168,8 @@ public class ImageFrame2 extends JFrame
       buildPane();
       getContentPane().add(pane);
     }
+
+    setTitle( values.getTitle() );       // set correct title on frame
   }
   
  /**
@@ -191,16 +199,17 @@ public class ImageFrame2 extends JFrame
     int ctrlcounter = 0;
     for( int i = 0; i < ctrl.length; i++ )
     {
-      if( ctrl[i] instanceof ControlCheckboxButton ) 
-      {
-        if( !((ControlCheckboxButton)ctrl[i]).
-	     getTitle().equals("Selection Overlay") )
+//      if( ctrl[i] instanceof ControlCheckboxButton ) 
+//      {
+//        if( !((ControlCheckboxButton)ctrl[i]).
+//          getTitle().equals("Selection Overlay") )
         controls.add(ctrl[i]);
 	ctrlcounter++;
-      }
+//      }
     }
     JPanel spacer = new JPanel();
-    spacer.setPreferredSize(new Dimension(0,((10-ctrlcounter)*40) ) );
+//    spacer.setPreferredSize(new Dimension(0,((10-ctrlcounter)*40) ) );
+    spacer.setPreferredSize( new Dimension(0,10000) );
     controls.add(spacer);
     pane = new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
                                   ivc.getDisplayPanel(),
