@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/08/03 21:28:55  dennis
+ *  Added methods getInetAddress() and getInetAddressString().  Now keeps
+ *  track of the last inet address for logging purposes.
+ *
  *  Revision 1.4  2001/04/23 19:44:17  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -70,6 +74,7 @@ import java.io.*;
 public class TCPComm
 {
   protected Socket             sock;
+  private   String             last_address_string = "";
   private   InputStream        in_stream;
   protected ObjectInputStream  obj_in_stream;
 
@@ -91,7 +96,8 @@ public class TCPComm
   
   public TCPComm( Socket sock, int time_out_ms ) throws Exception
   { 
-    this.sock       = sock;
+    this.sock           = sock;
+    last_address_string = getInetAddressString();
 
     if(time_out_ms > 0)
        this.sock.setSoTimeout( time_out_ms );
@@ -105,6 +111,37 @@ public class TCPComm
     obj_in_stream   = new ObjectInputStream( in_stream );
   }
  
+  /**
+   *  Get the address of the remote machine connected to the socket of this
+   *  TCPComm object.
+   *
+   *  @return  The internet address of the remote machine, if there is one,
+   *           or null if there is not.
+   */
+  public InetAddress getInetAddress()
+  {
+    if ( sock != null )
+      return sock.getInetAddress();
+
+    return null;
+  }
+
+  /**
+   *  Get the String containing the address of the last remote machine that
+   *  connected to the socket of this TCPComm object.
+   *
+   *  @return  String form of the last remote machine, if there was one,
+   *           or an empty String if there was not.
+   */
+  public String getInetAddressString()
+  {
+    if ( sock != null )
+      return sock.getInetAddress().toString();
+
+    return last_address_string;
+  }
+
+
   /**
    *  Send an object to a remote machine via a TCP connection.
    *
@@ -181,11 +218,8 @@ public class TCPComm
     }
     catch( IOException e )
     {
-      System.out.println("IOException reading Object " +
-                         "in TCPComm.Receive() " + e );
-      e.printStackTrace();
-      FreeResources();                 // if we can't receive, shut it down
-      throw( new IOException() );       
+      System.out.println("BROKEN CONNECTION");
+      data_obj = new TCPCommExitClass();
     }
     catch( Exception e )
     {
