@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2005/01/10 16:18:50  rmikk
+ * Eliminated commented out code
+ *
  * Revision 1.12  2004/12/23 19:59:14  rmikk
  * Updated to write NeXus standard version 1.0 format.  NXgeometry and
  * detector_number fields are used.
@@ -396,15 +399,13 @@ public class NxWriteDetector{
       NxWriteNode nn = node.newChildNode("crate","SDS");
       nn.setNodeValue( crate,Types.Int,
                        Inst_Type.makeRankArray( crate.length,-1,-1,-1,-1));
-      //nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char,
-      // Inst_Type.makeRankArray(8,-1,-1,-1,-1));
+     
     }
     if( input != null){
       NxWriteNode nn = node.newChildNode("input","SDS");
       nn.setNodeValue( input,Types.Int,
                        Inst_Type.makeRankArray( input.length,-1,-1,-1,-1));
-      //nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char,
-      //Inst_Type.makeRankArray(8,-1,-1,-1,-1));
+      
     }
 
     NxWriteNode NxLognode = node.newChildNode("Log_1","NXlog");
