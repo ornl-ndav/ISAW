@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/01/30 02:32:07  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.8  2003/10/15 02:15:42  bouzekc
  * Fixed javadoc errors.
  *
@@ -62,17 +65,10 @@
  */
 package Operators.TOF_SCD;
 
-import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.parameter.*;
-import DataSetTools.retriever.*;
-import DataSetTools.viewer.*;
 import DataSetTools.viewer.Contour.*;
 import DataSetTools.dataset.*;
-import DataSetTools.components.image.*;
-import DataSetTools.components.ThreeD.*;
-import DataSetTools.math.*;
-import DataSetTools.instruments.*;
 import DataSetTools.util.*;
 import java.util.*;
 import java.awt.*;
