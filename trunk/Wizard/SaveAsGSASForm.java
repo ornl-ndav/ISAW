@@ -32,6 +32,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/06/03 23:04:28  bouzekc
+ *  Fixed full constructor to avoid excessive garbage
+ *  collection.
+ *  Fixed documentation to reflect constructor
+ *  parameter changes.
+ *
  *  Revision 1.6  2003/06/02 22:25:05  bouzekc
  *  Fixed contact information.
  *  Added call to setDefaultParameters-needed to avoid
@@ -49,6 +55,12 @@
  *
  *  Revision 1.2  2003/03/13 19:04:14  dennis
  *  Added $Log$
+ *  Added Revision 1.7  2003/06/03 23:04:28  bouzekc
+ *  Added Fixed full constructor to avoid excessive garbage
+ *  Added collection.
+ *  Added Fixed documentation to reflect constructor
+ *  Added parameter changes.
+ *  Added
  *  Added Revision 1.6  2003/06/02 22:25:05  bouzekc
  *  Added Fixed contact information.
  *  Added Added call to setDefaultParameters-needed to avoid
@@ -102,15 +114,15 @@ public class SaveAsGSASForm extends    Form
    *  set the parameters.  getResult() may 
    *  be called immediately after using this constructor.
    *
-   *  @param tf_array         The array of time focused 
+   *  @param tf_vector        The Vector of time focused 
    *                          histograms that you wish to 
    *                          save in GSAS format.
    *
-   *  @param mon_array        The array of monitor DataSets
+   *  @param mon_vector       The Vector of monitor DataSets
    *                          that you wish to use for the
    *                          SaveAsGSAS operation.
    *
-   *  @param run_nums         The run numbers from the
+   *  @param run_nums         The list of run numbers from the
    *                          files that you loaded the
    *                          histograms and monitors from.
    *
@@ -126,22 +138,22 @@ public class SaveAsGSASForm extends    Form
    *  @param seq_num          Boolean indicating whether you want to 
    *                          sequentially number the banks.
    */
-  public SaveAsGSASForm(ArrayPG tf_array,
-                        ArrayPG mon_array,
-                        IntArrayPG run_nums, 
-                        InstNamePG inst_name,
-                        DataDirPG gsas_dir,
-                        BooleanPG export_mon,
-                        BooleanPG seq_num)
+  public SaveAsGSASForm(Vector tf_array,
+                        Vector mon_array,
+                        String run_nums, 
+                        String inst_name,
+                        String gsas_dir,
+                        boolean export_mon,
+                        boolean seq_num)
   {
     this();
-    setParameter(tf_array, 0);
-    setParameter(mon_array, 1);
-    setParameter(run_nums, 2);
-    setParameter(inst_name, 3);
-    setParameter(gsas_dir, 4);
-    setParameter(export_mon, 5);
-    setParameter(seq_num, 6);
+    getParameter(0).setValue(tf_array);
+    getParameter(1).setValue(mon_array);
+    getParameter(2).setValue(run_nums);
+    getParameter(3).setValue(inst_name);
+    getParameter(4).setValue(gsas_dir);
+    getParameter(5).setValue(new Boolean(export_mon));
+    getParameter(6).setValue(new Boolean(seq_num));
   }  
                        
   /**
@@ -184,13 +196,13 @@ public class SaveAsGSASForm extends    Form
     s.append("using the monitor DataSet and the user specifed parameters.  ");
     s.append("Each histogram (which is a DataSet) is saved under a file ");
     s.append("named <InstName><InstNum>.gsa (e.g. hrcs2447.gsa).\n");
-    s.append("@param run_nums Array of integers representing the runfile ");
+    s.append("@param run_nums List of integers representing the runfile ");
     s.append("numbers which you wish to load histograms from.\n");
     s.append("@param data_dir The directory from which to load the runfiles ");
     s.append("from.\n");
-    s.append("@param tf_array The array of time focused histograms that you ");
+    s.append("@param tf_vector The Vector of time focused histograms that you ");
     s.append("wish to save in GSAS format.\n");
-    s.append("@param mon_array The array of monitor DataSets that you wish ");
+    s.append("@param mon_vector The Vector of monitor DataSets that you wish ");
     s.append("to use for the SaveAsGSAS operation.\n");
     s.append("@param run_nums The run numbers from the files that you ");
     s.append("loaded the histograms and monitors from.\n");

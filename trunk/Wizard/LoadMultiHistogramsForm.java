@@ -82,7 +82,7 @@ public class LoadMultiHistogramsForm extends Form
    *  for the associated monitor DataSets.  getResult() may 
    *  be called immediately after using this constructor.
    *
-   *  @param run_nums         Array of integers representing
+   *  @param run_nums         List of integers representing
    *                          the runfile numbers which you
    *                          wish to load histograms from.
    *
@@ -97,23 +97,23 @@ public class LoadMultiHistogramsForm extends Form
    *  @param g_mask           The group mask to apply.  If
    *                          left blank, none will be applied.
    *
-   *  @param histograms       The array which you wish to store
+   *  @param histograms       The Vector which you wish to store
    *                          the loaded histograms in.
    */
-  public LoadMultiHistogramsForm(IntArrayPG run_nums,  // 0
-                                 DataDirPG data_dir,   // 1
-                                 InstNamePG inst_name, // 2
-                                 IntegerPG hist_num,   // 3
-                                 IntegerPG g_mask,     // 4
-                                 ArrayPG histograms)   // 5
+  public LoadMultiHistogramsForm(String run_nums,     // 0
+                                 String data_dir,     // 1
+                                 String inst_name,    // 2
+                                 int hist_num,        // 3
+                                 int g_mask,          // 4
+                                 Vector histograms)   // 5
   {
     this();
-    setParameter(run_nums, 0);
-    setParameter(data_dir, 1);
-    setParameter(inst_name, 2);
-    setParameter(hist_num, 3);
-    setParameter(g_mask, 4);
-    setParameter(histograms, 5);
+    getParameter(0).setValue(run_nums);
+    getParameter(1).setValue(data_dir);
+    getParameter(2).setValue(inst_name);
+    getParameter(3).setValue(new Integer(hist_num));
+    getParameter(4).setValue(new Integer(g_mask));
+    getParameter(5).setValue(histograms);
     // monitor DataSets not setable <- <- <- <-
   }
 
@@ -158,7 +158,7 @@ public class LoadMultiHistogramsForm extends Form
     s.append("specifed histogram from it.  The histograms are then stored ");
     s.append("in an ArrayPG.  The corresponding monitor DataSets are stored ");
     s.append("in a parallel ArrayPG.\n");
-    s.append("@param run_nums Array of integers representing the runfile ");
+    s.append("@param run_nums Vector of integers representing the runfile ");
     s.append("numbers which you wish to load histograms from.\n");
     s.append("@param data_dir The directory from which to load the runfiles ");
     s.append("from.\n");
@@ -166,7 +166,7 @@ public class LoadMultiHistogramsForm extends Form
     s.append("@param hist_num The histogram number you wish to load.\n");
     s.append("@param g_mask The group mask to apply.  If left blank, none ");
     s.append("will be applied.\n");
-    s.append("@param histograms The array which you wish to store the loaded ");
+    s.append("@param histograms The Vector which you wish to store the loaded ");
     s.append("histograms in.\n");
     s.append("@return Presently, returns a Boolean which indicates either ");
     s.append("success or failure.\n");
