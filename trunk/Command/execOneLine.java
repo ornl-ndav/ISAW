@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.46  2003/04/25 22:21:07  pfpeterson
+ * Changed Script_Class_List_Handler to be a class variable (rather
+ * than instance) that is not initialized until the first instance
+ * of execOneLine is created.
+ *
  * Revision 1.45  2003/04/25 19:51:44  rmikk
  * Fixed error. Now the Script Load command returns an integer
  *    representing the number of DataSets and not 0
@@ -180,7 +185,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     PropertyChangeSupport PC;
     
     // Contains user supplied operators 
-    Script_Class_List_Handler SH = new Script_Class_List_Handler();
+    Script_Class_List_Handler SH = null;
     
     //Error variables
     int perror;                      //position of error on a line
@@ -194,15 +199,14 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     //w. param execute
     public execOneLine( int i)
       { 
-        initt();        
-        OL = new IObserverList();        
-        PC = new PropertyChangeSupport( this );
+        this();
        }
 
     /** 
      *  
      */
     public execOneLine(){
+        if(SH==null) SH=new Script_Class_List_Handler();
         initt();        
         OL = new IObserverList();        
         PC = new PropertyChangeSupport( this );
