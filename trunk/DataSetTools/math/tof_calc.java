@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.25  2003/10/15 23:59:02  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.24  2003/07/22 19:19:25  dennis
  *  Removed un-needed constant.
  *
@@ -330,23 +333,25 @@ public static float Wavelength( float path_len_m, float time_us )
  *
  *   @return  The time in microseconds for the neutron to travel the distance.
  */
-
-
 public static float TOFofWavelength( float path_len_m, float wavelength_A )
 {
   return (float)( wavelength_A * path_len_m / ANGST_PER_US_PER_M );
 }
 
+
+/* -------------------- WavelengthofDiffractometerQ ------------------- */
 /**
  * Calculate the wavelength of a given Q.
  *
  * @param angle_radians The scattering angle.
- * @param diffractometerQ The Q value to be converted
+ *
+ * @param Q             The Q value to be converted to wavelength
  *
  * @return The wavelength related to the Q given.
  */
-public static float WavelengthofDiffractometerQ( float angle_radians, float Q){
-    float theta_radians=Math.abs(angle_radians/2.0f);
+public static float WavelengthofDiffractometerQ( float angle_radians, float Q)
+{
+    float theta_radians = Math.abs( angle_radians/2.0f );
     return (float)( 4.0 * Math.PI * Math.sin(theta_radians) / Q );
 }
 

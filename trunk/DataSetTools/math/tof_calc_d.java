@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.3  2003/10/15 23:59:02  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.2  2003/07/22 15:10:59  dennis
  *  Now refers to double precision physical constants defined in
  *  tof_calc, rather than re-defining them.
@@ -292,23 +295,25 @@ public static double Wavelength( double path_len_m, double time_us )
  *
  *   @return  The time in microseconds for the neutron to travel the distance.
  */
-
-
 public static double TOFofWavelength( double path_len_m, double wavelength_A )
 {
   return( wavelength_A * path_len_m / ANGST_PER_US_PER_M );
 }
 
+
+/* -------------------- WavelengthofDiffractometerQ ------------------- */
 /**
  * Calculate the wavelength of a given Q.
  *
  * @param angle_radians The scattering angle.
- * @param diffractometerQ The Q value to be converted
+ *
+ * @param Q             The Q value to be converted to wavelength
  *
  * @return The wavelength related to the Q given.
  */
-public static double WavelengthofDiffractometerQ( double angle_radians, double Q){
-    double theta_radians=Math.abs(angle_radians/2.0f);
+public static double WavelengthofDiffractometerQ(double angle_radians, double Q)
+{
+    double theta_radians = Math.abs(angle_radians/2.0f);
     return  4.0 * Math.PI * Math.sin(theta_radians) / Q; 
 }
 
