@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/12/11 22:08:25  rmikk
+ * Added a "kill" command needed to kill orphan windows
+ *
  * Revision 1.6  2003/11/09 22:32:11  rmikk
  * Can now select Groups in a rectangle in this table view
  *
@@ -192,7 +195,9 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
      return Title;
     }
    
+  public void kill(){
 
+  }
 
 
   /**
