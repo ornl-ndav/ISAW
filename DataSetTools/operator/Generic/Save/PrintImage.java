@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2005/01/11 14:42:41  rmikk
+ * Eliminated unused variables
+ *
  * Revision 1.14  2005/01/10 15:18:18  dennis
  * Added getCategoryList method to put operator in new position in
  * menus.
@@ -280,11 +283,13 @@ public class PrintImage extends GenericSave{
     Copies numberOfCopies = new Copies(copies);
     aset.add(numberOfCopies);
   	if (orientation == true){
-  		boolean fake = aset.add(OrientationRequested.LANDSCAPE);
+  		//boolean fake = 
+        aset.add(OrientationRequested.LANDSCAPE);
   	}
   	else
   	{
-  		boolean fake2 = aset.add(OrientationRequested.PORTRAIT);
+  		//boolean fake2 = 
+        aset.add(OrientationRequested.PORTRAIT);
   	}
 
   	// To determine the level of quality. (may not work with laser printers
