@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/04/29 21:16:52  dennis
+ *  Now adds the SpectrometerTofToQE() operator to the Energy Loss
+ *  DataSet that is constructed.
+ *
  *  Revision 1.7  2004/03/15 03:28:27  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -64,6 +68,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.operator.DataSet.Conversion.XYAxis.*;
 import  DataSetTools.parameter.*;
 import  DataSetTools.viewer.*;
 import  DataSetTools.retriever.*;
@@ -284,6 +289,9 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
     DataSet new_ds = factory.getDataSet();
     new_ds.copyOp_log( ds );
     new_ds.addLog_entry( "Converted to Energy Loss" );
+                                      
+                                     // add in the appropriate additional ops
+    new_ds.addOperator( new SpectrometerTofToQE() );
 
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
