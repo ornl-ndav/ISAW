@@ -19,7 +19,7 @@
    
 */
 package Command;
-import IsawGUI.Isaw.*;
+//import IsawGUI.Isaw.*;
 import IsawGUI.*;
 import java.io.*;
 import DataSetTools.retriever.*;
@@ -543,8 +543,11 @@ public class execOneLine implements IObservable ,
             return end; 
           }
        dss = Load( filename , varname);
+       if( perror >= 0 )
+         perror = start;
+       
        if( dss == null )
-         Result = null;
+         Result = new Integer( 0);
        else
            Result = new Integer( dss.length );
        return j;
@@ -737,7 +740,13 @@ public class execOneLine implements IObservable ,
 
         Util util = new Util();
         filename = StringUtil.fixSeparator(filename);
-       dss = util.loadRunfile( filename );
+     try{
+          dss = util.loadRunfile( filename );
+        }
+     catch( Exception s)
+       { dss = null;
+         seterror( 1000, s.toString());
+       }
        util = null;
        if( dss == null )
         {seterror( 1000 , "Data File Improper" );
@@ -912,7 +921,7 @@ public class execOneLine implements IObservable ,
        //  }
      // else
 	{ String SS;
-	  SS = "Result= ";
+	  SS = "";
   	 if( Result instanceof Integer )  
             SS = SS + (Integer)Result;
          else if( Result instanceof Float ) 
