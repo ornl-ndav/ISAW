@@ -1,0 +1,155 @@
+<HTML>
+<HEAD>
+  <TITLE>Untitled Document</TITLE>
+</HEAD>
+<BODY>
+
+<!-- <P><CENTER><B><FONT COLOR="#0000ff" SIZE="+1"><HR></FONT></B></CENTER></P> -->
+
+<P><CENTER><B><FONT COLOR="#0000ff" SIZE="+1">ISAW Help </FONT></B></CENTER></P>
+
+<P><CENTER><B><FONT COLOR="#0000ff">Version 0.7 ( to be updated
+to version 0.8)</FONT></B></CENTER></P>
+
+<P><B><FONT COLOR="#0000ff"><HR ALIGN=LEFT></FONT></B></P>
+
+<P><B><U><FONT COLOR="#0000ff">Mouse Operations on Image and Graph
+views</FONT></U></B></P>
+
+<P>Any region on the Image (not Graph) views can be zoomed into or
+zoomed out by making a rectangular region with middle button on a
+three button mouse or in the case of a two button mouse a region is
+traced out by holding the two button down simultaneously.  Zooming out
+requires a double click with the left mouse button.  For the Graph
+View menu item &quot;Shift + Right Click&quot; will allow a region to
+be defined for zooming and &quot;Control + Right Click&quot; returns
+to the previous zoom level. Selections of &quot;Group ID's&quot; from
+the image view is done with the &quot;s&quot; key.</P>
+
+<P>&nbsp;</P>
+
+<P><B><U><FONT COLOR="#0000ff">Definitions of various &quot;Operations&quot;
+that can be invoked on &quot;DataSets&quot;</FONT></U></B></P>
+
+<P> <B><FONT COLOR="#0000ff">Add a Scalar:</FONT></B><FONT COLOR="#0000ff">
+</FONT>This operator adds a constant value to all y-values of
+all Data blocks in a data set and places the result in a new DataSet.</P>
+
+<P> <B><FONT COLOR="#0000ff">Subtract a Scalar:</FONT></B><FONT
+ COLOR="#0000ff"> </FONT>Similar to 'Add a Scalar', except the
+constant value is subtracted from each y-value. </P>
+
+<P><B><FONT COLOR="#0000ff">Multiply by Scalar:</FONT></B> Similar
+to 'Add a Scalar', except the constant value is multiplied times
+each y-value. </P>
+
+<P><B><FONT COLOR="#0000ff">Divide by Scalar:</FONT></B> Similar
+to 'Add a Scalar', except the constant value is divided into each
+y-value. </P>
+
+<P><B><FONT COLOR="#0000ff">Add a DataSet:</FONT></B> This operator
+adds two DataSets by adding the corresponding Data blocks in the
+DataSets to form a new DataSet. A Data block in the current DataSet
+will be added to the first Data block in the second DataSet with
+the same Group ID provided that they have the same units, the
+same number of data values and extend over the same X-interval.
+</P>
+
+<P><B><FONT COLOR="#0000ff">Subtract a DataSet: </FONT></B>Similar
+to 'Add a DataSet', except the Data blocks in the specified DataSet
+are subtracted from the corresponding Data blocks in the current
+DataSet. </P>
+
+<P><B><FONT COLOR="#0000ff">Multiply by a DataSet:</FONT></B>
+Similar to 'Add a DataSet', except the Data blocks in the specified
+DataSet are multiplied times the corresponding Data blocks in
+the current DataSet. </P>
+
+<P><B><FONT COLOR="#0000ff">Divide by a DataSet:</FONT></B> Similar
+to 'Add a DataSet', except the Data blocks in the specified DataSet
+are divided into the corresponding Data blocks in the current
+DataSet. </P>
+
+<P><B><FONT COLOR="#0000ff">Integrate:</FONT></B> This operator
+calculates the integral of the data values of one Data block.
+The Group ID of the Data block to be integrated is specified by
+the parameter 'Group ID'. The interval [a,b] over which the integration
+is done is specified by the two endpoints a, b where it is assumed
+that a &lt; b. This operator just produces a numerical result
+that is displayed in the operator dialog box. </P>
+
+<P><B><FONT COLOR="#0000ff">Calculate Moment:</FONT></B> This
+operator calculates the integral of the data values times a power
+of x. The Group ID of the Data block to be integrated is specified
+by the parameter 'Group ID'. The power of x is specified by the
+parameter 'Moment'. The interval [a,b] over which the integration
+is done is specified by the two endpoints a, b where it is assumed
+that a &lt; b. This operator just produces a numerical result
+that is displayed in the operator dialog box. </P>
+
+<P><B><FONT COLOR="#0000ff">Integrated Cross Section:</FONT></B>
+This operator integrates each Data block in a DataSet over a specified
+interval [a,b] and forms a new DataSet with one entry: a Data
+block whose value at each of the original Data blocks is the value
+of the integral for the original Data block. The new Data block
+will have an X-Scale taken from an attribute of one of the original
+Data blocks. The integral values will be ordered according to
+increasing attribute value. If several Data blocks have the same
+value of the attribute, their integral values are averaged. For
+example, if the 'Raw Detector Angle' attribute is used and several
+Data blocks have the same angle value, the integral values for
+that angle are averaged to form the y-value that corresponds to
+that angle in the new Data block. </P>
+
+<P><B><FONT COLOR="#0000ff">Sort: </FONT></B>This operator constructs
+a new DataSet that contains the same Data blocks as the original
+DataSet, but ordered by some attribute of the Data blocks. For
+example, if the attribute chosen is the 'Raw Detector Angle',
+the Data blocks can be ordered in increasing or decreasing order
+based on the physical angle of the first detector in the group
+for that Data block. On the other hand, if the 'Effective Position'
+attribute is used, the Data blocks can be ordered based on the
+effective scattering angle to which the data was time-focused.
+In this case a group at -30 degrees and .1 meter above the beam
+plane and another group at +30 degrees and .1 meter above or below
+the beam plane would appear next to each other since the scattering
+angle for each group is the same. Although the Data blocks can
+be sorted based on any attribute, the most useful attributes are
+probably 'Group ID', 'Effective Position', 'Raw Detector Angle'
+or user specified attributes such as temperature or pressure.
+</P>
+
+<P><B><FONT COLOR="#0000ff">Merge: </FONT></B>This operator creates
+a new DataSet by combining the Data blocks from the current DataSet
+with the Data blocks of a specified DataSet. This can only be
+done if the two DataSets have the same X and Y units. If a DataSet
+with N Data blocks is merged with a DataSet with M Data blocks,
+the new DataSet will have N+M Data blocks. </P>
+
+<P><B><FONT COLOR="#0000ff">Convert to Energy Loss:</FONT></B>
+This operator creates a new DataSet from a time-of-flight DataSet
+for direct geometry spectrometer. The new DataSet contains Data
+blocks giving counts vs energy loss = energy_in - energy( tof
+). </P>
+
+<P><B><FONT COLOR="#0000ff">Convert to d-Spacing: </FONT></B>This
+operator creates a new DataSet from a time-of-flight DataSet for
+diffractometer. The new DataSet contains Data blocks giving counts
+vs d-Spacing. </P>
+
+<P><B><FONT COLOR="#0000ff">Convert to Q:</FONT></B> This operator
+creates a new DataSet from a time-of-flight DataSet for diffractometer.
+The new DataSet contains Data blocks giving counts vs Q.</P>
+
+<P><B><FONT COLOR="#0000ff">Convert to Energy:</FONT></B> This
+operator creates a new DataSet from a time-of-flight DataSet for
+either diffractometers or spectrometers. The new DataSet contains
+Data blocks giving counts vs energy. </P>
+
+<P><B><FONT COLOR="#0000ff">Convert to Wavelength:</FONT></B>
+This operator creates a new DataSet from a time-of-flight DataSet
+for either diffractometers or spectrometers. The new DataSet contains
+Data blocks giving counts vs wavelength.
+
+</BODY>
+</HTML>
