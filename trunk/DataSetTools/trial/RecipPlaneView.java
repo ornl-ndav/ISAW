@@ -31,6 +31,18 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/07/14 13:33:20  dennis
+ * Added option to print a file listing bins above the specified
+ * threshold.  One line is written for each such bin, specifying:
+ * run, det_id, h, k, l, row, col, tof, counts, qx, qy, qz for use
+ * in Dennis' calibration program.  This is similar to the peaks
+ * file, except:
+ * 1.Bins forming a peak have not been combined
+ * 2.TOF at the bin center is included, rather than wavelength,
+ *   since the wavelength depends upon the instrument parameters.
+ * 3.(Qx,Qy,Qz), calculated from nominal instrument parameters
+ *   are included, for comparison & debugging purposes.
+ *
  * Revision 1.5  2003/07/09 21:23:05  dennis
  * Prints file name as it's loading.
  * Builds up FFT DataSet, initially using stricter threshold
@@ -81,6 +93,7 @@ import DataSetTools.instruments.*;
 import DataSetTools.components.containers.*;
 import DataSetTools.util.*;
 import java.util.*;
+import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -105,7 +118,7 @@ public class RecipPlaneView
   public static final String CONST_L_SLICE = "Const l Slice";
   public static final int    SLICE_STEPS = 700;
 
-  private final int DIMENSION = 4;       // set to 4 to allow affine transform
+  private final int DIMENSION = 3;       // set to 4 to allow affine transform
                                          // set to 3 to just use rotation and
                                          // scaling.
   private float SLICE_SIZE_IN_Q = 20;
@@ -123,6 +136,7 @@ public class RecipPlaneView
 
   String path = null;
   String run_nums = null;
+  int    runs[];
   String threshold = "";
 
   ThreeD_JPanel   vec_Q_space;
@@ -139,6 +153,7 @@ public class RecipPlaneView
   LatticePlaneUI  l_plane_ui;
 
   Vector          vec_q_transformer;
+  Vector          all_peaks;
 
   int             global_obj_index = 0;  // needed to keep the pick ids distinct
   String          file_names[];
@@ -211,9 +226,11 @@ public class RecipPlaneView
     control_panel.add( l_plane_ui );
 
     JButton show_lat_param = new JButton( "Lattice Parameters" );
+    JButton write_file = new JButton("Write File");
     JPanel button_panel = new JPanel();
-    button_panel.setLayout( new GridLayout(1,1) );
+    button_panel.setLayout( new GridLayout(2,1) );
     button_panel.add( show_lat_param );
+    button_panel.add( write_file );
     control_panel.add( button_panel );
 
     JPanel filler = new JPanel();
@@ -257,18 +274,20 @@ public class RecipPlaneView
     l_plane_ui.addActionListener( plane_listener );    
 
     show_lat_param.addActionListener( new LatticeParameterListener() );
+    write_file.addActionListener( new WriteFileListener() );
 
     Redraw();
 
     vec_q_transformer = new Vector();
     data_sets = new Vector();
+    all_peaks = new Vector();
   }
 
 
  /* ---------------------------- loadFiles --------------------------- */
   public void loadFiles()
   {
-    int runs[] = IntList.ToArray( run_nums );
+    runs = IntList.ToArray( run_nums );
     file_names = new String[ runs.length ];
 
     for ( int i = 0; i < runs.length; i++ )
@@ -362,6 +381,7 @@ public class RecipPlaneView
   private void ExtractPeaks()
   {
      System.out.println("Applying threshold to extract peaks....");
+     all_peaks = new Vector();
      for ( int i = 0; i < vec_q_transformer.size(); i++ )
      {
        IThreeD_Object non_zero_objs[] = getPeaks(i,thresh_scale);
@@ -405,7 +425,7 @@ public class RecipPlaneView
             vec_q_transformer.add( transformer );
           }
         }
-        catch (Exception e )
+        catch (InstantiationError e )
         {
           System.out.println( e );
         }
@@ -435,6 +455,11 @@ public class RecipPlaneView
       IThreeD_Object objs[] = null;
       Vector3D pts[] = new Vector3D[1];
       pts[0]         = new Vector3D();
+                                            // Assume all runs have the same
+                                            // number of detectors in them
+                                            // and each detector has a grid.
+      int dets_per_run = vec_q_transformer.size()/runs.length; 
+      int run_num_index = index/dets_per_run;
 
       int obj_index = 0;
       VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(index);
@@ -476,6 +501,19 @@ public class RecipPlaneView
               objs[obj_index].setPickID( global_obj_index );
               obj_index++;
               global_obj_index++;
+              PeakData pd = new PeakData();
+              pd.run_num = runs[run_num_index];
+              pd.tof = t;
+              pd.row = row;
+              pd.col = col;
+              pd.qx  = pts[0].get()[0];
+              pd.qy  = pts[0].get()[1];
+              pd.qz  = pts[0].get()[2];
+              pd.counts = ys[j];
+              pd.det_id = grid.ID();
+              pd.run_num = 
+                (int)(d.getAttribute(Attribute.RUN_NUM).getNumericValue());
+              all_peaks.add( pd );
             }
           }
         }
@@ -1370,6 +1408,48 @@ private class ThresholdApplyButtonHandler implements ActionListener
 }
 
 
+/* --------------------------- WriteFileListener ------------------------ */
+
+private class WriteFileListener implements ActionListener
+{
+  public void actionPerformed( ActionEvent e )
+  {
+    Vector3D points[] = get_data_points();
+   
+    try
+    {
+      FileWriter out_file = new FileWriter( "fft_peaks.dat" );
+      PrintWriter writer  = new PrintWriter( out_file );
+      writer.println(""+all_peaks.size() );
+      for ( int i = 0; i < all_peaks.size(); i++ )
+      {
+        PeakData pd = (PeakData)all_peaks.elementAt(i);
+        writer.print( Format.integer( pd.run_num, 6 ) );
+        writer.print( Format.integer( pd.det_id, 4 ) );
+        writer.print( Format.real(pd.h, 7, 2 ));
+        writer.print( Format.real(pd.k, 7, 2 ));
+        writer.print( Format.real(pd.l, 7, 2 ));
+        writer.print( Format.integer( pd.row, 4 ) );
+        writer.print( Format.integer( pd.col, 4 ) );
+        writer.print( Format.real( pd.tof, 12, 2 ) );
+        writer.print( Format.real( pd.counts, 8, 1 ) );
+        writer.print( Format.real( pd.qx, 7, 2 ) );
+        writer.print( Format.real( pd.qy, 7, 2 ) );
+        writer.print( Format.real( pd.qz, 7, 2 ) );
+        writer.println();
+      }
+      out_file.close();
+    }
+    catch ( Exception exception )
+    {
+      System.out.println("Exception in WriteFileListener");
+      System.out.println(exception);
+    }
+  }
+}
+
+
+
 /* ---------------------- LatticeParameterListener ------------------------ */
 
 private class LatticeParameterListener implements ActionListener
@@ -1395,6 +1475,27 @@ private class LatticeParameterListener implements ActionListener
     c.multiply( l_plane_ui.get_d_spacing() ); 
     
     showLatticeParameters( a, b, c );
+
+    Vector3D q;
+    float mag_a = (float)(2*Math.PI/a.length());
+    float mag_b = (float)(2*Math.PI/b.length());
+    float mag_c = (float)(2*Math.PI/c.length());
+    a.normalize();
+    b.normalize();
+    c.normalize();
+    for ( int i = 0; i < all_peaks.size(); i++ )
+    {
+       PeakData pd = (PeakData)all_peaks.elementAt(i);
+       q = new Vector3D( pd.qx, pd.qy, pd.qz );
+       float h = q.dot(a)/mag_a;
+       float k = q.dot(b)/mag_b;
+       float l = q.dot(c)/mag_c;
+       System.out.print  ("q = "+ pd.qx + ", " + pd.qy + ", " + pd.qz );
+       System.out.println(" hkl = "+ h + ", " + k + ", " + l ); 
+       pd.h = h;
+       pd.k = k;
+       pd.l = l;
+    }    
   }
 }
 
@@ -1661,6 +1762,25 @@ private class FFTListener implements IObserver
   }
 }
 
+  /* ------------------------- PeakData ------------------------------ */
+  /*
+   *  class for recording basic peak info, to write out to file.
+   */
+  public class PeakData
+  {
+    int   run_num = 0;
+    int   det_id  = 0;
+    float h   = 0, 
+          k   = 0, 
+          l   = 0;
+    int   row = 0, 
+          col = 0;
+    float tof = 0;
+    float qx  = 0,
+          qy  = 0,
+          qz  = 0;
+    float counts;
+  }
 
   /* ---------------------------- main ---------------------------------- */
   public static void main( String args[] )
