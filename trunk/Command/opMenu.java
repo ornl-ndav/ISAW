@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.35  2005/01/07 15:00:10  rmikk
+ * Directories are now at the top and in alphabetical order at each level
+ *
  * Revision 1.34  2005/01/02 18:01:31  rmikk
  * Added Tool tip to the Menu items that indicate the location of the source
  *     code
@@ -182,13 +185,18 @@ public class opMenu extends JMenu{
               categories[0]=Operator.OPERATOR; 
             }
             found = true;
+            int insert_index;
             for( cat_index=start ; (cat_index < categories.length)&&(found) ; cat_index++ ){
               num_components = current_menu.getMenuComponentCount();
               found = false;
               comp_index = 0;
+              insert_index = -1;
+             
               while ( comp_index < num_components && !found ){
                 comp = (JMenuItem)(current_menu.getItem( comp_index) );
                 if(comp instanceof JMenu)
+                  if( comp.getText().compareTo( categories[cat_index])< 0)
+                     insert_index = comp_index+1;
                   if ( comp.getText().equalsIgnoreCase(categories[cat_index])){
                     found = true;
                     current_menu = (JMenu)comp;
@@ -203,7 +211,18 @@ public class opMenu extends JMenu{
                                      +cat_index+","+categories.length);
                   found = false;             
                 }else{
-                  current_menu.add( new_menu );
+                  int mNum = current_menu.getMenuComponentCount();
+                  if(mNum <= 0)
+                     current_menu.add( new_menu);
+                  else if( (insert_index < 0) )
+                     current_menu.add( new_menu, 0 );
+                  
+                  else if( insert_index < mNum )
+                      current_menu.add( new_menu, insert_index );
+                 
+                  else 
+                       current_menu.add( new_menu);
+                       
                   current_menu = new_menu; // advance the
                                            // current menu
                                            // pointer
