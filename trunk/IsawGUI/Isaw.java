@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.96  2002/04/22 21:00:13  pfpeterson
+ *  Changed title on 'Live Data' tabbed pane.
+ *
  *  Revision 1.95  2002/04/22 20:08:50  pfpeterson
  *  Now File->Load->Local remembers the last FileFilter used.
  *
@@ -1741,11 +1744,17 @@ public class Isaw
      // System.out.println( "loading: live data from " + instrument_computer );
 
       LiveDataMonitor monitor = new LiveDataMonitor( instrument_computer );
-
       monitor.addIObserver( Isaw.this );
 
-      String name = instrument_computer + " Live Data" ;
-      jcui.setTab( name, monitor );
+      String tab_name=instr;
+      int index=-1;
+      index=tab_name.indexOf("Path");
+      if(index>0)
+          tab_name=tab_name.substring(0,index)+"Name";
+      tab_name=System.getProperty(tab_name)+" Live Data";
+
+      String name = instrument_computer+" Live Data";
+      jcui.setTab( tab_name, monitor );
     }
   }
  
