@@ -32,6 +32,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.17  2003/06/17 21:52:56  pfpeterson
+ * Added quotes around the classpath when writing windows batch files.
+ *
  * Revision 1.16  2003/04/17 14:48:49  pfpeterson
  * Update skip(String) function to do more than the default with jnilib.
  *
@@ -574,9 +577,9 @@ public class IsawInstaller extends JFrame
 		+"rem --"+newline
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
-		+"java -mx128m -cp "+fixSeparator(isaw_home)
+		+"java -mx128m -cp \""+fixSeparator(isaw_home)
                 +";Isaw.jar;sgt_v2.jar;IPNS.jar;jnexus.jar;sdds.jar;"
-                +"jhall.jar;. IsawGUI.Isaw"+newline
+                +"jhall.jar;.\" IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+newline
