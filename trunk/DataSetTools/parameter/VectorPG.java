@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2003/09/03 14:54:04  bouzekc
+ * Removed inner ActionListener class (as it is now in ArrayEntryJFrame).
+ *
  * Revision 1.32  2003/08/30 20:00:02  bouzekc
  * Added javadoc comments to initGUi to signal that derived classes should
  * use this method in general.
@@ -202,7 +205,7 @@ import javax.swing.*;
  * should go through this constructor
  */
 public abstract class VectorPG extends ParameterGUI
-  implements PropertyChangeListener, ActionListener, ParamUsesString {
+  implements PropertyChangeListener, ParamUsesString {
   //~ Static fields/initializers ***********************************************
 
   public static final String DATA_CHANGED = "Data Changed";
@@ -301,19 +304,6 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   /**
-   * Called when the original button is pressed. It creates the JFrame that
-   * stores the list box and editing buttons, etc.
-   */
-  public void actionPerformed( ActionEvent evt ) {
-    String command = evt.getActionCommand(  );
-
-    //only show the window if the parameter button was clicked.
-    if( command.equals( innerParam.getName(  ) ) ) {
-      GUI.setVisible( true );
-    }
-  }
-
-  /**
    * Adds a property change listener to listen for new Vector values
    *
    * @param listener The listener to add.
@@ -367,7 +357,7 @@ public abstract class VectorPG extends ParameterGUI
     entrywidget    = new EntryWidget(  );
 
     entrywidget.add( vectorButton );
-    vectorButton.addActionListener( this );
+    vectorButton.addActionListener( GUI );
 
     super.initGUI(  );
   }
