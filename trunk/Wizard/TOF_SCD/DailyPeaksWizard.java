@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2005/03/06 00:38:30  dennis
+ * Adjusted the table of shared parameters to account for the new
+ * d_min parameter added to the integrate form.
+ *
  * Revision 1.13  2004/04/21 19:30:14  dennis
  * Now uses peaksform.APPEND_PARAM instead of '8' to refer back
  * to the FindMultiplePeaksForm parameter for appending to a
@@ -122,7 +126,13 @@ public class DailyPeaksWizard extends Wizard {
   }
 
   /**
-   * Adds and coordinates the necessary Forms for this Wizard.
+   * Adds and coordinates the necessary Forms for this Wizard.  Each row
+   * of the array corresponds to one of the parameters that is shared across
+   * the different forms of this wizard.  Each column corresponds to one
+   * of the forms of the wizard.  The entry in row k, column j is the 
+   * parameter number used for the kth shared parameter on form j.  A "-1"
+   * in row k, column j indicates that the kth shared parameter does not
+   * appear on form j.
    */
   private void createAllForms(  ) {
     int[][] fpi                     = {
@@ -131,7 +141,7 @@ public class DailyPeaksWizard extends Wizard {
       {  2,  0,  0, -1 },  //run numbers
       {  3,  2,  2,  3 },  //experiment name
       { 10, -1, -1,  5 },  //SCD calibration file
-      {  9, -1, -1,  8 }   //SCD calibration file line
+      {  9, -1, -1,  9 }   //SCD calibration file line
     };
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
 
