@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:38:49  bouzekc
+ * Documented file using javadoc statements.
+ * Fixed a bug that caused this class to find only one "characteristic" for some part
+ * of a class (i.e. If a method was public static final it would only find public.
+ * Now it finds all three "characteristics").
+ *
  * Revision 1.1  2004/02/07 05:10:46  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -73,25 +79,58 @@ import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.modeledObjects.InterfaceDefn;
 import devTools.Hawk.classDescriptor.modeledObjects.MethodDefn;
 
+/**
+ * This class is used to load a .class file, create a Class object, and create an Interface object.  If handles errors 
+ * such as NoClassDefFoundErrors and ClassNotFoundExceptions and tries to reload data from a .class file.  It 
+ * uses a java.net.URLClassLoader to load the classes.  The 
+ * class devTools.Hawk.classDescriptor.threads.LoadClassThread use this class's methods and should be used to 
+ * load classes because it will allow the progress of the loading to be displayed in a window because it loads classes 
+ * in a separate thread.  If you use this class to load classes directly, the progress will be displayed in a separate window.  
+ * However, you need to make sure that the progress window is created in a different thread to allow the progress to be 
+ * displayed.
+ * @author Dominic Kramer
+ */
 public class FileReflector
 {
+	/**
+	 * This is the window that contains any errors (that cannot be resolved) that may occur 
+	 * when the classes are loaded.
+	 */
 	private UnableToLoadClassGUI gui;
+	/**
+	 * An integer used to specify that a string given to a method is the name of a class.
+	 */
 	private final int CLASSNAME = 0;
+	/**
+	 * An integer used to specify that a string given to a method is the name of a file.
+	 */
 	private final int FILENAME = 1;
 	
+	/**
+	 * Default constructor which creates a new UnableToLoadClassGUI.
+	 *
+	 */
 	public FileReflector()
 	{
 		gui = new UnableToLoadClassGUI();
 	}
 	
+	/**
+	 * Constructor which uses the UnableToLoadClassGUI supplied.
+	 * @param GUI The UnableToLoadClassGUI to use to display errors when 
+	 * loading .class files.
+	 */
 	public FileReflector(UnableToLoadClassGUI GUI)
 	{
 		gui = GUI;
 	}
 	
 	/**
-	 * 
+	 * Opens a JFileChooser and allows the user to select .class or .jar files or directories 
+	 * (directories are recursively scanned for .class and .jar files).  The files that the user 
+	 * selects are added to the Vector "fileNameVec".
 	 * @param fileNameVec The Vector of filenames to add the new filenames to
+	 * @param gui The window which displays the progress the method.
 	 */
 	public static Vector getVectorOfInterfacesGUI(Vector fileNameVec, ProgressGUI gui)
 	{
@@ -132,8 +171,15 @@ public class FileReflector
 		}
 		
 		return fileNameVec;
-	}	
+	}
 
+	/**
+	 * Creates a Vector of Interface objects from a Vector of Strings each of which 
+	 * is the full filename to a .class or .jar file.
+	 * @param fileNameVec The Vector of filenames to use.
+	 * @param gui The window which displays the progress of the method.
+	 * @return The Vector of Interface objects created.
+	 */
 	public Vector getVectorOfInterfaces(Vector fileNameVec, ProgressGUI gui)
 	{
 		String name = "";
@@ -165,7 +211,7 @@ public class FileReflector
 	 * or .jar files in that directory.
 	 * @param dir The absolute filename to a file or directory.
 	 * @param vec The Vector to add the filenames to
-	 * @return
+	 * @return A Vector of Strings.
 	 */
 	public static Vector getAllFiles(String dir, Vector vec, ProgressGUI gui)
 	{
@@ -191,6 +237,13 @@ public class FileReflector
 		return vec;
 	}
 		
+		/**
+		 * Creates an Interface object from a .class file.  The Interface object is added to the Vector 
+		 * "vec".  If the Interface object could not be created nothing is added to the vector.
+		 * @param fileName The full filename for the .class file.
+		 * @param vec The Vector of Interface objects to add the newly created file to.
+		 * @return vec
+		 */
 		private Vector getInterfaceObjectsFromClassFile(String fileName, Vector vec)
 		{
 			Interface intf = getInterfaceObject(fileName, FILENAME, fileName);
@@ -199,7 +252,17 @@ public class FileReflector
 			
 			return vec;
 		}
-		    
+		   
+		/**
+		 * Creates Interface objects from all of the .class files in the .jar file specified.  All of the Interface objects 
+		 * created are added to the Vector "vec".
+		 * @param jarname The full filename for the jarfile to use.
+		 * @param vec A Vector of Interface objects.
+		 * @param gui The window displaying the progress of the method.
+		 * @param classNumber The number of classes that have already been loaded.  This is used in the ProgressGUI 
+		 * to accurately describe the progress.
+		 * @return The number of classes that have been loaded after the method loaded all of its classes.
+		 */
 		private int getInterfaceObjectsFromJarFile( String jarname, Vector vec, ProgressGUI gui, int classNumber)
 		{
 			if (!jarname.trim().equals(""))
@@ -428,7 +491,31 @@ public class FileReflector
 
 			return arr;
 		}
-			
+	
+	/**
+	 * This takes an Object (either a Field, Constructor, Method, or Class object) 
+	 * and creates a Vector of Strings each of which is one of the characteristics 
+	 * of the Object.  The characteristics that can be found are:  
+	 * <br> private
+	 * <br> public
+	 * <br> protected
+	 * <br> static
+	 * <br> abstract
+	 * <br> native
+	 * <br> strict
+	 * <br> synchronized
+	 * <br> transient
+	 * <br> volatile
+	 * <br> final
+	 * @param obj The Object to use.  The object has to be either a Field, Constructor, 
+	 * Method, or Class object.
+	 * @param str Describes what object is used.
+	 * <br> FIELD corresponds to a Field object
+	 * <br> CONSTRUCTOR corresponds to a Constructor object
+	 * <br> METHOD corresponds to a Method object
+	 * <br> CLASS corresponds to a Class object
+	 * @return
+	 */
 	private Vector getCharacteristicVector(Object obj, String str)
 	{
 		Vector vec = new Vector();
@@ -442,33 +529,44 @@ public class FileReflector
 			modNum = ((Method)obj).getModifiers();
 		else if (str.toUpperCase().equals("CLASS"))
 			modNum = ((Class)(obj)).getModifiers();
+
+		if (Modifier.isPrivate(modNum))
+			vec.add("private");
+		if (Modifier.isProtected(modNum))
+			vec.add("protected");
+		if (Modifier.isPublic(modNum))
+			vec.add("public");
+
+		if (Modifier.isStatic(modNum))
+			vec.add("static");
 		
 		if (Modifier.isAbstract(modNum))
 			vec.add("abstract");
-		else if (Modifier.isFinal(modNum))
-			vec.add("final");
-		else if (Modifier.isNative(modNum))
-			vec.add("native");
-		else if (Modifier.isPrivate(modNum))
-			vec.add("private");
-		else if (Modifier.isProtected(modNum))
-			vec.add("protected");
-		else if (Modifier.isPublic(modNum))
-			vec.add("public");
-		else if (Modifier.isStatic(modNum))
-			vec.add("static");		
-		else if (Modifier.isStrict(modNum))
+
+		if (Modifier.isNative(modNum))
+			vec.add("native");		
+		if (Modifier.isStrict(modNum))
 			vec.add("strict");
-		else if (Modifier.isSynchronized(modNum))
+		if (Modifier.isSynchronized(modNum))
 			vec.add("synchronized");
-		else if (Modifier.isTransient(modNum))
+		if (Modifier.isTransient(modNum))
 			vec.add("transient");
-		else if (Modifier.isVolatile(modNum))
+		if (Modifier.isVolatile(modNum))
 			vec.add("volatile");
-																														
+
+		if (Modifier.isFinal(modNum))
+			vec.add("final");
+
+																																	
 		return vec;
 	}
 	
+	/**
+	 * Creates a Vector of Strings each of which is the name of one of the 
+	 * parameters from the constructor described by the Constructor object.
+	 * @param Cnst The Constructor object to use.
+	 * @return A Vector of Strings.
+	 */
 	private Vector getConstructorParameterVector(Constructor Cnst)
 	{
 		Vector vec = new Vector();
@@ -479,7 +577,13 @@ public class FileReflector
 			
 		return vec;
 	}
-
+	
+	/**
+	 * Creates a Vector of Strings each of which is the name of one of the 
+	 * parameters from the method described by the Method object.
+	 * @param methd The Method object to use.
+	 * @return A Vector of Strings.
+	 */
 	private Vector getMethodParameterVector(Method methd)
 	{
 		Vector vec = new Vector();
@@ -491,6 +595,11 @@ public class FileReflector
 		return vec;
 	}
 	
+	/**
+	 * Makes an AttributeDefn object from a Field object.
+	 * @param fd The Field object to use.
+	 * @return The AttributeDefn object created.
+	 */
 	private AttributeDefn getAttributeDefn(Field fd)
 	{
 		String attName = fd.getName();
@@ -499,6 +608,11 @@ public class FileReflector
 		return (new AttributeDefn(vec, attName, attType));
 	}
 	
+	/**
+	 * Makes a ConstructorDefn object from a Class object.
+	 * @param cnst The Constructor object to use.
+	 * @return The ConstructorDefn object made.
+	 */
 	private ConstructorDefn getConstructorDefn(Constructor cnst)
 	{
 		String constName = cnst.getName();
@@ -508,6 +622,11 @@ public class FileReflector
 		return (new ConstructorDefn(charVec, pVec, constName));
 	}
 	
+	/**
+	 * Makes a MethodDefn object from a Class object.
+	 * @param mthd The Method object to use.
+	 * @return The MethodDefn object created.
+	 */
 	private MethodDefn getMethodDefn(Method mthd)
 	{
 		String methName = mthd.getName();
@@ -517,6 +636,11 @@ public class FileReflector
 		return (new MethodDefn(charVec, pVec, methName, methReturnType));
 	}
 	
+	/**
+	 * Makes an InterfaceDefn object from a Class object.
+	 * @param clss The Class object to use.
+	 * @return The InterfaceDefn object created.
+	 */
 	private InterfaceDefn getInterfaceDefn(Class clss)
 	{
 		String intType = "";
