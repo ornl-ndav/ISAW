@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/10/11 19:30:56  bouzekc
+ * Removed definition of clone() as the superclass implements it using
+ * reflection.  Moved Qbins1PG out to a package-level access class
+ * due to reflection's inability to easily determine information about an
+ * inner class.
+ *
  * Revision 1.12  2003/09/27 13:22:49  rmikk
  * Made dQ/Q the default
  *
@@ -122,14 +128,6 @@ public class QbinsPG  extends VectorPG{
      getEntryFrame(  ).setHelpMessage( ttext.toString(  ) );
    }
 
-   public Object clone(){
-      QbinsPG X = new QbinsPG( getName(), getValue());
-      if( initialized)
-          X.initGUI( new Vector());
-      return X;
-
-   }
-
    /**
     * Validates this QbinsPG.  A QbinsPG is considered valid if its internal
     * Qbins1PG parameter is valid.
@@ -162,129 +160,5 @@ public class QbinsPG  extends VectorPG{
     jf.show();
   }
     
-  /**
-  *     This class is used to enter start, end, and number of Q values for a
-  *     sublist.  The constant dQ or dQ/Q choice is also supported
-  */
-  private class Qbins1PG  extends ParameterGUI implements Concatenator{
-     private JPanel  Container;
-     private StringEntry start,end;
-     private StringEntry steps;
-     private JRadioButton dQ; 
-     private JButton Add, Help;
 
-     public Qbins1PG( String Prompt, Object val){ 
-       super( Prompt, val );
-       this.type = "Qbins1";
-     }
-
-     public Qbins1PG( String Prompt, Object val, boolean valid ) {
-       super( Prompt, val, valid );
-       this.type = "Qbins1";
-     }
-
-     public void initGUI( Vector V){
-        this.entrywidget = new EntryWidget(  );
-        this.entrywidget.setLayout(new GridLayout( 2,3));
-        start = new StringEntry(".0035",7,new FloatFilter());
-        end = new StringEntry("1.04",7,new FloatFilter());
-        steps = new StringEntry("117", 5,new IntegerFilter());
-        dQ = new JRadioButton( "dQ");
-        JRadioButton dQQ = new JRadioButton("dQ/Q");
-        dQQ.setSelected(true);
-        ButtonGroup Group = new ButtonGroup();
-        Group.add( dQ); Group.add( dQQ);
-        //dQ.setSelected( true );
-        JPanel jp = new JPanel( new GridLayout( 1,2));
-        jp.add( dQ); jp.add( dQQ);
-
-        this.entrywidget.add( new Comb("Start Q",start));
-        this.entrywidget.add( new Comb("N Steps",steps));
-        this.entrywidget.add( new Comb("End Q",end));
-        this.entrywidget.add( new Comb("Constant",jp));
-        this.entrywidget.validate();
-        super.initGUI();
-     }
-
-    public void setValue( Object V){
-       if( V instanceof Vector ) {
-         this.value = V;
-       } else {
-         Vector temp = new Vector(  );
-         if( V != null ) {
-           temp.addElement( V );
-         }
-         this.value = temp;
-       }
-    }
-   
-    public Object getValue(){
-       if( !this.initialized ) {
-         return new Vector(  );
-       }
-       float s = (new Float(start.getText())).floatValue();
-       float e = (new Float(end.getText())).floatValue();
-       int n  = (new Integer(steps.getText())).intValue();
-       Vector temp = new Vector(  );
-       String R; 
-       if( dQ.isSelected())
-           R = "dQ";
-       else
-           R = "dQ/Q"; 
-
-       if( n <=0){
-          temp.add( new Float( s) );
-          return temp;
-       }
-       if( R.equals("dQ/Q"))
-       if( (s <=0) ||(e <=0))
-         return new Vector(  );
-
-       boolean mult = false;
-       if( R.equals("dQ/Q"))
-         mult = true;
-       float stepSize;
-       if( mult){
-          stepSize = (float)Math.pow( e/s, 1.0/n);
-       }
-       else{
-          stepSize = (e-s)/n;
-
-       }
-      for( int i=0; i <= n; i++){
-        temp.add( new Float(s) );
-        if( mult)
-          s = s*stepSize;
-        else
-          s = s+stepSize;
-      }
-      return temp;
-    }
-
-    /**
-     * Validates this Qbins1PG.  A Qbins1PG is considered valid if its
-     * getValue(  ) returns a non-null, non-empty Vector.
-     */
-    public void validateSelf(  ) {
-      Object val = getValue(  );
-
-      if( val != null && val instanceof Vector ) {
-        Vector elems = ( Vector )val;
-
-        this.setValid( elems.size(  ) > 0 );
-      } else {
-        this.setValid( false );
-      }
-    }
-  }//Qbins1
-
-  //Utility to add a prompt to the left of text boxes, etc.
-  private class Comb  extends JPanel{
-    public Comb( String Prompt, JComponent Comp){
-      super( new GridLayout( 1,2));
-      add( new JLabel( Prompt,SwingConstants.CENTER));
-      add( Comp);
-
-    }
-  }//Comb
 }//QbinsPG
