@@ -36,6 +36,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2002/08/02 19:34:48  rmikk
+ *  main program Converts to Q with 100 bins
+ *
  *  Revision 1.11  2002/08/02 13:31:16  rmikk
  *  If the POINTED_AT_X is negative tha action controller
  *    now is initialized to time 0.
@@ -101,6 +104,7 @@ import DataSetTools.components.containers.*;
 import DataSetTools.components.ThreeD.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.retriever.*;
+import DataSetTools.operator.*;
 import gov.noaa.pmel.sgt.dm.*;
 import DataSetTools.operator.DataSet.*;
 
@@ -789,6 +793,7 @@ public class ContourView extends DataSetViewer
       else if( c=='c')
         {Choice1 = 1; Choice2 = 2; Choice3 = 0;}
       DataSetOperator op = ds.getOperator( "Convert to Q");
+      op.setParameter(new Parameter("nbins", new Integer(100)),2);
       Object O = op.getResult();
       if( O instanceof DataSet)
          ds = (DataSet)O;
