@@ -377,10 +377,10 @@ public class Reduce_KCL  extends GenericTOF_SAD{
           RUNCds[1]= RUNCds1;
          }
         qu = new float[ Qu.size()];
-        for( int i=0; i<Qu.size(); i++){
+        for( int i=0; i < Qu.size(); i++){
           qu[i] = ((Float)Qu.elementAt(i)).floatValue();
         }
-
+        
         if ((NQxBins < 1) || (NQyBins < 1))
             IF2D = 0;
         else
@@ -704,7 +704,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
         //----------------- Divide by Transmission ----------------------
         TransS.setX_units(RelSamp.getX_units());
-        Res = (new DataSetDivide_1(RelSamp, TransS, TransS.getData_entry(0).getGroup_ID(), true)).getResult();
+        Divide_1( RelSamp, TransS);
+        Res =(new DataSetDivide_1(RelSamp, TransS,TransS.getData_entry(0).getGroup_ID(),true)).getResult();
         if (Res instanceof ErrorString)
             return new ErrorString("AJ:" + Res.toString());;
         if (Res instanceof String)
@@ -714,7 +715,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
         
         TransB.setX_units(RelBackground.getX_units());
-        Res = (new DataSetDivide_1(RelBackground, TransB, TransB.getData_entry(0).getGroup_ID(), true)).getResult();
+        Divide_1( RelBackground, TransB);
+        Res = (new DataSetDivide_1(RelBackground,  TransB,TransB.getData_entry(0).getGroup_ID(), true)).getResult();
         if (Res instanceof ErrorString)
             return new ErrorString("AL:" + Res.toString());;
         if (Res instanceof String)
@@ -784,11 +786,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
             return Res;
         weight = (DataSet) Res;
 
-        try {
-            ScriptUtil.save("RelSampAdjQ.isd", RelSamp);
-            ScriptUtil.save("weightAdjQ.isd", weight);
-        } catch (Exception s9) {
-        }
+       
         RelSamp.setTitle("RelSamp Q0");
         // ScriptUtil.display( RelSamp.clone());
     
@@ -800,10 +798,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         Res = (new DataSetMultiply(RelSamp, weight, false)).getResult();
         Res = (new DataSetScalarMultiply(RelSamp, SCALE, false)).getResult();
 
-        try {
-            ScriptUtil.save("RelSamp_WeightSCALE.isd", RelSamp);
-        } catch (Exception sss) {
-        }
         if (Res instanceof ErrorString)
             return new ErrorString("AA:" + Res.toString());
        
@@ -828,10 +822,10 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         if (IF2D != 1) {
              
 	    xscl = new VariableXScale(qu);
+           
             Resample(RelSamp, xscl);
             Resample(RelBackground, xscl);
             Resample(weight, xscl);
-      
             //  EliminateBadDetectors( RelSamp, Sens);
             // EliminateBadDetectors( RelBackground, Sens);
             //EliminateBadDetectors( weight, Sens);
@@ -841,8 +835,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
             RelDiff = (DataSet) Res;
             RelSamp.setTitle("RelSamp Before summing");
             weight.setTitle("weight Before Summing");
-            ScriptUtil.display(RelSamp);
-            ScriptUtil.display(weight);
             DataSet SSampQ = SumAllDetectors(RelSamp);
             DataSet SBackQ = SumAllDetectors(RelBackground);
             DataSet SDifQ = SumAllDetectors(RelDiff);
@@ -1119,8 +1111,12 @@ public class Reduce_KCL  extends GenericTOF_SAD{
                  pos[1] -= XOFF;
                  pos[2] += YOFF;
                  */
-            float[] pos = ((DetectorPosition) (Sampgrid.getData_entry(row, col).getAttributeValue( 
-                            Attribute.DETECTOR_POS))).getCartesianCoords();
+            ((UniformGrid)Sampgrid).setDataEntriesInAllGrids( RelSamp);
+            Grid_util.setEffectivePositions(RelSamp, Sampgrid.ID());
+            Data DD =Sampgrid.getData_entry(row, col);
+            DetectorPosition dp = (DetectorPosition)(DD.getAttributeValue( Attribute.DETECTOR_POS));
+             
+            float[] pos = dp.getCartesianCoords();
     
             pos[1] += XOFF;
             pos[2] -= YOFF;
@@ -1302,7 +1298,7 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
             qu[i] = qu[i - 1] * 1.05f;
             //System.out.println("qu ....." +qu[i]);
         }
- 
+       
         RUNSds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19990.run");
         RUNBds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19935.run");
         RUNCds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19936.run");
@@ -1316,7 +1312,7 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
             System.out.println("Error:" + sss);
         }
 
-        System.out.println("Before calling Reduce_KCL");
+        System.out.println("Before calling Reduce_KCLxxxxxxxxxxxxxxxxxxxxxxxxxx");
         Reduce_KCL Reduce_KCL = new Reduce_KCL(TransS[0], TransB[0], 
                 Eff[0], Sens[0],toVec(qu), RUNSds[0], RUNSds[1], 
 		RUNBds[0],RUNBds[1], RUNCds[0],RUNCds[1], BETADN, SCALE, .1f,
@@ -1340,5 +1336,25 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
          Res.addElement( new Float( list[i]));
      return Res;
   }
+
+ /**
+ *    Trans does not have the correct XScale when read from a data file
+ */
+ private void Divide_1( DataSet DS, DataSet Trans){
+    if( DS == null)
+      return ;
+    Data DTr = Trans.getData_entry(0);
+    Data D = Data.getInstance(DS.getData_entry(0).getX_scale(),DTr.getY_values(),
+              DTr.getErrors(), DTr.getGroup_ID());
+    AttributeList Atlist = DTr.getAttributeList();
+    D.setAttributeList( Atlist);
+    Trans.removeData_entry(0);
+    Trans.addData_entry(D);
+    Trans.setY_units( DS.getY_units());
+
+  }
+    
+
+  
 }
 
