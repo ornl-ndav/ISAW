@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2004/07/16 18:52:55  rmikk
+ *  Created a new grid whose entries correspond to the given Data Set, not
+ *    to the cloned data set
+ *
  *  Revision 1.30  2004/06/18 18:39:18  rmikk
  *  Got the grid to correspond to the new id that was selected
  *
@@ -626,8 +630,10 @@ public class ContourData
          for( int j=0; j< ds.getNum_entries(); j++)
             if( ds.getData_entry(j).getX_scale() != x_scale)
                 ds.getData_entry(j).resample( x_scale,0);
-         UniformGrid.setDataEntriesInAllGrids(ds);
+         //UniformGrid.setDataEntriesInAllGrids(ds);
          grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum)); 
+         grid = new UniformGrid( grid, false);
+         grid.setData_entries(ds);
          //SetUpGroups();
         }
       else if( xscale != null)
@@ -784,10 +790,12 @@ public class ContourData
           else
               state.set_int( ViewerState.CONTOUR_DETNUM, DetNum);
 
-          UniformGrid.setDataEntriesInAllGrids(ds);
+          //UniformGrid.setDataEntriesInAllGrids(ds);
                                                    // now get the grid and assign it
                                                    // to the instance variable "grid"
           grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum)); 
+          grid = new UniformGrid( grid, false);
+          grid.setData_entries( ds);
           //SetUpGroups();
         }else DetNums = null;
      
@@ -867,9 +875,13 @@ public class ContourData
          DetNum = oldDetNum;
          state.set_int( ViewerState.CONTOUR_DETNUM, DetNum);
          grid = (UniformGrid)Grid_util.getAreaGrid( ds, DetNum);
+         grid = new UniformGrid( grid , false);
+         grid.setData_entries(ds);
          return;
       }
-      UniformGrid.setDataEntriesInAllGrids(ds);
+      //UniformGrid.setDataEntriesInAllGrids(ds);
+      grid = new UniformGrid( grid, false);
+      grid.setData_entries( ds);
       num_rows = grid.num_rows();
       num_cols = grid.num_cols();
       //SetUpGroups();
