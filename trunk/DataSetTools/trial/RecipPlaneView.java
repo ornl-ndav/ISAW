@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/07/09 21:23:05  dennis
+ * Prints file name as it's loading.
+ * Builds up FFT DataSet, initially using stricter threshold
+ * on the errors, gradually allowing larger errors until at least
+ * 10 directions are found.
+ *
  * Revision 1.4  2003/06/05 21:43:44  dennis
  * Added option to print lattice parameters.
  * Copy normal from FFT DataSet no longer attempts to further
@@ -281,8 +287,11 @@ public class RecipPlaneView
       if ( ds == null )
         System.out.println("File not found: " + file_names[count]);
       else
+      {
+        Attribute attr = ds.getAttribute( Attribute.RUN_TITLE );
+        System.out.println("Loaded run: " + attr.toString() + " -------------");
         data_sets.addElement(ds);
-
+      }
       ds = null;
     }
     System.out.println("DONE loading DataSets : " + data_sets.size() );
@@ -321,16 +330,19 @@ public class RecipPlaneView
 //  vm = new ViewManager( all_fft_ds, IViewManager.IMAGE );
 
     System.out.println("Filtering FFTs of all projections....");
-    filtered_fft_ds = FilterFFTds( all_fft_ds, LSQ_THRESHOLD );
-    if ( filtered_fft_ds.getNum_entries() < 10 )
+    float threshold = 0.5f * LSQ_THRESHOLD;
+    boolean done = false;
+    while (threshold < 4 * LSQ_THRESHOLD && !done )
     {
-      System.out.println("WARNING: recalculating FFT since too few found");
-      filtered_fft_ds = FilterFFTds( all_fft_ds, 2*LSQ_THRESHOLD );
-    }
-    if ( filtered_fft_ds.getNum_entries() < 10 )
-    {
-      System.out.println("WARNING: recalculating FFT AGAIN, too few found");
-      filtered_fft_ds = FilterFFTds( all_fft_ds, 4*LSQ_THRESHOLD );
+      filtered_fft_ds = FilterFFTds( all_fft_ds, threshold );
+      if ( filtered_fft_ds.getNum_entries() < 10 )
+      {
+        threshold *= 1.4142135f;
+        System.out.println("WARNING: recalculating FFT since too few found");
+        System.out.println("new threshold = " + threshold );
+      }
+      else
+        done = true;
     }
 
     filtered_fft_ds.addIObserver( new FFTListener() );
@@ -484,7 +496,10 @@ public class RecipPlaneView
     for ( int i = 0; i < vec_q_transformer.size(); i++ )
     {
       q_obj[i] = vec_Q_space.getObjects( PEAK_OBJECTS+i );
-      System.out.println("i = " + i + ", list length = " + q_obj[i].length );
+      if ( q_obj[i] != null )
+        System.out.println("i = " + i + ", list length = " + q_obj[i].length );
+      else
+        System.out.println("i = " + i + ", list length = " + 0 );
     }
 
     int total_length = 0;
