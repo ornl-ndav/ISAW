@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/01/08 14:52:35  bouzekc
+ * Replaced arrows on navigational buttons with words.  Changed
+ * "View Parameters" to "View."
+ *
  * Revision 1.2  2003/12/16 00:51:27  bouzekc
  * Fixed bug that prevented Form progress indicator from advancing
  * incrementally.
@@ -54,10 +58,10 @@ interface IWizardFrontEnd {
   //~ Static fields/initializers ***********************************************
 
   public static final String EXIT_COMMAND        = "Exit";
-  public static final String FIRST_COMMAND       = " << ";
-  public static final String BACK_COMMAND        = " < ";
-  public static final String NEXT_COMMAND        = " > ";
-  public static final String LAST_COMMAND        = " >> ";
+  public static final String FIRST_COMMAND       = "First Form";
+  public static final String BACK_COMMAND        = "Back One";
+  public static final String NEXT_COMMAND        = "Forward One";
+  public static final String LAST_COMMAND        = " Last Form";
   public static final String CLEAR_COMMAND       = "Reset";
   public static final String CLEAR_ALL_COMMAND   = "Reset All";
   public static final String EXEC_ALL_COMMAND    = "Do All";
@@ -66,7 +70,7 @@ interface IWizardFrontEnd {
   public static final String FORM_HELP_COMMAND   = "on Current Form";
   public static final String SAVE_WIZARD_COMMAND = "Save Wizard State";
   public static final String LOAD_WIZARD_COMMAND = "Load Wizard State";
-  public static final String VIEW_MENU           = "View Parameters";
+  public static final String VIEW_MENU           = "View";
   public static final String SET_PROJECT_DIR     = "Set Project Directory";
   public static final int FORM_PROGRESS          = 100;
   public static final int EXEC_ALL_IND           = 0;
