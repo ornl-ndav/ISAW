@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/08/22 20:12:05  bouzekc
+ *  Modified to work with EntryWidget.
+ *
  *  Revision 1.14  2003/08/16 02:22:29  bouzekc
  *  Added a top level PropertyChangeSupport so that child classes don't need to
  *  rewrite the property change listener methods just to have property change
@@ -85,6 +88,7 @@
 package DataSetTools.parameter;
 
 import DataSetTools.util.PropertyChanger;
+import DataSetTools.components.ParametersGUI.*;
 
 import java.awt.*;
 
@@ -115,7 +119,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
 
   // instance variables for IParameterGUI
   protected JLabel label;
-  protected JComponent entrywidget;
+  protected EntryWidget entrywidget;
   protected JPanel guipanel;
   protected boolean enabled;
   protected boolean drawvalid;
@@ -164,7 +168,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   /**
    * @return The entrywidget associated with this ParameterGUI.
    */
-  public JComponent getEntryWidget(  ) {
+  public EntryWidget getEntryWidget(  ) {
     return entrywidget;
   }
 

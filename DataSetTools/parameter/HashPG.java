@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/08/22 20:12:07  bouzekc
+ *  Modified to work with EntryWidget.
+ *
  *  Revision 1.7  2003/08/15 23:56:20  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI.
  *
@@ -59,6 +62,7 @@ package DataSetTools.parameter;
 
 import java.util.Vector;
 import DataSetTools.components.ParametersGUI.HashEntry;
+import DataSetTools.components.ParametersGUI.EntryWidget;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -163,7 +167,7 @@ abstract public class HashPG extends ParameterGUI{
     public Object getValue(){
         Object value=null;
         if(this.initialized){
-            value=((HashEntry)this.entrywidget).getSelectedItem().toString();
+            value=((HashEntry)(entrywidget.getComponent(0))).getSelectedItem().toString();
             return this.getValue((String)value);
         }else{
             value=this.value;
@@ -181,10 +185,10 @@ abstract public class HashPG extends ParameterGUI{
             }else{
                 int index=keys.indexOf(value);
                 if(index<=0){
-                    ((HashEntry)this.entrywidget)
+                    ((HashEntry)(entrywidget.getComponent(0)))
                         .setSelectedItem(this.getValue((String)value));
                 }else{
-                    ((HashEntry)this.entrywidget)
+                    ((HashEntry)(entrywidget.getComponent(0)))
                         .setSelectedItem(value);
                 }
             }
@@ -221,7 +225,7 @@ abstract public class HashPG extends ParameterGUI{
         }
 
         // set up the combobox
-        this.entrywidget=new HashEntry(keys);
+        entrywidget=new EntryWidget(new HashEntry(keys));
         this.entrywidget.setEnabled(this.enabled);
         this.entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
         super.initGUI();
