@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.47  2003/11/11 21:10:26  bouzekc
+ * Made result_param private and added accessor method for it.
+ *
  * Revision 1.46  2003/11/11 20:36:12  bouzekc
  * Now calls Operator's addParameter() in addParameter().
  *
@@ -293,7 +296,7 @@ public abstract class Form extends Operator implements PropertyChanger {
   protected float increment;
 
   //used so that we don't "dirty up" the parameters list.
-  protected IParameterGUI result_param = null;
+  private IParameterGUI result_param = null;
 
   //~ Constructors *************************************************************
 
@@ -391,7 +394,9 @@ public abstract class Form extends Operator implements PropertyChanger {
   /**
    * Get the parameter at the specified index from the list of parameters for
    * this Form.  Note: This returns a reference to the specified parameter.
-   * Consequently the value of the parameter can be altered.
+   * Consequently the value of the parameter can be altered.  If one more than
+   * the number of parameters is specified, this returns the result parameter.
+   * This is done to maintain backward-compatibility.
    *
    * @param index The index in the list of parameters of the parameter that is
    *        to be returned.  "index" must be between 0 and the number of
@@ -399,14 +404,13 @@ public abstract class Form extends Operator implements PropertyChanger {
    *
    * @return Returns the parameters at the specified position in the list of
    *         parameters for this object.  If the index is invalid, this
-   *         returns null. Asking for one more than the actual number of
-   *         parameters will return the result parameter.
+   *         returns null.
    */
   public IParameter getParameter( int index ) {
     if( index < getNum_parameters(  ) ) {
       return super.getParameter( index );
     } else {
-      return result_param;
+      return getResultParam(  );
     }
   }
 
@@ -426,6 +430,15 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( result_param != null ) {
       result_param.setDrawValid( true );
     }
+  }
+
+  /**
+   * Accessor method for the result parameter.
+   *
+   * @return The result parameter for this Form.
+   */
+  public IParameterGUI getResultParam(  ) {
+    return result_param;
   }
 
   /**
@@ -501,7 +514,7 @@ public abstract class Form extends Operator implements PropertyChanger {
       }
     }
 
-    return ( ( areSet == totalParam ) && result_param.getValid(  ) );
+    return ( ( areSet == totalParam ) && getResultParam(  ).getValid(  ) );
   }
 
   /**
@@ -516,7 +529,7 @@ public abstract class Form extends Operator implements PropertyChanger {
       return;
     }
 
-    result_param.setValid( false );
+    getResultParam(  ).setValid( false );
   }
 
   /**
