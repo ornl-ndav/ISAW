@@ -3,6 +3,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.3  2001/07/25 17:36:46  neffk
+ * commented method setParameter() out.
+ *
  * Revision 1.2  2001/07/11 18:37:12  neffk
  * changed getResult() to deal w/ potential multiple interval
  * parameters.  getResult() now returns type int[] of GROUP_ID's instead
@@ -167,7 +170,11 @@ public class IntervalSelectionOp
 /*
   public boolean setParameter( Parameter p, int i )
   {
-    System.out.println(  p.getValue().toString()  );
+    if(  p.getValue() instanceof String )
+      System.out.println(  (String)(p.getValue())  );
+    else if(  p.getValue() instanceof DataSet  )
+      System.out.println(  p.getValue() );
+
     return super.setParameter( p, i );
   }
 */
