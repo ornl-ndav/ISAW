@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/08/07 21:34:00  dennis
+ *  Added WRONG_SERVER_TYPE error code.
+ *
  *  Revision 1.1  2001/08/03 21:39:36  dennis
  *  Base class for retrievers that get DataSets from a
  *  NetComm.DataServer.  Manages connections and communication
@@ -59,17 +62,18 @@ abstract public class RemoteDataRetriever extends    Retriever
   public static final int BAD_FILE_NAME        = -1;
   public static final int BAD_USER_OR_PASSWORD = -2;
   public static final int SERVER_DOWN          = -3;
+  public static final int WRONG_SERVER_TYPE    = -4;
 
   TCPComm tcp_io = null;
 
-  protected boolean             server_alive = false;
-  protected boolean             user_pass_ok = false;
+  protected boolean  server_alive = false;
+  protected boolean  user_pass_ok = false;
+  protected String   password     = "RemoteDataRetriever";
+  protected String   file_name    = "";
 
   private   String remote_machine = "";
   private   int    port           = DataSetServer.DEFAULT_SERVER_PORT_NUMBER;
   private   String user_name      = "RemoteDataRetriever";
-  protected String password       = "RemoteDataRetriever";
-  protected String file_name      = "";
 
 /* ----------------------------- Constructor ----------------------------- */
 /**
