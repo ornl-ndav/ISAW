@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2003/06/18 22:47:04  bouzekc
+ * Added method to automatically validate nearly all
+ * ParameterGUIs.
+ *
  * Revision 1.17  2003/06/18 19:48:23  bouzekc
  * Instantiated getResult() to provide initialization of
  * PropertyChanger values and provide a hook for superclass
@@ -124,6 +128,9 @@ import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
+import DataSetTools.dataset.DataSet;
+import java.io.File;
+import java.util.Vector;
 
 /**
  *  The Form class is controls one operation of the sequence of operations
@@ -519,14 +526,96 @@ public abstract class Form extends Operator implements Serializable,
 
   /**
    *  Overridden to some functionality for child Forms.
+   *
+   *  @return     The result of validateParameterGUIs(), which is either
+   *              Boolean.TRUE or an ErrorString, depending on the whether the
+   *              parameters successfully validated or not, respectively.
    */
   public Object getResult()
   {
     //for progress bars
     newPercent = oldPercent = increment = 0;
     //not created yet
-    //this.checkParameterValidity();
-    return null;
+    return this.validateParameterGUIs();
+  }
+
+  /**
+   *  Convenience method for checking parameters.  Although it can be
+   *  overwritten to provide a more customized approach to validating 
+   *  parameters, this should not usually be necessary, as the 
+   *  recommended approach is to retrieve all parameters, validate
+   *  them using this method, then perform any special validations
+   *  directly in the child class.
+   *  
+   *  @return     Either Boolean.TRUE or an ErrorString, depending on the 
+   *              whether the parameters successfully validated or not, 
+   *              respectively.
+   */
+  protected Object validateParameterGUIs()
+  {
+    IParameterGUI ipg;
+    Object obj;
+
+    for(int i = 0; i < parameters.size(); i++){
+      ipg = (IParameterGUI)parameters.elementAt(i);
+      if(ipg.getValid() == true)
+        continue;
+
+      if(ipg instanceof DataSetPG){
+        obj = ipg.getValue();
+        if(obj != null && obj != DataSet.EMPTY_DATA_SET)
+          ipg.setValid(true);
+        else
+          return errorOut(ipg, 
+            "Parameter " + ipg.getName() + " is invalid.");
+      }
+      else if(ipg instanceof BrowsePG){ 
+        if(new File(ipg.getValue().toString()).exists())
+          ipg.setValid(true);
+        else
+          return errorOut(ipg, 
+            "Parameter " + ipg.getName() + " is invalid.");
+      }
+      else if(ipg instanceof ArrayPG){
+        Vector v = (Vector)(ipg.getValue());
+        if(v == null || v.isEmpty())
+          ipg.setValid(false);
+        else{  //assume it is valid, then test that assumption
+          ipg.setValid(true);
+          for(int k = 0; k < v.size(); k++){
+            if( !(new File( v.elementAt(k).toString() ).exists()) ){
+              ipg.setValid(false);
+              break;
+            }
+          }
+        }
+      }
+      else if(ipg instanceof BooleanPG)
+        ipg.setValid(true);
+      else if(ipg instanceof StringEntryPG){
+        //need to check input against the StringFilterer
+        StringFilterer sf = 
+          ((StringEntryPG)ipg).getStringFilter();
+        if(sf.isOkay(0, ipg.getValue().toString(), ""))
+          ipg.setValid(true);
+        else
+          return errorOut(ipg, 
+            "Parameter " + ipg.getName() + " is invalid.");
+      }
+
+      //for the remainder of the parameters, we will set them false.
+      //HashPG can't really be checked - if the value is not found, the
+      //value is set to a blank.  This is the default behavior of the JComboBox
+      //that HashPG's HashEntry is built on.
+      //ChooserPG's really can't be checked - they have a built in
+      //mechanism to add non-existing values.
+      //VectorPG does not have a clean way to determine its validity.
+      //To be safe we are going to let the subclasses work with these 
+      //parameters to validate them, but we will not return an error.
+      else
+        ipg.setValid(false);
+    }
+    return Boolean.TRUE;
   }
 
   /* -------------------- PropertyChanger methods --------------------------*/
