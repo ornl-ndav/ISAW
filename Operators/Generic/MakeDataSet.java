@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.8  2004/06/29 21:48:31  rmikk
+ * Fixed error if the xbins do not come in as a vector of vectors
+ *
  * Revision 1.7  2004/05/03 16:23:38  dennis
  * Removed unused local variables.
  *
@@ -187,10 +190,12 @@ public class MakeDataSet implements Wrappable {
 
 
         XScale xscl;
-
+        Object xbinss = xbins;
+        if(xbins.size()==1)
+           xbinss = xbins.elementAt(0);
         try {
             float[] O = NexIO.Util.ConvertDataTypes.
-                                      floatArrayValue(xbins.firstElement());
+                                      floatArrayValue(xbinss);
             if( O == null)
               return new ErrorString( "Cannot convert xvals to a float[]");
             xscl = new VariableXScale(O);
