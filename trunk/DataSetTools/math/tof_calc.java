@@ -30,6 +30,11 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.23  2003/07/22 15:09:58  dennis
+ *  Made all physical constants double precison.  Now calculates h/mn
+ *  (approximately 3.9560) in terms of 'h' and the mass of the
+ *  neutron, rather than using a numeric constant.
+ *
  *  Revision 1.22  2003/07/11 18:46:28  dennis
  *  Added versions of makeEulerRotation() and makeEulerRotationInverse()
  *  that produce the rotations as 3x3 arrays of doubles.
@@ -81,32 +86,39 @@ public final class tof_calc
    CONSTANTS
 
 */
-
+//
+//   "Accepted" values of physical constants and conversion factors 
+//   available from:
+//   http://physics.nist.gov/cuu/Constants/index.html?/codata86.html
+//
                                                          // mass of neutron(kg)
-public static final float  MN_KG        = 1.67492716e-27f;
+public static final double  MN_KG          = 1.67492716e-27;
 
-public static final float  JOULES_PER_meV=  1.602176462e-22f;
+public static final double  JOULES_PER_meV = 1.602176462e-22;
 
-                                                      //h in Joule seconds
-public static final float  H_JS          =  6.62606876e-34f;
+                                                          //h in Joule seconds
+public static final double  H_JS          =  6.62606876e-34;
 
-                                                      // h in erg seconds
-public static final float  H_ES          =  6.62606876e-27f;
+                                                           // h in erg seconds
+public static final double  H_ES          =  H_JS * 1.0e7; // 6.62606876e-27;
 
                                                       // h_bar in Joule seconds
-public static final float  H_BAR_JS      =  1.05457160e-34f;
+                                                      // 1.05457160e-34;
+public static final double  H_BAR_JS      =  H_JS/(2*Math.PI);
 
-                                                      // h in erg seconds
-public static final float  H_BAR_ES      =  1.05457160e-27f;   
+                                                      // h_bar in erg seconds
+                                                      // 1.05457160e-27;
+public static final double  H_BAR_ES      =  H_ES/(2*Math.PI);
 
+                                                      //5.227037; meV/(mm/us)^2
+public static final double  meV_PER_MM_PER_US_2 = (MN_KG/2)/(JOULES_PER_meV)
+                                                 * 1.0e6;
 
-public static final float  meV_per_mm_per_us_2 = 5.227037f;    // meV/(mm/us)^2 
+public static final double  ANGST_PER_US_PER_MM = H_ES/MN_KG;  // 3.956058;
 
-public static final float  ANGST_PER_US_PER_M  = 3.956058e-3f;
-
-public static final float  ANGST_PER_US_PER_MM = 3.956058f;
-
-public static final float  RADIANS_PER_DEGREE  = 0.01745332925f;
+public static final double  ANGST_PER_US_PER_M  = ANGST_PER_US_PER_MM/1000;
+                                                              //  3.956058e-3;
+//public static final float  RADIANS_PER_DEGREE  = 0.01745332925;
  
   /**
    * Don't let anyone instantiate this class.
@@ -134,7 +146,7 @@ public static float Energy( float path_len_m, float time_us )
     return( Float.NaN );
 
   v = (path_len_m * 1000.0f)/ time_us;        /*   velocity in mm/us    */
-  energy = meV_per_mm_per_us_2 * v * v; 
+  energy = (float)(meV_PER_MM_PER_US_2 * v * v); 
   return( energy );  
 }
 
@@ -153,7 +165,7 @@ public static float Energy( float path_len_m, float time_us )
 
 public static float  TOFofEnergy( float path_len_m, float e_meV )
 {
-  return (float)( path_len_m * 1000.0/Math.sqrt( e_meV/meV_per_mm_per_us_2 ));
+  return (float)( path_len_m * 1000.0/Math.sqrt( e_meV/meV_PER_MM_PER_US_2 ));
 }
 
 
@@ -172,7 +184,7 @@ public static float VelocityFromEnergy( float e_meV )
   if ( e_meV < 0.0f )                        /* NOT MEANINGFUL */
     return( Float.NaN );
 
-  float   v_m_per_us = (float)Math.sqrt( e_meV / meV_per_mm_per_us_2 )/1000;
+  float   v_m_per_us = (float)Math.sqrt( e_meV / meV_PER_MM_PER_US_2 )/1000;
 
   return( v_m_per_us );
 }
@@ -192,7 +204,8 @@ public static float EnergyFromVelocity( float v_m_per_us )
   if ( v_m_per_us < 0.0f )                     /* NOT MEANINGFUL */
     return( Float.NaN );
 
-  float   e_meV = v_m_per_us * v_m_per_us * 1000000 * meV_per_mm_per_us_2;
+  float   e_meV = (float)
+                  (v_m_per_us * v_m_per_us * 1000000 * meV_PER_MM_PER_US_2);
 
   return( e_meV );
 }
@@ -212,8 +225,9 @@ public static float EnergyFromWavelength( float wavelength_A )
   if ( wavelength_A <= 0.0f )                     /* NOT MEANINGFUL */
     return( Float.NaN );
 
-  float  v_m_per_us = ANGST_PER_US_PER_M / wavelength_A;
-  float  e_meV      = v_m_per_us * v_m_per_us * 1000000 * meV_per_mm_per_us_2;
+  float  v_m_per_us = (float)(ANGST_PER_US_PER_M / wavelength_A);
+  float  e_meV      = (float)
+                      (v_m_per_us * v_m_per_us * 1000000 * meV_PER_MM_PER_US_2);
 
   return( e_meV );
 }
@@ -234,8 +248,8 @@ public static float WavelengthFromEnergy( float e_meV )
   if ( e_meV <= 0.0f )                     /* NOT MEANINGFUL */
     return( Float.NaN );
 
-  float   v_m_per_us = (float)Math.sqrt( e_meV / meV_per_mm_per_us_2 )/1000;
-  float   wavelength_A = ANGST_PER_US_PER_M / v_m_per_us;
+  float   v_m_per_us = (float)Math.sqrt( e_meV / meV_PER_MM_PER_US_2 )/1000;
+  float   wavelength_A = (float)(ANGST_PER_US_PER_M / v_m_per_us);
 
   return( wavelength_A );
 }
@@ -256,7 +270,7 @@ public static float WavelengthFromVelocity( float v_m_per_us )
   if ( v_m_per_us <= 0.0f )                     /* NOT MEANINGFUL */
     return( Float.NaN );
 
-  float  wavelength_A = ANGST_PER_US_PER_M / v_m_per_us;
+  float  wavelength_A = (float)(ANGST_PER_US_PER_M / v_m_per_us);
 
   return( wavelength_A );
 }
@@ -276,7 +290,7 @@ public static float VelocityFromWavelength( float wavelength_A )
   if ( wavelength_A <= 0.0f )                     /* NOT MEANINGFUL */
     return( Float.NaN );
 
-  float  v_m_per_us = ANGST_PER_US_PER_M / wavelength_A;
+  float  v_m_per_us = (float)(ANGST_PER_US_PER_M / wavelength_A);
 
   return( v_m_per_us );
 }
@@ -300,7 +314,7 @@ public static float Wavelength( float path_len_m, float time_us )
                                  /* convert time in microseconds to time    */
                                  /* in seconds.  Calculate the wavelength   */
                                  /* in meters and then convert to Angstroms */
-  return( ANGST_PER_US_PER_M * time_us / path_len_m );
+  return (float)(ANGST_PER_US_PER_M * time_us / path_len_m );
 }
 
 
@@ -318,7 +332,7 @@ public static float Wavelength( float path_len_m, float time_us )
 
 public static float TOFofWavelength( float path_len_m, float wavelength_A )
 {
-  return( wavelength_A * path_len_m / ANGST_PER_US_PER_M );
+  return (float)( wavelength_A * path_len_m / ANGST_PER_US_PER_M );
 }
 
 /**
@@ -357,7 +371,7 @@ public static float  DSpacing( float angle_radians,
   float wavelength;
   float theta_radians;
 
-  wavelength    = ANGST_PER_US_PER_M * time_us / path_len_m;
+  wavelength    = (float)(ANGST_PER_US_PER_M * time_us / path_len_m);
   theta_radians = Math.abs( angle_radians / 2.0f );
 
   return (float)( wavelength / (2.0 * Math.sin( theta_radians ) ) ); 
@@ -449,7 +463,7 @@ public static float  TOFofDSpacing( float angle_radians,
   theta_radians = Math.abs( angle_radians / 2.0f );
   wavelength    = (float)(2.0 * Math.sin( theta_radians ) * d_A);
 
-  return( wavelength * path_len_m / ANGST_PER_US_PER_M );
+  return (float)( wavelength * path_len_m / ANGST_PER_US_PER_M );
 }
 
 
@@ -476,7 +490,7 @@ public static float  DiffractometerQ( float angle_radians,
   float  wavelength;
   float  theta_radians;
 
-  wavelength    = ANGST_PER_US_PER_M * time_us / path_len_m;
+  wavelength    = (float)(ANGST_PER_US_PER_M * time_us / path_len_m);
   theta_radians = Math.abs( angle_radians / 2.0f );
 
   return (float)( 4.0 * Math.PI * Math.sin( theta_radians ) / wavelength );
@@ -616,7 +630,7 @@ public static float  TOFofDiffractometerQ( float angle_radians,
   theta_radians = Math.abs( angle_radians / 2.0f );
   wavelength    = (float)( 4.0 * Math.PI * Math.sin( theta_radians ) / Q_invA );
 
-  return( wavelength * path_len_m / ANGST_PER_US_PER_M );
+  return  (float)( wavelength * path_len_m / ANGST_PER_US_PER_M );
 }
 
 /* --------------------------- SpectrometerQ ---------------------------- */
@@ -911,6 +925,16 @@ public static void main( String args[] )
   System.out.println( "Q at        = " + pos );
   System.out.println( "magnitude_Q = " + pos.getDistance() );
   System.out.println( "QScatt. ang.= " + pos.getScatteringAngle() );
+
+  System.out.println( "MN_KG               " + MN_KG );
+  System.out.println( "JOULES_PER_meV      " + JOULES_PER_meV   );
+  System.out.println( "H_JS                " + H_JS  );
+  System.out.println( "H_ES                " + H_ES  );
+  System.out.println( "H_BAR_JS            " + H_BAR_JS  );
+  System.out.println( "H_BAR_ES            " + H_BAR_ES  );
+  System.out.println( "meV_PER_MM_PER_US_2 " + meV_PER_MM_PER_US_2   );
+  System.out.println( "ANGST_PER_US_PER_MM " + ANGST_PER_US_PER_MM  );
+  System.out.println( "ANGST_PER_US_PER_M  " + ANGST_PER_US_PER_M  );
 }
 
 }
