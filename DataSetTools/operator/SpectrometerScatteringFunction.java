@@ -2,6 +2,9 @@
  * @(#)SpectrometerScatteringFunction.java   0.1  2000/07/26   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.4  2000/08/03 21:42:48  dennis
+ *  This version has been checked and works ok.
+ *
  *  Revision 1.3  2000/08/03 16:18:09  dennis
  *  Now works for both functions and histograms
  *
@@ -142,6 +145,8 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
 
     float x_vals[],
           y_vals[],
+          new_y_vals[],
+          new_errors[],
           tof,
           eff,
           fpcorr;
@@ -152,6 +157,7 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
           wvf;              // final    wave vector magnitude
     int   num_data;
     Data  data,
+          conversion_data,
           new_data;
                                           // make table of fpcorr
                                           // values and interpolate to get
@@ -191,6 +197,10 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
       y_vals = new_data.getY_values();
       x_vals = new_data.getX_scale().getXs();
 
+      int num_y = y_vals.length;
+      new_y_vals = new float[ num_y ];
+      new_errors = new float[ num_y ];
+
       for ( int i = 0; i < y_vals.length; i++ )
       {
         if ( x_vals.length > y_vals.length )  // histogram
@@ -198,20 +208,28 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
         else                                  // function
           tof = x_vals[i];
 
-// interpolate in table or....         
+        // interpolate in table or....         
         fpcorr = arrayUtil.interpolate(spherical_coords[0]/tof, 
                                        speed_arr, 
                                        fpcorr_arr );
 
-//  recalculate each time
-//    result = tof_data_calc.getEfficiencyFactor( spherical_coords[0]/tof, 1 );
-//    fpcorr = result[1];
+        //  recalculate each time
+        //    result = tof_data_calc.getEfficiencyFactor( 
+        //                           spherical_coords[0]/tof, 1 );
+        //    fpcorr = result[1];
 
         velocity_final = (spherical_coords[0]+fpcorr) / tof;
         wvf = WVCON * velocity_final;
 
-        y_vals[i] *= four_PI*wvi/wvf/sccs;
+        new_y_vals[i] = four_PI*wvi/wvf/sccs;
       }
+
+      conversion_data = new Data( data.getX_scale(),
+                                  new_y_vals,
+                                  new_errors,
+                                  data.getGroup_ID() );
+    
+      new_data = data.multiply( conversion_data );
 
 //      new_data.CLSmooth( 500 );
       if ( make_new_ds )
