@@ -6,6 +6,11 @@
  *  Programmer:  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/02/02 21:00:51  dennis
+ *  Now sends the instrument name and run number with each UPD packet.
+ *  To run this test, specify the instrument name and run number
+ *  as two separate arguments on the command line.
+ *
  *  Revision 1.1  2001/01/30 23:27:17  dennis
  *  Initial version, network communications for ISAW.
  *
@@ -38,7 +43,10 @@ public class DASOutputTest
 //public static final String INSTRUMENT_COMPUTER = "mscs138.mscs.uwstout.edu";
 //public static final String INSTRUMENT_COMPUTER = "mandrake.pns.anl.gov";
 
-  private byte buffer[] = new byte[ 65536 ];
+  byte    buffer[]    = new byte[ 65536 ];
+  String  file_name   = null;
+  byte    inst_name[] = null;
+  int     run_number  = -1;
 
   /**
    *   Send one array of y_values, scaled by a scale factor.  The array
@@ -58,9 +66,29 @@ public class DASOutputTest
     int  value    = 0;
 
     size = ByteConvert.toBytes( buffer, size, LiveDataServer.MAGIC_NUMBER );
+
+                                                    // pack the instrument name
+                                                    // into buffer, starting
+                                                    // with one byte giving
+                                                    // the inst name length.
+    buffer[ size ] = (byte)inst_name.length;
+    size++;
+    for ( int i = 0; i < inst_name.length; i++ )
+      buffer[size + i] = inst_name[i];
+    size += inst_name.length;
+                                                    // pack the run number into
+                                                    // buffer.
+    size = ByteConvert.toBytes( buffer, size, run_number );
+
+                                                     // pack the id, starting
+                                                     // channel and number of
+                                                     // channels into buffer. 
     size = ByteConvert.toBytes( buffer, size, id );
     size = ByteConvert.toBytes( buffer, size, 0 );
     size = ByteConvert.toBytes( buffer, size, y.length );
+                                              
+                                                     // pack the spectrum 
+                                                     // into buffer
     for ( int i = 0; i < y.length; i++ )
     {
       value = (int)(scale_factor * y[i]);
@@ -81,7 +109,7 @@ public class DASOutputTest
       int  id = d.getGroup_ID();
       SendSpectrum( sender, id, (counter+1), d.getCopyOfY_values() );
 
-      try  { Thread.sleep(3000); }
+      try  { Thread.sleep(30); }
       catch(Exception e){ System.out.println("sleep Exception"); } 
     }  
   }
@@ -114,14 +142,27 @@ public class DASOutputTest
     if ( args.length <= 0 )
     { 
       System.out.println("ERROR: you must specifiy a runfile to use for");
-      System.out.println("       testing.  This runfile must be the same"); 
-      System.out.println("       as was used when starting the LiveDataServer");
-      System.out.println("       Try 'java DASOutputTest hrcs2447.run'");
+      System.out.println("       testing.  The runfile will be sent to "); 
+      System.out.println("       the LiveDataServer in the form of a ");
+      System.out.println("       abbreviated instrument name and an integer ");
+      System.out.println("       run number." );
+      System.out.println("       Try 'java NetComm.DASOutputTest  HRCS  2447'");
 
       System.exit(1);
     } 
 
-    RunfileRetriever rr         = new RunfileRetriever( args[0] );
+    DASOutputTest test = new DASOutputTest();
+
+    test.inst_name  = args[0].getBytes();
+    test.run_number = Integer.parseInt( args[1] );
+
+    test.file_name = new String(test.inst_name, 0, test.inst_name.length);
+    test.file_name = test.file_name.toUpperCase();
+    test.file_name = test.file_name + test.run_number + ".RUN";
+
+    System.out.println( "Sending data for run " + test.file_name );
+
+    RunfileRetriever rr         = new RunfileRetriever( test.file_name );
     DataSet          monitor_ds = rr.getDataSet(0);
     DataSet          hist_ds    = rr.getDataSet(1);
     rr = null;
@@ -129,7 +170,6 @@ public class DASOutputTest
     ViewManager monitor_vm   = new ViewManager( monitor_ds, IViewManager.IMAGE);
     ViewManager histogram_vm = new ViewManager( hist_ds, IViewManager.IMAGE );
 */
-    DASOutputTest test = new DASOutputTest();
     for ( int i = 0; i < 1000; i++ )
     {
       test.SendDataBlocks( sender, monitor_ds, i );
