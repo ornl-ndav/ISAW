@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/07/08 22:50:22  bouzekc
+ * Changed result parameter names.
+ *
  * Revision 1.8  2003/07/03 14:17:43  bouzekc
  * Added comments and ordered methods according to access
  * privilege.
@@ -154,13 +157,13 @@ public class InitialPeaksWizard extends Wizard {
     //the return types of all of these Operator Forms is LoadFilePG,
     //hence the "LoadFile"
     OperatorForm blindjform = new OperatorForm( 
-        new BlindJ(  ), LOADFILETYPE, "Matrix file", new int[]{ 0 } );
+        new BlindJ(  ), LOADFILETYPE, "BlindJ log file", new int[]{ 0 } );
     OperatorForm indexjform = new OperatorForm( 
         new IndexJ(  ), LOADFILETYPE, "IndexJ log file", new int[]{ 0, 1 } );
     OperatorForm scalarjform = new OperatorForm( 
         new ScalarJ(  ), LOADFILETYPE, "ScalarJ log file", new int[]{ 0 } );
     OperatorForm lsqrsjform = new OperatorForm( 
-        new LsqrsJ(  ), LOADFILETYPE, "LsqrsJ matrix file", new int[]{ 0 } );
+        new LsqrsJ(  ), LOADFILETYPE, "LsqrsJ log file", new int[]{ 0 } );
 
     this.addForm( peaksform );
     this.addForm( blindjform );
