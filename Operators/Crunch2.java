@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2004/05/06 22:22:06  dennis
+ * Changed Title to Crunch2 to match the command name and
+ * file name for this operator.
+ *
  * Revision 1.7  2004/03/30 16:05:58  dennis
  * Changed string returned by getCommand() to Crunch2 instead of Crunch.
  *
@@ -53,7 +57,6 @@
  * Revision 1.1  2002/12/09 20:03:24  pfpeterson
  * Added to CVS.
  *
- *
  */
 package Operators;
 
@@ -70,7 +73,7 @@ import java.util.*;
  *  group ids as the second parameter.
  */
 public class Crunch2 extends GenericSpecial{
-  private static final String  TITLE = "Crunch";
+  private static final String  TITLE = "Crunch2";
   private static final boolean DEBUG = false;
   
   /* ----------------------- Default constructor ------------------------- */ 
@@ -108,7 +111,7 @@ public class Crunch2 extends GenericSpecial{
    * Scripts
    */
   public String getCommand(){
-    return "Crunch2";
+    return TITLE;
   }
     
   /**
