@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/02/07 05:24:32  bouzekc
+ * Changed all instances of "liscense" to "license".
+ *
  * Revision 1.1  2004/02/07 05:08:48  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -70,7 +73,7 @@ import devTools.Hawk.classDescriptor.tools.SystemsManager;
  */ 
 public class AboutGUI extends JFrame implements ActionListener
 {
-	private JFrame liscenseFrame;
+	private JFrame licenseFrame;
 	
 	public AboutGUI()
 	{
@@ -92,13 +95,13 @@ public class AboutGUI extends JFrame implements ActionListener
 			infoPanel.add(new JLabel("    Dominic Kramer who can "));
 			infoPanel.add(new JLabel("    be contacted at"));
 			infoPanel.add(new JLabel("    kramerd@uwstout.edu."));
-			infoPanel.add(new JLabel("    Hawk is liscensed under"));
-			infoPanel.add(new JLabel("    the GUN General Public"));
-			infoPanel.add(new JLabel("    Liscensing Agreement"));
+			infoPanel.add(new JLabel("    Hawk is licensed under"));
+			infoPanel.add(new JLabel("    the GNU General Public"));
+			infoPanel.add(new JLabel("    Licensing Agreement"));
 	
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-			JButton viewButton = new JButton("View Liscense");
+			JButton viewButton = new JButton("View License");
 			JButton closeButton = new JButton("Close"); 
 			
 			viewButton.addActionListener(this);
@@ -122,26 +125,26 @@ public class AboutGUI extends JFrame implements ActionListener
 		if (event.getActionCommand().equals("Close"))
 		{
 			dispose();
-			if (liscenseFrame != null)
-				liscenseFrame.dispose();
+			if (licenseFrame != null)
+				licenseFrame.dispose();
 		}
-		else if (event.getActionCommand().equals("View Liscense"))
+		else if (event.getActionCommand().equals("View License"))
 		{
-			liscenseFrame = new JFrame();
+			licenseFrame = new JFrame();
 			
-			liscenseFrame.setTitle("GNU General Public Liscensing Agreement");
-			liscenseFrame.setSize(550,550);
-			liscenseFrame.addWindowListener(new WindowDestroyer("liscense"));
+			licenseFrame.setTitle("GNU General Public Licensing Agreement");
+			licenseFrame.setSize(550,550);
+			licenseFrame.addWindowListener(new WindowDestroyer("license"));
 			
-			JTextArea liscense = new JTextArea();
-			liscense.setEditable(false);
+			JTextArea license = new JTextArea();
+			license.setEditable(false);
 			String line = "";
 			try
 			{
-				BufferedReader gnuReader = new BufferedReader(new FileReader("devTools.Hawk.classDescriptor/gui/liscense/LISCENSE.txt"));
+				BufferedReader gnuReader = new BufferedReader(new FileReader("devTools.Hawk.classDescriptor/gui/license/LICENSE.txt"));
 				while (line != null)
 				{
-					liscense.append(line+"\n");
+					license.append(line+"\n");
 					line = gnuReader.readLine();
 				}
 			}
@@ -154,7 +157,7 @@ public class AboutGUI extends JFrame implements ActionListener
 						System.out.println("     "+traceArray[i]);
 			}
 			
-			JScrollPane scrollpane = new JScrollPane(liscense);
+			JScrollPane scrollpane = new JScrollPane(license);
 			JPanel mainpanel = new JPanel();
 			mainpanel.setLayout(new BorderLayout());
 			
@@ -162,19 +165,19 @@ public class AboutGUI extends JFrame implements ActionListener
 			buttonpanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			
 			JButton closebutton = new JButton("Close");
-			closebutton.setActionCommand("liscenseFrame.close");
+			closebutton.setActionCommand("licenseFrame.close");
 			closebutton.addActionListener(this);
 			buttonpanel.add(closebutton);
 			
 			mainpanel.add(scrollpane, BorderLayout.CENTER);
 			mainpanel.add(buttonpanel, BorderLayout.SOUTH);
 			
-			liscenseFrame.getContentPane().add(mainpanel);
-			liscenseFrame.setVisible(true);			
+			licenseFrame.getContentPane().add(mainpanel);
+			licenseFrame.setVisible(true);			
 		}
-		else if (event.getActionCommand().equals("liscenseFrame.close"))
+		else if (event.getActionCommand().equals("licenseFrame.close"))
 		{
-			liscenseFrame.dispose();
+			licenseFrame.dispose();
 		}
 	}
 	
@@ -191,8 +194,8 @@ public class AboutGUI extends JFrame implements ActionListener
 			{
 				if (name.equals("main"))	
 					dispose();
-				else if (name.equals("liscense"))
-					liscenseFrame.dispose();
+				else if (name.equals("license"))
+					licenseFrame.dispose();
 			}
 	}
 }
