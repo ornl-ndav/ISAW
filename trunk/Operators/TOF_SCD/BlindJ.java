@@ -27,6 +27,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/04/09 16:23:48  pfpeterson
+ * Moved the code to write a matrix file from here to
+ * DataSetTools.operator.Generic.TOF_SCD.Util. Also cleaned up imports.
+ *
  * Revision 1.2  2003/02/24 22:06:07  pfpeterson
  * Changed the means of initializing the IntArrayPG.
  *
@@ -57,18 +61,13 @@
  */
 package Operators.TOF_SCD;
 
-import DataSetTools.operator.*;
-import DataSetTools.operator.DataSet.Information.XAxis.*;
-import DataSetTools.operator.Generic.Special.*;
+import DataSetTools.operator.Operator;
 import DataSetTools.operator.Generic.TOF_SCD.*;
-import DataSetTools.retriever.*;
-import DataSetTools.dataset.*;
-import DataSetTools.util.*;
-import DataSetTools.viewer.*;
-import java.util.*;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.IntList;
+import DataSetTools.util.SharedData;
+import java.util.Vector;
 import DataSetTools.parameter.*;
-import java.text.*;
-import java.io.*;
 import IPNSSrc.*;
 
 /** 
@@ -309,46 +308,31 @@ public class BlindJ extends  GenericTOF_SCD {
    * matrix file.
    */
   private Object writeMatFile(String filename, blind BLIND){
-    // create matrix file contents
-    DecimalFormat df = new DecimalFormat("##0.000000;#0.000000");
-    StringBuffer sb= new StringBuffer(10*3+1);
-    for( int i=0;i<3;i++){
-      for (int j=0;j<3;j++)
-        sb.append(format(df.format( BLIND.u[3*j+i]),10));
-      sb.append("\n");
-    }
-    df = new DecimalFormat("#####0.000;####0.000");
-    sb.append(format(df.format( BLIND.D1),10));
-    sb.append(format(df.format( BLIND.D2),10));
-    sb.append(format(df.format( BLIND.D3),10));
-    sb.append(format(df.format( BLIND.D4),10));
-    sb.append(format(df.format( BLIND.D5),10));
-    sb.append(format(df.format( BLIND.D6),10));
-    sb.append(format(df.format( BLIND.cellVol),10));
-    sb.append("\n");
-    for( int i=0; i < 7; i++)
-      sb.append(format(df.format(0.0),10));
-    sb.append("\n");
+    // create a UB matrix
+    float[][] UB=new float[3][3];
+    for( int i=0 ; i<3 ; i++ )
+      for( int j=0 ; j<3 ; j++ )
+        UB[i][j]=(float)BLIND.u[3*i+j];
 
-    //Write results to the matrix file
-    FileOutputStream fout = null;
-    try{
-      fout = new FileOutputStream( filename );
-      fout.write( sb.toString().getBytes());
-      fout.flush();
-    }catch( IOException e){
-      return new ErrorString("Writing Matrix File: "+e.getMessage());
-    }finally{
-      if(fout!=null){
-        try{
-          fout.close();
-        }catch(IOException e){
-          // let it drop on the floor
-        }
-      }
-    }
+    // create a lattice parameters vector
+    float[] abc=new float[7];
+    abc[0]=(float)BLIND.D1;
+    abc[1]=(float)BLIND.D2;
+    abc[2]=(float)BLIND.D3;
+    abc[3]=(float)BLIND.D4;
+    abc[4]=(float)BLIND.D5;
+    abc[5]=(float)BLIND.D6;
+    abc[6]=(float)BLIND.cellVol;
 
-    return "Wrote file: "+filename;
+    // create a sigma matrix
+    float[] sig={0f,0f,0f,0f,0f,0f,0f};
+
+    // write out the file
+    ErrorString error=Util.writeMatrix(filename,UB,abc,sig);
+    if(error!=null)
+      return error;
+    else
+      return "Wrote file: "+filename;
   }
 
   /* ------------------------------- main --------------------------------- */ 
