@@ -362,9 +362,9 @@ public class ParseFunction extends ScanString {
    * Return the solution of the function if it has no independent values
    * or they have already been set using the set methods
    * @return solution of the function
-   * @see ParseFunction.setX()
-   * @see ParseFunction.setY()
-   * @see ParseFunction.setZ()
+   * @see ParseFunction#setX
+   * @see ParseFunction#setY
+   * @see ParseFunction#setZ
    */
         public double getResult() throws Exception {
         	
