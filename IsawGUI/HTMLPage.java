@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2002/06/11 21:37:57  rmikk
+ * Used StringBuffer to optimize and speed up creating
+ *   HTML pages
+ *
  * Revision 1.8  2002/05/03 15:24:57  rmikk
  * The pages describing specific function have the prompt for the parameter
  *    included with the data type of the parameter
@@ -219,9 +223,10 @@ class HTMLPage extends JFrame
    private
    void setUpOpPanel() {
       Script_Class_List_Handler SH = new Script_Class_List_Handler();
-      String Textt = "<HTML><BODY><A href=\"XX$Panel3\">BACK</a><P>";
+      StringBuffer SB= new StringBuffer(5000);
+      SB.append( "<HTML><BODY><A href=\"XX$Panel3\">BACK</a><P>");
 
-      Textt += " <Center><H1>Current Operators</H1></Center>";
+      SB.append(" <Center><H1>Current Operators</H1></Center>");
       int n = SH.getNum_operators ();
       int nrows = n / 4;
       int ncols = 4;
@@ -240,24 +245,24 @@ class HTMLPage extends JFrame
          if( nrows * ncols < n ) 
              ncols++;       
       }
-      Textt += "<table> <tr><td>";
+      SB.append( "<table> <tr><td>");
       for( int i = 0; i < n; i++ )
       {
          Operator O = SH.getOperator ( i );
          String command = O.getCommand ();
 
-         Textt += "<A href=\"XX$Panel2#" + i + "\">" + command + "</a><BR>";
+         SB.append( "<A href=\"XX$Panel2#" + i + "\">" + command + "</a><BR>");
          if( nrows * ( ( i + 1 ) / nrows ) == i + 1 )
          {
-            Textt += "</TD>";
+            SB.append( "</TD>");
             if( i < n - 1 )
-               Textt += "<TD>";
+               SB.append( "<TD>");
          }
       }
       if( nrows * n / nrows != n )
-         Textt += "</TD>";
-      Textt += "</TR></table></body></html>";
-      OperatorPane = Textt;
+         SB.append( "</TD>");
+      SB.append("</TR></table></body></html>");
+      OperatorPane = SB.toString();
    }
 
    private
