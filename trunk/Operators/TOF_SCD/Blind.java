@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/02/18 22:59:00  pfpeterson
+ *  Updated calls to deprecated method fixSparator.
+ *
  *  Revision 1.12  2003/01/02 21:54:07  pfpeterson
  *  Fixed small error in full constructor.
  *
@@ -160,7 +163,7 @@ public class Blind extends    GenericTOF_SCD {
       return new ErrorString("must specify a peaks file");
     
     // standardize the peaks filename
-    peaksfile=FilenameUtil.fixSeparator(peaksfile);
+    peaksfile=FilenameUtil.setForwardSlash(peaksfile);
     
     // then confirm the peaks file exists
     if(! SysUtil.fileExists(peaksfile) )
