@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.83  2002/02/26 21:15:57  pfpeterson
+ *  Corrected the condition for the no data highlighted error to appear
+ *  in the status pane.
+ *
  *  Revision 1.82  2002/02/25 23:32:27  pfpeterson
  *  Extracted the writing of default properties file from Isaw.java and
  *  set new values to be more reasonable.
@@ -1450,7 +1454,7 @@ public class Isaw
       if( s.equals(IMAGE_VIEW_MI) )
       {
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  || ds != null){
+        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
           new ViewManager( ds, IViewManager.IMAGE );
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
@@ -1464,7 +1468,7 @@ public class Isaw
       { //SharedData.status_pane.add("Hi There");
         
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  || ds != null){
+        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
           new ViewManager( ds, IViewManager.SELECTED_GRAPHS );
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
@@ -1477,7 +1481,7 @@ public class Isaw
       if( s.equals(SCROLL_VIEW_MI) )
       {   
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  || ds != null){
+        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
           new ViewManager( ds, IViewManager.SCROLLED_GRAPHS );
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
@@ -1490,7 +1494,7 @@ public class Isaw
       if( s.equals(THREED_VIEW_MI) )
       {   
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  || ds != null){
+        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
             new ViewManager( ds, IViewManager.THREE_D );
             ds.setPointedAtIndex( 0 );
             ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
@@ -1503,7 +1507,7 @@ public class Isaw
       if( s.equals(TABLE_VIEW_MI) )
       {   
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  || ds != null){
+        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
             new ViewManager( ds, IViewManager.TABLE );
             ds.setPointedAtIndex( 0 );
             ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
