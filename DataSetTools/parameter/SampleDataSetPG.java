@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/11/19 04:13:23  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.10  2003/10/11 19:19:16  bouzekc
  *  Removed clone() as the superclass now implements it using reflection.
  *
@@ -86,18 +89,18 @@ public class SampleDataSetPG extends DataSetPG{
     // ********** Constructors **********
     public SampleDataSetPG(String name, Object value){
         super(name,value);
-        this.type=TYPE;
+        this.setType(TYPE);
         if(!isSampleDataSet(value)){
-                SharedData.addmsg("WARN: Non-"+this.type
+                SharedData.addmsg("WARN: Non-"+getType()
                                   +" in SampleDataSetPG constructor");
         }
     }
 
     public SampleDataSetPG(String name, Object value, boolean valid){
         super(name,value,valid);
-        this.type=TYPE;
+        this.setType(TYPE);
         if(!isSampleDataSet(value)){
-                SharedData.addmsg("WARN: Non-"+this.type
+                SharedData.addmsg("WARN: Non-"+getType()
                                   +" in SampleDataSetPG constructor");
         }
     }

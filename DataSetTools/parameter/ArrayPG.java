@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2003/11/19 04:13:21  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.33  2003/10/11 18:59:06  bouzekc
  *  Removed clone() as ParameterGUI now implements it.
  *
@@ -194,7 +197,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    */
   public ArrayPG( String name, Object val ) {
     super( name, val );
-    type = TYPE;
+    setType( TYPE );
   }
 
   /**
@@ -206,7 +209,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    */
   public ArrayPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    type = TYPE;
+    setType( TYPE );
   }
 
   //~ Methods ******************************************************************
@@ -226,7 +229,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @return The String value associated with this ArrayPG.
    */
   public String getStringValue(  ) {
-    return ArraytoString( ( Vector )value );
+    return ArraytoString( ( Vector )getValue(  ) );
   }
 
   /**
@@ -235,43 +238,47 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @param val The value to set.
    */
   public void setValue( Object val ) {
+    Vector vecVal = null;
+
     if( val == null ) {
-      value = new Vector(  );
+      vecVal = new Vector(  );
     } else if( val instanceof Vector ) {
-      value = ( Vector )val;
+      vecVal = ( Vector )val;
     } else if( val instanceof String ) {
-      value = StringtoArray( ( String )val );
+      vecVal = StringtoArray( ( String )val );
     } else {
       return;
     }
 
-    if( initialized ) {
-      ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
-        ArraytoString( ( Vector )value ) );
+    if( getInitialized(  ) ) {
+      ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).setText( 
+        ArraytoString( vecVal ) );
     }
+
+    //always update internal value
+    super.setValue( vecVal );
   }
 
   /**
-   * Accessor method to retrieve the value of this ArrayPG.
+   * Accessor method to retrieve the value of this ArrayPG.  If this is called
+   * and this ArrayPG has been initialized, it also sets the internal value to
+   * the GUI value.
    *
    * @return The value of this ArrayPG.
    */
   public Object getValue(  ) {
     //Vector of DataSets
+    Object val = super.getValue(  );
+
     if( 
-      ( value != null ) && ( ( ( Vector ) value  ).size(  ) > 0 ) &&
-        ( ( ( Vector )value ).elementAt( 0 ) instanceof DataSet ) ) {
-      return value;
+      ( val != null ) && ( ( ( Vector )val ).size(  ) > 0 ) &&
+        ( ( ( Vector )val ).elementAt( 0 ) instanceof DataSet ) ) {
+      return val;
     }
 
-    Object val = null;
-
-    if( initialized ) {
-      String StringValue = ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).getText(  );
-
-      val = StringtoArray( StringValue );
-    } else {
-      val = value;
+    if( getInitialized(  ) ) {
+      val = ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).getText(  );
+      val = StringtoArray( val.toString(  ) );
     }
 
     return val;
@@ -363,21 +370,24 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @param val The item to add.
    */
   public void addItem( Object val ) {
-    if( value == null ) {
-      value = new Vector(  );  // initialize if necessary
-    }
-
     if( val == null ) {
       return;  // don't add null to the vector
     }
 
-    if( ( ( Vector )value ).indexOf( val ) < 0 ) {
-      ( ( Vector )value ).add( val );  // add if unique
+    if( getValue(  ) == null ) {
+      setValue( new Vector(  ) );  // initialize if necessary
     }
 
-    if( initialized ) {
-      ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
-        ArraytoString( ( Vector )value ) );
+    Vector values = ( Vector )getValue(  );
+
+    if( values.indexOf( val ) < 0 ) {
+      values.add( val );  // add if unique
+      setValue( values );
+    }
+
+    if( getInitialized(  ) ) {
+      ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).setText( 
+        ArraytoString( values ) );
     }
   }
 
@@ -396,15 +406,14 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * Calls Vector.clear() on the value.
    */
   public void clearValue(  ) {
-    if( value == null ) {
+    if( getValue(  ) == null ) {
       return;
     }
+    ( ( Vector )getValue(  ) ).clear(  );
 
-    ( ( Vector )value ).clear(  );
-
-    if( initialized ) {
-      ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
-        ArraytoString( ( Vector )value ) );
+    if( getInitialized(  ) ) {
+      ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).setText( 
+        ArraytoString( ( Vector )getValue(  ) ) );
     }
   }
 
@@ -414,18 +423,21 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @param init_values The Vector of values to initialize this ArrayPG to.
    */
   public void initGUI( Vector init_values ) {
-    if( initialized ) {
+    if( getInitialized(  ) ) {
       return;  // don't initialize more than once
     }
+
     if( init_values != null ) {
       setValue( init_values );
     }
-
-    entrywidget = new EntryWidget( new JTextField( ArraytoString( ( Vector )value ) ) );
+    setEntryWidget( 
+      new EntryWidget( 
+        new JTextField( ArraytoString( ( Vector )getValue(  ) ) ) ) );
 
     //we'll set a really small preferred size and let the Layout Manager take
     //over at that point
-    entrywidget.setPreferredSize( new Dimension( 2, 2 ) );
+    getEntryWidget(  )
+      .setPreferredSize( new Dimension( 2, 2 ) );
     super.initGUI(  );
   }
 
@@ -452,9 +464,13 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @param val The key of the item to remove.
    */
   public void removeItem( Object val ) {
-    int index = ( ( Vector )value ).indexOf( val );
-
+    int index = ( ( Vector )getValue(  ) ).indexOf( val );
     removeItem( index );
+
+    if( getInitialized(  ) ) {
+      ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).setText( 
+        ArraytoString( ( Vector )getValue(  ) ) );
+    }
   }
 
   /**
@@ -463,8 +479,13 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @param index The index of the item to remove.
    */
   public void removeItem( int index ) {
-    if( ( index >= 0 ) && ( index < ( ( Vector )value ).size(  ) ) ) {
-      ( ( Vector )value ).remove( index );
+    if( ( index >= 0 ) && ( index < ( ( Vector )getValue(  ) ).size(  ) ) ) {
+      ( ( Vector )getValue(  ) ).remove( index );
+    }
+
+    if( getInitialized(  ) ) {
+      ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).setText( 
+        ArraytoString( ( Vector )getValue(  ) ) );
     }
   }
 
@@ -553,8 +574,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       return -1;
     }
 
-    int same = 1;
-
+    int same     = 1;
     String first = vals.elementAt( start )
                        .getClass(  )
                        .getName(  );
@@ -604,32 +624,34 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @return The String label.
    */
   private String stringVersion(  ) {
-    if( ( value == null ) || ( ( ( Vector )value ).size(  ) <= 0 ) ) {
+    Object obj = getValue(  );
+
+    if( ( obj == null ) || ( ( ( Vector )obj ).size(  ) <= 0 ) ) {
       return "";
     } else {
       StringBuffer result = new StringBuffer(  );
-      int numElements     = ( ( Vector )value ).size(  );
+      Vector val          = ( Vector )getValue(  );
+      int numElements     = val.size(  );
       int start           = 0;
       int index           = 0;
 
       while( start < numElements ) {
-        index = checkSame( ( Vector )value , start );
+        index = checkSame( val, start );
         result.append( 
-          shortName( ( ( Vector )value ).elementAt( ( index + start ) - 1 ) ) + 
-          "[" + index + "]" );
+          shortName( val.elementAt( ( index + start ) - 1 ) ) + "[" + index +
+          "]" );
         start = start + index;
 
         if( start < numElements ) {
           result.append( ", " );
         }
-
         index = 0;
       }
 
       if( result.length(  ) > 0 ) {
         return '[' + result.toString(  ) + ']';
       } else {
-        return '[' + value.toString(  ) + ']';
+        return '[' + val.toString(  ) + ']';
       }
     }
   }

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/11/19 04:13:21  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.16  2003/11/04 15:56:41  rmikk
  *  Took control of PropertyChange listeners and events
  *  Created a new clone method
@@ -103,17 +106,15 @@ import javax.swing.*;
 public class BooleanPG extends ParameterGUI 
                                     implements ParamUsesString{
   private static final String TYPE="Boolean";
-  JCheckBox box = null;
   // ********** Constructors **********
   public BooleanPG(String name, Object value){
     super( name, value );
-    this.type=TYPE;
-    oldValue = ((Boolean)value).booleanValue();
+    this.setType(TYPE);
   }
     
   public BooleanPG(String name, Object value, boolean valid){
     super( name, value, valid );
-    this.type=TYPE;
+    this.setType(TYPE);
   }
     
   public BooleanPG(String name, boolean value){
@@ -128,14 +129,15 @@ public class BooleanPG extends ParameterGUI
    * Override the default method.
    */
   public Object getValue(){
-    Object val=null;
-    if(this.initialized){
-      JCheckBox wijit = ( JCheckBox ) (entrywidget.getComponent( 0 ) );
+    Object val=super.getValue();
+    
+    //update if a GUI exists
+    if(this.getInitialized()){
+      JCheckBox wijit = ( JCheckBox ) getEntryWidget().getComponent( 0 );
       val = new Boolean( wijit.isSelected(  ) );
-    }else{
-      val=this.value;
     }
-    if( !(val instanceof Boolean) ) val=null;
+
+    if( !(val instanceof Boolean) ) val = null;
 
     return val;
   }
@@ -153,36 +155,37 @@ public class BooleanPG extends ParameterGUI
    *
    * For integers, zero is false, everything else is true.
    */
-  public void setValue(Object value){
+  public void setValue(Object val){
     Boolean booval=null;
     
-    if(value==null){
+    if(val==null){
       booval=Boolean.FALSE;
-    }else if(value instanceof Boolean){
-      booval=(Boolean)value;
-    }else if(value instanceof String){
-      this.setStringValue((String)value);
+    }else if(val instanceof Boolean){
+      booval=(Boolean)val;
+    }else if(val instanceof String){
+      this.setStringValue((String)val);
       return;
-    }else if(value instanceof Integer){
-      int intval=((Integer)value).intValue();
+    }else if(val instanceof Integer){
+      int intval=((Integer)val).intValue();
       if(intval==0)
         booval=Boolean.FALSE;
       else
         booval=Boolean.TRUE;
     }else{
       throw new ClassCastException("Could not coerce "
-                                +value.getClass().getName()+" into a Boolean");
+                                +val.getClass().getName()+" into a Boolean");
     }
 
-    if(this.initialized){
+    //update the visual checkbox
+    if(this.getInitialized()){
         boolean newval=booval.booleanValue();
         boolean oldval = 
-          ( ( JCheckBox )( entrywidget.getComponent( 0 ) ) ).isSelected(  );
+          ( ( JCheckBox )( getEntryWidget().getComponent( 0 ) ) ).isSelected(  );
         if(newval!=oldval)
-          ( ( JCheckBox )( entrywidget.getComponent( 0 ) ) ).doClick(  ); 
-    }else{
-      this.value=booval;
+          ( ( JCheckBox )( getEntryWidget().getComponent( 0 ) ) ).doClick(  ); 
     }
+    //always update the internal value
+    super.setValue(booval);
   }
 
   /**
@@ -214,7 +217,7 @@ public class BooleanPG extends ParameterGUI
    * Allows for initialization of the GUI after instantiation.
    */
   public void initGUI(Vector init_values){
-    if(this.initialized) return; // don't initialize more than once
+    if(this.getInitialized()) return; // don't initialize more than once
 
     if(init_values!=null){
       if(init_values.size()==1){
@@ -224,10 +227,8 @@ public class BooleanPG extends ParameterGUI
         // something is not right, should throw an exception
       }
     }
-    box = new JCheckBox("",
-                                ((Boolean)this.getValue()).booleanValue()); 
-    entrywidget=new EntryWidget( box );
-    box.addActionListener( new CheckBoxActionListener( this ));
+    setEntryWidget(new EntryWidget( 
+                new JCheckBox("", ((Boolean)this.getValue()).booleanValue()))); 
     
     super.initGUI();
   }
@@ -274,61 +275,4 @@ public class BooleanPG extends ParameterGUI
       setValid( false );
     }
   }
-
-  private Vector listeners = new Vector();
-  public void addPropertyChangeListener( PropertyChangeListener listener){
-     if( listeners.indexOf( listener) < 0)
-        listeners.addElement( listener);
-
-  }
-  
-  /**
-  *    The only property that will be notified is "value"
-  */
-  public void addPropertyChangeListener(java.lang.String prop,
-                                      java.beans.PropertyChangeListener pcl){
-     if( prop == null)
-        return;
-     if( ! prop.equals("value"))
-        return;
-     addPropertyChangeListener( pcl);
-
-  }
-  public void removePropertyChangeListener( PropertyChangeListener listener){
-     listeners.remove( listener);
-  }
- boolean oldValue = false;
- class CheckBoxActionListener implements ActionListener{
-
-    BooleanPG bpg;
-    public CheckBoxActionListener( BooleanPG bpg){
-      this.bpg = bpg;
-    }
-    public void actionPerformed( ActionEvent evt){
-       if( box.isSelected() == oldValue)
-         return;
-       PropertyChangeEvent Pevt = new PropertyChangeEvent(bpg,
-                             "value", new Boolean( oldValue),
-                              new Boolean( box.isSelected()));
-       for( int i = 0; i< listeners.size(); i++){
-         PropertyChangeListener list =(PropertyChangeListener)(listeners.elementAt(i) );
-         list.propertyChange(Pevt);
-       }
-   
-      oldValue = box.isSelected(); 
-    }
-
- }//class CheckBoxActionListener
- public Object clone(){
-   BooleanPG  Res = new BooleanPG( this.getName(), this.getValue());
-   if( this.initialized)
-     Res.initGUI(null);
-
-   //System.out.println("in BooleanPG clone ere add listeners "+listeners.size());
-   for( int i=0; i<listeners.size(); i++)
-     Res.addPropertyChangeListener( (PropertyChangeListener)(listeners.elementAt(i)));
-   return Res;
-
-
- }
 }

@@ -31,13 +31,16 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/11/19 04:13:22  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.16  2003/10/20 22:27:44  bouzekc
  *  Now sets the internal value when a String is encountered during setValue.
  *
  *  Revision 1.15  2003/10/20 16:22:44  rmikk
  *  Used floatval for value in setValue
  *  Used super.getValue() to get initial value in getValue.  This checks the
- *     entrywidget's value and the value variable
+ *     getEntryWidget()'s value and the value variable
  *
  *  Revision 1.14  2003/10/11 19:27:14  bouzekc
  *  Removed declaration of ParamUsesString as the superclass declares this
@@ -105,13 +108,13 @@ public class FloatPG extends StringEntryPG {
     public FloatPG(String name, Object value){
         super(name,value);
         this.FILTER=new FloatFilter();
-        this.type=TYPE;
+        this.setType(TYPE);
     }
     
     public FloatPG(String name, Object value, boolean valid){
         super(name,value,valid);
         this.FILTER=new FloatFilter();
-        this.type=TYPE;
+        this.setType(TYPE);
     }
     
     public FloatPG(String name, float value){
@@ -156,28 +159,28 @@ public class FloatPG extends StringEntryPG {
      * Overrides the default version of setValue to properly deal with
      * floats.  This will be 0.0 if no other valid value is set.
      */
-    public void setValue(Object value){
+    public void setValue(Object val){
       Float floatval=null;
-      if(value==null){
+      if(val==null){
         floatval=new Float(Float.NaN);
-      }else if(value instanceof Float){
-        floatval=(Float)value;
-      }else if(value instanceof Double){
-        floatval=new Float(((Double)value).doubleValue());
-      }else if(value instanceof Integer){
-        floatval=new Float(((Integer)value).intValue());
-      }else if(value instanceof String){
-        this.setStringValue((String)value);
+      }else if(val instanceof Float){
+        floatval=(Float)val;
+      }else if(val instanceof Double){
+        floatval=new Float(((Double)val).doubleValue());
+      }else if(val instanceof Integer){
+        floatval=new Float(((Integer)val).intValue());
+      }else if(val instanceof String){
+        this.setStringValue((String)val);
         return;
       }else{
         throw new ClassCastException("Could not coerce "
-                                  +value.getClass().getName()+" into a Float");
+                                  +val.getClass().getName()+" into a Float");
       }
 
-      if(this.initialized){
+      if(this.getInitialized()){
         super.setEntryValue((floatval));
       }
-      this.value=(floatval);
+      super.setValue( floatval );
      
     }
 
@@ -199,7 +202,7 @@ public class FloatPG extends StringEntryPG {
     }
 
     public void setStringValue(String val) throws NumberFormatException{
-      if(initialized) {
+      if(getInitialized()) {
         super.setEntryValue(val);
       }
       this.setValue(new Float(val.trim()));

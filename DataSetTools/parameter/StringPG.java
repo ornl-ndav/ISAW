@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/11/19 04:13:23  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.12  2003/10/11 19:24:33  bouzekc
  *  Removed declaration of "ParamUsesString" as the superclass declares it
  *  already.  Removed clone() definition as the superclass implements it
@@ -88,12 +91,12 @@ public class StringPG extends StringEntryPG {
     // ********** Constructors **********
     public StringPG(String name, Object value){
         super(name,value);
-        this.type=TYPE;
+        this.setType(TYPE);
     }
 
     public StringPG(String name, Object value, boolean valid){
         super(name,value,valid);
-        this.type=TYPE;
+        this.setType(TYPE);
     }
 
     // ********** IParameter requirements **********
@@ -110,10 +113,10 @@ public class StringPG extends StringEntryPG {
       else
         svalue=value.toString();
 
-      if(this.initialized)
+      if(this.getInitialized())
         super.setEntryValue(svalue);
-      else
-        this.value=svalue;
+        
+      super.setValue(svalue);
     }
 
     // ********** ParamUsesString requirements **********

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/11/19 04:13:22  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.14  2003/10/11 19:22:11  bouzekc
  *  Removed clone() as the superclass now implements it using reflection.
  *
@@ -44,7 +47,7 @@
  *  Implemented validateSelf().
  *
  *  Revision 1.10  2003/08/22 20:12:07  bouzekc
- *  Modified to work with EntryWidget.
+ *  Modified to work with getEntryWidget().
  *
  *  Revision 1.9  2003/08/15 23:50:04  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
@@ -99,19 +102,19 @@ public class DataSetPG extends ChooserPG implements IObserver{
     // ********** Constructors **********
     public DataSetPG(String name, Object value){
         super(name,value);
-        this.type=TYPE;
+        this.setType(TYPE);
         if(value==null || value==DataSet.EMPTY_DATA_SET) return;
         if(!(value instanceof DataSet))
-            SharedData.addmsg("WARN: Non-"+this.type
+            SharedData.addmsg("WARN: Non-"+this.getType()
                               +" in DataSetPG constructor");
     }
 
     public DataSetPG(String name, Object value, boolean valid){
         super(name,value,valid);
-        this.type=TYPE;
+        this.setType(TYPE);
         if(value==null || value==DataSet.EMPTY_DATA_SET) return;
         if(!(value instanceof DataSet))
-            SharedData.addmsg("WARN: Non-"+this.type
+            SharedData.addmsg("WARN: Non-"+this.getType()
                               +" in DataSetPG constructor");
     }
 
@@ -146,13 +149,15 @@ public class DataSetPG extends ChooserPG implements IObserver{
       // from choices
       this.vals.remove(observed);
       // from GUI
-      if(this.initialized) ((HashEntry)(entrywidget.getComponent(0))).removeItem(observed);
+      if(this.getInitialized()){
+        ((HashEntry)getEntryWidget().getComponent(0)).removeItem(observed);
+      }
       // from the value      
-      if(this.value==observed){
+      if(getValue()==observed){
         if(this.vals!=null && this.vals.size()>0)
-          this.value=this.vals.elementAt(0); // set to first choice
+          setValue(this.vals.elementAt(0)); // set to first choice
         else
-          this.value=DataSet.EMPTY_DATA_SET; // or empty dataset
+          setValue(DataSet.EMPTY_DATA_SET); // or empty dataset
       }
 
       // stop listening

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/11/19 04:13:22  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.10  2003/10/11 19:24:32  bouzekc
  *  Removed declaration of "ParamUsesString" as the superclass declares it
  *  already.  Removed clone() definition as the superclass implements it
@@ -80,12 +83,12 @@ public class FuncStringPG extends StringPG {
     // ********** Constructors **********
     public FuncStringPG(String name, Object value){
         super(name,value);
-        this.type=TYPE;
+        this.setType(TYPE);
     }
     
     public FuncStringPG(String name, Object value, boolean valid){
         super(name,value,valid);
-        this.type=TYPE;
+        this.setType(TYPE);
     }
 
     /*
