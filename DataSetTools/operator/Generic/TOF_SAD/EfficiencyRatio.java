@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/07/18 20:16:06  dennis
+ * Now calls tof_data_calc.SubtractDelayedNeutrons(,,)
+ *
  * Revision 1.1  2003/07/18 14:20:27  dennis
  * Initial form of efficiency ratio operator, not complete.
  *
@@ -164,13 +167,30 @@ public class EfficiencyRatio extends GenericTOF_SAD
     float   radius     = ((Float)(getParameter(5).getValue())).floatValue();
     float   delayed_n  = ((Float)(getParameter(6).getValue())).floatValue();
 
+    float   frequecy   = 30;                      // this could be a parameter
+
     //
     // Find the DataGrid for this detector and make sure that we have a 
     // segmented detector. 
     //
-                                                  // clone the DataSet so we
+                                                  // clone the DataSets so we
                                                   // don't damage the original
-    ds = (DataSet)ds.clone();
+    ds     = (DataSet)ds.clone();
+    mon_ds = (DataSet)mon_ds.clone();
+
+    mon_ds.removeData_entry(2);
+    mon_ds.removeData_entry(1);
+                                                 // subtract of delayed netrons
+
+    tof_data_calc.SubtractDelayedNeutrons( 
+                                      (TabulatedData)mon_ds.getData_entry(0), 
+                                       frequecy, 
+                                       delayed_n );
+
+    for ( int i = 0; i < ds.getNum_entries(); i++ )
+      tof_data_calc.SubtractDelayedNeutrons((TabulatedData)ds.getData_entry(i),
+                                             frequecy, 
+                                             delayed_n );
 
     UniformGrid grid = null;
     Data d = null;
