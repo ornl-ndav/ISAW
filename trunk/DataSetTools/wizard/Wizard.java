@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.75  2003/09/11 19:40:55  bouzekc
+ * Removed debugging println.
+ *
  * Revision 1.74  2003/09/10 04:46:01  bouzekc
  * Extracted method to update Form progress bar out.  Fixed bug where the
  * first time a Form is shown, the progress bar label is not Form name
@@ -1662,8 +1665,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    */
   private void updateFormProgressBar(  ) {
     Form f = getCurrentForm(  );
-
-    System.out.println( f == null );
 
     if( f != null ) {
       if( f.done(  ) ) {
