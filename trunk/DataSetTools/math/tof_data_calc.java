@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2003/04/17 19:48:00  pfpeterson
+ *  DiffractometerFocus returns supplied XScale if no focusing is done.
+ *
  *  Revision 1.19  2003/03/19 23:38:31  dennis
  *  Now uses different extent factors for the monitor peaks
  *  (for low energy and high energy) when calculating the incident
@@ -499,8 +502,10 @@ public static XScale DiffractometerFocus(XScale scale,
             x_vals[i]*=scalar;
         }
         new_scale=new VariableXScale(x_vals);
+        return new_scale;
+    }else{
+      return scale;
     }
-    return new_scale;
 }
 
 /**
