@@ -110,7 +110,7 @@ public class SpectrometerTofToEnergyLoss extends    DataSetOperator
                                      // get the energy scale parameters 
     float min_E = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float max_E = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    int   num_E = ( (Float)(getParameter(2).getValue()) ).intValue() + 1;
+    int   num_E = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
 
                                      // validate energy bounds
     if ( min_E > max_E )             // swap bounds to be in proper order
@@ -180,7 +180,7 @@ public class SpectrometerTofToEnergyLoss extends    DataSetOperator
         new_ds.addData_entry( new_data );      
       }
     }
-    ChopTools.chop_dataDrawer.drawgraphDataSet(new_ds);
+    //ChopTools.chop_dataDrawer.drawgraphDataSet(new_ds);
     return new_ds;
   }  
 
