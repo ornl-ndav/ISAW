@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/08/15 23:15:32  bouzekc
+ *  Removed init() from interface.
+ *
  *  Revision 1.4  2003/04/14 21:26:47  pfpeterson
  *  Moved valid state from IParameter.
  *
@@ -57,13 +60,7 @@ public interface IParameterGUI extends IParameter{
     /**
      * Allows for initialization of the GUI after instantiation.
      */
-    void                   init(java.util.Vector init_values);
-
-    /**
-     * Convenince method for initialization of the GUI after
-     * instantiation with null vector.
-     */
-    void                   init();
+    void                   initGUI(java.util.Vector init_values);
 
     /**
      * Method for producing an alternative layout of the GUI.
