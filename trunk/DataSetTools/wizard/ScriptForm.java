@@ -85,7 +85,61 @@ public class ScriptForm extends OperatorForm implements Serializable {
       filename.substring( 
         ( FilenameUtil.setForwardSlash( filename ) ).lastIndexOf( '/' ) + 1,
         filename.length(  ) ) );
-    super.form_op = new ScriptOperator( filename );
+    form_op = new ScriptOperator( filename );
+    setDefaultParameters(  );
+  }
+
+  /**
+   *  Construct a ScriptForm with the given Script file nameand
+   *  result parameter type.
+   *
+   *  @param  filename        The Script file name to use
+   *
+   *  @param  type            The IParameterGUI type of the result
+   *                          parameter.  e.g. for a LoadFilePG,
+   *                          use "LoadFile"
+   *
+   *  @param  name            The name of the result parameter.
+   *                          e.g. "log file"
+   *
+   */
+  public ScriptForm( String filename, String type, String name ) {
+    this( filename );
+    setParamClass( type );
+
+    //after calling that, we need to call setDefaultParameters()
+    result_param.setName( name );
+    setDefaultParameters(  );
+  }
+
+  /**
+   *  Construct a ScriptForm with the given Script file name and
+   *  result parameter type. This constructor allows setting of the
+   *  constant parameters.
+   *
+   *  @param  filename        The Script file name to use for this form
+   *
+   *  @param  type            The IParameterGUI type of the result
+   *                          parameter.  e.g. for a LoadFilePG,
+   *                          use "LoadFile"
+   *
+   *  @param  name            The name of the result parameter.
+   *                          e.g. "log file"
+   *
+   *  @param indices          The array of indices that represent constant
+   *                          parameters for this Form.
+   *
+   *
+   */
+  public ScriptForm( String filename, String type, String name, int[] indices ) {
+    this( filename );
+    setParamClass( type );
+
+    //after calling that, we need to call setDefaultParameters()
+    result_param.setName( name );
+    HAS_CONSTANTS = true;
+    this.setConstantParamIndices( indices );
+    setDefaultParameters(  );
   }
 
   /**
