@@ -45,6 +45,7 @@ import OverplotView.*;
 import javax.swing.text.*;
 import java.applet.*;
 import NetComm.*;
+import DataSetTools.components.ParametersGUI.*;
 
 /**
  * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
@@ -735,10 +736,11 @@ str));
                     } 
                     catch (Exception e){System.out.println("Choose a input file");
                                         return;}
-
-			DataSet DS[] = null;
+                  JTreeUI jjt=IS.jtui;
+                  DSgetArray  DSA= new DSgetArray( jjt );
+			DataSet DS[] = DSA.getDataSets() ;
                         
-			cp.getExecScript( filename, IS ,DS, sessionLog);
+			cp.getExecScript( filename, IS , DS , sessionLog);
 
                }
         }
