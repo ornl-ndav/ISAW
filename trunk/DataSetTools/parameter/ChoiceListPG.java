@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2004/05/12 02:16:15  bouzekc
+ *  Added check for null value to addItems.
+ *
  *  Revision 1.19  2004/05/11 18:23:47  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -158,6 +161,10 @@ public class ChoiceListPG extends ChooserPG {
    * @param values The values to add.
    */
   public void addItems( Vector values ) {
+    if( values == null ) {
+      return;
+    }
+    
     Object obj;
 
     for( int i = 0; i < values.size(  ); i++ ) {
