@@ -3,6 +3,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.5  2001/08/16 18:54:12  chatterjee
+ * Reordered filter extension & labeled isd as temporary
+ *
  * Revision 1.4  2001/08/15 22:34:23  chatterjee
  * Added new constructor with a boolean parameter to indicate the filter options
  * Filters for the save dialog can differ from the open dialog box.
@@ -93,12 +96,14 @@ public class NeutronDataFileFilter
   {
     String S = new String( 
       "Neutron Data Files (*." + HDF         + ", " +
-                          "*." + NEXUS       + ", " +
+                          "*." + NEXUS       + ", ") ;
                           
-                          "*." + ISAW_NATIVE   );
+                         
    if(!SaveFilter)
-       S += ",  *." + RUNFILE  ;
-   S += ")";
+       S +=  "*."+ RUNFILE  + ", *." + ISAW_NATIVE+"(Temporary)"   ;
+   else
+       S +=  "*." + ISAW_NATIVE+"(Temporary)"   ;
+   S += " )";
    return S;
   }
 
