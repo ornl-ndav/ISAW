@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2004/05/01 00:42:05  bouzekc
+ *  Now uses a result parameter in keeping with general Form contract.
+ *
  *  Revision 1.17  2004/03/15 03:37:40  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -109,12 +112,7 @@ import java.util.Vector;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Generic.Save.WriteGSAS;
-import DataSetTools.parameter.ArrayPG;
-import DataSetTools.parameter.BooleanPG;
-import DataSetTools.parameter.DataDirPG;
-import DataSetTools.parameter.IParameterGUI;
-import DataSetTools.parameter.InstNamePG;
-import DataSetTools.parameter.IntArrayPG;
+import DataSetTools.parameter.*;
 import DataSetTools.util.SharedData;
 import DataSetTools.wizard.Form;
 
@@ -197,7 +195,8 @@ public class SaveAsGSASForm extends Form implements Serializable {
       new DataDirPG( "Directory to save GSAS files to", null, false ) );
     addParameter( new BooleanPG( "Export Monitor DataSet", false, false ) );
     addParameter( new BooleanPG( "Sequential bank numbering", false, false ) );
-    setParamTypes( new int[]{ 0, 1, 2, 3 }, new int[]{ 4, 5, 6 }, null );
+    setResultParam( new StringPG( "Result ", null, false ) );
+    setParamTypes( new int[]{ 0, 1, 2, 3 }, new int[]{ 4, 5, 6 }, new int[]{ 7 } );
   }
 
   /**
@@ -321,6 +320,7 @@ public class SaveAsGSASForm extends Form implements Serializable {
 
       if( result instanceof String && result.equals( "Success" ) ) {
         SharedData.addmsg( "File " + save_name + "saved." );
+        getResultParam(  ).setValue( "Success" );
       } else {  //something went wrong
 
         return errorOut( "File " + save_name + "could not be saved." );
