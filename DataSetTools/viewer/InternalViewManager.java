@@ -31,14 +31,16 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.10  2001/07/20 19:43:00  dennis
+ *  Revision 1.11  2001/07/23 18:31:01  dennis
  *  ViewManager in a JInternalFrame, instead of in a JFrame.  This file is
  *  copied from ViewManager.java, then edited to replace:
  *
- *  JFrame         with  JInternalFrame
- *  ViewManager    with  InternalViewManager
- *  WindowListener with  InternalFrameListener
- *  windowClosing  with  internalFrameClosing
+ *    JFrame         with  JInternalFrame
+ *    ViewManager    with  InternalViewManager
+ *    WindowListener with  InternalFrameListener
+ *    windowClosing  with  internalFrameClosing
+ *    WindowAdapter  with  InternalFrameAdapter
+ *    WindowEvent    with  InternalFrameEvent
  *
  */
  
@@ -65,7 +67,7 @@ import javax.swing.event.*;
  *  frame.  It contains a menu bar that allows the user to select the type 
  *  of viewer to be used to view the DataSet and appropriate view options.  
  *  It also is an observer of the DataSet and will be notified of changes 
- *  in the DataSet.  Since an InternalViewManager is a JInternalFrame, it can 
+ *  in the DataSet.  Since a InternalViewManager is an  JInternalFrame, it can 
  *  be closed by the user, or by the program.
  */
 
@@ -73,7 +75,7 @@ public class InternalViewManager extends    JInternalFrame
                                  implements IViewManager,
                                             Serializable
 {
-   private   InternalViewManager view_manager = null;
+   private   InternalViewManager     view_manager = null;
    private   DataSetViewer   viewer;
    private   ViewerState     state = null;
    private   DataSet         dataSet;
@@ -132,7 +134,7 @@ public class InternalViewManager extends    JInternalFrame
 
       addInternalFrameListener(new InternalFrameAdapter()
       {
-        public void internalFrameClosing(InternalFrameEvent ev)
+        public void InternalFrameClosing(InternalFrameEvent ev)
         {
           destroy();
         }
@@ -187,18 +189,18 @@ public class InternalViewManager extends    JInternalFrame
      if ( viewer != null )
        state = viewer.getState();
      viewer = null;
-      if ( view_type == IMAGE )
+      if ( view_type.equals( IMAGE ))
         viewer = new ImageView( tempDataSet, state );
-      else if ( view_type == SCROLLED_GRAPHS )
+      else if ( view_type.equals( SCROLLED_GRAPHS ))
         viewer = new GraphView( tempDataSet, state );
-      else if ( view_type == THREE_D )
+      else if ( view_type.equals( THREE_D ))
         viewer = new ThreeDView( tempDataSet, state );
-      else if ( view_type == SELECTED_GRAPHS )                   // use either
+      else if ( view_type.equals( SELECTED_GRAPHS ))             // use either
         viewer = new GraphableDataManager( tempDataSet );        // Kevin's or
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
       else
       {
-        System.out.println( "ERROR: Unsupported view type in ViewManager:" );
+        System.out.println( "ERROR: Unsupported view type in InternalViewManager:" );
         System.out.println( "      " + view_type );
         System.out.println( "using " + IMAGE + " by default" );
         viewer = new ImageView( tempDataSet, state );
@@ -249,21 +251,22 @@ public class InternalViewManager extends    JInternalFrame
        return;
      }
  
+     String r_string = (String)reason;
      if ( observed == dataSet )             // message about original dataSet
      {
-       if ( (String)reason == DESTROY )
+       if ( r_string.equals( DESTROY ))
          destroy();
 
-       else if ( (String)reason == DATA_DELETED   ||
-                 (String)reason == DATA_REORDERED ||
-                 (String)reason == DATA_CHANGED   ||
-                 (String)reason == HIDDEN_CHANGED   )
+       else if (  r_string.equals( DATA_DELETED )   ||
+                  r_string.equals( DATA_REORDERED ) ||
+                  r_string.equals( DATA_CHANGED )   ||
+                  r_string.equals( HIDDEN_CHANGED )  )
        {
          makeTempDataSet( false );
          viewer.setDataSet( tempDataSet );
          System.gc();
        }
-       else if ( (String)reason == POINTED_AT_CHANGED   )
+       else if ( r_string.equals( POINTED_AT_CHANGED )  )
        {                                             // tell the viewer the new
          int index = dataSet.getPointedAtIndex();    // "pointed at" index if
          if ( index != DataSet.INVALID_INDEX )       //  valid and different 
@@ -274,10 +277,10 @@ public class InternalViewManager extends    JInternalFrame
                viewer.redraw( (String)reason );
              }  
        }
-       else if ( (String)reason == GROUPS_CHANGED    ||
-                 (String)reason == SELECTION_CHANGED ||
-                 (String)reason == FIELD_CHANGED     ||
-                 (String)reason == ATTRIBUTE_CHANGED ) 
+       else if ( r_string.equals( GROUPS_CHANGED )    ||
+                 r_string.equals( SELECTION_CHANGED ) ||
+                 r_string.equals( FIELD_CHANGED )     ||
+                 r_string.equals( ATTRIBUTE_CHANGED )  ) 
        {
          viewer.redraw( (String)reason );
        }
@@ -289,14 +292,14 @@ public class InternalViewManager extends    JInternalFrame
      else if ( observed == tempDataSet )    // message about temporary dataSet
      {                                      // translate to original dataSet
                                             // and notify it's observers
-       if ( (String)reason == POINTED_AT_CHANGED ) 
+       if ( r_string.equals( POINTED_AT_CHANGED )) 
        {
          int i = tempDataSet.getPointedAtIndex();
          dataSet.setPointedAtIndex( original_index[i] ); 
          dataSet.notifyIObservers( POINTED_AT_CHANGED );
        }
 
-       else if ( (String)reason == SELECTION_CHANGED ) 
+       else if ( r_string.equals( SELECTION_CHANGED )) 
                                                   // synchonize selections and
        {                                          // notify dataSet's observers 
          for ( int i = 0; i < tempDataSet.getNum_entries(); i++ )
@@ -306,8 +309,8 @@ public class InternalViewManager extends    JInternalFrame
          dataSet.notifyIObservers( reason );
        }
 
-       else if ( (String)reason == XScaleChooserUI.N_STEPS_CHANGED ||
-                 (String)reason == XScaleChooserUI.X_RANGE_CHANGED   )
+       else if ( r_string.equals( XScaleChooserUI.N_STEPS_CHANGED ) ||
+                 r_string.equals( XScaleChooserUI.X_RANGE_CHANGED )  )
        {
          if ( conversion_operator == null )
            viewer.redraw( (String)reason );
@@ -528,7 +531,7 @@ private void BuildConversionsMenu()
   ButtonGroup group = new ButtonGroup();
 
   JRadioButtonMenuItem button = new JRadioButtonMenuItem(NO_CONVERSION_OP);
-  if ( CurrentConversionName() == NO_CONVERSION_OP )
+  if ( CurrentConversionName().equals( NO_CONVERSION_OP ))
     button.setSelected(true);
   button.addActionListener( conversion_menu_handler );
   conversion_menu.add( button );
@@ -540,11 +543,11 @@ private void BuildConversionsMenu()
   for ( int i = 0; i < n_ops; i++ )
   {
     op = dataSet.getOperator(i);
-    if ( op.getCategory() == Operator.X_AXIS_CONVERSION )
+    if ( op.getCategory().equals( Operator.X_AXIS_CONVERSION ))
     {
       button = new JRadioButtonMenuItem( op.getTitle() );
       button.addActionListener( conversion_menu_handler );
-      if ( CurrentConversionName() == op.getTitle() )
+      if ( CurrentConversionName().equals( op.getTitle() ))
         button.setSelected(true);
 
       conversion_menu.add( button );     
@@ -595,9 +598,9 @@ private String CurrentConversionName()     // get current conversion name
     public void actionPerformed( ActionEvent e )
     {
       String action = e.getActionCommand();
-      if ( action == CLOSE_LABEL )
+      if ( action.equals( CLOSE_LABEL ))
         destroy();
-      else if ( action == SAVE_NEW_DATA_SET )
+      else if ( action.equals( SAVE_NEW_DATA_SET ))
       {
         DataSet new_ds = (DataSet)tempDataSet.clone();
         dataSet.notifyIObservers( new_ds );
@@ -615,13 +618,13 @@ private String CurrentConversionName()     // get current conversion name
       String action = e.getActionCommand();
       boolean changed;
 
-      if ( action == SUM_SELECTED )
+      if ( action.equals( SUM_SELECTED ))
       {
         DataSetOperator op = new SumCurrentlySelected( dataSet, true, false );
         op.getResult();
         dataSet.notifyIObservers( IObserver.DATA_DELETED );
       }
-      else if ( action == SUM_UNSELECTED )
+      else if ( action.equals( SUM_UNSELECTED ))
       {
         DataSetOperator op = new SumCurrentlySelected( dataSet, false, false );
         op.getResult();
@@ -630,14 +633,14 @@ private String CurrentConversionName()     // get current conversion name
       }
 
 /* //  delete by hiding...
-      else if ( action == DELETE_SELECTED )
+      else if ( action.equals( DELETE_SELECTED ))
       {
          dataSet.hideSelected( true );
          dataSet.notifyIObservers( IObserver.HIDDEN_CHANGED );
          if ( dataSet.clearSelections() )
            dataSet.notifyIObservers( IObserver.SELECTION_CHANGED );
       }
-      else if ( action == DELETE_UNSELECTED )
+      else if ( action.equals( DELETE_UNSELECTED ))
       {
          dataSet.hideSelected( false );
          dataSet.notifyIObservers( IObserver.HIDDEN_CHANGED );
@@ -646,14 +649,14 @@ private String CurrentConversionName()     // get current conversion name
       }
 */
    // delete for real
-      else if ( action == DELETE_SELECTED )
+      else if ( action.equals( DELETE_SELECTED ))
       {
         DataSetOperator op = new DeleteCurrentlySelected( 
                                               dataSet, true, false );
         op.getResult();
         dataSet.notifyIObservers( IObserver.DATA_DELETED );
       }
-      else if ( action == DELETE_UNSELECTED )
+      else if ( action.equals( DELETE_UNSELECTED ))
       {
         DataSetOperator op = new DeleteCurrentlySelected( 
                                               dataSet, false, false );
@@ -661,7 +664,7 @@ private String CurrentConversionName()     // get current conversion name
         dataSet.notifyIObservers( IObserver.DATA_DELETED );
         dataSet.notifyIObservers( IObserver.SELECTION_CHANGED );
       }
-      else if ( action == CLEAR_SELECTED )
+      else if ( action.equals( CLEAR_SELECTED ))
       {
         if ( dataSet.clearSelections() )
           dataSet.notifyIObservers( IObserver.SELECTION_CHANGED );
@@ -680,7 +683,7 @@ private String CurrentConversionName()     // get current conversion name
     public void actionPerformed( ActionEvent e )
     {
       String action = e.getActionCommand();
-      if ( action == SHOW_ALL && dataSet.getNumHidden() > 0 )
+      if ( action.equals( SHOW_ALL ) && dataSet.getNumHidden() > 0 )
       {
          makeTempDataSet( false ); 
          viewer.setDataSet( tempDataSet );
@@ -707,7 +710,7 @@ private String CurrentConversionName()     // get current conversion name
       String action  = e.getActionCommand();
                                                  // if the request is differnt
                                                  // do the new conversion
-      if ( action != CurrentConversionName() ) 
+      if ( !action.equals( CurrentConversionName() ) ) 
       {
         JRadioButtonMenuItem button = (JRadioButtonMenuItem)e.getSource();
         button.setSelected(true);
