@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/02/26 21:17:26  pfpeterson
+ *  Added some string constants for SDDS data.
+ *
  *  Revision 1.19  2002/02/25 17:35:51  pfpeterson
  *  Added DETECTOR_CEN_HEIGHT string constant.
  *
@@ -196,6 +199,12 @@ abstract public class Attribute implements Serializable
   public static final String  DETECTOR_INFO      = "Det Info";
 
   public static final String  DS_TYPE            = "Data Set Type";
+
+  // stuff for SDDS files
+  public static final String  START_TIME_SEC     = "Start Time(sec)";
+  public static final String  TIME_OF_DAY        = "Time of Day";
+  public static final String  DAY_OF_MONTH       = "Day of Month";
+
 
   // Suggested value Strings for DataSet attributes:
 
