@@ -330,7 +330,7 @@ public class Peak{
      */
     public float t(float T0, float T1){
 	float deltaT=T1-T0;
-	float remain=this.z%1f;
+	float remain=(this.z+1f)%1f;
 
 	return 	this.t(T0+remain*deltaT);
     }
