@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/09/16 22:46:52  bouzekc
+ *  Removed addition of this as a PropertyChangeListener.  This is already done
+ *  in ParameterGUI.  This should fix the excessive events being fired.
+ *
  *  Revision 1.13  2003/09/13 23:29:46  bouzekc
  *  Moved calls from setValid(true) to validateSelf().
  *
@@ -216,7 +220,6 @@ public class BooleanPG extends ParameterGUI
     }
     entrywidget=new EntryWidget(new JCheckBox("",
                                 ((Boolean)this.getValue()).booleanValue()));
-    entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
     super.initGUI();
   }
 

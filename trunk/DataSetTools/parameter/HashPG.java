@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/09/16 22:46:54  bouzekc
+ *  Removed addition of this as a PropertyChangeListener.  This is already done
+ *  in ParameterGUI.  This should fix the excessive events being fired.
+ *
  *  Revision 1.12  2003/09/13 23:29:47  bouzekc
  *  Moved calls from setValid(true) to validateSelf().
  *
@@ -239,7 +243,6 @@ abstract public class HashPG extends ParameterGUI{
 
         // set up the combobox
         entrywidget=new EntryWidget(new HashEntry(keys));
-        this.entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
         super.initGUI();
     }
 

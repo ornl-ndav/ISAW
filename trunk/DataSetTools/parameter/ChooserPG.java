@@ -30,6 +30,10 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.17  2003/09/16 22:46:53  bouzekc
+ *  Removed addition of this as a PropertyChangeListener.  This is already done
+ *  in ParameterGUI.  This should fix the excessive events being fired.
+ *
  *  Revision 1.16  2003/09/15 18:15:25  dennis
  *  Moved addItem() call from constructors to initGUI(). (Ruth)
  *
@@ -212,7 +216,6 @@ abstract public class ChooserPG extends ParameterGUI{
 
     // set up the combobox
     entrywidget=new EntryWidget(new HashEntry(this.vals));
-    entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
     super.initGUI();
     //GUI won't properly update without this
     setValue(value);
