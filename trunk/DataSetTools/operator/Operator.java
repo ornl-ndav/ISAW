@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2001/08/15 02:06:44  rmikk
+ *  Fixed error if parameter's value is null.
+ *
  *  Revision 1.10  2001/08/10 18:41:24  rmikk
  *  Initialize the parameters variable in this constructor.
  *
@@ -318,13 +321,14 @@ abstract public class Operator implements Serializable
    *           index.
    */
   public boolean setParameter( Parameter parameter, int index )
-  {
+  { 
     if ( index < 0 || index >= parameters.size() )
       return false;
                                              // NOTE: object parameters are
                                              //       represented using null
+   
     Object value = ((Parameter)parameters.elementAt( index )).getValue();
-    if (  value == null ||
+    if (  value == null || parameter.getValue() == null ||
           value.getClass() == parameter.getValue().getClass() ) 
     {
       parameters.setElementAt( parameter, index );   // types ok, so record it
