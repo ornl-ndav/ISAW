@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.13  2003/06/18 19:57:21  bouzekc
+ * Uses super.getResult() for initializing PropertyChanger
+ * variables.
+ *
  * Revision 1.12  2003/06/17 20:35:44  bouzekc
  * Fixed setDefaultParameters so all parameters have a
  * visible checkbox.  Added more robust error checking on
@@ -267,7 +271,6 @@ public class IntegrateMultiRunsForm extends Form
     String outputDir, matrixName, calibFile, expName, rawDir, centerType;
     String integName, sliceRange, loadName, IPNSName;
     boolean append, first;
-    float increment, oldPercent, newPercent;
     int timeSliceDelta, SCDline;
     DataSet histDS;
     int[] runsArray;
@@ -389,9 +392,11 @@ public class IntegrateMultiRunsForm extends Form
     createIntegrateOperators(calibFile, SCDline, integName, sliceRange,
                              timeSliceDelta, append, centerType);
 
+    //validate the parameters and set the progress bar variables
+    super.getResult();
+
     //set the increment amount
     increment = (1.0f / runsArray.length) * 100.0f;
-    oldPercent = newPercent = 0;
 
     for(int i = 0; i < runsArray.length; i++)
     {
