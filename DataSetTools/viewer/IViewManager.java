@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/05/09 21:32:55  dennis
+ *  Added code to include the ThreeDViewer
+ *
  *  Revision 1.3  2001/04/26 14:21:35  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -62,6 +65,7 @@ public interface IViewManager extends IObserver
 
   public static final String IMAGE           = "Image View";
   public static final String SCROLLED_GRAPHS = "Scrolled Graph View";
+  public static final String THREE_D         = "3D View";
   public static final String SELECTED_GRAPHS = "Selected Graph View";
   
   public void setDataSet( DataSet ds );
