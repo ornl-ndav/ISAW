@@ -5,6 +5,9 @@
  *                               2000/06/09  Renamed from just Integrate
  *             
  * $Log$
+ * Revision 1.3  2000/11/07 15:49:06  dennis
+ * Replaced group with Group in operator title.
+ *
  * Revision 1.2  2000/08/02 20:17:58  dennis
  * Changed to use TrapIntegrate() for function data instead of just using
  * IntegrateHistogram for histogram data
@@ -62,7 +65,7 @@ public class  IntegrateGroup  extends    DataSetOperator
 
   public IntegrateGroup( )
   {
-    super( "Integrate a group" );
+    super( "Integrate a Group" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
