@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.4  2004/04/30 23:49:33  rmikk
+# Changed package names to gov.anl.ipns
+#
 # Revision 1.3  2004/01/05 17:52:10  rmikk
 # Jython class now subclass of GenericOperator
 #
@@ -46,7 +49,7 @@ from DataSetTools.operator import *
 from Wizard.TOF_SAD import *
 from Command import ScriptUtil
 from java.util  import Vector
-from DataSetTools.util import ErrorString
+from gov.anl.ipns.Util.SpecialStrings import ErrorString
 # This form groups all the other nonCalibration type inputs to the Reduce 
 # program except for the Q binning method. This includes the Sample Run,
 # Cadmium run, Background run, and the sample Transmission run 

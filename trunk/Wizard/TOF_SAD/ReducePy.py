@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.5  2004/04/30 23:50:18  rmikk
+# Changed package names to gov.anl.ipns
+#
 # Revision 1.4  2004/01/05 23:31:04  rmikk
 # Last form returns the resultant data sets so they can be viewed in viewers
 #
@@ -49,6 +52,7 @@ from DataSetTools.operator import *
 from Wizard.TOF_SAD import *
 from Command import ScriptUtil
 from DataSetTools.util import *
+from gov.anl.ipns.Util.Sys import *;
 # This Jython operator form Runs the Reduce operation and prints out the results.
 class ReducePy(GenericOperator):
     def setDefaultParameters(self):
