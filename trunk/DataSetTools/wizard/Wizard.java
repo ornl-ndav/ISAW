@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2003/06/20 16:28:18  bouzekc
+ * Now allows ignoring of parameter property changes, which is
+ * needed for loading saved files.  Added methods to set and
+ * get the ignore property change value.  Set the debug print
+ * statements within a DEBUG block.
+ *
  * Revision 1.33  2003/06/19 16:19:02  bouzekc
  * Added javadoc tutorial on how to create the parameter table.
  * Modified convertXMLToParameters to more accurately deal with
@@ -289,7 +295,7 @@ public abstract class Wizard implements PropertyChangeListener{
     private boolean standalone   = true;
 
     // debugging
-    private static final boolean DEBUG=false;
+    private static boolean DEBUG=false;
 
     // instance variables
     private JFrame                 frame;
@@ -316,6 +322,7 @@ public abstract class Wizard implements PropertyChangeListener{
     private ObjectInputStream      input;
     private File                   save_file;
     private JComponent[]           wizComponents;
+    private boolean                ignorePropChanges;
 
     /**
      * The legacy constructor
@@ -353,20 +360,19 @@ public abstract class Wizard implements PropertyChangeListener{
      *  @param saving  A boolean indicating whether you want to open the
      *                 file for saving (true) or loading (false)                      
      */
-    private File getFile(boolean saving)
-    {
+    private File getFile(boolean saving){
       int result;
       WizardFileFilter wizFilter = new WizardFileFilter();
       String save_file_abs_path;
-      if(fileChooser == null)
-      {
+      if(fileChooser == null){
         fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(
           JFileChooser.FILES_ONLY);
         fileChooser.setFileFilter(wizFilter);
       }
 
-      if((save_file !=null) && !save_file.toString().equals(""))
+      //try to remember the previous value the user entered
+      if(save_file != null && !save_file.toString().equals(""))
         fileChooser.setSelectedFile(save_file);
 
       if(saving)
@@ -379,16 +385,14 @@ public abstract class Wizard implements PropertyChangeListener{
 
       save_file = fileChooser.getSelectedFile();
 
-      if(saving)
-      {
+      if(saving){
         save_file_abs_path = save_file.toString();
         //make sure the extension is on there
         save_file_abs_path = wizFilter.appendExtension(save_file_abs_path);
         save_file = new File(save_file_abs_path);
       }
 
-      if(saving && save_file.exists())
-      {
+      if(saving && save_file.exists()){
         String temp;
         StringBuffer s = new StringBuffer();
         s.append("You are about to overwrite ");
@@ -397,15 +401,13 @@ public abstract class Wizard implements PropertyChangeListener{
         s.append("<Enter> or click the <OK> button.\n  Otherwise, please ");
         s.append("enter a new name or click <Cancel>.");
         temp = JOptionPane.showInputDialog(s.toString());
-        if(temp != null && !temp.equals(""))
-        {
+        if(temp != null && !temp.equals("")){
           temp = wizFilter.appendExtension(temp);
           save_file = new File(fileChooser.getCurrentDirectory() + "/" + temp);
         }
       }
 
-      if( save_file== null || save_file.getName().equals(""))
-      {
+      if( save_file== null || save_file.getName().equals("")){
         JOptionPane.showMessageDialog(save_frame,
           "Please enter a valid file name",
           "ERROR",
@@ -419,18 +421,15 @@ public abstract class Wizard implements PropertyChangeListener{
     /**
      *  Closes a file.
      */
-    private void closeFile(Object stream)
-    {
-      try
-      {
+    private void closeFile(Object stream){
+      try{
         if(stream instanceof ObjectInputStream)
           ((ObjectInputStream)stream).close();
         else if (stream instanceof ObjectOutputStream)
           ((ObjectOutputStream)stream).close();
         save_frame.dispose();
       }
-      catch(Exception e)
-      {
+      catch(Exception e){
         JOptionPane.showMessageDialog(save_frame,
           "Could not close the file.",
           "ERROR",
@@ -449,8 +448,7 @@ public abstract class Wizard implements PropertyChangeListener{
      *  @param conc_forms The Vector of Forms to write to a file.
      *  @param file the File to write to.
      */
-    private void writeForms(Vector conc_forms, File file)
-    {
+    private void writeForms(Vector conc_forms, File file){
       StringBuffer s = new StringBuffer();
       Form f;
       String temp;
@@ -458,18 +456,15 @@ public abstract class Wizard implements PropertyChangeListener{
       IParameterGUI ipg;
       FileWriter fw = null;
 
-      try
-      {
+      try{
         fw = new FileWriter(file);
-        for(int i = 0; i < conc_forms.size(); i++)
-        {
+        for(int i = 0; i < conc_forms.size(); i++){
           s.append("<Form number=");
           s.append(i);
           s.append(">\n");
 
           f = (Form)conc_forms.elementAt(i);
-          for(int j = 0; j < f.getNum_parameters(); j++)
-          {
+          for(int j = 0; j < f.getNum_parameters(); j++){
             ipg = (IParameterGUI)f.getParameter(j);
             s.append("<");
             s.append(ipg.getType());
@@ -486,8 +481,7 @@ public abstract class Wizard implements PropertyChangeListener{
                             
             if((obj == null) || ( obj.toString().length() <= 0 ))
               s.append("emptyString");
-            else
-            {
+            else{
               s.append(obj.toString());
               s.append("");
             }
@@ -503,26 +497,20 @@ public abstract class Wizard implements PropertyChangeListener{
         }
         fw.write(s.toString());
       }
-      catch(IOException e)
-      {
+      catch(IOException e){
         e.printStackTrace();
         JOptionPane.showMessageDialog(save_frame,
           "Error saving file.  Please rerun the wizard and try again.",
           "ERROR",
           JOptionPane.ERROR_MESSAGE); 
       }
-      finally
-      {
-        if(fw != null)
-        {
-          try
-          {
+      finally{
+        if(fw != null){
+          try{
             fw.close();
             modified = false;
-            
           }
-          catch(IOException e)
-          {
+          catch(IOException e){
             //let it drop on the floor
           }
         }
@@ -533,21 +521,18 @@ public abstract class Wizard implements PropertyChangeListener{
      *  Loads Forms from a file.  It actually just loads the saved
      *  IParameterGUI values into the Wizard's Forms' parameters.
      */
-    private void loadForms(File file)
-    {
+    private void loadForms(File file){
       char ca;
       StringBuffer s = new StringBuffer();
       int good = -1;
       FileReader fr = null;
 
-      try
-      {
+      try{
         fr = new FileReader(file);
 
         good = fr.read();
 
-        while(good >=0)
-        {
+        while(good >= 0){
           ca = (char)good;
           s.append(ca);
           good = fr.read();
@@ -555,25 +540,20 @@ public abstract class Wizard implements PropertyChangeListener{
 
         convertXMLtoParameters(s);
       }
-      catch(IOException e)
-      {
+      catch(IOException e){
         e.printStackTrace();
         JOptionPane.showMessageDialog(save_frame,
           "Error loading file.  Does the file match the Wizard?",
           "ERROR",
           JOptionPane.ERROR_MESSAGE);
       }
-      finally
-      {
-        if(fr != null)
-        {
-          try
-          {
+      finally{
+        if(fr != null){
+          try{
             fr.close();
             modified = false;
           }
-          catch(IOException e)
-          {
+          catch(IOException e){
             //let it drop on the floor
           }
         }
@@ -589,8 +569,7 @@ public abstract class Wizard implements PropertyChangeListener{
      *  @param s The StringBuffer that holds the parameter
      *           information.
      */
-    private void convertXMLtoParameters(StringBuffer s) throws IOException
-    {
+    private void convertXMLtoParameters(StringBuffer s) throws IOException{
       final String NAMESTART = "<Name>";
       final String NAMEEND = "</Name>";
       final String VALUESTART = "<Value>";
@@ -598,13 +577,14 @@ public abstract class Wizard implements PropertyChangeListener{
       final String VALIDSTART = "<Valid>";
       final String VALIDEND = "</Valid>";
     
-      String xml, token_string, paramName, paramValue, paramValidity, typeEnd;
+      String xml, paramName, paramValue, paramValidity, typeEnd;
       StringBuffer temp = new StringBuffer();
       StringTokenizer st;
-      int formNum, equalsIndex, nameStartInd, nameEndInd, valueStartInd, 
+      int nameStartInd, nameEndInd, valueStartInd, 
           valueEndInd, validStartInd, validEndInd, typeEndInd;
       Form cur_form;
       IParameterGUI curParam;
+      boolean ignoreChanges = false;
 
       xml = s.toString();
 
@@ -613,15 +593,13 @@ public abstract class Wizard implements PropertyChangeListener{
       while(st.hasMoreTokens())
         temp.append(st.nextToken());
       xml = temp.toString();
-      
+
       //start going through the Forms
-      for(int i = 0; i < forms.size(); i++)
-      {
+      for(int i = 0; i < forms.size(); i++){
         cur_form = this.getForm(i);
 
         //start the parameter parsing for the Form
-        for(int j = 0; j < cur_form.getNum_parameters(); j++)
-        {
+        for(int j = 0; j < cur_form.getNum_parameters(); j++){
           //get the parameter
           curParam = (IParameterGUI)(cur_form.getParameter(j));
 
@@ -648,10 +626,12 @@ public abstract class Wizard implements PropertyChangeListener{
           else
             curParam.setValue(paramValue);
 
-          //get/set the parameter validity.  We will get the value from the
-          //file first.  For some parameters, if it is valid, we will double 
-          //check to be sure that it is indeed valid.  If it is not, we set 
-          //it false.
+          //set the parameter validity.  Read from the file, then check a few
+          //types against certain criteria.
+
+          //turn off property change checking for the parameter.
+          ignoreChanges = ((ParameterGUI)curParam).getIgnorePropertyChange();
+          ((ParameterGUI)curParam).setIgnorePropertyChange(true);
 
           validStartInd = xml.indexOf(VALIDSTART);
           validEndInd = xml.indexOf(VALIDEND);
@@ -661,13 +641,11 @@ public abstract class Wizard implements PropertyChangeListener{
 
           if(curParam instanceof DataSetPG)
             curParam.setValid(false);  //DataSets not valid
-          else if((curParam instanceof BrowsePG))
-          { 
-            if(!(new File(curParam.getValue().toString()).exists()))
+          else if((curParam instanceof BrowsePG)){ 
+            if(!(new File( curParam.getValue().toString() ).exists()))
               curParam.setValid(false);
           }
-          else if(curParam instanceof ArrayPG || curParam instanceof VectorPG)
-          {
+          else if(curParam instanceof ArrayPG || curParam instanceof VectorPG){
             Vector v = (Vector)(curParam.getValue());
             if(v == null || v.isEmpty())
               curParam.setValid(false);
@@ -682,20 +660,14 @@ public abstract class Wizard implements PropertyChangeListener{
             }
           }
 
-          /*else //some other form of simple PG that we can easily validate
-          {
-            validStartInd = xml.indexOf(VALIDSTART);
-            validEndInd = xml.indexOf(VALIDEND);
-            paramValidity = xml.substring(validStartInd + VALIDSTART.length(),
-                                        validEndInd);
-            curParam.setValid(new Boolean(paramValidity).booleanValue());
-          }*/
-
           //find the index of the ending for the parameter, e.g. </DataDir>
           typeEnd = "</" + ((IParameterGUI)curParam).getType() + ">";
           typeEndInd = xml.indexOf(typeEnd);
           xml = xml.substring(typeEndInd + typeEnd.length(),
                               xml.length());
+
+          //set property change checking for the parameter back to the original.
+          ((ParameterGUI)curParam).setIgnorePropertyChange(ignoreChanges);
 
         }
         //end the Parameter parsing for the Form
@@ -705,8 +677,7 @@ public abstract class Wizard implements PropertyChangeListener{
     /**
      *  Load the state of the wizard from a file
      */
-    public boolean load()
-    {
+    public boolean load(){
       Vector loadedforms;
       File f;
       Form temp;
@@ -714,21 +685,43 @@ public abstract class Wizard implements PropertyChangeListener{
 
       if( f == null ) return false;
 
+      //set the property change checking for the Wizard to false, otherwise it
+      //messes up our loading of valid result parameters
+      this.setIgnorePropertyChanges(true);
+
       loadForms(f);
       showForm(0);
+
+      //now we want to return to a state where the Wizard can listen to
+      //property changes
+      this.setIgnorePropertyChanges(false);
       return true;
+    }
+
+    /** 
+     *  Used to set the ignorePropChanges variable.  Useful because
+     *  many things trigger property change events, with possible
+     *  undesired effects.
+     */
+    public void setIgnorePropertyChanges(boolean ignore){
+      ignorePropChanges = ignore;
+    }
+
+    /** 
+     *  Accessor method to get ignorePropChanges variable.
+     */
+    public boolean getIgnorePropertyChanges(){
+      return ignorePropChanges;
     }
 
     /**
      *  Save the state of the wizard to a file
      */
-    public void save()
-    {
+    public void save(){
       if(forms == null) return;
 
       File file;
-      if(modified)
-      {
+      if(modified){
         file = getFile(true);
 
         if( file == null ) return;
@@ -740,23 +733,20 @@ public abstract class Wizard implements PropertyChangeListener{
     /**
      *  Save the state of the wizard then exit the wizard application.
      */
-    public void close()
-    {
+    public void close(){
       int save_me = 1;
-      if(modified)
-      {
+      if(modified){
        save_me = JOptionPane.showConfirmDialog(null, 
                    "Would you like to save your changes?",
                    "Would you like to save your changes?",
                     JOptionPane.YES_NO_OPTION);
-        if(save_me == 0)
-          save();
+       if(save_me == 0)
+         save();
       }
       System.exit(0);
     }
 
-    public int getNumForms()
-    {
+    public int getNumForms(){
       return forms.size();
     }
 
@@ -1018,16 +1008,13 @@ public abstract class Wizard implements PropertyChangeListener{
 
         //reset the progress bars - especially useful when loading up a Wizard
         //from a file
-        if(f.done())
-        {
+        if(f.done()){
           formProgress.setString(f + " Done");
           wizProgress.setString("Wizard Progress: "+ (lastForm + 1)
                                 + " of " + forms.size() + " Forms done");
           formProgress.setValue(FORM_PROGRESS);
           wizProgress.setValue(lastForm + 1);
-        }
-        else
-        {
+        }else{
           formProgress.setString(f + " Progress");
           formProgress.setValue(0);
         }
@@ -1076,8 +1063,7 @@ public abstract class Wizard implements PropertyChangeListener{
      *
      *  @return               The index of the last valid Form number.
      */
-    public int getLastValidFormNum()
-    {
+    public int getLastValidFormNum(){
       for(int i = 0; i < this.getNumForms(); i++)
         if(!getForm(i).done())
           return i - 1;
@@ -1221,8 +1207,7 @@ public abstract class Wizard implements PropertyChangeListener{
      * Creates the view menu and listeners for all of the currently
      * validated parameters in the current Form.  
      */
-    private void populateViewMenu()
-    {
+    private void populateViewMenu(){
       JMenuItem jmi;
       Form f;
       IParameterGUI iparam;
@@ -1231,11 +1216,9 @@ public abstract class Wizard implements PropertyChangeListener{
       f = this.getCurrentForm();
 
       view_menu.removeAll();
-      for( int i = 0; i < f.getNum_parameters(); i++ )
-      {
+      for( int i = 0; i < f.getNum_parameters(); i++ ){
         iparam = (IParameterGUI)f.getParameter(i);
-        if( iparam.getValid() )
-        {
+        if( iparam.getValid() ){
           val = iparam.getValue();
           /*semi-sophisticated attempt at being able to view
           DataSets, Vectors of items, and files.  Things like 
@@ -1244,8 +1227,7 @@ public abstract class Wizard implements PropertyChangeListener{
           if( (iparam instanceof DataSetPG)  ||
               (iparam instanceof ArrayPG)    ||
               (iparam instanceof LoadFilePG) ||
-              (iparam instanceof SaveFilePG)  )
-          {
+              (iparam instanceof SaveFilePG)  ){
             jmi = new JMenuItem(iparam.getName());
             view_menu.add(jmi);
             jmi.addActionListener( command_handler );
@@ -1257,11 +1239,15 @@ public abstract class Wizard implements PropertyChangeListener{
     
     /**
      * Method to depopulate part of the view list if the 
-     * parameters change.
+     * parameters change.  If ignorePropChanges is set
+     * true, as it is when the Wizard is loading Forms, 
+     * the viewMenu is the only thing that changes.
      */
     public void propertyChange(PropertyChangeEvent ev){
-        modified = true;
-        this.invalidate(this.getCurrentFormNumber());
+        if(ignorePropChanges == false){
+          modified = true;
+          this.invalidate(this.getCurrentFormNumber());
+        }
         this.populateViewMenu();
     }
 
@@ -1270,8 +1256,7 @@ public abstract class Wizard implements PropertyChangeListener{
      * that currently happen are for the view menu, the only commands to 
      * listen for are the ones for the current form.
      */
-     private void displayParameterViewer(String com)
-     {
+     private void displayParameterViewer(String com){
        Form f;
        IParameterGUI iparam;
        boolean done;
@@ -1282,8 +1267,7 @@ public abstract class Wizard implements PropertyChangeListener{
        index = 0;
        num_params = f.getNum_parameters();
        
-       while( !done && index < num_params )
-       {
+       while( !done && index < num_params ){
          iparam = (IParameterGUI)f.getParameter(index);
          //does the command match up to a current form parameter name?
          done = com.equals(iparam.getName());
@@ -1302,11 +1286,10 @@ public abstract class Wizard implements PropertyChangeListener{
      *                                    together.
      */
     public void linkFormParameters(int[][] paramTable){
-      //multiple for loops: probably somewhat slow, but it
-      //works and is relatively easy to understand
       int numForms, numParamsToLink, nonNegFormIndex, nonNegParamIndex;
       numForms = paramTable[0].length;  //the columns in paramTable
       numParamsToLink = paramTable.length;  //the rows in paramTable
+      DEBUG = false;
 
       //find the first paramTable[row][col] != 0 parameter index
 
@@ -1332,14 +1315,16 @@ public abstract class Wizard implements PropertyChangeListener{
             //although this is probably not a big deal, don't try to link the
             //same parameter on a given single Form
             if(nonNegFormIndex != colIndex){
-              System.out.print("Linking " + getForm(nonNegFormIndex) +": ");
-              System.out.print(nonNegParamIndex + ": ");
-              System.out.print(
-                getForm(nonNegFormIndex).getParameter(nonNegParamIndex).getName());
-              System.out.print(" with " + getForm(colIndex) +": ");
-              System.out.print(paramTable[rowIndex][colIndex] + ": ");
-              System.out.println(
-                getForm(nonNegFormIndex).getParameter(nonNegParamIndex).getName());
+              if(DEBUG){
+                System.out.print("Linking " + getForm(nonNegFormIndex) +": ");
+                System.out.print(nonNegParamIndex + ": ");
+                System.out.print(
+                  getForm(nonNegFormIndex).getParameter(nonNegParamIndex).getName());
+                System.out.print(" with " + getForm(colIndex) +": ");
+                System.out.print(paramTable[rowIndex][colIndex] + ": ");
+                System.out.println(
+                  getForm(nonNegFormIndex).getParameter(nonNegParamIndex).getName());
+              }
 
               getForm(colIndex).setParameter( 
                 getForm(nonNegFormIndex).getParameter(nonNegParamIndex),
@@ -1432,15 +1417,13 @@ public abstract class Wizard implements PropertyChangeListener{
      *  messages can be displayed for the user.  Since we only need two
      *  threads of execution, the choice of a SwingWorker was clear.
      */
-    private class WizardWorker extends SwingWorker
-    {
+    private class WizardWorker extends SwingWorker{
       private int formNum = 0;
 
       /**
        *  Required for SwingWorker.
        */
-      public Object construct()
-      {
+      public Object construct(){
         //can't have users mutating the values!
         for(int i = 0; i < wizComponents.length; i++)
           wizComponents[i].setEnabled(false);
@@ -1460,8 +1443,7 @@ public abstract class Wizard implements PropertyChangeListener{
       /**
        *  Used to set the form number for calling exec_forms.
        */
-      public void setFormNumber(int num)
-      {
+      public void setFormNumber(int num){
         formNum = num;
       }
 
@@ -1469,8 +1451,7 @@ public abstract class Wizard implements PropertyChangeListener{
        *  Implicit calls to getCurrentForm in order to enable or disable the
        *  parameters.
        */
-      private void enableFormParams(boolean enable)
-      {
+      private void enableFormParams(boolean enable){
         Form f = getCurrentForm();
         IParameterGUI ipg;
 
