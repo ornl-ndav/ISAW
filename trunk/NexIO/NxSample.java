@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/12/23 18:47:50  rmikk
+ * Now reads the sample_orientation Nexus field
+ *
  * Revision 1.4  2004/02/16 02:15:56  bouzekc
  * Removed unused import statements.
  *
@@ -44,7 +47,7 @@
 package NexIO;
 
 import DataSetTools.dataset.*;
-
+import DataSetTools.instruments.*;
 /**
  * This class is used to process the NxSample part of a Nexus datasource
  */
@@ -112,6 +115,20 @@ public class NxSample{
                                                  S.floatValue() ) );
       } 
     }
+    
+    float[] orientation = NexIO.Util.NexUtils.getFloatArrayFieldValue(node 
+                                        , "sample_orientation");
+    String units = NexIO.Util.NexUtils.getStringAttributeValue( node.
+            getChildNode( "sample_orientation"),"units");
+                                        
+    NexIO.Util.ConvertDataTypes.UnitsAdjust( orientation,units,"radians",
+           (float)(180.0/java.lang.Math.PI),0f );
+    if( orientation != null)
+        DS.setAttribute( new SampleOrientationAttribute( Attribute.SAMPLE_ORIENTATION,
+                                     new IPNS_SCD_SampleOrientation(orientation[0],
+                                                                   orientation[1],
+                                                                    orientation[2])));
+
     return false;  
   }
 }
