@@ -32,14 +32,20 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/12 17:28:02  dennis
+ * Removed the slash star and star slash from the last CVS log message,
+ * since this prevented the code from compiling.  (It ended the
+ * comment block containing the log messages, before the end of
+ * the log messages.)
+ *
  * Revision 1.2  2004/03/11 19:03:33  bouzekc
  * Documented file using javadoc statements.
- * Added the field strVec which looks at the token as a Vector of Strings each of which
- * is a line from the token.
- * Added the field firstLineNumber which is used to determine the line numbers for
- * each line in the token.
+ * Added the field strVec which looks at the token as a Vector of Strings 
+ * each of which is a line from the token.
+ * Added the field firstLineNumber which is used to determine the line numbers
+ * for each line in the token.
  * Added static final fields to support checking if the token is a slash star
- * comment (/* . . . . */) or slash slash comment (// . . .. ).
+ * comment or slash slash comment.
  *
  * Revision 1.1  2004/02/07 05:10:47  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
