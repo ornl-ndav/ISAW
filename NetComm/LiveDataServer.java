@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2003/03/05 22:06:56  dennis
+ *  Added command to get the range of IDs in a DataSet
+ *
  *  Revision 1.37  2003/03/05 20:43:35  dennis
  *  Now removes the TOTAL_COUNT attribute when the empty runfile is
  *  loaded, since the counts are zero at that time anyway.  Total
@@ -485,6 +488,26 @@ public class LiveDataServer extends    DataSetServer
         else
           tcp_io.Send( "DEFAULT_DATA_NAME" ); 
  
+        return true;
+      }
+
+      else if ( command.getCommand() == CommandObject.GET_DS_ID_RANGE )
+      {
+        int index = ((GetDataCommand)command).getDataSetNumber();
+
+        if ( index >= 0               && 
+             index < ds_type.length   &&
+             data_set[index] != null  &&
+             data_set[index].getNum_entries() > 0 )      // non-empty DataSet
+        {
+          int list[] = new int[2];                       // ID's are sequential
+          int id_1 = data_set[index].getData_entry(0).getGroup_ID();   
+          int id_2 = id_1 + data_set[index].getNum_entries() - 1;
+          tcp_io.Send( "" + id_1 + ":" + id_2 );
+        }
+        else
+          tcp_io.Send( "0:0" );
+
         return true;
       }
 
