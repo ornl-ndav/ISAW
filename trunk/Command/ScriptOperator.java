@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2004/01/22 01:25:03  bouzekc
+ * Removed unused local variables.
+ *
  * Revision 1.32  2003/12/14 19:18:08  bouzekc
  * Removed unused import statements.
  *
@@ -585,7 +588,6 @@ public class ScriptOperator  extends  GenericOperator
    */
   public Object getResult(){
     int i;
-    String S;
         
     ExecLine.initt();
     ExecLine.resetError();
@@ -779,7 +781,6 @@ public class ScriptOperator  extends  GenericOperator
 
       if( S !=  null ){
         int i ; 
-        char c ; 
         for( i = S.length() - 1 ;  i >=  0  ;  i-- ){
           if( S.charAt( i ) <=  ' ' )S = S.substring( 0 , i ) ; 
           else i = -1 ; 
@@ -858,7 +859,7 @@ public class ScriptOperator  extends  GenericOperator
   private int executeForBlock( Script script , int start , boolean execute, 
                                int onerror ){
     String var; 
-    int i, j, k, n; 
+    int i, j, n; 
     int line;  
     String S; 
     Vector V;
@@ -967,8 +968,6 @@ public class ScriptOperator  extends  GenericOperator
   *               end error statement
   */   
   private int executeErrorBlock( Script script, int start, boolean execute ){
-    String var;      
-    int i, j, k; 
     int line; 
     String S; 
     int mode; 
@@ -1149,7 +1148,7 @@ public class ScriptOperator  extends  GenericOperator
       lerror = j;
       return j;
     }
-    int x=0;
+    
     //??????????? Is it ELSE or ELSEIF ????????????????????
     if( S.toUpperCase().trim().indexOf( "ELSE" ) == 0)
       if( S.toUpperCase().trim().indexOf( "ELSEIF" ) == 0 ){
@@ -1157,7 +1156,6 @@ public class ScriptOperator  extends  GenericOperator
         return j;
       }else{
         j = executeBlock( script, nextLine( script, j ), (!b) && execute, 0 );
-        x = 2;
       }
       
     if(Debug) 
@@ -1562,11 +1560,7 @@ public class ScriptOperator  extends  GenericOperator
    * keeping track of line numbers.
    */
   private static String getLine( Document Doc, int start, boolean Continued ){
-    String var;
-    int i, j, k;
-    int line;
     String S;
-    boolean mode;
     Element  E, F;
        
     if( Doc == null ) 
@@ -1602,15 +1596,14 @@ public class ScriptOperator  extends  GenericOperator
    * Utility to delete xcess spaces outside of quotes(") in a string S
    */   
   public String delSpaces( String S){
-    boolean quote, onespace; 
+    boolean quote; 
     int i;
     String Res;
-    char prevchar;
+
     if( S == null ) return null;
     Res  = "";
     quote = false;
-    onespace = false;
-    prevchar = 0; 
+
     for ( i =0; i < S.length() ; i++){
       if( S.charAt( i) == '\"'){
         quote = ! quote;
@@ -1618,10 +1611,8 @@ public class ScriptOperator  extends  GenericOperator
           if (!quote )
             if( S.charAt( i-1) == '\\') quote = !quote;
         Res = Res + S.charAt ( i );
-        prevchar = S.charAt ( i );
       }else if( quote ){
         Res = Res + S.charAt(i);
-        prevchar = S.charAt ( i );
       }else if( " \t".indexOf(S.charAt(i))>=0){
         //!!if( S.charAt ( i ) == ' ')
         if( " +-*/^():[]{}," . indexOf(S.charAt(i + 1 )) >= 0){
@@ -1630,10 +1621,8 @@ public class ScriptOperator  extends  GenericOperator
         }else if("+-*/^():[]{},".indexOf(S.charAt( i - 1 ) ) >= 0){
         }else
           Res = Res + S.charAt( i ) ; 
-        prevchar = ' ';
       }else{
         Res = Res + S.charAt(i);
-        prevchar = S.charAt(i);
       }
     }
     return Res;
@@ -1643,7 +1632,7 @@ public class ScriptOperator  extends  GenericOperator
      * Allows running of Scripts without Isaw and/or the CommandPane
      */
     public static void main( String args [] ){
-        DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
+        new DataSetTools.util.SharedData();
 
         if( args == null)
             System.exit( 0 );
