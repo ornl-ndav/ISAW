@@ -6,6 +6,13 @@
  * Modified:  
  *
  *  $Log$
+ *  Revision 1.13  2001/04/20 20:16:15  dennis
+ *  Added code to Data.java to handle resampling when the original
+ *  function has only one data point.  This fixed an index out of
+ *  bounds problem triggered by using the TrueAngle operator.  Also
+ *  fixed a problem with resampling for the degenerate case when
+ *  the intervals didn't overlap.
+ *
  *  Revision 1.12  2000/12/15 05:19:45  dennis
  *  Now Resamples the second Data block when doing +,-,*,/
  *  of two Data blocks, if the x scales don't match.
@@ -960,18 +967,50 @@ public float getY_value( float x_value )
       float x_end   = new_X.getEnd_x();
 
       float x[]     = x_scale.getXs();
-      if ( x_start > x[ x.length-1 ] || x_end < x[0] )  // degenerate case
-      {
-        x_scale = (UniformXScale)new_X.clone();
-        y_values = new float[x.length];
-        for ( int i = 0; i < x.length-1; i++ )
-          y_values[i] = 0;
+      if ( x_start > x[ x.length-1 ] || x_end < x[0] || x.length ==0 )  
+      {                                                 // degenerate case
+        x_scale = (UniformXScale)new_X.clone();         // intervals don't 
+        y_values = new float[x_scale.getNum_x()];       // overlap
+
+        for ( int i = 0; i < y_values.length; i++ )     // assume function is 0
+          y_values[i] = 0;                              // outside
 
         if ( errors != null )
         {
-          errors = new float[x.length];
-          System.arraycopy( y_values, 0, errors, 0, x.length );
+          errors = new float[y_values.length];
+          for ( int i = 0; i < y_values.length; i++ )
+            errors[i] = 0;
         } 
+      }
+      else if ( x.length == 1 )                        // only one point
+      { 
+        float x_val = x[0];
+        float y_val = y_values[0];
+        
+        x_scale = (UniformXScale)new_X.clone();
+        x        = x_scale.getXs();
+        y_values = new float[x_scale.getNum_x()];  
+
+        for ( int i = 0; i < y_values.length; i++ )
+          y_values[i] = 0;
+
+        int x_index = arrayUtil.get_index_of( x_val, x );        
+        y_values[ x_index ] = y_val;
+        if ( x_val != x[x_index] )                     // the one point affects 
+          y_values[ x_index+1 ] = y_val;               // value at both
+                                                       // adjacent grid points
+        if ( errors != null )
+        {
+          float err = errors[0];
+          errors = new float[y_values.length];
+          for ( int i = 0; i < y_values.length; i++ )
+            errors[i] = 0;
+
+          errors[ x_index ] = err;
+          if ( x_val != x[x_index] )                   // the one point affects
+            errors[ x_index+1 ] = err;                 // error at both
+                                                       // adjacent grid points
+        }
       }
       else    // the intervals overlap, so get the portions of the x&y arrays 
       {       // that we are dealing with and pass those into the smooth op
@@ -1177,6 +1216,7 @@ public float getY_value( float x_value )
 
   public Data add( Data d )
   {
+
     if ( ! this.compatible( d ) )       
     {
       d = (Data)d.clone();                  // make a clone and resample it
@@ -1184,6 +1224,7 @@ public float getY_value( float x_value )
     }
 
     Data temp = (Data)this.clone();
+
     for ( int i = 0; i < temp.y_values.length; i++ )
       temp.y_values[i] += d.y_values[i];
     
@@ -1193,7 +1234,6 @@ public float getY_value( float x_value )
                                                d.errors[i] *    d.errors[i] ); 
     else
       temp.errors = null;
-
                                          // now take care of attributes... most
                                          // will use the default combine method
                                          // but some must really be added
