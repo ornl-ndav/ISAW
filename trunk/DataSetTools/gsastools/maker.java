@@ -40,7 +40,7 @@ public static void main(String[] args)
 {
     gsas_filemaker gfm=new gsas_filemaker();
     String run= ".\\DataSetTools\\gsastools\\GPPD10628.RUN"; 
-    gfm.maker(run);
+    //gfm.maker(run);
 }
   
 
