@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/08/14 19:16:30  dennis
+ *  Changed words used for some error messages.
+ *
  *  Revision 1.6  2001/08/14 15:12:38  dennis
  *  Added status messages for LiveDataServer status.
  *
@@ -86,15 +89,15 @@ abstract public class RemoteDataRetriever extends    Retriever
 
   public static final String SERVER_OK_STRING         = "Server OK";
   public static final String SERVER_ERROR_STRING      = "Server Error: ";
-  public static final String NO_DATA_SETS_STRING      = "No DataSets";
+  public static final String NO_DATA_SETS_STRING      = "No DataSets: ";
   public static final String BAD_FILE_NAME_STRING     = "File Not Found";
   public static final String BAD_USER_NAME_STRING     = "User Not Found";
   public static final String BAD_PASSWORD_STRING      = "Wrong Password";
   public static final String SERVER_DOWN_STRING       = "Server Down";
   public static final String WRONG_SERVER_TYPE_STRING = "Wrong Server Type";
-  public static final String DATA_OLD_STRING          = "Data Old: ";
+  public static final String DATA_OLD_STRING          = "Data OLD: ";
   public static final String DATA_LIVE_STRING         = "Data Live: ";
-  public static final String DAS_OFFLINE_STRING       = "DAS OFFLINE: ";
+  public static final String DAS_OFFLINE_STRING       = "DAS STOPPED: ";
   public static final String NOT_CONNECTED_STRING     = "NOT Connected";
 
   private static final String error_messages[] = { NO_DATA_SETS_STRING,
