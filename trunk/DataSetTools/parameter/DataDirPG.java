@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/10/10 19:15:13  pfpeterson
+ *  Fixed a bug where the Data_Directory was not used if a value
+ *  was not specified.
+ *
  *  Revision 1.3  2002/10/07 15:27:35  pfpeterson
  *  Another attempt to fix the clone() bug.
  *
@@ -66,8 +70,8 @@ public class DataDirPG extends BrowsePG{
     
     public DataDirPG(String name, Object value, boolean valid){
         super(name,value,valid);
-        if(name!=null){
-            File file=new File(name);
+        if(value!=null && ((String)value).length()>0){
+            File file=new File((String)value);
             if(file.exists()){
                 if(file.isFile()){
                     this.setValue(file.getParent());
