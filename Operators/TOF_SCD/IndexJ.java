@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2003/06/09 21:59:43  bouzekc
+ * getResult() now returns the name of the IndexJ log file
+ * and prints the number of peaks indexed to SharedData.
+ *
  * Revision 1.13  2003/06/05 22:05:28  bouzekc
  * Fixed incorrect parameter setting in constructor.
  *
@@ -139,7 +143,7 @@ public class IndexJ extends    GenericTOF_SCD {
     //2
     addParameter(new IntArrayPG("Restrict Runs",null));
     //3
-    addParameter(new FloatPG("Delta",0.05f));
+    addParameter(new FloatPG("Delta",0.20f));
     //4
     addParameter(new BooleanPG("update peaks file",true));
   }
@@ -183,6 +187,7 @@ public class IndexJ extends    GenericTOF_SCD {
     String      matrixfile  = null;  // matrix filename
     String      dir         = null;  // directory that the files are all in
     String      expname     = null;  // the experiment name
+    String      logfile     = null;  // the index.log file
     File        file        = null;  // for tests
     int         index       = 0;     // for chopping up strings
     float       delta       = 0f;    // error in index allowed
@@ -323,7 +328,7 @@ public class IndexJ extends    GenericTOF_SCD {
       if(DEBUG){
         out=new OutputStreamWriter(System.out);
       }else{
-        String logfile=FilenameUtil.setForwardSlash(peaksfile);
+        logfile=FilenameUtil.setForwardSlash(peaksfile);
         index=logfile.lastIndexOf("/");
         if(index>=0){
           logfile=logfile.substring(0,index+1)+"index.log";
@@ -353,8 +358,9 @@ public class IndexJ extends    GenericTOF_SCD {
     }
 
 
-    // return the number of indexed peaks
-    return this.getNumIndexed(peaks);
+    // return the log file name and print the number of indexed peaks
+    SharedData.addmsg(this.getNumIndexed(peaks));
+    return logfile;
   }  
   
   /**
