@@ -1,6 +1,6 @@
 /*
- * File:  DiffractometerQxyz.java 
- *             
+ * File:  DiffractometerQxyz.java
+ *
  * Copyright (C) 2002, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/01/13 20:24:13  dennis
+ * Added getDocumentation() method, simple main test program and
+ * javadocs on getResult(). (Chris Bouzek)
+ *
  * Revision 1.3  2002/11/27 23:18:10  pfpeterson
  * standardized header
  *
@@ -47,19 +51,21 @@ package DataSetTools.operator.DataSet.Information.XAxis;
 
 import  java.io.*;
 import  java.util.*;
-import  java.text.*; 
+import  java.text.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.retriever.*;
 
 /**
  *  This operator produces a string giving the values of Qx, Qy, Qz
  *  for a specific bin in a histogram, in the laboratory frame of reference.
  */
 
-public class DiffractometerQxyz extends    XAxisInformationOp 
+public class DiffractometerQxyz extends    XAxisInformationOp
                                 implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -70,7 +76,7 @@ public class DiffractometerQxyz extends    XAxisInformationOp
    * the parameters should be set ( using a GUI ) before calling getResult()
    * to apply the operator to the DataSet this operator was added to.
    */
-  public DiffractometerQxyz( ) 
+  public DiffractometerQxyz( )
   {
     super( "Find Qx, Qy, Qz" );
   }
@@ -82,19 +88,19 @@ public class DiffractometerQxyz extends    XAxisInformationOp
    *  by calling getResult().
    *
    *  @param  ds    The DataSet to which the operation is applied
-   *  @param  i     index of the Data block to use 
+   *  @param  i     index of the Data block to use
    *  @param  tof   the time-of-flight at which Qx,Qy,Qz is to be obtained
    */
   public DiffractometerQxyz( DataSet ds, int i, float tof )
   {
-    this();                        
+    this();
 
-    IParameter parameter = getParameter(0); 
+    IParameter parameter = getParameter(0);
     parameter.setValue( new Integer(i) );
-    
-    parameter = getParameter(1); 
+
+    parameter = getParameter(1);
     parameter.setValue( new Float(tof) );
-    
+
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
   }
@@ -102,8 +108,8 @@ public class DiffractometerQxyz extends    XAxisInformationOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: 
-   *         in this case, Qxyz 
+   * @return the command name to be used with script processor:
+   *         in this case, Qxyz
    */
    public String getCommand()
    {
@@ -111,7 +117,7 @@ public class DiffractometerQxyz extends    XAxisInformationOp
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -148,7 +154,7 @@ public class DiffractometerQxyz extends    XAxisInformationOp
   /**
    * Get Qx,Qy,Qz at the specified point.
    *
-   *  @param  x    the x-value (tof) for which the axis information is to be 
+   *  @param  x    the x-value (tof) for which the axis information is to be
    *               obtained.
    *
    *  @param  i    the index of the Data block for which the axis information
@@ -164,20 +170,54 @@ public class DiffractometerQxyz extends    XAxisInformationOp
      DetectorPosition pos = (DetectorPosition)
                              d.getAttributeValue( Attribute.DETECTOR_POS );
 
-     float initial_path = 
-             ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue(); 
- 
+     float initial_path =
+             ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
+
      Position3D q_pos = tof_calc.DiffractometerVecQ(pos, initial_path, x);
 
      float xyz[] = q_pos.getCartesianCoords();
 
      NumberFormat f = new DecimalFormat( "0.####E0" );;
-     
+
      return f.format(xyz[0]) + "," + f.format(xyz[1]) + "," + f.format(xyz[2]);
    }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator produces a string giving the values ");
+    s.append("of Qx, Qy, Qz for a specific bin in a histogram in a ");
+    s.append("DataSet, in the laboratory frame of reference.\n");
+    s.append("@assumptions The DataSet must contain spectra with ");
+    s.append("attributes giving the detector position and initial path.\n");
+    s.append("@algorithm This operator first uses the Data block index to ");
+    s.append("retrieve the data entry in the Data block.\n");
+    s.append("Then the operator uses the detector position and initial ");
+    s.append("path to retrieve the 3D position coordinate for the specified ");
+    s.append("time-of-flight value.\n");
+    s.append("Finally, the 3D coordinate is transformed into Cartesian ");
+    s.append("X, Y, and Z coordinates.\n");
+    s.append("@param ds The DataSet to which the operation is applied.\n");
+    s.append("@param i The index of the Data block to use.\n");
+    s.append("@param tof The time-of-flight at which Qx,Qy,Qz is to be ");
+    s.append("obtained.\n");
+    s.append("@return String which consists of the Qx, Qy, and Qz values for ");
+    s.append("a specific bin in a histogram in a DataSet.\n");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+   *  Produces a string giving the values of Qx, Qy, Qz for a specific bin
+   *  in a histogram, in the laboratory frame of reference.
+   *
+   *  @return String giving the values of Qx, Qy, Qz
+   */
 
   public Object getResult()
   {
@@ -187,12 +227,12 @@ public class DiffractometerQxyz extends    XAxisInformationOp
     float tof  = ( (Float)(getParameter(1).getValue()) ).floatValue();
 
     return PointInfo( tof, i );
-  }  
+  }
 
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current DateTime Operator.  The list 
+   * Get a copy of the current DateTime Operator.  The list
    * of parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
@@ -205,6 +245,44 @@ public class DiffractometerQxyz extends    XAxisInformationOp
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    int index;
+    float TOF;
+
+    StringBuffer p = new StringBuffer();
+
+    index = 50;
+    TOF = (float)7135.623;
+
+    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
+                       //"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";
+
+    try
+    {
+      RunfileRetriever rr = new RunfileRetriever( file_name );
+      DataSet ds1 = rr.getDataSet(1);
+      ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+      DiffractometerQxyz op =
+      new DiffractometerQxyz(ds1, index, TOF);
+
+      p.append("\nThe results of calling this operator are:\n");
+      p.append(op.getResult());
+      p.append("\n\nThe results of calling getDocumentation are:\n");
+      p.append(op.getDocumentation());
+
+      System.out.print(p.toString());
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
   }
 
 }
