@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/07/02 17:06:52  pfpeterson
+ * Now uses string constants defined in IsawGUI.Isaw.
+ *
  * Revision 1.1  2002/06/19 21:58:04  pfpeterson
  * Added to CVS.
  *
@@ -44,6 +47,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  IsawGUI.Isaw;
 
 /**
  * This operator converts a wavelength DataSet for a Diffractometer,
@@ -125,8 +129,10 @@ public class DiffractometerWavelengthToD extends XAxisConversionOp{
             Dmax=scale.getEnd_x();
             if( Float.isNaN(Dmax) || Float.isInfinite(Dmax) ) Dmax=20f;
         }
-        addParameter( new Parameter( "Min D(Inv(A))", new Float(Dmin) ) );
-        addParameter( new Parameter( "Max D(Inv(A))", new Float(Dmax) ) );
+        addParameter( new Parameter( "Min D("+Isaw.Angstrom+")",
+                                     new Float(Dmin) ) );
+        addParameter( new Parameter( "Max D("+Isaw.Angstrom+")", 
+                                     new Float(Dmax) ) );
         addParameter( new Parameter( Parameter.NUM_BINS, new Integer(1000) ) );
     }
     
@@ -139,7 +145,7 @@ public class DiffractometerWavelengthToD extends XAxisConversionOp{
      *  x values.
      */
     public String new_X_label(){
-        return new String( "d-Spacing (A)" );
+        return new String( "d-Spacing ("+Isaw.Angstrom+")" );
     }
 
 
