@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.2  2000/08/02 01:50:42  dennis
+ *  Now calls Data.ResampleUniformly() instead of Data.ReBin()
+ *
  *  Revision 1.1  2000/07/10 23:02:50  dennis
  *  July 10, 2000 version... many changes
  *
@@ -374,7 +377,7 @@ private void DrawGraphs( )
   {
     Data temp_data_block = getDataSet().getData_entry( i );  // rebin the Data 
     Data data_block = (Data)temp_data_block.clone();
-    data_block.ReBin( x_scale );
+    data_block.ResampleUniformly( x_scale );
 
     float x[] = data_block.getX_scale().getXs();
     float y[] = data_block.getY_values();

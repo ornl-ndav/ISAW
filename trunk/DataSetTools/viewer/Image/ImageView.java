@@ -9,6 +9,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.2  2000/08/02 01:51:10  dennis
+ *  Now calls Data.ResampleUniformly() instead of Data.ReBin()
+ *
  *  Revision 1.1  2000/07/10 23:03:23  dennis
  *  July 10, 2000 version... many changes
  *
@@ -496,7 +499,7 @@ private void MakeImage( boolean redraw_flag )
   {
     data_block = getDataSet().getData_entry(i);
     rebinned_data_block = (Data)data_block.clone();
-    rebinned_data_block.ReBin( x_scale );
+    rebinned_data_block.ResampleUniformly( x_scale );
 
 //    attr_list = data_block.getAttributeList();
 //    solid_angle_obj=(Float)attr_list.getAttributeValue(Attribute.SOLID_ANGLE);
