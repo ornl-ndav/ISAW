@@ -34,6 +34,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/08/10 19:41:16  dennis
+ *  Added methods to parse command line arguments and show usage.
+ *  Also added methods to get/set the udp port being used.
+ *  Removed unused method "TestAndSetAcessFlag".
+ *
  *  Revision 1.15  2001/08/09 21:47:26  dennis
  *  Uses start_TCP() method to start the TCPServer.
  *
@@ -148,15 +153,8 @@ public class LiveDataServer extends    DataSetServer
   private  int     run_number       = -1;
   private  int     current_udp_port = DEFAULT_DAS_UDP_PORT;
 
-  private  int read_count = 0;             // This is used to avoid switching 
-                                           // to a new runfile at the
-                                           // same time that data from the 
-                                           // current run is being transmitted.
-                                           // See: TestAndSetReadCount()
-
-  DataSet data_set[] = new DataSet[0];              // current DataSets
-  int     ds_type[]  = new int[0];                  // current DataSet types
-
+  DataSet data_set[]    = new DataSet[0];           // current DataSets
+  int     ds_type[]     = new int[0];               // current DataSet types
   int     spec_buffer[] = new int[ 16384 ];         // buffer for one part of
                                                     // on spectrum
 
@@ -171,26 +169,91 @@ public class LiveDataServer extends    DataSetServer
      setLogFilename( "LiveDataServerLog.txt" );
    }
 
+  /* -------------------------- setUDPport --------------------------- */
+  /**
+   *  Set the UDP port number to use when the server is started.  To be 
+   *  effective this must be called before starting the server and the 
+   *  specified port number must be positive.
+   *
+   *  @param  port  The port number to used when the server is started.
+   */
+  public void setUDPport( int port )
+  {
+     if ( port <= 0 )
+       current_udp_port = DEFAULT_DAS_UDP_PORT;
+     else
+       current_udp_port = port;
+  }
+
+
+  /* ---------------------------- getUDPport --------------------------- */
+  /**
+   *  Get the UPD port used for this run of the server.
+   *
+   public String getUDPport()
+   {
+     return current_udp_port;
+   }
+
+
+  /* ------------------------- parseArgs ----------------------------- */
+  /**
+   *  Parse a list of command line arguments to extract values for the
+   *  the data directories.  The only command supported at this level
+   *  is -U.
+   *
+   *  @param args  Array of strings from the command line, containing
+   *               command characters and arguments.
+   *
+   *  @see  showDataSetServerUsage
+   */
+   public void parseArgs( String args[] )
+   {
+     super.parseArgs( args );
+
+     if ( StringUtil.commandPresent("-h", args ) ||
+          StringUtil.commandPresent("-H", args )  )
+       showLiveDataServerUsage();
+
+     String command = StringUtil.getCommand( 1, "U", args );
+     if ( command.length() > 0 )
+     {
+       try
+       {
+         int value = Integer.parseInt(command);
+         setUDPport( value );
+       }
+       catch ( NumberFormatException e )
+       {
+       }
+     }
+   }
+
+
+  /* ----------------------- showLiveDataServerUsage ----------------------- */
+  /**
+   *  Print list of supported commands.
+   */
+   public void showLiveDataServerUsage()
+   {
+     System.out.println("  -U<port>         Set UDP port to use for data");
+     System.out.println("                   from the DAS");
+   }
+
+
   /* ---------------------------- start_UDP ---------------------------- */
   /**
-   *  Start the server listening for UDP packets on the specified port.
-   *
-   *  @param  udp_port  The udp port to listen to for data from the DAS.
+   *  Start the UDP listener running, listening for UDP packets on the last
+   *  port that was specified using setUDPport, or the default port if
+   *  none was specified.
    */
-   public void start_UDP( int udp_port )
+   public void start_UDP()
    {
-                                         // Start the UPD receiver to listen
-                                         // for data from the DAS
-    if ( udp_port < 0 )
-      udp_port = current_udp_port;
-
-    System.out.println("Starting UDP receiver on port " + udp_port );
+    System.out.println("Starting UDP receiver on port " + current_udp_port );
     UDPReceive udp_comm;
-    udp_comm = new UDPReceive( udp_port, this );
+    udp_comm = new UDPReceive( current_udp_port, this );
     udp_comm.setPriority(Thread.MAX_PRIORITY);
     udp_comm.start();
-
-    current_udp_port = udp_port;
    }
 
   /* -------------------------- InitializeDataSets ---------------------- */
@@ -397,71 +460,7 @@ public class LiveDataServer extends    DataSetServer
   * 
   */
 
-  /* -------------------------- TestAndSetAccessFlag ---------------------- */
-
-  synchronized private boolean TestAndSetAccessFlag( int access ) 
-  {
-    if ( access == START_READ_ACCESS )           // we want to start reading 
-    {
-      if ( read_count < 0 )
-        return false;                            // blocked
-      else
-      {
-        read_count++;                            // ok, count another reader
-        return true;
-      }
-    }
-
-    else if ( access == STOP_READ_ACCESS )       // we want to stop reading  
-    {
-      if ( read_count <= 0 )
-      {
-        System.out.println("ERROR: stoping read in TestAndSetAccessFlag, " +
-                           "but read_count <= 0: read_count =" + read_count );
-        return false;
-      } 
-      else
-      {
-        read_count--;                             // ok, count one less reader
-        return true;
-      }
-    }
-
-    else if ( access == START_WRITE_ACCESS )      // we want to start writing   
-    {
-      if ( read_count > 0 )
-        return false;                             // blocked
-      else
-      {
-        read_count = -1000;                       // ok, lock out any readers
-        return true;
-      }
-    }
-
-    else if ( access == STOP_WRITE_ACCESS )
-    {
-      if ( read_count >= 0 )
-      {
-        System.out.println("ERROR: stoping write in TestAndSetAccessFlag, " + 
-                           "but read_count >= 0 read_count =" + read_count );
-        return false;
-      } 
-      else
-      {
-        read_count = 0;                            // ok, allow readers now
-        return true;
-      }
-    }
-
-    else
-    {
-      System.out.println("ERROR: Invalid command in TestAndSetAccessFlag");
-      return false;
-    }
-  }
-
-
-
+  /* ----------------------------- SetToZero ---------------------------- */
   /**
    *  Zero out all of the spectra in the specified DataSet
    *
@@ -479,7 +478,7 @@ public class LiveDataServer extends    DataSetServer
     }
   }
 
-
+  /* --------------------------- RecordData ------------------------------ */
   /**
    *  Record part of a spectrum in the specified DataSet.
    *
@@ -527,56 +526,18 @@ public class LiveDataServer extends    DataSetServer
 
   public static void main(String args[])
   {
-    System.out.println("Live Data Server:");
-    System.out.println("You may specify up to three parameters on the ");
-    System.out.println("command line.  You can omit trailing parameters, but ");
-    System.out.println("not leading parameters.  The possible parameters are:");
-    System.out.println(" 1) The data directory from which to read the runfile");
-    System.out.println(" 2) The UDP port for the server use for the DAS" );
-    System.out.println(" 3) The TCP port for the server use for clients" );
-    String dataDirectory = null;
-    Date date = new Date( System.currentTimeMillis() );
-    System.out.println("Date = " + date );
+    System.out.println();
 
     LiveDataServer server= new LiveDataServer();
-                     
-    if ( args.length != 0 ) {
-	dataDirectory = args[0];
-	System.out.println( "Data directory is: " + dataDirectory );
-    }
-    else {
-	dataDirectory = new String("");
-	System.out.println("No Directory was specified.  Data directory "
-			   + " will be current directory" );
-    }
-    server.addDataDirectory( dataDirectory );
+    server.parseArgs( args );
 
+    Date date = new Date( System.currentTimeMillis() );
+    System.out.println("Starting " + server.getServerName() + " on " + date );
+    System.out.println("Log File " + server.getLogFilename() );
+    System.out.println("Using DataDirectories ");
+    server.showDataDirectories();
 
-                                         // Start the UPD receiver to listen
-                                         // for data from the DAS
-    if ( args.length >=2 )
-    {
-      int udp_port = Integer.parseInt( args[1] );
-      server.start_UDP( udp_port );
-    }
-    else
-      server.start_UDP( -1 );
-
-                                         // Start the TCP server to listen 
-                                         // for clients requesting data
-    if ( args.length >=3 )
-    {
-      int tcp_port = Integer.parseInt( args[2] );
-      server.start_TCP( tcp_port );
-    }
-    else
-      server.start_TCP( -1 );
-
-//  We could pop up viewers to see each new spectrum as it is received, but
-//  currently the viewers DON'T handle partial updates very well... most
-//  of the time is wasted redrawing everything.
-//
-//  ViewManager mon_vm  = new ViewManager( server.mon_ds, IViewManager.IMAGE );
-//  ViewManager hist_vm = new ViewManager( server.hist_ds, IViewManager.IMAGE );
+    server.start_UDP( );
+    server.startTCP();
   }
 }
