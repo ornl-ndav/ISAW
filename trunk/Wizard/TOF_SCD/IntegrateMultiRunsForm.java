@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.21  2003/07/14 16:34:15  bouzekc
+ * Made integrated peaks file parameter's initial value empty.
+ *
  * Revision 1.20  2003/07/14 15:35:09  bouzekc
  * Made run numbers parameter non-constant in all cases.
  *
@@ -216,46 +219,36 @@ public class IntegrateMultiRunsForm extends Form {
       init_choices(  );
     }
 
-    //0
-    addParameter( new DataDirPG( "Raw Data Path", "", false ) );
+    addParameter( new DataDirPG( "Raw Data Path", "", false ) );  //0
 
-    //1
-    addParameter( new DataDirPG( "Peaks File Output Path", "", false ) );
+    addParameter( new DataDirPG( "Peaks File Output Path", "", false ) );  //1
 
-    //2
-    addParameter( new IntArrayPG( "Run Numbers", "", false ) );
+    addParameter( new IntArrayPG( "Run Numbers", "", false ) );  //2
 
-    //3
-    addParameter( new StringPG( "Experiment name", "quartz", false ) );
+    addParameter( new StringPG( "Experiment name", "quartz", false ) );  //3
 
-    //4
     ChoiceListPG clpg = new ChoiceListPG( 
-        "Centering Type", choices.elementAt( 0 ), false );
+        "Centering Type", choices.elementAt( 0 ), false );  //4
 
     clpg.addItems( choices );
     addParameter( clpg );
 
-    //5
-    addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );
+    addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );  //5
 
-    //6
-    addParameter( new IntArrayPG( "The Time-Slice Range", "-1:3", false ) );
+    addParameter( new IntArrayPG( "The Time-Slice Range", "-1:3", false ) );  //6
 
-    //7
     addParameter( 
       new IntegerPG( 
-        "Amount to Increase Slice Size By", new Integer( 1 ), false ) );
+        "Amount to Increase Slice Size By", new Integer( 1 ), false ) );  //7
 
-    //8
     addParameter( 
       new IntegerPG( 
-        "SCD Calibration File Line to Use", new Integer( -1 ), false ) );
+        "SCD Calibration File Line to Use", new Integer( -1 ), false ) );  //8
 
-    //9
-    addParameter( new BooleanPG( "Append to File?", Boolean.FALSE, false ) );
+    addParameter( new BooleanPG( "Append to File?", Boolean.FALSE, false ) );  //9
 
-    //10
-    addParameter( new LoadFilePG( "Integrated Peaks File ", "", false ) );
+    addParameter( 
+      new LoadFilePG( "Integrated Peaks File ", " ", false ) );  //10
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
