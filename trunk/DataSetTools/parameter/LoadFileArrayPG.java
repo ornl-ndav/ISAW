@@ -30,6 +30,12 @@ public class LoadFileArrayPG extends VectorPG
 
 
       }      
+public Object clone()
+  {
+    LoadFilePG faap = new LoadFilePG( getName(), getValue());
+    return (Object)faap;
+
+  }       
 
 static class MyActionList implements ActionListener
   {

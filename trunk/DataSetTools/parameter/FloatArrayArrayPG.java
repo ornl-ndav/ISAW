@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/06/09 22:29:18  rmikk
+ * Added a clone method
+ *
  * Revision 1.1  2003/05/25 19:10:28  rmikk
  * Initial checkin.  This ParameterGUI allows for entering
  *   a Vector of Vector of floats
@@ -72,7 +75,13 @@ public class FloatArrayArrayPG extends VectorPG
 
 
 
-      }      
+      } 
+public Object clone()
+  {
+    FloatArrayArrayPG faap = new FloatArrayArrayPG( getName(), getValue());
+    return (Object)faap;
+
+  }     
 static class MyActionList implements ActionListener
   {
    FloatArrayArrayPG  vpf;
