@@ -10,6 +10,9 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.9  2001/09/27 19:49:55  dennis
+ * Added editing for labels, line styles, etc.
+ *
  * Revision 1.8  2001/09/03 18:57:04  dennis
  * Redraws whole graph on any update.  Previously the axes labels were
  * not changed. (Ruth)
@@ -68,7 +71,7 @@ import OverplotView.IGraphableDataGraph;
 import OverplotView.graphics.sgtGraphableDataGraph;
 import java.awt.*;
 import java.awt.event.*;
-
+import gov.noaa.pmel.sgt.swing.*;
 public class GraphableDataManager 
   extends DataSetViewer
 {
@@ -86,6 +89,10 @@ public class GraphableDataManager
   public GraphableDataManager( DataSet data_set )
   {
     super(data_set);
+    JMenu jm = menu_bar.getMenu(DataSetViewer.EDIT_MENU_ID);
+    JMenuItem jmi = new JMenuItem("Graph");
+    jm.add( jmi);
+    jmi.addActionListener(new OptionMenuHandler()  );
     inittt( data_set );
   }
   private void inittt( DataSet data_set )
@@ -337,6 +344,17 @@ public class GraphableDataManager
       System.out.println("The user selected : " + action );
       if(  action.equals( AUX_EXIT )  ) 
         System.exit( 1 );
+      else if( action.equals("Graph"))
+       {if( graph !=null)
+         {JPlotLayout jp = graph.getJPane();
+          if( jp !=null)
+           {JClassTree ct = new JClassTree();
+           ct.setModal(false);
+           ct.setJPane( jp);
+           ct.show();
+           }
+         }
+       }
     }
   }
 }
