@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:09:40  kramer
+ * Improved how the Interfaces are entered and selected from the tree.
+ *   Now the TreeModel is directly used.
+ * Created a new inner class to encapsulate Interface objects as nodes.
+ * Created a custom renderer.
+ *
  * Revision 1.3  2004/03/12 19:46:17  bouzekc
  * Changes since 03/10.
  *
@@ -43,6 +49,8 @@
  */
 package devTools.Hawk.classDescriptor.gui.panel;
 
+import java.awt.Component;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -50,8 +58,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
-import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -61,20 +69,23 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTree;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import devTools.Hawk.classDescriptor.gui.ExternallyControlledFrame;
+import devTools.Hawk.classDescriptor.gui.MouseNotifiable;
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
 import devTools.Hawk.classDescriptor.gui.internalFrame.InternalFrameUtilities;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
+import devTools.Hawk.classDescriptor.modeledObjects.InterfaceDefn;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
 import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
+import devTools.Hawk.classDescriptor.tools.SystemsManager;
 
 /**
  * This is a special JPanel which contains a JTree which displays interfaces in a project by their package 
@@ -94,7 +105,7 @@ import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
  * <br> .....
  * @author Dominic Kramer
  */
-public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, ActionListener
+public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, ActionListener, MouseNotifiable
 {
 	/**
 	 * This is a Vector of Vectors.  Each of these inside Vectors is a Vector of Interface objects.
@@ -125,9 +136,9 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 	 */
 	private JPopupMenu popup;
 	/**
-	 * The JInternalFrame that this panel is placed onto.
+	 * The frame that this panel is placed onto.
 	 */
-	private JInternalFrame frame;
+	private ExternallyControlledFrame frame;
 	/**
 	 * The JCheckBox that contains the option to shorten package names 
 	 * if they are java names.
@@ -152,7 +163,7 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 	 * The HawkDesktop onto which this panel is added.
 	 */
 	private HawkDesktop desktop;
-	
+
 	/**
 	 * Create a new PackageTreeJPanel.
 	 * @param pro The project associated with this panel.
@@ -163,7 +174,7 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 	 * @param classShortOther Set this to ture if class names are to be shortened if they are non-java names.
 	 * @param desk The HawkDesktop onto which this panel is on.
 	 */
-	public PackageTreeJPanel(Project pro, JInternalFrame FRAME, boolean packageShortJava, boolean packageShortOther, boolean classShortJava, boolean classShortOther, HawkDesktop desk)
+	public PackageTreeJPanel(Project pro, ExternallyControlledFrame FRAME, boolean packageShortJava, boolean packageShortOther, boolean classShortJava, boolean classShortOther, HawkDesktop desk)
 	{			
 		desktop = desk;
 		
@@ -173,13 +184,12 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 		
 		rootNode = new DefaultMutableTreeNode(project+"'s Packages");
 		model = new DefaultTreeModel(rootNode);
-		model.addTreeModelListener(new PackageTreeModelListener());
 		tree = new JTree(model);
 		tree.setEditable(false);
-		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
 		JScrollPane treeScrollPane = new JScrollPane(tree);
 
-		fillTree(packageShortJava, packageShortOther, classShortJava, classShortOther);
+		fillTree();
 
 		add(treeScrollPane);
 
@@ -305,7 +315,8 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 				menuBar.add(editMenu);
 				menuBar.add(viewMenu);
 				menuBar.add(propertiesMenu);
-				
+		
+		tree.setCellRenderer(new PackageTreeRenderer());
 		//now to add listeners to the components that will pop up the popup menu
 		MouseListener popupListener = new PopupListener();
 			this.addMouseListener(popupListener);
@@ -364,27 +375,20 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 	/**
 	 * Fills the tree with nodes.  The nodes use either the full name for classes and interfaces or 
 	 * shortened names depending on the parameters supplied.
-	 * @param packageShortJava Set this to true if package names are to be shortened if they are java names.
-	 * @param packageShortOther Set this to true if package names are to be shortened if they are non-java names.
-	 * @param classShortJava Set this to true if class names are to be shortened if they are java names.
-	 * @param classShortOther Set this to true if class names are to be shortened if they are non-java names.
 	 */
-	public void fillTree(boolean packageShortJava, boolean packageShortOther, boolean classShortJava, boolean classShortOther)
+	public void fillTree()
 	{
 		rootNode.removeAllChildren();
 		Vector currentIntFVec = new Vector();
 		for (int i=0; i<packageVec.size(); i++)
 		{
 			currentIntFVec = (Vector)packageVec.elementAt(i);
-			String newPackageName = ((Interface)currentIntFVec.elementAt(0)).getPgmDefn().getPackage_Name(packageShortJava, packageShortOther);
-			DefaultMutableTreeNode node = new DefaultMutableTreeNode( newPackageName );
+			String newPackageName = ((Interface)currentIntFVec.elementAt(0)).getPgmDefn().getPackage_Name(false, false);
+			PackageNameTreeNode node = new PackageNameTreeNode( newPackageName, currentIntFVec);
 			rootNode.add(node);
 			
 			for (int j=0; j<currentIntFVec.size(); j++)
-			{
-				String newIntFName = ((Interface)currentIntFVec.elementAt(j)).getPgmDefn().getInterface_name(classShortJava, classShortOther);
-				node.add(new DefaultMutableTreeNode( newIntFName ));
-			}
+				node.add(new InterfaceTreeNode( (Interface)currentIntFVec.elementAt(j)));
 		}
 		//now to expand the root node
 			tree.expandPath(new TreePath(rootNode));
@@ -398,43 +402,29 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 	 */
 	public Interface[] getSelectedInterface()
 	{
-		Interface intF = null;
-		TreePath treePath = tree.getSelectionPath();
-		if (treePath != null)
+		TreePath[] treePathArr = tree.getSelectionPaths();
+		Vector intfVec = new Vector();
+		Object lastComponent = null;
+		Vector packageVec = null;
+		for (int i=0; i<treePathArr.length; i++)
 		{
-			int count = treePath.getPathCount();
-			if (count<3)
-				intF = null;
-			else
+			lastComponent = treePathArr[i].getLastPathComponent();
+			if (lastComponent instanceof InterfaceTreeNode)
+				intfVec.add(((InterfaceTreeNode)lastComponent).getInterface());
+			else if (lastComponent instanceof PackageNameTreeNode)
 			{
-				String str = (String)((DefaultMutableTreeNode)tree.getLastSelectedPathComponent()).getUserObject();
-				int i=0;
-				int j=0;
-				boolean found = false;
-				while (!found && i<packageVec.size())
-				{
-					j=0;
-					while (!found && j<((Vector)packageVec.elementAt(i)).size())
-					{
-						if ( ((Interface)((Vector)packageVec.elementAt(i)).elementAt(j)).getPgmDefn().getInterface_name(shortenClassJavaBox.isSelected(), shortenClassOtherBox.isSelected()).equals(str))
-						{
-							found = true;
-							intF = ((Interface)((Vector)packageVec.elementAt(i)).elementAt(j));
-						}
-						j++;
-					}
-					i++;
-				}
+				packageVec = ((PackageNameTreeNode)lastComponent).getVectorOfInterfaces();
+				for (int j=0; j<packageVec.size(); j++)
+					intfVec.add(packageVec.elementAt(j));
 			}
+			else if (treePathArr[i].getPathCount() == 1)
+				intfVec = project.getInterfaceVec();
 		}
-		Interface[] intfArr = new Interface[0];
-		if (intF != null)
-		{
-			intfArr = new Interface[1];
-			intfArr[0] = intF;
-		}
+		Interface[] newArray = new Interface[intfVec.size()];
+		for (int i=0; i<intfVec.size(); i++)
+			newArray[i] = (Interface)intfVec.elementAt(i);
 		
-		return intfArr;
+		return newArray;
 	}
 	
 	/**
@@ -479,7 +469,22 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 		else if (event.getActionCommand().equals("associate.javadocs"))
 			InternalFrameUtilities.showAssociateJavadocsWindow(getSelectedInterface(),desktop);
 		else if (event.getActionCommand().equals("properties.shorten"))
-			fillTree(shortenPackageJavaBox.isSelected(), shortenPackageOtherBox.isSelected(), shortenClassJavaBox.isSelected(), shortenClassOtherBox.isSelected());
+			fillTree();
+	}
+	
+	/**
+	 * The Components in the array returned from this method are the Components that should have the 
+	 * mouse use the waiting animation when an operation is in progress.
+	 */
+	public Component[] determineWaitingComponents()
+	{
+		Component[] compArr = new Component[5];
+		compArr[0] = tree;
+		compArr[1] = menuBar;
+		compArr[2] = popup;
+		compArr[3] = frame.getControlledComponent();
+		compArr[4] = this;
+		return compArr;
 	}
 	
 	/**
@@ -508,16 +513,125 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 			}
 		}
 	}
-	
+
 	/**
-	 * Listens to events thrown from the JTree.
+	 * Class which handles rendering the tree (giving it custom fonts, icons, and tooltips etc.).
 	 * @author Dominic Kramer
 	 */
-	class PackageTreeModelListener implements TreeModelListener
+	private class PackageTreeRenderer extends DefaultTreeCellRenderer
 	{
-		public void treeNodesChanged(TreeModelEvent e) {}
-		public void treeNodesInserted(TreeModelEvent e) {}
-		public void treeNodesRemoved(TreeModelEvent e) {}
-		public void treeStructureChanged(TreeModelEvent e) {}
+		/**
+		 * Gets the custom component to add to the tree.
+		 */
+		public Component getTreeCellRendererComponent(JTree tree, Object ob, boolean isSelected, boolean isExpanded, boolean isLeaf, int rowNum, boolean isFocused)
+		{
+			super.getTreeCellRendererComponent(tree,ob,isSelected,isExpanded,isLeaf,rowNum,isFocused);
+			
+			if (isLeaf)
+			{
+				if (ob instanceof InterfaceTreeNode)
+				{
+					ImageIcon icon = null;
+					Interface intf = ((InterfaceTreeNode)ob).getInterface();
+					setText(intf.getPgmDefn().getInterface_name(shortenClassJavaBox.isSelected(),shortenClassOtherBox.isSelected()));
+					InterfaceDefn intfDefn = intf.getPgmDefn();
+					if (intfDefn.isClass())
+					{
+						if (intfDefn.isAbstract())
+						{
+							icon = SystemsManager.getImageIconOrNull("abstract_class_icon.png");
+							setFont(new Font("Plain",Font.PLAIN,12));
+							setToolTipText("Abstract Class "+intfDefn.getInterface_name());
+						}
+						else
+						{
+							setToolTipText("Class "+intfDefn.getInterface_name());
+							icon = SystemsManager.getImageIconOrNull("class_icon.png");
+							setFont(new Font("Plain",Font.PLAIN,12));
+						}
+					}
+					else
+					{
+						icon = SystemsManager.getImageIconOrNull("interface_icon.png");
+						setFont(new Font("Italic",Font.ITALIC,12));
+						setToolTipText("Interface "+intfDefn.getInterface_name());
+					}
+					
+					if (icon != null)
+						setIcon(icon);
+				}
+			}
+			else if (rowNum == 0) //then it is the root node
+			{
+				setFont(new Font("Plain",Font.BOLD,13));
+				setToolTipText("Project "+project.getProjectName());
+				ImageIcon icon = SystemsManager.getImageIconOrNull("project_icon.png");
+				if (icon != null)
+					setIcon(icon);
+			}
+			else
+			{
+				setFont(new Font("Plain",Font.BOLD,12));
+				if (ob instanceof PackageNameTreeNode)
+				{
+					PackageNameTreeNode node = (PackageNameTreeNode)ob;
+					setToolTipText("Package "+node.getPackageName());
+					setText(node.getPackageName(shortenPackageJavaBox.isSelected(),shortenPackageOtherBox.isSelected()));
+				}
+				ImageIcon icon = SystemsManager.getImageIconOrNull("package_icon.png");
+				if (icon != null)
+					setIcon(icon);
+			}
+			
+			return this;
+		}
+	}
+	
+	/**
+	 * Specialized class used to place Interface objects into the tree and alter the text displayed in the tree.
+	 * @author Dominic Kramer
+	 */
+	private class InterfaceTreeNode extends DefaultMutableTreeNode
+	{
+		public InterfaceTreeNode() { super(); }
+		public InterfaceTreeNode(Interface intf) { super(intf); }
+		
+		public Interface getInterface()
+		{
+			return ((Interface)getUserObject());
+		}
+	}
+	
+	/**
+	 * Specialized class used to place String objects into the tree and alter the text displayed in the tree.
+	 * @author Dominic Kramer
+	 */
+	private class PackageNameTreeNode extends DefaultMutableTreeNode
+	{
+		private Vector intfVec;
+		private String name;
+		
+		public PackageNameTreeNode() { super();}
+		public PackageNameTreeNode(String nm, Vector vec)
+		{
+			super(nm);
+			intfVec = vec;
+			name = nm;
+		}
+		
+		public String getPackageName()
+		{
+			return name;
+		}
+		
+		public String getPackageName(boolean shortJava, boolean shortOther)
+		{
+			return InterfaceUtilities.getAbbreviatedName(name,shortJava,shortOther);
+		}
+		
+		public Vector getVectorOfInterfaces()
+		{
+			return intfVec;
+		}
 	}
 }
