@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/11/06 21:27:26  rmikk
+ *  Now can handle selected Regions for specifying
+ *    data sets and time ranges to be selected
+ *
  *  Revision 1.2  2003/11/06 19:56:18  rmikk
  *  Changed the proportion on the split pane so the control
  *    panel takes less area
@@ -40,6 +44,10 @@
  *
  *  Revision 1.4  2003/08/08 15:48:24  dennis
  *  Added GPL copyright information and $Log$
+ *  Added GPL copyright information and Revision 1.3  2003/11/06 21:27:26  rmikk
+ *  Added GPL copyright information and Now can handle selected Regions for specifying
+ *  Added GPL copyright information and   data sets and time ranges to be selected
+ *  Added GPL copyright information and
  *  Added GPL copyright information and Revision 1.2  2003/11/06 19:56:18  rmikk
  *  Added GPL copyright information and Changed the proportion on the split pane so the control
  *  Added GPL copyright information and   panel takes less area
@@ -323,6 +331,10 @@ public class DataSetViewerMaker1  extends DataSetViewer
            ds.setPointedAtIndex( Group);
            ds.notifyIObservers( IObserver.POINTED_AT_CHANGED);
           }
+         else if( evt.getActionCommand().equals(IViewComponent.SELECTED_CHANGED)){
+             ISelectedRegion selRegion = ((DataSetViewerMethods)viewComp).IgetSelectedRegion();
+             viewArray.SelectRegion( selRegion);
+         }
          
        }
     }
