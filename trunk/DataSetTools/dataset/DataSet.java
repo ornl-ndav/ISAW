@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/06/06 21:20:24  dennis
+ *  The copy() method now also preserves the last_sort_attribute value.
+ *
  *  Revision 1.14  2001/06/04 22:48:12  dennis
  *  Added method getLastSortAttribute().
  *
@@ -160,18 +163,19 @@ public class DataSet implements IAttributeList,
                                     // and also keep the same title as an
                                     // attribute.  The title can only be 
                                     // changed using the setTitle() method.
-  private long          ds_tag;
-  private int           pointed_at_index;
   private String        x_units;
   private String        x_label;
   private String        y_units;
   private String        y_label;
-  private AttributeList attr_list;
   private Vector        data;
+
+  private AttributeList attr_list;
+  private IObserverList observers;
   private Vector        operators;
   private OperationLog  op_log;
-  private IObserverList observers;
 
+  private long          ds_tag;
+  private int           pointed_at_index;
   private String        last_sort_attribute = "";
 
   /**
@@ -1363,13 +1367,16 @@ public class DataSet implements IAttributeList,
       this.notifyIObservers( IObserver.DATA_CHANGED );
       return;
     }
+
+    this.title               = ds.title;
+    this.x_units             = ds.x_units;
+    this.x_label             = ds.x_label;
+    this.y_units             = ds.y_units;
+    this.y_label             = ds.y_label;
+
                                          // Note: we are NOT copying the ds_tag
-    this.title            = ds.title;
-    this.pointed_at_index = ds.pointed_at_index;
-    this.x_units          = ds.x_units;
-    this.x_label          = ds.x_label;
-    this.y_units          = ds.y_units;
-    this.y_label          = ds.y_label;
+    this.pointed_at_index    = ds.pointed_at_index;
+    this.last_sort_attribute = ds.last_sort_attribute;
 
     this.setAttributeList( ds.getAttributeList() );
 
