@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.55  2003/06/24 20:13:13  dennis
+ * Now calls ScriptUtil.display(). (Ruth)
+ *
  * Revision 1.54  2003/06/19 22:29:55  pfpeterson
  * Converted to use more of ScriptUtil. Removed dead code and commented
  * out code.
@@ -733,8 +736,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     }
 
     /**
-     * Executes the DISPLAY common. It Finds the data set that the
-     * variable refers to Then it creates a viewer for the data set
+     *  Displays the information from the string S.
      */
     private int  execDisplay( String S, int start, int end){
         int    i,
@@ -834,34 +836,9 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             seterror( i , ER_ImproperArgument+"B" );
             return i;
         }
-   
-        String SS;
-        SS = "";
-        if( Result instanceof Integer )  
-            SS = SS + (Integer)Result;
-        else if( Result instanceof Float ) 
-            SS = SS + (Float)Result;
-        else if( Result instanceof String ) 
-            SS = SS + (String)Result;
-        else if ( Result instanceof int[] ){
-             int Z[]= (int[]) Result;
-             
-             SS = SS + "[";
-             for( i = 0 ; i < Z.length ; i++ ){
-                 SS = SS + Z[i];
-                 if( i + 1 < Z.length)
-                     SS = SS + ",";
-             }
-             SS = SS + "]";
-             
-        }else if( Result instanceof Vector){
-            SS = Vect_to_String((Vector)Result);
-        }else if( Result == null)
-            SS = "(null)";
-        else
-            SS = SS + Result.toString();
 
-        PC.firePropertyChange( "Display"  , null , (Object)SS );
+        ScriptUtil.display( Result );
+
         Result = null;
         return end;
     }
