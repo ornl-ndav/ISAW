@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2002/05/20 20:24:13  pfpeterson
+ *  Added checkbox to allow for numbering banks as the
+ *  raw data does or sequentially. Also look for "IParmFile"
+ *  system property and add it as the second line of the
+ *  exported file if defined.
+ *
  *  Revision 1.14  2002/05/17 22:19:49  pfpeterson
  *  Added checkbox for exporting monitor spectrum. The integrated
  *  monitor count is still included in the file.
@@ -109,6 +115,7 @@ public class gsas_filemaker
     private String type;
     private int monNum;
     private boolean export_monitor;
+    private boolean seq_numbers;
     
     /**
      * This constructor is in place just in case one is needed. It
@@ -152,13 +159,14 @@ public class gsas_filemaker
     }
 
     /**
-     * This constructor allows for the exporting of the monitor to be
-     * specified.
+     * This constructor allows for the exporting of the monitor and
+     * method of bank numbering to be specified.
      */
     public gsas_filemaker( DataSet mon_ds, DataSet ds, String filename,
-                           boolean em){
+                           boolean em, boolean sn){
         this(mon_ds,ds,filename);
         this.export_monitor=em;
+        this.seq_numbers=sn;
     }
 
     /** 
@@ -166,14 +174,22 @@ public class gsas_filemaker
      */
     public void write(){
 	this.printRunTitle();
+        this.printIParmFile();
 	this.printMonitorCount();
 	this.printBankInfo();
-        //System.out.println("(GF)EXPORT MONITOR: "+export_monitor);
+        //System.out.println("(GF)NUMBERING: "+seq_numbers);
         if(export_monitor) this.printMonitorSpectrum();
 
 	// write out the data
+        int count=1;
 	for(int i=1; i<=data.getMaxGroupID() ; i++){
-	    this.printBank(i);
+            Data dd=data.getData_entry_with_id(i);
+            if(dd!=null){
+                printBank(count,dd);
+                count++;
+            }else if(!seq_numbers){
+                count++;
+            }
 	}
 	try{
 	    Thread.sleep(100);
@@ -183,6 +199,9 @@ public class gsas_filemaker
     /**
      * This method opens the banknum group and calls the other form of
      * printbank.
+     *
+     * @deprecated This is a redundant function incorporated in the
+     *             write() method
      */
     private void printBank(int banknum){
 	Data dd = data.getData_entry_with_id(banknum);
@@ -197,11 +216,7 @@ public class gsas_filemaker
      * not otherwise needed.
      */
     private void printBank( int banknum, Data ds ){
-	if(ds==null){
-	    return;
-	}else{
-	    // should choke
-	}
+	if(ds==null) return;
 
 	getBinType(ds,data.getX_units());
 	getType(ds);
@@ -507,9 +522,8 @@ public class gsas_filemaker
 	try{
 	// write the bank information header
 	outStream.write(format("#             Ref Angle  Total length",80)+"\n");
-
 	Data dd=null;
-	if(mon!=null){
+	if(mon!=null && export_monitor){
 	    dd = mon.getData_entry(monNum);
 	    if(dd!=null){
 		AttributeList attr_list = dd.getAttributeList();
@@ -518,12 +532,16 @@ public class gsas_filemaker
 	}
 
 	// write the bank information
+        int count=1;
 	for(int i=1; i<=data.getMaxGroupID(); i++){
 	    dd = data.getData_entry_with_id(i);
 	    if(dd!=null){
 		AttributeList attr_list = dd.getAttributeList();
-		printBankInfoLine(i,attr_list);
-	    }
+                printBankInfoLine(count,attr_list);
+                count++;
+	    }else if(!seq_numbers){
+                count++;
+            }
 	}
 	}catch(Exception e){}
     }
@@ -561,6 +579,20 @@ public class gsas_filemaker
 	    
 	} catch(Exception d){}
 	
+    }
+
+    /**
+     * Write the instrument parameter file with propper padding.
+     */
+    private void printIParmFile(){
+        String S=System.getProperty("IParmFile");
+        //System.out.println("IParm: "+S);
+        if(S!=null){
+            S="Instrument parameter "+S;
+            try{
+                outStream.write( format(S,80)+"\n");
+            }catch(Exception e){}
+        }
     }
 
     /** 
