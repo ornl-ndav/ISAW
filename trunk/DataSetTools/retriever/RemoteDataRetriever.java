@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/02/24 21:09:43  dennis
+ *  Moved STATUS string from TCPComm to TCPServer
+ *
  *  Revision 1.10  2003/02/24 20:47:40  dennis
  *  Now checks that reply to status request starts with "Status:"
  *
@@ -188,7 +191,7 @@ abstract public class RemoteDataRetriever extends    Retriever
         server_alive = true;
 
       String answer = (String)obj;
-      if ( answer.startsWith( TCPComm.STATUS ) )
+      if ( answer.startsWith( TCPServer.STATUS ) )
         return true;
       else
       {

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/02/24 21:09:14  dennis
+ *  Moved STATUS string from TCPComm to TCPServer
+ *
  *  Revision 1.6  2003/02/24 20:37:05  dennis
  *  Now consistently replies to status requests by sending a String
  *  that begins with "Status:".
@@ -151,7 +154,7 @@ public class FileDataServer extends DataSetServer
         }
   
         else if ( command.getCommand() == CommandObject.GET_STATUS )
-          tcp_io.Send(TCPComm.STATUS + TCPServer.ANSWER_OK);
+          tcp_io.Send(TCPServer.STATUS + TCPServer.ANSWER_OK);
  
         else
           return false;

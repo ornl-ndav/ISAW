@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/02/24 21:09:14  dennis
+ *  Moved STATUS string from TCPComm to TCPServer
+ *
  *  Revision 1.10  2003/02/24 13:39:19  dennis
  *  Switched to use CommandObject instead of compound command Strings.
  *
@@ -59,6 +62,7 @@ import DataSetTools.util.*;
 
 public class TCPServer implements ITCPUser
 {
+  public static final String STATUS           = "Status: ";
   public static final String ANSWER_OK        = "OK";
   public static final String ANSWER_NOT_OK    = "Not_OK";
 
