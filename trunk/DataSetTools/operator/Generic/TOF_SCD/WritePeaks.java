@@ -34,7 +34,7 @@ package DataSetTools.operator.Generic.TOF_SCD;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.instruments.*;
-import DataSetTools.util.SharedData;
+import DataSetTools.util.*;
 import DataSetTools.retriever.RunfileRetriever;
 import java.io.*;
 import java.util.*;
@@ -119,11 +119,15 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
   */
   public Object getResult()
   {
-    String  file     = (String) (getParameter(0).getValue());
-    DataSet mon_data = (DataSet)(getParameter(1).getValue());
-    Vector  peaks    = (Vector) (getParameter(2).getValue());
-    boolean append   = ((Boolean)(getParameter(3).getValue())).booleanValue();
+    String  file       = (String) (getParameter(0).getValue());
+    DataSet mon_data   = (DataSet)(getParameter(1).getValue());
+    Vector  peaks      = (Vector) (getParameter(2).getValue());
+    boolean append     = ((Boolean)(getParameter(3).getValue())).booleanValue();
     OutputStreamWriter outStream;
+    int     seqnum_off = 0;
+
+    // determine the last sequence number in the file if we are appending
+    if(append) seqnum_off=lastSeqNum(file);
 
     // general information
     int nrun=((Peak)peaks.elementAt(0)).nrun();
@@ -144,8 +148,6 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 	    .getAttributeValue(Attribute.TOTAL_COUNT)).floatValue();
 	//moncnt=Moncnt.floatValue();
     }
-
-    int seqnum_off=0;
 
     try{
 	// open and initialize a buffered file stream
@@ -175,9 +177,9 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 	// write out the peaks
 	for( int i=0 ; i<peaks.size() ; i++ ){
             if(((Peak)peaks.elementAt(i)).reflag()==20){
-                seqnum_off++;
+                seqnum_off--;
             }else{
-                int seqnum=((Peak)peaks.elementAt(i)).seqnum()-seqnum_off;
+                int seqnum=((Peak)peaks.elementAt(i)).seqnum()+seqnum_off;
                 ((Peak)peaks.elementAt(i)).seqnum(seqnum);
                 outStream.write(((Peak)peaks.elementAt(i)).toString()+"\n");
             }
@@ -190,6 +192,49 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     }
 
     return file;
+  }
+
+ /**
+  * Determine the last sequence number used in the file
+  *
+  * @param filename the name of the file that is being appended to and
+  * has peaks already listed in it.
+  *
+  * @return the last sequence number that appeared in the file. If
+  * anything goes wrong it returns zero instead.
+  */
+  static private int lastSeqNum( String filename ){
+        File peakF=new File(filename);
+        if(! peakF.exists()) return 0;
+        if(! peakF.canRead()) return 0;
+
+        TextFileReader tfr=null;
+        String line=null;
+        try{
+            tfr=new TextFileReader(filename);
+            while(!tfr.eof()){ // last line is the important one
+                line=tfr.read_line();
+            }
+        }catch(IOException e){
+            // let it drop on the floor
+        }finally{
+            if(tfr==null){
+                return 0;
+            }else{
+                try{
+                    tfr.close();
+                }catch(IOException e){
+                    // let it drop on the floor
+                }
+            }
+        }
+        if(line!=null){
+            StringBuffer sb=new StringBuffer(line.trim());
+            StringUtil.getInt(sb); // record type
+            return StringUtil.getInt(sb); // sequence number
+        }else{
+            return 0;
+        }
   }
 
  /* ----------------------------- formating ------------------------------ */ 
@@ -241,7 +286,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 	DataSet mds = (new RunfileRetriever(datfile)).getDataSet(0);
 	DataSet rds = (new RunfileRetriever(datfile)).getDataSet(1);
 	
-	FindPeaks fo = new FindPeaks(rds,10,1,false);
+	FindPeaks fo = new FindPeaks(rds,10,1);
 	Vector peaked=(Vector)fo.getResult();
 	
 	/* CentroidPeaks co=new CentroidPeaks(rds,peaked);
@@ -249,5 +294,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 
 	WritePeaks wo = new WritePeaks(outfile,mds,peaked,Boolean.FALSE);
 	System.out.println(wo.getResult());
+
+        System.exit(0);
     }
 }
