@@ -31,8 +31,8 @@ public class SplashWindowFrame extends JFrame {
 		(screenDim.height - frameDim.height) / 2);
 
        MediaTracker mt = new MediaTracker(this);
-        //System.out.println("Isaw_Home is = "+System.getProperty("ISAW_HOME"));
-       String ipath = System.getProperty("user.dir");
+        System.out.println("Isaw_Home is = "+System.getProperty("ISAW_HOME"));
+       String ipath = System.getProperty("ISAW_HOME");
        ipath = StringUtil.fixSeparator(ipath);
        ipath = ipath.replace('\\','/');
 
