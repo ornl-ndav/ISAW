@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/12/18 13:11:17  rmikk
+ * The error information new gives two new pieces of information about the errors.
+ *
  * Revision 1.9  2003/11/23 19:57:24  rmikk
  * Fixed so methods in this class work well with Python scripts that
  *   are NOT written as operators and that are not stored on a file.
@@ -214,7 +217,8 @@ public class PyScript extends Script{
         dumpStack=dumpStack.substring(0,index)+filename
                                                  +dumpStack.substring(index+8);
     }
-    ParseError pe=new ParseError(dumpStack,pyexcep.traceback.tb_lineno-1);
+    ParseError pe=new ParseError("Err Type/String="+pyexcep.type+",value="+pyexcep.value+
+           "\nstack Dump="+dumpStack,pyexcep.traceback.tb_lineno-1);
     return pe;
   }
 
