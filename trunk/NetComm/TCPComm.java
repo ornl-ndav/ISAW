@@ -32,6 +32,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/02/21 13:13:46  dennis
+ *  Java keeps a hashtable of objects sent over the tcp/ip connection
+ *  through the output stream.  This allows them to only send a "handle"
+ *  for an object if the object has already been sent.  However, since
+ *  our DataSets are mutable, this causes problems since only the
+ *  initial form of the DataSet is sent.  Previously we worked around
+ *  the problem by making and sending clones of the objects.  This
+ *  modification adds a Reset() method to TCPComm that calls the
+ *  underlying output stream's reset method.  Calling Reset() before
+ *  sending the modified DataSet lets us send it without first
+ *  cloning it.
+ *
  *  Revision 1.9  2002/11/27 23:27:59  pfpeterson
  *  standardized header
  *
@@ -157,6 +169,25 @@ public class TCPComm
       FreeResources();
       throw( new IOException() );
     }
+  }
+
+  /** 
+   *  Reset the object output stream, so that the hashtable of objects sent
+   *  is cleared and subsequent requests to send objects will actually send
+   *  the object, rather than just sending the object "handle".
+   */
+  public void Reset()
+  {
+    try
+    {
+      if ( obj_out_stream != null )
+        obj_out_stream.reset();
+    }
+    catch ( Exception e )
+    {
+      System.out.println("reset of object out stream threw exception " + e );
+    }    
+
   }
  
   /**
