@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/04/09 19:26:55  dennis
+ *  Added "add_sas_attrs" flag and "ANALYSIS" level.
+ *
  *  Revision 1.11  2004/04/08 22:32:32  dennis
  *  Added final Strings and boolean flags to control the level of
  *  attributes included with DataSets retrieved.  The levels are set
@@ -69,10 +72,12 @@ public abstract class Retriever implements Serializable
     public static final String  TOFNSCD_ANALYSIS = "TOFNSCD ANALYSIS";
     public static final String  TOFNDGS_ANALYSIS = "TOFNDGS ANALYSIS";
     public static final String  TOFNIGS_ANALYSIS = "TOFNIGS ANALYSIS";
+    public static final String  ANALYSIS         = "ANALYSIS";
     public static final String  DIAGNOSTIC       = "DIAGNOSTIC";
 
     protected static boolean add_vis_attrs = true;
     protected static boolean add_run_attrs = true;
+    protected static boolean add_sas_attrs = true;
     protected static boolean add_npd_attrs = true;
     protected static boolean add_scd_attrs = true;
     protected static boolean add_dgs_attrs = true;
@@ -174,7 +179,7 @@ public abstract class Retriever implements Serializable
     public abstract int getType( int data_set_num );
 
 
-    /* ------------------------- SetAttrLevel --------------------------- */
+    /* ----------------------- SetAttrLevel --------------------------- */
     /**
      *  Specify how many attributes are to be included when DataSets are
      *  retrieved, base on a string code.  The common attributes for
@@ -237,6 +242,7 @@ public abstract class Retriever implements Serializable
      *                "TOFNSCD ANALYSIS"         means 1,2,3,5
      *                "TOFNDGS ANALYSIS"         means 1,2,3,6,8
      *                "TOFNIGS ANALYSIS"         means 1,2,3,7
+     *                "ANALYSIS"                 means 1,2,3,4,5,6,7,8
      *                "DIAGNOSTIC"               means everything
      *
      *  @return This returns true if a valid level was specified and returns
@@ -244,9 +250,9 @@ public abstract class Retriever implements Serializable
      *          default to "DIAGNOSTIC", and all possible attributes will
      *          be included.
      */
-    public boolean SetAttrLevel( String level )
+    public static boolean SetAttrLevel( String level )
     {  
-       SetAttrLevel( false );
+       SetAttrFlags( false );
        if ( level.equalsIgnoreCase( NONE ) )
          return true;
 
@@ -259,7 +265,10 @@ public abstract class Retriever implements Serializable
          return true;
 
        if ( level.equalsIgnoreCase( TOFNSAS_ANALYSIS ) )
+       {
+         add_sas_attrs = true;
          return true;
+       }
        else if ( level.equalsIgnoreCase( TOFNPD_ANALYSIS ) )
        {
          add_npd_attrs = true;
@@ -280,9 +289,18 @@ public abstract class Retriever implements Serializable
          add_igs_attrs = true;
          return true;
        }
+       else if ( level.equalsIgnoreCase( ANALYSIS ) )
+       {
+         add_sas_attrs = true;
+         add_npd_attrs = true;
+         add_scd_attrs = true;
+         add_dgs_attrs = true;
+         add_igs_attrs = true;
+         return true;
+       }
                                // default to everything, but return false 
                                // as an error flag if invalid request
-       SetAttrLevel( true ); 
+       SetAttrFlags( true ); 
        if ( level.equalsIgnoreCase( DIAGNOSTIC ) )
          return true;
        else
@@ -298,10 +316,11 @@ public abstract class Retriever implements Serializable
      *  @param  onoff  If true, include all possible attributes, if false,
      *                 include no attributes.
      */
-    public void SetAttrLevel( boolean onoff )
+    static public void SetAttrFlags( boolean onoff )
     {
       add_vis_attrs = onoff; 
       add_run_attrs = onoff;
+      add_sas_attrs = onoff;
       add_npd_attrs = onoff;
       add_scd_attrs = onoff;
       add_dgs_attrs = onoff;
