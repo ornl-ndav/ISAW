@@ -28,6 +28,14 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/01/09 21:10:03  rmikk
+ * Fixed the matrix corresponding to the three directions.
+ *
+ * CV: ----------------------------------------------------------------------
+ * .
+ * .
+ * .er Log.  Lines beginning with `CVS:' are removed automatically
+ *
  * Revision 1.5  2003/01/07 23:04:08  rmikk
  * Fixed an error with the orientation file name
  *
@@ -237,20 +245,19 @@ public class TQxQyQz  extends ContourView
             this.validate();
             
           }
-
+       //Gives inverse of A transpose, sorry
        public float[][] inv( float[][] A)
           {float[][] Res = new float[3][3];
-           
            Res[0][0]= A[1][1]*A[2][2]-A[2][1]*A[1][2];
-           Res[1][0]= -A[1][0]*A[2][2]+A[2][0]*A[1][2];
-           Res[2][0]= A[1][0]*A[2][1]-A[2][0]*A[1][1];
-           float D = Res[0][0]*A[0][0]+Res[1][0]*A[0][1]+Res[2][0]*A[0][2];
+           Res[0][1]= -A[1][0]*A[2][2]+A[2][0]*A[1][2];
+           Res[0][2]= A[1][0]*A[2][1]-A[2][0]*A[1][1];
+           float D = Res[0][0]*A[0][0]+Res[0][1]*A[0][1]+Res[0][2]*A[0][2];
            if( D==0) return null;
-           Res[0][1]= -A[0][1]*A[2][2]+A[2][1]*A[0][2];
+           Res[1][0]= -A[0][1]*A[2][2]+A[2][1]*A[0][2];
            Res[1][1]= A[0][0]*A[2][2]-A[2][0]*A[0][2];
-           Res[2][1]= -A[0][0]*A[2][1]+A[2][0]*A[0][1];
-           Res[0][2]= A[0][1]*A[1][2]-A[1][1]*A[0][2];
-           Res[1][2]= -A[0][0]*A[1][2]+A[1][0]*A[0][2];
+           Res[1][2]= -A[0][0]*A[2][1]+A[2][0]*A[0][1];
+           Res[2][0]= A[0][1]*A[1][2]-A[1][1]*A[0][2];
+           Res[2][1]= -A[0][0]*A[1][2]+A[1][0]*A[0][2];
            Res[2][2]= A[0][0]*A[1][1]-A[1][0]*A[0][1];
            for( int i=0;i<3;i++)
             for( int j=0;j<3;j++)
