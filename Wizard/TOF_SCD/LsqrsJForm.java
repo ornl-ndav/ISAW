@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.6  2003/06/10 21:56:08  bouzekc
+ * Fixed problem where the matrix file name Vector was not
+ * being set as a parameter.
+ *
  * Revision 1.5  2003/06/10 20:31:41  bouzekc
  * Moved creation of lsqrsJ out of the for loop to avoid
  * excessive Object creation.  Now also outputs an overall
@@ -328,6 +332,10 @@ public class LsqrsJForm extends Form
 
     if(obj instanceof ErrorString)
       return errorOut("LsqrsJ failed: " + obj.toString());
+
+    //set the matrix file name vector parameter
+    param = (IParameterGUI)getParameter(5);
+    param.setValue(matNamesVec);
   
     SharedData.addmsg("--- LsqrsJForm finished. ---");
 
