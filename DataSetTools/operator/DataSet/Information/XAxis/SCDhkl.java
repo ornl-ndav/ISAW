@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/09/30 19:55:33  pfpeterson
+ * Fixed bug with updated orientation matrix not being used.
+ *
  * Revision 1.1  2002/09/25 16:45:24  pfpeterson
  * Added to CVS.
  *
@@ -69,6 +72,7 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
     private static final double PI  = Math.PI;
     private static final double HOM = 0.3955974;
     private float[][] invU;
+    private float[][] UB;
 
     /**
      * Construct an operator with a default parameter list.  If this
@@ -166,12 +170,16 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
             Q[i]=(float)(Q[i]/(2.*PI));
         }
           
-        // calculate the inverse of the orientation matrix
-        if(this.invU==null){
-            float[][] UB=
+        // check the current UB matrix
+        float[][] UBtemp=
                 (float[][])ds.getAttributeValue(Attribute.ORIENT_MATRIX);
-            if(UB==null) return null;
-            this.invU=this.findInverse( UB );
+        if(UBtemp==null) return null;
+        // calculate the inverse of the orientation matrix
+        if(! UBtemp.equals(this.UB)){
+            if(this.invU==null) this.invU=new float[3][3];
+            this.UB=(float[][])ds.getAttributeValue(Attribute.ORIENT_MATRIX);
+            if(this.UB==null) return null;
+            this.invU=this.findInverse( this.UB );
             if(this.invU==null) return null;
         }
 
