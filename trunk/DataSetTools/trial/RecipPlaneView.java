@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/06/05 14:42:31  dennis
+ * Now allows user to select planes of constant h, k or l either using
+ * the FFT DataSet, or by selecting peaks interactively.  Also shows slices
+ * of constant h, k or l through the reciprocal lattice, where the value
+ * of h, k or l is specified by the user.
+ *
  * Revision 1.2  2003/06/04 14:09:46  dennis
  * Now supports multiple runs with more than one area detector.
  * The code that filters the FFTs now checks for normal vectors
@@ -724,7 +730,14 @@ public class RecipPlaneView
 
 
 /* ------------------------- refinePlane ----------------------------- */
-
+/**
+ *  Calculate a refined normal vector as a 3 or 4 dimensional vector and
+ *  calculate the corresponding least squares errors and d_spacing.
+ *
+ *  @return If DIMENSION == 3, this returns: {n1,n2,n3,err,d}, and if
+ *          DIMENSION == 4, this returns: {n1,n2,n3,n4,err,d}, where n4
+ *          represents a shift.  
+ */
   public float[] refinePlane(Vector3D normal, float q_step)
   {
     double r[] = new double[all_vectors.length];
@@ -737,14 +750,78 @@ public class RecipPlaneView
 
     double err = LinearAlgebra.QR_solve( QR_Rmat, QR_Umat, r );
 
-    float result[] = new float[DIMENSION + 1];
+    float result[] = new float[DIMENSION + 2];
     for ( int i = 0; i < DIMENSION; i++ )
       result[i] = (float)r[i];
 
-    result[DIMENSION] = (float)err;
+    float sigma;
+    if ( all_vectors.length > 2 )
+      sigma = (float)(err / Math.sqrt( all_vectors.length-1 ));
+    else
+      sigma = (float)err;
+     
+    result[DIMENSION] = (float)sigma;              // fill in error values
+
+    Vector3D new_normal = new Vector3D( result );
+    float q_spacing  = 1/new_normal.length();
+    float d_spacing = (float)(2*Math.PI / q_spacing);
+    result[DIMENSION+1] = d_spacing;            // and d-spacing value
 
     return result;
   }
+
+
+/* ------------------------- refinePlane ----------------------------- */
+/**
+ *  Calculate a refined normal vector as a 3 or 4 dimensional vector and
+ *  calculate the corresponding least squares errors and d_spacing.
+ *
+ *  @return If DIMENSION == 3, this returns: {n1,n2,n3,err,d}, and if
+ *          DIMENSION == 4, this returns: {n1,n2,n3,n4,err,d}, where n4
+ *          represents a shift.  
+ */
+  public float[] refinePlane(Vector3D normal)
+  {
+    Data d = ProjectPoints( all_vectors, normal, 1 );
+    d = FFT( d );
+
+    float q_spacing;
+                                           // get FREQ and calculate q_spacing
+    Attribute attr = d.getAttribute( FREQUENCY_ATTRIBUTE );
+    if ( attr != null && attr instanceof FloatAttribute )
+    {
+      float max_chan = ((FloatAttribute)attr).getFloatValue();
+      q_spacing = (2*SLICE_SIZE_IN_Q)/(max_chan);
+    }
+    else
+    {
+      System.out.println("ERROR: Frequency attribute wrong");
+      return null;
+    }
+
+    boolean changed = true;
+    int     count = 0;
+    float   values[] = null;
+    Vector3D new_normal = new Vector3D();
+    while ( changed && count < 10 )
+    {
+      values = refinePlane( normal, q_spacing );
+      new_normal.set(values);
+      if ( new_normal.length() <= 0 )
+        System.out.println("************ Warning, 0 length normal ********");
+
+      q_spacing  = 1/new_normal.length();
+      new_normal.normalize();
+      if ( Math.abs(normal.dot(new_normal)) > 0.99999)
+        changed = false;
+      else
+        normal.set( new_normal );
+      count++;
+    }
+
+    return values;
+  }
+
 
 
 /* ------------------------- FilterFFTds ------------------------------- */
@@ -763,7 +840,7 @@ public class RecipPlaneView
     Vector3D normal;
     float    q_spacing;
     float    d_spacing;
-    float    err;
+    float    sigma;
     for ( int i = 0; i < n_data; i++ )
     {
       Data d = fft_ds.getData_entry( i );
@@ -810,12 +887,9 @@ public class RecipPlaneView
         System.out.println("Failed to stablize " + count );
 */
       d_spacing = (float)(2*Math.PI / q_spacing);
-      if ( all_vectors.length > 2 )
-        err = (float)(values[DIMENSION] / Math.sqrt( all_vectors.length-1 ));
-      else
-        err = values[DIMENSION];
+      sigma = values[DIMENSION];
 
-      if ( err < LSQ_THRESHOLD && d_spacing > 0 )
+      if ( sigma < LSQ_THRESHOLD && d_spacing > 0 )
       { 
         new_normal.normalize();
 
@@ -854,7 +928,7 @@ public class RecipPlaneView
           fft_d.setAttribute( 
                     new FloatAttribute( D_SPACING_ATTRIBUTE, d_spacing ) );
           fft_d.setAttribute( 
-                    new FloatAttribute( LSQ_ERROR_ATTRIBUTE, err ) );
+                    new FloatAttribute( LSQ_ERROR_ATTRIBUTE, sigma ) );
 
           new_ds.addData_entry( fft_d );
         }
@@ -1062,6 +1136,79 @@ public class RecipPlaneView
   }
 
 
+
+  /* ------------------------- make_slice ---------------------------- */
+
+  private float[][] make_slice( Vector3D origin,
+                                Vector3D normal,
+                                Vector3D base,
+                                Vector3D up    )
+  {
+    System.out.println("Start of make_slice......");
+    if( origin == null || base == null || up == null )
+      return null;
+
+    int n_rows = SLICE_STEPS;
+    int n_cols = SLICE_STEPS;
+    float image[][] = new float[n_rows][n_cols];
+
+    float size = 2*SLICE_SIZE_IN_Q;
+                                             // make two orthonormal vectors
+    Vector3D base2 = new Vector3D();
+    base2.cross( normal, base );
+    base2.normalize();
+
+    Vector3D base1 = new Vector3D();
+    base1.cross( normal, base2 );
+    base1.normalize();   
+
+    float b1[] = base1.get();
+    float b2[] = base2.get();
+    System.out.println("Origin = " + origin );
+    System.out.println("base1  = " + base1 );
+    System.out.println("base2  = " + base2 );
+
+    float orig[] = origin.get();
+    Vector3D q = new Vector3D();
+    float step = size/n_rows;
+    float d_row, d_col;
+    float value;
+    int   n_non_zero;
+                                             // for each point in the plane...
+    VecQToTOF transformer;
+    float sum;
+    for ( int row = 0; row < n_rows; row++ )
+      for ( int col = 0; col < n_cols; col++ )
+      {
+        d_row = (n_rows/2 - row)*step;
+        d_col = (col - n_cols/2)*step;
+
+        q.set( orig[0] + d_row * b2[0] + d_col * b1[0],
+               orig[1] + d_row * b2[1] + d_col * b1[1],
+               orig[2] + d_row * b2[2] + d_col * b1[2]  );
+
+         sum = 0;
+         n_non_zero = 0;
+         for ( int i = 0; i < vec_q_transformer.size(); i++ )
+         {
+           transformer = (VecQToTOF)(vec_q_transformer.elementAt(i));
+           value = transformer.intensityAtQ( q );
+           if ( value != 0 )
+           {
+             sum += value;
+             n_non_zero++;
+           }
+         }
+         if ( n_non_zero > 0 )
+           image[row][col] = sum / n_non_zero;
+         else
+           image[row][col] = 0;
+      }
+    System.out.println("DONE");
+    return image;
+  }
+
+
 /* --------------------------------------------------------------------------
  *
  *  PRIVATE CLASSES
@@ -1206,18 +1353,130 @@ private class PlaneListener implements ActionListener
      if ( action.equals(LatticePlaneUI.USER_SET) )
      {
        LatticePlaneUI plane_ui = (LatticePlaneUI)e.getSource();
-       System.out.println("Set Plane from User selected vectors");
+       Vector3D origin = origin_vec.getVector();
+       Vector3D v1     = vec_1.getVector();
+       Vector3D v2     = vec_2.getVector();
+       if ( origin == null || v1 == null || v2 == null )
+         return;
+ 
+       Vector3D e1 = new Vector3D( v1 );
+//       e1.subtract( origin );
+ 
+       Vector3D e2 = new Vector3D( v2 );
+//       e2.subtract( origin );
+
+       Vector3D normal = new Vector3D();
+       normal.cross( e1, e2 );
+       normal.normalize();
+       System.out.println("USER NORMAL = " + normal );
+
+       float[] value = refinePlane( normal );
+
+       float sigma = value[DIMENSION];
+       float d_spacing = value[DIMENSION+1];
+
+       normal.set(value);
+       float length = normal.length();
+
+       for ( int i = 0; i < 3; i++ )
+        value[i] /= length;
+
+       if ( DIMENSION == 3 )
+         value[DIMENSION] = 0;
+
+       plane_ui.set_normal( value );
+       plane_ui.set_d_sigma( d_spacing, sigma );
      }
      else if ( action.equals( LatticePlaneUI.FFT_SET) )
      {
        LatticePlaneUI plane_ui = (LatticePlaneUI)e.getSource();
-       System.out.println("Set Plane from FFT selected spectrum");
+       int index = filtered_fft_ds.getPointedAtIndex();
+       if ( index < 0 )
+         return;
+       Data d = filtered_fft_ds.getData_entry(index);
+
+       float value[] = (float[])d.getAttributeValue( NORMAL_ATTRIBUTE );
+
+       Vector3D normal = new Vector3D( value );
+       value = refinePlane( normal ); 
+
+       float sigma = value[DIMENSION];
+       float d_spacing = value[DIMENSION+1];
+
+       normal.set(value);
+       float length = normal.length();
+   
+       for ( int i = 0; i < 3; i++ )
+        value[i] /= length;
+ 
+       if ( DIMENSION == 3 )
+         value[DIMENSION] = 0;
+
+       plane_ui.set_normal( value );      
+       plane_ui.set_d_sigma( d_spacing, sigma );
      }
      else
      {
        LatticePlaneUI plane_ui = (LatticePlaneUI)e.getSource();
-       System.out.println("Redraw using miller index : " + 
-                           plane_ui.get_miller_index() );
+       float miller_index = plane_ui.get_miller_index();
+       float d_spacing    = plane_ui.get_d_spacing();
+
+       System.out.println("Redraw using miller index : " + miller_index );
+
+       Vector3D normal = new Vector3D( plane_ui.get_normal() );
+       if ( normal == null || normal.length() < 0.99 )
+         return;
+
+       String title     = null;
+       ImageFrame frame = null;
+       Vector3D   base  = null;
+       Vector3D   up    = null;
+
+       if ( plane_ui == h_plane_ui )
+       {
+         base = new Vector3D( k_plane_ui.get_normal() );
+         up   = new Vector3D( l_plane_ui.get_normal() );
+         if ( base == null || base.length() < 0.99 ||
+                up == null || up.length()   < 0.99 )
+           return;
+         frame = h_frame;
+         title = "h = " + miller_index;
+       }
+       else if ( plane_ui == k_plane_ui )
+       {
+         base = new Vector3D( l_plane_ui.get_normal() );
+         up   = new Vector3D( h_plane_ui.get_normal() );
+         if ( base == null || base.length() < 0.99 ||
+                up == null || up.length()   < 0.99 )
+           return;
+         frame = k_frame;
+         title = "k = " + miller_index;
+       }
+       else  // plane_ui == l_plane_ui
+       {
+         base = new Vector3D( h_plane_ui.get_normal() );
+         up   = new Vector3D( k_plane_ui.get_normal() );
+         if ( base == null || base.length() < 0.99 ||
+                up == null || up.length()   < 0.99 )
+           return;
+         frame = l_frame;
+         title = "l = " + miller_index;
+       }
+
+       Vector3D origin = new Vector3D( normal );
+       origin.multiply((float)(miller_index * Math.PI * 2/d_spacing) );
+       float image[][] = make_slice( origin, normal, base, up );
+       if ( frame == null )
+         frame = new ImageFrame( image, title );
+       else 
+         frame.setData( image, title );
+
+       if ( plane_ui == h_plane_ui )
+         h_frame = frame;
+       else if ( plane_ui == k_plane_ui )
+         k_frame = frame;
+       else  // plane_ui == l_plane_ui
+         l_frame = frame;
      }
    }
  }
