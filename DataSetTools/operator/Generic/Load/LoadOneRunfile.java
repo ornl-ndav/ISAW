@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/19 16:05:34  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.2  2002/03/05 19:27:49  pfpeterson
  *  Updated @see references in javadocs.
  *
@@ -92,6 +95,7 @@ import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 import IPNS.Runfile.*;
 import DataSetTools.operator.Parameter;
+import DataSetTools.parameter.*;
 
 /**
  * Operator to load all data sets from one IPNS runfile
@@ -128,7 +132,7 @@ public class LoadOneRunfile extends    GenericLoad
    {
       super( "Load One Runfile" );
 
-      Parameter parameter = getParameter(0);
+      IParameter parameter = getParameter(0);
       parameter.setValue( file_name );
 
       parameter = getParameter(1);

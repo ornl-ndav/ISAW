@@ -31,6 +31,9 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.4  2002/09/19 16:05:36  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.3  2002/07/29 18:56:34  dennis
  *  Fixed bug in forming Log entry in case a DataSet was rejected.
  *
@@ -121,6 +124,7 @@ import IPNS.Runfile.Runfile;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.DataSet.DataSetOperator;
 import DataSetTools.operator.DataSet.Math.DataSet.DataSetAdd;
+import DataSetTools.parameter.*;
 
 
 /**
@@ -172,7 +176,7 @@ public class SumRunfiles extends    GenericLoad
    {
       super( "Sum Multiple Runfiles" );
 
-      Parameter parameter = getParameter(0);
+      IParameter parameter = getParameter(0);
       parameter.setValue( path );
 
       parameter = getParameter(1);

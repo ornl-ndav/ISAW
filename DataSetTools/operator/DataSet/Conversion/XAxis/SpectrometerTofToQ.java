@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/09/19 16:00:37  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.5  2002/07/08 20:46:09  pfpeterson
  *  Now uses String constants in FontUtil.
  *
@@ -105,6 +108,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  * This operator converts neutron time-of-flight DataSet to Q.  The
@@ -153,7 +157,7 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Float( min_Q ) );
 
     parameter = getParameter( 1 );

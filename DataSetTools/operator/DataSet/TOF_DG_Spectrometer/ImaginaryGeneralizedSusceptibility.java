@@ -32,6 +32,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2002/09/19 16:03:10  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.3  2002/03/13 16:19:17  dennis
  *  Converted to new abstract Data class.
  *
@@ -93,6 +96,7 @@ import  DataSetTools.operator.Operator;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import  DataSetTools.operator.DataSet.Math.Analyze.*;
+import  DataSetTools.parameter.*;
 
 /**
   *  Compute the Imaginary Generalized Susceptibility Function for a direct 
@@ -152,7 +156,7 @@ public class ImaginaryGeneralizedSusceptibility
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Float(temperature) );
    
     parameter = getParameter( 1 );

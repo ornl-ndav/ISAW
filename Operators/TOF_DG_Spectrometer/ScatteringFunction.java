@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.5  2002/09/19 15:58:08  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.4  2002/07/10 20:13:20  dennis
  *  Removed unused code for energy dependent flight path correction, since this
  *  is now done in the FlightPathCorrection operator.
@@ -127,6 +130,7 @@ import  DataSetTools.math.*;
 import  DataSetTools.retriever.*;
 import  DataSetTools.operator.*;
 import  DataSetTools.operator.Generic.TOF_DG_Spectrometer.*;
+import  DataSetTools.parameter.*;
 import  DataSetTools.viewer.*;
 
 /**
@@ -178,7 +182,7 @@ public class ScatteringFunction extends GenericTOF_DG_Spectrometer
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( ds );
 
     parameter = getParameter( 1 );

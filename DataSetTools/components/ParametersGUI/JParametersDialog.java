@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2002/09/19 15:59:18  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.25  2002/07/15 19:30:32  dennis
  *  Commented out code that sets the cursor... this is an attempt to
  *  prevent crash in native code outside of VM when cursor is set on
@@ -133,6 +136,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.DataSet.Attribute.*;
+import DataSetTools.parameter.*;
 import Command.*;
 import java.awt.event.*;
 import java.awt.*;
@@ -230,6 +234,7 @@ public class JParametersDialog implements Serializable,
        
 	// opDialog.getContentPane().setLayout(new GridLayout(num_param+5,1));
         
+        IParameter iparam;
         Parameter param;
         JParameterGUI paramGUI;
        
@@ -239,7 +244,12 @@ public class JParametersDialog implements Serializable,
         {  
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
            Size1=-1;
-           param = op.getParameter(i);            
+           iparam = op.getParameter(i);            
+           if(iparam instanceof Parameter){
+               param=(Parameter)iparam;
+           }else{
+               param=null;
+           }
             
             if(  param.getValue() instanceof String  &&
                                op instanceof IntervalSelectionOp  )

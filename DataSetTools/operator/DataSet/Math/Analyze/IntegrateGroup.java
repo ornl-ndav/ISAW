@@ -31,6 +31,9 @@
  * Modified:
  *             
  * $Log$
+ * Revision 1.2  2002/09/19 16:01:56  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.1  2002/02/22 21:02:31  pfpeterson
  * Operator reorganization.
  *
@@ -112,6 +115,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.math.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
   *  This operator calculates the integral of the data values of one Data 
@@ -162,7 +166,7 @@ public class  IntegrateGroup  extends    AnalyzeOp
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
-    Parameter parameter = getParameter(0);
+    IParameter parameter = getParameter(0);
     parameter.setValue( new Integer( group_id ) );
 
     parameter = getParameter( 1 );

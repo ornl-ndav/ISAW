@@ -31,6 +31,9 @@
  * Modified:
  *             
  * $Log$
+ * Revision 1.2  2002/09/19 16:02:52  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.1  2002/02/22 21:03:43  pfpeterson
  * Operator reorganization.
  *
@@ -82,6 +85,7 @@ import  DataSetTools.util.*;
 import  DataSetTools.math.*;
 import  DataSetTools.peak.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
   *  This operator calculates the area under a peak in a specified monitor
@@ -132,7 +136,7 @@ public class MonitorPeakArea  extends    DS_Special
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
-    Parameter parameter = getParameter(0);
+    IParameter parameter = getParameter(0);
     parameter.setValue( new Integer( group_id ) );
 
     parameter = getParameter( 1 );

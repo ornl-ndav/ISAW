@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/09/19 16:01:53  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.2  2002/03/13 16:19:17  dennis
  * Converted to new abstract Data class.
  *
@@ -83,6 +86,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
   * This operator converts the histograms in a DataSet to tabulated functions.  
@@ -128,7 +132,7 @@ public class ConvertHistogramToFunction extends    AnalyzeOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Boolean(divide) );
 
     parameter = getParameter( 1 );

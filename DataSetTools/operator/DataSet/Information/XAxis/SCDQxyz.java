@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/09/19 16:01:30  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.1  2002/07/31 16:28:32  dennis
  * Calculate vector Q for a diffractometer in a common frame
  * of reference relative to a crystal.  The laboratory frame
@@ -49,6 +52,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  *  This operator uses the chi, phi and omega attributes of a single crystal
@@ -87,7 +91,7 @@ public class SCDQxyz extends  XAxisInformationOp
   {
     this();                        
 
-    Parameter parameter = getParameter(0); 
+    IParameter parameter = getParameter(0); 
     parameter.setValue( new Integer(i) );
     
     parameter = getParameter(1); 
