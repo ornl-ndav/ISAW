@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2003/06/11 21:59:40  bouzekc
+ * Updated getDocumentation().
+ *
  * Revision 1.15  2003/06/10 22:32:24  bouzekc
  * Added parameters for delta (h), delta (k), and delta (l).
  *
@@ -164,11 +167,22 @@ public class IndexJ extends    GenericTOF_SCD {
     StringBuffer sb=new StringBuffer(100);
 
     // overview
-    sb.append("@overview This is a java version of \"INDEX\" maintained by A.J.Schultz. This depends on two other operators being present: ReadPeaks and WritePeaks. Eventually this operator should not call these directly, but have the user do it through a script.");
+    sb.append("@overview This is a java version of \"INDEX\" maintained by ");
+    sb.append("A.J.Schultz. This depends on two other operators being ");
+    sb.append("present: ReadPeaks and WritePeaks. Eventually this operator ");
+    sb.append("should not call these directly, but have the user do it ");
+    sb.append("through a script.");
     // parameters
-    sb.append("@param String name of the peaks file");
-    sb.append("@param String name of the file containing the orientation matrix. This can either be a matrix file \".mat\" or an experiment file \".x\".");
-    sb.append("@param float the allowable uncertainty in the calculated hkl values. This is the same for all three.");
+    sb.append("@param peaksfile name of the peaks file");
+    sb.append("@param matrixfile name of the file containing the orientation ");
+    sb.append("matrix. This can either be a matrix file \".mat\" or an ");
+    sb.append("experiment file \".x\".");
+    sb.append("@param delta_h the allowable uncertainty in the calculated ");
+    sb.append("h value.");
+    sb.append("@param delta_k the allowable uncertainty in the calculated ");
+    sb.append("k value.");
+    sb.append("@param delta_l the allowable uncertainty in the calculated ");
+    sb.append("l value.");
     // return
     sb.append("@return The number of peaks indexed out of the total number present.");
     // error
