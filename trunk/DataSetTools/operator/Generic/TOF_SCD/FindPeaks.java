@@ -449,17 +449,27 @@ public class FindPeaks extends GenericTOF_SCD{
 	DetectorInfo det;
 	Data data=ds.getData_entry(0);
 	float angle=0f;
+        Float Fangle=new Float(0f);
 	int total=0;
-	for( int i=0 ; i< ds.getNum_entries() ; i++ ){
-	    data=ds.getData_entry(i);
-	    detI=(DetInfoListAttribute)
-		data.getAttribute(Attribute.DETECTOR_INFO_LIST);
-	    det=((DetectorInfo[])detI.getValue())[0];
-	    angle+=det.getPosition().getScatteringAngle();
-	    total++;
-	    //System.out.println(total+":"+angle);
-	}
+        //System.out.print("ANGLE="+angle);
+        Fangle=(Float)ds.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE);
+        if(Fangle!=null){
+            angle=Fangle.floatValue();
+        }
+        //System.out.print("->"+angle);
+        if(angle==0f){
+            for( int i=0 ; i< ds.getNum_entries() ; i++ ){
+                data=ds.getData_entry(i);
+                detI=(DetInfoListAttribute)
+                    data.getAttribute(Attribute.DETECTOR_INFO_LIST);
+                det=((DetectorInfo[])detI.getValue())[0];
+                angle+=det.getPosition().getScatteringAngle();
+                total++;
+                //System.out.println(total+":"+angle);
+            }
+        }
 	angle=(180*angle)/((float)(total+1)*(float)Math.PI);
+        //System.out.println("->"+angle);
 
 	return angle;
     }
@@ -474,21 +484,29 @@ public class FindPeaks extends GenericTOF_SCD{
 	Data data=ds.getData_entry(0);
 	float angle=0f;
 	float distance=0f;
+        Float Fdistance=new Float(distance);
 	int total=0;
 
-	for( int i=0 ; i< ds.getNum_entries() ; i++ ){
-	    data=ds.getData_entry(i);
-	    detI=(DetInfoListAttribute)
-		data.getAttribute(Attribute.DETECTOR_INFO_LIST);
-	    det=((DetectorInfo[])detI.getValue())[0];
+        Fdistance=(Float)ds.getAttributeValue(Attribute.DETECTOR_CEN_DISTANCE);
+        if(Fdistance!=null){
+            distance=Fdistance.floatValue();
+        }
 
-	    angle=det.getPosition().getScatteringAngle();
-	    angle=angle-2f*avg_angle/(float)Math.PI;
-
-	    angle=(float)Math.abs(Math.cos((double)angle));
-
-	    distance+=angle*det.getPosition().getDistance();
-	    total++;
+        if(distance==0f){
+            for( int i=0 ; i< ds.getNum_entries() ; i++ ){
+                data=ds.getData_entry(i);
+                detI=(DetInfoListAttribute)
+                    data.getAttribute(Attribute.DETECTOR_INFO_LIST);
+                det=((DetectorInfo[])detI.getValue())[0];
+                
+                angle=det.getPosition().getScatteringAngle();
+                angle=angle-2f*avg_angle/(float)Math.PI;
+                
+                angle=(float)Math.abs(Math.cos((double)angle));
+                
+                distance+=angle*det.getPosition().getDistance();
+                total++;
+            }
 	}
 	distance=distance/((float)(total+1));
 
