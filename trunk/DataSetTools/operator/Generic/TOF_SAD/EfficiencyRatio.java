@@ -28,6 +28,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/09/08 23:15:21  dennis
+ * Made naming of variables more consistent.  Per pixel sensitivity is now
+ * always referred to as sensitivity, rather than efficiency.
+ * Minor fix to java docs.
+ *
  * Revision 1.7  2003/08/19 19:05:22  rmikk
  * -Fixed an error
  * -Renamed  Data from the flood run, sensory data.
@@ -73,7 +78,7 @@ import java.util.*;
 import java.util.*;
 import DataSetTools.parameter.*;
 /** 
- * This operator calculates the efficiency (with errors) between the first
+ * This operator calculates the efficiency ratio(with errors) between the first
  * monitor and the area detector for SAND.  It implements the concepts from
  * the FORTRAN program:
  *   
@@ -184,7 +189,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
     Res.append(" by the monitor spectrum.");
     Res.append("@param ds - DataSet containing data from run with cadmium");
     Res.append(" mask upstream from monitor 1 and the beam stop removed.");
-    Res.append("@param mon_ds - ataSet containing monitor data for");
+    Res.append("@param mon_ds - DataSet containing monitor data for");
     Res.append(" the specified run.");
     Res.append("@param sens_ds - DataSet containing the sensitivities of");
     Res.append(" the area detector pixels.");
@@ -360,26 +365,26 @@ public class EfficiencyRatio extends GenericTOF_SAD
     mon_1_data.resample( wl_scale, IData.SMOOTH_NONE );
     
     // 
-    // Get the efficiency Data (stored in array, indexed starting at 0
+    // Get the sensitivity Data (stored in array, indexed starting at 0)
     //
-    int eff_grid_ids[] = Grid_util.getAreaGridIDs( sens_ds );
+    int sens_grid_ids[] = Grid_util.getAreaGridIDs( sens_ds );
 
-    if ( eff_grid_ids.length < 1 )
+    if ( sens_grid_ids.length < 1 )
       return new ErrorString( "No Area Detectors in Sensitivitiy DataSet" );
 
-    if ( eff_grid_ids.length > 1 )
-      return new ErrorString("Too many Area Detectors in Sensitivity DataSet: " +
-                              IntList.ToString( eff_grid_ids )          );
+    if ( sens_grid_ids.length > 1 )
+      return new ErrorString("Too many Area Detectors in Sensitivity DataSet: "+
+                              IntList.ToString( sens_grid_ids )          );
 
-    UniformGrid eff_grid = 
-                   (UniformGrid)Grid_util.getAreaGrid(sens_ds, eff_grid_ids[0]);
+    UniformGrid sens_grid = 
+                  (UniformGrid)Grid_util.getAreaGrid(sens_ds, sens_grid_ids[0]);
 
-    int n_rows = eff_grid.num_rows();
-    int n_cols = eff_grid.num_cols();
-    float eff[][] = new float[n_rows][n_cols];
+    int n_rows = sens_grid.num_rows();
+    int n_cols = sens_grid.num_cols();
+    float sens[][] = new float[n_rows][n_cols];
     for ( int row = 1; row <= n_rows; row++ )
       for ( int col = 1; col <= n_cols; col++ )
-        eff[row-1][col-1] = eff_grid.getData_entry( row, col ).getY_values()[0];
+        sens[row-1][col-1] = sens_grid.getData_entry(row,col).getY_values()[0];
 
     //
     //  reconstruct the ifgood array
@@ -387,7 +392,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
     boolean ifgood[][] = new boolean[n_rows][n_cols];
     for ( int row = 0; row < n_rows; row++ )
       for ( int col = 0; col < n_cols; col++ )
-        if ( eff[row][col] == 0 )
+        if ( sens[row][col] == 0 )
           ifgood[row][col] = false;
         else
           ifgood[row][col] = true;
@@ -425,17 +430,16 @@ public class EfficiencyRatio extends GenericTOF_SAD
 
     //
     //  Now do the efficiency calculation, by first multiplying the selected
-    //  spectra by 1/eff(pixel), then summing the selected spectra
+    //  spectra by 1/sens(pixel), then summing the selected spectra
     // 
     for ( int row = 1; row <= n_rows; row++ )
       for ( int col = 1; col <= n_cols; col++ )
       {
         Data d = grid.getData_entry(row,col);
         if ( d.isSelected() )
-          d.divide( eff[row-1][col-1], 0 ); 
+          d.divide( sens[row-1][col-1], 0 ); 
       } 
 
-    
     int run_num = -1;
     Attribute attr = ds.getAttribute( Attribute.RUN_NUM );
     if ( attr != null )
