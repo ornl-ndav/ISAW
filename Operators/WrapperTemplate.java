@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2004/02/16 19:46:26  bouzekc
+ * Now implements HiddenOperator to keep it out of the menus.
+ *
  * Revision 1.2  2003/12/15 02:44:08  bouzekc
  * Removed unused imports.
  *
@@ -50,7 +53,7 @@
  */
 package Operators;
 
-import DataSetTools.operator.Wrappable;
+import DataSetTools.operator.*;
 
 
 /**
@@ -61,9 +64,13 @@ import DataSetTools.operator.Wrappable;
 
 /*
  * You should change the name "WrapperTemplate" to the name you want (e.g.
- * Crunch, Integrate, etc.).
+ * Crunch, Integrate, etc.).  The HiddenOperator implementation is used so that
+ * Operator will not show up in the menus.  You will generally not use it.
+ *
+ * To repeat:  You will generally not implement HiddenOperator unless you
+ * do not want your Operator to show up in the menu.
  */
-public class WrapperTemplate implements Wrappable {
+public class WrapperTemplate implements Wrappable, HiddenOperator {
   //~ Instance fields **********************************************************
 
   /*
