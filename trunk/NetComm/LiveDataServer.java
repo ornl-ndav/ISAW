@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2003/02/24 21:09:14  dennis
+ *  Moved STATUS string from TCPComm to TCPServer
+ *
  *  Revision 1.34  2003/02/24 21:01:18  dennis
  *  Removed un-needed debug print.
  *
@@ -527,9 +530,9 @@ public class LiveDataServer extends    DataSetServer
          else if ( System.currentTimeMillis() - last_time_ms > OLD_THRESHOLD )
            reply = RemoteDataRetriever.DATA_OLD_STRING + last_time;
 
-         tcp_io.Send( TCPComm.STATUS + reply );
+         tcp_io.Send( TCPServer.STATUS + reply );
          if ( debug_server )
-           System.out.println("LDS replied with: "+ TCPComm.STATUS + reply); 
+           System.out.println("LDS replied with: "+ TCPServer.STATUS + reply); 
 
          return true;
       }

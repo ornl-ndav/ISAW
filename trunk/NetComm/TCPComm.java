@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/02/24 21:09:14  dennis
+ *  Moved STATUS string from TCPComm to TCPServer
+ *
  *  Revision 1.12  2003/02/24 20:35:30  dennis
  *  Added message string STATUS="Status:"
  *
@@ -78,8 +81,6 @@ import DataSetTools.util.*;
  */
 public class TCPComm
 {
-  public static final String STATUS = "Status:";
-
   public static boolean        debug_tcp_comm = false;
 
   protected Socket             sock;
