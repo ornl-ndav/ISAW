@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.1  2004/05/07 17:57:01  dennis
+ * Moved operators that extend GenericSpecial from Operators
+ * to Operators/Special
+ *
  * Revision 1.8  2004/03/15 19:36:52  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -57,9 +61,8 @@
  * Revision 1.1  2001/11/27 18:23:57  dennis
  * Initial version of sample operator.
  *
- *
  */
-package Operators;
+package Operators.Special;
 
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Special.*;
