@@ -28,6 +28,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.7  2003/06/10 21:55:07  bouzekc
+ * Added parameter for IndexJ log file viewing.  Moved error
+ * checking into loop to avoid a potential missed getResult()
+ * error.
+ *
  * Revision 1.6  2003/06/10 20:29:35  bouzekc
  * Fixed ClassCastException in getResult().
  *
@@ -137,11 +142,14 @@ public class IndexJForm extends Form
     addParameter(new BooleanPG("Update Peaks File",true));
     //4
     addParameter(new StringPG("Experiment Name",null));
+    //5
+    addParameter(new LoadFilePG("JIndex Log",null));
+
 
     if(HAS_CONSTANTS)
-      setParamTypes(new int[]{0,1,4},new int[]{2,3}, null);
+      setParamTypes(new int[]{0,1,4},new int[]{2,3}, new int[]{5});
     else
-      setParamTypes(null, new int[]{0,1,2,3,4}, null);
+      setParamTypes(null, new int[]{0,1,2,3,4}, new int[]{5});
   }
 
 
@@ -300,6 +308,8 @@ public class IndexJForm extends Form
       SharedData.addmsg("IndexJ is updating " + peaksName + " with " + matName);
       indexJOp.getParameter(1).setValue(matName);
       obj = indexJOp.getResult();
+      if(obj instanceof ErrorString)
+        return errorOut("IndexJ failed: " + obj.toString());
     }
     else     //otherwise, use LsqrsJ's output
     {
@@ -320,11 +330,14 @@ public class IndexJForm extends Form
         indexJOp.getParameter(2).setValue(runNum);
 
         obj = indexJOp.getResult();
+        if(obj instanceof ErrorString)
+          return errorOut("IndexJ failed: " + obj.toString());
       }
     }
 
-    if(obj instanceof ErrorString)
-      return errorOut("IndexJ failed: " + obj.toString());
+    //set the indexj log file parameter
+    param = (IParameterGUI)getParameter(5);
+    param.setValue(obj);
   
     SharedData.addmsg("--- IndexJForm finished. ---");
 
