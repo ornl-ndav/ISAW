@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/08/27 22:32:46  dennis
+ *  Fixed java docs.
+ *
  *  Revision 1.6  2003/04/25 15:24:48  pfpeterson
  *  Added more information when error encountered while reading a bank.
  *
@@ -65,10 +68,7 @@ import DataSetTools.operator.DataSet.DataSetOperator;
 import DataSetTools.util.*;
 
 /**
- * Base class for objects that retrieve DataSet objects from files, or via 
- * a network connection.  Derived classes for particular types of data
- * sources must actually implement the methods to get specified DataSets
- * and their types.
+ * Class that retrieves GSAS files and produces ISAW DataSets.
  */
 
 public class GsasRetriever extends Retriever{
