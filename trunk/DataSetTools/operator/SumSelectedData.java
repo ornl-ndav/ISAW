@@ -1,7 +1,5 @@
 /*
- * @(#)SumSelectedData.java   0.2  99/08/10   Dennis Mikkelson
- *                                 99/08/16   Added constructor to allow
- *                                            calling operator directly
+ * @(#)SumSelectedData.java   0.1  99/08/10   Dennis Mikkelson
  *             
  * This operator forms a new data set by summing selected Data blocks with a 
  * specified attribute in a specified range.
@@ -21,14 +19,7 @@ import  DataSetTools.util.*;
 public class SumSelectedData extends    DataSetOperator 
                                         implements Serializable
 {
-  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
-  /**
-   * Construct an operator with a default parameter list.  If this
-   * constructor is used, the operator must be subsequently added to the
-   * list of operators of a particular DataSet.  Also, meaningful values for
-   * the parameters should be set ( using a GUI ) before calling getResult()
-   * to apply the operator to the DataSet this operator was added to.
-   */
+  /* ----------------------- DEFAULT CONSTRUCTOR -------------------------- */
 
   public SumSelectedData( )
   {
@@ -50,23 +41,10 @@ public class SumSelectedData extends    DataSetOperator
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
-  /**
-   *  Construct an operator for a specified DataSet and with the specified
-   *  parameter values so that the operation can be invoked immediately
-   *  by calling getResult().
-   *
-   *  @param  ds          The DataSet to which the operation is applied
-   *  @param  attr_name   The name of that attribute to be used for the
-   *                      selection criterion
-   *  @param  keep        Flag that indicates whether Data blocks that meet
-   *                      the selection criteria are to be included in the
-   *                      sum, or omitted from the sum
-   *  @param  min         The lower bound for the selection criteria.  The
-   *                      selected Data blocks satisfy:
-   *                          min <= attribute value <= max
-   *  @parm   max         The upper bound for the selection criteria.
-   */
 
+                                    // This constructor actually sets values
+                                    // for the parameters so that the operator
+                                    // is ready to be invoked using getResult()
   public SumSelectedData( DataSet             ds, 
                           AttributeNameString attr_name,
                           boolean             keep,
@@ -78,15 +56,19 @@ public class SumSelectedData extends    DataSetOperator
 
     Parameter parameter = getParameter( 0 );
     parameter.setValue( attr_name );
+    setParameter( parameter, 0 );
 
     parameter = getParameter( 1 );
     parameter.setValue( new Boolean( keep ) );
+    setParameter( parameter, 1 );
 
     parameter = getParameter( 2 );
     parameter.setValue( new Float( min ) );
+    setParameter( parameter, 2 );
 
     parameter = getParameter( 3 );
     parameter.setValue( new Float( max ) );
+    setParameter( parameter, 3 );
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
@@ -111,7 +93,7 @@ public class SumSelectedData extends    DataSetOperator
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
-    DataSet new_ds = ds.empty_clone(); 
+    DataSet new_ds = (DataSet)ds.empty_clone(); 
     if ( keep )
       new_ds.addLog_entry( "summed groups with " + attr_name + 
                            " in [" + min + ", " + max + "]" );

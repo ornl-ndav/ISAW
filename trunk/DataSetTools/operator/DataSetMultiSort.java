@@ -1,7 +1,5 @@
 /*
- * @(#)DataSetMultiSort.java   0.2  99/08/05   Dennis Mikkelson
- *                                  99/08/16   Added constructor to allow
- *                                             calling operator directly
+ * @(#)DataSetMultiSort.java   0.1  99/07/28   Dennis Mikkelson
  *             
  * This operator sorts a DataSet based on multiple attributes of the Data 
  * entries.
@@ -21,18 +19,14 @@ import  DataSetTools.dataset.*;
 public class DataSetMultiSort  extends    DataSetOperator 
                                implements Serializable
 {
-  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
-  /**
-   * Construct an operator with a default parameter list.  If this
-   * constructor is used, the operator must be subsequently added to the
-   * list of operators of a particular DataSet.  Also, meaningful values for
-   * the parameters should be set ( using a GUI ) before calling getResult()
-   * to apply the operator to the DataSet this operator was added to.
-   */
+  /* --------------------------- CONSTRUCTOR ------------------------------ */
 
+                                     // The constructor calls the super
+                                     // class constructor, then sets up the
+                                     // list of parameters.
   public DataSetMultiSort( )
   {
-    super( "Sort on mutliple group attributes" );
+    super( "Sort on multiple group attributes" );
                                                // First Key.....
 
     Parameter parameter = new Parameter("First Group Attribute to Sort on",
@@ -69,81 +63,6 @@ public class DataSetMultiSort  extends    DataSetOperator
     parameter = new Parameter("Use this attribute to sort?",new Boolean(false));
     addParameter( parameter );
 
-  }
-
-  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
-  /**
-   *  Construct an operator for a specified DataSet and with the specified
-   *  parameter values so that the operation can be invoked immediately 
-   *  by calling getResult().
-   *
-   *  @param  ds           The DataSet to which the operation is applied
-   *  @param  attr_name_1  The name of the first attribute to be used for the
-   *                       sort
-   *  @param  increasing_1 Flag that indicates whether the sort should place
-   *                       the items in increasing ( vs. decreasing ) order
-   *  @param  use_it_1     Flag that indicates whether this attribute is to
-   *                       actually be used, or is to be ignored.
-   *  @param  attr_name_2  The name of the second attribute to be used for the
-   *                       sort
-   *  @param  increasing_2 Flag that indicates whether the sort should place
-   *                       the items in increasing ( vs. decreasing ) order
-   *  @param  use_it_2     Flag that indicates whether this attribute is to
-   *                       actually be used, or is to be ignored.
-   *  @param  attr_name_3  The name of the third attribute to be used for the
-   *                       sort
-   *  @param  increasing_3 Flag that indicates whether the sort should place
-   *                       the items in increasing ( vs. decreasing ) order
-   *  @param  use_it_3     Flag that indicates whether this attribute is to
-   *                       actually be used, or is to be ignored.
-   */
-
-  public DataSetMultiSort( DataSet             ds,
-                           AttributeNameString attr_name_1,
-                           boolean             increasing_1,
-                           boolean             use_it_1,
-                           AttributeNameString attr_name_2,
-                           boolean             increasing_2,
-                           boolean             use_it_2,
-                           AttributeNameString attr_name_3,
-                           boolean             increasing_3,
-                           boolean             use_it_3     )
-  {
-    this();                         // do the default constructor, then set
-                                    // the parameter value(s) by altering a
-                                    // reference to each of the parameters
-
-    Parameter parameter = getParameter( 0 );            // first attribute
-    parameter.setValue( attr_name_1 );
-
-    parameter = getParameter( 1 );
-    parameter.setValue( new Boolean( increasing_1 ) );
-
-    parameter = getParameter( 2 );
-    parameter.setValue( new Boolean( use_it_1 ) );
-
-
-    parameter = getParameter( 3 );                      // second attribute
-    parameter.setValue( attr_name_2 );
-
-    parameter = getParameter( 4 );
-    parameter.setValue( new Boolean( increasing_2 ) );
-
-    parameter = getParameter( 5 );
-    parameter.setValue( new Boolean( use_it_2 ) );
-
-
-    parameter = getParameter( 6 );                      // third attribute
-    parameter.setValue( attr_name_3 );
-
-    parameter = getParameter( 7 );
-    parameter.setValue( new Boolean( increasing_3 ) );
-
-    parameter = getParameter( 8 );
-    parameter.setValue( new Boolean( use_it_3 ) );
-
-    setDataSet( ds );               // record reference to the DataSet that
-                                    // this operator should operate on
   }
 
 
