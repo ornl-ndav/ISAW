@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/07/26 14:30:06  dennis
+ *  Now preserves Auto-Scale value in the ViewerState.
+ *
  *  Revision 1.15  2001/07/25 18:09:49  dennis
  *  Now uses new "generic" methods to get/set state information
  *  in the ViewerState object.
@@ -176,6 +179,7 @@ public GraphView( DataSet data_set, ViewerState state )
 
   init();
   DrawGraphs();
+  UpdateHGraphRange();
 }
 
 /* -----------------------------------------------------------------------
@@ -205,7 +209,11 @@ public void redraw( String reason )
     DrawPointedAtGraph();
 
   else
+  {
+    System.out.println("Graph redraw for reason " + reason );
     DrawGraphs();
+    UpdateHGraphRange();
+  }
 }
 
 
@@ -378,6 +386,10 @@ private Component MakeControlArea()
 
                                                      // Add the y-range slider
   hgraph_scale_slider.setPreferredSize( new Dimension(120,50) );
+  int value = (int)(10 * getState().get_float( ViewerState.AUTO_SCALE ));
+  System.out.println("Graph: auto-scale value = " + value );
+  hgraph_scale_slider.setValue( value );
+
   TitledBorder border = new TitledBorder(LineBorder.createBlackLineBorder(), 
                                          "Auto-Scale" );
   border.setTitleFont( FontUtil.BORDER_FONT );
@@ -643,6 +655,40 @@ private void UpdateHGraphReadout( GraphJPanel gp )
 }
 
 
+/* -------------------------- UpdateHGraphRange --------------------------- */
+
+private void UpdateHGraphRange()
+{
+  int value = hgraph_scale_slider.getValue();
+  getState().set_float( ViewerState.AUTO_SCALE, value/10.0f );
+
+  if ( value == 0 )                                     // ranges
+  {
+    for ( int i = 0; i < getDataSet().getNum_entries(); i++ )
+      h_graph[i].autoY_bounds();
+
+    TitledBorder border = new TitledBorder(
+                                LineBorder.createBlackLineBorder(),
+                                "Auto-Scale" );
+    border.setTitleFont( FontUtil.BORDER_FONT );
+    hgraph_scale_slider.setBorder( border );
+  }
+  else
+  {
+    float y_min = y_range.getStart_x();
+    float y_max = y_range.getEnd_x();
+    float range = ( y_max - y_min ) * value / 1000.0f;
+    if ( h_graph != null)
+      for ( int i = 0; i < getDataSet().getNum_entries(); i++ )
+        h_graph[i].setY_bounds( y_min, y_min + range );
+
+    TitledBorder border = new TitledBorder(
+                            LineBorder.createBlackLineBorder(),
+                            ""+value/10.0f+"%(max)" );
+    border.setTitleFont( FontUtil.BORDER_FONT );
+    hgraph_scale_slider.setBorder( border );
+  }
+}
 
 /* -------------------------------------------------------------------------
  *
@@ -657,33 +703,7 @@ private class HGraphScaleEventHandler implements ChangeListener,
 {
   public void stateChanged(ChangeEvent e)
   {
-    JSlider slider = (JSlider)e.getSource();
-                                                          // update all graph
-    if ( slider.getValue() == 0 )                         // ranges
-    {
-      for ( int i = 0; i < getDataSet().getNum_entries(); i++ )  
-        h_graph[i].autoY_bounds();
-
-      TitledBorder border = new TitledBorder(
-                                  LineBorder.createBlackLineBorder(),
-                                  "Auto-Scale" );
-      border.setTitleFont( FontUtil.BORDER_FONT );
-      slider.setBorder( border );
-    }
-    else
-    {
-      float y_min = y_range.getStart_x();
-      float y_max = y_range.getEnd_x();
-      float range = ( y_max - y_min ) * slider.getValue() / 1000.0f;
-      for ( int i = 0; i < getDataSet().getNum_entries(); i++ )  
-        h_graph[i].setY_bounds( y_min, y_min + range );
-      
-      TitledBorder border = new TitledBorder(
-                              LineBorder.createBlackLineBorder(),
-                              ""+slider.getValue()/10.0f+"%(max)" ); 
-      border.setTitleFont( FontUtil.BORDER_FONT );
-      slider.setBorder( border );
-    } 
+    UpdateHGraphRange();
   }
 }
 
