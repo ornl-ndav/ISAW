@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2002/10/04 14:38:40  dennis
+ *  Simplified calculation of scrolled image position when scrolling
+ *  to the "Pointed At" spectrum.
+ *
  *  Revision 1.36  2002/08/02 15:33:30  dennis
  *  improved handling of POINTED_AT_CHANGED messages
  *
@@ -1249,7 +1253,6 @@ private void SyncVImageScrollBar()
   float vi_bar_min  = vi_bar.getMinimum();
   float vi_bar_max  = vi_bar.getMaximum();
   float bar_height  = vi_bar.getSize().height;
-  float knob_height = bar_height * bar_height / (vi_bar_max - vi_bar_min);
 
   if ( bar_height >= n_rows )      // scrolling not needed
     return;
@@ -1266,7 +1269,7 @@ private void SyncVImageScrollBar()
       fraction = 0;
     if ( fraction > 1 )
       fraction = 1;
-    vi_bar_value = (int)( vi_bar_min - knob_height/2+ 
+    vi_bar_value = (int)( vi_bar_min +
                          (vi_bar_max - vi_bar_min - bar_height) * fraction );
   }
 
