@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2001/08/15 02:08:30  rmikk
+ *  Set the selected item of the combo box to the value of
+ *  the parameter
+ *
  *  Revision 1.2  2001/08/07 20:58:36  rmikk
  *  Eliminated setPreferred size and set segment layout to a
  *  grid layout
@@ -67,7 +71,7 @@ public class JIStringListParameterGUI extends JParameterGUI
 
        for(int i = 0; i< str_list.num_strings(); i++)                 
           combobox.addItem(str_list.getString( i ));     
-        
+       combobox.setSelectedItem( parameter.getValue() );
        segment = new JPanel();
        segment.setLayout(new GridLayout( 1, 2)); 
        
@@ -83,7 +87,7 @@ public class JIStringListParameterGUI extends JParameterGUI
 
 
     public Parameter getParameter()
-    {
+    {  
         Class C = parameter.getValue().getClass();
         try{
            SpecialString X = (SpecialString)(C.newInstance());
@@ -93,7 +97,7 @@ public class JIStringListParameterGUI extends JParameterGUI
 	       System.out.println("Class Mismatch in JIStringListParameter" );
            }
         catch( Exception s)
-         {}
+         { System.out.println("Exception occurred "+ s);}
         return parameter;
     }
 }
