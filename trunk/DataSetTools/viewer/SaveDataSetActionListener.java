@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/09/23 18:40:55  rmikk
+ * Changed an erroneous @see tag in the javadocs
+ *
  * Revision 1.1  2003/08/12 14:30:08  rmikk
  * Initial Check in.
  *
@@ -91,7 +94,7 @@ public class SaveDataSetActionListener extends JMenuItem implements ActionListen
   *   This method is invoked when the corresponding JMenuItem is selected. It
   *   pops up a JFileChooser Selection Dialog Box.  The DataSet is saved in the
   *   format specified by the extension of the file specified
-  *  @see  Command.ScriptUtil.save( String, DataSet)
+  *  @see  Command.ScriptUtil#save( String, DataSet)
   */
   public void actionPerformed( ActionEvent evt){
 
