@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2003/08/30 20:00:02  bouzekc
+ * Added javadoc comments to initGUi to signal that derived classes should
+ * use this method in general.
+ *
  * Revision 1.31  2003/08/30 19:47:12  bouzekc
  * Now uses ArrayEntryJFrame.
  *
@@ -338,7 +342,12 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   /**
-   * Initializes this VectorPG.
+   * Initializes this VectorPG.  In general, this method should work well as a
+   * GUI initializer for VectorPG's derived classes.  However, if you need to
+   * overwrite it for any reason, you may wish to call this method, since the
+   * button that displays the ArrayEntryJFrame cannot be set without it (since
+   * the button name is based on the parameter "name" passed into the
+   * constructor).
    *
    * @param V The Vector to use when initializing this VectorPG.
    */
