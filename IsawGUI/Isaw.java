@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.172  2003/12/12 18:17:00  dennis
+ *  Changed version to 1.6.0 alpha 7.
+ *
  *  Revision 1.171  2003/12/11 18:25:49  dennis
  *    Now uses the WindowShower utility class to display the ISAW main window
  *  from the Swing event handling thread, instead of showing it directly.
@@ -630,7 +633,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.6.0 alpha 6";
+          version="1.6.0 alpha 7";
         else
           version=SharedData.VERSION;
 
