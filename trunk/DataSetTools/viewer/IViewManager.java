@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/01/29 00:02:57  dennis
+ *  Added HKL_SliceView
+ *
  *  Revision 1.12  2003/10/30 17:16:06  dennis
  *  Removed "OLD Selected Graph View" that used SGT.
  *
@@ -76,6 +79,7 @@ public interface IViewManager extends IObserver
   public static final String TABLE           = "Table Generator";
   public static final String THREE_D         = "3D View";
   public static final String CONTOUR         = "Contour View";
+  public static final String HKL_SLICE       = "HKL Slice View";
   public void setDataSet( DataSet ds );
 
   public DataSet getDataSet();

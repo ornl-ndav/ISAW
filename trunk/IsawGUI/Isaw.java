@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.183  2004/01/29 00:03:25  dennis
+ *  Added HKL_SliceView
+ *
  *  Revision 1.182  2004/01/27 18:34:19  dennis
  *  DataSet[0] tag prefix was removed from the "experiment" tree
  *  node, when the DataSets are loaded from a file.  The file
@@ -530,6 +533,7 @@ public class Isaw
   private static final String VIEW_M             = "View";
   private static final String IMAGE_VIEW_MI      = IViewManager.IMAGE;
   private static final String SCROLL_VIEW_MI     = IViewManager.SCROLLED_GRAPHS;
+  private static final String HKL_SLICE_VIEW_MI  = IViewManager.HKL_SLICE;
   private static final String SELECTED_VIEW_MI   = IViewManager.SELECTED_GRAPHS;
   private static final String THREED_VIEW_MI     = IViewManager.THREE_D;
   private static final String TABLE_VIEW_MI      = IViewManager.TABLE;
@@ -766,6 +770,7 @@ public class Isaw
 
     JMenu vMenu = new JMenu( VIEW_M );
     JMenuItem imageView   = new JMenuItem( IMAGE_VIEW_MI );
+    JMenuItem hkl_slice_view = new JMenuItem( HKL_SLICE_VIEW_MI );
     JMenuItem s_graphView = new JMenuItem( SCROLL_VIEW_MI );
     JMenuItem graphView   = new JMenuItem( SELECTED_VIEW_MI );
     JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
@@ -868,7 +873,8 @@ public class Isaw
         
     vMenu.add(imageView);
     vMenu.add(threeDView);
-    vMenu.add( contourView );
+    vMenu.add(contourView);
+    vMenu.add(hkl_slice_view);
     vMenu.add(s_graphView);
     vMenu.add(graphView);
     
@@ -900,6 +906,7 @@ public class Isaw
     dbload.addActionListener( menu_item_handler );
     
     graphView.addActionListener(menu_item_handler); 
+    hkl_slice_view.addActionListener(menu_item_handler); 
     s_graphView.addActionListener(menu_item_handler); 
 
     threeDView.addActionListener(menu_item_handler); 
@@ -1429,6 +1436,7 @@ public class Isaw
  
       if( s.equals(IMAGE_VIEW_MI)      || 
           s.equals(SELECTED_VIEW_MI)   ||
+          s.equals(HKL_SLICE_VIEW_MI)  ||
           s.equals(SCROLL_VIEW_MI)     || 
           s.equals(THREED_VIEW_MI)     ||
           s.equals(TABLE_VIEW_MI)      ||
