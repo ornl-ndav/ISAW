@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2004/04/21 19:15:00  dennis
+ * Changed to work with new FindMultiplePeaksForm that has the
+ * min and max time channels as parameters.
+ *
  * Revision 1.15  2003/12/15 02:47:33  bouzekc
  * Removed unused imports.
  *
@@ -132,9 +136,9 @@ public class InitialPeaksWizard extends Wizard {
    */
   private void createAllForms(  ) {
     int[][] fpi                     = {
-      { 10, 0, 0, -1, 0, 0 },  //peaks file 
-      { -1, 2, 1, 0, -1, -1 }
-    };  //matrix
+      { 12,  0,  0, -1,  0,  0 },  //peaks file 
+      { -1,  2,  1,  0, -1, -1 }   //matrix
+    }; 
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
     OperatorForm blindjform         = new OperatorForm( 
         new BlindJ(  ), new LoadFilePG( "BlindJ log file", null, false ),

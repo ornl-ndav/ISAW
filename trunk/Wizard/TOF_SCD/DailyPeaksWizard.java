@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2004/04/21 19:15:00  dennis
+ * Changed to work with new FindMultiplePeaksForm that has the
+ * min and max time channels as parameters.
+ *
  * Revision 1.11  2003/12/15 01:45:31  bouzekc
  * Removed unused imports.
  *
@@ -117,17 +121,17 @@ public class DailyPeaksWizard extends Wizard {
    */
   private void createAllForms(  ) {
     int[][] fpi                     = {
-      { 0, -1, -1, 0 },  //raw data path 
-      { 1, 1, 1, 1 },  //peaks file path
-      { 2, 0, 0, -1 },  //run numbers
-      { 3, 2, 2, 3 },  //experiment name
-      { 8, -1, -1, 5 },  //SCD calibration file
-      { 7, -1, -1, 8 }
-    };  //SCD calibration file line
+      {  0, -1, -1,  0 },  //raw data path 
+      {  1,  1,  1,  1 },  //peaks file path
+      {  2,  0,  0, -1 },  //run numbers
+      {  3,  2,  2,  3 },  //experiment name
+      { 10, -1, -1,  5 },  //SCD calibration file
+      {  9, -1, -1,  8 }   //SCD calibration file line
+    };
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
 
     //A.J. Schultz wants the "update" parameter to default to true
-    peaksform.getParameter( 6 )
+    peaksform.getParameter( 8 )
              .setValue( Boolean.TRUE );
 
     //these Forms rely on previously calculated values, so set them
