@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2002/09/25 16:49:17  pfpeterson
+ *  Added string constants for SCD calibration information.
+ *
  *  Revision 1.28  2002/08/22 15:08:22  pfpeterson
  *  Added string constants for lattice parameter, orientation matrix,
  *  and unit cell volume.
@@ -247,6 +250,8 @@ abstract public class Attribute implements Serializable,
   public static final String ORIENT_MATRIX      = "Orientation Matrix";
   public static final String ORIENT_FILE        = "Orientation File";
   public static final String CELL_VOLUME        = "Unit Cell Volume";
+  public static final String SCD_CALIB          = "SCD Calibration";
+  public static final String SCD_CALIB_FILE     = "SCD Calibration File";
 
   public static final String  DETECTOR_INFO_LIST = "Det Info List";
   public static final String  DETECTOR_INFO      = "Det Info";
