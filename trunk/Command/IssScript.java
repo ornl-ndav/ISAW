@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/06/24 16:40:19  dennis
+ * Removed debug print "UNKNOWN COMMAND"
+ *
  * Revision 1.5  2003/06/23 21:48:43  dennis
  * Eliminated trailing slashes on all directories containing scripts.
  * (Ruth)
@@ -204,7 +207,7 @@ public class IssScript extends Script{
 
     // don't have a filename to fall back on
     if( this.filename.equals(UNKNOWN) ){
-      System.out.println("UNKNOWN COMMAND");
+      // System.out.println("UNKNOWN COMMAND");
       return UNKNOWN;
     }
     
