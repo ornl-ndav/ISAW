@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/12/08 15:16:17  rmikk
+ * The getResult method now returns a vector with 3 elements.  The last one
+ * is the gridID.
+ *
  * Revision 1.3  2003/06/18 20:36:13  pfpeterson
  * Changed calls for NxNodeUtils.Showw(Object) to
  * DataSetTools.util.StringUtil.toString(Object)
@@ -133,7 +137,7 @@ public class GetPixelInfo_op extends    DS_Attribute
   *  Executes this operator using the values of the current parameters.
   *
   *  @return If successful, this operator returns a Vector containing the
-  *  the column and row numbers of the data block indexed by the first
+  *  the column number, row number, and gridID of the data block indexed by the first
   *  parameter.  Otherwise an error string is returned.
   */
   public Object getResult(){
@@ -156,6 +160,7 @@ public class GetPixelInfo_op extends    DS_Attribute
     
     V.addElement(new Integer((int)pil.col()));
     V.addElement(new Integer((int)pil.row()));
+    V.addElement( new Integer( pil.pixel(0).gridID()));
     return V;
     
   }
@@ -218,9 +223,9 @@ public class GetPixelInfo_op extends    DS_Attribute
       Res.append("@param index  the position of the desired data block in");
        Res.append(" the data block array");
 
-      Res.append("@return If successful, this operator returns the");
-       Res.append(" row(Integer) of the given data block. Otherwise, it ");
-       Res.append(" returns an error string.");
+      Res.append("@return If successful, this operator returns a Vector whose ");
+      Res.append("entries are the column(Integer), row(Integer), then gridID.");
+       Res.append(" Otherwise, it  returns an error string.");
 
       Res.append("@error No data block at position < index >");
       Res.append("@error Data block has no PixelInfoList Attribute");
