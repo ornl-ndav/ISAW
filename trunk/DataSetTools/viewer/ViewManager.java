@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/07/27 15:56:02  dennis
+ *  Now passes in 0 as default number of bins for conversion operators.
+ *  In this case, the conversion operators should use the number of
+ *  bins from the DataSet.
+ *
  *  Revision 1.12  2001/07/23 16:55:26  dennis
  *  Fixed error: no longer using "==" for String comparison.
  *
@@ -462,11 +467,16 @@ public class ViewManager extends    JFrame
                                       temp_scale.getNum_x() );
          
        if ( x_scale == null || use_default_conversion_range ) 
+       {
          op.setDefaultParameters();
+         Parameter p = op.getParameter(2);                // 0 means use the
+         if ( p.getName().equals( Parameter.NUM_BINS ))   // number of bins
+           p.setValue( new Integer( 0 ) );                // in the DataSet
+       }
        else
        {                                           // try to set the parameters
          Parameter p = op.getParameter(2);
-         if ( p.getName() != Parameter.NUM_BINS )
+         if ( !p.getName().equals( Parameter.NUM_BINS ))
            op.setDefaultParameters();              // fall back to defaults
          else
          {
