@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.94  2003/11/05 03:34:36  bouzekc
+ * Updated save and load methods to work with result_param.
+ *
  * Revision 1.93  2003/11/05 02:15:18  bouzekc
  * Updated to work with new Form design.  No external interface changes.
  *
@@ -1200,7 +1203,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     for( int i = 0; i < getNumForms(  ); i++ ) {
       curForm = getForm( i );
 
-      for( int k = 0; k < curForm.getNum_parameters(  ); k++ ) {
+      for( int k = 0; k < ( curForm.getNum_parameters(  ) + 1 ); k++ ) {
         ipg = ( IParameterGUI )curForm.getParameter( k );
 
         if( ipg instanceof BrowsePG ) {
@@ -1372,8 +1375,9 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     for( int i = 0; i < forms.size(  ); i++ ) {
       cur_form = this.getForm( i );
 
-      //start the parameter parsing for the Form
-      for( int j = 0; j < cur_form.getNum_parameters(  ); j++ ) {
+      //start the parameter parsing for the Form...don't forget the result
+      //parameters
+      for( int j = 0; j < ( cur_form.getNum_parameters(  ) + 1 ); j++ ) {
         //get the parameter
         curParam        = ( IParameterGUI )( cur_form.getParameter( j ) );
 
@@ -1898,36 +1902,35 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       s.append( ">\n" );
       f = ( Form )forms.elementAt( i );
 
-      for( int j = 0; j < f.getNum_parameters(  ); j++ ) {
+      //don't forget the result parameter
+      for( int j = 0; j < ( f.getNum_parameters(  ) + 1 ); j++ ) {
         ipg = ( IParameterGUI )f.getParameter( j );
-        s.append( "<" );
-        s.append( ipg.getType(  ) );
-        s.append( ">\n" );
-        s.append( "<Name>" );
-        s.append( ipg.getName(  ) );
-        s.append( "</Name>\n" );
-        s.append( "<Value>" );
 
         if( ipg != null ) {  //parameter is not null
+          s.append( "<" );
+          s.append( ipg.getType(  ) );
+          s.append( ">\n" );
+          s.append( "<Name>" );
+          s.append( ipg.getName(  ) );
+          s.append( "</Name>\n" );
+          s.append( "<Value>" );
           obj = ipg.getValue(  );
-        } else {  //parameter is null, so set value to null
-          obj = null;
-        }
 
-        if( ( obj == null ) || ( obj.toString(  )
-                                      .length(  ) <= 0 ) ) {
-          s.append( "emptyString" );
-        } else {
-          s.append( obj.toString(  ) );
-          s.append( "" );
+          if( ( obj == null ) || ( obj.toString(  )
+                                        .length(  ) <= 0 ) ) {
+            s.append( "emptyString" );
+          } else {
+            s.append( obj.toString(  ) );
+            s.append( "" );
+          }
+          s.append( "</Value>\n" );
+          s.append( "<Valid>" );
+          s.append( ipg.getValid(  ) );
+          s.append( "</Valid>\n" );
+          s.append( "</" );
+          s.append( ipg.getType(  ) );
+          s.append( ">\n" );
         }
-        s.append( "</Value>\n" );
-        s.append( "<Valid>" );
-        s.append( ipg.getValid(  ) );
-        s.append( "</Valid>\n" );
-        s.append( "</" );
-        s.append( ipg.getType(  ) );
-        s.append( ">\n" );
       }
       s.append( "</Form>\n" );
     }
