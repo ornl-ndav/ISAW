@@ -119,7 +119,7 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
        String indexedString = (String)result;
        
        //assume that we have a loadable/viewable file name
-       result_param = new BrowsePG("Result", indexedString, true);
+       result_param = new LoadFilePG("Result", indexedString, true);
      }
      else  //something else we can't handle as a file
        this.result_param.setValue(result);
