@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/03/25 22:36:08  pfpeterson
+ * Fixed the histogram renumbering when inserting at the beginning.
+ *
  * Revision 1.10  2003/03/24 19:22:37  pfpeterson
  * Fixed histogram renumbering bug. Still exists if the run being appended
  * to the file should be placed before the first run.
@@ -214,7 +217,7 @@ public class WriteExp extends GenericTOF_SCD{
     String  calibfile = getParameter(3).getValue().toString();
     int     monid     = ((Integer)getParameter(4).getValue()).intValue();
     boolean append    = ((Boolean)(getParameter(5).getValue())).booleanValue();
-    boolean change_run_one=false;
+    int change_run_one=0;
 
     // read in the calibration if not in append mode
     if(!append){
@@ -244,8 +247,8 @@ public class WriteExp extends GenericTOF_SCD{
       run_one=run_num;
     else{
       if(run_num<run_one){
+        change_run_one=run_one-run_num;
         run_one=run_num;
-        change_run_one=true;
         exp_title=(String)ds.getAttributeValue(Attribute.RUN_TITLE);
       }
     }
@@ -287,12 +290,6 @@ public class WriteExp extends GenericTOF_SCD{
         if(index<0){ // just append
           out.write(exist_hist);
           exist_hist=null;
-        }else if(index==0){
-          // something wrong
-          return new ErrorString("Could not find earlier data");
-        }else{
-          out.write(exist_hist.substring(0,index-1));
-          exist_hist=exist_hist.substring(index);
         }
       }
 
@@ -302,8 +299,8 @@ public class WriteExp extends GenericTOF_SCD{
 
       // -------------------- following data's information
       if(append && exist_hist!=null && exist_hist.length()>0){
-        if(change_run_one)
-          out.write(fix_old(exist_hist));
+        if(change_run_one!=0)
+          out.write(fix_old(exist_hist,change_run_one));
         else
           out.write(exist_hist);
       }
@@ -349,6 +346,8 @@ public class WriteExp extends GenericTOF_SCD{
         if(index>0)
           return index;
       }
+    }else{
+      return 0;
     }
     return -1;
   }
@@ -371,48 +370,32 @@ public class WriteExp extends GenericTOF_SCD{
    *
    * @param old_hist The string to have the histogram number 'fixed'.
    */
-  private String fix_old(String old_hist){
-    int index=old_hist.indexOf("RUN#");
-    int delHist=0;
+  private String fix_old(String old_hist, int change_run_one){
+    // confirm that it makes sense to do this
+    if(old_hist==null || old_hist.length()<=0) return old_hist;
+    if(change_run_one==0) return old_hist;
 
-    if(index<=0){
-      return old_hist;
-    }else{
-      try{
-        delHist=Integer.parseInt(old_hist.substring(index+4,index+25).trim());
-        delHist=delHist-run_num;
-      }catch(NumberFormatException e){
-        System.out.println("Invalid Number: "+e.getMessage());
-        return old_hist;
-      }
-    }
-    if(delHist==0) return old_hist;
+    // some local variables
+    int index=0;
+    int histNum=-1;
+    StringBuffer buffer=new StringBuffer(old_hist);
 
-    StringBuffer new_sb=new StringBuffer(old_hist.length());
-    StringBuffer old_sb=new StringBuffer(old_hist);
-    int histnum=0;
-    String hsttag="HST";
-
+    // do the replacing
     try{
-      while(old_sb.length()>0){
-        if(old_sb.substring(0,3).equals(hsttag)){
-          new_sb.append(hsttag);
-          old_sb.delete(0,3);
-          histnum=delHist+Integer.parseInt(old_sb.substring(0,3).trim());
-          old_sb.delete(0,3);
-          new_sb.append(Format.real(histnum,3)+old_sb.substring(0,75));
-          old_sb.delete(0,75);
-        }else{
-          new_sb.append(old_sb.substring(0,81));
-          old_sb.delete(0,81);
-        }
+      while(index>=0 && index<buffer.length()){
+        histNum=Integer.parseInt(buffer.substring(index+3,index+6).trim());
+        buffer.replace(index+3,index+6,Format.real(histNum+change_run_one,3));
+        index=old_hist.indexOf("\n",index);
+        if(index>0) index++;
       }
     }catch(NumberFormatException e){
-      System.out.println("Invalid Number: "+e.getMessage());
+      SharedData.addmsg("WARNING(WriteSCDExp): NumberFormatException "
+                                                             +e.getMessage());
       return old_hist;
     }
 
-    return new_sb.toString();
+    //return new_sb.toString();
+    return buffer.toString();
   }
 
   /**
