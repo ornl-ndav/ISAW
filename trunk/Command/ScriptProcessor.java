@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2001/08/10 20:44:00  rmikk
+ * Added a ServerTypeString for supported data types for
+ * parameters in scripts
+ *
  * Revision 1.12  2001/08/02 21:08:08  rmikk
  * Fixed up all Document files to take care of non \n characters
  * to terminate lines
@@ -169,16 +173,19 @@ public class ScriptProcessor  extends GenericOperator
     public ScriptProcessor ( Document Doc  )
       {super( "UNKNOWN");
        OL = new IObserverList() ;         
-       initialize();     
+       initialize();
+            
        ExecLine = new execOneLine() ;
+       
        PL = new PropertyChangeSupport( (Object)this ); 
        MacroDocument = Doc ;
        CommandPane.fixUP( MacroDocument );
        ExecLine.initt();
        ExecLine.resetError();
        seterror( -1,"");
-       lerror = -1;
-       setDefaultParameters();  
+       lerror = -1;       
+       setDefaultParameters(); 
+      
       }
 /** 
   * Sets up the document that logs all operations
@@ -1123,6 +1130,9 @@ public String getLine( Document Doc, int start )
              V.addElement( new JStringParameterGUI
                         ( new Parameter( Message, XX )));
             }
+          else if( DT.equals( "SERVERTYPESTRING"))
+            { 
+            }
           else if ( DT.equals( "DataSet".toUpperCase()) )
            {
 	   DataSet DS[] = ExecLine.getGlobalDataset();
@@ -1146,8 +1156,8 @@ public String getLine( Document Doc, int start )
               return null; 
           }
       
-        if( Debug) System.out.println("At bottom get def "+ perror+","+serror);
-       }// For i=0 to count
+        if( Debug) System.out.println("At bottom get def "+ perror+","+serror);}
+	// For i=0 to count
        return V;
     }
     
@@ -1416,11 +1426,13 @@ public void setDefaultParameters()
              { if( InitValue == null)
                   InitValue ="0";
                try {InitValue=InitValue.trim();
-                    addParameter( new Parameter ( Message , new Integer (InitValue)) ) ;
+                    addParameter( new Parameter ( Message , 
+                         new Integer (InitValue)) ) ;
                    }
                catch( Exception s)
                   {System.out.println("catch for Int, InitValue="+InitValue);
-                     addParameter( new Parameter ( Message , new Integer (0)) ) ;
+                     addParameter( new Parameter ( Message , 
+                                  new Integer (0)) ) ;
 
                   }
 
@@ -1429,7 +1441,8 @@ public void setDefaultParameters()
             { if( InitValue == null)
                   InitValue ="0.0";
                try {InitValue=InitValue.trim();
-                    addParameter( new Parameter ( Message , new Float (InitValue)) ) ;
+                    addParameter( new Parameter ( Message , 
+                          new Float (InitValue)) ) ;
                    }
                catch( Exception s)
                   {addParameter( new Parameter ( Message , new Float (0.0)) ) ;
@@ -1447,7 +1460,8 @@ public void setDefaultParameters()
                   InitValue ="true";
 
                try {
-                    addParameter( new Parameter ( Message , new Boolean (InitValue.toLowerCase().trim())) ) ;
+                    addParameter( new Parameter ( Message , 
+                      new Boolean (InitValue.toLowerCase().trim())) ) ;
                    }
                catch( Exception s)
                   {addParameter( new Parameter ( Message , new Boolean (true)) ) ;
@@ -1477,9 +1491,11 @@ public void setDefaultParameters()
               }
           else if( DT.equals("DSSettableFieldString".toUpperCase()))
             { if(InitValue == null)
-                  addParameter( new Parameter( Message ,new DSSettableFieldString() ) );
+                  addParameter( new Parameter( Message ,
+                            new DSSettableFieldString() ) );
               else
-                   addParameter( new Parameter( Message ,new DSSettableFieldString(InitValue.trim()) ) );
+                   addParameter( new Parameter( Message ,
+                              new DSSettableFieldString(InitValue.trim()) ) );
 
              
             }
@@ -1487,7 +1503,8 @@ public void setDefaultParameters()
             {  if( InitValue == null )
                 addParameter( new Parameter( Message ,new DSFieldString() ));
                else
-                addParameter( new Parameter( Message ,new DSFieldString(InitValue.trim()) ));            
+                addParameter( new Parameter( Message ,
+                     new DSFieldString(InitValue.trim()) ));            
             }
           else if( DT.equals( "InstrumentNameString".toUpperCase()))
             {String XX = System.getProperty("Default_Instrument");
@@ -1495,6 +1512,13 @@ public void setDefaultParameters()
                XX = "";
              addParameter(  new Parameter( Message, XX ));
             }
+          else if( DT.equals( "SERVERTYPESTRING"))
+	      { 
+                ServerTypeString STS = new ServerTypeString();
+                 
+                addParameter( new Parameter( Message , STS ));
+                     
+               }
           else if ( DT.equals( "DataSet".toUpperCase()) )
            {
 	    
