@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/24 20:11:57  rmikk
+ * Added routines to determine if two nodes are the same
+ * link
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -53,7 +57,8 @@ public class NexNode implements NxNode
    String filename;
    public String errormessage=""; 
    Hashtable typeToString;
-  
+   Hashtable LinkInfo;
+   static int NameInt = 0;
 /**
 *@param filename  the nexus filename
 */
@@ -72,6 +77,7 @@ public class NexNode implements NxNode
         dirinfo= null;
         attrlist = null;
         initHashtable();
+        LinkInfo = new Hashtable();
        }
  private void initHashtable()
      {
@@ -94,13 +100,14 @@ public class NexNode implements NxNode
 	   typeToString.put(new Integer(NexusFile.NX_UINT8),"byte");
        }
    private NexNode(Vector Nodelist, Vector openNode,String filename, 
-                    NexusFile NF)
+                    NexusFile NF , Hashtable LinkInfo )
      { errormessage="";
        dirinfo=null;
        attrlist= null;
        this.NF = NF;
        Nodelistinfo = new Vector();
        Vector V ;
+       this.LinkInfo = LinkInfo;
        //System.out.print("New Node:");
        for( int i=0; i<Nodelist.size();i++)
          {V=(Vector)(Nodelist.elementAt(i));
@@ -237,7 +244,8 @@ public class NexNode implements NxNode
         X.addElement( keyValue);
         Nodeinfo.addElement( X );
      
-        return new NexNode( Nodeinfo, currentOpenNode , filename , NF);
+        return new NexNode( Nodeinfo, currentOpenNode , filename , 
+                            NF, LinkInfo);
 
           }
 /** Returns the name for this node
@@ -285,6 +293,75 @@ public class NexNode implements NxNode
          return attrlist.size();
 
           }
+
+  public String getLinkName()
+      {if( !open())
+        return null;
+       NXlink  l =null;
+      try{
+     
+      if( getNodeClass().equals("SDS"))
+         l = NF.getdataID();
+      else
+         l = NF.getgroupID();
+        }
+      catch(NexusException s)
+        {errormessage += s.getMessage();
+         return null;
+        }
+      if( l == null)
+       {errormessage = "Link could not be established";
+        return null;
+      }
+      String S = "linkk"+NameInt;
+      NameInt++;
+      LinkInfo.put( S , l );
+      //System.out.println(S+","+l.ref+","+l.tag);
+      return S;
+      }
+   
+   public boolean equals( String linkName)
+      {if( !open())
+         return false;
+     
+       NXlink l = null;
+       try{
+       if( getNodeClass().equals("SDS"))
+         l = NF.getdataID();
+      else
+         l = NF.getgroupID();
+        }
+      catch(NexusException s)
+        {errormessage += s.getMessage();
+	System.out.println("NexNode,Equal Error="+errormessage);
+         return false;
+        }
+     
+      if( l == null)
+       {errormessage = "Link could not be established";
+        return false;
+      }
+     
+     
+      Object X = LinkInfo.get( linkName);
+      if( X == null)
+       {errormessage = "No Link established";
+        return false;
+       }
+     
+      if( X instanceof NXlink)
+       {
+        NXlink l2=(NXlink)X;
+        //System.out.println("equals link="+l.ref+","+l.tag+";"+
+	//	   l2.ref+","+l2.tag);
+        if( l2.tag !=l.tag) return false;
+        if( l2.ref !=l.ref) return false;
+        return true;
+       }  
+    
+      errormessage = "Improper Link value";
+      return false;
+      }
 /** Returns the value(data-not attribute) of this node.<P>
 * <OL>Note:<LI> mulitdimensioned arrays are linearlized.
 *  <LI> Unsigned data types are "fixed" by copying to the
@@ -698,7 +775,7 @@ public class NexNode implements NxNode
            return null;
            }
        */
-       return new NexNode(X ,currentOpenNode, filename, NF);
+       return new NexNode(X ,currentOpenNode, filename, NF , LinkInfo );
       }
 /** utility for the test program
 */
@@ -760,7 +837,11 @@ public class NexNode implements NxNode
 */
    public static void main( String args[])
     {Command.CommandUtil.setPropsFile();
-     NexNode NN = new NexNode("C:\\SampleRuns\\Nex\\lrcs3000.nxs");
+    String filename ="C:\\SampleRuns\\Nex\\lrcs3000.nxs";
+    if( args != null)if( args.length>0)
+        filename = args[0];
+    System.out.println("filename="+filename);
+     NexNode NN = new NexNode(filename);
      // "C:\\SampleRuns\\Nex\\trics00151999.hdf"NexTest.nxs);
 
             //trics00151999.hdf");//lrcs3000.nxs");
@@ -781,7 +862,7 @@ public class NexNode implements NxNode
         System.out.println("  a: Show number of Attributes      E.error?");
         System.out.println("  A: show the nth attribute         5.Nodelists");
         System.out.println("  c:Show number of children         6.GetNodeValue");
-        System.out.println("  C: Show and set ith child");
+        System.out.println("  C: Show and set ith child         7.Compare links");
         System.out.println("  p: open parent new node ");
         try{
            c=0;
@@ -870,6 +951,13 @@ public class NexNode implements NxNode
             }
           else
              System.out.println("Check error message please");  
+         }
+       else if( c == '7')
+         {String SS = Node1.getLinkName();
+          if( SS != null)
+               System.out.println( Node2.equals(SS ));
+          else
+                System.out.println("Error="+ Node1.getErrorMessage());
          }
        }
      
