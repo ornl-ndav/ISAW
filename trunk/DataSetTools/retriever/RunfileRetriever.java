@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.44  2002/06/03 22:33:34  dennis
+ *  tof_data_calc.NewEnergyInData(,) is now used to adjust the spectra
+ *  for a TOF_DG_Spectrometer, to the incident energy calculated from the
+ *  beam monitors.
+ *
  *  Revision 1.43  2002/04/24 19:07:40  pfpeterson
  *  Updated to add the raw detector center distance and angle
  *  attributes when the instrument is of the SCD type.
@@ -672,7 +677,7 @@ private float CalculateEIn()
                    !is_monitor                                           )
            {
              source_to_sample_tof = 
-                        (float)run_file.SourceToSampleTime( calculated_E_in );
+                        (float)run_file.SourceToSampleTime();
 
              if ( !Float.isInfinite(source_to_sample_tof) )
                for ( int i = 0; i < bin_boundaries.length; i++ )
@@ -715,6 +720,14 @@ private float CalculateEIn()
       e.printStackTrace();
     }
 
+    if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER &&
+         ds_type         == Attribute.SAMPLE_DATA  )              //adjust e_in
+      for ( int i = 0; i < data_set.getNum_entries(); i++ )
+      {
+        Data d = data_set.getData_entry( i );
+        d = tof_data_calc.NewEnergyInData( (TabulatedData)d, calculated_E_in );
+        data_set.replaceData_entry( d, i );
+      } 
     return data_set;
   }
 
@@ -861,15 +874,16 @@ private float CalculateEIn()
                                      (float)run_file.EnergyIn() );
       attr_list.setAttribute( float_attr );
 
-      float_attr =new FloatAttribute(Attribute.ENERGY_IN, calculated_E_in );
+      float_attr =new FloatAttribute(Attribute.ENERGY_IN,
+                                     (float)run_file.EnergyIn() );
       attr_list.setAttribute( float_attr );
 
-      float_attr =new FloatAttribute("Nominal Source to Sample TOF",
+      float_attr =new FloatAttribute(Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF,
                                      (float)run_file.SourceToSampleTime() );
       attr_list.setAttribute( float_attr );
 
-      float_attr =new FloatAttribute("Source to Sample TOF",
-                        (float)run_file.SourceToSampleTime( calculated_E_in ) );
+      float_attr =new FloatAttribute(Attribute.SOURCE_TO_SAMPLE_TOF,
+                                     (float)run_file.SourceToSampleTime() );
       attr_list.setAttribute( float_attr );
     }
 
