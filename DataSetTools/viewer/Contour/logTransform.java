@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/07/15 22:14:01  rmikk
+ *  Added the intensity to the log transform
+ *
  *  Revision 1.2  2002/07/15 14:38:58  rmikk
  *  Fixed an error caused by a misunderstanding of a method.
  *    Now peaks are white
@@ -64,7 +67,7 @@ public class logTransform  implements Transform
    *  getTransU( pstart) = ustart and getTransu(pend) = uend.
    */
    public logTransform( double pstart, double pend, double ustart, 
-        double uend, float intensity) 
+        double uend, int intensity) 
     {this.pstart=pstart;
      this.pend=pend;
      this.ustart=ustart;
@@ -82,12 +85,12 @@ public class logTransform  implements Transform
    /** Sets the intensity to a value between .1 and 20
    *
    */
-   public void setIntensity( float intensity)
-     { if( intensity <0.1)
-        intensity = 0.1f;
-       if( intensity > 10)
-        intensity = 10f;
-       this.intensity = intensity;
+   public void setIntensity( int intensity)
+     { if( intensity <0)
+        this.intensity = 10.f;
+       if( intensity > 100)
+        this.intensity = .1f;
+       this.intensity = (float)(10.- .099*intensity);
        calc();
      }
    /** Sets the physical range
@@ -189,9 +192,9 @@ public class logTransform  implements Transform
 
     public static void main( String[] args )
    { System.out.println("Here");
-     logTransform lt = new logTransform( 0.,199., 0., 356., 1.0f);
-      logTransform lt1=new logTransform( 0.,10., 20., 50., 20.0f);
-     logTransform lt2=new logTransform( 0.,10., 20., 50., .5f);
+     logTransform lt = new logTransform( 0.,199., 0., 356., 50);
+      logTransform lt1=new logTransform( 0.,10., 20., 50., 0);
+     logTransform lt2=new logTransform( 0.,10., 20., 50., 100);
    /*  for( int i=0; i<50; i++)
       { double f=20.+30.*i/50.;
        // System.out.println(f+","+lt1.getTransP(f)+","+lt.getTransP(f)+","+lt2.getTransP(f)+
