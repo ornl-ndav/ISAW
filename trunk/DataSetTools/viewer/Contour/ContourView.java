@@ -33,6 +33,15 @@
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
+ * Modified:
+ *
+ *  $Log$
+ *  Revision 1.4  2002/07/12 21:14:07  rmikk
+ *  Changed documentation to get log messages to record
+ *    automatically
+ *  Incorporated a log scale for colors
+ *  Eliminated some debug prints
+ *
  */
 package DataSetTools.viewer.Contour;
 
@@ -118,7 +127,7 @@ public class ContourView extends DataSetViewer
       
       if( state1 == null)
         { state = new ViewerState();
-         System.out.println("state1 is null");
+         
         }
       /*
        * Create a new ViewManager to contain the graph.
@@ -315,7 +324,7 @@ public class ContourView extends DataSetViewer
          state.set_int("Contour.Style",GridAttribute.CONTOUR );
       else if( evt.getActionCommand().equals("RASTER"))
          state.set_int("Contour.Style",GridAttribute.RASTER );
-      System.out.println("new state is "+state.get_int("Contour.Style")+evt.getActionCommand());
+      
       setData( data_set , state.get_int("Contour.Style"));
       rpl_.draw();
       }
@@ -519,8 +528,8 @@ public class ContourView extends DataSetViewer
 
       IndexedColorMap cmap = new IndexedColorMap( IndexColorMaker.getColorTable( ColorMap, ncolors ) );
 
-      cmap.setTransform( new LinearTransform( 0.0, ncolors - 1.0,
-            datar.start, datar.end ) );
+      cmap.setTransform( new logTransform( 0.0, ncolors - 1.0,
+            datar.start, datar.end ,1.0f) );
       //IndexedColorMap cmap = new IndexedColorMap(IndexColorMaker.getColorTable(ColorMap, 18),clevels);
       return cmap;
    }
