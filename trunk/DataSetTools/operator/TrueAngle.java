@@ -191,7 +191,7 @@ public class TrueAngle extends    DataSetOperator
     {
       data          = ds.getData_entry(i);
       rebinned_data = (Data)data.clone();
-      rebinned_data.ReBin( x_scale );
+      rebinned_data.ResampleUniformly( x_scale );
       y_vals[i]     = rebinned_data.getY_values();
 
       attr_list = data.getAttributeList();
