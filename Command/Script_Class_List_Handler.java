@@ -31,6 +31,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2002/10/21 12:51:54  rmikk
+ * Uncommented out code that created a list of data set operators
+ * Sorted the list of data set operators
+ * Introduced two methods ,public int getNumDataSetOperators()
+ *   and public DataSetOperator getDataSetOperator( int index ),
+ *   to access the list of data set operatoors alphabetically.
+ * Fixed methods ScompareLess and getOperatorPosition. Now
+ *   all operators with the same name( and different argument
+ *   lists) can be found with the scripting system
+ *
  * Revision 1.33  2002/10/14 15:59:48  pfpeterson
  * Fixed a couple of bugs with finding an operator given its
  * command name. Now finds the last version of the operator in
@@ -181,7 +191,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     //Contains ordering for file names
     private static final Vector SortOnFileName = new Vector();
     private static  final Vector opList  = new Vector();
-    private static  final Vector dsOpList  = new Vector();
+    private  Vector dsOpList  = new Vector();
+    private static  DataSetOperator[] dsOpListI = null;
     private String errorMessage= "";
     private static int Command_Compare =257;
     private static int File_Compare = 322;
@@ -464,7 +475,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         else 
             return null;
     }
-
+  
     /**
      * Gets the number of operators in the master operator list
      */
@@ -472,6 +483,12 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return opList.size();
     }
 
+    /**
+     * Gets the number of data set operators in its master list
+    */
+    public int getNumDataSetOperators(){
+      return dsOpListI.length;
+    }
     /**
      * Gets the number of parameters(arguments) of the index-th
      * operator
@@ -522,22 +539,58 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             return X;
         }
     }
-
     /**
-     * Gets the position in the master list of the first operator
-     * whose command name is CommName.
+     * Gets the index-th operator in the master list of DataSet operators
      */
+    public DataSetOperator getDataSetOperator( int index ){
+        if( index < 0)
+           return null;
+        if( index >= dsOpListI.length)
+           return null;
+        return dsOpListI[index];
+    }
+
+    /** Gets the position in the master list of the first operator
+      *   whose command name is CommName.
+    */
     public int getOperatorPosition( String CommName){
         int i = find(CommName , Command_Compare);
         if( i < 0 )
             return i;
         if( getOperatorCommand(i) == null) 
             return -1;
+        if(! getOperatorCommand(i).equals( CommName))
+            return -1;
+        int j = i-1;
+        while( j >= 0 ){
+            if( getOperatorCommand( j ).equals(CommName)){
+                i = j;
+                j--;
+            }
+            else
+                return i;
+        }
+        return i;
+    }
+
+    /**
+     * Gets the position in the master list of the first operator
+     * whose command name is CommName.
+     */
+    public int getOperatorPosition1( String CommName){
+        int i = find(CommName , Command_Compare);
+        
+        if( i < 0 )
+            return i;
+        if( getOperatorCommand(i) == null) 
+            return -1;
+
 	for( int j=i ; j>=0 ; j-- ){
 	    if( getOperatorCommand(j).equals( CommName))
 		return j;
 	}
 	return -1;
+
     }
 
     /**
@@ -637,10 +690,50 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             processPaths((String)includeVec.elementAt(i));
         }
         
+       dsOpListI = new DataSetOperator[ dsOpList.size()];
+       for( int i=0 ; i < dsOpListI.length ; i++){
+             dsOpListI[i]= (DataSetOperator)(dsOpList.elementAt(i));
+       }
+       dsOpList = null;
+       java.util.Arrays.sort( dsOpListI, new CommandCompare( dsOpListI));
         
         toggleDebug(); 
     }  // end of inittt()
-    
+
+    /** This class is a comparator for two operators with respect of their command name
+    *
+    */
+    class CommandCompare implements Comparator{
+       DataSetOperator[] dslist;
+       public CommandCompare( DataSetOperator[] dslist){
+          this.dslist= dslist;
+       }
+       
+       /** Compares two DataSetOperators according to their command name
+       */  
+       public int compare(Object o1, Object o2){
+         if( o1 == null)
+          if( o2 == null)
+            return 0;
+          else 
+            return -1;
+          if( o2 == null)
+            return +1;
+          if( !( o1 instanceof DataSetOperator))
+             return 0;          
+          if( !( o2 instanceof DataSetOperator))
+             return 0;
+           return ((DataSetOperator)o1).getCommand().compareTo(((DataSetOperator)o2).getCommand()); 
+  
+       }
+       /** returns false. No two comparators are the same
+       */
+       public boolean equals(Object obj){
+          return false;
+       }
+
+    }
+      
     /**
      * Method to simplify code since all directories are parsed in the
      * same manner. This adds the directories "dir/Operators" and
@@ -730,18 +823,18 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         if(injar){ // we are working from a jar file
             // remove a little bit more from classFile
             classFile=classFile.substring(4,classFile.length()-1);
-            /*
-              UNCOMMENT THIS TO PROCESS DATASETOPERATORS
+           
+              //UNCOMMENT THIS TO PROCESS DATASETOPERATORS
               processDataSetOperators(classFile,true);
-            */
+           
             if( LoadDebug) System.out.println("----PATH="+classFile);
             ProcessJar(classFile,opList);
         }else{     // isaw is unpacked
-            /*
-              UNCOMMENT THIS TO PROCESS DATASETOPERATORS
+            
+              //UNCOMMENT THIS TO PROCESS DATASETOPERATORS
               processDataSetOperators(classFile+"/DataSetTools/operator/DataSet",
               false);
-            */
+           
             File opDir=new File(classFile+"/DataSetTools/operator/Generic");
             if(opDir.exists() && opDir.isDirectory()){
                 if( LoadDebug) System.out.println("----PATH="+classFile+"/DataSetTools/operator/Generic");
@@ -874,7 +967,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             return false;
         }
     }
-
+    
     private  void add( String filename , Vector opList){
         int i;
         
@@ -922,7 +1015,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     }
 
     /**
-     * insert before
+     * insert before 
      */
     private  void insert( int n_toInsert, int pos_insert , Vector rankList  ){
         if((pos_insert < 0) ||(pos_insert >=rankList.size()))
@@ -976,6 +1069,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         first = 0;
         last = V.size() -1;
         done = first > last; 
+
         less = true;
         if( done){
             mid = 0;
@@ -985,7 +1079,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 int pos = ((Integer)(V.elementAt(mid))).intValue();
                 Operator opp = (Operator)(opList.elementAt(pos));
                 less = false;
-  
+                 
                 if( mode == Command_Compare){
                     if( ScompareLess(opp.getCommand() , textt))
                         less = true;
@@ -1140,7 +1234,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     private  boolean ScompareLess( String s1, String s2){
         if( s1 == null ) return ( s2!=null );
 
-	if(s1.compareTo(s2)<=0)
+	if(s1.compareTo(s2)<0)  //$$$ had <=
 	    return true;
 	else
 	    return false;
@@ -1159,6 +1253,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         System.out.println("=====Number of Generic operators: "
                            +BB.getNum_operators());
         BB.show(257);
+       
         
         System.exit( 0 );
     }
