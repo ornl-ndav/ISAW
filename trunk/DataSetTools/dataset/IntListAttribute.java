@@ -3,6 +3,12 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.6  2001/04/20 19:56:43  dennis
+ *  Now guarantees that an IntListAttribute will keep the list of
+ *  integer in increasing order.  Also, the combine() method now uses
+ *  a "merge" operation to combine the lists more efficiently and keep them
+ *  in order.
+ *
  *  Revision 1.5  2000/09/11 23:02:57  dennis
  *  Now converts list of integers to compact string form n:m,i:j,...
  *
@@ -51,6 +57,17 @@ public class IntListAttribute extends Attribute
 
     this.values = new int[ values.length ];
     System.arraycopy( values, 0, this.values, 0, values.length );
+
+    boolean in_order = true;
+    for ( int i = 0; i < values.length - 1; i++ )
+      if ( values[i] > values[i+1] )
+        in_order = false;
+
+    if ( !in_order ) 
+    {
+      System.out.println("Warning: values not ordered in IntListAttribute");
+      arrayUtil.sort( this.values );
+    }
   }
 
 
@@ -119,37 +136,49 @@ public class IntListAttribute extends Attribute
        
     IntListAttribute other_attr = (IntListAttribute)attr; 
 
-    boolean  found;
-    int      i;
-    int      temp[] = new int [ values.length + other_attr.values.length ];
- 
-    int num_used = values.length;       
-                                                  // start with the integers 
-    for ( i = 0; i < values.length; i++ )         // from this attribute's list
-      temp[i] = values[i];
+    int      temp[]   = new int [ values.length + other_attr.values.length ];
+    int      i        = 0,
+             j        = 0,
+             num_used = 0;
+                                                             // merge the lists 
+    while ( i < values.length && j < other_attr.values.length )    
+    {
+      if ( values[ i ] < other_attr.values[ j ] )
+      {
+        temp[ num_used ] = values[i];
+        i++;
+      }
+      else if ( values[ i ] > other_attr.values[ j ] )    
+      {
+        temp[ num_used ] = other_attr.values[ j ];
+        j++;
+      }
+      else
+      {
+        temp[ num_used ] = values[ i ];
+        i++;
+        j++;
+      }
+      num_used++;
+    }
 
-                                                  // append any integers from
-                                                  // the new list that are not
-                                                  // in the original list 
-    for ( int k = 0; k < other_attr.values.length; k++ )
-    {                                             
-      found = false;                             
-      i = 0;
-      while ( !found && i < values.length )
-        if (  other_attr.values[k] == values[i] )
-          found = true;
-        else
-          i++;
-      if ( !found )                               // append and count this
-      {                                           // new integer
-        temp[ num_used ] = other_attr.values[k];
-        num_used++;
-      }       
-    }    
+    if ( i < values.length )
+    {
+      System.arraycopy( values, i, temp, num_used, values.length - i );
+      num_used += values.length - i;
+    }
+ 
+    else
+    {
+      System.arraycopy( other_attr.values, j, temp, num_used, 
+                        other_attr.values.length - j );
+      num_used += other_attr.values.length - j;
+    }
+      
                                                   // now copy the values into
     values = new int[ num_used ];                 // a new array for this
-    for ( i = 0; i < values.length; i++ )         // attribute
-      values[i] = temp[i];
+                                                  // attribute
+    System.arraycopy( temp, 0, values, 0, num_used );
   }
 
 
@@ -178,7 +207,7 @@ public class IntListAttribute extends Attribute
    */
   public String toString()
   {
-     return this.getName() + ": " + this.getStringValue();
+    return this.getName() + ": " + this.getStringValue();
   }
 
   /**
