@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2003/08/15 03:59:22  bouzekc
+ * Removed init() method.  Now relies on init(Vector).
+ *
  * Revision 1.19  2003/07/10 18:29:42  bouzekc
  * Replaced deprecated show() with setVisible(boolean).
  *
@@ -325,9 +328,12 @@ public abstract class VectorPG extends ParameterGUI
 
   /**
    * Initializes this VectorPG.
+   *
+   * @param V The Vector to use when initializing this VectorPG.
    */
-  public void init(  ) {
-    GUI = new ArrayEntryJPanel( param );
+  public void init( Vector V ) {
+    value   = ( V );
+    GUI     = new ArrayEntryJPanel( param );
     GUI.addPropertyChangeListener( this );
     entrywidget = vectorButton;
     GUI.setValue( value );
@@ -335,16 +341,8 @@ public abstract class VectorPG extends ParameterGUI
     buttonHolder   = new JPanel( new GridLayout( 1, 1 ) );
     buttonHolder.add( vectorButton );
     vectorButton.addActionListener( this );
-  }
 
-  /**
-   * Initializes this VectorPG.
-   *
-   * @param V The Vector to use when initializing this VectorPG.
-   */
-  public void init( Vector V ) {
-    value = ( V );
-    init(  );
+    //super.initGUI(  );
   }
 
   /**
