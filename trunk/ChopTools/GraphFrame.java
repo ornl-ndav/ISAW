@@ -9,7 +9,8 @@ import java.text.*;
 import graph.*;
 import java.beans.*;
 import java.awt.*;
-class GraphFrame extends java.awt.Frame
+
+public class GraphFrame extends java.awt.Frame
 {
 	public GraphFrame()
 	{
@@ -25,8 +26,9 @@ class GraphFrame extends java.awt.Frame
 		this.addWindowListener(aSymWindow);
 		//}}
 
-	      	//{{INIT_MENUS
+		//{{INIT_MENUS
 		//}}
+
 	}
 
 	public GraphFrame(String title)
@@ -46,7 +48,7 @@ class GraphFrame extends java.awt.Frame
 
 	public void addNotify()
 	{
-	// Record the size of the window prior to calling parents addNotify.
+		// Record the size of the window prior to calling parents addNotify.
 		Dimension d = getSize();
 
 		super.addNotify();
@@ -56,8 +58,7 @@ class GraphFrame extends java.awt.Frame
 
 		// Adjust components according to the insets
 		Insets ins = getInsets();
-		setSize(ins.left + ins.right + d.width, 
-                        ins.top + ins.bottom + d.height);
+		setSize(ins.left + ins.right + d.width, ins.top + ins.bottom + d.height);
 		Component components[] = getComponents();
 		for (int i = 0; i < components.length; i++)
 			{
@@ -77,7 +78,7 @@ class GraphFrame extends java.awt.Frame
 		{
 		Object object = event.getSource();
 		if (object == GraphFrame.this)
-		  GraphFrame_WindowClosing(event);
+			GraphFrame_WindowClosing(event);
 		}
 	}
 
