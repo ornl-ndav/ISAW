@@ -2225,6 +2225,8 @@ String url = "http://www.pns.anl.gov/CHEX/";
   			for ( int i = 0; i < num_ops; i++ )
     			ds_ops[i] = ds.getOperator(i);
 			ActionListener listener = new JOperationsMenuHandler(ds,jtui, sessionLog);
+                  //oMenu= new OpMenu((new DSOPHandler(ds) , new DSgetArray(tree), sessionlog , tree);
+
                   OperatorMenu.build( oMenu,      ds_ops,      listener );
                   int tt = oMenu.getItemCount();
                   for (int i =0; i<tt; i++)
