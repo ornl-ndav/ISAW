@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2002/04/18 21:29:05  dennis
+ *  Added private method getValidDataSet(ds) that will return a clone
+ *  of the EMPTY_DATA_SET if ds is null, or return ds otherwise.  This
+ *  is used to ensure that even if the LiveDataRetriever returns a null
+ *  for a DataSet, we only save valid DataSets.
+ *
  *  Revision 1.15  2001/08/14 19:17:43  dennis
  *  Removed local error code definitions and now uses codes from
  *  RemoteDataRetriever
@@ -451,7 +457,7 @@ public class LiveDataManager extends    Thread
         {                                                 // of the old ones
           new_data_sets[i] = data_sets[i];
 
-          DataSet temp_ds  = retriever.getDataSet(i);
+          DataSet temp_ds  = getValidDataSet( retriever.getDataSet(i) );
           new_data_sets[i].copy( temp_ds );              // copy notifies any
                                                          // observers of the ds
           new_ignore[i]    = ignore[i];
@@ -463,7 +469,7 @@ public class LiveDataManager extends    Thread
         for ( int i = num_to_save; i < num_ds; i++ )
         {
           ds_type[i]   = retriever.getType(i);
-          data_sets[i] = retriever.getDataSet(i);
+          data_sets[i] = getValidDataSet( retriever.getDataSet(i) );
           ignore[i]    = true;
         }
         send_message(  DATA_CHANGED + "SetUpLocalCopies 3: " );
@@ -475,9 +481,9 @@ public class LiveDataManager extends    Thread
         {
           ds_type[i]   = retriever.getType(i);
 
-          DataSet temp_ds  = retriever.getDataSet(i);
-          data_sets[i].copy( temp_ds );                  // copy notifies any
-                                                         // observers of the ds
+          DataSet temp_ds = getValidDataSet( retriever.getDataSet(i) );
+          data_sets[i].copy( temp_ds );                // copy notifies any
+                                                       // observers of the ds
         }
         send_message(  DATA_CHANGED + "SetUpLocalCopies 4: " );
       }
@@ -485,6 +491,17 @@ public class LiveDataManager extends    Thread
   }
 
 
+  /*
+   *  Get a valid DataSet that will be the specified DataSet if it is non-null
+   *  and will be a copy of the EMPTY_DATASET if the specified DataSet is null 
+   */
+  private DataSet getValidDataSet( DataSet ds )
+  {
+    if ( ds == null )
+      return (DataSet)DataSet.EMPTY_DATA_SET.clone();
+
+    return ds; 
+  }
 
 /* -------------------------------- main --------------------------------- */
   
