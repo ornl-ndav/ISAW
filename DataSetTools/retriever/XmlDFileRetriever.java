@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/12/10 22:13:53  pfpeterson
+ *  Fixed javadoc
+ *
  *  Revision 1.2  2002/11/27 23:23:16  pfpeterson
  *  standardized header
  *
@@ -320,7 +323,7 @@ public class XmlDFileRetriever extends Retriever
   * @param  data_set_num  the indicated data set
   * @return  The type of data set
   *
-  * @see DataSetTools.retriever,Retriever#HISTOGRAM_DATA_SET  
+  * @see DataSetTools.retriever.Retriever#HISTOGRAM_DATA_SET  
   */
   public int getType(int data_set_num)
   {  
