@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/07/17 13:38:31  dennis
+ *  Added operators to get/set attributes & fields
+ *
  *  Revision 1.3  2000/07/10 22:23:55  dennis
  *  July 10, 2000 version... many changes
  *
@@ -184,6 +187,13 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new SumCurrentlySelected() );
 
     new_ds.addOperator( new DataSetMerge() );
+
+    new_ds.addOperator( new GetDataAttribute() );
+    new_ds.addOperator( new SetDataAttribute() );
+    new_ds.addOperator( new GetDSAttribute() );
+    new_ds.addOperator( new SetDSAttribute() );
+    new_ds.addOperator( new GetField() );
+    new_ds.addOperator( new SetField() );
 
     return new_ds;
   }
