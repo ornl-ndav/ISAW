@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/11/23 23:45:01  rmikk
+ * Now implements the interface IProcessNxEntry
+ *
  * Revision 1.1  2003/11/16 21:40:57  rmikk
  * Initial Checkin
  *
@@ -50,7 +53,7 @@ import NexIO.Query.*;
  *   Data Set.
  */
 
-public class ProcessNxEntry  {
+public class ProcessNxEntry  implements IProcessNxEntry{
   String errormessage="";
 
 
@@ -228,6 +231,16 @@ public class ProcessNxEntry  {
 
  
 
+ /**
+    *   Hook to add new fields to the class that are not in the processDS methods
+    *   parameters
+    */
+   public void setNewInfo( String Name, Object value){}
+
+   /**
+    *   @return the current value of the new info associated with Name
+    */
+   public Object getNewInfo( String Name){return null;}
   
   
  }
