@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/04/10 15:39:20  pfpeterson
+ *  Added System properties to control MW width and height. Also improved
+ *  changing the divider positions in the SplitPanes and removed SplitPanes
+ *  that weren't used (get some screen space).
+ *
  *  Revision 1.7  2002/04/08 18:22:14  pfpeterson
  *  Added properties to set JSplitPanel portions on startup.
  *
@@ -301,10 +306,12 @@ public class DefaultProperties{
             +"NDSFileServer1_Path=dmikk.mscs.uwstout.edu;6008"+newline
             +newline
             +"#"+newline
-            +"# Screen Size"+newline
+            +"# Screen Size in percentage (<=1) or pixels (>1)"+newline
             +"#"+newline
-            +"# Status_Height=0.2"+newline
-            +"# Tree_Width=0.2"+newline
+            +"Isaw_Width=0.8"+newline
+            +"Isaw_Height=0.4"+newline
+            +"Tree_Width=0.2"+newline
+            +"Status_Height=0.2"+newline
             +newline
             +"#"+newline
             +"# Viewer Options"+newline
