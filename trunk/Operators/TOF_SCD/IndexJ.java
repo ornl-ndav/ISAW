@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/02/03 19:28:15  pfpeterson
+ * Added a file filter to the matrix file parameter.
+ *
  * Revision 1.1  2003/01/31 23:03:01  pfpeterson
  * Added to CVS.
  *
@@ -89,7 +92,9 @@ public class IndexJ extends    GenericTOF_SCD {
     LoadFilePG peaksfilepg=new LoadFilePG("Peaks file",null);
     peaksfilepg.setFilter(new PeaksFilter());
     addParameter(peaksfilepg);
-    addParameter(new LoadFilePG("Matrix file",null));
+    LoadFilePG matfilepg=new LoadFilePG("Matrix file",null);
+    matfilepg.setFilter(new MatrixFilter());
+    addParameter(matfilepg);
     addParameter(new FloatPG("Delta",0.05f));
   }
   
