@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/01/31 19:16:46  pfpeterson
+ * Added a line to set the monitor count of the generated peaks.
+ *
  * Revision 1.1  2003/01/30 21:07:23  pfpeterson
  * Added to CVS.
  *
@@ -127,6 +130,7 @@ public class PeakFactory{
       peak.times(this.T0,this.T1);
     peak.calib(calib);
     peak.UB(UB);
+    peak.monct(this.monct);
 
     return peak;
   }
