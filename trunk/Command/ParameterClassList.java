@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/11/17 22:10:52  dennis
+ * Added the name of the jar file to the exception message
+ * thrown by Command.ParameterClassList.processJar(), if the
+ * jar file could not be opened ok.
+ *
  * Revision 1.7  2003/10/08 21:41:18  dennis
  * If a directory is not found, the exception message now
  * contains the name of the directory that was not found.
@@ -196,7 +201,8 @@ public class ParameterClassList{
       zf=new ZipFile(jarname);
       entries=zf.entries();
     }catch(IOException e){
-      throw new InstantiationError("IOException:"+e.getMessage());
+      throw new InstantiationError("IOException:"+e.getMessage() + "\n" +
+                                   "failed on file " + jarname );
     }
 
     // prepare some variables for looping through
@@ -226,7 +232,7 @@ public class ParameterClassList{
     // get the location of ISAW code base
     String isaw_home=SharedData.getProperty("ISAW_HOME");
     if(isaw_home==null)
-      throw new InstantiationError("Could not find directory");
+     throw new InstantiationError("Could not find directory:ISAW_HOME is null");
     isaw_home=FilenameUtil.setForwardSlash(isaw_home+"/");
 
     // get the name of the directory to check
