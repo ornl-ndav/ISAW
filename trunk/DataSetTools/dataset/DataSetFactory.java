@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2002/08/22 15:11:17  pfpeterson
+ *  Moved LoadGsasCalib and LoadOffsets to only Diffractometers.
+ *  Added LoadOrientation to SCD.
+ *
  *  Revision 1.27  2002/08/01 22:52:00  dennis
  *  Re-inserted changes removed by Ruth.
  *
@@ -341,8 +345,6 @@ public class DataSetFactory implements Serializable
     ds.addOperator( new SetDSDataAttributes() );
     ds.addOperator( new GetField() );
     ds.addOperator( new SetField() );
-    ds.addOperator( new LoadOffsets() );
-    ds.addOperator( new LoadGsasCalib() );
 
     ds.addOperator( new PlotterOp() );
   }
@@ -399,6 +401,8 @@ public class DataSetFactory implements Serializable
       ds.addOperator( new DiffractometerTofToEnergy() );
       ds.addOperator( new DiffractometerTofToWavelength() );
       ds.addOperator( new TrueAngle() );
+      ds.addOperator( new LoadOffsets() );
+      ds.addOperator( new LoadGsasCalib() );
     }
     else if ( instrument_type == InstrumentType.TOF_SCD )  // will be different
     {                                                      // when SCD properly
@@ -409,6 +413,7 @@ public class DataSetFactory implements Serializable
       ds.addOperator( new DiffractometerTofToEnergy() );
       ds.addOperator( new DiffractometerTofToWavelength() );
       ds.addOperator( new TrueAngle() );
+      ds.addOperator( new LoadOrientation() );
     }
     else if ( instrument_type == InstrumentType.TOF_SAD )  // will be different
     {                                                      // when SAD properly
