@@ -1,7 +1,7 @@
 /*
  * File:  SANDWedgeViewer.java
  *
- * Copyright (C) 2003-2004, Mike Miller
+ * Copyright (C) 2003-2005, Mike Miller
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,11 +33,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.44  2005/01/19 21:34:26  millermi
+ * - Made changes to calculation of radial line summing.
+ * - binarySearch() now returns -1 if value is not within
+ *   the interval of the array.
+ *
  * Revision 1.43  2005/01/18 23:01:54  millermi
  * - Changed ImageListener to no longer listen for SelectionOverlay events,
  *   but rather for ImageViewComponent events. This simplifies the
  *   listener and makes it work more reliably.
- * - Fixed "upside wedge" bug.
+ * - Fixed "upside-down wedge" bug.
  *
  * Revision 1.42  2004/12/05 05:23:29  millermi
  * - Fixed eclipse warnings.
@@ -1264,7 +1269,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       else
       {
         start_x = def_pts[5].x;
-	end_x = start_x + def_pts[5].y;
+	end_x = start_x + def_pts[5].y + 180;
 	theta = def_pts[5].y;
 	// The average radius in pixel coords.
 	pix_avg_radius = Math.abs((def_pts[4].x - center.x));
@@ -1393,6 +1398,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     // Map world coord origin to image origin for magnitude calculation
     floatPoint2D image_origin = 
                         image_to_world_tran.MapFrom( new floatPoint2D(0,0) );
+    
     float x = 0;
     float y = 0;
     float dist = 0;
@@ -1413,26 +1419,36 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     	y = Math.abs( selected_pts[i].y - image_origin.y );
     	dist = (float)Math.sqrt( x*x + y*y );
     	index = binarySearch( x_vals, dist );
-    	y_vals[index] += data_array[ selected_pts[i].y ][ selected_pts[i].x ];
-    	err = err_array[ selected_pts[i].y ][ selected_pts[i].x ];
-    	err_vals[index] += err*err; 
-    	hit_count[index]++;
-      }
-    }
+	// If value is on the range of x_vals, a valid index is returned.
+	// If not, -1 is returned.
+	if( !(index < 0) )
+	{
+    	  y_vals[index] += data_array[ selected_pts[i].y ][ selected_pts[i].x ];
+    	  err = err_array[ selected_pts[i].y ][ selected_pts[i].x ];
+    	  err_vals[index] += err*err; 
+    	  hit_count[index]++;
+	} // end if valid index
+      } // end for all selected points.
+    } // end if integrate by_rings
     // Bins are angular distance, summing over an angle.
     else
     {
       // This variable is used to place the angle in the correct quadrant.
       float angle_modifier = 0;
+      // ####### These two variables are test variables. #######
+      int in_count = 0;
+      int out_count = 0;
       // System.out.println("X scale: " + x_scale );
       for ( int i = 0; i < selected_pts.length; i++ )
       {
     	x = selected_pts[i].x - image_origin.x;
     	y = selected_pts[i].y - image_origin.y;
+	// Since image coordinates start from upper-left corner, the
+	// following rules apply.
 	if( x < 0 )
 	{
 	  // quadrant III
-	  if( y < 0 )
+	  if( y > 0 )
 	    angle_modifier = 180f;
 	  // quadrant II
     	  else
@@ -1441,30 +1457,45 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	else
 	{
 	  // quadrant IV
-	  if( y < 0 )
+	  if( y > 0 )
 	    angle_modifier = -360f;
 	  // quadrant I
     	  else
 	    angle_modifier = 0;
 	}
 	// dist is the angle, this will always be a positive angle
+	// tan(dist) = y/x  ===>  dist = atan(y/x)
 	dist = (float)Math.atan( (double)Math.abs(y/x) );
 	// convert from radians to degrees
 	dist = dist * (float)(180d/Math.PI);
 	// Add the modifier
 	dist = Math.abs( dist + angle_modifier );
-	// Make sure value is between the min and max theta
-	if( dist < start_x )
+	// Make sure value is between the min and max theta. Since degrees
+	// can wrap, must account for range > 360.
+	if( end_x > 360 && dist < start_x )
 	  dist += 360;
-	if( dist > end_x )
-	  dist -= 360;
-    	index = binarySearch( x_vals, dist );
-    	y_vals[index] += data_array[ selected_pts[i].y ][ selected_pts[i].x ];
-    	err = err_array[ selected_pts[i].y ][ selected_pts[i].x ];
-    	err_vals[index] += err*err; 
-    	hit_count[index]++;
-      }
-    }
+	// Find index of dist in the x_vals array.
+	index = binarySearch( x_vals, dist );
+	// If value not on the range of x_vals, ignore it.
+	if( index < 0 )
+	{
+	  out_count++;/*
+	  System.out.println("Value: "+dist+"not on range ["+start_x+","+
+	                   end_x+"], Radius: "+Math.sqrt(x*x+y*y)+
+			   ", index = "+binarySearch( x_vals, dist ) );*/
+    	}
+	else
+	{
+	  in_count++;
+    	  // Proceed with calculations on given index.
+	  y_vals[index] += data_array[ selected_pts[i].y ][ selected_pts[i].x ];
+    	  err = err_array[ selected_pts[i].y ][ selected_pts[i].x ];
+    	  err_vals[index] += err*err; 
+    	  hit_count[index]++;
+	} // end else valid indices
+      } // end for all points
+      // System.out.println("In/Out: "+in_count+"/"+out_count);
+    } // end else integration by radial lines.
     
     // find average value per hit.
     for( int bindex = 0; bindex < n_xvals; bindex++ )
@@ -1526,7 +1557,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 
       data_set.addData_entry( new_spectrum ); 
       data_set.setSelectFlag( data_set.getNum_entries() - 1, true );
-    }
+    } // end if integrate by rings
     else
     {
       // put it into a "Data" object and then add it to the dataset
@@ -1539,14 +1570,23 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 
       data_set.addData_entry( new_spectrum ); 
       data_set.setSelectFlag( data_set.getNum_entries() - 1, true );
-    }
+    } // end else integrate by radial lines.
   } // End of integrate()
  
  /*
   * This method efficiently finds what bin to put data in.
+  *
+  * @param  x_values The ordered array being searched
+  * @param  dist Value being searched for.
+  * @return Index of dist in the x_values array.
   */ 
   private int binarySearch(  float[] x_values, float dist )
   { 
+    // If array size is 1 or 0, return index 0.
+    if( x_values.length < 2 )
+      return 0;
+    if( dist < x_values[0] || dist > x_values[x_values.length-1] )
+      return -1;
     int bin_low = 0;
     int bin_high = x_values.length - 1;
     int bin = Math.round( (float)(bin_high-bin_low)/2f );
