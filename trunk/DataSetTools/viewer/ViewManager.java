@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/05/09 21:32:59  dennis
+ *  Added code to include the ThreeDViewer
+ *
  *  Revision 1.4  2001/04/26 14:21:40  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -91,6 +94,7 @@ import DataSetTools.util.*;
 import DataSetTools.viewer.util.*;
 import DataSetTools.viewer.Graph.*;
 import DataSetTools.viewer.Image.*;
+import DataSetTools.viewer.ThreeD.*;
 //import OverplotView.*;                      // import this for Kevin's viewer
 import DataSetTools.viewer.ViewerTemplate.*;
 import java.awt.*;
@@ -228,6 +232,8 @@ public class ViewManager extends    JFrame
         viewer = new ImageView( tempDataSet, state );
       else if ( view_type == SCROLLED_GRAPHS )
         viewer = new GraphView( tempDataSet, state );
+      else if ( view_type == THREE_D )
+        viewer = new ThreeDView( tempDataSet, state );
       else if ( view_type == SELECTED_GRAPHS )                 // use either
 //        viewer = new SelectedGraphView( tempDataSet );         // Kevin's or
         viewer = new ViewerTemplate( tempDataSet, state );     // Template  
@@ -526,6 +532,10 @@ private void BuildViewMenu()
   view_menu.add( button );
 
   button = new JMenuItem( SCROLLED_GRAPHS );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+
+  button = new JMenuItem( THREE_D );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
