@@ -31,6 +31,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2002/08/01 22:36:55  dennis
+ *  Set Java's serialVersionUID = 1.
+ *  Set the local object's IsawSerialVersion = 1 for our
+ *  own version handling.
+ *  Added readObject() method to handle reading of different
+ *  versions of serialized object.
+ *  Added NeXus string constant names for analysis types.
+ *  Removed redundant "transient" qualifier from static field.
+ *
  *  Revision 1.25  2002/07/10 20:57:52  pfpeterson
  *  All string constants are now transient and finally define the
  *  serialVersionUID=1L (the first version when we are counting).
@@ -155,93 +164,123 @@ import  DataSetTools.math.*;
 abstract public class Attribute implements Serializable, 
                                            IXmlIO
 {
-  // CHANGE IF THE SERIALIZATION IS INCOMPATIBLE WITH PREVIOUS VERSIONS
-  static final long serialVersionUID = 1L;
+  // NOTE: any field that is static or transient is NOT serialized.
+  //
+  // CHANGE THE "serialVersionUID" IF THE SERIALIZATION IS INCOMPATIBLE WITH
+  // PREVIOUS VERSIONS, IN WAYS THAT CAN NOT BE FIXED BY THE readObject()
+  // METHOD.  SEE "IsawSerialVersion" COMMENTS BELOW.  CHANGING THIS CAUSES
+  // JAVA TO REFUSE TO READ DIFFERENT VERSIONS.
+  //
+  public  static final long serialVersionUID = 1L;
 
-  transient public static final int     MAX_LABEL_LENGTH  = 80; 
+  public static final int     MAX_LABEL_LENGTH  = 80; 
+
   // Suggested names for attributes for neutron scattering data sets:
 
-  transient public static final String  TITLE             = "DataSet Name";
-  transient public static final String  LABEL             = "Label";
-  transient public static final String  DS_TAG            = "DataSet Tag";
+  public static final String  TITLE             = "DataSet Name";
+  public static final String  LABEL             = "Label";
+  public static final String  DS_TAG            = "DataSet Tag";
 
-  transient public static final String  INST_NAME         = "Instrument Name";
-  transient public static final String  INST_TYPE         = "Instrument Type";
+  public static final String  INST_NAME         = "Instrument Name";
+  public static final String  INST_TYPE         = "Instrument Type";
 
-  transient public static final String  FILE_NAME         = "File";
-  transient public static final String  RUN_TITLE         = "Run Title";
-  transient public static final String  RUN_NUM           = "Run Number";
-  transient public static final String  END_DATE          = "End Date";
-  transient public static final String  END_TIME          = "End Time";
-  transient public static final String  UPDATE_TIME       = "Update Time";
+  public static final String  FILE_NAME         = "File";
+  public static final String  RUN_TITLE         = "Run Title";
+  public static final String  RUN_NUM           = "Run Number";
+  public static final String  END_DATE          = "End Date";
+  public static final String  END_TIME          = "End Time";
+  public static final String  UPDATE_TIME       = "Update Time";
 
-  transient public static final String  DETECTOR_POS      = "Effective Position";
-  transient public static final String  RAW_ANGLE         = "Raw Detector Angle";
-  transient public static final String  SOLID_ANGLE       = "Total Solid Angle";
-  transient public static final String  OMEGA             = "Omega";
-  transient public static final String  DELTA_2THETA      = "\u0394"+"2"+"\u03b8";
-  transient public static final String  EFFICIENCY_FACTOR = "Efficiency";
-  transient public static final String  DETECTOR_IDS      = "Detector IDs";
-  transient public static final String  SEGMENT_IDS       = "Segment IDs";
-  transient public static final String  GROUP_ID          = "Group ID";
-  transient public static final String  TIME_FIELD_TYPE   = "Time Field Type";
-  transient public static final String  CRATE             = "Crate";
-  transient public static final String  SLOT              = "Slot";
-  transient public static final String  INPUT             = "Input";
+  public static final String  DETECTOR_POS      = "Effective Position";
+  public static final String  RAW_ANGLE         = "Raw Detector Angle";
+  public static final String  SOLID_ANGLE       = "Total Solid Angle";
+  public static final String  OMEGA             = "Omega";
+  public static final String  DELTA_2THETA      = "\u0394"+"2"+"\u03b8";
+  public static final String  EFFICIENCY_FACTOR = "Efficiency";
+  public static final String  DETECTOR_IDS      = "Detector IDs";
+  public static final String  SEGMENT_IDS       = "Segment IDs";
+  public static final String  GROUP_ID          = "Group ID";
+  public static final String  TIME_FIELD_TYPE   = "Time Field Type";
+  public static final String  CRATE             = "Crate";
+  public static final String  SLOT              = "Slot";
+  public static final String  INPUT             = "Input";
 
-  transient public static final String  DETECTOR_CEN_DISTANCE = 
+  public static final String  DETECTOR_CEN_DISTANCE = 
                                                   "Detector center distance";
-  transient public static final String  DETECTOR_CEN_ANGLE = 
+  public static final String  DETECTOR_CEN_ANGLE = 
                                                   "Detector center angle";
-  transient public static final String  DETECTOR_CEN_HEIGHT = 
+  public static final String  DETECTOR_CEN_HEIGHT = 
                                                   "Detector center height";
 
-  transient public static final String  INITIAL_PATH      = "Initial Path";
-  transient public static final String  ENERGY_IN         = "Energy In";
-  transient public static final String  NOMINAL_ENERGY_IN =
+  public static final String  INITIAL_PATH      = "Initial Path";
+  public static final String  ENERGY_IN         = "Energy In";
+  public static final String  NOMINAL_ENERGY_IN =
                                                            "Nominal Energy In";
-  transient public static final String  ENERGY_OUT        = "Energy Out";
-  transient public static final String  NOMINAL_SOURCE_TO_SAMPLE_TOF = 
+  public static final String  ENERGY_OUT        = "Energy Out";
+  public static final String  NOMINAL_SOURCE_TO_SAMPLE_TOF = 
                                                 "Nominal Source to Sample TOF";
-  transient public static final String  SOURCE_TO_SAMPLE_TOF = 
+  public static final String  SOURCE_TO_SAMPLE_TOF = 
                                                   "Source to Sample TOF";
 
-  transient public static final String  SAMPLE_CHI        = "Sample Chi";
-  transient public static final String  SAMPLE_PHI        = "Sample Phi";
-  transient public static final String  SAMPLE_OMEGA      = "Sample Omega";
-  transient public static final String  SAMPLE_NAME       = "Sample Name";
-  transient public static final String  TEMPERATURE       = "Temperature";
-  transient public static final String  PRESSURE          = "Pressure";
-  transient public static final String  MAGNETIC_FIELD    = "Magnetic Field";
-  transient public static final String  NUMBER_OF_PULSES  = "Number of Pulses";
-  transient public static final String  TOTAL_COUNT       = "Total Count";
+  public static final String  SAMPLE_CHI        = "Sample Chi";
+  public static final String  SAMPLE_PHI        = "Sample Phi";
+  public static final String  SAMPLE_OMEGA      = "Sample Omega";
+  public static final String  SAMPLE_NAME       = "Sample Name";
+  public static final String  TEMPERATURE       = "Temperature";
+  public static final String  PRESSURE          = "Pressure";
+  public static final String  MAGNETIC_FIELD    = "Magnetic Field";
+  public static final String  NUMBER_OF_PULSES  = "Number of Pulses";
+  public static final String  TOTAL_COUNT       = "Total Count";
 
-  transient public static final String  Q_VALUE           = "Q(invA)";
-  transient public static final String  GSAS_CALIB        = "GSAS calibration";
-  transient public static final String  GSAS_IPARM        =
+  public static final String  Q_VALUE           = "Q(invA)";
+  public static final String  GSAS_CALIB        = "GSAS calibration";
+  public static final String  GSAS_IPARM        =
                                               "GSAS Instrument Parameter File";
 
-  transient public static final String  DETECTOR_INFO_LIST = "Det Info List";
-  transient public static final String  DETECTOR_INFO      = "Det Info";
+  public static final String  DETECTOR_INFO_LIST = "Det Info List";
+  public static final String  DETECTOR_INFO      = "Det Info";
 
-  transient public static final String  DS_TYPE            = "Data Set Type";
+  public static final String  DS_TYPE            = "Data Set Type";
 
   // software grouping and time focusing
-  transient public static final String  TIME_OFFSET        ="Time Offset";
+  public static final String  TIME_OFFSET        ="Time Offset";
 
   // stuff for SDDS files
-  transient public static final String  START_TIME_SEC     = "Start Time(sec)";
-  transient public static final String  TIME_OF_DAY        = "Time of Day";
-  transient public static final String  DAY_OF_MONTH       = "Day of Month";
+  public static final String  START_TIME_SEC     = "Start Time(sec)";
+  public static final String  TIME_OF_DAY        = "Time of Day";
+  public static final String  DAY_OF_MONTH       = "Day of Month";
 
 
   // Suggested value Strings for DataSet attributes:
 
-  transient public static final String  UNKNOWN            = "Unknown";
-  transient public static final String  MONITOR_DATA       = "Monitor Data";
-  transient public static final String  SAMPLE_DATA        = "Sample Data";
-  transient public static final String  PULSE_HEIGHT_DATA  = "Pulse Height";
+  public static final String  UNKNOWN            = "Unknown";
+  public static final String  INVALID_DATA_SET   = "Invalid Data Set";
+  public static final String  MONITOR_DATA       = "Monitor Data";
+  public static final String  SAMPLE_DATA        = "Sample Data";
+  public static final String  PULSE_HEIGHT_DATA  = "Pulse Height";
+
+  public static final String TOF_DIFFRACTOMETER_S        = "TOFNPD";
+  public static final String TOF_SCD_S                   = "TOFNSCD";
+  public static final String TOF_SAD_S                   = "TOFNSAS"; 
+  public static final String TOF_REFLECTROMETER_S        = "TOFNREF";
+  public static final String TOF_DG_SPECTROMETER_S       = "TOFNDGS";
+  public static final String TOF_IDG_SPECTROMETER_S      = "TOFNIGS";
+
+  public static final String TRIPLE_AXIS_SPECTROMETER_S  = "MONONXTAS";
+  public static final String MONO_CHROM_DIFFRACTOMETER_S = "MONONXPD";
+  public static final String MONO_CHROM_SCD_S            = "MONONXSCD";
+  public static final String MONO_CHROM_SAD_S            = "MONONXSAS";
+  public static final String MONO_CHROM_REFLECTROMETER_S = "MONONXREF";
  
+  // NOTE: The following fields are serialized.  If new fields are added that
+  //       are not static, reasonable default values should be assigned in the
+  //       readObject() method for compatibility with old servers, until the
+  //       servers can be updated.
+
+  private int IsawSerialVersion = 1;         // CHANGE THIS WHEN ADDING OR
+                                             // REMOVING FIELDS, IF
+                                             // readObject() CAN FIX ANY
+                                             // COMPATIBILITY PROBLEMS
   protected String name;
 
   /**
@@ -503,5 +542,29 @@ abstract public class Attribute implements Serializable,
     return false;
   }
 
+/* -----------------------------------------------------------------------
+ *
+ *  PRIVATE METHODS
+ *
+ */
 
+/* ---------------------------- readObject ------------------------------- */
+/**
+ *  The readObject method is called when objects are read from a serialized
+ *  ojbect stream, such as a file or network stream.  The non-transient and
+ *  non-static fields that are common to the serialized class and the
+ *  current class are read by the defaultReadObject() method.  The current
+ *  readObject() method MUST include code to fill out any transient fields
+ *  and new fields that are required in the current version but are not
+ *  present in the serialized version being read.
+ */
+
+  private void readObject( ObjectInputStream s ) throws IOException,
+                                                        ClassNotFoundException
+  {
+    s.defaultReadObject();               // read basic information
+    
+    if ( IsawSerialVersion != 1 )
+      System.out.println("Warning:Attribute IsawSerialVersion != 1");
+  }
 }
