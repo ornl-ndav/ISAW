@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/11/27 18:22:49  dennis
+ * Fixed getCommand to return proper command name and added
+ * operator title to constructor java docs.
+ *
  * Revision 1.1  2001/11/21 21:27:47  dennis
  * Example of user-supplied add-on operator.
  *
@@ -68,8 +72,8 @@ public class Ysquared extends GenericSpecial
 
  /* ------------------------- DefaultConstructor -------------------------- */
  /** 
-  *   Default constructor that is used when the parameters will be
-  *   set later
+  *  Creates operator with title "Square all Y-values" and a  default list of
+  *  parameters.
   */  
   public Ysquared()
   {
@@ -79,8 +83,9 @@ public class Ysquared extends GenericSpecial
 
  /* ----------------------------- Constructor ----------------------------- */
  /** 
-  *  This form of the constructor specifies the parameters at construction 
-  *  time.  The getResult method must be called to actually run the operator.
+  *  Creates operator with title "Square all Y-values" and the specified list
+  *  of parameters.  The getResult method must still be used to execute
+  *  the operator.
   *  
   *  @param  ds   The DataSet to process.
   */
@@ -96,11 +101,11 @@ public class Ysquared extends GenericSpecial
  /** 
   * Get the name of this operator to use in scripts
   * 
-  * @return  "Eg1", the command used to invoke this operator in Scripts
+  * @return  "Ysquared", the command used to invoke this operator in Scripts
   */
   public String getCommand()
   {
-    return "Eg1";
+    return "Ysquared";
   }
 
 
