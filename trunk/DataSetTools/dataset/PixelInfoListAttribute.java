@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/04/26 13:23:20  rmikk
+ *  Now implements IXmlIO
+ *  Added a null constructor
+ *  Has a handle on all Grid's already created by this data set
+ *
  *  Revision 1.4  2004/03/19 17:22:05  dennis
  *  Removed unused variable(s)
  *
@@ -48,9 +53,10 @@
 package  DataSetTools.dataset;
 
 import gov.anl.ipns.MathTools.Geometry.*;
-
+import java.util.*;
 import java.io.*;
 
+import gov.anl.ipns.Util.File.*;
 /**
  * This class is an Attribute whose value records information about all
  * detector segments contributing to a spectrum in a PixelInfoList object.
@@ -98,6 +104,12 @@ public class PixelInfoListAttribute extends Attribute
     this.value = value;
   }
 
+  public PixelInfoListAttribute(){
+     super("NoName");
+     value = null;	
+  	
+  }
+ 
   /**
    * Returns reference to the PixelInfoList kept by this attribute,
    * as a generic object. 
@@ -238,7 +250,139 @@ public class PixelInfoListAttribute extends Attribute
     System.out.println("PixelInfoList value is:");
     System.out.println(attr); 
   }
+  transient private Hashtable gridIDs = null;
+
+  /**
+    * This method gets a Hashtable of gridIDs that have already been used by the
+    * current data set( for reuse).
+    * @param gridIDs1  A hashtable whose key is The grid Id and whose value is 
+    *                  the actual grid
+    */
+  public void setGridIds( Hashtable gridIDs1)
+  {
+ 	
+    gridIDs = gridIDs1;
+ 	
+  }
+
+  /**
+    *  This method reads information from the Input Stream and assigns the
+    *  information to the appropriate fields of this PixelInfoListAttribute
+    *  This method assumes that the leading tag has already been consumed.
+    */
+  public boolean XMLread(java.io.InputStream stream)
+  {
+
+    Vector Ipixels= new Vector();
+    try
+    {   
+      String Tag= xml_utils.getTag( stream);
+        
+      boolean done= Tag==null;
+      if(Tag == null)
+        { return xml_utils.setError( xml_utils.getErrorMessage() );
+            
+        }
+      if(!Tag.equals("name") )
+          return false; 
+      name = xml_utils.getValue( stream);
+      if(name==null)
+        return false; 
+
+      Tag= xml_utils.getTag( stream);
+      if( Tag != null)
+        done= Tag.equals("/PixelInfoListAttribute");
+         
+      while( !done)
+      { 
+        try
+        {
+          Class AT = Class.forName( "DataSetTools.dataset."+Tag);
+          DetectorPixelInfo A = (DetectorPixelInfo)(AT.newInstance());
+          boolean OK;
+          if( !( A instanceof IXmlIO))
+             return xml_utils.setError("ximproper read for "+Tag+","+
+                   A.getClass());
+          A.setGridIDs(gridIDs); 
+          OK= ((IXmlIO)A).XMLread( stream );
+          if(!OK)
+            { return xml_utils.setError("ximproper read for "+Tag+","+
+                   A.getClass());
+            }
+          Ipixels.addElement( A);
+               
+        }
+        catch( Exception s)
+        { return xml_utils.setError("No class DataSetTools.dataset."+Tag 
+                   +" err="+s.getClass()+s.getMessage());
+                
+          //xml_utils.skipBlock(stream);
+        }
+            
+        Tag= xml_utils.getTag( stream);
+        done= Tag==null;
+        if(Tag == null)
+        { return xml_utils.setError(xml_utils.getErrorMessage());
+              
+        }
+            
+        if( Tag != null)
+          done= Tag.equals("/PixelInfoListAttribute");
+      }//While !done
+         
+      if(!xml_utils.skipAttributes( stream))
+        return xml_utils.setError( xml_utils.getErrorMessage()); 
+      IPixelInfo[] pixels = new IPixelInfo[ Ipixels.size()];
+      for( int k = 0; k< pixels.length;k++)
+         pixels[k] = (IPixelInfo)(Ipixels.elementAt(k));
+      value = new PixelInfoList( pixels);
+      return true;//(Attribute)(new PixelInfoListAttribute( name, value));
+    }
+    catch(Exception s)
+    { DataSetTools.util.SharedData.addmsg("Exception="+s.getMessage());
+       
+      return false;
+    }
+    
+
+  }
 
 
+  /**
+    *  This method writes the information in this PixelInfoListAttribute to the
+    *  OutputStream in an xml format
+    */
+  public boolean XMLwrite(java.io.OutputStream stream,int mode)
+  {
+    if (value == null)
+      return true;
+    try
+    {
+      stream.write(("<PixelInfoListAttribute size= \""+value.num_pixels()+
+                    "\">\n").getBytes());
+      stream.write(("<name>"+name+"</name>\n").getBytes());
+      for(int i=0 ;i<value.num_pixels(); i++)
+      { 
+        IPixelInfo A =value.pixel(i);
+        if( !(A instanceof IXmlIO))
+          return false; 
+        if(!((IXmlIO)A).XMLwrite(stream,mode))
+          return false;
+              
+        stream.write("\n".getBytes());
+      }
+      stream.write("</PixelInfoListAttribute>\n".getBytes());
+      
+    }
+    catch(Exception s)
+    { 
+      return xml_utils.setError("Exception="+s.getClass()+","+
+                   s.getMessage());
+    }
+     
+    return true;
+
+
+}
 
 }
