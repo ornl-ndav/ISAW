@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2002/09/10 22:39:54  dennis
+ *  Now adds operator SetDataLabel to all DataSets.
+ *
  *  Revision 1.28  2002/08/22 15:11:17  pfpeterson
  *  Moved LoadGsasCalib and LoadOffsets to only Diffractometers.
  *  Added LoadOrientation to SCD.
@@ -338,6 +341,7 @@ public class DataSetFactory implements Serializable
     ds.addOperator( new TofToChannel() );     // convert to channel for any
                                                   // DataSet
 //    ds.addOperator( new IntervalSelectionOp() );
+    ds.addOperator( new SetDataLabel() );
     ds.addOperator( new GetDataAttribute() );
     ds.addOperator( new SetDataAttribute() );
     ds.addOperator( new GetDSAttribute() );
