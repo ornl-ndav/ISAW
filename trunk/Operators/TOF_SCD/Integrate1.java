@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2004/08/19 19:16:54  rmikk
+ * All logging information is logged to the Global logging file in
+ *   gov.anl.ipns.Util.Sys.SharedMessages
+ *
  * Revision 1.4  2004/08/03 00:07:58  rmikk
  * Replaced INTGT by TOFINT
  *
@@ -375,7 +379,7 @@ public class Integrate1 extends GenericTOF_SCD{
     }else{
       return new ErrorString("Value of first parameter must be a dataset");
     }
-
+    String logfile = null;
     // then the integrate file
     val=getParameter(1).getValue();
     if(val!=null){
@@ -383,11 +387,14 @@ public class Integrate1 extends GenericTOF_SCD{
       if(integfile.length()<=0)
         return new ErrorString("Integrate filename is null");
       integfile=FilenameUtil.setForwardSlash(integfile);
+      logfile=integfile;
+      
+      
     }else{
-      return new ErrorString("Integrate filename is null");
+      //return new ErrorString("Integrate filename is null");
     }
 
-
+    
     // then get the matrix file
     val=getParameter(2).getValue();
     if(val!=null){
@@ -423,7 +430,7 @@ public class Integrate1 extends GenericTOF_SCD{
 
     // then whether to append
     boolean append=((BooleanPG)getParameter(7)).getbooleanValue();
-     
+      
      PeakAlg =getParameter(8).getValue().toString();
 	
      if( PeakAlg.equals(Integrate1.OLD_INTEGRATE))
@@ -595,11 +602,8 @@ public class Integrate1 extends GenericTOF_SCD{
 
   
     // write out the logfile integrate.log
-    String logfile=integfile;
-    {
-      int index=logfile.lastIndexOf("/");
-      logfile=logfile.substring(0,index)+"/integrate.log";
-    }
+    
+   
     String errmsg=this.writeLog(logfile,append);
     if(errmsg!=null)
       SharedData.addmsg(errmsg);
@@ -811,7 +815,7 @@ public class Integrate1 extends GenericTOF_SCD{
     if( logBuffer==null || logBuffer.length()<=0 )
       return "No information in log buffer";
 
-    FileOutputStream fout=null;
+    /*FileOutputStream fout=null;
 
     try{
       fout=new FileOutputStream(logfile,append);
@@ -828,7 +832,8 @@ public class Integrate1 extends GenericTOF_SCD{
         }
       }
     }
-  
+   */
+    gov.anl.ipns.Util.Sys.SharedMessages.LOGaddmsg(logBuffer.toString());
     return null;
   }
   /**
