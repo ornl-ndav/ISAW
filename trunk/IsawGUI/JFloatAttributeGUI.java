@@ -9,7 +9,6 @@ package IsawGUI;
 
 import javax.swing.*;
 import javax.swing.border.*;
-import DataSetTools.*;
 import DataSetTools.dataset.*;
 import java.awt.*;
 import java.util.zip.*;
