@@ -3,6 +3,10 @@
  *
  *
  *  $Log$
+ *  Revision 1.5  2000/08/03 21:50:32  dennis
+ *  Added methods to get the path and file name separately from the fully
+ *  qualified file name.
+ *
  *  Revision 1.4  2000/07/13 14:28:28  dennis
  *  Changed formIPNSFileName() method to NOT include the path
  *
@@ -20,6 +24,7 @@
 package DataSetTools.instruments;
 
 import java.io.*;
+import DataSetTools.util.*;
 
 /**
  *  This class defines constants for various instrument types and provides
@@ -41,27 +46,28 @@ public class InstrumentType implements Serializable
   public static final int  TOF_IDG_SPECTROMETER = 6;    // indirect geometry
   
 
+
+
   /**
    *  Strip the path from a fully qualified file name and return the base
-   *  file name.  
+   *  file name, without the extension.  
    *
    *  @param   file_name   The initial file name complete with the path.
    *                       The characters "/" or "\\" must be used to
    *                       describe the path.
    *
-   *  @return              The basic file name without the path.
+   *  @return              The basic file name without the path or extension.
    */
 
   public static String getBaseFileName( String file_name )
   {
     int    last_slash,
            dot;
-    String temp = file_name.trim();
-                                          // Strip the path from the file name
-    last_slash = temp.lastIndexOf( "/" );
-    if ( last_slash == -1 )
-      last_slash = temp.lastIndexOf( "\\" );
 
+    String temp = file_name.trim();
+    file_name   = StringUtil.fixSeparator( file_name );
+                                          // Strip the path from the file name
+    last_slash = temp.lastIndexOf( File.separator );
     temp = temp.substring( last_slash + 1, temp.length() );
 
                                           // Strip the "run" from the file name
@@ -73,6 +79,61 @@ public class InstrumentType implements Serializable
     
     return temp;
   }
+
+
+  /**
+   *  Strip the path from a fully qualified file name and return the base
+   *  file name, with the extension.
+   *
+   *  @param   file_name   The initial file name complete with the path.
+   *                       The characters "/" or "\\" must be used to
+   *                       describe the path.
+   *
+   *  @return              The basic file name without the path but
+   *                       with the extension.
+   */
+
+  public static String getFileName( String file_name )
+  {
+    int    last_slash,
+           dot;
+
+    String temp = file_name.trim();
+    file_name   = StringUtil.fixSeparator( file_name );
+                                          // Strip the path from the file name
+    last_slash = temp.lastIndexOf( File.separator );
+    temp = temp.substring( last_slash + 1, temp.length() );
+                              
+    return temp;
+  }
+
+
+  /**
+   *  Get the path from a fully qualified file name and return the path 
+   *  without the file name.
+   *
+   *  @param   file_name   The initial file name complete with the path.
+   *                       The characters "/" or "\\" must be used to
+   *                       describe the path.
+   *
+   *  @return              the path without the file name.
+   */
+
+  public static String getPath( String file_name )
+  {
+    int    last_slash,
+           dot;
+
+    String temp = file_name.trim();
+    file_name   = StringUtil.fixSeparator( file_name );
+                                          // Strip the path from the file name
+    last_slash = temp.lastIndexOf( File.separator );
+    temp = temp.substring( 0, last_slash+1 );
+
+    return temp;
+  }
+
+
 
 
   /**
@@ -160,9 +221,6 @@ public class InstrumentType implements Serializable
   */
  public static int getIPNSInstType( String  inst_name)
   {
-    //String inst_name;
-    
-    //inst_name = getIPNSInstrumentName( file_name );
     if ( inst_name.equalsIgnoreCase( "GPPD" )  ||
          inst_name.equalsIgnoreCase( "SEPD" )  ||
          inst_name.equalsIgnoreCase( "GLAD")    ) 
@@ -229,10 +287,13 @@ public class InstrumentType implements Serializable
     System.out.println("Test program for class InstrumentType" );
 
     System.out.println( getBaseFileName( "A:/junk/test/hrcs12345.run" ) );
+    System.out.println( getPath( "A:/junk/test/hrcs12345.run" ) );
+    System.out.println( getFileName( "A:/junk/test/hrcs12345.run" ) );
     System.out.println( getBaseFileName( "A:\\junk\\test\\hrcs12345.run" ));
     
     System.out.println( getIPNSInstrumentName("A:/junk/test/hrcs12345.run" ) );
     System.out.println( getIPNSInstrumentName("A:\\junk\\test\\hrcs12345.run"));
+
 
     System.out.println( "Type of GPPD = " + 
                         getIPNSInstrumentType("A:/junk/test/gppd12345.run"));
