@@ -513,9 +513,11 @@ public class ControlPanel
     public void actionPerformed( ActionEvent e ) 
     {
       removeFromGraphList( graph_selections );
-      if(  graphDLM.size() > 0  )
-        removeJB.setEnabled( true );
-      else
+      //graph_selections = new int[0];
+
+      //if(  graphDLM.size() > 0  )
+      //  removeJB.setEnabled( true );
+      //else
         removeJB.setEnabled( false );
     }
   }
@@ -614,8 +616,9 @@ public class ControlPanel
       //this value is bewteen 0 and 1 (as of 175-2000)
       percent_offset = (float)source.getValue() / 100;
       manager.setPercentOffset( percent_offset );
+
+      System.out.println( "redrawing..." );
       manager.redraw();
-      //manager.redraw(  getSelectedKeyList()  );
     }
   }
 
@@ -644,6 +647,7 @@ public class ControlPanel
 
       {
         System.out.println( "SliderListener::getValueIsAdjusting()" );
+        manager.redraw();
       }
     }
   }    
@@ -841,7 +845,10 @@ public class ControlPanel
     {
       int count = e.getClickCount();
       if( count == 2 )
+      {
         removeFromGraphList( graph_selections );
+        //graph_selections
+      }
     }
   }
 
@@ -912,6 +919,9 @@ public class ControlPanel
    */
   public void addToGraphList( String[] selections )
   {
+    //make sure we have to do anything
+    if( selections.length == 0 )
+      return;
 
     //adds selected spectra to the list in the 'Graph' tab
     addToPropertyList( selections );
@@ -927,6 +937,11 @@ public class ControlPanel
           d = data[j];
           break;
         }
+
+      //check to make sure there was a match
+      if( d == null )
+        System.out.println( 
+          "Error: ControlPanel.addToGraphList: failed to match selection" );
         
 
       //add to list of specta to be graphed (if it's not already there)
@@ -950,6 +965,9 @@ public class ControlPanel
    */
   protected void removeFromGraphList( String[] selections )
   {
+    //make sure we have to do anything
+    if( selections.length == 0  || selections == null )
+      return;
 
     //removes selected spectra from the list in the 'Graph' tab
     removeFromPropertyList( selections );
@@ -957,6 +975,10 @@ public class ControlPanel
     for( int i=0;  i<selections.length;  i++ )
     {
       String id = selections[i];
+
+      if( manager == null ) System.out.println( "null manager" );
+      if( id == null ) System.out.println( "null id" );
+
       manager.remove( id ).setSelected( false );
       graphDLM.removeElement( id );
 
@@ -974,6 +996,10 @@ public class ControlPanel
    */
   public void addToPropertyList( String[] selections )
   {
+    //make sure we have to do anything
+    if( selections.length == 0 )
+      return;
+
     for( int i=0;  i<selections.length;  i++ )
       if(  propertyDLM == null  )
         return;
