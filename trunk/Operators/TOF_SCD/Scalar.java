@@ -309,12 +309,8 @@ public class Scalar extends    GenericTOF_SCD {
    * Get a copy of the current SpectrometerEvaluator Operator.  The
    * list of parameters is also copied.
    */
-  
   public Object clone(){
-    System.out.println("########## CLONING Scalar");
-    Scalar new_op = 
-      new Scalar( );
-    
+    Scalar new_op = new Scalar();
     new_op.CopyParametersFrom( this );
     
     return new_op;
