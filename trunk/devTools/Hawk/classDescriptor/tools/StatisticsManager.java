@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 19:04:37  bouzekc
+ * Documented file using javadoc statements.
+ * Added methods to greatly increase the functionality of this class.  Now the
+ * class can find more information about a project.
+ *
  * Revision 1.1  2004/02/07 05:10:48  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -41,135 +46,364 @@
 package devTools.Hawk.classDescriptor.tools;
 
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
+import devTools.Hawk.classDescriptor.modeledObjects.InterfaceDefn;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class is used to obtain statistical information about a project such as the number 
+ * of interfaces, number of classes, number of inner classes, number of outer classes, etc.
+ * @author Dominic Kramer
  */
 public class StatisticsManager
 {
+	/** The project that this manager is analyzing. */
 	private Project project;
 	
+	/**
+	 * Create a new StatisticsManager.
+	 * @param pro The project to analyze.
+	 */
 	public StatisticsManager(Project pro)
 	{
 		project = pro;
 	}
 	
+	//--------------------Methods to obtain class data---------------------------------------
+		//----------------Abstract---------------------------------------------------------------------
+		/**
+		 * Get the number of Interface objects that are abstract, inner, and 
+		 * are classes.
+		 */
+		public int getNumberOfAbstractInnerClasses()
+		{
+			int answer = 0;
+			InterfaceDefn intf = null;
+				
+			for (int i=0; i<project.getInterfaceVec().size(); i++)
+			{
+				intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+				if ((intf != null) && intf.isAbstract() && intf.isClass() && intf.isInner())
+					answer++;
+			}
+				
+			return answer;
+		}
+		
+		/**
+		 * Get the number of Interface objects that are abstract, outer, and 
+		 * are classes.
+		 */
+		public int getNumberOfAbstractOuterClasses()
+		{
+			int answer = 0;
+			InterfaceDefn intf = null;
+				
+			for (int i=0; i<project.getInterfaceVec().size(); i++)
+			{
+				intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+				if ((intf != null) && intf.isAbstract() && intf.isClass() && intf.isOuter())
+					answer++;
+			}
+				
+			return answer;
+		}
+		
+		//----------------Concrete---------------------------------------------------------------------		
+		/**
+		 * Get the number of Interface objects that are concrete, inner, and 
+		 * are classes.
+		 */
+		public int getNumberOfConcreteInnerClasses()
+		{
+			int answer = 0;
+			InterfaceDefn intf = null;
+				
+			for (int i=0; i<project.getInterfaceVec().size(); i++)
+			{
+				intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+				if ((intf != null) && intf.isConcrete() && intf.isClass() && intf.isInner())
+					answer++;
+			}
+				
+			return answer;
+		}
+
+		/**
+		 * Get the number of Interface objects that are concrete, outer, and 
+		 * are classes.
+		 */
+		public int getNumberOfConcreteOuterClasses()
+		{
+			int answer = 0;
+			InterfaceDefn intf = null;
+				
+			for (int i=0; i<project.getInterfaceVec().size(); i++)
+			{
+				intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+				if ((intf != null) && intf.isConcrete() && intf.isClass() && intf.isOuter())
+					answer++;
+			}
+				
+			return answer;
+		}
+	
+	//--------------------Methods to obtain interface data----------------------------------
+		//----------------Abstract---------------------------------------------------------------------
+		/**
+		* Get the number of Interface objects that are abstract, inner, and 
+		* are interfaces.
+		*/
+		public int getNumberOfAbstractInnerInterfaces()
+		{
+			int answer = 0;
+			InterfaceDefn intf = null;
+				
+			for (int i=0; i<project.getInterfaceVec().size(); i++)
+			{
+				intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+				if ((intf != null) && intf.isAbstract() && intf.isInterface() && intf.isInner())
+					answer++;
+			}
+				
+			return answer;
+		}
+		
+		/**
+		* Get the number of Interface objects that are abstract, outer, and 
+		* are interfaces.
+		*/
+		public int getNumberOfAbstractOuterInterfaces()
+		{
+			int answer = 0;
+			InterfaceDefn intf = null;
+				
+			for (int i=0; i<project.getInterfaceVec().size(); i++)
+			{
+				intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+				if ((intf != null) && intf.isAbstract() && intf.isInterface() && intf.isOuter())
+					answer++;
+			}
+				
+			return answer;
+		}
+			
+		//----------------Concrete---------------------------------------------------------------------		
+		/**
+		* Get the number of Interface objects that are concrete, inner, and 
+		* are interfaces.
+		*/
+		public int getNumberOfConcreteInnerInterfaces()
+		{
+			int answer = 0;
+			InterfaceDefn intf = null;
+				
+			for (int i=0; i<project.getInterfaceVec().size(); i++)
+			{
+				intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+				if ((intf != null) && intf.isConcrete() && intf.isInterface() && intf.isInner())
+					answer++;
+			}
+				
+			return answer;
+		}
+		/**
+		* Get the number of Interface objects that are concrete, outer, and 
+		* are interfaces.
+		*/
+		public int getNumberOfConcreteOuterInterfaces()
+		{
+			int answer = 0;
+			InterfaceDefn intf = null;
+				
+			for (int i=0; i<project.getInterfaceVec().size(); i++)
+			{
+				intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+				if ((intf != null) && intf.isConcrete() && intf.isInterface() && intf.isOuter())
+					answer++;
+			}
+				
+			return answer;
+		}
+	
+	//----------------------Get totals------------------------------------------------------------------
+		//------------------For classes---------------------------------------------------------------
+			/**
+			* Get the number of Interface objects that are abstract and represent classes.
+			*/
+			public int getTotalNumberOfAbstractClasses()
+			{
+				return (getNumberOfAbstractInnerClasses()+getNumberOfAbstractOuterClasses());
+			}
+			/**
+			* Get the number of Interface objects that are concrete and represent classes.
+			*/			
+			public int getTotalNumberOfConcreteClasses()
+			{
+				return (getNumberOfConcreteInnerClasses()+getNumberOfConcreteOuterClasses());
+			}
+			
+			/**
+			* Get the number of Interface objects that are inner and represent classes.
+			*/
+			public int getTotalNumberOfInnerClasses()
+			{
+				return (getNumberOfAbstractInnerClasses()+getNumberOfConcreteInnerClasses());
+			}
+			
+			/**
+			* Get the number of Interface objects that are outer and represent classes.
+			*/
+			public int getTotalNumberOfOuterClasses()
+			{
+				return (getNumberOfAbstractOuterClasses()+getNumberOfConcreteOuterClasses());
+			}
+			
+			/**
+			* Get the number of Interface objects that represent classes.
+			*/
+			public int getTotalNumberOfClasses()
+			{
+				int answer = 0;
+				InterfaceDefn intf = null;
+				
+				for (int i=0; i<project.getInterfaceVec().size(); i++)
+				{
+					intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+					if ((intf != null) && intf.isClass())
+						answer++;
+				}
+				
+				return answer;
+			}
+		//------------------For interfaces---------------------------------------------------------------
+			/**
+			* Get the number of Interface objects that are abstract and represent interfaces.
+			*/
+			public int getTotalNumberOfAbstractInterfaces()
+			{
+				return (getNumberOfAbstractInnerInterfaces()+getNumberOfAbstractOuterInterfaces());
+			}
+
+			/**
+			* Get the number of Interface objects that are concrete and represent interfaces.
+			*/
+			public int getTotalNumberOfConcreteInterfaces()
+			{
+				return (getNumberOfConcreteInnerInterfaces()+getNumberOfConcreteOuterInterfaces());
+			}
+
+			/**
+			* Get the number of Interface objects that are inner and represent interfaces.
+			*/
+			public int getTotalNumberOfInnerInterfaces()
+			{
+				return (getNumberOfAbstractInnerInterfaces()+getNumberOfConcreteInnerInterfaces());
+			}
+			
+			/**
+			* Get the number of Interface objects that are outer and represent interfaces.
+			*/
+			public int getTotalNumberOfOuterInterfaces()
+			{
+				return (getNumberOfAbstractOuterInterfaces()+getNumberOfConcreteOuterInterfaces());
+			}
+
+			/**
+			* Get the number of Interface objects that represent interfaces.
+			*/			
+			public int getTotalNumberOfInterfaces()
+			{
+				int answer = 0;
+				InterfaceDefn intf = null;
+			
+				for (int i=0; i<project.getInterfaceVec().size(); i++)
+				{
+					intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+					if ((intf != null) && intf.isInterface())
+						answer++;
+				}
+			
+				return answer;
+			}
+	
+	//------------Get Grand Totals------------------------------------------------------------
+	/**
+	* Get the number of Interface objects that are outer.
+	*/
+	public int getTotalNumberOfOuterClassesAndInterfaces()
+	{
+		int answer = 0;
+		InterfaceDefn intf = null;
+			
+		for (int i=0; i<project.getInterfaceVec().size(); i++)
+		{
+			intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+			if ((intf != null) && intf.isOuter())
+				answer++;
+		}
+		
+		return answer;
+	}
+	
+	/**
+	* Get the number of Interface objects that are inner.
+	*/
+	public int getTotalNumberOfInnerClassesAndInterfaces()
+	{
+		int answer = 0;
+		InterfaceDefn intf = null;
+			
+		for (int i=0; i<project.getInterfaceVec().size(); i++)
+		{
+			intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+			if ((intf != null) && intf.isInner())
+				answer++;
+		}
+		
+		return answer;
+	}
+	
+	/**
+	* Get the number of Interface objects that are abstract.
+	*/
+	public int getTotalNumberOfAbstractClassesAndInterfaces()
+	{
+		int answer = 0;
+		InterfaceDefn intf = null;
+			
+		for (int i=0; i<project.getInterfaceVec().size(); i++)
+		{
+			intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+			if ((intf != null) && intf.isAbstract())
+				answer++;
+		}
+		
+		return answer;
+	}
+	
+	/**
+	* Get the number of Interface objects that are concrete.
+	*/
+	public int getTotalNumberOfConcreteClassesAndInterfaces()
+	{
+		int answer = 0;
+		InterfaceDefn intf = null;
+			
+		for (int i=0; i<project.getInterfaceVec().size(); i++)
+		{
+			intf = ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn();
+			if ((intf != null) && intf.isConcrete())
+				answer++;
+		}
+		
+		return answer;
+	}
+	
+	/**
+	* Get the number of Interface objects.
+	*/
 	public int getTotalNumberOfClassesAndInterfaces()
 	{
-		return project.getInterfaceVec().size();
-	}
-	
-	public int getNumberOfInterfaces()
-	{
-		int answer = 0;
-		
-		for (int i=0; i<project.getInterfaceVec().size(); i++)
-			if ( ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isInterface())
-				answer++;
-		
-		return answer;
-	}
-
-	public int getNumberOfClasses()
-	{
-		int answer = 0;
-		
-		for (int i=0; i<project.getInterfaceVec().size(); i++)
-			if ( ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isClass())
-				answer++;
-		
-		return answer;
-	}
-
-	public int getNumberOfConcreteNonInnerClasses()
-	{
-		int answer = 0;
-		
-		for (int i=0; i<project.getInterfaceVec().size(); i++)
-			if ( ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isClass() && !(((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isAbstract()) && !(((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isInnerClass()))
-				answer++;
-		
-		return answer;
-	}
-
-	public int getNumberOfConcreteInnerClasses()
-	{
-		int answer = 0;
-		
-		for (int i=0; i<project.getInterfaceVec().size(); i++)
-			if ( ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isClass() && !(((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isAbstract()) && (((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isInnerClass()))
-				answer++;
-		
-		return answer;
-	}
-
-	public int getTotalNumberOfConcreteClasses()
-	{
-		int answer = 0;
-		
-		for (int i=0; i<project.getInterfaceVec().size(); i++)
-			if ( ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isClass() && !(((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isAbstract()) )
-				answer++;
-		
-		return answer;
-	}
-	
-	public int getTotalNumberOfAbstractClasses()
-	{
-		int answer = 0;
-		
-		for (int i=0; i<project.getInterfaceVec().size(); i++)
-			if ( ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isClass() && ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isAbstract())
-				answer++;
-		
-		return answer;
-	}
-
-	public int getNumberOfAbstractInnerClasses()
-	{
-		int answer = 0;
-		
-		for (int i=0; i<project.getInterfaceVec().size(); i++)
-			if ( ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isClass() && ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isAbstract() && ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isClass() && ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isInnerClass())
-				answer++;
-		
-		return answer;
-	}
-
-	public int getNumberOfAbstractNonInnerClasses()
-	{
-		int answer = 0;
-		
-		for (int i=0; i<project.getInterfaceVec().size(); i++)
-			if ( ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isClass() && ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isAbstract() && ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isClass() && !((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isInnerClass())
-				answer++;
-		
-		return answer;
-	}
-
-	public int getTotalNumberOfInnerClass()
-	{
-		int answer = 0;
-		
-		for (int i=0; i<project.getInterfaceVec().size(); i++)
-			if ( ((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isInnerClass() && !((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isInterface())
-				answer++;
-		
-		return answer;
-	}
-
-	public int getTotalNumberOfNonInnerClass()
-	{
-		int answer = 0;
-		
-		for (int i=0; i<project.getInterfaceVec().size(); i++)
-			if ( !((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isInnerClass() && !((Interface)(project.getInterfaceVec().elementAt(i))).getPgmDefn().isInterface())
-				answer++;
-		
-		return answer;
+			return project.getInterfaceVec().size();
 	}
 }
