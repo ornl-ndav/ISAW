@@ -10,6 +10,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.9  2000/08/03 15:48:40  dennis
+ *  Added ConvertHistogramToFunction() method
+ *
  *  Revision 1.8  2000/08/02 01:34:22  dennis
  *  Added ResampleUniformly() to generalize ReBin().  ReBin only applies to
  *  histograms, ResampleUniformly applies to both histgrams and tabulated
@@ -524,6 +527,46 @@ public float getY_value( float x_value )
 
     return temp;
   }
+
+
+  /**
+   *  Convert the Data to tablulated function Data if it is currently 
+   *  histogram Data.
+   *
+   *  @param  divide    Flag that indicates whether the histogram values
+   *                    should be divided by the width of the histogram bin.
+   */
+  public void ConvertToFunction( boolean divide )
+  {
+    if ( x_scale.getNum_x() == y_values.length )   // function already
+      return;
+
+    if (  x_scale.getNum_x() == y_values.length+1 )  // histogram
+    {  
+      float temp_x[] = null;
+      if ( divide )                   // divide y values by the bin width
+      {
+        temp_x = x_scale.getXs();
+        for ( int i = 0; i < y_values.length; i++ )
+          y_values[i] = y_values[i] / (temp_x[i+1] - temp_x[i]);
+      }
+                                     //  use bin centers for the x values
+      if ( x_scale instanceof UniformXScale )
+        x_scale = new UniformXScale( x_scale.getStart_x(),
+                                     x_scale.getEnd_x(),
+                                     x_scale.getNum_x()  ); 
+      else
+      {
+        if ( temp_x == null )  // not assigned yet
+          temp_x = x_scale.getXs();
+        float new_x[] = new float[ y_values.length ];
+        for ( int i = 0; i < y_values.length; i++ )
+          new_x[i] = (temp_x[i] + temp_x[i+1]) / 2;
+        x_scale = new VariableXScale( new_x );
+      }
+    }
+  }
+
 
 
   /**
