@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/01/24 22:00:05  bouzekc
+ *  Now inherits from StringField.
+ *
  *  Revision 1.7  2004/01/22 01:35:12  bouzekc
  *  Removed and/or commented out unused variables.
  *
@@ -55,197 +58,145 @@
  *
  *
  */
- 
 package DataSetTools.components.ParametersGUI;
 
-import javax.swing.*; 
-import javax.swing.text.*; 
-import java.awt.Toolkit;
-import java.beans.*;
-import DataSetTools.parameter.*;
-
 /**
- * This class is intended to be used as a replacement for JTextField
- * when a float value is to be entered. The major difference is an
- * overridden insertString method which beeps when something that
- * isn't found in a float is entered.
+ * This class is intended to be used as a replacement for JTextField when a
+ * float value is to be entered. The major difference is an overridden
+ * insertString method which beeps when something that isn't found in a float
+ * is entered.
  */
-public class FloatField extends JTextField {
-    private transient Toolkit toolkit;
-    private PropertyChangeSupport propBind=new PropertyChangeSupport(this);
+public class FloatField extends StringField {
+  //~ Static fields/initializers ***********************************************
 
-    private static Character MINUS =new Character((new String("-")).charAt(0));
-    //private static Character PLUS  =new Character((new String("+")).charAt(0));
-    private static Character DEC   =new Character((new String(".")).charAt(0));
-    private static Character E     =new Character((new String("E")).charAt(0));
+  private static Character MINUS = new Character( 
+      ( new String( "-" ) ).charAt( 0 ) );
 
-    /**
-     * Constructs a FloatField with the appropriate number of columns
-     * and the default value of zero.
-     */
-    public FloatField(int columns){
-        this(0f,columns);
-    }
+  //private static Character PLUS  =new Character((new String("+")).charAt(0));
+  private static Character DEC = new Character( 
+      ( new String( "." ) ).charAt( 0 ) );
+  private static Character E   = new Character( 
+      ( new String( "E" ) ).charAt( 0 ) );
 
-    /**
-     * Constructs a FloatField with a specified default value and
-     * number of columns.
-     */
-    public FloatField(float value, int columns) {
-        super((new Float(value)).toString(),columns);
-        toolkit = Toolkit.getDefaultToolkit();
-    }
+  //~ Constructors *************************************************************
 
-    /**
-     * A hook to override the insertString method.
-     */
-    protected Document createDefaultModel() {
-        return new FloatDocument(this);
-    }
+  /**
+   * Constructs a FloatField with the appropriate number of columns and the
+   * default value of zero.
+   */
+  public FloatField( int columns ) {
+    this( 0f, columns );
+  }
 
-    public void addPropertyChangeListener(String prop,
-                                          PropertyChangeListener pcl){
-        super.addPropertyChangeListener(prop,pcl);
-        if(propBind!=null) propBind.addPropertyChangeListener(prop,pcl);
-    }
-    public void addPropertyChangeListener(PropertyChangeListener pcl){
-        super.addPropertyChangeListener(pcl);
-        if(propBind!=null) propBind.addPropertyChangeListener(pcl);
-    }
-    public void removePropertyChangeListener(PropertyChangeListener pcl){
-        super.removePropertyChangeListener(pcl);
-        if(propBind!=null) propBind.removePropertyChangeListener(pcl);
-    }
+  /**
+   * Constructs a FloatField with a specified default value and number of
+   * columns.
+   */
+  public FloatField( float value, int columns ) {
+    super( ( new Float( value ) ).toString(  ), columns );
+  }
 
-    /**
-     * Internal method to confirm that the text can be added.
-     */
-    private boolean isOkay(int offs, String inString, String curString){
-        char[] source = inString.toCharArray();
-        for( int i=0 ; i < source.length ; i++ ){
-            if(Character.isDigit(source[i])){
-                // do nothing
-            }else if(DEC.compareTo(new Character(source[i]))==0){
-                if(curString.indexOf(DEC.toString())>=0){
-                    return false;
-                }else{
-                    int index=curString.indexOf(E.toString());
-                    if(index>=0){
-                        if(offs+i>index){
-                            return false;
-                        }else{
-                            // do nothing
-                        }
-                    }else{
-                        // do nothing
-                    }
-                }
-                /* }else if(PLUS.compareTo(new Character(source[i]))==0){
-                   int pi=curString.indexOf(PLUS.toString());
-                   int ei=curString.indexOf(E.toString());
-                   if(pi>=0){
-                   return false;
-                   }else{
-                   if(ei>=0){
-                   if(offs+i==ei+1){
-                   // do nothing
-                   }else{
-                   return false;
-                   }
-                   }else{
-                   return false;
-                   }
-                   }*/
-            }else if(MINUS.compareTo(new Character(source[i]))==0){
-                int mi=curString.indexOf(MINUS.toString());
-                int ei=curString.indexOf(E.toString());
-                if(ei>=0){ // allow two minuses
-                    if(offs+i==0){
-                        if(offs+i==mi){
-                            return false;
-                        }else{
-                            // do nothing
-                        }
-                    }else if(offs+i==ei+1){
-                        if(mi==0){
-                            mi=curString.indexOf(MINUS.toString(),mi+1);
-                        }
-                        if(offs+i==mi){
-                            return false;
-                        }else{
-                            
-                        }
-                    }else{
-                        return false;
-                    }
-                }else{     // allow only one minus
-                    if(offs+i==0 && mi<0){
-                        // do nothing
-                    }else{
-                        return false;
-                    }
-                }
-                // do nothing
-            }else if(E.compareTo(new Character(source[i]))==0){
-                if(curString.indexOf(E.toString())>=0){
-                    return false;
-                }else if( offs==0 && i==0 ){
-                    return false;
-                }else{
-                    if(offs+i<=curString.indexOf(DEC.toString())){
-                        return false;
-                    }else{
-                        // do nothing
-                    }
-                }
-            }else{
-                return false;
+  //~ Methods ******************************************************************
+
+  /**
+   * Internal method to confirm that the text can be added.  This checks to
+   * see if a number is a valid floating point number.
+   *
+   * @param offset The offset to use for inserting.
+   * @param insertString The String to insert.
+   * @param currentString The String that currently exists in the StringField
+   */
+  protected boolean isOkay( 
+    int offset, String insertString, String currentString ) {
+    insertString = insertString.toUpperCase(  );
+
+    char[] source = insertString.toCharArray(  );
+
+    for( int i = 0; i < source.length; i++ ) {
+      if( Character.isDigit( source[i] ) ) {
+        // do nothing
+      } else if( DEC.compareTo( new Character( source[i] ) ) == 0 ) {
+        if( currentString.indexOf( DEC.toString(  ) ) >= 0 ) {
+          return false;
+        } else {
+          int index = currentString.indexOf( E.toString(  ) );
+
+          if( index >= 0 ) {
+            if( ( offset + i ) > index ) {
+              return false;
+            } else {
+              // do nothing
             }
+          } else {
+            // do nothing
+          }
         }
-        
-        return true;
-    }
+        /* }else if(PLUS.compareTo(new Character(source[i]))==0){
+           int pi=curString.indexOf(PLUS.toString());
+           int ei=curString.indexOf(E.toString());
+           if(pi>=0){
+           return false;
+           }else{
+           if(ei>=0){
+           if(offs+i==ei+1){
+           // do nothing
+           }else{
+           return false;
+           }
+           }else{
+           return false;
+           }
+           }*/
+      } else if( MINUS.compareTo( new Character( source[i] ) ) == 0 ) {
+        int mi = currentString.indexOf( MINUS.toString(  ) );
+        int ei = currentString.indexOf( E.toString(  ) );
 
-    /**
-     * Internal class to do all of the formatting checks.
-     */
-    protected class FloatDocument extends PlainDocument {
-        private FloatField textBox;
-        public FloatDocument(FloatField T){
-            super();
-            textBox=T;
-        }
+        if( ei >= 0 ) {  // allow two minuses
 
-        /**
-         * Overrides the default insertString method. Insert if okay,
-         * beep if not.
-         */
-        public void insertString(int offs, String str, AttributeSet a) 
-            throws BadLocationException {
-
-            String oldText=textBox.getText();
-            str=str.toUpperCase();
-            if(textBox.isOkay(offs,str,textBox.getText())){
-                super.insertString(offs,str,a);
-                if(propBind!=null)
-                    propBind.firePropertyChange(IParameter.VALUE,
-                                                oldText,textBox.getText());
-            }else{
-                toolkit.beep();
+          if( ( offset + i ) == 0 ) {
+            if( ( offset + i ) == mi ) {
+              return false;
+            } else {
+              // do nothing
             }
-        }
-        
-        /** 
-         * Overrides the default remove method.
-         */
-        public void remove(int offs, int len) throws BadLocationException{
-            String oldText=textBox.getText();
-            super.remove(offs,len);
-            //System.out.println("value:"+oldText+"->"+textBox.getText());
-            if(propBind!=null)
-                propBind.firePropertyChange(IParameter.VALUE,
-                                            oldText,textBox.getText());
+          } else if( ( offset + i ) == ( ei + 1 ) ) {
+            if( mi == 0 ) {
+              mi = currentString.indexOf( MINUS.toString(  ), mi + 1 );
+            }
+
+            if( ( offset + i ) == mi ) {
+              return false;
+            } else {}
+          } else {
+            return false;
+          }
+        } else {  // allow only one minus
+
+          if( ( ( offset + i ) == 0 ) && ( mi < 0 ) ) {
+            // do nothing
+          } else {
+            return false;
+          }
         }
 
+        // do nothing
+      } else if( E.compareTo( new Character( source[i] ) ) == 0 ) {
+        if( currentString.indexOf( E.toString(  ) ) >= 0 ) {
+          return false;
+        } else if( ( offset == 0 ) && ( i == 0 ) ) {
+          return false;
+        } else {
+          if( ( offset + i ) <= currentString.indexOf( DEC.toString(  ) ) ) {
+            return false;
+          } else {
+            // do nothing
+          }
+        }
+      } else {
+        return false;
+      }
     }
+
+    return true;
+  }
 }
