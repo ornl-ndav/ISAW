@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2003/09/12 23:49:47  bouzekc
+ *  Changed call from setValid() to validateSelf() in getValue().
+ *
  *  Revision 1.23  2003/09/09 23:06:27  bouzekc
  *  Implemented validateSelf().
  *
@@ -220,7 +223,7 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
         }else{
           this.value=svalue;
         }
-        this.setValid(true);
+        validateSelf(  );
     }
 
     // ********** IParameterGUI requirements **********
