@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.62  2001/11/08 22:27:52  chatterjee
+ *  Added ability to write out PDF (Pair distribution function) format as a part of the GSAS file output.
+ *
  *  Revision 1.61  2001/09/06 22:20:26  dennis
  *  Replaced keyPressed() method with keyReleased() method in the
  *  KeyListener class, so that the information from the newly
@@ -1280,7 +1283,9 @@ public class Isaw
           if( node instanceof DataSetMutableTreeNode )
           {
             DataSet ds = ( (DataSetMutableTreeNode)node ).getUserObject();
-            gsas_filemaker gsas_output = new gsas_filemaker( ds, filename );
+         	DataSet mon_ds = ( (DataSetMutableTreeNode)(node.getParent().getChildAt(0)) ).getUserObject();
+            
+		gsas_filemaker pdf_output = new gsas_filemaker( mon_ds, ds, filename);
           }
         }
       }
