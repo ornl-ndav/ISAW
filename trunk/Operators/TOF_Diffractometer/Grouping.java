@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/02/24 23:32:59  dennis
+ * Un-commented the print USAGE statement.
+ *
  * Revision 1.5  2003/02/24 21:04:29  pfpeterson
  * Changed style of full constructor and setDefaultParameters.
  *
@@ -277,15 +280,15 @@ public class Grouping extends GenericTOF_Diffractometer{
               if ( result instanceof DataSet ){      // we got a DataSet back
                                                 // so show it and original
                   DataSet new_ds = (DataSet)result;
-                  ViewManager vm1 =new ViewManager( ds,     IViewManager.IMAGE );
-                  ViewManager vm2 =new ViewManager( new_ds, IViewManager.IMAGE );
+                  ViewManager vm1 =new ViewManager( ds,    IViewManager.IMAGE );
+                  ViewManager vm2 =new ViewManager( new_ds, IViewManager.IMAGE);
               }else{
                   System.out.println( "Operator returned " + result );
               }
             }
-          /*}else{
+          }else{
               System.out.println("USAGE: Grouping <filename>");
-        }*/
+        }
         System.out.println("Test of Grouping done.");
     }
 }
