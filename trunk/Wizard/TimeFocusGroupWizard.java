@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/07/16 16:28:46  bouzekc
+ * Now uses the base class's wizardLoader().
+ *
  * Revision 1.15  2003/07/03 15:02:08  bouzekc
  * Added html formatting to createAllForms()'s javadocs.
  * Arranged methods according to access privileges.
@@ -125,17 +128,7 @@ public class TimeFocusGroupWizard extends Wizard {
    */
   public static void main( String[] args ) {
     TimeFocusGroupWizard w = new TimeFocusGroupWizard( true );
-
-    //specified a --nogui switch but forgot to give a filename
-    if( args.length == 1 ) {
-      System.out.println( 
-        "USAGE: java Wizard.TimeFocusGroupWizard " +
-        "[--nogui] <Wizard Save File>" );
-    } else if( args.length == 2 ) {
-      w.executeNoGUI( args[1] );
-    } else {
-      w.showForm( 0 );
-    }
+    w.wizardLoader( args );
   }
 
   /**
