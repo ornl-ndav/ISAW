@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2002/11/30 22:21:31  dennis
+ *  Now pauses after sending each 5 spectra, instead of each 10 spectra,
+ *  to give the LiveDataServer a better chance to process the Data when
+ *  running on a single processor.
+ *
  *  Revision 1.14  2002/11/29 23:04:57  dennis
  *  Now forms file name from instrument name and run number using
  *  InstrumentType.formIPNSFileName().  Reduced delay between sending
@@ -134,7 +139,7 @@ public class DASOutputTest
 
   /**
    *   Send the Data blocks from the DataSet as complete histograms, sleeping
-   *   between sending each Data block.
+   *   between sending groups of Data blocks.
    */ 
   public void SendDataBlocks( UDPSend sender, DataSet ds, int counter )
   {
@@ -144,7 +149,7 @@ public class DASOutputTest
       int  id = d.getGroup_ID();
 
       SendSpectrum( sender, id, (counter+1), d.getCopyOfY_values() );
-      if ( i % 10 == 0 )                           // pause every 10th spectrum
+      if ( i % 5 == 0 )                         // pause every fifth spectrum
       {
         try  { Thread.sleep(10); }
         catch(Exception e){ System.out.println("sleep Exception"); } 
