@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/08/05 19:14:51  pfpeterson
+ *  Improved reading method and now updates the effective/bank
+ *  positions in the Data Attributes.
+ *
  *  Revision 1.1  2002/07/10 16:04:22  pfpeterson
  *  Added to CVS.
  *
@@ -42,6 +46,7 @@ package DataSetTools.operator.DataSet.Attribute;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
+import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.retriever.RunfileRetriever;
@@ -136,28 +141,48 @@ public class LoadGsasCalib extends    DS_Attribute {
         try{
             fr = new TextFileReader(iparm);
             String temp;
-            int bankNum;
-            float dif_c,dif_a,t_zero;
+            int bankNum  = 0;
+            float dif_c  = 0f;
+            float dif_a  = 0f;
+            float t_zero = 0f;
+            float l_one  = 0f;
+            float l_two  = 0f;
+            float bragg  = 0f;
+            float tilt   = 0f;;
+            String line;
             while(!fr.eof()){
                 fr.skip_blanks();
-                if(fr.read_line().indexOf("ICONS")>0){
-                    fr.unread(); //found a good line, put it back in the stream
-                    fr.read_String(); //skip the INS tag
-                    temp=fr.read_String(); //read the next tag
-                    if(temp.endsWith("ICONS")){
-                        int index=temp.indexOf("ICONS");
-                        temp=temp.substring(0,index);
-                        bankNum=(new Integer(temp)).intValue();
-                    }else{
-                        fr.unread();
-                        bankNum=fr.read_int();
-                        fr.read_String();
-                    }
+                line=fr.read_line();
+                if(line.indexOf("ICONS")>0){
+                    fr.unread(); // found a good line, put it back in the stream
+                    //fr.read_String(); // skip the INS tag
+                    bankNum=this.readBankNum(fr,"ICONS");
                     dif_c=fr.read_float();
                     dif_a=fr.read_float();
                     t_zero=fr.read_float();
-                    fr.read_line();
+                    fr.read_line(); // gooble the rest of the line
                     this.associate(bankNum,dif_c,dif_a,t_zero);
+                }else if(line.indexOf("BNKPAR")>0){
+                    fr.unread(); // found a good line, put it back in the stream
+                    //fr.read_String(); // skip the INS tag
+                    bankNum=this.readBankNum(fr,"BNKPAR");
+                    l_two=fr.read_float();
+                    bragg=fr.read_float();
+                    fr.read_line(); // gooble the rest of the line
+                    this.assocDetPos(bankNum,l_one,l_two,bragg);
+                }else if(line.indexOf("FPATH1")>0){
+                    fr.unread(); // found a good line, put it back in the stream
+                    fr.read_String(); // skip the INS tag
+                    fr.read_String(); // skip the FPATH1 tag
+                    l_one=fr.read_float(); // get l_1
+                    fr.read_line(); // gooble the rest of the line
+                }else if(line.indexOf("DETAZM")>0){
+                    fr.unread(); // found a good line, put it back in the stream
+                    //fr.read_String(); // skip the INS tag
+                    bankNum=this.readBankNum(fr,"BNKPAR");
+                    tilt=fr.read_float();
+                    fr.read_line(); // gooble the rest of the line
+                    this.assocDetAzm(bankNum,tilt);
                 }
             }
         }catch(IOException e){
@@ -178,13 +203,116 @@ public class LoadGsasCalib extends    DS_Attribute {
     }  
 
     /**
+     * Determines the bank number and goobles the tag it may or may
+     * not be attached to. 
+     */
+    private int readBankNum(TextFileReader fr, String tag){
+        String temp=null;
+        try{
+            fr.read_String(3);
+            int banknum=fr.read_int(3);
+            fr.read_String(6);
+            return banknum;
+            /*temp=fr.read_String();
+              if(temp.endsWith(tag)){
+              int index=temp.indexOf(tag);
+              temp=temp.substring(0,index);
+              return (new Integer(temp)).intValue();
+              }else{
+              fr.unread();
+              int banknum=fr.read_int();
+              fr.read_String();
+              return banknum;
+              }*/
+        }catch(IOException e){
+            System.err.println("IOException: "+e.getMessage());
+            return -1;
+        }
+    }
+
+    /**
      * Method to associate the gsas information with the data block
      * specified.
      */
     private void associate(int bankNum,float dif_c,float dif_a,float t_zero){
-        DataSet ds = getDataSet();
-        Data d=null;
         GsasCalibAttribute calibAttr;
+        Data d=this.getData(bankNum);
+        if(d==null)return;
+
+        // add the attribute to the data block
+        if(DEBUG)System.out.println(bankNum+"A,C,T:"+dif_c+", "+dif_a+", "
+                                    +t_zero);
+        calibAttr=new GsasCalibAttribute(Attribute.GSAS_CALIB,
+                                         new GsasCalib(dif_c,dif_a,t_zero));
+        d.setAttribute(calibAttr);
+    }
+
+    /**
+     * Associate the detector position with the given Data block.
+     *
+     * @param bankNum The bank number.
+     * @param l_one   The source to sample distace.
+     * @param l_two   The sample to detector distace.
+     * @param bragg   The bragg angle of the detector in degrees,
+     *                frequently called two-theta.
+     */
+    private void assocDetPos(int bankNum,float l_one,float l_two,float bragg){
+        Data d  = this.getData(bankNum);
+        if(d==null)return;
+
+        if(DEBUG)System.out.println(bankNum+"L,L,B:"+l_one+", "+l_two
+                                    +", "+bragg);
+        // set the primary flight path
+        FloatAttribute l_one_attr=new FloatAttribute(Attribute.INITIAL_PATH,
+                                                     l_one);
+        d.setAttribute(l_one_attr);
+
+        // set the detector position relative to the sample
+        DetectorPosition det_pos=(DetectorPosition)
+            d.getAttributeValue(Attribute.DETECTOR_POS);
+        if(det_pos!=null){
+            float[] cyl_coords=det_pos.getCylindricalCoords();
+            det_pos.setCylindricalCoords(l_two,(float)(bragg*Math.PI/180f),
+                                         cyl_coords[2]);
+        }else{
+            Position3D pos=new Position3D();
+            pos.setCylindricalCoords(l_two,(float)(bragg*Math.PI/180f),0f);
+            det_pos=new DetectorPosition(pos);
+        }
+        d.setAttribute(new DetPosAttribute(Attribute.DETECTOR_POS,det_pos));
+    }
+    /**
+     * Associate the detector azimuthal angle with the given data block.
+     *
+     * @param tilt    The angle of the detector out of the scattering 
+     *                plane in degrees. 
+     */
+    private void assocDetAzm(int bankNum, float tilt){
+        Data d = this.getData(bankNum);
+        if(d==null)return;
+        
+        if(DEBUG)System.out.println(bankNum+"T:"+tilt);
+        DetectorPosition det_pos=(DetectorPosition)
+            d.getAttributeValue(Attribute.DETECTOR_POS);
+        if(det_pos!=null){
+            float[] sph_coords=det_pos.getSphericalCoords();
+            det_pos.setSphericalCoords(sph_coords[0],
+                                       (float)((90f-tilt)*Math.PI/180f),
+                                       sph_coords[1]);
+        }else{
+            Position3D pos=new Position3D();
+            pos.setSphericalCoords(0f, (float)((90f-tilt)*Math.PI/180f), 0f);
+            det_pos=new DetectorPosition(pos);
+        }
+        d.setAttribute(new DetPosAttribute(Attribute.DETECTOR_POS,det_pos));
+    }
+
+    /**
+     * Get the appropriate Data block according to numbering scheme.
+     */
+    private Data getData(int bankNum){
+        DataSet ds = getDataSet();
+        Data    d  = null;
 
         // get the appropriate data block
         if(DEBUG)System.out.print(bankNum+": ");
@@ -193,16 +321,15 @@ public class LoadGsasCalib extends    DS_Attribute {
         }else{
             d=ds.getData_entry_with_id(bankNum);
         }
-        if(d==null){ // don't bother if can't do anything
-            if(DEBUG)System.out.println("failed");
-            return;
-        }
 
-        // add the attribute to the data block
-        if(DEBUG)System.out.println(dif_c+", "+dif_a+", "+t_zero);
-        calibAttr=new GsasCalibAttribute(Attribute.GSAS_CALIB,
-                                         new GsasCalib(dif_c,dif_a,t_zero));
-        d.setAttribute(calibAttr);
+        // don't bother if can't do anything
+        if(d==null){ 
+            if(DEBUG)System.out.println("failed");
+            return null;
+        }else{
+            return d;
+        }
+        
     }
 
     /* ---------------------------- clone ----------------------------- */
@@ -221,15 +348,13 @@ public class LoadGsasCalib extends    DS_Attribute {
         return new_op;
     }
 
-    public static void main(String args[]){
-        String runfile="/IPNShome/pfpeterson/data/II_VI/SEPD/"
-            +"dec2001/runfiles/sepd18124.run";
-        LoadFileString offfile
-            =new LoadFileString("/IPNShome/pfpeterson/trial.offsets");
-        //System.out.println(runfile);
-        DataSet rds=(new RunfileRetriever(runfile)).getDataSet(1);
-        
-        LoadGsasCalib op=new LoadGsasCalib(rds,offfile,false);
-        op.getResult();
-    }
+    /*public static void main(String args[]){
+      String runfile="/IPNShome/pfpeterson/data/CsC60/SEPD18805.RUN";
+      LoadFileString calfile=new LoadFileString("/IPNShome/pfpeterson/data/CsC60/iparm_oct00_pdf.sepd");
+      //System.out.println(runfile);
+      DataSet rds=(new RunfileRetriever(runfile)).getDataSet(1);
+      System.out.println(rds+" "+calfile);
+      LoadGsasCalib op=new LoadGsasCalib(rds,calfile,false);
+      op.getResult();
+      }*/
 }
