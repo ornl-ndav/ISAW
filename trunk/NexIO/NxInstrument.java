@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/08/02 13:28:04  rmikk
+ * Added a routine to get all the id's from each NxDetector
+ *   and save info(NxDetector and position in id list) in a
+ *   Hashtable
+ *
  * Revision 1.5  2002/06/19 15:06:55  rmikk
  * Trimmed the Instrument name string to eliminate the extra
  * null character at the end.
@@ -58,16 +63,16 @@ package NexIO;
 import DataSetTools.dataset.*;
 import NexIO.*;
 import java.lang.reflect.*;
-
+import java.util.*;
 
 /** This class is used to process the NXinstrument information in a Nexus
  *data source
  */
 public class NxInstrument
-{
+{  static Hashtable DetectorInf =null;
    String errormessage;
    public NxInstrument()
-   {
+   {  DetectorInf = null;
       errormessage = "";
    }
 
@@ -78,8 +83,90 @@ public class NxInstrument
    {
       return errormessage;
    }
+   
+   /** Sets up a Hashtable of detector id's versus corresponding <BR>
+   *     <NXdetector node,<BR>
+   *      position of id child in the NXdetector node,
+   *      index of the id with the corresponding detector id
+   */
+   public void SetUpDetectorInfo( NxNode instrNode)
+    { if(DetectorInf != null)
+        return;
+      NexIO.NxData_Gen  util= new NexIO.NxData_Gen();
+      if( instrNode == null)
+        return;
+      if( !instrNode.getNodeClass().equals( "NXinstrument"))
+        return;
 
+      DetectorInf = new Hashtable();
+      for( int i = 0; i<instrNode.getNChildNodes(); i++)
+       { NxNode nd = instrNode.getChildNode( i );
+         if( nd.getNodeClass().equals("NXdetector"))
+           for( int j=0; j< nd.getNChildNodes(); j++)
+             {NxNode ndet_child = nd.getChildNode(j);
+              
+              boolean use = false;
+              if( ndet_child.getNodeName().equals("id"))
+                use = true;
+              else
+                {Object O = ndet_child.getAttrValue( "axis");
+                 if( O != null)
+                   {int axis = -1;
+                    if( O instanceof Integer)
+                       axis = ((Integer)O).intValue();
+                    else 
+                      {axis = util.cnvertoint(O);
+                       if( !util.getErrorMessage().equals(""))
+                         axis = -1;
+                       }
+                     if( axis == 2)
+                       use = true;
 
+                   }//if axis attribute != null
+                }//else for if child's name is "id"
+              if( use)
+                {float[] ff = NXData_util.Arrayfloatconvert(ndet_child.getNodeValue());
+                 if( ff!= null)
+                 for( int k=0; k<ff.length; k++)
+                   {try{
+                     Vector V = new Vector();
+                     V.addElement( nd);
+                     V.addElement( new Integer( j ));
+                     V.addElement(new Integer(k));
+                     DetectorInf.put( new Integer( (int)ff[k]), V);
+                      }
+                   catch( Exception u)
+                     {}
+                    
+                   }//try catch
+                
+                }//if use
+              
+             }//for  @ index of a detector node's id
+
+       }//for @ child of the NxInstrument node
+      //System.out.println("Detector information is");
+      // showwDetectorInf();
+     }
+
+    public void showwDetectorInf()
+      { if( DetectorInf == null)
+          {System.out.println("null");
+           return;
+          }
+        if( DetectorInf.size() < 1)
+          {System.out.println( "No Elements");
+           return;
+          }
+       Object[] k = DetectorInf.keySet().toArray();
+       for( int i = 0; i< k.length; i++)
+        {Vector V =(Vector) DetectorInf.get( k[i]);
+         NxNode nd =(NxNode) V.elementAt(0);
+         System.out.println(k[i]+"::("+nd.getNodeName()+","+nd.getNodeClass() +"),"+V.elementAt(1)+","+V.elementAt(2));
+         }
+       }
+   /** Returns the NXdetector node with the corresponding axes that are linked
+   */
    public NxNode matchNode( NxNode instrNode, String ax1Link, String ax2Link )
    {
       NxData_Gen ng = new NxData_Gen();
