@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/08/03 21:37:53  dennis
+ *  Improved the docs and now allow numDataSets() to return a negative
+ *  value as an error code.
+ *
  *  Revision 1.6  2001/07/30 18:47:28  dennis
  *  Minor documentation improvements.
  *
@@ -57,9 +61,9 @@ import  DataSetTools.dataset.*;
 import  java.io.*;
 
 /**
- * Root class for objects that retrieve DataSet objects from files, or via 
+ * Base class for objects that retrieve DataSet objects from files, or via 
  * a network connection.  Derived classes for particular types of data
- * sources must actually implement the methods to get specified data sets
+ * sources must actually implement the methods to get specified DataSets
  * and their types.
  */
 
@@ -73,6 +77,7 @@ public abstract class Retriever implements Serializable
     protected String data_source_name = null;
 
 
+    /* ------------------------ Constructor -------------------------- */
     /**
      * Construct the retriever for the specified source name.
      *
@@ -80,31 +85,54 @@ public abstract class Retriever implements Serializable
      *                           data retrievers, this should be the fully 
      *                           qualified file name
      */
-
     public Retriever( String data_source_name )
     {
       this.data_source_name = data_source_name;
     }
 
-    /**
-     * Get the number of distinct data sets that can be obtained from the
-     * current data source.
-     */
 
-    public abstract int numDataSets();
-    
+    /* ------------------------ numDataSets -------------------------- */
     /**
-     * Get the specified data set from the current data source.
+     * Get the number of distinct DataSets that can be obtained from the
+     * current data source.
      *
+     *  @return The number of distinct DataSets available.  This function
+     *          may return values < 0 as an error code if there are no
+     *          DataSets available.
+     */
+    public abstract int numDataSets();
+
+    
+    /* -------------------------- getDataSet ---------------------------- */
+    /**
+     * Get the specified DataSet from the current data source.
+     *
+     * @param data_set_num  The number of the DataSet in this runfile
+     *                      that is to be read from the runfile.  data_set_num
+     *                      must be between 0 and numDataSets()-1
+     *
+     * @return The specified DataSet, if it exists, or null if no such
+     *         DataSet exists.
      */
     public abstract DataSet getDataSet( int data_set_num );
 
-    /**
-     * Get the type of the specified data set from the current data source.
-     * The type is an integer flag that indicates whether the data set contains
-     * monitor data or data from other detectors.
-     */
 
+    /* ---------------------------- getType ------------------------------ */
+    /**
+     *  Get the type code of a particular DataSet in this runfile.
+     *  The type codes include:
+     *
+     *     Retriever.INVALID_DATA_SET
+     *     Retriever.MONITOR_DATA_SET
+     *     Retriever.HISTOGRAM_DATA_SET
+     *     Retriever.PULSE_HEIGHT_DATA_SET
+     *
+     *  @param  data_set_num  The number of the DataSet in this runfile whose
+     *                        type code is needed.  data_set_num must be between
+     *                        0 and numDataSets()-1
+     *
+     *  @return the type code for the specified DataSet.
+     */
     public abstract int getType( int data_set_num );
 }
 
