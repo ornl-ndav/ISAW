@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/07/01 14:44:15  bouzekc
+ * Uses a JDialog again.
+ *
  * Revision 1.14  2003/06/30 22:26:33  bouzekc
  * Fixed comment to reflect change in ArrayEntryJPanel.
  *
@@ -331,15 +334,18 @@ public abstract class VectorPG extends ParameterGUI
 
     entryFrame.setSize( 500, 300 );
 
-    //leave this commented code in here.  It is possible that ScriptOperator
-    //needs it yet, and VectorPG has undergone major surgery between CVS
-    //commits.  06/24/2003 - CMB
-    //entryDialog = new JDialog( entryFrame, param.getName(  ), true );
-    //entryDialog.setSize( 500, 300 );
-    entryFrame.setDefaultCloseOperation( WindowConstants.HIDE_ON_CLOSE );
-    entryFrame.addWindowListener( new VectorPGWindowListener(  ) );
+    //leave this commented code in here.  There is a strange flaw elsewhere
+    //that requires a JDialog, but at some point I would like to remove the
+    //modal/modeless operation choice. -7/1/2003 CMB
+    entryDialog = new JDialog( entryFrame, param.getName(  ), true );
+    entryDialog.setSize( 500, 300 );
 
-    //entryDialog.addWindowListener( new VectorPGWindowListener(  ) );
+    //entryFrame.setDefaultCloseOperation( WindowConstants.HIDE_ON_CLOSE );
+    entryDialog.setDefaultCloseOperation( WindowConstants.HIDE_ON_CLOSE );
+
+    //entryFrame.addWindowListener( new VectorPGWindowListener(  ) );
+    entryDialog.addWindowListener( new VectorPGWindowListener(  ) );
+
     //entryDialog.getContentPane(  ).setLayout( new GridLayout( 1, 1 ) );
     //entryDialog.getContentPane(  ).add( GUI );
     entryFrame.getContentPane(  ).add( GUI );
