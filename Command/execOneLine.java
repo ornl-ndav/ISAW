@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.74  2005/01/10 20:15:12  rmikk
+ * Fixed a misterious error with the & operation
+ *
  * Revision 1.73  2005/01/07 17:46:54  rmikk
  * Added type checking to eliminate run time errors
  * Added a method to clear ChooserPG storage
@@ -2441,6 +2444,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
                     Result = (String)LeftValue +RightValue.toString();
                 else 
                     Result = LeftValue.toString()+(String)RightValue;
+                return;
             }
 
             
@@ -2451,8 +2455,11 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
 	if( (RightValue instanceof DataSet) &&( operation !='&') ){
             operateArithDS( LeftValue , RightValue , operation );
             return;
-        }
-        if( (LeftValue instanceof DataSet) || (RightValue instanceof DataSet) ){
+    }
+    
+        if( (LeftValue instanceof DataSet) || (RightValue instanceof DataSet) )
+           if( !(LeftValue instanceof String )&&!(RightValue instanceof String)){
+           
             seterror(1000, ER_ImproperDataType+" "+ operation );
             Result = null;
             return;
@@ -2471,18 +2478,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
                     Result = execOneLine.Vect_to_String((Vector)LeftValue)+
                                            (String)RightValue;
             }
-    if(!(LeftValue instanceof String ))
-      if(!(LeftValue instanceof Float ))
-        if(!(LeftValue instanceof Integer )){
-          seterror(1000, ER_ImproperArgument);
-          return;
-        }
-      if(!(RightValue instanceof String ))
-        if(!(RightValue instanceof Float ))
-          if(!(RightValue instanceof Integer )){
-            seterror(1000, ER_ImproperArgument);
-            return;
-          }
+   
        //---------------------- +-*/^<> operations -----------------------
 	if( "+-/*<>^".indexOf( operation ) >= 0 ){
             if( LeftValue instanceof String ){
