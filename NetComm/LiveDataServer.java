@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2003/02/24 20:41:59  dennis
+ *  Put debug print in 'if ( debug...' statement.
+ *
  *  Revision 1.32  2003/02/24 20:37:05  dennis
  *  Now consistently replies to status requests by sending a String
  *  that begins with "Status:".
@@ -523,7 +526,9 @@ public class LiveDataServer extends    DataSetServer
            reply = RemoteDataRetriever.DATA_OLD_STRING + last_time;
 
          tcp_io.Send( TCPComm.STATUS + reply );
-         System.out.println("LDS replied with: "+ TCPComm.STATUS + reply); 
+         if ( debug_server )
+           System.out.println("LDS replied with: "+ TCPComm.STATUS + reply); 
+
          return true;
       }
    
