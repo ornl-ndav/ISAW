@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/05/09 14:12:27  pfpeterson
+ * Fixed bug in converting hkl to real-space when the detector is not
+ * at +/-90 degrees.
+ *
  * Revision 1.12  2003/04/11 15:35:43  pfpeterson
  * Added a method to return (Q/2PI)-vector for use in lsqrs.
  *
@@ -804,13 +808,13 @@ public class Peak{
     double ang = this.detA*Math.PI/180.;
     double xt = xdp;
     double yt = pos[1];
-    xdp = xt*Math.cos(ang)+yt*Math.sin(ang);
-    ydp = -xt*Math.sin(ang)+yt*Math.cos(ang);
+    xdp = xt*Math.cos(ang)-yt*Math.sin(ang);
+    ydp = xt*Math.sin(ang)+yt*Math.cos(ang);
     zdp = pos[2];
 
     // calculate XCM and YCM                                             
     this.xcm = (float)(-(ydp/xdp)*this.detD);
-    this.ycm = (float)((zdp/xdp)*this.detD);
+    this.ycm = (float)(-(zdp/xdp)*this.detD);
   }
 
   /**
