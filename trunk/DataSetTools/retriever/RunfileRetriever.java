@@ -1,5 +1,7 @@
 /*
- * @(#)RunfileRetriever.java     1.1  2000/03/23  Dennis Mikkelson
+ * @(#)RunfileRetriever.java
+ *
+ * Programmer: Dennis Mikkelson
  *
  * Modified:  
  *    Alok Chatterjee, Fall 1999.  Added number of pulses and total counts
@@ -13,6 +15,9 @@
  * ---------------------------------------------------------------------------
  *
  *  $Log$
+ *  Revision 1.20  2001/01/31 14:23:48  dennis
+ *  Now uses CVS version numbers.
+ *
  *  Revision 1.19  2001/01/29 21:13:17  dennis
  *  Simplified logic for adding operators for
  *  DG Spectrometers and Pulse Height Spectra.
