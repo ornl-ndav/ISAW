@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/12/15 01:39:12  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.7  2003/10/14 21:57:41  dennis
  *  Fixed javadocs to build cleanly with jdk 1.4.2
  *
@@ -42,6 +45,9 @@
  *
  *  Revision 1.4  2002/10/29 15:57:33  dennis
  *  Added getDocumentation method, and $Log$
+ *  Added getDocumentation method, and Revision 1.8  2003/12/15 01:39:12  bouzekc
+ *  Added getDocumentation method, and Removed unused imports.
+ *  Added getDocumentation method, and
  *  Added getDocumentation method, and Revision 1.7  2003/10/14 21:57:41  dennis
  *  Added getDocumentation method, and Fixed javadocs to build cleanly with jdk 1.4.2
  *  Added getDocumentation method, and
@@ -57,10 +63,8 @@
  */
 package Operators.Calculator;
 
-import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
-import DataSetTools.dataset.*;
 import DataSetTools.util.ErrorString;
 import java.util.*;
 import DataSetTools.materials.*;

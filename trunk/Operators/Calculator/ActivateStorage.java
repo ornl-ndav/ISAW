@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/12/15 01:39:13  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.5  2003/02/04 16:28:14  pfpeterson
  *  Now uses IParameterGUI and changed returns on errors to ErrorString.
  *
@@ -39,6 +42,9 @@
  *
  *  Revision 1.3  2002/10/29 16:02:24  dennis
  *  Added getDocumentation method, and $Log$
+ *  Added getDocumentation method, and Revision 1.6  2003/12/15 01:39:13  bouzekc
+ *  Added getDocumentation method, and Removed unused imports.
+ *  Added getDocumentation method, and
  *  Added getDocumentation method, and Revision 1.5  2003/02/04 16:28:14  pfpeterson
  *  Added getDocumentation method, and Now uses IParameterGUI and changed returns on errors to ErrorString.
  *  Added getDocumentation method, and
@@ -50,9 +56,7 @@
  */
 package Operators.Calculator;
 
-import DataSetTools.dataset.*;
 import DataSetTools.materials.*;
-import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
 import DataSetTools.util.ErrorString;
