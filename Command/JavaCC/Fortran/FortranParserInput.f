@@ -31,6 +31,10 @@ C For further information, see <http://www.pns.anl.gov/ISAW/>
 C
 C Modified:
 C $Log$
+C Revision 1.5  2004/01/30 00:41:18  bouzekc
+C Added a line to test declaring a non-array variable right after an
+C array variable.
+C
 C Revision 1.4  2004/01/26 21:44:29  bouzekc
 C Added test for function.
 C
@@ -92,6 +96,7 @@ C float declarations
   real r1, r2, r(9)
   real r1 = 5.0, r2 = 10.0
   real r1 = 2.0
+  real r(3),r4
   double precision test
   double precision test1, test2
   double precision var1(9), var2(10)
