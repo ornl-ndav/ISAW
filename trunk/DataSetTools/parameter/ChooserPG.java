@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.30  2004/03/11 06:20:39  bouzekc
+ *  Added javadocs.
+ *
  *  Revision 1.29  2004/03/11 06:09:50  bouzekc
  *  Added an extra check on addItems to be sure the Vector is nonempty.
  *
@@ -164,8 +167,8 @@ public abstract class ChooserPG extends ParameterGUI {
   /**
    * Creates a new ChooserPG object.
    *
-   * @param name DOCUMENT ME!
-   * @param val DOCUMENT ME!
+   * @param name The name of this ChooserPG.
+   * @param val The value of this ChooserPG.
    */
   public ChooserPG( String name, Object val ) {
     super( name, val );
