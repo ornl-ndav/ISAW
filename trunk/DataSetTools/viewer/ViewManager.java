@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2003/08/08 17:54:10  dennis
+ *  Added option to change to New Selected Graph (Brent's) view.
+ *
  *  Revision 1.34  2003/03/18 14:42:44  dennis
  *  Added option for popping up an additional ViewManager to the
  *  view menu of an existing ViewManager
@@ -118,6 +121,8 @@ import DataSetTools.viewer.Table.*;
 import DataSetTools.viewer.Contour.*;
 import DataSetTools.viewer.OverplotView.*;
 import DataSetTools.viewer.ViewerTemplate.*;
+import DataSetTools.components.View.*;
+import DataSetTools.components.View.OneD.*;
 import DataSetTools.parameter.*;
 import DataSetTools.math.*;
 import java.awt.*;
@@ -283,7 +288,13 @@ public class ViewManager extends    JFrame
         viewer = new GraphView( tempDataSet, state );
       else if ( view_type.equals( THREE_D ))
         viewer = new ThreeDView( tempDataSet, state );
-      else if ( view_type.equals( SELECTED_GRAPHS ))             // use either
+      else if ( view_type.equals( SELECTED_GRAPHS ))             // Brent's 
+      {
+        DataSetData dsd = new DataSetData( tempDataSet );
+        FunctionViewComponent viewComp = new FunctionViewComponent( dsd);
+        viewer = new DataSetViewerMaker(tempDataSet, state, dsd, viewComp);
+      }
+      else if ( view_type.equals( SELECTED_GRAPH2 ))             // use either
         viewer = new GraphableDataManager( tempDataSet, state ); // Kevin's or
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
       else if ( view_type.equals( TABLE)) //TABLE ) )
@@ -693,6 +704,9 @@ private void BuildViewMenu()
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
+  button = new JMenuItem( SELECTED_GRAPH2 );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
   
   JMenu Tables = new JMenu( "Selected Table View");
   view_menu.add( Tables);
@@ -702,18 +716,16 @@ private void BuildViewMenu()
   button = new JMenuItem( TABLE );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
- 
-
 }
 
- public void BuildTableMenu( JMenu Tables)
-  { 
+ public void BuildTableMenu( JMenu Tables )
+ { 
     int n= TableViewMenuComponents.getNMenuItems();
     ViewMenuHandler view_menu_handler = new ViewMenuHandler();
-     if( table_MenuComp == null)
-        table_MenuComp = new TableViewMenuComponents();
+    if( table_MenuComp == null)
+      table_MenuComp = new TableViewMenuComponents();
    
-     table_MenuComp.addMenuItems( Tables , view_menu_handler);
+    table_MenuComp.addMenuItems( Tables , view_menu_handler);
     
    /* Tables.addSeparator();  
     JMenuItem button;
@@ -721,9 +733,8 @@ private void BuildViewMenu()
     button.addActionListener( view_menu_handler );
     Tables.add( button );
    */
+ }
 
-
-  }
 /*
  * Build the menu of conversion options and turn on the radio button for the 
  * currently active conversion operator.
@@ -962,8 +973,9 @@ private float solve( float new_x ) // find what x in the original DataSet maps
 
   private class ViewMenuHandler implements ActionListener,
                                            Serializable
-  {  boolean errors = false, 
-              index =false;
+  {  
+     boolean errors = false, 
+              index = false;
     
     public void actionPerformed( ActionEvent e )
     {
