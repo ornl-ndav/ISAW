@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.6  2002/07/10 16:02:25  pfpeterson
+ *  Added removeAttribute() methods.
+ *
  *  Revision 1.5  2001/07/02 16:41:46  dennis
  *  Added methods:
  *    getAttribute( index )
@@ -116,6 +119,23 @@ public interface IAttributeList
    */
   public void setAttribute( Attribute attribute, int index );
 
+
+  /**
+   * Remove the attribute at the specified index from the list of
+   * attributes. If the index is invalid, this does nothing.
+   *
+   * @param index The position of the attribute to remove.
+   */
+  public void removeAttribute( int index );
+
+  /**
+   * Remove the attribute with the specified name from the list of
+   * attributes. If the named attribute is not in the list, this does
+   * nothing.
+   *
+   * @param name The name of the attribute to remove.
+   */
+  public void removeAttribute( String name );
 
   /**
    * Get the attribute at the specified index from the list of
