@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2001/06/25 19:07:03  rmikk
+ * Fixed error witj a:b+c to allow expressions after the :
+ *
  * Revision 1.19  2001/06/04 20:15:36  rmikk
  * Fixed Documentation
  *
@@ -1381,9 +1384,25 @@ public void addDataSet(DataSet dss, String vname)
          else if("+-&:".indexOf(S.charAt(i))<0)
            done = true;
          if(Debug)System.out.println("ExArithB,done,perror,char"+done+","+perror+","+j);
-
+         
          while( !done )
-           {j = execOneTerm( S , i + 1 , end );
+           {
+	     if(S.charAt(i)==':')
+		{ Object R = Result;
+                  j=execArithm(S, i+1, end);
+		  if( perror >= 0) return perror;
+                  if( (j >= end) ||(j>=S.length()))
+                     {}
+                  else if("),]<>=".indexOf(S.charAt( j ))< 0)
+                     {seterror( j, ER_IllegalCharacter);
+                      return j;
+                     }
+                 operateArith(R, Result, ':');
+                 if( perror >=0)return perror;
+                 else return j;
+                }
+
+            j = execOneTerm( S , i + 1 , end );
             if(Debug)System.out.println("ExArithC"+Result+","+perror);
 
                if( perror < 0 )
@@ -1404,7 +1423,7 @@ public void addDataSet(DataSet dss, String vname)
            else if( "),]<>=".indexOf( S.charAt( i ) ) >= 0 )
 	     done = true;
            else if("+-&:".indexOf(S.charAt(i))<0)
-           done = true;
+               done = true;
 
            }//While !done      
 
