@@ -1,5 +1,5 @@
 /*
- * File:  FloatArray.java 
+ * File:  FloatArrayArrayPG.java 
  *             
  * Copyright (C) 2003, Ruth Mikkelson
  *
@@ -23,7 +23,8 @@
  *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
- * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA and by 
+ * the National Science Foundation under grant number DMR-0218882.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
@@ -31,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/06/23 20:17:52  bouzekc
+ * Fixed GPL file name.
+ *
  * Revision 1.5  2003/06/23 16:12:24  bouzekc
  * Reformatted for consistent indenting.
  *
