@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2005/02/08 21:28:45  dennis
+ * Removed excessive tabs from getDocumentation method.
+ *
  * Revision 1.32  2004/08/02 21:13:18  rmikk
  * Removed unused imports
  *
@@ -223,7 +226,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         addParameter( new BooleanPG("Use Background Transmission Run?", 
                                      new Boolean( useTransB)));
         addParameter( new FloatPG("Beam Stop Size", new Float(bs_dim)));
-       addParameter( new IntegerPG("upStream Monitor ID", new Integer(upStreamMonID)));
+        addParameter( new IntegerPG("upStream Monitor ID", 
+                                     new Integer(upStreamMonID)));
       }
 
 
@@ -493,56 +497,64 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
         return V;
     }
-	public String getDocumentation() {
 
-			 StringBuffer Res = new StringBuffer();
+
+    /**
+     *  Get the multi-line documentation String for this operator.
+     *
+     *  @return the documentation String.
+     */
+    public String getDocumentation() {
+
+      StringBuffer Res = new StringBuffer();
     
-			 Res.append("@overview  SMALL ANGLE NEUTRON SCATTERING ANALYSIS ROUTINE ");  
-			 Res.append("PRODUCE either A RADIALLY AVERAGED S(Q) VS Q ARRAY; SN(RUN#)");
-			 Res.append(".dat OR PRODUCING AN S(QX,QY) ARRAY.	SN@D(RUN#).BIN");
-			 Res.append("mask of pixels to be used, based on a flood fill data set.");
+      Res.append("@overview  SMALL ANGLE NEUTRON SCATTERING ANALYSIS ROUTINE ");
+      Res.append("PRODUCE either A RADIALLY AVERAGED S(Q) VS Q ARRAY; ");
+      Res.append("SN(RUN#).dat OR PRODUCING AN S(QX,QY) ARRAY. SN@D(RUN#).BIN");
+      Res.append("mask of pixels to be used, based on a flood fill data set.");
  
-			 Res.append("@algorithm  First the Neutron Delay is applied to all DataSets,");
-			 Res.append(" and all Time channels are converted to a common wavelength ");
-			 Res.append(" scale.");
-			 Res.append(" Next the offset of the Beam center is applied. The ratios:");
-			 Res.append(" (Samp/MonSamp-Cadmium/MonCadm)/(TransSamp*sens*eff) and");
-			 Res.append("(Back/MonBack-Cadmium/MonCadm)/(TransBack*sens*eff)  are ");
-			 Res.append(" applied");
-			 Res.append(" These are converted to Q(or Qx,Qy) and summed ofer the given ");
-			 Res.append(" Q or (Qx,Qy) bins with weighting of SampMonitor*sens*eff");
+      Res.append("@algorithm  First the Neutron Delay is applied to all ");
+      Res.append("DataSets, and all Time channels are converted to a common ");
+      Res.append("wavelength scale.  ");
+      Res.append("Next the offset of the Beam center is applied. The ratios: ");
+      Res.append("(Samp/MonSamp-Cadmium/MonCadm)/(TransSamp*sens*eff) and ");
+      Res.append("(Back/MonBack-Cadmium/MonCadm)/(TransBack*sens*eff) are ");
+      Res.append("applied.  ");
+      Res.append("These are converted to Q(or Qx,Qy) and summed over the ");
+      Res.append("given Q or (Qx,Qy) bins with weighting of ");
+      Res.append("SampMonitor*sens*eff");
     
-			 Res.append(" @param TransS   The sample Transmission data set");
-			 Res.append("  @param TransB   The background Transmission data set");
-			 Res.append("  @param  Eff     The Efficiency data set");
-			 Res.append("  @param Sens     The sensitivity data set");
-			 Res.append(" @param qu       The q bins if 1d or qxmin,qxmax, qymin, qymax");
-			 Res.append(" @param RUNSds0   the monitor  for the sample");
+      Res.append("@param TransS The sample Transmission data set");
+      Res.append("@param TransB The background Transmission data set");
+      Res.append("@param  Eff   The Efficiency data set");
+      Res.append("@param Sens   The sensitivity data set");
+      Res.append("@param qu     The q bins if 1d or qxmin,qxmax, qymin, qymax");
+      Res.append("@param RUNSds0   the monitor  for the sample");
 
-			 Res.append(" @param RUNSds1   the Histogram  for the sample");
-			 Res.append(" @param RUNBds0  the  monitor for the Background");
-			 Res.append(" @param RUNBds1  the  Histogramfor the Background");
-			 Res.append(" @param RUNCds0  null or the monitor for the  Cadmium run");
-			 Res.append(" @param RUNCds1  null or the  Histogram for the  Cadmium run");
-			 Res.append(" @param BETADN  The delayed neutron fraction");
-			 Res.append(" @param SCALE   The scale factor to be applied to all data");
-			 Res.append(" @param  THICK  The sample thickness in m");
-			 Res.append(" @param  XOFF    The Xoffset of beam from the center in meters");
-			 Res.append(" @param  YOFF    The Yoffset of beam from center in meters");
-			 Res.append(" @param NQxBins  The number of Qx bins if 2D,otherwise use");
-			 Res.append("  a neg number");
-			 Res.append(" @param NQyBins  The number of Qx bins if 2D,otherwise use a");
-			 Res.append("  neg number"); 
-			 Res.append(" @param useTransB  Use the background Transmission run"); 
-             Res.append("@param upStreamMonID  Upstream monitor ID or -1");
-		     Res.append(" @return The vector of three DataSets, the Sample,");
-		     Res.append(" Background, and Samp-Back S(Q) or S(Qx,Qy)for 2D,");
+      Res.append("@param RUNSds1  the Histogram  for the sample");
+      Res.append("@param RUNBds0 the  monitor for the Background");
+      Res.append("@param RUNBds1 the  Histogramfor the Background");
+      Res.append("@param RUNCds0 null or the monitor for the  Cadmium run");
+      Res.append("@param RUNCds1 null or the  Histogram for the  Cadmium run");
+      Res.append("@param BETADN The delayed neutron fraction");
+      Res.append("@param SCALE  The scale factor to be applied to all data");
+      Res.append("@param  THICK The sample thickness in m");
+      Res.append("@param  XOFF  The Xoffset of beam from the center in meters");
+      Res.append("@param  YOFF  The Yoffset of beam from center in meters");
+      Res.append("@param NQxBins  The number of Qx bins if 2D,otherwise use");
+      Res.append(" a neg number");
+      Res.append("@param NQyBins  The number of Qx bins if 2D,otherwise use a");
+      Res.append(" neg number"); 
+      Res.append("@param useTransB  Use the background Transmission run"); 
+      Res.append("@param upStreamMonID  Upstream monitor ID or -1");
+      Res.append("@return The vector of three DataSets, the Sample,");
+      Res.append(" Background, and Samp-Back S(Q) or S(Qx,Qy)for 2D,");
 
-		     Res.append(" if no errors are encountered, otherwise an");
-		     Res.append("  ErrorString will be returned.");
-			 return Res.toString();
+      Res.append(" if no errors are encountered, otherwise an");
+      Res.append("  ErrorString will be returned.");
 
-		}
+      return Res.toString();
+}
      
 
   /* ----------------------------- Main ---------------------------------- */
