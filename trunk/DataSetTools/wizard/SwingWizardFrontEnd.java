@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/02/14 06:13:19  bouzekc
+ * Changed protected final methods to default access final, as they are
+ * package access only.
+ *
  * Revision 1.11  2004/02/14 05:01:10  bouzekc
  * Changed several private methods to protected final to avoid performance
  * hits with compiler generated synthetic accessor methods.
@@ -405,7 +409,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * @param com The command (IParameterGUI name) to attempt to display the
    *        parameter viewer for.
    */
-  protected final void displayParameterViewer( String com ) {
+  final void displayParameterViewer( String com ) {
     Form f;
     IParameterGUI iparam;
     boolean done;
@@ -438,7 +442,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * @param index The index of the Form to enable/disable navigation buttons
    *        on.
    */
-  protected final void enableNavButtons( boolean enable, int index ) {
+  final void enableNavButtons( boolean enable, int index ) {
     if( enable ) {
       for( int i = 0; i < wizButtons.length; i++ ) {
         wizButtons[i].setEnabled( true );
@@ -465,7 +469,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   /**
    * Launches a JFileChooser so the user can set the project directory.
    */
-  protected final void launchProjectChooser(  ) {
+  final void launchProjectChooser(  ) {
     JFileChooser projChooser = new JFileChooser(  );
     projChooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
 
@@ -486,7 +490,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * Creates the view menu and listeners for certain types of parameters in the
    * current Form.
    */
-  protected final void populateViewMenu(  ) {
+  final void populateViewMenu(  ) {
     JMenuItem jmi;
     Form f;
     IParameterGUI iparam;
@@ -532,7 +536,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   /**
    * Shows the JavaHelp HTML page for the current form.
    */
-  protected final void showFormHelpMessage(  ) {
+  final void showFormHelpMessage(  ) {
     HTMLizer form_htmlizer = new HTMLizer(  );
     Form f                 = wiz.getCurrentForm(  );
 
@@ -546,7 +550,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * Show the specified String in the help frame.  This is for the wizard help
    * message
    */
-  protected final void showWizardHelpMessage(  ) {
+  final void showWizardHelpMessage(  ) {
     String wTitle = "Help: " + wiz.getTitle(  );
 
     if( wiz.getWizardHelpURL(  ) != null ) {
