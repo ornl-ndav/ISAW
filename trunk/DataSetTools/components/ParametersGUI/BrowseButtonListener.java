@@ -32,6 +32,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/06/16 14:51:52  bouzekc
+ *  Added code so that if the FileFilter for BrowsePG (when
+ *  masquerading as SaveFilePG) is a RobustFileFilter, the
+ *  default extension is added if no extension is specified.
+ *
  *  Revision 1.6  2003/05/29 21:46:50  bouzekc
  *  Added a constructor which takes a Vector of FileFilters.
  *  Added the capability to select a default FileFilter.
@@ -67,6 +72,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
 import javax.swing.filechooser.FileFilter;
+import DataSetTools.util.RobustFileFilter;
     
 public class BrowseButtonListener implements ActionListener{
     public static int SAVE_FILE  = 1;
@@ -244,7 +250,21 @@ public class BrowseButtonListener implements ActionListener{
             }else{
                 File file= jfc.getSelectedFile();
                 if(this.type==SAVE_FILE){
+                  //make sure the extension is correct - if one is not given, 
+                  //use the default
                     filename=file.getAbsolutePath();
+                    FileFilter filter = jfc.getFileFilter();
+                    
+                    //only the RobustFileFilters have the built-in capability 
+                    //of appending the right extension onto the file name 
+                    if(filter instanceof RobustFileFilter)
+                    {
+                      RobustFileFilter robustFilter = (RobustFileFilter)filter;
+                      //if filename is no good
+                      if(!(robustFilter.acceptFileName(filename))) 
+                        filename = robustFilter.appendExtension(filename);
+                    }
+                    
                     textbox.setText( filename );
                 }else if(this.type==LOAD_FILE || this.type==DIR_ONLY){
                     if(file.exists()){
