@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/06/11 14:56:18  pfpeterson
+ * Small updates to documentation.
+ *
  * Revision 1.2  2002/06/06 16:15:45  pfpeterson
  * Now use new parameters.
  *
@@ -68,19 +71,20 @@ import DataSetTools.util.*;
 import DataSetTools.parameter.*;
 
 /**
- *  The Wizard class provides the top level control for a sequence of 
- *  operations to be carried out with user interaction.  The quantities
- *  the the user interacts with are stored in a master list of all quantities 
- *  used in the Wizard.  The quantites are stored as WizardParameter objects.
- *  The operations that are to be carried out are described by Form objects.
- *  The Wizard also controls a sequence of forms and allows the user to
- *  step back and forth between forms.  Each form defines an execute() method
- *  to carry out the action determined by the form.  The Wizard also manages
- *  a simple help system.  Help messages should be set for each form that is
- *  used in a particular Wizard application, as well as for the Wizard itself.
+ *  The Wizard class provides the top level control for a sequence of
+ *  operations to be carried out with user interaction.  The
+ *  quantities the the user interacts with are stored in a master list
+ *  of all quantities used in the Wizard.  The quantites are stored as
+ *  IParameterGUI objects.  The operations that are to be carried out
+ *  are described by Form objects.  The Wizard also controls a
+ *  sequence of forms and allows the user to step back and forth
+ *  between forms. Each form defines an execute() method to carry out
+ *  the action determined by the form. The Wizard also manages a
+ *  simple help system. Help messages should be set for each form
+ *  that is used in a particular Wizard application, as well as for
+ *  the Wizard itself.
  *
  *  @see Form
- *  @see WizardParameter
  */
 
 public class Wizard implements Serializable{
