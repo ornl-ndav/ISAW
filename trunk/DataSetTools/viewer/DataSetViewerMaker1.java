@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/03/10 23:40:57  millermi
+ *  - Changed IViewComponent interface, no longer
+ *    distinguish between private and shared controls/
+ *    menu items.
+ *  - Combined private and shared controls/menu items.
+ *
  *  Revision 1.7  2004/01/24 22:02:38  bouzekc
  *  Removed unused imports.
  *
@@ -57,6 +63,12 @@
  *
  *  Revision 1.4  2003/08/08 15:48:24  dennis
  *  Added GPL copyright information and $Log$
+ *  Added GPL copyright information and Revision 1.8  2004/03/10 23:40:57  millermi
+ *  Added GPL copyright information and - Changed IViewComponent interface, no longer
+ *  Added GPL copyright information and   distinguish between private and shared controls/
+ *  Added GPL copyright information and   menu items.
+ *  Added GPL copyright information and - Combined private and shared controls/menu items.
+ *  Added GPL copyright information and
  *  Added GPL copyright information and Revision 1.7  2004/01/24 22:02:38  bouzekc
  *  Added GPL copyright information and Removed unused imports.
  *  Added GPL copyright information and
@@ -92,6 +104,7 @@ import javax.swing.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.Menu.*;
+import DataSetTools.components.View.ViewControls.ViewControl;
 import java.awt.event.*;
 import java.awt.*;
 import DataSetTools.components.containers.*;
@@ -166,16 +179,12 @@ public class DataSetViewerMaker1  extends DataSetViewer
        for( int i=0; i< Arraycontrols.length; i++)
          East.add( Arraycontrols[i]);
       
-     JComponent[] Compcontrols = viewComp.getSharedControls();
+     ViewControl[] Compcontrols = viewComp.getControls();
      if( Compcontrols != null)
        for( int i=0; i< Compcontrols.length; i++)
-         East.add( Compcontrols[i]);    
-     JComponent[] CompPcontrols = viewComp.getPrivateControls();
-     if( CompPcontrols != null)
-       for( int i=0; i< CompPcontrols.length; i++)
-         East.add( CompPcontrols[i]);  
+         East.add( Compcontrols[i]);   
      
-     ViewMenuItem[] MenItem1 = viewComp.getSharedMenuItems();
+     ViewMenuItem[] MenItem1 = viewComp.getMenuItems();
      ViewMenuItem[] MenItem2 = viewArray.getSharedMenuItems();
      
      PrintComponentActionListener.setUpMenuItem( getMenuBar(), this);

@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/10 23:40:58  millermi
+ * - Changed IViewComponent interface, no longer
+ *   distinguish between private and shared controls/
+ *   menu items.
+ * - Combined private and shared controls/menu items.
+ *
  * Revision 1.7  2004/03/10 17:56:35  dennis
  * Conversions table now activated.
  * Now sends, but does not receive POINTED_AT_CHANGED messages
@@ -225,7 +231,7 @@ public class HKL_SliceView extends DataSetViewer
     setCurrentPoint( new floatPoint2D(0,0) );
 
     Box controls = new Box(BoxLayout.Y_AXIS);
-    JComponent[] ctrl = ivc.getSharedControls();
+    ViewControl[] ctrl = ivc.getControls();
     for( int i = 0; i < ctrl.length; i++ )
     {
       if ( ctrl[i] instanceof ControlCheckboxButton )

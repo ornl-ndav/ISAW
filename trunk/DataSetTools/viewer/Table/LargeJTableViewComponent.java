@@ -44,6 +44,8 @@ import javax.swing.table.*;
 import java.util.*;
 import DataSetTools.components.View.Menu.*;
 import DataSetTools.components.View.*;
+import DataSetTools.components.View.ViewControls.ViewControl;
+import DataSetTools.components.View.ViewControls.ViewControlMaker;
 import java.beans.*;
 import DataSetTools.components.ParametersGUI.*;
 
@@ -516,7 +518,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
     *  returned.  The Select menu item should set the corresponding data sets and
     *  and times as selected.
     */
-   public ViewMenuItem[] getSharedMenuItems(){
+   public ViewMenuItem[] getMenuItems(){
        ViewMenuItem[] Res;
        
       
@@ -606,8 +608,8 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
    * Return controls needed by the component. Currently only a Format
    * Control is returned.
    */ 
-   public JComponent[] getSharedControls(){
-     JComponent[] Res = new JComponent[1];
+   public ViewControl[] getControls(){
+     ViewControl[] Res = new ViewControl[1];
      
      StEnt = new StringEntry("",6, new FormatFilter());
      StEnt.addActionListener( new FormatActionListener());
@@ -615,27 +617,9 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
      JP.add( new JLabel("Format"));
      JP.add( StEnt);
      StEnt.setToolTipText("Fortran Formats like F5.3,I4,E8.2");
-     Res[0] = JP;
+     Res[0] = new ViewControlMaker(JP);
      return Res;
      
-   }
-
-  /**
-   * Returns the Private Controls.  Currently no controls are returned by
-   * this method.
-   */   
-   public JComponent[] getPrivateControls(){
-     return new JComponent[0];
-   }
-
- 
-   
-  /**
-   * Returns the list of private menu items. Currently no ViewMenuItems
-   * are returned.
-   */
-   public ViewMenuItem[] getPrivateMenuItems( ){
-     return new ViewMenuItem[0];
    }
    
   public void kill(){
