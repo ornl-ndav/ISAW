@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/02/07 15:35:50  pfpeterson
+ *  Fixed a bug when the list of FileFilters is null.
+ *
  *  Revision 1.4  2003/02/03 21:36:39  pfpeterson
  *  Made it possible for the JParameterDialog the is produced by this
  *  class to have more than one FileFilter.
@@ -135,7 +138,7 @@ public class BrowseButtonListener implements ActionListener{
                 jfc.setCurrentDirectory(new File(def_filename));
             }
             this.configureFileChooser();
-            if( this.filters.size()>0 ){
+            if( this.filters!=null && this.filters.size()>0 ){
               for( int i=0 ; i<this.filters.size() ; i++ )
                 jfc.addChoosableFileFilter( (FileFilter)filters.elementAt(i) );
             }
