@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.22  2005/01/05 20:37:52  dennis
+ * The clone() method now returns a new IndexJ operator, rather than a
+ * new Index operator.
+ *
  * Revision 1.21  2004/03/15 03:37:02  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -500,7 +504,7 @@ public class IndexJ extends    GenericTOF_SCD {
    * list of parameters is also copied.
    */
   public Object clone(){
-    Index new_op = new Index( );
+    IndexJ new_op = new IndexJ( );
     
     new_op.CopyParametersFrom( this );
     
