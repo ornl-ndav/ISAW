@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/06/02 14:31:06  pfpeterson
+ * Fixed a spelling error.
+ *
  * Revision 1.7  2003/05/21 18:48:10  pfpeterson
  * Added log file writing.
  *
@@ -99,7 +102,7 @@ public class LsqrsJ extends GenericTOF_SCD{
     addParameter(lfpg);
     addParameter(new IntArrayPG("Restrict Run Numbers (blank for all)",null));
     addParameter(new IntArrayPG("Restrict Sequence Numbers (blank for all)",null));
-    addParameter(new StringPG("Tramsform Matrix",identmat));
+    addParameter(new StringPG("Transform Matrix",identmat));
     SaveFilePG sfpg=new SaveFilePG("Matrix file to write to",null);
     sfpg.setFilter(new MatrixFilter());
     addParameter(sfpg);
