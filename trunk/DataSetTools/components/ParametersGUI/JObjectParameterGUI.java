@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/01/22 01:41:27  bouzekc
+ * Removed unused variables and unused imports.
+ *
  * Revision 1.7  2002/11/27 23:12:34  pfpeterson
  * standardized header
  *
@@ -47,7 +50,6 @@ import java.awt.*;
 import javax.swing.border.*;
 import java.io.*;
 import java.awt.event.*;
-import Command.*;
 import DataSetTools.util.*;
 
 public class JObjectParameterGUI extends    JParameterGUI 
@@ -67,7 +69,7 @@ public class JObjectParameterGUI extends    JParameterGUI
        super(parameter);
 
        serror = "";
-       String value = null; //((Integer)parameter.getValue()).toString();
+       //((Integer)parameter.getValue()).toString();
 
        intText = new JTextField();
        intText.setText("");

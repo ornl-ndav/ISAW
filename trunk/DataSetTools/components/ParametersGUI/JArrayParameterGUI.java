@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/22 01:41:27  bouzekc
+ * Removed unused variables and unused imports.
+ *
  * Revision 1.5  2002/11/27 23:12:34  pfpeterson
  * standardized header
  *
@@ -104,7 +107,7 @@ public class JArrayParameterGUI extends    JParameterGUI
    private Vector StringtoArray( String S)
    {
      execOneLine execLine = new execOneLine();
-     int r=execLine.execute(S, 0 , S.length());
+     execLine.execute(S, 0 , S.length());
 
      if( execLine.getErrorCharPos()>=0)
          return new Vector();
