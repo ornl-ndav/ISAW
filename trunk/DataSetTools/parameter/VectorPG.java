@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/06/10 14:54:07  pfpeterson
+ * Commented out a call that was meant to be a comment.
+ *
  * Revision 1.6  2003/06/10 14:42:21  rmikk
  * Now implements ParamUsesString
  * All GUI elements are now created first in init()
@@ -111,7 +114,7 @@ abstract public class VectorPG extends ParameterGUI
        this.param = param;
        setName( Prompt);
        pcs = new PropertyChangeSupport( this);
-       GUI = null;  new MJPanel( param );
+       GUI = null;  //new MJPanel( param );
        //GUI.addPropertyChangeListener( new MyPropertyChangeListener() );
        //entrywidget = butt;
        butt = null;//new JButton( param.getName());
