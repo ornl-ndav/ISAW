@@ -69,7 +69,7 @@ public class Fcvrt {
     *  Program that invokes this translator.
     * @param  args[0]  the filename of a file that contains a [sequence of]
     *                  subroutine[s] or function[s]
-    * @ return nothing but each subroutine and function will be translated
+    * @return nothing but each subroutine and function will be translated
     *          to a different java file. The filename corresponds to the 
     *          subroutine or function name.
     */
@@ -1088,7 +1088,16 @@ String RestOfNonAndOrExpression():{
 
        }|
 
-   {
+    LOOKAHEAD(2, <LOGDOT> <TRUE>)
+      <LOGDOT><TRUE>(<DOT>|<LOGDOT>){
+         return "true";
+     }
+   |LOOKAHEAD(2, <LOGDOT> <FALSE>)
+      <LOGDOT><FALSE>(<DOT>|<LOGDOT>){
+         return "false";
+     }
+
+   |{
      return "";
 
    }
