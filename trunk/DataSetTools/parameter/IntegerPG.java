@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/10/07 15:27:41  pfpeterson
+ *  Another attempt to fix the clone() bug.
+ *
  *  Revision 1.3  2002/09/30 15:20:51  pfpeterson
  *  Update clone method to return an object of this class.
  *
@@ -190,6 +193,9 @@ public class IntegerPG extends StringPG{
      * Definition of the clone method.
      */
     public Object clone(){
-        return (IntegerPG)super.clone();
+        IntegerPG pg=new IntegerPG(this.name,this.value,this.valid);
+        pg.setDrawValid(this.getDrawValid());
+        pg.initialized=false;
+        return pg;
     }
 }
