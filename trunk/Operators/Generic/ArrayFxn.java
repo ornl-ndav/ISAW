@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2004/03/17 20:24:37  dennis
+ * Fixed @see tag that was broken when view components, math and
+ * util were moved to gov package.
+ *
  * Revision 1.4  2004/03/15 19:36:53  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -119,7 +123,7 @@ public class ArrayFxn implements Wrappable {
     *     and round
     *   @return  A new Object of the same data type as ArrayHolder. Its values all 
     *     have the Rule applied to them
-    *   @see DataSetTools.functions.FunctionTools
+    *   @see gov.anl.ipns.MathTools.Functions.FunctionTools
     */
   public Object calculate( Vector ArrayHolder, String Rule){
 

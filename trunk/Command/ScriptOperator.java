@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.38  2004/03/17 20:25:08  dennis
+ * Fixed @see tag that was broken when view components, math and
+ * util were moved to gov package.
+ *
  * Revision 1.37  2004/03/15 23:58:31  dennis
  * Changed some references to static methods to be through the
  * class name instead of an instance.
@@ -429,7 +433,7 @@ public class ScriptOperator  extends  GenericOperator
  /**
    * Executed when an IObservable notifies this IObserver
    *
-   *@see DataSetTools.util.IObserver
+   *@see gov.anl.ipns.Util.Messaging.IObserver
    */ 
   public void update(  Object observed_obj ,  Object reason ){
     if(OL==null) return; // no one to notify
@@ -605,7 +609,7 @@ public class ScriptOperator  extends  GenericOperator
    * @return the result.  If there is an error the result is a
    * subclass of ErrorString
    *
-   * @see DataSetTools.util.ErrorString
+   * @see gov.anl.ipns.Util.SpecialStrings.ErrorString
    */
   public Object getResult(){
     int i;
