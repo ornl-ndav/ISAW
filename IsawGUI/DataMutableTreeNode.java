@@ -3,6 +3,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.7  2002/09/11 23:22:09  dennis
+ * Label for tree is now obtained using the Data.getLabel() method,
+ * rather than using the attribute at index 1 of the attribute list.
+ *
  * Revision 1.6  2002/05/30 16:53:17  chatterjee
  * Gets the label for the group and puts it in the tree
  *
@@ -58,7 +62,7 @@ public class DataMutableTreeNode
   public DataMutableTreeNode( Data d )
   {
     this.parent = parent;
-    name=(String)d.getAttributeValue(1);
+    name=d.getLabel();
     setUserObject( d );
   }
 
