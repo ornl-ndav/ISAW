@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/07/29 06:48:27  bouzekc
+ *  getStringValue() now returns proper case.
+ *
  *  Revision 1.7  2003/07/17 20:57:04  bouzekc
  *  setValue(int) now works if the GUI has not been created.
  *
@@ -184,7 +187,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
       return null;
     }
 
-    return tempVal.toLowerCase(  );
+    return tempVal;
   }
 
   /**
