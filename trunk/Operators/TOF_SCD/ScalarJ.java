@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/06/09 22:01:47  bouzekc
+ * getResult() now returns the name of the log file
+ * and prints a message to SharedData.
+ * Changed label on ChoiceList to "Symmetry Constraints."
+ *
  * Revision 1.11  2003/06/05 22:07:22  bouzekc
  * Updated documentation in constructor.
  *
@@ -254,7 +259,8 @@ public class ScalarJ extends GenericTOF_SCD{
     lfpg.setFilter(new MatrixFilter());
     addParameter(lfpg);
     addParameter(new FloatPG("Delta",0.01f));
-    ChoiceListPG clpg=new ChoiceListPG("Search Method",choices.elementAt(0));
+    ChoiceListPG clpg=new ChoiceListPG("Symmetry Constraints", 
+                                       choices.elementAt(0));
     clpg.addItems(choices);
     addParameter(clpg);
   }
@@ -296,6 +302,7 @@ public class ScalarJ extends GenericTOF_SCD{
    */
   public Object getResult(){
     String matfile=getParameter(0).getValue().toString();
+    String logfile = null;
     delta=(double)((Float)getParameter(1).getValue()).floatValue();
     String Schoice=getParameter(2).getValue().toString();
     int choice=choices.indexOf(Schoice);
@@ -340,7 +347,7 @@ public class ScalarJ extends GenericTOF_SCD{
     // print the results to the log file
     int index=matfile.lastIndexOf("/");
     if(index>=0){
-      String logfile=matfile.substring(0,index+1)+"scalar.log";
+      logfile=matfile.substring(0,index+1)+"scalar.log";
       if(!writeLog(logfile))
         SharedData.addmsg("WARNING: Error while writing scalar.log");
     }else{
@@ -348,7 +355,10 @@ public class ScalarJ extends GenericTOF_SCD{
     }
 
     logBuffer.delete(0,logBuffer.length()); // cut the log loose
-    return "See console for result";
+
+    //return the logfile name and print a message
+    SharedData.addmsg("See console for result");
+    return logfile;
   }
 
   /**
