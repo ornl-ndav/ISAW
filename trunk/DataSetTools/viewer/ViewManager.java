@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.47  2004/03/23 15:51:44  rmikk
+ *  Listeners were added to finalized the ViewManager(JFrame) after it is
+ *     disposed.
+ *
  *  Revision 1.46  2004/03/19 17:18:43  dennis
  *  Removed unused variables
  *
@@ -179,7 +183,8 @@ import javax.swing.*;
 
 public class ViewManager extends    JFrame
                          implements IViewManager,
-                                    Serializable
+                                    Serializable,
+                                    IFinish
 {
    public static boolean debug_view_manager   = false;
 
@@ -261,7 +266,7 @@ public class ViewManager extends    JFrame
         System.out.println("ERROR: ds is null in ViewManager constructor");
       else
         dataSet.addIObserver( this );
-
+      addWindowListener( new FinishWindowListener());
       addWindowListener(new WindowAdapter()
       {
         public void windowClosing(WindowEvent ev)
@@ -1087,5 +1092,12 @@ private float solve( float new_x ) // find what x in the original DataSet maps
       }
     }
   }
+ public void finish(){
 
+    try{
+      finalize();
+    }catch( Throwable ss){
+      System.out.println(" finalize error "+ss);
+    }
+ }
 }
