@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2005/01/28 21:28:13  dennis
+ *  Added getCategoryList to place operator under TOF_NDGS category.
+ *
  *  Revision 1.12  2004/07/16 19:02:46  dennis
  *  Fixed improper comparison with Float.NaN
  *
@@ -81,13 +84,13 @@ import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import java.io.Serializable;
 import java.util.Vector;
 
+import DataSetTools.operator.*;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.DataSetFactory;
 import DataSetTools.dataset.UniformXScale;
-import DataSetTools.operator.Parameter;
 import DataSetTools.parameter.IParameter;
 
 /**
@@ -166,6 +169,22 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
 
     parameter = getParameter(1);
     parameter.setValue( new Float( theta ) );
+  }
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.TOF_NDGS;
   }
 
 
