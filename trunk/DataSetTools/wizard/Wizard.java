@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.52  2003/07/03 15:50:53  bouzekc
+ * Added all missing javadocs and some additional code comments.
+ *
  * Revision 1.51  2003/07/02 22:53:40  bouzekc
  * Sorted methods according to access rights.
  *
@@ -276,81 +279,80 @@ import javax.swing.*;
 
 
 /**
- *  The Wizard class provides the top level control for a sequence of
- *  operations to be carried out with user interaction.  The
- *  quantities the the user interacts with are stored in a master list
- *  of all quantities used in the Wizard.  The quantites are stored as
- *  IParameterGUI objects.  The operations that are to be carried out
- *  are described by Form objects.  The Wizard also controls a
- *  sequence of forms and allows the user to step back and forth
- *  between forms. Each form defines an execute() method to carry out
- *  the action determined by the form. The Wizard also manages a
- *  simple help system. Help messages should be set for each form
- *  that is used in a particular Wizard application, as well as for
- *  the Wizard itself.
+ * The Wizard class provides the top level control for a sequence of operations
+ * to be carried out with user interaction.  The quantities the the user
+ * interacts with are stored in a master list of all quantities used in the
+ * Wizard.  The quantites are stored as IParameterGUI objects.  The operations
+ * that are to be carried out are described by Form objects.  The Wizard also
+ * controls a sequence of forms and allows the user to step back and forth
+ * between forms. Each form defines an execute() method to carry out the
+ * action determined by the form. The Wizard also manages a simple help
+ * system. Help messages should be set for each form that is used in a
+ * particular Wizard application, as well as for the Wizard itself. <br>
+ * <br>
+ * <u>HOW TO CREATE THE PARAMETER TABLE</u><br>
+ * <br>
+ * By Chris Bouzek<br>
+ * <br>
+ * The parameter table is used to coordinate the Forms for this Wizard.<br>
+ * <br>
+ * The referential links are arranged in a tabular format.<br>
+ * <br>
+ * Suppose that we have a Wizard with three Forms:<br>
+ * <br>
+ * LoadMultiHistogramsForm, named lmhf<br>
+ * TimeFocusGroupForm, named tfgf<br>
+ * SaveAsGSASForm, named sagf<br>
+ * <br>
+ * Suppose that the parameters on these forms are linked as follows:<br>
+ * lmhf parameter 5 = tfgf parameter 0<br>
+ * tfgf parameter 61 = sagf parameter 0<br>
+ * lmhf parameter 6 = sagf parameter 1<br>
+ * lmhf parameter 0 = sagf parameter 2<br>
+ * lmhf parameter 2 = sagf parameter 3<br>
+ * <br>
+ * Now, if we consider a table with the rows set as the Form indices, the
+ * columns set as the parameter number indices, and the cells of the table as
+ * the actual parameter numbers to link, it would look like this:<br><br>
+ * 
+ * <p align=center>
+ * lmhf    tfgf    sagf<br>
+ * |----------------------|<br>
+ * |   5   |   0   | -1   |<br>
+ * |----------------------|<br>
+ * |  -1   |  61   |  0   |<br>
+ * |----------------------|<br>
+ * |   6   |  -1   |  1   |<br>
+ * |----------------------|<br>
+ * |   0   |  -1   |  2   |<br>
+ * |----------------------|<br>
+ * |   2   |  -1   |  3   |<br>
+ * |----------------------|<br>
+ * <br>
+ * The indices are accessed in the following manner: [rowIndex][columnIndex]:
+ * You must place the actual parameter number within the integer array. For
+ * example, to set the link between LoadMultiHistogramForm's 5th parameter
+ * into TimeFocusGroupForm's 0th parameter, use the following: (assuming fpi
+ * has already been declared as a two-dimensional integer array of sufficient size):<br>
+ * <br>
+ * fpi[0][0] = 5;<br>
+ * fpi[0][1] = 0;<br>
+ * <br>
+ * Alternately, you may create the entire table  using Java's array
+ * initialization scheme, as shown:<br>
+ * <br>
+ * int fpi[][] = {{5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3}};<br>
+ * <br>
+ * DON'T put a row of -1's in the parameter table.  There is no point to it,
+ * since you are supposed to be linking parameters, so linking no parameters
+ * at all makes no sense.<br><br>
+ * </p>
  *
- *  <br><br>
- *  <u>HOW TO CREATE THE PARAMETER TABLE</u><br><br>
- *  By Chris Bouzek<br><br>
- *
- *  The parameter table is used to coordinate the Forms for this
- *  Wizard.<br><br>
- *
- *  The referential links are arranged in a tabular format.<br><br>
- *  Suppose that we have a Wizard with three Forms:<br><br>
- *
- *  LoadMultiHistogramsForm, named lmhf<br>
- *  TimeFocusGroupForm, named tfgf<br>
- *  SaveAsGSASForm, named sagf<br><br>
- *
- *  Suppose that the parameters on these forms are linked as follows:<br>
- *  lmhf parameter 5 = tfgf parameter 0<br>
- *  tfgf parameter 61 = sagf parameter 0<br>
- *  lmhf parameter 6 = sagf parameter 1<br>
- *  lmhf parameter 0 = sagf parameter 2<br>
- *  lmhf parameter 2 = sagf parameter 3<br><br>
- *
- *  Now, if we consider a table with the rows set as the Form indices, the
- *  columns set as the parameter number indices, and the cells of the table as
- *  the actual parameter numbers to link, it would look like this:<br><br>
- *
- *  <center>
- *
- *    lmhf    tfgf    sagf<br>
- *  |----------------------|<br>
- *  |   5   |   0   | -1   |<br>
- *  |----------------------|<br>
- *  |  -1   |  61   |  0   |<br>
- *  |----------------------|<br>
- *  |   6   |  -1   |  1   |<br>
- *  |----------------------|<br>
- *  |   0   |  -1   |  2   |<br>
- *  |----------------------|<br>
- *  |   2   |  -1   |  3   |<br>
- *  |----------------------|<br><br></center>
- *
- *  The indices are accessed in the following manner: [rowIndex][columnIndex]:
- *  You must place the actual parameter number within the integer array.
- *  For example, to set the link between LoadMultiHistogramForm's 5th
- *  parameter into TimeFocusGroupForm's 0th parameter, use the following:
- *  (assuming fpi has already been declared as a two-dimensional integer
- *  array of sufficient size):<br><br>
- *
- *  fpi[0][0] = 5;<br>
- *  fpi[0][1] = 0;<br><br>
- *
- *  Alternately, you may create the entire table  using Java's array
- *  initialization scheme, as shown:<br><br>
- *
- *   int fpi[][] = { {5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3} };<br><br>
- *
- *   DON'T put a row of -1's in the parameter table.  There is no point to it,
- *   since you are supposed to be linking parameters, so linking no parameters
- *   at all makes no sense.<br><br>
- *
- *  @see Form
+ * @see Form
  */
 public abstract class Wizard implements PropertyChangeListener {
+  //~ Static fields/initializers ***********************************************
+
   // size of the window
   private static final int FORM_PROGRESS = 100;
   private static final int STRUT_HEIGHT  = 5;
@@ -373,6 +375,8 @@ public abstract class Wizard implements PropertyChangeListener {
 
   // debugging
   private static boolean DEBUG = false;
+
+  //~ Instance fields **********************************************************
 
   // default help and about messages
   private String help_message  = "Help not available for Wizard";
@@ -404,6 +408,8 @@ public abstract class Wizard implements PropertyChangeListener {
   private JComponent[] wizComponents;
   private boolean ignorePropChanges;
 
+  //~ Constructors *************************************************************
+
   /**
    * The legacy constructor
    *
@@ -434,37 +440,35 @@ public abstract class Wizard implements PropertyChangeListener {
     save_frame        = new JFrame( "Save Form as..." );
   }
 
+  //~ Methods ******************************************************************
+
   /**
-   *  Set the message that will be displayed when the user chooses
-   *  the help about option.
+   * Set the message that will be displayed when the user chooses the help
+   * about option.
    *
-   *  @param about_message  String giving the message to use for the
-   *                        "Help About" option.
+   * @param about_message String giving the message to use for the "Help About"
+   *        option.
    */
   public void setAboutMessage( String about_message ) {
     this.about_message = about_message;
   }
 
   /**
-   *  Get the help about message for this wizard.
-   *
-   *  @return the String giving the help about message for this wizard.
+   * @return the String giving the help about message for this wizard.
    */
   public String getAboutMessage(  ) {
     return about_message;
   }
 
   /**
-   *  Get the form that is currently displayed by the wizard.
-   *
-   *  @return  The currently displayed form.
+   * @return The currently displayed form.
    */
   public Form getCurrentForm(  ) {
     return getForm( getCurrentFormNumber(  ) );
   }
 
   /**
-   * Get the number of the form currently being shown.
+   * @return the number of the Form currently being shown.
    */
   public int getCurrentFormNumber(  ) {
     return form_num;
@@ -473,7 +477,9 @@ public abstract class Wizard implements PropertyChangeListener {
   /**
    * Get the form at specified index.
    *
-   * @return The form at the specified index.
+   * @param index The index where the desired Form resides at.
+   *
+   * @return The Form at the specified index.
    */
   public Form getForm( int index ) {
     if( ( index >= 0 ) && ( index < forms.size(  ) ) ) {
@@ -484,50 +490,51 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Set the help message that will be displayed when the user
-   *  requests help with this wizard.
+   * Set the help message that will be displayed when the user requests help
+   * with this wizard.
    *
-   *  @param help_message  String giving the help message to use for this
-   *                       wizard.
+   * @param help_message String giving the help message to use for this wizard.
    */
   public void setHelpMessage( String help_message ) {
     this.help_message = help_message;
   }
 
   /**
-   *  Get the help message for this wizard.
-   *
-   *  @return the String giving the help message for this wizard.
+   * @return the String giving the help message for this wizard.
    */
   public String getHelpMessage(  ) {
     return help_message;
   }
 
   /**
-   *  Used to set the ignorePropChanges variable.  Useful because
-   *  many things trigger property change events, with possible
-   *  undesired effects.
+   * Used to set the ignorePropChanges variable.  Useful because many things
+   * trigger property change events, with possible undesired effects.
+   *
+   * @param ignore true if property changes are to be ignored, false otherwise.
    */
   public void setIgnorePropertyChanges( boolean ignore ) {
     ignorePropChanges = ignore;
   }
 
   /**
-   *  Accessor method to get ignorePropChanges variable.
+   * Accessor method to get ignorePropChanges variable.
+   *
+   * @return true if the Wizard is ignoring property changes, false otherwise.
    */
   public boolean getIgnorePropertyChanges(  ) {
     return ignorePropChanges;
   }
 
   /**
-   *  Used to get the number of the last valid Form (i.e the Form that has
-   *  all of its parameters set to valid).
+   * Used to get the number of the last valid Form (i.e the Form that has all
+   * of its parameters set to valid).
    *
-   *  @return               The index of the last valid Form number.
+   * @return The index of the last valid Form.
    */
   public int getLastValidFormNum(  ) {
     for( int i = 0; i < this.getNumForms(  ); i++ ) {
-      if( !getForm( i ).done(  ) ) {
+      if( !getForm( i )
+               .done(  ) ) {
         return i - 1;
       }
     }
@@ -536,19 +543,18 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Accessor method to get the number of Forms.
+   * Accessor method to get the number of Forms.
    *
-   *  @return     Number of Forms in this Wizard.
+   * @return number of Forms in this Wizard.
    */
   public int getNumForms(  ) {
     return forms.size(  );
   }
 
   /**
-   *  Add another form to the list of forms maintained by this
-   *  wizard.
+   * Add another form to the list of forms maintained by this wizard.
    *
-   *  @param f  The form to be added to the list.
+   * @param f The Form to be added to the list.
    */
   public void addForm( Form f ) {
     forms.add( f );
@@ -562,7 +568,8 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Save the state of the wizard then exit the wizard application.
+   * Exits the wizard application.  If the Wizard has been changed and not been
+   * saved, this will ask the user if they want to save.
    */
   public void close(  ) {
     int save_me = 1;
@@ -581,9 +588,9 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Method to execute the Wizard without bringing up the GUI.
+   * Method to execute the Wizard without bringing up the GUI.
    *
-   *  @param  saveFile             The Wizard Save File (*.wsf) to use.
+   * @param saveFile The Wizard Save File (.wsf) to use.
    */
   public void executeNoGUI( String saveFile ) {
     this.setIgnorePropertyChanges( true );
@@ -596,12 +603,11 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Method to handle linking of parameters using the paramIndex table.
-   *  Instructions for creating this table are at the top of the Wizard.
-   *  Note that the Forms must be added before this method will work.
+   * Method to handle linking of parameters using the paramIndex table.
+   * Instructions for creating this table are at the top of the Wizard. Note
+   * that the Forms must be added before this method will work.
    *
-   *  @param  paramTable                The table of parameters to link
-   *                                    together.
+   * @param paramTable The table of parameters to link together.
    */
   public void linkFormParameters( int[][] paramTable ) {
     int numForms;
@@ -643,16 +649,15 @@ public abstract class Wizard implements PropertyChangeListener {
               System.out.print( "Linking " + getForm( nonNegFormIndex ) + ": " );
               System.out.print( nonNegParamIndex + ": " );
               System.out.print( 
-                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex )
-                  .getName(  ) );
+                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ).getName(  ) );
               System.out.print( " with " + getForm( colIndex ) + ": " );
               System.out.print( paramTable[rowIndex][colIndex] + ": " );
               System.out.println( 
-                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex )
-                  .getName(  ) );
+                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ).getName(  ) );
             }
 
-            getForm( colIndex ).setParameter( 
+            getForm( colIndex )
+              .setParameter( 
               getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ),
               paramTable[rowIndex][colIndex] );
           }
@@ -662,7 +667,9 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Load the state of the wizard from a file
+   * Load the state of the wizard from a file.
+   *
+   * @return true if the Wizard loaded successfully, false otherwise.
    */
   public boolean load(  ) {
     File f;
@@ -688,10 +695,11 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   * Method to depopulate part of the view list if the
-   * parameters change.  If ignorePropChanges is set
-   * true, as it is when the Wizard is loading Forms,
+   * Method to depopulate part of the view list if the parameters change.  If
+   * ignorePropChanges is set true, as it is when the Wizard is loading Forms,
    * the viewMenu is the only thing that changes.
+   *
+   * @param ev The property change event that was triggered.
    */
   public void propertyChange( PropertyChangeEvent ev ) {
     if( !ignorePropChanges ) {
@@ -703,7 +711,7 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Save the state of the wizard to a file
+   * Save the state of the wizard to a file.
    */
   public void save(  ) {
     if( forms == null ) {
@@ -728,11 +736,10 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Show the form at the specified position in the list of forms.
-   *  If the index is invalid, an error message will be displayed in
-   *  the status pane.
+   * Show the form at the specified position in the list of forms. If the index
+   * is invalid, an error message will be displayed in the status pane.
    *
-   *  @param  index  The index of the form to show.
+   * @param index The index of the form to show.
    */
   public void showForm( int index ) {
     if( !frame.isShowing(  ) ) {
@@ -794,6 +801,8 @@ public abstract class Wizard implements PropertyChangeListener {
 
   /**
    * Execute all forms up to the number specified.
+   *
+   * @param end The number of the last Form to be executed.
    */
   protected void exec_forms( int end ) {
     modified = true;
@@ -836,11 +845,14 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   * Invalidate all forms starting with the number specified.
+   * Invalidate all Forms starting with the number specified.
+   *
+   * @param start The number of the Form to start invalidating Forms at.
    */
   protected void invalidate( int start ) {
     for( int i = start; i < forms.size(  ); i++ ) {
-      getForm( i ).invalidate(  );
+      getForm( i )
+        .invalidate(  );
     }
 
     //we are farther along then the invalidated Form, so reset the progress
@@ -856,7 +868,7 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Makes the GUI for this Wizard.
+   * Makes the GUI for this Wizard.
    */
   protected void makeGUI(  ) {
     LookAndFeelManager.setLookAndFeel(  );
@@ -879,12 +891,15 @@ public abstract class Wizard implements PropertyChangeListener {
 
     frame.setJMenuBar( menu_bar );
     frame.addWindowListener( new CloseWizardWindow(  ) );
-    frame.getContentPane(  ).add( work_area );
+    frame.getContentPane(  )
+         .add( work_area );
 
     {
-      int screenheight = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  )
+      int screenheight = ( int )( Toolkit.getDefaultToolkit(  )
+                                         .getScreenSize(  )
                                          .getHeight(  ) * 0.75f );
-      int screenwidth = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  )
+      int screenwidth = ( int )( Toolkit.getDefaultToolkit(  )
+                                        .getScreenSize(  )
                                         .getWidth(  ) * 0.75f );
 
       frame.setBounds( 0, 0, screenwidth, screenheight );
@@ -1049,18 +1064,19 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Shows the GUI for this Wizard by calling the outer Frame's
-   *  show() method.
+   * Shows the GUI for this Wizard by calling the outer Frame's show() method.
    */
   protected void showGUI(  ) {
     frame.show(  );
   }
 
   /**
-   *  Opens a file for input or output.
+   * Opens a file for input or output.
    *
-   *  @param saving  A boolean indicating whether you want to open the
-   *                 file for saving (true) or loading (false)
+   * @param saving A boolean indicating whether you want to open the file for
+   *        saving (true) or loading (false)
+   *
+   * @return the File that has been opened.
    */
   private File getFile( boolean saving ) {
     int result;
@@ -1074,7 +1090,8 @@ public abstract class Wizard implements PropertyChangeListener {
     }
 
     //try to remember the previous value the user entered
-    if( ( save_file != null ) && !save_file.toString(  ).equals( "" ) ) {
+    if( ( save_file != null ) && !save_file.toString(  )
+                                             .equals( "" ) ) {
       fileChooser.setSelectedFile( save_file );
     }
 
@@ -1121,41 +1138,44 @@ public abstract class Wizard implements PropertyChangeListener {
       }
     }
 
-    if( ( save_file == null ) || save_file.getName(  ).equals( "" ) ) {
+    //somehow we got a bad file
+    if( ( save_file == null ) || save_file.getName(  )
+                                            .equals( "" ) ) {
       JOptionPane.showMessageDialog( 
         save_frame, "Please enter a valid file name", "ERROR",
         JOptionPane.ERROR_MESSAGE );
 
       return null;
     } else {
+      //successfull opened a file
       return save_file;
     }
   }
 
   /**
-   *  Shows the JavaHelp HTML page for the current form.
-   *
+   * Shows the JavaHelp HTML page for the current form.
    */
   private void ShowFormHelpMessage(  ) {
     HTMLizer form_htmlizer = new HTMLizer(  );
     String html            = form_htmlizer.createHTML( this.getCurrentForm(  ) );
     JFrame help_frame      = new JFrame( title );
-    Dimension screen_size  = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
+    Dimension screen_size  = Toolkit.getDefaultToolkit(  )
+                                    .getScreenSize(  );
 
     help_frame.setSize( 
       new Dimension( 
         ( int )( screen_size.getWidth(  ) / 2 ),
         ( int )( screen_size.getHeight(  ) / 2 ) ) );
-    help_frame.getContentPane(  ).add( 
-      new JScrollPane( new JEditorPane( "text/html", html ) ) );
+    help_frame.getContentPane(  )
+              .add( new JScrollPane( new JEditorPane( "text/html", html ) ) );
     help_frame.show(  );
   }
 
   /**
-   *  Show the specified String in the help frame.
+   * Show the specified String in the help frame.
    *
-   *  @param str   The message to display in a dialog.
-   *  @param title The title of the dialog.
+   * @param str The message to display in a dialog.
+   * @param title The title of the dialog.
    */
   private void ShowHelpMessage( String str, String title ) {
     JOptionPane.showMessageDialog( 
@@ -1163,12 +1183,10 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Converts a StringBuffer which holds an XML String of
-   *  IParameterGUI and Form information into data that
-   *  the Wizard can understand.
+   * Converts a StringBuffer which holds an XML String of IParameterGUI and
+   * Form information into data that the Wizard can understand.
    *
-   *  @param s The StringBuffer that holds the parameter
-   *           information.
+   * @param s The StringBuffer that holds the parameter information.
    */
   private void convertXMLtoParameters( StringBuffer s )
     throws IOException {
@@ -1294,9 +1312,12 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   * Method to call a ParameterViewer.  Since the only "oddball" events
-   * that currently happen are for the view menu, the only commands to
-   * listen for are the ones for the current form.
+   * Method to call a ParameterViewer.  Since the only "oddball" events that
+   * currently happen are for the view menu, the only commands to listen for
+   * are the ones for the current form.
+   *
+   * @param com The command (IParameterGUI name) to attempt to display the
+   *        parameter viewer for.
    */
   private void displayParameterViewer( String com ) {
     Form f;
@@ -1325,12 +1346,11 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Utility to enable/disable the Wizard navigation buttons.
+   * Utility to enable/disable the Wizard navigation buttons.
    *
-   *  @param   enable            true to enable, false to disable.
-   *
-   *  @param  index              The index of the Form to enable/disable
-   *                             navigation buttons on.
+   * @param enable true to enable, false to disable.
+   * @param index The index of the Form to enable/disable navigation buttons
+   *        on.
    */
   private void enableNavButtons( boolean enable, int index ) {
     if( enable ) {
@@ -1370,8 +1390,10 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Loads Forms from a file.  It actually just loads the saved
-   *  IParameterGUI values into the Wizard's Forms' parameters.
+   * Loads Forms from a file.  It actually just loads the saved IParameterGUI
+   * values into the Wizard's Forms' parameters.
+   *
+   * @param file The Wizard Save File to load information from.
    */
   private void loadForms( File file ) {
     char ca;
@@ -1390,6 +1412,7 @@ public abstract class Wizard implements PropertyChangeListener {
         good = fr.read(  );
       }
 
+      //now convert the xml to usable data
       convertXMLtoParameters( s );
     } catch( IOException e ) {
       JOptionPane.showMessageDialog( 
@@ -1408,9 +1431,8 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *
-   * Creates the view menu and listeners for all of the currently
-   * validated parameters in the current Form.
+   * Creates the view menu and listeners for all of the currently validated
+   * parameters in the current Form.
    */
   private void populateViewMenu(  ) {
     JMenuItem jmi;
@@ -1446,14 +1468,12 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
+   * Write the Forms to a file, using the conc_forms Vector. The only things
+   * actually written are the Form's IParameterGUI types, name, and value in
+   * XML format along with XML tags for the Form index.
    *
-   *  Write the Forms to a file, using the conc_forms Vector.
-   *  The only things actually written are the Form's
-   *  IParameterGUI types, name, and value in XML format along with
-   *  XML tags for the Form index.
-   *
-   *  @param conc_forms The Vector of Forms to write to a file.
-   *  @param file the File to write to.
+   * @param conc_forms The Vector of Forms to write to a file.
+   * @param file the File to write to.
    */
   private void writeForms( Vector conc_forms, File file ) {
     StringBuffer s = new StringBuffer(  );
@@ -1490,7 +1510,8 @@ public abstract class Wizard implements PropertyChangeListener {
             obj = null;
           }
 
-          if( ( obj == null ) || ( obj.toString(  ).length(  ) <= 0 ) ) {
+          if( ( obj == null ) || ( obj.toString(  )
+                                        .length(  ) <= 0 ) ) {
             s.append( "emptyString" );
           } else {
             s.append( obj.toString(  ) );
@@ -1527,13 +1548,19 @@ public abstract class Wizard implements PropertyChangeListener {
     }
   }
 
+  //~ Inner Classes ************************************************************
+
   /**
-   *  This class closes down the application when the user closes
-   *  the frame.
+   * This class closes down the application when the user closes the frame.
    */
   private class CloseWizardWindow extends WindowAdapter {
     //~ Methods ****************************************************************
 
+    /**
+     * Triggered when a window is closed.
+     *
+     * @param event The window event which was triggered.
+     */
     public void windowClosing( WindowEvent event ) {
       close(  );
     }
@@ -1542,8 +1569,7 @@ public abstract class Wizard implements PropertyChangeListener {
   /* ---------------- Internal Event Handler Classes --------------------- */
 
   /**
-   *  This class handles all of the commands from buttons and menu
-   *  items.
+   * This class handles all of the commands from buttons and menu items.
    */
   private class CommandHandler implements ActionListener {
     //~ Instance fields ********************************************************
@@ -1553,12 +1579,23 @@ public abstract class Wizard implements PropertyChangeListener {
 
     //~ Constructors ***********************************************************
 
+    /**
+     * Creates a new CommandHandler object.
+     *
+     * @param wiz The Wizard to have this CommandHandler listen to.
+     */
     public CommandHandler( Wizard wiz ) {
       this.wizard = wiz;
     }
 
     //~ Methods ****************************************************************
 
+    /**
+     * Required for ActionListener implementation.  Listens to all the Wizard
+     * buttons.
+     *
+     * @param event The triggering ActionEvent
+     */
     public void actionPerformed( ActionEvent event ) {
       String command = event.getActionCommand(  );
 
@@ -1625,10 +1662,9 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *
-   *  This wizard is multithreaded so that the progress bar and Form update
-   *  messages can be displayed for the user.  Since we only need two
-   *  threads of execution, the choice of a SwingWorker was clear.
+   * This wizard is multithreaded so that the progress bar and Form update
+   * messages can be displayed for the user.  Since we only need two threads
+   * of execution, the choice of a SwingWorker was clear.
    */
   private class WizardWorker extends SwingWorker {
     //~ Instance fields ********************************************************
@@ -1638,14 +1674,18 @@ public abstract class Wizard implements PropertyChangeListener {
     //~ Methods ****************************************************************
 
     /**
-     *  Used to set the form number for calling exec_forms.
+     * Used to set the Form number for calling exec_forms.
+     *
+     * @param num the Form number to use for exec_forms.
      */
     public void setFormNumber( int num ) {
       formNum = num;
     }
 
     /**
-     *  Required for SwingWorker.
+     * Required for SwingWorker.
+     *
+     * @return "Success" - unused.
      */
     public Object construct(  ) {
       //can't have users mutating the values!
@@ -1665,8 +1705,10 @@ public abstract class Wizard implements PropertyChangeListener {
     }
 
     /**
-     *  Implicit calls to getCurrentForm in order to enable or disable the
-     *  parameters.
+     * Implicit calls to getCurrentForm in order to enable or disable the
+     * parameters.
+     *
+     * @param enable Whether to enable parameters or not.
      */
     private void enableFormParams( boolean enable ) {
       Form f = getCurrentForm(  );
