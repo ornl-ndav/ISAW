@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/08/01 22:33:35  dennis
+ *  Set Java's serialVersionUID = 1.
+ *  Set the local object's IsawSerialVersion = 1 for our
+ *  own version handling.
+ *  Added readObject() method to handle reading of different
+ *  versions of serialized object.
+ *
  *  Revision 1.7  2002/07/17 20:35:06  dennis
  *  Now traps invalid index in getY_value()
  *
@@ -87,8 +94,26 @@ import DataSetTools.util.*;
  */
 
 public class HistogramTable extends    TabulatedData
-                            implements Serializable
 {
+  // NOTE: any field that is static or transient is NOT serialized.
+  //
+  // CHANGE THE "serialVersionUID" IF THE SERIALIZATION IS INCOMPATIBLE WITH
+  // PREVIOUS VERSIONS, IN WAYS THAT CAN NOT BE FIXED BY THE readObject()
+  // METHOD.  SEE "IsawSerialVersion" COMMENTS BELOW.  CHANGING THIS CAUSES
+  // JAVA TO REFUSE TO READ DIFFERENT VERSIONS.
+  //
+  public  static final long serialVersionUID = 1L;
+
+
+  // NOTE: The following fields are serialized.  If new fields are added that
+  //       are not static, reasonable default values should be assigned in the
+  //       readObject() method for compatibility with old servers, until the
+  //       servers can be updated.
+
+  private int IsawSerialVersion = 1;         // CHANGE THIS WHEN ADDING OR
+                                             // REMOVING FIELDS, IF
+                                             // readObject() CAN FIX ANY
+                                             // COMPATIBILITY PROBLEMS
   /**
    * Constructs a Data object containing a table of frequency histogram values 
    * specifying an "X" scale, "Y" values and a group id for that data object.
@@ -211,29 +236,6 @@ public class HistogramTable extends    TabulatedData
 
 
   /**
-   *  Set the specified array of y_values as the y_values for this Data 
-   *  object.  If there are more y_values than there are x_values in the
-   *  XScale for this object, the excess y_values are discarded.  If there
-   *  are not as many y_values as there are x_values, the new y_values array
-   *  is padded with 0s.
-   */
-  private void init( float y_values[] )
-  {
-    int n_bins = x_scale.getNum_x() - 1;
-    this.y_values = new float[ n_bins ];
-
-    if ( y_values.length >= n_bins )
-      System.arraycopy( y_values, 0, this.y_values, 0, n_bins );
-    else
-    {
-      System.arraycopy( y_values, 0, this.y_values, 0, y_values.length );
-      for ( int i = y_values.length; i < n_bins; i++ )
-        this.y_values[i] = 0;
-    }
-  }
-
-
-  /**
    *  Get an approximate y value corresponding to the specified x_value in this 
    *  Data block. If the x_value is outside of the interval of x values
    *  for the Data, this returns 0.  In other cases, the approximation used is
@@ -319,6 +321,35 @@ public class HistogramTable extends    TabulatedData
   }
 
 
+/* -----------------------------------------------------------------------
+ *
+ *  PRIVATE METHODS
+ *
+ */
+
+  /**
+   *  Set the specified array of y_values as the y_values for this Data
+   *  object.  If there are more y_values than there are x_values in the
+   *  XScale for this object, the excess y_values are discarded.  If there
+   *  are not as many y_values as there are x_values, the new y_values array
+   *  is padded with 0s.
+   */
+  private void init( float y_values[] )
+  {
+    int n_bins = x_scale.getNum_x() - 1;
+    this.y_values = new float[ n_bins ];
+
+    if ( y_values.length >= n_bins )
+      System.arraycopy( y_values, 0, this.y_values, 0, n_bins );
+    else
+    {
+      System.arraycopy( y_values, 0, this.y_values, 0, y_values.length );
+      for ( int i = y_values.length; i < n_bins; i++ )
+        this.y_values[i] = 0;
+    }
+  }
+
+
   /**
    * Alter this Data object by "rebinning" the y values of the current 
    * object to correspond to a new set of x "bins" given by the parameter
@@ -350,8 +381,24 @@ public class HistogramTable extends    TabulatedData
   }
 
 
-  public static void main( String argv[] )
+/* ---------------------------- readObject ------------------------------- */
+/**
+ *  The readObject method is called when objects are read from a serialized
+ *  ojbect stream, such as a file or network stream.  The non-transient and
+ *  non-static fields that are common to the serialized class and the
+ *  current class are read by the defaultReadObject() method.  The current
+ *  readObject() method MUST include code to fill out any transient fields
+ *  and new fields that are required in the current version but are not
+ *  present in the serialized version being read.
+ */
+
+  private void readObject( ObjectInputStream s ) throws IOException,
+                                                        ClassNotFoundException
   {
+    s.defaultReadObject();               // read basic information
+
+    if ( IsawSerialVersion != 1 )
+      System.out.println("Warning:HistogramTable IsawSerialVersion != 1");
   }
 
 }
