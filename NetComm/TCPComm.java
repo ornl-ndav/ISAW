@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/02/21 18:37:15  dennis
+ *  Now "automatically" sends and receives DataSets in compressed form.
+ *
  *  Revision 1.10  2003/02/21 13:13:46  dennis
  *  Java keeps a hashtable of objects sent over the tcp/ip connection
  *  through the output stream.  This allows them to only send a "handle"
@@ -54,6 +57,8 @@ package NetComm;
 import java.net.*;
 import java.lang.*;
 import java.io.*;
+import DataSetTools.dataset.*;
+import DataSetTools.util.*;
 
 /**
  *  Creates Object I/O streams, given a TCP socket, and handles sending
@@ -152,6 +157,12 @@ public class TCPComm
   {
     try
     {
+      if ( data_obj instanceof DataSet )    // use CompressedDataSet instead
+      {
+        CompressedDataSet comp_ds = new CompressedDataSet( (DataSet)data_obj );
+        data_obj = comp_ds;
+      }
+
       obj_out_stream.writeObject( data_obj );
       obj_out_stream.flush();
       out_stream.flush();
@@ -202,6 +213,8 @@ public class TCPComm
     try
     {
       data_obj = obj_in_stream.readObject( );
+      if ( data_obj instanceof CompressedDataSet )            // expand it 
+        data_obj = ((CompressedDataSet)data_obj).getDataSet();    
     }
     catch( ClassNotFoundException e )
     {
