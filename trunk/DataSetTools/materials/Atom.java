@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/02/04 16:05:03  pfpeterson
+ * Throws an InstantiationError if cannot find element in the database.
+ * Also fixed bug with finding the incoherent cross section.
+ *
  * Revision 1.5  2003/02/03 22:46:55  pfpeterson
  * Fixed a labeling bug with various cross sections. Small speed
  * and readability improvements.
@@ -101,7 +105,8 @@ public class Atom{
 	isotope=iso;
 	concentration=conc;
 	if(!this.getIsotopeInfo()){
-	    this.element=null;
+          throw new InstantiationError("Could not find information on: "+ele);
+                                       //this.element=null;
 	}
     }
 
@@ -157,6 +162,7 @@ public class Atom{
 	matchSym=" "+matchSym+" ";
 
 	try{
+            boolean found=false;
 	    TextFileReader f = new TextFileReader( isotopefile );
 	    line=f.read_line();
 	    while(line!=null){
@@ -165,13 +171,14 @@ public class Atom{
 		if(index>=0){
 		    //System.out.println(symbol);
 		    f.unread();
+                    found=true;
 		    break;
 		}
 		line=f.read_line();
 	    }
 	    line=f.read_line();
 	    f.close();
-	    if(line==null){
+	    if( !found || line==null ){
 		return false;
 	    }
 	    splitIsotopeInfo(line);
@@ -217,16 +224,16 @@ public class Atom{
     // imaginary portion of the incoherent scattering length
     this.I_b_inc=checkNullFloat(sb);
 
-    // coherent scattering cross section CHANGE ME
+    // coherent scattering cross section
     this.xs_coh=checkNullFloat(sb);
 
-    // incoherent scattering cross section CHANGE ME
-    this.xs_coh=checkNullFloat(sb);
+    // incoherent scattering cross section
+    this.xs_inc=checkNullFloat(sb);
 
-    // total scattering cross section CHANGE ME
+    // total scattering cross section
     this.xs_tot=checkNullFloat(sb);
 
-    // scattering absorption cross section CHANGE ME
+    // scattering absorption cross section
     this.xs_abs=checkNullFloat(sb);
 
     // time needed to store before no longer 'hot'
@@ -343,6 +350,9 @@ public class Atom{
      *  Accessor method for the element name
      */
     public String element(){
+      if(this.element==null)
+        return null;
+      else
 	return new String(this.element);
     }
 
