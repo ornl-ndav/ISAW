@@ -38,6 +38,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2003/03/19 19:35:50  rmikk
+ *  Added a Menu option( Edit/SpreadSheet/Intensity)
+ *   on the viewer to calculate the Intensity of the zoomed
+ *   in area.
+ *
  *  Revision 1.23  2002/11/27 23:24:29  pfpeterson
  *  standardized header
  *
@@ -244,8 +249,15 @@ public class ContourView extends DataSetViewer
      tree_ = new JMenuItem( "Graph" );
      jm.add( tree_ );
      tree_.addActionListener( new MyAction() );
+
+     JMenu SprdSheet  = new JMenu( "SpreadSheet");
+     jm.add( SprdSheet);
+     JMenuItem Intensity = new JMenuItem( "Intensity");
+     SprdSheet.add( Intensity);
+     Intensity.addActionListener( new IntensityListener() );
+
      DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( menu_bar, this );
-      
+     
      jm = menu_bar.getMenu( DataSetViewer.OPTION_MENU_ID );
      jm.add( new ColorScaleMenu( new ColorActionListener() ) );
 
@@ -1731,6 +1743,130 @@ public class ContourView extends DataSetViewer
      { System.out.println("XXX focus Lost");
       }
 
-   }
+   }// MyFocusListener
+
+  class IntensityListener implements ActionListener
+   {
+    public void actionPerformed( ActionEvent evt )
+     {
+       if( cd == null)  return;
+       Domain D = rpl_.getRange();
+       if( D == null)
+          return;
+       if( D.getXRange() == null) return;
+       if( D.getYRange() == null) return;
+       //System.out.println("Xrange="+D.getXRange().start+","+D.getXRange().end);
+      // System.out.println("Yrange="+D.getYRange().start+","+D.getYRange().end);
+       //System.out.println("");
+       double[] xArray = ((SGTGrid) newData).getXArray();
+       double[] yArray  =((SGTGrid)  newData).getYArray();
+       double[] zArray = ((SGTGrid) newData).getZArray();
+      
+       int xstart = findCoordIndex(D.getXRange().start, xArray, true);
+       int xend  =findCoordIndex(D.getXRange().end, xArray, false);
+       int ystart = findCoordIndex(D.getYRange().start, yArray, true);
+       int yend  =findCoordIndex(D.getYRange().end, yArray, false);
+
+       float SumSel=0.0f, SumBorder= 0.0f;
+       int nSel =0, nBord = 0;
+       for( int x = xstart; x <= xend; x++)
+         for( int y = ystart; y<= yend; y++)
+          {
+            float value = getValue( yArray.length ,  zArray, x, y);
+            if(Float.isNaN(value)){}
+            else
+               { SumSel+= value;
+                 nSel++;
+               }
+
+           }
+       //Top and Bottom Borders
+      for( int x = xstart-1; x <= xend+1; x++)
+       if( x >= 0)
+          if( x <= xArray.length -1)
+           { if( ystart -1 >=0)
+               {
+                float value = getValue( yArray.length ,  zArray, x, ystart -1);
+                if(Float.isNaN(value)){}
+                 else
+                  { SumBorder+= value;
+                   nBord++;
+                  }
+                }
+              if( yend + 1 <= yArray.length -1)
+              {
+                float value = getValue( yArray.length ,  zArray, x, yend + 1);
+                if(Float.isNaN(value)){}
+                 else
+                  { SumBorder+= value;
+                   nBord++;
+                  }
+              }
+
+           }// if x is in range
+
+       //Right and Left borders
+       for( int y = ystart; y <= yend; y++)
+         {
+           if( xstart-1 >=0)
+               {
+                float value = getValue( yArray.length ,  zArray, xstart-1, y );
+                if(Float.isNaN(value)){}
+                 else
+                  { SumBorder+= value;
+                   nBord++;
+                  }
+                }
+            if( xend+1 <= xArray.length-1)
+              {
+                float value = getValue( yArray.length ,  zArray, xend + 1, y );
+                if(Float.isNaN(value)){}
+                 else
+                  { SumBorder+= value;
+                   nBord++;
+                  }
+                }
+
+         }  //For for right and left borders
+
+         float Intensity =(SumSel - (nSel * SumBorder/nBord));
+        String S="Intensity=" + Intensity +"\n";
+        double p_over_b = (0.0 + nSel)/nBord;
+        double sigI =java.lang.Math.sqrt( SumSel + p_over_b*p_over_b*SumBorder);
+        S+= "(Poisson)Error = " + sigI;
+        S+="\n Intensity/error="+(Intensity/sigI);
+
+          
+       (new JOptionPane()).showMessageDialog( null, S);
+
+     }
+   private float getValue( int axisLength,double[] Zvalues, int x, int y)
+    { 
+     if( x < 0) return Float.NaN;
+     if( y < 0) return Float.NaN;
+     if( y >= axisLength) return Float.NaN;
+     int index = (x-1)*axisLength + y;
+     if( index >= Zvalues.length) return Float.NaN;
+     return (float) Zvalues[ index];
+
+    }
+
+   // Gives index that makes sure whole block is in the Range
+   private int findCoordIndex( double value, double[] list, boolean leftEndpoint)
+    {
+      int ind = Arrays.binarySearch( list, value);
+      if( ind < 0)
+        { ind = -ind -1; //insert before point
+          if( !leftEndpoint) 
+            ind--;
+         
+        }
+       return ind;
+
+
+     }
+
+
+   }//class IntensityListener
 }
 
