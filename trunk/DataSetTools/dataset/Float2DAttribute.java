@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/04/26 13:12:45  rmikk
+ *  null constructor is now public
+ *
  *  Revision 1.9  2004/03/15 06:10:36  dennis
  *  Removed unused import statements.
  *
@@ -136,7 +139,7 @@ public class Float2DAttribute extends Attribute{
         }
     }
     
-    private Float2DAttribute(){
+    public Float2DAttribute(){
         super( "" );
         this.value =new float[1][1];
         this.value[0][0]=0f;
@@ -294,7 +297,7 @@ public class Float2DAttribute extends Attribute{
             return xml_utils.setError( xml_utils.getErrorMessage());
         if( !Tag.equals("name"))
             return xml_utils.setError("name Tag Missing in Float2D");
-        this.name = xml_utils.getValue( stream);
+        name = xml_utils.getValue( stream);
         if( name == null)
             return xml_utils.setError("name Tag Missing in Float2D");
         
@@ -357,7 +360,7 @@ public class Float2DAttribute extends Attribute{
         //create the float array
         if(nRow<=0 || nCol<=0)
             return xml_utils.setError("Bad array dimension: "+nRow
-                                      +" by "+nCol);
+                                     +" by "+nCol);
         
         read_value=new float[nRow][nCol];
         
@@ -386,7 +389,7 @@ public class Float2DAttribute extends Attribute{
             return xml_utils.setError("Tags not nested in Float2D"+Tag);
         if(!xml_utils.skipAttributes( stream ))
             return xml_utils.setError( xml_utils.getErrorMessage());
-        return true;
+        return true;//(Attribute)(new Float2DAttribute(name,value));
     }
     
     /**
