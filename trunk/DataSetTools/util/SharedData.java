@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/01/10 15:36:42  rmikk
+ *  Added a Global StatusPane.  Everyone can write to this
+ *  as follows:
+ *     SharedData.status_pane.add( Value)
+ *
  *  Revision 1.4  2001/08/16 19:34:07  dennis
  *  Temporarily added an instance of Dongfeng's SpectrometerPlotter, so that
  *  DataSets from an old server could be received properly.
@@ -67,10 +72,18 @@ public class SharedData implements java.io.Serializable
   public static final PropertiesLoader isaw_props 
                                         = new PropertiesLoader("IsawProps.dat");
   
+ 
   public static final String BUILD_DATE = "Unknown_Build_Date";
+
+  /** The Global StatusPane.  Everyone can "add"(Display) values on this pane
+  * if Displayable or the Values will be displayed on System.out
+  */
+  public static final Command.StatusPane status_pane= 
+              new Command.StatusPane( 30,70);
 
   // This is here to allow DataSets from an old version of the servers to
   // be received by this version.  SpectromterPlotter is obsolete and should
   // be removed.
   public static final Operator old_op = new SpectrometerPlotter();
+ 
 }
