@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/08/13 23:30:49  dennis
+ *  Now has separate error messages for bad user name and bad password.
+ *
  *  Revision 1.3  2001/08/09 15:24:06  dennis
  *  Put debug prints in "if (debug_retriever)" blocks.
  *
@@ -118,11 +121,14 @@ public class RemoteFileRetriever extends    RemoteDataRetriever
   { 
     if ( ds_type == null )
     {
-      if ( server_alive && user_pass_ok )
+      if ( server_alive && user_ok && password_ok )
         return BAD_FILE_NAME;
-      
+
+      if ( server_alive && user_ok )
+        return BAD_PASSWORD;
+
       if ( server_alive )
-        return BAD_USER_OR_PASSWORD;
+        return BAD_USER_NAME;
 
       return SERVER_DOWN;
     }
