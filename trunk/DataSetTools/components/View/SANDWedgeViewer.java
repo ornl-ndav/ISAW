@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.40  2004/09/15 22:00:24  millermi
+ * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
+ *   Adding a second log required the boolean parameter to be changed
+ *   to an int. These changes may affect any ObjectState saved configurations
+ *   made prior to this version.
+ *
  * Revision 1.39  2004/07/10 06:38:31  millermi
  * - Added functionality for all selections to be written to
  *   file. Previously, only the last selection was written to file.
@@ -735,13 +741,13 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 				       array.length-0.001f );
         VirtualArray2D va2D = new VirtualArray2D( array, err_array );
         va2D.setAxisInfo( AxisInfo.X_AXIS, qxmin, qxmax, 
-    		            xlabel, xunit, true );
+    		            xlabel, xunit, AxisInfo.LINEAR );
         va2D.setAxisInfo( AxisInfo.Y_AXIS, qymin, qymax, 
-    			    ylabel, yunit, true );
+    			    ylabel, yunit, AxisInfo.LINEAR );
         // since datamin/max are gotten from the image,
 	// the min/max are dummy values.
 	va2D.setAxisInfo( AxisInfo.Z_AXIS, 0, 1, 
-    			    zlabel, zunit, true );
+    			    zlabel, zunit, AxisInfo.LINEAR );
         int separator_index = filename.lastIndexOf(
         	                    System.getProperty("file.separator") );
 	va2D.setTitle(filename.substring(separator_index + 1));

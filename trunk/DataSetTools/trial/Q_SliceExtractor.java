@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/09/15 22:03:51  millermi
+ * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
+ *   Adding a second log required the boolean parameter to be changed
+ *   to an int. These changes may affect any ObjectState saved configurations
+ *   made prior to this version.
+ *
  * Revision 1.10  2004/05/10 22:43:10  dennis
  * Test program now just instantiates a Frame to diplay
  * calculated result, rather than keeping a reference to it.
@@ -532,25 +538,25 @@ public class Q_SliceExtractor
      {  
        va2D.setTitle( "H = -4" );
        va2D.setAxisInfo( AxisInfo.X_AXIS, 1f, 7f,
-                        "K","(Index)", true );
+                        "K","(Index)", AxisInfo.LINEAR );
        va2D.setAxisInfo( AxisInfo.Y_AXIS, 1f, 7f,
-                        "L","(Index)", true );
+                        "L","(Index)", AxisInfo.LINEAR );
      }
      if ( hkl_cut.equals( CONST_K ) )
      {  
        va2D.setTitle( "K = 4" );
        va2D.setAxisInfo( AxisInfo.X_AXIS, -7f, -1f,
-                        "H","(Index)", true );
+                        "H","(Index)", AxisInfo.LINEAR );
        va2D.setAxisInfo( AxisInfo.Y_AXIS, 1f, 7f,
-                        "L","(Index)", true );
+                        "L","(Index)", AxisInfo.LINEAR );
      }
      if ( hkl_cut.equals( CONST_L ) )
      {
        va2D.setTitle( "L = 4" );
        va2D.setAxisInfo( AxisInfo.X_AXIS, -7f, -1f,
-                        "H","(Index)", true );
+                        "H","(Index)", AxisInfo.LINEAR );
        va2D.setAxisInfo( AxisInfo.Y_AXIS, 1f, 7f,
-                        "K","(Index)", true );
+                        "K","(Index)", AxisInfo.LINEAR );
      }
 
      new ImageFrame2( va2D );
@@ -587,9 +593,9 @@ public class Q_SliceExtractor
      va2D = new VirtualArray2D( vol_array );
      va2D.setTitle( "K = 4" );
      va2D.setAxisInfo( AxisInfo.X_AXIS, -5.15f, -4.85f,
-                      "H","(Index)", true );
+                      "H","(Index)", AxisInfo.LINEAR );
      va2D.setAxisInfo( AxisInfo.Y_AXIS, 4.85f, 5.15f,
-                      "L","(Index)", true );
+                      "L","(Index)", AxisInfo.LINEAR );
      new ImageFrame2( va2D );
   }
 

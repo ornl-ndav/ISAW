@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/09/15 22:03:50  millermi
+ * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
+ *   Adding a second log required the boolean parameter to be changed
+ *   to an int. These changes may affect any ObjectState saved configurations
+ *   made prior to this version.
+ *
  * Revision 1.11  2004/05/10 22:43:10  dennis
  * Test program now just instantiates a Frame to diplay
  * calculated result, rather than keeping a reference to it.
@@ -273,9 +279,9 @@ public class ImageFrame2 extends JFrame
         test_array[i][j] = i + j;
     VirtualArray2D va2D = new VirtualArray2D( test_array );
     va2D.setAxisInfo( AxisInfo.X_AXIS, 0f, 10000f, 
-    		        "TestX","TestUnits", true );
+    		        "TestX","TestUnits", AxisInfo.LINEAR );
     va2D.setAxisInfo( AxisInfo.Y_AXIS, 0f, 1500f, 
-    			"TestY","TestYUnits", false );
+    			"TestY","TestYUnits", AxisInfo.TRU_LOG );
     va2D.setTitle("ImageFrame Test");
     new ImageFrame2( va2D );
     // test setData() 10 times

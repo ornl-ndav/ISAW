@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/09/15 22:03:51  millermi
+ * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
+ *   Adding a second log required the boolean parameter to be changed
+ *   to an int. These changes may affect any ObjectState saved configurations
+ *   made prior to this version.
+ *
  * Revision 1.10  2004/08/18 17:17:30  rmikk
  * Added support for markers at integer hkl values if there is enough information
  *
@@ -1143,10 +1149,10 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
      *  @param  max Maximum value for this axis.
      *  @param  label Label associated with the axis.
      *  @param  units Units associated with the values for this axis.
-     *  @param  islinear Is axis linear ( true ) or logarithmic ( false)
+     *  @param  scale Define axis as linear or log.
      */
     public void setAxisInfo(int axis, float min, float max,
-        String label, String units, boolean islinear) {}
+        String label, String units, int scale) {}
 
 
 
@@ -1584,11 +1590,11 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             if ((Xscales[ 0 ].getXScale() != null) && (nchan > 0))
                 return new AxisInfo(Mintimex, Maxtimex, 
                         DataSets[ 0 ].getX_label(), 
-                        DataSets[ 0 ].getX_units(), true);
+                        DataSets[ 0 ].getX_units(), AxisInfo.LINEAR);
             else
                 return new AxisInfo(Mintimex - sgn * .5f, 
                                     Maxtimex + sgn * .5f, 
-                                    "Channel", "", true);     
+                                    "Channel", "", AxisInfo.LINEAR);     
 
         } else if (f == 1) {//row
             String end = "EndRow";
@@ -1601,7 +1607,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             return new AxisInfo((float) getInt(
                        (Integer) state.get(start), MaxRows) - sgn * .5f, 
                        (float) getInt((Integer) state.get(end), 1) + sgn * .5f, 
-                       "Row", "", true);
+                       "Row", "", AxisInfo.LINEAR);
 
         } else if (f == 2) {//col
             String end = "EndCol";
@@ -1614,7 +1620,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             return new AxisInfo((float) getInt(
                   (Integer) state.get(start), MaxRows) - sgn * .5f, 
                   (float) getInt((Integer) state.get(end), 1) + sgn * .5f, 
-                  "Col", "", true);
+                  "Col", "", AxisInfo.LINEAR);
 
         } else if (f == 3) {//grid
             String end = "MaxGridindx";
@@ -1627,7 +1633,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             return new AxisInfo((float) getInt(
                   (Integer) state.get(start), GridNums.length - 1) - sgn * .5f, 
                   (float) getInt((Integer) state.get(end), 0) + sgn * .5f, 
-                   "Grid", "", true);
+                   "Grid", "", AxisInfo.LINEAR);
 
         } else if (f == 4) {//row
             String end = "MaxDSindx";
@@ -1640,7 +1646,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             return new AxisInfo((float) getInt(
                 (Integer) state.get(start), DataSets.length - 1) - sgn * .5f, 
                 (float) getInt((Integer) state.get(end), 0) + sgn * .5f, 
-                "DataSet", "", true);
+                "DataSet", "", AxisInfo.LINEAR);
 
         } else
 

@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2004/09/15 22:03:50  millermi
+ * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
+ *   Adding a second log required the boolean parameter to be changed
+ *   to an int. These changes may affect any ObjectState saved configurations
+ *   made prior to this version.
+ *
  * Revision 1.15  2004/09/06 20:34:02  dennis
  * Added option to write the list of bins that are above the currently
  * selected threshold, in the form of a "modified" peaks file with each
@@ -3237,9 +3243,9 @@ private class PlaneListener implements ActionListener
 
        // ##### patch
        va2d.setAxisInfo( AxisInfo.X_AXIS, -10.0f, 10.0f,
-                         "X","Uncalibrated Units", true );
+                         "X","Uncalibrated Units", AxisInfo.LINEAR );
        va2d.setAxisInfo( AxisInfo.Y_AXIS, -10.0f, 10.0f,
-                         "Y","Uncalibrated Units", false );
+                         "Y","Uncalibrated Units", AxisInfo.TRU_LOG );
 
        va2d.setTitle( title );
        if ( frame == null )
