@@ -31,7 +31,6 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.border.*;
 import java.util.zip.*;
-import OverplotView.*;
 
 /**
  * The display area for the images and graphs for ISAW. It defines different methods 
@@ -95,18 +94,6 @@ public class JDataViewUI extends JDesktopPane implements Serializable
     else if (frame == "External Frame")
      view_manager = new ViewManager( ds, view_type );
   }
-
-  public JFrame ShowSelectedGraphView(DataSet ds )
-  {
-    JFrame jf = new JFrame(ds.getTitle());
-    OverplotView.GraphableDataManager sgv = new OverplotView.GraphableDataManager(ds);
-    jf.getContentPane().add(sgv);
-     sgv.setVisible(true);
-    return jf;
-    
-    
-  }
-
 
 
   public void closeAll() 
