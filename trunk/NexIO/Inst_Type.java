@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/03/18 21:06:49  dennis
+ * Fixed indexing error.
+ *
  * Revision 1.4  2002/02/26 15:31:34  rmikk
  * Added Code to incorporate the TOFNDGS instrument type
  * Added utility routines to get link names, set up an xval node with
@@ -167,13 +170,15 @@ public String getNexAnalysisName( int IsawInstrNum)
        { 
          float[] phi=new float[endIndex - beginIndex];
          for( int i = beginIndex;i<endIndex;i++)
-           {Data D = DS.getData_entry(beginIndex );
+           {Data D = DS.getData_entry(i );
             Attribute  A = D.getAttribute( Attribute.DETECTOR_POS);
             if( A == null)
               { SharedData.status_pane.add("No Detector position attribute");
                 return null;
               }
-            phi[i-beginIndex] = ((DetPosAttribute)A).getDetectorPosition().getScatteringAngle();
+            phi[i-beginIndex] = 
+	      ((DetPosAttribute)A).getDetectorPosition().getScatteringAngle();
+	    
             }
          NxWriteNode nphi = nxdetector.newChildNode("phi","SDS");
          nphi.setNodeValue( phi, Types.Float, makeRankArray(phi.length,-1,-1,-1,-1));
