@@ -56,9 +56,19 @@ public class  QxQyQzAxesHandler
       * NOTE: The y value can be gotten with getX(i)
       */
       public float  getValue( int GroupIndex, int xIndex)
-         { float[] Q = getQunitVect( GroupIndex);
-           System.out.println("unit Qx,Qy,Qz="+Q[0]+","+Q[1]+","+Q[2]);
+         { if( GroupIndex <0)
+             return 0f;
+           if( GroupIndex >= ds.getNum_entries())
+              return 0;
+           if( xIndex < 0)
+              return 0.0f;
+           float[] Q = getQunitVect( GroupIndex);
+           if( Q== null)
+               return 0f;
+          
            Data D = ds.getData_entry( GroupIndex);
+           if( D == null)
+             return 0f;
            return D.getX_scale().getX(xIndex)*Q[0];
           } 
 
@@ -73,6 +83,8 @@ public class  QxQyQzAxesHandler
           if( D == null)
               return -1;
            int i = D.getX_scale().getI(Value/Q[0]);
+           if( i >= D.getX_scale().getNum_x())
+             return -1;
            if( D.isHistogram()) i--;
            return i;
          }
@@ -112,8 +124,25 @@ public class  QxQyQzAxesHandler
       * NOTE: The y value can be gotten with getX(i)
       */
       public float  getValue( int GroupIndex, int xIndex)
-         { float[] Q = getQunitVect( GroupIndex);
+         { 
+           if( GroupIndex <0)
+             return 0f;
+
+           if( GroupIndex >= ds.getNum_entries())
+              return 0;
+
+          if( xIndex < 0)
+              return 0.0f;
+ 
+           float[] Q = getQunitVect( GroupIndex);
+
+           if( Q== null)
+               return 0f;
+          
            Data D = ds.getData_entry( GroupIndex);
+
+           if( D == null)
+             return 0f;
            return D.getX_scale().getX(xIndex)*Q[1];
           } 
 
@@ -128,6 +157,8 @@ public class  QxQyQzAxesHandler
           if( D == null)
               return -1;
            int i = D.getX_scale().getI(Value/Q[1]);
+           if( i >= D.getX_scale().getNum_x())
+             return -1;
            if( D.isHistogram()) i--;
            return i;
          }
@@ -167,8 +198,19 @@ public class  QxQyQzAxesHandler
       * NOTE: The y value can be gotten with getX(i)
       */
       public float  getValue( int GroupIndex, int xIndex)
-         { float[] Q = getQunitVect( GroupIndex);
+         { if( GroupIndex <0)
+             return 0f;
+           if( GroupIndex >= ds.getNum_entries())
+              return 0;
+          if( xIndex < 0)
+              return 0.0f;
+           float[] Q = getQunitVect( GroupIndex);
+           if( Q== null)
+               return 0f;
+          
            Data D = ds.getData_entry( GroupIndex);
+           if( D == null)
+             return 0f;
            return D.getX_scale().getX(xIndex)*Q[2];
           } 
 
@@ -183,7 +225,9 @@ public class  QxQyQzAxesHandler
            if( D == null)
               return -1;
            int i = D.getX_scale().getI(Value/Q[2]);
-           if( D.isHistogram()) i--;
+           if( i >= D.getX_scale().getNum_x())
+             return -1;
+           if( D.isHistogram() &&( i>0)) i--;
            return i;
          }
        public float getMaxAxisValue(int GroupIndex)
@@ -208,4 +252,39 @@ public class  QxQyQzAxesHandler
 
 
       }
+  public static void main( String args[])
+   {
+    if( args == null)
+       System.exit(0);
+    if( args.length < 1)
+       System.exit( 1);
+    String filename = args[0].trim();
+    DataSet[] DS = (new IsawGUI.Util()).loadRunfile( filename);
+    if( DS == null)
+      System.exit(0);
+    int k= DS.length -1;
+    if( args.length >1 )
+      try{
+         k =(new Integer( args[1].trim())).intValue();
+
+         }
+      catch( Exception u){}
+     DataSet ds = DS[k];
+     DataSetTools.operator.DataSet.DataSetOperator op = ds.getOperator( "Convert to Q");
+     Object O = op.getResult();
+     if( O instanceof DataSet)
+         ds = (DataSet)O;
+     else
+      {System.out.println( O);
+       System.exit(0);
+      }
+    QxQyQzAxesHandler Qax = new QxQyQzAxesHandler( ds );
+    IAxisHandler Ax3 = Qax.getQzAxis();
+    for( int i=0;i<ds.getNum_entries(); i++)
+      System.out.println( "Min,Max="+Ax3.getMinAxisValue( i)+","+
+          Ax3.getMaxAxisValue( i));
+   
+
+
+    }
   }
