@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2003/12/15 20:19:58  dennis
+ * Removed unused imports.
+ *
  * Revision 1.31  2003/08/11 19:44:44  dennis
  * Detector segment orientation is now calculated from the DataGrid,
  * (if possible), rather than making individual pixels so that their
@@ -89,9 +92,7 @@ package DataSetTools.viewer.ThreeD;
 
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
-import DataSetTools.viewer.util.*;
 import DataSetTools.components.image.*;
-import DataSetTools.instruments.*;
 import DataSetTools.viewer.*;
 import DataSetTools.math.*;
 import DataSetTools.components.containers.*;
@@ -101,7 +102,6 @@ import DataSetTools.retriever.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.text.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
