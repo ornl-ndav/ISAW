@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/06/18 20:32:54  pfpeterson
+ * Removed deprecated method.
+ *
  * Revision 1.14  2003/06/18 19:38:55  pfpeterson
  * ShowW() now calls method in StringUtil.
  *
@@ -248,24 +251,13 @@ public class NxNodeUtils{
   }  //fixUnsignedArray
 
   /**
-   * Shows the value of many, many types of Objects
-   *
-   * @deprecated calls should be made to {@link
-   * DataSetTools.util.StringUtil StringUtil}
-   */
-  public String Showw( Object X ){
-    return StringUtil.toString(X);
-  }
-
-
-  /**
    * test array for parse dates
    */
   public static void main( String args[] ){
     Object X;
     String[] ss = {"abc", "cde", "efg"};
     
-    System.out.println( "String Arry=" + new NxNodeUtils().Showw( ss ) );
+    System.out.println( "String Arry=" + StringUtil.toString( ss ) );
     NxNodeUtils NU = new NxNodeUtils();
     Calendar C = new GregorianCalendar();
     
@@ -455,7 +447,7 @@ public class NxNodeUtils{
         ( ( int[] )X )[ 0] = -3000;
         X = NU.fixUnsignedArray( X, NexusFile.NX_UINT32, 10 );
       }else if( c == '6' ){
-        System.out.println( NU.Showw( X ) );
+        System.out.println( StringUtil.toString( X ) );
       }else if( c == '7' )
         System.out.println( NU.getErrorMessage() );
     }
