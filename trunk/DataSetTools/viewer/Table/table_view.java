@@ -31,6 +31,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.15  2002/01/17 23:16:13  dennis
+ * Now closes file immediately after writing it.
+ * Also changed label to "Selected indices".
+ *
  * Revision 1.14  2001/11/27 18:37:20  dennis
  *    1. If no indices are selected:
  *       a) Indicated in the label with RED letters
@@ -351,7 +355,7 @@ public class table_view extends JPanel implements ActionListener
        setSelectedGRoup_Display( IntList.ToString( DS[0].
                                  getSelectedIndices() ) );
 
-       selectEdit = new JButton( "Select Group indices" );
+       selectEdit = new JButton( "Select indices" );
        selectEdit.addActionListener( this );
        selectAllEdit = new JCheckBox( "Use All Groups" , false );
        DBSeqOpt = new JRadioButton( "List Groups Sequentially" ,
@@ -745,6 +749,15 @@ public class table_view extends JPanel implements ActionListener
                {File F = JFC.getSelectedFile();
                 filename = F.getPath().trim(); 
                 Showw();         
+                try
+                {
+                  f.close();
+                }
+                catch ( IOException exception )
+                {
+                  System.out.println("Exception closing file in table_view");
+                  System.out.println("Exception is " + exception );
+                }
                }
            setState();
           }
