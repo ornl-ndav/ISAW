@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.93  2002/04/12 20:52:05  pfpeterson
+ *  Removed the listeners that pay attention to the split_pane dividers.
+ *
  *  Revision 1.92  2002/04/11 16:02:47  pfpeterson
  *  Put version information (w/o build date) in the title bar of
  *  the main ISAW window.
@@ -608,7 +611,7 @@ public class Isaw
 
     upper_sp= new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
                                       jdt, jcui, 0.2f);
-    upper_sp.addPropertyChangeListener(new PropertyChangeListener(){
+    /*upper_sp.addPropertyChangeListener(new PropertyChangeListener(){
        public void propertyChange(PropertyChangeEvent ev){
          if(initialized && 
             JSplitPane.DIVIDER_LOCATION_PROPERTY.equals(ev.getPropertyName())
@@ -642,11 +645,11 @@ public class Isaw
              //System.out.println(tree+" ");
          }
        }
-    });
+       }); */
 
     main_sp= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT,
                                      upper_sp, StatusPanel, 1f-0.2f );
-    main_sp.addPropertyChangeListener(new PropertyChangeListener(){
+    /*main_sp.addPropertyChangeListener(new PropertyChangeListener(){
       public void propertyChange(PropertyChangeEvent ev){
          if(initialized && 
             JSplitPane.DIVIDER_LOCATION_PROPERTY.equals(ev.getPropertyName())
@@ -682,7 +685,7 @@ public class Isaw
              //System.out.println(status+" ");
          }
       }
-    });
+      }); */
 
     upper_sp.setOneTouchExpandable(true);
     Container con = getContentPane();
