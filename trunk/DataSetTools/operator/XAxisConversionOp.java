@@ -2,6 +2,9 @@
  * @(#)XAxisConversionOp.java   0.1  2000/04/20   Dennis Mikkelson
  *
  * $Log$
+ * Revision 1.2  2001/03/01 20:53:45  dennis
+ * Fixed naming errors in @see comments.
+ *
  * Revision 1.1  2000/11/10 23:10:31  dennis
  * New abstract base class for operators.  Allows automatic
  * generation of hierarchical menus using operator categories.
@@ -30,7 +33,7 @@ import  DataSetTools.util.*;
   * X axis to different units.
   *
   *  @see DS_Conversion
-  *  @see DiffractomterTofToD
+  *  @see DiffractometerTofToD 
   */
 
 abstract public class XAxisConversionOp extends    DS_Conversion 

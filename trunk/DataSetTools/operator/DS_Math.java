@@ -2,6 +2,9 @@
  * @(#)DS_Math.java     1.0  2000/11/08  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/03/01 20:53:35  dennis
+ *  Fixed naming errors in @see comments.
+ *
  *  Revision 1.1  2000/11/10 23:01:14  dennis
  *  New abstract base class for operators.  Allows automatic
  *  generation of hierarchical menus using operator categories.
@@ -18,7 +21,7 @@ import java.io.*;
  * on the Data blocks of one or more DataSets.
  *
  * @see DataSetOperator
- * @see Scalar 
+ * @see ScalarOp 
  *
  */
 
