@@ -5,6 +5,10 @@
  *                               2000/06/09  Renamed from just Integrate
  *             
  * $Log$
+ * Revision 1.2  2000/08/02 20:17:58  dennis
+ * Changed to use TrapIntegrate() for function data instead of just using
+ * IntegrateHistogram for histogram data
+ *
  * Revision 1.1  2000/07/10 22:36:10  dennis
  * July 10, 2000 version... many changes
  *
@@ -154,7 +158,13 @@ public class  IntegrateGroup  extends    DataSetOperator
       float x_vals[] = data.getX_scale().getXs();
       float y_vals[] = data.getY_values();
 
-      float result = NumericalAnalysis.IntegrateHistogram(x_vals, y_vals, a, b);
+      float result;
+
+      if ( x_vals.length == y_vals.length + 1 )  // histogram
+        result = NumericalAnalysis.IntegrateHistogram( x_vals, y_vals, a, b );
+      else                                       // tabulated function
+        result = NumericalAnalysis.TrapIntegrate( x_vals, y_vals, a, b );
+
       return new Float( result );  
     }
   }  
