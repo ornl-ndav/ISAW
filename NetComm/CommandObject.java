@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/10/21 21:13:25  dennis
+ *  Added command codes for ExecuteOpCommand subclass
+ *
  *  Revision 1.7  2003/03/07 22:42:19  dennis
  *  Added command GET_DS_X_RANGE, "fixed" command values for
  *  GET_FILE_NAMES and GET_FILE_SUMMARY
@@ -89,7 +92,11 @@ public class CommandObject implements Serializable
   public static final int GET_FILE_NAMES   = 210;// This can only be used with a
   public static final int GET_FILE_SUMMARY = 220;// GetFileCommandObject, since 
                                                  // it requires a directory name
-  public static final int END_FILE_CMDS   = 300; // BOUND ON FILE_COMMANDS
+  public static final int END_FILE_CMDS    = 300;// BOUND ON FILE_COMMANDS
+
+  public static final int RETURN_RESULT    = 310;
+  public static final int RESULT_IN_FILE   = 320;
+  public static final int END_EXECUTE_CMDS = 400;// BOUND ON EXECUTE COMMANDS
 
   public static final String ALL_IDS = "-1";
 
@@ -103,7 +110,9 @@ public class CommandObject implements Serializable
                                                  GET_DATA_BLOCKS,
                                                  GET_SUMMARY,
                                                  GET_FILE_NAMES,
-                                                 GET_FILE_SUMMARY };
+                                                 GET_FILE_SUMMARY,
+                                                 RETURN_RESULT,
+                                                 RESULT_IN_FILE };
 
   public static final String[] command_names = {"INVALID", 
                                                 "EXIT",
@@ -115,7 +124,9 @@ public class CommandObject implements Serializable
                                                 "GET_DATA_BLOCKS",
                                                 "GET_SUMMARY",
                                                 "GET_FILE_NAMES",
-                                                "GET_FILE_SUMMARY" };
+                                                "GET_FILE_SUMMARY",
+                                                "RETURN_RESULT",
+                                                "RESULT_IN_FILE" };
 
   /**
    *  We define the serialVersionUID so that we can upgrade and maintain basic
@@ -153,7 +164,7 @@ public class CommandObject implements Serializable
    */
   public CommandObject( int command, String username, String password )
   {
-    if ( command <= END_BASIC_CMDS )    // only allow top level commands
+    if ( command < END_BASIC_CMDS )      // only allow top level commands
       this.command  = command; 
 
     this.username = username;
