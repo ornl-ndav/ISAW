@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/06/07 21:19:07  dennis
+ *  Added calls to System.gc() at the end of clone() and copy()
+ *  methods.
+ *
  *  Revision 1.15  2001/06/06 21:20:24  dennis
  *  The copy() method now also preserves the last_sort_attribute value.
  *
@@ -1403,6 +1407,7 @@ public class DataSet implements IAttributeList,
                                        //       the observers of this DataSet
                                        //       that it's contents changed.                              
     this.notifyIObservers( IObserver.DATA_CHANGED );
+    System.gc();
   }
 
 
@@ -1425,6 +1430,7 @@ public class DataSet implements IAttributeList,
         new_ds.addData_entry( (Data)d.clone() );
     }
 
+    System.gc();
     return new_ds;
   }
 
