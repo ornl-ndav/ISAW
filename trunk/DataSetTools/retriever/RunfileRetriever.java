@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.60  2003/02/10 15:21:51  dennis
+ *  Now adds detector grid to DataSet attributes and PixelList
+ *  to Data block attributes, for SCD and SAD instruments only.
+ *  Eventually, the SegmentInfoList should be removed for these
+ *  instruments.
+ *
  *  Revision 1.59  2003/01/15 20:54:26  dennis
  *  Changed to use SegmentInfo, SegInfoListAttribute, etc.
  *
@@ -148,6 +154,7 @@ import IPNS.Runfile.*;
 import IPNS.Calib.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
+import DataSetTools.viewer.*;
 import java.util.*;
 import java.io.*;
 
@@ -185,6 +192,7 @@ public class RunfileRetriever extends    Retriever
                             = new FloatAttribute(Attribute.EFFICIENCY_FACTOR,1);
   private Hashtable        det_cen_dist_attrs  = new Hashtable();
   private Hashtable        det_cen_angle_attrs = new Hashtable();
+  private Hashtable        det_data_grid_attrs = new Hashtable();
 
 /**
  *  Construct a runfile retriever for a specific file.
@@ -665,10 +673,18 @@ private float CalculateEIn()
              !run_file.IsSubgroupBeamMonitor(group_id) &&
              !run_file.IsPulseHeight(group_id)                            )
        {
+                                             // Although the detector data grid
+                                             // is a DataSet attribute, we need
+                                             // a segment to get at the detID
+           if ( instrument_type == InstrumentType.TOF_SCD ||
+                instrument_type == InstrumentType.TOF_SAD )
+             Add_DetectorDataGrid( data_set.getAttributeList(),
+                                   group_segments[0].DetID() );
+
          tf_type = run_file.TimeFieldType(group_id);
          if ( tf_type != last_tf_type )      // only get the times if it's a
                                              // new time field type
-         { 
+         {                               
            bin_boundaries = run_file.TimeChannelBoundaries(group_id);
            num_times      = bin_boundaries.length;
            last_tf_type   = tf_type;
@@ -1011,6 +1027,38 @@ private float CalculateEIn()
     float_attr =new FloatAttribute(Attribute.DELTA_2THETA, delta_2theta  );
     attr_list.setAttribute( float_attr );
 
+    // PixelInfo ....
+    if ( instrument_type == InstrumentType.TOF_SCD ||
+         instrument_type == InstrumentType.TOF_SAD )
+    if ( group_segments.length > 0 )
+    {
+      short      row;
+      short      col;
+      int        seg_id;
+      int        det_id;
+      IDataGrid  data_grid;
+      Integer    key;
+      IPixelInfo    list[] = new IPixelInfo[group_segments.length]; 
+      PixelInfoList pil;
+      for ( int i = 0; i < group_segments.length; i++ )
+      {
+        det_id = group_segments[i].DetID();
+        seg_id = group_segments[i].SegID();
+        row = (short)group_segments[i].Row();
+        col = (short)group_segments[i].Column();
+
+        key = new Integer(det_id);
+        DetectorDataGridAttribute data_grid_attr =
+                      (DetectorDataGridAttribute)det_data_grid_attrs.get( key );
+        data_grid = (IDataGrid)data_grid_attr.getValue(); 
+        list[i] = new DetectorPixelInfo( seg_id, row, col, data_grid );   
+      }
+      pil = new PixelInfoList(list);
+      attr_list.setAttribute( 
+                  new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST, pil) );
+    }
+    
+
     // SegmentInfo ....
 
     SegmentInfo seg_info_list[] = new SegmentInfo[ group_segments.length ];
@@ -1213,6 +1261,74 @@ private float CalculateEIn()
        } 
        attr_list.setAttribute( float_attr );
     }
+
+
+  /**
+   *  Add Detector data grid information as an attribute to the DataSet.
+   *
+   * @param attr_list The list of attributes to which the detector
+   *                  information is added.
+   * @param id        Detector number.
+   */
+    private void Add_DetectorDataGrid( AttributeList attr_list, int id )
+    {
+                             // to allow sharing the attributes, we keep them
+                             // in a hash table, keyed by a string form of
+                             // the detector id.  This will work for an
+                             // arbitrary number of detectors.
+       Integer key = new Integer(id);
+
+       DetectorDataGridAttribute data_grid_attr =
+                     (DetectorDataGridAttribute)det_data_grid_attrs.get( key );
+       if ( data_grid_attr == null )
+       {
+         float det_angle  = (float)run_file.RawDetectorAngle(id);
+         float det_dist   = (float)run_file.RawFlightPath(id);
+         float det_height = (float)run_file.RawDetectorHeight(id);
+         det_angle = (float)(det_angle * Math.PI/180);
+         DetectorPosition det_pos = new DetectorPosition();
+         det_pos.setCylindricalCoords( det_dist, det_angle, det_height );
+         Vector3D det_cen = new Vector3D( det_pos );
+ 
+                                         // assume y_vec in detector coords 
+                                         // is vertical in lab coords
+         Vector3D y_vec   = new Vector3D( 0, 0, 1 );
+                                         // make the normal to the detector be
+                                         // unit vector pointing from center
+                                         // back to origin
+         Vector3D z_vec   = new Vector3D( det_cen ); 
+         z_vec.normalize();
+         z_vec.multiply(-1);
+                                         // make the x_vec in detector coords
+                                         // so we have a right hand system
+         Vector3D x_vec   = new Vector3D();
+         x_vec.cross( y_vec, z_vec );
+         x_vec.normalize();
+
+         int n_cols = run_file.NumSegs1( id );
+         int n_rows = run_file.NumSegs2( id );
+
+         int det_type = run_file.DetectorType( id );
+         float width  = DC5.WIDTH[ det_type ]/100;
+         float height = DC5.LENGTH[ det_type ]/100;
+         float depth  = DC5.DEPTH[ det_type ]/100;
+
+         UniformGrid  data_grid = new UniformGrid( id, "m",
+                                                   det_cen, x_vec, y_vec,
+                                                   width, height, depth,
+                                                   n_rows, n_cols );
+
+         System.out.println("Uniform Grid = " + data_grid );
+
+         data_grid_attr = new DetectorDataGridAttribute( 
+                                   Attribute.DETECTOR_DATA_GRID,
+                                   data_grid );
+         det_data_grid_attrs.put( key, data_grid_attr );
+       }
+       attr_list.setAttribute( data_grid_attr );
+    }
+
+
 
 
  /**
@@ -1676,30 +1792,37 @@ private float CalculateEIn()
 
   public static void main(String[] args)
   {
-    String file_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ/SCD06496.RUN";
+//    String file_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ/SCD06496.RUN";
+    String file_name = "/usr/local/ARGONNE_DATA/SCD07940.RUN";
 
     System.out.println("Start test program"); 
-    System.out.println("Loading: " + file_name );
+    System.out.println("Loading: " + file_name +"....");
 
     RunfileRetriever rr = new RunfileRetriever( file_name ); 
-    DataSet ds = rr.getDataSet(1);
+    DataSet ds = rr.getFirstDataSet(Retriever.HISTOGRAM_DATA_SET);
     rr = null;
+    System.out.println("Data loaded ------------------------");
 
-    try   { Thread.currentThread().sleep(2000); } 
+    try   { Thread.currentThread().sleep(5000); } 
     catch (InterruptedException ie) { }
 
+    System.out.println("Trying GC...");
     System.gc();
 
-    try   { Thread.currentThread().sleep(2000); }                
+    try   { Thread.currentThread().sleep(5000); }                
     catch (InterruptedException ie) { }
  
+    System.out.println("Trying GC...");
     System.gc();
 
-    try   { Thread.currentThread().sleep(2000); }                
+
+    System.out.println("Displaying Image...");
+    ViewManager vm = new ViewManager( ds, IViewManager.IMAGE ); 
+    try   { Thread.currentThread().sleep(5000); }                
     catch (InterruptedException ie) { }
  
     System.out.println("End test program"); 
-    System.exit(1);
+//    System.exit(1);
   }
 
 }
