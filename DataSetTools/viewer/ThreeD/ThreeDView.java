@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2002/07/12 18:49:38  dennis
+ * Now traps for invalid (null) XScale from the x_scale_ui
+ * and uses the XScale from the first Data block of the DataSet as
+ * the default XScale.
+ *
  * Revision 1.21  2002/05/30 22:57:06  chatterjee
  * Added print feature
  *
@@ -297,12 +302,20 @@ public void setDataSet( DataSet ds )
   *  conversions.
   *
   *  @return  The current values from the number of bins control and the
-  *           x range control form the Xscale that is returned.
+  *           x range control form the Xscale that is returned, if no XScale
+  *           is defined, a default XScale is used from a Data block in the
+  *           DataSet.
   *
   */
  public XScale getXConversionScale()
   {
     XScale x_scale = x_scale_ui.getXScale();
+    if ( x_scale == null )                        // no XScale specified, so use
+    {                                             // the XScale from first data
+      DataSet ds = getDataSet();                  // block.
+      Data    d  = ds.getData_entry(0);
+      x_scale = d.getX_scale();
+    }
     return x_scale;
   }
 
@@ -512,16 +525,13 @@ private void MakeColorList()
     return;
 
   XScale x_scale = getXConversionScale();
-  int   num_x    = x_scale.getNum_x();
-  int   num_frames;
+  int    num_x    = x_scale.getNum_x();
+  int    num_frames;
 
   if ( num_x == 1 )                         // single point, get one frame by
     num_frames = 1;                         // sampling.
   else
     num_frames = num_x - 1;
-
-  float x_min      = x_scale.getStart_x();
-  float x_max      = x_scale.getEnd_x();
 
   color_index = new byte[ num_rows ][ num_frames ];
 
