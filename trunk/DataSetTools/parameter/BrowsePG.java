@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/06/06 18:49:44  pfpeterson
+ *  Made abstract and removed clone method.
+ *
  *  Revision 1.9  2003/06/02 20:15:41  bouzekc
  *  setFilter() now adds the given FileFilter if it does not
  *  yet exist in the FileFilter Vector.
@@ -86,7 +89,7 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
  * This is a superclass to take care of many of the common details of
  * BrowsePGs.
  */
-public class BrowsePG extends ParameterGUI{
+abstract public class BrowsePG extends ParameterGUI{
     private static String TYPE     = "Browse";
 
     protected static int VIS_COLS  = 12;
@@ -254,83 +257,5 @@ public class BrowsePG extends ParameterGUI{
      */
     public void addFilter(FileFilter filefilter){
         filter_vector.add(filefilter);
-    }
-
-    public static void main(String args[]){
-        BrowsePG fpg;
-        //y position and delta y, so that multiple windows can 
-        //be displayed without too much overlap
-        int y=0, dy=70;
-        
-        String defString="/IPNShome/bouzekc/IsawProps.dat";
-
-        fpg=new BrowsePG("Enabled, not valid, no filters",defString);
-        System.out.println(fpg);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-        
-        //disabled browse button GUI
-        fpg=new BrowsePG("Disabled, not valid, no filters",defString);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new BrowsePG("Disabled, not valid, no filters",defString,false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new BrowsePG("Valid, enabled, no filters",defString,true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-
-        fpg=new BrowsePG("Enabled, not valid, multiple filters",defString);
-        System.out.println(fpg);
-        //add some FileFilters
-        fpg.addFilter(new ExpFilter());
-        fpg.addFilter(new MatrixFilter());
-        fpg.addFilter(new IntegrateFilter());
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new BrowsePG("Enabled, not valid, one filter",defString);
-        System.out.println(fpg);
-        //add some FileFilters
-        fpg.addFilter(new IntegrateFilter());
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new BrowsePG(
-          "Enabled, not valid, multiple filters, reassigned filter", defString);
-        System.out.println(fpg);
-        //add some FileFilters
-        IntegrateFilter intf = new IntegrateFilter();
-        fpg.addFilter(new ExpFilter());
-        fpg.addFilter(intf);
-        fpg.addFilter(new MatrixFilter());
-        fpg.setFilter(intf);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-    }
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        BrowsePG bpg=new BrowsePG(this.name,this.value,this.valid);
-        bpg.setDrawValid(this.getDrawValid());
-        bpg.initialized=false;
-        bpg.filter_vector=this.filter_vector;
-        return bpg;
     }
 }
