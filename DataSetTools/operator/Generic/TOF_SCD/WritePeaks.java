@@ -29,6 +29,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/01/31 21:09:45  pfpeterson
+ * No longer assumes that the vector of peaks all came from the same run
+ * and detector. Does assume that the peaks from the same run and detector
+ * are grouped together in the vector supplied. When either the run or
+ * detector changes the file gets a new header line inserted.
+ *
  * Revision 1.11  2003/01/28 23:01:38  dennis
  * Added getDocumentation() method.  Also, now closes file if an
  * exception is encountered. (Chris Bouzek)
@@ -169,60 +175,45 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     if(append) seqnum_off=lastSeqNum(file);
     
     // general information
-    int nrun=((Peak)peaks.elementAt(0)).nrun();
-    int detnum=((Peak)peaks.elementAt(0)).detnum();
-    float deta=((Peak)peaks.elementAt(0)).detA();
-    float deta2=((Peak)peaks.elementAt(0)).detA2();
-    float detd=((Peak)peaks.elementAt(0)).detD();
+    int runNum=-1;
+    int detNum=-1;
 
-    // sample orientation
-    float chi=((Peak)peaks.elementAt(0)).chi();
-    float phi=((Peak)peaks.elementAt(0)).phi();
-    float omega=((Peak)peaks.elementAt(0)).omega();
-    
-    // the integrated monitor intensity
-    float moncnt=((Peak)peaks.elementAt(0)).monct();
-    
+    // temporary variable
+    Peak peak = null;
+
     try{
       // open and initialize a buffered file stream
       FileOutputStream op = new FileOutputStream(file,append);
       outStream=new OutputStreamWriter(op);
       
-      // general information header
-      outStream.write("0  NRUN DETNUM    DETA   DETA2    DETD     CHI     "
-                      +"PHI   OMEGA   MONCNT"+"\n");
-      
-      // general information
-      outStream.write("1"+format(nrun,6)
-                      +format(detnum,7)
-                      +format(deta,8)
-                      +format(deta2,8)
-                      +format(detd,8)
-                      +format(chi,8)
-                      +format(phi,8)
-                      +format(omega,8)
-                      +format((int)moncnt,9)
-                      +"\n");
-      
-      // peaks field header
-      outStream.write("2  SEQN   H   K   L      X      Y"
-                      +"      Z    XCM    YCM      WL   IPK"
-                      +"     INTI     SIGI RFLG  NRUN DN"+"\n");
-      // write out the peaks
+      // loop through the peaks
       for( int i=0 ; i<peaks.size() ; i++ ){
-        if(((Peak)peaks.elementAt(i)).reflag()==20){
-          seqnum_off--;
-        }else{
-          int seqnum=((Peak)peaks.elementAt(i)).seqnum()+seqnum_off;
-          ((Peak)peaks.elementAt(i)).seqnum(seqnum);
-          outStream.write(((Peak)peaks.elementAt(i)).toString()+"\n");
+        peak=(Peak)peaks.elementAt(i);
+
+        // check that we are in the same section
+        if( (peak.nrun()!=runNum) || (peak.detnum()!=detNum) ){
+          // write out the header
+          writeHeader(outStream,(Peak)peaks.elementAt(i));
+          // reinit run and detector numbers
+          runNum=((Peak)peaks.elementAt(i)).nrun();
+          detNum=((Peak)peaks.elementAt(i)).detnum();
         }
+
+        // skip peaks with reflection flag of 20
+        if(peak.reflag()==20){
+          seqnum_off--;
+          continue;
+        }
+
+        // write the peak to the file
+        peak.seqnum(peak.seqnum()+seqnum_off);
+        outStream.write(peak.toString()+"\n");
       }
 
       // flush and close the buffered file stream
       outStream.flush();
       outStream.close();
-    }catch(Exception e){
+    }catch(IOException e){
       //file may not be closed
       try{
         if( outStream != null )
@@ -233,7 +224,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 	}
       }
       
-      catch(Exception e2){
+      catch(IOException e2){
         //let it drop on the floor
       }
     }
@@ -284,7 +275,34 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     }
   }
   
-  /* ----------------------------- formatting ------------------------------ */ 
+  /**
+   * Write an formatted headder line to the ouput stream using the
+   * supplied peak for information.
+   */
+  private static void writeHeader(OutputStreamWriter outStream, Peak peak)
+                                                            throws IOException{
+    // general information header
+    outStream.write("0  NRUN DETNUM    DETA   DETA2    DETD     CHI     PHI   "
+                    +"OMEGA   MONCNT"+"\n");
+    // general information
+    outStream.write("1"+format(peak.nrun(),6)
+                    +format(peak.detnum(),7)
+                    +format(peak.detA(),8)
+                    +format(peak.detA2(),8)
+                    +format(peak.detD(),8)
+                    +format(peak.chi(),8)
+                    +format(peak.phi(),8)
+                    +format(peak.omega(),8)
+                    +format((int)peak.monct(),9)
+                    +"\n");
+      
+    // peaks field header
+    outStream.write("2  SEQN   H   K   L      X      Y      Z    XCM    "
+                    +"YCM      WL   IPK     INTI     SIGI RFLG  NRUN DN"+"\n");
+
+  }
+
+  /* ----------------------------- formatting ------------------------------ */
   /**
    * Format an integer by padding on the left.
    */
@@ -324,30 +342,21 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
    *
    */
   public static void main( String args[] ){
+    Vector peaked=null;
+
+    String inPeakFile="/IPNShome/pfpeterson/multi.peaks";
+    String outfile="/IPNShome/pfpeterson/lookatme.peaks";
     
-    //String outfile="/IPNShome/pfpeterson/ISAW/DataSetTools/"
-    //  +"operator/Generic/TOF_SCD/lookatme.rfl";
-    //String outfile="/IPNShome/pfpeterson/lookatme.rfl";
-    //String datfile="/IPNShome/pfpeterson/data/SCD/SCD06496.RUN";
-    String outfile="/home/groups/SCD_PROJECT/SampleRuns/SCD_QUARTZ/lookatme.rfl";
-    String datfile="/home/groups/SCD_PROJECT/SampleRuns/SCD_QUARTZ/SCD06496.RUN";
-    DataSet mds = (new RunfileRetriever(datfile)).getDataSet(0);
-    DataSet rds = (new RunfileRetriever(datfile)).getDataSet(1);
+    // read the peaks in from a file
+    ReadPeaks ro=new ReadPeaks(inPeakFile);
+    peaked=(Vector)ro.getResult();
     
-    float monct=((Float)(mds.getData_entry_with_id(1))
-                 .getAttributeValue(Attribute.TOTAL_COUNT)).floatValue();
-    
-    FindPeaks fo = new FindPeaks(rds,monct,10,1);
-    Vector peaked=(Vector)fo.getResult();
-    
-    /* CentroidPeaks co=new CentroidPeaks(rds,peaked);
-       peaked=(Vector)co.getResult(); */
-    
+    // try out this operator
     WritePeaks wo = new WritePeaks(outfile,peaked,Boolean.FALSE);
     System.out.println(wo.getResult());
     
     /* -------------- added by Chris Bouzek --------------------- */
-    System.out.println("Documentation: " + wo.getDocumentation());
+    //System.out.println("Documentation: " + wo.getDocumentation());
     /* ---------------------------------------------------------- */
     
     System.exit(0);
