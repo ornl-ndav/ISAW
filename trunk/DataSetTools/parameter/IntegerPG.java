@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/09/13 23:36:34  bouzekc
+ *  Added call to validateSelf() in setValue().
+ *
  *  Revision 1.10  2003/08/28 02:09:50  bouzekc
  *  Added a try...catch block to trap a NumberFormatException which occurred
  *  when a minus sign was typed in.  This occurred because of the large
@@ -172,6 +175,8 @@ public class IntegerPG extends StringEntryPG implements ParamUsesString{
       }else{
         this.value=intval;
       }
+
+      validateSelf();
     }
 
     /**
