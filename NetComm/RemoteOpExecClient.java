@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/10/31 18:15:44  dennis
+ *  Added a few checks for null in the main (test) program.
+ *
  *  Revision 1.2  2003/10/22 21:24:30  dennis
  *  Changed parameter name so javadocs build cleanly using
  *  jdk 1.4.2
@@ -111,7 +114,10 @@ public class RemoteOpExecClient extends TCPClient
                                             dir_name );
 
     Object result = getObjectFromServer( command );
-    return result.toString();
+    if ( result != null )
+      return result.toString();
+    else
+      return "ERROR: status message from server was null";
   } 
   
 
@@ -138,12 +144,18 @@ public class RemoteOpExecClient extends TCPClient
                                            // starting with the hello operator
       Operator op = new HelloOperator(); 
       Object result = client.getResult(op);
-      System.out.println("Result of HelloOperator is " + result.toString() );
+      if ( result != null )
+        System.out.println("Result of HelloOperator is " + result.toString() );
+      else
+        System.out.println("Got back null from HelloOperator");
 
                                            // Ysquared operator on empty DataSet
       op = new Ysquared();
       result = client.getResult(op);
-      System.out.println("Result of Ysquared is " + result.toString() );
+      if ( result != null )
+        System.out.println("Result of Ysquared is " + result.toString() );
+      else
+        System.out.println("Got back null from Ysquared operator");
 
                                            // Load a DataSet (edit this to 
                                            // specify a DataSet on the server)
