@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.27  2004/01/08 23:28:44  bouzekc
+ * Removed unused imports and collapsed DataSetTools.parameter import.
+ *
  * Revision 1.26  2004/01/08 23:27:48  bouzekc
  * Removed unused variables.
  *
@@ -130,14 +133,7 @@ package Wizard.TOF_SCD;
 
 import java.util.Vector;
 
-import DataSetTools.parameter.ArrayPG;
-import DataSetTools.parameter.BooleanPG;
-import DataSetTools.parameter.DataDirPG;
-import DataSetTools.parameter.IParameterGUI;
-import DataSetTools.parameter.IntArrayPG;
-import DataSetTools.parameter.IntegerPG;
-import DataSetTools.parameter.LoadFilePG;
-import DataSetTools.parameter.StringPG;
+import DataSetTools.parameter.*;
 import DataSetTools.util.ErrorString;
 import DataSetTools.util.IntList;
 import DataSetTools.util.SharedData;
