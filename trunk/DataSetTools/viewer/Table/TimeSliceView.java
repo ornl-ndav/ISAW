@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.11  2004/06/18 19:45:46  rmikk
+ * Eliminated some unused variables
+ *
  * Revision 1.10  2004/03/15 19:34:00  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -131,11 +134,11 @@ public class TimeSliceView  extends STableView
        {
         return;
        }
-     String S =state.get_String( ViewerState.TABLE_TS);
+     //String S =state.get_String( ViewerState.TABLE_TS);
     
      state.set_String( ViewerState.TABLE_TS, "OK");
     
-     DataSet ds = getDataSet();
+     //DataSet ds = getDataSet();
      state.set_int( "TableTS_MinRow" , 1);
      state.set_int( "TableTS_MinCol" , 1);
      state.set_int( "TableTS_MaxRow" , table_model.getRowCount());
@@ -318,9 +321,9 @@ public class TimeSliceView  extends STableView
     {
      if( reason == IObserver.POINTED_AT_CHANGED )
        { 
-        float x = getDataSet().getPointedAtX();
+       // float x = getDataSet().getPointedAtX();
         int indexX = getPointedAtXindex();
-        int index =getDataSet().getPointedAtIndex();
+        //int index =getDataSet().getPointedAtIndex();
         if( acontrol.getFrameNumber() != indexX)
           {state.set_int("TableTS_TimeInd", indexX);
            acontrol.setFrameNumber( indexX );
@@ -339,7 +342,7 @@ public class TimeSliceView  extends STableView
       if( args.length<1)
         System.exit(0);
       DataSet[] DS = (new IsawGUI.Util()).loadRunfile( args[0]);
-      Time_Slice_TableModel tbm = new Time_Slice_TableModel(DS[1],4317.0f,false,false);
+      //Time_Slice_TableModel tbm = new Time_Slice_TableModel(DS[1],4317.0f,false,false);
   
       for( int i=0; i<DS[1].getNum_entries(); i++)
          DS[1].setSelectFlag(i,true);
@@ -359,7 +362,7 @@ public class TimeSliceView  extends STableView
          min = (int)( tri.getMin());
          max = (int)( tri.getMax());
         
-        int n2 = table_model.getColumnCount();
+        //int n2 = table_model.getColumnCount();
         if(ID==1)
           { ((Time_Slice_TableModel)table_model).setRowRange( min,max);
             state.set_int( "TableTS_MinRow", min);
