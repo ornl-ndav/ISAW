@@ -6,6 +6,10 @@ package OverplotView.graphics;
  * graphical output panel
  *
  * $Log$
+ * Revision 1.7  2001/08/30 14:40:03  dennis
+ * Added code to set the title for the line to
+ * the line's title. This now is the group number. (Ruth)
+ *
  * Revision 1.6  2001/08/15 18:43:59  rmikk
  * Eliminated a "redrawing..." output
  *
@@ -173,8 +177,10 @@ public class sgtGraphableDataGraph
 
     SimpleLine l = new SimpleLine(  x_values, 
                                     y_values,
-                                    (String)attrs.getAttributeValue( 
+                                    (String)d.getAttributeList().
+                                            getAttributeValue( 
                                                     GraphableData.NAME )  );
+   
     l.setXMetaData( x_meta );
     l.setYMetaData( y_meta );
 
@@ -227,7 +233,9 @@ public class sgtGraphableDataGraph
       for( int i=0;  i<data.size();  i++ )
         //ltsl.addData( (SGTData)data.get(i), ""+i );
         //ltsl.addData( (Collection)data.get(i), ""+i );
-        ltsl.addData( (SGTLine)data.get(i), ""+i );
+	  { SimpleLine sl =(SimpleLine)data.get(i);
+          ltsl.addData( sl, sl.getTitle());
+        }
 
       ltsl.setTitles( 
         (String)attrs.getAttributeValue( IGraphableDataGraph.TITLE ),
