@@ -40,7 +40,19 @@
   -Fixed error with ==
   -Fixed error when  array index calculation had an error
   -  & can be applied to a data set to yield its toString Value
-   
+ 
+12-12-00-
+  -Tested inequalities to get correct answer(operateCompare)
+  -fixed initt so all local string, data set and well as boolean variables are cleared(initt)
+      May cause some problems with the macro run??
+
+1/31/01-
+  -implemented arrays as Vectors. Includes multidimensional arrays.
+  - Bolstered variables to retain data type after first assignment
+
+2-21-
+  -Load with varname now makes this an array of DataSets  
+      
 */
 package Command;
 //import IsawGUI.Isaw.*;
@@ -59,11 +71,13 @@ import DataSetTools.operator.*;
 import java.beans.*;
 import java.util.*;
 import java.util.zip.*;
+import java.beans.*;
 /** 
 *  This class parses and executes one line of code using the values of variables 
 *  obtained from  the execution of previous lines of code
 */ 
-public class execOneLine implements DataSetTools.util.IObserver,IObservable  
+public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
+                                    PropertyChangeListener ,Customizer 
                                      
 {
     public static final String ER_NoSuchFile                  = "File not Found";
@@ -87,6 +101,11 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable
     public static final String ER_No_Result                  =" Result is null ";
     public static final String ER_IMPROPER_DATA_TYPE          ="Variable has incorrect data type";
     public static final String ER_ReservedWord                =" Reserved word";
+    public static final String  ER_ArrayIndex_Out_Of_bounds   ="Array index out of Bounds";
+    private static final String OP_Arithm                      ="+-*/^";
+    private static final String Ops                           =OP_Arithm+"&:";
+    private static final String EndExpr                       =",)]<>=";
+    
     private Document logDocument = null;
 
     private boolean Debug= false;
@@ -96,7 +115,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable
 
     //-----Run Space  Variables --------------
 
-   Hashtable   ds =new Hashtable();                                //Copy of the data set(s) passed in
+   Hashtable   ds =new Hashtable();        //Copy of the data set(s) passed in
 	                                    //   by the constructor
     
      
@@ -110,17 +129,20 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable
     String Svalnames[];
 
     Hashtable BoolInfo = new Hashtable();
-    IObserverList  OL; 
-    PropertyChangeSupport PC;
- 
+
    
-    Hashtable lds = new Hashtable() ;                      //use getTitle for the  variable names
+    Hashtable lds = new Hashtable() ;   //local dataset storage. Global at ds
     Object Result;                     //Storage for Intermediate Results of
                                        //  operations
 
+    Hashtable ArrayInfo = new Hashtable();
     Hashtable MacroInfo = new Hashtable();                  //Stores Macros
    
+    IObserverList  OL; 
+    PropertyChangeSupport PC;
 
+    // Contains user supplied operators 
+    Script_Class_List_Handler SH = new Script_Class_List_Handler();
 
     //Error variables
 
@@ -131,16 +153,19 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable
      String serror;                 // error message.
  
     Vector Graphs = new Vector();                // Saves all displays so as to delete them when done.
-    Vector Params = new Vector();		// Saves all Global parameters added on Script w. param execute
+    Vector Params = new Vector();		// Saves all Global parameters added on Script 
+                                                //w. param execute
     
 
 /** 
   
 */
     public execOneLine()
-      {initt();
-        OL = new IObserverList();
-	  PC = new PropertyChangeSupport( this );
+      {
+        initt();        
+        OL = new IObserverList();        
+        PC = new PropertyChangeSupport( this );
+        
       }
 
 /**
@@ -214,7 +239,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable
 *@param   vname   the name that will be used by the command pane to refer to this data set
 */
 public void addParameterDataSet(DataSet dss, String vname)
-  {addDataSet(dss,vname);
+  { addDataSet(dss,vname);
     Params.addElement(vname.toUpperCase().trim());
    }
 /**
@@ -227,7 +252,7 @@ public void addParameterDataSet(DataSet dss, String vname)
 */
 
 public void addDataSet(DataSet dss, String vname)
-   {ds.put(vname.toUpperCase().trim() , dss );
+   { ds.put( vname.toUpperCase().trim() , dss );
       }
 /**
 * This method allows outside data sets to be added to the variable space
@@ -319,17 +344,17 @@ public void addDataSet(DataSet dss, String vname)
       
        i = skipspaces( S , 1 , start );
        if( i > end) i = end;
-       
+      
        j = findfirst( S , 1 , i , " (+-*=;:'/^+,[]<>&)\",","" );
        if( j > end) j = end;
        if( (i >= 0) && (i < S.length() ) && (i < end) )
 	 if(" (+-*=<>;:'/^+,[]&)\"," .indexOf( S.charAt( i ) ) >= 0 )
 	   j = i ;
-
-        
+     
+       
              if( Debug )
                System.out.print("i ,j=" + i+ "," + j);
-          if( (j < i) ||  (i < 0) ||  (i >= end) ||  (i >= S.length() ) )
+       if( (j < i) ||  (i < 0) ||  (i >= end) ||  (i >= S.length() ) )
             {return i;
             }
       j1 = skipspaces( S , 1 , j );
@@ -342,8 +367,21 @@ public void addDataSet(DataSet dss, String vname)
          C = S.substring( i , j ).trim();
      
       if ( (j1 >= 0) && (j1 < S.length()) && ( j1 < end))
-        if(  S.charAt( j1 ) == '[' )                // Check for []
-	  {C = C +  brackSub( S , j1 , end );
+        if(  (S.charAt( j1 ) == '[') && (j==j1)&&(j1>0)&&(i<j1) )  // Check for vname[]
+	  {int j2=findfirst(S,1,j1+1,"]","[]");
+           if((j2>=end)||(j2>=S.length()))
+              {seterror(j1, ER_MissingBracket);
+                return j1;
+              }
+            j1=j2+1;
+            C = S.substring(i,j1).trim().toUpperCase();
+            j1 = skipspaces(S,1,j1);
+            
+            j=j1;
+            if(Debug)
+              System.out.println("[], C,j="+C+","+j);
+           /*
+           C = C +  brackSub( S , j1 , end );
 	  if(Debug)
 	      System.out.println("aft brack sub C,err=" + C + perror);
 	   if(perror >=0) return j1;
@@ -360,7 +398,7 @@ public void addDataSet(DataSet dss, String vname)
            j = j + 1;
            j1 = skipspaces( S , 1 , j);
            if( j1 > end) j1 = end;
-           
+          */ 
           }
       if( C.charAt(0) != '\"' )
         C = C.toUpperCase();
@@ -429,7 +467,7 @@ public void addDataSet(DataSet dss, String vname)
        else 
 	 { if((j1<S.length())&&(j1>=0)&&(j1 < end))
              if( (start==0) &&(S.charAt(j1) == '=') )
-		 {if(Debug) System.out.println("Assignement op"); 
+		 {if(Debug) System.out.println("Assignement op "+ C); 
 		 if( start != 0)  
 		   {seterror( j1 , ER_IllegalCharacter+"A");
 		    return j1;
@@ -443,7 +481,7 @@ public void addDataSet(DataSet dss, String vname)
 	         int cc;
 	         Result = null;
                     if( Debug )
-                       System.out.println("kk=" + kk);
+                       System.out.println("kk=" + kk+","+perror);
                   if( ( kk  <= j1 + 1) ||  (perror >= 0) )
 	             {return S.length() + 1;
                      }
@@ -583,7 +621,7 @@ public void addDataSet(DataSet dss, String vname)
 		    {}
                 else if( varname.toUpperCase().charAt(0) < 'A')
                     {}
-                else vname=(varname + new Integer(i).toString().trim());
+                else vname=(varname + "["+new Integer(i).toString().trim()+"]");
       /*      Object X = getVal( DDs.getTitle());
     
           if( X != null )
@@ -685,7 +723,7 @@ public void addDataSet(DataSet dss, String vname)
         
 
         for( i = 0 ; i < dss.length ; i++ )
-         {DDs = eliminateSpaces( dss[i] );
+	 {DDs = eliminateSpaces( dss[i] );
           
 
           String vname=DDs.getTitle();
@@ -695,7 +733,7 @@ public void addDataSet(DataSet dss, String vname)
 		    {}
                 else if( varname.toUpperCase().charAt(0) < 'A')
                     {}
-                else vname=(varname + new Integer(i).toString().trim());
+                else vname=(varname +"["+ new Integer(i).toString().trim()+"]");
          
           if( Debug) System.out.print("error="+perror+",");       
         
@@ -732,28 +770,43 @@ public void addDataSet(DataSet dss, String vname)
         System.out.print("Disp A ,i" + i);
 
        i = start;
-      
+     
       if( (start < 0) || (start >= S.length()) || (start >= end))
         { seterror( S.length(),ER_MissingArgument);
           return start;
         }
-      Vector V;
+      Vector V = new Vector();
       if( S.charAt( i ) == '(')
            V = getArgs( S , i + 1 , end);
       else
          V = getArgs( S , i , end );
+     
       if( V == null )
         return perror;
-      if( V.size() <=1 )
-        {seterror( start, ER_MissingArgument);
-         return start;
-        }
-      else if( V.size() > 4)
+      if( V.size() == 0)
+        return perror;
+     // if( V.size() <=1 )
+     //   {PC.firePropertyChange( "Display"  , null , (Object)"(null)" );
+     //    Integer XX = new Integer(start);
+     //    if(V.size()> 0)
+     //     { XX = (Integer)(V.elementAt( V.size() - 1 ));            
+     //     } 
+
+     //    return XX.intValue();
+     //   }
+     // else if( (V.size() == 2)&&(V.elementAt(0) == null ))
+      //   {PC.firePropertyChange( "Display"  , null , (Object)"(null)" );
+
+      //   return start;
+      //  }
+      //
+      if( V.size() > 4)
         { seterror( start, ER_ImproperArgument+"A" );
           return start;
         }
       j =((Integer)V.lastElement()).intValue(); 
       j = skipspaces( S , 1, j );
+       
       if( Debug)System.out.println("Display i,j="+i+","+j+","+start+","+S);
       if( S.charAt( i ) == '(')
         if( (j >= end) || ( j >= S.length()))
@@ -768,6 +821,16 @@ public void addDataSet(DataSet dss, String vname)
       int x = 0;
       String DisplayType="IMAGE"; 
       String FrameType="External Frame";
+      if( V.size() > 1)
+        if( V.elementAt( 0 ) == null)
+          {PC.firePropertyChange( "Display"  , null , (Object)"(null)" );
+           return j;
+          }
+       if( V.size() <= 1)
+          {PC.firePropertyChange( "Display"  , null , (Object)"No Result" );
+           return j;
+          }
+
       try{
           
 
@@ -836,7 +899,9 @@ public void addDataSet(DataSet dss, String vname)
              SS = SS + "]";
 
            }
-
+         else if( Result instanceof Vector)
+          {SS = Vect_to_String((Vector)Result);
+          }
          else if( Result == null)
 	     SS = "(null)";
          else
@@ -850,7 +915,22 @@ public void addDataSet(DataSet dss, String vname)
       return end;
   
       }
-
+ public static String Vect_to_String(Vector V)
+   {
+    if(V == null) return "null";
+    String res="[";
+   
+    int i;
+    for( i=0; i< V.size(); i++)
+      {Object O= V.elementAt(i);
+       if( O instanceof Vector)
+           res = res+ Vect_to_String((Vector)O);
+       else res = res+ O.toString();
+       if( i<V.size()-1)res = res+",";
+       }
+     res = res+"]";
+     return res;
+   }
 /**
  * Creates a viewer for the data set
  *@param      ds            The data set to be viewed
@@ -1258,9 +1338,9 @@ public void addDataSet(DataSet dss, String vname)
          done = false;
          if( (i >= end) ||  (i >= S.length()) ||  (i < 0) )
            done = true;
-         else if( "),]:<>=".indexOf( S.charAt( i ) ) >= 0 )
+         else if( "),]<>=".indexOf( S.charAt( i ) ) >= 0 )
 	   done = true;
-         else if("+-&".indexOf(S.charAt(i))<0)
+         else if("+-&:".indexOf(S.charAt(i))<0)
            done = true;
          if(Debug)System.out.println("ExArithB,done,perror,char"+done+","+perror+","+j);
 
@@ -1283,9 +1363,9 @@ public void addDataSet(DataSet dss, String vname)
            done = false;
            if( ( i >= end ) ||  ( i >= S.length() ) ||  ( i < 0 ) )
              done = true;
-           else if( "),]:<>=".indexOf( S.charAt( i ) ) >= 0 )
+           else if( "),]<>=".indexOf( S.charAt( i ) ) >= 0 )
 	     done = true;
-           else if("+-&".indexOf(S.charAt(i))<0)
+           else if("+-&:".indexOf(S.charAt(i))<0)
            done = true;
 
            }//While !done      
@@ -1314,6 +1394,25 @@ public void addDataSet(DataSet dss, String vname)
 	    }
              if( Debug )
                System.out.println("in exe1Fact start=" + i);
+       if(S.charAt(i) == '[')
+        {
+          Vector V = getArgs(S,i+1, end);
+          if( V == null)
+            return i;   //error occured
+          int n= ((Integer)V.lastElement()).intValue();
+          if( (n >= end) || ( n < 0)|| (n>=S.length()))
+            {seterror( n, ER_MissingArgument);
+             return n;
+              } 
+          if( S.charAt(n) != ']')
+            {seterror( n, ER_MissingBracket);
+             return n;
+            }
+          if( V.size()>0)
+            V.removeElementAt(V.size()-1);
+            Result = V;
+            return n+1;
+        }
        if( S.charAt( i ) == '\"' )
          {String S1 = getString( S , i );
 	 if( perror >= 0)
@@ -1414,7 +1513,16 @@ public void addDataSet(DataSet dss, String vname)
       
       if ( (j1 >= 0) && (j1 < S.length()) && ( j1 < end ) )
          if(  S.charAt( j1 ) == '[' )                // Check for []
-	  {C = C +  brackSub( S , j1 , end );
+	  { int j2=findfirst(S,1,j1+1,"]","[]");
+	  //System.out.println("j2="+j2+","+j1+","+i+","+S);
+            if((j2>=end) ||( j2 >= S.length()))
+              {seterror(j1,ER_MissingBracket +" at "+j1);
+               return j1;
+              }
+             j1=j2+1;
+             C = S.substring(i,j1);
+             j=j1;
+            /*C = C +  brackSub( S , j1 , end );
 	  
 	   if(perror >=0) return j1;
 	   j = finddQuote( S , j1 + 1 , "]" , "[]()");
@@ -1429,7 +1537,7 @@ public void addDataSet(DataSet dss, String vname)
 	     }
            j = j + 1;
            j1 = skipspaces( S , 1 , j);
-           
+           */
           }
 
  
@@ -1523,22 +1631,30 @@ public void addDataSet(DataSet dss, String vname)
    private Vector getArgs( String S , int start , int end )
      {
        if( ( start < 0 ) ||  ( start >= S.length() ) || ( start >= end ) )
-	 {seterror( S.length() + 2 , "internal errorp" );
+	 {seterror( S.length() + 2 , "internal errorp" +S);
 	 return null;
 	 }
        if( Debug)
-         System.out.println( "get args ,start= "+ start);
+         System.out.println( "getArgs ,start= "+ start);
        Vector Args = new Vector();
        int i , j;
        boolean done;
        i = skipspaces( S , 1 ,start) ;
        done = (i >= S.length()) ||( i >= end);
+       if(!done) 
+          if("])".indexOf(S.charAt(i))>=0)
+              done =true;
        while( !done )
-         {j = execExpr( S , i , end );
-         if(Debug)System.out.println("getArgsA"+Result+","+perror+","+j);
+	 {Result = null;
+          j = execExpr( S , i , end );
+         if(Debug)
+            System.out.println("getArgsA"+Result+","+perror+","+j);
          if( perror >= 0 )
            return null;
-         Args.addElement( Result );
+         if(Result instanceof SubRange)
+           Args.addAll( ((SubRange)Result).Vect());
+         else
+           Args.addElement( Result );
          if( ( j >= S.length() ) || ( j >= end ) )
 	   {Args.addElement(new Integer(j));
 	    return Args;
@@ -1549,7 +1665,9 @@ public void addDataSet(DataSet dss, String vname)
 	   }
          if( S.charAt( j ) == ')' )
 	   done = true;
-         else if( S.charAt( j ) != ',' )
+         else if( S.charAt(j) == ']')
+           done = true;
+         else if( (S.charAt( j ) != ',') )
 	   {seterror( j , ER_IllegalCharacter+"B");
 	    return null;
 	   }
@@ -1615,6 +1733,7 @@ public void addDataSet(DataSet dss, String vname)
       }
 public void operateCompare( Object R1,Object R2, char c)
   { Result = null;
+    
     if( (R1==null) ||(R2==null))
       {seterror( 1000, ER_ImproperArgument);
        return;
@@ -1646,7 +1765,8 @@ public void operateCompare( Object R1,Object R2, char c)
      { if( R1.equals(R2))
          { if("<>".indexOf(c)>=0) 
               Result = new Boolean(false);
-           else if( (byte)c - 2 ==(byte)'=')
+	 //else if( (byte)c-2  ==(byte)'=')
+           else if( (byte)c == (byte)'='+5)
               Result = new Boolean(false);
            else  
             Result = new Boolean(true);
@@ -1655,10 +1775,17 @@ public void operateCompare( Object R1,Object R2, char c)
        else if( ((Boolean)R1).booleanValue())// false < true
          {if(">".indexOf(c)>=0) Result= new Boolean(true);
           else if("<=".indexOf(c)>=0) Result = new Boolean(false);
-          else if((byte)c-2 ==(byte)'<' ) Result = new Boolean(false);
+          else if((byte)c-5 ==(byte)'<' ) Result = new Boolean(false);
+          //else if((byte)c-2 ==(byte)'<' ) Result = new Boolean(false);
+        
           else Result = new Boolean(true);
           return;
          }
+       else
+        if((c=='<')||((byte)c-5 == (byte)'<'))Result= new Boolean(true);
+        else if( (c=='>')||((byte)c-5 == (byte)'>'))Result= new Boolean(false);
+        else if( (byte)c == '=' +5) Result = new Boolean(true);
+        else if( c=='=')Result = new Boolean(false);
         return;
       }       
     if(R1 instanceof DataSet)
@@ -1674,7 +1801,8 @@ public void operateCompare( Object R1,Object R2, char c)
     if( R1 instanceof DataSet)
       { if( (c=='=') && (R1.equals(R2)))
           Result= new Boolean(true);
-        else if( ((byte)c-2 == (byte)'='))
+        //else if( ((byte)c-2 == (byte)'='))
+         else if( ((byte)c-5 == (byte)'='))
           if(R1.equals(R2)) Result= new Boolean(false);
           else Result= new Boolean(true);
         else
@@ -1702,23 +1830,26 @@ public void operateCompare( Object R1,Object R2, char c)
             x=-1;
 
         if(x>=2)
-        if( S1.length() < S2.length())
-           x=1;
-        else if(S1.length()>S2.length())
-           x=-1;
-        else x=0;
+          if( S1.length() < S2.length())
+             x=1;
+          else if(S1.length()>S2.length())
+             x=-1;
+          else x=0;
           
       if( (c=='=') ||((byte)c-5 ==(byte)'<') || ((byte)c-5 ==(byte)'>'))
         if( x==0){ Result = new Boolean( true);return;}
 
      if( (byte)c-5==(byte)'=') 
        if(x ==0) Result = new Boolean(false);
-        else Result = new Boolean(true);
-    else if((c=='<') ||(byte)c-5==(byte)'<')
-       if( x==-1) Result = new Boolean(false);
        else Result = new Boolean(true);
+    else if((c=='<') ||((byte)c-5==(byte)'<'))
+       if( x<=0) Result = new Boolean(false);
+       else Result = new Boolean(true);
+    else if( c== '=')
+       if( x ==0) Result= new Boolean(true);
+       else Result= new Boolean(false);
     else 
-       if( x==1) Result = new Boolean(false);
+       if( x>=0) Result = new Boolean(false);
        else Result = new Boolean(true);
    
 
@@ -1748,8 +1879,12 @@ public void operateCompare( Object R1,Object R2, char c)
     else if((c=='<') ||(byte)c-5==(byte)'<')
        if( x<=0) Result = new Boolean(false);
        else Result = new Boolean(true);
+    else if( c== '=')
+      if( x ==0) Result= new Boolean(true);
+      else Result= new Boolean(false);
     else 
-       if( x!=0) Result = new Boolean(false);
+       if( x >= 0) Result = new Boolean(false);
+       else Result = new Boolean(true);
            return;
 
 
@@ -1798,6 +1933,17 @@ private void operateLogic(Object R1 , Object R2 , char c )
           {operateLogic(R1,R2,c);
            return;
           }
+        if( c==':')
+	   {if(R1 instanceof Integer)
+               if(R2 instanceof Integer)
+                 {Result= new SubRange(((Integer)R1).intValue(), ((Integer)R2).intValue());
+                  return;
+                 }
+            seterror(1000, ER_ImproperDataType+" "+c);
+            Result = null;
+            return;
+           }
+
         if( (R1 instanceof Boolean) ||(R2 instanceof Boolean))
           { seterror( 1000, ER_ImproperDataType);
             return ;
@@ -1810,6 +1956,10 @@ private void operateLogic(Object R1 , Object R2 , char c )
           {operateArithDS( R1 , R2 , c );
 	   return;
 	  }
+        if( (R1 instanceof Vector) || (R2 instanceof Vector))
+          {operateVector(R1,R2,c);
+           return;
+          }
 	if( "+-/*<>^".indexOf( c ) >= 0 )
           { 
             if( R1 instanceof String )
@@ -1911,6 +2061,47 @@ private void operateLogic(Object R1 , Object R2 , char c )
 
       }
 
+  private void operateVector( Object R1, Object R2, char c)
+   {int i;
+     Vector Res = new Vector();
+    Object r2i;
+    if( "+-*/".indexOf(c)>=0)
+     {if( R1 instanceof Vector)
+        {if(R2 instanceof Vector)
+           if(((Vector)R2).size() != ((Vector)R1).size())
+              {seterror(1000, "Incompatible arrays");
+               Result= null;
+               return;}
+         
+          for(i=0;i<((Vector)R1).size(); i++)
+            {
+             if(R2 instanceof Vector) r2i= ((Vector)R2).elementAt(i);
+             else r2i=R2;
+             operateArith(((Vector)R1).elementAt(i),r2i,c);
+             Res.addElement(Result);
+            } 
+          Result=Res;
+        }//if R1 instanceof Vector
+       else
+         {for( i=0;i<((Vector)R2).size();i++)
+             { operateArith(R1,((Vector)R2).elementAt(i),c);
+               Res.addElement(Result);
+             }
+           Result =Res;
+         }
+      }//if c is +-*/
+    else if( (!(R2 instanceof Vector))||(!( R1 instanceof Vector)))
+       {seterror(1000,"improper Arguments");
+        Result = null;
+        return;
+       }
+    else
+      {Result = R1;
+       ((Vector)Result).addAll((Vector)R2); // must redo for Java 1.9
+
+      }
+      
+   }//operateVector
    // Does the function operations
     private void operateArithDS( Object R1 , Object R2 , char c )
       {String Arg;
@@ -1965,6 +2156,40 @@ private void operateLogic(Object R1 , Object R2 , char c )
       DoDataSetOperation( Args , Arg );
     
       }
+private Operator getSHOp( Vector Args, String Command)
+  { int i = SH.getOperatorPosition( Command );
+    if( i < 0)
+      return null;
+    int j = i;
+    boolean done = false;
+    boolean found = false;
+    while( (!done) && (!found ) )
+       {int n = SH.getNumParameters(i);
+        if( n == Args.size())
+         {found = true;
+           for( j = 0; (j < n) && found; j++)
+              {Object P = SH.getOperatorParameter( i , j );
+               if( P == null)
+                  {}
+               else if( (Args.elementAt( j ) instanceof String)
+                        &&(P instanceof SpecialString))
+                 { }
+               else if ( Args.elementAt(j).getClass().equals( P.getClass()))
+                  { }
+               else found = false; 
+              }
+          }
+        if( found )
+          return SH.getOperator( i ) ;
+        i++;
+        String C1= SH.getOperatorCommand( i );
+        if( C1 == null)
+           done = true;
+         else if( C1.equals( Command ) )
+           done = true;
+        }
+    return null;
+   }
 /**
  * Find and Executes an  operation from lists of operations 
  * @param   Args     The vector of argument values
@@ -1976,11 +2201,19 @@ private void operateLogic(Object R1 , Object R2 , char c )
     public void DoOperation( Vector Args, String Command )
       { if(Debug)
           System.out.println("Start DoOperation comm =" + Command);
-        Operator op = GenericOperatorList.getOperator( Command );
+        //Operator op = GenericOperatorList.getOperator( Command );
+        if( Args == null )
+            return;
+        
+        Operator op = getSHOp( Args, Command );
+        
         if( op == null )
           { if(Debug)
               System.out.print("A");
             op =(Operator)MacroInfo.get(Command);
+            if( !checkArgs( Args, op, 0 ))
+               op = null;
+   
             if(op==null)
               {DoDataSetOperation( Args, Command  );
                return;
@@ -1989,15 +2222,19 @@ private void operateLogic(Object R1 , Object R2 , char c )
         int i;
         if(Debug)
               System.out.print("B");
-        if( !checkArgs( Args, op , 0 ))
-          {  if(Debug)
-              System.out.print("C");
-            DoDataSetOperation( Args, Command  );
-            return;
-          }        
+        
         
         SetOpParameters( op , Args , 0);
+        if( op instanceof IObservable)
+           ((IObservable)op).addIObserver( this );
+        if( op instanceof Customizer)
+           ((Customizer)op).addPropertyChangeListener( this );
         Result = op.getResult();
+       if( op instanceof IObservable)
+           ((IObservable)op).deleteIObserver( this );
+        if( op instanceof Customizer)
+           ((Customizer)op).removePropertyChangeListener( this );
+
         if( Result instanceof ErrorString )
           {seterror (1000 , ((ErrorString)Result).toString() );
 	    if(Debug)
@@ -2116,10 +2353,10 @@ private void operateLogic(Object R1 , Object R2 , char c )
                         (op.getNum_parameters() == Args.size()-1) )
                  fit = checkArgs( Args , op , 1 );
                
-		  if(Debug)System.out.println("F");                    
+		  if(Debug)System.out.print("F");                    
 					
                 
-	       if(Debug)System.out.println("GG");
+	       if(Debug)System.out.print("GG");
 	     if(fit)
 	       {/*for( k = 0 ; k < op.getNum_parameters() ; k++ )
                   {if( Args.get( k + 1 ) instanceof String )
@@ -2166,6 +2403,12 @@ private void operateLogic(Object R1 , Object R2 , char c )
        boolean done;
        i = start;
        done = false;
+       j = skipspaces(S, 1, i + 1 );
+       if( j < end )
+         if( (S.charAt(j) == ')'))
+            {done = true;
+              i = skipspaces( S , 1 , j);
+             }
        while( !done )
          {j = execute( S , i + 1 , end );
          if( perror >= 0 )
@@ -2225,7 +2468,57 @@ private void operateLogic(Object R1 , Object R2 , char c )
      private boolean isDataSetOP( String C )
        {return false;
        }
-
+  private Object getValArray(String S1)
+   { String S = S1;//fixx(S1);
+     Object O;
+   
+     if( perror >=0 ) return null;
+      int k= S.indexOf('[');
+     Vector V = getArgs(S, k+1, S.length());
+      
+     if(V == null)return null;
+     //System.out.print("C");
+     int n = ((Integer)V.lastElement()).intValue();
+     
+    
+       //System.out.print("D"+","+n+","+k);
+     if(k<0)
+        {seterror(1000, "Internal Error getValArry");
+           return null; 
+         }
+      Vector d1 = (Vector)ArrayInfo.get(S.substring(0,k).toUpperCase());
+       //System.out.print("E");
+      if( d1== null)
+       {seterror(1000,ER_NoSuchVariable);
+           return null; 
+       }
+       //System.out.print("F");
+      Object d=d1;
+      for(int i=0; i<V.size()-1; i++)
+        {O = V.elementAt(i);
+          //System.out.print("G"+O);
+         if(O == null)
+           {seterror(1000, ER_MissingArgument +" at index="+i);
+           return null; 
+           }
+         if( !(O instanceof Integer))
+          {seterror(1000, ER_IMPROPER_DATA_TYPE +"A at index="+i);
+           return null; 
+          }
+         if(!(d instanceof Vector))
+           {seterror(1000, ER_IMPROPER_DATA_TYPE+"B" );
+           return null; 
+            }   
+         int indx = ((Integer)O).intValue();
+         if(((Vector)d).size()<=indx)
+           {seterror(1000, ER_ArrayIndex_Out_Of_bounds+" "+indx);
+            return null;
+            }
+         d =((Vector)d).elementAt(indx);
+        } 
+      //System.out.println("getvalArray res="+d);
+      return d;
+   }
   /** 
    *  Returns the value of the variable S
    *@param  S   A string used to refer to a variable 
@@ -2235,10 +2528,14 @@ private void operateLogic(Object R1 , Object R2 , char c )
    */
      public Object getVal( String S )
        {int i;
-       //System.out.println("getVal");
+       
+        if(S.indexOf('[')>=0)
+            return getValArray(S);
+        if( ArrayInfo.containsKey(S.toUpperCase()))
+            return ArrayInfo.get(S.toUpperCase());
         if( BoolInfo.containsKey(S.toUpperCase()))
            return BoolInfo.get(S.toUpperCase());
-            
+           
         i = findd( S.toUpperCase() , Ivalnames );
         if( isInList( i , Ivalnames ) )
 	  {
@@ -2354,7 +2651,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
      */
       public  void initt()
         { 
-         
+         BoolInfo = new Hashtable();
         BoolInfo.put("FALSE",new Boolean(false));
          BoolInfo.put("TRUE", new Boolean(true));
          Ivals=null;
@@ -2363,7 +2660,9 @@ private void operateLogic(Object R1 , Object R2 , char c )
          
          Fvals = null;  
          Fvalnames = null;
-         lds.clear();                        // May need an Empty data set somewhere but where?
+         Svals=null; 
+         Svalnames=null;
+         lds.clear();            // May need an Empty data set somewhere but where?
          //ds = new HashMap()'
          perror = -1;
          serror = "";
@@ -2373,6 +2672,9 @@ private void operateLogic(Object R1 , Object R2 , char c )
            { ds.remove(Params.elementAt(i));
             }
          Params= new Vector();
+        
+        //ds= new Hashtable();
+        ArrayInfo=new Hashtable();
       }
 
 
@@ -2405,8 +2707,8 @@ private void operateLogic(Object R1 , Object R2 , char c )
        char c;
        boolean done;
 
-       // if( Debug )
-       // System.out.print("findfrst start, S=" + start + "." + S);
+       if( Debug )
+        System.out.print("findfrst start, S=" + start + "." + S+":");
        if( start < 0 )
          return -1;
        if( S == null )
@@ -2442,7 +2744,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
          }
    
        while( !done )
-         {
+	   {if(Debug)System.out.print(c);
           if( BraceChars != null )
             j = BraceChars.indexOf( S.charAt(i) );
           else 
@@ -2454,7 +2756,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
           else 
             brclev--;
 
-          i += dir;
+          if(brclev>=0) i += dir; //** test this out.  if brclev<0 like end of line
 
           c = 0;
           if( i  >= S.length() )
@@ -2469,9 +2771,10 @@ private void operateLogic(Object R1 , Object R2 , char c )
               c = S.charAt( i );
             }
           if( ( brclev == 0 ) && ( SearchChars.indexOf(c) >= 0 ) )
-           done = true;
+            done = true;
         
          }
+       if(Debug) System.out.println("return value ="+i);
       if( ( i <= S.length() ) && ( i >= 0 ) ) 
         return i; 
       else 
@@ -2675,30 +2978,132 @@ private void operateLogic(Object R1 , Object R2 , char c )
       }
 
 
-
-    private void Assign(String vname,
+    public void AssignArray(String vname, Object Result)
+     {String S = vname;//fixx(S1);
+      Object O;
+      if(Debug)
+         System.out.println("TOP ASsignArray vname,Result="+vname+","+Result);
+      if( perror >=0 ) return ;
+      int k= S.indexOf('[');
+      Vector V = getArgs(S, k+1, S.length());
+      //System.out.print("B");
+     if(V == null)
+           {return ;
+           }   
+     if(Debug) System.out.println("Args="+Vect_to_String(V)); 
+     int n = ((Integer)V.lastElement()).intValue();  
+      
+     if(k<0)
+        {seterror(1000, "Internal Error getValArry");
+           return ; 
+        }
+      boolean newVar=false;
+      Vector d1 = (Vector)ArrayInfo.get(S.substring(0,k).toUpperCase());
+      if((V.size()<2)&&(d1!=null)) //ar[]=[1,2,3]
+        {if(Result instanceof Vector)
+          {d1.removeAllElements();
+           d1.addAll((Vector)Result);
+           return;
+          }
+	}
+       else if( (V.size()<2)&&(d1==null))
+	 { if( Result instanceof Vector)
+               ArrayInfo.put(S.substring(0,k).toUpperCase(), Result);
+           else
+	       seterror(1000,ER_IMPROPER_DATA_TYPE+"C");
+	  return;
+         }
+       
+    
+      if( d1== null)
+       {d1=new Vector();
+        newVar=true;
+       }
+      if(Debug)
+         System.out.println("d1="+Vect_to_String(d1));
+      Object d=d1;
+      for(int i=0; i<V.size()-1; i++)
+        {O = V.elementAt(i);
+         if(Debug)
+           System.out.println("element i="+i+","+O); 
+         if(O == null)
+           {seterror(1000, ER_MissingArgument +" at index="+i);
+           return; 
+           }
+         if( !(O instanceof Integer))
+          {seterror(1000, ER_IMPROPER_DATA_TYPE +"D at index="+i);
+           return; 
+          }
+         if(i<V.size()-2)
+         if(!(d instanceof Vector))
+           {seterror(1000, ER_IMPROPER_DATA_TYPE+" E" );
+           return; 
+            }   
+         int indx = ((Integer)O).intValue();
+         if((  (i<V.size()-2) && ((Vector)d).size()<indx     )  ||
+            (  (i==V.size()-1) &&((Vector)d).size()<indx-1    )
+            )
+           {seterror(1000, ER_ArrayIndex_Out_Of_bounds+" "+indx);
+            return ;
+            }
+        if(i<V.size()-2)
+             d =((Vector)d).elementAt(indx);
+        else if(((Vector)d).size()>indx)
+           {((Vector)d).setElementAt(Result,indx); 
+            }
+         else ((Vector)d).addElement(Result);
+        
+        } 
+     if(newVar) 
+        ArrayInfo.put(vname.substring(0,k).toUpperCase(),d);
+     
+     }
+    public void Assign(String vname,
                        Object Result)
       {int   i,
              j;
        
       boolean found = true ;
-     
-      Object X = getVal( vname );
-     
+      String nam = vname;
+      if(vname.indexOf('[')>=0)
+            nam = vname.substring(0,vname.indexOf('[')   ).toUpperCase();
+      Object X = getVal( nam );
       if( (perror >= 0) && ( serror.equals( ER_NoSuchVariable)))
 	 {perror = -1;
 	  serror = "";
           found = false;
          }
+      if(Debug) System.out.println("in Assign,vname and nam="+vname+" "+nam);
+      if(vname.indexOf('[')>=0)
+          {if(found && !ArrayInfo.containsKey(nam))
+             {seterror(1000,ER_IMPROPER_DATA_TYPE+"F" );
+            
+              
+              return; 
+             }
+           AssignArray(vname, Result);
+           return;
+          }
      
        if( Result instanceof Boolean)
-         {if(vname.toUpperCase().equals("TRUE") || vname.toUpperCase().equals("FALSE"))
+         {if(vname.toUpperCase().equals("TRUE") || 
+             vname.toUpperCase().equals("FALSE"))
             {seterror(1000, ER_ReservedWord);
              return;
              }
-           BoolInfo.put(vname,Result);
-          
+           if(found && !BoolInfo.containsKey(vname))
+             {seterror(1000,ER_IMPROPER_DATA_TYPE+"G" );
+              return; 
+             }
+           BoolInfo.put(vname.toUpperCase(),Result);         
             
+          }
+       else if( Result instanceof Vector)
+          {if(found && !ArrayInfo.containsKey(vname))
+             {seterror(1000,ER_IMPROPER_DATA_TYPE+"H" );
+              return; 
+             }
+            ArrayInfo.put(vname.toUpperCase(),Result);
           }
        else if( Result instanceof Integer )  //what about array of integers??
          {i = findd( vname , Ivalnames );
@@ -2849,6 +3254,11 @@ private void operateLogic(Object R1 , Object R2 , char c )
         DS.remove(vname.toUpperCase().trim()); 
        }
     
+     public void propertyChange(PropertyChangeEvent evt)
+        { 
+          PC.firePropertyChange( evt );
+         }
+
 
      public void update( Object observed_obj , Object reason )
        { if( observed_obj != null) 
@@ -2858,7 +3268,9 @@ private void operateLogic(Object R1 , Object R2 , char c )
                  { 
                   // Help, Help, Help
                        
-                 }    
+                 } 
+         if( reason instanceof DataSet)  //Send Command from a subscript
+               OL.notifyIObservers( observed_obj , reason );
        } 
 //************************SECTION:EVENTS********************
     /** 
@@ -2890,7 +3302,8 @@ private void operateLogic(Object R1 , Object R2 , char c )
      *                "Display" value
      */
      public void addPropertyChangeListener( PropertyChangeListener listener )
-       {PC.addPropertyChangeListener( listener );
+       {
+       PC.addPropertyChangeListener( listener );
        }
 
      /** 
@@ -2903,6 +3316,12 @@ private void operateLogic(Object R1 , Object R2 , char c )
        {PC.removePropertyChangeListener( listener );
        }
 
+     /**
+      * Needed to fill out the Customizer interface
+      */
+     public void setObject( Object bean)
+         {
+         }
     /** 
      *@param 
      *     listener      The listener who wants to be notified of a non Data Set
@@ -2926,5 +3345,20 @@ private void operateLogic(Object R1 , Object R2 , char c )
        {PC.removePropertyChangeListener( listener );
        }
 
-    
+ private class SubRange
+  {int first,last;
+   public SubRange( int first, int last)
+     {this.first = first;
+      this.last = last;
+     }
+   Vector Vect()
+     {int dir=1;
+      if(first> last) dir = -1;
+      Vector V = new Vector();
+      for( int i = first;(i-last)*dir <=0    ; i+=dir)
+            V.addElement( new Integer(i));
+      return V;
+     }   
+
+   }   
 }
