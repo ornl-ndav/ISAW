@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/07/05 16:11:09  dennis
+ *  Frame title is now set from the DataSet.
+ *
  *  Revision 1.8  2001/06/27 18:43:31  dennis
  *  Now uses Kevin's GraphableDataManager instead of
  *  Kevin's SelectedGraphView
@@ -176,6 +179,7 @@ public class ViewManager extends    JFrame
     */
    public ViewManager(DataSet ds, String view_type )
    {
+      super( ds.toString() );
       view_manager = this;
       setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
       
