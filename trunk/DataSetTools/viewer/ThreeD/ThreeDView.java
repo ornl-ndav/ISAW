@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2003/02/12 19:44:07  dennis
+ * Switched to use PixelInfoList instead of SegmentInfoList
+ *
  * Revision 1.27  2003/01/15 20:54:31  dennis
  * Changed to use SegmentInfo, SegInfoListAttribute, etc.
  *
@@ -676,7 +679,6 @@ private float draw_detectors()
   float   max_radius = 0;
   float   radius = 0;
 
-  Position3D position;
   Vector3D  points[] = new Vector3D[1];
   Vector3D  point;
   points[0] = new Vector3D();
@@ -686,17 +688,16 @@ private float draw_detectors()
   for ( int i = 0; i < n_data; i++ )
   {
     Data d = ds.getData_entry(i);
-    SegmentInfo seg_info[] = (SegmentInfo[])
-                          d.getAttributeValue( Attribute.SEGMENT_INFO_LIST );
-    if ( seg_info != null )
-    {
-      objects = new IThreeD_Object[ seg_info.length ];
-      for ( int k = 0; k < seg_info.length; k++ )
-      {
-        position= seg_info[k].getPosition();
+    PixelInfoList pil = (PixelInfoList)
+                          d.getAttributeValue( Attribute.PIXEL_INFO_LIST );
 
-        float coords[] = position.getCartesianCoords();
-        point = new Vector3D( coords[0], coords[1], coords[2] );
+    if ( pil != null )
+    {
+      int n_pixels = pil.num_pixels();
+      objects = new IThreeD_Object[ n_pixels ];
+      for ( int k = 0; k < n_pixels; k++ )
+      {
+        point = pil.pixel(k).position();
 
         if ( point == null )
           objects[k]   = new ThreeD_Non_Object();
@@ -707,8 +708,8 @@ private float draw_detectors()
             max_radius = radius;
 
           objects[k] = make_detector( point, 
-                                      seg_info[k].getWidth()/100, 
-                                      seg_info[k].getLength()/100,
+                                      pil.pixel(k).width(), 
+                                      pil.pixel(k).height(),
                                       i );
         }
       }
