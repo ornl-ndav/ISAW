@@ -32,6 +32,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/10/05 17:53:36  dennis
+ *  Added a parameter giving the angle between the normal to the sample
+ *  slab and the beam direction.
+ *  SLABMS() no longer hard codes the slab angle, but uses the angle
+ *  parameter and computes the complement of the angle sample slab angle.
+ *  Improved documentation and did some general code clean up.
+ *
  *  Revision 1.6  2001/08/31 20:30:20  dennis
  *  Now extends GenericSpecial operator, rather than DS_Special operator,
  *  so that it is properly found as a GenericOperator.
@@ -43,7 +50,8 @@
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.3  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *     Introduced additional abstract classes to better categorize the 
+ *     operators.
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -101,6 +109,27 @@ import  DataSetTools.util.*;
  * background run DataSets.  The difference must first be converted to
  * energy loss.
  * 
+ *  <p><b>Title:</b> Detector Normalization Factors 
+ *
+ *  <p><b>Command:</b> DetNormFac
+ *
+ *  <p><b>Usage:</b><ul>
+ *    When used in a script, the parameters are as described in the
+ *    documentation for the constructor, as listed below.
+ *  </ul>
+ *
+ *  <p><b>Returns:</b><ul>
+ *     This returns a new DataSet containing three Data blocks.  The first
+ *     Data block has the experimentally determined efficienciesr. The second
+ *     has the calculated efficiencies based on Vineyard's approximation
+ *     for multiple scattering ( J.R.D. Copley et al., Nucl. Instr. Method 
+ *     107, 501(1973) ).  The third has the ratio of the calculated to 
+ *     experimental efficiencies: cal_FF[j]/exp_FF[j]. If an error occurs, 
+ *     this returns a message String.
+ *   </ul>
+ *
+ *  @see DataSetOperator
+ *  @see Operator
  */
 
 public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial 
@@ -117,7 +146,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
 
   public SpectrometerDetectorNormalizationFactor( )
   {
-    super( "Calculate Detector Normalization Factors" );
+    super( "Detector Normalization Factors" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -126,20 +155,27 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
    *  a difference between a vanadium run and a background run.  The
    *  result of the calculation is obtained by calling getResult().
    *
-   *  @param  ds          This DataSet must contain the difference between
-   *                      a vanadium run and a background run.  These DataSets
-   *                      must have the same machine geometry and detector
-   *                      grouping as the sample runs that the normalization
-   *                      factors will be applied to. Also, the difference
-   *                      must have been converted to energy loss.
+   *  @param  ds      This DataSet must contain the difference between
+   *                  a vanadium run and a background run.  These DataSets
+   *                  must have the same machine geometry and detector
+   *                  grouping as the sample runs that the normalization
+   *                  factors will be applied to. Also, the difference
+   *                  must have been converted to energy loss.
+   *
+   *  @param theta    The angle between the normal to the sample slab
+   *                  and the beam direction.
+   *                      
    */
 
-  public SpectrometerDetectorNormalizationFactor( DataSet     ds)
+  public SpectrometerDetectorNormalizationFactor( DataSet ds, float theta )
   {
     this();
 
     Parameter parameter = getParameter(0);
     parameter.setValue( ds );
+
+    parameter = getParameter(1);
+    parameter.setValue( new Float( theta ) );
   }
 
 
@@ -167,6 +203,9 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
                    "Vanadium Calib. Data, minus background (Energy Loss)",
                     DataSet.EMPTY_DATA_SET );
      addParameter( parameter );
+
+     parameter = new Parameter( "Sample slab angle:", new Float(57) );
+     addParameter( parameter );
   }
 
 
@@ -181,7 +220,8 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
     
     float ELAM = ECON*LAMCON*LAMCON;
                                      // get the current data set
-    DataSet ds = (DataSet)(getParameter(0).getValue());
+    DataSet ds  = (DataSet)(getParameter(0).getValue());
+    float THETS = ((Float)(getParameter(1).getValue())).floatValue();
  
                                      // construct a new data set for the
                                      // normalization factors
@@ -230,7 +270,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
       energy_in_obj=(Float)
                       attr_list.getAttributeValue(Attribute.ENERGY_IN);
 
-      if( position != null && energy_in_obj != null)
+      if( position != null && energy_in_obj != null )
                                                        // has needed attributes 
       {                                                // so convert it to E
                                        // calculate energies at bin boundaries
@@ -248,15 +288,13 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
         float sum = 0.0f;
         int numofe = e_vals.length;
         
-       // System.out.print("EDUM EINTEG DUM numofe: "+EDUM+"  "+EINTEG+"  "+DUM+ " "+numofe);
-       // System.out.print("spherical_coords ="+spherical_coords[0]+ " " +spherical_coords[1]+ " "+spherical_coords[2]);
-       // pause(3000);
-        
-        spherical_coords = position.getSphericalCoords();
+       // System.out.print("EDUM EINTEG DUM numofe: " + EDUM +
+       //                  "  " + EINTEG + "  " + DUM + " " + numofe);
+       // System.out.print("spherical_coords =" + spherical_coords[0] + 
+       //                  " " + spherical_coords[1]+ " "+spherical_coords[2]);
         
         loope:for ( int i = 0; i < (numofe-1); i++ )
         {
-            
             if (e_vals[i+1]<DUM || e_vals[i+1]>EINTEG) continue loope;
             float EF=EI - e_vals[i+1];
             float LAMF = (float)Math.sqrt(ELAM/EF);
@@ -267,26 +305,28 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
             float LAMF1 = (float)Math.sqrt(ELAM/EF1);
             float DLAMF = LAMF1-LAMF;
             float HLAMF = 0.5f*DLAMF;
-            float DEfudge =(float)( ELAM*(Math.pow((LAMF-HLAMF), -2.0f)-Math.pow((LAMF+HLAMF), -2.0f)));
+            float DEfudge =(float)( ELAM*(Math.pow((LAMF-HLAMF), -2.0f) -
+                                          Math.pow((LAMF+HLAMF), -2.0f)));
             sum += DEfudge*y_vals[i+1]/1000;
            // System.out.print(e_vals[i]+" "+sum+"\n");
-           // pause(300);
         }
 
-        
-        //*/
-            
-            float XMS = SLABMS(180.0f*spherical_coords[1]/(float)Math.PI, energy_in );
-            if (1/XMS>0.000001) 
-            cal_FF[j]= 1/XMS;
-            exp_FF[j]=sum;
-            if(exp_FF[j]<0.00001f||1/XMS<0.000001)
-            {
-                fudge_FF[j]=0.0f;
-            }else 
-            fudge_FF[j]=cal_FF[j]/exp_FF[j];
+        float XMS = SLABMS(180.0f*spherical_coords[1] /
+                    (float)Math.PI, energy_in, THETS );
 
-            System.out.print(j+"  "+(180.0f*spherical_coords[1]/(float)Math.PI)+" "+cal_FF[j]+" "+exp_FF[j]+" "+fudge_FF[j]+"  \n");
+        if (1/XMS>0.000001) 
+          cal_FF[j]= 1/XMS;
+        else
+          cal_FF[j] = 0;
+
+        exp_FF[j]=sum;
+        if( exp_FF[j] < 0.00001f || 1/XMS < 0.000001)
+          fudge_FF[j]=0.0f;
+        else 
+          fudge_FF[j]=cal_FF[j]/exp_FF[j];
+
+   //     System.out.print(j+"  "+(180.0f*spherical_coords[1]/(float)Math.PI)+
+   //                       " "+cal_FF[j]+" "+exp_FF[j]+" "+fudge_FF[j]+"  \n");
       }
         
         if (j==(num_data-1))
@@ -325,149 +365,131 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
     new_op.CopyParametersFrom( this );
 
     return new_op;
-  }
+ }
 
 
 
-public static void pause(int time)
-{ 
- System.out.print("Pause for "+time/1000 +" second! ");
-  try{Thread.sleep(time);}catch(Exception e){}
-    
-}
+  static float SLABMS(float PHI, float energy, float THETS )
+  {
+    float ECON   = 5.2276f*1000000;
+    float WVCON  = 1.5885f*1000;
 
-    static float SLABMS(float PHI, float energy)
+    float XNI = (float)Math.sqrt(ECON/energy);
+    float XKO = WVCON/XNI;
+
+    int NALPHA = 50;
+    int NMU  = 50;
+
+    THETS = 90 - THETS;
+    float T = 0.1575f;
+    float SIGS = 5.20f;
+    float SIGA = 5.08f;
+    float RHON = 0.0170f;
+    SIGS =SIGS*RHON;
+    SIGA = RHON*SIGA*2200.0f*XNI/1000000.0f;
+    float SIGR = SIGS +SIGA;
+    float IRSW = THETS/(float)Math.abs(THETS);
+    THETS=(float)Math.abs(THETS);
+    float DW = 4.909865f/1000000.0f;
+
+    float PI = 3.1415927f;
+    float DALPHA = 2.0f*PI /NALPHA;
+    float DMU = 2.0f/NMU;
+    float DOM = DALPHA * DMU/4.0f/PI;
+    float THETR =THETS *PI/180;
+    float CT = (float)Math.cos(THETR);
+    float ST = (float)Math.sin(THETR);
+    float TP = T/ST;
+    float EXPO = -SIGR*TP;
+    float SCAT = SIGS/SIGR;
+    float  XMS = 0;
+    if ( Math.abs(PHI) < 0.01f )
     {
-      float ECON = 5.2276f*1000000,LAMCON = 3.95541f/1000, WVCON = 1.5885f*1000,
-                        XKCON = 0.086165f;
-        
-        //float XKO = 7.6038f;//120meV
-        //float XNI = 208.9078f;//120meV
-        
-        float XKO = 9.825f;//200meV
-        float XNI = 161.672f;//200meV
-       // p("XKO XNI ="+XKO+"  "+XNI);
-        
-        XNI = (float)Math.sqrt(ECON/energy);
-        XKO = WVCON/XNI;
-        
-     //   p("XKO XNI ="+XKO+"  "+XNI);
-      //  pause(1000);
-        int NALPHA = 50;
-        int NMU  = 50;
-        float THETS = -45.0f;
-        float T = 0.1575f;
-        float SIGS = 5.20f;
-        float SIGA = 5.08f;
-        float RHON = 0.0170f;
-        SIGS =SIGS*RHON;
-        SIGA = RHON*SIGA*2200.0f*XNI/1000000.0f;
-        float SIGR = SIGS +SIGA;
-        float IRSW = THETS/(float)Math.abs(THETS);
-        THETS=(float)Math.abs(THETS);
-        float DW = 4.909865f/1000000.0f;
-        
-        float PI = 3.1415927f;
-        float DALPHA = 2.0f*PI /NALPHA;
-        float DMU = 2.0f/NMU;
-        float DOM = DALPHA * DMU/4.0f/PI;
-        float THETR =THETS *PI/180;
-        float CT = (float)Math.cos(THETR);
-        float ST = (float)Math.sin(THETR);
-        float TP = T/ST;
-        float EXPO = -SIGR*TP;
-        float SCAT = SIGS/SIGR;
-        float  XMS = 0;
-        if ( Math.abs(PHI)<0.01f) 
-        {
-            System.out.println("Quit for samll PHI");
-            return 0.0f;
-        }
-        
-        float PHIR = PHI * PI/ 180.0f;
-        float CP = (float)Math.cos(PHIR);
-        float SP = (float)Math.sin(PHIR);
-        float BETA = THETR - PI /2.0f + PHIR*IRSW;
-        float CB = (float)Math.cos(BETA);
-        float DEL = ST/CB;
-        float ATT = (float)Math.exp(EXPO*DEL);
-       // p("PHIR CP SP BETA CB DEL ATT :"+            PHIR+ "  "+ CP + "  "+ SP + "  "+ BETA + "  "+ CB+ "  "+ DEL + "  "+ ATT);
-        
-        if ( IRSW < 0) ATT =1;
-        float FIRST = (float)(SCAT * ATT * ( 1.0f - Math.exp(EXPO * (1.0f-DEL)))
-             /( 1.0f -DEL)* Math.exp(-4*DW*XKO*XKO*Math.sin(PHIR/2.0f)*Math.sin(PHIR/2.0f) ));
-             
-        float EPS = 1.0f - DEL;
-        float FAC = (float)( 1.0f - Math.exp(EXPO*EPS))/EPS;
-        float SECOND = 0.0f;
-       // p("FIRST EPS FAC :"+FIRST+" "+EPS+" "+FAC);
-      //  System.out.println("1. SECOND  = "+SECOND);
-        float ALPHA = 0.0f;
-        float CA = 0.0f;
-        float SA = 0.0f;
-        float CMU = 0.0f;
-        float CM = 0.0f;
-        float SM = 0.0f;
-        float EDW = 0.0f;
-        float ITEST = 0.0f;
-        float RHO = 0.0f;
-        float EKSI = 0.0f;
-        float SUB = 0.0f;
-        float ETA = 0.0f;
-   
-        for ( int IAL = 1; IAL <= NALPHA; IAL++)
-        {
-             ALPHA = ( (float)IAL-0.5f) * DALPHA;
-             CA = (float)Math.cos(ALPHA);
-             SA = (float)Math.sin(ALPHA);
-            
-           // System.out.println("1.5.ALPHA  CA SA : " +ALPHA+"  "+  CA +"  "+  SA  );
-            
-            for (int IMU = 1; IMU <= NMU; IMU++)
-            {
-                 CMU = NMU/2 + 0.5f;
-                 CM = ( (float)IMU - CMU )*DMU;
-                 SM = (float)Math.sqrt(1.0f -CM*CM);
-                 EDW = (float)Math.exp(-DW*4.0f*XKO*XKO*(1.0f-(CM + SP*SM*CA + CP*CM)/2.0f));
-                 ITEST = 1;
-                 RHO = SM * CA * CT/ST + CM;
-                 EKSI = 1.0f - 1.0f/RHO;
-                 SUB = 0;
-                if ( Math.abs(RHO)<0.01f)  SECOND = SECOND + ( FAC - SUB) * EDW/ ( 1.0f - RHO* DEL);
-                else
-                {
-                    if ( RHO<0) ITEST = 0;
-                    ETA = ( 1.0f- RHO * DEL)/RHO;
-                    SUB = (float)( Math.exp(ITEST*EXPO*ETA)*(1.0f-Math.exp(EXPO*EKSI))/EKSI);
-                    SECOND = SECOND + ( FAC - SUB) * EDW/ ( 1.0f - RHO* DEL);
-                }
-                
-              //  System.out.println("2.IMU  SECOND + ( FAC - SUB) * EDW/ ( 1.0f - RHO* DEL):"  
-               //           +IMU + "  "+ SECOND +"  "+ FAC+"  "+ SUB +"  "+EDW +"  "+RHO +"  "+DEL );
-               
-             //  try{Thread.sleep(5000);}catch(Exception e){}
-                
-                
-            }
-        }
-        
-        SECOND = SECOND * SCAT * SCAT * ATT * DOM;
-       // System.out.println("3. SECOND * SCAT * SCAT * ATT * DOM :"  
-        //           + SECOND +"  "+ SCAT +"  "+ ATT +"  "+DOM );
-        
-        float XINF = SECOND / (1.0f - SECOND / FIRST );
-        float RATIO = SIGS * TP/ ( FIRST + XINF);
-        
-        //System.out.println("4. RATIO = SIGS * TP/ ( FIRST + XINF)" +RATIO+ "   "+ SIGS + "   "+ 
-        //            TP+ "   "+ FIRST+ "   "+  XINF);
-        
-        XMS = RATIO;
-        
-       // System.out.println("5. MULT  SC  PHI = "  + PHI + " FIRST = " + FIRST + 
-        //      " SECOND = " + SECOND + " XMS = " + XMS );
-        
-        return XMS;
+      System.out.println("Quit for samll PHI");
+      return 0.0f;
     }
-    
 
+    float PHIR = PHI * PI/ 180.0f;
+    float CP = (float)Math.cos(PHIR);
+    float SP = (float)Math.sin(PHIR);
+    float BETA = THETR - PI /2.0f + PHIR*IRSW;
+    float CB = (float)Math.cos(BETA);
+    float DEL = ST/CB;
+    float ATT = (float)Math.exp(EXPO*DEL);
+
+    if ( IRSW < 0) ATT =1;
+
+  //System.out.println("SCAT = " + SCAT + " ATT = " + ATT + " EXPO = " + EXPO );
+  //System.out.println("DEL = " + DEL + " DW = " +DW + " XKO = " + XKO +
+  //                   " PHIR = " + PHIR );
+    float FIRST = (float)(SCAT * ATT * ( 1.0f - Math.exp(EXPO * (1.0f-DEL)))/
+                  ( 1.0f -DEL)* Math.exp(-4*DW*XKO*XKO*Math.sin(PHIR/2.0f) *
+                  Math.sin(PHIR/2.0f) ));
+
+    float EPS = 1.0f - DEL;
+    float FAC = (float)( 1.0f - Math.exp(EXPO*EPS))/EPS;
+    float SECOND;
+    float ALPHA;
+    float CA;
+    float SA;
+    float CMU;
+    float CM;
+    float SM;
+    float EDW;
+    float ITEST;
+    float RHO;
+    float EKSI;
+    float SUB;
+    float ETA;
+  
+    SECOND = 0;
+    for ( int IAL = 1; IAL <= NALPHA; IAL++)
+    {
+      ALPHA = ( (float)IAL-0.5f) * DALPHA;
+      CA = (float)Math.cos(ALPHA);
+      SA = (float)Math.sin(ALPHA);
+
+      // System.out.println("1.5.ALPHA CA SA : "+ALPHA+"  "+  CA +"  "+ SA);
+
+      for (int IMU = 1; IMU <= NMU; IMU++)
+      {
+        CMU = NMU/2 + 0.5f;
+        CM = ( (float)IMU - CMU )*DMU;
+        SM = (float)Math.sqrt(1.0f -CM*CM);
+        EDW = (float)Math.exp(-DW*4.0f*XKO*XKO*(1.0f-(CM + SP*SM*CA + CP*CM)
+                                  /2.0f));
+        ITEST = 1;
+        RHO = SM * CA * CT/ST + CM;
+        EKSI = 1.0f - 1.0f/RHO;
+        SUB = 0;
+        if ( Math.abs(RHO)<0.01f)  
+          SECOND = SECOND + ( FAC - SUB) * EDW/ ( 1.0f - RHO* DEL);
+        else
+        {
+          if ( RHO<0) ITEST = 0;
+          ETA = ( 1.0f- RHO * DEL)/RHO;
+          SUB = (float)( Math.exp(ITEST*EXPO*ETA)*
+                        (1.0f-Math.exp(EXPO*EKSI))/EKSI);
+          SECOND = SECOND + ( FAC - SUB) * EDW/ ( 1.0f - RHO* DEL);
+        }
+
+     }
+   }
+
+   SECOND = SECOND * SCAT * SCAT * ATT * DOM;
+   // System.out.println("3. SECOND * SCAT * SCAT * ATT * DOM :"
+   //           + SECOND +"  "+ SCAT +"  "+ ATT +"  "+DOM );
+
+   float XINF = SECOND / (1.0f - SECOND / FIRST );
+   float RATIO = SIGS * TP/ ( FIRST + XINF);
+
+   //System.out.println("4. RATIO " +RATIO+ "   "+ SIGS + "   "+
+   //            TP+ "   "+ FIRST+ "   "+  XINF);
+
+   XMS = RATIO;
+
+   System.out.println("5. MULT  SC  PHI = "  + PHI + " FIRST = " + FIRST +
+                      " SECOND = " + SECOND + " XMS = " + XMS );
+   return XMS;
+  }
 }
