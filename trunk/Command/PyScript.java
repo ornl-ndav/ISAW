@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/11/23 19:57:24  rmikk
+ * Fixed so methods in this class work well with Python scripts that
+ *   are NOT written as operators and that are not stored on a file.
+ * All Python scripts can now be run in the CommandPane.
+ *
  * Revision 1.8  2003/10/15 16:22:30  bouzekc
  * Added the filename to the error Isaw generates when it encounters a
  * Python script syntax error upon startup.
@@ -70,7 +75,7 @@ import org.python.core.PyException;
 public class PyScript extends Script{
   private static boolean DEBUG = false;
   private        Boolean valid = null;
-
+  private        String  className = null;
   // ============================== CONSTRUCTORS
   public PyScript(String filename){
     super(filename);
@@ -107,7 +112,11 @@ public class PyScript extends Script{
       }else if(line.startsWith("#")){
         continue;
       }else if(line.startsWith("class")){
-        if(line.indexOf(this.getClassname())>0)
+        if( this.getClassname() == null){
+          className = getClassNamefromLine( line.substring( 5));
+          if( className != null)
+             hasClass = true;
+        }else if(line.indexOf(this.getClassname())>0)
           hasClass=true;
         else {
           DataSetTools.util.SharedData.addmsg( 
@@ -131,6 +140,9 @@ public class PyScript extends Script{
       if(DEBUG) System.out.println(">>"+line+"<<");
 
       //there is an error in the file, so list the name and number
+      // It is not a valid python operator but it could be a regular
+      // python script
+      if( hasClass )
       if( filename != null ) {
         DataSetTools.util.SharedData.addmsg( 
           filename + " has a syntax error on line " + ( i + 1 ) + ".");
@@ -152,10 +164,29 @@ public class PyScript extends Script{
     return valid.booleanValue();
   }
 
+  //the class is stripped off of this line
+  private String getClassNamefromLine( String line){
+     int Paren = line.indexOf("(");
+     if( Paren < 0) 
+        return null;
+          
+     className = line.substring( 0,Paren).trim();
+     if( className == null)
+        return null;
+     if( className.length()<1)
+        return null;
+     return className;
+           
+  }
+
+  /**
+    *  Returns the name of the class associated with a file.  If
+    *  there is no file, null is retured
+    */
   public String getClassname(){
-    // the class name must match the filename
+    // the class name must match the filename if it is in a file
     String filename=this.getFilename();
-    if(filename==null || filename.equals(UNKNOWN)) return null;
+    if(filename==null || filename.equals(UNKNOWN)) return className;
 
     // ditch the directory name
     int index=filename.lastIndexOf("/");
