@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/10/20 16:41:53  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.9  2003/09/11 18:33:45  rmikk
  * Caught some errors in the underlying jnexus system
  *
@@ -91,7 +94,7 @@ public class NexusRetriever extends Retriever
     }               
   
   /**
-  * @param  the data set index
+  * @param data_set_num the data set index
   * @return the type( Histogram/monitor/invalid/etc.) of the data 
   *
   *@see DataSetTools.retriever.dataSource

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/10/20 16:38:11  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.2  2003/10/09 20:23:08  dennis
  * Changed catch(Exception u) to catch(Throwable u) to fix
  * warning when compiling with jdk 1.4.1_05.
@@ -72,18 +75,18 @@ public class PrintImage extends GenericSave{
 
    /**
    *      Constructor for Java code
-   *   @param DS - The DataSet whose view is to be printed
-   *   @param view_type- The name of the view used by the ViewManager. This is the
+   *   @param DS  The DataSet whose view is to be printed
+   *   @param view_type The name of the view used by the ViewManager. This is the
    *                     String that appears in Isaw's View Menu
-   *   @param State -A Vector containing entries that are Vectors with two 
+   *   @param State A Vector containing entries that are Vectors with two 
    *                elements: of State's Name and its value(not implemented yet)
    *                See getDocumentation method for some State names
-   *   @param width- The width of the image(will be scaled to fit the paper)
-   *   @param height- The height of the image in pixels(Also scaled)
-   *   @param PrintName- the name of the printer. If blank, any printer will be considered
-   *   @param PrintLocation- The location of the printer. If blank, any location will
+   *   @param width The width of the image(will be scaled to fit the paper)
+   *   @param height The height of the image in pixels(Also scaled)
+   *   @param PrintName the name of the printer. If blank, any printer will be considered
+   *   @param PrintLocation The location of the printer. If blank, any location will
    *                        be considered
-   *   @param PrintOptions- (not implemented yet).For options like Portrait, etc.
+   *   @param PrintOptions (not implemented yet).For options like Portrait, etc.
    */
    public PrintImage( DataSet DS, String view_type, Vector State,
          int width, int height, String PrintName, 
