@@ -31,6 +31,9 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.32  2001/07/13 13:32:23  rmikk
+  *  *** empty log message ***
+  *
   *  Revision 1.31  2001/07/10 14:37:21  chatter
   *  Fixed the Selected Graph View menuitem. The window still needs to be resized before the
   *  selected graphs appear in the graph panel. Needs to be fixed.
@@ -1560,6 +1563,79 @@
                  
                   if(s=="Selected Graph View" )	 
  			{
+<<<<<<< Isaw.java
+ 
+                       if(  mtn.getLevel()==1)
+                      {  
+                            int num_child =  mtn.getChildCount();
+                        
+                            DataSet mergedDS1 = null;
+                            DataSet mergedDS2 = null;
+                            DataSetOperator  op1, op2;
+                    
+                          
+                            DefaultMutableTreeNode child_dataset0= (DefaultMutableTreeNode) mtn.getChildAt(0);
+                            DefaultMutableTreeNode child_dataset1 = (DefaultMutableTreeNode) mtn.getChildAt(1);
+            
+                            DataSet ds0 = (DataSet)child_dataset0.getUserObject();
+                            DataSet ds1 = (DataSet)child_dataset1.getUserObject();
+                   
+                        if(num_child == 2)
+                         {   
+                             op1 = new DataSetMerge( ds0, ds1 );
+                             mergedDS1 = (DataSet)op1.getResult(); 
+ 
+
+
+                              jdvui.ShowDataSet(mergedDS1, "ExternalFrame", IViewManager.SELECTED_GRAPHS);
+
+                            
+                         }
+                      if(num_child == 3)
+                           
+                         {  
+                             DefaultMutableTreeNode child_dataset2 = (DefaultMutableTreeNode) mtn.getChildAt(2);
+                             DataSet ds2 = (DataSet)child_dataset2.getUserObject();
+                             op1 = new DataSetMerge( ds0, ds1 );
+                             mergedDS1 = (DataSet)op1.getResult(); 
+                             op2 = new DataSetMerge( mergedDS1, ds2 );
+                             mergedDS2 = (DataSet)op2.getResult(); 
+ 
+ 				
+                           //  addDataSet(mergedDS2);
+                           
+                         //  chop_MacroTools fg = new chop_MacroTools();
+                         // fg.drawAlldata (mergedDS2); 
+   
+                         }
+                      }           
+                     
+                     if(  mtn.getUserObject() instanceof DataSet)
+                     {
+                         
+                         DataSet ds = (DataSet)mtn.getUserObject();
+                         
+                         jdvui.ShowDataSet(ds, "ExternalFrame", IViewManager.SELECTED_GRAPHS);
+                     }
+                         
+                     else if(  mtn.getUserObject() instanceof Data)
+                     {
+                         //DataSet ds  = (DataSet) mtn.getParent();
+                         DefaultMutableTreeNode  parent = (DefaultMutableTreeNode)mtn.getParent();
+                         DataSet ds = (DataSet)parent.getUserObject();
+                         
+                         TreePath[] paths = null;
+ 	                    JTree tree = jtui.getTree();
+ 	                    DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+ 	                    TreePath[] tp = tree.getSelectionPaths();
+                         Data ggg = (Data)mtn.getUserObject();
+                         int start_id =  ggg.getGroup_ID();
+                         DataSetOperator  op1;
+                         String attr_name = new String("Group ID");
+                         op1 = new ExtractByAttribute(ds, attr_name , true, start_id, start_id+tp.length-1);
+                         DataSet new_ds = (DataSet)op1.getResult(); 
+                        
+=======
                      DefaultMutableTreeNode mtn = jtui.getSelectedNode();
  	               if(mtn!=null)
                      {   
@@ -1570,6 +1646,7 @@
                             System.out.println("Selected graph view 0");
                             jdvui.ShowDataSet(ds, "External Frame", IViewManager.SELECTED_GRAPHS);
                           }
+>>>>>>> 1.31
                          
                           else if(  mtn.getUserObject() instanceof Data)
                           {
@@ -1597,8 +1674,15 @@
                //            IsawViewHelp("No DataSet selected");
                           }
  
+<<<<<<< Isaw.java
+ 			}
+ 			else 
+                                 System.out.println("No Tree Node Selected");
+ 
+=======
                       }
                    
+>>>>>>> 1.31
                  }
                          
                  
