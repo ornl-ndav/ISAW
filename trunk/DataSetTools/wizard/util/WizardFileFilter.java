@@ -29,6 +29,10 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ * $Log$
+ * Revision 1.2  2003/06/13 16:27:51  bouzekc
+ * Removed embedded tabs.  Added log message.
+ *
  */
 package DataSetTools.wizard.util;
 
@@ -51,7 +55,7 @@ public class WizardFileFilter extends javax.swing.filechooser.FileFilter
    */ 
   public String getDescription()
   {
-	  return "Wizard Save File (*.wsf)";
+    return "Wizard Save File (*.wsf)";
   }
     
   /**
@@ -59,10 +63,10 @@ public class WizardFileFilter extends javax.swing.filechooser.FileFilter
    */
   public String getSuffix(File f)
   {
-	  String s = f.getPath(), suffix = null;
-	  int i = s.lastIndexOf('.');
-	  if (i>0 && i<s.length() -1)
-	    suffix = s.substring(i+1).toLowerCase();
-	  return suffix;
+    String s = f.getPath(), suffix = null;
+    int i = s.lastIndexOf('.');
+    if (i>0 && i<s.length() -1)
+      suffix = s.substring(i+1).toLowerCase();
+    return suffix;
   }
 }
