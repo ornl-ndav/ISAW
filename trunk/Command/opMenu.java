@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2001/06/05 16:50:35  rmikk
+ * Changed props.dat to IsawProps.dat
+ *
  * Revision 1.6  2001/06/01 21:14:13  rmikk
  * Added Documentation for javadocs etc.
  *
@@ -188,7 +191,7 @@ public static void main( String args[] )
    String path = System.getProperty("user.home")+"\\";
        path = StringUtil.fixSeparator(path);
        try {
-	    FileInputStream input = new FileInputStream(path + "props.dat" );
+	    FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
           isawProp.load( input );
 	   // Script_Path = isawProp.getProperty("Script_Path");
          // Data_Directory = isawProp.getProperty("Data_Directory");
