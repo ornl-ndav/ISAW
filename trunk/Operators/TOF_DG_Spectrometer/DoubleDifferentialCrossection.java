@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2002/04/19 19:40:39  dennis
+ *  Fixed "broken" @see javadoc comments.
+ *
  *  Revision 1.3  2002/03/13 16:26:26  dennis
  *  Converted to new abstract Data class.
  *
@@ -182,9 +185,6 @@ import  DataSetTools.viewer.*;
   *  <p>tsec = time of sample run, number of T0 pulses / 30.
   *
   *  </ul>
-  *
-  *  @see DataSetOperator
-  *  @see Operator
   */
 
 public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer

@@ -32,6 +32,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.3  2002/04/19 19:40:41  dennis
+ *  Fixed "broken" @see javadoc comments.
+ *
  *  Revision 1.2  2002/03/13 16:26:26  dennis
  *  Converted to new abstract Data class.
  *
@@ -129,10 +132,8 @@ import  DataSetTools.viewer.*;
   *  geometry spectrometer based on the result of applying the scattering 
   *  function operator.  
   *
-  *  @see SpectrometerScatteringFunction
+  *  @see ScatteringFunction
   *  @see DoubleDifferentialCrossection 
-  *  @see DataSetOperator
-  *  @see Operator
   */
 
 public class GeneralizedEnergyDistributionFunction 
