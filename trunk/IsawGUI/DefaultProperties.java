@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2003/11/25 19:04:06  rmikk
+ *  Replaced %20 by a space after a call to Resource.
+ *
  *  Revision 1.20  2003/06/03 21:27:51  pfpeterson
  *  Fixed circular logic by restoring old method.
  *
@@ -196,6 +199,7 @@ public class DefaultProperties{
 
         className='/'+this.getClass().getName().replace('.','/')+".class";
         classFile=this.getClass().getResource(className).toString();
+        classFile=FilenameUtil.URLSpacetoSpace( classFile);
         if(classFile==null) return "DEFAULT";
         injar=classFile.startsWith("jar:");
         index=classFile.indexOf("file:");
