@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.50  2004/01/08 14:56:22  bouzekc
+ * Collapsed import statements.
+ *
  * Revision 1.49  2004/01/06 23:15:39  bouzekc
  * Removed unused variables.
  *
@@ -222,23 +225,20 @@
  */
 package DataSetTools.wizard;
 
-import java.awt.Color;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
-
 import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
+
 import DataSetTools.operator.Operator;
-import DataSetTools.parameter.IParameter;
-import DataSetTools.parameter.IParameterGUI;
-import DataSetTools.util.ErrorString;
-import DataSetTools.util.PropertyChanger;
-import DataSetTools.util.SharedData;
+
+import DataSetTools.parameter.*;
+
+import DataSetTools.util.*;
+
+import java.awt.Color;
+
+import java.beans.*;
+
+import javax.swing.*;
+import javax.swing.border.*;
 
 
 /**
@@ -474,7 +474,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( propBind != null ) {
       propBind.addPropertyChangeListener( property, pcl );
     }
-
     this.addListenerToParameters( property, pcl );
   }
 
@@ -489,7 +488,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( propBind != null ) {
       propBind.addPropertyChangeListener( pcl );
     }
-
     this.addListenerToParameters( null, pcl );
   }
 
@@ -513,7 +511,8 @@ public abstract class Form extends Operator implements PropertyChanger {
       }
     }
 
-    return ( ( areSet == totalParam ) && getResultParam(  ).getValid(  ) );
+    return ( ( areSet == totalParam ) && getResultParam(  )
+                                           .getValid(  ) );
   }
 
   /**
@@ -527,8 +526,8 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( this.getNum_parameters(  ) <= 0 ) {
       return;
     }
-
-    getResultParam(  ).setValid( false );
+    getResultParam(  )
+      .setValid( false );
   }
 
   /**
@@ -584,7 +583,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( ( result == null ) || ( result.length <= 0 ) ) {
       result = null;
     }
-
     param_ref = new int[][]{ constant, variable, result };
   }
 
@@ -618,17 +616,14 @@ public abstract class Form extends Operator implements PropertyChanger {
 
     JPanel sub_panel = new JPanel(  );
     Box subBox       = Box.createVerticalBox(  );
-
     sub_panel.add( subBox );
 
     TitledBorder border;
-
     border = new TitledBorder( LineBorder.createBlackLineBorder(  ), title );
     sub_panel.setBorder( border );
 
     for( int i = 0; i < num.length; i++ ) {
       IParameterGUI param = ( IParameterGUI )getParameter( num[i] );
-
       param.initGUI( null );
       subBox.add( param.getGUIPanel(  ) );
     }
@@ -677,7 +672,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( panel == null ) {
       panel = new JPanel(  );
     }
-
     panel.removeAll(  );
     panel.add( container );
   }
@@ -758,7 +752,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( DEBUG ) {
       box.setBackground( Color.red );
     }
-
     prepGUI( box );
 
     JPanel sub_panel;
@@ -773,7 +766,6 @@ public abstract class Form extends Operator implements PropertyChanger {
         }
       }
     }
-
     this.enableParameters(  );
   }
 
