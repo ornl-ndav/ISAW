@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/12/06 14:58:24  dennis
+ *  Fixed spelling error in java doc tag. (Chris Bouzek)
+ *
  *  Revision 1.4  2002/11/27 23:16:41  pfpeterson
  *  standardized header
  *
@@ -205,7 +208,7 @@ public class SetDataAttribute extends    DS_Attribute
      Res.append("@param ds - The DataSet to which the operation is applied");
      Res.append("@param index - The index of the data block whose attribute");
       Res.append(" is to be set.");
-     Res.append("@parm   Attrib - The Attribute to be set.");
+     Res.append("@param   Attrib - The Attribute to be set.");
      Res.append("@param  new_Value - The new value of the Attribute");
      
      Res.append("@return sets a Data Attribute on a particular Data block");
