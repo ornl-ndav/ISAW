@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/07/10 15:59:55  pfpeterson
+ *  Added new operator to data.
+ *
  *  Revision 1.20  2002/04/03 20:41:16  pfpeterson
  *  Added the LoadOffsets DataSet operator to the DataSets.
  *
@@ -300,6 +303,7 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new GetField() );
     new_ds.addOperator( new SetField() );
     new_ds.addOperator( new LoadOffsets() );
+    new_ds.addOperator( new LoadGsasCalib() );
 
     new_ds.addOperator( new PlotterOp() );
     return new_ds;
