@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/03/12 21:16:42  pfpeterson
+ *  Removed log file line since it is no longer used by anyone.
+ *
  *  Revision 1.3  2002/03/07 22:14:41  pfpeterson
  *  Hopefully will work better with windows
  *
@@ -227,26 +230,23 @@ public class DefaultProperties{
             +"#"+newline
             +"# Directory Options"+newline
             +"#"+newline
-            +"ISAW_HOME="+IsawHome+newline;
+            +"ISAW_HOME="+IsawHome+newline
+            +"#GROUP_HOME="+UserHome+separator+"ipns"+newline;
         if(IsawHome.equals("DEFAULT")){
-            rs=rs+"#GROUP_HOME="+UserHome+separator+"ipns"+newline
-                +"#Help_Directory="+IsawHome+separator+"IsawHelp"+newline
+            rs=rs+"#Help_Directory="+IsawHome+separator+"IsawHelp"+newline
                 +"#Script_Path="+IsawHome+separator+"Scripts"+newline
                 +"#Docs_Directory="+IsawHome+separator+"docs"+separator
                 +"html"+newline
                 +"#Data_Directory="+IsawHome+separator+"SampleRuns"+newline
-                +"#Log_Directory="+IsawHome+separator+"SampleRuns"+newline
                 +"#Instrument_Macro_Path="+IsawHome+newline
                 +"#User_Macro_Path="+IsawHome+newline
                 +newline;
         }else{
-            rs=rs+"#GROUP_HOME="+UserHome+separator+"ipns"+newline
-                +"Help_Directory="+IsawHome+separator+"IsawHelp"+newline
+            rs=rs+"Help_Directory="+IsawHome+separator+"IsawHelp"+newline
                 +"Script_Path="+IsawHome+separator+"Scripts"+newline
                 +"Docs_Directory="+IsawHome+separator+"docs"+separator
                 +"html"+newline
                 +"Data_Directory="+IsawHome+separator+"SampleRuns"+newline
-                +"Log_Directory="+IsawHome+separator+"SampleRuns"+newline
                 +"Instrument_Macro_Path="+IsawHome+newline
                 +"User_Macro_Path="+IsawHome+newline
                 +newline;
