@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2002/01/10 15:42:47  rmikk
+ * Added an addStatusPane method.
+ * Added this StatusPane to the JParametersDialog
+ *
  * Revision 1.16  2001/08/16 20:31:09  rmikk
  * Fixed the javadocs @see tags
  *
@@ -89,6 +93,7 @@ public class opMenu extends JMenu
  MActionListener ML;
  IDataSetListHandler DS;
  IObserver iobs;
+ StatusPane statPane;
 /**
 * @param op   Gets the list of operators to be placed in this menu
 * @param DS  Gets the list of Data Sets that can be used for parameters
@@ -102,16 +107,17 @@ public opMenu(OperatorHandler op , IDataSetListHandler DS, Document logdoc ,
            IObserver iobs)
     {
        super("Operations");
-       initt( op, DS, logdoc, iobs, 1);
+       initt( op, DS, logdoc, iobs, 1,null);
     }
 public opMenu(OperatorHandler op , IDataSetListHandler DS, 
         Document logdoc , IObserver iobs , int start)
     { super("Operations");
-      initt( op, DS, logdoc, iobs, start);
+      initt( op, DS, logdoc, iobs, start,null);
     }
+
 private  void initt(OperatorHandler op , IDataSetListHandler DS, 
-        Document logdoc , IObserver iobs , int start)
-  {
+        Document logdoc , IObserver iobs , int start, StatusPane stPane)
+  { statPane=stPane;
    this.op = op;
    this.DS = DS;
    this.iobs = iobs;
@@ -196,6 +202,9 @@ private  void initt(OperatorHandler op , IDataSetListHandler DS,
 public void setOpMenuLabel( String newText)
   {setText( newText );
   }
+public void addStatusPane( StatusPane stPane)
+  {statPane= stPane;
+   }
 private class MActionListener implements ActionListener
   {OperatorHandler op;
    IDataSetListHandler DS;
@@ -225,16 +234,33 @@ private class MActionListener implements ActionListener
              dss = DS.getDataSets();
          
          if( opnum >=0 )
-          { Operator opn = op.getOperator( opnum );        
+          { Operator opn = op.getOperator( opnum );  
+                 
             if( opn instanceof IObservable)
                if( iobs != null)
                  ((IObservable)opn).addIObserver( iobs );
-           
+           /*  if( opn instanceof IusesStatusPane)
+                 if( statPane !=null)
+                  ((IusesStatusPane)opn).addStatusPane( statPane);
+             else if(opn instanceof java.beans.Customizer)
+                if( statPane != null)
+                  ((java.beans.Customizer)opn).addPropertyChangeListener( statPane);
+             */
             JParametersDialog JP = new JParametersDialog(  opn, 
                                                            DS, 
                                                            logdoc, 
-                                                           iobs  );
-          
+                                                           iobs,false,
+                                                            statPane  );
+             
+
+          /*   if(opn instanceof java.beans.Customizer)
+                if( statPane != null)
+                  ((java.beans.Customizer)opn).removePropertyChangeListener( statPane);
+           //done in JParametersDialog
+             
+            if( opn instanceof IusesStatusPane)
+               ((IusesStatusPane)opn).addStatusPane( null);
+          */
             if( opn instanceof IObservable)
                if( iobs != null)
                  ((IObservable)opn).deleteIObserver( iobs );
