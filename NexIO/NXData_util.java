@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2004/02/16 02:15:55  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.21  2003/12/18 17:48:09  rmikk
  * Added bounds checking for array references
  *
@@ -101,10 +104,8 @@ package NexIO;
 //import NexIO.NDS.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.StringUtil;
-import DataSetTools.viewer.*;
 import DataSetTools.math.*; 
-import DataSetTools.util.*;
-;
+
 
 /**
  * A utility package used by many NxData implementers

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2004/02/16 02:15:54  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.21  2003/12/19 14:30:37  rmikk
  * Fixed error when a nexus file has two NXentries.
  *
@@ -88,23 +91,16 @@ package NexIO ;
 
 //import NdsSvNode ;
 import java.io.* ;
-import NexIO.NexApi.* ;
 //import NexIO.NDS.* ;
-import NexIO.* ;
-import NexIO.NexApi.* ;
 import DataSetTools.dataset.* ;
 import DataSetTools.retriever.* ;
 import DataSetTools.viewer.* ;
-import DataSetTools.math.*;
-import IPNS.Runfile.* ;
 import java.util.* ;
-import java.lang.reflect.*;
 import NexIO.State.*;
 import NexIO.Process.*;
 import NexIO.Util.*;
 import NexIO.Query.*;
 import DataSetTools.util.*;
-import NexIO.Util.*;
 
 /**  Class that retrieves DataSets from sources with an NxNode interface AND
  *  which
