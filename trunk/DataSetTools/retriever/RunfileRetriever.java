@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2001/07/27 15:53:52  dennis
+ *  Now also tries to get the instrument type from the file name, if
+ *  the Runfile package returns type unknown.
+ *
  *  Revision 1.29  2001/07/25 18:15:27  dennis
  *  Now trims the title from the runfile.
  *
@@ -218,6 +222,8 @@ public class RunfileRetriever extends    Retriever
     {
       run_file         = new Runfile( file_name );
       instrument_type  = run_file.InstrumentType();
+      if ( instrument_type == InstrumentType.UNKNOWN )
+        instrument_type = InstrumentType.getIPNSInstrumentType( file_name );
       num_histograms   = run_file.NumOfHistograms();
       data_set_type    = new int[ 3 * num_histograms ];
       histogram        = new int[ 3 * num_histograms ];
@@ -448,7 +454,7 @@ public class RunfileRetriever extends    Retriever
                                             // with reasonable defaults
 
      DataSetFactory ds_factory = new DataSetFactory( title );
-     System.out.println("instrument_type = " + instrument_type );
+//     System.out.println("instrument_type = " + instrument_type );
      if ( is_monitor || is_pulse_height )
        data_set = ds_factory.getDataSet();  // just generic operations
 
