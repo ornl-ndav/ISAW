@@ -3,9 +3,12 @@
  *     1.3  2000/08/09   Dongfeng Chen Dennis Mikkelson
  *             
  *  $Log$
- *  Revision 1.2  2000/08/09 17:11:35  dennis
- *  Many small changes... removed un-needed clones of Data blocks and DataSets.
+ *  Revision 1.3  2000/08/10 15:02:15  dennis
+ *  Finished javadoc comments, improved prompts for input parameters,
+ *  commented out some System.out.println statements.
  *
+ *  Revision 1.3  2000/08/09 17:11:35  dennis
+ *  Many small changes... removed un-needed clones of Data blocks and DataSets.
  *
  *  Revision 1.2  2000/08/08 15:15:00   Dongfeng dennis  
  *  Take scattering function's dataset and use ToEL, ConvHist and Resample 
@@ -61,13 +64,13 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
    *
    *  @param  ds               The sample DataSet for which the scattering 
    *                           function is to be calculated 
-   *
    *  @param  temperature      The sample temperature
-   *
-   *  @param  xmass            The 
-   *
-   *  @param  alpha            The 
-   *
+   *  @param  xmass            The sample mass (amu)
+   *  @param  alpha            The Debye Waller coefficient
+   *  @param  min_E            The minimum energy loss value to be binned
+   *  @param  max_E            The maximum energy loss value to be binned
+   *  @param  num_E            The number of "bins" to be used between min_E and
+   *                           max_E 
    *  @param  make_new_ds Flag that determines whether a new DataSet is
    *                           constructed, or the Data blocks of the original 
    *                           DataSet are just altered.
@@ -133,19 +136,19 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
                                          new Float(5.0) );
     addParameter( parameter );
 
-    parameter = new Parameter("XMASS", new Float(1.0) );
+    parameter = new Parameter("Sample mass (amu)", new Float(1.0) );
     addParameter( parameter );
     
-    parameter = new Parameter("ALPHA", new Float(0.00001) );
+    parameter = new Parameter("Debye Waller coefficient", new Float(0.00001) );
     addParameter( parameter );
     
-    parameter = new Parameter( "Min X", new Float(0) );
+    parameter = new Parameter( "Min Energy Loss Value", new Float(0) );
     addParameter( parameter );
 
-    parameter = new Parameter("Max X", new Float(1000) );
+    parameter = new Parameter("Max Energy Loss Value", new Float(1000) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Num X", new Integer( 200 ) );
+    parameter = new Parameter( "Num Steps of Energy Loss", new Integer( 200 ) );
     addParameter( parameter );
     
     parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
@@ -157,7 +160,7 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
 
   public Object getResult()
   {       
-    System.out.println("Start g_fn_ds now!");
+    // System.out.println("Start g_fn_ds now!");
     
     final float XKCON   = 0.086165f; // conversion factor 
 
@@ -182,7 +185,7 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
       
     // ConvertHistogramToFunction for the new energy loss DataSet
 
-    System.out.println("\n\nConvertHistogramToFunction start...");
+    // System.out.println("\n\nConvertHistogramToFunction start...");
     op = new ConvertHistogramToFunction( new_ds, false, false );
     op.getResult();
       
@@ -319,3 +322,4 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
     return new_op;
   }
 }
+
