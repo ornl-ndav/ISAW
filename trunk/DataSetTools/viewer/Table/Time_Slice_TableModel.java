@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/09/24 13:57:40  rmikk
+ * Added accessor methods getDetNum, setDetNum, setErrInd
+ *
  * Revision 1.13  2003/09/23 15:54:28  rmikk
  * -Eliminated the persistent reference to the DataGrid. This
  *  grid is changed by other operators and other Viewers so
@@ -216,6 +219,17 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       Time = time;
    }
 
+
+   /**
+   *   Sets whether the error and/or indecies are to be shown.
+   *   The JTable using this table model must be invalidated to
+   *   reset everything
+   */
+   public void setErrInd( boolean error, boolean index){
+     err = error;
+     ind = index;
+
+   }
 
    /** Used to set a new time for this time slice.
     */
@@ -591,6 +605,33 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
   ActionListener DataChangeListener = null;
   public void addDataChangeListener( ActionListener listener){
     DataChangeListener = listener;
+  }
+
+   
+  public int getDetNum(){
+    return DetNum;
+  } 
+
+
+   public void setDetNum( int DetNum){
+      //Check to see if it is there
+      if( DetNum < 0)
+        return;
+      grid = (UniformGrid)Grid_util.getAreaGrid( DS, DetNum);
+      if( grid == null)
+         return;
+      this.DetNum = DetNum;
+      MaxRow = grid.num_rows();
+      MaxCol = grid.num_cols();
+      SetUpGroups();
+      tMinrow = 0;
+      tMaxrow = MaxRow - 1;
+      tMincol = 0;
+      tMaxcol = MaxCol - 1;
+      if( DataChangeListener != null)
+      DataChangeListener.actionPerformed( new ActionEvent(this,
+          ActionEvent.ACTION_PERFORMED,"DataChange"));
+
   }
   class DetectorActionListener implements ActionListener{
     public void actionPerformed( ActionEvent evt){
