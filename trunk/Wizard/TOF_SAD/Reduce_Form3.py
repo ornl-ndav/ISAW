@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.4  2004/04/30 23:49:57  rmikk
+# Changed Package names to new gov.anl.ipns
+#
 # Revision 1.3  2004/01/05 17:52:10  rmikk
 # Jython class now subclass of GenericOperator
 #
@@ -46,7 +49,7 @@ from Wizard.TOF_SAD import *
 from Command import ScriptUtil
 from java.util import Vector
 from java.lang import Float
-from DataSetTools.util  import StringUtil
+from gov.anl.ipns.Util.Sys import StringUtil
 
 # This form operator allows for specifying the Q binning options.
 class Reduce_Form3(GenericOperator):
