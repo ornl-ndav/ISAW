@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/19 22:57:05  dennis
+ *  Added getDocumentation() method and basic main test program. (Tyler Stelzer)
+ *
  *  Revision 1.2  2002/09/19 16:00:09  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -140,7 +143,11 @@ public class SetDataLabel extends    DS_Attribute
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /** Sets the label for a specified number of groups or the whole dataset and 
+  *   returns the log_message if successful. Otherwise it returns an error 
+  *   string if the dataSet is null
+  */
+  
   public Object getResult()
   {  
       DataSet ds = getDataSet();
@@ -200,6 +207,54 @@ public class SetDataLabel extends    DS_Attribute
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+  
+  /* ------------------------------ getDocumentation ------------------- */
+  public String getDocumentation()
+  {
+     StringBuffer Res = new StringBuffer();
+     
+     Res.append("@overview This operator specifies the label for some or");
+      Res.append(" all of the Data blocks in a DataSet.");
+     
+     Res.append("@algorithm The group IDs of the Data blocks for which the");
+      Res.append(" attribute is set are specified as String parameter.  If");
+      Res.append(" the list of group IDs is empty, then the label is applied");
+      Res.append(" for all groups in the DataSet.  If the label is the name");
+      Res.append(" of an attribute, then the attribute's toString() method");
+      Res.append(" will be used for the label.");
+     
+     Res.append("@param ds - The DataSet to which the operation is applied");
+     Res.append("@parm label - The new label to use for the specified Data");
+      Res.append(" blocks. If this is the name of an attribute, then the");
+      Res.append(" toString() method of the named attribute will be used as");
+      Res.append(" the label."); 
+     Res.append("@param  ids - String specifying the list of group IDs of the"); 
+      Res.append(" Data blocks whose labels are to be set.");
+     
+     Res.append("@return Sets the label for a specified number of groups");
+      Res.append(" or the whole dataset and returns the log_message if");
+      Res.append(" successful. Otherwise it returns an error string if the");
+      Res.append(" dataSet is null.");
+     
+     Res.append("@error DataSet is null");
+     
+     return Res.toString();
+  }
+  
+  /* ------------------------------ main ------------------------------- */
+  public static void main(String [] args)
+  {
+  
+    SetDataLabel op = new SetDataLabel();
+    String documentation = op.getDocumentation();
+    
+    System.out.println(documentation);
+    
+    //NOTE:  invalid default parameters
+    //getResult returns "DataSet is null"
+    System.out.println(op.getResult().toString());
+  
   }
 
 }

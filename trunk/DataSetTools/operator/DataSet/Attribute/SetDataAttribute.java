@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/19 22:57:05  dennis
+ *  Added getDocumentation() method and basic main test program. (Tyler Stelzer)
+ *
  *  Revision 1.2  2002/09/19 16:00:08  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -179,7 +182,10 @@ public class SetDataAttribute extends    DS_Attribute
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**@return sets a Data Attribute on a particular Data block 
+  *          in a DataSet if successful.  Otherwise it returns an error string
+  *          if there is an Improper Index
+  */
   public Object getResult()
   {  
       DataSet ds = getDataSet();
@@ -221,5 +227,46 @@ public class SetDataAttribute extends    DS_Attribute
 
     return new_op;
   }
-
+  
+  /* ------------------------------ getDocumentation ------------------- */
+  public String getDocumentation()
+  {
+     StringBuffer Res = new StringBuffer();
+     Res.append("@overview This operator sets an attribute of a DataSet.");
+     
+     Res.append("@algorithm Check to make sure the attribute and index are");
+      Res.append(" valid.  If they are, it sets the data attribute of the");
+      Res.append(" data block that is specified.");
+     
+     Res.append("@param ds - The DataSet to which the operation is applied");
+     Res.append("@param index - The index of the data block whose attribute");
+      Res.append(" is to be set.");
+     Res.append("@parm   Attrib - The Attribute to be set.");
+     Res.append("@param  new_Value - The new value of the Attribute");
+     
+     Res.append("@return sets a Data Attribute on a particular Data block");
+      Res.append(" in a DataSet and returns the String \"Attribute Set\"");
+      Res.append(" if successful.  Otherwise it returns an error string if");
+      Res.append(" there is an Improper Index or an error in Attribute.Build");
+      
+     Res.append("@error Improper Index");
+     Res.append("@error null value object");
+     Res.append("@error null name object");
+     Res.append("@error can't build Attribute for");
+  
+     return Res.toString();
+  }
+  
+  /* ------------------------------ main ------------------------------- */
+  public static void main(String [] args)
+  {
+  	SetDataAttribute op = new SetDataAttribute();
+	String documentation = op.getDocumentation();
+	
+	System.out.println(documentation);
+	
+	//NOTE:  invalid default parameters
+	//getResult returns "null value object"
+	System.out.println(op.getResult().toString());
+  }
 }
