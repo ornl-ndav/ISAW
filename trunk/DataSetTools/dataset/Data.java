@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2001/08/16 02:56:53  dennis
+ *  The add() method now also adds the solid angle values.
+ *
  *  Revision 1.16  2001/07/20 16:38:47  dennis
  *  Added method getY_values( x_scale ) to obtain a set of
  *  y-values for the data, resampled at points given by the
@@ -1338,6 +1341,9 @@ public float getY_value( float x_value )
                         this.getAttributeList(),  
                         d.getAttributeList()    );
     temp.attr_list.add( Attribute.TOTAL_COUNT,
+                        this.getAttributeList(),  
+                        d.getAttributeList()    );
+    temp.attr_list.add( Attribute.SOLID_ANGLE,
                         this.getAttributeList(),  
                         d.getAttributeList()    );
     return temp; 
