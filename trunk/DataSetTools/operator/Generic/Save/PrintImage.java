@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/06/15 19:24:05  robertsonj
+ * Print image now allows the user to select some printer option as well as
+ * State of the view that they would like to print
+ *
  * Revision 1.10  2004/06/15 19:12:50  robertsonj
  * Print image now allows the user to select some printer option as well as
  * State of the view that they would like to print
@@ -130,8 +134,8 @@ public class PrintImage extends GenericSave{
    public PrintImage( DataSet DS, String view_type,
    int width, int height, String PrintName, 
 	  String PrintLocation, String PrintOptions, String orientation, int copies){
-   	  this();
    	  
+	  this();
       parameters = new Vector();
       addParameter( new DataSetPG( "Select DataSet",DS));
 	  addParameter( new PrinterNamePG("select printer", null));
@@ -142,6 +146,7 @@ public class PrintImage extends GenericSave{
 	  addParameter( new IntegerPG("quality", 1));
 	  addParameter( new IntegerPG("height",height));
       addParameter( new IntegerPG("width", width));
+      
    }
 
 
@@ -200,8 +205,6 @@ public class PrintImage extends GenericSave{
      jf.getContentPane().add(DSV);
 	 jf.addWindowListener(new MyWindowListener(DSV, PrintName, orientation, quality, copies, jf));
 
-     jf.addWindowListener(new MyWindowListener(DSV, PrintName, orientation,
-                                               quality, copies, jf));
 	 jf.show();
      return "Success";
   }
@@ -229,14 +232,6 @@ public class PrintImage extends GenericSave{
 			this.orientation = orientation;
 			this.quality = quality;
 			this.copies = copies;
-
-          this.DSV = DSV;
-
-          this.PrintName = PrintName;
-          this.jf = jf;
-          this.orientation = orientation;
-          this.quality = quality;
-          this.copies = copies;
 
   	}
 	
