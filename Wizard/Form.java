@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/04/11 22:34:35  pfpeterson
+ * Big changes including:
+ *   - new GUI (layout works better)
+ *   - filled out done() method
+ *   - if setCompleted(false) invalidate results in this form.
+ *
  * Revision 1.2  2002/03/12 16:09:44  pfpeterson
  * Now automatically disable constant and result parameters.
  *
@@ -73,21 +79,20 @@ import DataSetTools.components.ParametersGUI.*;
 
 public class Form implements Serializable
 {
-  protected  String    title;
-  protected  String    help_message = "Help not available for this form ";
+  private    boolean   completed;           // set by execute, if done ok
+  private    String    title;
+  private    String    help_message = "Help not available for this form ";
 
   protected  Wizard    wizard;              // the Wizard using this form
   protected  JPanel    panel;               // panel that the Wizard will draw
-  protected  JButton   execute_button;      // button that invokes execute()
-                                            // method.  Must be added to panel
-                                            // by makeGUI() method, in any
-                                            // derived class that overrides the
-                                            // makeGUI() method
-  protected  boolean   completed;           // set by execute, if done ok
 
   protected  String    const_params[];
   protected  String    editable_params[];
   protected  String    result_params[];
+
+  protected static final String CONS_FRAME_HEAD = "CONSTANT PARAMETERS";
+  protected static final String VAR_FRAME_HEAD  = "USER SPECIFIED PARAMETERS";
+  protected static final String RES_FRAME_HEAD  = "RESULTS";
 
   /**
    *  Construct a form with the given title and parameter names to work with 
@@ -118,66 +123,61 @@ public class Form implements Serializable
 
     completed      = false;
     panel          = new JPanel();
-    execute_button = new JButton("Execute");
-    execute_button.addActionListener( new ExecuteListener() );
 
     makeGUI();
   } 
 
   /**
-   *  This method makes the GUI for the Form.  If a derived class overrides
-   *  this method, it must build it's own user interface in the current
-   *  JPanel, panel, since that is what is returned to the Wizard to show the
-   *  form.  Also, this method is NOT just called at construction time, but
-   *  is called each time the Form is shown by the Wizard.  This guarantees 
-   *  that the paramter values will be properly displayed using their current 
-   *  values.  In addition to displaying interfaces for the parameters,
-   *  this method should add the execute_button to the panel, so that the
-   *  user can trigger the calculation.
+   *  This method makes the GUI for the Form.  If a derived class
+   *  overrides this method, it must build it's own user interface in
+   *  the current JPanel, panel, since that is what is returned to the
+   *  Wizard to show the form.  Also, this method is NOT just called
+   *  at construction time, but is called each time the Form is shown
+   *  by the Wizard.  This guarantees that the paramter values will be
+   *  properly displayed using their current values.
    */
-  protected void makeGUI()
-  {
-    Box box = new Box( BoxLayout.Y_AXIS );
-    panel.setLayout( new GridLayout( 1, 1 ) );    
-    panel.removeAll();
-    panel.add(box); 
-
-    JLabel title_label = new JLabel( title, SwingConstants.CENTER );
-    JPanel title_panel = new JPanel();
-    title_panel.setLayout( new GridLayout(1,1) );
-    title_panel.add( title_label );
-    box.add( title_panel );
-
-    JPanel sub_panel = build_param_panel("CONSTANT PARAMETERS", const_params);
-    if ( sub_panel != null ){
-        box.add( sub_panel ); 
-        for( int i=0 ; i<const_params.length ; i++ ){
-            WizardParameter param = wizard.getParameter( const_params[i] );
-            param.setEnabled(false);
-        }
-    }
-
-    sub_panel = build_param_panel("USER SPECIFIED PARAMETERS",editable_params);
-    if ( sub_panel != null ){
-        box.add( sub_panel ); 
-        for( int i=0 ; i<editable_params.length ; i++ ){
-            WizardParameter param = wizard.getParameter( editable_params[i] );
-            param.setEnabled(true);
-        }
-    }
-
-    sub_panel = build_param_panel("RESULTS", result_params);
-    if ( sub_panel != null ){
-        box.add( sub_panel ); 
-        for( int i=0 ; i<result_params.length ; i++ ){
-            WizardParameter param = wizard.getParameter( result_params[i] );
-            param.setEnabled(false);
-        }
-    }
-
-    JPanel button_panel = new JPanel();
-    button_panel.add( execute_button );
-    box.add(button_panel);
+  protected void makeGUI(){
+      Box box = new Box( BoxLayout.Y_AXIS );
+      box.setBackground(Color.red);
+      //panel.setLayout( new GridLayout( 1, 1 ) );    
+      panel.removeAll();
+      panel.add(box); 
+      JPanel sub_panel;
+      
+      if(const_params!=null){
+          sub_panel = build_param_panel(CONS_FRAME_HEAD, const_params);
+          if ( sub_panel != null ){
+              box.add( sub_panel ); 
+              for( int i=0 ; i<const_params.length ; i++ ){
+                  WizardParameter param = wizard.getParameter(const_params[i]);
+                  param.setEnabled(false);
+              }
+          }
+      }
+      
+      if(editable_params!=null) {
+          sub_panel = build_param_panel(VAR_FRAME_HEAD,editable_params);
+          if ( sub_panel != null ){
+              box.add( sub_panel ); 
+              for( int i=0 ; i<editable_params.length ; i++ ){
+                  WizardParameter param = 
+                      wizard.getParameter( editable_params[i] );
+                  param.setEnabled(true);
+              }
+          }
+      }
+      
+      if(result_params!=null){
+          sub_panel = build_param_panel(RES_FRAME_HEAD, result_params);
+          if ( sub_panel != null ){
+              box.add( sub_panel ); 
+              for( int i=0 ; i<result_params.length ; i++ ){
+                  WizardParameter param = 
+                      wizard.getParameter( result_params[i] );
+                  param.setEnabled(false);
+              }
+          }
+      }
   }
 
   /**
@@ -199,7 +199,8 @@ public class Form implements Serializable
     border = new TitledBorder(LineBorder.createBlackLineBorder(), title);
     border.setTitleFont( FontUtil.BORDER_FONT );
     sub_panel.setBorder( border );
-    sub_panel.setLayout( new GridLayout( params.length, 1 ) );
+    //sub_panel.setLayout( new GridLayout( params.length, 1 ) );
+    sub_panel.setLayout( new BoxLayout( sub_panel,BoxLayout.Y_AXIS ) );
     for ( int i = 0; i < params.length; i++ )
     {
       WizardParameter param = wizard.getParameter( params[i] );
@@ -296,7 +297,7 @@ public class Form implements Serializable
   {
     Wizard.status_display.append(title + " execute() Not Implemented\n");
     // completed = .....
-    return true;
+    return false;
   }
 
   /**
@@ -306,25 +307,67 @@ public class Form implements Serializable
    *  @return true if the form's operation has been successfully carried out
    *               and none of the parameters have been subsequently altered 
    */
-  public boolean done()
-  {
-    Wizard.status_display.append(title + " done() Not Implemented\n");
-    return true;
+  public boolean done(){
+      WizardParameter param;
+      int areSet=0;
+      int totalParam=0;
+      if(const_params!=null){
+          totalParam+=const_params.length;
+          for( int i=0 ; i<const_params.length ; i++ ){
+              param=wizard.getParameter(const_params[i]);
+              if(param.isSet()) areSet++;
+          }
+      }
+
+      if(editable_params!=null){
+          totalParam+=editable_params.length;
+          for( int i=0 ; i<editable_params.length ; i++ ){
+              param=wizard.getParameter(editable_params[i]);
+              if(param.isSet()) areSet++;
+          }
+      }
+
+      if(result_params!=null){
+          totalParam+=result_params.length;
+          for( int i=0 ; i<result_params.length ; i++ ){
+              param=wizard.getParameter(result_params[i]);
+              if(param.isSet()) areSet++;
+          }
+      }
+
+      this.completed=(areSet==totalParam);
+
+      /* System.out.println(areSet+" of "+totalParam+" are set ->"
+         +this.completed+"("+this.title+")"); */
+
+      return this.completed;
     // check completed flag and
     // for each required parameter, check if still valid
     // for each result parameter, check if now set to valid value 
   }
 
-  /**
-   *  Internal class to handle the execute_button.
-   */ 
-  private class ExecuteListener implements ActionListener
-  {
-    public void actionPerformed( ActionEvent event )
-    {
-      execute(); 
+    /**
+     * Accessor method to get the title for the form.
+     */
+    public String getTitle(){
+        return new String(this.title);
     }
-  }
+
+    /**
+     * Mutator method to set that the form has (not) been completed.
+     */
+    public void setCompleted(boolean val){
+        this.completed=val;
+         if(!val){ // must invalidate the results
+             if(result_params!=null){
+                 WizardParameter param;
+                 for( int i=0 ; i<result_params.length ; i++ ){
+                     param=wizard.getParameter(result_params[i]);
+                     param.unSet();
+                 }
+             }
+         }
+    }
 
   /**
    *  main program for testing purposes
