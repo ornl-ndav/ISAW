@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/07/16 18:51:07  rmikk
+ *  Improved Ranges on the intensity scale
+ *
  *  Revision 1.10  2004/01/24 22:22:24  bouzekc
  *  Removed unused imports and local variables.
  *
@@ -82,7 +85,7 @@ public class logTransform  implements Transform
     double pstart,pend,ustart,uend;
     double pstart0,pend0,ustart0,uend0;
     float intensity;
-    double mu,bu,mp,bp;
+    double mu,bu,mp,bp,sg;
     double a,b,K;
     int sgn;
    /** 
@@ -104,9 +107,6 @@ public class logTransform  implements Transform
       uend0=uend;
      
      setIntensity( intensity);
-      
-    // System.out.println("in logTransform "+pstart+","+pend+","+ustart+","+uend);
-
 
     }
    /** Sets the intensity to a value between .1 and 20
@@ -117,7 +117,7 @@ public class logTransform  implements Transform
         this.intensity = 0;
        if( intensity > 100)
           intensity = 100;
- 
+       
        this.intensity = intensity;
        calc();
      }
@@ -176,7 +176,7 @@ public class logTransform  implements Transform
    * <br>
   * Value out of range get mapped to their corresponding extreme values
   */
-
+   int k=0;
    public double getTransP(double u)
      {if( u < ustart) 
          return pstart;
@@ -185,14 +185,27 @@ public class logTransform  implements Transform
          return pend;
         }
         double x = bu+ mu*(u-ustart);
-        double y = a*Math.log( x+ b)/Math.log(10)+K;
-        //stem.out.println("xy="+x+","+y+","+a+","+K);
-        if( y >=100)
+       double y;
+       if( sg*x+b < 0)
+          if( sg >0)
+             y= -1;
+          else 
+             y = 101;
+        else  
+          y = a*Math.log( sg*x+ b)/Math.log(10)+K;
+      
+        
+       
+         
+        /*if( y >=100)
           return pend;
         if( y <=0)
           return pstart;
-        
+          */
+       y = gety(x);
+       
        double uu=pstart+(y-bp)/mp;
+      
        if( uu < pstart) return pstart;
        if( uu > pend) return pend;
        return uu;
@@ -213,18 +226,118 @@ public class logTransform  implements Transform
         if( p>pend)
           return uend;
         double y = mp*(p-pstart)+bp;
-        double x= Math.pow(10.0,(y-K)/a) -b;
+        double x= sg*(Math.pow(10.0,(y-K)/a) -b);
+        x = getx(y);
         double u = (x-bu)/mu +ustart;
-        System.out.println("a,K="+a+","+K+","+x+","+y+","+u);
+          
+        
         if( u<ustart)
           return ustart;
         if( u > uend)
           return uend;
         return u;
        }
-
+  //p:[0:100]-> u:[0:100]
+  private void calc(){
+    mu = 100/(uend-ustart);   //x = mu(u-ustart)+bu
+       bu =0;
+       mp = 100/(pend-pstart);   //y = mp(p-pstart)+bp
+       bp=0;
+    float intensity = 100-this.intensity;
+    if( intensity <= 50){
+    
+    lowerA =  Math.pow(10.,-30.) +intensity*.9/50;
+    upperA = lowerA + 1;
+    a= 100*Math.log(10.)/(Math.log(upperA)-Math.log(lowerA));
+    K= -a*Math.log(lowerA)/Math.log(10.);
+    }else{
+     intensity =100-intensity;
+     lowerA =  Math.pow(10.,-30.) +intensity*.9/50;
+     upperA = lowerA + 1;
+     a= 100*Math.log(10.)/(Math.log(upperA)-Math.log(lowerA));
+     K= -a*Math.log(lowerA)/Math.log(10.);
+    }
+    
+  }
+  double lowerA, upperA;
+  /**
+   * Returns the y value(0->100) corresponding to the x value(0:100)
+   * @param x  x value, normalized u value
+   * @return   yvalue -normalized p value
+   */
+  private double gety(double x){
+     float intensity =100-this.intensity;
+     if( intensity  <= 50 ){
+          double xx = lowerA + x/100.*(upperA-lowerA);
+          double yy=a*Math.log(xx)/Math.log(10.)+K;
+          if( yy < 0) return 0;
+          if( yy > 100) return 100.;
+          return yy;
+     }else{
+        x = 100-x;
+       double xx = lowerA + x/100.*(upperA-lowerA);
+       double yy =a*Math.log(xx)/Math.log(10.)+K;
+       yy =-yy+100;
+       if( yy<0) return 0;
+       if( yy > 100) return 100;
+       return yy;
+     }
+     return 0.;
+     
+      
+  }
+  
+  /**
+   * Returns the x value(0->100) corresponding to the y value(0:100)
+   * @param x  y value, normalized p value
+   * @return   x value -normalized u value
+   */
+  private double getx( double y){
+    float intensity =100-this.intensity;
+    if( intensity  <= 50 ){
+       double xx= Math.pow(10.0,(y-K)/a);
+       double x = (xx-lowerA)*100/(upperA-lowerA);
+       
+       if( x < 0) return 0;
+       if( x > 100) return 100.;
+         return x;
+    }else{
+      y = -y+100;
+      double xx= Math.pow(10.0,(y-K)/a);
+      double x = (xx-lowerA)*100/(upperA-lowerA);
+      x = 100-x;
+      if( x<0) return 0;
+      if( x > 100) return 100;
+      return x;
+    }
+    return 0.;
+  }
+  private void calc2(){
+    mu = 100/(uend-ustart);   //x = mu(u-ustart)+bu
+    bu =0;
+    mp = 100/(pend-pstart);   //y = mp(p-pstart)+bp
+    bp=0;
+    
+                           // y=a*log(sg*x+b)+K
+    if( intensity < 50){
+       sg=1;
+       b= Math.pow(10.0,-30.0)+intensity*Math.pow(10.0,-.02)/50.;
+       a = 100*Math.log(10)/(Math.log(100+b)-Math.log(b));
+       K =  -a*Math.log(b)/Math.log(10.0);
+    }else{
+       sg = -1;
+       b = 100+Math.pow(10.,-30.) -(1-Math.pow(10.0,-.02)/50.)*
+                 (100-intensity);
+       if( b <100)
+          a = 100*Math.log(10)/(Math.log(-100+b)-Math.log(b));
+       else
+          a = 100*Math.log(10)/(-30-Math.log(b));
+      
+       K =  -a*Math.log(b)/Math.log(10.0);
+    }
+  }
   //from mapped to 0 to 100(p)   to mapped to .1 to 100(u)
-   private void calc()
+   private void calc1()
     { 
       mu = 99.9/(uend-ustart);   //x = mu(u-ustart)+bu
       bu =.1f;
@@ -257,7 +370,7 @@ public class logTransform  implements Transform
 
     public static void main( String[] args )
    { System.out.println("Here");
-     logTransform lt = new logTransform( 0.,100., .1, 100., 
+     logTransform lt = new logTransform( 0.,100., 0, 100., 
                     ( new Integer(args[0])).intValue());
       //logTransform lt1=new logTransform( 0.,10., 20., 50., 0);
      //logTransform lt2=new logTransform( 0.,10., 20., 50., 100);
@@ -270,7 +383,11 @@ public class logTransform  implements Transform
       }
    */
     //double f = (new Double( args[0])).doubleValue();
-   for( double x = .1; x<=100.3; x+=10)
-      System.out.println( x+"  "+lt.getTransP(x));
+   for( double x = 0; x<=100; x+=10){
+   
+      double y =lt.getTransP(x);
+      double xx = lt.getTransU(y);
+      System.out.println( x+"  "+y+","+xx);
+   }
    }	
    }
