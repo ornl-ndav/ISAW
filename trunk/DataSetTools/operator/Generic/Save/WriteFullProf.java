@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/02/03 18:29:38  dennis
+ * Added getDocumentation() method. (Joshua Olson)
+ *
  * Revision 1.2  2002/11/27 23:21:28  pfpeterson
  * standardized header
  *
@@ -52,8 +55,7 @@ import DataSetTools.writer.*;
 import java.util.*;
 import java.io.*;
 
-/** This is an operator to export files in the FullProf format as
- * determined from conversations with Jason Hodges.
+/** This is an operator to export files in the FullProf format.
  */
 public class WriteFullProf extends GenericSave{
     public  static String EXTENSION = "fp";
@@ -70,9 +72,11 @@ public class WriteFullProf extends GenericSave{
         setDefaultParameters();
     }
     
+    /** ------------------------- FULL CONSTRUCTOR ----------------------- */
     /** 
-     *@param DS  The data set that is to be saved in gsas format
-     *@param filename the name of the file where the data will be saved
+     * @param ds       The data set that is to be saved in FullProf format
+     * @param filename the name of the file where the data will be saved
+     * @param sn       Indicates if the bank numbers are sequentially numbered 	
      */
     public WriteFullProf( DataSet ds, String filename, boolean sn ){
         this();
@@ -98,11 +102,47 @@ public class WriteFullProf extends GenericSave{
     public String getCommand(){
         return "SaveFullProf";
     }
-    
+
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This is an operator to export files in the FullProf ");
+    s.append("format.");
+    s.append("@assumptions The given data set is not empty.\n");
+    s.append("The specified filename either does not exist, or it is ");      
+    s.append("acceptable to overwrite it.\n");                                                                    
+    s.append("@algorithm This operator goes through every data entry in ");
+    s.append("the given data set.  For each one it determines a bank number ");
+    s.append("and creates a file.  It then makes sure that the file can be ");
+    s.append("opened, and that the data and header can be written.  If just ");
+    s.append("one entry of data does not meet one of these three ");
+    s.append("requirements, then 'Failed' is returned.  Otherwise the files ");
+    s.append("are exported in the FullProf format, and 'Success' is ");
+    s.append("returned. ");
+    s.append("@param ds The data set that is to be saved in FullProf format.");
+    s.append("@param filename The name of the file where the data will ");
+    s.append("be saved.");
+    s.append("@param sn Indicates if the data of the data set are ");
+    s.append("sequentially numbered. ");
+    s.append("@return A String indicating that the file has been converted ");
+    s.append("to the FullProf format.");
+    s.append("@error Returns an error any time that opening or closing a ");
+    s.append("file does not work properly.");
+    s.append("@error Returns an error if the specified DataSet is not found.");
+    return s.toString();
+  }
+                                                                                  
     /** 
-     * executes the gsas command, saving the data to the file in gsas form.
+     * executes the SaveFullProf command, saving the data to the file in 
+     * full prof form.
      *
-     * @return  "Success" only
+     * @return  "Success" if the file was successfully written and retrun 
+     *          "Failed" if the file could not be written.
      */
     public Object getResult(){
         DataSet ds       = (DataSet)( getParameter(0).getValue());
@@ -132,7 +172,8 @@ public class WriteFullProf extends GenericSave{
             }
             int index=filename.lastIndexOf(".");
             if(index>0){
-                bankfile=filename.substring(0,index)+"b"+bankNum+filename.substring(index);
+                bankfile=filename.substring(0,index)+
+                         "b"+bankNum+filename.substring(index);
             }else{
                 bankfile=filename+"b"+bankNum;
             }
@@ -190,7 +231,7 @@ public class WriteFullProf extends GenericSave{
             data.append(EOL);
         }
 
-        // add last bin boundaray
+        // add last bin boundary
         /*if(x.length>y.length){
           data.append("   "+x[x.length-1]);
           }*/
