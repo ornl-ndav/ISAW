@@ -1,5 +1,5 @@
 /*
- * File:  IParameter.java 
+ * File:  IParameter.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/05/11 18:23:52  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.5  2003/04/14 21:26:33  pfpeterson
  *  Moved valid state into IParameterGUI.
  *
@@ -48,48 +51,54 @@
  *
  *
  */
-
 package DataSetTools.parameter;
 
 /**
- * This is an interface to be implemented by all parameters. Things
- * that need to use IParameters do not need a GUI constructed.
+ * This is an interface to be implemented by all parameters. Things that need
+ * to use IParameters do not need a GUI constructed.
  */
-public interface IParameter{
-    public static String VALUE="value";
+public interface IParameter {
+  //~ Static fields/initializers ***********************************************
 
-    /**
-     * Returns the name of the parameter. This is normally used as the
-     * title of the parameter.
-     */
-    String getName();
+  public static String VALUE = "value";
 
-    /**
-     * Set the name of the parameter.
-     */
-    void   setName(String name);
+  //~ Methods ******************************************************************
 
-    /**
-     * Returns the value of the parameter. While this is a generic
-     * object specific parameters will return appropriate
-     * objects. There can also be a 'fast access' method which returns
-     * a specific object (such as Float or DataSet) without casting.
-     */
-    Object getValue();
+  /**
+   * Set the name of the parameter.
+   *
+   * @param The name of this IParameter.
+   */
+  void setName( String name );
 
-    /**
-     * Sets the value of the parameter.
-     */
-    void   setValue(Object value);
+  /**
+   * @return The name of the parameter. This is normally used as the title of
+   *         the parameter.
+   */
+  String getName(  );
 
-    /**
-     * Returns the string used in scripts to denote the particular
-     * parameter.
-     */
-    String getType();
+  /**
+   * @return the string used in scripts to denote the particular parameter.
+   */
+  String getType(  );
 
-    /**
-     * Defines the clone method for all IParameters.
-     */
-    Object clone();
+  /**
+   * Sets the value of the parameter.
+   *
+   * @param value The new value.
+   */
+  void setValue( Object value );
+
+  /**
+   * @return The value of the parameter. While this is a generic object
+   *         specific parameters will return appropriate objects. There can
+   *         also be a 'fast access' method which returns a specific object
+   *         (such as Float or DataSet) without casting.
+   */
+  Object getValue(  );
+
+  /**
+   * Defines the clone method for all IParameters.
+   */
+  Object clone(  );
 }

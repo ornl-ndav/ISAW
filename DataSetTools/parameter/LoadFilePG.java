@@ -1,5 +1,5 @@
 /*
- * File:  LoadFilePG.java 
+ * File:  LoadFilePG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/05/11 18:23:53  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.12  2003/12/15 02:20:38  bouzekc
  *  Removed unused imports.
  *
@@ -74,107 +77,120 @@
  *
  *
  */
-
 package DataSetTools.parameter;
-import java.io.File;
 
 import DataSetTools.components.ParametersGUI.BrowseButtonListener;
 
+import java.io.File;
+
+
 /**
- * This is a particular case of the BrowsePG used for loading a single
- * file. The value is a string.
+ * This is a particular case of the BrowsePG used for loading a single file.
+ * The value is a string.
  */
-public class LoadFilePG extends BrowsePG{
-    private static String TYPE     = "LoadFile";
+public class LoadFilePG extends BrowsePG {
+  //~ Static fields/initializers ***********************************************
 
-    // ********** Constructors **********
-    public LoadFilePG(String name, Object value){
-        this(name,value,false);
-        this.setDrawValid(false);
-    }
-    
-    public LoadFilePG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        this.setType(TYPE);
-        super.choosertype = BrowseButtonListener.LOAD_FILE;
-    }
+  private static String TYPE = "LoadFile";
 
-    /*
-     * Testbed.
-     */
-    /*public static void main(String args[]){
-        LoadFilePG fpg;
-        //y position and delta y, so that multiple windows can 
-        //be displayed without too much overlap
-        int y=0, dy=70;
-        
-        String defString="/IPNShome/bouzekc/IsawProps.dat";
+  //~ Constructors *************************************************************
 
-        fpg=new LoadFilePG ("Enabled, not valid, no filters",defString);
-        System.out.println(fpg);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-        
-        //disabled browse button GUI
-        fpg=new LoadFilePG ("Disabled, not valid, no filters",defString);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+  /**
+   * Creates a new LoadFilePG object.
+   *
+   * @param name The name of this LoadFilePG.
+   * @param value The value of this LoadFilePG.
+   */
+  public LoadFilePG( String name, Object value ) {
+    this( name, value, false );
+    this.setDrawValid( false );
+  }
 
-        fpg=new LoadFilePG ("Disabled, not valid, no filters",defString,false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+  /**
+   * Creates a new LoadFilePG object.
+   *
+   * @param name The name of this LoadFilePG.
+   * @param value The value of this LoadFilePG.
+   * @param valid True if this LoadFilePG should be considered initially valid.
+   */
+  public LoadFilePG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+    this.setType( TYPE );
+    super.choosertype = BrowseButtonListener.LOAD_FILE;
+  }
 
-        fpg=new LoadFilePG ("Valid, enabled, no filters",defString,true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
+  //~ Methods ******************************************************************
 
-        fpg=new LoadFilePG ("Enabled, not valid, multiple filters",defString);
-        System.out.println(fpg);
-        //add some FileFilters
-        fpg.addFilter(new ExpFilter());
-        fpg.addFilter(new IntegrateFilter());
-        fpg.addFilter(new MatrixFilter());
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+  /*
+   * Testbed.
+   */
+  /*public static void main(String args[]){
+     LoadFilePG fpg;
+     //y position and delta y, so that multiple windows can
+     //be displayed without too much overlap
+     int y=0, dy=70;
+  
+     String defString="/IPNShome/bouzekc/IsawProps.dat";
+     fpg=new LoadFilePG ("Enabled, not valid, no filters",defString);
+     System.out.println(fpg);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+  
+     //disabled browse button GUI
+     fpg=new LoadFilePG ("Disabled, not valid, no filters",defString);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new LoadFilePG ("Disabled, not valid, no filters",defString,false);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new LoadFilePG ("Valid, enabled, no filters",defString,true);
+     System.out.println(fpg);
+     fpg.setDrawValid(true);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     fpg=new LoadFilePG ("Enabled, not valid, multiple filters",defString);
+     System.out.println(fpg);
+     //add some FileFilters
+     fpg.addFilter(new ExpFilter());
+     fpg.addFilter(new IntegrateFilter());
+     fpg.addFilter(new MatrixFilter());
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new LoadFilePG("Enabled, not valid, one filter",defString);
+     System.out.println(fpg);
+     //add some FileFilters
+     fpg.addFilter(new IntegrateFilter());
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     }*/
 
-        fpg=new LoadFilePG("Enabled, not valid, one filter",defString);
-        System.out.println(fpg);
-        //add some FileFilters
-        fpg.addFilter(new IntegrateFilter());
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-    }*/
+  /**
+   * Validates this LoadFilePG.  A LoadFilePG is considered valid if getValue()
+   * returns a non-null String and the String references  a non-directory,
+   * existing, and readable File
+   */
+  public void validateSelf(  ) {
+    Object val = getValue(  );
 
-    /**
-     * Validates this LoadFilePG.  A LoadFilePG is considered valid if
-     * getValue() returns a non-null String and the String references 
-     * a non-directory, existing, and readable File
-     */
-    public void validateSelf(  ) {
-      Object val = getValue(  );
-      
-      if( val != null ) {
-      
-        File file = new File( val.toString(  ) );
-        
-        if( file.exists(  ) && !file.isDirectory(  ) && file.canRead(  ) ) {
-          setValid( true );
-        } else {
-          setValid( false );
-        }
+    if( val != null ) {
+      File file = new File( val.toString(  ) );
+
+      if( file.exists(  ) && !file.isDirectory(  ) && file.canRead(  ) ) {
+        setValid( true );
       } else {
         setValid( false );
       }
+    } else {
+      setValid( false );
     }
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * File:  FuncStringPG.java 
+ * File:  FuncStringPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/05/11 18:23:49  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.12  2003/12/15 02:06:09  bouzekc
  *  Removed unused imports.
  *
@@ -70,53 +73,68 @@
  *
  *
  */
-
 package DataSetTools.parameter;
 
 /**
- * This is class is to deal with float parameters.
+ * This is class is to deal with Strings of mathematical functions.
  */
 public class FuncStringPG extends StringPG {
-    private static final String TYPE="FuncString";
+  //~ Static fields/initializers ***********************************************
 
-    // ********** Constructors **********
-    public FuncStringPG(String name, Object value){
-        super(name,value);
-        this.setType(TYPE);
-    }
-    
-    public FuncStringPG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        this.setType(TYPE);
-    }
+  private static final String TYPE = "FuncString";
 
-    /*
-     * Testbed.
-     */
-    public static void main(String args[]){
-        FuncStringPG fpg;
+  //~ Constructors *************************************************************
 
-        fpg=new FuncStringPG("a","1f");
-        System.out.println(fpg);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
+  /**
+   * Creates a new FuncStringPG object.
+   *
+   * @param name The name of this FuncStringPG.
+   * @param value The value of this FuncStringPG.
+   */
+  public FuncStringPG( String name, Object value ) {
+    super( name, value );
+    this.setType( TYPE );
+  }
 
-        fpg=new FuncStringPG("b","10f");
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
+  /**
+   * Creates a new FuncStringPG object.
+   *
+   * @param name The name of this FuncStringPG.
+   * @param value The value of this FuncStringPG.
+   * @param valid True if this FuncStringPG should be considered initially
+   *        valid.
+   */
+  public FuncStringPG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+    this.setType( TYPE );
+  }
 
-        fpg=new FuncStringPG("c","100f",false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
+  //~ Methods ******************************************************************
 
-        fpg=new FuncStringPG("d","1000f",true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-    }
+  /*
+   * Testbed.
+   */
+  public static void main( String[] args ) {
+    FuncStringPG fpg;
+
+    fpg = new FuncStringPG( "a", "1f" );
+    System.out.println( fpg );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new FuncStringPG( "b", "10f" );
+    System.out.println( fpg );
+    fpg.setEnabled( false );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new FuncStringPG( "c", "100f", false );
+    System.out.println( fpg );
+    fpg.setEnabled( false );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new FuncStringPG( "d", "1000f", true );
+    System.out.println( fpg );
+    fpg.setDrawValid( true );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+  }
 }

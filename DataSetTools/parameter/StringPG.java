@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/05/11 18:23:56  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.16  2004/03/12 21:13:49  bouzekc
  *  Added clear() method.
  *
@@ -98,8 +101,8 @@ public class StringPG extends StringEntryPG {
   /**
    * Creates a new StringPG object.
    *
-   * @param name The name of this PG.
-   * @param value The initial value of this PG.
+   * @param name The name of this StringPG.
+   * @param value The initial value of this StringPG.
    */
   public StringPG( String name, Object value ) {
     super( name, value );
@@ -109,8 +112,8 @@ public class StringPG extends StringEntryPG {
   /**
    * Creates a new StringPG object.
    *
-   * @param name The name of this PG.
-   * @param value The initial value of this PG.
+   * @param name The name of this StringPG.
+   * @param value The initial value of this StringPG.
    * @param valid Whether this PG should be considered initially valid.
    */
   public StringPG( String name, Object value, boolean valid ) {
@@ -121,7 +124,7 @@ public class StringPG extends StringEntryPG {
   //~ Methods ******************************************************************
 
   /**
-   * Sets the value of this PG using a String.
+   * Sets the value of this StringPG using a String.
    *
    * @param val The new value.
    */
@@ -130,7 +133,7 @@ public class StringPG extends StringEntryPG {
   }
 
   /**
-   * @return The String value of this PG.
+   * @return The String value of this StringPG.
    */
   public String getStringValue(  ) {
     Object ob     = this.getValue(  );
@@ -152,7 +155,9 @@ public class StringPG extends StringEntryPG {
   }
 
   /**
-   * Sets the value of the parameter.
+   * Sets the value of this StringPG.
+   *
+   * @param value The new value.
    */
   public void setValue( Object value ) {
     String svalue = null;
@@ -202,7 +207,7 @@ public class StringPG extends StringEntryPG {
   }
 
   /**
-   * Used to clear out the PG.  This sets the internal value to an empty
+   * Used to clear out the StringPG.  This sets the internal value to an empty
    * String.
    */
   public void clear(  ) {

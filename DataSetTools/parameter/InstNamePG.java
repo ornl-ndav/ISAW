@@ -1,5 +1,5 @@
 /*
- * File:  InstNamePG.java 
+ * File:  InstNamePG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/05/11 18:23:49  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.16  2004/05/01 00:39:18  bouzekc
  *  Modified to accept upper and lower case names.  The name in IsawProps.dat
  *  should still be upper case.
@@ -85,98 +88,117 @@
  *
  *
  */
-
 package DataSetTools.parameter;
+
 import DataSetTools.util.SharedData;
 
+
 /**
- * This is class is to deal with float parameters.
+ * This is class is to deal with instrument names.
  */
 public class InstNamePG extends StringPG {
-    private static final String TYPE     = "InstName";
-    private static       String propName = "Default_Instrument";
+  //~ Static fields/initializers ***********************************************
 
-    // ********** Constructors **********
-    public InstNamePG(String name, Object val){
-        super(name,val);
-        this.setType(TYPE);
-        if( val==null ){
-            this.setValue(SharedData.getProperty(propName));
-        }else{
-            String temp=this.getStringValue();
-            if(temp==null || temp.length()==0){
-                this.setValue(SharedData.getProperty(propName));
-            }
-        }
+  private static final String TYPE = "InstName";
+  private static String propName   = "Default_Instrument";
+
+  //~ Constructors *************************************************************
+
+  /**
+   * Creates a new InstNamePG object.
+   *
+   * @param name The name of this InstNamePG.
+   * @param val The value of this InstNamePG.
+   */
+  public InstNamePG( String name, Object val ) {
+    super( name, val );
+    this.setType( TYPE );
+
+    if( val == null ) {
+      this.setValue( SharedData.getProperty( propName ) );
+    } else {
+      String temp = this.getStringValue(  );
+
+      if( ( temp == null ) || ( temp.length(  ) == 0 ) ) {
+        this.setValue( SharedData.getProperty( propName ) );
+      }
     }
-    
-    public InstNamePG(String name, Object val, boolean valid){
-        super(name,val,valid);
-        this.setType(TYPE);
-        if( val==null ){
-            this.setValue(SharedData.getProperty(propName));
-        }else{
-            String temp=this.getStringValue();
-            if(temp==null || temp.length()==0){
-                this.setValue(SharedData.getProperty(propName));
-            }
-        }
+  }
+
+  /**
+   * Creates a new InstNamePG object.
+   *
+   * @param name The name of this InstNamePG.
+   * @param val The value of this InstNamePG.
+   * @param valid True if this InstNamePG should be considered initially valid.
+   */
+  public InstNamePG( String name, Object val, boolean valid ) {
+    super( name, val, valid );
+    this.setType( TYPE );
+
+    if( val == null ) {
+      this.setValue( SharedData.getProperty( propName ) );
+    } else {
+      String temp = this.getStringValue(  );
+
+      if( ( temp == null ) || ( temp.length(  ) == 0 ) ) {
+        this.setValue( SharedData.getProperty( propName ) );
+      }
     }
+  }
 
-    /*
-    * Testbed.
-    */
-    /*public static void main(String args[]){
-        InstNamePG fpg;
+  //~ Methods ******************************************************************
 
-        fpg=new InstNamePG("a","1f");
-        System.out.println(fpg);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
+  /*
+   * Testbed.
+   */
+  /*public static void main(String args[]){
+     InstNamePG fpg;
+     fpg=new InstNamePG("a","1f");
+     System.out.println(fpg);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new InstNamePG("b","10f");
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new InstNamePG("c","100f",false);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new InstNamePG("d","1000f",true);
+     System.out.println(fpg);
+     fpg.setDrawValid(true);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     }*/
 
-        fpg=new InstNamePG("b","10f");
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
+  /**
+   * Validates this InstNamePG.  An InstNamePG is valid if and only if
+   * getValue() returns a non-null String which references an Instrument name
+   * in IsawProps.dat.
+   */
+  public void validateSelf(  ) {
+    Object val = getValue(  );
 
-        fpg=new InstNamePG("c","100f",false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
+    if( val != null ) {
+      String name    = val.toString(  );
+      Object propVal = SharedData.getProperty( name );
 
-        fpg=new InstNamePG("d","1000f",true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-    }*/
+      if( propVal == null ) {
+        //try uppercase
+        propVal = SharedData.getProperty( name.toUpperCase(  ) );
+      }
 
-    /**
-     * Validates this InstNamePG.  An InstNamePG is valid if and only if
-     * getValue() returns a non-null String which references an Instrument name
-     * in IsawProps.dat.
-     */
-    public void validateSelf(  ) {
-      Object val = getValue(  );
-
-      if( val != null ) {
-        String name = val.toString(  );
-        Object propVal = SharedData.getProperty( name );
-        
-        if( propVal == null ) {
-          //try uppercase
-          propVal = SharedData.getProperty( name.toUpperCase(  ) );
-        }
-        
-        if( propVal != null ) {
-          setValid( true );
-        } else {
-          setValid( false );
-        }
+      if( propVal != null ) {
+        setValid( true );
       } else {
         setValid( false );
       }
+    } else {
+      setValid( false );
     }
+  }
 }

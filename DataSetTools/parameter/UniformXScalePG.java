@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/05/11 18:23:56  bouzekc
+ * Added/updated javadocs and reformatted for consistency.
+ *
  * Revision 1.13  2004/03/15 03:28:41  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -85,7 +88,6 @@ import DataSetTools.components.ParametersGUI.StringEntry;
 
 import DataSetTools.dataset.UniformXScale;
 import DataSetTools.dataset.XScale;
-
 
 import gov.anl.ipns.Util.StringFilter.FloatFilter;
 import gov.anl.ipns.Util.StringFilter.IntegerFilter;

@@ -1,5 +1,5 @@
 /*
- * File:  MaterialPG.java 
+ * File:  MaterialPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/05/11 18:23:53  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.16  2004/03/15 03:28:40  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -83,72 +86,86 @@
  *
  *
  */
-
 package DataSetTools.parameter;
+
 import gov.anl.ipns.Util.StringFilter.MaterialFilter;
 import gov.anl.ipns.Util.StringFilter.StringFilterer;
 
+
 /**
- * This is class is to deal with float parameters.
+ * This subclass deals with Material Objects.
  */
 public class MaterialPG extends StringPG {
-    private static final String TYPE="Material";
+  //~ Static fields/initializers ***********************************************
 
-    // ********** Constructors **********
-    public MaterialPG(String name, Object value){
-        super(name,value);
-        FILTER=new MaterialFilter();
-        this.setType(TYPE);
+  private static final String TYPE = "Material";
+
+  //~ Constructors *************************************************************
+
+  /**
+   * Creates a new MaterialPG object.
+   *
+   * @param name The name of this MaterialPG.
+   * @param value The value of this MaterialPG.
+   */
+  public MaterialPG( String name, Object value ) {
+    super( name, value );
+    FILTER = new MaterialFilter(  );
+    this.setType( TYPE );
+  }
+
+  /**
+   * Creates a new MaterialPG object.
+   *
+   * @param name The name of this MaterialPG.
+   * @param value The value of this MaterialPG.
+   * @param valid True if this MaterialPG should be considered initially valid.
+   */
+  public MaterialPG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+    FILTER = new MaterialFilter(  );
+    this.setType( TYPE );
+  }
+
+  //~ Methods ******************************************************************
+
+  /*
+   * Testbed.
+   */
+  /*public static void main(String args[]){
+     MaterialPG fpg;
+     fpg=new MaterialPG("a","1f");
+     System.out.println(fpg);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new MaterialPG("b","10f");
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new MaterialPG("c","100f",false);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new MaterialPG("d","1000f",true);
+     System.out.println(fpg);
+     fpg.setDrawValid(true);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     }*/
+
+  /**
+   * Validates this MaterialPG.  A valid MaterialPG is one where getValue()
+   * will pass through a MaterialFilter.
+   */
+  public void validateSelf(  ) {
+    StringFilterer sf = getStringFilter(  );
+
+    if( sf == null ) {
+      setValid( false );
+    } else {
+      setValid( sf.isOkay( 0, getValue(  ).toString(  ), "" ) );
     }
-    
-    public MaterialPG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        FILTER=new MaterialFilter();
-        this.setType(TYPE);
-    }
-
-    /*
-     * Testbed.
-     */
-    /*public static void main(String args[]){
-        MaterialPG fpg;
-
-        fpg=new MaterialPG("a","1f");
-        System.out.println(fpg);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-
-        fpg=new MaterialPG("b","10f");
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-
-        fpg=new MaterialPG("c","100f",false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-
-        fpg=new MaterialPG("d","1000f",true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-    }*/
-
-    /**
-     * Validates this MaterialPG.  A valid MaterialPG is one where getValue()
-     * will pass through a MaterialFilter.
-     */
-    public void validateSelf(  ) {
-      StringFilterer sf = getStringFilter(  );
-
-      if( sf == null ) {
-        setValid( false );
-      } else {
-        setValid( sf.isOkay( 0, getValue(  ).toString(  ), "" ) );
-      }
-    }
-
+  }
 }
