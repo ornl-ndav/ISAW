@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2003/10/15 03:56:40  bouzekc
+ *  Fixed javadoc errors.
+ *
  *  Revision 1.22  2002/11/27 23:24:18  pfpeterson
  *  standardized header
  *
@@ -207,7 +210,7 @@ public class ViewerState  implements Serializable
    *
    * @param  name  The name of the string state entry to get.
    *
-   * @eturn  The string value of the named entry as is set in this 
+   * @return  The string value of the named entry as is set in this 
    *         ViewerState object.  If the named entry does not exist, 
    *         a blank string is returned.
    */
@@ -249,7 +252,7 @@ public class ViewerState  implements Serializable
    *
    * @param  name  The name of the boolean state entry to get.
    *
-   * @eturn The value, true or false of the boolean state entry
+   * @return The value, true or false of the boolean state entry
    *        as is set in this ViewerState object.  If the named
    *        entry does not exist, false is returned.
    */
@@ -292,7 +295,7 @@ public class ViewerState  implements Serializable
    *
    * @param  name  The name of the int state entry to get.
    *
-   * @eturn The value of the named int state entry as is set in this 
+   * @return The value of the named int state entry as is set in this 
    *        ViewerState object.  If the named entry does not exist
    *        ERROR_INT is returned.
    */
@@ -334,7 +337,7 @@ public class ViewerState  implements Serializable
    *
    * @param  name  The name of the float state entry to get.
    *
-   * @eturn The value of the named float state entry as is set in this
+   * @return The value of the named float state entry as is set in this
    *        ViewerState object.  If the named entry does not exist
    *        Float.NaN is returned.
    */
@@ -399,7 +402,7 @@ public class ViewerState  implements Serializable
    /**
     *  Save the specified zoom region.
     *
-    *  @param  bounds Zoom region to be saved.
+    *  @param  zoom_region Zoom region to be saved.
     *  @param  ds     The current DataSet being viewed.  The zoom region should
     *                 only be restored provided the new DataSet given to the
     *                 viewer is using the same units and axis labels.  The

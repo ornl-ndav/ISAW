@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/10/15 03:56:38  bouzekc
+ *  Fixed javadoc errors.
+ *
  *  Revision 1.3  2002/11/27 23:24:30  pfpeterson
  *  standardized header
  *
@@ -53,7 +56,10 @@ public interface IAxisHandler
 
    public String getAxisUnits();
 
-   /** Gets the axis value for this Group and xvalue<P>
+   /** 
+    * Gets the axis value for this Group and xvalue.
+    *
+    * <br><br>
    * NOTE: The y value can be gotten with getX( xIndex )
    */
    public float  getValue( int GroupIndex, int xIndex);
