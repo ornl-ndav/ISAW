@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2002/10/07 19:35:57  dennis
+ *  "Clear Selections" menu option now clears selections in the temporary
+ *  DataSet as well as the original DataSet.  This fixes a bug where the
+ *  "Clear Selection" failed to clear the selections on the viewer if an
+ *  Axis Conversion had been done.
+ *
  *  Revision 1.26  2002/10/02 22:04:15  dennis
  *  Now check the result of calling the conversion operator.  If some Data
  *  blocks are not converted, don't try to set the selection flags or
@@ -884,7 +890,7 @@ private String CurrentConversionName()     // get current conversion name
       }
       else if ( action.equals( CLEAR_SELECTED ))
       {
-        if ( dataSet.clearSelections() )
+        if ( tempDataSet.clearSelections() || dataSet.clearSelections() )
           dataSet.notifyIObservers( IObserver.SELECTION_CHANGED );
       } 
       else 
