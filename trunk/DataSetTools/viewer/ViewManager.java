@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/07/12 18:26:15  rmikk
+ *  Used the Constructor with the state variable for starting
+ *    the Selected Graph view.
+ *
  *  Revision 1.19  2002/07/10 19:39:03  rmikk
  *  Added code to incorporate the Contour View
  *
@@ -296,9 +300,11 @@ public class ViewManager extends    JFrame
    {
      getContentPane().setVisible(false);
      getContentPane().removeAll();
+    
      if ( viewer != null )
-       state = viewer.getState();
-     viewer = null;
+         state = viewer.getState();
+
+      viewer = null;
       if ( view_type.equals( IMAGE ))
         viewer = new ImageView( tempDataSet, state );
       else if ( view_type.equals( SCROLLED_GRAPHS ))
@@ -306,7 +312,7 @@ public class ViewManager extends    JFrame
       else if ( view_type.equals( THREE_D ))
         viewer = new ThreeDView( tempDataSet, state );
       else if ( view_type.equals( SELECTED_GRAPHS ))             // use either
-        viewer = new GraphableDataManager( tempDataSet );        // Kevin's or
+        viewer = new GraphableDataManager( tempDataSet, state );        // Kevin's or
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
       else if ( view_type.equals( TABLE ) )
         viewer = new TabView( tempDataSet, state ); 
