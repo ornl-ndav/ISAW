@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.3  2003/02/07 18:39:24  dennis
+ *  Added serial version ID and ReadObject methods needed for "stable"
+ *  serialization.
+ *
  *  Revision 1.2  2003/02/06 20:22:32  dennis
  *  Fixed solid angle calculation.  Now uses orientation of pixel to obtain
  *  a better approximation to the solid angle.
@@ -56,6 +60,24 @@ import DataSetTools.math.*;
 
 public class UniformGrid implements IDataGrid 
 {
+  // NOTE: any field that is static or transient is NOT serialized.
+  //
+  // CHANGE THE "serialVersionUID" IF THE SERIALIZATION IS INCOMPATIBLE WITH
+  // PREVIOUS VERSIONS, IN WAYS THAT CAN NOT BE FIXED BY THE readObject()
+  // METHOD.  SEE "IsawSerialVersion" COMMENTS BELOW.  CHANGING THIS CAUSES
+  // JAVA TO REFUSE TO READ DIFFERENT VERSIONS.
+  //
+  public  static final long serialVersionUID = 1L;
+
+
+  // NOTE: The following fields are serialized.  If new fields are added that
+  //       are not static, reasonable default values should be assigned in the
+  //       readObject() method for compatibility with old servers, until the
+  //       servers can be updated.
+  private int IsawSerialVersion = 1;         // CHANGE THIS WHEN ADDING OR
+                                             // REMOVING FIELDS, IF
+                                             // readObject() CAN FIX ANY
+                                             // COMPATIBILITY PROBLEMS
   private int       id;
   private String    units;
 
@@ -648,6 +670,34 @@ public class UniformGrid implements IDataGrid
     buffer.append("num_cols = " + num_cols() +'\n');
     return buffer.toString();
   }
+
+
+/* -----------------------------------------------------------------------
+ *
+ *  PRIVATE METHODS
+ *
+ */
+
+/* ---------------------------- readObject ------------------------------- */
+/**
+ *  The readObject method is called when objects are read from a serialized
+ *  ojbect stream, such as a file or network stream.  The non-transient and
+ *  non-static fields that are common to the serialized class and the
+ *  current class are read by the defaultReadObject() method.  The current
+ *  readObject() method MUST include code to fill out any transient fields
+ *  and new fields that are required in the current version but are not
+ *  present in the serialized version being read.
+ */
+
+  private void readObject( ObjectInputStream s ) throws IOException,
+                                                        ClassNotFoundException
+  {
+    s.defaultReadObject();               // read basic information
+
+    if ( IsawSerialVersion != 1 )
+      System.out.println("Warning:UniformGrid IsawSerialVersion != 1");
+  }
+
 
 
   /* ------------------------------------------------------------------- */
