@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/08/28 20:06:56  rmikk
+ * QbinPG's setValue no longer appends the new Value to
+ *   the old value
+ *
  * Revision 1.4  2003/08/28 03:10:04  bouzekc
  * Modified to work with the new ParameterGUI.
  *
@@ -121,11 +125,13 @@ public class QbinsPG  extends ParameterGUI{
       if( value == null)
            value = V;
       else
-           ((Vector)value).addAll((Vector)V);
+           value = V;
       if( list != null)
+         list.setValue( V);
+      /*if( list != null)
         for( int i=0; i < ((Vector)V).size(); i++)
            list.setValue( ((Vector)V).elementAt( i ));
-
+      */
    }
 
 
