@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/11 16:45:03  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.7  2004/02/28 17:18:17  rmikk
  * Added static methods to linearlize a multidimensioned Java array and to
  * convert a linear array to a multidimensioned array
@@ -252,7 +255,7 @@ public class Types{
   *    Linearlizes a multidimension array
   *    @param array the multi-dimensioned array
   *    @param ndims  the number of dimensions
-  *    @param lenghts the size of each dimension
+  *    @param lengths the size of each dimension
   *    @return  a linear array of the same type as array
   */
   public static Object linearlizeArray(Object array, int ndims, int lengths[],
