@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.20  2003/05/08 20:01:57  pfpeterson
+ * Removed some debug statements.
+ *
  * Revision 1.19  2003/05/08 19:52:12  pfpeterson
  * First pass at expanding to multiple detectors. There is a bug where it
  * does not find any peaks in the -120 deg detector.
@@ -114,7 +117,7 @@ import java.util.Vector;
  */
 public class Integrate extends GenericTOF_SCD{
   private static final String       TITLE       = "Integrate";
-  private static       boolean      DEBUG       = true;
+  private static       boolean      DEBUG       = false;
   private static       Vector       choices     = null;
   private              StringBuffer logBuffer   = null;
   private              float        chi         = 0f;
@@ -431,12 +434,12 @@ public class Integrate extends GenericTOF_SCD{
     Vector innerPeaks=null;
     ErrorString error=null;
     for( int i=0 ; i<det_number.length ; i++ ){
-      System.out.println("integrating "+det_number[i]);
+      if(DEBUG) System.out.println("integrating "+det_number[i]);
       innerPeaks=new Vector();
       error=integrateDetector(ds,innerPeaks,pkfac,det_number[i]);
-      System.out.println("ERR="+error);
+      if(DEBUG) System.out.println("ERR="+error);
       if(error!=null) return error;
-      System.out.println("integrated "+innerPeaks.size()+" peaks");
+      if(DEBUG) System.out.println("integrated "+innerPeaks.size()+" peaks");
       if(innerPeaks!=null && innerPeaks.size()>0)
         peaks.addAll(innerPeaks);
     }
@@ -490,10 +493,6 @@ public class Integrate extends GenericTOF_SCD{
       if(calib==null)
         return new ErrorString("Could not find calibration for detector "
                                +detnum);
-      System.out.print("CALIB=");
-      for( int i=0 ; i<calib.length ; i++ )
-        System.out.print(calib[i]+" ");
-      System.out.println();
       pkfac.calib(calib);
     }
 
@@ -523,13 +522,6 @@ public class Integrate extends GenericTOF_SCD{
     // determine the detector limits in hkl
     int[][] hkl_lim=minmaxhkl(pkfac, ids, times);
     float[][] real_lim=minmaxreal(pkfac, ids, times);
-    System.out.print("REAL LIMITS=");
-    for(int i=0 ; i<3 ; i++ ){
-      for( int j=0 ; j<2 ; j++ ){
-        System.out.print(real_lim[i][j]+" ");
-      }
-      System.out.println();
-    }
 
     // add the limits to the logBuffer
     logBuffer.append("---------- LIMITS\n");
@@ -549,7 +541,7 @@ public class Integrate extends GenericTOF_SCD{
     logBuffer.append("========== PEAK INTEGRATION ==========\n");
     logBuffer.append("listing information about every "+listNthPeak+" peak\n");
 
-    boolean printPeak=false; // REMOVE
+    boolean printPeak=DEBUG||false; // REMOVE
     Peak peak=null;
     int seqnum=1;
     // loop over all of the possible hkl values and create peaks
