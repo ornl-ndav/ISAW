@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2003/11/23 02:27:58  bouzekc
+ *  Removed setGUIPanel().
+ *
  *  Revision 1.35  2003/11/23 02:12:18  bouzekc
  *  Now properly clones the label.
  *
@@ -582,9 +585,9 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @param gPanel The new GUI panel to use.
    */
-  protected final void setGUIPanel( JPanel gPanel ) {
+ /* protected final void setGUIPanel( JPanel gPanel ) {
     this.gUIPanel = gPanel;
-  }
+  }*/
 
   /**
    * Mutator method for child classes to set the initialized state.
@@ -673,7 +676,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     if( 
       ( this.getLabel(  ) != null ) && ( this.getEntryWidget(  ) != null ) &&
         ( this.validCheck != null ) ) {
-      setGUIPanel( new JPanel(  ) );
+      gUIPanel = new JPanel(  );
 
       JPanel gPanel = getGUIPanel(  );
       gPanel.setLayout( new BorderLayout(  ) );
