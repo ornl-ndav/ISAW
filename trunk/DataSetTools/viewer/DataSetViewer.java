@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2002/12/10 22:13:35  pfpeterson
+ *  Fixed javadoc
+ *
  *  Revision 1.11  2002/11/27 23:24:18  pfpeterson
  *  standardized header
  *
@@ -50,7 +53,7 @@ import  javax.swing.*;
  *  @see DataSetTools.viewer.Graph.GraphView
  *  @see DataSetTools.viewer.ThreeD.ThreeDView
  *  @see DataSetTools.viewer.Table.TabView
- *  @see OverplotView.GraphableDataManager
+ *  @see DataSetTools.viewer.OverplotView.GraphableDataManager
  *
  */ 
 
