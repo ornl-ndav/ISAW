@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/08/02 22:54:57  dennis
+ *  Code to form runfile name from instument name + run number
+ *  now also works for SCD.
+ *
  *  Revision 1.8  2001/04/25 20:28:10  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -336,6 +340,9 @@ public class InstrumentType implements Serializable
     String file_name;
  
     while ( num.length() < 4 )
+      num = "0"+num;
+
+    if ( (instrument+num).length() < 8 )
       num = "0"+num;
 
     if ( Character.isUpperCase( instrument.charAt(0) ) )
