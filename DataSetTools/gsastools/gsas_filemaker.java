@@ -17,7 +17,7 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Alok Chatterjee <AChatterjee@anl.gov>
+ * Contact : Peter F. Peterson <pfpeterson@anl.gov>
  *           Intense Pulsed Neutron Source Division
  *           Argonne National Laboratory
  *           Argonne, IL 60439-4845
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/07/25 19:29:05  pfpeterson
+ *  Many changes, the largest of which is time map support.
+ *
  *  Revision 1.20  2002/07/17 20:16:13  pfpeterson
  *  Now uses DataSetTools.util.Format for string formatting.
  *  Determines if scale is constant by seeing if is instance
@@ -123,14 +126,28 @@ import DataSetTools.retriever.RunfileRetriever;
 
 public class gsas_filemaker
 {                      
+    // string constants for bintypes
+    public static String COND    = GsasUtil.COND;
+    public static String CONS    = GsasUtil.CONS;
+    public static String CONQ    = GsasUtil.CONQ;
+    public static String SLOG    = GsasUtil.SLOG;
+    public static String TIMEMAP = GsasUtil.TIMEMAP;
+
+    // string constants for types (how errors are written)
+    public static String STD = GsasUtil.STD;
+    public static String ESD = GsasUtil.ESD;
+
+    // string constant for other stuff
+    public static String BANK       = GsasUtil.BANK;
+    public static String IPARM      = "Instrument parameter file:";
+    public static String MONITOR    = "MONITOR";
+    public static String REF_ANGLE  = "Ref Angle";
+    public static String TOT_LENGTH = "Total length";
+
     private OutputStreamWriter outStream;
     private DataSet mon;
     private DataSet data;
     private String bintype;
-    private float bCoef1;
-    private float bCoef2;
-    private float bCoef3;
-    private float bCoef4;
     private String type;
     private int monNum;
     private boolean export_monitor;
@@ -197,42 +214,104 @@ public class gsas_filemaker
         this.printIParmFile();
 	this.printMonitorCount();
 	this.printBankInfo();
+
+        XInfo[] tempinfolist=new XInfo[this.data.getNum_entries()];
+        XInfo tempinfo=null;
+        int[] infonum=new int[this.data.getNum_entries()];
+        int infocount=-1;
+        int timemap_count=0;
+        for( int i=0 ; i<this.data.getNum_entries() ; i++ ){
+            Data d=this.data.getData_entry(i);
+            tempinfo=new XInfo(d.getX_scale(),this.data.getX_units(),
+                               GsasUtil.getType(d));
+            if(tempinfo.setTimeMapNum(timemap_count)){
+                timemap_count++;
+            }
+            if(isUniqueInfo(tempinfo,tempinfolist)){
+                infocount++;
+                tempinfo.setTimeMapNum(timemap_count);
+                tempinfolist[infocount]=tempinfo;
+            }else{
+                if(tempinfo.setTimeMapNum(timemap_count)){
+                    timemap_count--;
+                }
+            }
+            infonum[i]=infocount;
+        }
+        XInfo[] info=new XInfo[infocount+1];
+        for( int i=0 ; i<infocount+1 ; i++ ){
+            info[i]=tempinfolist[i];
+        }
+        printTimeMap(info);
+
         //System.out.println("(GF)NUMBERING: "+seq_numbers);
         if(export_monitor) this.printMonitorSpectrum();
 
 	// write out the data
         int count=1;
+        infocount=0;
 	for(int i=1; i<=data.getMaxGroupID() ; i++){
             Data dd=data.getData_entry_with_id(i);
             if(dd!=null){
-                printBank(count,dd);
+                printBank(count,dd,info[infonum[infocount]]);
                 count++;
+                infocount++;
             }else if(!seq_numbers){
                 count++;
             }
 	}
+        //TimeMap tm=new TimeMap(data.getData_entry(0).getX_scale(),23);
+        //System.out.print(tm);
+
         //System.out.println("time="+(System.currentTimeMillis()-offset));
-	/* try{
-           Thread.sleep(100);
-           } catch(Exception d){}*/
     }
     
+    private boolean isUniqueInfo( XInfo info, XInfo[] infolist){
+        for( int i=0 ; i<infolist.length ; i++ ){
+            if(infolist[i]!=null){
+                if(info.equals(infolist[i]))return false;
+            }
+        }
+        return true;
+    }
+
+    private void printTimeMap( XInfo[] info ){
+        StringBuffer sb=new StringBuffer(info.length*80);
+        TimeMap timemap=null;
+            
+        for( int i=0 ; i<info.length ; i++ ){
+            timemap=info[i].timemap();
+            if(timemap!=null){
+                sb.append(timemap.toString());
+            }
+        }
+        try{
+            outStream.write(sb.toString());
+        }catch(IOException e){
+            SharedData.addmsg("Could not write "+TIMEMAP+" information: "+e.getMessage());
+        }
+
+    }
+
     /**
      * This method determines the BINTYPE and TYPE of the group
      * specified by ds then prints the entire bank information. The
      * value of banknum is strictly used for printing purposes and is
      * not otherwise needed.
      */
-    private void printBank( int banknum, Data ds ){
+    private void printBank( int banknum, Data ds, XInfo info ){
 	if(ds==null) return;
+        if(info==null){
+            info=new XInfo(ds.getX_scale(),data.getX_units(),
+                           //ESD); // this line forces writing errors
+                           GsasUtil.getType(ds));
+        }
 
-	getBinType(ds,data.getX_units());
-	getType(ds);
+        bintype = info.bintype();
+        type    = info.type();
 
-	if((bintype=="CONST")||(bintype=="COND")||(bintype=="CONQ")){
-	    printCONSThead(banknum,ds.getCopyOfY_values().length);
-	}
-	if(type=="STD"){
+        printBankHead(banknum,info);
+	if(type.equals(STD)){
 	    printSTDdata(ds.getCopyOfY_values());
 	}else{
 	    printESDdata(ds.getCopyOfY_values(),ds.getCopyOfErrors());
@@ -241,188 +320,19 @@ public class gsas_filemaker
     }
 
     /**
-     * Determine the TYPE. This is done by calculating the percent
-     * difference between sqrt(I) and sigmaI. If it is more than
-     * 0.0001 different then the bank is labeled ESD.
-     */
-    private void getType(Data data){
-	float[] dI = data.getCopyOfErrors();
-	float[] I  = data.getCopyOfY_values();
-	boolean Etype=true;
-	for( int i=0 ; i<dI.length ; i++ ){
-	    if((0.9999f*(float)Math.sqrt((double)I[i])<dI[i])||(dI[i]==0.0f)){
-		// do nothing
-	    }else{
-		System.out.println(Math.sqrt((double)I[i])+" not same as "+dI[i]);
-		Etype=false;
-		i=dI.length;
-	    }
-	}
-	if(Etype){
-	    type="STD";
-	}else{
-	    type="ESD";
-	}
-	return;
-    }
-
-    /**
-     * This determines the BINTYPE of the data by first looking at the
-     * units (only understands 'time' at the moment) then determining
-     * if the x-values need to be scaled into microseconds. Then the
-     * bining is determined to be constant or constant dT/T. Once the
-     * BINTYPE is determined the parameters needed for the bank header
-     * are also set.
-     *
-     * These method needs reasonable keys in the units tag to look for
-     * to determine if data is in d or Q. Once this is done the
-     * BINTYPE can be found to support these other values.
-     */
-    private void getBinType( Data data, String units ){
-	int numX=data.getX_scale().getNum_x();
-        XScale xscale=data.getX_scale();
-	float[] xval=data.getX_scale().getXs();
-	float scale=0.0f;
-	units=units.toLowerCase();
-
-	// convert units and get scale
-	if(units.indexOf("time")>=0){
-	    if(units.indexOf("us")>0){
-		scale=1.0f;
-	    }else if(units.indexOf("ms")>0){
-		scale=0.001f;
-	    }
-	    units="time";
-        }else if(units.indexOf("inverse angstroms")==0){
-            units="q";
-        }else if(units.indexOf("angstroms")==0){
-            units="d";
-	}else{
-	    // unsuported right now
-	}
-
-	float minX=10000.0f;
-	float maxX=-1.0f;
-
-	for( int i=0 ; i<numX ; i++ ){
-	    xval[i]=scale*xval[i];
-	    if(xval[i]>maxX){
-		maxX=xval[i];
-	    }
-	    if(xval[i]<minX){
-		minX=xval[i];
-	    }
-	}
-	//System.out.println("min="+minX+" max="+maxX);
-	float dX=xval[1]-xval[0];
-        if(xscale instanceof UniformXScale){
-            dX=(float)((UniformXScale)xscale).getStep();
-        }else{
-            System.out.println("not UniformXScale");
-            dX=0f;
-        }
-
-	// check that there was constant spacing
-	if(dX>0.0f){
-	    if(units=="time"){ // constant time binning found
-		bintype="CONST";
-		bCoef1=minX;
-		bCoef2=dX;
-		bCoef3=0.0f;
-		bCoef4=0.0f;
-		return;
-	    }else if(units=="d"){ // constant d-spacing
-		bintype="COND";
-		bCoef1=minX;
-		bCoef2=dX;
-		bCoef3=0.0f;
-		bCoef4=0.0f;
-		return;
-	    }else if(units=="q"){ // constant Q-spacing
-		bintype="CONQ";
-		bCoef1=minX;
-		bCoef2=dX;
-		bCoef3=0.0f;
-		bCoef4=0.0f;
-		return;
-	    }
-	}
-
-	// untested but it should work
-	dX=(xval[1]-xval[0])/xval[0];
-	for( int i=1 ; i<numX ; i++ ){
-	    if(((xval[i]-xval[i-1])/xval[i-1])==dX){
-		// do nothing
-	    }else{
-		System.out.println("not log steps "+((xval[i]-xval[i-1])/xval[i-1])+" not "+dX);
-		dX=0.0f;
-		i=numX;
-	    }
-	}
-	
-	// check that there was constant spacing
-	if(dX>0.0f){
-	    if(units=="time"){ // constant Dt/t found
-		bintype="SLOG";
-		bCoef1=minX;
-		bCoef2=maxX;
-		bCoef3=dX;
-		bCoef4=0.0f;
-		return;
-	    }
-	}else{ // must be a time-map
-	    if(units=="time"){
-		bintype="TIME_MAP";
-		bCoef1=0.0f;
-		bCoef2=0.0f;
-		bCoef3=0.0f;
-		bCoef4=0.0f;
-		return;
-	    }
-	}
-
-	return;
-    }
-
-    /**
      * This method is for printing the bank header for the different
      * constant BINTYPES. This method is shared because all three have
      * only two parameters.
      */
-    private void printCONSThead( int banknum, int nchan){
-	int nrec=0;
+    private void printBankHead( int banknum, XInfo info){
         StringBuffer sb=new StringBuffer(80);
-	if(type=="STD"){
-	    nrec=(int)((float)nchan/10.0+0.9);
-	}else if(type=="ESD"){
-	    nrec=(int)((float)nchan/5.0+0.9);
-	}else{
-	    // the data does not have error of a supported type
-	    return;
-	}
-        sb.append("BANK   ").append(Format.integer(banknum,6)).append("    ")
-            .append(Format.integer(nchan,6)).append("     ")
-            .append(Format.integer(nrec,6)).append(" ")
-            .append(Format.string(bintype,7,false))
-            .append(Format.real(bCoef1,14,7)).append("     ")
-            .append(Format.real(bCoef2,10,7)).append("  ");
-        if(type.equals("STD")){
-            sb.append("       ");
-        }else{
-            sb.append(type).append("    ");
+        try{
+            sb.append(GsasUtil.getBankHead(banknum,info));
+            outStream.write(Format.string(sb,80,false)+"\n");
+        }catch(IOException e){
+            SharedData.addmsg("Could not write "+bintype+" bank header: "
+                              +e.getMessage());
         }
-	try{
-            outStream.write(sb+"\n");
-	}catch(Exception d){}
-    }
-
-    /**
-     * This is a legacy method which simply retrieves banknum's
-     * intensities and passes them to the full printSTDdata method.
-     */
-    private void printSTDdata( int banknum ){
-	float [] y = data.getData_entry_with_id(banknum).getCopyOfY_values();
-	printSTDdata(y);
     }
 
     /**
@@ -431,31 +341,21 @@ public class gsas_filemaker
      */
     private void printSTDdata( float[] y ){
         StringBuffer sb=new StringBuffer((int)(81*y.length/10));
-        for(int j=0; j<y.length; j+=10){
-            for(int l=j+0; l<j+10; l++){
-                if(l>=y.length){
-                    sb.append("        ");
-                }else{
-                    sb.append("  ").append(Format.integer(y[l],6));
-                }
+        int colcount=0;
+        for( int i=0 ; i<y.length ; i++ ){
+            if(colcount>=80){
+                sb.append("\n");
+                colcount=0;
             }
-            sb.append("\n");
-            //sb.delete(0,sb.length());
+            sb.append("  ").append(Format.integer(y[i],6));
+            colcount+=8;
         }
+        sb.append(Format.string("\n",81-colcount));
 	try{
-            outStream.write(sb+"\n");
-	} catch(Exception d){}
-    }
-
-    /**
-     * This is a legacy method which simply retrieves banknum's
-     * intensities and errors then passes them to the full
-     * printESDdata method.
-     */
-    private void printESDdata( int banknum ){
-	float[] y  = data.getData_entry_with_id(banknum).getCopyOfY_values();
-	float[] dy = data.getData_entry_with_id(banknum).getCopyOfErrors();
-	printESDdata(y,dy);
+            outStream.write(sb.toString());
+	}catch(IOException e){
+            SharedData.addmsg("Could not write "+STD+" data: "+e.getMessage());
+        }
     }
 
     /**
@@ -464,19 +364,18 @@ public class gsas_filemaker
      */
     private void printESDdata( float[] y , float[] dy ){
         StringBuffer sb=new StringBuffer((int)(81*y.length/5));
-        for(int j=0; j<y.length; j+=5){
-            for(int l=j+0; l<j+5; l++){
-                if(l>=y.length){
-                    sb.append("        ");
-                }else{
-                    sb.append("  "+Format.integer(y[l],6)+"  "
-                              +Format.integer(dy[l],6));
-                }
+        int colcount=0;
+        for( int i=0 ; i<y.length ; i++ ){
+            if(colcount>=80){
+                sb.append("\n");
+                colcount=0;
             }
-            sb.append("\n");
+            sb.append(Format.real(y[i],8)+Format.real(dy[i],8));
+            //sb.append(" "+Format.real(y[i],7)+" "+Format.real(dy[i],7));
+            colcount+=16;
         }
 	try{
-            outStream.write(sb+"\n");
+            outStream.write(sb.toString());
 	} catch(Exception d){}
     }
 
@@ -489,7 +388,8 @@ public class gsas_filemaker
     private void printBankInfo(){
 	try{
 	// write the bank information header
-	outStream.write(Format.string("#             Ref Angle  Total length",80,false)+"\n");
+	outStream.write(Format.string("#             "+REF_ANGLE+"  "
+                                      +TOT_LENGTH,80,false)+"\n");
 	Data dd=null;
 	if(mon!=null && export_monitor){
 	    dd = mon.getData_entry(monNum);
@@ -529,7 +429,7 @@ public class gsas_filemaker
 	float ref_angle = (float)(cylindrical_coords[1]*180.0/(java.lang.Math.PI));
 	
 	try{
-	    outStream.write ("#BANK " +Format.integer(banknum,4)+"  "
+	    outStream.write ("#"+BANK+" " +Format.integer(banknum,4)+"  "
                              +Format.real(ref_angle,12,7)+"  "
 			     +Format.real(total_length,5,7)
                              +Format.string(" ",44)+"\n");
@@ -561,7 +461,7 @@ public class gsas_filemaker
         //System.out.println("IParm: "+S);
         if(S!=null){
             StringBuffer sb=new StringBuffer(80);
-            sb.append("Instrument parameter ").append(S);
+            sb.append(IPARM).append(S);
             try{
                 outStream.write( Format.string(sb,80,false)+"\n");
             }catch(Exception e){}
@@ -576,7 +476,7 @@ public class gsas_filemaker
 	try{
 	    float monCount=this.getMonitorCount();
 	    if(monCount>0.0f){
-                sb.append("MONITOR: ").append(monCount);
+                sb.append(MONITOR+": ").append(monCount);
 		outStream.write (Format.string(sb,80,false)+"\n");
 	    }
 	} catch(Exception d){}
@@ -590,7 +490,7 @@ public class gsas_filemaker
 	    return; 
 	}else{
 	    Data monData = mon.getData_entry(monNum);
-	    printBank(0,monData);
+	    printBank(0,monData,null);
 	}
 
 	return;
