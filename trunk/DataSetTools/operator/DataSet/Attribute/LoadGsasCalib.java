@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/08/06 21:29:06  pfpeterson
+ *  Fixed small bug with the specification of the parameter file.
+ *
  *  Revision 1.2  2002/08/05 19:14:51  pfpeterson
  *  Improved reading method and now updates the effective/bank
  *  positions in the Data Attributes.
@@ -131,7 +134,7 @@ public class LoadGsasCalib extends    DS_Attribute {
     
     public Object getResult(){  
         DataSet ds = getDataSet();
-        String iparm = (String)getParameter(0).getValue();
+        String iparm = getParameter(0).getValue().toString();
         iparm=FilenameUtil.fixSeparator(iparm);
         this.seq_numbering=
             ((Boolean)getParameter(1).getValue()).booleanValue();
