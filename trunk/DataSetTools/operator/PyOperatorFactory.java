@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/07/14 20:42:14  bouzekc
+ * Added a printStackTrace() when a pyException is caught in
+ * order to aid script debugging.
+ *
  * Revision 1.5  2003/07/08 23:41:10  bouzekc
  * Now uses pyScriptProcessor's initImports() method to
  * interpret some blanket include statements.
@@ -139,6 +143,7 @@ public class PyOperatorFactory extends Object implements OperatorFactory{
       this.interp.exec(script.toString());
       //this.interp.execfile(script.getFilename());
     }catch(PyException e){
+      e.printStackTrace(  );
       throw script.generateError(e,filename);
     }
 
