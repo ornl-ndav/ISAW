@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/05/30 13:35:38  dennis
+ * Changed the protocol name from "Memory" to "memory" so that the
+ * dynamic generation of help pages works under JDK 1.4.1. (Ruth)
+ *
  * Revision 1.4  2002/12/08 22:11:03  dennis
  * Now uses single copy of HTMLizer from SharedData. (Ruth)
  *
@@ -69,8 +73,8 @@ public class Handler extends URLStreamHandler
   *  creating html pages for Isaw Operators in memory
   */
   public URLConnection openConnection(URL u) throws IOException
-  { 
-     if( !(u.getProtocol().equals("Memory")))
+  {  
+     if( !(u.getProtocol().equals("memory")))
                throw new IOException("improper protocol");
         
      return new MURLConnection( u);
@@ -111,8 +115,7 @@ public class Handler extends URLStreamHandler
        else
           page = DataSetTools.util.SharedData.HTMLPageMaker. createHTML( op );
 
-       
-        setDoInput(true);
+       setDoInput( true );
      }
     
   /** 
@@ -120,7 +123,7 @@ public class Handler extends URLStreamHandler
    *  associated with the url
    */
   public  InputStream getInputStream()  throws IOException
-  {
+  {  
      return new ByteArrayInputStream( ((String)getContent()).getBytes());
   }
 
@@ -129,7 +132,7 @@ public class Handler extends URLStreamHandler
   *   Connects the system to the "resource"
   */
   public void connect() 
-  {
+  {  
      setDoInput( true );
   }
 
@@ -167,7 +170,7 @@ public class Handler extends URLStreamHandler
    *  with this URL NOTE: Not quite implemented yet
    */
   public Object getContent() throws IOException
-  {
+  {  
      return page;
   }
 
@@ -182,11 +185,11 @@ public class Handler extends URLStreamHandler
      JFrame jf= new JFrame( "Test");
      try{
         System.setProperty("java.protocol.handler.pkgs","test");//did not work
-        URLStreamHandler MyurlStreamHandler = (URLStreamHandler)(new Handler());
-        URL url=new URL("Memory","DSOperator",35,"x",MyurlStreamHandler);
-        JEditorPane jep = new JEditorPane( url);
-        jf.getContentPane().add(jep);
-        jf.setSize(600,600);
+	URLStreamHandler MyurlStreamHandler = (URLStreamHandler)(new Handler());
+	URL url=new URL("memory","DataSet",15,"x",MyurlStreamHandler);
+	JEditorPane jep = new JEditorPane( url);
+	jf.getContentPane().add(jep);
+	jf.setSize(600,600);
         jf.show();
         jf.validate();
        }

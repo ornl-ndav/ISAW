@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/05/30 13:36:48  dennis
+ * Changed the protocol name from "Memory" to "memory" so that the
+ * dynamic generation of help pages works under JDK 1.4.1. (Ruth)
+ *
  * Revision 1.4  2003/03/06 23:25:41  pfpeterson
  * Changed call from fixSeparator to appropriate method.
  *
@@ -328,7 +332,7 @@ public class IsawOpHelpSet extends HelpSet
         try{
            int opnum = ( new Integer( id.id.substring( 3 ).trim() ) ).intValue();
           
-           return new URL( "Memory" , host , opnum , "x" , urlh );
+           return new URL( "memory" , host , opnum , "x" , urlh );
             }
         catch( Exception ss )
           {throw new java.net.MalformedURLException( "improper id number" );
@@ -384,7 +388,7 @@ public class IsawOpHelpSet extends HelpSet
         else if( url.getProtocol().equals( "file")&& !operatorsOnly)
            S ="htm."+getFname( url.getFile());
 
-        else if( url.getProtocol().equals( "Memory" ))
+        else if( url.getProtocol().equals( "memory" ))
 
            if( url.getHost().equals("Generic"))
              S ="Gen"+url.getPort();
@@ -399,7 +403,7 @@ public class IsawOpHelpSet extends HelpSet
      */
      public boolean isID( java.net.URL url )
        {
-        if( !url.getProtocol().equals( "Memory" ) && !operatorsOnly) 
+        if( !url.getProtocol().equals( "memory" ) && !operatorsOnly) 
 
            if( getIdfrURL( url) == null)
               return false;
@@ -437,7 +441,7 @@ public class IsawOpHelpSet extends HelpSet
         if( url == null ) 
            return null;
          
-        if( !url.getProtocol().equals( "Memory" ))
+        if( !url.getProtocol().equals( "memory" ))
 
            if(!operatorsOnly) 
 
@@ -476,7 +480,7 @@ public class IsawOpHelpSet extends HelpSet
         if( url == null ) 
            return null;
 
-        if( !url.getProtocol().equals( "Memory" ))
+        if( !url.getProtocol().equals( "memory" ))
 
            if(!operatorsOnly )
 
