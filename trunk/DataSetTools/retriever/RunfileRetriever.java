@@ -12,6 +12,9 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.6  2000/07/17 20:54:19  dennis
+ *  Temporarily added EnergyFromMonitorDS() operator to monitor DataSets
+ *
  *  Revision 1.5  2000/07/13 14:23:43  dennis
  *  Changed TOTAL_COUNTS to TOTAL_COUNT to remove redundant attribute name
  *
@@ -288,6 +291,7 @@ public class RunfileRetriever extends    Retriever
                                        "Time-of-flight",
                                        "Counts",
                                        "Scattering Intensity" );
+     
      else if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
        ds_factory = new DiffractometerTofDataSetFactory( title );
      else if ( instrument_type == InstrumentType.TOF_SCD )
@@ -304,6 +308,10 @@ public class RunfileRetriever extends    Retriever
        ds_factory = new DataSetFactory( title );
 
      data_set   = ds_factory.getDataSet();
+
+     if ( monitor && instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
+       data_set.addOperator( new EnergyFromMonitorDS() );
+
      data_set.addLog_entry( "Loaded " + title );
      AddDataSetAttributes( data_source_name, data_set );
 
@@ -438,7 +446,6 @@ public class RunfileRetriever extends    Retriever
                                  run_file.NumOfPulses() );
     attr_list.setAttribute( int_attr );
     
-
     ds.setAttributeList( attr_list );
   }
 
