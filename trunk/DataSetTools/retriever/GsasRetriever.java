@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/27 17:48:52  pfpeterson
+ *  Now supports loading files with TIME_MAPs
+ *
  *  Revision 1.1  2002/08/06 22:01:51  pfpeterson
  *  Added to CVS.
  *
@@ -84,6 +87,7 @@ public class GsasRetriever extends Retriever{
     private String    runtitle;
     private String    iparmfile;
     private DataSet[] dataset;
+    private Vector    timemaps;
 
     /* ------------------------ Constructor -------------------------- */
     /**
@@ -117,7 +121,7 @@ public class GsasRetriever extends Retriever{
             if(line.startsWith(IPARM)){
                 this.iparmfile=line.substring(IPARM.length(),line.length());
                 line=reader.read_line();
-            }else if(line.startsWith(BANK)){
+            }else{
                 reader.unread();
             }
 
@@ -127,6 +131,9 @@ public class GsasRetriever extends Retriever{
                 line=reader.read_line();
                 line=line.trim();
                 //System.out.println(line);
+                if(line.startsWith(TIMEMAP)){
+                    this.readTimeMap(reader,line);
+                }
                 if(line.startsWith(BANK)){
                     //System.out.println(line);
                     reader.unread();
@@ -216,6 +223,106 @@ public class GsasRetriever extends Retriever{
     }
 
     /**
+     * This constructs an XScale from the time_map read in and adds it
+     * to the timemaps vector at the mapnum position.
+     */
+    private boolean readTimeMap(TextFileReader reader, String header){
+        // convert the header into a StringBuffer for parsing
+        StringBuffer sb=new StringBuffer(header);
+
+        // parse the header to get some useful parameters
+        StringUtil.getString(sb); // drop the TIME_MAP on the floor;
+        int mapnum=StringUtil.getInt(sb);
+        int nval=StringUtil.getInt(sb);
+        nval=(nval-1)/3;
+        int nrec=StringUtil.getInt(sb);
+        StringUtil.getString(sb); // drop the TIME_MAP on the floor;
+        float clockwidth=StringUtil.getFloat(sb);
+        clockwidth=clockwidth/1000f; // convert from ns to us
+
+        if(DEBUG){
+            System.out.println("TIMEMAP="+mapnum+" "+nval+" "+nrec+" "
+                               +clockwidth);
+        }
+
+        // create arrays to hold the values
+        float[] time  = new float[nval];
+        float[] dt    = new float[nval];
+        float   etime = 0f;
+        
+        // read in the time_map
+        String line=null;
+        float temp=0f;
+        float nchan=0f;
+        for( int i=0, j=0, k=0 ; i<nrec ; i++ ){
+            try{
+                line=reader.read_line();
+            }catch(IOException e){
+                return false;
+            }
+            sb=new StringBuffer(line);
+            sb.delete(0,1);  // get rid of the space the is added by read_line
+            for( int l=0 ; l<10 ; l++ ){
+                temp=StringUtil.getFloat(sb,8);
+                if(j==nval){ // the last number is the end time
+                    etime=temp;
+                    break;
+                }
+                if(k==0){ // the first in each triplet is the channel
+                    nchan=temp;
+                    k++;
+                }else if(k==1){  // the second is the time
+                    time[j]=temp;
+                    k++;
+                }else if(k==2){ // the third is the bin width
+                    dt[j]=temp;
+                    k=0;
+                    j++;
+                }
+            }
+        }
+
+        // generate the x-values from the time map
+        int x_size=(int)nchan+(int)((etime-time[nval-1])/dt[nval-1]);
+        float[] xval=new float[x_size];
+        xval[0]=time[0];
+        boolean first=true;
+        for( int i=1, j=0 ; i<x_size ; i++ ){
+            if(j+1==time.length){
+                if(xval[i-1]+dt[j]>=etime){
+                    xval[i]=etime;
+                }else{
+                    xval[i]=xval[i-1]+dt[j];
+                }
+            }else{
+                xval[i]=xval[i-1]+dt[j];
+                if(xval[i]+dt[j]>=time[j+1]){
+                    j++;
+                }
+            }
+        }
+
+        // multiply by the clock width
+        for( int i=0 ; i<xval.length ; i++ ){
+            xval[i]=xval[i]*clockwidth;
+        }
+        
+        // get the xscale
+        XScale xscale=XScale.getInstance(xval);
+        if(xscale!=null){
+            if(timemaps==null) timemaps=new Vector();
+            while(timemaps.size()<mapnum){
+                timemaps.add(null);
+            }
+            timemaps.add(mapnum,xscale);
+        }else{
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Method to read in a single bank.
      */
     private boolean readBank(TextFileReader reader, Vector data,
@@ -235,7 +342,12 @@ public class GsasRetriever extends Retriever{
             info=new XInfo(line);
         }
         //System.out.println("INFO("+bankNum+"):"+info.nchan()+" "+info.nrec()+" "+info);
-        XScale xscale=GsasUtil.getXScale(info);
+        XScale xscale=null;
+        if(info.bintype().equals(TIMEMAP)){
+            xscale=(XScale)timemaps.elementAt((int)info.coef1());
+        }else{
+            xscale=GsasUtil.getXScale(info);
+        }
         float[] y_val  = new float[info.nchan()];
         float[] dy_val = new float[info.nchan()];
         int chan_per_line=0;
@@ -426,7 +538,10 @@ public class GsasRetriever extends Retriever{
                                               new LoadFileString(parmfile)),0);
                 op.setParameter(new Parameter("Sequential Bank Numbering",
                                               new Boolean(false)),1);
-                op.getResult();
+                Object res=op.getResult();
+                if( res==null || res instanceof ErrorString ){
+                    dataset[i].removeAttribute(Attribute.GSAS_IPARM);
+                }
             }
         }
         // return sucess
