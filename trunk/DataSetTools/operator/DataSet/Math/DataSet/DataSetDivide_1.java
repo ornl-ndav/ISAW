@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/12/06 14:40:55  dennis
+ *  getDocumentation() now includes name of parameter. (Chris Bouzek)
+ *
  *  Revision 1.4  2002/11/27 23:18:49  pfpeterson
  *  standardized header
  *
@@ -169,15 +172,16 @@ public class DataSetDivide_1 extends    DataSetOp
     s.append("another DataSet.");
     s.append("@assumptions The units on the two DataSets are compatible.");
     s.append("@algorithm Uses the binary divide from DSOpsImplementation.");
-    s.append("@param The DataSet for the operation.");
-    s.append("@param The DataSet from which to get the data block to divide by.");
-    s.append("@param The index of the data block to divide by.");
-    s.append("@param A boolean value of true if you want a new DataSet to be ");
-    s.append("created, or false if you want the operation performed on the ");
-    s.append("original DataSet.");
+    s.append("@param ds The DataSet for the operation.");
+    s.append("@param ds_2 The DataSet from which to get the data block to ");
+    s.append("divide by.");
+    s.append("@param id The index of the data block to divide by.");
+    s.append("@param make_new_ds A boolean value of true if you want a new ");
+    s.append("DataSet to be created, or false if you want the operation ");
+    s.append("performed on the original DataSet.");
     s.append("@return The DataSet which is the result of dividing by the ");
     s.append("block of data from the second DataSet.");
-    s.append("@return An error if the units of the two DataSets do not match.");
+    s.append("@error An error if the units of the two DataSets do not match.");
     return s.toString();
   }
 
