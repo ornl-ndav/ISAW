@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2001/08/02 20:54:40  rmikk
+ * This now supports the RETURN statement.
+ *
  * Revision 1.24  2001/07/30 21:36:22  rmikk
  * Implemented  the Iobservable  delete event
  *
@@ -154,7 +157,9 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     public static final String ER_No_Result                  =" Result is null ";
     public static final String ER_IMPROPER_DATA_TYPE          ="Variable has incorrect data type";
     public static final String ER_ReservedWord                =" Reserved word";
-    public static final String  ER_ArrayIndex_Out_Of_bounds   ="Array index out of Bounds";
+    public static final String  ER_ArrayIndex_Out_Of_bounds   =
+                                                  "Array index out of Bounds";
+    public static final String WN_Return     ="Return Statement executed";
     private static final String OP_Arithm                      ="+-*/^";
     private static final String Ops                           =OP_Arithm+"&:";
     private static final String EndExpr                       =",)]<>=";
@@ -504,10 +509,20 @@ public void addDataSet(DataSet dss, String vname)
 	  {    Result = null; 
                return S.length(); 
           }
-           
+       else if( C.equals("RETURN"))
+          { j = skipspaces( S, 1, j);
+            if( j < S.length())
+              { 
+                 j = execute( S, j, S.length());               
+                if( perror >= 0)
+                   return j;
+              }
+           seterror( j , WN_Return );
+           return j;
+          }            
 	  
-             if( Debug )
-                System.out.println( "1C=" + C + ":" + (C=="(") ); 
+        if( Debug )
+           System.out.println( "1C=" + C + ":" + (C=="(") ); 
        
     
        if( i >= end )
@@ -3130,7 +3145,7 @@ private Operator getSHOp( Vector Args, String Command)
             return ;
             }
         if(i<V.size()-2)
-             d =((Vector)d).elementAt(indx);
+             d=((Vector)d).elementAt( indx);
         else if(((Vector)d).size()>indx)
            {((Vector)d).setElementAt(Result,indx); 
             }
@@ -3159,9 +3174,7 @@ private Operator getSHOp( Vector Args, String Command)
       if(Debug) System.out.println("in Assign,vname and nam="+vname+" "+nam);
       if(vname.indexOf('[')>=0)
           {if(found && !ArrayInfo.containsKey(nam))
-             {seterror(1000,ER_IMPROPER_DATA_TYPE+"F" );
-            
-              
+             {seterror(1000,ER_IMPROPER_DATA_TYPE+"F" );          
               return; 
              }
            AssignArray(vname, Result);
