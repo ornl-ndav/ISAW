@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2003/07/14 20:56:53  bouzekc
+ * Fixed incorrect code documentation.
+ *
  * Revision 1.32  2003/07/14 15:32:41  bouzekc
  * Modified validateParameterGUIs() to better handle various
  * cases of BrowsePGs.
@@ -742,7 +745,7 @@ public abstract class Form extends Operator implements PropertyChanger {
       } else if( ipg instanceof SaveFilePG ) {
         String fileName = ipg.getValue(  )
                              .toString(  );
-        File tempFile   = new File( fileName );
+        File tempFile = new File( fileName );
 
         if( ( fileName.indexOf( '.' ) > 0 ) && !( tempFile.isDirectory(  ) ) ) {
           //not a directory and it has a '.' in its name, so we'll 
@@ -788,7 +791,7 @@ public abstract class Form extends Operator implements PropertyChanger {
             ipg, "Parameter " + ipg.getName(  ) + " is invalid." );
         }
       }
-      //for the remainder of the parameters, we will set them false.
+      //for the remainder of the parameters, we will set them true.
       //HashPG can't really be checked - if the value is not found, the
       //value is set to a blank.  This is the default behavior of the JComboBox
       //that HashPG's HashEntry is built on.
