@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/05/06 18:18:25  pfpeterson
+ * Removed dependence on experiment file.
+ *
  * Revision 1.4  2003/04/30 19:52:04  pfpeterson
  * Moved lattice parameter calculation from orientation matrix into
  * DataSetTools.operator.Generic.TOF_SCD.Util.
@@ -83,11 +86,14 @@ public class LsqrsJ extends GenericTOF_SCD{
   public void setDefaultParameters(){
     parameters=new Vector();
 
-    addParameter(new DataDirPG("Path",null));
-    addParameter(new StringPG("Experiment Name",null));
-    addParameter(new IntArrayPG("Restrict Histgrams (blank for all)",null));
+    LoadFilePG lfpg=new LoadFilePG("Peaks file",null);
+    lfpg.setFilter(new PeaksFilter());
+    addParameter(lfpg);
+    addParameter(new IntArrayPG("Restrict Run Numbers (blank for all)",null));
     addParameter(new IntArrayPG("Restrict Sequence Numbers (blank for all)",null));
-    addParameter(new SaveFilePG("Matrix file to write to",null));
+    SaveFilePG sfpg=new SaveFilePG("Matrix file to write to",null);
+    sfpg.setFilter(new MatrixFilter());
+    addParameter(sfpg);
   }
 
   /**
@@ -121,38 +127,14 @@ public class LsqrsJ extends GenericTOF_SCD{
    */
   public Object getResult(){
     // get the parameters
-    String dir=getParameter(0).getValue().toString();
-    String expname=getParameter(1).getValue().toString();
-    int[] hist_nums=((IntArrayPG)getParameter(2)).getArrayValue();
-    int[] seq_nums=((IntArrayPG)getParameter(3)).getArrayValue();
-    String matfile=getParameter(4).getValue().toString();
-    int[] run_nums=null;
-
-    // local variables
-    String expfile=null;
-    String peaksfile=null;
+    String peaksfile=getParameter(0).getValue().toString();
+    int[] run_nums=((IntArrayPG)getParameter(1)).getArrayValue();
+    int[] seq_nums=((IntArrayPG)getParameter(2)).getArrayValue();
+    String matfile=getParameter(3).getValue().toString();
 
     // confirm the parameters
     {
-      if(dir==null || dir.length()<=0)
-        return new ErrorString("Empty path");
-      dir=FilenameUtil.setForwardSlash(dir+"/");
-
-      File file=new File(dir);
-      if(! file.isDirectory())
-        return new ErrorString("Invalid path: "+dir);
-
-      if(hist_nums!=null){
-        if(expname==null || expname.length()<=0)
-          return new ErrorString("Empty experiment name");
-        expfile=dir+expname+".x";
-        file=new File(expfile);
-        if(! file.canRead())
-          return new ErrorString(expfile+" is not user readable");
-      }
-
-      peaksfile=dir+expname+".peaks";
-      file=new File(peaksfile);
+      File file=new File(peaksfile);
       if(! file.canRead())
         return new ErrorString(peaksfile+" is not user readable");
 
@@ -167,18 +149,11 @@ public class LsqrsJ extends GenericTOF_SCD{
         SharedData.addmsg("WARN("+getCommand()
                           +"): not writing to matrix file");
 
-      if(hist_nums!=null && hist_nums.length>0)
-        run_nums=histToRun(hist_nums,expfile);
-
       file=null;
     }
 
     if(DEBUG){
-      System.out.println("DIR="+dir);
-      System.out.println("EXP="+expname);
-      System.out.println("HST="+arrayToString(hist_nums));
       System.out.println("SEQ="+arrayToString(seq_nums));
-      System.out.println("EFL="+expfile);
       System.out.println("PFL="+peaksfile);
       System.out.println("RUN="+arrayToString(run_nums));
     }
@@ -224,6 +199,10 @@ public class LsqrsJ extends GenericTOF_SCD{
           peaks.remove(i);
       }
     }
+
+    // can't refine nothing
+    if(peaks.size()==0)
+      return new ErrorString("No peaks to refine");
 
     // create the hkl-matrix and q-matrix (q=1/d)
     double[][] q=new double[peaks.size()][3];
@@ -331,6 +310,7 @@ public class LsqrsJ extends GenericTOF_SCD{
    * Uses the experiment file to convert histogram numbers into run
    * numbers
    */
+/* REMOVE
   private static int[] histToRun(int[] hist_nums,String expfile){
     TextFileReader tfr=null;
     int[] runs=new int[hist_nums.length];
@@ -379,6 +359,7 @@ public class LsqrsJ extends GenericTOF_SCD{
 
     return runs;
   }
+*/
 
   /**
    * This search tries to find the value in the provided
