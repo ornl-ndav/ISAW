@@ -1,0 +1,104 @@
+<html><body>
+<A href="CommandPane.html"> CONTENTS </a><P>
+<h1><Center> Interfaces of CommandPane to other programs</Center></h1>
+<ol Type ="A">
+<li> Isaw<ul>
+   This project was originally designed to integrate with Isaw.  Isaw has currently incorporated the CommandPane.<P>
+   To send a data set to the Isaw program use the <A href ="ComDes.html#Send">Send </a> command.<P>
+   
+   </ul><P>
+<li> Batch file
+  <ul> These are currently supported. See <a href ="Examples1.html#Batch">Example</a>.<BR>
+       The java program Command.ScriptOperator  can be used to run a script outside of ISAW and
+        the command pane.  Include the script filename on the command line as the first argument.<P>
+
+
+
+
+  </ul><P>
+<li> Macro-simple
+  <ul> A simple macro or a start on developing a macro or script with parameters:<ol type ="1">
+      <li> Create the sequence of instructions in the CommandPane's Editor Pane or use any text editor.<P>
+      <li> Make sure to use a lot of variables and assign them values at the top of the code<P>
+      <li> Test the code and save it.<P>
+      <li> Open the file in the CommandPane.<P>
+      <li> Change the conents of the variables at the top<P>
+      <li> Run this program<P>
+      </ol> 
+  </ul>
+  Macros stored in a file can also be run, standalone, using the Command.ScriptOperator class. Invoke
+  it as follows:<ul> java Command.ScriptOperator filename </ul><P>
+<li> Macro with parameters. See <A href="Examples1.html#Parameters">Example</a>
+  <ul> 
+    A Macro or script with parameters can run in the CommandPane,in Isaw(File->Load Script), or supplying
+    the filename as an argument to the Command.ScriptOperator class.  Variable names that represent 
+    parameters are preceded by a "$", then
+    followed by two "arguments" separated by spaces.  The first argument is the
+   data type of the variable (immediately followed optionally by an initial value in
+   parenthesis) and the third argument is a prompt that will 
+   appear if a dialog box pops up requesting values for these parameters.<P>
+<A  name="DataTypes">
+   <OL> The data types supported so far are
+     <li> Integer or int, Float, DataSet, String , and Array (not case sensitive)
+     <li> DataDirectoryString - Uses IsawProps.dat(property Data_Directory) to fill in a name
+     <li> InstrumentNameString - Uses IsawProps.dat(property Default_Instrument) to fill in instrument name
+     <li>DSSettableFieldString - Gives choices for  settable fields 
+     <li> DSFieldString -Gives choice for fields that can be viewed
+     <li> Choice( initValue) where initValue is a Script Array.  Creates a drop down choice box with the elements
+           of the array.  The result is String 
+    
+   </ol>
+
+  </ul><P>
+<li> With stand alone program
+   <ul>  <ol type = "1"> Stand alone programs can use several forms of CommandPane<P>
+          <li> With the visual Elements<P>
+          <li> Without the visual Elements<P>
+          <li> Just the one line translator :execOneLine<P>
+          <li> With a data set or data sets passed in at Construction time<P>
+          <li> With a data set passed in using the addDataSet method<P>
+          <li> The ScriptOperator class can execute a script.
+         </ol>
+
+  </ul><P>
+
+<li> With javac
+  <ul> Most low-level routines have been extracted and repackaged so that they can be used by javac.<P>
+        javac can do the looping, if-then- else , etc. <ul>
+           This would be faster and more extensible</ul><P>
+       The routines are currently in the execOneLine class.
+
+  </ul>
+<li> Scripts are now "operators" and may be called by other scripts if installed.
+ <ul> To install scripts, they must be placed in specific directories( relative to IsawProps.dat) and
+ must have the extension ".iss".  <P>
+     <li>Any script in the Scripts subdirectory of the ISAW subdirectory of the user's home directory are
+     automatically installed.
+     <li> Any script in the Scripts subdirectory of the directory specified by the GROUP_HOME property
+         (set in the IsawProps.dat file) are automatically installed.
+     <li> Finally, Any script in the Scripts subdirectory of the directory specified by the ISAW_HOME property
+         (set in the IsawProps.dat file) are automatically installed.
+  </ul>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>
