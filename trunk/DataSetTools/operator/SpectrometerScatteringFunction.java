@@ -2,6 +2,9 @@
  * @(#)SpectrometerScatteringFunction.java   0.1  2000/07/26   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.3  2000/08/03 16:18:09  dennis
+ *  Now works for both functions and histograms
+ *
  *  Revision 1.2  2000/07/28 13:56:45  dennis
  *  Added missing factor of 4PI in calculation
  *
@@ -24,7 +27,7 @@ import  DataSetTools.math.*;
   *  based on the result of applying the DoubleDifferentialCrossection 
   *  operator.  
   *
-  *  @see DSDODE
+  *  @see DoubleDifferentialCrossection 
   *  @see DataSetOperator
   *  @see Operator
   */
@@ -190,15 +193,19 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
 
       for ( int i = 0; i < y_vals.length; i++ )
       {
-        tof = (x_vals[i]+x_vals[i+1])/2;
+        if ( x_vals.length > y_vals.length )  // histogram
+          tof = (x_vals[i]+x_vals[i+1])/2;
+        else                                  // function
+          tof = x_vals[i];
 
 // interpolate in table or....         
         fpcorr = arrayUtil.interpolate(spherical_coords[0]/tof, 
                                        speed_arr, 
                                        fpcorr_arr );
-// recalculate each time
-//      corr = tof_data_calc.getEfficiencyFactor( spherical_coords[0]/tof, 1 );
-//      fpcorr = corr[1];
+
+//  recalculate each time
+//    result = tof_data_calc.getEfficiencyFactor( spherical_coords[0]/tof, 1 );
+//    fpcorr = result[1];
 
         velocity_final = (spherical_coords[0]+fpcorr) / tof;
         wvf = WVCON * velocity_final;
@@ -206,6 +213,7 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
         y_vals[i] *= four_PI*wvi/wvf/sccs;
       }
 
+//      new_data.CLSmooth( 500 );
       if ( make_new_ds )
         new_ds.addData_entry( new_data );
       else
