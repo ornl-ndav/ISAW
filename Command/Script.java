@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/06/13 14:59:02  pfpeterson
+ * Changed some fields from private to protected.
+ *
  * Revision 1.5  2003/04/02 14:52:51  pfpeterson
  * Altered the fix_script() method to also remove carriage return, '
 '.
@@ -57,13 +60,13 @@ import javax.swing.text.PlainDocument;
 import javax.swing.text.BadLocationException;
 
 public class Script extends Object{
-  private static final String UNKNOWN="UNKNOWN";
+  protected static final String UNKNOWN="UNKNOWN";
 
-  private String filename; // the name of the file which contains the script
-  private String script;   // contains the actual document
-  private int[] linenum;   // Zero index of linenumber to buffer index. This
-                           // has one more element than necessary to mark the
-                           // end of the string.
+  protected String filename; // the name of the file which contains the script
+  private   String script;   // contains the actual document
+  private   int[] linenum;   // Zero index of linenumber to buffer index. This
+                             // has one more element than necessary to mark the
+                             // end of the string.
 
   // ============================== CONSTRUCTORS
   private Script(){
