@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/12/08 23:05:36  rmikk
+ * Eliminate call to addOperator
+ *
  * Revision 1.3  2003/12/08 20:54:31  rmikk
  * Changed saving the NeXus NXentry.title field to the Attribute.RUN_TITLE  instead
  *  of to Attribute.TITLE.
@@ -119,8 +122,8 @@ public class ProcessNxEntry  implements IProcessNxEntry{
         
         DS.setTitle( NxDataNode.getNodeName());
         Integer instType = ((Integer) DS.getAttributeValue( Attribute.INST_TYPE));
-        if( instType != null)
-        DataSetFactory.addOperators( DS,  instType.intValue());
+        //if( instType != null)
+        //DataSetFactory.addOperators( DS,  instType.intValue());
         NxNode NxInstrumentNode = null;
         NxNode NxBeamNode = null;
         for( int child =0; (child < NxEntryNode.getNChildNodes()); child++){
