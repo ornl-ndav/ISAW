@@ -38,6 +38,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2003/12/15 18:27:20  rmikk
+ *  Removed execution of code that caused a null pointer exception
+ *  Redraw now redraws with the last Contour Style
+ *  When Data is changed, everything is now recalculated and redrawn
+ *
  *  Revision 1.38  2003/12/15 00:42:08  rmikk
  *  Eliminated some commented out code
  *  Now redraws when the selected groups of the data set are changed
@@ -440,11 +445,12 @@ public class ContourView extends DataSetViewer
 
   }
   boolean addControls( ContourData cd, JPanel cdControlHolder){
+     
      JComponent[] controls = cd.getControls();
      if( controls == null) return false;
      if( controls.length < 1) return false;
      for( int i = 0; i <  controls.length; i++){
-       cdControlHolder.add( controls[i]);
+       if( controls[i] != null)cdControlHolder.add( controls[i]);
      }
      return true;
 
@@ -476,9 +482,12 @@ public class ContourView extends DataSetViewer
         sliderTime_index =0;
       if( times.length < 1) return;
       
-      SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[sliderTime_index] ) );
+     /* SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[sliderTime_index] ) );
 
       ( ( SimpleGrid )newData ).setZArray( newData1.getZArray() );
+     */
+      setData( getDataSet(), state.get_int(ViewerState.CONTOUR_STYLE));
+         
       rpl_.draw();
 
      }
@@ -768,7 +777,7 @@ public class ContourView extends DataSetViewer
             return;
          if( state == null )
             state = new ViewerState();
-         state.set_String( ViewerState.COLOR_SCALE, evt.getActionCommand() );
+         state.set_String( ViewerState.CONTOUR_COLOR_SCALE, evt.getActionCommand() );
          acChange= XsclChange = XConvChange = false;
         
          setData(getDataSet(),state.get_int("Contour.Style"));
@@ -991,7 +1000,7 @@ public class ContourView extends DataSetViewer
 
       if( state != null )
       {
-         C = state.get_String( ViewerState.COLOR_SCALE );
+         C = state.get_String( ViewerState.CONTOUR_COLOR_SCALE );
 
          if( C != null )
             ColorMap = C;
@@ -1311,26 +1320,26 @@ public class ContourView extends DataSetViewer
        
       }
   public void redraw( String reason )
-   { 
+   {  int raster_Style = state.get_int( ViewerState.CONTOUR_STYLE);
       if( reason == IObserver.DESTROY )
       {
-         setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
+         setData( getDataSet(), raster_Style );
          rpl_.draw();
 
       }
       else if( reason == IObserver.DATA_REORDERED )
       {
-         setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
+         setData( getDataSet(), raster_Style );
          rpl_.draw();
       }
       else if( reason == IObserver.DATA_DELETED )
       {
-         setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
+         setData( getDataSet(), raster_Style );
          rpl_.draw();
       }
       else if( reason == IObserver.SELECTION_CHANGED )
       {
-         setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
+         setData( getDataSet(), raster_Style );
          rpl_.draw();
       }
       else if( reason == IObserver.POINTED_AT_CHANGED )
@@ -1399,13 +1408,13 @@ public class ContourView extends DataSetViewer
         }
       else if( reason == IObserver.GROUPS_CHANGED )
       {
-         setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
+         setData( getDataSet(), raster_Style );
          rpl_.draw();
 
       }
       else if( reason == IObserver.DATA_CHANGED )
       {
-         setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
+         setData( getDataSet(), raster_Style );
          rpl_.draw();
       }
       else if( reason == IObserver.ATTRIBUTE_CHANGED )
@@ -1416,7 +1425,7 @@ public class ContourView extends DataSetViewer
       {}
       else if( reason == DataSetViewer.NEW_DATA_SET )
       {
-         setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
+         setData( getDataSet(), raster_Style );
          rpl_.draw();
       }
       //else  don't redraw
