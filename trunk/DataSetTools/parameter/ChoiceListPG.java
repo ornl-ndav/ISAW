@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/02/24 20:59:14  pfpeterson
+ *  Now extends ChooserPG rather than ArrayPG.
+ *
  *  Revision 1.5  2002/11/27 23:22:42  pfpeterson
  *  standardized header
  *
@@ -62,10 +65,10 @@ import java.util.Vector;
  * This class represents a parameter where there is a list of Strings
  * to choose from.
  */
-public class ChoiceListPG extends ArrayPG{
+public class ChoiceListPG extends ChooserPG{
     // static variables
     private   static String TYPE     = "ChoiceList";
-    protected static int    DEF_COLS = ArrayPG.DEF_COLS;
+    protected static int    DEF_COLS = ChooserPG.DEF_COLS;
 
     // ********** Constructors **********
     public ChoiceListPG(String name, Object value){
