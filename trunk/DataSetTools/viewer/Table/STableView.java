@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.14  2003/09/05 21:44:04  rmikk
+ * Eliminated Debug Prints
+ *
  * Revision 1.13  2003/08/12 14:32:39  rmikk
  * Added the JMenuItem,SaveDataSetActionListener, to save
  *   the current data set
@@ -673,11 +676,9 @@ public class STableView  extends DataSetViewer
   class SelectActionListener implements ActionListener
     {
      public void actionPerformed( ActionEvent evt)
-      {System.out.println("In select Action performed");
+      {
        int[] cols = jtb.getSelectedColumns();
        int[] rows = jtb.getSelectedRows();
-       System.out.println( "Rows="+ StringUtil.toString( rows));
-       System.out.println( "cols="+ StringUtil.toString( cols));
 
        if( (cols == null) || ( rows == null))
          return;
@@ -685,14 +686,12 @@ public class STableView  extends DataSetViewer
          return;
        float minTime = -1, maxTime = -1;
        ds.clearSelections();
-       System.out.println("Groups=");
        for( int i=0; i< cols.length; i++)
         for( int j=0; j < rows.length; j++)
          { int Group = table_model.getGroup( rows[j], cols[i] ) ;
            if( Group >= 0 )
             if( Group < ds.getNum_entries())
              ds.getData_entry( Group ).setSelected( true);
-           System.out.print( Group+"  ");
            float time = table_model.getTime( rows[j], cols[i]);
            if( (i == 0) &&( j== 0))
              minTime = maxTime = time;
@@ -702,7 +701,6 @@ public class STableView  extends DataSetViewer
              maxTime = time;
          }
        ds.setSelectedInterval(new ClosedInterval(minTime , maxTime ));
-       System.out.println("");
 
      }
     }//class SelectActionListener
