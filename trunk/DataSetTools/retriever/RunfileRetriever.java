@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2001/07/10 20:24:12  dennis
+ *  Now adds "Omega" attribute to each spectrum.
+ *
  *  Revision 1.27  2001/07/10 19:36:24  dennis
  *  Now imports DataSetTools/instruments/DetectorInfo
  *
@@ -767,6 +770,11 @@ public class RunfileRetriever extends    Retriever
 
     pos_attr = new DetPosAttribute( Attribute.DETECTOR_POS, position );
     attr_list.setAttribute( pos_attr );
+
+    // Omega
+    float omega = tof_calc.Omega(position.getScatteringAngle()*180/3.14159264f);
+    FloatAttribute omega_attr = new FloatAttribute( Attribute.OMEGA, omega );
+    attr_list.setAttribute( omega_attr );
 
     // Raw Detector Angle ...........
     float_attr =new FloatAttribute(Attribute.RAW_ANGLE,
