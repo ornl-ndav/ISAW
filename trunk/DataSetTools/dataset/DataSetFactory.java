@@ -137,25 +137,34 @@ public class DataSetFactory implements Serializable
       new_ds.addLog_entry( log_info );
                                                     // add the list of generic
                                                     // data set operations
-    new_ds.addOperator( new DataSetScalarAdd() );
-    new_ds.addOperator( new DataSetScalarSubtract() );
-    new_ds.addOperator( new DataSetScalarMultiply() );
-    new_ds.addOperator( new DataSetScalarDivide() );
+    
 
-    new_ds.addOperator( new DataSetAdd() );
-    new_ds.addOperator( new DataSetSubtract() );
-    new_ds.addOperator( new DataSetMultiply() );
-    new_ds.addOperator( new DataSetDivide()   );
+    
 
     new_ds.addOperator( new Integrate() );
     new_ds.addOperator( new CalculateMoment() );
     new_ds.addOperator( new DataSetCrossSection() );
     new_ds.addOperator( new SumSelectedData() );
    
+   new_ds.addOperator( new SpectrometerEvaluator() );
     new_ds.addOperator( new SelectData() );
     new_ds.addOperator( new DataSetSort() );
     new_ds.addOperator( new DataSetMultiSort() );
     new_ds.addOperator( new DataSetMerge() );
+    
+    new_ds.addOperator( new DataSetAdd() );
+    new_ds.addOperator( new DataSetSubtract() );
+    new_ds.addOperator( new DataSetMultiply() );
+    new_ds.addOperator( new DataSetDivide()   );
+    
+    new_ds.addOperator( new DataSetScalarAdd() );
+    new_ds.addOperator( new DataSetScalarSubtract() );
+    new_ds.addOperator( new DataSetScalarMultiply() );
+    new_ds.addOperator( new DataSetScalarDivide() );
+    
+    
+
+   
 
     return new_ds;
   }
