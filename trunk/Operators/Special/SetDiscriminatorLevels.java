@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/06/02 15:44:16  dennis
+ * Fixed error in assigning values to parameters in the constructor
+ * that accepts parameters.
+ *
  * Revision 1.2  2004/05/10 20:42:29  dennis
  * Test program now just instantiates a ViewManager to diplay
  * calculated DataSet, rather than keeping a reference to it.
@@ -120,9 +124,9 @@ public class SetDiscriminatorLevels extends GenericSpecial
     addParameter( new Parameter( "lower (fraction of peak position)", 
                                   new Float(lower_frac) ) );
     addParameter( new Parameter( "upper (fraction of peak amplitude)", 
-                                  new Float(max_chn) ) );
+                                  new Float(upper_frac) ) );
     addParameter( new Parameter( "maximum channel", 
-                                  new Float(width) ) );
+                                  new Float(max_chn) ) );
     addParameter( new Parameter( "width of interval for fit", 
                                   new Float(width) ) );
   }
