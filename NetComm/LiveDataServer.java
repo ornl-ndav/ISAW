@@ -34,6 +34,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2001/09/21 19:10:25  dennis
+ *  Now the LiveDataServer adds a Log message giving the time to
+ *  the DataSet that is sent.
+ *
  *  Revision 1.22  2001/09/20 17:38:10  dennis
  *  Fixed @see javadoc comment
  *
@@ -470,6 +474,8 @@ public class LiveDataServer extends    DataSetServer
 
           if ( ds != null )                           // remove observers
           {                                           // before sending
+            Date date = new Date( System.currentTimeMillis() );
+            ds.addLog_entry( "Live Data as of: " + date );
             ds.deleteIObservers(); 
             tcp_io.Send( ds  );
           }
