@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/11/09 15:59:01  dennis
+ * Fixed minor error in documentation.
+ *
  * Revision 1.2  2001/08/14 20:26:48  dennis
  * Changed title and command
  *
@@ -43,70 +46,80 @@
  */
 
 package DataSetTools.operator;
+
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.gsastools.*;
 import java.util.*;
 
 /** This is an operator shell around the Save gsas File menu option in ISAW.
-*  The Title in Menu's that refers to this is <B>Save As gsas</b>.<BR>
-*  The Command in Scripts used to refer to this operation is <B>gsasOut</b>.
-*/
+ *  The Title in Menu's that refers to this is <B>Save As gsas</b>.<BR>
+ *  The Command in Scripts used to refer to this operation is <B>gsasOut</b>.
+ */
 public class WriteGSAS extends GenericSave
 {
 
    public WriteGSAS()
-     {super( "Save as GSAS " );
-      setDefaultParameters();
-     }
+    {
+     super( "Save as GSAS " );
+     setDefaultParameters();
+    }
 
-    /** 
+   /** 
     *@param DS  The data set that is to be saved in gsas format
     *@param filename the name of the file where the data will be saved
     */
    public WriteGSAS( DataSet DS, String filename )
-     { super( "Save as GSAS File" );
-      parameters = new Vector();
-      addParameter( new Parameter("DS=" , DS ));
-      addParameter( new Parameter("filename=", filename ));
-
-     }
+    {
+     super( "Save as GSAS File" );
+     parameters = new Vector();
+     addParameter( new Parameter("DS=" , DS ));
+     addParameter( new Parameter("filename=", filename ));
+    }
 
    public void setDefaultParameters()
-    {parameters = new Vector();
+    {
+     parameters = new Vector();
      addParameter( new Parameter("Data Set=" , new DataSet("","") ));
      addParameter( new Parameter("Output file name=", "filename"));
     }  
    
-   /** Returns <B>gsasOut</b>, the command used by scripts to refer to this
-  * operation
-  */ 
+  /** 
+   * Returns <B>SaveGSAS</b>, the command used by scripts to refer to this
+   * operation
+   */ 
    public String getCommand()
-    {return "SaveGSAS";
+    {
+      return "SaveGSAS";
     }
 
-   /** executes the gsas command, saving the data to the file in gsas form.
-   *@return  "Success" only
+  /** 
+   * executes the gsas command, saving the data to the file in gsas form.
+   *
+   * @return  "Success" only
    */
    public Object getResult()
-    { DataSet DS = (DataSet)( getParameter(0).getValue());
-      String filename = (String) (getParameter(1).getValue());
-       gsas_filemaker gsas_output = new gsas_filemaker( DS, filename );
+    { 
+      DataSet DS       = (DataSet)( getParameter(0).getValue());
+      String  filename = (String) (getParameter(1).getValue());
+
+      gsas_filemaker gsas_output = new gsas_filemaker( DS, filename );
       return "Success";
     }
-/** Creates a clone of this operator.
-*/
-public Object clone()
-  {WriteGSAS W = new WriteGSAS();
-   W.CopyParametersFrom( this );
-    return W;
-  }
-public static void main( String args[])
-  {System.out.println("yyy");
-  }
+
+  /** 
+   * Creates a clone of this operator.
+   */
+   public Object clone()
+   {
+     WriteGSAS W = new WriteGSAS();
+     W.CopyParametersFrom( this );
+     return W;
+   }
+
+   public static void main( String args[])
+   {
+     System.out.println("WriteGSAS test... operator compiled and can run");
+   }
   
 }
-
-
-
-
