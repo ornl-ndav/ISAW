@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/03/03 20:13:05  hammonds
+ *  Documentation cleanup.
+ *
  *  Revision 1.2  2003/02/26 23:03:02  hammonds
  *  Fixed problem caused by leading white space.
  *
@@ -63,8 +66,8 @@ public class LoadScriptArray2 extends GenericBatch implements Serializable
 	
   /* -------------------------- Constructor -------------------------- */
   /**
-   *  Construct a SetupReader to read from the specified file.  The
-   *  constructor will throw an exception if the file can't be opened.  The
+   *  Construct a LoadScriptArray2 Operator to read from the specified file.  
+   *  Theconstructor will throw an exception if the file can't be opened.  The
    *  other methods of this class should not be used if the file can't be
    *  opened.
    *
@@ -118,10 +121,6 @@ public class LoadScriptArray2 extends GenericBatch implements Serializable
 
   public Object getResult() {
     String  file_name = getParameter(0).getValue().toString();
-    /*    int     num_head = ((Integer)getParameter(1).getValue()).intValue();
-    int     num_data = ((Integer)getParameter(2).getValue()).intValue();
-    int     max_col = ((Integer)getParameter(3).getValue()).intValue();
-    */
     TextFileReader f = null;
     String line;
     Vector data_out = new Vector();
@@ -139,7 +138,6 @@ public class LoadScriptArray2 extends GenericBatch implements Serializable
 	}
 	else {
 
-	  //	  System.out.println( in_line.toString() );
 	  data_out = new Vector();
 	  while ( in_line.toString().length() > 0 ){
 	    try { // Is it an integer
