@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/11/06 20:03:19  rmikk
+ *  Catches and handles the exception thrown by
+ *    row-col time Array  maker
+ *
  *  Revision 1.15  2003/10/27 15:13:49  rmikk
  *  Now uses the new Table views- with format specifiers and cursor keys
  *
@@ -177,11 +181,15 @@ public class TableViewMenuComponents
  public DataSetViewer getDataSetViewer( String view_type, DataSet DS, ViewerState state)
    { 
      if(view_type.indexOf("x,Row vs Col y")==0)
-       return new DataSetViewerMaker1(DS, state,
+       try{
+           return new DataSetViewerMaker1(DS, state,
                    new RowColTimeVirtualArray( DS, 
                                 DS.getData_entry(0).getX_scale().getStart_x(),
                                false, false, state),
                    new LargeJTableViewComponent(state, new dummyIVirtualArray2D()));  
+       }catch( Exception ss){
+          return null;
+       }
        //return (DataSetViewer)(new TimeSliceView( DS, state));
     if( DS.getSelectedIndices().length<1)
        {//DataSetTools.util.SharedData.addmsg("No data sets selected");
