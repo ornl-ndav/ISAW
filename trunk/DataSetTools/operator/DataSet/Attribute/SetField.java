@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/22 02:39:55  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.4  2002/11/27 23:16:41  pfpeterson
  * standardized header
  *
@@ -231,9 +234,6 @@ public class SetField extends    DS_Attribute
       else if( S.equals(DSFieldString.SELECTED_GROUPS) )
       { 
         int list[] = IntList.ToArray( O.toString() );
-       
-        int id, 
-            index;
 
         ds.clearSelections();
         if ( list.length > 0 ) 

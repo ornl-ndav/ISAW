@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/01/22 02:39:54  bouzekc
+ *  Removed/commented out unused imports/variables.
+ *
  *  Revision 1.8  2003/12/15 02:20:38  bouzekc
  *  Removed unused imports.
  *
@@ -177,7 +180,6 @@ public class LoadGsasCalib extends    DS_Attribute {
 
         try{
             fr = new TextFileReader(iparm);
-            String temp;
             int bankNum  = 0;
             float dif_c  = 0f;
             float dif_a  = 0f;
@@ -244,7 +246,7 @@ public class LoadGsasCalib extends    DS_Attribute {
      * not be attached to. 
      */
     private int readBankNum(TextFileReader fr, String tag){
-        String temp=null;
+        //String temp=null;
         try{
             fr.read_String(3);
             int banknum=fr.read_int(3);

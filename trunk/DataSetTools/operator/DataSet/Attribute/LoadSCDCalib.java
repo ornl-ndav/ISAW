@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2004/01/22 02:39:54  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.13  2004/01/07 14:40:11  dennis
  * Now also uses the calibration file to adjust the data grid positions
  * and to set the effective detector positions based on the calibrated
@@ -232,7 +235,6 @@ public class LoadSCDCalib extends DS_Attribute{
 
         // print some information to StatusPane and create return string
         Calib kalib=null;
-        Integer DetNum=null;
         String detList="Loaded calibration for det#";
         boolean inList;
         for( int i=0 ; i<this.calibrations.size() ; i++ ){
@@ -267,8 +269,6 @@ public class LoadSCDCalib extends DS_Attribute{
      * Associate the calibration to the data as appropriate.
      */
     private void assoc( Data d, StringAttribute filenameAttr ){
-        FloatAttribute fa;
-        Float1DAttribute faa;
         if(d==null) return;
             
         Object detNumObj=d.getAttributeValue(Attribute.DETECTOR_IDS);
@@ -428,7 +428,6 @@ public class LoadSCDCalib extends DS_Attribute{
      * Read in the calibration parameters.
      */
     private ErrorString readCalib( String filename, int linenum ){
-        StringBuffer calibline=null;
         TextFileReader tfr=null;
 
         try{

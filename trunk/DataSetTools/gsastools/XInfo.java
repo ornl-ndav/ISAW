@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/01/22 02:32:15  bouzekc
+ *  Removed/commented out unused imports/variables.
+ *
  *  Revision 1.4  2003/12/15 02:33:25  bouzekc
  *  Removed unused imports.
  *
@@ -65,7 +68,6 @@ public class XInfo{
     private static String TIMEMAP = GsasUtil.TIMEMAP;
 
     private static String STD     = GsasUtil.STD;
-    private static String ESD     = GsasUtil.ESD;
 
     private static int TIME = 1;
     private static int Q    = 2;
@@ -180,9 +182,7 @@ public class XInfo{
 
         StringBuffer sb=new StringBuffer(bankhead.trim());
         //System.out.println("SB0:"+sb);
-        Integer tempI=null;
         String  tempS=null;
-        int end=0;
         // pull off the bank number if necessary
         if(sb.toString().startsWith(GsasUtil.BANK)){
             sb.delete(0,4);

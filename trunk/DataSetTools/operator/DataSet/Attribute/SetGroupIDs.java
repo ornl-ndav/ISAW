@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/01/22 02:39:55  bouzekc
+ *  Removed/commented out unused imports/variables.
+ *
  *  Revision 1.4  2002/11/27 23:16:41  pfpeterson
  *  standardized header
  *
@@ -51,7 +54,6 @@ package DataSetTools.operator.DataSet.Attribute;
 
 import  java.io.*;
 import  java.util.Vector;
-import  java.util.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;

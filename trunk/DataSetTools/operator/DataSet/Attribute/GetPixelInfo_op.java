@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/22 02:39:54  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.5  2003/12/30 13:09:18  rmikk
  * Fixed an error in the  non-default constructor
  *
@@ -66,15 +69,11 @@
  */
 package DataSetTools.operator.DataSet.Attribute;
 import DataSetTools.operator.DataSet.*;
-import DataSetTools.operator.DataSet.Information.XAxis.*;
-import DataSetTools.operator.*;
 import DataSetTools.operator.Parameter;
-import DataSetTools.instruments.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import java.util.*;
-import DataSetTools.materials.*;
-import java.text.DecimalFormat;
+
 /** 
  *  
  */

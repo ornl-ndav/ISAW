@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2004/01/22 02:32:15  bouzekc
+ *  Removed/commented out unused imports/variables.
+ *
  *  Revision 1.26  2003/05/28 20:41:51  pfpeterson
  *  Changed System.getProperty to SharedData.getProperty
  *
@@ -94,13 +97,9 @@ package DataSetTools.gsastools;
 
 import DataSetTools.dataset.*;
 import DataSetTools.util.*; 
-import java.awt.*;
 import java.io.*;
-import javax.swing.*;
-import java.text.DateFormat;
 //import java.text.*;
 import DataSetTools.math.*;
-import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.retriever.RunfileRetriever;
 /**
@@ -594,7 +593,7 @@ public class gsas_filemaker
 	//System.out.println(infile);
 	//System.out.println(outfile);
 	RunfileRetriever rr=new RunfileRetriever(infile);
-	DataSet mds = rr.getDataSet(0);
+	//DataSet mds = rr.getDataSet(0);
 	DataSet rds = rr.getDataSet(1);
 	
 	//gsas_filemaker gf = new gsas_filemaker(mds,rds,outfile);

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/01/22 02:35:25  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.2  2002/11/27 23:16:27  pfpeterson
  * standardized header
  *
@@ -47,7 +50,6 @@ package DataSetTools.operator.DataSet;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.viewer.*;
 import  DataSetTools.operator.Parameter;
@@ -126,7 +128,7 @@ public class PlotterOp extends    DataSetOperator
      op.getResult();
     //Call Kevin's Viewer
     
-   ViewManager Vm= new ViewManager( ds, IViewManager.SELECTED_GRAPHS);
+   new ViewManager( ds, IViewManager.SELECTED_GRAPHS);
    return "Success";
   }  
 
