@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/07/30 14:49:46  rmikk
+ * Removed unused imports
+ *
  * Revision 1.1  2004/06/16 21:02:32  rmikk
  * Initial Checkin in this directory. 
  * Moved from the Command.JavaCC directory
@@ -42,7 +45,7 @@
 package Command.JavaCC.Fortran;
 import java.util.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
-import gov.anl.ipns.Util.Numeric.*;
+//import gov.anl.ipns.Util.Numeric.*;
 import DataSetTools.operator.*;
 import java.text.*;
 

@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2004/07/30 14:52:39  rmikk
+ * Removed unused imports
+ *
  * Revision 1.1  2004/04/19 14:07:54  rmikk
  * Initial Checkin
  * Wrapper around the advanced Table View
@@ -42,7 +45,7 @@ package DataSetTools.operator.Generic.Save;
 import DataSetTools.operator.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import DataSetTools.viewer.Table.*;
-import javax.swing.table.*;
+//import javax.swing.table.*;
 import javax.swing.*;
 import java.util.*;
 import  gov.anl.ipns.Util.Numeric.*;
