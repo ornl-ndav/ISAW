@@ -1,5 +1,5 @@
 /*
- * File:  BooleanPG.java 
+ * File:  BooleanPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2004/03/12 20:03:07  bouzekc
+ *  Code reformat.
+ *
  *  Revision 1.18  2003/12/15 01:45:30  bouzekc
  *  Removed unused imports.
  *
@@ -91,52 +94,140 @@
  *  Added to CVS.
  *
  */
-
 package DataSetTools.parameter;
 
 import DataSetTools.components.ParametersGUI.*;
+
 import java.util.Vector;
+
 import javax.swing.*;
 
 
 /**
  * This is class is to deal with boolean parameters.
  */
-public class BooleanPG extends ParameterGUI 
-                                    implements ParamUsesString{
-  private static final String TYPE="Boolean";
-  // ********** Constructors **********
-  public BooleanPG(String name, Object value){
+public class BooleanPG extends ParameterGUI implements ParamUsesString {
+  //~ Static fields/initializers ***********************************************
+
+  private static final String TYPE = "Boolean";
+
+  //~ Constructors *************************************************************
+
+  public BooleanPG( String name, Object value ) {
     super( name, value );
-    this.setType(TYPE);
-  }
-    
-  public BooleanPG(String name, Object value, boolean valid){
-    super( name, value, valid );
-    this.setType(TYPE);
-  }
-    
-  public BooleanPG(String name, boolean value){
-    this(name, new Boolean(value));
+    this.setType( TYPE );
   }
 
-  public BooleanPG(String name, boolean value, boolean valid){
-    this(name, new Boolean(value),valid);
+  /**
+   * Creates a new BooleanPG object.
+   *
+   * @param name The name.
+   * @param value The initial value.
+   * @param valid Whether this PG should be considered initially valid.
+   */
+  public BooleanPG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+    this.setType( TYPE );
+  }
+
+  /**
+   * Creates a new BooleanPG object.
+   *
+   * @param name The name.
+   * @param value The initial value.
+   */
+  public BooleanPG( String name, boolean value ) {
+    this( name, new Boolean( value ) );
+  }
+
+  /**
+   * Creates a new BooleanPG object.
+   *
+   * @param name The name.
+   * @param value The initial value.
+   * @param valid Whether this PG should be considered initially valid.
+   */
+  public BooleanPG( String name, boolean value, boolean valid ) {
+    this( name, new Boolean( value ), valid );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * Sets the value by parsing the String using {@link
+   * java.lang.Boolean#Boolean(String) Boolean}
+   */
+  public void setStringValue( String val ) {
+    Boolean BooVal = new Boolean( val.trim(  ) );
+
+    this.setValue( BooVal );
+  }
+
+  /**
+   * Returns "TRUE" or "FALSE".
+   */
+  public String getStringValue(  ) {
+    return this.getValue(  ).toString(  ).toUpperCase(  );
+  }
+
+  /**
+   * Overrides the default version of setValue to properly deal with booleans.
+   * For integers, zero is false, everything else is true.
+   */
+  public void setValue( Object val ) {
+    Boolean booval = null;
+
+    if( val == null ) {
+      booval = Boolean.FALSE;
+    } else if( val instanceof Boolean ) {
+      booval = ( Boolean )val;
+    } else if( val instanceof String ) {
+      this.setStringValue( ( String )val );
+
+      return;
+    } else if( val instanceof Integer ) {
+      int intval = ( ( Integer )val ).intValue(  );
+
+      if( intval == 0 ) {
+        booval = Boolean.FALSE;
+      } else {
+        booval = Boolean.TRUE;
+      }
+    } else {
+      throw new ClassCastException( 
+        "Could not coerce " + val.getClass(  ).getName(  ) + " into a Boolean" );
+    }
+
+    //update the visual checkbox
+    if( this.getInitialized(  ) ) {
+      boolean newval = booval.booleanValue(  );
+      boolean oldval = ( ( JCheckBox )( getEntryWidget(  ).getComponent( 0 ) ) ).isSelected(  );
+
+      if( newval != oldval ) {
+        ( ( JCheckBox )( getEntryWidget(  ).getComponent( 0 ) ) ).doClick(  );
+      }
+    }
+
+    //always update the internal value
+    super.setValue( booval );
   }
 
   /**
    * Override the default method.
    */
-  public Object getValue(){
-    Object val=super.getValue();
-    
+  public Object getValue(  ) {
+    Object val = super.getValue(  );
+
     //update if a GUI exists
-    if(this.getInitialized()){
-      JCheckBox wijit = ( JCheckBox ) getEntryWidget().getComponent( 0 );
+    if( this.getInitialized(  ) ) {
+      JCheckBox wijit = ( JCheckBox )getEntryWidget(  ).getComponent( 0 );
+
       val = new Boolean( wijit.isSelected(  ) );
     }
 
-    if( !(val instanceof Boolean) ) val = null;
+    if( !( val instanceof Boolean ) ) {
+      val = null;
+    }
 
     return val;
   }
@@ -144,122 +235,65 @@ public class BooleanPG extends ParameterGUI
   /**
    * Convenience method to get the proper type value right away.
    */
-  public boolean getbooleanValue(){
-    return ((Boolean)this.getValue()).booleanValue();
+  public boolean getbooleanValue(  ) {
+    return ( ( Boolean )this.getValue(  ) ).booleanValue(  );
   }
 
-  /**
-   * Overrides the default version of setValue to properly deal with
-   * booleans.
-   *
-   * For integers, zero is false, everything else is true.
-   */
-  public void setValue(Object val){
-    Boolean booval=null;
-    
-    if(val==null){
-      booval=Boolean.FALSE;
-    }else if(val instanceof Boolean){
-      booval=(Boolean)val;
-    }else if(val instanceof String){
-      this.setStringValue((String)val);
-      return;
-    }else if(val instanceof Integer){
-      int intval=((Integer)val).intValue();
-      if(intval==0)
-        booval=Boolean.FALSE;
-      else
-        booval=Boolean.TRUE;
-    }else{
-      throw new ClassCastException("Could not coerce "
-                                +val.getClass().getName()+" into a Boolean");
-    }
-
-    //update the visual checkbox
-    if(this.getInitialized()){
-        boolean newval=booval.booleanValue();
-        boolean oldval = 
-          ( ( JCheckBox )( getEntryWidget().getComponent( 0 ) ) ).isSelected(  );
-        if(newval!=oldval)
-          ( ( JCheckBox )( getEntryWidget().getComponent( 0 ) ) ).doClick(  ); 
-    }
-    //always update the internal value
-    super.setValue(booval);
-  }
-
-  /**
-   * Convenience method to set the proper type value right away.
-   */
-  public void setbooleanValue(boolean value){
-    this.setValue(new Boolean(value));
-  }
-    
-  // ********** ParamUsesString requirements **********
-  /**
-   * Returns "TRUE" or "FALSE".
-   */
-  public String getStringValue(){
-    return this.getValue().toString().toUpperCase();
-  }
-
-  /**
-   * Sets the value by parsing the String using {@link
-   * java.lang.Boolean#Boolean(String) Boolean}
-   */
-  public void setStringValue(String val){
-    Boolean BooVal=new Boolean(val.trim());
-    this.setValue(BooVal);
-  }
-
-  // ********** IParameterGUI requirements **********
   /**
    * Allows for initialization of the GUI after instantiation.
    */
-  public void initGUI(Vector init_values){
-    if(this.getInitialized()) return; // don't initialize more than once
+  public void initGUI( Vector init_values ) {
+    if( this.getInitialized(  ) ) {
+      return;  // don't initialize more than once
+    }
 
-    if(init_values!=null){
-      if(init_values.size()==1){
+    if( init_values != null ) {
+      if( init_values.size(  ) == 1 ) {
         // the init_values is what to set as the value of the parameter
-        this.setValue(init_values.elementAt(0));
-      }else{
+        this.setValue( init_values.elementAt( 0 ) );
+      } else {
         // something is not right, should throw an exception
       }
     }
-    setEntryWidget(new EntryWidget( 
-                new JCheckBox("", ((Boolean)this.getValue()).booleanValue()))); 
-    
-    super.initGUI();
+
+    setEntryWidget( 
+      new EntryWidget( 
+        new JCheckBox( "", ( ( Boolean )this.getValue(  ) ).booleanValue(  ) ) ) );
+    super.initGUI(  );
   }
 
   /*
    * Testbed.
    */
-  public static void main(String args[]){
+  public static void main( String[] args ) {
     BooleanPG fpg;
 
-    fpg=new BooleanPG("a",new Boolean(false));
-    System.out.println(fpg);
-    fpg.initGUI(null);
-    fpg.showGUIPanel();
+    fpg = new BooleanPG( "a", new Boolean( false ) );
+    System.out.println( fpg );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new BooleanPG( "b", new Boolean( true ) );
+    System.out.println( fpg );
+    fpg.setEnabled( false );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new BooleanPG( "c", new Boolean( true ), false );
+    System.out.println( fpg );
+    fpg.setEnabled( false );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new BooleanPG( "d", new Boolean( true ), true );
+    System.out.println( fpg );
+    fpg.setDrawValid( true );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+  }
 
-    fpg=new BooleanPG("b",new Boolean(true));
-    System.out.println(fpg);
-    fpg.setEnabled(false);
-    fpg.initGUI(null);
-    fpg.showGUIPanel();
-
-    fpg=new BooleanPG("c",new Boolean(true),false);
-    System.out.println(fpg);
-    fpg.setEnabled(false);
-    fpg.initGUI(null);
-    fpg.showGUIPanel();
-
-    fpg=new BooleanPG("d",new Boolean(true),true);
-    System.out.println(fpg);
-    fpg.setDrawValid(true);
-    fpg.initGUI(null);
-    fpg.showGUIPanel();
+  /**
+   * Convenience method to set the proper type value right away.
+   */
+  public void setbooleanValue( boolean value ) {
+    this.setValue( new Boolean( value ) );
   }
 
   /**
@@ -268,7 +302,8 @@ public class BooleanPG extends ParameterGUI
    */
   public void validateSelf(  ) {
     Object val = getValue(  );
-    if( val != null && val instanceof Boolean) {
+
+    if( ( val != null ) && val instanceof Boolean ) {
       setValid( true );
     } else {
       setValid( false );
