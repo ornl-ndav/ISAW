@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/07/23 13:19:32  dennis
+ * Added capabilities to:
+ *   - Load an orientation matrix
+ *   - Draw markers at integer hkl positions
+ *   - Restrict data to a selected plane in hkl
+ *   - Mark region of reciprocal space covered by a detector
+ *
  * Revision 1.2  2004/07/16 15:04:01  dennis
  * Added calibrated axes.
  * Readout of QxQyQz positions of peaks now supported.
@@ -186,6 +193,7 @@ import gov.anl.ipns.ViewTools.Panels.Image.*;
 import gov.anl.ipns.ViewTools.Panels.GL_ThreeD.*;
 import gov.anl.ipns.ViewTools.Panels.GL_ThreeD.Shapes.*;
 import gov.anl.ipns.ViewTools.Panels.GL_ThreeD.ViewControls.*;
+import gov.anl.ipns.ViewTools.Panels.Contour.*;
 import gov.anl.ipns.ViewTools.UI.*;
 
 import java.util.*;
@@ -204,6 +212,9 @@ public class GL_RecipPlaneView
   public static final String D_SPACING_ATTRIBUTE = "d-Spacing";
   public static final String Q_SPACING_ATTRIBUTE = "Q-Spacing";
   public static final String PEAK_OBJECTS        = "Peaks_";
+  public static final String CONTOUR_OBJECTS     = "Contours_";
+  public static final String BOUNDARY_OBJECTS    = "Boundaries_";
+  public static final String MARK_OBJECTS        = "Marks_";
   public static final String ORIGIN = " origin ";
   public static final String VEC_1  = " (+)";
   public static final String VEC_2  = " (*)";
@@ -233,6 +244,7 @@ public class GL_RecipPlaneView
   String path       = null;
   String run_nums   = null;
   String calib_file = null;
+  String orient_file = null;
 
   int    runs[];
   String threshold = "";
@@ -261,6 +273,9 @@ public class GL_RecipPlaneView
   String          file_names[];
   Vector          data_sets;
   Hashtable       calibrations = null;
+  Tran3D          orientation_matrix = null;
+  Tran3D          orientation_matrix_inverse = null;
+
   Vector3D        all_vectors[];
   double          QR_Rmat[][];           // "R" factor of QR factorization
   double          QR_Umat[][];           // Matrix containing unit vectors U
@@ -269,6 +284,12 @@ public class GL_RecipPlaneView
   DataSet         projection_ds;
   DataSet         all_fft_ds;
   DataSet         filtered_fft_ds;
+
+  float gray[] = { 0.4f, 0.4f, 0.4f };
+  float red[]   = { 0.8f, 0.3f, 0.3f };
+  float green[] = { 0.3f, 0.8f, 0.3f };
+  float blue[]  = { 0.3f, 0.3f, 0.8f };
+
 
   /* ---------------------------- Constructor ----------------------------- */
 
@@ -362,7 +383,7 @@ public class GL_RecipPlaneView
     scene_f.getContentPane().add( split_pane );
 
 //    vec_Q_space.setBackground( new Color( 20, 150, 90 ) );
-    draw_axes(1, vec_Q_space );
+
     scene_f.setSize(970,750);
 
     ViewControlListener c_listener = new ViewControlListener( vec_Q_space );
@@ -520,7 +541,40 @@ public class GL_RecipPlaneView
                                                // positions     
       Grid_util.setEffectivePositions( ds, ids[i] );
     }
+  }
 
+
+/* ------------------------- loadOrientationMatrix -------------------- */
+  public void loadOrientationMatrix( String file_name )
+  {
+    float or_mat[][] = new float[3][3];
+    try
+    {
+      TextFileReader tfr = new TextFileReader( path + file_name );
+      or_mat = new float[3][3];
+
+      for ( int col = 0; col < 3; col++ )
+        for ( int row = 0; row < 3; row++ )
+          or_mat[row][col] = tfr.read_float();
+    }
+    catch ( Exception e )
+    {
+      System.out.println("Exception reading orientation matrix is " + e );
+      e.printStackTrace();
+      orientation_matrix = null;
+      orientation_matrix_inverse = null;
+      return;
+    }
+
+    for ( int i = 0; i < 3; i++ )
+      for ( int j = 0; j < 3; j++ )
+        or_mat[i][j] *= ((float)Math.PI * 2);
+
+    orientation_matrix = new Tran3D( or_mat );
+
+    orientation_matrix_inverse = new Tran3D( orientation_matrix );
+    if ( !orientation_matrix_inverse.invert() )
+      System.out.println("ERROR...INVALID ORIENTATION MATRIX, NO INVERSE");
   }
 
 
@@ -528,9 +582,12 @@ public class GL_RecipPlaneView
   public void loadFiles()
   {
     System.out.println("Specified calibration file is : " + calib_file );
-
     if ( calib_file != null && calib_file.length() > 0 )
       loadCalibrations( calib_file );
+
+    System.out.println("Specified orientation file is : " + orient_file );
+    if ( orient_file != null && orient_file.length() > 0 )
+      loadOrientationMatrix( orient_file );
 
     runs = IntList.ToArray( run_nums );
     file_names = new String[ runs.length ];
@@ -573,6 +630,11 @@ public class GL_RecipPlaneView
     System.out.println("Making transformers.....");
     makeVecQTransformers();
     System.out.println("DONE");
+
+    if ( orientation_matrix == null )
+      draw_Q_axes( 15, vec_Q_space );
+    else
+      draw_HKL_axes( 15, vec_Q_space );
 
     if ( extract_peaks )
       ExtractPeaks();
@@ -623,6 +685,214 @@ public class GL_RecipPlaneView
  *
  */
 
+/* --------------------------- getHKL_extent --------------------------- */
+
+  private Vector3D[] getHKL_extent( int index )
+  {
+    if ( orientation_matrix == null )
+    {
+      System.out.println("NO ORIENTATION MATRIX LOADED");
+      return null;
+    }
+
+    VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(index);
+    IDataGrid grid = transformer.getDataGrid();
+
+    Data d = grid.getData_entry(1,1);
+    float initial_path = 9.378f;
+    Attribute attr = d.getAttribute(Attribute.INITIAL_PATH);
+    if ( attr != null )
+      initial_path = (float)attr.getNumericValue();
+
+    float t0 = 0;
+    attr = d.getAttribute(Attribute.T0_SHIFT);
+    if ( attr != null )
+      t0 = (float)attr.getNumericValue();
+
+    d = grid.getData_entry(1,1);
+    float xs[] = d.getX_scale().getXs();
+    float t_min = xs[0];
+    float t_max = xs[ xs.length - 1 ];
+
+    Tran3D combinedR = transformer.getGoniometerRotationInverse();
+
+    int max_row = grid.num_rows();
+    int max_col = grid.num_cols();
+    Vector3D corner_1_1   = grid.position( 1, 1 );
+    Vector3D corner_mr_1  = grid.position( max_row, 1 );
+    Vector3D corner_1_mc  = grid.position( 1, max_col );
+    Vector3D corner_mr_mc = grid.position( max_row, max_col );
+   
+    Vector3D corners[] = new Vector3D[8];
+    corners[0] = getQ( combinedR, corner_1_1,   t_min + t0, initial_path ); 
+    corners[1] = getQ( combinedR, corner_mr_1,  t_min + t0, initial_path ); 
+    corners[2] = getQ( combinedR, corner_1_mc,  t_min + t0, initial_path ); 
+    corners[3] = getQ( combinedR, corner_mr_mc, t_min + t0, initial_path ); 
+    corners[4] = getQ( combinedR, corner_1_1,   t_max + t0, initial_path ); 
+    corners[5] = getQ( combinedR, corner_mr_1,  t_max + t0, initial_path ); 
+    corners[6] = getQ( combinedR, corner_1_mc,  t_max + t0, initial_path ); 
+    corners[7] = getQ( combinedR, corner_mr_mc, t_max + t0, initial_path ); 
+
+    System.out.println( "ORIENTATION MATRIX\n" +  orientation_matrix );
+    System.out.println("CORNER POINTS IN Q .....");
+    for ( int i = 0; i < corners.length; i++ )
+      System.out.println("Corner Q =  " + corners[i] );
+
+    Tran3D inverse = new Tran3D( orientation_matrix );
+    if ( !inverse.invert() )
+    {
+      System.out.println("COULDN'T INVERT THE ORIENTATION MATRIX");
+      return null;
+    }
+    System.out.println( "INVERSE ORIENTATION MATRIX\n" +  inverse );
+
+    for ( int i = 0; i < corners.length; i++ )         // map Q back to hkl
+      inverse.apply_to( corners[i], corners[i] );
+
+    System.out.println("CORNER POINTS IN HKL .....");
+    for ( int i = 0; i < corners.length; i++ )
+      System.out.println("Corner HKL =  " + corners[i] );
+
+    float min[] = corners[0].getCopy();
+    float max[] = corners[0].getCopy();
+    for ( int i = 1; i < 8; i++ )
+    {
+      float pt[] = corners[i].get();
+      for ( int k = 0; k < 3; k++ )
+      {
+        if ( pt[k] < min[k] )
+        {
+          min[k] = pt[k];
+          System.out.println("ASSIGNING " +i+ ", " +k+ ", min[k] " + min[k]);
+        }
+        else if ( pt[k] > max[k] )
+        {
+          max[k] = pt[k];
+          System.out.println("ASSIGNING " +i+ ", " +k+ ", max[k] " + max[k]);
+        }
+      }
+      System.out.println("PT  = " + pt[0]  + ", " + pt[1]  + ", " +  pt[2] );
+      System.out.println("min = " + min[0] + ", " + min[1] + ", " + min[2] );
+      System.out.println("max = " + max[0] + ", " + max[1] + ", " + max[2] );
+    }
+  
+    Vector3D result[] = new Vector3D[2];
+    result[0] = new Vector3D( min );
+    result[1] = new Vector3D( max );
+
+    System.out.println("MIN HKL = " + result[0] ); 
+    System.out.println("MAX HKL = " + result[1] ); 
+
+    return result;
+  }
+
+
+/* -------------------------- Generate hkl markers ---------------------- */
+
+  private GL_Shape[] getHKL_Marks( int index )
+  {
+    if ( orientation_matrix == null )
+    {
+      System.out.println("NO ORIENTATION MATRIX LOADED");
+      return null;
+    }
+
+    Vector3D  hkl_min_max[] = getHKL_extent( index );
+
+    if ( hkl_min_max == null || hkl_min_max.length == 0 )
+    {
+      System.out.println("INVALID HKL EXTENT....");
+      return null;
+    }
+
+    Vector3D  start,
+              end;
+    Vector3D  h_step = new Vector3D(0.05f,0,0);
+    Vector3D  k_step = new Vector3D(0,0.05f,0);
+    Vector3D  l_step = new Vector3D(0,0,0.05f);
+    orientation_matrix.apply_to( h_step, h_step );
+    orientation_matrix.apply_to( k_step, k_step );
+    orientation_matrix.apply_to( l_step, l_step );
+
+    Vector h_line_list = new Vector(10000);
+    Vector k_line_list = new Vector(10000);
+    Vector l_line_list = new Vector(10000);
+    VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(index);
+    float min[] = hkl_min_max[0].get();
+    float max[] = hkl_min_max[1].get();
+    float rctof[];
+    Vector3D point = new Vector3D(); 
+    for ( int h = (int)min[0]; h <= (int)max[0]; h++ )
+      for ( int k = (int)min[1]; k <= (int)max[1]; k++ )
+        for ( int l = (int)min[2]; l <= (int)max[2]; l++ )
+        {
+           point.set( h, k, l ); 
+           orientation_matrix.apply_to( point, point );
+           rctof = transformer.QtoRowColTOF( point );    // check if in data
+           if ( rctof != null )
+           {
+             start = new Vector3D( point );
+             start.subtract( h_step );
+             end = new Vector3D( point );
+             end.add( h_step );
+             h_line_list.add( start );
+             h_line_list.add( end );
+
+             start = new Vector3D( point );
+             start.subtract( k_step );
+             end = new Vector3D( point );
+             end.add( k_step );
+             k_line_list.add( start );
+             k_line_list.add( end );
+
+             start = new Vector3D( point );
+             start.subtract( l_step );
+             end = new Vector3D( point );
+             end.add( l_step );
+             l_line_list.add( start );
+             l_line_list.add( end );
+          } 
+        }
+
+     if ( h_line_list.size() > 0 )
+     {
+       int n_points = h_line_list.size()/2;
+
+       Vector3D start_vec[] = new Vector3D[ n_points ];
+       Vector3D end_vec[] = new Vector3D[ n_points ];
+       for ( int i = 0; i < n_points; i++ )
+       {
+         start_vec[i] = (Vector3D)h_line_list.elementAt( 2*i );
+         end_vec[i] = (Vector3D)h_line_list.elementAt( 2*i + 1 );
+       }
+       Lines h_lines = new Lines( start_vec, end_vec );
+       h_lines.setColor( red );
+
+       for ( int i = 0; i < n_points; i++ )
+       {
+         start_vec[i] = (Vector3D)k_line_list.elementAt( 2*i );
+         end_vec[i] = (Vector3D)k_line_list.elementAt( 2*i + 1 );
+       }
+       Lines k_lines = new Lines( start_vec, end_vec );
+       k_lines.setColor( green );
+
+       for ( int i = 0; i < n_points; i++ )
+       {
+         start_vec[i] = (Vector3D)l_line_list.elementAt( 2*i );
+         end_vec[i] = (Vector3D)l_line_list.elementAt( 2*i + 1 );
+       }
+       Lines l_lines = new Lines( start_vec, end_vec );
+       l_lines.setColor( blue );
+
+       GL_Shape[] result = new GL_Shape[3]; 
+       result[0] = h_lines;
+       result[1] = k_lines;
+       result[2] = l_lines;
+       return result;
+     }
+     else 
+       return null;
+  } 
 
 /* ------------------------ ExtractPeaks --------------------------- */
 
@@ -635,6 +905,15 @@ public class GL_RecipPlaneView
        GL_Shape non_zero_objs[] = getPeaks(i,thresh_scale);
        vec_Q_space.setObjects( PEAK_OBJECTS+i, non_zero_objs);
        System.out.println("Found peaks : " + non_zero_objs.length );
+
+//     non_zero_objs = getBoundaries( i );
+//     vec_Q_space.setObjects( BOUNDARY_OBJECTS+i, non_zero_objs);
+
+//     non_zero_objs = getContours( i, thresh_scale / 2 );
+//     vec_Q_space.setObjects( CONTOUR_OBJECTS+i, non_zero_objs);
+
+//     GL_Shape hkl_marks[] = getHKL_Marks( i );
+//     vec_Q_space.setObjects( MARK_OBJECTS+i, hkl_marks );
      }
      System.out.println("DONE");
   }
@@ -701,7 +980,6 @@ public class GL_RecipPlaneView
       IDataGrid grid = transformer.getDataGrid();
       d = grid.getData_entry(1,1);
 
-
       SampleOrientation orientation = null;
       attr = d.getAttribute(Attribute.SAMPLE_ORIENTATION);
       if ( attr != null )
@@ -748,52 +1026,57 @@ public class GL_RecipPlaneView
               pts[0].set( cart_coords[0], cart_coords[1], cart_coords[2] );
               combinedR.apply_to( pts[0], pts[0] );
 
-              int color_index = (int)(ys[j]*30/thresh_scale);
-              if ( color_index > 127 )
-                color_index = 127;
-              c = rgb_colors[ color_index ];
-//              objs[obj_index] = new Ball( pts[0], 0.03f, c );
-              float coords[] = pts[0].get();
-              objs[ obj_index ] =
-                              new Cube(coords[0], coords[1], coords[2], 0.03f);
-              objs[ obj_index ].setColor( c );
-              objs[obj_index].setPickID( global_obj_index );
-              obj_index++;
-              global_obj_index++;
-              PeakData pd = new PeakData();
-              pd.run_num = runs[run_num_index];
-              pd.orientation = new IPNS_SCD_SampleOrientation_d(
+              if ( keep_peak(pts[0]) )
+              {
+                int color_index = (int)(ys[j]*30/thresh_scale);
+                if ( color_index > 127 )
+                  color_index = 127;
+                c = rgb_colors[ color_index ];
+//                objs[obj_index] = new Ball( pts[0], 0.03f, c );
+                float coords[] = pts[0].get();
+                objs[ obj_index ] =
+                              new Cube(coords[0], coords[1], coords[2], 0.04f);
+                objs[ obj_index ].setColor( c );
+                objs[obj_index].setPickID( global_obj_index );
+                obj_index++;
+                global_obj_index++;
+                PeakData pd = new PeakData();
+                pd.run_num = runs[run_num_index];
+                pd.orientation = new IPNS_SCD_SampleOrientation_d(
                                                       orientation.getPhi(), 
                                                       orientation.getChi(), 
                                                       orientation.getOmega());
-              pd.l1    = initial_path; 
-              coords = grid.position().get();
-              Vector3D_d center = new Vector3D_d( coords[0], 
-                                                  coords[1], 
-                                                  coords[2] );
-              coords = grid.x_vec().get();
-              Vector3D_d base   = new Vector3D_d( coords[0], 
-                                                  coords[1], 
-                                                  coords[2] );
-              coords = grid.y_vec().get();
-              Vector3D_d up     = new Vector3D_d( coords[0], 
-                                                  coords[1], 
-                                                  coords[2] );
-              pd.grid  = new UniformGrid_d( 
+                pd.l1    = initial_path; 
+  
+                coords = grid.position().get();
+                Vector3D_d center = new Vector3D_d( coords[0], 
+                                                    coords[1], 
+                                                    coords[2] );
+                coords = grid.x_vec().get();
+                Vector3D_d base   = new Vector3D_d( coords[0], 
+                                                    coords[1], 
+                                                    coords[2] );
+                coords = grid.y_vec().get();
+                Vector3D_d up     = new Vector3D_d( coords[0], 
+                                                    coords[1], 
+                                                    coords[2] );
+                pd.grid  = new UniformGrid_d( 
                                    grid.ID(), grid.units(),
                                    center, base, up,
                                    grid.width(), grid.height(), grid.depth(),
                                    grid.num_rows(), grid.num_cols() );
-              pd.tof = t;
-              pd.row = row;
-              pd.col = col;
-              pd.qx  = pts[0].get()[0];
-              pd.qy  = pts[0].get()[1];
-              pd.qz  = pts[0].get()[2];
-              pd.counts = ys[j];
-              pd.run_num = 
-                (int)(d.getAttribute(Attribute.RUN_NUM).getNumericValue());
-              all_peaks.add( pd );
+
+                pd.tof = t;
+                pd.row = row;
+                pd.col = col;
+                pd.qx  = pts[0].get()[0];
+                pd.qy  = pts[0].get()[1];
+                pd.qz  = pts[0].get()[2];
+                pd.counts = ys[j];
+                pd.run_num = 
+                  (int)(d.getAttribute(Attribute.RUN_NUM).getNumericValue());
+                all_peaks.add( pd );
+              }
             }
           }
         }
@@ -802,6 +1085,380 @@ public class GL_RecipPlaneView
         non_zero_objs[i] = objs[i];
 
       return non_zero_objs;
+  }
+
+  /* -------------------------- getQ ---------------------------------- */
+  /*
+   *  Calculate the Q vector for the specified position and TOF
+   */
+  private Vector3D getQ( Tran3D   combinedR,
+                         Vector3D pos_vec,
+                         float    tof,
+                         float    initial_path )
+  {
+     DetectorPosition pos = new DetectorPosition( pos_vec );
+     Position3D q_pos = tof_calc.DiffractometerVecQ( pos, initial_path, tof );
+     Vector3D q_vec  = new Vector3D( q_pos );
+     combinedR.apply_to( q_vec, q_vec );
+     return q_vec;
+  }
+
+  /* ---------------------------- getContours ---------------------------- */
+  /*
+   *  Get list of contour lines om the specified grid, based on the specified
+   *  threshold scale factor.
+   *
+   *  @param index   The index of the DataGrid in the list. 
+   *  @param level   The intensity level for which the contour lines are drawn.
+   *
+   *  @return an array of ThreeD_Objects representing the iso-surfaces the
+   *          the specified level. 
+   */
+  private GL_Shape[] getContours( int index, float level )
+  {
+      Data  d;
+      Vector3D pts[] = new Vector3D[1];
+      pts[0]         = new Vector3D();
+      Attribute attr;
+                                            // Assume all runs have the same
+                                            // number of detectors in them
+                                            // and each detector has a grid.
+      VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(index);
+      IDataGrid grid = transformer.getDataGrid();
+      d = grid.getData_entry(1,1);
+
+      float initial_path = 9.378f;
+      attr = d.getAttribute(Attribute.INITIAL_PATH);
+      if ( attr != null )
+        initial_path = (float)attr.getNumericValue();
+
+      float t0 = 0;
+      attr = d.getAttribute(Attribute.T0_SHIFT);
+      if ( attr != null )
+        t0 = (float)attr.getNumericValue();
+
+      Tran3D combinedR = transformer.getGoniometerRotationInverse();
+
+      GL_Shape result[] = new GL_Shape[3];
+      result[0] = getTimeContours( grid, combinedR, initial_path, t0, level );
+      result[1] = getRowContours( grid, combinedR, initial_path, t0, level );
+      result[2] = getColContours( grid, combinedR, initial_path, t0, level );
+
+     return result;
+  }
+
+  /* ------------------------ getTimeContours ------------------------- */
+  /*
+   *  Get Lines object containing contour lines with constant TOF value
+   */
+  public GL_Shape getTimeContours( IDataGrid grid,
+                                   Tran3D    combinedR,
+                                   float     initial_path,
+                                   float     t0,
+                                   float     level     )
+  {
+    Data d = grid.getData_entry(1,1);
+
+    float times[] = d.getX_scale().getXs();
+    int   n_tbins  = d.getY_values().length;
+    float t;
+
+    float arr[][] = new float[ grid.num_rows() ][ grid.num_cols() ];
+    Vector contours;
+    Vector start = new Vector();
+    Vector end   = new Vector();
+    for ( int j = 0; j < n_tbins-1; j++ )
+    {
+      for ( int row = 1; row <= grid.num_rows(); row++ )
+        for ( int col = 1; col <= grid.num_cols(); col++ )
+          arr[row-1][col-1] = grid.getData_entry(row,col).getY_values()[j];
+
+      contours = Contour2D.contour( arr, level );
+      t = (times[j] + times[j+1])/2;
+      for ( int i = 0; i < contours.size()/2; i++ )
+      {
+        floatPoint2D p1 = (floatPoint2D)contours.elementAt( 2*i );
+        Vector3D pos_vec  = grid.position( 1+p1.y, 1+p1.x );
+        Vector3D q_vec = getQ( combinedR, pos_vec, t + t0, initial_path );
+        start.add( new Vector3D(q_vec) );
+
+        floatPoint2D p2 = (floatPoint2D)contours.elementAt( 2*i + 1 );
+        pos_vec  = grid.position( 1+p2.y, 1+p2.x );
+        q_vec = getQ( combinedR, pos_vec, t + t0, initial_path );
+        end.add( new Vector3D(q_vec) );
+      }
+    }
+
+    Vector3D start_vec[] = new Vector3D[ start.size() ];
+    Vector3D end_vec[]   = new Vector3D[ end.size() ];
+    for ( int i = 0; i < start_vec.length; i++ )
+    {
+      start_vec[i] = (Vector3D)start.elementAt(i);
+      end_vec[i]   = (Vector3D)end.elementAt(i);
+    }
+    Lines lines = new Lines( start_vec, end_vec );
+    lines.setColor( gray );
+    return lines;
+  }
+
+  /* ------------------------ getRowContours ------------------------- */
+  /*
+   *  Get Lines object containing contour lines with constant row value
+   */
+  public GL_Shape getRowContours( IDataGrid grid,
+                                  Tran3D    combinedR,
+                                  float     initial_path,
+                                  float     t0,
+                                  float     level    )
+  {
+    Data d = grid.getData_entry(1,1);
+
+    float times[] = d.getX_scale().getXs();
+    int   n_tbins  = d.getY_values().length;
+    float fract,
+          t;
+    int   t_index;
+
+    float arr[][] = new float[ grid.num_cols() ][ n_tbins ];
+    Vector contours;
+    Vector start = new Vector();
+    Vector end   = new Vector();
+    for ( int row = 1; row <= grid.num_rows(); row++ )
+    {
+      for ( int col = 1; col <= grid.num_cols(); col++ )
+        arr[col-1] = grid.getData_entry(row,col).getY_values();
+
+      contours = Contour2D.contour( arr, level );
+      for ( int i = 0; i < contours.size()/2; i++ )
+      {
+        floatPoint2D p1 = (floatPoint2D)contours.elementAt( 2*i );
+        Vector3D pos_vec  = grid.position( row, 1+p1.y );
+        t_index = (int)p1.x;
+        fract = p1.x - t_index;
+        t = times[t_index] + fract * (times[t_index+1] - times[t_index]);
+        Vector3D q_vec = getQ( combinedR, pos_vec, t + t0, initial_path );
+        start.add( new Vector3D(q_vec) );
+
+        floatPoint2D p2 = (floatPoint2D)contours.elementAt( 2*i + 1 );
+        pos_vec  = grid.position( row, 1+p2.y );
+        t_index = (int)p2.x;
+        fract = p2.x - t_index;
+        t = times[t_index] + fract * (times[t_index+1] - times[t_index]);
+        q_vec = getQ( combinedR, pos_vec, t + t0, initial_path );
+        end.add( new Vector3D(q_vec) );
+      }
+    }
+
+    Vector3D start_vec[] = new Vector3D[ start.size() ];
+    Vector3D end_vec[]   = new Vector3D[ end.size() ];
+    for ( int i = 0; i < start_vec.length; i++ )
+    {
+      start_vec[i] = (Vector3D)start.elementAt(i);
+      end_vec[i]   = (Vector3D)end.elementAt(i);
+    }
+    Lines lines = new Lines( start_vec, end_vec );
+    lines.setColor( gray );
+    return lines;
+  }
+
+
+  /* ------------------------ getColContours ------------------------- */
+  /*
+   *  Get Lines object containing contour lines with constant column value
+   */
+  public GL_Shape getColContours( IDataGrid grid,
+                                  Tran3D    combinedR,
+                                  float     initial_path,
+                                  float     t0,
+                                  float     level  )
+  {
+    Data d = grid.getData_entry(1,1);
+
+    float times[] = d.getX_scale().getXs();
+    int   n_tbins  = d.getY_values().length;
+    float fract,
+          t;
+    int   t_index;
+
+    float arr[][] = new float[ grid.num_rows() ][ n_tbins ];
+    Vector contours;
+    Vector start = new Vector();
+    Vector end   = new Vector();
+    for ( int col = 1; col <= grid.num_cols(); col++ )
+    {
+      for ( int row = 1; row <= grid.num_rows(); row++ )
+        arr[row-1] = grid.getData_entry(row,col).getY_values();
+
+      contours = Contour2D.contour( arr, level );
+      for ( int i = 0; i < contours.size()/2; i++ )
+      {
+        floatPoint2D p1 = (floatPoint2D)contours.elementAt( 2*i );
+        Vector3D pos_vec  = grid.position( 1+p1.y, col );
+        t_index = (int)p1.x;
+        fract = p1.x - t_index;
+        t = times[t_index] + fract * (times[t_index+1] - times[t_index]);
+        Vector3D q_vec = getQ( combinedR, pos_vec, t + t0, initial_path );
+        start.add( new Vector3D(q_vec) );
+
+        floatPoint2D p2 = (floatPoint2D)contours.elementAt( 2*i + 1 );
+        pos_vec  = grid.position( 1+p2.y, col );
+        t_index = (int)p2.x;
+        fract = p2.x - t_index;
+        t = times[t_index] + fract * (times[t_index+1] - times[t_index]);
+        q_vec = getQ( combinedR, pos_vec, t + t0, initial_path );
+        end.add( new Vector3D(q_vec) );
+      }
+    }
+
+    Vector3D start_vec[] = new Vector3D[ start.size() ];
+    Vector3D end_vec[]   = new Vector3D[ end.size() ];
+    for ( int i = 0; i < start_vec.length; i++ )
+    {
+      start_vec[i] = (Vector3D)start.elementAt(i);
+      end_vec[i]   = (Vector3D)end.elementAt(i);
+    }
+    Lines lines = new Lines( start_vec, end_vec );
+    lines.setColor( gray );
+    return lines;
+  }
+
+  /* ---------------------------- getBoundaries ---------------------------- */
+  /*
+   *  Get outline of region of Q covered by the specified grid.
+   *
+   *  @param index   The index of the DataGrid in the list. 
+   *
+   *  @return an array of ThreeD_Objects representing the region covered.
+   */
+  private GL_Shape[] getBoundaries( int index )
+  {
+      Data  d;
+      Vector3D pts[] = new Vector3D[1];
+      pts[0]         = new Vector3D();
+      Attribute attr;
+                                            // Assume all runs have the same
+                                            // number of detectors in them
+                                            // and each detector has a grid.
+      VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(index);
+      IDataGrid grid = transformer.getDataGrid();
+      d = grid.getData_entry(1,1);
+
+      float initial_path = 9.378f;
+      attr = d.getAttribute(Attribute.INITIAL_PATH);
+      if ( attr != null )
+        initial_path = (float)attr.getNumericValue();
+
+      float t0 = 0;
+      attr = d.getAttribute(Attribute.T0_SHIFT);
+      if ( attr != null )
+        t0 = (float)attr.getNumericValue();
+
+      Tran3D combinedR = transformer.getGoniometerRotationInverse();
+
+      GL_Shape result[];
+      result = GetRegion( grid, combinedR, initial_path, t0 );
+
+     return result;
+  }
+
+
+  /*
+   *  Get Lines object containing contour lines with constant column value
+   */
+  public GL_Shape[] GetRegion( IDataGrid grid,
+                               Tran3D    combinedR,
+                               float     initial_path,
+                               float     t0     )
+  {
+    Data d = grid.getData_entry(1,1);
+
+    float times[] = d.getX_scale().getXs();
+    int   n_tbins  = d.getY_values().length;
+    float t_start = times[0];
+    float t_end   = times[n_tbins-1]; 
+    int   n_rows = grid.num_rows();
+    int   n_cols = grid.num_cols();
+                                                          // edge lines
+    Vector3D corners[] = { grid.position(      1, 1 ),
+                           grid.position( n_rows, 1 ),
+                           grid.position( n_rows, n_cols ),
+                           grid.position(      1, n_cols ) };
+
+    Vector3D start[] = new Vector3D[4];
+    Vector3D end[]   = new Vector3D[4];
+    for ( int i = 0; i < 4; i++ )
+    {
+      start[i] = getQ( combinedR, corners[i], t_start + t0, initial_path );
+      end[i]   = getQ( combinedR, corners[i], t_end   + t0, initial_path );
+    }
+
+    GL_Shape boundaries[] = new GL_Shape[3];
+    boundaries[0] = new Lines( start, end );
+
+    Vector3D points[] = new Vector3D[397];                // inner face
+    int index = 0;
+    for ( int col = 1; col <= n_cols; col++ )
+    {
+      points[index] = 
+           getQ( combinedR, grid.position(1,col), t_start + t0, initial_path );
+      index++;
+    }
+
+    for ( int row = 2; row <= n_rows; row++ )
+    {
+      points[index] = 
+          getQ(combinedR, grid.position(row,n_cols), t_start+t0, initial_path);
+      index++;
+    }
+
+    for ( int col = n_cols-1; col >= 1; col-- )
+    {
+      points[index] = 
+          getQ(combinedR, grid.position(n_rows,col), t_start+t0, initial_path);
+      index++;
+    }
+
+    for ( int row = n_rows-1; row >= 1; row-- )
+    {
+      points[index] = 
+          getQ(combinedR, grid.position(row,1), t_start+t0, initial_path);
+      index++;
+    }
+
+    boundaries[1] = new LineStrip( points ); 
+                                                         // outer face
+    index = 0;
+    for ( int col = 1; col <= n_cols; col++ )
+    {
+      points[index] = 
+           getQ( combinedR, grid.position(1,col), t_end + t0, initial_path );
+      index++;
+    }
+
+    for ( int row = 2; row <= n_rows; row++ )
+    {
+      points[index] =
+          getQ(combinedR, grid.position(row,n_cols), t_end+t0, initial_path);
+      index++;
+    }
+
+    for ( int col = n_cols-1; col >= 1; col-- )
+    {
+      points[index] =
+          getQ(combinedR, grid.position(n_rows,col), t_end+t0, initial_path);
+      index++;
+    }
+    
+    for ( int row = n_rows-1; row >= 1; row-- )
+    {
+      points[index] =
+          getQ(combinedR, grid.position(row,1), t_end+t0, initial_path);
+      index++;
+    }
+
+    boundaries[2] = new LineStrip( points );
+
+    return boundaries;
   }
 
 
@@ -878,7 +1535,7 @@ public class GL_RecipPlaneView
     for ( int i = 0; i < all_vectors.length; i++ )
     {
       pd = (PeakData)all_peaks.elementAt(i);
-      all_vectors[i] = new Vector3D( (float)pd.qx, (float)pd.qy, (float)pd.qz );
+      all_vectors[i] = new Vector3D((float)pd.qx, (float)pd.qy, (float)pd.qz );
     }
 
     return all_vectors;
@@ -980,7 +1637,11 @@ public class GL_RecipPlaneView
   /* ---------------------------- FFT -------------------------------- */
   public DataSet FFT( DataSet ds )
   {
-    DataSetFactory ds_factory = new DataSetFactory( "FFT of projections" );
+//  DataSetFactory ds_factory = new DataSetFactory( "FFT of projections" );
+    DataSetFactory ds_factory = 
+           new DataSetFactory( "FFT of projections", 
+                                "Bin", "Magnitude",
+                                "Counts", "Projected Counts");
     DataSet fft_ds = ds_factory.getDataSet();
    
     for ( int i = 0; i < ds.getNum_entries(); i++ )
@@ -1356,6 +2017,7 @@ public class GL_RecipPlaneView
      path       = StringUtil.getCommand( 1, "-D", args );
      run_nums   = StringUtil.getCommand( 1, "-R", args );
      calib_file = StringUtil.getCommand( 1, "-C", args );
+     orient_file = StringUtil.getCommand( 1, "-O", args );
 
      if ( path.length() <= 0 || run_nums.length() <= 0 )
      {
@@ -1382,6 +2044,8 @@ public class GL_RecipPlaneView
        "  -R<list of run numbers> specify runs to load (required)");
     System.out.println(
        "  -C<calibration file name> specify name of calibration file");
+    System.out.println(
+       "  -O<orientation matris file name> specify name of calibration file");
     System.out.println(
        "  -T<relative threshold> specify scale factor to apply to the");
     System.out.println(
@@ -1435,34 +2099,132 @@ public class GL_RecipPlaneView
     vec_Q_space.Draw();
   }
 
-  /* ------------------------------ draw_axes ----------------------------- */
+  /* ---------------------------- draw_Q_axes ----------------------------- */
   /*
-   *  Draw a simple set of red, green and blue lines to represent the
-   *  coordinate system.
+   *  Draw orthogonal axes in "Q".
    */
-  private  void draw_axes( float length, ThreeD_GL_Panel threeD_panel  )
+  private  void draw_Q_axes( float length, ThreeD_GL_Panel threeD_panel  )
   {
-    Axis x_axis = Axis.getInstance( new Vector3D( -0.9f, 0, 0 ),
-                                    new Vector3D( 10,    0, 0 ),
+    Axis x_axis = Axis.getInstance( new Vector3D( -length/20, 0, 0 ),
+                                    new Vector3D(  length,    0, 0 ),
                                     "Qx" );
-    Axis y_axis = Axis.getInstance( new Vector3D( 0, -0.9f, 0 ),
-                                    new Vector3D( 0, 10,    0 ),
+    Axis y_axis = Axis.getInstance( new Vector3D( 0, -length/20, 0 ),
+                                    new Vector3D( 0,  length,    0 ),
                                     "Qy" );
-    Axis z_axis = Axis.getInstance( new Vector3D( 0, 0, -0.9f ),
-                                    new Vector3D( 0, 0, 10    ),
+    Axis z_axis = Axis.getInstance( new Vector3D( 0, 0, -length/20 ),
+                                    new Vector3D( 0, 0,  length    ),
                                     "Qz" );
     z_axis.setSkipValue( 0 );
-    float red[]   = { 0.8f, 0.3f, 0.3f };
-    float green[] = { 0.3f, 0.8f, 0.3f };
-    float blue[]  = { 0.3f, 0.3f, 0.8f };
     x_axis.setColor( red );
     y_axis.setColor( green );
     z_axis.setColor( blue );
     
-    threeD_panel.setObject( "X-AXIS", x_axis );
-    threeD_panel.setObject( "Y-AXIS", y_axis );
-    threeD_panel.setObject( "Z-AXIS", z_axis );
+    threeD_panel.setObject( "QX-AXIS", x_axis );
+    threeD_panel.setObject( "QY-AXIS", y_axis );
+    threeD_panel.setObject( "QZ-AXIS", z_axis );
   }
+
+
+  /* -------------------------- keep_peak ------------------------------ */
+  /*
+   *  Check whether or not the peak should be kept.  Peaks are kept if
+   *  there is no orientation matrix, or if there is an orientation matrix,
+   *  they are kept if they line near integer "h" planes
+   */
+  private boolean keep_peak( Vector3D peak )
+  {
+    float TOLERANCE = 0.1f;
+
+
+    if ( orientation_matrix != null )      // use orientation matrix to filter
+    {
+      Vector3D temp = new Vector3D( peak );
+      orientation_matrix_inverse.apply_to( temp, temp );
+
+      float peak_dot_h = temp.get()[0];
+      float peak_h = (float)Math.round(peak_dot_h);
+
+      if ( Math.abs( peak_dot_h - peak_h ) < TOLERANCE )
+        return true;
+      else
+        return false;
+    }
+
+    float h_vals[] = h_plane_ui.get_normal();
+                                             // use normal vector to filter
+    if ( h_vals != null && h_vals[0] != 0 && h_vals[1] != 0 && h_vals[1] != 0 )
+    {
+      Vector3D a = new Vector3D( h_vals );
+      a.multiply( h_plane_ui.get_d_spacing() );
+      float mag_a = (float)(2*Math.PI/a.length());
+      a.normalize();
+      float h = peak.dot(a)/mag_a;
+      float h_int = (float)Math.round( h );
+      if ( Math.abs( h - h_int ) < TOLERANCE )
+        return true;
+      else
+        return false;
+    }
+
+    return true;      // no reason to reject the peak.
+  }
+
+
+  /* -------------------------- draw_HKL_axes --------------------------- */
+  /*  
+   *  Draw axes for the HKL coordinate system (assuming there is an 
+   *  orientation matrix. 
+   */
+  private  void draw_HKL_axes( float length, ThreeD_GL_Panel threeD_panel  )
+  { 
+    if ( orientation_matrix == null )
+    {
+      System.out.println("NO ORIENTATION MATRIX LOADED");
+      return;
+    }
+
+    Vector3D  h_dir = new Vector3D(1,0,0);
+    Vector3D  k_dir = new Vector3D(0,1,0);
+    Vector3D  l_dir = new Vector3D(0,0,1);
+    orientation_matrix.apply_to( h_dir, h_dir );
+    orientation_matrix.apply_to( k_dir, k_dir );
+    orientation_matrix.apply_to( l_dir, l_dir );
+
+    h_dir.multiply( length );    
+    k_dir.multiply( length );    
+    l_dir.multiply( length );    
+
+    Vector3D minus_h_dir = new Vector3D( h_dir );
+    Vector3D minus_k_dir = new Vector3D( k_dir );
+    Vector3D minus_l_dir = new Vector3D( l_dir );
+    minus_h_dir.multiply( -1 );
+    minus_k_dir.multiply( -1 );
+    minus_l_dir.multiply( -1 );
+ 
+    Axis h_axis = Axis.getInstance( minus_h_dir, h_dir,"              a*-Axis");
+    Axis k_axis = Axis.getInstance( minus_k_dir, k_dir,"              b*-Axis");
+    Axis l_axis = Axis.getInstance( minus_l_dir, l_dir,"              c*-Axis");
+
+    h_axis.setSkipValue( 0 );
+    k_axis.setSkipValue( 0 );
+    l_axis.setSkipValue( 0 );
+    h_axis.setColor( red );
+    k_axis.setColor( green );
+    l_axis.setColor( blue );
+
+    h_axis.setCharHeight( length/50 );
+    k_axis.setCharHeight( length/50 );
+    l_axis.setCharHeight( length/50 );
+    
+    h_axis.setMinMax( -length, length );
+    k_axis.setMinMax( -length, length );
+    l_axis.setMinMax( -length, length );
+    
+    threeD_panel.setObject( "a*-AXIS", h_axis );
+    threeD_panel.setObject( "b*-AXIS", k_axis );
+    threeD_panel.setObject( "c*-AXIS", l_axis );
+  } 
+
 
   /* ------------------------- MarkPoint --------------------------- */
   /*
@@ -1605,7 +2367,7 @@ private void showLatticeParameters( Vector3D a, Vector3D b, Vector3D c )
   temp.cross( a, b );
   float volume = Math.abs(c.dot( temp ));
 
-  System.out.println("-------------------------------------------------------");
+  System.out.println("-----------------------------------------------------");
   System.out.println("Lattice Parameters:");
   System.out.println("");
   System.out.println( "  "  + Format.real( a.length(), 5, 5 ) +
@@ -1789,18 +2551,38 @@ private class ReadoutListener implements ActionListener
      {
        Vector3D position = vec_Q_space.pickedPoint();
        System.out.println("++++ ReadoutListener: pickedPoint = " + position );
-       if ( position == null )
+       if ( position == null || position.length() > 30 )
        {
          if ( readout.getTitle().equals(ORIGIN) )      // origin defaults to
+         {
            readout.setVector( new Vector3D(0,0,0) );   // (0,0,0)
+           Vector3D cop = new Vector3D( controller.getCOP() );
+           Vector3D vrp = new Vector3D( controller.getVRP() );
+           position = new Vector3D(0,0,0);
+           Vector3D shift = new Vector3D( position );
+           shift.subtract( vrp );
+           cop.add( shift );
+           controller.setCOP( cop );
+           controller.setVRP( position );
+           //##############
+         }
          else
            readout.setVector( null );
        }
        else
        {
          if ( readout.getTitle().equals(ORIGIN) )
+         {
            readout.setVector( position );              // just move the origin
-
+           Vector3D cop = new Vector3D( controller.getCOP() );
+           Vector3D vrp = new Vector3D( controller.getVRP() );
+           Vector3D shift = new Vector3D( position );
+           shift.subtract( vrp );
+           cop.add( shift );
+           controller.setCOP( cop );
+           controller.setVRP( position );
+           //##############
+         }
          else                                          // get vector relative
          {                                             // to the origin
            Vector3D vec = new Vector3D( position );
