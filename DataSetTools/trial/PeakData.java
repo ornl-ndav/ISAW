@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/07/26 22:15:21  dennis
+ * Converted to just use single precision, since PeakData_d.java is
+ * now the double precision version.
+ *
  * Revision 1.12  2004/03/19 17:19:50  dennis
  * Removed unused variable(s)
  *
@@ -108,31 +112,31 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
    */
 public class PeakData
 {
-    public static final double DEFAULT_DEPTH = 0.002; // default area detector
+    public static final float DEFAULT_DEPTH = 0.002f; // default area detector
                                                       // thickness, 2mm
-    int    run_num = 0;                // Run info .....
-    double moncnt = 0;
+    int   run_num = 0;                 // Run info .....
+    float moncnt  = 0;
                                        // Instrument info .....
-    public double l1     = 9.378;
-    SampleOrientation_d orientation;
+    public float l1  = 9.378f;
+    SampleOrientation orientation;
 
                                        // Detector info ......
-    public UniformGrid_d grid;
+    public UniformGrid grid;
                                        // Peak info .....
-    int    seqn   = 0;
-    double counts = 0;
+    int   seqn   = 0;
+    float counts = 0;
    
-    double row = 0,                    // Measured position
-           col = 0,
-           tof = 0;
+    float row = 0,                    // Measured position
+          col = 0,
+          tof = 0;
 
-    double qx  = 0,                    // Q position
-           qy  = 0,
-           qz  = 0;
+    float qx  = 0,                    // Q position
+          qy  = 0,
+          qz  = 0;
 
-    double h   = 0,                    // Miller indices
-           k   = 0,
-           l   = 0;
+    float h   = 0,                    // Miller indices
+          k   = 0,
+          l   = 0;
 
 
   /**
@@ -140,25 +144,39 @@ public class PeakData
    */
   public PeakData()
   {
-    orientation = new IPNS_SCD_SampleOrientation_d(0,0,0);
+    orientation = new IPNS_SCD_SampleOrientation(0,0,0);
 
     int    det_id = 0; 
-    Vector3D_d center = new Vector3D_d( 0, -1, 0 );
-    Vector3D_d up_vec   = new Vector3D_d( 0, 0, 1 );
-    Vector3D_d base_vec = new Vector3D_d( -1, 0, 0 );
+    Vector3D center = new Vector3D( 0, -1, 0 );
+    Vector3D up_vec   = new Vector3D( 0, 0, 1 );
+    Vector3D base_vec = new Vector3D( -1, 0, 0 );
 
     int    n_rows = 100,
            n_cols = 100;
 
-    double width  = .15,
-           height = .15,
-           depth  = DEFAULT_DEPTH;
+    float width  = .15f,
+          height = .15f,
+          depth  = DEFAULT_DEPTH;
 
-    grid = new UniformGrid_d( det_id, "m", 
+    grid = new UniformGrid( det_id, "m", 
                               center, base_vec, up_vec, 
                               width, height, depth,
                               n_rows, n_cols );
   }
+
+
+  /**
+   *  Construct a PeakData object using the specified orientation and grid
+   *
+   *  @param  orientation   The sample orientation for this peak
+   *  @param  grid          The detector grid for this peak
+   */
+  public PeakData( SampleOrientation orientation, UniformGrid grid )
+  {
+    this.orientation = orientation;
+    this.grid = grid;
+  }
+
 
   /**
    *  Write a vector of PeakData objects to the specified file.
@@ -192,9 +210,9 @@ public class PeakData
           writer.print("1 ");
           writer.print( Format.integer( pd.run_num, 6 ) );
           writer.print( Format.integer( pd.grid.ID(), 4 ) );
-          DetectorPosition_d center = 
-                   new DetectorPosition_d( pd.grid.position());
-          double coords[] = center.getSphericalCoords();
+          DetectorPosition center = 
+                   new DetectorPosition( pd.grid.position());
+          float coords[] = center.getSphericalCoords();
           writer.print( Format.real(180*coords[1]/Math.PI, 8, 2 ));
           writer.print( Format.real(90-(180*coords[2]/Math.PI), 8, 2 ));
           writer.print( Format.real(coords[0], 8, 4 ));
@@ -266,21 +284,21 @@ public class PeakData
   {
     Vector              peaks            = new Vector();
 
-    SampleOrientation_d last_orientation = null; 
-    double chi,
-           phi,
-           omega;
+    SampleOrientation last_orientation = null; 
+    float chi,
+          phi,
+          omega;
 
-    UniformGrid_d  last_grid = null;
-    double det_a,
-           det_a2, 
-           det_d,
-           height,
-           width,
-           x, y, z;
+    UniformGrid  last_grid = null;
+    float det_a,
+          det_a2, 
+          det_d,
+          height,
+          width,
+          x, y, z;
 
-    double last_moncnt   =  1.0,
-           last_l1       =  9.378;
+    float last_moncnt =  1.0f,
+          last_l1     =  9.378f;
 
     int    det_id,
            n_rows,
@@ -305,38 +323,38 @@ public class PeakData
             last_run     = tfr.read_int();
 
             det_id  = tfr.read_int();
-            det_a   = tfr.read_double();
-            det_a2  = tfr.read_double();
-            det_d   = tfr.read_double();
-            DetectorPosition_d position = new DetectorPosition_d();
+            det_a   = tfr.read_float();
+            det_a2  = tfr.read_float();
+            det_d   = tfr.read_float();
+            DetectorPosition position = new DetectorPosition();
             position.setSphericalCoords( det_d, 
-                                         Math.PI * det_a / 180, 
-                                         Math.PI * (90-det_a2) / 180 );
-            Vector3D_d center = new Vector3D_d( position );
+                                         (float)(Math.PI * det_a / 180), 
+                                         (float)(Math.PI * (90-det_a2) / 180 ));
+            Vector3D center = new Vector3D( position );
 
-            chi     = tfr.read_double();
-            phi     = tfr.read_double();
-            omega   = tfr.read_double();
-            last_orientation = new IPNS_SCD_SampleOrientation_d(phi,chi,omega);
-            last_moncnt  = tfr.read_double();
-            last_l1      = tfr.read_double();
+            chi     = tfr.read_float();
+            phi     = tfr.read_float();
+            omega   = tfr.read_float();
+            last_orientation = new IPNS_SCD_SampleOrientation(phi,chi,omega);
+            last_moncnt  = tfr.read_float();
+            last_l1      = tfr.read_float();
 
             n_rows  = tfr.read_int();
             n_cols  = tfr.read_int();
 
-            height  = tfr.read_double(); 
-            width   = tfr.read_double();
+            height  = tfr.read_float(); 
+            width   = tfr.read_float();
 
-            x = tfr.read_double();
-            y = tfr.read_double();
-            z = tfr.read_double();
-            Vector3D_d base_vec = new Vector3D_d( x, y, z );
-            x = tfr.read_double();
-            y = tfr.read_double();
-            z = tfr.read_double();
-            Vector3D_d up_vec = new Vector3D_d( x, y, z );
+            x = tfr.read_float();
+            y = tfr.read_float();
+            z = tfr.read_float();
+            Vector3D base_vec = new Vector3D( x, y, z );
+            x = tfr.read_float();
+            y = tfr.read_float();
+            z = tfr.read_float();
+            Vector3D up_vec = new Vector3D( x, y, z );
 
-            last_grid = new UniformGrid_d( det_id, "m",
+            last_grid = new UniformGrid( det_id, "m",
                                            center, 
                                            base_vec, up_vec,
                                            width, height, DEFAULT_DEPTH,
@@ -361,17 +379,17 @@ public class PeakData
 
           peak.grid  = last_grid;               // Det position & orientation
 
-          peak.seqn     = tfr.read_int();         // Peak Data
-          peak.h        = tfr.read_double();
-          peak.k        = tfr.read_double();
-          peak.l        = tfr.read_double();
-          peak.col      = tfr.read_double();
-          peak.row      = tfr.read_double();
-          peak.tof      = tfr.read_double();
-          peak.counts   = tfr.read_double();
-          peak.qx       = tfr.read_double();
-          peak.qy       = tfr.read_double();
-          peak.qz       = tfr.read_double();
+          peak.seqn     = tfr.read_int();       // Peak Data
+          peak.h        = tfr.read_float();
+          peak.k        = tfr.read_float();
+          peak.l        = tfr.read_float();
+          peak.col      = tfr.read_float();
+          peak.row      = tfr.read_float();
+          peak.tof      = tfr.read_float();
+          peak.counts   = tfr.read_float();
+          peak.qx       = tfr.read_float();
+          peak.qy       = tfr.read_float();
+          peak.qz       = tfr.read_float();
           tfr.read_line();                         // end of line type 3
           peaks.addElement( peak );
         }
@@ -442,13 +460,13 @@ public class PeakData
       return null;
     }
 
-    UniformGrid_d grid; 
-    UniformGrid   sgrid;
+    UniformGrid grid; 
+    UniformGrid sgrid;
     Hashtable grids = new Hashtable();
     for ( int i = 0; i < grid_ids.length; i++ )
     {
       sgrid = (UniformGrid)Grid_util.getAreaGrid( ds, grid_ids[i] );
-      grid = new UniformGrid_d( sgrid, false );
+      grid = new UniformGrid( sgrid, false );
       grids.put( new Integer(grid_ids[i]), grid );
     }
 
@@ -467,11 +485,11 @@ public class PeakData
     for ( int i = 0; i < peaks.size(); i++ )
     {
       PeakData pd = new PeakData();
-      Peak     p  = (Peak)peaks.elementAt(i);
+      Peak       p  = (Peak)peaks.elementAt(i);
    
       pd.run_num = p.nrun();
       pd.moncnt  = p.monct();
-      pd.l1      = attr.getNumericValue();
+      pd.l1      = (float)attr.getNumericValue();
       pd.seqn    = p.seqnum();
       pd.counts  = p.ipkobs();
       pd.row     = p.y();
@@ -482,8 +500,8 @@ public class PeakData
         pd.tof = xscale.getX( xscale.getNum_x() - 1 );
       else if ( bin >= 0 )
       {
-        double x1 = xscale.getX( bin     );
-        double x2 = xscale.getX( bin + 1 );
+        float x1 = xscale.getX( bin     );
+        float x2 = xscale.getX( bin + 1 );
         pd.tof    = x1 + ( p.z() - bin ) * ( x2 - x1 ); 
       }
       else
@@ -493,10 +511,10 @@ public class PeakData
                             peaks_file_name );
       }
 
-      pd.orientation = new IPNS_SCD_SampleOrientation_d( p.phi(), 
-                                                         p.chi(), 
-                                                         p.omega() );
-      pd.grid = (UniformGrid_d)grids.get( new Integer(p.detnum()) );
+      pd.orientation = new IPNS_SCD_SampleOrientation( p.phi(), 
+                                                       p.chi(), 
+                                                       p.omega() );
+      pd.grid = (UniformGrid)grids.get( new Integer(p.detnum()) );
 
       pd.qx  = 0;            // Q position, not set for now, since not needed
       pd.qy  = 0;
