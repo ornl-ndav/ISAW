@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/08/19 17:07:03  pfpeterson
+ * Reformated file to make it easier to read.
+ *
  * Revision 1.3  2001/06/01 21:14:13  rmikk
  * Added Documentation for javadocs etc.
  *
@@ -40,12 +43,11 @@
 package Command;
 import DataSetTools.operator.*;
 
-/** An interface for handling lists of operators
+/**
+ * An interface for handling lists of operators
  */
-public interface OperatorHandler
-   {
-     public int getNum_operators();
-   
-     public  Operator getOperator(int index);
-     
-    }
+public interface OperatorHandler{
+    public int getNum_operators();
+    
+    public  Operator getOperator(int index);
+}
