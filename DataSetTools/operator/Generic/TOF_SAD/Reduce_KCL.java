@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/10/22 20:21:48  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.14  2003/10/02 15:38:17  rmikk
  * Fixed an error when the background transmission run is
  *    being used.
@@ -272,8 +275,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     *    @param RUNSds1   the Histogram  for the sample
     *    @param RUNBds0  the  monitor for the Background
     *    @param RUNBds1  the  Histogramfor the Background
-    *    @param RUCBds0  null or the monitor for the  Cadmium run
-    *    @param RUCBds1  null or the  Histogram for the  Cadmium run
+    *    @param RUNBds0  null or the monitor for the  Cadmium run
+    *    @param RUNBds1  null or the  Histogram for the  Cadmium run
     *    @param BETADN  The delayed neutron fraction
     *    @param SCALE   The scale factor to be applied to all data
     *    @param  THICK  The sample thickness in m
