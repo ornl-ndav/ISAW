@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/01/24 19:18:50  bouzekc
+ *  Commented out unused local variable.
+ *
  *  Revision 1.9  2004/01/24 19:10:47  bouzekc
  *  Removed unused variables from main().  Removed unused imports.
  *
@@ -230,9 +233,9 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
 
     float e_out = tof_calc.Energy( spherical_coords[0], x );
 
-    float Q1 = tof_calc.SpectrometerQ( e_in,
+    /*float Q1 = tof_calc.SpectrometerQ( e_in,
                                        e_out,
-                                       position.getScatteringAngle() );
+                                       position.getScatteringAngle() );*/
 
     float v_in  = tof_calc.VelocityFromEnergy( e_in );
     float v_out = tof_calc.VelocityFromEnergy( e_out );
