@@ -6,6 +6,9 @@
  * Modified:  
  *
  *  $Log$
+ *  Revision 1.11  2000/12/15 03:52:15  dennis
+ *  Use methods isHistogram() and isFunction() to check type of Data block.
+ *
  *  Revision 1.10  2000/12/07 22:17:07  dennis
  *  Added methods isHistogram(),
  *                isFunction(),
@@ -327,7 +330,7 @@ public float getY_value( float x_value )
   float x1 = x_vals[last];              // first & last have crossed
   float x2 = x_vals[first];
 
-  if ( y_values.length < x_vals.length || x1 == x2 )  // histogram, or
+  if ( isHistogram() || x1 == x2 )                    // histogram, or
     return y_values[last];                            // duplicate x values
 
   float y1 = y_values[last];                         // otherwise, interpolate
@@ -758,11 +761,11 @@ public float getY_value( float x_value )
    */
   public void ConvertToFunction( boolean divide )
   {
-    if ( x_scale.getNum_x() == y_values.length )   // function already
+    if ( isFunction() )                              // function already
       return;
 
-    if (  x_scale.getNum_x() == y_values.length+1 )  // histogram
-    {  
+    if ( isHistogram() ) 
+    { 
       float temp_x[] = null;
       if ( divide )                   // divide y values by the bin width
       {
@@ -826,10 +829,10 @@ public float getY_value( float x_value )
    */
   public void ConvertToHistogram( float width_1, boolean multiply )
   {
-    if ( x_scale.getNum_x() == y_values.length+1 )   // histogram already
+    if ( isHistogram() )                             // histogram already
       return;
 
-    if (  x_scale.getNum_x() == y_values.length )    // function 
+    if ( isFunction() ) 
     {
       float start    = x_scale.getStart_x();
       float end      = x_scale.getEnd_x();
@@ -915,7 +918,7 @@ public float getY_value( float x_value )
    */
   public void Resample( XScale new_X )
   {
-    if ( x_scale.getNum_x() == y_values.length + 1 )   // histogram, so ReBin
+    if ( isHistogram() )                     // histogram, so ReBin
     {
       ReBin( new_X );
       return;
@@ -944,7 +947,7 @@ public float getY_value( float x_value )
    */
   public void ResampleUniformly( UniformXScale new_X )
   {
-    if ( x_scale.getNum_x() == y_values.length + 1 )   // histogram
+    if ( isHistogram() )
       ReBin( new_X );
 
     else                                               // function
@@ -1056,12 +1059,12 @@ public float getY_value( float x_value )
     boolean function;
     float   old_x[] = null;
 
-    if ( x_scale.getNum_x() == y_values.length )          // function
+    if ( isFunction() ) 
     {
       function = true;
       old_x    = x_scale.getXs();
     }
-    else if (  x_scale.getNum_x() == y_values.length+1 )  // histogram 
+    else if ( isHistogram() )                             // histogram 
     {                                                     // so use bin centers
       function       = false;                             // for the x values
       float temp_x[] = x_scale.getXs();
@@ -1133,15 +1136,23 @@ public float getY_value( float x_value )
 
   public boolean compatible( Data d )
   {
+    System.out.println("y lengths: " + y_values.length+
+                       ", " +        d.y_values.length);
     if ( this.y_values.length != d.y_values.length )
       return false;
 
+    System.out.println("x lengths: " + x_scale.getNum_x()+
+                       ", " +        d.x_scale.getNum_x() );
     if ( this.x_scale.getNum_x() != d.x_scale.getNum_x() )
       return false;
 
+    System.out.println("Start x: " + x_scale.getStart_x()+
+                       ", " +      d.x_scale.getStart_x() );
     if ( this.x_scale.getStart_x() != d.x_scale.getStart_x() )
       return false;
 
+    System.out.println("End x: " + x_scale.getEnd_x()+
+                       ", " +      d.x_scale.getEnd_x() );
     if ( this.x_scale.getEnd_x() != d.x_scale.getEnd_x() )
       return false;
 
