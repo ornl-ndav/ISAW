@@ -34,6 +34,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/08/09 15:42:27  dennis
+ *  Now checks if the retriever is null.
+ *  Put some debug prints in "if (debug server)" blocks
+ *
  *  Revision 1.13  2001/08/07 21:30:59  dennis
  *    Removed command to get DS_TYPE and get NUM_DS... now only uses
  *  get DS_TYPES, for the whole list of types.  This is simpler,
@@ -182,25 +186,28 @@ public class LiveDataServer extends    DataSetServer
     System.out.println( "FileName: " + file_name );
     Retriever rr = get_retriever( file_name );
 
-    int num_data_sets = rr.numDataSets();
-
-    if ( num_data_sets != 0 )
+    if ( rr != null )
     {
-      data_set = new DataSet[ num_data_sets ];
-      ds_type = new int[ num_data_sets ];
-      for ( int i = 0; i < num_data_sets; i++ )
+      int num_data_sets = rr.numDataSets();
+      if ( num_data_sets > 0 )
       {
-        ds_type[i] = rr.getType( i ); 
-        data_set[i] = rr.getDataSet( i ); 
-        SetToZero( data_set[i] );
+        data_set = new DataSet[ num_data_sets ];
+        ds_type = new int[ num_data_sets ];
+        for ( int i = 0; i < num_data_sets; i++ )
+        {
+          ds_type[i] = rr.getType( i ); 
+          data_set[i] = rr.getDataSet( i ); 
+          SetToZero( data_set[i] );
+        }
+        data_name = data_set[0].getTitle();
+        return;
       }
     }
-    else
-    {
-      System.out.println("ERROR: Invalid runfile: " + file_name );
-      data_set = new DataSet[0];
-      ds_type  = new int[0];
-    }
+
+    System.out.println("ERROR: Invalid runfile: " + file_name );
+    data_set = new DataSet[0];
+    ds_type  = new int[0];
+    data_name = "NONE";
 
     rr = null;
   }
@@ -312,45 +319,47 @@ public class LiveDataServer extends    DataSetServer
   synchronized public void ProcessCommand( String          command,
                                            ThreadedTCPComm tcp_io   )
   {
+    if ( debug_server )
       System.out.println("Received request " + command );
-      try
+
+    try
+    {
+      if (  command.startsWith( COMMAND_GET_DS_TYPES ) )
       {
-        if (  command.startsWith( COMMAND_GET_DS_TYPES ) )
-        {
-          int types[] = new int[ ds_type.length ];
-          for ( int i = 0; i < types.length; i++ )
-            types[i] = ds_type[i];
-          tcp_io.Send( types );
-        }
+        int types[] = new int[ ds_type.length ];
+        for ( int i = 0; i < types.length; i++ )
+          types[i] = ds_type[i];
+        tcp_io.Send( types );
+      }
 
-        else if ( command.startsWith( COMMAND_GET_DS ) )
-        {
-          int index = extractIntParameter( command );
+      else if ( command.startsWith( COMMAND_GET_DS ) )
+      {
+        int index = extractIntParameter( command );
 
-          if ( index >= 0 && index < ds_type.length )   // valid DataSet index
-          {                                             // so get a copy of a
-                                                        // snapshot of the ds
-            DataSet source_ds = data_set[ index ];
-            DataSet ds        = (DataSet)(source_ds.clone());
+        if ( index >= 0 && index < ds_type.length )   // valid DataSet index
+        {                                             // so get a copy of a
+                                                      // snapshot of the ds
+          DataSet source_ds = data_set[ index ];
+          DataSet ds        = (DataSet)(source_ds.clone());
 
-            if ( ds != null )                           // remove observers
-            {                                           // before sending
-              ds.deleteIObservers(); 
-              tcp_io.Send( ds  );
-            }
-            else                                       
-              tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
+          if ( ds != null )                           // remove observers
+          {                                           // before sending
+            ds.deleteIObservers(); 
+            tcp_io.Send( ds  );
           }
-
-          else                                          
+          else                                       
             tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
         }
+
+        else                                          
+          tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
       }
-      catch ( Exception e )
-      {
-        System.out.println("Error: LiveDataServer command: " + command);
-        System.out.println("Error: couldn't send data "+e );
-      }  
+    }
+    catch ( Exception e )
+    {
+      System.out.println("Error: LiveDataServer command: " + command);
+      System.out.println("Error: couldn't send data "+e );
+    }  
   }
 
 
