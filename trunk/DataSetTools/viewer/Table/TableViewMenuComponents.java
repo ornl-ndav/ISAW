@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/12/11 19:29:22  rmikk
+ *  Change Tom's view to Instrument Table and decreased the
+ *    portion of the view assigned to the controls
+ *
  *  Revision 1.17  2003/12/04 20:48:44  rmikk
  *  Added "Tom's View" to the Selected Table View Submenu
  *
@@ -109,7 +113,7 @@ public class TableViewMenuComponents
   { boolean error, index;
     JCheckBoxMenuItem jmErr=null; 
     JCheckBoxMenuItem jmInd=null;
-
+    public static final String TOMS_VIEW = "Instrument Table";
    public TableViewMenuComponents( )
      {error = false;
       index = false;
@@ -157,7 +161,7 @@ public class TableViewMenuComponents
       if( i == 6 )
          return "Contour:Qxyz slices";
       if( i==7)
-         return "Tom's View";
+         return TOMS_VIEW;
       else return null;
     }
 
@@ -196,10 +200,13 @@ public class TableViewMenuComponents
           return null;
        }
 
-    if( view_type.indexOf("Tom's View")==0)
-         return new DataSetViewerMaker1(DS,state, new DataBlockSelector( DS,null,null),
+    if( view_type == TOMS_VIEW){
+         DataSetViewerMaker1 dsv=new DataSetViewerMaker1(DS,state, new DataBlockSelector( DS,null),
                      new LargeJTableViewComponent(null,
                 null));
+         dsv.ImagePortion = .90f;
+         return dsv;
+    }
        //return (DataSetViewer)(new TimeSliceView( DS, state));
     if( DS.getSelectedIndices().length<1)
        {//DataSetTools.util.SharedData.addmsg("No data sets selected");
