@@ -5,6 +5,9 @@
  *                                   2000/06/09  Renamed from SelectData
  *             
  * $Log$
+ * Revision 1.3  2000/11/07 15:53:16  dennis
+ * Replaced "Data blocks" with "Groups" in operator title.
+ *
  * Revision 1.2  2000/08/03 15:46:19  dennis
  * Fixed spelling error in comment
  *
@@ -64,7 +67,7 @@ public class ExtractByAttribute extends    DataSetOperator
 
   public ExtractByAttribute( )
   {
-    super( "Extract Data blocks based on Attribute" );
+    super( "Extract Groups based on Attribute" );
   }
 
 

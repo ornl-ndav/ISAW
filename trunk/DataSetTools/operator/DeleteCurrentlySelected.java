@@ -3,6 +3,9 @@
  *             
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.2  2000/11/07 15:53:46  dennis
+ *  Replaced "Data blocks" with "Groups" in operator title.
+ *
  *  Revision 1.1  2000/07/10 22:36:03  dennis
  *  July 10, 2000 version... many changes
  *
@@ -56,7 +59,7 @@ public class DeleteCurrentlySelected  extends    DataSetOperator
 
   public DeleteCurrentlySelected( )
   {
-    super( "Delete currently selected Data blocks" );
+    super( "Delete currently selected Groups" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
