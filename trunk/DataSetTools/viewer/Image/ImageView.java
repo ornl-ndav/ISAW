@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2002/07/23 18:21:02  dennis
+ *  Now sends/processes POINTED_AT_CHANGED messages when the
+ *  pointed at "X" value is changed as well as when the
+ *  pointed at Data block is changed.
+ *  Added method SyncVImageScrollBar to scroll to pointed
+ *  at Data block if the image has a vertical scroll bar.
+ *
  *  Revision 1.32  2002/07/12 18:39:19  dennis
  *  Now traps for invalid (null) XScale from the x_scale_ui
  *  and uses the result from getXRange() for the DataSet as
@@ -280,6 +287,10 @@ public class ImageView extends    DataSetViewer
   private JCheckBoxMenuItem use_color_button    = null;
   private JCheckBoxMenuItem remove_hidden_lines = null;
 
+  private boolean image_sent_pointed_at = false;
+
+  private boolean debug = false;
+
 /* --------------------------------------------------------------------------
  *
  * CONSTRUCTORS
@@ -339,17 +350,37 @@ public void redraw( String reason )
   }
   else if ( reason.equals( IObserver.POINTED_AT_CHANGED ))
   {
+    if ( image_Jpanel.isDoingBox() )
+      return;
+
     DrawSelectedHGraphs(); 
     float n_data = getDataSet().getNum_entries();
+
+    if ( debug )
+    {
+      System.out.println("ImageView.redraw(), reason = " + reason );
+      System.out.println("PAX  = " + getDataSet().getPointedAtX() );
+    }
+
     if ( n_data > 0 )
     {
       floatPoint2D pt = image_Jpanel.getCurrent_WC_point();
-      int  index = getDataSet().getPointedAtIndex();
+      int   index = getDataSet().getPointedAtIndex();
+      float x     = getDataSet().getPointedAtX();
       pt.y = index;
       pt.y = pt.y * ( n_data - 1 )/ n_data + 0.5f;
+      if ( x != Float.NaN )
+        pt.x = x;
+
+      if ( !image_sent_pointed_at )
+        SyncVImageScrollBar();
+      else
+        image_sent_pointed_at = false;   // only skip one POINTED_AT message
+
       image_Jpanel.set_crosshair_WC( pt );
 
       getState().set_int( ViewerState.POINTED_AT_INDEX, index );
+      getState().set_float( ViewerState.POINTED_AT_X, pt.x );
     }
   }
   else
@@ -1047,11 +1078,15 @@ private void DrawDefaultDataBlock()
   {                                      // none, try to draw the last one
                                          // that was pointed at.
 
-    int last_pointed_at = getState().get_int( ViewerState.POINTED_AT_INDEX );
+    int   last_pointed_at   = getState().get_int( ViewerState.POINTED_AT_INDEX);
+    float last_pointed_at_x = getState().get_float( ViewerState.POINTED_AT_X );
     if (last_pointed_at >= 0 && last_pointed_at < getDataSet().getNum_entries())
     {
       DrawHGraph( last_pointed_at, 0, true );
       getDataSet().setPointedAtIndex( last_pointed_at );
+      if ( last_pointed_at_x != Float.NaN )
+        getDataSet().setPointedAtX( last_pointed_at_x );
+      image_sent_pointed_at = true;
       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
     }
     else                                 // if none, try to draw data block 0
@@ -1062,6 +1097,7 @@ private void DrawDefaultDataBlock()
         DrawHGraph( 0, 0, true );
         getDataSet().setPointedAtIndex(0);
         getState().set_int( ViewerState.POINTED_AT_INDEX, 0 );
+        image_sent_pointed_at = true;
         getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
       }
 
@@ -1185,6 +1221,69 @@ private void SyncHGraphScrollBar()
 }
  
 
+/* -------------------------- SyncVImageScrollBar ------------------------- */
+
+private void SyncVImageScrollBar()
+{
+  JScrollBar vi_bar = image_scroll_pane.getVerticalScrollBar();
+
+  if ( vi_bar == null || !vi_bar.isVisible() )
+    return;
+
+  DataSet ds = getDataSet();
+  if ( ds == null )
+    return;
+
+  int n_rows = ds.getNum_entries();
+  if ( n_rows <= 100 )
+    return; 
+
+  int row = ds.getPointedAtIndex();
+  if ( row == DataSet.INVALID_INDEX ) 
+    return;
+
+  float vi_bar_min  = vi_bar.getMinimum();
+  float vi_bar_max  = vi_bar.getMaximum();
+  float bar_height  = vi_bar.getSize().height;
+  float knob_height = bar_height * bar_height / (vi_bar_max - vi_bar_min);
+
+  if ( bar_height >= n_rows )      // scrolling not needed
+    return;
+
+  float fraction = 0;
+  int   vi_bar_value;
+
+  if ( vi_bar_max == vi_bar_min )
+    vi_bar_value = 0;
+  else
+  {
+    fraction = (row-bar_height/2) / (float)(n_rows-bar_height);
+    if ( fraction < 0 )
+      fraction = 0;
+    if ( fraction > 1 )
+      fraction = 1;
+    vi_bar_value = (int)( vi_bar_min - knob_height/2+ 
+                         (vi_bar_max - vi_bar_min - bar_height) * fraction );
+  }
+
+/*
+  System.out.println("In SyncVImageScrollBar");
+  System.out.println("n_rows       = " + n_rows );
+  System.out.println("row          = " + row );
+  System.out.println("fraction     = " + fraction );
+  System.out.println("vi_bar_value = " + vi_bar_value );
+  System.out.println("vi_bar_min   = " + vi_bar_min );
+  System.out.println("vi_bar_max   = " + vi_bar_max );
+  System.out.println("Scrollbar size = " + vi_bar.getSize() );
+  System.out.println("knob_height    = " + knob_height );
+  System.out.println("scroll size    = " + image_scroll_pane.getSize() );
+*/  
+  vi_bar.setValue( vi_bar_value );
+
+  getState().set_float( ViewerState.V_SCROLL_POSITION, fraction );
+}
+
+
 /* ------------------------- ProcessImageMouseEvent ------------------------ */
 
 private Point ProcessImageMouseEvent( MouseEvent e, 
@@ -1193,17 +1292,38 @@ private Point ProcessImageMouseEvent( MouseEvent e,
 {
   image_Jpanel.requestFocus();
   
-  Point pix_pt          = image_Jpanel.getCurrent_pixel_point();
+  Point        pix_pt = image_Jpanel.getCurrent_pixel_point();
+  floatPoint2D pt     = image_Jpanel.getCurrent_WC_point();
   int row = image_Jpanel.ImageRow_of_PixelRow( pix_pt.y );
   int col = image_Jpanel.ImageCol_of_PixelCol( pix_pt.x );
+  if ( debug )
+  {
+    System.out.println("ProcessImageMouseEvent");
+    System.out.println("row = " + row);
+    System.out.println("col = " + col);
+    System.out.println("WC  = " + pt );
+  }
+                                        // NOTE: Now that we are notifying
+                                        //       observers when Y or X changes
+                                        //       these checks may be redundant.
+                                        //       Leave them here incase we
+                                        //       need to go back to notifying
+                                        //       for Y changes only due to
+                                        //       performance considerations.
 
-  if ( row != last_image_row )
+  if ( row != last_image_row || col != last_image_col  )
   {
     if ( getDataSet().getPointedAtIndex() != row  ||
+         getDataSet().getPointedAtX()     != pt.x ||
          getDataSet().getNum_entries() == 1        )  // only change if needed
     { 
+      getDataSet().setPointedAtX( pt.x ); 
       getDataSet().setPointedAtIndex( row );
       getState().set_int( ViewerState.POINTED_AT_INDEX, row );
+      getState().set_float( ViewerState.POINTED_AT_X, pt.x );
+      if ( debug )
+        System.out.println("IMAGE CALLING NOTIFY: " + pt.x);
+      image_sent_pointed_at = true;
       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
     }
     DrawSelectedHGraphs();
