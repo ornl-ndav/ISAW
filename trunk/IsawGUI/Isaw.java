@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.66  2001/12/05 20:53:05  pfpeterson
+ *  extended dual monitor support to cover more windows
+ *
  *  Revision 1.65  2001/11/30 23:14:58  pfpeterson
  *  Changed the size and position of the main window to assume a 4:3 aspect ratio from the screen height. This should fix the dual monitor problem.
  *
@@ -951,6 +954,8 @@ public class Isaw
 
         JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(new File(SS));
+	Dimension d = new Dimension(650,300);
+	fc.setPreferredSize(d);
  
         String str = (String)Script_Path ;
         fc.setFileFilter(new scriptFilter());
@@ -1070,6 +1075,8 @@ public class Isaw
             fc.addChoosableFileFilter(  new NeutronDataFileFilter( true )  ); 
             fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
             fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
+	    Dimension d = new Dimension(650,300);
+	    fc.setPreferredSize(d);
             
             if(  (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION ) ) 
                 return;
@@ -1123,7 +1130,7 @@ public class Isaw
           FileDialog fc = new FileDialog(  new Frame(), 
                                            msg, 
                                            FileDialog.LOAD  );
-          fc.setDirectory(  System.getProperty( "user.home" )  );
+	  fc.setDirectory(  System.getProperty( "user.home" )  );
           fc.show();
           File f = new File( fc.getDirectory(), fc.getFile() );
           String filename = f.toString();
@@ -1421,10 +1428,10 @@ public class Isaw
     //Center the opdialog frame 
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     Dimension size = hh.getSize();
+    screenSize.width = (int)(screenSize.height*2/3);
     screenSize.height = screenSize.height/2;
-    screenSize.width = screenSize.width/2;
+    size.width = (int)(size.height*2/3);
     size.height = size.height/2;
-    size.width = size.width/2;
     int y = screenSize.height - size.height;
     int x = screenSize.width - size.width;
     hh.setLocation(x-200, y-200);
@@ -1569,7 +1576,7 @@ public class Isaw
     Dimension size = this.getSize();
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     int window_height = (int)(screenSize.height*.9);
-    int window_width = (int)(screenSize.width*.95);  
+    int window_width = (int)(screenSize.height*.95*4/3);
     size.height = window_height/2+200;
     size.width = window_width/2;
     int y = window_height - size.height;
@@ -1992,7 +1999,7 @@ public class Isaw
       fc.setFileFilter(  new NeutronDataFileFilter()  ); 
       fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
       fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
-      Dimension d = new Dimension(550,300);
+      Dimension d = new Dimension(650,300);
       fc.setPreferredSize(d);
       if(  fc.showDialog(frame,null) == JFileChooser.APPROVE_OPTION  ) 
       {
