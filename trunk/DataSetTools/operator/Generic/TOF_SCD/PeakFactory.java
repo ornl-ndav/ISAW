@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2004/01/24 20:31:16  bouzekc
+ * Removed/commented out unused variables/imports.
+ *
  * Revision 1.4  2003/12/15 02:29:12  bouzekc
  * Removed unused imports.
  *
@@ -56,24 +59,8 @@ import DataSetTools.math.LinearAlgebra;
 
 public class PeakFactory{
   // instance variables
-  private int       seqnum   = 0;
-  private float     h        = 0;
-  private float     k        = 0;
-  private float     l        = 0;
-  private float     x        = Float.NaN;
-  private float     y        = Float.NaN;
-  private float     z        = Float.NaN;
-  private float     xcm      = 0f;
-  private float     ycm      = 0f;
-  private float     t        = 0f;
-  private float     wl       = 0f;
-  private int       ipkobs   = 0;
-  private float     inti     = 0f;
-  private float     sigi     = 0f;
-  private int       reflag   = 0;
   private int       nrun     = 0;
   private int       detnum   = 0;
-  private float     nearedge = 0;
   private float     detA     = 0f;
   private float     detA2    = 0f;
   private float     detD     = 0f;
@@ -84,8 +71,6 @@ public class PeakFactory{
   private XScale    xscale   = null;
   private float[]   calib    = null;
   private float[][] UB       = null;
-  private float[][] invUB    = null;
-  private float[][] ROT      = {{1f,0f,0f},{0f,1f,0f},{0f,0f,1f}};
   private float     L1       = 0f;
   private float     T0       = 0f;
   private float     T1       = 0f;
@@ -258,8 +243,7 @@ public class PeakFactory{
   }
   
   /**
-   *  Mutator method for the sample orientation. This will
-   *  automatically update the values of hkl.
+   *  Mutator method for the sample orientation.
    *
    *  @param CHI   Angle chi.
    *  @param PHI   Angle phi.
@@ -272,8 +256,7 @@ public class PeakFactory{
   }
   
   /**
-   * Mutator method for the calibration. This will automatically
-   * update the values of xcm, ycm, wl, and hkl.
+   * Mutator method for the calibration. 
    *
    * @param CALIB The new calibration array.
    */

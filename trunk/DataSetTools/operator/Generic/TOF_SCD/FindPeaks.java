@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.20  2004/01/24 20:31:15  bouzekc
+ * Removed/commented out unused variables/imports.
+ *
  * Revision 1.19  2003/12/15 01:56:37  bouzekc
  * Removed unused imports.
  *
@@ -69,8 +72,6 @@ import java.util.Vector;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
-import DataSetTools.dataset.IPixelInfo;
-import DataSetTools.dataset.PixelInfoListAttribute;
 import DataSetTools.dataset.XScale;
 import DataSetTools.instruments.SampleOrientation;
 import DataSetTools.operator.HiddenOperator;
@@ -187,9 +188,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     //System.out.print("====================================");
     //System.out.println("==================================");
     Data data=data_set.getData_entry(0);
-    int numData=data_set.getNum_entries();
-    PixelInfoListAttribute segI;
-    IPixelInfo seg=null;
     int[] det_number=null;
     float init_path=0f;
 
@@ -496,7 +494,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   public static void main( String args[] ){
     
     String datfile="/IPNShome/pfpeterson/data/SCD/SCD06496.RUN";
-    DataSet mds = (new RunfileRetriever(datfile)).getDataSet(0);
     DataSet rds = (new RunfileRetriever(datfile)).getDataSet(1);
     //System.out.println(rds.getAttributeValue(Attribute.RUN_NUM));
     //Data data = rds.getData_entry_with_id(2523);

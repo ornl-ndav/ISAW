@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2004/01/24 20:31:15  bouzekc
+ * Removed/commented out unused variables/imports.
+ *
  * Revision 1.12  2003/12/15 01:45:30  bouzekc
  * Removed unused imports.
  *
@@ -55,7 +58,6 @@ import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
 import DataSetTools.util.ErrorString;
-import DataSetTools.util.SharedData;
 import DataSetTools.retriever.RunfileRetriever;
 import java.util.Vector;
 
@@ -66,9 +68,6 @@ import java.util.Vector;
  */
 public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
   private static final String     TITLE                 = "Centroid Peaks";
-  private static final int        time_notice_frequency = 20;
-  private static final SharedData shared                = new SharedData();
-  private              int        run_number            = -1;
   
   /**
    *  Creates operator with title "Centroid Peaks" and a default
@@ -146,7 +145,6 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
   public Object getResult(){
     DataSet data_set = (DataSet)(getParameter(0).getValue());
     Vector  peaks    = (Vector) (getParameter(1).getValue());
-    Vector  cpeaks   = new Vector();
     
     int detNum=((Peak)peaks.elementAt(0)).detnum();
     if(detNum<=0) return new ErrorString("Invalid detector number: "+detNum);
@@ -196,7 +194,7 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
     
     FindPeaks fo = new FindPeaks(rds,138568f,10,1);
     Vector peaked=(Vector)fo.getResult();
-    Peak peak=new Peak();
+
     for( int i=0 ; i<peaked.size() ; i++ ){
       System.out.println(peaked.elementAt(i));
     }

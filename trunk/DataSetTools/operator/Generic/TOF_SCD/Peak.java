@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.22  2004/01/24 20:31:15  bouzekc
+ * Removed/commented out unused variables/imports.
+ *
  * Revision 1.21  2003/12/15 02:29:12  bouzekc
  * Removed unused imports.
  *
@@ -876,8 +879,6 @@ public class Peak{
    * Despite its name this actually calculates 1/d (Qvec/2PI).
    */
   private float[] getQ(){
-    float[] Qvec   = new float[3];
-    float[] pos    = new float[3];
     float[] post_d = new float[3];
     float[] post_a = new float[3];
     float[] post_l = new float[3];
