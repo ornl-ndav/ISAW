@@ -32,14 +32,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/02/11 04:09:02  bouzekc
+ * Removed the PropChangeProgressBar.  The progress bars now use the JDK 1.4
+ * setIndeterminate() method.  This should take some work off of writing
+ * new Forms.
+ *
  * Revision 1.1  2004/01/09 22:25:45  bouzekc
  * Added to CVS.
  *
  */
 package DataSetTools.wizard;
-
-import java.beans.PropertyChangeListener;
-
 
 /**
  * This is a package level interface defining a GUI front end for a Wizard.
@@ -75,20 +77,18 @@ interface IGUIWizardFrontEnd extends IWizardFrontEnd {
   //~ Methods ******************************************************************
 
   /**
-   * Accessor method for the progress indicator.  For example, invoking this on
-   * SwingWizardFrontEnd will get the internal progress bar.
+   * Utility method to set the Form progress bar indeterminate state.
    *
-   * @return The PropertyChanger progress indicator.
+   * @param indet Whether the progress bar should be indeterminate.
    */
-  public PropertyChangeListener getFormProgressIndicator(  );
+  public void setFormProgressIndeterminate( boolean indet );
 
   /**
-   * Utility method to set the progress widget value and label.
+   * Utility method to set the Wizard progress bar indeterminate state.
    *
-   * @param value The new value to set.
-   * @param label The new label to set
+   * @param indet Whether the progress bar should be indeterminate.
    */
-  public void setFormProgressParameters( int value, String label );
+  public void setWizardProgressIndeterminate( boolean indet );
 
   /**
    * Method to update the formProgress progress widget based on whether or not
