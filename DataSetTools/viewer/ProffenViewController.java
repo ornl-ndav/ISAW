@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/08/04 22:12:15  rmikk
+ * Fixed an error in the menu system
+ *
  * Revision 1.4  2004/07/29 19:46:11  rmikk
  * Fixed the Menu maker to give.
  * Checked for a null condition before invoking an imageViewComponent Method
@@ -50,9 +53,9 @@
 
 package DataSetTools.viewer;
 
-import Command.ScriptUtil;
+//import Command.ScriptUtil;
 import DataSetTools.dataset.DataSet;
-import DataSetTools.viewer.Table.LargeJTableViewComponent;
+//import DataSetTools.viewer.Table.LargeJTableViewComponent;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.TwoD.*;
 import javax.swing.*;
@@ -87,7 +90,7 @@ public class ProffenViewController extends DataSetViewer implements
 		super(data_set); 
         ArrayMaker = new DataSetGRCTArrayMaker(data_set, null);
         Viewer = new ImageViewComponent( new VirtualArray2D(10,10));
-       // Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
+        //Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
         Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
 		init();
 	}
@@ -105,8 +108,7 @@ public class ProffenViewController extends DataSetViewer implements
         //Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
         Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
         init();
-       
-		// XXX Auto-generated constructor stub
+	
 	}
   
     private void init(){
@@ -190,8 +192,11 @@ public class ProffenViewController extends DataSetViewer implements
              }
           }else{
              jm1 = find( item, jm);
-             if( jm1 == null)
-                jm.add(new JMenu(item));
+             if( jm1 == null){
+                jm1 = new JMenu(item);
+                jm.add(jm1);
+               
+             }
           } 
           jm = jm1;
           j=k+1;
@@ -258,7 +263,7 @@ public class ProffenViewController extends DataSetViewer implements
      model =ArrayMaker.getObjectState(true);
      Contr = new ObjectState();
      Contr.insert("ImageTable", new Boolean(true));
-     Contr.insert(ViewerState.CONTROL_WIDTH, new Float(.7));
+     Contr.insert(ViewerState.CONTROL_WIDTH, new Float(.3));
      ObjectState Res = new ObjectState();
      Res.insert("Controller", Contr);
      Res.insert("View", view);
