@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/08/14 01:32:14  dennis
+ *  Added comments to ProcessCommand() method.  Now usually makes
+ *  a log entry before doing the command.
+ *
  *  Revision 1.5  2001/08/13 23:37:32  dennis
  *  Added code for basic handling of get status command.
  *
@@ -277,13 +281,17 @@ public class TCPServer implements ITCPUser
                                             ThreadedTCPComm tcp_io   )
    {  
       try
-      {
+      {                                                // handle GET_STATUS, but
+                                                       // allow derived classes
+                                                       // to override it.
         if ( command.startsWith( COMMAND_GET_STATUS) )
         {
           if ( !user_ok )
             tcp_io.Send( RemoteDataRetriever.BAD_USER_NAME_STRING );
+
           else if ( !password_ok )
             tcp_io.Send( RemoteDataRetriever.BAD_PASSWORD_STRING );
+
           else 
             tcp_io.Send( RemoteDataRetriever.SERVER_OK_STRING );
         } 
@@ -323,9 +331,9 @@ public class TCPServer implements ITCPUser
       {
         if ( command.startsWith( COMMAND_USER_IS ))  
         {
+          MakeLogEntry( command, tcp_io.getInetAddressString(), false );
           user_name = getArgument( command );
           user_ok = true;
-          MakeLogEntry( command, tcp_io.getInetAddressString(), false );
           tcp_io.Send( ANSWER_OK );
           return;
         } 
@@ -355,16 +363,20 @@ public class TCPServer implements ITCPUser
 
         else if ( command.startsWith( COMMAND_GET_DATA_NAME ))
         {
+          MakeLogEntry( command, tcp_io.getInetAddressString(), false );
           if ( user_ok && password_ok )
             tcp_io.Send( data_name );
           else
             tcp_io.Send( ANSWER_NOT_OK );          
+          return;
         }
 
-        MakeLogEntry( command, tcp_io.getInetAddressString(), false );
 
         if ( user_ok && password_ok )
+        {
+          MakeLogEntry( command, tcp_io.getInetAddressString(), false );
           ProcessCommand( command, tcp_io );
+        }
 
         else                                           // break connection
         {
