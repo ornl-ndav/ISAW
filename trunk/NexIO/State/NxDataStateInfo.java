@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/12/08 17:28:23  rmikk
+ * Eliminated a debu print
+ *
  * Revision 1.1  2003/11/16 21:42:25  rmikk
  * Initial Checkin
  *
@@ -124,8 +127,7 @@ public class NxDataStateInfo extends StateInfo{
               labelName = ConvertDataTypes.StringValue( child.getAttrValue("label"));
            }
            String L = ConvertDataTypes.StringValue(child.getAttrValue("link")); 
-           System.out.println("link "+child.getNodeName()+","+L+"::"+
-                  child.getAttrValue("label"));
+          
            if( L != null){
               linkName = L;
            } 
