@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2002/04/23 20:59:22  pfpeterson
+ * Do not show operators that implement the HiddenOperator
+ * interface in the menus. BatchOperators now implement the
+ * interface.
+ *
  * Revision 1.18  2002/02/22 20:33:48  pfpeterson
  * Operator Reorganization.
  *
@@ -153,7 +158,7 @@ private  void initt(OperatorHandler op , IDataSetListHandler DS,
         categories[0]=Operator.OPERATOR; 
        }
     found = true;
-    if( !( op.getOperator( i ) instanceof GenericBatch ))
+    if( !(op.getOperator(i) instanceof HiddenOperator) )
     {for ( cat_index = start; (cat_index < categories.length) &&(found); cat_index++ ) 
     {
        num_components = current_menu.getMenuComponentCount();
