@@ -29,6 +29,9 @@
  * Modified: 
  *
  * $Log$
+ * Revision 1.8  2003/04/24 19:00:58  pfpeterson
+ * Various small bug fixes. (Chris Bouzek)
+ *
  * Revision 1.7  2003/04/02 15:02:46  pfpeterson
  * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  *
@@ -38,8 +41,8 @@
  *
  * Revision 1.4  2003/03/13 19:00:52  dennis
  * Added $Log$
- * Added Revision 1.7  2003/04/02 15:02:46  pfpeterson
- * Added Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
+ * Added Revision 1.8  2003/04/24 19:00:58  pfpeterson
+ * Added Various small bug fixes. (Chris Bouzek)
  * Added
  * Added Revision 1.5  2003/03/19 15:08:33  pfpeterson
  * Added Uses the TimeFocusGroupForm rather than TimeFocusForm and GroupingForm.
@@ -50,16 +53,10 @@
 
 package Wizard;
 
-import java.util.*;
+import java.util.Vector;
 import java.io.*;
-import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 import DataSetTools.wizard.*;
-import DataSetTools.util.*;
-import DataSetTools.operator.*;
-import DataSetTools.parameter.*;
-
 
 /**
  *  This class has a main program that constructs a Wizard for time
@@ -67,6 +64,12 @@ import DataSetTools.parameter.*;
  */
 public class TimeFocusGroupWizard extends Wizard
 {
+  private static final int HISTOGRAMS         = 0;
+  private static final int MONITORS           = 1;
+  private static final int TIME_FOCUS_RESULTS = 2;
+  private static final int RUN_NUMBERS        = 3;
+  private static final int INSTRUMENT_NAME    = 4; 
+
   /**
    *
    *  Default constructor.  Sets standalone in Wizard to true.
@@ -130,23 +133,6 @@ public class TimeFocusGroupWizard extends Wizard
     this.addForm(lmhf);
     this.addForm(tfgf);
     this.addForm(sagf);
-  }
-
-  /*
-   *
-   *  Overridden methods.
-   */
-  public boolean  load()
-  {
-    return false;
-  }
-  public void save()
-  {
-  }
-  public void close()
-  {
-    this.save();
-    System.exit(0);
   }
 
   /**

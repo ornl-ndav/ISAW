@@ -49,15 +49,12 @@ public class LoadMultiHistogramsForm extends Form
                               implements Serializable
 {
   /**
-   *  Construct a LoadMultiHistogramsForm.  This constructor also
-   *  calls setDefaultParameters in order to set the permission
-   *  type of the parameters.
+   *  Construct a LoadMultiHistogramsForm.
    *  
    */
   public LoadMultiHistogramsForm()
   {
       super("Open multiple histograms");
-      this.setDefaultParameters();
   } 
 
   /**
@@ -113,6 +110,7 @@ public class LoadMultiHistogramsForm extends Form
    */
   public void setDefaultParameters()
   {
+    parameters = new Vector();
     addParameter(new IntArrayPG("Run Numbers", "12358", false));
     addParameter(new DataDirPG("Location of runfiles", "", false));
     addParameter(new InstNamePG("Instrument Name", "GPPD", false));
