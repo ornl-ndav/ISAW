@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/09/21 19:11:35  dennis
+ *  Improved label on file name that's printed to the console.
+ *
  *  Revision 1.5  2001/09/21 18:39:36  dennis
  *  Removed some debugging println() statements.
  *
@@ -71,7 +74,7 @@ public class gsas_filemaker
     try{
         FileOutputStream op= new FileOutputStream(f);
         OutputStreamWriter opw = new OutputStreamWriter(op);
-         System.out.println("the file name isx " +filename);
+         System.out.println("The GSAS file name is " +filename);
          String S = ds.getTitle();
         
 
