@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/02/24 21:01:36  pfpeterson
+ *  Major reworking. This version is completely incompatible with previous
+ *  versions. Value changed to a vector which cannot be changed in the GUI.
+ *  This should be subclassed for particular types of vectors in order to
+ *  make the value changable in the GUI.
+ *
  *  Revision 1.4  2002/11/27 23:22:42  pfpeterson
  *  standardized header
  *
@@ -50,6 +56,7 @@ package DataSetTools.parameter;
 
 import java.util.Vector;
 import DataSetTools.components.ParametersGUI.HashEntry;
+import javax.swing.JLabel;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -61,7 +68,7 @@ public class ArrayPG extends ParameterGUI{
     protected static int    DEF_COLS = 20;
 
     // instance variables
-    protected Vector vals=null;
+    protected Vector value=null;
 
     // ********** Constructors **********
     public ArrayPG(String name, Object value){
@@ -71,7 +78,6 @@ public class ArrayPG extends ParameterGUI{
     }
 
     public ArrayPG(String name, Object value, boolean valid){
-        this.addItem(value);
         this.setName(name);
         this.setValue(value);
         this.setEnabled(true);
@@ -85,12 +91,14 @@ public class ArrayPG extends ParameterGUI{
     // ********** Methods to deal with the hash **********
 
     /**
-     * Add a single item to the vector of choices.
+     * Add a single item to the vector
      */
     public void addItem( Object val){
-        if(this.vals==null) this.vals=new Vector(); // initialize if necessary
+        if(this.value==null) this.value=new Vector();// initialize if necessary
         if(val==null) return; // don't add null to the vector
-        if(this.vals.indexOf(val)<0) this.vals.add(val); // add if unique
+        if(this.value.indexOf(val)<0) this.value.add(val); // add if unique
+        if(this.initialized)
+          ((JLabel)this.entrywidget).setText(this.stringVersion());
     }
 
     /**
@@ -106,8 +114,24 @@ public class ArrayPG extends ParameterGUI{
      * Remove an item from the hash based on its key.
      */
     public void removeItem( Object val ){
-        int index=vals.indexOf(val);
-        if(index>=0) vals.remove(index);
+        int index=this.value.indexOf(val);
+        this.removeItem(index);
+    }
+
+    public void removeItem(int index){
+      if(index>=0 && index<value.size())
+        value.remove(index);
+    }
+
+    /**
+     * Calls Vector.clear() on the value.
+     */
+    public void clearValue(){
+      if(this.value==null) return;
+
+      this.value.clear();
+      if(this.initialized)
+        ((JLabel)this.entrywidget).setText(this.stringVersion());
     }
 
     // ********** IParameter requirements **********
@@ -119,30 +143,28 @@ public class ArrayPG extends ParameterGUI{
      * a specific object (such as String or DataSet) without casting.
      */
     public Object getValue(){
-        Object value=null;
-        if(this.initialized){
-            value=((HashEntry)this.entrywidget).getSelectedItem();
-        }else{
-            value=this.value;
-        }
-        return value;
+        return this.value;
+    }
+    
+    public Vector getVectorValue(){
+      return this.value;
     }
 
     /**
      * Sets the value of the parameter.
      */
     public void setValue(Object value){
-        this.addItem(value);
-        if(this.initialized){
-            if(value==null){
-                // do nothing
-            }else{
-                ((HashEntry)this.entrywidget).setSelectedItem(value);
-            }
-        }else{
-            this.value=value;
-        }
-        this.setValid(true);
+      if(value==null)
+        this.value=null;
+      else if(value instanceof Vector)
+        this.value=(Vector)value;
+      else
+        return;
+
+      if(this.initialized)
+        ((JLabel)this.entrywidget).setText(this.stringVersion());
+
+      this.setValid(true);
     }
 
     // ********** IParameterGUI requirements **********
@@ -151,22 +173,8 @@ public class ArrayPG extends ParameterGUI{
      */
     public void init(Vector init_values){
         if(this.initialized) return; // don't initialize more than once
-        if(init_values!=null){
-            if(init_values.size()==1){
-                this.setValue(init_values.elementAt(0));
-            }else if(init_values.size()>1){
-                for( int i=0 ; i<init_values.size() ; i++ ){
-                    this.addItem(init_values.elementAt(i));
-                }
-            }else{
-                // something is not right, should throw an exception
-            }
-        }
 
-        // set up the combobox
-        this.entrywidget=new HashEntry(this.vals);
-        this.entrywidget.setEnabled(this.enabled);
-        this.entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
+        this.entrywidget=new JLabel(this.stringVersion());
         this.packupGUI();
         this.initialized=true;
     }
@@ -184,12 +192,77 @@ public class ArrayPG extends ParameterGUI{
     }
 
     /**
-     * Set the enabled state of the EntryWidget. This produces a more
-     * pleasant effect that the default setEnabled of the widget.
+     * This is an empty method. It is not used because the value
+     * cannot be changed from the GUI.
      */
     public void setEnabled(boolean enabled){
-        this.enabled=enabled;
-        if(this.entrywidget!=null) this.entrywidget.setEnabled(this.enabled);
+    }
+
+    /**
+     * Creates the string to be placed in the label for the GUI
+     */
+    private String stringVersion(){
+      if(this.value==null || this.value.size()<=0){
+        return "";
+      }else{
+        StringBuffer result=new StringBuffer();
+        int numElements=this.value.size();
+        int start=0;
+        int index=0;
+        while(start<numElements){
+          index=checkSame(this.value,start);
+          result.append(shortName(this.value.elementAt(index+start-1))
+                     +"["+index+"]");
+          start=start+index;
+          if(start<numElements)
+            result.append(", ");
+          index=0;
+        }
+
+        if(result.length()>0)
+          return result.toString();
+        else
+          return this.value.toString();
+      }
+    }
+
+    /**
+     * Determines how many elements are identical.
+     */
+    private int checkSame(Vector vals, int start){
+      if(vals==null || vals.size()<=0) return -1;
+      if(start>=vals.size()) return -1;
+
+      int same=1;
+
+      String first=vals.elementAt(start).getClass().getName();
+      for( int i=1 ; i<vals.size() ; i++ ){
+        if(first.equals(vals.elementAt(i).getClass().getName()))
+          same++;
+        else
+          return same;
+      }
+
+      return same;
+    }
+
+    /**
+     * Create a short version of a classname based on the object provided.
+     */
+    private String shortName(Object obj){
+      // get the name of the class
+      String res=obj.getClass().getName();
+
+      // determine what to trim off
+      int start=res.lastIndexOf(".");
+      int end=res.length();
+      if(res.endsWith(";"))end--;
+
+      // return the trimmed version
+      if(start>=0&&end>=0)
+        return res.substring(start+1,end);
+      else
+        return res;
     }
 
     /**
@@ -204,27 +277,34 @@ public class ArrayPG extends ParameterGUI{
         vals.add("bob");
         vals.add("doug");
 
-        fpg=new ArrayPG("a","1f");
+        fpg=new ArrayPG("a",vals);
         System.out.println(fpg);
         fpg.init();
         fpg.showGUIPanel(0,y);
         y+=dy;
 
-        fpg=new ArrayPG("b","10f");
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new ArrayPG("c","1000f",false);
+        vals.add(new StringBuffer("tim"));
+        fpg=new ArrayPG("b",vals);
         System.out.println(fpg);
         fpg.setEnabled(false);
         fpg.init();
         fpg.showGUIPanel(0,y);
         y+=dy;
 
-        fpg=new ArrayPG("d","100f",true);
+        vals=new Vector();
+        for( int i=1 ; i<=20 ; i++ )
+          vals.add(new Integer(i));
+        fpg=new ArrayPG("c",vals,false);
+        System.out.println(fpg);
+        fpg.setEnabled(false);
+        fpg.init();
+        fpg.showGUIPanel(0,y);
+        y+=dy;
+
+        vals=new Vector();
+        for( float f=1f ; f<100 ; f*=2 )
+          vals.add(new Float(f));
+        fpg=new ArrayPG("d",vals,true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
         fpg.init(vals);
@@ -238,7 +318,6 @@ public class ArrayPG extends ParameterGUI{
      */
     public Object clone(){
         ArrayPG apg=new ArrayPG(this.name,this.value,this.valid);
-        apg.vals=(Vector)this.vals.clone();
         apg.setDrawValid(this.getDrawValid());
         apg.initialized=false;
         return apg;
