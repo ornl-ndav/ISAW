@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/08/16 19:15:44  dennis
+ *  Now calls DSImplementationOps.AddDataBlocks to form the sum
+ *  and to form an average DetectorPosition, weighted by
+ *  the solid angles ( if present ).
+ *
  *  Revision 1.6  2001/07/23 18:50:47  dennis
  *  Fixed error: no longer using "==" for String comparison.
  *
@@ -109,6 +114,7 @@ package DataSetTools.operator;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
+import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 
 /**
@@ -180,7 +186,8 @@ public class SumByAttribute extends    DataSetOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: in this case, SumAtt
+   * @return  the command name to be used with script processor: 
+   *          in this case, SumAtt
    */
    public String getCommand()
    {
@@ -242,12 +249,13 @@ public class SumByAttribute extends    DataSetOp
     int num_data = ds.getNum_entries();
     Data data,
          new_data;
+    Attribute attr;
     for ( int i = 0; i < num_data; i++ )
     {
       data = ds.getData_entry( i );        // get reference to the data entry
                                            // keep or reject it based on the
                                            // attribute value.
-      Attribute attr = data.getAttributeList().getAttribute( attr_name );
+      attr = data.getAttribute( attr_name );
       float val = (float)attr.getNumericValue(); 
       if (attr_name.equals( Attribute.DETECTOR_POS ))     // convert to degrees
         val *= (float) 180.0/Math.PI;
@@ -267,29 +275,13 @@ public class SumByAttribute extends    DataSetOp
       System.out.println( message );
       return message;
     }
-    else                                 // sum up the data blocks that were 
-    {                                    // selected and return
 
-      Data sum = new_ds.getData_entry( 0 );                // get the first 
-      for ( int i = 1; i < new_ds.getNum_entries(); i++ )  // and add all the 
-      {                                                    // later ones to it 
-        sum = sum.add( new_ds.getData_entry(i) ); 
-        if ( sum == null )
-        {
-          ErrorString message = new ErrorString(
-                         "ERROR: Data block not compatible for adding" );
-          System.out.println( message );
-          return message;
-        } 
-      }
- 
-      for ( int i = new_ds.getNum_entries()-1; i >= 0 ; i-- ) 
-        new_ds.removeData_entry(i);                    // throw out all entries
-
-      new_ds.addData_entry( sum );                     // put the sum in the
-                                                       // data set
+    SpecialString result = DSOpsImplementation.AddDataBlocks( new_ds );
+    if ( result == null )
       return new_ds;
-    }
+    else
+      return result;
+
   }  
 
   /* ------------------------------ clone ------------------------------- */
