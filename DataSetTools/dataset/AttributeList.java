@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2002/11/12 02:10:32  dennis
+ *  No longer clones attributes.  Since attributes are immutable, just use
+ *  the same reference to the attribute.
+ *
  *  Revision 1.12  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -151,7 +155,7 @@ public class AttributeList implements Serializable,
   {
     if ( getAttribute( attribute.getName() ) == null )
     {
-      attributes.addElement( (Attribute)attribute.clone() );
+      attributes.addElement( attribute );
       return true;
     }
    else
@@ -179,7 +183,7 @@ public class AttributeList implements Serializable,
          index <= attributes.size()   &&
          getAttribute( attribute.getName() ) == null )
     {
-      attributes.insertElementAt( (Attribute)attribute.clone(), index );
+      attributes.insertElementAt( attribute, index );
       return true;
     }
     else
@@ -465,13 +469,11 @@ public class AttributeList implements Serializable,
       attr_2 = attr_list_2.getAttribute( attr_name );
 
       if ( attr_1 != null  && attr_2 != null ) 
-      {                                  // the attributes are in the lists
-                                         // so make a copy then add and put in
+        setAttribute( attr_1.add( attr_2 ) ); 
+                                         // the attributes are in the lists
+                                         // so put the new Attribute that
+                                         // results from adding them, in
                                          // the list
-         attr_1 = (Attribute)attr_1.clone();
-         attr_1.add( attr_2 );    
-         setAttribute( attr_1 ); 
-      }      
    }
  
 
