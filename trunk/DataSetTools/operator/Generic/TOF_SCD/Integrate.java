@@ -29,6 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.30  2003/09/19 21:26:12  dennis
+ * Does integration over full shoebox region, including one extra time
+ * slice in each direction.  Logging is not complete for shoebox region
+ * integration.  This still needs to modified to do full logging for
+ * integration over shoebox region and to NOT include extra time slices
+ * before and after the region integrated.
+ *
  * Revision 1.29  2003/09/15 22:21:08  dennis
  * Added spaces to improve readability.
  *
@@ -40,7 +47,7 @@
  * 1. Renamed compItoDI() method to increasingIsigI()
  * 2. Added method is_significant() that checks if I > 2 * sigI
  *    AND I > 0.01 * total I.
- * 3. Slices are now integrated and included if either the increase I/sigI
+ * 3. Slices are now integrated and included if either they increase I/sigI
  *    or if is_significant() is true.
  *
  * Revision 1.26  2003/08/27 23:17:44  bouzekc
@@ -647,7 +654,7 @@ public class Integrate extends GenericTOF_SCD{
     for( int i=0 ; i<det_number.length ; i++ ){
       if(DEBUG) System.out.println("integrating "+det_number[i]);
       innerPeaks=new Vector();
-      error=integrateDetector(ds,innerPeaks,pkfac,det_number[i]);
+      error=integrateDetector(ds,innerPeaks,pkfac,det_number[i], use_shoebox);
       if(DEBUG) System.out.println("ERR="+error);
       if(error!=null) return error;
       if(DEBUG) System.out.println("integrated "+innerPeaks.size()+" peaks");
@@ -672,8 +679,12 @@ public class Integrate extends GenericTOF_SCD{
   }
 // ========== start of detector dependence
 
-  private ErrorString integrateDetector(DataSet ds, Vector peaks, 
-                                                PeakFactory pkfac, int detnum){
+  private ErrorString integrateDetector(DataSet     ds, 
+                                        Vector      peaks, 
+                                        PeakFactory pkfac, 
+                                        int         detnum,
+                                        boolean     use_shoebox )
+  {
     if(DEBUG) System.out.println("Integrating detector "+detnum);
 
     // get the detector number
@@ -797,13 +808,30 @@ public class Integrate extends GenericTOF_SCD{
     }
 
     // integrate the peaks
-    for( int i=peaks.size()-1 ; i>=0 ; i-- ){
-      if( i%listNthPeak == 0 )
-        integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
-                      logBuffer);
-      else
-        integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
-                      null);
+    for( int i=peaks.size()-1 ; i>=0 ; i-- )
+    {
+      if( i%listNthPeak == 0 )                   // integrate with logging
+      {
+        if ( use_shoebox )
+          integrateShoebox( (Peak)peaks.elementAt(i),
+                             ds, ids,
+                             colXrange, rowYrange, timeZrange,
+                             logBuffer ); 
+        else
+          integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
+                        logBuffer);
+      }
+      else                                      // integrate but don't log
+      {
+        if ( use_shoebox )
+          integrateShoebox( (Peak)peaks.elementAt(i),
+                             ds, ids,
+                             colXrange, rowYrange, timeZrange,
+                             null );
+        else
+          integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
+                        null);
+      }
     }
 
     // centroid the peaks
@@ -867,6 +895,120 @@ public class Integrate extends GenericTOF_SCD{
     return null;
   }
 
+
+  /**
+   * This method integrates the peak by looking at a rectangular "shoebox"
+   * around the specified peak.  The volume specified by the shoebox is assumed 
+   * to be the peak.  The border voxels (just outside the shoebox in 3D) are 
+   * taken as the background.  If the peak position is too close to the edge
+   * of the volume of data, it cannot be integrated and this method just
+   * returns.
+   */
+   private static void integrateShoebox( Peak         peak,
+                                         DataSet      ds, 
+                                         int          ids[][], 
+                                         int          colXrange[], 
+                                         int          rowYrange[], 
+                                         int          timeZrange[],
+                                         StringBuffer log )
+   {
+     // set up where the peak is located
+     int cenX=(int)Math.round(peak.x());
+     int cenY=(int)Math.round(peak.y());
+     int cenZ=(int)Math.round(peak.z());
+
+     // we will consider the specified shoe box to the the part of the peak
+     // that is included and will consider the background to be the border
+     // "voxels" in 3D.  So we need to have some extra space around the peak.
+     // If we don't, we'll just return without integrating the peak.
+
+     int minZ = 0;
+     int maxZ = ds.getData_entry(ids[1][1]).getX_scale().getNum_x() - 1; 
+     if ( cenZ + timeZrange[0] < minZ + 1 )  // too close to time channel 0
+       return;                   
+  
+     if ( cenZ + timeZrange[1] > maxZ - 1 )  // too close to max time channel
+       return;
+
+     int minX = 1;                           // in ids[][] the first index
+     int maxX = ids.length-1;                // is the column (i.e. X) index
+
+     if ( cenX + colXrange[0] < minX + 1 )
+       return;            
+     
+     if ( cenX + colXrange[1] > maxX - 1 )
+       return;
+
+     int minY = 1;                           // in ids[][] the second index
+     int maxY = ids[1].length-1;             // is the row (i.e. Y) index
+
+     if ( cenY + rowYrange[0] < minY + 1 )
+       return;            
+     
+     if ( cenY + rowYrange[1] > maxY - 1 )
+       return;
+
+     addLogHeader( log, peak );
+                                             // size of peak "shoebox"
+     int nX = colXrange[1]  - colXrange[0]  + 1;  
+     int nY = rowYrange[1]  - rowYrange[0]  + 1;
+     int nZ = timeZrange[1] - timeZrange[0] + 1;
+
+     float n_signal =  nX    *  nY    *  nZ;   
+     float n_total  = (nX+2) * (nY+2) * (nZ+2);   
+     float n_border = n_total - n_signal;
+     float ratio    = n_signal/n_border;
+
+     float total = 0;            // overall total on peak + background region
+     float p_sig_plus_back = 0;  // signal + background total for peak region
+     float intensity;            // intensity at one voxel
+
+     int n_in = 0;
+     int n_tot = 0;
+
+     for(int i = cenX + colXrange[0] - 1; i <= cenX + colXrange[1] + 1; i++)
+      for(int j = cenY + rowYrange[0] - 1; j <= cenY + rowYrange[1] + 1; j++)
+       for(int k = cenZ + timeZrange[0] - 1; k <= cenZ + timeZrange[1] + 1; k++)
+       {
+         intensity = getObs( ds, ids[i][j], k );
+         n_tot++;
+         total += intensity;
+         if ( i >= cenX + colXrange[0]  &&  i <= cenX + colXrange[1]    &&
+              j >= cenY + rowYrange[0]  &&  j <= cenY + rowYrange[1]    &&
+              k >= cenZ + timeZrange[0] &&  k <= cenZ + timeZrange[1]   )
+         {
+           p_sig_plus_back += intensity;
+           n_in++;
+         }
+       }
+
+     float border = total - p_sig_plus_back;      // total on border region only
+     float signal = p_sig_plus_back - ratio * border;  
+     float sigI   = (float)Math.sqrt(p_sig_plus_back + ratio * ratio * border);
+
+/*
+     System.out.println("" + nX + ", " + nY + ", " + nZ +
+                        ", ratio = " + ratio + 
+                        ", p_sig_plus_back = " + p_sig_plus_back +
+                        ", total = " + total +
+                        ", signal = " + signal +
+                        ", n_in = " + n_in +
+                        ", n_tot = " + n_tot + 
+                        ", cenX  = " + cenX  +
+                        ", cenY  = " + cenY  +
+                        ", cenZ  = " + cenZ  ); 
+     System.out.println("X: " + colXrange[0]  + ", " + colXrange[1] +" " +
+                        "Y: " + rowYrange[0]  + ", " + rowYrange[1] +" " +
+                        "Z: " + timeZrange[0] + ", " + timeZrange[1] ); 
+*/                           
+
+     peak.inti( signal );
+     peak.sigi( sigI   );
+
+     addPeakSummary( log, signal, sigI );
+   }
+
+
   /**
    * This method integrates the peak by looking at five time slices
    * centered at the one the peak exsists on. It grows a rectangle on
@@ -875,7 +1017,11 @@ public class Integrate extends GenericTOF_SCD{
    */
   private static void integratePeak(Peak peak, DataSet ds, int[][] ids,
                         int[] timeZrange, int increaseSlice, StringBuffer log){
-    // track what's going on in some cases
+
+    // For debugging purposes, it' helpful to track what's going on in some 
+    // cases.  To track what is done with a particular peak, specify the hkl
+    // values and add println() statements to dump out needed values 
+    // if trace is true.
     boolean trace = false;
     int trace_h = -1;
     int trace_k =  3;
@@ -884,7 +1030,7 @@ public class Integrate extends GenericTOF_SCD{
          Math.round(peak.k()) == trace_k && 
          Math.round(peak.l()) == trace_l  )
       trace = true;
-    trace = false;   // disable trace now.
+    trace = false;   // disable trace for now.
 
     // set up where the peak is located
     float[] tempIsigI=null;
@@ -920,15 +1066,7 @@ public class Integrate extends GenericTOF_SCD{
       if(zrange[i]==maxZrange) indexZmax=i;
     }
 
-    // add some information to the log file (if necessary)
-    if(log!=null){
-      log.append("\n******************** hkl = "+formatInt(peak.h())+" "
-                 +formatInt(peak.k())+" "+formatInt(peak.l())
-                 +"   at XYT = "+formatInt(peak.x())+" "+formatInt(peak.y())
-                 +" "+formatInt(peak.z())+" ********************\n");
-      log.append("Layer  T   maxX maxY  IPK     dX       dY      Ihkl     sigI"
-                 +"  I/sigI   included?\n");
-    }
+    addLogHeader( log, peak );
 
     // initialize variables for the slice integration
     float[][] IsigI=new float[zrange.length][2]; // 2nd index is I,dI
@@ -1128,14 +1266,7 @@ public class Integrate extends GenericTOF_SCD{
           log.append("No\n");
       }
 
-      // summary
-      log.append("***** Final       Ihkl = "+formatFloat(Itot)+"       sigI = "
-                 +formatFloat(dItot)+"       I/sigI = ");
-      if(dItot>0f)
-        log.append(formatFloat(Itot/dItot));
-      else
-        log.append(formatFloat(0f));
-      log.append(" *****\n");
+      addPeakSummary( log, Itot, dItot );
     }
 
     // change the peak to reflect what we just did
@@ -1232,16 +1363,6 @@ public class Integrate extends GenericTOF_SCD{
     // add information to the log and return the integral
     formatRange(rng,log);
     return IsigI;
-  }
-
-  private static void formatRange(int[] rng, StringBuffer log){
-    if(log==null) return;
-    final int MAX_LENGTH=14;
-
-    if(log.length()>MAX_LENGTH)
-      log.delete(MAX_LENGTH,log.length());
-    log.append("  "+formatInt(rng[0])+" "+formatInt(rng[2])+"  "
-               +formatInt(rng[1])+" "+formatInt(rng[3]));
   }
 
   /**
@@ -1670,6 +1791,8 @@ public class Integrate extends GenericTOF_SCD{
     return op;
   }
   
+  /* --------------------- logging utilities -------------------------- */
+
   private static String formatInt(double num){
     return formatInt(num,3);
   }
@@ -1694,6 +1817,45 @@ public class Integrate extends GenericTOF_SCD{
     return text.toString();
   }
 
+  private static void formatRange(int[] rng, StringBuffer log){
+    if(log==null) return;
+    final int MAX_LENGTH=14;
+
+    if(log.length()>MAX_LENGTH)
+      log.delete(MAX_LENGTH,log.length());
+    log.append("  "+formatInt(rng[0])+" "+formatInt(rng[2])+"  "
+               +formatInt(rng[1])+" "+formatInt(rng[3]));
+  }
+
+  private static void addLogHeader( StringBuffer log, Peak peak )
+  {
+    // add some information to the log file (if necessary)
+    if(log!=null){
+      log.append("\n******************** hkl = "+formatInt(peak.h())+" "
+                 +formatInt(peak.k())+" "+formatInt(peak.l())
+                 +"   at XYT = "+formatInt(peak.x())+" "+formatInt(peak.y())
+                 +" "+formatInt(peak.z())+" ********************\n");
+      log.append("Layer  T   maxX maxY  IPK     dX       dY      Ihkl     sigI"
+                 +"  I/sigI   included?\n");
+    }
+  }
+
+  private static void addPeakSummary( StringBuffer log, 
+                                      float        Itot, 
+                                      float        sigItot )
+  {
+    if ( log != null )
+    {
+      log.append("***** Final       Ihkl = "+formatFloat(Itot)+"       sigI = "
+                 +formatFloat(sigItot)+"       I/sigI = ");
+      if(sigItot>0f)
+        log.append(formatFloat(Itot/sigItot));
+      else
+        log.append(formatFloat(0f));
+      log.append(" *****\n");
+    }
+  }
+
   /* ------------------------------- main --------------------------------- */ 
   /** 
    * Test program to verify that this will complile and run ok.  
@@ -1711,7 +1873,8 @@ public class Integrate extends GenericTOF_SCD{
     System.out.println("LoadSCDCalib.RESULT="+lsc.getResult());
     
     // load an orientation matrix
-    LoadOrientation lo=new LoadOrientation(rds,new LoadFileString(prefix+"quartz.mat"));
+    LoadOrientation lo = 
+              new LoadOrientation(rds,new LoadFileString(prefix+"quartz.mat"));
     System.out.println("LoadOrientation.RESULT="+lo.getResult());
 
     // integrate the dataset
