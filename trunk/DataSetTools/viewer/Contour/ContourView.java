@@ -36,6 +36,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/07/23 22:09:05  rmikk
+ *  Implemented the PointedAt features to integrate with
+ *    other viewers.
+ *
  *  Revision 1.5  2002/07/15 22:13:33  rmikk
  *  Added an intensity slider
  *
@@ -113,9 +117,12 @@ public class ContourView extends DataSetViewer
    int nlevels = 16;
    ViewerState state = null;  
    JLabel time_label = new JLabel( "" );
+   // Use the correct one ---------------
+   //JPanel main; 
    SplitPaneWithState main = null;
    //JSplitPane main = null;
   // JPanel main= null;
+   //---------------------
    JSlider intensity = null;
    public ContourView( DataSet ds, ViewerState state1 )
    {
@@ -182,21 +189,21 @@ public class ContourView extends DataSetViewer
       BoxLayout blay = new BoxLayout( jpEast, BoxLayout.Y_AXIS );
 
       jpEast.setLayout( blay );
-      jpEast.add( ac );
+     
    
       intensity = new JSlider( 0, 100);
       intensity.setBorder( BorderFactory.createTitledBorder( BorderFactory.createEtchedBorder(),
                         "Intensity") );
-      jpEast.add(intensity);
+     
       intensity.addChangeListener( new MyChange());
       
 
-      jpEast.add( ConvTableHolder );
-      jpEast.add( Box.createHorizontalGlue() );
-      rpl_Holder = new JPanel( new GridLayout( 1,1));
-      rpl_Holder.add( rpl_);
+     
       
-       main = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,  rpl_Holder,  jpEast, .70f);
+      rpl_Holder = new MyJPanel( rpl_, Color.white);
+      rpl_Holder.add( rpl_);
+      setLayout(jpEast );
+     
        //main.setDividerLocation( .70);
      /*  main = new JPanel();
       GridBagLayout gbl = new GridBagLayout();
@@ -249,7 +256,71 @@ public class ContourView extends DataSetViewer
       validate();
 
    }
+  // main splitpane with state, 
+  public void setLayout(JPanel jpEast)
+   {jpEast.add( ac );
+    jpEast.add(intensity);  
+    jpEast.add( ConvTableHolder );
+    jpEast.add( Box.createHorizontalGlue() );
+    main = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,  rpl_Holder,  jpEast, .70f);
+   }
+   //Change the name of doLayou when changing this
+   //Cannot get the column 2 items to draw correctly.
+   JPanel acHolder, intensityHolder;
+   public void setLayout2( JPanel jpEast)
+     { //main = new JPanel();
+       main.setLayout( null);
+       acHolder = new MyJPanel(  ac ,Color.blue);//new JPanel( new GridLayout( 1,1));//
+       intensityHolder =new JPanel( new GridLayout( 1,1));
+      
+       acHolder.add( ac);
+       intensityHolder.add( intensity);
+       
+     }
+  public void doLayout2()
+   {if( acHolder == null)
+      { super.doLayout();
+        System.out.println("Eliminate ContourView.doLayout");
+        return;
+       }
+    System.out.println("in doLayout Bounds ="+getBounds());
+    Rectangle R = getBounds();
+    if( R.width <=0) return;
+    if(R.height <=0) return;
+    int R1 = (int)(R.width*.7);
+    rpl_Holder.setBounds     ( new Rectangle( 0,    0,                (int)(R.width*.7),
+                         R.height) );
+    acHolder.setBounds       ( new Rectangle(R1+1,   0,                 R.width-R1-2, 
+                   (int) (R.height*.2)));
+    //intensityHolder.setBounds( new Rectangle(R1+1, 1+(int)(R.height*.2),R.width-R1, 
+     //                  (int)(R.height*.1)) ));
+   // ConvTableHolder.setBounds( new Rectangle(R1+1, 3+(int)(R.height*.3), R.width -R1,
+    //                                 R.height-2-(int)(R.height*.3));
+   
+     rpl_Holder.doLayout();
+    //acHolder.doLayout();
+    //intensityHolder.doLayout();
+    //ConversionTableHolder.doLayout();
 
+    main.add( rpl_Holder);
+    main.add( acHolder);
+    rpl_Holder.doLayout();
+    acHolder.doLayout();
+    System.out.println( "acHolder bounds="+acHolder.getBounds());
+    }
+  //Will attempt to do box layout horizontally. NOPE cannot do this
+  public void setLayout3( JPanel jpEast)
+    {jpEast.add( ac );
+    jpEast.add(intensity);  
+    jpEast.add( ConvTableHolder );
+    jpEast.add( Box.createHorizontalGlue() );
+
+    BoxLayout bl = new BoxLayout(main, BoxLayout.X_AXIS );
+    //main = new JPanel();
+    main.setLayout( bl);
+    main.add(rpl_Holder);
+    main.add( jpEast);
+     }
   public ViewerState getState()
    {return state;
    }
@@ -614,7 +685,8 @@ public class ContourView extends DataSetViewer
                   i = times.length -1;;
                
                SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[i] ) );
-
+               data_set.setPointedAtX( times[i]);
+               data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
                ( ( SimpleGrid )newData ).setZArray( newData1.getZArray() );
                rpl_.draw();
 
@@ -704,7 +776,14 @@ public class ContourView extends DataSetViewer
       else if( reason == IObserver.SELECTION_CHANGED )
       {}
       else if( reason == IObserver.POINTED_AT_CHANGED )
-      {}
+      { 
+        float x = data_set.getPointedAtX();
+        int index =data_set.getPointedAtIndex();
+        
+        if( java.lang.Math.abs(cd.getTime() -x) >.00001)
+           ac.setFrameValue( x );
+        dct.showConversions( x, index );
+      }
       else if( reason == IObserver.GROUPS_CHANGED )
       {
          setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
@@ -787,11 +866,53 @@ public class ContourView extends DataSetViewer
          double row = cg.getYPtoU( L.getYDtoP( e.getY() ) );
          int index = cd.getGroupIndex( row, col );
          float time = cd.getTime();
+         data_set.setPointedAtIndex( index);
+         data_set.setPointedAtX( time);
+         
+         data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
 
-         dct.showConversions( time, index );
+         //dct.showConversions( time, index ); moved to redraw
 
       }
 
    }
+ class MyJPanel extends JPanel
+   {JComponent comp;
+    Color colr;
+    public MyJPanel( JComponent jc, Color C)
+      {super( new GridLayout( 1,1 ));
+        comp =jc;
+       colr =C;
+      }
+  
+    public void paint1( Graphics g)
+      {
+        Rectangle R = this.getBounds();
+        g.setColor( colr);
+ 
+        g.fillRect(R.x,R.y,R.width,R.height);
+        comp.setBounds( new Rectangle( R.x, R.y, R.width,R.height));
+       System.out.println("in Paint "+colr+R);
+        System.out.println("com"+comp.getBounds()+comp.getClass());
+        if( comp instanceof JPlotLayout)
+            rpl_.draw(g);
+        else
+            {comp.paint(g);}
+        
+       }
+
+    }
+  public void paint1( Graphics g)
+   {System.out.println("In ContourView paint");
+     Graphics g1 = g;
+     rpl_Holder.paint(g1);
+     Rectangle R = acHolder.getBounds();
+     g1=g;
+     //g1.translate( R.x,R.y);
+     System.out.println("CV acHolder.bounds="+acHolder.getBounds());
+     System.out.println("CV ac bounds="+ac.getBounds());
+     acHolder.paint(g1);
+
+     }
 }
 
