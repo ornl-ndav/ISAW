@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2003/03/04 20:32:00  dennis
+ *  Added method to get the name of any of the DataSets on the server,
+ *  using the new command object.
+ *  Now strips "Status:" prefix off from reply to status request.
+ *
  *  Revision 1.23  2003/02/24 13:42:31  dennis
  *  Switched to use CommandObject instead of compound String command.
  *
@@ -100,9 +105,6 @@ public class LiveDataRetriever extends    RemoteDataRetriever
       return types.length; 
     }
 
-//    if ( server_alive && user_ok && password_ok )
-//      return WRONG_SERVER_TYPE;
-
     if ( server_alive )
       return BAD_PASSWORD;
 
@@ -138,23 +140,23 @@ public class LiveDataRetriever extends    RemoteDataRetriever
   }
 
 
-/* ---------------------------- getDataName ----------------------------- */
+/* -------------------------- getDataSetName ----------------------------- */
 /**
  *  Get the name of current data on the LiveDataServer.
  *
+ *  @param  data_set_num  The number of the DataSet for which the name is
+ *                        requested
+ *
  *  @return String containing the name of the Data.
  */
-  public String getDataName()
+  public String getDataSetName( int data_set_num )
   {
               // include file_name for compatibilty with RemoteFileRetriever
 
-    Object obj = getObjectFromServer( getDS_Name("",0) );
+    Object obj = getObjectFromServer( getDS_Name("", data_set_num) );
 
     if ( obj != null && obj instanceof String )
-    {
-      String name = (String)obj;
-      return name;
-    }
+      return (String)obj;
 
     return new String(TCPServer.DEFAULT_DATA_NAME);
   }
@@ -172,6 +174,10 @@ public class LiveDataRetriever extends    RemoteDataRetriever
  */
   public DataSet getDataSet( int data_set_num )
   {
+    if ( debug_remote )
+      System.out.println("LiveDataRetriever.getDataSet(" + data_set_num +
+                         ") called **************");
+
     Object obj = getObjectFromServer( getDS("",data_set_num) );
 
     if ( obj != null && obj instanceof DataSet )
@@ -208,7 +214,14 @@ public class LiveDataRetriever extends    RemoteDataRetriever
    Object obj = getObjectFromServer( getStatus() );
 
    if ( obj != null && obj instanceof String )
-     return (String)obj;
+   {
+     String message = (String)obj;
+
+     if ( message.startsWith( TCPServer.STATUS ) )           // strip off prefix
+       message = message.substring( TCPServer.STATUS.length() );
+
+     return message;
+   }
 
    if ( !isConnected() )
      return NOT_CONNECTED_STRING;
