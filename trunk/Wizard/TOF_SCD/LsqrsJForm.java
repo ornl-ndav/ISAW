@@ -1,5 +1,5 @@
 /*
- * File:  LsqrsJForm.java   
+ * File:  LsqrsJForm.java
  *
  * Copyright (C) 2003, Chris M. Bouzek
  *
@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.12  2003/06/25 16:11:22  bouzekc
+ * Reformatted for clarity.
+ *
  * Revision 1.11  2003/06/18 23:34:26  bouzekc
  * Parameter error checking now handled by superclass Form.
  *
@@ -75,40 +78,43 @@
  * Added log message header to file.
  *
  */
-
 package Wizard.TOF_SCD;
 
-import  java.util.Vector;
-import  DataSetTools.util.*;
-import  DataSetTools.parameter.*;
-import  DataSetTools.wizard.*;
-import  Operators.TOF_SCD.*;
-import  DataSetTools.operator.Operator;
-import  java.io.File;
+import DataSetTools.operator.Operator;
+
+import DataSetTools.parameter.*;
+
+import DataSetTools.util.*;
+
+import DataSetTools.wizard.*;
+
+import Operators.TOF_SCD.*;
+
+import java.io.File;
+
+import java.util.Vector;
+
 
 /**
- * 
- *  This is a Form to add extra functionality to LsqrsJ.  It outputs 
+ *
+ *  This is a Form to add extra functionality to LsqrsJ.  It outputs
  *  multiple ls#.mat files, where # corresponds to a run number.
  *  Other than that, it functions in a similar manner to LsqrsJ.
  */
-public class LsqrsJForm extends Form
-{
-
+public class LsqrsJForm extends Form {
   protected static int RUN_NUMBER_WIDTH = 5;
-  private static final String  identmat = "[[1,0,0][0,1,0][0,0,1]]";
-
-  private boolean useIdentity = false;
+  private static final String identmat  = "[[1,0,0][0,1,0][0,0,1]]";
+  private boolean useIdentity        = false;
   private BooleanPG useIdentCheckBox;
 
   /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
+
   /**
    * Construct a Form with a default parameter list.
    */
-  public LsqrsJForm()
-  {
+  public LsqrsJForm(  ) {
     super( "LsqrsJForm" );
-    this.setDefaultParameters();
+    this.setDefaultParameters(  );
   }
 
   /**
@@ -118,13 +124,13 @@ public class LsqrsJForm extends Form
    *                                this Form should have constant
    *                                parameters.
    */
-  public LsqrsJForm(boolean hasConstParams)
-  {
+  public LsqrsJForm( boolean hasConstParams ) {
     super( "LsqrsJForm", hasConstParams );
-    this.setDefaultParameters();
+    this.setDefaultParameters(  );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+
   /**
    *  Full constructor for LsqrsJForm.
    *
@@ -135,54 +141,59 @@ public class LsqrsJForm extends Form
    *  @param restrictSeq    The sequence numbers to restrict.
    *  @param transform      The transformation matrix to apply.
    */
-  
-  public LsqrsJForm(String runNums, String peaksPath, String expName,
-                    String restrictSeq, String transform)
-  {
-    this();
-    getParameter(0).setValue(runNums);
-    getParameter(1).setValue(peaksPath);
-    getParameter(2).setValue(expName);
-    getParameter(3).setValue(restrictSeq);
-    getParameter(4).setValue(transform);
+  public LsqrsJForm( 
+    String runNums, String peaksPath, String expName, String restrictSeq,
+    String transform ) {
+    this(  );
+    getParameter( 0 ).setValue( runNums );
+    getParameter( 1 ).setValue( peaksPath );
+    getParameter( 2 ).setValue( expName );
+    getParameter( 3 ).setValue( restrictSeq );
+    getParameter( 4 ).setValue( transform );
   }
 
   /**
    *
    *  Attempts to set reasonable default parameters for this form.
    */
-  public void setDefaultParameters()
-  {
-    parameters = new Vector();
+  public void setDefaultParameters(  ) {
+    parameters = new Vector(  );
 
     //0
-    addParameter(new IntArrayPG("Run Numbers",null, false));
+    addParameter( new IntArrayPG( "Run Numbers", null, false ) );
+
     //1
-    addParameter(new DataDirPG( "Peaks File Path", null, false));
+    addParameter( new DataDirPG( "Peaks File Path", null, false ) );
+
     //2
-    addParameter(new StringPG( "Experiment Name", null, false));
+    addParameter( new StringPG( "Experiment Name", null, false ) );
+
     //3
-    addParameter(new IntArrayPG(
-                   "Restrict Peaks Sequence Numbers (blank for all)", 
-                    null, false));
+    addParameter( 
+      new IntArrayPG( 
+        "Restrict Peaks Sequence Numbers (blank for all)", null, false ) );
+
     //4
-    addParameter(new BooleanPG("Use Identity Matrix for Iteration?", false, 
-                               false));
+    addParameter( 
+      new BooleanPG( "Use Identity Matrix for Iteration?", false, false ) );
+
     //5
-    addParameter(new StringPG("Transform Matrix",identmat, false));
+    addParameter( new StringPG( "Transform Matrix", identmat, false ) );
+
     //6 - parameter added solely so user can view scalar file and is optional.
     //As such, it is ALWAYS valid
-    addParameter(new LoadFilePG("Scalar Log", null, true));
+    addParameter( new LoadFilePG( "Scalar Log", null, true ) );
+
     //7
-    addParameter(new ArrayPG("Matrix Files", new Vector(), false));
+    addParameter( new ArrayPG( "Matrix Files", new Vector(  ), false ) );
 
-    if(HAS_CONSTANTS)
-      setParamTypes(new int[]{0,1,2},new int[]{3,4,5,6}, new int[]{7});
-    else  //standalone or first time form
-      setParamTypes(null, new int[]{0,1,2,3,4,5,6}, new int[]{7});
-
+    if( HAS_CONSTANTS ) {
+      setParamTypes( 
+        new int[]{ 0, 1, 2 }, new int[]{ 3, 4, 5, 6 }, new int[]{ 7 } );
+    } else {  //standalone or first time form
+      setParamTypes( null, new int[]{ 0, 1, 2, 3, 4, 5, 6 }, new int[]{ 7 } );
+    }
   }
-
 
   /**
    *
@@ -190,215 +201,232 @@ public class LsqrsJForm extends Form
    *  conventions.
    *
    */
-  public String getDocumentation()
-  {
-    StringBuffer s = new StringBuffer();
-    s.append("@overview This is a Form to add extra functionality to ");
-    s.append("LsqrsJ.  It use the given *.peaks file and the transformation ");
-    s.append("matrix for calculation.  In addition, it ");
-    s.append("\"knows\" which runs to restrict for each matrix file.  ");
-    s.append("It outputs a ls#expName.mat file for each run, and an ");
-    s.append("lsexpName.mat file which is produced for ALL runs.");
-    s.append("Other than that, it functions in a similar manner to ");
-    s.append("LsqrsJ.\n");
-    s.append("NOTE: although it resets the transformation matrix to the ");
-    s.append("identity after the first iteration, the matrix can be reset ");
-    s.append("at any time if you want to change it again when executing.\n");
-    s.append("NOTE: the transformation matrix is initially set to the ");
-    s.append("identity matrix.\n");
-    s.append("@assumptions The peaks file exists and the transformation ");
-    s.append("matrix is valid.");
-    s.append("@algorithm Using the given run numbers, transformation matrix, ");
-    s.append("and peaks file, this Form calls LsqrsJ, creating the appropriate ");
-    s.append("lsexpName#.mat file for each run number in the peaks file, as well ");
-    s.append("as an overall lsexpName.mat file.\n");
-    s.append("The user is given a choice as to what transformation matrix to ");
-    s.append("use for each run number (NOT IMPLEMENTED YET).\n");
-    s.append("@param runnums The run numbers to use for naming the matrix ");
-    s.append("files.\n");
-    s.append("@param peaksPath The path where the peaks file is.\n");
-    s.append("@param expName The experiment name.\n");
-    s.append("@param restrictSeq The sequence numbers to restrict.\n");
-    s.append("@param useIdentity Whether or not LsqrsJ should use the  ");
-    s.append("identity matrix (i.e. if this is set to true, then the ");
-    s.append("transformation matrix is always the identity matrix.\n");
-    s.append("@param transform The transformation matrix to apply.\n");
-    s.append("@param scalarLog The scalar log file.  Unused by LsqrsJ, it ");
-    s.append("is included for convenience.\n");
-    s.append("@param matrixFiles The Vector of LsqrsJ output matrix files.\n");
-    s.append("@return A Boolean indicating success or failure of the Form's ");
-    s.append("execution.\n");
-    s.append("@error Invalid peaks path.\n");
-    s.append("@error Invalid experiment name.\n");
-    s.append("@error Invalid transformation matrix.\n");
-    return s.toString();
+  public String getDocumentation(  ) {
+    StringBuffer s = new StringBuffer(  );
+
+    s.append( "@overview This is a Form to add extra functionality to " );
+    s.append( "LsqrsJ.  It use the given *.peaks file and the transformation " );
+    s.append( "matrix for calculation.  In addition, it " );
+    s.append( "\"knows\" which runs to restrict for each matrix file.  " );
+    s.append( "It outputs a ls#expName.mat file for each run, and an " );
+    s.append( "lsexpName.mat file which is produced for ALL runs." );
+    s.append( "Other than that, it functions in a similar manner to " );
+    s.append( "LsqrsJ.\n" );
+    s.append( "NOTE: although it resets the transformation matrix to the " );
+    s.append( "identity after the first iteration, the matrix can be reset " );
+    s.append( "at any time if you want to change it again when executing.\n" );
+    s.append( "NOTE: the transformation matrix is initially set to the " );
+    s.append( "identity matrix.\n" );
+    s.append( "@assumptions The peaks file exists and the transformation " );
+    s.append( "matrix is valid." );
+    s.append( 
+      "@algorithm Using the given run numbers, transformation matrix, " );
+    s.append( 
+      "and peaks file, this Form calls LsqrsJ, creating the appropriate " );
+    s.append( 
+      "lsexpName#.mat file for each run number in the peaks file, as well " );
+    s.append( "as an overall lsexpName.mat file.\n" );
+    s.append( 
+      "The user is given a choice as to what transformation matrix to " );
+    s.append( "use for each run number (NOT IMPLEMENTED YET).\n" );
+    s.append( "@param runnums The run numbers to use for naming the matrix " );
+    s.append( "files.\n" );
+    s.append( "@param peaksPath The path where the peaks file is.\n" );
+    s.append( "@param expName The experiment name.\n" );
+    s.append( "@param restrictSeq The sequence numbers to restrict.\n" );
+    s.append( "@param useIdentity Whether or not LsqrsJ should use the  " );
+    s.append( "identity matrix (i.e. if this is set to true, then the " );
+    s.append( "transformation matrix is always the identity matrix.\n" );
+    s.append( "@param transform The transformation matrix to apply.\n" );
+    s.append( "@param scalarLog The scalar log file.  Unused by LsqrsJ, it " );
+    s.append( "is included for convenience.\n" );
+    s.append( "@param matrixFiles The Vector of LsqrsJ output matrix files.\n" );
+    s.append( "@return A Boolean indicating success or failure of the Form's " );
+    s.append( "execution.\n" );
+    s.append( "@error Invalid peaks path.\n" );
+    s.append( "@error Invalid experiment name.\n" );
+    s.append( "@error Invalid transformation matrix.\n" );
+
+    return s.toString(  );
   }
 
   /**
    *  Returns the String command used for invoking this
    *  Form in a Script.
    */
-  public String getCommand()
-  {
+  public String getCommand(  ) {
     return "JLSQRSFORM";
   }
 
-
- /**
-   * getResult() takes the user input parameters and runs LsqrsJ, 
-   * using the given *.peaks file.  It pops up a dialog box so that the 
+  /**
+   * getResult() takes the user input parameters and runs LsqrsJ,
+   * using the given *.peaks file.  It pops up a dialog box so that the
    * user can select transformation matrices for each run number.
    * (DIALOG BOX NOT IMPLEMENTED YET).
    *
    *  @return A Boolean indicating success or failure.
    */
-  public Object getResult()
-  {
-    SharedData.addmsg("Executing...");
+  public Object getResult(  ) {
+    SharedData.addmsg( "Executing..." );
+
     IParameterGUI param;
-    String runNum, peaksDir, xFormMat, restrictSeq, matFileName, expName,
-           peaksName;
-    Vector matNamesVec = new Vector(20,4);
+    String runNum;
+    String peaksDir;
+    String xFormMat;
+    String restrictSeq;
+    String matFileName;
+    String expName;
+    String peaksName;
+    Vector matNamesVec  = new Vector( 20, 4 );
     Object obj;
     int[] runsArray;
     LsqrsJ leastSquares;
 
     //gets the run numbers
-    param = (IParameterGUI)getParameter(0);
-    runsArray = IntList.ToArray(param.getValue().toString());
+    param       = ( IParameterGUI )getParameter( 0 );
+    runsArray   = IntList.ToArray( param.getValue(  ).toString(  ) );
+
     //get input file directory 
-    param = (IParameterGUI)super.getParameter(1);
-    peaksDir = param.getValue().toString();
+    param      = ( IParameterGUI )super.getParameter( 1 );
+    peaksDir   = param.getValue(  ).toString(  );
+
     //gets the experiment name
-    param = (IParameterGUI)super.getParameter(2);
-    expName = param.getValue().toString();
+    param     = ( IParameterGUI )super.getParameter( 2 );
+    expName   = param.getValue(  ).toString(  );
+
     /*get restricted sequence numbers - leave in String form
-      for LsqrsJ*/
-    param = (IParameterGUI)getParameter(3);
-    restrictSeq = param.getValue().toString();
+       for LsqrsJ*/
+    param         = ( IParameterGUI )getParameter( 3 );
+    restrictSeq   = param.getValue(  ).toString(  );
+
     //get "use identity" value - this is a class value, and is actually
     //retrieved using setIdentityParameter below
-    setIdentityParameter(); 
+    setIdentityParameter(  );
 
     /*get transformation matrix - only set to identity if
-      not first time through.  Otherwise, use user input
-      value.*/
-    param = (IParameterGUI)getParameter(5);
-    xFormMat = param.getValue().toString();
+       not first time through.  Otherwise, use user input
+       value.*/
+    param      = ( IParameterGUI )getParameter( 5 );
+    xFormMat   = param.getValue(  ).toString(  );
 
-    if(useIdentity)
+    if( useIdentity ) {
       xFormMat = identmat;
+    }
 
     //the scalar log file - ALWAYS valid.  The Form will now skip checking this
     //parameter.
-    param = (IParameterGUI)getParameter(6);
-    param.setValid(true);
+    param = ( IParameterGUI )getParameter( 6 );
+    param.setValid( true );
 
     //peaks file
-    peaksName = peaksDir + expName + ".peaks";
+    peaksName   = peaksDir + expName + ".peaks";
 
-   //call LsqrsJ - this is the same every time, so keep it out of the loop
-   leastSquares = new LsqrsJ();
-   leastSquares.getParameter(0).setValue(peaksName);
-   leastSquares.getParameter(2).setValue(restrictSeq);
-   leastSquares.getParameter(3).setValue(xFormMat);
+    //call LsqrsJ - this is the same every time, so keep it out of the loop
+    leastSquares = new LsqrsJ(  );
+    leastSquares.getParameter( 0 ).setValue( peaksName );
+    leastSquares.getParameter( 2 ).setValue( restrictSeq );
+    leastSquares.getParameter( 3 ).setValue( xFormMat );
 
     //validate the parameters and init the progress bar variables
-    Object superRes = super.getResult();
+    Object superRes = super.getResult(  );
 
     //had an error, so return
-    if(superRes instanceof ErrorString)  
+    if( superRes instanceof ErrorString ) {
       return superRes;
+    }
 
     //set the increment amount
-    increment = (1.0f / runsArray.length) * 100.0f;
+    increment = ( 1.0f / runsArray.length ) * 100.0f;
 
-    for(int i = 0; i < runsArray.length; i++)
-    {
-      runNum = DataSetTools
-               .util
-               .Format
-               .integerPadWithZero(runsArray[i], RUN_NUMBER_WIDTH);
+    for( int i = 0; i < runsArray.length; i++ ) {
+      runNum   = DataSetTools.util.Format.integerPadWithZero( 
+          runsArray[i], RUN_NUMBER_WIDTH );
 
       matFileName = peaksDir + "ls" + expName + runNum + ".mat";
-      matNamesVec.add(matFileName);
+      matNamesVec.add( matFileName );
 
-      SharedData.addmsg("LsqrsJ is creating " + matFileName + " for " + peaksName);
+      SharedData.addmsg( 
+        "LsqrsJ is creating " + matFileName + " for " + peaksName );
 
-      leastSquares.getParameter(1).setValue(runNum);
-      leastSquares.getParameter(4).setValue(matFileName);
+      leastSquares.getParameter( 1 ).setValue( runNum );
+      leastSquares.getParameter( 4 ).setValue( matFileName );
 
-      obj = leastSquares.getResult();
+      obj = leastSquares.getResult(  );
 
-      if(obj instanceof ErrorString)
-        return errorOut("LsqrsJ failed: " + obj.toString());
+      if( obj instanceof ErrorString ) {
+        return errorOut( "LsqrsJ failed: " + obj.toString(  ) );
+      }
 
       //fire a property change event off to any listeners
       oldPercent = newPercent;
       newPercent += increment;
-      super.fireValueChangeEvent((int)oldPercent, (int)newPercent);
+      super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
     }
 
     //now put out an orientation matrix for all of the runs.
     matFileName = peaksDir + "ls" + expName + ".mat";
-    matNamesVec.add(matFileName);
-    leastSquares.getParameter(1).setValue("");
-    leastSquares.getParameter(4).setValue(matFileName);
-    obj = leastSquares.getResult();
+    matNamesVec.add( matFileName );
+    leastSquares.getParameter( 1 ).setValue( "" );
+    leastSquares.getParameter( 4 ).setValue( matFileName );
+    obj = leastSquares.getResult(  );
 
-    if(obj instanceof ErrorString)
-      return errorOut("LsqrsJ failed: " + obj.toString());
+    if( obj instanceof ErrorString ) {
+      return errorOut( "LsqrsJ failed: " + obj.toString(  ) );
+    }
 
     //set the matrix file name vector parameter
-    param = (IParameterGUI)getParameter(7);
-    param.setValue(matNamesVec);
-    param.setValid(true);
-  
-    SharedData.addmsg("--- LsqrsJForm finished. ---");
+    param = ( IParameterGUI )getParameter( 7 );
+    param.setValue( matNamesVec );
+    param.setValid( true );
 
-    return new Boolean(true);
+    SharedData.addmsg( "--- LsqrsJForm finished. ---" );
+
+    return new Boolean( true );
   }
 
   /**
-   *  Overridden so that the identity matrix can be used on any iterations 
-   *  of Lsqrs.  
+   *  Overridden so that the identity matrix can be used on any iterations
+   *  of Lsqrs.
    */
-  protected void makeGUI()
-  {
+  protected void makeGUI(  ) {
     IParameterGUI param;
+
     //the scalar log file - ALWAYS valid
-    param = (IParameterGUI)getParameter(6);
-      param.setValid(true);
-    if(useIdentCheckBox == null)
-      setIdentityParameter();
+    param = ( IParameterGUI )getParameter( 6 );
+    param.setValid( true );
+
+    if( useIdentCheckBox == null ) {
+      setIdentityParameter(  );
+    }
+
     //after the first time through, we don't want to change the
     //identity matrix
-    if(!useIdentity)
-    {
-      useIdentCheckBox.setValue(Boolean.FALSE);
+    if( !useIdentity ) {
+      useIdentCheckBox.setValue( Boolean.FALSE );
+
       //alternate so that the user won't accidentally apply the matrix twice.
       //This will not interfere with getResult(), since it gets the checkbox
       //value anyways
       useIdentity = true;
-    }
-    else
-    {
-      useIdentCheckBox.setValue(Boolean.TRUE);
+    } else {
+      useIdentCheckBox.setValue( Boolean.TRUE );
+
       //reset the matrix to identity
-      ((IParameterGUI)getParameter(5)).setValue(identmat);
+      ( ( IParameterGUI )getParameter( 5 ) ).setValue( identmat );
     }
 
-    super.makeGUI();  //now make the GUI
+    super.makeGUI(  );  //now make the GUI
   }
 
   /**
    *  Gets the true/false value from the identity check box on the GUI
    *  and sets the useIdentity variable to that value.
    */
-  private void setIdentityParameter()
-  {
-    if(useIdentCheckBox == null)
-      useIdentCheckBox = (BooleanPG)super.getParameter( 4 );
-    useIdentity = useIdentCheckBox.getbooleanValue();
+  private void setIdentityParameter(  ) {
+    if( useIdentCheckBox == null ) {
+      useIdentCheckBox = ( BooleanPG )super.getParameter( 4 );
+    }
+
+    useIdentity = useIdentCheckBox.getbooleanValue(  );
   }
 }
