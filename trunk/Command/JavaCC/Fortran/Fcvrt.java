@@ -35,9 +35,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.1  2004/06/16 21:08:34  rmikk
- * Created by JavaCC on the FortJ2.jj file.  This is the Fortran to Java(
- * wrapped operator) converter.  Functional
+ * Revision 1.2  2004/06/17 14:17:05  rmikk
+ * The Fortran to Java Converter with a lot of unused variables eliminated
  *
  */
 
@@ -283,8 +282,8 @@ public class Fcvrt implements FcvrtConstants {
  }
 
   final public String start() throws ParseException {
-   String s1="",
-          s2="";
+   String s1="";
+         // s2="";
    Token t=null;
    String errStart,
          errEnd;
@@ -409,10 +408,10 @@ public class Fcvrt implements FcvrtConstants {
   }
 
   final public String statement(String Res) throws ParseException {
-String s1,s2="",s3="";
+String s1;//s2="",s3="";
 String[] params = null;
 Token t;
- String[] ss=null;
+ //String[] ss=null;
 
   lastStatementSimple = true;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -565,7 +564,7 @@ Token t;
   }
 
   final public String RestofMethod(String name) throws ParseException {
-  String s,s1=null,s2;
+  String s;//s2,s1=null;
   String[] params=null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case EQUALS:
@@ -644,10 +643,10 @@ Token t;
 /** Follows Declaration lines 
 */
   final public String RestofDeclare(String name) throws ParseException {
- Token t1=null,t2=null;
+ //Token t1=null,t2=null; 
  String s,s1=null,s2=null,s3="";
 
- int ndims = -1;
+ //int ndims = -1;
  String[] params=null,params1=null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case EQUALS:
@@ -800,10 +799,10 @@ Token t;
   }
 
   final public String RestofExternal() throws ParseException {
-Token t1=null,t2=null;
- String s,s1=null,s2="",s3="";
- String Res="";
- String[] params=null,params1=null;
+ //Token t1=null,t2=null;
+ String s,s1=null,s3="";//s2="";
+ //String Res="";
+ String[] params=null;//params1=null; 
  VariableInfo vbInf;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case EQUALS:
@@ -884,10 +883,10 @@ Token t1=null,t2=null;
   * This one must consume <EOLN>. Used only for CONTINUE, ELSE, and ENDIF
   */
   final public String RestofExpression(String vname) throws ParseException {
-Token t1=null,t2=null;
- String s,s1=null,s2="",s3="";
- String Res="";
- String[] params=null,params1=null;
+//Token t1=null,t2=null;
+ String s;//s1=null,s2="",s3="";
+// String Res="";
+ String[] params=null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case EQUALS:
     case LPAREN:
@@ -932,7 +931,6 @@ Token t1=null,t2=null;
   */
   final public String RestofIf(int Ifmode, String[] params) throws ParseException {
   String s;
-  String[] params1= null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case EQUALS:
       jj_consume_token(EQUALS);
@@ -1027,7 +1025,7 @@ Token t1=null,t2=null;
          if( Ifmode >1)
               {if (true) throw new ParseException("Structured if statement not allowed");}
          {if (true) return "if("+params[0]+")\n"+
-                       makeUpAssignmentStatement("THEN",params, s);}
+                       makeUpAssignmentStatement("THEN",params1, s);}
       break;
     default:
       jj_la1[22] = jj_gen;
@@ -1039,7 +1037,7 @@ Token t1=null,t2=null;
 
   final public String RestofDo() throws ParseException {
  Token t;
- String s1,s2,s3=null,s;
+ String s,s1;//s2,s3=null,;
  String[] params = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case EQUALS:
@@ -1430,7 +1428,7 @@ void RestOfParamList():{
  Token t1 = null,
        t2 = null;
  String s,
-        s1="",
+        //s1="",
         s2="",
         s3,
         lparens="";
@@ -1562,9 +1560,7 @@ void RestOfParamList():{
 
   final public String RestOfExpression(String prevOp) throws ParseException {
   Token t;
-  String s,
-         lp = "",
-         rp = "";
+  String s;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LOGDOT:
       jj_consume_token(LOGDOT);
@@ -1594,8 +1590,8 @@ void RestOfParamList():{
       }
       s = Expression("AND");
        if(prevOp.equals("AND")){
-         lp = "(";
-         rp=")";
+         //lp = "(";
+         //rp=")";
        }
        if( t.kind == AND)
          {if (true) return "&&"+s;}
@@ -1611,8 +1607,8 @@ void RestOfParamList():{
   }
 
   final public String NonAndOrExpression() throws ParseException {
- Token t1=null,
-       t2;
+ //Token t1=null,
+ //      t2;
  String s,
         s1="";
     s = AlgExpression();
@@ -1622,10 +1618,9 @@ void RestOfParamList():{
   }
 
   final public String RestOfNonAndOrExpression() throws ParseException {
- Token t1=null,
-       t2;
- String s,
-        s1="";
+ Token t1=null;
+       //t2;
+ String s;
     if (jj_2_2(2)) {
       jj_consume_token(LOGDOT);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1695,8 +1690,8 @@ void RestOfParamList():{
   }
 
   final public String AlgExpression() throws ParseException {
- Token t=null,
-       t1;
+ Token t=null;
+       //t1;
  String s1,
         s2="";
     s1 = termOfExpression();
@@ -1733,8 +1728,8 @@ void RestOfParamList():{
   }
 
   final public String termOfExpression() throws ParseException {
- Token t=null,
-       t1;
+ Token t=null;
+       //t1;
  String s,
         s2="",
         s3="";
@@ -1778,7 +1773,7 @@ void RestOfParamList():{
   }
 
   final public String FactorOfExpression() throws ParseException {
- Token t=null,
+ Token //t=null,
        t1=null,
        t3=null;
  String s,
@@ -2041,7 +2036,7 @@ void RestOfParamList():{
   final public String ExponentialExpression() throws ParseException {
  Token t=null,
        t1=null;
- String s,
+ String //s,
         pm;
     jj_consume_token(EXP);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2366,12 +2361,12 @@ void RestOfParamList():{
 
 /*-------------------------  Lists --------------------------------*/
   final public String[] ExpressionList() throws ParseException {
- Token t;
+ //Token t;
  String[] Res= new String[0],
           Res1;;
  String s="",
         s1="";
-    t = jj_consume_token(LPAREN);
+    jj_consume_token(LPAREN);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case SUBROUTINE:
     case FUNCTION:
@@ -2435,9 +2430,9 @@ void RestOfParamList():{
   }
 
   final public String[] ArgList() throws ParseException {
-  String s=null,s1=null,s2;
+  String s=null;//s1=null,s2;
   String[] Res;
-  Token t;
+  //Token t;
   LinkedList LL = new LinkedList();
     jj_consume_token(LPAREN);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2506,7 +2501,7 @@ void RestOfParamList():{
         s = Expression("");
         break;
       case PROD:
-        t = jj_consume_token(PROD);
+        jj_consume_token(PROD);
         break;
       default:
         jj_la1[70] = jj_gen;
@@ -2562,7 +2557,7 @@ void RestOfParamList():{
           s = Expression("");
           break;
         case PROD:
-          t = jj_consume_token(PROD);
+          jj_consume_token(PROD);
           break;
         default:
           jj_la1[72] = jj_gen;
