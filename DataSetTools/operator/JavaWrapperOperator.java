@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2003/10/30 18:38:33  bouzekc
+ * Changed Operator name in main() to WrappedCrunch.
+ *
  * Revision 1.1  2003/10/29 01:13:06  bouzekc
  * Added to CVS.
  *
@@ -184,9 +187,9 @@ public class JavaWrapperOperator extends Operator {
    * Testbed.
    */
   public static void main( String[] args ) {
-    Operators.CrunchODB crunch  = new Operators.CrunchODB(  );
-    JavaWrapperOperator wrapper = new JavaWrapperOperator( crunch );
-    DataSet temp                = new DataSetTools.retriever.RunfileRetriever( 
+    Operators.WrappedCrunch crunch = new Operators.WrappedCrunch(  );
+    JavaWrapperOperator wrapper    = new JavaWrapperOperator( crunch );
+    DataSet temp                   = new DataSetTools.retriever.RunfileRetriever( 
         "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
     new DataSetTools.viewer.ViewManager( 
       temp, DataSetTools.viewer.IViewManager.IMAGE );
