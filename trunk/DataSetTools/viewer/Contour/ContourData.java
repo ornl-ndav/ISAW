@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/08/01 13:51:45  rmikk
+ *  Implemented code to deal with arbitrary axis handlers
+ *
  *  Revision 1.5  2002/07/30 14:35:59  rmikk
  *  Improved handling of differing XScales.
  *
@@ -78,15 +81,27 @@ public class ContourData
           minvalue = -1;
    int maxrows, 
        maxcols;
+       
    float lastTime = -1;
    int[][] groups = null;
    double[] axis1, 
             axis2;
    XScale x_scale ;
+   IAxisHandler Axis1,Axis2,Axis3;
+   int mode =0;
    //*****************************************************************************************
    //						Constructors
    //*****************************************************************************************
-   public ContourData( DataSet data_set )
+  public ContourData( DataSet data_set, IAxisHandler Axis1, IAxisHandler Axis2, IAxisHandler Axis3)
+    {mode =1;
+     ds = data_set;
+     dsSave = data_set; 
+     this.Axis1= Axis1;
+     this.Axis2= Axis2;
+     this.Axis3= Axis3;
+     SetUpInfo( ds, Axis1, Axis2, Axis3);
+    }
+  public ContourData( DataSet data_set )
    {
       ds = data_set;
       dsSave = data_set;
@@ -159,7 +174,8 @@ public class ContourData
    //*****************************************************************************************
    public SGTData getSGTData( float X )
    {
-
+      if( mode !=0)
+         return getSGTDataSpecial( X);
       // X = (float)1261.596;		//Set time slice parameter, t=X=0
       int i, 
           j,
@@ -231,7 +247,59 @@ public class ContourData
 
    }
 
-
+  int[] Groupss;
+  double[] values;
+  public SGTData getSGTDataSpecial( float X )
+   { SimpleGrid sg;
+      SGTMetaData xMeta;
+      SGTMetaData yMeta;
+      SGTMetaData zMeta;
+     lastTime = X;
+    values = new double[ nrowws*ncolls+1];
+    Arrays.fill( values, 0.0f);
+    Groupss = new int[nrowws*ncolls+1];
+    Arrays.fill( Groupss, -1);
+    for( int i=0;i< ds.getNum_entries(); i++)
+      {int indx = Axis3.getXindex( i, X);
+       float ax1= Axis1.getValue( i,indx);
+       float ax2 = Axis2.getValue( i,indx);
+       int row = (int)( .5+ nrowws*(ax2-minAx2)/(maxAx2-minAx2));
+       int col =(int)( .5+ ncolls*(ax1-minAx1)/(maxAx1-minAx1));
+       double y=0;
+       Data D =ds.getData_entry(i);
+       if( indx >=0)
+        if( indx <= D.getX_scale().getNum_x())
+          {if( D.isHistogram() && indx >0) indx--;
+           y = D.getX_scale().getX(indx);
+          }
+       if( y > 0)
+         {
+          values[ col*nrowws+row ]+=y;
+          Groupss[ col*nrowws+row ] = i;
+         // System.out.println("("+ax1+","+ax2+","+i+","+y);
+          }
+     
+      }
+     /* System.out.println("Time ="+X);
+      for( int k=0; k<values.length;k++)
+        {
+         if( (values[k] >0)||(Groupss[k]>=0))
+          System.out.print("("+k+":"+values[k]+","+Groupss[k]+")  ");
+         }
+      System.out.println("___________________");
+      */
+      SimpleGrid sl;
+      xMeta = new SGTMetaData( Axis1.getAxisName(), "" );
+      yMeta = new SGTMetaData( Axis2.getAxisName(), "" );
+      zMeta = new SGTMetaData( Axis3.getAxisName(), "" );
+      sl = new SimpleGrid( values, axis1, axis2, "Area Detector Data" );
+      sl.setXMetaData( xMeta );
+      sl.setYMetaData( yMeta );
+      sl.setZMetaData( zMeta );
+     
+      data_ = sl;
+      return data_;
+    }
    /*
     * Get the range of time vales for the area detector data
     */
@@ -241,6 +309,8 @@ public class ContourData
       //Read in the first data entry and get the range of time values. While
       //there could be missing data in the returned array, we will take a
       //chance and say that the first detector will give us good data.
+      if( mode !=0)
+        return (new UniformXScale(minAx3,maxAx3, ntimes)).getXs();
       Data db = ds.getData_entry( 0 );
 
       if( x_scale == null)
@@ -262,9 +332,15 @@ public class ContourData
    }
 
 
-   public float getTime()
-   {
-      return lastTime;
+   public float getTime(double row, double col)
+   {  if( mode == 0)
+        return lastTime;
+      //Needs to be the time in the data set.
+     int Group = getGroupIndex( row, col);
+     int time = Axis3.getXindex( Group, lastTime);
+     Data D = ds.getData_entry(0);
+     return D.getX_scale().getX(time);
+      
    }
 
    public void setXScale( XScale xscale)
@@ -278,10 +354,11 @@ public class ContourData
       for( int j=0; j< ds.getNum_entries(); j++)
         ds.getData_entry(j).resample( x_scale,0);
      }
+
    public int getGroupIndex( double row, double col )
    {
       int r, c;
-
+      
       r = ( int )( row );
       c = ( int )( col );
       if( row - r > .5 )
@@ -292,20 +369,79 @@ public class ContourData
          c++;
       else if( c - col > .5 )
          c--;
-      if( (r<=0) ||(col <=0))
-        System.out.println("with neg Group row,col="+r+","+c);
-      if( r <= 0 )
+     
+      
+     
+      if( mode == 0)
+        {
+         if( r <= 0 )
          return -1;
-      if( c <= 0 )
+         if( c <= 0 )
          return -1;
-      if( (r > maxrows) ||(c>maxcols))
-        System.out.println("with neg Group row,col="+r+","+c+"max="+maxrows+","+maxcols);
-      if( r > maxrows )
-         return -1;
-      if( c > maxcols )
-         return -1;
-      return groups[r][c];
+         if( r > maxrows )
+          return -1;
+         if( c > maxcols )
+           return -1;
+         return groups[r][c];
+         }
+      else //returns user coordinates
+         { r = (int)((row-minAx2)/(maxAx2-minAx2)*nrowws);
+           c =(int) ((col -minAx1)/(maxAx1-minAx1)*ncolls);
+          // System.out.println("mode 1 "+r+","+c+","+nrowws+","+ncolls);
+          // System.out.println("Range row(Ax2)="+minAx2+","+row+","+maxAx2+","+
+           //      (row-minAx2)+","+(maxAx2-minAx2)+","+((row-minAx2)/(maxAx2-minAx2)));
+          // System.out.println( ((row-minAx2)/(maxAx2-minAx2)*nrowws)+","+r);
+           if( r<0) return -1;
+           if( c<0) return -1;
+           if( r >=nrowws) return -1;
+           if( c >=ncolls) return -1;
+           return Groupss[ c*nrowws+r];
+         }
 
    }
-
+ float minAx1,minAx2, minAx3, maxAx1, maxAx2, maxAx3;
+ int nrowws, ncolls, ntimes;
+ 
+ public void SetUpInfo( DataSet ds, IAxisHandler Axis1,IAxisHandler Axis2,IAxisHandler Axis3)
+    { 
+      
+      for( int i = 0; i < ds.getNum_entries(); i++)
+        { if( i==0)
+            { minAx1= Axis1.getMinAxisValue( i);
+              maxAx1= Axis1.getMaxAxisValue( i);
+              minAx2= Axis2.getMinAxisValue( i);
+              maxAx2= Axis2.getMaxAxisValue( i);
+              minAx3= Axis3.getMinAxisValue( i);
+              maxAx3= Axis3.getMaxAxisValue( i);
+            }
+         else if( Axis1.getMinAxisValue(i) < minAx1)
+            minAx1=Axis1.getMinAxisValue(i);
+         else if( Axis1.getMaxAxisValue(i) > maxAx1)
+            maxAx1=Axis1.getMaxAxisValue(i);
+         else if( Axis2.getMinAxisValue(i) < minAx2)
+            minAx2=Axis2.getMinAxisValue(i);
+         else if( Axis2.getMaxAxisValue(i) > maxAx2)
+            maxAx2=Axis2.getMaxAxisValue(i);
+         else if( Axis3.getMinAxisValue(i) < minAx3)
+            minAx3=Axis3.getMinAxisValue(i);
+         else if( Axis3.getMaxAxisValue(i) > maxAx3)
+            maxAx3=Axis3.getMaxAxisValue(i);
+         
+         //System.out.println("Ax1 min,max="+ minAx1+","+maxAx1);
+         }
+      ncolls =(int)(.5+java.lang.Math.sqrt( 4*ds.getNum_entries()*(maxAx2-minAx2)/(maxAx1-minAx1)));
+       
+      nrowws = (int)(.5+ncolls*(maxAx1-minAx1)/(maxAx2-minAx2));
+      ntimes = 20;
+      axis2 = new double[nrowws];
+      axis1 = new double[ncolls];
+      for(int i = 0; i < ncolls; i++)
+        axis1[i] = minAx1 + i*(maxAx1-minAx1)/ncolls;
+      
+      for(int i = 0; i < nrowws; i++)
+        axis2[i] = minAx2 + i*(maxAx2-minAx2)/nrowws;
+     //System.out.println("end Setup min-max are"+minAx1+","+maxAx1+","+minAx2+","+maxAx2+","
+     //            +minAx3+","+maxAx3);
+     //System.out.println("nrows, ncols="+nrowws+","+ncolls);
+    }//SetUp
 }
