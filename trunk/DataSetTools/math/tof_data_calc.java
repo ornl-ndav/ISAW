@@ -1,9 +1,15 @@
 /*
- * @(#)tof_data_calc.java    0.01 2000/07/17  Dennis Mikkelson
+ * @(#)tof_data_calc.java    
+ *
+ *  Programmer: Dennis Mikkelson
  *
  *  Basic time-of-flight calculations on DataSets and Data blocks
  *
- *  $LOG:$
+ *  $Log$
+ *  Revision 1.4  2000/12/13 00:09:26  dennis
+ *  Added static method IncSpecFocus to focus the incident spectrum
+ *  to a bank of detectors for a powder diffractometer.
+ *
  */
 
 package DataSetTools.math;
@@ -119,6 +125,149 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 8.5f;
      return result;
     }
 
+
+/**
+ *  Focus the incident spectrum from a beam monitor to a bank of detectors
+ *  at a specified total flight path length and range of angles.  This
+ *  function is based on the FORTRAN SUBROUTINE inc_spec_focus from IPNS.
+ *
+ *  @param  monitor_spec     Data block containing the incident beam monitor
+ *                           data.
+ *  @param  new_tof_scale    XScale giving the time of flight range to which
+ *                           the incident spectrum is to be focused.
+ *  @param  new_path_length  The total flight path length for the bank to
+ *                           which the spectrum is focussed. 
+ *  @param  theta            The nominal scattering angle for the bank to 
+ *                           which the spectrum is focussed.
+ *  @param  theta_min        The minimum scattering angle for the bank to 
+ *                           which the spectrum is focussed.
+ *  @param  theta_max        The maximum scattering angle for the bank to 
+ *                           which the spectrum is focussed.
+ *  @param  new_group_ID     The group_ID to be used for the focused spectrum
+ *
+ *  @return   A new Data block with the specified tof "x" scale, position, 
+ *            group ID containing the focused incident spectrum values.
+ */
+public static Data IncSpecFocus( Data    monitor_spec, 
+                                 XScale  new_tof_scale, 
+                                 float   new_path_length,
+                                 float   theta,
+                                 float   theta_min,
+                                 float   theta_max,
+                                 int     new_group_ID  )
+{
+                            // First get the position and path length values
+                            // from the monitor Data block.  Check that they
+                            // exist and that the position is on the beam
+                            // line.
+
+  AttributeList attr_list   = monitor_spec.getAttributeList();
+  DetectorPosition position = (DetectorPosition)
+                       attr_list.getAttributeValue( Attribute.DETECTOR_POS );
+
+  if ( position == null )
+  {
+    System.out.println("ERROR:No Detector Position attribute in InSpecFocus()");
+    return null;
+  }
+
+  Float initial_path_obj = (Float)
+                        attr_list.getAttributeValue(Attribute.INITIAL_PATH);
+  if ( initial_path_obj == null )
+  {
+    System.out.println("ERROR: No Initial Path attribute in InSpecFocus()");
+    return null;
+  }
+
+  float initial_path       = initial_path_obj.floatValue();
+  float cartesian_coords[] = position.getCartesianCoords();
+  float path_length        = initial_path + cartesian_coords[0];
+
+  if ( Math.abs( cartesian_coords[1] ) > 0.01 || 
+       Math.abs( cartesian_coords[2] ) > 0.01  )
+  {
+    System.out.println("ERROR: Not monitor Data in InSpecFocus()");
+    return null;
+  }
+
+                           // Now get the x and y values from the monitor Data
+                           // as well as the new x values and an array for the
+                           // y values.
+
+  float old_y[] = monitor_spec.getY_values();
+  float old_x[] = monitor_spec.getX_scale().getXs();
+  float new_x[] = new_tof_scale.getXs();
+  float new_y[] = new float[ new_x.length-1 ];
+
+  float path_length_ratio = path_length/new_path_length;
+  float min_theta_ratio   = (float)(Math.sin( theta_min * Math.PI/180.0 ) / 
+                                    Math.sin( theta * Math.PI/180.0 )     );
+  float max_theta_ratio   = (float)(Math.sin( theta_max * Math.PI/180.0 ) / 
+                                    Math.sin( theta * Math.PI/180.0 )     );
+
+  float new_tof,
+        min_tof,
+        max_tof;
+  float total;
+  int   min_index,
+        max_index;
+  float first_fraction,
+        last_fraction;
+
+  for ( int i = 0; i < new_y.length; i++ )   // for each bin in the focused spec
+  {
+    new_tof = (new_x[i] + new_x[i+1]) / 2;   // find tof at center of bin and
+                                             // map that tof back to monitor
+                                             // spectrum, using interval of 
+                                             // angles. 
+    min_tof =  path_length_ratio * min_theta_ratio * new_tof;
+    max_tof =  path_length_ratio * max_theta_ratio * new_tof;
+
+    if ( min_tof > max_tof )
+    {
+      float temp = min_tof;
+      min_tof    = max_tof;
+      max_tof    = temp;
+    }
+
+    min_index = arrayUtil.get_index_of( min_tof, old_x );
+    max_index = arrayUtil.get_index_of( max_tof, old_x );
+    if ( min_index != -1 && max_index != -1 && max_index < new_x.length-1 )
+    {
+                                             // sum up counts from part of first
+                                             // bin, all of the complete bins
+                                             // in the middle and part of last
+                                             // bin
+      first_fraction =  ( old_x[ min_index + 1 ] - min_tof ) /
+                        ( old_x[ min_index + 1 ] - old_x[ min_index ] ) ;
+      total = first_fraction * old_y[ min_index ];
+
+      for ( int j = min_index + 1; j < max_index; j++ )
+        total += old_y[j];
+
+      last_fraction =  ( max_tof            - old_x[ max_index ] ) /
+                       ( old_x[ max_index + 1 ] - old_x[ max_index ] ) ;
+      total += last_fraction * old_y[ max_index ];
+                                             // divide by the number of bins 
+                                             // summed.  For non-uniform time
+                                             // scales this is NOT correct.
+      new_y[i] = total / 
+                 (first_fraction + max_index - min_index - 1 + last_fraction);
+    }
+    else
+      new_y[i] = 0;
+  }
+
+  Data new_data = new Data( new_tof_scale, new_y, new_group_ID );
+  new_data.setAttribute( new FloatAttribute( Attribute.INITIAL_PATH, 
+                                             initial_path )); 
+  DetectorPosition det_pos = new DetectorPosition();
+  det_pos.setSphericalCoords( new_path_length-initial_path, theta, 0 );
+  new_data.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS,
+                                              det_pos ) ); 
+  return new_data;
+}
+ 
 
 /* -------------------------------------------------------------------------
  *
