@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2001/07/26 14:25:55  dennis
+ *  Added Brightnes & Auto-Scale state variables.
+ *
  *  Revision 1.11  2001/07/25 18:08:30  dennis
  *  Now initializes state from the system properties and
  *  stores most state info in a heap.  Added generic
@@ -102,6 +105,8 @@ public class ViewerState  implements Serializable
   public static final String V_DISTANCE        = "ViewDistance";
   public static final String V_GROUPS          = "ViewGroups";
   public static final String V_DETECTORS       = "ViewDetectors";
+  public static final String BRIGHTNESS        = "Brightness";
+  public static final String AUTO_SCALE        = "Auto-Scale";
 
   private Hashtable     state = null;
   private int           pointed_at_index;
@@ -159,10 +164,18 @@ public class ViewerState  implements Serializable
       String v_groups = getProperty( V_GROUPS, "NOT DRAWN" );
       state.put( V_GROUPS, v_groups );
 
+      Integer brightness = getIntegerProperty( BRIGHTNESS, "40" );
+      state.put( BRIGHTNESS, brightness );
+
+      Float auto_scale = getFloatProperty( AUTO_SCALE, "0" );
+      state.put( AUTO_SCALE, auto_scale );
+      System.out.println("VieweState, auto_scale = " + auto_scale );
 
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
       ds_x_label = "";
       ds_y_label = "";
+      ds_x_units = "";
+      ds_y_units = "";
     }
 
   /* ---------------------------- set_String --------------------------- */
