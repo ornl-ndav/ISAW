@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/08/19 20:57:31  rmikk
+ * Will print Histogram and Function data correctly
+ *
  * Revision 1.1  2003/08/15 19:33:00  rmikk
  * Initial Checkin. Prints 1D reduce results and Efficiency ratios.
  *
@@ -115,9 +118,12 @@ public class Print3Col1D extends GenericTOF_SAD{
      WriteHeader( filename, DS, fileType);
 
      float[] xvals= DS.getData_entry(0).getX_scale().getXs();
-     float[] xav = new float[xvals.length-1];
+     int N=1;
+     if( xvals.length == DS.getData_entry(0).getY_values().length)
+        N = 0;
+     float[] xav = new float[xvals.length-N];
      for(int i=0; i < xav.length; i++)
-        xav[i]= (xvals[i]+xvals[i+1])/2;
+        xav[i]= (xvals[i]+xvals[i+N])/2;
      Vector V = new Vector();
      V.addElement( xav);
      V.addElement( DS.getData_entry(0).getY_values());
