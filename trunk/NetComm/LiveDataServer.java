@@ -34,6 +34,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/08/09 21:47:26  dennis
+ *  Uses start_TCP() method to start the TCPServer.
+ *
  *  Revision 1.14  2001/08/09 15:42:27  dennis
  *  Now checks if the retriever is null.
  *  Put some debug prints in "if (debug server)" blocks
@@ -127,7 +130,8 @@ import DataSetTools.util.*;
 public class LiveDataServer extends    DataSetServer
                             implements IUDPUser
 {
-  public  static final int MAGIC_NUMBER               = 483719513;
+  public  static final int MAGIC_NUMBER         = 483719513;
+  public  static final int DEFAULT_DAS_UDP_PORT = 6080;
 
   private static final int DELAY_COUNT        = 300;
 
@@ -140,8 +144,9 @@ public class LiveDataServer extends    DataSetServer
                                                     // messages when we have
                                                     // processed a specified
                                                     // number of pulses
-  private  String  instrument_name = null;
-  private  int     run_number      = -1;
+  private  String  instrument_name  = null;
+  private  int     run_number       = -1;
+  private  int     current_udp_port = DEFAULT_DAS_UDP_PORT;
 
   private  int read_count = 0;             // This is used to avoid switching 
                                            // to a new runfile at the
@@ -164,6 +169,28 @@ public class LiveDataServer extends    DataSetServer
      super();
      setServerName( "LiveDataServer" );
      setLogFilename( "LiveDataServerLog.txt" );
+   }
+
+  /* ---------------------------- start_UDP ---------------------------- */
+  /**
+   *  Start the server listening for UDP packets on the specified port.
+   *
+   *  @param  udp_port  The udp port to listen to for data from the DAS.
+   */
+   public void start_UDP( int udp_port )
+   {
+                                         // Start the UPD receiver to listen
+                                         // for data from the DAS
+    if ( udp_port < 0 )
+      udp_port = current_udp_port;
+
+    System.out.println("Starting UDP receiver on port " + udp_port );
+    UDPReceive udp_comm;
+    udp_comm = new UDPReceive( udp_port, this );
+    udp_comm.setPriority(Thread.MAX_PRIORITY);
+    udp_comm.start();
+
+    current_udp_port = udp_port;
    }
 
   /* -------------------------- InitializeDataSets ---------------------- */
@@ -527,38 +554,24 @@ public class LiveDataServer extends    DataSetServer
 
                                          // Start the UPD receiver to listen
                                          // for data from the DAS
-    System.out.println("Starting UDP receiver...");
-    UDPReceive udp_comm;
     if ( args.length >=2 )
     {
       int udp_port = Integer.parseInt( args[1] );
-      udp_comm = new UDPReceive( udp_port, server );
+      server.start_UDP( udp_port );
     }
     else
-      udp_comm = new UDPReceive( DASOutputTest.DEFAULT_DAS_UDP_PORT, server );
-
-    udp_comm.setPriority(Thread.MAX_PRIORITY);
-    udp_comm.start();
-    System.out.println("UDP receiver started.");
-    System.out.println();
-
+      server.start_UDP( -1 );
 
                                          // Start the TCP server to listen 
                                          // for clients requesting data
-    System.out.println("Starting TCP server...");
-    TCPServiceInit TCPinit;
     if ( args.length >=3 )
     {
       int tcp_port = Integer.parseInt( args[2] );
-      TCPinit = new TCPServiceInit( server, tcp_port );
+      server.start_TCP( tcp_port );
     }
     else
-      TCPinit = new TCPServiceInit( server, DEFAULT_SERVER_PORT_NUMBER );
+      server.start_TCP( -1 );
 
-    TCPinit.start();
-    System.out.println("TCP server started.");
-    System.out.println();
-   
 //  We could pop up viewers to see each new spectrum as it is received, but
 //  currently the viewers DON'T handle partial updates very well... most
 //  of the time is wasted redrawing everything.
