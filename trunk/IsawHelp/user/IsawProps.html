@@ -1,0 +1,116 @@
+<html><body>
+<H1><CENTER>IsawProps.dat</CENTER></h1>
+
+The file IsawProps.dat is used to save a lot of user preferences.  This is commonly
+stored in the user's home directory. The Edit Properties submenu option under ISAW's
+Edit menu can be used to edit this file.  Any simple text editor can also be used
+to change this file.<P>
+
+<OL type="A">The properties in this file fall into several categories.
+<LI><a href="#A1">Dimensions of IsawGUI Panel</a>
+<LI><a href="#A2">Paths for commonly used files</a>
+<LI><a href="#A3"> Name and Path to external files\Data</a>
+<LI><a href="#A6">Operator and Script Search Paths</a>
+<LI><a href="#A4"> Default instrument.</a>
+<LI><a href="#A5"> Viewer settings</a>
+<LI><a href="#A6"> Wizard settings</a>
+</OL><P><P><HR>
+
+<H2><Center><a name="A1">Dimensions of IsawGUI Panel</a></Center></H2>
+<table>
+<tr> <td><B>Key</B></td><td> <B>Information</B></td><td><B>Values</B></td>
+</tr>
+<tr><td>Isaw_Width</td> <td>#pixels width of main ISAW Panel</td><td> 500,700</td>
+</tr>
+<tr><td>Isaw_Height</td><td>#pixels height of main IsawGUI main Panel</td><td> 500,700</td>
+</tr>
+<tr><td>Tree_Width</td><td>#pixels width of tree in IsawGUI main Panel</td><td> 500,700</td>
+</tr>
+<tr><td>Status_Height</td><td>#pixels height of the status pane in IsawGUI main Panel</td><td> 500,700</td>
+</tr>
+</table><P><P><HR>
+
+
+<H2><Center><a name="A2">Paths for commonly used files</Center></H2>
+<table>
+<tr> <td><B>Key</B></td><td> <B>Information</B></td><td><B>Values</B></td>
+</tr>
+<tr> <td>Help_Directory</td><td> The top directory where help files are located</td>
+                  <td>Isaw Directory/IsawHelp</td>
+</tr>
+<tr> <td>Script_Path</td><td>The directory where user scripts are located. <P>
+                       These need not be installed</td><td><B>Isaw \Scripts</B></td>
+</tr>
+<tr> <td>Docs_Directory</td><td> Directory for ISAW's java source code 
+               documentation</td><td>Isaw\docs</td>
+</tr>
+<tr> <td>Data_Directory</td><td>Directory where most of the data is</td>
+           <td>Isaw\SampleRuns</td>
+</tr>
+<tr> <td>Instrument_Macro_Path</td><td> Not used</td><td> anything</d>
+</tr>
+<tr> <td>User_Macro_Path</td><td> Not Used</td><td>anything</td>
+</tr>
+</table><P><P><HR>
+<H2><Center><a name="A3">Name and Path to external files\Data</a></Center></H2>
+<table>
+<tr> <td><B>Key</B></td><td> <B>Information</B></td><td><B>Values</B></td>
+</tr>
+<tr> <td>Inst1_Name</td><td> Name of Instrument</td><td>HRMECS</td>
+</tr>
+<tr> <td>Inst1_Path</td><td>Path to the server on this instrument,x=1,2,3</td>
+ <td>hrmecs.pns.anl.gov;6088</td>
+</tr>
+
+<tr> <td>IsawFileServerx_Name</td><td>Name of remote file server</td>
+                       <td>IPNS{hrmecs)</td>
+</tr>
+<tr> <td>IsawFileServerx_Path</td><td> Path to the remote file server</td>
+<td>hrmecs.pns.anl.gov;6089</td>
+</tr>
+<tr> <td>NDSFileServerx_Name</td><td> Name of NDS file server</td><td>Not used</td>
+</tr>
+
+<tr> <td>NDSFileServerx_Path</td><td> Path to NDS server</td>none<td></td>
+</tr>
+</table>
+<P><P><HR>
+
+
+<H2><Center><a name="A6">Operator and Script Search Paths</a></Center></H2>
+<table>
+<tr> <td><B>Key</B></td><td> <B>Information</B></td><td><B>Values</B></td>
+</tr>
+<tr> <td>ISAW_HOME</td><td>The top directory for scripts, operators
+                           ,etc. </td><td>C:\ISAW</td>
+</tr><tr></tr><tr> <td>GROUP_HOME</td><td>Directory with user scripts and operators </td>
+         <td>Anywhere except Java files must be reachable 
+              via classpath</td>
+</tr><tr></tr><tr> <td>GROUPx_HOME</td><td>Another directory for scripts and operators</td>
+      <td>Same as GROUP_HOME</td>
+</tr>
+
+<table><P>
+   <UL>The Isaw Systems searches for all legitimate scripts and operators in the following
+   directories.<P>
+   <LI> Script or Operators sudirectory of the directory specified by ISAW_HOME,
+      GROUP_HOME, GROUP1_HOME, etc.<P>
+    <LI> Any file in a subdirectory (of a subdirectory of ...) of a directory above
+        will be searched.
+    </ul><P><P><HR>
+     
+<H2><Center><a name="A4"><a name="A1">Default instrument</a></Center></H2>
+   Key = Default_Instrument.  Values are like hrmecs, gppd, etc.<P><P><hr>
+<H2><Center><a name="A5">Viewer settings</Center></a></H2>
+<table>
+<tr> <td><B>Key</B></td><td> <B>Information</B></td><td><B>Values</B></td>
+</tr>
+<tr> <td>ColorScale<P><P><HR>
+
+
+
+<H2><Center><a name="A5"> Viewer settings</a></Center></H2>
+
+<H2><Center><a name="A6"> Wizard settings</a></Center></H2>
+
+</body></html>
