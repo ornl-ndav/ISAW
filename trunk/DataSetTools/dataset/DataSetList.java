@@ -30,6 +30,9 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.4  2003/10/15 23:50:12  dennis
+  *  Fixed javadocs to build cleanly with jdk 1.4.2
+  *
   *  Revision 1.3  2003/06/18 20:35:35  pfpeterson
   *  Changed calls for NxNodeUtils.Showw(Object) to
   *  DataSetTools.util.StringUtil.toString(Object)
@@ -173,12 +176,10 @@ public class DataSetList  implements IXmlIO
   * Implements the IXmlIO interface so a list of Data can read itself
   *
   * @param  stream  the IntputStream to which the data is written
-  * @param  mode   either IXmlIO.BASE64 or IXmlIO.NORMAL. This indicates how
-  *                the spectra x, y and error values are written
   *
   * @return true if successful and false otherwise<P>
   *
-  * NOTE: This routine writes assumes the begin tag along with all attributes
+  * NOTE: This routine assumes the begin tag along with all attributes
   * have been read.  It also reads the end tag( DataList)
   */
   public boolean XMLread( InputStream stream )
