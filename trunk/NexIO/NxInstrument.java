@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/02/26 15:44:46  rmikk
+ * This module can now be used to load in Monitor data that has been inadvertently labeled NXdata. It does not have two axes
+ *
  * Revision 1.2  2001/07/24 20:09:34  rmikk
  * Added several other attributes.
  * Incorporated an equals to determine if two separate pieces
@@ -70,7 +73,7 @@ public class NxInstrument
    
    if( instrNode == null)
     return null;
-   if( (ax1Link == null)||(ax2Link == null ))
+   if( (ax1Link == null))
     return null;
    if( !instrNode.getNodeClass().equals("NXinstrument" ))
      return null;
@@ -105,7 +108,9 @@ public class NxInstrument
                       else
                         ax1=-1;
                     else if( axnum == 2)
-                       if( n1.equals( ax2Link))
+                       if(ax2Link==null)
+                          ax2=-1;
+                       else if( n1.equals( ax2Link))
                          ax2 = 1;
                        else
                          ax2 = -1;
@@ -115,6 +120,8 @@ public class NxInstrument
             }//for j
            //System.out.print("Y"+ax1+","+ax2);
            if( (ax1 >0) &&(ax2) > 0)
+                 return nx;
+           if( (ax2Link==null)&&(ax1> 0))
                  return nx;
            if( nDef == null) nDef= nx;
            }//else if child a detector node
