@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.130  2003/05/08 20:50:40  pfpeterson
+ *  Changed the default version number.
+ *
  *  Revision 1.129  2003/03/07 21:11:37  pfpeterson
  *  Now creates a single instance of various listeners for the menus
  *  rather than anonymous listers for each menu item. Speed improvement
@@ -513,7 +516,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.5.0";
+          version="1.5.1 alpha 1";
         else
           version=SharedData.VERSION;
 
