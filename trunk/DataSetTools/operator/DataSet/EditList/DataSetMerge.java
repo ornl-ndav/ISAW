@@ -34,6 +34,10 @@
  * units match for the two DataSets being merged.
  *
  *  $Log$
+ *  Revision 1.4  2002/12/03 17:33:51  dennis
+ *  Added getDocumentation() method, simple main() test program and
+ *  added java docs to getResult().  (Chris Bouzek)
+ *
  *  Revision 1.3  2002/11/27 23:17:40  pfpeterson
  *  standardized header
  *
@@ -53,6 +57,8 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.operator.*;
 
 /**
   * This operator creates a new DataSet by combining the Data blocks from the 
@@ -86,7 +92,7 @@ public class DataSetMerge extends    DS_EditList
    *  by calling getResult().
    *  
    *  @param  ds          The DataSet to which the operation is applied
-   *  @parm   ds_to_merge The DataSet to merge with DataSet ds.
+   *  @param  ds_to_merge The DataSet to merge with DataSet ds.
    */
 
   public DataSetMerge( DataSet             ds,
@@ -114,7 +120,7 @@ public class DataSetMerge extends    DS_EditList
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -127,13 +133,39 @@ public class DataSetMerge extends    DS_EditList
     addParameter( parameter );
   }
 
+  /* ------------------------------ getDocumentation ------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+
+  public String getDocumentation()
+  {
+     StringBuffer s = new StringBuffer();
+     s.append("@overview This operator creates a new DataSet by combining ");
+     s.append("the Data blocks from the current DataSet with the Data ");
+     s.append("blocks of a specified DataSet.");
+     s.append("@assumptions The two DataSets have the same X and Y units.");
+     s.append("@algorithm Merges the two DataSet's Data blocks.  ");
+     s.append("If a DataSet with N Data blocks is merged with a DataSet ");
+     s.append("with M Data blocks, the new DataSet will have N+M Data ");
+     s.append("blocks.");
+     s.append("@param The DataSet to which the operation is applied.");
+     s.append("@param The DataSet to merge with the first DataSet.");
+     s.append("@return The DataSet which consists of the merging of the ");
+     s.append("first and second DataSets.");
+     s.append("@error Returns an ErrorString if the two DataSets' X and Y ");
+     s.append("units do not match.");
+     return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
-
-                                     // Get the second DataSet from the 
-                                     // parameter list and merge Data objects 
-                                     // with Data objects from the current
-                                     // DataSet.
+  /**
+   *  Gets the second DataSet from the parameter list and merges its Data
+   *  objects with Data objects from the first DataSet.
+   *  @return DataSet which consists of the merging of the first
+   *          and second DataSets.
+   */
   public Object getResult()
   {                                  // get the DataSet to merge with 
     DataSet ds_to_merge = (DataSet)(getParameter(0).getValue());
@@ -199,12 +231,18 @@ public class DataSetMerge extends    DS_EditList
    */
   public static void main( String[] args )
   {
-    DataSetMerge op = new DataSetMerge();
-
-    String list[] = op.getCategoryList();
-    System.out.println( "Categories are: " );
-    for ( int i = 0; i < list.length; i++ )
-      System.out.println( list[i] );
+    DataSet ds1 = DataSetFactory.getTestDataSet();
+    DataSet ds2 = DataSetFactory.getTestDataSet();
+    ViewManager viewer1 = new ViewManager(ds1, ViewManager.IMAGE);
+    ViewManager viewer2 = new ViewManager(ds2, ViewManager.IMAGE);
+    
+    Operator op = new DataSetMerge(ds1, ds2);
+    DataSet new_ds = (DataSet)op.getResult();
+    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);
+    
+    String documentation = op.getDocumentation();
+    System.out.println(documentation);
+    System.out.println("\n" + op.getResult().toString());
   }
 
 }

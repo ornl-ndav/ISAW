@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2002/12/03 17:33:51  dennis
+ *  Added getDocumentation() method, simple main() test program and
+ *  added java docs to getResult().  (Chris Bouzek)
+ *
  *  Revision 1.3  2002/11/27 23:17:40  pfpeterson
  *  standardized header
  *
@@ -49,10 +53,12 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.operator.*;
 
 /**
   *  Remove Data blocks that are marked as selected, or that are not marked
-  *  as selected, depending on the paramters. 
+  *  as selected, depending on the parameters. 
   */
 
 public class DeleteCurrentlySelected  extends    DS_EditList 
@@ -122,7 +128,7 @@ public class DeleteCurrentlySelected  extends    DS_EditList
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -138,9 +144,50 @@ public class DeleteCurrentlySelected  extends    DS_EditList
     addParameter( parameter );
   }
 
+  /* ------------------------------ getDocumentation ------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+
+  public String getDocumentation()
+  {
+     StringBuffer s = new StringBuffer();
+     s.append("@overview This operator removes Data blocks that are marked ");
+     s.append("as selected, or that are not marked as selected, depending ");
+     s.append("on the parameters.");
+     s.append("@assumptions The DataSet is not null.");
+     s.append("@algorithm Removes specified Data blocks from the DataSet ");
+     s.append("based on the following rules: If status == true, the selected ");
+     s.append("blocks are deleted.  If status == false, the un-selected ");
+     s.append("blocks are deleted.  If make_new_ds is true, creates a new ");
+     s.append("DataSet.  If make_new_ds is false, removes the Data blocks ");
+     s.append("from the original DataSet and appends an entry to the DataSet log.");
+     s.append("@param The DataSet to which the operation is applied.");
+     s.append("@param status: flag that determines whether the selected or ");
+     s.append("un-selected Data blocks are deleted.");
+     s.append("@param make_new_ds: flag that determines whether removing the ");
+     s.append("Data blocks makes a new DataSet and returns the new DataSet ");
+     s.append("as a value, or just removes the selected blocks from the current ");
+     s.append("DataSet.");
+     s.append("@return A new DataSet which consists of the original DataSet ");
+     s.append("minus the Data blocks if make_new_ds is true.  Returns a ");
+     s.append("String indicating that the Data blocks have been removed ");
+     s.append("from the original DataSet if make_new_ds is false.");
+     return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+   *  Removes specified Data blocks from the DataSet based on the following 
+   *  rules: If status == true, the selected blocks are deleted.  If 
+   *  status == false, the un-selected blocks are deleted.  If make_new_ds 
+   *  is true, creates a new DataSet.  
+   *  @return A new DataSet which consists of the original DataSet minus 
+   *  the Data blocks if make_new_ds is true.  Returns a String indicating 
+   *  that the Data blocks have been removed from the original DataSet if 
+   *  make_new_ds is false.
+   */
   public Object getResult()
   {                                  // get the parameters
 
@@ -206,5 +253,21 @@ public class DeleteCurrentlySelected  extends    DS_EditList
     return new_op;
   }
 
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    DataSet ds1 = DataSetFactory.getTestDataSet();
+    ViewManager viewer1 = new ViewManager(ds1, ViewManager.IMAGE);
+    
+    Operator op = new DeleteCurrentlySelected(ds1, false, true);
+    DataSet new_ds = (DataSet)op.getResult();
+    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);
+    
+    String documentation = op.getDocumentation();
+    System.out.println("\n\nDocumentation:\n" + documentation);
+  }
 
 }
