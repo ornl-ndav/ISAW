@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/12/30 13:07:27  rmikk
+ * Added two new choices to a submenu of the select menu item to add the new
+ *   attributes: row, col, Detector, slot, input and crate
+ *
  * Revision 1.7  2003/12/18 22:46:06  millermi
  * - This file was involved in generalizing AxisInfo2D to
  *   AxisInfo. This change was made so that the AxisInfo
@@ -75,6 +79,8 @@ import java.util.*;
 import DataSetTools.dataset.*;
 import java.awt.*;
 import DataSetTools.util.*;
+import java.lang.reflect.*;
+import DataSetTools.operator.DataSet.Attribute.*;
 /**
   *  This class is the "ArrayMaker" part of a DataSetViewer that can be used
   *  to sort and select Data Blocks from a DataSet.
@@ -258,8 +264,21 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
         ViewMenuItem item = new ViewMenuItem(jmi);
         jmi.addActionListener( new myClearActionListener());
         
-        ViewMenuItem[] view_menu= new ViewMenuItem[1];
+        ViewMenuItem[] view_menu= new ViewMenuItem[3];
         view_menu[0] = item;
+
+        NewAttrAdd addAttr = new NewAttrAdd();
+        jmi = new JMenuItem( "Row,Col,Detector");
+        item = new ViewMenuItem(jmi);
+        item.addActionListener( addAttr);
+        view_menu[1] = item;
+
+
+        jmi = new JMenuItem( "Crate,Slot,Intput");
+        item = new ViewMenuItem(jmi);
+        item.addActionListener( addAttr);
+        view_menu[2] = item;
+        
         return view_menu;
     }
 
@@ -276,8 +295,10 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
       * Returns null because there are no MenuItems
       */
     public String[] getSharedMenuItemPath() {
-        String[] Res = new String[1];
+        String[] Res = new String[3];
         Res[0] = "Select";
+        Res[1] ="Select.New Attribute";
+        Res[2] ="Select.New Attribute";
         return Res;
     }
 
@@ -869,4 +890,44 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
      }
 
   }
+
+  class NewAttrAdd implements ActionListener{
+     public void actionPerformed( ActionEvent evt){
+        if( evt.getActionCommand().indexOf("Row,Col") >= 0){
+           
+           for( int i = 0; i< DS.getNum_entries(); i++){
+
+             Object O = (new GetPixelInfo_op( DS, i)).getResult();
+             if( O instanceof Vector){
+                
+                Data db = DS.getData_entry(i);
+                Vector R = (Vector)O;
+                db.setAttribute( new IntAttribute( "Row", ((Integer)R.elementAt(1)).intValue()));
+                db.setAttribute( new IntAttribute( "Col", ((Integer)R.elementAt(0)).intValue()));
+                db.setAttribute( new IntAttribute( "Detector", ((Integer)R.elementAt(2)).intValue()));
+
+
+             } 
+
+           }
+
+        }else{
+          String[] slott = {Attribute.SLOT, Attribute.CRATE,Attribute.INPUT};
+          
+          for( int i = 0; i< DS.getNum_entries(); i++){
+            Data db = DS.getData_entry(i);
+            for( int j=0;j<3;j++){
+              Object O = db.getAttributeValue( slott[j]);
+              if( O instanceof int[]){
+                 int c = Array.getInt( O,0);
+                 db.setAttribute( new IntAttribute( "_"+slott[j],c));
+              }
+
+
+            }
+          } 
+
+     }
+     }//action performed
+  }//NewAttrAdd
 }
