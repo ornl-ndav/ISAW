@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.76  2003/08/05 14:44:51  dennis
+ *  Added temporary fix for SAND area detector positions.  The
+ *  effective positions of the pixels are now set from the area
+ *  detector DataGrid, not from the IPNS Runfile segment positions.
+ *
  *  Revision 1.75  2003/07/21 22:32:54  dennis
  *  Added temporary fix to put M1 monitor upstream, for SAD instruments.
  *
@@ -823,6 +828,20 @@ private float CalculateEIn()
 
       position.setCartesianCoords( coords[0], coords[1], coords[2] ); 
       d.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS, position ));
+    }
+
+                                     // make effective positions match grid 
+    if ( instrument_type == InstrumentType.TOF_SAD && is_histogram )
+    {
+      System.out.println("TEMPORARY FIX FOR SAND AREA DETECTOR .....");
+      ids = Grid_util.getAreaGridIDs( data_set );
+      UniformGrid grid;
+      for ( int i = 0; i < ids.length; i++ )
+      {
+        int det_id = ids[i];
+        grid = (UniformGrid)Grid_util.getAreaGrid( data_set, det_id );
+        Grid_util.setEffectivePositions( data_set, det_id );
+      }
     }
 
     return data_set;
@@ -1876,7 +1895,8 @@ private float CalculateEIn()
 
   public static void main(String[] args)
   {
-    String file_names[] = { "/usr/local/ARGONNE_DATA/glad0816.run" };
+    String file_names[] = { "/usr/local/ARGONNE_DATA/wrchen03/INS/sand19878.run" };
+//    String file_names[] = { "/usr/local/ARGONNE_DATA/glad0816.run" };
 //    String file_names[] = { "/home/dennis/glad7197.run" };
 //    String file_names[] = { "/usr/local/ARGONNE_DATA/SCD_QUARTZ/SCD06496.RUN" };
 /*    String file_names[] = { "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07940.RUN", 
@@ -1902,6 +1922,18 @@ private float CalculateEIn()
       System.out.println("Trying GC...");
       System.gc();
     }
+
+    int index = 154;
+    System.out.println("Looking at group with index = " + index );
+    Data d = ds[0].getData_entry(index);
+    float y[] = d.getY_values();
+    float sum = 0;
+    for ( int i = 0; i < y.length; i++ )
+    {
+      sum += y[i];
+      System.out.println("i, y = " + i + ", " + y[i] );
+    }
+    System.out.println("TOTAL = " + sum );
  
     System.out.println("Trying GC...");
     System.gc();
