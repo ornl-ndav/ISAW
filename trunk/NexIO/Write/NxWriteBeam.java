@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/12/08 20:56:41  rmikk
+ * Moved the duration from NXbeam to NXentry
+ *
  * Revision 1.4  2002/11/27 23:29:19  pfpeterson
  * standardized header
  *
@@ -69,7 +72,7 @@ public class NxWriteBeam{
    * Extracts the information from the Data Set and writes it to the
    * NxBeam portion of a Nexus file
    *
-   * @param  node    A node whose class is NXbeam
+   * @param  node    A node whose class is NXbeam..
    * @param  DS      The data set whose information is to be written
    */
   public boolean processDS( NxWriteNode node, DataSet DS ){
@@ -112,8 +115,8 @@ public class NxWriteBeam{
                         Inst_Type.makeRankArray(4,-1,-1,-1,-1));
       }  
     } 
-    // duration 
-    O = DS.getAttributeValue( Attribute.NUMBER_OF_PULSES );
+    // duration <-- global attribute -->
+   /* O = DS.getAttributeValue( Attribute.NUMBER_OF_PULSES );
     if( O != null ){
       if( O instanceof Number ){
         float f = ( ( Number )O ).floatValue();
@@ -128,7 +131,11 @@ public class NxWriteBeam{
         n1.addAttribute("units",("msec"+(char)0).getBytes(),Types.Char,
                         Inst_Type.makeRankArray(5,-1,-1,-1,-1));
       }  
-    } 
+    }
+  */
+     NxWriteNode NxLognode = node.newChildNode("Log_2","NXlog");
+    NxWriteLog writelog = new NxWriteLog( 5);
+    writelog.processDS( NxLognode, null, 2); 
     return false;
   }//processDS
 }//class NxWriteBeam
