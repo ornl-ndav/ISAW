@@ -29,6 +29,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.2  2003/08/22 18:57:32  bouzekc
+ * Added method to recursively enable/disable all Components contained within
+ * this EntryWidget.  Modified ActionListener and KeyListener methods to more
+ * accurately trigger PropertyChangeEvents.  Commented out main() method.
+ *
  * Revision 1.1  2003/08/22 05:01:16  bouzekc
  * Added to CVS.
  *
@@ -136,12 +141,21 @@ public class EntryWidget extends JPanel implements PropertyChanger,
   //~ Methods ******************************************************************
 
   /**
+   * Overridden to enable/disable all the components within the EntryWidget.
+   * Uses recursion.
+   */
+  public void setEnabled( boolean enable ) {
+    recursivelySetEnabled( this, enable );
+  }
+
+  /**
    * ActionListener implementation.
    *
    * @param evt The triggering ActionEvent.
    */
   public void actionPerformed( ActionEvent evt ) {
-    propBind.firePropertyChange( IParameter.VALUE, "old", "new" );
+    propertyChange( 
+      new PropertyChangeEvent( this, IParameter.VALUE, "old", "new" ) );
   }
 
   /**
@@ -253,19 +267,17 @@ public class EntryWidget extends JPanel implements PropertyChanger,
   /**
    * Testbed.
    */
-  public static void main( String[] args ) {
-    EntryWidget ew = new EntryWidget( new JTextField( "TEST" ) );
 
-    ew.addPropertyChangeListener( 
-      new Operators.TOF_SCD.MyPropertyChangeListener(  ) );
-
-    JFrame frame = new JFrame( "TEST" );
-
-    frame.getContentPane(  )
-         .add( ew );
-    frame.setSize( new Dimension( 640, 480 ) );
-    frame.setVisible( true );
-  }
+  /*public static void main( String[] args ) {
+     EntryWidget ew = new EntryWidget( new JTextField( "TEST" ) );
+     //ew.addPropertyChangeListener(
+     //new Operators.TOF_SCD.MyPropertyChangeListener(  ) );
+     JFrame frame = new JFrame( "TEST" );
+     frame.getContentPane(  )
+          .add( ew );
+     frame.setSize( new Dimension( 640, 480 ) );
+     frame.setVisible( true );
+     }*/
 
   /**
    * Triggered when a key is pressed.
@@ -287,7 +299,8 @@ public class EntryWidget extends JPanel implements PropertyChanger,
    * @param e The triggering key event.
    */
   public void keyTyped( KeyEvent e ) {
-    propBind.firePropertyChange( IParameter.VALUE, "old", "new" );
+    propertyChange( 
+      new PropertyChangeEvent( this, IParameter.VALUE, "old", "new" ) );
   }
 
   /**
@@ -421,6 +434,35 @@ public class EntryWidget extends JPanel implements PropertyChanger,
     for( int i = 0; i < ( ( Container )comp ).getComponents(  ).length; i++ ) {
       recursivelyAddListeners( 
         evl, ( ( Container )comp ).getComponents(  )[i], name );
+    }
+  }
+
+  /**
+   * Used by setEnabled( boolean ) to enable/disable all components within this
+   * EntryWidget.  Recursive method.
+   *
+   * @param comp The Component to enable/disable Components in.
+   * @param enable Whether to enable/disable.
+   */
+  private void recursivelySetEnabled( Component comp, boolean enable ) {
+    if( !( comp instanceof Container ) ) {
+      //base case
+      comp.setEnabled( enable );
+
+      return;
+    }
+
+    //enable/disable the Container as well.  To avoid infinite recursion, we
+    //don't want to call this setEnabled on the EntryWidget again.
+    if( !( comp instanceof EntryWidget ) ) {
+      comp.setEnabled( enable );
+    } else {
+      super.setEnabled( enable );
+    }
+
+    for( int i = 0; i < ( ( Container )comp ).getComponents(  ).length; i++ ) {
+      recursivelySetEnabled( 
+        ( ( Container )comp ).getComponents(  )[i], enable );
     }
   }
 }
