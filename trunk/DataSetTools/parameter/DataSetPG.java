@@ -1,5 +1,5 @@
 /*
- * File:  DataSetPG.java 
+ * File:  DataSetPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2004/05/09 17:48:53  bouzekc
+ *  Added commments, recoded main(), reformatted.
+ *
  *  Revision 1.17  2004/03/15 03:28:40  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -87,179 +90,231 @@
  *
  *
  */
-
 package DataSetTools.parameter;
 
-import gov.anl.ipns.Util.Messaging.IObserver;
 import DataSetTools.components.ParametersGUI.HashEntry;
+
 import DataSetTools.dataset.*;
+
 import DataSetTools.util.SharedData;
 
+import gov.anl.ipns.Util.Messaging.IObserver;
+
+
 /**
- * This is a superclass to take care of many of the common details of
- * Array Parameter GUIs.
+ * This is a superclass to take care of many of the common details of Array
+ * Parameter GUIs.
  */
-public class DataSetPG extends ChooserPG implements IObserver{
-    // static variables
-    private   static String TYPE     = "DataSet";
-    protected static int    DEF_COLS = ChooserPG.DEF_COLS;
+public class DataSetPG extends ChooserPG implements IObserver {
+  //~ Static fields/initializers ***********************************************
 
-    // ********** Constructors **********
-    public DataSetPG(String name, Object value){
-        super(name,value);
-        this.setType(TYPE);
-        if(value==null || value==DataSet.EMPTY_DATA_SET) return;
-        if(!(value instanceof DataSet))
-            SharedData.addmsg("WARN: Non-"+this.getType()
-                              +" in DataSetPG constructor");
+  private static String TYPE    = "DataSet";
+  protected static int DEF_COLS = ChooserPG.DEF_COLS;
+
+  //~ Constructors *************************************************************
+
+  /**
+   * Creates a new DataSetPG object.
+   *
+   * @param name The name of this DataSetPG.
+   * @param value The initial value.
+   */
+  public DataSetPG( String name, Object value ) {
+    super( name, value );
+    this.setType( TYPE );
+
+    if( ( value == null ) || ( value == DataSet.EMPTY_DATA_SET ) ) {
+      return;
     }
 
-    public DataSetPG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        this.setType(TYPE);
-        if(value==null || value==DataSet.EMPTY_DATA_SET) return;
-        if(!(value instanceof DataSet))
-            SharedData.addmsg("WARN: Non-"+this.getType()
-                              +" in DataSetPG constructor");
+    if( !( value instanceof DataSet ) ) {
+      SharedData.addmsg( 
+        "WARN: Non-" + this.getType(  ) + " in DataSetPG constructor" );
+    }
+  }
+
+  /**
+   * Creates a new DataSetPG object.
+   *
+   * @param name The name of this DataSetPG.
+   * @param value The initial value.
+   * @param valid True to  consider this initially valid.
+   */
+  public DataSetPG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+    this.setType( TYPE );
+
+    if( ( value == null ) || ( value == DataSet.EMPTY_DATA_SET ) ) {
+      return;
     }
 
-    // ********** Methods to deal with the hash **********
+    if( !( value instanceof DataSet ) ) {
+      SharedData.addmsg( 
+        "WARN: Non-" + this.getType(  ) + " in DataSetPG constructor" );
+    }
+  }
 
-    /**
-     * Add a single DataSet to the vector of choices. This calls the
-     * superclass's method once it confirms the value to be added is a
-     * DataSet.
-     */
-    public void addItem( Object val){
-      if(val==null){
-        super.addItem(DataSet.EMPTY_DATA_SET);
-      }else{
-        if(val instanceof DataSet){
-          super.addItem(val);
-          ((DataSet)val).addIObserver(this);
-        }else{
-          throw new ClassCastException(val+" cannot be cast as a DataSet");
+  //~ Methods ******************************************************************
+
+  /**
+   * Returns the value of the parameter. While this is a generic object
+   * specific parameters will return appropriate objects. There can also be a
+   * 'fast access' method which returns a specific object (such as String or
+   * DataSet) without casting.
+   */
+  public DataSet getDataSetValue(  ) {
+    Object value = this.getValue(  );
+
+    if( value instanceof DataSet ) {
+      return ( DataSet )value;
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Calls the parent method with DataSet.EMPTY_DATA_SET if value is null.
+   */
+  public void setValue( Object value ) {
+    if( value == null ) {
+      super.setValue( DataSet.EMPTY_DATA_SET );
+    } else {
+      if( value instanceof DataSet ) {
+        super.setValue( value );
+      } else {
+        throw new ClassCastException( value + " cannot be cast as a DataSet" );
+      }
+    }
+  }
+
+  /**
+   * Add a single DataSet to the vector of choices. This calls the superclass's
+   * method once it confirms the value to be added is a DataSet.
+   */
+  public void addItem( Object val ) {
+    if( val == null ) {
+      super.addItem( DataSet.EMPTY_DATA_SET );
+    } else {
+      if( val instanceof DataSet ) {
+        super.addItem( val );
+        ( ( DataSet )val ).addIObserver( this );
+      } else {
+        throw new ClassCastException( val + " cannot be cast as a DataSet" );
+      }
+    }
+  }
+
+  /*
+   * Main method for testing purposes.
+   */
+  public static void main( String[] args ) {
+    DataSetPG fpg;
+    int y = 0;
+
+    // int dy          = 70;
+    String filename = null;
+
+    if( args.length == 1 ) {
+      filename = args[0];
+    }
+
+    fpg = new DataSetPG( "a", null );
+    fpg.initGUI( new java.util.Vector(  ) );
+    fpg.showGUIPanel( 0, y );
+
+    DataSetTools.retriever.RunfileRetriever rr = new DataSetTools.retriever.RunfileRetriever( 
+        filename );
+    DataSet[] ds                               = new DataSet[rr.numDataSets(  )];
+
+    for( int k = 0; k < 20; k++ ) {
+      System.out.println( "Iteration " + k );
+      fpg.clear(  );
+      System.out.println( fpg );
+
+      for( int i = 0; i < rr.numDataSets(  ); i++ ) {
+        ds[i] = rr.getDataSet( i );
+
+        try {
+          fpg.addItem( ds[i] );
+        } catch( ClassCastException cce ) {
+          //suppress it
         }
-      }
-    }
-
-    // ********** IObserver requirements **********
-    public void update(Object observed, Object reason){
-      if( !(reason instanceof String) ) return; // reason should be a string
-      if( ! (IObserver.DESTROY.equals((String)reason)) )
-        return;                                      // must be a destroy event
-      if( !(observed instanceof DataSet) ) return; // must be a DataSet
-
-      // -- remove references to the DataSet
-      // from choices
-      this.vals.remove(observed);
-      // from GUI
-      if(this.getInitialized()){
-        ((HashEntry)getEntryWidget().getComponent(0)).removeItem(observed);
-      }
-      // from the value      
-      if(getValue()==observed){
-        if(this.vals!=null && this.vals.size()>0)
-          setValue(this.vals.elementAt(0)); // set to first choice
-        else
-          setValue(DataSet.EMPTY_DATA_SET); // or empty dataset
-      }
-
-      // stop listening
-      ((DataSet)observed).deleteIObserver(this);
-    }
-
-    // ********** IParameter requirements **********
-
-    /**
-     * Returns the value of the parameter. While this is a generic
-     * object specific parameters will return appropriate
-     * objects. There can also be a 'fast access' method which returns
-     * a specific object (such as String or DataSet) without casting.
-     */
-    public DataSet getDataSetValue(){
-        Object value=this.getValue();
-        if(value instanceof DataSet){
-            return (DataSet)value;
-        }else{
-            return null;
-        }
-    }
-
-    /**
-     * Calls the parent method with DataSet.EMPTY_DATA_SET if value is
-     * null.
-     */
-    public void setValue(Object value){
-      if(value==null){
-        super.setValue(DataSet.EMPTY_DATA_SET);
-      }else{
-        if( value instanceof DataSet )
-          super.setValue(value);
-        else
-          throw new ClassCastException(value+" cannot be cast as a DataSet");
       }
     }
 
     /*
-     * Main method for testing purposes.
-     */
-    /*public static void main(String args[]){
-        DataSetPG fpg;
-        int y=0, dy=70;
+       y+=dy;
+       fpg=new DataSetPG("b",ds[0]);
+       System.out.println(fpg);
+       fpg.setEnabled(false);
+       fpg.initGUI(ds);
+       fpg.showGUIPanel(0,y);
+       y+=dy;
+       fpg=new DataSetPG("c",ds[0],false);
+       System.out.println(fpg);
+       fpg.setEnabled(false);
+       fpg.initGUI(ds);
+       fpg.showGUIPanel(0,y);
+       y+=dy;
+       fpg=new DataSetPG("d",ds[0],true);
+       System.out.println(fpg);
+       fpg.setDrawValid(true);
+       fpg.initGUI(ds);
+       fpg.showGUIPanel(0,y);
+       y+=dy;*/
+  }
 
-        String filename=null;
-        if(args.length==1){
-            filename=args[0];
-        }else{
-            filename="/home/students/bouzekc/ISAW/SampleRuns/SCD06497.RUN";
-        }
+  /**
+   * Required for IObserver implementation.
+   *
+   * @param observed The observed Object.
+   * @param reason The reason for the update-should be a String.
+   */
+  public void update( Object observed, Object reason ) {
+    if( !( reason instanceof String ) ) {
+      return;  // reason should be a string
+    }
 
-        RunfileRetriever rr=new RunfileRetriever(filename);
-        DataSet[] ds=new DataSet[rr.numDataSets()];
-        for( int i=0 ; i<rr.numDataSets() ; i++ ){
-            ds[i]=rr.getDataSet(i);
-        }
+    if( !( IObserver.DESTROY.equals( ( String )reason ) ) ) {
+      return;  // must be a destroy event
+    }
 
-        fpg=new DataSetPG("a",ds[0]);
-        System.out.println(fpg);
-        fpg.initGUI(ds);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+    if( !( observed instanceof DataSet ) ) {
+      return;  // must be a DataSet
+    }
 
-        fpg=new DataSetPG("b",ds[0]);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(ds);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+    this.vals.remove( observed );
 
-        fpg=new DataSetPG("c",ds[0],false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(ds);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+    // from GUI
+    if( this.getInitialized(  ) ) {
+      ( ( HashEntry )getEntryWidget(  ).getComponent( 0 ) ).removeItem( 
+        observed );
+    }
 
-        fpg=new DataSetPG("d",ds[0],true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(ds);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-    }*/
-
-    /**
-     * Validates this DataSetPG.  A DataSetPG is considered valid if its value
-     * is not null and is not a DataSet.EMPTY_DATA_SET.
-     */
-    public void validateSelf(  ) {
-      Object obj = getValue(  );
-
-      if( ( obj != null ) && ( obj != DataSet.EMPTY_DATA_SET ) ) {
-        setValid( true );
+    // from the value      
+    if( getValue(  ) == observed ) {
+      if( ( this.vals != null ) && ( this.vals.size(  ) > 0 ) ) {
+        setValue( this.vals.elementAt( 0 ) );  // set to first choice
       } else {
-        setValid( false );
+        setValue( DataSet.EMPTY_DATA_SET );  // or empty dataset
       }
     }
+
+    // stop listening
+    ( ( DataSet )observed ).deleteIObserver( this );
+  }
+
+  /**
+   * Validates this DataSetPG.  A DataSetPG is considered valid if its value is
+   * not null and is not a DataSet.EMPTY_DATA_SET.
+   */
+  public void validateSelf(  ) {
+    Object obj = getValue(  );
+
+    if( ( obj != null ) && ( obj != DataSet.EMPTY_DATA_SET ) ) {
+      setValid( true );
+    } else {
+      setValid( false );
+    }
+  }
 }
