@@ -14,10 +14,9 @@ $SaveFileName      SaveFileString("/IPNShome/sasi/GeorgeUser/sens0012.dat") Ente
 $HotDetectorLevel  Float(1.4)                     Enter the level indicating a hot detector
 $DeadDetectorLevel Float( .6)                   Enter the level indicating a dead detector
 
-
-$Title = Calculate Sensitivity
-$Command = Sensitivity
-$Category=Operator,Generic,TOF_SAD,Scripts
+$Title = sasi Calculate Sensitivity
+$Command = sasi_Sensitivity
+$Category = Operator, Instrument Type, TOF_NSAS
 
 n= load( runFileName, "SensData")
 

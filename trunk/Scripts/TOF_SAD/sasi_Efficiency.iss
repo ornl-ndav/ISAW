@@ -22,10 +22,9 @@ $ YOFF                Float(0.008747)                         Enter Yoffset of b
 $ Radius              Float( 5.0)                             Radius to use
 $ DelayNeutron        Float( .0042)                           Delayed Neutron Fraction
 
-$ Title = Efficiency From File
-$ Command = Efficiency
-$ Category = Operator, Generic, TOF_SAD, Scripts
-
+$ Title = sasi Efficiency From File
+$ Command = sasi_Efficiency
+$ Category = Operator, Instrument Type, TOF_NSAS 
 
 
 n= load( CadmiumFileName, "CadDS")

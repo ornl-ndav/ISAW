@@ -16,7 +16,7 @@
 # @param NQyBins if positive then do the 2D case for Qbins
 
 # @return  null or an ErrorString.   The result will be written to a file
-$ Category = Operator, Generic, TOF_SAD, Scripts
+$ Category = Operator, Instrument Type, TOF_NSAS 
 
 #================= Parameters ======================================
 $Input_Path  String( "C:/new_das_runs/")  Input path

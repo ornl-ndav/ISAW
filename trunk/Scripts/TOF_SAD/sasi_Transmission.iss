@@ -25,9 +25,9 @@ $ polyfitIndx2      Integer(60)      Last time channel for poly fit, or -1 if no
 $ polyDegree        Integer(3)      The Degree of the fit polynomial
 $ sqrtWeight        Boolean(true)    Use 1/sqrt(y) for weightin
 
-$ Title = Calculate Transmission
-$ Command = Transmission
-$ Category = Operator, Generic, TOF_SAD, Scripts
+$ Title = sasi Calculate Transmission
+$ Command = sasi_Transmission
+$ Category = Operator, Instrument Type, TOF_NSAS 
 
 load SampleFileName, "Samp"
 load EmptyFileName, "Empty"
