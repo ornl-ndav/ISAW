@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/05/20 20:49:58  dennis
+ * Now constructs a new parameters vector in setDefaultParameters.
+ * (Ruth Mikkelson)
+ *
  * Revision 1.5  2003/04/02 15:02:46  pfpeterson
  * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  *
@@ -127,6 +131,8 @@ public class ActivateForm extends Form{
    */
   public void setDefaultParameters()
   {
+    parameters = new Vector();
+
     addParameter(new MaterialPG("Sample composition", "La,Mn,O_3", false));
     addParameter(new FloatPG("Sample mass", 1.0f, false));
     addParameter(new FloatPG("Beam Current (in microAmp)", 16.0f, false));
