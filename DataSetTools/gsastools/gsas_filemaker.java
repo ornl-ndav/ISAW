@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2002/02/22 20:35:45  pfpeterson
+ *  Fixed to work with GSAS (again) by removing STD from bank header.
+ *
  *  Revision 1.12  2002/01/14 20:31:50  pfpeterson
  *  Modified to use writer interface for GSAS files.
  *  Now can be used to export files with constant t, d, Q and delta t/t.
@@ -358,7 +361,12 @@ public class gsas_filemaker
 			    +format(nchan,6)+"     "
 			    +format(nrec,6)+formatc(bintype,8)
 			    +format(bCoef1,14)+"     "
-			    +format(bCoef2,10)+"  "+type+"    \n");
+			    +format(bCoef2,10)+"  ");
+            if(type.equals("STD")){
+                outStream.write("       \n");
+            }else{
+                outStream.write(type+"    \n");
+            }
 	}catch(Exception d){}
     }
 
