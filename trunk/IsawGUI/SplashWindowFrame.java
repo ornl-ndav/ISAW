@@ -31,6 +31,16 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/12/11 18:24:52  dennis
+ *    Now uses the WindowShower utility class to display the splash window
+ *  from the Swing event handling thread, instead of showing it directly.
+ *  This fixes an intermittent problem where Isaw would "hang" while
+ *  loading on Linux, using j2sdk 1.4.2_02.
+ *    Added code to start the thread that disposes of the splash screen
+ *  after a period of time, so that the thread does not need to be started
+ *  in the ISAW main program.
+ *    Did some general code clean up and improved javadocs.
+ *
  *  Revision 1.16  2003/02/13 21:45:13  pfpeterson
  *  Removed calls to deprecated function fixSeparator.
  *
@@ -59,35 +69,25 @@ import java.awt.*;
 import javax.swing.*;
 import DataSetTools.util.*;
 
+/**
+ *   This class will display the ISAW splash screen on the center of the
+ *   monitor for a period of time.
+ */
 public class SplashWindowFrame extends    JFrame
                                implements Runnable
 {
-  SplashWindow sw;
-  Image splashIm;
-  private static final int width  = 475;
-  private static final int height = 360;
-
+  private static final int    WIN_WIDTH  = 475;  // size of splash screen
+  private static final int    WIN_HEIGHT = 360;
+  private static final float  TIME       = 7;    // time to display the splash
+                                                 // screen, in seconds
+  /** 
+   *  Construct the parent frame for the splash window
+   */
   SplashWindowFrame() 
   {
     super();
-
-    String ipath=SharedData.getProperty("IMAGE_DIR");
-    if(ipath==null) return;
-    ipath = StringUtil.setFileSeparator(ipath);
-    splashIm = Toolkit.getDefaultToolkit().getImage(ipath+"Isaw.gif");
-    splashIm=splashIm.getScaledInstance(width,height,Image.SCALE_FAST);
-
-    MediaTracker mt = new MediaTracker(this);
-    mt.addImage(splashIm,0);
-    try 
-    {
-      mt.waitForID(0);
-    } 
-    catch(InterruptedException ie){}
-
-    sw = new SplashWindow( this, splashIm );
+    SplashWindow sw = new SplashWindow( this );
   }
-
 
   /**
    *  This run method just sleeps for a while and then disposes of the
@@ -98,33 +98,62 @@ public class SplashWindowFrame extends    JFrame
   {
     try
     {
-     Thread.sleep(7000);
+     Thread.sleep( (int)(1000 * TIME) );
     }
     catch(InterruptedException ie){}
     this.dispose();
   }
 
-
+  /**
+   *  This internal Window class actually gets the splash image and 
+   *  displays it in itself.  
+   */
   private class SplashWindow extends Window 
   {
     Image splashIm;
 
-    public SplashWindow( JFrame parent, Image splashIm ) 
+    public SplashWindow( Frame parent ) 
     {
       super(parent);
-      this.splashIm = splashIm;
-      this.setSize(width,height);
+                                                          // find and load the
+                                                          // image
+      String ipath=SharedData.getProperty("IMAGE_DIR");
+      if ( ipath == null ) 
+         return;
+      ipath    = StringUtil.setFileSeparator(ipath);
+      splashIm = Toolkit.getDefaultToolkit().getImage( ipath + "Isaw.gif" );
+      splashIm = splashIm.getScaledInstance( WIN_WIDTH, 
+                                             WIN_HEIGHT, 
+                                             Image.SCALE_FAST );
 
-      /* Center the window */
-      Dimension screenDim = 
-      Toolkit.getDefaultToolkit().getScreenSize();
-      Rectangle winDim = this.getBounds();
-      this.setLocation((screenDim.width - winDim.width) / 2,
-                  (screenDim.height - winDim.height) / 2);
+                                                  // use a media tracker to wait
+      MediaTracker mt = new MediaTracker( this ); // for the image to load, so
+      mt.addImage(splashIm,0);                    // when it appears, it pops 
+      try                                         // pops up instantly. 
+      {
+        mt.waitForID(0);
+      }
+      catch(InterruptedException ie){}
+
+                                                  // center the splash screen
+                                                  // on the monitor
+      this.setSize( WIN_WIDTH, WIN_HEIGHT );
+      Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
+      this.setLocation( ( screenDim.width  - WIN_WIDTH  ) / 2,
+                        ( screenDim.height - WIN_HEIGHT ) / 2 );
   
-      this.setVisible(true);
+                                                 // actually show the window in
+                                                 // the event thread, to avoid
+                                                 // deadlock or race conditions
+      Runnable window_shower = new WindowShower( (Window)this );
+      EventQueue.invokeLater( window_shower );
+                                                 // start timer that kills the
+                                                 // the window after some time
+      Thread splash_thread = new Thread( (Runnable)parent );
+      splash_thread.start();
     }
 
+   
     public void paint(Graphics g) 
     {
       if (splashIm != null) 
