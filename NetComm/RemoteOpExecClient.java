@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/10/22 21:24:30  dennis
+ *  Changed parameter name so javadocs build cleanly using
+ *  jdk 1.4.2
+ *
  *  Revision 1.1  2003/10/21 21:21:56  dennis
  *  Client to send operator to RemoteOpExecServer to
  *  request remote execution of operator on a server.
@@ -94,7 +98,7 @@ public class RemoteOpExecClient extends TCPClient
    */
   public String saveResultInFile( Operator op, 
                                   String file_name, 
-                                  String directory_name )
+                                  String dir_name )
   {
      String username = SharedData.getProperty("user.name");
      String password = "dummypassword";
@@ -104,7 +108,7 @@ public class RemoteOpExecClient extends TCPClient
                                             password,
                                             op,
                                             file_name,
-                                            directory_name );
+                                            dir_name );
 
     Object result = getObjectFromServer( command );
     return result.toString();
