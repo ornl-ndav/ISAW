@@ -10,7 +10,11 @@ package OverplotView;
  * ----------
  *
  * $Log$
- * Revision 1.11  2001/12/13 18:59:49  dennis
+ * Revision 1.12  2001/12/21 17:53:46  dennis
+ * -Implemented offsets for graphs              (Ruth)
+ * -Fixed error message when no data blocks are selected
+ *
+ * Revision 1.11  2001/12/13 18:59:49 Ruth
  * -Eliminated the AUX_EXIT option
  * -Implemented the Data Label attribute to label spectra in the
  *  selected graph view
@@ -58,15 +62,15 @@ package OverplotView;
  * implements IObserver, and update(...) has been removed.
  * ----------
  */
-
-import DataSetTools.dataset.Attribute;
-import DataSetTools.dataset.AttributeList;
-import DataSetTools.dataset.FloatAttribute;
-import DataSetTools.dataset.StringAttribute;
-import DataSetTools.dataset.Data;
-import DataSetTools.dataset.DataSet;
+ import DataSetTools.dataset.*;
+//import DataSetTools.dataset.Attribute;
+//import DataSetTools.dataset.AttributeList;
+//import DataSetTools.dataset.FloatAttribute;
+//import DataSetTools.dataset.StringAttribute;
+//import DataSetTools.dataset.Data;
+//import DataSetTools.dataset.DataSet;
 import DataSetTools.viewer.DataSetViewer;
-import DataSetTools.util.IObserver;
+import DataSetTools.util.*;
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -91,6 +95,7 @@ public class GraphableDataManager
   private sgtGraphableDataGraph graph;
    AttributeList attrs;
   private String Error;
+  JCheckBoxMenuItem HShift,VShift;
 
   /**
    * default constructor
@@ -107,11 +112,20 @@ public class GraphableDataManager
   private void inittt( DataSet data_set )
    {
     setLayout( new GridLayout( 1 , 1 ));
+    JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
+     OptionMenuHandler option_menu_handler = new OptionMenuHandler();
+     HShift = new JCheckBoxMenuItem( "Horizontal Shift", false);
+     VShift = new JCheckBoxMenuItem( "Vertical Shift",false);
+     
+     option_menu.add( HShift  );
+     option_menu.add( VShift );
+    HShift.addActionListener( option_menu_handler);
+    VShift.addActionListener( option_menu_handler);
     Error =null;
     if( data_set == null)
 	Error = "No data Set";
     else if( data_set.getSelectedIndices().length <=0)
-        Error = "No Data Sets are Selected";
+        Error = "No Data Blocks are Selected";
    
        
     graph = new sgtGraphableDataGraph();
@@ -140,13 +154,16 @@ public class GraphableDataManager
     attrs.addAttribute( y_units );
     attrs.addAttribute( x_label );
     attrs.addAttribute( y_label );
+    attrs.addAttribute( new FloatAttribute("Xshift",0.0f));
+    attrs.setAttribute( new FloatAttribute("Yshift",0.0f));
     graph.setAttributeList( attrs );
 
     redraw( );
 
     //modify the menu provided by DataSetViewer
-    OptionMenuHandler option_menu_handler = new OptionMenuHandler();
-    JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
+   ;
+    
+     
     //JMenuItem exitButton = new JMenuItem( AUX_EXIT );
     //exitButton.addActionListener( option_menu_handler );
     //option_menu.add( exitButton );
@@ -167,7 +184,7 @@ public class GraphableDataManager
    */
   public void redraw( String reason ) 
   {  //inittt( getDataSet() );
-    //System.out.println( "DataSetViewer> " + reason );
+    System.out.println( "DataSetViewer> " + reason + ","+ IObserver.SELECTION_CHANGED );
       
     if ( reason == IObserver.DESTROY )
     {
@@ -183,7 +200,7 @@ public class GraphableDataManager
     }
     else if( reason == IObserver.SELECTION_CHANGED )
     { DataSet ds = getDataSet();
-       Error = "No Data Blocks Selected";
+       Error = "No Data Blocks are Selected";
        if( ds.getSelectedIndices().length  > 0)
            Error = null;
        redraw();
@@ -315,11 +332,33 @@ public class GraphableDataManager
   private void convert_Data_to_GraphableData()
   {
     graphable_data = new Vector();
+    float dx=0; 
+    float dy=0;
+    int nn = getDataSet().getNumSelected();
+    float xx= 50;
+    if( nn>12) xx = 4*nn;
+    if( HShift.getState() && (nn>0))
+      { UniformXScale xs;
+        xs = getDataSet().getXRange();
+        dx= (xs.getEnd_x()-xs.getStart_x())/xx ;  
+       }
+   if( VShift.getState() && (nn > 0)) dy = 1.0f; //tag
+    /*  {ClosedInterval  ys= getDataSet().getYRange();
+       float xx=50;
+       if( nn>12) xx=4*nn;
+       dy=(ys.getEnd_x()-ys.getStart_x())/xx;
+
+       }
+   */
+    
+    float MXY = java.lang.Float.POSITIVE_INFINITY ;
+    float MNY = java.lang.Float.NEGATIVE_INFINITY;
+    int kk = 0;
     for( int i=0;  i<getDataSet().getNum_entries();  i++ )
       if(  getDataSet().getData_entry(i).isSelected()  )
       {
         GraphableData d = new GraphableData( getDataSet().getData_entry(i) );
-          new GraphableData(  getDataSet().getData_entry(i)  );
+         // new GraphableData(  getDataSet().getData_entry(i)  );
 
 
                                           //create all of the attributes
@@ -348,12 +387,30 @@ public class GraphableDataManager
         d.addAttribute( offset_attr );
         d.addAttribute( name_attr );
         d.addAttribute( color_attr );
- 
-                                          
+        d.addAttribute( new FloatAttribute("Xshift", kk*dx ));
+        d.addAttribute( new FloatAttribute("Yshift", kk*dy+0.0f ));
+        kk++;                                  
                                           //add the new GraphableData object
                                           //to the list of data to be
         graphable_data.add( d );          //visualized
+
+
+        float [] ys;
+        ys = Dat.getY_values();
+        if( ys != null)
+          for( int k = 0; k < ys.length;k++)
+            {if(MXY == java.lang.Float.POSITIVE_INFINITY) MXY = ys[k];
+             else if( ys[k] > MXY) MXY = ys[k];
+             if(MNY == java.lang.Float.NEGATIVE_INFINITY) MNY = ys[k];
+             else if( ys[k] < MNY) MNY =ys[k]; 
+             } 
       }
+    
+     FloatAttribute FF =  new FloatAttribute( "Yshift",(MXY-MNY)/xx);
+    
+     attrs.setAttribute( FF );
+    
+     graph.setAttributeList( attrs);
   }
 
 
@@ -367,10 +424,10 @@ public class GraphableDataManager
     public void actionPerformed( ActionEvent e ) 
     {
       String action = e.getActionCommand();
-      System.out.println("The user selected : " + action );
-      if(  action.equals( AUX_EXIT )  ) 
-       {}
-      else if( action.equals("Graph"))
+     if( (action.equals("Horizontal Shift")) || (action.equals("Vertical Shift")))
+       { redraw();
+        }
+     else if( action.equals("Graph"))
        {if( graph !=null)
          {JPlotLayout jp = graph.getJPane();
           if( jp !=null)
