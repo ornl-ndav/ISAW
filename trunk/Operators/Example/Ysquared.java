@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.1  2004/05/07 17:23:49  dennis
+ * Moved Ysquared from Operators to Operators.Example
+ *
  * Revision 1.6  2004/01/30 02:19:39  bouzekc
  * Removed unused imports and variables.
  *
@@ -47,10 +50,10 @@
  * operator title to constructor java docs.
  *
  */
-package Operators;
+package Operators.Example;
 
 import DataSetTools.operator.*;
-import DataSetTools.operator.Generic.Special.*;
+import DataSetTools.operator.Generic.Example.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
@@ -77,7 +80,7 @@ import java.util.*;
  *  new DataSet.
  */
 
-public class Ysquared extends GenericSpecial
+public class Ysquared extends GenericExample
 {
   private static final String TITLE = "Square all Y-values";
 
