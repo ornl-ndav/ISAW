@@ -13,7 +13,9 @@ Operator                                        Operator
 
  -Generic                                          GenericOperator
     --Load                                            GenericLoad
-    --Batch                                           GenericBatch
+    --Save                                            GenericBatch
+    --Special
+    --Batch  
 
  -DataSet Operator                                 DataSetOperator
     --Edit List                                        DS_EditList
