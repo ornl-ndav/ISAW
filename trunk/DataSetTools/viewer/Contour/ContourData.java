@@ -29,6 +29,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/09/23 15:57:04  rmikk
+ *  -Eliminated the persistent reference to the DataGrid. This
+ *   grid is changed by other operators and other Viewers so
+ *  does not retain valid values
+ *
  *  Revision 1.17  2003/08/28 15:00:09  rmikk
  *  Added Code to support Several Area Detectors
  *
@@ -141,6 +146,8 @@ public class ContourData
    int DetNum = -1;
    int[] DetNums = null;
    UniformGrid grid;
+   Data[][]Groups = null;
+   int num_rows = -1, num_cols = -1;
    //*****************************************************************************************
    //						Constructors
    //*****************************************************************************************
@@ -230,7 +237,11 @@ public class ContourData
          groups[ k[i][0] ][ k[i][1] ] = k[i][2];
 
       }
-     */
+     */    
+      x_scale = data_set.getData_entry(0).getX_scale();
+      ds = (DataSet)(dsSave.clone());
+      for( int j=0; j< ds.getNum_entries(); j++)
+      ds.getData_entry(j).resample( x_scale,0);
       SetUpDetNums();
       if( DetNum < 0){
          ThetPhiData( ds, new thetaAxisHandler( ds), new phiAxisHandler( ds), 
@@ -238,18 +249,16 @@ public class ContourData
          return;
       }
       
-      axis1 = new double[ grid.num_cols() ];
-      axis2 = new double[  grid.num_rows() ];
+      axis1 = new double[ num_cols ];
+      axis2 = new double[  num_rows ];
       for( int row = 0; row < axis2.length; row++ )
          axis2[row] = row+1;
       for( int col = 0; col < axis1.length; col++ )
          axis1[col] = col+1;
      
-     x_scale = data_set.getData_entry(0).getX_scale();
-     ds = (DataSet)(dsSave.clone());
-     for( int j=0; j< ds.getNum_entries(); j++)
-       ds.getData_entry(j).resample( x_scale,0);
-     grid.setDataEntriesInAllGrids(ds);
+ 
+    
+     //grid.setDataEntriesInAllGrids(ds);
    }
 
 
@@ -277,16 +286,16 @@ public class ContourData
       //Given the group indecies and time slice, we look up the row, column, and y value and store
       //them in separate 1d arrays.  Axis data itself will be integer values.  The axis arrays
       //will hold no repeated values. (ie values.size = axis1.size * axis2.size)
-      double[] values = new double[ ( grid.num_rows() ) * ( grid.num_cols()) ];
+      double[] values = new double[ ( num_rows ) * ( num_cols) ];
 
       maxvalue = -1;
       minvalue = -1;
       
-      for( col = 1; col <= grid.num_cols(); col++ )
+      for( col = 1; col <= num_cols; col++ )
       {
-         for( row = 1; row <= grid.num_rows(); row++ )
+         for( row = 1; row <= num_rows; row++ )
          {
-            Data db = grid.getData_entry(row,col);
+            Data db = Groups[row][col];
             if( db != null)
               values[w] = db.getY_value( X,0);
             else{
@@ -616,6 +625,7 @@ public class ContourData
          for( int j=0; j< ds.getNum_entries(); j++)
             ds.getData_entry(j).resample( x_scale,0);
          grid.setDataEntriesInAllGrids(ds);
+         SetUpGroups();
         }
       else if( xscale != null)
        { ntimes = xscale.getNum_x();
@@ -640,20 +650,18 @@ public class ContourData
          c++;
       else if( c - col > .5 )
          c--;
-     
-      
-     
       if( mode == 0)
         {
          if( r <= 1 )
          return -1;
          if( c <= 1 )
          return -1;
-         if( r > grid.num_rows() )
+         if( r > num_rows )
           return -1;
-         if( c > grid.num_cols() )
+         if( c > num_cols )
            return -1;
-         return ds.getIndex_of_data(grid.getData_entry( r,c));
+       
+         return ds.getIndex_of_data(Groups[ r][c]);
          }
       else //returns user coordinates
          { float R;
@@ -766,8 +774,20 @@ public class ContourData
           DetNum = DetNums[0];
       grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum));
       grid.setDataEntriesInAllGrids(ds);
+      SetUpGroups();
 
    }
+  //assumes grid is accurate at this instance
+  private void SetUpGroups(){
+      num_rows = grid.num_rows();
+      num_cols = grid.num_cols();
+      Groups = new Data[ 1+ num_rows][1+num_cols];
+      for( int row = 1; row <= num_rows; row++)
+        for( int col = 1; col <= num_cols; col++)
+           Groups[row][col] = grid.getData_entry(row,col);
+
+   } 
+
   LabelCombobox  DetChoices = null;
   public JComponent[] getControls(){
     if( DetNums == null)
@@ -798,8 +818,15 @@ public class ContourData
                  intValue();
     }catch( Exception ss){};
     if( choice != DetNum){
+      int oldDetNum = DetNum;
       DetNum = choice;
       grid = (UniformGrid)Grid_util.getAreaGrid( ds, DetNum);
+      if( grid == null){
+         DetNum = oldDetNum;
+         return;
+      }
+      grid.setDataEntriesInAllGrids(ds);
+      SetUpGroups();
       DataChangeListener.actionPerformed( new ActionEvent(this,
           ActionEvent.ACTION_PERFORMED,"DataChange"));
     }
