@@ -10,6 +10,10 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.13  2001/12/21 18:22:18  dennis
+ * Doubled the y-shift amount.
+ * Removed debug print of selection messages.
+ *
  * Revision 1.12  2001/12/21 17:53:46  dennis
  * -Implemented offsets for graphs              (Ruth)
  * -Fixed error message when no data blocks are selected
@@ -184,7 +188,8 @@ public class GraphableDataManager
    */
   public void redraw( String reason ) 
   {  //inittt( getDataSet() );
-    System.out.println( "DataSetViewer> " + reason + ","+ IObserver.SELECTION_CHANGED );
+//    System.out.println( "DataSetViewer> " + reason + ","+ 
+//                         IObserver.SELECTION_CHANGED );
       
     if ( reason == IObserver.DESTROY )
     {
@@ -406,7 +411,7 @@ public class GraphableDataManager
              } 
       }
     
-     FloatAttribute FF =  new FloatAttribute( "Yshift",(MXY-MNY)/xx);
+     FloatAttribute FF =  new FloatAttribute( "Yshift",2*(MXY-MNY)/xx);
     
      attrs.setAttribute( FF );
     
