@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.7  2002/12/11 19:06:48  rmikk
+ * Fixed indentation and added documentation
+ *
  * Revision 1.6  2002/11/27 23:25:37  pfpeterson
  * standardized header
  *
@@ -225,8 +228,8 @@ public class STableView  extends DataSetViewer
 
 
   /** Subclasses can add components above the info panel. This method is empty
-  *   in STable
-  *  @param  EastPanel  The EastPanel with BoxLayout( Vertical ). Add components hee
+  *   in STableView
+  *  @param  EastPanel  The EastPanel with BoxLayout( Vertical ). Add components here
   */
    public void AddComponentsAboveInfo( JPanel EastPanel)
     {
@@ -234,8 +237,8 @@ public class STableView  extends DataSetViewer
   
 
   /** Subclasses can add components below the info panel. This method is empty
-  *   in STable
-  *  @param  EastPanel  The EastPanel with BoxLayout( Vertical ). Add components hee
+  *   in STableView
+  *  @param  EastPanel  The EastPanel with BoxLayout( Vertical ). Add components here
   */
    public void AddComponentsBelowInfo(JPanel EastPanel)
     {
@@ -360,9 +363,14 @@ public class STableView  extends DataSetViewer
      }
 
 
-private class MyActionListener implements ActionListener
+   private class MyActionListener implements ActionListener
      {
       String filename = null;
+
+      /** 
+      *  Displays a JFileChooser box to save the table and then writes header information
+      *  and the data to the file
+      */  
       public void actionPerformed( ActionEvent evt )
         {JFileChooser jf ;
          if( filename == null )  
@@ -424,6 +432,9 @@ private class MyActionListener implements ActionListener
      }
 
  
+  /** 
+  *  Listener for events on the show error and show indices Option menu item buttons
+  */
   private class CheckBoxListener  implements ActionListener
     {
      public void actionPerformed( ActionEvent evt)
@@ -435,9 +446,10 @@ private class MyActionListener implements ActionListener
     }
 
 
-  /**Action Listener for the MenuItems to Select all and copy select
-    * in the JFrame containing the JTable
-    */
+   /**
+   * Action Listener for the MenuItems to Select all and copy select
+   * in the JFrame containing the JTable
+   */
    private class MyJTableListener implements ActionListener
      {
       JTable JTb;
@@ -467,7 +479,9 @@ private class MyActionListener implements ActionListener
         }
      }
 
-
+   /** 
+   *    Listener for mouse events in the table. These events cause POINTED_AT_CHANGED events
+   */
    class MyMouseListener  extends MouseAdapter
      {
       public void mouseClicked(MouseEvent e)
@@ -484,10 +498,12 @@ private class MyActionListener implements ActionListener
       }
 
 
-   /** Test program for this module. It requires one argument, the filename
+   /** 
+   *    Test program for this module. It requires one argument, the filename of a data set
+   *    to display as a Time_Slice_TableModel
    */
    public static void main( String args[])
-    { if( args == null)
+     {if( args == null)
         System.exit(0);
       if( args.length<1)
         System.exit(0);
