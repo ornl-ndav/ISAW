@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/02/24 21:04:29  pfpeterson
+ * Changed style of full constructor and setDefaultParameters.
+ *
  * Revision 1.4  2003/02/24 19:02:05  dennis
  * Added getDocumentation() method. (Shannon Hintzman)
  * Switch to use:  new parameter GUIs: DataSetPG, StringPG,
@@ -90,11 +93,9 @@ public class Grouping extends GenericTOF_Diffractometer{
      */
     public Grouping( DataSet ds, String  group_str, int new_gid ){
         this(); 
-        parameters = new Vector();
-        addParameter( new DataSetPG("DataSet parameter", ds) );
-        addParameter( new StringPG("List of IDs to focus",
-                                    new String(group_str)));
-        addParameter( new IntegerPG("New Group ID", new Integer(new_gid) ) );
+        getParameter(0).setValue(ds);
+        getParameter(1).setValue(group_str);
+        getParameter(2).setValue(new Integer(new_gid));
     }
 
   /* ---------------------------- getDocumentation -------------------------- */
@@ -148,9 +149,8 @@ public class Grouping extends GenericTOF_Diffractometer{
         parameters = new Vector();
         addParameter( new DataSetPG("DataSet parameter",
                                     DataSet.EMPTY_DATA_SET) );
-        addParameter( new StringPG("List of Group IDs to focus",
-                                    new String("")));
-        addParameter( new IntegerPG("New Group ID", new Integer(1) ) );
+        addParameter( new StringPG("List of Group IDs to focus", "") );
+        addParameter( new IntegerPG("New Group ID", 1) );
     }
 
   /* ------------------------------ getResult ----------------------------- */
@@ -259,28 +259,33 @@ public class Grouping extends GenericTOF_Diffractometer{
   /* ------------------------------- main -------------------------------- */
 
     /** 
-     * Test program to verify that this will complile and run ok.  
+     * Test program to verify that this will compile and run ok.  
      */
-    public static void main( String args[] ){
+    public static void main(String args[]){
         System.out.println("Test of Grouping starting...");
         if(args.length==1){
             String filename = args[0];
             RunfileRetriever rr = new RunfileRetriever( filename );
             DataSet ds = rr.getDataSet(1);
             // make operator and call it
-            Grouping op = new Grouping( ds, "44:73", 2 );
-            Object obj = op.getResult();
-            if ( obj instanceof DataSet ){      // we got a DataSet back
+            Operator op = new TimeFocus(ds, "", 10.0f, 2.0f, true);
+            Object result = op.getResult();
+            
+            if(result instanceof DataSet ){
+              op = new Grouping( (DataSet)result, "44:73", 2 );
+              result = op.getResult();
+              if ( result instanceof DataSet ){      // we got a DataSet back
                                                 // so show it and original
-                DataSet new_ds = (DataSet)obj;
-                ViewManager vm1 =new ViewManager( ds,     IViewManager.IMAGE );
-                ViewManager vm2 =new ViewManager( new_ds, IViewManager.IMAGE );
-            }else{
-                System.out.println( "Operator returned " + obj );
+                  DataSet new_ds = (DataSet)result;
+                  ViewManager vm1 =new ViewManager( ds,     IViewManager.IMAGE );
+                  ViewManager vm2 =new ViewManager( new_ds, IViewManager.IMAGE );
+              }else{
+                  System.out.println( "Operator returned " + result );
+              }
             }
-        }else{
-            System.out.println("USAGE: Grouping <filename>");
-        }
+          /*}else{
+              System.out.println("USAGE: Grouping <filename>");
+        }*/
         System.out.println("Test of Grouping done.");
     }
 }
