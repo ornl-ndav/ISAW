@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/07/07 15:56:09  bouzekc
+ * Added missing param tags in constructor and
+ * getDocumentation().
+ *
  * Revision 1.9  2003/04/17 20:37:47  pfpeterson
  * Added more debug lines and a check that IntList returned a non-empty array.
  *
@@ -103,6 +107,7 @@ public class Grouping extends GenericTOF_Diffractometer{
      *  @param group_str String containing list of group ids of the
      *            	 spectra in the DataSet that should be grouped.
      *  @param new_gid   The group id of the new datablock created.
+     *  @param newDS     Whether to make a new DataSet.
      */
     public Grouping( DataSet ds, String group_str, int new_gid, boolean newDS){
         this(); 
@@ -127,10 +132,11 @@ public class Grouping extends GenericTOF_Diffractometer{
     Res.append("retrieved and the grouping occurs.  The data is then ");
     Res.append("normalized, packed up, and returned from the method.");
        
-    Res.append("@param ds - DataSet for which the focusing should be done.");
-    Res.append("@param group_str - String containing list of group ids of the");
+    Res.append("@param ds DataSet for which the focusing should be done.");
+    Res.append("@param group_str String containing list of group ids of the");
     Res.append(" spectra in the DataSet that should be grouped.");
-    Res.append("@param new_gid - The group id of the new datablock created.");
+    Res.append("@param new_gid The new group ID of the new datablock created.");
+    Res.append("@param newDS Whether to make a new DataSet.");
     
     Res.append("@return Returns a DataSet where the specified groups have ");
     Res.append("been grouped together or an ErrorString.");
