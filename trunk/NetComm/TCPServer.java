@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/03/14 20:38:21  dennis
+ *  Server log messages now (again) include the user name
+ *  of the user making the requests.
+ *  Server logs are now written out if a request is made
+ *  and the log has not been written within the last minute.
+ *
  *  Revision 1.11  2003/02/24 21:09:14  dennis
  *  Moved STATUS string from TCPComm to TCPServer
  *
@@ -86,6 +92,7 @@ public class TCPServer implements ITCPUser
 
   private    Hashtable log;
   private    String    log_filename     = "TCPServerLog.txt";
+  private    long      last_log_time_ms = 0;
   private    String    server_name      = "TCPServer";
   private    int       current_tcp_port = DEFAULT_SERVER_TCP_PORT;
   private    String    start_time       = "";
@@ -294,7 +301,13 @@ public class TCPServer implements ITCPUser
         System.out.println("Received request " + command );
       try
       {
-        MakeLogEntry(command.toString(), tcp_io.getInetAddressString(), false);
+        if ( command != null )
+        {
+          user_name = command.getUsername();
+          MakeLogEntry(command.toString(),tcp_io.getInetAddressString(),false);
+        }
+        else
+          MakeLogEntry("NULL COMMAND",tcp_io.getInetAddressString(),false);
 
         if ( CheckPassword( command ) )
         {
@@ -426,7 +439,10 @@ public class TCPServer implements ITCPUser
       requests = log_entry.getRequests() + 1; 
 
     log.put( log_key, new LogEntry( command, requests ) );
-    if ( write_file )
+                                             // write the log file if requested
+                                             // or if at least a minute passed
+    if ( write_file || 
+         System.currentTimeMillis() - last_log_time_ms > 60000 )
       WriteLogFile();
   }
 
@@ -453,6 +469,7 @@ public class TCPServer implements ITCPUser
        }
        file_writer.flush();
        file_writer.close();
+       last_log_time_ms = System.currentTimeMillis();
      }
      catch ( Exception exception )                        // write to console
      {
