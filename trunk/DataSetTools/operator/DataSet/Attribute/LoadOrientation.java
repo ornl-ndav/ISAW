@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/11/21 22:53:14  dennis
+ *  Added getDocumentation() method, docs to getResult() and test of
+ *  getDocumentation() to main program.  Left old main program as
+ *  comment. (Chris Bouzek)
+ *
  *  Revision 1.3  2002/10/25 22:18:22  pfpeterson
  *  Uses MatrixFilter for choosing orientation matrix file.
  *
@@ -126,7 +131,7 @@ public class LoadOrientation extends    DS_Attribute {
     }
 
 
-    /* ------------------------ setDefaultParmeters ----------------------- */
+    /* ------------------------ setDefaultParameters ----------------------- */
     /**
      *  Set the parameters to default values.
      */
@@ -141,12 +146,50 @@ public class LoadOrientation extends    DS_Attribute {
           new LoadFileString("")));*/
     }
     
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator loads a orientation matrix ");
+    s.append("and lattice parameters from a matrix file produced ");
+    s.append("by blind.");
+    s.append("@assumptions The file containing the orientation ");
+    s.append("matrix and lattice parameter does indeed exist, .");
+    s.append("and contains usable information in the correct ");
+    s.append("format.");
+    s.append("@algorithm Associate the orientation matrix and ");
+    s.append("lattice parameter to the DataSet. The information ");
+    s.append("is read from a matrix file.  New attributes, based");
+    s.append("on the information in the file, are added to the ");
+    s.append("DataSet, and a new SCDhkl Operator is added to the ");
+    s.append("DataSet.");
+    s.append("@param The DataSet to which the operation is applied.");
+    s.append("@param The name of the parameter file.");
+    s.append("@return A String which tells the user that the ");
+    s.append("orientation matrix was read successfully.  Note ");
+    s.append("that the DataSet is modifed, and appropriate ");
+    s.append("messages are added to the log file.");
+    s.append("@error Returns an error if the file containing the ");
+    s.append("orientation matrix cannot be found.");
+    s.append("@error Returns an error if the file containing the ");
+    s.append("orientation matrix is a directory.");
+    s.append("@error Returns an error if the file containing the ");
+    s.append("orientation matrix has data with invalid number formats.");
+    s.append("@error Returns an error if the file containing the ");
+    s.append("orientation matrix cannot be closed after opening.");
+    return s.toString();
+  }
     
-    /* -------------------------- getResult ----------------------------- */
-    
+    /* -------------------------- getResult ----------------------------- */ 
     /**
      * Associate the orientation matrix and lattice parameter to the
      * DataSet. The information is read from a matrix file.
+     * @return A String which tells the user that the orientation matrix 
+     * was read successfully.
      */
     public Object getResult(){  
         DataSet ds = getDataSet();
@@ -250,7 +293,23 @@ public class LoadOrientation extends    DS_Attribute {
         return new_op;
     }
 
-    public static void main(String args[]){
+    /* --------------------------------- main() ------------------------ */
+    /**  
+     *  Main method for testing purposes.
+     */
+    public static void main(String args[])
+    {
+        /* Chris's test program */
+	LoadOrientation lo = new LoadOrientation();
+	Object ob = lo.getResult();
+	System.out.println("The result of calling this operator is:"); 
+	System.out.println(ob.toString());
+	System.out.println("The documentation for this operator is: ");
+	System.out.println(lo.getDocumentation());
+	
+	System.exit(0);
+
+        /*  Peter's test program
         String prefix="/IPNShome/pfpeterson/data/SCD/";
         String runfile=prefix+"SCD06496.RUN";
         LoadFileString calfile=new LoadFileString(prefix+"quartz_isaw.mat");
@@ -259,5 +318,6 @@ public class LoadOrientation extends    DS_Attribute {
         System.out.println(rds+" "+calfile);
         LoadOrientation op=new LoadOrientation(rds,calfile);
         System.out.println("RESULT:"+op.getResult());
+        */
     }
 }
