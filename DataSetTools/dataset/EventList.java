@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/06/28 20:52:20  dennis
+ *  Improved check for valid index when building histogram.
+ *
  *  Revision 1.1  2002/06/19 22:54:06  dennis
  *  Prototype classes for event data.
  *
@@ -73,7 +76,7 @@ public class EventList implements IEventList
     {                                              // right histogram bin
       t = (float)(start_time + time[i] * tick_width);
       index = arrayUtil.get_index_of( t, x );
-      if ( index >= 0 )
+      if ( index >= 0 && index < y.length )
         y[index] += count[i];
     } 
 
