@@ -5,6 +5,9 @@
  *             
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/11/07 15:59:06  dennis
+ *  Replaced "groups" with "Groups" in operator title.
+ *
  *  Revision 1.4  2000/07/10 22:35:53  dennis
  *  July 10, 2000 version... many changes
  *
@@ -52,7 +55,7 @@ public class DataSetMultiSort  extends    DataSetOperator
 
   public DataSetMultiSort( )
   {
-    super( "Sort on group attributes" );
+    super( "Sort on Group attributes" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
