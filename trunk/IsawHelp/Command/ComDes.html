@@ -1,0 +1,322 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (Windows NT 5.0; U) [Netscape]">
+</head>
+<body>
+<a href="CommandPane.html">CONTENTS</a>
+<p><a NAME="#rith"></a>Arithmetic Operations :+,-, *, /, &amp;, and ^(power)
+<br>&nbsp;
+<br>&nbsp;
+<ul>These binary operations(Except &amp;) can be between Data Sets, a Data
+Set and a float, between two integers, between two floats, or between two
+strings(&amp; only).
+<p>&nbsp;Mixed types are allowed and are converted. "&amp;" is always string
+add so non string data is converted to strings.</ul>
+
+<hr>Assignment operator =
+<br>&nbsp;
+<br>&nbsp;
+<ul>To store a quantity in the local workspace memory, use "=" just like
+it is used in FORTRAN</ul>
+
+<hr><a NAME="Load"></a>Load
+<ul>
+<ol type="1">
+<h3>
+There are several forms of load. (* proposed)</h3>
+
+<li>
+<b>Load String Filename</b></li>
+
+<br><b>Load(String Filename)</b>
+<p>The names of the variables are names related to the file
+<li>
+<b>Load String Filename, String VariableName</b></li>
+
+<br><b>Load( String Filename , String VariableName )</b>
+<p>The names of the variables are varname0, varname1, varname2, etc.
+<br>and also varname[o], varname[1], ... varname[i]
+<li>
+<b>Integer Load String Filename</b></li>
+
+<br><b>Integer Load(String Filename)</b>
+<br><b>Integer Load String Filename, String VariableName</b>
+<br><b>Integer Load( String Filename , String VariableName )</b>
+<p>The return value is the number of datasets loaded.
+<br>These files are loaded into the local workspace</ol>
+</ul>
+
+<hr><a NAME="Display"></a>Display
+<ul>The * means proposed
+<br>&nbsp;
+<br>&nbsp;
+<ol type ="1">
+<li>
+<b>Display Object Expr</b></li>
+
+<p><br>&nbsp;The expression can be a variable or constant of any type.
+The data sets will be displayed in an external viewer of type IMAGE.
+<br>&nbsp;
+<br>&nbsp;
+<li>
+<b>*Display Object Expr, String ImageType</b></li>
+
+<p><br>&nbsp;ImageType should be either "IMAGE" or "SCROLLED_GRAPHS" or
+"SELECTED_GRAPHS"</ol>
+</ul>
+
+<hr><a NAME="Send"></a>Send
+<ul><b>Send DataSet</b>
+<ul>This command sends the data set back to anyone that is an IObserver
+Listener</ul>
+</ul>
+
+<hr><a NAME="Save"></a>Save
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>Save DataSet, String Filename</b>
+<p>&nbsp;This may have some problems in conjunction with Isaw</ul>
+
+<hr><a NAME="Peak"></a>Peak
+<ul>FitPeak
+<ul><b>DataSet Peak(DataSet, Integer, float a, float b, String S)</b></ul>
+</ul>
+Not implemented yet
+<p>
+<hr><a NAME="Rebin"></a>Rebin
+<ul>
+<ul><b>DataSet Rebin(DataSet , float a, float b , int n)</b></ul>
+</ul>
+Not implemented Yet
+<p>
+<hr><a NAME="TranX"></a>TranX
+<ul>Transform X
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet TranX( DataSet , String )</b></ul>
+</ul>
+Not implemented yet
+<p>
+<hr><a NAME="TranY"></a>TranY
+<ul>Transform Y
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet TranY(DataSet, String )</b></ul>
+</ul>
+Not implemented yet
+<p>
+<hr><a NAME="Add"></a>Add
+<ul>There are Several Forms
+<ol type= "1">
+<li>
+<b>DataSet Add( DataSet ds , DataSet ds_to_add , boolean make_new_ds)</b></li>
+
+<li>
+<b>DataSet Add( DataSet, float value , boolean make_new_s)</b></li>
+
+<li>
+<b>* DataSet Add( DataSet, DataSet , integer )</b></li>
+
+<ul>&nbsp;Not implemented yet</ul>
+</ol>
+</ul>
+
+<hr><a NAME="Sub"></a>Sub
+<ul>See <a href="#Add">Add</a></ul>
+
+<hr><a NAME="Mult"></a>Mult
+<ul>See <a href="#Add">Add</a></ul>
+
+<hr><a NAME="Div"></a>Div
+<ul>See <a href="#Add">Add</a></ul>
+
+<hr><a NAME="IntegGrp"></a>IntegGrp
+<ul>Integrate a Data Block with a specified Group ID
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet IntegGrp(DataSet, integer GroupID, float a , float b )</b></ul>
+</ul>
+
+<hr><a NAME="IntegInd"></a>IntegInd
+<ul>Integrate a Data Block with a specified Index
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet IntegInd(DataSet, integer GroupIndex, float a , float b
+)</b></ul>
+Not implemented yet ???</ul>
+
+<hr><a NAME="MomGrp"></a>MomGrp
+<ul>Calculate Moment
+<p>&nbsp;The next two have the same data types
+<ul><b>float MomGrp( DataSet, Integer GR_ID, float a, float b, float center,
+integer moment)</b></ul>
+</ul>
+
+<hr><a NAME="MomInd"></a>MomInd
+<ul><a href="#MomGrp">See MomGrp</a>
+<p>&nbsp;MomInd is not implemented yet</ul>
+
+<hr><a NAME="CrossSect"></a>CrossSect
+<ul>Data Cross Section
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet CrossSect( DataSet , float a , float b , String <a href="Attributes.html">AttributeName</a>
+)</b></ul>
+</ul>
+
+<hr><a href="CommandPane.html">CONTENTS</a>
+<p><a NAME="Merge"></a>Merge
+<ul>Data Set Merge
+<ul><b>DataSet Merge( DataSet , DataSet)</b></ul>
+</ul>
+
+<hr><a NAME="SortMK"></a>SortMK
+<ul>DataSet MultiSort ( On several group attributes)* No boolean
+<ul><b>DataSet SortMK(DataSet, String <a href="Attributes.html">attr_name1</a>
+, boolean incr , boolean use_it1,</b>
+<ul><b>String Attr2 , boolean incr1, boolean use_it2,</b>
+<br><b>String Attr3 , boolean incr2, boolean use_it3, boolean Make_new_ds</b></ul>
+<b>)</b></ul>
+</ul>
+
+<hr><a NAME="Sort"></a>Sort
+<ul>DataSet Sort( DataSet ds , String attr_name , boolean incr , boolean
+make_new_ds)</ul>
+
+<hr><a NAME="DelSel"></a>DelSel
+<ul>Delete currently Selected (How?)*
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet DelSel( DataSet, boolean DelSel_KeepSel, boolean make_new_ds)</b></ul>
+</ul>
+
+<hr><a NAME="DelAtt"></a>DelAtt
+<ul>Delete by Attribute
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet DelAtt( DataSet , String <a href="Attributes.html">attr_name</a>
+, float min, float max , boolean make_new_ds)</b></ul>
+</ul>
+
+<hr><a NAME="ExtSel"></a>ExtSel
+<ul>Extract currently Selected
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet ExtSel( DataSet , boolean , boolean )</b></ul>
+</ul>
+Not implemented yet
+<p>
+<hr><a NAME="ExtAt"></a>ExtAtt
+<ul>Extract by Attribute
+<ul><b>DataSet ExtAtt( DataSet , String <a href="Attributes.html">attr_name</a>
+, float min , float max , boolean keep )</b></ul>
+</ul>
+
+<hr><a NAME="Eval"></a>Eval
+<ul>Evaluator for Spectrometer , Diffractometer , or Reflectometer
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet Eval( DataSet , DataSet monitor_ds ,float up_level , float
+low_level)</b></ul>
+</ul>
+
+<hr><a NAME="Norm"></a>Norm
+<ul>Normalizer for Spectrometer , Diffractometer , or Reflectometer
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet Norm ( DataSet , float adjuster , DataSet Monitor_ds )</b></ul>
+</ul>
+
+<hr><a NAME="SumSel"></a>SumSel
+<ul>Sum Currently Selected
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet SumSel( DataSet , boolean status , boolean make_new_ds )</b></ul>
+</ul>
+Not incorporated with user command yet.
+<p>
+<hr><a NAME="SumAtt"></a>SumAtt
+<ul>Sum by Attribute
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet SumAtt(DataSet , String <a href="Attributes.html">attr_name</a>
+, boolean keep , float min , float max )</b></ul>
+</ul>
+
+<hr><a NAME="SumTF"></a>SumTF
+<ul>Sum Time Fields
+<ul><b>DataSet SumTF ( DataSet , float , float )</b></ul>
+</ul>
+Not implemented yet
+<p>
+<hr><a NAME="Focus"></a>Focus
+<ul>Focus
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet Focus( DataSet , float )</b></ul>
+</ul>
+Not implemented yet
+<p>
+<hr><a NAME="ToChan"></a>ToChan
+<ul>Tof to Channel
+<ul><b>DataSet toChan(DataSet , float min_chan, float max_chan, integer
+n_bins)</b></ul>
+</ul>
+
+<hr><a NAME="ToD"></a>ToD
+<ul>Tof to D
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet ToD( DataSet , float min_D, float max_d, integer num_D)</b></ul>
+</ul>
+
+<hr><a NAME="ToE"></a>ToE
+<ul>Tof to E
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet ToE( DataSet , float min_Energy , float max_Energy, integer
+Num_Enegy)</b></ul>
+</ul>
+
+<hr><a NAME="ToQ"></a>ToQ
+<ul>Tof to Q
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet ToQ( DataSet , float min_Q , float max_Q , integer num_Q)</b></ul>
+</ul>
+Not implemented yet
+<p>
+<hr><a NAME="ToEL"></a>ToEL
+<ul>Tof to Energy Loss
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet ToEL( DataSet , float minEnergy, float maxEnergy, integer
+num_E)</b></ul>
+</ul>
+
+<hr><a NAME="ToWL"></a>ToWL
+<ul>Tof to Wave Length
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet ToWL( DataSet , float minWavelength, float maxWaveLength,
+integer nwaveL)</b></ul>
+</ul>
+
+<hr><a NAME="ToQE"></a>ToQE
+<ul>Tof to QE
+<ul><b>DataSet ToQE( DataSet , float minQ, float maxQ, integer nbins)</b></ul>
+</ul>
+
+<hr><a NAME="ToYAngle"></a>ToYAngle
+<ul>Tof to True Angle
+<br>&nbsp;
+<br>&nbsp;
+<ul><b>DataSet ToYAngle( DataSet , float minAngle , float maxAngle , integer
+nbins)</b></ul>
+</ul>
+
+<hr>
+</body>
+</html>
