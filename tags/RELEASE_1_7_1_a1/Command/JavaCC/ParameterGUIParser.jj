@@ -1,0 +1,426 @@
+/*
+ * File:  ParameterGUIParser.jj
+ *
+ * Copyright (C) 2003, Chris M. Bouzek
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ *           Chris Bouzek <coldfusion78@yahoo.com>
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0218882.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * $Log$
+ * Revision 1.10  2004/01/08 21:10:16  bouzekc
+ * Now more forgiving than before with path separators for file systems.
+ * Allows multiple forward or back slashes for Windows, and multiple
+ * forward slashes for *NIX.
+ *
+ * Revision 1.9  2003/11/11 19:41:33  bouzekc
+ * Now returns a new Vector when the parser finds an empty set of brackets.
+ * The previous behaviour was to return a new Vector with one element: an
+ * empty String.
+ *
+ * Revision 1.8  2003/10/20 22:06:57  bouzekc
+ * Fixed javadoc error.  The javadocs are actually held in the .jj file.
+ *
+ * Revision 1.7  2003/09/15 22:56:43  bouzekc
+ * Now recognizes a space between words in a Windows file path when the
+ * quotes are not supplied with the String.
+ *
+ * Revision 1.6  2003/09/12 16:56:54  bouzekc
+ * Added underscore and dash to the list of "valid" characters.
+ *
+ * Revision 1.5  2003/08/16 01:36:28  bouzekc
+ * Now handles *NIX and Windows paths more correctly.
+ *
+ * Revision 1.4  2003/08/06 18:40:25  bouzekc
+ * Changed so that integer expansions entered in quotes are treated as Strings.
+ *
+ * Revision 1.3  2003/08/06 18:30:25  bouzekc
+ * Fixed bug where multiple calls to parseText() would not actually parse the
+ * input.
+ *
+ * Revision 1.2  2003/08/06 17:10:36  bouzekc
+ * Fixed bug where a call to parseText crashed the parsing.
+ *
+ * Revision 1.1  2003/08/05 23:08:42  bouzekc
+ * Added to CVS.
+ *
+ */
+PARSER_BEGIN( ParameterGUIParser )
+package Command.JavaCC;
+
+import java.io.StringReader;
+
+import java.util.*;
+
+public class ParameterGUIParser {
+  //don't want to continually recreate this thing
+  private static ParameterGUIParser myParser;
+  private static boolean expandVectorIntoElements = true;
+  private static boolean standalone = false;
+  
+  /**
+   * Method used to run the ParameterGUIParser for testing purposes.
+   *
+   * @param args Unused.
+   *
+   * @throws ParseException If anything goes wrong during parsing
+   */
+  public static void main( String args[] ) throws ParseException {
+    standalone = true;
+    myParser = new ParameterGUIParser( System.in );
+    myParser.ExpansionList(  );
+  }
+
+  /**
+   *  Used to call the parser from an outside class.
+   *
+   * @param text The text to parse.
+   *
+   * @return The result of the parsing.
+   *
+   * @throws ParseException If anything goes wrong during parsing
+   */
+  public static Vector parseText( String text ) throws ParseException {
+    standalone = false;
+    //need a semicolon on the end
+    if( text.indexOf( ";" ) < 0 ) {
+      text = text.trim(  ) + ";";
+    }
+    if( myParser == null ) {
+      myParser = new ParameterGUIParser( new StringReader( text )  );
+    } else {
+      myParser.ReInit( new StringReader( text )  );
+    }
+    Vector tempy = myParser.ExpansionList(  );
+
+    if( tempy.size(  ) == 1 && tempy.get( 0 ).equals( "" ) ) {
+      return new Vector(  );
+    }  else  {
+      return tempy;
+    }
+  }
+     
+
+  /**
+   * Used to expand an integer list (e.g. 5:8 to 5,6,7,8).
+   *
+   * @param first The first integer in the list.
+   * @param last The last integer in the list.
+   * @param step The step size.
+   *
+   * @throws ParseException if the list cannot be created due to integer
+   * wraparound (e.g. 60:10:10 will not work since it has to wrap around to get
+   * to 10 from 60 going forwards).
+   */
+  private static Vector expandIntList( int first, int last, int step ) throws
+                 ParseException {
+    Vector intExpansion = new Vector(  );
+    
+    intExpansion.add( new Integer( first ) );
+       
+    //forward expansion
+    if( first <= last ) {
+      if( step > 0  ) {
+        //positive step size
+        for( int i = first + step; i <= last; i += step ) {
+          intExpansion.add( new Integer( i ) );
+        }
+      } else {
+        //we would have to wrap around to expand the list
+        throw new ParseException( 
+          "Cannot expand " + first + ":" + last + ":" + step + "due to integer wraparound." );
+      }
+    } else { 
+      //backward expansion
+      if( step < 0 ) {
+        for( int i = first + step; i >= last; i += step ) {
+          intExpansion.add( new Integer( i ) );
+        }
+      } else {
+        //we would have to wrap around to expand the list
+        throw new ParseException( 
+          "Cannot expand " + first + ":" + last + ":" + step + "due to integer wraparound." );
+      }
+    }
+    return intExpansion;
+  }
+}
+
+PARSER_END( ParameterGUIParser )
+
+SKIP : {
+  "\n" | "\r"
+}
+
+TOKEN : {
+  < DIGIT: ( "+" | "-" )? ( ["0"-"9"] )+ >
+}
+
+TOKEN : {
+  < #UNSIGNED_DIGIT: ( ["0"-"9"] )+ >
+}
+
+TOKEN : {
+  < WHITESPACE: (" " | "\t" )+ >
+}
+
+
+TOKEN : {
+  < #CHARACTER: ( ["a"-"z"] | ["A"-"Z"] | "_" | "-" )+ >
+}
+
+TOKEN : {
+  < #RESERVED_CHAR: ( ~["a"-"z", "A"-"Z", "0"-"9", " ", "\t", "|", "\\", ":", 
+                        "\n", "\r", "/", "\""] ) >
+}
+
+TOKEN : {
+  < #VAR_RESERVED_CHAR: ["|", "\\", "/"] >
+}
+
+TOKEN : {
+  < #VARIABLE_COMP:  <CHARACTER> | <DIGIT> | <VAR_RESERVED_CHAR> >
+}
+
+TOKEN : {
+  < VARIABLE : ( ( ( <CHARACTER> )+ ( <VARIABLE_COMP> )* ) | 
+                 ( ( <DIGIT>     )+ ( <VARIABLE_COMP> )+ ) ) >
+}
+
+TOKEN : {
+    < WINDOWS_PATH : ( ( "\"" )*
+                     ( <CHARACTER> ":" ( "\\"| "/" )+ ( <WIN_PATH_END> )* ) ( "\"" )* ) >
+}
+
+TOKEN : {
+    < UNIX_PATH : ( ( "\"" )*  ( ( <UNIX_PATH_END> )+ ) ( "\"" )* ) >
+}
+
+TOKEN : {
+  < #DIGICHAR : <DIGIT> | <CHARACTER> >
+}
+
+TOKEN : {
+  < #WIN_PATH_END : ( ( ( <DIGICHAR> )* ) | 
+                         ( ( <DIGICHAR> )+ ( " " )* ( "." )? 
+                           ( <DIGICHAR> )* ( " " )* ) ) 
+                    ( "\\" | "/" )* >
+}
+
+TOKEN : {
+  < #UNIX_PATH_END : ( "/" )+ ( ( ( <DIGICHAR> )* ) | 
+                         ( ( <DIGICHAR> )+ ( "." )? ( <DIGICHAR> )* ) ) 
+                    ( "/" )* >
+}
+
+TOKEN : {
+  < STRING: ( "\"" )+ ( <DIGIT> | <CHARACTER> | <RESERVED_CHAR> |
+                   <VAR_RESERVED_CHAR> | <WHITESPACE> | <FLOATING_POINT> |
+                   ":" )* ( "\"" )+ >
+}
+
+TOKEN : {
+  < COLON_PAIR: <DIGIT> ":" <DIGIT> >
+}
+
+TOKEN : {
+  < STEPPED_COLON_PAIR: <COLON_PAIR> ":" <DIGIT> >
+}
+TOKEN : {
+  < FLOATING_POINT: ( <DIGIT> )+ ( ( "." )? ( ( <UNSIGNED_DIGIT> )* ) | 
+                                 ( "." ( <UNSIGNED_DIGIT> )+ ) ) 
+                                 ( ["e", "E"] ( <DIGIT>)+ )? >
+}
+
+TOKEN : {
+  < EMPTY_ARRAY: "[" ( <WHITESPACE> )* "]" >
+}
+
+Vector ExpansionList(  ) : {
+  Vector expandedList = null;
+}
+{ 
+  {
+    if( standalone ) {
+      System.out.println( "Please type in an expression with or without " +
+        " brackets, (e.g. [5:8], [5,6,7], [\"john\"]. 5:10:2) or ^D to quit:\n" );
+    }
+  }
+  ( expandedList = Expansion(  ) ";"{
+      //a semicolon ends the expansion
+      //print the parsed expression
+      if( standalone ) {
+        System.out.println( expandedList );
+        System.out.println(  );
+        System.out.println( "Please type in another expression in brackets or ^D to quit:" );
+        System.out.println(  );
+      }
+    }
+  )*
+  {
+    return expandedList;
+  }
+  <EOF>
+}
+
+Vector Expansion(  ) : {
+  Vector tempArray = new Vector(  );
+  Object element, listElem;
+  //StringBuffer numList = new StringBuffer(  );
+}
+{
+  element = toArray(  ) {
+    if( element instanceof Collection && expandVectorIntoElements ) {
+        //when we get a Vector back (such as as for an int expansion) add the
+        //elements themselves if we are told to expand the elements
+        tempArray.addAll( ( Collection)element );
+    } else {
+      tempArray.add( element );
+    }
+  }
+  ( ( ( "," ( <WHITESPACE> )* ) | ( ( <WHITESPACE> )+  ( "," ( <WHITESPACE> )* )? ) ) element = toArray(  ) {
+      
+      //could have any number of comma separated tokens, or multiple space
+      //separated tokens.  Treat any and all spaces as delimiters (except
+      //inside quotes of course)
+    if( element instanceof Collection && expandVectorIntoElements ) {
+      tempArray.addAll( ( Collection )element );
+    } else {
+      tempArray.add( element );
+    }
+  }
+  )*
+
+  {
+    //if we only have one element and it is a Vector, expand the inner Vector
+    if( tempArray.size(  ) == 1 && 
+        tempArray.firstElement(  ) instanceof Vector ) {
+      tempArray = ( Vector )( tempArray.firstElement(  ) );
+    }
+    return tempArray;
+  }
+}
+
+Object toArray(  ) : {
+  Token t;
+  String expansion;
+  Object recursedElement;
+  int index, first, last;
+  //reset for every element iteration
+  expandVectorIntoElements = true;
+}
+{
+  //matched a digit
+  t = <DIGIT> {
+    return Integer.valueOf( t.image );
+  }
+|
+  //matched a float
+  t = <FLOATING_POINT> {
+    return Double.valueOf( t.image );
+  }
+|
+  //matched a String
+  t = <STRING> {
+    t.image = t.image.substring( 1, t.image.length(  ) - 1 );
+    return t.image;
+  }
+|
+  //matched a variable
+  t = <VARIABLE> {
+    //at some point, we should add support for things like "ISAWDS1"
+
+    return t.image;
+  }
+|
+  //matched a "bracketed" expression
+  "[" recursedElement = Expansion(  ) "]" {
+    //tell the outside program to NOT expand this Vector
+    expandVectorIntoElements = false;
+    return recursedElement;
+  }
+|
+  //matched a colon pair (e.g. 5:8)
+  t = <COLON_PAIR> {
+    expansion = t.image.trim(  );
+    index = expansion.indexOf( ":" );
+    first = Integer.parseInt( expansion.substring( 0, index ) );
+    first = Integer.parseInt( expansion.substring( 0, index ) );
+    last = Integer.parseInt( expansion.substring( index + 1,
+                             expansion.length(  ) ) );
+    if( first <= last ) {
+      return expandIntList( first, last, 1 );
+    } else {
+      return expandIntList( first, last, -1 );
+    }
+  }
+|  
+  //matched a stepped colon pair(e.g. 10:35:2)
+  t = <STEPPED_COLON_PAIR> {
+    expansion = t.image.trim(  );
+    index = expansion.indexOf( ":" );
+    first = Integer.parseInt( expansion.substring( 0, index ) );
+    //trim out the first colon to find the step size
+    expansion = expansion.substring( index + 1, expansion.length(  ) );
+    index = expansion.indexOf( ":" );
+    last = Integer.parseInt( expansion.substring( 0, index ) );
+    int step = Integer.parseInt( expansion.substring( index + 1,
+                                 expansion.length(  ) ) );
+
+    return expandIntList( first, last, step );
+  }
+
+|
+  //someone did not add anything to the array, so return an empty String
+  t = <EMPTY_ARRAY> {
+    return "";
+  }
+
+|
+  //windows path.  
+  t = <WINDOWS_PATH> {
+    /*if( !t.image.startsWith( "\"" ) ) {
+      t.image = t.image.substring( 1, t.image.length(  ) );
+    }
+    if( !t.image.endsWith( "\"" ) ) {
+      t.image = t.image.substring( 0, t.image.length(  ) - 1);
+    }*/
+
+    return t.image;
+  }
+
+|
+  //unix path.  
+  t = <UNIX_PATH> {
+    /*if( !t.image.startsWith( "\"" ) ) {
+      t.image = t.image.substring( 1, t.image.length(  ) );
+    }
+    if( !t.image.endsWith( "\"" ) ) {
+      t.image = t.image.substring( 0, t.image.length(  ) - 1);
+    }*/
+
+    return t.image;
+  }
+}

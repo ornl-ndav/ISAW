@@ -1,0 +1,328 @@
+<!--
+  File: WizardDevel.html
+ 
+  Copyright (C) 2003, Chris M. Bouzek
+ 
+  Permission is granted to copy, distribute and/or modify this document
+  under the terms of the GNU Free Documentation License, Version 1.2
+  or any later version published by the Free Software Foundation;
+  with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+  Texts.
+ 
+  You should have received a copy of the GNU Free Documentation License
+  along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ 
+  Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+            Department of Mathematics, Statistics and Computer Science
+            University of Wisconsin-Stout
+            Menomonie, WI 54751, USA
+ 
+            Chris Bouzek <coldfusion78@yahoo.com>
+ 
+  This work was supported by the National Science Foundation under grant
+  number DMR-0218882.
+ 
+  For further information, see <http://www.pns.anl.gov/ISAW/>
+ 
+  $Log$
+  Revision 1.2  2004/03/30 01:06:05  bouzekc
+  Changed license to GNU Free Documentation License.
+
+  Revision 1.1  2004/03/30 00:28:21  bouzekc
+  Added to CVS.
+
+
+-->
+<html>
+  <head>
+    <title> ISAW Wizard How-To </title>
+  </head>
+  
+  <body>
+  <hr><br>
+  <font size=+3><center>
+  ISAW Wizard Writing How-To
+  </font></center>
+  <br><hr><br>
+  <font size=+2><center>
+  What is a software Wizard?
+  </font></center>
+  <br><hr><br>
+  For those of you not familiar with the concept of a software wizard, allow me
+  to give you a brief story as an explanation.<br><br>
+  
+  Suppose that you want to create a resume for a job application, but you
+  don&#8217;t know how to write a resume.  All you know is what name you want
+  on the resume, what school(s) you received degrees from, and where you have
+  worked the last few years.  If you use some software that allows you
+  to type in that information and then creates a resume for you, you have just
+  used a software wizard.<br>
+
+  <br><hr><br>
+  <font size=+2><center>
+  How easy is it to create an ISAW Wizard?
+  </font></center>
+  <br><hr><br>
+  ISAW Wizards&#8217; primary use is as a tool to allow you to analyze data 
+  step-by-step.  You essentially decide what the steps will be by selecting 
+  previously existing Operators or Scripts.  Both ISS and Jython scripts can be
+  used.  All you really need to do is determine what parameters match up between 
+  the steps and follow the template below, and you can easily create an ISAW 
+  Wizard.
+  <br><br>As you read, keep in mind that the steps will eventually translate
+  into Wizard "Forms."
+
+  <br><hr><br>
+  <font size=+2><center>
+  Step by Step directions for creating a Wizard.
+  </font></center>
+  <br><hr><br>
+  <ol>
+    <li>Decide what steps you want to perform.  That is, decide what analyses
+    you want to do.</li><br>
+    <li>Decide what order you want to do the analyses in.</li><br>
+    <li>Determine your parameter "matches."  That is, determine what parameters 
+    (such as runfile name) on the steps match up.  <br>For example, if you need
+    a runfile name for both step 1 and step 4, that runfile name is a "match."
+    <br><br><b> From the Wizard point of view, the result of executing an 
+    Operator (i.e. what getResult(  ) returns) is also considered a 
+    parameter.</b>
+    </li><br>
+    <li>Find or create the Operators or Scripts that correspond to your chosen
+    steps.  Note that these will be placed into Forms.</li><br>
+    <li>Locate the parameters in the Operators or Scripts that correspond to
+    the "matches" you found in step 3.</li><br>
+    <li>Write down the number of these parameters for each step.  Don&#8217;t
+    forget that this is a zero based numbering system-the first parameter is
+    parameter number zero and so on.
+    <br><br><b>The parameter number for the result from getResult(  ) is exactly 
+    the number of parameters for the Operator.</b>  For example, the result 
+    parameter number for an Operator with 5 parameters is 5.
+    </li><br>
+    </li><br>
+    <li>Create a table using the "Table Pattern" directions given
+    below.</li><br>
+    <li>Use the template given in "Wizard Template" below to create your
+    Wizard.</li><br>
+    <li>Test it out.  Remember that many results of intermediate steps (such as
+    DataSets, result files, etc.) can be viewed directly from the Wizard using
+    the "View" menu.</li><br>
+  </ol>
+
+  <br><hr><br>
+  <font size=+2><center>
+  Wizard Template
+  </font></center>
+  <br><hr><br>
+  <font size=+1>
+  This is a modification of an actual Wizard, with heavy commenting so that you
+  can understand what is going on.  Recall that each step is implemented with 
+  either an Operator or Script, and that each Script or Operator is placed into
+  a Form.<br><br></font>
+
+  <pre><code>
+  package Wizard.TOF_SCD;
+  //change the package to reflect the directory structure where this Wizard
+  //will be
+
+  //you MUST include these two lines
+  import DataSetTools.parameter.IParameterGUI;
+  import DataSetTools.wizard.*;
+
+  /**
+   *  Put the description of your wizard here.
+   */
+  public class MyWizard extends Wizard {
+  //Change the MyWizard name to the name of your wizard.
+
+  //~ Constructors *************************************************************
+
+  //you MUST have the following two constructors
+  
+  /**
+   * Default constructor.  Sets standalone in Wizard to true.
+   */
+  public MyWizard(  ) {
+    this( true );
+  }
+
+  /**
+   * Constructor for setting the standalone variable in Wizard.
+   *
+   * @param standalone Boolean indicating whether the Wizard stands alone
+   *        (true) or is contained in something else (false).
+   */
+  public MyWizard( boolean standalone ) {
+
+    //put the name of your wizard in place of "Wizard Name"
+    super( "Wizard Name", standalone );
+    this.createAllForms(  );
+
+    StringBuffer s = new StringBuffer(  );
+
+    //type a succinct description of your wizard here.
+    s.append( 
+      "This Wizard can perform the following steps: \n" );
+    s.append( "Step 1: \n" );
+    s.append( "Step 2: \n" );
+
+    //and so on.  You do not have to list the steps, although that may be the
+    //simplest way to explain what the wizard does.
+    this.setHelpMessage( s.toString(  ) );
+  }
+
+  //~ Methods ******************************************************************
+
+  //you MUST have a main method
+
+  /**
+   * Method for running this wizard as standalone.
+   */
+  public static void main( String[] args ) {
+    MyWizard w = new MyWizard( true );
+
+    //the wizards have built-in capability to load files and run sequentially
+    //without a GUI using a saved file.  This method call sets that up.
+    w.wizardLoader( args );
+  }
+
+  //you SHOULD follow this naming convention for this method, as all the other
+  //Wizards are written using this style
+
+  /**
+   * Adds and coordinates the necessary Forms for this Wizard.
+   */
+  private void createAllForms(  ) {
+    //put the table that you created using the Table Pattern section in the 
+    //Wizard how-to HTML page right here.
+  
+    int[][] fpi = {
+      { 0, 0 },    //description of linked parameter 1
+      { 1, 1 },    //description of linked parameter 2
+      { 2, 2 },    //description of linked parameter 3
+      { 3, 3 } };  //description of linked parameter 4
+    
+    //if you want to create a Form from a script, you must give it the 
+    //script name.  If the script is in your ISAW/Scripts directory, 
+    //it will be found automatically.  Otherwise, you have to 
+    //specify exactly where it is.
+
+    //Note the "LoadFile."  This is an example of a result parameter.  
+    //We have looked in the DataSetTools/parameters directory at 
+    //LoadFilePG to determine that its type is "LoadFile."  Then we give 
+    //it the name "Peaks File", which will show up in our wizard.
+
+    ScriptForm peaks = new ScriptForm( 
+        "/find_multiple_peaks.iss", "LoadFile", "Peaks File" );
+    this.addForm( peaks );
+    
+    //Here we are creating an OperatorForm by using the previously existing
+    //Operator Operators.TOF_SCD.BlindJ
+
+    OperatorForm blindjform = new OperatorForm( 
+        new Operators.TOF_SCD.BlindJ(  ), 
+        "LoadFile", "BlindJ log file" );
+
+    this.addForm( blindjform );
+
+    //Note here that we have decided to specify non-editable (i.e. "constant"
+    //parameters for this ScriptForm.  What we have decided is that parameters
+    //0, 1, 2, and 3 should be non-editable, and so we specify that as an
+    //argument for the ScriptForm.
+    ScriptForm integrate = new ScriptForm( 
+        "/integrate_multiple_runs.iss", "LoadFile", "Integrated Peaks File",
+        new int[]{ 0, 1, 2, 3 } );
+
+    this.addForm( integrate );
+
+    //use Form's method to actually link the parameters.  You MUST call this,
+    //or else your wizard will not work.
+    super.linkFormParameters( fpi );
+  }
+}
+
+</pre>
+
+  <br><hr><br>
+  <font size=+2><center>
+  Table Pattern
+  </font></center>
+  <br><hr><br>
+
+  Suppose that we have a Wizard with three steps: loading histograms, time
+  focusing and grouping, and saving in GSAS format.  Let&#8217;s call these
+  steps<br>
+  <ol>
+    <li>LoadHistograms</li>
+    <li>TimeFocus</li>
+    <li>SaveAsGSAS</li>
+  </ol><br>
+  We know that there are three Operators that can do these steps for us.  They
+  are: <br>
+  <ol>
+    <li>LoadMultiHistogramsForm</li>
+    <li>TimeFocusGroupForm</li>
+    <li>SaveAsGSASForm</li>
+  </ol>
+  Suppose that you have determined what parameters (e.g. run numbers) that you
+  want to match up.  Suppose further that you have looked at the documentation
+  for these Operators and have determined that the parameters for these steps 
+  match up as follows:
+  <ul>
+    <li>LoadHistograms parameter 5 = TimeFocus parameter 0</li><br>
+    <li>TimeFocus parameter 61 = SaveAsGSAS parameter 0</li><br>
+    <li>LoadHistograms parameter 6 = SaveAsGSAS parameter 1</li><br>
+    <li>LoadHistograms parameter 0 =  parameter 2</li><br>
+    <li>LoadHistograms parameter 2 = SaveAsGSAS parameter 3</li><br>
+  </ul><br>
+  Now, if we consider a table with the column numbering corresponding to the step
+  numbering (i.e. row 1 = step 1), and consider each row as corresponding to a 
+  parameter "match", we can set the table up easily.  For each column/step, find 
+  the Operator parameter number for the "match" for that step, and place that
+  number in the cell corresponding to the step column and parameter "match" row.
+  <br>
+  Note: if you have a step that does not have a parameter "match" with one or
+  more of the other steps, put a -1 in its cell for the parameter "match" row.  
+  <br><br>
+  Following these rules for our example, we come up with the table below.
+  <br><br>
+  <pre>
+    LoadHistograms   TimeFocus   SaveAsGSAS
+   |---------------------------------------|
+   |       5       |     0     |    -1     |
+   |---------------------------------------|
+   |      -1       |     61    |     0     |
+   |---------------------------------------|
+   |       6       |    -1     |     1     |
+   |---------------------------------------|
+   |       0       |    -1     |     2     |
+   |---------------------------------------|
+   |       2       |    -1     |     3     |
+   |---------------------------------------|
+  </pre><br><br>
+
+  What this essentially does is "link" the parameters so that when the value of
+  one parameter changes, the values of any parameters linked to it change as
+  well.<br><br>
+  This table in Java code will look like this:<br>
+  <pre><code>
+  int fpi[][] = { {5, 0, -1}, 
+                  {-1, 61, 0}, 
+                  {6, -1, 1}, 
+                  {0, -1, 2}, 
+                  {2, -1, 3} };
+  </pre></code>
+  
+  <b>DON'T</b> put a row of -1's in the table.  There is no point to it.
+  You are supposed to be matching up parameters, so matching no parameters 
+  at all makes no sense.<br><br>
+
+<strong><div align="center">Conditional Statements</div></strong>
+The contents of this document are licensed under the
+<a href="http://www.gnu.org/copyleft/fdl.html" >GNU Free 
+Documentation License</a> license.
+
+      <br><font size=-1>Copyright 2003 Chris M. Bouzek</font>
+  </body>
+</html>
