@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/07/26 22:01:51  rmikk
+ *  Replaced the null for the state in the TimeSliceView with
+ *    the state variable.
+ *
  *  Revision 1.5  2002/07/25 21:00:06  rmikk
  *  The Specialized TimeSlice Table view no longer needs
  *     selected Groups
@@ -126,9 +130,9 @@ public class TableViewMenuComponents
  * Name associated with the Menu items
  */
  public DataSetViewer getDataSetViewer( String view_type, DataSet DS, ViewerState state)
-   {
+   { 
      if(view_type.indexOf("x,Row vs Col y")==0)
-       return (DataSetViewer)(new TimeSliceView( DS, null));
+       return (DataSetViewer)(new TimeSliceView( DS, state));
     if( DS.getSelectedIndices().length<1)
        {DataSetTools.util.SharedData.addmsg("No data sets selected");
         return null;
