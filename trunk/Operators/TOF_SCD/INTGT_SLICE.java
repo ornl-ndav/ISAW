@@ -6,22 +6,22 @@ import DataSetTools.operator.*;
 import Command.JavaCC.Fortran.*;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
-
+  
 public class INTGT_SLICE implements Wrappable,HiddenOperator{
 
-  public int[][][] JHIST=null;
+  public int[][][] JHIST=new int[0][0][0];
 
-  public int[][] RANGE=null;
+  public int[][] RANGE=new int[0][0];
 
-  public int[] KRANGE=null;
+  public int[] KRANGE=new int[0];
 
   public int IZ=0;
 
-  public float[] IHKL=null;
+  public float[] IHKL=new float[0];
 
-  public float[] SIGI=null;
+  public float[] SIGI=new float[0];
 
-  public float[] ITOSIGI=null;
+  public float[] ITOSIGI=new float[0];
 
   public Object calculate(){
 
@@ -44,6 +44,10 @@ public class INTGT_SLICE implements Wrappable,HiddenOperator{
     int ISTOT=0;
 
     int J=0;
+
+    int NXS=0;
+
+    int NYS=0;
 
     float STOB=0f;
 
@@ -82,7 +86,9 @@ public class INTGT_SLICE implements Wrappable,HiddenOperator{
         IBTOT))))));
       ITOSIGI[(int)(((1))-1)]=(float)((IHKL[(int)(((1))-1)]/SIGI[(int)(((1))-1)]
         ));
-      return null;
+
+    return null;
+
   }
   public String getCommand(){
     return "INTGT_SLICE";}
