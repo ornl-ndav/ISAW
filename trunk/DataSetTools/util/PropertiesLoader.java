@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/01/20 17:27:20  pfpeterson
+ *  Specified the default for 'Default_Ext' to be 'ipns'.
+ *
  *  Revision 1.10  2002/11/27 23:23:49  pfpeterson
  *  standardized header
  *
@@ -158,6 +161,8 @@ public class PropertiesLoader implements java.io.Serializable
             def="40";
         }else if( prop.equals(ViewerState.AUTO_SCALE) ){
             def="0";
+        }else if( prop.equals("Default_Ext") ){
+            def="ipns";
         }else if( prop.equals( ViewerState.CONTOUR_STYLE) ){
            { def = ""+gov.noaa.pmel.sgt.GridAttribute.RASTER;
              
