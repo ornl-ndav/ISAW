@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2002/01/22 20:31:25  dennis
+ *  Temporarily added code for HRMECS runs 3099 & 3100 where
+ *  HRMECS was run as a diffractometer.
+ *
  *  Revision 1.37  2001/12/21 17:26:47  dennis
  *  Did complete change to using detector segments instead of detector ids.
  *
@@ -255,6 +259,16 @@ public class RunfileRetriever extends    Retriever
       instrument_type  = run_file.InstrumentType();
       if ( instrument_type == InstrumentType.UNKNOWN )
         instrument_type = InstrumentType.getIPNSInstrumentType( file_name );
+
+      // patch for runs where HRMECS was run as a diffractometer
+      int run_num = run_file.RunNumber();
+      if ( run_num == 3099 || run_num == 3100 )
+      {
+        String inst_name = InstrumentType.getIPNSInstrumentName( file_name );
+        if ( inst_name.equalsIgnoreCase( "HRCS" ) )
+          instrument_type = IPNS.Runfile.InstrumentType.TOF_DIFFRACTOMETER;
+      }
+
       num_histograms   = run_file.NumOfHistograms();
       data_set_type    = new int[ 3 * num_histograms ];
       histogram        = new int[ 3 * num_histograms ];
