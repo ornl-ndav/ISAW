@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2001/08/02 20:54:01  rmikk
+ * -Continuation of For, If, Else, Elseif, endif, endfor, and
+ * on error(?) lines are now supported.
+ * -This code now implements a RETURN command in the
+ * command pane
+ *
  * Revision 1.10  2001/08/02 16:22:10  rmikk
  * Incorporated the continuation character "\" for multiline
  * commands
@@ -222,10 +228,11 @@ public class ScriptProcessor  extends GenericOperator
     {
      String S ; 
      //Element E ; 
-       
+     
      if( Doc == null )return ;   
      if( line < 0 )return ;    
-     S = getLine( Doc , line);          
+     S = getLine( Doc , line);
+        
      if( S == null )
         {seterror( 0 , "Bad Line number");
          lerror = line;
@@ -387,7 +394,9 @@ public class ScriptProcessor  extends GenericOperator
        Element  E = Doc.getDefaultRootElement(),
 	        F ;                 
        line = start ; 
-       if(Debug)System.out.print( "In exeBlock line ,ex=" + line+","+exec + perror ) ; 
+       if(Debug)
+              System.out.print( "In exeBlock line ,ex=" + line+","+
+                                  exec + perror ) ; 
        while ( ( line < E.getElementCount() ) && ( perror < 0 ) )
 	   {
            S = getLine( Doc , line );
@@ -445,7 +454,7 @@ public class ScriptProcessor  extends GenericOperator
 	      {}
             
 	   else if( exec )  //can transverse a sequence of lines. On error , if then
-             { ExecLine.resetError();
+             { ExecLine.resetError();               
                execute1( Doc  , line ) ; 
              }
           
@@ -479,7 +488,8 @@ public class ScriptProcessor  extends GenericOperator
     
 
     
-private int executeForBlock( Document Doc , int start , boolean execute, int onerror )
+private int executeForBlock( Document Doc , int start , boolean execute, 
+                          int onerror )
     { String var ; 
       //Command.ListHandler LL ; 
       int i , j , k , n; 
@@ -513,7 +523,7 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
              }
           var= S.substring( i + 4, j).trim(); 
           String iter = S.substring( j + 4  ).trim() ;
-      
+          
            int kk = ExecLine.execute( iter, 0, iter.length());
            perror = ExecLine.getErrorCharPos();
         
@@ -524,6 +534,12 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
                lerror = start;
                return start;
               }
+          kk = ExecLine.skipspaces( iter, 1,kk);
+         if( kk < iter.length() )
+           {seterror( kk, "Extra Characters at the end of command");
+            lerror = start;
+            return start;
+            }  
           Object U = ExecLine.getResult();
          if( !(U instanceof Vector) || (U==null))
             {seterror( j+4, ExecLine.ER_IMPROPER_DATA_TYPE);
@@ -538,9 +554,10 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
         V = new Vector();
         var ="MMM";
         }   
+       line = nextLine( Doc, start );
       
-          line = start + 1 ; 
-       
+          //line = start + 1 ; 
+       int kline = line;
        for( int jj = 0; jj< n ;jj++)
 	   {/*S = null;
             
@@ -556,6 +573,7 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
            
 	    if( execute) i = ExecLine.execute ( S , 0 , S.length() ) ;
             */
+           
             if(execute && (onerror ==0))
              {ExecLine.Assign(var,V.elementAt(jj)); 
               if( (perror >= 0) && (onerror == 0) )
@@ -564,30 +582,36 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
                  return start ; 
                 }
               }
-              //if(execute) 
-              line = executeBlock( Doc , start + 1 , execute ,0 ) ; 
-	      if ( (perror >= 0) && (onerror == 0) )
-		 return line ; 
-              if( line >= E.getElementCount() )
-                { seterror( 0 , "No EndFor for a FORb" + S ) ; 
-	          return line ; 
-                }
              
-               S = getLine( Doc , line );
+              //if(execute) 
+              kline = executeBlock( Doc , line , execute ,0 ) ; 
+	      if ( (perror >= 0) && (onerror == 0) )
+		 return kline ; 
+             
+              if( kline >= E.getElementCount() )
+                { seterror( 0 , "No EndFor for a FORb" + S ) ; 
+	          return kline ; 
+                }
+              
+               S = getLine( Doc , kline );
                if( S == null )
 	       {
 		seterror( 0 ,  "Internal error" ) ; 
-                return line ; 
+                return kline ; 
 	       }
-             if( perror >= 0 ) return line ; 
+             
+             if( perror >= 0 ) return kline ;
+            
 	     if( !S.toUpperCase().trim().equals( "ENDFOR" ) )
 	       {seterror( 0 , "No EndFor for a FORx" + S ) ; 
-		return line ; 
+
+		return kline ; 
                };
             
                   
            }	//end for jj=    
-       return line ; 
+      
+       return kline ; 
                      
 
       }
@@ -616,7 +640,7 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
 	   {seterror ( 0, "internal error d" ) ; 
 	    return start ; 
            }
-       line = executeBlock( Doc , start + 1 , execute, 0 ) ; 
+       line = executeBlock( Doc , nextLine( Doc ,start)  , execute, 0 ) ; 
        if( perror >= 0 )
 	 {ExecLine.resetError() ; 
 	   perror = -1 ; 
@@ -644,16 +668,18 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
       if( S.toUpperCase().trim().equals( "ELSE ERROR" ) )
 	{ if(Debug)
             System.out.println("ELSE ERROR on line="+line+","+execute+mode);
-          line =executeBlock( Doc , line + 1 , execute, mode ) ;
+          line =executeBlock( Doc , nextLine( Doc , line) , execute, mode ) ;
           
           if( perror >= 0)
             {lerror = line;
              if(Debug) System.out.println( "ELSE ERROR ERROR ob lin"+line);
              int pperror = perror;
              perror = -1;
+             //not done cause did not reset error on this line????
              line = executeBlock( Doc, line, execute, 1);
              perror = pperror;
-             if(Debug)System.out.println("ELSE ERROR ERROR2, line,perror ="+line+","+perror);
+             if(Debug)System.out.println("ELSE ERROR ERROR2, line,perror ="+
+                                         line+","+perror);
             }
             
 	}
@@ -727,6 +753,12 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
            lerror= line;
            return line;
          }
+      kk = ExecLine.skipspaces( S, 1,kk);
+      if( kk < j )
+        {seterror( kk, "Extra Characters at the end of command");
+         lerror = line;
+         return line;
+        }  
       Object X = ExecLine.getResult();
       if( X instanceof Integer)
          if( ((Integer)X).intValue()==0) X = new Boolean(false);
@@ -741,10 +773,11 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
            System.out.println("aft eval b and err ="+b+","+perror);
       if( perror >= 0 )
          return line;
-     
-      j = executeBlock ( Doc , line + 1 , b && execute , 0 ) ;
+      line = nextLine( Doc, line );
+      j = executeBlock ( Doc , line , b && execute , 0 ) ;
       if( Debug)
-           System.out.println( "ExIf::aft exe 1st block, perror=" + perror +serror );
+           System.out.println( "ExIf::aft exe 1st block, perror=" +
+                        perror +serror );
       if( perror >= 0 ) 
         return j;
       S = getLine ( Doc , j );
@@ -763,7 +796,8 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
 	             
           }
         else 
-            {j = executeBlock( Doc , j+1 , (!b) && execute, 0 );
+            {j = executeBlock( Doc , nextLine( Doc , j ) , 
+                                   (!b) && execute, 0 );
              x = 2;
             }
       if(Debug) 
@@ -811,6 +845,26 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
          }
       return getNextMacroLine( Doc, prevLine++);
     } 
+
+
+private int nextLine( Document Doc, int line1 )
+{ boolean done = false;
+  int line = line1;  
+  while( !done )
+     {String SS = getLine( Doc,line,  false );
+      if( SS == null )
+          done = true;
+      else if( SS.length() < 1)
+          done = true;
+      else if( SS.charAt( SS.length() - 1) != '\\' )
+          done = true;
+      else
+        line ++;
+      }
+  line++  ; 
+  return line;
+}
+
 
  /** Utility to return a given line from the Document
  *@param Doc the document with the line
@@ -1535,7 +1589,7 @@ public Object getResult()
 
        }// for i=0 to Num_parameters
       int k =lerror; 
-      if( perror < 0)
+     /* if( perror < 0)
 	  { //new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
           S="(";
           int line;
@@ -1549,30 +1603,41 @@ public Object getResult()
 	   //new IsawGUI.Util().appendDoc(logDocument , "Args ="+S);
 
           Element E = MacroDocument.getDefaultRootElement() ; 
-	  /*  for( line = 0 ; line < E.getElementCount(); line ++)
+	    for( line = 0 ; line < E.getElementCount(); line ++)
              { S = getLine( MacroDocument , line);
                 new IsawGUI.Util().appendDoc(logDocument , S);
               }
 	  */
           k = executeBlock( MacroDocument ,0 ,true ,0) ;
           //new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");
-         }
+         //}
 
-    
-    if( perror < 0)
+    if( getErrorMessage().equals(execOneLine.WN_Return))
+        seterror( -1,"");
+    if( (perror < 0) && 
+          !execOneLine.WN_Return.equals( ExecLine.getErrorMessage()))
          seterror( ExecLine.getErrorCharPos(), ExecLine.getErrorMessage());
+
     if( (perror >= 0) && (lerror <  0 ))
         lerror = k;
         
-     
+      boolean ReturnStatement=  execOneLine.WN_Return.
+                         equals(ExecLine.getErrorMessage());    
 
-
+  
    if( ExecLine != null )
-      if( ExecLine.getErrorCharPos() >= 0)
-        return new ErrorString( ExecLine.getErrorMessage() +" on line "+lerror+ "at position "
+      if( (ExecLine.getErrorCharPos() >= 0) && !ReturnStatement)
+           
+        {System.out.println("HERE"+ReturnStatement+" "+
+                 ExecLine.getErrorCharPos());
+           return new ErrorString( ExecLine.getErrorMessage() +" on line "+
+                 lerror+ "at position "
                          +ExecLine.getErrorCharPos() );
+         }
       else
-        return ExecLine.getResult();
+        {
+          return ExecLine.getResult();
+        }
     else
       return null;
   }
