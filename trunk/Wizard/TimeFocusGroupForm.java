@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/09/11 21:21:41  bouzekc
+ * Updated to work with new Form class.
+ *
  * Revision 1.13  2003/08/16 00:00:38  bouzekc
  * Modified to work with new IParameterGUI and ParameterGUI.
  *
@@ -273,11 +276,11 @@ public class TimeFocusGroupForm extends Form implements Serializable {
 
     edit_len = super.getParamType( Form.VAR_PARAM ).length;
 
-    Object superRes = super.getResult(  );
+    Object validCheck = validateSelf(  );
 
     //had an error, so return
-    if( superRes instanceof ErrorString ) {
-      return superRes;
+    if( validCheck instanceof ErrorString ) {
+      return validCheck;
     }
 
     //make sure list exists
