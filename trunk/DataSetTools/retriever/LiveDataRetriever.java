@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2003/02/24 13:42:31  dennis
+ *  Switched to use CommandObject instead of compound String command.
+ *
  *  Revision 1.22  2002/11/27 23:23:16  pfpeterson
  *  standardized header
  *
@@ -89,10 +92,7 @@ public class LiveDataRetriever extends    RemoteDataRetriever
  */  
   public int numDataSets()
   {
-              // include file_name for compatibilty with RemoteFileRetriever
-
-    Object obj = getObjectFromServer( DataSetServer.COMMAND_GET_DS_TYPES +
-                                      file_name );
+    Object obj = getObjectFromServer( getDS_Types("") );
 
     if ( obj != null && obj instanceof int[] )
     {
@@ -100,14 +100,11 @@ public class LiveDataRetriever extends    RemoteDataRetriever
       return types.length; 
     }
 
-    if ( server_alive && user_ok && password_ok )
-      return WRONG_SERVER_TYPE;
-
-    if ( server_alive && user_ok )
-      return BAD_PASSWORD;
+//    if ( server_alive && user_ok && password_ok )
+//      return WRONG_SERVER_TYPE;
 
     if ( server_alive )
-      return BAD_USER_NAME;
+      return BAD_PASSWORD;
 
     return SERVER_DOWN;
   }
@@ -126,10 +123,7 @@ public class LiveDataRetriever extends    RemoteDataRetriever
 
   public int getType( int data_set_num )
   {
-              // include file_name for compatibilty with RemoteFileRetriever
-
-    Object obj = getObjectFromServer( DataSetServer.COMMAND_GET_DS_TYPES +
-                                      file_name );
+    Object obj = getObjectFromServer( getDS_Types("") );
 
     if ( obj != null && obj instanceof int[] )
     {
@@ -154,8 +148,7 @@ public class LiveDataRetriever extends    RemoteDataRetriever
   {
               // include file_name for compatibilty with RemoteFileRetriever
 
-    Object obj = getObjectFromServer( DataSetServer.COMMAND_GET_DATA_NAME +
-                                      file_name );
+    Object obj = getObjectFromServer( getDS_Name("",0) );
 
     if ( obj != null && obj instanceof String )
     {
@@ -163,7 +156,7 @@ public class LiveDataRetriever extends    RemoteDataRetriever
       return name;
     }
 
-    return new String("NONE");
+    return new String(TCPServer.DEFAULT_DATA_NAME);
   }
 
 
@@ -179,9 +172,7 @@ public class LiveDataRetriever extends    RemoteDataRetriever
  */
   public DataSet getDataSet( int data_set_num )
   {
-    Object obj = getObjectFromServer( DataSetServer.COMMAND_GET_DS +
-                                      file_name + " " +
-                                      data_set_num );
+    Object obj = getObjectFromServer( getDS("",data_set_num) );
 
     if ( obj != null && obj instanceof DataSet )
     {
@@ -214,7 +205,7 @@ public class LiveDataRetriever extends    RemoteDataRetriever
  */
  public String status()
  {
-   Object obj = getObjectFromServer( TCPServer.COMMAND_GET_STATUS + file_name );
+   Object obj = getObjectFromServer( getStatus() );
 
    if ( obj != null && obj instanceof String )
      return (String)obj;
