@@ -30,6 +30,17 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/06/04 13:56:20  dennis
+ *  Now supports two area detectors in one DataSet. Added constructor
+ *    VecQToTOF( ds, det_num ).
+ *  The constructors now throw InstantiationErrors if the DataSet is
+ *  not a time-of-flight DataSet or if it does not have the needed
+ *  attributes.  Also added convenience methods to get the underlying
+ *  DataGrid and the goniometer rotation matrices:
+ *    getDataGrid()
+ *    getGoniometerRotation()
+ *    getGoniometerRotationInverse()
+ *
  *  Revision 1.6  2003/06/03 16:33:02  dennis
  *  Separated calculation of interpolated intensity from calculation of
  *  corresponding detector position info.  Added methods:
@@ -80,6 +91,7 @@ import java.io.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ThreeD.*;
+import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
 import DataSetTools.operator.*;
@@ -99,7 +111,8 @@ public class VecQToTOF
 
   IDataGrid grid;
 
-  Tran3D   goniometerRinv;
+  Tran3D   goniometerR,
+           goniometerRinv;
 
   Vector3D det_center;  // center position of detector.
   Vector3D u, v, n;     // vectors defining coordinate axes on face of
@@ -119,9 +132,10 @@ public class VecQToTOF
                         // cases where q would not have come from this 
                         // detector.
 
-  /** 
-   *  Construct a VecQToTOF conversion object, from the first area detector
-   *  DataGrid found in the specified DataSet.
+  /* --------------------------- constructor ------------------------- */
+  /**
+   *  Construct a VecQToTOF conversion object, from the first 
+   *  area detector DataGrid from in the specified DataSet.
    *  The DataGrid must have had it's Data block references set, and the
    *  Data blocks must be in terms of time-of-flight.  It must also have
    *  a SampleOrientation defined and the initial flight path defined.
@@ -131,63 +145,88 @@ public class VecQToTOF
    */
   VecQToTOF( DataSet ds )
   {
+    this( ds, 1 );
+  }
+
+
+  /* --------------------------- constructor ------------------------- */
+  /** 
+   *  Construct a VecQToTOF conversion object, from the specified 
+   *  area detector DataGrid from in the specified DataSet.
+   *  The DataGrid must have had it's Data block references set, and the
+   *  Data blocks must be in terms of time-of-flight.  It must also have
+   *  a SampleOrientation defined and the initial flight path defined.
+   *
+   *  @param  ds   The DataSet from which the first area detector's DataGrid
+   *               is used.
+   *
+   *  @param  det_num  Should be an integer, 1,2,3... which specifies whether
+   *                   the first, second, third, etc. area detector from the
+   *                   DataSet is used.
+   */
+  VecQToTOF( DataSet ds, int det_num )
+  {
     if ( ds == null )
-    {
-      System.out.println("ERROR: DataSet null in VecQToTOF constructor ");
-      return;
-    }
+      throw new InstantiationError(
+                "ERROR: DataSet null in VecQToTOF constructor" );
 
     String units = ds.getX_units();
     if ( !units.equalsIgnoreCase( "Time(us)" ) )
-    {
-      System.out.println("ERROR: need time-of-flight DataSet in VecQToTOF" );
-      return;
-    }
+      throw new InstantiationError(
+                "ERROR: need time-of-flight DataSet in VecQToTOF constructor" );
     
     int n_data = ds.getNum_entries();
-    if ( n_data < 100 )
-    {
-      System.out.println("ERROR: VecQToTOF constructor needs area detector");
-      return;
-    }
+    int num_area_detectors_found = 0;
 
     Data d = null;
     PixelInfoList pil;
     Attribute attr;
-    boolean area_detector_found = false;
+    boolean area_detector_found  = false;
+    boolean right_detector_found = false;
     int data_index = 1;
-    while ( !area_detector_found && data_index < n_data )
+    while ( !right_detector_found )
     {
-      d = ds.getData_entry( data_index );
-      attr = d.getAttribute( Attribute.PIXEL_INFO_LIST );
-      if ( attr != null && attr instanceof PixelInfoListAttribute )
+      while ( !area_detector_found && data_index < n_data )
       {
-        pil  = (PixelInfoList)attr.getValue();
-        grid = pil.pixel(0).DataGrid(); 
-        if ( grid.num_rows() > 1 && grid.num_cols() > 1 )
-          area_detector_found = true;
-      }
-      else 
-      {
-        System.out.println(
+        d = ds.getData_entry( data_index );
+        attr = d.getAttribute( Attribute.PIXEL_INFO_LIST );
+        if ( attr != null && attr instanceof PixelInfoListAttribute )
+        {
+          pil  = (PixelInfoList)attr.getValue();
+          grid = pil.pixel(0).DataGrid(); 
+          if ( grid.num_rows() > 1 && grid.num_cols() > 1 )
+          {
+            area_detector_found = true;
+            num_area_detectors_found++;
+            if ( det_num == num_area_detectors_found )
+              right_detector_found = true;
+                                                              // skip the 
+            data_index += grid.num_rows() * grid.num_cols();  // other pixels
+          }                                                   // in this grid
+        }
+        else 
+        {
+          System.out.println(
              "ERROR: need PixelInfoList attribute in VecQToTOF constructor");
-        return;
+          return;
+        }
+        data_index++;
       }
-      data_index++;
+      if ( !right_detector_found )
+        area_detector_found = false;    // start looking for the next area det
     }
 
     if ( !grid.isData_entered() )
       if ( !grid.setData_entries( ds ) )
-      {
-        System.out.println("ERROR: Can't set Data grid entries in VecQToTOF");  
-        return;
-      }
+      throw new InstantiationError(
+                "ERROR: Can't set Data grid entries in VecQToTOF constructor");
 
     attr = d.getAttribute( Attribute.INITIAL_PATH );
     if ( attr != null )
       initial_path = (float)(attr.getNumericValue());
     else
-      return;
+      throw new InstantiationError(
+                "ERROR: Need initial path in VecQToTOF constructor");
 
 //    System.out.println("DataGrid is : " + grid );
 //    System.out.println("initial path: " + initial_path);
@@ -221,8 +260,8 @@ public class VecQToTOF
     det_width  = grid.width();
     det_height = grid.height();
 
-    Vector3D corner1 = grid.position( 0, 0 );    
-    Vector3D corner2 = grid.position( grid.num_rows()-1, grid.num_cols()-1 );
+    Vector3D corner1 = grid.position( 1, 1 );    
+    Vector3D corner2 = grid.position( grid.num_rows(), grid.num_cols() );
     Vector3D temp = new Vector3D( corner1 );
     temp.subtract( corner2 );
     float diag = temp.length();
@@ -241,10 +280,11 @@ public class VecQToTOF
     temp.multiply( 0.5f );
     det_center.add( temp );
 
-    Tran3D goniometerR = makeGoniometerRotationInverse( ds );
-    goniometerRinv = new Tran3D();
-    goniometerRinv.set( goniometerR );
-    goniometerRinv.transpose();
+    SampleOrientation orientation =
+        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
+
+    goniometerR    = orientation.getGoniometerRotation();
+    goniometerRinv = orientation.getGoniometerRotationInverse();    
 
     // To allow for quickly discarding q's that couldn't come from this 
     // detector & chi,phi,omega, we keep a unit vector in the direction of
@@ -259,23 +299,46 @@ public class VecQToTOF
     q_center.normalize();
     q_center.subtract( unit_k ); 
     q_center.normalize();
-    goniometerR.apply_to( q_center, q_center );
+    goniometerRinv.apply_to( q_center, q_center );
                                                      // then find q_corner at
                                                      // both corners.
     Vector3D q_corner1 = new Vector3D( corner1 );
     q_corner1.normalize();
     q_corner1.subtract( unit_k );
     q_corner1.normalize();
-    goniometerR.apply_to( q_corner1, q_corner1 );
+    goniometerRinv.apply_to( q_corner1, q_corner1 );
 
     Vector3D q_corner2 = new Vector3D( corner2 );
     q_corner2.normalize();
     q_corner2.subtract( unit_k );
     q_corner2.normalize();
-    goniometerR.apply_to( q_corner2, q_corner2 );
+    goniometerRinv.apply_to( q_corner2, q_corner2 );
                                                      // finally get min_q_dot
     min_q_dot = Math.min( q_center.dot(q_corner1), q_center.dot(q_corner2) );
   }   
+
+
+ /* ---------------------------- getDataGrid ----------------------------- */
+  
+  public IDataGrid getDataGrid()
+  {
+    return grid;
+  }
+
+
+  /* ------------------------- getGoniometerRotation ---------------------- */
+ 
+  public Tran3D getGoniometerRotation()
+  {
+    return goniometerR;
+  }
+
+  /* ---------------------- getGoniometerRotationInverse -------------------- */
+  
+  public Tran3D getGoniometerRotationInverse()
+  {
+    return goniometerRinv;
+  }
 
 
  /* -------------------------- QtoXcmYcmWl ------------------------------- */
@@ -571,18 +634,38 @@ public class VecQToTOF
     return intensity;
   }
 
- /* ------------------- makeGoniometerRotationInverse --------------------- */
- /*
-  *  Make the cumulative rotation matrix to "unwind" the rotations by chi,
-  *  phi and omega, to put the data into one common reference frame for the
-  *  crystal.
-  */
-  private Tran3D makeGoniometerRotationInverse( DataSet ds )
-  {
-    SampleOrientation orientation =
-        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
 
-      return orientation.getGoniometerRotationInverse();
-  }
+ /* ------------------------------ main ------------------------------ */
+ /*
+  *  main program for basic testing
+  */
+
+ public static void main( String args[] )
+ {
+   RunfileRetriever rr = new RunfileRetriever( 
+                       "/usr/local/ARGONNE_DATA/SCD_QUARTZ/scd06496.run" );
+   DataSet ds = rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
+   VecQToTOF transformer = new VecQToTOF( ds );
+
+//   Vector3D q_vec = new Vector3D( 0.8701965f, 6.3653164f, 0.8469445f );
+   Vector3D q_vec = new Vector3D( -0.31071144f, 6.3506145f, 0.8738657f );
+   float rc_tof[] = transformer.QtoRowColTOF( q_vec );
+ 
+   System.out.println("Peak at: " );  
+   System.out.println("row = " + rc_tof[0] );  
+   System.out.println("col = " + rc_tof[1] );  
+   System.out.println("tof = " + rc_tof[2] );  
+
+   float rc_chan[] = transformer.QtoRowColChan( q_vec );
+   System.out.println("row  = " + rc_chan[0] );  
+   System.out.println("col  = " + rc_chan[1] );  
+   System.out.println("chan = " + rc_chan[2] );  
+
+   float xy_wl[]   = transformer.QtoXcmYcmWl( q_vec );
+   System.out.println("x  = " + xy_wl[0] );  
+   System.out.println("y  = " + xy_wl[1] );  
+   System.out.println("wl = " + xy_wl[2] );  
+
+ }
 
 }
