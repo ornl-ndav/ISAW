@@ -31,6 +31,9 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.26  2001/06/25 22:13:51  chatter
+  *  Changed the SelectedGraphView call to use the ViewManager
+  *
   *  Revision 1.25  2001/06/25 20:09:26  chatter
   *  Splashpane and IsawProps.dat read in main
   *
@@ -98,7 +101,6 @@
  import java.io.IOException; 
  //import javax.help.*;
  import Command.*;
- import OverplotView.*;
  import javax.swing.text.*;
  import java.applet.*;
  import NetComm.*;
@@ -408,7 +410,7 @@
  
          JMenuItem viewFileSeparator =  new JMenuItem("File Separator");
          JMenuItem viewLogView =  new JMenuItem("Log View");
-         
+
          JMenuItem optionwindowsLook =  new JMenuItem("Windows Look");
          JMenuItem optionmetalLook =  new JMenuItem("Metal Look");
          JMenuItem optionmotifLook =  new JMenuItem("Motif Look");
@@ -1857,12 +1859,7 @@
                          
                          DataSet ds = (DataSet)mtn.getUserObject();
                          
-                        // chop_MacroTools fg = new chop_MacroTools();
-                         // fg.drawAlldata (ds); 
-                              
-                         JFrame jf = (JFrame)jdvui.ShowSelectedGraphView(ds);
-                         jf.setSize(700,600);
-                         jf.show();
+                         jdvui.ShowDataSet(ds, "ExternalFrame", IViewManager.SELECTED_GRAPHS);
                      }
                          
                      else if(  mtn.getUserObject() instanceof Data)
@@ -1886,9 +1883,7 @@
                           //chop_MacroTools fg = new chop_MacroTools();
                            // fg.drawAlldata (new_ds); 
  
-                         JFrame jf = (JFrame)jdvui.ShowSelectedGraphView(ds);
-                         jf.setSize(700,600);
-                         jf.show();
+                         jdvui.ShowDataSet(ds, "ExternalFrame", IViewManager.SELECTED_GRAPHS);
  
  
  
