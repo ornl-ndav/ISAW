@@ -173,7 +173,9 @@ public class RunfileRetriever extends    Retriever
         if ( num_times > 1 )
         {
           // raw_spectrum = run_file.Get1DSpectrum( det_id, histogram_num );
+        
            raw_spectrum = run_file.Get1DSpectrum( group_id );
+        
 
           if ( raw_spectrum.length >= 1 )
           {
@@ -290,7 +292,7 @@ public class RunfileRetriever extends    Retriever
 
     // Initial flight path ............
     float_attr = new FloatAttribute( Attribute.INITIAL_PATH,
-                                     (float)run_file.SourceToSample() );
+                                     (float)run_file.RawFlightPath(group_members[0]) );
     attr_list.setAttribute( float_attr );
 
     // Initial energy ...........
@@ -323,11 +325,24 @@ public class RunfileRetriever extends    Retriever
     // Raw Detector Angle ...........
     float_attr =new FloatAttribute(Attribute.RAW_ANGLE,
                       (float)run_file.RawDetectorAngle( group_members[0]) );
+                      //(float)run_file.RawDetectorAngle(1) );
     attr_list.setAttribute( float_attr );
     
+    // Number of channels ...........
+    try{
+    float_attr =new FloatAttribute(Attribute.NUM_CHANNELS,
+                      (float)run_file.NumChannelsBinned(5));
+    attr_list.setAttribute( float_attr ); 
+    }
+    catch(Exception e){};
+   
+   
     // Total Counts  ........
-    int_attr = new IntAttribute( Attribute.TOTAL_COUNTS, 5555555555 );
-    attr_list.setAttribute( int_attr );
+    try{
+    float_attr = new FloatAttribute( Attribute.TOTAL_COUNT, (float)run_file.Get1DSum(group_members[0]));
+    attr_list.setAttribute( float_attr );
+    }
+    catch(Exception e) {};
 
 
     spectrum.setAttributeList( attr_list );
