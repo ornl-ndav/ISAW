@@ -31,6 +31,12 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.41  2001/07/25 16:12:22  neffk
+  *  added the mouse listener (for the tree) as an inner class so that
+  *  it has access to Isaw.this.  the change was made so that Isaw can
+  *  be updated when operators generate new DataSet objects and update
+  *  the tree, the command pane, and the properties panel.
+  *
   *  Revision 1.40  2001/07/24 18:58:16  neffk
   *  operations menu contains only "[empty]" when the current selections
   *  is not a DataSet object.
@@ -49,8 +55,8 @@
   *  currently IPNS will not load a files that have changed names.
   *
   *  Revision 1.37  2001/07/23 18:33:50  neffk
-  *  make the -F option more robust by checking filename estensions.
-  *  prints out success and failure messages on the console.  not that the
+  *  made the -F option more robust by checking filename estensions.
+  *  prints out success and failure messages on the console.  note that the
   *  interactive file chooser does not force users to use filenames w/
   *  correct extension.  see NuetronDataFileChooser to see how to force
   *  filenames when using -F to load files.
@@ -313,7 +319,7 @@ public class Isaw
     Vector mm = util.listProperties();
     JScrollPane tt = util.viewProperties();
     cp = new Command.CommandPane();
-    cp.addIObserver(this);
+    cp.addIObserver( this );
     cp.setLogDoc(sessionLog);
 
     jpui = new JPropertiesUI();
@@ -326,6 +332,7 @@ public class Isaw
     jcui.setMinimumSize(new Dimension(20, 50));  
 
     jdt = new JDataTree();
+    jdt.addMouseListener(  new MouseListener()  );
     jdt.setPreferredSize(new Dimension(200, 500));
     jdt.setMinimumSize(new Dimension(20, 50));
     jdt.addTreeSelectionListener(  new TreeSelectionHandler( this )  );
@@ -403,10 +410,12 @@ public class Isaw
     macrosMenu.setOpMenuLabel( MACRO_M );
 
 
+/*
     JMenu optionMenu = new JMenu( OPTION_M );
     JMenuItem optionwindowsLook =  new JMenuItem( WINDOZE_MI );
     JMenuItem optionmetalLook   =  new JMenuItem( METAL_MI );
     JMenuItem optionmotifLook   =  new JMenuItem( MOTIF_MI );
+*/
 
 
     JMenu hMenu = new JMenu( HELP_M );
@@ -494,9 +503,11 @@ public class Isaw
     vMenu.add(threeDView);
     vMenu.add(instrumentInfoView);         
       
+/*
     optionMenu.add(optionwindowsLook);
     optionMenu.add(optionmetalLook);
     optionMenu.add(optionmotifLook);
+*/
     
     hMenu.add(helpISAW);
     fileExit.addActionListener(new MenuItemHandler());
@@ -551,9 +562,9 @@ public class Isaw
     m_CHEXS.addActionListener(new MenuItemHandler());
 
 
-    optionmetalLook.addActionListener(new MenuItemHandler());
-    optionmotifLook.addActionListener(new MenuItemHandler());
-    optionwindowsLook.addActionListener(new MenuItemHandler());
+//    optionmetalLook.addActionListener(new MenuItemHandler());
+//    optionmotifLook.addActionListener(new MenuItemHandler());
+//    optionwindowsLook.addActionListener(new MenuItemHandler());
     fileLoadDataset.addActionListener(new MenuItemHandler());
     removeSelectedNode.addActionListener(new MenuItemHandler());
     editProps.addActionListener(new AttributeMenuItemHandler());
@@ -567,7 +578,7 @@ public class Isaw
     menuBar.add(fMenu);
     menuBar.add(eMenu);
     menuBar.add(vMenu);
-    menuBar.add(optionMenu);
+//    menuBar.add(optionMenu);
     menuBar.add(oMenu);
     menuBar.add(macrosMenu);
     menuBar.add(hMenu);
@@ -591,8 +602,10 @@ public class Isaw
     for(int i =0; i<dss.length; i++)
     {
       cp.addDataSet( dss[i] );
-      dss[i].addIObserver(jpui);
-      dss[i].addIObserver(jcui);
+      dss[i].addIObserver( this );
+      dss[i].addIObserver( jdt );
+      dss[i].addIObserver( jpui );
+      dss[i].addIObserver( jcui );
     }
   }
 
@@ -605,8 +618,10 @@ public class Isaw
     jdt.addToModifiedExperiment( ds );
 
     cp.addDataSet( ds );
-    ds.addIObserver(jpui);
-    ds.addIObserver(jcui);
+    ds.addIObserver( this );
+    ds.addIObserver( jdt );
+    ds.addIObserver( jcui );
+    ds.addIObserver( jcui );
   }
  
 
@@ -1293,8 +1308,6 @@ public class Isaw
      */
     public void valueChanged( TreeSelectionEvent e )
     {
-      System.out.println( "tree selection changed" );
-
                                                   //deal w/ unselection events
       if( e.getNewLeadSelectionPath() == null )
       {
@@ -1343,7 +1356,10 @@ public class Isaw
         for ( int i = 0; i < num_ops; i++ )
           ds_ops[i] = ds.getOperator(i);
  
-        ActionListener listener = new JOperationsMenuHandler( ds, jdt, sessionLog );
+        ActionListener listener = new JOperationsMenuHandler( ds, 
+                                                              jdt, 
+                                                              Isaw.this,
+                                                              sessionLog );
         OperatorMenu.build( oMenu, ds_ops, listener );
       }
 
@@ -1649,6 +1665,8 @@ public class Isaw
     if( !( reason instanceof String) && !( reason instanceof DataSet) )   
       return;
  
+                                  //this means that a new DataSet has
+                                  //been created. 
     if ( reason instanceof DataSet )
     {
       DataSet ds = (DataSet)reason;
@@ -1656,19 +1674,24 @@ public class Isaw
  
       if( node == null ) 
       {
+
+        System.out.println( "new DataSet object generated (Isaw.java)" );
+
                     //this must be a new DataSet object...
                     //put it in the modified folder on 
                     //the tree and send to command pane
         addModifiedDataSet( ds );
+        return;
       }
       else
         return;
     }
-    else
+    else if( reason instanceof String )
     {
-      System.out.println("Error: Tree update called with wrong reason");
-      return;
+      System.out.println( "reason (Isaw.java): " + (String)reason );
     }
+    else
+      System.out.println( "unsupported type in Isaw.update()" );
   }
  
  
@@ -1852,6 +1875,52 @@ public class Isaw
     }
     
     return new_ds;
+  }
+
+
+  /**
+   * listens to the events generated by the JDataTree's JTree
+   */ 
+  class MouseListener extends MouseAdapter
+  {
+    private JDataTreeRingmaster ringmaster = null;
+
+    public MouseListener()
+    {
+      ringmaster = new JDataTreeRingmaster( jdt, Isaw.this );
+    }
+
+
+    public void mousePressed( MouseEvent e )
+    {
+      if(  jdt.getSelectionCount() > 0  )
+      {
+        TreePath[] selectedPath = null;
+        TreePath[] tps          = jdt.getSelectedNodePaths();
+
+        int button1 =  e.getModifiers() & InputEvent.BUTTON1_MASK;
+        int button3 =  e.getModifiers() & InputEvent.BUTTON3_MASK;
+
+
+                                            //respond to right-click events
+        if(  button3 == InputEvent.BUTTON3_MASK  )
+        {
+          System.out.println( "right-click detected" );
+          ringmaster.generatePopupMenu( tps, e );
+        }
+
+                                            //respond to left-click events
+        else if(  button1 == InputEvent.BUTTON1_MASK  )
+        {
+          System.out.println( "left-click detected" );
+          if( e.getClickCount() == 1 )
+             ringmaster.pointAtNode( tps[0] );
+
+          else if( e.getClickCount() == 2 )
+            ringmaster.selectNode( tps );
+        }
+      }
+    }
   }
 
 }
