@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/10/15 23:50:12  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.13  2003/07/23 15:06:49  dennis
  *  clone() method now also copies the use_sqrt_errors flag.
  *
@@ -194,18 +197,17 @@ public class HistogramTable extends    TabulatedData
 
 
   /**
-   * Constructs a HistogramTable Data object from another Data object.
+   * Constructs a HistogramTable Data object from another Data object which
+   * could be a histogram or function.
    *
-   *  @param  width_1   Width of the first bin.  For VariableXScales, this is
-   *                    is used to determine the bin boundaries.  NOTE: this
-   *                    process is subject to rounding errors and should be
-   *                    avoided if possible.  If width_1 is less than or equal
-   *                    to zero, the distance between the first two x values
-   *                    will be used as a default.
+   *  @param  d         That Data object from which the HistogramTable will
+   *                    be constructed
    *
-   *  @param  multiply  Flag that indicates whether the function values
-   *                    should be multiplied by the width of the histogram bin.
-   * @param   group_id  an integer id for this data object
+   *  @param  multiply  If the given Data object is a function, this flag 
+   *                    indicates whether each function value should be 
+   *                    multiplied by the width of the new histogram bin.
+   *
+   * @param   group_id  The integer id to be used for the new Data object
    *
    */
   public HistogramTable( Data d, boolean multiply, int group_id )

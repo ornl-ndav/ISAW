@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/10/15 23:50:12  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.17  2003/03/03 16:49:16  pfpeterson
  *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -279,7 +282,7 @@ public class AttributeList implements Serializable,
    * Get the value of the attribute at the specified index from the list of
    * attributes. If the index is invalid, this returns null.
    *
-   * @param  name  The name of the attribute value to get.
+   * @param  index The index of the attribute whose value is to be returned.
    */
   public Object  getAttributeValue( int index )
   {
@@ -436,14 +439,18 @@ public class AttributeList implements Serializable,
    }
 
   /**
-   * Add the specified attribute values from two attribute lists and set
-   * the resulting sum as the attribtue value in the current attribute list.
+   * Add the attribute values with the specified name, from two attribute 
+   * lists and set the resulting sum as the attribute value in the current 
+   * attribute list.
    * This method is intended to be called after combining attribute lists to
    * implement special behavior for those attributes where the default 
    * "combine" behavior is not correct.
    *
-   *  @param  attr_list  The attribute list that is to be combined with the
-   *                      current attribute list.
+   *  @param  attr_name    The name of the attributes that are to be added.
+   *  @param  attr_list_1  The first attribute list from which a value for
+   *                       the named attribute is obtained.
+   *  @param  attr_list_2  The second attribute list from which a value for
+   *                       the named attribute is obtained.
    */
    public void add( String        attr_name,
                     AttributeList attr_list_1,

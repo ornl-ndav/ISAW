@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2003/10/15 23:50:11  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.3  2003/02/20 19:45:00  dennis
  *  Now implements Serializable.
  *
@@ -96,12 +99,12 @@ public class PixelInfoList implements Serializable
    *  Construct a PixelInfoList object with only one entry, the specified 
    *  IPixelInfo object.
    *
-   *  @param pixel_info  The IPixelInfo object record in this list.
+   *  @param  pixel_info  The IPixelInfo object record in this list.
    */
-  public PixelInfoList( IPixelInfo pixel  )
+  public PixelInfoList( IPixelInfo pixel_info  )
   {
     list = new IPixelInfo[1];
-    list[0] = pixel;
+    list[0] = pixel_info;
   }
 
   /**
