@@ -40,6 +40,14 @@
 
    2) This class contributes to the Isaw session log.   
 
+9-14-2000
+   -Fixed on error, end-error structure with nesting
+   -Fixed if-then error.  The "if" need not be in column 1
+   -Eliminated a debug print when not in debug mode
+   -if  and elseif statements use the new Boolean type
+
+10-1-2000
+   - Implemented starting character $ for parameters in addition to #$$
 */
 package Command; 
 
@@ -121,9 +129,9 @@ public class CommandPane  extends JPanel
      *  This can be used with the Isaw package
      *    @param    Dat        One data set
      */
-    public CommandPane( DataSet Dat )
+    public CommandPane( DataSet Dat , String vname)
     {initialize() ;  
-    ExecLine = new Command.execOneLine( Dat ) ; 
+    ExecLine = new Command.execOneLine( Dat , vname ) ; 
     init() ; 
     OL = new IObserverList() ; 
       PL = new PropertyChangeSupport( this );  
@@ -133,10 +141,10 @@ public class CommandPane  extends JPanel
      *
      *    @param    dss[]        A list of data sets
      */
-    public CommandPane( DataSet dss[] )
+    public CommandPane( DataSet dss[], String vname )
     {
        initialize() ; 
-     ExecLine = new Command.execOneLine( dss ) ; 
+     ExecLine = new Command.execOneLine( dss ,vname) ; 
      init() ; 
      OL = new IObserverList() ; 
        PL = new PropertyChangeSupport( this );  
@@ -165,10 +173,10 @@ public class CommandPane  extends JPanel
 
 
 
-    /** Constructor that can be used to run Macros
+    /** Constructor that can be used to run Macros- non visual?
      *
      *    @param  Doc      The Document that has macro commands
-     *    @param  P        The parameters and values to run the Macro
+     *    @param  O        Observer for the Send command
      */
     public CommandPane( Document Doc , IObserver O )
       {OL = new IObserverList() ; 
@@ -262,13 +270,13 @@ public class CommandPane  extends JPanel
 
            Commands = new JTextArea( 7 , 50 ) ; 
            Commands.setLineWrap( true ) ; 
-           //Commands.setFont(FontUtil.MONO_FONT ) ;
+           Commands.setFont(FontUtil.MONO_FONT ) ;
            Immediate = new JTextArea( 5 , 50 ) ; 
-           //Immediate .setFont(FontUtil.MONO_FONT ) ;
+           Immediate .setFont(FontUtil.MONO_FONT ) ;
            Immediate.addKeyListener( new MyKeyListener(this)) ;        
 	 
            JSplitPane JPS = new JSplitPane(JSplitPane.VERTICAL_SPLIT) ; 
-        //   JPS.setResizeWeight( .8);
+           //JPS.setResizeWeight( .8);
            JScrollPane X =  new JScrollPane( Commands ) ; 
            X.setBorder( new TitledBorder( "Prgm Editor" ) ) ; 
           
@@ -367,6 +375,8 @@ public class CommandPane  extends JPanel
               new IsawGUI.Util().appendDoc(logDocument , S);
             }
        ExecLine.initt() ; 
+       if(StatusLine !=null) StatusLine.setText("");
+       if( Immediate !=null) Immediate.setText("");
        ExecLine.resetError();
        perror = -1 ; 
        line = executeBlock( Doc , 0 ,  true ,0 ) ; 
@@ -400,9 +410,11 @@ public class CommandPane  extends JPanel
      for( i = 0 ; i < Args.length ; i++)
        {  if( Args[i].getValue() instanceof DataSet)
             { DataSet ds = (DataSet)(Args[i].getValue());
-              vnames.add( ds.getTitle());
-              vnames.add( ds);
-              ds.setTitle(Args[i].getName());
+              //vnames.add( Args[i].getName());//ds.getTitle());
+              //vnames.add( ds);
+              //ds.setTitle(Args[i].getName());
+              ExecLine.addParameterDataSet( ds,Args[i].getName());
+              
             }
           else
             {S = Args[i].getName().toString() + "=" ;
@@ -445,10 +457,10 @@ public class CommandPane  extends JPanel
           new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");
          }
 
-     for(i = 0 ; i < (vnames.size()/2) ; i++)
-       {DataSet ds =(DataSet)(vnames.get( 2*i + 1));
-        ds.setTitle( vnames.get( 2*i ).toString() );
-       }
+     //for(i = 0 ; i < (vnames.size()/2) ; i++)
+     //  {DataSet ds =(DataSet)(vnames.get( 2*i + 1));
+     //   ds.setTitle( vnames.get( 2*i ).toString() );
+     //  }
     if( perror < 0)
          seterror( ExecLine.getErrorCharPos(), ExecLine.getErrorMessage());
     if( (perror >= 0) && (lerror <  0 ))
@@ -494,6 +506,9 @@ public class CommandPane  extends JPanel
                }
             else if( S.trim().indexOf( "#") == 0 )
                {
+               }
+            else if( S.trim().indexOf("$" ) == 0)
+              {
                }
             else if( S.toUpperCase().trim().indexOf( "ELSE ERROR" ) == 0 )
 	       return line ; 
@@ -799,10 +814,26 @@ public class CommandPane  extends JPanel
           j = S.toUpperCase().lastIndexOf("THEN") ;
 
       boolean b;
-      if( execute )
-         b= evaluate( S, i, j );
-      else
-         b = false;
+      //if( execute )
+      //   b= evaluate( S, i, j );
+      //else
+      //   b = false;
+      int kk =ExecLine.execute( S, i, j);
+      if( ExecLine.getErrorCharPos()>=0)
+         { seterror(ExecLine.getErrorCharPos(), ExecLine.getErrorMessage());
+           lerror= line;
+           return line;
+         }
+      Object X = ExecLine.getResult();
+      if( X instanceof Integer)
+         if( ((Integer)X).intValue()==0) X = new Boolean(false);
+         else X = new Boolean(true);
+      if( !(X instanceof Boolean))
+        { seterror(j,execOneLine.ER_ImproperDataType);
+           lerror= line;
+           return line;
+         }
+      b= ((Boolean)X).booleanValue();   
       if(Debug) 
            System.out.println("aft eval b and err ="+b+","+perror);
       if( perror >= 0 )
@@ -869,6 +900,10 @@ public class CommandPane  extends JPanel
         return -1;
       if( Line.trim().indexOf("#$$") == 0)
          return prevLine;
+      if( Line.trim().indexOf("$") == 0)
+         {if(Debug)System.out.println("get $ Macro line #"+prevLine);
+           return prevLine;
+         }
       return getNextMacroLine( Doc, prevLine++);
     } 
    private String getLine( Document Doc, int start )
@@ -959,338 +994,11 @@ public class CommandPane  extends JPanel
 
      
       }
-  // Find's the level 1 AND's and OR's in an expression
-    private   int finddANDOR( String S1, int start, int end )
-      {int i , j; 
-       boolean found; 
-       found = false;
-       String S = S1.toUpperCase();
-       if( Debug) 
-         System.out.println( "start ,endfinddANDOR=" + start + "," + end );
-        for(i = findQuote( S.toUpperCase() , 1, start, "A", "{}[]()"); 
-                                                 ( i < end ) && !found  ;
-            i = findQuote( S.toUpperCase() , 1, i, "A", "{}[]()"))
-         {if(Debug) 
-             System.out.print("AND i="+i);
-          if( i + 2 >= end) i = end;
-          else if(! (S.substring( i, i+3).toUpperCase().equals( "AND" ) ) )
-	    i = i + 1 ;
-          else if (i <=0 ) 
-            i = end;
-          else if ( "+-*(^/:[,".indexOf( S.charAt( i - 1 ) ) >=0 )
-            i = i + 1;
-          else if( ! (") ]".indexOf( S.charAt( i - 1  )) >= 0 ))
-            i = i + 1 ;
-          else if( i + 4 >= end)
-            i = end;
-          else if ( "+-*^/:[,".indexOf(S.charAt( i + 3 ) ) >= 0  )
-            i = i + 1;
-          else if( (S.charAt(i + 3 ) == ' ') &&
-                ( "+-*(^/:[,".indexOf(S.charAt( i + 4 ) ) >= 0))
-	    {i = i + 1;}
-      
-         else
-	   found = true;
-       
-      }
-     
- // Look for first OR
-      found = false;
-      for(j = findQuote( S , 1, start, "O", "{}[]()" ); ( j < end ) && !found  ; )
-            
-        {
-         if( Debug) 
-            System.out.print("Or j=" + j );
-         if( j + 2 >= end) 
-           j = end;
-         else if (j<=0) 
-            j = end;
-         else if(! S.substring( j, j + 2 ).toUpperCase().equals( "OR" ))
-	    j = j + 1 ;
-       
-         else if ( "+-*(^/:[," . indexOf(S.charAt( j - 1)) >= 0 )
-            j = j + 1;
-         else if( !(") ]" . indexOf(S.charAt( j - 1 ) ) >= 0 ))
-            j = j + 1;
-         else if( j + 3 >= end)
-           j = end;
-         else if ( "+-*^/:[,".indexOf(S.charAt( j + 2 )) >= 0 )
-           j = j + 1;
-         else if ( (S.charAt( j + 2) == ' ') && 
-                            ("+-*(^/:[,".indexOf(S.charAt( j + 3 )) >= 0 ))
-	   j = j + 1;
-     
-         else
-	   found = true;
-      
-         if(!found) j = findQuote( S , 1, j, "O", "{}[]()" );
-         
-      }  
-   
-      if ( j < i ) 
-         return j ; 
-      else 
-        return i;   
-    }
-
-  // Evaluates a logical expression
-    private boolean evaluate (String S, int start, int end )
-      {int i , 
-          j, 
-          k , 
-          s;
-      boolean B1 , 
-	     B2 ,
-             eq;
-      char op;
-      Object Result;
-
-     if(start < S.length())S= S.substring(0,start)+delSpaces(S.substring(start));     
-     if( Debug) 
-        System.out.println( "START eval" + start + "," + end );
-     if (S == null) 
-        return false;
-     if( end > S.length()) 
-        end = S.length();
-     if( start < 0 ) 
-       start = 0;
-     if( start >= end ) 
-       return false;
  
-    
-      i = finddANDOR( S, start, end );
-      if( Debug) 
-          System.out.println("After finddANDOR i="+i);
-      if( i < end)
-        { op = 'A';
- 	 if( "Oo".indexOf(S.charAt( i )) >= 0 ) 
-            op = 'O'; 
-        }
-      else op = 'X';
-     
-      if( i < end)  
-        {B1 = evaluate( S , start , i );
-         i = i+2;
-         if(op == 'A' ) 
-           i++;
-        }
-      else
-  	 B1 = false;
-    
-      while( i < end)
-        {
-          j = finddANDOR( S, i , end );
-          B2 = evaluate ( S , i , j );
-          if( op == 'A')
-	    B1 = B1 && B2;
-          else if( op == 'O')
-            B1 = B1 || B2;
-          else
-            { perror = i;
-              return false;
-            }
 
-          op = 'X';
-          if( j< end)
-	   {
-             op = 'A';
-             if( "Oo".indexOf(S.charAt( j )) >= 0 ) 
-               op = 'O';
-	   }
-          else return B1;
-          i = j + 2;
-          if( op == 'A') 
-            i++;           
 
-       }
-     // GET here if no AND's and Or's in Sub expressions;
-     // Check for Not's
-     if( Debug)
-        System.out.println("After And's and Or's");
-     if( S.charAt(start) == ' ') 
-       start++;
-     if( start +2 < end )
-       if( S.substring( start, start+3).toUpperCase().equals("NOT"))
-	 if(start + 4 < end)
-	     if( (( ( S.charAt( start + 3 ) == ' ') &&
-                      ( ! ( "+-*/^):, )".indexOf( S.charAt( start + 4 )) >= 0)) ))||
-		 (  ! ("+-*/^):, )".indexOf( S.charAt( start + 3 )) >= 0 )  ) )
-	      { B1 = evaluate ( S , start + 3 , end );
-	        if( perror >= 0)
-                  return false;
-                return !B1;
-              }
-
-    //  No more AND's OR's or NOT's at top level.  Try parens around these
-    if( Debug )
-       System.out.println("After Nots");
-    if ( S.charAt( start ) == ' ') 
-      start ++;
-    if( S.charAt( start ) == '(')
-      { if( S.charAt( end - 1 )== ' ') end --;
-	   if( S.charAt(end - 1) != ')') 
-	       {perror =5; 
-                return false;
-               }
-           return evaluate ( S, start + 1 , end - 1  );
-       }
-    if( Debug )
-      System.out.println("After parens");
-    //Now go for the < > etc
-    // For test purposes will just use numbers here
-
-    i = findQuote( S, 1, start, "<>=", "(){}[]"  );
-    if( Debug ) 
-      System.out.println( "ineq at i, start=" + i + "," + start +":"+S+":");
-    if( i < end )
-       {   perror = -1;
-	  j = ExecLine.execute ( S , start , i );
-          perror = ExecLine.getErrorCharPos();
-          Object O1 = ExecLine.getResult();
-          if(perror >= 0)
-            {
-              serror = ExecLine.getErrorMessage();
-              return false;
-            }
-           else if( O1 == null)
-             { seterror( start, " No Result for operand" );
-               return false;
-             }
-           
-         
-          
-          if (i + 1 >= end ) 
-            return false;
-          if( ">=".indexOf( S.charAt( i + 1)) >= 0 ) 
-            j = i + 2 ;
-          else 
-            j = i + 1 ;
-          k = ExecLine.execute ( S , j, end );
-          perror = ExecLine.getErrorCharPos();
-          Result = ExecLine.getResult();
-          if( (perror >= 0) )
-            {
-              serror = ExecLine.getErrorMessage();
-              return false;
-            }
-           else if( Result  == null)
-             { seterror( j, " No Result for operand" );
-               return false;
-             }  
-       
-          if( O1.equals(Result))
-	      eq = true;
-          else 
-              eq = false;
-          if( eq && ((S.charAt( i ) == '=') || (S.charAt( j-1 ) == '=')))
-	      return true;
-
-           Object R3 = Result;
-           ExecLine.operateArith( O1 , Result , '-' );
-          
-           perror = ExecLine.getErrorCharPos();
-           
-           if( perror >= 0)
-             {serror = ExecLine.getErrorMessage();
-              perror = i;
-               ExecLine.resetError();
-              
-            }
-           
-           Object R2 = ExecLine.getResult();
-  
-           if( R2 == null )
-             { seterror ( i , "Wrong DataTypes");
-               ExecLine.resetError();
-             }
-            
-           if( Debug )
-              System.out.println("Arith Result =" + R2 );
-           if( ( perror >= 0 ) && (( O1 instanceof String ) || 
-                                      ( R3 instanceof String )))
-	     {perror = -1; 
-              serror = "";
-             
-	      B1 = StrLss( O1, R3 );
-              
-             }
-	   else if ( R2 instanceof Integer )
-	     {if( (( Integer ) R2 ).intValue() < 0 ) 
-               B1 = true;
-	      else 
-               B1 = false;
-	     }
-	   else if ( R2 instanceof Float )
-	     {if( (( Float)R2 ).floatValue() < 0 ) 
-                B1 = true;
-	      else 
-                B1 = false;
-               
-	     }
-           if( Debug) 
-               System.out.println( "Log res < ="+B1+"," + i + "," + j );
-           if( eq ) 
-             return false;
-           if( ( S.charAt( i ) =='<' ) && B1) 
-             return true;
-           if( (S.charAt( i ) == '>' ) && B1) 
-             return false;
-           if( (S.charAt( i ) == '>' ) && !B1) 
-             return true;
-        
-
-           if( (S.charAt(j-1) == '>') && !B1 ) 
-             return true;
-           return false;
-          
-          
-      } 
-   
-    j = ExecLine.execute ( S , start , end );
-    perror = ExecLine.getErrorCharPos();
-    if( perror >= 0)
-      {serror = ExecLine.getErrorMessage();
-       return false;
-       }
-    Result = ExecLine.getResult();
-    if( Result instanceof Integer )
-      if( ( ( Integer )Result ).intValue() != 0 )
-	 return true;
-      else
-        return false;
-    else if( Result instanceof Float)
-	if( ( ( Float )Result ).floatValue() !=  0 )
-	    return true;
-        else
-            return false;
-  
-      
-    return false;        
-	    
-    }
-    private boolean StrLss( Object O1 , Object O2)
-      { if( O1 == null)
-        if( O2 == null)
-          return false;
-        else return true;
-        if ( O2 == null )
-         return false;
-
-        String S1 = O1.toString();
-        String S2 = O2.toString();
-        int i;
-        for( i = 0 ; i < java.lang.Math.min( S1.length() , S2.length()) ; i++)
-           if( S1.charAt(i) < S2.charAt(i))
-             return true;
-           else  if( S1.charAt(i) < S2.charAt(i))
-             return false;
-        if( S1.length() < S2.length())
-          return true;
-        else 
-          return false;
-   }
 /*
-*  Determines if a document as parameters (#$$). If so, a vector representation
+*  Determines if a document as parameters (#$$) ot ($). If so, a vector representation
 *  of the parameters is returned
 *@param   doc    A (Plain)Document that contains a script
 *
@@ -1323,15 +1031,20 @@ public class CommandPane  extends JPanel
        E = doc.getDefaultRootElement();
        start = 0;
        int j , k;
+       if(Debug) System.out.println("Next line="+getNextMacroLine( doc,-1));
        for( i = getNextMacroLine( doc,-1) ; i>= 0; i = getNextMacroLine( doc , i))
          {Line = getLine( doc , i);
          
          if( Debug)
-            System.out.print("Line="+Line);
+            System.out.println("Line="+Line);
+         
           if(Line == null )
             return V;
-          start = Line.indexOf("#$$")+3;
-          if( start < 3)
+          if( Line.trim().indexOf("#$$")==0)
+             start = Line.indexOf("#$$")+3;
+          else start = Line.indexOf("$")+1;
+          if(Debug) System.out.println("start="+start);
+          if( start < 1)
             return V;
           start = ExecLine.skipspaces(Line , 1 , start );
           j = findQuote ( Line , 1 , start, " " , "" );
@@ -1346,6 +1059,7 @@ public class CommandPane  extends JPanel
           j = findQuote( Line , 1, start, " ", "" );
        
           String DT = Line.substring( start , j );//.toUpperCase();
+          
           String Message;
           j = ExecLine.skipspaces( Line , 1, j );
         
@@ -1362,6 +1076,8 @@ public class CommandPane  extends JPanel
              V.add( new JFloatParameterGUI(  new Parameter ( Message , new Float (0.0)) ) ); 
           else if( DT.equals( "STRING"))
              V.add( new JStringParameterGUI( new Parameter ( Message , "" ) ) );
+          else if(DT.equals("BOOLEAN"))
+             V.add(new JBooleanParameterGUI( new Parameter ( Message, "") ) );
           else if( DT.equals("DataDirectoryString".toUpperCase()))
              { String DirPath = System.getProperty("Data_Directory");
                if( DirPath != null )
@@ -1392,10 +1108,11 @@ public class CommandPane  extends JPanel
              V.add( new JStringParameterGUI( new Parameter( Message, XX )));
             }
           else if ( DT.equals( "DataSet".toUpperCase()) )
-           {//System.out.println( "Argument is a data set");
+           {
 	   DataSet DS[] = ExecLine.getGlobalDataset();
-            DataSet dd = new DataSet("DataSet=","");
+            DataSet dd = new DataSet("DataSet","");
             Parameter PP = new Parameter( Message , dd);
+            if(Debug)System.out.println("Dat Set Param dd="+PP.getValue()+","+PP.getName());
             JlocDataSetParameterGUI JJ = new JlocDataSetParameterGUI( PP , DS);
             V.add(JJ);
             
@@ -1535,7 +1252,7 @@ public class CommandPane  extends JPanel
          MessageBox B;
          if( DDS != null )
            for( i = 0; i < DDS.length ; i++)
-            cp.addDataSet(DDS[i]);
+             cp.addDataSet(DDS[i]);
          
          Parameter P[] = cp.GUIgetParameters();
          seterror( cp.getErrorCharPos(), cp.getErrorMessage());
@@ -1636,6 +1353,8 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
         ExecLine.resetError() ; 
         ExecLine.initt();
         seterror( -1,"");
+        if(StatusLine != null) StatusLine.setText("");
+        if(Immediate != null) Immediate.setText("");
         lerror = -1;
         Parameter P[] = GUIgetParameters();
        
@@ -1976,7 +1695,7 @@ public static void  main( String args[] )
 	    //Instrument_Macro_Path = isawProp.getProperty("Instrument_Macro_Path");
 	    //User_Macro_Path = isawProp.getProperty("User_Macro_Path");
           System.setProperties(isawProp);  
-          System.getProperties().list(System.out);
+//        System.getProperties().list(System.out);
           input.close();
        }
        catch (IOException ex) {
