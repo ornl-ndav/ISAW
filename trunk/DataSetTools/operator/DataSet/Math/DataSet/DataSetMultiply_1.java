@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/12 23:28:54  dennis
+ *  Added getDocumentation and main methods.  Added JavaDoc comments for the
+ *  getResult() method.  (modified by: Tyler Stelzer)
+ *
  *  Revision 1.2  2002/09/19 16:02:18  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -49,14 +53,15 @@ import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
-
+import  DataSetTools.viewer.*;
+import  DataSetTools.operator.*;
 /**
   *  Multiply one Data "block" from a second DataSet times all Data "blocks"
   *  of the current DataSet.  The resulting Data blocks are placed in a  
   *  new DataSet provided the parameter "make_new_ds" is true, otherwise
   *  the Data blocks of the current DataSet are altered.
   *
-  *  The tile of this operator is "DataSet times one Data block".
+  *  The title of this operator is "DataSet times one Data block".
   *
   *  The command name for this operator is "Mult".
   *
@@ -151,7 +156,16 @@ public class DataSetMultiply_1 extends DataSetOp
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+  * @return returns a new DataSet or an Error String.
+  *      If "create a new DataSet" is selected and operation is successful, a
+  *      reference to a new DataSet will be returned.  If it is successful with out
+  *      creating a new DataSet, a reference to the current DataSet will be returned.  If
+  *      the operation is not successful, an error string will be returned.  Possible errors
+  *      include "unsupported operation", "DataSets have different units", and 
+  *      "no compatible Data blocks to combine in.
+  *
+  */
   public Object getResult()
   {       
     return DSOpsImplementation.DoDSOneDataBlockOp( this );
@@ -172,5 +186,60 @@ public class DataSetMultiply_1 extends DataSetOp
 
     return new_op;
   }
+  
+  public String getDocumentation(){
+    StringBuffer Res = new StringBuffer();
+    
+    Res.append("@overview This operator multiplies one block of two DataSets together. ");
+     Res.append("When the operation ");
+     Res.append("is successful and a new DataSet is created, a reference to this new DataSet ");
+     Res.append("is returned.  If a new DataSet is NOT created, the result is stored in the ");
+     Res.append("current DataSet and a reference to the current DataSet is returned. If the ");
+     Res.append("operation is NOT successful, an error string is returned.");
+     
+    Res.append("@algorithm Construct a new DataSet with the same title, units and operations");
+     Res.append("as the current DataSet. Multiply the values in the DataSet blocks.  If make a new ");
+     Res.append("DataSet is selected, the new values will be stored in a new DataSet.  If ");
+     Res.append("it is not selected, the new values will be stored in the current DataSet.");
+    
+    Res.append("@param ds - the current DataSet on which the operator will be performed.");
+    Res.append("@param ds_to_add - the DataSet to add to the current DataSet.");
+    Res.append("@param  id - The id of the Data block to use from DataSet ds_2.");
+    Res.append("@param make_new_ds - a boolean value which determines if a new DataSet is ");
+     Res.append("created or not.");
+        
+    Res.append("@return returns a new DataSet or an Error String.");
+     Res.append("If \"create a new DataSet\" is selected and operation is successful, a ");
+     Res.append("reference to a new DataSet will be returned.  If it is successful without ");
+     Res.append("creating a new DataSet, a reference to the current DataSet will bereturned. ");  
+     Res.append("If the operation is not successful, an error string will be returned");
+    
+    Res.append("@error Unsupported operation");
+    Res.append("@error DataSets have different units");
+    Res.append("@error No compatible Data blocks");
+     
+     return Res.toString();
+  }
+  
+  /* ---------------------------- main --------------------------------- */
+  /**
+   *  Main method for testing purposes.  Subtracts the 3rd "block"
+   *  of ds2 (DataSet2) from ds1 (DataSet1) and displays each in a 
+   *  viewer window.
+   */
 
+  public static void main( String[] args )
+  {
+    DataSet ds1 = DataSetFactory.getTestDataSet(); //create the first test DataSet
+    DataSet ds2 = DataSetFactory.getTestDataSet(); //create the second test DataSet
+    ViewManager viewer = new ViewManager(ds1, ViewManager.IMAGE);
+    Operator op = new DataSetMultiply_1( ds1, ds2, 3, true );
+    DataSet new_ds = (DataSet)op.getResult();
+    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);
+    
+    String documentation = op.getDocumentation();
+    System.out.println(documentation);
+    System.out.println("\n" + op.getResult().toString());
+  }//main()
+  
 }
