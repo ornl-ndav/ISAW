@@ -32,6 +32,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.46  2003/07/07 21:48:34  rmikk
+ *  -Returned exception information if getResult has an
+ *    exception.
+ *  -Return values of Object[] and Vector will now notify
+ *   all IObservers of each DataSet entry.
+ *
  *  Revision 1.45  2003/07/01 21:41:39  rmikk
  *  Added a method, isModal, to determine if the Dialog box
  *    is a modal dialog box
@@ -702,19 +708,19 @@ public class JParametersDialog implements Serializable,
       // create a subclass of SwingWorker to call getResult()
       worker = new SwingWorker() {
           public Object construct(){
-            try{
+            try{ 
               if( op instanceof IObservable)
                 {((IObservable)op).addIObserver(io);
                 }
               Result=op.getResult();
               if( op instanceof IObservable)
                 ((IObservable)op).deleteIObserver(io); 
-              notifyListeners( OPERATION_THROUGH);            
+              notifyListeners( OPERATION_THROUGH); 
               return Result;
             }catch(Throwable e){
               Result= new ErrorString( e.getMessage());
               notifyListeners( OPERATION_THROUGH);
-              return null;
+              return Result;
             }
            
           }
@@ -762,8 +768,6 @@ public class JParametersDialog implements Serializable,
       }
       else if (result == null)
       {
-         
-            
          resultsLabel.setText("Result was null  :");
          util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
 
@@ -784,16 +788,19 @@ public class JParametersDialog implements Serializable,
         util.appendDoc(sessionLog,  
                 ((DataSet)result).toString()+"="+op.getCommand()+"(" +s +")");
      }
-     else if( result instanceof DataSet[] )
-       { DataSet DSS[];
-         DSS = (DataSet[])result; 
-        
-           for( int i = 0; i < DSS.length; i++)
-              OL.notifyIObservers( this, DSS[i]);
-        resultsLabel.setText("Operation completed");
+     else if( result instanceof Object[] )
+       { //DataSet DSS[];
+         //DSS = (DataSet[])result; 
+          Object[] listt = (Object[])result; 
+           for( int i = 0; i < listt.length; i++)
+              if( listt[i] instanceof DataSet)
+                 OL.notifyIObservers( this, listt[i]);
+        resultsLabel.setText("Result ="+ 
+                              StringUtil.toString( result));
         util.appendDoc(sessionLog,  
                 "DS[]="+op.getCommand()+"(" +s +")");      
-       }     
+       } 
+
      else if (result instanceof Float)
      {
         Float value = (Float)result;
@@ -820,10 +827,16 @@ public class JParametersDialog implements Serializable,
         resultsLabel.setText(SS);
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
+   
      else if( result instanceof Vector )
-     {
+     {  Vector V = (Vector) result;
+        for( int i=0; i< V.size(); i++)
+          if( V.elementAt(i) instanceof DataSet)
+            OL.notifyIObservers( this, V.elementAt(i) );
+        
         resultsLabel.setText("Result ="+ 
-                              execOneLine.Vect_to_String((Vector)result));
+                              StringUtil.toString( result));
+        
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
 
