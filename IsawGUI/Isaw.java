@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.123  2003/01/23 22:24:24  pfpeterson
+ *  Removed a diagnostic print statement.
+ *
  *  Revision 1.122  2003/01/20 17:26:16  pfpeterson
  *  Added method for having a default file filter. Currently allows 'nxs', 'nexus', 'sdds', 'ipns', 'run', 'gsas', 'gsa', and 'gda'.
  *
@@ -1978,7 +1981,6 @@ public class Isaw
       // get the default FileFilter out of the properties file
       if(load_filter==null){
         String ext=SharedData.getProperty("Default_Ext");
-        System.out.println("EXT:"+ext);
         if(ext!=null){
           ext=ext.toLowerCase();
           if(ext.equals("nxs") || ext.equals("nexus"))
