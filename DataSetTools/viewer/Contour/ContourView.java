@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2003/10/30 21:10:26  dennis
+ *  Removed unneeded import of gov.noaa.pmel.sgt.demo, which
+ *  caused a problem with javadoc 1.4.2_02
+ *
  *  Revision 1.35  2003/10/15 03:56:37  bouzekc
  *  Fixed javadoc errors.
  *
@@ -172,8 +176,6 @@
  */
 package DataSetTools.viewer.Contour;
 
-
-import gov.noaa.pmel.sgt.demo.*;
 import gov.noaa.pmel.sgt.swing.JPlotLayout;
 import gov.noaa.pmel.sgt.swing.JClassTree;
 import gov.noaa.pmel.sgt.swing.prop.GridAttributeDialog;
