@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2004/06/16 19:56:21  pfpeterson
+ * Fixed bug that appears in createIdMap when not using a square (in pixels)
+ * detector. This was discovered using by Gayle Green using an SNS detector
+ * on QUIP.
+ *
  * Revision 1.18  2004/04/12 21:31:29  dennis
  * The method to get the detector ID now will first try to get
  * the ID from the data blocks PixelInfoList.
@@ -333,8 +338,8 @@ public class Util{
 
     // initialize the return matrix
     int[][] ids = new int[colMax+1][rowMax+1];
-    for( int i=0 ; i<ids.length ; i++ ){
-      for( int j=0 ; j<ids.length ; j++ ){
+    for( int i=0 ; i<=colMax ; i++ ){
+      for( int j=0 ; j<=rowMax ; j++ ){
         ids[i][j]=-1;
       }
     }
