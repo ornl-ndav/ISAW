@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2001/07/30 18:48:09  dennis
+ *  Now adds DS_TYPE attribute to the DataSets.
+ *
  *  Revision 1.30  2001/07/27 15:53:52  dennis
  *  Now also tries to get the instrument type from the file name, if
  *  the Runfile package returns type unknown.
@@ -425,6 +428,7 @@ public class RunfileRetriever extends    Retriever
     float             source_to_sample_tof;
     DataSet           data_set = null;
     String            title;
+    String            ds_type;
 
     if ( run_file == null )
       return null;
@@ -436,16 +440,19 @@ public class RunfileRetriever extends    Retriever
       {
         is_monitor = true;
         title = "M" + histogram_num + "_" + title; 
+        ds_type = Attribute.MONITOR_DATA;
       }
     else if ( getType( data_set_num ) == PULSE_HEIGHT_DATA_SET )
       {
         is_pulse_height = true;
         title = "P" + histogram_num + "_" + title;
+        ds_type = Attribute.PULSE_HEIGHT_DATA;
       }
     else
       {
         is_histogram = true;    
         title = "H" + histogram_num + "_" + title; 
+        ds_type = Attribute.SAMPLE_DATA;
       }
  
     try
@@ -464,7 +471,7 @@ public class RunfileRetriever extends    Retriever
 
                                             // Adjust the empty DataSet based
                                             // on the current situation 
-     if ( is_monitor && instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
+     if ( is_monitor )
      {
        data_set.addOperator( new EnergyFromMonitorDS() );
        data_set.addOperator( new MonitorPeakArea() );
@@ -476,7 +483,7 @@ public class RunfileRetriever extends    Retriever
      }
 
      data_set.addLog_entry( "Loaded " + title );
-     AddDataSetAttributes( data_source_name, data_set );
+     AddDataSetAttributes( data_source_name, ds_type, data_set );
 
      run_file.LeaveOpen();
 
@@ -578,10 +585,12 @@ public class RunfileRetriever extends    Retriever
  *  Add the DataSet attributes to the specified DataSet.
  *
  *  @param  file_name  The file name for this DataSet.
- *
+ *  @param  ds_type    The type of this DataSet, "MONITOR_DATA", "SAMPLE_DATA",
+ *                     etc.
  *  @param  ds         The DataSet to which the attributes are added.
  */
   private void AddDataSetAttributes( String   file_name,
+                                     String   ds_type,
                                      DataSet  ds        )
   {
     IntAttribute      int_attr;
@@ -603,6 +612,10 @@ public class RunfileRetriever extends    Retriever
     list[0] = instrument_type;
     int_list_attr = new IntListAttribute( Attribute.INST_TYPE, list );
     attr_list.setAttribute( int_list_attr );
+
+    // DataSet Type ........
+    str_attr = new StringAttribute( Attribute.DS_TYPE, ds_type );
+    attr_list.setAttribute( str_attr );
 
     // Run Title ........
     String title = run_file.RunTitle();
