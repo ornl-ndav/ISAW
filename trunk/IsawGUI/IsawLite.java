@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/10/29 01:36:57  bouzekc
+ * Now considers -h as a request for the full help message.
+ *
  * Revision 1.7  2003/08/11 18:06:11  bouzekc
  * Now uses PyScriptOperator.
  *
@@ -491,18 +494,19 @@ public class IsawLite{
   }
 
   private static void printHelp(int level){
-    String generic="USAGE: IsawLite [#parameters] "
+    String generic="USAGE: IsawLite [options] [#parameters] "
                                          +"<CommandName/ClassName/ScriptFile>";
 
-    if(level<=0)
+    if(level<=0){
+      generic += "\nTry -h for a full option list.";
       exit(generic,-1);
-    else
+    }else{
       exit(generic+"\n"
            +"-nogui     execute without gui\n"
            +"-d         print debug messages\n"
-           +"-h         print usage statement\n"
            +"-help      print this help message\n"
            +"-i <file>  use <file> for input\n",-1);
+    }
   }
 
   /**
@@ -523,9 +527,8 @@ public class IsawLite{
     for( int i=0 ; i<args.length ; i++ ){
       if(args[i].equals("-nogui") || args[i].equals("--nogui") ){
         GUI=false; // nogui mode
-      }else if(args[i].equals("-h")){
-        printHelp(0); // print short help
-      }else if(args[i].equals("--help") || args[i].equals("-help")){
+      }else if(args[i].equals("--help") || args[i].equals("-help") || 
+               args[i].equals("-h")){
         printHelp(1); // print full help
       }else if(args[i].equals("-d")){
         LoadDebug=true; // print debug messages
