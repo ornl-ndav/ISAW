@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/07/03 14:17:43  bouzekc
+ * Added comments and ordered methods according to access
+ * privilege.
+ *
  * Revision 1.7  2003/06/30 16:05:53  bouzekc
  * Now takes --nogui command line arguments.
  *
@@ -80,27 +84,28 @@ import javax.swing.*;
 
 
 /**
- *  This class constructs a Wizard used for initially finding peaks.  In this
- *  Wizard, BlindJ is used for creating a matrix file.
+ * This class constructs a Wizard used for initially finding peaks.  In this
+ * Wizard, BlindJ is used for creating a matrix file.
  */
 public class InitialPeaksWizard extends Wizard {
+  //~ Static fields/initializers ***********************************************
+
   private static final String LOADFILETYPE = "LoadFile";
 
+  //~ Constructors *************************************************************
+
   /**
-   *
-   *  Default constructor.  Sets standalone in Wizard to true.
+   * Default constructor.  Sets standalone in Wizard to true.
    */
   public InitialPeaksWizard(  ) {
     this( true );
   }
 
   /**
-   *  Constructor for setting the standalone variable in Wizard.
+   * Constructor for setting the standalone variable in Wizard.
    *
-   *  @param standalone          Boolean indicating whether the
-   *                             Wizard stands alone (true) or
-   *                             is contained in something else
-   *                             (false).
+   * @param standalone Boolean indicating whether the Wizard stands alone
+   *        (true) or is contained in something else (false).
    */
   public InitialPeaksWizard( boolean standalone ) {
     super( "Initial SCD Peaks Wizard", standalone );
@@ -115,8 +120,28 @@ public class InitialPeaksWizard extends Wizard {
     this.setHelpMessage( s.toString(  ) );
   }
 
+  //~ Methods ******************************************************************
+
   /**
-   *  Adds and coordinates the necessary Forms for this Wizard.
+   * Method for running the Initial Peaks wizard as standalone.
+   */
+  public static void main( String[] args ) {
+    InitialPeaksWizard w = new InitialPeaksWizard( true );
+
+    //specified a --nogui switch but forgot to give a filename
+    if( args.length == 1 ) {
+      System.out.println( 
+        "USAGE: java Wizard.TOF_SCD.InitialPeaksWizard " +
+        "[--nogui] <Wizard Save File>" );
+    } else if( args.length == 2 ) {
+      w.executeNoGUI( args[1] );
+    } else {
+      w.showForm( 0 );
+    }
+  }
+
+  /**
+   * Adds and coordinates the necessary Forms for this Wizard.
    */
   private void createAllForms(  ) {
     int[][] fpi = {
@@ -144,26 +169,5 @@ public class InitialPeaksWizard extends Wizard {
     this.addForm( lsqrsjform );
 
     super.linkFormParameters( fpi );
-  }
-
-  /**
-   *  Method for running the Initial Peaks wizard
-   *   as standalone.
-   */
-  public static void main( String[] args ) {
-    InitialPeaksWizard w = new InitialPeaksWizard( true );
-
-    //specified a --nogui switch but forgot to give a filename
-    if( args.length == 1 ) {
-      System.out.println( 
-        "USAGE: java Wizard.TOF_SCD.InitialPeaksWizard " +
-        "[--nogui] <Wizard Save File>" );
-    }
-    else if( args.length == 2 ) {
-      w.executeNoGUI( args[1] );
-    }
-    else {
-      w.showForm( 0 );
-    }
   }
 }

@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/07/03 14:16:30  bouzekc
+ * Added comments and ordered methods according to access
+ * privilege.
+ *
  * Revision 1.6  2003/06/30 16:05:52  bouzekc
  * Now takes --nogui command line arguments.
  *
@@ -76,25 +80,25 @@ import javax.swing.*;
 
 
 /**
- *  This class constructs a Wizard used for initially finding peaks.  In this
- *  Wizard, an iteration over LsqrsJ and IndexJ is used for creating a matrix file.
+ * This class constructs a Wizard used for initially finding peaks.  In this
+ * Wizard, an iteration over LsqrsJ and IndexJ is used for creating a matrix
+ * file.
  */
 public class DailyPeaksWizard extends Wizard {
+  //~ Constructors *************************************************************
+
   /**
-   *
-   *  Default constructor.  Sets standalone in Wizard to true.
+   * Default constructor.  Sets standalone in Wizard to true.
    */
   public DailyPeaksWizard(  ) {
     this( true );
   }
 
   /**
-   *  Constructor for setting the standalone variable in Wizard.
+   * Constructor for setting the standalone variable in Wizard.
    *
-   *  @param standalone          Boolean indicating whether the
-   *                             Wizard stands alone (true) or
-   *                             is contained in something else
-   *                             (false).
+   * @param standalone Boolean indicating whether the Wizard stands alone
+   *        (true) or is contained in something else (false).
    */
   public DailyPeaksWizard( boolean standalone ) {
     super( "Daily SCD Peaks Wizard", standalone );
@@ -110,41 +114,10 @@ public class DailyPeaksWizard extends Wizard {
     this.setHelpMessage( s.toString(  ) );
   }
 
-  /**
-   *  Adds and coordinates the necessary Forms for this Wizard.
-   */
-  private void createAllForms(  ) {
-    int[][] fpi = {
-      { 0, -1, -1, 0 },  //raw data path 
-      { 1, 1, 1, 1 },  //peaks file path
-      { 2, 0, 0, 2 },  //run numbers
-      { 3, 2, 2, 3 },  //experiment name
-      { 8, -1, -1, 5 },  //SCD calibration file
-      { 7, -1, -1, 8 }
-    };  //SCD calibration file line
-
-    FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
-
-    //A.J. Schultz wants the "update" parameter to default to true
-    peaksform.getParameter( 6 ).setValue( Boolean.TRUE );
-
-    //these Forms rely on previously calculated values, so set them
-    //up as having constants with "true"
-    IndexJForm indexjform                 = new IndexJForm( true );
-    LsqrsJForm lsqrsjform                 = new LsqrsJForm( true );
-    IntegrateMultiRunsForm integmultiform = new IntegrateMultiRunsForm( true );
-
-    this.addForm( peaksform );
-    this.addForm( indexjform );
-    this.addForm( lsqrsjform );
-    this.addForm( integmultiform );
-
-    super.linkFormParameters( fpi );
-  }
+  //~ Methods ******************************************************************
 
   /**
-   *  Method for running the Daily Peaks wizard
-   *   as standalone.
+   * Method for running the Daily Peaks wizard as standalone.
    */
   public static void main( String[] args ) {
     DailyPeaksWizard w = new DailyPeaksWizard( true );
@@ -159,5 +132,38 @@ public class DailyPeaksWizard extends Wizard {
     } else {
       w.showForm( 0 );
     }
+  }
+
+  /**
+   * Adds and coordinates the necessary Forms for this Wizard.
+   */
+  private void createAllForms(  ) {
+    int[][] fpi = {
+      { 0, -1, -1, 0 },  //raw data path 
+      { 1, 1, 1, 1 },  //peaks file path
+      { 2, 0, 0, 2 },  //run numbers
+      { 3, 2, 2, 3 },  //experiment name
+      { 8, -1, -1, 5 },  //SCD calibration file
+      { 7, -1, -1, 8 }
+    };  //SCD calibration file line
+
+    FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
+
+    //A.J. Schultz wants the "update" parameter to default to true
+    peaksform.getParameter( 6 )
+             .setValue( Boolean.TRUE );
+
+    //these Forms rely on previously calculated values, so set them
+    //up as having constants with "true"
+    IndexJForm indexjform                 = new IndexJForm( true );
+    LsqrsJForm lsqrsjform                 = new LsqrsJForm( true );
+    IntegrateMultiRunsForm integmultiform = new IntegrateMultiRunsForm( true );
+
+    this.addForm( peaksform );
+    this.addForm( indexjform );
+    this.addForm( lsqrsjform );
+    this.addForm( integmultiform );
+
+    super.linkFormParameters( fpi );
   }
 }
