@@ -31,6 +31,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.4  2002/10/07 14:45:27  rmikk
+ * Tries to position viewport after an error and/or index
+ *   column is added or deleted. Somewhat successful.
+ *
  * Revision 1.3  2002/07/29 22:09:16  rmikk
  * Fixed interactive table views so that they scroll
  *   correctly to the pointed at cell.
@@ -405,7 +409,7 @@ private class MyActionListener implements ActionListener
        {table_model=fixTableModel( state, table_model, jmErr.getState(),jmInd.getState());
         jtb.setModel(table_model );
         jtb.invalidate();
-
+        redraw( IObserver.POINTED_AT_CHANGED);
        }
     }
 
