@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/07/26 22:05:55  rmikk
+ * Incorporated XScales to find y values and error values.
+ * The XScales can now be set from outside.
+ *
  * Revision 1.4  2002/07/25 21:02:44  rmikk
  * Fixed code to work better with subranges of rows and
  *   or columns.
@@ -87,6 +91,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    int tMincol,
        tMaxcol;
 
+   XScale x_scale = null;
+   int firstGroup =-1;
    /** Constructor for this table model of the Data Set DS at time time
     *@param  DS  the data set for which the model will present the data
     *@param  time  the time of this time slice
@@ -155,9 +161,12 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       }
 
       
-      for( int i = 0; i < RC_to_Group.length; i++ )
-         if( RC_to_Group[i] != i )
-            System.out.println( "MISSed at " + i + "Group =" + RC_to_Group[i] );
+    firstGroup = 0;
+    int[] u = DS.getSelectedIndices();
+    if( u != null)
+      if( u.length > 0)
+        firstGroup = u[0];
+    x_scale = DS.getData_entry( firstGroup).getX_scale();
    }
 
 
@@ -338,13 +347,13 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     * @return   The table column #(starting at 0) or -1 if none.
     */
    public int getCol( int GroupIndx, float time )
-   {   //System.out.println("in getCol GroupIndx="+GroupIndx+","+tMinrow+","+tMaxrow);
-      if( GroupIndx < 0 )
+   { 
+     if( GroupIndx < 0 )
          return -1;
-      for( int r = 0; r < MaxRow; r++ )
+     for( int r = 0; r < MaxRow; r++ )
          for( int c = 0; c < MaxCol; c++ )
             if( RC_to_Group[ r * MaxCol + c] == GroupIndx )
-            {  //System.out.println("   Found col ="+c);
+            { 
                if( c <= tMaxcol )
                   return c - tMincol;
             }
@@ -364,12 +373,12 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          return new Integer( 0 );
       if( Grp >= DS.getNum_entries() )
          return new Integer( 0 );
+      //XScale xscl =DS.getData_entry( Grp ).getX_scale();
+     // float[] xvals = DS.getData_entry( Grp ).getX_scale().getXs();
 
-      float[] xvals = DS.getData_entry( Grp ).getX_scale().getXs();
+      //int index = xscl.getI( Time );
 
-      int index = DS.getData_entry( Grp ).getX_scale().getI( Time );
-
-      float dx = ( xvals[1] - xvals[0] ) / 10.0f;
+      /*float dx = ( xvals[1] - xvals[0] ) / 10.0f;
 
       if( index >= xvals.length )
          if( ( Time - xvals[xvals.length - 1] ) <
@@ -384,20 +393,33 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       {}
       else
          index = -1;
+      */
       int n = 1;
-
+     
       if( err ) n++;
       if( ind ) n++;
       int field = column - n * ( column / n );
 
       float[] yvals = null;
+      Data db = (Data)(DS.getData_entry( Grp).clone());
+      if( x_scale != null)
+        db.resample( x_scale,0);
+      XScale xscl;
+      xscl = db.getX_scale();
+      int index = xscl.getI( Time );
+      if( xscl.getX( index) != Time)
+         
+        if( index > 0)
+          index = index -1;
+       
 
       if( field == 0 )
-         yvals = DS.getData_entry( Grp ).getY_values();
+         yvals = db.getY_values();
       else if( field == 1 && err )
-         yvals = DS.getData_entry( Grp ).getErrors();
-      else //if( field ==1)
-         return new Float( 0.0f + index );
+         yvals = db.getErrors();
+      else
+         return new Integer(index);
+       
 
       if( index < 0 )
          return new Integer( 0 );
@@ -407,6 +429,9 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          return( new Float( yvals[index] ) );
 
    }
+  public void setXScale( XScale xscale)
+    { x_scale = xscale;
+     }
    String filename = null;
    public void actionPerformed( ActionEvent evt )
    {
