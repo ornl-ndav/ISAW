@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2001/08/08 22:29:22  rmikk
+ * Fixed Set SELECTED_GROUPS so only the selected
+ * indecies are selected(Error)
+ * Also the GetField and SetField for SELECTED_GROUPS
+ *    both set indecies not Group ID's
+ *
  * Revision 1.6  2001/06/01 21:18:00  rmikk
  * Improved documentation for getCommand() method
  *
@@ -220,22 +226,18 @@ public class SetField extends    DS_Attribute
          }
       }
       else if( S.equals(DSFieldString.SELECTED_GROUPS) )
-      {
+      { 
         int list[] = IntList.ToArray( O.toString() );
+       
         int id, 
             index;
 
         ds.clearSelections();
         if ( list.length > 0 ) 
-        for ( int i = 0; i < ds.getNum_entries(); i++ )
-        {
-          id = ds.getData_entry(i).getGroup_ID();
-          index = arrayUtil.get_index_of( id, list, 0, list.length-1 ); 
-                                                        // set the select flag
-                                                        // if the group ID is
-          if ( index >= 0 )                             // in the list 
-            ds.setSelectFlag( i, true );
-        }
+        for ( int i = 0; i < list.length ; i++ )
+          if( (list[i] >=0) &&( list[i] < ds.getNum_entries() ) )
+                 ds.setSelectFlag( list[i], true );
+
         ds.notifyIObservers( IObserver.SELECTION_CHANGED );
       }
       else
