@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/07/20 18:17:00  dennis
+ *  Made prompt for print destination more compact.
+ *
  *  Revision 1.12  2001/07/16 22:49:50  dennis
  *  Modified it to work even if there are no error values present
  *  in the Data block.  Did some general "clean up".
@@ -161,7 +164,7 @@ public class DataSetPrint extends    GenericOperator
      parameter = new Parameter("Data block index", new Integer( 0) );
      addParameter( parameter );
      
-     parameter = new Parameter("Output Type (0=Print, 1=write 2= textfield or 3=table)", 
+     parameter = new Parameter("0:Console,1:file,2:textfield,3:table)", 
                                 new Integer( 0) );
      addParameter( parameter );
      
