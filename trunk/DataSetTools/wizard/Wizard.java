@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.103  2004/02/11 04:09:02  bouzekc
+ * Removed the PropChangeProgressBar.  The progress bars now use the JDK 1.4
+ * setIndeterminate() method.  This should take some work off of writing
+ * new Forms.
+ *
  * Revision 1.102  2004/01/14 18:59:00  bouzekc
  * Fixed bug that wiped out loaded Form values when loading a file
  * directly from the command line.
@@ -592,8 +597,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     forms             = new Vector(  );
     form_num          = -1;
     this.standalone   = standalone;
-
-    //command_handler   = new CommandHandler( this );
     tryToLoadProjectsDir(  );
   }
 
@@ -1005,8 +1008,10 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       //only do something if the Form is not done
       if( !f.done(  ) ) {
         if( frontEnd instanceof IGUIWizardFrontEnd ) {
-          ( ( IGUIWizardFrontEnd )frontEnd ).setFormProgressParameters( 
-            0, "Executing " + f );
+          ( ( IGUIWizardFrontEnd )frontEnd ).setFormProgressIndeterminate( 
+            true );
+          ( ( IGUIWizardFrontEnd )frontEnd ).setWizardProgressIndeterminate( 
+            true );
         }
 
         /*if( this.IamRemote ) {
@@ -1026,15 +1031,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
           break;
         }
-
-        if( frontEnd instanceof IGUIWizardFrontEnd ) {
-          ( ( IGUIWizardFrontEnd )frontEnd ).updateWizardProgress(  );
-        }
       }
-    }
-
-    if( frontEnd instanceof IGUIWizardFrontEnd ) {
-      ( ( IGUIWizardFrontEnd )frontEnd ).updateWizardProgress(  );
     }
     invalidate( end + 1 );
   }
@@ -1057,6 +1054,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     }
 
     if( frontEnd instanceof IGUIWizardFrontEnd ) {
+      ( ( IGUIWizardFrontEnd )frontEnd ).setFormProgressIndeterminate( false );
+      ( ( IGUIWizardFrontEnd )frontEnd ).setWizardProgressIndeterminate( false );
       ( ( IGUIWizardFrontEnd )frontEnd ).updateFormProgress(  );
       ( ( IGUIWizardFrontEnd )frontEnd ).updateWizardProgress(  );
     }
@@ -1249,11 +1248,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    */
   private void createGUIInterface(  ) {
     frontEnd = new SwingWizardFrontEnd( this );
-
-    for( int i = 0; i < this.getNumForms(  ); i++ ) {
-      getForm( i ).addPropertyChangeListener( 
-        ( ( IGUIWizardFrontEnd )frontEnd ).getFormProgressIndicator(  ) );
-    }
 
     //set the projects directory for relevant parameters
     this.setBrowsePGDirectory(  );

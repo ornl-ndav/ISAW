@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.51  2004/02/11 04:09:02  bouzekc
+ * Removed the PropChangeProgressBar.  The progress bars now use the JDK 1.4
+ * setIndeterminate() method.  This should take some work off of writing
+ * new Forms.
+ *
  * Revision 1.50  2004/01/08 14:56:22  bouzekc
  * Collapsed import statements.
  *
@@ -225,8 +230,6 @@
  */
 package DataSetTools.wizard;
 
-import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
-
 import DataSetTools.operator.Operator;
 
 import DataSetTools.parameter.*;
@@ -267,7 +270,6 @@ public abstract class Form extends Operator implements PropertyChanger {
   private static final String CONS_FRAME_HEAD = "CONSTANT PARAMETERS";
   private static final String VAR_FRAME_HEAD  = "USER SPECIFIED PARAMETERS";
   private static final String RES_FRAME_HEAD  = "RESULTS";
-  public static final String PERCENT_DONE     = "Percent Form Done";
   public static final String[] PARAM_NAMES    = {
     CONS_FRAME_HEAD, VAR_FRAME_HEAD, RES_FRAME_HEAD
   };
@@ -282,17 +284,7 @@ public abstract class Form extends Operator implements PropertyChanger {
   private int[][] param_ref        = null;
 
   //used for standalone or first Forms.  Default is standalone.
-  protected boolean HAS_CONSTANTS          = false;
-  protected PropertyChangeSupport propBind;
-
-  //used for the progress bars
-  protected float newPercent;
-
-  //used for the progress bars
-  protected float oldPercent;
-
-  //used for the progress bars
-  protected float increment;
+  protected boolean HAS_CONSTANTS = false;
 
   //used so that we don't "dirty up" the parameters list.
   private IParameterGUI result_param = null;
@@ -308,7 +300,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     super( title );
     panel            = null;
     this.param_ref   = null;
-    propBind         = new PropertyChangeSupport( this );
   }
 
   /**
@@ -470,10 +461,6 @@ public abstract class Form extends Operator implements PropertyChanger {
    */
   public void addPropertyChangeListener( 
     String property, PropertyChangeListener pcl ) {
-    //this one is for the Form progress messages
-    if( propBind != null ) {
-      propBind.addPropertyChangeListener( property, pcl );
-    }
     this.addListenerToParameters( property, pcl );
   }
 
@@ -484,10 +471,6 @@ public abstract class Form extends Operator implements PropertyChanger {
    * @param pcl The PropertyChangeListener used for listening.
    */
   public void addPropertyChangeListener( PropertyChangeListener pcl ) {
-    //this one is for the Form progress messages
-    if( propBind != null ) {
-      propBind.addPropertyChangeListener( pcl );
-    }
     this.addListenerToParameters( null, pcl );
   }
 
@@ -511,8 +494,7 @@ public abstract class Form extends Operator implements PropertyChanger {
       }
     }
 
-    return ( ( areSet == totalParam ) && getResultParam(  )
-                                           .getValid(  ) );
+    return ( ( areSet == totalParam ) && getResultParam(  ).getValid(  ) );
   }
 
   /**
@@ -526,8 +508,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( this.getNum_parameters(  ) <= 0 ) {
       return;
     }
-    getResultParam(  )
-      .setValid( false );
+    getResultParam(  ).setValid( false );
   }
 
   /**
@@ -537,9 +518,7 @@ public abstract class Form extends Operator implements PropertyChanger {
    * @param pcl The PropertyChangeListener to remove.
    */
   public void removePropertyChangeListener( PropertyChangeListener pcl ) {
-    if( propBind != null ) {
-      propBind.removePropertyChangeListener( pcl );
-    }
+    this.removeListenerFromParameters( pcl );
   }
 
   /**
@@ -719,19 +698,6 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   * Utility method to fire property change events.
-   *
-   * @param oldValue The old value of the property.
-   * @param newValue The new value of the property.
-   */
-  protected void fireValueChangeEvent( int oldValue, int newValue ) {
-    if( ( propBind != null ) && ( oldValue != newValue ) ) {
-      propBind.firePropertyChange( 
-        PropChangeProgressBar.VALUE, oldValue, newValue );
-    }
-  }
-
-  /**
    * This method makes the GUI for the Form.  If a derived class overrides this
    * method, it must build it's own user interface in the current JPanel,
    * panel, since that is what is returned to the Wizard to show the form.
@@ -784,9 +750,6 @@ public abstract class Form extends Operator implements PropertyChanger {
    *         the parameters successfully validated or not, respectively.
    */
   protected Object validateSelf(  ) {
-    //for progress bars
-    newPercent = oldPercent = increment = 0;
-
     IParameterGUI ipg;
 
     if( this.getNum_parameters(  ) <= 0 ) {
@@ -845,6 +808,26 @@ public abstract class Form extends Operator implements PropertyChanger {
           } else {
             ( ( PropertyChanger )param ).addPropertyChangeListener( listener );
           }
+        }
+      }
+    }
+  }
+
+  /**
+   * Utility method to remove a property change listener from the parameters.
+   *
+   * @param listener The PropertyChangeListener to remove.
+   */
+  private void removeListenerFromParameters( PropertyChangeListener listener ) {
+    int[] var_indices   = retrieveVarParamIndices(  );
+    IParameterGUI param;
+
+    if( var_indices != null ) {
+      for( int i = 0; i < var_indices.length; i++ ) {
+        param = ( IParameterGUI )this.getParameter( var_indices[i] );
+
+        if( param instanceof PropertyChanger ) {
+          ( ( PropertyChanger )param ).removePropertyChangeListener( listener );
         }
       }
     }
