@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/10/14 22:04:22  dennis
+ *  Fixed javadoc comment to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.8  2003/02/24 13:39:19  dennis
  *  Switched to use CommandObject instead of compound command Strings.
  *
@@ -79,7 +82,7 @@ public class DataSetServer extends TCPServer
    *  command line it is used as the data directory.  If not, the current
    *  directory is used.
    *
-   *  @ param String dataDirectory
+   *  @param String dataDirectory
    */
   public void addDataDirectory( String data_directory )
   {
