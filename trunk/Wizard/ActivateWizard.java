@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/26 17:21:37  rmikk
+ * Now writes to DataSetTools.util.SharedData.status_pane
+ *
  * Revision 1.3  2002/11/27 23:31:16  pfpeterson
  * standardized header
  *
@@ -61,7 +64,7 @@ public class ActivateWizard{
     public static void main( String args[] ){
         // build the wizard and specify the help messages.
         Wizard w = new Wizard( "Activate Wizard" ); 
-        Wizard.status_display.append("ActivateWizard Main\n");
+        DataSetTools.util.SharedData.addmsg("ActivateWizard Main\n");
         w.setHelpMessage("This wizard will let you do arithetic operations");
         w.setAboutMessage("This is a simple Demonstation Wizard, 2/26/2002, D.M.");
         

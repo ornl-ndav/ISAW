@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/26 17:21:28  rmikk
+ * Now writes to DataSetTools.util.SharedData.status_pane
+ *
  * Revision 1.3  2002/11/27 23:31:16  pfpeterson
  * standardized header
  *
@@ -122,11 +125,11 @@ public class ActivateForm extends Form{
         //System.out.println("ActivateForm.execute()");
         if( (editable_params.length!=4) || (result_params.length!=3) ){
             if(editable_params.length!=4)
-                wizard.status_display.append("Wizard calling form "
+                DataSetTools.util.SharedData.addmsg("Wizard calling form "
                                              +"incorrectly: wrong number of "
                                              +"editable parameters\n");
             if(result_params.length!=3)
-                wizard.status_display.append("Wizard calling form "
+                DataSetTools.util.SharedData.addmsg("Wizard calling form "
                                              +"incorrectly: wrong number of "
                                              +"result parameters\n");
             return false;
@@ -140,7 +143,7 @@ public class ActivateForm extends Form{
         float mass=((FloatPG)param).getfloatValue();
         if(mass<=0f){
             param.setValid(false);
-            wizard.status_display.append("Invalid Mass Specified: "+mass);
+            DataSetTools.util.SharedData.addmsg("Invalid Mass Specified: "+mass);
             return false;
         }else{
             param.setValid(true);
@@ -150,7 +153,7 @@ public class ActivateForm extends Form{
         float current=((FloatPG)param).getfloatValue();
         if(current<=0f){
             param.setValid(false);
-            wizard.status_display.append("Invalid Current Specified: "
+            DataSetTools.util.SharedData.addmsg("Invalid Current Specified: "
                                          +current);
             return false;
         }else{
@@ -161,7 +164,7 @@ public class ActivateForm extends Form{
         float inst_fac=((FloatPG)param).getfloatValue();
         if(inst_fac<=0f){
             param.setValid(false);
-            wizard.status_display.append("Invalid Instrument Factor "
+            DataSetTools.util.SharedData.addmsg("Invalid Instrument Factor "
                                          +"Specified: "+inst_fac);
             return false;
         }else{
