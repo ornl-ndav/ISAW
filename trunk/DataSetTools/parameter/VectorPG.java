@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.38  2003/09/13 23:29:47  bouzekc
+ * Moved calls from setValid(true) to validateSelf().
+ *
  * Revision 1.37  2003/09/10 00:18:28  bouzekc
  * Removed space in the setting of type for derived classes.
  *
@@ -302,6 +305,7 @@ public abstract class VectorPG extends ParameterGUI
     if( GUI != null ) {
       GUI.setValue( value );
     }
+    validateSelf(  );
   }
 
   /**

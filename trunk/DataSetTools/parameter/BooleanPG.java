@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/09/13 23:29:46  bouzekc
+ *  Moved calls from setValid(true) to validateSelf().
+ *
  *  Revision 1.12  2003/09/13 23:16:39  bouzekc
  *  Removed calls to setEnabled in initGUI(Vector), since ParameterGUI.init()
  *  already calls this.
@@ -168,6 +171,8 @@ public class BooleanPG extends ParameterGUI
     }else{
       this.value=booval;
     }
+
+    validateSelf();
   }
 
   /**
