@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.37  2003/02/21 19:35:44  pfpeterson
+ * Changed calls to fixSeparator appropriate (not deprecated) method.
+ *
  * Revision 1.36  2003/01/29 22:47:57  pfpeterson
  * Added a check for InstantiationError when trying to make a new instance.
  *
@@ -279,18 +282,18 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             return null;
         }
         // fix up the filename
-        filename = FilenameUtil.fixSeparator(filename);
+        filename = FilenameUtil.setForwardSlash(filename);
 
         // get the pathlist
         String pathlist = System.getProperty("java.class.path");
-        pathlist=FilenameUtil.fixSeparator(pathlist);
+        pathlist=FilenameUtil.setForwardSlash(pathlist);
         pathlist=pathlist.replace(File.pathSeparatorChar,';');
 
         // get the location of ISAW
         String ScrPath=System.getProperty("ISAW_HOME");
         if(ScrPath!=null){
             ScrPath=ScrPath+"/";
-            ScrPath=FilenameUtil.fixSeparator(ScrPath);
+            ScrPath=FilenameUtil.setForwardSlash(ScrPath);
             if(pathlist.indexOf(ScrPath+"Isaw.jar;")>=0){
                 if(pathlist.indexOf(ScrPath+";")>=0){
                     // do nothing
@@ -714,10 +717,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     private String standardizeDir( String dir ){
         // remove whitespace from the name
         dir.trim();
-        // add a '/' at the end (fixSeparator will remove redundancies)
+        // add a '/' at the end (setForwardSlash will remove redundancies)
         dir=dir+'/';
         // switch '\' to '/' and remove any extra of either
-        dir=FilenameUtil.fixSeparator(dir);
+        dir=FilenameUtil.setForwardSlash(dir);
 
         return dir;
     }
@@ -758,7 +761,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         // the end is to remove the classname
         classFile=classFile.substring(5,classFile.indexOf(className));
         // then change the separator to forward slash (should be already)
-        classFile=FilenameUtil.fixSeparator(classFile);
+        classFile=FilenameUtil.setForwardSlash(classFile);
 
         if(injar){ // we are working from a jar file
             // remove a little bit more from classFile
@@ -799,13 +802,13 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             ZipEntry entry=null;
             String name=null;
             String matchname=
-                FilenameUtil.fixSeparator("DataSetTools/operator/DataSet");
+                FilenameUtil.setForwardSlash("DataSetTools/operator/DataSet");
             if(!dir.endsWith("Isaw.jar"))return; // only works with Isaw
             
             // go through the entries
             while(entries.hasMoreElements()){
                 entry=(ZipEntry)entries.nextElement();
-                name = FilenameUtil.fixSeparator(entry.getName());
+                name = FilenameUtil.setForwardSlash(entry.getName());
                 if( (name.endsWith(".class")) && (name.indexOf(matchname)>=0) ){
                     add(name,dsOpList);
                 }
@@ -859,13 +862,13 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         String matchname="Operators";
         if(jarname.endsWith("Isaw.jar")){
             matchname=
-                FilenameUtil.fixSeparator("DataSetTools/operator/Generic/");
+                FilenameUtil.setForwardSlash("DataSetTools/operator/Generic/");
         }
 
         // go through the entries
         while(entries.hasMoreElements()){
             entry=(ZipEntry)entries.nextElement();
-            name=FilenameUtil.fixSeparator(entry.getName());
+            name=FilenameUtil.setForwardSlash(entry.getName());
             if( (name.indexOf(matchname)>=0) && (name.endsWith(".class")) ){
                 //System.out.println("ENTRY:"+name);
                 add(name,opList);

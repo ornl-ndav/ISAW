@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.48  2003/02/21 19:35:44  pfpeterson
+ * Changed calls to fixSeparator appropriate (not deprecated) method.
+ *
  * Revision 1.47  2003/02/11 16:56:42  pfpeterson
  * No longer allows 'jython' option if Jython cannot be used.
  *
@@ -276,7 +279,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
 
         try{        
             FilePath = System.getProperty("Script_Path");  
-            FilePath = DataSetTools.util.StringUtil.fixSeparator(FilePath);   
+            FilePath = StringUtil.setFileSeparator(FilePath);   
             if( Debug )
                 System.out.println( "FilePath is "+FilePath);   
         }catch( Exception s){
@@ -754,7 +757,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
          
                 S = System.getProperty("Help_Directory");
                 if( S!= null){
-                    S = DataSetTools.util.StringUtil.fixSeparator( S);     
+                    S = StringUtil.setFileSeparator( S);     
 
                     S = S.trim();
                     if( S.length() < 1) 
@@ -773,7 +776,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                         if( S.length() > 0 ) 
                             if(  "\\/".indexOf(S.charAt(S.length() - 1 ) ) < 0)
                                 S = S + java.io.File.separator;
-                    S = DataSetTools.util.StringUtil.fixSeparator( S);
+                    S = StringUtil.setFileSeparator( S);
                     
                     if(!new 
                            File(S+"IsawHelp/Command/CommandPane.html").exists())
