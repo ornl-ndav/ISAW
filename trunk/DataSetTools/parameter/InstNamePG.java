@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/11/19 04:13:22  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.13  2003/10/11 19:24:33  bouzekc
  *  Removed declaration of "ParamUsesString" as the superclass declares it
  *  already.  Removed clone() definition as the superclass implements it
@@ -90,10 +93,10 @@ public class InstNamePG extends StringPG {
     private static       String propName = "Default_Instrument";
 
     // ********** Constructors **********
-    public InstNamePG(String name, Object value){
-        super(name,value);
-        this.type=TYPE;
-        if( value==null ){
+    public InstNamePG(String name, Object val){
+        super(name,val);
+        this.setType(TYPE);
+        if( val==null ){
             this.setValue(SharedData.getProperty(propName));
         }else{
             String temp=this.getStringValue();
@@ -103,10 +106,10 @@ public class InstNamePG extends StringPG {
         }
     }
     
-    public InstNamePG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        this.type=TYPE;
-        if( value==null ){
+    public InstNamePG(String name, Object val, boolean valid){
+        super(name,val,valid);
+        this.setType(TYPE);
+        if( val==null ){
             this.setValue(SharedData.getProperty(propName));
         }else{
             String temp=this.getStringValue();
@@ -114,7 +117,6 @@ public class InstNamePG extends StringPG {
                 this.setValue(SharedData.getProperty(propName));
             }
         }
-        this.setValid(valid);
     }
 
     /*

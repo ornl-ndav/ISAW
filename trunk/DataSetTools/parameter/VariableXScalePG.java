@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/11/19 04:13:23  bouzekc
+ * Is now a JavaBean.
+ *
  * Revision 1.4  2003/10/11 19:32:48  bouzekc
  * Really implemented validateSelf().
  *
@@ -87,7 +90,7 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
   public VariableXScalePG( String name, Object val ) {
     super( name, val );
     setParam( new FloatPG( "Enter divisions", 0.0f ) );
-    this.type = TYPE;
+    this.setType( TYPE );
   }
 
   /**
@@ -100,7 +103,7 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
   public VariableXScalePG( String name, Object val, boolean valid ) {
     super( name, val, valid );
     setParam( new FloatPG( "Enter divisions", 0.0f ) );
-    this.type = TYPE;
+    this.setType( TYPE );
   }
 
   //~ Methods ******************************************************************
@@ -153,15 +156,11 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
       }
       scale = new VariableXScale( elems );
     }
+    super.setValue( scale );
 
-    //don't do anything if we don't have a value
-    if( scale != null ) {
-      this.value = scale;
-
-      if( GUI != null ) {
-        //ArrayEntryJFrame can't handle XScales
-        GUI.setValue( XScalePGHelper.convertXScaleToVector( scale ) );
-      }
+    if( GUI != null ) {
+      //ArrayEntryJFrame can't handle XScales
+      GUI.setValue( XScalePGHelper.convertXScaleToVector( scale ) );
     }
   }
 
@@ -172,7 +171,7 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
    * @return The Vector of values for this VariableXScalePG.
    */
   public Object getValue(  ) {
-    return XScalePGHelper.convertXScaleToVector( ( XScale )this.value );
+    return XScalePGHelper.convertXScaleToVector( ( XScale )super.getValue(  ) );
   }
 
   /**
@@ -229,7 +228,7 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
    * @return The internal VariableXScale.
    */
   public XScale getXScaleValue(  ) {
-    return ( XScale )this.value;
+    return ( XScale )super.getValue(  );
   }
 
   /**

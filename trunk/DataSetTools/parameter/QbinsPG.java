@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/11/19 04:13:23  bouzekc
+ * Is now a JavaBean.
+ *
  * Revision 1.14  2003/10/11 20:29:32  bouzekc
  * Removed import of java.lang.  This is not needed and can
  * sometimes cause problems.
@@ -109,13 +112,13 @@ public class QbinsPG  extends VectorPG{
    public QbinsPG( String Prompt, Object val){ 
      super( Prompt, val );
      setParam( new Qbins1PG( "Set Q bins or Qx,Qy min/max", null ) );
-     this.type = "Qbins";
+     this.setType( "Qbins" );
    }
 
    public QbinsPG( String Prompt, Object val, boolean valid ) {
      super( Prompt, val, valid );
      setParam( new Qbins1PG( "Set Q bins or Qx,Qy min/max", null ) );
-     this.type = "Qbins";
+     this.setType( "Qbins" );
    }
 
    public void initGUI( Vector vals ) {

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/11/19 04:13:22  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.14  2003/10/11 19:24:33  bouzekc
  *  Removed declaration of "ParamUsesString" as the superclass declares it
  *  already.  Removed clone() definition as the superclass implements it
@@ -99,13 +102,13 @@ public class IntegerPG extends StringEntryPG {
     public IntegerPG(String name, Object value){
         super(name,value);
         FILTER=new IntegerFilter();
-        this.type=TYPE;
+        this.setType(TYPE);
     }
 
     public IntegerPG(String name, Object value, boolean valid){
         super(name,value,valid);
         FILTER=new IntegerFilter();
-        this.type=TYPE;
+        this.setType(TYPE);
     }
 
     public IntegerPG(String name, int value){
@@ -122,7 +125,7 @@ public class IntegerPG extends StringEntryPG {
     }
 
     public void setStringValue(String val) throws NumberFormatException{
-      if(initialized)
+      if(getInitialized())
         super.setEntryValue(val);
       else
         this.setValue(new Integer(val.trim()));
@@ -134,19 +137,22 @@ public class IntegerPG extends StringEntryPG {
      */
     public Object getValue(){
         Object val=super.getValue();
+        Integer bigIntVal = null;
         if(val instanceof String){
             try{
-              return new Integer((String)val);
+              bigIntVal = new Integer((String)val);
             }catch( NumberFormatException nfe ) {
               //probably just a minus sign.  We will return a 0.
-              return new Integer( 0 );
+              bigIntVal = new Integer( 0 );
             }
         }else if(val instanceof Integer){
-            return (Integer)val;
+            bigIntVal = (Integer)val;
         }else{
             throw new ClassCastException("Could not coerce "
-                               +value.getClass().getName()+" into an Integer");
+                               +val.getClass().getName()+" into an Integer");
         }
+
+        return bigIntVal;
     }
 
     /**
@@ -160,32 +166,29 @@ public class IntegerPG extends StringEntryPG {
      * Overrides the default behavior. If passed null this sets the
      * value to Integer.MIN_VALUE.
      */
-    public void setValue(Object value){
+    public void setValue(Object val){
       Integer intval=null;
 
-      if(value==null){
+      if(val==null){
         intval=new Integer(Integer.MIN_VALUE);
-      }else if(value instanceof Integer){
-        intval=(Integer)value;
-      }else if(value instanceof Float){
-        intval=new Integer(Math.round(((Float)value).floatValue()));
-      }else if(value instanceof Double){
-        intval=new Integer(Math.round((int)((Double)value).doubleValue()));
-      }else if(value instanceof String){
-        this.setStringValue((String)value);
+      }else if(val instanceof Integer){
+        intval=(Integer)val;
+      }else if(val instanceof Float){
+        intval=new Integer(Math.round(((Float)val).floatValue()));
+      }else if(val instanceof Double){
+        intval=new Integer(Math.round((int)((Double)val).doubleValue()));
+      }else if(val instanceof String){
+        this.setStringValue((String)val);
         return;
       }else{
         throw new ClassCastException("Could not coerce "
-                               +value.getClass().getName()+" into an Integer");
+                               +val.getClass().getName()+" into an Integer");
       }
 
-      if(this.initialized){
+      if(this.getInitialized()){
         super.setEntryValue(intval);
-      }else{
-        this.value=intval;
       }
-
-      validateSelf();
+      super.setValue(intval);
     }
 
     /**

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/11/19 04:13:22  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.13  2003/11/05 04:36:09  bouzekc
  *  Code cleanup in validateSelf().
  *
@@ -90,13 +93,13 @@ public class MaterialPG extends StringPG {
     public MaterialPG(String name, Object value){
         super(name,value);
         FILTER=new MaterialFilter();
-        this.type=TYPE;
+        this.setType(TYPE);
     }
     
     public MaterialPG(String name, Object value, boolean valid){
         super(name,value,valid);
         FILTER=new MaterialFilter();
-        this.type=TYPE;
+        this.setType(TYPE);
     }
 
     /*

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/11/19 04:13:22  bouzekc
+ * Is now a JavaBean.
+ *
  * Revision 1.2  2003/11/09 22:25:13  rmikk
  * -Changed the class to be a public class
  * -This class is now valid if its value is a Vector with no elements in it
@@ -84,7 +87,7 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
    */
   public Qbins1PG( String Prompt, Object val ) {
     super( Prompt, val );
-    this.type = "Qbins1";
+    this.setType( "Qbins1" );
   }
 
   /**
@@ -96,7 +99,7 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
    */
   public Qbins1PG( String Prompt, Object val, boolean valid ) {
     super( Prompt, val, valid );
-    this.type = "Qbins1";
+    this.setType( "Qbins1" );
   }
 
   //~ Methods ******************************************************************
@@ -108,14 +111,14 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
    */
   public void setValue( Object V ) {
     if( V instanceof Vector ) {
-      this.value = V;
+      super.setValue( V );
     } else {
       Vector temp = new Vector(  );
 
       if( V != null ) {
         temp.addElement( V );
       }
-      this.value = temp;
+      super.setValue( temp );
     }
   }
 
@@ -125,7 +128,7 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
    * @return DOCUMENT ME!
    */
   public Object getValue(  ) {
-    if( !this.initialized ) {
+    if( !this.getInitialized() ) {
       return new Vector(  );
     }
 
@@ -186,8 +189,8 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
    * @param V DOCUMENT ME!
    */
   public void initGUI( Vector V ) {
-    this.entrywidget = new EntryWidget(  );
-    this.entrywidget.setLayout( new GridLayout( 2, 3 ) );
+    this.setEntryWidget( new EntryWidget(  ) );
+    this.getEntryWidget().setLayout( new GridLayout( 2, 3 ) );
     start   = new StringEntry( ".0035", 7, new FloatFilter(  ) );
     end     = new StringEntry( "1.04", 7, new FloatFilter(  ) );
     steps   = new StringEntry( "117", 5, new IntegerFilter(  ) );
@@ -204,11 +207,11 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
     JPanel jp = new JPanel( new GridLayout( 1, 2 ) );
     jp.add( dQ );
     jp.add( dQQ );
-    this.entrywidget.add( new Comb( "Start Q", start ) );
-    this.entrywidget.add( new Comb( "N Steps", steps ) );
-    this.entrywidget.add( new Comb( "End Q", end ) );
-    this.entrywidget.add( new Comb( "Constant", jp ) );
-    this.entrywidget.validate(  );
+    this.getEntryWidget().add( new Comb( "Start Q", start ) );
+    this.getEntryWidget().add( new Comb( "N Steps", steps ) );
+    this.getEntryWidget().add( new Comb( "End Q", end ) );
+    this.getEntryWidget().add( new Comb( "Constant", jp ) );
+    this.getEntryWidget().validate(  );
     super.initGUI(  );
   }
 
