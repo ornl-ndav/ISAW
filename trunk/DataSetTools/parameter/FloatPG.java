@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/06/12 14:20:00  pfpeterson
+ *  Added two convenience constructors to create the parameter
+ *  with a float.
+ *
  *  Revision 1.1  2002/06/06 16:14:30  pfpeterson
  *  Added to CVS.
  *
@@ -61,6 +65,14 @@ public class FloatPG extends StringPG{
         this.type=TYPE;
     }
     
+    public FloatPG(String name, float value){
+        this(name, new Float(value));
+    }
+
+    public FloatPG(String name, float value, boolean valid){
+        this(name, new Float(value),valid);
+    }
+
     /**
      * Override the default method.
      */
