@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/08/07 20:58:36  rmikk
+ *  Eliminated setPreferred size and set segment layout to a
+ *  grid layout
+ *
  *  Revision 1.1  2001/08/06 22:16:59  rmikk
  *  New File: Handles all the IStringList parameter Values
  *
@@ -58,14 +62,14 @@ public class JIStringListParameterGUI extends JParameterGUI
        super(parameter);
        combobox = new JComboBox();
        combobox.setEditable(true);
-       JLabel label = new JLabel(parameter.getName());
-       label.setPreferredSize(new Dimension(150,25));
+       JLabel label = new JLabel("  "+parameter.getName());
+       //label.setPreferredSize(new Dimension(150,25));
 
        for(int i = 0; i< str_list.num_strings(); i++)                 
           combobox.addItem(str_list.getString( i ));     
         
        segment = new JPanel();
-       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
+       segment.setLayout(new GridLayout( 1, 2)); 
        
        segment.add(label);
        segment.add(combobox);
