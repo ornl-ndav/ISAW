@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2002/06/19 20:53:43  rmikk
+ *  Added a Default Constructor
+ *
  *  Revision 1.24  2002/06/18 19:29:41  rmikk
  *  Fixed a minor error in XMLwrite
  *
@@ -316,6 +319,19 @@ public class DataSet implements IAttributeList,
     this.xmlStandAlone = xmlStandAlone;
   }
 
+   /**
+  * Constructs an empty data set with no log info and an empty string for
+  * the title.  This routine creates a data set that will then be filled up
+  * by the XMLread method<P>
+  *
+  *  xmlStandAlone   will be set to false
+ 
+  *  @see #XMLread( java.io.InputStream)
+  */ 
+ public DataSet( )
+  { this("",(String)(null));
+    this.xmlStandAlone = false;
+  }
   /**
    *  Add the specified object to the list of observers to notify when this
    *  observable object changes.
