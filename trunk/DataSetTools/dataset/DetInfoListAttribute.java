@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/06/18 19:34:38  rmikk
+ *  *** empty log message ***
+ *
  *  Revision 1.5  2002/06/18 19:31:09  rmikk
  *  Eliminated some debug prints
  *
@@ -290,28 +293,28 @@ public class DetInfoListAttribute extends Attribute implements  IXmlIO
      {  
         String Tag = xml_utils.getTag( stream );
         if( Tag == null)
-          return xml_utils.setError("A"+xml_utils.getErrorMessage());
+          return xml_utils.setError(xml_utils.getErrorMessage());
         if( !xml_utils.skipAttributes( stream ))
-          return xml_utils.setError("B"+xml_utils.getErrorMessage());
+          return xml_utils.setError(xml_utils.getErrorMessage());
         if(!Tag.equals("name"))
            return xml_utils.setError(" No Name tag in DetInfoList");
         name = xml_utils.getValue( stream );
         if( name == null)
-          return xml_utils.setError("C"+xml_utils.getErrorMessage()); 
+          return xml_utils.setError(xml_utils.getErrorMessage()); 
          
         Tag = xml_utils.getEndTag( stream);
          if( Tag == null)
-          return xml_utils.setError("D"+xml_utils.getErrorMessage());
+          return xml_utils.setError(xml_utils.getErrorMessage());
         if( !xml_utils.skipAttributes( stream ))
-          return xml_utils.setError("E"+xml_utils.getErrorMessage());
+          return xml_utils.setError(xml_utils.getErrorMessage());
         if(!Tag.equals("/name"))
            return xml_utils.setError(" No /Name tag in DetInfoList");
 
         Tag = xml_utils.getTag( stream );
         if( Tag == null)
-          return xml_utils.setError("F"+xml_utils.getErrorMessage());
+          return xml_utils.setError(xml_utils.getErrorMessage());
         if( !xml_utils.skipAttributes( stream ))
-          return xml_utils.setError("G"+xml_utils.getErrorMessage());
+          return xml_utils.setError(xml_utils.getErrorMessage());
         if(!Tag.equals("value"))
            return xml_utils.setError(" No Name tag in DetInfoList");
          
