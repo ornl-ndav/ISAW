@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/07/31 14:18:18  dennis
+ * Fixed reading of detector angle 2... it's now properly
+ * interpreted as the angle above (or below) the "scattering plane"
+ * where the detector center is located, as in Art's peak file
+ * format.
+ *
  * Revision 1.3  2003/07/30 22:03:35  dennis
  * Now uses a SampleOrientation object to store phi, chi and omega,
  * and uses a UniformGrid object to store the detector information.
@@ -263,7 +269,7 @@ public class PeakData
             DetectorPosition_d position = new DetectorPosition_d();
             position.setSphericalCoords( det_d, 
                                          Math.PI * det_a / 180, 
-                                         Math.PI * (det_a2-90) / 180 );
+                                         Math.PI * (90-det_a2) / 180 );
             Vector3D_d center = new Vector3D_d( position );
 
             chi     = tfr.read_double();
