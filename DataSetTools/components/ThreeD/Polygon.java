@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/03/14 20:26:38  dennis
+ * Removed unused imports
+ *
  * Revision 1.4  2003/10/02 19:35:08  dennis
  * If polygon is "solid" just do fillPolygon.  (Previously, the
  * border of the polygon was also drawn.  Separately drawing the
@@ -45,7 +48,6 @@ package DataSetTools.components.ThreeD;
 import java.awt.*;
 import java.io.*;
 import DataSetTools.math.*;
-import DataSetTools.components.image.*;
 
 
 /**

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/14 20:26:39  dennis
+ * Removed unused imports
+ *
  * Revision 1.2  2002/11/27 23:12:53  pfpeterson
  * standardized header
  *
@@ -40,7 +43,6 @@ package DataSetTools.components.ThreeD;
 import java.awt.*;
 import java.io.*;
 import DataSetTools.math.*;
-import DataSetTools.components.image.*;
 
 /**
  *  This class represents a 3D polyline of one color.
