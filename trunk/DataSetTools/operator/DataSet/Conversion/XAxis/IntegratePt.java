@@ -34,6 +34,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/06/23 20:37:26  rmikk
+ * Reduced the number of times the data has to be copied to an arrray
+ * Improved Documentation
+ * Removed a DataSet parameter in the base method for this class
+ *
  * Revision 1.1  2004/06/18 22:18:27  rmikk
  * Initial Checkin- Integrate Information operator
  *
@@ -56,6 +61,8 @@ import java.lang.reflect.*;
 public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.AnalyzeOp  
                              implements IDataPointInfo {
   DataSet DS;
+  int[][][] JHist = null;
+  int id =-1;
   private static Wrappable op = new INTEG();
   public IntegratePt(){
     super("Integrate1");
@@ -69,9 +76,6 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
      *  @param DS  The DataSet of interest
      *  @param x   The time of the associated peak
      *  @param i   The INDEX of the datablock where the peak is centered.
-     *  @return  after getResult method-A Vector with two elements, ITOT(The 
-     *      integrated value of the peak), SIGI(The standard deviation of ITOT),
-     *       null, or an ErrorString
      */
   public IntegratePt( DataSet DS,  float time, int dataBlockIndex ){
     this();
@@ -105,7 +109,7 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
     DS = getDataSet();
     if( DS == null)
        return "";
-    Vector V = Integrate( DS , x , i, op );
+    Vector V = Integrate( x , i, op );
     if( V == null)
       return "";
     if( V.size()<1)
@@ -153,7 +157,7 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
        DS = getDataSet();
        if( DS == null)
          return new ErrorString("No DataSet Associated with this DataSet operator");
-       Vector V = Integrate( DS, time, GroupIndex, op);
+       Vector V = Integrate( time, GroupIndex, op);
        if( V == null)
           V = new Vector();
        return V;     
@@ -231,20 +235,23 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
  //--------------------- Base method for all interfaces -------------- 
   /**
       *   Applies the INTEG operator to the ith data block of the data set DS and time x
-      *  @param DS  The DataSet of interest
+     
       *  @param x   The time of the associated peak
       *  @param i   The INDEX of the datablock where the peak is centered.
       *  @param op  The wrappable that will actually integrate the peak
       *  @return  A Vector with two elements, ITOT, SIGI, null, or an ErrorString
       */
-  public Vector Integrate(DataSet DS, float time, int dataBlockIndex, Wrappable op){
+  public Vector Integrate( float time, int dataBlockIndex, Wrappable op){
   
     if( dataBlockIndex < 0)
       return null;
     if( Float.isNaN(time))
       return null;
     if (op == null)
-       op = new INTGT();
+      if( this.op != null)
+         op = this.op;
+      else
+         op = new INTEG();
     //INTGT op = new INTGT();
    
     Data D = DS.getData_entry( dataBlockIndex);
@@ -271,14 +278,16 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
     if( channel > nchannels)
        return null;
    
-    
-    int [][][]JHist = new int[numrows][numcols][nchannels];
-    //gr.setData_entries(DS);
-    for( int i=1; i<= numrows;i++)
-      for( int j = 1; j <= numcols; j++)
-        for( int k=0; k< nchannels -1; k++)
-          JHist[i-1][j-1][k] =(int) gr.getData_entry(j,i).getY_values()[k];
-   
+    if( (JHist == null) ||(gr.ID()!=id)){
+     
+      JHist = new int[numrows][numcols][nchannels];
+      id = gr.ID();
+      //gr.setData_entries(DS);
+      for( int i=1; i<= numrows;i++)
+        for( int j = 1; j <= numcols; j++)
+          for( int k=0; k< nchannels -1; k++)
+            JHist[i-1][j-1][k] =(int) gr.getData_entry(j,i).getY_values()[k];
+    }
     setintField(op,"ISX",1) ;
     setintField(op,"ISY",1) ;
     setintField(op,"ISZ",1) ;
