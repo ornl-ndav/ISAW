@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/18 21:38:21  dennis
+ *  Minor fix to documentation.
+ *
  *  Revision 1.1  2002/03/13 16:08:37  dennis
  *  Data class is now an abstract base class that implements IData
  *  interface. FunctionTable and HistogramTable are concrete derived
@@ -47,7 +50,7 @@ import DataSetTools.math.*;
 import DataSetTools.util.*;
 
 /**
- * The concrete root class for a tabulated function data object.  This class
+ * The abstract base class for a tabulated function data object.  This class
  * bundles together the basic data necessary to describe a tabulated function 
  * or frequency histogram of one variable.  An object of this class contains 
  * a list of "X" values and a list of "Y" values together with an extensible 
