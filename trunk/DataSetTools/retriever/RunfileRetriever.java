@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2001/10/08 18:30:21  dennis
+ *  Added operator FocusIncidentSpectrum() to Monitor DataSet for
+ *  Diffractometers.  This was accidentally removed.
+ *
  *  Revision 1.33  2001/08/16 01:18:23  dennis
  *  Now sets the ID for the detector element using Segment.DetID() method.
  *
@@ -468,26 +472,30 @@ public class RunfileRetriever extends    Retriever
 
      DataSetFactory ds_factory = new DataSetFactory( title );
 //     System.out.println("instrument_type = " + instrument_type );
-     if ( is_monitor )
-     {
-       data_set = ds_factory.getDataSet();
-       data_set.addOperator( new MonitorTofToEnergy() );
-     }
-     else if ( is_pulse_height )
+     if ( is_monitor || is_pulse_height )
        data_set = ds_factory.getDataSet();  // just generic operations
 
      else                                   // get data_set with ops for the
                                             // current instrument
        data_set = ds_factory.getTofDataSet( instrument_type );  
 
-                                            // Adjust the empty DataSet based
-                                            // on the current situation 
+                                            // Add some special operators
+                                            // for monitors 
      if ( is_monitor )
      {
-       data_set.addOperator( new EnergyFromMonitorDS() );
-       data_set.addOperator( new MonitorPeakArea() );
+       if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
+       {
+         data_set.addOperator( new EnergyFromMonitorDS() );
+         data_set.addOperator( new MonitorPeakArea() );
+       }
+       else if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
+         data_set.addOperator( new FocusIncidentSpectrum() );
+
+       data_set.addOperator( new MonitorTofToEnergy() );
      }
-     else if ( is_pulse_height )
+
+                                            // Fix the label and units for
+     if ( is_pulse_height )                 // Pulse height spectra
      {
        data_set.setX_label( "P.H. Channel" );
        data_set.setX_units( "Channel" );
