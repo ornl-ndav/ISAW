@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/10/15 02:52:57  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.8  2003/03/05 20:44:19  pfpeterson
  * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -422,11 +425,10 @@ public class NxWriter{
 
   /**
    * Test program for this NxWriter module
-   *
-   * @param  args[0]  The filename sans extension
-   *
-   * @result a new file with an extension .nxs will be created from
+   * A new file with an extension .nxs will be created from
    * filename.run
+   *
+   * @param  args  The filename sans extension
    */
   public static void main( String args[] ){
     DataSet DSS[], DSH[], DSM[];

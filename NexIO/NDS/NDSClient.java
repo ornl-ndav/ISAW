@@ -54,12 +54,16 @@ import java.io.IOException;
 
   /*====================== Constructors =================================*/
     /**
-      * constructs a new NDSClient object to connect to a NDS server
+      * Constructs a new NDSClient object to connect to a NDS server.
       * living at the computer host and listening at the TCP/IP
       * port port. iMagic is the magic integer used for verifying
       * access rights. Set iMagic to 0 if you use the login facility 
       * for getting the magic ID.
-    */
+      *
+      * @param host The host computer to connect to.
+      * @param port The TCP/IP port the host is listening to.
+      * @param iMagic The magic number.
+      */
     public NDSClient(String host, int port, int iMagic)
     {
          this(host,port,null,0,iMagic);
@@ -170,8 +174,10 @@ import java.io.IOException;
          dout = null;
      }
    /**
-    * getDirectory retrieves a directory listing of the directory
-    * specified by dir. dir is relative to the root directory of
+    * Retrieves a directory listing of the directory
+    * specified by dir. 
+    *
+    * @param dir Directory relative to the root directory of
     * the NDS server.
    */
      public synchronized  boolean getDirectory(String dir) throws IOException

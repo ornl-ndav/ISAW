@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/10/15 02:52:57  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.5  2002/11/27 23:29:19  pfpeterson
  * standardized header
  *
@@ -69,11 +72,13 @@ public class NxWriteInstrument{
    *
    * @param Instr The instrument node to which the detector is to be
    * added
-   * @param axis1_link<br> axis2_link The axis that are linked between
-   * NXdata and NXdetectors
-   *@param startIndex, endIndex The indecis of the Data Blocks to be
-   *<br> included in this NXdetector(startIndex-> endIndex-1
-   *@param DS The data set that has the information
+   * @param axis1_link The first axis link between NXdata and NXdetectors.
+   * @param axis2_link The second axis link between NXdata and NXdetectors.
+   * @param startIndex The starting index of the Data Blocks to be included in
+   * this NXdetector.
+   * @param endIndex The ending index of the Data Blocks to be included 
+   * in this NXdetector.
+   * @param DS The data set that has the information
    */
   public boolean addDetector( NxWriteNode Instr , String axis1_link , 
                               String axis2_link , int  startIndex , 
