@@ -6,6 +6,9 @@
  * corresponding operators.
  *
  *  $Log$
+ *  Revision 1.2  2000/07/21 19:33:33  dennis
+ *  changed String comparisons from == to .equals()
+ *
  *  Revision 1.1  2000/07/10 22:35:48  dennis
  *  July 10, 2000 version... many changes
  *
@@ -90,16 +93,16 @@ public final class DSOpsImplementation implements Serializable
  
       if ( data_2 != null )                  // there is a corresponding entry
       {                                      // to try to combine 
-        if ( op_name == "Add" ) 
+        if ( op_name.equals( "Add" )) 
           new_data = data_1.add( data_2 );  
 
-        else if ( op_name == "Sub" ) 
+        else if ( op_name.equals( "Sub" ) ) 
           new_data = data_1.subtract( data_2 );  
 
-        else if ( op_name == "Mult" ) 
+        else if ( op_name.equals( "Mult" )) 
           new_data = data_1.multiply( data_2 );  
 
-        else if ( op_name == "Div" ) 
+        else if ( op_name.equals( "Div" )) 
           new_data = data_1.divide( data_2 );  
 
         else
@@ -172,7 +175,7 @@ public final class DSOpsImplementation implements Serializable
    String op_name = op.getCommand();
 
    
-   if ( op_name == "Div" && value == 0 )
+   if ( op_name.equals( "Div" ) && value == 0 )
      return new ErrorString( "ERROR: Division by zero in scalar divide" );
 
 
@@ -194,16 +197,16 @@ public final class DSOpsImplementation implements Serializable
      data = ds.getData_entry( i );    
                                        // carry out the operation, assuming
                                        // zero error in the the numerical value.
-     if ( op_name == "Add" )
+     if ( op_name.equals("Add") )
         new_data = data.add( value );
 
-     else if ( op_name == "Sub" )
+     else if ( op_name.equals("Sub") )
         new_data = data.subtract( value );
 
-     else if ( op_name == "Mult" )
+     else if ( op_name.equals( "Mult" ) )
         new_data = data.multiply( value );
 
-     else if ( op_name == "Div" )
+     else if ( op_name.equals( "Div" ) )
         new_data = data.divide( value );
 
      else
