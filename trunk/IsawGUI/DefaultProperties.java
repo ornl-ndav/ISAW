@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2002/08/12 20:25:40  pfpeterson
+ *  Changed all calls to be FilenameUtil.fixSeparator rather than
+ *  StringUtil.fixSeparator.
+ *
  *  Revision 1.11  2002/06/12 19:08:59  pfpeterson
  *  Fixed a problem with the name of the jar file appearing in the
  *  properties. Also (small optimization) changed the default
@@ -104,11 +108,11 @@ public class DefaultProperties{
     public DefaultProperties(){
         String temp=System.getProperty("user.home");
         if(temp!=null){
-            UserHome=StringUtil.fixSeparator(temp);
+            UserHome=FilenameUtil.fixSeparator(temp);
         }
         temp=getIsawHome();
         if(temp!=null){
-            IsawHome=StringUtil.fixSeparator(temp);
+            IsawHome=FilenameUtil.fixSeparator(temp);
         }else{
             IsawHome=UserHome+separator+"ISAW";
         }
@@ -130,7 +134,7 @@ public class DefaultProperties{
      */
     public DefaultProperties( String USERHOME ){
         this();
-        UserHome=StringUtil.fixSeparator(USERHOME);
+        UserHome=FilenameUtil.fixSeparator(USERHOME);
         IsawHome=USERHOME+separator+"ISAW";
         System.out.println(UserHome+","+IsawHome);
         IsawProps=defaultString();
@@ -142,7 +146,7 @@ public class DefaultProperties{
      */
     public DefaultProperties( String USERHOME, String ISAWHOME){
         this(USERHOME);
-        IsawHome=StringUtil.fixSeparator(ISAWHOME);
+        IsawHome=FilenameUtil.fixSeparator(ISAWHOME);
         System.out.println(UserHome+","+IsawHome);
         IsawProps=defaultString();
     }
@@ -232,7 +236,7 @@ public class DefaultProperties{
      */
     private String resolveDir(String origDir){
         String dir=(new File(origDir)).getAbsolutePath();
-        dir=StringUtil.fixSeparator(dir);
+        dir=FilenameUtil.fixSeparator(dir);
         int index=dir.indexOf("/.");
         if(index>0){
             dir=dir.substring(0,index);
@@ -356,7 +360,7 @@ public class DefaultProperties{
     public static void oldmain( String[] args ){
         Properties isawProp = new Properties(System.getProperties());
         String path = System.getProperty("user.home")+"\\";
-        path = StringUtil.fixSeparator(path);
+        path = FilenameUtil.fixSeparator(path);
         //boolean windows = isWindowsPlatform();
         
         try{
@@ -374,10 +378,10 @@ public class DefaultProperties{
             
             String npath = System.getProperty("user.home")+"\\";
             String ipath = System.getProperty("user.dir")+"\\";
-            npath = StringUtil.fixSeparator(npath);
+            npath = FilenameUtil.fixSeparator(npath);
             npath = npath.replace('\\','/');
             
-            ipath = StringUtil.fixSeparator(ipath);
+            ipath = FilenameUtil.fixSeparator(ipath);
             ipath = ipath.replace('\\','/');
             
             File f= new File( npath + "IsawProps.dat" );
