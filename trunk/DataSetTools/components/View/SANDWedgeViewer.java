@@ -33,6 +33,17 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.35  2004/05/04 01:50:36  millermi
+ * - Default close operation now set to DISPOSE_ON_CLOSE.
+ * - Overloaded dispose() method so subcomponent windows are also closed.
+ * - main() now has a window listener to exit when the viewer is used
+ *   as a stand-alone tool.
+ * - Controls now placed in tabbed pane instead of having a separate
+ *   editor for the controls.
+ * - Added integration over an angle, now users can choose between
+ *   integration methods. This capability forces all selections to
+ *   be of one integration method.
+ *
  * Revision 1.34  2004/04/16 18:58:58  millermi
  * - Removed parenthesis from units passed to the ViewManager.
  *
@@ -329,7 +340,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   private transient JMenuBar menu_bar;
   private transient DataSet data_set;
   private String projectsDirectory = SharedData.getProperty("Data_Directory");
-  private transient SANDEditor editor;
+  private transient SANDControlPanel sandcontrolpane;
   private transient CoordTransform image_to_world_tran = new CoordTransform();
   private transient ViewManager oldview;
   private transient SANDWedgeViewer this_viewer;
@@ -338,6 +349,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   private String[] ringlabels;
   private String   datafile;
   private boolean os_region_added = false;
+  private boolean integrate_by_ring = true; // If false, integrate by radii,
+                                            // summing over an angle.
 
  /**
   * Construct a frame with no data to start with. This constructor will be
@@ -492,9 +505,18 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 		"at the top of the file, prefixed by a pound symbol(#). " +
 		"<I>If multiple selections are made, only the last " +
 		"selection can be written to file.</I><BR>" +
-		"<BR>Note:<BR>" +
-        	"Detailed commands for each overlay can be found under " +
-		"<B>Help|Overlays</B> after a data file has been loaded.</P>";
+		"<H2>TROUBLESHOOTING</H2>" +
+		"<P><I>Why doesn't the cursor readout work?</I> Go to the " +
+		"<B>Image</B> tab, make sure the Annotation and Selection " +
+		"controls are unchecked.<br><br>" +
+		"<I>How do I add annotations to the image?</I> " +
+		"Detailed commands for each overlay can be found under " +
+		"<B>Help|Overlays</B> after a data file has been loaded.<br>" +
+		"<br><I>Why can I no longer change between integration " +
+		"techniques?</I> All selections must be of the same " +
+		"integration technique. To switch techniques, remove all " +
+		"existing selections (Hold A and single click on the image)."+
+		"</P>";
     textpane.setText(text);
     JScrollPane scroll = new JScrollPane(textpane);
     scroll.setVerticalScrollBarPolicy(
@@ -509,8 +531,9 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   * This method loads a 200 x 200 data array from the file specified.
   *
   *  @param  filename Filename of the data file being loaded.
+  *  @return true if load was successful.
   */ 
-  public void loadData( String filename )
+  public boolean loadData( String filename )
   {
     datafile = filename;
     // this assumes the data is from a 200x200 array.
@@ -529,6 +552,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     String yunit  = "Inverse Angstroms";
     String zlabel = "";
     String zunit  = "Intensity";
+    TextFileReader reader = null;
     // try to open the file
     try
     {
@@ -536,7 +560,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       // Since we only care about the min and max of Qx, Qy, only the first
       // and last values in those columns are saved. The Value and Error columns
       // are each stored in a separate 2-D array.
-      TextFileReader reader = new TextFileReader( filename );
+      reader = new TextFileReader( filename );
       String header_line = removeLeadingSpaces(reader.read_line());
       String key = "";
       String info = null;
@@ -557,10 +581,11 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	  info = header_line.substring(colon_index + 1);
 	  // remove any leading spaces
 	  info = removeLeadingSpaces(info);
-	  // trim the header_line to just the first 6 characters
+	  // Get everything from header line except the "#" symbol and
+	  // leading spaces.
 	  header_line = header_line.substring(0,colon_index).toLowerCase();
 	  // Find and set the corresponding information
-	  // the number of rows and columns should be specified
+	  // the number of rows and columns should be specified.
 	  if( header_line.indexOf("row") >= 0 )
 	  {
 	    NUM_ROWS = (new Integer(info)).intValue();
@@ -570,38 +595,38 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	    NUM_COLS = (new Integer(info)).intValue();
 	  }
 	  // X LABEL
-	  else if( header_line.indexOf("x la") >= 0 ||
+	  else if( header_line.indexOf("x lab") >= 0 ||
 	      header_line.indexOf("xlab") >= 0 )
 	  {
 	    xlabel = info;
 	  }
 	  // X UNITS
-	  else if( header_line.indexOf("x un") >= 0 ||
-	      header_line.indexOf("xuni") >= 0 )
+	  else if( header_line.indexOf("x unit") >= 0 ||
+	      header_line.indexOf("xunit") >= 0 )
 	  {
 	    xunit = info;
 	  }
 	  // Y LABEL
-	  else if( header_line.indexOf("y la") >= 0 ||
+	  else if( header_line.indexOf("y lab") >= 0 ||
 	      header_line.indexOf("ylab") >= 0 )
 	  {
 	    ylabel = info;
 	  }
 	  // Y UNITS
-	  else if( header_line.indexOf("y un") >= 0 ||
-	      header_line.indexOf("yuni") >= 0 )
+	  else if( header_line.indexOf("y unit") >= 0 ||
+	      header_line.indexOf("yunit") >= 0 )
 	  {
 	    yunit = info;
 	  }
 	  // Z LABEL
-	  else if( header_line.indexOf("z la") >= 0 ||
+	  else if( header_line.indexOf("z lab") >= 0 ||
 	      header_line.indexOf("zlab") >= 0 )
 	  {
 	    zlabel = info;
 	  }
 	  // Z UNITS
-	  else if( header_line.indexOf("z un") >= 0 ||
-	      header_line.indexOf("zuni") >= 0 )
+	  else if( header_line.indexOf("z unit") >= 0 ||
+	      header_line.indexOf("zunit") >= 0 )
 	  {
 	    zunit = info;
 	  }
@@ -696,8 +721,22 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	                                       new JLabel("File Not Found") );
         validate();
         repaint();
+	return false;
       }
     }
+    
+    // close the text file reader
+    try
+    {
+      // Make sure to close file input stream.
+      if( reader != null )
+        reader.close();
+    }
+    catch( IOException e )
+    {
+      SharedData.addmsg("SANDWedgeViewer unable to close file in loadData()");
+    }
+    return true;
   }
   
  /*
@@ -766,6 +805,24 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     projectsDirectory = path;
   }
   
+ /**
+  * This method overrides the dispose() method of the JFrame. This method will
+  * dispose of all subcomponents' windows before calling dispose() method of
+  * the JFrame.
+  */
+  public void dispose()
+  {
+    // Close the windows of all subcomponents
+    if( oldview != null )
+      oldview.dispose();
+    if( helper != null )
+      helper.dispose();
+    if( ivc != null )
+      ivc.kill();
+    // Do the normal dispose process on this viewer.
+    super.dispose();
+  }
+  
  /*
   * The init function gathers the common functionality between the constructors
   * so that the code does not have to exist in 3 spots. This will build the
@@ -781,7 +838,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
                    "Wedge Axis Angle", "Interior Angle"};
     ringlabels = new String[]{"X Center", "Y Center",
                              "Inner Radius", "Outer Radius"};
-    editor = new SANDEditor();
     if( iva != null )
     {
       AxisInfo xinfo = iva.getAxisInfo( AxisInfo.X_AXIS );
@@ -799,7 +855,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     datafile = "";
     buildMenubar();
     
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     setBounds(0,0,700,525);
     data_set   = new DataSet("Intensity vs Q in Region", 
                              "Calculated Intensity vs Q in Region");
@@ -812,6 +868,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     if( data_set.getNum_entries() > 0 )
       data_set.setSelectFlag( data_set.getNum_entries() - 1, true );
     setData(iva);
+    sandcontrolpane = new SANDControlPanel();
   }
 
  /*
@@ -858,8 +915,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       // if SandProps.isv exists, load it into the ObjectState automatically.
       // This code will save user settings.
       String props = System.getProperty("user.home") + 
-        	      System.getProperty("file.separator") +
-        	      "SandProps.isv";
+        	     System.getProperty("file.separator") +
+        	     "SandProps.isv";
       ObjectState temp = getObjectState(IPreserveState.DEFAULT);
       temp.silentFileChooser(props,false);
       setObjectState(temp);
@@ -982,17 +1039,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   {
     // box that contains all of the controls.
     Box controls = new Box(BoxLayout.Y_AXIS);
-    // add button to open sand editor
-    JPanel sand_controls = new JPanel(); 
-    TitledBorder sand_border = 
-    		     new TitledBorder(LineBorder.createBlackLineBorder(),
-        			      "SAND Selection Controls");
-    sand_border.setTitleFont( FontUtil.BORDER_FONT );
-    sand_controls.setBorder( sand_border );
-    JButton createbutton = new JButton("Manual Selection");
-    createbutton.addActionListener( new WVListener() );
-    sand_controls.add(createbutton);
-    controls.add(sand_controls);
 
     // add imageviewcomponent controls
     Box ivc_controls = new Box(BoxLayout.Y_AXIS);
@@ -1005,16 +1051,24 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     for( int i = 0; i < ivc_ctrl.length; i++ )
     {
       // don't add cursor read out.
-      if( !ivc_ctrl[i].getTitle().equals(
-               ImageViewComponent.CURSOR_READOUT_NAME) )
+      if( ivc_ctrl[i].getTitle().equals(
+             ImageViewComponent.CURSOR_READOUT_NAME) || 
+	  ivc_ctrl[i].getTitle().equals(
+	           ImageViewComponent.INTENSITY_SLIDER_NAME) )
+        controls.add(ivc_ctrl[i]);
+      else
         ivc_controls.add(ivc_ctrl[i]);
     }
     // if resized, adjust container size for the pan view control.
-    ivc_controls.addComponentListener( new ResizedControlListener() );
+    //ivc_controls.addComponentListener( new ResizedControlListener() );
+    JTabbedPane sand_and_image_controls = new JTabbedPane();
+    sand_and_image_controls.add( "SAND", sandcontrolpane );
     if( ivc_ctrl.length != 0 )
     {
-      controls.add(ivc_controls);
+      sand_and_image_controls.add("Image", ivc_controls);
     }
+    controls.add(sand_and_image_controls);
+    ivc_controls.addComponentListener( new ResizedControlListener() );
     
     // add spacer between ivc controls
     JPanel spacer = new JPanel();
@@ -1029,8 +1083,23 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   */
   private void integrate( Region region, int ID )
   {
+    // Set the units of the dataset
+    if( integrate_by_ring )
+    {
+      data_set.setX_units("Inverse Angstroms" );
+      data_set.setX_label("Q" );
+    }
+    else
+    {
+      data_set.setX_units("Angle" );
+      data_set.setX_label("Degrees" );
+    }
+    
     float start_x = 0;
     float end_x   = 0;
+    // theta is used only if integrating by angle
+    float theta   = 0;
+    float pix_avg_radius = 0; // This value is the average radius of the region.
     floatPoint2D center = new floatPoint2D(); 
     floatPoint2D  start_point = null,
                   end_point   = null;
@@ -1062,7 +1131,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       */
       attributes = new float[5];
       center = new floatPoint2D( def_pts[0] );
-      end_x = def_pts[4].x - center.x;
       // build attributes list
       attribute_name = SelectionJPanel.WEDGE;
       float axisangle = def_pts[5].x + def_pts[5].y/2f;
@@ -1079,6 +1147,17 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       attributes[2] = (float)Format.round((double)radius, 5);
       attributes[3] = axisangle;
       attributes[4] = def_pts[5].y;
+      // Depending on the method of integration, start_x and end_x will change.
+      if( integrate_by_ring )
+        end_x = def_pts[4].x - center.x;
+      else
+      {
+        start_x = def_pts[5].x;
+	end_x = start_x + def_pts[5].y;
+	theta = def_pts[5].y;
+	// The average radius in pixel coords.
+	pix_avg_radius = Math.abs((def_pts[4].x - center.x)/2f);
+      }
       end_point = new floatPoint2D( def_pts[1].x, def_pts[1].y );
     }
     else if( region instanceof DoubleWedgeRegion )
@@ -1093,7 +1172,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       */
       attributes = new float[5];
       center = new floatPoint2D( def_pts[0] );
-      end_x = def_pts[4].x - center.x;
       // build attributes list
       attribute_name = SelectionJPanel.DOUBLE_WEDGE;
       float axisangle = def_pts[5].x + def_pts[5].y/2f;
@@ -1110,6 +1188,17 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       attributes[2] = (float)Format.round((double)radius, 5);
       attributes[3] = axisangle;
       attributes[4] = def_pts[5].y;
+      // Depending on the method of integration, start_x and end_x will change.
+      if( integrate_by_ring )
+        end_x = def_pts[4].x - center.x;
+      else
+      {
+        start_x = def_pts[5].x;
+	end_x = start_x + def_pts[5].y;
+	theta = def_pts[5].y;
+	// The average radius in pixel coords.
+	pix_avg_radius = Math.abs((def_pts[4].x - center.x)/2f);
+      }
       end_point = new floatPoint2D( def_pts[1].x, def_pts[1].y );
     }
     else if( region instanceof EllipseRegion )
@@ -1120,7 +1209,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       */
       attributes = new float[4];
       center = new floatPoint2D( def_pts[2] );
-      end_x = def_pts[1].x - center.x;
       // build attributes list
       attribute_name = SelectionJPanel.ELLIPSE;
       // tranform from image to world coords
@@ -1137,6 +1225,18 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       attributes[1] = (float)Format.round((double)wc_center.y, 5);
       attributes[2] = (float)Format.round((double)major_radius, 5);
       attributes[3] = (float)Format.round((double)minor_radius, 5);
+      // Depending on the method of integration, start_x and end_x will change.
+      if( integrate_by_ring )
+        end_x = def_pts[1].x - center.x;
+      else
+      {
+        // Cover entire circle
+        start_x = 0;
+	end_x = 360;
+	theta = 360;
+	// The average radius in pixel coords.
+	pix_avg_radius = Math.abs((def_pts[1].x - center.x)/2f);
+      }
       float image_radius = def_pts[1].x - center.x;
                                       // The following end_point calculation
                                       // may need to be changed ###############
@@ -1153,7 +1253,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       */
       attributes = new float[4];
       center = new floatPoint2D( def_pts[0] );
-      end_x = def_pts[4].x - center.x;
       // build attributes list
       attribute_name = SelectionJPanel.RING;
       // tranform from image to world coords
@@ -1170,6 +1269,19 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       attributes[1] = (float)Format.round((double)wc_center.y, 5);
       attributes[2] = (float)Format.round((double)inner_radius, 5);
       attributes[3] = (float)Format.round((double)outer_radius, 5);
+      // Depending on the method of integration, start_x and end_x will change.
+      if( integrate_by_ring )
+        end_x = def_pts[4].x - center.x;
+      else
+      {
+        // Cover entire circle
+        start_x = 0;
+	end_x = 360;
+	theta = 360;
+	// The average radius in pixel coords.
+	pix_avg_radius = Math.abs( ( (def_pts[4].x - center.x) + 
+	                             (def_pts[2].x - center.x) )/2f);
+      }
       float image_radius = def_pts[4].x - center.x;
                                       // The following end_point calculation
                                       // needs to be changed ###############
@@ -1182,8 +1294,17 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     }
 
     UniformXScale x_scale;      // "time channels" for the spectrum
-    // build list of Q bin centers, with one bin for each "pixel" in the radius
-    n_xvals = Math.round(end_x);
+    if( integrate_by_ring )
+    {
+      // build list of Q bin centers, with one bin for each pixel in the radius
+      n_xvals = Math.round(end_x);
+    }
+    else
+    {
+      // This uses eqn:
+      // max steps = (theta in radians) * (average pixel radius) * 2/3
+      n_xvals = Math.round( (float)(theta*Math.PI/180)*pix_avg_radius*2f/3f );
+    }
     x_scale = new UniformXScale( start_x, end_x, n_xvals );
 
     int hit_count[]  = new int[n_xvals];
@@ -1209,16 +1330,67 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     float[][] data_array = data.getRegionValues( 0,data.getNumRows()-1,
                                                  0,data.getNumColumns()-1 );
     float[][] err_array = data.getErrors();
-    for ( int i = 0; i < selected_pts.length; i++ )
+    
+    // Bins are radial distances, summing over a ring.
+    if( integrate_by_ring )
     {
-      x = Math.abs( selected_pts[i].x - image_origin.x );
-      y = Math.abs( selected_pts[i].y - image_origin.y );
-      dist = (float)Math.sqrt( x*x + y*y );
-      index = binarySearch( x_vals, dist );
-      y_vals[index] += data_array[ selected_pts[i].y ][ selected_pts[i].x ];
-      err = err_array[ selected_pts[i].y ][ selected_pts[i].x ];
-      err_vals[index] += err*err; 
-      hit_count[index]++;
+      for ( int i = 0; i < selected_pts.length; i++ )
+      {
+    	x = Math.abs( selected_pts[i].x - image_origin.x );
+    	y = Math.abs( selected_pts[i].y - image_origin.y );
+    	dist = (float)Math.sqrt( x*x + y*y );
+    	index = binarySearch( x_vals, dist );
+    	y_vals[index] += data_array[ selected_pts[i].y ][ selected_pts[i].x ];
+    	err = err_array[ selected_pts[i].y ][ selected_pts[i].x ];
+    	err_vals[index] += err*err; 
+    	hit_count[index]++;
+      }
+    }
+    // Bins are angular distance, summing over an angle.
+    else
+    {
+      // This variable is used to place the angle in the correct quadrant.
+      float angle_modifier = 0;
+      // System.out.println("X scale: " + x_scale );
+      for ( int i = 0; i < selected_pts.length; i++ )
+      {
+    	x = selected_pts[i].x - image_origin.x;
+    	y = selected_pts[i].y - image_origin.y;
+	if( x < 0 )
+	{
+	  // quadrant III
+	  if( y < 0 )
+	    angle_modifier = 180f;
+	  // quadrant II
+    	  else
+	    angle_modifier = -180f;
+	}
+	else
+	{
+	  // quadrant IV
+	  if( y < 0 )
+	    angle_modifier = -360f;
+	  // quadrant I
+    	  else
+	    angle_modifier = 0;
+	}
+	// dist is the angle, this will always be a positive angle
+	dist = (float)Math.atan( (double)Math.abs(y/x) );
+	// convert from radians to degrees
+	dist = dist * (float)(180d/Math.PI);
+	// Add the modifier
+	dist = Math.abs( dist + angle_modifier );
+	// Make sure value is between the min and max theta
+	if( dist < start_x )
+	  dist += 360;
+	if( dist > end_x )
+	  dist -= 360;
+    	index = binarySearch( x_vals, dist );
+    	y_vals[index] += data_array[ selected_pts[i].y ][ selected_pts[i].x ];
+    	err = err_array[ selected_pts[i].y ][ selected_pts[i].x ];
+    	err_vals[index] += err*err; 
+    	hit_count[index]++;
+      }
     }
     
     // find average value per hit.
@@ -1232,52 +1404,69 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       }
     }
 
-    // Convert the spectrum into a spectrum relative to "Q".  Also, discard the
-    // the first bin, at the central vertex of the wedge, since the counts
-    // there are usually 0.  ( 0 causes problems with the log-log display.)
-    //
-    // NOTE: The calculation in "pixel space" added the intensity to y_vals[k]
-    //       provided the point's distance from the center was closest to
-    //       x_vals[k], so the x_vals[] are actually bin centers.
-   
+    // Bins are radial distances, summing over a ring.
+    if( integrate_by_ring )
+    {
+      // Convert the spectrum into a spectrum relative to "Q".  Also, discard
+      // the first bin, at the central vertex of the wedge, since the counts
+      // there are usually 0.  ( 0 causes problems with the log-log display.)
+      //
+      // NOTE: The calculation in "pixel space" added the intensity to y_vals[k]
+      //       provided the point's distance from the center was closest to
+      //       x_vals[k], so the x_vals[] are actually bin centers.
+     
+      
+      start_point = new floatPoint2D( center.x, center.y );
+      start_point = image_to_world_tran.MapTo( start_point ); 
+      end_point   = image_to_world_tran.MapTo( end_point ); 
+
+      float new_start_x = start_point.magnitude(); 
+      float new_end_x	= end_point.magnitude(); 
+      // increment to avoid first bin.
+      if ( n_xvals > 1 )
+      {
+     	float step = (new_end_x - new_start_x) / (n_xvals-1);
+     	new_start_x += step;
+      }
+
+      //System.out.println("Using Q between " + new_start_x + 
+      //			  " and " + new_end_x );
+      // first bin gone, so n_xvals-1 values
+      UniformXScale new_x_scale = new UniformXScale( new_start_x, 
+     						     new_end_x, 
+     						     n_xvals-1 );
+      float new_y_vals[]   = new float[ y_vals.length - 1 ];
+      float new_err_vals[] = new float[ y_vals.length - 1 ];
+      for ( int i = 0; i < new_y_vals.length; i++ )
+      {
+     	new_y_vals[i]	= y_vals[i+1];
+     	new_err_vals[i] = err_vals[i+1];
+      }
     
-    start_point = new floatPoint2D( center.x, center.y );
-    start_point = image_to_world_tran.MapTo( start_point ); 
-    end_point   = image_to_world_tran.MapTo( end_point ); 
+      // put it into a "Data" object and then add it to the dataset
+      Data new_spectrum = new FunctionTable( new_x_scale, 
+     					     new_y_vals, 
+     					     new_err_vals,  
+     					     ID );
+      new_spectrum.setAttribute( new Float1DAttribute( attribute_name, 
+     				 attributes ) );
 
-    float new_start_x = start_point.magnitude(); 
-    float new_end_x   = end_point.magnitude(); 
-    // increment to avoid first bin.
-    if ( n_xvals > 1 )
-    {
-      float step = (new_end_x - new_start_x) / (n_xvals-1);
-      new_start_x += step;
+      data_set.addData_entry( new_spectrum ); 
+      data_set.setSelectFlag( data_set.getNum_entries() - 1, true );
     }
-
-    //System.out.println("Using Q between " + new_start_x + 
-    //                          " and " + new_end_x );
-    // first bin gone, so n_xvals-1 values
-    UniformXScale new_x_scale = new UniformXScale( new_start_x, 
-                                                   new_end_x, 
-                                                   n_xvals-1 );
-    float new_y_vals[]   = new float[ y_vals.length - 1 ];
-    float new_err_vals[] = new float[ y_vals.length - 1 ];
-    for ( int i = 0; i < new_y_vals.length; i++ )
+    else
     {
-      new_y_vals[i]   = y_vals[i+1];
-      new_err_vals[i] = err_vals[i+1];
-    }
-  
-    // put it into a "Data" object and then add it to the dataset
-    Data new_spectrum = new FunctionTable( new_x_scale, 
-                                           new_y_vals, 
-                                           new_err_vals,  
-                                           ID );
-    new_spectrum.setAttribute( new Float1DAttribute( attribute_name, 
-                               attributes ) );
+      // put it into a "Data" object and then add it to the dataset
+      Data new_spectrum = new FunctionTable( x_scale, 
+        				     y_vals, 
+        				     err_vals,  
+        				     ID );
+      new_spectrum.setAttribute( new Float1DAttribute( attribute_name, 
+        			 attributes ) );
 
-    data_set.addData_entry( new_spectrum ); 
-    data_set.setSelectFlag( data_set.getNum_entries() - 1, true );
+      data_set.addData_entry( new_spectrum ); 
+      data_set.setSelectFlag( data_set.getNum_entries() - 1, true );
+    }
   }
  
  /*
@@ -1330,6 +1519,11 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
           String filename = fc.getSelectedFile().toString();
 	  projectsDirectory = fc.getCurrentDirectory().toString();
           loadData(filename);
+	  // Remove all currently selected regions.
+	  if( data_set.getNum_entries() > 0 )
+	  {
+	    ivc.setSelectedRegions(null);
+	  }
         }
       } // end else if load data
       else if( ae.getActionCommand().equals("Save Results to File") )
@@ -1343,7 +1537,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
           String filename = fc.getSelectedFile().toString();
 	  filename = new DataFileFilter().appendExtension(filename);
 	  projectsDirectory = fc.getCurrentDirectory().toString();
-	  String[] descriptors;  // labels displayed in the SANDEditor.
+	  String[] descriptors;  // labels displayed in the SANDControlPanel.
           Data tempdata = data_set.getData_entry(data_set.getNum_entries() - 1);
           Float1DAttribute fat;
 	  // figure out which type of region was selected.
@@ -1446,13 +1640,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       {
         help();
       }
-      else if( ae.getActionCommand().equals("Manual Selection") )
-      {
-        editor.setCurrentPoint( ivc.getPointedAt() );
-	WindowShower shower = new WindowShower(editor);
-        java.awt.EventQueue.invokeLater(shower);
-	shower = null;
-      }
       else if( ae.getActionCommand().equals("Exit") )
       {
         if( oldview != null )
@@ -1462,7 +1649,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	}
 	this_viewer.dispose();
 	System.gc();
-	System.exit(0);
+	//System.exit(0);
       }
     }
   }
@@ -1502,6 +1689,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
           oldview.setDefaultCloseOperation( JFrame.HIDE_ON_CLOSE );
 	  oldview.addComponentListener( new VisibleListener() );
 	  oldview.addWindowListener( new ClosingListener() );
+	  oldview.setDataSet(data_set);
 	}
 	else
 	{
@@ -1518,7 +1706,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	  else
 	    oldview.toFront();
 	}
-	editor.selectionChanged();
+	sandcontrolpane.selectionChanged();
+	sandcontrolpane.setIntegrateRadioEnabled(false);
       }
       else if( message.equals(SelectionOverlay.REGION_REMOVED) )
       {
@@ -1530,12 +1719,15 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
         data_set.removeData_entry( num_entries );
 	// if no entries in dataset, do not make ViewManager viewable.
 	if( num_entries == 0 )
+	{
 	  oldview.setVisible(false);
+	  sandcontrolpane.setIntegrateRadioEnabled(true);
+	}
 	// the update revises the tempDataSet, and the notify causes
 	// the graphs to be updated.
 	oldview.update(data_set, IObserver.DATA_CHANGED);
 	data_set.notifyIObservers( IObserver.SELECTION_CHANGED );
-	editor.selectionChanged();
+	sandcontrolpane.selectionChanged();
       }
       else if( message.equals(SelectionOverlay.ALL_REGIONS_REMOVED) )
       {
@@ -1548,11 +1740,11 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	// the graphs to be updated.
 	oldview.update(data_set, IObserver.DATA_CHANGED);
 	data_set.notifyIObservers( IObserver.SELECTION_CHANGED );
-	editor.selectionChanged();
+	sandcontrolpane.selectionChanged();
+	sandcontrolpane.setIntegrateRadioEnabled(true);
       }
       else if( message.equals(IViewComponent.POINTED_AT_CHANGED) )
       {
-        editor.setCurrentPoint( ivc.getPointedAt() );
 	data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
 	//System.out.println("Pointed At Changed " + 
 	//                   ivc.getPointedAt().toString() );
@@ -1571,13 +1763,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
         menu_bar.getMenu(1).getItem(0).setEnabled(false); // show proj. window
         menu_bar.getMenu(1).getItem(1).setEnabled(false); // save results
       }
-      // ################## Consider revising ########################
-      // Potential bottleneck...
-      // This is a hack to get the ViewManager to update when selections
-      // are removed. Need to ignore all messages except when a region is
-      // added or removed, otherwise the viewer bogs down.
-      //if( oldview != null && message.toLowerCase().indexOf("region") >= 0 )
-      //  oldview.setView( oldview.getView() );      
     }
   }
   
@@ -1630,7 +1815,9 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   {
     public void componentResized( ComponentEvent e )
     {
-      Box control_box = (Box)e.getComponent();
+      JComponent control_box = (JComponent)e.getComponent();
+      JComponent tabbed_pane = (JComponent)control_box.getParent();
+      
       int height = 0;
       int width = control_box.getWidth();
       Component[] controls = control_box.getComponents();
@@ -1638,14 +1825,15 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       {
         height += ((JComponent)controls[ctrl]).getHeight();
       }
-      height += 20; // this is to adjust for spaces in between components.
-      if( control_box.getHeight() < height )
+      height += 45; // this is to adjust for spaces in between components.
+      // Adjust the size of the tabbed pane
+      if( tabbed_pane.getHeight() < height )
       {
-        control_box.setSize( new Dimension( width, height ) );     
+        tabbed_pane.setSize( new Dimension( width, height ) );
+        tabbed_pane.validate();
       }
-      control_box.validate();
     }  
-  } 
+  }
  
  /*
   * File filter for .dat files being loaded for data analysis.
@@ -1665,39 +1853,40 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   }
 
  /*
-  * This class is called by the Manual Selection button. It allows users to
-  * enter/edit selections via field entries instead of using the GUI.
+  * This class constructs the controls for the SANDWedgeViewer.
   */
-  private class SANDEditor extends JFrame
+  private class SANDControlPanel extends Box
   {
     private FieldEntryControl radiofec = new FieldEntryControl(5);
-    private CursorOutputControl coc;
     private JComboBox selectlist;
-    private Box pane;
-    private Box leftpane;
-    private Box rightpane;
-    private SANDEditor this_editor;
+    private JRadioButton ring_option;
+    private JRadioButton angle_option;
+    private SANDControlPanel this_editor;
     
-    protected SANDEditor()
+    protected SANDControlPanel()
     {
+      super( BoxLayout.Y_AXIS );
       this_editor = this;
-      this_editor.setTitle("SAND Wedge Editor");
-      this_editor.setBounds(0,0,430,300);
-      this_editor.getContentPane().setLayout( new GridLayout(1,1) );
-      this_editor.setDefaultCloseOperation( JFrame.HIDE_ON_CLOSE );
       
-      pane = new Box( BoxLayout.X_AXIS );
-      leftpane = new Box( BoxLayout.Y_AXIS );
-      // give left pane 5/8 of the window.
-      leftpane.setPreferredSize( new Dimension(
-                                     (int)(5*this_editor.getWidth()/8),0) );
-      rightpane = new Box( BoxLayout.Y_AXIS );
-      rightpane.setPreferredSize( new Dimension(
-                                      (int)(3*this_editor.getWidth()/8),0) );
-      String[] cursorlabels = {"X","Y"};
-      
-      radiofec.setLabelWidth(10);
-      radiofec.setFieldWidth(10);
+      JLabel label = new JLabel("Integrate by:");
+      ButtonGroup integrate_group = new ButtonGroup();
+      ring_option = new JRadioButton("Rings");
+      ring_option.addActionListener( new IntegrateOption() );
+      angle_option = new JRadioButton("Angle");
+      angle_option.addActionListener( new IntegrateOption() );
+      integrate_group.add(ring_option);
+      integrate_group.add(angle_option);
+      integrate_group.setSelected(ring_option.getModel(),true);
+      JPanel radios = new JPanel( new GridLayout(2,1) );
+      radios.add(ring_option);
+      radios.add(angle_option);
+      JPanel integrate_control = new JPanel( new GridLayout(1,2) );
+      integrate_control.add(label);
+      integrate_control.add(radios);
+      this_editor.add(integrate_control);
+            
+      radiofec.setLabelWidth(9);
+      radiofec.setFieldWidth(6);
       radiofec.addRadioChoice(SelectionJPanel.ELLIPSE,ellipselabels);
       radiofec.addRadioChoice(SelectionJPanel.WEDGE,wedgelabels);
       radiofec.addRadioChoice(SelectionJPanel.DOUBLE_WEDGE,
@@ -1706,39 +1895,12 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       radiofec.setButtonText("Enter Values");
       radiofec.addActionListener( new EditorListener() );
       
-      coc = new CursorOutputControl(cursorlabels);
-      coc.setTitle("Current Pointed At");
-      setCurrentPoint( new floatPoint2D(0,0) );
-      
-      leftpane.add(radiofec);
-      
       selectlist = new JComboBox();
       selectlist.addActionListener( new EditorListener() );
       
       buildComboBox();
-      rightpane.add( selectlist );
-      rightpane.add(coc);
-      JPanel spacer = new JPanel();
-      spacer.setPreferredSize( new Dimension( 0, 250 ) );
-      rightpane.add(spacer);
-      JButton closebutton = new JButton("Close");
-      closebutton.addActionListener(new EditorListener() );
-      rightpane.add( closebutton );
-      pane.add(leftpane);
-      pane.add(rightpane);
-      this_editor.getContentPane().add(pane);
-      
-    }
-   
-   /*
-    * This method will set the current world coord point, displayed by the
-    * x[] y[] cursor readout.
-    */ 
-    protected void setCurrentPoint( floatPoint2D current_pt )
-    {
-      coc.setValue( 0, current_pt.x );
-      coc.setValue( 1, current_pt.y );
-      this_editor.repaint();
+      this_editor.add( selectlist );
+      this_editor.add(radiofec);
     }
     
    /*
@@ -1748,8 +1910,22 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     {
       radiofec.clearAllValues();
       buildComboBox();
-      rightpane.validate();
+      this_editor.validate();
       this_editor.repaint();
+    }
+    
+    protected void setIntegrateRadioEnabled( boolean enable )
+    {
+      if( enable )
+      {
+        ring_option.setEnabled(true);
+	angle_option.setEnabled(true);
+      }
+      else
+      {
+        ring_option.setEnabled(false);
+	angle_option.setEnabled(false);
+      }
     }
    
    /*
@@ -1786,6 +1962,25 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       else
       {
 	selectlist.addItem("New Selection");
+      }
+    }
+  
+    private class IntegrateOption implements ActionListener
+    {
+      public void actionPerformed( ActionEvent ae )
+      {
+  	String message = ae.getActionCommand();
+  	if( message.equals("Rings") )
+  	{
+  	  integrate_by_ring = true;
+  	}
+  	else if( message.equals("Angle") )
+  	{
+  	  integrate_by_ring = false;
+  	}
+	// give focus back to ImageViewComponent
+	if( ivc != null )
+	  ivc.returnFocus();
       }
     }
   
@@ -2028,17 +2223,35 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	    this_viewer.repaint();
 	  }
 	}
+	// give focus back to ImageViewComponent
+	if( ivc != null )
+          ivc.returnFocus();
       }
     }
   
-  } // end of SANDEditor
+  } // end of SANDControlPanel
   
- /*
-  * Main program.
+ /**
+  * Main program - Running this viewer as a stand-alone application will
+  * use this method.
+  *
+  *  @param  args If an argument exists, it is assumed to be a filename.
+  *               The main() will automatically call loadData() if an
+  *               argument is passed in. Make sure the filename includes
+  *               the path, but not any spaces.
   */
   public static void main( String args[] )
   {
     SANDWedgeViewer wedgeviewer = new SANDWedgeViewer();
+    // Since dispose does not return focus to the terminal, use exit to
+    // terminate the viewer when used in a stand-alone application.
+    wedgeviewer.addWindowListener( new WindowAdapter()
+      {
+        public void windowClosing( WindowEvent we )
+	{
+	  System.exit(0);
+	}
+      } );
     if( args.length > 0 )
       wedgeviewer.loadData( args[0] );
     WindowShower shower = new WindowShower(wedgeviewer);
