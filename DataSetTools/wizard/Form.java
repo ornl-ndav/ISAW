@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2003/06/27 22:07:40  bouzekc
+ * Added missing javadocs.
+ *
  * Revision 1.23  2003/06/27 21:59:38  bouzekc
  * No longer implements Serializable.
  *
@@ -268,6 +271,10 @@ public abstract class Form extends Operator implements PropertyChanger {
     return super.setParameter( iparam, index );
   }
 
+  /**
+   *  Similar to the above method, but takes a IParameter.  This needed to be
+   *  overridden from Operator, and so had to have the same signature.
+   */
   public boolean setParameter( IParameter iparam, int index ) {
     if( iparam instanceof IParameterGUI ) {
       return this.setParameter( ( IParameterGUI )iparam, index );
