@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2001/07/27 15:59:33  dennis
+ *  Removed debug print and changed rebin menu item from "Rebin Data" to
+ *  "Graph Rebinned Data".
+ *
  *  Revision 1.16  2001/07/26 14:30:06  dennis
  *  Now preserves Auto-Scale value in the ViewerState.
  *
@@ -136,7 +140,7 @@ public class GraphView extends    DataSetViewer
                        implements Serializable
 { 
   private static final String HORIZONTAL_SCROLL = "Horizontal Scroll";
-  private static final String DO_REBIN          = "Rebin Data";
+  private static final String DO_REBIN          = "Graph Rebinned Data";
 
                                                     // Image and border
   SplitPaneWithState   main_split_pane = null;
@@ -210,7 +214,6 @@ public void redraw( String reason )
 
   else
   {
-    System.out.println("Graph redraw for reason " + reason );
     DrawGraphs();
     UpdateHGraphRange();
   }
@@ -387,7 +390,6 @@ private Component MakeControlArea()
                                                      // Add the y-range slider
   hgraph_scale_slider.setPreferredSize( new Dimension(120,50) );
   int value = (int)(10 * getState().get_float( ViewerState.AUTO_SCALE ));
-  System.out.println("Graph: auto-scale value = " + value );
   hgraph_scale_slider.setValue( value );
 
   TitledBorder border = new TitledBorder(LineBorder.createBlackLineBorder(), 
