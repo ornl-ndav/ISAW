@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/17 15:05:19  rmikk
+ * Updated Show for arbitrary dim arrays and for large
+ *    arrays(truncated after 100 entries)
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -73,29 +77,46 @@ public class NxNodeUtils
      {Date Result;
       SimpleDateFormat fmt = new SimpleDateFormat();
       fmt.setLenient( true );
+
       String Date_formats[] = {"yyyy-MM-dd" , "yyyy.MM.dd" , 
-                               "yyyy-MMM-dd" , "yyyy.MMM.dd" , 
+                               //"yyyy-MMM-dd" , "yyyy.MMM.dd" , 
                                "yyyy-M-d" , "yyyy.M.d" , "yy.MM.dd" , "yy.N.d" , 
                                "MM/dd/yyyy" ,  "MM/dd/yy" ,  "M/d/yyyy" ,  "M/d/yy" , 
-                               "MMM/dd/yyyy" , "MMM/d/yyyy" , "MMM/dd/yy" , "MMM/d/yy"};
+                               "MMM/dd/yyyy" , "MMM/d/yyyy" , "MMM/dd/yy" , "MMM/d/yy",
+                               "dd-MMM-yyyy","dd/MMM/yyyy", "dd-MMM-yy","d/MMM/yy",
+                                "MMM dd,yyyy", };
                               
                               
-      String Time_formats[] =  {"hh:mm:ss" , "hh:mm" , "hh:mm a" , "hh:mma" , 
-                               "h:mm:ss" , "h:mm" , "h:mm a" , "h:mma" ,  
-                                "h:m:ss" , "h:m" , "h:m a" , "h:ma" , ""};
+      String Time_formats[] =  { "HH:mm" ,"HH:mm:ss" , "hh:mm a" , "hh:mma" , 
+                               "H:mm" ,"H:mm:ss" ,  "h:mm a" , "h:mma" ,  
+                                "H:m" ,"H:m:ss" ,  "h:m a" , "h:ma", "" };
 
       for( int i = 0; i<Date_formats.length; i++ )    
           {         
            for( int k = 0; k<Time_formats.length; k++ )
-             {String pattern = Date_formats[ i]+" "+Time_formats[  k ];              
+             {String pattern = Date_formats[ i]+" "+Time_formats[  k ];
+             pattern= pattern.trim();              
               fmt.applyPattern(  pattern  );
               try{
                  Result = fmt.parse( DateString );
                  if( Result != null )
-                  return Result;
+                  {System.out.println("format="+pattern);
+                   return Result;
+                  }
                  }
                catch( ParseException s )
                  {}
+           /*    fmt.applyPattern( Date_formats[ i]    );
+              try{
+                 Result = fmt.parse( DateString );
+                 if( Result != null )
+                  {System.out.println("format="+pattern);
+                   return Result;
+                  }
+                 }
+               catch( ParseException s )
+                 {}
+            */
               }        
         }//for i
        return null;
@@ -155,7 +176,15 @@ public class NxNodeUtils
 	else if( type == NexusFile.NX_INT8 ) 
             return X;
         else if( type == NexusFile.NX_CHAR )
-            return new String( (byte[] )X );
+            {byte u[]; u =(byte[])X;
+	     if( u== null) return null;
+             if( u.length < 1)return "";
+            
+             int offset =u.length;
+             if( u[ u.length -1] != (byte)0)
+               return new String( (byte[])X);
+             return new String( u, 0, u.length-1);
+            }
 
 	else if( type == NexusFile.NX_UINT16 )
            { int u[] = new int[ length];
@@ -214,109 +243,89 @@ public class NxNodeUtils
 /** Utility to view array objects
 */
 public String ShowwArr( Object X )
-  {String Res = "["; 
-  System.out.println("in ShowArr"+X.getClass( ) );
+  {String Res="["; 
+  System.out.println("in ShowArr"+X.getClass());
 
-   if( X instanceof int[] ) 
-    {int u[] = ( int[] )X;
-     System.out.print( "int"+u.length+":" );
-     for( int i = 0; i < u.length; i++ )
-     if( u.length<100 )
-      {Res = Res+u[ i];
-       if( i<u.length-1 )Res = Res+",";
+   if( X instanceof int[]) 
+    {int u[] = (int[])X;
+     Res =("int"+u.length+":")+Res;
+     for( int i = 0; i < java.lang.Math.min(100, u.length); i++)    
+      {Res =Res+u[i];
+       if( i<u.length-1)Res = Res+",";
       }     
-     else
-        {System.out.print( u[ i] );
-         if( i<u.length-1 )System.out.print( "," );
-       }
-     System.out.println( "int length = "+u.length );
+     if( u.length >100)
+         Res += (",......");
+     
+     System.out.println("int length="+u.length);
      }
-   else if( X instanceof short[] )
-    {short u[] = ( short[] )X;
-     System.out.print( "short"+u.length+":" );
-     for( int i = 0; i < u.length; i++ )
-     if( u.length<100 )     
-      {Res = Res+u[ i];
-       if( i<u.length-1 )Res = Res+",";
+   else if( X instanceof short[])
+    {short u[] = (short[])X;
+     Res =("short"+u.length+":")+Res;
+     for( int i = 0; i <java.lang.Math.min(100, u.length); i++)    
+      {Res =Res+u[i];
+       if( i<u.length-1)Res = Res+",";
       } 
-     else
-        {System.out.print( u[ i] );
-         if( i<u.length-1 )System.out.print( "," );
-       }  
-     System.out.println( "short length="+u.length );
+         if( u.length >100)
+           Res += (",......");
+     System.out.println("short length="+u.length);
      }
-   else if( X instanceof short[] )
-    {short u[] = ( short[] )X;
-     System.out.print( "short"+u.length+":" );
-     for( int i = 0; i < u.length; i++ )
-     if( u.length<100 )     
-      {Res = Res+u[ i];
-       if( i<u.length-1 )Res = Res+",";
+   else if( X instanceof Object[])
+    {Object u[] = (Object[])X;
+     Res =("Object"+u.length+":")+Res;
+     for( int i = 0; i < java.lang.Math.min(100, u.length); i++)        
+      {Res =Res+Showw(u[i]);
+       if( i<u.length-1)Res = Res+",";
       } 
-     else
-        {System.out.print( u[ i] );
-         if( i<u.length-1 )System.out.print( "," );
-       }  
-      System.out.println( "short length= "+u.length );  
+         if( u.length >100)
+          Res += (",......");
+      System.out.println("short length="+u.length);  
      } 
-    else if( X instanceof byte[] )
-    {byte u[ ] = ( byte[ ] )X;
-     System.out.print( "byte"+u.length+":" );
-     for( int i = 0; i < u.length; i++ )
-     if( u.length<100 )
-      {Res = Res+( char )u[ i];
-       if( i<u.length-1 )Res = Res+",";
+    else if( X instanceof byte[])
+    {byte u[] = (byte[])X;
+     Res=("byte"+u.length+":")+Res;
+     for( int i = 0; i < java.lang.Math.min(100, u.length); i++)     
+      {Res =Res+(char)u[i];
+       if( i<u.length-1)Res = Res+",";
       }
-     else
-        {System.out.print( u[ i] );
-         if( i<u.length-1 )System.out.print( "," );
-       } 
-      System.out.println( "byte length="+u.length );    
+        if( u.length >100)
+          Res += (",......");
+      System.out.println("byte length="+u.length);    
      } 
-   else if( X instanceof long[] ) 
-    {long u[] = ( long[] )X;
-     System.out.print( "long"+u.length+":" );
-     for( int i = 0; i < u.length; i++ )
-     if( u.length<100 )
-      {Res = Res+u[ i];
-       if( i<u.length-1 )Res = Res+",";
+   else if( X instanceof long[]) 
+    {long u[] = (long[])X;
+     Res =("long"+u.length+":")+Res;
+     for( int i = 0; i < java.lang.Math.min(100, u.length); i++)    
+      {Res =Res+u[i];
+       if( i<u.length-1)Res = Res+",";
       } 
-     else
-        {System.out.print( u[ i] );
-         if( i<u.length-1 )System.out.print( "," );
-       }
-     System.out.println( "long length ="+u.length );        
+         if( u.length >100)
+            Res+=(",......");
+     System.out.println("long length="+u.length);        
      }
-   else if( X instanceof float[ ] )
-    {float u[] = ( float[] )X;
-     System.out.print( "float"+u.length+":" );
-     for( int i = 0; i < u.length; i++ )
-     if( u.length<100 )
-      {Res = Res+u[ i];
-       if( i<u.length-1 )Res = Res+",";
+   else if( X instanceof float[])
+    {float u[] = (float[])X;
+     Res= "float"+u.length+":"+Res;
+     for( int i = 0; i < java.lang.Math.min(100, u.length); i++)    
+      {Res =Res+u[i];
+       if( i<u.length-1)Res = Res+",";
       }
-     else
-        {System.out.print( u[ i] );
-         if( i<u.length-1 )System.out.print( "," );         
-       } 
-     System.out.println( "float length="+u.length );    
+       if( u.length >100)
+          Res += (",......"); 
+     System.out.println("float length="+u.length);    
      } 
-   else if( X instanceof double[] ) 
-    {double u[] = ( double[] )X;
-       System.out.print( "double"+u.length+":" );
-     for( int i = 0; i < u.length; i++ )
-     if( u.length<100 )
-      {Res = Res+u[ i];
-       if( i<u.length-1 )Res = Res+",";
+   else if( X instanceof double[]) 
+    {double u[] = (double[])X;
+       Res=("double"+u.length+":")+Res;
+     for( int i = 0; i < java.lang.Math.min(100, u.length); i++)    
+      {Res =Res+u[i];
+       if( i<u.length-1)Res = Res+",";
       } 
-     else
-        {System.out.print( u[ i] );
-         if( i<u.length-1 )System.out.print( "," );
-       }
-     System.out.println( "double length="+u.length ); 
+        if( u.length >100)
+          Res += (",......");
+     System.out.println("double length="+u.length); 
     }   
    else 
-    {System.out.println( "SHnot supported"+X.getClass( ) );
+    {System.out.println("SHnot supported"+X.getClass());
      return null;
     }
    return Res+"]";
@@ -338,9 +347,47 @@ public String Showw( Object X  )
    else return ShowwArr( X );
   
    }
+/** test array for parse dates
+*/
+ public static void main( String args[])
+  {Object X;
+   NxNodeUtils NU= new NxNodeUtils();
+   Calendar C = new GregorianCalendar();
+   while(true)
+    { System.out.println("Enter String form for a data");
+      char c=0;
+      String S ="";
+      try{
+          while( c<32)
+            c=(char) System.in.read();
+           while( c>=32)
+             {S = S+c;
+              c=(char)System.in.read();
+             }
+         }
+       catch(Exception s){}
+       Date D = NU.parse( S);
+       if( D == null)
+         System.out.println("Result is null");
+       else
+         {System.out.println("Result is"+ new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(D));
+          System.out.println("Date.toString="+D);
+          System.out.println("year="+D.getYear());
+          C.setTime(D);
+          int year = C.get(Calendar.YEAR);
+          if( year <500) 
+              {C.set(Calendar.YEAR, year+1900);
+               }
+             
+          System.out.println( "cal Year="+C.get(Calendar.YEAR)+","+C.get(Calendar.MONTH));
+          }
+
+
+    }
+   }
 /** Test program for NxNodeUtils.java
 */
-public static void main( String args[] )
+public static void main1( String args[] )
  {Object X;
  NxNodeUtils NU= new NxNodeUtils();
   System.out.println( "Byte="+java.lang.Byte.MAX_VALUE );
@@ -402,3 +449,4 @@ public static void main( String args[] )
  }
 
 }
+
