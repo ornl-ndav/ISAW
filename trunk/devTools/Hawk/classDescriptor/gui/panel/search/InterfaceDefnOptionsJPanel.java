@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:43:32  bouzekc
+ * Documented file using javadoc statements.
+ * Removed the main method.
+ * Removed the field named label.
+ *
  * Revision 1.1  2004/02/07 05:15:50  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -45,31 +50,47 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * Makes a panel which allows the user to enter search parameters that an interface's general information 
+ * has to meet.
+ * @author Dominic Kramer
  */
 public class InterfaceDefnOptionsJPanel extends JPanel
 {
+	/**
+	 * Integer specifying that the Interface object has to represents a class.
+	 */
 	public static final int CLASS = 1;
+	/**
+	 * Integer specitying that the Interface object has to represent an interface.
+	 */
 	public static final int INTERFACE = 2;
+	/**
+	 * Integer specitying that the Interface object has to represent either a class or interface.
+	 */
 	public static final int ANY = 0;
 	
+	/** Combo box specifying that the Interface is either a class, interface, or either. */
 	protected JComboBox typeBox;
+	/** The panel containing fields to specify the Interface's name. */
 	protected BasicOptionsJPanel namePanel;
+	/** The panel containing fields to specify the class or interface the Interface extends. */
 	protected BasicOptionsJPanel extendsPanel;
+	/** The panel containing fields to specify the Interface's package's name. */
 	protected BasicOptionsJPanel packageNamePanel;
+	/** The panel containing fields to specify what the Interface implements. */
 	protected VectorOptionsJPanel implementsPanel;
+	/** The panel containing fields to specify the Interface's characteristics (public, static, final, etc.). */
 	protected VectorOptionsJPanel characteristicsPanel;
+	/** The panel containing all of the other panel's. */
 	protected JPanel panelsPanel;
-	protected JLabel label;
 	
+	/**
+	 * Create a InterfaceDefnOptionsJPanel.
+	 */	
 	public InterfaceDefnOptionsJPanel()
 	{
 		String[] stringArr = new String[3];
@@ -101,44 +122,52 @@ public class InterfaceDefnOptionsJPanel extends JPanel
 		add(panelsPanel, BorderLayout.CENTER);
 	}
 	
+	/**
+	 * Get the type that the Interface has to be.
+	 * @return Either CLASS, INTERFACE, or ANY.
+	 */	
 	public int getType()
 	{
 		return typeBox.getSelectedIndex();
 	}
+	
+	/**
+	 * Get the panel describing what the Interface's name must be.
+	 */
 	public BasicOptionsJPanel getNamePanel()
 	{
 		return namePanel;
 	}
 	
+	/**
+	 * Get the panel describing what the Interface must extend.
+	 */
 	public BasicOptionsJPanel getExtendsPanel()
 	{
 		return extendsPanel;
 	}
 	
+	/**
+	 * Get the panel describing what the Interface's package's name must be.
+	 */
 	public BasicOptionsJPanel getPackageNamePanel()
 	{
 		return packageNamePanel;
 	}
-
+	
+	/**
+	 * Get the panel describing what the Interface implements.
+	 */
 	public VectorOptionsJPanel getImplementsPanel()
 	{
 		return implementsPanel;
 	}
 	
+	/**
+	 * Get the panel describing what the Interface's characteristics must be (public, static, final, etc.).
+	 */	
 	public VectorOptionsJPanel getCharPanel()
 	{
 		return characteristicsPanel;
-	}
-
-	public static void main(String args[])
-	{
-		JFrame frame = new JFrame();
-		JPanel mainPanel = new JPanel();
-		mainPanel.setLayout(new BorderLayout());
-		InterfaceDefnOptionsJPanel panel = new InterfaceDefnOptionsJPanel();
-		mainPanel.add(panel, BorderLayout.CENTER);
-		frame.getContentPane().add(mainPanel);
-		frame.setVisible(true);
-		frame.pack();
 	}
 }
