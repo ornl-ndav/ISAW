@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2003/08/28 04:56:12  bouzekc
+ *  The internal PropertyChangeSupport now fires an event when propertyChange()
+ *  is invoked.
+ *
  *  Revision 1.20  2003/08/28 03:00:15  bouzekc
  *  Made setDrawValid(), getDrawValid(), getEnabled(), getEntryWidget(),
  *  getGUIPanel(), setIgnorePropertyChange(), getIgnorePropertyChange(),
@@ -393,6 +397,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     }
 
     this.setValid( false );
+    topPCS.firePropertyChange( ev );
   }
 
   /**
@@ -424,27 +429,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       this.getValue(  ) + " " + this.getValid(  );
 
     return rs;
-  }
-
-  /**
-   * Adds a PropertyChangeListener to the internal Vectors.
-   *
-   * @param pcl The PropertyChangeListener to remove.
-   */
-  private void addPCLToVector( PropertyChangeListener pcl ) {
-    propListeners.addElement( pcl );
-    nameList.addElement( null );
-  }
-
-  /**
-   * Adds a PropertyChangeListener to the internal Vectors.
-   *
-   * @param prop The property to listen for.
-   * @param pcl The PropertyChangeListener to remove.
-   */
-  private void addPCLToVector( String prop, PropertyChangeListener pcl ) {
-    propListeners.addElement( pcl );
-    nameList.addElement( prop );
   }
 
   /**
@@ -510,21 +494,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
-   * Removes a PropertyChangeListener from the internal Vectors.
-   *
-   * @param pcl The PropertyChangeListener to remove.
-   */
-  private void removePCLFromVector( PropertyChangeListener pcl ) {
-    int nameIndex = propListeners.indexOf( pcl );
-
-    propListeners.remove( pcl );
-
-    if( nameIndex >= 0 ) {
-      nameList.removeElementAt( nameIndex );
-    }
-  }
-
-  /**
    * Shows the GUI.  If this inner GUI panel does not exist, this creates a
    * test JFrame.  Otherwise it does nothing.
    */
@@ -557,6 +526,27 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
+   * Adds a PropertyChangeListener to the internal Vectors.
+   *
+   * @param pcl The PropertyChangeListener to remove.
+   */
+  private void addPCLToVector( PropertyChangeListener pcl ) {
+    propListeners.addElement( pcl );
+    nameList.addElement( null );
+  }
+
+  /**
+   * Adds a PropertyChangeListener to the internal Vectors.
+   *
+   * @param prop The property to listen for.
+   * @param pcl The PropertyChangeListener to remove.
+   */
+  private void addPCLToVector( String prop, PropertyChangeListener pcl ) {
+    propListeners.addElement( pcl );
+    nameList.addElement( prop );
+  }
+
+  /**
    * When this is called, all of the internal PropertyChangeListeners will be
    * added to the entrywidget.
    */
@@ -579,6 +569,21 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       } else {
         entrywidget.addPropertyChangeListener( pcl );
       }
+    }
+  }
+
+  /**
+   * Removes a PropertyChangeListener from the internal Vectors.
+   *
+   * @param pcl The PropertyChangeListener to remove.
+   */
+  private void removePCLFromVector( PropertyChangeListener pcl ) {
+    int nameIndex = propListeners.indexOf( pcl );
+
+    propListeners.remove( pcl );
+
+    if( nameIndex >= 0 ) {
+      nameList.removeElementAt( nameIndex );
     }
   }
 
