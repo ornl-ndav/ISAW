@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/04/30 19:50:49  pfpeterson
+ * Added ability to work with orientation matrix, in addition to cell
+ * scalars from 'blind.log'.
+ *
  * Revision 1.2  2003/03/27 23:11:22  pfpeterson
  * Added clause to deal with NumberFormatException when reading the log file.
  *
@@ -57,10 +61,13 @@
 
 package Operators.TOF_SCD;
 
+import DataSetTools.math.LinearAlgebra;
+import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.parameter.*;
 import DataSetTools.util.ErrorString;
 import DataSetTools.util.FilenameUtil;
+import DataSetTools.util.Format;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.TextFileReader;
 import java.io.IOException;
@@ -76,23 +83,23 @@ public class ScalarJ extends GenericTOF_SCD{
   private int i= 0;
   private int [] k= new int[60];
   private int [] l= new int[60];
-  private double r31= 0.0;
-  private double r12= 0.0;
   private double r11= 0.0;
   private double r22= 0.0;
   private double r33= 0.0;
   private double r23= 0.0;
-  private double sig31= 0.0;
-  private double sig23= 0.0;
-  private double sig33= 0.0;
-  private double sig22= 0.0;
+  private double r31= 0.0;
+  private double r12= 0.0;
   private double sig11= 0.0;
+  private double sig22= 0.0;
+  private double sig33= 0.0;
+  private double sig23= 0.0;
+  private double sig31= 0.0;
   private double sig12= 0.0;
-  private double sig31sq= 0.0;
-  private double sig23sq= 0.0;
-  private double sig33sq= 0.0;
-  private double sig22sq= 0.0;
   private double sig11sq= 0.0;
+  private double sig22sq= 0.0;
+  private double sig33sq= 0.0;
+  private double sig23sq= 0.0;
+  private double sig31sq= 0.0;
   private double sig12sq= 0.0;
   private int nequal= 0;
   private int nchoice= 0;
@@ -199,9 +206,11 @@ public class ScalarJ extends GenericTOF_SCD{
 
     if(choices==null || choices.size()==0) init_choices();
 
-    addParameter(new DataDirPG("Working Director",null));
+    LoadFilePG lfpg=new LoadFilePG("Matrix File",null);
+    lfpg.setFilter(new MatrixFilter());
+    addParameter(lfpg);
     addParameter(new FloatPG("Delta",0.01f));
-    ChoiceListPG clpg=new ChoiceListPG("SearchMethod",choices.elementAt(0));
+    ChoiceListPG clpg=new ChoiceListPG("Search Method",choices.elementAt(0));
     clpg.addItems(choices);
     addParameter(clpg);
   }
@@ -215,7 +224,7 @@ public class ScalarJ extends GenericTOF_SCD{
     // overview
     sb.append("@overview This is a java version of \"SCALAR\" maintained by A.J.Schultz and originally written by R.Goyette. JScalar will read in information from blind.log and write out its results to the console that spawned the process.");
     // parameters
-    sb.append("@param String directory to find the file \"blind.log\"");
+    sb.append("@param String file to get scalars from. If it is \"blind.log\" then the scalars are read directly. This will also calculate the scalars from an orientation matrix found in either a \"matrix\" or \"experiment\" file.");
     sb.append("@param float delta parameter");
     sb.append("@param int restrictions on the resulting symmetry");
     // return
@@ -260,9 +269,11 @@ public class ScalarJ extends GenericTOF_SCD{
       return new ErrorString("Error undestanding restriction");
     
     // read in the blind logfile
-    String blindfile=FilenameUtil.setForwardSlash(dir+"/blind.log");
-    if(!readBlindLog(blindfile))
-      return new ErrorString("Error Reading "+blindfile);
+    String blindfile=FilenameUtil.setForwardSlash(dir);//+"/blind.log");
+    {
+      ErrorString error=readScalars(blindfile);
+      if(error!=null) return error;
+    }
 
     // initialize all of the other parameters
     if(!init())
@@ -343,20 +354,78 @@ public class ScalarJ extends GenericTOF_SCD{
     k[i-1] = 0;
     l[i-1] = 0;
 
-    System.out.println(r11+" "+sig11+" ");
-    System.out.println(r22+" "+sig22+" ");
-    System.out.println(r33+" "+sig33+" ");
-    System.out.println(r23+" "+sig23+" ");
-    System.out.println(r31+" "+sig31+" ");
-    System.out.println(r12+" "+sig12+" ");
+    System.out.println(Format.real(r11,10,3)+" "+Format.real(sig11,10,3));
+    System.out.println(Format.real(r22,10,3)+" "+Format.real(sig22,10,3));
+    System.out.println(Format.real(r33,10,3)+" "+Format.real(sig33,10,3));
+    System.out.println(Format.real(r23,10,3)+" "+Format.real(sig23,10,3));
+    System.out.println(Format.real(r31,10,3)+" "+Format.real(sig31,10,3));
+    System.out.println(Format.real(r12,10,3)+" "+Format.real(sig12,10,3));
 
     return true;
   }
 
   /**
+   * Moves information from the specified file into the scalars, r_ij.
+   */
+  private ErrorString readScalars(String filename){
+    if(filename.endsWith("blind.log"))
+       return readBlindLog(filename);
+
+    // determine if this is an experiment file
+    boolean isexpfile=!(filename.endsWith(".mat"));
+    TextFileReader tfr=null;
+    float[][] UB=null;
+
+    // read in the orientation matrix
+    try{
+      tfr=new TextFileReader(filename);
+      {
+        Object result=LoadOrientation.readOrient(tfr,isexpfile);
+        if(result==null)
+          return new ErrorString("Failed to read orientation from "+filename);
+        else if(result instanceof ErrorString)
+          return (ErrorString)result;
+        else if(result instanceof float[][])
+          UB=(float[][])result;
+        else
+          return new ErrorString("Failed to read orientation from "+filename);
+        result=null;
+      }
+    }catch(IOException e){
+      return new ErrorString("Error Reading "+filename+": "+e.getMessage());
+    }finally{
+      if(tfr!=null)
+        try{
+          tfr.close();
+        }catch(IOException e){
+          // let it drop on the floor
+        }
+    }
+
+    // generate the scalars from it
+    double[] abc=Util.abc(LinearAlgebra.float2double(UB));
+    if(abc==null)
+      return new ErrorString("Could not get lattice parameters from UB");
+    double[] scalars=Util.scalars(abc);
+    if(scalars==null)
+      return new ErrorString("Could not calculate scalars from "
+                             +"lattice parameters");
+
+    // assign the scalars to what is used here
+    r11=scalars[0];
+    r22=scalars[1];
+    r33=scalars[2];
+    r23=scalars[3];
+    r31=scalars[4];
+    r12=scalars[5];
+
+    return null;
+  }
+
+  /**
    * Reads the log file from blind to get 'scalars'.
    */
-  private boolean readBlindLog(String logfile){
+  private ErrorString readBlindLog(String logfile){
     TextFileReader tfr=null;
 
     try{
@@ -377,10 +446,10 @@ public class ScalarJ extends GenericTOF_SCD{
       r31=tfr.read_double();
       r12=tfr.read_double();
     }catch( IOException e){
-      return false;
+      return new ErrorString("Error Reading "+logfile+": "+e.getMessage());
     }catch( NumberFormatException e){
       SharedData.addmsg("NumberFormatException: "+e.getMessage());
-      return false;
+      return new ErrorString("NumberFormatException: "+e.getMessage());
     }finally{
       if(tfr!=null)
         try{
@@ -390,7 +459,7 @@ public class ScalarJ extends GenericTOF_SCD{
         }
     }
 
-    return true;
+    return null;
   }
 
   /**
@@ -1080,7 +1149,7 @@ public class ScalarJ extends GenericTOF_SCD{
         for( int m=1 ; m<=3 ; m++ ){
           System.out.print("");
           for( int j=1 ; j<=3 ; j++ )
-            System.out.print(trans[m+((j+3*k[n])*3)-13]+" ");
+            System.out.print(Format.real(trans[m+((j+3*k[n])*3)-13],4)+" ");
 
           System.out.println();
         }
