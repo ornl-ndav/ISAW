@@ -1,5 +1,5 @@
 /*
- * File:  SpectrometerTofToEnergyLoss.java 
+ * File:  SpectrometerTofToEnergyLoss.java
  *
  * Copyright (C) 1999, Dennis Mikkelson
  *
@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/01/09 17:15:02  dennis
+ *  Added getDocumentation(), main test program and java docs on getResult()
+ *  (Chris Bouzek)
+ *
  *  Revision 1.4  2002/11/27 23:17:04  pfpeterson
  *  standardized header
  *
@@ -53,16 +57,19 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.retriever.*;
 
 /**
- * This operator converts a neutron time-of-flight DataSet to energy loss.  The
- * DataSet must contain spectra with attributes giving the detector position
- * and initial energy. In addition, it is assumed that the XScale for the
- * spectra represents the time-of-flight from the sample to the detector.
- * 
+ * This operator converts a spectrometer time-of-flight DataSet to energy loss.
+ * The DataSet must contain spectra with attributes giving the detector
+ * position and initial energy. In addition, it is assumed that the XScale
+ * for the spectra represents the time-of-flight from the sample to the
+ * detector.
+ *
  */
 
-public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp 
+public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
                                          implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -117,7 +124,8 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: in this case, ToEL
+   * @return the command name to be used with script processor: 
+   *         in this case, ToEL
    */
    public String getCommand()
    {
@@ -125,7 +133,7 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -136,7 +144,7 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
     parameters = new Vector();  // must do this to clear any old parameters
 
     Parameter parameter;
-    
+
     if ( scale == null )
       parameter = new Parameter( "Min Energy Loss(meV)", new Float(-50.0) );
     else
@@ -194,7 +202,7 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
     AttributeList attr_list = data.getAttributeList();
 
                                              // get the detector position and
-                                             // initial energy 
+                                             // initial energy
     DetectorPosition position=(DetectorPosition)
                        attr_list.getAttributeValue( Attribute.DETECTOR_POS);
 
@@ -210,8 +218,45 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
     return (energy_in - tof_calc.Energy( spherical_coords[0], x ));
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator converts the X-axis units on a ");
+    s.append("DataSet from spectrometer time-of-flight to energy loss.\n");
+    s.append("@assumptions The DataSet must contain spectra with an ");
+    s.append("attribute giving the detector position and initial ");
+    s.append("energy.  In addition, it is assumed that the XScale for ");
+    s.append("the spectra represents the time-of-flight from the sample ");
+    s.append("to the detector.\n");
+    s.append("@algorithm Creates a new DataSet which has the same title ");
+    s.append("as the input DataSet, the same y-values as the input DataSet, ");
+    s.append("and whose X-axis units have been converted to energy loss.  ");
+    s.append("The new DataSet also has a message appended to its log ");
+    s.append("indicating that a conversion to units of energy loss on the ");
+    s.append("X-axis was done.\n");
+    s.append("@param ds The DataSet to which the operation is applied.\n");
+    s.append("@param min_E The minimum energy loss value to be binned.\n");
+    s.append("@param max_E The maximum energy loss value to be binned.\n");
+    s.append("@param num_E The number of \"bins\" to be used between ");
+    s.append("min_E and max_E.\n");
+    s.append("@return A new DataSet which is the result of converting the ");
+    s.append("input DataSet's X-axis units to energy loss.\n");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+   *  Converts the input DataSet to a DataSet which is identical except that
+   *  the new DataSet's X-axis units have been converted from spectrometer
+   *  time-of-flight to energy loss.
+   *
+   *  @return DataSet whose X-axis units have been converted to energy loss.
+   */
 
   public Object getResult()
   {
@@ -220,7 +265,7 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
-    DataSetFactory factory = new DataSetFactory( 
+    DataSetFactory factory = new DataSetFactory(
                                      ds.getTitle(),
                                      "meV",
                                      "EnergyLoss",
@@ -228,14 +273,14 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
                                      "Scattering Intensity" );
 
     // #### must take care of the operation log... this starts with it empty
-    DataSet new_ds = factory.getDataSet(); 
+    DataSet new_ds = factory.getDataSet();
     new_ds.copyOp_log( ds );
     new_ds.addLog_entry( "Converted to Energy Loss" );
 
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
 
-                                     // get the energy scale parameters 
+                                     // get the energy scale parameters
     float min_E = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float max_E = ( (Float)(getParameter(1).getValue()) ).floatValue();
     int   num_E = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
@@ -252,10 +297,10 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
     if ( num_E <= 1.0 || min_E >= max_E )       // no valid scale set
       new_e_scale = null;
     else
-      new_e_scale = new UniformXScale( min_E, max_E, num_E );  
+      new_e_scale = new UniformXScale( min_E, max_E, num_E );
 
-                                            // now proceed with the operation 
-                                            // on each data block in DataSet 
+                                            // now proceed with the operation
+                                            // on each data block in DataSet
     Data             data,
                      new_data;
     DetectorPosition position;
@@ -275,7 +320,7 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
       data = ds.getData_entry( j );        // get reference to the data entry
       attr_list = data.getAttributeList();
                                            // get the detector position and
-                                           // initial path length 
+                                           // initial path length
       position=(DetectorPosition)
                    attr_list.getAttributeValue(Attribute.DETECTOR_POS);
 
@@ -283,7 +328,7 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
                       attr_list.getAttributeValue(Attribute.ENERGY_IN);
 
       if( position != null && energy_in_obj != null)
-                                                       // has needed attributes 
+                                                       // has needed attributes
       {                                                // so convert it to E
                                        // calculate energies at bin boundaries
         energy_in        = energy_in_obj.floatValue();
@@ -291,36 +336,35 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
         spherical_coords = position.getSphericalCoords();
         e_vals           = data.getX_scale().getXs();
         for ( int i = 0; i < e_vals.length; i++ )
-          e_vals[i] = energy_in - 
+          e_vals[i] = energy_in -
                       tof_calc.Energy( spherical_coords[0], e_vals[i] );
-  
+
         E_scale = new VariableXScale( e_vals );
         y_vals  = data.getY_values();
         errors  = data.getErrors();
 
-        new_data = Data.getInstance( E_scale, 
-                                     y_vals, 
-                                     errors, 
-                                     data.getGroup_ID() ); 
-                                                // create new data block with 
-                                                // non-uniform E_scale and 
+        new_data = Data.getInstance( E_scale,
+                                     y_vals,
+                                     errors,
+                                     data.getGroup_ID() );
+                                                // create new data block with
+                                                // non-uniform E_scale and
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 
                                                 // resample if a valid
         if ( new_e_scale != null )              // scale was specified
-          new_data.resample( new_e_scale, IData.SMOOTH_NONE );  
+          new_data.resample( new_e_scale, IData.SMOOTH_NONE );
 
-        new_ds.addData_entry( new_data );      
+        new_ds.addData_entry( new_data );
       }
     }
-//    ChopTools.chop_dataDrawer.drawgraphDataSet(new_ds);
     return new_ds;
-  }  
+  }
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current SpectrometerTofToEnergyLoss Operator.  The list 
+   * Get a copy of the current SpectrometerTofToEnergyLoss Operator.  The list
    * of parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
@@ -335,6 +379,31 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
     return new_op;
   }
 
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    float min_1 = (float)-383.0, max_1 = (float)115.0;
+    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run ";
+                       //"D:\\ISAW\\SampleRuns\\hrcs2447.run ";
 
+    try
+    {
+      RunfileRetriever rr = new RunfileRetriever( file_name );
+      DataSet ds1 = rr.getDataSet(1);
+      ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+      SpectrometerTofToEnergyLoss op =
+                  new SpectrometerTofToEnergyLoss(ds1, min_1, max_1, 1000);
+      DataSet new_ds = (DataSet)op.getResult();
+      ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+      System.out.println(op.getDocumentation());
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+  }
 
 }
