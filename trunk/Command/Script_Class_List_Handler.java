@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2001/07/20 16:35:21  rmikk
+ * Fixed the show method to show more
+ *
  * Revision 1.13  2001/07/20 15:48:21  chatter
  * Checked Properties directories for tailing '/' ir '\'
  *
@@ -284,21 +287,25 @@ public  void show( int mode  )
     return;
    int i;
   
-   for( i=0; i< SortOnFileName.size(); i++ )
-     { int j;
+   for( i=0; i< getNum_operators(); i++ )
+     { int j = -1;
         if( mode == Command_Compare)
             j= ((Integer)SortOnCommand.elementAt(i)).intValue();
-        else
+        else if( i < SortOnFileName.size() )
             j=((Integer)SortOnFileName.elementAt(i)).intValue();
 
-       Operator X =(Operator) opList.elementAt(j);
+	Operator X = null;
+       if(j >= 0)
+           X  =(Operator) opList.elementAt(j);
+
        //System.out.print(i+":Command="+X.getCommand());
+       if( X != null)
        if( X instanceof ScriptOperator)
          { ScriptOperator Y =(ScriptOperator) X;
-           //System.out.println("  File="+Y.getFileName());
+           System.out.println(X.getCommand()+"  File="+Y.getFileName() );
          }
         else 
-          System.out.println("");
+          System.out.println(X.getCommand()+"");
     }
   
    }
@@ -642,6 +649,7 @@ public static void main( String args[] )
        }
      System.out.println("Here");
      Script_Class_List_Handler BB = new Script_Class_List_Handler();
+     System.out.println("#operators ="+BB.getNum_operators());
      BB.show(257);
      
    
