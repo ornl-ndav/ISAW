@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2002/10/08 15:44:06  dennis
+ *  Added conversions of "Pointed At X" to proper units when the X-Axis
+ *  of the DataSet has been converted in the ViewManager.
+ *
  *  Revision 1.27  2002/10/07 19:35:57  dennis
  *  "Clear Selections" menu option now clears selections in the temporary
  *  DataSet as well as the original DataSet.  This fixes a bug where the
@@ -181,6 +185,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
+import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.viewer.util.*;
@@ -192,6 +197,7 @@ import DataSetTools.viewer.Contour.*;
 import DataSetTools.viewer.OverplotView.*;
 import DataSetTools.viewer.ViewerTemplate.*;
 import DataSetTools.parameter.*;
+import DataSetTools.math.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -218,7 +224,7 @@ public class ViewManager extends    JFrame
    private   ViewerState     state = null;
    private   DataSet         dataSet;
    private   DataSet         tempDataSet;
-   private   DataSetOperator conversion_operator = null;
+   private   XAxisConversionOp conversion_operator = null;
    private   int[]           original_index;      // records the index in the
                                                   // original dataSet that 
                                                   // corresponds to an index in
@@ -345,22 +351,24 @@ public class ViewManager extends    JFrame
       else if ( view_type.equals( THREE_D ))
         viewer = new ThreeDView( tempDataSet, state );
       else if ( view_type.equals( SELECTED_GRAPHS ))             // use either
-        viewer = new GraphableDataManager( tempDataSet, state );        // Kevin's or
+        viewer = new GraphableDataManager( tempDataSet, state ); // Kevin's or
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
       else if ( view_type.equals( TABLE)) //TABLE ) )
          viewer = new TabView( tempDataSet, state ); 
       else if ( view_type.equals( CONTOUR ) )
         viewer = new ContourView( tempDataSet, state ); 
       else
-      { if( table_MenuComp == null)
+      { 
+        if( table_MenuComp == null)
            table_MenuComp= new TableViewMenuComponents();
-        viewer = table_MenuComp.getDataSetViewer( view_type, tempDataSet, state);
+        viewer = table_MenuComp.getDataSetViewer(view_type, tempDataSet, state);
         if( viewer == null)
-          {System.out.println( "ERROR: Unsupported view type in ViewManager:" );
+        {
+           System.out.println( "ERROR: Unsupported view type in ViewManager:" );
            System.out.println( "      " + view_type );
            System.out.println( "using " + IMAGE + " by default" );
            viewer = new ImageView( tempDataSet, state );
-          }
+        }
       }
       getContentPane().add(viewer);
       getContentPane().setVisible(true);
@@ -431,10 +439,22 @@ public class ViewManager extends    JFrame
          int index = dataSet.getPointedAtIndex();    // "pointed at" index if
          if ( index != DataSet.INVALID_INDEX )       //  valid and different 
            if ( new_index[ index ] != DataSet.INVALID_INDEX )
-        //   if ( new_index[ index ] != tempDataSet.getPointedAtIndex() )
              {
                tempDataSet.setPointedAtIndex( new_index[ index ] );
-               tempDataSet.setPointedAtX( dataSet.getPointedAtX() );
+               float new_x = dataSet.getPointedAtX();
+               if ( !Float.isNaN(new_x) )            // valid new_x is clamped
+               {                                     // and mapped by the conv.
+                 Data d = dataSet.getData_entry( index );          // operator
+                 float x_min = d.getX_scale().getStart_x();             
+                 float x_max = d.getX_scale().getEnd_x();             
+                 if ( new_x < x_min )
+                   new_x = x_min;
+                 if ( new_x > x_max )
+                   new_x = x_max;
+                 if ( conversion_operator != null )
+                   new_x = conversion_operator.convert_X_Value( new_x, index );
+               }
+               tempDataSet.setPointedAtX( new_x );
                viewer.redraw( (String)reason );
              }  
        }
@@ -457,7 +477,12 @@ public class ViewManager extends    JFrame
        {
          int i = tempDataSet.getPointedAtIndex();
          dataSet.setPointedAtIndex( original_index[i] ); 
-         dataSet.setPointedAtX( tempDataSet.getPointedAtX() ); 
+
+         float new_x = tempDataSet.getPointedAtX();
+         float orig_x = new_x;
+         if ( conversion_operator != null && !Float.isNaN(new_x) )
+           orig_x = solve( new_x );
+         dataSet.setPointedAtX( orig_x ); 
          dataSet.notifyIObservers( POINTED_AT_CHANGED );
        }
 
@@ -598,15 +623,16 @@ public class ViewManager extends    JFrame
        if ( result instanceof DataSet )
        {
          tempDataSet = (DataSet)op.getResult();
-         if ( tempDataSet.getNum_entries() == num_new )// we didn't lose Data blocks, so
+         if ( tempDataSet.getNum_entries() == num_new )
+                                            // we didn't lose Data blocks, so
          {
-           for ( int i = 0; i < num_new; i++ )         // preserve the selection flags
+           for ( int i = 0; i < num_new; i++ ) // preserve the selection flags
            {
              d = dataSet.getData_entry( original_index[i] );
              tempDataSet.setSelectFlag( i, d );
            }
-                                                       // preserve the pointed at index
-                                                       // if possible
+                                                // preserve the pointed at index
+                                                // if possible
            int k = dataSet.getPointedAtIndex(); 
            if ( k != DataSet.INVALID_INDEX )
              if ( new_index[k] != DataSet.INVALID_INDEX )
@@ -766,7 +792,7 @@ private void BuildConversionsMenu()
   for ( int i = 0; i < n_ops; i++ )
   {
     op = dataSet.getOperator(i);
-    if ( op.getCategory().equals( Operator.X_AXIS_CONVERSION ))
+    if ( op instanceof XAxisConversionOp )
     {
       button = new JRadioButtonMenuItem( op.getTitle() );
       button.addActionListener( conversion_menu_handler );
@@ -798,7 +824,6 @@ private void BuildOptionMenu()
 }
 
 
-
 private String CurrentConversionName()     // get current conversion name
 {
   String name;     
@@ -809,6 +834,66 @@ private String CurrentConversionName()     // get current conversion name
  
   return name;
 }
+
+
+private float solve( float new_x ) // find what x in the original DataSet maps
+{                                  // maps to new_x in converted tempDataSet
+  if ( conversion_operator == null )
+    return new_x;
+
+  int index = dataSet.getPointedAtIndex();
+  XScale x_scale = dataSet.getData_entry(index).getX_scale();
+  float a = x_scale.getStart_x();
+  float b = x_scale.getEnd_x();
+  float f_a = conversion_operator.convert_X_Value( a, index );
+  float f_b = conversion_operator.convert_X_Value( b, index );
+
+  float f_min = Math.min( f_a, f_b );
+  float f_max = Math.max( f_a, f_b );
+  if ( new_x <= f_min )                // clamp the values at the ends of the
+  {                                    // Data blocks.  There are two cases,
+    if ( f_a <= f_b )                  // since the conversion may reverse the
+      return a;                        // order.
+    else
+      return b;
+  }
+
+  if ( new_x >= f_max )
+  {
+    if ( f_a <= f_b )
+      return b;
+    else
+      return a;
+  }
+
+  ConversionFunction f =
+                  new ConversionFunction(index, conversion_operator, new_x );
+
+  return (float)NumericalAnalysis.BisectionMethod( f, a, b, 20 );
+}
+
+
+  public class ConversionFunction implements IOneVariableFunction
+  {
+    private  int               index;
+    private  XAxisConversionOp op;
+    private  float             new_x;
+
+    public  ConversionFunction( int               index, 
+                                XAxisConversionOp op, 
+                                float             new_x )
+    {
+      this.index = index;
+      this.op    = op;
+      this.new_x = new_x;
+    }
+
+    public double getValue( double x )
+    {
+      return ( new_x - op.convert_X_Value( (float)x, index ) );
+    }
+  }
+
 
 /* -------------------------------------------------------------------------
  *
@@ -940,7 +1025,7 @@ private String CurrentConversionName()     // get current conversion name
       {
         JRadioButtonMenuItem button = (JRadioButtonMenuItem)e.getSource();
         button.setSelected(true);
-        conversion_operator = dataSet.getOperator( action );  
+        conversion_operator = (XAxisConversionOp)dataSet.getOperator( action ); 
         makeTempDataSet( true );
         viewer.setDataSet( tempDataSet );
       }
