@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.107  2004/04/21 19:19:10  bouzekc
+ * Fixed the problem where the Wizard Progress Bar wasn't updated during
+ * sequential execution of the Forms.
+ *
  * Revision 1.106  2004/04/21 17:56:32  bouzekc
  * Removed call to method that set the wizard progress bar indeterminate.
  *
@@ -1023,6 +1027,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       if( !f.done(  ) ) {
         if( frontEnd instanceof IGUIWizardFrontEnd ) {
           ( ( IGUIWizardFrontEnd )frontEnd ).setFormProgressIndeterminate(   );
+           ( ( IGUIWizardFrontEnd )frontEnd ).updateWizardProgress(  );
         }
 
         /*if( this.IamRemote ) {
