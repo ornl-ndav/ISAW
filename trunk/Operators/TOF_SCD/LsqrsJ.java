@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2003/06/26 17:01:57  bouzekc
+ * Changed "Channels to keep" to "Pixel Rows and Columns to
+ * Keep".  Added a "NOT IMPLEMENTED" to parameter names for
+ * the last two parameters.
+ *
  * Revision 1.13  2003/06/25 21:41:01  bouzekc
  * Added hook parameters for minimum peak count threshold
  * and channels to keep.
@@ -147,10 +152,13 @@ public class LsqrsJ extends GenericTOF_SCD {
     addParameter( sfpg );
 
     //6
-    addParameter( new IntegerPG( "Minimum Peak Threshold", 0, false ) );
+    addParameter( 
+      new IntegerPG( "Minimum Peak Threshold: NOT IMPLEMENTED", 0, false ) );
 
     //7
-    addParameter( new IntArrayPG( "Channels to Keep", "1:100", false ) );
+    addParameter( 
+      new IntArrayPG( 
+        "Pixel Rows and Columns to Keep: NOT IMPLEMENTED", "1:100", false ) );
   }
 
   /**
