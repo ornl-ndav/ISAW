@@ -296,7 +296,7 @@ Not implemented yet
 num_E)</b></ul>
 </ul>
 
-<hr><a NAME="ToWL"></a>ToWL
+<hr><a NAME="ToWL">ToWL</a>
 <ul>Tof to Wave Length
 <br>&nbsp;
 <br>&nbsp;
@@ -304,12 +304,12 @@ num_E)</b></ul>
 integer nwaveL)</b></ul>
 </ul>
 
-<hr><a NAME="ToQE"></a>ToQE
+<hr><a NAME="ToQE">ToQE</a>
 <ul>Tof to QE
 <ul><b>DataSet ToQE( DataSet , float minQ, float maxQ, integer nbins)</b></ul>
 </ul>
 
-<hr><a NAME="ToYAngle"></a>ToYAngle
+<hr><a NAME="ToYAngle">ToYAngle</a>
 <ul>Tof to True Angle
 <br>&nbsp;
 <br>&nbsp;
@@ -318,5 +318,39 @@ nbins)</b></ul>
 </ul>
 
 <hr>
+<A Name = "SetAttr">SetAttr</a><br>
+<ul>
+  <li> Set a Data Set Attribute<ul>
+        <b> void SetAttr( DataSet ds , String Attribute , Object New_Value)</b></ul>
+  <li> Set A Data Block Attribute<ul>
+     <b> void SetAttr( DataSet ds , int index , String Attribute , Object New_Value ) </b></ul>
+</ul>
+<hr>
+<A Name = "GetAttr">GetAttr</a><br>
+<ul>
+<li> Get a Data Set Attribute<ul>
+        <b> Object GetAttr( DataSet ds , String Attribute)</b></ul>
+  <li> Set A Data Block Attribute<ul>
+     <b> Object GetAttr( DataSet ds , int index , String Attribute  ) </b></ul>
+
+</ul>
+
+<hr>
+<A Name = "SetAttrs">SetAttrs</a><br>
+<ul> Sets Attributes on ALL data blocks of a data Set
+ <ul><b> void SetAttrs( DataSet ds , String Attribute , Object New_Value)</b></ul>
+</ul>
+<hr>
+<A Name = "SetField">SetField</a><br>
+  <ul> Set a Data Set Field<ul><b>
+       void SetField( DataSet ds , String FieldName , Object New_Value ) </b></ul>
+  </ul>
+<hr>
+<A name = "GetField" >GetField</a> <br>
+ <ul> Get a Data Set Field<ul><b>
+      Object GetField( DataSet ds , String FieldName )</b></ul>
+ </ul>
+<hr>
+
 </body>
 </html>
