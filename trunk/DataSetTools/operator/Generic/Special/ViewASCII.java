@@ -1,5 +1,5 @@
 /*
- * File:  ViewASCII.java   
+ * File:  ViewASCII.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/01/23 19:04:39  dennis
+ *  Added getDocumentation() method (Chris Bouzek)
+ *
  *  Revision 1.4  2002/11/27 23:21:43  pfpeterson
  *  standardized header
  *
@@ -63,7 +66,7 @@
  *  Revision 1.1  2002/07/26 22:45:32  pfpeterson
  *  Added to CVS.
  *
- *   
+ *
  */
 
 package DataSetTools.operator.Generic.Special;
@@ -79,12 +82,14 @@ import  javax.swing.*;
 import DataSetTools.viewer.*;
 import IsawGUI.*;
 
+/* ------------------------- class ViewASCII ------------------------------- */
 /**
- * This operator views the contents of and ascii file. A given
- * instance of this operator has only one view dialog, to get a second
+ * This operator views the contents of an ASCII file. A given
+ * instance of this operator has only one view dialog. To get a second
  * viewer a second operator is needed.
  */
-public class ViewASCII extends    GenericSpecial {
+public class ViewASCII extends    GenericSpecial
+{
     private static final String FAIL       = "FAILURE";
     private static final String RELOAD     = "Reload";
     private static final String CLOSE      = "Close";
@@ -100,65 +105,105 @@ public class ViewASCII extends    GenericSpecial {
     /**
      * Construct an operator with a default parameter list.
      */
-    public ViewASCII( ){
+    public ViewASCII( )
+    {
         super( "ViewASCII" );
         this.mw=null;
         this.textarea=null;
         this.filename=null;
     }
 
-    /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+    /* ---------------------- FULL CONSTRUCTOR ----------------------------- */
     /**
-     *  Construct operator to execute a system command.
+     *  Creates operator with title "View ASCII File" and the
+     *  specified list of parameters. The getResult method must still
+     *  be used to execute the operator.nd.
      *
-     *  @param  command  The command to be executed.
+     *  @param filename  The fully qualified ASCII file name
      */
-    
-    public ViewASCII( String filename ){
+
+    public ViewASCII( String filename )
+    {
         this();
         parameters=new Vector();
         addParameter(new Parameter("View ASCII File",filename));
     }
 
-    
-    /* ------------------------- setDefaultParmeters ----------------------- */
+
+    /* ------------------------- setDefaultParameters ---------------------- */
     /**
      *  Set the parameters to default values.
      */
-    public void setDefaultParameters(){
-        parameters = new Vector();  // must do this to create empty list of 
+    public void setDefaultParameters()
+    {
+        parameters = new Vector();  // must do this to create empty list of
                                     // parameters
 
         parameters=new Vector();
         addParameter( new Parameter("View ASCII File",new LoadFileString("")));
     }
-    
+
+    /* ------------------------------ getCommand --------------------------- */
     /**
-     * @return	the command name to be used with script processor.
+     *  @return the command name to be used with script processor, "ViewASCII"
      */
-    public String getCommand(){
+    public String getCommand()
+    {
         return "ViewASCII";
     }
-    
-    /*
-     * This loads a (hopefully) ascii file and displays it in a
-     * JTextArea.
+
+    /* ---------------------- getDocumentation --------------------------- */
+    /**
+     *  Returns the documentation for this method as a String.  The format
+     *  follows standard JavaDoc conventions.
      */
-    public Object getResult(){
+    public String getDocumentation()
+    {
+      StringBuffer s = new StringBuffer("");
+      s.append("@overview This operator displays the contents of an ASCII ");
+      s.append("file.  A given instance of this operator has only one ");
+      s.append("view dialog.  To get a second view dialog a second instance ");
+      s.append("of this operator is needed.\n");
+      s.append("@assumptions The file exists and is in a readable format ");
+      s.append("(i.e. it is an ASCII file).\n");
+      s.append("@algorithm Loads the specified file and places its contents ");
+      s.append("in a scrollable text area.\n");
+      s.append("@param file_name The fully qualified ASCII file name.\n");
+      s.append("@return A String indicating that the operator successfully ");
+      s.append("displayed the ASCII file.\n");
+      s.append("@error Returns an error if the file does not exist.\n");
+      s.append("@error Returns an error if the file is not a valid ASCII ");
+      s.append("file.\n");
+      s.append("@error Returns an error if the file could not be opened.\n");
+      s.append("@error Returns an error if the file text could not be added ");
+      s.append("to the text area.\n");
+      return s.toString();
+    }
+
+    /* ------------------------------ getResult ---------------------------- */
+    /**
+     *   Loads an ASCII file and displays it in a JTextArea.
+     */
+    public Object getResult()
+    {
         filename=getParameter(0).getValue().toString();
 
-        if( (mw!=null) && (! mw.isShowing()) )mw=null;
-        
-        if(mw==null){
+        if( (mw!=null) && (! mw.isShowing()) )
+          mw=null;
+
+        if(mw==null)
+        {
             // set the font for the text display
             Font font=new Font("monospaced",Font.PLAIN,FONT_SIZE);
 
             // set up the maximum size of the text box
-            if(MAX_WIDTH==0 && MAX_HEIGHT==0){
+            if(MAX_WIDTH==0 && MAX_HEIGHT==0)
+            {
                int fontwidth=12;
                int fontheight=20;
-               
-               Dimension screenSize=Toolkit.getDefaultToolkit().getScreenSize();
+
+               Dimension screenSize =
+                        Toolkit.getDefaultToolkit().getScreenSize();
                MAX_WIDTH=(int)(screenSize.height*4f/(3f*fontwidth))-2;
                MAX_HEIGHT=(int)(screenSize.height/fontheight)-5;
             }
@@ -171,7 +216,10 @@ public class ViewASCII extends    GenericSpecial {
 
             // fill up the text area
             String text=readFile(filename);
-            if(text!=null) return text;
+
+            //an error occurred
+            if(text!=null)
+              return text;
 
             //create a menubar
             JMenuBar menuBar=new JMenuBar();
@@ -179,8 +227,8 @@ public class ViewASCII extends    GenericSpecial {
             JMenuItem reloadMenu=new JMenuItem(RELOAD);
             JMenuItem closeMenu=new JMenuItem(CLOSE);
             menuBar.add(fileMenu);
-            DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( 
-                                                                   menuBar, mw);
+            DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem(
+                                                                  menuBar, mw);
             fileMenu.add(reloadMenu);
             fileMenu.add(closeMenu);
             MyActionListener mal=new MyActionListener(this);
@@ -197,18 +245,24 @@ public class ViewASCII extends    GenericSpecial {
 
             // put it up on screen
             mw.pack();
-        }else{
-            // just fill up the text area 
+        }
+        else
+        {
+            // just fill up the text area
             String text=readFile(filename);
-            if(text!=null) return text;
+
+            //an error occurred
+            if(text!=null)
+              return text;
         }
 
         mw.setTitle(filename);
         mw.show();
 
         return "success";
-    }  
+    }
 
+    /* -------------------------------- clone ------------------------------ */
     /**
      * Get a copy of the current SpectrometerEvaluator Operator.  The
      * list of parameters is also copied.
@@ -216,10 +270,11 @@ public class ViewASCII extends    GenericSpecial {
     public Object clone(){
         ViewASCII new_op =  new ViewASCII( );
         new_op.CopyParametersFrom( this );
-        
+
         return new_op;
     }
 
+    /* ------------------------------- readFile ---------------------------- */
     /**
      * Method to read the file into the document and add the document
      * to the JTextArea.
@@ -231,7 +286,8 @@ public class ViewASCII extends    GenericSpecial {
      * @return a null string is returned if the read went well,
      * otherwise the error message is returned.
      */
-    String readFile(String filename){
+    String readFile(String filename)
+    {
         if(filename==null) filename=this.filename;
 
         TextFileReader tfr=null;
@@ -245,31 +301,46 @@ public class ViewASCII extends    GenericSpecial {
         if(! file.exists() )  return FAIL+": File does not exist";
         if(! file.canRead() ) return FAIL+": File is not readable";
 
-        try{
+        try
+        {
             tfr=new TextFileReader(filename);
-            while(!tfr.eof()){
+            while(!tfr.eof())
+            {
                 height++;
                 line=tfr.read_line();
                 if(line.length()>width) width=line.length();
-                if(text!=null){
+                if(text!=null)
+                {
                     text=text+"\n"+line;
-                }else{
+                }
+                else
+                {
                     text=line;
                 }
             }
             doc.insertString(0,text,null);
-        }catch(IOException e){
+        }
+        catch(IOException e)
+        {
             return "IOException: "+e.getMessage();
-        }catch(BadLocationException e){
+        }
+        catch(BadLocationException e)
+        {
             return FAIL+": Could not add file to TextArea";
-        }finally{
-            try{
+        }
+        finally
+        {
+            try
+            {
                 if(tfr!=null) tfr.close();
-            }catch(IOException e){
+            }
+            catch(IOException e)
+            {
                 // let it drop on the floor
             }
         }
         if(textarea!=null){
+
             textarea.setDocument(doc);
             if(width>MAX_WIDTH) textarea.setColumns(MAX_WIDTH);
             if(height>MAX_HEIGHT) textarea.setRows(MAX_HEIGHT);
@@ -293,15 +364,23 @@ public class ViewASCII extends    GenericSpecial {
             }
         }
     }
-
-    public static void main(String[] args){
+    /* ------------------------------ main ------------------------------- */
+    /**
+     * Main method for testing purposes.
+     */
+    public static void main(String[] args)
+    {
         String filename="/IPNShome/pfpeterson/ISAW/Scripts/TestScripts/"
-            +"hello.iss";
+           +"hello.iss";
+        //String filename="testASCII.txt";
 
         ViewASCII op;
         op=new ViewASCII(filename);
         System.out.println("RESULT: "+op.getResult());
 
-        System.exit(0);
+        /** ------------ added by Chris Bouzek -------------- */
+        System.out.println("Documentation: " + op.getDocumentation());
+
+        //System.exit(0);
     }
 }
