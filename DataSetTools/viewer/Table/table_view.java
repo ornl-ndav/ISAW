@@ -31,6 +31,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.18  2002/02/22 20:37:52  pfpeterson
+ * Operator reorganization.
+ *
  * Revision 1.17  2002/02/16 15:57:47  rmikk
  * -Fixed error when no Groups were selected and the "UseAll" was selected
  * -Added a file close at the end of the Showw routine so users who enter only
@@ -98,6 +101,8 @@
 package DataSetTools.viewer.Table;
 
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.*;
+import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.math.*;
 import javax.swing.*;
 import DataSetTools.dataset.*;

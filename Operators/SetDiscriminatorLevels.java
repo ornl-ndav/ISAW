@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/02/22 20:45:06  pfpeterson
+ * Operator reorganization.
+ *
  * Revision 1.4  2001/11/27 18:21:54  dennis
  * Added operator title to constructor java docs.
  *
@@ -43,6 +46,7 @@
 package Operators;
 
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;

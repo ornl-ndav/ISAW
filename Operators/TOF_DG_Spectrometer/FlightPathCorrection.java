@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/02/22 20:43:49  pfpeterson
+ * Operator reorganization.
+ *
  * Revision 1.1  2002/01/31 21:01:29  dennis
  * Moved into Operators.TOF_DG_Spectrometer package.
  *
@@ -49,6 +52,7 @@ import DataSetTools.viewer.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.TOF_DG_Spectrometer.*;
 import java.util.*;
 import java.io.*;
 

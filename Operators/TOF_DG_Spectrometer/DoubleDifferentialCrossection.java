@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2002/02/22 20:43:48  pfpeterson
+ *  Operator reorganization.
+ *
  *  Revision 1.1  2002/01/31 20:59:53  dennis
  *  Calculation simplified. Flight path correction should now
  *  be made by calling the FlightPathCorrection operator BEFORE
@@ -134,6 +137,9 @@ import  DataSetTools.util.*;
 import  DataSetTools.math.*;
 import  DataSetTools.retriever.*;
 import  DataSetTools.operator.*;
+import  DataSetTools.operator.Generic.TOF_DG_Spectrometer.*;
+import  DataSetTools.operator.DataSet.Conversion.XAxis.*;
+import  DataSetTools.operator.DataSet.Math.Analyze.*;
 import  DataSetTools.viewer.*;
 
 /**
