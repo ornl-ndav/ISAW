@@ -31,6 +31,20 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.56  2002/11/15 00:06:27  dennis
+ *  RunfileRetriever now adds shared copies of the attributes:
+ *      RUN_NUM
+ *      NUMBER_OF_PULSES
+ *      INITIAL_PATH
+ *      SAMPLE_CHI
+ *      SAMPLE_PHI
+ *      SAMPLE_OMEGA
+ *      EFFICIENCY_FACTOR (nominal value = 1)
+ *      DETECTOR_CEN_ANGLE
+ *      DETECTOR_CEN_DIST
+ *  to the attribute lists for the Data blocks or DataSet to conserve
+ *  memory.
+ *
  *  Revision 1.55  2002/10/24 15:38:16  dennis
  *  Now calculates the total count rather than calling Runfile.Get1DSum().
  *  This avoids re-reading the spectrum from the file a second time for the
@@ -41,7 +55,8 @@
  *  Fix import path to get DC5.
  *
  *  Revision 1.53  2002/10/12 03:42:33  hammonds
- *  changed location for getting LENGTH&WIDTH for detector elements from IPNS.Runfile.Runfile to IPNS.Calib.DC5.
+ *  changed location for getting LENGTH&WIDTH for detector elements from 
+ *  IPNS.Runfile.Runfile to IPNS.Calib.DC5.
  *
  *  Revision 1.52  2002/10/03 15:50:51  dennis
  *  Replace call to Data.setSqrtErrors() to Data.setSqrtErrors(true)
@@ -296,6 +311,20 @@ public class RunfileRetriever extends    Retriever
   private float calculated_E_in = 0;     // incident energy calculated from
                                          // the beam monitors, for direct
                                          // geometry spectrometers.  
+
+                                         // The following attributes are shared
+                                         // by all items in this runfile.
+  private IntListAttribute run_num_attr      = null;
+  private FloatAttribute   num_pulses_attr   = null;
+  private FloatAttribute   initial_path_attr = null;
+  private FloatAttribute   scd_chi_attr      = null;
+  private FloatAttribute   scd_phi_attr      = null;
+  private FloatAttribute   scd_omega_attr    = null;
+  private FloatAttribute   nominal_eff_attr 
+                            = new FloatAttribute(Attribute.EFFICIENCY_FACTOR,1);
+  private Hashtable        det_cen_dist_attrs  = new Hashtable();
+  private Hashtable        det_cen_angle_attrs = new Hashtable();
+
 /**
  *  Construct a runfile retriever for a specific file.
  *
@@ -893,9 +922,7 @@ private float CalculateEIn()
     attr_list.setAttribute( str_attr );
 
     // Run Number ...........
-    list[0] =  run_file.RunNumber();
-    int_list_attr =new IntListAttribute(Attribute.RUN_NUM, list );
-    attr_list.setAttribute( int_list_attr );
+    Add_RunNumber( attr_list );
 
     // End Date  ........
     str_attr = new StringAttribute( Attribute.END_DATE, run_file.EndDate() );
@@ -906,9 +933,7 @@ private float CalculateEIn()
     attr_list.setAttribute( str_attr );
     
     // Number of Pulses  ........
-    int_attr = new IntAttribute( Attribute.NUMBER_OF_PULSES, 
-                                 run_file.NumOfPulses() );
-    attr_list.setAttribute( int_attr );
+    Add_NumberOfPulses( attr_list );
 
     // SCD sample orientation, Sample Chi, Sample Phi, Sample Omega
     if ( instrument_type == InstrumentType.TOF_SCD )
@@ -951,10 +976,7 @@ private float CalculateEIn()
     AttributeList     attr_list = spectrum.getAttributeList();
 
     // Run Number ...........
-    int list[] = new int[1]; 
-    list[0] =  run_file.RunNumber();
-    int_list_attr =new IntListAttribute(Attribute.RUN_NUM, list );
-    attr_list.setAttribute( int_list_attr );
+    Add_RunNumber( attr_list );
 
     // Time field type
     // int_attr = new IntAttribute( Attribute.TIME_FIELD_TYPE, tf_type );
@@ -977,13 +999,11 @@ private float CalculateEIn()
     attr_list.setAttribute( int_list_attr );
 
     int_list_attr = new IntListAttribute( "Segment IDs",
-                                          seg_ids );
+                                           seg_ids );
     attr_list.setAttribute( int_list_attr );
 
     // Initial flight path ............
-    float_attr = new FloatAttribute( Attribute.INITIAL_PATH,
-                                     (float)run_file.SourceToSample() );
-    attr_list.setAttribute( float_attr );
+    Add_InitialPath( attr_list );
 
     // Initial energy ...........
     if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
@@ -1129,9 +1149,12 @@ private float CalculateEIn()
     // DetectorInfo ....
 
     DetectorInfo det_info_list[] = new DetectorInfo[ group_segments.length ];
+    DetectorPosition det_position;
+    DetectorInfo     det_info;
+
     for ( int id = 0; id < group_segments.length; id++ )
     {
-      DetectorPosition det_position = new DetectorPosition();
+      det_position = new DetectorPosition();
       float seg_angle  = (float)run_file.RawDetectorAngle( group_segments[id] );
             seg_angle *= (float)(Math.PI / 180.0);
       float seg_height = (float)run_file.RawDetectorHeight( group_segments[id]);
@@ -1153,20 +1176,22 @@ private float CalculateEIn()
       
       det_position.setCylindricalCoords( rho, seg_angle, seg_height );
 
-      DetectorInfo det_info = new DetectorInfo( group_segments[id].SegID(), 
-                                              group_segments[id].DetID(), 
-                                              group_segments[id].Row(),
-                                              group_segments[id].Column(),
-                                              det_position,
-                                              group_segments[id].Length(),
-                                              group_segments[id].Width(),
-                                              group_segments[id].Depth(),
-                                              group_segments[id].Efficiency() );
+      det_info = new DetectorInfo( group_segments[id].SegID(), 
+                                   group_segments[id].DetID(), 
+                                   group_segments[id].Row(),
+                                   group_segments[id].Column(),
+                                   det_position,
+                                   group_segments[id].Length(),
+                                   group_segments[id].Width(),
+                                   group_segments[id].Depth(),
+                                   group_segments[id].Efficiency() );
       det_info_list[id] = det_info;
 
-      if(instrument_type==InstrumentType.TOF_SCD)
-           Add_DetectorCenterPosition(attr_list,group_segments[id].DetID());
     }
+
+    if ( group_segments.length > 0 )
+      if(instrument_type==InstrumentType.TOF_SCD)
+         Add_DetectorCenterPosition(attr_list,group_segments[0].DetID());
 
     if ( group_segments.length > 0 )           // add the DetInfoListAttribute
     {
@@ -1197,15 +1222,12 @@ private float CalculateEIn()
     float_attr =new FloatAttribute(Attribute.SOLID_ANGLE,
                                    GrpSolidAngle( group_id ) );
     attr_list.setAttribute( float_attr );
+
     // Efficiency Factor 
-    float_attr =new FloatAttribute(Attribute.EFFICIENCY_FACTOR, 1 );
-    attr_list.setAttribute( float_attr );
+    attr_list.setAttribute( nominal_eff_attr );
 
     // Number of pulses...... 
-    int_attr = new IntAttribute( Attribute.NUMBER_OF_PULSES, 
-                                     run_file.NumOfPulses( ));
-    attr_list.setAttribute( int_attr );
-
+    Add_NumberOfPulses( attr_list );
 
     // Total Counts  ........
     try{
@@ -1229,7 +1251,46 @@ private float CalculateEIn()
 
 
   /**
-   *  Add Chi, Phi and Omega attributes for the sample orientation for 
+   *  Add "shared" number of pulses attribute to the specified Attribute list
+   */
+  private void Add_NumberOfPulses( AttributeList attr_list )
+  {
+    if ( num_pulses_attr == null )
+      num_pulses_attr =new FloatAttribute(Attribute.NUMBER_OF_PULSES,
+                                          (float)run_file.NumOfPulses());
+    attr_list.setAttribute( num_pulses_attr );
+  }
+
+
+  /**
+   *  Add "shared" initial path attribute to the specified Attribute list
+   */
+  private void Add_InitialPath( AttributeList attr_list )
+  {
+    if ( initial_path_attr == null )
+      initial_path_attr =new FloatAttribute(Attribute.INITIAL_PATH,
+                                           (float)run_file.SourceToSample());
+    attr_list.setAttribute( initial_path_attr );
+  }
+
+
+  /**
+   *  Add "shared" run number attribute to the specified Attribute list
+   */
+  private void Add_RunNumber( AttributeList attr_list )
+  { 
+    if ( run_num_attr == null )
+    {
+      int list[] = new int[1];
+      list[0] =  run_file.RunNumber();
+      run_num_attr =new IntListAttribute(Attribute.RUN_NUM, list );
+    }
+    attr_list.setAttribute( run_num_attr );
+  }
+
+
+  /**
+   *  Add "shared" Chi, Phi and Omega attributes for the sample orientation for 
    *  SCD instruments. 
    *
    *  @param  attr_list  The list of attributes to which the orientation
@@ -1237,34 +1298,55 @@ private float CalculateEIn()
    */
   private void AddSCD_SamplePosition( AttributeList attr_list )
   {
-    FloatAttribute float_attr;
-    float_attr = 
+    if ( scd_chi_attr == null )
+      scd_chi_attr = 
         new FloatAttribute( Attribute.SAMPLE_CHI,  (float)run_file.Chi() );
-    attr_list.setAttribute( float_attr );
-    float_attr = 
+    attr_list.setAttribute( scd_chi_attr );
+
+    if ( scd_phi_attr == null )
+      scd_phi_attr = 
         new FloatAttribute( Attribute.SAMPLE_PHI,  (float)run_file.Phi() );
-    attr_list.setAttribute( float_attr );
-    float_attr = 
+    attr_list.setAttribute( scd_phi_attr );
+
+    if ( scd_omega_attr == null )
+      scd_omega_attr = 
         new FloatAttribute( Attribute.SAMPLE_OMEGA, (float)run_file.Omega() );
-    attr_list.setAttribute( float_attr );
+    attr_list.setAttribute( scd_omega_attr );
   }
 
   /**
    * Add raw Detector (not segment) angle and secondary flight path to
-   * the list of attributes.
+   * the list of attributes.  
    *
    * @param attr_list The list of attributes to which the detector
    *                  attributes are added.
    * @param id        Detector number.
    */
-    private void Add_DetectorCenterPosition( AttributeList attr_list, int id ){
-        FloatAttribute float_attr;
-        float_attr = new FloatAttribute( Attribute.DETECTOR_CEN_DISTANCE,
+    private void Add_DetectorCenterPosition( AttributeList attr_list, int id )
+    {
+                             // to allow sharing the attributes, we keep them 
+                             // in a hash table, keyed by a string form of 
+                             // the detector id.  This will work for an 
+                             // arbitrary number of detectors.
+       Integer key = new Integer(id);
+       FloatAttribute float_attr = 
+                      (FloatAttribute)det_cen_dist_attrs.get( key );
+       if ( float_attr == null )
+       {
+         float_attr = new FloatAttribute( Attribute.DETECTOR_CEN_DISTANCE,
                                          (float)run_file.RawFlightPath(id));
-        attr_list.setAttribute( float_attr );
-        float_attr = new FloatAttribute( Attribute.DETECTOR_CEN_ANGLE,
+         det_cen_dist_attrs.put( key, float_attr );
+       }
+       attr_list.setAttribute( float_attr );
+
+       float_attr = (FloatAttribute)det_cen_angle_attrs.get( key );
+       if ( float_attr == null )
+       {
+         float_attr = new FloatAttribute( Attribute.DETECTOR_CEN_ANGLE,
                                          (float)run_file.RawDetectorAngle(id));
-        attr_list.setAttribute( float_attr );
+         det_cen_angle_attrs.put( key, float_attr );
+       } 
+       attr_list.setAttribute( float_attr );
     }
 
 
@@ -1729,10 +1811,30 @@ private float CalculateEIn()
 
   public static void main(String[] args)
   {
+    String file_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ/SCD06496.RUN";
+
     System.out.println("Start test program"); 
-    RunfileRetriever rr = new RunfileRetriever( "/usr/local/ARGONNE_DATA/SCD_QUARTZ/SCD06496.RUN" );
+    System.out.println("Loading: " + file_name );
+
+    RunfileRetriever rr = new RunfileRetriever( file_name ); 
     DataSet ds = rr.getDataSet(1);
+    rr = null;
+
+    try   { Thread.currentThread().sleep(2000); } 
+    catch (InterruptedException ie) { }
+
+    System.gc();
+
+    try   { Thread.currentThread().sleep(2000); }                
+    catch (InterruptedException ie) { }
+ 
+    System.gc();
+
+    try   { Thread.currentThread().sleep(2000); }                
+    catch (InterruptedException ie) { }
+ 
     System.out.println("End test program"); 
+    System.exit(1);
   }
 
 }
