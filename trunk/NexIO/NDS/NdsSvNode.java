@@ -191,6 +191,11 @@ public class NdsSvNode implements NxNode
        if(S1.charAt(S1.length()-1)=='\n')n++;
         return n;
      }
+   public int[] getDimension()
+     { if( !(getNodeClass().equals("SDS"))) return null;
+       if(nds== null) return null;
+       return nds.getDimension();
+      }
    public Object getNodeValue()
     { errormessage="improper node for Value";
       String S1= getDef();
@@ -201,19 +206,17 @@ public class NdsSvNode implements NxNode
       int k=S1.lastIndexOf('/',S1.length()-2);
       if(k<0) return null;
         if(!(S1.substring(k).indexOf(",SDS")>=0))return null;
-      //if(!S1.substring(S1.length()-3).toUpperCase().equals("SDS/"))
-       // {return null;
-      //  }
+      
        S1=S1.substring(0,S1.length()-2);
      
        k = S1.lastIndexOf('/');
        int j=S1.indexOf(',',k);
-       //System.out.println("k,j="+k+","+j);
+      
       errormessage="improper Node info";
       if((j<0)||(k<0)||(j<k)) return null;
       errormessage="";
       S1=S1.substring(0,k+1)+"SDS "+S1.substring(k+1,j);
-      //System.out.println("Args for getData="+S1);
+      
       try{
       if(!nds.getData(getFile(),S1))
        {errormessage=nds.getStringData();
