@@ -48,22 +48,8 @@ public class JTreeUI extends JPanel implements Serializable // ,DragGestureListe
     DefaultTreeModel model;
     public  JTreeUI() 
     { 
-            /*DragSource dragSource = DragSource.getDefaultDragSource();
 
-		    dragSource.createDefaultDragGestureRecognizer(
-					this, // component where drag originates
-					DnDConstants.ACTION_COPY_OR_MOVE, // actions
-					this); // drag gesture recognizer
-			*/		
-	
-           
-		//	m_popup = new JPopupMenu();
-         //   Action a1 = new AbstractAction("Delete") { 
-          //  public void actionPerformed(ActionEvent e) {
-          //      tree.repaint();}
-          //      };
-        //    m_popup.add(a1);
-             
+
             ds_tag = 0;
             setLayout(new GridLayout(1,1));
             root = new DefaultMutableTreeNode("Session");
@@ -75,14 +61,8 @@ public class JTreeUI extends JPanel implements Serializable // ,DragGestureListe
             model.insertNodeInto(level1, root, 0);
             tree = new JTree(model);
             tree.setShowsRootHandles(true);
-            
-           // tree.add(m_popup);
-           // tree.addMouseListener(new PopupTrigger());
-            
             tree.putClientProperty("JTree.LineStyle", "Horizontal");
-           // tree.setLayout(new BorderLayout());
-           // tree.setBorder(
-			//BorderFactory.createTitledBorder(""));
+
             JScrollPane pane = new JScrollPane(tree);
             add(pane);
 
@@ -98,21 +78,6 @@ public class JTreeUI extends JPanel implements Serializable // ,DragGestureListe
  
     }// End of Constructor
     
- 
-  /*      public void dragGestureRecognized(DragGestureEvent e) {
-		        // drag anything ...
-		        e.startDrag(DragSource.DefaultCopyDrop, // cursor
-			        new StringSelection(getFilename()), // transferable
-			        this);  // drag source listener
-	        }
-	        public void dragDropEnd(DragSourceDropEvent e) {}
-	        public void dragEnter(DragSourceDragEvent e) {}
-	        public void dragExit(DragSourceEvent e) {}
-	        public void dragOver(DragSourceDragEvent e) {}
-	        public void dropActionChanged(DragSourceDragEvent e) {}
-
-         */
- 
  
         
       public DefaultMutableTreeNode getSelectedNode()

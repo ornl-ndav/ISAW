@@ -103,7 +103,7 @@ public class JCommandUI  extends JPanel  implements Serializable
             System.out.println("Num of log entries" +num);
             for (int i = 0; i<num; i++)
             {
-                System.out.println(" log entries  :" +ds.getOp_log().getEntryAt(i));
+              //  System.out.println(" log entries  :" +ds.getOp_log().getEntryAt(i));
                  DefaultMutableTreeNode level2 = new DefaultMutableTreeNode(ds.getOp_log().getEntryAt(i));
                  model.insertNodeInto(level2,level1,i);
                  
