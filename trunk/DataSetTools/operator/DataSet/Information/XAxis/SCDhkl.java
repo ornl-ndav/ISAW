@@ -1,6 +1,6 @@
 /*
- * File:  SCDhkl.java 
- *             
+ * File:  SCDhkl.java
+ *
  * Copyright (C) 2002, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/01/14 19:02:08  dennis
+ * Added getDocumentation() and main test program. (Chris Bouzek)
+ *
  * Revision 1.3  2002/11/27 23:18:10  pfpeterson
  * standardized header
  *
@@ -55,7 +58,7 @@ package DataSetTools.operator.DataSet.Information.XAxis;
 
 import java.io.*;
 import java.util.*;
-import java.text.*; 
+import java.text.*;
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
 import DataSetTools.math.*;
@@ -63,6 +66,8 @@ import DataSetTools.util.*;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.DataSet.DataSetOperator;
 import DataSetTools.parameter.*;
+import DataSetTools.viewer.*;
+import DataSetTools.retriever.*;
 
 /**
  *  This operator uses the Q-vector produced by SCDQxyz and the
@@ -93,22 +98,22 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
      *  by calling getResult().
      *
      *  @param  ds    The DataSet to which the operation is applied
-     *  @param  i     index of the Data block to use 
+     *  @param  i     index of the Data block to use
      *  @param  tof   the time-of-flight at which Qx,Qy,Qz is to be obtained
      */
     public SCDhkl( DataSet ds, int i, float tof ){
-        this();                        
-        
+        this();
+
         getParameter(0).setValue( new Integer(i) );
         getParameter(1).setValue( new Float(tof) );
-        
+
         setDataSet( ds );           // record reference to the DataSet that
                                     // this operator should operate on
     }
 
     /**
-     * @return the command name to be used with script processor: 
-     *         in this case, SCDhkl 
+     * @return the command name to be used with script processor:
+     *         in this case, SCDhkl
      */
     public String getCommand(){
         return "SCDhkl";
@@ -120,10 +125,10 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
      */
     public void setDefaultParameters(){
         parameters = new Vector();  // must do this to clear any old parameters
-        
+
         Parameter parameter = new Parameter("Data block index",new Integer(0));
         addParameter( parameter );
-        
+
         parameter = new Parameter( "TOF(us)" , new Float(0) );
         addParameter( parameter );
     }
@@ -132,25 +137,63 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
      * Get string label for the xaxis information.
      *
      *  @param  x    the x-value for which the axis label is to be obtained.
-     *  @param  i    the index of the Data block that will be used for obtaining
-     *               the label.
+     *  @param  i    the index of the Data block that will be used for
+     *               obtaining the label.
      *
-     *  @return  String describing the information provided by X_Info(),
-     *           "h,k,l".
+     *  @return      String describing the information provided by X_Info(),
+     *               "h,k,l".
      */
     public String PointInfoLabel( float x, int i ){
         return "h,k,l";
     }
-    
 
+    /* ---------------------- getDocumentation --------------------------- */
     /**
-     * Get <hkl> at the specified point.
-     *
-     *  @param  x    the x-value (tof) for which the axis information is to be 
-     *               obtained.
-     *
-     *  @param  i    the index of the Data block for which the axis information
-     *               is to be obtained.
+     *  Returns the documentation for this method as a String.  The format
+     *  follows standard JavaDoc conventions.
+     */
+    public String getDocumentation()
+   {
+     StringBuffer s = new StringBuffer("");
+     s.append("@overview This operator uses the Q-vector produced by ");
+     s.append("SCDQxyz and the orientation matrix, UB, produced by blind ");
+     s.append("to calculate the <hkl> of a given point, specified by the");
+     s.append("Data block index and the time-of-flight value.\n");
+     s.append("@assumptions It is assumed that the DataSet has an SCDQyx ");
+     s.append("operator associated with it.\n");
+     s.append("It is also assumed that the DataSet has an attribute ");
+     s.append("specifying the orientation matrix, and the matrix is ");
+     s.append("invertible.\n");
+     s.append("@algorithm First this operator calls SCDQxyz to calculate ");
+     s.append("the associated Position3D Q-vector of the selected point.\n");
+     s.append("Then the Position3D is converted to Cartesian coordinates \n");
+     s.append("and further converted to units of 1/d.\n");
+     s.append("Then the orientation matrix is checked and the inverse is ");
+     s.append("calculated.\n");
+     s.append("Next the inverse orientation matrix and the 1/d vector ");
+     s.append("are multiplied together to create the (h,k,l) coordinates.\n");
+     s.append("Finally the (h,k,l) coordinates are used to create a new ");
+     s.append("Position3D.\n");
+     s.append("@param ds The DataSet to which the operation is applied.\n");
+     s.append("@param i index of the Data block to use.\n");
+     s.append("@param tof The time-of-flight at which Qx,Qy,Qz is to be ");
+     s.append("obtained\n");
+     s.append("@return Position3D of the hkl.  Only the Cartesian ");
+     s.append("coordinates of this have physical meaning.\n");
+     s.append("@error Returns null if the DataSet does not have an SCDQxyz ");
+     s.append("operator associated with it.\n");
+     s.append("@error Returns null if the SCDQxyz cannot calculate a ");
+     s.append("Q-vector.\n");
+     s.append("@error Returns null if the DataSet does not have an attribute ");
+     s.append("specifying the orientation matrix.\n");
+     s.append("@error Returns null if the orientation matrix does not ");
+     s.append("have an inverse.\n");
+     return s.toString();
+   }
+
+    /* ---------------------------- getResult ------------------------------ */
+    /**
+     *  Get <hkl> at the specified point.
      *
      *  @return Position3D of the hkl. Only the cartesian coordinates
      *  of this have physical meaning.
@@ -160,10 +203,13 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
 
         // have SCDQxyz calculate the Q-vector
         SCDQxyz Qop = (SCDQxyz)ds.getOperator("Find Qx, Qy, Qz");
+
         if(Qop==null) return null;
+
         Qop.getParameter(0).setValue((Integer)getParameter(0).getValue());
         Qop.getParameter(1).setValue((Float)getParameter(1).getValue());
         Position3D Qpos=(Position3D)Qop.getResult();
+
         if(Qpos==null) return null;
 
         // convert the Q to 1/d
@@ -171,11 +217,13 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
         for( int i=0 ; i<3 ; i++ ){
             Q[i]=(float)(Q[i]/(2.*PI));
         }
-          
+
         // check the current UB matrix
         float[][] UBtemp=
                 (float[][])ds.getAttributeValue(Attribute.ORIENT_MATRIX);
+
         if(UBtemp==null) return null;
+
         // calculate the inverse of the orientation matrix
         if(! UBtemp.equals(this.UB)){
             if(this.invU==null) this.invU=new float[3][3];
@@ -196,12 +244,12 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
 
         return hklpos;
     }
-    
+
     /**
      * Calls getResult then formats the Position3D nicely. If anything
      * is wrong this returns "N/A".
      *
-     *  @param  x    the x-value (tof) for which the axis information is to be 
+     *  @param  x    the x-value (tof) for which the axis information is to be
      *               obtained.
      *
      *  @param  i    the index of the Data block for which the axis information
@@ -211,19 +259,19 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
         // set the parameters for getResult
         getParameter(0).setValue(new Integer(i));
         getParameter(1).setValue(new Float(x));
-        
+
         // set up a number format to display the result
         NumberFormat fmt = NumberFormat.getInstance();
         fmt.setMinimumFractionDigits(2);
         fmt.setMaximumFractionDigits(2);
-        
+
         // let getResult calculate Q
         Position3D hklpos=(Position3D)this.getResult();
         if(hklpos==null) return "N/A";
         float[] hkl=hklpos.getCartesianCoords();
-        
+
         return fmt.format(hkl[0])+","+fmt.format(hkl[1])+","+fmt.format(hkl[2]);
-    }  
+    }
 
     /**
      * Calculate the inverse of a 3x3 matrix using a method other than
@@ -269,7 +317,7 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
     }
 
     /**
-     * Get a copy of the current DateTime Operator.  The list 
+     * Get a copy of the current DateTime Operator.  The list
      * of parameters and the reference to the DataSet to which it applies are
      * also copied.
      */
@@ -279,7 +327,48 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
         // with this operator
         new_op.setDataSet( this.getDataSet() );
         new_op.CopyParametersFrom( this );
-        
+
         return new_op;
     }
+
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    int index;
+    float TOF;
+
+    StringBuffer p = new StringBuffer();
+
+    index = 70;
+    TOF = (float)3512.438;
+
+    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/SCD06496.RUN";
+                       //"D:\\ISAW\\SampleRuns\\SCD06496.RUN";
+
+    try
+    {
+       RunfileRetriever rr = new RunfileRetriever( file_name );
+       DataSet ds1 = rr.getDataSet(1);
+       ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+       SCDhkl op = new SCDhkl(ds1, index, TOF);
+       p.append("\nThe results of calling this operator are:\n");
+
+       if( op.getResult() == null )
+         p.append("The results of this operator are invalid.");
+       else
+         p.append(op.getResult().toString());
+
+       p.append("\n\nThe results of calling getDocumentation are:\n");
+       p.append(op.getDocumentation());
+
+       System.out.print(p.toString());
+    }
+    catch(Exception e)
+    {
+       e.printStackTrace();
+    }
+  }
 }
