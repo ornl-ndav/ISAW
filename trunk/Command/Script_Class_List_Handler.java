@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2001/06/26 14:44:27  rmikk
+ * Install scripts and java operators are now relative to
+ * ISAW_HOME(Operators and Scripts subdirectories),
+ *  USER_HOME, and user.home Directories
+ *
  * Revision 1.9  2001/06/25 19:59:58  chatter
  * Added Last Parameter to JParametersDialog Constructor
  * in main program
@@ -91,13 +96,31 @@ public class Script_Class_List_Handler  implements OperatorHandler
      private void inittt()
       {  if( !first)
            return;
-        
+         for( int i = 0 ; i < GenericOperatorList.getNum_operators(); i++)
+          {Operator op = GenericOperatorList.getOperator( i );
+            if( op instanceof GenericOperator)
+                 add( op );
+          }
         first = false;     
-        String ScrPaths = System.getProperty( "Script_Path" );
-        if( ScrPaths == null )
-          return ;
-         
-        ScrPaths.trim();
+        String ScrPaths = System.getProperty( "ISAW_HOME" );
+        if( ScrPaths != null )
+           {processPaths(ScrPaths+"\\Operators") ;
+            processPaths(ScrPaths+"\\Scripts") ;
+           }
+        ScrPaths = System.getProperty( "USER_HOME" );
+        if( ScrPaths != null )
+           {processPaths(ScrPaths+"\\Operators") ;
+            processPaths(ScrPaths+"\\Scripts") ;
+           }
+        ScrPaths = System.getProperty( "user.home" );
+        if( ScrPaths != null )
+           {processPaths(ScrPaths+"\\Operators") ;
+            processPaths(ScrPaths+"\\Scripts") ;
+           }
+
+      }
+      private void processPaths( String ScrPaths) 
+        {ScrPaths.trim();
         
         ScrPaths=ScrPaths.replace(java.io.File.pathSeparatorChar,';'); 
         if( ScrPaths.lastIndexOf(';') != ';')
@@ -116,11 +139,7 @@ public class Script_Class_List_Handler  implements OperatorHandler
 
              
            }
-        for( int i = 0 ; i < GenericOperatorList.getNum_operators(); i++)
-          {Operator op = GenericOperatorList.getOperator( i );
-            if( op instanceof GenericOperator)
-                 add( op );
-          }
+   
         return;
         }//Constructor
 
