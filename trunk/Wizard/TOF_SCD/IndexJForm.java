@@ -28,6 +28,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.12  2003/06/18 19:57:03  bouzekc
+ * Uses super.getResult() for initializing PropertyChanger
+ * variables.  Now fires off property change events in a
+ * semi-intelligent manner.
+ *
  * Revision 1.11  2003/06/17 20:36:36  bouzekc
  * Fixed setDefaultParameters so all parameters have a
  * visible checkbox.  Added more robust error checking on
@@ -338,8 +343,16 @@ public class IndexJForm extends Form
     param.setValid(true);
     useSpecMat = ((BooleanPG)param).getbooleanValue();
 
+    //#8 the matrix name will be validated later
+
+    //#9 the restrict runs value will be validated later
+    param = (IParameterGUI)super.getParameter(9);
+
     //peaks file name - make sure it is right for the system
     peaksName = peaksDir + expName + ".peaks";
+
+    //validate the parameters and init the progress bar variables
+    super.getResult();
 
     //no need to continually recreate this Operator in a loop
     indexJOp = new IndexJ();
@@ -351,27 +364,28 @@ public class IndexJForm extends Form
 
     if(useSpecMat)  //user wants to use a specific matrix file
     {
-      //get the matrix name and be sure the file exists
+      //get the matrix name make sure the matrix file exists
       param = (IParameterGUI)super.getParameter(8);
       matName = (String)param.getValue().toString();
-
       if( !(new File(matName).exists()) )
         return errorOut(param,
                  "ERROR: The specified matrix file does not exist.");
       else
         param.setValid(true);
 
-      //get the restrict runs value
+      //validate the restrict runs value
       param = (IParameterGUI)super.getParameter(9);
       restrictRuns = (String)param.getValue().toString();
       param.setValid(true);
-                 
+
       SharedData.addmsg("IndexJ is updating " + peaksName + " with " + matName);
       indexJOp.getParameter(1).setValue(matName);
       indexJOp.getParameter(2).setValue(restrictRuns);
       obj = indexJOp.getResult();
       if(obj instanceof ErrorString)
         return errorOut("IndexJ failed: " + obj.toString());
+
+      super.fireValueChangeEvent(0, 100);
     }
     else  //try to find the matrix files
     {
@@ -382,6 +396,9 @@ public class IndexJForm extends Form
         return errorOut(param,
                  "ERROR: No least squares matrix files exist.  " + 
                  "Please specify a matrix file.");
+
+      //set the increment amount
+      increment = (1.0f / runsArray.length) * 100.0f;
 
       for(int i = 0; i < runsArray.length; i++)
       {
@@ -401,6 +418,11 @@ public class IndexJForm extends Form
         obj = indexJOp.getResult();
         if(obj instanceof ErrorString)
           return errorOut("IndexJ failed: " + obj.toString());
+
+        //fire a property change event off to any listeners
+        oldPercent = newPercent;
+        newPercent += increment;
+        super.fireValueChangeEvent((int)oldPercent, (int)newPercent);
       }
     }
 
