@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/04/26 13:12:10  rmikk
+ *  null constructor is now public
+ *
  *  Revision 1.9  2004/03/15 06:10:36  dennis
  *  Removed unused import statements.
  *
@@ -128,7 +131,7 @@ public class Float1DAttribute extends Attribute{
         System.arraycopy( value, 0, this.value, 0, value.length );
     }
     
-    private Float1DAttribute(){
+    public Float1DAttribute(){
         super( "" );
         this.value =new float[1];
         this.value[0]=0f;
@@ -247,7 +250,7 @@ public class Float1DAttribute extends Attribute{
         }
      }
 
-    public boolean XMLread( InputStream stream ){
+	public boolean XMLread( InputStream stream ){
         Vector       attr        = null;
         int          nVal        = 0;
         Integer      tempI       = null;
@@ -262,7 +265,7 @@ public class Float1DAttribute extends Attribute{
             return xml_utils.setError( xml_utils.getErrorMessage());
         if( !Tag.equals("name"))
             return xml_utils.setError("name Tag Missing in Float1D");
-        this.name = xml_utils.getValue( stream);
+        name = xml_utils.getValue( stream);
         if( name == null)
             return xml_utils.setError("name Tag Missing in Float1D");
         
@@ -336,7 +339,7 @@ public class Float1DAttribute extends Attribute{
             return xml_utils.setError("Tags not nested in Float1D"+Tag);
         if(!xml_utils.skipAttributes( stream ))
             return xml_utils.setError( xml_utils.getErrorMessage());
-        return true;
+        return true;//new Float1DAttribute( name,value);
     }
 
     /**
