@@ -1,4 +1,3 @@
-
 /*
  * File:  FloatArray.java 
  *             
@@ -32,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/06/23 16:12:24  bouzekc
+ * Reformatted for consistent indenting.
+ *
  * Revision 1.4  2003/06/23 14:50:31  bouzekc
  * Removed duplicate inner ActionListener class.  Now uses
  * PGActionListener.
@@ -59,37 +61,28 @@ import DataSetTools.util.PGActionListener;
 *   This ParameterGUI allows for users to enter a Vector whose elements are Vectors
 *   of Float values
 */
-public class FloatArrayArrayPG extends VectorPG
-  {
+public class FloatArrayArrayPG extends VectorPG{
 
-   public FloatArrayArrayPG( String Prompt, Object value)
-      { super( new FloatArrayPG("Enter FloatArray",null),"Enter FloatArray List");
-        setValue( value);
-       }
-
-      public static void main( String args[] )
-      {
-         JFrame jf = new JFrame("Test");
-         jf.getContentPane().setLayout( new GridLayout( 1,2));
-         FloatArrayArrayPG IaPg = new FloatArrayArrayPG( "Enter FloatArray list", null);
-         IaPg.init();
-         jf.getContentPane().add(IaPg.getGUIPanel());
-         JButton  jb = new JButton("Result");
-         jf.getContentPane().add(jb);
-         jb.addActionListener( new PGActionListener( IaPg));
-         jf.setSize( 600,100);
-         jf.invalidate();
-         jf.show();
-
-
-
-
-      } 
-public Object clone()
-  {
-    FloatArrayArrayPG faap = new FloatArrayArrayPG( getName(), getValue());
-    return (Object)faap;
-
-  }     
+  public FloatArrayArrayPG( String Prompt, Object value){ 
+    super( new FloatArrayPG("Enter FloatArray",null),"Enter FloatArray List");
+    setValue( value);
   }
 
+  public static void main( String args[] ){
+    JFrame jf = new JFrame("Test");
+    jf.getContentPane().setLayout( new GridLayout( 1,2));
+    FloatArrayArrayPG IaPg = new FloatArrayArrayPG( "Enter FloatArray list", null);
+    IaPg.init();
+    jf.getContentPane().add(IaPg.getGUIPanel());
+    JButton  jb = new JButton("Result");
+    jf.getContentPane().add(jb);
+    jb.addActionListener( new PGActionListener( IaPg));
+    jf.setSize( 600,100);
+    jf.invalidate();
+    jf.show();
+  } 
+  public Object clone(){
+    FloatArrayArrayPG faap = new FloatArrayArrayPG( getName(), getValue());
+    return (Object)faap;
+  }     
+}
