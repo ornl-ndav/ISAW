@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2002/05/03 14:33:26  rmikk
+ * The help pages describing specific operators now has the prompt string
+ *   to the right of the data type for each argument
+ *
+ * The help pages for ScriptOperators allow for the display of the script.
+ *
  * Revision 1.6  2001/11/12 21:36:54  dennis
  *   1. Fixed the "BACK" in The help page with the list of all
  *      installed commands.
@@ -39,8 +45,7 @@
  *   2. Added GPL and some java-doc's.
  *
 */
-//import javax.swing.*;
-//import javax.swing.event.*;
+
 package IsawGUI;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -51,6 +56,7 @@ import java.io.IOException;
 import java.net.*;
 import Command.*;
 import DataSetTools.operator.*;
+
 /** Creates a pop up window that can display rudimentary HTML pages or pages that are
 *   customized to help on the operators.
 */
@@ -113,6 +119,9 @@ public class HTMLPage extends JFrame {
                                            { 
                                              SetText( editorPane , U.getRef() );
                                            }
+                                        else if( U.getFile().indexOf("XX$ScriptFile") >= 0)
+                                           { ShowFile( U.getRef() );
+                                            }
 					else if( U.getFile().indexOf("XX$Panel3")>=0)
                                             SetTextBack( editorPane );
                                         else
@@ -133,22 +142,31 @@ public class HTMLPage extends JFrame {
        }
      catch(Exception s){return;}
      Operator O = SH.getOperator( k );
+     String filename = null;
      if( O instanceof ScriptOperator)
-       Textt += "ScriptOperator from file <B>"+ ((ScriptOperator)O).getFileName()+"</B><BR>";
+       { filename = ((ScriptOperator)O).getFileName();
+         Textt += "ScriptOperator from file <A href=XX$ScriptFile#"+ filename+
+                   ">"+ ((ScriptOperator)O).getFileName()+"</a><BR>";
+        }
      else
        Textt += "Java Operator. Class="+ O.getClass().toString() +"<BR>";
      Textt += "Title( in Menu's etc.) ="+ O.getTitle()+"<BR>";
      Textt += "Command(in commandPane) =" + O.getCommand()+"<P><P>";
-     Textt += "<Center><H3> Object "+ O.getCommand()+"(";
+     Textt += "<Center><H3> Object "+ O.getCommand()+"( <BR>";
+     
      int n = SH.getNumParameters( k );
+    
      for( int i = 0; i< n ; i++ )
        {Object XX = SH.getOperatorParameter( k , i );
+        Parameter P = O.getParameter( i );
+        String Prompt = P.getName();
         if( XX == null)
-           Textt += "Object ";
+           Textt += " <U>Object</U> "+ Prompt;
         else
-          Textt += XX.getClass().toString();
+          Textt += "<U>"+XX.getClass().toString()+"</U>  "+Prompt;
         if( i < n-1)
-          Textt += " , ";      
+          Textt += " , ";   
+        Textt += "<BR>";   
       
        }
       Textt +=" ) ";
@@ -221,6 +239,21 @@ public class HTMLPage extends JFrame {
    P+="</body></html>";
 
    JP.setText(P);
+     }
+  private void ShowFile( String filename )
+     {JFrame jf = new JFrame( filename );
+      JTextArea jt = new JTextArea(20,60 );
+       jt.setEditable( false );
+      jt.setDocument( new IsawGUI.Util().openDoc( filename ));
+      jf.getContentPane().add( new JScrollPane(jt));
+      jf.setSize( 600,500 );
+      jf.show();
+      jf.validate();
+
+        
+
+
+
      }
 	public static void main(String args[]) {
 		GJApp.launch(new HTMLPage("http://www.pns.anl.gov/gppd/index.htm"), 
