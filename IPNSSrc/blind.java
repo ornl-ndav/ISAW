@@ -53,6 +53,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/06/20 16:04:55  dennis
+ * Increased size of array jh[] to fix array index out of bounds
+ * problem when certain peaks were used.
+ *
  * Revision 1.13  2003/05/14 20:17:35  pfpeterson
  * Improved readability and encapsulation. No longer uses wrappers for int
  * or double, log file better matches FORTRAN counterpart, simplified loop
@@ -473,7 +477,7 @@ public class blind {
     double [] a = new double[3 * 3];
     double d= 0.0;
 
-    int [] jh= new int[3 * lmt];
+    int [] jh= new int[3 * lmt + 3];
     boolean Goto=true;
 
     if(DEBUG) System.out.println("Got into BIAS");
