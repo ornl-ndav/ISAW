@@ -1,27 +1,55 @@
 /*
- * @(#)SpectrometerTofToWavelength.java   0.2  99/06/17   Dennis Mikkelson
+ * @(#)SpectrometerTofToWavelength.java   0.3  99/06/17   Dennis Mikkelson
  *
  *                                 99/08/16   Added constructor to allow
  *                                            calling operator directly
+ *                               2000/04/21   Added methods to set better
+ *                                            default parameters. Now it
+ *                                            is derived from the class
+ *                                            XAxisConversionOperator
  *             
- * This operator converts neutron time-of-flight DataSet for a Spectrometer
- * to wavelength.  The DataSet must contain spectra with an attribute giving 
- * the detector position. In addition, it is assumed that the XScale for the 
- * spectra represents the time-of-flight from the SAMPLE to the detector. 
+ * $Log$
+ * Revision 1.4  2000/07/10 22:36:23  dennis
+ * July 10, 2000 version... many changes
+ *
+ * Revision 1.13  2000/06/09 16:12:35  dennis
+ * Added getCommand() method to return the abbreviated command string for
+ * this operator
+ *
+ * Revision 1.12  2000/05/25 18:48:16  dennis
+ * Fixed bug: DataSet attributes were not copied properly.
+ *
+ * Revision 1.11  2000/05/16 15:36:34  dennis
+ * Fixed clone() method to also copy the parameter values from
+ * the current operator.
+ *
+ * Revision 1.10  2000/05/15 21:43:45  dennis
+ * now uses constant Parameter.NUM_BINS rather than the string
+ * "Number of Bins"
+ *
+ * Revision 1.9  2000/05/11 16:41:28  dennis
+ * Added RCS logging
+ * 
+ *
  */
 
 package DataSetTools.operator;
 
 import  java.io.*;
+import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 
 /**
-  *  Convert a neutron time-of-flight DataSet to wavelength. 
-  */
+ * This operator converts neutron time-of-flight DataSet for a Spectrometer
+ * to wavelength.  The DataSet must contain spectra with an attribute giving 
+ * the detector position. In addition, it is assumed that the XScale for the 
+ * spectra represents the time-of-flight from the SAMPLE to the detector. 
+ *
+ */
 
-public class SpectrometerTofToWavelength extends    DataSetOperator 
+public class SpectrometerTofToWavelength extends    XAxisConversionOperator 
                                          implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -36,16 +64,6 @@ public class SpectrometerTofToWavelength extends    DataSetOperator
   public SpectrometerTofToWavelength( )
   {
     super( "Convert to Wavelength" );
-    Parameter parameter;
-
-    parameter = new Parameter( "Min Wavelength(A)", new Float(0.0) );
-    addParameter( parameter );
-
-    parameter = new Parameter( "Max Wavelength(A)", new Float(5.0) );
-    addParameter( parameter );
-
-    parameter = new Parameter( "Number of Bins ", new Integer( 500 ) );
-    addParameter( parameter );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -84,6 +102,97 @@ public class SpectrometerTofToWavelength extends    DataSetOperator
   }
 
 
+  /* ---------------------------- getCommand ------------------------------- */
+  /**
+   * Returns the abbreviated command string for this operator.
+   */
+   public String getCommand()
+   {
+     return "ToWL";
+   }
+
+
+ /* -------------------------- setDefaultParmeters ------------------------- */
+ /**
+  *  Set the parameters to default values.
+  */
+  public void setDefaultParameters()
+  {
+    UniformXScale scale = getXRange();
+
+    parameters = new Vector();  // must do this to clear any old parameters
+    Parameter parameter;
+
+    if ( scale == null )
+      parameter = new Parameter( "Min Wavelength(A)", new Float(0.0) );
+    else
+      parameter = new Parameter( "Min Wavelength(A)",
+                                  new Float(scale.getStart_x()) );
+    addParameter( parameter );
+
+    if ( scale == null )
+      parameter = new Parameter( "Max Wavelength(A)", new Float(5.0) );
+    else
+      parameter = new Parameter( "Max Wavelength(A)",
+                                  new Float(scale.getEnd_x()) );
+    addParameter( parameter );
+
+    parameter = new Parameter( Parameter.NUM_BINS, new Integer( 500 ) );
+    addParameter( parameter );
+  }
+
+  /* -------------------------- new_X_label ---------------------------- */
+  /**
+   * Get string label for converted x values.
+   *
+   *  @return  String describing the x label and units for converted x values.
+   */
+   public String new_X_label()
+   {
+     return new String( "\u03bb" + "(A)" );
+   }
+
+
+  /* ---------------------- convert_X_Value ------------------------------- */
+  /**
+   * Evaluate the axis conversion function at one point only.
+   *
+   *  @param  x    the x-value where the axis conversion function is to be
+   *               evaluated.
+   *
+   *  @param  i    the index of the Data block for which the axis conversion
+   *               function is to be evaluated.
+   *
+   *  @return  the value of the axis conversion function at the specified x.
+   */
+  public float convert_X_Value( float x, int i )
+  {
+    DataSet ds = this.getDataSet();          // make sure we have a DataSet
+    if ( ds == null )
+      return Float.NaN;
+
+    int num_data = ds.getNum_entries();      // make sure we have a valid Data
+    if ( i < 0 || i >= num_data )            // index
+      return Float.NaN;
+
+    Data data               = ds.getData_entry( i );
+    AttributeList attr_list = data.getAttributeList();
+
+                                             // get the detector position
+    DetectorPosition position=(DetectorPosition)
+                       attr_list.getAttributeValue( Attribute.DETECTOR_POS);
+
+    if( position == null )                             // make sure it has the
+      return Float.NaN;                                // needed attributes
+                                                       // to convert it to D
+
+    float spherical_coords[] = position.getSphericalCoords();
+
+    return tof_calc.Wavelength( spherical_coords[0], x );
+  }
+
+
+
   /* ---------------------------- getResult ------------------------------- */
 
   public Object getResult()
@@ -97,7 +206,7 @@ public class SpectrometerTofToWavelength extends    DataSetOperator
                                      ds.getTitle(),
                                      "Angstroms",
                                      "Wavelength",
-                                     "counts",
+                                     "Counts",
                                      "Scattering Intensity" );
 
     // #### must take care of the operation log... this starts with it empty
@@ -106,7 +215,7 @@ public class SpectrometerTofToWavelength extends    DataSetOperator
     new_ds.addLog_entry( "Converted to Wavelength" );
 
     // copy the attributes of the original data set
-    new_ds.getAttributeList().addAttributes( ds.getAttributeList() );
+    new_ds.setAttributeList( ds.getAttributeList() );
 
                                      // get the wavelength scale parameters 
     float min_wl = ( (Float)(getParameter(0).getValue()) ).floatValue();
@@ -192,6 +301,7 @@ public class SpectrometerTofToWavelength extends    DataSetOperator
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
+    new_op.CopyParametersFrom( this );
 
     return new_op;
   }

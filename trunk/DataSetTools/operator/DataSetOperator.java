@@ -1,6 +1,15 @@
 /*
  * @(#)DataSetOperator.java     0.1  99/06/04  Dennis Mikkelson
  *
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.3  2000/07/10 22:35:55  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.7  2000/05/11 16:41:28  dennis
+ *  Added RCS logging
+ *
+ *
  */
 
 package DataSetTools.operator;
@@ -36,6 +45,10 @@ import DataSetTools.dataset.*;
 
 abstract public class DataSetOperator extends Operator implements Serializable
 {
+   public static final int DEFAULT           = 0;
+   public static final int X_AXIS_CONVERSION = 1;
+   public static final int SCALAR            = 2;
+
    private DataSet data_set;
 
    protected DataSetOperator( String title )
@@ -50,6 +63,9 @@ abstract public class DataSetOperator extends Operator implements Serializable
    * on a DataSet.  The DataSet that the operator operates on is set by calling
    * this method when the operator is added to the list of operators for a
    * DataSet.
+   *
+   *  @param  data_set  the DataSet that this operator will operate on when
+   *                    the getResult() method is called.
    */
   public void setDataSet( DataSet data_set )
   {
@@ -59,12 +75,23 @@ abstract public class DataSetOperator extends Operator implements Serializable
   /**
    * Get the "this" DataSet for the operator.  This is the data set on which
    * the operation is to be performed.
+   *
+   * @return  a reference to the DataSet this operator acts on.
    */
   public DataSet getDataSet()
   {
     return data_set;
   }
 
+  /**
+   * Get the category of this DataSet operator
+   *
+   * @return  Returns an integer flag specifying the category of this operator.
+   */
+  public int getCategory()
+  {
+    return DEFAULT;
+  } 
 
   /**
    * Get a copy of the current DataSetOperator.  The list of parameters

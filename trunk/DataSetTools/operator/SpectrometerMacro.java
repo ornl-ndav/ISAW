@@ -1,6 +1,7 @@
 package  DataSetTools.operator;
 
 import  java.io.*;
+import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
@@ -22,37 +23,22 @@ import  ChopTools.*;
  * @version 1.0
  * @since August 10, 1999
  *        August 16, 1999 Added constructor to allow calling operator directly
- * @see ISaw
+ * @see IsawGUI.Isaw
  * @see SpectrometerEvaluator
- * @see SpectrometerGrouper
- * @see SpectrometerNomalizer
+// * @see SpectrometerGrouper
+ * @see SpectrometerNormalizer
  * @see SpectrometerTofToEnergyLoss
  */
 
 public class SpectrometerMacro extends    DataSetOperator 
                                   implements Serializable
 {
-
   /**
    * Constructor of macro
    */
   public SpectrometerMacro( )
   {
     super( "HRMECS Macro: Calibration, Evaluation, Grouping & Tof~E " );
-    
-    Parameter parameter;
- 
-    parameter = new Parameter( "Select Proper Monitor", 
-                              new DataSet("Monitor DataSet", "Empty DataSet") );
-                              
-    addParameter( parameter );
-    
-    parameter = new Parameter( "Uplevel for Evaluation", new Float(50.0) );
-    addParameter( parameter );
-    
-    parameter = new Parameter( "Lowlevel for Evaluation", new Float(1.0) );
-    addParameter( parameter );
-    
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -90,6 +76,39 @@ public class SpectrometerMacro extends    DataSetOperator
                                     // this operator should operate on
   }
 
+
+  /* ---------------------------- getCommand ------------------------------- */
+  /**
+   * Returns the abbreviated command string for this operator.
+   */
+   public String getCommand()
+   {
+     return "SpecMacro";
+   }
+
+
+
+ /* -------------------------- setDefaultParmeters ------------------------- */
+ /**
+  *  Set the parameters to default values.
+  */
+  public void setDefaultParameters()
+  {
+    parameters = new Vector();  // must do this to clear any old parameters
+
+    Parameter parameter;
+
+    parameter = new Parameter( "Select Proper Monitor",
+                              new DataSet("Monitor DataSet", "Empty DataSet") );
+  
+    addParameter( parameter );
+   
+    parameter = new Parameter( "Uplevel for Evaluation", new Float(50.0) );
+    addParameter( parameter );
+
+    parameter = new Parameter( "Lowlevel for Evaluation", new Float(1.0) );
+    addParameter( parameter );
+  }
 
 
   /**
@@ -236,6 +255,7 @@ public class SpectrometerMacro extends    DataSetOperator
   {
     SpectrometerMacro new_op = new SpectrometerMacro( );
     new_op.setDataSet( this.getDataSet() );
+    new_op.CopyParametersFrom( this );
     return new_op;
   }
 

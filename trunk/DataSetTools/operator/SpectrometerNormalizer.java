@@ -12,6 +12,7 @@
 package DataSetTools.operator;
 
 import  java.io.*;
+import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  ChopTools.*;
 import  DataSetTools.util.*;
@@ -35,14 +36,6 @@ public class SpectrometerNormalizer extends    DataSetOperator
   public SpectrometerNormalizer( )
   {
     super( "Scale Using Monitor1 DataSet" );
-
-    Parameter parameter = new Parameter( "Adjuster", new Float(1000000.0) );
-    addParameter( parameter );
-    
-    parameter = new Parameter( "Monitor DataSet", 
-                              new DataSet("Monitor DataSet", "Empty DataSet"));
-    addParameter( parameter );
-    
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -73,6 +66,33 @@ public class SpectrometerNormalizer extends    DataSetOperator
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
+  }
+
+
+  /* ---------------------------- getCommand ------------------------------- */
+  /**
+   * Returns the abbreviated command string for this operator.
+   */
+   public String getCommand()
+   {
+     return "Norm";
+   }
+
+
+ /* -------------------------- setDefaultParmeters ------------------------- */
+ /**
+  *  Set the parameters to default values.
+  */
+  public void setDefaultParameters()
+  {
+    parameters = new Vector();  // must do this to clear any old parameters
+
+    Parameter parameter = new Parameter( "Adjuster", new Float(1000000.0) );
+    addParameter( parameter );
+   
+    parameter = new Parameter( "Monitor DataSet",
+                              new DataSet("Monitor DataSet", "Empty DataSet"));
+    addParameter( parameter );
   }
 
 
@@ -150,6 +170,7 @@ public class SpectrometerNormalizer extends    DataSetOperator
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
+    new_op.CopyParametersFrom( this );
 
     return new_op;
   }
