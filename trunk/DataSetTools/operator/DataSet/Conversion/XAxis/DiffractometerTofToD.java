@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2002/07/02 17:06:50  pfpeterson
+ *  Now uses string constants defined in IsawGUI.Isaw.
+ *
  *  Revision 1.3  2002/06/19 21:59:48  pfpeterson
  *  Modified to add the new conversion operators once Operation
  *  is completed.
@@ -123,6 +126,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  IsawGUI.Isaw;
 
 /**
  * This operator converts a neutron time-of-flight DataSet to D-spacing.  The
@@ -210,15 +214,15 @@ public class DiffractometerTofToD extends    XAxisConversionOp
     Parameter parameter;
 
     if ( scale == null )
-      parameter = new Parameter( "Min d(A)", new Float(0.0) );
+      parameter = new Parameter( "Min d("+Isaw.Angstrom+")", new Float(0.0) );
     else
-      parameter = new Parameter( "Min d(A)", new Float(scale.getStart_x()));  
+      parameter = new Parameter( "Min d("+Isaw.Angstrom+")", new Float(scale.getStart_x()));  
     addParameter( parameter );
 
     if ( scale == null )
-      parameter = new Parameter( "Max d(A)", new Float(4.0) );
+      parameter = new Parameter( "Max d("+Isaw.Angstrom+")", new Float(4.0) );
     else
-      parameter = new Parameter( "Max d(A)", new Float(scale.getEnd_x()));  
+      parameter = new Parameter( "Max d("+Isaw.Angstrom+")", new Float(scale.getEnd_x()));  
     addParameter( parameter );
 
     parameter = new Parameter( Parameter.NUM_BINS, new Integer(2000) );
@@ -233,7 +237,7 @@ public class DiffractometerTofToD extends    XAxisConversionOp
    */
    public String new_X_label()
    {
-     return new String( "d-Spacing(A)" );
+     return new String( "d-Spacing("+Isaw.Angstrom+")" );
    }
 
 
