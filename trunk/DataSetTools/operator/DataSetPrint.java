@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2001/07/16 22:49:50  dennis
+ *  Modified it to work even if there are no error values present
+ *  in the Data block.  Did some general "clean up".
+ *
  *  Revision 1.11  2001/07/16 14:25:24  dennis
  *  Now extends GenericOperator, so it appears in the GUI
  *
@@ -132,7 +136,8 @@ public class DataSetPrint extends    GenericOperator
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, PrintDS
+   * @return  the command name to be used with script processor: in this case, 
+   *          PrintDS
    */
    public String getCommand()
    {
@@ -175,76 +180,73 @@ public class DataSetPrint extends    GenericOperator
     int     index  = ((Integer)(getParameter(1).getValue()) ).intValue() ;
     int     OPtype = ((Integer)(getParameter(2).getValue()) ).intValue() ;
 
-                                     // construct a new data set with the same
-                                     // title, units, and operations as the
-                                     // current DataSet, ds
-    DataSetFactory factory = new DataSetFactory( 
-                                     ds.getTitle(),
-                                     "x_value",
-                                     "x_axis",
-                                     "y_value",
-                                     "y_axis" );
-
-    // #### must take care of the operation log... this starts with it empty
-    DataSet new_ds = factory.getDataSet(); 
-    new_ds.copyOp_log( ds );
-    new_ds.addLog_entry( "DataSetPrint Data" );
-
-    // copy the attributes of the original data set
-    new_ds.setAttributeList( ds.getAttributeList() );
-   
-    Data             data,
-                     new_data;
-    float            y_vals[];              
-    float            x_vals[];              
-    float            err_vals[];              
+    Data    data;
+    float   y_vals[];              
+    float   x_vals[];              
+    float   err_vals[] = null;              
     
-    int              num_data = ds.getNum_entries();
+    int     num_data = ds.getNum_entries();
 
-     data = ds.getData_entry( index );        
+    data = ds.getData_entry( index );        
   
-     if ( data == null )
-       return new ErrorString("ERROR: In PrintDS, No Data block # " + index  );
+    if ( data == null )
+      return new ErrorString("ERROR: In PrintDS, No Data block # " + index  );
 
-     x_vals           = data.getX_scale().getXs();
-     y_vals  = data.getCopyOfY_values();
-     
-     err_vals  = data.getErrors();
+     x_vals   = data.getX_scale().getXs();
+     y_vals   = data.getCopyOfY_values();
+     err_vals = data.getErrors();
      
      int numofy= y_vals.length;
      DecimalFormat df=new DecimalFormat("####0.000");
      
-     float [][] tableArray = new float [numofy][4];
-        
-     String [] columnName =     {"Number", 
-                                "x_values",
-                                "y_values",
-                                "Err_values"
-                                          };
-     
-     
+     String columnName[];
+     float tableArray[][];
+
+     if (err_vals != null )
+     {
+       tableArray = new float [numofy][4];
+       columnName = new String[] {"Number","x_values","y_values","Err_values"};
+     }
+     else
+     {
+       tableArray = new float [numofy][3];
+       columnName = new String[] { "Number", "x_values", "y_values" };
+     }
      
      for ( int i = 0; i < numofy; i++ )
      {
-       result.append( i+"\t "+df.format(x_vals[i])+"\t "+df.format(y_vals[i])+"\t "+df.format(err_vals[i])+"\r\n");
+
+       if ( err_vals != null )
+         result.append( i+"\t " + 
+                        df.format(x_vals[i]) + "\t " + 
+                        df.format(y_vals[i]) + "\t " +
+                        df.format(err_vals[i])+"\r\n");
+       else
+         result.append( i+"\t " +
+                        df.format(x_vals[i]) + "\t " +
+                        df.format(y_vals[i]) + "\r\n");
+
        tableArray[i][0]=i;
        tableArray[i][1]=x_vals[i];
        tableArray[i][2]=y_vals[i];
-       tableArray[i][3]=err_vals[i];       
+       if ( err_vals != null )
+         tableArray[i][3]=err_vals[i];       
      }
     
-    String output = result.toString();
+   String output = result.toString();
+   String return_str = "Printed " + ds.toString() + ", index " + index;
 
     //0.Print to screen
    if(OPtype==0)
    {
     System.out.print(output);
-    System.out.print("... Pop up "+ ds.toString()+"_INDX_"+index+" on screen \n");
+    return_str += " on console";
    }
 
     //1.write to a file 
     if(OPtype==1)
-    try{
+    try
+    {
         String filename = ds.toString()+"_"+index+".prt";
         filename = StringUtil.fixSeparator( filename );
         File f = new File(filename);
@@ -253,51 +255,52 @@ public class DataSetPrint extends    GenericOperator
         opw.write(output);
         opw.flush();
         opw.close();
-    System.out.print("... Save  "+ ds.toString()+"_INDX_"+index+" to the file "+filename+"\n");
-    }catch(Exception e){}
-    
+        return_str += " to file " +filename;
+    }
+    catch(Exception e){}
  
    //2.Jtextfield
    if(OPtype==2)
-		try
-		{
-    		JFrameMessageCHOP JFMC=(new JFrameMessageCHOP("Window Output for "+ds.toString()+"_INDX_"+index, ds.toString()+" for index "+index , output));
-    		JFMC.setVisible(true);
-    		JFMC.setBounds(60, 60, 680, 680);
-       System.out.print("... Pop up  "+ ds.toString()+"_INDX_"+index+" in text field \n");
-
-		}
-		catch (Throwable tt)
-		{
-			System.err.println(tt);
-			tt.printStackTrace();
-			System.exit(1);
-		}
+   try
+   {
+    JFrameMessageCHOP JFMC = (
+        new JFrameMessageCHOP( "Window Output for " + ds.toString()+
+                               "_INDX_" + index, 
+                               ds.toString() + " for index " + index,
+                               output));
+    JFMC.setVisible(true);
+    JFMC.setBounds(60, 60, 680, 680);
+    return_str += " in text field";
+   }
+   catch (Throwable tt)
+   {
+     System.err.println(tt);
+     tt.printStackTrace();
+     System.exit(1);
+   }
     
    //3.Jtable
    if(OPtype==3)
    {
-        OutputTable frame = new OutputTable( 
+     OutputTable frame = new OutputTable( 
                               tableArray,
                               columnName,
                               ds.toString()+"_INDX_"+index );
-        frame.pack();
-        frame.setVisible(true);
-        System.out.print("... Pop up "+ ds.toString()+"_INDX_"+index+" in Jtable \n");
-        
+     frame.pack();
+     frame.setVisible(true);
+     return_str += " in Jtable";
    } 
 
-    return new_ds;
+    System.out.println( return_str );
+    return return_str;
   }  
 
 
 public static void pause(int time)
 { 
- System.out.print("Pause for "+time/1000 +" second! ");
+  System.out.print("Pause for "+time/1000 +" second! ");
   try{Thread.sleep(time);}catch(Exception e){}
-    
 }
 
 
 }
-
