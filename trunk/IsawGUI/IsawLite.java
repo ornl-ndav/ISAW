@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/02 15:25:08  pfpeterson
+ * Trivial change to check mail notification.
+ *
  * Revision 1.3  2003/05/22 21:35:38  pfpeterson
  * Fixed bug so GUI mode works again.
  *
@@ -481,4 +484,5 @@ public class IsawLite{
       if(num_param==0 || !GUI)
         exit("Result: "+result,0);
   }
+
 }
