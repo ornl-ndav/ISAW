@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/08/05 19:12:01  pfpeterson
+ * Switched the default layout of the parameters in a form to be grid.
+ *
  * Revision 1.3  2002/06/11 14:56:17  pfpeterson
  * Small updates to documentation.
  *
@@ -215,8 +218,8 @@ public class Form implements Serializable, PropertyChangeListener{
     border = new TitledBorder(LineBorder.createBlackLineBorder(), title);
     border.setTitleFont( FontUtil.BORDER_FONT );
     sub_panel.setBorder( border );
-    //sub_panel.setLayout( new GridLayout( params.length, 1 ) );
-    sub_panel.setLayout( new BoxLayout( sub_panel,BoxLayout.Y_AXIS ) );
+    sub_panel.setLayout( new GridLayout( params.length, 1 ) );
+    //sub_panel.setLayout( new BoxLayout( sub_panel,BoxLayout.Y_AXIS ) );
     for ( int i = 0; i < params.length; i++ ){
         IParameterGUI param = wizard.getParameter( params[i] );
         param.init();
