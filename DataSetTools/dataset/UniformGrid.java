@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.12  2004/04/02 15:17:48  dennis
+ *  Added constructor to construct single precision UniformGrid
+ *  from double precision UniformGrid_d.
+ *
  *  Revision 1.11  2004/03/15 06:10:39  dennis
  *  Removed unused import statements.
  *
@@ -262,6 +266,42 @@ public class UniformGrid implements IDataGrid
           data[i][j] = grid.data[i][j];
     }
   }
+
+  /* ---------- copy constructor from double precision version ------------- */
+  /**
+   *  Make a new UniformGrid, copying the values from the given 
+   *  double precision UniformGrid.
+   *  
+   *  @param  grid      The double precision grid to be copied
+   *  @param  copy_data Flag indicating whether the references to the Data
+   *                    blocks should be copied, if the references are set.
+   */
+  public UniformGrid( UniformGrid_d grid, boolean copy_data )
+  {
+    id          = grid.ID();
+    units       = grid.units();
+    this.n_cols = grid.num_cols();
+    this.n_rows = grid.num_rows();
+
+    setHeight( (float)grid.height() );
+    setWidth ( (float)grid.width()  );
+    setDepth ( (float)grid.depth()  );
+
+    setCenter( new Vector3D( grid.position() ) );
+    setOrientation( new Vector3D( grid.x_vec() ), 
+                    new Vector3D( grid.y_vec() ) );
+
+    data = null;
+    data_loaded = false;
+    if ( copy_data && grid.isData_entered() )
+    {
+      data = new Data[ data.length ][ data[0].length ];
+      for ( int i = 0; i < data.length; i++ )
+        for ( int j = 0; j < data[0].length; i++ )
+          data[i][j] = grid.getData_entry(i,j);
+    }
+  }
+
 
   /**
    *  Get the ID of the current data grid (i.e. detector).  This ID should be 
