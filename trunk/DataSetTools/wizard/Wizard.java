@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.84  2003/09/27 00:17:40  bouzekc
+ * Fixed a javadoc error.
+ *
  * Revision 1.83  2003/09/18 19:59:14  bouzekc
  * Now saves error files to the project directory, if it exists.  In addition,
  * the day and month are recorded in the error file name.
@@ -447,9 +450,10 @@ import javax.swing.*;
  * lmhf parameter 0 = sagf parameter 2<br>
  * lmhf parameter 2 = sagf parameter 3<br>
  * <br>
- * Now, if we consider a table with the rows set as the Form indices, the
- * columns set as the parameter number indices, and the cells of the table as
- * the actual parameter numbers to link, it would look like this:<br><br>
+ * Now, if we consider a table with the columns set as the Form indices, the
+ * row indices set as the parameters-to-link indices, and the cells of the 
+ * table as the actual parameter numbers to link, it would look like this:
+ * <br><br>
  * 
  * <p align=center>
  * lmhf    tfgf    sagf<br>
