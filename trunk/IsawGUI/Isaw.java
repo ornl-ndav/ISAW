@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/06/08 14:03:31  chatter
+ *  Changed the name of the Properties file to IsawProps.dat
+ *  Used arrays to fill up some of the menuitems
+ *
  *  Revision 1.13  2001/06/06 14:32:39  chatter
  *  Added the gpl license
  *
@@ -104,13 +108,10 @@ public class Isaw extends JFrame implements Serializable, IObserver
     Util util;
     CommandPane cp;
     MyInternalFrame internalframe;
-
+    
     Properties isawProp;
     Object Script_Path, Data_Directory, Help_Directory, Default_Instrument, Instrument_Macro_Path, 
-    User_Macro_Path, Image_Path, Inst1_Path, Inst2_Path, Inst3_Path, Inst4_Path, Inst5_Path, Inst6_Path, 
-    Inst7_Path, Inst8_Path, Inst9_Path, Inst10_Path, Inst11_Path, Inst12_Path, Inst13_Path,
-    Inst1_Name, Inst2_Name, Inst3_Name, Inst4_Name, Inst5_Name, Inst6_Name, Inst7_Name, Inst8_Name, Inst9_Name, 
-    Inst10_Name, Inst11_Name, Inst12_Name, Inst13_Name;
+    User_Macro_Path, Image_Path;
 
 
 
@@ -152,41 +153,7 @@ public class Isaw extends JFrame implements Serializable, IObserver
        try {
 	    FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
           isawProp.load( input );
-          Help_Directory = isawProp.getProperty("Help_Directory");
-	    Script_Path = isawProp.getProperty("Script_Path");
-          Data_Directory = isawProp.getProperty("Data_Directory");
-          Default_Instrument = isawProp.getProperty("Default_Instrument");
-	    Instrument_Macro_Path = isawProp.getProperty("Instrument_Macro_Path");
-	    User_Macro_Path = isawProp.getProperty("User_Macro_Path");
-	    Image_Path = isawProp.getProperty("Image_Path");
-
-          Inst1_Path = isawProp.getProperty("Inst1_Path");
-	    Inst2_Path = isawProp.getProperty("Inst2_Path");
-          Inst3_Path = isawProp.getProperty("Inst3_Path");
-          Inst4_Path = isawProp.getProperty("Inst4_Path");
-	    Inst5_Path = isawProp.getProperty("Inst5_Path");
-          Inst6_Path = isawProp.getProperty("Inst6_Path");
-          Inst7_Path = isawProp.getProperty("Inst7_Path");
-	    Inst8_Path = isawProp.getProperty("Inst8_Path");
-          Inst9_Path = isawProp.getProperty("Inst9_Path");
-          Inst10_Path = isawProp.getProperty("Inst10_Path");
-	    Inst11_Path = isawProp.getProperty("Inst11_Path");
-          Inst12_Path = isawProp.getProperty("Inst12_Path");
-          Inst13_Path = isawProp.getProperty("Inst13_Path");
-
-          Inst1_Name = isawProp.getProperty("Inst1_Name");
-	    Inst2_Name = isawProp.getProperty("Inst2_Name");
-          Inst3_Name = isawProp.getProperty("Inst3_Name");
-          Inst4_Name = isawProp.getProperty("Inst4_Name");
-	    Inst5_Name = isawProp.getProperty("Inst5_Name");
-          Inst6_Name = isawProp.getProperty("Inst6_Name");
-          Inst7_Name = isawProp.getProperty("Inst7_Name");
-	    Inst8_Name = isawProp.getProperty("Inst8_Name");
-          Inst9_Name = isawProp.getProperty("Inst9_Name");
-          Inst10_Name = isawProp.getProperty("Inst10_Name");
-	    Inst11_Name = isawProp.getProperty("Inst11_Name");
-          Inst12_Name = isawProp.getProperty("Inst12_Name");
-          Inst13_Name = isawProp.getProperty("Inst13_Name");
+           
 
           System.setProperties(isawProp);  
 
@@ -195,9 +162,118 @@ public class Isaw extends JFrame implements Serializable, IObserver
          
           input.close();
        }
-       catch (IOException ex) {
+       catch (IOException ex) 
+       {
           System.out.println("Properties file could not be loaded due to error :" +ex);
-       }
+          System.out.println("Creating a new Properties file called IsawProps in the directory " +System.getProperty("user.home"));
+          
+          String npath = System.getProperty("user.home")+"\\";
+          npath = StringUtil.fixSeparator(npath);
+          npath = npath.replace('\\','/');
+          File f= new File(npath + "IsawProps.dat");
+
+          try{
+               FileOutputStream op= new FileOutputStream(f);
+               OutputStreamWriter opw = new OutputStreamWriter(op);
+               opw.write("#This is a properties file");
+               opw.write("\n");
+               opw.write("Help_Directory="+npath+"IsawHelp/");
+               System.setProperty("Help_Directory",  npath+"IsawHelp/");
+               opw.write("\n");
+               opw.write("Script_Path="+npath+"Scripts/");
+               System.setProperty("Script_Path",npath+"Scripts/");
+               opw.write("\n");
+               opw.write("Data_Directory="+npath+"SampleRuns/");
+                System.setProperty("Data_Directory",npath+"SampleRuns/");
+               opw.write("\n");
+               opw.write("Default_Instrument=HRCS");
+               System.setProperty("Default_Instrument","HRCS");
+               opw.write("\n");
+               opw.write("Instrument_Macro_Path="+npath);
+               System.setProperty("Instrument_Macro_Path",npath);
+               opw.write("\n");
+               opw.write("User_Macro_Path="+npath);
+               System.setProperty("User_Macro_Path",npath);
+               opw.write("\n");
+
+               opw.write("Image_Path="+npath);
+
+               opw.write("\n");
+               opw.write("Inst1_Name=HRMECS");
+               opw.write("\n"); 
+               opw.write("Inst1_Path=zeus.pns.anl.gov");
+               opw.write("\n");  
+
+               opw.write("Inst2_Name=LRMECS");
+               opw.write("\n");  
+               opw.write("Inst2_Path=webproject-4.pns.anl.gov");
+               opw.write("\n");  
+
+               opw.write("Inst3_Name=GPPD");
+               opw.write("\n");  
+               opw.write("Inst3_Path=gppd-pc.pns.anl.gov");
+               opw.write("\n");  
+
+               opw.write("Inst4_Name=SEPD");
+               opw.write("\n");  
+               opw.write("Inst4_Path=webproject-4.pns.anl.gov");
+               opw.write("\n");
+
+               opw.write("Inst5_Name=SAD");
+               opw.write("\n");
+               opw.write("Inst5_Path=webproject-4.pns.anl.gov");
+               opw.write("\n");    
+  
+               opw.write("Inst6_Name=SAND");
+               opw.write("\n");      
+               opw.write("Inst6_Path=webproject-4.pns.anl.gov");
+               opw.write("\n");
+      
+               opw.write("Inst7_Name=SCD");
+               opw.write("\n");      
+               opw.write("Inst7_Path=webproject-4.pns.anl.gov");
+               opw.write("\n");  
+    
+               opw.write("Inst8_Name=GLAD");
+               opw.write("\n");      
+               opw.write("Inst8_Path=webproject-4.pns.anl.gov");
+               opw.write("\n"); 
+     
+               opw.write("Inst9_Name=HIPD");
+               opw.write("\n"); 
+               opw.write("Inst9_Path=webproject-4.pns.anl.gov");
+               opw.write("\n");
+
+               opw.write("Inst10_Name=POSY1");
+               opw.write("\n");      
+               opw.write("Inst10_Path=webproject-4.pns.anl.gov");
+               opw.write("\n");  
+    
+               opw.write("Inst11_Name=POSY2");
+               opw.write("\n");  
+               opw.write("Inst11_Path=webproject-4.pns.anl.gov");
+               opw.write("\n");  
+               
+               opw.write("Inst12_Name=QENS");
+               opw.write("\n");                 
+               opw.write("Inst12_Path=webproject-4.pns.anl.gov");
+               opw.write("\n");  
+               
+               opw.write("Inst13_Name=CHEXS");
+               opw.write("\n");                 
+               opw.write("Inst13_Path=webproject-4.pns.anl.gov");
+               opw.write("\n"); 
+
+               opw.write("neutron.nexus.JNEXUSLIB=C:\\\\ISAW\\\\jnexus.dll  ");
+               opw.write("\n"); 
+              
+                                             
+               opw.flush();
+               opw.close();
+             } catch(Exception d){}
+        }
+
+
          setupMenuBar();
 	 util = new Util(); 
 
@@ -407,53 +483,18 @@ public class Isaw extends JFrame implements Serializable, IObserver
         macrosMenu.add(m_POSY2);
         macrosMenu.add(m_QENS);
         macrosMenu.add(m_CHEXS);
-
-
-        JMenuItem l_HRMECS = new JMenuItem(System.getProperty("Inst1_Name"));
-        JMenuItem l_LRMECS = new JMenuItem(System.getProperty("Inst2_Name"));
-        JMenuItem l_GPPD = new JMenuItem(System.getProperty("Inst3_Name"));
-        JMenuItem l_SEPD = new JMenuItem(System.getProperty("Inst4_Name"));
-        JMenuItem l_SAD = new JMenuItem(System.getProperty("Inst5_Name"));
-        JMenuItem l_SAND = new JMenuItem(System.getProperty("Inst6_Name"));
-        JMenuItem l_SCD = new JMenuItem(System.getProperty("Inst7_Name"));
-        JMenuItem l_GLAD = new JMenuItem(System.getProperty("Inst8_Name"));
-
-        JMenuItem l_HIPD = new JMenuItem(System.getProperty("Inst9_Name"));
-        JMenuItem l_POSY1 = new JMenuItem(System.getProperty("Inst10_Name"));
-        JMenuItem l_POSY2 = new JMenuItem(System.getProperty("Inst11_Name"));
-        JMenuItem l_QENS = new JMenuItem(System.getProperty("Inst12_Name"));
-        JMenuItem l_CHEXS = new JMenuItem(System.getProperty("Inst13_Name"));
-
-	  l_HRMECS.setToolTipText(System.getProperty("Inst1_Path"));
-        l_LRMECS.setToolTipText(System.getProperty("Inst2_Path"));
-        l_GPPD.setToolTipText(System.getProperty("Inst3_Path"));
-        l_SEPD.setToolTipText(System.getProperty("Inst4_Path"));
-	  l_SAD.setToolTipText(System.getProperty("Inst5_Path"));
-        l_SAND.setToolTipText(System.getProperty("Inst6_Path"));
-        l_SCD.setToolTipText(System.getProperty("Inst7_Path"));
-        l_GLAD.setToolTipText(System.getProperty("Inst8_Path"));
-	  l_HIPD.setToolTipText(System.getProperty("Inst9_Path"));
-        l_POSY1.setToolTipText(System.getProperty("Inst10_Path"));
-        l_POSY2.setToolTipText(System.getProperty("Inst11_Path"));
-        l_QENS.setToolTipText(System.getProperty("Inst12_Path"));
-	  l_CHEXS.setToolTipText(System.getProperty("Inst13_Path"));
-  
-
-
-	  LiveData.add(l_HRMECS);
-        LiveData.add(l_LRMECS);
-        LiveData.add(l_GPPD);
-        LiveData.add(l_SEPD);
-        LiveData.add(l_SAD);
-        LiveData.add(l_SAND);
-        LiveData.add(l_SCD);
-        LiveData.add(l_GLAD);
-        LiveData.add(l_HIPD);
-        LiveData.add(l_POSY1);
-        LiveData.add(l_POSY2);
-        LiveData.add(l_QENS);
-        LiveData.add(CHEXS);
-        
+        boolean found =true;
+        for( int ii =1; (ii<14)&&found;ii++)
+          {String SS =System.getProperty("Inst"+new Integer(ii).toString().trim()+"_Name");
+           if( SS == null) found=false;
+           else
+             {JMenuItem dummy = new JMenuItem(SS);
+              dummy.setToolTipText( System.getProperty("Inst"+new Integer(ii).toString().trim()+"_Path"));
+              dummy.addActionListener( new MenuItemHandler());
+              LiveData.add(dummy);
+              }
+           }
+       
         
         vMenu.add(imageView);
         vMenu.add(s_graphView);
@@ -532,23 +573,6 @@ public class Isaw extends JFrame implements Serializable, IObserver
         m_CHEXS.addActionListener(new MenuItemHandler());
 
 
-        l_HRMECS.addActionListener(new MenuItemHandler());
-        l_LRMECS.addActionListener(new MenuItemHandler());
-        l_HIPD.addActionListener(new MenuItemHandler());
-        
-        l_GPPD.addActionListener(new MenuItemHandler());
-        l_SEPD.addActionListener(new MenuItemHandler());
-        l_SAND.addActionListener(new MenuItemHandler());
-       
-        l_SAD.addActionListener(new MenuItemHandler());
-        l_SCD.addActionListener(new MenuItemHandler());
-        l_POSY1.addActionListener(new MenuItemHandler());
-        
-        l_POSY2.addActionListener(new MenuItemHandler());
-        l_QENS.addActionListener(new MenuItemHandler());
-        l_GLAD.addActionListener(new MenuItemHandler());
-        l_CHEXS.addActionListener(new MenuItemHandler());
-      
         viewFileSeparator.addActionListener(new MenuItemHandler());
         viewLogView.addActionListener(new MenuItemHandler());
         optionmetalLook.addActionListener(new MenuItemHandler());
@@ -744,11 +768,15 @@ public class Isaw extends JFrame implements Serializable, IObserver
             
             if(s=="Load Script")
                {
+			String SS = System.getProperty("Script_Path");
+                  if(SS == null)
+                     SS =System.getProperty("user.home");
+                        JFileChooser fc = new JFileChooser();
+                  fc.setCurrentDirectory(new File(SS));
 
 			String str = (String)Script_Path ;
 			//System.out.println("Properties file loaded from " +str);
-      		JFileChooser fc = new JFileChooser(new File(
-str));
+      		//JFileChooser fc = new JFileChooser(new File(SS));
 			fc.setFileFilter(new scriptFilter());
 			String fname, filename;
  			try
@@ -821,8 +849,11 @@ public String getDescription(){
 
                  { 
                     try
-                    {
-                        fc.setCurrentDirectory(new File(System.getProperty("Data_Directory")));
+                    {  String SS = System.getProperty("Data_Directory");
+                       if(SS == null)
+                           SS =System.getProperty("user.home");
+                        
+                        fc.setCurrentDirectory(new File(SS));
 				int state = fc.showOpenDialog(null);
                         if (state ==0 && fc.getSelectedFile() != null)
 			      {
@@ -856,7 +887,12 @@ public String getDescription(){
                 {
                     try
                     {
-                        fc.setCurrentDirectory(new File(System.getProperty("Data_Directory"))); 
+                        String SS = System.getProperty("Data_Directory");
+                       if(SS == null)
+                           SS =System.getProperty("user.home");
+                        
+                        fc.setCurrentDirectory(new File(SS));
+
                        // int state = fc.showOpenDialog(null);
                        // if (state == 0 && fc.getSelectedFile() != null)
 			     // {
@@ -912,6 +948,12 @@ public String getDescription(){
                 {
                     try
                     { 
+                       String SS = System.getProperty("Data_Directory");
+                       if(SS == null)
+                           SS =System.getProperty("user.home");
+                        
+                        fc.setCurrentDirectory(new File(SS));
+
 				int state = fc.showOpenDialog(null);
 				if (state ==0 && fc.getSelectedFile() != null)
 			      {
@@ -1039,15 +1081,19 @@ public String getDescription(){
                         
                         try
                         {
-                      /*     FileDialog fc = new FileDialog(new Frame(), "Please choose the File to save", FileDialog.SAVE);
-                           JFileChooser fd = new JFileChooser();
-                             fd.setCurrentDirectory(null);
-                            fc.setDirectory("C:\\");
+                           FileDialog fc = new FileDialog(new Frame(), 
+                                "Please choose the File to save", FileDialog.SAVE);
+                           fc.setDirectory("C:\\");
                             fc.show();
-                             int state  = fd.showSaveDialog(null);
+                            
                              
-                            File f = new File(fc.getDirectory(), fc.getFile()+".dsz");
-                            System.out.println("cccc"+f.toString());
+                            File f = new File(fc.getDirectory(), fc.getFile());
+                            DataSet xxx = (DataSet)(dn.getUserObject());
+                            System.out.print("filename="+f.toString());
+                            if( !DataSet_IO.SaveDataSet( xxx, f.toString() ) )   
+                               System.out.println("Could not save File");
+                         
+/*                             System.out.println("cccc"+f.toString());
                             
                             FileOutputStream fos = new FileOutputStream(f);
                             GZIPOutputStream gout = new GZIPOutputStream(fos);
@@ -1067,11 +1113,17 @@ public String getDescription(){
                         
                         try
                         {
-/*
-                           fd.show();
+
+                           FileDialog fc = new FileDialog(new Frame(), 
+                                "Please choose the File to open", FileDialog.LOAD);
+                           fc.setDirectory("C:\\");
+                           fc.show();
+
                 
-                            File f = new File(fd.getDirectory(), fd.getFile());
-                            String filename = fd.getFile();
+                            File f = new File(fc.getDirectory(), fc.getFile());
+                            String filename = f.toString();
+                            DataSet xxx = DataSet_IO.LoadDataSet( filename );
+/*
                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                             FileInputStream fis = new FileInputStream(f);
                             GZIPInputStream gin = new GZIPInputStream(fis);
@@ -1079,12 +1131,11 @@ public String getDescription(){
                             
                             DefaultMutableTreeNode dn = (DefaultMutableTreeNode)ois.readObject();
                             ois.close();
-                           
-                         DataSet ds = (DataSet) dn.getUserObject();
-                            //add dn to to the tree as a child of the root
-                            jtui.openDataSet(ds, filename);
+ */                          
+                          //add dn to to the tree as a child of the root
+                            jtui.openDataSet(xxx, filename);
 
-*/
+
 
                         }
                         catch(Exception e){System.out.println("Choose a input DataSet");} 
@@ -1487,20 +1538,20 @@ String url = "http://www.pns.anl.gov/CHEX/";
                 
                 if(s == "Export GSAS File")
                 {
-                 // JFileChooser fc = new JFileChooser(new File(System.getProperty("user.dir")) );
-                  // FileDialog fc = new FileDialog(new Frame(), "Please choose the File to save", FileDialog.SAVE);
+                  //fc = new JFileChooser(new File(System.getProperty("user.dir")) );
+                 
                     	int state = fc.showSaveDialog(null);
                         if (state ==0 && fc.getSelectedFile() != null)
 			      {
-
-                   // File f = new File(fc.getDirectory(), fc.getFile());
-                   // String filename =f.toString();
-			  //String fname = f.getName();
+                         
+                    File f = fc.getSelectedFile();
+                    String filename =f.toString();
+		
                     DefaultMutableTreeNode mtn = jtui.getSelectedNode();
                     DataSet ds = (DataSet)mtn.getUserObject();
                     System.out.println("inside gsaag" +ds);
                    //gsas_filemaker(ds, "F:\\GPPD10628.RUN;10" );
-                      DataSetTools.gsastools.gsas_file.gsasfilemaker(ds, "GPPDGsas");
+                      DataSetTools.gsastools.gsas_file.gsasfilemaker(ds, filename);
                        }
 
                  }
