@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.35  2003/09/09 23:00:58  bouzekc
+ * Added method to assist derived classes in implementing validateSelf().
+ * Added method to retrieve internal parameter.
+ *
  * Revision 1.34  2003/09/03 23:35:15  bouzekc
  * Changed direct this.value call to getValue().
  *
@@ -424,5 +428,38 @@ public abstract class VectorPG extends ParameterGUI
   protected final void setParam( ParameterGUI param ) {
     innerParam   = param;
     this.type    = param.getType(  ) + " " + TYPE;
+  }
+
+  /**
+   * Gets this VectorPG's parameter.
+   */
+  protected final IParameterGUI getParam(  ) {
+    return innerParam;
+  }
+
+  /**
+   * Allows derived classes to quickly implement validate.  This method takes a
+   * class name and checks to see if all the elements in the internal Vector
+   * value are of that type.
+   *
+   * @param klass The class to verify the Vector elements against.
+   */
+  protected final void validateElements( Class klass ) {
+    Object val = getValue(  );
+
+    if( ( val != null ) && val instanceof Vector ) {
+      Vector elements    = ( Vector )val;
+      boolean allTheSame = true;
+
+      for( int i = 0; ( i < elements.size(  ) ) && allTheSame; i++ ) {
+        if( !( elements.get( i ).getClass(  ).equals( klass ) ) ) {
+          allTheSame = false;
+        }
+      }
+
+      setValid( allTheSame );
+    } else {
+      setValid( false );
+    }
   }
 }
