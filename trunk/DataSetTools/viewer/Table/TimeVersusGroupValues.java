@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/05/06 17:36:09  rmikk
+ * Added a setTime Method 
+ * Added an argument to the Selected2D constructor
+ *
  * Revision 1.12  2004/03/15 19:34:00  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -655,7 +659,7 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
     {
      int row = getRow(PointedAtGroupIndex,PointedAtTime);
      int col = getCol(PointedAtGroupIndex,PointedAtTime);
-     SelectedData2D X= new SelectedData2D(row ,col );
+     SelectedData2D X= new SelectedData2D(row ,col, PointedAtTime );
      return X;
     }
 
@@ -692,6 +696,12 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
     }
   }
   
+  /**
+   *   Sets the time from an external source, like pointed at
+   */
+  public void setTime( float time){
+  	
+  }
  /**
   * Set the error values that correspond to the data. The dimensions of the
   * error values array should match the dimensions of the data array. Zeroes
