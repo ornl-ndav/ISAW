@@ -28,14 +28,43 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ * NOTE: This file was modified from an example in the Sun Core Java 
+ *       Technologies Tech Tips.  Used with permission of Sun Microsystems.
+ *        
+ * Core Java Technologies Tech Tips, December 17, 2002
+ * Copyright 2002 Sun Microsystems, Inc. All rights reserved.
+ * 901 San Antonio Road, Palo Alto, California 94303 USA.
+ *
+ * This document is protected by copyright. For more information, see:
+ *
+ * http://java.sun.com/jdc/copyright.html
+ *
+ * IMPORTANT: Please read our Terms of Use, Privacy, and Licensing
+ * policies:
+ * http://www.sun.com/share/text/termsofuse.html
+ * http://www.sun.com/privacy/
+ * http://developer.java.sun.com/berkeley_license.html
+ *
+ * - ARCHIVES
+ *   You'll find the Core Java Technologies Tech Tips archives at:
+ *   http://java.sun.com/jdc/TechTips/index.html
+ *
+ * Sun, Sun Microsystems, Java, Java Developer Connection, J2SE,
+ * J2EE, and J2ME are trademarks or registered trademarks of Sun
+ * Microsystems, Inc. in the United States and other countries.
+ *
+ *
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/01/23 16:11:19  dennis
+ * Move source citation information (Sun Java Tech Tips) to top of file
+ * with other copyright and modification information.
+ *
  * Revision 1.2  2004/01/23 16:00:38  dennis
  * Modified by tworlton:
  * Eliminated special characters from name of search results file.
  * Underscores now replace all non-letters/numbers in the search string.
- *
  *
  * Revision 1.10  2003/12/10 19:10:27  bouzekc
  * Added to CVS.
@@ -403,34 +432,3 @@ public class ResultsPanel extends JPanel {
         }
       }
 }
-//.  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-
-//IMPORTANT: Please read our Terms of Use, Privacy, and Licensing 
-//policies:
-//http://www.sun.com/share/text/termsofuse.html
-//http://www.sun.com/privacy/
-//http://developer.java.sun.com/berkeley_license.html
-//- ARCHIVES
-//You'll find the Core Java Technologies Tech Tips archives at:
-
-//http://java.sun.com/jdc/TechTips/index.html
-
-
-//- COPYRIGHT
-//Copyright 2002 Sun Microsystems, Inc. All rights reserved.
-//901 San Antonio Road, Palo Alto, California 94303 USA.
-
-//This document is protected by copyright. For more information, see:
-
-//http://java.sun.com/jdc/copyright.html
-
-
-//Core Java Technologies Tech Tips 
-//December 17, 2002
-
-//Sun, Sun Microsystems, Java, Java Developer Connection, J2SE, 
-//J2EE, and J2ME are trademarks or registered trademarks of Sun 
-//Microsystems, Inc. in the United States and other countries.
-
-
-
