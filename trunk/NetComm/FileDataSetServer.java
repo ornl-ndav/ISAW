@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/08/10 19:45:13  dennis
+ *  Changed main program to use the command line arguments and other
+ *  new features of the servers.
+ *
  *  Revision 1.3  2001/08/09 21:47:26  dennis
  *  Uses start_TCP() method to start the TCPServer.
  *
@@ -166,13 +170,15 @@ public class FileDataSetServer extends DataSetServer
 
   public static void main(String args[])
   {
-    System.out.println("FileDataSetServer starting:");
-
     FileDataSetServer server= new FileDataSetServer();
-    server.setServerName( "Test FileDataSetServer" );
-    server.setLogFilename( "Test_FileDataSetServerLog.txt" );
+    server.parseArgs( args );
 
-    server.addDataDirectory( "/home/dennis/ARGONNE_DATA/" );
-    server.start_TCP( 6089 );
+    Date date = new Date( System.currentTimeMillis() );
+    System.out.println("Starting " + server.getServerName() + " on " + date );
+    System.out.println("Log File " + server.getLogFilename() );
+    System.out.println("Using DataDirectories ");
+    server.showDataDirectories();
+
+    server.startTCP();
   }
 }
