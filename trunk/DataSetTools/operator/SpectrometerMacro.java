@@ -219,9 +219,8 @@ public class SpectrometerMacro extends    DataSetOperator
     
     new_ds.addLog_entry( "Save S-E LQ, Mq, Hq data in file as g_Q(4~6)X-Yh(RunNumber).opt!(HRMECS Macro)" );
     //*/
-chop_MacroTools cmt = new chop_MacroTools();
 
-    cmt.drawAlldata(new_ds);   
+    //chop_MacroTools.drawAlldata(new_ds);   
     
     new_ds.addLog_entry( "Draw LQ, Mq , HQ data by graphview!(HRMECS Macro)" );
     
