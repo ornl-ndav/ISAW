@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.60  2004/03/23 23:44:16  dennis
+ *  Resolved ambiguity on addWindowListener method in class
+ *  FinishJDialog. (Ruth)
+ *
  *  Revision 1.59  2004/03/23 15:54:17  rmikk
  *  Added listeners to get all dialog and JFrames to finalize after disposing
  *
@@ -970,17 +974,15 @@ public class JParametersDialog implements Serializable,
 
     public FinishJDialog( JFrame jf, String Title, boolean modal){
        super( jf, Title, modal);
-       addWindowListener( new FinishWindowListener());
-
+       this.addWindowListener( new FinishWindowListener());
     }
+    
     public void finish(){
       try{
          finalize();
      }catch( Throwable ss){
-
      }
-
     }
-
- }
+  }
+ 
 }
