@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.15  2003/07/03 14:23:46  bouzekc
+ * Added all missing javadoc comments.
+ *
  * Revision 1.14  2003/06/25 20:25:35  bouzekc
  * Unused private variables removed, reformatted for
  * consistency.
@@ -100,16 +103,22 @@ import java.util.Vector;
 
 
 /**
- *
- *  This is a Form to add extra functionality to IndexJ.  If used with
- *  output from LsqrsJForm, it "knows" which runs to restrict for each
- *  matrix file. If used with output from BlindJ, it applies
- *  the orientation matrix data to the entire peaks file.
- *  Other than that, it functions in a similar manner to IndexJ.
+ * This is a Form to add extra functionality to IndexJ.  If used with output
+ * from LsqrsJForm, it "knows" which runs to restrict for each matrix file. If
+ * used with output from BlindJ, it applies the orientation matrix data to the
+ * entire peaks file. Other than that, it functions in a similar manner to
+ * IndexJ.
  */
 public class IndexJForm extends Form {
+  //~ Static fields/initializers ***********************************************
+
   protected static int RUN_NUMBER_WIDTH = 5;
+
+  //~ Instance fields **********************************************************
+
   private IndexJ indexJOp;
+
+  //~ Constructors *************************************************************
 
   /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
 
@@ -122,11 +131,10 @@ public class IndexJForm extends Form {
   }
 
   /**
-   *  Construct a Form using the default parameter list.
+   * Construct a Form using the default parameter list.
    *
-   *  @param hasConstParams         boolean indicating whether
-   *                                this Form should have constant
-   *                                parameters.
+   * @param hasConstParams boolean indicating whether this Form should have
+   *        constant parameters.
    */
   public IndexJForm( boolean hasConstParams ) {
     super( "IndexJForm", hasConstParams );
@@ -136,31 +144,45 @@ public class IndexJForm extends Form {
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
 
   /**
-   *  Full constructor for IndexJForm.
+   * Full constructor for IndexJForm.
    *
-   *  @param runnums        The run numbers used in naming the
-   *                        matrix files.
-   *  @param peaksPath      The peaks file path.
-   *  @param delta          Error parameter for indexing peaks.
-   *  @param update         Whether to update the peaks file.
-   *  @param expName        The experiment name.
+   * @param runnums The run numbers used in naming the matrix files.
+   * @param peaksPath The peaks file path.
+   * @param delta Error parameter for indexing peaks.
+   * @param update Whether to update the peaks file.
+   * @param expName The experiment name.
    */
   public IndexJForm( 
     String runnums, String peaksPath, float delta, boolean update,
     String expName ) {
     this(  );
-    getParameter( 0 ).setValue( runnums );
-    getParameter( 1 ).setValue( peaksPath );
-    getParameter( 2 ).setValue( new Float( delta ) );
-    getParameter( 3 ).setValue( new Float( delta ) );
-    getParameter( 4 ).setValue( new Float( delta ) );
-    getParameter( 5 ).setValue( new Boolean( update ) );
-    getParameter( 6 ).setValue( expName );
+    getParameter( 0 )
+      .setValue( runnums );
+    getParameter( 1 )
+      .setValue( peaksPath );
+    getParameter( 2 )
+      .setValue( new Float( delta ) );
+    getParameter( 3 )
+      .setValue( new Float( delta ) );
+    getParameter( 4 )
+      .setValue( new Float( delta ) );
+    getParameter( 5 )
+      .setValue( new Boolean( update ) );
+    getParameter( 6 )
+      .setValue( expName );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * @return String command used for invoking this Form in a Script.
+   */
+  public String getCommand(  ) {
+    return "JINDEXFORM";
   }
 
   /**
-   *
-   *  Attempts to set reasonable default parameters for this form.
+   * Attempts to set reasonable default parameters for this form.
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
@@ -208,10 +230,7 @@ public class IndexJForm extends Form {
   }
 
   /**
-   *
-   *  Documentation for this OperatorForm.  Follows javadoc
-   *  conventions.
-   *
+   * @return documentation for this OperatorForm.  Follows javadoc conventions.
    */
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer(  );
@@ -258,21 +277,13 @@ public class IndexJForm extends Form {
   }
 
   /**
-   *  Returns the String command used for invoking this
-   *  Form in a Script.
-   */
-  public String getCommand(  ) {
-    return "JINDEXFORM";
-  }
-
-  /**
-   * getResult() takes the user input parameters and runs IndexJ,
-   * using a lsexpName#.mat file (output from LsqrsJForm) for each run
-   * number.  In addition, it sends its output to a index.log file.
-   * Note that it "knows" which runs to restrict for each matrix file,
-   * based on the matrix file names.
+   * getResult() takes the user input parameters and runs IndexJ, using a
+   * lsexpName#.mat file (output from LsqrsJForm) for each run number.  In
+   * addition, it sends its output to a index.log file. Note that it "knows"
+   * which runs to restrict for each matrix file, based on the matrix file
+   * names.
    *
-   *  @return A Boolean indicating success or failure.
+   * @return A Boolean indicating success or failure.
    */
   public Object getResult(  ) {
     SharedData.addmsg( "Calculating h, k, and l values for each run..." );
@@ -298,11 +309,13 @@ public class IndexJForm extends Form {
 
     //gets the input path
     param      = ( IParameterGUI )super.getParameter( 1 );
-    peaksDir   = param.getValue(  ).toString(  );
+    peaksDir   = param.getValue(  )
+                      .toString(  );
 
     //gets the experiment name
     param     = ( IParameterGUI )super.getParameter( 2 );
-    expName   = param.getValue(  ).toString(  );
+    expName   = param.getValue(  )
+                     .toString(  );
 
     //gets the delta_h
     param     = ( IParameterGUI )super.getParameter( 3 );
@@ -344,17 +357,23 @@ public class IndexJForm extends Form {
 
     //no need to continually recreate this Operator in a loop
     indexJOp = new IndexJ(  );
-    indexJOp.getParameter( 0 ).setValue( peaksName );
-    indexJOp.getParameter( 3 ).setValue( new Float( delta_h ) );
-    indexJOp.getParameter( 4 ).setValue( new Float( delta_k ) );
-    indexJOp.getParameter( 5 ).setValue( new Float( delta_l ) );
-    indexJOp.getParameter( 6 ).setValue( new Boolean( update ) );
+    indexJOp.getParameter( 0 )
+            .setValue( peaksName );
+    indexJOp.getParameter( 3 )
+            .setValue( new Float( delta_h ) );
+    indexJOp.getParameter( 4 )
+            .setValue( new Float( delta_k ) );
+    indexJOp.getParameter( 5 )
+            .setValue( new Float( delta_l ) );
+    indexJOp.getParameter( 6 )
+            .setValue( new Boolean( update ) );
 
-    if( useSpecMat )  //user wants to use a specific matrix file
-     {
+    //user wants to use a specified matrix file
+    if( useSpecMat ) {
       //get the matrix name make sure the matrix file exists
-      param          = ( IParameterGUI )super.getParameter( 8 );
-      matName        = ( String )param.getValue(  ).toString(  );
+      param     = ( IParameterGUI )super.getParameter( 8 );
+      matName   = ( String )param.getValue(  )
+                                 .toString(  );
 
       if( !( new File( matName ).exists(  ) ) ) {
         return errorOut( 
@@ -365,13 +384,16 @@ public class IndexJForm extends Form {
 
       //validate the restrict runs value
       param          = ( IParameterGUI )super.getParameter( 9 );
-      restrictRuns   = ( String )param.getValue(  ).toString(  );
+      restrictRuns   = ( String )param.getValue(  )
+                                      .toString(  );
       param.setValid( true );
 
       SharedData.addmsg( 
         "IndexJ is updating " + peaksName + " with " + matName );
-      indexJOp.getParameter( 1 ).setValue( matName );
-      indexJOp.getParameter( 2 ).setValue( restrictRuns );
+      indexJOp.getParameter( 1 )
+              .setValue( matName );
+      indexJOp.getParameter( 2 )
+              .setValue( restrictRuns );
       obj = indexJOp.getResult(  );
 
       if( obj instanceof ErrorString ) {
@@ -379,11 +401,11 @@ public class IndexJForm extends Form {
       }
 
       super.fireValueChangeEvent( 0, 100 );
-    } else  //try to find the matrix files
-     {
-      //if the lsqrs matrix files exist, this is their format
-      runNum      = formatRunNum( runsArray[0] );
-      matName     = peaksDir + "ls" + expName + runNum + ".mat";
+    } else {
+      //try to find the matrix files.  If the lsqrs matrix files exist, 
+      //this is their format:
+      runNum    = formatRunNum( runsArray[0] );
+      matName   = peaksDir + "ls" + expName + runNum + ".mat";
 
       if( !( new File( matName ).exists(  ) ) ) {
         return errorOut( 
@@ -406,10 +428,12 @@ public class IndexJForm extends Form {
           "IndexJ is updating " + peaksName + " with " + matName );
 
         //call IndexJ
-        indexJOp.getParameter( 1 ).setValue( matName );
+        indexJOp.getParameter( 1 )
+                .setValue( matName );
 
         //synchronize the run number in the peaks and matrix file
-        indexJOp.getParameter( 2 ).setValue( runNum );
+        indexJOp.getParameter( 2 )
+                .setValue( runNum );
 
         obj = indexJOp.getResult(  );
 
@@ -435,7 +459,12 @@ public class IndexJForm extends Form {
   }
 
   /**
-   *  Utility method to ease "code eye."
+   * Utility method to ease "code eye."
+   *
+   * @param runNumber The RUN_NUMBER_WIDTH size number to pad with leading
+   *        zeroes.
+   *
+   * @return The runNumber padded with leading zeroes.
    */
   private String formatRunNum( int runNumber ) {
     return DataSetTools.util.Format.integerPadWithZero( 
