@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/01/09 19:29:43  rmikk
+ * Added constructors so that the toolbar can be placed on
+ *    any of the four corners.
+ *
  * Revision 1.2  2001/08/14 19:32:09  chatterjee
  * MyHandler actionlistener has a class of its own now
  *
@@ -48,21 +52,39 @@ import java.awt.*;
 */
 public class JPanelwithToolBar  extends JPanel
 {
+   
+   
 
   /** A constructor that places one JButton at the top right of a JComponent
   */  
   public JPanelwithToolBar( String ButtonText, ActionListener ButtonHandler,
-                              JComponent  nonToolBarComponent )
+                              JComponent  nonToolBarComponent,               
+                              String BorderPosition )
 	{ super( new BorderLayout());
          
 	JPanel JToolPanel = new JPanel( new BorderLayout() );
         JButton Button= new JButton( ButtonText);
         Button.addActionListener( ButtonHandler );
-        JToolPanel.add( Button, BorderLayout.EAST );
-        add( JToolPanel, BorderLayout.NORTH );
+        boolean horizontal=true;
+          if( BorderPosition .equals("BorderLayout.EAST"))
+             horizontal = false;
+         else if( BorderPosition .equals("BorderLayout.WEST"))
+             horizontal = false;
+        if( horizontal)
+             JToolPanel.add( Button,BorderLayout.EAST  );
+        else
+             JToolPanel.add(Button, BorderLayout.NORTH);
+        add( JToolPanel, BorderPosition );
         add( nonToolBarComponent, BorderLayout.CENTER );
        
         }
+
+ 
+  public JPanelwithToolBar( String ButtonText, ActionListener ButtonHandler,
+                              JComponent  nonToolBarComponent)
+       {this(ButtonText,ButtonHandler,nonToolBarComponent,
+             BorderLayout.NORTH);
+       }
 
 
    /** The constructor that places two JButtons at the top right of a
@@ -71,23 +93,55 @@ public class JPanelwithToolBar  extends JPanel
    public JPanelwithToolBar( String ButtonText, String Button1Text,
                              ActionListener ButtonHandler,
                              ActionListener Button1Handler,
-                              JComponent  nonToolBarComponent )
+                              JComponent  nonToolBarComponent,
+                             String BorderPosition )
 
 	{ super( new BorderLayout());
-         
-	Box JToolPanel = new Box( BoxLayout.X_AXIS );
-        JToolPanel.add( Box.createHorizontalGlue());
-        JToolPanel.add( Box.createHorizontalGlue());
+         boolean horizontal = true;
+         if( BorderPosition .equals(BorderLayout.EAST))
+             horizontal = false;
+         else if( BorderPosition .equals(BorderLayout.WEST))
+             horizontal = false;
+         Box JToolPanel;
+      
+               
+	 if( horizontal)
+           JToolPanel = new Box( BoxLayout.X_AXIS );
+         else
+           JToolPanel = new Box( BoxLayout.Y_AXIS);
+        Component glue;
+        if( horizontal) 
+            glue = Box.createHorizontalGlue();
+        else 
+            glue = Box.createVerticalGlue();
+
+        if( horizontal)
+           {JToolPanel.add(glue);
+            JToolPanel.add( glue);
+           }
         JButton Button= new JButton( ButtonText);
         Button.addActionListener( ButtonHandler );
         JButton Button1= new JButton( Button1Text);
         Button1.addActionListener( Button1Handler );
         JToolPanel.add( Button);
         JToolPanel.add( Button1);
-        add( JToolPanel, BorderLayout.NORTH );
+        if( !horizontal)
+           {JToolPanel.add(glue);
+            JToolPanel.add( glue);
+           }
+        add( JToolPanel,BorderPosition );
         add( nonToolBarComponent, BorderLayout.CENTER );
 
         }
+
+ public JPanelwithToolBar( String ButtonText, String Button1Text,
+                             ActionListener ButtonHandler,
+                             ActionListener Button1Handler,
+                              JComponent  nonToolBarComponent)
+    {this( ButtonText, Button1Text, ButtonHandler, Button1Handler,
+              nonToolBarComponent, BorderLayout.NORTH);
+
+    }
 
   /** Test program and example of the use of this class <P>
   * Comp.add( new JPanelwithToolBar( "Exit", exitlistener, TheComponent);
