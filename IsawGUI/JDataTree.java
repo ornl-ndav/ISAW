@@ -29,7 +29,14 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.25  2004/07/07 16:38:54  kramer
+ * Now the tree responds to "selection changes" from viewers.  If a Data object
+ * in a DataSet is selected, its corresponding node in the tree has its text
+ * color set to blue.  Also, now the tree will allow the user to use shift
+ * and control to select multiple nodes.
+ *
  * Revision 1.24  2004/06/30 14:21:11  kramer
+ *
  * The tree now handles "pointed at" messages.  Now when the user selects a
  * spectrum in a viewer, the corresponding node on the tree is selected.
  *
@@ -130,9 +137,13 @@ import DataSetTools.dataset.*;
  */
 public class JDataTree
   extends JPanel 
-  implements IObserver, Serializable, IDataSetListHandler
+  implements IObserver, Serializable, IDataSetListHandler, KeyListener
 {
   private JTree tree;
+  
+  private boolean respondToPointedAt = true;
+  private boolean isCtrlPressed = false;
+  private boolean isShiftPressed = false;
 
   public static final String MODIFIED_NODE_TITLE = "Modified";
   public static boolean DEBUG=false;
@@ -158,7 +169,8 @@ public class JDataTree
     tree.putClientProperty("JTree.lineStyle", "Angled");
     tree.addMouseListener( ml );
     tree.addKeyListener( kl );
-    //tree.setCellRenderer(new JDataTreeCellRenderer());
+    tree.addKeyListener(this);
+    tree.setCellRenderer(new JDataTreeCellRenderer());
 
     getMyModel().insertNodeInto(  new Experiment( MODIFIED_NODE_TITLE ),
                                   (DefaultMutableTreeNode)getMyModel().getRoot(),
@@ -673,24 +685,34 @@ public class JDataTree
 
       else if ( reason_str.equals(SELECTION_CHANGED) )
       {
-        //TODO: figure out what to do for this IObserver message
+         Data data = null;
+         MutableTreeNode node = null;
+         for (int i=0; i<ds.getNum_entries(); i++)
+         {
+            data = ds.getData_entry(i);
+            if (data != null)
+            {
+               node = getNodeOfObject(data);
+               if (node != null)
+                  if (node instanceof DataMutableTreeNode)
+                     ((DataMutableTreeNode)node).setSelected(data.isSelected());
+            }
+         }
+         repaint();
       }
 
       else if ( reason_str.equals(POINTED_AT_CHANGED) )
       {
-         Data data = ds.getData_entry(ds.getPointedAtIndex());
-         if (data != null)
+         if (respondToPointedAt)
          {
-            MutableTreeNode node = getNodeOfObject(data);
-            if (node != null)
+            Data data = ds.getData_entry(ds.getPointedAtIndex());
+            if (data != null)
             {
-               tree.setExpandsSelectedPaths(true);
-               tree.getSelectionModel().clearSelection();
-               TreePath createdPath = createTreePathForNode(node);
-               if (createdPath != null)
+               MutableTreeNode node = getNodeOfObject(data);
+               if (node != null)
                {
-                  tree.scrollPathToVisible(createdPath);
-                  tree.getSelectionModel().addSelectionPath(createdPath);
+                  TreePath createdPath = createTreePathForNode(node);
+                  selectNode(createdPath);
                }
             }
          }
@@ -712,6 +734,29 @@ public class JDataTree
 
       return; 
     }           
+  }
+  
+  /**
+   * Causes the node with the TreePath <code>
+   * path</code> to be selected.  The tree 
+   * expands and scrolls to make the node 
+   * visible.  Note:  This method causes a 
+   * <code>TreeSelectionEvent</code> to be 
+   * fired.
+   * @param path The TreePath corresponding 
+   * to the node that is to selected.  Note:  
+   * if <code>path</code> is null the tree 
+   * remains unchanged.
+   */
+  private void selectNode(TreePath path)
+  {
+     tree.setExpandsSelectedPaths(true);
+     tree.getSelectionModel().clearSelection();
+     if (path != null)
+     {
+        tree.scrollPathToVisible(path);
+        tree.getSelectionModel().addSelectionPath(path);
+     }
   }
 
 
@@ -877,4 +922,34 @@ public class JDataTree
     e.setName( exp_name );    // Now set the experiment name to the unique one
   }
 
+  
+  public void keyPressed(KeyEvent e)
+  {
+     int code = e.getKeyCode();
+     if ((code==KeyEvent.VK_SHIFT) || (code==KeyEvent.VK_CONTROL))
+     {
+        respondToPointedAt = false;
+        if (code==KeyEvent.VK_SHIFT)
+           isShiftPressed = true;
+        if (code==KeyEvent.VK_CONTROL)
+           isCtrlPressed = true;
+     }
+  }
+
+   public void keyReleased(KeyEvent e)
+   {
+      int code = e.getKeyCode();
+      if ((code==KeyEvent.VK_SHIFT) || (code==KeyEvent.VK_CONTROL))
+      {
+         respondToPointedAt = true;
+         if (code==KeyEvent.VK_SHIFT)
+            isShiftPressed = false;
+         if (code==KeyEvent.VK_CONTROL)
+            isCtrlPressed = false;
+      }
+   }
+
+   public void keyTyped(KeyEvent e)
+   {
+   }
 }
