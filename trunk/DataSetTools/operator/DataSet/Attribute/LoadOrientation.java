@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/05/06 20:56:01  pfpeterson
+ *  Added a constructor which takes a string to specify matrix file.
+ *
  *  Revision 1.10  2003/03/06 23:21:05  pfpeterson
  *  Changed call from fixSeparator to setForwardSlash
  *
@@ -137,6 +140,22 @@ public class LoadOrientation extends    DS_Attribute {
 
         setDataSet( ds );         // record reference to the DataSet that
                                   // this operator should operate on
+    }
+
+    /**
+     *  Construct an operator for a specified DataSet and with the
+     *  specified parameter values so that the operation can be
+     *  invoked immediately by calling getResult().
+     *
+     *  @param  ds          The DataSet to which the operation is applied
+     *  @param  orient      The name of the iparm file.
+     */
+
+    public LoadOrientation(DataSet ds, String  orient){
+        this();
+
+        getParameter(0).setValue(orient);
+        setDataSet( ds );
     }
 
 
