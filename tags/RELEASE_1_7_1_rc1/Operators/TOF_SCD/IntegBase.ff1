@@ -1,0 +1,577 @@
+
+      SUBROUTINE INTEG (JHIST,Nxs,Nys, X,Y,Z,ITOT,SIGITOT,REFLAG,WLNUM,
+     1      MAXP1,IPFLAG,IADD,ISX,ISY,ISZ)
+
+      INTEGER X,Y,Z,Nxs,Nys
+      INTEGER REFLAG,WLNUM
+      REAL SDATA(85,85),IHKL(5),IHKLX,SIGI(5)
+      REAL ITOT
+      REAL ITOSIGI(5),ITOSIGIX
+      CHARACTER PORM(5)
+      INTEGER RANGE(4,5),PEAK(4,5),STEP(4),XDISP(5),YDISP(5),KRANGE(5)
+      INTEGER TSLICE(5),MAXX(5),MAXY(5),MAXP(5)
+      DIMENSION ISIGTOT(5),IBCKTOT(5),STOB(5),IBTOT(5),ISTOT(5)
+      INTEGER JHIST(85,85,128), GOTO
+      EXTERNAL RANGE_TEST
+      INTEGER RANGE_TEST
+      REAL A(1),B(1),C(1)
+c put in bounds checkin for JHIST
+        if( X-ISX .lt.1)RETURN
+        if(X +ISX .gt.NXs)RETURN
+        if( Y-ISY .lt.1)RETURN
+        if(Y +ISY .gt.NYs)RETURN
+        
+        if( Z-ISZ .lt.1)RETURN
+        if(Z +ISZ .gt.WLNUM) RETURN
+        
+         
+        TSLICE(1)=0
+        TSLICE(2)=-1
+        TSLICE(3)=1
+        TSLICE(4)=2
+        TSLICE(5)=3
+C
+C      Search the data for the absolute peak position in the time slices 
+C      of interest.  Initialally, the search will range from z-1 to z+1
+C      in time channels, y-1 to y+1 and x-1 to x+1 in position channels.
+C
+
+
+C      MAXP(K) = maximum count on time-slice K.
+C      MAXX(K) = X channel of MAXP on time-slice K.
+C              = PEAK(1,K) = PEAK(2,K)
+C      MAXY(K) = Y channel of MAXP on time-slice K.
+C              = PEAK(3,K) = PEAK(4,K)
+C      MAXZ = Z (time) channel for MAXP(1), which is max for entire peak.
+
+
+      MAXP1=JHIST(X,Y,Z)
+
+      REFLAG = 0
+      MAXP(1)=0.0
+      DO 80 K=(Z-ISZ),(Z+ISZ)
+            DO 60 J=(Y-ISY),(Y+ISY)
+                  DO 40 I=(X-ISX),(X+ISX)
+                        IF(JHIST(I,J,K).GT.MAXP(1))THEN
+                              MAXP(1)=JHIST(I,J,K)
+                              MAXX(1)=I
+                              MAXY(1)=J
+                              MAXZ=K
+                              PEAK(1,1)=I
+                              PEAK(3,1)=J
+                              PEAK(2,1)=PEAK(1,1)
+                              PEAK(4,1)=PEAK(3,1)
+                        ENDIF
+40                  CONTINUE
+60            CONTINUE
+80      CONTINUE
+
+      MAXP1 = MAXP(1)
+
+      IF (MAXX(1).LT.5 .OR. MAXX(1).GT.81
+     1      .OR. MAXY(1).LT.5 .OR. MAXY(1).GT.81
+     2      .OR. MAXZ.LT.2 .OR. MAXZ.GT.(WLNUM-3)) THEN
+            REFLAG=500
+            RETURN
+      ENDIF
+
+      KRANGE(1)=MAXZ
+      KRANGE(2)=MAXZ-1
+      KRANGE(3)=MAXZ+1
+      KRANGE(4)=MAXZ+2
+      KRANGE(5)=MAXZ+3
+
+C      Find MAXP for each time slice individually.
+
+      DO 160 K=2,5
+
+            MAXP(K) = 0
+            II = MAXX(1)
+            JJ = MAXY(1)
+
+C      For slices 4(+2) and 5(+3), start search from MAX of
+C      previous time-slice.
+            IF (K .GE. 4) THEN
+                  II=MAXX(K-1)
+                  JJ=MAXY(K-1)
+            ENDIF
+
+            DO 140 J=JJ-1,JJ+1
+
+                  DO 120 I=II-1,II+1
+                        IF( I.GT.0.and.j.gt.0.and.k.gt.0.and.KRANGE(k).gt.0
+     1                     .and.I.le.NXS.and.J.LE.NYs.and.krange(k).le.wlnum)then
+                        IF(JHIST(I,J,KRANGE(K)).GT.MAXP(K))THEN
+                              MAXP(K)=JHIST(I,J,KRANGE(K))
+                              MAXX(K) = I
+                              MAXY(K) = J
+                              PEAK(1,K)=I
+                              PEAK(3,K)=J
+                              PEAK(2,K)=PEAK(1,K)
+                              PEAK(4,K)=PEAK(3,K)
+                        ENDIF
+                      endif
+120                  CONTINUE
+
+140            CONTINUE
+
+160      CONTINUE
+
+C      Set initial peak signal ranges.
+      DO 161 K=1,5
+
+            RANGE(1,K)=PEAK(1,K)-2                  
+            RANGE(2,K)=PEAK(1,K)+2                 
+            RANGE(3,K)=PEAK(3,K)-2                 
+            RANGE(4,K)=PEAK(3,K)+2                  
+
+            REFLAG= RANGE_TEST(RANGE,NXs,NYs,K,REFLAG,WLNUM)
+            IF (REFLAG.EQ.500) RETURN
+
+ 161     CONTINUE
+
+
+C
+C
+
+      DO 400 IZ=1,5
+
+C
+C      This is the initial step.  We will calculate the value of I(hkl)/SIG(I)
+C      for the default range of channels in X  and Y.  We will use this as our
+C      the first value in our maximization of I(hkl)/SIG(I).
+
+C      Calculate the following:
+C      IBXMIN      Min X Background Channel
+C      IBXMAX      Max X Background Channel
+C      IBYMIN      Min Y Background Channel
+C      IBYMAX      Max Y Background Channel
+C      ISIGTOT      Total number of signal channels
+C      IBCKTOT      Total number of background channels
+C      STOB            Ratio of signal to background channels
+C      IBTOT            Total counts in background region
+C      ISTOT            Total counts in signal region
+C      
+           A(1)=IHKL(IZ)
+           B(1) = SIGI(IZ)
+           C(1) = ITOSIGI(IZ)
+            CALL INTGT_SLICE (JHIST,RANGE,KRANGE,IZ,A,B,C)
+           IHKL(IZ)= A(1)
+          SIGI(IZ)= B(1)  
+          ITOSIGI(IZ)= C(1)  
+            
+
+            IF (ITOSIGI(IZ) .LT. 3.0) THEN            
+                  IPASS = 2
+                  
+            ELSE
+
+C
+C      Start the search by varying XMIN.  Move XMIN out (more negative)
+C      unless the initial step decreases I(hkl)/SIG(I).  If the first step
+C      decreases I(hkl)/SIG(I), reverse the direction of the step.  Continue 
+C      this process with XMAX (stepping positive), YMIN (stepping negative) and
+C      YMAX (stepping positive).
+C
+c    !Number of passes to integrate time-slice
+            IPASS = 1      
+270          Do 390 IPASS=1,2
+                STEP(1) = -1
+            STEP(2) = 1
+            STEP(3) = -1
+            STEP(4) = 1
+
+            DO 360 II=1,4
+
+                  IFLAG=0
+                        GOTO= 280
+                     
+
+280                  CONTINUE
+                 do 300 while( GOTO.eq.280)
+                    GOTO = 0
+
+                        RANGE(II,IZ)=RANGE(II,IZ)+STEP(II)
+
+                        REFLAG= RANGE_TEST(RANGE,NXs,NYs,IZ,REFLAG,WLNUM)
+                        IF (REFLAG.EQ.500) RETURN
+                         A(1)=IHKLX
+                         B(1)=SIGIX
+                         C(1)=ITOSIGIX
+                        CALL INTGT_SLICE (JHIST,RANGE,KRANGE,IZ,A,B,C)
+                         IHKLX=A(1)
+                         SIGIX=B(1)
+                         ITOSIGIX=C(1)
+
+            IF (ITOSIGIX .GT. ITOSIGI(IZ)) THEN
+
+C      The step increased I/SIGI.  Transfer results to arrays
+C      and go back to try another step in the same direction.
+                  ITOSIGI(IZ) = ITOSIGIX
+                  IHKL(IZ) = IHKLX
+                  SIGI(IZ) = SIGIX
+                  GOTO=280
+
+            ELSE
+C
+C      The first step outward reduced I(hkl)/SIG(I).
+C
+                  IF (RANGE(II,IZ) .EQ. PEAK(II,IZ)+3*STEP(II) 
+     1                  .AND. IFLAG.EQ.0)THEN
+C
+C      Reduce the range, reverse the step and try again.
+C
+                        RANGE(II,IZ)=PEAK(II,IZ)+2*STEP(II)
+
+                        REFLAG= RANGE_TEST(RANGE,NXs,NYs,IZ,REFLAG,WLNUM)
+                        IF (REFLAG.EQ.500) RETURN
+
+                        STEP(II)=-1*STEP(II)
+                        IFLAG=1
+                        GOTO=280
+               ENDIF
+              ENDIF
+ 300                 continue
+ 
+C
+C      This was a good step.
+C
+c                  ELSE
+                IF(GOTO.EQ.0) then
+                        RANGE(II,IZ)=RANGE(II,IZ)-STEP(II)
+                        REFLAG= RANGE_TEST(RANGE,NXs,NYs,IZ,REFLAG,WLNUM)
+                        IF (REFLAG.EQ.500) RETURN
+                  
+
+                 
+
+            ENDIF
+
+
+360            CONTINUE
+        ENDIF
+380      CONTINUE
+
+      
+      
+
+C*****************  INCLUDE TEST3PLOT.FOR HERE  *********************
+
+390      CONTINUE
+        IF (IADD .NE. 1) THEN
+
+C      Increase X and Y dimensions by 1 on each side to make sure the
+C      entire peak is integrated.
+
+      RANGE(1,IZ) = RANGE(1,IZ) - 1
+      RANGE(2,IZ) = RANGE(2,IZ) + 1
+      RANGE(3,IZ) = RANGE(3,IZ) - 1
+      RANGE(4,IZ) = RANGE(4,IZ) + 1
+
+      REFLAG = RANGE_TEST (RANGE,NXs,NYs,IZ,REFLAG,WLNUM)
+      IF (REFLAG.EQ.500) RETURN
+       
+           A(1)=IHKL(IZ)
+           B(1) = SIGI(IZ)
+           C(1) = ITOSIGI(IZ)
+            CALL INTGT_SLICE (JHIST,RANGE,KRANGE,IZ,A,B,C)
+           IHKL(IZ)= A(1)
+          SIGI(IZ)= B(1)  
+          ITOSIGI(IZ)= C(1)
+    
+
+
+       ENDIF     
+400    continue       
+c           End of loop integrating each of 5 time-slices.
+
+C
+C      Maximize the sum of the five I(hkl)/SIG(I)'s. Start with JDIR=-1
+C      to check 0,-1,1,2,3.  If this fails on the 0,-1 check, switch to
+C      JDIR=1 to check 0,1,2,3.  J=0 indicates the initial step (in either
+C      direction).  
+C
+
+      porm(1) = 'Yes'
+      porm(2) = 'No '
+      porm(3) = 'No '
+      porm(4) = 'No '
+      porm(5) = 'No '
+
+      ITOT = IHKL(1)
+      SIGITOT = SIGI(1)
+      TOTITOSIGI = ITOSIGI(1)
+      IF (IHKL(1) .LT. 0.0) THEN      
+            GOTO= 690
+      ENDIF
+      IF( GOTO.eq.0) then
+      DO 503 IJJ=2,3                  
+            IF (IHKL(1) .LT. IHKL(IJJ)) THEN
+                  REFLAG = 500
+                  RETURN
+            ENDIF
+ 503    CONTINUE
+
+      PORM(2) = 'Yes'
+      ITOT = IHKL(1) + IHKL(2)
+      SIGITOT = SQRT(SIGI(1)**2 + SIGI(2)**2)
+      TOTITOSIGI = ITOT/SIGITOT
+c !Test to see if I/sig(I) is increasing.
+      IF (TOTITOSIGI .LT. ITOSIGI(1)) THEN
+c !If not, add in anyway if intensity is more than 1%      
+            IF (ITOSIGI(2).GT.2.0 .AND.                  
+     1            IHKL(2)/IHKL(1) .GT. 0.01) then
+                   GOTO= 680
+               else
+c  !of total intensity at this point.      
+            ITOT = IHKL(1)
+            SIGITOT = SIGI(1)
+            TOTITOSIGI = ITOSIGI(1)
+            porm(2) = 'No '
+      ENDIF
+      ENDIF
+
+      ENDIF
+      if( GOTO.eq.0.or.GOTO.eq.680) then
+         GOTO=0
+680      OLDITOT = ITOT
+      OLDSIGITOT = SIGITOT
+      OLDITOSIGI = TOTITOSIGI
+      
+      PORM(3) = 'Yes'
+      ITOT = ITOT + IHKL(3)
+      SIGITOT      = SQRT(SIGITOT**2 + SIGI(3)**2)
+      TOTITOSIGI = ITOT/SIGITOT
+      IF (TOTITOSIGI .LT. OLDITOSIGI) THEN
+            IF (ITOSIGI(3).GT.3.0 .AND.
+     1            IHKL(3)/OLDITOT .GT. 0.01) then
+                GOTO= 682
+        else
+            ITOT =       OLDITOT
+            SIGITOT = OLDSIGITOT
+            TOTITOSIGI = OLDITOSIGI
+            porm(3) = 'No '
+            goto= 690
+      ENDIF
+      endif
+      Endif
+        if( GOTO.eq.0 .or. GOTO.eq.682) then
+           GOTO = 0
+682      OLDITOT = ITOT
+      OLDSIGITOT = SIGITOT
+      OLDITOSIGI = TOTITOSIGI
+      
+      IF (IHKL(1) .LT. IHKL(4)) GOTO =690
+      ENDIF
+      IF( GOTO.eq.0) then
+      PORM(4) = 'Yes'
+      ITOT = ITOT + IHKL(4)
+      SIGITOT      = SQRT(SIGITOT**2 + SIGI(4)**2)
+      TOTITOSIGI = ITOT/SIGITOT
+      IF (TOTITOSIGI .LT. OLDITOSIGI) THEN
+            IF (ITOSIGI(4).GT.3.0 .AND.
+     1            IHKL(4)/OLDITOT .GT. 0.01) then
+                GOTO= 684
+         else
+            ITOT =       OLDITOT
+            SIGITOT = OLDSIGITOT
+            TOTITOSIGI = OLDITOSIGI
+            PORM(4) = 'No '
+            goto =690
+      ENDIF
+        ENDIF
+       endif
+
+        if( goto.eq.684.or.goto.eq.0) then
+           GOTO = 0
+684      OLDITOT = ITOT
+      OLDSIGITOT = SIGITOT
+      OLDITOSIGI = TOTITOSIGI
+      
+      IF (IHKL(1) .LT. IHKL(5)) GOTO=690
+      ENDIF
+      if( GOTO.eq.0) then
+      PORM(5) = 'Yes'
+      ITOT = ITOT + IHKL(5)
+      SIGITOT      = SQRT(SIGITOT**2 + SIGI(5)**2)
+      TOTITOSIGI = ITOT/SIGITOT
+      IF (TOTITOSIGI .LT. OLDITOSIGI) THEN
+            IF (ITOSIGI(5).GT.3.0 .AND.
+     1            IHKL(5)/OLDITOT .GT. 0.01) then
+                GOTO= 690
+         else
+            ITOT =       OLDITOT
+            SIGITOT = OLDSIGITOT
+            TOTITOSIGI = OLDITOSIGI
+            PORM(5) = 'No '
+      ENDIF
+        ENDIF
+      ENDIF
+        if( goto .eq. 690) GOTO=0
+ 690    IF (IPFLAG.EQ.0) THEN
+       CALL WRITESTRING(0,' Layer  T   MaxX MaxY  IPK     dX      dY  ')
+        CALL WRITESTRING(0,'     Ihkl      sigI    I/sigI   Included in I(hkl)?')
+        CALL WRITELN(0)
+        CALL WRITEINT( 0, TSLICE(2),'I4')
+        CALL WRITEINT(0, MAXZ-1,'I6')
+        CALL WRITEINT(0,MAXX(2),'I5')
+        CALL WRITEINT(0,MAXY(2),'I5')
+        CALL WRITEINT(0,MAXP(2),'I6')
+        CALL WRITEINT(0,Range(1,2),'I5')
+        CALL WRITEINT(0,Range(2,2),'I3')
+        CALL WRITEINT(0,Range(3,2),'I5')
+        CALL WRITEINT(0,Range(4,2),'I3')
+
+        CALL WRITEFLOAT(0, IHKL(2),'F10.2')
+        CALL WRITEFLOAT(0, SIGI(2),'F10.2')
+        CALL WRITEFLOAT(0, ITOSIGI(2),'F10.2')
+        CALL WRITESTRING(0,'          ')
+        CALL WRITESTRING(0,PORM(2))
+        CALL WRITELN(0)
+
+
+        CALL WRITEINT( 0, TSLICE(1),'I4')
+        CALL WRITEINT(0, MAXZ,'I6')
+        CALL WRITEINT(0,MAXX(1),'I5')
+        CALL WRITEINT(0,MAXY(1),'I5')
+        CALL WRITEINT(0,MAXP(1),'I6')
+        CALL WRITEINT(0,Range(1,1),'I5')
+        CALL WRITEINT(0,Range(2,1),'I3')
+        CALL WRITEINT(0,Range(3,1),'I5')
+        CALL WRITEINT(0,Range(4,1),'I3')
+
+        CALL WRITEFLOAT(0, IHKL(1),'F10.2')
+        CALL WRITEFLOAT(0, SIGI(1),'F10.2')
+        CALL WRITEFLOAT( 0,ITOSIGI(1),'F10.2')
+        CALL WRITESTRING(0,'          ')
+        CALL WRITESTRING(0,PORM(1))
+        CALL WRITELN(0)
+
+
+        CALL WRITEINT(0,  TSLICE(3),'I4')
+        CALL WRITEINT( 0,MAXZ+1,'I6')
+        CALL WRITEINT(0,MAXX(3),'I5')
+        CALL WRITEINT(0,MAXY(3),'I5')
+        CALL WRITEINT(0,MAXP(3),'I6')
+        CALL WRITEINT(0,Range(1,3),'I5')
+        CALL WRITEINT(0,Range(2,3),'I3')
+        CALL WRITEINT(0,Range(3,3),'I5')
+        CALL WRITEINT(0,Range(4,3),'I3')
+
+        CALL WRITEFLOAT(0, IHKL(3),'F10.2')
+        CALL WRITEFLOAT(0, SIGI(3),'F10.2')
+        CALL WRITEFLOAT(0, ITOSIGI(3),'F10.2')
+        CALL WRITESTRING(0,'          ')
+        CALL WRITESTRING(0,PORM(3))
+        CALL WRITELN(0)
+
+
+        CALL WRITEINT(0,  TSLICE(4),'I4')
+        CALL WRITEINT(0, MAXZ+2,'I6')
+        CALL WRITEINT(0,MAXX(4),'I5')
+        CALL WRITEINT(0,MAXY(4),'I5')
+        CALL WRITEINT(0,MAXP(4),'I6')
+        CALL WRITEINT(0,Range(1,4),'I5')
+        CALL WRITEINT(0,Range(2,4),'I3')
+        CALL WRITEINT(0,Range(3,4),'I5')
+        CALL WRITEINT(0,Range(4,4),'I3')
+
+        CALL WRITEFLOAT(0, IHKL(4),'F10.2')
+        CALL WRITEFLOAT(0, SIGI(4),'F10.2')
+        CALL WRITEFLOAT(0, ITOSIGI(4),'F10.2')
+        CALL WRITESTRING(0,'          ')
+        CALL WRITESTRING(0,PORM(4))
+        CALL WRITELN(0)
+
+
+        CALL WRITEINT( 0, TSLICE(5),'I4')
+        CALL WRITEINT(0, MAXZ+3,'I6')
+        CALL WRITEINT(0,MAXX(5),'I5')
+        CALL WRITEINT(0,MAXY(5),'I5')
+        CALL WRITEINT(0,MAXP(5),'I6')
+        CALL WRITEINT(0,Range(1,5),'I5')
+        CALL WRITEINT(0,Range(2,5),'I3')
+        CALL WRITEINT(0,Range(3,5),'I5')
+        CALL WRITEINT(0,Range(4,5),'I3')
+
+        CALL WRITEFLOAT(0, IHKL(5),'F10.2')
+        CALL WRITEFLOAT( 0,SIGI(5),'F10.2')
+        CALL WRITEFLOAT(0, ITOSIGI(5),'F10.2')
+        CALL WRITESTRING(0,'          ')
+        CALL WRITESTRING(0,PORM(5))
+        CALL WRITELN(0)
+        CALL WRITELN(0)
+
+                  ENDIF
+
+     
+      END
+
+C----------------------------------------------------------------------
+
+      Integer Function RANGE_TEST (RANGE,Nxs,Nys,IZ,REFLAG,WLNUM)
+
+      INTEGER RANGE(4,5)
+      INTEGER WLNUM,REFLAG
+
+      REFLAG=0
+
+      IF (RANGE(1,IZ).LT.2 .OR. RANGE(2,IZ).GT.NXS-1
+     1      .OR. RANGE(3,IZ).LT.2 .OR. RANGE(4,IZ).GT.NYS-1)
+     2      RANGE_TEST=500
+
+      IF (RANGE(1,IZ) .GE. RANGE(2,IZ)) RANGE_TEST=500
+      IF (RANGE(3,IZ) .GE. RANGE(4,IZ)) RANGE_TEST=500
+
+      
+      END
+
+C----------------------------------------------------------------------
+
+      SUBROUTINE INTGT_SLICE (JHIST,RANGE,KRANGE,IZ,IHKL,SIGI,ITOSIGI)
+
+      INTEGER RANGE(4,5),KRANGE(5)
+      REAL IHKL(1),ITOSIGI(1),SIGI(1)
+
+      INTEGER JHIST(NXS,NYS,128)
+
+      IBXMIN = RANGE(1,IZ) - 1
+      IBXMAX = RANGE(2,IZ) + 1
+      IBYMIN = RANGE(3,IZ) - 1
+      IBYMAX = RANGE(4,IZ) + 1
+
+      ISIGTOT = (RANGE(2,IZ)-RANGE(1,IZ)+1)
+     1      * (RANGE(4,IZ)-RANGE(3,IZ)+1)
+      IBCKTOT = (IBXMAX-IBXMIN+1)*(IBYMAX-IBYMIN+1)-ISIGTOT
+      STOB = FLOAT(ISIGTOT) / FLOAT(IBCKTOT)
+
+      IBTOT = 0
+      ISTOT = 0
+
+      DO 320 J=IBYMIN,IBYMAX
+
+            DO 300 I=IBXMIN,IBXMAX
+
+                  IBTOT=IBTOT+JHIST(I,J,KRANGE(IZ))
+
+                  IF (J.GE.RANGE(3,IZ).AND.J.LE.
+     1                  RANGE(4,IZ).AND.I.GE.RANGE(1,IZ).AND.
+     2                  I.LE.RANGE(2,IZ)) THEN
+                        ISTOT=ISTOT+JHIST(I,J,KRANGE(IZ))
+                  ENDIF
+
+300            CONTINUE
+
+320      CONTINUE
+
+      STOB2=STOB**2
+      IBTOT=IBTOT-ISTOT
+      IHKL(1)=ISTOT-STOB*IBTOT                  
+      SIGI(1)=SQRT(ISTOT+STOB2*IBTOT)
+
+      ITOSIGI(1)=IHKL(1)/SIGI(1)
+
+    
+      END
+
+
