@@ -3,7 +3,11 @@
  *                                         Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.8  2000/11/07 15:56:13  dennis
+ *  .
+ *
  *  Revision 1.7  2000/10/03 22:13:10  dennis
+ *
  *  Now uses the constant empty DataSet, DataSet.EMPTY_DATA_SET,
  *   as a place holder for the DataSet parameter.
  *
@@ -11,10 +15,9 @@
  *  Moved OutputTable from DataSetTools/operator to DataSetTools/components/ui
  *
  *  Revision 1.5  2000/08/17 19:08:28  dennis
- *  Modified 08/13 by Dongfeng.  Now prints output into JTable for viewing, copying
- *  and pasting.  Changed the output format. All of the output types can be pasted
- *  neatly.
- *
+ *  Modified 08/13 by Dongfeng.  Now prints output into JTable for viewing, 
+ *  copying and pasting.  Changed the output format. All of the output types 
+ *  can be pasted neatly.
  *
  *  Revision 1.4  2000/08/08 21:12:52  dennis
  *  Now prints error values and uses tabs & number format to make the
