@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.3  2002/02/18 21:57:09  pfpeterson
+ * Fixed nexus and windows problem.
+ *
  * Revision 1.2  2002/02/18 16:33:27  pfpeterson
  * Changes the permission of Isaw_exec.sh to executable using the "chmod +x"
  * system call. New line character is now System.getProperty("line.separator").
@@ -447,6 +450,7 @@ public class IsawInstaller extends JFrame
 		+"rem The following command is used to run from jar files\n"
 		+"rem --"+newline
 		+"cd "+isaw_home+newline
+		+"path %PATH%;./lib"+newline
 		+"java -mx128000000 -cp Isaw.jar;sgt_v2.jar;IPNS.jar"
 		+";jnexus.jar;sdds.jar;.  IsawGUI.Isaw"+newline
 		+"rem --"+newline
@@ -482,7 +486,6 @@ public class IsawInstaller extends JFrame
 
 	if(operating_system.equals(LIN_ID)){
 	    Process proc = null;
-	    System.out.println("chmod +x "+filename);
 	    try{
 		proc=Runtime.getRuntime().exec("chmod +x "+filename);
 		proc.waitFor();
