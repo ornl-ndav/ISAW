@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.19  2003/07/09 14:20:11  bouzekc
+ * No longer has a specific default directory for the SCD
+ * instprm.dat file.
+ *
  * Revision 1.18  2003/07/08 23:08:13  bouzekc
  * Removed brackets from within getDocumentation().
  *
@@ -229,9 +233,7 @@ public class IntegrateMultiRunsForm extends Form {
     addParameter( clpg );
 
     //5
-    addParameter( 
-      new LoadFilePG( 
-        "SCD Calibration File", "/IPNShome/scd/instprm.dat", false ) );
+    addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );
 
     //6
     addParameter( new IntArrayPG( "The Time-Slice Range", "-1:3", false ) );
