@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2004/03/09 17:56:52  rmikk
+ * Fixed Javadoc errors
+ *
  * Revision 1.2  2004/03/06 19:05:21  rmikk
  * Tested the code to work with Vectors. This can now be used with the ISAW
  * Scripting language
@@ -81,9 +84,9 @@ public class MakeDataSet implements Wrappable {
      *                 of x(time) bins.
      * @param yvals A Vector with the y values( intensity). This vector can 
      *           contain multidimensional arrays or Vectors. 
-     * @param errors A Vector containing the errors in the same format as
+     * @param errs A Vector containing the errors in the same format as
      *              the y values
-     * @param the Title for the data set
+     * @param Title the Title for the data set
      * @param XLabel  the label for the x(time/Q) values
      * @param XUnits the Units of the xvalues
      * @param YLabel the label for the Y values( Intensities)
