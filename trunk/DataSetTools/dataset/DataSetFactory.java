@@ -2,6 +2,9 @@
  * @(#)DataSetFactory.java     0.1  99/06/07  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.10  2001/04/02 20:48:53  dennis
+ *  Now adds TofToChannel operator for any DataSet.
+ *
  *  Revision 1.9  2000/12/07 22:23:37  dennis
  *  Added operators FitPolynomialToGroup(),
  *                  ConvertFunctionToHistogram()
@@ -214,6 +217,8 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new ConvertHistogramToFunction() );
     new_ds.addOperator( new ConvertFunctionToHistogram() );
 
+    new_ds.addOperator( new TofToChannel() );     // convert to channel for any
+                                                  // DataSet
     new_ds.addOperator( new GetDataAttribute() );
     new_ds.addOperator( new SetDataAttribute() );
     new_ds.addOperator( new GetDSAttribute() );
@@ -255,7 +260,6 @@ public class DataSetFactory implements Serializable
       new_ds.addOperator( new DiffractometerTofToQ() );
       new_ds.addOperator( new DiffractometerTofToEnergy() );
       new_ds.addOperator( new DiffractometerTofToWavelength() );
-      new_ds.addOperator( new TofToChannel() );
       new_ds.addOperator( new TrueAngle() );
     }
     else if ( instrument_type == InstrumentType.TOF_SCD )  // will be different
@@ -264,7 +268,6 @@ public class DataSetFactory implements Serializable
       new_ds.addOperator( new DiffractometerTofToQ() );
       new_ds.addOperator( new DiffractometerTofToEnergy() );
       new_ds.addOperator( new DiffractometerTofToWavelength() );
-      new_ds.addOperator( new TofToChannel() );
       new_ds.addOperator( new TrueAngle() );
     }
     else if ( instrument_type == InstrumentType.TOF_SAD )  // will be different
@@ -273,7 +276,6 @@ public class DataSetFactory implements Serializable
       new_ds.addOperator( new DiffractometerTofToQ() );
       new_ds.addOperator( new DiffractometerTofToEnergy() );
       new_ds.addOperator( new DiffractometerTofToWavelength() );
-      new_ds.addOperator( new TofToChannel() );
       new_ds.addOperator( new TrueAngle() );
     }
     else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
@@ -288,17 +290,16 @@ public class DataSetFactory implements Serializable
       new_ds.addOperator( new DoubleDifferentialCrossection() );
 //      new_ds.addOperator( new SpectrometerTofToQ() );
       new_ds.addOperator( new SpectrometerTofToQE() );
-      new_ds.addOperator( new TofToChannel() );
       new_ds.addOperator( new TrueAngle() );
     }
     else if ( instrument_type == InstrumentType.TOF_IDG_SPECTROMETER )
     {                                                    // will be different
-      new_ds.addOperator( new TofToChannel() );          // when IDG_S properly
+                                                         // when IDG_S properly
       new_ds.addOperator( new TrueAngle() );             // supported  
     }
     else if ( instrument_type == InstrumentType.TOF_REFLECTROMETER )
     {                                                    // will be different
-      new_ds.addOperator( new TofToChannel() );          // when REFLT properly
+                                                         // when REFLT properly
       new_ds.addOperator( new TrueAngle() );             // supported  
     }
     else
