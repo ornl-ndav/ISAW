@@ -28,6 +28,14 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.4  2003/06/09 21:50:39  bouzekc
+ * Changed Form to run with BlindJ matrix files if it
+ * could not find LsqrsJ matrix files rather than having
+ * the user select.
+ * Updated documentation.
+ * Added constructor to set HAS_CONSTANTS to reduce
+ * the number of calls to setDefaultParameters().
+ *
  * Revision 1.3  2003/06/06 15:12:01  bouzekc
  * Added log message header to file.
  *
@@ -41,22 +49,20 @@ import  DataSetTools.parameter.*;
 import  DataSetTools.wizard.*;
 import  Operators.TOF_SCD.*;
 import  DataSetTools.operator.Operator;
+import  java.io.File;
 
 /**
  * 
- *  This is a Form to add extra functionality to IndexJ.  It "knows" 
- *  which runs to restrict for each matrix file.
+ *  This is a Form to add extra functionality to IndexJ.  If used with
+ *  output from LsqrsJForm, it "knows" which runs to restrict for each 
+ *  matrix file. If used with output from BlindJ, it applies
+ *  the orientation matrix data to the entire peaks file.
  *  Other than that, it functions in a similar manner to IndexJ.
  */
 public class IndexJForm extends Form
 {
 
   protected static int RUN_NUMBER_WIDTH = 5;
-  private static Vector choices;
-
-  //use these constants to set the choice list value
-  public static final String JBLIND = "JBlind";
-  public static final String JLSQRS = "JLeastSquares";
 
   /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
   /**
@@ -68,23 +74,33 @@ public class IndexJForm extends Form
     this.setDefaultParameters();
   }
 
+  /**
+   *  Construct a Form using the default parameter list.
+   *
+   *  @param hasConstParams         boolean indicating whether
+   *                                this Form should have constant
+   *                                parameters.
+   */
+  public IndexJForm(boolean hasConstParams)
+  {
+    super( "IndexJForm", hasConstParams );
+    this.setDefaultParameters();
+  }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
    *  Full constructor for IndexJForm.
    *
-   *  @param runnums        The run numbers to use for naming the
+   *  @param runnums        The run numbers used in naming the
    *                        matrix files.
-   *  @param peaksPath      The path where the peaks file is located.
+   *  @param peaksPath      The peaks file path.
    *  @param delta          Error parameter for indexing peaks.
    *  @param update         Whether to update the peaks file.
-   *  @param matType        Whether the matrix files are from BlindJ
-   *                        or LsqrsJ.
    *  @param expName        The experiment name.
    */
   
   public IndexJForm(String runnums, String peaksPath, 
-                    float delta, boolean update, int matType,
+                    float delta, boolean update, 
                     String expName)
   {
     this();
@@ -93,7 +109,6 @@ public class IndexJForm extends Form
     getParameter(2).setValue(new Float(delta));
     getParameter(3).setValue(new Boolean(update));
     getParameter(4).setValue(expName);
-    getParameter(5).setValue(choices.elementAt(matType));
   }
 
   /**
@@ -104,31 +119,21 @@ public class IndexJForm extends Form
   {
     parameters = new Vector();
 
-    if( choices==null || choices.size()==0 ) init_choices();
-
     //0
     addParameter(new IntArrayPG("Run Numbers",null));
     //1
     addParameter(new DataDirPG("Peaks File Path",null));
     //2
-    addParameter(new FloatPG("Delta",0.05f));
+    addParameter(new FloatPG("Delta",0.20f));
     //3
     addParameter(new BooleanPG("Update Peaks File",true));
     //4
     addParameter(new StringPG("Experiment Name",null));
-    //5
-    ChoiceListPG clpg=new ChoiceListPG("Matrix File Input From", 
-                                       choices.elementAt(0));
-    clpg.addItems(choices);
-    addParameter(clpg);
 
-    /*I am not entirely sure that the choice list should be uneditable
-      when the Form's constants are turned on.  Change it if you 
-      need to.*/
     if(HAS_CONSTANTS)
-      setParamTypes(new int[]{0,1,4},new int[]{2,3,5}, null);
+      setParamTypes(new int[]{0,1,4},new int[]{2,3}, null);
     else
-      setParamTypes(null, new int[]{0,1,2,3,4,5}, null);
+      setParamTypes(null, new int[]{0,1,2,3,4}, null);
   }
 
 
@@ -155,13 +160,11 @@ public class IndexJForm extends Form
     s.append("@algorithm Using the given run numbers and matrix files, ");
     s.append("this Form calls IndexJ, giving it the appropriate matrix file ");
     s.append("for each run number in the peaks file.\n");
-    s.append("@param runnums The run numbers to use for naming the matrix ");
+    s.append("@param runnums The run numbers used for naming the matrix ");
     s.append("files.\n");
     s.append("@param peaksPath The path where the peaks file is located.\n");
     s.append("@param delta Error parameter for indexing peaks.\n");
     s.append("@param update Whether to update the peaks file.\n");
-    s.append("@param matType Whether the matrix files are from BlindJ or ");
-    s.append("LsqrsJ.\n");
     s.append("@param expName The experiment name.\n");
     s.append("@return A Boolean indicating success or failure of the Form's ");
     s.append("execution.\n");
@@ -183,8 +186,8 @@ public class IndexJForm extends Form
 
  /**
    * getResult() takes the user input parameters and runs IndexJ, 
-   * using a expName#.mat file for each run number.  In 
-   * addition, it sends its output to a index.log file.
+   * using a lsexpName#.mat file (output from LsqrsJForm) for each run 
+   * number.  In addition, it sends its output to a index.log file.
    * Note that it "knows" which runs to restrict for each matrix file,
    * based on the matrix file names.
    *
@@ -224,7 +227,7 @@ public class IndexJForm extends Form
     }
     else
       return errorOut(param, 
-        "ERROR: you must enter a valid input directory.");
+        "ERROR: you must enter a valid peaks file directory.");
 
     //gets the delta
     param = (IParameterGUI)super.getParameter(2);
@@ -265,44 +268,47 @@ public class IndexJForm extends Form
       return errorOut(param, 
         "ERROR: you must enter a valid experiment name.");
 
-    //get the currently selected choice list value
-    param = (IParameterGUI)super.getParameter(5);
-    obj = param.getValue();
+    //peaks file name - make sure it is right for the system
+    peaksName = StringUtil.setFileSeparator(
+      peaksDir + "/" + expName + ".peaks");
 
-    if(obj == JBLIND)
-      matrixFrom = expName;
-    else
-      matrixFrom = "ls" + expName;
-
-    peaksName = peaksDir + "/" + expName + ".peaks";
-    //make sure it is right for the system
-    peaksName = StringUtil.setFileSeparator(peaksName);
-
-    for(int i = 0; i < runsArray.length; i++)
+    //if the lsqrs matrix files exist, this is their format
+    runNum = formatRunNum(runsArray[0]);
+    matName = StringUtil.setFileSeparator(peaksDir + "/ls" + 
+                expName + runNum + ".mat");
+    //if there is no matrix file, run off BlindJ's output
+    if( !(new File(matName).exists()) )
     {
-      /*load the run numbers.  We don't want to remove the leading zeroes!*/
-      runNum = DataSetTools
-               .util
-               .Format
-               .integerPadWithZero(runsArray[i], RUN_NUMBER_WIDTH);
-               
-      //the name of the matrix file
-      matName = peaksDir + "/" + matrixFrom + runNum + ".mat";
-      //make sure it is right for the system
-      matName = StringUtil.setFileSeparator(matName);
-
+      //the name of the matrix file - make sure it is right for the system
+      matName = StringUtil.setFileSeparator(
+                  peaksDir + "/" + expName + ".mat");
       SharedData.addmsg("IndexJ is updating " + peaksName + " with " + matName);
-
-      //call IndexJ
-      obj = new IndexJ(peaksName, matName, delta, update);
-      //synchronize the run number in the peaks and matrix file
-      ((Operator)obj).getParameter(2).setValue(runNum);
-
-      obj = ((Operator)obj).getResult();
-
-      if(obj instanceof ErrorString)
-        return errorOut("IndexJ failed: " + obj.toString());
+      obj = new IndexJ(peaksName, matName, delta, update).getResult();
     }
+    else     //otherwise, use LsqrsJ's output
+    {
+      for(int i = 0; i < runsArray.length; i++)
+      {
+        //load the run numbers.  We don't want to remove the leading zeroes!
+        runNum = formatRunNum(runsArray[i]);
+               
+        //the name of the matrix file - make sure it is right for the system
+        matName = StringUtil.setFileSeparator(
+                    peaksDir + "/ls" + expName + runNum + ".mat");
+      
+        SharedData.addmsg("IndexJ is updating " + peaksName + " with " + matName);
+
+        //call IndexJ
+        obj = new IndexJ(peaksName, matName, delta, update);
+        //synchronize the run number in the peaks and matrix file
+        ((Operator)obj).getParameter(2).setValue(runNum);
+
+        obj = ((Operator)obj).getResult();
+      }
+    }
+
+    if(obj instanceof ErrorString)
+      return errorOut("IndexJ failed: " + obj.toString());
   
     SharedData.addmsg("--- IndexJForm finished. ---");
 
@@ -310,11 +316,11 @@ public class IndexJForm extends Form
   }
 
   /**
-   * Set up a vector for use inside the ChoiceListPG.
+   *  Utility method to ease "code eye."
    */
-  private void init_choices(){
-    choices=new Vector(2);
-    choices.add(JBLIND);
-    choices.add(JLSQRS);
+  private String formatRunNum(int runNumber)
+  {
+    return DataSetTools.util.Format
+             .integerPadWithZero(runNumber, RUN_NUMBER_WIDTH);
   }
 }
