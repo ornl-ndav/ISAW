@@ -29,6 +29,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/08/13 14:37:11  rmikk
+ *  Increased size for operators with zero parameters.
+ *  The first line under the title bar has the command name
+ *      for the operation not the title (which is in the title bar ).
+ *
  *  Revision 1.13  2001/08/10 18:40:14  rmikk
  *  Adjusted the size of the dialog box to reduce the amount
  *  of excess space when  there are a lot of options
@@ -121,10 +126,10 @@ public class JParametersDialog implements Serializable,
         //opDialog.addComponentListener( new MyComponentListener());       
         int Size = 0 ;
         int Size1 = 0;
-        String SS ="Operation "+op.getTitle();
+        String SS ="Operation "+op.getCommand();
         int Width = 0;
         if(op instanceof DataSetOperator)
-            SS = SS +" on tree node "+((DataSetOperator)op).getDataSet();
+            SS = SS +" on "+((DataSetOperator)op).getDataSet();
 	//#
         
         Box BB = new Box( BoxLayout.Y_AXIS);
@@ -332,7 +337,7 @@ public class JParametersDialog implements Serializable,
         opDialog.getContentPane().add( BB);
         //#
        
-        Size += (num_param  + 4 )*7 + 7;
+        Size += (num_param  + 4 )*7 + 12;
         
         opDialog.setSize((int)(.4* Width) , new Float(Size +.8).intValue());
         opDialog.validate();
