@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.1  2004/05/07 17:36:28  dennis
+ * Moved WrappedCrunch from Operators to Operators/Example
+ *
  * Revision 1.4  2004/03/15 19:36:53  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -46,9 +49,8 @@
  * Revision 1.1  2003/10/30 18:38:04  bouzekc
  * Added to CVS.
  *
- *
  */
-package Operators;
+package Operators.Example;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 import DataSetTools.dataset.*;
