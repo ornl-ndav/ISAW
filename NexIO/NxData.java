@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/02/26 15:42:11  rmikk
+ * Added a set for the timeField field to put into the TimeField attribute.
+ *    All NXdata are   merged.  To unmerge, extract with the TimefieldType
+ *   attribute
+ *
  * Revision 1.2  2001/07/24 20:06:14  rmikk
  * Added Field to the process command so their is access
  * to and from linked data
@@ -59,4 +64,8 @@ public interface NxData
   /** Returns an error or warning message or "" if none
   */
    public String getErrorMessage();
+
+   /** When several NXdata's are in an NXentry, they can be tagged using this method
+   */
+   public void setTimeFieldType( int t);
   }
