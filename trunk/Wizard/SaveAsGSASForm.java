@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/07/03 15:22:13  bouzekc
+ *  Added and formatted class and javadoc comments.
+ *
  *  Revision 1.11  2003/07/03 15:07:05  bouzekc
  *  Fixed odd CVS log entries due to double inclusion of the
  *  log header tag.
@@ -70,7 +73,7 @@
  *  Revision 1.3  2003/03/19 15:07:04  pfpeterson
  *  Added the monitor DataSets as an explicit parameter and now creates
  *  filename from instrument name and run number. (Chris Bouzek)
- * 
+ *
  *  Revision 1.2  2003/03/13 19:04:14  dennis
  *  Added log header to include revision information.
  *
@@ -99,14 +102,15 @@ import java.util.Vector;
 
 
 /**
- *  This class defines a form for saving DataSets in
- *  GSAS format under the control of a Wizard.
+ * This class defines a form for saving DataSets in GSAS format under the
+ * control of a Wizard.
  */
 public class SaveAsGSASForm extends Form implements Serializable {
+  //~ Constructors *************************************************************
+
   /**
-   *  Construct an SaveAsGSASForm to open a set of histograms
-   *  which have been time focused and grouped, and save them
-   *  in GSAS format.
+   * Construct an SaveAsGSASForm to open a set of histograms which have been
+   * time focused and grouped, and save them in GSAS format.
    */
   public SaveAsGSASForm(  ) {
     super( "Save as GSAS" );
@@ -114,56 +118,55 @@ public class SaveAsGSASForm extends Form implements Serializable {
   }
 
   /**
+   * Full constructor.  Uses the input parameters to create a SaveAsGSASForm
+   * without the need to externally set the parameters.  getResult() may be
+   * called immediately after using this constructor.
    *
-   *  Full constructor.  Uses the input parameters to create
-   *  a SaveAsGSASForm without the need to externally
-   *  set the parameters.  getResult() may
-   *  be called immediately after using this constructor.
-   *
-   *  @param tf_vector        The Vector of time focused
-   *                          histograms that you wish to
-   *                          save in GSAS format.
-   *
-   *  @param mon_vector       The Vector of monitor DataSets
-   *                          that you wish to use for the
-   *                          SaveAsGSAS operation.
-   *
-   *  @param run_nums         The list of run numbers from the
-   *                          files that you loaded the
-   *                          histograms and monitors from.
-   *
-   *  @param inst_name        The name of the instrument associated
-   *                          with the histograms.
-   *
-   *  @param gsas_dir         The directory to store the GSAS files
-   *                          in.
-   *
-   *  @param export_mon       Boolean indicating whether you want to
-   *                          export the monitor DataSets.
-   *
-   *  @param seq_num          Boolean indicating whether you want to
-   *                          sequentially number the banks.
+   * @param tf_vector The Vector of time focused histograms that you wish to
+   *        save in GSAS format.
+   * @param mon_vector The Vector of monitor DataSets that you wish to use for
+   *        the SaveAsGSAS operation.
+   * @param run_nums The list of run numbers from the files that you loaded the
+   *        histograms and monitors from.
+   * @param inst_name The name of the instrument associated with the
+   *        histograms.
+   * @param gsas_dir The directory to store the GSAS files in.
+   * @param export_mon Boolean indicating whether you want to export the
+   *        monitor DataSets.
+   * @param seq_num Boolean indicating whether you want to sequentially number
+   *        the banks.
    */
   public SaveAsGSASForm( 
     Vector tf_array, Vector mon_array, String run_nums, String inst_name,
     String gsas_dir, boolean export_mon, boolean seq_num ) {
     this(  );
-    getParameter( 0 ).setValue( tf_array );
-    getParameter( 1 ).setValue( mon_array );
-    getParameter( 2 ).setValue( run_nums );
-    getParameter( 3 ).setValue( inst_name );
-    getParameter( 4 ).setValue( gsas_dir );
-    getParameter( 5 ).setValue( new Boolean( export_mon ) );
-    getParameter( 6 ).setValue( new Boolean( seq_num ) );
+    getParameter( 0 )
+      .setValue( tf_array );
+    getParameter( 1 )
+      .setValue( mon_array );
+    getParameter( 2 )
+      .setValue( run_nums );
+    getParameter( 3 )
+      .setValue( inst_name );
+    getParameter( 4 )
+      .setValue( gsas_dir );
+    getParameter( 5 )
+      .setValue( new Boolean( export_mon ) );
+    getParameter( 6 )
+      .setValue( new Boolean( seq_num ) );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * @return the String command used for invoking this Form in a Script.
+   */
+  public String getCommand(  ) {
+    return "SAVEASGSASFORM";
   }
 
   /**
-   *
-   *  Attempts to set reasonable default parameters for this form.
-   *  Included in this is a default setting of the DataSet array
-   *  corresponding to the respective runfiles' loaded histograms,
-   *  as well as the corresponding type of the parameter (editable,
-   *  result, or constant).
+   * Attempts to set reasonable default parameters for this form.
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
@@ -180,10 +183,7 @@ public class SaveAsGSASForm extends Form implements Serializable {
   }
 
   /**
-   *
-   *  Documentation for this OperatorForm.  Follows javadoc
-   *  conventions.
-   *
+   * @return documentation for this OperatorForm.  Follows javadoc conventions.
    */
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer(  );
@@ -228,19 +228,9 @@ public class SaveAsGSASForm extends Form implements Serializable {
   }
 
   /**
-   *  Returns the String command used for invoking this
-   *  Form in a Script.
-   */
-  public String getCommand(  ) {
-    return "SAVEASGSASFORM";
-  }
-
-  /**
-   *  Saves the loaded time focused and grouped histograms in GSAS
-   *  format.
+   * Saves the loaded time focused and grouped histograms in GSAS format.
    *
-   *  @return true if all of the parameters are valid and all hist_ds
-   *  can be time focused and grouped; false if any significant error occurs
+   * @return Boolean indicating success or failure.
    */
   public Object getResult(  ) {
     SharedData.addmsg( "Executing...\n" );
@@ -264,14 +254,17 @@ public class SaveAsGSASForm extends Form implements Serializable {
     int[] run_numbers;
 
     //get the results
-    gr_res        = ( ArrayPG )super.getParameter( 0 );
-    grouped       = ( Vector )gr_res.getValue(  );
-    mds_pg        = ( ArrayPG )super.getParameter( 1 );
-    monitors      = ( Vector )mds_pg.getValue(  );
-    obj           = super.getParameter( 2 ).getValue(  );
+    gr_res     = ( ArrayPG )super.getParameter( 0 );
+    grouped    = ( Vector )gr_res.getValue(  );
+    mds_pg     = ( ArrayPG )super.getParameter( 1 );
+    monitors   = ( Vector )mds_pg.getValue(  );
+    obj        = super.getParameter( 2 )
+                      .getValue(  );
     run_numbers   = IntList.ToArray( obj.toString(  ) );
-    inst_name     = ( ( IParameterGUI )super.getParameter( 3 ) ).getValue(  )
-                      .toString(  ).toLowerCase(  );
+    inst_name     = ( ( IParameterGUI )super
+                      .getParameter( 3 ) ).getValue(  )
+                      .toString(  )
+                      .toLowerCase(  );
 
     //get the user input parameters
     //get directory
@@ -329,4 +322,3 @@ public class SaveAsGSASForm extends Form implements Serializable {
     return Boolean.TRUE;
   }
 }
-  //class
