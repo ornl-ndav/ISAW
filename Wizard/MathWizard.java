@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/04/02 15:02:46  pfpeterson
+ * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
+ *
  * Revision 1.4  2003/02/26 17:21:58  rmikk
  * Now writes to DataSetTools.util.SharedData.status_pane
  *
@@ -64,71 +67,96 @@ import DataSetTools.util.*;
 import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
 
-
 /**
- *  This class has a main program that constructs a Wizard for doing add,
+ *  This class constructs a Wizard for doing add,
  *  subtract, multiply and divide operations on a specified list of parameters.
  */
-public class MathWizard
+public class MathWizard extends Wizard
 {
+  /**
+   *
+   *  Default constructor.  Sets standalone in Wizard to true.
+   */
+  public MathWizard()
+  {
+    this(true);
+  }
 
   /**
-   *  The main program constructs a new Wizard, defines the parameters to
-   *  be stored in the master parameter list, and constructs instances of
-   *  of the forms that define the operations available.
+   *  Constructor for setting the standalone variable in Wizard.
+   *
+   *  @param standalone          Boolean indicating whether the
+   *                             Wizard stands alone (true) or
+   *                             is contained in something else
+   *                             (false).
    */
-  public static void main( String args[] )
+  public MathWizard(boolean standalone)
   {
-                                                      // build the wizard and
-                                                      // specify the help 
-                                                      // messages.
-    Wizard w = new Wizard( "Math Wizard" ); 
-    DataSetTools.util.SharedData.addmsg("MathWizard Main\n");
-    w.setHelpMessage("This wizard will let you do arithetic operations");
-    w.setAboutMessage("This is a simple Demonstation Wizard, 2/26/2002, D.M.");
+    super("Math Wizard", standalone);
+    this.createAllForms();
+  }
 
-                                                      // define the entries in
-                                                      // in the master list
-    w.setParameter( "Value 1", 
-                    new FloatPG( "Enter Value 1",new Float(1), false));
-    w.setParameter( "Value 2", 
-                    new FloatPG( "Enter Value 2",new Float(2), false));
-    w.setParameter( "Value 3", 
-                    new FloatPG( "Enter Value 3",new Float(3), false));
-    w.setParameter( "Result 1", 
-                    new FloatPG( "Result 1",new Float(0), false ));
-    w.setParameter( "Result 2", 
-                    new FloatPG( "Result 2",new Float(0), false ));
-    w.setParameter( "Result 3", 
-                    new FloatPG( "Result 3",new Float(0), false ));
-    w.setParameter( "Result 4", 
-                    new FloatPG( "Result 4",new Float(0), false ));
+  /**
+   *  Adds and coordinates the necessary Forms for this Wizard.
+   *  Here is the breakdown of the referential links.
+   *
+   *  aef.Value1 = sef.Value1
+   *  aef.Value2 = sef.Value2
+   *  aef.Value1 = mef.Value1
+   *  aef.Value2 = mef.Value2
+   *  aef.Value3 = mef.Value3
+   *  aef.Result1 = mef.Result1
+   *  sef.Result2 = mef.Result2
+   *  aef.Value2 = def.Value2
+   *  sef.Result2 = def.Result2
+   */
+  private void createAllForms()
+  {
+    
+    AdderExampleForm aef = new AdderExampleForm();
+    SubtracterExampleForm sef = new SubtracterExampleForm();
+    MultiplierExampleForm mef = new MultiplierExampleForm();
+    DividerExampleForm def = new DividerExampleForm();
 
-                                                    // Specifiy the parameters
-                                                    // used by the forms and
-                                                    // add the forms to the
-                                                    // Wizard
-    String edit_parms[] = { "Value 1", "Value 2", "Value 3" };
-    String out_parms[]  = {"Result 1"};
-    Form form0 = new AdderExampleForm(  edit_parms, out_parms, w );
-    w.add( form0 );
+    sef.setParameter(aef.getParameter(0) ,0);
+    sef.setParameter(aef.getParameter(1), 1);
+    mef.setParameter(aef.getParameter(0), 0);
+    mef.setParameter(aef.getParameter(1), 1);
+    mef.setParameter(aef.getParameter(2), 2);
+    mef.setParameter(aef.getParameter(3), 3);
+    mef.setParameter(sef.getParameter(2), 4);
+    def.setParameter(aef.getParameter(1), 0);
+    def.setParameter(sef.getParameter(2), 1);
+    this.addForm(aef);
+    this.addForm(sef);
+    this.addForm(mef);
+    this.addForm(def);
+  }
 
-    String edit_parms_1[] = { "Value 1", "Value 2" };
-    String out_parms_1[]  = {"Result 2"}; 
-    Form form1 = new SubtracterExampleForm(  edit_parms_1, out_parms_1, w );
-    w.add( form1 );
+  /*
+   *
+   *  Overridden methods.
+   */
+  public boolean  load()
+  {
+    return false;
+  }
+  public void save()
+  {
+  }
+  public void close()
+  {
+    this.save();
+    System.exit(0);
+  }
 
-    String const_parms_2[] = { "Value 1", "Value 2", "Value 3",
-                               "Result 1", "Result 2" };
-    String out_parms_2[]   = {"Result 3"};
-    Form form2 = new MultiplierExampleForm(  const_parms_2, out_parms_2, w );
-    w.add( form2 );
-
-    String const_parms_3[] = { "Value 2", "Result 2" };
-    String out_parms_3[]   = {"Result 4"};
-    Form form3 = new DividerExampleForm(  const_parms_3, out_parms_3, w );
-    w.add( form3 );
-
-    w.show(0);
+  /**
+   *  Method for running the Time Focus Group wizard 
+   *   as standalone.
+   */
+  public static void main(String args[])
+  {
+    MathWizard w = new MathWizard(true);
+    w.showForm(0);
   }
 }

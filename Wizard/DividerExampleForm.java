@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/04/02 15:02:46  pfpeterson
+ * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
+ *
  * Revision 1.3  2002/11/27 23:31:16  pfpeterson
  * standardized header
  *
@@ -63,25 +66,34 @@ public class DividerExampleForm extends    Form
                                 implements Serializable
 {
   /**
-   *  Construct a DividerExampleForm to divide the parameters named in
-   *  the list operands[] and place the result in the parameter named by
-   *  result[0].  This constructor basically just calls the super class
-   *  constructor and builds an appropriate help message for the form.
-   *
-   *  @param  operands  The list of names of parameters to be divided, in
-   *                    this case only operands[0] and operands[1] are used.
-   *  @param  result    The list of names of parameters to be calculated,
-   *                    in this case only result[0] is used.
-   *  @param  w         The wizard controlling this form.
+   *  Default constructor.  Creates an AdderExampleForm and calls
+   *  setDefaultParameters.
    */
-  public DividerExampleForm( String constants[], String result[], Wizard w )
+  public DividerExampleForm( )
   {
-    super("Divide two Numbers", constants, null, result, w );
+    super("Divider example Form");
+    this.setDefaultParameters();
+  }
 
-    String help = "This form let's you divide the numbers \n";
-    for ( int i = 0; i < constants.length && i < 2; i++ )
-      help = help + "  " + constants[i] + "\n";
-    setHelpMessage( help );
+  /**
+   *
+   *  Attempts to set reasonable default parameters for this form.
+   */
+  public void setDefaultParameters()
+  {
+    addParameter(new FloatPG("Value 2", new Float(2), false));
+    addParameter(new FloatPG("Result 2", new Float(0), false));
+    addParameter(new FloatPG("Result 4", new Float(0), false));
+    setParamTypes(new int[]{0,1}, null, new int[]{2});
+  }
+
+  /**
+   *  Returns the String command used for invoking this
+   *  Form in a Script.
+   */
+  public String getCommand()
+  {
+    return "DIVIDEREXAMPLEFORM";
   }
 
   /**
@@ -92,24 +104,24 @@ public class DividerExampleForm extends    Form
    *          check that the values were valid numbers and only set the
    *          result value and return true in that case.
    */
-  public boolean execute()
+  public Object getResult()
   {
     float quotient = Float.NaN;
     FloatPG param;
 
-    param = (FloatPG)wizard.getParameter( const_params[0] );
+    param = (FloatPG)super.getParameter(0);
     float denom = param.getfloatValue();
     if ( denom == 0 ){
       quotient = Float.NaN;
     }else{
-      param = (FloatPG)wizard.getParameter( const_params[1] );
+      param = (FloatPG)super.getParameter(1);
       float num = param.getfloatValue();
       quotient = num / denom;
     }
 
-    param = (FloatPG)wizard.getParameter( result_params[0] );
+    param = (FloatPG)super.getParameter(2);
     param.setfloatValue( quotient );
-    return true;
+    return new Boolean(true);
   } 
 
 }
