@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/02/23 17:55:29  bouzekc
+ * Changed method signatures to be consistent with modified IGUIWizardFrontEnd
+ * interface.
+ *
  * Revision 1.12  2004/02/14 06:13:19  bouzekc
  * Changed protected final methods to default access final, as they are
  * package access only.
@@ -223,23 +227,21 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   }
 
   /**
-   * Utility method to set the Form progress bar indeterminate state.
-   *
-   * @param indet Whether the progress bar should be indeterminate.
+   * Utility method to set the Form progress bar indeterminate state
+   * to indeterminate.  updateFormProgress() will change it back.
    */
-  public final void setFormProgressIndeterminate( boolean indet ) {
+  public final void setFormProgressIndeterminate(  ) {
     formProgress.setString( "Executing " + wiz.getCurrentForm(  ) );
-    formProgress.setIndeterminate( indet );
+    formProgress.setIndeterminate( true );
   }
 
   /**
-   * Utility method to set the Wizard progress bar indeterminate state.
-   *
-   * @param indet Whether the progress bar should be indeterminate.
+   * Utility method to set the Wizard progress bar indeterminate state
+   * to indeterminate.  updateWizProgress() will change it back.
    */
-  public final void setWizardProgressIndeterminate( boolean indet ) {
+  public final void setWizardProgressIndeterminate(  ) {
     wizProgress.setString( "Executing " + wiz.getTitle(  ) );
-    wizProgress.setIndeterminate( indet );
+    wizProgress.setIndeterminate( true );
   }
 
   /**
@@ -374,6 +376,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    */
   public final void updateFormProgress(  ) {
     Form f = wiz.getCurrentForm(  );
+    formProgress.setIndeterminate( false );
 
     if( f != null ) {
       if( f.done(  ) ) {
@@ -394,6 +397,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * based on the last form completed at the time of the method call.
    */
   public final void updateWizardProgress(  ) {
+    wizProgress.setIndeterminate( false );
     int lastDone = wiz.getLastValidFormNum(  ) + 1;
     wizProgress.setValue( lastDone );
     wizProgress.setString( 
@@ -1013,7 +1017,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
         message.append( "File and the wizard.err file to your developer.\n" );
         displayAndSaveErrorMessage( e, "wizard", message );
 
-        //reset the progress bars by re-showing the Form
+        //reset the progress bars
         showForm( wizard.getCurrentFormNumber(  ) );
 
         return "Failure";
