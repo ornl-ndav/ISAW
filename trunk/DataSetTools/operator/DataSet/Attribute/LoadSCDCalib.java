@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/06/09 19:48:31  pfpeterson
+ * Now can read 'new' experiment files. Also added ability to read in all
+ * unique detectors from a file when -1 is specified as the 'line to use'.
+ *
  * Revision 1.10  2003/06/09 15:01:47  pfpeterson
  * Better memory usage since only one copy of each attribute is created
  * and added to the data.
@@ -67,6 +71,7 @@ import DataSetTools.operator.*;
 import DataSetTools.instruments.*;
 //import DataSetTools.util.LoadFileString;
 import DataSetTools.operator.DataSet.Information.XAxis.SCDhkl;
+import DataSetTools.parameter.IntegerPG;
 import DataSetTools.util.*;
 import DataSetTools.retriever.RunfileRetriever;
 import java.util.*;
@@ -85,7 +90,8 @@ public class LoadSCDCalib extends DS_Attribute{
     private static final String     TITLE  = "Load SCD Calibration";
     private static final boolean    DEBUG  = false;
 
-    private calib kalib=null;
+    private Vector calibrations=null;
+    private Vector detNums=null;
 
     /**
      *  Creates operator with title "Load SCD Calibration" and a
@@ -132,7 +138,7 @@ public class LoadSCDCalib extends DS_Attribute{
     public void setDefaultParameters(){
         parameters = new Vector();
         addParameter( new Parameter("Calibration File", new LoadFileString()));
-        addParameter( new Parameter("Line to use",      new Integer(1)));
+        addParameter( new IntegerPG("Line to use",      -1 ) );
         addParameter( new Parameter("Group IDs",        new IntListString()) );
     }
     
@@ -145,10 +151,18 @@ public class LoadSCDCalib extends DS_Attribute{
     public Object getResult(){
         DataSet ds=getDataSet();
         Data    d=null;
+        this.calibrations=null;
+        this.detNums=null;
         String calibfile   = getParameter(0).getValue().toString();
-        int    linenum     = ((Integer)getParameter(1).getValue()).intValue();
+        int    linenum;
+        try{
+          linenum=((Integer)getParameter(1).getValue()).intValue();
+        }catch(NumberFormatException e){
+          linenum=-1;
+        }
         String list_string = getParameter(2).getValue().toString();
 
+        // determine if the calibration file is usable
         File file=new File(calibfile);
         if(! file.exists() ){
           String warn_msg="WARNING(LoadSCDCalib): file does not exist "
@@ -166,10 +180,12 @@ public class LoadSCDCalib extends DS_Attribute{
         }
         file=null;
 
-        if(!this.readCalib(calibfile,linenum)){
-            return new ErrorString("FAILURE");
-        }
+        // read in the calibration(s)
+        ErrorString err=this.readCalib(calibfile,linenum);
+        if(err!=null)
+            return err;
 
+        // associate the attributes with the Data
         StringAttribute filenameAttr=
                        new StringAttribute(Attribute.SCD_CALIB_FILE,calibfile);
         if( list_string!=null && list_string.trim().length()!=0 ){
@@ -187,7 +203,29 @@ public class LoadSCDCalib extends DS_Attribute{
             }
         }
 
-        return "Using '"+kalib.descr.trim()+"' on det#"+kalib.detNum;
+        // return an error if nothing was associated
+        if(this.detNums==null || this.detNums.size()<=0)
+          return new ErrorString("Did not associate any detectors");
+
+        // print some information to StatusPane and create return string
+        Calib kalib=null;
+        Integer DetNum=null;
+        String detList="Loaded calibration for det#";
+        boolean inList;
+        for( int i=0 ; i<this.calibrations.size() ; i++ ){
+          kalib=(Calib)this.calibrations.elementAt(i);
+          inList=(this.detNums.contains(new Integer(kalib.detNum)));
+          if(inList || kalib.detNum<0){
+            SharedData.addmsg("Using '"+kalib.descr.trim()
+                              +"' on det#"+kalib.detNum);
+            if(inList)
+              detList=detList+" "+kalib.detNum;
+            else
+              detList="Loaded calibration for all detectors";
+          }
+        }
+
+        return detList;
     }
     
     /** 
@@ -199,6 +237,9 @@ public class LoadSCDCalib extends DS_Attribute{
         return op;
     }
     
+    /**
+     * Associate the calibration to the data as appropriate.
+     */
     private void assoc( Data d, StringAttribute filenameAttr ){
         FloatAttribute fa;
         Float1DAttribute faa;
@@ -209,84 +250,139 @@ public class LoadSCDCalib extends DS_Attribute{
         if( detNumObj instanceof int[] ){
             oldDetNum=((int[])detNumObj)[0];
         }
-        /*Vector detNums=
-            (Vector)d.getAttributeValue(Attribute.DETECTOR_IDS);
-        if(detNum != ((Integer)detNums.elementAt(0)).intValue() ){
-            return;
-            }*/
 
-        // if detNum=-1 don't bother checking against existing number
-        if(kalib.detNum!=-1 && oldDetNum!=0 && oldDetNum!=kalib.detNum) return;
+        Calib kalib=null;
+        for( int i=0 ; i<this.calibrations.size() ; i++ ){
+          kalib=(Calib)this.calibrations.elementAt(i);
 
-        //System.out.println(d);
+          // if detNum=-1 don't bother checking against existing number
+          if(kalib.detNum!=-1 && oldDetNum!=0 && oldDetNum!=kalib.detNum)
+            continue;
 
-        d.setAttribute(kalib.detA_Attr);
-        d.setAttribute(kalib.detD_Attr);
-        d.setAttribute(kalib.L1_Attr);
-        d.setAttribute(kalib.calib_Attr);
-        d.setAttribute(filenameAttr);
+          // add the attributes
+          d.setAttribute(kalib.detA_Attr);
+          d.setAttribute(kalib.detD_Attr);
+          d.setAttribute(kalib.L1_Attr);
+          d.setAttribute(kalib.calib_Attr);
+          d.setAttribute(filenameAttr);
+
+          // add the detector number to the list of what was used
+          if(kalib.detNum>0)
+            this.addDetNum(kalib.detNum);
+          else
+            this.addDetNum(oldDetNum);
+        }
     }
 
     /**
      * The line number parameter is ignored if this is an experiment file.
      */
     public static Object readCalib(TextFileReader tfr, boolean isexpfile,
-                                                                  int linenum){
+                         int linenum)throws IOException, NumberFormatException{
       float[] calib=null;
       String descr=null;
 
-      try{
-        if(isexpfile){
-          descr="";
-          int i=1;
-          String start=null;
-          calib=new float[9];
-          calib[0]=-1f;
-          while(!tfr.eof() && i<9 ){
+      if(isexpfile){
+        descr="";
+        int i=1;
+        String start=null;
+        calib=new float[9];
+        calib[0]=-1f;
+        String detTag=null;
+        while(!tfr.eof() && i<9 ){
+          start=tfr.read_String();
+          if(start.equals("INST")){ // old style candidate
             start=tfr.read_String();
-            if(start.equals("INST")){ // candidate
-              start=tfr.read_String();
-              if(start.equals("DETA")){ // detector angle in plane
-                calib[1]=tfr.read_float();
-                i++;
-              }else if(start.equals("DETD")){ // detector distance
-                calib[2]=tfr.read_float();
-                i++;
-              }else if(start.equals("L1")){ // initial flight path
-                calib[3]=tfr.read_float();
-                i++;
-              }else if(start.equals("TZERO")){ // time offset
-                calib[4]=tfr.read_float();
-                i++;
-              }else if(start.equals("X2CM")){ // x-pixel to cm
-                calib[5]=tfr.read_float();
-                i++;
-              }else if(start.equals("Y2CM")){ // y-pixel to cm
-                calib[6]=tfr.read_float();
-                i++;
-              }else if(start.equals("XLEFT")){ // x-offset in cm
-                calib[7]=tfr.read_float();
-                i++;
-              }else if(start.equals("YLOWER")){ // y-offset in cm
-                calib[8]=tfr.read_float();
-                i++;
+            if(start.equals("DETA")){ // detector angle in plane
+              calib[1]=tfr.read_float();
+              i++;
+            }else if(start.equals("DETD")){ // detector distance
+              calib[2]=tfr.read_float();
+              i++;
+            }else if(start.equals("L1")){ // initial flight path
+              calib[3]=tfr.read_float();
+              i++;
+            }else if(start.equals("TZERO")){ // time offset
+              calib[4]=tfr.read_float();
+              i++;
+            }else if(start.equals("X2CM")){ // x-pixel to cm
+              calib[5]=tfr.read_float();
+              i++;
+            }else if(start.equals("Y2CM")){ // y-pixel to cm
+              calib[6]=tfr.read_float();
+              i++;
+            }else if(start.equals("XLEFT")){ // x-offset in cm
+              calib[7]=tfr.read_float();
+              i++;
+            }else if(start.equals("YLOWER")){ // y-offset in cm
+              calib[8]=tfr.read_float();
+              i++;
+            }
+          }else if(start.equals("DET")){ // new style candidate
+            tfr.unread();
+            
+            start=tfr.read_String(6);
+            if(detTag==null){
+              detTag=start;
+              try{
+                calib[0]=Float.parseFloat(start.substring(3).trim());
+              }catch(NumberFormatException e){
+                // let it drop on the floor
               }
             }
-            tfr.read_line(); // gobble the rest of the line
+            if(!start.equals(detTag)){
+              tfr.unread();
+              break;
+            }
+            start=tfr.read_String();
+            if(start.equals("DETA")){ // detector angle in plane
+              calib[1]=tfr.read_float();
+              i++;
+            }else if(start.equals("DETD")){ // detector distance
+              calib[2]=tfr.read_float();
+              i++;
+            }else if(start.equals("L1")){ // initial flight path
+              calib[3]=tfr.read_float();
+              i++;
+            }else if(start.equals("TZERO")){ // time offset
+              calib[4]=tfr.read_float();
+              i++;
+            }else if(start.equals("X2CM")){ // x-pixel to cm
+              calib[5]=tfr.read_float();
+              i++;
+            }else if(start.equals("Y2CM")){ // y-pixel to cm
+              calib[6]=tfr.read_float();
+              i++;
+            }else if(start.equals("XLEFT")){ // x-offset in cm
+              calib[7]=tfr.read_float();
+              i++;
+            }else if(start.equals("YLOWER")){ // y-offset in cm
+              calib[8]=tfr.read_float();
+              i++;
+            }
           }
-        }else{
-          for( int i=0 ; i<=linenum ; i++ )
-            tfr.read_line();
-          tfr.unread();
-          calib=new float[9];
-          for( int i=0 ; i<9 ; i++ )
-            calib[i]=tfr.read_float();
-          descr=tfr.read_line();
+          tfr.read_line(); // gobble the rest of the line
         }
-      }catch(IOException e){
-        return new ErrorString("Error reading calibration: "+e.getMessage());
-      }catch(NumberFormatException e){
-        return new ErrorString("Error reading calibration: "+e.getMessage());
+      }else{ // when isn't experiment file
+        if(linenum>0){
+          for( int i=0 ; i<=linenum ; i++ )
+              tfr.read_line();
+          tfr.unread();
+        }
+        calib=new float[9];
+        int numErrors=0;
+        while(true){
+          try{
+            for( int i=0 ; i<9 ; i++ )
+              calib[i]=tfr.read_float();
+            descr=tfr.read_line();
+            break;
+          }catch(NumberFormatException e){
+            numErrors++;
+            if(numErrors>9) return new ErrorString("Error reading file");
+            descr=tfr.read_line();
+          }
+        }
       }
 
       if(DEBUG){
@@ -294,9 +390,9 @@ public class LoadSCDCalib extends DS_Attribute{
           System.out.println(i+":"+calib[i]);
       }
 
+      // return the appropriate type
       if(calib!=null){
-        Object[] res={calib,descr};
-        return res;
+        return new Object[] {calib,descr};
       }else{
         return new ErrorString("Something went wrong");
       }
@@ -305,29 +401,42 @@ public class LoadSCDCalib extends DS_Attribute{
     /**
      * Read in the calibration parameters.
      */
-    private boolean readCalib( String filename, int linenum ){
+    private ErrorString readCalib( String filename, int linenum ){
         StringBuffer calibline=null;
         TextFileReader tfr=null;
-        float[] innercalib=null;
-        String descr=null;
 
         try{
           tfr=new TextFileReader(filename);
           Object res=null;
           if(filename.toUpperCase().endsWith(".X")){
-            res=readCalib(tfr,true,linenum);
-            descr=filename;
+            while(!tfr.eof()){
+              res=readCalib(tfr,true,linenum);
+              if(res instanceof ErrorString) return (ErrorString)res;
+              addCalib(new Calib(filename,(float[])((Object[])res)[0]));
+            }
           }else{
-            res=readCalib(tfr,false,linenum);
-            descr=(String)((Object[])res)[1];
+            while(true){
+              try{
+                res=readCalib(tfr,false,linenum);
+              }catch(NumberFormatException e){
+                // let it drop on the floor
+              }
+              if(res instanceof ErrorString)
+                return (ErrorString)res;
+              else if(res==null)
+                return null;
+              addCalib(new Calib((String)((Object[])res)[1],
+                                 (float[])((Object[])res)[0]));
+              if(linenum>0) break;
+            }
           }
-          if(res instanceof ErrorString)
-            return false;
-          
-          // things can't be too bad
-          innercalib=(float[])((Object[])res)[0];
+        }catch(EOFException e){ // this is not a big deal
+          return null;
         }catch(IOException e){
-          return false;
+          if(!e.getMessage().toUpperCase().startsWith("END OF FILE")){
+            e.printStackTrace();
+            return new ErrorString(e);
+          }
         }finally{
           if(tfr!=null){
             try{
@@ -338,11 +447,51 @@ public class LoadSCDCalib extends DS_Attribute{
           }
         }
 
-
-        this.kalib=new calib(descr,innercalib);
-        return true;
+        return null;
     }
     
+    /**
+     * Add a detector number to the list of unique detectors modified
+     */
+    private void addDetNum(int detNum){
+      if(this.detNums==null)
+        this.detNums=new Vector();
+      Integer DetNum=new Integer(detNum);
+      if(! this.detNums.contains(DetNum) )
+        this.detNums.add(DetNum);
+    }
+
+    /**
+     * Add a calibration to the list of unique calibrations available
+     */
+    private void addCalib(Calib kalib){
+      // initialize the calibration vector if necessary
+      if(this.calibrations==null)
+        this.calibrations=new Vector();
+
+      // get the detector number of the supplied calibration
+      int detNum=kalib.detNum;
+
+      // is this unique?
+      Calib myCalib=null;
+      for( int i=0 ; i<this.calibrations.size() ; i++ ){
+        myCalib=(Calib)this.calibrations.elementAt(i);
+        if(detNum==myCalib.detNum) return; // jump out
+      }
+
+      // fix the L1_Attr of other calibrations if necessary/possible
+      if(!(new Float(0f)).equals(kalib.L1_Attr.getValue())){
+        for( int i=0 ; i<this.calibrations.size() ; i++ ){
+          myCalib=(Calib)this.calibrations.elementAt(i);
+          if((new Float(0f)).equals(myCalib.L1_Attr.getValue()))
+            myCalib.L1_Attr=kalib.L1_Attr;
+        }
+      }
+
+      // finally add the new calibration
+      this.calibrations.add(kalib);
+    }
+
     public String getDocumentation()
     {
       StringBuffer Res = new StringBuffer();
@@ -357,7 +506,10 @@ public class LoadSCDCalib extends DS_Attribute{
 
       Res.append("@param ds The DataSet to operate on.");
       Res.append("@param calib_file Calibration file to use.");
-      Res.append("@param linenum The line number to use.");
+      Res.append("@param linenum The line number to use. If this is blank or "
+                 +"set to -1 then all unique detector numbers will be read in "
+                 +"with the those at the top of the file taking precedence "
+                 +"over the lower ones.");
       Res.append("@param groups The group ID numbers to use."); 
 
       Res.append("@return Returns an error string if the file does not exist");
@@ -371,7 +523,10 @@ public class LoadSCDCalib extends DS_Attribute{
      return Res.toString();
     }
 
-  private class calib{
+  /**
+   * Inner class to make dealing with calibrations easier.
+   */
+  private class Calib{
     String           descr      = null;
     int              detNum     = 0;
     FloatAttribute   detA_Attr  = null;
@@ -379,7 +534,7 @@ public class LoadSCDCalib extends DS_Attribute{
     FloatAttribute   L1_Attr    = null;
     Float1DAttribute calib_Attr = null;
 
-    calib(String descr,float[] innercalib){
+    Calib(String descr,float[] innercalib){
       // copy over information from the supplied information
       this.descr=descr;
       this.detNum=(int)Math.round(innercalib[0]);
