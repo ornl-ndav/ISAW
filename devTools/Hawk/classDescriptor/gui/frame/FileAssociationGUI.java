@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/05/26 19:31:43  kramer
+ * Now the gui allows the user to select multiple files from the list.
+ * Added a JTable to display information about which files have been
+ * associated.
+ *
  * Revision 1.4  2004/03/15 20:30:15  dennis
  * Changed to use RobustFileFilter from new package,
  * gov.anl.ipns.Util.File
@@ -50,25 +55,30 @@ package devTools.Hawk.classDescriptor.gui.frame;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Vector;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
 
 import gov.anl.ipns.Util.File.RobustFileFilter;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.tools.FileAssociationManager;
+import devTools.Hawk.classDescriptor.tools.FileAssociationManager.LoggedInterface;
 
 /**
  * @author kramer
@@ -100,6 +110,14 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 	 * interface.
 	 */
 	private boolean singleSelection;
+	/**
+	 * The JButton that the user selects to remove a filename from the list.
+	 */
+	private JButton removeButton;
+//	/**
+//	 * The tabbed pane onto which the files to user for associating and the results are displayed.
+//	 */
+//	private JTabbedPane tabbedPane;
 	
 	/**
 	 * If this constructor is used, it is assumed you want to associate each Interface in the Vector 
@@ -113,31 +131,23 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 		singleSelection = false;
 		setTitle(title);
 		
-		JPanel textPanel = new JPanel();
-		textPanel.setLayout(new GridLayout(3,0));
-			JPanel panel1 = new JPanel();
-			panel1.setLayout(new FlowLayout(FlowLayout.LEFT));
-			
-			JPanel panel2 = new JPanel();
-			panel2.setLayout(new FlowLayout(FlowLayout.LEFT));
-			
-			JPanel panel3 = new JPanel();
-			panel3.setLayout(new FlowLayout(FlowLayout.LEFT));
-			
-			String string1 = "Select the files and directories used to search for the correct ";
+			StringBuffer string1 = new StringBuffer("Select the files and directories used to search for the correct ");
 			if (filetype == FileAssociationManager.JAVADOCS)
-				string1 += "javadocs files.";
+				string1.append("javadocs files.");
 			else if (filetype == FileAssociationManager.JAVASOURCE)
-				string1 += "source files.";
-			panel1.add(new JLabel(string1));
-			panel2.add(new JLabel("The directories will be recursively scanned and the correct files will "));
-			panel3.add(new JLabel("automatically assigned to the correct class."));
-		textPanel.add(panel1);
-		textPanel.add(panel2);
-		textPanel.add(panel3);
+				string1.append("source files.");
+			string1.append("  \nThe directories will be recursively scanned and the correct files will \n"+
+								  "automatically assigned to the correct class.");
+		JTextArea textArea = new JTextArea();
+		textArea.setEditable(false);
+		textArea.setLineWrap(false);
+		textArea.setText(string1.toString());
 		
 		performDefaultActions();
-		mainPanel.add(textPanel, BorderLayout.NORTH);
+
+		textArea.setBackground(mainPanel.getBackground());
+
+		mainPanel.add(textArea, BorderLayout.NORTH);
 		pack();
 	}
 	
@@ -156,19 +166,23 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 			setTitle("Assigning Javadocs Files for the "+intF.getPgmDefn().getInterface_type()+" "+intF.getPgmDefn().getInterface_name());
 		else if (filetype == FileAssociationManager.JAVASOURCE)
 			setTitle("Assigning Java Source Files for the "+intF.getPgmDefn().getInterface_type()+" "+intF.getPgmDefn().getInterface_name());
-			
-		JPanel textPanel = new JPanel();
-		textPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-			
-			String string1 = "Select the file corresponding to the correct ";
+		
+			StringBuffer string1 = new StringBuffer("Select the file corresponding to the correct ");
 			if (filetype == FileAssociationManager.JAVADOCS)
-				string1 += "javadocs file.";
+				string1.append("javadocs file.");
 			else if (filetype == FileAssociationManager.JAVASOURCE)
-				string1 += "source file.";
-		textPanel.add(new JLabel(string1));
+				string1.append("source file.");
+
+		JTextArea textArea = new JTextArea();
+		textArea.setEditable(false);
+		textArea.setLineWrap(false);
+		textArea.setText(string1.toString());
 		
 		performDefaultActions();
-		mainPanel.add(textPanel, BorderLayout.NORTH);
+
+		textArea.setBackground(mainPanel.getBackground());
+
+		mainPanel.add(textArea, BorderLayout.NORTH);
 		pack();
 	}
 	
@@ -187,6 +201,7 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 		//now to make the list
 			model = new DefaultListModel();
 			list = new JList(model);
+			list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			list.addListSelectionListener(this);
 			JScrollPane scrollPane = new JScrollPane(list);
 			mainPanel.add(scrollPane, BorderLayout.CENTER);
@@ -198,19 +213,45 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 		closeButton.addActionListener(this);
 		closeButton.setActionCommand("close");
 		
-		JButton browseButton = new JButton("Browse");
+		JButton browseButton = new JButton("Select File");
 		browseButton.addActionListener(this);
 		browseButton.setActionCommand("browse");
 		
-		JButton okButton = new JButton("Ok");
+		removeButton = new JButton("Remove File");
+		removeButton.addActionListener(this);
+		removeButton.setActionCommand("remove");
+		removeButton.setEnabled(false);
+		
+		JButton okButton = new JButton("Associate");
 		okButton.addActionListener(this);
 		okButton.setActionCommand("ok");
 		
 		buttonPanel.add(closeButton);
+		buttonPanel.add(removeButton);
 		buttonPanel.add(browseButton);
 		buttonPanel.add(okButton);
 		mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 		pane.add(mainPanel);
+	}
+	
+	/**
+	 * Get all of the filenames that are selected from the list.
+	 * @return The selected filenames.
+	 */
+	public String[] getSelectedFiles()
+	{
+		int[] indexArr = list.getSelectedIndices();
+		Vector vec = new Vector();
+		for (int i=0; i<indexArr.length; i++)
+		{
+			if (indexArr[i] >= 0)
+				vec.add(model.elementAt(indexArr[i]));
+		}
+		String[] fileArr = new String[vec.size()];
+		for (int i=0; i<vec.size(); i++)
+			fileArr[i] = (String)vec.elementAt(i);
+			
+		return fileArr;
 	}
 	
 	/**
@@ -221,6 +262,18 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 		if (event.getActionCommand().equals("close"))
 		{
 			dispose();
+		}
+		else if (event.getActionCommand().equals("remove"))
+		{
+			int[] indexArr = list.getSelectedIndices();
+			for (int i=indexArr.length-1; i>=0; i--)
+			{
+				if (indexArr[i]>=0)
+					model.removeElementAt(indexArr[i]);
+			}
+			
+			if (model.isEmpty())
+				removeButton.setEnabled(false);
 		}
 		else if (event.getActionCommand().equals("browse"))
 		{
@@ -242,7 +295,8 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 				}
 				chooser.setFileFilter(filter);
 			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-			
+			chooser.setMultiSelectionEnabled(true);
+						
 			int returnVal = chooser.showDialog(frame, "Select");
 			
 			mainChooserPanel.add(chooser, BorderLayout.CENTER);
@@ -254,17 +308,36 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 			{
 				if (singleSelection == true)
 					model.removeAllElements();
-				model.addElement(chooser.getSelectedFile().getAbsoluteFile().toString());
-			}			
+				File[] selectedFileArr = chooser.getSelectedFiles();
+				for (int i=0; i<selectedFileArr.length; i++)
+					model.addElement(selectedFileArr[i].getAbsoluteFile().toString());
+				
+				removeButton.setEnabled(true);
+			}
 		}
 		else if (event.getActionCommand().equals("ok"))
 		{
-			for (int i=0; i<model.size(); i++)
-			{
-				manager.ProcessDirectoryOrFile((String)(model.elementAt(i)));
-			}
+			JPanel secondTabPanel = new JPanel();
+			JTabbedPane tabbedPane = new JTabbedPane();
+				tabbedPane.addTab("File Selector",mainPanel);
+				tabbedPane.addTab("Results",secondTabPanel);
+				getContentPane().add(tabbedPane);
+
+			tabbedPane.setSelectedIndex(1);
 			
-			dispose();
+			Vector fileNameVec = new Vector();
+			for (int i=0; i<model.size(); i++)
+				fileNameVec.add((String)(model.elementAt(i)));
+			
+			manager.resetModificationFlags();
+			manager.associateFiles(fileNameVec);
+			
+			JTable table = new JTable(new AssociationTableModel(manager));
+			JScrollPane scrollPane = new JScrollPane(table);
+			secondTabPanel.removeAll();
+			secondTabPanel.add(scrollPane);
+			table.doLayout();
+//			table.setPreferredScrollableViewportSize(new Dimension(700,700));			
 		}
 	}
 	
@@ -275,6 +348,77 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 	public void valueChanged(ListSelectionEvent e)
 	{
 	}
+	
+	private class AssociationTableModel extends AbstractTableModel
+	{
+		private String[] nameArr;
+		private Object[][] valueArr;
+		private FileAssociationManager fileManager;
+		
+		public AssociationTableModel(FileAssociationManager fManager)
+		{
+			fileManager = fManager;
+			
+			nameArr = new String[5];
+			nameArr[0] = "Name";
+			nameArr[1] = "Assigned";
+			nameArr[2] = "Modified";
+			nameArr[3] = "File";
+			nameArr[4] = "Message";
+			
+			valueArr = new Object[manager.getLoggedInterfaceVector().size()][nameArr.length];
+			
+			LoggedInterface loggedIntf = manager.new LoggedInterface();
+			for (int i=0; i<manager.getLoggedInterfaceVector().size(); i++)
+			{
+				loggedIntf = (LoggedInterface)(manager.getLoggedInterfaceVector().elementAt(i));
+				
+//				JTextArea intfArea = new JTextArea();
+//					intfArea.setText(loggedIntf.getInterface().getPgmDefn().getInterface_name());
+//					intfArea.setEditable(false);
+//					JScrollPane intfScrollPane = new JScrollPane(intfArea);
+				valueArr[i][0] = loggedIntf.getInterface().getPgmDefn().getInterface_name();
+//					JCheckBox assignedBox = new JCheckBox();
+//					assignedBox.setSelected();
+				valueArr[i][1] = new Boolean(!manager.getAppropriateFilename(loggedIntf.getInterface()).trim().equals(""));
+//					JCheckBox modifiedBox = new JCheckBox();
+//					modifiedBox.setSelected(loggedIntf.isModified());
+				valueArr[i][2] = new Boolean(loggedIntf.isModified());
+				valueArr[i][3] = manager.getAppropriateFilename(loggedIntf.getInterface());
+				valueArr[i][4] = loggedIntf.getLog();
+			}
+		}
+		
+		public boolean isCellEditable(int rowIndex, int columnIndex)
+		{
+			return false;
+		}
+		
+		public int getColumnCount()
+		{
+			return nameArr.length;
+		}
+		
+		public String getColumnName(int column)
+		{
+			return nameArr[column];
+		}
+		
+		public Class getColumnClass(int index)
+		{
+			return getValueAt(0,index).getClass();
+		}
 
+		public int getRowCount()
+		{
+			return fileManager.getLoggedInterfaceVector().size();
+		}
+
+		public Object getValueAt(int rowIndex, int columnIndex)
+		{
+			return valueArr[rowIndex][columnIndex];
+		}
+		
+	}
 }
 	
