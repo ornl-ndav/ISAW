@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/07/09 22:20:29  chatter
+ *  Changed the sleep time to 10000
+ *
  *  Revision 1.8  2001/06/26 20:20:38  dennis
  *  Now implements Runnable, so that the splash pane does not
  *  delay the loading of Isaw.
@@ -85,7 +88,7 @@ public class SplashWindowFrame extends    JFrame
   {
     try
     {
-     Thread.sleep(15000);
+     Thread.sleep(10000);
     }
     catch(InterruptedException ie){}
     this.dispose();
