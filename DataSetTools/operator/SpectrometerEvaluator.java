@@ -95,8 +95,8 @@ public class SpectrometerEvaluator extends    DataSetOperator
 
     Parameter parameter;
 
-    parameter = new Parameter( "Monitors",
-                              new DataSet("Monitor DataSet", "Empty DataSet") );
+    parameter = new Parameter( "Monitor DataSet",
+                                DataSet.EMPTY_DATA_SET );
     addParameter( parameter );
    
     parameter = new Parameter( "Uplevel", new Float(50.0) );
