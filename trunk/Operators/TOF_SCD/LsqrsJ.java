@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/05/21 18:48:10  pfpeterson
+ * Added log file writing.
+ *
  * Revision 1.6  2003/05/20 20:27:03  pfpeterson
  * Added parameter for transformation matrix.
  *
@@ -63,6 +66,7 @@ import DataSetTools.util.Format;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.TextFileReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Enumeration;
@@ -149,6 +153,7 @@ public class LsqrsJ extends GenericTOF_SCD{
       }
     }
     String matfile=getParameter(4).getValue().toString();
+    matfile=FilenameUtil.setForwardSlash(matfile);
 
     // confirm the parameters
     {
@@ -170,11 +175,27 @@ public class LsqrsJ extends GenericTOF_SCD{
       file=null;
     }
 
-    if(DEBUG){
-      System.out.println("SEQ="+arrayToString(seq_nums));
-      System.out.println("PFL="+peaksfile);
-      System.out.println("RUN="+arrayToString(run_nums));
+    // create a buffer for a log file
+    StringBuffer logBuffer=new StringBuffer();
+    logBuffer.append("Peaks file  = "+peaksfile+"\n");
+    logBuffer.append("Matrix file = "+matfile+"\n");
+    logBuffer.append("run#        = "+arrayToString(run_nums)+"\n");
+    logBuffer.append("seq#        = "+arrayToString(seq_nums)+"\n");
+    if(matrix!=null){
+      logBuffer.append("     ");
+      for( int i=0 ; i<3 ; i++ )
+        logBuffer.append(Format.real(matrix[0][i],3)+" ");
+      logBuffer.append("\n"+"UB = ");
+      for( int i=0 ; i<3 ; i++ )
+        logBuffer.append(Format.real(matrix[1][i],3)+" ");
+      logBuffer.append("\n"+"     ");
+      for( int i=0 ; i<3 ; i++ )
+        logBuffer.append(Format.real(matrix[2][i],3)+" ");
+      logBuffer.append("\n");
+    }else{
+      logBuffer.append("UB = identity\n");
     }
+    logBuffer.append("------------------------------\n");
 
     // read in the reflections from the peaks file
     Vector peaks=null;
@@ -272,11 +293,36 @@ public class LsqrsJ extends GenericTOF_SCD{
       for( int i=0 ; i<hkl.length ; i++ )
         for( int j=0 ; j<3 ; j++ )
           Thkl[j][i]=hkl[i][j];
-          Tq=LinearAlgebra.mult(UB,Thkl);
+      Tq=LinearAlgebra.mult(UB,Thkl);
+      Thkl=LinearAlgebra.mult(LinearAlgebra.getInverse(UB),Tq);
+      // write information to the log file
+      logBuffer.append(" seq#   h     k     l      x      y      z      "
+                       +"xcm    ycm      wl  Iobs    Qx     Qy     Qz\n");
+      String peakString;
+      for( int i=0 ; i<peaks.size() ; i++ ){
+        peakString=peaks.elementAt(i).toString();
+        logBuffer.append(peakString.substring(2,11)+"   "
+                         +peakString.substring(12,17)+"   "
+                         +peakString.substring(18,21)+"   "
+                         +peakString.substring(22,peakString.length()-32)
+                         +" "+Format.real(q[i][0],7,3)+Format.real(q[i][1],7,3)
+                         +Format.real(q[i][2],7,3)+"\n");
+        logBuffer.append("      "+Format.real(Thkl[0][i],6,2)
+                         +Format.real(Thkl[1][i],6,2)
+                         +Format.real(Thkl[2][i],6,2)
+                         +"                                                 "
+                         +Format.real(Tq[0][i],7,3)+Format.real(Tq[1][i],7,3)
+                         +Format.real(Tq[2][i],7,3)+"\n");
+      }
+      // calculate chisq
       for( int i=0 ; i<peaks.size() ; i++ )
         for( int j=0 ; j<3 ; j++ )
           chisq=chisq+(q[i][j]-Tq[j][i])*(q[i][j]-Tq[j][i]);
     }
+
+    // add chisq to the logBuffer
+    logBuffer.append("\nchisq[Qobs-Qexp]: "+Format.real(chisq,8,5)+"\n");
+
 /* REMOVE
     System.out.println("UB="+arrayToString(UB));
     System.out.println("CHISQ="+chisq);
@@ -327,8 +373,38 @@ public class LsqrsJ extends GenericTOF_SCD{
         sig_abc[i]=Math.sqrt(delta*sig_abc[i]);
     }
 
+    // finish up the log buffer
+    logBuffer.append("\nOrientation matrix:\n");
+    for( int i=0 ; i<3 ; i++ ){
+      for( int j=0 ; j<3 ; j++ )
+        logBuffer.append(Format.real(UB[j][i],10,6));
+      logBuffer.append("\n");
+    }
+    logBuffer.append("\n");
+    logBuffer.append("Lattice parameters:\n");
+    for( int i=0 ; i<7 ; i++ )
+      logBuffer.append(Format.real(abc[i],10,3));
+    logBuffer.append("\n");
+    for( int i=0 ; i<7 ; i++ )
+      logBuffer.append(Format.real(sig_abc[i],10,3));
+    logBuffer.append("\n");
+
+
     // print out the results
     toConsole(UB,abc,sig_abc);
+
+    // write the log file
+    {
+      String logfile="lsqrs.log";
+      int index=matfile.lastIndexOf("/");
+      if(index>=0)
+        logfile=matfile.substring(0,index+1)+logfile;
+      String warn=writeLog(logfile,logBuffer.toString());
+      if(warn!=null && warn.length()>0)
+        SharedData.addmsg("JLsqrs(WARN) while writting lsqrs.log: "+warn);
+    }
+
+    // update the matrix file
     if(matfile!=null){
       ErrorString error=Util.writeMatrix(matfile,double2float(UB),
                                       double2float(abc),double2float(sig_abc));
@@ -339,6 +415,29 @@ public class LsqrsJ extends GenericTOF_SCD{
     }else{
       return "Success";
     }
+  }
+
+  /**
+   *
+   */
+  private static String writeLog( String logfile, String log){
+    FileOutputStream fout=null;
+    try{
+      fout=new FileOutputStream(logfile);
+      fout.write(log.getBytes());
+      fout.flush();
+    }catch(IOException e){
+      return e.toString();
+    }finally{
+      if(fout!=null){
+        try{
+          fout.close();
+        }catch(IOException e){
+          // let it drop on the floor
+        }
+      }
+    }
+    return null;
   }
 
   /**
