@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/10/07 19:45:26  pfpeterson
+ *  Now supports print option.
+ *
  *  Revision 1.2  2002/10/04 20:08:53  pfpeterson
  *  Changed reload and close buttons to be in a menu-bar. Fixed bug
  *  that no file could be displayed once the dialog was closed using
@@ -70,6 +73,8 @@ import  java.io.*;
 import  java.util.Vector;
 import  javax.swing.text.*;
 import  javax.swing.*;
+import DataSetTools.viewer.*;
+import IsawGUI.*;
 
 /**
  * This operator views the contents of and ascii file. A given
@@ -108,7 +113,6 @@ public class ViewASCII extends    GenericSpecial {
     
     public ViewASCII( String filename ){
         this();
-        
         parameters=new Vector();
         addParameter(new Parameter("View ASCII File",filename));
     }
@@ -172,6 +176,8 @@ public class ViewASCII extends    GenericSpecial {
             JMenuItem reloadMenu=new JMenuItem(RELOAD);
             JMenuItem closeMenu=new JMenuItem(CLOSE);
             menuBar.add(fileMenu);
+            DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( 
+                                                                   menuBar, mw);
             fileMenu.add(reloadMenu);
             fileMenu.add(closeMenu);
             MyActionListener mal=new MyActionListener(this);
