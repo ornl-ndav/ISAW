@@ -29,6 +29,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/08/15 02:10:17  rmikk
+ *  Removed the setDefaultParameters. Now the parameter
+ *  values( except Object types) will retain their values.
+ *  Restored only the Object parameters to the default
+ *    Object value of null;
+ *
  *  Revision 1.15  2001/08/14 16:17:14  rmikk
  *  The Dialog Box in now NOT modal
  *
@@ -109,7 +115,7 @@ public class JParametersDialog implements Serializable,
     Object Result = null;
     JLabel resultsLabel = new JLabel("    Result");
     ApplyButtonHandler APH;
-    
+    Vector ObjectParameters ;
                                  //allows acess to a dynamic list
                                  //of DataSet objects in the tree
                                  //w/o a reference to the actual tree.
@@ -173,8 +179,8 @@ public class JParametersDialog implements Serializable,
         Parameter param;
         JParameterGUI paramGUI;
        
-        op.setDefaultParameters();
-       
+        //op.setDefaultParameters();
+        ObjectParameters = new Vector();
         for (int i = 0; i<num_param; i++)
         {  
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
@@ -191,7 +197,9 @@ public class JParametersDialog implements Serializable,
             }
 
            else if(param.getValue() == null)
-             paramGUI = new JObjectParameterGUI(param);
+             {paramGUI = new JObjectParameterGUI(param);
+	      ObjectParameters.addElement( new Integer( i ));
+             }
            else if (param.getValue() instanceof Float)
              paramGUI = new JFloatParameterGUI(param);
            else if(param.getValue() instanceof Integer)
@@ -304,6 +312,7 @@ public class JParametersDialog implements Serializable,
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
             
         }
+
         JPanel Filler = new JPanel();
         Filler.setPreferredSize( new Dimension(120,2000));
         BB.add( Filler ); 
@@ -443,6 +452,13 @@ public class JParametersDialog implements Serializable,
              
       Object result = op.getResult();
       Result = result;
+      for( int i = 0; i < ObjectParameters.size(); i++ )
+        { int k = ((Integer)ObjectParameters.elementAt(i)).intValue();
+          String ParName = op.getParameter(k).getName();
+          if( ParName == null)
+              ParName = "Value?";
+          op.setParameter( new Parameter( ParName , null ) , k );
+        }
       opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       if (result == null)
       {
