@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/07 14:47:56  dennis
+ * Changed operator title to SCDQxyz_Dennis.java, to distinguish this
+ * from SCDQxyz.  This file may still be useful for testing purposes,
+ * but currently it has replaced the "old" SCDQxyz, so they are the
+ * same.
+ *
  * Revision 1.5  2003/07/07 15:51:45  bouzekc
  * Added getDocumentation().
  *
@@ -90,7 +96,7 @@ public class SCDQxyz_Dennis extends  XAxisInformationOp
    */
   public SCDQxyz_Dennis( ) 
   {
-    super( "Find Qx, Qy, Qz" );
+    super( "Find Qx, Qy, Qz, Dennis" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
