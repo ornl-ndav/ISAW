@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.51  2002/08/05 14:35:10  hammonds
+ *  Commented out code that rotates SCDs detector angle to -90 degrees.
+ *
  *  Revision 1.50  2002/08/01 22:44:15  dennis
  *  Monitor operators are now added using the DataSetFactory's
  *  addMonitorOperators() method
@@ -1029,8 +1032,8 @@ private float CalculateEIn()
       final_path = getAverageFlightPath(group_segments, histogram_num, false);
     }
 
-    if ( instrument_type == InstrumentType.TOF_SCD )   // ###### temporary fix
-      angle -= (float)Math.PI;                         // for SCD since runfile
+    //    if ( instrument_type == InstrumentType.TOF_SCD )   // ###### temporary fix
+    //      angle -= (float)Math.PI;                         // for SCD since runfile
                                                        // rotates detector to
                                                        // plus 90 degrees.
                                                        // 1 of 2 places this is
@@ -1124,8 +1127,8 @@ private float CalculateEIn()
       else
         rho  = (float)Math.sqrt(seg_path * seg_path - seg_height * seg_height);
 
-      if ( instrument_type == InstrumentType.TOF_SCD ) // ###### temporary fix
-        seg_angle -= (float)Math.PI;                   // for SCD since runfile
+      //      if ( instrument_type == InstrumentType.TOF_SCD ) // ###### temporary fix
+      //        seg_angle -= (float)Math.PI;                   // for SCD since runfile
                                                        // rotates detector to
                                                        // plus 90 degrees.
                                                        // 2 of 2 places this is
