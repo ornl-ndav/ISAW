@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:31:09  bouzekc
+ * Documented file using javadoc statements.
+ * Modified to use the Project(String, boolean) constructor instead of the
+ * Project(dataFileUtilities, boolean) when creating projects from native Hawk
+ * filenames supplied at the command line.
+ *
  * Revision 1.1  2004/02/07 05:10:45  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -41,7 +47,6 @@
 package devTools.Hawk.classDescriptor.tools;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
@@ -49,30 +54,59 @@ import javax.swing.JOptionPane;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
 
 /**
+ * This class handles the arguments passed to the program on the 
+ * command line.
  * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class CommandLineManager
 {
+	/**
+	 * The array of Strings each of which is an argument from the 
+	 * command line.
+	 */
 	private String[] arr;
 	//vec is a Vector of Projects specified from the command line
+	/**
+	 * This is the Vector of Project objects created from .hjp files 
+	 * specified from the command line.
+	 */
 	private Vector vec;
+	/**
+	 * Constant used to specify that the window should be displayed.
+	 */
 	public static final int SHOW_GUI = 1;	
+	/**
+	 * Constant used to specify that the window should not be displayed.
+	 */
 	public static final int DONT_SHOW_GUI = 2;
 	
+	/**
+	 * Create a new CommandLineManager object.
+	 * @param a The arguments from the command line.
+	 */
 	public CommandLineManager(String[] a)
 	{
 		arr = a;
 		vec = new Vector();
 	}
 	
+	/**
+	 * Get the Vector of Project objects created by reading the .hjp files 
+	 * supplied from the command line.
+	 * @return A Vector of Project objects.
+	 */
 	public Vector getCommandLineProjectVector()
 	{
 		return vec;
 	}
-			
+	
+	/**
+	 * This method reads through the command line arguments and decides what to do.  
+	 * Information may be displayed to the screen or a Project object might be created from 
+	 * a .hjp file if its full filename is specified.  Any Project objects are placed in the Vector 
+	 * vec.
+	 * @return Either SHOW_GUI or DONT_SHOW_GUI
+	 */
 	public int parseCommandLine()
 	{
 		int answer = DONT_SHOW_GUI;
@@ -105,7 +139,7 @@ public class CommandLineManager
 				System.out.println("Author:  "+SystemsManager.getAuthor());
 				unknown = "";
 			}
-			else if (str.endsWith(".jdf"))
+			else if (str.endsWith(SystemsManager.getHawkFileExtension()))
 			{
 				str = unknown + str;
 				str = str.trim();
@@ -134,31 +168,9 @@ public class CommandLineManager
 				
 				if (!fileName.equals(""))
 				{
-					try
-					{
-						File testfile = new File(fileName);
-						dataFileUtilities data = new dataFileUtilities(fileName, true);
-						
-						if (data != null)
-						{
-							String project_Name = Project.getProjectName(fileName);
-	
-								Project newProject = new Project(data, project_Name);
-														
-								vec.add(newProject);
-								answer = SHOW_GUI;
-						}
-					}
-					catch(FileNotFoundException e)
-					{
-						JOptionPane opPane = new JOptionPane();
-						JOptionPane.showMessageDialog(opPane,
-							"The file "+file.getAbsolutePath()+" is either not of the correct type or has been corrupted.",
-							"File Error",
-							JOptionPane.ERROR_MESSAGE);
-						
-						answer = SHOW_GUI;
-					}
+					Project newProject = new Project(fileName,false);									
+					vec.add(newProject);
+					answer = SHOW_GUI;
 				}
 				else
 				{
@@ -177,10 +189,10 @@ public class CommandLineManager
 				System.out.println("     you do not need a program's source code when using Hawk to");
 				System.out.println("     start to understand how the program was created.");
 				System.out.println();
-				System.out.println("Usage:  java -jar Hawk.jar [OPTIONS] [FULL jdf FILENAMES]");
+				System.out.println("Usage:  java -jar Hawk.jar [OPTIONS] [FULL "+SystemsManager.getHawkFileExtension()+" FILENAMES]");
 				System.out.println();
 				System.out.println("Filenames:");
-				System.out.println("     This is a list of .jdf files that will be opened when Hawk starts");
+				System.out.println("     This is a list of "+SystemsManager.getHawkFileExtension()+" files that will be opened when Hawk starts");
 				System.out.println();
 				System.out.println("Options:");
 				System.out.println("     -V, --version");
