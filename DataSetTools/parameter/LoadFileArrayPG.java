@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.11  2003/09/09 23:06:28  bouzekc
+ * Implemented validateSelf().
+ *
  * Revision 1.10  2003/08/28 03:38:40  bouzekc
  * Changed innerParameter assignment to call to setParam().
  *
@@ -50,6 +53,8 @@ package DataSetTools.parameter;
 import DataSetTools.util.StringUtil;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Vector;
+import java.io.File;
 import DataSetTools.util.PGActionListener;
 
 public class LoadFileArrayPG extends VectorPG{
@@ -84,4 +89,31 @@ public class LoadFileArrayPG extends VectorPG{
     LoadFilePG faap = new LoadFilePG( getName(), getValue());
     return (Object)faap;
   }       
+
+  /**
+   * Validates this LoadFileArrayPG.  An LoadFileArrayPG is considered valid if 
+   * it contains all String elements that correspond to existing non-directory
+   * readable files.
+   */
+  public void validateSelf(  ) {
+    validateElements( new String(  ).getClass(  ) );
+
+    //we need to be sure all the files exist and are readable real files
+    if( getValid(  ) ) {
+      //from the superclass method, we already know at this point that the
+      //value is a non-null Vector.
+      Vector fileElements = ( Vector )getValue(  );
+      File temp = null;
+      boolean allLoadable = true;
+
+      for( int i = 0; i < fileElements.size(  ) && allLoadable; i++ ) {
+        temp = new File( fileElements.get( i ).toString(  ) );
+        if( !temp.exists(  ) || temp.isDirectory(  )
+                             || !temp.canRead(  ) ) {
+          allLoadable = false;
+        }
+      }
+      setValid( allLoadable );
+    }
+  }
 }
