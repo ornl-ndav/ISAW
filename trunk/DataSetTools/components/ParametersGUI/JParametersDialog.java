@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2002/12/09 16:31:59  pfpeterson
+ *  Changed size of help window.
+ *
  *  Revision 1.32  2002/12/08 22:12:38  dennis
  *  Added help button for new help system. (Ruth)
  *
@@ -128,6 +131,9 @@ public class JParametersDialog implements Serializable,
                                  //w/o a reference to the actual tree.
     IDataSetListHandler ds_src;
     StatusPane stat_pane=null;
+
+  private static int screenwidth=0; // for help dialog
+  private static int screenheight=0;
     
     public JParametersDialog( Operator  op, 
                               IDataSetListHandler ds_src, 
@@ -697,22 +703,22 @@ public class JParametersDialog implements Serializable,
     } 
   }
 
-  public class HelpButtonListener implements ActionListener
-    {
+  public class HelpButtonListener implements ActionListener{
 
-    public void actionPerformed(ActionEvent ev) 
-    {
-       JFrame jf = new JFrame( "operator "+op.getCommand());
-       JEditorPane jedPane = new JEditorPane();
-       jedPane.setEditorKit( new HTMLEditorKit() );
-       jedPane.setText( 
-             DataSetTools.util.SharedData.HTMLPageMaker.createHTML( op ));
-       jf.getContentPane().add( new JScrollPane(jedPane));
-       if( Width == 0 )
-         Width = 600;
-       jf.setSize( (int)(.8*Width) , (int)(1.5*Width));
-       jf.show();
-       
+    public void actionPerformed(ActionEvent ev){
+      if(screenwidth==0 && screenheight==0){
+        Dimension screensize=Toolkit.getDefaultToolkit().getScreenSize();
+        screenheight=screensize.height;
+        screenwidth=(int)(screenheight*4/3);
+      }
+      
+      JFrame jf = new JFrame( "operator "+op.getCommand());
+      JEditorPane jedPane = new JEditorPane();
+      jedPane.setEditorKit( new HTMLEditorKit() );
+      jedPane.setText(SharedData.HTMLPageMaker.createHTML(op));
+      jf.getContentPane().add( new JScrollPane(jedPane) );
+      jf.setSize( (int)(screenwidth/2), (int)(3*screenheight/4) );
+      jf.show();
     } 
-    }
+  }
 }
