@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/04/29 21:24:11  dennis
+ *  Now adds the SpectrometerTofToQE() operator to the new Energy
+ *  DataSet that is constructed.
+ *
  *  Revision 1.9  2004/03/15 06:10:46  dennis
  *  Removed unused import statements.
  *
@@ -72,6 +76,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.operator.DataSet.Conversion.XYAxis.*;
 import  DataSetTools.parameter.*;
 import  DataSetTools.viewer.*;
 import  DataSetTools.retriever.*;
@@ -287,6 +292,9 @@ public class SpectrometerTofToEnergy extends    XAxisConversionOp
 
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
+
+    // add in the appropriate additional ops
+    new_ds.addOperator( new SpectrometerTofToQE() );
 
                                      // get the energy scale parameters
     float min_E = ( (Float)(getParameter(0).getValue()) ).floatValue();
