@@ -29,6 +29,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2003/12/15 20:07:00  rmikk
+ *  Eliminated rescaling when XScales are the same
+ *  Removed the use of the Groups variable and completely replaced it by
+ *    the grid
+ *
  *  Revision 1.22  2003/12/15 18:24:07  rmikk
  *  Used the new viewer states to retain the detector number.
  *
@@ -159,7 +164,7 @@ public class ContourData
    int DetNum = -1;
    int[] DetNums = null;
    UniformGrid grid;
-   Data[][]Groups = null;
+   //Data[][]Groups = null;
    int num_rows = -1, num_cols = -1;
    boolean showAllGroups = true;
    ViewerState state;
@@ -185,7 +190,6 @@ public class ContourData
   public ContourData( DataSet data_set , ViewerState state)
    {
       this.state = state;
-     
       ds = data_set;
       dsSave = data_set;
       maxvalue = 0;
@@ -199,20 +203,33 @@ public class ContourData
       //Build a vector holding the row and column entries
       maxrows = -1;
       maxcols = -1;
-      int[][] k = new int[ds.getNum_entries() + 1][3];
+      //int[][] k = new int[ds.getNum_entries() + 1][3];
       int w = 0;
 
       x_scale = data_set.getData_entry(0).getX_scale();
       ds = (DataSet)(dsSave.clone());
-      for( int j=0; j< ds.getNum_entries(); j++)
-      ds.getData_entry(j).resample( x_scale,0);
       SetUpDetNums();
+      if( grid == null)
+        for( int j=0; j< ds.getNum_entries(); j++)
+            if( ds.getData_entry(j).getX_scale() != x_scale)
+               ds.getData_entry(j).resample( x_scale,0);
+      else
+        for( int row = 1; row <= grid.num_rows(); row++)
+          for( int col = 1; col <= grid.num_cols(); col++){
+            Data D = grid.getData_entry( row, col);
+            if( D != null)
+              if( D.getX_scale() != x_scale)
+                 D.resample( x_scale,0);
+          }
+            
+      
       if( DetNum < 0){
          ThetPhiData( ds, new thetaAxisHandler( ds), new phiAxisHandler( ds), 
                         new TimeAxisHandler( ds ));
          return;
       }
-      
+      num_rows = grid.num_rows();
+      num_cols = grid.num_cols();
       axis1 = new double[ num_cols ];
       axis2 = new double[  num_rows ];
       for( int row = 0; row < axis2.length; row++ )
@@ -221,7 +238,6 @@ public class ContourData
          axis1[col] = col+1;
      
  
-    
      //grid.setDataEntriesInAllGrids(ds);
    }
 
@@ -244,9 +260,8 @@ public class ContourData
       SGTMetaData xMeta;
       SGTMetaData yMeta;
       SGTMetaData zMeta;
-
       lastTime = X;
-
+   
       //Given the group indecies and time slice, we look up the row, column, and y value and store
       //them in separate 1d arrays.  Axis data itself will be integer values.  The axis arrays
       //will hold no repeated values. (ie values.size = axis1.size * axis2.size)
@@ -259,7 +274,7 @@ public class ContourData
       {
          for( row = 1; row <= num_rows; row++ )
          {
-            Data db = Groups[row][col];
+            Data db = grid.getData_entry(row,col);
             if( db == null)
                values[w] = 0.0;
             else if( !showAllGroups && !db.isSelected())
@@ -284,6 +299,8 @@ public class ContourData
       sl.setZMetaData( zMeta );
 
       data_ = sl;
+      
+    
       return data_;
 
    }
@@ -589,9 +606,10 @@ public class ContourData
         
          ds =(DataSet)( dsSave.clone());
          for( int j=0; j< ds.getNum_entries(); j++)
-            ds.getData_entry(j).resample( x_scale,0);
+            if( ds.getData_entry(j).getX_scale() != x_scale)
+                ds.getData_entry(j).resample( x_scale,0);
          grid.setDataEntriesInAllGrids(ds);
-         SetUpGroups();
+         //SetUpGroups();
         }
       else if( xscale != null)
        { ntimes = xscale.getNum_x();
@@ -626,8 +644,9 @@ public class ContourData
           return -1;
          if( c > num_cols )
            return -1;
-       
-         return ds.getIndex_of_data(Groups[ r][c]);
+         //if( Groups[r][c] != grid.getData_entry(r,c))
+           //System.out.println( "Grid<>Groups at "+r+","+c);
+         return ds.getIndex_of_data(grid.getData_entry(r,c));
          }
       else //returns user coordinates
          { float R;
@@ -747,7 +766,7 @@ public class ContourData
               state.set_int( ViewerState.CONTOUR_DETNUM, DetNum);
           grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum));
           grid.setDataEntriesInAllGrids(ds);
-          SetUpGroups();
+          //SetUpGroups();
         }else DetNums = null;
      
 
@@ -756,13 +775,14 @@ public class ContourData
   private void SetUpGroups(){
       if( DetNums== null)
          return;
-      num_rows = grid.num_rows();
+      /*num_rows = grid.num_rows();
       num_cols = grid.num_cols();
       Groups = new Data[ 1+ num_rows][1+num_cols];
       for( int row = 1; row <= num_rows; row++)
         for( int col = 1; col <= num_cols; col++)
            Groups[row][col] = grid.getData_entry(row,col);
-
+      */
+      System.out.println("in set up groups");
    } 
 
   LabelCombobox  DetChoices = null;
@@ -824,10 +844,13 @@ public class ContourData
       if( grid == null){
          DetNum = oldDetNum;
          state.set_int( ViewerState.CONTOUR_DETNUM, DetNum);
+         grid = (UniformGrid)Grid_util.getAreaGrid( ds, DetNum);
          return;
       }
       grid.setDataEntriesInAllGrids(ds);
-      SetUpGroups();
+      num_rows = grid.num_rows();
+      num_cols = grid.num_cols();
+      //SetUpGroups();
       DataChangeListener.actionPerformed( new ActionEvent(this,
           ActionEvent.ACTION_PERFORMED,"DataChange"));
     }
@@ -840,10 +863,11 @@ public class ContourData
     public void actionPerformed( ActionEvent evt){
      
       showAllGroups = ((JCheckBox)evt.getSource()).isSelected();
+      state.set_boolean( ViewerState.CONTOUR_SHOWALL, showAllGroups);
       DataChangeListener.actionPerformed( new ActionEvent(this,
           ActionEvent.ACTION_PERFORMED,"DataChange"));
       
-      state.set_boolean( ViewerState.CONTOUR_SHOWALL, showAllGroups);
+      
     }
 
  }
