@@ -2,6 +2,9 @@
  *  File:  DiffractometerTofToQ.java 
  *             
  *  $Log$
+ *  Revision 1.7  2002/07/10 16:05:22  pfpeterson
+ *  Use gsas calibration if possible.
+ *
  *  Revision 1.6  2002/07/08 20:46:04  pfpeterson
  *  Now uses String constants in FontUtil.
  *
@@ -109,6 +112,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.gsastools.GsasCalib;
 
 /**
  * This operator converts a neutron time-of-flight DataSet to "Q".  The
@@ -251,21 +255,28 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
                                              // get the detector position and
                                              // initial path length
     DetectorPosition position=(DetectorPosition)
-                       attr_list.getAttributeValue( Attribute.DETECTOR_POS);
+        attr_list.getAttributeValue( Attribute.DETECTOR_POS );
+
+    GsasCalib gsas=(GsasCalib)
+        attr_list.getAttributeValue( Attribute.GSAS_CALIB );
 
     Float initial_path_obj=(Float)
                         attr_list.getAttributeValue(Attribute.INITIAL_PATH);
 
-    if( position == null || initial_path_obj == null)  // make sure it has the
-      return Float.NaN;                                // needed attributes
-                                                       // to convert it to D
+    if(gsas!=null){
+        return tof_calc.DiffractometerQ( gsas.dif_c(), gsas.dif_a(),
+                                         gsas.t_zero(), x );
+    }else{
+        if( position == null || initial_path_obj == null)  // make sure it has
+            return Float.NaN;                          // the needed attributes
+        
+        float initial_path       = initial_path_obj.floatValue();
+        float spherical_coords[] = position.getSphericalCoords();
+        float total_length       = initial_path + spherical_coords[0];
+        float scattering_angle   = position.getScatteringAngle();
 
-    float initial_path       = initial_path_obj.floatValue();
-    float spherical_coords[] = position.getSphericalCoords();
-    float total_length       = initial_path + spherical_coords[0];
-    float scattering_angle   = position.getScatteringAngle();
-
-    return tof_calc.DiffractometerQ( scattering_angle, total_length, x );
+        return tof_calc.DiffractometerQ( scattering_angle, total_length, x );
+    }
   }
 
 
@@ -316,6 +327,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
     Data             data,
                      new_data;
     DetectorPosition position;
+    GsasCalib        gsas;
     float            initial_path;
     Float            initial_path_obj;
     float            total_length;
@@ -338,10 +350,13 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
                                            // initial path length 
       position=(DetectorPosition)
                    attr_list.getAttributeValue(Attribute.DETECTOR_POS);
+
+      gsas=(GsasCalib)attr_list.getAttributeValue(Attribute.GSAS_CALIB);
+
       initial_path_obj=(Float)
                           attr_list.getAttributeValue(Attribute.INITIAL_PATH);
 
-      if( position != null && initial_path_obj != null)
+      if( gsas!=null || (position != null && initial_path_obj != null))
                                                        // has needed attributes 
       {                                                // so convert it to Q
                                        // calculate d-values at bin boundaries
@@ -351,10 +366,18 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
         scattering_angle = position.getScatteringAngle();
         t_vals           = data.getX_scale().getXs();
         Q_vals           = new float[t_vals.length];
-        for ( int i = 0; i < t_vals.length; i++ )
-          Q_vals[i] = tof_calc.DiffractometerQ( scattering_angle,
-                                                total_length, 
-                                                t_vals[i]        );
+        if(gsas!=null){
+            for ( int i = 0; i < t_vals.length; i++ )
+                Q_vals[i] = tof_calc.DiffractometerQ( gsas.dif_a(),
+                                                      gsas.dif_c(),
+                                                      gsas.t_zero(),
+                                                      t_vals[i] );
+        }else{
+            for ( int i = 0; i < t_vals.length; i++ )
+                Q_vals[i] = tof_calc.DiffractometerQ( scattering_angle,
+                                                      total_length, 
+                                                      t_vals[i]        );
+        }
 
         y_vals  = data.getCopyOfY_values();    // need copy, since we alter it
         errors  = data.getCopyOfErrors();
