@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/03/18 21:32:49  dennis
+ *  Now checks whether or not the errors array is null before attempting
+ *  to reverse the array.
+ *
  *  Revision 1.2  2002/03/13 16:19:17  dennis
  *  Converted to new abstract Data class.
  *
@@ -304,7 +308,8 @@ public class MonitorTofToEnergy extends    XAxisConversionOp
         y_vals = data.getCopyOfY_values();    // need copy, since we alter it
         errors = data.getCopyOfErrors();
         arrayUtil.Reverse( y_vals );
-        arrayUtil.Reverse( errors );
+        if ( errors != null )
+          arrayUtil.Reverse( errors );
 
         new_data = Data.getInstance( E_scale, 
                                      y_vals, 
