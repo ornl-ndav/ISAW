@@ -1,0 +1,152 @@
+<html><body>
+<a href="CommandPane.html">CONTENTS</a>
+<UL> Features
+<LI> <A href="#Line Structure">Line Structure</a>
+<li> <A href="#Data Types">Data Types</a>
+<li> <A href="#Constants">Constants</a>
+<li> <A href="#Variables">Variables</a>
+<li> <A href="#Parameters">Parameters</a>
+<li> <A href="#Programming Structures">Programming Structures</a>
+<li> <A href="#Miscellaneous">Miscellaneous</a>
+</ul><P><P>
+<A name="Line Structure">Line Structure</a>
+  <ul>
+   <li> Comment lines MUST start(1st character) with a # symbol or the letters REM
+   <li> Parameter lines MUST start with a $ symbol
+   <li> <ul> All other Lines
+        <li> Can start with or end with as many spaces as desired
+        <LI> Must not start with a # or $
+        <LI> Can continue to the next line using _, the underscore character,
+             as the last character on the line
+        <LI> Represent blank lines or executable statements
+        <li> There is only one executable statement per line( or continued line)
+        <li> Spaces outside of quotes are delimiters for variable names,
+             Command names, etc.
+      </ul>
+   </ul>
+<P><P>
+ <A name="Data Types">Data Types</a><ul>
+   <ul> The Data Types "Fully" Supported are
+     <li> Integer
+     <li> Float
+     <li> Boolean(Logical)
+     <li> DataSet
+     <li> Array (This is Java's Vector Data Type)
+   </ul>
+   Supported means that variables can store data of this type, expressions using
+      operations like +, -, *, /, ^, AND, OR, NOT evaluate correctly, and data of 
+     this type can be used as arguments in the operators.<P>
+
+  NOTE: Arrays are Really Vectors.  Elements need not be of the same data type. <P>
+
+  <UL>There is some support for Objects
+    <LI> Elements of an Array can be arbitrary objects.<BR>
+        NOTE: A[3]= X  saves a REFERENCE to X in A[3]
+    <LI> Arguments of the operators can be any Object Data Type
+    <LI> Only array elements can store these variables, and there are no intrinsic
+         operations that can be applied to these variables.  Operators can always be
+         written to act on specific types of Objects.
+  </ul>
+
+   </ul>
+     
+
+<P><P>
+<A name="Constants">Constants</a><ul>
+  <ul> Examples
+     <li> Integer :  4,  -3      Contain no Decimal point
+     <li> Float   :  5.  2.0     Contain a decimal point
+     <li> Boolean(Logical):  True  false     Not case sensitive
+     <li> DataSet        None yet
+     <li> Array : [3, true, "abc"] or [ [1,2,3],[3,4,5]]  or [1:5,8]
+   </ul>
+<ul>
+   The <b>NULL</b> Constant:<P>
+     Assigning a variable the NULL value will delete it from the scripting language's namespace,
+     if it is not a parameter.  This is used to eliminate references to large datasets and hence free
+     up space.
+ </ul>
+ </ul>
+<P><P>
+<A name="Variables">Variables</a><ul>
+    The names for variables are any sequence of characters on one line between two delimiters.  The
+   delimiters include  spaces, tabs, square and round braces, algebraic and string operations, comma,
+   colon, inequality and equality symbols and quotes.<P><P>
+
+   The Data Type of a variable is "declared" by the first value assigned to it.
+
+</ul>
+   
+<P><P>
+<A name="Parameters">Parameters</a><ul>
+  Parameters for a script are declared using lines starting with a $ symbol as the first character.<P>
+  The format is as follows:<P>
+  <Center> $Varname  &nbsp;&nbsp;&nbsp;    DataType(InitValue)  &nbsp;&nbsp;&nbsp;    Prompt</Center>
+ <P> Varname is the varible name used in the script to refer to this variable<P>
+  The Initial value( and corresponding parenthesis ) are not necessary<P>
+  <a href="Interfaces.html#DataTypes">Supported Parameter "Types" </a>
+</ul>
+<P><P>
+ <A name="Programming Structures">Programming Structures</a><ul>
+    There are Three programming structures so far:<P>
+     <A href="#For">For loops</a>, <A href="#If"> If then structures</a>,  and 
+       <A href="#Err">On error structures</a><P>
+    Nesting of these structures is supported<P>
+
+   <A name="For">For loops</a><ul>
+     
+     A FOR Block starts with :  For <B>var</B> in <B>X</B><BR><UL>
+     where <B>X</b> represents an Array variable or constant<BR>
+     and <b>var</B> represents a variable that is not an element of an array. It must have
+      the proper data type to be assigned all the elements in the array.
+     </ul>
+
+     A FOR Block ends with:  endfor<P>
+
+
+    The keywords for, in , and endfor are NOT case sensitive
+   </ul><P><P>
+   <A name="If"> If structures</a><ul>
+    All If structures starts with:  <U>if</U>  logical_expression<BR>
+      It can also start with: <U>if</U>  logical_expression <U>then</U><BR><P>
+
+    All If structures end with: <U>endif</U><P>
+
+    An If-Then-Else structure  contain exactly one <U> else</u> statement between the beginning and
+      the end<P>
+
+    An If-Then-Elseif structure contains one or more of the following statments between 
+         the beginning and the end  of this if structure:<ul>
+       <li><u>elseif</u> logical_expression
+       <li> <u>elseif</u> logical_expression <u>then</u>
+       <LI>  <u>else</u> <BR>
+           There MUST be no elseif statements below this one to the end of the if structure
+        </ul>
+       
+   </ul><P><P>
+   <A name="Err">On error structures</a><ul>
+    An OnError Block starts with:<u>On Error</u><P>
+
+    An OnError Block ends with: <U>end error</u><P>
+
+    An OnError Block MAY have at most one <u>else error</u> statement between the start and the end.<P><P>
+
+    If an error occurs in the first block of code in an on error block, the next statement executed 
+     will be the first statement after the else error statment, if there is one, otherwise the
+     first statement after the end error will be executed.
+   
+
+   </ul></ul><P>
+
+
+<P><P>
+<A name="Miscellaneous">Miscellaneous</a>
+  The Isaw Scripting Language has three <u>Directives</u>, Command,Title, and Category.
+  These are placed in the script on a line starting with a $.  They override the default
+  Command name, Title( appears in menus), and Category List(describing the path in
+  menus).  Examples of their format are:<ul>
+   <li>$Command = HelpMe
+   <li>$Title=Help Me
+   <li>$Category =  Operator, Generic,TOF_SAD, Scripts
+  </uL>
+</body></html>
