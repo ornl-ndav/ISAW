@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/07/14 16:39:21  rmikk
+ *  Can now be used to retrieve ISIS files
+ *
  *  Revision 1.7  2004/03/15 19:33:52  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -197,14 +200,22 @@ public class LoadOneDS extends    GenericLoad
 
      String temp = file_name.toUpperCase ();
 
-     if ( temp.endsWith( "RUN" ) )
+     /*if ( temp.endsWith( "RUN" ) )
        rr = new RunfileRetriever( file_name );
      else if ( temp.endsWith("NXS") || temp.endsWith("HDF") )
        rr = new NexusRetriever( file_name );
+     */
+     try{
+     
+       rr= Command.ScriptUtil.getRetriever(file_name);
+     }catch(Exception ss){
+        rr = null;
+     }
+     
 
      if ( rr == null )
        return new ErrorString("Unsupported file type: " +
-                              "must be .run, .nxs or .hdf");
+                              "must be .run, .nxs or .hdf,etc.");
 
      DataSet ds;
      if ( ids.length == 0 )
