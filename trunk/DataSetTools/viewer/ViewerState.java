@@ -8,6 +8,9 @@
  *  set in a particular viewer.
  *
  *  $Log$
+ *  Revision 1.3  2001/03/01 22:33:07  dennis
+ *  Now saves the last "Pointed At" index.
+ *
  *  Revision 1.2  2001/01/29 21:26:50  dennis
  *  Now uses CVS version numbers.
  *
@@ -35,6 +38,7 @@ public class ViewerState  implements Serializable
   private String   color_scale;
   private boolean  horizontal_scrolling;
   private float    horizontal_scroll_fraction;
+  private int      pointed_at_index;
 
     /** 
      * Constructs a ViewerState object with default values for the
@@ -45,6 +49,7 @@ public class ViewerState  implements Serializable
       color_scale                = IndexColorMaker.HEATED_OBJECT_SCALE;
       horizontal_scrolling       = false;
       horizontal_scroll_fraction = 0.5f;
+      pointed_at_index           = 0;
     }
 
    /**
@@ -116,5 +121,25 @@ public class ViewerState  implements Serializable
      this.horizontal_scroll_fraction = position;
    }
 
+
+   /**
+    *  Get the last "POINTED AT" index that was saved.
+    *
+    *  @return  The last saved "POINTED AT" index.
+    */
+   public int getPointedAtIndex()
+   {
+     return pointed_at_index;
+   }
+
+   /**
+    *  Save the specified "POINTED AT" index.
+    *
+    *  @param  index  The "POINTED AT" index to be saved. 
+    */
+   public void setPointedAtIndex( int index )
+   {
+      pointed_at_index = index;
+   }
 
 }
