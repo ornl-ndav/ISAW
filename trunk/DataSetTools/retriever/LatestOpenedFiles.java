@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/05/29 16:32:52  rmikk
+ * Eliminated an unused variable
+ *
  * Revision 1.9  2004/05/21 13:49:53  rmikk
  * Used IsawProp's NsavedFiles,if present, in all positions of this code
  *
@@ -240,9 +243,10 @@ class MyActionListener implements ActionListener{
      DataSet[] DSS = null;
      try{
         DSS = ScriptUtil.load( filename );
-        filename = filename.replace( '\\' , '/' );
+        /*filename = filename.replace( '\\' , '/' );
         int l = filename.lastIndexOf( '/' );
         String filename1=filename;
+        */
         if( l >= 0 ) 
            filename1 = filename.substring( l + 1 );
       
