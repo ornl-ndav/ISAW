@@ -30,6 +30,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/11/12 00:26:33  dennis
+ *  Made immutable by:
+ *  1. remove setValue() method
+ *  2. add() & combine() methods now return a new Attribute
+ *  3. getValue() returns copy of the array value
+ *
+ *  Also:
+ *  4. Since it is now immutable, clone() method is not needed and
+ *     was removed
+ *  5. Default constructor is now private, since the value can't
+ *     be set from outside of the class
+ *
  *  Revision 1.1  2002/08/22 14:55:58  pfpeterson
  *  Added to CVS.
  *
@@ -85,92 +97,98 @@ public class Float1DAttribute extends Attribute{
         this.value = value;
     }
     
-    public Float1DAttribute(){
+    private Float1DAttribute(){
         super( "" );
         this.value =new float[1];
         this.value[0]=0f;
     }
 
     /**
-     * Returns the float value of this attribute, as a generic object.
+     * Returns a copy of the array of values of this attribute as a generic
+     * object. 
      */
     public Object getValue(){
-        return( value );
+        return( getFloatValue() );
     }
 
     /**
-     * Set the value for the float attribute using a generic object.
-     * The actual class of the object must be a Float object.
-     */
-    public boolean setValue( Object obj ){
-        if ( obj instanceof float[] ){
-            this.setFloatValue( (float[])obj );
-            return true;
-        }else{
-            return false;
-        }
-    }   
-
-    /**
-     * Returns the float value of this attribute as a float.
+     * Returns a copy of the array of values of this attribute as a float[].
      */
     public float[] getFloatValue(){
-        return value;
+      float new_array[] = new float[ value.length ];
+      System.arraycopy( value, 0, new_array, 0, value.length );
+      return new_array;
     }
 
     /**
-     * Set the value for the float attribute using a float.
-     */
-    public void setFloatValue( float[] value ){
-        this.value = value;
-    }
-    
-    /**
      * Combine the value of this attribute with the value of the
-     * attribute passed as a parameter to obtain a new value for this
-     * attribute.  The new value is just the average of the values of
-     * the two attributes.
+     * attribute passed as a parameter to obtain a new Attribute whose
+     * value is a combination of the two attributes. If the sizes of the
+     * the arrays don't match, this returns the current attribute.  If the
+     * sizes match, the new attribute is obtained by averaging the
+     * corresponding values in the arrays.
      *
      *  @param attr An attribute whose value is to be "combined" with
      *  the value of the this attribute.
+     *
+     *  @return The current attribute, if the array sizes don't match, or
+     *     a new Float1DAttribute whose values are the averages of the values
+     *     of the current Attribute and the specified Attribute's values.
      */
-    public void combine( Attribute attr ){
-        float[] other;
-        if(attr instanceof Float1DAttribute)
-            other=((Float1DAttribute)attr).getFloatValue();
-        else
-            return; // can't do anything
+    public Attribute combine( Attribute attr )
+    {
+      if ( attr == null || value == null )
+        return this;  // can't do anything
 
-        if( this.value.length == other.length ){
-            for( int i=0 ; i<this.value.length ; i++ ){
-                this.value[i]=(this.value[i]+other[i])/2f;
-            }
-        }else{
-            return; // the arrays must be the same length
-        }
+      if(attr instanceof Float1DAttribute)
+      {
+        float other[] = ((Float1DAttribute)attr).getFloatValue();
+
+        if( other != null && this.value.length == other.length )
+        {
+           float new_value[] = new float[ value.length ];
+           for( int i=0 ; i<this.value.length ; i++ )
+              new_value[i]= (this.value[i]+other[i])/2;
+            return new Float1DAttribute( name, new_value );
+         }
+       }
+
+       return this; // by default, if we couldn't add, just return the 
+                    // current array.
     }
     
     /**
      * Add the value of the specified attribute to the value of this
-     * attribute obtain a new value for this attribute.
+     * attribute obtain a new Attribute object whose value is the sum of
+     * entries from this attribute and the other attribute.
      *
      *  @param attr An attribute whose value is to be "added" to the
      *  value of the this attribute.
+     *
+     *  @return The current attribute, if the array sizes don't match, or
+     *     a new Float1DAttribute whose values are the sums of the values
+     *     of the current Attribute and the specified Attribute's values.
      */
-    public void add( Attribute attr ){
-        float[] other;
-        if(attr instanceof Float1DAttribute)
-            other=((Float1DAttribute)attr).getFloatValue();
-        else
-            return; // can't do anything
+    public Attribute add( Attribute attr )
+    {
+      if ( attr == null || value == null )
+        return this;  // can't do anything
 
-        if( this.value.length == other.length ){
-            for( int i=0 ; i<this.value.length ; i++ ){
-                this.value[i]=this.value[i]+other[i];
-            }
-        }else{
-            return; // the arrays must be the same length
-        }
+      if(attr instanceof Float1DAttribute)
+      {
+        float other[] = ((Float1DAttribute)attr).getFloatValue();
+      
+        if( other != null && this.value.length == other.length )
+        {
+          float new_value[] = new float[ value.length ];
+          for( int i=0 ; i<this.value.length ; i++ )
+            new_value[i]=this.value[i]+other[i];
+          return new Float1DAttribute( name, new_value );
+         }
+       }
+
+       return this; // by default, if we couldn't add, just return the 
+                    // current array. 
     }
 
     public boolean XMLwrite( OutputStream stream, int mode ){
@@ -270,7 +288,7 @@ public class Float1DAttribute extends Attribute{
         for( int i=0 ; i<nVal ; i++ ){
             read_value[i]=StringUtil.getFloat(float_array);
         }
-        this.setValue(read_value);
+        value = read_value;
 
         //-------------------- get End tags
         Tag =xml_utils.getTag( stream ); 
@@ -324,12 +342,6 @@ public class Float1DAttribute extends Attribute{
         return this.getName() + ": " + this.getStringValue();
     }
     
-    /**
-     * Returns a copy of the current attribute
-     */
-    public Object clone(){
-        return new Float1DAttribute( this.getName(), value );
-    }
 
     /* ------------------------- PRIVATE METHODS --------------------------- */
 
@@ -363,7 +375,7 @@ public class Float1DAttribute extends Attribute{
         f[0]=2f;
         f[1]=3f;
         f[2]=2f;
-        fa.setFloatValue(f);
+        fa=new Float1DAttribute("Lattice Parameters",f);
         System.out.println("03:"+fa);
         System.out.println("04:"+fa.getStringValue());
         System.out.println("05:"+fa.getNumericValue());
