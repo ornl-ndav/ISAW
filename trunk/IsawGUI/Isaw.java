@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.120  2002/12/08 22:34:35  dennis
+ *  The Help->Command option now brings up the new help system. (Ruth)
+ *
  *  Revision 1.119  2002/12/03 17:47:44  pfpeterson
  *  Now uses InstrumentViewMenu for the instrument links. Deleted code which
  *  used to serve this purpose. Commented out code for the instrument macro
@@ -1478,7 +1481,17 @@ public class Isaw
       } 
                 
       if( s.equals(COMMAND_PANE_MI) )
-      {
+      { try{
+            Component jh = (new Jhelp()).getHelpComponent();
+            JFrame jf = new JFrame("Command Pane-Scripting");
+            jf.getContentPane().add(jh);
+            Dimension D = getToolkit().getScreenSize();
+            // make the help window pop up centered and 60% of screen size
+            jf.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height));
+            jf.show();
+            return;
+           }
+        catch( Exception sss){}
 	String S=DataSetTools.util.FilenameUtil.helpDir("Command/CommandPane.html");
 	//S="http://www.pns.anl.gov/ISAW/ISAW%20Tutorial_files/v3_document.htm";
 	HTMLPage H = new HTMLPage( S ) ;
