@@ -1,5 +1,5 @@
 /*
- * File:  StringPG.java 
+ * File:  StringPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2004/03/12 20:30:53  bouzekc
+ *  Code reformat and added javadocs.
+ *
  *  Revision 1.14  2003/12/15 02:38:19  bouzekc
  *  Removed unused imports.
  *
@@ -76,7 +79,6 @@
  *
  *
  */
-
 package DataSetTools.parameter;
 
 /**
@@ -84,97 +86,120 @@ package DataSetTools.parameter;
  * StringPGs.
  */
 public class StringPG extends StringEntryPG {
-    private   static final String TYPE     = "String";
+  //~ Static fields/initializers ***********************************************
 
-    // ********** Constructors **********
-    public StringPG(String name, Object value){
-        super(name,value);
-        this.setType(TYPE);
+  private static final String TYPE = "String";
+
+  //~ Constructors *************************************************************
+
+  /**
+   * Creates a new StringPG object.
+   *
+   * @param name The name of this PG.
+   * @param value The initial value of this PG.
+   */
+  public StringPG( String name, Object value ) {
+    super( name, value );
+    this.setType( TYPE );
+  }
+
+  /**
+   * Creates a new StringPG object.
+   *
+   * @param name The name of this PG.
+   * @param value The initial value of this PG.
+   * @param valid Whether this PG should be considered initially valid.
+   */
+  public StringPG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+    this.setType( TYPE );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * Sets the value of this PG using a String.
+   *
+   * @param val The new value.
+   */
+  public void setStringValue( String val ) {
+    this.setValue( val );
+  }
+
+  /**
+   * @return The String value of this PG.
+   */
+  public String getStringValue(  ) {
+    Object ob     = this.getValue(  );
+    String svalue = null;
+
+    if( ob == null ) {
+      svalue = null;
+    } else if( ob instanceof String ) {
+      svalue = ( String )ob;
+    } else {
+      svalue = ob.toString(  );
     }
 
-    public StringPG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        this.setType(TYPE);
+    if( ( svalue == null ) || ( svalue.length(  ) <= 0 ) ) {
+      return null;
+    } else {
+      return svalue;
+    }
+  }
+
+  /**
+   * Sets the value of the parameter.
+   */
+  public void setValue( Object value ) {
+    String svalue = null;
+
+    if( value == null ) {
+      svalue = null;
+    } else if( value instanceof String ) {
+      svalue = ( String )value;
+    } else {
+      svalue = value.toString(  );
     }
 
-    // ********** IParameter requirements **********
-    /**
-     * Sets the value of the parameter.
-     */
-    public void setValue(Object value){
-      String svalue=null;
-        
-      if(value==null)
-        svalue=null;
-      else if(value instanceof String)
-        svalue=(String)value;
-      else
-        svalue=value.toString();
-
-      if(this.getInitialized())
-        super.setEntryValue(svalue);
-        
-      super.setValue(svalue);
+    if( this.getInitialized(  ) ) {
+      super.setEntryValue( svalue );
     }
 
-    // ********** ParamUsesString requirements **********
-    public String getStringValue(){
-        Object ob=this.getValue();
+    super.setValue( svalue );
+  }
 
-        String svalue=null;
+  /*
+   * Testbed.
+   */
+  /*public static void main(String args[]){
+     StringPG fpg;
+     fpg=new StringPG("a","1f");
+     System.out.println(fpg);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new StringPG("b","10f");
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new StringPG("c","1000f",false);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new StringPG("d","100f",true);
+     System.out.println(fpg);
+     fpg.setDrawValid(true);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     }*/
 
-        if(ob==null)
-            svalue=null;
-        else if(ob instanceof String)
-            svalue=(String)ob;
-        else
-            svalue=ob.toString();
-
-        if(svalue==null || svalue.length()<=0)
-          return null;
-        else
-          return svalue;
-    }
-
-    public void setStringValue(String val){
-      this.setValue(val);
-    }
-
-    /*
-     * Testbed.
-     */
-    /*public static void main(String args[]){
-        StringPG fpg;
-
-        fpg=new StringPG("a","1f");
-        System.out.println(fpg);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-
-        fpg=new StringPG("b","10f");
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-
-        fpg=new StringPG("c","1000f",false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-
-        fpg=new StringPG("d","100f",true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-    }*/
-
-    /**
-     * Validates this StringPG.  A StringPG is considered valid if its
-     * getValue() does not return null.
-     */
-    public void validateSelf(  ) {
-      setValid( ( getValue(  ) != null ) );
-    }
+  /**
+   * Validates this StringPG.  A StringPG is considered valid if its getValue()
+   * does not return null.
+   */
+  public void validateSelf(  ) {
+    setValid( ( getValue(  ) != null ) );
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * File:  IntegerPG.java 
+ * File:  IntegerPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/03/12 20:27:29  bouzekc
+ *  Code reformat and added javadocs.
+ *
  *  Revision 1.16  2003/12/15 02:10:49  bouzekc
  *  Removed unused imports.
  *
@@ -85,144 +88,188 @@
  *
  *
  */
-
 package DataSetTools.parameter;
+
 import DataSetTools.util.IntegerFilter;
+
 
 /**
  * This is a superclass to take care of many of the common details of
  * IntegerPGs.
  */
 public class IntegerPG extends StringEntryPG {
-    private static final String TYPE="Integer";
+  //~ Static fields/initializers ***********************************************
 
-    // ********** Constructors **********
-    public IntegerPG(String name, Object value){
-        super(name,value);
-        FILTER=new IntegerFilter();
-        this.setType(TYPE);
+  private static final String TYPE = "Integer";
+
+  //~ Constructors *************************************************************
+
+  /**
+   * Creates a new IntegerPG object.
+   *
+   * @param name The name of this PG.
+   * @param value The initial value of this PG.
+   */
+  public IntegerPG( String name, Object value ) {
+    super( name, value );
+    FILTER = new IntegerFilter(  );
+    this.setType( TYPE );
+  }
+
+  /**
+   * Creates a new IntegerPG object.
+   *
+   * @param name The name of this PG.
+   * @param value The initial value of this PG.
+   * @param valid Whether this PG should be considered initially valid.
+   */
+  public IntegerPG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+    FILTER = new IntegerFilter(  );
+    this.setType( TYPE );
+  }
+
+  /**
+   * Creates a new IntegerPG object.
+   *
+   * @param name The name of this PG.
+   * @param value The initial value of this PG.
+   */
+  public IntegerPG( String name, int value ) {
+    this( name, new Integer( value ) );
+  }
+
+  /**
+   * Creates a new IntegerPG object.
+   *
+   * @param name The name of this PG.
+   * @param value The initial value of this PG.
+   * @param valid Whether this PG should be considered initially valid.
+   */
+  public IntegerPG( String name, int value, boolean valid ) {
+    this( name, new Integer( value ), valid );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * Sets the value of this PG using a String consisting of an integer number.
+   *
+   * @param val The new value.
+   *
+   * @throws NumberFormatException If there are non-integer characters in the
+   *         String.
+   */
+  public void setStringValue( String val ) throws NumberFormatException {
+    if( getInitialized(  ) ) {
+      super.setEntryValue( val );
+    } else {
+      this.setValue( new Integer( val.trim(  ) ) );
+    }
+  }
+
+  /**
+   * @return The String value.
+   */
+  public String getStringValue(  ) {
+    return this.getValue(  ).toString(  );
+  }
+
+  /**
+   * Overrides the default behavior. If passed null this sets the value to
+   * Integer.MIN_VALUE.
+   */
+  public void setValue( Object val ) {
+    Integer intval = null;
+
+    if( val == null ) {
+      intval = new Integer( Integer.MIN_VALUE );
+    } else if( val instanceof Integer ) {
+      intval = ( Integer )val;
+    } else if( val instanceof Float ) {
+      intval = new Integer( Math.round( ( ( Float )val ).floatValue(  ) ) );
+    } else if( val instanceof Double ) {
+      intval = new Integer( 
+          Math.round( ( int )( ( Double )val ).doubleValue(  ) ) );
+    } else if( val instanceof String ) {
+      this.setStringValue( ( String )val );
+
+      return;
+    } else {
+      throw new ClassCastException( 
+        "Could not coerce " + val.getClass(  ).getName(  ) +
+        " into an Integer" );
     }
 
-    public IntegerPG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        FILTER=new IntegerFilter();
-        this.setType(TYPE);
+    if( this.getInitialized(  ) ) {
+      super.setEntryValue( intval );
     }
 
-    public IntegerPG(String name, int value){
-        this(name, new Integer(value));
-    }
+    super.setValue( intval );
+  }
 
-    public IntegerPG(String name, int value, boolean valid){
-        this(name, new Integer(value), valid);
-    }
+  /**
+   * Override the default method.
+   */
+  public Object getValue(  ) {
+    Object val        = super.getValue(  );
+    Integer bigIntVal = null;
 
-    // ********** ParamUsesString **********
-    public String getStringValue(){
-      return this.getValue().toString();
-    }
-
-    public void setStringValue(String val) throws NumberFormatException{
-      if(getInitialized())
-        super.setEntryValue(val);
-      else
-        this.setValue(new Integer(val.trim()));
-    }
-
-    // ********** IParameter requirements **********
-    /** 
-     * Override the default method.
-     */
-    public Object getValue(){
-        Object val=super.getValue();
-        Integer bigIntVal = null;
-        if(val instanceof String){
-            try{
-              bigIntVal = new Integer((String)val);
-            }catch( NumberFormatException nfe ) {
-              //probably just a minus sign.  We will return a 0.
-              bigIntVal = new Integer( 0 );
-            }
-        }else if(val instanceof Integer){
-            bigIntVal = (Integer)val;
-        }else{
-            throw new ClassCastException("Could not coerce "
-                               +val.getClass().getName()+" into an Integer");
-        }
-
-        return bigIntVal;
-    }
-
-    /**
-     * Returns a primitive integer version of the value.
-     */
-    public int getintValue(){
-        return ((Integer)this.getValue()).intValue();
-    }
-
-    /**
-     * Overrides the default behavior. If passed null this sets the
-     * value to Integer.MIN_VALUE.
-     */
-    public void setValue(Object val){
-      Integer intval=null;
-
-      if(val==null){
-        intval=new Integer(Integer.MIN_VALUE);
-      }else if(val instanceof Integer){
-        intval=(Integer)val;
-      }else if(val instanceof Float){
-        intval=new Integer(Math.round(((Float)val).floatValue()));
-      }else if(val instanceof Double){
-        intval=new Integer(Math.round((int)((Double)val).doubleValue()));
-      }else if(val instanceof String){
-        this.setStringValue((String)val);
-        return;
-      }else{
-        throw new ClassCastException("Could not coerce "
-                               +val.getClass().getName()+" into an Integer");
+    if( val instanceof String ) {
+      try {
+        bigIntVal = new Integer( ( String )val );
+      } catch( NumberFormatException nfe ) {
+        //probably just a minus sign.  We will return a 0.
+        bigIntVal = new Integer( 0 );
       }
-
-      if(this.getInitialized()){
-        super.setEntryValue(intval);
-      }
-      super.setValue(intval);
+    } else if( val instanceof Integer ) {
+      bigIntVal = ( Integer )val;
+    } else {
+      throw new ClassCastException( 
+        "Could not coerce " + val.getClass(  ).getName(  ) +
+        " into an Integer" );
     }
 
-    /**
-     * Convenience method to allow for passing a primitive int.
-     */
-    public void setintValue(int value){
-        this.setValue(new Integer(value));
-    }
+    return bigIntVal;
+  }
 
-    /*
-     * Testbed.
-     */
-    /*public static void main(String args[]){
-        IntegerPG fpg;
+  /**
+   * Returns a primitive integer version of the value.
+   */
+  public int getintValue(  ) {
+    return ( ( Integer )this.getValue(  ) ).intValue(  );
+  }
 
-        fpg=new IntegerPG("a",new Integer(1));
-        System.out.println(fpg);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
+  /**
+   * Convenience method to allow for passing a primitive int.
+   */
+  public void setintValue( int value ) {
+    this.setValue( new Integer( value ) );
+  }
 
-        fpg=new IntegerPG("b",new Integer(10));
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-
-        fpg=new IntegerPG("c",new Integer(100),false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-
-        fpg=new IntegerPG("d",new Integer(1000),true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-    }*/
+  /*
+   * Testbed.
+   */
+  /*public static void main(String args[]){
+     IntegerPG fpg;
+     fpg=new IntegerPG("a",new Integer(1));
+     System.out.println(fpg);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new IntegerPG("b",new Integer(10));
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new IntegerPG("c",new Integer(100),false);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new IntegerPG("d",new Integer(1000),true);
+     System.out.println(fpg);
+     fpg.setDrawValid(true);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     }*/
 }

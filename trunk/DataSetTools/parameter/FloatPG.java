@@ -1,5 +1,5 @@
 /*
- * File:  FloatPG.java 
+ * File:  FloatPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2004/03/12 20:23:36  bouzekc
+ *  Code reformat and added javadocs.
+ *
  *  Revision 1.19  2004/01/05 22:36:50  bouzekc
  *  Added check to prevent NumberFormatException with empty String.
  *
@@ -95,147 +98,184 @@
  *
  *
  */
-
 package DataSetTools.parameter;
+
 import DataSetTools.util.FloatFilter;
+
 
 /**
  * This is class is to deal with float parameters.
  */
 public class FloatPG extends StringEntryPG {
-    protected static final String         TYPE   = "Float";
+  //~ Static fields/initializers ***********************************************
 
-    // ********** Constructors **********
-    public FloatPG(String name, Object value){
-        super(name,value);
-        this.FILTER=new FloatFilter();
-        this.setType(TYPE);
-    }
-    
-    public FloatPG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        this.FILTER=new FloatFilter();
-        this.setType(TYPE);
-    }
-    
-    public FloatPG(String name, float value){
-        this(name, new Float(value));
-    }
+  protected static final String TYPE = "Float";
 
-    public FloatPG(String name, float value, boolean valid){
-        this(name, new Float(value),valid);
-    }
+  //~ Constructors *************************************************************
 
-    /**
-     * Override the default method.  Note that if the internal value is null,
-     * this will return 0.0.
-     *
-     * @return The value of this FloatPG.
-     */
-    public Object getValue() throws NumberFormatException{
-        Object val = super.getValue();
-       
-        if( val == null)
-          return new Float(0.0f);
-        else if(val instanceof Float)
-          return val;
-        else if( val instanceof Number){
-          return new Float( ((Number)val).floatValue() );
-           
-        }
-        else if(val instanceof String && ( ( String ) val ).length(  ) > 0 )
-          return new Float((String)val);
-        else
-          return new Float( 0.0f );
-    }
+  /**
+   * Creates a new FloatPG object.
+   *
+   * @param name The name of this PG.
+   * @param value The initial value of this PG.
+   */
+  public FloatPG( String name, Object value ) {
+    super( name, value );
+    this.FILTER = new FloatFilter(  );
+    this.setType( TYPE );
+  }
 
-    /**
-     * Convenience method to get the proper type value right away.
-     */
-    public float getfloatValue(){
-        return ((Float)this.getValue()).floatValue();
-    }
+  /**
+   * Creates a new FloatPG object.
+   */
+  public FloatPG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+    this.FILTER = new FloatFilter(  );
+    this.setType( TYPE );
+  }
 
-    /**
-     * Overrides the default version of setValue to properly deal with
-     * floats.  This will be 0.0 if no other valid value is set.
-     */
-    public void setValue(Object val){
-      Float floatval=null;
-      if(val==null){
-        floatval=new Float(Float.NaN);
-      }else if(val instanceof Float){
-        floatval=(Float)val;
-      }else if(val instanceof Double){
-        floatval=new Float(((Double)val).doubleValue());
-      }else if(val instanceof Integer){
-        floatval=new Float(((Integer)val).intValue());
-      }else if(val instanceof String){
-        this.setStringValue((String)val);
-        return;
-      }else{
-        throw new ClassCastException("Could not coerce "
-                                  +val.getClass().getName()+" into a Float");
-      }
+  /**
+   * Creates a new FloatPG object.
+   *
+   * @param name The name of this PG.
+   * @param value The initial value of this PG.
+   */
+  public FloatPG( String name, float value ) {
+    this( name, new Float( value ) );
+  }
 
-      if(this.getInitialized()){
-        super.setEntryValue((floatval));
-      }
-      super.setValue( floatval );
-     
+  /**
+   * Creates a new FloatPG object.
+   *
+   * @param name The name of this PG.
+   * @param value The initial value of this PG.
+   * @param valid Whether this PG should be considered initially valid.
+   */
+  public FloatPG( String name, float value, boolean valid ) {
+    this( name, new Float( value ), valid );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * Sets the value of this PG using a String consisting of a floating point number.
+   *
+   * @param val The new value.
+   *
+   * @throws NumberFormatException If there are non-float characters in the
+   *         String.
+   */
+  public void setStringValue( String val ) throws NumberFormatException {
+    if( getInitialized(  ) ) {
+      super.setEntryValue( val );
     }
 
-    /**
-     * Convenience method to set the proper type value right away.
-     */
-    public void setfloatValue(float value){
-        this.setValue(new Float(value));
+    this.setValue( new Float( val.trim(  ) ) );
+  }
+
+  /**
+   *
+   * @return Accessor method for the String value.
+   */
+  public String getStringValue(  ) {
+    Object val = this.getValue(  );
+
+    if( val instanceof String ) {
+      return ( String )val;
+    } else {
+      return val.toString(  );
     }
-    
-    // ********** ParamUsesString requirements **********
-    public String getStringValue(){
-      Object val=this.getValue();
+  }
 
-      if(val instanceof String)
-        return (String)val;
-      else
-        return val.toString();
+  /**
+   * Overrides the default version of setValue to properly deal with floats.
+   * This will be 0.0 if no other valid value is set.
+   */
+  public void setValue( Object val ) {
+    Float floatval = null;
+
+    if( val == null ) {
+      floatval = new Float( Float.NaN );
+    } else if( val instanceof Float ) {
+      floatval = ( Float )val;
+    } else if( val instanceof Double ) {
+      floatval = new Float( ( ( Double )val ).doubleValue(  ) );
+    } else if( val instanceof Integer ) {
+      floatval = new Float( ( ( Integer )val ).intValue(  ) );
+    } else if( val instanceof String ) {
+      this.setStringValue( ( String )val );
+
+      return;
+    } else {
+      throw new ClassCastException( 
+        "Could not coerce " + val.getClass(  ).getName(  ) + " into a Float" );
     }
 
-    public void setStringValue(String val) throws NumberFormatException{
-      if(getInitialized()) {
-        super.setEntryValue(val);
-      }
-      this.setValue(new Float(val.trim()));
+    if( this.getInitialized(  ) ) {
+      super.setEntryValue( ( floatval ) );
     }
 
-    /*
-     * Testbed.
-     */
-    /*public static void main(String args[]){
-        FloatPG fpg;
+    super.setValue( floatval );
+  }
 
-        fpg=new FloatPG("a",new Float(1f));
-        System.out.println(fpg);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
+  /**
+   * Override the default method.  Note that if the internal value is null,
+   * this will return 0.0.
+   *
+   * @return The value of this FloatPG.
+   */
+  public Object getValue(  ) throws NumberFormatException {
+    Object val = super.getValue(  );
 
-        fpg=new FloatPG("b",new Float(10f));
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
+    if( val == null ) {
+      return new Float( 0.0f );
+    } else if( val instanceof Float ) {
+      return val;
+    } else if( val instanceof Number ) {
+      return new Float( ( ( Number )val ).floatValue(  ) );
+    } else if( val instanceof String && ( ( ( String )val ).length(  ) > 0 ) ) {
+      return new Float( ( String )val );
+    } else {
+      return new Float( 0.0f );
+    }
+  }
 
-        fpg=new FloatPG("c",new Float(1000f),false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
+  /**
+   * Convenience method to get the proper type value right away.
+   */
+  public float getfloatValue(  ) {
+    return ( ( Float )this.getValue(  ) ).floatValue(  );
+  }
 
-        fpg=new FloatPG("d",new Float(100f),true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-    }*/
+  /**
+   * Convenience method to set the proper type value right away.
+   */
+  public void setfloatValue( float value ) {
+    this.setValue( new Float( value ) );
+  }
+  /*
+   * Testbed.
+   */
+  /*public static void main(String args[]){
+     FloatPG fpg;
+     fpg=new FloatPG("a",new Float(1f));
+     System.out.println(fpg);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new FloatPG("b",new Float(10f));
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new FloatPG("c",new Float(1000f),false);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     fpg=new FloatPG("d",new Float(100f),true);
+     System.out.println(fpg);
+     fpg.setDrawValid(true);
+     fpg.initGUI(null);
+     fpg.showGUIPanel();
+     }*/
 }
