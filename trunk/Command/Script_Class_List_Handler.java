@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.43  2003/06/13 15:00:18  pfpeterson
+ * Now adds jython operators to the GenericOperator or DataSetOperator
+ * list, whichever is appropriate.
+ *
  * Revision 1.42  2003/06/12 18:49:22  pfpeterson
  * Updated javadocs to reflect a idiosycracy of Script_Class_List_Handler.
  *
@@ -173,6 +177,9 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     protected static boolean           reload_scripts  = true;
     public    static boolean           LoadDebug       = false;
     private   static String[]          pathlist        = null;
+
+    private   static OperatorFactory   pyOperatorFactory = null;
+    private   static boolean           hasJython       = true;
 
     private String errorMessage = "";
 
@@ -975,7 +982,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         String ext = nm.substring( i + 1).toUpperCase();
 
         //System.out.println(ext);
-        if( ext.equals("ISS") || ext.equals("CLASS") || ext.equals("JAR")){
+        if( ext.equals("ISS") || ext.equals("CLASS") || ext.equals("JAR") || ext.equals("PY")){
             return true;
         }else{
             return false;
@@ -1003,6 +1010,57 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             }else if( LoadDebug ){
                 System.out.println( "NO "+X.getErrorMessage() );
             }
+        }else if(Extension.equalsIgnoreCase("py")){
+          // try to get the factory instance
+          if(hasJython && pyOperatorFactory==null){
+            try{
+              pyOperatorFactory=new DataSetTools.operator.PyOperatorFactory();
+            }catch(NoClassDefFoundError e){
+              hasJython=false;
+              pyOperatorFactory=null;
+            }
+          }
+          // error out if there is no jython
+          if(!hasJython){
+            if(LoadDebug) System.out.println("(No Jython) NO");
+            return;
+          }
+          // try to get the instance
+          Operator op=null;
+          try{
+            op=pyOperatorFactory.getInstance(filename);
+          }catch(IllegalStateException e){
+            op=null;
+            if(LoadDebug) System.out.print("(IllegalStateException) ");
+          }catch(ClassCastException e){
+            op=null;
+            if(LoadDebug) System.out.print("(ClassCastException) ");
+          }catch(MissingResourceException e){
+            op=null;
+            if(LoadDebug) System.out.print("(MissingResourceException) ");
+          }catch(ParseError e){
+            op=null;
+            if(LoadDebug) System.out.print("(ParseError on line "+e.linenum()+")");
+          }catch(InstantiationError e){
+            op=null;
+            if(LoadDebug) System.out.print("(InstantiationError) ");
+          }
+
+          // add it to the proper lists
+          if(op!=null){
+            if(op instanceof GenericOperator){
+              add(op);
+            }else if(op instanceof DataSetOperator){
+              dsOpList.addElement(op);
+            }else{
+                if(LoadDebug)
+                  System.out.println("(Not Generic or DataSet) NO");
+                return;
+            }
+            if(LoadDebug) System.out.println( "OK" );
+          }else{
+            if(LoadDebug) System.out.println("NO");
+          }
         }else if(Extension.equalsIgnoreCase("class")){ // it is a class
             boolean isgeneric=!(opList==dsOpList);
             Operator X = getClassInst( filename, isgeneric);
