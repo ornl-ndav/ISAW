@@ -29,6 +29,11 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.10  2002/05/29 21:14:57  pfpeterson
+ * Now determines the name of the jar file through reflection. Also
+ * added functionality for testing which uses the information as
+ * well.
+ *
  * Revision 1.9  2002/04/12 15:17:53  pfpeterson
  * Prints message about moving properties file only when sucessful.
  *
@@ -86,6 +91,7 @@ public class IsawInstaller extends JFrame
     private javax.swing.Timer timer;
     static String MANIFEST = "META-INF/MANIFEST.MF";
     static JFrame mw;
+    private Boolean injar;
 
     // global variables so text can be changed
     JTextField location;
@@ -138,9 +144,7 @@ public class IsawInstaller extends JFrame
 	zse.getOS();
 	
 	// find the name of archive
-	zse.jarFileName=
-	    //"/IPNShome/pfpeterson/zipper/ISAW-111-beta-install.jar";
-	    zse.getJarFileName();
+        zse.jarFileName=zse.getJarFileName();
 	
 	// set up the GUI
 	zse.init();
@@ -151,6 +155,24 @@ public class IsawInstaller extends JFrame
      * The constructor is empty.
      */
     public IsawInstaller(){
+    }
+
+    /**
+     * Method to determine if running from a jar file.
+     */
+    private boolean inJar(){
+        if(injar==null){
+            String className=this.getClass().getName().replace('.','/');
+            String classJar=this.getClass().getResource("/"+className
+                                                        +".class").toString();
+            if(classJar.startsWith("jar:")){
+                injar=Boolean.TRUE;
+            }else{
+                injar=Boolean.FALSE;
+            }
+        }
+
+        return injar.booleanValue();
     }
 
     /* ====================== operating system ==================== */
@@ -569,24 +591,43 @@ public class IsawInstaller extends JFrame
      * Determine the name of the jar file.
      */
     private String getJarFileName(){
-	myClassName = this.getClass().getName()+".class";
-	URL urlJar = 
-	    this.getClass().getClassLoader().getSystemResource(myClassName);
-	String urlStr = urlJar.toString();
-	if(urlStr!=null){
-	    int from = "jar:file:".length();
-	    int to = urlStr.indexOf("!/");
-	    if( from<to && from!=-1 ){
-		//unpack.setText(urlStr.substring(from,to));
-		return urlStr.substring(from, to);
-	    }else{
-		System.err.println("'"+urlStr+"' not an archive("
-				   +from+","+to+")");
-	    }
-	}else{
-	    System.err.println("Name of archive not found");
-	}
-	System.exit(-1);
+        if(inJar()){
+            myClassName = this.getClass().getName()+".class";
+            URL urlJar = this.getClass().getResource(myClassName);
+            String urlStr = urlJar.toString();
+            if(urlStr!=null){
+                int from = "jar:file:".length();
+                int to = urlStr.indexOf("!/");
+                if( from<to && from!=-1 ){
+                    //unpack.setText(urlStr.substring(from,to));
+                    return urlStr.substring(from, to);
+                }else{
+                    System.err.println("'"+urlStr+"' not an archive("
+                                       +from+","+to+")");
+                }
+            }else{
+                System.err.println("Name of archive not found");
+            }
+        }else{
+            File dir=new File("/IPNShome/pfpeterson/packup/");
+            if(dir.isDirectory() && dir.exists() ){
+                File F[];
+                F = dir.listFiles();
+                for( int i=0 ; i<F.length ; i++){
+                    if(F[i].isFile()){
+                        if(F[i].getName().endsWith(".jar")){
+                            if(F[i].getName().startsWith("Isaw-")){
+                                return F[i].getAbsolutePath();
+                            }
+                        }
+                    }
+                }
+                System.err.println("Name of archive not found");
+            }else{
+                System.err.println(dir.getAbsolutePath()+" does not exist");
+            }
+        }
+        System.exit(-1);
 	return "";
     }
 
