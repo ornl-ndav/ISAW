@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/12/04 20:48:44  rmikk
+ *  Added "Tom's View" to the Selected Table View Submenu
+ *
  *  Revision 1.16  2003/11/06 20:03:19  rmikk
  *  Catches and handles the exception thrown by
  *    row-col time Array  maker
@@ -131,7 +134,7 @@ public class TableViewMenuComponents
   */
   public static int getNMenuItems()
     {
-      return 7;
+      return 8;
     }
 
   /** Returns the menu Name associated with the menu items
@@ -153,6 +156,8 @@ public class TableViewMenuComponents
          return "Contour:Qy,Qz vs Qx";
       if( i == 6 )
          return "Contour:Qxyz slices";
+      if( i==7)
+         return "Tom's View";
       else return null;
     }
 
@@ -190,6 +195,11 @@ public class TableViewMenuComponents
        }catch( Exception ss){
           return null;
        }
+
+    if( view_type.indexOf("Tom's View")==0)
+         return new DataSetViewerMaker1(DS,state, new DataBlockSelector( DS,null,null),
+                     new LargeJTableViewComponent(null,
+                null));
        //return (DataSetViewer)(new TimeSliceView( DS, state));
     if( DS.getSelectedIndices().length<1)
        {//DataSetTools.util.SharedData.addmsg("No data sets selected");
