@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.55  2004/03/11 22:00:56  rmikk
+ *  The arguments to the last run operator now appear in the session log
+ *
  *  Revision 1.54  2004/01/05 23:21:32  rmikk
  *  Fixed and error in removing data sets after the parameterGUI is done.
  *
@@ -215,7 +218,7 @@ public class JParametersDialog implements Serializable,
                                  //of DataSet objects in the tree
                                  //w/o a reference to the actual tree.
     IDataSetListHandler ds_src;
-
+    String s="";  //keeps track of the argument values
     JButton apply = null;
     JButton exit = null;
     private boolean modal;
@@ -323,7 +326,7 @@ public class JParametersDialog implements Serializable,
             
               
               BB.add(pp);
-              vparamGUI.addElement( null );
+              vparamGUI.addElement( iparam );
 
               Size1 = pp.getPreferredSize().height;
         
@@ -545,7 +548,7 @@ public class JParametersDialog implements Serializable,
             
              }
           }//for i < nparameters
-
+        
         JPanel Filler = new JPanel();
         Filler.setPreferredSize( new Dimension(120,2000));
         BB.add( Filler ); 
@@ -702,7 +705,7 @@ public class JParametersDialog implements Serializable,
              //  optionPane.setValue(btnString1);
              // System.out.println("buttonpressed" +ev);
       JParameterGUI pGUI;
-      String s="";
+      s="";
 
       if(apply.getText().equals(HALT)){
         worker.interrupt();
@@ -725,18 +728,25 @@ public class JParametersDialog implements Serializable,
 
       for(int i = 0; i < op.getNum_parameters(); i++)
       {
-        pGUI = (JParameterGUI)vparamGUI.elementAt( i );
-        if( pGUI != null)
-        if(  pGUI.getParameter() != null  &&  
-             pGUI.getParameter().getValue() != null  )
-        {                  
-          op.setParameter( pGUI.getParameter(), i) ;
-          s = s + pGUI.getParameter().getValue();
-          if (i < op.getNum_parameters() - 1)
-            s = s + ", ";
+        if( vparamGUI.elementAt(i) == null)
+           s = s+" ";
+        else if( vparamGUI.elementAt(i) instanceof IParameter)
+            s=s+ ((IParameter)vparamGUI.elementAt(i)).getValue();
+        else{
+           pGUI = (JParameterGUI)vparamGUI.elementAt( i );
+           if( pGUI != null)
+           if(  pGUI.getParameter() != null  &&  
+                pGUI.getParameter().getValue() != null  )
+           {                  
+             op.setParameter( pGUI.getParameter(), i) ;
+             s = s + pGUI.getParameter().getValue();
+          
+           }
         }
+        if (i < op.getNum_parameters() - 1)
+            s = s + ", ";
       }
-
+     
       if( op instanceof IusesStatusPane)
         ((IusesStatusPane)op).addStatusPane( SharedData.getStatusPane());
       if(op instanceof java.beans.Customizer)
@@ -780,7 +790,7 @@ public class JParametersDialog implements Serializable,
      */
     void processResult(){
       Object result = Result;
-      String s="";
+      
 
       if(result instanceof RuntimeException){
         ((RuntimeException)result).printStackTrace();
@@ -809,7 +819,7 @@ public class JParametersDialog implements Serializable,
       else if (result == null)
       {
          resultsLabel.setText("Result was null  :");
-         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
+        
 
               //resultsLabel.setBackground(new java.awt.Color(225, 225, 0));
               //  resultsLabel.setBackground(new java.awt.Color(100,10,10));
