@@ -54,6 +54,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/02/10 15:35:24  pfpeterson
+ * No longer creates 'x.out' in the directory where the program was executed.
+ *
  * Revision 1.1  2003/01/20 16:18:56  rmikk
  * Initial Checkin
  *
@@ -258,14 +261,14 @@ for( i=0;i<lmt.val+1;i++)
   {l[i]=0;
    w[i]=1.0E9;
   }
-File ff= new File( "x.out");
+/*File ff= new File( "x.out");
 OutputStream fout;
-  try{
+try{
       fout= new FileOutputStream( ff);
      }
   catch( Exception sss)
     {fout = System.out;
-    }
+    }*/
 forloop3:
 //Index sort of w, the magnitude of the the peaks, with index l 
 for (i = 1; i <= lmt.val; i++) {
@@ -274,10 +277,10 @@ for (i = 1; i <= lmt.val; i++) {
       System.out.println("abid hm value  is very large");
    Goto = 0;
    if( Double.isNaN(hm)) hm = .9E9;
-   try{
+   /*   try{
      fout.write(("hm="+hm+"\n").getBytes());
       }
-    catch( Exception sss5){}
+      catch( Exception sss5){}*/
    forloop1:
    for (j = 1; (j <= lmt.val) &&(Goto ==0); j++) {
      if ((hm < w[(j)- 1]) && (Goto == 0))  {
@@ -293,11 +296,11 @@ for (i = 1; i <= lmt.val; i++) {
       w[(j)- 1] = hm;
       l[(j)- 1] = i;
       Goto = 3;
-     try{
+/*     try{
      for( int ii=0; ii<lmt.val+1 ;ii++)fout.write((l[ii]+" ").getBytes());fout.write("\n".getBytes());
      for( int ii=0; ii<lmt.val+1 ;ii++)fout.write((w[ii]+" ").getBytes());fout.write("\n".getBytes());
          }
-     catch(Exception sss1){}
+         catch(Exception sss1){}*/
     }              // Close if()
     //Dummy.label("Abid",1);
    }              //  Close for() loop. 
@@ -306,10 +309,10 @@ for (i = 1; i <= lmt.val; i++) {
 //Dummy.label("Abid",3);
 }              //  Close for() loop. 
 
-try{
+/*try{
  fout.close();
   }
-catch(Exception ssss3){}
+  catch(Exception ssss3){}*/
 // 
 {
 forloop5:
