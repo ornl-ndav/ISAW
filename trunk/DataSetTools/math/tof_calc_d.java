@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2003/07/22 15:10:59  dennis
+ *  Now refers to double precision physical constants defined in
+ *  tof_calc, rather than re-defining them.
+ *
  *  Revision 1.1  2003/07/14 22:23:01  dennis
  *  Double precision version, ported from original
  *  single precision version.
@@ -54,32 +58,34 @@ public final class tof_calc_d
 
 */
 
+//
+//   "Accepted" values of physical constants and conversion factors
+//   available from:
+//   http://physics.nist.gov/cuu/Constants/index.html?/codata86.html
+//
                                                          // mass of neutron(kg)
-public static final double  MN_KG        = 1.67492716e-27;
+public static final double  MN_KG          = tof_calc.MN_KG; 
 
-public static final double  JOULES_PER_meV=  1.602176462e-22;
+public static final double  JOULES_PER_meV = tof_calc.JOULES_PER_meV;
 
-                                                      //h in Joule seconds
-public static final double  H_JS          =  6.62606876e-34;
+                                                          //h in Joule seconds
+public static final double  H_JS          =  tof_calc.H_JS;
 
-                                                      // h in erg seconds
-public static final double  H_ES          =  6.62606876e-27;
+                                                           // h in erg seconds
+public static final double  H_ES          =  tof_calc.H_ES;
 
                                                       // h_bar in Joule seconds
-public static final double  H_BAR_JS      =  1.05457160e-34;
+public static final double  H_BAR_JS      =  tof_calc.H_BAR_JS;
 
-                                                      // h in erg seconds
-public static final double  H_BAR_ES      =  1.05457160e-27;   
+                                                      // h_bar in erg seconds
+public static final double  H_BAR_ES      =  tof_calc.H_BAR_ES;
 
+public static final double  meV_PER_MM_PER_US_2 = tof_calc.meV_PER_MM_PER_US_2;
 
-public static final double  meV_per_mm_per_us_2 = 5.227037;    // meV/(mm/us)^2 
+public static final double  ANGST_PER_US_PER_MM = tof_calc.ANGST_PER_US_PER_MM;
 
-public static final double  ANGST_PER_US_PER_M  = 3.956058e-3;
+public static final double  ANGST_PER_US_PER_M  = tof_calc.ANGST_PER_US_PER_M;
 
-public static final double  ANGST_PER_US_PER_MM = 3.956058;
-
-public static final double  RADIANS_PER_DEGREE  = 0.01745332925;
- 
   /**
    * Don't let anyone instantiate this class.
    */
@@ -106,7 +112,7 @@ public static double Energy( double path_len_m, double time_us )
     return( Double.NaN );
 
   v = (path_len_m * 1000.0f)/ time_us;        /*   velocity in mm/us    */
-  energy = meV_per_mm_per_us_2 * v * v; 
+  energy = meV_PER_MM_PER_US_2 * v * v; 
   return( energy );  
 }
 
@@ -125,7 +131,7 @@ public static double Energy( double path_len_m, double time_us )
 
 public static double  TOFofEnergy( double path_len_m, double e_meV )
 {
-  return  path_len_m * 1000.0/Math.sqrt( e_meV/meV_per_mm_per_us_2 );
+  return  path_len_m * 1000.0/Math.sqrt( e_meV/meV_PER_MM_PER_US_2 );
 }
 
 
@@ -144,7 +150,7 @@ public static double VelocityFromEnergy( double e_meV )
   if ( e_meV < 0.0f )                        /* NOT MEANINGFUL */
     return( Double.NaN );
 
-  double   v_m_per_us = Math.sqrt( e_meV / meV_per_mm_per_us_2 )/1000;
+  double   v_m_per_us = Math.sqrt( e_meV / meV_PER_MM_PER_US_2 )/1000;
 
   return( v_m_per_us );
 }
@@ -164,7 +170,7 @@ public static double EnergyFromVelocity( double v_m_per_us )
   if ( v_m_per_us < 0.0f )                     /* NOT MEANINGFUL */
     return( Double.NaN );
 
-  double   e_meV = v_m_per_us * v_m_per_us * 1000000 * meV_per_mm_per_us_2;
+  double   e_meV = v_m_per_us * v_m_per_us * 1000000 * meV_PER_MM_PER_US_2;
 
   return( e_meV );
 }
@@ -185,7 +191,7 @@ public static double EnergyFromWavelength( double wavelength_A )
     return( Double.NaN );
 
   double  v_m_per_us = ANGST_PER_US_PER_M / wavelength_A;
-  double  e_meV      = v_m_per_us * v_m_per_us * 1000000 * meV_per_mm_per_us_2;
+  double  e_meV      = v_m_per_us * v_m_per_us * 1000000 * meV_PER_MM_PER_US_2;
 
   return( e_meV );
 }
@@ -206,7 +212,7 @@ public static double WavelengthFromEnergy( double e_meV )
   if ( e_meV <= 0.0f )                     /* NOT MEANINGFUL */
     return( Double.NaN );
 
-  double   v_m_per_us = Math.sqrt( e_meV / meV_per_mm_per_us_2 )/1000;
+  double   v_m_per_us = Math.sqrt( e_meV / meV_PER_MM_PER_US_2 )/1000;
   double   wavelength_A = ANGST_PER_US_PER_M / v_m_per_us;
 
   return( wavelength_A );
@@ -786,6 +792,16 @@ public static void main( String args[] )
   System.out.println( "Q at        = " + pos );
   System.out.println( "magnitude_Q = " + pos.getDistance() );
   System.out.println( "QScatt. ang.= " + pos.getScatteringAngle() );
+
+  System.out.println( "MN_KG               " + MN_KG );
+  System.out.println( "JOULES_PER_meV      " + JOULES_PER_meV   );
+  System.out.println( "H_JS                " + H_JS  );
+  System.out.println( "H_ES                " + H_ES  );
+  System.out.println( "H_BAR_JS            " + H_BAR_JS  );
+  System.out.println( "H_BAR_ES            " + H_BAR_ES  );
+  System.out.println( "meV_PER_MM_PER_US_2 " + meV_PER_MM_PER_US_2   );
+  System.out.println( "ANGST_PER_US_PER_MM " + ANGST_PER_US_PER_MM  );
+  System.out.println( "ANGST_PER_US_PER_M  " + ANGST_PER_US_PER_M  );
 }
 
 }
