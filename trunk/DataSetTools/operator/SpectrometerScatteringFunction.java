@@ -2,6 +2,9 @@
  * @(#)SpectrometerScatteringFunction.java   0.1  2000/07/26   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.2  2000/07/28 13:56:45  dennis
+ *  Added missing factor of 4PI in calculation
+ *
  *  Revision 1.1  2000/07/26 22:36:56  dennis
  *  Initial version of Scattering Crossection function for Spectrometers
  *
@@ -107,8 +110,9 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
 
   public Object getResult()
   {       
-    final float WVCON = 1588.5f; // conversion factor between inverse velocity
-                                 // and wave vector
+    final float four_PI = (float)(4.0*Math.PI);
+    final float WVCON   = 1588.5f; // conversion factor between inverse velocity
+                                   // and wave vector
                                                    // get the current data set
     DataSet ds  = getDataSet();
                                                     // get the parameters
@@ -199,7 +203,7 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
         velocity_final = (spherical_coords[0]+fpcorr) / tof;
         wvf = WVCON * velocity_final;
 
-        y_vals[i] *= wvi/wvf/sccs;
+        y_vals[i] *= four_PI*wvi/wvf/sccs;
       }
 
       if ( make_new_ds )
