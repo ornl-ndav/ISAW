@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2001/07/20 16:36:28  rmikk
+ * Fixed error that occurred when two operators have the
+ * same command and neither match the arguments.
+ *
  * Revision 1.22  2001/07/20 14:01:13  rmikk
  * 1. Enabled THREE_D displays of data sets.
  * 2. Can now load Nexus files using IsawGUI.Util's load
@@ -60,7 +64,6 @@
  7-12-2000:
    Introduced the symbols : < > and tightened the "end" parameter in 
    execute( String, int,int ) to work with the outside For and If-Else-ENdif structures
-
 7-14-2000
    Display now works with int[]
 
@@ -2233,7 +2236,8 @@ private Operator getSHOp( Vector Args, String Command)
     boolean done = false;
     boolean found = false;
     while( (!done) && (!found ) )
-       {int n = SH.getNumParameters(i);
+       {int n = SH.getNumParameters( i );
+        
         if( n == Args.size())
          {found = true;
            for( j = 0; (j < n) && found; j++)
@@ -2254,7 +2258,7 @@ private Operator getSHOp( Vector Args, String Command)
         String C1= SH.getOperatorCommand( i );
         if( C1 == null)
            done = true;
-         else if( C1.equals( Command ) )
+        else if( ! C1.equals( Command ) )
            done = true;
         }
     return null;
@@ -2284,15 +2288,18 @@ private Operator getSHOp( Vector Args, String Command)
                op = null;
    
             if(op==null)
+              if( Args.size() > 0)
               {DoDataSetOperation( Args, Command  );
                return;
                }
+           seterror (1000 , execOneLine.ER_NoSuchOperator);
+           return;
           }
         int i;
         if(Debug)
               System.out.print("B");
         
-        
+      
         SetOpParameters( op , Args , 0);
         if( op instanceof IObservable)
            ((IObservable)op).addIObserver( this );
