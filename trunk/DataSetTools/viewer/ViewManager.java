@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2002/10/16 19:22:15  dennis
+ *  Added option to "link/unlink" views.  If the view is not linked to
+ *  other views, the POINTED_AT_CHANGED messages are not passed out
+ *  to other viewers, or acted on if they come from other viewers.
+ *
  *  Revision 1.28  2002/10/08 15:44:06  dennis
  *  Added conversions of "Pointed At X" to proper units when the X-Axis
  *  of the DataSet has been converted in the ViewManager.
@@ -234,6 +239,7 @@ public class ViewManager extends    JFrame
                                                   // corresponds to an index in
                                                   // the original DataSet  
    private JCheckBoxMenuItem show_all_button;
+   private JCheckBoxMenuItem link_viewers_button;
 
    private static final String CLOSE_LABEL          = "Close Viewer";
    private static final String SAVE_NEW_DATA_SET    = "Save As New DataSet";
@@ -250,6 +256,7 @@ public class ViewManager extends    JFrame
    private static final String CLEAR_SELECTED       = "Clear Selected Flags";
 
    private static final String SHOW_ALL             = "Show All";
+   private static final String LINK_VIEWS           = "Link Views";
    private static final String NO_CONVERSION_OP     = "None";
    private TableViewMenuComponents table_MenuComp   = null;
     
@@ -435,7 +442,10 @@ public class ViewManager extends    JFrame
          System.gc();
        }
        else if ( r_string.equals( POINTED_AT_CHANGED )  )
-       {                                             // tell the viewer the new
+       {
+         if ( !link_viewers_button.getState() )      // nothing to do
+           return;
+                                                     // tell the viewer the new
          int index = dataSet.getPointedAtIndex();    // "pointed at" index if
          if ( index != DataSet.INVALID_INDEX )       //  valid and different 
            if ( new_index[ index ] != DataSet.INVALID_INDEX )
@@ -475,6 +485,12 @@ public class ViewManager extends    JFrame
                                             // and notify it's observers
        if ( r_string.equals( POINTED_AT_CHANGED )) 
        {
+         if ( !link_viewers_button.getState() )      // call redraw for tempDS 
+         {
+           viewer.redraw( r_string );
+           return;
+         }
+
          int i = tempDataSet.getPointedAtIndex();
          dataSet.setPointedAtIndex( original_index[i] ); 
 
@@ -811,11 +827,15 @@ private void BuildConversionsMenu()
 
 private void BuildOptionMenu()
 {
-/*
                                                 // set up option menu items
   OptionMenuHandler option_menu_handler = new OptionMenuHandler();
   JMenu option_menu = viewer.getMenuBar().getMenu(DataSetViewer.OPTION_MENU_ID);
 
+  link_viewers_button = new JCheckBoxMenuItem(LINK_VIEWS);
+  link_viewers_button.addActionListener( option_menu_handler );
+  link_viewers_button.setState( true );
+  option_menu.add( link_viewers_button );
+/*
   show_all_button = new JCheckBoxMenuItem(SHOW_ALL);
   show_all_button.addActionListener( option_menu_handler );
   show_all_button.setState( false );
