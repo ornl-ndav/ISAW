@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.6  2004/04/26 13:08:49  rmikk
+ *  Now implements XMLread and XMLwrite
+ *
  *  Revision 1.5  2004/03/15 06:10:36  dennis
  *  Removed unused import statements.
  *
@@ -52,16 +55,16 @@
 package  DataSetTools.dataset;
 
 import gov.anl.ipns.MathTools.Geometry.*;
-
+import gov.anl.ipns.Util.File.*;
 import java.io.*;
-
+import java.util.*;
 /**
  *   A DetectorPixelInfo object provides access to information about the 
  * position, size and orientation of a rectangular box representing one  
  * segment on a grid of detector segments.
  */  
 
-public class DetectorPixelInfo implements IPixelInfo 
+public class DetectorPixelInfo implements IPixelInfo ,IXmlIO
 {
   // NOTE: any field that is static or transient is NOT serialized.
   //
@@ -101,6 +104,13 @@ public class DetectorPixelInfo implements IPixelInfo
     this.row  = row;
     this.col  = col;
     this.grid = grid;
+  }
+
+  public DetectorPixelInfo(){
+     id= 1;
+     row=1;
+     col= 1;
+     grid = null;
   }
 
   /**
@@ -340,6 +350,213 @@ public class DetectorPixelInfo implements IPixelInfo
     System.out.println("SolidAngle()  = " + test_pixel.SolidAngle() );
     System.out.println("Delta2Theta() = " + test_pixel.Delta2Theta() );
   }
+  /**
+    * This method Reads in the part of an xml file with the information on
+    * the DetectorPixel and also the corresponding grid Information.
+    * This read method assumes that the leading tag has been read
+    */
+  public boolean XMLread(java.io.InputStream stream)
+  {
+    String S=xml_utils.getTag(stream);
+    boolean b=xml_utils.skipAttributes(stream);
+    String V=xml_utils.getValue(stream);
+    try{
+      id=(new Integer(V.trim())).intValue();
+      S=xml_utils.getTag(stream);
+      b=xml_utils.skipAttributes(stream);
+      V=xml_utils.getValue(stream);
+      row=(new Integer(V.trim())).shortValue();
+      S=xml_utils.getTag(stream);
+      b=xml_utils.skipAttributes(stream);
+      V=xml_utils.getValue(stream);
+      col=(new Integer(V.trim())).shortValue();
+    }catch(Exception ss){
+      return false;
+    }
+    S=xml_utils.getTag(stream);
+    grid=null;
+    if( S.equals("</DetectorPixelInfo>"))
+      return true;
+    int grid_id,nrows,ncols;
+    String units;
+    float w,h,d;
+    float[] center,yvec,zvec,xvec;
+     
+    b=xml_utils.skipAttributes(stream);
+    V=xml_utils.getValue(stream);
+    grid_id=(new Integer(V.trim())).intValue();
 
+    S=xml_utils.getTag(stream);
+    b=xml_utils.skipAttributes(stream);
+    units=xml_utils.getValue(stream).trim();
+    
+    S=xml_utils.getTag(stream);
+    b=xml_utils.skipAttributes(stream);
+    V=xml_utils.getValue(stream).trim();
+    center = getDataList( V);
+    
+    S=xml_utils.getTag(stream);
+    b=xml_utils.skipAttributes(stream);
+    V=xml_utils.getValue(stream).trim();
+    xvec= getDataList(V);
+    
+    S=xml_utils.getTag(stream);
+    b=xml_utils.skipAttributes(stream);
+    V=xml_utils.getValue(stream).trim();
+    yvec= getDataList(V);
+	
+    S=xml_utils.getTag(stream);
+    b=xml_utils.skipAttributes(stream);
+    V=xml_utils.getValue(stream).trim();
+    zvec= getDataList(V);
+	
+    S=xml_utils.getTag(stream);
+    b=xml_utils.skipAttributes(stream);
+    V=xml_utils.getValue(stream).trim();
+    w= (new Float(V)).floatValue();
+	
+    S=xml_utils.getTag(stream);
+    b=xml_utils.skipAttributes(stream);
+    V=xml_utils.getValue(stream).trim();
+    h= (new Float(V)).floatValue();
+	
+    S=xml_utils.getTag(stream);
+    b=xml_utils.skipAttributes(stream);
+    V=xml_utils.getValue(stream).trim();
+    d= (new Float(V)).floatValue();
+
+    S=xml_utils.getTag(stream);
+    b=xml_utils.skipAttributes(stream);
+    V=xml_utils.getValue(stream).trim();
+    nrows= (new Integer(V)).intValue();
+	
+    S=xml_utils.getTag(stream);
+    b=xml_utils.skipAttributes(stream);
+    V=xml_utils.getValue(stream).trim();
+    ncols= (new Integer(V)).intValue(); 
+    if( gridIDs != null)
+      grid = (IDataGrid)(gridIDs.get( new Integer(grid_id)));
+    if( grid == null){
+    
+      grid = new UniformGrid(grid_id,units, new Vector3D(center[0],center[1],center[2]),
+                   new Vector3D(xvec[0],xvec[1],xvec[2]), new Vector3D(yvec[0],yvec[1],
+                      yvec[2]),w,h,d,nrows,ncols);
+      gridIDs.put( new Integer(grid_id), grid);
+    
+    }
+   
+    S=xml_utils.getTag(stream);
+    b=xml_utils.skipAttributes(stream);
+    if(!(S.equals("/DetectorPixelInfo")))
+      return false;
+    return true;
+    
+  }
+
+
+  private float[] getDataList( String V)
+  {
+    int mode = 0; //0 start, 1 in number, 2 set;
+    int nColons=0;
+    String Res="";
+    if( V == null)
+      return null;
+    V = V.trim();
+    for( int i=0; i< V.length(); i++){
+      char c= V.charAt(i);
+      if( Character.isDigit(c))
+        mode =1;
+      else if( "Ee+-.".indexOf(c)>=0)
+        mode =1;
+      else if( mode ==0)
+        {}
+      else if(mode==2)
+        {}
+      else 
+      {
+        mode =2;
+        c=';';
+        nColons++;
+      }
+    Res+=c;
+  }
+  float[] Fres = new float[nColons+1];
+  try{
+    int start = 0,j=0;
+    for( int end = Res.indexOf(";"); end >=0;  end = Res.indexOf(";",end+1)){
+      Fres[j] = (new Float( Res.substring(start,end).trim())).floatValue();
+      j++;
+      start = end+1;
+
+    }
+    Fres[j]= (new Float( Res.substring(start).trim())).floatValue();
+
+   }catch(Exception s){
+     return null;
+   }
+   return Fres;
+}
+
+
+  /**
+    *  This methods writes out the information in a DetectorPixelInfo structure
+    *  to an xml stream
+    */
+  public boolean XMLwrite(java.io.OutputStream stream,
+                        int mode)
+  {
+    try{
+    stream.write("<DetectorPixelInfo>\n".getBytes());
+    stream.write(("<id>"+ id+" </id>\n").getBytes());
+    stream.write(("<row>"+ row+" </row>\n").getBytes());
+    stream.write(("<col>"+ col +"</col>\n").getBytes());
+    if( grid != null){
+      
+    stream.write(("<grid_id>"+ grid.ID() +"</grid_id>\n").getBytes());
+    stream.write(("<grid_units>"+ grid.units()+" </grid_units>\n").getBytes());
+    float[]  V= grid.position().get();
+    stream.write(("<grid_center>"+ V[0] +"  "+V[1]+"  "+V[2]+
+                                          "</grid_center>\n").getBytes());
+    V=grid.x_vec().get();
+    stream.write(("<grid_xvector>"+ V[0] +"  "+V[1]+"  "+V[2]+
+                                       "</grid_xvector>\n").getBytes());
+    V = grid.y_vec().get();
+    stream.write(("<grid_yvector>"+ V[0] +"  "+V[1]+"  "+V[2]+
+                                           "</grid_yvector>\n").getBytes());
+    V=grid.z_vec().get();
+    stream.write(("<grid_zvector>"+ V[0] +"  "+V[1]+"  "+V[2]+
+                                            "</grid_zvector>\n").getBytes());
+    stream.write(("<grid_width>"+ grid.width()+" </grid_width>\n").getBytes());
+    stream.write(("<grid_height>"+ grid.height()+" </grid_height>\n").
+                                                               getBytes());
+    stream.write(("<grid_depth>"+ grid.depth() +"</grid_depth>\n").getBytes());
+    stream.write(("<grid_nrows>"+ grid.num_rows() +"</grid_nrows>\n").
+                                                             getBytes());
+    stream.write(("<grid_ncols>"+ grid.num_cols() +"</grid_ncols>\n").
+                                                              getBytes());
+    }
+
+   stream.write("</DetectorPixelInfo>\n".getBytes());
+   return true;
+
+ }catch(Exception ss){
+ 	  return false;
+ 	  
+ }
+}
+
+
+  private Hashtable gridIDs = null;
+
+  /**
+    *  Sets the Grids already in use by the current data set
+    *  @param gridIDs  A Hashtable whose keys are the grid Ids already used and
+    *              whose values are the actual grid with that ID
+    */
+  public void setGridIDs(Hashtable gridIDs)
+  {
+    this.gridIDs = gridIDs;	
+	
+  }
 
 } 
