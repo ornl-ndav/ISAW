@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.47  2005/02/19 02:02:25  millermi
+ * - Updated help() to include information on opening files, including
+ *   lines containing header information.
+ *
  * Revision 1.46  2005/02/10 21:33:07  millermi
  * - Made loadData() more robust by replacing removeLeadingZero()
  *   with String.trim().
@@ -535,9 +539,29 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     		"selection is made on the image, the graph will display " +
 		"the intensity values per hit as a function of distance " +
 		"in Q. Selections can be made in two ways: <BR>" +
-		"1. Graphically using the SelectionOverlay<BR>" +
-		"2. Entering defining information by pressing the Manual " +
-		"Selection button.</P>" + 
+		"1. Graphically using the SelectionOverlay on the Image tab" +
+		"<BR>2. Entering defining information on the SAND tab and " +
+		"pressing the Enter Values button.</P>" +
+		"<H2>Opening Files</H2>"+
+		"<P> The SWV reads in text files with 4 columns of numeric "+
+		"data (X Values, Y Values, Intensity, Error). "+
+		"<I>By default the SWV assumes data in the text file "+
+		"will construct a 200 rows x 200 columns array.</I> "+
+		"If other dimensions are desired, the file should contain "+
+		"header information. Lines with <B>header information</B> are "+
+		"preceeded with a pound (#) symbol. Following the # is the "+
+		"attribute followed by a colon (:) and finally the value. "+
+		"The example below would be put at the top of a "+
+		"data file that is 100 x 150. The x axis would be labeled "+
+		"Angle with units of Degrees.<BR><BR><B>"+
+		"# ROWS: 100<BR>"+
+		"# COLUMNS: 150<BR>"+
+                "# X Label: Angle<BR>"+
+                "# X Units: Degrees</B><BR><BR>"+
+		"<I>Supported attributes include: row, column, x label, "+
+		"y label, z label, x units, y units, and z units. "+
+		"Attribute labels are not case sensitive, but must appear "+
+		"as listed.</I>"+
 		"<H2>Commands for SWV</H2>" +
                 "<P> SAVING USER PREFERENCES: Click on <B>File|Save User " +
 		"Settings</B>. Your preferences will automatically be saved " +
