@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2002/01/04 16:43:49  pfpeterson
+ *  Modified format. Now more closely matches sumruns results.
+ *
  *  Revision 1.10  2001/11/21 19:59:10  pfpeterson
  *  Fixed bug of array indexing. Added feature where if 0deg monitor has zero counts 180deg monitor is printed in file.
  *
@@ -129,7 +132,7 @@ public class gsas_filemaker
 	    }
 
 	// write the bank information header
-        opw.write("BANKS"  + "     Ref Angle" + "     Total length");
+        opw.write("# BANKS "  + "     Ref Angle" + "     Total length");
         opw.write("\n"); 
 	int ein= ds.getNum_entries();
 	// write the bank information
@@ -149,7 +152,7 @@ public class gsas_filemaker
 		float cylindrical_coords[] = position.getCylindricalCoords();
 		float ref_angle = (float)(cylindrical_coords[1]*180.0/(java.lang.Math.PI));
 		
-		opw.write ("BANK" +i + "     "+ref_angle+"     "+total_length);
+		opw.write ("#BANK " +i + "     "+ref_angle+"     "+total_length);
 		opw.write("\n");
 	    }
 	
@@ -160,30 +163,32 @@ public class gsas_filemaker
 	for(int i=1; i<=en; i++)
 	    {
 		// format definitions
-		DecimalFormat df=new DecimalFormat(  "000000");
-		DecimalFormat dff=new DecimalFormat( "00.0000000");
-		DecimalFormat dff1 =new DecimalFormat("000000.0000000");
+		//DecimalFormat df=new DecimalFormat(  "000000");
+		//DecimalFormat dff=new DecimalFormat(      "00.0000000");
+		//DecimalFormat dff1 =new DecimalFormat("000000.0000000");
 		// the intensities
 		float [] y = ds.getData_entry(i-1).getCopyOfY_values();
 		
 		DataSetTools.dataset.Data dd = ds.getData_entry(i-1);
 		DataSetTools.dataset.XScale xx = dd.getX_scale();
-		float binwidth = (xx.getEnd_x()-xx.getStart_x())/((float)xx.getNum_x() - 1);
-		opw.write("BANK   "+df.format( i )+"    "+ df.format(y.length)+"     "
-			  +df.format((int)(y.length/10.0+0.9))+" CONST  "
-			  +dff1.format(xx.getStart_x())
-			  +"  STD     "+dff.format(binwidth)+"    \n");
+		float binwidth 
+		    = (xx.getEnd_x()-xx.getStart_x())/((float)xx.getNum_x() - 1);
+		opw.write("BANK   "+format(i,6)+"    "
+			  +format(y.length,6)+"     "
+			  +format((int)(y.length/10.0+0.9),6)+" CONST  "
+			  +format(xx.getStart_x(),14)+"     "
+			  +format(binwidth,10)+"  STD"+"    \n");
 		
-		loop:for(int j=0; j<y.length; j+=10)
+		for(int j=0; j<y.length; j+=10)
 		    {
 			for(int l=j+0; l<j+10; l++)
 			    {
 				if(l>=y.length)  
 				    {    
-					opw.write("        ");                
+					opw.write("        ");
 				    }
 				else 
-				    opw.write("  "+df.format(y[l]));
+				    opw.write("  "+format((int)y[l],6));
 			    }
 			opw.write("\n");
 		    }
@@ -194,5 +199,27 @@ public class gsas_filemaker
     } catch(Exception d){}
     }
 
+    static private String format(int number, int length){
+	String rs=new Integer(number).toString();
+
+	while(rs.length()<length){
+	    rs=" "+rs;
+	}
+	
+	return rs;
+    }
+
+    static private String format(float number, int length){
+	DecimalFormat df=new DecimalFormat("#####0.0000000");
+	String rs=new String(df.format(number));
+
+	while(rs.length()<length){
+	    rs=" "+rs;
+	}
+	
+	return rs;
+    }
+
     public static void main(String[] args){}
 }
+
