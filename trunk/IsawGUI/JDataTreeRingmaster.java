@@ -12,6 +12,11 @@ package IsawGUI;
  * associated with the generated right-click menu.
  *
  * $Log$
+ * Revision 1.2  2001/06/27 20:19:36  neffk
+ * added the appropriate constructor so that JTreeUI and CommandPane can
+ * remain up to date when the menus provided by this class change the DataSet
+ * objects.
+ *
  * Revision 1.1  2001/06/25 21:30:54  neffk
  * handles all menus and operations for JTreeUI.
  *
@@ -31,6 +36,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.text.Document;
+
 
 public class JDataTreeRingmaster
 {
@@ -41,11 +48,20 @@ public class JDataTreeRingmaster
   final String MENU_DELETE    = "Delete";
 
 
-  /**
-   * default constructor
-   */
-  JDataTreeRingmaster()
+  JTreeUI tree;                  //need this because of some 
+  Document sessionLog = null;    //unpleasant coupling of the tree
+                                 //the command pane, and various other stuff...
+
+  JDataTreeRingmaster( JTreeUI tree_ )
   {
+    tree = tree_;
+  }
+
+
+  JDataTreeRingmaster( JTreeUI tree_, Document log )
+  {
+    tree = tree_;
+    sessionLog = log;
   }
 
 
@@ -285,10 +301,14 @@ public class JDataTreeRingmaster
     JMenuItem clear_all_item = new JMenuItem( MENU_CLEAR_ALL );
               //clear_all_item.setMnemonic( KeyEvent.VK_S );
               clear_all_item.addActionListener( item_listener );
+    JMenuItem delete_item = new JMenuItem( MENU_DELETE );
+              //delete_item.setMnemonic( KeyEvent.VK_X );
+              delete_item.addActionListener( item_listener );
     JPopupMenu popup_menu = new JPopupMenu( "MultipleDataBlockPopupMenu" );
                popup_menu.add( select_item );
                popup_menu.add( clear_item );
                popup_menu.add( clear_all_item );
+               popup_menu.add( delete_item );
                popup_menu.show(  e.getComponent(), e.getX(), e.getY()  );
   }
 
@@ -306,16 +326,16 @@ public class JDataTreeRingmaster
     int num_ops = ds.getNum_operators();                //create a sub-menu
     Operator ds_ops[] = new Operator[num_ops];          //for the current
     for ( int i = 0; i < num_ops; i++ )                 //DataSet object
-      ds_ops[i] = ds.getOperator(i);                    // ...
-                                                        // ...
-    DataSet[] dss = new DataSet[1];                     // ...
-    dss[0] = ds;                                        // ...
-    JMenu ops_popup_menu = new JMenu( "Operations" );   // ...
-    OperatorMenu om = new OperatorMenu();               // ...
-    JPopupMenuListener popup_listener = null;           // ...
-    popup_listener = new JPopupMenuListener( dss );     // ...
-    om.build( ops_popup_menu, ds_ops, popup_listener ); // ...
-    ops_popup_menu.setPopupMenuVisible( true );         // ...
+      ds_ops[i] = ds.getOperator(i);
+
+    DataSet[] dss = new DataSet[1];
+    dss[0] = ds;
+    JMenu ops_popup_menu = new JMenu( "Operations" );
+    OperatorMenu om = new OperatorMenu();
+//    JPopupMenuListener popup_listener = null;
+    JOperationsMenuHandler popup_listener = new JOperationsMenuHandler( dss, tree );
+    om.build( ops_popup_menu, ds_ops, popup_listener );
+    ops_popup_menu.setPopupMenuVisible( true );
 
     class singleDataSetMenuItemListener implements ActionListener
     {
@@ -334,23 +354,28 @@ public class JDataTreeRingmaster
         }
         if(  item_e.getActionCommand() == MENU_DELETE  )
         {
+        
         }
       }
     }
 
     singleDataSetMenuItemListener item_listener = new singleDataSetMenuItemListener();
-    JMenuItem select_item = new JMenuItem( MENU_SELECT );
-              //select_item.setMnemonic( KeyEvent.VK_S );
-              select_item.addActionListener( item_listener );
-    JMenuItem clear_item = new JMenuItem( MENU_CLEAR );
-              //clear_item.setMnemonic( KeyEvent.VK_BACK_SPACE );
-              clear_item.addActionListener( item_listener );
-    JMenuItem clear_all_item = new JMenuItem( MENU_CLEAR_ALL );
-              //clear_all_item.setMnemonic( KeyEvent.VK_S );
-              clear_all_item.addActionListener( item_listener );
+//    JMenuItem select_item = new JMenuItem( MENU_SELECT );
+//              //select_item.setMnemonic( KeyEvent.VK_S );
+//              select_item.addActionListener( item_listener );
+//    JMenuItem clear_item = new JMenuItem( MENU_CLEAR );
+//              //clear_item.setMnemonic( KeyEvent.VK_BACK_SPACE );
+//              clear_item.addActionListener( item_listener );
+//    JMenuItem clear_all_item = new JMenuItem( MENU_CLEAR_ALL );
+//              //clear_all_item.setMnemonic( KeyEvent.VK_S );
+//              clear_all_item.addActionListener( item_listener );
+    JMenuItem delete_item = new JMenuItem( MENU_DELETE );
+              //delete_item.setMnemonic( KeyEvent.VK_X );
+              delete_item.addActionListener( item_listener );
     JPopupMenu popup_menu = new JPopupMenu( "SingleDataSetPopupMenu" );
-               popup_menu.add( clear_item );
-               popup_menu.add( clear_all_item );
+//               popup_menu.add( clear_item );
+//               popup_menu.add( clear_all_item );
+               popup_menu.add( delete_item );
                popup_menu.add( ops_popup_menu );
                popup_menu.show(  e.getComponent(), e.getX(), e.getY()  );
   }
@@ -376,9 +401,10 @@ public class JDataTreeRingmaster
     dmtn = (DefaultMutableTreeNode)(  tp[0].getLastPathComponent()  );
 
     if(  dmtn.getUserObject() instanceof Data  )
+    {
       _ds.setPointedAtIndex(  _ds.getIndex_of_data( (Data)dmtn.getUserObject() )  );
-
-    _ds.notifyIObservers( IObserver.SELECTION_CHANGED );
+      _ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+    }
   }
 
 
@@ -396,34 +422,29 @@ public class JDataTreeRingmaster
     //selection corresponds to
     //
     DataSet ds = traverseUpToDataSet( tp[0] );
-
-    for( int i=0;  i<tp.length;  i++ )
+    if(  ds != null  )
     {
-      dmtn = (DefaultMutableTreeNode)(  tp[i].getLastPathComponent()  );
-      if(   dmtn != null  &&  ds.equals(  traverseUpToDataSet( tp[i] )  )   );
+      for( int i=0;  i<tp.length;  i++ )
       {
-        if(  dmtn.getUserObject() instanceof Data  )
+        dmtn = (DefaultMutableTreeNode)(  tp[i].getLastPathComponent()  );
+        if( dmtn != null  &&  
+            ds.equals(  traverseUpToDataSet(tp[i]) ) &&
+            dmtn.getUserObject() instanceof Data  )
         {
           Data d = (Data)dmtn.getUserObject();
           if(  d.isSelected() == false   )
             d.setSelected( true );
           else
             d.setSelected( false );
-/*
-          if(   ds.getData_entry(  d.getGroup_ID()  ).isSelected() == false   )
-            ds.getData_entry(  d.getGroup_ID()  ).setSelected( true );
-          else
-            ds.getData_entry(  d.getGroup_ID()  ).setSelected( false );
-*/
         }
-        else
-        {
-          if(  dmtn.getUserObject() != null  )
-            System.out.println(  "non-Data: " + dmtn.getUserObject().toString()  );
-        }
+        else if(  dmtn.getUserObject() != null  )
+          System.out.println(  "non-Data: " + dmtn.getUserObject().toString()  );
+        
       }
       ds.notifyIObservers( IObserver.SELECTION_CHANGED );
     }
+    else
+      return;
   }
 
 
