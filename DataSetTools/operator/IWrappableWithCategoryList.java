@@ -34,6 +34,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/01/07 17:25:24  rmikk
+ * Removed the fields that were possible return values for getCategoryList
+ *    method and moved them to Operators.
+ * These fields were added to the wrapped operators which caused an error
+ *
  * Revision 1.1  2005/01/07 16:31:14  rmikk
  * Initial Checkin.
  * This new interface requires a Wrappable to have the getCategoryList
@@ -51,25 +56,7 @@ package DataSetTools.operator;
  */
 public interface IWrappableWithCategoryList extends Wrappable {
 
-   /**
-    *   String arrays that are usable return value of the getCategoryList
-    *   method.
-    */
-   public static final String[] TOF_NSAS= {"operator","Instrument Type",
-                                                   "TOF_NSAS"};
-                                     
-   public static final String[] TOF_NSCD={"operator","Instrument Type",
-                                                     "TOF_NSCD"};
-                                                     
-   public static final String[] TOF_NPD={"operator","Instrument Type",
-                                                     "TOF_NPD"};
-                                                     
-   public static final String[] TOF_NDGS={"operator","Instrument Type",
-                                                        "TOF_NDGS"};
-                                                        
-   public static final String[] TOF_NGLAD={"operator","Instrument Type",
-                                                       "TOF_NGLAD"};
-   
+  
    /**
     * Get an array of strings listing the operator category names  for 
     * this operator. The first entry in the array is the 
