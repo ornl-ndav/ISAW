@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2003/06/02 16:30:30  pfpeterson
+ * Always creates a new orientation matrix when chi,phi,omega are changed
+ * and changed some comments.
+ *
  * Revision 1.15  2003/05/14 20:14:05  pfpeterson
  * More changes to get detectors not at -90deg to work. Now code
  * produces exactly same result as FORTRAN.
@@ -520,7 +524,7 @@ public class Peak{
   }
 
   /**
-   *  Mutator method for the primary flight path
+   *  Mutator method for the primary flight path in meters.
    */
   public void L1(float path){
     this.L1=path;
@@ -562,8 +566,8 @@ public class Peak{
     this.phi=PHI;
     this.omega=OMEGA;
 
-    // create a new rotation matrix if needed
-    if(this.ROT!=null) this.ROT=makeROT(this.chi,this.phi,this.omega);
+    // create a new rotation matrix
+    this.ROT=makeROT(this.chi,this.phi,this.omega);
 
     // update the inverse of the rotated UB matrix
     if(this.UB!=null){
