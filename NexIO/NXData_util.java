@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/07/26 13:52:42  rmikk
+ * Removed Dependence on NDS package
+ *
  * Revision 1.3  2001/07/24 20:02:58  rmikk
  * Separated out common functionality so it can be used
  * by NxMonitor
@@ -43,7 +46,7 @@
  *
  */
 package NexIO;
-import NexIO.NDS.*;
+//import NexIO.NDS.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.math.*;
@@ -583,7 +586,7 @@ public float[] converToNex( DetectorPosition DP)
 /** Test program for NXData_util
 */
 public static void main( String args[] )
-  {NDSClient nds;String filename = "lrcs3000.hdf";
+  {/*NDSClient nds;String filename = "lrcs3000.hdf";
    nds = new NDSClient( "mandrake.pns.anl.gov" , 6008 , 6081998 );
    nds.connect(  );
    NdsSvNode node = new NdsSvNode( filename , nds );
@@ -599,6 +602,7 @@ public static void main( String args[] )
   //  { ViewManager view_manager = new ViewManager(  DS ,  DataSetTools.viewer.IViewManager.IMAGE );
 
  //     }
+   */
    }
 
   }
