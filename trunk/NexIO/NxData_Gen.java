@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/02/26 15:44:12  rmikk
+ * This module can now be used to load in Monitor data that has been inadvertently labeled NXdata. It does not have two axes
+ *
  * Revision 1.3  2001/07/26 20:50:50  rmikk
  * Used StringFromBytes method to fix titles, etc.
  *
@@ -101,7 +104,7 @@ public class NxData_Gen extends NXData_util implements NxData
 
           }//end for
       
-        if( ( ax1 == null )||( ax2 == null )||( dat == null ) ) 
+        if( ( ax1 == null )||( dat == null ) ) 
            {errormessage = "Axes not specified";
             return false;
            }
