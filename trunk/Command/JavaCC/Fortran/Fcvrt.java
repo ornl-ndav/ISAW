@@ -35,8 +35,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.4  2004/06/22 15:42:09  rmikk
- * Result of update Fort2j.jj
+ * Revision 1.5  2004/07/30 14:07:06  rmikk
+ * Fixed javadoc errors
  *
  */
 
@@ -64,7 +64,7 @@ public class Fcvrt implements FcvrtConstants {
    public String Res ="";
   /**
     *  Program that invokes this translator.
-    * @param  args[0]  the filename of a file that contains a [sequence of]
+    * @param  args args[0]  the filename of a file that contains a [sequence of]
     *                  subroutine[s] or function[s]
     * @return nothing but each subroutine and function will be translated
     *          to a different java file. The filename corresponds to the 
@@ -223,8 +223,12 @@ public class Fcvrt implements FcvrtConstants {
  public String getDefaultInitValue(String DataType,String[] Parameters)
              throws ParseException{
    if( Parameters != null)
-       if( Parameters.length > 0)
-          return "null";
+       if( Parameters.length > 0){
+          String S ="new "+DataType;
+          for(int i=0;i<Parameters.length;i++)
+             S +="[0]";
+          return  S;
+         }
    if( DataType.equals("String"))
       return "null";
    if( DataType.equals("int"))
@@ -926,8 +930,9 @@ Token t;
   }
 
 /**
-  *
-  *@param mode  0 if any if, 1 if struct if or 2 if one-line if
+  * Parses the rest of an if statement. Determines which mode it is in
+  * @param Ifmode  0 if any if, 1 if struct if or 2 if one-line if
+  * @param params   The parameterlist of the arguments in the if statement
   */
   final public String RestofIf(int Ifmode, String[] params) throws ParseException {
   String s;
@@ -2655,6 +2660,18 @@ void RestOfParamList():{
     finally { jj_save(3, xla); }
   }
 
+  final private boolean jj_3_4() {
+    if (jj_scan_token(LOGDOT)) return true;
+    if (jj_scan_token(FALSE)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_1() {
+    if (jj_scan_token(LOGDOT)) return true;
+    if (jj_scan_token(NOT)) return true;
+    return false;
+  }
+
   final private boolean jj_3_3() {
     if (jj_scan_token(LOGDOT)) return true;
     if (jj_scan_token(TRUE)) return true;
@@ -2681,18 +2698,6 @@ void RestOfParamList():{
     }
     }
     }
-    return false;
-  }
-
-  final private boolean jj_3_4() {
-    if (jj_scan_token(LOGDOT)) return true;
-    if (jj_scan_token(FALSE)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_1() {
-    if (jj_scan_token(LOGDOT)) return true;
-    if (jj_scan_token(NOT)) return true;
     return false;
   }
 

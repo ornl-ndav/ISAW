@@ -67,7 +67,7 @@ public class Fcvrt {
    public String Res ="";
   /**
     *  Program that invokes this translator.
-    * @param  args[0]  the filename of a file that contains a [sequence of]
+    * @param  args args[0]  the filename of a file that contains a [sequence of]
     *                  subroutine[s] or function[s]
     * @return nothing but each subroutine and function will be translated
     *          to a different java file. The filename corresponds to the 
@@ -628,8 +628,9 @@ String RestofExpression( String vname):{
 }
 
 /**
-  *
-  *@param mode  0 if any if, 1 if struct if or 2 if one-line if
+  * Parses the rest of an if statement. Determines which mode it is in
+  * @param Ifmode  0 if any if, 1 if struct if or 2 if one-line if
+  * @param params   The parameterlist of the arguments in the if statement
   */
 String RestofIf( int Ifmode, String[] params):{
   String s;
