@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2003/08/08 17:55:49  dennis
+ *  Added option to change to New Selected Graph (Brent's) view.
+ *  Added "Additional View" option that was previously added to
+ *  the regular ViewManager.
+ *
  *  Revision 1.32  2003/03/04 20:25:35  dennis
  *  Title on window is now set properly if the contents of the DataSet
  *  are changed to a different run.
@@ -74,6 +79,8 @@ import DataSetTools.viewer.Table.*;
 import DataSetTools.viewer.Contour.*;
 import DataSetTools.viewer.OverplotView.*;
 import DataSetTools.viewer.ViewerTemplate.*;
+import DataSetTools.components.View.*;
+import DataSetTools.components.View.OneD.*;
 import DataSetTools.parameter.*;
 import DataSetTools.math.*;
 import java.awt.*;
@@ -99,6 +106,7 @@ public class InternalViewManager extends    JInternalFrame
 
    private   InternalViewManager     view_manager = null;
    private   DataSetViewer   viewer = null;
+   private   String          viewType = IMAGE;
    private   ViewerState     state = null;
    private   DataSet         dataSet;
    private   DataSet         tempDataSet;
@@ -231,19 +239,26 @@ public class InternalViewManager extends    JInternalFrame
          state = viewer.getState();
 
       viewer = null;
+      viewType = view_type;
       if ( view_type.equals( IMAGE ))
         viewer = new ImageView( tempDataSet, state );
       else if ( view_type.equals( SCROLLED_GRAPHS ))
         viewer = new GraphView( tempDataSet, state );
       else if ( view_type.equals( THREE_D ))
         viewer = new ThreeDView( tempDataSet, state );
-      else if ( view_type.equals( SELECTED_GRAPHS ))             // use either
+      else if ( view_type.equals( SELECTED_GRAPHS ))             // Brent's
+      {
+        DataSetData dsd = new DataSetData( tempDataSet );
+        FunctionViewComponent viewComp = new FunctionViewComponent( dsd);
+        viewer = new DataSetViewerMaker(tempDataSet, state, dsd, viewComp);
+      }
+      else if ( view_type.equals( SELECTED_GRAPH2 ))             // use either
         viewer = new GraphableDataManager( tempDataSet, state ); // Kevin's or
-//        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
+//        viewer = new ViewerTemplate( tempDataSet, state );     // Template
       else if ( view_type.equals( TABLE)) //TABLE ) )
-         viewer = new TabView( tempDataSet, state ); 
+         viewer = new TabView( tempDataSet, state );
       else if ( view_type.equals( CONTOUR ) )
-        viewer = new ContourView( tempDataSet, state ); 
+        viewer = new ContourView( tempDataSet, state );
       else
       { 
         if( table_MenuComp == null)
@@ -256,6 +271,7 @@ public class InternalViewManager extends    JInternalFrame
            System.out.println( "      " + view_type );
            System.out.println( "using " + IMAGE + " by default" );
            viewer = new ImageView( tempDataSet, state );
+           viewType = IMAGE;
         }
       }
       getContentPane().add(viewer);
@@ -328,6 +344,7 @@ public class InternalViewManager extends    JInternalFrame
        {
          makeTempDataSet( false );
          viewer.setDataSet( tempDataSet );
+         setTitle( dataSet.toString() );
          System.gc();
        }
        else if ( r_string.equals( POINTED_AT_CHANGED )  )
@@ -620,12 +637,15 @@ private void BuildEditMenu()
 }
 
 private void BuildViewMenu()
-{
-                                                // set up view menu items
+{                                                   // set up view menu items
   ViewMenuHandler view_menu_handler = new ViewMenuHandler();
   JMenu view_menu = viewer.getMenuBar().getMenu(DataSetViewer.VIEW_MENU_ID);
 
-  JMenuItem button = new JMenuItem( IMAGE );
+  JMenuItem button = new JMenuItem( ADDITIONAL_VIEW );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+
+  button = new JMenuItem( IMAGE );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
@@ -645,6 +665,9 @@ private void BuildViewMenu()
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
+  button = new JMenuItem( SELECTED_GRAPH2 );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
   
   JMenu Tables = new JMenu( "Selected Table View");
   view_menu.add( Tables);
@@ -654,17 +677,16 @@ private void BuildViewMenu()
   button = new JMenuItem( TABLE );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
- 
-
 }
 
- public void BuildTableMenu( JMenu Tables)
-  { int n= TableViewMenuComponents.getNMenuItems();
+ public void BuildTableMenu( JMenu Tables )
+ { 
+    int n= TableViewMenuComponents.getNMenuItems();
     ViewMenuHandler view_menu_handler = new ViewMenuHandler();
-     if( table_MenuComp == null)
-        table_MenuComp = new TableViewMenuComponents();
+    if( table_MenuComp == null)
+      table_MenuComp = new TableViewMenuComponents();
    
-     table_MenuComp.addMenuItems( Tables , view_menu_handler);
+    table_MenuComp.addMenuItems( Tables , view_menu_handler);
     
    /* Tables.addSeparator();  
     JMenuItem button;
@@ -672,9 +694,8 @@ private void BuildViewMenu()
     button.addActionListener( view_menu_handler );
     Tables.add( button );
    */
+ }
 
-
-  }
 /*
  * Build the menu of conversion options and turn on the radio button for the 
  * currently active conversion operator.
@@ -913,13 +934,19 @@ private float solve( float new_x ) // find what x in the original DataSet maps
 
   private class ViewMenuHandler implements ActionListener,
                                            Serializable
-  {  boolean errors = false, 
-              index =false;
-    
-    public void actionPerformed( ActionEvent e )
+  {  
+     boolean errors = false, 
+              index = false;
+
+      public void actionPerformed( ActionEvent e )
     {
       String action = e.getActionCommand();
-      setView( action ); 
+      if ( action.equals( ADDITIONAL_VIEW ) )
+      {
+        ViewManager vm = new ViewManager( dataSet, viewType );
+      }
+      else
+        setView( action );
     }
   }
 
