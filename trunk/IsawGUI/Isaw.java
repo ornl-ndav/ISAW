@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.187  2004/03/11 21:00:12  rmikk
+ *  Loading of Recent files now reports this to the session log
+ *
  *  Revision 1.186  2004/03/11 14:50:09  dennis
  *  Changed version to 1.6.1
  *
@@ -1273,13 +1276,16 @@ public class Isaw
 
  }
  class MyActionListener implements ActionListener{
-    String[] filename;
+    String filename;
     public MyActionListener( String filname){
-       filename = new String[1];
-       filename[0] = filname;
+       
+       filename= filname;
     }
     public void actionPerformed( ActionEvent evt){
-       load_runfiles( false, filename);
+       File[] F = new File[1];
+       F[0] = new File(filename);
+       load_files( F );
+       
     }
  }
 
@@ -1999,11 +2005,14 @@ public class Isaw
        DataSet[] DSS = (DataSet[])reason;
        if( DSS != null) if(DSS.length > 0){
            Object name = DSS[0].getAttributeValue(Attribute.FILE_NAME);
+    
+           util.appendDoc(  sessionLog, "Load " + name  );
            if( name == null)
               name = DSS[0].toString();
            else
               name = (Object)(""+DSS[0].getTag()+":"+(new File(name.toString())).getName());
            addNewDataSets( DSS, name.toString());
+          
        }
  
     }else
@@ -2155,7 +2164,7 @@ public class Isaw
    * have been checked for sanity (e.g. correct file extensions)
    */
   private void load_files( File[] files )
-  {
+  { 
     if(  files != null  &&  files.length > 0  )
       for( int i=0;  i<files.length;  i++ ) 
         {
