@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/02/11 04:09:02  bouzekc
+ * Removed the PropChangeProgressBar.  The progress bars now use the JDK 1.4
+ * setIndeterminate() method.  This should take some work off of writing
+ * new Forms.
+ *
  * Revision 1.9  2004/01/14 18:58:15  bouzekc
  * Code reformat.
  *
@@ -65,8 +70,6 @@
  */
 package DataSetTools.wizard;
 
-import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
-
 import DataSetTools.parameter.*;
 
 import DataSetTools.util.*;
@@ -79,8 +82,6 @@ import IsawHelp.HelpSystem.HTMLizer;
 
 import java.awt.*;
 import java.awt.event.*;
-
-import java.beans.PropertyChangeListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -114,7 +115,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   private CommandHandler command_handler;
   private JFileChooser fileChooser;
   private AbstractButton[] wizButtons;
-  private PropChangeProgressBar formProgress;
+  private JProgressBar formProgress;
   private JProgressBar wizProgress;
   private String help_message = "Help not available for Wizard";
   private Wizard wiz          = null;
@@ -138,7 +139,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     }
     form_panel        = new JPanel(  );
     form_label        = new JLabel( " ", SwingConstants.CENTER );
-    formProgress      = new PropChangeProgressBar(  );
+    formProgress      = new JProgressBar(  );
     wizProgress       = new JProgressBar(  );
     command_handler   = new CommandHandler( wiz );
   }
@@ -214,14 +215,23 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   }
 
   /**
-   * Utility method to set the Form progress bar value and label.
+   * Utility method to set the Form progress bar indeterminate state.
    *
-   * @param value The new value to set.
-   * @param label The new label to set
+   * @param indet Whether the progress bar should be indeterminate.
    */
-  public final void setFormProgressParameters( int value, String label ) {
-    formProgress.setValue( value );
-    formProgress.setString( label );
+  public final void setFormProgressIndeterminate( boolean indet ) {
+    formProgress.setString( "Executing " + wiz.getCurrentForm(  ) );
+    formProgress.setIndeterminate( indet );
+  }
+
+  /**
+   * Utility method to set the Wizard progress bar indeterminate state.
+   *
+   * @param indet Whether the progress bar should be indeterminate.
+   */
+  public final void setWizardProgressIndeterminate( boolean indet ) {
+    wizProgress.setString( "Executing " + wiz.getTitle(  ) );
+    wizProgress.setIndeterminate( indet );
   }
 
   /**
@@ -381,16 +391,6 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     wizProgress.setString( 
       "Wizard Progress: " + ( lastDone ) + " of " + wiz.getNumForms(  ) +
       " Forms done" );
-  }
-
-  /**
-   * Accessor method for the progress indicator.  This particular version
-   * allows access to the internal form progress bar.
-   *
-   * @return The PropertyChanger form progress indicator.
-   */
-  public PropertyChangeListener getFormProgressIndicator(  ) {
-    return formProgress;
   }
 
   /**
