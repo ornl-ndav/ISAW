@@ -31,27 +31,29 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/02/09 21:05:13  dennis
+ * Added getDocumentation() method, so that users can obtain
+ * information on this operator and the file format for the
+ * SandWedgeViewer.
+ * Removed unused imports.
+ *
  * Revision 1.1  2004/08/11 18:30:09  chatterjee
  * Operator to invoke the SANDWedgeViewer.
  *
  */
 package DataSetTools.operator.Generic.TOF_SAD;
 
-import gov.anl.ipns.Util.Numeric.*;
-
 import java.util.Vector;
 
-import DataSetTools.dataset.*;
-import DataSetTools.math.*;
 import DataSetTools.parameter.*;
 import DataSetTools.components.View.*;
-import DataSetTools.operator.DataSet.Attribute.*;
+
 import gov.anl.ipns.Util.Sys.WindowShower;
 
 
 public class SWV  extends GenericTOF_SAD{
 
-   String filename;
+   public static final String Title = "Sand Wedge Viewer";
 
    /* ---------------------------- Constructor  -------------------------- */
    /**
@@ -59,7 +61,7 @@ public class SWV  extends GenericTOF_SAD{
     */
     public SWV()
     {
-      super("Sand Wedge Viewer");
+      super( Title );
     }
 
    /* ---------------------------- Constructor  -------------------------- */
@@ -69,7 +71,6 @@ public class SWV  extends GenericTOF_SAD{
     */
    public SWV(String filename) 
      {
-        
       this();
       parameters = new Vector();
       addParameter( new LoadFilePG( "Enter Filename", filename));
@@ -97,17 +98,51 @@ public class SWV  extends GenericTOF_SAD{
     	return "SWV";
   	}
 
+
+  /* ------------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+   public String getDocumentation()
+   {
+     StringBuffer s = new StringBuffer("");                                        
+     s.append("@overview  This operator loads a data file containing ");
+     s.append(" S(Qx,Qy) and pops up a viewer showing the data.  Integration ");
+     s.append(" over rings and wedges is supported by the viewer.");
+
+     s.append("@assumptions  The data file must be in the proper format. ");
+     s.append(" Specifically, the data must be stored as an ASCII file");
+     s.append(" with four columns per line.  Each line consists of the");
+     s.append(" four values Qx, Qy, S(Qx,Qy) and err(S(Qx,Qy)), for one");
+     s.append(" pixel of an array.  This is the form of file produced by");
+     s.append(" the older FORTRAN codes for SAND at IPNS.  A simple" );
+     s.append(" header portion listing the number of rows and columns on");
+     s.append(" two lines of the form '# Rows: 100' and '# Columns: 100' ");
+     s.append(" for a 100x100 array of pixels may optionally be included.");
+     s.append(" If the number or rows and columns is not specified, it ");
+     s.append(" is assumed to be 200x200, as was produced by the legacy ");
+     s.append(" FORTRAN codes at IPNS.");
+
+     s.append("@param String specifying the name of the file containing ");
+     s.append(" the pixel data.");
+
+     s.append("@return A string indicating that the file was displayed " );
+     return s.toString();
+   }
+
+
   /* ---------------------------- getResult ------------------------------- */
     /**  
-		 * Calls the SANDWedgeViewer
+     * Calls the SANDWedgeViewer
      */
      public Object getResult()
      {
         String filename =   getParameter(0).getValue().toString();
         // String filename = "C:/sasi/sn2d44.dat" ;
-				SANDWedgeViewer swv = new SANDWedgeViewer();
+        SANDWedgeViewer swv = new SANDWedgeViewer();
         swv.loadData(filename);
-				WindowShower shower = new WindowShower(swv);
+        WindowShower shower = new WindowShower(swv);
         java.awt.EventQueue.invokeLater(shower);
         shower = null;
         return "SANDWedgeView displayed";
