@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/07/10 19:38:21  rmikk
+ *  Added a string for the Contour view
+ *
  *  Revision 1.5  2001/08/13 16:19:34  dennis
  *  Added Ruth's Table view
  *
@@ -71,7 +74,7 @@ public interface IViewManager extends IObserver
   public static final String SELECTED_GRAPHS = "Selected Graph View";
   public static final String TABLE           = "Table View";
   public static final String THREE_D         = "3D View";
-  
+  public static final String CONTOUR         = "Contour View";
   public void setDataSet( DataSet ds );
 
   public DataSet getDataSet();
