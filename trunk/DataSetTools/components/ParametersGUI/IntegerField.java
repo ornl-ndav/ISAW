@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/06/06 16:06:50  pfpeterson
+ *  Reorganized some of the code and class hierarchy.
+ *
  *  Revision 1.2  2002/05/31 19:32:46  pfpeterson
  *  Now fire PropertyChangeEvent when the value in widget is changed.
  *
@@ -99,6 +102,47 @@ public class IntegerField extends JTextField {
     }
 
     /**
+     * Internal method to confirm that the text can be added.
+     */
+    private boolean isOkay(int offs, String inString, String curString){
+        char[]    source  = inString.toCharArray();
+        
+        for( int i=0 ; i < source.length ; i++ ){
+            if(Character.isDigit(source[i])){
+                if(ZERO.compareTo(new Character(source[i]))==0){
+                    if( offs+i==0 && curString.length()>0 ){
+                        return false;
+                    }else if(curString.startsWith(MINUS.toString())){
+                        if( offs+i==1 ){
+                            return false;
+                        }else{
+                            // do nothing
+                        }
+                    }else{
+                        // do nothing
+                    }
+                }else{
+                    // do nothing
+                }
+            }else if(MINUS.compareTo(new Character(source[i]))==0){
+                if(offs+i==0){
+                    if(curString.startsWith(MINUS.toString())){
+                        return false;
+                    }else{
+                        // do nothing
+                    }
+                }else{
+                    return false;
+                }
+            }else{
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /**
      * Internal class to do all of the formatting checks.
      */
     protected class WholeNumberDocument extends PlainDocument {
@@ -116,7 +160,7 @@ public class IntegerField extends JTextField {
             throws BadLocationException {
             
             String oldText=textBox.getText();
-            if(isOkay(offs,str,textBox.getText())){
+            if(textBox.isOkay(offs,str,textBox.getText())){
                 super.insertString(offs,str,a);
                 if(propBind!=null)
                     propBind.firePropertyChange(IParameter.VALUE,
@@ -138,45 +182,5 @@ public class IntegerField extends JTextField {
                                             oldText,textBox.getText());
         }
 
-        /**
-         * Internal method to confirm that the text can be added.
-         */
-        private boolean isOkay(int offs, String inString, String curString){
-            char[]    source  = inString.toCharArray();
-
-            for( int i=0 ; i < source.length ; i++ ){
-                if(Character.isDigit(source[i])){
-                    if(ZERO.compareTo(new Character(source[i]))==0){
-                        if( offs+i==0 && curString.length()>0 ){
-                            return false;
-                        }else if(curString.startsWith(MINUS.toString())){
-                            if( offs+i==1 ){
-                                return false;
-                            }else{
-                                // do nothing
-                            }
-                        }else{
-                            // do nothing
-                        }
-                    }else{
-                        // do nothing
-                    }
-                }else if(MINUS.compareTo(new Character(source[i]))==0){
-                    if(offs+i==0){
-                        if(curString.startsWith(MINUS.toString())){
-                            return false;
-                        }else{
-                            // do nothing
-                        }
-                    }else{
-                        return false;
-                    }
-                }else{
-                    return false;
-                }
-            }
-
-            return true;
-        }
     }
 }
