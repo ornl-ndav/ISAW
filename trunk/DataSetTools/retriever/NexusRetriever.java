@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2002/07/29 18:47:24  rmikk
+ * Added code to report errors to status pane and, if file
+ *   cannot be opened to System.out.
+ *
  * Revision 1.6  2001/08/17 18:58:39  rmikk
  * Incorporated more error handling if file cannot be read
  *
@@ -68,9 +72,10 @@ public class NexusRetriever extends Retriever
      if( node.getErrorMessage() != null)
        if( node.getErrorMessage().length() > 0)
          {errormessage = node.getErrorMessage();
-	 System.out.println("Cannot Read File");
-         ext = null;
-         return;
+	  DataSetTools.util.SharedData.addmsg("Cannot Read File: "+errormessage);
+          ext = null;
+          System.out.println( errormessage );
+          return;
          }
      ext = new ExtGetDS( node, dataSourceName ) ;
     }
@@ -108,7 +113,9 @@ public class NexusRetriever extends Retriever
   * returns the total number of datasets of All Types
   */
    public   int  numDataSets() 
-      {if( errormessage !=null)
+      {if( ext == null)
+         return 0;
+      if( errormessage !=null)
         if( errormessage.length() > 0)
           return  RemoteDataRetriever.BAD_FILE_NAME;
        int nsets = ext.numDataSets() ;
