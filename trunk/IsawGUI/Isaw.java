@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.98  2002/04/29 15:14:19  pfpeterson
+ *  Changed version.
+ *
  *  Revision 1.97  2002/04/23 19:04:48  pfpeterson
  *  Fixed problem with percentage status_heights (missing a 'D').
  *
@@ -654,7 +657,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version")){
-            version="1.3.1 alpha";
+            version="1.3.1";
         }else{
             version=SharedData.VERSION;
         }
