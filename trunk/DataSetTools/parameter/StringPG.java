@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/06/14 14:21:14  pfpeterson
+ *  Added more checks to setValue() and getValue().
+ *
  *  Revision 1.1  2002/06/06 16:14:37  pfpeterson
  *  Added to CVS.
  *
@@ -87,18 +90,28 @@ public class StringPG extends ParameterGUI{
     }
 
     public String getStringValue(){
-        return this.getValue().toString();
+        Object ob=this.getValue();
+        if(ob==null){
+            return null;
+        }else{
+            return this.getValue().toString();
+        }
     }
 
     /**
      * Sets the value of the parameter.
      */
     public void setValue(Object value){
-        //this.value=value;
         if(this.initialized){
-            //this.ignore_prop_change=true;
-            ((JTextField)this.entrywidget).setText(value.toString());
-            //this.ignore_prop_change=false;
+            if(value==null){
+                ((JTextField)this.entrywidget).setText("");
+            }else{
+                if(value instanceof String){
+                    ((JTextField)this.entrywidget).setText((String)value);
+                }else{
+                    ((JTextField)this.entrywidget).setText(value.toString());
+                }
+            }
         }else{
             this.value=value;
         }
