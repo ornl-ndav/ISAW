@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.85  2003/10/04 20:52:48  bouzekc
+ * Removed the setting of look and feel from the Wizard.  This had been a
+ * temporary measure to improve sizing issues, and interferes with consistent
+ * look and feel across ISAW now that it is no longer needed.
+ *
  * Revision 1.84  2003/09/27 00:17:40  bouzekc
  * Fixed a javadoc error.
  *
@@ -1036,8 +1041,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    * Makes the GUI for this Wizard.
    */
   protected void makeGUI(  ) {
-    LookAndFeelManager.setLookAndFeel(  );
-
     Box formControlsBox       = Box.createHorizontalBox(  );
     Box wizardControlsBox     = Box.createHorizontalBox(  );
     Box statusBox             = Box.createHorizontalBox(  );
