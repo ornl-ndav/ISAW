@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/12/23 15:50:13  rmikk
+ * Added extra spacing between lines
+ *
  * Revision 1.3  2004/12/23 13:15:22  rmikk
  * Added the NxEntryInfo to the States list so that the version number
  *   is available.
@@ -108,6 +111,7 @@ public class Process1NxData implements IProcessNxData {
      States.Push( EntryState);
      NxNode NxDetectorNode = NexUtils.getCorrespondingNxDetector( DataState.linkName,
               NxInstrument);
+              
      NxDetectorStateInfo DetState = null;
      if( NxDetectorNode == null){
         DataSetTools.util.SharedData.addmsg( "no NxDetector Node for "+
@@ -118,9 +122,11 @@ public class Process1NxData implements IProcessNxData {
         DetState = new NxDetectorStateInfo(NxDetectorNode, States);
      if( DetState != null)
         States.Push( DetState);
+        
      NexUtils  nxut = new NexUtils();
      boolean res= nxut.setUpNxData (DS,NxDataNode,DataState.startGroupID,States);
      if( res){ 
+       
         States.Pop();States.Pop();States.Pop();
         if(DetState != null)
            States.Pop();
