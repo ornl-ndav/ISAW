@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.39  2003/06/26 16:58:52  bouzekc
+ * Viewing of generic file result parameters, such as those
+ * returned from OperatorForms, now enabled.
+ *
  * Revision 1.38  2003/06/26 16:24:34  bouzekc
  * Removed unused FRAME_WIDTH and FRAME_HEIGHT instance
  * variables.
@@ -587,7 +591,7 @@ public abstract class Wizard implements PropertyChangeListener {
     String paramValue;
     String paramValidity;
     String typeEnd;
-    StringBuffer temp  = new StringBuffer(  );
+    StringBuffer temp      = new StringBuffer(  );
     StringTokenizer st;
     int nameStartInd;
     int nameEndInd;
@@ -598,9 +602,9 @@ public abstract class Wizard implements PropertyChangeListener {
     int typeEndInd;
     Form cur_form;
     IParameterGUI curParam;
-    boolean ignoreChanges = false;
+    boolean ignoreChanges  = false;
 
-    xml                = s.toString(  );
+    xml                    = s.toString(  );
 
     //remove the newline characters
     st = new StringTokenizer( xml, "\n" );
@@ -1286,7 +1290,9 @@ public abstract class Wizard implements PropertyChangeListener {
            Form, should not be sent to the ParameterViewer. */
         if( 
           ( iparam instanceof DataSetPG ) || ( iparam instanceof ArrayPG ) ||
-            ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ) {
+            ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ||
+            ( iparam instanceof StringPG && val instanceof String &&
+            ( ( ( String )val ).indexOf( '.' ) > 0 ) ) ) {
           jmi = new JMenuItem( iparam.getName(  ) );
           view_menu.add( jmi );
           jmi.addActionListener( command_handler );
