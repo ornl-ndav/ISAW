@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/03/28 19:34:39  pfpeterson
+ *  Added new string constant for TIME_OFFSET attribute.
+ *
  *  Revision 1.20  2002/02/26 21:17:26  pfpeterson
  *  Added some string constants for SDDS data.
  *
@@ -199,6 +202,9 @@ abstract public class Attribute implements Serializable
   public static final String  DETECTOR_INFO      = "Det Info";
 
   public static final String  DS_TYPE            = "Data Set Type";
+
+  // software grouping and time focusing
+  public static final String  TIME_OFFSET        ="Time Offset";
 
   // stuff for SDDS files
   public static final String  START_TIME_SEC     = "Start Time(sec)";
