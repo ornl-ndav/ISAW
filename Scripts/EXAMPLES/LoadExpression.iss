@@ -11,6 +11,9 @@
 #  @param is_histogram  Flag indicating whether a histogram or function 
 #                       should be created.
 #
+#  $Date$
+
+$Category = Operator, Utils, Examples
 $ Title = Evaluate Expression A * exp( -k*x ) * sin( w*x )
 
 $ min_x         Float(0)       The minimum x value
