@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2005/03/28 06:01:31  serumb
+ *  Now uses new methods for instances of labelComboBox.
+ *
  *  Revision 1.33  2005/03/14 19:28:22  serumb
  *  Now uses call to get combo box instead of public variable.
  *
@@ -835,13 +838,13 @@ public class ContourData
       for( int i =0; i< choices.length; i++)
         choices[i] = ""+DetNums[i];
       DetChoices = new LabelCombobox("Detectors", choices);
-      DetChoices.getCBox().addActionListener( new DetectorActionListener());
+      DetChoices.addActionListener( new DetectorActionListener());
       DetNum = state.get_int( ViewerState.CONTOUR_DETNUM);
       int find = FindIndex(DetNums, DetNum);
       if( find < 0)
         DetNum = DetNums[0];
       else
-         DetChoices.setSelected( find);
+         DetChoices.setSelectedIndex( find);
       
       
     }
@@ -869,7 +872,7 @@ public class ContourData
     public void actionPerformed( ActionEvent evt){
     int choice= DetNum;
     try{
-       choice = (new Integer( (String)DetChoices.getCBox().getSelectedItem())).
+       choice = (new Integer( (String)DetChoices.getSelectedItem())).
                  intValue();
     }catch( Exception ss){}
     if( choice != DetNum){

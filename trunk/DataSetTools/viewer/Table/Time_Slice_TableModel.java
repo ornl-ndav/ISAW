@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2005/03/28 06:02:15  serumb
+ * Now uses new methods for instances of labelComboBox.
+ *
  * Revision 1.23  2005/03/14 19:26:50  serumb
  * Now uses call to get the combo box instead of public variable.
  *
@@ -630,7 +633,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       for( int i =0; i< choices.length; i++)
         choices[i] = ""+DetNums[i];
       DetChoices = new LabelCombobox("Detectors", choices);
-      DetChoices.getCBox().addActionListener( new DetectorActionListener());
+      DetChoices.addActionListener( new DetectorActionListener());
     }
     
     JComponent[] Res = new JComponent[1];
@@ -675,7 +678,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     public void actionPerformed( ActionEvent evt){
     int choice= DetNum;
     try{
-       choice = (new Integer( (String)DetChoices.getCBox().getSelectedItem())).
+       choice = (new Integer( (String)DetChoices.getSelectedItem())).
                  intValue();
     }catch( Exception ss){}
     if( choice != DetNum){
