@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/04/23 15:52:33  pfpeterson
+ * Fixed calculation of lattice parameters and implemented own method
+ * for calculating chisq.
+ *
  * Revision 1.1  2003/04/11 15:36:16  pfpeterson
  * Added to CVS.
  *
@@ -230,10 +234,37 @@ public class LsqrsJ extends GenericTOF_SCD{
 
     // calculate ub
     double[][] UB=new double[3][3];
-    double chisq=LinearAlgebra.BestFitMatrix(UB,hkl,q);
+    double chisq=0.;
+    {
+      double[][] Thkl = new double[peaks.size()][3];
+      double[][] Tq   = new double[peaks.size()][3];
+      for( int i=0 ; i<hkl.length ; i++ ){
+        for( int j=0 ; j<3 ; j++ ){
+          Thkl[i][j]=hkl[i][j];
+          Tq[i][j]=q[i][j];
+        }
+      }
+      chisq=LinearAlgebra.BestFitMatrix(UB,Thkl,Tq);
+      chisq=0.; // reset chisq
+      Tq=new double[3][peaks.size()];
+      for( int i=0 ; i<hkl.length ; i++ )
+        for( int j=0 ; j<3 ; j++ )
+          Tq[j][i]=q[i][j];
+          Thkl=LinearAlgebra.mult(UB,Tq);
+      for( int i=0 ; i<peaks.size() ; i++ )
+        for( int j=0 ; j<3 ; j++ )
+          chisq=chisq+Math.sqrt((hkl[i][j]-Thkl[j][i])*(hkl[i][j]-Thkl[j][i]));
+    }
 /* REMOVE
     System.out.println("UB="+arrayToString(UB));
     System.out.println("CHISQ="+chisq);
+*/
+
+/* REMOVE
+    // reset UB for a quick test
+    UB=new double[][]{{-0.010955,-0.008296,-0.375428},
+                      { 0.202690, 0.201401, 0.000154},
+                      { 0.126577,-0.120317, 0.005069}};
 */
 
     // calculate lattice parameters and cell volume
@@ -250,37 +281,35 @@ public class LsqrsJ extends GenericTOF_SCD{
       double[][] derivatives=new double[3][7];
       double[][] VC=generateVC(peaks);
 
-      for( int ii=0 ; ii<3 ; ii++ ){
+      for( int i=0 ; i<3 ; i++ ){
         // determine derivatives
-        for( int jj=0 ; jj<3 ; jj++ ){
-          UB[ii][jj]=UB[ii][jj]+SMALL;
+        for( int j=0 ; j<3 ; j++ ){
+          UB[i][j]=UB[i][j]+SMALL;
           temp_abc=abc(UB);
-          UB[ii][jj]=UB[ii][jj]-SMALL;
-          for( int kk=0 ; kk<7 ; kk++ )
-            derivatives[jj][kk]=(temp_abc[kk]-abc[kk])/SMALL;
+          UB[i][j]=UB[i][j]-SMALL;
+          for( int k=0 ; k<7 ; k++ )
+            derivatives[j][k]=(temp_abc[k]-abc[k])/SMALL;
         }
 
         // accumulate sigmas
-        for( int m=0 ; m<7 ; m++ )
-          for( int i=0 ; i<3 ; i++ )
-            for( int j=0 ; j<3 ; j++ )
-              sig_abc[m]=sig_abc[m]
-                                 +derivatives[i][m]*VC[i][j]*derivatives[j][m];
+        for( int l=0 ; l<7 ; l++ )
+          for( int m=0 ; m<3 ; m++ )
+            for( int n=0 ; n<3 ; n++ )
+              sig_abc[l]+=derivatives[m][l]*VC[m][n]*derivatives[n][l];
       }
 
       // turn the 'sigmas' into actual sigmas
+      //System.out.println("CHI="+chisq+" FREE="+numFreedom); REMOVE
       double delta=chisq/numFreedom;
       for( int i=0 ; i<sig_abc.length ; i++ )
         sig_abc[i]=Math.sqrt(delta*sig_abc[i]);
     }
-/* REMOVE
-    System.out.println("sigABC="+arrayToString(sig_abc));
-*/
 
     // print out the results
     toConsole(UB,abc,sig_abc);
     if(matfile!=null){
-      ErrorString error=Util.writeMatrix(matfile,double2float(UB),double2float(abc),double2float(sig_abc));
+      ErrorString error=Util.writeMatrix(matfile,double2float(UB),
+                                      double2float(abc),double2float(sig_abc));
       if(error!=null)
         return error;
       else
@@ -592,7 +621,7 @@ public class LsqrsJ extends GenericTOF_SCD{
     for( int i=0 ; i<3 ; i++ )
       for( int j=0 ; j<3 ; j++ )
         UBtrans[i][j]=UB[j][i];
-    double[][] UBsquare=LinearAlgebra.mult(UB,UBtrans);
+    double[][] UBsquare=LinearAlgebra.mult(UBtrans,UB);
      if(UBsquare==null) return null;
     double[][] invUBsquare=LinearAlgebra.getInverse(UBsquare);
     if(invUBsquare==null) return null;
@@ -603,15 +632,16 @@ public class LsqrsJ extends GenericTOF_SCD{
     abc[2]=Math.sqrt(invUBsquare[2][2]);
 
     // calculate alpha, beta, gamma
-    abc[3]=invUBsquare[2][1]/(abc[1]*abc[2]);
-    abc[4]=invUBsquare[2][0]/(abc[0]*abc[2]);
-    abc[5]=invUBsquare[1][0]/(abc[0]*abc[1]);
+    abc[3]=invUBsquare[1][2]/(abc[1]*abc[2]);
+    abc[4]=invUBsquare[0][2]/(abc[0]*abc[2]);
+    abc[5]=invUBsquare[0][1]/(abc[0]*abc[1]);
     abc[3]=Math.acos(abc[3])*180./Math.PI;
     abc[4]=Math.acos(abc[4])*180./Math.PI;
     abc[5]=Math.acos(abc[5])*180./Math.PI;
 
     // calculate the cell volume
-    abc[6]=abc[0]*abc[1]*Math.sin(abc[5]*Math.PI/180.)/abc[2];
+    abc[6]=abc[0]*abc[1]*Math.sin(abc[5]*Math.PI/180.);
+    abc[6]=abc[6]/Math.sqrt(UBsquare[2][2]);
 
     return abc;
   }
