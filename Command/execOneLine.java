@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2001/07/30 21:36:22  rmikk
+ * Implemented  the Iobservable  delete event
+ *
  * Revision 1.23  2001/07/20 16:36:28  rmikk
  * Fixed error that occurred when two operators have the
  * same command and neither match the arguments.
@@ -303,6 +306,7 @@ public void addParameterDataSet(DataSet dss, String vname)
 
 public void addDataSet(DataSet dss, String vname)
    { ds.put( vname.toUpperCase().trim() , dss );
+    
       }
 /**
 * This method allows outside data sets to be added to the variable space
@@ -325,6 +329,7 @@ public void addDataSet(DataSet dss, String vname)
         //else vname = dss.getTitle();
         if(Debug)System.out.println("EndADD DATA SET vname="+vname);
         addDataSet(dss, vname);
+        dss.addIObserver(this);
       }
 /**
 *  Removes all displays created by the CommandPane
@@ -3344,7 +3349,9 @@ private Operator getSHOp( Vector Args, String Command)
             if( reason instanceof String)
               if( reason.equals( IObserver.DESTROY))
                  { 
-                  // Help, Help, Help
+		   long tag = ((DataSet)observed_obj).getTag();
+                   ds.remove( "ISAWDS"+tag);
+                   observed_obj = null;
                        
                  } 
          if( reason instanceof DataSet)  //Send Command from a subscript
