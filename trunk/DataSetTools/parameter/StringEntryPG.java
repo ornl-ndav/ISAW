@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/09/16 22:46:55  bouzekc
+ *  Removed addition of this as a PropertyChangeListener.  This is already done
+ *  in ParameterGUI.  This should fix the excessive events being fired.
+ *
  *  Revision 1.14  2003/09/13 23:35:58  bouzekc
  *  Fixed bug in validateSelf().
  *
@@ -194,7 +198,6 @@ public abstract class StringEntryPG extends ParameterGUI {
       entrywidget = new EntryWidget( new StringEntry( "", DEF_COLS, FILTER ) );
     }
 
-    entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
     super.initGUI(  );
   }
 

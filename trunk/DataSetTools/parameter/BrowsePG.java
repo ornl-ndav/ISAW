@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2003/09/16 22:46:53  bouzekc
+ *  Removed addition of this as a PropertyChangeListener.  This is already done
+ *  in ParameterGUI.  This should fix the excessive events being fired.
+ *
  *  Revision 1.26  2003/09/13 20:40:20  bouzekc
  *  Fixed bug in getValue().
  *
@@ -263,7 +267,6 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
 
         entrywidget.add(innerEntry);
         entrywidget.add(browse);
-        entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
         this.setEnabled(this.getEnabled());
         super.initGUI();
     }
