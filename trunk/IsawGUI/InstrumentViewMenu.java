@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2002/12/11 15:57:20  pfpeterson
+ * Fixed small bug where the tag used in the menu was not 'trim()'ed.
+ *
  * Revision 1.1  2002/12/03 17:44:02  pfpeterson
  * Added to CVS
  *
@@ -139,7 +142,7 @@ class InstrumentViewMenu extends JMenu implements ActionListener{
       // read in the line
       tempURL=tfr.read_String();
       tempTAG=tfr.read_line();
-      tempTAG.trim();
+      tempTAG=tempTAG.trim();
 
       // check if we are supposed to add a separator
       if(tempURL.equals(SEPARATOR)){
