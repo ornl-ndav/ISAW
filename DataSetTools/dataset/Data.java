@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2002/10/03 15:42:45  dennis
+ *  Changed setSqrtErrors() to setSqrtErrors(boolean) in Data classes.
+ *  Added use_sqrt_errors flag to Data base class and changed derived
+ *  classes to use this.  Added isSqrtErrors() method to check state
+ *  of flag.  Derived classes now check this flag and calculate rather
+ *  than store the errors if the use_sqrt_errors flag is set.
+ *
  *  Revision 1.32  2002/09/11 23:26:06  dennis
  *     The toString() method now returns the String obtained from the
  *  getLabel() method if it is a non-degenerate String.  It returns
@@ -147,6 +154,7 @@ public abstract class Data implements IData,
                                     // attribute.  The id should only be
                                     // changed through the setID() method.
   protected XScale        x_scale;
+  private   boolean       use_sqrt_errors = false;
   protected AttributeList attr_list;
 
   /**
@@ -598,9 +606,9 @@ public abstract class Data implements IData,
    *
    *  @return  A reference to a new copy of the y_values
    */
-  public float[]  getCopyOfY_values()       
+  public float[] getCopyOfY_values()       
   {
-    float y_vals[]   = getY_values();
+    float y_vals[] = getY_values();
     if ( y_vals != null )
     {
       float new_vals[] = new float[ y_vals.length ];
@@ -617,9 +625,9 @@ public abstract class Data implements IData,
    *
    *  @return  A reference to a new copy of the error estimates. 
    */
-  public float[]  getCopyOfErrors()       
+  public float[] getCopyOfErrors()       
   {
-    float errors[]   = getErrors();
+    float errors[] = getErrors();
     if ( errors != null )
     {
       float new_vals[] = new float[ errors.length ];
@@ -630,6 +638,31 @@ public abstract class Data implements IData,
       return null;
   } 
 
+  /**
+   *  Specify whether the errors are to be estimated as the square root of
+   *  the y values.  If use_sqrt is true, derived classes may 
+   *  calculate the error estimates "on the fly" rather than storing them.
+   *
+   *  @param use_sqrt If true, error estimates will be calculated as the
+   *                  square root of the y values, if false, error estimates
+   *                  may be specified in other ways for derived classes.
+   */
+  public void setSqrtErrors( boolean use_sqrt )
+  {
+    use_sqrt_errors = use_sqrt;
+  }
+
+  /**
+   *  Check whether or not errors for this Data block are calculated as the
+   *  square root of the y values.
+   *
+   *  @return true if the error estimates are calculated as the square root 
+   *               of the y values, and false otherwise.
+   */
+  public boolean isSqrtErrors()
+  {
+    return use_sqrt_errors;
+  }
 
   /**
     * Construct a new Data object by ADDING corresponding "y" values of the
@@ -1113,7 +1146,7 @@ public abstract class Data implements IData,
     {
       has_error_info = true;
       if ( temp_data.errors == null )   // if no previous error values set,
-        temp_data.setSqrtErrors();      // use the sqrt of number of counts
+        temp_data.setSqrtErrors( true );// use the sqrt of number of counts
     }
                                         // record the extent of the original
                                         // XScales
@@ -1253,7 +1286,6 @@ public abstract class Data implements IData,
   abstract public float   getY_value( float x, int smooth_flag ); 
 
   abstract public float[] getErrors();
-  abstract public void    setSqrtErrors();
 
   abstract public void    resample( XScale x_scale, int smooth_flag );
   abstract public Object  clone();

@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/10/03 15:42:46  dennis
+ *  Changed setSqrtErrors() to setSqrtErrors(boolean) in Data classes.
+ *  Added use_sqrt_errors flag to Data base class and changed derived
+ *  classes to use this.  Added isSqrtErrors() method to check state
+ *  of flag.  Derived classes now check this flag and calculate rather
+ *  than store the errors if the use_sqrt_errors flag is set.
+ *
  *  Revision 1.4  2002/05/29 22:46:49  dennis
  *  Minor fixes to documentation.
  *
@@ -175,7 +182,7 @@ public class HistogramModel extends    ModeledData
    */
   public float[] getErrors()
   { 
-    if ( use_sqrt_errors )
+    if ( isSqrtErrors() )
     {
       float y_vals[] = getY_values();
       float errs[] = new float[ y_vals.length ];
