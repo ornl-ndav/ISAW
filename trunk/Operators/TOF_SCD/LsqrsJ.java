@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/06/25 16:42:38  bouzekc
+ * Removed unused DEBUG variable, commented out unused
+ * readans() private method.
+ *
  * Revision 1.10  2003/06/25 16:34:32  bouzekc
  * Filled out getDocumentation(), removed extraneous
  * debug print messages.
@@ -88,7 +92,6 @@ import java.util.Vector;
  * symmetry. Originally written by R. Goyette.
  */
 public class LsqrsJ extends GenericTOF_SCD{
-  private static final boolean DEBUG    = false;
   private static final double  SMALL    = 1.525878906E-5;
   private static final String  identmat = "[[1,0,0][0,1,0][0,0,1]]";
 
@@ -727,7 +730,7 @@ public class LsqrsJ extends GenericTOF_SCD{
   /**
    * Read in result from STDIN.
    */
-  private static String readans(){
+  /*private static String readans(){
     char c=0;
     String Res="";
     try{
@@ -741,7 +744,7 @@ public class LsqrsJ extends GenericTOF_SCD{
       return Res;
     }
     return Res;
-  }
+  }*/
 
   /**
    * A method to make printing arrays easier
