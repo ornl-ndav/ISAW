@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/07/07 15:58:13  bouzekc
+ * Added getDocumentation().  Fixed code comment errors.
+ *
  * Revision 1.5  2003/05/07 18:36:21  dennis
  * Removed redundant code that created parameters vector() twice.
  *
@@ -101,8 +104,37 @@ public class Lsqrs extends    GenericTOF_SCD {
   /**
    * This returns the help documentation
    */
-  public String getDocumentation(){
-    return super.getDocumentation();
+  public String getDocumentation(  ) {
+    StringBuffer sb = new StringBuffer( 80 * 5 );
+
+    // overview
+    sb.append( "@overview This is an Operator designed to execute \"LSQRS\" " );
+    sb.append( "maintained by A.J.Schultz and originally written by J.Marc " );
+    sb.append( "Overhage in 1979." );
+
+    //assumptions
+    sb.append( "@assumptions The peaks file exists and the transformation " );
+    sb.append( "matrix is valid." );
+
+    //algorithm
+    sb.append( "@algorithm The parameters are read in and passed to the " );
+    sb.append( "lsqrs FORTRAN executable." );
+
+    // parameters
+    sb.append( "@param peaksFile The peaks file to load. " );
+    sb.append( "@param matrix The transformation matrix to use. " );
+
+    // return
+    sb.append( "@return If successful, it returns a message saying that " );
+    sb.append( "the experiment file was updated." );
+
+    // error
+    sb.append( "@error If the peaks file is not found or cannot be read from." );
+    sb.append( 
+      "@error If the matrix file is not found or cannot be written to." );
+    sb.append( "@error If anything went wrong within the executable." );
+
+    return sb.toString(  );
   }
   
   /**
@@ -167,7 +199,7 @@ public class Lsqrs extends    GenericTOF_SCD {
     if(command==null)
       command=this.getFullLsqrsName();
     
-    // exit out early if no index executable found
+    // exit out early if no lsqrs executable found
     if(command==null)
       return new ErrorString("could not find lsqrs executable");
       
@@ -259,7 +291,7 @@ public class Lsqrs extends    GenericTOF_SCD {
       System.out.println(output+"2");
       
 
-      // the transformatin matrix question
+      // the transformation matrix question
       output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("transformation matrix")<0 ){
         if(output!=null&&output.length()>0){
@@ -354,7 +386,7 @@ public class Lsqrs extends    GenericTOF_SCD {
   }  
   
   /**
-   * Get a copy of the current SpectrometerEvaluator Operator.  The
+   * Get a copy of the current Lsqrs Operator.  The
    * list of parameters is also copied.
    */
   
