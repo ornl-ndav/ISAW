@@ -29,6 +29,11 @@
  *
  *
  * $Log$
+ * Revision 1.31  2003/11/05 02:10:31  bouzekc
+ * Removed references to result_param, as it is now a protected Form instance
+ * variable.  Removed dependence on ParameterClassList.  Changed constructor
+ * interfaces to reflect change in design.
+ *
  * Revision 1.30  2003/10/29 02:48:59  bouzekc
  * Redesign.  Now uses its own parameter list, with the result parameter as the
  * parameter.  Removed several methods that became obsolete with this change.
@@ -124,14 +129,9 @@ import java.util.Vector;
  * so it can "return" more than one value.
  */
 public class OperatorForm extends Form implements HiddenOperator {
-  //~ Static fields/initializers ***********************************************
-
-  private static ParameterClassList PL = null;
-
   //~ Instance fields **********************************************************
 
   protected Operator form_op;
-  protected IParameterGUI result_param;
   private int[] constIndices;
 
   //~ Constructors *************************************************************
@@ -141,7 +141,6 @@ public class OperatorForm extends Form implements HiddenOperator {
    */
   public OperatorForm(  ) {
     super( "Operator Form" );
-    result_param = null;
     setDefaultParameters(  );
   }
 
@@ -152,7 +151,6 @@ public class OperatorForm extends Form implements HiddenOperator {
    */
   public OperatorForm( String title ) {
     super( title );
-    result_param = null;
     setDefaultParameters(  );
   }
 
@@ -170,36 +168,18 @@ public class OperatorForm extends Form implements HiddenOperator {
 
   /**
    * Construct an OperatorForm with the given Operator and result parameter
-   * type. This allows the use of that Operator for the getResult() method.
-   *
-   * @param op The Operator to use for this form
-   * @param type The IParameterGUI type of the result parameter.  e.g. for a
-   *        LoadFilePG, use "LoadFile"
-   * @param name The name of the result parameter. e.g. "log file"
-   */
-  public OperatorForm( Operator op, String type, String name ) {
-    this( op );
-    setParamClass( type );
-    result_param.setName( name );
-    setDefaultParameters(  );
-  }
-
-  /**
-   * Construct an OperatorForm with the given Operator and result parameter
    * type. This allows the use of that Operator for the getResult() method. In
-   * addition, this constructor allows setting of the constant parameters.
+   * addition, this constructor allows setting of the constant parameters as
+   * well as allowing you to set the result parameter at construction time.
    *
    * @param op The Operator to use for this form
-   * @param type The IParameterGUI type of the result parameter.  e.g. for a
-   *        LoadFilePG, use "LoadFile"
-   * @param name The name of the result parameter. e.g. "log file"
+   * @param resultPG The IParameterGUI to use for the resultParameter.
    * @param indices The array of indices that represent constant parameters for
    *        this Form.
    */
-  public OperatorForm( Operator op, String type, String name, int[] indices ) {
+  public OperatorForm( Operator op, IParameterGUI resultPG, int[] indices ) {
     this( op );
-    setParamClass( type );
-    result_param.setName( name );
+    setResultParam( resultPG );
     setConstantParamIndices( indices );
     setDefaultParameters(  );
   }
@@ -312,7 +292,6 @@ public class OperatorForm extends Form implements HiddenOperator {
     for( int pNum = 0; pNum < numOpParams; pNum++ ) {
       addParameter( form_op.getParameter( pNum ) );
     }
-    addParameter( result_param );
 
     //draw all of the internal Operator parameters and our result parameter
     for( int i = 0; i < getNum_parameters(  ); i++ ) {
@@ -365,9 +344,8 @@ public class OperatorForm extends Form implements HiddenOperator {
     }
 
     //set the value for the internal Operator's parameters to the values that
-    //we currently have for this OperatorForm.  Don't include the result
-    //parameter
-    for( int pNum = 0; pNum < ( getNum_parameters(  ) - 1 ); pNum++ ) {
+    //we currently have for this OperatorForm.
+    for( int pNum = 0; pNum < getNum_parameters(  ); pNum++ ) {
       form_op.getParameter( pNum )
              .setValue( getParameter( pNum ).getValue(  ) );
     }
@@ -390,23 +368,5 @@ public class OperatorForm extends Form implements HiddenOperator {
     }
 
     return result;
-  }
-
-  /**
-   * Used to set the class type of the result parameter by passing in the type
-   * (as determined by getType()) of the IParameterGUI.
-   *
-   * @param type The type of the IParameterGUI.
-   */
-  protected void setParamClass( String type ) {
-    try {
-      if( PL == null ) {
-        PL = new ParameterClassList(  );
-      }
-      result_param = ( IParameterGUI )( PL.getInstance( type ) );
-    } catch( ClassCastException cce ) {
-      SharedData.addmsg( 
-        "ERROR: You must pass an IParameterGUI (not a IParameter)to a Form." );
-    }
   }
 }
