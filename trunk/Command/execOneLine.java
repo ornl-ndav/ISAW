@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2001/11/09 18:18:11  dennis
+ * Fixed the method Vect_to_String to put quotes around the string entries.
+ * Also, data sets are replaced by ISAWDS[tag number]
+ *
  * Revision 1.27  2001/08/16 20:30:50  rmikk
  * Fixed the javadocs @see tags
  *
@@ -991,6 +995,14 @@ public void addDataSet(DataSet dss, String vname)
       return end;
   
       }
+ /** Utility that converts a Vector to a displayable string<P>
+ *Elements of a vector can be another vector, a Data Set.<Br>
+ * Strings and Special strings will be quoted
+ *@param   V     The vector to be converted to its string form
+ *@return  A String representation of the number.  
+ *NOTE: If the string representation is run through execOneLine, hopefully
+ * the vector form is reconstructed
+ */
  public static String Vect_to_String(Vector V)
    {
     if(V == null) return "null";
@@ -1001,6 +1013,10 @@ public void addDataSet(DataSet dss, String vname)
       {Object O= V.elementAt(i);
        if( O instanceof Vector)
            res = res+ Vect_to_String((Vector)O);
+       else if ((O instanceof String) ||(O instanceof SpecialString))
+           res = res +"\""+ O.toString()+"\"";
+       else if( O instanceof DataSet)
+           res =res+ "ISAWDS"+((DataSet)O).getTag();
        else res = res+ O.toString();
        if( i<V.size()-1)res = res+",";
        }
