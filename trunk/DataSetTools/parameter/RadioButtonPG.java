@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2003/12/01 19:03:19  bouzekc
+ *  Fixed bug that discarded a set value if the GUI had not been created.
+ *
  *  Revision 1.27  2003/11/25 03:02:32  bouzekc
  *  Now only tries to clone the Label if it has been initialized.
  *
@@ -212,12 +215,14 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
     if( val instanceof Vector ) {
       Vector tempVec = ( Vector )val;
+
       addItems( tempVec );
       setValue( tempVec.get( tempVec.size(  ) - 1 ) );
     } else {
       addItem( val );
       setValue( val );
     }
+
     this.setType( TYPE );
   }
 
@@ -273,18 +278,24 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
     if( ( radioChoices != null ) && ( val != null ) ) {
       String valName = val.toString(  );
-      boolean found  = radioChoices.containsKey( valName );
 
-      if( found && this.getInitialized(  ) ) {
-        JRadioButton selectedButton = ( JRadioButton )radioChoices.get( 
-            valName );
+      if( radioChoices.containsKey( valName ) ) {
+        //set the internal temporary value
+        sVal = valName;
 
-        if( !selectedButton.isSelected(  ) ) {
-          selectedButton.doClick(  );
+        //update the GUI if it exists
+        if( this.getInitialized(  ) ) {
+          JRadioButton selectedButton = ( JRadioButton )radioChoices.get( sVal );
+
+          if( !selectedButton.isSelected(  ) ) {
+            selectedButton.doClick(  );
+          }
+
+          sVal = selectedButton.getText(  );
         }
-        sVal = selectedButton.getText(  );
       }
     }
+
     super.setValue( sVal );
   }
 
@@ -294,8 +305,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    * @return String label of the selected radio button.
    */
   public Object getValue(  ) {
-    String sVal = super.getValue(  )
-                       .toString(  );
+    String sVal = super.getValue(  ).toString(  );
 
     if( sVal == null ) {
       sVal = "";
@@ -375,6 +385,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
           new Class[]{ String.class, Object.class } );
       RadioButtonPG pg      = ( RadioButtonPG )construct.newInstance( 
           new Object[]{ null, null } );
+
       pg.setName( new String( this.getName(  ) ) );
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
@@ -390,14 +401,13 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
       }
 
       if( getPropListeners(  ) != null ) {
-        java.util.Enumeration e = getPropListeners(  ).keys(  );
+        java.util.Enumeration e    = getPropListeners(  ).keys(  );
         PropertyChangeListener pcl = null;
-        String propertyName = null;
+        String propertyName        = null;
 
         while( e.hasMoreElements(  ) ) {
           pcl            = ( PropertyChangeListener )e.nextElement(  );
           propertyName   = ( String )getPropListeners(  ).get( pcl );
-
           pg.addPropertyChangeListener( propertyName, pcl );
         }
       }
@@ -428,8 +438,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
     //we can let addItem take care of adding it to the button group, entry
     //widget, and Vector of buttons.
     setEntryWidget( new EntryWidget(  ) );
-    getEntryWidget(  )
-      .setLayout( new GridLayout( 0, 1 ) );
+    getEntryWidget(  ).setLayout( new GridLayout( 0, 1 ) );
     radioGroup = new ButtonGroup(  );
 
     //we will either discard all the old values and set to the new ones, or
@@ -445,6 +454,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
         createGUIButton( names.nextElement(  ).toString(  ) );
       }
     }
+
     super.initGUI(  );
     setValue( getValue(  ) );
   }
@@ -458,11 +468,13 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
     if( this.getIgnorePropertyChange(  ) ) {
       return;
     }
+
     this.setValid( false );
 
     String propName            = pce.getPropertyName(  );
     PropertyChangeEvent newPCE = new PropertyChangeEvent( 
         this, propName, oldValue, getValue(  ) );
+
     firePropertyChange( newPCE );
   }
 
@@ -488,11 +500,11 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    */
   private void createGUIButton( String buttonName ) {
     JRadioButton tempButton = new JRadioButton( buttonName );
+
     radioChoices.remove( buttonName );
     radioChoices.put( buttonName, tempButton );
     radioGroup.add( tempButton );
-    getEntryWidget(  )
-      .add( tempButton );
+    getEntryWidget(  ).add( tempButton );
     tempButton.addActionListener( rpgListener );
   }
 
@@ -512,8 +524,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
      * @param event The ActionEvent triggered by the JRadioButton click.
      */
     public void actionPerformed( ActionEvent ae ) {
-      oldValue = getValue(  )
-                   .toString(  );
+      oldValue = getValue(  ).toString(  );
       setValue( ae.getActionCommand(  ) );
     }
   }
