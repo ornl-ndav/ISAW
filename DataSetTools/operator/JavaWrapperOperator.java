@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.20  2004/05/09 21:41:28  bouzekc
+ * Added code to clear DataSet values before returning the wrapped result.
+ *
  * Revision 1.19  2004/05/07 17:44:55  dennis
  * Changed to use WrappedCrunch in the Operators/Examples
  * directory instead of Operators.
@@ -156,12 +159,11 @@ public class JavaWrapperOperator extends GenericOperator {
    * Testbed.
    */
   public static void main( String[] args ) {
-    Operators.Example.WrappedCrunch op = new Operators.Example.WrappedCrunch();
+    Operators.Example.WrappedCrunch op = new Operators.Example.WrappedCrunch(  );
 
     //Operators.StringChoiceOp op = new Operators.StringChoiceOp(  );
     //Operators.MyFortran crunch = new Operators.MyFortran(  );
     JavaWrapperOperator wrapper = new JavaWrapperOperator( op );
-
     /*DataSet temp = new DataSetTools.retriever.RunfileRetriever(
        "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
        new DataSetTools.viewer.ViewManager(
@@ -280,19 +282,16 @@ public class JavaWrapperOperator extends GenericOperator {
           //BooleanPG
           if( ( type == Boolean.TYPE ) || ( type == Boolean.class ) ) {
             addParameter( new BooleanPG( name, val ) );
-
             //FloatPG
           } else if( 
             ( type == Float.TYPE ) || ( type == Double.TYPE ) ||
               ( type == Float.class ) || ( type == Double.class ) ) {
             addParameter( new FloatPG( name, val ) );
-
             //IntegerPG
           } else if( 
             ( type == Integer.TYPE ) || ( type == Long.TYPE ) ||
               ( type == Integer.class ) || ( type == Long.class ) ) {
             addParameter( new IntegerPG( name, val ) );
-
             //StringPG
           } else if( ( type == Character.TYPE ) || ( type == String.class ) ) {
             addParameter( new StringPG( name, val ) );
@@ -365,10 +364,10 @@ public class JavaWrapperOperator extends GenericOperator {
         pg          = ( ParameterGUI )parameters.get( i );
         values[i]   = pg.getValue(  );
 
+        //at this point, we have the value, so we don't want excessive references to the 
+        //DataSet, since they seem reluctant to release it
         if( pg instanceof DataSetPG ) {
-          ( ( DataSetPG )pg ).clear(  );  // clear DataSetPG to 
-
-          // avoid memory leak !
+          ( ( DataSetPG )pg ).clear(  );
         }
       }
 
@@ -385,8 +384,7 @@ public class JavaWrapperOperator extends GenericOperator {
               Array.set( fieldParams[k].get( wrapped ), 1, myVect.get( m ) );
             }
           }
-        }  //else if( fieldParams[k].getType(  ) instanceof SpecialString ) {
-        else if( 
+        } else if( 
           SpecialString.class.isAssignableFrom( fieldParams[k].getType(  ) ) ) {
           SpecialString ss = ( SpecialString )fieldParams[k].get( wrapped );
 
@@ -397,7 +395,18 @@ public class JavaWrapperOperator extends GenericOperator {
       }
 
       //send the values through calculate(...)
-      return wrapped.calculate(  );
+      Object result = wrapped.calculate(  );
+
+      //we have our result, and it seems that the out of memory error occurs when we try to 
+      //iterate over this class again, so drop the old values
+      for( int k = 0; k < fieldParams.length; k++ ) {
+        if( values[k] instanceof DataSet ) {
+          values[k] = null;
+          fieldParams[k].set( wrapped, DataSet.EMPTY_DATA_SET );
+        }
+      }
+
+      return result;
     } catch( IllegalAccessException iae ) {
       iae.printStackTrace(  );
 
