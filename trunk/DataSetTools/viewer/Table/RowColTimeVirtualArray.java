@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/11/06 21:26:10  rmikk
+ * Implemented method to select data sets via the table.  In
+ * this form only data sets are selected and not time intervals.
+ *
  * Revision 1.3  2003/11/06 20:01:57  rmikk
  * Eliminated warning messages by removing paths from
  *   ViewMenuItems
@@ -590,7 +594,23 @@ public class RowColTimeVirtualArray extends
     }
 
 
+  public void SelectRegion( ISelectedRegion region){
+     if( region instanceof SelectedRegion2D){
+        SelectedRegion2D Region = (SelectedRegion2D)region;
+        if( Region.rows == null)
+           return;
+        if( Region.cols == null)
+           return;
+        for( int i = 0; i < Region.rows.length; i++)
+          for( int j = 0; j< Region.cols.length; j++){
+             int Group = getGroup( i, j);
+             DS.setSelectFlag( Group, true);
 
+         }
+
+
+     }
+  }
   /**
   *    Returns the selected data corresponding to the give PointedAt
   *    condition
