@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/10/23 19:03:03  pfpeterson
+ *  Fixed a bug where the parameter did not work with a null value.
+ *
  *  Revision 1.3  2002/10/07 15:27:40  pfpeterson
  *  Another attempt to fix the clone() bug.
  *
@@ -63,6 +66,11 @@ public class IntArrayPG extends StringPG{
     public IntArrayPG(String name, Object value, boolean valid){
         super(name,value,valid);
         this.type=TYPE;
+    }
+
+    public void setValue(Object value){
+      super.setValue(value);
+      if(value==null) this.value="";
     }
 
     // ********** IParameterGUI requirements **********
