@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/01/30 02:38:51  bouzekc
+ *  Removed unused variables and an unused private method to pad a String
+ *  with spaces on the left.  This method will likely be moved to
+ *  StringUtil.java.
+ *
  *  Revision 1.16  2003/12/15 01:45:30  bouzekc
  *  Removed unused imports.
  *
@@ -222,9 +227,9 @@ public class Blind extends    GenericTOF_SCD {
     // declare some things
     Process process=null;
     String output=null;
-    File dir=new File(direc);
+
     if(command==null){
-	command=this.getFullBlindName();
+	    command=this.getFullBlindName();
     }
     
     // exit out early if no blind executable found
