@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/06/19 22:28:59  pfpeterson
+ * More appropriate setting of parameters in an operator.
+ *
  * Revision 1.2  2003/06/19 21:21:03  pfpeterson
  * Now does type checking when looking for an operator if could not
  * determine one from number of supplied parameters.
@@ -43,6 +46,8 @@
 package Command;
 
 import DataSetTools.dataset.*;
+import DataSetTools.parameter.IParameter;
+import DataSetTools.parameter.IParameterGUI;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Generic.GenericOperator;
 import DataSetTools.retriever.*;
@@ -484,8 +489,29 @@ public class ScriptUtil{
     int max=Math.min(num_vals,num_param);
 
     // copy over the values into the parameters
-    for( int i=0 ; i<max ; i++ )
-      operator.getParameter(i).setValue(param_vals[i]);
+    IParameter param=null;
+    for( int i=0 ; i<max ; i++ ){
+      param=operator.getParameter(i);
+      if(param instanceof IParameterGUI){
+        param.setValue(param_vals[i]);
+      }else{
+        Object value=param.getValue();
+        if( value instanceof String ){
+          param.setValue(param_vals[i].toString());
+        }else if( value instanceof SpecialString ){
+          param.setValue(param_vals[i].toString());
+        }else if(value instanceof Integer){
+          param.setValue(new Integer(((Number)param_vals[i]).intValue()));
+        }else if(value instanceof Float){
+          param.setValue(new Float(((Number)param_vals[i]).floatValue()));
+        }else if(value instanceof Double){
+          param.setValue(new Double(((Number)param_vals[i]).doubleValue()));
+        }else{
+          param.setValue(param_vals[i]);
+        }
+
+      }
+    }
     
     // return the configured operator
     return operator;
@@ -569,10 +595,7 @@ public class ScriptUtil{
     int[] num_param=new int[candidates.length];
     boolean has_matching=false;
 
-    System.out.println("Searching for "+command); // REMOVE
-
     // remove candidates with too few parameters
-    System.out.println("00:"+StringUtil.toString(candidates)); // REMOVE
     for( int i=0 ; i<candidates.length ; i++ ){
       num_param[i]=SCLH.getNumParameters(candidates[i]);
       if(num_vals==num_param[i]){
@@ -582,7 +605,6 @@ public class ScriptUtil{
         candidates[i]=-1;
       }
     }
-    System.out.println("01:"+StringUtil.toString(candidates)); // REMOVE
 
     // something has the right number so remove anything that doesn't
     if(has_matching){
@@ -599,8 +621,6 @@ public class ScriptUtil{
         return candidates;
     }
 
-    System.out.println("02:"+StringUtil.toString(candidates)); // REMOVE
-
     // find the minimum
     int min=100;
     for( int i=0 ; i<candidates.length ; i++ ){
@@ -616,8 +636,6 @@ public class ScriptUtil{
       if( (candidates[i]>=0) && (num_param[i]>min) )
         candidates[i]=-1;
     }
-
-    System.out.println("03:"+StringUtil.toString(candidates)); // REMOVE
 
     // shrink the array and return
     return reduceArray(candidates);;
