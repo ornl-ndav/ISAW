@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/06/23 21:48:43  dennis
+ * Eliminated trailing slashes on all directories containing scripts.
+ * (Ruth)
+ *
  * Revision 1.4  2003/06/18 18:11:10  pfpeterson
  * Fixed bug in the reload method where not all instance variables
  * were reinitialized.
@@ -164,20 +168,20 @@ public class IssScript extends Script{
     }else{
       major=directory;
     }
-
     String[] minorArray=StringUtil.split(minor,"/");
 
     // fill in the category list
     int count=2;
     if(minorArray!=null) count=count+minorArray.length;
     this.categoryList=new String[count];
+
     this.categoryList[0]=DataSetTools.operator.Operator.OPERATOR;
-    this.categoryList[1]=(String)HOMES.get(major);
+    this.categoryList[1]=(String)HOMES.get(Eliminate1TrailingSlash(major));
     if(minorArray!=null){
       for( int i=0 ; i<minorArray.length ; i++ )
         this.categoryList[i+2]=minorArray[i];
     }
-
+    
     return this.categoryList;
   }
 
@@ -254,6 +258,17 @@ public class IssScript extends Script{
     this.documentation=docbuffer.toString();
     return this.documentation;
   }
+  
+  private static String Eliminate1TrailingSlash( String DirName){
+    if( DirName == null)
+       return DirName;
+    if( DirName.length() < 1)
+       return DirName;
+    if( "/\\".indexOf(DirName.charAt( DirName.length()-1))>=0)
+       return DirName.substring(0, DirName.length()-1);
+    return DirName; 
+  }
+   
 
   // ============================== PRIVATE UTILITY METHODS
   /**
@@ -262,19 +277,19 @@ public class IssScript extends Script{
   private static void initHomes(){
     HOMES=new Hashtable();
     // ISAW home directory
-    addDir(SharedData.getProperty("ISAW_HOME"),"Isaw Scripts");
+    addDir(Eliminate1TrailingSlash(SharedData.getProperty("ISAW_HOME")),"Isaw Scripts");
 
     // user home directory
-    addDir(SharedData.getProperty("user.home"),"User Scripts");
+    addDir(Eliminate1TrailingSlash(SharedData.getProperty("user.home")),"User Scripts");
 
     // group home directories
-    addDirs(SharedData.getProperty("GROUP_HOME"),"Group Home");
+    addDirs(Eliminate1TrailingSlash(SharedData.getProperty("GROUP_HOME")),"Group Home");
     int group=1;
-    String group_home=SharedData.getProperty("GROUP"+group+"_HOME");
+    String group_home=Eliminate1TrailingSlash(SharedData.getProperty("GROUP"+group+"_HOME"));
     while(group_home!=null && group_home.length()>0){
       addDirs(group_home,"Group"+group+" Scripts");
       group=group+1;
-      group_home=SharedData.getProperty("GROUP"+group+"_HOME");
+      group_home=Eliminate1TrailingSlash(SharedData.getProperty("GROUP"+group+"_HOME"));
     }
   }
 
