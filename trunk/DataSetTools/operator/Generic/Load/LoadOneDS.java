@@ -1,5 +1,5 @@
 /*
- * File:  LoadOneDS.java  
+ * File:  LoadOneDS.java
  *
  * Copyright (C) 2002, Dennis Mikkelson
  *
@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/12/20 17:50:43  dennis
+ *  Added getDocumentation() method. (Chris Bouzek)
+ *
  *  Revision 1.3  2002/11/27 23:21:16  pfpeterson
  *  standardized header
  *
@@ -54,19 +57,19 @@ import DataSetTools.operator.Parameter;
 import DataSetTools.parameter.*;
 
 /**
- * Operator to load specific IDs from a specific DataSet from a NeXus file 
- * or IPNS runfile 
+ * Operator to load specific IDs from a specific DataSet from a NeXus file
+ * or IPNS runfile
  *
  * @see DataSetTools.operator.Operator
  */
 
-public class LoadOneDS extends    GenericLoad 
+public class LoadOneDS extends    GenericLoad
                        implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
    * Construct an operator with a default parameter list.  If this constructor
-   * is used, meaningful values for the parameters should be set before 
+   * is used, meaningful values for the parameters should be set before
    * calling getResult().
    */
    public LoadOneDS( )
@@ -77,16 +80,16 @@ public class LoadOneDS extends    GenericLoad
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
-   *  Construct an operator for with the specified parameter values so 
+   *  Construct an operator for with the specified parameter values so
    *  that the operation can be invoked immediately by calling getResult().
    *
    *  @param  file_name   The fully qualified runfile name
    *  @param  ds_num      The DataSet number that should be loaded
-   *  @param  ids         A list of IDs for the Data blocks that should be 
-   *                      loaded 
+   *  @param  ids         A list of IDs for the Data blocks that should be
+   *                      loaded
    *
    */
-   public LoadOneDS( String   file_name, 
+   public LoadOneDS( String   file_name,
                      int      ds_num,
                      String   ids      )
    {
@@ -100,11 +103,11 @@ public class LoadOneDS extends    GenericLoad
 
       parameter = getParameter(2);
       parameter.setValue( ids );
-   } 
+   }
 
   /* -------------------------- setDefaultParameters ----------------------- */
   /**
-   *  Set the parameters to default values.  
+   *  Set the parameters to default values.
    */
   public void setDefaultParameters()
   {
@@ -125,8 +128,8 @@ public class LoadOneDS extends    GenericLoad
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor:
-   *            in this case, OneDS
+   * @return  the command name to be used with script processor:
+   *          in this case, OneDS
    *
    */
    public String getCommand()
@@ -134,6 +137,33 @@ public class LoadOneDS extends    GenericLoad
      return "OneDS";
    }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+   public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator loads specific IDs from a ");
+    s.append("specific DataSet from a NeXus file or IPNS runfile.");
+    s.append("@assumptions The file exists and it contains valid ");
+    s.append("ID data.");
+    s.append("@algorithm Gets the specified ID data from the DataSet ");
+    s.append("in the IPNS runfile or Nexus file, and creates a ");
+    s.append("histogram from this data.  The histogram is then used to ");
+    s.append("create a new DataSet.");
+    s.append("@param file_name The fully qualified runfile name.");
+    s.append("@param ds_num The DataSet number that should be loaded.");
+    s.append("@param ids A list of IDs for the Data blocks that should be ");
+    s.append("loaded.");
+    s.append("@return A new DataSet containing the specified histogram ");
+    s.append("from the runfile.");
+    s.append("@error Returns an ErrorString if the file type is not valid");
+    s.append("@error Returns an ErrorString if the requested DataSet is ");
+    s.append("not in the file.");
+    return s.toString();
+  }
 
   /* ----------------------------- getResult ---------------------------- */
   /**
@@ -144,12 +174,12 @@ public class LoadOneDS extends    GenericLoad
    *          histogram existed.
    */
    public Object getResult()
-   {                               
+   {
      String  file_name  = getParameter(0).getValue().toString();
      int     ds_num     = ((Integer)(getParameter(1).getValue()) ).intValue();
      String  ids_string = getParameter(2).getValue().toString();
 
-     int     ids[] = IntList.ToArray( ids_string ); 
+     int     ids[] = IntList.ToArray( ids_string );
 
      Retriever rr = null;
 
@@ -178,13 +208,13 @@ public class LoadOneDS extends    GenericLoad
 
 
    /* -------------------------------- main ------------------------------ */
-   /* 
-    * main program for test purposes only  
+   /*
+    * main program for test purposes only
     */
 
    public static void main(String[] args)
    {
-      LoadOneDS loader = new LoadOneDS( 
+      LoadOneDS loader = new LoadOneDS(
                                 "/usr/local/ARGONNE_DATA/hrcs2444.run",
                                  1,
                                 "2:10,20:30" );
@@ -199,5 +229,8 @@ public class LoadOneDS extends    GenericLoad
       }
       else
         System.out.println( result.toString() );
-   } 
-} 
+
+      System.out.println("\nCalling getDocumentation():\n");
+      System.out.println(loader.getDocumentation());
+   }
+}
