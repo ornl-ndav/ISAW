@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/08/08 17:52:47  dennis
+ *  Added final String names for "Brent" view and old selected graph
+ *  view.
+ *
  *  Revision 1.10  2003/03/18 14:42:43  dennis
  *  Added option for popping up an additional ViewManager to the
  *  view menu of an existing ViewManager
@@ -65,7 +69,8 @@ public interface IViewManager extends IObserver
   public static final String ADDITIONAL_VIEW = "Additional View";
   public static final String IMAGE           = "Image View";
   public static final String SCROLLED_GRAPHS = "Scrolled Graph View";
-  public static final String SELECTED_GRAPHS = "Selected Graph View";
+  public static final String SELECTED_GRAPHS = "NEW Selected Graph View";
+  public static final String SELECTED_GRAPH2 = "OLD Selected Graph View";
   public static final String TABLE           = "Table Generator";
   public static final String THREE_D         = "3D View";
   public static final String CONTOUR         = "Contour View";
