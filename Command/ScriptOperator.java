@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2001/06/26 14:41:18  rmikk
+ * -Used ISAW_HOME ,USER_HOME, and user.home
+ * environmental variables to trim filename path.
+ * -If no title given in script, the title will be the command name
+ *
  * Revision 1.8  2001/06/05 16:50:35  rmikk
  * Changed props.dat to IsawProps.dat
  *
@@ -74,6 +79,9 @@ public class ScriptOperator extends GenericOperator
    
 
   /**
+ * Creates an operator wrapper around a script
+ * The command Name and category list are derived from the filename
+ * The title is determined by the $title = from the script
  *@param  filename  The file with a script
  */
    public ScriptOperator(  String filename )
@@ -109,20 +117,51 @@ public class ScriptOperator extends GenericOperator
         command = F.substring( i + 1, j );
        
         F = F.substring( 0, i );
+        if( F.charAt(F.length()-1)!='/')
+          F = F + "/";
         String F2 = F;
-        String X = System.getProperty( "Script_Path");
-        if( X != null )
-          {X = X.replace( '\\' , '/' );
-           X = X.replace(java.io.File.pathSeparatorChar,';');
-           F2 = adjust( F, X );
-           }
+        String F3=F2;
+        String X ;//= System.getProperty( "Script_Path");
+       
+        //if( X != null )
+        //  {X = X.replace( '\\' , '/' );
+        //   X = X.replace(java.io.File.pathSeparatorChar,';');
+        //   F2 = adjust( F, X );
+        //   }
         if( F2.equals(F))
-         {  X = System.getProperty( "java.class.path");
-           X = X.replace( '\\', '/');
-           X.replace(java.io.File.pathSeparatorChar, ';');
-           F2 = adjust ( F , X );
+         {  X = System.getProperty( "ISAW_HOME");
+            
+            if(X!=null)
+               {X = X.replace( '\\', '/');
+                X.replace(java.io.File.pathSeparatorChar, ';');
+                F2 = adjust ( F , X );
+               }
          } 
-         
+	//if( F2.equals(F))
+         {  X = System.getProperty( "USER_HOME");
+            
+            if( X!=null)
+               {X = X.replace( '\\', '/');
+                X.replace(java.io.File.pathSeparatorChar, ';');
+                F3 = adjust ( F , X );
+               }
+         } 
+	if(F3.length() < F2.length()) F2 = F3;
+        //if( F2.length()== F.length() )
+         {  X = System.getProperty( "java.class.path");            
+            X = X.replace( '\\', '/');
+            X.replace(java.io.File.pathSeparatorChar, ';');
+            F3 = adjust ( F , X );
+         } 
+	if(F3.length() < F2.length()) F2 = F3;
+	 //  if( F2.equals(F))
+         {  X = System.getProperty( "user.home");
+            
+            X = X.replace( '\\', '/');
+            X.replace(java.io.File.pathSeparatorChar, ';');
+            F3 = adjust ( F , X );
+         } 
+        if(F3.length() < F2.length()) F2 = F3;
         if( !(F2.equals(F)))
              F = F2;
         else
@@ -191,6 +230,7 @@ public class ScriptOperator extends GenericOperator
        {String F = F1;
          if( F == null ) 
            return null;
+       
          F = F.trim();
          if( F.length()<1)
            return F;
@@ -229,7 +269,11 @@ public class ScriptOperator extends GenericOperator
 */
 public String getTitle()
   { if( SP != null )
-       return SP.getTitle();
+       {String S =SP.getTitle();
+        if( S.equals("UNKNOWN"))
+           S = getCommand();
+        return S;
+       }
     else 
        return "UNKNOWN";
    }
