@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2001/06/25 19:59:31  chatter
+ * Added Last Parameter to JParametersDialog Constructor
+ *
  * Revision 1.22  2001/06/25 19:25:26  rmikk
  * Added SplitPane With State and Clearred the
  * Status Line before every run
@@ -295,7 +298,7 @@ public void setLogDoc(Document doc)
            return ;
           }
         DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
-                new DataSetTools.components.ParametersGUI.JParametersDialog(cp, DSS, new PlainDocument());
+                new DataSetTools.components.ParametersGUI.JParametersDialog(cp, DSS, new PlainDocument(),X);
    }
 
 /**
@@ -498,7 +501,8 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
         if( CP.SP.getNum_parameters() > 0 )
            {
              DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
-                     new DataSetTools.components.ParametersGUI.JParametersDialog(CP.SP, SP.getDataSets(), new PlainDocument());
+                     new DataSetTools.components.ParametersGUI.JParametersDialog(CP.SP, SP.getDataSets(), 
+                     new PlainDocument(), null);
              
            }
         else
