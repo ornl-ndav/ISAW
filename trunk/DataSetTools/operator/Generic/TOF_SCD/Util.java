@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/05/06 16:39:28  pfpeterson
+ * Fixed small bug in detector_angle(DataSet,int) which was not checking
+ * for detector number.
+ *
  * Revision 1.12  2003/05/06 16:00:22  pfpeterson
  * Added new methods for determining information about data from two
  * detectors. Old methods are deprecated to ease debugging.
@@ -123,8 +127,19 @@ public class Util{
    * 
    * @return the in plane angle in degrees
    */
-  static public float detector_angle(DataSet ds, int detID){
-    Data data=ds.getData_entry(0); 
+  static public float detector_angle(DataSet ds, int detNum){
+    Data data=null;
+    int detID=-1;
+    for( int i=0 ; i< ds.getNum_entries() ; i++ ){
+      detID=-1;
+      data=ds.getData_entry(i);
+      if(data==null) continue;
+      detID=detectorID(data);
+
+      // stop looping b/c we found something
+      if(detID==detNum) break;
+    }
+
     Object attr_val=data.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE);
     if(attr_val!=null && attr_val instanceof Float)
       return ((Float)attr_val).floatValue();
