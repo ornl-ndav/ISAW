@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.20  2003/07/14 16:47:17  bouzekc
+ * Added missing javadocs, reformatted to fit within 80 column
+ * indent.
+ *
  * Revision 1.19  2003/07/14 16:41:19  bouzekc
  * Added the LsqrsJ log file as a second "result."
  *
@@ -121,16 +125,22 @@ import java.util.Vector;
 
 
 /**
- *
- *  This is a Form to add extra functionality to LsqrsJ.  It outputs
- *  multiple ls#.mat files, where # corresponds to a run number.
- *  Other than that, it functions in a similar manner to LsqrsJ.
+ * This is a Form to add extra functionality to LsqrsJ.  It outputs multiple
+ * ls#.mat files, where # corresponds to a run number. Other than that, it
+ * functions in a similar manner to LsqrsJ.
  */
 public class LsqrsJForm extends Form {
+  //~ Static fields/initializers ***********************************************
+
   protected static int RUN_NUMBER_WIDTH = 5;
   private static final String identmat  = "[[1,0,0][0,1,0][0,0,1]]";
-  private boolean useIdentity           = false;
+
+  //~ Instance fields **********************************************************
+
+  private boolean useIdentity        = false;
   private BooleanPG useIdentCheckBox;
+
+  //~ Constructors *************************************************************
 
   /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
 
@@ -143,11 +153,10 @@ public class LsqrsJForm extends Form {
   }
 
   /**
-   *  Construct a Form using the default parameter list.
+   * Construct a Form using the default parameter list.
    *
-   *  @param hasConstParams         boolean indicating whether
-   *                                this Form should have constant
-   *                                parameters.
+   * @param hasConstParams boolean indicating whether this Form should have
+   *        constant parameters.
    */
   public LsqrsJForm( boolean hasConstParams ) {
     super( "LsqrsJForm", hasConstParams );
@@ -157,50 +166,62 @@ public class LsqrsJForm extends Form {
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
 
   /**
-   *  Full constructor for LsqrsJForm.
+   * Full constructor for LsqrsJForm.
    *
-   *  @param runnums        The run numbers to use for naming the
-   *                        matrix files.
-   *  @param peaksPath      The path where the peaks file is.
-   *  @param expName        The experiment name.
-   *  @param restrictSeq    The sequence numbers to restrict.
-   *  @param transform      The transformation matrix to apply.
+   * @param runnums The run numbers to use for naming the matrix files.
+   * @param peaksPath The path where the peaks file is.
+   * @param expName The experiment name.
+   * @param restrictSeq The sequence numbers to restrict.
+   * @param transform The transformation matrix to apply.
    */
   public LsqrsJForm( 
     String runNums, String peaksPath, String expName, String restrictSeq,
     String transform ) {
     this(  );
-    getParameter( 0 ).setValue( runNums );
-    getParameter( 1 ).setValue( peaksPath );
-    getParameter( 2 ).setValue( expName );
-    getParameter( 3 ).setValue( restrictSeq );
-    getParameter( 4 ).setValue( transform );
+    getParameter( 0 )
+      .setValue( runNums );
+    getParameter( 1 )
+      .setValue( peaksPath );
+    getParameter( 2 )
+      .setValue( expName );
+    getParameter( 3 )
+      .setValue( restrictSeq );
+    getParameter( 4 )
+      .setValue( transform );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * @return the String command used for invoking this Form in a Script.
+   */
+  public String getCommand(  ) {
+    return "JLSQRSFORM";
   }
 
   /**
-   *
-   *  Attempts to set reasonable default parameters for this form.
+   * Attempts to set reasonable default parameters for this form.
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
 
-    addParameter( new IntArrayPG( "Run Numbers", null, false ) );//0
+    addParameter( new IntArrayPG( "Run Numbers", null, false ) );  //0
 
-    addParameter( new DataDirPG( "Peaks File Path", null, false ) );//1
+    addParameter( new DataDirPG( "Peaks File Path", null, false ) );  //1
 
-    addParameter( new StringPG( "Experiment Name", null, false ) );//2
-
-    addParameter( 
-      new IntArrayPG( "Restrict Peaks Sequence Numbers (blank for all)", 
-                      null, false ) );//3
-
-    addParameter( new ArrayPG( "Matrix Files", new Vector(  ), false ) );//4
+    addParameter( new StringPG( "Experiment Name", null, false ) );  //2
 
     addParameter( 
-      new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );//5
+      new IntArrayPG( 
+        "Restrict Peaks Sequence Numbers (blank for all)", null, false ) );  //3
+
+    addParameter( new ArrayPG( "Matrix Files", new Vector(  ), false ) );  //4
 
     addParameter( 
-      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );//6
+      new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );  //5
+
+    addParameter( 
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );  //6
 
     addParameter( new LoadFilePG( "JLsqrs Log File", " ", false ) );  //7
 
@@ -213,10 +234,7 @@ public class LsqrsJForm extends Form {
   }
 
   /**
-   *
-   *  Documentation for this OperatorForm.  Follows javadoc
-   *  conventions.
-   *
+   * @return javadoc formatted documentation for this OperatorForm.
    */
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer(  );
@@ -261,20 +279,13 @@ public class LsqrsJForm extends Form {
   }
 
   /**
-   *  Returns the String command used for invoking this
-   *  Form in a Script.
-   */
-  public String getCommand(  ) {
-    return "JLSQRSFORM";
-  }
-
-  /**
-   * getResult() takes the user input parameters and runs LsqrsJ,
-   * using the given *.peaks file.  It pops up a dialog box so that the
-   * user can select transformation matrices for each run number.
-   * (DIALOG BOX NOT IMPLEMENTED YET).
+   * getResult() uses the given .peaks file and the identity matrix for
+   * calculation.  In addition, it "knows" which runs to  restrict for each
+   * matrix file.  "It outputs a ls#expName.mat file for each run, and an
+   * lsexpName.mat file which is produced for ALL runs.  Other than that, it
+   * functions in a similar manner to LsqrsJ.
    *
-   *  @return A Boolean indicating success or failure.
+   * @return A Boolean indicating success or failure.
    */
   public Object getResult(  ) {
     SharedData.addmsg( "Executing..." );
@@ -299,16 +310,19 @@ public class LsqrsJForm extends Form {
 
     //get input file directory 
     param      = ( IParameterGUI )super.getParameter( 1 );
-    peaksDir   = param.getValue(  ).toString(  );
+    peaksDir   = param.getValue(  )
+                      .toString(  );
 
     //gets the experiment name
     param     = ( IParameterGUI )super.getParameter( 2 );
-    expName   = param.getValue(  ).toString(  );
+    expName   = param.getValue(  )
+                     .toString(  );
 
     /*get restricted sequence numbers - leave in String form
        for LsqrsJ*/
     param         = ( IParameterGUI )getParameter( 3 );
-    restrictSeq   = param.getValue(  ).toString(  );
+    restrictSeq   = param.getValue(  )
+                         .toString(  );
 
     //get the peak intensity threshold
     param       = ( IParameterGUI )getParameter( 5 );
@@ -323,11 +337,16 @@ public class LsqrsJForm extends Form {
 
     //call LsqrsJ - this is the same every time, so keep it out of the loop
     leastSquares = new LsqrsJ(  );
-    leastSquares.getParameter( 0 ).setValue( peaksName );
-    leastSquares.getParameter( 2 ).setValue( restrictSeq );
-    leastSquares.getParameter( 3 ).setValue( identmat );
-    leastSquares.getParameter( 5 ).setValue( threshold );
-    leastSquares.getParameter( 6 ).setValue( range );
+    leastSquares.getParameter( 0 )
+                .setValue( peaksName );
+    leastSquares.getParameter( 2 )
+                .setValue( restrictSeq );
+    leastSquares.getParameter( 3 )
+                .setValue( identmat );
+    leastSquares.getParameter( 5 )
+                .setValue( threshold );
+    leastSquares.getParameter( 6 )
+                .setValue( range );
 
     //validate the parameters and init the progress bar variables
     Object superRes = super.getResult(  );
@@ -350,8 +369,10 @@ public class LsqrsJForm extends Form {
       SharedData.addmsg( 
         "LsqrsJ is creating " + matFileName + " for " + peaksName );
 
-      leastSquares.getParameter( 1 ).setValue( runNum );
-      leastSquares.getParameter( 4 ).setValue( matFileName );
+      leastSquares.getParameter( 1 )
+                  .setValue( runNum );
+      leastSquares.getParameter( 4 )
+                  .setValue( matFileName );
 
       obj = leastSquares.getResult(  );
 
@@ -368,8 +389,10 @@ public class LsqrsJForm extends Form {
     //now put out an orientation matrix for all of the runs.
     matFileName = peaksDir + "ls" + expName + ".mat";
     matNamesVec.add( matFileName );
-    leastSquares.getParameter( 1 ).setValue( "" );
-    leastSquares.getParameter( 4 ).setValue( matFileName );
+    leastSquares.getParameter( 1 )
+                .setValue( "" );
+    leastSquares.getParameter( 4 )
+                .setValue( matFileName );
     obj = leastSquares.getResult(  );
 
     if( obj instanceof ErrorString ) {
@@ -387,6 +410,7 @@ public class LsqrsJForm extends Form {
     param.setValid( true );
 
     SharedData.addmsg( "--- LsqrsJForm finished. ---" );
+
     return new Boolean( true );
   }
 }
