@@ -31,6 +31,9 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.27  2001/06/25 23:14:57  chatter
+  *  Added the 3D view menuitem
+  *
   *  Revision 1.26  2001/06/25 22:13:51  chatter
   *  Changed the SelectedGraphView call to use the ViewManager
   *
@@ -379,6 +382,7 @@
          JMenu imageView = new JMenu("Image View");
          JMenu s_graphView = new JMenu("Scrolled Graph View");
          JMenu instrumentInfoView = new JMenu("Instrument Info");
+         JMenu threeDView = new JMenu("3D View");
  	   JMenu LiveData = new JMenu("Load Live Data"); 
                
          JMenu macrosMenu = new JMenu("Macros");
@@ -430,6 +434,10 @@
          
          JMenuItem iFrame_sg = new JMenuItem("Scrolled Graph Internal Frame");
          JMenuItem eFrame_sg = new JMenuItem("Scrolled Graph External Frame");
+
+         JMenuItem iFrame_threeD = new JMenuItem("3D View Internal Frame");
+         JMenuItem eFrame_threeD = new JMenuItem("3D View External Frame");
+
          
          JMenuItem HRMECS = new JMenuItem("HRMECS Link");
          JMenuItem LRMECS = new JMenuItem("LRMECS Link");
@@ -483,7 +491,9 @@
            
          imageView.add(iFrame);
          imageView.add(eFrame);
-         
+         threeDView.add(iFrame_threeD);
+         threeDView.add(eFrame_threeD);
+
          s_graphView.add(iFrame_sg);
          s_graphView.add(eFrame_sg);
          
@@ -530,7 +540,7 @@
          vMenu.add(imageView);
          vMenu.add(s_graphView);
          vMenu.add(graphView);
-         //vMenu.add(viewFileSeparator);
+         vMenu.add(threeDView);
          vMenu.add(instrumentInfoView);         
            
          optionMenu.add(optionwindowsLook);
@@ -563,6 +573,9 @@
          //s_graphView.addActionListener(new MenuItemHandler()); 
          iFrame_sg.addActionListener(new MenuItemHandler()); 
          eFrame_sg.addActionListener(new MenuItemHandler()); 
+
+         iFrame_threeD.addActionListener(new MenuItemHandler()); 
+         eFrame_threeD.addActionListener(new MenuItemHandler()); 
          
          imageView.addActionListener(new MenuItemHandler()); 
          iFrame.addActionListener(new MenuItemHandler()); 
@@ -1829,10 +1842,7 @@
                              op1 = new DataSetMerge( ds0, ds1 );
                              mergedDS1 = (DataSet)op1.getResult(); 
  
-                            // addDataSet(mergedDS1);
-                            // chop_MacroTools fg = new chop_MacroTools();
-                          //   fg.drawAlldata (mergedDS1); 
-                              OverplotView.GraphableDataManager sgv = new OverplotView.GraphableDataManager(mergedDS1);
+                              jdvui.ShowDataSet(mergedDS1, "ExternalFrame", IViewManager.SELECTED_GRAPHS);
                             
                          }
                       if(num_child == 3)
@@ -2075,13 +2085,289 @@
                      else {
                                  System.out.println("View is Selected");
                           }
- 	}
+ 	             }
  			else 
                                  System.out.println("No Tree Node Selected");
  
                    
                  }
                  
+
+//================
+
+                 
+                  if(s==" 3D View External Frame" )
+                 {   
+                     
+                     DefaultMutableTreeNode mtn = jtui.getSelectedNode();
+ 			if(mtn!=null)
+ 			{
+ 
+                       if(  mtn.getLevel()==1)
+                      {  
+                            int num_child =  mtn.getChildCount();
+                        
+                            DataSet mergedDS1 = null;
+                            DataSet mergedDS2 = null;
+                            DataSetOperator  op1, op2;
+                    
+                          
+                            DefaultMutableTreeNode child_dataset0= (DefaultMutableTreeNode) mtn.getChildAt(0);
+                            DefaultMutableTreeNode child_dataset1 = (DefaultMutableTreeNode) mtn.getChildAt(1);
+            
+                            DataSet ds0 = (DataSet)child_dataset0.getUserObject();
+                            DataSet ds1 = (DataSet)child_dataset1.getUserObject();
+                   
+                        if(num_child == 2)
+                         {   
+                             op1 = new DataSetMerge( ds0, ds1 );
+                             mergedDS1 = (DataSet)op1.getResult(); 
+ 
+                              jdvui.ShowDataSet(mergedDS1, "ExternalFrame", IViewManager.THREE_D);
+                            
+                         }
+                      if(num_child == 3)
+                           
+                         {  
+                             DefaultMutableTreeNode child_dataset2 = (DefaultMutableTreeNode) mtn.getChildAt(2);
+                             DataSet ds2 = (DataSet)child_dataset2.getUserObject();
+                             op1 = new DataSetMerge( ds0, ds1 );
+                             mergedDS1 = (DataSet)op1.getResult(); 
+                             op2 = new DataSetMerge( mergedDS1, ds2 );
+                             mergedDS2 = (DataSet)op2.getResult(); 
+   
+                         }
+                      }           
+                     
+                     if(  mtn.getUserObject() instanceof DataSet)
+                     {
+                         
+                         DataSet ds = (DataSet)mtn.getUserObject();
+                         
+                         jdvui.ShowDataSet(ds, "ExternalFrame", IViewManager.THREE_D);
+                     }
+                         
+                     else if(  mtn.getUserObject() instanceof Data)
+                     {
+                         //DataSet ds  = (DataSet) mtn.getParent();
+                         DefaultMutableTreeNode  parent = (DefaultMutableTreeNode)mtn.getParent();
+                         DataSet ds = (DataSet)parent.getUserObject();
+                         
+                         TreePath[] paths = null;
+ 	                    JTree tree = jtui.getTree();
+ 	                    DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+ 	                    TreePath[] tp = tree.getSelectionPaths();
+                         Data ggg = (Data)mtn.getUserObject();
+                         int start_id =  ggg.getGroup_ID();
+                         DataSetOperator  op1;
+                         String attr_name = new String("Group ID");
+                         op1 = new ExtractByAttribute(ds, attr_name , true, start_id, start_id+tp.length-1);
+                         DataSet new_ds = (DataSet)op1.getResult(); 
+                        
+                         
+                          //chop_MacroTools fg = new chop_MacroTools();
+                           // fg.drawAlldata (new_ds); 
+ 
+                         jdvui.ShowDataSet(ds, "ExternalFrame", IViewManager.THREE_D);
+ 
+ 
+ 
+                         Data data = (Data)mtn.getUserObject();
+                         jpui.showAttributes(data.getAttributeList());
+                     }
+                     else {
+                                 System.out.println("View is Selected");
+ //                                IsawViewHelp("No DataSet selected");
+                          }
+ 			}
+ 			else 
+ 			System.out.println("No tree Node selected");
+                   
+                 }
+                 
+                 if(s=="3D View Internal Frame" )
+                 {   
+                     DefaultMutableTreeNode mtn = jtui.getSelectedNode();
+                        	if(mtn!=null)
+ 			{
+ 
+                     System.out.println("The Selected Node in ISaw is "  +mtn.getUserObject());
+                    if(  mtn.getLevel()==1)
+                      {  
+                            int num_child =  mtn.getChildCount();
+                        
+                            DataSet mergedDS1 = null;
+                            DataSet mergedDS2 = null;
+                            DataSetOperator  op1, op2;
+                    
+                          
+                            DefaultMutableTreeNode child_dataset0= (DefaultMutableTreeNode) mtn.getChildAt(0);
+                            DefaultMutableTreeNode child_dataset1 = (DefaultMutableTreeNode) mtn.getChildAt(1);
+            
+                            DataSet ds0 = (DataSet)child_dataset0.getUserObject();
+                            DataSet ds1 = (DataSet)child_dataset1.getUserObject();
+                   
+                        if(num_child == 2)
+                         {   
+                             op1 = new DataSetMerge( ds0, ds1 );
+                             mergedDS1 = (DataSet)op1.getResult(); 
+ 
+ 
+ 					jdvui.ShowDataSet(mergedDS1,"Internal Frame",IViewManager.THREE_D);
+ 
+                        // addDataSet(mergedDS1);
+                       
+                         }
+                      if(num_child == 3)
+                           
+                         {  
+                             DefaultMutableTreeNode child_dataset2 = (DefaultMutableTreeNode) mtn.getChildAt(2);
+                             DataSet ds2 = (DataSet)child_dataset2.getUserObject();
+                             op1 = new DataSetMerge( ds0, ds1 );
+                             mergedDS1 = (DataSet)op1.getResult(); 
+                             op2 = new DataSetMerge( mergedDS1, ds2 );
+                             mergedDS2 = (DataSet)op2.getResult(); 
+ 
+                           //  addDataSet(mergedDS2);
+ 
+ 				jdvui.ShowDataSet(mergedDS2,"Internal Frame",IViewManager.THREE_D);
+                           
+                         }
+                      }           
+                      
+                     if(  mtn.getUserObject() instanceof DataSet)
+                     {
+                         DataSet ds = (DataSet)mtn.getUserObject();
+                         jdvui.ShowDataSet(ds,"Internal Frame",IViewManager.THREE_D);
+ 
+                     }
+                     
+                     
+                     
+                    else if(  mtn.getUserObject() instanceof Data)
+                     {
+                         DefaultMutableTreeNode  parent = (DefaultMutableTreeNode)mtn.getParent();
+                         DataSet ds = (DataSet)parent.getUserObject();
+                         TreePath[] paths = null;
+ 	                    JTree tree = jtui.getTree();
+ 	                    DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+ 	                    TreePath[] tp = tree.getSelectionPaths();
+                         Data ggg = (Data)mtn.getUserObject();
+                         int start_id =  ggg.getGroup_ID();
+                         DataSetOperator  op1;
+                         String attr_name = new String("Group ID");
+                         op1 = new ExtractByAttribute(ds, attr_name , true, start_id, start_id+tp.length-1);
+                         DataSet new_ds = (DataSet)op1.getResult(); 
+ 				jdvui.ShowDataSet(new_ds,"Internal Frame",IViewManager.THREE_D);
+                     	}
+                     else {
+                                 System.out.println("View is Selected");
+ //                                IsawViewHelp("No DataSet selected");
+                          }
+ 
+ 			}
+ 			else 
+                                 System.out.println("No Tree Node Selected");
+ 
+                 }
+                 
+                 if(s=="3D View External Frame" )
+                 {   
+                     DefaultMutableTreeNode mtn = jtui.getSelectedNode();
+                        if(mtn!=null)
+ 			{
+ 
+                     System.out.println("The Selected Node in ISaw is "  +mtn.getUserObject());
+                     if(  mtn.getLevel()==1)
+                      {  
+                            int num_child =  mtn.getChildCount();
+                        
+                            DataSet mergedDS1 = null;
+                            DataSet mergedDS2 = null;
+                            DataSetOperator  op1, op2;
+                    
+                          
+                            DefaultMutableTreeNode child_dataset0= (DefaultMutableTreeNode) mtn.getChildAt(0);
+                            DefaultMutableTreeNode child_dataset1 = (DefaultMutableTreeNode) mtn.getChildAt(1);
+            
+                            DataSet ds0 = (DataSet)child_dataset0.getUserObject();
+                            DataSet ds1 = (DataSet)child_dataset1.getUserObject();
+                   
+                        if(num_child == 2)
+                         {   
+                             op1 = new DataSetMerge( ds0, ds1 );
+                             mergedDS1 = (DataSet)op1.getResult(); 
+ 
+ 					jdvui.ShowDataSet(mergedDS1,"External Frame",IViewManager.THREE_D);
+                            // addDataSet(mergedDS1);
+                         }
+                      if(num_child == 3)
+                           
+                         {  
+                             DefaultMutableTreeNode child_dataset2 = (DefaultMutableTreeNode) mtn.getChildAt(2);
+                             DataSet ds2 = (DataSet)child_dataset2.getUserObject();
+                             op1 = new DataSetMerge( ds0, ds1 );
+                             mergedDS1 = (DataSet)op1.getResult(); 
+                             op2 = new DataSetMerge( mergedDS1, ds2 );
+                             mergedDS2 = (DataSet)op2.getResult(); 
+ 
+                            // addDataSet(mergedDS2);
+ 		       	   jdvui.ShowDataSet(mergedDS2,"External Frame",IViewManager.THREE_D);
+ 
+                         }
+                      }           
+                     
+                     if(  mtn.getUserObject() instanceof DataSet)
+                     {
+                         DataSet ds = (DataSet)mtn.getUserObject();
+   				jdvui.ShowDataSet(ds,"External Frame",IViewManager.THREE_D);
+ 
+                     }                   
+                     else if(  mtn.getUserObject() instanceof Data)
+                     {
+                         DefaultMutableTreeNode  parent = (DefaultMutableTreeNode)mtn.getParent();
+                         DataSet ds = (DataSet)parent.getUserObject();
+                        
+                        
+                     TreePath[] paths = null;
+ 	                JTree tree = jtui.getTree();
+ 	                DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+ 	                TreePath[] tp = tree.getSelectionPaths();
+ 	                System.out.println("The number of selected files is  "+tp.length );
+ 	                
+ 	                Data ggg = (Data)mtn.getUserObject();
+                     int start_id =  ggg.getGroup_ID();
+                     DataSetOperator  op1;
+                     String attr_name = new String("Group ID");
+                     
+ 	                for (int i=0; i<tp.length; i++)
+ 	                {
+                       // dmtn = (DefaultMutableTreeNode)tp[i].getLastPathComponent();
+                       //  System.out.println("The selected files are in JTREEUI " +dmtn.toString());
+                     }
+ 	                
+                     
+                     op1 = new ExtractByAttribute(ds, attr_name , true, start_id, start_id+tp.length-1);
+                     
+                     DataSet new_ds = (DataSet)op1.getResult(); 
+ 			  jdvui.ShowDataSet(new_ds,"External Frame",IViewManager.THREE_D);
+ 
+ 
+ 
+                         Data data = (Data)mtn.getUserObject();
+                         jpui.showAttributes(data.getAttributeList());
+                     }
+                     else {
+                                 System.out.println("View is Selected");
+                          }
+ 	             }
+ 			else 
+                                 System.out.println("No Tree Node Selected");
+ 
+                   
+                 }
+
+//=================
                  
                  if(s=="Restore Views")
                  {    
@@ -2492,10 +2778,10 @@
                 System.setProperty("User_Macro_Path",ipath);
                 opw.write("\n");
  
-             //   opw.write("Image_Path="+ipath);
-             //   System.setProperty("Image_Path",ipath);
+                opw.write("ISAW_HOME="+ipath);
+                System.setProperty("ISAW_HOME",ipath);
  
-              //  opw.write("\n");
+                opw.write("\n");
                 opw.write("Inst1_Name=HRMECS");
                 opw.write("\n"); 
                 opw.write("Inst1_Path=zeus.pns.anl.gov");
