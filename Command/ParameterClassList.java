@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/06/06 19:46:44  pfpeterson
+ * Implemented processJar, factoring out some common code in the process.
+ *
  * Revision 1.1  2003/06/06 18:58:46  pfpeterson
  * Added to CVS.
  *
@@ -43,10 +46,14 @@ import DataSetTools.parameter.ParameterGUI;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.FilenameUtil;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Class that contains a list of all IParameters with a concrete
@@ -60,6 +67,9 @@ public class ParameterClassList{
   static       Hashtable paramList   = null;
   static final boolean   DEBUG       = true;
   static       boolean   initialized = false;
+  static final String    matchname   =
+                       FilenameUtil.setForwardSlash("DataSetTools/parameter/");
+
 
   /**
    * Initializes the singleton if it is not already done.
@@ -67,11 +77,14 @@ public class ParameterClassList{
   public ParameterClassList(){
     if(!initialized){
       paramList=new Hashtable(35,.6f);
-      if(inJar())
-        processJar();
+      String jarName=jarName();
+      if(jarName!=null && jarName.length()>0)
+        processJar(jarName);
       else
         processDir();
     }
+
+    if(DEBUG) System.out.println("Found "+paramList.size()+" parameters");
   }
 
   /**
@@ -128,22 +141,60 @@ public class ParameterClassList{
   }
 
   /**
-   * Determines whether ParameterClassList is being run from inside a jar.
+   * Find the name of the jar file that holds this class
+   * (ParameterClassList). If this class is not in a jar this returns
+   * null.
    */
-  private boolean inJar(){
+  private String jarName(){
+    // determine the name of this class
     String className="/"+this.getClass().getName().replace('.','/')+".class";
+    // find out where the class is on the filesystem
     String classFile=this.getClass().getResource(className).toString();
-    if( (classFile!=null) && (classFile.startsWith("jar:")) )
-      return true;
-    else
-      return false;
+
+    if( (classFile==null) || !(classFile.startsWith("jar:")) ) return null;
+
+    // trim out parts and set this to be forwardslash
+    classFile=classFile.substring(5,classFile.indexOf(className));
+    classFile=FilenameUtil.setForwardSlash(classFile);
+
+    // chop off a little bit more
+    classFile=classFile.substring(4,classFile.length()-1);
+
+    return classFile;
   }
 
   /**
    * Determine the possible class names from code residing in the jar.
    */
-  private void processJar(){
-    // ADD REAL CODE HERE!
+  private void processJar(String jarname){
+    ZipFile zf=null;
+    Enumeration entries=null;
+
+    // open the zip file and get the list of entries
+    try{
+      zf=new ZipFile(jarname);
+      entries=zf.entries();
+    }catch(IOException e){
+      throw new InstantiationError("IOException:"+e.getMessage());
+    }
+
+    // prepare some variables for looping through
+    ZipEntry entry=null;
+    String name=null;
+
+    // go through the entries
+    while(entries.hasMoreElements()){
+      entry=(ZipEntry)entries.nextElement();
+      name=checkName(entry.getName(),0);
+      if(name!=null) addParameter(name);
+    }
+
+    // clean up
+    try{
+      zf.close();
+    }catch(IOException e){
+      // doesn't matter now
+    }
   }
 
   /**
@@ -171,22 +222,30 @@ public class ParameterClassList{
     File[] files=paramDir.listFiles();
     String filename=null;
     for( int i=0 ; i<files.length ; i++ ){
-      // get the filename
-      filename=FilenameUtil.setForwardSlash(files[i].toString());
-      
-      // confirm that it is a possibility
-      if(filename==null || filename.length()<=0) continue;
-      if( ! (filename.toUpperCase().endsWith(".CLASS")) ) continue;
-      if( filename.indexOf("$")>filename.lastIndexOf("/") ) continue;
-      
-      // chop of the ISAW_HOME part
-      filename=filename.substring(isaw_home.length(),filename.length()-6);
-      filename=filename.replace('/','.');
-      
-      addParameter(filename);
+      filename=checkName(files[i].toString(),isaw_home.length());
+      if(filename!=null) addParameter(filename);
     }
+  }
 
-    if(DEBUG) System.out.println("Found "+paramList.size()+" parameters");
+  /**
+   * Checks if the specified filename is worth trying to get a class
+   * from. If sucessful this will return a package qualified
+   * classname, otherwise it will return null.
+   */
+  private String checkName(String filename,int start_off){
+    String name=FilenameUtil.setForwardSlash(filename);
+
+    // check that it is a possibility
+    if(name==null || name.length()<=0) return null;
+    if(name.indexOf(matchname)<0) return null;
+    if(! name.endsWith(".class") ) return null;
+    if(name.indexOf("$")>name.lastIndexOf("/")) return null;
+    
+    // chop off the class part
+    name=name.substring(start_off,name.length()-6);
+    name=name.replace('/','.');
+    
+    return name;
   }
 
   /**
