@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:42:55  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:10:26  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -49,17 +52,34 @@ import devTools.Hawk.classDescriptor.tools.HTMLPrintFileManager;
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class is used to write data about a project to a file in HTML format in 
+ * a separate thread.  There is a PrintGUI associated with this class.  It uses this 
+ * PrintGUI to decide what Interface objects it is supposed to write along with 
+ * how it is supposed to write the data.  Because the information is written in a 
+ * separate thread using this class, the GUI does not seem to freeze while the data is 
+ * being written.
+ * @author Dominic Kramer
  */
 public class HTMLPrintThread extends Thread
 {
+	/**
+	 * The PrintGUI associated with this thread.
+	 */
 	protected PrintGUI printGUI;
+	/**
+	 * The window displaying the progress of the thread.
+	 */
 	protected ProgressGUI progress;
+	/**
+	 * Used to determine the maximum value of the JProgressBar in the 
+	 * ProgressGUI.
+	 */
 	protected int maxSize;
 	
+	/**
+	 * Creates a new HTMLPrintThread object.
+	 * @param PRINTGUI The PrintGUI associated with this thread.
+	 */
 	public HTMLPrintThread(PrintGUI PRINTGUI)
 	{
 		super();
@@ -80,6 +100,10 @@ public class HTMLPrintThread extends Thread
 		progress.setVisible(true);
 	}
 	
+	/**
+	 * This method actually does the work of writing the data.  However, do not directly 
+	 * call this method.  Instead call the method start() which will in turn call this method.
+	 */
 	public void run()
 	{
 		try

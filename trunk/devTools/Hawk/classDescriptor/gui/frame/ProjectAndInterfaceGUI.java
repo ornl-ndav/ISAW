@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:57:33  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:51  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -61,20 +64,21 @@ import devTools.Hawk.classDescriptor.gui.panel.ProjectSelectorJPanel;
 
 /*
  * Created on Nov 18, 2003
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This was the main window from which the user ran everything that Hawk could do.  This class 
+ * has been replaced with HawkDesktop which is more robust and powerful.  Consequently, this
+ * class may be removed.
+ * @author Dominic Kramer
+ * @deprecated
  */
 public class ProjectAndInterfaceGUI extends JFrame implements ActionListener
 {
-	//PROVEC is a Vector of Projects
+	/**
+	 * Create a new ProjectAndInterfaceGUI.
+	 * @param PROVEC The Vector of Project objects to place on the GUI.
+	 */
 	public ProjectAndInterfaceGUI(Vector PROVEC)
 	{
 		//now to define some of the charateristics about the window
@@ -165,6 +169,9 @@ public class ProjectAndInterfaceGUI extends JFrame implements ActionListener
 		setContentPane(desktop);
 	}
 	
+	/**
+	 * Handle's ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
 		if (event.getActionCommand().equals("this.print"))
@@ -185,6 +192,10 @@ public class ProjectAndInterfaceGUI extends JFrame implements ActionListener
 		}
 	}
 	
+	/**
+	 * Class which handles closing the window.
+	 * @author Dominic Kramer
+	 */	
 	public class WindowDestroyer extends WindowAdapter
 	{
 		public WindowDestroyer() {}

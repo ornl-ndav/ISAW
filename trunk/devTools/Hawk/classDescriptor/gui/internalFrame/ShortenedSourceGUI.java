@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 19:01:20  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:09:16  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -67,15 +70,58 @@ import devTools.Hawk.classDescriptor.modeledObjects.MethodDefn;
 import devTools.Hawk.classDescriptor.tools.ASCIIPrintFileManager;
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
 
+/**
+ * This is a special type of JInternalFrame that displays the shortened source code for 
+ * an Interface object with support for coloring keywords.  Here is an example for the shortened 
+ * source code for a class:
+	 * <br> package a.b.c.d
+	 * <br>
+	 * <br>public class classA extends JFrame implements ActionListener
+	 * <br> {
+	 * <br>       Attribute
+	 * <br>       public int num
+	 * <br>
+	 * <br>       Constructor
+	 * <br>       public classA(int)
+	 * <br>
+	 * <br>       Method
+	 * <br>       public int getNum()
+	 * <br>       public void setNum(int)
+	 * <br> }
+ * @author Dominic Kramer
+ */
 public class ShortenedSourceGUI extends ColorfulTextGUI implements ActionListener
 {
+	/**
+	 * The pane which the text is written on.
+	 */
 	protected JTextPane textPane;
+	/**
+	 * The StyledDocument which supports colored text.
+	 */
 	protected StyledDocument doc;
+	/**
+	 * The Interface whose data is to be written.
+	 */
 	protected Interface selectedInterface;
-	
+	/**
+	 * The checkbox allowing the user to select if they want to shorten java names.
+	 */
 	protected JCheckBox shortJavaCheckBox;
+	/**
+	 * The checkbox allowing the user to select if they want to shorten non-java names.
+	 */
 	protected JCheckBox shortOtherCheckBox;
 	
+	/**
+	 * Create a new ShortenedSourceGUI.
+	 * @param INTF The Interface object whose data is written.
+	 * @param title The title of the window.
+	 * @param shortJava True if you want a name to be shortened if it is a java name.  For 
+	 * example, java.lang.String would be shortened to String.
+	 * @param shortOther True if you want a name to be shortened if it is a non-java name.
+	 * @param desk The HawkDesktop that this window is on.
+	 */
 	public ShortenedSourceGUI(Interface INTF, String title, boolean shortJava, boolean shortOther, HawkDesktop desk)
 	{
 		super(desk);
@@ -134,19 +180,28 @@ public class ShortenedSourceGUI extends ColorfulTextGUI implements ActionListene
 					propertiesMenu.add(shortJavaCheckBox);
 					propertiesMenu.add(shortOtherCheckBox);
 				ssMenuBar.add(propertiesMenu);
-				refreshMoveAndCopyMenu();
-				windowMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
+//				refreshMoveAndCopyMenu();
+//				windowMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
 				ssMenuBar.add(windowMenu);
 				menuBar = ssMenuBar;
 		setJMenuBar(ssMenuBar);
-		pack();
+		resizeAndRelocate();
 	}
 	
+	/**
+	 * Gets a copy of this window.
+	 * @return A copy of this window.
+	 */
 	public DesktopInternalFrame getCopy()
 	{
 		return new ShortenedSourceGUI(selectedInterface,getTitle(),shortJavaCheckBox.isSelected(),shortOtherCheckBox.isSelected(),desktop);
 	}
 	
+	/**
+	 * This add a style to the document with the name "header".  If text is added to the document using 
+	 * this style the text will be colored black and will be bold.
+	 * @param doc The document to add the styles to.
+	 */
 	public void addStylesToDocument(StyledDocument doc)
 	{
 		super.addStylesToDocument(doc);
@@ -155,7 +210,31 @@ public class ShortenedSourceGUI extends ColorfulTextGUI implements ActionListene
 		StyleConstants.setForeground(header,Color.BLACK);
 		StyleConstants.setBold(header,true);
 	}
-			
+	
+	/**
+	 * This takes an Interface object and adds information to the window in a format similar to the 
+	 * following:
+	 * <br> package a.b.c.d
+	 * <br>
+	 * <br>public class classA extends JFrame implements ActionListener
+	 * <br> {
+	 * <br>       Attribute
+	 * <br>       public int num
+	 * <br>
+	 * <br>       Constructor
+	 * <br>       public classA(int)
+	 * <br>
+	 * <br>       Method
+	 * <br>       public int getNum()
+	 * <br>       public void setNum(int)
+	 * <br> }
+	 * <br> with Attribute, Constructor, and Method colored black and bold.  Also, keywords are 
+	 * colored.
+	 * @param intF The Interface object whose data is to be written.
+	 * @param shortJava True if you want a name to be shortened if it is a java name.  For 
+	 * example, java.lang.String would be shortened to String.
+	 * @param shortOther True if you want a name to be shortened if it is a non-java name.
+	 */
 	public void fillInTextArea(Interface intF, boolean shortJava, boolean shortOther)
 	{
 		try
@@ -198,6 +277,9 @@ public class ShortenedSourceGUI extends ColorfulTextGUI implements ActionListene
 		}
 	}
 	
+	/**
+	 * Handles ActionEvent.
+	 */
 	public void actionPerformed( ActionEvent event)
 	{
 		if (event.getActionCommand().equals("save"))
@@ -216,6 +298,7 @@ public class ShortenedSourceGUI extends ColorfulTextGUI implements ActionListene
 		else if (event.getActionCommand().equals("shorten"))
 		{
 			fillInTextArea(selectedInterface,shortJavaCheckBox.isSelected(), shortOtherCheckBox.isSelected());
+			setTitle(selectedInterface.getPgmDefn().getInterface_name(shortJavaCheckBox.isSelected(), shortOtherCheckBox.isSelected()));
 			pack();
 		}
 		else if (event.getActionCommand().equals("close"))
@@ -224,9 +307,12 @@ public class ShortenedSourceGUI extends ColorfulTextGUI implements ActionListene
 		}
 		else
 		{
+/*
 			ShortenedSourceGUI copy = (ShortenedSourceGUI)getCopy();
 			copy.setVisible(true);
 			processWindowChange(event,copy,this);
+*/
+			super.actionPerformed(event);
 		}
 	}
 }

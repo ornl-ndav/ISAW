@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:45:59  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:50  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -57,11 +60,11 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
-import devTools.Hawk.classDescriptor.tools.dataFileUtilities;
 
 /**
- * @author kramer
- *
+ * This is a class that allows the user to save the project from an InterfaceSelectorJPanel.  
+ * Currently, this class is not needed, may be removed, and is still under construction.
+ * @author Dominic Kramer
  */
 public class InterfaceSelectorSaveAsGUI extends JFrame implements ActionListener
 {
@@ -148,6 +151,9 @@ public class InterfaceSelectorSaveAsGUI extends JFrame implements ActionListener
 			pack();
 	}
 	
+	/**
+	 * Handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
 		if (event.getActionCommand().equals("Save"))
@@ -156,7 +162,8 @@ public class InterfaceSelectorSaveAsGUI extends JFrame implements ActionListener
 			if (!(nameField.getText().trim().equals("")  || fileField.getText().trim().equals("")))
 			{
 				selectedProject.setProjectName(nameField.getText());
-				dataFileUtilities.writeJDFFile(selectedProject, fileField.getText());
+				selectedProject.getData().setFileName(fileField.getText());
+				selectedProject.writeNativeHawkFile();
 			}
 			else
 			{

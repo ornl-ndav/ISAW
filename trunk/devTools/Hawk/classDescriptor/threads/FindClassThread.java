@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:39:20  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:10:26  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -47,17 +50,27 @@ import devTools.Hawk.classDescriptor.gui.frame.ProgressGUI;
 import devTools.Hawk.classDescriptor.tools.FileReflector;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class is used with the class CreateNewProjectGUI.  It opens a JFileChooser and asks the user 
+ * to select a .class or .jar file, or a directory.  It then locates .class and .jar files from a directory if chosen 
+ * and adds the .class and .jar files found to the CreateNewProjectGUI object's JList of .class and .jar files 
+ * found.  This class locates these files in a separate thread so the gui doesn't seem to freeze.
+ * @author Dominic Kramer
  */
 public class FindClassThread extends Thread
 {
+	/**
+	 * The CreateNewProjectGUI associated with this thread.
+	 */
 	protected CreateNewProjectGUI gui;
-	
+	/**
+	 * This displays the progress of the search.
+	 */	
 	protected ProgressGUI progress;
 	
+	/**
+	 * This creates a new thread to locate .class and .jar files.
+	 * @param GUI The CreateNewProjectGUI associated with this thread.
+	 */
 	public FindClassThread(CreateNewProjectGUI GUI)
 	{
 		gui = GUI;
@@ -67,6 +80,9 @@ public class FindClassThread extends Thread
 		progress.setIndeterminante(true);
 	}
 	
+	/**
+	 * This method is called when the start() method is used to start the search.
+	 */
 	public void run()
 	{
 		Vector fileVec = new Vector();
@@ -76,10 +92,12 @@ public class FindClassThread extends Thread
 		progress.setIndeterminante(false);
 		progress.setValue(0);
 		progress.setMaximum(fileVec.size());
-		progress.setString(null);
+		progress.setProgressBarString(null);
 		progress.appendMessage("Adding names to list . . . .\n");
 		
 		//gui.getModel().removeAllElements();
+		gui.getCreateProjectButton().setEnabled(false);
+		gui.getCreateProjectButton().setToolTipText("The list is still being populated.");
 		int i=0;
 		while (i<fileVec.size() && !progress.isCancelled())
 		{
@@ -103,5 +121,7 @@ public class FindClassThread extends Thread
 			progress.isCompleted();
 			progress.dispose();
 		}
+		gui.getCreateProjectButton().setEnabled(true);
+		gui.getCreateProjectButton().setToolTipText("Load the files in the list to make the project");
 	}
 }

@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:37:13  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:50  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -46,6 +49,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Vector;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -60,7 +64,6 @@ import javax.swing.event.ListSelectionListener;
 
 import DataSetTools.util.RobustFileFilter;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
-import devTools.Hawk.classDescriptor.modeledObjects.Project;
 import devTools.Hawk.classDescriptor.tools.FileAssociationManager;
 
 /**
@@ -71,27 +74,41 @@ import devTools.Hawk.classDescriptor.tools.FileAssociationManager;
  */
 public class FileAssociationGUI extends JFrame implements ActionListener, ListSelectionListener
 {
+	/**
+	 * Manager used to associate the correct files.
+	 */
 	private FileAssociationManager manager;
-
+	/**
+	 * The list containing all of the files and directories to search through when looking for the 
+	 * files to associate.
+	 */
 	private JList list;
+	/**
+	 * The model that handles modification of the Jlist list.
+	 */
 	private DefaultListModel model;
+	/**
+	 * The main panel on which everything on the window is placed.
+	 */
 	private JPanel mainPanel;
+	/**
+	 * Set to true to signify that this window has been opened to associate files to only one 
+	 * interface.
+	 */
 	private boolean singleSelection;
 	
 	/**
-	 * If this constructor is used, it is assumed you want to associate each Interface in the Project with a file
-	 * @param pro The current Project whose Interfaces will have the correct file attached to
+	 * If this constructor is used, it is assumed you want to associate each Interface in the Vector 
+	 * of Interface objects with a file.
+	 * @param intfVec The Vector of Interface objects to have files attached to.
 	 * @param filetype Either FileAssociationManager.JAVASOURCE or FileAssociationManager.JAVADOCS
 	 */
-	public FileAssociationGUI(Project pro, int filetype)
+	public FileAssociationGUI(Vector intfVec, int filetype, String title)
 	{
-		manager = new FileAssociationManager(pro, filetype);
+		manager = new FileAssociationManager(intfVec, filetype);
 		singleSelection = false;
-		if (filetype == FileAssociationManager.JAVADOCS)
-			setTitle("Assigning Javadocs Files for Project "+pro.getProjectName());
-		else if (filetype == FileAssociationManager.JAVASOURCE)
-			setTitle("Assigning Java Source Files for Project "+pro.getProjectName());
-			
+		setTitle(title);
+		
 		JPanel textPanel = new JPanel();
 		textPanel.setLayout(new GridLayout(3,0));
 			JPanel panel1 = new JPanel();
@@ -119,16 +136,22 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 		mainPanel.add(textPanel, BorderLayout.NORTH);
 		pack();
 	}
-
+	
+	/**
+	 * Create a new FileAssociationGUI.  This constructor is used if you want to associate files for only 
+	 * one class or interface.
+	 * @param intF The Interface object representing the class or interface.
+	 * @param filetype Either FileAssociationManager.JAVASOURCE or FileAssociationManager.JAVADOCS
+	 */
 	public FileAssociationGUI(Interface intF, int filetype)
 	{
 		manager = new FileAssociationManager(intF, filetype);
 		singleSelection = true;
 
 		if (filetype == FileAssociationManager.JAVADOCS)
-			setTitle("Assigning Javadocs Files for the class "+intF.getPgmDefn().getInterface_name());
+			setTitle("Assigning Javadocs Files for the "+intF.getPgmDefn().getInterface_type()+" "+intF.getPgmDefn().getInterface_name());
 		else if (filetype == FileAssociationManager.JAVASOURCE)
-			setTitle("Assigning Java Source Files for the class "+intF.getPgmDefn().getInterface_name());
+			setTitle("Assigning Java Source Files for the "+intF.getPgmDefn().getInterface_type()+" "+intF.getPgmDefn().getInterface_name());
 			
 		JPanel textPanel = new JPanel();
 		textPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -145,6 +168,11 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 		pack();
 	}
 	
+	/**
+	 * Adds all of the default items to the window which would be there if the window was used 
+	 * to associate java source code files or javadocs files.
+	 *
+	 */
 	private void performDefaultActions()
 	{
 		Container pane = getContentPane();
@@ -181,6 +209,9 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 		pane.add(mainPanel);
 	}
 	
+	/**
+	 * Handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
 		if (event.getActionCommand().equals("close"))
@@ -232,9 +263,14 @@ public class FileAssociationGUI extends JFrame implements ActionListener, ListSe
 			dispose();
 		}
 	}
-
+	
+	/**
+	 * Handles a list changing.
+	 * @param e The event that is being handled.
+	 */
 	public void valueChanged(ListSelectionEvent e)
 	{
 	}
 
 }
+	

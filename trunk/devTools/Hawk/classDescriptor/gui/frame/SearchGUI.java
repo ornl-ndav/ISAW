@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 19:00:07  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:52  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -48,38 +51,64 @@ import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
-import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import devTools.Hawk.classDescriptor.gui.panel.AlphabeticalListJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.AttributeDefnOptionsJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.ConstructorDefnOptionsJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.InterfaceDefnOptionsJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.MethodDefnOptionsJPanel;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
+import devTools.Hawk.classDescriptor.modeledObjects.Project;
 import devTools.Hawk.classDescriptor.tools.SearchUtilities;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This is the window which allows the user to search for an interface meeting specific conditions.
+ * @author Dominic Kramer
  */
 public class SearchGUI extends JFrame implements ActionListener, ListSelectionListener
 {
-	protected InterfaceDefnOptionsJPanel intFPanel;
+	/** The panel used to specify the conditions one of the interface's attributes has to meet. */
 	protected AttributeDefnOptionsJPanel attributePanel;
-	protected ConstructorDefnOptionsJPanel constructorPanel;
-	protected MethodDefnOptionsJPanel methodPanel;
-	protected JButton searchButton;
+	/** The button that closes the window. */
 	protected JButton closeButton;
-	protected Vector interfaceVec;
+	/** The panel used to specify the conditions one of the interface's constructors has to meet. */
+	protected ConstructorDefnOptionsJPanel constructorPanel;
+	/** The Interfaces that are to be searched. */
+	protected Vector interfacesToSearchVec;
+	/** The panel used to specify the conditions that the interface's general properties have to meet. */
+	protected InterfaceDefnOptionsJPanel intFPanel;
+	/** The panel used to specify the conditions one of the interface's methods has to meet. */
+	protected MethodDefnOptionsJPanel methodPanel;
+	/** The tabbed pane onto which the panels are placed. */
+	protected JTabbedPane tabbedPane;
 	
-	public SearchGUI(Vector VEC)
+	/** The panel containing the interfaces found from the search. */
+	protected AlphabeticalListJPanel listPanel;
+	/** The button which initiates the search. */
+	protected JButton searchButton;
+	/** The project containing all of the interfaces that meet the condition of the search. */
+	protected Project projectMadeFromSearch;
+	/** The HawkDesktop onto which windows opened from this search window are to be placed. */
+	protected HawkDesktop desktop;
+	
+	/**
+	 * Make a new SearchGUI.
+	 * @param VEC The Vector of Interface objects to search.
+	 * @param desk The HawkDesktop onto which windows which are opened from this window are placed.
+	 */
+	public SearchGUI(Vector VEC, HawkDesktop desk)
 	{
-		interfaceVec = VEC;
+		interfacesToSearchVec = VEC;
+		desktop = desk;
 		
 		JPanel mainPanel = new JPanel();
 			mainPanel.setLayout(new BorderLayout());
@@ -92,7 +121,7 @@ public class SearchGUI extends JFrame implements ActionListener, ListSelectionLi
 			buttonPanel.add(searchButton);
 			buttonPanel.add(closeButton);
 			
-		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane = new JTabbedPane();
 		JPanel panel1 = new JPanel();
 			panel1.setLayout(new BorderLayout());
 			intFPanel = new InterfaceDefnOptionsJPanel();
@@ -115,7 +144,15 @@ public class SearchGUI extends JFrame implements ActionListener, ListSelectionLi
 		
 		JPanel panel5 = new JPanel();
 			panel5.setLayout(new BorderLayout());
-		
+			projectMadeFromSearch = new Project();
+			listPanel = new AlphabeticalListJPanel(projectMadeFromSearch,false,false,desktop,panel5);
+			JPanel topPanel = new JPanel();
+			topPanel.setLayout(new BorderLayout());
+				topPanel.add(new JLabel("Search Results"),BorderLayout.NORTH);
+				topPanel.add(new JSeparator(),BorderLayout.SOUTH);
+			panel5.add(topPanel,BorderLayout.NORTH);
+			panel5.add(listPanel,BorderLayout.CENTER);
+			
 		tabbedPane.addTab("General Properties",null,panel1,"Specify general properties of the class you're searching for");
 		tabbedPane.addTab("Field Properties",null,panel2,"Specify the fields' properties of the class you're searching for");
 		tabbedPane.addTab("Constructor Properties",null,panel3,"Specify the constructors' properties of the class you're searching for");
@@ -125,43 +162,47 @@ public class SearchGUI extends JFrame implements ActionListener, ListSelectionLi
 		mainPanel.add(tabbedPane, BorderLayout.CENTER);
 		mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 		getContentPane().add(mainPanel);
+		
+		JMenuBar menubar = new JMenuBar();
+		JMenu fileMenu = new JMenu("File");
+			JMenuItem closeItem = listPanel.getCloseMenuItem();
+			closeItem.addActionListener(this);
+			closeItem.setActionCommand("Close");
+			fileMenu.add(closeItem);
+		menubar.add(fileMenu);
+		menubar.add(listPanel.getEditMenu());
+		menubar.add(listPanel.getPropertiesMenu(listPanel.getShortenJavaCheckBox().isSelected(),listPanel.getShortenOtherCheckBox().isSelected()));
+		setJMenuBar(menubar);
+		
 		pack();
 	}
 	
+	/**
+	 * Handles action events.
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
 		if (event.getActionCommand().equals("Close"))
 			dispose();
 		else if (event.getActionCommand().equals("Search"))
 		{
-			Vector foundVec = SearchUtilities.findMatches(interfaceVec,  attributePanel, constructorPanel, methodPanel, intFPanel);
-			
-			System.out.println("Search Results:");
-			System.out.println("-----------------------");
-			for (int i=0; i<foundVec.size(); i++)
-				System.out.println(""+((Interface)foundVec.elementAt(i)).getPgmDefn().getInterface_name());
-				
+			Vector foundVec = SearchUtilities.findMatches(interfacesToSearchVec,  attributePanel, constructorPanel, methodPanel, intFPanel);
 			if (foundVec.size() == 0)
-				System.out.println("No results found");
+			{
+				Interface tempInterface = new Interface();
+				tempInterface.getPgmDefn().setInterface_name("No class or interface found");
+				foundVec.addElement(tempInterface);
+			}
+			tabbedPane.setSelectedIndex(4);
+			projectMadeFromSearch.setInterfaceVec(foundVec);
+			listPanel.fillList(false,false);
 		}
-	}
-
-	public void valueChanged(ListSelectionEvent e)
-	{
 	}
 	
-	public static void main(String args[])
+	/**
+	 * Handles listening for the list to change.
+	 */
+	public void valueChanged(ListSelectionEvent e)
 	{
-		try {
-			UIManager.setLookAndFeel(
-				new com.sun.java.swing.plaf.gtk.GTKLookAndFeel());
-			SearchGUI gui = new SearchGUI(new Vector());
-			gui.setVisible(true);
-			System.out.println("(false || !false) =" + (false || !false));
-			System.out.println("(true || !false) =" + (true || !false));
-			System.out.println("(false || !true) =" + (false || !true));
-			System.out.println("(true || !true) =" + (true || !true));
-		} catch (Exception e) {
-		}
 	}
 }
