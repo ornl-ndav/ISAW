@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/07/17 18:55:59  bouzekc
+ *  Single parameter constructor now no longer draws a "valid"
+ *  checkbox.  Added a method to add a list of items.
+ *
  *  Revision 1.3  2003/07/17 18:46:06  bouzekc
  *  Removed main()'s inner class.
  *
@@ -84,12 +88,14 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
   //~ Constructors *************************************************************
 
   /**
-   * Creates a new RadioButtonPG object.
+   * Creates a new RadioButtonPG object without a drawn "valid" checkbox and an
+   * initial state of valid = false.
    *
    * @param PGname The name of this ParameterGUI
    */
   public RadioButtonPG( String PGname ) {
     this( PGname, false );
+    this.setDrawValid( false );
   }
 
   /**
@@ -221,6 +227,17 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
       radioGroup.add( tempButton );
       entrywidget.add( tempButton );
       tempButton.addActionListener( this );
+    }
+  }
+
+  /**
+   * Method to add a list of items to this RadioButtonPG.
+   *
+   * @param itemList The Vector of items (Strings) to add.
+   */
+  public void addItems( Vector itemList ) {
+    for( int i = 0; i < itemList.size(  ); i++ ) {
+      addItem( itemList.elementAt( i ).toString(  ) );
     }
   }
 
