@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/12/16 00:51:27  bouzekc
+ * Fixed bug that prevented Form progress indicator from advancing
+ * incrementally.
+ *
  * Revision 1.2  2003/12/15 02:44:07  bouzekc
  * Removed unused imports.
  *
@@ -41,6 +45,27 @@
  */
 package DataSetTools.wizard;
 
+import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
+
+import DataSetTools.parameter.ArrayPG;
+import DataSetTools.parameter.DataSetPG;
+import DataSetTools.parameter.IParameterGUI;
+import DataSetTools.parameter.LoadFilePG;
+import DataSetTools.parameter.ParameterViewer;
+import DataSetTools.parameter.SaveFilePG;
+import DataSetTools.parameter.StringPG;
+import DataSetTools.parameter.VectorPG;
+
+import DataSetTools.util.SharedData;
+import DataSetTools.util.StringUtil;
+import DataSetTools.util.TextWriter;
+
+import DataSetTools.wizard.util.WizardFileFilter;
+
+import ExtTools.SwingWorker;
+
+import IsawHelp.HelpSystem.HTMLizer;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -49,9 +74,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
+import java.beans.PropertyChangeListener;
+
 import java.io.File;
 import java.io.IOException;
+
 import java.net.URL;
+
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -70,22 +100,6 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
-
-import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
-import DataSetTools.parameter.ArrayPG;
-import DataSetTools.parameter.DataSetPG;
-import DataSetTools.parameter.IParameterGUI;
-import DataSetTools.parameter.LoadFilePG;
-import DataSetTools.parameter.ParameterViewer;
-import DataSetTools.parameter.SaveFilePG;
-import DataSetTools.parameter.StringPG;
-import DataSetTools.parameter.VectorPG;
-import DataSetTools.util.SharedData;
-import DataSetTools.util.StringUtil;
-import DataSetTools.util.TextWriter;
-import DataSetTools.wizard.util.WizardFileFilter;
-import ExtTools.SwingWorker;
-import IsawHelp.HelpSystem.HTMLizer;
 
 
 /**
@@ -361,6 +375,16 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
     wizProgress.setString( 
       "Wizard Progress: " + ( lastDone ) + " of " + wiz.getNumForms(  ) +
       " Forms done" );
+  }
+
+  /**
+   * Accessor method for the progress indicator.  This particular version
+   * allows access to the internal form progress bar.
+   *
+   * @return The PropertyChanger form progress indicator.
+   */
+  public PropertyChangeListener getFormProgressIndicator(  ) {
+    return formProgress;
   }
 
   /**

@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.97  2003/12/16 00:51:27  bouzekc
+ * Fixed bug that prevented Form progress indicator from advancing
+ * incrementally.
+ *
  * Revision 1.96  2003/12/15 02:44:07  bouzekc
  * Removed unused imports.
  *
@@ -739,16 +743,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
     //add the listener (this) to the Form's parameters and progress bar
     f.addPropertyChangeListener( IParameter.VALUE, this );
-
-    //**********************************************************************
-    //**********************************************************************
-    //**********************************************************************
-    //**********************************************************************
-    //This needs to be dealt with
-    //f.addPropertyChangeListener( formProgress );
-    //**********************************************************************
-    //**********************************************************************
-    //**********************************************************************
   }
 
   /**
@@ -894,6 +888,10 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       "#3:\t\tLoad with a template or \n" +
       "\t\tpreviously saved file\t\t[WizardSaveFile]\n";
     frontEnd = new SwingWizardFrontEnd( this );
+    
+    for( int i = 0; i < this.getNumForms(); i++ ) {
+		getForm( i ).addPropertyChangeListener( frontEnd.getFormProgressIndicator());
+    }
 
     if( argv.length == 0 ) {
       //set the projects directory for relevant parameters
