@@ -202,7 +202,7 @@ public class util {
      * @return   the array of sizes in each dimension or an int array with
      *            size 0.
      */
-    public static int[] setRankArray(Object multiArray) {
+    public static int[] setRankArray(Object multiArray, boolean elim1dim) {
       
         if (!(multiArray.getClass().isArray()))
             return new int[0];
@@ -216,11 +216,15 @@ public class util {
             return Res;
         }
         int n1 = Array.getLength(multiArray);
-        int[] Res1 = setRankArray(O);
-        int[] Res = new int[Res1.length + 1];
+        int nNew = 1;//try to eliminate dim size = 1
+        if( (n1 <=1) && elim1dim)
+           nNew =0;
+        int[] Res1 = setRankArray(O, elim1dim);
+        int[] Res = new int[Res1.length + nNew];
 
         Res[0] = n1;
-        System.arraycopy(Res1, 0, Res, 1, Res1.length);
+        System.arraycopy(Res1, 0, Res, nNew, Res1.length);
+   
         return Res;
     }
 }
