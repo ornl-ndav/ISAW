@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/09/12 17:18:40  dennis
+ *  If requested histgram is not found, the error string now includes
+ *  the number of the histogram that was requested.
+ *
  *  Revision 1.5  2002/12/10 21:56:21  dennis
  *  Added getDocumentation() method. (Shannon Hintzman)
  *
@@ -204,8 +208,10 @@ public class LoadOneHistogramDS extends    GenericLoad
 
      if ( ds == null )
      {
-       System.out.println("ERROR: requested histogram not in " + file_name );
-       return new ErrorString("ERROR: requested histogram not in " +file_name);
+       String err_str = "ERROR: requested histogram, "+hist_num+", not in " +
+                         file_name;
+       System.out.println(err_str);
+       return new ErrorString(err_str);
      }
 
      return ds;
