@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2005/02/12 17:18:18  rmikk
+ * Use CNexusFile class instead of its super class
+ * Linearize multidimensional arrays instead of letting jnexus do it. Fixes an
+ *    error if one of the dimensions of an array is 1
+ *
  * Revision 1.13  2004/05/14 15:04:05  rmikk
  * Removed unused variables
  *
@@ -85,7 +90,7 @@ import java.io.*;
  */
 public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   protected String errormessage;
-  NexusFile nf;
+  CNexusFile nf;
   String filename;
   Vector children;
   Vector attributes;
@@ -123,7 +128,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       return;
     }    
     try{
-      nf = new NexusFile( filename , open_mode );       
+      nf = new CNexusFile( filename , open_mode );       
       if( open_mode == NexusFile.NXACC_RDWR ){
         Hashtable HT = nf.groupdir();
         Enumeration E = HT.elements();
@@ -240,7 +245,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     return ( NxWriteNode )nw;   
   }
    
-  private NexWriteNode( String filename , NexusFile nf , Hashtable linkInfo , 
+  private NexWriteNode( String filename , CNexusFile nf , Hashtable linkInfo , 
                         NexWriteNode parent ){
     if( nf == null ) {
       errormessage = "Not initialized yes";
@@ -416,7 +421,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
               System.out.println( "END null Writing"+ nodename+","+classname );
             return;
           }     
-       
+          ranks = fixRankArray( ranks );
           nf.makedata(nodename,TypeConv.convertFrom(type),ranks.length,ranks);
          
           nf.opendata( nodename );
@@ -461,8 +466,12 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
          }else if ( value != null ){ //data
            if( ranks == null ) 
              if( Debug ) System.out.print( "ranks null" );
-           Object array = convertArray( value , TypeConv.convertFrom( type ) ,
-                                        ranks.length , ranks );     
+           int[] ranks1 = util.setRankArray(value, false);
+           Object array = Types.linearlizeArray(value, ranks1.length,ranks1,
+               ( type ));
+                         //convertArray( value , TypeConv.convertFrom( type ) ,
+                         //               ranks.length , ranks );
+                                             
            if( array == null ){
              nf.closedata( );
              if( value == null ) 
@@ -574,6 +583,36 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
        // let it drop on the floor
      }
   }//write
+  
+  private int[] fixRankArray( int[] ranks ){
+     if(0==0)
+        return ranks;
+     if( ranks == null)
+        return null;
+     if( ranks.length <= 1)
+        return ranks;
+     int k=0;
+     for( int i=0; i<ranks.length; i++)     
+        if( ranks[i] <=1)
+           k++;
+     if( k >= ranks.length){
+       int[] R = new int[1];
+       R[0]=1;
+       return R;
+     }
+       
+     int[] Result = new int[ranks.length-k];
+     
+     k=0;
+     for( int i=0; i< ranks.length; i++){
+       if( ranks[i] <=0) 
+          k++;
+       else
+          Result[i-k] =ranks[i];
+     }
+     return Result;
+     
+  }
   private String ShwDims( Object X){
     if( X == null) return "";
     if( ! X.getClass().isArray())
