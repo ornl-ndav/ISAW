@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/06/30 20:34:23  bouzekc
+ * Moved button names into final instance variables.
+ *
  * Revision 1.1  2003/06/24 20:24:36  bouzekc
  * Added to CVS.
  *
@@ -67,21 +70,28 @@ import javax.swing.*;
  */
 public class ArrayEntryJPanel extends JPanel implements ActionListener,
   PropertyChanger {
-  JList jlist;
-  DefaultListModel jlistModel;
-  JButton Delete;
-  JButton Add;
-  JButton Up;
-  JButton Down;
-  JButton Edit;
-  JButton OK;
-  JButton Show;
-  PropertyChangeSupport pcs;
-  Vector oldVector;
-  ParameterGUI param;
-  JFrame jf         = null;
-  boolean isShowing = false;
-  int position      = -1;
+  private final String UP_LABEL     = new String( "Up" );
+  private final String DOWN_LABEL   = new String( "Down" );
+  private final String DELETE_LABEL = new String( "Delete Item" );
+  private final String ADD_LABEL    = new String( "Add Item" );
+  private final String EDIT_LABEL   = new String( "Edit Item" );
+  private final String DONE_LABEL   = new String( "Done" );
+  private final String SHOW_LABEL   = new String( "Show Items" );
+  private JList jlist;
+  private DefaultListModel jlistModel;
+  private JButton Delete;
+  private JButton Add;
+  private JButton Up;
+  private JButton Down;
+  private JButton Edit;
+  private JButton OK;
+  private JButton Show;
+  private PropertyChangeSupport pcs;
+  private Vector oldVector;
+  private ParameterGUI param;
+  private JFrame jf         = null;
+  private boolean isShowing = false;
+  private int position      = -1;
 
   /**
    *  ArrayEntryJPanel constructor.
@@ -106,13 +116,13 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
 
     JPanel jp = new JPanel( new GridLayout( 7, 1 ) );
 
-    Up       = new JButton( "Up" );
-    Down     = new JButton( "Down" );
-    Delete   = new JButton( "Delete" );
-    Add      = new JButton( "Add" );
-    Edit     = new JButton( "Edit" );
-    OK       = new JButton( "Ok" );
-    Show     = new JButton( "Show" );
+    Up       = new JButton( UP_LABEL );
+    Down     = new JButton( DOWN_LABEL );
+    Delete   = new JButton( DELETE_LABEL );
+    Add      = new JButton( ADD_LABEL );
+    Edit     = new JButton( EDIT_LABEL );
+    OK       = new JButton( DONE_LABEL );
+    Show     = new JButton( SHOW_LABEL );
     jp.add( Up );
     jp.add( Down );
     jp.add( Show );
@@ -210,6 +220,7 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   /******************* ActionListener requirement ********************/
   public void actionPerformed( ActionEvent evt ) {
     JButton actionButton = ( JButton )( evt.getSource(  ) );
+    String event         = evt.getActionCommand(  );
 
     if( actionButton == Up ) {
       move( -1 );
