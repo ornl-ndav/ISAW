@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/12 16:10:34  pfpeterson
+ * Updated to work better with disabling wizard feature.
+ *
  * Revision 1.1  2002/02/27 17:32:00  dennis
  * Example Form to allow multiplying some parameters.
  * (Used by MathWizard.java)
@@ -62,13 +65,15 @@ public class MultiplierExampleForm extends    Form
    *                    in this case only result[0] is used.
    *  @param  w         The wizard controlling this form.
    */
-  public MultiplierExampleForm( String operands[], String result[], Wizard w )
+  public MultiplierExampleForm( String constants[], String operands[], String result[], Wizard w )
   {
-    super("Multiply the Numbers", null, operands, result, w );
+    super("Multiply the Numbers", constants, operands, result, w );
 
     String help = "This form let's you multiply the numbers \n";
-    for ( int i = 0; i < operands.length; i++ )
-      help = help + "  " + operands[i] + "\n";
+    for ( int i = 0 ; i < operands.length  ; i++ )
+        help = help + "  " + operands[i]  + "\n";
+    for ( int i = 0 ; i < constants.length ; i++ )
+        help = help + "  " + constants[i] + "\n";
     setHelpMessage( help );
   }
 
@@ -85,11 +90,15 @@ public class MultiplierExampleForm extends    Form
     float product = 1.0f;
     WizardParameter param;
 
-    for ( int i = 0; i < editable_params.length; i++ )
-    {
-      param = wizard.getParameter( editable_params[i] );
-      Float val = (Float)param.getNewValue();
-      product *= val.floatValue();
+    for ( int i = 0; i < editable_params.length; i++ ){
+        param = wizard.getParameter( editable_params[i] );
+        Float val = (Float)param.getNewValue();
+        product *= val.floatValue();
+    }
+    for( int i = 0 ; i < const_params.length ; i++ ){
+        param=wizard.getParameter( const_params[i] );
+        Float val=(Float)param.getNewValue();
+        product*=val.floatValue();
     }
 
     param = wizard.getParameter( result_params[0] );

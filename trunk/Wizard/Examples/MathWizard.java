@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/12 16:10:33  pfpeterson
+ * Updated to work better with disabling wizard feature.
+ *
  * Revision 1.1  2002/02/27 17:33:02  dennis
  * Example Wizard that controls four forms for doing
  * +,-,*,/ operations.
@@ -75,19 +78,19 @@ public class MathWizard
                                                       // define the entries in
                                                       // in the master list
     w.setParameter( "Value 1", 
-                     new WizardParameter( "Enter Value 1",new Float(1), false));
+                    new WizardParameter( "Enter Value 1",new Float(1), false));
     w.setParameter( "Value 2", 
-                     new WizardParameter( "Enter Value 2",new Float(2), false));
+                    new WizardParameter( "Enter Value 2",new Float(2), false));
     w.setParameter( "Value 3", 
-                     new WizardParameter( "Enter Value 3",new Float(3), false));
+                    new WizardParameter( "Enter Value 3",new Float(3), false));
     w.setParameter( "Result 1", 
-                     new WizardParameter( "Result 1",new Float(0), false ));
+                    new WizardParameter( "Result 1",new Float(0), false ));
     w.setParameter( "Result 2", 
-                     new WizardParameter( "Result 2",new Float(0), false ));
+                    new WizardParameter( "Result 2",new Float(0), false ));
     w.setParameter( "Result 3", 
-                     new WizardParameter( "Result 3",new Float(0), false ));
+                    new WizardParameter( "Result 3",new Float(0), false ));
     w.setParameter( "Result 4", 
-                     new WizardParameter( "Result 4",new Float(0), false ));
+                    new WizardParameter( "Result 4",new Float(0), false ));
 
                                                     // Specifiy the parameters
                                                     // used by the forms and
@@ -103,15 +106,18 @@ public class MathWizard
     Form form1 = new SubtracterExampleForm(  edit_parms_1, out_parms_1, w );
     w.add( form1 );
 
-    String edit_parms_2[] = { "Value 1", "Value 2", "Value 3", 
-                              "Result 1", "Result 2" };
-    String out_parms_2[]  = {"Result 3"};
-    Form form2 = new MultiplierExampleForm(  edit_parms_2, out_parms_2, w );
+    String edit_parms_2[]  = { "Value 1", "Value 2", "Value 3" };
+    String const_parms_2[] = { "Result 1", "Result 2" };
+    String out_parms_2[]   = {"Result 3"};
+    Form form2 = new MultiplierExampleForm(  const_parms_2, edit_parms_2, 
+                                             out_parms_2, w );
     w.add( form2 );
 
-    String edit_parms_3[] = { "Result 2", "Value 2" };
-    String out_parms_3[]  = {"Result 4"};
-    Form form3 = new DividerExampleForm(  edit_parms_3, out_parms_3, w );
+    String edit_parms_3[]  = { "Value 2" };
+    String const_parms_3[] = { "Result 2" };
+    String out_parms_3[]   = {"Result 4"};
+    Form form3 = new DividerExampleForm(  const_parms_3, edit_parms_3, 
+                                          out_parms_3, w );
     w.add( form3 );
 
     w.show(0);
