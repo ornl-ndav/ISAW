@@ -9,6 +9,12 @@
  *             
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/08/02 01:41:00  dennis
+ *  Changed to use Data.ResampleUniformly() so that the operation can be
+ *  applied to functions as well as to histograms.  Also made some
+ *  experimental changes with scaling by delta_Q, and removing setting error
+ *  values.
+ *
  *  Revision 1.3  2000/07/10 22:36:06  dennis
  *  July 10, 2000 version... many changes
  *
@@ -241,7 +247,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOperator
       max_Q = temp;
     }
 
-    XScale new_Q_scale;
+    UniformXScale new_Q_scale;
     if ( num_Q <= 1.0 || min_Q >= max_Q )       // no valid scale set
       new_Q_scale = null;
     else
@@ -284,7 +290,6 @@ public class DiffractometerTofToQ extends    XAxisConversionOperator
         spherical_coords = position.getSphericalCoords();
         total_length     = initial_path + spherical_coords[0];
         scattering_angle = position.getScatteringAngle();
- 
         t_vals           = data.getX_scale().getXs();
         Q_vals           = new float[t_vals.length];
         for ( int i = 0; i < t_vals.length; i++ )
@@ -293,27 +298,34 @@ public class DiffractometerTofToQ extends    XAxisConversionOperator
                                                 t_vals[i]        );
 
         y_vals  = data.getCopyOfY_values();
-
+/*
         for ( int i = 0; i < y_vals.length; i++ )
           if ( t_vals[i] != t_vals[i+1] )
             y_vals[i] *= -(Q_vals[i+1] - Q_vals[i])/(t_vals[i+1] - t_vals[i]);
           else
             y_vals[i] = 0;
-
+*/
         arrayUtil.Reverse( y_vals );
 
         arrayUtil.Reverse( Q_vals );
         Q_scale = new VariableXScale( Q_vals );
 
 
-        new_data = new Data( Q_scale, y_vals, data.getGroup_ID() );
+        float errors[] = new float[data.getErrors().length];
+        System.arraycopy( data.getErrors(), 0, errors, 0, errors.length );
+        arrayUtil.Reverse( errors );
+
+        new_data = new Data( Q_scale, 
+                             y_vals, 
+                             errors,
+                             data.getGroup_ID() );
                                                 // create new data block with 
-        new_data.setSqrtErrors();               // non-uniform Q_scale and 
+//        new_data.setSqrtErrors();               // non-uniform Q_scale and 
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 
-        if ( new_Q_scale != null )              // rebin if a valid scale was
-          new_data.ReBin( new_Q_scale );        // specified
+        if ( new_Q_scale != null )                    // resample if a valid
+          new_data.ResampleUniformly( new_Q_scale );  // scale was specified
 
         new_ds.addData_entry( new_data );      
       }
