@@ -10,6 +10,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.6  2000/08/01 01:32:13  dennis
+ *  Changed getAttributeList() to return null if the current list is null.
+ *
  *  Revision 1.5  2000/07/31 20:54:48  dennis
  *  Added CLSmooth routine to smooth function Data
  *
@@ -405,7 +408,10 @@ public float getY_value( float x_value )
    */
   public AttributeList getAttributeList()
   {
-    return (AttributeList)attr_list.clone();
+    if ( attr_list != null )
+      return (AttributeList)attr_list.clone();
+    else
+      return null;
   }
 
 
@@ -666,7 +672,7 @@ public float getY_value( float x_value )
     else
       temp.errors = null;
 
-                                         // now take car of attributes... most
+                                         // now take care of attributes... most
                                          // will use the default combine method
                                          // but some must really be added
     temp.CombineAttributeList( d );
