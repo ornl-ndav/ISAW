@@ -32,9 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/06/23 14:59:58  bouzekc
+ * Fixed log message.  Now uses PGActionListener.
+ *
  * Revision 1.6  2003/06/23 14:58:17  bouzekc
- * Removed duplicate inner ActionListener class.  Now uses
- * PGActionListener.
+ * Removed duplicate inner ActionListener class.
  *
  * Revision 1.5  2003/06/18 20:36:41  pfpeterson
  * Changed calls for NxNodeUtils.Showw(Object) to
@@ -71,7 +73,7 @@ public class StringArrayPG extends VectorPG
          jf.getContentPane().add(IaPg.getGUIPanel());
          JButton  jb = new JButton("Result");
          jf.getContentPane().add(jb);
-         jb.addActionListener( new MyActionList( IaPg));
+         jb.addActionListener( new PGActionListener( IaPg));
          jf.setSize( 500,100);
          jf.invalidate();
          jf.show();
