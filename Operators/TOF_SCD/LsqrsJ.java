@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2003/07/08 22:49:40  bouzekc
+ * Now returns the fully qualified name of the lsqrs.log file.
+ *
  * Revision 1.18  2003/06/27 18:05:34  bouzekc
  * Fixed indenting errors.
  *
@@ -618,7 +621,7 @@ public class LsqrsJ extends GenericTOF_SCD {
     } else {
       SharedData.addmsg( "Wrote file: " + matfile );
 
-      return matfile;
+      return logfile;
     }
   }
 
