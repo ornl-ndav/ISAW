@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.201  2004/05/18 13:54:16  rmikk
+ *  Now supports NsavedFiles(int) and ShortSavedFilename(true/false) in
+ *     IsawProps.dat
+ *
  *  Revision 1.200  2004/05/14 02:55:59  bouzekc
  *  Added feature to store the last user-set (with mouse) size of the main
  *  ISAW window.  This required a method addition and a conversion of an
@@ -1315,7 +1319,9 @@ public class Isaw
      }
     String NO_SUCH_FILE="No Such File";
     boolean isAlready = false;
-    for( int i = 0 ; i < LatestOpenedFiles.NSavedFiles ; i++ ){
+	int nSavedFiles = SharedData.getintProperty( "NSavedFiles",""+LatestOpenedFiles.NSavedFiles);
+    boolean shortMangle = SharedData.getbooleanProperty("ShortSavedFileName","false");
+    for( int i = 0 ; i < nSavedFiles ; i++ ){
 
         String filname = pref.get( "File" + i , NO_SUCH_FILE );
         
@@ -1323,9 +1329,10 @@ public class Isaw
            isAlready = true;
         }
      }
+     if(nSavedFiles > 0)
      if(! isAlready){
-           
-           JMenuItem jmi = new JMenuItem( LatestOpenedFiles.Mangle( filename ) );
+		  
+           JMenuItem jmi = new JMenuItem( LatestOpenedFiles.Mangle( filename,shortMangle ));
            fMenu.add( jmi );
            MyActionListener actList =new MyActionListener(  filename  
                                                                  ) ;
