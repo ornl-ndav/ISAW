@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/12 22:01:09  dennis
+ *  Constructor now makes copy of array of values, to guarantee that
+ *  the Attribute is immutable.
+ *
  *  Revision 1.2  2002/11/12 00:47:20  dennis
  *  Made immutable by:
  *  1. remove setValue() method
@@ -94,8 +98,13 @@ public class Float2DAttribute extends Attribute{
      */
     public Float2DAttribute( String name, float[][] value ){
         super( name );
-        if(this.isRectangular(value)){
-            this.value = value;
+        if(this.isRectangular(value)){     // copy the values into a new array
+
+          this.value = new float[ value.length ][ value[0].length ];
+
+          for ( int i = 0; i < value.length; i++ )
+            System.arraycopy( value[i], 0, this.value[i], 0, value[i].length );
+
         }else{
             this.value=new float[1][1];
             this.value[0][0]=0f;
