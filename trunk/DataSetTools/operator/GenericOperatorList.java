@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2001/08/15 02:21:19  dennis
+ *  Added XYDataTable operator.
+ *
  *  Revision 1.16  2001/08/14 20:24:36  dennis
  *  Added SaveGSAS operator
  *
@@ -85,6 +88,7 @@ public class GenericOperatorList implements Serializable
                                           "OneHist",
                                           "DetNormFac",
                                           "PrintDS",
+                                          "Table",
                                           "SaveNX",
                                           "SaveGSAS",
                                           "Pause",
@@ -182,6 +186,9 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "PrintDS" ) )
       return new DataSetPrint();
+
+    else if ( op_name.equals( "Table" ) )
+      return new XYDataTable();
 
     else if ( op_name.equals( "SaveNX" ) )
       return new WriteNexus();
