@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.9  2003/08/28 01:36:56  bouzekc
+ *  Modified to work with new ParameterGUI.
+ *
  *  Revision 1.8  2003/08/22 20:12:07  bouzekc
  *  Modified to work with EntryWidget.
  *
@@ -78,22 +81,15 @@ abstract public class ChooserPG extends ParameterGUI{
   protected Vector vals=null;
 
   // ********** Constructors **********
-  public ChooserPG(String name, Object value){
-    this(name,value,false);
-    this.setDrawValid(false);
+  public ChooserPG(String name, Object val){
+    super(name, val);
     this.type=TYPE;
   }
 
-  public ChooserPG(String name, Object value, boolean valid){
+  public ChooserPG(String name, Object val, boolean valid){
+    super(name, val, valid);
     this.addItem(value);
-    this.setName(name);
-    this.setValue(value);
-    this.setEnabled(true);
-    this.setValid(valid);
-    this.setDrawValid(true);
     this.type=TYPE;
-    this.initialized=false;
-    this.ignore_prop_change=false;
   }
 
   // ********** Methods to deal with the hash **********
