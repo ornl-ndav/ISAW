@@ -100,7 +100,7 @@ public class CommandPane  extends JPanel
     File SelectedFile = null;
     Document logDocument = null;
 
-    private boolean Debug = false;
+    private boolean Debug = true;
     private Document MacroDocument = null;
 
     /** Constructor with Visual Editor and no data sets from outside this program
@@ -432,6 +432,11 @@ public class CommandPane  extends JPanel
    private int executeBlock ( Document Doc , int start ,  boolean exec )
      { int line ; 
        String S ; 
+      if( Doc == null)
+         { seterror (0 , "No Document");
+           if( Debug)System.out.println("NO DOCUMENT");
+            return -1;
+         }
        Element  E = Doc.getDefaultRootElement(),
 	        F ;                 
        line = start ; 
@@ -1217,6 +1222,123 @@ public class CommandPane  extends JPanel
         else 
           return false;
    }
+/*
+*  Determines if a document as parameters (#$$). If so, a vector representation
+*  of the parameters is returned
+*@param   doc    A (Plain)Document that contains a script
+*
+* @return   null if there are NO parameters or <P>
+*            A Vector where each parameter in the script represents 2 indeces as follows:<ul>
+*             <li> first (least index) variable name
+*             <li> Next a parameterGUI  of the correct data type and Message
+*            </ul>
+*/
+  public Vector getDefaultParameters( Document doc )
+    { Element E;
+      String S , 
+             Line;
+      int start ,
+          i;
+      Vector V = new Vector();
+      
+       if( doc == null) 
+         return null;
+       
+         S = " Enter Parameter Value ";
+    
+       V.add( getLine(MacroDocument , 1 ));
+       E = doc.getDefaultRootElement();
+       start = 0;
+       int j , k;
+       for( i = 0 ; i< E.getElementCount(); i++)
+         {Line = getLine( MacroDocument , 2+i);
+          start = Line.indexOf("#$$")+3;
+          if( start < 3)
+            return V;
+          start = ExecLine.skipspaces(Line , 1 , start );
+          j = findQuote ( Line , 1 , start, " " , "" );
+          if( (j >= 0) && ( j < Line.length() ))
+            V.add(Line.substring( start , j).trim());
+          start = j;
+          if( start >= Line.length())
+            {seterror( start , "Improper Parameter Format");
+             return null;
+            }
+          start = ExecLine.skipspaces(Line , 1, start );
+          j = findQuote( Line , 1, start, " ", "" );
+       
+          String DT = Line.substring( start , j );//.toUpperCase();
+          String Message;
+          j = ExecLine.skipspaces( Line , 1, j );
+        
+          if( j < Line.length() )
+            Message = Line.substring( j ).trim();
+          else
+            Message = "";
+          if(Debug)
+            System.out.println("in line start end="+ start + ","+DT+","+Message);
+          if( (DT .equals( "Int") ) || ( DT.equals( "INTEGER")))
+             V.add( new JIntegerParameterGUI( new Parameter ( Message , new Integer (0)) ) );
+          else if ( DT.equals( "Float"))
+             V.add( new JFloatParameterGUI(  new Parameter ( Message , new Float (0.0)) ) ); 
+          else if( DT.equals( "String"))
+             V.add( new JStringParameterGUI( new Parameter ( Message , "" ) ) );
+          else if( DT.equals("DataDirectoryString"))
+             { String DirPath = System.getProperty("DataDirectory");
+               if( DirPath != null )
+                   DirPath = DataSetTools.util.StringUtil.fixSeparator( DirPath+"\\");
+               else
+                   DirPath = "";
+               V.add( new JStringParameterGUI( new Parameter( Message, DirPath)));
+              }
+          else if (DT.equals( "DSFieldString"))
+            {String Fields[] = {"Title","X_label", "X_units", "PointedAtIndex","SelectFlagOn",
+                       "SelectFlagOff","SelectFlag","Y_label","Y_units", "MaxGroupID",
+                        "MaxXSteps","MostRecentlySelectedIndex", "NumSelected" , "XRange",
+                       "YRange"};
+             AttributeList A = new AttributeList();
+            // Attribute A1;
+	    
+             for( k =0; k< Fields.length; k++)
+		 {   
+                    A.addAttribute( new StringAttribute( Fields[k] , "") );
+              }
+            
+             V.add( new JAttributeNameParameterGUI( new Parameter( Message ,"" ) , A));
+            }
+          else if( DT.equals( "InstrumentNameString"))
+            {String XX = System.getProperty("DefaultInstrument");
+             if( XX == null )
+               XX = "";
+             V.add( new JStringParameterGUI( new Parameter( Message, XX )));
+            }
+          else if ( DT.equals( "DataSet") )
+           {System.out.println( "Argument is a data set");
+	   DataSet DS[] = ExecLine.getGlobalDataset();
+            DataSet dd = new DataSet("DataSet=", null);
+            Parameter PP = new Parameter( Message , dd);
+            JlocDataSetParameterGUI JJ = new JlocDataSetParameterGUI( PP , DS);
+            V.add(JJ);
+           
+            if(Debug)
+              {System.out.print("DS"+JJ.getClass()+","); 
+               System.out.print( JJ.getParameter()+",");
+               System.out.print(  JJ.getParameter().getValue()+",");
+              // System.out.println(JJ.getParameter().getValue().getClass());
+              }
+
+            } 
+          else
+            { seterror( i , "Data Type not supported " + DT);
+             
+              return null; 
+          }
+      
+      
+       }// For i=0 to count
+       return V;
+    }
+    
 
 /**
   * A utility to get parameters for a macro AND execute the macro<P>
@@ -1254,13 +1376,13 @@ public class CommandPane  extends JPanel
    *            cp.getErrorCharPos()+ "," + cp.getErrorMessage() +","+cp.getErrorLine());
     </pre>
   */
-  public  void GUIgetParameters()
+  public  Parameter[] GUIgetParameters()
      { if(Debug)System.out.println("Start of GUIgetParameters");
        if( MacroDocument == null)
          {seterror( 1000, "Macro Does not Exist ");
-          return ;
+          return  null;
          }
-       int count = 0;
+/*       int count = 0;
        String Line = getLine( MacroDocument , 2);
        if( Line == null)
          {seterror( 1000, "Macro Does not Exist ");
@@ -1342,13 +1464,13 @@ public class CommandPane  extends JPanel
                     A.addAttribute( new StringAttribute( Fields[k] , "") );
               }
             
-             V.add( new JAttributeNameParameterGUI( new Parameter( Message ,"" ) , A));
+             V.add( new JAttributeNameParameterGUI( new Parameter( S ,"" ) , A));
             }
           else if( DT.equals( "InstrumentNameString"))
             {String XX = System.getProperty("DefaultInstrument");
              if( XX == null )
                XX = "";
-             V.add( new JStringParameterGUI( new Parameter( Message, XX )));
+             V.add( new JStringParameterGUI( new Parameter( S, XX )));
             }
           else if ( DT.equals( "DataSet") )
            {System.out.println( "Argument is a data set");
@@ -1374,22 +1496,37 @@ public class CommandPane  extends JPanel
         
       
        }// For i=0 to count
-     
+    */
+    Vector V1 = getDefaultParameters( MacroDocument );
+    if( Debug )
+       if( V1 != null )
+         for( int i = 0 ; i < V1.size() ; i++)
+           System.out.println( "par i ="+V1.get(i));
+    if( V1 == null)
+      return null;
+    if( V1.size() <1)
+      return null;
+    Vector V = new Vector();
+    V.add( V1.get(0)); 
+    for( int i = 2; i < V1.size(); i+=2)
+     {V.add( V1.get( i ) );
+     }
      Command.JScriptParameterDialog X = new Command.JScriptParameterDialog( V, ExecLine.getGlobalDataset() );
      if( Debug ) System.out.println( "After Dialog box");
      V = X.getResult();
      if( V == null)
-       return ;
-     Parameter U;
+       return null;
+     Parameter U ;
+     Parameter P[] = new Parameter[ V.size() - 1] ;
      JParameterGUI JPP;
-     for( i = 1 ; i < V.size(); i++)
+     for( int i = 1 ; i < V.size(); i++)
        { JPP= (JParameterGUI)(V.get( i )) ;
          U = JPP.getParameter();
-         P[i-1]=  new Parameter((String)( vname.get( i - 1 )), U.getValue());
+         P[i-1]= new Parameter( (String)(V1.get(2*i -1 )) , U.getValue()) ;//new Parameter((String)( V1.get( i - 1 )), U.getValue());
        
        }
-     execute(P);
-     return ;
+    
+     return P;
 
          
    } 
@@ -1475,7 +1612,8 @@ public class CommandPane  extends JPanel
          if( DDS != null )
            for( i = 0; i < DDS.length ; i++)
             cp.addDataSet(DDS[i]);
-         cp.GUIgetParameters();
+         Parameter P[] = cp.GUIgetParameters();
+         cp.execute(P);
          seterror( cp.getErrorCharPos(), cp.getErrorMessage());
          lerror = cp.getErrorLine();
          if( Debug)
@@ -1547,7 +1685,10 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
   {public void actionPerformed( ActionEvent e )
     {Document doc ; 
      if( e.getSource().equals( Run ) ) 
-       {
+       {//MacroDocument = Commands.getDocument();
+        //Parameter P[] = GUIgetParameters();
+       // MacroDocument = null;
+        
         doc = Commands.getDocument() ; 	
         StatusLine.setText( "" ) ; 
         perror = -1 ; 
@@ -1662,10 +1803,10 @@ private class MyKeyListener  extends KeyAdapter
     public void keyTyped( KeyEvent e )
     { if( Debug )
          System.out.println("In keyEvent");
-      if('x' == 'y')//e.getKeyChar()   used for testing macros)
+      if('x' == e.getKeyChar())//   used for testing macros)
       { 
         System.out.println( 
-              CP.getExecScript( "C:\\Ruth\\ISAW\\Scripts\\MacDS.txt", 
+              CP.getExecScript( "C:\\Ruth\\ISAW\\Scripts\\Load1.iss", 
                                 CP, CP.ExecLine.getGlobalDataset()));
      
        }
@@ -1834,8 +1975,8 @@ public static void  main( String args[] )
     
 
  P = new CommandPane() ; 
-   
-    F.setSize( 800 , 400 ) ; 
+ Dimension D = P.getToolkit().getScreenSize();
+    F.setSize((int)(.8* D.width) , (int)(.8*D.height) ) ; 
    F.show() ;  
     F.getContentPane().add( P ) ; 
    
