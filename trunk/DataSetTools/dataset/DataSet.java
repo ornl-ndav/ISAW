@@ -10,6 +10,10 @@
  *                 blocks. 
  *
  *  $Log$
+ *  Revision 1.7  2000/08/01 01:33:21  dennis
+ *  Changed clone() to display an error message if a null Data block is
+ *  found while cloning
+ *
  *  Revision 1.6  2000/07/17 21:01:14  dennis
  *  Minor reformat of documentation
  *
@@ -1308,7 +1312,10 @@ public class DataSet implements IAttributeList,
     for ( int i = 0; i < num_entries; i++ )
     {
       d = getData_entry( i );
-      new_ds.addData_entry( (Data)d.clone() );
+      if ( d == null )
+        System.out.println("ERROR: null data block " + i +" in Data.clone()");
+      else
+        new_ds.addData_entry( (Data)d.clone() );
     }
 
     return new_ds;
