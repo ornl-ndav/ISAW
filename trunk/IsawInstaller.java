@@ -32,6 +32,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.16  2003/04/17 14:48:49  pfpeterson
+ * Update skip(String) function to do more than the default with jnilib.
+ *
  * Revision 1.15  2002/12/09 20:29:36  pfpeterson
  * Added jhall.jar to the classpath in generated batch file.
  *
@@ -83,8 +86,6 @@
  *
  * Revision 1.1  2002/02/13 20:42:19  pfpeterson
  * First version of unified installer in CVS.
- *
- *
  */
 
 import java.io.*;
@@ -1307,6 +1308,18 @@ public class IsawInstaller extends JFrame
                     return true; // don't install file
 		}else if( operating_system.equals(UNKNOWN_ID) ){
 		    // install file
+		}
+            }else if( filename.endsWith("jnilib") ){
+		if( operating_system.equals(WIN_ID) ){
+		    return true; // don't install file
+		}else if( operating_system.equals(LIN_ID) ){
+                    return true; // don't install file
+                }else if( operating_system.equals(SUN_ID) ){
+                    return true; // don't install file
+                }else if( operating_system.equals(MAC_ID) ){
+                    // install file
+		}else if( operating_system.equals(UNKNOWN_ID) ){
+                    // install file
 		}
 	    }else if( (filename.toUpperCase()).indexOf("CVS") >=0 ){
 		return true;
