@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/30 15:20:56  pfpeterson
+ *  Update clone method to return an object of this class.
+ *
  *  Revision 1.1  2002/08/01 18:40:07  pfpeterson
  *  Added to CVS.
  *
@@ -171,5 +174,12 @@ public class SampleDataSetPG extends DataSetPG{
         fpg.showGUIPanel(0,y);
         y+=dy;
 
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        return (SampleDataSetPG)super.clone();
     }
 }

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/30 15:20:45  pfpeterson
+ *  Update clone method to return an object of this class.
+ *
  *  Revision 1.1  2002/07/15 21:26:07  pfpeterson
  *  Added to CVS.
  *
@@ -130,5 +133,12 @@ public class DataDirPG extends BrowsePG{
         fpg.init();
         fpg.showGUIPanel(0,y);
 
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        return (DataDirPG)super.clone();
     }
 }
