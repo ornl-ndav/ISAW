@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/07/20 16:38:47  dennis
+ *  Added method getY_values( x_scale ) to obtain a set of
+ *  y-values for the data, resampled at points given by the
+ *  X-Scale
+ *
  *  Revision 1.15  2001/07/02 16:41:40  dennis
  *  Added methods:
  *    getAttribute( index )
@@ -331,6 +336,40 @@ public class Data implements IAttributeList,
   { 
     return y_values;
   }
+
+/**
+ *  Get a list of "Y" values for this Data object, resampled at the x
+ *  values specified by the XScale.
+ *
+ *  @param  x_scale  The XScale to be used for resampling the Data block.
+ *
+ *  @return  A new array listing approximate y-values corresponding to the
+ *           given x-scale.  If the Data block is a histogram, the x-scale
+ *           is considered to list the bin-boundaries and there will be one
+ *           more bin-boundary than y-values.  If the Data block is a function,
+ *           there will be the same number of y-values as x-values.
+ */
+public float[] getY_values( XScale x_scale )
+{
+  float y_vals[];
+
+  int   num_x   = x_scale.getNum_x();
+  if ( num_x > 1 )                          // resample over non-degenerate
+  {                                         // interval
+    Data data = (Data)this.clone();
+//    data.ResampleUniformly( (UniformXScale)x_scale );
+    data.Resample( x_scale );
+    y_vals = data.getY_values();
+  }
+  else                                      // just one point, so evaluate
+  {                                         // at that point
+    y_vals = new float[1];
+    y_vals[0] = getY_value( x_scale.getStart_x() );  
+  }
+
+  return y_vals;
+}
+
 
 /**
  *  Get the y value corresponding to the specified x_value in this Data
