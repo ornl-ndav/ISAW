@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/08/06 20:16:29  rmikk
+ *  Added IntListString parameter type.
+ *  Added code to take care of DataSet[] results.
+ *
  *  Revision 1.8  2001/07/18 16:27:47  neffk
  *  now uses an IDataSetListHandler object to get/keep a current list
  *  of DataSet objects.
@@ -148,6 +152,10 @@ public class JParametersDialog implements Serializable,
               paramGUI = new JBooleanParameterGUI(param);
            else if(param.getValue() instanceof String)
              paramGUI = new JStringParameterGUI(param);
+           else if(param.getValue() instanceof IntListString)
+             { param.setValue( param.getValue().toString());
+               paramGUI = new JStringParameterGUI(param);
+             }
            else if(param.getValue() instanceof Vector)
              paramGUI = new JArrayParameterGUI(param);
            else if((param.getValue() instanceof AttributeNameString) &&
@@ -179,13 +187,15 @@ public class JParametersDialog implements Serializable,
                 //      an operation is done (e.g. the 'Apply' button is pressed)
 
            else if((param.getValue() instanceof DataSet)  )
-                 paramGUI = new JDataSetParameterGUI(  param, ds_src.getDataSets()  );
+                 paramGUI = new JDataSetParameterGUI(  param, 
+                             ds_src.getDataSets()  );
                 
            else if( param.getValue() instanceof DataDirectoryString )
            { 
             String DirPath = System.getProperty("DataDirectory");
             if( DirPath != null )
-              DirPath = DataSetTools.util.StringUtil.fixSeparator(DirPath+"\\");
+              DirPath = DataSetTools.util.StringUtil.
+                                 fixSeparator(DirPath+"\\");
             else
               DirPath = "";
                param.setValue( DirPath );
@@ -194,24 +204,7 @@ public class JParametersDialog implements Serializable,
           }
 
 
-         /*@@@@@
-          else if (param.getValue() instanceof DSFieldString)
-          {
-            String Fields[] = {"Title","X_label", "X_units","PointedAtIndex",
-                               "SelectFlagOn", "SelectFlagOff","SelectFlag",
-                               "Y_label","Y_units","MaxGroupID", "MaxXSteps",
-                               "MostRecentlySelectedIndex","NumSelected" , 
-                               "XRange", "YRange"};
-            AttributeList A = new AttributeList();
-            for( int k =0; k< Fields.length; k++)
-            {
-               A.addAttribute( new StringAttribute( Fields[k] , ""));
-            }
-
-              paramGUI =  new JAttributeNameParameterGUI(param  , A);
-          }
-         @@@@*/
-
+       
         else if (param.getValue() instanceof IStringList )
         {
           AttributeList A = new AttributeList();
@@ -372,6 +365,14 @@ public class JParametersDialog implements Serializable,
         util.appendDoc(sessionLog,  
                 ((DataSet)result).toString()+"="+op.getCommand()+"(" +s +")");
      }
+     else if( result instanceof DataSet[] )
+       {
+           for( int i = 0; i < ((DataSet[])result).length; i++)
+              OL.notifyIObservers( this, ((DataSet[])result)[i]);
+        resultsLabel.setText("Operation completed");
+        util.appendDoc(sessionLog,  
+                "DS[]="+op.getCommand()+"(" +s +")");      
+       }     
      else if (result instanceof Float)
      {
         Float value = (Float)result;
