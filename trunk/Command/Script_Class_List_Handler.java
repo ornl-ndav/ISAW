@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.48  2003/08/11 18:04:01  bouzekc
+ * Now uses PyScriptOperator.
+ *
  * Revision 1.47  2003/07/08 15:49:49  rmikk
  * Caught a run-time error in creating Jython Scripts
  *
@@ -191,7 +194,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     public    static boolean           LoadDebug       = false;
     private   static String[]          pathlist        = null;
 
-    private   static OperatorFactory   pyOperatorFactory = null;
+    private   static PyScriptOperator  pyOperatorFactory      = null;
+    private   static PyOperatorFactory pyOperator      = null;
     private   static boolean           hasJython       = true;
 
     private String errorMessage = "";
@@ -949,21 +953,6 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 System.out.println( "NO "+uu.getMessage() );
             }
         }else if(Extension.equalsIgnoreCase("py")){
-          // try to get the factory instance
-          if(hasJython && pyOperatorFactory==null){
-            try{
-              pyOperatorFactory=new DataSetTools.operator.PyOperatorFactory();
-            }catch(NoClassDefFoundError e){
-              hasJython=false;
-              pyOperatorFactory=null;
-            }catch( Throwable uv)
-               {
-                if( LoadDebug )
-                System.out.println( "NO "+uv.getMessage() );
-
-                }
-          
-          }
           // error out if there is no jython
           if(!hasJython){
             if(LoadDebug) System.out.println("(No Jython) NO");
@@ -972,7 +961,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
           // try to get the instance
           Operator op=null;
           try{
-            op=pyOperatorFactory.getInstance(filename);
+            op=new PyScriptOperator(filename);
           }catch(IllegalStateException e){
             op=null;
             if(LoadDebug) System.out.print("(IllegalStateException) ");

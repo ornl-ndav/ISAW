@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/08/11 18:02:42  bouzekc
+ * Now uses PyScriptOperator.
+ *
  * Revision 1.5  2003/07/09 23:15:40  bouzekc
  * Constructor now attempts to find the given filename. If not
  * found, it looks in the Script_Path directory.
@@ -54,6 +57,7 @@
 package DataSetTools.wizard;
 
 import DataSetTools.operator.PyOperatorFactory;
+import DataSetTools.operator.PyScriptOperator;
 
 import DataSetTools.util.*;
 
@@ -70,7 +74,7 @@ public class JyScriptForm extends OperatorForm {
 
   /**
    * Construct a JyScriptForm with the given filename.  This uses
-   * PyOperatorFactory to create an Operator and allows the use of that
+   * PyScriptOperator to create an Operator and allows the use of that
    * Operator for the getResult() method.
    *
    * @param filename The Jython script file name to use.
@@ -87,7 +91,7 @@ public class JyScriptForm extends OperatorForm {
       filename = StringUtil.setFileSeparator( jyScriptsDir + filename );
     }
 
-    form_op = new PyOperatorFactory(  ).getInstance( filename );
+    form_op = new PyScriptOperator( filename );
     setDefaultParameters(  );
   }
 
