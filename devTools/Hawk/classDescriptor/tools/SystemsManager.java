@@ -32,12 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 19:05:01  bouzekc
- * Documented file using javadoc statements.
- * Added getAuthorsEmailAddress() method.
- * Modified the printStackTrace() method to show a window informing the user that
- * an error has occured.  It also prints an error log for the user.
- * Added methods to obtain the file extension used by Hawk.
+ * Revision 1.3  2004/03/12 19:46:20  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:10:48  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -109,7 +105,7 @@ public class SystemsManager
 		 */
 		public static String getVersion()
 		{
-			return "0.8.02.3-2";
+			return "0.8.02.3-3";
 		}
 		
 		/**
@@ -118,7 +114,7 @@ public class SystemsManager
 		 */
 		public static String getBuildDate()
 		{
-			return "Tuesday March 2, 2004 at 12:23 AM CST";
+			return "Wednesday March 10, 2004 at 4:30 PM CST";
 		}
 		
 		/**
@@ -137,6 +133,19 @@ public class SystemsManager
 		public static String getAuthorsEmailAddress()
 		{
 			return "kramerd@uwstout.edu";
+		}
+		
+		/**
+		 * Prints a stack trace describing where the Throwable e originated.  The 
+		 * stack trace is printed to the standard output (most likely the console).
+		 * @param e The Throwable to process.
+		 */
+		public static void printStackTraceToStandardOutput(Throwable e)
+		{
+			System.err.println(e);
+			StackTraceElement[] traceArray = e.getStackTrace();
+			for (int i = 0; i < traceArray.length; i++)
+				System.out.println("  "+traceArray[i]);
 		}
 		
 		/**

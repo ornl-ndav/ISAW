@@ -1,19 +1,57 @@
 /*
- * Created on Feb 27, 2004
+ * File:  AlphabeticalListJPanel.java
  *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * Copyright (C) 2004 Dominic Kramer
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Dominic Kramer <kramerd@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA and by
+ * the National Science Foundation under grant number DMR-0218882.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ *
+ * $Log$
+ * Revision 1.2  2004/03/12 19:46:16  bouzekc
+ * Changes since 03/10.
+ *
  */
-package devTools.Hawk.classDescriptor.gui.panel;
+ package devTools.Hawk.classDescriptor.gui.panel;
 
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.URL;
 import java.util.Vector;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
@@ -21,25 +59,22 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.ListSelectionModel;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import devTools.Hawk.classDescriptor.gui.frame.FileAssociationGUI;
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
-import devTools.Hawk.classDescriptor.gui.internalFrame.JavadocsGUI;
-import devTools.Hawk.classDescriptor.gui.internalFrame.ShortenedSourceGUI;
-import devTools.Hawk.classDescriptor.gui.internalFrame.SingleUMLGUI;
-import devTools.Hawk.classDescriptor.gui.internalFrame.SourceCodeGUI;
+import devTools.Hawk.classDescriptor.gui.internalFrame.InternalFrameUtilities;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
+import devTools.Hawk.classDescriptor.modeledObjects.InterfaceDefn;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
-import devTools.Hawk.classDescriptor.tools.FileAssociationManager;
 import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
+import devTools.Hawk.classDescriptor.tools.SystemsManager;
 
 /**
  * This is a specialized JPanel which displays all of the Interface objects in a Project object in 
@@ -119,6 +154,8 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 			alphaModel = new DefaultListModel();
 			alphaList = new JList(alphaModel);
 			alphaList.addListSelectionListener(this);
+			alphaList.setCellRenderer(new AlphaListRenderer());
+			ToolTipManager.sharedInstance().registerComponent(alphaList);
 			//the following only allows one item to be selected at a time
 			alphaList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);		
 		
@@ -312,6 +349,7 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 	 */
 	public Interface[] getSelectedInterfaces()
 	{
+/*
 		int[] indexArr = alphaList.getSelectedIndices();
 		Vector tempVec = new Vector();
 		for (int i=0; i<indexArr.length; i++)
@@ -323,6 +361,19 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 		for (int i=0; i<tempVec.size(); i++)
 			intfArr[i] = (Interface)tempVec.elementAt(i);
 			
+		return intfArr;
+*/
+		int[] indexArr = alphaList.getSelectedIndices();
+		Vector tempVec = new Vector();
+		for (int i=0; i<indexArr.length; i++)
+		{
+			if (indexArr[i] >= 0)
+				tempVec.add(((InterfaceListItem)alphaModel.elementAt(indexArr[i])).getInterface());
+		}
+		Interface[] intfArr = new Interface[tempVec.size()];
+		for (int i=0; i<tempVec.size(); i++)
+			intfArr[i] = (Interface)tempVec.elementAt(i);
+					
 		return intfArr;
 	}
 	
@@ -340,7 +391,8 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 		
 		for (int i = 0; i < (project.getInterfaceVec()).size(); i++)
 		{
-			alphaModel.addElement((((((Interface)((project.getInterfaceVec()).elementAt(i))).getPgmDefn()).getInterface_name(shortJava, shortOther))) );
+			//alphaModel.addElement((((((Interface)((project.getInterfaceVec()).elementAt(i))).getPgmDefn()).getInterface_name(shortJava, shortOther))) );
+			alphaModel.addElement(new InterfaceListItem((Interface)project.getInterfaceVec().elementAt(i), shortJava, shortOther));
 		}
 	}
 
@@ -364,163 +416,53 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 	
 	/**
 	 * Handles ActionEvents.
+	 */
+	public void actionPerformed(ActionEvent event)
+	{
+		ActionPerformedThread thread = new ActionPerformedThread(event,this);
+		thread.start();
+	}
+	
+	/**
+	 * Called by actionPerformed to handle ActionEvents in a separate thread split apart from the AWT thread.
 	 */		
-	public void actionPerformed( ActionEvent event)
+	public void actionPerformedInSeparateThread( ActionEvent event)
 	{
 		if (event.getActionCommand().equals("popup.singleUML"))
-		{
-			Interface[] intfArr = getSelectedInterfaces();
-			if (intfArr.length == 0)
-			{
-				JOptionPane opPane = new JOptionPane();
-					JOptionPane.showMessageDialog(opPane,"You need to select a class or interface to view \nits UML diagram."
-						,"Note"
-						,JOptionPane.INFORMATION_MESSAGE);
-			}
-			else
-			{
-				for (int i=0; i<intfArr.length; i++)
-				{
-					SingleUMLGUI singleUML = null;
-					singleUML = new SingleUMLGUI(intfArr[i], intfArr[i].getPgmDefn().getInterface_name(true,false), true, false, desktop);
-						
-					if (singleUML != null)
-					{
-						singleUML.setVisible(true);
-						desktop.getSelectedDesktop().add(singleUML);
-						singleUML.setAsSelected(true);
-					}
-				}
-			}
-		}
+			InternalFrameUtilities.showSingleUMLDiagrams(getSelectedInterfaces(),desktop);
 		else if (event.getActionCommand().equals("popup.shortenedSource"))
-		{
-			Interface[] intfArr = getSelectedInterfaces();
-			if (intfArr.length == 0)
-			{
-				JOptionPane opPane = new JOptionPane();
-					JOptionPane.showMessageDialog(opPane,"You need to select a class or interface to view \nits shortened source code."
-						,"Note"
-						,JOptionPane.INFORMATION_MESSAGE);
-			}
-			else
-			{
-				for (int i=0; i<intfArr.length; i++)
-				{
-					ShortenedSourceGUI popupSsg = new ShortenedSourceGUI(intfArr[i], intfArr[i].getPgmDefn().getInterface_name(true,false), true, false,desktop);
-					popupSsg.setVisible(true);
-					desktop.getSelectedDesktop().add(popupSsg);
-					popupSsg.setAsSelected(true);
-				}
-			}
-		}
+			InternalFrameUtilities.showShortenedSourceCode(getSelectedInterfaces(),desktop);
 		else if (event.getActionCommand().equals("popup.sourceCode"))
-		{
-			Interface[] intfArr = getSelectedInterfaces();
-			if (intfArr.length == 0)
-			{
-				JOptionPane opPane = new JOptionPane();
-					JOptionPane.showMessageDialog(opPane,"You need to select a class or interface to view \nits source code."
-						,"Note"
-						,JOptionPane.INFORMATION_MESSAGE);
-			}
-			else
-			{
-				for (int i=0; i<intfArr.length; i++)
-				{
-					SourceCodeGUI popupSource = new SourceCodeGUI(intfArr[i], intfArr[i].getPgmDefn().getInterface_name(), desktop);
-					popupSource.setVisible(true);
-					desktop.getSelectedDesktop().add(popupSource);
-					popupSource.setAsSelected(true);
-				}
-			}
-		}
+			InternalFrameUtilities.showSourceCode(getSelectedInterfaces(),desktop);
 		else if (event.getActionCommand().equals("popup.javadocs"))
-		{
-			Interface[] intfArr = getSelectedInterfaces();
-			if (intfArr.length == 0)
-			{
-				JOptionPane opPane = new JOptionPane();
-					JOptionPane.showMessageDialog(opPane,"You need to select a class or interface to view \nits UML diagram."
-						,"Note"
-						,JOptionPane.INFORMATION_MESSAGE);
-			}
-			else
-			{
-				for (int i=0; i<intfArr.length; i++)
-				{
-					JavadocsGUI javagui = new JavadocsGUI(intfArr[i], intfArr[i].getPgmDefn().getInterface_name(), desktop);
-					javagui.setVisible(true);
-					desktop.getSelectedDesktop().add(javagui);
-					javagui.setAsSelected(true);
-				}
-			}
-		}
+			InternalFrameUtilities.showJavadocs(getSelectedInterfaces(),desktop);
+		else if (event.getActionCommand().equals("associate.source.code"))
+			InternalFrameUtilities.showAssociateSourceCodeWindow(getSelectedInterfaces(),desktop);
+		else if (event.getActionCommand().equals("associate.javadocs"))
+			InternalFrameUtilities.showAssociateJavadocsWindow(getSelectedInterfaces(),desktop);
 		else if (event.getActionCommand().equals("properties.shorten"))
 		{
 			fillList(shortenJavaBox.isSelected(), shortenOtherBox.isSelected());
-			if (component instanceof JFrame)
-				((JFrame)component).pack();
-			else if (component instanceof JInternalFrame)
-				((JInternalFrame)component).pack();
-		}
-		else if (event.getActionCommand().equals("associate.source.code"))
-		{
-			Interface[] intfArr = getSelectedInterfaces();
-			if (intfArr.length == 0)
+			try
 			{
-				JOptionPane opPane = new JOptionPane();
-				JOptionPane.showMessageDialog(opPane,
-					"You need to select an interface to associate a source code file with it",
-					"Note",
-					JOptionPane.INFORMATION_MESSAGE);
+				if (component instanceof JFrame)
+					((JFrame)component).pack();
+				else if (component instanceof JInternalFrame)
+					((JInternalFrame)component).pack();
 			}
-			else
+			catch (Throwable e)
 			{
-				if (intfArr.length == 1)
+				SystemsManager.printStackTraceToStandardOutput(e);
+				try
 				{
-					FileAssociationGUI sourceGUI = new FileAssociationGUI(intfArr[0], FileAssociationManager.JAVASOURCE);
-					sourceGUI.setVisible(true);
+					fillList(shortenJavaBox.isSelected(), shortenOtherBox.isSelected());
 				}
-				else
+				catch (Throwable e2)
 				{
-					Vector intfVec = new Vector();
-					for (int i=0; i<intfArr.length; i++)
-						intfVec.add(intfArr[i]);
-				
-					FileAssociationGUI sourceGUI = new FileAssociationGUI(intfVec, FileAssociationManager.JAVASOURCE,"Associate Java Source Files for the Selected Classes and Interfaces");
-					sourceGUI.setVisible(true);
+					SystemsManager.printStackTraceToStandardOutput(e2);
 				}
 			}
-		}
-		else if (event.getActionCommand().equals("associate.javadocs"))
-		{
-			Interface[] intfArr = getSelectedInterfaces();
-			if (intfArr.length == 0)
-			{
-				JOptionPane opPane = new JOptionPane();
-				JOptionPane.showMessageDialog(opPane,
-					"You need to select an interface to associate a javadoc file with it",
-					"Note",
-					JOptionPane.INFORMATION_MESSAGE);
-			}
-			else
-			{
-				if (intfArr.length == 1)
-				{
-					FileAssociationGUI sourceGUI = new FileAssociationGUI(intfArr[0], FileAssociationManager.JAVADOCS);
-					sourceGUI.setVisible(true);
-				}
-				else
-				{
-					Vector intfVec = new Vector();
-					for (int i=0; i<intfArr.length; i++)
-						intfVec.add(intfArr[i]);
-				
-					FileAssociationGUI sourceGUI = new FileAssociationGUI(intfVec, FileAssociationManager.JAVADOCS,"Associate Javadoc Files for the Selected Classes and Interfaces");
-					sourceGUI.setVisible(true);
-				}
-			}
+			
 		}
 	}
 	
@@ -567,6 +509,125 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 				popup.show(e.getComponent(),
 					e.getX(), e.getY());
 			}
+		}
+	}
+	
+	/**
+	 * Class which handles ActionEvents the same way as the actionPerformedInSeparateThread(ActionEvent) 
+	 * method would except, in a separate thread.
+	 * @author Dominic Kramer
+	 */
+	class ActionPerformedThread extends Thread
+	{
+		/** The ActionEvent to handle. */
+		private ActionEvent e;
+		/** The panel from which the user selects to perform an action. */
+		private JPanel panel;
+		/** Make a new ActionPerformedThread object. */
+		public ActionPerformedThread(ActionEvent ev, JPanel pan)
+		{
+			e = ev;
+			panel = pan;
+		}
+		/** Defines what to do in the new thread. */
+		public void run()
+		{
+			panel.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+			actionPerformedInSeparateThread(e);
+			panel.setCursor(Cursor.getDefaultCursor());
+		}
+	}
+	
+	public class AlphaListRenderer extends DefaultListCellRenderer
+	{
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+		{
+			super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+			
+			InterfaceDefn intfD = ((InterfaceListItem)value).getInterface().getPgmDefn();
+
+/*			
+			if (isSelected)
+			{
+				list.setForeground(list.getSelectionForeground());
+				list.setBackground(list.getSelectionBackground());
+			}
+			else
+			{
+				list.setForeground(list.getForeground());
+				list.setBackground(list.getBackground());
+			}
+*/			
+			ImageIcon icon = null;
+			
+			if (intfD.isClass())
+			{
+				if (intfD.isAbstract())
+				{
+					setToolTipText("Abstract Class "+intfD.getInterface_name());
+					icon = getImageIcon("devTools/Hawk/classDescriptor/pixmaps/abstract_class_icon.png");
+				}
+				else
+				{
+					setToolTipText("Class "+intfD.getInterface_name());
+					icon = getImageIcon("devTools/Hawk/classDescriptor/pixmaps/class_icon.png");
+				}
+				setFont(new Font("Plain",Font.PLAIN,12));
+			}
+			else
+			{
+				icon = getImageIcon("devTools/Hawk/classDescriptor/pixmaps/interface_icon.png");
+				setFont(new Font("Italic",Font.ITALIC,12));
+				setToolTipText("Interface "+intfD.getInterface_name());
+			}
+			
+			if (icon != null)
+				setIcon(icon);
+				
+//			setEnabled(list.isEnabled());
+//			setOpaque(true);
+			
+			return this;
+		}
+		
+		private ImageIcon getImageIcon(String location)
+		{
+			URL imageURL = ClassLoader.getSystemClassLoader().getResource(location);
+			ImageIcon icon = null;
+			if (imageURL != null)
+				icon = new ImageIcon(imageURL);
+		
+			return icon;
+		}
+	}
+	
+	public class InterfaceListItem
+	{
+		protected Interface intf;
+		protected boolean shortenJava;
+		protected boolean shortenOther;
+		
+		public InterfaceListItem(Interface intF, boolean shortJava, boolean shortOther)
+		{
+			intf = intF;
+			shortenJava = shortJava;
+			shortenOther = shortOther;
+		}
+		
+		public Interface getInterface()
+		{
+			return intf;
+		}
+		
+		public void setShorteningParameters(boolean shortJava, boolean shortOther)
+		{
+			shortenJava = shortJava;
+			shortenOther = shortOther;
+		}
+		
+		public String toString()
+		{
+			return intf.getPgmDefn().getInterface_name(shortenJava,shortenOther);
 		}
 	}
 }

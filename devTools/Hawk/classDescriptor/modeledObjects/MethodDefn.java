@@ -32,9 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:51:52  bouzekc
- * Documented file using javadoc statements.
- * Added the toString() method.
+ * Revision 1.3  2004/03/12 19:46:18  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:10:06  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter

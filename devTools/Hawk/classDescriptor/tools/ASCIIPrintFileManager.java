@@ -32,8 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:25:57  bouzekc
- * Documented file using javadoc statements.
+ * Revision 1.3  2004/03/12 19:46:19  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:10:45  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -93,22 +93,23 @@ public class ASCIIPrintFileManager extends PrintManager
 	{
 		try
 		{
-			String result = "";
+			StringBuffer buffer = new StringBuffer();
 			String shortenedSource = "";
-			String tab = "";
-				
+			
+			StringBuffer tabBuffer = new StringBuffer();
 			for (int j = 1; j<=tabSize; j++)
-				tab = tab + " ";
-				
+				tabBuffer.append(" ");
+			
+			String tab = tabBuffer.toString();
+							
 				shortenedSource = intF.getStringInJavadocFormat(shortJava, shortOther);
 				StringTokenizer tokenizer = new StringTokenizer(shortenedSource,"\n");
 				while (tokenizer.hasMoreTokens())
-				{
-					result = result + tab + tokenizer.nextToken() + "\n";
-				}
-				result = result + "\n";
+					buffer.append(tab + tokenizer.nextToken() + "\n");
+
+				buffer.append("\n");
 	
-			writeBytes(result);
+			writeBytes(buffer.toString());
 		}
 		catch(IOException e)
 		{
@@ -133,30 +134,30 @@ public class ASCIIPrintFileManager extends PrintManager
 		{
 			try
 			{
-				String result = "";
+				StringBuffer buffer = new StringBuffer();
 				for (int i = 1; i <= len; i++)
-					result = result + "=";
+					buffer.append("=");
 				
-				result = result + "\n";
+				buffer.append("\n");
 				
 				if (num >= 0)
 				{
-					result = result + "Section " + num+":";
+					buffer.append("Section " + num+":");
 				}
 				
 				if (title != null)
 				{
-					result = result + "  " + title;
+					buffer.append("  " + title);
 				}
 				
-				result = result + "\n";
+				buffer.append("\n");
 				
 				for (int i = 1; i <= len; i++)
-				result = result + "=";
-								
-				result = result + "\n";
+					buffer.append("=");
+					
+				buffer.append("\n");
 				
-				writeBytes(result);
+				writeBytes(buffer.toString());
 			}
 			catch(IOException e)
 			{
@@ -202,24 +203,24 @@ public class ASCIIPrintFileManager extends PrintManager
 		{
 			try
 			{
-				String result = "";
-				result = result + "Title:  "+title+"\n";
-				result = result + "Date:  "+date+"\n";
-				result = result + "Author:  "+author+"\n";
-				result = result + "Description:  ";
+				StringBuffer buffer = new StringBuffer();
+				buffer.append("Title:  "+title+"\n");
+				buffer.append("Date:  "+date+"\n");
+				buffer.append("Author:  "+author+"\n");
+				buffer.append("Description:  ");
 				StringTokenizer tokenizer = new StringTokenizer(description, "\n");
 				String tab = "              ";
 				boolean writeTab = false;
 				while (tokenizer.hasMoreTokens())
 				{				
 					if (writeTab)
-						result = result + tab;
+						buffer.append(tab);
 						
-					result = result + tokenizer.nextToken()+"\n";
+					buffer.append(tokenizer.nextToken()+"\n");
 					writeTab = true;
 				}
-				
-				writeBytes(result+"\n");
+				buffer.append("\n");
+				writeBytes(buffer.toString());
 			}
 			catch(IOException e)
 			{
@@ -238,24 +239,26 @@ public class ASCIIPrintFileManager extends PrintManager
 		{
 			try
 			{
-				String result = "";
-				String tab = "";
+				StringBuffer buffer = new StringBuffer();
+				StringBuffer tabBuffer = new StringBuffer();
 				
 				for (int i = 1; i<=tabSize; i++)
-					tab = tab + " ";
+					tabBuffer.append(" ");
 					
-				result = result + tab;
+				String tab = tabBuffer.toString();	
+				
+				buffer.append(tab);
 				
 				for (int i = 1; i<(len-tabSize); i++)
-					result = result + "-";
+					buffer.append("-");
 				
-				result = result + "\n"+tab+description+"\n";
+				buffer.append("\n"+tab+description+"\n");
 				
 				for (int i = 1; i<(len-tabSize); i++)
-					result = result + "-";
+					buffer.append("-");
 					
-				result = result + "\n";
-				writeBytes(result);
+				buffer.append("\n");
+				writeBytes(buffer.toString());
 			}
 			catch(IOException e)
 			{
@@ -276,9 +279,10 @@ public class ASCIIPrintFileManager extends PrintManager
 				//this vector contains the unique package names
 					Vector uniqueVec = InterfaceUtilities.getPackageListVector(vec);
 								
-				String tab = "";
+				StringBuffer tabBuffer = new StringBuffer();
 				for (int k = 1; k<=tabSize; k++)
-					tab = tab + " ";
+					tabBuffer.append(" ");
+				String tab = tabBuffer.toString();
 				String oldText = gui.getText();
 				int i=0;	
 				while (i < uniqueVec.size() && !gui.isCancelled())
@@ -311,28 +315,26 @@ public class ASCIIPrintFileManager extends PrintManager
 		{
 			try
 			{
-				String result = "";
 				String shortenedSource = "";
-				String tab = "";
-				
+				StringBuffer tabBuffer = new StringBuffer();
 				for (int j = 1; j<=tabSize; j++)
-					tab = tab + " ";
-				
+					tabBuffer.append(" ");
+				String tab = tabBuffer.toString();
 				int i=0;
 				int currentVal = 0;
 				String oldProgressText = gui.getText();
 				while (i<vec.size() && !gui.isCancelled())
 				{
+					StringBuffer buffer = new StringBuffer();
 					shortenedSource = ((Interface)vec.elementAt(i)).getStringInJavadocFormat(shortJava, shortOther);
 					StringTokenizer tokenizer = new StringTokenizer(shortenedSource,"\n");
 					while (tokenizer.hasMoreTokens())
 					{
-						result = result + tab + tokenizer.nextToken() + "\n";
+						buffer.append(tab + tokenizer.nextToken() + "\n");
 					}
-					result = result + "\n";
+					buffer.append("\n");
 				
-					writeBytes(result);
-					result = "";
+					writeBytes(buffer.toString());
 					
 					i++;
 					currentVal = gui.getValue() + increment;
@@ -380,15 +382,16 @@ public class ASCIIPrintFileManager extends PrintManager
 		{
 			try
 			{
-				String results = "";
-				String tab = "";			
+				StringBuffer buffer = new StringBuffer();
+				StringBuffer tabBuffer = new StringBuffer();
 				for (int i = 1; i <= tabSize; i++)
-					tab = tab + " ";
+					tabBuffer.append(" ");
+				String tab = tabBuffer.toString();
 			
 				for (int i = 0; i < stringVec.size(); i++)
-					results = results + tab + "Section " + numArr[i] + ":  " + (String)(stringVec.elementAt(i)) + "\n";
+					buffer.append(tab + "Section " + numArr[i] + ":  " + (String)(stringVec.elementAt(i)) + "\n");
 			
-				writeBytes(results);
+				writeBytes(buffer.toString());
 			}
 			catch(IOException e)
 			{
@@ -619,7 +622,7 @@ public class ASCIIPrintFileManager extends PrintManager
 	 */
 	public static String getOuterDivider(Interface intF, boolean shortJava, boolean shortOther)
 	{
-		String line1 = " ";
+		StringBuffer buffer = new StringBuffer(" ");
 			
 		//here you might think that i<=PrintFileManager.longestLine(intF)-2
 		//however, I am adding 2 to that number to accomidate one space 
@@ -629,10 +632,10 @@ public class ASCIIPrintFileManager extends PrintManager
 		//ex.  ----------
 		//    | Name     |
 		for (int i = 1; i <= ASCIIPrintFileManager.longestLine(intF, shortJava, shortOther)+2; i++)
-			line1 = line1+"-";
+			buffer.append("-");
 				
-		line1 = line1 + " ";
-		return line1;
+		buffer.append(" ");
+		return buffer.toString();
 		//ex.  line1 = " --------- "
 	}
 	
@@ -650,14 +653,14 @@ public class ASCIIPrintFileManager extends PrintManager
 	 */
 	public static String getInterfaceNameLine(Interface intF, boolean shortJava, boolean shortOther)
 	{
-		String line2 = "| " + intF.getPgmDefn().getInterface_name(shortJava, shortOther);
-		int num = line2.length();
+		StringBuffer buffer = new StringBuffer("| " + intF.getPgmDefn().getInterface_name(shortJava, shortOther));
+		int num = buffer.length();
 			
 		for (int i = 1; i <= ASCIIPrintFileManager.longestLine(intF, shortJava, shortOther)-num+2; i++)
-			line2 = line2 + " ";
+			buffer.append(" ");
 				
-		line2 = line2 + " |";
-		return line2;
+		buffer.append(" |");
+		return buffer.toString();
 		
 	}
 	
@@ -674,13 +677,13 @@ public class ASCIIPrintFileManager extends PrintManager
 	 * @return A sequence of dashes.
 	 */	public static String getInnerDivider(Interface intF, boolean shortJava, boolean shortOther)
 	{
-		String line3 = "|";
+		StringBuffer buffer = new StringBuffer("|");
 			
 		for (int i = 1; i <= ASCIIPrintFileManager.longestLine(intF, shortJava, shortOther)+2; i++)
-			line3 = line3+"-";
+			buffer.append("-");
 			
-		line3 = line3 + "|";
-		return line3;
+		buffer.append("|");
+		return buffer.toString();
 	}
 	
 	/**
@@ -697,13 +700,13 @@ public class ASCIIPrintFileManager extends PrintManager
 	 */
 	public static String getBlankLine(Interface intF, boolean shortJava, boolean shortOther)
 	{
-		String blank = "|";
+		StringBuffer buffer = new StringBuffer("|");
 			
 		for (int i = 1; i <= ASCIIPrintFileManager.longestLine(intF, shortJava, shortOther)+2; i++)
-			blank = blank+" ";
+			buffer.append(" ");
 			
-		blank = blank + "|";
-		return blank;
+		buffer.append("|");
+		return buffer.toString();
 	}
 	
 	/**
