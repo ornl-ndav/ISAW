@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/03/13 16:08:33  dennis
+ *  Data class is now an abstract base class that implements IData
+ *  interface. FunctionTable and HistogramTable are concrete derived
+ *  classes for storing tabulated functions and frequency histograms
+ *  respectively.
+ *
  *  Revision 1.20  2002/02/22 20:35:06  pfpeterson
  *  Operator Reorganization.
  *
@@ -434,7 +440,7 @@ public class DataSet implements IAttributeList,
   public void setSelectFlag( int index, Data d )
   {
     if ( index >= 0 && index < data.size() )
-      ((Data)data.elementAt(index)).setSelected( d );
+      ((Data)data.elementAt(index)).setSelected( d.isSelected() );
     else
       System.out.println("Error: setSelectFlag(i,d) called with invalid index");
   }
