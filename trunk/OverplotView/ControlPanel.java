@@ -89,7 +89,7 @@ public class ControlPanel
 
     // *** WINDOW ***
     Component windowC = initWindow_inJPanel();
-    this.addTab("Window", icon, windowC, "select viewable graph region" );
+    //this.addTab("Window", icon, windowC, "select viewable graph region" );
 
 
     // *** DATA ***
@@ -240,9 +240,8 @@ public class ControlPanel
    */
   protected Component initWindow_inJPanel()
   {
+/*
     JPanel panelJP = new JPanel();
-    xrangeActionListener xrangeListener = new xrangeActionListener();
-    yrangeActionListener yrangeListener = new yrangeActionListener();
 
     manager.setXRangeUI( xrange = new TextRangeUI(  "xrange", 
                                                     manager.getXRange().x,
@@ -252,7 +251,10 @@ public class ControlPanel
                                                    manager.getYRange().x, 
                                                    manager.getYRange().y )  );
 
+
+    xrangeActionListener xrangeListener = new xrangeActionListener();
     xrange.addActionListener(  xrangeListener  );
+    yrangeActionListener yrangeListener = new yrangeActionListener();
     yrange.addActionListener(  yrangeListener  );
 
     panelJP.setLayout(  new GridLayout( 5, 5 )  );
@@ -293,6 +295,8 @@ public class ControlPanel
     panelJP.add(  new JPanel()  );
 
     return panelJP;
+*/
+    return new JPanel();
   }
 
 
@@ -417,6 +421,12 @@ public class ControlPanel
     markers[1] = 2;
     markers[2] = 4; 
     markers[3] = 18;
+    //markers[4] = 18;
+    //markers[5] = 20;
+    //markers[6] = 48;
+    //markers[7] = 22;
+    //markers[8] = 28;
+    //markers[9] = 88;
 
     //add the (above) colors to 'colorJL', where each color and it's string
     //representation have correspondint indices.
