@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/06/27 16:28:58  rmikk
+ * The displayType for displaying data sets is not case sensitive
+ *   so it works with the viewManager
+ *
  * Revision 1.4  2003/06/19 22:31:26  pfpeterson
  * Removed an empty statement to make jikes happy.
  *
@@ -115,7 +119,7 @@ public class ScriptUtil{
     if(displayType==null || displayType.length()<=0)
       displayType=IMAGE;
     else
-      displayType=displayType.toUpperCase().intern();
+      displayType=displayType.intern();
 
     if(DEBUG) System.out.println("IN DISPLAY("+ds+","+displayType+")");
 
