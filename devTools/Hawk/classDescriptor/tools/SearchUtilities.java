@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 19:00:38  bouzekc
+ * Documented file using javadoc statements.
+ * Added a private constructor because all of the methods are static.
+ *
  * Revision 1.1  2004/02/07 05:10:47  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -42,26 +46,27 @@ package devTools.Hawk.classDescriptor.tools;
 
 import java.util.Vector;
 
+import devTools.Hawk.classDescriptor.gui.panel.search.AdvancedOptionsJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.AttributeDefnOptionsJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.BasicOptionsJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.ConstructorDefnOptionsJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.InterfaceDefnOptionsJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.MethodDefnOptionsJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.VectorOptionsJPanel;
-import devTools.Hawk.classDescriptor.gui.panel.search.AdvancedOptionsJPanel;
 import devTools.Hawk.classDescriptor.modeledObjects.AttributeDefn;
 import devTools.Hawk.classDescriptor.modeledObjects.ConstructorDefn;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.modeledObjects.InterfaceDefn;
 import devTools.Hawk.classDescriptor.modeledObjects.MethodDefn;
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class contains general methods used to compare Strings.
+ * @author Dominic Kramer
  */
 public class SearchUtilities
 {
+	/** This is private because all of the methods are static. */
+	private SearchUtilities() {}
+	
 	/**
 	 * This returns true if str1 is a match for str2 and false if not given the conditions matchMustContainWord, matchEntireWord, caseSensitive.
 	 * @param str1 The String you have.
@@ -80,14 +85,6 @@ public class SearchUtilities
 			result = isEqual(str1, str2, caseSensitive);
 		else
 			result = isSubstring(str1, str2, caseSensitive);
-
-/*		
-		System.out.println("     "+str1+" vs. "+str2);
-		if (result == matchMustContainWord)
-			System.out.println("     +++++++++++SUCCESS");
-		else
-			System.out.println("     ----------------------FAILURE");
-*/			
 		return (result == matchMustContainWord);
 	}
 	
@@ -96,7 +93,7 @@ public class SearchUtilities
 		 * @param str1 The String to look for
 		 * @param str2 The String to look in
 		 * @param caseSensitive Whether or not to be case sensitive
-		 * @return
+		 * @return Either true or false.
 		 */
 		public static boolean isSubstring(String str1, String str2, boolean caseSensitive)
 		{
@@ -126,7 +123,7 @@ public class SearchUtilities
 		 * @param str1 The String to look for
 		 * @param str2 The String to look in
 		 * @param caseSensitive Whether or not to be case sensitive
-		 * @return
+		 * @return Either true or false.
 		 */
 		public static boolean isEqual(String str1, String str2, boolean caseSensitive)
 		{
@@ -138,6 +135,7 @@ public class SearchUtilities
 			
 			return str1.equals(str2);
 		}
+
 	/**
 	 * Takes a vector of BasicOptionsJPanel objects and for some index, it compares the string from dataVec and sees if it is a match to what is entered
 	 * in the JTextField in the BasicOptionsJPanel given the conditions in the BasicOptionsJPanel.  If the textFrom the JTextField when trimmed is equal to ""
@@ -160,6 +158,13 @@ public class SearchUtilities
 		return answer;
 	}
 	
+	/**
+	 * This method compares the entries in the VectorOptionsJPanel panel with the data 
+	 * in the Vector dataVec.
+	 * @param panel The panel which contains the Strings to compare.
+	 * @param dataVec A Vector of VectorStringElements
+	 * @return True if all of the conditions in the VectorOptionsJPanel are true.
+	 */	
 	public static boolean checkVectorSearchOptions(VectorOptionsJPanel panel, Vector dataVec)
 	{
 		int location = 0;
@@ -174,7 +179,6 @@ public class SearchUtilities
 		boolean answer = panel.getGlobalOptionsJPanel().isAValidNumberOfItems(dataVec.size());
 		if (answer)
 		{
-//			System.out.println("Passed the vector size check");
 			Vector dataVec2 = recreateVector(dataVec);
 			
 			while (i<panel.getOptionsVec().size() && answer)
@@ -187,8 +191,6 @@ public class SearchUtilities
 					expectedLocation = dataVec.size();
 				else if (locationVal == AdvancedOptionsJPanel.AT_ELEMENT)
 					expectedLocation = newPanel.getNumberSpinnerValue();
-				
-//				System.out.println("expectedLodation="+expectedLocation);
 				
 				text = newPanel.getTextFieldText();
 				found = false;
@@ -206,11 +208,6 @@ public class SearchUtilities
 					j++;
 				}
 
-/*				
-				System.out.println("found="+found);
-				System.out.println("foundLocation="+foundLocation);
-				System.out.println(""+testText+" vs "+text);
-*/				
 				if ( (expectedLocation==-1 || expectedLocation==foundLocation)&&found )
 					answer = true;
 				else
@@ -219,8 +216,6 @@ public class SearchUtilities
 				i++;
 			}
 		}
-//		System.out.println("anwer="+answer);
-//		System.out.println();
 		return answer;
 	}
 
@@ -228,8 +223,8 @@ public class SearchUtilities
 	/**
 	 * This takes a Vector of Strings and creates a Vector of VectorStringElement objects.  This object contains a str member which contains the element's
 	 * String and index which is the String's index.
-	 * @param vec
-	 * @return
+	 * @param vec The Vector of String objects to use.
+	 * @return The Vector of VectorStringElement objects created.
 	 */
 	public static Vector recreateVector(Vector vec)
 	{
@@ -243,6 +238,13 @@ public class SearchUtilities
 		return newVec;
 	}
 	
+	/**
+	 * Determines if the AttributeDefn object attD is a match to the search as specified by the AttributeDefnOptionsJPanel 
+	 * panel.
+	 * @param panel The panel which contains the data the user entered.
+	 * @param attD The AttributeDefn object to compare against.
+	 * @return True if all of the data specified by the panel is true.
+	 */
 	public static boolean matches(AttributeDefnOptionsJPanel panel, AttributeDefn attD)
 	{
 		Vector panelsVector = new Vector();
@@ -260,6 +262,13 @@ public class SearchUtilities
 		return answer;
 	}
 
+	/**
+	 * Determines if the ConstructorDefn object constD is a match to the search as specified by the ConstructorDefnOptionsJPanel 
+	 * panel.
+	 * @param panel The panel which contains the data the user entered.
+	 * @param constD The ConstructorDefn object to compare against.
+	 * @return True if all of the data specified by the panel is true.
+	 */
 	public static boolean matches(ConstructorDefnOptionsJPanel panel, ConstructorDefn constD)
 	{
 		Vector panelsVector = new Vector();
@@ -278,6 +287,13 @@ public class SearchUtilities
 		return answer;
 	}
 	
+	/**
+	 * Determines if the MethodDefn object methD is a match to the search as specified by the MethodDefnOptionsJPanel 
+	 * panel.
+	 * @param panel The panel which contains the data the user entered.
+	 * @param methD The MethodDefn object to compare against.
+	 * @return True if all of the data specified by the panel is true.
+	 */
 	public static boolean matches(MethodDefnOptionsJPanel panel, MethodDefn methD)
 	{
 		Vector panelsVector = new Vector();
@@ -298,6 +314,13 @@ public class SearchUtilities
 		return answer;
 	}
 	
+	/**
+	 * Determines if the InterfaceDefn object intfD is a match to the search as specified by the InterfaceDefnOptionsJPanel 
+	 * panel.
+	 * @param panel The panel which contains the data the user entered.
+	 * @param intfD The InterfaceDefn object to compare against.
+	 * @return True if all of the data specified by the panel is true.
+	 */	
 	public static boolean matches(InterfaceDefnOptionsJPanel panel, InterfaceDefn intfD)
 	{
 		boolean answer = true;
@@ -335,6 +358,16 @@ public class SearchUtilities
 		return answer;
 	}
 	
+	/**
+	 * Determines if the Inteface object intF is a match to the search as specified by the panels  
+	 * supplied to the method.
+	 * @param attPanel The panel describing the search parameters for the attributes (fields) in the class or interface.
+	 * @param constPanel The panel describing the search parameters for the constructors in the class or interface.
+	 * @param methPanel The panel describing the search parameters for the methods in the class or interface.
+	 * @param intfPanel The panel describing the search parameters for the InterfaceDefn object associated with the 
+	 * class or interface.  The InterfaceDefn object describes the general properties of the class or interface.
+	 * @return True if all of the data specified by the panels are true.
+	 */
 	public static boolean matches(Interface intF, AttributeDefnOptionsJPanel attPanel, ConstructorDefnOptionsJPanel constPanel, MethodDefnOptionsJPanel methPanel, InterfaceDefnOptionsJPanel intfPanel)
 	{
 		int i=0;
@@ -375,7 +408,17 @@ public class SearchUtilities
 		return answer;
 	}
 	
-	//intFVec is a Vector of Interface objects
+	/**
+	 * Compares all of the Interfaces from the Vector supplied with the search parameters from the panels and returns a Vector 
+	 * of all of the Interfaces that meet the conditions.
+	 * @param intFVec A Vector of Interface objects.
+	 * @param attPanel The panel describing the search parameters for the attributes (fields) in the class or interface.
+	 * @param constPanel The panel describing the search parameters for the constructors in the class or interface.
+	 * @param methPanel The panel describing the search parameters for the methods in the class or interface.
+	 * @param intfPanel The panel describing the search parameters for the InterfaceDefn object associated with the 
+	 * class or interface.  The InterfaceDefn object describes the general properties of the class or interface.
+	 * @return The Interfaces from the Vector intFVec that match the parameters supplied from the panels.
+	 */
 	public static Vector findMatches(Vector intFVec, AttributeDefnOptionsJPanel attPanel, ConstructorDefnOptionsJPanel constPanel, MethodDefnOptionsJPanel methPanel, InterfaceDefnOptionsJPanel intfPanel)
 	{
 		Vector foundVec = new Vector();
@@ -383,7 +426,6 @@ public class SearchUtilities
 		for (int i=0; i<intFVec.size(); i++)
 		{
 			foundIntf = (Interface)intFVec.elementAt(i);
-			System.out.println("ON CLASS "+foundIntf.getPgmDefn().getInterface_name());
 			if (matches(foundIntf, attPanel, constPanel, methPanel, intfPanel))
 				foundVec.add(foundIntf);
 		}
@@ -391,20 +433,42 @@ public class SearchUtilities
 		return foundVec;
 	}
 	
+	/**
+	 * A class which describes the elements from a Vector of Strings.  The class 
+	 * describes the contents of the element from a Vector as well as the position in the 
+	 * Vector.
+	 * @author Dominic Kramer
+	 */
 	private static class VectorStringElement
 	{
+		/**
+		 * The contents of the element from the Vector.
+		 */
 		public String str;
+		/**
+		 * The index of the element in the Vector.
+		 */
 		public int index;
 		
+		/**
+		 * Create a new VectorStringElement.
+		 * @param s The value of the element.
+		 * @param i The elements index.
+		 */
 		public VectorStringElement(String s, int i)
 		{
 			str = s;
 			index = i;
 		}
 		
+		/**
+		 * Get a string representation of the element from the Vector.  
+		 * The String returned is of the form (str="str", index="index")
+		 * @return A string representation of the element from the Vector.
+		 */
 		public String display()
 		{
-			return "(str="+str+", inedex="+index+")";
+			return "(str="+str+", index="+index+")";
 		}
 	}
 }
