@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/06/26 14:39:36  rmikk
+ * Changed DataSetListHandler to IDataSetListHandler
+ *
  * Revision 1.3  2001/06/01 21:14:13  rmikk
  * Added Documentation for javadocs etc.
  *
@@ -47,9 +50,9 @@ import java.util.*;
 import javax.swing.tree.*;
 import javax.swing.*;
 
-/** Implements DataSetListHandler when the Data Set list is in a JTreeUI
+/** Implements IDataSetListHandler when the Data Set list is in a JTreeUI
  */
-public class DSgetArray implements DataSetListHandler
+public class DSgetArray implements IDataSetListHandler
 {DataSet DS[];
 
 
