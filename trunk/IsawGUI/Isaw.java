@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.122  2003/01/20 17:26:16  pfpeterson
+ *  Added method for having a default file filter. Currently allows 'nxs', 'nexus', 'sdds', 'ipns', 'run', 'gsas', 'gsa', and 'gda'.
+ *
  *  Revision 1.121  2002/12/10 20:39:27  pfpeterson
  *  More gracefully errors when JavaHelp is not present.
  *
@@ -1972,6 +1975,23 @@ public class Isaw
       if( data_dir == null )
         data_dir = SharedData.getProperty( "user.home" );
         
+      // get the default FileFilter out of the properties file
+      if(load_filter==null){
+        String ext=SharedData.getProperty("Default_Ext");
+        System.out.println("EXT:"+ext);
+        if(ext!=null){
+          ext=ext.toLowerCase();
+          if(ext.equals("nxs") || ext.equals("nexus"))
+            load_filter=new NexIO.NexusfileFilter();
+          else if(ext.equals("sdds"))
+            load_filter=new DataSetTools.retriever.SDDSFileFilter();
+          else if(ext.equals("ipns") || ext.equals("run"))
+            load_filter=new IPNS.Runfile.RunfileFilter();
+          else if(ext.equals("gsas") || ext.equals("gsa") || ext.equals("gda"))
+            load_filter=new DataSetTools.gsastools.GsasFileFilter();
+        }
+      }
+
                                        //create and display the 
                                        //file chooser, load files
       JFrame frame = new JFrame();
