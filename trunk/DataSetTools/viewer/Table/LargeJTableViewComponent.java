@@ -40,15 +40,10 @@ import java.awt.event.*;
 import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 import IsawGUI.*;
-import java.io.*;
 import javax.swing.table.*;
-import DataSetTools.components.ui.*;
-import DataSetTools.components.containers.*;
-import DataSetTools.util.*;
 import java.util.*;
 import DataSetTools.components.View.Menu.*;
 import DataSetTools.components.View.*;
-import javax.swing.event.*;
 import java.beans.*;
 import DataSetTools.components.ParametersGUI.*;
 
@@ -228,7 +223,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
         S+="\n Intensity/error="+(Intensity/sigI);
 
           
-       (new JOptionPane()).showMessageDialog( null, S);
+       JOptionPane.showMessageDialog( null, S);
 
        }//actionPerformed
 
@@ -374,8 +369,8 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
         Rectangle Rscr = JscrlPane.getViewport().getViewRect();//getViewRect(); NG
         int width = Rscr.width;
         int height = Rscr.height;
-        int nrows = height/ R.height;
-        int ncols = width/R.width;
+        //int nrows = height/ R.height;
+        //int ncols = width/R.width;
        /* if( R.x > Rscr.x + Rscr.width/nrows*4)
            if( R.x < Rscr.x -Rscr.width/nrows*4)
              if( R.y > Rscr.y + Rscr.height/ncols*4)
@@ -484,7 +479,8 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
    class MyMouseListener  extends MouseAdapter
      {
       public void mouseClicked(MouseEvent e)
-        { int row = jtb.getSelectedRow();
+        { 
+          int row = jtb.getSelectedRow();
           int col = jtb.getSelectedColumn();
           notifyActionListeners( IViewComponent.POINTED_AT_CHANGED);
           if( jtb.getInputMap() ==  inp_map){}

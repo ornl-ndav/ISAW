@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/01/24 22:41:15  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.8  2003/12/18 22:46:06  millermi
  * - This file was involved in generalizing AxisInfo2D to
  *   AxisInfo. This change was made so that the AxisInfo
@@ -64,7 +67,6 @@
  */
 
 package DataSetTools.viewer.Table;
-import javax.swing.table.*;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.Menu.*;
 import java.util.*;

@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.16  2004/01/24 22:41:15  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.15  2003/10/15 03:43:12  bouzekc
  * Fixed javadoc errors.
  *
@@ -95,10 +98,8 @@ import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 import IsawGUI.*;
 import java.io.*;
-import javax.swing.table.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.components.containers.*;
-import DataSetTools.util.*;
 import java.util.*;
 
 /** This class can be used as a Stub for all the special TableViewers in the old
@@ -281,7 +282,7 @@ public class STableView  extends DataSetViewer
         S+="\n Intensity/error="+(Intensity/sigI);
 
           
-       (new JOptionPane()).showMessageDialog( null, S);
+       JOptionPane.showMessageDialog( null, S);
 
        }//actionPerformed
 
@@ -493,8 +494,8 @@ public class STableView  extends DataSetViewer
         Rectangle Rscr = JscrlPane.getViewport().getViewRect();//getViewRect(); NG
         int width = Rscr.width;
         int height = Rscr.height;
-        int nrows = height/ R.height;
-        int ncols = width/R.width;
+        //int nrows = height/ R.height;
+        //int ncols = width/R.width;
        /* if( R.x > Rscr.x + Rscr.width/nrows*4)
            if( R.x < Rscr.x -Rscr.width/nrows*4)
              if( R.y > Rscr.y + Rscr.height/ncols*4)
