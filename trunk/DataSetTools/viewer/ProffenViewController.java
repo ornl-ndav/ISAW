@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/07/28 19:52:23  dennis
+ * Removed unused import and some unreachable code.
+ *
  * Revision 1.1  2004/07/28 18:23:53  rmikk
  * Initial Checkin
  *
@@ -40,7 +43,6 @@
 
 package DataSetTools.viewer;
 
-import Command.ScriptUtil;
 import DataSetTools.dataset.DataSet;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.TwoD.*;
@@ -194,18 +196,15 @@ public class ProffenViewController extends DataSetViewer implements
          if( menu.getItem(i).getText().equals(item))
              return (JMenu)menu.getItem(i);
      return null;
-     
-   //------------------------ add Listeners----------------------------------
-   
-   invalidate();  
    }
+   
 	/* 
 	 * @see DataSetTools.viewer.DataSetViewer#redraw(java.lang.String)
 	 */
 	public void redraw(String reason) {
-		
-
+	
 	}
+
 //--------------------IPreserveState Methods------------------
   /**
    *  Method required by the IPreserveState interface
