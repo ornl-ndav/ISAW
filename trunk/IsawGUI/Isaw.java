@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.127  2003/03/06 15:49:24  pfpeterson
+ *  Changed to work with SharedData's private StatusPane.
+ *
  *  Revision 1.126  2003/03/05 20:37:51  pfpeterson
  *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -487,7 +490,7 @@ public class Isaw
                   new JScrollPane( SharedData.status_pane),
                   BorderLayout.EAST);
      */                    
-    cp.addPropertyChangeListener(SharedData.status_pane);
+    cp.addPropertyChangeListener(SharedData.getStatusPane());
 
     upper_sp= new JSplitPane( JSplitPane.HORIZONTAL_SPLIT,
                               jdt, jcui); 
@@ -498,7 +501,7 @@ public class Isaw
     }
     
     main_sp= new JSplitPane( JSplitPane.VERTICAL_SPLIT,
-                             upper_sp,SharedData.status_pane);
+                             upper_sp,SharedData.getStatusPane());
     sp_comp=main_sp.getComponents();
     for( int i=0 ; i<sp_comp.length ; i++ ){
         if(sp_comp[i] instanceof BasicSplitPaneDivider)
@@ -642,7 +645,7 @@ public class Isaw
     Script_Class_List_Handler SP = new Script_Class_List_Handler();      
     opMenu macrosMenu = new opMenu(SP, jdt, sessionLog , Isaw.this);
     macrosMenu.setOpMenuLabel( MACRO_M );
-    macrosMenu.addStatusPane( SharedData.status_pane );
+    macrosMenu.addStatusPane( SharedData.getStatusPane() );
 
 
 
@@ -1080,7 +1083,7 @@ public class Isaw
         }
 
         JDataTree jjt=IS.jdt;
-        cp.getExecScript( filename, IS, jdt, sessionLog, SharedData.status_pane);
+        cp.getExecScript( filename, IS, jdt, sessionLog, SharedData.getStatusPane());
       }
     }
  
