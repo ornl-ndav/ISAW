@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.73  2003/05/24 21:12:07  dennis
+ *  Now adds list of references to Data blocks to the UniformGrid object
+ *  for each detector.
+ *
  *  Revision 1.72  2003/04/14 14:34:47  dennis
  *  Now gets the size of detectors from the IPNS.Runfile.Runfile methods:
  *  DetectorWidth(id), DetectorLength(id) and DetectorDepth(id)
@@ -773,6 +777,10 @@ private float CalculateEIn()
        }
       }
     }
+
+    Enumeration e = det_data_grids.elements();
+    while ( e.hasMoreElements() )
+      ((IDataGrid)(e.nextElement())).setData_entries( data_set );
 
     run_file.Close(); 
 
