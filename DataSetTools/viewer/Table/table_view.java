@@ -29,6 +29,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.38  2004/02/07 00:56:38  bouzekc
+ * Fixed bug that caused an Exception if the column name was less than
+ * 4 characters.
+ *
  * Revision 1.37  2003/12/11 19:31:37  rmikk
  * Fixed the getFieldInfo so it retrieves the correct Field
  *
@@ -2869,6 +2873,12 @@ public class table_view extends JPanel implements ActionListener
       Vector Sv = new Vector();
       int SvColSize = 20;
 
+      /**
+       * Gets the name of the chosen column, truncated to 4 characters or less.
+       * e.g. "Raw detector angle" goes to "Raw".
+       * 
+       * @return Truncated column name.
+       */
       public String getColumnName( int col )
       { 
          int col1 = col;
@@ -2938,8 +2948,16 @@ public class table_view extends JPanel implements ActionListener
                S += "Col " + ( items[ 2 ] + 1 );
             else if( c == 'T' )
                S += "Tm" + items[ offset + 2 ];
-            else if( c == 'F' )
-               S += LM.elementAt( items[ offset + 3 ] ).toString().substring( 0, 4 );
+            else if( c == 'F' ){
+               //find the length of the column name
+               String colName = LM.elementAt( items[ offset + 3 ] ).toString();
+               
+                if( colName.length(  ) < 4 ) {
+                 S += colName.substring( 0, colName.length(  ) );
+                } else {
+                  S += colName.substring( 0, 4 );
+                }
+            }
             if( i + 1 < order.length() )
                S += ":";
          }
