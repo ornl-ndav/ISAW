@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/17 14:58:46  rmikk
+ * Added More Attributes
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -74,6 +77,7 @@ public boolean processDS( NxNode node ,  DataSet DS )
           phi[] , 
           theta[];
    rho = phi = theta = null;
+  //distance
    NxNode X = node.getChildNode( "distance" );
    
    if( X != null )
@@ -81,6 +85,7 @@ public boolean processDS( NxNode node ,  DataSet DS )
      if( val != null )
        rho = ut.Arrayfloatconvert( val );
     }
+  //phi
    X = node.getChildNode( "phi" );
    
    if( X != null )
@@ -88,6 +93,7 @@ public boolean processDS( NxNode node ,  DataSet DS )
      if( val != null )
        phi = ut.Arrayfloatconvert( val );
     }
+ //theta
     X = node.getChildNode( "theta" );
    
    if( X != null)
@@ -106,6 +112,11 @@ public boolean processDS( NxNode node ,  DataSet DS )
         l = java.lang.Math.min( l , DS.getNum_entries() );
     
     }
+  float min_angle, max_angle;
+  
+  min_angle=max_angle=0.0f;
+  if( phi != null) min_angle = phi[0];
+  int nbins = l;
   for( int i = 0 ; i < l ; i++ )
     {float r , 
            t , 
@@ -121,12 +132,50 @@ public boolean processDS( NxNode node ,  DataSet DS )
         t = theta[i];
      Data D = DS.getData_entry( i );
      Position3D P = new Position3D();  
+     if( p> max_angle) max_angle =p;
+     if( p< min_angle) min_angle =p;
      P.setSphericalCoords( r ,  t ,  p );   
      D.setAttribute(  new DetPosAttribute( Attribute.DETECTOR_POS , 
               new DetectorPosition( P ) ) );           
 
     }
+
+
+  //efficiency
+  NxData_Gen ng = new NxData_Gen();
+  NxNode n3 = node.getChildNode("efficiency");
+  if(n3!= null)
+      {Object O = n3.getNodeValue();
+       if( n3.getErrorMessage() !="")
+         errormessage +=":"+n3.getErrorMessage();
+       if( O!= null)
+        {  Float XX = ng.cnvertoFloat( O);
+          if( XX != null)
+           {  float u = XX.floatValue();
+             if( u != Float.NaN)
+              { FloatAttribute FA = new FloatAttribute(Attribute.EFFICIENCY_FACTOR, u);
+              
+                 DS.setAttribute( FA );                    
+              }
+           }
+
+        }
+      }
+ //end efficiency
+
+//raw angle
+  for( int i = 0; i< l; i++)
+   {Data DB = DS.getData_entry( i );
+    float f = i*(max_angle-min_angle)/nbins + min_angle;
+    DB.setAttribute(new FloatAttribute( Attribute.RAW_ANGLE, f)); 
+
+   }
+
+//Solid angle : need detector ID for ...Help
   return false;
   }
+  
+
 
 }
+
