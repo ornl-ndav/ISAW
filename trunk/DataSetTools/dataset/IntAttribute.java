@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/07/26 14:52:25  dennis
+ *  Now includes method to add() attributes.
+ *
  *  Revision 1.3  2000/07/10 22:24:01  dennis
  *  July 10, 2000 version... many changes
  *
@@ -98,6 +101,19 @@ public class IntAttribute extends Attribute
   public void combine( Attribute attr )
   {
      this.value = (int)( this.value + attr.getNumericValue() ) / 2;
+  }
+
+  /**
+   * Add the value of the specified attribute to the value of this
+   * attribute obtain a new value for this attribute.  
+   *
+   *  @param   attr   An attribute whose value is to be "added" to the
+   *                  value of the this attribute.
+   *
+   */
+  public void add( Attribute attr )
+  {
+     this.value = (int)( this.value + attr.getNumericValue() );
   }
 
 

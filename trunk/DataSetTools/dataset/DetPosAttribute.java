@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/07/26 14:52:21  dennis
+ *  Now includes method to add() attributes.
+ *
  *  Revision 1.4  2000/07/18 18:17:34  dennis
  *  Rewrote using the toString() method of DetectorPosition.java
  *
@@ -106,6 +109,34 @@ public class DetPosAttribute extends Attribute
   
      this.value.setCartesianCoords( xyz[0], xyz[1], xyz[2] );
   }
+
+
+  /**
+   * Add the specified position to this position to obtain an new position
+   * value for this attribute.  
+   *
+   *  @param   attr   An attribute whose position value is to be "added" to the
+   *                  position value of the this attribute.
+   *
+   */
+  public void add( Attribute attr )
+  {
+     if ( !(attr instanceof DetPosAttribute) )       // can't combine
+       return;
+
+     float xyz[] = new float[3];
+     float this_xyz[],
+           other_xyz[];
+
+     this_xyz  = this.value.getCartesianCoords();
+     other_xyz = ((DetectorPosition)attr.getValue()).getCartesianCoords();
+
+     for ( int i = 0; i < 3; i++ )
+       xyz[i] = this_xyz[i] + other_xyz[i];
+
+     this.value.setCartesianCoords( xyz[0], xyz[1], xyz[2] );
+  }
+
 
 
   /**
