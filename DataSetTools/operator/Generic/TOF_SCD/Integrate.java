@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/02/10 16:03:41  pfpeterson
+ * Fixed semantic error.
+ *
  * Revision 1.1  2003/01/30 21:07:23  pfpeterson
  * Added to CVS.
  *
@@ -375,7 +378,7 @@ public class Integrate extends GenericTOF_SCD{
     int cenY=(int)Math.round(peak.y());
     int cenZ=(int)Math.round(peak.z());
 
-    int[] zrange={cenZ,cenZ-1,cenZ+1,cenZ-2,cenZ+2};
+    int[] zrange={cenZ,cenZ-1,cenZ+1,cenZ+2,cenZ+3};
     int minZ=0;
     int maxZ=ds.getData_entry(ids[1][1]).getX_scale().getNum_x();
     for( int i=0 ; i<zrange.length ; i++ ){           // can't integrate past
