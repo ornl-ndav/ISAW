@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2003/08/26 18:29:51  bouzekc
+ *  Removed entrywidget layout setup, changed entrywidget initialization to
+ *  use default constructor.
+ *
  *  Revision 1.19  2003/08/26 18:17:19  bouzekc
  *  Fixed GUI layout.
  *
@@ -240,7 +244,6 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
         }
         browse.addActionListener(browselistener);
         entrywidget=new EntryWidget(  );
-        entrywidget.setLayout( new BoxLayout( entrywidget, BoxLayout.X_AXIS  ) );
 
         entrywidget.add(innerEntry);
         entrywidget.add(browse);
