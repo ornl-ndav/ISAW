@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/07/07 15:53:05  bouzekc
+ *  Fixed code comment errors, added missing param tags in
+ *  constructor javadoc code and getDocumentation().
+ *
  *  Revision 1.3  2002/12/10 21:54:21  dennis
  *  Added getDocumentation() method. (Shannon Hintzman)
  *
@@ -57,8 +61,8 @@ import  DataSetTools.operator.Parameter;
 import  DataSetTools.retriever.RunfileRetriever;
 
 /**
- * This operator determines what the number of bins, of a given
- * DataBlock, is over the specified range.
+ * This operator determines what the number of bins of a given
+ * DataBlock is over a specified range.
  */
 
 public class NumBins extends    GenericSpecial {
@@ -72,9 +76,12 @@ public class NumBins extends    GenericSpecial {
 
     /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
     /**
-     *  Construct operator to determine the upstream monitor group id.
+     *  Construct operator to determine number of bins within a given range.
      *
-     *  @param  mds     The monitor data set.
+     *  @param  ds     The DataSet to use.
+     *  @param  id     The group ID to use.
+     *  @param  xmin   The minimum of the range.
+     *  @param  xmax   The maximum of the range.
      */
     
     public NumBins( DataSet ds, Integer id, Float xmin, Float xmax ){
@@ -109,23 +116,24 @@ public class NumBins extends    GenericSpecial {
    	StringBuffer Res = new StringBuffer();
 	
 	Res.append("@overview This operator determines what the number of ");
- 	Res.append("bins, of a given DataBlock, is over the specified range.");
+ 	Res.append("bins of a given data block is over a specified range.");
 	
 	Res.append("@algorithm If no upstream monitor is found \"-1\" is ");
     	Res.append("returned.  Otherwise the max and mins are compared to ");
 	Res.append("make sure the max is larger than the min and ");
-	Res.append("we also make sure the bounds do not go outside the ");
-	Res.append("DataSet.  If our range is the entire DataBlock then we ");
-	Res.append("just return the total number of bins in the DataBlock.  ");
-	Res.append("If not, we check the DataBlock to see how many bins there");
-	Res.append(" are in our range and return the number of bins tallied ");
-	Res.append("in our range.");
+	Res.append("that the bounds do not go outside the ");
+	Res.append("DataSet.  If the range is the entire DataBlock then the ");
+	Res.append("total number of bins in the data block is returned.");
+	Res.append("If not, the data block is checked to see how many bins ");
+        Res.append("are in the given range.");
 
-	Res.append("@param mds The monitor data set.");
+	Res.append("@param ds The DataSet to use.");
+	Res.append("@param id The group ID to use.");
+	Res.append("@param ds The minimum of the range.");
+	Res.append("@param ds The maximum of the range.");
 
-	Res.append("@return Returns the group id of the detector with the ");
-     	Res.append("largest TOTAL_COUNT attribute.  If no upstream monitor ");
-     	Res.append("is found it will return -1.");
+	Res.append("@return The number of bins tallied within the given ");
+        Res.append("range.");
 		
 	return Res.toString();
    
