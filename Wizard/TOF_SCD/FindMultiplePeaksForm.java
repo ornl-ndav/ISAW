@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.22  2003/07/14 16:32:44  bouzekc
+ * Made run number, experiment name, and peaks file
+ * parameters' initial values empty.
+ *
  * Revision 1.21  2003/07/09 19:57:42  bouzekc
  * Added pixel border restriction parameter.
  *
@@ -206,9 +210,9 @@ public class FindMultiplePeaksForm extends Form {
 
     addParameter( new DataDirPG( "Peaks File Output Path", null, false ) );  //1
 
-    addParameter( new IntArrayPG( "Run Numbers", "6496:6498", false ) );  //2
+    addParameter( new IntArrayPG( "Run Numbers", "", false ) );  //2
 
-    addParameter( new StringPG( "Experiment name", "quartz", false ) );  //3
+    addParameter( new StringPG( "Experiment name", "", false ) );  //3
 
     addParameter( 
       new IntegerPG( "Maximum Number of Peaks", new Integer( 30 ), false ) );  //4
@@ -225,7 +229,7 @@ public class FindMultiplePeaksForm extends Form {
 
     addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );  //8
 
-    addParameter( new LoadFilePG( "Peaks File", null, false ) );  //9
+    addParameter( new LoadFilePG( "Peaks File", " ", false ) );  //9
 
     addParameter( 
       new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );  //10
