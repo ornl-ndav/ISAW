@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.9  2004/02/16 19:45:44  bouzekc
+ * Now handles HiddenOperator implementation by the Wrappable Object.
+ *
  * Revision 1.8  2004/02/03 23:45:48  bouzekc
  * Added clone test to main().
  *
@@ -148,19 +151,16 @@ public class JavaWrapperOperator extends GenericOperator {
           //BooleanPG
           if( ( type == Boolean.TYPE ) || ( type == Boolean.class ) ) {
             addParameter( new BooleanPG( name, val ) );
-
             //FloatPG
           } else if( 
             ( type == Float.TYPE ) || ( type == Double.TYPE ) ||
               ( type == Float.class ) || ( type == Double.class ) ) {
             addParameter( new FloatPG( name, val ) );
-
             //IntegerPG
           } else if( 
             ( type == Integer.TYPE ) || ( type == Long.TYPE ) ||
               ( type == Integer.class ) || ( type == Long.class ) ) {
             addParameter( new IntegerPG( name, val ) );
-
             //StringPG
           } else if( ( type == Character.TYPE ) || ( type == String.class ) ) {
             addParameter( new StringPG( name, null ) );
@@ -267,7 +267,6 @@ public class JavaWrapperOperator extends GenericOperator {
 
     //Operators.MyFortran crunch = new Operators.MyFortran(  );
     JavaWrapperOperator wrapper = new JavaWrapperOperator( op );
-
     /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
        "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
        new DataSetTools.viewer.ViewManager(
@@ -288,18 +287,19 @@ public class JavaWrapperOperator extends GenericOperator {
     for( int i = 0; i < catList.length; i++ ) {
       System.out.println( catList[i] );
     }
+
     System.out.println( wrapper.getCommand(  ) );
     System.out.println( wrapper.getResult(  ) );
-    
+
     //this test is good only for WrappedCrunch
     wrapper.getParameter( 1 ).setValue( new Float( 5.0f ) );
+
     JavaWrapperOperator clonedOp = ( JavaWrapperOperator )wrapper.clone(  );
-    
+
     System.out.print( "Original value: " );
     System.out.println( wrapper.getParameter( 1 ) );
     System.out.print( "New value: " );
     System.out.println( clonedOp.getParameter( 1 ) );
-    
   }
 
   /**
@@ -330,8 +330,23 @@ public class JavaWrapperOperator extends GenericOperator {
       category = category.replaceFirst( BIG_OP, "operator.Generic" );
     }
 
+    String[] tempList = category.split( "\\." );
+    String[] catList  = null;
+
+    if( wrapped instanceof HiddenOperator ) {
+      catList      = new String[tempList.length + 1];
+      catList[0]   = "HIDDENOPERATOR";
+
+      //copy the rest of the categories over
+      for( int catIndex = 1; catIndex < catList.length; catIndex++ ) {
+        catList[catIndex] = tempList[catIndex - 1];
+      }
+    } else {
+      catList = tempList;
+    }
+
     // split up into an array and return
-    return category.split( "\\." );
+    return catList;
   }
 
   /**
@@ -344,6 +359,7 @@ public class JavaWrapperOperator extends GenericOperator {
           new Class[]{ Wrappable.class } );
       JavaWrapperOperator op  = ( JavaWrapperOperator )konstruktor.newInstance( 
           new Object[]{ this.wrapped.getClass(  ).newInstance(  ) } );
+
       op.CopyParametersFrom( this );
 
       return op;
