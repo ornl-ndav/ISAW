@@ -68,13 +68,12 @@ public class FortranParser implements FortranParserConstants {
    */
   private static String convertToJavaStyle(
     String s, String type ) {
-    StringBuffer buffer = new StringBuffer( type );
-    buffer.append( " " );
+    StringBuffer buffer = new StringBuffer(  );
+    //buffer.append( " " );
 
     //the parentheses should NOT be right at the beginning of the declaration
     if( s.indexOf( "(" ) > 0 ) {
-
-      String tokenList[] = s.split( "\\s+|\\s*,\\s*" );
+      String tokenList[] = s.trim(  ).split( "\\s+|\\s*,\\s*" );
       //now go through the tokens, determining if an element is an array
       String[] temp;
       for( int i = 0; i < tokenList.length; i++ ) {
@@ -87,15 +86,14 @@ public class FortranParser implements FortranParserConstants {
           temp = tokenList[i].split( "\\[" );
           tokenList[i] = temp[0] + " = new " + type + "[" + temp[1];
 
-          //put the array element in
-          buffer.append( tokenList[i] );
+        }
 
-          if( i < tokenList.length - 1 ) {
-            buffer.append( "," );
-          }
-        } else {
-          //just put the token back on
-          buffer.append( tokenList[i] );
+        //put the token (array element or not) in
+        buffer.append( tokenList[i] );
+
+        //basically, put the commas back in
+        if( i < tokenList.length - 1 ) {
+          buffer.append( "," );
         }
       }
     } else {
@@ -103,7 +101,7 @@ public class FortranParser implements FortranParserConstants {
       buffer.append( s );
     }
 
-    return buffer.toString(  );
+    return type + " " + buffer.toString(  );
   }
 
 /**
