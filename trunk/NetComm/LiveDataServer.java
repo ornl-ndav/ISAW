@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.42  2003/10/20 22:11:21  dennis
+ *  Server will now halt of started with either -h or -H to
+ *  request help on usage.
+ *
  *  Revision 1.41  2003/03/14 20:43:16  dennis
  *  Bug fix...no-longer misses last full bin, if a
  *  rebinned DataSet is obtained.
@@ -904,7 +908,7 @@ public class LiveDataServer extends    DataSetServer
     server.parseArgs( args );
 
     if ( StringUtil.commandPresent( "-h", args )  ||
-         StringUtil.commandPresent( "-h", args )  )
+         StringUtil.commandPresent( "-H", args )  )
       System.exit(1);
 
     System.out.println("Starting " + server.getServerName() + " on " + 
