@@ -1,12 +1,16 @@
 /*
- * @(#)tof_calc.java        1.00 98/08/03  Dennis Mikkelson
+ * @(#)tof_calc.java 
+ *
+ *  Programmer: Dennis Mikkelson
  *
  *  Ported to Java from tof_vis_calc.c
  * 
  *  $Log$
+ *  Revision 1.10  2001/01/29 21:05:58  dennis
+ *  Now uses CVS revision numbers.
+ *
  *  Revision 1.9  2000/08/01 20:46:29  dennis
  *  Removed "sampling" related methods such as ReBin and CLSmooth
- *
  *
  *  Revision 1.5  2000/07/26 20:47:00  dennis
  *  Now allow zero parameter in velocity<->energy conversions
