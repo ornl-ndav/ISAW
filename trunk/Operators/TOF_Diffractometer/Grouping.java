@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/24 19:02:05  dennis
+ * Added getDocumentation() method. (Shannon Hintzman)
+ * Switch to use:  new parameter GUIs: DataSetPG, StringPG,
+ * FloatPG and BooleanPD. ( Chris Bouzek )
+ *
  * Revision 1.3  2002/11/27 23:30:47  pfpeterson
  * standardized header
  *
@@ -54,12 +59,12 @@ import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 import DataSetTools.math.*;
 import java.util.*;
+import DataSetTools.parameter.*;
 
 /** 
- *  This operator will focus one or more spectra in a DataSet to a specified
- *  scattering angle, using the ratio L'*sin(theta') / L*sin(theta).  The
- *  current total flight path length is L and half the scattering angle is 
- *  theta.  L' and theta' are the new path length and angle.
+ *  This operator will group together the specified groups into a data set. 
+ *  The intensity in each bin is added to the total intensity of the 
+ *  grouped dataset.
  */
 public class Grouping extends GenericTOF_Diffractometer{
     private static final String  TITLE = "Diffractometer Grouping";
@@ -80,18 +85,51 @@ public class Grouping extends GenericTOF_Diffractometer{
      *
      *  @param ds        DataSet for which the focusing should be done.
      *  @param group_str String containing list of group ids of the
-     *            spectra in the DataSet that should be grouped.
+     *            	 spectra in the DataSet that should be grouped.
      *  @param new_gid   The group id of the new datablock created.
      */
     public Grouping( DataSet ds, String  group_str, int new_gid ){
         this(); 
         parameters = new Vector();
-        addParameter( new Parameter("DataSet parameter", ds) );
-        addParameter( new Parameter("List of IDs to focus",
+        addParameter( new DataSetPG("DataSet parameter", ds) );
+        addParameter( new StringPG("List of IDs to focus",
                                     new String(group_str)));
-        addParameter( new Parameter("New Group ID", new Integer(new_gid) ) );
+        addParameter( new IntegerPG("New Group ID", new Integer(new_gid) ) );
     }
 
+  /* ---------------------------- getDocumentation -------------------------- */
+ 
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    
+    Res.append("@overview This operator will group together specified groups ");
+    Res.append("into a data set.  The intensity in each bin is added to the ");
+    Res.append("total intensity of the grouped dataset.");
+ 
+    Res.append("@algorithm If the DataSet is not null and there are items to ");
+    Res.append("be grouped, then the id's of the items to be grouped are ");
+    Res.append("retrieved and the grouping occurs.  The data is then ");
+    Res.append("normalized, packed up, and returned from the method.");
+       
+    Res.append("@param ds - DataSet for which the focusing should be done.");
+    Res.append("@param group_str - String containing list of group ids of the");
+    Res.append(" spectra in the DataSet that should be grouped.");
+    Res.append("@param new_gid - The group id of the new datablock created.");
+    
+    Res.append("@return Returns a DataSet where the specified groups have ");
+    Res.append("been grouped together or an ErrorString.");
+    
+    Res.append("@error \"DataSet is null in Grouping\"");
+    Res.append("@error \"Invalid Grouping (null or empty string)\"");
+    Res.append("@error \"Data to be grouped must be at same effective ");
+    Res.append("position\"");
+    
+    return Res.toString();
+  }
+  
+  /* ------------------------------ getCommand ---------------------------- */
+  
     /** 
      * Get the name of this operator to use in scripts. In this case
      * "GroupDiffract".
@@ -100,18 +138,22 @@ public class Grouping extends GenericTOF_Diffractometer{
         return "GroupDiffract";
     }
 
+  /* -------------------------- setDefaultParameters ----------------------- */
+
     /** 
      * Sets default values for the parameters.  This must match the data types 
      * of the parameters.
      */
     public void setDefaultParameters(){
         parameters = new Vector();
-        addParameter( new Parameter("DataSet parameter",
+        addParameter( new DataSetPG("DataSet parameter",
                                     DataSet.EMPTY_DATA_SET) );
-        addParameter( new Parameter("List of Group IDs to focus",
+        addParameter( new StringPG("List of Group IDs to focus",
                                     new String("")));
-        addParameter( new Parameter("New Group ID", new Integer(1) ) );
+        addParameter( new IntegerPG("New Group ID", new Integer(1) ) );
     }
+
+  /* ------------------------------ getResult ----------------------------- */
 
     /** 
      *  Executes this operator using the values of the current parameters.
@@ -188,7 +230,8 @@ public class Grouping extends GenericTOF_Diffractometer{
             }
             if(num_d>0f){
                 y[i]=y[i]/num_d;
-                dy[i]=dy[i]/num_d;
+                if ( dy != null )
+                  dy[i]=dy[i]/num_d;
             }
         }
 
@@ -202,6 +245,8 @@ public class Grouping extends GenericTOF_Diffractometer{
         return new_ds;
     }
 
+  /* ------------------------------ clone ------------------------------- */
+
     /** 
      *  Creates a clone of this operator.
      */
@@ -210,6 +255,8 @@ public class Grouping extends GenericTOF_Diffractometer{
         op.CopyParametersFrom( this );
         return op;
     }
+
+  /* ------------------------------- main -------------------------------- */
 
     /** 
      * Test program to verify that this will complile and run ok.  
