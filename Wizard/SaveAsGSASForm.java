@@ -30,8 +30,16 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/03/19 15:07:04  pfpeterson
+ *  Added the monitor DataSets as an explicit parameter and now creates
+ *  filename from instrument name and run number. (Chris Bouzek)
+ *
  *  Revision 1.2  2003/03/13 19:04:14  dennis
- *  Added $Log:$ comment to include revision information.
+ *  Added $Log$
+ *  Added Revision 1.3  2003/03/19 15:07:04  pfpeterson
+ *  Added Added the monitor DataSets as an explicit parameter and now creates
+ *  Added filename from instrument name and run number. (Chris Bouzek)
+ *  Added comment to include revision information.
  *
  *
  */
@@ -88,16 +96,22 @@ public class SaveAsGSASForm extends    Form
     Vector grouped, monitors;
     Operator op;
     Object obj, result;
-    int num_datasets;
     boolean export_mon, seq_num;
     IParameterGUI param;
     DataSet mds, group_ds;
-    String gsas_dir, gsas_name, save_name;
+    String gsas_dir, save_name, inst_name;
     boolean DEBUG = true;
+    int[] run_numbers;
 
-    //get the ArrayPG grouping result
-    gr_res = (ArrayPG)wizard.getParameter("GroupingResults");
+    //get the results
+    gr_res = (ArrayPG)wizard.getParameter("TimeFocusGroupResults");
     grouped = (Vector)gr_res.getValue();
+    mds_pg = (ArrayPG)wizard.getParameter("MonitorRunList");
+    monitors = (Vector)mds_pg.getValue();
+    obj = wizard.getParameter("RunNumbers").getValue();
+    run_numbers = IntList.ToArray(obj.toString());
+    inst_name = 
+      wizard.getParameter("InstName").getValue().toString().toLowerCase();
 
     //get the user input parameters
     //get directory
@@ -105,25 +119,6 @@ public class SaveAsGSASForm extends    Form
     param = wizard.getParameter( "GSASDir" );
     gsas_dir = param.getValue().toString() + "/";
     param.setValid(true);
-
-    param = wizard.getParameter("GSASName");
-
-    obj = param.getValue();
-    if( obj != null && obj instanceof String )
-    {
-      gsas_name = (String)obj;
-      //empty name; give it a default
-      if( gsas_name.equals("") )
-        gsas_name = "GSAS";
-      param.setValid(true);
-    }
-    else
-    {
-      param.setValid(false);
-      SharedData.addmsg(
-        "Please enter a valid name for the file.\n");
-      return false;
-    }
 
     param = wizard.getParameter("ExportMon");
     //this one doesn't need to be checked for validity
@@ -135,10 +130,6 @@ public class SaveAsGSASForm extends    Form
     param.setValid(true);
     seq_num = ((BooleanPG)param).getbooleanValue();
 
-    //get the ArrayPG load monitor DS result
-    mds_pg = (ArrayPG)wizard.getParameter("MonitorRunList");
-    monitors = (Vector)mds_pg.getValue();
-
     //go through the vector
     for( int i = 0; i < grouped.size(); i++ )
     {
@@ -147,9 +138,7 @@ public class SaveAsGSASForm extends    Form
       mds = (DataSet)monitors.elementAt(i);
 
       //save the GSAS file
-      save_name = gsas_dir + gsas_name + i + ".GSAS";
-      //the monitor DataSet parameter still needs to be loaded
-      //somehow - null should work for the time being
+      save_name = gsas_dir + inst_name + run_numbers[i] + ".gsa";
       op = new WriteGSAS(mds, group_ds,
                          save_name, new Boolean(export_mon),
                          new Boolean(seq_num));
