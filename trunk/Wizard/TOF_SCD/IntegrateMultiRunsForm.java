@@ -28,6 +28,12 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.35  2004/05/21 19:03:21  dennis
+ * Changed instrument name from SCD to SCD0.  This was needed to fix
+ * file name problems when SCD run numbers went from 9999 to 10000.
+ * The runfile names went from SCD09999.RUN to SCD010000.RUN, not
+ * SCD10000.RUN
+ *
  * Revision 1.34  2004/03/15 03:37:40  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -178,7 +184,7 @@ public class IntegrateMultiRunsForm extends Form {
   //~ Instance fields **********************************************************
 
   private Vector choices;
-  protected final String SCDName        = "SCD";
+  protected final String SCDName = "SCD0";
   private LoadOneHistogramDS loadHist;
   private Integrate integrate;
   private LoadSCDCalib loadSCD;
