@@ -1,7 +1,7 @@
 /**
  * File:  ContourView.java
  *
- * Copyright (C) 2001, Rion Dooley & Ruth Mikkelson
+ * Copyright (C) 2002, Rion Dooley & Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/02/12 20:02:36  dennis
+ *  Switched to use PixelInfoList instead of SegmentInfoList
+ *
  *  Revision 1.14  2003/01/15 20:54:27  dennis
  *  Changed to use SegmentInfo, SegInfoListAttribute, etc.
  *
@@ -161,33 +164,34 @@ public class ContourData
       for( int i = 0; i < ds.getNum_entries(); i++ )
       {
          Data db = ds.getData_entry( i );
-         SegInfoListAttribute dl = ( SegInfoListAttribute )
-                              db.getAttribute( Attribute.SEGMENT_INFO_LIST );
+         PixelInfoListAttribute dl = ( PixelInfoListAttribute )
+                              db.getAttribute( Attribute.PIXEL_INFO_LIST );
          
          if( dl == null )
-           {ThetPhiData( ds, new thetaAxisHandler( ds), new phiAxisHandler( ds), 
-                          new TimeAxisHandler( ds ));
+         {
+           ThetPhiData( ds, new thetaAxisHandler( ds), new phiAxisHandler( ds), 
+                        new TimeAxisHandler( ds ));
             return;
-           }
+         }
          else
          {
-            SegmentInfo[] dll = ( SegmentInfo[] )dl.getValue();
+           IPixelInfo da = ((PixelInfoList)dl.getValue()).pixel(0);
 
-            if( dll.length >= 1 )
-            {
-               int row = ( int )dll[0].getRow();
-               int col = ( int )dll[0].getColumn();
+           if( da != null )
+           {
+             int row = ( int )da.row();
+             int col = ( int )da.col();
 
-               if( row > maxrows )
-                  maxrows = row;
-               if( col > maxcols )
-                  maxcols = col;
+             if( row > maxrows )
+                maxrows = row;
+             if( col > maxcols )
+                maxcols = col;
 
-               k[w][0] = row;
-               k[w][1] = col;
-               k[w][2] = i;
-               w++;
-            }
+             k[w][0] = row;
+             k[w][1] = col;
+             k[w][2] = i;
+             w++;
+           }
 
          }
       }

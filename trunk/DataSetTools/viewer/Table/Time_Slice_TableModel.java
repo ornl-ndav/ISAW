@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/02/12 20:02:05  dennis
+ * Switched to use PixelInfoList instead of SegmentInfoList
+ *
  * Revision 1.8  2003/01/15 20:54:29  dennis
  * Changed to use SegmentInfo, SegInfoListAttribute, etc.
  *
@@ -126,29 +129,24 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
       for( int i = 0; i < DS.getNum_entries(); i++ )
       {
-         SegInfoListAttribute Ax = ( SegInfoListAttribute )
-               DS.getData_entry(i).getAttribute( Attribute.SEGMENT_INFO_LIST );
+         PixelInfoListAttribute Ax = ( PixelInfoListAttribute )
+               DS.getData_entry(i).getAttribute( Attribute.PIXEL_INFO_LIST );
 
          row[i] = -1;
          col[i] = -1;
-         if( Ax == null )
-         {}
-         else
+         if( Ax != null )
          {
-            SegmentInfo[] Ab = ( SegmentInfo[] )( Ax.getValue() );
+           if( ((PixelInfoList)(Ax.getValue())).num_pixels() > 0 )
+           {
+             IPixelInfo B = ((PixelInfoList)(Ax.getValue())).pixel(0);
 
-            if( Ab != null )
-               if( Ab.length > 0 )
-               {
-                  SegmentInfo B = Ab[0];
-
-                  row[i] = B.getRow();
-                  col[i] = B.getColumn();
-                  if( row[i] > MaxRow )
-                     MaxRow = row[i];
-                  if( col[i] > MaxCol )
-                     MaxCol = col[i];
-               }
+             row[i] = (int)B.row();
+             col[i] = (int)B.col();
+             if( row[i] > MaxRow )
+               MaxRow = row[i];
+             if( col[i] > MaxCol )
+               MaxCol = col[i];
+           }
          }
 
       }
