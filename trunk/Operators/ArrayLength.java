@@ -29,11 +29,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/03/03 18:54:31  dennis
+ *  Syntax "fix" in case obj_in is an Array.
+ *
  *  Revision 1.1  2003/02/26 23:04:30  hammonds
- *  New Class to determine the length of an array.  In Isaw Arrays are actually Vectors.  Both Arrays and Vectors can be passed.
- *
- *
- *
+ *  New Class to determine the length of an array.  In Isaw Arrays are 
+ *  actually Vectors.  Both Arrays and Vectors can be passed.
  */
 
 package Operators;
@@ -118,7 +119,7 @@ public class ArrayLength extends GenericBatch implements Serializable
       len = ((Vector)obj_in).size();
     }
     else if (obj_in instanceof Array) {
-      len = (Array).getLength(obj_in);
+      len = Array.getLength(obj_in);
     }    
     result = new Integer(len);
     return result;
