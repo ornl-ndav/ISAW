@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/03/11 15:47:15  pfpeterson
+ *  More checking when deciding what type of errors to use.
+ *
  *  Revision 1.3  2002/11/27 23:15:00  pfpeterson
  *  standardized header
  *
@@ -113,8 +116,14 @@ public class GsasUtil{
     public static String getType(Data data){
         float tol=0.999f;
 
+        if( data.isSqrtErrors() ) // much easier than calculating by hand
+          return STD;
+
         float[] I  = data.getCopyOfY_values();
         float[] dI = data.getCopyOfErrors();
+
+        if(dI==null) // nothing we can say about the errors
+          return STD;
 
 	for( int i=0 ; i<dI.length ; i++ ){
 	    if((tol*(float)Math.sqrt((double)I[i])<dI[i])||(dI[i]==0.0f)){
@@ -134,11 +143,11 @@ public class GsasUtil{
     public static float getStepSize(XScale xscale){
         if(xscale instanceof UniformXScale)
             return (float)((UniformXScale)xscale).getStep();
-        
+
         float tol=0f;
         float dX=0f;
         float[] x=xscale.getXs();
-        
+
         if(x.length>2) dX=x[1]-x[0];
 
         for( int i=1 ; i<x.length ; i++ ){
@@ -154,7 +163,7 @@ public class GsasUtil{
      */
     public static String getBankHead( int banknum, XInfo info){
         StringBuffer sb=new StringBuffer(80);
-        
+
         sb.append(BANK).append(" ").append(Format.integer(banknum,6))
             .append(" ").append(info);
 
@@ -171,7 +180,7 @@ public class GsasUtil{
         float end     = 0f;
         int   numX    = 0;
 
-        if( info.bintype().equals(CONS) || info.bintype().equals(CONQ) 
+        if( info.bintype().equals(CONS) || info.bintype().equals(CONQ)
             || info.bintype().equals(COND) ){
             start = info.coef1();
             numX  = info.nchan()+1;
@@ -190,7 +199,7 @@ public class GsasUtil{
 
     public static String getUnit(XInfo info){
         String unit=null;
-        if( info.bintype().equals(CONS) || info.bintype().equals(TIMEMAP) 
+        if( info.bintype().equals(CONS) || info.bintype().equals(TIMEMAP)
                                         || info.bintype().equals(SLOG) ){
             unit="Time(us)";
         }else if( info.bintype().equals(CONQ) ){
