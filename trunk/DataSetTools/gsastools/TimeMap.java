@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/09/27 17:49:42  pfpeterson
+ *  Fixed bug where it writes out the wrong number of lines in the TIME_MAP
+ *
  *  Revision 1.4  2002/09/26 21:45:05  pfpeterson
  *  Now properly determines time maps.
  *
@@ -133,7 +136,7 @@ public class TimeMap{
         }
 
         // determine the number of records/lines when written out
-        nrec=(int)(((float)nval+1f)/10f+0.9f);
+        nrec=(int)((3f*nval+1f)/10f+0.9f);
     }
 
     /**
