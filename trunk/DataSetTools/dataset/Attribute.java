@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2002/12/20 20:24:59  pfpeterson
+ *  Added a new static String for user name.
+ *
  *  Revision 1.32  2002/12/04 14:53:22  pfpeterson
  *  Added string constants for the start date and start time.
  *
@@ -153,6 +156,7 @@ abstract public class Attribute implements Serializable,
   public static final String  TITLE             = "DataSet Name";
   public static final String  LABEL             = "Label";
   public static final String  DS_TAG            = "DataSet Tag";
+  public static final String  USER              = "User Name";
 
   public static final String  INST_NAME         = "Instrument Name";
   public static final String  INST_TYPE         = "Instrument Type";
