@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/07/17 20:31:39  dennis
+ *  Fixed form of comment
+ *
  *  Revision 1.1  2002/02/22 21:02:56  pfpeterson
  *  Operator reorganization.
  *
@@ -162,7 +165,8 @@ public class DataSetMultiply extends  DataSetOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case Mult
+   * @return	the command name to be used with script processor: 
+   *            in this case Mult
    */
    public String getCommand()
    {
