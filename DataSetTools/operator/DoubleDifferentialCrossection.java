@@ -2,6 +2,12 @@
  * @(#)DoubleDifferentialCrossection.java   0.1  2000/07/25   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.7  2000/08/02 01:46:48  dennis
+ *  Calculate the correction factors for detector efficiency and path length
+ *  by interpolation in a table, for faster calculation.  Also, put the
+ *  correction factors in a Data block then multiply one time so that the
+ *  errors are calculated by Data.multiply().
+ *
  *  Revision 1.6  2000/07/26 22:38:31  dennis
  *  Fixed problem with interpolating in wrong table.
  *  Also, now adds the Scattering Function operator to the result of the
@@ -160,7 +166,9 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
     float spherical_coords[];
 
     float x_vals[],
-          y_vals[],
+          new_x_vals[],
+          new_y_vals[],
+          new_errors[],
           corr[],
           tof,
           delta_tof,
@@ -175,6 +183,7 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
     int   num_data,
           num_pulses;
     Data  data,
+          correction_data,
           new_data;
                                           // make table of eff and fpcorr
                                           // values and interpolate to get
@@ -210,8 +219,8 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
                     attr_list.getAttributeValue(Attribute.NUMBER_OF_PULSES);
       num_pulses  = Int_val.intValue();
 
-      System.out.println("ID = " + data.getGroup_ID()+
-                        " SA = " + Format.real( solid_angle, 12, 6 ));
+//      System.out.println("ID = " + data.getGroup_ID()+
+//                        " SA = " + Format.real( solid_angle, 12, 6 ));
       position = (DetectorPosition)
                   attr_list.getAttributeValue(Attribute.DETECTOR_POS);
       spherical_coords = position.getSphericalCoords();
@@ -226,39 +235,48 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
                                         // and the incident beam flux 
       scale_factor = 1000.0f / (solid_angle * atoms * flux * tsec);
 
-      new_data = data.multiply( scale_factor );
-                                            
                                         // compensate for detector efficiency
                                         // as a function of neutron velocity   
-      y_vals = new_data.getY_values();
-      x_vals = new_data.getX_scale().getXs();
-
-      
-
-      for ( int i = 0; i < y_vals.length; i++ )
+                                        // the result will be a function with
+                                        // equal number of x&y values
+      x_vals     = data.getX_scale().getXs();
+      int num_x  = data.getY_values().length;
+      new_y_vals = new float[ num_x ]; 
+      new_x_vals = new float[ num_x ]; 
+      new_errors = new float[ num_x ]; 
+                                       
+      for ( int i = 0; i < num_x; i++ )
       {
-        tof = (x_vals[i]+x_vals[i+1])/2;
-        delta_tof = x_vals[i+1] - x_vals[i];
+        tof           = (x_vals[i]+x_vals[i+1])/2;
+        delta_tof     = x_vals[i+1] - x_vals[i];
+        new_x_vals[i] = tof;
+        new_errors[i] = 0;              // for now assume correction factor is
+                                        // accurate.
 
-// interpolate in table or....         
         eff    = arrayUtil.interpolate( spherical_coords[0]/tof, 
                                         speed_arr, eff_arr );
         fpcorr = arrayUtil.interpolate(spherical_coords[0]/tof,
                                         speed_arr, fpcorr_arr );
-// recalculate each time
-//      corr = tof_data_calc.getEfficiencyFactor( spherical_coords[0]/tof, 1 );
-//      eff    = corr[0];
-//      fpcorr = corr[1];
 
         def = 2*tof_calc.Energy(spherical_coords[0]+fpcorr, tof)*delta_tof/tof;
-        y_vals[i] /= (def*eff);
+        new_y_vals[i] = scale_factor / (def*eff);
       }
+                                        // correction Data block is also
+                                        // histogram, for compatibility
+      correction_data = new Data ( data.getX_scale(),
+                                   new_y_vals,
+                                   new_errors,
+                                   data.getGroup_ID() );
+
+      new_data = data.multiply( correction_data ); 
 
       if ( make_new_ds )
         new_ds.addData_entry( new_data );
       else
         new_ds.replaceData_entry( new_data, index );
     }
+
+    System.out.println("Number of entries is : "+new_ds.getNum_entries() );
 
     new_ds.addOperator( new SpectrometerScatteringFunction() );
     if ( make_new_ds )
