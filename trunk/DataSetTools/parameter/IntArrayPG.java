@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/04/14 20:57:14  pfpeterson
+ *  Added method to get value as int[].
+ *
  *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -59,7 +62,8 @@ import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.util.*;
 
 /**
- * This is class is to deal with float parameters.
+ * This is class is to deal with Integer Arrays. Its value is stored
+ * as a String.
  */
 public class IntArrayPG extends StringPG{
     private static String TYPE="IntArray";
@@ -78,6 +82,14 @@ public class IntArrayPG extends StringPG{
     public void setValue(Object value){
       super.setValue(value);
       if(value==null) this.value="";
+    }
+
+    public int[] getArrayValue(){
+      String svalue=super.getStringValue();
+      if(svalue==null || svalue.length()<=0)
+        return null;
+      else
+        return IntList.ToArray(svalue);
     }
 
     // ********** IParameterGUI requirements **********
