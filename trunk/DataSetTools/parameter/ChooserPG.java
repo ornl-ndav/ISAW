@@ -30,6 +30,10 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.5  2003/08/02 04:52:23  bouzekc
+ *  Fixed bug in init() which caused a reinitialization every time entrywidget
+ *  was shown.  Now properly updates the GUI when init() is called.
+ *
  *  Revision 1.4  2003/06/05 22:34:34  bouzekc
  *  Added method to retrieve the index of a given item.
  *
@@ -157,6 +161,7 @@ abstract public class ChooserPG extends ParameterGUI{
    * Allows for initialization of the GUI after instantiation.
    */
   public void init(Vector init_values){
+    if(this.initialized) return;
     if(init_values!=null && init_values.size()>0){
       this.vals=new Vector();
       if(this.value!=null && this.value!=DataSet.EMPTY_DATA_SET)
@@ -177,6 +182,9 @@ abstract public class ChooserPG extends ParameterGUI{
     this.entrywidget.setEnabled(this.enabled);
     this.entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
     super.initGUI();
+    this.initialized=true;
+    //GUI won't properly update without this
+    setValue(value);
   }
 
   /**
