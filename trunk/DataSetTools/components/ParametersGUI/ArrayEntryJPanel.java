@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/07/07 22:41:37  bouzekc
+ * Now uses VectorPG's class constant for the "Data Changed"
+ * event.
+ *
  * Revision 1.8  2003/07/07 22:20:46  bouzekc
  * Now gives focus to the entry widget when the panel is
  * shown.  Highlights all text within an entrywidget if it
@@ -286,7 +290,7 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
       Vector newVector = getValues(  );
 
       //let any property listeners know that the values have changed
-      pcs.firePropertyChange( "DataChanged", oldVector, newVector );
+      pcs.firePropertyChange( VectorPG.DATA_CHANGED, oldVector, newVector );
       oldVector = newVector;
     }
   }
