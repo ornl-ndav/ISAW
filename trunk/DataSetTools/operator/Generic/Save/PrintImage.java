@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/08/13 03:29:26  millermi
+ * - Fixed javadoc errors.
+ *
  * Revision 1.12  2004/06/21 16:07:23  robertsonj
  * Changed the help file to reflect the changes in the viewer state class
  *
@@ -126,9 +129,6 @@ public class PrintImage extends GenericSave{
    *   @param DS  The DataSet whose view is to be printed
    *   @param view_type The name of the view used by the ViewManager. This 
    *                    is the String that appears in Isaw's View Menu
-   *   @param State A Vector containing entries that are Vectors with two 
-   *                elements: of State's Name and its value(not implemented yet)
-   *                See getDocumentation method for some State names
    *   @param width The width of the image(will be scaled to fit the paper)
    *   @param height The height of the image in pixels(Also scaled)
    *   @param PrintName the name of the printer. If blank, any printer 
