@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.49  2003/06/13 20:07:48  pfpeterson
+ * Takes advantage of the IssScript class.
+ *
  * Revision 1.48  2003/06/10 14:57:22  bouzekc
  * Fixed NullPointerException when DataType is "INTLIST."
  *
@@ -218,14 +221,14 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    */
   public ScriptProcessor ( String TextFileName ){
     this();
-    this.script=new Script(TextFileName);
+    this.script=new IssScript(TextFileName);
     setDefaultParameters();
     Title = TextFileName;
   }
   
   public ScriptProcessor( StringBuffer buffer ){
     this();
-    this.script=new Script(buffer);
+    this.script=new IssScript(buffer);
     setDefaultParameters();
   }
 
@@ -237,7 +240,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    public ScriptProcessor ( Document Doc  ){
     this();
     if( Doc==null || Doc.getLength()==0 ) return;
-    this.script=new Script(Doc);
+    this.script=new IssScript(Doc);
     setDefaultParameters(); 
   }
   
@@ -1298,6 +1301,17 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     return lerror;
   }
     
+  /**
+   * Returns the documentation. This is generated from the script from
+   * the lines that start with a '#' up to the first non-empty line.
+   */
+  public String getDocumentation(){
+    if(this.script instanceof IssScript)
+      return ((IssScript)this.script).getDocumentation();
+    else
+      return super.getDocumentation();
+  }
+
   /**
    *  Sets Default parameters for getResult or for the JParametersGUI
    *  Dialog box. This will parse the macroBuffer created in the
