@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2002/07/11 18:18:23  dennis
+ *  Added getLabel() and setLabel() methods.
+ *  Added  serialVersionUID = 1L;
+ *
  *  Revision 1.28  2002/07/10 16:02:23  pfpeterson
  *  Added removeAttribute() methods.
  *
@@ -79,6 +83,9 @@ public abstract class Data implements IData,
                                       Serializable ,
                                       IXmlIO
 {
+  // CHANGE IF THE SERIALIZATION IS INCOMPATIBLE WITH PREVIOUS VERSIONS
+  static final long serialVersionUID = 1L;
+
   public static final String FUNCTION  = "Function";
   public static final String HISTOGRAM = "Histogram";
 
@@ -96,7 +103,9 @@ public abstract class Data implements IData,
                                            // selected == select_count
                                            // for the most recently selected
                                            // Data block.
-  protected boolean       hide = false;
+  protected boolean  hide = false;
+  private   String   label_string = Attribute.GROUP_ID;
+  private   boolean  label_is_attribute = true;
 
   /**
    *  Create an instance of a Data object representing a function or histogram.
@@ -206,7 +215,6 @@ public abstract class Data implements IData,
     return group_id;
   }
 
-
   /**
    *  Set the selected flag of this Data block to the specified value.
    *
@@ -247,7 +255,6 @@ public abstract class Data implements IData,
     else
       setSelected( true );
   }
-
 
   /**
    *  Determine if this is the most recently selected Data block.
@@ -302,6 +309,52 @@ public abstract class Data implements IData,
     hide = !hide;
   }
  
+  /**
+   *  Specify what label to use for this Data block.  The label can be either
+   *  the name of an attribute (in which case the string form of the attribute
+   *  will be used as the label) or a simple string.
+   *
+   *  @param  label  If label is the name of an attribute of the Data block,
+   *                 at the time that this method is called, then the getLabel()
+   *                 method will return the String form of the attribute, named
+   *                 by the label parameter, otherwise the label parameter will
+   *                 just be saved in the Data block and returned by getLabel().
+   */
+  public void setLabel( String label )
+  {
+    if (label == null)                               // ignore invalid request
+      return;
+
+    label_string = label;
+    Attribute attr = attr_list.getAttribute(label);
+
+    if ( attr == null )                              // use string directly
+      label_is_attribute = false;                    // as label
+    
+    else                                             // use named attribute
+      label_is_attribute = true;                     // as label
+  }
+
+  /**
+   *  Get the label String for this Data block.  This will be either the label
+   *  specified by setLabel(), or the String form of the attribute named by
+   *  the label.  The named attribute is used if the attribute was present in
+   *  the list of attributes at the time setLabel() and getLabel() is called.
+   *
+   *  @return  A String label for this Data block. 
+   */
+  public String getLabel()
+  {
+    if ( label_is_attribute )
+    {
+      Attribute attr = attr_list.getAttribute( label_string );
+      if ( attr != null )
+        return attr.toString();
+    }
+
+    return label_string;
+  }
+
   /**
    * Combine the attribute list of the specified Data object with the attribute
    * list of the current Data object to obtain a new attribute list for the
