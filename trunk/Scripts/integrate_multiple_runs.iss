@@ -25,7 +25,7 @@ Display "Instrument = "&inst
 #Display "Calibration File ="&calibfile
 
 # DataSet is number two
-dsnum=2
+#dsnum=1  //Changes depending on when run file was produced
 
 first=true
 append=false
@@ -35,8 +35,8 @@ for i in run_numbers
   filename=path&inst&0&i&".RUN"
   Display "Loading "&filename
   Echo("Integrating peaks in "&filename)
-  load(filename,"ds")
-
+  nn= load(filename,"ds")
+  dsnum = nn-1
   # The calibration file "instprm.dat" must be in the outpath directory.
   LoadSCDCalib(ds[dsnum],outpath&"instprm.dat",-1,"")
 
