@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/05/03 18:06:50  dennis
+ * Now checks if num_data_blocks > 5 and just shows a maximum of
+ * 5 Data blocks.
+ *
  * Revision 1.7  2004/03/15 06:10:56  dennis
  * Removed unused import statements.
  *
@@ -113,17 +117,19 @@ public void redraw( String reason )
     // DataSet are changed and it is necesary to redraw the graphs using the
     // current DataSet.
 
-  int  num_data_blocks = getDataSet().getNum_entries();
-
-                                  // just show up to five DataBlocks for now 
   Color colors[] = new Color[5];
   colors[0] = Color.black;
   colors[1] = Color.red;
   colors[2] = Color.green;
   colors[3] = Color.blue;
   colors[4] = Color.yellow;
+  
+  int  num_data_blocks = getDataSet().getNum_entries();
 
-  for ( int i = 0; i < 5; i++ )     
+  if ( num_data_blocks > 5 )  // just show up to five DataBlocks for now  
+    num_data_blocks = 5;
+    
+  for ( int i = 0; i < num_data_blocks; i++ )     
   {
     Data data_block = getDataSet().getData_entry( i );
     if ( data_block != null )
