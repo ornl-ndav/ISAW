@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.35  2003/07/29 08:09:55  bouzekc
+ * Now handles RadioButtonPGs in validateParameterGUIs().
+ *
  * Revision 1.34  2003/07/18 14:37:12  bouzekc
  * Now uses a Box for each parameter panel.
  *
@@ -780,6 +783,15 @@ public abstract class Form extends Operator implements PropertyChanger {
         }
       } else if( ipg instanceof BooleanPG ) {
         ipg.setValid( true );
+      } else if( ipg instanceof RadioButtonPG ) {
+        if( ipg.getValue(  ) != null ) {
+          ipg.setValid( true );
+        } else {
+          return errorOut( 
+            ipg,
+            "Parameter " + ipg.getName(  ) + " is invalid.  You" +
+            "must select a choice." );
+        }
       } else if( ipg instanceof StringEntryPG ) {
         //need to check input against the StringFilterer
         StringFilterer sf = ( ( StringEntryPG )ipg ).getStringFilter(  );
