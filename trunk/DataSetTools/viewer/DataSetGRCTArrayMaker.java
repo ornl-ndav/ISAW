@@ -35,6 +35,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/07/29 19:44:56  rmikk
+ * Fixed some errors
+ * Can now change the number of bins and bin ranges for All? dimensions
+ *
  * Revision 1.7  2004/07/29 15:40:39  rmikk
  * Fixed some javadoc errors
  * Fixed an off by one error
@@ -124,6 +128,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     AnimationController[]  ACS;
     XScaleChooserUI[] Xscales;
     DataSetXConversionsTable  DSConversions;
+    JPanel[] savXScales = null;
 
     int NstepDims = 5;
     //----------------- GUI Elements-----------------
@@ -463,13 +468,16 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         AnimXscls[ 0 ]  = new ViewControlMaker(order );
         DSConversions = new DataSetXConversionsTable(DataSets[0]);
         AnimXscls[ 1 ] =  new ViewControlMaker( DSConversions.getTable());
+        savXScales = new JPanel[5];
         for ( int i = 0; i < NstepDims; i++ ) {
 
             AnimXscls[ 2 + 2 * i ]  = 
                         new ViewControlMaker( ACS[ Permutation[ i ] ] );
             AnimXscls[2 +2*i].setTitle(Title1[Permutation[i]] );
+            savXScales[Permutation[i]] = new JPanel( new GridLayout(1,1));
+            savXScales[Permutation[i]].add(Xscales[ Permutation[ i ] ]);
             AnimXscls[ 3 + 2 * i ]  =
-                        new ViewControlMaker( Xscales[ Permutation[ i ] ] );
+                        new ViewControlMaker( savXScales[Permutation[i]] );
             AnimXscls[3 +2*i].setTitle(Title1[Permutation[i]] );
 
         }
@@ -711,14 +719,16 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         return -1;
 
     }
+    
+    // row and col are real row and col coords
     private float getTime( float row, float col){
-      int fx = (int)(row+.5f);
-      int fy = (int)(col+.5f);
+     
+      
       float time;
       if(Permutation[0]==0 )
-        time = (Handler[0].getMax(fx)+Handler[0].getMin(fx))/2;
+        time =col;// (Handler[0].getMax(fy)+Handler[0].getMin(fy))/2;
       else if( Permutation[1] ==0)
-        time =(Handler[0].getMax(fy)+Handler[0].getMin(fy))/2;
+        time =row;//(Handler[0].getMax(fx)+Handler[0].getMin(fx))/2;
       else
          time = (pixel_min[0]+pixel_max[0])/2;
       return time;
@@ -758,7 +768,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
 
    /**
     * Sets the XConversion table.Assumes only one data set currently
-    * @param fpt
+    * @param fpt   Real coordinates of view where pointed at occurs
     */
    public void setPointedAt( floatPoint2D fpt){
       float time;
@@ -834,20 +844,21 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
    
    private floatPoint2D getDisplayRowCol( int rowDet, int colDet, int GridIndx
          ,float time,int timechan){
-     int[] Displayrowcol = new int[2];
-     Arrays.fill(Displayrowcol, -1);
+     float[] Displayrowcol = new float[2];
+     Arrays.fill(Displayrowcol, -1f);
      for(int i =0; i<2;i++)
      if(Permutation[i] ==0)
        if( state.get("NtimeChan").equals(new Integer(0)))
-         Displayrowcol[i] = indexOf(0,timechan);
+         Displayrowcol[i] = timechan;//Handler[0]
        else
-         Displayrowcol[i] = indexOf(0, time);
-     else if( Permutation[0]==1){
-        Displayrowcol[i] =indexOf( 1,rowDet);
-     }else if( Permutation[0]==2){
-       Displayrowcol[i] =indexOf( 2,colDet);
-     }else if( Permutation[0]==3){
-       Displayrowcol[i] =indexOf( 3,GridIndx);
+        Displayrowcol[i] = time;//indexOf(0, time);
+      
+     else if( Permutation[i]==1){
+        Displayrowcol[i] = rowDet;//indexOf( 1,rowDet);
+     }else if( Permutation[i]==2){
+       Displayrowcol[i] =colDet;//indexOf( 2,colDet);
+     }else if( Permutation[i]==3){
+       Displayrowcol[i] = GridIndx;//indexOf( 3,GridIndx);
      }else 
        return null;
      if( Displayrowcol[0]<0)
@@ -2398,9 +2409,11 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
          */
         public void actionPerformed( ActionEvent evt ) {
 
-            XScale xscl = Xscales[ 4 ] .getXScale( );
+            XScaleChooserUI xscl = Xscales[ 4 ] ;
    
             if ( xscl == null )
+               return;
+            if( xscl.getNum_x()==0)
                 Handler[ 4 ]  = new DataSetHandler( 0, DataSets.length - 1, 0 );
             else
                 Handler[ 4 ]  = new DataSetHandler( (int) xscl.getStart_x(), 
@@ -2474,9 +2487,11 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
          */
         public void actionPerformed( ActionEvent evt ) {
 
-            XScale xscl = Xscales[ 3 ] .getXScale();
+            XScaleChooserUI xscl = Xscales[ 3 ] ;
 
             if ( xscl == null )
+                 return;
+            if( xscl.getNum_x() ==0)
                 Handler[ 3 ]  = new GridHandler( 0, GridNums.length - 1, 0 );
             else
                 Handler[ 3 ]  = new GridHandler( (int) xscl.getStart_x(), 
@@ -2552,10 +2567,13 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
          */
         public void actionPerformed( ActionEvent evt ) {
 
-            XScale xscl = Xscales[ 2 ] .getXScale();
+            XScaleChooserUI xscl = Xscales[ 2 ] ;
 
             if ( xscl == null )
-                Handler[ 2 ]  = new ColHandler( 1, MaxCols, 0 );
+               return;
+            if( xscl.getNum_x()==0)
+                Handler[ 2 ]  = new ColHandler( (int) xscl.getStart_x(), 
+                                               (int) xscl.getEnd_x(), 0 );
             else
                 Handler[ 2 ]  = new ColHandler( (int) xscl.getStart_x(), 
                           (int) xscl.getEnd_x(), xscl.getNum_x() - 1 );
@@ -2630,10 +2648,12 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
          */
         public void actionPerformed( ActionEvent evt ) {
 
-            XScale xscl = Xscales[ 1 ] .getXScale();
+            XScaleChooserUI xscl = Xscales[ 1 ] ;
 
             if ( xscl == null )
-                Handler[ 1 ]  = new RowHandler( 1, MaxRows, 0 );
+               return;
+            if( xscl.getNum_x() ==0)
+                Handler[ 1 ]  = new RowHandler( (int)xscl.getStart_x(), (int)xscl.getEnd_x(), 0 );
             else
                 Handler[ 1 ]  = new RowHandler( (int) xscl.getStart_x(), 
                                   (int) xscl.getEnd_x(), xscl.getNum_x() - 1 );
@@ -2712,8 +2732,48 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
          */
         public void actionPerformed( ActionEvent evt ) {
 
-            XScale xscl = Xscales[ 0 ] .getXScale();
-            float val = ACS[ 0 ] .getFrameValue();
+           //XScale xscl = Xscales[ 0 ] .getXScale();
+           float val = ACS[0].getFrameValue();
+           XScaleChooserUI xscl = Xscales[0];
+           if(Xscales[ 0 ] == null){
+             return;
+             
+           }else if( Xscales[ 0 ].getNum_x() ==0){
+                 if( state.get("NtimeChan").equals(new Integer(0)))
+                       Handler[0] = new TimeHandler( xscl.getStart_x(),
+                                     xscl.getEnd_x(), MaxChannels,0);
+                 else{// Change from time to channel
+                    float low_r = Math.max(0,(xscl.getStart_x()-MinTime)/(MaxTime-MinTime) );
+                    float top_r = Math.min(1,(xscl.getEnd_x()-MinTime)/(MaxTime-MinTime) );
+                    if( top_r < low_r) return;
+                    Handler[0]= new TimeHandler( MaxChannels*low_r, MaxChannels*top_r, MaxChannels,0);
+                   
+                    Xscales[0].set("Channel",MaxChannels*low_r, MaxChannels*top_r, 0);
+                    Xscales[0].invalidate();
+                   
+                 }
+             
+           }else{
+              
+              if(  state.get("NtimeChan").equals(new Integer(0))){ //Changed from chan to time
+                 float low_r = Math.max(0,xscl.getStart_x()/MaxChannels);
+                 float top_r = Math.min(1,xscl.getEnd_x()/MaxChannels);
+                 if( low_r >= top_r) return;
+                 low_r = MinTime + low_r*(MaxTime-MinTime);
+                 top_r = MinTime + top_r*(MaxTime-MinTime);
+                 Handler[0] = new TimeHandler(low_r,top_r, MaxChannels,xscl.getNum_x() );
+                
+                Xscales[0].set("us",low_r,top_r, xscl.getNum_x());
+                
+                Xscales[0].invalidate();
+                
+              }else{//Only ranges are changed
+                 Handler[0]= new TimeHandler( xscl.getStart_x(),xscl.getEnd_x(),MaxChannels,
+                       xscl.getNum_x());
+              }
+                              
+           }
+            /*float val = ACS[ 0 ] .getFrameValue();
             boolean change = false;
 
             if ( xscl == null ) {
@@ -2735,7 +2795,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
 
 
             }
-
+            */
             float[  ]  xvals = new float[  Handler[ 0 ] .getNSteps() ] ;
 
             for ( int i = 0; i < xvals.length; i++ )
@@ -2754,8 +2814,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             else
                 ACS[ 0 ] .setTextLabel( DataSets[ 0 ] .getX_units() );
 
-            if ( !change )
-                ACS[ 0 ] .setFrameValue( val ); 
+            
+            ACS[ 0 ] .setFrameValue( val ); 
 
             notifyListeners( IArrayMaker.DATA_CHANGED );
    
