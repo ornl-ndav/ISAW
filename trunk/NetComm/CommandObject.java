@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/02/20 19:45:25  dennis
+ *  Now implements Serializable
+ *
  *  Revision 1.2  2003/02/20 00:08:38  dennis
  *  Added toString() method.
  *
@@ -49,7 +52,7 @@ import java.io.*;
  *  Derived classes support getting data from a specified file (or current run),
  *  and getting the list of files available in a directory. 
  */
-public class CommandObject
+public class CommandObject implements Serializable
 {
   /**
    *  The supported commands are given below.  Additional codes may be inserted
