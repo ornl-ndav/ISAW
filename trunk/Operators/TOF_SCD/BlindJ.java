@@ -27,6 +27,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/06/05 22:04:15  bouzekc
+ * Now prints a "Wrote filename: " to SharedData and returns
+ * the fully qualified filename.
+ *
  * Revision 1.7  2003/05/14 20:15:00  pfpeterson
  * Now deals with possible ErrorString being returned by blind.bias.
  *
@@ -329,7 +333,10 @@ public class BlindJ extends  GenericTOF_SCD {
     if(error!=null)
       return error;
     else
-      return "Wrote file: "+filename;
+    {
+      SharedData.addmsg("Wrote file: " + filename);
+      return filename;
+    }
   }
 
   /* ------------------------------- main --------------------------------- */ 
