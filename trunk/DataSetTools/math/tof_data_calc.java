@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2002/07/10 20:10:30  dennis
+ *  NewEnergyInData() method that adjusts time scales for new Ein value
+ *  for DG_Spectrometers now maintains a UniformXScale if the original Data
+ *  block has a UniformXScale.
+ *
  *  Revision 1.13  2002/07/10 15:57:21  pfpeterson
  *  Contains time focusing code.
  *
@@ -222,8 +227,6 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 1.0f;
 public static Data NewEnergyInData( TabulatedData  data, 
                                     float          new_e_in )
 {
-  float x[] = data.getX_scale().getXs();
-
   Float Float_e = (Float)data.getAttribute(Attribute.ENERGY_IN).getValue();
   Float Float_l = (Float)data.getAttribute(Attribute.INITIAL_PATH).getValue();
   DetectorPosition position = (DetectorPosition)
@@ -261,13 +264,26 @@ public static Data NewEnergyInData( TabulatedData  data,
                                                    focused_L2 / physical_L2 );
 */
 
-  for ( int k = 0; k < x.length; k++ )
-    x[k] -= delta_t;
+  XScale x_scale;
+  if ( data.getX_scale() instanceof UniformXScale )
+  {
+    System.out.println("Energy Adjustment for UNIFORM X Scale");
+    float start_x = data.getX_scale().getStart_x() - delta_t;
+    float end_x   = data.getX_scale().getEnd_x()   - delta_t;
+    int   num_x   = data.getX_scale().getNum_x();
+    x_scale = new UniformXScale( start_x, end_x, num_x );
+  }
+  else
+  {
+    float x[] = data.getX_scale().getXs();
+    for ( int k = 0; k < x.length; k++ )
+      x[k] -= delta_t;
+    x_scale = new VariableXScale( x );
+  }
                                           // make a new Data block with the new
                                           // x values and same group ID, y
                                           // values and attributes.
   float y[] = data.getY_values();
-  XScale x_scale = new VariableXScale( x );
   TabulatedData new_d = (TabulatedData)
                          Data.getInstance( x_scale, y, data.getGroup_ID() );
   new_d.setAttributeList( data.getAttributeList() );
