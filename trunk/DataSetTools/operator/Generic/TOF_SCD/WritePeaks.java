@@ -129,6 +129,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     int nrun=((Peak)peaks.elementAt(0)).nrun();
     int detnum=((Peak)peaks.elementAt(0)).detnum();
     float deta=((Peak)peaks.elementAt(0)).detA();
+    float deta2=((Peak)peaks.elementAt(0)).detA2();
     float detd=((Peak)peaks.elementAt(0)).detD();
 
     // sample orientation
@@ -150,13 +151,14 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 	outStream=new OutputStreamWriter(op);
    
 	// general information header
-	outStream.write("0  NRUN DETNUM    DETA    DETD     CHI     "
+	outStream.write("0  NRUN DETNUM    DETA   DETA2    DETD     CHI     "
 			+"PHI   OMEGA   MONCNT"+"\n");
 
 	// general information
 	outStream.write("1"+format(nrun,6)
 			+format(detnum,7)
 			+format(deta,8)
+                        +format(deta2,8)
 			+format(detd,8)
 			+format(chi,8)
 			+format(phi,8)
@@ -231,7 +233,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 	DataSet mds = (new RunfileRetriever(datfile)).getDataSet(0);
 	DataSet rds = (new RunfileRetriever(datfile)).getDataSet(1);
 	
-	FindPeaks fo = new FindPeaks(rds,10,1);
+	FindPeaks fo = new FindPeaks(rds,10,1,false);
 	Vector peaked=(Vector)fo.getResult();
 	
 	/* CentroidPeaks co=new CentroidPeaks(rds,peaked);
