@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/03/11 14:46:22  dennis
+ * Removed old CursorOutputControl... now just uses new form of
+ * CursorOutputControl that "automatically" listens to the
+ * ImageViewComponent.
+ *
  * Revision 1.8  2004/03/10 23:40:58  millermi
  * - Changed IViewComponent interface, no longer
  *   distinguish between private and shared controls/
@@ -140,8 +145,6 @@ public class HKL_SliceView extends DataSetViewer
 
   private boolean debug = false;
 
-  private CursorOutputControl cursor_output = null;
-
   private boolean ignore_pointed_at = false;
 
   private final  Vector3D I_VEC = new Vector3D( 1, 0, 0 );
@@ -225,11 +228,6 @@ public class HKL_SliceView extends DataSetViewer
     image_container.removeAll();
     image_container.add( ivc.getDisplayPanel() );
 
-    String cursor_labels[] = {"X","Y"};
-    cursor_output = new CursorOutputControl( cursor_labels );
-    cursor_output.setTitle("Current Position");
-    setCurrentPoint( new floatPoint2D(0,0) );
-
     Box controls = new Box(BoxLayout.Y_AXIS);
     ViewControl[] ctrl = ivc.getControls();
     for( int i = 0; i < ctrl.length; i++ )
@@ -243,6 +241,8 @@ public class HKL_SliceView extends DataSetViewer
         slider.setValue(30);
         common_controls.add(slider);
       }
+      else if ( ctrl[i] instanceof CursorOutputControl )
+        common_controls.add(ctrl[i]);
       else
         controls.add(ctrl[i]);
     }
@@ -250,8 +250,6 @@ public class HKL_SliceView extends DataSetViewer
     ivc_controls.removeAll();
     ivc_controls.add( controls );
 
-    common_controls.add( cursor_output );
-   
     split_pane.validate();
 
     setDataSet( data_set );
@@ -747,19 +745,6 @@ public class HKL_SliceView extends DataSetViewer
   }
 
 
-  /* -------------------------- setCurrentPoint ------------------------- */
-  /*
-   * This method will set the current world coord point, displayed by the
-   * cursor readout.
-   */
-  private void setCurrentPoint( floatPoint2D current_pt )
-  {
-    cursor_output.setValue( 0, current_pt.x );
-    cursor_output.setValue( 1, current_pt.y );
-  }
-
-
-
   /* ----------------------- MapPlaneToQ -------------------------------- */
   /*
    *  Map the specified plane from HKL to Q, as nearly as possible.
@@ -943,7 +928,6 @@ public class HKL_SliceView extends DataSetViewer
       if ( message.equals( IViewComponent.POINTED_AT_CHANGED ) )
       {
         floatPoint2D current_point = ivc.getPointedAt();
-        setCurrentPoint( current_point );
 
         if ( extractor != null )
         {
