@@ -43,7 +43,7 @@ import  DataSetTools.parameter.*;
  * program. This is not heavily tested but works fairly well.
  */
 public class Index extends    GenericTOF_SCD {
-
+  public static String command=null;
   /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
   /**
    * Construct an operator with a default parameter list.
@@ -104,11 +104,9 @@ public class Index extends    GenericTOF_SCD {
    * Runs scalar using the specified parameters
    */
   public Object getResult(){
-    String      fail      = "FAILED";
     ErrorString eString   = null;
     String      fullfile  = null; // full filename of peaksfile
     String      dir       = null; // directory that the files are all in
-    String      command   = null; // the program we are wrapping
     String      expname   = null; // the experiment name
     File        file      = null; // for tests
     int         index     = 0;    // for chopping up strings
@@ -119,11 +117,11 @@ public class Index extends    GenericTOF_SCD {
     fullfile=FilenameUtil.fixSeparator(fullfile);
     file=new File(fullfile);
     if( !file.exists() )
-      return new ErrorString(fail+": file does not exist: "+fullfile);
+      return new ErrorString("file does not exist: "+fullfile);
     else if( !file.isFile() )
-      return new ErrorString(fail+": not a regular file "+fullfile);
+      return new ErrorString("not a regular file "+fullfile);
     else if( !file.canRead() )
-      return new ErrorString(fail+": file is not readable "+fullfile);
+      return new ErrorString("file is not readable "+fullfile);
 
     // determine the directory we are working in and the peaksfilename
     index=fullfile.lastIndexOf("/");
@@ -131,33 +129,34 @@ public class Index extends    GenericTOF_SCD {
       dir=fullfile.substring(0,index+1);
       expname=fullfile.substring(index+1);
     }else{
-      return new ErrorString(fail+": bad filename "+fullfile);
+      return new ErrorString("bad filename "+fullfile);
     }
     if(!SysUtil.isDirectory(dir))
-      return new ErrorString(fail+": cannot find directory "+dir);
+      return new ErrorString("cannot find directory "+dir);
     index=expname.lastIndexOf(".peaks");
     if(index>=0){
       expname=expname.substring(0,index);
     }else{
-      return new ErrorString(fail+": could not create experiment name from "
+      return new ErrorString("could not create experiment name from "
                              +expname);
     }
 
     // determine the experiment file
     file=new File(dir+expname+".x");
     if( !file.exists() )
-      return new ErrorString(fail+": file does not exist: "+dir+expname+".x");
+      return new ErrorString("file does not exist: "+dir+expname+".x");
     else if( !file.isFile() )
-      return new ErrorString(fail+": not a regular file "+dir+expname+".x");
+      return new ErrorString("not a regular file "+dir+expname+".x");
     else if( !file.canRead() )
-      return new ErrorString(fail+": file is not readable "+dir+expname+".x");
+      return new ErrorString("file is not readable "+dir+expname+".x");
 
     // find index (with full path)
-    command=this.getFullIndexName();
+    if(command==null)
+      command=this.getFullIndexName();
       
     // exit out early if no index executable found
     if(command==null)
-      return new ErrorString(fail+": could not find index executable");
+      return new ErrorString("could not find index executable");
 
     // get the delta parameter
     IParameter iparm=getParameter(1);
@@ -168,7 +167,7 @@ public class Index extends    GenericTOF_SCD {
       if(value instanceof Float ){
         delta=((Float)value).floatValue();
       }else{
-        return new ErrorString(fail+": invalid value "+value);
+        return new ErrorString("invalid value "+value);
       }
     }
 
@@ -276,7 +275,7 @@ public class Index extends    GenericTOF_SCD {
     }finally{
       if(process!=null){
         if(process.exitValue()!=0){
-          return new ErrorString(fail+"("+process.exitValue()+")");
+          return new ErrorString("BAD EXIT("+process.exitValue()+")");
         }else{
           if(eString!=null)
             return eString;
@@ -284,7 +283,7 @@ public class Index extends    GenericTOF_SCD {
             return this.getNumIndexed(dir+expname+".peaks");
         }
       }else{
-        return new ErrorString(fail);
+        return new ErrorString("Something went wrong");
       }
     }
   }  
