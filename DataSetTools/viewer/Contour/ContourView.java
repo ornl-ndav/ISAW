@@ -36,6 +36,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/10/18 19:05:34  rmikk
+ *  Fixed the notify system to be more robust
+ *
  *  Revision 1.20  2002/10/14 19:52:11  rmikk
  *  Converted the private setData method to a protected method
  *    so subclasses can recalculate the data
@@ -188,6 +191,9 @@ public class ContourView extends DataSetViewer
    JSlider intensity = null;
    JPanel intensitHolder = null;
    int PrevGroup;
+   boolean notify = true, stop=false;
+   float note_time;
+   float note_group; 
    protected IAxesHandler Transf;
   public ContourView( DataSet ds, ViewerState state1 )
      { this( ds, state1, null,null,null);
@@ -1198,11 +1204,19 @@ public class ContourView extends DataSetViewer
               
                data_set.setPointedAtX( times[i]);
              
-               if( sliderTime_index != i)
-                  { sliderTime_index = i;
-                    if( rpldrawn)
-                      data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-                   }
+              
+               sliderTime_index = i;
+               if( notify)
+                 {
+                  data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+                  notify=false;
+                  stop=true;
+                  note_time= times[i];
+                  note_group = data_set.getPointedAtIndex();
+                 }
+                  
+               else
+                  notify=true;
                 
                ( ( SimpleGrid )newData ).setZArray( newData1.getZArray() );
               
@@ -1291,7 +1305,7 @@ public class ContourView extends DataSetViewer
        
       }
   public void redraw( String reason )
-   {
+   { 
       if( reason == IObserver.DESTROY )
       {
          setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
@@ -1314,8 +1328,16 @@ public class ContourView extends DataSetViewer
       { 
         float x = data_set.getPointedAtX();
         int index =data_set.getPointedAtIndex();
+        if( stop)
+          {if( x == note_time)
+            if( note_group==index)
+              {stop=false;
+               notify=true;
+              }
+            return;
+           }
         int Xindex = getPointedAtXindex();
-        boolean notify = false;
+       
 
         if( PrevGroup != index)
           {notify = true;
@@ -1328,12 +1350,13 @@ public class ContourView extends DataSetViewer
        
         if( (Xindex != sliderTime_index) || !rpldrawn) 
           { sliderTime_index = Xindex;
+             notify = false;
             ac.setFrameNumber( Xindex );
            
             //ac.stop();
            }
-        if( notify)
-          data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED);  
+       // if( notify)
+          //data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED);  
         }
       else if( reason == IObserver.GROUPS_CHANGED )
       {
@@ -1431,7 +1454,11 @@ public class ContourView extends DataSetViewer
          data_set.setPointedAtX( time);
          
          data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-         //redraw(IObserver.POINTED_AT_CHANGED );
+         notify = false;
+         stop = false;
+         note_time=time;
+         note_group=index;
+        
          PrevGroup = index;
         
          dct.showConversions( time, index ); 
