@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/06/23 15:00:32  bouzekc
+ * Removed testbed and inner ActionListener class.
+ *
  * Revision 1.9  2003/06/23 13:53:35  bouzekc
  * Reformatted for consistent indenting.
  *
@@ -473,39 +476,5 @@ abstract public class VectorPG extends ParameterGUI
     }
 
   }//MJPanel class end
-
-  /**
-   *   Test program for this module.  There are no arguments
-   */
-/*
-  public static void main( String args[] ){
-    JFrame jf = new JFrame("Test");
-    jf.getContentPane().setLayout( new GridLayout( 1,2));
-    FloatPG ipg = new FloatPG("Enter Float",5.0f);
-    if( ipg == null)
-      DataSetTools.util.SharedData.addmsg("Null parameter????");
-    VectorPG vpg = new VectorPG( ipg, "Integer List");
-    jf.getContentPane().add(vpg.getGUIPanel());
-    JButton  jb = new JButton("Result");
-    jf.getContentPane().add(jb);
-    jb.addActionListener( new MyActionList( vpg));
-    jf.setSize( 500,100);
-    jf.invalidate();
-    jf.show();
-  }  
-*/
-
-  //VectorPG inner class
-  static class MyActionList implements ActionListener{
-    VectorPG vpf;
-    public MyActionList( VectorPG vpg){
-      vpf = vpg;
-    }
-
-    public void actionPerformed( ActionEvent evt ){ 
-      (new JOptionPane()).showMessageDialog(null,"Result="+
-        StringUtil.toString(vpf.getValue()));
-    }
-  }    
 
 }
