@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/07/17 20:38:18  dennis
+ *  Clarified javadoc comment.
+ *
  *  Revision 1.6  2002/06/18 19:34:38  rmikk
  *  *** empty log message ***
  *
@@ -97,8 +100,8 @@ public class DetInfoListAttribute extends Attribute implements  IXmlIO
   }
 
   /**
-   * Returns reference to the list of DetectorInfo objects for this attribute,
-   * as a generic object.
+   * Returns reference to the array of DetectorInfo objects for this attribute,
+   * as a generic object. 
    */
   public Object getValue( )
   {
