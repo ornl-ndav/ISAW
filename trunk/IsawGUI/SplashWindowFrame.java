@@ -3,6 +3,7 @@ package IsawGUI;
 import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
+import DataSetTools.util.*;
 
 
 public class SplashWindowFrame extends JFrame {
@@ -30,8 +31,13 @@ public class SplashWindowFrame extends JFrame {
 		(screenDim.height - frameDim.height) / 2);
 
        MediaTracker mt = new MediaTracker(this);
+       String ipath = System.getProperty("user.dir")+"\\";
+       ipath = StringUtil.fixSeparator(ipath);
+       ipath = ipath.replace('\\','/');
+
+
        splashIm = Toolkit.getDefaultToolkit(
-           ).getImage("Isaw.gif");
+           ).getImage(ipath+"Images/Isaw.gif");
        mt.addImage(splashIm,0);
        try {
           mt.waitForID(0);
