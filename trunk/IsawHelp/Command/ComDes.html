@@ -64,7 +64,19 @@ The data sets will be displayed in an external viewer of type IMAGE.<P>
 <b>*Display Object Expr, String ImageType</b></li>
 
 <br>&nbsp;ImageType should be either "IMAGE" , "SCROLLED_GRAPHS" ,
-"SELECTED_GRAPHS", "TABLE", or "THREE_D" without quotes(")</ol>
+"SELECTED_GRAPHS", "TABLE", or "THREE_D" without quotes(") or
+ <ul>one of the following IN QUOTES, case sensitive, and with no leading and trailing
+     spaces:
+    <li> Contour View
+    <li> Group x vs y
+    <li> x vs Group y
+    <li> x,Row vs Col y
+    <li> Contour:Qx,Qy vs Qz
+    <li> Contour:Qx,Qz vs Qy
+    <li> Contour:Qy,Qz vs Qx
+    <li> Contour:Qxyz slices
+   </ul>
+</ol>
 </ul>
 
 <hr><a NAME="Send"></a>Send
