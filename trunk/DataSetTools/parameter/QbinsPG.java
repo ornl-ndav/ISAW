@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/09/13 22:18:22  bouzekc
+ * Moved class Comb and class Qbins1PG inside of QbinsPG.  This was to correct
+ * an earlier move outside of the class.
+ *
  * Revision 1.7  2003/09/09 23:06:29  bouzekc
  * Implemented validateSelf().
  *
@@ -140,12 +144,11 @@ public class QbinsPG  extends VectorPG{
     jf.show();
   }
     
-}//QbinsPG
   /**
   *     This class is used to enter start, end, and number of Q values for a
   *     sublist.  The constant dQ or dQ/Q choice is also supported
   */
-  class Qbins1PG  extends ParameterGUI implements Concatenator{
+  private class Qbins1PG  extends ParameterGUI implements Concatenator{
      private JPanel  Container;
      private StringEntry start,end;
      private StringEntry steps;
@@ -254,11 +257,12 @@ public class QbinsPG  extends VectorPG{
   }//Qbins1
 
   //Utility to add a prompt to the left of text boxes, etc.
-  class Comb  extends JPanel{
+  private class Comb  extends JPanel{
     public Comb( String Prompt, JComponent Comp){
       super( new GridLayout( 1,2));
       add( new JLabel( Prompt,SwingConstants.CENTER));
       add( Comp);
 
-  }
-}//Qbins1PG
+    }
+  }//Comb
+}//QbinsPG
