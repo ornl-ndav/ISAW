@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/07/03 14:43:40  bouzekc
+ * Fixed odd CVS log entries due to double inclusion of the
+ * log header tag.
+ *
  * Revision 1.13  2003/06/30 16:17:10  bouzekc
  * Now takes --nogui command line arguments.
  *
@@ -45,46 +49,34 @@
  * Revision 1.10  2003/06/02 22:26:05  bouzekc
  * Fixed contact information.
  *
- * Revision 1.9  2003/04/29 15:45:37  pfpeterson
+ * Revision 1.9   2003/04/29 15:45:37  pfpeterson
  * Updated code which links parameters between forms. (Chris Bouzek)
  *
- * Revision 1.8  2003/04/24 19:00:58  pfpeterson
+ * Revision 1.8   2003/04/24 19:00:58  pfpeterson
  * Various small bug fixes. (Chris Bouzek)
  *
- * Revision 1.7  2003/04/02 15:02:46  pfpeterson
+ * Revision 1.7   2003/04/02 15:02:46  pfpeterson
  * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  *
- * Revision 1.5  2003/03/19 15:08:33  pfpeterson
+ * Revision 1.6   2003/03/19 23:07:37  pfpeterson
+ * Expanded TimeFocusGroupForm to allow for up to 20 'banks' to be focused 
+ * and grouped. (Chris Bouzek)
+ *
+ * Revision 1.5   2003/03/19 15:08:33  pfpeterson
  * Uses the TimeFocusGroupForm rather than TimeFocusForm and GroupingForm.
  * (Chris Bouzek)
  *
- * Revision 1.4  2003/03/13 19:00:52  dennis
- * Added $Log$
- * Added Revision 1.13  2003/06/30 16:17:10  bouzekc
- * Added Now takes --nogui command line arguments.
- * Added
- * Added Revision 1.12  2003/06/25 20:24:45  bouzekc
- * Added Unused private variables removed, reformatted for
- * Added consistency.
- * Added
- * Added Revision 1.11  2003/06/19 16:19:59  bouzekc
- * Added Now uses Wizard's linkFormParameters() to link the
- * Added parameters in the parameter table.
- * Added
- * Added Revision 1.10  2003/06/02 22:26:05  bouzekc
- * Added Fixed contact information.
- * Added
- * Added Revision 1.9  2003/04/29 15:45:37  pfpeterson
- * Added Updated code which links parameters between forms. (Chris Bouzek)
- * Added
- * Added Revision 1.8  2003/04/24 19:00:58  pfpeterson
- * Added Various small bug fixes. (Chris Bouzek)
- * Added
- * Added Revision 1.5  2003/03/19 15:08:33  pfpeterson
- * Added Uses the TimeFocusGroupForm rather than TimeFocusForm and GroupingForm.
- * Added (Chris Bouzek)
- * Added comment to include revision information.
+ * Revision 1.4   2003/03/13 19:00:52  dennis
+ * Added log header to include revision information.
  *
+ * Revision 1.3   2003/03/11 19:49:52  pfpeterson
+ * Chris Bouzek's next version of the wizard.
+ *
+ * Revision 1.2   2003/03/03 13:38:17  dennis 
+ * Added more error checking (Chris Bouzek).
+ *
+ * Revision 1.1   2003/02/26 20:22:42  pfpeterson
+ * Added to CVS (Chris Bouzek).
  */
 package Wizard;
 
