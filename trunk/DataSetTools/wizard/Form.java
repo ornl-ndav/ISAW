@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/06/06 16:15:44  pfpeterson
+ * Now use new parameters.
+ *
  * Revision 1.1  2002/05/28 20:35:59  pfpeterson
  * Moved files
  *
@@ -61,6 +64,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
 import DataSetTools.operator.*;
+import DataSetTools.parameter.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ParametersGUI.*;
 
@@ -81,8 +85,7 @@ import DataSetTools.components.ParametersGUI.*;
  *  @see Wizard.AdderExampleForm
  */
 
-public class Form implements Serializable
-{
+public class Form implements Serializable, PropertyChangeListener{
   private    boolean   completed;           // set by execute, if done ok
   private    String    title;
   private    String    help_message = "Help not available for this form ";
@@ -153,8 +156,12 @@ public class Form implements Serializable
           if ( sub_panel != null ){
               box.add( sub_panel ); 
               for( int i=0 ; i<const_params.length ; i++ ){
-                  WizardParameter param = wizard.getParameter(const_params[i]);
+                  IParameterGUI param = wizard.getParameter(const_params[i]);
                   param.setEnabled(false);
+                  if(param instanceof PropertyChanger){
+                      ((PropertyChanger)param)
+                          .addPropertyChangeListener(IParameter.VALUE,this);
+                  }
               }
           }
       }
@@ -164,9 +171,12 @@ public class Form implements Serializable
           if ( sub_panel != null ){
               box.add( sub_panel ); 
               for( int i=0 ; i<editable_params.length ; i++ ){
-                  WizardParameter param = 
-                      wizard.getParameter( editable_params[i] );
+                  IParameterGUI param =wizard.getParameter(editable_params[i]);
                   param.setEnabled(true);
+                  if(param instanceof PropertyChanger){
+                      ((PropertyChanger)param)
+                          .addPropertyChangeListener(IParameter.VALUE,this);
+                  }
               }
           }
       }
@@ -176,7 +186,7 @@ public class Form implements Serializable
           if ( sub_panel != null ){
               box.add( sub_panel ); 
               for( int i=0 ; i<result_params.length ; i++ ){
-                  WizardParameter param = 
+                  IParameterGUI param = 
                       wizard.getParameter( result_params[i] );
                   param.setEnabled(false);
               }
@@ -205,16 +215,10 @@ public class Form implements Serializable
     sub_panel.setBorder( border );
     //sub_panel.setLayout( new GridLayout( params.length, 1 ) );
     sub_panel.setLayout( new BoxLayout( sub_panel,BoxLayout.Y_AXIS ) );
-    for ( int i = 0; i < params.length; i++ )
-    {
-      WizardParameter param = wizard.getParameter( params[i] );
-      sub_panel.add( param.getGUISegment() );
-      /* param.getGUISegment().addPropertyChangeListener(new PropertyChangeListener(){
-         public void propertyChange(PropertyChangeEvent ev){
-         System.out.println(ev.getPropertyName()+": "+ev.getOldValue()
-         +" -> "+ev.getNewValue());
-         }
-         });*/
+    for ( int i = 0; i < params.length; i++ ){
+        IParameterGUI param = wizard.getParameter( params[i] );
+        param.init();
+        sub_panel.add( param.getGUIPanel() );
     }
     return sub_panel;
   }
@@ -318,14 +322,14 @@ public class Form implements Serializable
    *               and none of the parameters have been subsequently altered 
    */
   public boolean done(){
-      WizardParameter param;
+      IParameterGUI param;
       int areSet=0;
       int totalParam=0;
       if(const_params!=null){
           totalParam+=const_params.length;
           for( int i=0 ; i<const_params.length ; i++ ){
               param=wizard.getParameter(const_params[i]);
-              if(param.isSet()) areSet++;
+              if(param.getValid()) areSet++;
           }
       }
 
@@ -333,7 +337,7 @@ public class Form implements Serializable
           totalParam+=editable_params.length;
           for( int i=0 ; i<editable_params.length ; i++ ){
               param=wizard.getParameter(editable_params[i]);
-              if(param.isSet()) areSet++;
+              if(param.getValid()) areSet++;
           }
       }
 
@@ -341,7 +345,7 @@ public class Form implements Serializable
           totalParam+=result_params.length;
           for( int i=0 ; i<result_params.length ; i++ ){
               param=wizard.getParameter(result_params[i]);
-              if(param.isSet()) areSet++;
+              if(param.getValid()) areSet++;
           }
       }
 
@@ -370,13 +374,21 @@ public class Form implements Serializable
         this.completed=val;
          if(!val){ // must invalidate the results
              if(result_params!=null){
-                 WizardParameter param;
+                 IParameterGUI param;
                  for( int i=0 ; i<result_params.length ; i++ ){
                      param=wizard.getParameter(result_params[i]);
-                     param.unSet();
+                     param.setValid(false);
                  }
              }
          }
+    }
+
+    /**
+     * Method to invalidate the results if one of the properties changes.
+     */
+    public void propertyChange(PropertyChangeEvent ev){
+        int form_num=this.wizard.getCurrentFormNumber();
+        this.wizard.invalidate(form_num);
     }
 
   /**
