@@ -30,16 +30,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/10/31 14:48:42  dennis
+ *  Fixed CVS log tag.
+ *
  *  Revision 1.5  2003/10/27 14:54:30  rmikk
  *  Added the printing capability to this DataSetViewer
  *
  *  Revision 1.4  2003/08/08 15:48:24  dennis
- *  Added GPL copyright information and $Log$
- *  Added GPL copyright information and Revision 1.5  2003/10/27 14:54:30  rmikk
- *  Added GPL copyright information and Added the printing capability to this DataSetViewer
- *  Added GPL copyright information and to record CVS
- *  login messages.
- *
+ *  Added GPL copyright information and log tag and to record CVS
  */
 
 package DataSetTools.viewer;
