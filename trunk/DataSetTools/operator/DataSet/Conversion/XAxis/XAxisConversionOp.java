@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/16 19:02:27  pfpeterson
+ * Removed old code and updated to work with new getCategoryList() code
+ * in base operator class.
+ *
  * Revision 1.3  2002/11/27 23:17:04  pfpeterson
  * standardized header
  *
@@ -64,21 +68,11 @@ abstract public class XAxisConversionOp extends    DS_Conversion
                                         implements IDataPointInfo,
                                                    Serializable
 {
+  private static String[] categoryList=null;
   public XAxisConversionOp( String title )
   {
     super( title );
     Parameter parameter;
-  }
-
-  /* -------------------------- getCategory -------------------------------- */
-  /**
-   * Get the category of this DataSet operator
-   *
-   * @return  A String specifying the category of this operator.
-   */
-  public String getCategory()
-  {
-    return X_AXIS_CONVERSION;
   }
 
   /* ------------------------ getCategoryList ------------------------------ */
@@ -96,13 +90,11 @@ abstract public class XAxisConversionOp extends    DS_Conversion
    */
   public String[] getCategoryList()
   {
-    String partial_list[] = super.getCategoryList();  // get list of ancestor
-                                                      // categories and put
-                                                      // them in a new larger
-                                                      // list.
-    return AppendCategory( X_AXIS_CONVERSION, partial_list );
-  }
+    if(categoryList==null)
+      categoryList=createCategoryList();
 
+    return categoryList;
+  }
 
   /* -------------------------- new_X_label ---------------------------- */
   /**

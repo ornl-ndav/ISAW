@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/06/16 19:01:58  pfpeterson
+ *  Removed old code and updated to work with new getCategoryList() code
+ *  in base operator class.
+ *
  *  Revision 1.4  2003/06/12 18:47:50  pfpeterson
  *  Updated javadocs to reflect a idiosycracy of Script_Class_List_Handler.
  *
@@ -89,6 +93,7 @@ import DataSetTools.operator.Operator;
 abstract public class DataSetOperator extends Operator implements Serializable
 {
    private DataSet data_set;
+   private static String[] categoryList=null;
 
    protected DataSetOperator( String title )
    {
@@ -122,20 +127,6 @@ abstract public class DataSetOperator extends Operator implements Serializable
     return data_set;
   }
 
-
-  /* -------------------------- getCategory -------------------------------- */
-  /**
-   * Get the category of this operator
-   *
-   * @return  A String specifying the category of this operator.  This is
-   *          actually the category of the abstract base class from which
-   *          the current operator is directly derived.
-   */
-  public String getCategory()
-  {
-    return DATA_SET_OPERATOR;
-  }
-
   /* ------------------------ getCategoryList ------------------------------ */
   /**
    * Get an array of strings listing the operator category names of base
@@ -151,13 +142,11 @@ abstract public class DataSetOperator extends Operator implements Serializable
    */
   public String[] getCategoryList()
   {
-    String partial_list[] = super.getCategoryList();  // get list of ancestor
-                                                      // categories and put 
-                                                      // them in a new larger
-                                                      // list.
-    return AppendCategory( DATA_SET_OPERATOR, partial_list );
-  }
+    if(categoryList==null)
+      categoryList=createCategoryList();
 
+    return categoryList;
+  }
 
   /**
    * Get a copy of the current DataSetOperator.  The list of parameters
@@ -165,15 +154,4 @@ abstract public class DataSetOperator extends Operator implements Serializable
    * method must be implemented in classes derived from DataSetOperator.
    */
   abstract public Object clone();
-
-
-  /**
-   *  Trace the finalization of objects
-   */
-/*
-  protected void finalize() throws IOException
-  {
-    System.out.println( "finalize Operator" );
-  }
-*/
 } 
