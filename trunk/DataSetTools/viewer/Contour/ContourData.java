@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2002/10/14 19:51:15  rmikk
+ *  -Fixed a swap error
+ *
  *  Revision 1.10  2002/10/07 15:00:37  rmikk
  *  Will now keep better information on a cell.  The last group
  *    and its corresponding x value that added non zero intensities
@@ -329,6 +332,7 @@ public class ContourData
          return 0;
       return numX-1;
      }
+
   int[] Groupss, Inds;
   double[] values;
   boolean bg=false;
@@ -346,8 +350,8 @@ public class ContourData
     Inds = new int[nrowws*ncolls];
     Arrays.fill( Groupss, -1);
     Arrays.fill( Inds, -1);
-    int Trow=(int)( nrowws*(-4-minAx2)/(maxAx2-minAx2) );
-    int Tcol =(int)( ncolls*(-4-minAx1)/(maxAx1-minAx1) );
+    //int Trow=(int)( nrowws*(-4-minAx2)/(maxAx2-minAx2) );
+    //int Tcol =(int)( ncolls*(-4-minAx1)/(maxAx1-minAx1) );
     //System.out.println("-------------------------------");
     float SS=0;
     for( int i=0;i< ds.getNum_entries(); i++)
@@ -365,12 +369,12 @@ public class ContourData
             index2 = 0;  
        if( index1 > index2)
          { float x = index1;
-           index2 = index1;
-           index1 = x;
+           index1 = index2;
+           index2 = x;
           } 
        Data D =ds.getData_entry(i); 
        float[] yy =D.getY_values();
-       
+      
        if( (index1 >= 0) && (index2 >=0))
          for( int indx =(int)index1; indx <=(int)index2;indx++)
          {
@@ -426,9 +430,10 @@ public class ContourData
             values[ col*nrowws+row ]+=y;
             Groupss[ col*nrowws+row ] = i;
             Inds[ col*nrowws+row ] = indx;
-            if(3==2)if( Trow==row)if(Tcol==col)
+            if(0==100)//if( Trow==row)if(Tcol==col)
               { SS+=y;
-               System.out.println("Gr,indx,y="+i+","+indx+","+index1+","+","+index2+","+y+","+SS);
+               System.out.println("      Gr,indx,y="+i+","+indx+","+","+
+                        y+","+SS);
               }
                
             }
@@ -465,6 +470,7 @@ public class ContourData
       float mult = 1.0f;
       mult =(float)java.lang.Math.max(1.0,ds.getXRange().getNum_x()/(float)ntimes);
       mult *= (float)java.lang.Math.max(1.0, ds.getNum_entries()/(float)(nrowws*ncolls));
+    
       return new ClosedInterval( Yrange.getStart_x()*mult,
                                  Yrange.getEnd_x()*mult);
 
