@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/07/29 14:04:40  dennis
+ * Now uses Ruth's FinishJFrame rather than a JFrame, so that more
+ * of the resources associated with the window are freed.  This is
+ * an attempt to fix a problem with opening the view a second time
+ * on Ruth's XP laptop.
+ *
  * Revision 1.5  2004/07/28 15:44:05  dennis
  * Added public methods to draw  contours, hkl marks and Q-regions
  * covered by detectors.
@@ -340,7 +346,7 @@ public class GL_RecipPlaneView
 
   public GL_RecipPlaneView()
   {
-    JFrame scene_f = new JFrame("Reciprocal Lattice Plane Viewer");
+    FinishJFrame scene_f = new FinishJFrame("Reciprocal Lattice Plane Viewer");
     scene_f.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 
     JPanel q_panel = new JPanel();
