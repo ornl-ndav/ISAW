@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.167  2003/11/30 19:18:06  rmikk
+ *  Incorporated code to display the filenames of the last 4 DataSets that were
+ *    opened in the File menu.  Selecting these new menu options will open those
+ *    files.
+ *
+
  *  Revision 1.166  2003/11/21 16:20:16  dennis
  *  Changed version to 1.6.0 alpha 5
  *
@@ -644,6 +650,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
+
           version="1.6.0 alpha 5";
         else
           version=SharedData.VERSION;
@@ -783,6 +790,7 @@ public class Isaw
     //fMenu.addSeparator();
     fMenu.add(fileSaveData);
     //fMenu.add(fileSaveDataAs);
+    LatestOpenedFiles.setUpMenuItems( fMenu, jdt, this);
     fMenu.addSeparator();
     
    // fMenu.addSeparator();
@@ -1165,8 +1173,11 @@ public class Isaw
   {
     public void actionPerformed( ActionEvent e ) 
     {
-      if(  e.getActionCommand().equals( LOAD_LOCAL_DATA_MI )  )
+      if(  e.getActionCommand().equals( LOAD_LOCAL_DATA_MI )  ){
         load_runfiles( false, null );
+        
+      }
+       
     }
   }
  
@@ -1273,6 +1284,7 @@ public class Isaw
                                 //dependants
           DataSet[] dss = new DataSet[1];  dss[0] = ds;
           addNewDataSets(  dss, dss[0].toString()  );
+          LatestOpenedFiles.addNewOpenedFile( filename);
         }
         catch( Exception e )
         {
@@ -2026,6 +2038,7 @@ public class Isaw
         {
          DataSet DSS[];
          DSS = util.loadRunfile(  files[i].getPath()  );
+         LatestOpenedFiles.addNewOpenedFile((files[i].getPath()));
          if( DSS != null)
            if( DSS.length > 0)
             {
