@@ -36,6 +36,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2002/08/02 13:31:16  rmikk
+ *  If the POINTED_AT_X is negative tha action controller
+ *    now is initialized to time 0.
+ *
  *  Revision 1.10  2002/08/01 13:49:38  rmikk
  *  Sped up the display when the intensity slider was changed.
  *  Implemented hooks to display countours with arbitrary
@@ -167,9 +171,10 @@ public class ContourView extends DataSetViewer
       PrevGroup = ds.getPointedAtIndex();
       if( state1 == null)
         { state = new ViewerState();
+          state.set_int ("Contour.Intensity",50);
          
         }
-       state.set_int ("Contour.Intensity",50);
+       
    //Create the Menu bar items
       JMenuBar menu_bar = getMenuBar();
       JMenu jm = menu_bar.getMenu( DataSetViewer.EDIT_MENU_ID );
@@ -388,7 +393,10 @@ public class ContourView extends DataSetViewer
      
       if( (ac != null) && (acChange  ||  XsclChange) )
         { ac.setFrame_values( times );
-          ac.setFrameValue( ds.getPointedAtX());
+          if( ds.getPointedAtX() <0)
+              ac.setFrameValue( 0.0f);
+          else
+              ac.setFrameValue( ds.getPointedAtX());
           sliderTime_index = ac.getFrameNumber();
         }
       if( ConvTableHolder == null )
@@ -790,6 +798,7 @@ public class ContourView extends DataSetViewer
         }
       QxQyQzAxesHandler Qax = new QxQyQzAxesHandler(ds);
       IAxisHandler Axis1, Axis2, Axis3;
+      System.out.println("Choice 1,2,3="+Choice1+","+Choice2+","+Choice3);
       if( Choice1 == 0)
         Axis1 = Qax.getQxAxis();
       else if( Choice1 ==1)
@@ -810,6 +819,8 @@ public class ContourView extends DataSetViewer
         Axis3 = Qax.getQyAxis();
       else
         Axis3 = Qax.getQzAxis();
+    
+    
     /* for(;;)
       { try{
           c=0;
@@ -846,7 +857,7 @@ public class ContourView extends DataSetViewer
 
        }
        */
-     ContourView cv = new ContourView( ds, new ViewerState(),Axis1,Axis2,Axis2);
+     ContourView cv = new ContourView( ds, new ViewerState(),Axis1,Axis2,Axis3);
     jf.getContentPane().setLayout( new GridLayout(1,1));
     jf.getContentPane().add(cv);
     jf.validate();
@@ -1103,10 +1114,14 @@ public class ContourView extends DataSetViewer
          float time = cd.getTime( row, col);
        
          if( index < 0)
-           return;
+           {dct.showConversions( 0.0f, -1 ); 
+            return;
+           }
         
          if( index >= getDataSet().getNum_entries())
-           return;
+           {dct.showConversions( 0.0f, -1 ); 
+            return;
+           }
         
          data_set.setPointedAtIndex( index);
          
@@ -1115,6 +1130,7 @@ public class ContourView extends DataSetViewer
          data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
          //redraw(IObserver.POINTED_AT_CHANGED );
          PrevGroup = index;
+        
          dct.showConversions( time, index ); 
 
       }
