@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2004/03/12 19:17:46  serumb
+ * Added setAxisInfo method.
+ *
  * Revision 1.14  2004/01/22 02:08:18  bouzekc
  * Removed unused imports.
  *
@@ -73,16 +76,14 @@ import java.util.*;
 public class DataSetData implements IVirtualArray1D
   {
      private DataSet ds;
-  
- 
+     private AxisInfo x_info;
+     private AxisInfo y_info;
    
    int[]  selectedInd ;
    float maxy;
    float minx;
    float maxx;
    float miny;
-   boolean is_x_linear = true;
-   boolean is_y_linear = true;
    
   /**
    * Constructor that takes in a data set and sets the selected 
@@ -94,6 +95,9 @@ public class DataSetData implements IVirtualArray1D
       
        selectedInd = ds.getSelectedIndices();
        minx=maxx=miny=maxy= Float.NaN;
+       
+       x_info = new AxisInfo(0, 1, AxisInfo.NO_LABEL, AxisInfo.NO_UNITS, true);
+       y_info = new AxisInfo(0, 1, AxisInfo.NO_LABEL, AxisInfo.NO_UNITS, true);
   
      }
 
@@ -119,13 +123,31 @@ public class DataSetData implements IVirtualArray1D
      {
       
       if( axis == AxisInfo.X_AXIS )
-         return  new AxisInfo(findminX(), findmaxX(), 
-               ds.getX_label(), ds.getX_units(), is_x_linear);
+         return  x_info; 
       else
-
-         return  new AxisInfo(findminY(), findmaxY(), 
-               ds.getY_label(), ds.getY_units(), is_y_linear);
+         return  y_info;
      }
+
+ /**
+  * Sets the attributes of the data array within a AxisInfo wrapper.
+  * This method will take in an integer to determine which axis
+  * info is being altered.
+  *
+  *  @param  axiscode
+  *  @param  min
+  *  @param  max
+  *  @param  label
+  *  @param  units
+  *  @param  islinear
+  */
+  public void setAxisInfo( int axiscode, float min, float max,
+                           String label, String units, boolean islinear)
+  {
+    if(axiscode == AxisInfo.X_AXIS)
+      x_info = new AxisInfo(min,max,label,units, islinear);
+    else if(axiscode == AxisInfo.Y_AXIS)
+      y_info = new AxisInfo(min,max,label,units, islinear);
+  }
 
 
   /**
@@ -360,17 +382,6 @@ public class DataSetData implements IVirtualArray1D
     System.out.println("DataSetData.setAllValues() is just a stub");
   }
 
-  public void set_x_linear(boolean isLinear) 
-  {
-    is_x_linear = isLinear;
-  }
-  
-  public void set_y_linear(boolean isLinear) 
-  {
-    is_y_linear = isLinear;
-  }
-
-  
  /** Returns the number of x values in the line line_number
  */
   public int getNumPoints( int line_number)
@@ -392,6 +403,13 @@ public class DataSetData implements IVirtualArray1D
          return 0;
       return selectedInd.length;
     }
+  
+  /**
+   * Gets the dimension of the Virtual array.
+   */
+  public int getDimension(){
+    return 1;
+  }
 
   /**
    * Methods for adding, removing, and notifing actionlisteners.
