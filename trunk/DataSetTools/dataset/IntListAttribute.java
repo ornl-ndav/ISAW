@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/07/10 18:51:47  dennis
+ *  Constructor now calls setValue() so that the value is set
+ *  the same way both at construction time and later.
+ *
  *  Revision 1.7  2001/04/25 19:03:57  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -84,19 +88,7 @@ public class IntListAttribute extends Attribute
   {
     super( name );
 
-    this.values = new int[ values.length ];
-    System.arraycopy( values, 0, this.values, 0, values.length );
-
-    boolean in_order = true;
-    for ( int i = 0; i < values.length - 1; i++ )
-      if ( values[i] > values[i+1] )
-        in_order = false;
-
-    if ( !in_order ) 
-    {
-      System.out.println("Warning: values not ordered in IntListAttribute");
-      arrayUtil.sort( this.values );
-    }
+    setValue( values );
   }
 
 
@@ -122,6 +114,18 @@ public class IntListAttribute extends Attribute
       int length  = ((int[])obj).length;
       this.values = new int[ length ];
       System.arraycopy( (int[])obj, 0, this.values, 0, length );
+
+      boolean in_order = true;
+
+      for ( int i = 0; i < values.length - 1; i++ )
+        if ( values[i] > values[i+1] )
+          in_order = false;
+
+      if ( !in_order )
+      {
+        System.out.println("Warning: values not ordered in IntListAttribute");
+        arrayUtil.sort( this.values );
+      }
     }
     else
       return false;
