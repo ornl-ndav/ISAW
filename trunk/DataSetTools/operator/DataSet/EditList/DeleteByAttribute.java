@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/06 20:32:54  dennis
+ * Added getDocumentation() method. (Tyler Stelzer)
+ *
  * Revision 1.3  2002/11/27 23:17:40  pfpeterson
  * standardized header
  *
@@ -242,6 +245,45 @@ public class DeleteByAttribute extends    DS_EditList
 
     return new_op;
   }
+  
+  public String getDocumentation()
+    {
+      StringBuffer Res = new StringBuffer();
+      Res.append("@overview This operator removes (or keeps) Data blocks");
+       Res.append(" with a specified attribute in a specified range.  The");
+       Res.append(" operator can either make a new DataSet, or modify the");
+       Res.append(" current DataSet.");
+
+      Res.append("@algorithm Get the parameters specified by the user. Get");
+       Res.append(" the current data set. Set new_ds to either a reference");
+       Res.append(" to ds or a clone of ds.");
+       Res.append(" Get reference to the data entry. Keep or reject it");
+       Res.append(" based on the attribute value.  The range is");
+       Res.append(" min <= attribute value <= max");
+
+      Res.append("@param ds   The DataSet to which the operation is applied");   
+      Res.append("@param attr_name   The name of that attribute to be used");
+       Res.append(" for the selection criterion from the data set.");   
+      Res.append("@param  min   The lower bound for the selection criteria.");
+       Res.append(" The selected Data blocks satisfy:");
+       Res.append(" min <= attribute value <= max");   
+      Res.append("@param  max   The upper bound for the selection criteria.");
+      Res.append("@param  status   Flag that indicates whether Data blocks");
+       Res.append(" that meet the selection criteria are to be kept or");
+       Res.append(" removed from the data set. If status==true, the selected");
+       Res.append(" blocks are deleted. If status==false, the un-selected");
+       Res.append(" blocks are deleted.");
+      Res.append("@param  make_new_ds   Flag that determines whether removing");
+       Res.append(" the Data blocks makes a new DataSet and returns the new");
+       Res.append(" DataSet as a value, or just removes the selected blocks");
+       Res.append(" from the current DataSet and returns a message indicating");
+       Res.append(" that the remove operation was done.");
+
+      Res.append("@return Returns either a new DataSet or the string:");
+       Res.append(" Specified Data blocks REMOVED.");
+  
+     return Res.toString();
+    }
 
 
 }

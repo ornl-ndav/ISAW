@@ -30,6 +30,9 @@
  * Modified:
  *             
  * $Log$
+ * Revision 1.4  2003/02/06 20:32:54  dennis
+ * Added getDocumentation() method. (Tyler Stelzer)
+ *
  * Revision 1.3  2002/11/27 23:17:40  pfpeterson
  * standardized header
  *
@@ -227,6 +230,40 @@ public class ExtractByAttribute extends    DS_EditList
 
     return new_op;
   }
+  
+  
+  public String getDocumentation()
+    {
+      StringBuffer Res = new StringBuffer();
+      Res.append("@overview This operator forms a new data set by selecting");
+       Res.append(" Data blocks with a specified attribute in a specified");
+       Res.append(" range.");
+
+      Res.append("@algorithm Get the parameters specified by the user. Get");
+       Res.append(" the current data set. Construct a new data set with the");
+       Res.append(" same title, units, and operations as the current DataSet,");
+       Res.append(" ds. Get reference to the data entry. Keep or reject it");
+       Res.append(" based on the attribute value.  The range is");
+       Res.append(" min <= attribute value <= max");
+
+      Res.append("@param ds The DataSet to which the operation is applied");
+      Res.append("@param attr_name The name of that attribute to be used for");
+       Res.append(" the selection criterion");
+      Res.append("@param keep Flag that indicates whether Data blocks that");
+       Res.append(" meet the selection criteria are to be kept or removed");
+       Res.append(" from the data set.");
+      Res.append("@param  min The lower bound for the selection criteria.");
+       Res.append(" The selected Data blocks satisfy: ");
+       Res.append(" min <= attribute value <= max");
+      Res.append("@param  max The upper bound for the selection criteria."); 
+
+      Res.append("@return Returns an error string if unsuccessful or a new");
+       Res.append(" DataSet with the extracted data entries.");
+
+      Res.append("@error ERROR: No Data blocks satisfy the condition.");
+  
+     return Res.toString();
+    }
 
 
 }

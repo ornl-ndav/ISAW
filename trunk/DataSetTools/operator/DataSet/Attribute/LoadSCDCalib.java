@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/02/06 20:34:47  dennis
+ * Added getDocumentation() method. (Tyler Stelzer)
+ *
  * Revision 1.2  2002/11/27 23:16:41  pfpeterson
  * standardized header
  *
@@ -255,5 +258,33 @@ public class LoadSCDCalib extends DS_Attribute{
         }else{
             return false;
         }
+    }
+    
+    public String getDocumentation()
+    {
+      StringBuffer Res = new StringBuffer();
+      Res.append("@overview This operator will add the calibration");
+       Res.append(" information from the file produced by A.J. Schultz's code");
+
+      Res.append("@algorithm This operator will add the calibration");
+       Res.append(" information from the file produced by A.J. Schultz's");
+       Res.append(" code. This sets the primary flight path, detector center");
+       Res.append(" angle, secondary flight path, and the bin to real space");
+       Res.append(" conversion information.");
+
+      Res.append("@param ds The DataSet to operate on.");
+      Res.append("@param calib_file Calibration file to use.");
+      Res.append("@param linenum The line number to use.");
+      Res.append("@param groups The group ID numbers to use."); 
+
+      Res.append("@return Returns an error string if the file does not exist");
+      Res.append(" or the file is not readable.  If it is successful, it");
+      Res.append(" returns A vector of Peak objects.");
+
+      Res.append("@error FAILURE: file does not exist");
+      Res.append("@error FAILURE: file is not readable");
+      Res.append("@error FAILURE");
+  
+     return Res.toString();
     }
 }
