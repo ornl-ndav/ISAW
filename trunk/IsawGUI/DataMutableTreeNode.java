@@ -30,6 +30,9 @@
 
  *
  * $Log$
+ * Revision 1.9  2003/12/16 00:00:49  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.8  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -44,11 +47,12 @@
 
 package IsawGUI;
 
-import DataSetTools.dataset.Data;
 import java.util.Enumeration;
-import java.util.Vector;
-import javax.swing.tree.TreeNode;
+
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+
+import DataSetTools.dataset.Data;
 
 /**
  * encapsulates a Data object.

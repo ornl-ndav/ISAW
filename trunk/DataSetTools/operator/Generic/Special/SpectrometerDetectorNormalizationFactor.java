@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/12/15 23:56:33  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.8  2003/02/28 14:20:06  dennis
  *  Added getDocumentation() method. (Tyler Stelzer)
  *
@@ -63,13 +66,19 @@
 
 package DataSetTools.operator.Generic.Special;
 
-import  java.io.*;
-import  java.util.Vector;
-import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
-import  DataSetTools.operator.Parameter;
-import  DataSetTools.parameter.*;
+import java.io.Serializable;
+import java.util.Vector;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.AttributeList;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.DataSetFactory;
+import DataSetTools.dataset.UniformXScale;
+import DataSetTools.dataset.XScale;
+import DataSetTools.math.DetectorPosition;
+import DataSetTools.operator.Parameter;
+import DataSetTools.parameter.IParameter;
 
 /**
  * This operator calculates detector normalization factors for a direct 

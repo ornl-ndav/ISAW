@@ -31,15 +31,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/12/15 23:53:56  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.1  2003/12/10 19:10:27  bouzekc
  * Added to CVS.
  *
  */
 package FileIO;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import java.io.File;
 import DataSetTools.util.RobustFileFilter;
 
 /**

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/12/16 00:06:00  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.13  2003/10/11 19:19:17  bouzekc
  * Removed clone() as the superclass now implements it using reflection.
  *
@@ -69,10 +72,6 @@
  */
 package DataSetTools.parameter;
 
-import DataSetTools.util.StringUtil;
-import javax.swing.*;
-import java.awt.*;
-import DataSetTools.util.PGActionListener;
 
 public class StringArrayPG extends VectorPG{
 

@@ -29,6 +29,9 @@
 
  *
  * $Log$
+ * Revision 1.7  2003/12/16 00:02:10  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.6  2003/10/16 00:34:42  dennis
  * Fixed javadocs to build cleanly with jdk 1.4.2
  *
@@ -40,18 +43,7 @@
 package DataSetTools.util;
 
 import DataSetTools.dataset.Attribute;
-import DataSetTools.dataset.Attribute;
-import DataSetTools.dataset.DetPosAttribute;
 import DataSetTools.dataset.DoubleAttribute;
-import DataSetTools.dataset.FloatAttribute;
-import DataSetTools.dataset.IntAttribute;
-import DataSetTools.dataset.IntListAttribute;
-import DataSetTools.dataset.StringAttribute;
-import DataSetTools.dataset.StringAttribute;
-import DataSetTools.util.*;
-import java.lang.IllegalArgumentException;
-
-import java.lang.Integer;
 
 /**
  * container for arbitrary bounded intervals of Attributes.

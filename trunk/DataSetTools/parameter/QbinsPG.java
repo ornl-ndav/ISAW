@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/12/16 00:06:00  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.15  2003/11/19 04:13:23  bouzekc
  * Is now a JavaBean.
  *
@@ -92,13 +95,13 @@
 
 
 package DataSetTools.parameter;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import java.beans.*;
-import DataSetTools.components.ParametersGUI.*;
-import java.util.*;
-import DataSetTools.util.*;
+import java.awt.GridLayout;
+import java.util.Vector;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+
+import DataSetTools.util.PGActionListener;
 
 /**
 *    This ParameterGUI was designed specifically for entering a large

@@ -29,6 +29,9 @@
 
  *
  * $Log$
+ * Revision 1.4  2003/12/16 00:03:16  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/07/07 15:50:26  bouzekc
  * Added getDocumentation(), fixed code comment spelling
  * errors.
@@ -43,17 +46,15 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
-import DataSetTools.util.Interval;
+import java.io.Serializable;
+import java.util.Vector;
+
 import DataSetTools.dataset.Attribute;
-import DataSetTools.dataset.StringAttribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
-import DataSetTools.util.IObserver;
-import java.io.Serializable;
-import java.lang.String;
-import java.lang.Object;
-import java.util.Vector;
 import DataSetTools.operator.Parameter;
+import DataSetTools.util.IObserver;
+import DataSetTools.util.Interval;
 
 /**
  * Selects Data objects in a single DataSet object based on an attribute

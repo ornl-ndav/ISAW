@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2003/12/15 23:49:06  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.40  2003/12/15 20:09:14  rmikk
  *  Replaced code to redraw everything(including the controls) to just redrawing
  *    the image when only the data has changed.
@@ -192,37 +195,77 @@
  */
 package DataSetTools.viewer.Contour;
 
-import gov.noaa.pmel.sgt.swing.JPlotLayout;
-import gov.noaa.pmel.sgt.swing.JClassTree;
-import gov.noaa.pmel.sgt.swing.prop.GridAttributeDialog;
-
+import gov.noaa.pmel.sgt.CartesianGraph;
+import gov.noaa.pmel.sgt.ContourLevels;
+import gov.noaa.pmel.sgt.GridAttribute;
+import gov.noaa.pmel.sgt.IndexedColorMap;
+import gov.noaa.pmel.sgt.JPane;
+import gov.noaa.pmel.sgt.Layer;
 import gov.noaa.pmel.sgt.dm.SGTData;
+import gov.noaa.pmel.sgt.dm.SGTGrid;
+import gov.noaa.pmel.sgt.dm.SimpleGrid;
+import gov.noaa.pmel.sgt.swing.JClassTree;
+import gov.noaa.pmel.sgt.swing.JPlotLayout;
+import gov.noaa.pmel.util.Dimension2D;
+import gov.noaa.pmel.util.Domain;
+import gov.noaa.pmel.util.Range2D;
+import gov.noaa.pmel.util.Rectangle2D;
 
-import gov.noaa.pmel.sgt.*;
+import java.awt.AWTEvent;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.util.Arrays;
 
-import gov.noaa.pmel.util.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JSplitPane;
 
-import java.awt.*;
-import java.awt.print.*;
-import java.awt.event.*;
-import javax.swing.*;
-import java.util.*;
-import DataSetTools.dataset.*;
-import DataSetTools.util.*;
-import DataSetTools.viewer.util.*;
-import DataSetTools.components.image.*;
-import DataSetTools.components.containers.*;
-import DataSetTools.instruments.*;
-import DataSetTools.viewer.*;
-import DataSetTools.math.*;
-import DataSetTools.components.containers.*;
-import DataSetTools.components.ThreeD.*;
-import DataSetTools.components.ui.*;
-import DataSetTools.retriever.*;
-import DataSetTools.operator.*;
-import gov.noaa.pmel.sgt.dm.*;
-import DataSetTools.operator.DataSet.*;
-import DataSetTools.components.image.*;
+import DataSetTools.components.containers.SplitPaneWithState;
+import DataSetTools.components.image.CoordJPanel;
+import DataSetTools.components.image.CrosshairCursor;
+import DataSetTools.components.image.IndexColorMaker;
+import DataSetTools.components.ui.AnimationController;
+import DataSetTools.components.ui.ColorScaleMenu;
+import DataSetTools.components.ui.DataSetXConversionsTable;
+import DataSetTools.components.ui.XScaleChooserUI;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.UniformXScale;
+import DataSetTools.dataset.XScale;
+import DataSetTools.util.ClosedInterval;
+import DataSetTools.util.IObserver;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.StringUtil;
+import DataSetTools.viewer.DataSetViewer;
+import DataSetTools.viewer.IViewManager;
+import DataSetTools.viewer.SaveDataSetActionListener;
+import DataSetTools.viewer.ViewManager;
+import DataSetTools.viewer.ViewerState;
 
 /**
  * Example demonstrating how to use <code>JPlotLayout</code>
