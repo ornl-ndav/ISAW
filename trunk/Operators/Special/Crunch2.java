@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/06/29 13:28:06  dennis
+ * Changed name from Crunch to Crunch2 in returned ErrorStrings.
+ *
  * Revision 1.1  2004/05/07 17:57:00  dennis
  * Moved operators that extend GenericSpecial from Operators
  * to Operators/Special
@@ -179,9 +182,9 @@ public class Crunch2 extends GenericSpecial
     Vector removed_ids = new Vector();    // keep track of the ones removed
 
     if( ds==null )
-      return new ErrorString( "DataSet is null in Crunch" );
+      return new ErrorString( "DataSet is null in Crunch2" );
     if( tds==null)
-      return new ErrorString( "Template DataSet is null in Crunch" );
+      return new ErrorString( "Template DataSet is null in Crunch2" );
     if( ds==tds)
       return new ErrorString( "DataSet and Template must be different" );
 
