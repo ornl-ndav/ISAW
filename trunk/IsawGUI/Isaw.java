@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.97  2002/04/23 19:04:48  pfpeterson
+ *  Fixed problem with percentage status_heights (missing a 'D').
+ *
  *  Revision 1.96  2002/04/22 21:00:13  pfpeterson
  *  Changed title on 'Live Data' tabbed pane.
  *
@@ -1933,7 +1936,7 @@ public class Isaw
         if(status_height>1.0){
             status_height=main_sp.getHeight()-status_height;
         }else{
-            status_height=(int)((1.0-status_height)
+            status_height=(int)((1.0-status_heightD)
                                 *(double)main_sp.getHeight());
         }
         main_sp.setDividerLocation(status_height);
