@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.62  2003/10/20 16:27:50  rmikk
+ * Fixed javadoc errors
+ * Improved releasing of data from this scripting system
+ *
  * Revision 1.61  2003/09/14 17:57:03  rmikk
  * -Added code to reduce the holding on to Data Sets and
  *  clearing out memory
@@ -338,6 +342,8 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      */
     public  void initt(){
         clearHT( BoolInfo);
+        clearHT(ArrayInfo);
+        clearHT(lds);
         BoolInfo = null;
         BoolInfo = new Hashtable();
         BoolInfo.put("FALSE",new Boolean(false));
@@ -360,7 +366,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         Params= new Vector();
         
         //ds= new Hashtable();
-        ArrayInfo.clear();
+        
         ArrayInfo = null;
         ArrayInfo=new Hashtable();
         System.gc();
@@ -391,12 +397,27 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
    public void clearHT( Hashtable  HT){
      if( HT == null)
        return;
+     Object X=null;
+     for(Enumeration E = HT.keys();E.hasMoreElements();){
+         Object O = E.nextElement();
+         X = HT.remove(O);
+         if( X != null)
+           Clearr(X);
+         X = null;
+     }
      HT.clear();
    }
    public void clearVec( Vector V){
       if(V==null)
         return;
-      V.removeAllElements();
+      Object X=null;
+      for( int i = V.size()-1; i>=0; i--){
+         
+         X = V.remove( i);
+         Clearr(X);
+         X = null;
+      }
+      V.clear();
    }
  
 
@@ -3834,7 +3855,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
    
 
     /** 
-     * @param obs The Iobserver who wants to be notified of a new data
+     * @param iobs The Iobserver who wants to be notified of a new data
      * set.
      */
     public void addIObserver( IObserver iobs ){
@@ -3882,7 +3903,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     /** 
      * @param listener The listener who wants to be notified of a non
      * Data Set "Display" value
-     * @param PropertyName Must be Display
+     * @param propertyName Must be Display
      */
      public void addPropertyChangeListener( String propertyName,
                                             PropertyChangeListener listener){
@@ -3892,7 +3913,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     /** 
      * @param listener The listener who no longer wants to be notified
      * of a non Data Set "Display" value
-     * @param PropertyName Must be Display
+     * @param propertyName Must be Display
      */
      public void removePropertyChangeListener( String propertyName,
                                                PropertyChangeListener listener){
