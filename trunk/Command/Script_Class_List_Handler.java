@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2001/06/05 16:38:08  rmikk
+ * Fixed potential error in getNextPath to catch only
+ * repeated paths not repeated subpaths
+ *
  * Revision 1.6  2001/06/04 20:15:21  rmikk
  * Fixed Documentation
  *
@@ -170,6 +174,7 @@ public class Script_Class_List_Handler  implements OperatorHandler
            if( j < 0 )
              return null;
            Res = PathList.substring( i , j );
+           X = ";";
          }
        return Res;
     }
