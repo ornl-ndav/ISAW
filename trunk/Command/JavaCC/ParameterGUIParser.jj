@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/08/06 18:40:25  bouzekc
+ * Changed so that integer expansions entered in quotes are treated as Strings.
+ *
  * Revision 1.3  2003/08/06 18:30:25  bouzekc
  * Fixed bug where multiple calls to parseText() would not actually parse the
  * input.
@@ -190,16 +193,15 @@ TOKEN : {
 TOKEN : {
   < STRING: "\"" ( <DIGIT> | <CHARACTER> | <RESERVED_CHAR> |
                    <VAR_RESERVED_CHAR> | <WHITESPACE> | <FLOATING_POINT> |
-                   ( <EXPANSION_DELIMITER> ( <CHARACTER> )+ ) |
-                   ( ( <CHARACTER> )+ <EXPANSION_DELIMITER> ) )* "\"" >
+                   <EXPANSION_DELIMITER> )* "\"" >
 }
 
 TOKEN : {
-  < COLON_PAIR: ( "\"" )? <DIGIT> ":" <DIGIT> ( "\"" )? >
+  < COLON_PAIR: <DIGIT> ":" <DIGIT> >
 }
 
 TOKEN : {
-  < STEPPED_COLON_PAIR: ( "\"" ) <DIGIT> ":" <DIGIT> ":" <DIGIT> ( "\"" ) >
+  < STEPPED_COLON_PAIR: <COLON_PAIR> ":" <DIGIT> >
 }
 TOKEN : {
   < FLOATING_POINT: ( <DIGIT> )+ ( ( "." )? ( ( <UNSIGNED_DIGIT> )* ) | 
@@ -313,8 +315,7 @@ Object toArray(  ) : {
 |
   //matched a colon pair (e.g. 5:8)
   t = <COLON_PAIR> {
-    //remove any quotes that exist
-    expansion = t.image.replace( '\"', ' ' ).trim(  );
+    expansion = t.image.trim(  );
     index = expansion.indexOf( ":" );
     first = Integer.parseInt( expansion.substring( 0, index ) );
     first = Integer.parseInt( expansion.substring( 0, index ) );
@@ -329,8 +330,7 @@ Object toArray(  ) : {
 |  
   //matched a stepped colon pair(e.g. 10:35:2)
   t = <STEPPED_COLON_PAIR> {
-    //remove any quotes that exist
-    expansion = t.image.replace( '\"', ' ' ).trim(  );
+    expansion = t.image.trim(  );
     index = expansion.indexOf( ":" );
     first = Integer.parseInt( expansion.substring( 0, index ) );
     //trim out the first colon to find the step size
