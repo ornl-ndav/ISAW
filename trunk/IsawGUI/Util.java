@@ -44,13 +44,23 @@ public class Util
       filename = StringUtil.fixSeparator(filename);
      // System.out.println("Filename is after" +filename);
 
-  	RunfileRetriever r = new RunfileRetriever(filename);
+      Retriever r;
+      if ( filename.endsWith( "nxs" )  ||
+           filename.endsWith( "NXS" )  ||
+           filename.endsWith( "hdf" )  ||
+           filename.endsWith( "HDF" )  )
+        r = new NexusRetriever( filename );
+      else
+        r = new RunfileRetriever( filename );
+
       int numberOfDataSets = r.numDataSets();
       DataSet[] dss = new DataSet[numberOfDataSets];
       for (int i = 0; i< numberOfDataSets; i++)
            dss[i] = r.getDataSet(i);
 
-	return dss;
+      r = null;
+      System.gc();
+      return dss;
   }
 
 
@@ -157,7 +167,7 @@ public String saveDoc(Document doc, String filename)
       String path = System.getProperty("user.home")+"\\";
        path = StringUtil.fixSeparator(path);
        try {
-	    FileInputStream input = new FileInputStream(path + "props.dat" );
+	    FileInputStream input = new FileInputStream(path + "IsawProps.dat");
           props.load(input);
          }
        
@@ -182,9 +192,6 @@ public String saveDoc(Document doc, String filename)
    public JScrollPane viewProperties()
    {
        JTable table;
-
-
-           	
            	
        Vector heading = new Vector();
 	 heading.addElement("Attribute" ); 
