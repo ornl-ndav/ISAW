@@ -201,7 +201,7 @@ public class RealSpacePeaks extends GenericTOF_SCD implements HiddenOperator{
 	DataSet rds = (new RunfileRetriever(datfile)).getDataSet(1);
 	String calibfile="/IPNShome/pfpeterson/progs/scd/instprm.dat";
 
-	FindPeaks fo = new FindPeaks(rds,10,1,false);
+	FindPeaks fo = new FindPeaks(rds,10,1);
 	Vector peaked=(Vector)fo.getResult();
 	
 	/* CentroidPeaks co=new CentroidPeaks(rds,peaked);
