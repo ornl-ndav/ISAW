@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/07/08 16:05:33  dennis
+ *  Removed some "workarounds" since underlying ISIS Rawfile class has
+ *  been fixed.  Specifically, LeaveOpen() no longer hangs the system,
+ *  the first histogram is now histogram 1 and methods to get the
+ *  min and max monitor ID have been implemented.
+ *
  *  Revision 1.1  2004/07/02 16:54:44  dennis
  *  Initial version of data retriever for ISIS files.  This version is
  *  basically working for SXDII files, though the monitor position
@@ -112,7 +118,7 @@ public class IsisRetriever extends    Retriever
     try
     {
       raw_file = new Rawfile( file_name );
-//      raw_file.LeaveOpen();
+      raw_file.LeaveOpen();
       instrument_type = raw_file.InstrumentType();
       String name = raw_file.InstrumentName().trim();
       System.out.println("Instrument Type = " + instrument_type );
@@ -140,7 +146,7 @@ public class IsisRetriever extends    Retriever
       }
 */
       System.out.println("Looking for DataSets");
-      int hist = 0;                               // only histogram is 0 #### 1
+      int hist = 1;                               // only histogram is 0 #### 1
 
       first_id = raw_file.MinSubgroupID( hist );
       last_id  = raw_file.MaxSubgroupID( hist );
@@ -361,17 +367,17 @@ public class IsisRetriever extends    Retriever
 
     if ( data_set_type[ data_set_num ] == HISTOGRAM_DATA_SET )
     {
-// ####  first_id = raw_file.MinSubgroupID( histogram_num );
-// ####  last_id  = raw_file.MaxSubgroupID( histogram_num );
-      first_id = 2;
-      last_id  = 45057;
+      first_id = raw_file.MinSubgroupID( histogram_num );
+      last_id  = raw_file.MaxSubgroupID( histogram_num );
+//    first_id = 2;
+//    last_id  = 45057;
     }
     else if ( data_set_type[ data_set_num ] == MONITOR_DATA_SET )
     { 
-// ####   first_id = raw_file.MinMonitorID( histogram_num ); 
-// ####   last_id  = raw_file.MaxMonitorID( histogram_num ); 
-      first_id = 45101;   // for SXDII
-      last_id  = 45104;   // for SXDII
+      first_id = raw_file.MinMonitorID(); 
+      last_id  = raw_file.MaxMonitorID(); 
+//    first_id = 45101;   // for SXDII
+//    last_id  = 45104;   // for SXDII
     } 
     else
       return new int[0]; 
@@ -420,7 +426,7 @@ public class IsisRetriever extends    Retriever
     int               num_times = 0;
     XScale            x_scale = new UniformXScale(0,1,2);
     float[]           raw_spectrum;
-    int               group_id;
+    int               group_id = -2;
     Data              spectrum;
     int               histogram_num;
     boolean           is_monitor      = false;
@@ -473,7 +479,7 @@ public class IsisRetriever extends    Retriever
      data_set.addLog_entry( "Loaded " + title );
      AddDataSetAttributes( data_source_name, ds_type, data_set );
 
-//     raw_file.LeaveOpen();
+     raw_file.LeaveOpen();
 
      int last_tf_type = Integer.MAX_VALUE;  // keep track of the previous time
      int tf_type;                           // type so we only create new 
@@ -487,15 +493,17 @@ public class IsisRetriever extends    Retriever
      {
       if ( Arrays.binarySearch( ids, group_id ) >= 0 )// skip if not in the list
       {
-       if ( is_monitor    &&  raw_file.IsSubgroupBeamMonitor(group_id) ||
+       if ( is_monitor    &&   raw_file.IsSubgroupBeamMonitor(group_id) ||
             is_histogram  &&  !raw_file.IsSubgroupBeamMonitor(group_id) )
        {
          tf_type = raw_file.TimeFieldType(group_id);
          if ( tf_type != last_tf_type )      // only get the times if it's a
                                              // new time field type
          {
+           System.out.println("group id, tft, hist = " + group_id + ", " + tf_type + ", " + histogram_num );
            bin_boundaries = raw_file.TimeChannelBoundaries(group_id);
            num_times      = bin_boundaries.length;
+           System.out.println("num_times = " + num_times );
            last_tf_type   = tf_type;
 
            x_scale = XScale.getInstance( bin_boundaries );
@@ -530,6 +538,7 @@ public class IsisRetriever extends    Retriever
     catch( Exception e )
     {
       System.out.println("Exception in IsisRetriever.getDataSet()" );
+      System.out.println("group_id = " + group_id );
       System.out.println("Exception is " +  e );
       e.printStackTrace();
     }
@@ -867,9 +876,11 @@ public class IsisRetriever extends    Retriever
    System.out.println("Number in Monitor DataSet = " + mon_ds.getNum_entries());
    new ViewManager( mon_ds, IViewManager.IMAGE );
 
-   int ids[] = IntList.ToArray( "2:5000" );
+ int ids[] = IntList.ToArray( "2:28672" );
+//   int ids[] = IntList.ToArray( "2:45056" );   // #####
+   DataSet hist_ds = rr.getDataSet( 1, ids );  // #####
+//   DataSet hist_ds = rr.getDataSet( 1 );
 
-   DataSet hist_ds = rr.getDataSet( 1, ids );
    System.out.println("Number in Histogram DataSet = "+mon_ds.getNum_entries());
    new ViewManager( hist_ds, IViewManager.IMAGE );
 
