@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 19:44:52  kramer
+ * Made the class extend LinkedFrame instead of JInternalFrame.
+ * Removed the methods:
+ *   public void setAsSelected(boolean bol)
+ *   public abstract DesktopInternalFrame getCopy()
+ *
  * Revision 1.3  2004/03/12 19:46:16  bouzekc
  * Changes since 03/10.
  *
@@ -55,15 +61,16 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.event.MenuListener;
 
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
+import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 
 /**
  * This is a special type of JInternalFrame that is placed in a HawkDesktop object.  It handles 
@@ -73,7 +80,7 @@ import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
  * can be copied or moved to.
  * @author Dominic Kramer
  */
-public abstract class DesktopInternalFrame extends JInternalFrame implements ActionListener
+public abstract class DesktopInternalFrame extends LinkedFrame implements ActionListener, MenuListener
 {
 	/**
 	 * The item in menu that allows the user to move the window to the previous tab.
@@ -104,11 +111,13 @@ public abstract class DesktopInternalFrame extends JInternalFrame implements Act
 	 */
 	protected JMenu copyToMenu;
 	
-	public DesktopInternalFrame(HawkDesktop desk)
+	public DesktopInternalFrame(HawkDesktop desk, JDesktopPane parentPane, Interface intf, boolean showUMLOption, boolean showShortenedSourceOption, boolean showJavadocsOption, boolean showSourceOption)
 	{
+		super(desk, parentPane, intf, showUMLOption, showShortenedSourceOption, showJavadocsOption, showSourceOption);
+		
 		desktop = desk;
 		windowMenu = new JMenu("Window");
-		windowMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
+		windowMenu.addMenuListener(this);
 		moveToMenu = new JMenu("Move To");
 			JMenuItem nextTabItem = new JMenuItem("Next Tab");
 			nextTabItem.addActionListener(this);
@@ -136,7 +145,6 @@ public abstract class DesktopInternalFrame extends JInternalFrame implements Act
 			windowMenu.add(moveToMenu);
 
 		copyToMenu = new JMenu("Copy To");
-			copyToMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
 			JMenuItem copyToNextTabItem = new JMenuItem("Next Tab");
 			copyToNextTabItem.addActionListener(this);
 			copyToNextTabItem.setActionCommand("nextTab.copyTo");
@@ -160,6 +168,11 @@ public abstract class DesktopInternalFrame extends JInternalFrame implements Act
 			otherCopyItem.addActionListener(this);
 			copyToMenu.add(otherCopyItem);
 			windowMenu.add(copyToMenu);
+			
+			windowMenu.add(new JSeparator());
+			windowMenu.add(attachMenu);
+			attachMenu.addMenuListener(this);
+			windowMenu.add(detachMenuItem);
 	}
 		
 	public void resizeAndRelocate()
@@ -205,26 +218,7 @@ public abstract class DesktopInternalFrame extends JInternalFrame implements Act
 			setSize(newWidth,newHeight);
 		}
 	}
-	
-	/**
-	 * If bol is true the method moves the selected internal window in front of the other windows 
-	 * on the JDesktop.  If bol is false it moves the window behind the other windows on the JDesktopPane.
-	 * @param bol True to move the window to the front and false to move the window to the back.
-	 */
-	public void setAsSelected(boolean bol)
-	{
-		if (bol)
-			moveToFront();
-		else
-			moveToBack();
-	}
-	
-	/**
-	 * Gets a copy of this window.
-	 * @return A copy of this window.
-	 */
-	public abstract DesktopInternalFrame getCopy();
-	
+		
 	/**
 	 * Gets this windows HawkDesktop it is on.
 	 * @return The HawkDesktop.
@@ -269,7 +263,7 @@ public abstract class DesktopInternalFrame extends JInternalFrame implements Act
 					desktop.getTabbedPane().setTitleAt(total-1,"Tab"+total);
 				}
 				desktop.setSelectedDesktop(sel+1);
-				DesktopInternalFrame frame = this.getCopy();
+				AttachableDetachableFrame frame = this.getCopy();
 				desktop.getSelectedDesktop().add(frame);
 				frame.setAsSelected(true);
 				frame.setVisible(true);
@@ -277,7 +271,7 @@ public abstract class DesktopInternalFrame extends JInternalFrame implements Act
 			else if (str.equals("previousTab"))
 			{
 				desktop.setSelectedDesktop(sel-1);
-				DesktopInternalFrame frame = this.getCopy();
+				AttachableDetachableFrame frame = this.getCopy();
 				desktop.getSelectedDesktop().add(frame);
 				frame.setAsSelected(true);
 				frame.setVisible(true);
@@ -288,7 +282,7 @@ public abstract class DesktopInternalFrame extends JInternalFrame implements Act
 				total++;
 				desktop.getTabbedPane().setTitleAt(total-1,"Tab"+total);
 				desktop.setSelectedDesktop(total-1);
-				DesktopInternalFrame frame = this.getCopy();
+				AttachableDetachableFrame frame = this.getCopy();
 				desktop.getSelectedDesktop().add(frame);
 				frame.setAsSelected(true);
 				frame.setVisible(true);
@@ -350,6 +344,8 @@ public abstract class DesktopInternalFrame extends JInternalFrame implements Act
 				System.out.println("str (processed in else statement)="+str);
 			}
 		}
+		else
+			super.actionPerformed(event);
 	}
 	
 	class MoveToGUI extends JFrame implements ActionListener
@@ -403,8 +399,6 @@ public abstract class DesktopInternalFrame extends JInternalFrame implements Act
 		
 		public void actionPerformed(ActionEvent event)
 		{
-			System.out.println("In MoveToGUI:  event.getActionCommand()="+event.getActionCommand());
-			
 			if (event.getActionCommand().equals("Ok"))
 			{
 				int i=0;
@@ -461,7 +455,7 @@ public abstract class DesktopInternalFrame extends JInternalFrame implements Act
 				{
 					if (((JCheckBox)checkBoxVec.elementAt(i)).isSelected())
 					{
-						DesktopInternalFrame copy = frame.getCopy();
+						AttachableDetachableFrame copy = frame.getCopy();
 						((JDesktopPane)hDesk.getTabbedPane().getComponentAt(i)).add(copy);
 						copy.setVisible(true);
 						copy.setAsSelected(true);
