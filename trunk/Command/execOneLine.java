@@ -1,4 +1,5 @@
-/*
+
+/*op.getParameter(k).getValue()*
  * File:  execOneLine.java 
  *             
  * Copyright (C) 2001, Ruth Mikkelson
@@ -31,6 +32,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2001/11/12 21:18:39  dennis
+ *   1. & between a string and boolean or Vector now changes these
+ *      non string data type to string.
+ *
+ *   2. Float parameters in operators now also match with
+ *      integer arguments.
+ *
  * Revision 1.28  2001/11/09 18:18:11  dennis
  * Fixed the method Vect_to_String to put quotes around the string entries.
  * Also, data sets are replaced by ISAWDS[tag number]
@@ -1849,7 +1857,6 @@ public void addDataSet(DataSet dss, String vname)
       }
 public void operateCompare( Object R1,Object R2, char c)
   { Result = null;
-    
     if( (R1==null) ||(R2==null))
       {seterror( 1000, ER_ImproperArgument);
        return;
@@ -1858,21 +1865,31 @@ public void operateCompare( Object R1,Object R2, char c)
     if(R1 instanceof Boolean)
       if( !(R2 instanceof Boolean))
         if( R2 instanceof Integer)
-          if( ((Integer)R2).intValue()==0)
+          {if( ((Integer)R2).intValue()==0)
             R2=new Boolean(false);
           else 
             R2=new Boolean(true);
-         else
+           }
+        else if( (R2 instanceof String) && (c=='&'))
+           {Result = R1.toString() + (String)R2;
+            return;
+            }
+        else
            {seterror(1000, ER_ImproperDataType);
             return;
             }
    if(R2 instanceof Boolean)
       if( !(R1 instanceof Boolean))
         if( R1 instanceof Integer)
-          if( ((Integer)R1).intValue()==0)
+           {if( ((Integer)R1).intValue()==0)
             R1=new Boolean(false);
-          else 
+           else 
             R1=new Boolean(true);
+            }
+         else if( (R1 instanceof String)&&(c=='&'))
+           {Result = (String)R1+ R2.toString();
+            return;
+            }
          else
            {seterror(1000, ER_ImproperDataType);
             return;
@@ -1928,10 +1945,12 @@ public void operateCompare( Object R1,Object R2, char c)
         return;
        }
     if(R1 instanceof String)
-       if(!(R2 instanceof String)) R2 = R2.toString();
+       if( (R2 instanceof Vector)&&(c=='&')) R2= execOneLine.Vect_to_String((Vector)R2);
+       else if(!(R2 instanceof String)) R2 = R2.toString();
 
     if(R2 instanceof String)
-       if(!(R1 instanceof String)) R1 = R1.toString();
+       if( (R1 instanceof Vector)&&(c=='&')) R1= execOneLine.Vect_to_String((Vector)R1);
+       else if(!(R1 instanceof String)) R1 = R1.toString();
 
 
    if( (R2 instanceof String)  &&(R1 instanceof String))
@@ -2061,9 +2080,15 @@ private void operateLogic(Object R1 , Object R2 , char c )
            }
 
         if( (R1 instanceof Boolean) ||(R2 instanceof Boolean))
+         if( (c!='&') || !(R1 instanceof String || R2 instanceof String))
           { seterror( 1000, ER_ImproperDataType);
             return ;
           }
+         else 
+           {if( R1 instanceof String) Result = (String)R1 +R2.toString();
+            else Result = R1.toString()+(String)R2;
+           }
+            
         if( (R1 instanceof DataSet) &&(c!='&') )
           {operateArithDS( R1 , R2 , c );
 	   return;
@@ -2073,8 +2098,13 @@ private void operateLogic(Object R1 , Object R2 , char c )
 	   return;
 	  }
         if( (R1 instanceof Vector) || (R2 instanceof Vector))
+         if( (c!='&') || !(R1 instanceof String || R2 instanceof String))
           {operateVector(R1,R2,c);
            return;
+          }
+         else 
+          { if( R1 instanceof String) Result = (String)R1 +execOneLine.Vect_to_String((Vector)R2);
+            else Result = execOneLine.Vect_to_String((Vector)R1)+(String)R2;
           }
 	if( "+-/*<>^".indexOf( c ) >= 0 )
           { 
@@ -2291,6 +2321,9 @@ private Operator getSHOp( Vector Args, String Command)
                else if( (Args.elementAt( j ) instanceof String)
                         &&(P instanceof SpecialString))
                  { }
+               else if( (Args.elementAt(j) instanceof  Integer)
+                    &&(P instanceof  Float))
+                 {}
                else if ( Args.elementAt(j).getClass().equals( P.getClass()))
                   { }
                else found = false; 
@@ -2409,7 +2442,9 @@ private Operator getSHOp( Vector Args, String Command)
 	      {
 		 if( Debug ) System.out.print("E"+ Arg2.getClass());
               }
-                       
+            else if( (Arg2 instanceof  Integer)
+                    &&(op.getParameter(k).getValue() instanceof  Float))
+                 {}           
 	    else 
                fit = false;
 	    if(Debug)System.out.println("F");                    
@@ -2436,6 +2471,10 @@ private Operator getSHOp( Vector Args, String Command)
              {System.out.println("Internal ERROR XXXX"+ s);
              }
            }
+          else if( op.getParameter(k).getValue() instanceof Float)
+            {Float F = new Float(((Number)(Args.elementAt(k + start))).floatValue());
+             op.getParameter(k).setValue( F);
+             }
           else
             op.getParameter( k ).setValue( Args.elementAt( k + start ) );
         }
