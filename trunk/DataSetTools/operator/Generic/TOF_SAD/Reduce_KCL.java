@@ -1,3 +1,46 @@
+
+/*
+ * File:  Reduce_KCL.java 
+ *             
+ * Copyright (C) 2003, Ruth Mikkelson and Alok Chatterjee
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ *
+ * Modified:
+ *
+ * $Log$
+ * Revision 1.10  2003/09/11 14:59:45  rmikk
+ * -Included the GPL
+ * -eliminated the DataSet.Add, Subtract, etc. methods and did
+ *   several steps at one time.
+ * -Reduced memory requirements by eliminating the declaration
+ *  of variables to MaxSlice, etc.  and introducing a memory
+ * efficient convert and rebin to one final xscale.
+ *
+ */
 package DataSetTools.operator.Generic.TOF_SAD;
 
 import java.io.*;
@@ -73,7 +116,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     /**
      *Parameters
      */
-
+    int[] MonitorInd, MonitorID;
     XScale xscl;
     int MAXDET = 100;
     int MAXCST = 512;
@@ -92,13 +135,11 @@ public class Reduce_KCL  extends GenericTOF_SAD{
      */
     String ANS, ANSDN, ANSCH, ANSNL, ANSSD, ANSCOL, ANISOT, ANSAGN, ANSPLT, ANSCL, ANSD;
     String ansbt;
-    //char[]  NAMCOL,NAMLIS,NAMLIS2,NAMLIS3,namsq2,namsq1,namsq=new char[20];
     String  REDUCEOUT;
     char[]  tttt1 = new char[80];
     char[]  users1 = new char[20];
     byte[] tttt = new byte[80];
     byte[] users = new byte[20];
-    //char[] edt[1]= new char[9];
     byte[] sdt = new byte[9];
     byte[] edt = new byte[9];
     char[] stm1, etm1 = new char[9];
@@ -160,57 +201,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
      */
     int[] ITEMP = new int[3];
     int[] NSHIFT = new int[5];
-    int[] IFOMIT = new int[MAXCST + MAXCST];
-    int[] IFGOOD = new int[MAXSLC + MAXSLC];
-    //int[] IFERR=new int[MAXCRV+MAXCRV];
-
-    double[] DETSEN, DETERR = new double[MAXSLC + MAXSLC];
-    double[] AREATOM1, AREATOM1ERR = new double[MAXCST + 1];
-    double[] QVECTOR, IOFQ, ERROR = new double[MAXQBIN + 1];
-
-    double[] siofq, serror = new double[MAXQBIN + 1];
-    double[] biofq, berror = new double[MAXQBIN + 1];
-
-    float[] LAMBDA = new float[MAXCST + 1];
-
-    double[] TRANS, TRANB, TSERR, TBERR = new double[MAXCST + 1];
-    double[] XX = new double[MAXX + 1];
-    double[] YY = new double[MAXY + 1];
-    double[] QUE1, QUE2, QUE3, QUE4 = new double[MAXQBIN + 1];
-    double[] QUEx1, QUEx2 = new double[maxqxbin + 1];
-    double[] QUEx3, QUEx4 = new double[maxqxbin + 1];
-    double[] QUEY1, QUEY2 = new double[maxqybin + 1];
-    double[] QUEY3, QUEY4 = new double[maxqybin + 1];
-    float[] SAMPM1, BACKM1, CADM1 = new float[MAXCST + 1];
-    double[] SAMPDN, BACKDN, CADDN, SAMPLE = new double[MAXSLC + 1];
-    double[] SINRAD = new double[MAXSLC + 1];
-    double[][] sinx = new double[MAXX + 1][MAXY + 1];
-    double[][] siny = new double[MAXX + 1][MAXY + 1];
-
-    double[] SAMPINT = new double[MAXSLC + MAXSLC];
-    double[] WEIGHT = new double[MAXSLC + MAXSLC];;
-    double[] BACKINT = new double[MAXSLC + MAXSLC];
-    double[] BACKVAR = new double[MAXSLC + MAXSLC];
-    double[] SAMPVAR = new double[MAXSLC + MAXSLC];
-    float[][] WTQXQY = new float[maxqxbin + 1][maxqxbin + 1];
-    double[] Qxx = new double[maxqxbin + 1];
-    float[][] SQXQY = new float[maxqxbin + 1][maxqxbin + 1];
-    float[] Qyy = new float[maxqxbin + 1];
-    float[][] SERRXY = new float[maxqxbin + 1][maxqxbin + 1];
-    float[][] BQXQY = new float[maxqxbin + 1][maxqxbin + 1];
-    float[][] BERRXY = new float[maxqxbin + 1][maxqxbin + 1];
-
-    float[][] SBQXQY = new float[maxqxbin + 1][maxqxbin + 1];
-    float[][] SBERRXY = new float[maxqxbin + 1][maxqxbin + 1];
-
-    double[] WEIGHT1 = new double[MAXQBIN + 1];
-    double[] SOFQS = new double[MAXQBIN + 1];
-    double[] SOFQB = new double[MAXQBIN + 1];
-    double[] SOQSMB = new double[MAXQBIN + 1];
-    double[] SMPERR = new double[MAXQBIN + 1];
-    double[] BKGERR = new double[MAXQBIN + 1];
-    double[] SMBERR = new double[MAXQBIN + 1];
-
+    float[] LAMBDA ;
+    
     String NAMCOL = "SN.DAT";
     String NAMLIS = "SMB.DAT";
     String NAMLIS2 = "S.DAT";
@@ -220,7 +212,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     String namsq2 = "SN2D.DAT";
   
     double SOURCEFREQ = 30.0;
-    //float BETADN = 0.0042f;
 
     double THMIN;//= 0.5*Math.atan(0.01*RADMIN/L2);
     double SINTHMIN;//= Math.sin(THMIN);
@@ -251,8 +242,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
  
     int RUNC, RUNB, RUNS;
     float XOFF, YOFF;
-       int[] MonitorInd; 
-        int[] MonitorID; 
+
     public Reduce_KCL(){
       super("Reduce");
     }
@@ -285,6 +275,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         DataSet RUNBds1,DataSet RUNCds0,DataSet RUNCds1, float BETADN, 
         float SCALE, float THICK,
         float XOFF, float YOFF, int NQxBins, int NQyBins) {
+        
         super( "Reduce");
         parameters = new Vector();
         addParameter( new Parameter("", TransS));
@@ -393,15 +384,12 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         this.RUNBds = RUNBds;
         this.RUNCds = RUNCds;
         this.qu = qu;
-        
+
         MonitorInd = CalcTransmission.setMonitorInd( RUNSds0);
         MonitorID = new int[MonitorInd.length];
-        System.out.println("Monit Inds="+StringUtil.toString( MonitorInd));
-      
- 
         for( int i = 0; i< MonitorInd.length; i++)
           MonitorID[i]= RUNSds0.getData_entry( MonitorInd[i]).getGroup_ID();
-       System.out.println("Monit Ids="+StringUtil.toString( MonitorID));
+
         RUNS = (((IntListAttribute) (RUNSds[0].getAttribute(Attribute.RUN_NUM))).getIntegerValue())[0];
 
         RUNB = (((IntListAttribute) (RUNBds[0].getAttribute(Attribute.RUN_NUM))).getIntegerValue())[0];
@@ -441,48 +429,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         double CMASS = 1.67495E-24;
         double PL = PLANK / CMASS;
         double TOTTIM = 1.0E6 / SOURCEFREQ;
-
-        /**
-         * INITIALIZE ARRAYS
-         */
-        for (int k = 1; k <= MAXSLC; k++) {  
-            WEIGHT[k] = 0.0f;
-
-            SAMPINT[k] = 0.0f;
-            SAMPVAR[k] = 0.0f;
-
-            BACKINT[k] = 0.0f;
-            BACKVAR[k] = 0.0f;
-
-        }
-
-        for (int i = 1; i <= maxqxbin; i++) {
-            for (int j = 1; j <= maxqybin; j++) {
-
-                WTQXQY[i][j] = 0.0f;
-
-                SQXQY[i][j] = 0.0f;
-                SERRXY[i][j] = 0.0f;
-
-                BQXQY[i][j] = 0.0f;
-                BERRXY[i][j] = 0.0f;
-                SBQXQY[i][j] = 0.0f;
-                SBERRXY[i][j] = 0.0f;
-
-            }
-        }
-        for (int i = 1; i <= MAXQBIN; i++) {
-            WEIGHT1[i] = 0.0;
-
-            SOFQS[i] = 0.0;
-            SOFQB[i] = 0.0;
-            SOQSMB[i] = 0.0;
-
-            SMPERR[i] = 0.0;
-            BKGERR[i] = 0.0;
-            SMBERR[i] = 0.0;
-
-        }
 
         /**
          * OPEN .OUT FILE
@@ -529,7 +475,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         int NSLICE = NUMX * NUMY;
 
         double TOFDIST = L1 + L2;
-
+        
         LAMMAX = (PL / TOFDIST) * TOTTIM;
 
         THMIN = 0.5 * Math.atan(0.01 * Radmin / L2);
@@ -539,22 +485,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         YDIM = grid.height();
         double SFX = XDIM / NUMX;
         double SFY = YDIM / NUMY;
-        
-        /*tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[0].getData_entry(0),
-            30f, BETADN);
-        tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[1].getData_entry(1),
-            30f, BETADN);
-        tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNBds[0].getData_entry(0),
-            30f, BETADN);
-        tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNBds[1].getData_entry(1),
-            30f, BETADN);
-        tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNCds[0].getData_entry(0),
-            30f, BETADN);
-        tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNCds[1].getData_entry(1),
-     
-            30f, BETADN);
-       */
-       for( int i=0;i<1;i++){
+        for( int i=0;i<1;i++){
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[0].getData_entry(
                MonitorInd[i]),30f, BETADN);
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNBds[0].getData_entry(
@@ -562,8 +493,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
           
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNCds[0].getData_entry(
                MonitorInd[i]),30f, BETADN);
-       }      
-      for( int i=0; i< RUNSds[1].getNum_entries(); i++){
+         }      
+        for( int i=0; i< RUNSds[1].getNum_entries(); i++){
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[1].getData_entry(
                i),30f, BETADN);
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNBds[1].getData_entry(
@@ -572,112 +503,43 @@ public class Reduce_KCL  extends GenericTOF_SAD{
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNCds[1].getData_entry(
                i),30f, BETADN);
 
-       }
-    
-        RUNSds[1] = convertToLambda(RUNSds[1]);
-        RUNSds[0] = convertToLambda(RUNSds[0]);
-   
-        RUNBds[1] = convertToLambda(RUNBds[1]);
-        RUNBds[0] = convertToLambda(RUNBds[0]);
-   
-        RUNCds[1] = convertToLambda(RUNCds[1]);
-        RUNCds[0] = convertToLambda(RUNCds[0]);
+         }
+       
+        float[] tofs=RUNSds[1].getData_entry(NUMX * NUMY / 2).getX_scale().getXs();
+        tofs = cnvertToWL(tofs, (XAxisConversionOp)RUNSds[1].
+                 getOperator("Convert to WaveLength"),NUMX*NUMY/2);
+        if( tofs[0] > tofs[1]) Reverse(tofs);
+        xscl = new VariableXScale( tofs);
         
-        xscl = RUNSds[1].getData_entry(NUMX * NUMY / 2).getX_scale();
-         
-        RUNSds[0].getData_entry(MonitorInd[0]).resample(xscl, IData.SMOOTH_NONE);
- 
-        RUNBds[0].getData_entry(MonitorInd[0]).resample(xscl, IData.SMOOTH_NONE);
-        if (RUNCds[0] != null)
-            RUNCds[0].getData_entry(MonitorInd[0]).resample(xscl, IData.SMOOTH_NONE);
-        RUNSds[0].getData_entry(MonitorInd[1]).resample(xscl, IData.SMOOTH_NONE);
-        RUNBds[0].getData_entry(MonitorInd[1]).resample(xscl, IData.SMOOTH_NONE);
-        if (RUNCds[0] != null)
-            RUNCds[0].getData_entry(MonitorInd[1]).resample(xscl, IData.SMOOTH_NONE);
-        float[] yy = RUNSds[0].getData_entry(MonitorInd[0]).getY_values();
-
-        yy = RUNCds[0].getData_entry(MonitorInd[0]).getY_values();
-
-        Resample(RUNSds[1], xscl);
-        Resample(RUNBds[1], xscl);
-        Resample(RUNCds[1], xscl);
-        
-        LAMBDA = xscl.getXs();
-  
+       ConvertToWL( RUNSds[0],xscl);
+       ConvertToWL( RUNSds[1],xscl);
+       System.gc();
+       ConvertToWL( RUNBds[0],xscl);
+       ConvertToWL( RUNBds[1],xscl);
+       System.gc();
+       ConvertToWL( RUNCds[0],xscl);
+       ConvertToWL( RUNCds[1],xscl);
+       System.gc();
+      
+       LAMBDA = xscl.getXs();
         this.SCALE = this.SCALE / THICK;
-
-        /**
-         * SET UP SIN(RADII), sinx(x,y), siny(x,y) AND MASK OUT BEAM STOP
-         AND BEYOND ANY SPECIFIED RADIUS.  Set up the azimuthal angle array.
-         */
-        for (int J = 1; J <= NUMY; J++) {
-            for (int i = 1; i <= NUMX; i++) {
-                int K = i + (J - 1) * NUMX ;
-                PixelInfoListAttribute pilistAt = (PixelInfoListAttribute) 
-                     (RUNSds[1].getData_entry(K - 1).
-                         getAttribute(Attribute.PIXEL_INFO_LIST));
-                IPixelInfo ipinf = ((PixelInfoList) pilistAt.getValue()).pixel(0);
-                int row = (int) ipinf.row();
-                int col = (int) ipinf.col();
-                Vector3D dis = new Vector3D(grid.position((float) row, (float) col));
-                Vector3D di = new Vector3D(grid.position());
-                dis.subtract(di);
-
-                XX[row] = dis.dot(ipinf.x_vec());
-                YY[col] = dis.dot(ipinf.y_vec()); 
-                //RAD = SQRT(XX(I)**2 + YY(J)**2)
-                double RAD = Math.sqrt((XX[row] * XX[row]) + (YY[col] * YY[col]));
-
-                SINRAD[K] = (double) Math.sin(0.5 * Math.atan(0.01 * RAD / L2));
-                sinx[row][col] = (double) Math.sin(0.5 * Math.atan(0.01 * 
-                                    XX[row] / L2));
-                siny[row][col] = (double) Math.sin(0.5 * Math.atan(0.01 * 
-                                   YY[col] / L2));
-
-            }
-
-        }
 
         /**
          * CONSTRUCT THE TITLE
          *
          */
         try {
-            str1 = TITLE;
-            for (int ii1 = 0; ii1 < str1.length(); ii1++)
-                F1.write(str1.charAt(ii1));
+            str1 = TITLE+" "+RUNS;
+            F1.write( str1.getBytes());
 
-            str1 = " ";
-            for (int ii1 = 0; ii1 < str1.length(); ii1++)
-                F1.write(str1.charAt(ii1));
-
-            str1 = String.valueOf(RUNS);
-            for (int ii1 = 0; ii1 < str1.length(); ii1++)
-                F1.write(str1.charAt(ii1));
-
-            str1 = TITLE;
-            for (int ii1 = 0; ii1 < str1.length(); ii1++)
-                F1.write(str1.charAt(ii1));
-
-            str1 = " ";
-            for (int ii1 = 0; ii1 < str1.length(); ii1++)
-                F1.write(str1.charAt(ii1));
-
-            str1 = String.valueOf(RUNB);
-            for (int ii1 = 0; ii1 < str1.length(); ii1++)
-                F1.write(str1.charAt(ii1));
+            
+           
+            str1 = TITLE+" "+RUNB;
+            F1.write( str1.getBytes());
 
             if (RUNC != 0) {
-                str1 = TITLE;
-                for (int ii1 = 0; ii1 < str1.length(); ii1++)
-                    F1.write(str1.charAt(ii1));
-                str1 = " ";
-                for (int ii1 = 0; ii1 < str1.length(); ii1++)
-                    F1.write(str1.charAt(ii1));
-
-                str1 = String.valueOf(RUNC);
-                for (int ii1 = 0; ii1 < str1.length(); ii1++)
-                    F1.write(str1.charAt(ii1));
+                str1 = TITLE+" "+RUNC;
+            F1.write( str1.getBytes());
 
             }
 
@@ -689,207 +551,39 @@ public class Reduce_KCL  extends GenericTOF_SAD{
       *    Had to do this so global variables were used in 2nd code
       */
        public Object init(){
-         System.out.println("A");
-        //----------------- Divide by Monitor ------------------------
-        Object Res = (new DataSetDivide_1(RUNSds[1], RUNSds[0], MonitorID[0], true)).getResult();
-
-        if (Res instanceof ErrorString)
-            return new ErrorString("AA1:" + Res.toString());
-        if (Res instanceof String)
-            return new ErrorString("AB" + (String) Res);
-        RelSamp = (DataSet) Res;
-
-        RelSamp.setTitle("Samp to MOnitor");
-   System.out.println("B");
-        Res = (new DataSetDivide_1(RUNCds[1], RUNCds[0], MonitorID[0], true)).getResult();
-        if (Res instanceof ErrorString)
-            return new ErrorString("AB:" + Res.toString());;
-        if (Res instanceof String)
-            return new ErrorString("AC:" + (String) Res);
-        DataSet RelCadmium = (DataSet) Res;
-System.out.println("C");
-        Res = (new DataSetDivide_1(RUNBds[1], RUNBds[0], MonitorID[0], true)).getResult();
-        if (Res instanceof ErrorString)
-            return new ErrorString("AD:" + Res.toString());;
-        if (Res instanceof String)
-            return new ErrorString("AE:" + (String) Res);
-        DataSet RelBackground = (DataSet) Res;
-
-        //---------------- Subtract out Cadmium Run-----------------
-        Res = (new DataSetSubtract(RelSamp, RelCadmium, true)).getResult();
-        if (Res instanceof ErrorString)
-            return new ErrorString("AF:" + Res.toString());;
-        if (Res instanceof String)
-            return new ErrorString("AG:" + (String) Res);
-  
-
-        RelSamp = (DataSet) Res;
-        RelSamp.setTitle("Sample rel Monitor - CAdmium");
-        Res = (new DataSetSubtract(RelBackground, RelCadmium, true)).getResult();
-        if (Res instanceof ErrorString)
-            return new ErrorString("AH:" + Res.toString());;
-        if (Res instanceof String)
-            return new ErrorString("AI:" + (String) Res);
-        RelBackground = (DataSet) Res;
-
-        //----------------- Divide by Transmission ----------------------
-        TransS.setX_units(RelSamp.getX_units());
-        Divide_1( RelSamp, TransS);
-        Res =(new DataSetDivide_1(RelSamp, TransS,TransS.getData_entry(0).getGroup_ID(),true)).getResult();
-        if (Res instanceof ErrorString)
-            return new ErrorString("AJ:" + Res.toString());;
-        if (Res instanceof String)
-            return new ErrorString("AK:" + (String) Res);
-        RelSamp = (DataSet) Res;
-        RelSamp.setTitle("Adj Samp div by Transm");
+        AdjustGrid(RUNSds[1], XOFF, YOFF) ;
+        AdjustGrid(RUNBds[1], XOFF, YOFF) ;
+        UniformGrid SampGrid = SetUpGrid( RUNSds[1]);
+        UniformGrid BackGrid = SetUpGrid( RUNBds[1]);
+        UniformGrid CadGrid = SetUpGrid( RUNCds[1]);
+        UniformGrid SensGrid = SetUpGrid( Sens);
+        Grid_util.setEffectivePositions( RUNSds[1], SampGrid.ID());
+        Grid_util.setEffectivePositions(RUNBds[1], BackGrid.ID());
+        ZeroSens( SensGrid,SampGrid);
+        ErrorString X = CalcRatios( SampGrid,CadGrid,TransS,RUNSds[0],
+               RUNCds[0], SensGrid, Eff, SCALE);
+        X = CalcRatios( BackGrid,CadGrid,TransB,
+               RUNBds[0],RUNCds[0], SensGrid, Eff,SCALE);
+        Object Res = null;
 
         
-        TransB.setX_units(RelBackground.getX_units());
-        Divide_1( RelBackground, TransB);
-        Res = (new DataSetDivide_1(RelBackground,  TransB,TransB.getData_entry(0).getGroup_ID(), true)).getResult();
-        if (Res instanceof ErrorString)
-            return new ErrorString("AL:" + Res.toString());;
-        if (Res instanceof String)
-            return new ErrorString("AM:" + (String) Res);
-        RelBackground = (DataSet) Res;
-
-        // float[] eff = Eff.getData_entry(0).getY_values();
-        //  Divide Sample by sens and efficiency
-        DataSet weight = makeNewSensEffDS(Sens, Eff, xscl, RelSamp, XOFF, YOFF);
-
-        //ScriptUtil.display(weight.clone() );
-        RelSamp.setTitle("XXXXXXXXXXXXXXXx");
-        //ScriptUtil.display( RelSamp.clone());
-
-        //-------------------- Divide by Sens and Eff -------------
-        Res = (new DataSetDivide(RelSamp, weight, true)).getResult();
-        if (Res instanceof ErrorString)
-            return new ErrorString("AL:" + Res.toString());;
-        if (Res instanceof String)
-            return new ErrorString("AM:" + (String) Res);
-        RelSamp = (DataSet) Res;
-
-        Res = (new DataSetDivide(RelBackground, weight, true)).getResult();
-        if (Res instanceof ErrorString)
-            return new ErrorString("AL:" + Res.toString());;
-        if (Res instanceof String)
-            return new ErrorString("AM:" + (String) Res);
-        RelBackground = (DataSet) Res;
-
-        //ScriptUtil.display( RelSamp);
-        //ScriptUtil.display(RelBackground);
-   
-        RelSamp.setTitle("Sample Intensities.corrected -cadmium,eta, trans");
-        RelBackground.setTitle("Backgound Intensities.corrected -cadmium,eta, trans");
-        //ScriptUtil.display( RelSamp.clone());
-        //ScriptUtil.display( RelBackground.clone());
-        //----------------------- After MonGet--------------------
-        //QUE1 is the "xscale" for 1 to N 
-  
-        System.out.println("E");
-        //------------------ Calculate Weight DS -------------------
-        (new DataSetMultiply_1(weight, RUNSds[0], MonitorID[0], false)).getResult();
+        DataSet RelSamp = RUNSds[1];
+        DataSet RelBackground = RUNBds[1];
         
-       System.out.println("F");
-
-        Operator opp = null;
-
-        AdjustGrid(RelSamp, this.XOFF, this.YOFF);
-        AdjustGrid(RelBackground, this.XOFF, this.YOFF);
-        AdjustGrid(weight, this.XOFF, this.YOFF);
-
-        RelSamp.setTitle("After Adj grid in RelSamp in lambda");
-        weight.setTitle("After Adj grid in weight in lambda");
-
-        Res = (new DiffractometerWavelengthToQ(RelSamp, 0f, 100f, 0)).getResult();
-        if (Res instanceof ErrorString)
-            return Res;
-        RelSamp = (DataSet) Res;
-    
-        Res = (new DiffractometerWavelengthToQ(RelBackground, 0f, 100f, 0)).getResult();
-        if (Res instanceof ErrorString)
-            return Res;
-        RelBackground = (DataSet) Res;
-
-        Res = (new DiffractometerWavelengthToQ(weight, 0f, 100f, 0)).getResult();
-        if (Res instanceof ErrorString)
-            return Res;
-        weight = (DataSet) Res;
-
-       
-        RelSamp.setTitle("RelSamp Q0");
-        // ScriptUtil.display( RelSamp.clone());
-    
-      
-        //ScriptUtil.display(RelBackground.clone());
-        //ScriptUtil.display( weight.clone());
-        //if( 3==3) return null;
-   
-        Res = (new DataSetMultiply(RelSamp, weight, false)).getResult();
-        Res = (new DataSetScalarMultiply(RelSamp, SCALE, false)).getResult();
-
-        if (Res instanceof ErrorString)
-            return new ErrorString("AA:" + Res.toString());
-       
-        Res = (new DataSetMultiply(RelBackground, weight, false)).getResult();
-
-        Res = (new DataSetScalarMultiply(RelBackground, SCALE, false)).getResult();
-        if (Res instanceof ErrorString)
-            return new ErrorString("BB:" + Res.toString());
-       
-        RelSamp.setTitle("Weighted Resamp Q for Sample");
-        //ScriptUtil.display( RelSamp.clone());
-        // if( 3==3) return null;
-        //EliminateBadDetectors(RelSamp, Sens);
-        ////EliminateBadDetectors(RelBackground, Sens);
-        EliminateBadDetectors(weight, Sens);
-
-        Res = (new DataSetSubtract(RelSamp, RelBackground, true)).getResult();
-        if (Res instanceof ErrorString)
-            return Res;
-        DataSet RelDiff = (DataSet) Res;
-         
         if (IF2D != 1) {
              
 	    xscl = new VariableXScale(qu);
-           
-            Resample(RelSamp, xscl);
-            Resample(RelBackground, xscl);
-            Resample(weight, xscl);
-            //  EliminateBadDetectors( RelSamp, Sens);
-            // EliminateBadDetectors( RelBackground, Sens);
-            //EliminateBadDetectors( weight, Sens);
-            Res = (new DataSetSubtract(RelSamp, RelBackground, true)).getResult();
-            if (Res instanceof ErrorString)
-                return Res;
-            RelDiff = (DataSet) Res;
-            RelSamp.setTitle("RelSamp Before summing");
-            weight.setTitle("weight Before Summing");
-            DataSet SSampQ = SumAllDetectors(RelSamp);
-            DataSet SBackQ = SumAllDetectors(RelBackground);
-            DataSet SDifQ = SumAllDetectors(RelDiff);
-            DataSet Sweight = SumAllDetectors(weight);
-            SSampQ.setTitle("SampSumQ");
-            //ScriptUtil.display( SSampQ.clone() );
-            Res = (new DataSetDivide(SSampQ, Sweight, false)).getResult();
-            if (Res instanceof ErrorString)
-                return Res;      
-            Res = (new DataSetDivide(SBackQ, Sweight, false)).getResult();
-            if (Res instanceof ErrorString)
-                return Res;      
-            Res = (new DataSetDivide(SDifQ, Sweight, false)).getResult();
-            if (Res instanceof ErrorString)
-                return Res;      
-    
-            SSampQ.setTitle("Neutron Corrected Sample-" + 
-                   StringUtil.toString(SSampQ.getData_entry(0).getAttributeValue(Attribute.RUN_NUM)));
+            
+            DataSet SSampQ = SumQs( SampGrid, xscl, RUNSds[0], SensGrid, Eff);
+            DataSet SBackQ  = SumQs( BackGrid, xscl, RUNSds[0], SensGrid, Eff);
+            DataSet SDifQ = (DataSet)((new DataSetSubtract( SSampQ,SBackQ,true)).getResult());
+            SSampQ.setTitle("Neutron Corrected Sample-" + RUNS);
 
-            SBackQ.setTitle("Neutron Corrected Background-" + 
-                   StringUtil.toString(SBackQ.getData_entry(0).getAttributeValue(Attribute.RUN_NUM)));
+            SBackQ.setTitle("Neutron Corrected Background-" + RUNS);
 
-            SDifQ.setTitle("Neutron Corrected Sample-Background-" + 
-                  StringUtil.toString(SDifQ.getData_entry(0).getAttributeValue(Attribute.RUN_NUM)));
-  
+            SDifQ.setTitle("Neutron Corrected Sample-Background-" + RUNS);
+            SampGrid = BackGrid=SensGrid = null;
+            RelSamp = RelBackground = Sens = Eff=RUNSds[0]=null;
             Vector V = new Vector();
     
             int[] RunNums;
@@ -912,14 +606,16 @@ System.out.println("C");
             V.addElement(SDifQ);
             return V;
         }
+       Res = (new DataSetSubtract(RelSamp, RelBackground, true)).getResult();
+        if (Res instanceof ErrorString)
+            return Res;
+        DataSet RelDiff = (DataSet) Res;
         LLOW = .5*(LAMBDA[0]+  //Change to subrange of times
                LAMBDA[1]);
         PixelInfoList pilistx = ((PixelInfoList)RelSamp.getData_entry(0).
               getAttributeValue( Attribute.PIXEL_INFO_LIST));
         IPixelInfo ipinfx =pilistx.pixel(0);
-        IDataGrid SampGrid=ipinfx.DataGrid();
-        SampGrid.clearData_entries();
-        SampGrid.setData_entries(RelSamp);
+        
         float[] mins = SampGrid.position(1f,1f).get();
         float[] maxs = SampGrid.position( (float) NUMX, (float) NUMY).get();
 
@@ -940,65 +636,74 @@ System.out.println("C");
 	  }
         xDELTAQ = ((Qxmax - Qxmin)/DIVx);
         yDELTAQ =((Qymax - Qymin)/DIVy);
-
-       
-        IDataGrid BackGrid= ((PixelInfoList)(RelBackground.getData_entry(0).
-               getAttributeValue(Attribute.PIXEL_INFO_LIST))).pixel(0).DataGrid();
+        float[][] WTQXQY,SQXQY,SERRXY,BQXQY,BERRXY,SBQXQY, SBERRXY;
+        WTQXQY=sss(DIVx,DIVy);SQXQY=sss(DIVx,DIVy);SERRXY=sss(DIVx,DIVy);
+        BQXQY=sss(DIVx,DIVy);BERRXY=sss(DIVx,DIVy);SBQXQY=sss(DIVx,DIVy); 
+        SBERRXY=sss(DIVx,DIVy);;
+                
         
-        BackGrid.clearData_entries();
-        BackGrid.setData_entries(RelBackground);
-        IDataGrid weightGrid= ((PixelInfoList)(weight.getData_entry(0).
-               getAttributeValue(Attribute.PIXEL_INFO_LIST))).pixel(0).DataGrid();
-        weightGrid.clearData_entries();
-        weightGrid.setData_entries(weight);
+        
 	int nn =0;
+        float[] eff = Eff.getData_entry(0).getY_values();
+        float[] effErr = Eff.getData_entry(0).getErrors();
+        float[] Mon = RUNSds[0].getData_entry(MonitorInd[0]).getY_values();
+        float[] MonErr = RUNSds[0].getData_entry(MonitorInd[0]).getErrors();
+        Data Dback,Dsamp;
+        DetectorPosition detPos ;
+        float[]Qxy,SampYvals,BackYvals,SampErrs,BackErrs,wlvals;
+        float scatAngle,Len,sens,sensErr,lambdaAv,Q,Qx,Qy,DNx,DNy ;
+        int row,col,k,Nx,Ny;
 	for( int i = 0; i< RelSamp.getNum_entries(); i++){
-	   Data Dsamp =RelSamp.getData_entry(i);
-	   IPixelInfo ipx = ((PixelInfoList)(RelSamp.getData_entry(0).
+	   Dsamp =RelSamp.getData_entry(i);
+	   IPixelInfo ipx = ((PixelInfoList)(RelSamp.getData_entry(i).
 	          getAttributeValue(Attribute.PIXEL_INFO_LIST))).pixel(0);
-	   int row = (int)(ipx.row());
-	   int col = (int)(ipx.col());
-	   Data Dback = RelBackground.getData_entry(i);
-                           //BackGrid.getData_entry( row,col);
-	   Data Dweight =weight.getData_entry(i); 
-                       //weightGrid.getData_entry( row,col);
-	   DetectorPosition detPos = ((DetectorPosition)Dsamp.getAttributeValue
+	   row = (int)(ipx.row());
+	   col = (int)(ipx.col());
+	   Dback = RelBackground.getData_entry(i);
+                          
+	   detPos = ((DetectorPosition)Dsamp.getAttributeValue
 	                          ( Attribute.DETECTOR_POS));
-	   float[]Qxy = tof_calc.DiffractometerVecQ( detPos,L1,1000f).
+	   Qxy = tof_calc.DiffractometerVecQ( detPos,L1,1000f).
 	            getCartesianCoords();
-	   float Len = (float)(java.lang.Math.sqrt( Qxy[0]*Qxy[0]+
+	   Len = (float)(java.lang.Math.sqrt( Qxy[0]*Qxy[0]+
 	      Qxy[1]*Qxy[1]+Qxy[2]*Qxy[2]));
 	   Qxy[0] = Qxy[0]/Len; Qxy[1] = Qxy[1]/Len;Qxy[2] = Qxy[2]/Len;
-	   float[] SampYvals = Dsamp.getY_values();
-	   float[] BackYvals = Dback.getY_values();
-	   float[] weightYvals = Dweight.getY_values();
-	   
-	   float[] SampErrs = Dsamp.getErrors();
-	   float[] BackErrs = Dback.getErrors();
-	   float[] weightErrs = Dweight.getErrors();
-	   float[] qvals = Dsamp.getX_scale().getXs();
-	   for( int q =0; q+1 < qvals.length;q++){
-	      int k=q;
-	      float Q = .5f*(qvals[q]+qvals[q+1]);
-	      float Qx = -Q*Qxy[1]; 
-	      float Qy = Q * Qxy[2];
+           scatAngle = detPos.getScatteringAngle();
+
+	   SampYvals = Dsamp.getY_values();
+	   BackYvals = Dback.getY_values();
+           sens = SensGrid.getData_entry( row, col).getY_values()[0];
+           sensErr =SensGrid.getData_entry( row, col).getErrors()[0];	   
+	   SampErrs = Dsamp.getErrors();
+	   BackErrs = Dback.getErrors(); 
+	   wlvals = Dsamp.getX_scale().getXs();
+   
+            
+	   for( int w =0; w+1 < wlvals.length;w++){
+	      k=w;
+	      lambdaAv = .5f*(wlvals[w]+wlvals[w+1]);
+              Q = tof_calc.DiffractometerQofWavelength( scatAngle, lambdaAv); 
+	      Qx = -Q*Qxy[1]; 
+	      Qy = Q * Qxy[2];
              
-              float DNx = ((Qx -Qxmin)/xDELTAQ);
-	      float DNy = ((Qy -Qymin)/xDELTAQ);
-              int Nx=-1, Ny=-1;
+              DNx = ((Qx -Qxmin)/xDELTAQ);
+	      DNy = ((Qy -Qymin)/xDELTAQ);
+              Nx=-1; Ny=-1;
               Nx = (int)java.lang.Math.floor(DNx);
               Ny = (int) java.lang.Math.floor(DNy);
 	      if( Nx >=0)if(Ny>=0)if(Qx <Qxmax)if(Qy<Qymax){
-                WTQXQY[Nx][Ny] = WTQXQY[Nx][Ny] + weightYvals[k];
-                
-                SQXQY[Nx][Ny]=SQXQY[Nx][Ny]+SampYvals[k];
-                BQXQY[Nx][Ny]=BQXQY[Nx][Ny]+BackYvals[k];
+                float W =sens*eff[k]*Mon[k];
+                WTQXQY[Nx][Ny] = WTQXQY[Nx][Ny] + //weightYvals[k];
+                          W;       
+                SQXQY[Nx][Ny]=SQXQY[Nx][Ny]+SampYvals[k]*Mon[k];
+                BQXQY[Nx][Ny]=BQXQY[Nx][Ny]+BackYvals[k]*Mon[k];
                 SBQXQY[Nx][Ny] = SQXQY[Nx][Ny]-BQXQY[Nx][Ny];
- 
+                float U = SampErrs[k]*W;
                 SERRXY[Nx][Ny]=SERRXY[Nx][Ny]+
-                                  (float)Math.pow(SampErrs[k],2);
+                                  (float)Math.pow(U,2.0);
+                U = BackErrs[k]*W;
                 BERRXY[Nx][Ny]=BERRXY[Nx][Ny]+(
-                                 float)Math.pow(BackErrs[k],2);
+                                 float)Math.pow(U,2.0);
                 SBERRXY[Nx][Ny]=BERRXY[Nx][Ny]+SERRXY[Nx][Ny];
 	      }
 	      else{
@@ -1028,210 +733,35 @@ System.out.println("C");
 	      SBERRXY[i][j] = (float)java.lang.Math.sqrt(SBERRXY[i][j])/WTQXQY[i][j];
             }
 	  }
+        WTQXQY = null;
+        eff = effErr= Mon=MonErr = null;
+        Qxy= SampYvals= BackYvals= SampErrs= BackErrs= wlvals= null;
+        Dback = Dsamp = null;
+        System.gc(); 
         Vector  V = new Vector();
-
 	Object O1=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, SQXQY,SERRXY,"s2d19990");
+        SQXQY = null;
+        SERRXY = null;
+        System.gc();
 	Object O2=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, BQXQY,BERRXY,"b2d19990");
+        BQXQY= null;BERRXY= null;
 	Object O3=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, SBQXQY,SBERRXY,"sn2d19990");
+        SBQXQY= null;SBERRXY= null;
+        System.gc();
 	if( O1 instanceof ErrorString)
           return O1;
 	if( O2 instanceof ErrorString)
           return O2;
 	if( O3 instanceof ErrorString)
           return O3;
-
+    
         V.addElement( O1); V.addElement(O2); V.addElement( O3);
+        
         return V;
 
     }//end of getResult
 
-
-    private DataSet convertToLambda(DataSet ds) {
-        DataSetOperator opBackground;
-        Object Result;
-  
-        opBackground = ds.getOperator("Convert to Wavelength");
-        if (opBackground == null)
-            opBackground = ds.getOperator("Monitor to Wavelength");
-        if (opBackground != null) {
-            opBackground.setDefaultParameters();
-            opBackground.getParameter(0).setValue(new Float(-1.0f));
-            opBackground.getParameter(1).setValue(new Float(-1.0f));
-            opBackground.getParameter(2).setValue(new Integer(0));
-            Result = opBackground.getResult();
-            if ((Result  instanceof ErrorString)) {
-                error = ((ErrorString) Result).toString();
-                System.out.println("C:" + error);
-                return  null;
-            }
-            if (Result == null) {
-                error = ("Could not Convert Sample to Llamda");
-                System.out.println("D:" + error);
-                return null;
-            }
-            DataSet ds1 = (DataSet) Result;
-
-            ds1.setTitle(ds.getTitle() + "-lambda and scaled");
-            ds1.setX_units("Angstroms");
-            return ds1;
-        }
-        return null;
-
-    }
-
-    private void Resample(DataSet DS, XScale xscl) {
-        //System.out.println("in void Resample, xscl="+StringUtil.toString( xscl.getXs()));
-        for (int i = 0; i < DS.getNum_entries(); i++)
-            DS.getData_entry(i).resample(xscl, IData.SMOOTH_NONE);
-    }
-
-    /**
-     *    This makes the initial weights data set. If XOFF and YOFF have already
-     *    been applied to RelSamp, use 0'f for these
-     */
-    private DataSet makeNewSensEffDS(DataSet Sens, DataSet Eff, XScale xscl, 
-        DataSet RelSamp, float XOFF, float YOFF) {
-
-        DataSet Res = new DataSet("Sens_Eff_Prod", new OperationLog(), RelSamp.getX_units(),
-                RelSamp.getX_label(), RelSamp.getY_units(), RelSamp.getY_label());
-
-        //DataSetFactory.addOperators( Res);
-        float[] Eff_yvals = Eff.getData_entry(0).getY_values();
-        float[] Eff_errors = Eff.getData_entry(0).getErrors();
-        PixelInfoList pxinflist = (PixelInfoList) (Sens.getData_entry(0).getAttribute(Attribute.PIXEL_INFO_LIST).getValue());
-        IPixelInfo ipinf = pxinflist.pixel(0);
-        IDataGrid Sensgrid = ipinf.DataGrid();
-
-        Sensgrid.setData_entries(Sens);
-        IPixelInfo ipinf1 = ((PixelInfoList) RelSamp.getData_entry(0).getAttributeValue(Attribute.PIXEL_INFO_LIST)).pixel(0);
-        IDataGrid Sampgrid = ipinf1.DataGrid();
-
-        Sampgrid.setData_entries(RelSamp);
-        UniformGrid SensEffgrid = new UniformGrid(77, Sampgrid.units(), Sampgrid.position(),
-                Sampgrid.x_vec(), Sampgrid.y_vec(), Sampgrid.width(), Sampgrid.height(),
-                Sampgrid.depth(), Sensgrid.num_rows(), Sensgrid.num_cols());
-
-        ((UniformGrid)Sampgrid).setDataEntriesInAllGrids(RelSamp);
-        Grid_util.setEffectivePositions(RelSamp, Sampgrid.ID());
-        for (int i = 0; i < Sens.getNum_entries(); i++) {
-    
-            float[] yvals = new float[Eff_yvals.length];
-            float[] errors = new float[Eff_errors.length];
-
-            System.arraycopy(Eff_yvals, 0, yvals, 0, Eff_yvals.length);
-     
-            System.arraycopy(Eff_errors, 0, errors, 0, Eff_errors.length);
-
-            PixelInfoList pilist9 = (PixelInfoList) (Sens.getData_entry(i).getAttributeValue( 
-                        Attribute.PIXEL_INFO_LIST));
-            IPixelInfo pinf9 = pilist9.pixel(0);
-            IDataGrid grid = pinf9.DataGrid();
-    
-            int row = (int) pinf9.row();
-            int col = (int) pinf9.col();
-    
-            float this_sens = Sens.getData_entry(i).getY_values()[0];
-
-            if ((row < Nedge) || (row > grid.num_rows() - Nedge) || (col < Nedge) ||
-                (col > grid.num_cols() - Nedge))
-                this_sens = 0;
-
-                /* float[] pos = Sampgrid.position( row, col).get();
-                 pos[1] -= XOFF;
-                 pos[2] += YOFF;
-                 */
-            Data DD =Sampgrid.getData_entry(row, col);
-            DetectorPosition dp = (DetectorPosition)(DD.getAttributeValue(Attribute.DETECTOR_POS));
-             
-            float[] pos = dp.getCartesianCoords();
-    
-            pos[1] += XOFF;
-            pos[2] -= YOFF;
-
-            float rad = pos[1] * pos[1] + pos[2] * pos[2];
-
-            if ((rad < Radmin * Radmin) || (rad > Radmax * Radmax))
-                this_sens = 0;
- 
-            for (int j = 0; j < Eff_yvals.length; j++) {
-                yvals[j] = yvals[j] * this_sens;
-                errors[j] = errors[j] * this_sens;
-            }
-            int GroupID = Sampgrid.getData_entry(row, col).getGroup_ID();
-            HistogramTable D = new HistogramTable(xscl, yvals, errors, GroupID);
-            DetectorPixelInfo dpi = new DetectorPixelInfo(GroupID, (short) row, (short) col, SensEffgrid);
-            DetectorPixelInfo[] pilist = new DetectorPixelInfo[1];
-
-            pilist[0] = dpi;
-            D.setAttribute(new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST, 
-                    new PixelInfoList(pilist)));
-            Data Dsamp = RelSamp.getData_entry_with_id(GroupID);
-
-            D.setAttribute(Dsamp.getAttribute(Attribute.DETECTOR_POS));
-            Res.addData_entry(D);
-        }
-        return Res;
-
-    }//makeNewSensEffDS
-
-    private void EliminateBadDetectors(DataSet ds, DataSet Sens) {
-        Object Res = (new ClearSelect(Sens)).getResult();
-
-        if (Res instanceof ErrorString)
-            return;
-        StringChoiceList sl1 = new StringChoiceList();
-
-        sl1.setString("Between Max and Min");
-
-        StringChoiceList sl2 = new StringChoiceList();
-
-        sl2.setString("Set Selected");
-        DataSet Sens1 = (DataSet) (Sens.clone());
-
-        Res = (new SelectGroups(Sens1, new AttributeNameString("TOTAL COUNT"), 0f, .0001f,
-                        sl1, sl2)).getResult();
-
-        if (Res instanceof ErrorString)
-            return;
- 
-        int[] selInd = Sens1.getSelectedIndices();
-
-        for (int i = 0; i < selInd.length; i++)
-            ds.setSelectFlag(selInd[i], true);
-        (new ExtractCurrentlySelected(ds, false, false)).getResult();
-  
-    }//EliminateBadDetectors
-
-    private DataSet SumAllDetectors(DataSet ds) {
-  
-        Object Res = (new SumByAttribute(ds, "Group ID", true, 0f, 20f + ds.getNum_entries())).getResult();
-
-        if (Res instanceof ErrorString)
-            return null;
-        ds.clearSelections();
-        System.out.println("End sunAll Det Res class=" + Res.getClass() + "," + Res.toString());
-        return (DataSet) Res;
-
-    }
-
-    public void AdjustGrid1(DataSet ds, float xoff, float yoff) {
-        for (int i = 0; i < ds.getNum_entries(); i++) {
-            Data D = ds.getData_entry(i);
-            float[] Coords = ((DetectorPosition)
-                    D.getAttributeValue(Attribute.DETECTOR_POS)).getCartesianCoords();
-
-            Coords[1] += xoff;
-            Coords[2] -= yoff;
-
-            DetectorPosition pos = new DetectorPosition( 
-                    new Vector3D(Coords));
-
-            D.setAttribute(new DetPosAttribute(Attribute.DETECTOR_POS,
-                    pos));
-
-        }
-    }
-
+   
     public void AdjustGrid(DataSet ds, float xoff, float yoff) { 
 
         int ids[] = Grid_util.getAreaGridIDs(ds);
@@ -1240,7 +770,7 @@ System.out.println("C");
             System.out.println("ERROR: wrong number of data grids " + ids.length);
         IDataGrid grid = Grid_util.getAreaGrid(ds, ids[0]);
 
-        grid.setData_entries(ds);
+        ((UniformGrid)grid).setDataEntriesInAllGrids(ds);
         Vector3D pos = grid.position();
 
         pos.add(new Vector3D(0, xoff, -yoff));
@@ -1249,21 +779,12 @@ System.out.println("C");
         Grid_util.setEffectivePositions(ds, grid.ID());
     }
 
-  private int hasDataGrid( DataSet ds){
-     Object pilist = ds.getData_entry(0).getAttributeValue( Attribute.PIXEL_INFO_LIST);
-     if( pilist == null) return 1;
-     IPixelInfo pinf =((PixelInfoList)pilist).pixel(0);
-     if( pinf == null) return 2;
-     if( pinf.DataGrid() == null) return 3;
-     return 0;
-
-
-  }
 public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
     float[][] list, float[][] err, String DataSetName){
     DataSet DS = new DataSet(DataSetName,new OperationLog(),"per Angstrom",
           "","Rel Counts", "Rel Counts");
     DataSetFactory.addOperators( DS);
+    DS.addOperator( new GetPixelInfo_op() );
     UniformGrid grid = new UniformGrid(47,"per Angstrom",new Vector3D(0f,0f,0f),
             new Vector3D(0f,Dy,0f), new Vector3D(0f,0f,Dx), Dx*Nx,Dy*Ny, 0.0001f,Ny,Nx);
 
@@ -1277,12 +798,14 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
     RunNums[1] = RUNB;
     if( RUNC >0)
        RunNums[2] = RUNC;
+    float[] yvals,errs;
     for(int row = 1; row<= Ny; row++)
       for( int col = 1; col <= Nx; col++){
-       float[] yvals = new float[1];
-       float[] errs = new float[1];
+       yvals = new float[1];
+       errs = new float[1];
        yvals[0] = list[row-1][col-1];
        errs[0] = err[row-1][col-1];
+       if( col == Nx) list[row-1] = null;
        HistogramTable Dat = new HistogramTable( xscl, yvals, errs, (row-1)*Nx+col);
 
        DetectorPixelInfo dpi = new DetectorPixelInfo((row-1)*Nx+col,(short)row,
@@ -1300,12 +823,14 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
     DS.setAttribute( new StringAttribute(Attribute.INST_NAME,"SAND"));
 
     DS.setAttribute( new IntListAttribute(Attribute.RUN_NUM, RunNums));
+    
     grid.setDataEntriesInAllGrids( DS);
    
     Grid_util.setEffectivePositions( DS, 47);
     return DS;
    
     }
+
     public static void main(String[] args) {
 
         IsawGUI.Util util = new IsawGUI.Util();
@@ -1352,6 +877,7 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
         ScriptUtil.display(V.elementAt(0));
         ScriptUtil.display(V.elementAt(1));
         ScriptUtil.display(V.elementAt(2));
+       
 
     }
   private static Vector toVec( float[] list){
@@ -1363,24 +889,301 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
      return Res;
   }
 
- /**
- *    Trans does not have the correct XScale when read from a data file
- */
- private void Divide_1( DataSet DS, DataSet Trans){
-    if( DS == null)
-      return ;
-    Data DTr = Trans.getData_entry(0);
-    Data D = Data.getInstance(DS.getData_entry(0).getX_scale(),DTr.getY_values(),
-              DTr.getErrors(), DTr.getGroup_ID());
-    AttributeList Atlist = DTr.getAttributeList();
-    D.setAttributeList( Atlist);
-    Trans.removeData_entry(0);
-    Trans.addData_entry(D);
-    Trans.setY_units( DS.getY_units());
+ 
+    
+ private DataSet SumQs(UniformGrid SampGrid, XScale xscl, DataSet RunsDs, 
+                 UniformGrid SensGrid, DataSet Effx){
+       float[] Resy = new float[ xscl.getNum_x()-1];
+       float[] ErrSq = new float[ Resy.length];
+       float [] weight = new float[ Resy.length];
+       float sens, sensErr;
+       float[] yvals, errs, xvals, eff,eff1,eff2,effMon;
+       Data D, D1, D2;
+       Arrays.fill( Resy,0.0f);
+       Arrays.fill( ErrSq, 0.0f);
+       Arrays.fill( weight, 0.0f);
+       float[] monit = RunsDs.getData_entry(MonitorInd[0]).getY_values();
+      
+       eff = Eff.getData_entry(0).getY_values();
+       float[] effErr = Eff.getData_entry(0).getErrors();
+       eff2 = new float[ eff.length];
+       for( int i = 0; i< eff.length; i++)
+          eff2[i]= eff[i]*monit[i];
+      
+       boolean done = false;
+       for( int row = 1; row <= SampGrid.num_rows(); row++)
+         for( int col = 1; col <= SampGrid.num_cols(); col++){
+            sens = SensGrid.getData_entry(row, col).getY_values()[0];
+            sensErr = SensGrid.getData_entry(row, col).getErrors()[0];
+            if( sens != 0.0f){
+               D = SampGrid.getData_entry( row, col);
+               xvals = convt_toQ( D);
+               yvals = D.getY_values();
+               errs =  AdjustErrs(D.getErrors(), yvals,eff,effErr, sens,
+                          sensErr, monit) ;
+               for( int i = 0; i< yvals.length; i++)
+                  yvals[i] = yvals[i]*monit[i];
+               yvals =Rebin( yvals,xvals, xscl);
+               errs =Rebin( errs,xvals, xscl);
+               eff1 =Rebin( eff2,xvals, xscl);
+            
+               SqErrors( errs);
+               for( int chan = 0; chan < yvals.length; chan++)
+                 if( eff1[chan] !=0){
+                   Resy[chan] += yvals[chan];
+                   ErrSq[chan] += errs[chan];
+                   weight[chan] += sens*eff1[chan];
+                 }
+               
+            }//sens !=0
+           
+
+       }//for rows and cols
+       for( int i = 0; i< Resy.length;i++)
+           if( weight[i] > 0){
+             Resy[i] = Resy[i]/weight[i];
+             ErrSq[i] = (float)java.lang.Math.sqrt( ErrSq[i])/weight[i];
+           }else
+             Resy[i]=ErrSq[i]=0.0f;
+
+      DataSet Result = new DataSet("S of Q",new OperationLog(),"per Angstrom",
+              "Q","Rel Intensity", "Intensity");  
+      D = new HistogramTable( xscl, (Resy), (ErrSq), 0);
+      Result.addData_entry( D); 
+      return Result; 
+
+  }//SumQs 
+
+  private float[] AdjustErrs( float[] err, float[] yvals, float[] eff, float[] effErr,
+          float sens, float sensErr,float[]monit){
+      for( int i=0; i< err.length; i++){
+       /* float errprod =(float) java.lang.Math.sqrt(effErr[i]*sens*effErr[i]*sens + 
+                       sensErr*eff[i]*sensErr*eff[i]);
+        if( eff[i] == 0) err[i] = 0;
+        else if( sens == 0) err[i] = 0;
+        else if( yvals[i] == 0)
+             err[i]=0;
+       else
+        err[i] =(float) Math.sqrt(err[i]*err[i]/yvals[i]/yvals[i] + 
+            errprod*errprod/eff[i]/eff[i]/sens/sens);
+       */
+        err[i] = err[i]*monit[i]*eff[i]*sens;
+      }               
+      
+     
+      return err;
 
   }
+  private float prodErr( float Fac1, float Fac1Err, float Fac2, float Fac2Err){
+      return (float)Math.sqrt(Fac1*Fac2Err*Fac1*Fac2Err+Fac2*Fac1Err*Fac2*Fac1Err);
+
+  }
+  private float SumDiffErr(  float Term1Err, float Term2Err){
+    return (float)Math.sqrt( Term1Err*Term1Err+Term2Err*Term2Err);
+  }
+ 
+
+ //  Calcs   (S/Ms-C/Mc)/Ts  with errs for That/sens/eff
+ private ErrorString CalcRatios( IDataGrid SampGr, IDataGrid CadmiumGr, 
+           DataSet Transm, DataSet SampMon, DataSet CadmMon, IDataGrid SensGr,
+           DataSet Eff, float SCALE){
+     float[] sampy,samperr,Cadmy,Cadmerr;
+     float[] Transmy = Transm.getData_entry(0).getY_values();
+     float[] SampMony = SampMon.getData_entry(MonitorInd[0]).getY_values();
+     float[]  CadmMony =  CadmMon.getData_entry(MonitorInd[0]).getY_values();
+     float[]  Effy = Eff.getData_entry(0).getY_values();
+     float[] Transmerr = Transm.getData_entry(0).getErrors();
+     float[] SampMonerr = SampMon.getData_entry(MonitorInd[0]).getErrors();
+     float[]  CadmMonerr =  CadmMon.getData_entry(MonitorInd[0]).getErrors();
+     float[]  Efferr = Eff.getData_entry(0).getErrors();
+     Data D;
+     float err1,err2,err3, Num,Den, sens,senserr;
+     int row,col;
+     for( row = 1; row <= SampGr.num_rows(); row++)
+       for( col = 1; col <= SampGr.num_cols(); col++){
+         sens = SensGr.getData_entry( row,col).getY_values()[0];
+         senserr = SensGr.getData_entry( row,col).getErrors()[0];
+          D = SampGr.getData_entry( row,col);
+         sampy = D.getY_values();
+         samperr = D.getErrors();
+         if( sens == 0){
+             Arrays.fill( sampy,0.0f);
+             Arrays.fill( samperr, 0.0f);
+         }else {
+          D = CadmiumGr.getData_entry( row,col);
+         Cadmy = D.getY_values();
+         Cadmerr = D.getErrors();
+         D = null;
+         for( int i=0; i< sampy.length; i++){
+            err1= quoErr(sampy[i],samperr[i],SampMony[i],SampMonerr[i]);
+            
+            err2= quoErr(Cadmy[i],Cadmerr[i],CadmMony[i],CadmMonerr[i]);
+            err3 = SumDiffErr( err1,  err2);
+           
+            Num = sampy[i]/SampMony[i] -Cadmy[i]/CadmMony[i]; 
+            sampy[i] = Num;
+            samperr[i] = quoErr( sampy[i], err3,Transmy[i],Transmerr[i]);
+            sampy[i] =sampy[i]/Transmy[i];
+            
+            samperr[i]= quoErr( sampy[i],samperr[i], sens*Effy[i],
+                     prodErr( sens, senserr, Effy[i], Efferr[i]));
+            sampy[i]= SCALE*sampy[i];
+            samperr[i] = samperr[i]*SCALE;
+
+        }
+       }//else sens ==0
+     }
+    return null;
+ }
+ private float quoErr( float Num, float NumErr, float Den, float DenErr){
+   if( Den ==0){DenErr=0;Den=1;}
+   
+   float V = Num/Den/Den;
+   return (float)Math.sqrt(NumErr*NumErr/Den/Den+ V*V*DenErr*DenErr );
+ }
+  private  static float[]  Reverse(  float[] X){
+        if( X == null)
+          return null;
+        float sav;
+        int n= X.length ;
+        for( int i = 0; i < X.length/2; i++){
+          sav = X[i];
+          X[i] = X[n-1-i];
+          X[n-1-i] = sav;
+        }
+
+       return X;
+
+  }
+  //assumes in wave length
+  private float[] convt_toQ( Data D){
+      float[] Res = D.getX_scale().getXs();
+      float scatAngle =((DetectorPosition) D.getAttributeValue( 
+                    Attribute.DETECTOR_POS)).getScatteringAngle();
+       float a = Res[Res.length-1];
+       for( int i = 0; i< Res.length; i++){
+          Res[i] = tof_calc.DiffractometerQofWavelength( scatAngle, Res[i]);
+
+       }
+      PixelInfoList pilist =(PixelInfoList)(D.getAttributeValue(
+                  Attribute.PIXEL_INFO_LIST));
+      return Res;
+  }
+ 
+  public static float[] Rebin( float[] yvals,float[] xvals, XScale qu){
+    float[] xx= qu.getXs();
+    float[] Res = new float[ xx.length-1];
+    Arrays.fill( Res, 0.0f);
+    int i, j,k;
+    i = xvals.length - 1;
+    //xvals are in reverse order
+    for( j=0; j + 1< xx.length; j++){
+      
+       while( (i-1 >=0) &&( xvals[i-1] < xx[j]) )i--;
+       if( i < 1)
+          return Res;
+       if( xvals[i] < xx[j+1])
+       Res[j] += yvals[i-1]* (java.lang.Math.min( xvals[i-1],xx[j+1])-
+                 java.lang.Math.max( xx[j],xvals[i]))/(xvals[i-1]-xvals[i]);
+       i--;
+       if( i > 0)
+       while( (i >=0)&&( xvals[i] <xx[j+1])){
+         Res[j]+= yvals[i-1]*( java.lang.Math.min( xvals[i-1],xx[j+1])-
+                 java.lang.Math.max( xx[j],xvals[i]))/(xvals[i-1]-xvals[i]);
+         i--;
+       }     
+       if( i < 0) return Res;
+       if( xvals[i] >= xx[j+1]) i++;
+       if( i >= xvals.length) i =xvals.length-1;        
+
+    }
+  
+   return Res;
+
+  }
+ 
+  private UniformGrid SetUpGrid( DataSet DS){
+         int[] Ids= Grid_util.getAreaGridIDs( DS);
+        UniformGrid SampGrid = (UniformGrid)Grid_util.getAreaGrid( DS, Ids[0]);
+        SampGrid.clearData_entries();
+        SampGrid.setData_entries(DS);
+        return SampGrid; 
+      }
+
+  private void SqErrors( float[] errs){
+    if( errs == null) return;
+    for( int i=0; i< errs.length; i++)
+       errs[i]= errs[i]*errs[i];
+  
+   }
+
+  private void ZeroSens( UniformGrid SensGrid, UniformGrid SampGrid){
+
+     for( int row = 1; row <= SensGrid.num_rows(); row++)
+        for( int col = 1; col <= SensGrid.num_cols(); col++){
+            boolean Z = false;
+            if ((row < Nedge) || (row > SensGrid.num_rows() - Nedge) || (col < Nedge) ||
+                (col > SensGrid.num_cols() - Nedge))
+               Z = true;    
+
+            Data DD =SampGrid.getData_entry(row, col);
+            DetectorPosition dp = (DetectorPosition)(DD.getAttributeValue(Attribute.DETECTOR_POS));
+             
+            float[] pos = dp.getCartesianCoords();
     
 
-  
+            float rad = pos[1] * pos[1] + pos[2] * pos[2];
+            if ((rad < Radmin * Radmin) || (rad > Radmax * Radmax))
+                Z = true;
+            if( Z)
+               SensGrid.getData_entry(row,col).getY_values()[0]= 0.0f;
+   }
+  }
+  private float[][] sss( int nrows, int ncols){
+
+    float[][]Res = new float[nrows][ncols];
+
+    for( int i=0; i< nrows; i++)
+      Arrays.fill(Res[i],0.0f);
+    return Res;
+  }
+  public static float[] cnvertToWL( float[] x, XAxisConversionOp op, int DataIndex){
+      for(int i= 0; i< x.length; i++)
+        x[i]= op.convert_X_Value(x[i], DataIndex);
+      return x;
+  }
+  /**
+  *     This method is "memory efficient".  Since all have a common XScale there
+  *     is little extra space
+  */
+  public static DataSet ConvertToWL( DataSet ds, XScale wlScale){
+   
+    XAxisConversionOp op =(XAxisConversionOp)( ds.getOperator("Convert to Wavelength"));
+   
+    if( op == null)
+      op =(XAxisConversionOp)( ds.getOperator("Monitor to Wavelength"));
+    Data D, D1;
+    for( int i = 0; i< ds.getNum_entries(); i++){
+      D = ds.getData_entry(i);
+      float[] xvals = D.getX_scale().getXs();
+      float[] yvals = D.getY_values();
+      float[] errs = D.getErrors();
+      AttributeList alist = D.getAttributeList();
+      xvals = cnvertToWL( xvals, op, i);
+      if( xvals[0] > xvals[1]){
+        Reverse(xvals);
+        Reverse(yvals);
+        Reverse(errs);
+      }
+     D1= Data.getInstance(new VariableXScale( xvals), yvals,errs, D.getGroup_ID());
+     D1.setAttributeList( alist);
+     D1.resample( wlScale, IData.SMOOTH_NONE);
+     ds.replaceData_entry( D1, i);
+
+    }
+   ds.setX_units("Angstrom");
+   ds.setX_label("WaveLength");
+   return ds;
+ }
 }
 
