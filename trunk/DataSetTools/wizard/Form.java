@@ -1,7 +1,7 @@
 /*
  * File:  Form.java
  *
- * Copyright (C) 2002, Dennis Mikkelson
+ * Copyright (C) 2003 Chris Bouzek
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,18 +18,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Chris Bouzek <coldfusion78@yahoo.com>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ * This work was supported by the National Science Foundation under
+ * grant number
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/04/24 18:55:32  pfpeterson
+ * Added functionality to save Wizards plus code cleanup. (Chris Bouzek)
+ *
  * Revision 1.9  2003/04/02 14:54:49  pfpeterson
  * Major reworking to reflect that Form now subclasses Operator. (Chris Bouzek)
  *
@@ -78,17 +84,15 @@
 
 package DataSetTools.wizard;
 
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
 import javax.swing.*;
 import javax.swing.border.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.GridLayout;
 import java.beans.*;
 import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
-import DataSetTools.util.*;
-import DataSetTools.components.ParametersGUI.*;
+import DataSetTools.util.PropertyChanger;
 
 /**
  *  The Form class is controls one operation of the sequence of operations
@@ -109,13 +113,8 @@ import DataSetTools.components.ParametersGUI.*;
 public abstract class Form extends Operator implements Serializable{
   private final boolean DEBUG=false;
 
-  protected  Wizard    wizard;              // the Wizard using this form
-  protected  JPanel    panel;               // panel that the Wizard will draw
+  protected JPanel    panel;               // panel that the Wizard will draw
   
-  /*protected  int    const_params[];
-    protected  int    editable_params[];
-    protected  int    result_params[];*/
-
   private static final String CONS_FRAME_HEAD = "CONSTANT PARAMETERS";
   private static final String VAR_FRAME_HEAD  = "USER SPECIFIED PARAMETERS";
   private static final String RES_FRAME_HEAD  = "RESULTS";
@@ -140,12 +139,10 @@ public abstract class Form extends Operator implements Serializable{
    */
   public Form( String title )
   {
-    super(title);   
-    
+    super(title);
     panel = null;
     this.param_ref=null;
-    this.setDefaultParameters();
-
+    setDefaultParameters();
   } 
 
   /* ---------------------------- addParameter ---------------------------- */
@@ -220,7 +217,6 @@ public abstract class Form extends Operator implements Serializable{
       if(DEBUG) box.setBackground(Color.red);
       prepGUI(box);
       JPanel sub_panel;
-
       for(int i = 0; i < param_ref.length; i++)
       {
         if(param_ref[i]!=null && param_ref[i].length > 0){
@@ -289,6 +285,14 @@ public abstract class Form extends Operator implements Serializable{
   }
 
   /**
+   *  Returns the array of indices for the variable parameters.
+   */
+  public final int[] getVarParamIndices()
+  {
+    return this.getParamType(VAR_PARAM);
+  }
+
+  /**
    *  This builds the portions of the default form panel that contain a
    *  list of parameters inside of a panel with a titled border.  It is
    *  used to build up to three portions, corresponding to the constant,
@@ -306,10 +310,9 @@ public abstract class Form extends Operator implements Serializable{
     JPanel       sub_panel = new JPanel();
     TitledBorder border;
     border = new TitledBorder(LineBorder.createBlackLineBorder(), title);
-    border.setTitleFont( FontUtil.BORDER_FONT );
+    //border.setTitleFont( FontUtil.BORDER_FONT );
     sub_panel.setBorder( border );
     sub_panel.setLayout( new GridLayout( num.length, 1 ) );
-    //sub_panel.setLayout( new BoxLayout( sub_panel,BoxLayout.Y_AXIS ) );
     for ( int i = 0; i < num.length; i++ ){
         IParameterGUI param = (IParameterGUI)getParameter(num[i]);
         param.init();
