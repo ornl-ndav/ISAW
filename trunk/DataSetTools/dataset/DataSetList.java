@@ -30,6 +30,9 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.5  2004/01/22 02:19:05  bouzekc
+  *  Removed unused imports and local variables.
+  *
   *  Revision 1.4  2003/10/15 23:50:12  dennis
   *  Fixed javadocs to build cleanly with jdk 1.4.2
   *
@@ -51,7 +54,6 @@ import DataSetTools.util.StringUtil;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
-import java.lang.*;
 
 /**
 * A utility class that deals with the list of Data in a DataSet
