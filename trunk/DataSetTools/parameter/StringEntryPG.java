@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/08/21 21:45:18  bouzekc
+ *  Added javadoc comments.
+ *
  *  Revision 1.7  2003/08/15 23:56:21  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI.
  *
@@ -80,11 +83,25 @@ public abstract class StringEntryPG extends ParameterGUI {
   protected StringFilterer FILTER     = null;
 
   // ********** Constructors **********
+  /**
+   * Creates a StringEntryPG with the specified name and value.  Does NOT draw
+   * the "valid" checkbox.
+   *
+   * @param name The name of this StringEntryPG.
+   * @param value The value of this StringEntryPG.
+   */
   public StringEntryPG( String name, Object value ) {
     this( name, value, false );
     this.setDrawValid( false );
   }
 
+  /**
+   * Creates a StringEntryPG with the specified name, value and validity.
+   *
+   * @param name The name of this StringEntryPG.
+   * @param value The value of this StringEntryPG.
+   * @param valid Whether or not this StringEntryPG should be valid.
+   */
   public StringEntryPG( String name, Object value, boolean valid ) {
     this.setName( name );
     this.setValue( value );
@@ -103,6 +120,8 @@ public abstract class StringEntryPG extends ParameterGUI {
    * object specific parameters will return appropriate
    * objects. There can also be a 'fast access' method which returns
    * a specific object (such as String or DataSet) without casting.
+   *
+   * @return The value of this ParameterGUI.
    */
   public Object getValue(  ) {
     Object value = null;
@@ -118,6 +137,8 @@ public abstract class StringEntryPG extends ParameterGUI {
 
   /**
    * Sets the value of the parameter.
+   *
+   * @param value The new value.
    */
   protected void setEntryValue( Object value ) {
     if( this.initialized ) {
@@ -152,6 +173,8 @@ public abstract class StringEntryPG extends ParameterGUI {
 
   /**
    * Allows for initialization of the GUI after instantiation.
+   * 
+   * @param init_values The initial values to use.
    */
   public void initGUI( Vector init_values ) {
     if( this.initialized ) {
@@ -181,6 +204,8 @@ public abstract class StringEntryPG extends ParameterGUI {
   /**
    * Set the enabled state of the EntryWidget. This produces a more
    * pleasant effect than the default setEnabled of the widget.
+   *
+   * @param enabled Whether or not this StringEntryPG should be enabled.
    */
   public void setEnabled( boolean enabled ) {
     this.enabled = enabled;
