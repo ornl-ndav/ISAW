@@ -49,6 +49,7 @@ public class JScriptParameterDialog implements Serializable
     public JScriptParameterDialog(Vector V, DataSet[] DS ) //DataSetOperator op, JTreeUI jtui)
     {
         this.V = V;
+        if( this.V == null ) V = new Vector();
         opDialog = new JDialog(new JFrame(), "Data Entry" ,true);
         opDialog.setSize(700,460);
         opDialog.getContentPane().add(new JLabel( (String)(V.firstElement() ) ));
@@ -66,6 +67,7 @@ public class JScriptParameterDialog implements Serializable
 
  
 	    int num_param = V.size() - 1 ;
+	 
         opDialog.getContentPane().setLayout(new GridLayout(num_param+5,1));
         Parameter param;
         JParameterGUI paramGUI;
@@ -75,8 +77,10 @@ public class JScriptParameterDialog implements Serializable
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
             
             param =((JParameterGUI)( V.get(i+1))).getParameter();
-	  
-            if (param.getValue() instanceof Float)
+	   
+            if( param.getValue() == null )
+                 paramGUI = new JObjectParameterGUI(param);
+            else if (param.getValue() instanceof Float)
                 paramGUI = new JFloatParameterGUI(param);
             else if(param.getValue() instanceof Integer)
                 paramGUI = new JIntegerParameterGUI(param);
@@ -86,11 +90,42 @@ public class JScriptParameterDialog implements Serializable
                 paramGUI = new JStringParameterGUI(param);
            
            else if(param.getValue() instanceof DataSet)
-	        paramGUI = new JlocDataSetParameterGUI(param , DS );  
+	        paramGUI = new JlocDataSetParameterGUI(param , DS );    
+          
                  
+            else if( param.getValue() instanceof DataDirectoryString )
+             { String DirPath = System.getProperty("DataDirectory");
+               if( DirPath != null )
+                   DirPath = DataSetTools.util.StringUtil.fixSeparator(DirPath+"\\");
+               else
+                   DirPath = "";
+               param.setValue( DirPath );
+               paramGUI = new JStringParameterGUI( param) ;
+              }
+          else if (param.getValue() instanceof DSFieldString)
+            {String Fields[] = {"Title","X_label", "X_units","PointedAtIndex","SelectFlagOn",
+                       "SelectFlagOff","SelectFlag","Y_label","Y_units","MaxGroupID",
+                        "MaxXSteps","MostRecentlySelectedIndex","NumSelected" , "XRange",
+                       "YRange"};
+             AttributeList A = new AttributeList();
+            // Attribute A1;
+             for( int k =0; k< Fields.length; k++)
+              {
+                    A.addAttribute( new StringAttribute( Fields[i] , ""));
+              }
+
+             paramGUI =  new JAttributeNameParameterGUI(param  , A);
+            }
+          else if( param.getValue() instanceof InstrumentNameString)
+            {String XX = System.getProperty("DefaultInstrument");
+             if( XX == null )
+               XX = "";
+            param.setValue(XX);
+            paramGUI= new JStringParameterGUI( param);
+            }    
             else
             {
-                System.out.println("Unsupported Parameter in JParamatersDialog");
+                System.out.println("Unsupported Parameter in JParamatersDialog"+param.getValue().getClass());
                 return ;
             }
                
