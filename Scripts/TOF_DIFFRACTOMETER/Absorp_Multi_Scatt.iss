@@ -64,7 +64,7 @@ Display "Ratio = "&Ratio
   b_dsi = TimeFocusGID(bds[1],id_val[0],focus_val[0],1.5,true)
   b_dsa = SumAtt(b_dsi, "Effective Position",true, focus_val[0]-.000005,focus_val[0]+.000005)
   y0 = m_dsa - Ratio*b_dsa
-  van0 = Absorp_MultScatt_Correction(y0,focus_val[0], rod_radius)
+  van0 = Abs_MScatt_Correct(y0,focus_val[0], rod_radius)
 
   for j in [1:4]
       dsi = TimeFocusGID(vds[1],id_val[j],focus_val[j],1.5,true)
@@ -72,20 +72,21 @@ Display "Ratio = "&Ratio
       bdsi = TimeFocusGID(bds[1],id_val[j],focus_val[j],1.5,true)
       bdsa = SumAtt(bdsi, "Effective Position",true, focus_val[j]-0.5,focus_val[j]+0.5)
       y1 = dsa - Ratio*bdsa
-      van1 = Absorp_MultScatt_Correction(y1,focus_val[j], rod_radius)
+      van1 = Abs_MScatt_Correct(y1,focus_val[j], rod_radius)
      van0 =Merge(van0,van1)  
   endfor
     SaveGSAS( vds[0], van0, filepath&inst&vfile&".gda",false,true)
  else
 
   y0 = vds[1] - Ratio*bds[1]
-  van0 = Absorp_MultScatt_Correction(y0,focus_val[0], rod_radius)
+  van0 = Abs_MScatt_Correct(y0,focus_val[0], rod_radius)
   for j in [1:4]
-   van_ds = Absorp_MultScatt_Correction(y0,focus_val[j], rod_radius)
+   van_ds = Abs_MScatt_Correct(y0,focus_val[j], rod_radius)
    van0 = Merge(van0,van_ds)
   endfor
    SaveGSAS(vds[0],van0,filepath&inst&vfile&".gda",false,true)
  endif
+
 
 
 
