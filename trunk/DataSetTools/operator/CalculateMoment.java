@@ -1,7 +1,5 @@
 /*
- * @(#)CalculateMoment.java   0.2  99/07/27   Dennis Mikkelson
- *                                 99/08/16   Added constructor to allow 
- *                                            calling operator directly
+ * @(#)CalculateMoment.java   0.1  99/07/27   Dennis Mikkelson
  *             
  * This operator calculates a specified moment of a selected Data block over 
  * a specified inteval and returns a single real value.
@@ -17,26 +15,17 @@ import  DataSetTools.math.*;
 
 /**
   *  Calculate the specified moment of the selected Data block over the  
-  *  sppecified inteval. This operator calculates the integral of the data 
-  *  values times a power of x.  The Group ID of the data block to be
-  *  integrated is specified by the parameter "Group ID".  The power of x is 
-  *  specified by the parameter "Moment".  The interval [a,b] over which the 
-  *  integration is done is specified by the two endpoints a, b where it is 
-  *  assumed that a < b.
+  *  sppecified inteval. 
   */
 
 public class  CalculateMoment  extends    DataSetOperator 
                                implements Serializable
 {
-  /* ----------------------- DEFAULT CONSTRUCTOR -------------------------- */
-  /**
-   * Construct an operator with a default parameter list.  If this
-   * constructor is used, the operator must be subsequently added to the
-   * list of operators of a particular DataSet.  Also, meaningful values for
-   * the parameters should be set ( using a GUI ) before calling getResult()
-   * to apply the operator to the DataSet this operator was added to.
-   */
+  /* --------------------------- CONSTRUCTOR ------------------------------ */
 
+                                     // The constructor calls the super
+                                     // class constructor, then sets up the
+                                     // list of parameters.
   public CalculateMoment( )
   {
     super( "Calculate Moment" );
@@ -52,50 +41,6 @@ public class  CalculateMoment  extends    DataSetOperator
 
     parameter = new Parameter("Moment ( 1, 2, 3 ... )", new Integer(1));
     addParameter( parameter );
-  }
-
-  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
-  /**
-   *  Construct an operator for a specified DataSet and with the specified
-   *  parameter values so that the operation can be invoked immediately 
-   *  by calling getResult()
-   *
-   *  @param  ds          The DataSet to which the operation is applied
-   *  @param  group_id    The id of the group for which the moment is to be
-   *                      calculated 
-   *                      which the moment is to be calculated.
-   *  @param  a           The left hand endpoint of the interval [a, b] over
-   *                      which the moment is to be calculated.
-   *  @param  b           The right hand endpoint of the interval [a, b] over
-   *                      which the moment is to be calculated.
-   *                      from the data set.
-   *  @parm   moment      The moment to be calculated.
-   */
-
-  public CalculateMoment( DataSet             ds,
-                          int                 group_id,
-                          float               a,
-                          float               b,
-                          int                 moment   )
-  {
-    this();                         // do the default constructor, then set
-                                    // the parameter value(s) by altering a
-                                    // reference to each of the parameters
-
-    Parameter parameter = getParameter( 0 );
-    parameter.setValue( new Integer( group_id ) );
-
-    parameter = getParameter( 1 );
-    parameter.setValue( new Float( a ) );
-
-    parameter = getParameter( 2 );
-    parameter.setValue( new Float( b ) );
-
-    parameter = getParameter( 3 );
-    parameter.setValue( new Integer( moment ) );
-
-    setDataSet( ds );               // record reference to the DataSet that
-                                    // this operator should operate on
   }
 
 
@@ -138,8 +83,8 @@ public class  CalculateMoment  extends    DataSetOperator
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current CalculateMoment Operator.  The list of 
-   * parameters and the reference to the DataSet to which it applies are 
+   * Get a copy of the current CalculateMoment Operator.  The list of
+   * parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
   public Object clone()
@@ -151,6 +96,7 @@ public class  CalculateMoment  extends    DataSetOperator
 
     return new_op;
   }
+
 
 
 }

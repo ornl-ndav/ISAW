@@ -66,7 +66,7 @@ public class DiffractometerTofToWavelength extends    DataSetOperator
     // #### must take care of the operation log... this starts with it empty
     DataSet new_ds = factory.getDataSet(); 
     new_ds.copyOp_log( ds );
-    new_ds.addLog_entry( "Converted to Wavelength" );
+    //new_ds.addLog_entry( "Converted to Wavelength" );
 
     // copy the attributes of the original data set
     new_ds.getAttributeList().addAttributes( ds.getAttributeList() );
@@ -89,7 +89,7 @@ public class DiffractometerTofToWavelength extends    DataSetOperator
       new_wl_scale = null;
     else
       new_wl_scale = new UniformXScale( min_wl, max_wl, num_wl );  
-
+new_ds.addLog_entry( "Converted to Wavelength in the range" +" "+ min_wl +" "+ "to" +" "+ max_wl);
                                             // now proceed with the operation 
                                             // on each data block in DataSet 
     Data             data,
