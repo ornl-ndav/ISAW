@@ -2,6 +2,9 @@
  * @(#)AnalyzeOp.java     1.0  2000/11/08  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/03/01 20:55:05  dennis
+ *  Fixed naming errors in @see comments.
+ *
  *  Revision 1.1  2000/11/10 23:01:10  dennis
  *  New abstract base class for operators.  Allows automatic
  *  generation of hierarchical menus using operator categories.
@@ -17,7 +20,7 @@ import java.io.*;
  * Base class for DataSetOperators that operate on a DataSet using
  * numerical analyis operations such as IntegrateGroup 
  *
- * @see DS_MATH 
+ * @see DS_Math 
  * @see IntegrateGroup 
  *
  */

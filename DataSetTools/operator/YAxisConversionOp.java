@@ -2,6 +2,9 @@
  * @(#)YAxisConversionOp.java     1.0  2000/11/08  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/03/01 20:53:55  dennis
+ *  Fixed naming errors in @see comments.
+ *
  *  Revision 1.1  2000/11/10 23:10:34  dennis
  *  New abstract base class for operators.  Allows automatic
  *  generation of hierarchical menus using operator categories.
@@ -16,7 +19,7 @@ import java.io.*;
 /**
  * Base class for DataSetOperators that convert the Y axis to different units.
  *
- * @see Conversion 
+ * @see DS_Conversion 
  * @see TrueAngle 
  *
  */
