@@ -28,6 +28,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2004/04/08 15:18:09  dennis
+ * Now uses "new" DataSetPGs consistently and calls clear() after getting the
+ * value from the DataSetPG, to avoid memory leaks.
+ * Replaced all parameters with new ParameterGUI's for consistency.
+ *
  * Revision 1.11  2004/03/15 19:33:54  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -147,17 +152,17 @@ public class EfficiencyRatio extends GenericTOF_SAD
   {
     this(); 
     parameters = new Vector();
-    addParameter( new Parameter("Cadmium Mask Histogram", ds) );
-    addParameter( new Parameter("Cadmium Mask Monitor", mon_ds) );
-    addParameter( new Parameter("Detector Sensitivities", sens_ds) );
-    addParameter( new Parameter("X(cm) offset of beam", new Float(x_center)));
-    addParameter( new Parameter("Y(cm) offset of beam", new Float(y_center)));
-    addParameter( new Parameter("Radius to use", new Float(radius)));
-    addParameter( new Parameter("Delayed Neutron Fraction", 
+    addParameter( new SampleDataSetPG("Cadmium Mask Histogram", ds) );
+    addParameter( new MonitorDataSetPG("Cadmium Mask Monitor", mon_ds) );
+    addParameter( new DataSetPG("Detector Sensitivities", sens_ds) );
+    addParameter( new FloatPG("X(cm) offset of beam", new Float(x_center)));
+    addParameter( new FloatPG("Y(cm) offset of beam", new Float(y_center)));
+    addParameter( new FloatPG("Radius to use", new Float(radius)));
+    addParameter( new FloatPG("Delayed Neutron Fraction", 
                                  new Float(dn_fraction)) );
   }
 
-  
+
   /* --------------------------- getCommand ------------------------------- */ 
   /** 
    * Get the name of this operator to use in scripts
@@ -289,8 +294,14 @@ public class EfficiencyRatio extends GenericTOF_SAD
     final int   MONITOR_ID = 1;
 
     DataSet ds         = (DataSet)(getParameter(0).getValue());
+    ((DataSetPG)getParameter(0)).clear();
+
     DataSet mon_ds     = (DataSet)(getParameter(1).getValue());
+    ((DataSetPG)getParameter(1)).clear();
+
     DataSet sens_ds    = (DataSet)(getParameter(2).getValue());
+    ((DataSetPG)getParameter(2)).clear();
+
     float   x_offset   = ((Float)(getParameter(3).getValue())).floatValue();
     float   y_offset   = ((Float)(getParameter(4).getValue())).floatValue();
     float   radius     = ((Float)(getParameter(5).getValue())).floatValue();

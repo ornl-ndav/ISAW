@@ -1,4 +1,3 @@
-
 /*
  * File:  CalcTransmission.java 
  *             
@@ -32,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/04/08 15:18:08  dennis
+ * Now uses "new" DataSetPGs consistently and calls clear() after getting the
+ * value from the DataSetPG, to avoid memory leaks.
+ * Replaced all parameters with new ParameterGUI's for consistency.
+ *
  * Revision 1.11  2004/03/15 03:28:35  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -132,11 +136,7 @@ public class CalcTransmission extends GenericTOF_SAD {
      addParameter( new IntegerPG( "Polyfit indx 1", polyfitIndx1) );
      addParameter( new IntegerPG( "Polyfit indx 2", polyfitIndx2) );
      addParameter( new IntegerPG( "Polynomial degree 1", degree) );
-
      addParameter( new BooleanPG("Use 1/sqrty weights", weight));
-
-
-
   } 
 
   /**
@@ -153,9 +153,7 @@ public class CalcTransmission extends GenericTOF_SAD {
      addParameter( new IntegerPG( "Polyfit indx 1", -1) );
      addParameter( new IntegerPG( "Polyfit indx 2", -1) );
      addParameter( new IntegerPG( "Polynomial degree 1", -1) );
-
      addParameter( new BooleanPG("Use 1/sqrt y weights", false));
-
   }
 
   /**
@@ -174,9 +172,17 @@ public class CalcTransmission extends GenericTOF_SAD {
      log = new StringBuffer(1000);
      DataSet Sample = (DataSet)((MonitorDataSetPG)getParameter(0)).
                               getDataSetValue();
+     ((DataSetPG)getParameter(0)).clear();
+
      DataSet Empty = ((DataSetPG)getParameter(1)).getDataSetValue();
+     ((DataSetPG)getParameter(1)).clear();
+
      DataSet Cadmium = ((DataSetPG)getParameter(2)).getDataSetValue();
-     DataSet SampleDs =((SampleDataSetPG)getParameter(3)).getDataSetValue();
+     ((DataSetPG)getParameter(2)).clear();
+
+     DataSet SampleDs = ((SampleDataSetPG)getParameter(3)).getDataSetValue();
+     ((DataSetPG)getParameter(3)).clear();
+
      boolean useCadmium = ((Boolean)(getParameter(4).getValue())).booleanValue();
      float NeutronDelay =((FloatPG)getParameter(5)).getfloatValue();
      int polyfitIndx1=((IntegerPG)getParameter(6)).getintValue();
@@ -275,9 +281,7 @@ public class CalcTransmission extends GenericTOF_SAD {
            return new ErrorString( "Could not Convert Cadmium to Llamda");
         Cadmium = (DataSet) Result;
         Cadmium.setTitle("Cadmium-lambda and scaled");
-
       }
-
   
  
   // Resample the monitor's time channels to agree with the SampleDS's XScale
@@ -309,8 +313,6 @@ public class CalcTransmission extends GenericTOF_SAD {
       if( Cadmium != null)
          Cadmium.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
       
-     
-
      ReportToLog1( Sample,Monitor0,Monitor1);
      ReportToLog2( Sample,Monitor0,Monitor1);
 
@@ -325,7 +327,6 @@ public class CalcTransmission extends GenericTOF_SAD {
      DataSet RelCadmium = null;
      Object Res = null;
     
-     
      if(useCadmium){
        Res = ((new DataSetDivide_1( Cadmium, Cadmium, CadMonitor0GroupID, true)).getResult());
        if( Res instanceof ErrorString)
@@ -342,7 +343,6 @@ public class CalcTransmission extends GenericTOF_SAD {
      if( Res instanceof String)
           return new ErrorString( (String)Res);
      RelSamp = (DataSet) Res;
-
       
      
      DataSet RelEmpty;
@@ -448,9 +448,6 @@ public class CalcTransmission extends GenericTOF_SAD {
     }
     System.out.println( log.toString());
     return tr;
-    
-     
-    
   }
 
  //  Returns the Largest Run Number
@@ -478,7 +475,6 @@ public class CalcTransmission extends GenericTOF_SAD {
     
     tof_data_calc.SubtractDelayedNeutrons(
             (TabulatedData) Sample.getData_entry(2),30f, delay);
-
   }
 
   private void setErrors( DataSet D){
@@ -488,10 +484,9 @@ public class CalcTransmission extends GenericTOF_SAD {
       Data db = D.getData_entry(i);
       if( db.getErrors() == null)
          db.setSqrtErrors( true );
-
     }
-
   }
+
   public String getDocumentation(){
       StringBuffer Res = new StringBuffer();
       Res.append( "@overview - This class creates a transmission data set in");
@@ -534,9 +529,8 @@ public class CalcTransmission extends GenericTOF_SAD {
       Res.append( "  is 3. There has to be three monitors included in each ");
       Res.append("    histogram data set");
       return Res.toString();
-
-  
   }
+
   //Gives widths of time bins
 
   private void ReportToLog1( DataSet ds, int Mon0, int Mon1){
@@ -561,12 +555,9 @@ public class CalcTransmission extends GenericTOF_SAD {
         log.append("\n");
      }
     log.append("\n\n");
-
-
   }
 
   private void ReportToLog2( DataSet ds, int Mon0, int Mon1){
-
    
     log.append("***********************************************\n");
     log.append(" LAMBDA    M1-pancake-sample   M2trans-BSMon-sample\n");
@@ -591,6 +582,7 @@ public class CalcTransmission extends GenericTOF_SAD {
   private double getTotCount( Data Db){
    return ((Float) (Db.getAttribute( Attribute.TOTAL_COUNT).getValue())).doubleValue();
   }
+
   private void ReportToLog3(DataSet Sample,DataSet Empty, DataSet Cadmium,
               int Mon0, int Mon1){
       int Mon3 =0;
@@ -615,15 +607,12 @@ public class CalcTransmission extends GenericTOF_SAD {
           if( Mon0 == Mon3) Mon3++;
           
           if( Mon1 == Mon3) Mon3++;
-        
-
        }
       log.append("         UPSTREAM MON      Beamstop MON             PROTONS\n");
       log.append(" SAMPLE  = "+Format.integer(getTotCount(Sample.getData_entry(Mon0)),10));
       log.append( Format.integer(getTotCount(Sample.getData_entry(Mon1)),20));
       
       log.append( Format.integer(getTotCount(Sample.getData_entry(1)),20)+"\n");
-
 
       log.append(" EMPTY   = "+Format.integer(getTotCount(Empty.getData_entry(Mon0)),10));
       log.append( Format.integer(getTotCount(Empty.getData_entry(Mon1)),20));
@@ -636,9 +625,8 @@ public class CalcTransmission extends GenericTOF_SAD {
       log.append( Format.integer(getTotCount(Cadmium.getData_entry(Mon1)),20));
       
       log.append( Format.integer(getTotCount(Cadmium.getData_entry(1)),20)+"\n");
-      
-
   }
+
   private float[] cvrtToTime( float[] lvals1, float initialPath, Data db){
     DetectorPosition dp =(DetectorPosition)
                   db.getAttributeValue(Attribute.DETECTOR_POS);
@@ -647,8 +635,8 @@ public class CalcTransmission extends GenericTOF_SAD {
     for( int i = 0; i< xvals.length; i++)
       xvals[i] = tof_calc.TOFofWavelength( L2+initialPath, lvals1[i]);
     return xvals;
-    
   }
+
  public static int[] setMonitorInd( DataSet ds){
     int[] Res = new int[2];
     Res[0] = 0;
@@ -664,11 +652,9 @@ public class CalcTransmission extends GenericTOF_SAD {
            return Res;
          }
      }
-    
       
     return null;
-    }//setMonitorInd
-
+ }//setMonitorInd
  
 
 }//CalcTransmisson
