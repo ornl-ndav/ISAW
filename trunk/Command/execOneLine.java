@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.66  2003/12/09 14:41:14  rmikk
+ * fixed javadoc warnings
+ *
  * Revision 1.65  2003/12/02 18:58:34  rmikk
  * Fixed incompatibility error with DataSetPG.
  *
@@ -2386,7 +2389,8 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * Can be used by other parsers. Use the getResult() method to
      * determine the value
      *
-     * @param LeftValue, RightValue the two objects to be operated on
+     * @param LeftValue   The left operand
+     * @param RightValue the right operand
      * @param operation +,-,*, or /
      *
      * NOTE: The data types will converted if possible and the
@@ -3844,7 +3848,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
    
 
     /** 
-     * @param obs The Iobserver who wants to be notified of a new data
+     * @param iobs The Iobserver who wants to be notified of a new data
      * set.
      */
     public void addIObserver( IObserver iobs ){
@@ -3892,7 +3896,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     /** 
      * @param listener The listener who wants to be notified of a non
      * Data Set "Display" value
-     * @param PropertyName Must be Display
+     * @param propertyName Must be Display
      */
      public void addPropertyChangeListener( String propertyName,
                                             PropertyChangeListener listener){
@@ -3902,7 +3906,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     /** 
      * @param listener The listener who no longer wants to be notified
      * of a non Data Set "Display" value
-     * @param PropertyName Must be Display
+     * @param propertyName Must be Display
      */
      public void removePropertyChangeListener( String propertyName,
                                                PropertyChangeListener listener){
