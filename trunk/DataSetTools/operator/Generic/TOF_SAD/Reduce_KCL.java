@@ -778,6 +778,21 @@ public class Reduce_KCL {
   
             Vector V = new Vector();
     
+            int[] RunNums;
+            if( RUNC >0)
+              RunNums = new int[3];
+            else
+              RunNums = new int[2];
+            RunNums[0] = RUNS;
+            RunNums[1] = RUNB;
+            if( RUNC > 0)
+             RunNums[2] = RUNC;
+            SSampQ.setAttribute( new IntListAttribute( Attribute.RUN_NUM,RunNums));
+            SSampQ.getData_entry(0).setAttribute( new IntListAttribute( Attribute.RUN_NUM,RunNums));
+            SBackQ.setAttribute( new IntListAttribute( Attribute.RUN_NUM,RunNums));
+            SBackQ.getData_entry(0).setAttribute( new IntListAttribute( Attribute.RUN_NUM,RunNums));
+            SDifQ.setAttribute( new IntListAttribute( Attribute.RUN_NUM,RunNums));
+            SDifQ.getData_entry(0).setAttribute( new IntListAttribute( Attribute.RUN_NUM,RunNums));
             V.addElement(SSampQ);
             V.addElement(SBackQ);
             V.addElement(SDifQ);
@@ -1211,7 +1226,7 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
             System.out.println("Error:" + sss);
         }
         Reduce_KCL Reduce_KCL = new Reduce_KCL(TransS[0], TransB[0], 
-                Eff[0], Sens[0],new float[]{-.5f,.5f,-.5f,.5f} , RUNSds, 
+                Eff[0], Sens[0],new float[]{-.5f,.5f,-.5f,.5f}, RUNSds, 
 		RUNBds, RUNCds, BETADN, SCALE, .1f,
                 //     0f,0f);
                 .000725f, .006909f, 200, 200);
@@ -1219,7 +1234,7 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
 //new float[]{-.5f,.5f,-.5f,.5f}
         System.out.println("Finished O=" + O);
         Vector V = (Vector) O;
-
+        ScriptUtil.display(((DataSet)(V.elementAt(0))).getAttributeValue(Attribute.RUN_NUM));
         ScriptUtil.display(V.elementAt(0));
         ScriptUtil.display(V.elementAt(1));
         ScriptUtil.display(V.elementAt(2));
