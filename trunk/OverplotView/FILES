@@ -1,0 +1,27 @@
+#
+# files included in package SelectedGraphView
+#
+# $Log$
+# Revision 1.1  2000/07/06 16:17:44  neffk
+# Initial revision
+#
+#
+
+isawLineProfileLayout.java
+SelectedGraph.java
+SelectedGraphView.java
+SelectionPane.java
+sgtSelectedGraph.java
+util/NumberTypeConverter.java
+components/containers/Designator.java
+components/containers/EntityColor.java
+components/containers/GraphAdapter.java
+components/containers/GraphableData.java
+components/containers/GraphableDataManager.java
+components/containers/LineType.java
+components/containers/LineTypeDesignator.java
+components/containers/Marker.java
+components/containers/MarkerDesignator.java
+components/containers/RedrawInstruction.java
+components/containers/StringDesignator.java
+
