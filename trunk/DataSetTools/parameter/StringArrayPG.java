@@ -31,8 +31,7 @@ public class StringArrayPG extends VectorPG
 
       }      
 
-  }
-class MyActionList implements ActionListener
+static class MyActionList implements ActionListener
   {
    StringArrayPG  vpf;
    public MyActionList( StringArrayPG vpg)
@@ -53,3 +52,4 @@ class MyActionList implements ActionListener
 
 
    }
+  }
