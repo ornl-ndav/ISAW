@@ -30,6 +30,11 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.3  2003/05/24 21:09:14  dennis
+ *  Added methods setData_entries(ds), getData_entry(row,col), and
+ *  isData_entered() to allow DataGrids to keep a list of references
+ *  to Data blocks associated with each pixel.
+ *
  *  Revision 1.2  2003/02/20 19:45:00  dennis
  *  Now implements Serializable.
  *
@@ -282,6 +287,48 @@ public interface IDataGrid extends Serializable
    *          "z" direction for this grid "box".
    */
   public Vector3D z_vec( float row, float col );
+
+
+  /**
+   *  This method goes through the Data blocks of a DataSet and records
+   *  a reference to each of the Data blocks whose detector ID matches
+   *  the ID of this DataGrid.  References to the Data blocks are recorded
+   *  in a table, indexed by the row and column numbers.  This allows the
+   *  Data to be accessed based on (row, col) pairs by the getData_entry
+   *  method.  
+   *
+   *  @param  ds   The DataSet  from which references to Data blocks will
+   *               be obtained.
+   */
+  public boolean setData_entries( DataSet ds );
+
+
+  /**
+   *  Get the Data block from one pixel, if references to the Data blocks
+   *  have been set. 
+   *
+   *  @param  row   the row number of the Data block
+   *  @param  col   the column number of the Data block
+   *
+   *  @return  The Data block corresponding to the specified row and column.
+   *           If no Data entriew have been set, or if row, col are out of
+   *           bounds, this returns null.
+   */
+  public Data getData_entry( int row, int col );
+
+  /**
+   *  Check whether or not Data blocks have been set for each row and column
+   *  of this DataGrid.
+   *
+   *  @return  true if Data entries have been set for all of the pixels
+   *           and false if any pixel has a null Data block.
+   */
+  public boolean isData_entered();
+
+  /**
+   *  Clear all references to Data blocks.
+   */
+  public void clearData_entries();
 
   /**
    *  Get the solid angle subtended by this grid "box" from the origin. 
