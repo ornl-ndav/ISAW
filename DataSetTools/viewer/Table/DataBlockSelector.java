@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/02/07 20:13:50  rmikk
+ * Fixed Error when initial fields are not present
+ *
  * Revision 1.8  2003/12/30 13:07:27  rmikk
  * Added two new choices to a submenu of the select menu item to add the new
  *   attributes: row, col, Detector, slot, input and crate
@@ -73,7 +76,7 @@ import DataSetTools.viewer.*;
 import java.awt.event.*;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.Menu.*;
-import javax.swing.*;
+import javax.swing.*; 
 import javax.swing.event.*;
 import java.util.*;
 import DataSetTools.dataset.*;
@@ -88,8 +91,8 @@ import DataSetTools.operator.DataSet.Attribute.*;
 public class DataBlockSelector implements IArrayMaker_DataSet {
 
     DataSet DS;
-    Vector Fields;
-    TableArray tbArray;
+    Vector Fields;      //The names of the Fields in the vies
+    TableArray tbArray; // IVirtualArray2D that returns values
     ViewerState state;
     Integer[] GroupSort;
 
@@ -396,7 +399,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
           */
         public TableArray(DataSet DS, Vector Fields) {
             this.DS = DS;
-            this.Fields = Fields;
+            this.Fields =new Vector();
             DataSet[] DSS = new DataSet[1];
 
             DSS[0] = DS;
@@ -406,10 +409,14 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
             for (int i = 0; i < Fields.size(); i++){
                 table_view.FieldInfo fieldinf =(tbView.getFieldInfo(DS, 
                              (String) (Fields.elementAt(i))));
-                if( fieldinf != null)
+                if( fieldinf != null){
                       listModel.addElement( fieldinf);
-                else
+                      this.Fields.addElement( Fields.elementAt(i));
+ 
+                }else
                    System.out.println("Field not set "+Fields.elementAt(i));
+                   
+                
             }
             Groups = new int[ DS.getNum_entries()];
             for (int i = 0; i < DS.getNum_entries(); i++) 
