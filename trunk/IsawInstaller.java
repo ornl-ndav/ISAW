@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.8  2002/04/04 20:48:50  pfpeterson
+ * changed command line switch to '-mx128m'.
+ *
  * Revision 1.7  2002/03/26 20:47:08  pfpeterson
  * More mac updates:
  * - Set default file extension to 'applescript' (uncompiled code).
@@ -491,7 +494,7 @@ public class IsawInstaller extends JFrame
 		+"rem --"+newline
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
-		+"java -mx128000000 -cp Isaw.jar;sgt_v2.jar;IPNS.jar"
+		+"java -mx128m -cp Isaw.jar;sgt_v2.jar;IPNS.jar"
 		+";jnexus.jar;sdds.jar;.  IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
@@ -505,7 +508,7 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"export LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
+		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
 		+" IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(SUN_ID)){
@@ -514,12 +517,12 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"export LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
+		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
 		+" IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
-                +"      do script with command \"java -mx128000000 -cp "
+                +"      do script with command \"java -mx128m -cp "
                 +isaw_home+"/Isaw.jar:"
                 +isaw_home+"/sgt_v2.jar:"
                 +isaw_home+"/IPNS.jar:"
