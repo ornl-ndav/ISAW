@@ -60,7 +60,8 @@ public class execOneLine implements IObservable ,
     public static final String ER_MissingBracket              =" Unpaired brackets";
     public static final String ER_ImproperDataType            =" Improper Data Type";
     public static final String ER_ExtraArguments              ="Extra Arguments";
-     public static final String ER_No_Result                  =" Result is null ";
+    public static final String ER_No_Result                  =" Result is null ";
+    public static final String ER_IMPROPER_DATA_TYPE          ="Variable has incorrect data type";
     private Document logDocument = null;
 
     private boolean Debug= false;
@@ -175,7 +176,7 @@ public class execOneLine implements IObservable ,
        {return perror;
        }
 
-/**
+/**741.
 * This method allows outside data sets to be added to the variable space
 *@param
 *      dss    The data set to be added
@@ -185,26 +186,49 @@ public class execOneLine implements IObservable ,
         ds1 = null;
         if(Debug)
 	    System.out.print("in DataSet Add"+dss);
+      
+        i = findd( dss.getTitle(), ds);
+        if( isInListDS(i, ds)) return;
+        i = findd( dss.getTitle(), lds);
+        if( isInListDS(i, lds))
+           {Delete( i , lds);
+            } 
+        Object X = getVal(dss.getTitle());
+        if( X!=null)
+          {seterror( 0, ER_IMPROPER_DATA_TYPE+" "+dss.getTitle());
+          
+           // PC.firePropertyChange( "Display"  , null , (Object)serror );
+
+           return;
+          }
+        seterror( -1, "" );
+       
         if( ds == null )
 	    {ds1 = new DataSet[ 1 ];
 	     ds1[ 0 ] = dss;
 	     i = 0 ;
-             //System.out.print("XA");
+             if(Debug)System.out.print("XA");
             }
         else
           {ds1 = new DataSet[ ds.length + 1 ];
            ds1[ ds.length ] = dss;
            for( i = 0 ; i<ds.length ; i++ )
 	       ds1[ i ] = ds[ i ];
-           i = ds.length ;           //System.out.print("XB");
+           i = ds.length ;           
+            if(Debug) System.out.print("XB");
           }
+      
+
         ds = ds1;
         ds1 = null;  
-        ds [ i ].addIObserver(this);   
+        ds [ i ].addIObserver(this); 
+         
+  
         //System.out.println("XD");
         if(Debug)
 	    for(i = 0 ; i<ds.length ; i++)
                 System.out.println( "AddDataSet: ds[i]=:"+ds[i]);
+        
       }
 /*
 *  Removes all displays created by the CommandPane
@@ -585,7 +609,7 @@ public class execOneLine implements IObservable ,
             {seterror( 1000 , "DataFile already loadedX" );
              return;
             }
-     
+          seterror(-1,"");
           Assign( DDs.getTitle() , DDs);
         }
            
@@ -640,33 +664,14 @@ public class execOneLine implements IObservable ,
                 else DDs.setTitle(varname + new Integer(i).toString().trim());
           j = findd( DDs.getTitle() , ds );  
           if( Debug) System.out.print("error="+perror+",");       
-         /* if( j >= 0 )
-            {
-             seterror( 1000 , "DataFile already loadedC" );
-	     if( Debug)System.out.println("alr loaded DDs="+DDs.getTitle());
-             return null;
-            }
-          j = findd( DDs.getTitle() , lds );         
-          if( j < 0 )
-            {
-            }                     
-          else if( j >= lds.length )
-            {
-            }
-          //else if( lds[j] != null )
-          else if( isInListDS( j , lds ) )
-            {seterror( 1000 , "DataFile already loaded" );
-             if( Debug) System.out.println("Alr loaded"+lds[j].getTitle()+","+DDs.getTitle());
-             return null;
-            }
-          */
-          Object X = getVal( DDs.getTitle());
-         /* 
+        
+  /*        Object X = getVal( DDs.getTitle());
+    
           if( X != null )
             {seterror( 1000 , "DataFile already loadedX" );
              return null;
             }
-         */
+  */
           Assign( DDs.getTitle() , DDs);
            
           if( Debug )
@@ -784,9 +789,11 @@ public class execOneLine implements IObservable ,
         { if( x > 1)
           if( (Result == null) || (V.size() > 2 ) ) 
             {seterror( i , ER_ImproperArgument+" " + x  );
-             if( x-1 < V.size())
-               System.out.println( "V and class = "+ V.get(i) +","+V.get(i).getClass());
-             else System.out.println("Aft Display args ="+ DisplayType+","+FrameType);
+             if( Debug)
+              { if( x-1 < V.size())
+                 System.out.println( "V and class = "+ V.get(i) +","+V.get(i).getClass());
+               else System.out.println("Aft Display args ="+ DisplayType+","+FrameType);
+              }
              return i;
             }
         }
@@ -1071,7 +1078,7 @@ public class execOneLine implements IObservable ,
     { if( Debug) 
         {System.out.println( "in getGlobalDataSet") ;
 	if( ds == null )
-	 System.out.println("ds is null");
+	 if(Debug)System.out.println("ds is null");
         }
       return ds;
     }
@@ -2083,7 +2090,7 @@ public class execOneLine implements IObservable ,
 
      private  void seterror( int charnum, String errorMessage)
        {
-        if(charnum < 0)return ;      
+        //if(charnum < 0)return ;      
         perror = charnum;
         serror = errorMessage;
     
@@ -2573,7 +2580,7 @@ public class execOneLine implements IObservable ,
          if( i >= DS.length)
            return;
          int k;
-         for( k = i; i < DS.length ; k++)
+         for( k = i; k+1 < DS.length ; k++)
            DS[k] = DS[ k+1];
          DS [ DS.length - 1] = null;
        }
