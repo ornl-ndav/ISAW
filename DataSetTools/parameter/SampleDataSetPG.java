@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/05/21 22:02:01  dennis
+ *  Fixed name of parameter in javadoc comment.
+ *
  *  Revision 1.13  2004/05/11 18:23:55  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -71,8 +74,6 @@
  *
  *  Revision 1.1  2002/08/01 18:40:07  pfpeterson
  *  Added to CVS.
- *
- *
  */
 package DataSetTools.parameter;
 
@@ -133,7 +134,7 @@ public class SampleDataSetPG extends DataSetPG {
    * Add a single DataSet to the vector of choices. This calls the superclass's
    * method once it confirms the value to be added is a DataSet.
    *
-   * @param The DataSet to add.
+   * @param  val  The DataSet to add.
    */
   public void addItem( Object val ) {
     if( isSampleDataSet( val ) ) {

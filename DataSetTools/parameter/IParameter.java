@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/05/21 22:02:01  dennis
+ *  Fixed name of parameter in javadoc comment.
+ *
  *  Revision 1.6  2004/05/11 18:23:52  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -41,15 +44,14 @@
  *  standardized header
  *
  *  Revision 1.3  2002/09/19 16:07:23  pfpeterson
- *  Changed to work with new system where operators get IParameters in stead of Parameters. Now support clone method.
+ *  Changed to work with new system where operators get IParameters instead 
+ *  of Parameters. Now support clone method.
  *
  *  Revision 1.2  2002/05/31 19:43:20  pfpeterson
  *  Added a string constant 'VALUE'.
  *
  *  Revision 1.1  2002/05/28 22:24:12  pfpeterson
  *  added to cvs
- *
- *
  */
 package DataSetTools.parameter;
 
@@ -67,7 +69,7 @@ public interface IParameter {
   /**
    * Set the name of the parameter.
    *
-   * @param The name of this IParameter.
+   * @param  name  The name of this IParameter.
    */
   void setName( String name );
 
