@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/02/07 16:19:17  pfpeterson
+ *  Fixed bug in constructor where the value of 'valid' was not properly set.
+ *
  *  Revision 1.6  2002/11/27 23:22:42  pfpeterson
  *  standardized header
  *
@@ -88,6 +91,7 @@ public class DataDirPG extends BrowsePG{
             }
         }
         this.type=TYPE;
+        this.setValid(valid);
     }
 
     /**

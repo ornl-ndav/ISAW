@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/02/07 16:19:17  pfpeterson
+ *  Fixed bug in constructor where the value of 'valid' was not properly set.
+ *
  *  Revision 1.4  2002/11/27 23:22:43  pfpeterson
  *  standardized header
  *
@@ -92,6 +95,7 @@ public class BrowsePG extends ParameterGUI{
           String datadir=SharedData.getProperty("Data_Directory");
           this.setValue(datadir);
         }
+        this.setValid(valid);
     }
 
     // ********** IParameter requirements **********
