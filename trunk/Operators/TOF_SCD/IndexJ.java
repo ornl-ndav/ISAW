@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/02/11 21:03:39  pfpeterson
+ * Uses routine to read orientation matrix from LoadOrientation.
+ *
  * Revision 1.3  2003/02/10 15:27:33  pfpeterson
  * Changed the 'title' and 'command' to be 'JIndex'.
  *
@@ -46,6 +49,7 @@ package Operators.TOF_SCD;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.util.*;
+import  DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.Generic.TOF_SCD.*;
 import  DataSetTools.parameter.*;
@@ -282,28 +286,14 @@ public class IndexJ extends    GenericTOF_SCD {
     float[][] orient=new float[3][3];
 
     boolean isexpfile=matrixfile.endsWith(".x");
-    System.out.println("isexpfile="+isexpfile);
 
     try{
       tfr=new TextFileReader(matrixfile);
-      if(isexpfile){
-        String start=null;
-        int i=0;
-        while( (! tfr.eof()) && (i<3) ){
-          start=tfr.read_String();
-          if(start.indexOf("CRS11")==0){ // this is a good line
-            start=tfr.read_String(); // skip the next 'word'
-            for( int j=0 ; j<3 ; j++ ){
-              orient[j][i]=tfr.read_float();
-            }
-            i++;
-          }
-        }
-      }else{
-        for( int i=0 ; i<3 ; i++ )
-          for( int j=0 ; j<3 ; j++ )
-            orient[j][i]=tfr.read_float();
-      }
+      Object res=LoadOrientation.readOrient(tfr,isexpfile);
+      if(res instanceof ErrorString)
+        eString=(ErrorString)res;
+      else
+        orient=(float[][])res;
     }catch(IOException e){
       eString=new ErrorString("Error while reading matrix: "+e.getMessage());
     }catch(NumberFormatException e){
@@ -317,11 +307,6 @@ public class IndexJ extends    GenericTOF_SCD {
         }
       }
     }
-
-    float det=(float)DataSetTools.math.LinearAlgebra.determinant(DataSetTools.math.LinearAlgebra.float2double(orient));
-
-    if( det==0f )
-      return new ErrorString("Zero determinant in orientation matrix");
 
     if(eString!=null)
       return eString;
