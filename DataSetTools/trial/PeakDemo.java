@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/01/29 13:52:19  dennis
+ * Added code to find max value.
+ *
  * Revision 1.2  2001/04/26 15:28:51  dennis
  * Added copyright and GPL info at the start of the file.
  *
@@ -64,7 +67,9 @@ public class PeakDemo
   public static void main(String args[])
   {
     DataSet      A_monitor_ds;  
-    String       run_A = "/IPNShome/dennis/ARGONNE_DATA/hrcs2444.run";
+//    String       run_A = "/IPNShome/dennis/ARGONNE_DATA/hrcs2444.run";
+//  String       run_A = "/usr/local/ARGONNE_DATA/hrcs2444.run";
+    String       run_A = "/usr/local/ARGONNE_DATA/LRCS3978.RUN";
 
     // Get the DataSet from the runfile and show it.
 
@@ -83,8 +88,16 @@ public class PeakDemo
     {
       Data monitor_data = A_monitor_ds.getData_entry(monitor);
 
-      float x1    = 0;
-      float x2    = 5000;
+      float x[] = monitor_data.getX_scale().getXs();
+      float y[] = monitor_data.getY_values();
+      
+      int max_channel = 0;                               // find max value
+      for ( int i = 1; i < y.length; i++ )
+        if ( y[i] > y[max_channel] )
+          max_channel = i;
+
+      float x1    = x[max_channel] - 100;
+      float x2    = x[max_channel] + 100;
       float width = 100;
       for ( int i = 0; i < 20; i++ )
       {
