@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/04/26 13:26:35  rmikk
+ *  The Attr read method now returns an object with the name and value.
+ *     Attributes were made immutable so an external method can no longer
+ *     change their values
+ *
  *  Revision 1.10  2004/03/15 03:28:09  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -69,7 +74,7 @@
 
 package DataSetTools.dataset;
 import  gov.anl.ipns.Util.Sys.*;
-
+import gov.anl.ipns.Util.SpecialStrings.*;
 import java.io.*;
 import java.util.*;
 
@@ -398,77 +403,91 @@ public class xml_utils
 
     }
 
-public static boolean AttribXMLread( InputStream stream, Attribute A )
+private static Vector AttrInf( String name, Object Value){
+	Vector Res = new Vector(2);
+	Res.addElement( name);
+	Res.addElement(Value);
+	return Res;
+}
+public static Object AttribXMLread( InputStream stream, Attribute A )
    {String dt= A.getClass().toString();
     dt=dt.substring( dt.lastIndexOf('.')+1); 
     boolean done=false;
     String fd="";
+	Object value=null;
+	String name ="";
     String key=  xml_utils.getTag( stream );
     if( key.trim().equals("/"+dt))
       {xml_utils.skipAttributes( stream );
        done = true;
        if(fd.equals("nv"))
-         return true;
+         return AttrInf(name,value);
        else
-          return false;
+          return new ErrorString("Did not set all attribute fields");
        }
     while(!done)
      {
       if( !xml_utils.skipAttributes( stream ) )
-       {DataSetTools.util.SharedData.addmsg(xml_utils.getErrorMessage());
-        return false;
+       {return new ErrorString(xml_utils.getErrorMessage());
+        
         }
       String v= xml_utils.getValue( stream);
       if( v== null)
-        {DataSetTools.util.SharedData.addmsg(xml_utils.getErrorMessage());
-         return false;
+        {return new ErrorString(xml_utils.getErrorMessage());
+         
         }
       if( key.equals( "name"))
        {if( fd.indexOf('n')>=0)
-          return false;
+          return new ErrorString("Cannot have two names for an Attribute");
         if( v.equals("\\u0394"+"2"+"\\u03b8"))
           v="\u0394"+"2"+"\u03b8";
         
-        A.setName(v);
+        name=(v);
         fd="n"+fd;
         }
       else if( key.equals("value"))
        try{if(fd.indexOf('v')>=0)
-             return false;
+             return new ErrorString("Two values given for Attribute");
           fd=fd+"v";
-          //Object value= v;
+          value= v;
           if( (A instanceof IntAttribute) ||
               (A instanceof FloatAttribute) ||
-              (A instanceof DoubleAttribute))
+              (A instanceof DoubleAttribute)){
             //value= new Double(v);
-          System.out.println("ERROR: setValue no longer supported " +
-                             "by Attribute class" );
+         // System.out.println("ERROR: setValue no longer supported " +
+                        //     "by Attribute class" );
+          try{
+          	 value = new Float(v);
+          }catch(Exception ss){
+          	return new ErrorString("improper data for number");	 
+          }
+           }
           // A.setValue( value );        ######## now that Attributes are
           //                                      immutable, we need a new
           //                                      way to do this
           }
        catch( Exception s)
-          { DataSetTools.util.SharedData.addmsg("Error"+s.getMessage()); 
-             return false;
+          { return new ErrorString("Error"+s.getMessage()); 
+             
            
            }
        key=  xml_utils.getTag( stream );
        if( key == null)
-         {DataSetTools.util.SharedData.addmsg(xml_utils.getErrorMessage());
-          return false;
+         {return new ErrorString(xml_utils.getErrorMessage());
+          
           }
        if( key.trim().equals("/"+dt))
         {xml_utils.skipAttributes( stream );
          done = true;
          if(fd.equals("nv"))
-           return true;
+           return AttrInf(name,value);
          else
-          {DataSetTools.util.SharedData.addmsg("Did not Set both field ");
-           return false;
+          {return new ErrorString("Did not Set both field ");
+          
           }
        }
       }
-      return true;
+      return AttrInf(name,value);
       
        
 
