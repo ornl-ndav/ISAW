@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.92  2002/04/11 16:02:47  pfpeterson
+ *  Put version information (w/o build date) in the title bar of
+ *  the main ISAW window.
+ *
  *  Revision 1.91  2002/04/10 20:47:00  pfpeterson
  *  Added command line switches -v and --version which print the version
  *  of ISAW currently running and exit.
@@ -538,7 +542,7 @@ public class Isaw
    */
   public Isaw( String[] args ) 
   {
-    super( TITLE );
+    super( TITLE+" "+getVersion(false) );
                       //used for loading runfiles
     util = new Util(); 
     Vector mm = util.listProperties();
@@ -686,20 +690,34 @@ public class Isaw
   }
     
     /**
-     * Print version information
+     * return version information
+     *
+     * @param Long  If true return full version information (including
+     *              build date if possible) with TITLE in front. If
+     *              false, return * just the version number.
      */
-    public static void printVersion(){
-        System.out.print(TITLE + " Release ");
+    public static String getVersion(boolean Long){
+        String version;
+        String val="";
+
         if(SharedData.VERSION.equals("Unknown_Version")){
-            System.out.print("1.3.1 alpha");
+            version="1.3.1 alpha";
         }else{
-            System.out.print(SharedData.VERSION );
+            version=SharedData.VERSION;
         }
-        if(SharedData.BUILD_DATE.equals("Unknown_Build_Date")){
-            System.out.println("");
-        }else{ 
-            System.out.println(" Built "+SharedData.BUILD_DATE);
+
+        if(Long){
+            val=TITLE + " Release "+version;
+            if(SharedData.BUILD_DATE.equals("Unknown_Build_Date")){
+                // do nothing
+            }else{ 
+                val=val+" Built "+SharedData.BUILD_DATE;
+            }
+        }else{
+            val=version;
         }
+
+        return val;
     }
      
     /**
@@ -2056,7 +2074,7 @@ public class Isaw
   {
     for( int i=0 ; i<Array.getLength(args) ; i++ ){
         if("--version".equals(args[i]) || "-v".equals(args[i])){
-            printVersion();
+            System.out.println(getVersion(true));
             System.exit(0);
         }
     }
@@ -2082,8 +2100,7 @@ public class Isaw
     splash_thread = null;
     sp = null;
 
-    System.out.print("Loading ");
-    printVersion();
+    System.out.println("Loading "+getVersion(true));
 
     JFrame Isaw = new Isaw( args );
     Isaw.pack();
