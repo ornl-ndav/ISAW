@@ -29,6 +29,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.25  2005/03/30 02:17:31  dennis
+ * Removed unused instance variable.
+ * Fixed java constructor so that the list of pixel rows specified
+ * in the constructor parameters is actually used to set the
+ * PixelRows parameter.
+ *
  * Revision 1.24  2004/07/14 16:18:34  rmikk
  * Added the Pixel row and column numbers to include so peaks near the 
  * edges of the detector are not added to the initial peaks Vector
@@ -112,7 +118,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   private              int        run_number            = -1;
   private              int        maxNumPeaks           = 0;
   private              int        min_count             = 0;
-  private             IntListString PixelRow         =new IntListString("1:400");
   
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -153,7 +158,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                                  new Integer(minTimeChan) ) );
     addParameter( new Parameter("Maximum Time Channel", 
                                  new Integer(maxTimeChan) ) );
-    addParameter( new Parameter("Pixel Rows/Cols", new IntListString("1:200")));
+    addParameter( new Parameter("Pixel Rows/Cols", PixelRows ));
   }
   
   /* --------------------------- getCommand ------------------------------- */ 
