@@ -272,8 +272,7 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
     case COLON_PAIR:
       //matched a colon pair (e.g. 5:8)
         t = jj_consume_token(COLON_PAIR);
-    //remove any quotes that exist
-    expansion = t.image.replace( '\"', ' ' ).trim(  );
+    expansion = t.image.trim(  );
     index = expansion.indexOf( ":" );
     first = Integer.parseInt( expansion.substring( 0, index ) );
     first = Integer.parseInt( expansion.substring( 0, index ) );
@@ -288,8 +287,7 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
     case STEPPED_COLON_PAIR:
       //matched a stepped colon pair(e.g. 10:35:2)
         t = jj_consume_token(STEPPED_COLON_PAIR);
-    //remove any quotes that exist
-    expansion = t.image.replace( '\"', ' ' ).trim(  );
+    expansion = t.image.trim(  );
     index = expansion.indexOf( ":" );
     first = Integer.parseInt( expansion.substring( 0, index ) );
     //trim out the first colon to find the step size
