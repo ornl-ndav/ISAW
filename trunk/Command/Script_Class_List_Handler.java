@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2001/06/27 18:38:33  rmikk
+ * Add tests to make sure a directory is only loaded once
+ *
  * Revision 1.10  2001/06/26 14:44:27  rmikk
  * Install scripts and java operators are now relative to
  * ISAW_HOME(Operators and Scripts subdirectories),
@@ -107,16 +110,25 @@ public class Script_Class_List_Handler  implements OperatorHandler
            {processPaths(ScrPaths+"\\Operators") ;
             processPaths(ScrPaths+"\\Scripts") ;
            }
-        ScrPaths = System.getProperty( "USER_HOME" );
-        if( ScrPaths != null )
-           {processPaths(ScrPaths+"\\Operators") ;
-            processPaths(ScrPaths+"\\Scripts") ;
+        String ScrPaths1 = System.getProperty( "GROUP_HOME" );
+       
+        if( ScrPaths1 != null )
+	    if(!ScrPaths1.equals(ScrPaths))
+           {processPaths(ScrPaths1+"\\Operators") ;
+            processPaths(ScrPaths1+"\\Scripts") ;
            }
-        ScrPaths = System.getProperty( "user.home" );
-        if( ScrPaths != null )
-           {processPaths(ScrPaths+"\\Operators") ;
-            processPaths(ScrPaths+"\\Scripts") ;
+        String ScrPaths2 = System.getProperty( "user.home" );
+        if( ScrPaths2 != null )
+         {String X =ScrPaths2+java.io.File.pathSeparator+"ISAW";
+          if(ScrPaths2 != null)
+            if( ScrPaths2.charAt(ScrPaths2.length()-1)== java.io.File.pathSeparatorChar)
+               X = ScrPaths2+"ISAW"+ java.io.File.pathSeparator;
+          if(!(X).equals(ScrPaths))
+          if( !X.equals(ScrPaths1))
+           {processPaths(ScrPaths2+"\\ISAW\\Operators") ;
+            processPaths(ScrPaths2+"\\ISAW\\Scripts") ;
            }
+         }
 
       }
       private void processPaths( String ScrPaths) 
