@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.33  2004/05/09 18:11:29  bouzekc
+ *  Changed addItem(init_vals) to addItems(init_vals) in initGUI().
+ *
  *  Revision 1.32  2004/03/11 07:35:01  bouzekc
  *  Removed the vals = null assignment, as it messed up the polymorphic
  *  method calls.
@@ -390,7 +393,7 @@ public abstract class ChooserPG extends ParameterGUI {
 
     //addItems will check to see if the Vector is null and set the 
     //value to the first element
-    addItem( init_values );
+    addItems( init_values );
 
     // set up the combobox
     setEntryWidget( new EntryWidget( new HashEntry( this.vals ) ) );
