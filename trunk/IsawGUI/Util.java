@@ -35,6 +35,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2002/09/30 19:59:54  pfpeterson
+ * Now allows gda extension for gsas powder files.
+ *
  * Revision 1.13  2002/08/06 21:31:24  pfpeterson
  * Now calls GsasRetriever as well.
  *
@@ -187,6 +190,7 @@ public class Util
       }
       else if( filename.toUpperCase().endsWith( ".GSA" ) ||
          filename.toUpperCase().endsWith( ".GDAT" ) ||
+         filename.toUpperCase().endsWith( ".GDA" ) ||
          filename.toUpperCase().endsWith( ".GSAS" ) )
       {
          X = new WriteGSAS();
