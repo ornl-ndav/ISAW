@@ -2,6 +2,9 @@
  *  File:  DiffractometerTofToQ.java 
  *             
  *  $Log$
+ *  Revision 1.8  2002/07/15 16:52:42  pfpeterson
+ *  Fixed bugs involving tof->d/Q conversions.
+ *
  *  Revision 1.7  2002/07/10 16:05:22  pfpeterson
  *  Use gsas calibration if possible.
  *
@@ -368,8 +371,8 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
         Q_vals           = new float[t_vals.length];
         if(gsas!=null){
             for ( int i = 0; i < t_vals.length; i++ )
-                Q_vals[i] = tof_calc.DiffractometerQ( gsas.dif_a(),
-                                                      gsas.dif_c(),
+                Q_vals[i] = tof_calc.DiffractometerQ( gsas.dif_c(),
+                                                      gsas.dif_a(),
                                                       gsas.t_zero(),
                                                       t_vals[i] );
         }else{
