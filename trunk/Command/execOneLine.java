@@ -556,139 +556,7 @@ public class execOneLine implements IObservable ,
        else
            Result = new Integer( dss.length );
        return j;
-    /*
-       // Get First Argument      
-       i = start;
-       i = skipspaces( S , 1 , i );
-          if( (i >= end) ||  (i >= S.length()) )
-	    {seterror( i , ER_MissingArgument );
-	     return -1;
-            }
-          if( i < 0 )
-            {perror = start;
-             serror = "internal Error 1";
-             return -1;
-            }
     
-       if( S.charAt( i ) == '(' )
-	 j = execute( S , i + 1 , end );
-       else
-         j = execute( S , i , end );
-
-          if( perror >= 0 )
-	    {   if( Debug )
-                  System.out.println("in execLoad exec error,i,j=" + i + "," + j+","+S.length());
-	     return perror;
-            }
-       
-            if( Debug )
-               System.out.print("ExecLoad/Exec=OK" + i + "," + j+","+Result);
-     
-       
-          if( Result == null )
-	    {
-             seterror( i , ER_ImproperArgument );
-	     return  j;
-            }
-          if( !( Result  instanceof String ) )
-	    {seterror( i , ER_ImproperArgument );          
-	     return j;
-             }
-       filename = (String)Result;
-
-       //Get 2nd argument if possible    
-       j=skipspaces( S , 1 , j   );
-       String varname=null;
-             if(Debug)
-	         System.out.println("ere get varname j= "+j+","+S.length());
-       if( (j<S.length()) && ( j < end ))
-         if(j>=0)
-	   if ( S.charAt( j ) == ',')
-	       {       if(Debug)
-                          System.out.println("XXXXXXXXX"+j+","+S.charAt(j));
-               j=execute( S , j + 1, end );
-	          if( perror >= 0) return perror;
-                  if( !(Result instanceof String)) return j;
-               j = skipspaces( S , 1 , j );
-               varname = (String)Result;
-	     }
-
-      
-       if( S.charAt(i) == '(' )
-         {   if( (j >= end) ||  (j >= S.length()) )
-	       {seterror( i , ER_MisMatchParens );             
-	        return i;
-               }
-	     if( S.charAt(j) != ')' )
-               {seterror( i , ER_MisMatchParens );              
-	        return j;
-               }
-          j = skipspaces( S , 1 , j + 1 );
-         if( j > end) j = end;
-
-          } 
-      
-     
-             if(Debug)
-	         System.out.println("in mid Load varname="+varname);
-
-       //Execute low level Load
-
-       dss = new IsawGUI.Util().loadRunfile( filename  );
-       if( dss == null )
-        {seterror( start , "Data File Improper" );
-         return -1;
-        }
-       if( dss.length <= 0 )
-         {seterror( start , "Data File Improper" );
-          return  -1;
-         }
-       int j1 = j;
-       DataSet DDs;
-  
-       for( i = 0 ; i < dss.length ; i++ )
-         {DDs = eliminateSpaces( dss[i] );
-	 dss[i].addOperator( new GetDSAttribute());
-         dss[i].addOperator(new SetDSAttribute());
-         dss[i].addOperator( new GetDataAttribute());
-         dss[i].addOperator(new SetDataAttribute());
-        dss[i].addOperator(new SetField());
-         dss[i].addOperator(new GetField());
-        
-	 if( varname != null)
-	    if( varname.length()>0)
-		if( varname.toUpperCase().charAt(0) >'Z')
-		    {}
-                else if( varname.toUpperCase().charAt(0) < 'A')
-                    {}
-                else DDs.setTitle(varname + new Integer(i).toString().trim());
-          j = findd( DDs.getTitle() , ds );         
-          if( isInListDS ( j , ds ) )
-            {seterror( start , "DataFile already loadedA" );
-             return -1;
-            }
-          j = findd( DDs.getTitle() , lds );         
-          if( j < 0 )
-            {
-            }                     
-          else if( j >= lds.length )
-            {
-            }
-          //else if( lds[j] != null )
-          else if( isInListDS( j , lds ) )
-            {seterror( start , "DataFile already loadedB" );
-             return -1;
-            }
-          Assign( DDs.getTitle() , DDs);
-          if( perror >= 0) perror = S.length();
-          if( Debug )
-            System.out.println("Assign Dat set=" + DDs.getTitle());
-         }
-       if( start > 0 )
-          Result = new Integer( dss.length );
-       else
-         Result = null;
-  */    
      
       }
    public void Load ( DataSet dss[] , String varname)
@@ -770,9 +638,12 @@ public class execOneLine implements IObservable ,
                 else if( varname.toUpperCase().charAt(0) < 'A')
                     {}
                 else DDs.setTitle(varname + new Integer(i).toString().trim());
-          j = findd( DDs.getTitle() , ds );         
-          if( j >= 0 )
-            {seterror( 8 , "DataFile already loadedC" );
+          j = findd( DDs.getTitle() , ds );  
+          if( Debug) System.out.print("error="+perror+",");       
+         /* if( j >= 0 )
+            {
+             seterror( 1000 , "DataFile already loadedC" );
+	     if( Debug)System.out.println("alr loaded DDs="+DDs.getTitle());
              return null;
             }
           j = findd( DDs.getTitle() , lds );         
@@ -784,11 +655,19 @@ public class execOneLine implements IObservable ,
             }
           //else if( lds[j] != null )
           else if( isInListDS( j , lds ) )
-            {seterror( 0 , "DataFile already loaded" );
+            {seterror( 1000 , "DataFile already loaded" );
+             if( Debug) System.out.println("Alr loaded"+lds[j].getTitle()+","+DDs.getTitle());
+             return null;
+            }
+          */
+          Object X = getVal( DDs.getTitle());
+    
+          if( X != null )
+            {seterror( 1000 , "DataFile already loadedX" );
              return null;
             }
           Assign( DDs.getTitle() , DDs);
-         
+           
           if( Debug )
             System.out.println("Assign Dat set=" + DDs.getTitle());
          }
@@ -845,7 +724,7 @@ public class execOneLine implements IObservable ,
        i = start;
       
       if( (start < 0) || (start >= S.length()) || (start >= end))
-        { seterror( S.length(),"Internal ErrorSL");
+        { seterror( S.length(),ER_MissingArgument);
           return start;
         }
       Vector V;
@@ -1565,7 +1444,7 @@ public class execOneLine implements IObservable ,
        int i , j;
        boolean done;
        i = skipspaces( S , 1 ,start) ;
-       done = false;
+       done = (i >= S.length()) ||( i >= end);
        while( !done )
          {j = execute( S , i , end );
          if( perror >= 0 )
@@ -2230,8 +2109,8 @@ public class execOneLine implements IObservable ,
        char c;
        boolean done;
 
-       if( Debug )
-         System.out.print("findfrst start, S=" + start + "." + S);
+       // if( Debug )
+       // System.out.print("findfrst start, S=" + start + "." + S);
        if( start < 0 )
          return -1;
        if( S == null )
