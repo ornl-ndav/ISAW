@@ -32,6 +32,11 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.7  2001/09/13 22:52:47  dennis
+ *  Fixed problem with calculation of Q ( angle should not have been converted
+ *  to degrees ).
+ *  Fixed calculation of G().
+ *
  *  Revision 1.6  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -179,7 +184,8 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: in this case, GFun
+   * @return the command name to be used with script processor: 
+   *         in this case, GFun
    */
    public String getCommand()
    {
@@ -268,24 +274,24 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
     Float   Float_val;
 
     DetectorPosition position;
-    float spherical_coords[];
 
     float x_vals[],
           y_vals[],
-          new_y_vals[],
-          new_errors[],
+          conversion_vals[],
+          conversion_errors[],
           energy_transfer;
     float energy_in,
           energy_final,
           xkt,
           ebykt,
-          popinv,
+          E,
           scattering_angle,
           Q;
     int   num_data;
     Data  data,
           conversion_data,
           new_data;
+
     num_data = new_ds.getNum_entries();
     for ( int index = 0; index < num_data; index++ )
     {
@@ -298,58 +304,51 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
 
       position = (DetectorPosition)
                   attr_list.getAttributeValue(Attribute.DETECTOR_POS);
-      spherical_coords = position.getSphericalCoords();
+      scattering_angle = position.getScatteringAngle();
 
       y_vals = data.getY_values();
       x_vals = data.getX_scale().getXs();
 
       int num_y = y_vals.length;
-      new_y_vals = new float[ num_y ];
-      new_errors = new float[ num_y ];
+      conversion_vals = new float[ num_y ];
+      conversion_errors = new float[ num_y ];
 
+      xkt=XKCON*temperature;
       for ( int i = 0; i < (y_vals.length-1); i++ )
-      {
-        if ( x_vals.length > y_vals.length )  // histogram
+      {            
+        if ( data.isHistogram() )                       // use bin centers
           energy_transfer = (x_vals[i]+x_vals[i+1])/2;
-        else                                  // function
+        else                                            // just use x value 
           energy_transfer = x_vals[i];
 
-        energy_final     = energy_in-energy_transfer;
-        scattering_angle = position.getScatteringAngle() * 
-                                  (float)(180.0/Math.PI);
-        
+        energy_final = energy_in - energy_transfer;
         Q = tof_calc.SpectrometerQ( energy_in, energy_final, scattering_angle );
-        
-        xkt=XKCON*temperature;
-        ebykt=energy_transfer/xkt;
-        if(Math.abs(ebykt)>35.0f) ebykt=10.0f*(float)Math.abs(ebykt)/ebykt;
-        if(energy_transfer<-1.0f) ebykt=1.0f;
-        popinv= 1.0f-(float)Math.exp(-ebykt);
-        if(energy_transfer<0)
-        popinv= -popinv;
-        new_y_vals[i] =energy_transfer/(2.0539802f*Q*Q)*
-                            (float)( Math.exp(alpha*Q*Q))*xmass*popinv;
-         /*        
-        if(index ==( 0))
-        System.out.println("new_y_vals[i]="+ new_y_vals[i]+"\n"+
+        E = Math.abs( energy_transfer );
+
+        ebykt=E/xkt;
+
+        conversion_vals[i] =xmass * E / (2.0539802f * Q * Q ) *
+                            (float)( Math.exp(alpha * Q * Q)) * 
+                            ( 1 - (float)Math.exp(-ebykt) );
+
+/*                
+        if(i == 200 )
+        System.out.println("conversion_vals[i]="+ conversion_vals[i]+"\n"+
                            "energy_transfer="+ energy_transfer+"\n"+
                            "temperature=" + temperature+"\n"+
                            "alpha=" + alpha+"\n"+
-                           "spherical_coords[1]=" +spherical_coords[1]+"and  "+
-                                    + (spherical_coords[1]*180/3.1415926)+"\n"+ 
                            "scattering_angle =" +  scattering_angle +"\n"+ 
                            "Q=" + Q+"\n"+ 
                            "xmass=" + xmass+"\n"+ 
                            "XKCON=" + XKCON+"\n"+
                            "xkt=" + xkt+"\n"+
-                           "ebykt=" + ebykt+"\n"+
-                           "popinv=" + popinv+"\n");                    
-           //*/                
+                           "ebykt=" + ebykt+"\n" );
+*/                       
       }
 
       conversion_data = new Data( data.getX_scale(),
-                                  new_y_vals,
-                                  new_errors,
+                                  conversion_vals,
+                                  conversion_errors,
                                   data.getGroup_ID() );
     
       //now multiply the spectrum by the conversion_data;
