@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2001/08/16 01:19:59  dennis
+ *  Now sends POINTED AT CHANGED messages when the mouse moves
+ *  over the SAME Data block, if there is only one Data block.
+ *
  *  Revision 1.17  2001/07/27 15:59:33  dennis
  *  Removed debug print and changed rebin menu item from "Rebin Data" to
  *  "Graph Rebinned Data".
@@ -721,7 +725,8 @@ private class HGraphMouseMotionAdapter extends    MouseMotionAdapter
      GraphJPanel gp = (GraphJPanel)e.getComponent();     
 
      int row = getBlockNumber( gp );
-     if ( row != last_data_block )
+     if ( row != last_data_block ||                  // only update if needed
+          getDataSet().getNum_entries() == 1 )
      {
        getDataSet().setPointedAtIndex( row );
        last_data_block = row;
