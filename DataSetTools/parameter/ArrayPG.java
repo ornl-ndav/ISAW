@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2003/08/05 23:10:11  bouzekc
+ *  StringtoArray() now uses JavaCC to parse input.
+ *
  *  Revision 1.19  2003/07/15 22:57:22  bouzekc
  *  getVectorValue() now calls getValue(), rather than just
  *  returning the value.  Modified StringtoArray to handle
@@ -111,6 +114,8 @@
 package DataSetTools.parameter;
 
 import Command.execOneLine;
+
+import Command.JavaCC.*;
 
 import DataSetTools.components.ParametersGUI.HashEntry;
 
@@ -289,7 +294,17 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @return A Vector of Objects corresponding to the Strings.
    */
   public static Vector StringtoArray( String S ) {
-    if( S == null ) {
+    System.out.println(S);
+    try{
+      //prep the string a little
+      //the ";" is needed for the ParameterGUIParser-it will be thrown away
+      S = S.trim(  ) + ";";
+      return ParameterGUIParser.parseText( S );
+    } catch( ParseException pe ) {
+      pe.printStackTrace(  );
+      return new Vector(  );
+    }
+    /*if( S == null ) {
       return null;
     }
 
@@ -358,7 +373,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     S = ArrayPG.ArraytoString( elements );
 
     //now we can send it to execOneLine
-    return parseLine( execLine, S );
+    return parseLine( execLine, S );*/
   }
 
   /**
