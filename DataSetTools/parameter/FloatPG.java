@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2004/01/05 22:36:50  bouzekc
+ *  Added check to prevent NumberFormatException with empty String.
+ *
  *  Revision 1.18  2003/12/15 01:56:37  bouzekc
  *  Removed unused imports.
  *
@@ -140,7 +143,7 @@ public class FloatPG extends StringEntryPG {
           return new Float( ((Number)val).floatValue() );
            
         }
-        else if(val instanceof String)
+        else if(val instanceof String && ( ( String ) val ).length(  ) > 0 )
           return new Float((String)val);
         else
           return new Float( 0.0f );
