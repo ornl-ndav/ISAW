@@ -30,6 +30,12 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.13  2004/05/10 20:42:29  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.12  2004/05/03 16:22:58  dennis
  *  Removed unused local variables
  *
@@ -532,11 +538,11 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
     Retriever rr       = new RunfileRetriever( run_name );
 
     DataSet     ds  = rr.getDataSet(1);
-    ViewManager vm1 = new ViewManager(ds,IViewManager.IMAGE);
+    new ViewManager(ds,IViewManager.IMAGE);
  
     Operator    op     = new FlightPathCorrection(ds, true );
     DataSet     ds_cor = (DataSet)op.getResult();
-    ViewManager vm2    = new ViewManager(ds_cor,IViewManager.IMAGE);
+    new ViewManager(ds_cor,IViewManager.IMAGE);
 
     op = new DoubleDifferentialCrossection(ds_cor, null, false, 10000, 1, true);
     
@@ -552,11 +558,11 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
       System.out.println("DSDODE_2 returned:" + ddif_ds );
       if ( ddif_ds instanceof DataSet )
       {
-        ViewManager vm3 = new ViewManager((DataSet)ddif_ds,IViewManager.IMAGE);
+        new ViewManager((DataSet)ddif_ds,IViewManager.IMAGE);
 
         op = new ResampleDataSet( (DataSet)ddif_ds, -100, 100, 200, true );
         DataSet smooth_ds = (DataSet)op.getResult();
-        ViewManager vm4=new ViewManager( smooth_ds,IViewManager.IMAGE );
+        new ViewManager( smooth_ds,IViewManager.IMAGE );
       }
     }
    System.out.println("End of test of DoubleDifferentialCrossection");

@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/05/10 20:42:19  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.7  2004/03/15 06:10:36  dennis
  *  Removed unused import statements.
  *
@@ -337,6 +343,6 @@ public class EventData extends    Data
     data = new HistogramModel( x_scale, f, 5 );
     ds.addData_entry( data );
 
-    ViewManager vm = new ViewManager( ds, IViewManager.IMAGE );
+    new ViewManager( ds, IViewManager.IMAGE );
   }
 }

@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/05/10 20:42:20  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.4  2004/03/15 06:10:37  dennis
  *  Removed unused import statements.
  *
@@ -281,7 +287,7 @@ public class Grid_util
 
       setEffectivePositions( ds, area_dets[i] );
     }
-    ViewManager vm = new ViewManager( ds, ViewManager.IMAGE );
+    new ViewManager( ds, ViewManager.IMAGE );
   }
 
 }

@@ -29,6 +29,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2004/05/10 20:42:21  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.2  2004/04/22 18:48:33  dennis
  * Replaced num_row, num_cols parameters with min and max group id.
  * This can now be used for either the LPSDs or area detector, by
@@ -354,11 +360,11 @@ public class LPSDSensitivity extends GenericTOF_SAD
      Operator op = new LPSDSensitivity( ds, 0.6f, 1.4f, 0, 16388 );
      Vector result = (Vector)op.getResult();
      DataSet area_sens = (DataSet)result.elementAt(0);
-     ViewManager vm = new ViewManager( area_sens, IViewManager.THREE_D );
+     new ViewManager( area_sens, IViewManager.THREE_D );
      
      op = new LPSDSensitivity( ds, 0.6f, 1.4f, 16389, 18948 );
      result = (Vector)op.getResult();
      DataSet lpsd_sens = (DataSet)result.elementAt(0);
-     vm = new ViewManager( lpsd_sens, IViewManager.THREE_D );
+     new ViewManager( lpsd_sens, IViewManager.THREE_D );
   }
 }

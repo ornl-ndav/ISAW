@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/05/10 20:42:23  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.8  2004/03/15 06:10:53  dennis
  * Removed unused import statements.
  *
@@ -451,7 +457,7 @@ public class Q_SliceExtractor
      LoadSCDCalib load_cal = new LoadSCDCalib( ds, calib_file_name, -1, null );
      load_cal.getResult();
  
-     ViewManager viewer = new ViewManager(ds, IViewManager.IMAGE );
+     new ViewManager(ds, IViewManager.IMAGE );
 
      DataSet ds_array[] = new DataSet[1];
      ds_array[0] = ds;

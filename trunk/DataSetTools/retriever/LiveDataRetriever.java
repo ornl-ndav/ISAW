@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2004/05/10 20:42:22  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.25  2004/03/15 06:10:51  dennis
  *  Removed unused import statements.
  *
@@ -268,10 +274,10 @@ public class LiveDataRetriever extends    RemoteDataRetriever
     LiveDataRetriever retriever = new LiveDataRetriever( server_name );
 
     DataSet     monitor_ds = retriever.getDataSet(0);
-    ViewManager monitor_vm = new ViewManager( monitor_ds, IViewManager.IMAGE);
+    new ViewManager( monitor_ds, IViewManager.IMAGE);
 
     DataSet     hist_ds = retriever.getDataSet(1);
-    ViewManager hist_vm = new ViewManager( hist_ds, IViewManager.IMAGE );
+    new ViewManager( hist_ds, IViewManager.IMAGE );
 
 //    retriever.Exit();
 

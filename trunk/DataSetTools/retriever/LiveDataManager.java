@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2004/05/10 20:42:21  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.26  2004/05/03 16:31:18  dennis
  *  Removed getValidDataSet() method that is no longer used.
  *
@@ -782,10 +788,10 @@ public class LiveDataManager extends    Thread
     LiveDataManager manager = new LiveDataManager( server_name );
 
     DataSet     monitor_ds = manager.getDataSet(0);
-    ViewManager monitor_vm = new ViewManager( monitor_ds, IViewManager.IMAGE);
+    new ViewManager( monitor_ds, IViewManager.IMAGE);
 
     DataSet     hist_ds = manager.getDataSet(1);
-    ViewManager hist_vm = new ViewManager( hist_ds, IViewManager.IMAGE );
+    new ViewManager( hist_ds, IViewManager.IMAGE );
 
   }
 }

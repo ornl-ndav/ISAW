@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/05/10 20:42:26  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.8  2004/03/15 06:10:54  dennis
  * Removed unused import statements.
  *
@@ -80,15 +86,13 @@ public static void main(String args[])
   RunfileRetriever rr;    // The RunfileRetriever object calls John's runfile
                           // package and returns the data as DataSets
 
-  ViewManager view_manager;  // Variable to hold reference to a ViewManager
-                             // that will display a DataSet
 
                                          // Load and show run A histograms 
   rr = new RunfileRetriever( run_A ); 
   A_histogram_ds = rr.getDataSet( 1 );
   rr = null;
-  view_manager = new ViewManager( A_histogram_ds, IViewManager.IMAGE );
-  view_manager = new ViewManager( A_histogram_ds, IViewManager.THREE_D );
+  new ViewManager( A_histogram_ds, IViewManager.IMAGE );
+  new ViewManager( A_histogram_ds, IViewManager.THREE_D );
   }
 
 } 

@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2004/05/10 20:42:24  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.22  2004/05/03 16:29:54  dennis
  * Removed two unused local variables.
  * Removed method: makeGoniometerRotationInverse() that was moved
@@ -554,7 +560,6 @@ public class RecipPlaneView
     System.out.println("Projecting points...");
     projection_ds = ProjectPointsUniformly( all_vectors, 15 );
     System.out.println("DONE");
-    ViewManager vm;
 //  vm = new ViewManager( projection_ds, IViewManager.IMAGE );
 
     System.out.println("Doing FFT on all projections....");
@@ -581,7 +586,7 @@ public class RecipPlaneView
 
     filtered_fft_ds.addIObserver( new FFTListener() );
     System.out.println("DONE");
-    vm = new ViewManager( filtered_fft_ds, IViewManager.IMAGE );
+    new ViewManager( filtered_fft_ds, IViewManager.IMAGE );
   }
 
 /* ---------------------------------------------------------------------
