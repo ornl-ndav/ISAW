@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2002/07/10 16:02:49  pfpeterson
+ *  Added to CVS.
+ *
  *  Revision 1.18  2002/06/12 13:59:49  pfpeterson
  *  Modified the write so the data for each bank is in a single
  *  string buffer (only one write per bank).
@@ -616,7 +619,8 @@ public class gsas_filemaker
      * Write the instrument parameter file with propper padding.
      */
     private void printIParmFile(){
-        String S=System.getProperty("IParmFile");
+        String S=(String)data.getAttributeValue(Attribute.GSAS_IPARM);
+        if(S==null) S=System.getProperty("IParmFile");
         //System.out.println("IParm: "+S);
         if(S!=null){
             StringBuffer sb=new StringBuffer(80);
