@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/08/17 20:38:29  rmikk
+ * Set the operator several times
+ *
  * Revision 1.6  2004/08/13 03:28:35  millermi
  * - Fixed javadoc errors.
  * - Split up lines exceeding 80 characters.
@@ -80,13 +83,14 @@ public class IntegratePt extends
   DataSet DS;
   int[][][] JHist = null;
   int id =-1;
-  private Wrappable op = new INTEG();
+  private Wrappable op;
   int ISX = 1;
   int ISY = 1;
   int ISZ = 1;
   public IntegratePt(){
     super("Integrate1");
     DS = null;
+    setIntgratePkOp(op,1,1,1);
   }
 
   
@@ -105,6 +109,7 @@ public class IntegratePt extends
     parameters = new Vector();
     parameters.addElement(new IntegerPG("Group Index", 0));
     parameters.addElement(new FloatPG("Time", 0.0f));
+    setIntgratePkOp(new INTEG(), 1,1,1);
     // Set default parameters to the above
     // getResult will integrate the given peak
   }
