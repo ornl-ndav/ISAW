@@ -12,6 +12,11 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.16  2000/10/03 21:25:10  dennis
+ *  Now uses one DataSetFactory for all Instrument types.
+ *  Also, now verifies that the source-to-sample distance is valid before
+ *  it uses the value to calculate the sample-to-detector distance.
+ *
  *  Revision 1.15  2000/08/03 21:40:15  dennis
  *  Now calls FilenameUtil.fixCase()
  *
@@ -350,31 +355,14 @@ public class RunfileRetriever extends    Retriever
      first_id = run_file.MinSubgroupID( histogram_num );
      last_id  = run_file.MaxSubgroupID( histogram_num );
 
-     DataSetFactory ds_factory;
+     DataSetFactory ds_factory = new DataSetFactory( title );
      if ( monitor )
-       ds_factory = new DataSetFactory( title, 
-                                       "Time(us)",
-                                       "Time-of-flight",
-                                       "Counts",
-                                       "Scattering Intensity" );
-     
-     else if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
-       ds_factory = new DiffractometerTofDataSetFactory( title );
-     else if ( instrument_type == InstrumentType.TOF_SCD )
-       ds_factory = new SCDTofDataSetFactory( title );
-     else if ( instrument_type == InstrumentType.TOF_SAD )
-       ds_factory = new SADTofDataSetFactory( title );
-     else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
-       ds_factory = new SpectrometerTofDataSetFactory( title );
-     else if ( instrument_type == InstrumentType.TOF_IDG_SPECTROMETER )
-       ds_factory = new IDGSpectrometerTofDataSetFactory( title );
-     else if ( instrument_type == InstrumentType.TOF_REFLECTROMETER )
-       ds_factory = new ReflectometerTofDataSetFactory( title );
-     else
-       ds_factory = new DataSetFactory( title );
+       data_set = ds_factory.getDataSet();  // just generic operations
 
-     data_set   = ds_factory.getDataSet();
-
+     else                                   // get data_set with ops for the
+                                            // current instrument
+       data_set = ds_factory.getTofDataSet( instrument_type );  
+                                                           
      if ( monitor && instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
      {
        data_set.addOperator( new EnergyFromMonitorDS() );
@@ -412,6 +400,11 @@ public class RunfileRetriever extends    Retriever
         if ( num_times > 1 )
         {
            raw_spectrum = run_file.Get1DSpectrum( group_id );
+  //         float max_val = 0;
+  //         for ( int i = 0; i < raw_spectrum.length; i++ )
+  //           if ( raw_spectrum[i] > max_val )
+  //             max_val =  raw_spectrum[i];
+  //         System.out.println( "max = " + max_val );
 
    //      if ( group_id == 7 || group_id == 52 )
    //        ShowGroupDetectorInfo( group_id, histogram_num );
@@ -420,11 +413,15 @@ public class RunfileRetriever extends    Retriever
           {
             // change times to sample to detector TOF for spectrometers 
             // and groups that are NOT beam monitors ------------------------ 
+            // and this is a new set of bin boundaries 
+            // and there is a valid source_to_sample time of flight
             source_to_sample_tof = (float)run_file.SourceToSampleTime();
-            if (instrument_type==InstrumentType.TOF_DG_SPECTROMETER && !monitor)
-              if ( new_tf_type )
-                for ( int i = 0; i < bin_boundaries.length; i++ )
-                   bin_boundaries[i] -= source_to_sample_tof;
+            if (instrument_type==InstrumentType.TOF_DG_SPECTROMETER && 
+                !monitor                                            &&
+                new_tf_type                                         && 
+                !Float.isInfinite(source_to_sample_tof)             ) 
+                  for ( int i = 0; i < bin_boundaries.length; i++ )
+                     bin_boundaries[i] -= source_to_sample_tof;
 
           // DON'T DO THIS FOR NOW... WE'LL JUST DEAL WITH HISTOGRAMS
           // change counts to counts per unit time
@@ -702,6 +699,9 @@ public class RunfileRetriever extends    Retriever
     };
 
     spectrum.setAttributeList( attr_list );
+
+//    if ( Math.abs(group_id - 294) < 3 )
+//      ShowGroupDetectorInfo( group_id, histogram_num );
   }
 
 
