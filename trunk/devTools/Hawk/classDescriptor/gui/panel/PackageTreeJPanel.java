@@ -32,10 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:53:35  bouzekc
- * Documented file using javadoc statements.
- * Removed usage of the HorizontalInterfacePanelGUI and VerticalInterfacePanelGUI
- * classes.
+ * Revision 1.3  2004/03/12 19:46:17  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:09:43  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -58,7 +56,6 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -73,15 +70,10 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import devTools.Hawk.classDescriptor.gui.frame.FileAssociationGUI;
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
-import devTools.Hawk.classDescriptor.gui.internalFrame.JavadocsGUI;
-import devTools.Hawk.classDescriptor.gui.internalFrame.ShortenedSourceGUI;
-import devTools.Hawk.classDescriptor.gui.internalFrame.SingleUMLGUI;
-import devTools.Hawk.classDescriptor.gui.internalFrame.SourceCodeGUI;
+import devTools.Hawk.classDescriptor.gui.internalFrame.InternalFrameUtilities;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
-import devTools.Hawk.classDescriptor.tools.FileAssociationManager;
 import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
 
 /**
@@ -404,7 +396,7 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 	 * selected does not correspond to an Interface, null is returned.
 	 * @return The selected Interface or null.
 	 */
-	public Interface getSelectedInterface()
+	public Interface[] getSelectedInterface()
 	{
 		Interface intF = null;
 		TreePath treePath = tree.getSelectionPath();
@@ -435,8 +427,14 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 				}
 			}
 		}
-				
-		return intF;
+		Interface[] intfArr = new Interface[0];
+		if (intF != null)
+		{
+			intfArr = new Interface[1];
+			intfArr[0] = intF;
+		}
+		
+		return intfArr;
 	}
 	
 	/**
@@ -465,106 +463,23 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 	public void actionPerformed(ActionEvent event)
 	{
 		if (event.getActionCommand().equals("Save"))
-		{
-			
-		}
+		{}
 		else if (event.getActionCommand().equals("Close"))
-		{
 			frame.dispose();
-		}
 		else if (event.getActionCommand().equals("popup.singleUML"))
-		{
-			Interface intF = getSelectedInterface();
-			
-			if (intF != null)
-			{
-				SingleUMLGUI singleUML = null;
-				singleUML = new SingleUMLGUI(intF, intF.getPgmDefn().getInterface_name(true,false), true, false,desktop);		
-				
-				if (singleUML != null)
-				{
-					singleUML.setVisible(true);
-					desktop.getSelectedDesktop().add(singleUML);
-					singleUML.setAsSelected(true);
-				}
-			}
-		}		
+			InternalFrameUtilities.showSingleUMLDiagrams(getSelectedInterface(),desktop);
 		else if (event.getActionCommand().equals("popup.shortenedSource"))
-		{
-			Interface intF = getSelectedInterface();
-			
-			if (intF != null)
-			{
-				ShortenedSourceGUI popupSsg = new ShortenedSourceGUI(intF, getSelectedInterface().getPgmDefn().getInterface_name(true,false), true, false,desktop);
-				popupSsg.setVisible(true);
-				desktop.getSelectedDesktop().add(popupSsg);
-				popupSsg.setAsSelected(true);
-			}
-		}
+			InternalFrameUtilities.showShortenedSourceCode(getSelectedInterface(),desktop);
 		else if (event.getActionCommand().equals("popup.sourceCode"))
-		{
-			Interface intF = getSelectedInterface();
-			
-			if (intF != null)
-			{
-				SourceCodeGUI popupSource = new SourceCodeGUI(intF, getSelectedInterface().getPgmDefn().getInterface_name(),desktop);
-				popupSource.setVisible(true);
-				desktop.getSelectedDesktop().add(popupSource);
-				popupSource.setAsSelected(true);
-			}
-		}
+			InternalFrameUtilities.showSourceCode(getSelectedInterface(),desktop);
 		else if (event.getActionCommand().equals("popup.javadocs"))
-		{
-			Interface intF = getSelectedInterface();
-			
-			if (intF != null)
-			{
-				JavadocsGUI javagui = new JavadocsGUI(intF,getSelectedInterface().getPgmDefn().getInterface_name(),desktop);
-				javagui.setVisible(true);
-				desktop.getSelectedDesktop().add(javagui);
-				javagui.setAsSelected(true);
-			}
-		}
-		else if (event.getActionCommand().equals("properties.shorten"))
-		{
-			fillTree(shortenPackageJavaBox.isSelected(), shortenPackageOtherBox.isSelected(), shortenClassJavaBox.isSelected(), shortenClassOtherBox.isSelected());
-		}
+			InternalFrameUtilities.showJavadocs(getSelectedInterface(),desktop);
 		else if (event.getActionCommand().equals("associate.source.code"))
-		{
-			Interface selectedIntF = getSelectedInterface();
-			if (selectedIntF != null)
-			{
-				FileAssociationGUI sourceGUI = new FileAssociationGUI(selectedIntF, FileAssociationManager.JAVASOURCE);
-				sourceGUI.setVisible(true);
-			}
-			else
-			{
-				//custom title, error icon
-					JOptionPane opPane = new JOptionPane();
-					JOptionPane.showMessageDialog(opPane,
-						"You need to select an interface to associate a source code file with it",
-						"Note",
-						JOptionPane.INFORMATION_MESSAGE);
-			}
-		}
+			InternalFrameUtilities.showAssociateSourceCodeWindow(getSelectedInterface(),desktop);
 		else if (event.getActionCommand().equals("associate.javadocs"))
-		{
-			Interface selectedIntF = getSelectedInterface();
-			if (selectedIntF != null)
-			{
-				FileAssociationGUI javadocsGUI = new FileAssociationGUI(selectedIntF, FileAssociationManager.JAVADOCS);
-				javadocsGUI.setVisible(true);
-			}
-			else
-			{
-				//custom title, error icon
-					JOptionPane opPane = new JOptionPane();
-					JOptionPane.showMessageDialog(opPane,
-						"You need to select an interface to associate a javadocs file with it",
-						"Note",
-						JOptionPane.INFORMATION_MESSAGE);
-			}
-		}
+			InternalFrameUtilities.showAssociateJavadocsWindow(getSelectedInterface(),desktop);
+		else if (event.getActionCommand().equals("properties.shorten"))
+			fillTree(shortenPackageJavaBox.isSelected(), shortenPackageOtherBox.isSelected(), shortenClassJavaBox.isSelected(), shortenClassOtherBox.isSelected());
 	}
 	
 	/**

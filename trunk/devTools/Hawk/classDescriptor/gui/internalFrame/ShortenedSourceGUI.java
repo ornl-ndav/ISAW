@@ -32,8 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 19:01:20  bouzekc
- * Documented file using javadoc statements.
+ * Revision 1.3  2004/03/12 19:46:16  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:09:16  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -46,6 +46,7 @@ package devTools.Hawk.classDescriptor.gui.internalFrame;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -143,7 +144,25 @@ public class ShortenedSourceGUI extends ColorfulTextGUI implements ActionListene
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());		
 		
-		textPane = new JTextPane();
+		textPane = new JTextPane()
+		{
+			public void setSize(Dimension dim)
+			{
+				//if (dim.width < getParent().getSize().width)
+					//dim.width = getParent().getSize().width;
+					
+				if (dim.width < desktop.getSize().width)
+					dim.width = desktop.getSize().width;
+				
+				super.setSize(dim);
+			}
+			
+			public boolean getScrollableTracksViewportWidth()
+			{
+				return false;
+			}
+
+		};
 		doc = textPane.getStyledDocument();
 		addStylesToDocument(doc);
 		fillInTextArea(INTF, shortJava, shortOther);
@@ -165,7 +184,7 @@ public class ShortenedSourceGUI extends ColorfulTextGUI implements ActionListene
 				fileMenu.add(save);
 				fileMenu.add(close);
 			ssMenuBar.add(fileMenu);
-				
+			ssMenuBar.add(InternalFrameUtilities.constructViewMenu(this,true,false,true,true));
 				JMenu propertiesMenu = new JMenu("Properties");
 					shortJavaCheckBox = new JCheckBox("Shorten Java Classnames");
 						shortJavaCheckBox.setSelected(shortJava);
@@ -299,7 +318,7 @@ public class ShortenedSourceGUI extends ColorfulTextGUI implements ActionListene
 		{
 			fillInTextArea(selectedInterface,shortJavaCheckBox.isSelected(), shortOtherCheckBox.isSelected());
 			setTitle(selectedInterface.getPgmDefn().getInterface_name(shortJavaCheckBox.isSelected(), shortOtherCheckBox.isSelected()));
-			pack();
+			resizeAndRelocate();
 		}
 		else if (event.getActionCommand().equals("close"))
 		{
@@ -313,6 +332,7 @@ public class ShortenedSourceGUI extends ColorfulTextGUI implements ActionListene
 			processWindowChange(event,copy,this);
 */
 			super.actionPerformed(event);
+			InternalFrameUtilities.processActionEventFromViewMenu(event,selectedInterface,desktop);
 		}
 	}
 }

@@ -32,8 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:55:21  bouzekc
- * Documented file using javadoc statements.
+ * Revision 1.3  2004/03/12 19:46:15  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:08:51  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -68,6 +68,7 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -218,8 +219,10 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 				fileField = new JTextField(25);
 				mainButtonPanel.add(fileField);
 				
-				JButton browseButton = new JButton("Browse");
+				JButton browseButton = new JButton("Select File");
+				browseButton.setToolTipText("Select the file to print the information to");
 				browseButton.addActionListener(this);
+				browseButton.setActionCommand("Browse");
 				mainButtonPanel.add(browseButton);
 				
 				JButton closeButton = new JButton("Close");
@@ -605,11 +608,22 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 		}
 		else if (event.getActionCommand().equals("Print"))
 		{
-			dispose();
-			ASCIIPrintThread printThread = new ASCIIPrintThread(this);
-			printThread.start();
-			//HTMLPrintThread thread = new HTMLPrintThread(this);
-			//thread.start();
+			if (fileField.getText().trim().equals(""))
+			{
+				JOptionPane opPane = new JOptionPane();
+				JOptionPane.showMessageDialog(opPane,
+					"Please select a file to save the printout to.",
+					"Filename Not Given",
+				JOptionPane.INFORMATION_MESSAGE);
+			}
+			else
+			{
+				dispose();
+				ASCIIPrintThread printThread = new ASCIIPrintThread(this);
+				printThread.start();
+				//HTMLPrintThread thread = new HTMLPrintThread(this);
+				//thread.start();
+			}
 		}
 		else if (event.getActionCommand().equals("Close"))
 		{

@@ -32,8 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:42:27  bouzekc
- * Documented file using javadoc statements.
+ * Revision 1.3  2004/03/12 19:46:20  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:10:46  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -129,45 +129,58 @@ public class HTMLPrintFileManager extends PrintManager
 	 */
 	public static String getHTMLCodeForSingleUML(Interface intf, boolean shortJava, boolean shortOther)
 	{
-		String str = "";
+		StringBuffer buffer = new StringBuffer();
 		int longest = longestLine(intf, shortJava, shortOther);
 //		int percent = (int)((longest / 77.0));
 		
-		str += "<table style=\"text-align: left; width: "+ "100"+ "%;\" border=\"1\" cellspacing=\"2\" cellpadding=\"2\">\n  <tbody>\n";
-		str += "    <tr><td style=\"text-align: center;\"><b>"+getUMLNameLine(intf.getPgmDefn(),shortJava,shortOther)+"</b></td></tr>\n";
-		str += "    <tr><td style=\"vertical-align: top;\">\n";
+		buffer.append("<table style=\"text-align: left; width: "+ "100"+ "%;\" border=\"1\" cellspacing=\"2\" cellpadding=\"2\">\n  <tbody>\n");
+		buffer.append("    <tr><td style=\"text-align: center;\"><b>"+getUMLNameLine(intf.getPgmDefn(),shortJava,shortOther)+"</b></td></tr>\n");
+		buffer.append("    <tr><td style=\"vertical-align: top;\">\n");
 		for (int i=0; i<intf.getAttribute_vector().size(); i++)
 		{
 			if (i==intf.getAttribute_vector().size()-1)
-				str += "        "+getUMLAttributeLine((AttributeDefn)intf.getAttribute_vector().elementAt(i),shortJava,shortOther)+"\n";
+				buffer.append("        "+getUMLAttributeLine((AttributeDefn)intf.getAttribute_vector().elementAt(i),shortJava,shortOther)+"\n");
 			else
-				str += "        "+getUMLAttributeLine((AttributeDefn)intf.getAttribute_vector().elementAt(i),shortJava,shortOther)+"<br>\n";
+				buffer.append("        "+getUMLAttributeLine((AttributeDefn)intf.getAttribute_vector().elementAt(i),shortJava,shortOther)+"<br>\n");
 		}
 		
-		str += "  </td></tr>";
+		buffer.append("  </td></tr>");
 			
-		str += "    <tr><td style=\"vertical-align: top;\">\n";
+		buffer.append("    <tr><td style=\"vertical-align: top;\">\n");
 		for (int i=0; i<intf.getConst_vector().size(); i++)
 		{
 			if (i==intf.getConst_vector().size()-1)
-				str += "        "+getUMLConstructorLine((ConstructorDefn)intf.getConst_vector().elementAt(i),shortJava,shortOther)+"\n";
+				buffer.append("        "+getUMLConstructorLine((ConstructorDefn)intf.getConst_vector().elementAt(i),shortJava,shortOther)+"\n");
 			else
-				str += "        "+getUMLConstructorLine((ConstructorDefn)intf.getConst_vector().elementAt(i),shortJava,shortOther)+"<br>\n";
+				buffer.append("        "+getUMLConstructorLine((ConstructorDefn)intf.getConst_vector().elementAt(i),shortJava,shortOther)+"<br>\n");
 		}
-		str += "  </td></tr>";
+		buffer.append("  </td></tr>");
 		
-		str += "    <tr><td style=\"vertical-align: top;\">\n";
+		buffer.append("    <tr><td style=\"vertical-align: top;\">\n");
 		for (int i=0; i<intf.getMethod_vector().size(); i++)
 		{
 			if (i==intf.getMethod_vector().size()-1)
-				str += "        "+getUMLMethodLine((MethodDefn)intf.getMethod_vector().elementAt(i),shortJava,shortOther)+"\n";
+				buffer.append("        "+getUMLMethodLine((MethodDefn)intf.getMethod_vector().elementAt(i),shortJava,shortOther)+"\n");
 			else
-				str += "        "+getUMLMethodLine((MethodDefn)intf.getMethod_vector().elementAt(i),shortJava,shortOther)+"<br>\n";
+				buffer.append("        "+getUMLMethodLine((MethodDefn)intf.getMethod_vector().elementAt(i),shortJava,shortOther)+"<br>\n");
 		}
-		str += "  </td></tr>";
+		buffer.append("  </td></tr>");
 			
-		str += "  </tbody>\n</table>\n";
+		buffer.append("  </tbody>\n</table>\n");
 		
-		return str;
+		return buffer.toString();
+	}
+	
+	/**
+	 * Prints the HTML code for the shortened source code for the Interface supplied.  Note:  This method only returns the code 
+	 * for the diagram (represented as a table) and does not include the html, body, end-html, and end-body flags.  This method is 
+	 * still under construction.
+	 * @param intf This Interface whose data is to be analyzed.
+	 * @param shortJava Set this to true if java names are to be shortened.
+	 * @param shortOther Set this to true if non-java names are to be shortened.
+	 * @return The HTML code for a single UML diagram for the Interface supplied.
+	 */
+	public void printShortenedSource(Interface intf, boolean shortJava, boolean shortOther)
+	{
 	}
 }

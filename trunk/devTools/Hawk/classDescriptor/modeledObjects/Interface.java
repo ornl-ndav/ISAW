@@ -32,8 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:47:20  bouzekc
- * Documented file using javadoc statements.
+ * Revision 1.3  2004/03/12 19:46:18  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:10:06  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -401,29 +401,29 @@ public class Interface
 		int constSize = getConst_vector().size();
 		int methSize = getMethod_vector().size();
 		int i = 0;
-		String answer = "";
-		
-		answer = answer + tab + ASCIIPrintFileManager.getOuterDivider(this, shortJava, shortOther) + "\n";
-		answer  = answer + tab + ASCIIPrintFileManager.getInterfaceNameLine(this, shortJava, shortOther) + "\n";
-		answer = answer + tab + ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther) + "\n";
+		StringBuffer buffer = new StringBuffer();
+			
+		buffer.append(tab + ASCIIPrintFileManager.getOuterDivider(this, shortJava, shortOther) + "\n");
+		buffer.append(tab + ASCIIPrintFileManager.getInterfaceNameLine(this, shortJava, shortOther) + "\n");
+		buffer.append(tab + ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther) + "\n");
 	
 		for (i = 0; i < attSize; i++)
-			answer = answer + tab + ASCIIPrintFileManager.getAttributeLine(this, i, shortJava, shortOther) + "\n";
+			buffer.append(tab + ASCIIPrintFileManager.getAttributeLine(this, i, shortJava, shortOther) + "\n");
 
 		if (attSize>0)
-			answer = answer + tab + ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther) + "\n";
+			buffer.append(tab + ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther) + "\n");
 			
 		for (i = 0; i < constSize; i++)
-			answer = answer + tab + ASCIIPrintFileManager.getConstructorLine(this, i, shortJava, shortOther) + "\n";
+			buffer.append(tab + ASCIIPrintFileManager.getConstructorLine(this, i, shortJava, shortOther) + "\n");
 		if (constSize>0)
-			answer = answer + tab + ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther) + "\n";
+			buffer.append(tab + ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther) + "\n");
 	
 		for (i = 0; i < methSize; i++)
-			answer = answer + tab + ASCIIPrintFileManager.getMethodLine(this, i, shortJava, shortOther) + "\n";
+			buffer.append(tab + ASCIIPrintFileManager.getMethodLine(this, i, shortJava, shortOther) + "\n");
 	
-		answer = answer + tab + ASCIIPrintFileManager.getOuterDivider(this, shortJava, shortOther);
+		buffer.append(tab + ASCIIPrintFileManager.getOuterDivider(this, shortJava, shortOther));
 		
-		return answer;
+		return buffer.toString();
 	}
 
 	

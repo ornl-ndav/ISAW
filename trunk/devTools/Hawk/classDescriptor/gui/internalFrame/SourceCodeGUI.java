@@ -32,10 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 19:02:35  bouzekc
- * Documented file using javadoc statements.
- * Modified the JTextPane such that lines are not wrapped.
- * Removed the WindowDestroyer inner class which extends WindowAdapter.
+ * Revision 1.3  2004/03/12 19:46:16  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:09:16  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -108,8 +106,8 @@ public class SourceCodeGUI extends ColorfulTextGUI implements ActionListener
 			JPanel mainPanel = new JPanel();
 			mainPanel.setLayout(new BorderLayout());
 			
-		//now to create the area for placing the javadocs in html format
-			sourcePane = new JTextPane()
+		//now to create the area for placing the source code
+		sourcePane = new JTextPane()
 			{
 				public void setSize(Dimension dim)
 				{
@@ -148,6 +146,7 @@ public class SourceCodeGUI extends ColorfulTextGUI implements ActionListener
 					closeItem.addActionListener(this);
 				fileMenu.add(closeItem);
 			sourceMenuBar.add(fileMenu);
+			sourceMenuBar.add(InternalFrameUtilities.constructViewMenu(this,true,true,true,false));
 //			refreshMoveAndCopyMenu();
 //			windowMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
 			sourceMenuBar.add(windowMenu);
@@ -182,6 +181,7 @@ public class SourceCodeGUI extends ColorfulTextGUI implements ActionListener
 			processWindowChange(event,copy,this);
 */
 			super.actionPerformed(event);
+			InternalFrameUtilities.processActionEventFromViewMenu(event,selectedInterface,desktop);
 		}
 	}
 }

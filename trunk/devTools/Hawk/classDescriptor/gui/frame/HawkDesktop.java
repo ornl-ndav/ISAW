@@ -32,11 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:40:46  bouzekc
- * Documented file using javadoc statements.
- * Added the firstWindowOpened field to support having multiple HawkDesktop windows open and have System.exit(0) be
- *   called only if the original window is closed.  Otherwise the window is simply disposed.
- * Added the method getIconedButton which can get icons from inside the jarfile that Hawk is in to place on buttons.
+ * Revision 1.3  2004/03/12 19:46:14  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:08:50  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -305,7 +302,7 @@ public class HawkDesktop extends JFrame implements ActionListener
 	 */
 	public void actionPerformed(ActionEvent event)
 	{
-		proPanel.processSentEvent(event);
+		proPanel.actionPerformed(event);
 	}
 	
 	/**

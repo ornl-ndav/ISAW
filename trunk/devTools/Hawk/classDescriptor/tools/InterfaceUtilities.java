@@ -32,11 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:47:47  bouzekc
- * Documented file using javadoc statements.
- * Removed method isASectionKeyword(String).
- * Modified the method alphabatizeVector() to use the toString method to
- * alphabatize the Vector of object supplied.
+ * Revision 1.3  2004/03/12 19:46:20  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:10:46  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -412,5 +409,28 @@ public class InterfaceUtilities
 		}
 						
 		return answer;
+	}
+	
+	/**
+	 * This returns true if the string supplied is a keyword.  Here are the following keywords:  
+	 * abstract, boolean, break, byte, case, catch, char, class, const, continue, default, do, double, 
+	 * else, extends, final, finally, float, for, future, generic, goto, if, implements, imports, inner, 
+	 * instanceof, int, interface, long, native, new, null, operator, outer, package, private, protected, 
+	 * public, rest, return, short, static, super, switch, synchronized, this, throw, throws, transient, 
+	 * try, var, void, volatile, while
+	 * @param str The string to analyze.
+	 * @return True if str is a keyword and false otherwise.
+	 */
+	public static boolean isAJavaKeyword(String str)
+	{
+		if (str.equals("abstract") || str.equals("boolean") || str.equals("break") || str.equals("byte") || str.equals("case") || str.equals("catch") || str.equals("char") || str.equals("class") || str.equals("const") ||
+		str.equals("continue") || str.equals("default") || str.equals("do") || str.equals("double") || str.equals("else") || str.equals("extends") || str.equals("final") || str.equals("finally") || str.equals("float") || str.equals("for") || 
+		str.equals("future") || str.equals("generic") || str.equals("goto") || str.equals("if") || str.equals("implements") || str.equals("import") || str.equals("inner") || str.equals("instanceof") || str.equals("int") || str.equals("interface") || 
+		str.equals("long") || str.equals("native") || str.equals("new") || str.equals("null") || str.equals("operator") || str.equals("outer") || str.equals("package") || str.equals("private") || str.equals("protected") || str.equals("public") || 
+		str.equals("rest") || str.equals("return") || str.equals("short") || str.equals("static") || str.equals("super") || str.equals("switch") || str.equals("synchronized") || str.equals("this") || str.equals("throw") || str.equals("throws") ||
+		str.equals("transient") || str.equals("try") || str.equals("var") || str.equals("void") || str.equals("volatile") || str.equals("while"))
+			return true;
+		else
+			return false;
 	}
 }
