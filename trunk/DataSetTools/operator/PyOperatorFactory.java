@@ -29,17 +29,25 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/06/13 14:58:05  pfpeterson
+ * Implements OperatorFactory, does more checks before giving a file
+ * to the enterpreter, and converts PyException to ParseError to keep
+ * dependence on Jython minimized.
+ *
  * Revision 1.1  2003/06/11 21:24:07  pfpeterson
  * Added to CVS.
  *
  */
 package DataSetTools.operator;
 
+import Command.PyScript;
+import Command.ParseError;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import org.python.core.Py;
+import org.python.core.PyException;
 import org.python.core.PyObject;
 import org.python.util.PythonInterpreter;
 
@@ -51,8 +59,9 @@ import org.python.util.PythonInterpreter;
  * and can be remidied by creating a new instance of the
  * PyOperatorFactory.
  */
-public class PyOperatorFactory extends Object{
-  protected PythonInterpreter interp=null;
+public class PyOperatorFactory extends Object implements OperatorFactory{
+  private   static boolean           DEBUG  = true;
+  protected        PythonInterpreter interp = null;
 
   /**
    * This constructor does not allow passing information to the
@@ -97,12 +106,23 @@ public class PyOperatorFactory extends Object{
    * generate an operator instance from the given python file
    */
   public Operator getInstance(String filename) throws IllegalStateException,
+                                                      InstantiationError,
                                                       ClassCastException,
-                                                      MissingResourceException{
+                                                      MissingResourceException,
+                                                      ParseError{
     String classname;
 
-    // execute the file
-    this.interp.execfile(filename);
+    // get the script
+    PyScript script=new PyScript(filename);
+    if(! script.isValid())
+      throw new InstantiationError("Invalid Script Format");
+
+    // execute the file --> this throws the PyException
+    try{
+      this.interp.exec(script.toString());
+    }catch(PyException e){
+      throw script.generateError(e,filename);
+    }
 
     // get the name of the class within the file
     int start=filename.lastIndexOf(File.separator);
