@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/11/06 21:25:09  rmikk
+ * Introduces a new method necessary for Selecting
+ *    DataSets in a table
+ *
  * Revision 1.2  2003/10/28 19:57:28  rmikk
  * Fixed javadoc errors
  *
@@ -81,5 +85,5 @@ public interface IArrayMaker_DataSet extends IArrayMaker{
   public ISelectedData getSelectedData( int PointedAtGroupIndex,
                                          float PointedAtTime);
   
-
+  public void SelectRegion( ISelectedRegion region);
 }
