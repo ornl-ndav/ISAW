@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2002/04/08 15:36:27  dennis
+ *  Added categories for X, Y and XY Axis Information operators.
+ *
  *  Revision 1.13  2002/02/22 20:49:26  pfpeterson
  *  Operator reorganization.
  *
@@ -155,6 +158,10 @@ abstract public class Operator implements Serializable
    public static final String        X_AXIS_CONVERSION  = "X Axis Conversion";
    public static final String        Y_AXIS_CONVERSION  = "Y Axis Conversion";
    public static final String        XY_AXIS_CONVERSION = "XY Axes Conversion";
+   public static final String      INFORMATION          = "Information";
+   public static final String        X_AXIS_INFORMATION = "X Axis Information";
+   public static final String        Y_AXIS_INFORMATIO  = "Y Axis Information";
+   public static final String        XY_AXIS_INFORMATION= "XY Axes Information";
    public static final String      SPECIAL              = "Special";
 
 // ####### NOTE: THESE SHOULD BE UN-COMMENTED WHEN A NEW RELEASE IS MADE
