@@ -105,12 +105,25 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
    public Object getResult()
    {
      Object result=form_op.getResult();
+     
      if(result instanceof ErrorString){
        this.result_param.setValue(null);
        SharedData.addmsg("ERROR: " + result);
        return Boolean.FALSE;
      }
-     this.result_param.setValue(result);
+     
+     /*if we have a String result and it has a '.' in it, it is probably
+       a file.*/
+     if(result instanceof String && 
+        ( ((String)result).indexOf('.') ) >= 0){
+       String indexedString = (String)result;
+       
+       //assume that we have a loadable/viewable file name
+       result_param = new BrowsePG("Result", indexedString, true);
+     }
+     else  //something else we can't handle as a file
+       this.result_param.setValue(result);
+       
      SharedData.addmsg("Success!\n" + result.toString());
 
      //validate the parameters...if we got this far, assume
