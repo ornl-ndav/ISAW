@@ -34,6 +34,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2001/08/10 20:19:59  dennis
+ *  Main program exits if help message was requested.
+ *
  *  Revision 1.16  2001/08/10 19:41:16  dennis
  *  Added methods to parse command line arguments and show usage.
  *  Also added methods to get/set the udp port being used.
@@ -530,6 +533,10 @@ public class LiveDataServer extends    DataSetServer
 
     LiveDataServer server= new LiveDataServer();
     server.parseArgs( args );
+
+    if ( StringUtil.commandPresent( "-h", args )  ||
+         StringUtil.commandPresent( "-h", args )  )
+      System.exit(1);
 
     Date date = new Date( System.currentTimeMillis() );
     System.out.println("Starting " + server.getServerName() + " on " + date );
