@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/03/07 22:24:32  pfpeterson
+ *  Put global version information in here.
+ *
  *  Revision 1.6  2002/02/22 20:36:43  pfpeterson
  *  Operator reorganization.
  *
@@ -76,6 +79,7 @@ public class SharedData implements java.io.Serializable
   public static final PropertiesLoader isaw_props 
                                         = new PropertiesLoader("IsawProps.dat");
   
+ public static final String VERSION     = "Unknown_Version";
  
   public static final String BUILD_DATE = "Unknown_Build_Date";
 
