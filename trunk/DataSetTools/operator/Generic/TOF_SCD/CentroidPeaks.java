@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/02/06 18:03:27  dennis
+ * Added getDocumentation() method.  (Shannon Hintzman)
+ *
  * Revision 1.9  2003/01/30 21:08:56  pfpeterson
  * Huge reduction in amount of code due to new Util class.
  *
@@ -97,6 +100,30 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
     return "CentroidPeaks";
   }
   
+  /* ---------------------------- getDocumentation -------------------------- */
+ 
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    
+    Res.append("@overview This program takes a list of peaks and calculates ");
+    Res.append("their centers using a centroid method.");
+ 
+    Res.append("@algorithm The x,y time bin and intensity values are found ");
+    Res.append("using various methods.  They are then each printed out with ");
+    Res.append("a \"System.out.print\".  (Currently these are all commented ");
+    Res.append("out.)  Finally a vector of x,y time bins and intensities is ");
+    Res.append("returned.");
+       
+    Res.append("@param data_set - DataSet to find peak in.");
+    Res.append("@param peaks - Vector of peaks. Normally created by ");
+    Res.append("FindPeaks.");
+    
+    Res.append("@return Returns a vector of x,y,time bins and intensities.");
+    
+    return Res.toString();
+  }
+
   /** 
    * Sets default values for the parameters. This must match the
    * data types of the parameters.
