@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/08/15 02:08:38  rmikk
+ *  Set the selected item of the combo box to the value of
+ *  the parameter
+ *
  *  Revision 1.4  2001/08/07 20:57:13  rmikk
  *  Eliminated setPreferred Size and changed segments layout
  *  to a Grid Layout
@@ -70,6 +74,7 @@ public class JDataSetParameterGUI extends JParameterGUI
        { 
          combobox.addItem( DS[i]);
        }
+       combobox.setSelectedItem( parameter.getValue() );
        segment = new JPanel();
        segment.setLayout(new GridLayout( 1, 2 )); 
       
