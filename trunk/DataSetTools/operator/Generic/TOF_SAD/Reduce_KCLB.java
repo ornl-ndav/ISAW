@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/10 17:56:07  rmikk
+ * Fixed the Data Type for 2D data.
+ * Fixed the first returned parameter to be a Vector with Run number then
+ *   an int[] of run numbers used
+ *
  * Revision 1.1  2004/02/29 17:53:07  rmikk
  * Initial checkin.  This is Reduce_KCL that returns arrays instead of
  * DataSets.  These arrays can be summed when working with several
@@ -337,9 +342,12 @@ public class Reduce_KCLB extends GenericTOF_SAD {
    /* ---------------------------- getResult ------------------------------- */
     
    /**  Executes the operator using the parameters that were set up
-    *@return  If there were no errors aVector of the results (Entry 1: Array 
-    *     of RunNums, Entry 2: The array of yvals,Entry 3: Array of errors, 
-    *     and Entry 4: the array of weights). otherwise  the ErrorString
+    *@return  If there were no errors a Vector of the results (Entry 1: A Vector
+    *         whose first element is the major run number(Integer) and whose 2nd
+    *     element is an int[]of RunNums, Entry 2: a Vector whose elements are 
+    *     The float[] of yvals,float[] of errors,and float[] of weights and 
+    *     and Entry 3: A Vector for background values in the format of Entry 2. 
+    *     Otherwise  the ErrorString
     *             "No Data Set Selected" is returned.<P>
     *
     *NOTE: 
@@ -617,8 +625,11 @@ public class Reduce_KCLB extends GenericTOF_SAD {
          Vector SBackQ = SumQs(BackGrid, xscl, RUNSds[0], SensGrid, Eff);
             
          Vector V = new Vector();
-    
-         V.add(RunNums);
+           Vector W = new Vector();
+           W.add( new Integer(RunNums[0]));
+           W.add( RunNums);
+       
+         V.add(W);
          V.add(SSampQ);
          V.add(SBackQ);
             
@@ -659,7 +670,7 @@ public class Reduce_KCLB extends GenericTOF_SAD {
          }
       xDELTAQ = ((Qxmax - Qxmin) / DIVx);
       yDELTAQ = ((Qymax - Qymin) / DIVy);
-      float[][] WTQXQY, SQXQY, SERRXY, BQXQY, BERRXY, SBQXQY, SBERRXY;
+      float[][][] WTQXQY, SQXQY, SERRXY, BQXQY, BERRXY, SBQXQY, SBERRXY;
 
       WTQXQY = sss(DIVx, DIVy);
       SQXQY = sss(DIVx, DIVy);
@@ -727,19 +738,19 @@ public class Reduce_KCLB extends GenericTOF_SAD {
 
                         float W = sens * eff[k] * Mon[k];
 
-                        WTQXQY[Nx][Ny] = WTQXQY[Nx][Ny] + //weightYvals[k];
+                        WTQXQY[Nx][Ny][0] = WTQXQY[Nx][Ny][0] + //weightYvals[k];
                               W;       
-                        SQXQY[Nx][Ny] = SQXQY[Nx][Ny] + SampYvals[k] * Mon[k];
-                        BQXQY[Nx][Ny] = BQXQY[Nx][Ny] + BackYvals[k] * Mon[k];
-                        SBQXQY[Nx][Ny] = SQXQY[Nx][Ny] - BQXQY[Nx][Ny];
+                        SQXQY[Nx][Ny][0] = SQXQY[Nx][Ny][0] + SampYvals[k] * Mon[k];
+                        BQXQY[Nx][Ny][0] = BQXQY[Nx][Ny][0] + BackYvals[k] * Mon[k];
+                        SBQXQY[Nx][Ny][0] = SQXQY[Nx][Ny][0] - BQXQY[Nx][Ny][0];
                         float U = SampErrs[k] * W;
 
-                        SERRXY[Nx][Ny] = SERRXY[Nx][Ny] +
+                        SERRXY[Nx][Ny][0] = SERRXY[Nx][Ny][0] +
                               (float) Math.pow(U, 2.0);
                         U = BackErrs[k] * W;
-                        BERRXY[Nx][Ny] = BERRXY[Nx][Ny] + (
+                        BERRXY[Nx][Ny][0] = BERRXY[Nx][Ny][0] + (
                               float) Math.pow(U, 2.0);
-                        SBERRXY[Nx][Ny] = BERRXY[Nx][Ny] + SERRXY[Nx][Ny];
+                        SBERRXY[Nx][Ny][0] = BERRXY[Nx][Ny][0] + SERRXY[Nx][Ny][0];
 
                      } else {//System.out.println("out of bounds"+Qxmin+","+Q+","+Qxmax+"::"+
                         //  Qymin+","+Qy+","+Qymax);
@@ -751,9 +762,11 @@ public class Reduce_KCLB extends GenericTOF_SAD {
         
      
       Vector V = new Vector();
-      Vector Ress = new Vector();
-
-      Ress.add(RunNums);
+         Vector Ress = new Vector();
+         V.add( new Integer( RunNums[0]));
+         V.add( RunNums);
+      Ress.add(V);    
+      V = new Vector();
       V.add(SQXQY);
       V.add(SERRXY);
       V.add(WTQXQY);
@@ -971,7 +984,7 @@ public class Reduce_KCLB extends GenericTOF_SAD {
             }//sens !=0
            
          }//for rows and cols
-      for(int i = 0; i < Resy.length; i++)
+     /* for(int i = 0; i < Resy.length; i++)
          if(weight[i] > 0) {
 
             Resy[i] = Resy[i] / weight[i];
@@ -979,7 +992,7 @@ public class Reduce_KCLB extends GenericTOF_SAD {
 
          } else
             Resy[i] = ErrSq[i] = 0.0f;
-      
+      */
         
       Vector Result = new Vector();
 
@@ -1241,12 +1254,13 @@ public class Reduce_KCLB extends GenericTOF_SAD {
 
    }
 
-   private float[][] sss(int nrows, int ncols) {
+   private float[][][] sss(int nrows, int ncols) {
 
-      float[][]Res = new float[nrows][ncols];
+      float[][][]Res = new float[nrows][ncols][1];
 
       for(int i = 0; i < nrows; i++)
-         Arrays.fill(Res[i], 0.0f);
+        for( int j=0; j<ncols; j++)
+          Res[i][j][0]=0;
       return Res;
 
    }
@@ -1341,10 +1355,13 @@ public class Reduce_KCLB extends GenericTOF_SAD {
       Res.append("  neg number"); 
       Res.append(" @param useTransB  Use the background Transmission run");
     
-      Res.append("@return  a Vector of the results (Entry 1: Array ");
-      Res.append("   of RunNums, Entry 2: Vector with Sum yvals,Sum Sq errs, ");
-      Res.append(" Sum weights ,Entry 3: Like Entry 2 but for Background run, ");
-      Res.append(" otherwise the ErrorString  'No Data Set Selected' is ");
+      Res.append("@return  a Vector of the results (Entry 1: A Vector");
+      Res.append(" whose first element is the major run number(Integer) and ");
+      Res.append(" whose 2nd element is an int[]of RunNums, Entry 2: a Vector");
+      Res.append("  whose elements are The float[] of yvals,float[] of errors,");
+      Res.append(" and float[] of weights and Entry 3: A Vector for background");
+      Res.append("  values in the format of Entry 2. otherwise the ErrorString");
+      Res.append("   'No Data Set Selected' is ");
       Res.append(" returned.");
     
       return Res.toString();
