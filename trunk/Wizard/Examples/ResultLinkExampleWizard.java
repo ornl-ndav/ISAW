@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/09/27 00:52:24  bouzekc
+ * Main method() now uses wizardLoader() method.  This is in keeping with
+ * the other wizards.
+ *
  * Revision 1.2  2003/06/26 18:18:44  bouzekc
  * Reformatted and removed some extraneous imports.
  *
@@ -131,6 +135,6 @@ public class ResultLinkExampleWizard extends Wizard {
   public static void main( String[] args ) {
     ResultLinkExampleWizard w = new ResultLinkExampleWizard( true );
 
-    w.showForm( 0 );
+    w.wizardLoader( args );
   }
 }
