@@ -39,22 +39,22 @@ import Operators.TOF_Diffractometer.TimeFocus;
 import DataSetTools.util.*;
 
 /**
- *  This class defines a form for time focusing spectra in 
+ *  This class defines a form for time focusing spectra in
  *  a DataSet under the control of a Wizard.
  */
 public class TimeFocusForm extends    Form
                               implements Serializable
 {
   /**
-   *  Construct an TimeFocusForm to time focus the spectra in a DataSet 
-   *  using the arguments in operands[].  This constructor basically 
-   *  just calls the super class constructor and builds an appropriate 
+   *  Construct an TimeFocusForm to time focus the spectra in a DataSet
+   *  using the arguments in operands[].  This constructor basically
+   *  just calls the super class constructor and builds an appropriate
    *  help message for the form.
    *
    *  @param  constants The vector of arrays of DataSets to be time focused
    *  @param  operands  The list of names of parameters to be added.
-   *  @param  result    The 
-   *  @param  w         The wizard controlling this form. 
+   *  @param  result    The
+   *  @param  w         The wizard controlling this form.
    */
   public TimeFocusForm( String constants[], String operands[], String result[], Wizard w )
   {
@@ -71,7 +71,7 @@ public class TimeFocusForm extends    Form
    *  This overrides the execute() method of the super class and provides
    *  the code that actually does the calculation.
    *
-   *  @return 
+   *  @return
    */
   public boolean execute()
   {
@@ -87,33 +87,64 @@ public class TimeFocusForm extends    Form
     String focusing_IDs;
     IParameterGUI param;
     DataSet ds;
-    
+
     //get the ArrayPG run list result
     apg = (ArrayPG)wizard.getParameter("RunList");
-    runfiles = (Vector)apg.getValue(); 
-    
+    runfiles = (Vector)apg.getValue();
+
     //get the user input parameters
     param = wizard.getParameter("FocusIDs");
-    param.setValid(true);
     focusing_IDs = ((StringPG)param).getStringValue();
+    //not sure how to validate this
+    param.setValid(true);
+
     param = wizard.getParameter("NewAngle");
-    param.setValid(true);
-    angle = ((FloatPG)param).getfloatValue();
+
+    obj = param.getValue();
+    if( obj != null && obj instanceof Float)
+    {
+      angle = ((Float)obj).floatValue();
+      param.setValid(true);
+    }
+    else
+    {
+      param.setValid(false);
+      SharedData.addmsg(
+        "The new angle must be a float value.\n");
+      return false;
+    }
+
     param = wizard.getParameter("NewFPath");
-    param.setValid(true);
-    path = ((FloatPG)param).getfloatValue();
+    //needs to be an error check here-if the
+    //parameter is entered as "" it will
+    //throw a java.lang.NumberFormatException
+    obj = param.getValue();
+    if( obj != null && obj instanceof Float)
+    {
+      path = ((Float)obj).floatValue();
+      param.setValid(true);
+    }
+    else
+    {
+      param.setValid(false);
+      SharedData.addmsg(
+        "The new path must be a float value.\n");
+      return false;
+    }
+
     param = wizard.getParameter("MakeNewds");
+    //this one doesn't need to be checked for validity
     param.setValid(true);
     make_new_ds = ((BooleanPG)param).getbooleanValue();
-    
+
     //get the time focus result parameter
     tfr = (ArrayPG)wizard.getParameter("TimeFocusResults");
     //clear it out when the form is re-run
     tfr.clearValue();
-    
+
     //make sure list exists
     if( runfiles != null )
-    {   
+    {
       //get the runfiles array size
       num_runs = runfiles.size();
       //go through the array, getting each runfile's DataSets
@@ -125,19 +156,19 @@ public class TimeFocusForm extends    Form
         {
           datasets = (DataSet[])obj;
           num_datasets = datasets.length;
-		        
+
           //the time focused DataSets will be the same in number
           //so create the time_focused_array at that size
           time_focused = new DataSet[num_datasets];
-		       
+
           //time_focus the DataSets
           for( int j = 0; j < num_datasets; j++ )
           {
             ds = datasets[j];
-            
+
             if( ds != DataSet.EMPTY_DATA_SET )
             {
-              tf = new TimeFocus(ds, focusing_IDs, 
+              tf = new TimeFocus(ds, focusing_IDs,
                                  angle, path, make_new_ds);
               obj = tf.getResult();
             }
@@ -148,12 +179,12 @@ public class TimeFocusForm extends    Form
             }
 
             //make sure we are working with DataSets
-            //TimeFocus will always return a DataSet unless it 
+            //TimeFocus will always return a DataSet unless it
             //hits an error (as of 02/17/2003)
             if( obj instanceof DataSet )
-            { 
+            {
               time_focused[j] = (DataSet)obj;
-              SharedData.addmsg(datasets[j] + " time focused.\n"); 
+              SharedData.addmsg(datasets[j] + " time focused.\n");
             }
             else
             {
@@ -179,7 +210,7 @@ public class TimeFocusForm extends    Form
       SharedData.addmsg("No runfiles selected.\n");
       return false;
     }
-    
-  } 
-		    
+
+  }
+
 }
