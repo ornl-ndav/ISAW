@@ -1,18 +1,70 @@
+/*
+ * File:  FortranTokenManager.java 
+ *             
+ * Copyright (C) 2004, Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ * This work was supported by the National Science Foundation under
+ * grant number DMR-0218882
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ *
+ * Modified:
+ *
+ * $Log$
+ * Revision 1.2  2004/06/04 22:01:34  rmikk
+ * Added documentation  and GPL
+ *
+ */
+
 package Command.JavaCC.Fortran;
 import java.io.*;
 
-public class FortranTokenManager implements TokenManager,FcvrtConstants{
+/**
+ * This class implements the token manager tasks for Fortran files. It 
+ * reads continuation lines, handles columns 1 through 6, and returns special
+ * tokens for most "reserved" words in FORTRAN 
+ * @author MikkelsonR
+ *
+ *
+ */
+public class FortranTokenManager implements TokenManager,
+                                          FcvrtConstants{
+                                            
   private FileInputStream fin;
   boolean quoteMode = false;
   boolean labelMode = false;
   boolean checkingNextline=false;//i.e. eoln appeared
   boolean nextCharEOF=false;
   public static boolean debug=false;
-  int lineNum=1;
-
-  
-  char c=0; //first lookahead character
+  int lineNum=1;  char c=0; //first lookahead character
   int column=0; //when parsing first couple columns
+  
+  /**
+   *  Constructor
+   * @param filename  The source Fortran filename
+   */
   public FortranTokenManager( String filename){
    try{
     fin = new FileInputStream( filename);
@@ -24,32 +76,39 @@ public class FortranTokenManager implements TokenManager,FcvrtConstants{
    *  A token of kind 0 (<EOF>) should be returned on EOF.
    */
   public Token getNextToken(){
+    
     if( fin == null)
       return  TToken( EOF,null);
    
     Token t= getNextWord();
     if( debug)
       System.out.println("Next token="+t.kind+","+t.image);
+      
     return t;
 
 
   }
+  
  Token TToken( int kind, String image){
+   
     Token Res = new Token();
     Res.kind = kind;
     Res.image = image;
     Res.next = null;
     Res.beginLine= StartLineNum;
     Res.beginColumn=startColNum ;
-     Res.endLine =lineNum ;
-     Res.endColumn = column;
+    Res.endLine =lineNum ;
+    Res.endColumn = column;
     return Res;
-
- }
+   }
   
  char SavChar =0;
- int StartLineNum=1,SavLineNum=1, startColNum=0, savColNum=0;
- public Token getNextWord(){
+ int StartLineNum=1,
+     SavLineNum=1, 
+     startColNum=0, 
+     savColNum=0;
+     
+ private Token getNextWord(){
     String SS="";
     char c=0;
     StartLineNum=lineNum;
@@ -76,7 +135,7 @@ public class FortranTokenManager implements TokenManager,FcvrtConstants{
            return TToken(DOT,".");
        else return TToken(LOGDOT,".");
     }
-    int colStart = column;
+   //int colStart = column;
     if( c=='+')
        return TToken( PLUS,""+c);
     else if( c=='-')
@@ -131,7 +190,7 @@ public class FortranTokenManager implements TokenManager,FcvrtConstants{
        return TToken(ERROR, "Label must be integer");
     }else if( Character.isDigit(c) ||(c=='.')){
       SS+=c;
-      boolean flt = false;
+      //boolean flt = false;
       int startcolumn=column;
       for( c=getNextChar(); Character.isDigit(c);
              c=getNextChar()){
@@ -163,7 +222,9 @@ public class FortranTokenManager implements TokenManager,FcvrtConstants{
    }else 
      return TToken (ERROR,"Improper character"+(int)c+"::"+c);
  }//getNextWord
- public Token IdentToken(String SS){
+ 
+ 
+ private Token IdentToken(String SS){
 
     SS = SS.toUpperCase();
     
@@ -204,6 +265,8 @@ public class FortranTokenManager implements TokenManager,FcvrtConstants{
     return TToken( IDENTIFIER,SS);
    
  }
+ 
+ 
  String S="";
  char prevChar=0;
  /**
@@ -213,7 +276,7 @@ public class FortranTokenManager implements TokenManager,FcvrtConstants{
    *  The quotes and leading c are NOT returned.
    *  NewLine returns new line character if not a continuation line
    */
- public char getNextChar(){
+ private char getNextChar(){
     int cc=0,i;
     try{
     if( S.length()>0){
@@ -278,13 +341,18 @@ public class FortranTokenManager implements TokenManager,FcvrtConstants{
     }
    }catch(Exception ss){return 0;}
  }//getNextChar
-public static void main( String args[]){
- FortranTokenManager fm = new FortranTokenManager( args[0]);
- int i=0;
- for( Token c=fm.getNextWord(); c.kind!=EOF; c=fm.getNextWord()){
-    System.out.println(i+"  "+c.kind+"::"+c.image+":"
-         +c.beginLine+","+c.beginColumn+","+c.endLine+","+c.endColumn);
-    i++;
+ 
+  /**
+   *  Test program for this module
+   * @param args[0]  A filename for source Fortran code
+   */
+  public static void main( String args[]){
+   FortranTokenManager fm = new FortranTokenManager( args[0]);
+   //int i=0;
+  // for( Token c=fm.getNextWord(); c.kind!=EOF; c=fm.getNextWord()){
+  //    System.out.println(i+"  "+c.kind+"::"+c.image+":"
+  //       +c.beginLine+","+c.beginColumn+","+c.endLine+","+c.endColumn);
+  //    i++;
+  // }
   }
-}
 }
