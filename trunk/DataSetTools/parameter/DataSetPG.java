@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2004/05/21 22:02:01  dennis
+ *  Fixed name of parameter in javadoc comment.
+ *
  *  Revision 1.19  2004/05/11 18:23:48  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -176,8 +179,8 @@ public class DataSetPG extends ChooserPG implements IObserver {
   /**
    * Mutator method for the value.
    *
-   * @param val The new DataSet value.  If this is null, it is set to
-   *        DataSet.EMPTY_DATA_SET.
+   * @param  value  The new DataSet value.  If this is null, it is set to
+   *                 DataSet.EMPTY_DATA_SET.
    */
   public void setValue( Object value ) {
     if( value == null ) {
