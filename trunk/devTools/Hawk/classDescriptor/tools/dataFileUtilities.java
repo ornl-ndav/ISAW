@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:33:53  bouzekc
+ * Documented file using javadoc statements.
+ * Added methods isAlreadySaved() and setAlreadySaved(boolean).
+ * Moved the methods writeJDFFile(Project,String), getVectorOfInterfaceObjects() to
+ * the class Project.
+ *
  * Revision 1.1  2004/02/07 05:10:48  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -40,104 +46,101 @@
  */
 package devTools.Hawk.classDescriptor.tools;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Vector;
 
-import devTools.Hawk.classDescriptor.gui.frame.FileAlreadyExistsGUI;
-import devTools.Hawk.classDescriptor.modeledObjects.Project;
-import devTools.Hawk.classDescriptor.threads.JDFFileReaderThread;
-import devTools.Hawk.classDescriptor.threads.JDFFileWriterThread;
-
+/**
+ * This class contains the methods used by other classes to read and write native Hawk files.  An object 
+ * of this type basically just holds information about how a project is supposed to be saved.
+ * @author Dominic Kramer
+ */
 public class dataFileUtilities
 {
+		/**
+		 * The filename of the native Hawk file.
+		 */
 		protected String fileName;
+		/**
+		 * This is set to true if data written to the file should be appended to the end of the 
+		 * file if the file already exists.
+		 */
 		protected boolean append;
+		/**
+		 * This is set to true if the project that this object is associated with has been saved 
+		 * to a native Hawk file.
+		 */
+		protected boolean alreadySaved;
 		
 		/**
-		* Create a new default dataFileUtilities object
-		*/		
-		public dataFileUtilities() throws FileNotFoundException
+		* Create a new default dataFileUtilities object without any file associated with it.
+		*/
+		public dataFileUtilities()
 		{
 			fileName = "";
 			append = false;
 		}
 		
 		/**
-		* This makes a dataFileUtilities object from a .jdf file
-		* @param file the .jdf file
+		* This makes a dataFileUtilities object with the native Hawk file, file, associated 
+		* with it.
+		* @param file The filename of the native Hawk file.
+		* @param ap True if you want to append to the file and false if you want to 
+		* overwrite the file.
 		*/
-		public dataFileUtilities(String file, boolean ap) throws FileNotFoundException
+		public dataFileUtilities(String file, boolean ap)
 		{
 			fileName = file;
 			append = ap;
 		}
 		
+		/**
+		 * Get the native Hawk file's filename associated with this object.
+		 * @return The filename assocaited with this object.
+		 */
 		public String getFileName()
 		{
 			return fileName;
 		}
 		
+		/**
+		 * Set the Hawk native filename associated with this object.
+		 * @param name The filename
+		 */
+		public void setFileName(String name)
+		{
+			fileName = name;
+		}
+		
+		/**
+		 * Get the answer of whether or not to append to the file.
+		 * @return True if the data should be appended to the file.
+		 */
 		public boolean append()
 		{
 			return append;
 		}
-
-		public dataFileUtilities getJDFRAF()
+		
+		/**
+		 * Set whether or not to append data to the end of the file or overwrite the data.
+		 * @param bol True if data is to be appended to the end of the file and false if the 
+		 * file is to be overwritten.
+		 */
+		public void setAppend(boolean bol)
 		{
-			return this;
+			append = bol;
 		}
-
-		public void printInterfacesAndName(Vector vec, Project pro)  //this takes a vector of Interface objects if you do not pass Interface objectes in the vector you'll get a ClassCastException
+		
+		/**
+		 * Determine if the project associated with this object has been saved to a native Hawk file.
+		 */
+		public boolean isAlreadySaved()
 		{
-			JDFFileWriterThread thread = new JDFFileWriterThread(vec,pro,this);
-			thread.start();
+			return alreadySaved;
 		}
-
-	//this returns a vector of Interface objects for ALL of the objects in the file specified by infoRAF
-	public Vector getVectorOfInterfaceObjects()
-	{
-		Vector vec = new Vector();
 		
-		JDFFileReaderThread thread = new JDFFileReaderThread(this,vec);
-		thread.start();
-		
-		return vec;
-	}
-	
-	/**
-	 * This is used to save a project to a file and as the name implies, this
-	 * method writes the .jdf file and writes the .inf, .ext, and .lst files.
-	 * @param pro The project to save
-	 * @param fileName The name of the file to save the file to
-	 */
-	public static void writeJDFFile(Project pro, String fileName)
-	{
-		String jdfFILE = fileName;
-		if (!jdfFILE.endsWith(".jdf"))
-			jdfFILE = jdfFILE + ".jdf";
-		
-		String result = "";
-		if ((new File(jdfFILE)).exists())
-			result = (new FileAlreadyExistsGUI()).showQuestionDialog(fileName);
-		boolean append = true;
-		if (result.equals("Append"))
-			append = true;
-		else if (result.equals("Overwrite"))
-			append = false;
-		
-		if (!result.equals("Cancel"))
+		/**
+		 * Set if the project associated with this object has been saved to a native Hawk file.
+		 */
+		public void setAlreadySaved(boolean bol)
 		{
-			try
-			{
-				pro.setData(new dataFileUtilities(jdfFILE, append));
-				pro.getData().printInterfacesAndName(pro.getInterfaceVec(),pro);
-			}
-			catch(IOException e)
-			{
-				SystemsManager.printStackTrace(e);
-			}
+			alreadySaved = bol;
 		}
-	}
 }
