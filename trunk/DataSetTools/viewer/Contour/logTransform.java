@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/07/17 16:06:28  dennis
+ *  Removed some unreachable code.
+ *
  *  Revision 1.11  2004/07/16 18:51:07  rmikk
  *  Improved Ranges on the intensity scale
  *
@@ -281,10 +284,7 @@ public class logTransform  implements Transform
        if( yy<0) return 0;
        if( yy > 100) return 100;
        return yy;
-     }
-     return 0.;
-     
-      
+     }   
   }
   
   /**
@@ -310,8 +310,9 @@ public class logTransform  implements Transform
       if( x > 100) return 100;
       return x;
     }
-    return 0.;
   }
+  
+/*  Old version ... keep for now  
   private void calc2(){
     mu = 100/(uend-ustart);   //x = mu(u-ustart)+bu
     bu =0;
@@ -355,8 +356,8 @@ public class logTransform  implements Transform
        //a = 30+ 70*u;
       //b= 0 ;
       // K = 37-137*u;
-     
-     }
+   }
+*/
 
    /** Unused
    */
