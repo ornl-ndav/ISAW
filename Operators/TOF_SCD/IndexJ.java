@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/05/14 21:01:46  pfpeterson
+ * Removed a debug print statement.
+ *
  * Revision 1.10  2003/05/07 18:37:53  dennis
  * removed redundant code that created parameters vector twice.
  *
@@ -298,7 +301,6 @@ public class IndexJ extends    GenericTOF_SCD {
         }else{
           logfile="index.log";
         }
-        System.out.println(logfile);
         FileOutputStream fos=new FileOutputStream(logfile,false);
         out=new OutputStreamWriter(fos);
       }
