@@ -1,7 +1,7 @@
 /*
  * File:  TableViewMenuComponents.java
  *
- * Copyright (C) 2000, Dennis Mikkelson
+ * Copyright (C) 2002, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,12 +17,13 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * This work was supported by the Intense Pulsed Neutron Source Division
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0218882, and by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
@@ -30,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2004/09/06 17:55:23  dennis
+ *  Fixed copyright information.
+ *
  *  Revision 1.24  2004/08/24 18:51:32  rmikk
  *  Reorder menu options
  *  Caught errors on viewer initialization and returned null
