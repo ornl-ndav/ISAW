@@ -27,6 +27,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/10/14 21:02:04  dennis
+ * Adjusted javadocs on main method to build cleanly under jdk 1.4.2
+ *
  * Revision 1.12  2003/07/17 21:45:28  bouzekc
  * Removed initial values for peak sequence numbers.
  *
@@ -361,11 +364,13 @@ public class BlindJ extends  GenericTOF_SCD {
 
   /* ------------------------------- main --------------------------------- */ 
   /** 
-   * Standalong program to carry out the operations
-   * @param   args[0] The name of the file with peak information
-   * @param   args[1] The list of sequence numbers to use. Eg 33:36,47,56
-   * @param   args[2] The name of the file to write the orientation matrix
+   * Main test program to execute BlindJ using a file of peaks, a list
+   * of sequence numbers and the name of the the file where the orientation
+   * matrix should be written.
    *
+   * @param   args    The array of arguments containing the peak file name,
+   *                  list of sequence numbers (Eg 33:36,47,5) and the matrix 
+   *                  file name. 
    */
   public static void main( String args[] )
   {
