@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:28:02  bouzekc
+ * Documented file using javadoc statements.
+ * Added the toString() method.
+ *
  * Revision 1.1  2004/02/07 05:10:05  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -51,6 +55,11 @@ import javax.swing.JTextField;
 
 import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
 
+/**
+ * This class is used to represent an attribute (field) in a class or interface.
+ * @author Dominic Kramer
+ *
+ */
 public class AttributeDefn
 {
 	//-----------class attributes----------------------------
@@ -93,41 +102,80 @@ public class AttributeDefn
 	
 	//----------class methods--------------------------------
 	
+	/**
+	 * Get the attributes characteristics (public, static, final, abstract, etc.) as a Vector of Strings.
+	 * @return A Vector of Strings
+	 */
 	public Vector getAttribute_char_vector()
 	{
 		return attribute_char_vector;
 	}
 	
+	/**
+	 * Set the attribute's characteristics (public, static, final, abstract, etc.)
+	 * @param vec A Vector of Strings.  They can be anything, not just Java keywords as long as they are
+	 * Strings.
+	 */
 	public void setAttribute_char_vector(Vector vec)
 	{
 		attribute_char_vector = vec;
 	}
 	
+	/**
+	 * Get the attribute's type (int or String) exactly as it is stored
+	 * @return The attribute's type
+	 */
 	public String getAttribute_type()
 	{
 		return attribute_type;
 	}
 	
+	/**
+	 * Get the attribute's type (int or String) possibly shortened.
+	 * javax.swing.JTree when shortened will be returned as JTree
+	 * @param shortJava True if you want the name to be shortened if it is a java name
+	 * @param shortOther True if you want the name to be shortened if it is not a java name
+	 * @return The possibly shortened version of the attribute's type
+	 */
 	public String getAttribute_type(boolean shortJava, boolean shortOther)
 	{
 		return InterfaceUtilities.getAbbreviatedName(attribute_type, shortJava, shortOther);
 	}
 	
+	/**
+	 * Set the attributes type
+	 * @param str For example, int, String, etc.
+	 */
 	public void setAttribute_type(String str)
 	{
 		attribute_type = str;
 	}
 	
+	/**
+	 * Get the attribute's name exactly as it is stored
+	 * @return The attributes name
+	 */
 	public String getAttribute_name()
 	{
 		return attribute_name;
 	}
-	
+
+	/**
+	 * Get the attribute's name possibly shortened.
+	 * If the name contains any . in it.  This will return the last . separated word
+	 * @param shortJava True if you want the name to be shortened if it is a java name
+	 * @param shortOther True if you want the name to be shortened if it is not a java name
+	 * @return The possibly shortened version of the attribute's name
+	 */
 	public String getAttribute_name(boolean shortJava, boolean shortOther)
 	{
 		return InterfaceUtilities.getAbbreviatedName(attribute_name, shortJava, shortOther);
 	}
 	
+	/**
+	 * Set the attribute's name
+	 * @param str The new name
+	 */
 	public void setAttribute_name(String str)
 	{
 		attribute_name = str;
@@ -135,12 +183,15 @@ public class AttributeDefn
 	
 	//-----these methods print to tile specified by the PrintWriter 'writer'
 	
-	int i = 0;
-	
+	/**
+	 * Prints the data corresponding to this attribute using the DataOutputStream writer.
+	 * This method is used to save the save the attribute part of a class and is used by 
+	 * the class dataFileUtilities to save class information.
+	 */
 	public void print(DataOutputStream writer)
 	{
 		String del = ":";
-		
+		int i=0;
 		try
 		{
 			writer.writeUTF("<ATTRIBUTE>"+del);
@@ -171,6 +222,11 @@ public class AttributeDefn
 		}
 	}
 	
+	/**
+	 * Prints the data corresponding to this attribute using the DataOutputStream writer.
+	 * Then move the cursor to the next line.  This method is used to save the save the 
+	 * attribute part of a class and is used by the class dataFileUtilities to save class information.
+	 */
 	public void println(DataOutputStream writer)
 	{
 		try
@@ -184,6 +240,14 @@ public class AttributeDefn
 		}
 	}
 	
+	/**
+	 * This sets all of the fields for the AttributeDefn object with the supplied data.  This method is used
+	 * because it sets field data but doesn't make a whole new object in memory.  So it is more 
+	 * memory conservative.
+	 * @param vec A Vector of Strings each of which is one of the attribute's characteristics (i.e. public, static, fina, etc.)
+	 * @param type The attribute's type
+	 * @param name The attribute's name
+	 */
 	public void defineAttributeDefnObject(Vector vec, String type, String name)
 	{
 		attribute_char_vector = vec;
@@ -191,6 +255,13 @@ public class AttributeDefn
 		attribute_name = name;
 	}
 	
+	/**
+	 * This creates a JPanel with all of the textfields and labels that display the information for this AttributeDefn object.  The textfields 
+	 * and labels are positioned vertically on the JPanel.  The panel created does not display information in a 
+	 * compact or effecient way and may be removed or significantly changed.
+	 * @deprecated
+	 * @return A JPanel.
+	 */
 	public JPanel getAttributeJPanel()
 	{
 		JPanel attributeJPanel = new JPanel();
@@ -213,8 +284,23 @@ public class AttributeDefn
 		return attributeJPanel;
 	}
 	
+	/**
+	 * This returns a String representation of the the attribute object in a specialized form.  For example it will return 
+	 * public static final int;
+	 * @param shortJava True if you want java names to be shortened
+	 * @param shortOther True if you want non java names to be shortened
+	 * @return A String representation of the attribute
+	 */
 	public String getStringInJavadocFormat(boolean shortJava, boolean shortOther)
 	{
-		return ""+InterfaceUtilities.makeStringFromVector(attribute_char_vector, ", ")+getAttribute_type(shortJava, shortOther)+" "+getAttribute_name(shortJava, shortOther);
+		return ""+InterfaceUtilities.makeStringFromVector(attribute_char_vector, " ")+getAttribute_type(shortJava, shortOther)+" "+getAttribute_name(shortJava, shortOther);
+	}
+	
+	/**
+	 * Get the attribute's name.
+	 */
+	public String toString()
+	{
+		return attribute_name;
 	}
 }
