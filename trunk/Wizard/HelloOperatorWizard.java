@@ -34,7 +34,7 @@ package Wizard;
 
 import DataSetTools.wizard.OperatorForm;
 import DataSetTools.wizard.Wizard;
-import Operators.HelloOperator;
+import Operators.Example.HelloOperator;
 
 /**
  *  This class constructs a Wizard for loading the HelloOperator.
