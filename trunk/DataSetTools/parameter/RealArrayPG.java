@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/06/17 15:31:19  rmikk
+ *  The visible GUI part of this PG now works as expected.  Again the
+ *    RealArrayPG should not have the visible GUI showing for LARGE
+ *    Arrays
+ *
  *  Revision 1.1  2004/06/16 21:45:31  rmikk
  *  Initial Checkin. This ParameterGUI is used for transfering references
  *    to large, possibly multidimensional, arrays.  These arrays are then
@@ -55,7 +60,7 @@ import java.lang.reflect.*;
 import java.util.Vector;
 
 import javax.swing.*;
-
+import DataSetTools.operator.*;
 
 /**
  * This is a superclass to take care of many of the common details of Array
@@ -79,9 +84,9 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
     super( name, val );
 
     if( val == null)
-        throw new IllegalArgumentException("Initial value cannot be null");
+      throw new IllegalArgumentException("Initial value cannot be null");
     if( !isMultiArray( val))
-        throw new IllegalArgumentException("Initial value must be"+
+      throw new IllegalArgumentException("Initial value must be"+
            " mult dim array of numbers or Strings");
     setType( TYPE );
     valClass = val.getClass();
@@ -98,9 +103,9 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
                  throws  IllegalArgumentException{
     super( name, val, valid );
     if( val == null)
-        throw new IllegalArgumentException("Initial value cannot be null");
+      throw new IllegalArgumentException("Initial value cannot be null");
     if( !isMultiArray( val))
-        throw new IllegalArgumentException("Initial value must be"+
+      throw new IllegalArgumentException("Initial value must be"+
            " mult dim array of numbers or Strings");
     setType( TYPE );
   }
@@ -131,30 +136,33 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
    * @param val The value to set.
    */
   public void setValue( Object val ) {
-    Vector vecVal = null;
+    //Vector vecVal = null;
    
-   Object val1 = val;
-   if( val == null)
-     val1 = getValue();
+    Object val1 = val;
+    if( val == null)
+      val1 = getValue();
        
     if( val1 == null)//initial set up called from ParameterGUI
       return;
-   
-    else if( val1 instanceof Vector ) {
-      val1 = Arrayify(val);
-    } else if( val1 instanceof String ) {
-      val1=Arrayify( StringtoArray( ( String )val ));
-    } else if( val1.getClass(  ).isArray(  ) ) {
-      if( !RealArrayPG.isMultiArray(val1))
+    try{
+      if( val1 instanceof Vector ) {
+        val1 = JavaWrapperOperator.cvrt(val1.getClass(),val);
+      }else if( val1 instanceof String ) {
+        val1= JavaWrapperOperator.cvrt(val1.getClass(),StringtoArray( ( String )val ));
+      }else if( val1.getClass(  ).isArray(  ) ) {
+        if( !RealArrayPG.isMultiArray(val1))
         
-        val1 = Arrayify( val );
-    } else {
-      return;
+           val1 =  JavaWrapperOperator.cvrt(val1.getClass(), val );
+        } else 
+          return;
+    
+    }catch(Exception ss){
+      return; 
     }
     if( !RealArrayPG.isMultiArray(val1))
-       return;
+      return;
     if( val1 == null)
-       return;
+      return;
    
     if( getInitialized(  ) ) {
       String Res = gov.anl.ipns.Util.Sys.StringUtil.toString(val1);
@@ -180,14 +188,40 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
 
    
     if( getInitialized(  ) ) {
-     String val0   = ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).getText(  );
-     Vector val1   = StringtoArray( val0.toString(  ) );
-     Object val2 = Arrayify( val1);
-     if(val2 != null)
-     if( val2.getClass() == val.getClass())
-        val = val2;
+      String val0   = ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).getText(  );
+      Vector val1   = StringtoArray( val0.toString(  ) );
+     
+      Object val2 = null;
+      try{
+     
+        val2 = JavaWrapperOperator.cvrt(val.getClass(), val1);
+        if( val2 != null){
+        
+          super.setValue( val2);
+          val = val2;
+        }else{ //Set the text in the GUI to represent the value
+          val2 = null;
+         
+      
+          
+        }
+      }catch(Exception s){
+        val2 = null;
+        //return val;
+      }
+      if(val2 != null)
+        if( val2.getClass() == val.getClass())
+           val = val2;
+        else 
+           val2 = null;
+      if(val2 == null){
+    
+        String Res = gov.anl.ipns.Util.Sys.StringUtil.toString(val);
+        ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).setText( 
+                           Res );
+      }        
     }
-
+   
     return val;
   }
 
@@ -395,17 +429,11 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
   public void validateSelf(  ) {
     Object o = getValue(  );
 
-    if( ( o != null ) && o instanceof Vector ) {
-      Vector v = ( Vector )o;
-
-      if( ( v == null ) || v.isEmpty(  ) ) {
-        setValid( false );
-      } else {  //assume it is valid, then test that assumption
-        setValid( true );
-      }
-    } else {
-      setValid( false );
-    }
+    if(o == null)
+      setValid(false);
+    else
+      setValid(true);
+    
   }
 
   /**
@@ -442,26 +470,26 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
   *           where int could be float, double, long, byte, short or
   *           String
   */
- public static boolean isMultiArray( Object val){
-     if( val == null)
-        return false;
-     if(!val.getClass().isArray()) 
-        return false;
+  public static boolean isMultiArray( Object val){
+    if( val == null)
+      return false;
+    if(!val.getClass().isArray()) 
+      return false;
     
     for(int i=1; i < Array.getLength(val); i++){
-       System.out.println("X"+ (Array.get(val,i).getClass()==
-      Array.get(val,i-1).getClass()) );
-       if(Array.get(val,i).getClass() == Array.get(val,i-1).getClass()){} 
-       else  return false;
+      
+      if(Array.get(val,i).getClass() == Array.get(val,i-1).getClass()){} 
+      else  
+        return false;
     }
     if( val.getClass().getComponentType() == String.class)
       return true;
     try{
 
-    if( val.getClass().getComponentType().isArray()){
-       Class CC =val.getClass().getComponentType(); 
-       return isMultiArray(Array.newInstance(CC.getComponentType(),0) )  ;
-    }
+      if( val.getClass().getComponentType().isArray()){
+        Class CC =val.getClass().getComponentType(); 
+        return isMultiArray(Array.newInstance(CC.getComponentType(),0) )  ;
+      }
     }catch(Exception ss){
        return false;
     }
@@ -472,100 +500,100 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
        return true;
     if( C== float.class)
         return true;
-   if( C== long.class)
+    if( C== long.class)
        return true;
-   if( C== short.class)
+    if( C== short.class)
        return true;
-   if( C== byte.class)
+    if( C== byte.class)
        return true;
-   if( C== double.class)
+    if( C== double.class)
        return true;    
-     return false;
- }
+    return false;
+  }
  
- /**
-  *  Converts to an n dimensional array if possible.
-  * @param V   The Object to be converted
-  * @return  The ndimensional array containing the values of V or
-  *          null if not possible
-  *  NOTE: This method works with zero lengthed arrays
-  */
- public static Object Arrayify( Object V){
-   if( V == null)
-     return null;
-   if( isMultiArray(V))
-     return V;
-   if( !(V instanceof Vector))
-     if( !V.getClass().isArray())
+  /**
+   *  Converts to an n dimensional array if possible.
+   * @param V   The Object to be converted
+   * @return  The ndimensional array containing the values of V or
+   *          null if not possible
+   *  NOTE: This method works with zero lengthed arrays
+   */
+  private static Object Arrayify( Object V){
+    if( V == null)
+      return null;
+    if( isMultiArray(V))
+      return V;
+    if( !(V instanceof Vector))
+      if( !V.getClass().isArray())
         return V;
-   if( V instanceof Vector){
-     if( ((Vector)V).size() <1)
+    if( V instanceof Vector){
+      if( ((Vector)V).size() <1)
         return null;
      
-     Object O;
-     Class EltClass = null ;
-     int size ;
-     if( V instanceof Vector)
-       size = ((Vector)V).size();
-     else
-       size = Array.getLength(V);
-     if(isList(EltAt(V,0))){
+    Object O;
+    Class EltClass = null ;
+    int size ;
+    if( V instanceof Vector)
+      size = ((Vector)V).size();
+    else
+      size = Array.getLength(V);
+    if(isList(EltAt(V,0))){
      
-       O = Arrayify(EltAt(V,0));
-       if(O == null)
-         return null;
-       EltClass = O.getClass();
-     }
-     else{
+      O = Arrayify(EltAt(V,0));
+      if(O == null)
+        return null;
+      EltClass = O.getClass();
+    }
+    else{
     
-       O = EltAt(V,0);
-       if( O == null)
-         return null;
+      O = EltAt(V,0);
+      if( O == null)
+        return null;
       if( O instanceof Integer)
-         EltClass = int.class;
+        EltClass = int.class;
       else if( O instanceof Float)
-         EltClass = float.class;
-       else if( O instanceof Short)
-         EltClass = short.class;
-       else if( O instanceof Long)
-         EltClass = long.class;
-       else if( O instanceof Double)
-         EltClass = double.class;
-       else if( O instanceof  Byte)
-         EltClass = byte.class;
-       else if( O instanceof String)
-         EltClass = String.class;
-       else
-         return null;
-     }
+        EltClass = float.class;
+      else if( O instanceof Short)
+        EltClass = short.class;
+      else if( O instanceof Long)
+        EltClass = long.class;
+      else if( O instanceof Double)
+        EltClass = double.class;
+      else if( O instanceof  Byte)
+        EltClass = byte.class;
+      else if( O instanceof String)
+        EltClass = String.class;
+      else
+        return null;
+    }
     Object Res = null;
     try{
-     Res = Array.newInstance(EltClass,size);
+      Res = Array.newInstance(EltClass,size);
     
-     Array.set(Res,0, O);
-    for( int i = 1; i< size; i++){
-      Object O1=Arrayify(EltAt(V,i));
-      if(O1 == null)
-        return null;
-      Array.set(Res,i, O1);
-    }
+      Array.set(Res,0, O);
+      for( int i = 1; i< size; i++){
+        Object O1=Arrayify(EltAt(V,i));
+        if(O1 == null)
+          return null;
+        Array.set(Res,i, O1);
+      }
     }catch( Exception ss){
        return null; 
     }
     return Res;
-   }
+    }
    
    return null;
- }
+  }
  
- /**
-  *   For zero length arrays it returns an instance of subcomponent with 
-  *   zero length if indx ==0
-  * @param V
-  * @param indx
-  * @return
-  */
- private static Object EltAt( Object V, int indx){
+  /**
+   *   For zero length arrays it returns an instance of subcomponent with 
+   *   zero length if indx ==0
+   * @param V
+   * @param indx
+   * @return
+   */
+  private static Object EltAt( Object V, int indx){
     if( V == null)
       return null;
     if( indx < 0)
@@ -574,7 +602,7 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
       if( indx >= ((Vector)V).size())
         return null;
       else
-         return ((Vector)V).elementAt(indx);
+        return ((Vector)V).elementAt(indx);
     if( !V.getClass().isArray())
       return null;
    int L = Array.getLength(V);
@@ -588,7 +616,9 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
    return null;
        
  }
- private static boolean isList( Object val){
+ 
+ 
+  private static boolean isList( Object val){
     if( val == null)
       return false;
     if( val instanceof Vector)
@@ -596,19 +626,21 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
     if( val.getClass().isArray())
        return true;
     return false;
- }
- public static Object getZeroLengthedArray( Class C){
-    if(!C.isArray())
-      return null;
-    if( C.getComponentType().isPrimitive())
+  }
+  
+  
+  public static Object getZeroLengthedArray( Class C){
+   if(!C.isArray())
+     return null;
+   if( C.getComponentType().isPrimitive())
      return Array.newInstance(C.getComponentType(),0);
-    Object O = getZeroLengthedArray( C.getComponentType());
-    return Array.newInstance(O.getClass(),0);
- }
+   Object O = getZeroLengthedArray( C.getComponentType());
+   return Array.newInstance(O.getClass(),0);
+  }
 
- public Object clone(){
+  public Object clone(){
     RealArrayPG Res = new RealArrayPG(getName(), getValue());
     
     return Res;
- }
+  }
 }
