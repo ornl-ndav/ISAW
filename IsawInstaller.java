@@ -32,6 +32,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.22  2004/06/04 22:46:25  dennis
+ * Added jogl.jar and native libraries for jogl.
+ *
  * Revision 1.21  2004/04/23 19:07:50  dennis
  * Removed -server option from batch file for running ISAW
  * for all operating systems besides Linux.  (Java on
@@ -598,13 +601,13 @@ public class IsawInstaller extends JFrame
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
 		+"java -mx128m -cp \""+fixSeparator(isaw_home)
-                +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;"
+                +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;jogl.jar"
                 +"jhall.jar;.\" IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+ newline
 		+"rem --"+newline
-		+"rem java -mx128m -cp sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;."
+		+"rem java -mx128m -cp sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;jogl.jar"
 		+" IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
@@ -613,7 +616,7 @@ public class IsawInstaller extends JFrame
 		+"export LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
 		+"$JAVA -mx128m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:"+
-		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
+		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/jogl.jar"
 		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(SUN_ID)){
 	    content="#!/bin/sh"+newline
@@ -622,7 +625,7 @@ public class IsawInstaller extends JFrame
 		+"LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
 		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:"+
-		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
+		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/jogl.jar"
 		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
@@ -634,6 +637,7 @@ public class IsawInstaller extends JFrame
                 +isaw_home+"/IPNS.jar:"
                 +isaw_home+"/jnexus.jar:"
                 +isaw_home+"/sdds.jar:"
+                +isaw_home+"/jogl.jar:"
                 +isaw_home+"/jhall.jar:. IsawGUI.Isaw\""+newline
                 +"end tell"+newline;
 	}else{
