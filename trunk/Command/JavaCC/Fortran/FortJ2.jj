@@ -296,8 +296,8 @@ class VariableInfo{
 }
 PARSER_END(Fcvrt)
 String start():{
-   String s1="",
-          s2="";
+   String s1="";
+         // s2="";
    Token t=null;
    String errStart,
          errEnd;
@@ -369,10 +369,10 @@ String start():{
   }
 }
 String statement( String Res):{
-String s1,s2="",s3="";
+String s1;//s2="",s3="";
 String[] params = null;
 Token t;
- String[] ss=null;
+ //String[] ss=null;
   
   lastStatementSimple = true;
 
@@ -452,7 +452,7 @@ Token t;
    
  }
 String RestofMethod( String name):{
-  String s,s1=null,s2;
+  String s;//s2,s1=null;
   String[] params=null;
 }{
      [params=ExpressionList()]<EQUALS> s=Expression("")
@@ -492,10 +492,10 @@ String RestofMethod( String name):{
 /** Follows Declaration lines 
 */
 String RestofDeclare( String name):{
- Token t1=null,t2=null; 
+ //Token t1=null,t2=null; 
  String s,s1=null,s2=null,s3="";
  
- int ndims = -1;
+ //int ndims = -1;
  String[] params=null,params1=null; 
 }{
      [params=ExpressionList()]<EQUALS> s=Expression("")
@@ -558,10 +558,10 @@ String RestofDeclare( String name):{
 
 
 String RestofExternal():{
-Token t1=null,t2=null;
- String s,s1=null,s2="",s3="";
- String Res="";
- String[] params=null,params1=null; 
+ //Token t1=null,t2=null;
+ String s,s1=null,s3="";//s2="";
+ //String Res="";
+ String[] params=null;//params1=null; 
  VariableInfo vbInf;
 }{
      [params=ExpressionList()]<EQUALS> s=Expression("")
@@ -595,10 +595,10 @@ Token t1=null,t2=null;
   * This one must consume <EOLN>. Used only for CONTINUE, ELSE, and ENDIF
   */
 String RestofExpression( String vname):{
-Token t1=null,t2=null;
- String s,s1=null,s2="",s3="";
- String Res="";
- String[] params=null,params1=null; 
+//Token t1=null,t2=null;
+ String s;//s1=null,s2="",s3="";
+// String Res="";
+ String[] params=null;//params1=null; 
 }{
      [params=ExpressionList()]<EQUALS> s=Expression("")<EOLN>
        {  
@@ -629,7 +629,7 @@ Token t1=null,t2=null;
   */
 String RestofIf( int Ifmode, String[] params):{
   String s;
-  String[] params1= null;
+  //String[] params1= null;
 }{
 
      <EQUALS> s=Expression("")<EOLN>
@@ -691,14 +691,14 @@ String RestofThen( String[] params,int Ifmode):{
          if( Ifmode >1)
               throw new ParseException("Structured if statement not allowed");
          return "if("+params[0]+")\n"+
-                       makeUpAssignmentStatement("THEN",params, s);
+                       makeUpAssignmentStatement("THEN",params1, s);
   }
 
 
 }
 String RestofDo():{
  Token t;
- String s1,s2,s3=null,s;
+ String s,s1;//s2,s3=null,;
  String[] params = null;
 }{
   [params=ExpressionList()] <EQUALS> s = Expression("")
@@ -960,7 +960,7 @@ String Expression(String prevOp):{
  Token t1 = null,
        t2 = null;
  String s,
-        s1="",
+        //s1="",
         s2="",
         s3,
         lparens="";
@@ -999,17 +999,17 @@ String Expression(String prevOp):{
 
 String RestOfExpression( String prevOp):{
   Token t;
-  String s,
-         lp = "",
-         rp = "";
+  String s;
+         //lp = "",
+        // rp = "";
 
  }
  {
 
    <LOGDOT> (t=<AND>|t=<OR>) (<LOGDOT>|<DOT>) s=Expression("AND")
      { if(prevOp.equals("AND")){
-         lp = "(";
-         rp=")";
+         //lp = "(";
+         //rp=")";
        }
        if( t.kind == AND)
          return "&&"+s;
@@ -1027,8 +1027,8 @@ String RestOfExpression( String prevOp):{
  }
 
 String NonAndOrExpression():{
- Token t1=null,
-       t2;
+ //Token t1=null,
+ //      t2;
  String s,
         s1="";
 
@@ -1045,10 +1045,10 @@ String NonAndOrExpression():{
 
 
 String RestOfNonAndOrExpression():{
- Token t1=null,
-       t2;
- String s,
-        s1="";
+ Token t1=null;
+       //t2;
+ String s;
+       // s1="";
  
  }
  {
@@ -1094,8 +1094,8 @@ String RestOfNonAndOrExpression():{
 
 
 String AlgExpression():{
- Token t=null,
-       t1;
+ Token t=null;
+       //t1;
  String s1,
         s2="";
  }
@@ -1116,8 +1116,8 @@ String AlgExpression():{
 
 
 String termOfExpression():{
- Token t=null,
-       t1;
+ Token t=null;
+       //t1;
  String s,
         s2="",
         s3="";
@@ -1147,7 +1147,7 @@ String termOfExpression():{
 
 
 String FactorOfExpression():{
- Token t=null,
+ Token //t=null,
        t1=null,
        t3=null;
  String s,
@@ -1302,7 +1302,7 @@ String Number():{
 String ExponentialExpression():{
  Token t=null,
        t1=null;
- String s,
+ String //s,
         pm;
  }
  {
@@ -1404,13 +1404,13 @@ String PossVarName():{
 /*-------------------------  Lists --------------------------------*/
 
 String[] ExpressionList():{
- Token t;
+ //Token t;
  String[] Res= new String[0], 
           Res1;;
  String s="",
         s1="";
 }
-{ t=<LPAREN> [s = Expression("") 
+{ <LPAREN> [s = Expression("") 
                (<COMMA> s1=Expression("")
                   { Res1 = new String[Res.length+1];
                     System.arraycopy( Res,0,Res1,0,Res.length);
@@ -1430,21 +1430,21 @@ String[] ExpressionList():{
 }
 
 String[] ArgList():{
-  String s=null,s1=null,s2;
+  String s=null;//s1=null,s2;
   String[] Res;
-  Token t;
+  //Token t;
   LinkedList LL = new LinkedList();
 }{
 
   <LPAREN> [
-             (s=Expression("") |t=<PROD>)
+             (s=Expression("") |<PROD>)
              {if( s != null)
                  LL.add( s);
               else 
                  LL.add( "*");
              }
                (
-                 <COMMA>(s=Expression("") |t=<PROD>)
+                 <COMMA>(s=Expression("") |<PROD>)
                     {if( s != null)
                        LL.add( s);
                      else 
