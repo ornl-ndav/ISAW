@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2004/04/12 21:33:18  dennis
+ * Now gets detector ID using the Util.detectorID() method, rather
+ * than assuming that there is an explict DETECTOR_IDS attribute
+ * present.
+ *
  * Revision 1.16  2004/03/15 03:28:23  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -109,6 +114,7 @@ import DataSetTools.dataset.Grid_util;
 import DataSetTools.dataset.UniformGrid;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
+import DataSetTools.operator.Generic.TOF_SCD.Util;
 import DataSetTools.parameter.IntegerPG;
 import DataSetTools.util.SharedData;
 
@@ -279,11 +285,9 @@ public class LoadSCDCalib extends DS_Attribute{
     private void assoc( Data d, StringAttribute filenameAttr ){
         if(d==null) return;
             
-        Object detNumObj=d.getAttributeValue(Attribute.DETECTOR_IDS);
-        int oldDetNum=0;
-        if( detNumObj instanceof int[] ){
-            oldDetNum=((int[])detNumObj)[0];
-        }
+        int oldDetNum = Util.detectorID( d );
+        if ( oldDetNum == -1 )
+          oldDetNum = 0;         // later code uses 0 to indicate not found
 
         Calib kalib=null;
         for( int i=0 ; i<this.calibrations.size() ; i++ ){
