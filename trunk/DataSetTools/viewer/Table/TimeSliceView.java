@@ -31,6 +31,11 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.5  2002/10/07 14:48:45  rmikk
+ * Sets the pointed at Time internally to the dataset's
+ *   PointedAtX at several places, so it is in line with
+ *   the other views
+ *
  * Revision 1.4  2002/08/21 15:49:14  rmikk
  * -If pointedAtX is NaN(undefined) defaults to 0th frame
  *  -Initialized with pointed at Time and group
@@ -177,17 +182,19 @@ public class TimeSliceView  extends STableView
     {  
         if( getDataSet() == null)
            DataSetTools.util.SharedData.addmsg("DataSet is null in fix table");
-       int i =state.get_int("TableTS_TimeInd");
+       int i =getPointedAtXindex( );//state.get_int("TableTS_TimeInd");
+       state.set_int( "TableTS_TimeInd" ,i );
        if( i<0)
           i=0;
        
        //if( i >= xvals1.length)
        //   i= xvals1.length -1;
        Time_Slice_TableModel ttt= new Time_Slice_TableModel(getDataSet(),
-                       0.0f, 
+                       xvals1[i], 
                        showerrors, showIndices);
        ttt.setRowRange( state.get_int( "TableTS_MinRow"), state.get_int("TableTS_MaxRow"));
        ttt.setColRange( state.get_int( "TableTS_MinCol"), state.get_int("TableTS_MaxCol"));
+       
       
        return ttt;
     }
