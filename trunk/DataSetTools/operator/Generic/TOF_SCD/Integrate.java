@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.28  2003/09/15 03:26:11  dennis
+ * Added parameters that allow a constant (shoe box) region of integration
+ * to be used for all peaks.  (This option is not implemented yet.)
+ *
  * Revision 1.27  2003/09/15 02:05:52  dennis
  * 1. Renamed compItoDI() method to increasingIsigI()
  * 2. Added method is_significant() that checks if I > 2 * sigI
@@ -170,6 +174,14 @@ public class Integrate extends GenericTOF_SCD{
    * integration range in z
    */
   private              int[] timeZrange={-1,3};
+  /**
+   * integration range in x
+   */
+  private              int[] colXrange={-2,2};
+  /**
+   * integration range in y
+   */
+  private              int[] rowYrange={-2,2};
 
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -187,7 +199,7 @@ public class Integrate extends GenericTOF_SCD{
    *
    * @param ds DataSet to integrate
    */
-  public Integrate( DataSet ds){
+  public Integrate( DataSet ds ){
     this(); 
 
     getParameter(0).setValue(ds);
@@ -214,10 +226,24 @@ public class Integrate extends GenericTOF_SCD{
    * @param lognum      The peak multiples to log - i.e. 3 logs
    *                    1, 3, 6, 9...
    * @param append      Append to file (true/false);
+   * @param use_shoebox Flag to specify using same-size shoebox around all peaks,
+   *                    rather than trying to maximize I/sigI
+   * @param box_x_range The range of x (delta col) values to use around the peak 
+   *                    position
+   * @param box_y_range The range of y (delta row) values to use around the peak 
+   *                    position
    */
-  public Integrate( DataSet ds, String integfile, String matfile,
-                    String slicerange, int slicedelta, int lognum,
-                    boolean append){
+  public Integrate( DataSet ds, 
+                    String  integfile, 
+                    String  matfile,
+                    String  slicerange, 
+                    int     slicedelta, 
+                    int     lognum,
+                    boolean append,
+                    boolean use_shoebox,
+                    String  box_x_range,
+                    String  box_y_range )
+  {
     this(ds); 
 
     getParameter(1).setValue(integfile);
@@ -226,6 +252,9 @@ public class Integrate extends GenericTOF_SCD{
     getParameter(5).setValue(new Integer(slicedelta));
     getParameter(6).setValue(new Integer(lognum));
     getParameter(7).setValue(new Boolean(append));
+    getParameter(8).setValue(new Boolean(use_shoebox));
+    getParameter(9).setValue(box_x_range);
+    getParameter(10).setValue(box_y_range);
   }
 
   /** 
@@ -244,11 +273,32 @@ public class Integrate extends GenericTOF_SCD{
    * @param lognum      The peak multiples to log - i.e. 3 logs
    *                    1, 3, 6, 9...
    * @param append      Append to file (true/false);
+   * @param use_shoebox Flag to specify using same-size shoebox around all peaks,
+   *                    rather than trying to maximize I/sigI
+   * @param box_x_range The range of x (delta col) values to use around the peak 
+   *                    position
+   * @param box_y_range The range of y (delta row) values to use around the peak 
+   *                    position
    */
-  public Integrate( DataSet ds, String integfile, String matfile,
-                    int choice, String slicerange, int slicedelta, int lognum,
-                    boolean append){
-    this(ds, integfile, matfile, slicerange, slicedelta, lognum, append); 
+  public Integrate( DataSet ds, 
+                    String  integfile, 
+                    String  matfile,
+                    int     choice, 
+                    String  slicerange, 
+                    int     slicedelta, 
+                    int     lognum,
+                    boolean append,
+                    boolean use_shoebox,
+                    String  box_x_range,
+                    String  box_y_range )
+  {
+    this(ds,
+         integfile, matfile, 
+         slicerange, slicedelta, 
+         lognum, 
+         append, 
+         use_shoebox,
+         box_x_range, box_y_range ); 
     getParameter(3).setValue(choices.elementAt(choice));
   }
   
@@ -295,6 +345,12 @@ public class Integrate extends GenericTOF_SCD{
     addParameter(new IntegerPG("Log Every nth Peak",3));
     // parameter(7)
     addParameter(new BooleanPG("Append",false));
+    // parameter(8)
+    addParameter(new BooleanPG("Use Shoe Box (NOT max I/sigI)",false));
+    // parameter(9)
+    addParameter(new IntArrayPG("Box Delta x (col) range","-2:2"));
+    // parameter(10)
+    addParameter(new IntArrayPG("Box Delta y (row) range","-2:2"));
   }
   
   /**
@@ -425,6 +481,36 @@ public class Integrate extends GenericTOF_SCD{
 
     // then whether to append
     boolean append=((BooleanPG)getParameter(7)).getbooleanValue();
+
+    // then whether to just use a "shoebox" instead of maximizing I/sigI
+    boolean use_shoebox=((BooleanPG)getParameter(8)).getbooleanValue();
+
+    // then the x range
+    {
+      int[] myXrange=((IntArrayPG)getParameter(9)).getArrayValue();
+      if(myXrange!=null && myXrange.length>=2){
+        colXrange[0]=myXrange[0];
+        colXrange[1]=myXrange[myXrange.length-1];
+      }else{
+        return new ErrorString("Invalid X range specified");
+      }
+    }
+
+    // then the y range
+    {
+      int[] myYrange=((IntArrayPG)getParameter(10)).getArrayValue();
+      if(myYrange!=null && myYrange.length>=2){
+        rowYrange[0]=myYrange[0];
+        rowYrange[1]=myYrange[myYrange.length-1];
+      }else{
+        return new ErrorString("Invalid Y range specified");
+      }
+    }
+
+   System.out.println("use shoebox = " + use_shoebox );
+   System.out.println("X range = " + colXrange[0] + " to " + colXrange[1] );
+   System.out.println("Y range = " + rowYrange[0] + " to " + rowYrange[1] );
+   System.out.println("Z range = " + timeZrange[0] + " to " + timeZrange[1] );
 
     // get list of detectors
     int[] det_number=null;
