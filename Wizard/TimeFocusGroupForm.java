@@ -28,6 +28,9 @@
  * Modified: 
  *
  * $Log$
+ * Revision 1.4  2003/04/24 18:58:24  pfpeterson
+ * Various small bug fixes. (Chris Bouzek)
+ *
  * Revision 1.3  2003/04/02 15:02:46  pfpeterson
  * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  *
@@ -36,8 +39,8 @@
  *
  * Revision 1.5  2003/03/13 19:00:52  dennis
  * Added $Log$
- * Added Revision 1.3  2003/04/02 15:02:46  pfpeterson
- * Added Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
+ * Added Revision 1.4  2003/04/24 18:58:24  pfpeterson
+ * Added Various small bug fixes. (Chris Bouzek)
  * Added
  * Added Revision 1.1  2003/03/19 15:07:51  pfpeterson
  * Added Added to CVS. (Chris Bouzek)
@@ -49,9 +52,9 @@
 package Wizard;
 
 import java.io.*;
-import DataSetTools.wizard.*;
+import DataSetTools.wizard.Form;
 import DataSetTools.parameter.*;
-import DataSetTools.dataset.*;
+import DataSetTools.dataset.DataSet;
 import java.util.Vector;
 import DataSetTools.operator.Operator;
 import Operators.TOF_Diffractometer.*;
@@ -72,7 +75,7 @@ public class TimeFocusGroupForm extends    Form
   private Float angle, path;
   private String focusing_GIDs;
   public static final int NUM_BANKS = 20;
-  
+
   /**
    *  Construct a TimeFocusGroupForm.  This constructor also
    *  calls setDefaultParameters in order to set the permission
@@ -82,7 +85,6 @@ public class TimeFocusGroupForm extends    Form
   public TimeFocusGroupForm( )
   {
     super("Time focus and group DataSets");
-    this.setDefaultParameters();
   }
 
   /**
@@ -130,6 +132,7 @@ public class TimeFocusGroupForm extends    Form
    */
   public void setDefaultParameters()
   {
+    parameters = new Vector();
     addParameter(new ArrayPG("Histograms", new Vector(), false));
     for( int i = 0; i < NUM_BANKS; i ++ )
     {
@@ -144,7 +147,6 @@ public class TimeFocusGroupForm extends    Form
       editable_params[i] = i + 1;
 
     setParamTypes(new int[]{0},editable_params,new int[]{NUM_BANKS*3+1});
-
   }
 
   /**
@@ -277,7 +279,6 @@ public class TimeFocusGroupForm extends    Form
     DataSet hist_ds;
     int num_ds, p_index, edit_len;
     IParameterGUI param;
-    DataSet ds;
 
     //get the DataSet array
     histograms = (ArrayPG)super.getParameter(0);
@@ -311,8 +312,13 @@ public class TimeFocusGroupForm extends    Form
           angle = ((Float)this.getEditableParamValue(ipgs[p_index + 1]));
           path = ((Float)this.getEditableParamValue(ipgs[p_index + 2]));
           
+          if( focusing_GIDs==null || focusing_GIDs.length()<=0){
+            p_index+=3;
+            continue;
+          }
           //was there an error entering params?
-          if( focusing_GIDs == null || angle == null || path == null )
+          //if( focusing_GIDs == null || angle == null || path == null )
+          if( angle == null || path == null )
           {
             System.out.println("ERROR");
             return new Boolean(false);               
@@ -321,9 +327,10 @@ public class TimeFocusGroupForm extends    Form
           //time_focus the DataSet
           if( hist_ds != DataSet.EMPTY_DATA_SET )
           {
-            //do NOT make a new DataSet
+            //make a new DataSet-otherwise it will be somewhat difficult
+            //to compare the results with the original
             tf = new TimeFocusGID(hist_ds, focusing_GIDs,
-                               angle.floatValue(), path.floatValue(), false);
+                               angle.floatValue(), path.floatValue(), true);
             result = tf.getResult();
           }
           else
