@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2001/12/17 16:38:45  pfpeterson
+ * Made the algorithm to prevent double operator listings stonger.
+ *
  * Revision 1.22  2001/12/13 18:57:43  dennis
  * -Fixed a documentation error
  * -Fixed and error that would find a command that did not exist
@@ -183,7 +186,12 @@ public class Script_Class_List_Handler  implements OperatorHandler
 		ScrPaths2=ScrPaths2+'/'+"ISAW";
 		ScrPaths2=standardizeDir(ScrPaths2);
 		if(existDir(ScrPaths2)){
-		    includeVec.add(ScrPaths2);
+		    if(existDir(ScrPaths2+"Operators")){
+			includeVec.add(ScrPaths2+"Operators");
+		    }
+		    if(existDir(ScrPaths2+"Scripts")){
+			includeVec.add(ScrPaths2+"Scripts");
+		    }
 		}
 	    }
 	}
@@ -196,13 +204,18 @@ public class Script_Class_List_Handler  implements OperatorHandler
 	    if(ScrPaths1.length()>0){
 		ScrPaths1=standardizeDir(ScrPaths1);
 		if(existDir(ScrPaths1)){
-		    includeVec.add(ScrPaths1);
+		    if(existDir(ScrPaths1+"Operators")){
+			includeVec.add(ScrPaths1+"Operators");
+		    }
+		    if(existDir(ScrPaths1+"Scripts")){
+			includeVec.add(ScrPaths1+"Scripts");
+		    }
 		}
 	    }
 	    g++;
 	    String suff=""+g;
 	    suff=suff.trim();
-	    ScrPaths1 = System.getProperty( "GROUP"+suff+"_HOME" );
+ 	    ScrPaths1 = System.getProperty( "GROUP"+suff+"_HOME" );
 	}
 
        
@@ -212,7 +225,12 @@ public class Script_Class_List_Handler  implements OperatorHandler
 	   if(ScrPaths.length()>0){
 	       ScrPaths=standardizeDir(ScrPaths);
 		if(existDir(ScrPaths)){
-		    includeVec.add(ScrPaths);
+		    if(existDir(ScrPaths+"Operators")){
+			includeVec.add(ScrPaths+"Operators");
+		    }
+		    if(existDir(ScrPaths+"Scripts")){
+			includeVec.add(ScrPaths+"Scripts");
+		    }
 		}
 	   }
        }
@@ -245,8 +263,7 @@ public class Script_Class_List_Handler  implements OperatorHandler
 	  System.out.println("********************"); */
 
        for( int i=0 ; i<includeVec.size() ; i++ ){
-	   processPaths((String)includeVec.elementAt(i)+"Operators");
-	   processPaths((String)includeVec.elementAt(i)+"Scripts");
+	   processPaths((String)includeVec.elementAt(i));
        }
 
 
