@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.58  2003/07/07 21:49:43  rmikk
+ * -Rearranged Methods into sections.
+ * -Added a lot of documentation
+ *
  * Revision 1.57  2003/06/27 16:27:59  rmikk
  * Reverted to version 1.51
  * The if then statement no longer requires all upper case THEN
@@ -206,9 +210,13 @@ import java.util.Vector;
 
 
 /**
- * Processes the script or one line of a script.  <BR>
- * It has features to send back results that are displayable and also
- * results that are data sets. 
+ * Lexes, parses and executes Structure statements( if, else, for, on error),
+ * parameter statements, and provides methods to interface with ISAW by
+ * supplying titles, command names, execution results, etc. This class only
+ * works on Isaw scripts.<P>
+ * execOneLine is used to lex, parse, and executes lines not containing
+ * structure or parameter statements and also expressions that are part of the
+ * lines of the script containing the structure commands.
  */
 public class ScriptProcessor  extends ScriptProcessorOperator 
                                implements  PropertyChangeListener, IObservable,
@@ -228,10 +236,11 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   private Vector vnames= new Vector();
   private IssScript script=null;
   private ParameterClassList param_types = new ParameterClassList();
+
+  //--------------------------- Constructors ---------------------------
   
   /**
-   * Constructor to take care of the common parts of initializing the
-   * ScriptProcessor.
+   * Constructor that initializes the Script system
    */
   private ScriptProcessor(){
     super("UNKNOWN");
@@ -253,6 +262,11 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     setDefaultParameters();
   }
   
+  /**
+  *     Constructor that uses the StringBuffer representation of the
+  *     script
+  *     @param  buffer   the buffer that stores the Isaw Script
+  */
   public ScriptProcessor( StringBuffer buffer ){
     this();
     this.script=new IssScript(buffer);
@@ -271,6 +285,36 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     setDefaultParameters(); 
   }
   
+
+ //------------------------ Events ---------------------------------
+  /**
+   * The only "property" that changes is the "Display"<br> Use this
+   * method if you want to be notified of the Display Command for non
+   * Data Sets
+   *
+   * @param P The class that wants to be notified
+   */
+  public void addPropertyChangeListener( PropertyChangeListener P){
+    if( ExecLine == null ) return;
+    ExecLine.addPropertyChangeListener( P );
+    if( PL == null )
+      PL = new PropertyChangeSupport((Object) this );
+    PL.addPropertyChangeListener(P);
+  }
+
+  public void addPropertyChangeListener( String prop,PropertyChangeListener P){
+    if( ExecLine == null ) return;
+    ExecLine.addPropertyChangeListener( P );
+    if( PL == null )
+      PL = new PropertyChangeSupport((Object) this );
+    PL.addPropertyChangeListener(prop,P);
+  }
+
+  public void removePropertyChangeListener(PropertyChangeListener P){
+    if(PL!=null)
+      PL.removePropertyChangeListener(P);
+  }
+
   /**
    * Sets the whole IObserverList.  
    *   NOTE: Used when alternating between different languages
@@ -280,7 +324,9 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     OL = IOlist;
     ExecLine.setIObserverList( IOlist);
   }
-   
+ 
+ 
+  
   /**
    * Sets the whole list of property change listeners.  
    *   NOTE: Used when alternating between different languages
@@ -291,7 +337,75 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     ExecLine.setPropertyChangeList( PcSupp );
   } 
 
-  /** 
+  /**
+   * adds an Iobserver to be notified when a new data Set is sent
+   *
+   * @param iobs an Iobserver who wants to be notified of a data set
+   */
+  public void addIObserver( IObserver iobs ){
+    ExecLine. addIObserver( this ) ; 
+    if(OL==null) 
+       OL=new IObserverList();
+    OL.addIObserver( iobs ) ; 
+  }
+
+  /**
+   * deletes an Iobserver who no longer wants to be notified when a
+   * new data Set is sent
+   *
+   * @param iobs an Iobserver who wants to be notified of a data set
+   */
+  public void deleteIObserver( IObserver iobs ){
+    ExecLine.deleteIObserver( this ) ; 
+    if(OL==null)
+      return; // can't remove anyone
+    else
+      OL.deleteIObserver( iobs ) ; 
+  }
+    
+  /**
+   * deletes all the Iobserver 
+   */
+  public void deleteIObservers(){
+    ExecLine.deleteIObservers();
+    if(OL==null)
+      return; // can't remove anyone
+    else
+      OL.deleteIObservers();
+  }
+
+   //-----------------  Event Handling -----------------
+/**
+   * Executes when a PropertyChangeEvent Occurs
+   *
+   * @param  e   The property change Event. 
+   *
+   * NOTE: The only PropertyChangeEvent processed has a name
+   * "Display"
+   */
+  public void propertyChange(PropertyChangeEvent e){
+    if(PL==null) return; // no one to notify
+    PL.firePropertyChange( e );
+  }
+
+ /**
+   * Executed when an IObservable notifies this IObserver
+   *
+   *@see DataSetTools.util.IObserver
+   */ 
+  public void update(  Object observed_obj ,  Object reason ){
+    if(OL==null) return; // no one to notify
+
+    if( !(reason instanceof String))
+      OL.notifyIObservers( this  ,  reason  );
+    else
+      OL.notifyIObservers( observed_obj, reason);
+
+  }
+
+ //---------------------- Interface Setups and Retrievers---------------
+
+ /** 
    * Sets up the document that logs all operations
    *
    * @param doc The document that logs operations
@@ -303,6 +417,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     ExecLine.setLogDoc( doc);
   }
   
+
+
   public void setDocument( Document doc){
     this.script=new IssScript(doc);
   }
@@ -316,6 +432,196 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     if( Debug)System.out.println( dss.getTitle());
     ExecLine.addDataSet( dss ) ; 
   }
+
+ /**
+   * Resets error condition so program can continue executing one line
+   */
+  public void resetError(){
+    ExecLine.resetError();
+    perror = -1;
+    lerror = -1;
+    serror = "";
+  }
+  
+  /**
+   * resets the error conditions and the variable space and clears
+   * displays
+   *
+   * NOTE: The data sets that were added from outside stay
+   */
+  public void reset(){
+    ExecLine.initt();
+    ExecLine.resetError();
+    ExecLine.removeDisplays();
+  }
+
+
+
+  public String getVersion(){
+    return "6-01-2001";
+  }
+
+  /**
+   * Gets the position in a line where the error occurred
+   */
+  public int getErrorCharPos(){
+    if(ExecLine == null ) return -1;
+    return perror;
+    //return ExecLine.getErrorCharPos();
+  }
+
+  /**
+   * Gets the Message for the error 
+   */
+  public String getErrorMessage(){
+    if( ExecLine == null ) return "";
+    return serror;
+  }
+
+  /**
+   * Returns the line where the error occurred
+   */
+  public int getErrorLine(){
+    return lerror;
+  }
+
+  /**
+   *    Utility to set the error at the current line
+  */
+  private void seterror( int poserr , String ermess ){
+    perror = poserr ; 
+    serror = ermess ; 
+  }
+      
+//------------------------- Operator info Methods-----------------    
+  /**
+   * Returns the documentation. This is generated from the script from
+   * the lines that start with a '#' up to the first non-empty line.
+   */
+  public String getDocumentation(){
+    return this.script.getDocumentation();
+  }
+
+ 
+  public String[] getCategoryList(){
+    return this.script.getCategoryList();
+  }
+
+  /** 
+   * Gives the Command to use this script in the as a function in
+   * this ScriptProcessor.<BR> NOT USED
+   *
+   * NOTE: ScriptOperators are used for functions in this scriptProcessor
+   *
+   *@see  Command.ScriptOperator
+   */
+  public String getCommand(){
+    return this.script.getCommand();
+  }
+    
+  public String getFileName(){
+    return this.script.getFilename();
+  }
+
+  /**
+   * Gives the Title of this program document. The Title appears in
+   * dialog boxes and menu items
+   *
+   * NOTE: To set the Title have a line "$Title= title string" in
+   * the document
+   */
+  public String getTitle(){
+    return this.script.getTitle();
+  }
+
+
+  /**
+   * Utility that returns all the data sets that have been added
+   * from outside sources
+   */
+  public DataSet[] getDataSets(){
+    return ExecLine.getGlobalDataset();
+  }     
+
+  //----------------- Lex and Parse Section -----------------
+
+
+ //----------------------- Executes Script ---------------------------
+  /**
+   * Executes the whole script then returns the result
+   *
+   * @return the result.  If there is an error the result is a
+   * subclass of ErrorString
+   *
+   * @see DataSetTools.util.ErrorString
+   */
+  public Object getResult(){
+    int i;
+    String S;
+        
+    ExecLine.initt();
+    ExecLine.resetError();
+    seterror( -1, "");
+    lerror = -1;
+    
+    //--------------- Add Parameters to execOneLine -----------------    
+    for( i = 0 ; i < getNum_parameters() ; i++){
+      if(getParameter( i ).getValue() == null){
+        serror = "Undefined Parameter "+i;
+        perror =i;
+        lerror = i;
+        return new ErrorString( serror );
+      }else if( getParameter( i ).getValue() instanceof DataSet){
+        DataSet ds = (DataSet)(getParameter( i ).getValue());        
+        ExecLine.addParameterDataSet( ds , (String)vnames.elementAt(i));
+      }else if( getParameter(i).getValue() instanceof Vector){
+        Vector V = (Vector)( getParameter(i).getValue());
+        ExecLine.Assign((String)(vnames.elementAt(i)) , V );
+      
+      }else if( getParameter(i).getValue() instanceof SpecialString){
+        ExecLine.Assign((String)(vnames.elementAt(i)),
+                        getParameter(i).getValue().toString());
+
+      }else{
+        ExecLine.Assign((String)(vnames.elementAt(i)),
+                        getParameter(i).getValue());
+      }
+    }// for i=0 to Num_parameters
+
+    //-------------  Execute the script--------------------
+    int k =lerror; 
+    k = executeBlock( this.script,0 ,true ,0) ;
+         
+    // ------------- Check for errors -------------------
+    if( getErrorMessage().equals(execOneLine.WN_Return))
+      seterror( -1,"");
+    if( (perror < 0) && 
+        !execOneLine.WN_Return.equals( ExecLine.getErrorMessage()))
+      seterror( ExecLine.getErrorCharPos(), ExecLine.getErrorMessage());
+        
+    if( (perror >= 0) && (lerror <  0 ))
+      lerror = k;
+    
+    // ???????? is there a return statment ??????????    
+    boolean ReturnStatement=  execOneLine.WN_Return.
+      equals(ExecLine.getErrorMessage());    
+
+    //----------- Set up Return Value -------------------
+  
+    if( ExecLine != null )
+      if( (ExecLine.getErrorCharPos() >= 0) && !ReturnStatement){
+        return new ErrorString( ExecLine.getErrorMessage() +" on line "+
+                                lerror+ "at position "
+                                +ExecLine.getErrorCharPos() );
+      }else{
+        return ExecLine.getResult();
+      }
+    else
+      return null;
+  }
+
+
+
 
   /**
    * Executes one line of a Script
@@ -377,28 +683,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     } 
   }
   
-  /**
-   * Resets error condition so program can continue executing one line
-   */
-  public void resetError(){
-    ExecLine.resetError();
-    perror = -1;
-    lerror = -1;
-    serror = "";
-  }
-  
-  /**
-   * resets the error conditions and the variable space and clears
-   * displays
-   *
-   * NOTE: The data sets that were added from outside stay
-   */
-  public void reset(){
-    ExecLine.initt();
-    ExecLine.resetError();
-    ExecLine.removeDisplays();
-  }
-
+ 
   /**
    * executes all the lines of code in the script
    *
@@ -425,7 +710,25 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       }
     
   }
-    
+  
+
+  /**
+  *     Goes through lines of code in the script starting at line "start".
+  *     The code is executed if exec is true and onerror is false. This
+  *     method will execute lines of code until it hits the end of the script
+  *     or an end structure statement like "end if","end for", etc.
+
+  *     @param   script   the script containing the code to be executed
+  *     @param   start    the starting line of the script to execute.
+  *     @param   exec     If true the lines will be executed, otherwise they
+  *                       will just be past through.
+  *     @param   onerror  If greater than zero, lines will be ignored until an
+  *                       "end error" or "else error" where onerror is 
+  *                        decremented.
+  *     @return   The last line processed by this method. It should be the
+  *               end of the script or an end or else structure type statment
+  */
+
   private int executeBlock( Script script, int start, boolean exec,
                             int onerror ){
     int line ;
@@ -509,7 +812,20 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     }
     return line; 
   }
-    
+
+
+  /**    
+  *     Executes a For Block
+  *     @param   script   the script containing the code to be executed
+  *     @param   start    the starting line of the script to execute.
+  *     @param   exec     If true the lines will be executed, otherwise they
+  *                       will just be past through.
+  *     @param   onerror  If greater than zero, lines will be ignored until an
+  *                       "end error" or "else error" where onerror is 
+  *                        decremented.
+  *     @return   The last line processed by this method. It should have and
+  *               end for statement
+  */   
   private int executeForBlock( Script script , int start , boolean execute, 
                                int onerror ){
     String var; 
@@ -612,6 +928,15 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     return kline ; 
   }
 
+   /**    
+  *     Executes a on Error Block
+  *     @param   script   the script containing the code to be executed
+  *     @param   start    the starting line of the script to execute.
+  *     @param   exec     If true the lines will be executed, otherwise they
+  *                       will just be past through.
+  *     @return   The last line processed by this method. It should have and
+  *               end error statement
+  */   
   private int executeErrorBlock( Script script, int start, boolean execute ){
     String var;      
     int i, j, k; 
@@ -698,6 +1023,19 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       return line + 1; // in case nested on errors 
   }
 
+
+ /**    
+  *     Executes a If Blocks
+  *     @param   script   the script containing the code to be executed
+  *     @param   start    the starting line of the script to execute.
+  *     @param   exec     If true the lines will be executed, otherwise they
+  *                       will just be past through.
+  *     @param   onerror  If greater than zero, lines will be ignored until an
+  *                       "end error" or "else error" where onerror is 
+  *                        decremented.
+  *     @return   The last line processed by this method. It should have and
+  *               end if statement
+  */   
   private int executeIfStruct( Script script, int line, boolean execute,
                                int onerror ){
     String S;
@@ -714,6 +1052,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       lerror = line;
       return line;
     } 
+    //????????? Does line start with IF ?????????????
     i = S.toUpperCase().indexOf( "IF " ) ;
     if( i < 0){
       perror = 0;
@@ -721,6 +1060,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       lerror = line;
       return line;
     }
+
+    //?????????? Get rest of line, eliminate the trailing THEN????
     i = i + 3;
     j = S.length();
     if( S.trim().length() >= 8 )
@@ -730,6 +1071,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
 
     boolean b;
     Object X;
+    //?????????????? Determing If condition ???????????????
     if(!execute)
       X = new Boolean(true);
     else{
@@ -760,6 +1102,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       System.out.println("aft eval b and err ="+b+","+perror);
     if( perror >= 0 )
       return line;
+
+    //------- Now go through Next block and execute or not--------
     line = nextLine( script, line );
     j = executeBlock ( script , line , b && execute , 0 ) ;
     if( Debug)
@@ -767,6 +1111,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
                           perror +serror );
     if( perror >= 0 )
       return j;
+    //------------ Get end block statement --------------
     S = script.getLine ( j );
     if(Debug)
       System.out.println("ExIf:: Els or Elseif?"+S);
@@ -776,6 +1121,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       return j;
     }
     int x=0;
+    //??????????? Is it ELSE or ELSEIF ????????????????????
     if( S.toUpperCase().trim().indexOf( "ELSE" ) == 0)
       if( S.toUpperCase().trim().indexOf( "ELSEIF" ) == 0 ){
         j = executeIfStruct( script , j , !b && execute ,0);  
@@ -789,7 +1135,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       System.out.println( "ExIf:: aft exec 1st block, perror=" + perror );
     if( perror >= 0) 
       return j;
-
+    //??????????????? Is it ENDIF
     S = script.getLine ( j );
     if( Debug ) 
       System.out.println( "ExIf:: ENDIF?" + S );
@@ -810,524 +1156,9 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     return j;
   } 
 
-  /**
-   * Utility to get the Next Macro line( starts with $ or #$) in a
-   * document
-   *
-   * @param Doc The document containing the program
-   * @param prevLine the line number of the previous Macro line of
-   * -1 for first
-   *
-   * @return The line number of the next macro line or -1 if none
-   */
-  public static int getNextMacroLine( Document Doc, int prevLine){
-    String Line;
-    prevLine++;
-    if( prevLine < 0 ) 
-      prevLine = 0;
-    Line = getLine( Doc , prevLine);
-    if( Line == null )
-      return -1;
-    if( Line.trim().indexOf("#$$") == 0)
-      return prevLine;
-    if( Line.trim().indexOf("$") == 0){
-      //if(Debug)System.out.println("get $ Macro line #"+prevLine);
-      return prevLine;
-    }
-    return getNextMacroLine( Doc, prevLine++);
-  }
+ //------------------ Handle Parameters ------------------------------
 
-  /**
-   * This turns a string into a parameter that it adds to the list of
-   * parameters for the operator. This can also parse some 'MACRO'
-   * information such as setting the title or command name.
-   *
-   * @param line the String to be parsed
-   * @param linenum the line number that the string came from. This is
-   * used in the case when an error is encountered.
-   */
-  private boolean processMacroLine( String line, int linenum ){
-    String VarName, DataType, InitValue, Prompt;
-    int index=-1;
-    StringBuffer buffer=null;
-
-    if( Debug)
-      System.out.println("Line="+line);
-            
-    // confirm that there is something to work with
-    if( line==null || line.length()<=0 || line.indexOf("$")<0 )
-      return true;
-    {
-      String checker=line.trim();
-      if( (checker.indexOf("$")!=0) && (checker.indexOf("#$$")!=0) )
-        return true;
-    }
-
-    index=line.indexOf("#");
-    if(index==0){ // could be comment
-      //index=line.indexOf("#$$");
-      //if(index<0) // it is a comment
-      if(line.indexOf("#$$")<0)
-        return true; // it dealt with things correctly
-    }
-
-    // trim off the marker flag
-    index=line.indexOf("#$$");
-    if(index>=0){
-      buffer=new StringBuffer(line.substring(index+3).trim());
-    }else{
-      index=line.indexOf("$");
-      if(index<0) return false; // something wrong
-      buffer=new StringBuffer(line.substring(index+1).trim());
-    }
-
-    // insert extra spaces if there is an '=' sign
-    index=buffer.toString().indexOf("=");
-    if( index>0 ){
-      buffer.insert(index+1," ");
-      buffer.insert(index," ");
-    }
-
-    // get the variable name
-    VarName=StringUtil.getString(buffer);
-
-    // get the Data Type and initial value
-    int num_space=buffer.length();
-    DataType=StringUtil.getString(buffer);
-    if(DataType==null) return false; // REMOVE???
-    index=DataType.indexOf("("); // check if there is in initial value
-    if(index>0){
-      num_space=num_space-buffer.length()-DataType.length();
-      InitValue=DataType.substring(index+1);
-      DataType=DataType.substring(0,index);
-      index=InitValue.indexOf(")");
-      if(index>0){ // the init value is complete so trim off the ')'
-        InitValue=InitValue.substring(0,index);
-      }else{  // look in the buffer for the rest of the init value
-        index=buffer.toString().indexOf(")");
-        if(index>0){
-          InitValue=InitValue+Format.string("",num_space)
-            +buffer.substring(0,index);
-          buffer.delete(0,index+1);
-          StringUtil.trim(buffer);
-        }else{
-          InitValue=InitValue.substring(0,InitValue.length()-1);
-        }
-      }
-    }else{
-      InitValue=null;
-    }
-    String DataType_C = DataType;
-    DataType = DataType.toUpperCase();
-
-    // get the prompt
-    Prompt=buffer.toString().trim();
-    if(Debug)
-      System.out.println("in line ["+linenum+"] "+DataType+","+Prompt);
-            
-    // add name to list of variables
-    if( !DataType.equals( "=" ))
-      vnames.addElement( VarName );
-   
-    // parse type and create a parameter
-    if( DataType.equals("=")){
-      // do nothing
-    }else if( (DataType .equals( "INT") ) || ( DataType.equals( "INTEGER"))){
-      if( InitValue == null)
-        InitValue ="0";
-      try {
-        InitValue=InitValue.trim();
-        addParameter( new IntegerPG( Prompt , 
-                                      new Integer(InitValue)) );
-      }catch( Exception s){
-         addParameter( new Parameter( Prompt, new Integer (0)) );
-      }
-    }else if ( DataType.equals( "FLOAT")){
-      if( InitValue == null)
-        InitValue ="0.0";
-      try {
-        InitValue=InitValue.trim();
-        addParameter( new FloatPG( Prompt,
-                                     new Float(InitValue)) );
-      }catch( Exception s){
-        addParameter( new Parameter( Prompt , new Float (0.0)) );
-      }
-    }else if( DataType.equals( "STRING")){
-      if( InitValue == null)
-        InitValue ="";
-      addParameter( new StringPG ( Prompt , InitValue ) ) ;
-    }else if(DataType.equals("BOOLEAN")){
-      if( InitValue == null)
-        InitValue ="true";
-      try {
-        addParameter( new BooleanPG ( Prompt , 
-                                 new Boolean(InitValue.toLowerCase().trim())));
-      }catch( Exception s){
-        addParameter( new BooleanPG( Prompt, new Boolean (true)) );
-      }
-    }else if( DataType.equals("ARRAY")){
-     /* if( InitValue != null)
-        ExecLine.execute(InitValue , 0 , InitValue.length());
-      Vector V = new Vector();
-      if( InitValue != null )
-        if( ExecLine.getErrorCharPos() < 0){
-          if( ExecLine.getResult() instanceof Vector)
-            V = (Vector)(ExecLine.getResult());
-        }
-      */
-      addParameter( new ArrayPG( Prompt, InitValue));
-    }else if( DataType.equals("DATADIRECTORYSTRING")){
-      /*String DirPath = null;
-      if(InitValue!=null && InitValue.length()>0){
-        DirPath=InitValue;
-      }else{
-        DirPath=SharedData.getProperty("Data_Directory")+"\\";
-      }
-      if( DirPath != null )
-        DirPath = 
-          DataSetTools.util.StringUtil.setFileSeparator( DirPath);
-      else
-        DirPath = "";
-      */
-      addParameter( new DataDirPG( Prompt, null));
-                                 //  new DataDirectoryString(DirPath)));
-    }else if( DataType.equals("DSSETTABLEFIELDSTRING")){
-      /*if(InitValue == null)
-        addParameter( new Parameter( Prompt ,
-                                     new DSSettableFieldString() ));
-      else
-        addParameter( new Parameter( Prompt ,
-                               new DSSettableFieldString(InitValue.trim()) ) );
-      */
-      DSSettableFieldString dsf = new DSSettableFieldString();
-      ChoiceListPG choice= new ChoiceListPG( Prompt, InitValue);
-      for( int i = 0; i< dsf.num_strings(); i++)
-        choice.addItem( dsf.getString(i));
-      addParameter( choice);
-    }else if( DataType.equals("LOADFILESTRING")){ 
-      /*String DirPath=null;
-      if(InitValue!=null && InitValue.length()>0){
-        DirPath=InitValue;
-      }else{
-        DirPath=SharedData.getProperty("Data_Directory")+"\\";
-      }
-      if(DirPath!=null)
-        DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
-      else
-        DirPath="";
-      */
-      addParameter(new LoadFilePG(Prompt, InitValue));
-    }else if( DataType.equals("SAVEFILESTRING")){ 
-      /*String DirPath=null;
-      if(InitValue!=null && InitValue.length()>0){
-        DirPath=InitValue;
-      }else{
-        DirPath=SharedData.getProperty("Data_Directory")+"\\";
-      }
-      if(DirPath!=null)
-        DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
-      else
-        DirPath="";
-      */
-      addParameter(new SaveFilePG(Prompt,InitValue));
-    }else if( DataType.equals( "INTLIST" )){
-       if(InitValue != null)
-         addParameter( new IntArrayPG( Prompt, InitValue.trim() ));
-       else
-         addParameter( new IntArrayPG( Prompt, InitValue ));
-
-
-    }else if (DataType.equals( "DSFIELDSTRING")){
-      if( InitValue == null )
-        addParameter( new Parameter( Prompt,new DSFieldString() ));
-      else
-        addParameter( new SaveFilePG( Prompt, InitValue ));
-                                     //new DSFieldString(InitValue.trim()) ));
-    }else if( DataType.equals( "INSTRUMENTNAMESTRING")){
-      String XX=null;
-      if(InitValue!=null && InitValue.length()>0)
-        XX=InitValue;
-      else
-        XX = SharedData.getProperty("Default_Instrument");
-      if( XX == null )
-        XX = "";
-      addParameter(  new InstNamePG( Prompt, XX ));
-    }else if( DataType.equals( "SERVERTYPESTRING")){
-      ServerTypeString STS = new ServerTypeString();
-      ChoiceListPG clpg = new ChoiceListPG( Prompt, InitValue);
-      for( int i=0; i< STS.num_strings(); i++)
-         clpg.addItem( STS.getString(i));
-               
-      addParameter( new Parameter( Prompt , STS ));
-                
-    }else if( DataType.equals("CHOICE")){
-      int nn = ExecLine.execute( InitValue, 0, InitValue.length()); 
-      Vector V= new Vector();
-      if( ExecLine.getErrorCharPos() <0)
-        if( ExecLine.getResult() instanceof Vector)
-          V = (Vector)(ExecLine.getResult());
-       ChoiceListPG cpg = new ChoiceListPG( Prompt, null);
-      for( nn=0; nn< V.size(); nn++){
-        cpg.addItem( (V.elementAt(nn)).toString()) ;
-      }
-      //StringChoiceList SL = new StringChoiceList(ss);
-     
-     
-      addParameter(  cpg);//new Parameter(Prompt, SL));
-    }else if ( DataType.equals( "DATASET") ){
-      /*DataSet dd = new DataSet("DataSet","");
-      if( InitValue != null){
-        ExecLine.execute( InitValue, 0, InitValue.length());
-        if( ExecLine.getErrorCharPos() < 0 )
-          if( ExecLine.getResult() instanceof DataSet )
-            dd = ( DataSet )( ExecLine.getResult() );
-      }
-      Parameter PP = new Parameter( Prompt , dd);
-      */
-      addParameter ( new DataSetPG(Prompt, null));// PP );
-    }else if ( DataType.equals( "SAMPLEDATASET") ){
-      /*SampleDataSet dd = new SampleDataSet();
-      if( InitValue != null){
-        ExecLine.execute( InitValue, 0, InitValue.length());
-                   
-        if( ExecLine.getErrorCharPos() < 0 )
-          if( ExecLine.getResult() instanceof SampleDataSet )
-            dd = ( SampleDataSet )( ExecLine.getResult() );
-      }
- 
-      Parameter PP = new Parameter( Prompt , dd);
-      */
-      addParameter ( new SampleDataSetPG(Prompt, null) );
-    }else if ( DataType.equals( "MONITORDATASET") ){
-      /*MonitorDataSet dd = new MonitorDataSet();
-      if( InitValue != null){
-        ExecLine.execute( InitValue, 0, InitValue.length());
-        if( ExecLine.getErrorCharPos() < 0 )
-          if( ExecLine.getResult() instanceof MonitorDataSet )
-            dd = ( MonitorDataSet )( ExecLine.getResult() );
-      }
-      Parameter PP = new Parameter( Prompt , dd);
-      */
-      addParameter ( new MonitorDataSetPG( Prompt, null) );
-    }else{
-      IParameter param = param_types.getInstance( DataType_C);
-      if( param != null)
-        try{
-             param.setName( Prompt);
-             param.setValue( InitValue);
-             addParameter( param );
-             return true;
-            }
-        catch(Exception ss)
-          { 
-            DataSetTools.util.SharedData.addmsg( "Parameter Error="+ss); 
-           }
-    
-      index=line.toUpperCase().indexOf(DataType);
-      seterror( index , "Data Type not supported " + DataType);
-      lerror = linenum;
-      return false; 
-    }
-      
-    if( Debug)
-      System.out.println("At bottom get def "+ perror+","+serror);
-
-
-    return true;
-  }
-
-  private int nextLine( Script script, int line1 ){
-    boolean done=false;
-    int line=line1;
-    String SS=null;
-    while(!done){
-      SS=script.getLine(line);
-      if(SS==null)
-        done=true;
-      else if(SS.length()<1)
-        done=true;
-      else if(SS.charAt(SS.length()-1)!='\\')
-        done=true;
-      else
-        line++;
-    }
-    line++;
-    return line;
-  }
-
-  /**
-   * Utility to return a given line from the Document
-   *
-   * @param Doc the document with the line
-   * @param start  the line number to be returned
-   * @return  The string representation of that line or null if there is none
-   */
-  public static String getLine( Document Doc, int start ){
-    return getLine( Doc, start, true );
-  }
-    
-  /**
-   * Same as getLine above if Contined is true.  It can be used when
-   * keeping track of line numbers.
-   */
-  private static String getLine( Document Doc, int start, boolean Continued ){
-    String var;
-    int i, j, k;
-    int line;
-    String S;
-    boolean mode;
-    Element  E, F;
-       
-    if( Doc == null ) 
-      return null ; 
-    E = Doc.getDefaultRootElement() ; 
-    if( start < 0 ) 
-      return null ; 
-    if( start >= E.getElementCount() ) 
-      return null ;   
-    F = E.getElement( start ) ; 
-    try{
-      S = Doc.getText( F.getStartOffset(),
-                       F.getEndOffset() -  F.getStartOffset() );
-    }catch( BadLocationException s ){
-      //seterror ( 0 , "Internal Errorc" ) ; 
-      return null ; 
-    }
-     
-    if( S != null) 
-      if( S.charAt(S.length() - 1 )<' ' ) 
-        S = S.substring( 0,S.length() - 1 );
-    if(Continued)
-      if( S.length() >0 )
-        if( S.charAt( S.length() - 1) == '\\' ){
-          String S2 = getLine( Doc,start + 1 );
-          if( S2 != null)
-            S = S.substring( 0, S.length() - 1 )+ S2;
-        }
-    return S;
-  }
-
-  private void seterror( int poserr , String ermess ){
-    perror = poserr ; 
-    serror = ermess ; 
-  }
-      
-  /**
-   * Utility to delete xcess spaces outside of quotes(") in a string S
-   */   
-  public String delSpaces( String S){
-    boolean quote, onespace; 
-    int i;
-    String Res;
-    char prevchar;
-    if( S == null ) return null;
-    Res  = "";
-    quote = false;
-    onespace = false;
-    prevchar = 0; 
-    for ( i =0; i < S.length() ; i++){
-      if( S.charAt( i) == '\"'){
-        quote = ! quote;
-        if( i > 0)
-          if (!quote )
-            if( S.charAt( i-1) == '\\') quote = !quote;
-        Res = Res + S.charAt ( i );
-        prevchar = S.charAt ( i );
-      }else if( quote ){
-        Res = Res + S.charAt(i);
-        prevchar = S.charAt ( i );
-      }else if( " \t".indexOf(S.charAt(i))>=0){
-        //!!if( S.charAt ( i ) == ' ')
-        if( " +-*/^():[]{}," . indexOf(S.charAt(i + 1 )) >= 0){
-        }else if( i+1>= S.length()){
-        }else if( i < 1) {
-        }else if("+-*/^():[]{},".indexOf(S.charAt( i - 1 ) ) >= 0){
-        }else
-          Res = Res + S.charAt( i ) ; 
-        prevchar = ' ';
-      }else{
-        Res = Res + S.charAt(i);
-        prevchar = S.charAt(i);
-      }
-    }
-    return Res;
-  }
-
-  // ************************SECTION:EVENTS********************
-
-  /**
-   * adds an Iobserver to be notified when a new data Set is sent
-   *
-   * @param iobs an Iobserver who wants to be notified of a data set
-   */
-  public void addIObserver( IObserver iobs ){
-    ExecLine. addIObserver( this ) ; 
-    if(OL==null) OL=new IObserverList();
-    OL.addIObserver( iobs ) ; 
-  }
-
-  /**
-   * deletes an Iobserver who no longer wants to be notified when a
-   * new data Set is sent
-   *
-   * @param iobs an Iobserver who wants to be notified of a data set
-   */
-  public void deleteIObserver( IObserver iobs ){
-    ExecLine.deleteIObserver( this ) ; 
-    if(OL==null)
-      return; // can't remove anyone
-    else
-      OL.deleteIObserver( iobs ) ; 
-  }
-    
-  /**
-   * deletes all the Iobserver 
-   */
-  public void deleteIObservers(){
-    ExecLine.deleteIObservers();
-    if(OL==null)
-      return; // can't remove anyone
-    else
-      OL.deleteIObservers();
-  }
-
-  public String getVersion(){
-    return "6-01-2001";
-  }
-
-  /**
-   * Gets the position in a line where the error occurred
-   */
-  public int getErrorCharPos(){
-    if(ExecLine == null ) return -1;
-    return perror;
-    //return ExecLine.getErrorCharPos();
-  }
-
-  /**
-   * Gets the Message for the error 
-   */
-  public String getErrorMessage(){
-    if( ExecLine == null ) return "";
-    return serror;
-  }
-
-  /**
-   * Returns the line where the error occurred
-   */
-  public int getErrorLine(){
-    return lerror;
-  }
-    
-  /**
-   * Returns the documentation. This is generated from the script from
-   * the lines that start with a '#' up to the first non-empty line.
-   */
-  public String getDocumentation(){
-    return this.script.getDocumentation();
-  }
-
-  /**
+ /**
    *  Sets Default parameters for getResult or for the JParametersGUI
    *  Dialog box. This will parse the macroBuffer created in the
    *  constructor.
@@ -1394,182 +1225,375 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     return ;
   }
 
-  public String[] getCategoryList(){
-    return this.script.getCategoryList();
-  }
 
-  /** 
-   * Gives the Command to use this script in the as a function in
-   * this ScriptProcessor.<BR> NOT USED
+
+  /**
+   * Utility to get the Next Macro line( starts with $ or #$) in a
+   * document
    *
-   * NOTE: ScriptOperators are used for functions in this scriptProcessor
+   * @param Doc The document containing the program
+   * @param prevLine the line number of the previous Macro line of
+   * -1 for first
    *
-   *@see  Command.ScriptOperator
+   * @return The line number of the next macro line or -1 if none
    */
-  public String getCommand(){
-    return this.script.getCommand();
-  }
-    
-  public String getFileName(){
-    return this.script.getFilename();
+  public static int getNextMacroLine( Document Doc, int prevLine){
+    String Line;
+    prevLine++;
+    if( prevLine < 0 ) 
+      prevLine = 0;
+    Line = getLine( Doc , prevLine);
+    if( Line == null )
+      return -1;
+    if( Line.trim().indexOf("#$$") == 0)
+      return prevLine;
+    if( Line.trim().indexOf("$") == 0){
+      //if(Debug)System.out.println("get $ Macro line #"+prevLine);
+      return prevLine;
+    }
+    return getNextMacroLine( Doc, prevLine++);
   }
 
   /**
-   * Gives the Title of this program document. The Title appears in
-   * dialog boxes and menu items
+   * This turns a string into a parameter that it adds to the list of
+   * parameters for the operator. This can also parse some 'MACRO'
+   * information such as setting the title or command name.
    *
-   * NOTE: To set the Title have a line "$Title= title string" in
-   * the document
+   * @param line the String to be parsed
+   * @param linenum the line number that the string came from. This is
+   * used in the case when an error is encountered.
    */
-  public String getTitle(){
-    return this.script.getTitle();
-  }
-    
-  /**
-   * Executes the whole script then returns the result
-   *
-   * @return the result.  If there is an error the result is a
-   * subclass of ErrorString
-   *
-   * @see DataSetTools.util.ErrorString
-   */
-  public Object getResult(){
-    int i;
-    String S;
-        
-    ExecLine.initt();
-    ExecLine.resetError();
-    seterror( -1, "");
-    lerror = -1;
-        
-    for( i = 0 ; i < getNum_parameters() ; i++){
-      if(getParameter( i ).getValue() == null){
-        serror = "Undefined Parameter "+i;
-        perror =i;
-        lerror = i;
-        return new ErrorString( serror );
-      }else if( getParameter( i ).getValue() instanceof DataSet){
-        DataSet ds = (DataSet)(getParameter( i ).getValue());        
-        ExecLine.addParameterDataSet( ds , (String)vnames.elementAt(i));
-      }else if( getParameter(i).getValue() instanceof Vector){
-        Vector V = (Vector)( getParameter(i).getValue());
-        ExecLine.Assign((String)(vnames.elementAt(i)) , V );
-      }else if( 3==4){
-        S =  (String)vnames.elementAt(i)+ "=" ;
-        if( (getParameter( i ).getValue() instanceof String) ||
-            (getParameter( i ).getValue() instanceof SpecialString))
-          S = S + '"' +  getParameter( i ).getValue().toString()+ '"';
-        else
-          S = S + getParameter( i ).getValue().toString();            
-        ExecLine.resetError() ;
-                
-        int j = ExecLine.execute ( S , 0 , S.length());
-        perror =ExecLine.getErrorCharPos() ;
-                
-        if( perror >= 0 )
-          serror = ExecLine.getErrorMessage()+" in Parameters " + S;
-        if( perror >= 0){
-          lerror = i;
-          //return;  must reset dataset titles
+  private boolean processMacroLine( String line, int linenum ){
+    String VarName, DataType, InitValue, Prompt;
+    int index=-1;
+    StringBuffer buffer=null;
+
+    if( Debug)
+      System.out.println("Line="+line);
+            
+    // confirm that there is something to work with
+    if( line==null || line.length()<=0 || line.indexOf("$")<0 )
+      return true;
+    {
+      String checker=line.trim();
+      if( (checker.indexOf("$")!=0) && (checker.indexOf("#$$")!=0) )
+        return true;
+    }
+
+    index=line.indexOf("#");
+    if(index==0){ 
+      if(line.indexOf("#$$")<0)
+        return true; // legacy code. #$$ used to be parameter
+    }
+
+    // Eliminate the #$ in the legacy parameter indicator
+    index=line.indexOf("#$$");
+    if(index>=0){
+      buffer=new StringBuffer(line.substring(index+3).trim());
+    }else{
+      index=line.indexOf("$");
+      if(index < 0) 
+          return false; // something wrong
+      buffer=new StringBuffer(line.substring(index+1).trim());
+    }
+
+    // insert extra spaces if there is an '=' sign
+    index=buffer.toString().indexOf("=");
+    if( index>0 ){
+      buffer.insert(index+1," ");
+      buffer.insert(index," ");
+    }
+
+    // get the variable name
+    VarName=StringUtil.getString(buffer);
+
+    // get the Data Type and initial value
+    int num_space=buffer.length();
+    DataType=StringUtil.getString(buffer);
+    if(DataType==null) 
+         return false; // REMOVE-nope line is not long enough
+
+    // check if there is in initial value
+    index=DataType.indexOf("("); 
+    if(index>0){
+      num_space = num_space - buffer.length() - DataType.length();
+      InitValue = DataType.substring(index+1);
+      DataType=DataType.substring(0,index);
+      index=InitValue.indexOf(")");
+      if(index > 0){ // the init value is complete so trim off the ')'
+        InitValue=InitValue.substring(0,index);
+      }else{  // look in the buffer for the rest of the init value
+        index=buffer.toString().indexOf(")");
+        if(index>0){
+          InitValue=InitValue+Format.string("",num_space)
+            +buffer.substring(0,index);
+          buffer.delete(0,index+1);
+          StringUtil.trim(buffer);
+        }else{
+          InitValue=InitValue.substring(0,InitValue.length()-1);
         }
-      }else if( getParameter(i).getValue() instanceof SpecialString){
-        ExecLine.Assign((String)(vnames.elementAt(i)),
-                        getParameter(i).getValue().toString());
-
-      }else{
-        ExecLine.Assign((String)(vnames.elementAt(i)),
-                        getParameter(i).getValue());
       }
-    }// for i=0 to Num_parameters
+    }else{
+      InitValue=null;
+    }
+    String DataType_C = DataType;
+    DataType = DataType.toUpperCase();
 
-    int k =lerror; 
-    k = executeBlock( this.script,0 ,true ,0) ;
-         
-    if( getErrorMessage().equals(execOneLine.WN_Return))
-      seterror( -1,"");
-    if( (perror < 0) && 
-        !execOneLine.WN_Return.equals( ExecLine.getErrorMessage()))
-      seterror( ExecLine.getErrorCharPos(), ExecLine.getErrorMessage());
-        
-    if( (perror >= 0) && (lerror <  0 ))
-      lerror = k;
-        
-    boolean ReturnStatement=  execOneLine.WN_Return.
-      equals(ExecLine.getErrorMessage());    
-
-  
-    if( ExecLine != null )
-      if( (ExecLine.getErrorCharPos() >= 0) && !ReturnStatement){
-        return new ErrorString( ExecLine.getErrorMessage() +" on line "+
-                                lerror+ "at position "
-                                +ExecLine.getErrorCharPos() );
-      }else{
-        return ExecLine.getResult();
+    // get the prompt
+    Prompt=buffer.toString().trim();
+    if(Debug)
+      System.out.println("in line ["+linenum+"] "+DataType+","+Prompt);
+            
+    // add name to list of variables
+    if( !DataType.equals( "=" ))
+      vnames.addElement( VarName );
+   
+    // parse type and create a parameter
+    if( DataType.equals("=")){
+      // do nothing
+    }else if( (DataType .equals( "INT") ) || ( DataType.equals( "INTEGER"))){
+      if( InitValue == null)
+        InitValue ="0";
+      try {
+        InitValue=InitValue.trim();
+        addParameter( new IntegerPG( Prompt , 
+                                      new Integer(InitValue)) );
+      }catch( Exception s){
+         addParameter( new Parameter( Prompt, new Integer (0)) );
       }
-    else
-      return null;
+    }else if ( DataType.equals( "FLOAT")){
+      if( InitValue == null)
+        InitValue ="0.0";
+      try {
+        InitValue=InitValue.trim();
+        addParameter( new FloatPG( Prompt,
+                                     new Float(InitValue)) );
+      }catch( Exception s){
+        addParameter( new Parameter( Prompt , new Float (0.0)) );
+      }
+    }else if( DataType.equals( "STRING")){
+      if( InitValue == null)
+        InitValue ="";
+      addParameter( new StringPG ( Prompt , InitValue ) ) ;
+    }else if(DataType.equals("BOOLEAN")){
+      if( InitValue == null)
+        InitValue ="true";
+      try {
+        addParameter( new BooleanPG ( Prompt , 
+                                 new Boolean(InitValue.toLowerCase().trim())));
+      }catch( Exception s){
+        addParameter( new BooleanPG( Prompt, new Boolean (true)) );
+      }
+    }else if( DataType.equals("ARRAY")){
+      addParameter( new ArrayPG( Prompt, InitValue));
+    }else if( DataType.equals("DATADIRECTORYSTRING")){
+     
+      addParameter( new DataDirPG( Prompt, null));
+                                 //  new DataDirectoryString(DirPath)));
+    }else if( DataType.equals("DSSETTABLEFIELDSTRING")){
+      
+      DSSettableFieldString dsf = new DSSettableFieldString();
+      ChoiceListPG choice= new ChoiceListPG( Prompt, InitValue);
+      for( int i = 0; i< dsf.num_strings(); i++)
+        choice.addItem( dsf.getString(i));
+      addParameter( choice);
+    }else if( DataType.equals("LOADFILESTRING")){ 
+     
+      addParameter(new LoadFilePG(Prompt, InitValue));
+    }else if( DataType.equals("SAVEFILESTRING")){ 
+     
+      addParameter(new SaveFilePG(Prompt,InitValue));
+    }else if( DataType.equals( "INTLIST" )){
+       if(InitValue != null)
+         addParameter( new IntArrayPG( Prompt, InitValue.trim() ));
+       else
+         addParameter( new IntArrayPG( Prompt, InitValue ));
+
+
+    }else if (DataType.equals( "DSFIELDSTRING")){
+      if( InitValue == null )
+        addParameter( new Parameter( Prompt,new DSFieldString() ));
+      else
+        addParameter( new SaveFilePG( Prompt, InitValue ));
+                                     //new DSFieldString(InitValue.trim()) ));
+    }else if( DataType.equals( "INSTRUMENTNAMESTRING")){
+      String Instrument_Name = null;
+      if(InitValue != null && InitValue.length() > 0)
+        Instrument_Name = InitValue;
+      else
+        Instrument_Name = SharedData.getProperty("Default_Instrument");
+      if( Instrument_Name == null )
+        Instrument_Name = "";
+      addParameter(  new InstNamePG( Prompt, Instrument_Name ));
+    }else if( DataType.equals( "SERVERTYPESTRING")){
+      ServerTypeString STS = new ServerTypeString();
+      ChoiceListPG clpg = new ChoiceListPG( Prompt, InitValue);
+      for( int i=0; i< STS.num_strings(); i++)
+         clpg.addItem( STS.getString(i));
+               
+      addParameter( new Parameter( Prompt , STS ));
+                
+    }else if( DataType.equals("CHOICE")){
+      int nn = ExecLine.execute( InitValue, 0, InitValue.length()); 
+      Vector V= new Vector();
+      if( ExecLine.getErrorCharPos() <0)
+        if( ExecLine.getResult() instanceof Vector)
+          V = (Vector)(ExecLine.getResult());
+       ChoiceListPG cpg = new ChoiceListPG( Prompt, null);
+      for( nn=0; nn< V.size(); nn++){
+        cpg.addItem( (V.elementAt(nn)).toString()) ;
+      }
+      
+      addParameter(  cpg);
+    }else if ( DataType.equals( "DATASET") ){
+     
+      addParameter ( new DataSetPG(Prompt, null));// PP );
+    }else if ( DataType.equals( "SAMPLEDATASET") ){
+     
+      addParameter ( new SampleDataSetPG(Prompt, null) );
+    }else if ( DataType.equals( "MONITORDATASET") ){
+     
+      addParameter ( new MonitorDataSetPG( Prompt, null) );
+    }else{
+      IParameter param = param_types.getInstance( DataType_C);
+      if( param != null)
+        try{
+             param.setName( Prompt);
+             param.setValue( InitValue);
+             addParameter( param );
+             return true;
+            }
+        catch(Exception ss)
+          { 
+            DataSetTools.util.SharedData.addmsg( "Parameter Error="+ss); 
+           }
+    
+      index=line.toUpperCase().indexOf(DataType);
+      seterror( index , "Data Type not supported " + DataType);
+      lerror = linenum;
+      return false; 
+    }
+      
+    if( Debug)
+      System.out.println("At bottom get def "+ perror+","+serror);
+
+
+    return true;
+  }
+
+  //----------------------- Text Utilities ------------------
+  private int nextLine( Script script, int line1 ){
+    boolean done=false;
+    int line=line1;
+    String SS=null;
+    while(!done){
+      SS=script.getLine(line);
+      if(SS==null)
+        done=true;
+      else if(SS.length()<1)
+        done=true;
+      else if(SS.charAt(SS.length()-1)!='\\')
+        done=true;
+      else
+        line++;
+    }
+    line++;
+    return line;
   }
 
   /**
-   * Executes when a PropertyChangeEvent Occurs
+   * Utility to return a given line from the Document
    *
-   * @param  e   The property change Event. 
-   *
-   * NOTE: The only PropertyChangeEvent processed has a name
-   * "Display"
+   * @param Doc the document with the line
+   * @param start  the line number to be returned
+   * @return  The string representation of that line or null if there is none
    */
-  public void propertyChange(PropertyChangeEvent e){
-    if(PL==null) return; // no one to notify
-    PL.firePropertyChange( e );
+  public static String getLine( Document Doc, int start ){
+    return getLine( Doc, start, true );
   }
-
+    
   /**
-   * The only "property" that changes is the "Display"<br> Use this
-   * method if you want to be notified of the Display Command for non
-   * Data Sets
-   *
-   * @param P The class that wants to be notified
+   * Same as getLine above if Continued is true.  It can be used when
+   * keeping track of line numbers.
    */
-  public void addPropertyChangeListener( PropertyChangeListener P){
-    if( ExecLine == null ) return;
-    ExecLine.addPropertyChangeListener( P );
-    if( PL == null )
-      PL = new PropertyChangeSupport((Object) this );
-    PL.addPropertyChangeListener(P);
-  }
-
-  public void addPropertyChangeListener( String prop,PropertyChangeListener P){
-    if( ExecLine == null ) return;
-    ExecLine.addPropertyChangeListener( P );
-    if( PL == null )
-      PL = new PropertyChangeSupport((Object) this );
-    PL.addPropertyChangeListener(prop,P);
-  }
-
-  public void removePropertyChangeListener(PropertyChangeListener P){
-    if(PL!=null)
-      PL.removePropertyChangeListener(P);
+  private static String getLine( Document Doc, int start, boolean Continued ){
+    String var;
+    int i, j, k;
+    int line;
+    String S;
+    boolean mode;
+    Element  E, F;
+       
+    if( Doc == null ) 
+      return null ; 
+    E = Doc.getDefaultRootElement() ; 
+    if( start < 0 ) 
+      return null ; 
+    if( start >= E.getElementCount() ) 
+      return null ;   
+    F = E.getElement( start ) ; 
+    try{
+      S = Doc.getText( F.getStartOffset(),
+                       F.getEndOffset() -  F.getStartOffset() );
+    }catch( BadLocationException s ){
+      //seterror ( 0 , "Internal Errorc" ) ; 
+      return null ; 
+    }
+     
+    if( S != null) 
+      if( S.charAt(S.length() - 1 )<' ' ) 
+        S = S.substring( 0,S.length() - 1 );
+    if(Continued)
+      if( S.length() >0 )
+        if( S.charAt( S.length() - 1) == '\\' ){
+          String S2 = getLine( Doc,start + 1 );
+          if( S2 != null)
+            S = S.substring( 0, S.length() - 1 )+ S2;
+        }
+    return S;
   }
 
   /**
-   * Executed when an IObservable notifies this IObserver
-   *
-   *@see DataSetTools.util.IObserver
-   */ 
-  public void update(  Object observed_obj ,  Object reason ){
-    if(OL==null) return; // no one to notify
-
-    if( !(reason instanceof String))
-      OL.notifyIObservers( this  ,  reason  );
-    else
-      OL.notifyIObservers( observed_obj, reason);
+   * Utility to delete xcess spaces outside of quotes(") in a string S
+   */   
+  public String delSpaces( String S){
+    boolean quote, onespace; 
+    int i;
+    String Res;
+    char prevchar;
+    if( S == null ) return null;
+    Res  = "";
+    quote = false;
+    onespace = false;
+    prevchar = 0; 
+    for ( i =0; i < S.length() ; i++){
+      if( S.charAt( i) == '\"'){
+        quote = ! quote;
+        if( i > 0)
+          if (!quote )
+            if( S.charAt( i-1) == '\\') quote = !quote;
+        Res = Res + S.charAt ( i );
+        prevchar = S.charAt ( i );
+      }else if( quote ){
+        Res = Res + S.charAt(i);
+        prevchar = S.charAt ( i );
+      }else if( " \t".indexOf(S.charAt(i))>=0){
+        //!!if( S.charAt ( i ) == ' ')
+        if( " +-*/^():[]{}," . indexOf(S.charAt(i + 1 )) >= 0){
+        }else if( i+1>= S.length()){
+        }else if( i < 1) {
+        }else if("+-*/^():[]{},".indexOf(S.charAt( i - 1 ) ) >= 0){
+        }else
+          Res = Res + S.charAt( i ) ; 
+        prevchar = ' ';
+      }else{
+        Res = Res + S.charAt(i);
+        prevchar = S.charAt(i);
+      }
+    }
+    return Res;
   }
 
-  /**
-   * Utility that returns all the data sets that have been added
-   * from outside sources
-   */
-  public DataSet[] getDataSets(){
-    return ExecLine.getGlobalDataset();
-  } 
+ 
+
 }
