@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/06/12 23:36:14  bouzekc
+ *  Added methods for implementing PropertyChanger since the
+ *  actual widget is the innerEntry and the listeners need to
+ *  be associated with that.
+ *
  *  Revision 1.11  2003/06/09 20:43:24  pfpeterson
  *  Implents ParamUsesString and works better with null values.
  *
@@ -87,12 +92,14 @@ import java.io.File;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.util.SharedData;
 import DataSetTools.operator.Generic.TOF_SCD.*;
+import DataSetTools.util.PropertyChanger;
 
 /**
  * This is a superclass to take care of many of the common details of
  * BrowsePGs.
  */
-abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
+abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
+                                                               PropertyChanger{
     private static String TYPE     = "Browse";
 
     protected static int VIS_COLS  = 12;
@@ -264,5 +271,31 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
      */
     public void addFilter(FileFilter filefilter){
         filter_vector.add(filefilter);
+    }
+
+    // ********** methods for PropertyChanger **********
+    // implementation of DataSetTools.util.PropertyChanger interface
+
+    /**
+     * @param pcl The property change listener to be removed.
+     */
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        this.innerEntry.removePropertyChangeListener(pcl);
+    }
+    
+    /**
+     * @param pcl The property change listener to be added.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        this.innerEntry.addPropertyChangeListener(pcl);
+    }
+    
+    /**
+     * @param pcl  The property change listener to be added.
+     * @param prop The property to listen for.
+     */
+    public void addPropertyChangeListener(String prop, 
+                                          PropertyChangeListener pcl) {
+        this.innerEntry.addPropertyChangeListener(prop,pcl);
     }
 }
