@@ -29,6 +29,23 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.23  2004/03/01 06:06:29  dennis
+ * Added additional error checking in the hkl_to_real() method.
+ * 1. The peak is marked as invalid (wavelength = 0), if in lab
+ *    coordinates the x component of Q is greater than or equal
+ *    to zero.  Such peaks are not real.
+ * 2. The peak is marked as invalid (wavelength = 0), if it would
+ *    be on the opposite side of the sample from the detector.  Such
+ *    peaks are constructed by "Integrate" when many possible hkl
+ *    values are generated to cover a volume of space containing the
+ *    data from the detector.  Some of these, when rotated into lab
+ *    coordinates would correspond to a detector on the opposite side
+ *    of the sample from the actual detector.  These peaks were later
+ *    projected onto the detector and showed up as spurious peaks.
+ * This fixes a bug in the integration process, pointed out by John
+ * Cowan, where the same hkl values showed up twice in slightly
+ * different positions on the detector.
+ *
  * Revision 1.22  2004/01/24 20:31:15  bouzekc
  * Removed/commented out unused variables/imports.
  *
@@ -448,6 +465,7 @@ public class Peak{
    */
   public float nearedge(int MINX, int MAXX,int MINY, int MAXY,
                         int MINZ, int MAXZ){
+
     if( this.x==-1 || this.y==-1 || this.z==-1 ){
       this.nearedge=-1;
       return this.nearedge;
@@ -796,8 +814,9 @@ public class Peak{
   }
 
   private void hkl_to_real(){
+
+    final double  small = 1.0E-06;
     float[] pos   = new float[3];
-    double  small = 1.0E-06;
 
     // get the orientation matrix with the euler angles dealt with
     float[][] UBR=LinearAlgebra.mult(this.ROT,this.UB);
@@ -807,9 +826,13 @@ public class Peak{
     pos[1]=UBR[1][0]*h+UBR[1][1]*k+UBR[1][2]*l;
     pos[2]=UBR[2][0]*h+UBR[2][1]*k+UBR[2][2]*l;
 
-    // If pos[0] = 0.0, then sin(theta), theta and two-theta are all zero,
-    // in which case return WL=0.0.
-    if (Math.abs(pos[0]) < small)  {
+    // pos[] now has the scaled "Q" vector in lab coordinates, so in order
+    // to be valid, we need Qx < 0.  In particular, 
+    // if Qx = 0.0, then sin(theta), theta and two-theta are all zero,
+    // in which case return WL=0.0. 
+    // More generally if Qx >= 0, then the Q vector is not valid, so return
+    // WL and positions as 0.
+    if (pos[0] > small) {
       this.xcm=0f;
       this.ycm=0f;
       this.wl=0f;
@@ -824,8 +847,7 @@ public class Peak{
     //      = 2.0 * XD / HH
     // 
     float hh = pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2];
-    this.wl  = -2f*pos[0]/hh; // added a minus sign for now
-    //System.out.println("HKLTOREAL("+hh+")"+pos[0]+","+pos[1]+","+pos[2]);
+    this.wl  = -2f*pos[0]/hh;     // wl is positive, since pos[0] = Qx < 0 
 
     // check that the wavelength is non-zero
     if(Math.abs(this.wl)<small){
@@ -837,7 +859,7 @@ public class Peak{
 
     // Calculate XCM and YCM detector coordinates. First translate
     // the origin from the reciprocal lattice origin to the center of
-    // the sphere of reflaction.
+    // the sphere of reflection.
     double xdp = pos[0]+(1f/this.wl);
     double ydp = 0.;
     double zdp = 0.;
@@ -849,6 +871,17 @@ public class Peak{
     xdp =     xt*Math.cos(ang) + yt*Math.sin(ang);
     ydp = -1.*xt*Math.sin(ang) + yt*Math.cos(ang);
     zdp = pos[2];
+
+    // check that the rotated detector is in the +x direction.  If not, then
+    // the scattering vector was directed away from the actual detector,
+    // so set the values to zero.
+
+    if( xdp <= small ){
+      this.xcm=0f;
+      this.ycm=0f;
+      this.wl=0f;
+      return;
+    }
 
     // calculate XCM and YCM                                             
     this.xcm = (float)(-(ydp/xdp)*this.detD);
