@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2005/03/30 02:34:00  dennis
+ *  Removed unused private instance variable "current_status".
+ *
  *  Revision 1.30  2005/01/10 15:55:04  dennis
  *  Removed empty statement.
  *
@@ -127,8 +130,6 @@ public class LiveDataMonitor extends    JPanel
   public static final Color  ALERT_COLOR = Color.red;
   private String           data_source_name = "";
   private String           current_data_name = "";
-  private String           current_status   
-                                   = RemoteDataRetriever.NOT_CONNECTED_STRING;
   private LiveDataManager  data_manager = null;
   private JLabel           status_label = new JLabel();
   private JLabel           source_label = new JLabel();
@@ -947,8 +948,6 @@ public class LiveDataMonitor extends    JPanel
           status_label.setForeground( FOREGROUND );
           status_label.setText( message ); 
         }
-
-        current_status = message;
       }
     }
   }
