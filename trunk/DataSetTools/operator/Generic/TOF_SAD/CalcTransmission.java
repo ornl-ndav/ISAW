@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/06/02 15:41:22  rmikk
+ * Added parameter(s) to specify monitor ID(s)
+ *
  * Revision 1.13  2004/04/19 15:43:39  dennis
  * Now forms a new DataSet with only one spectrum from the area detector
  * and converts that small DataSet to wavelength to get a wavelength
@@ -125,12 +128,14 @@ public class CalcTransmission extends GenericTOF_SAD {
   *                         channel is channel 0. This last channel is included.
   *    @param  degree      degree of the polynomial to fit or -1 if no fitting is desired
   *    @param  weight      use 1/sqrt|y| values for weights instead of 1.
+  *    @param  upStreamID  The upstream monitor ID
+  *    @param  downStreamID  The downstream monitor ID
   */
 
   public CalcTransmission( MonitorDataSet Sample, MonitorDataSet Empty, MonitorDataSet Cadmium,
                 SampleDataSet SampleDS,
                 boolean useCadmium,float Neutron_Delay, int polyfitIndx1, int polyfitIndx2,
-                int degree, boolean weight){
+                int degree, boolean weight, int upStreamID, int downStreamID){
      this();
      parameters = new Vector();
      addParameter( new MonitorDataSetPG("Enter Sample Monitor",Sample) );
@@ -143,6 +148,8 @@ public class CalcTransmission extends GenericTOF_SAD {
      addParameter( new IntegerPG( "Polyfit indx 2", polyfitIndx2) );
      addParameter( new IntegerPG( "Polynomial degree 1", degree) );
      addParameter( new BooleanPG("Use 1/sqrty weights", weight));
+     addParameter( new IntegerPG( "Up Stream Monitor ID", upStreamID) );
+     addParameter( new IntegerPG( "Down Stream Monitor ID", downStreamID) );
   } 
 
   /**
@@ -160,6 +167,8 @@ public class CalcTransmission extends GenericTOF_SAD {
      addParameter( new IntegerPG( "Polyfit indx 2", -1) );
      addParameter( new IntegerPG( "Polynomial degree 1", -1) );
      addParameter( new BooleanPG("Use 1/sqrt y weights", false));
+    addParameter( new IntegerPG( "Up Stream Monitor ID", -1) );
+    addParameter( new IntegerPG( "Down Stream Monitor ID", -1) );
   }
 
   /**
@@ -195,33 +204,40 @@ public class CalcTransmission extends GenericTOF_SAD {
      int polyfitIndx2=((IntegerPG)getParameter(7)).getintValue();
      int degree=((IntegerPG)getParameter(8)).getintValue();
      boolean weight = ((Boolean)(getParameter(9).getValue())).booleanValue();
+
+    int upStreamID=((IntegerPG)getParameter(10)).getintValue();
+
+    int downStreamID=((IntegerPG)getParameter(11)).getintValue();
      int Monitor0 = 0;
      int Monitor1 = 2;
-     int SampMonitor0GroupID = 1;
-     int CadMonitor0GroupID = 1;
-     int EmpMonitor0GroupID = 1;
-     int SampMonitor1GroupID = 3;
-     int CadMonitor1GroupID = 3;
-     int EmpMonitor1GroupID = 3;
-     int[] MonIndx = setMonitorInd( Sample);
-     if( MonIndx == null)
-       return new ErrorString("Could not find matching upStream and downStream monitors");
-     Monitor0 = MonIndx[0];
-     Monitor1 = MonIndx[1];
-     
-      SampMonitor0GroupID = Sample.getData_entry(Monitor0).getGroup_ID();
-      CadMonitor0GroupID = Cadmium.getData_entry(Monitor0).getGroup_ID();
-      EmpMonitor0GroupID = Empty.getData_entry(Monitor0).getGroup_ID();
-      SampMonitor1GroupID = Sample.getData_entry(Monitor1).getGroup_ID();
-     
+     int SampMonitor0GroupID = upStreamID;
+     int CadMonitor0GroupID = upStreamID;
+     int EmpMonitor0GroupID = upStreamID;
+     //int SampMonitor1GroupID = downStreamID;
+     int CadMonitor1GroupID = downStreamID;
+     int EmpMonitor1GroupID = downStreamID;
+     if( (upStreamID <0) ||(downStreamID<0)){
+            
+        int[] MonIndx = setMonitorInd( Sample);
+        if( MonIndx == null)
+          return new ErrorString("Could not find matching upStream and downStream monitors");
+        Monitor0 = MonIndx[0];
+        Monitor1 = MonIndx[1];
+      
+        SampMonitor0GroupID = Sample.getData_entry(Monitor0).getGroup_ID();
+        CadMonitor0GroupID = Cadmium.getData_entry(Monitor0).getGroup_ID();
+        EmpMonitor0GroupID = Empty.getData_entry(Monitor0).getGroup_ID();
+        //SampMonitor1GroupID = Sample.getData_entry(Monitor1).getGroup_ID();
+      
       if( useCadmium)
         CadMonitor1GroupID = Cadmium.getData_entry(Monitor1).getGroup_ID();
-      EmpMonitor1GroupID = Empty.getData_entry(Monitor1).getGroup_ID();
-    System.out.println("FF"+Monitor0+","+Monitor1+","+SampMonitor0GroupID+","+
-           CadMonitor0GroupID+","+EmpMonitor0GroupID+","+SampMonitor1GroupID+","+
-           CadMonitor1GroupID+","+EmpMonitor1GroupID);
-     if( !useCadmium)
+        EmpMonitor1GroupID = Empty.getData_entry(Monitor1).getGroup_ID();
+        //System.out.println("FF"+Monitor0+","+Monitor1+","+SampMonitor0GroupID+","+
+         //  CadMonitor0GroupID+","+EmpMonitor0GroupID+","+SampMonitor1GroupID+","+
+         //  CadMonitor1GroupID+","+EmpMonitor1GroupID);
+      if( !useCadmium)
         Cadmium = null;
+     }
      log.append("number of monitor detectors :");
      log.append(Format.integer((double)( Sample.getNum_entries()),4)+"\n");
      //--------------- Neutron Delay
@@ -425,7 +441,7 @@ public class CalcTransmission extends GenericTOF_SAD {
        polyfitIndx2 = N-2;
     if( polyfitIndx1 >= polyfitIndx2)
       return tr;
-    int groupID = tr.getData_entry(0).getGroup_ID();
+   // int groupID = tr.getData_entry(0).getGroup_ID();
     XScale xscl1 = tr.getData_entry(0).getX_scale();
 
     float[] xvals = xscl1.getXs();
@@ -440,7 +456,8 @@ public class CalcTransmission extends GenericTOF_SAD {
      
     double[] coeff = new double[degree + 1];
     
-    double errr=gov.anl.ipns.MathTools.Functions.CurveFit.Polynomial(trunc_xvals,
+    //double errr=
+    gov.anl.ipns.MathTools.Functions.CurveFit.Polynomial(trunc_xvals,
                             trunc_yvals,coeff, weight);
     for( int ii = 0; ii< yvals.length; ii++){
       yvals[ii]=0f;
@@ -523,6 +540,8 @@ public class CalcTransmission extends GenericTOF_SAD {
       Res.append( "@param  degree -  degree of the polynomial to fit or -1 if ");
       Res.append( "no fitting is desired");
       Res.append( "@param  weight  - use 1/sqrt|y| values for weights instead of 1.");
+      Res.append( "@param  upStreamID  The upstream monitor ID");
+      Res.append( "@param  downStreamID  The downstream monitor ID");
       Res.append( "@return  a Data Set of transmission ratios converted to llamda");
       Res.append( " and rebinned to match the corresponding sample histogram. ");
 
@@ -569,7 +588,7 @@ public class CalcTransmission extends GenericTOF_SAD {
     
      float[] lvals = ds.getData_entry(Mon0).getX_scale().getXs();
      //float[] xvals=cvrtToTime( lvals, initialPath,ds.getData_entry(0));
-     float[] lvals1=ds.getData_entry(Mon1).getX_scale().getXs();
+     //float[] lvals1=ds.getData_entry(Mon1).getX_scale().getXs();
      //float[] xvals1 =cvrtToTime( lvals1, initialPath,ds.getData_entry(2));
      float[] yvals1= ds.getData_entry(Mon0).getY_values();
      float[] yvals2 = ds.getData_entry(Mon1).getY_values();

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/06/02 15:41:22  rmikk
+ * Added parameter(s) to specify monitor ID(s)
+ *
  * Revision 1.2  2004/04/27 21:51:38  dennis
  * The Efficiency, sample and background transmission DataSets
  * are now interpolated to cover the needed range of wavelengths.
@@ -82,6 +85,7 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
     *    @param SCALE     The scale factor to be applied to all data
     *    @param THICK     The sample thickness in m
     *    @param useTransB Use the background Transmission run
+    *    @param upStreamMonID  Upstream monitor ID or -1
    */
    public Reduce_LPSD( DataSet TransS, 
                       DataSet TransB, 
@@ -97,7 +101,8 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
                       float   BETADN, 
                       float   SCALE, 
                       float   THICK,
-                      boolean useTransB ) 
+                      boolean useTransB,
+                      int upStreamMonID ) 
      {
         
         super( "Reduce");
@@ -118,6 +123,9 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
         addParameter( new FloatPG("Thickness in m", new Float(THICK)));
         addParameter( new BooleanPG("Use Background Transmission Run?", 
                                      new Boolean( useTransB)));
+
+        addParameter( new IntegerPG("upStream Monitor ID", 
+            new Integer(upStreamMonID)));
       }
 
 
@@ -144,6 +152,9 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
        addParameter( new FloatPG("Thickness in m", null));
        addParameter( new BooleanPG("Use Background Transmission Run?", 
                                     new Boolean( true ) ) );
+      addParameter( new IntegerPG("upStream Monitor ID", 
+                 new Integer(-1)));
+     
     }
 
   /* ---------------------------- getResult ------------------------------- */
@@ -199,7 +210,7 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
         float   THICK     = ((Float)(getParameter(13).getValue())).floatValue();
         boolean useTransB = 
                         ((Boolean)(getParameter(14).getValue())).booleanValue();
-
+        int upStreamMonID =((Integer)(getParameter(15).getValue())).intValue();
         SCALE = SCALE / THICK;
 
         DataSet[] RUNSds = new DataSet[2];
@@ -231,7 +242,15 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
         System.out.println(" XScale = " + Eff.getData_entry(0).getX_scale() );
         System.out.println(" Ngroup = " + Eff.getNum_entries() );
         
-        int MonitorInd[] = CalcTransmission.setMonitorInd( RUNSds0 );
+
+       int MonitorInd[];
+       if( upStreamMonID <0)
+          MonitorInd = CalcTransmission.setMonitorInd( RUNSds0 );
+       else{
+          MonitorInd = new int[1];
+          MonitorInd[0] = RUNSds0.getIndex_of_data(
+              RUNSds0.getData_entry_with_id(upStreamMonID));
+       }
 
         DataSet ds_list[] = new DataSet[3];
         ds_list[0] = RUNSds0;
