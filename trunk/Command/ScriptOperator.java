@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2001/06/04 14:10:38  rmikk
+ * *** empty log message ***
+ *
  * Revision 1.5  2001/06/01 21:14:13  rmikk
  * Added Documentation for javadocs etc.
  *
@@ -74,18 +77,20 @@ public class ScriptOperator extends GenericOperator
         command = null;
         categList = null;
         SP = null;
-        IsawGUI.Util  ut = new IsawGUI.Util();
+        IsawGUI.Util ut = new IsawGUI.Util();
         Document D =ut.openDoc( filename ) ;
-                errorMessage ="";
+        errorMessage ="";
         if((D == null) ||( filename == null ))
           { errorMessage = ER_FILE_ERROR;
             return;
           }
+        
         SP = new ScriptProcessor( D );
         if( SP.getErrorMessage().length( ) > 0 )
            {  errorMessage = SP.getErrorMessage();
               return;
             }
+       
         int i, j;
         j = filename.lastIndexOf( '.');
         if( j < 0 ) 
@@ -96,6 +101,7 @@ public class ScriptOperator extends GenericOperator
         if( i < 0 )
            i = -1;
         command = F.substring( i + 1, j );
+       
         F = F.substring( 0, i );
         String F2 = F;
         String X = System.getProperty( "Script_Path");
@@ -122,6 +128,7 @@ public class ScriptOperator extends GenericOperator
             }
         
         F.trim();
+       
         if(F.length() >0)
           if(F.charAt(0) == '/')
              F =F.substring(1);
@@ -133,7 +140,7 @@ public class ScriptOperator extends GenericOperator
         if( F.length()>1)
          for( i = F.indexOf( '/' ); i >= 0;  i = F.indexOf( '/' , i + 1 ) )
            c++;
-         
+        
         if( F.length()>1)
           categList = new String [ c + 1];
         else
@@ -383,10 +390,10 @@ public static void main( String args [] )
 
 
 
-     ScriptOperator SO;
-    SO = new ScriptOperator("E:/Isaw/Scripts/junk.iss");
+  ScriptOperator SO;
+  SO = new ScriptOperator("C:/Ruth/Isaw/Scripts/MacDS.iss");
 
-  System.out.println("Error ="+SO.getErrorMessage() );
+  System.out.println("xError ="+SO.getErrorMessage() );
   System.out.println("filename="+SO.getFileName() );
   SO.show();
    }
