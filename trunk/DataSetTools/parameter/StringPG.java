@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/09/19 16:07:25  pfpeterson
+ *  Changed to work with new system where operators get IParameters in stead of Parameters. Now support clone method.
+ *
  *  Revision 1.3  2002/07/15 21:27:33  pfpeterson
  *  Factored out parts of the GUI.
  *
@@ -190,5 +193,15 @@ public class StringPG extends ParameterGUI{
         fpg.init();
         fpg.showGUIPanel();
 
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        StringPG spg=new StringPG(this.name,this.value,this.valid);
+        spg.setDrawValid(this.getDrawValid());
+        spg.initialized=false;
+        return spg;
     }
 }

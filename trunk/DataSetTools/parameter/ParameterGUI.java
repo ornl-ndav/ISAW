@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/19 16:07:24  pfpeterson
+ *  Changed to work with new system where operators get IParameters in stead of Parameters. Now support clone method.
+ *
  *  Revision 1.2  2002/07/15 21:27:07  pfpeterson
  *  Factored out parts of the GUI.
  *
@@ -289,5 +292,16 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
             mw.setBounds(pos);
             mw.show();
         }
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        return this.clone();
+        /*ParameterGUI pg=new ParameterGUI(this.name,this.value,this.valid);
+          pg.setDrawValid(this.getDrawValid());
+          pg.initialized=false;
+          return pg;*/
     }
 }
