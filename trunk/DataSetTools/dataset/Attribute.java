@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2002/07/10 16:00:44  pfpeterson
+ *  Added new string constants for GSAS handling.
+ *
  *  Revision 1.23  2002/06/05 20:26:35  dennis
  *  Now implements the IXmlIO interface using "stubs" that just return false
  *  for the read and write methods.  These MUST be overidden in derived classes.
@@ -206,6 +209,8 @@ abstract public class Attribute implements Serializable,
   public static final String  TOTAL_COUNT       = "Total Count";
 
   public static final String  Q_VALUE           = "Q(invA)";
+  public static final String  GSAS_CALIB        = "GSAS calibration";
+  public static final String  GSAS_IPARM    = "GSAS Instrument Parameter File";
 
   public static final String  DETECTOR_INFO_LIST = "Det Info List";
   public static final String  DETECTOR_INFO      = "Det Info";
