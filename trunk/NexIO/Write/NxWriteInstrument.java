@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/08/01 14:38:53  rmikk
+ * Moved the savind of  a DataSet's INSTR_TYPE to
+ * NXentry .analysis
+ *
  * Revision 1.1  2001/07/25 21:23:20  rmikk
  * Initial checkin
  *
@@ -123,18 +127,22 @@ public class NxWriteInstrument
        NexIO.Inst_Type it = new NexIO.Inst_Type();
      
        String analysis = it.getNexAnalysisName( instr_type );
-       if( analysis == null )
-        {ranks = new int[1];
+       n1 =  NxInstr.newChildNode( "analysis" , "SDS" );
+         ranks = new int[1];
          ranks[0] = 1;
          intval = new int[1];
          intval[0] = instr_type;
-         NxInstr.addAttribute( "isaw_instr_type" , intval , 
+       if( analysis == null )
+        {
+         n1.addAttribute( "isaw_instr_type" , intval , 
                                Types.Int , ranks );
         }
-       else
-        if( analysis.length() > 0 )
+       else if(analysis.length() <= 0)
+                n1.addAttribute( "isaw_instr_type" , intval , 
+                               Types.Int , ranks );
+        else
         {
-         n1 =  NxInstr.newChildNode( "analysis" , "SDS" );
+         
           ranks = new int[1];
           ranks[0] = analysis.length() + 1;          
           
