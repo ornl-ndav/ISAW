@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/05/29 22:43:12  dennis
+ * Now returns day and date as the label, and the time as the value of the
+ * information.
+ *
  * Revision 1.1  2002/04/08 15:40:32  dennis
  * Initial version of operator to convert elapsed time in
  * seconds to a Date and Time form, for use with SDDS DataSets.
@@ -42,14 +46,15 @@ package DataSetTools.operator.DataSet.Information.XAxis;
 
 import  java.io.*;
 import  java.util.*;
+import  java.text.*; 
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 
 /**
- *  This operator uses the attributes START_TIME_SEC and TIME_OFFSET attributes
- *  to produce a string giving the Date and Time for a specific x value.
+ *  This operator uses the StartTime attribute to produce a string giving 
+ *  the Date and Time for a specific x value.
  */
 
 public class XDateTime extends  XAxisInformationOp 
@@ -123,19 +128,28 @@ public class XDateTime extends  XAxisInformationOp
 
   /* -------------------------- XInfo_label ---------------------------- */
   /**
-   * Get string label for the xaxis information.
+   * Get string label for the xaxis information, in this case the month,
+   * day and year are returned.
    *
-   *  @return  String describing the information provided by X_Information.
+   *  @param  x    the x-value for which the axis label is to be obtained.
+   *  @param  i    the index of the Data block that will be used for obtaining
+   *               the label.
+   *
+   *  @return  String describing the information provided by X_Info().
    */
-   public String XInfo_label()
+   public String XInfo_label( float x, int i )
    {
-     return new String( "Time" ); 
+     Date date = getDate( x, i ); 
+
+     DateFormat df = DateFormat.getDateInstance( DateFormat.SHORT );
+     return df.format(date);
    }
 
 
   /* ------------------------------ X_Info ----------------------------- */
   /**
-   * Get the axis information at one point only.
+   * Get the axis information at one point only, in this case the time of
+   * day is returned.
    *
    *  @param  x    the x-value for which the axis information is to be obtained.
    *
@@ -146,9 +160,43 @@ public class XDateTime extends  XAxisInformationOp
    */
    public String X_Info( float x, int i )
    {
-     Date   date = new Date( System.currentTimeMillis() );
-     String date_string = ""+date;
-     return date_string; 
+     Date date = getDate( x, i ); 
+
+     DateFormat tf = DateFormat.getTimeInstance( DateFormat.MEDIUM );
+     return tf.format(date);
+   }
+
+
+   private Date getDate( float x, int i )
+   {
+     DataSet ds = this.getDataSet();
+     Data d = ds.getData_entry( i );
+     if ( d != null )
+     {
+       StringAttribute start_attr = 
+                            (StringAttribute)d.getAttribute( "StartTime" );
+       if ( start_attr != null )
+       { 
+         long time = 0;
+
+         String start_str = start_attr.getStringValue();
+         try
+         {
+           double start = Double.valueOf( start_str ).doubleValue(); 
+           time = (long)start;
+         }
+         catch ( NumberFormatException e )
+         {
+           System.out.println("WARNING: StartTime attribute NOT a number" +
+                                        " in XDateTime" ); 
+         }
+         time = (long)x + time;
+         return new Date( time * 1000 );
+       } 
+       else
+         System.out.println("StartTime attribute == null in XDateTime " );
+     }
+     return new Date( 0 );
    }
 
 
