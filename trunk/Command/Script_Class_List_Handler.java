@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2001/12/13 18:57:43  dennis
+ * -Fixed a documentation error
+ * -Fixed and error that would find a command that did not exist
+ *
  * Revision 1.21  2001/12/12 19:43:33  pfpeterson
  * Fixed the multiple listing of operators and scripts.
  *
@@ -142,7 +146,8 @@ public class Script_Class_List_Handler  implements OperatorHandler
      private static boolean first = true;
      public static boolean LoadDebug = false;
      private final int MIN_DIR_NAME__LENGTH=3;
-/** The System property Script_Path is an input to this
+/** The System property user.home,ISAW_HOME, GROUP_HOME, GROUP1_HOME,..
+*    are the paths for the operators that are to be "installed"
 */
      public Script_Class_List_Handler()
        {inittt();
@@ -732,6 +737,8 @@ public int getOperatorPosition( String CommName)
   {int i = find(CommName , Command_Compare);
    if( i < 0 )
       return i;
+    if(! getOperatorCommand(i).equals( CommName))
+       return -1;
    int j = i-1;
    while( j >= 0 )
      {if( getOperatorCommand( j ).equals(CommName))
