@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/01/29 17:52:07  dennis
+ * Added getDocumentation() method. (Chris Bouzek)
+ *
  * Revision 1.6  2002/11/27 23:29:54  pfpeterson
  * standardized header
  *
@@ -109,13 +112,42 @@ public class Crunch extends GenericSpecial{
 	addParameter(new Parameter("Number of sigma to keep",new Float(2.0f)));
         addParameter(new Parameter("Make new DataSet", new Boolean(false)));
     }
+
+    /* ---------------------- getDocumentation --------------------------- */
+    /**
+     *  Returns the documentation for this method as a String.  The format
+     *  follows standard JavaDoc conventions.
+     */
+    public String getDocumentation()
+    {
+      StringBuffer s = new StringBuffer("");
+      s.append("@overview This operator removes detectors from a DataSet ");
+      s.append("according to three criteria, all of which involve the total ");
+      s.append("counts.\n");
+      s.append("@assumptions The specified DataSet ds is not null.\n");
+      s.append("@algorithm First this operator removes detectors with zero ");
+      s.append("counts from the specified DataSet. Next it removes detectors ");
+      s.append("below the user specified threshold. Finally the average and ");
+      s.append("standard deviation is found for the total counts, then ");
+      s.append("detectors outside of the user specified number of sigma are ");
+      s.append("removed (generally too many counts).  It also appends a log ");
+      s.append("message indicating that the Crunch operator was applied to ");
+      s.append("the DataSet.\n");
+      s.append("@param ds Sample DataSet to remove dead detectors from.\n");
+      s.append("@param min_count Minimum counts to keep.\n");
+      s.append("@param width How many sigma around the average to keep.\n");
+      s.append("@return DataSet containing the the original DataSet minus the ");
+      s.append("dead detectors.\n");
+      s.append("@error Returns an error if the specified DataSet ds is null.\n");
+      return s.toString();
+    }
     
     /* ----------------------------- getResult ------------------------------ */ 
     /** 
-     *  Executes this operator using the values of the current parameters.
+     *  Removes dead detectors from the specified DataSet.
      *
-     *  @return If successful, this operator produces a DataSet
-     *  containing the the original DataSet minus the dead detectors.
+     *  @return DataSet containing the the original DataSet minus the dead 
+     *  detectors (if successful).
      */
     public Object getResult(){
 	DataSet ds        = (DataSet)(getParameter(0).getValue());
@@ -222,14 +254,15 @@ public class Crunch extends GenericSpecial{
 
     /* ------------------------------- main --------------------------------- */ 
     /** 
-     * Test program to verify that this will complile and run ok.  
+     * Test program to verify that this will compile and run ok.  
      *
      */
     public static void main( String args[] ){
 	System.out.println("Test of Crunch starting...");
 	
-	String filename="/IPNShome/pfpeterson/ISAW/SampleRuns/GPPD12358.RUN";
+	//String filename="/IPNShome/pfpeterson/ISAW/SampleRuns/GPPD12358.RUN";
 	//String filename="/IPNShome/pfpeterson/data/ge_10k/glad4606.run";
+	String filename="/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
 	RunfileRetriever rr = new RunfileRetriever( filename );
 	DataSet ds = rr.getDataSet(1);
 
@@ -240,8 +273,12 @@ public class Crunch extends GenericSpecial{
 	    ViewManager vm1 = new ViewManager(     ds, IViewManager.IMAGE );
 	    ViewManager vm2 = new ViewManager( new_ds, IViewManager.IMAGE );
 	}else{
-	    System.out.println( "Operator returned" + obj );
+	    System.out.println( "Operator returned: " + obj );
 	}
+	
+	/*-- added by Chris Bouzek --*/
+	System.out.println("Documentation: " + op.getDocumentation());
+	/*---------------------------*/
 	
 	System.out.println("Test of Crunch done.");
     }
