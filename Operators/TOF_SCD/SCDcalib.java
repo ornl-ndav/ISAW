@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/04/02 15:31:26  dennis
+ *  Added code to log and display views of scatter plots showing the
+ *  comparison between  measured and theoretical row, col and tof
+ *  values.
+ *
  *  Revision 1.6  2004/04/01 21:02:47  dennis
  *  Opens default log file, SCDcalib.log, in current directory
  *  and calls methods on the error function being minimized to
@@ -62,9 +67,11 @@ import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
 import DataSetTools.trial.*;
 import DataSetTools.dataset.*;
+import DataSetTools.viewer.*;
 
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Functions.*;
+import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
 
@@ -381,6 +388,71 @@ public class SCDcalib extends GenericTOF_SCD
     addParameter( new Parameter("Refine det rotation", new Boolean(false)) ); 
   }
 
+ 
+  /*
+   *  Extract list of (theory,measured) pairs, in a list of float point 2D
+   *  objects.  If k = 0, this will the the row numbers.  If k = 1, this
+   *  will be the column numbers.  If k = 2, this will be the times-of-flight
+   */
+  private floatPoint2D[] getPairs( int k, float theory[][], float measured[][] )
+  {
+     if ( k < 0 || k > 2 )
+     {
+       System.out.println("ERROR: invalid index in SCDcalib.getPairs() " + k );
+       return null;
+     }
+
+     floatPoint2D[] pairs = new floatPoint2D[ measured.length ];
+     for ( int i = 0; i < pairs.length; i++ )
+        pairs[i] = new floatPoint2D( theory[i][k], measured[i][k] );
+
+     arrayUtil.SortOnX( pairs );
+     return pairs;
+  }
+
+
+  private void MakeDisplay( String          title, 
+                            String          label, 
+                            String          units, 
+                            floatPoint2D[]  pairs )
+  {
+    DataSetFactory ds_factory = new DataSetFactory( title, 
+                                                    units, 
+                                                   "Theoretical " + label, 
+                                                    units, 
+                                                   "Measured " + label );
+
+                                           // one entry measured vs theoretical
+    DataSet ds = ds_factory.getDataSet();
+    Vector unique = new Vector( pairs.length );
+    unique.add( pairs[0] );
+    for ( int i = 1; i < pairs.length; i++ )
+      if ( pairs[i].x > pairs[i-1].x )             // ok to add if increasing
+        unique.add( pairs[i] );
+
+    float x[] = new float[ unique.size() ];
+    float y[] = new float[ unique.size() ];
+    for ( int i = 0; i < x.length; i++ )
+    {
+      floatPoint2D point = (floatPoint2D)unique.elementAt( i );
+      x[i] = point.x;
+      y[i] = point.y;
+    }
+    XScale x_scale = new VariableXScale( x );
+    Data d = Data.getInstance( x_scale, y, 1 ); 
+    ds.addData_entry( d );
+
+                                           // make second entry with y = x 
+    for ( int i = 0; i < y.length; i++ )
+      y[i] = x[i];
+    d = Data.getInstance( x_scale, y, 2 );
+    ds.addData_entry( d );
+
+    ds.setSelectFlag( 0, true );
+    ds.setSelectFlag( 1, true );
+
+    new ViewManager( ds, IViewManager.SELECTED_GRAPHS );
+  }
 
 
   /**
@@ -634,6 +706,43 @@ public class SCDcalib extends GenericTOF_SCD
     error_f.ShowOldCalibrationInfo( System.out );
     error_f.ShowOldCalibrationInfo( log_print  );
 
+    float meas_pos[][] = error_f.getMeasuredPeakPositions();
+    float theo_pos[][] = error_f.getTheoreticalPeakPositions();
+
+    System.out.println("Number of measured positions = " + meas_pos.length );
+    System.out.println("Number of theoretical positions = " + theo_pos.length );
+
+    floatPoint2D row_pairs[] = getPairs( 0, theo_pos, meas_pos );
+    floatPoint2D col_pairs[] = getPairs( 1, theo_pos, meas_pos );
+    floatPoint2D tof_pairs[] = getPairs( 2, theo_pos, meas_pos );
+
+    log_print.println("Detector Row Number Comparison");
+    log_print.println("Theoetical     Measured");
+    for ( int i = 0; i < row_pairs.length; i++ )
+      log_print.println( Format.real( row_pairs[i].x, 10, 5 ) + "   " +
+                         Format.real( row_pairs[i].y, 13, 5 )    );
+
+    log_print.println("Detector Column Number Comparison");
+    log_print.println("Theoetical     Measured");
+    for ( int i = 0; i < col_pairs.length; i++ )
+      log_print.println( Format.real( col_pairs[i].x, 10, 5 ) + "   " +
+                         Format.real( col_pairs[i].y, 13, 5 )    );
+
+    log_print.println("Detector Time-of-flight Comparison");
+    log_print.print  ("NOTE: The calculated T0 shift should be added to the ");
+    log_print.println("measured value ");
+    log_print.println("Theoetical     Measured");
+    for ( int i = 0; i < tof_pairs.length; i++ )
+      log_print.println( Format.real( tof_pairs[i].x, 10, 3 ) + "   " +
+                         Format.real( tof_pairs[i].y, 13, 3 )    );
+
+    log_print.close();
+
+    MakeDisplay( "Theoretical vs Measured Row", "Row", "Number", row_pairs );
+    MakeDisplay( "Theoretical vs Measured Column", "Column", "Number", 
+                  col_pairs );
+    MakeDisplay( "Theoretical vs Measured TOF", "Time", "us", tof_pairs );
+
     float results[] = new float[ parameters.length ];
     for ( int i = 0; i < parameters.length; i++ )
       results[i] = (float)parameters[i];
@@ -642,7 +751,6 @@ public class SCDcalib extends GenericTOF_SCD
     result_vector.addElement( results );
     result_vector.addElement( parameter_names );
 
-    log_print.close();
     return result_vector;
   }
 
