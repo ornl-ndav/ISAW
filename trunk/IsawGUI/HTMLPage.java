@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2002/11/12 23:18:31  pfpeterson
+ * Fixed a bug where the help pages didn't display in newer
+ * versions of Java by overiding 'boolean super.isValid()'.
+ *
  * Revision 1.12  2002/10/24 19:36:22  pfpeterson
  * More appropriately deals with a FileNotFound exception.
  *
@@ -183,6 +187,13 @@ class HTMLPage extends JFrame
       );
       this.isValid=true;
    }
+
+  /**
+   * Override Component's default method.
+   */
+  public boolean isValid(){
+    return this.isValid;
+  }
 
    private
    void SetText( JEditorPane JP, String ref ) {
