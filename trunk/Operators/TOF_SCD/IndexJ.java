@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/06/05 22:05:28  bouzekc
+ * Fixed incorrect parameter setting in constructor.
+ *
  * Revision 1.12  2003/05/20 19:42:19  pfpeterson
  * Added parameter to restrict run number of indexed peaks.
  *
@@ -114,8 +117,8 @@ public class IndexJ extends    GenericTOF_SCD {
     
     getParameter(0).setValue(peaksfile);
     getParameter(1).setValue(matrixfile);
-    getParameter(2).setValue(new Float(delta));
-    getParameter(3).setValue(new Boolean(update));
+    getParameter(3).setValue(new Float(delta));
+    getParameter(4).setValue(new Boolean(update));
   }
   
   /* ------------------------- setDefaultParmeters ----------------------- */
@@ -127,12 +130,17 @@ public class IndexJ extends    GenericTOF_SCD {
                                 // parameters
     LoadFilePG peaksfilepg=new LoadFilePG("Peaks file",null);
     peaksfilepg.setFilter(new PeaksFilter());
+    //0
     addParameter(peaksfilepg);
     LoadFilePG matfilepg=new LoadFilePG("Matrix file",null);
     matfilepg.setFilter(new MatrixFilter());
+    //1
     addParameter(matfilepg);
+    //2
     addParameter(new IntArrayPG("Restrict Runs",null));
+    //3
     addParameter(new FloatPG("Delta",0.05f));
+    //4
     addParameter(new BooleanPG("update peaks file",true));
   }
   
