@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2004/06/02 15:41:21  rmikk
+ * Added parameter(s) to specify monitor ID(s)
+ *
  * Revision 1.30  2004/05/25 12:38:51  rmikk
  * Added the getDocumentation Method
  *
@@ -169,6 +172,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     *    @param NQyBins   The number of Qx bins if 2D,otherwise use a neg number
     *    @param useTransB Use the background Transmission run
     *    @param bs_dim    New beam stop dimensions
+    *    @param upStreamMonID  Upstream monitor ID or -1
    */
    public Reduce_KCL( DataSet TransS, 
                       DataSet TransB, 
@@ -189,7 +193,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
                       int     NQxBins, 
                       int     NQyBins, 
                       boolean useTransB, 
-                      float   bs_dim ) 
+                      float   bs_dim,
+                      int upStreamMonID ) 
      {
         
         super( "Reduce");
@@ -215,6 +220,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         addParameter( new BooleanPG("Use Background Transmission Run?", 
                                      new Boolean( useTransB)));
         addParameter( new FloatPG("Beam Stop Size", new Float(bs_dim)));
+       addParameter( new IntegerPG("upStream Monitor ID", new Integer(upStreamMonID)));
       }
 
 
@@ -247,6 +253,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
                                     new Boolean( true ) ) );
        addParameter( new FloatPG("Beam Stop Size", 
                                   new Float(1.5f)));
+      addParameter( new IntegerPG("upStream Monitor ID", new Integer(-1)));
     }
 
   /* ---------------------------- getResult ------------------------------- */
@@ -307,7 +314,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         boolean useTransB = 
                         ((Boolean)(getParameter(18).getValue())).booleanValue();
         float   bs_dim    = ((Float)(getParameter(19).getValue())).floatValue();
-
+        int upStreamMonID =((Integer)(getParameter(20).getValue())).intValue();
         SCALE = SCALE / THICK;
 
         float Radmin = bs_dim/100;
@@ -338,7 +345,14 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         else
             make_2D = true;
 
-        int MonitorInd[] = CalcTransmission.setMonitorInd( RUNSds0 );
+        int MonitorInd[];
+        if( upStreamMonID <0)
+           MonitorInd = CalcTransmission.setMonitorInd( RUNSds0 );
+        else{
+           MonitorInd = new int[1];
+           MonitorInd[0] = RUNSds0.getIndex_of_data(
+               RUNSds0.getData_entry_with_id(upStreamMonID));
+        }
 
         DataSet ds_list[] = new DataSet[3];
         ds_list[0] = RUNSds0;
@@ -516,7 +530,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 			 Res.append("  a neg number");
 			 Res.append(" @param NQyBins  The number of Qx bins if 2D,otherwise use a");
 			 Res.append("  neg number"); 
-			 Res.append(" @param useTransB  Use the background Transmission run");
+			 Res.append(" @param useTransB  Use the background Transmission run"); 
+             Res.append("@param upStreamMonID  Upstream monitor ID or -1");
 		     Res.append(" @return The vector of three DataSets, the Sample,");
 		     Res.append(" Background, and Samp-Back S(Q) or S(Qx,Qy)for 2D,");
 
@@ -569,7 +584,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
                 Eff[0], Sens[0], SAD_Util.toVec(qu), RUNSds[0], RUNSds[1],
                 RUNBds[0], RUNBds[1], RUNCds[0], RUNCds[1], BETADN, SCALE, .1f,
                 //     0f,0f);
-                .000725f, .006909f, -200, -200, true, 1.5f );
+                .000725f, .006909f, -200, -200, true, 1.5f,-1 );
         Object O = reduce_KCL.getResult();
         //new float[]{-.5f,.5f,-.5f,.5f}
         System.out.println("Finished O=" + O);
