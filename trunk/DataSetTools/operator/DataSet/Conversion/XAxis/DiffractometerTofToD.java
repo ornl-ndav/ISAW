@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.6  2002/07/10 16:05:21  pfpeterson
+ *  Use gsas calibration if possible.
+ *
  *  Revision 1.5  2002/07/08 20:46:03  pfpeterson
  *  Now uses String constants in FontUtil.
  *
@@ -129,6 +132,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.gsastools.GsasCalib;
 
 /**
  * This operator converts a neutron time-of-flight DataSet to D-spacing.  The
@@ -271,21 +275,28 @@ public class DiffractometerTofToD extends    XAxisConversionOp
                                              // get the detector position and
                                              // initial path length
     DetectorPosition position=(DetectorPosition)
-                       attr_list.getAttributeValue( Attribute.DETECTOR_POS);
+        attr_list.getAttributeValue( Attribute.DETECTOR_POS);
 
-    Float initial_path_obj=(Float)
-                        attr_list.getAttributeValue(Attribute.INITIAL_PATH);
+    GsasCalib gsas=(GsasCalib)
+        attr_list.getAttributeValue( Attribute.GSAS_CALIB);
 
-    if( position == null || initial_path_obj == null)  // make sure it has the
-      return Float.NaN;                                // needed attributes
-                                                       // to convert it to D
-
-    float initial_path       = initial_path_obj.floatValue();
-    float spherical_coords[] = position.getSphericalCoords();
-    float total_length       = initial_path + spherical_coords[0];
-    float scattering_angle   = position.getScatteringAngle();
-
-    return tof_calc.DSpacing( scattering_angle, total_length, x );
+    // convert to D using gsas if possible
+    if(gsas!=null){
+        return tof_calc.DSpacing(gsas.dif_c(), gsas.dif_a(), gsas.t_zero(), x);
+    }else{
+        Float initial_path_obj=(Float)
+            attr_list.getAttributeValue(Attribute.INITIAL_PATH);
+        
+        if( position == null || initial_path_obj == null)  // make sure it has
+            return Float.NaN;                          // the needed attributes
+        
+        float initial_path       = initial_path_obj.floatValue();
+        float spherical_coords[] = position.getSphericalCoords();
+        float total_length       = initial_path + spherical_coords[0];
+        float scattering_angle   = position.getScatteringAngle();
+        
+        return tof_calc.DSpacing( scattering_angle, total_length, x );
+    }
   }
 
 
@@ -338,6 +349,7 @@ public class DiffractometerTofToD extends    XAxisConversionOp
     Data             data,
                      new_data;
     DetectorPosition position;
+    GsasCalib        gsas;
     float            initial_path;
     Float            initial_path_obj;
     float            total_length;
@@ -361,12 +373,14 @@ public class DiffractometerTofToD extends    XAxisConversionOp
       position=(DetectorPosition)
                        attr_list.getAttributeValue( Attribute.DETECTOR_POS);
 
+      gsas=(GsasCalib)attr_list.getAttributeValue( Attribute.GSAS_CALIB);
+
       initial_path_obj=(Float)
                         attr_list.getAttributeValue(Attribute.INITIAL_PATH);
 
-      if( position != null && initial_path_obj != null)
-                                                       // has needed attributes 
-      {                                                // so convert it to D
+      if( gsas!=null || (position != null && initial_path_obj != null))
+                                                      // has needed attributes 
+      {                                               // so convert it to D
                                        // calculate d-values at bin boundaries
         initial_path     = initial_path_obj.floatValue();
         spherical_coords = position.getSphericalCoords();
@@ -374,10 +388,16 @@ public class DiffractometerTofToD extends    XAxisConversionOp
         scattering_angle = position.getScatteringAngle();
  
         d_vals           = data.getX_scale().getXs();
-        for ( int i = 0; i < d_vals.length; i++ )
-          d_vals[i] = tof_calc.DSpacing( scattering_angle,
-                                         total_length, 
-                                         d_vals[i]        );
+        if(gsas!=null){
+            for ( int i = 0; i < d_vals.length; i++ )
+                d_vals[i] = tof_calc.DSpacing( gsas.dif_a(),  gsas.dif_c(),
+                                               gsas.t_zero(), d_vals[i] );
+        }else{
+            for ( int i = 0; i < d_vals.length; i++ )
+                d_vals[i] = tof_calc.DSpacing( scattering_angle,
+                                               total_length, 
+                                               d_vals[i]        );
+        }
   
         D_scale = new VariableXScale( d_vals );
 
