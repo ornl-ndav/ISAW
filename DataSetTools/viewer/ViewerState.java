@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2004/06/15 20:20:20  robertsonj
+ *  add setViewerState method used to set the viewer state from the 
+ *  script language and from a StringPG
+ *
+ * Revision 1.32 2004/06/14 robertson
+ * Added setViewerState(String) to allow stringPG's to be used to change the viewer state.
+ * 
  *  Revision 1.31  2004/05/03 16:25:19  dennis
  *  Removed unused local variables.
  *
@@ -485,4 +492,101 @@ public class ViewerState  implements Serializable
       ds_name    = ds.getTitle();
       ds_n_rows  = ds.getNum_entries();
    }
+   /**
+    * 
+    * @param stateVariables String that holds your state information int the form of "Name Value,Name value,....,Name Value". 
+    * Where the name and the value are both strings. 
+    * 		The valid strings value pairs are:
+    * 		ColorScale								Strings - ie. Heat1 or Rainbow
+    * 		RebinFlag								Boolean
+    * 		Brightness								int between 0 and 100
+    * 		HScrollPosition							float between 0 and 1
+    * 		PointedAtIndex							Positive integer, # of spectra
+    * 		PointedAtX								float corresponding to x values
+    * 		ViewAzimuthAngle						float, angle in degrees
+    * 		ViewAltitudeAngle						float, angle in degrees
+    * 		ViewDistance							float, distance in meters
+    * 		ViewGroups								String 
+    * 		ViewDetectors							String
+    * 		Auto-Scale								float between 0 and 100
+    * 		table_view Data							String
+    * 		Contour.Style							String
+    * 		ContourTimeMin							float min time
+    * 		Time Slice Table Data Set				
+    * 		TableTS_TimeInd							int pionted at time channel or slice channel
+    * 		TableTS_MinRow							int min row to include
+    * 		TableTS_MaxRow							int max row to include
+    * 		TableTS_MinCol							int min column to include
+    * 		TableTS_MaxCol							int max column to include
+    * 		TABLE_TS_MIN_TIME						float min time to include
+    * 		TABLE_TS_MAX_TIME						float max time to include
+    * 		TABLE_TS_NXSTEPS						float # of time sterps for Xscale
+    * @return The updated viewer state that can be used to change state information of a viewer.
+    */
+   public ViewerState setViewerState(String stateVariables)
+   {
+   	
+   		String stateString = stateVariables.substring(21, (stateVariables.length() - 6)); //gets the substring that I want
+    	String[] seperatedStates = stateString.split(",");
+    	System.out.println("length of array "+seperatedStates.length);
+	   	for(int i = 0; i <seperatedStates.length; i++)
+	   	{
+	   		System.out.println("The string we have now at i = " + i + "is" + seperatedStates[i]);
+	   		if(seperatedStates[i].startsWith("ColorScale")){
+	   			set_String("ColorScale", seperatedStates[i].substring(11));
+	   		}else if(seperatedStates[i].startsWith("RebinFlag")){
+	   			if(seperatedStates[i].endsWith("ue")){
+	   				set_boolean("RebinFlag", true);
+	   			}else
+	   			{set_boolean("RebinFlag", false);
+	   			}
+	   		}else if(seperatedStates[i].startsWith("Brightness")){
+	   			set_int("Brightness", Integer.parseInt(seperatedStates[i].substring(11).trim()));
+	   		}else if(seperatedStates[i].startsWith("HScrollPosition")){
+	   			set_float("HScrollPosition", Float.parseFloat(seperatedStates[i].substring(16).trim()));
+	   		}else if(seperatedStates[i].startsWith("PointedAtIndex")){
+	   			set_int("PointedAtIndex", Integer.parseInt(seperatedStates[i].substring(15).trim()));
+	   		}else if(seperatedStates[i].startsWith("ViewAzimuthAngle")){
+	   			set_float("ViewAzimuthAngle", Float.parseFloat(seperatedStates[i].substring(16).trim()));
+	   		}else if(seperatedStates[i].startsWith("ViewAltitudeAngle")){
+	   			set_float("ViewAltitudeAngle", Float.parseFloat(seperatedStates[i].substring(17).trim()));
+	   		}else if(seperatedStates[i].startsWith("ViewDistance")){
+	   			set_float("ViewDistance", Float.parseFloat(seperatedStates[i].substring(13).trim()));
+	   		}else if(seperatedStates[i].startsWith("ViewGroups")){
+	   			set_String("ViewGroups", seperatedStates[i].substring(11));
+	   		}else if(seperatedStates[i].startsWith("ViewDetectors")){
+	   			set_String("ViewDetectors", seperatedStates[i].substring(14));
+	   		}else if(seperatedStates[i].startsWith("Auto-Scale")){
+	   			set_float("Auto-Scale", Float.parseFloat(seperatedStates[i].substring(11).trim()));
+	   		}else if(seperatedStates[i].startsWith("table_view Data")){
+	   			set_String("table_view Data", seperatedStates[i].substring(16));
+	   		}else if(seperatedStates[i].startsWith("Contour.Style")){
+	   			set_int("Contour.Style", Integer.parseInt(seperatedStates[i].substring(14).trim()));
+	   		}else if(seperatedStates[i].startsWith("ContourTimeMin")){
+				set_float("ContourTimeMin", Float.parseFloat(seperatedStates[i].substring(15).trim()));	
+	   		}else if(seperatedStates[i].startsWith("Time Slice Table Data Set")){
+	   			set_String("Time Slice Table Data Set", seperatedStates[i].substring(26));
+	   		}else if(seperatedStates[i].startsWith("TableTS_TimeInd")){
+	   			set_int("TableTS_TimeInd", Integer.parseInt(seperatedStates[i].substring(15).trim()));
+	   		}else if(seperatedStates[i].startsWith("TableTS_MinRow")){
+	   			set_int("TableTS_MinRow", Integer.parseInt(seperatedStates[i].substring(15).trim()));
+	   		}else if(seperatedStates[i].startsWith("TableTS_MaxRow")){
+	   			set_int("TableTS_MaxRow", Integer.parseInt(seperatedStates[i].substring(15).trim()));
+	   		}else if(seperatedStates[i].startsWith("TableTS_MinCol")){
+	   			set_int("TableTS_MinCol", Integer.parseInt(seperatedStates[i].substring(15).trim()));
+	   		}else if(seperatedStates[i].startsWith("TableTS_MaxCol")){
+	   			set_int("TableTS_MaxCol", Integer.parseInt(seperatedStates[i].substring(15).trim()));	
+	   		}else if(seperatedStates[i].startsWith("TABLE_TS_MIN_TIME")){
+	   			set_float("TABLE_TS_MIN_TIME", Float.parseFloat(seperatedStates[i].substring(18)));
+	   		}else if(seperatedStates[i].startsWith("TABLE_TS_MAX_TIME")){
+	   			set_float("TABLE_TS_MAX_TIME", Float.parseFloat(seperatedStates[i].substring(18)));
+	   		}else if(seperatedStates[i].startsWith("TABLE_TS_NXSTEPS")){
+	   			set_int("TABLE_TS_NXSTEPS", Integer.parseInt(seperatedStates[i].substring(17)));
+	   		}
+	   		System.out.println("i = "+i);
+	   	}
+	return this;
+   	}
+   	
 }
+
