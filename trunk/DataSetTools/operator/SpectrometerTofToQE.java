@@ -246,10 +246,10 @@ public class SpectrometerTofToQE extends  DataSetOperator
       for ( int row = 0; row < num_data; row++ )
       {
         q1 = tof_calc.SpectrometerQ( e_in[row], 
-                                     ( e_vals[col] + e_vals[col+1] ) / 2, 
+                                   ( e_vals[col] + e_vals[col+1] ) / 2, 
                                      min_ang[row] );
         q2 = tof_calc.SpectrometerQ( e_in[row], 
-                                     ( e_vals[col] + e_vals[col+1] ) / 2, 
+                                   ( e_vals[col] + e_vals[col+1] ) / 2, 
                                      max_ang[row] );
         if ( q1 > q2 )
         {
@@ -258,8 +258,8 @@ public class SpectrometerTofToQE extends  DataSetOperator
           q2 = temp;
         }
 
-        tof_calc.ResampleBin( q1, q2, y_vals[row][col],
-                              min_Q, max_Q,  resampled_col );  
+        Sample.ResampleBin( q1, q2, y_vals[row][col],
+                            min_Q, max_Q,  resampled_col );  
       }
       for ( int row = 0; row < n_bins; row++ )
         y_vals[row][col] = resampled_col[row];        
