@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2001/07/10 18:59:16  dennis
+ *  First attempt at using the new detector "segment"
+ *  methods from the IPNS/Runfile package.
+ *
  *  Revision 1.25  2001/07/04 15:23:58  dennis
  *  Calculation of average heights and angles now uses the method
  *  arrayUtil.SignedAbsSum().
@@ -151,7 +155,7 @@ package DataSetTools.retriever;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.instruments.InstrumentType;
-import IPNS.Runfile.Runfile;
+import IPNS.Runfile.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
 import java.io.*;
@@ -254,6 +258,7 @@ public class RunfileRetriever extends    Retriever
       run_file = null;
       System.out.println("Exception in RunfileRetriever constructor");
       System.out.println("Exception is " +  e ); 
+      e.printStackTrace();
     }
   }
 
@@ -433,6 +438,7 @@ public class RunfileRetriever extends    Retriever
                                             // with reasonable defaults
 
      DataSetFactory ds_factory = new DataSetFactory( title );
+     System.out.println("instrument_type = " + instrument_type );
      if ( is_monitor || is_pulse_height )
        data_set = ds_factory.getDataSet();  // just generic operations
 
@@ -467,7 +473,10 @@ public class RunfileRetriever extends    Retriever
 
      for ( group_id = first_id; group_id <= last_id; group_id++ )
      {
-      int[] group_members = run_file.IdsInSubgroup( group_id );
+      int     group_members[]  = run_file.IdsInSubgroup( group_id );
+      Segment group_segments[] = run_file.SegsInSubgroup( group_id );
+      if ( group_members.length != group_segments.length )
+        System.out.println("ERROR: Wrong number of segments");
 
       if ( group_members.length > 0 )   // only deal with non-trivial groups
                                         // and then pick out the groups of the
@@ -502,7 +511,12 @@ public class RunfileRetriever extends    Retriever
                for ( int i = 0; i < bin_boundaries.length; i++ )
                  bin_boundaries[i] -= source_to_sample_tof;
            }
-
+/*  ####
+           System.out.println("bin boundaries for group ID " + group_id );
+           for ( int ii = 0; ii < bin_boundaries.length; ii++ )
+             System.out.print(" " + bin_boundaries[ii] );
+           System.out.println();
+*/
            x_scale = new VariableXScale( bin_boundaries );
         }
 
@@ -519,6 +533,7 @@ public class RunfileRetriever extends    Retriever
                                    histogram_num,
                                    group_id,
                                    group_members, 
+                                   group_segments,
                                    tf_type,
                                    spectrum      );
  
@@ -534,8 +549,9 @@ public class RunfileRetriever extends    Retriever
     } 
     catch( Exception e )
     {
-       System.out.println("Exception in RunfileRetriever.getDataSet()" );
-       System.out.println("Exception is " +  e );
+      System.out.println("Exception in RunfileRetriever.getDataSet()" );
+      System.out.println("Exception is " +  e );
+      e.printStackTrace();
     }
 
     return data_set;
@@ -613,6 +629,7 @@ public class RunfileRetriever extends    Retriever
                                       int     histogram_num,
                                       int     group_id,
                                       int     group_members[], 
+                                      Segment group_segments[], 
                                       int     tf_type,
                                       Data    spectrum )
   {
@@ -737,7 +754,7 @@ public class RunfileRetriever extends    Retriever
     position.setCylindricalCoords( r, angle, height );
 
     // Show effective position
-    float sphere_coords[] = position.getSphericalCoords();
+//    float sphere_coords[] = position.getSphericalCoords();
 //    System.out.println("Group = " + group_id +
 //                       " R = " + sphere_coords[0] +
 //                       " Theta = " + sphere_coords[1]*180/3.14159265f +
@@ -760,13 +777,49 @@ public class RunfileRetriever extends    Retriever
     float_attr =new FloatAttribute(Attribute.DELTA_2THETA, delta_2theta  );
     attr_list.setAttribute( float_attr );
 
+    // DetectorInfo ....
+
+    DetectorInfo det_info_list[] = new DetectorInfo[ group_members.length ];
+    for ( int id = 0; id < group_members.length; id++ )
+    {
+      DetectorPosition det_position = new DetectorPosition();
+      float seg_angle  = (float)run_file.RawDetectorAngle( group_segments[id] );
+            seg_angle *= (float)(Math.PI / 180.0);
+      float seg_height = (float)run_file.RawDetectorHeight( group_segments[id]);
+      float seg_path   = (float)run_file.RawFlightPath( group_segments[id] );
+      float rho = 0;                                    // patch for error with
+                                                        // group 294, some files
+      if ( seg_path * seg_path < seg_height * seg_height )  
+        rho = seg_path;
+      else
+        rho  = (float)Math.sqrt(seg_path * seg_path - seg_height * seg_height);
+      
+      det_position.setCylindricalCoords( rho, seg_angle, seg_height );
+
+      DetectorInfo det_info = new DetectorInfo( 1, 
+                                              group_members[id], 
+                                              group_segments[id].Row(),
+                                              group_segments[id].Column(),
+                                              det_position,
+                                              group_segments[id].Length(),
+                                              group_segments[id].Width(),
+                                              group_segments[id].Depth(),
+                                              group_segments[id].Efficiency() );
+      det_info_list[id] = det_info;
+    }
+    if ( group_members.length > 0 )
+    {
+      DetInfoListAttribute det_info_attr = new DetInfoListAttribute( 
+                             Attribute.DETECTOR_INFO_LIST, det_info_list );
+      attr_list.setAttribute( det_info_attr );
+    }
+
     // Solid angle
     //float_attr =new FloatAttribute(Attribute.SOLID_ANGLE,
     //                               run_file.SolidAngle( group_id ) );
     float_attr =new FloatAttribute(Attribute.SOLID_ANGLE,
                                    GrpSolidAngle( group_id ) );
     attr_list.setAttribute( float_attr );
-
     // Efficiency Factor 
     float_attr =new FloatAttribute(Attribute.EFFICIENCY_FACTOR, 1 );
     attr_list.setAttribute( float_attr );
@@ -787,6 +840,7 @@ public class RunfileRetriever extends    Retriever
     {
       System.out.println("Exception in RunfileRetriever.AddSpectrumAttributes");
       System.out.println("Exception is " + e );
+      e.printStackTrace();
     };
 
     spectrum.setAttributeList( attr_list );
@@ -820,6 +874,7 @@ public class RunfileRetriever extends    Retriever
     {
       System.out.println("Exception in RunfileRetriever.getAverageFlightPath:");
       System.out.println( "Exception is " + e );
+      e.printStackTrace();
     }
 
     return arrayUtil.SignedAbsSum( values ) / values.length;
@@ -862,7 +917,9 @@ public class RunfileRetriever extends    Retriever
     }
     catch ( Exception e )
     {
-      System.out.println("Exception in RunfileRetriever.getAverageFlightPath:");      System.out.println( "Exception is " + e );
+      System.out.println("Exception in RunfileRetriever.getAverageFlightPath:");
+      System.out.println( "Exception is " + e );
+      e.printStackTrace();
     }
 
     return arrayUtil.SignedAbsSum( values ) / tot_solid_ang;
@@ -894,6 +951,7 @@ public class RunfileRetriever extends    Retriever
     {
       System.out.println( "Exception in RunfileRetriever.getAverageHeight:" );
       System.out.println( "Exception is " + e );
+      e.printStackTrace();
     }
 
     return arrayUtil.SignedAbsSum( values ) / ids.length;   
@@ -933,6 +991,7 @@ public class RunfileRetriever extends    Retriever
     {
       System.out.println( "Exception in RunfileRetriever.getAverageHeight:" );
       System.out.println( "Exception is " + e );
+      e.printStackTrace();
     }
 
     return arrayUtil.SignedAbsSum( values ) / tot_solid_ang;
@@ -969,6 +1028,7 @@ public class RunfileRetriever extends    Retriever
     {
       System.out.println( "Exception in RunfileRetriever.getAverageAngle:" );
       System.out.println( "Exception is " + e );
+      e.printStackTrace();
     }
 
     return total / ids.length;  
@@ -1013,6 +1073,7 @@ public class RunfileRetriever extends    Retriever
     {
       System.out.println( "Exception in RunfileRetriever.getAverageAngle:" );
       System.out.println( "Exception is " + e );
+      e.printStackTrace();
     }
 
     return total / sum;
@@ -1239,6 +1300,7 @@ public class RunfileRetriever extends    Retriever
       System.out.println( 
                  "Exception in RunfileRetriever.ShowGroupDetectorInfo:" );
       System.out.println( "Exception is " + e );
+      e.printStackTrace();
     }
   }
 
