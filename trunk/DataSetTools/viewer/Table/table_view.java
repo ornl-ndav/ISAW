@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.28  2002/07/17 19:58:56  rmikk
+ * Changed the naming for the different type of tables
+ *
  * Revision 1.27  2002/07/16 21:39:47  rmikk
  * Added routines to use the Gen_TableModel outside of
  *   table_view
@@ -420,10 +423,10 @@ public class table_view extends JPanel implements ActionListener
       Selects.setBorder( BorderFactory.createEtchedBorder() );
       RightPanel.add( Selects );
 
-      Object[] X = { new DescrCode( "HGT,F", "Gr,Time vs Field" )//,new DescrCode( "HT,FG" , "Time vs Field,Gr" )
-            , new DescrCode( "HT,GF", "Time vs Gr,Field" )//, new DescrCode( "HTG,F" , "Time,Gr vs Field" )
+      Object[] X = { new DescrCode( "HGT,F", "Group x vs Fields" )//,new DescrCode( "HT,FG" , "Time vs Field,Gr" )
+            , new DescrCode( "HT,GF", "x vs Group Fields" )//, new DescrCode( "HTG,F" , "Time,Gr vs Field" )
             //, new DescrCode( "HG,TF" , "Gr vs Time,Field" )
-            , new DescrCode( "HTI,JF", "Time,Row vs col" ),
+            , new DescrCode( "HTI,JF", "x,Row vs col Fields" ),
             "Advanced" };
 
       Order = new JComboBox( X );
@@ -2459,7 +2462,7 @@ public class table_view extends JPanel implements ActionListener
       {
          this.Code = Code;
          this.Report = Report;
-      }
+       }  
 
 
       public String toString()
