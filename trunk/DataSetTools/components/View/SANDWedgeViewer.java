@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.46  2005/02/10 21:33:07  millermi
+ * - Made loadData() more robust by replacing removeLeadingZero()
+ *   with String.trim().
+ *
  * Revision 1.45  2005/01/20 22:05:18  millermi
  * - Changed x values to bin centers prior to graphing.
  * - Replaced binarySearch() with one provided by Java utilities.
@@ -628,7 +632,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       // and last values in those columns are saved. The Value and Error columns
       // are each stored in a separate 2-D array.
       reader = new TextFileReader( filename );
-      String header_line = removeLeadingSpaces(reader.read_line());
+      String header_line = reader.read_line().trim();
       String info = null;
       int colon_index = -1;
       // while a line starts with #, treat it as special information.
@@ -636,19 +640,17 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       {
         //System.out.println("Line: " + header_line + "***" + 
         //                 header_line.startsWith("#") );
-	// remove # character from substring
-	header_line = header_line.substring(1);
-	// remove any spaces
-	header_line = removeLeadingSpaces(header_line);
+	// remove # character from substring and remove any spaces
+	header_line = header_line.substring(1).trim();
 	colon_index = header_line.indexOf(":");
 	// require that a colon precedes the info
 	if( colon_index >= 0 )
 	{
-	  info = header_line.substring(colon_index + 1);
-	  // remove any leading spaces
-	  info = removeLeadingSpaces(info);
+	  // Get everything after colon, this is the actual information
+	  // to be parsed, then remove leading/trailing spaces.
+	  info = header_line.substring(colon_index + 1).trim();
 	  // Get everything from header line except the "#" symbol and
-	  // leading spaces.
+	  // convert it to lower case to allow for consistent comparison.
 	  header_line = header_line.substring(0,colon_index).toLowerCase();
 	  // Find and set the corresponding information
 	  // the number of rows and columns should be specified.
@@ -698,12 +700,12 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	  }
 	}
         // read the next line to see if it is also header info, making sure
-	// the line does not start with spaces
-	header_line = removeLeadingSpaces(reader.read_line());
+	// the line does not start/end with spaces
+	header_line = reader.read_line().trim();
       }
       // get rid of any empty lines between the metadata and the data.
       while( header_line.equals("") )
-        header_line = removeLeadingSpaces(reader.read_line());
+        header_line = reader.read_line().trim();
       // No # sign, then data was read in. Replace it and read again later.
       // If last line did not contain any useful data, do not replace it.
       if( !(header_line.equals("") || header_line == null) )
@@ -803,17 +805,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       SharedData.addmsg("SANDWedgeViewer unable to close file in loadData()");
     }
     return true;
-  }
-  
- /*
-  * Helper method for the loadData() method. This method will remove all
-  * leading spaces from the String passed in.
-  */
-  private String removeLeadingSpaces( String string )
-  {
-    while( string.indexOf(" ") == 0 )
-      string = string.substring(1);
-    return string;
   }
   
  /**
