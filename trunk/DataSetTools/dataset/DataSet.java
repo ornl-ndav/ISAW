@@ -10,6 +10,11 @@
  *                 blocks. 
  *
  *  $Log$
+ *  Revision 1.10  2001/02/15 23:29:05  dennis
+ *  Now the copy() method will not attempt to copy a DataSet
+ *  into itself.  The observers will just be notified with
+ *  a DATA_CHANGED message.
+ *
  *  Revision 1.9  2000/11/07 16:02:58  dennis
  *  Changed the return type of the getYRange() method from a UniformXScale to
  *  a ClosedInterval so that the case where the YRange degenerated to one point
@@ -1302,6 +1307,12 @@ public class DataSet implements IAttributeList,
    */
   public void copy( DataSet ds )
   {
+    if ( this.equals( ds ) )
+    {
+      this.notifyIObservers( IObserver.DATA_CHANGED );
+      return;
+    }
+                                         // Note: we are NOT copying the ds_tag
     this.title            = ds.title;
     this.pointed_at_index = ds.pointed_at_index;
     this.x_units          = ds.x_units;
@@ -1313,10 +1324,11 @@ public class DataSet implements IAttributeList,
 
     this.data = new Vector(); 
     int num_entries = ds.getNum_entries();
+
     for ( int i = 0; i < num_entries; i++ )
     {
       Data d = ds.getData_entry( i );
-      this.addData_entry( (Data)d.clone() );
+      this.addData_entry( (Data)(d.clone()) );
     }
 
     this.operators = new Vector();
