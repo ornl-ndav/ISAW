@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.9  2003/02/04 21:08:27  dennis
+ *  Added getDocumentation() method. (Chris Bouzek)
+ *
  *  Revision 1.8  2002/12/11 22:31:31  pfpeterson
  *  Removed the '_2' from getCommand() and its javadocs.
  *
@@ -196,7 +199,7 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -224,8 +227,90 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
     addParameter( parameter );
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator computes the double differential ");
+    s.append("cross section for a time-of-flight spectrometer DataSet ");
+    s.append("based on a sample with background subtracted, the area of ");
+    s.append("the peak in monitor 1 and the number of atoms in the ");
+    s.append("sample.\n");
+    s.append("@assumptions The initial DataSet must be a time-of-flight ");
+    s.append("histogram.\n");
+    s.append("The number of scattering units (i.e. atoms) specified must ");
+    s.append("be greater than zero.\n");
+    s.append("Also, if using the normalization factors from the DataSet ");
+    s.append("ff_ds, the DataSet ff_ds should have three data blocks.  ");
+    s.append("In addition, the number of normalization factors should match ");
+    s.append("the number of data entries in the DataSet ds.\n");
+    s.append("@algorithm First this operator determines if it is supposed ");
+    s.append("to use normalization factors from ff_ds, and retrieves the ");
+    s.append("factors if necessary.\n");
+    s.append("Then for each data entry, it retrieves the solid angle, ");
+    s.append("the energy in, the number of pulses, and the detector ");
+    s.append("position.  It then uses these to calculate the velocity in ");
+    s.append("and the flux.\n");
+    s.append("It then calculates a compensation factor for the solid angle, ");
+    s.append("the number of atoms in the sample, and the incident beam ");
+    s.append("flux.\n");
+    s.append("Another compensation is calculated for detector efficiency as ");
+    s.append("a function of neutron velocity.\n");
+    s.append("After the data entries have been changed, the ");
+    s.append("SpectrometerTofToEnergyLoss operator is applied in order to");
+    s.append("convert to a raw energy loss spectrum with non-uniform bins.\n");
+    s.append("Next the ConvertHistogramToFunction operator is applied to");
+    s.append("get counts per energy as a probability density function.\n");
+    s.append("Finally a message is appended to the DataSet's log indicating ");
+    s.append("that a double differential cross section was performed.\n");
+    s.append("@param ds The sample DataSet for which the double ");
+    s.append("differential crossection is to be calculated.\n");
+    s.append("@param ff_ds DataSet containing detector normalization ");
+    s.append("factors calculated from a vanadium run.\n");
+    s.append("@param use_ff_ds Boolean flag indicating whether ff_ds ");
+    s.append("contains normalization factors to use, or to just use ");
+    s.append("\"1\" for normalization in the calculation.\n");
+    s.append("@param peak_area The area of the peak in monitor 1.\n");
+    s.append("@param atoms The number of \"scattering units\" in the ");
+    s.append("sample exposed to the beam times 10 ** -24.\n");
+    s.append("@param make_new_ds Flag that determines whether a new DataSet ");
+    s.append("is constructed, or the Data blocks of the original DataSet ");
+    s.append("are just altered.\n");
+    s.append("@return If make_new_ds is true, this operator returns a ");
+    s.append("DataSet which has had a double differential cross section ");
+    s.append("performed on it.  Otherwise, it returns a String indicating ");
+    s.append("that a double differential cross section was performed.\n");
+    s.append("@error Returns an error if the number of atoms is zero or ");
+    s.append("less.\n");
+    s.append("@error Returns an error if the DataSet ff_ds does not have ");
+    s.append("three data blocks.\n");
+    s.append("@error Returns an error if the number of normalization ");
+    s.append("factors does not match the number of data entries in the ");
+    s.append("DataSet ds.\n");
+    s.append("@error Returns an error if any of the data entries in the ");
+    s.append("DataSet are not histograms.\n");
+    return s.toString();
+  }    
 
   /* ---------------------------- getResult ------------------------------- */
+  /*
+   *  Computes the double differential cross section using peak area, 
+   *  number of scattering units, solid angle, energy in, number of pulses,
+   *  and detector position.  Two compensation factors are used: one for 
+   *  detector efficiency, and one for incident beam flux, solid angle, 
+   *  and the number of atoms in the sample.  Two other operators are also
+   *  used for the calculation: SpectrometerTofToEnergyLoss and 
+   *  ConvertHistogramToFunction.
+   *
+   *  @return If make_new_ds is true, this operator returns a DataSet which 
+   *  has had a double differential cross section performed on it.  Otherwise, 
+   *  it returns a String indicating that a double differential cross 
+   *  section was performed.
+   */
 
   public Object getResult()
   {       
@@ -351,7 +436,7 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
       x_vals     = data.getX_scale().getXs();
       int num_y  = data.getY_values().length;
 
-      if ( num_y >= x_vals.length )
+      if ( !data.isHistogram() ) 
       {
         System.out.println("ERROR: need histogram in DSDODE_2 calculation");
         return new ErrorString( "Need histogram in DSDODE_2 calculation" );
@@ -442,6 +527,10 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
     ViewManager vm2    = new ViewManager(ds_cor,IViewManager.IMAGE);
 
     op = new DoubleDifferentialCrossection(ds_cor, null, false, 10000, 1, true);
+    
+    /*------- added by Chris Bouzek ---------- */
+    System.out.println("Documentation: " + op.getDocumentation() + "\n");
+    /*---------------------------------------*/
 
     Object ddif_ds = op.getResult();
     if ( ddif_ds == null )
