@@ -29,6 +29,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2002/07/15 19:30:32  dennis
+ *  Commented out code that sets the cursor... this is an attempt to
+ *  prevent crash in native code outside of VM when cursor is set on
+ *  Linux.
+ *
  *  Revision 1.24  2002/04/03 19:53:18  pfpeterson
  *  Added SampleDataSet and MonitorDataSet.
  *
@@ -582,7 +587,7 @@ public class JParametersDialog implements Serializable,
 
 
       //util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
-      opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+//#####      opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
       if(stat_pane !=null)
         {if( op instanceof IusesStatusPane)
           ((IusesStatusPane)op).addStatusPane( stat_pane);
@@ -604,7 +609,7 @@ public class JParametersDialog implements Serializable,
               ParName = "Value?";
           op.setParameter( new Parameter( ParName , null ) , k );
         }
-      opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+//#####      opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       if (result == null)
       {
          
