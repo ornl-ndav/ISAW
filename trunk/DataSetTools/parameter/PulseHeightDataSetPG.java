@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/10/11 19:19:16  bouzekc
+ *  Removed clone() as the superclass now implements it using reflection.
+ *
  *  Revision 1.9  2003/09/09 23:06:29  bouzekc
  *  Implemented validateSelf().
  *
@@ -214,15 +217,4 @@ public class PulseHeightDataSetPG extends DataSetPG{
         y+=dy;
     }*/
 
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        PulseHeightDataSetPG pg=
-            new PulseHeightDataSetPG(this.name,this.value,this.valid);
-        pg.vals=(Vector)this.vals.clone();
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        return pg;
-    }
 }

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/10/11 19:19:17  bouzekc
+ * Removed clone() as the superclass now implements it using reflection.
+ *
  * Revision 1.12  2003/09/09 23:06:31  bouzekc
  * Implemented validateSelf().
  *
@@ -99,10 +102,6 @@ public class StringArrayPG extends VectorPG{
     jf.invalidate();
     jf.show();
   }*/
-  public Object clone(){
-    StringArrayPG faap = new StringArrayPG( getName(), getValue());
-    return (Object)faap;
-  }       
 
   /**
    * Validates this StringArrayPG.  An StringArrayPG is considered valid if 
