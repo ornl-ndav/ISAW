@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.6  2003/06/10 20:29:35  bouzekc
+ * Fixed ClassCastException in getResult().
+ *
  * Revision 1.5  2003/06/10 20:11:56  bouzekc
  * Moved IndexJ creation out of for loop to avoid
  * excessive Object creation.
@@ -314,7 +317,7 @@ public class IndexJForm extends Form
         //call IndexJ
         indexJOp.getParameter(1).setValue(matName);
         //synchronize the run number in the peaks and matrix file
-        ((Operator)obj).getParameter(2).setValue(runNum);
+        indexJOp.getParameter(2).setValue(runNum);
 
         obj = indexJOp.getResult();
       }
