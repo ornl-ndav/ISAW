@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.43  2003/06/27 21:32:50  bouzekc
+ * Now uses Form's addPropertyChangeListener() method to add
+ * itself as a listener on parameters.  Reformatted javadocs
+ * at top of class so the Form linking tutorial shows up
+ * correctly.
+ *
  * Revision 1.42  2003/06/27 18:40:34  bouzekc
  * Fixed bug where changing parameters in a Form did not
  * always reset the Wizard progress bar.  Modifed boolean
@@ -249,60 +255,64 @@ import javax.swing.*;
  *  that is used in a particular Wizard application, as well as for
  *  the Wizard itself.
  *
- *  <u>HOW TO CREATE THE PARAMETER TABLE</u>
- *  By Chris Bouzek
+ *  <br><br>
+ *  <u>HOW TO CREATE THE PARAMETER TABLE</u><br><br>
+ *  By Chris Bouzek<br><br>
  *
- *  The parameter table is used to coordinate the Forms for this Wizard.
+ *  The parameter table is used to coordinate the Forms for this
+ *  Wizard.<br><br>
  *
- *  The referential links are arranged in a tabular format.
- *  Suppose that we have a Wizard with three Forms:
+ *  The referential links are arranged in a tabular format.<br><br>
+ *  Suppose that we have a Wizard with three Forms:<br><br>
  *
- *  LoadMultiHistogramsForm, named lmhf
- *  TimeFocusGroupForm, named tfgf
- *  SaveAsGSASForm, named sagf
+ *  LoadMultiHistogramsForm, named lmhf<br>
+ *  TimeFocusGroupForm, named tfgf<br>
+ *  SaveAsGSASForm, named sagf<br><br>
  *
- *  Suppose that the parameters on these forms are linked as follows:
- *  lmhf parameter 5 = tfgf parameter 0
- *  tfgf parameter 61 = sagf parameter 0
- *  lmhf parameter 6 = sagf parameter 1
- *  lmhf parameter 0 = sagf parameter 2
- *  lmhf parameter 2 = sagf parameter 3
+ *  Suppose that the parameters on these forms are linked as follows:<br>
+ *  lmhf parameter 5 = tfgf parameter 0<br>
+ *  tfgf parameter 61 = sagf parameter 0<br>
+ *  lmhf parameter 6 = sagf parameter 1<br>
+ *  lmhf parameter 0 = sagf parameter 2<br>
+ *  lmhf parameter 2 = sagf parameter 3<br><br>
  *
  *  Now, if we consider a table with the rows set as the Form indices, the
  *  columns set as the parameter number indices, and the cells of the table as
- *  the actual parameter numbers to link, it would look like this:
+ *  the actual parameter numbers to link, it would look like this:<br><br>
  *
- *    lmhf    tfgf    sagf
- *  |----------------------|
- *  |   5   |   0   | -1   |
- *  |----------------------|
- *  |  -1   |  61   |  0   |
- *  |----------------------|
- *  |   6   |  -1   |  1   |
- *  |----------------------|
- *  |   0   |  -1   |  2   |
- *  |----------------------|
- *  |   2   |  -1   |  3   |
- *  |----------------------|
+ *  <center>
+ *
+ *    lmhf    tfgf    sagf<br>
+ *  |----------------------|<br>
+ *  |   5   |   0   | -1   |<br>
+ *  |----------------------|<br>
+ *  |  -1   |  61   |  0   |<br>
+ *  |----------------------|<br>
+ *  |   6   |  -1   |  1   |<br>
+ *  |----------------------|<br>
+ *  |   0   |  -1   |  2   |<br>
+ *  |----------------------|<br>
+ *  |   2   |  -1   |  3   |<br>
+ *  |----------------------|<br><br></center>
  *
  *  The indices are accessed in the following manner: [rowIndex][columnIndex]:
  *  You must place the actual parameter number within the integer array.
  *  For example, to set the link between LoadMultiHistogramForm's 5th
  *  parameter into TimeFocusGroupForm's 0th parameter, use the following:
  *  (assuming fpi has already been declared as a two-dimensional integer
- *  array of sufficient size):
+ *  array of sufficient size):<br><br>
  *
- *  fpi[0][0] = 5;
- *  fpi[0][1] = 0;
+ *  fpi[0][0] = 5;<br>
+ *  fpi[0][1] = 0;<br><br>
  *
  *  Alternately, you may create the entire table  using Java's array
- *  initialization scheme, as shown:
+ *  initialization scheme, as shown:<br><br>
  *
- *   int fpi[][] = { {5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3} };
+ *   int fpi[][] = { {5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3} };<br><br>
  *
  *   DON'T put a row of -1's in the parameter table.  There is no point to it,
  *   since you are supposed to be linking parameters, so linking no parameters
- *   at all makes no sense.
+ *   at all makes no sense.<br><br>
  *
  *  @see Form
  */
@@ -1084,9 +1094,8 @@ public abstract class Wizard implements PropertyChangeListener {
       wizProgress.setValue( lastForm + 1 );
     }
 
-    //add the listener (this) to the Form's parameters
-    f.addParameterPropertyChangeListener( this );
-
+    //add the listener (this) to the Form's parameters and progress bar
+    f.addPropertyChangeListener( this );
     f.addPropertyChangeListener( formProgress );
 
     form_panel.validate(  );
