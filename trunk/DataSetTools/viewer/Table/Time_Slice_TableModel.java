@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2004/05/29 16:41:10  rmikk
+ * Removed commented out code segments
+ *
  * Revision 1.19  2004/03/15 19:34:00  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -155,8 +158,6 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
            boolean showInd ) throws IllegalArgumentException
    {   
       Time = time;
-      //int[] row = new int[DS.getNum_entries()];
-      //int[] col = new int[DS.getNum_entries()];
 
       Time = time;
       this.DS = DS;
@@ -175,52 +176,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       tMaxrow = MaxRow - 1;
       tMincol = 0;
       tMaxcol = MaxCol - 1;
-     /* for( int i = 0; i < DS.getNum_entries(); i++ )
-      {
-         PixelInfoListAttribute Ax = ( PixelInfoListAttribute )
-               DS.getData_entry(i).getAttribute( Attribute.PIXEL_INFO_LIST );
-
-         row[i] = -1;
-         col[i] = -1;
-         if( Ax != null )
-         {
-           if( ((PixelInfoList)(Ax.getValue())).num_pixels() > 0 )
-           {
-             IPixelInfo B = ((PixelInfoList)(Ax.getValue())).pixel(0);
-
-             row[i] = (int)B.row();
-             col[i] = (int)B.col();
-             if( row[i] > MaxRow )
-               MaxRow = row[i];
-             if( col[i] > MaxCol )
-               MaxCol = col[i];
-           }
-         }
-
-      }
-      if( ( MaxCol < 0 ) || ( MaxRow < 0 ) )
-      {
-         RC_to_Group = null;
-         return;
-      }
-      tMinrow = 0;
-      tMaxrow = MaxRow - 1;
-      tMincol = 0;
-      tMaxcol = MaxCol - 1;
-      RC_to_Group = new int[( MaxRow ) * ( MaxCol )];
-      Arrays.fill( RC_to_Group, -1 );
-      for( int i = 0; i < row.length; i++ )
-      {
-         int r = row[i];
-         int c = col[i];
-
-         if( r >= 0 )
-            if( c >= 0 )
-               RC_to_Group[( r - 1 ) * ( MaxCol ) + ( c - 1 )] = i;
-      }
-
-    */   
-    firstGroup = 0;
+        firstGroup = 0;
     int[] u = DS.getSelectedIndices();
     if( u != null)
       if( u.length > 0)
