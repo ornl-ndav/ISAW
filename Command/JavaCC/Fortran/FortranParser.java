@@ -84,17 +84,17 @@ public class FortranParser implements FortranParserConstants {
 
     if( s.indexOf( LOGICAL ) >= 0 ) {
       type = BOOLEAN;
-      s = s.replaceAll( LOGICAL, "");
+      s = s.replaceFirst( LOGICAL, "");
     } else if( s.indexOf( F_DOUBLE ) >= 0 ) {
       type = J_DOUBLE;
-      s = s.replaceAll( F_DOUBLE, "");
+      s = s.replaceFirst( F_DOUBLE, "");
     } else if( ( ( s.indexOf( F_INT ) >= 0 ) ||
-                    ( s.startsWith( "i | j | k | l | m | n ") ) ) ) {
+                    ( s.startsWith( "i|j|k|l|m|n") ) ) ) {
       type = J_INT;
-      s = s.replaceAll( F_INT, "");
+      s = s.replaceFirst( F_INT, "");
     } else {
       type = FLOAT;
-      s = s.replaceAll( REAL, "");
+      s = s.replaceFirst( REAL, "");
     }
 
     StringBuffer buffer = new StringBuffer( type );
@@ -102,31 +102,38 @@ public class FortranParser implements FortranParserConstants {
     //make sure these get a semicolon
     appendSemiColon = true;
     s = s.trim(  );
+
     //the parentheses should NOT be right at the beginning of the declaration
     if( s.indexOf( "(" ) > 0 ) {
-      String tokenList[] = s.split( "," );
+      //split based on parentheses    
+      String tokenListParen[] = s.split( "\\(|\\)" );
       //now go through the tokens, determining if an element is an array
       String[] temp;
-      for( int i = 0; i < tokenList.length; i++ ) {
-        if( tokenList[i].indexOf( "(" ) >= 0 ) {
-          //change to Java style array delimiters
-          tokenList[i] = tokenList[i].replace( '(', '[' );
-          tokenList[i] = tokenList[i].replace( ')', ']' );
-          //this will split the String just after the variable name.  We
-          //will have to put the '[' back on however
-          temp = tokenList[i].split( "\\[" );
-          tokenList[i] = temp[0] + " = new " + type + "[" + temp[1];
 
-        }
+      //note that the odd numbered tokens represent the number of array
+      //element(s).  For these, we need to replace commas with "][".
+      //For even numbered tokens, except for the first and last ones, we need
+      //to start with a "]" and end with a "[" when inserting them into the buffer
+      for( int i = 0; i < tokenListParen.length; i++ ) {
+        if( ( i % 2 ) != 0 ) {
+          buffer.append( tokenListParen[i].replaceAll( "\\s*,\\s*", "][" ) );
+        } else {
 
-        //put the token (array element or not) in
-        buffer.append( tokenList[i] );
+          if( i != 0 ) {
+            buffer.append( "]" );
+          }
 
-        //basically, put the commas back in
-        if( i < tokenList.length - 1 ) {
-          buffer.append( "," );
+          buffer.append( tokenListParen[i] );
+          buffer.append( " = new " );
+          buffer.append( type );
+
+          if( i != ( tokenListParen.length - 1  ) ) {
+            buffer.append( "[" );
+          }
         }
       }
+
+      buffer.append( "]" );
     } else {
       //just return what we had after initial replacements
       buffer.append( s );
@@ -169,6 +176,7 @@ public class FortranParser implements FortranParserConstants {
       case LINE_END:
       case EMPTY_LINE:
       case STRING:
+      case EMPTY_FORTRAN_COMMENT:
       case FORTRAN_COMMENT:
       case FORTRAN_MATH_FUN:
       case FORTRAN_ABS:
@@ -222,6 +230,7 @@ public class FortranParser implements FortranParserConstants {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case EMPTY_LINE:
       case STRING:
+      case EMPTY_FORTRAN_COMMENT:
       case FORTRAN_COMMENT:
       case FORTRAN_MATH_FUN:
       case FORTRAN_ABS:
@@ -271,6 +280,11 @@ public class FortranParser implements FortranParserConstants {
   StringBuffer buffer;
   String tokenList[];
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case EMPTY_FORTRAN_COMMENT:
+      //matched an empty comment
+        t = jj_consume_token(EMPTY_FORTRAN_COMMENT);
+  {if (true) return "//\n";}
+      break;
     case FORTRAN_COMMENT:
       //matched a comment
         t = jj_consume_token(FORTRAN_COMMENT);
@@ -537,10 +551,10 @@ public class FortranParser implements FortranParserConstants {
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x8fc0900a,0x8fc09008,0x8fc09008,};
+      jj_la1_0 = new int[] {0x1f81900a,0x1f819008,0x1f819008,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x1dfc,0x1dfc,0x1dfc,};
+      jj_la1_1 = new int[] {0x3bf9,0x3bf9,0x3bf9,};
    }
 
   public FortranParser(java.io.InputStream stream) {
@@ -660,8 +674,8 @@ public class FortranParser implements FortranParserConstants {
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[45];
-    for (int i = 0; i < 45; i++) {
+    boolean[] la1tokens = new boolean[46];
+    for (int i = 0; i < 46; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -680,7 +694,7 @@ public class FortranParser implements FortranParserConstants {
         }
       }
     }
-    for (int i = 0; i < 45; i++) {
+    for (int i = 0; i < 46; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
