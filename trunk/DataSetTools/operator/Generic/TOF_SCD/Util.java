@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/02/13 17:03:44  pfpeterson
+ * Methods to determine detector center angle and distance now try to
+ * get attribute before calculating.
+ *
  * Revision 1.3  2003/02/12 20:03:11  dennis
  * Switched to use PixelInfoList instead of SegmentInfoList
  *
@@ -60,17 +64,21 @@ public class Util{
    * @return the in plane angle in degrees
    */
   static public float detector_angle(DataSet ds){
-    PixelInfoListAttribute pil_attr;
     Data data=ds.getData_entry(0); 
 
-    pil_attr =
+    Object attr_val=ds.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE);
+    if(attr_val!=null && attr_val instanceof Float){
+      return ((Float)attr_val).floatValue();
+    }
+
+    PixelInfoListAttribute pil_attr =
           (PixelInfoListAttribute)data.getAttribute(Attribute.PIXEL_INFO_LIST);
     PixelInfoList pil  = (PixelInfoList)pil_attr.getValue();   
     Vector3D      vec  = pil.pixel(0).DataGrid().position();
     Position3D    position     = new Position3D( vec );
     float         cyl_coords[] = position.getCylindricalCoords(); 
     
-    return cyl_coords[1];
+    return (float)(cyl_coords[1]*180./Math.PI);
   }
 
   /**
@@ -81,6 +89,16 @@ public class Util{
    */
   static public float detector_angle2(DataSet ds){
     return 0f;
+    /*Data data=ds.getData_entry(0); 
+
+      PixelInfoListAttribute pil_attr =
+      (PixelInfoListAttribute)data.getAttribute(Attribute.PIXEL_INFO_LIST);
+      PixelInfoList pil  = (PixelInfoList)pil_attr.getValue();   
+      Vector3D      vec  = pil.pixel(0).DataGrid().position();
+      Position3D    position     = new Position3D( vec );
+      float         sph_coords[] = position.getSphericalCoords(); 
+    
+      return (float)(90.-180.*sph_coords[2]/Math.PI);*/
   }
 
   /**
@@ -94,6 +112,11 @@ public class Util{
     PixelInfoListAttribute pil_attr;
     Data data=ds.getData_entry(0);
    
+    Object attr_val=ds.getAttributeValue(Attribute.DETECTOR_CEN_DISTANCE);
+    if(attr_val!=null && attr_val instanceof Float){
+      return ((Float)attr_val).floatValue();
+    }
+
     pil_attr =
           (PixelInfoListAttribute)data.getAttribute(Attribute.PIXEL_INFO_LIST);
     PixelInfoList pil  = (PixelInfoList)pil_attr.getValue();
