@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/06/12 13:36:54  pfpeterson
+ * invalidate method now sets the value of the progress bar.
+ *
  * Revision 1.3  2002/06/11 14:56:18  pfpeterson
  * Small updates to documentation.
  *
@@ -542,6 +545,7 @@ public class Wizard implements Serializable{
         for( int i=start ; i<forms.size() ; i++ ){
             getForm(i).setCompleted(false);
         }
+        progress.setValue(start);
     }
 
     /**
@@ -610,7 +614,6 @@ public class Wizard implements Serializable{
                 show(form_num);
             }else if ( command.equals( CLEAR_COMMAND ) ){
                 invalidate(0);
-                progress.setValue(0);
             }else if ( command.equals( EXEC_ALL_COMMAND) ){
                 exec_forms(forms.size()-1);
             }else if ( command.equals( EXEC_COMMAND ) ){
