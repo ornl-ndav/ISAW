@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.67  2004/01/08 19:40:01  bouzekc
+ * Removed unused variables.
+ *
  * Revision 1.66  2003/12/14 19:18:06  bouzekc
  * Removed unused import statements.
  *
@@ -251,9 +254,6 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
    */
   public void getExecScript( 
     String fname, IObserver X, IDataSetListHandler ds_src, Document DocLog ) {
-    int i;
-    String S;
-    Object RES;
     ScriptOperator cp = new ScriptOperator( fname );
     cp.addIObserver( X );
     cp.addPropertyChangeListener( this );
@@ -264,8 +264,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
     }
     new IsawGUI.Util(  ).appendDoc( logDoc, "#$ Script File Execute " + fname );
 
-    JParametersDialog pDialog = new JParametersDialog( 
-        cp, ds_src, logDoc, X, false );
+    new JParametersDialog( cp, ds_src, logDoc, X, false );
   }
 
   /**
@@ -442,7 +441,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
    * Test program for this unit- no args are used
    */
   public static void main( String[] args ) {
-    SharedData dd = new SharedData(  );
+    new SharedData(  );
     JFrame F;
     CommandPane P;
     F   = new JFrame( "Command Pane" );
@@ -578,7 +577,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds DataSets from the Tree.
    *
    * @param X DOCUMENT ME!
    */
@@ -589,11 +588,10 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
   }
 
   /**
-   * DOCUMENT ME!
+   * Common entry point.
    */
   private void initt(  ) {
     JPanel JP;
-    Rectangle R              = getBounds(  );
     String ISAWscript        = "ISAW Script";
     Run                      = new JButton( "Run Script" );
     Open                     = new JButton( "Open Script" );
@@ -846,7 +844,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
      * @param e DOCUMENT ME!
      */
     public void actionPerformed( ActionEvent e ) {
-      Document doc;
+      //Document doc;
 
       if( e.getActionCommand(  ) == JParametersDialog.OPERATION_THROUGH ) {
         ReportExecutionStatus(  );
