@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/05/04 19:03:51  dennis
+ * Now clears DataSetPG after getting value, to avoid memory leak.
+ *
  * Revision 1.10  2004/01/24 19:50:54  bouzekc
  * Removed unused imports.
  *
@@ -162,7 +165,11 @@ public class WriteGSAS extends GenericSave{
    */
   public Object getResult(){
     DataSet MS       =(DataSet)( getParameter(0).getValue());
+    ((DataSetPG)getParameter(0)).clear();    // needed to avoid memory leak
+
     DataSet DS       =(DataSet)( getParameter(1).getValue());
+    ((DataSetPG)getParameter(1)).clear();    // needed to avoid memory leak
+
     String  filename =getParameter(2).getValue().toString();
     boolean em       =((Boolean)(getParameter(3).getValue())).booleanValue();
     boolean sn       =((Boolean)(getParameter(4).getValue())).booleanValue();

@@ -1,4 +1,3 @@
-
 /*
  * File:  PrintImage.java
  *
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/05/04 19:03:50  dennis
+ * Now clears DataSetPG after getting value, to avoid memory leak.
+ *
  * Revision 1.5  2004/03/15 06:10:50  dennis
  * Removed unused import statements.
  *
@@ -49,8 +51,6 @@
  * Initial Checkin
  *
  */
-
-
 
 package DataSetTools.operator.Generic.Save;
 import DataSetTools.dataset.*;
@@ -84,16 +84,17 @@ public class PrintImage extends GenericSave{
    /**
    *      Constructor for Java code
    *   @param DS  The DataSet whose view is to be printed
-   *   @param view_type The name of the view used by the ViewManager. This is the
-   *                     String that appears in Isaw's View Menu
+   *   @param view_type The name of the view used by the ViewManager. This 
+   *                    is the String that appears in Isaw's View Menu
    *   @param State A Vector containing entries that are Vectors with two 
    *                elements: of State's Name and its value(not implemented yet)
    *                See getDocumentation method for some State names
    *   @param width The width of the image(will be scaled to fit the paper)
    *   @param height The height of the image in pixels(Also scaled)
-   *   @param PrintName the name of the printer. If blank, any printer will be considered
-   *   @param PrintLocation The location of the printer. If blank, any location will
-   *                        be considered
+   *   @param PrintName the name of the printer. If blank, any printer 
+   *                    will be considered
+   *   @param PrintLocation The location of the printer. If blank, any
+   *                        location will be considered
    *   @param PrintOptions (not implemented yet).For options like Portrait, etc.
    */
    public PrintImage( DataSet DS, String view_type, Vector State,
@@ -109,7 +110,6 @@ public class PrintImage extends GenericSave{
       addParameter( new StringPG( "Printer Name", PrintName));
       addParameter( new StringPG( "Printer Location", PrintLocation));
       addParameter( new ArrayPG("Printer Options", PrintOptions));
-
    }
 
   public void setDefaultParameters(){ 
@@ -122,7 +122,6 @@ public class PrintImage extends GenericSave{
       addParameter( new StringPG( "Printer Name",""));
       addParameter( new StringPG( "Printer Location", ""));
       addParameter( new ArrayPG("Printer Options", new Vector()));
-   
   }
 
   /**
@@ -131,6 +130,8 @@ public class PrintImage extends GenericSave{
   */
   public Object getResult(){
      DataSet DS = ((DataSetPG)(getParameter(0))).getDataSetValue();
+     ((DataSetPG)(getParameter(0))).clear();  //needed to avoid memory leak
+
      String ViewName = getParameter(1).getValue().toString();
      Vector State = ((ArrayPG)(getParameter(2))).getVectorValue();
      int  width = ((IntegerPG)(getParameter(3))).getintValue();
