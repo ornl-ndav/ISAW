@@ -234,6 +234,7 @@ public class TofToChannel extends  XAxisConversionOperator
     Data             data,
                      new_data;
     float            y_vals[];               // y_values from one spectrum
+    float            errors[];               // errors from one spectrum
     XScale           channel_scale;
     int              num_data = ds.getNum_entries();
     AttributeList    attr_list;
@@ -244,7 +245,8 @@ public class TofToChannel extends  XAxisConversionOperator
 
       attr_list = data.getAttributeList();  // copy the Data attributes
 
-      y_vals = data.getCopyOfY_values();
+      y_vals = data.getY_values();
+      errors = data.getErrors();
       channel_scale = new UniformXScale( 0,  
                                          y_vals.length,  
                                          y_vals.length + 1 );
@@ -252,8 +254,7 @@ public class TofToChannel extends  XAxisConversionOperator
                                                  // create new data block with 
                                                  // time-channel XScale and 
                                                  // the original y_vals.
-      new_data = new Data( channel_scale, y_vals, data.getGroup_ID() );
-      new_data.setSqrtErrors();  
+      new_data = new Data( channel_scale, y_vals, errors, data.getGroup_ID() );
       new_data.setAttributeList( attr_list );  
 
       if ( new_channel_scale != null )                    // resample if a valid

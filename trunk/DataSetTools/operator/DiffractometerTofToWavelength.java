@@ -9,6 +9,9 @@
  *                                            XAxisConversionOperator
  *
  * $Log$
+ * Revision 1.6  2000/08/08 21:20:17  dennis
+ * Now propagate errors, rather than set them to SQRT(counts)
+ *
  * Revision 1.5  2000/08/02 01:39:06  dennis
  * Changed to use Data.ResampleUniformly() so that the operation can be
  * applied to functions as well as to histograms.
@@ -256,6 +259,7 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOperator
     Float            initial_path_obj;
     float            total_length;
     float            y_vals[];           // y_values from one spectrum
+    float            errors[];           // errors from one spectrum
     float            wl_vals[];          // wavelength values at bin boundaries
                                          // calculated from tof bin bounds
     XScale           wl_scale;
@@ -290,11 +294,12 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOperator
   
         wl_scale = new VariableXScale( wl_vals );
 
-        y_vals  = data.getCopyOfY_values();
+        y_vals  = data.getY_values();
+        errors  = data.getErrors();
 
-        new_data = new Data( wl_scale, y_vals, data.getGroup_ID() );
+        new_data = new Data( wl_scale, y_vals, errors, data.getGroup_ID() );
                                                 // create new data block with 
-        new_data.setSqrtErrors();               // non-uniform E_scale and 
+                                                // non-uniform E_scale and 
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 

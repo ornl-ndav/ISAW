@@ -10,6 +10,9 @@
  *             
  * --------------------------------------------------------------------------- 
  *  $Log$
+ *  Revision 1.5  2000/08/08 21:20:15  dennis
+ *  Now propagate errors, rather than set them to SQRT(counts)
+ *
  *  Revision 1.4  2000/08/02 01:38:49  dennis
  *  Changed to use Data.ResampleUniformly() so that the operation can be
  *  applied to functions as well as to histograms.
@@ -259,6 +262,7 @@ public class DiffractometerTofToEnergy extends    XAxisConversionOperator
     Float            initial_path_obj;
     float            total_length;
     float            y_vals[];              // y_values from one spectrum
+    float            errors[];              // errors from one spectrum
     float            e_vals[];              // energy values at bin boundaries
                                             // calculated from tof bin bounds
     XScale           E_scale;
@@ -295,12 +299,14 @@ public class DiffractometerTofToEnergy extends    XAxisConversionOperator
         arrayUtil.Reverse( e_vals );
         E_scale = new VariableXScale( e_vals );
 
-        y_vals  = data.getCopyOfY_values();
+        y_vals  = data.getCopyOfY_values();    // need copy, since we alter it
+        errors  = data.getCopyOfErrors();
         arrayUtil.Reverse( y_vals );
+        arrayUtil.Reverse( errors );
 
-        new_data = new Data( E_scale, y_vals, data.getGroup_ID() ); 
+        new_data = new Data( E_scale, y_vals, errors, data.getGroup_ID() ); 
                                                 // create new data block with 
-        new_data.setSqrtErrors();               // non-uniform E_scale and 
+                                                // non-uniform E_scale and 
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 

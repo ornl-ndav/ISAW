@@ -9,6 +9,9 @@
  *                                            XAxisConversionOperator
  *             
  *  $Log$
+ *  Revision 1.7  2000/08/08 21:20:19  dennis
+ *  Now propagate errors, rather than set them to SQRT(counts)
+ *
  *  Revision 1.6  2000/08/02 01:42:23  dennis
  *  Changed to use Data.ResampleUniformly() so that the operation can be
  *  applied to functions as well as to histograms.
@@ -253,6 +256,7 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
     float            energy_in;
     Float            energy_in_obj;
     float            y_vals[];              // y_values from one spectrum
+    float            errors[];
     float            e_vals[];              // energy values at bin boundaries
                                             // calculated from tof bin bounds
     XScale           E_scale;
@@ -285,11 +289,12 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
                       tof_calc.Energy( spherical_coords[0], e_vals[i] );
   
         E_scale = new VariableXScale( e_vals );
-        y_vals  = data.getCopyOfY_values();
+        y_vals  = data.getY_values();
+        errors  = data.getErrors();
 
-        new_data = new Data( E_scale, y_vals, data.getGroup_ID() ); 
+        new_data = new Data( E_scale, y_vals, errors, data.getGroup_ID() ); 
                                                 // create new data block with 
-        new_data.setSqrtErrors();               // non-uniform E_scale and 
+                                                // non-uniform E_scale and 
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 
