@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2003/12/15 00:42:08  rmikk
+ *  Eliminated some commented out code
+ *  Now redraws when the selected groups of the data set are changed
+ *
  *  Revision 1.37  2003/11/25 20:12:03  rmikk
  *  Added a Save Image as a submenu of the File Menu
  *
@@ -387,54 +391,8 @@ public class ContourView extends DataSetViewer
      rpl_Holder.add( rpl_);
      rpl_Holder.addActionListener( new CoordJPanelActionListener());
      setLayout(jpEast );
-     //rpl_.addFocusListener( new MyFocusListener());
-     //rpl_.addMouseMotionListener( new MyMouseMotionListener());
-     //main.setDividerLocation( .70);
-     /*  main = new JPanel();
-     GridBagLayout gbl = new GridBagLayout();
-     GridBagConstraints gbc = new GridBagConstraints();
-     
-     main.setLayout( new BorderLayout());
-     //gbc.fill = GridBagConstraints.BOTH;
-     gbc.weightx=2;
-     // gbc.gridx = 0;
     
-     // gbl.setConstraints( rpl_Holder, gbc);
-     
-     //main.add(rpl_, BorderLayout.CENTER);
-     gbc.weightx = 1;
-     
-     //gbc.gridx = 3;
       
-     //gbl.setConstraints( jpEast, gbc);
-     
-     main.add( jpEast, BorderLayout.EAST);
-     */
-     /* all grid bag layout for all components
-     main = new JPanel();
-  
-     GridBagLayout gbl = new GridBagLayout();
-     GridBagConstraints gbc = new GridBagConstraints();
-     gbc.weightx =2;
-     gbc.gridheight = 6;
-     gbl.setConstraints( rpl_Holder, gbc);
-
-     gbc.weightx =1;
-     gbc.gridheight = 1;
-     gbc.gridwidth =  GridBagConstraints.REMAINDER;
-     gbl.setConstraints( ac, gbc);
-
-     gbl.setConstraints( intensity, gbc);
-
-     gbc.gridheight =3;
-     gbl.setConstraints( ConvTableHolder, gbc);
-
-     main.add( rpl_Holder);
-     main.add( ac);
-     main.add( intensity);
-     main.add( ConvTableHolder);
-     // end grid bag layout for all components
-     */  
      setLayout( new GridLayout( 1,1));
      rpl_Holder.addComponentListener( new MyComponentListener() );
      add( main);
@@ -622,21 +580,15 @@ public class ContourView extends DataSetViewer
                          R.height) );
      acHolder.setBounds       ( new Rectangle(R1+1,   0,                 R.width-R1-2, 
                    (int) (R.height*.2)));
-     //intensityHolder.setBounds( new Rectangle(R1+1, 1+(int)(R.height*.2),R.width-R1, 
-      //                  (int)(R.height*.1)) ));
-     // ConvTableHolder.setBounds( new Rectangle(R1+1, 3+(int)(R.height*.3), R.width -R1,
-     //                                 R.height-2-(int)(R.height*.3));
+     
    
      rpl_Holder.doLayout();
-     //acHolder.doLayout();
-     //intensityHolder.doLayout();
-     //ConversionTableHolder.doLayout();
+   
 
      main.add( rpl_Holder);
      main.add( acHolder);
      rpl_Holder.doLayout();
      acHolder.doLayout();
-     // System.out.println( "acHolder bounds="+acHolder.getBounds());
     }
 
 
@@ -664,7 +616,7 @@ public class ContourView extends DataSetViewer
   protected void setData( DataSet ds, int GridContourAttribute )
     {  
      if( axis1 == null)
-        cd = new ContourData( ds );
+        cd = new ContourData( ds, state );
      else if( Transf == null)
         cd = new ContourData( ds, axis1, axis2, axis3);
      else
@@ -960,16 +912,7 @@ public class ContourView extends DataSetViewer
       rpl.setLayerSizeP( sz );
         //rpl.setKeyLocationP( new Point2D.Double(0.0,1.0));
 
-      /*MouseListener[] E = (MouseListener[]) rpl.getListeners(MouseListener.class );
-     
-      for(int i=0;i<E.length;i++)
-         rpl.removeMouseListener( E[i]);
 
-      MouseMotionListener[] E1 = (MouseMotionListener[])rpl.getListeners(MouseMotionListener.class);
-      for(int i=0;i<E1.length;i++)
-         rpl.removeMouseMotionListener( E1[i]); 
-
-      */
       
       int style =state.get_int("Contour.Style");
       if( style != GridAttribute.CONTOUR)
@@ -1386,7 +1329,10 @@ public class ContourView extends DataSetViewer
          rpl_.draw();
       }
       else if( reason == IObserver.SELECTION_CHANGED )
-      {}
+      {
+         setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
+         rpl_.draw();
+      }
       else if( reason == IObserver.POINTED_AT_CHANGED )
       { 
         float x = data_set.getPointedAtX();
