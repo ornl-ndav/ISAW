@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.2  2003/11/13 18:23:03  rmikk
+# Added user documentation
+#
 # Revision 1.1  2003/11/11 20:49:54  rmikk
 # Initial Checkin
 #
@@ -94,5 +97,21 @@ class ReducePy(GenericTOF_SAD):
         ScriptUtil.display( V[0])
         return "Success"
 
+    def getDocumentation(self):
+        S = "@overview This Form is part of the Reduce Wizard. The actual analysis is done "
+        S += "in this form.  See the Wizard Help for more information "
+        S += " @param  Xoffset   The x(horizontal) offset the beam center is from the area detector center"
+        S += " @param  yoffset   The y(vertical)offset the beam center is from the area detector center"
+        S += " @param  Scale     A scale factor to standardize the results."
+        S += " @param  Thickness   the thickness of the area detector center."
+        S += " @param  Neutron Delay   the fraction of the neutrons that are delayed neutrons and are subtracted"
+        S +=  " from the count."
+        S += " @param  output directory   The directory where the three results are saved. Their"
+        S += "  names will be s****.dat, b****.dat, sn****.dat for the 1D analysis and"
+        S += " for the 2D analysis the names will be s2d****.dat, b2d****.dat, sn2d****.dat."
+        S += " The **** represents the run number corresponding to the sample"
+ 
+        return S
+
     def __init__(self):
-        Operator.__init__(self,"ReduceB")
+        Operator.__init__(self,"Reduce")
