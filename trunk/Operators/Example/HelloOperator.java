@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/05/12 14:04:35  dennis
+ * Removed unused import.
+ *
  * Revision 1.1  2004/05/07 16:10:41  dennis
  * Moved from Operators package to new Operators.Example package
  *
@@ -58,7 +61,6 @@
 package Operators.Example;
 
 import DataSetTools.operator.*;
-import DataSetTools.operator.Generic.*;
 import DataSetTools.operator.Generic.Example.*;
 import DataSetTools.parameter.StringPG;
 import DataSetTools.util.SharedData;
