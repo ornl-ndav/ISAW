@@ -5,66 +5,61 @@
 $ number_of_runs         Integer(1)                Enter number of runs
 
 #========================== Reduce run inputs =========================
-Input_Path ="/IPNShome/sand/data/"
-Output_Path ="/IPNShome/sand/chensept03/"
+#Input_Path ="/IPNShome/sand/data/"
+#Output_Path ="/IPNShome/sand/chensept03/"
 
-#Input_Path ="C:/new_das_runs/"
-#Output_Path = "C:/test_output/"
-
-inst= "sand"
-ext= ".run"
-Scale = 843000
 Xoff = 0.000645
 Yoff =0.006867
 #==================== Start of Input files ==================
+
+Input_Path ="C:/johan/"
+Output_Path = "C:/johan/output/"
+
+# Sample thickness in cm:
 ThickA = [0.2,0.104]
-# ThickA are the thickness of the samples
 
-TransSFileA = [21581,21119,21121]
-# TransSFileA are the Transmission runs for the samples
+# Sample Transmission runs:
+TransSFileA = [21581,21119]
 
-SampleFileA = [21582,21120,21122]
-# SampleFileA are the Scattering runs for the samples
+# Sample Scattering runs:
+SampleFileA = [21582,21120]
 
-BackGroundTFileA = [21583,20529,20529] 
-# BackGroundTFileA are the Background Transmission runs for the samples
+# Background Transmission runs:
+BackGroundTFileA = [21125,20529] 
 
-BackGroundFileA = [21584,20530] 
-# BackGroundFileA are the Background scattering runs for the samples
+# Background scattering runs:
+BackGroundFileA = [21126,20530] 
 
+# Cadmium Transmission runs:
 CadmiumTFileA = [21127,20535]  
-# CadmiumTFileA are the Cadmium Transmission runs for the samples
 
+# Cadmium scattering runs:
 CadmiumFileA = [21128,20536] 
-# CadmiumFileA are the Cadmium scattering runs for the samples
 
+# Use/Not use (true/false) Cadmium runs for transmission calculations
 useCadmiumRunA = [true, true] 
-# useCadmiumRunA are boolean (true/false) values for using/not using the Cadmium runs 
-# in the transmission calculations
 
-CameraFileA = [21125,20531] 
-# CameraFileA are the Camera transmission runs
+# Camera transmission runs
+CameraTFileA = [21125,20531] 
 
-EffFileA = [21115,20270] 
-# EffFileA are the Efficiency .dat files
-
+# SensFileA are the sensitivity .dat files (use Sensitivity.iss script to produce them)
 SensFileA = [20616,20616] 
-# SensFileA are the sensitivity .dat files
 
+# EffFileA are the Efficiency .dat files (use Efficiency.iss sccript to produce them)
+EffFileA = [21115,20270] 
 
 #===================== End of Input files =======================
 polyfitIndx1 =   11
 polyfitIndx2  =  70
 polyDegree   =   3
-sqrtWeight   =   true
 NeutronDelay =  0.0011
-
-useEmptyCell =  false
-useDefault    =  true
-
 NQxBins = -200
 NQyBins = -200
-
+sqrtWeight   =   true
+useDefault    =  true
+inst= "sand"
+ext= ".run"
+Scale = 843000
 #======================== End of Reduce run inputs ====================
 
 # loop over number of runs
@@ -74,19 +69,20 @@ Thick = ThickA[i]
 TransSFile = TransSFileA[i] 
 SampleFile = SampleFileA[i]
 
-BackGroundTFile = BackGroundTFileA[0]
-BackGroundFile = BackGroundFileA[0]
+BackGroundTFile = BackGroundTFileA[i]
+BackGroundFile = BackGroundFileA[i]
 
-CadmiumTFile = CadmiumTFileA[0]
-CadmiumFile = CadmiumFileA[0]
-useCadmiumRun = useCadmiumRunA[0]
+CadmiumTFile = CadmiumTFileA[i]
+CadmiumFile = CadmiumFileA[i]
+useCadmiumRun = useCadmiumRunA[i]
 
-CameraFile = CameraFileA[0]
+CameraFile = CameraTFileA[i]
 
-EffFile = EffFileA[0]
-SensFile = SensFileA[0] 
+EffFile = EffFileA[i]
+SensFile = SensFileA[i] 
 
-Reduce(Input_Path, Output_Path, inst, ext, Thick, TransSFile, SampleFile,BackGroundTFile,BackGroundFile,CadmiumTFile,CadmiumFile,useCadmiumRun,CameraFile,polyfitIndx1, polyfitIndx2, polyDegree, sqrtWeight, NeutronDelay, useEmptyCell,useDefault,EffFile,SensFile,Scale,Xoff,Yoff,NQxBins, NQyBins)
+Reduce(Input_Path, Output_Path, inst, ext, Thick, TransSFile, SampleFile,BackGroundTFile,BackGroundFile,CadmiumTFile,CadmiumFile,useCadmiumRun,CameraFile,polyfitIndx1, polyfitIndx2, polyDegree, sqrtWeight, NeutronDelay, true,useDefault,EffFile,SensFile,Scale,Xoff,Yoff,NQxBins, NQyBins)
 
 endfor
 Display "Finished"
+
