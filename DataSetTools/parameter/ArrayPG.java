@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/06/03 21:59:37  rmikk
+ *  -Created an entrywidget for text entry of Vectors
+ *
  *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -60,6 +63,7 @@ package DataSetTools.parameter;
 import java.util.Vector;
 import DataSetTools.components.ParametersGUI.HashEntry;
 import javax.swing.JLabel;
+import javax.swing.*;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -101,7 +105,7 @@ public class ArrayPG extends ParameterGUI{
         if(val==null) return; // don't add null to the vector
         if(this.value.indexOf(val)<0) this.value.add(val); // add if unique
         if(this.initialized)
-          ((JLabel)this.entrywidget).setText(this.stringVersion());
+          ((JTextField)this.entrywidget).setText(this.ArraytoString((Vector)value));
     }
 
     /**
@@ -134,7 +138,7 @@ public class ArrayPG extends ParameterGUI{
 
       this.value.clear();
       if(this.initialized)
-        ((JLabel)this.entrywidget).setText(this.stringVersion());
+        ((JTextField)this.entrywidget).setText(this.ArraytoString((Vector)value));
     }
 
     // ********** IParameter requirements **********
@@ -146,7 +150,16 @@ public class ArrayPG extends ParameterGUI{
      * a specific object (such as String or DataSet) without casting.
      */
     public Object getValue(){
-        return this.value;
+       // return this.value;
+        Object value=null;
+        if(this.initialized){
+            String StringValue=((JTextField)this.entrywidget).getText();
+            value = StringtoArray( StringValue);
+        }else{
+            value=this.value;
+        }
+        return value;
+ 
     }
     
     public Vector getVectorValue(){
@@ -161,11 +174,13 @@ public class ArrayPG extends ParameterGUI{
         this.value=null;
       else if(value instanceof Vector)
         this.value=(Vector)value;
-      else
+      else if( value instanceof String)
+        this.value = StringtoArray( (String)value);
+      else 
         return;
 
       if(this.initialized)
-        ((JLabel)this.entrywidget).setText(this.stringVersion());
+        ((JTextField)(this.entrywidget)).setText(this.ArraytoString((Vector)value));
 
       this.setValid(true);
     }
@@ -177,7 +192,7 @@ public class ArrayPG extends ParameterGUI{
     public void init(Vector init_values){
         if(this.initialized) return; // don't initialize more than once
 
-        this.entrywidget=new JLabel(this.stringVersion());
+        this.entrywidget= new JTextField(this.ArraytoString((Vector)value));
         super.initGUI();
     }
 
@@ -222,9 +237,9 @@ public class ArrayPG extends ParameterGUI{
         }
 
         if(result.length()>0)
-          return result.toString();
+          return '['+result.toString()+']';
         else
-          return this.value.toString();
+          return '['+this.value.toString()+']';
       }
     }
 
@@ -323,5 +338,29 @@ public class ArrayPG extends ParameterGUI{
         apg.setDrawValid(this.getDrawValid());
         apg.initialized=false;
         return apg;
+    }
+   private Vector StringtoArray( String S)
+   {
+     Command.execOneLine execLine = new Command.execOneLine();
+     int r=execLine.execute(S, 0 , S.length());
+
+     if( execLine.getErrorCharPos()>=0)
+         return new Vector();
+
+     Object O = execLine.getResult();
+     if( O==null)
+       return new Vector();
+
+     if( !(O instanceof Vector))
+       return new Vector();
+
+     return (Vector) O;
+   }
+
+  private String ArraytoString(Vector V)
+   {
+      Command.execOneLine execLine = new Command.execOneLine();
+      String res = execLine.Vect_to_String(V);
+      return res;
     }
 }
