@@ -29,35 +29,31 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/06/13 22:02:03  bouzekc
+ * Now extends RobustFileFilter to take care of common
+ * functionality.
+ *
  * Revision 1.3  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
  */
 package NexIO; 
-import java.io.File; 
-import javax.swing.*; 
-import javax.swing.filechooser.*;  
 
-public class NexusfileFilter extends FileFilter{
-  public boolean accept(File f) {
-    if (f.isDirectory() ) {return true;}      
-    String s = f.getName();     
-    int index = s.lastIndexOf('.');      
-    String extension = null;     
-    if ( index > 0 && index < s.length() - 1 ) {
-      extension = s.substring(index +1).toLowerCase();         
-    }   
-    if ( extension != null ) {
-      if ( extension.equals("nxs")|| extension.equals("hdf")){
-        return true;            
-      }else{
-        return false;       
-      }        
-    }
-    return false;      
-  }  
+import DataSetTools.util.RobustFileFilter;
 
-  public String getDescription(){
-    return "NeXus file (*.nxs/hdf)";      
-  } 
+/**
+ * FileFilter for nexus files.
+ */
+public class NexusfileFilter extends RobustFileFilter{
+  /**
+   *  Default constructor.  Calls the super constructor,
+   *  sets the description, and sets the file extensions.
+   */
+  public NexusfileFilter()
+  {
+    super();
+    super.setDescription("NeXus files (*.nxs, *.hdf)");
+    super.addExtension(".nxs");
+    super.addExtension(".hdf");
+  }
 } 
