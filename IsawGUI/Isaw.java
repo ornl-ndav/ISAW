@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.105  2002/07/08 20:49:25  pfpeterson
+ *  Removed string constants from here that are now
+ *  in DataSetTools.util.FontUtil.
+ *
  *  Revision 1.104  2002/07/02 17:05:16  pfpeterson
  *  Added public string constants for lambda, angstrom, and inv(angstrom).
  *
@@ -441,10 +445,6 @@ public class Isaw
   implements Serializable, IObserver
 {
      
-  public static final String Angstrom    = "\u00c5";
-  public static final String InvAngstrom = "Inv("+Angstrom+")";
-  public static final String Lambda      = "\u03bb";
-
   private static final String TITLE              = "ISAW";
     //private static final String VERSION            = "Release 1.2";
 
