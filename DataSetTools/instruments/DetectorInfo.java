@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/06/14 21:22:55  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.1  2001/07/10 18:46:46  dennis
  *  Initial version of Class to hold information on individual
  *  detector positions, sizes, efficiency, etc.
@@ -42,6 +45,7 @@ package  DataSetTools.instruments;
 import java.io.*;
 import java.text.*;
 import DataSetTools.math.*;
+import DataSetTools.dataset.*;
 
 /**
  * DetectorInfo represents the position, size, ID, and efficiency of an
@@ -49,7 +53,8 @@ import DataSetTools.math.*;
  * detector or LPSD, but may also be an entire detector if it is not
  * segmented.
  */
-public class DetectorInfo implements Serializable
+public class DetectorInfo implements Serializable ,
+                                     DataSetTools.dataset.IXmlIO
 {
   private int               seg_num;   // ID for this particular segment
   private int               det_num;   // "raw" detector ID for detector
@@ -107,6 +112,12 @@ public class DetectorInfo implements Serializable
     this.efficiency = info.efficiency;
   }
 
+  /**
+  * Constructor needed to use the XMLread and XMLwrite routines.
+  */
+  public DetectorInfo()
+  {this(-1,-1,-1,-1,new DetectorPosition(), 0.0f,0.0f,0.0f,0.0f);
+  }
 
   /**
    *  Get the segment number for this Detector segment. 
@@ -204,7 +215,195 @@ public class DetectorInfo implements Serializable
     return efficiency;
   }
 
- 
+  /** Implements the IXmlIO interface so a DetectorInfo can write itself
+  *
+  * @param stream  the OutputStream to which the data is written
+  * @param mode    either IXmlIO.BASE64 or IXmlOP.NORMAL. This indicates 
+  *                how a Data's xvals, yvals and errors are written
+  * @return true if successful otherwise false<P>
+  *
+  * NOTE: This routine writes all of the begin and end tags.  These tag names
+  *      are DetectorInfo
+  */
+  public boolean XMLwrite( OutputStream stream, int mode )
+  { try
+    {stream.write("<DetectorInfo>\n".getBytes());
+
+     stream.write(("<seg_num>"+ seg_num+"</seg_num>\n").getBytes());
+     stream.write(("<det_num>"+   det_num+"</det_num>\n").getBytes());
+     stream.write(("<row>"+  row +"</row>\n").getBytes()); 
+     stream.write(("<column>"+   column  +"</column>\n").getBytes());
+     stream.write("<position>\n".getBytes());
+     if( !((Position3D)position).XMLwrite( stream, mode))
+       return false;
+     stream.write(("</position>\n").getBytes());
+     stream.write(("<length>"+   length  +"</length>\n").getBytes());
+     stream.write(("<width>"+   width   +"</width>\n").getBytes());
+     stream.write(("<depth>"+   depth   +"</depth>\n").getBytes());
+     stream.write(("<efficiency>"+   efficiency   +"</efficiency>\n").getBytes());
+
+     stream.write("</DetectorInfo>\n".getBytes());
+     return true;
+    }
+    catch(Exception s)
+    { return xml_utils.setError("Exception="+s.getMessage());
+    }
+  }
+
+  /** Implements the IXmlIO interface so a DetectorInfo can read itself
+  *
+  * @param stream  the InStream to which the data is written
+
+  * @return true if successful otherwise false<P>
+  *
+  * NOTE: This routine assumes the begin tag has been completely read.  It reads
+  *       the end tag.  The tag name is DetectorInfo
+  *       
+  */
+  public boolean XMLread( InputStream stream )
+  { try
+    { int NN;
+      float x;
+      
+      if(!get_tag(stream, "seg_num"))
+        return false;
+      NN = getIntValue( stream,"seg_num");
+      if( err == null)
+        seg_num = NN;
+     
+      if(!get_tag(stream, "det_num"))
+        return false;
+      NN  = getIntValue( stream,"det_num");
+      if( err == null)
+        det_num = NN;
+     
+      if(!get_tag(stream, "row"))
+        return false;
+      NN  = getIntValue( stream,"row");
+      if( err == null)
+        row = NN;
+     
+      if(!get_tag(stream, "column"))
+        return false;
+      NN  = getIntValue( stream,"column");
+      if( err == null)
+        column = NN;
+     
+      if(!get_tag(stream, "position"))
+        return false;
+      xml_utils.getTag( stream);
+      xml_utils.skipAttributes( stream);
+      if( !((Position3D)position).XMLread( stream))
+        return false;
+      if(!get_tag(stream,"/position"))
+        return xml_utils.setError("Improper unclosed tag,position");
+      
+      if(!get_tag(stream, "length"))
+        return false;
+      x = getFloatValue( stream,"length");
+      if( err == null)
+        length = x;
+     
+      if(!get_tag(stream, "width"))
+        return false;
+      x = getFloatValue( stream,"width");
+      if( err == null)
+        width = x;
+    
+      if(!get_tag(stream, "depth"))
+        return false;
+      x = getFloatValue( stream,"depth");
+      if( err == null)
+        depth = x;
+     
+      if(!get_tag(stream, "efficiency"))
+        return false;
+      x = getFloatValue( stream,"efficiency");
+      if( err == null)
+        efficiency = x;
+    
+      if( !get_tag( stream, "/DetectorInfo"))
+        return xml_utils.setError( "Unmatched DetectorInfo tag");
+    
+      return true;
+
+
+    }
+    catch(Exception s)
+    { return xml_utils.setError( s.getMessage());
+    }
+
+  }
+  
+  private boolean get_tag( InputStream stream, String TagName )
+  { try
+    { String Tag = xml_utils.getTag( stream );
+      if( Tag == null)
+        return xml_utils.setError( xml_utils.getErrorMessage());
+      if( !Tag.equals(TagName))
+        return xml_utils.setError( "Improper tag. Should be seg_num");
+      if(!xml_utils.skipAttributes( stream ))
+        return xml_utils.setError( xml_utils.getErrorMessage());
+      return true;
+    }
+    catch( Exception s )
+    { return xml_utils.setError( "Exception="+s.getMessage());    
+    }
+  }
+  
+  String  err;
+
+ private int getIntValue( InputStream stream, String tag) 
+                    throws java.lang.Exception
+   { err = null;
+     String v = xml_utils.getValue( stream );
+     if(v == null)
+      { err=""+( xml_utils.getErrorMessage());
+        return 0;
+      }
+     String tag1= xml_utils.getEndTag( stream );
+     if( tag1 == null )
+       { err=xml_utils.getErrorMessage();
+         return 0;
+       }
+     if(!tag1.equals("/"+tag))
+       { err="Improper end tag";
+         throw new java.lang.Exception( err);
+         
+        }
+     if(! xml_utils.skipAttributes( stream ))
+       {err=""+( xml_utils.getErrorMessage());
+        return 0;
+       }
+
+     return (new Integer( v)).intValue();
+    }
+
+private float getFloatValue( InputStream stream, String tag) 
+                    throws java.lang.Exception
+   { err = null;
+     String v = xml_utils.getValue( stream );
+     if(v == null)
+      { err=""+( xml_utils.getErrorMessage());
+        return 0;
+      }
+     String tag1= xml_utils.getEndTag( stream );
+     if( tag1 == null )
+       { err=xml_utils.getErrorMessage();
+         return 0;
+       }
+     if(!tag1.equals("/"+tag))
+       { err="Improper end tag";
+         throw new java.lang.Exception( err);
+        
+        }
+     if(! xml_utils.skipAttributes( stream ))
+       {err=""+( xml_utils.getErrorMessage());
+        return 0;
+       }
+
+     return (new Float( v)).floatValue();
+    }
   /**
    *  Form a string listing the detector info.
    *
