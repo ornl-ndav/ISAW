@@ -28,14 +28,16 @@ inst = "SCD"
 Display "Instrument="&inst
 Display "Calibration File ="&calibfile
 # DataSet is number two
-dsnum=2
+# dsnum=1   //Changes depending on when the run file was made
 first=true
 for i in run_numbers
   # load data
   filename=path&inst&0&i&".RUN"
   Display "Loading "&filename
   Echo("Finding peaks in "&filename)
-  load(filename,"ds")
+  nn=load(filename,"ds")
+  Display "nn="&nn
+  dsnum = nn-1
   monct=IntegGrp(ds[0],1,0,50000)
   LoadSCDCalib(ds[dsnum],calibfile,-1,"")
   # find peaks
