@@ -2,6 +2,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.8  2001/07/31 19:31:12  neffk
+ * ignores new DataSet objects that are sent as 'reason' via the
+ * update/IObservable menchanism.
+ *
  * Revision 1.7  2001/07/25 17:30:58  neffk
  * added a debug println and cleaned up some poor indentation.
  *
@@ -102,9 +106,15 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
     */
   public void update( Object observed, Object reason )
   {
+
+                                       //if a new DataSet is generated,
+                                       //this object can just ignore it
     if(  reason instanceof DataSet )
     {
-      System.out.println( "new DataSet object generated (JPropertiesUI.java)" );
+//      System.out.println( 
+//        "new DataSet object generated (JPropertiesUI.java)" );
+
+      return;
     }
 
     if ( observed instanceof DataSet )             
@@ -113,8 +123,9 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
       showAttributes(ds.getAttributeList());
 
       if ( (String)reason == DESTROY )
-        System.out.println("Reason:" + reason );
-    
+      {
+      }
+
       else if ( (String)reason == SELECTION_CHANGED )
       {
         int index = ds.getMostRecentlySelectedIndex();
