@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2001/08/16 19:16:04  dennis
+ * Now calls DSImplementationOps.AddDataBlocks to form the sum
+ * and to form an average DetectorPosition, weighted by
+ * the solid angles ( if present ).
+ *
  * Revision 1.5  2001/06/01 21:18:00  rmikk
  * Improved documentation for getCommand() method
  *
@@ -164,7 +169,8 @@ public class SumCurrentlySelected  extends    DataSetOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: in this case, SumSel
+   * @return the command name to be used with script processor: 
+   *         in this case, SumSel
    */
    public String getCommand()
    {
@@ -184,7 +190,7 @@ public class SumCurrentlySelected  extends    DataSetOp
                                          new Boolean(true) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
+    parameter = new Parameter( "Create new DataSet?", new Boolean(true) );
     addParameter( parameter );
   }
 
@@ -196,15 +202,10 @@ public class SumCurrentlySelected  extends    DataSetOp
     boolean status      = ((Boolean)getParameter(0).getValue()).booleanValue();
     boolean make_new_ds = ((Boolean)getParameter(1).getValue()).booleanValue();
 
-    DataSet ds     = this.getDataSet();
+    DataSet ds      = this.getDataSet();
+    DataSet temp_ds = (DataSet)ds.empty_clone();
 
-    DataSet new_ds = ds;             // set new_ds to either a reference to ds
-    if ( make_new_ds )               // or a clone of ds
-      new_ds = (DataSet)ds.clone();
-
-    Data    sum   = null;
     Data    data  = null;
-    boolean first = true;
     int num_data = ds.getNum_entries();
     int ids[] = new int[num_data];
     int n_summed = 0;
@@ -214,46 +215,48 @@ public class SumCurrentlySelected  extends    DataSetOp
       if ( data.isSelected() == status )  
       {                                     
         ids[n_summed] = data.getGroup_ID();    // record the Data blocks that
-        n_summed++;                            // were summed 
+        n_summed++;                            // are to be summed 
 
-        if ( first )                           // initialize the sum Data block
-        {
-          sum   = (Data)data.clone();
-          first = false;
-        }
-        else                                   // add later Data blocks
-        {
-          sum = sum.add( data );
-          if ( sum == null )                   // somethings wrong, bail out
-          {
-            ErrorString message = new ErrorString(
-                           "ERROR: Data block not compatible for adding" );
-            System.out.println( message );
-            return message;
-          }
-        } 
+        temp_ds.addData_entry( data );
       }
     }
-                            // now remove the summed Data and append the sum
-    new_ds.removeSelected( status );
-    new_ds.addData_entry( sum );
-    new_ds.clearSelections();
 
-    String list = new String("[");
+    if ( temp_ds.getNum_entries() <= 0 )
+    {
+      ErrorString message = new ErrorString(
+                         "ERROR: No Data blocks satisfy the condition" );
+      System.out.println( message );
+      return message;
+    }
+      
+    SpecialString result = DSOpsImplementation.AddDataBlocks( temp_ds );
+    if ( result != null )
+      return result;
+
+    String log_message;
+    int list[] = new int[n_summed];
     for ( int i = 0; i < n_summed; i++)
-      list = list +  ids[i] + ",";
-    list = list + "]";
-
+      list[i] = ids[i];
+    arrayUtil.sort( list );
+    
     if ( status )
-      new_ds.addLog_entry( "Summed selected Data blocks: "+list );
+      log_message = "Summed selected Data blocks: "+IntList.ToString(list);
     else
-      new_ds.addLog_entry( "Summed un-selected Data blocks: "+list );
+      log_message = "Summed un-selected Data blocks: "+IntList.ToString(list);
 
     if ( make_new_ds )                           
-      return new_ds;
+    {
+      temp_ds.addLog_entry( log_message );
+      return temp_ds;
+    }
     else
     {
-      new_ds.notifyIObservers( IObserver.DATA_DELETED );
+      ds.addLog_entry( log_message );
+      ds.removeSelected( status );
+      ds.addData_entry( temp_ds.getData_entry(0) );
+      ds.clearSelections();
+
+      ds.notifyIObservers( IObserver.DATA_DELETED );
       return new String("Specified Data blocks SUMMED");
     }                           
   }  
