@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/10/21 21:15:08  dennis
+ *  Removed extractIntParameter() method that is no longer used.
+ *
  *  Revision 1.10  2003/10/15 03:05:49  bouzekc
  *  Fixed javadoc errors.
  *
@@ -175,36 +178,6 @@ public class DataSetServer extends TCPServer
   *  PROTECTED METHODS
   * 
   */
-
-  /* -------------------------- extractIntParameter ----------------------- */
-  /**
-   *  Extract the last integer value occuring in a command string.
-   *
-   *  @param command  A command string ending with a space and an integer 
-   *                  parameter.
-   */
-  protected int extractIntParameter( String command )
-  {
-    int last_space = command.lastIndexOf( " " );   
- 
-    if ( last_space < 0 )
-      return -1;
-    
-    String int_string = command.substring( last_space + 1 );
-    int_string.trim();
-
-    int parameter;
-    try
-    {
-      parameter = (Integer.valueOf( int_string )).intValue();
-    }
-    catch ( NumberFormatException e )
-    {
-      parameter = -1;
-    }
-    return parameter;
-  }
-
 
  /* ---------------------------- get_retriever --------------------------- */
  /**
