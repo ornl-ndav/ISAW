@@ -31,6 +31,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.2  2002/03/13 16:19:17  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.1  2002/02/22 21:01:27  pfpeterson
  * Operator reorganization.
  *
@@ -257,7 +260,7 @@ public class TrueAngle extends    YAxisConversionOp
     {
       data          = ds.getData_entry(i);
       rebinned_data = (Data)data.clone();
-      rebinned_data.ResampleUniformly( x_scale );
+      rebinned_data.resample( x_scale, IData.SMOOTH_NONE );
       y_vals[i]     = rebinned_data.getY_values();
 
       attr_list = data.getAttributeList();
@@ -338,9 +341,9 @@ public class TrueAngle extends    YAxisConversionOp
       }  
 
       if ( all_zero )
-        new_data = new Data( two_point_xscale, one_point_y, row+1 );
+        new_data = Data.getInstance( two_point_xscale, one_point_y, row+1 );
       else
-        new_data = new Data( x_scale, y_vals[row], row+1 );
+        new_data = Data.getInstance( x_scale, y_vals[row], row+1 );
 
       raw_angle = row * (max_angle - min_angle) / n_bins + min_angle;
       Attribute angle_attr = new FloatAttribute( Attribute.RAW_ANGLE, 

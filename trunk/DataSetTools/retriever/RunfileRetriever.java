@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2002/03/13 16:14:44  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.40  2002/02/22 20:36:25  pfpeterson
  *  Operator reorganization.
  *
@@ -479,7 +482,7 @@ private float CalculateEIn()
         float bin_boundaries[] = run_file.TimeChannelBoundaries(group_id);
         float raw_spectrum[]   = run_file.Get1DSpectrum( group_id );
         XScale x_scale = new VariableXScale( bin_boundaries );
-        d[n_monitors] = new Data( x_scale, raw_spectrum, n_monitors ); 
+        d[n_monitors] = Data.getInstance( x_scale, raw_spectrum, n_monitors ); 
 
         DetectorPosition det_position = new DetectorPosition();
 
@@ -665,7 +668,7 @@ private float CalculateEIn()
           raw_spectrum = run_file.Get1DSpectrum( group_id );
           if ( raw_spectrum.length >= 1 )
           {
-            spectrum = new Data( x_scale, raw_spectrum, group_id );
+            spectrum = Data.getInstance( x_scale, raw_spectrum, group_id );
             spectrum.setSqrtErrors();
 
             // Add the relevant attributes ----------------------------------

@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.3  2002/03/13 16:19:17  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.2  2002/03/05 19:25:43  pfpeterson
  *  Updated @see references in javadocs.
  *
@@ -341,7 +344,7 @@ public class DataSetCrossSection extends    AnalyzeOp
     System.arraycopy( distinct_integral_val, 0, y, 0, num_distinct );
 
     XScale x_scale = new VariableXScale( x );
-    Data new_data = new Data( x_scale, y, 0 );
+    Data new_data = Data.getInstance( x_scale, y, 0 );
 
     new_ds.addData_entry( new_data );      
                                             // set the labels and units based

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/03/13 16:15:23  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.5  2001/04/25 21:32:20  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -372,7 +375,7 @@ public class HistogramDataPeak implements IPeak,
     for ( int i = 0; i < y_vals.length; i++ )
       y_vals[i] = (float)getValue( (x_vals[i]+x_vals[i+1])/2 );
 
-    return new Data( interval, y_vals, 1 );
+    return Data.getInstance( interval, y_vals, 1 );
   }
 
 

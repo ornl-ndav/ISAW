@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/13 16:19:17  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.1  2002/02/22 21:02:30  pfpeterson
  * Operator reorganization.
  *
@@ -330,8 +333,8 @@ public class  FitPolynomialToGroup  extends    AnalyzeOp
                                                   // make the new Data block
                                                   // and "stitch" it together
                                                   // with the original Data
-    Data new_data = new Data( new_x_scale, p_val, 111111 );
-    new_data = data.Stitch( new_data, Data.DISCARD );
+    Data new_data = Data.getInstance( new_x_scale, p_val, 111111 );
+    new_data = data.stitch( new_data, IData.DISCARD );
 
 //    new_data.print(0,200);
 

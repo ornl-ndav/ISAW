@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/03/13 16:13:40  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.3  2002/02/28 19:57:46  dennis
  * Modified import statements due to operator reorganization.
  *
@@ -96,7 +99,7 @@ public class SimpleBuildDataSetDemo
       for ( int channel = 0; channel < NUM_SAMPLES; channel++ )
         y_values[ channel ] = (float)Math.sin( id * x_values[channel] );
 
-      data = new Data( x_scale, y_values, id ); 
+      data = Data.getInstance( x_scale, y_values, id ); 
       new_ds.addData_entry( data );
     }
    

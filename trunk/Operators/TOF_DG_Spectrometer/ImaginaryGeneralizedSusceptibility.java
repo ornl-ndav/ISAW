@@ -32,6 +32,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2002/03/13 16:26:26  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.1  2002/02/22 20:43:51  pfpeterson
  *  Operator reorganization.
  *
@@ -269,10 +272,10 @@ public class ImaginaryGeneralizedSusceptibility
          //*/                
       }
 
-      conversion_data = new Data( data.getX_scale(),
-                                  new_y_vals,
-                                  new_errors,
-                                  data.getGroup_ID() );
+      conversion_data = Data.getInstance( data.getX_scale(),
+                                          new_y_vals,
+                                          new_errors,
+                                          data.getGroup_ID() );
     
       //now multiply the spectrum by the conversion_data;
       new_data = data.multiply( conversion_data );
