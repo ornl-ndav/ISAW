@@ -4,6 +4,9 @@
  * Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2001/02/02 20:53:51  dennis
+ *  Added loop to display the CURRENT_TIME attribute for testing.
+ *
  *  Revision 1.2  2001/01/31 14:25:19  dennis
  *  Added Exit() method to break the TCP connection to the remote
  *  server and free up the TCP socket.
@@ -175,5 +178,15 @@ public class LiveDataRetriever extends    Retriever
     ViewManager histogram_vm = new ViewManager( hist_ds, IViewManager.IMAGE );
 
     retriever.Exit();
+
+/*  // to verify that the time attribute has been set, uncomment this loop
+    for ( int i = 0; i < hist_ds.getNum_entries(); i++ )
+    {
+      Data d = hist_ds.getData_entry(i);
+      System.out.println( "For entry " + i + " Time = " + 
+                        (String)(d.getAttributeValue(Attribute.CURRENT_TIME)));
+     }
+*/
+    
   }
 }
