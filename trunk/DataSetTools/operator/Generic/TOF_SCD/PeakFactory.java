@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/10/17 02:19:06  bouzekc
+ * Updated javadocs and fixed javadoc errors.
+ *
  * Revision 1.2  2003/01/31 19:16:46  pfpeterson
  * Added a line to set the monitor count of the generated peaks.
  *
@@ -44,8 +47,9 @@ import DataSetTools.math.LinearAlgebra;
 import DataSetTools.dataset.*;
 
 /**
- * Methods for getting information about atoms dependent on the
- * isotope.
+ * Factory class for building Peaks.
+ *
+ * @see DataSetTools.operator.Generic.TOF_SCD.Peak
  */
 
 public class PeakFactory{
@@ -84,25 +88,23 @@ public class PeakFactory{
   private float     T0       = 0f;
   private float     T1       = 0f;
   
-  /* --------------------Constructor Methods-------------------- */
   /**
-   *  A Peak with the null constructor.
+   *  Builds a Peak with the default constructor.
    */
   /*public PeakFactory(){
     super();
     }*/
   
   /**
-   *  Create a peak specifing only the pixel position, real
+   *  Create a Peak specifing only the pixel position, real
    *  position, and intensity.
    *
-   *  @param seqnum The sequence number
-   *  @param x      The pixel column the peak is in.
-   *  @param y      The pixel row the peak is in.
-   *  @param z      The time bin the peak is in.
-   *  @param ipkobs The intesity of the peak.
    *  @param nrun   The run number.
    *  @param detnum The detector number.
+   *  @param L1     The primary flight path.
+   *  @param detD   The detector distance.
+   *  @param detA   The detector angle.
+   *  @param detA2  The second detector angle.
    */
   public PeakFactory( int nrun, int detnum, float L1,
                       float detD, float detA, float detA2){
@@ -114,7 +116,11 @@ public class PeakFactory{
     this.detA2=detA2;
   }
 
-  /* ------------------- builder methods --------------------------------- */
+  /**
+   * Returns a Peak with parameters 0, 0, 0, 0, 0, run number, detector number.
+   *
+   * @see DataSetTools.operator.Generic.TOF_SCD.Peak
+   */
   public Peak getInstance(){
     Peak peak=new Peak(0, 0, 0, 0, 0, nrun, detnum);
 
@@ -135,6 +141,12 @@ public class PeakFactory{
     return peak;
   }
 
+  /**
+   * Calls this.getInstance() and calls peak.times( t0, t1 ) and 
+   * peak.pixel( x, y, z ) on the resultant Peak.
+   *
+   * @see DataSetTools.operator.Generic.TOF_SCD.Peak
+   */
   public Peak getPixelInstance( float x, float y, float z, float t0, float t1){
     Peak peak=this.getInstance();
 
@@ -144,6 +156,11 @@ public class PeakFactory{
     return peak;
   }
 
+  /**
+   * Calls this.getInstance() and calls peak.sethkl(h, k, l).
+   *
+   * @see DataSetTools.operator.Generic.TOF_SCD.Peak
+   */
   public Peak getHKLInstance( float h, float k, float l){
     Peak peak=this.getInstance();
 
@@ -157,18 +174,28 @@ public class PeakFactory{
    * Accessor method for setting what times the peak lies
    * between. Something must be done to pixel_to_real to recreate
    * this.
+   *
+   * @param t0 Time one.
+   * @param t1 Time two.
    */
   public void times(float t0, float t1){
     this.T0=t0;
     this.T1=t1;
   }
   
-  public void time(XScale time){
-    this.xscale=time;
+  /**
+   * Mutator method for the internal XScale.
+   *
+   * @param xscale The new XScale to set.
+   */
+  public void time(XScale xscale){
+    this.xscale=xscale;
   }
 
   /**
    *  Mutator method for the run number.
+   *
+   *  @param NRUN The new run number.
    */
   public void nrun(int NRUN){
     this.nrun=NRUN;
@@ -176,41 +203,53 @@ public class PeakFactory{
 
   /**
    *  Mutator method for the detector number.
+   *
+   *  @param DETNUM The new detector number.
    */
   public void detnum(int DETNUM){
     this.detnum=DETNUM;
   }
   
   /**
-   * Mutator method for the integrated monitor intensity
+   * Mutator method for the integrated monitor intensity.
+   *
+   * @param MONCT The new monitor intensity.
    */
   public void monct(float MONCT){
     this.monct=MONCT;
   }
   
   /**
-   *  Mutator method for the detector angle
+   *  Mutator method for the detector angle.
+   *
+   *  @param DETA The new detector angle.
    */
   public void detA(float DETA){
     this.detA=DETA;
   }
   
   /**
-   *  Mutator method for the second detector angle
+   *  Mutator method for the second detector angle.
+   *
+   *  @param DETA The new second detector angle.
    */
   public void detA2(float DETA){
     this.detA2=DETA;
   }
 
   /**
-   *  Mutator method for the detector distance
+   *  Mutator method for the detector distance.
+   *
+   *  @param DETD The new detector distance.
    */
   public void detD(float DETD){
     this.detD=DETD;
   }
 
   /**
-   *  Mutator method for the primary flight path
+   *  Mutator method for the primary flight path.
+   *
+   *  @param path The new flight path.
    */
   public void L1(float path){
     this.L1=path;
@@ -219,6 +258,10 @@ public class PeakFactory{
   /**
    *  Mutator method for the sample orientation. This will
    *  automatically update the values of hkl.
+   *
+   *  @param CHI   Angle chi.
+   *  @param PHI   Angle phi.
+   *  @param OMEGA Angle omega.
    */
   public void sample_orient(float CHI, float PHI, float OMEGA){
     this.chi=CHI;
@@ -229,6 +272,8 @@ public class PeakFactory{
   /**
    * Mutator method for the calibration. This will automatically
    * update the values of xcm, ycm, wl, and hkl.
+   *
+   * @param CALIB The new calibration array.
    */
   public void calib(float[] CALIB){
     if(CALIB==null){
@@ -244,6 +289,8 @@ public class PeakFactory{
   /**
    * Mutator method method for the orientation matrix. This will
    * automatically update the values of hkl.
+   *
+   * @param ub The new orientation matrix.
    */
   public void UB(float[][] ub){
     // check that the value we want to set to is valid
@@ -262,9 +309,12 @@ public class PeakFactory{
     }
   }
 
-  /* ------------------- toString method -------------------- */
   /**
    *  Format the toString method to be useful for diagnostics.
+   *
+   *  @return A String containing run number, detector number, primary flight
+   *  path, detector distance, detector angle one, and detector angle two (in
+   *  that order).
    */
   public String toString( ){
     String rs="";	
