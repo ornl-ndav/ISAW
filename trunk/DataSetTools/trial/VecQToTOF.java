@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2004/03/01 06:16:14  dennis
+ *  Fixed bug in QtoRowColChan().  Now properly returns null if
+ *  call to QtoRowColTOF() returns null.
+ *
  *  Revision 1.14  2004/02/28 21:23:07  dennis
  *  Made constructors public so this class can be used by more classes.
  *  Further simplified calculation of transform from Q to Row, Col, TOF.
@@ -443,6 +447,9 @@ public class VecQToTOF
   public float[] QtoRowColChan( Vector3D q_vec )
   {
     float result[] = QtoRowColTOF( q_vec );
+    if ( result == null )
+      return null;
+    
     if ( !same_xscale )
     {
       int row = Math.round( result[0] );
@@ -501,7 +508,6 @@ public class VecQToTOF
       return null;
   
     float mag_q = q_vec.length();
-  
     threshold = threshold/mag_q;
     if ( threshold < min_q_dot )
       return null;
