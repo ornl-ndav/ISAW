@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.17  2003/06/27 20:30:31  bouzekc
+ * Removed the temporary parameter validation for peaks
+ * intensity and threshold.
+ *
  * Revision 1.16  2003/06/26 22:25:25  bouzekc
  * Added code to deal with the threshold and pixel range
  * parameters and send them to LsqrsJ.
@@ -381,12 +385,6 @@ public class LsqrsJForm extends Form {
     param.setValid( true );
 
     SharedData.addmsg( "--- LsqrsJForm finished. ---" );
-
-    //these are here only until the minimum peaks threshold and channel
-    //limiting code is put in
-    ( ( IParameterGUI )super.getParameter( 5 ) ).setValid( true );
-    ( ( IParameterGUI )super.getParameter( 6 ) ).setValid( true );
-
     return new Boolean( true );
   }
 }
