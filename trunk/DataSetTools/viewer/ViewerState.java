@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2004/06/24 19:12:02  rmikk
+ *  Incorporated the state variable ControlPanelWidth(%)
+ *
  *  Revision 1.35  2004/06/21 16:05:24  robertsonj
  *  made the naming of the viewer state strings more consistant
  *
@@ -136,6 +139,7 @@ public class ViewerState  implements Serializable
   public static final String COLOR_SCALE       = "ColorScale";
   public static final String REBIN             = "RebinFlag";
   public static final String H_SCROLL          = "HScrollFlag";
+  public static final String CONTROL_WIDTH     = "ControlPanelWidth(%)";
   public static final String H_SCROLL_POSITION = "HScrollPosition";
   public static final String V_SCROLL_POSITION = "VScrollPosition";
   public static final String POINTED_AT_INDEX  = "PointedAtIndex";
@@ -269,7 +273,7 @@ public class ViewerState  implements Serializable
 
       state.put( ViewerState.TIMEVSGROUPTABLE_SHOWERR, new Boolean(false));  
       state.put( ViewerState.TIMEVSGROUPTABLE_SHOWIND, new Boolean(false));
-
+      state.put( ViewerState.CONTROL_WIDTH , new Float( .75f));
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
       ds_x_label = "";
       ds_y_label = "";
@@ -602,7 +606,9 @@ public class ViewerState  implements Serializable
 	   			set_float("TableTimeSliceMaxTime", Float.parseFloat(tempString.substring(22)));
 	   		}else if(tempString.startsWith("TableTimeSliceNxSteps")){
 	   			set_int("TableTimeSliceNxSteps", Integer.parseInt(tempString.substring(22)));
-	   		}
+	   		}else if(tempString.startsWith("ControlPanelWidth(%)"))
+                 set_float("ControlPanelWidth(%)", Float.parseFloat(tempString.substring(21)));
+        
 	   		
 	   	}
 	return this;

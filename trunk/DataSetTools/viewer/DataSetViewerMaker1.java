@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2004/06/24 19:11:39  rmikk
+ *  Incorporated the state variable ControlPanelWidth(%)
+ *
  *  Revision 1.14  2004/05/26 16:55:03  rmikk
  *  Added one input verification to a method
  *
@@ -185,7 +188,7 @@ public class DataSetViewerMaker1  extends DataSetViewer
      if( viewComp instanceof DataSetViewerMethods)
          paths = ((DataSetViewerMethods)viewComp).getSharedMenuItemPath();
      SetUpMenuBar( getMenuBar(), MenItem1, paths );
-
+ 
      SetUpMenuBar( getMenuBar(), MenItem2, viewArray.getSharedMenuItemPath());
 
      Conversions = new DataSetXConversionsTable( ds);
@@ -197,6 +200,12 @@ public class DataSetViewerMaker1  extends DataSetViewer
        viewComp.addActionListener( new CompActionListener());
      setLayout( new GridLayout( 1,1));
      JComponent Controls = (JComponent)East;
+    if( state != null){
+       float f = state.get_float("ControlPanelWidth(%)");
+       if( !Float.isNaN(f))
+        ImagePortion = 1-f;
+     }
+    
      if( ArrayScontrols.length+Compcontrols.length > 7){
      
           Controls = new JScrollPane( East);
