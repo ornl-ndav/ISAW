@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/14 20:23:45  dennis
+ * Put in package DataSetTools.trial
+ *
  * Revision 1.2  2003/07/22 15:21:59  dennis
  * Replaced local value for h/mn as about (.395..) with "standard"
  * value from tof_calc.
@@ -40,6 +43,7 @@
  *
  *
  */
+package DataSetTools.trial;
 
 import DataSetTools.functions.*;
 import DataSetTools.operator.DataSet.Attribute.*;
