@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/05/28 20:49:23  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.5  2002/11/27 23:23:16  pfpeterson
  * standardized header
  *
@@ -37,6 +40,7 @@
 
 package DataSetTools.retriever;
 
+import  DataSetTools.util.SharedData;
 import  NetComm.*;
 
 /**
@@ -153,7 +157,7 @@ public class dataSource
     String user_name = getStringAfterSemicolon( 2 );
 
     if ( user_name.length() <= 0 )
-      user_name = System.getProperty("user.name");
+      user_name = SharedData.getProperty("user.name");
 
     return user_name;
   }

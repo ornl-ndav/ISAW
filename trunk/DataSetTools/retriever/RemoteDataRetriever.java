@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/05/28 20:49:23  pfpeterson
+ *  Changed System.getProperty to SharedData.getProperty
+ *
  *  Revision 1.14  2003/03/07 22:47:55  dennis
  *  Made convenience methods for getting particular commands
  *  into static methods.
@@ -61,6 +64,7 @@
 package DataSetTools.retriever;
 
 import DataSetTools.dataset.*;
+import DataSetTools.util.SharedData;
 import DataSetTools.viewer.*;
 import java.io.*;
 import java.net.*;
@@ -351,7 +355,7 @@ abstract public class RemoteDataRetriever extends    Retriever
  */
   static public CommandObject getStatus()
   {
-    String user_name = System.getProperty("user.name");    
+    String user_name = SharedData.getProperty("user.name");    
     String password  = "dummy password";
     return new CommandObject( CommandObject.GET_STATUS, user_name, password );
   }
@@ -369,7 +373,7 @@ abstract public class RemoteDataRetriever extends    Retriever
  */
   static public GetDataCommand getDS_Types( String file_name )
   {
-    String user_name = System.getProperty("user.name");
+    String user_name = SharedData.getProperty("user.name");
     String password  = "dummy password";
     return new GetDataCommand( CommandObject.GET_DS_TYPES,      
                               user_name, password, 
@@ -395,7 +399,7 @@ abstract public class RemoteDataRetriever extends    Retriever
  */ 
   static public GetDataCommand getDS_Name( String file_name, int ds_num )
   {
-    String user_name = System.getProperty("user.name");
+    String user_name = SharedData.getProperty("user.name");
     String password  = "dummy password";
     return new GetDataCommand( CommandObject.GET_DS_NAME,      
                               user_name, password, 
@@ -422,7 +426,7 @@ abstract public class RemoteDataRetriever extends    Retriever
  */
   static public GetDataCommand getDS_ID_Range( String file_name, int ds_num )
   {
-    String user_name = System.getProperty("user.name");
+    String user_name = SharedData.getProperty("user.name");
     String password  = "dummy password";
     return new GetDataCommand( CommandObject.GET_DS_ID_RANGE,
                                user_name, password,
@@ -449,7 +453,7 @@ abstract public class RemoteDataRetriever extends    Retriever
  */
   static public GetDataCommand getDS_X_Range( String file_name, int ds_num )
   {
-    String user_name = System.getProperty("user.name");
+    String user_name = SharedData.getProperty("user.name");
     String password  = "dummy password";
     return new GetDataCommand( CommandObject.GET_DS_X_RANGE,
                                user_name, password,
@@ -476,7 +480,7 @@ abstract public class RemoteDataRetriever extends    Retriever
  */ 
   static public GetDataCommand getDS( String file_name, int ds_num )
   {
-    String user_name = System.getProperty("user.name");
+    String user_name = SharedData.getProperty("user.name");
     String password  = "dummy password";
     return new GetDataCommand( CommandObject.GET_DS, 
                                user_name, password,
@@ -521,7 +525,7 @@ abstract public class RemoteDataRetriever extends    Retriever
                                            int    rebin_factor,
                                            int    attr_mode      )
   {
-    String user_name = System.getProperty("user.name");
+    String user_name = SharedData.getProperty("user.name");
     String password  = "dummy password";
     return new GetDataCommand( CommandObject.GET_DS,
                                user_name, password,
