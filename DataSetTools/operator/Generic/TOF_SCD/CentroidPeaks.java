@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2004/04/21 19:08:16  dennis
+ * Changed main test program to work with new version of FindPeaks
+ * that has the min and max time channel as parameters.
+ *
  * Revision 1.14  2004/03/15 03:28:37  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -197,7 +201,7 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
       LoadSCDCalib(rds,"/IPNShome/pfpeterson/data/SCD/instprm.dat",1,null);
     lsc.getResult();
     
-    FindPeaks fo = new FindPeaks(rds,138568f,10,1);
+    FindPeaks fo = new FindPeaks(rds,138568f,10,1,0,1000);
     Vector peaked=(Vector)fo.getResult();
 
     for( int i=0 ; i<peaked.size() ; i++ ){
