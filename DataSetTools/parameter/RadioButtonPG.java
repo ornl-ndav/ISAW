@@ -33,6 +33,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2003/09/13 22:11:10  bouzekc
+ *  Now uses a Hashtable rather than parallel Vectors to store the JRadioButton
+ *  names and buttons.  Removed a non-standard constructor.  setValue() now
+ *  calls validateSelf().  Modified main method for updated testing.  Changed
+ *  signature on addItem() to take an Object rather than a String.  Updated
+ *  clone() to return the correct Object.  Removed setValue(int) and private
+ *  getButtonIndex() method.
+ *
  *  Revision 1.18  2003/09/09 23:06:30  bouzekc
  *  Implemented validateSelf().
  *
@@ -111,8 +119,6 @@ import java.awt.event.*;
 
 import java.beans.*;
 
-import java.lang.Float;
-
 import java.util.*;
 
 import javax.swing.*;
@@ -130,45 +136,34 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
   //~ Instance fields **********************************************************
 
-  //the radioButtons and radioChoices are parallel Vectors...they must be added
-  //to simultaneously!!
-  private Vector radioButtons;
-  private Vector radioChoices;
-  private Vector extListeners      = null;
+  //the Hashtables keys are the radio button names, its values are the radio
+  //buttons themselves.  If this RadioButtonPG is not initialized, both the
+  //keys and values are the button name, and when initGUI is called, new
+  //RadioButtons are created.
+  private Hashtable radioChoices = new Hashtable(  );
+  private Vector extListeners    = null;
   private ButtonGroup radioGroup;
 
   //~ Constructors *************************************************************
 
   /**
    * Creates a new RadioButtonPG object without a drawn "valid" checkbox and an
-   * initial state of valid = false.
+   * initial state of valid = false.  Note that any value sent in will be
+   * coerced to a String.
    *
    * @param name The name of this ParameterGUI
    * @param Object val
    */
   public RadioButtonPG( String name, Object val ) {
     super( name, val );
-
-    if( val != null ) {
-      addItem( val.toString(  ) );
-      setValue( val.toString(  ) );
-    }
-
+    addItem( val );
+    setValue( val );
     this.type = TYPE;
   }
 
   /**
-   * Creates a new RadioButtonPG object.
-   *
-   * @param PGname The name of this parameterGUI.
-   * @param valid Whether this parameterGUI should be initially valid or not.
-   */
-  public RadioButtonPG( String PGname, boolean valid ) {
-    this( PGname, null, valid );
-  }
-
-  /**
-   * Creates a new RadioButtonPG object.
+   * Creates a new RadioButtonPG object.  Note that any value sent in will be
+   * coerced to a String.
    *
    * @param PGname The name of this parameterGUI.
    * @param val Either the Vector of (String) values that this RadioButtonPG
@@ -179,16 +174,13 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
     super( PGname, val, valid );
 
     if( val instanceof Vector ) {
-      radioChoices = ( Vector )val;
+      Vector tempVec = ( Vector )val;
+      addItems( tempVec );
+      setValue( tempVec.get( tempVec.size(  ) - 1 ) );
     } else {
-      radioChoices = new Vector(  );
-
-      if( val != null ) {
-        addItem( val.toString(  ) );
-        setValue( val.toString(  ) );
-      }
+      addItem( val );
+      setValue( val );
     }
-
     this.type = TYPE;
   }
 
@@ -206,69 +198,64 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
   /**
    * Fast-access method to return the string value of this class.
    *
-   * @return The String value associated with the selected radio button.
+   * @return The String value associated with the selected radio button.  If
+   *         there is no selected button, this returns a blank String.
    */
   public String getStringValue(  ) {
     if( getValue(  ) == null ) {
       return null;
     }
 
-    String tempVal = getValue(  )
-                       .toString(  );
+    Object val = getValue(  );
 
-    if( tempVal == null ) {
-      return null;
+    if( val != null ) {
+      String tempVal = val.toString(  );
+
+      if( tempVal == null ) {
+        return null;
+      }
+
+      return tempVal;
     }
 
-    return tempVal;
+    //nothing to return, so send a blank String.
+    return "";
   }
 
   /**
    * Overrides the default version of setValue to properly deal with radio
-   * buttons.
+   * buttons.  If a null is sent in, this does nothing.
    *
-   * @param value The value to set the radio button to.  This will be converted
+   * @param val The value to set the radio button to.  This will be converted
    *        to a String if it is not one already by way of an Object's
    *        toString() method.  If the value does not exist, it will not be
    *        added.
    */
-  public void setValue( Object sVal ) {
-    if( sVal == null ) {
+  public void setValue( Object val ) {
+    if( radioChoices == null ) {
+      return;
+    }
+
+    if( val == null ) {
       //we can't really set it
       return;
     }
 
-    String valName = sVal.toString(  );
+    String valName = val.toString(  );
+    boolean found  = radioChoices.containsKey( valName );
 
-    int radioIndex = getButtonIndex( valName );
-
-    if( radioIndex < 0 ) {
+    if( !found ) {
       return;
     }
 
     if( this.initialized ) {
-      setValue( radioIndex );
-    } else {
-      this.value = sVal;
-    }
-  }
-
-  /**
-   * Utility to set the value of this RadioButtonPG to a particular index.
-   *
-   * @param index The index to set the value to.
-   */
-  public void setValue( int index ) {
-    if( initialized ) {
-      JRadioButton selectedButton = ( ( JRadioButton )radioButtons.elementAt( 
-          index ) );
-
+      JRadioButton selectedButton = ( JRadioButton )radioChoices.get( valName );
       selectedButton.setSelected( true );
-      value = selectedButton.getText(  );
-    } else if( ( radioChoices != null ) && ( radioChoices.size(  ) > 0 ) ) {
-      value = radioChoices.elementAt( index )
-                          .toString(  );
+      this.value = selectedButton.getText(  );
+    } else {
+      this.value = val;
     }
+    validateSelf(  );
   }
 
   /**
@@ -277,25 +264,26 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    * @return String label of the selected radio button.
    */
   public Object getValue(  ) {
-    if( !initialized ) {
-      return value;
-    } else if( radioButtons != null ) {
-      JRadioButton button;
+    Object val = null;
 
-      for( int i = 0; i < radioButtons.size(  ); i++ ) {
-        button = ( JRadioButton )radioButtons.elementAt( i );
+    if( !initialized ) {
+      val = this.value;
+    } else if( radioChoices != null ) {
+      JRadioButton button;
+      Enumeration names = radioChoices.keys(  );
+      String buttonName = null;
+
+      while( names.hasMoreElements(  ) && ( val == null ) ) {
+        buttonName   = ( String )names.nextElement(  );
+        button       = ( JRadioButton )radioChoices.get( buttonName );
 
         if( button.isSelected(  ) ) {
-          return button.getActionCommand(  );
+          val = button.getActionCommand(  );
         }
       }
-
-      //couldn't find anything
-      return null;
-    } else {
-      //couldn't get anything
-      return null;
     }
+
+    return val;
   }
 
   /*
@@ -305,16 +293,16 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    */
   /*public static void main( String[] args ) {
      JFrame mainWindow = new JFrame(  );
-     RadioButtonPG rpg = new RadioButtonPG( "Tester", true );
+     RadioButtonPG rpg = new RadioButtonPG( "Tester", null, true );
      rpg.addItem( "Choice 1" );
      rpg.addItem( "Choice 2" );
      rpg.addItem( "Choice 3" );
      rpg.addItem( "Choice 3" );
-     //rpg.setValue( 2 );
+     rpg.setValue( "Choice 1" );
      System.out.println( rpg.getValue(  ) );
      rpg.initGUI( null );
-     //rpg.setValue( "Choice 5" );
-     //rpg.setValue( "Choice 1" );
+     rpg.setValue( "Choice 5" );
+     rpg.setValue( "Choice 1" );
      System.out.println( rpg.getValue(  ) );
      rpg.showGUIPanel(  );
      }*/
@@ -330,28 +318,31 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
     if( extListeners == null ) {
       extListeners = new Vector( 5, 2 );
     }
-
     extListeners.add( al );
   }
 
   /**
    * Adds a radio button to the list if and only if it is not already in the
    * list.  If this RadioButtonPG has been initialized (i.e. the GUI has been
-   * created) then it is also added to the GUI.
+   * created) then it is also added to the GUI.  Note that the sent in value
+   * is coerced to a String.
    *
-   * @param buttonName The name of the value to add.
+   * @param val The name of the value to add.  If this is null, nothing is
+   *        done.
    */
-  public void addItem( String buttonName ) {
-    if( radioChoices == null ) {
-      radioChoices = new Vector(  );
+  public void addItem( Object val ) {
+    if( val == null ) {
+      return;
     }
 
-    //only add if the button does not exist
-    int foundIndex = getButtonIndex( buttonName );
+    String buttonName = val.toString(  );
 
-    if( foundIndex < 0 ) {
+    //only add if the button does not exist
+    boolean found = radioChoices.containsKey( buttonName );
+
+    if( !found ) {
       //negative number, so it doesn't exist in the list
-      radioChoices.add( buttonName );
+      radioChoices.put( buttonName, buttonName );
 
       if( initialized ) {
         createGUIButton( buttonName );
@@ -374,9 +365,9 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    * Definition of the clone method.
    */
   public Object clone(  ) {
-    RadioButtonPG pg = new RadioButtonPG( this.name, this.valid );
-
+    RadioButtonPG pg = new RadioButtonPG( this.name, this.getValue(  ) );
     pg.setDrawValid( this.getDrawValid(  ) );
+    pg.setValid( this.getValid(  ) );
     pg.initialized = false;
 
     return pg;
@@ -397,21 +388,22 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
     //widget, and Vector of buttons.
     entrywidget = new EntryWidget(  );
     entrywidget.setLayout( new GridLayout( 0, 1 ) );
-    radioButtons   = new Vector(  );
-    radioGroup     = new ButtonGroup(  );
+    radioGroup = new ButtonGroup(  );
 
+    //we will either discard all the old values and set to the new ones, or
+    //create buttons for the new ones.
     if( init_values != null ) {
       for( int i = 0; i < init_values.size(  ); i++ ) {
         addItem( init_values.elementAt( i ).toString(  ) );
       }
     } else if( radioChoices != null ) {
-      for( int k = 0; k < radioChoices.size(  ); k++ ) {
-        createGUIButton( radioChoices.elementAt( k ).toString(  ) );
+      Enumeration names = radioChoices.keys(  );
+
+      while( names.hasMoreElements(  ) ) {
+        createGUIButton( names.nextElement(  ).toString(  ) );
       }
     }
-
     entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
-
     this.setEnabled( this.getEnabled(  ) );
     super.initGUI(  );
   }
@@ -431,36 +423,6 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
   }
 
   /**
-   * Utility to get the button index.
-   *
-   * @param buttonName The label of the JRadioButton you wish to have the index
-   *        for.
-   * @param int corresponding to the array index of the button.  Returns -1 if
-   *        it is not found.
-   */
-  private int getButtonIndex( String buttonName ) {
-    if( radioChoices == null ) {
-      return -1;
-    }
-
-    boolean found  = false;
-    int foundIndex = -1;
-
-    for( int i = 0; i < radioChoices.size(  ); i++ ) {
-      if( radioChoices.elementAt( i )
-                        .toString(  )
-                        .equals( buttonName ) ) {
-        found        = true;
-        foundIndex   = i;
-
-        break;
-      }
-    }
-
-    return foundIndex;
-  }
-
-  /**
    * Used by addItem() and init() to create the GUI buttons when this PG is
    * shown.
    *
@@ -468,8 +430,8 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    */
   private void createGUIButton( String buttonName ) {
     JRadioButton tempButton = new JRadioButton( buttonName );
-
-    radioButtons.add( tempButton );
+    radioChoices.remove( buttonName );
+    radioChoices.put( buttonName, tempButton );
     radioGroup.add( tempButton );
     entrywidget.add( tempButton );
 
