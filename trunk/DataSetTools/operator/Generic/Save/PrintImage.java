@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/10/09 20:23:08  dennis
+ * Changed catch(Exception u) to catch(Throwable u) to fix
+ * warning when compiling with jdk 1.4.1_05.
+ *
  * Revision 1.1  2003/09/16 15:43:31  rmikk
  * Initial Checkin
  *
@@ -139,7 +143,7 @@ public class PrintImage extends GenericSave{
      Doc myDoc = null;
      try{
        myDoc = new SimpleDoc(pr_utils, myFormat, null); 
-     }catch(Exception u){jf.dispose();
+     }catch(Throwable u){jf.dispose();
        return new ErrorString( u.toString());
      }
     // Build a set of attributes
