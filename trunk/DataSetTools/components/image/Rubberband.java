@@ -1,7 +1,13 @@
 /*
- * @(#) Rubberband.java  
+ * File:  Rubberband.java  
+ *
+ *  Adapted from "graphic JAVA", David M. Geary, Alan L. McClellan,
+ *  SunSoft Press/Prentice Hall, 1997
  *
  *  $Log$
+ *  Revision 1.4  2001/04/23 21:14:10  dennis
+ *  Added citation of source: the text "Graphic Java".
+ *
  *  Revision 1.3  2000/07/10 22:17:01  dennis
  *  minor format change to documentation
  *
@@ -70,8 +76,6 @@ abstract public class Rubberband implements Serializable
     abstract public void drawLast(Graphics g);
     abstract public void drawNext(Graphics g);
     private  Color  color = Color.gray;
-
-
 
     public Rubberband(JPanel component) {
         this.component = component;
