@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2003/02/10 13:30:15  dennis
+ *  String produced by toString() method is now more compact.
+ *
  *  Revision 1.3  2003/02/07 18:39:24  dennis
  *  Added serial version ID and ReadObject methods needed for "stable"
  *  serialization.
@@ -657,17 +660,17 @@ public class UniformGrid implements IDataGrid
   public String toString()
   {
     StringBuffer buffer = new StringBuffer();
-    buffer.append("ID    = " + ID() +'\n' );
-    buffer.append("units = " + units() +'\n');
-    buffer.append("x_vec = " + x_vec() +'\n');
-    buffer.append("y_vec = " + y_vec() +'\n');
-    buffer.append("z_vec = " + z_vec() +'\n');
-    buffer.append("center   = " + position() +'\n');
-    buffer.append("width    = " + width() +'\n');
-    buffer.append("depth    = " + depth() +'\n');
-    buffer.append("height   = " + height() +'\n');
-    buffer.append("num_rows = " + num_rows() +'\n');
-    buffer.append("num_cols = " + num_cols() +'\n');
+    buffer.append("ID:" + ID() +'\n' );
+    buffer.append("Nrows:" + num_rows() +'\n');
+    buffer.append("Ncols:" + num_cols() +'\n');
+    buffer.append("Cen:" + position() +'\n');
+    buffer.append("Width:" + width() +'\n');
+    buffer.append("Height:" + height() +'\n');
+    buffer.append("Depth:" + depth() +'\n');
+    buffer.append("x_vec:" + x_vec() +'\n');
+    buffer.append("y_vec:" + y_vec() +'\n');
+    buffer.append("z_vec:" + z_vec() +'\n');
+    buffer.append("Units:" + units() +'\n');
     return buffer.toString();
   }
 

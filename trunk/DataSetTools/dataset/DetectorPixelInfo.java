@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.3  2003/02/10 13:30:15  dennis
+ *  String produced by toString() method is now more compact.
+ *
  *  Revision 1.2  2003/02/07 18:39:24  dennis
  *  Added serial version ID and ReadObject methods needed for "stable"
  *  serialization.
@@ -254,10 +257,9 @@ public class DetectorPixelInfo implements IPixelInfo
    */
   public String toString()
   {
-    String buffer = "grid_id   = " + grid.ID() + '\n' +
-                    "pixel_id  = " + id  + '\n' +
-                    "row       = " + row + '\n' +
-                    "col       = " + col + '\n'; 
+    String buffer = "(row,col):(" + row + "," + col + ")" + '\n' +
+                    "id:" + grid.ID() + '\n' +
+                    "pixel:" + id  + '\n';
     return buffer;
   }
 
