@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/19 17:19:50  dennis
+ * Removed unused variable(s)
+ *
  * Revision 1.6  2004/03/15 19:33:57  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -101,8 +104,10 @@ public class DataSetTest
     */
   public static void main(String args[])
   {
+    /*
     DataSetTest test = new DataSetTest();   // create an instance of this test
                                             // object
+    */
   }
 
   private class FileMenuHandler implements ActionListener

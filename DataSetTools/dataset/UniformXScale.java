@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2004/03/19 17:22:05  dennis
+ *  Removed unused variable(s)
+ *
  *  Revision 1.14  2004/03/15 06:10:39  dennis
  *  Removed unused import statements.
  *
@@ -316,7 +319,7 @@ public class UniformXScale extends XScale implements Serializable
    */
   public static void main( String args[] )
   {
-    XScale    scale = new UniformXScale(    10,    12, 11 );
+/*  XScale    scale = new UniformXScale(    10,    12, 11 );
     XScale u1_scale = new UniformXScale(  8.5f,  9.5f, 11 );
     XScale u2_scale = new UniformXScale(  9.5f, 10.5f, 11 );
     XScale u3_scale = new UniformXScale( 10.5f, 11.5f, 11 );
@@ -364,7 +367,7 @@ public class UniformXScale extends XScale implements Serializable
     System.out.println("Position of 10   " + extended.getI( 10.0f ) );
     System.out.println("Position of 12.4 " + extended.getI( 12.4f ) );
     System.out.println("Position of 130  " + extended.getI( 130.0f ) );
-
+*/
   }
 
 /* -----------------------------------------------------------------------

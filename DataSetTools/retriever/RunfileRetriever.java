@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.81  2004/03/19 17:22:06  dennis
+ *  Removed unused variable(s)
+ *
  *  Revision 1.80  2004/03/15 19:33:55  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -859,7 +862,6 @@ private float CalculateEIn()
                                      String   ds_type,
                                      DataSet  ds        )
   {
-    IntAttribute      int_attr;
     StringAttribute   str_attr;
     IntListAttribute  int_list_attr;
     AttributeList     attr_list = ds.getAttributeList();
@@ -937,9 +939,7 @@ private float CalculateEIn()
                                       int     tf_type,
                                       Data    spectrum )
   {
-    StringAttribute   str_attr;
     FloatAttribute    float_attr;
-    IntAttribute      int_attr;
     DetPosAttribute   pos_attr;
     IntListAttribute  int_list_attr;
     DetectorPosition  position = new DetectorPosition();
@@ -1408,7 +1408,6 @@ private float CalculateEIn()
          int n_rows = run_file.NumSegs1( id );     // NumSegs1 gives n_rows
          int n_cols = run_file.NumSegs2( id );     // NumSegs2 gives n_cols 
 
-         int det_type = run_file.DetectorType( id );
          float width  = run_file.DetectorWidth(id)/100;
          float height = run_file.DetectorLength(id)/100;
          float depth  = run_file.DetectorDepth(id)/100;
@@ -1725,8 +1724,7 @@ private float CalculateEIn()
   private float SegmentSolidAngle( Segment seg )
   {
     float solid_angle = 0;
-    float area,
-          length,
+    float length,
           width,
           raw_dist,
           nom_radius,
@@ -1775,8 +1773,7 @@ private float CalculateEIn()
     Segment segs[] = run_file.SegsInSubgroup( group_id );
     int type; 
     Segment seg;
-    float area,
-          length,
+    float length,
           width,
           raw_dist,
           nom_radius,

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/19 17:20:49  dennis
+ * Removed unused variable(s)
+ *
  * Revision 1.6  2004/03/15 03:28:29  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -229,8 +232,6 @@ public class DiffractometerQxyz extends    XAxisInformationOp
 
   public Object getResult()
   {
-                                     // get the current data set
-    DataSet ds = this.getDataSet();
     int   i    = ( (Integer)(getParameter(0).getValue()) ).intValue();
     float tof  = ( (Float)(getParameter(1).getValue()) ).floatValue();
 

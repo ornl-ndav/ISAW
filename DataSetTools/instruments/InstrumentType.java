@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2004/03/19 17:22:05  dennis
+ *  Removed unused variable(s)
+ *
  *  Revision 1.14  2004/03/15 06:10:40  dennis
  *  Removed unused import statements.
  *
@@ -152,8 +155,7 @@ public class InstrumentType implements Serializable
 
   public static String getFileName( String file_name )
   {
-    int    last_slash,
-           dot;
+    int    last_slash;
 
     String temp = file_name.trim();
     file_name   = StringUtil.setFileSeparator( file_name );
@@ -178,8 +180,7 @@ public class InstrumentType implements Serializable
 
   public static String getPath( String file_name )
   {
-    int    last_slash,
-           dot;
+    int    last_slash;
 
     String temp = file_name.trim();
     file_name   = StringUtil.setFileSeparator( file_name );
