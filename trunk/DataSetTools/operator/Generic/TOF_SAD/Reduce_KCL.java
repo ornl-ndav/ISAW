@@ -1,6 +1,5 @@
 package DataSetTools.operator.Generic.TOF_SAD;
 
-
 import java.io.*;
 import java.lang.String;
 import java.lang.Math;
@@ -851,11 +850,14 @@ public class Reduce_KCL  extends GenericTOF_SAD{
             if (Res instanceof ErrorString)
                 return Res;      
     
-            SSampQ.setTitle("Neutron Corrected Sample-" + StringUtil.toString(SSampQ.getData_entry(0).getAttributeValue(Attribute.RUN_NUM)));
+            SSampQ.setTitle("Neutron Corrected Sample-" + 
+                   StringUtil.toString(SSampQ.getData_entry(0).getAttributeValue(Attribute.RUN_NUM)));
 
-            SBackQ.setTitle("Neutron Corrected Background-" + StringUtil.toString(SBackQ.getData_entry(0).getAttributeValue(Attribute.RUN_NUM)));
+            SBackQ.setTitle("Neutron Corrected Background-" + 
+                   StringUtil.toString(SBackQ.getData_entry(0).getAttributeValue(Attribute.RUN_NUM)));
 
-            SDifQ.setTitle("Neutron Corrected Sample-Background-" + StringUtil.toString(SDifQ.getData_entry(0).getAttributeValue(Attribute.RUN_NUM)));
+            SDifQ.setTitle("Neutron Corrected Sample-Background-" + 
+                  StringUtil.toString(SDifQ.getData_entry(0).getAttributeValue(Attribute.RUN_NUM)));
   
             Vector V = new Vector();
     
@@ -957,9 +959,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
               Ny = (int) java.lang.Math.floor(DNy);
 	      if( Nx >=0)if(Ny>=0)if(Qx <Qxmax)if(Qy<Qymax){
                 WTQXQY[Nx][Ny] = WTQXQY[Nx][Ny] + weightYvals[k];
-                   
                 
-                   
                 SQXQY[Nx][Ny]=SQXQY[Nx][Ny]+SampYvals[k];
                 BQXQY[Nx][Ny]=BQXQY[Nx][Ny]+BackYvals[k];
                 SBQXQY[Nx][Ny] = SQXQY[Nx][Ny]-BQXQY[Nx][Ny];
@@ -969,7 +969,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
                 BERRXY[Nx][Ny]=BERRXY[Nx][Ny]+(
                                  float)Math.pow(BackErrs[k],2);
                 SBERRXY[Nx][Ny]=BERRXY[Nx][Ny]+SERRXY[Nx][Ny];
-	      
 	      }
 	      else{
 	        //System.out.println("out of bounds"+Qxmin+","+Q+","+Qxmax+"::"+
@@ -978,10 +977,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 	   }
 	   
 	  }//for( int i = 0; i< RelSamp.getNum_entries(); i++)
-		  
         
 	
-
         for( int i = 0; i < DIVx; i++)
 	  for( int j = 0; j < DIVy; j++){
 	    if(WTQXQY[i][j] == 0){
@@ -1014,9 +1011,9 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
         V.addElement( O1); V.addElement(O2); V.addElement( O3);
         return V;
-               
-    
+
     }//end of getResult
+
 
     private DataSet convertToLambda(DataSet ds) {
         DataSetOperator opBackground;
@@ -1055,7 +1052,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         //System.out.println("in void Resample, xscl="+StringUtil.toString( xscl.getXs()));
         for (int i = 0; i < DS.getNum_entries(); i++)
             DS.getData_entry(i).resample(xscl, IData.SMOOTH_NONE);
-
     }
 
     /**
@@ -1077,13 +1073,15 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
         Sensgrid.setData_entries(Sens);
         IPixelInfo ipinf1 = ((PixelInfoList) RelSamp.getData_entry(0).getAttributeValue(Attribute.PIXEL_INFO_LIST)).pixel(0);
-        IDataGrid Sampgrid = ipinf.DataGrid();
+        IDataGrid Sampgrid = ipinf1.DataGrid();
 
         Sampgrid.setData_entries(RelSamp);
         UniformGrid SensEffgrid = new UniformGrid(77, Sampgrid.units(), Sampgrid.position(),
                 Sampgrid.x_vec(), Sampgrid.y_vec(), Sampgrid.width(), Sampgrid.height(),
                 Sampgrid.depth(), Sensgrid.num_rows(), Sensgrid.num_cols());
 
+        ((UniformGrid)Sampgrid).setDataEntriesInAllGrids(RelSamp);
+        Grid_util.setEffectivePositions(RelSamp, Sampgrid.ID());
         for (int i = 0; i < Sens.getNum_entries(); i++) {
     
             float[] yvals = new float[Eff_yvals.length];
@@ -1111,10 +1109,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
                  pos[1] -= XOFF;
                  pos[2] += YOFF;
                  */
-            ((UniformGrid)Sampgrid).setDataEntriesInAllGrids( RelSamp);
-            Grid_util.setEffectivePositions(RelSamp, Sampgrid.ID());
             Data DD =Sampgrid.getData_entry(row, col);
-            DetectorPosition dp = (DetectorPosition)(DD.getAttributeValue( Attribute.DETECTOR_POS));
+            DetectorPosition dp = (DetectorPosition)(DD.getAttributeValue(Attribute.DETECTOR_POS));
              
             float[] pos = dp.getCartesianCoords();
     
@@ -1142,7 +1138,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
             D.setAttribute(Dsamp.getAttribute(Attribute.DETECTOR_POS));
             Res.addData_entry(D);
-  
         }
         return Res;
 
