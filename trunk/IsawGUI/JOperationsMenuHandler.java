@@ -1,7 +1,13 @@
 /*
- * @(#)JOperationsMenuHandler.java     1.0  99/09/02  Alok Chatterjee
+ * $Id$
  *
- * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
+ * listens to the menu that OperatorMenu.build(...) returns and handles
+ * each selection appropriatly.
+ *
+ * $Log$
+ * Revision 1.8  2001/06/27 20:47:32  neffk
+ * updated to play nice with the tree and command pane
+ *
  * 
  */
  
@@ -16,56 +22,74 @@ import java.awt.*;
 import java.io.Serializable;
 import javax.swing.text.*; 
 import Command.*;
-/**
- * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
- * ChopTools and graph packages.
- *
- * @version 1.0  
- */
  
-public class JOperationsMenuHandler implements ActionListener, Serializable
+public class JOperationsMenuHandler 
+  implements ActionListener, 
+             Serializable
 {
-    private DataSet ds;
-    private JTreeUI treeUI;
-    Document sessionLog;
-    public JOperationsMenuHandler(DataSet ds, JTreeUI treeUI, Document sessionLog)
-    
-    { this.ds = ds ;
-      this.treeUI = treeUI;
-      this.sessionLog = sessionLog;
+  private DataSet[] dss;
+  private JTreeUI treeUI;
+  Document sessionLog;
+
+
+  /**
+   * constructs this object with the appropriate links to ISAW's tree and
+   * session log.
+   */
+  public JOperationsMenuHandler( DataSet ds_, 
+                                 JTreeUI treeUI_, 
+                                 Document sessionLog_ )
+  {
+    dss = new DataSet[1];  dss[0] = ds_;
+    treeUI = treeUI_;
+    sessionLog = sessionLog_;
+  }
+
+
+  /**
+   * constructs this object with the appropriate links to ISAW's tree and
+   * session log.  the array of DataSet objects allows the JParametersDialog
+   * to offer only selected DataSet objects as additional parameters.
+   */
+  public JOperationsMenuHandler( DataSet[] dss_, 
+                                 JTreeUI treeUI_ )
+  {
+    dss = dss_;
+    treeUI = treeUI_;
+    sessionLog = null;
+  }
+
+
+  /** 
+   * handles all of the menu selection events.  when there are multiple
+   * DataSet objects selected,
+   */     
+  public void actionPerformed( ActionEvent e ) 
+  {
+    String s = e.getActionCommand();
+    DataSetOperator op = dss[0].getOperator(0);  //use first selection
+
+    for( int i=0;  i<dss[0].getNum_operators();  i++ )
+    {
+      if(   s.equalsIgnoreCase(  dss[0].getOperator(i).getTitle()  )   )
+      {
+/*
+        DSgetArray DSA = new DSgetArray( treeUI );  //DataSet objects to be
+        DataSet Dss[];                              //shown as additional args
+        Dss = DSA.getDataSets();                    //in JParameterDialog
+
+        JParametersDialog pDialog = new JParametersDialog( op,
+                                                           Dss, 
+                                                           sessionLog,
+                                                           treeUI );
+*/
+        JParametersDialog pDialog = new JParametersDialog( op,
+                                                           dss,
+                                                           sessionLog,
+                                                           treeUI );
+      }
     }
- 
-    public void actionPerformed(ActionEvent ev) 
-        
-        {
-            DataSetOperator op = ds.getOperator(0);
-            String s=ev.getActionCommand();
-           // for (int i = 0; i<ds.getNum_operators(); i++)
-    
-           boolean found = false;
-           int i = 0;
-           while(!found && i<ds.getNum_operators())
-            { 
-                if (s.equalsIgnoreCase(ds.getOperator(i).getTitle()))
-                {op = ds.getOperator(i);
-                found = true;
-                }
-                else i++;
-                //System.out.println("We are looking for s:" +s);
-            }
-            if (found)
-            {   DSgetArray DSA= new DSgetArray( treeUI );
-                DataSet Dss[];
-                Dss= DSA.getDataSets();
-                JParametersDialog pDialog = new JParametersDialog(op, Dss, sessionLog, treeUI);
-
-            }
-        }
-
-  
-    
-
-
+  }
 }
 
 
