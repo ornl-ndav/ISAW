@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/02/12 22:54:03  pfpeterson
+ *  Reads in the cell volume (again) if reading a matrix file.
+ *
  *  Revision 1.7  2003/02/12 15:30:55  pfpeterson
  *  Moved various debug statements into if(DEBUG) conditionals.
  *
@@ -249,6 +252,8 @@ public class LoadOrientation extends    DS_Attribute {
               return res;
             else
               lat=(float[])res;
+            // grab the cell volume
+            vol=fr.read_float();
           }
           success=true;
         }catch(IOException e){
@@ -294,7 +299,9 @@ public class LoadOrientation extends    DS_Attribute {
         int index=iparm.lastIndexOf("/");
         if(index>=0)iparm=iparm.substring(index+1,iparm.length());
         ds.setAttribute(new StringAttribute(Attribute.ORIENT_FILE,iparm));
-        //ds.setAttribute(new FloatAttribute(Attribute.CELL_VOLUME,vol));
+        System.out.print("VOL="+vol);
+        if(vol!=0f)
+          ds.setAttribute(new FloatAttribute(Attribute.CELL_VOLUME,vol));
         ds.setAttribute(new Float1DAttribute(Attribute.LATTICE_PARAM,lat));
         ds.setAttribute(new Float2DAttribute(Attribute.ORIENT_MATRIX,orient));
         ds.addLog_entry("Read Orientation Matrix From File: "+iparm);
