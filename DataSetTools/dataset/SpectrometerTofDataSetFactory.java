@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/07/11 13:38:04  dennis
+ *  Removed SpectrometerTofToQ() operation
+ *
  *  Revision 1.3  2000/07/10 22:24:04  dennis
  *  July 10, 2000 version... many changes
  *
@@ -94,7 +97,7 @@ public class SpectrometerTofDataSetFactory extends    DataSetFactory
     new_ds.addOperator( new SpectrometerTofToEnergyLoss() );
     new_ds.addOperator( new SpectrometerTofToEnergy() );
     new_ds.addOperator( new SpectrometerTofToWavelength() );
-    new_ds.addOperator( new SpectrometerTofToQ() );
+//    new_ds.addOperator( new SpectrometerTofToQ() );
     new_ds.addOperator( new SpectrometerTofToQE() );
     new_ds.addOperator( new TofToChannel() );
     new_ds.addOperator( new TrueAngle() );
