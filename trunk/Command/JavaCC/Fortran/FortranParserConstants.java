@@ -18,10 +18,10 @@ public interface FortranParserConstants {
   int ARRAY_VARIABLE = 12;
   int STRING = 13;
   int FLOATING_POINT = 14;
-  int BOOL_CONSTANT = 15;
+  int BOOL_CONST = 15;
   int INT_IDENT = 16;
   int FLOAT_IDENT = 17;
-  int MULTI_VARIABLE = 18;
+  int EQ = 18;
   int CHAR_VARIABLE = 19;
   int MATH_INT_VAR = 20;
   int MATH_FLOAT_VAR = 21;
@@ -66,10 +66,10 @@ public interface FortranParserConstants {
     "<ARRAY_VARIABLE>",
     "<STRING>",
     "<FLOATING_POINT>",
-    "<BOOL_CONSTANT>",
+    "<BOOL_CONST>",
     "<INT_IDENT>",
     "<FLOAT_IDENT>",
-    "<MULTI_VARIABLE>",
+    "<EQ>",
     "<CHAR_VARIABLE>",
     "<MATH_INT_VAR>",
     "<MATH_FLOAT_VAR>",

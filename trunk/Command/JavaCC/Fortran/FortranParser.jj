@@ -30,6 +30,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2004/01/14 06:38:17  bouzekc
+ * Now handles initialization in variable declaration for scalar and array
+ * types as well as mixed types.  Removed the MULTI_VARIABLE token, as it
+ * is no longer used.
+ *
  * Revision 1.8  2004/01/14 06:06:00  bouzekc
  * Fixed remaining bugs dealing with mixing array and scalar declarations.
  *
@@ -133,12 +138,12 @@ public class FortranParser {
    */
   private static String convertToJavaStyle( 
     String s, String type ) { 
-    StringBuffer buffer = new StringBuffer(  );
-    //buffer.append( " " );
+    StringBuffer buffer = new StringBuffer( type );
+    buffer.append( " " );
     
     //the parentheses should NOT be right at the beginning of the declaration
     if( s.indexOf( "(" ) > 0 ) {    
-      String tokenList[] = s.trim(  ).split( "\\s+|\\s*,\\s*" );
+      String tokenList[] = s.split( "," );
       //now go through the tokens, determining if an element is an array
       String[] temp;
       for( int i = 0; i < tokenList.length; i++ ) {
@@ -166,7 +171,7 @@ public class FortranParser {
       buffer.append( s );
     }  
 
-    return type + " " + buffer.toString(  );
+    return buffer.toString(  );
   }
 }
      
@@ -309,7 +314,7 @@ TOKEN : {
 
 //handles the Fortran logical (i.e. boolean) constants
 TOKEN: {
-  < #BOOL_CONSTANT : (
+  < #BOOL_CONST: (
     <OPT_WS> ( 
       ".TRUE." | ".FALSE." | ".true." | ".false."
     ) <OPT_WS> 
@@ -327,14 +332,9 @@ TOKEN: {
   < #FLOAT_IDENT: ( ["a"-"h"] | ["o"-"z"] | ["A"-"H"] | ["O"-"Z"] ) >
 }
 
-//handles both scalar and array variable declarations.  Created to ease 
-//code-eye 
+//basically an equals sign with optional whitespace on either side
 TOKEN: {
-  < #MULTI_VARIABLE: (
-    <OPT_WS> ( 
-      <VARIABLE> | <ARRAY_VARIABLE> 
-    ) <OPT_WS> 
-  ) >
+  < EQ: <OPT_WS> "=" <OPT_WS> >
 }
 
 //Fortran has a non-C like way of declaring character arrays so we
@@ -529,10 +529,12 @@ TOKEN: {
 TOKEN : {
   < FORTRAN_INT: ( 
     <OPT_WS>
-    ( "integer " | <INT_IDENT> ) <MULTI_VARIABLE> ( 
-      "," <MULTI_VARIABLE> ( 
-        <OPT_WS> "=" <OPT_WS> ( <DIGIT> )+
-      )? 
+    ( "integer " | <INT_IDENT> ) 
+    ( 
+      <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <DIGIT> )+ )? ) 
+    ) 
+    (  
+      "," ( <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <DIGIT> )+ )? ) )  
     )* 
     <OPT_WS>
   ) >
@@ -542,8 +544,12 @@ TOKEN : {
 TOKEN : {
   < FORTRAN_REAL: (
     <OPT_WS> 
-    ( "real " | <FLOAT_IDENT> ) <MULTI_VARIABLE> ( 
-      "," <MULTI_VARIABLE> 
+    ( "real " | <FLOAT_IDENT> )
+    ( 
+      <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <FLOATING_POINT> )+ )? ) 
+    ) 
+    (  
+      "," ( <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <FLOATING_POINT> )+ )? ) )  
     )*
     <OPT_WS> 
   ) >
@@ -553,9 +559,13 @@ TOKEN : {
 TOKEN : {
   < FORTRAN_DOUBLE: (
     <OPT_WS> 
-    "double precision" <MULTI_VARIABLE> ( 
-      "," <MULTI_VARIABLE> 
-    )*
+    "double precision" 
+    ( 
+      <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <DIGIT> )+ )? ) 
+    ) 
+    (  
+      "," ( <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <DIGIT> )+ )? ) )  
+    )* 
     <OPT_WS> 
   ) >
 }
@@ -564,9 +574,13 @@ TOKEN : {
 TOKEN : {
   < FORTRAN_LOGICAL: (
     <OPT_WS> 
-    "logical " <MULTI_VARIABLE> ( 
-      "," <MULTI_VARIABLE> 
-    )*
+    "logical " 
+    ( 
+      <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <BOOL_CONST> )+ )? ) 
+    ) 
+    (  
+      "," ( <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <BOOL_CONST> )+ )? ) )  
+    )* 
     <OPT_WS> 
   ) >
 }
@@ -795,7 +809,9 @@ String convertFortranTokens(  ) : {
 |
   //matched a boolean
   t = <FORTRAN_LOGICAL> {
-    t.image = t.image.replaceAll( "logical", "" );
+    t.image = t.image.replaceAll( "logical", "" )
+                              .replaceAll( ".true.", "true" )
+                              .replaceAll( ".false.", "false" );
     return convertToJavaStyle( t.image, "boolean" );
   }
 |

@@ -68,12 +68,12 @@ public class FortranParser implements FortranParserConstants {
    */
   private static String convertToJavaStyle(
     String s, String type ) {
-    StringBuffer buffer = new StringBuffer(  );
-    //buffer.append( " " );
+    StringBuffer buffer = new StringBuffer( type );
+    buffer.append( " " );
 
     //the parentheses should NOT be right at the beginning of the declaration
     if( s.indexOf( "(" ) > 0 ) {
-      String tokenList[] = s.trim(  ).split( "\\s+|\\s*,\\s*" );
+      String tokenList[] = s.split( "," );
       //now go through the tokens, determining if an element is an array
       String[] temp;
       for( int i = 0; i < tokenList.length; i++ ) {
@@ -101,7 +101,7 @@ public class FortranParser implements FortranParserConstants {
       buffer.append( s );
     }
 
-    return type + " " + buffer.toString(  );
+    return buffer.toString(  );
   }
 
 /**
@@ -354,7 +354,9 @@ public class FortranParser implements FortranParserConstants {
     case FORTRAN_LOGICAL:
       //matched a boolean
         t = jj_consume_token(FORTRAN_LOGICAL);
-    t.image = t.image.replaceAll( "logical", "" );
+    t.image = t.image.replaceAll( "logical", "" )
+                              .replaceAll( ".true.", "true" )
+                              .replaceAll( ".false.", "false" );
     {if (true) return convertToJavaStyle( t.image, "boolean" );}
       break;
     case FORTRAN_CHAR_1:
