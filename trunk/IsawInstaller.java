@@ -32,6 +32,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.18  2004/01/08 17:58:17  bouzekc
+ * Removed unused local variables.
+ *
  * Revision 1.17  2003/06/17 21:52:56  pfpeterson
  * Added quotes around the classpath when writing windows batch files.
  *
@@ -111,7 +114,6 @@ import java.awt.event.*;
 public class IsawInstaller extends JFrame
 {
     private String myClassName;
-    private javax.swing.Timer timer;
     static String MANIFEST = "META-INF/MANIFEST.MF";
     static JFrame mw;
     private Boolean injar;
@@ -795,7 +797,7 @@ public class IsawInstaller extends JFrame
 	installBut.setForeground(Color.green.darker());
 
 	// ==================== things for batch file frame ==========
-	GridBagLayout batchGB = new GridBagLayout();
+
 	// ========== stuff for batch file name
 	JLabel batchL=new JLabel(BATCH_FILE);
 	batch=new JTextField(getDefaultBatch());
