@@ -1,6 +1,8 @@
 #Testing arrays
 # $Date$
 
+$Category = Operator, Utils, Tests
+
 d = [1,3,5,5+2]
 # or d[]=[1,3,5,7]
 

@@ -1,5 +1,8 @@
 # Testing script for loading and displaying files
 # $Date$
+
+$Category = Operator, Utils, Tests
+
 $  path      DataDirectoryString   Data Directory
 
 # first a run file
