@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2002/07/26 22:48:47  pfpeterson
+ *  Added "Exec" to the list of operators.
+ *
  *  Revision 1.22  2002/07/25 16:55:28  pfpeterson
  *  Added reference to the fullprof writer.
  *
@@ -123,6 +126,7 @@ public class GenericOperatorList implements Serializable
                                           "DnMonitorID",
                                           "NumBins",
                                           "Pause",
+                                          "Exec",
                                           "Echo"    };
 
   /**
@@ -253,6 +257,9 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "Pause" ) )
       return new pause();
+
+    else if ( op_name.equals( "Exec" ) )
+      return new Exec();
 
     else if ( op_name.equals( "Echo" ) )
       return new EchoObject();
