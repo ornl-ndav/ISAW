@@ -3,6 +3,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.7  2002/06/18 18:57:18  rmikk
+ * Added filters for xmi and xmn files. XML files, either
+ *   ISAW or Nexus forms
+ *
  * Revision 1.6  2002/01/08 21:26:21  rmikk
  * Fixed the display of the filter to only show xm.,gsas and
  * isd output and input.
@@ -42,7 +46,8 @@ public class NeutronDataFileFilter
   public final static String NEXUS       = "nxs";
   public final static String RUNFILE     = "run";
   public final static String ISAW_NATIVE = "isd";
-  public final static String XML         = "xml";
+  public final static String XML         = "xmi";
+  public final static String NXML        = "xmn";
   public final static String GSAS        = "gsa";
   boolean SaveFilter;
 
@@ -85,7 +90,8 @@ public class NeutronDataFileFilter
       (
         extension.equals( HDF         ) ||
         extension.equals( NEXUS       ) ||        
-        extension.equals( ISAW_NATIVE ) 
+        extension.equals( ISAW_NATIVE ) ||  
+        extension.equals( XML )
   
       )
     )
@@ -93,7 +99,7 @@ public class NeutronDataFileFilter
     else if( extension != null && extension.equals( RUNFILE) &&!SaveFilter )
        return true;
     else if( !SaveFilter) return false;
-    else if( extension.equals( XML) || extension.equals(GSAS))
+    else if( extension.equals( NXML) || extension.equals(GSAS))
        return true;
     else  
       return false;
@@ -111,10 +117,10 @@ public class NeutronDataFileFilter
                           
                          
    if(!SaveFilter)
-       S =  "*."+ISAW_NATIVE+"(Temporary)";
+       S =  "*."+ISAW_NATIVE+"(Temporary) *."+XML+"(Isaw XML)";
    else
        S =  "*." + ISAW_NATIVE+"(Temporary),*."+XML+",*."+GSAS+
-              "(gsas)"   ;
+              "(gsas) *."+XML+"(Isaw XML)"   ;
    S += " )";
    return S;
   }
