@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/12/15 00:33:52  rmikk
+ * Now notifies the observers of a DataSet when the selected groups have changed
+ *
  * Revision 1.6  2003/12/11 22:08:53  rmikk
  * Added a kill command to remove orphaned windows
  *
@@ -615,7 +618,7 @@ public class RowColTimeVirtualArray extends
 
          }
 
-
+        DS.notifyIObservers( IObserver.SELECTION_CHANGED);
      }
   }
   /**
