@@ -1,13 +1,10 @@
 /*
- * @(#)DiffractometerTofToQ.java   0.3  99/06/16   Dennis Mikkelson
- *                                      99/08/16   Added constructor to allow
- *                                                 calling operator directly
- *                                    2000/04/21   Added methods to set better
- *                                                 default parameters. Now it
- *                                                 is derived from the class
- *                                                 XAxisConversionOp
+ *  File:  DiffractometerTofToQ.java 
  *             
  *  $Log$
+ *  Revision 1.7  2001/04/26 19:08:37  dennis
+ *  Added copyright and GPL info at the start of the file.
+ *
  *  Revision 1.6  2000/11/10 22:41:34  dennis
  *     Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
@@ -46,7 +43,7 @@
  *  values.
  *
  *  Revision 1.3  2000/07/10 22:36:06  dennis
- *  July 10, 2000 version... many changes
+ *  Now Using CVS 
  *
  *  Revision 1.13  2000/06/09 16:12:35  dennis
  *  Added getCommand() method to return the abbreviated command string for
@@ -71,7 +68,13 @@
  *  Revision 1.8  2000/05/11 16:41:28  dennis
  *  Added RCS logging
  *
- *
+ *  2000/04/21   Added methods to set better
+ *               default parameters. Now it
+ *               is derived from the class
+ *               XAxisConversionOp
+ *             
+ *  99/08/16     Added constructor to allow
+ *               calling operator directly
  */
 
 package DataSetTools.operator;
@@ -378,7 +381,6 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
 
     return new_op;
   }
-
 
 
 }

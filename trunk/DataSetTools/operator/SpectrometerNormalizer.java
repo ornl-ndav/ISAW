@@ -5,10 +5,12 @@
  *                                 99/08/16   Added constructor to allow
  *                                            calling operator directly
  *             
- * This operator Normalizer all data objects in a data set by a monitor value.
  *
  *
  *  $Log$
+ *  Revision 1.6  2001/04/26 19:11:16  dennis
+ *  Added copyright and GPL info at the start of the file.
+ *
  *  Revision 1.5  2000/11/10 22:41:34  dennis
  *     Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
@@ -49,7 +51,9 @@ import  ChopTools.*;
 import  DataSetTools.util.*;
 
 /**
-  *  Divide a data set by a constant scalar value, obtained from Monitor 1
+  * This operator normalizes all data objects in a DataSet to a monitor.
+  * Specifically, it divides a data set by a the integrated peak 
+  * obtained from Monitor 1
   */
 
 public class SpectrometerNormalizer extends    DS_Special
