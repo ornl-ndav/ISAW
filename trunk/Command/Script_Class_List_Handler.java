@@ -32,6 +32,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2001/08/15 14:17:58  rmikk
+ * This now returns the SAME java operator whenever the
+ *    getOperator method is called (no clone is returned).
+ *    This will allow the parameters to retain their values more
+ *     often.  Scripts, so far, return a NEW operator with
+ *    default parameter values each time.
+ *
  * Revision 1.16  2001/08/10 20:46:12  rmikk
  * The LoadDebug variable is now public and static so it
  * can be set to true by any application to get the debug
@@ -632,17 +639,20 @@ public Operator getOperator( int index )
    Operator X = getOp1( CommandListIndex(index) );
    if( X == null )
      return null;
-   if( X instanceof ScriptOperator )
+   if( X instanceof ScriptOperator ) //Maybe will get these to
+                                     //to retain their parameter values too
      {String filename = ((ScriptOperator)X).getFileName();
       return new ScriptOperator( filename );
      }
-   else
-     {Class C = X.getClass();
-      try{
-         return (Operator)(C.newInstance());
-         }
-      catch(Exception s)
-         { return null;}
+   else //Will try to have these operators retain their parameter values
+     {/*Class C = X.getClass();
+        try{
+           return (Operator)(C.newInstance());
+           }
+         catch(Exception s)
+            { return null;}
+      */
+      return X;
       }
    }
 /** Gets the position in the master list of the first operator
