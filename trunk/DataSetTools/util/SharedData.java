@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2004/08/18 20:17:46  rmikk
+ *  Now the status_pane IS gov.anl.ipns.Util.Sys.SharedMessages status_pane
+ *
  *  Revision 1.19  2004/03/15 03:28:54  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -123,7 +126,8 @@ public class SharedData implements java.io.Serializable
    */
   public static gov.anl.ipns.Util.Sys.StatusPane getStatusPane(){
     if(status_pane==null)
-      status_pane=new gov.anl.ipns.Util.Sys.StatusPane( 30,70);
+      //status_pane=new gov.anl.ipns.Util.Sys.StatusPane( 30,70);
+      status_pane = gov.anl.ipns.Util.Sys.SharedMessages.getStatusPane();
     return status_pane;
   }
 
