@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:32:43  bouzekc
+ * Documented file using javadoc statements.
+ * Added the toString() method.
+ *
  * Revision 1.1  2004/02/07 05:10:05  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -55,8 +59,9 @@ import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
 * This class defines the object which describes a constructor
 * in a class or interface.  Each constructor in a class or 
 * interface has a unique ConstructorDefn object.
+* 
+* @author Dominic Kramer
 */
-
 public class ConstructorDefn
 {
 	//-----------------class attributes-------------------------
@@ -106,21 +111,40 @@ public class ConstructorDefn
 						 	
 	//------------------class methods----------------------------
 	
+	/**
+	 * Get the Vector of Strings representing the constructor's "characteristics" (public, static, etc.).
+	 * @return A Vector of Strings
+	 */
 	public Vector getConst_char_vector()
 	{
 		return const_char_vector;
 	}
 	
+	/**
+	 * Set the constructor's "characteristics" (public, static, etc.)
+	 * @param vec A Vector of Strings
+	 */
 	public void setConst_char_vector(Vector vec)
 	{
 		const_char_vector = vec;
 	}
-		
+	
+	/**
+	 * Get the constructor's parameters.
+	 * @return A Vector of Strings.
+	 */
 	public Vector getConst_parameter_vector()
 	{
 		return const_parameter_vector;
 	}
 	
+	/**
+	 * Get the constructor's parametes returned in a modified format.
+	 * @param shortJava If this is set to true then any parameter that is a java type will have its name shortened.  For 
+	 * example java.lang.String will be returned as String.
+	 * @param shortOther If this is set to true then any parameter that is a non-java type will have its name shortened.
+	 * @return A Vector of Strings.
+	 */
 	public Vector getConst_parameter_vector(boolean shortJava, boolean shortOther)
 	{
 		Vector vec = new Vector();
@@ -130,32 +154,51 @@ public class ConstructorDefn
 		return vec;
 	}
 	
+	/**
+	 * Set the constructor's parameters.
+	 * @param vec A Vector of Strings.
+	 */
 	public void setConst_parameter_vector(Vector vec)
 	{
 		const_parameter_vector = vec;
 	}
-
+	
+	/**
+	 * Get the constructor's name.
+	 * @return The constructor's name.
+	 */
 	public String getConst_name()
 	{
 		return const_name;
 	}
 	
+	/**
+	 * Get the constructor's name returned in a modified format.
+	 * @param shortJava If this is set to true, then if the name is a java name it will be returned in a shortened form.  For 
+	 * example java.io.RandomAccessFile will be returned as RandomAccessFile
+	 * @param shortOther If this is set to true, then if the name is a non-java name it will be returned in a shortened form.
+	 * @return The constructor's name (in a modified format).
+	 */
 	public String getConst_name(boolean shortJava, boolean shortOther)
 	{
 		return InterfaceUtilities.getAbbreviatedName(const_name, shortJava, shortOther);
 	}
 	
+	/**
+	 * Set the constructor's name.
+	 * @param str The constructor's new name.
+	 */
 	public void setConst_name(String str)
 	{
 		const_name = str;
 	}
 
 	/**
-	* Prints the data to the file specified by the RandomAccessFile writer 
+	* Prints the data to the file specified by the DataOutputStream writer 
 	* starting where writer's file pointer is currently located.  This method
 	* works only if const_parameter_vector is a vector of Strings.
 	*
-	* @param writer The RandomAccessFile used to write the data
+	* @param writer The DataOutputStream used to write the data
 	*/
 	
 	//---------method prints the data to the file specified by the PrintWriter 'writer'
@@ -202,12 +245,12 @@ public class ConstructorDefn
 	}
 	
 	/**
-	* Prints the data to the file specified by the RandomAccessFile writer 
+	* Prints the data to the file specified by the DataOutputStream writer 
 	* starting where writer's file pointer is currently located.  Then it 
 	* moves the file pointer to the start of the next line in the file.
 	* This method works only if const_parameter_vector is a vector of Strings.
 	*
-	* @param writer The RandomAccessFile used to write the data
+	* @param writer The DataOutputStream used to write the data
 	*/
 	
 	public void println(DataOutputStream writer)
@@ -240,12 +283,12 @@ public class ConstructorDefn
 	}
 	
 	/**
-	* Returns the JPanel which holds all of the information about the constructor
-	* in the form of JLabel and JTextField pairs.
-	* @return The JPanel that contains the information
-	*/
-	
-	public JPanel getConstJPanel()
+	 * This creates a JPanel with all of the textfields and labels that display the information for this ConstructorDefn object.  The textfields 
+	 * and labels are positioned vertically on the JPanel.  The panel created does not display information in a 
+	 * compact or effecient way and may be removed or significantly changed.
+	 * @deprecated
+	 * @return A JPanel.
+	 */	public JPanel getConstJPanel()
 	{
 		JPanel constJPanel = new JPanel();
 		
@@ -277,6 +320,14 @@ public class ConstructorDefn
 	
 	public String getStringInJavadocFormat(boolean shortJava, boolean shortOther)
 	{
-		return ""+InterfaceUtilities.makeStringFromVector(const_char_vector, ", ")+getConst_name(shortJava, shortOther)+"( "+InterfaceUtilities.makeStringFromVector(getConst_parameter_vector(shortJava, shortOther), ", ")+")";
+		return ""+InterfaceUtilities.makeStringFromVector(const_char_vector, " ")+getConst_name(shortJava, shortOther)+"( "+InterfaceUtilities.makeStringFromVector(getConst_parameter_vector(shortJava, shortOther), ", ")+")";
+	}
+	
+	/**
+	 * Get the constructor's name.
+	 */
+	public String toString()
+	{
+		return const_name;
 	}
 }
