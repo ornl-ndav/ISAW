@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/03/14 22:51:47  pfpeterson
+ * More appropriately sets the reflection flag.
+ *
  * Revision 1.8  2003/02/28 20:58:18  pfpeterson
  * Changed a Parameter to a BooleanPG.
  *
@@ -159,15 +162,16 @@ public class IndexJ extends    GenericTOF_SCD {
    * Runs scalar using the specified parameters
    */
   public Object getResult(){
-    ErrorString eString    = null;
-    String      peaksfile  = null;  // peaks filename
-    String      matrixfile = null;  // matrix filename
-    String      dir        = null;  // directory that the files are all in
-    String      expname    = null;  // the experiment name
-    File        file       = null;  // for tests
-    int         index      = 0;     // for chopping up strings
-    float       delta      = 0f;    // error in index allowed
-    boolean     update     = false; // update the peaks file
+    ErrorString eString     = null;
+    String      peaksfile   = null;  // peaks filename
+    String      matrixfile  = null;  // matrix filename
+    String      dir         = null;  // directory that the files are all in
+    String      expname     = null;  // the experiment name
+    File        file        = null;  // for tests
+    int         index       = 0;     // for chopping up strings
+    float       delta       = 0f;    // error in index allowed
+    boolean     update      = false; // update the peaks file
+    int         crystallite = 1;     // placeholder for future feature
 
     // get the peaks file name from the script and test it out
     peaksfile=getParameter(0).getValue().toString();
@@ -273,8 +277,9 @@ public class IndexJ extends    GenericTOF_SCD {
 
       if( (delta<=hMod) || (delta<=kMod) || (delta<=lMod) ){
         peak.sethkl(0f,0f,0f,false);
+        peak.reflag(0);
       }else{
-        peak.reflag(1);
+        peak.reflag(crystallite);
       }
       log.append(peak.toString().substring(2)+"\n");
     }
