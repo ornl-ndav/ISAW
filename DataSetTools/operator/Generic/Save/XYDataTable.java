@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.7  2004/01/24 19:50:54  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.6  2003/10/20 16:39:29  rmikk
  * Fixed javadoc error
  *
@@ -60,11 +63,10 @@ import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.util.*;
 import DataSetTools.viewer.Table.*;
-import DataSetTools.util.*;
 import java.util.*;
-import DataSetTools.util.*;
 import  javax.swing.*;
 import DataSetTools.parameter.*;
+
 /** This class creates a operator that produces a table of x vs y vs errors.
  *  The table can be sent to the console, table, or file<P>
  * The Title is <B>Table x, y, error</b>. This represents this operator on

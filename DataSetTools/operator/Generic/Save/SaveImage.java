@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/01/24 19:50:54  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.1  2003/09/11 17:42:26  rmikk
  * Initial Checkin.  Updata DataSetTools.viewer also
  * Saves view as jpg
@@ -46,7 +49,6 @@ import java.util.*;
 import java.io.*;
 import java.awt.image.*;
 import DataSetTools.viewer.*;
-import DataSetTools.operator.*;
 import DataSetTools.util.*;
 import DataSetTools.dataset.*;
 import javax.swing.*;

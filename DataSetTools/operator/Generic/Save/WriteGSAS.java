@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/01/24 19:50:54  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.9  2003/04/25 15:41:39  pfpeterson
  * Migrated to new parameters.
  *
@@ -68,7 +71,6 @@
 package DataSetTools.operator.Generic.Save;
 
 import DataSetTools.dataset.*;
-import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
 import DataSetTools.writer.*;
 import DataSetTools.gsastools.*;
