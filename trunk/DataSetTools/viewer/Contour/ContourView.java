@@ -36,6 +36,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/10/14 19:52:11  rmikk
+ *  Converted the private setData method to a protected method
+ *    so subclasses can recalculate the data
+ *
  *  Revision 1.19  2002/10/07 16:17:32  rmikk
  *  Fixed a missing parenthesis
  *
@@ -434,7 +438,7 @@ public class ContourView extends DataSetViewer
 
 
 
-  private void setData( DataSet ds, int GridContourAttribute )
+  protected void setData( DataSet ds, int GridContourAttribute )
     {  
      if( axis1 == null)
         cd = new ContourData( ds );
