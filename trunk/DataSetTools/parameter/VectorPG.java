@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2003/07/10 18:29:42  bouzekc
+ * Replaced deprecated show() with setVisible(boolean).
+ *
  * Revision 1.18  2003/07/07 22:40:05  bouzekc
  * Now uses a class constant for the "Data Changed" event,
  * and checks to be sure that the event is correct in
@@ -428,7 +431,7 @@ public abstract class VectorPG extends ParameterGUI
       //there must be a way to show this without remaking the GUI -
       //setVisible(true) does NOT work
       this.makeEntryPanel(  );
-      entryFrame.show(  );
+      entryFrame.setVisible( true );
     } else {
       return;
     }
