@@ -30,6 +30,11 @@
  *
  *
  * $Log$
+ * Revision 1.17  2004/07/15 14:38:15  kramer
+ * Now when the user highlights a group of DataMutableTreeNodes, right clicks,
+ * and selects clear, only the highlighted nodes are cleared, not the entire
+ * tree.
+ *
  * Revision 1.16  2004/03/15 03:31:25  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -55,6 +60,7 @@ import gov.anl.ipns.Util.Messaging.IObserver;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.util.LinkedList;
 import java.util.Vector;
 
 import javax.swing.JMenu;
@@ -271,7 +277,6 @@ public class JDataTreeRingmaster
    */
   public void MultipleDataBlockPopupMenu( TreePath[] tps, MouseEvent e )
   {
-
     class MultipleDataBlockMenuItemListener
       implements ActionListener
     {
@@ -288,8 +293,27 @@ public class JDataTreeRingmaster
           tree.selectNodesWithPaths( tps );
 
         else if(  item_e.getActionCommand() == MENU_CLEAR  )
-          tree.clearSelections();
+        {
+           DataMutableTreeNode node = null;
+           Data d = null;
+           DataSet ds = null;
+           LinkedList list = new LinkedList();
+           for (int i=0; i<tps.length; i++)
+           {
+              node = (DataMutableTreeNode)(  tps[i].getLastPathComponent()  );
+              d = node.getUserObject();
+              d.setSelected( false );
 
+                                     //find the DataSet that these Data objects
+                                     //belong to and have it notify its IObservers
+              ds = tree.getDataSet( node );
+              if (!list.contains(ds))
+                 list.add(ds);
+           }
+           
+           for (int i=0; i<list.size(); i++)
+              ((DataSet)list.get(i)).notifyIObservers( IObserver.SELECTION_CHANGED );
+         }
         else if(  item_e.getActionCommand() == MENU_CLEAR_ALL  )
           tree.clearSelections();
 
