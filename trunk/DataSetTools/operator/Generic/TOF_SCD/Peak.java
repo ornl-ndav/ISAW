@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.26  2005/03/03 22:02:40  dennis
+ * Fixed "nearedge()" method, so that any peak that is outside of the
+ * specified range is flagged.
+ *
  * Revision 1.25  2005/03/02 22:55:21  dennis
  * Removed unused private field t.
  * Fixed "typo" in nearedge() method that compared channel number
@@ -480,28 +484,37 @@ public class Peak{
       return this.nearedge;
     }
 
-    float dx=Math.abs((float)MINX-this.x);
-    float dy=Math.abs((float)MINY-this.y);
-    float dz=Math.abs((float)MINZ-this.z);
-    float min=1000.0f;
-    
-    if(dx>Math.abs((float)MAXX-this.x)){
-      dx=Math.abs((float)MAXX-this.x);
-    }
-    if(dy>Math.abs((float)MAXY-this.y)){
-      dy=Math.abs((float)MAXY-this.y);
-    }
-    if(dz>Math.abs((float)MAXZ-this.z)){
-      dz=Math.abs((float)MAXZ-this.z);
+    if ( this.x < MINX || this.x > MAXX ||      // x out of bounds
+         this.y < MINY || this.y > MAXY ||      // y out of bounds
+         this.z < MINZ || this.z > MAXZ  )      // z out of bounds
+    {
+      this.nearedge = -1;
+      return this.nearedge;
     }
     
-    if(dx<min) min=dx;
-    if(dy<min) min=dy;
-    if(dz<min) min=dz;
+    float dx = this.x - MINX;     // find dx = min distance of x to MINX, MAXX
+    if ( dx > MAXX - this.x)
+      dx = MAXX - this.x;
+
+    float dy = this.y - MINY;     // find dy = min distance of y to MINY, MAXY
+    if ( dy > MAXY - this.y )
+      dy = MAXY - this.y;
+    
+    float dz = this.z - MINZ;     // find dz = min distance of x to MINZ, MAXZ
+    if ( dz > MAXZ - this.z )
+      dz = MAXZ - this.z;
+    
+    float min = dx;               // set min to min of dx, dy, dz
+
+    if ( dy < min ) 
+      min = dy;
+
+    if ( dz < min ) 
+      min = dz;
     
     //System.out.println("("+this.x+","+this.y+","+this.z+")"+min);
     
-    this.nearedge=min;
+    this.nearedge = min;
     return this.nearedge();
   }
   
