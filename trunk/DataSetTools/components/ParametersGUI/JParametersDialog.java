@@ -32,6 +32,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.45  2003/07/01 21:41:39  rmikk
+ *  Added a method, isModal, to determine if the Dialog box
+ *    is a modal dialog box
+ *  Added Method addActionListener. The listeners will be
+ *     notified when op.getResult is finished so error conditions
+ *    can be checked
+ *
  *  Revision 1.44  2003/06/24 16:41:26  dennis
  *  Changed to compare with IssScript.UNKNOWN instead of "UNKNOWN"
  *
@@ -160,6 +167,8 @@ import ExtTools.SwingWorker;
 public class JParametersDialog implements Serializable,
                                IObservable
 {
+    
+    public static final String OPERATION_THROUGH = "OPERATION THROUGH";
     private Operator op;
     private IObserver io;
     IsawGUI.Util util = new IsawGUI.Util();
@@ -178,6 +187,7 @@ public class JParametersDialog implements Serializable,
 
     JButton apply = null;
     JButton exit = null;
+    private boolean modal;
 
   private static int screenwidth=0; // for help dialog
   private static int screenheight=0;
@@ -202,6 +212,7 @@ public class JParametersDialog implements Serializable,
         this.ds_src = ds_src;
         this.sessionLog = sessionLog;    
         this.io = io;
+        this.modal = modal;
         opDialog = new JDialog( new JFrame(), op.getTitle(), modal);
         //opDialog.addComponentListener( new MyComponentListener());       
         int Size = 0 ;
@@ -557,6 +568,33 @@ public class JParametersDialog implements Serializable,
   {
     APH.deleteIObservers();
   }
+
+  Vector Action_list = new Vector();
+  /**
+  *   Adds an action listener
+  *   The only event reported so far is the end of op.getResult.
+  *   The actionCommand for this event is "OPERATION THROUGH"
+  */
+  public void addActionListener( ActionListener listener)
+  {
+   
+   Action_list.addElement( listener);
+  }
+
+  private void  notifyListeners( String ActionCommand)
+  {
+    for( int i = 0; i < Action_list.size() ; i++)
+    {
+      ActionListener action_listener = 
+                 (ActionListener)(Action_list.elementAt( i ));
+
+      action_listener.actionPerformed( new ActionEvent( this, ActionEvent.ACTION_PERFORMED,
+                 OPERATION_THROUGH) );
+
+     }
+
+
+   }
   /** Returns the result of the last execution of the operator or
  *    null if the Apply button was not pressed
  *
@@ -565,6 +603,11 @@ public class JParametersDialog implements Serializable,
      {return Result;
      }  
 
+
+    public boolean isModal()
+    {
+      return modal;
+    }
   public void addWindowListener(WindowListener l) 
    { opDialog.addWindowListener( l );
    }
@@ -665,12 +708,15 @@ public class JParametersDialog implements Serializable,
                 }
               Result=op.getResult();
               if( op instanceof IObservable)
-                ((IObservable)op).deleteIObserver(io);             
+                ((IObservable)op).deleteIObserver(io); 
+              notifyListeners( OPERATION_THROUGH);            
               return Result;
             }catch(Throwable e){
               Result= new ErrorString( e.getMessage());
+              notifyListeners( OPERATION_THROUGH);
               return null;
             }
+           
           }
           public void finished(){
             apply.setText(APPLY);
