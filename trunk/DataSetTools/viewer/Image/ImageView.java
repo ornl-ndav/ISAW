@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.44  2003/12/12 18:12:25  dennis
+ *  The "main" test program now uses the WindowShower utility class to
+ *  display the ImageView from the Swing event handling thread, instead
+ *  of showing it directly.
+ *
  *  Revision 1.43  2003/07/09 15:35:06  dennis
  *  The XConversions table for the image now uses the new form of
  *  DataSetXConversionsTable.showConversions() method, which rebins
@@ -376,7 +381,9 @@ public static void main(String[] args)
   f.setBounds(0,0,600,400);
   f.setJMenuBar( image_view.getMenuBar() );
   f.getContentPane().add(image_view);
-  f.setVisible(true);
+
+  WindowShower window_shower = new WindowShower( f );
+  EventQueue.invokeLater( window_shower );
 }
    
 
