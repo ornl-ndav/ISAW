@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2004/01/28 05:00:30  bouzekc
+ * parseText() now looks for a newline rather than a semicolon for the line
+ * end.
+ *
  * Revision 1.18  2004/01/26 21:42:14  bouzekc
  * Now handles zero-argument functions (for the wrapper).
  *
@@ -154,10 +158,15 @@ public class FortranParser {
    */
   public static String parseText( String text ) throws ParseException {
     standalone = false;
-    //need a semicolon on the end
-    if( text.indexOf( ";" ) < 0 ) {
-      text = text.trim(  ) + ";";
+    
+    if( text == null ) {
+      return null;
     }
+    
+    if( text.indexOf( "\n" ) < 0 ) {
+      text = text + "\n";
+    }
+
     if( myParser == null ) {
       myParser = new FortranParser( new StringReader( text )  );
     } else {
