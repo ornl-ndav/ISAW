@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/01/22 01:35:12  bouzekc
+ *  Removed and/or commented out unused variables.
+ *
  *  Revision 1.6  2003/12/14 19:20:41  bouzekc
  *  Removed unused imports.
  *
@@ -72,7 +75,7 @@ public class FloatField extends JTextField {
     private PropertyChangeSupport propBind=new PropertyChangeSupport(this);
 
     private static Character MINUS =new Character((new String("-")).charAt(0));
-    private static Character PLUS  =new Character((new String("+")).charAt(0));
+    //private static Character PLUS  =new Character((new String("+")).charAt(0));
     private static Character DEC   =new Character((new String(".")).charAt(0));
     private static Character E     =new Character((new String("E")).charAt(0));
 
@@ -119,7 +122,6 @@ public class FloatField extends JTextField {
      */
     private boolean isOkay(int offs, String inString, String curString){
         char[] source = inString.toCharArray();
-        String stuff=MINUS.toString();
         for( int i=0 ; i < source.length ; i++ ){
             if(Character.isDigit(source[i])){
                 // do nothing
