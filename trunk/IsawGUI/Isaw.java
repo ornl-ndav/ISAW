@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.114  2002/08/15 21:09:41  pfpeterson
+ *  Updated links due to changes in IPNS website.
+ *
  *  Revision 1.113  2002/08/15 18:49:01  pfpeterson
  *  Added a verbose, '-v', switch and updated the default version
  *  number.
@@ -568,20 +571,22 @@ public class Isaw
 
   private static final String DATA_DIR_ENV = "Data_Directory";
 
-  private static final String CHEX_URL   = "http://www.pns.anl.gov/CHEX/";
-  private static final String GLAD_URL   = "http://www.pns.anl.gov/GLAD/";
-  private static final String GPPD_URL   = "http://www.pns.anl.gov/GPPD/";
-  private static final String HIPD_URL   = "http://www.pns.anl.gov/hipd/";
-  private static final String HRMECS_URL = "http://www.pns.anl.gov/HRMECS/";
-  private static final String LRMECS_URL = "http://www.pns.anl.gov/LRMECS/";
-  private static final String POSY2_URL  = "http://www.pns.anl.gov/POSY2/";
-  private static final String POSY_URL   = "http://www.pns.anl.gov/POSY/";
-  private static final String QENS_URL   = "http://www.pns.anl.gov/qens/";
-  private static final String SAD_URL    = "http://www.pns.anl.gov/SAD/";
-  private static final String SAND_URL   = "http://www.pns.anl.gov/SAND/";
-  private static final String SCD_URL    = "http://www.pns.anl.gov/SCD/";
-  private static final String SEPD_URL   = "http://www.pns.anl.gov/SEPD/";
-  private static final String DB_URL     = "http://www.pns.anl.gov/ISAW/";
+  private static final String IPNS_URL   = "http://www.pns.anl.gov/";
+  private static final String INST_URL   = IPNS_URL+"instruments/";
+  private static final String CHEX_URL   = INST_URL+"CHEX/";
+  private static final String GLAD_URL   = INST_URL+"GLAD/";
+  private static final String GPPD_URL   = INST_URL+"GPPD/";
+  private static final String HIPD_URL   = INST_URL+"HIPD/";
+  private static final String HRMECS_URL = INST_URL+"HRMECS/";
+  private static final String LRMECS_URL = INST_URL+"LRMECS/";
+  private static final String POSY2_URL  = INST_URL+"POSY2/";
+  private static final String POSY_URL   = INST_URL+"POSY/";
+  private static final String QENS_URL   = INST_URL+"QENS/";
+  private static final String SAD_URL    = INST_URL+"SAD/";
+  private static final String SAND_URL   = INST_URL+"SAND/";
+  private static final String SCD_URL    = INST_URL+"SCD/";
+  private static final String SEPD_URL   = INST_URL+"SEPD/";
+  private static final String DB_URL     = IPNS_URL+"computing/ISAW/";
   private static final String WIN_ID     = "Windows";
 
   JDataTree jdt;  
