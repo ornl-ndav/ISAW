@@ -210,64 +210,21 @@ public class LoadMultiHistogramsForm extends Form
 
     //gets the run numbers
     param = (IParameterGUI)super.getParameter(0);
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        run_numbers = IntList.ToArray(obj.toString());
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-         "You must enter one or more valid run numbers.");
-
+    run_numbers = IntList.ToArray(param.getValue().toString());
     //get directory
     param = (IParameterGUI)super.getParameter( 1 );
     run_dir = StringUtil.setFileSeparator(
                 param.getValue().toString() + "/");
-    if(new File(run_dir).exists())
-      param.setValid(true);
-    else
-      return errorOut(param,
-          "You must enter a valid run number directory.");
-
     //get instrument name
     param = (IParameterGUI)super.getParameter( 2 );
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        inst_name = obj.toString();
-        //what instrument names should this check for?
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-         "You must enter a valid instrument name.");
-
+    inst_name = param.getValue().toString();
     //get histogram number
     param = (IParameterGUI)super.getParameter( 3 );
-    obj = param.getValue();
-    if( obj != null && obj instanceof Integer )
-    {
-        h_num = ((Integer)obj).intValue();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-         "You must enter a valid histogram number.");
-
+    h_num = ((Integer)param.getValue()).intValue();
     //get group mask
     //how should I validate this?
     param = (IParameterGUI)super.getParameter( 4 );
-    obj = param.getValue();
-    if( obj != null  )
-    {
-        g_mask = obj.toString();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-         "You must enter a valid group mask.");
-
+    g_mask = param.getValue().toString();
     //get the DataSet array
     histograms = (ArrayPG)super.getParameter( 5 );
     monitors = (ArrayPG)super.getParameter( 6 );
@@ -275,7 +232,11 @@ public class LoadMultiHistogramsForm extends Form
     histograms.clearValue();
     monitors.clearValue();
 
-    super.getResult();
+    Object superRes = super.getResult();
+
+    //had an error, so return
+    if(superRes instanceof ErrorString)  
+      return superRes;
 
     //set the increment amount
     increment = (1.0f / run_numbers.length) * 100.0f;
