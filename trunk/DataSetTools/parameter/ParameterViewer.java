@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/08/14 23:40:59  bouzekc
+ * Now sets the size of the JFrame "list" to 30% of the screen size and width.
+ *
  * Revision 1.8  2003/08/14 23:08:14  bouzekc
  * Now handles StringBuffer values.  Will now display Strings as ASCII files
  * using ViewASCII.
@@ -210,6 +213,20 @@ public class ParameterViewer implements ActionListener {
   }
 
   /**
+   * Sets the JFrame's opening size.
+   */
+  private void setInitialSize(  ) {
+    int screenheight = ( int )( Toolkit.getDefaultToolkit(  )
+                                       .getScreenSize(  )
+                                       .getHeight(  ) * 0.30f );
+    int screenwidth = ( int )( Toolkit.getDefaultToolkit(  )
+                                      .getScreenSize(  )
+                                      .getWidth(  ) * 0.30f );
+
+    holder.setBounds( 0, 0, screenwidth, screenheight );
+  }
+
+  /**
    * Note that this relies mainly on what is in the String array item_names in
    * order to create the list
    */
@@ -219,7 +236,8 @@ public class ParameterViewer implements ActionListener {
       holder = new JFrame(  );
       holder.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
       c = holder.getContentPane(  );
-      holder.setSize( 640, 480 );
+
+      setInitialSize(  );
       selector = new JList( item_names );
       selector.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
       selector.setPreferredSize( new Dimension( 320, 240 ) );
