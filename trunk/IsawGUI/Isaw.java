@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.84  2002/02/27 17:31:58  pfpeterson
+ *  Made the StatusPane larger (look for JSplitPane sp1).
+ *
  *  Revision 1.83  2002/02/26 21:15:57  pfpeterson
  *  Corrected the condition for the no data highlighted error to appear
  *  in the status pane.
@@ -583,7 +586,7 @@ public class Isaw
     JSplitPane sp1= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT,
                                             sp,
                                       StatusPanel,
-                                            0.85f );
+                                            0.80f );
    
        
     sp.setOneTouchExpandable(true);
