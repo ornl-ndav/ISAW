@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/05/20 18:51:21  pfpeterson
+ * Fixed NullPointerException problem when running operator a second time.
+ *
  * Revision 1.8  2003/05/09 18:48:25  pfpeterson
  * Now prints out UB matrices after being multiplied by the transformation
  * matrix. Also writes results to a log file.
@@ -338,7 +341,7 @@ public class ScalarJ extends GenericTOF_SCD{
       SharedData.addmsg("WARNING: Could not create logfile, bad filename");
     }
 
-    logBuffer=null; // cut the log loose
+    logBuffer.delete(0,logBuffer.length()); // cut the log loose
     return "See console for result";
   }
 
