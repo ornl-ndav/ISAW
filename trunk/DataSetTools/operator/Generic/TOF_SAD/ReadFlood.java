@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/08/21 15:26:44  rmikk
+ * Set Detector Positions
+ *
  * Revision 1.2  2003/07/22 16:27:01  dennis
  * Fixed formatting.
  *
@@ -173,7 +176,7 @@ public class ReadFlood extends GenericTOF_SAD{
                                            new Vector3D(0f,-1f,0f),
                                            new Vector3D( 0f,0f,1f), 
                                            .21f,.21f,.001f,nrows,ncols);
-     UniformGrid gridMask = new UniformGrid(37,"cm",
+     UniformGrid gridMask = new UniformGrid(38,"cm",
                                             new Vector3D(.5f,0f,0f),
                                             new Vector3D(0f,-1f,0f),
                                             new Vector3D( 0f,0f,1f), 
@@ -189,6 +192,7 @@ public class ReadFlood extends GenericTOF_SAD{
      int col = 1;
      for( int i =0; i< nrows*ncols; i++){
        // -----------------Now work with  Efficiencies
+       
         yy[0]=yvals[i];
         err[0]=errors[i];
         HistogramTable D = new HistogramTable( new UniformXScale( 0f,1f,2), yy,
@@ -199,10 +203,12 @@ public class ReadFlood extends GenericTOF_SAD{
         DetectorPixelInfo dpi = new DetectorPixelInfo( i,(short)row,(short)col,
                                   gridEff);
         DetectorPixelInfo[] pinf = new DetectorPixelInfo[1];
+        
         pinf[0] = dpi;
-        D.setAttribute( new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST,
-                              new PixelInfoList(  (pinf))   )   );
-
+        PixelInfoList pilist = new PixelInfoList(pinf);
+        PixelInfoListAttribute pilistAt = new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST,
+               pilist);;
+        D.setAttribute( pilistAt);
        //------------------ Now work with the Mask DataSet
         yy = new float[1];
         yy[0] = mask[i];
@@ -223,6 +229,11 @@ public class ReadFlood extends GenericTOF_SAD{
           col=1;
         }
      }
+     
+     gridEff.setDataEntriesInAllGrids( Efficiencies );
+     gridMask.setDataEntriesInAllGrids( Mask );
+     Grid_util.setEffectivePositions( Efficiencies, gridEff.ID());
+     Grid_util.setEffectivePositions( Mask, gridMask.ID());
 
      V = new Vector();
      V.addElement( Efficiencies);
