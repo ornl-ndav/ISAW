@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/12/11 22:09:20  rmikk
+ *  Added a kill command to remove orphaned windows
+ *
  *  Revision 1.5  2003/12/11 19:28:19  rmikk
  *  Made a public field, ImagePortion, for the portion of the
  *    split pane given to the View.
@@ -51,6 +54,9 @@
  *
  *  Revision 1.4  2003/08/08 15:48:24  dennis
  *  Added GPL copyright information and $Log$
+ *  Added GPL copyright information and Revision 1.6  2003/12/11 22:09:20  rmikk
+ *  Added GPL copyright information and Added a kill command to remove orphaned windows
+ *  Added GPL copyright information and
  *  Added GPL copyright information and Revision 1.5  2003/12/11 19:28:19  rmikk
  *  Added GPL copyright information and Made a public field, ImagePortion, for the portion of the
  *  Added GPL copyright information and   split pane given to the View.
@@ -92,7 +98,7 @@ import Command.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.util.*;
 import java.util.*;
-
+import javax.swing.event.*;
 
 /**
 *    This class creates DataSetViewers given an IViewComponent and an
@@ -187,6 +193,7 @@ public class DataSetViewerMaker1  extends DataSetViewer
                   viewComp.getDisplayPanel(), East, ImagePortion));
 
      invalidate();
+     addAncestorListener( new myAncestorListener());
     }
 
   /**
@@ -354,7 +361,21 @@ public class DataSetViewerMaker1  extends DataSetViewer
          
        }
     }
- 
+  
+  class myAncestorListener implements AncestorListener{
+     public void ancestorAdded(AncestorEvent event){
+     }
+    
+     public void ancestorRemoved(AncestorEvent event){
+       
+       viewComp.kill();
+       viewArray.kill();
+     }
+     public void ancestorMoved(AncestorEvent event){
+
+     }
+     
+  }
 
 
   public static void main( String args[])

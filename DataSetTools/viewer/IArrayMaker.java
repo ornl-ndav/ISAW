@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/12/11 22:09:31  rmikk
+ * Added a kill command to remove orphaned windows
+ *
  * Revision 1.1  2003/10/27 15:05:36  rmikk
  * Initial Checkin
  *
@@ -108,4 +111,10 @@ public interface IArrayMaker{
    public void actionPerformed( ActionEvent evt);
 
   public IVirtualArray getArray();
+
+  /**
+    * Used to dispose of orphan windows and other resources when the
+    * parent is removed from display
+    */
+  public void kill();
 }
