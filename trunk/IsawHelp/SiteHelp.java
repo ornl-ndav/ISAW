@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/02/19 17:17:38  rmikk
+ * Changed file:/// to file:// so applet is found under linux
+ *
  * Revision 1.1  2003/01/27 15:03:21  rmikk
  * Initial Checkin -The JMenuItem added to the IsawGUI
  *
@@ -69,6 +72,9 @@ public class SiteHelp  extends JMenuItem
          String S = DataSetTools.util.FilenameUtil.helpDir( "IsawMain.htm");
          if( S == null)
            return;
+         if( S.startsWith("file:///"))
+            S = "file://"+S.substring(8);
+         
          BrowserControl bc = new BrowserControl();
          bc.displayURL( S);
         }
