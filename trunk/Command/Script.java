@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/06/24 16:39:42  dennis
+ * Made the static final String "UNKNOWN" public instead of
+ * protected, so that users of this class can use it.
+ *
  * Revision 1.8  2003/06/18 18:10:26  pfpeterson
  * Added a method to get the filename.
  *
@@ -67,7 +71,7 @@ import javax.swing.text.PlainDocument;
 import javax.swing.text.BadLocationException;
 
 public class Script extends Object{
-  protected static final String UNKNOWN="UNKNOWN";
+  public static final String UNKNOWN="UNKNOWN";
 
   protected String filename; // the name of the file which contains the script
   private   String script;   // contains the actual document
