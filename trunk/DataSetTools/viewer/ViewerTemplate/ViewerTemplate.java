@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/07/13 22:00:42  dennis
+ * Main (test) program now includes code to read a
+ * sample runfile.
+ *
  * Revision 1.3  2001/04/26 14:31:32  dennis
  * Added copyright and GPL info at the start of the file.
  *
@@ -41,6 +45,7 @@ package DataSetTools.viewer.ViewerTemplate;
 
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
+import DataSetTools.retriever.*;
 import DataSetTools.components.image.*;
 import DataSetTools.viewer.*;
 import java.awt.*;
@@ -156,6 +161,7 @@ public void setDataSet( DataSet ds )
  */
 public static void main(String[] args)
 {
+/*
   DataSet   data_set   = new DataSet("Sample DataSet", "Sample log-info");
   data_set.setX_units( "Test X Units" );
   data_set.setX_label("Text X Label" );
@@ -179,6 +185,11 @@ public static void main(String[] args)
     data_set.addData_entry( spectrum );             // that data object to
                                                     // the data set
   }
+*/
+  String file_name = "/home/dennis/ARGONNE_DATA/gppd6100.run";
+  RunfileRetriever rr = new RunfileRetriever( file_name );
+  DataSet data_set = rr.getDataSet(1);
+  rr = null;
 
   ViewerTemplate view = new ViewerTemplate( data_set, null );
   JFrame f = new JFrame("Test for ViewerTemplate");
