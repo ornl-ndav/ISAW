@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/08/08 22:14:59  rmikk
+ * Fixed a logical error
+ *
  * Revision 1.11  2003/07/23 14:13:34  rmikk
  * Improved data reporting
  *
@@ -118,7 +121,8 @@ public class DS_XY_TableModel extends TableViewModel
        this.includeIndex = includeIndex;
        if( DS != null )
          { xvals = table_view.MergeXvals( 0, DS, u, false, Groups ); 
-           
+           if(xvals == null)
+             return;
            if( xvals.length > 1 ) 
                dx = xvals[ 1 ] -  xvals[ 0 ];
            else 
@@ -151,6 +155,7 @@ public class DS_XY_TableModel extends TableViewModel
    public int getColumnCount()
       {if( Groups == null )
            return 0;
+
        int S = 1 + Groups.length;
        if( includeErrors )
            S += Groups.length;
@@ -209,6 +214,8 @@ public class DS_XY_TableModel extends TableViewModel
        if( index  < 0 ) 
             return "";
        */
+       if( xvals == null)
+            return "";
        int Group = getGroup( row, column );
        float time = getTime( row,column );
        if( column == 0 )
@@ -255,15 +262,20 @@ public class DS_XY_TableModel extends TableViewModel
        float[] vals = null;
        int offset = (  column-1 )/ncolsPgroup;
        offset = column-1-ncolsPgroup*offset;
+       
        if( offset == 0 )
           vals =  DS.getData_entry( Group ).getY_values();
        else if( offset == 1 )
-          if( includeErrors )
+          if( includeErrors ){
              vals = DS.getData_entry( Group ).getErrors();
-          else vals = null;
+             if( vals == null)
+                vals = new float[0];
+          }
+          else
+            vals = null;
        else if( offset == 2 )
            vals = null;
-          
+      
        //if( vals == null ) 
        //   return new Integer(  index );
        if( vals != null)
