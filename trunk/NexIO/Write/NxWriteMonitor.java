@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/02/16 02:19:23  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.5  2003/11/24 14:09:01  rmikk
  * Eliminated some commented out code
  * Wrote out errors
@@ -49,7 +52,6 @@
 package NexIO.Write;
 
 import DataSetTools.dataset.*;
-import DataSetTools.math.*;
 import NexIO.*;
 
 /**

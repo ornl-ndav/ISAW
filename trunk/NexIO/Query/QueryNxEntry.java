@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/02/16 02:17:55  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.2  2003/12/09 14:39:33  rmikk
  * Fixed javadoc warnings
  *
@@ -45,8 +48,6 @@
 package NexIO.Query;
 import NexIO.*;
 import NexIO.State.*;
-import NexIO.Util.*;
-
 import NexIO.Process.*;
 
 /**

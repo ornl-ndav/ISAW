@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/02/16 02:19:23  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.7  2003/11/24 14:02:28  rmikk
  * Fixed error
  * Added a NXlog entry to this class for testing purposes
@@ -58,7 +61,6 @@ package NexIO.Write;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
 import NexIO.*;
-import IPNS.Runfile.*;
 
 /**
  * A Class that is responsible for writing information from data sets

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/02/16 02:19:23  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.10  2003/11/24 14:14:25  rmikk
  * Deleted segments of commented out code
  * Eliminated debugging prints
@@ -57,12 +60,9 @@
 */
 package NexIO.Write;
 
-import NexIO.Write.*;
 import NexIO.Write.NexApi.*;
 import NexIO.*;
-import java.lang.*;
 import DataSetTools.dataset.*;
-import NexIO.NexApi.*;
 import IsawGUI.*;
 import IPNS.Runfile.*;
 import DataSetTools.util.*;
