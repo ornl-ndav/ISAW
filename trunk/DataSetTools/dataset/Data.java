@@ -10,8 +10,15 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.8  2000/08/02 01:34:22  dennis
+ *  Added ResampleUniformly() to generalize ReBin().  ReBin only applies to
+ *  histograms, ResampleUniformly applies to both histgrams and tabulated
+ *  functions.  For histograms, it just calls ReBin.  For tabulated functions,
+ *  CLSmooth is called and then the points are resampled to a uniform grid of
+ *  x values by interpolation.
+ *
  *  Revision 1.7  2000/08/01 19:10:37  dennis
- *  Data.ReBin now calls error handling version of tof_calc.ReBin() if
+ *  Data.ReBin now calls error handling version of Sample.ReBin() if
  *  the Data block has non-null errors.  Also, added crude print() routine
  *  to print x,y,err values for debugging.
  *
@@ -518,6 +525,87 @@ public float getY_value( float x_value )
     return temp;
   }
 
+
+  /**
+   *  Resample the Data block on a uniformly spaced set of points given by
+   *  the new_X scale parameter.  If the Data block is a tabulated function,
+   *  the function will be interpolated and smoothed by averaging nearby 
+   *  points.  If the Data block is a histogram, the histogram will be 
+   *  re-binned to form a new histogram with uniform bin sizes.
+   *
+   *  @param new_X  The x scale giving the set of x values to use for the
+   *                 resampling and/or rebinning operation. 
+   */
+  public void ResampleUniformly( UniformXScale new_X )
+  {
+    if ( x_scale.getNum_x() == y_values.length + 1 )   // histogram
+      ReBin( new_X );
+
+    else                                               // function
+    {
+      float x_start = new_X.getStart_x();
+      float x_end   = new_X.getEnd_x();
+
+      float x[]     = x_scale.getXs();
+      if ( x_start > x[ x.length-1 ] || x_end < x[0] )  // degenerate case
+      {
+        x_scale = (UniformXScale)new_X.clone();
+        y_values = new float[x.length];
+        for ( int i = 0; i < x.length-1; i++ )
+          y_values[i] = 0;
+
+        if ( errors != null )
+        {
+          errors = new float[x.length];
+          System.arraycopy( y_values, 0, errors, 0, x.length );
+        } 
+      }
+      else    // the intervals overlap, so get the portions of the x&y arrays 
+      {       // that we are dealing with and pass those into the smooth op
+
+         int i_start = arrayUtil.get_index_of( x_start, x );
+         if ( i_start < 0 )
+           i_start = 0;
+
+         int i_end = arrayUtil.get_index_of( x_end, x );
+         if ( i_end < 0 )
+           i_end = x.length-1;
+
+         int num_new_x = i_end - i_start + 1;       // extract part of the
+         float new_x[] = new float[ num_new_x ];    // existing x,y values
+         float new_y[] = new float[ num_new_x ];
+         for ( int i = 0; i < num_new_x; i++ )
+         {
+           new_x[i] = x[ i + i_start ];
+           new_y[i] = y_values[ i + i_start ];
+         }
+
+         x_scale = new VariableXScale( new_x );     // keep only part of the
+         y_values = new_y;                          // existing x,y values
+
+         if ( errors != null )                      // keep part of existing 
+         {                                          // errors if not null.
+           float new_err[] = new float[ num_new_x ];
+           for ( int i = 0; i < num_new_x; i++ )
+             new_err[i] = errors[ i + i_start ];
+           errors = new_err;
+         }
+         CLSmooth( new_X.getNum_x() );             // changes current Data
+                                                   // block x, y, errors
+        
+         x = x_scale.getXs();
+         float nX[] = new_X.getXs();
+         y_values = Sample.Resample( x, y_values, nX );   
+       
+         if ( errors != null ) 
+           errors   = Sample.Resample( x, errors, nX );
+         x_scale = (UniformXScale)new_X.clone();
+      }
+                
+    }
+  }
+
+
   /**
    * Alter this Data object by "rebinning" the y values of the current 
    * object to correspond to a new set of x "bins" given by the parameter
@@ -534,14 +622,14 @@ public float getY_value( float x_value )
     if ( errors != null )
     {
       float new_errs[] = new float[ new_X.getNum_x() - 1 ];
-      tof_calc.ReBin( x_scale.getXs(), old_ys, errors,
+      Sample.ReBin( x_scale.getXs(), old_ys, errors,
                       new_X.getXs(),   new_ys, new_errs );
       y_values = new_ys;
       errors   = new_errs;
     }
     else
     {
-      tof_calc.ReBin( x_scale.getXs(), old_ys, new_X.getXs(), new_ys );
+      Sample.ReBin( x_scale.getXs(), old_ys, new_X.getXs(), new_ys );
       y_values = new_ys;
     }
 
@@ -565,13 +653,13 @@ public float getY_value( float x_value )
     if ( x_scale.getNum_x() == y_values.length )          // function
     {
       function = true;
-      old_x  = x_scale.getXs();
+      old_x    = x_scale.getXs();
     }
     else if (  x_scale.getNum_x() == y_values.length+1 )  // histogram 
     {                                                     // so use bin centers
-      function = false;                                   // for the x values
+      function       = false;                             // for the x values
       float temp_x[] = x_scale.getXs();
-      old_x = new float[ temp_x.length -1 ];
+      old_x          = new float[ temp_x.length -1 ];
       for ( int i = 0; i < old_x.length; i++ )
         old_x[i] = (temp_x[i] + temp_x[i+1]) / 2;
     }
@@ -582,9 +670,11 @@ public float getY_value( float x_value )
     }
                                                         // now do the smoothing
    if ( errors != null )
-     num_X = tof_calc.CLSmooth( old_x, y_values, errors, num_X );
+   {
+     num_X = Sample.CLSmooth( old_x, y_values, errors, num_X );
+   }
    else
-     num_X = tof_calc.CLSmooth( old_x, y_values, num_X );
+     num_X = Sample.CLSmooth( old_x, y_values, num_X );
 
                                                 // put the y values and
                                                 // errors in right size arrays
@@ -601,11 +691,12 @@ public float getY_value( float x_value )
                                                 // copy over the x values, or
                                                 // synthesize bin boundaries
                                                 // as needed and make XScale
-   if ( function )
-   {
+//   if ( function )
+//   {
      float new_x[] = new float[num_X];
      System.arraycopy( old_x, 0, new_x, 0, num_X );
      x_scale = new VariableXScale( new_x );
+/*
    }
    else                                    
    {
@@ -620,7 +711,7 @@ public float getY_value( float x_value )
 
      x_scale = new VariableXScale( new_x );
    }
-
+*/
   }
 
 
@@ -1021,6 +1112,10 @@ public float getY_value( float x_value )
   }
 
  /**
+  *  Dump the index, x, y and error value to standard output
+  *  
+  *  @param first_index  The index of the first data point to dump
+  *  @param last_index   The index of the last data point to dump
   *
   */
   public void print( int first_index, int last_index )
