@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/01/05 23:44:13  rmikk
+ * Last form now shows resultant data sets
+ *
  * Revision 1.3  2004/01/05 15:24:22  bouzekc
  * Removed unused imports.
  *
@@ -122,7 +125,7 @@ public class ReduceWizard extends Wizard {
      
      this.addForm( new JyScriptForm( Path+"Reduce_Form3.py",new ArrayPG("Q bins",null )));
      
-     this.addForm( new JyScriptForm( Path+"ReducePy.py",new StringPG("Result",null),consts ));
+     this.addForm( new JyScriptForm( Path+"ReducePy.py",new ArrayPG("DataSet Result",null),consts ));
      
      setHelpURL( "Reduce.html");
  
