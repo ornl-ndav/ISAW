@@ -1,7 +1,7 @@
 /*
  * File:  ScriptForm.java
  *
- * Copyright (C) 2003, Christopher M. Bouzek
+ * Copyright (C) 2003, Chris M. Bouzek
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,10 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
- *           Christopher M. Bouzek <coldfusion78@yahoo.com>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
+ *
+ *           Chris M. Bouzek <coldfusion78@yahoo.com>
  *
  * This work was supported by the National Science Foundation.
  *
@@ -45,10 +46,10 @@ import DataSetTools.components.ParametersGUI.*;
 import Command.ScriptOperator;
 
 /**
-  * The OperatorForm class is an extension of Form designed to work 
-  * with an Operator Object.  Although a Form is an Operator, 
-  * by creating an OperatorForm, it becomes easier to implement
-  * many of the methods.
+  * The ScriptForm class is an extension of Form designed to work 
+  * with Scripts.  Although a Form is an Operator, 
+  * by creating an ScriptForm, it becomes easier to implement
+  * many of the methods by using ScriptOperator.
  */
 
 public class ScriptForm extends OperatorForm implements Serializable{
@@ -75,6 +76,7 @@ public class ScriptForm extends OperatorForm implements Serializable{
   {
     this();
     super.form_op = new ScriptOperator(filename);
+    super.setDefaultParameters();
   }
 
 }
