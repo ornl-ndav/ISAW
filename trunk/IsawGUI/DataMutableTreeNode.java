@@ -3,6 +3,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.4  2001/07/20 16:36:10  neffk
+ * log error: fixed removeFromNode() in previous revision
+ *
  * Revision 1.3  2001/07/20 16:30:31  neffk
  * fixed some fairly obvious errors, added a few comments, and changed
  * children() to return an implementor of Enumeration instead of null.
@@ -37,7 +40,9 @@ public class DataMutableTreeNode
   private MutableTreeNode parent = null;
   private String          name   = null;
 
-
+  /**
+   * default constructor
+   */ 
   public DataMutableTreeNode()
   {
   }
