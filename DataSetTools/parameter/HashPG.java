@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/06/06 18:49:44  pfpeterson
+ *  Made abstract and removed clone method.
+ *
  *  Revision 1.5  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -58,7 +61,7 @@ import DataSetTools.components.ParametersGUI.HashEntry;
  * This is a superclass to take care of many of the common details of
  * Hash Parameter GUIs.
  */
-public class HashPG extends ParameterGUI{
+abstract public class HashPG extends ParameterGUI{
     // static variables
     private   static String TYPE     = "Hash";
     protected static int    DEF_COLS = 20;
@@ -242,62 +245,5 @@ public class HashPG extends ParameterGUI{
     public void setEnabled(boolean enabled){
         this.enabled=enabled;
         if(this.entrywidget!=null) this.entrywidget.setEnabled(this.enabled);
-    }
-
-    /**
-     * Main method for testing purposes.
-     */
-    static void main(String args[]){
-        HashPG fpg;
-        int y=0, dy=70;
-
-        Vector keys=new Vector();
-        keys.add("bob");
-        keys.add("bob");
-        keys.add("doug");
-        Vector vals=new Vector();
-        vals.add("bb");
-        vals.add("bb");
-        vals.add("dug");
-
-        fpg=new HashPG("a","1f");
-        System.out.println(fpg);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new HashPG("b","10f");
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new HashPG("c","1000f",false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new HashPG("d","100f",true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.init(keys,vals);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-    }
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        HashPG hpg=new HashPG(this.name,this.value,this.valid);
-        hpg.keys=(Vector)this.keys.clone();
-        hpg.vals=(Vector)this.vals.clone();
-        hpg.setDrawValid(this.getDrawValid());
-        hpg.initialized=false;
-        return hpg;
     }
 }
