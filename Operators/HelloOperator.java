@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/04/02 15:04:37  pfpeterson
+ * Now uses IParameterGUI rather than IParameter.
+ *
  * Revision 1.5  2003/02/03 18:52:38  dennis
  * Added getDocumentation() operator. (Joshua Olson)
  *
@@ -47,6 +50,7 @@ package Operators;
 
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
+import DataSetTools.parameter.StringPG;
 import java.util.*;
 
 /** 
@@ -92,8 +96,7 @@ public class HelloOperator extends GenericOperator
   public HelloOperator( String user_name )
   {
     this();
-    parameters = new Vector();
-    addParameter( new Parameter("Name", user_name) );
+    getParameter(0).setValue(user_name);
   }
 
  /* ------------------------------ getCommand ----------------------------- */
@@ -147,7 +150,7 @@ public class HelloOperator extends GenericOperator
   public void setDefaultParameters()
   {
     parameters = new Vector();
-    addParameter( new Parameter("Name", "John Doe") );
+    addParameter( new StringPG("Name", "John Doe") );
   }
 
  /* ------------------------------ getResult ------------------------------- */
