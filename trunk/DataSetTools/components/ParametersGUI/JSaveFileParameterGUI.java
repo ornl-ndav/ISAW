@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/08/22 15:07:03  pfpeterson
+ *  Fixed a bug with setting the parameter value and the return type.
+ *
  *  Revision 1.2  2002/04/04 20:41:48  pfpeterson
  *  getParameter returns a String.
  *
@@ -41,6 +44,7 @@ package DataSetTools.components.ParametersGUI;
 
 import javax.swing.*;
 import DataSetTools.operator.*;
+import DataSetTools.util.SaveFileString;
 import javax.swing.filechooser.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -83,8 +87,10 @@ public class JSaveFileParameterGUI  extends JParameterGUI{
     }
 
     public Parameter getParameter(){
-        parameter.setValue( filename.toString() ); 
-        return parameter;
+        Parameter p = super.getParameter();
+        filename=tf.getText();
+        p.setValue(new SaveFileString(filename));
+        return p;
     }
 
     public void setFileFilter(  FileFilter file_filter){
