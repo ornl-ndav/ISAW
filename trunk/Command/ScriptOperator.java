@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2003/06/18 18:16:23  pfpeterson
+ * Removed dead code, constructor throws an exception on failure, implements
+ * PropertyChanger rather than Customizer, pushed off more work onto the
+ * ScriptProcessor that the instance posesses.
+ *
  * Revision 1.25  2003/06/17 16:39:39  pfpeterson
  * Uses methods in ScriptProcessor for getCommand, getTitle, getDocumentation,
  * and getCategoryList.
@@ -83,11 +88,10 @@ import java.io.*;
  * Adds features to a ScriptProcessor to be more of an "Operator"
  */
 public class ScriptOperator extends GenericOperator
-              implements IObservable, Customizer{  //for property change events
+         implements IObservable, PropertyChanger{  //for property change events
     private String filename;
     
     private ScriptProcessor SP;
-    private String errorMessage ="";
     public static String ER_FILE_ERROR             = "File error ";
    
     
@@ -98,15 +102,14 @@ public class ScriptOperator extends GenericOperator
      *
      * @param  filename  The file with a script
      */
-    public ScriptOperator(  String filename ){
+    public ScriptOperator(  String filename ) throws InstantiationError{
         super("UNKNOWN");
         
         this.filename = filename;
-        errorMessage ="";
         SP = new ScriptProcessor( filename );
-        if( SP.getErrorMessage().length( ) > 0 ){
-            errorMessage = SP.getErrorMessage();
-            return;
+        String errorMessage=SP.getErrorMessage().trim();
+        if( errorMessage!=null && errorMessage.length( ) > 0 ){
+          throw new InstantiationError(errorMessage);
         }
     }
     
@@ -127,42 +130,6 @@ public class ScriptOperator extends GenericOperator
         }
     }
 
-    private String adjust( String F1, String X ){
-        String F = F1;
-        if( F == null ) 
-            return null;
-        
-        F = F.trim();
-        if( F.length()<1)
-            return F;
-        if( F.charAt(F.length()-1) !='/')
-            F = F+'/';
-        int i = 0;
-        X = X.replace(java.io.File.pathSeparatorChar,';');
-        // System.out.println("X ="+X);
-        int j = X.indexOf( ';');
-        boolean done = X.length()==0;
-        if( j < 0) 
-            j = X.length();
-        
-        while( !done){
-            //System.out.println(F+"-"+X.substring(i,j));
-            if (F.toUpperCase().indexOf( X.substring(i,j).toUpperCase() ) >=0 ){
-                done = true;
-                F = F.substring( j - i ); 
-                //System.out.println("adjusted");
-                return F;
-            }else if( j < X.length() ){
-                i= j  + 1;
-                j = X.indexOf( ';' , i );
-                if( j < 0) 
-                    j = X.length();
-            }else
-                done = true;
-        }
-        return F;
-    }
-    
     /**
      * Gets the title
      *
@@ -183,7 +150,7 @@ public class ScriptOperator extends GenericOperator
     }
 
     public String getErrorMessage(){
-        return errorMessage;
+        return SP.getErrorMessage();
     }
     
     /**
@@ -193,8 +160,8 @@ public class ScriptOperator extends GenericOperator
      * is an important part of a function
      */
     public void setDefaultParameters(){
-        if(SP != null)
-            SP.setDefaultParameters();
+      if(SP!=null)
+        SP.setDefaultParameters();
     }
 
     public String getDocumentation(){
@@ -212,7 +179,7 @@ public class ScriptOperator extends GenericOperator
     }
     
     public String getFileName(){
-        return filename;
+        return SP.getFileName();
     }
 
     public int getErrorCharPos(){
@@ -238,8 +205,8 @@ public class ScriptOperator extends GenericOperator
         return SP.getParameter( index );
     }
 
-    public void addParameter( IParameter P){
-        return;
+    public void addParameter( IParameter P) throws IllegalArgumentException{
+        throw new IllegalArgumentException("Cannot add parameters to scripts");
     }
     
     public void CopyParametersFrom( Operator op){
@@ -247,17 +214,17 @@ public class ScriptOperator extends GenericOperator
     }
     
     public void addPropertyChangeListener( PropertyChangeListener pl ){
-      if(SP!=null)
         SP.addPropertyChangeListener( pl );
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener){
-        //SP.removePropertyChangeListener( listener);
-    }
-    
-    public void setObject(Object bean){
+    public void addPropertyChangeListener( String property,
+                                           PropertyChangeListener pl ){
+        SP.addPropertyChangeListener( property, pl );
     }
 
+    public void removePropertyChangeListener(PropertyChangeListener listener){
+        SP.removePropertyChangeListener( listener);
+    }
 
     public void addIObserver( IObserver iobs ){
         SP.addIObserver( iobs );
@@ -291,12 +258,7 @@ public class ScriptOperator extends GenericOperator
      * Executes the script and returns the result
      */
     public Object getResult(){
-        if( SP != null){
-            Object Res = SP.getResult();
-            errorMessage = SP.getErrorMessage();
-            return Res;
-        }else
-            return null;
+        return SP.getResult();
     }
 
     /**
@@ -309,17 +271,25 @@ public class ScriptOperator extends GenericOperator
             System.exit( 0 );
         if( args.length < 1)
             System.exit( 0 );
-        ScriptOperator SO;
-        SO = new ScriptOperator( args[ 0 ] );
-        if( SO.getErrorMessage().length() > 0){
+        ScriptOperator SO=null;
+        try{
+          SO = new ScriptOperator( args[ 0 ] );
+        }catch(InstantiationError e){
+          System.out.println("ERROR:"+e.getMessage());
+          System.exit(-1);
+        }
+        if( SO!=null && SO.getErrorMessage().length() > 0){
             System.out.println("Error ="+args[0]+"--"+SO.getErrorMessage());
-            System.exit( 0 );
+            System.exit(-1);
         }
         boolean dialogbox=false;
         if( SO.getNum_parameters() > 0){
             JParametersDialog JP = new JParametersDialog(SO, null, null, null );
-            myWindowListener  ml = new myWindowListener();
-            JP.addWindowListener( ml );
+            JP.addWindowListener( new WindowAdapter(){
+                public void windowClosed(WindowEvent e){
+                  System.exit(0);
+                }
+              } );
             dialogbox=true;
         }else{
             Object XX = SO.getResult();
@@ -332,11 +302,5 @@ public class ScriptOperator extends GenericOperator
                     System.out.println("An Error occurred "
                                        +SO.getErrorMessage());
         if(!dialogbox)System.exit( 0 );
-    }
-}
-
-class myWindowListener  extends WindowAdapter{
-    public void windowClosed(WindowEvent e){
-        System.exit(0);
     }
 }
