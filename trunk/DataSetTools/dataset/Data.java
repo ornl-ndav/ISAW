@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2002/08/01 22:33:34  dennis
+ *  Set Java's serialVersionUID = 1.
+ *  Set the local object's IsawSerialVersion = 1 for our
+ *  own version handling.
+ *  Added readObject() method to handle reading of different
+ *  versions of serialized object.
+ *
  *  Revision 1.29  2002/07/11 18:18:23  dennis
  *  Added getLabel() and setLabel() methods.
  *  Added  serialVersionUID = 1L;
@@ -83,11 +90,44 @@ public abstract class Data implements IData,
                                       Serializable ,
                                       IXmlIO
 {
-  // CHANGE IF THE SERIALIZATION IS INCOMPATIBLE WITH PREVIOUS VERSIONS
-  static final long serialVersionUID = 1L;
+  // NOTE: any field that is static or transient is NOT serialized.
+  //
+  // CHANGE THE "serialVersionUID" IF THE SERIALIZATION IS INCOMPATIBLE WITH
+  // PREVIOUS VERSIONS, IN WAYS THAT CAN NOT BE FIXED BY THE readObject()
+  // METHOD.  SEE "IsawSerialVersion" COMMENTS BELOW.  CHANGING THIS CAUSES
+  // JAVA TO REFUSE TO READ DIFFERENT VERSIONS.
+  //
+  public  static final long serialVersionUID = 1L;
 
-  public static final String FUNCTION  = "Function";
-  public static final String HISTOGRAM = "Histogram";
+  public  static final String FUNCTION  = "Function";
+  public  static final String HISTOGRAM = "Histogram";
+  private static long  select_count     = 1;
+                                           // each Data block is tagged as
+  transient protected long selected = 0;   // selected by giving it a non-zero
+                                           // selected value.  The value is
+                                           // value of select_count after
+                                           // incrementing select_count.
+                                           // selected == select_count
+                                           // for the most recently selected
+                                           // Data block.
+  transient protected boolean  hide = false;
+                                           // if label_is_attribute == true,
+                                           // use the named attribute for the
+                                           // label value, otherwise, use the
+                                           // label_string directly as the  
+                                           // label
+  transient private   String   label_string = Attribute.GROUP_ID;
+  transient private   boolean  label_is_attribute = true;
+
+  // NOTE: The following fields are serialized.  If new fields are added that
+  //       are not static, reasonable default values should be assigned in the
+  //       readObject() method for compatibility with old servers, until the
+  //       servers can be updated.
+
+  private int IsawSerialVersion = 1;         // CHANGE THIS WHEN ADDING OR
+                                             // REMOVING FIELDS, IF
+                                             // readObject() CAN FIX ANY
+                                             // COMPATIBILITY PROBLEMS
 
   protected int          group_id;  //NOTE: we force a Data object to have an
                                     // id and also keep the same id as an
@@ -95,17 +135,6 @@ public abstract class Data implements IData,
                                     // changed through the setID() method.
   protected XScale        x_scale;
   protected AttributeList attr_list;
-                                           // each Data block is tagged as
-  protected long          selected = 0;    // selected by giving it a non-zero
-  private   static long   select_count = 1;// selected value.  The value is
-                                           // value of select_count after
-                                           // incrementing select_count.
-                                           // selected == select_count
-                                           // for the most recently selected
-                                           // Data block.
-  protected boolean  hide = false;
-  private   String   label_string = Attribute.GROUP_ID;
-  private   boolean  label_is_attribute = true;
 
   /**
    *  Create an instance of a Data object representing a function or histogram.
@@ -1263,4 +1292,37 @@ public abstract class Data implements IData,
     {
      return xml_utils.setError("Data XMLread not implemented");
     }
+
+/* -----------------------------------------------------------------------
+ *
+ *  PRIVATE METHODS
+ *
+ */
+
+/* ---------------------------- readObject ------------------------------- */
+/**
+ *  The readObject method is called when objects are read from a serialized
+ *  ojbect stream, such as a file or network stream.  The non-transient and
+ *  non-static fields that are common to the serialized class and the
+ *  current class are read by the defaultReadObject() method.  The current
+ *  readObject() method MUST include code to fill out any transient fields
+ *  and new fields that are required in the current version but are not
+ *  present in the serialized version being read.
+ */
+
+  private void readObject( ObjectInputStream s ) throws IOException,
+                                                        ClassNotFoundException
+  {
+    s.defaultReadObject();               // read basic information
+
+    if ( IsawSerialVersion != 1 )
+      System.out.println("Warning:Data IsawSerialVersion != 1");
+
+                                         // set meaningful values for transient
+    hide         = false;                // fields
+    selected     = 0;
+    label_string = Attribute.GROUP_ID;
+    label_is_attribute = true;
+  }
+
 }
