@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2001/12/10 22:05:06  dennis
+ *  Now will pad run numbers with leading zeros, to length 4 when
+ *  forming the file name string.
+ *
  *  Revision 1.10  2001/08/10 22:14:51  dennis
  *  Now sends message to LiveDataServer if the run number is 0.
  *
@@ -90,9 +94,9 @@ import DataSetTools.retriever.*;
 public class DASOutputTest
 {
   public static final int    DEFAULT_DAS_UDP_PORT = 6080;
-//  public static final String INSTRUMENT_COMPUTER  = "dmikk.mscs.uwstout.edu";
+//public static final String INSTRUMENT_COMPUTER  = "dmikk.mscs.uwstout.edu";
 //public static final String INSTRUMENT_COMPUTER  = "mscs138.mscs.uwstout.edu";
-public static final String INSTRUMENT_COMPUTER  = "mandrake.pns.anl.gov";
+  public static final String INSTRUMENT_COMPUTER  = "mandrake.pns.anl.gov";
 
   byte    buffer[]    = new byte[ 65536 ];
   String  file_name   = null;
@@ -224,10 +228,17 @@ public static final String INSTRUMENT_COMPUTER  = "mandrake.pns.anl.gov";
       System.out.println("Sending message with run number 0");
       test.SendSpectrum( sender, 0, 1, new float[0] );
       System.exit( 0 );
-    }
+    }                                                    // pad run_number with
+                                                         // leading 0's to at
+                                                         // least length 4.
+    String run_number_string = new String();
+    run_number_string = "" + test.run_number;
+    while ( run_number_string.length() < 4 )
+       run_number_string = "0" + run_number_string;
+
     test.file_name = new String(test.inst_name, 0, test.inst_name.length);
     test.file_name = test.file_name.toUpperCase();
-    test.file_name = test.file_name + test.run_number + ".RUN";
+    test.file_name = test.file_name + run_number_string + ".RUN";
 
     System.out.println( "Sending data for run " + test.file_name );
 
