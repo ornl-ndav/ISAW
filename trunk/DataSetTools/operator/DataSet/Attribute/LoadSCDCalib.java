@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/02/11 23:05:03  pfpeterson
+ * Added ability to read calibration from an experiment file.
+ *
  * Revision 1.3  2003/02/06 20:34:47  dennis
  * Added getDocumentation() method. (Tyler Stelzer)
  *
@@ -191,7 +194,8 @@ public class LoadSCDCalib extends DS_Attribute{
             return;
             }*/
 
-        if( oldDetNum!=0 && oldDetNum!=detNum ) return;
+        // if detNum=-1 don't bother checking against existing number
+        if( detNum!=-1 && oldDetNum!=0 && oldDetNum!=detNum ) return;
 
         //System.out.println(d);
 
@@ -208,56 +212,124 @@ public class LoadSCDCalib extends DS_Attribute{
     }
 
     /**
+     * The line number parameter is ignored if this is an experiment file.
+     */
+    public static Object readCalib(TextFileReader tfr, boolean isexpfile,
+                                                                  int linenum){
+      float[] calib=null;
+      String descr=null;
+
+      try{
+        if(isexpfile){
+          descr="";
+          int i=1;
+          String start=null;
+          calib=new float[9];
+          calib[0]=-1f;
+          while(!tfr.eof() && i<9 ){
+            start=tfr.read_String();
+            if(start.equals("INST")){ // candidate
+              start=tfr.read_String();
+              if(start.equals("DETA")){ // detector angle in plane
+                calib[1]=tfr.read_float();
+                i++;
+              }else if(start.equals("DETD")){ // detector distance
+                calib[2]=tfr.read_float();
+                i++;
+              }else if(start.equals("L1")){ // initial flight path
+                calib[3]=tfr.read_float();
+                i++;
+              }else if(start.equals("TZERO")){ // time offset
+                calib[4]=tfr.read_float();
+                i++;
+              }else if(start.equals("X2CM")){ // x-pixel to cm
+                calib[5]=tfr.read_float();
+                i++;
+              }else if(start.equals("Y2CM")){ // y-pixel to cm
+                calib[6]=tfr.read_float();
+                i++;
+              }else if(start.equals("XLEFT")){ // x-offset in cm
+                calib[7]=tfr.read_float();
+                i++;
+              }else if(start.equals("YLOWER")){ // y-offset in cm
+                calib[8]=tfr.read_float();
+                i++;
+              }
+            }
+            tfr.read_line(); // gobble the rest of the line
+          }
+        }else{
+          for( int i=0 ; i<=linenum ; i++ )
+            tfr.read_line();
+          tfr.unread();
+          calib=new float[9];
+          for( int i=0 ; i<9 ; i++ )
+            calib[i]=tfr.read_float();
+          descr=tfr.read_line();
+        }
+      }catch(IOException e){
+        return new ErrorString("Error reading calibration: "+e.getMessage());
+      }catch(NumberFormatException e){
+        return new ErrorString("Error reading calibration: "+e.getMessage());
+      }
+
+      for( int i=0 ; i<9 ; i++ )
+        System.out.println(i+":"+calib[i]);
+
+      if(calib!=null){
+        Object[] res={calib,descr};
+        return res;
+      }else{
+        return new ErrorString("Something went wrong");
+      }
+    }
+
+    /**
      * Read in the calibration parameters.
      */
     private boolean readCalib( String filename, int linenum ){
         StringBuffer calibline=null;
         TextFileReader tfr=null;
+        float[] innercalib=null;
 
-	try{
-	    tfr=new TextFileReader(filename);
-            String temp=null;
-            for( int i=0 ; i<=linenum ; i++ ){
-                temp=tfr.read_line();
+        try{
+          tfr=new TextFileReader(filename);
+          Object res=null;
+          if(filename.toUpperCase().endsWith(".X")){
+            res=readCalib(tfr,true,linenum);
+            descr=filename;
+          }else{
+            res=readCalib(tfr,false,linenum);
+            descr=(String)((Object[])res)[1];
+          }
+          if(res instanceof ErrorString)
+            return false;
+          
+          // things can't be too bad
+          innercalib=(float[])((Object[])res)[0];
+        }catch(IOException e){
+          return false;
+        }finally{
+          if(tfr!=null){
+            try{
+              tfr.close();
+            }catch(IOException e){
+              // let it drop on the floor
             }
-            if(temp!=null){
-                calibline=new StringBuffer(temp);
-            }
-	}catch(IOException e){
-            // something went wrong
-	    return false;
-	}finally{
-            if(tfr!=null){
-                try{
-                    tfr.close();
-                }catch(IOException e){
-                }
-            }else{
-                return false;
-            }
+          }
         }
 
         this.calib=new float[5];
-        if(calibline!=null){
-            StringUtil.trim(calibline);
-            detNum=StringUtil.getInt(calibline);
-            detA=StringUtil.getFloat(calibline);
-            detD=StringUtil.getFloat(calibline);
-            L1=StringUtil.getFloat(calibline);
-            this.calib[0]=StringUtil.getFloat(calibline); // T0
-            this.calib[1]=StringUtil.getFloat(calibline); // ax
-            this.calib[2]=StringUtil.getFloat(calibline); // ay
-            this.calib[3]=StringUtil.getFloat(calibline); // bx
-            this.calib[4]=StringUtil.getFloat(calibline); // by
-            descr=calibline.toString();
-            
-            detD=detD/100f;
-            L1=L1/100f;
+        this.detNum=(int)innercalib[0];
+        this.detA=innercalib[1];
+        this.detD=innercalib[2];
+        this.L1=innercalib[3];
+        for( int i=0 ; i<5 ; i++ )
+          this.calib[i]=innercalib[i+4];
 
-            return true;
-        }else{
-            return false;
-        }
+        this.detD=this.detD/100f;
+        this.L1=this.L1/100f;
+        return true;
     }
     
     public String getDocumentation()
