@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.36  2004/05/11 02:01:53  millermi
+ * - Changed integrate label from "Integrate by:" to "Integrate with:".
+ *
  * Revision 1.35  2004/05/04 01:50:36  millermi
  * - Default close operation now set to DISPOSE_ON_CLOSE.
  * - Overloaded dispose() method so subcomponent windows are also closed.
@@ -349,7 +352,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   private String[] ringlabels;
   private String   datafile;
   private boolean os_region_added = false;
-  private boolean integrate_by_ring = true; // If false, integrate by radii,
+  private boolean integrate_by_ring = true; // If false, integrate wrt radii,
                                             // summing over an angle.
 
  /**
@@ -1868,7 +1871,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       super( BoxLayout.Y_AXIS );
       this_editor = this;
       
-      JLabel label = new JLabel("Integrate by:");
+      JLabel label = new JLabel("Integrate");
+      JLabel label2 = new JLabel("with:");
       ButtonGroup integrate_group = new ButtonGroup();
       ring_option = new JRadioButton("Rings");
       ring_option.addActionListener( new IntegrateOption() );
@@ -1877,11 +1881,14 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       integrate_group.add(ring_option);
       integrate_group.add(angle_option);
       integrate_group.setSelected(ring_option.getModel(),true);
+      JPanel labels = new JPanel( new GridLayout(2,1) );
+      labels.add(label);
+      labels.add(label2);
       JPanel radios = new JPanel( new GridLayout(2,1) );
       radios.add(ring_option);
       radios.add(angle_option);
       JPanel integrate_control = new JPanel( new GridLayout(1,2) );
-      integrate_control.add(label);
+      integrate_control.add(labels);
       integrate_control.add(radios);
       this_editor.add(integrate_control);
             
