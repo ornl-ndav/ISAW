@@ -30,6 +30,15 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.7  2003/07/01 22:17:36  dennis
+ *  Added static method setDataEntriesInAllGrids(ds) to allow the
+ *  runfile retriever to efficiently set references to all Data blocks
+ *  in the corresponding DataGrids.  This is needed to efficiently
+ *  fill out the references to Data blocks for cases where a DataSet
+ *  contains a large number of Data blocks each treated as comming
+ *  from an individual detector.  (eg. GLAD with 20000 pixels, treated
+ *  as individual detectors.)
+ *
  *  Revision 1.6  2003/05/24 21:10:09  dennis
  *  Added methods setData_entries(ds), getData_entry(row,col), and
  *  isData_entered() to allow a UniformGrid to keep a list of references
@@ -717,6 +726,68 @@ public class UniformGrid implements IDataGrid
     return true;
   }
 
+
+  /**
+   *  This method goes through the Data blocks of a DataSet and records
+   *  a reference to each of the Data blocks in all of the UniformDataGrids 
+   *  associated with the pixels in it's pixel info list.  If any of the 
+   *  Data blocks don't have a pixel info list this returns false.  Otherwise
+   *  it returns true.  The DataGrids that this finds will also have their
+   *  data_loaded flags set to true, so this method should only be used on 
+   *  DataSets containing a complete set of Data blocks for the Data grids
+   *  that appear in the PixelInfoList.
+   *
+   *  @param  ds   The DataSet for which references to its Data blocks are to
+   *               be made from their Data grids.
+   *
+   *  @return If all entries in the DataSet had a pixel info list and
+   *          those all referenced UniformGrids, then all entries in 
+   *          the DataSet will be referrenced from the corresponding 
+   *          DataGrids, and this method will return true.
+   */
+  public static boolean setDataEntriesInAllGrids( DataSet ds )
+  {
+    if ( ds == null )
+      return false;
+
+    int n_data = ds.getNum_entries();
+    if ( n_data <= 0 )
+      return false;
+
+    Data          d;
+    Attribute     attr;
+    int           row,
+                  col;
+    PixelInfoList pil;
+    UniformGrid     grid;
+    boolean       complete = true;
+
+    for ( int i = 0; i < n_data; i++ )
+    {
+      d = ds.getData_entry(i);
+      attr = d.getAttribute( Attribute.PIXEL_INFO_LIST );
+      if ( attr != null && attr instanceof PixelInfoListAttribute )
+      {
+        pil = (PixelInfoList)attr.getValue();
+        for ( int j = 0; j < pil.num_pixels(); j++ )
+        {
+          grid = (UniformGrid)(pil.pixel(j).DataGrid());
+          if ( grid.data == null )
+            grid.data = new Data[grid.n_rows][grid.n_cols]; 
+          row = Math.round(pil.pixel(j).row());
+          col = Math.round(pil.pixel(j).col());
+          grid.data[row-1][col-1] = d;                      // record reference
+          grid.data_loaded = true;
+        }
+      }
+      else
+        complete = false;
+    }
+
+    return complete;
+  }
+
+
   /**
    *  This method goes through the Data blocks of a DataSet and records
    *  a reference to each of the Data blocks whose detector ID matches
@@ -728,6 +799,9 @@ public class UniformGrid implements IDataGrid
    *
    *  @param  ds   The DataSet  from which references to Data blocks will
    *               be obtained.
+   *
+   *  @return true if this DataGrid now has a complete set of references to
+   *               Data blocks for each of its grid positions.
    */
   public boolean setData_entries( DataSet ds )
   {
