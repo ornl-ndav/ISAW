@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/10/15 01:40:46  hammonds
+ *  Fix spelling for reflectometer
+ *
  *  Revision 1.11  2003/02/18 22:08:46  pfpeterson
  *  Fixed reference to deprecated method.
  *
@@ -68,8 +71,8 @@ public class InstrumentType implements Serializable
   public static final int TOF_SAD                   =    
                           IPNS.Runfile.InstrumentType.TOF_SAD;
 
-  public static final int TOF_REFLECTROMETER        =
-                          IPNS.Runfile.InstrumentType.TOF_REFLECTROMETER;
+  public static final int TOF_REFLECTOMETER        =
+                          IPNS.Runfile.InstrumentType.TOF_REFLECTOMETER;
 
   public static final int TOF_DG_SPECTROMETER       =      // direct geometry
                           IPNS.Runfile.InstrumentType.TOF_DG_SPECTROMETER;
@@ -90,8 +93,8 @@ public class InstrumentType implements Serializable
   public static final int MONO_CHROM_SAD            =     
                           IPNS.Runfile.InstrumentType.MONO_CHROM_SAD;
 
-  public static final int MONO_CHROM_REFLECTROMETER = 
-                          IPNS.Runfile.InstrumentType.MONO_CHROM_REFLECTROMETER;
+  public static final int MONO_CHROM_REFLECTOMETER = 
+                          IPNS.Runfile.InstrumentType.MONO_CHROM_REFLECTOMETER;
 
 
 
@@ -242,7 +245,7 @@ public class InstrumentType implements Serializable
 
     else if ( inst_name.equalsIgnoreCase( "POSY1" )  ||   // ##### fix this
               inst_name.equalsIgnoreCase( "POSY2" )    )
-      return TOF_REFLECTROMETER;
+      return TOF_REFLECTOMETER;
 
     else if ( inst_name.equalsIgnoreCase( "HRCS" )  ||
               inst_name.equalsIgnoreCase( "LRCS" )    )
@@ -282,7 +285,7 @@ public class InstrumentType implements Serializable
 
     else if ( inst_name.equalsIgnoreCase( "POSY1" )  ||   // ##### fix this
               inst_name.equalsIgnoreCase( "POSY2" )    )
-      return TOF_REFLECTROMETER;
+      return TOF_REFLECTOMETER;
 
     else if ( inst_name.equalsIgnoreCase( "HRCS" )  ||
               inst_name.equalsIgnoreCase( "LRCS" )    )
