@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/07/11 16:27:38  neffk
+ *  added IntervalSelectionOP as a valid type of GUI parameter.
+ *
  *  Revision 1.6  2001/06/26 18:37:40  dennis
  *  Added Copyright and GPL license.
  *  Removed un-needed imports and improved
@@ -118,7 +121,16 @@ public class JParametersDialog implements Serializable,
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
             
            param = op.getParameter(i);            
-           if(param.getValue() == null)
+
+            if(  param.getValue() instanceof String  &&
+                               op instanceof IntervalSelectionOp  )
+            {
+              DataSet ds = ((DS_Attribute)op).getDataSet();
+              AttributeList attrs = ds.getData_entry(0).getAttributeList();
+              paramGUI = new JIntervalParameterGUI( param, attrs );
+            }
+
+           else if(param.getValue() == null)
              paramGUI = new JObjectParameterGUI(param);
            else if (param.getValue() instanceof Float)
              paramGUI = new JFloatParameterGUI(param);
@@ -168,6 +180,7 @@ public class JParametersDialog implements Serializable,
 
             paramGUI = new JStringParameterGUI( param) ;
           }
+
 
          /*@@@@@
           else if (param.getValue() instanceof DSFieldString)
@@ -306,17 +319,17 @@ public class JParametersDialog implements Serializable,
 
       for(int i = 0; i < op.getNum_parameters(); i++)
       {
-         pGUI = (JParameterGUI)vparamGUI.elementAt( i );
-         if( pGUI.getParameter() != null)
-           if(pGUI.getParameter().getValue() !=null)
-           {                  
-             op.setParameter( pGUI.getParameter(), i) ;
-             s = s + pGUI.getParameter().getValue();
-             if (i < op.getNum_parameters() - 1)
-               s = s + ", ";
-           }
-           
+        pGUI = (JParameterGUI)vparamGUI.elementAt( i );
+        if(  pGUI.getParameter() != null  &&  
+             pGUI.getParameter().getValue() != null  )
+        {                  
+          op.setParameter( pGUI.getParameter(), i) ;
+          s = s + pGUI.getParameter().getValue();
+          if (i < op.getNum_parameters() - 1)
+            s = s + ", ";
+        }
       }
+
 
       //util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
       opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
