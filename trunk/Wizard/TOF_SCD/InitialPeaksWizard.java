@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/06/26 16:31:18  bouzekc
+ * Unlinked the LsqrsJForm matrix file parameter from the
+ * other Forms.
+ *
  * Revision 1.5  2003/06/25 20:25:36  bouzekc
  * Unused private variables removed, reformatted for
  * consistency.
@@ -114,7 +118,7 @@ public class InitialPeaksWizard extends Wizard {
   private void createAllForms(  ) {
     int[][] fpi = {
       { 9, 0, 0, -1, 0 },  //peaks file 
-      { -1, 2, 1, 0, 4 }
+      { -1, 2, 1, 0, -1 }
     };  //matrix file
 
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
