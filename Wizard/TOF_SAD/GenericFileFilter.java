@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/15 19:38:22  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.2  2004/03/15 03:37:40  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -43,7 +47,6 @@
  */
 package Wizard.TOF_SAD;
 import gov.anl.ipns.Util.File.*;
-import DataSetTools.util.*;
 
 /**
 *    This class creates arbitrary File Filters with arbitrary extensions

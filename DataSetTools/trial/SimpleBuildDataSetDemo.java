@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 19:33:58  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.6  2004/03/14 20:23:46  dennis
  * Put in package DataSetTools.trial
  *
@@ -48,7 +52,6 @@ package DataSetTools.trial;
 import DataSetTools.dataset.*;
 import DataSetTools.dataset.Data;
 import DataSetTools.viewer.*;
-import DataSetTools.math.*;
 
 /**
   *  This class provides a basic demo of how to construct a DataSet with

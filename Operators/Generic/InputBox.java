@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 19:36:53  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.6  2004/03/15 03:37:00  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -62,8 +66,6 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.*;
 import DataSetTools.operator.Generic.Batch.*;
-import DataSetTools.util.*;
-
 
 /** This class behaves like Visual Basic's Input box to allow quick entry of 
  *  data by the user at run time.  

@@ -45,12 +45,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import DataSetTools.viewer.*;
-import DataSetTools.util.*;
 import IsawGUI.*;
 import javax.swing.table.*;
 import java.util.*;
-import DataSetTools.components.View.Menu.*;
-import DataSetTools.components.View.*;
 import java.beans.*;
 import DataSetTools.components.ParametersGUI.*;
 

@@ -29,6 +29,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.41  2004/03/15 19:34:01  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.40  2004/03/15 03:29:03  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -158,11 +162,9 @@
 
 package DataSetTools.viewer.Table;
 
-
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.DataSet.Attribute.*;
-import DataSetTools.math.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Numeric.*;
@@ -178,7 +180,6 @@ import DataSetTools.util.*;
 import java.io.*;
 import javax.swing.table.*;
 import IsawGUI.*;
-import java.awt.image.*;
 
 import DataSetTools.components.ParametersGUI.*;
 

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.80  2004/03/15 19:33:55  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.79  2004/03/15 06:10:52  dennis
  *  Removed unused import statements.
  *
@@ -1933,7 +1937,7 @@ private float CalculateEIn()
     System.out.println("Trying GC...");
     System.gc();
 
-    try   { Thread.currentThread().sleep(5000); } 
+    try   { Thread.sleep(5000); } 
     catch (InterruptedException ie) { }
 
     System.out.println("Trying GC...");

@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.6  2004/03/15 19:33:50  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.5  2004/03/15 03:27:59  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -62,10 +66,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
-import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
 import NetComm.*;
 
 /**

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2004/03/15 19:33:59  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.14  2004/03/15 03:28:58  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -66,8 +70,6 @@ package DataSetTools.viewer;
 
 import gov.anl.ipns.Util.Messaging.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
-
 
 /**
  * The IViewManager interface provides an interface that ViewManager objects

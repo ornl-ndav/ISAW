@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 19:36:52  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.6  2004/03/15 03:36:58  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -62,7 +66,6 @@ import  java.util.*;
 import  DataSetTools.operator.*;
 import  DataSetTools.parameter.LoadFilePG;
 import  DataSetTools.parameter.IntegerPG;
-import  DataSetTools.util.*;
 import  DataSetTools.operator.Generic.Batch.*;
 //import  IPNS.Runfile.*;
 /**

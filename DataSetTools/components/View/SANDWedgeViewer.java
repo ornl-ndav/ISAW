@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2004/03/15 19:33:49  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.30  2004/03/15 03:27:28  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -229,7 +233,6 @@ import gov.anl.ipns.ViewTools.Components.Transparency.SelectionOverlay;
 import gov.anl.ipns.ViewTools.Components.TwoD.ImageViewComponent;
 import gov.anl.ipns.ViewTools.Components.ViewControls.CursorOutputControl;
 import gov.anl.ipns.ViewTools.Components.ViewControls.FieldEntryControl;
-import gov.anl.ipns.ViewTools.Components.ViewControls.PanViewControl;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
 import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 import gov.anl.ipns.ViewTools.UI.FontUtil;
@@ -238,7 +241,6 @@ import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 import javax.swing.*;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.awt.Container;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -251,13 +253,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.Serializable;
 import java.io.IOException;
-import java.io.EOFException;
 import javax.swing.border.TitledBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.text.html.HTMLEditorKit;
 
-import DataSetTools.components.image.*;
-import DataSetTools.components.View.Region.*;
 import DataSetTools.util.SharedData;
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;

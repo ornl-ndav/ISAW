@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/03/15 19:33:59  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.4  2004/03/15 03:28:59  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -52,10 +56,9 @@
  *
  */
 
-
 package DataSetTools.viewer;
+
 import gov.anl.ipns.ViewTools.Components.*;
-import DataSetTools.components.View.*;
 
 
 public class dummyIVirtualArray2D implements IVirtualArray2D{

@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/15 19:36:55  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.7  2004/03/15 03:37:03  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -62,13 +66,9 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.parameter.*;
 import DataSetTools.retriever.*;
-import DataSetTools.viewer.*;
 import DataSetTools.dataset.*;
-import DataSetTools.components.image.*;
-import DataSetTools.components.ThreeD.*;
 import DataSetTools.math.*;
 import DataSetTools.instruments.*;
-import DataSetTools.util.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
