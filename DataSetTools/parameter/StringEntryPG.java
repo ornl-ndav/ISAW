@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2003/11/19 04:06:53  bouzekc
+ *  This class is now a JavaBean.  Added code to clone() to copy all
+ *  PropertyChangeListeners.
+ *
  *  Revision 1.20  2003/11/05 04:35:06  bouzekc
  *  validateSelf now handles the case where the StringFilterer is null.
  *
@@ -64,7 +68,7 @@
  *  Modified to work with new ParameterGUI.
  *
  *  Revision 1.9  2003/08/22 20:12:07  bouzekc
- *  Modified to work with EntryWidget.
+ *  Modified to work with getEntryWidget().
  *
  *  Revision 1.8  2003/08/21 21:45:18  bouzekc
  *  Added javadoc comments.
@@ -74,7 +78,7 @@
  *
  *  Revision 1.6  2003/06/30 16:00:44  bouzekc
  *  Now returns the StringFilterer FILTER associated with this
- *  class, rather than the entrywidget's filter.  This is to
+ *  class, rather than the getEntryWidget()'s filter.  This is to
  *  aid in using the StringFilterer in noGUI situations.
  *
  *  Revision 1.5  2003/06/30 15:58:33  bouzekc
@@ -82,7 +86,7 @@
  *
  *  Revision 1.4  2003/06/18 22:48:38  bouzekc
  *  Added method to return StringFilterer associated with the
- *  entrywidget.
+ *  getEntryWidget().
  *
  *  Revision 1.3  2003/06/10 13:48:32  bouzekc
  *  Fixed NullPointerException in init().
@@ -149,7 +153,7 @@ public abstract class StringEntryPG extends ParameterGUI
    */
   public StringEntryPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    this.type = "UNKNOWN";
+    this.setType( "UNKNOWN" );
   }
 
   //~ Methods ******************************************************************
@@ -172,13 +176,11 @@ public abstract class StringEntryPG extends ParameterGUI
    *         present, returns the internal value.
    */
   public Object getValue(  ) {
-    Object value = null;
+    Object value = super.getValue(  );
 
-    if( this.initialized ) {
-      value = ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).getText(  );
-    } else {
-      value = this.value;
-    }
+    if( this.getInitialized() ) {
+      value = ( ( JTextField )( getEntryWidget().getComponent( 0 ) ) ).getText(  );
+    } 
 
     return value;
   }
@@ -206,8 +208,21 @@ public abstract class StringEntryPG extends ParameterGUI
         pg.FILTER = newFilter;
       }
 
-      if( this.initialized ) {
+      if( this.getInitialized() ) {
         pg.initGUI( null );
+      }
+
+      if( getPropListeners(  ) != null ) {
+        java.util.Enumeration e = getPropListeners(  ).keys(  );
+        PropertyChangeListener pcl = null;
+        String propertyName = null;
+
+        while( e.hasMoreElements(  ) ) {
+          pcl            = ( PropertyChangeListener )e.nextElement(  );
+          propertyName   = ( String )getPropListeners(  ).get( pcl );
+
+          pg.addPropertyChangeListener( propertyName, pcl );
+        }
       }
 
       return pg;
@@ -228,7 +243,7 @@ public abstract class StringEntryPG extends ParameterGUI
    * @param init_values The initial values to use.
    */
   public void initGUI( Vector init_values ) {
-    if( this.initialized ) {
+    if( this.getInitialized() ) {
       return;  // don't initialize more than once
     }
 
@@ -241,11 +256,12 @@ public abstract class StringEntryPG extends ParameterGUI
       }
     }
 
-    if( this.value != null ) {
-      entrywidget = new EntryWidget( 
-          new StringEntry( this.value.toString(  ), DEF_COLS, FILTER ) );
+    if( getValue(  ) != null ) {
+      setEntryWidget( new EntryWidget( 
+          new StringEntry( getValue(  ).toString(  ), DEF_COLS, FILTER ) ) );
     } else {
-      entrywidget = new EntryWidget( new StringEntry( "", DEF_COLS, FILTER ) );
+      setEntryWidget( new EntryWidget( 
+            new StringEntry( "", DEF_COLS, FILTER ) ) );
     }
     super.initGUI(  );
   }
@@ -272,15 +288,15 @@ public abstract class StringEntryPG extends ParameterGUI
    * @param value The new value.
    */
   protected void setEntryValue( Object value ) {
-    if( this.initialized ) {
+    if( this.getInitialized() ) {
       if( value == null ) {
-        ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( "" );
+        ( ( JTextField )( getEntryWidget().getComponent( 0 ) ) ).setText( "" );
       } else {
         if( value instanceof String ) {
-          ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
+          ( ( JTextField )( getEntryWidget().getComponent( 0 ) ) ).setText( 
             ( String )value );
         } else {
-          ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
+          ( ( JTextField )( getEntryWidget().getComponent( 0 ) ) ).setText( 
             value.toString(  ) );
         }
       }

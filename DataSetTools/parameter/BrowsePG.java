@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2003/11/19 04:06:53  bouzekc
+ *  This class is now a JavaBean.  Added code to clone() to copy all
+ *  PropertyChangeListeners.
+ *
  *  Revision 1.28  2003/10/11 19:00:16  bouzekc
  *  Now implements clone() using reflection.
  *
@@ -57,21 +61,21 @@
  *  Modified to work with new ParameterGUI.
  *
  *  Revision 1.20  2003/08/26 18:29:51  bouzekc
- *  Removed entrywidget layout setup, changed entrywidget initialization to
+ *  Removed getEntryWidget() layout setup, changed entrywidget initialization to
  *  use default constructor.
  *
  *  Revision 1.19  2003/08/26 18:17:19  bouzekc
  *  Fixed GUI layout.
  *
  *  Revision 1.18  2003/08/22 20:12:08  bouzekc
- *  Modified to work with EntryWidget.
+ *  Modified to work with getEntryWidget().
  *
  *  Revision 1.17  2003/08/15 23:56:22  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI.
  *
  *  Revision 1.16  2003/08/15 03:54:26  bouzekc
  *  Should now properly add previously existing PropertyChangeListeners to the
- *  entrywidget.
+ *  getEntryWidget().
  *
  *  Revision 1.15  2003/08/14 18:40:27  bouzekc
  *  Made BrowseButtonListener transient.
@@ -102,7 +106,7 @@
  *  Fixed ClassCastException in setValue().
  *
  *  Revision 1.8  2003/05/30 15:00:46  bouzekc
- *  Fixed bug where the entrywidget components overlapped
+ *  Fixed bug where the getEntryWidget() components overlapped
  *  when resizing.
  *
  *  Revision 1.7  2003/05/29 21:36:56  bouzekc
@@ -172,13 +176,13 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
     
     public BrowsePG(String name, Object val){
         super( name, val );
-        this.type=TYPE;
+        this.setType(TYPE);
     }
 
     public BrowsePG(String name, Object val, boolean valid){
         super( name, val, valid );
-        this.type=TYPE;
-        if(value==null || value.toString().length()<=0){
+        this.setType(TYPE);
+        if(val==null || val.toString().length()<=0){
           String datadir=SharedData.getProperty("Data_Directory");
           this.setValue(datadir);
         }
@@ -204,8 +208,21 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
         pg.setValid( this.getValid(  ) );
         pg.filter_vector = this.filter_vector;
 
-        if( this.initialized ) {
+        if( this.getInitialized() ) {
           pg.initGUI( null );
+        }
+
+        if( getPropListeners(  ) != null ) {
+          java.util.Enumeration e = getPropListeners(  ).keys(  );
+          PropertyChangeListener pcl = null;
+          String propertyName = null;
+
+          while( e.hasMoreElements(  ) ) {
+            pcl            = ( PropertyChangeListener )e.nextElement(  );
+            propertyName   = ( String )getPropListeners(  ).get( pcl );
+
+            pg.addPropertyChangeListener( propertyName, pcl );
+          }
         }
 
         return pg;
@@ -239,43 +256,32 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
      * a specific object (such as String or DataSet) without casting.
      */
     public Object getValue(){
-        String val=null;
-        if(this.initialized){
+        String val=super.getValue().toString();
+
+        if(this.getInitialized()){
             val=((JTextField)this.innerEntry).getText();
-        }else{
-            val=(String)this.value;
         }
 
-        if( val != null ) {
-          return FilenameUtil.setForwardSlash(val);
-        } else {
-          return "";
-        }
+        return FilenameUtil.setForwardSlash(val.toString());
     }
 
     /**
      * Sets the value of the parameter.
      */
-    public void setValue(Object value){
-        String svalue=null;
-        if(value==null)
-          svalue=null;
-        else if(value instanceof String)
-          svalue=(String)value;
+    public void setValue(Object val){
+        String svalue="";
+        if(val==null)
+          svalue="";
         else
-          svalue=value.toString();
+          svalue=val.toString();
         
-        if(svalue==null || svalue.length()<=0) svalue=null;
+        if(svalue.length()<=0) svalue="";
 
-        if(this.initialized){
-            if(svalue==null){
-              ((JTextField)this.innerEntry).setText("");
-            }else{
-              ((JTextField)this.innerEntry).setText(svalue);
-            }
-        }else{
-          this.value=svalue;
+        if(this.getInitialized()){
+          ((JTextField)this.innerEntry).setText(svalue);
         }
+        //always update the internal value
+        super.setValue(svalue);
     }
 
     // ********** IParameterGUI requirements **********
@@ -283,7 +289,7 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
      * Allows for initialization of the GUI after instantiation.
      */
     public void initGUI(Vector init_values){
-        if(this.initialized) return; // don't initialize more than once
+        if(this.getInitialized()) return; // don't initialize more than once
         if(init_values!=null){
             if(init_values.size()==1){
                 // the init_values is what to set as the value of the parameter
@@ -300,10 +306,11 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
           browselistener.setFileFilter(defaultindex);
         }
         browse.addActionListener(browselistener);
-        entrywidget=new EntryWidget(  );
+        setEntryWidget(new EntryWidget(  ));
+        EntryWidget wijit = getEntryWidget();
 
-        entrywidget.add(innerEntry);
-        entrywidget.add(browse);
+        wijit.add(innerEntry);
+        wijit.add(browse);
         this.setEnabled(this.getEnabled());
         super.initGUI();
     }

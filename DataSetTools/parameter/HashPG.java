@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/11/19 04:06:53  bouzekc
+ *  This class is now a JavaBean.  Added code to clone() to copy all
+ *  PropertyChangeListeners.
+ *
  *  Revision 1.14  2003/10/11 19:04:24  bouzekc
  *  Now implements clone() using reflection.
  *
@@ -52,7 +56,7 @@
  *  Modified to work with new ParameterGUI.
  *
  *  Revision 1.8  2003/08/22 20:12:07  bouzekc
- *  Modified to work with EntryWidget.
+ *  Modified to work with getEntryWidget().
  *
  *  Revision 1.7  2003/08/15 23:56:20  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI.
@@ -85,6 +89,7 @@ import DataSetTools.components.ParametersGUI.HashEntry;
 import DataSetTools.components.ParametersGUI.EntryWidget;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.beans.PropertyChangeListener;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -114,15 +119,15 @@ abstract public class HashPG extends ParameterGUI{
 
     public HashPG(String name, Object val, String key){
         super(name,val);
-        this.type=TYPE;
+        this.setType(TYPE);
         addItem( key, val );
         setValue( val );
     }
 
     public HashPG(String name, Object val, boolean valid, String key){
         super( name, val, valid );
-        this.type=TYPE;
-        addItem(key,value);
+        this.setType(TYPE);
+        addItem(key,val);
         setValue( val );
     }
 
@@ -175,8 +180,21 @@ abstract public class HashPG extends ParameterGUI{
           pg.keys = ( Vector )keys.clone(  );
         }
 
-        if( this.initialized ) {
+        if( this.getInitialized() ) {
           pg.initGUI( null );
+        }
+
+        if( getPropListeners(  ) != null ) {
+          java.util.Enumeration e = getPropListeners(  ).keys(  );
+          PropertyChangeListener pcl = null;
+          String propertyName = null;
+
+          while( e.hasMoreElements(  ) ) {
+            pcl            = ( PropertyChangeListener )e.nextElement(  );
+            propertyName   = ( String )getPropListeners(  ).get( pcl );
+
+            pg.addPropertyChangeListener( propertyName, pcl );
+          }
         }
 
         return pg;
@@ -224,36 +242,31 @@ abstract public class HashPG extends ParameterGUI{
      * a specific object (such as String or DataSet) without casting.
      */
     public Object getValue(){
-        Object value=null;
-        if(this.initialized){
-            value=((HashEntry)(entrywidget.getComponent(0))).getSelectedItem().toString();
-            return this.getValue((String)value);
-        }else{
-            value=this.value;
+        Object val=super.getValue();
+
+        //update if we have a GUI
+        if(this.getInitialized()){
+            val=((HashEntry)(getEntryWidget().getComponent(0))).getSelectedItem().toString();
         }
-        return value;
+
+        //index and return the value
+        return this.getValue((String)val);
     }
 
     /**
      * Sets the value of the parameter.
      */
-    public void setValue(Object value){
-        if(this.initialized){
-            if(value==null){
-                // do nothing
-            }else{
-                int index=keys.indexOf(value);
-                if(index<=0){
-                    ((HashEntry)(entrywidget.getComponent(0)))
-                        .setSelectedItem(this.getValue((String)value));
-                }else{
-                    ((HashEntry)(entrywidget.getComponent(0)))
-                        .setSelectedItem(value);
+    public void setValue(Object val){
+        Object selVal = null;
+        if(this.getInitialized() && val!=null){
+                selVal = getValue(val.toString());
+                if(selVal != null){
+                    ((HashEntry)(getEntryWidget().getComponent(0)))
+                        .setSelectedItem(selVal);
                 }
-            }
-        }else{
-            this.value=value;
         }
+
+        super.setValue( selVal );
     }
 
     // ********** IParameterGUI requirements **********
@@ -261,7 +274,7 @@ abstract public class HashPG extends ParameterGUI{
      * Allows for initialization of the GUI after instantiation.
      */
     public void initGUI(Vector init_values){
-        if(this.initialized) return; // don't initialize more than once
+        if(this.getInitialized()) return; // don't initialize more than once
         if(init_values!=null){
             if(init_values.size()==1){
                 // the init_values is what to set as the value of the parameter
@@ -283,7 +296,7 @@ abstract public class HashPG extends ParameterGUI{
         }
 
         // set up the combobox
-        entrywidget=new EntryWidget(new HashEntry(keys));
+        setEntryWidget(new EntryWidget(new HashEntry(keys)));
         super.initGUI();
     }
 
