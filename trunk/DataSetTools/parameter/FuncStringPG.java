@@ -31,9 +31,11 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.8  2003/10/07 18:38:51  bouzekc
- *  Removed declaration of "implements ParamUsesString" as the
- *  StringEntryPG superclass now declares it.
+ *  Revision 1.9  2003/10/08 22:39:09  dennis
+ *  Reverting to previous version, that was in ISAW 1.5.1 beta 8.
+ *  The most recent checkin (10/07/03) also removed the clone() method
+ *  and was not consistent with the version in CVS.  ISAW crashed on
+ *  startup with null pointer exception.
  *
  *  Revision 1.7  2003/08/15 23:50:04  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
@@ -69,7 +71,7 @@ import DataSetTools.util.*;
 /**
  * This is class is to deal with float parameters.
  */
-public class FuncStringPG extends StringPG {
+public class FuncStringPG extends StringPG implements ParamUsesString{
     private static final String TYPE="FuncString";
 
     // ********** Constructors **********
@@ -111,5 +113,15 @@ public class FuncStringPG extends StringPG {
         fpg.setDrawValid(true);
         fpg.initGUI(null);
         fpg.showGUIPanel();
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        FuncStringPG pg=new FuncStringPG(this.name,this.value,this.valid);
+        pg.setDrawValid(this.getDrawValid());
+        pg.initialized=false;
+        return pg;
     }
 }
