@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/11/04 15:56:41  rmikk
+ *  Took control of PropertyChange listeners and events
+ *  Created a new clone method
+ *
  *  Revision 1.15  2003/10/11 18:57:56  bouzekc
  *  Removed clone() as ParameterGUI now implements it.
  *
@@ -99,11 +103,12 @@ import javax.swing.*;
 public class BooleanPG extends ParameterGUI 
                                     implements ParamUsesString{
   private static final String TYPE="Boolean";
-
+  JCheckBox box = null;
   // ********** Constructors **********
   public BooleanPG(String name, Object value){
     super( name, value );
     this.type=TYPE;
+    oldValue = ((Boolean)value).booleanValue();
   }
     
   public BooleanPG(String name, Object value, boolean valid){
@@ -219,8 +224,11 @@ public class BooleanPG extends ParameterGUI
         // something is not right, should throw an exception
       }
     }
-    entrywidget=new EntryWidget(new JCheckBox("",
-                                ((Boolean)this.getValue()).booleanValue()));
+    box = new JCheckBox("",
+                                ((Boolean)this.getValue()).booleanValue()); 
+    entrywidget=new EntryWidget( box );
+    box.addActionListener( new CheckBoxActionListener( this ));
+    
     super.initGUI();
   }
 
@@ -266,4 +274,61 @@ public class BooleanPG extends ParameterGUI
       setValid( false );
     }
   }
+
+  private Vector listeners = new Vector();
+  public void addPropertyChangeListener( PropertyChangeListener listener){
+     if( listeners.indexOf( listener) < 0)
+        listeners.addElement( listener);
+
+  }
+  
+  /**
+  *    The only property that will be notified is "value"
+  */
+  public void addPropertyChangeListener(java.lang.String prop,
+                                      java.beans.PropertyChangeListener pcl){
+     if( prop == null)
+        return;
+     if( ! prop.equals("value"))
+        return;
+     addPropertyChangeListener( pcl);
+
+  }
+  public void removePropertyChangeListener( PropertyChangeListener listener){
+     listeners.remove( listener);
+  }
+ boolean oldValue = false;
+ class CheckBoxActionListener implements ActionListener{
+
+    BooleanPG bpg;
+    public CheckBoxActionListener( BooleanPG bpg){
+      this.bpg = bpg;
+    }
+    public void actionPerformed( ActionEvent evt){
+       if( box.isSelected() == oldValue)
+         return;
+       PropertyChangeEvent Pevt = new PropertyChangeEvent(bpg,
+                             "value", new Boolean( oldValue),
+                              new Boolean( box.isSelected()));
+       for( int i = 0; i< listeners.size(); i++){
+         PropertyChangeListener list =(PropertyChangeListener)(listeners.elementAt(i) );
+         list.propertyChange(Pevt);
+       }
+   
+      oldValue = box.isSelected(); 
+    }
+
+ }//class CheckBoxActionListener
+ public Object clone(){
+   BooleanPG  Res = new BooleanPG( this.getName(), this.getValue());
+   if( this.initialized)
+     Res.initGUI(null);
+
+   //System.out.println("in BooleanPG clone ere add listeners "+listeners.size());
+   for( int i=0; i<listeners.size(); i++)
+     Res.addPropertyChangeListener( (PropertyChangeListener)(listeners.elementAt(i)));
+   return Res;
+
+
+ }
 }
