@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.11  2004/03/11 06:14:34  bouzekc
+ * Removed dead code.
+ *
  * Revision 1.10  2004/03/06 19:07:41  rmikk
  * It now handles the Vector Data Type
  *
@@ -154,20 +157,23 @@ public class JavaWrapperOperator extends GenericOperator {
           //BooleanPG
           if( ( type == Boolean.TYPE ) || ( type == Boolean.class ) ) {
             addParameter( new BooleanPG( name, val ) );
+
             //FloatPG
           } else if( 
             ( type == Float.TYPE ) || ( type == Double.TYPE ) ||
               ( type == Float.class ) || ( type == Double.class ) ) {
             addParameter( new FloatPG( name, val ) );
+
             //IntegerPG
           } else if( 
             ( type == Integer.TYPE ) || ( type == Long.TYPE ) ||
               ( type == Integer.class ) || ( type == Long.class ) ) {
             addParameter( new IntegerPG( name, val ) );
+
             //StringPG
           } else if( ( type == Character.TYPE ) || ( type == String.class ) ) {
             addParameter( new StringPG( name, null ) );
-          } else if( (type.isArray(  )) || ( type == Vector.class) ) {
+          } else if( ( type.isArray(  ) ) || ( type == Vector.class ) ) {
             //ArrayPG
             addParameter( new ArrayPG( name, val ) );
           } else if( 
@@ -232,8 +238,6 @@ public class JavaWrapperOperator extends GenericOperator {
               Array.set( fieldParams[k].get( wrapped ), 1, myVect.get( m ) );
             }
           }
-
-          // fieldParams[k].set( wrapped, values[k] );
         } else {
           fieldParams[k].set( wrapped, values[k] );
         }
@@ -264,12 +268,11 @@ public class JavaWrapperOperator extends GenericOperator {
    * Testbed.
    */
   public static void main( String[] args ) {
-    //DataSetTools.operator.Generic.Special.getDateTime op = 
-    //new DataSetTools.operator.Generic.Special.getDateTime(  );
     Operators.WrappedCrunch op = new Operators.WrappedCrunch(  );
 
     //Operators.MyFortran crunch = new Operators.MyFortran(  );
     JavaWrapperOperator wrapper = new JavaWrapperOperator( op );
+
     /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
        "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
        new DataSetTools.viewer.ViewManager(
