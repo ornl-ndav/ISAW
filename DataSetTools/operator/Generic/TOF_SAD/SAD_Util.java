@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/07/26 14:58:06  rmikk
+ * Fixed the ConvertToWL to fix the data set operators to correspond
+ *   to those from wave length
+ *
  * Revision 1.5  2004/04/28 18:58:21  dennis
  * Now only print debug information in CalcRatios() method for the
  * first group, and only if debugging is turned on.
@@ -76,6 +80,7 @@ package DataSetTools.operator.Generic.TOF_SAD;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.ViewTools.Panels.Transforms.*;
+import DataSetTools.util.*;
 
 import java.util.Vector;
 import java.util.*;
@@ -85,6 +90,9 @@ import DataSetTools.math.*;
 
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.Math.Analyze.*;
+import DataSetTools.operator.DataSet.*;
+import DataSetTools.operator.DataSet.Conversion.XAxis.*;
+import DataSetTools.operator.DataSet.Conversion.XYAxis.*;
 
 
 /**
@@ -934,12 +942,17 @@ public class SAD_Util
    *   resample the spectrum at the specified set of wavelength values. 
    *   This method is "memory efficient".  Since all have a common XScale there
    *   is little extra space.  
+   *  @param ds  The DataSet to be converted to WL
+   *  @param wlScale  The XScale for resultant wave lengths
+   *  @param is_monitor  True if the data set is a monitor data set
+   *  @return   returns the data set converted to wave length with appropriate operators 
    */
    public static DataSet ConvertToWL( DataSet ds, 
                                       XScale  wlScale,
                                       boolean is_monitor )
    {
      Data D, D1;
+     
      for( int i = 0; i< ds.getNum_entries(); i++)
      {
        D = ds.getData_entry(i);
@@ -964,9 +977,58 @@ public class SAD_Util
      ds.setX_units("Angstrom");
      ds.setX_label("WaveLength");
      ds.addLog_entry( "Converted to Wavelength" );
+     String pre ="";
+     if(ds.getDSType().indexOf("Monitor")>=0)
+        pre="Monitor";
+     
+     for( int i=ds.getNum_operators()-1; i >=0; i--){
+        DataSetOperator op = ds.getOperator(i);
+        if( op.getClass().toString().indexOf("Diffractometer")>=0)
+           pre ="Diffractometer";
+        else if( op.getClass().toString().indexOf("Spectrometer")>=0)
+           pre ="Spectrometer";
+        if( op instanceof XAxisConversionOp)
+           ds.removeOperator(op);
+        else if( op instanceof XYAxisConversionOp)
+           ds.removeOperator( op );
+          
+     }
+     
+     DataSetOperator op = getDSOp( pre+"WavelengthTo"+"Tof");
+     if( op != null)
+       ds.addOperator(op);
+       
+     op = getDSOp( pre+"WavelengthTo"+"D");
+     if( op != null)
+       ds.addOperator(op);
+       
+     op = getDSOp( pre+"WavelengthTo"+"Q");
+     if( op != null)
+       ds.addOperator(op);
+     
+     op = getDSOp( pre+"WavelengthTo"+"Energy");
+     if( op != null)
+       ds.addOperator(op);
+     
+      
      return ds;
    }
-
+ 
+ private static DataSetOperator getDSOp( String opTitle){
+   
+   try{
+      Class C = Class.forName( "DataSetTools.operator.DataSet.Conversion.XAxis." +
+                opTitle);
+      if( C.getSuperclass() != DataSetTools.operator.DataSet.Conversion.XAxis.
+                  XAxisConversionOp.class )
+        return null;
+     return (DataSetOperator)(C.newInstance());
+   }catch( Exception ss){
+     return null;
+   }
+   
+   
+ }
 
   /* ------------------------ InterpolateDataSet ------------------------ */
   /**
