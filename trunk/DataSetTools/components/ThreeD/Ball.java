@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/14 20:26:38  dennis
+ * Removed unused imports
+ *
  * Revision 1.3  2003/07/14 13:47:28  dennis
  * Now uses 8 vertices of a cube centered around the specified center,
  * so the average position of the vertices matches the specified center.
@@ -49,7 +52,6 @@ package DataSetTools.components.ThreeD;
 import java.awt.*;
 import java.io.*;
 import DataSetTools.math.*;
-import DataSetTools.components.image.*;
 
 
 /**
