@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2002/11/20 15:56:28  rmikk
+ * -Improved the robustness of the routine to find Detector ID.s
+ *
  * Revision 1.6  2002/08/02 13:28:04  rmikk
  * Added a routine to get all the id's from each NxDetector
  *   and save info(NxDetector and position in id list) in a
@@ -69,14 +72,33 @@ import java.util.*;
  *data source
  */
 public class NxInstrument
-{  static Hashtable DetectorInf =null;
+{  Hashtable DetectorInf =null;
+   int nNxDet;
+   NxNode LastNxDetNode=null;
+   int[] ids= null;
    String errormessage;
    public NxInstrument()
    {  DetectorInf = null;
       errormessage = "";
+      nNxDet=0;
+      LastNxDetNode=null;
+      ids=null;
    }
-
-
+   /** Sets the ids of the data blocks that are to be loaded
+   *
+   * NOTE: ids should be increasing and a linear array. 
+   * NOTE: if the array is null, ALL will be retrieved.
+   */
+   public void setIds( int ids[])
+     {
+      this.ids=ids;
+     }
+   /** returns the ids to of the data blocks that are to be retrieved
+   */
+   public int[] getIds()
+      {
+        return ids;
+      }
    /**Returns error and/or warning messages or "" if none
     */
    public String getErrorMessage()
@@ -84,17 +106,22 @@ public class NxInstrument
       return errormessage;
    }
    
-   /** Sets up a Hashtable of detector id's versus corresponding <BR>
+   /** Sets up a Hashtable of detector id's versus corresponding Vector<BR>
    *     <NXdetector node,<BR>
    *      position of id child in the NXdetector node,
    *      index of the id with the corresponding detector id
    */
    public void SetUpDetectorInfo( NxNode instrNode)
-    { if(DetectorInf != null)
+    {
+      if(DetectorInf != null)
         return;
+      nNxDet=0;
+      DetectorInf=new Hashtable();
+      LastNxDetNode=null;
       NexIO.NxData_Gen  util= new NexIO.NxData_Gen();
       if( instrNode == null)
         return;
+
       if( !instrNode.getNodeClass().equals( "NXinstrument"))
         return;
 
@@ -102,7 +129,7 @@ public class NxInstrument
       for( int i = 0; i<instrNode.getNChildNodes(); i++)
        { NxNode nd = instrNode.getChildNode( i );
          if( nd.getNodeClass().equals("NXdetector"))
-           for( int j=0; j< nd.getNChildNodes(); j++)
+          {for( int j=0; j< nd.getNChildNodes(); j++)
              {NxNode ndet_child = nd.getChildNode(j);
               
               boolean use = false;
@@ -129,6 +156,13 @@ public class NxInstrument
                  if( ff!= null)
                  for( int k=0; k<ff.length; k++)
                    {try{
+                     if( DetectorInf.containsKey( new Integer((int)ff[k])))//det id's not unique
+                       {
+                         nNxDet++;
+                         LastNxDetNode = nd;
+                         DetectorInf= new Hashtable();
+                         return;
+                        }
                      Vector V = new Vector();
                      V.addElement( nd);
                      V.addElement( new Integer( j ));
@@ -141,9 +175,13 @@ public class NxInstrument
                    }//try catch
                 
                 }//if use
-              
-             }//for  @ index of a detector node's id
 
+          
+             }//for  @ index of a detector node's id
+              nNxDet++;
+              LastNxDetNode = nd;
+           
+          }//if child is an Nxdetector node
        }//for @ child of the NxInstrument node
       //System.out.println("Detector information is");
       // showwDetectorInf();
