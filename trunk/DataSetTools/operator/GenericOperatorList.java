@@ -29,6 +29,13 @@ public class GenericOperatorList implements Serializable
                                           "OneHist",
                                           "FF"       };
 
+  /**
+   *  Private constructor ... don't let anyone instantiate this class
+   */
+   private GenericOperatorList()
+   {
+   }
+
 
   /* ---------------------------- getNum_operators ------------------------- */
   /**
