@@ -58,6 +58,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/18 19:33:50  dennis
+ * Removed ^M characters.
+ *
  * Revision 1.3  2003/02/10 18:58:06  pfpeterson
  * Created a second version of tstvol which returns the value rather
  * than augmenting one of the arguments.
