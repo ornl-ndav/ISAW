@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2004/05/03 18:05:07  dennis
+ * Removed unused variables bad_det[] and bi.
+ *
  * Revision 1.11  2004/04/29 21:14:22  dennis
  * Now steps through the list of Data blocks based on index
  * rather than group ID.
@@ -187,9 +190,6 @@ public class Crunch extends GenericSpecial{
       }
 
       // first remove detectors below min_count
-      int[] bad_det = new int[new_ds.getNum_entries()];
-      int bi=0;
- 
       int n_data = new_ds.getNum_entries();
       for( int i = n_data - 1; i >= 0; i-- )
       {
