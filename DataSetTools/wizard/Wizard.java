@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2003/06/17 16:43:49  bouzekc
+ * Added dual progress bars, one for the overall progress and
+ * one for the current Form progress.
+ *
  * Revision 1.29  2003/06/16 23:06:26  bouzekc
  * Added internal class subclassed from SwingWorker to enable
  * multithreading of the Wizard.
@@ -188,7 +192,8 @@ public abstract class Wizard implements PropertyChangeListener{
     // size of the window
     private static final int FRAME_WIDTH   = 650;
     private static final int FRAME_HEIGHT  = 500;
-    private static final int MAX_PROGRESS = 100;
+    private static final int FORM_PROGRESS = 100;
+    private static final int STRUT_HEIGHT  = 5;
 
     // string constants for the menus and buttons
     private static final String EXIT_COMMAND        = "Exit";
@@ -230,7 +235,8 @@ public abstract class Wizard implements PropertyChangeListener{
     private JButton                exec_button;
     private JButton                clear_button;
     private JLabel                 form_label;
-    private PropChangeProgressBar  progress;
+    private PropChangeProgressBar  formProgress;
+    private JProgressBar           wizProgress;
     private JMenu                  view_menu;
     private CommandHandler         command_handler;
     private boolean                modified;
@@ -265,7 +271,8 @@ public abstract class Wizard implements PropertyChangeListener{
         frame       = new JFrame( title );
         form_panel  = new JPanel();
         form_label  = new JLabel(" ",SwingConstants.CENTER);
-        progress    = new PropChangeProgressBar();
+        formProgress    = new PropChangeProgressBar();
+        wizProgress    = new JProgressBar();
         command_handler = new CommandHandler(this);
         save_frame = new JFrame("Save Form as...");
     }
@@ -553,7 +560,6 @@ public abstract class Wizard implements PropertyChangeListener{
           nameEndInd = xml.indexOf(NAMEEND);
           paramName = xml.substring(nameStartInd + NAMESTART.length(),
                                     nameEndInd);
-          //System.out.println(paramName);
 
           //compare it to the Form parameter name
           if(!(curParam.getName().equals(paramName)))
@@ -571,8 +577,6 @@ public abstract class Wizard implements PropertyChangeListener{
             curParam.setValue("");
           else
             curParam.setValue(paramValue);
-          
-          //System.out.println(paramValue);
 
           //get/set the parameter validity
           if(curParam instanceof DataSetPG)
@@ -607,16 +611,13 @@ public abstract class Wizard implements PropertyChangeListener{
             paramValidity = xml.substring(validStartInd + VALIDSTART.length(),
                                         validEndInd);
             curParam.setValid(new Boolean(paramValidity).booleanValue());
-            //System.out.println(paramValidity);
           }
 
           //find the index of the ending for the parameter, e.g. </DataDir>
           typeEnd = "</" + ((IParameterGUI)curParam).getType() + ">";
-          //System.out.println(typeEnd);
           typeEndInd = xml.indexOf(typeEnd);
           xml = xml.substring(typeEndInd + typeEnd.length(),
                               xml.length());
-          //System.out.println(xml);
 
         }
         //end the Parameter parsing for the Form
@@ -700,11 +701,11 @@ public abstract class Wizard implements PropertyChangeListener{
         frame.addWindowListener( new CloseWizardWindow() );
         frame.getContentPane().add( work_area );
         {
-            int screenheight=(int)
-                Toolkit.getDefaultToolkit().getScreenSize().getHeight();
-            frame.setBounds( (screenheight*4/3-FRAME_WIDTH)/2,
-                             (screenheight-FRAME_HEIGHT)*3/10,
-                             FRAME_WIDTH, FRAME_HEIGHT );
+          int screenheight=(int)
+            Toolkit.getDefaultToolkit().getScreenSize().getHeight();
+          frame.setBounds( (screenheight*4/3-FRAME_WIDTH)/2,
+                           (screenheight-FRAME_HEIGHT)*3/10,
+                           FRAME_WIDTH, FRAME_HEIGHT );
         }
 
         JMenuItem help_about  = new JMenuItem( HELP_ABOUT_COMMAND );
@@ -743,27 +744,37 @@ public abstract class Wizard implements PropertyChangeListener{
         form_panel.setLayout( new GridLayout(1,1) );
         work_area.add(form_scrollpane,gbc);
 
-        // add the progress bar to the panel
+        // add the progress bars to the panel
         clear_button = new JButton( CLEAR_COMMAND );
         exec_all_button=new JButton(EXEC_ALL_COMMAND);
         if(forms.size()>1){
             gbc.weighty=1.0;
             gbc.fill=GridBagConstraints.HORIZONTAL;
             work_area.add(progress_panel,gbc);
-            progress.setString("Execute Progress");
-            progress.setStringPainted(true);
+            formProgress.setString("Form Progress");
+            wizProgress.setString("Wizard Progress: "+(getCurrentFormNumber()+1)
+                                  + " of " + forms.size() + " Forms done");
+            formProgress.setStringPainted(true);
+            wizProgress.setStringPainted(true);
 
-            //each Form will send out a PropertyChange new value from 0 to 100,
-            //so the Wizard needs 100 units for each Form
-            progress.setMaximum(forms.size() * MAX_PROGRESS);
-            progress.setValue(0);
+            wizProgress.setMaximum(forms.size());
+            wizProgress.setValue(0);
+            formProgress.setValue(0);
             gbc.fill=GridBagConstraints.NONE;
             gbc.gridwidth=1;
             progress_panel.add( clear_button, gbc );
             gbc.weightx=20.0;
             gbc.fill=GridBagConstraints.HORIZONTAL;
             gbc.gridwidth=GridBagConstraints.RELATIVE;
-            progress_panel.add( progress,     gbc );
+            
+            Box tempBox = Box.createVerticalBox();
+            tempBox.add(formProgress);
+            tempBox.add(Box.createVerticalStrut(STRUT_HEIGHT));
+            tempBox.add(wizProgress);
+            progress_panel.add( tempBox,     gbc );
+            //progress_panel.add( formProgress,     gbc );
+            //progress_panel.add( wizProgress,     gbc );
+            
             gbc.weightx=1.0;
             gbc.fill=GridBagConstraints.NONE;
             gbc.gridwidth=GridBagConstraints.REMAINDER;
@@ -821,7 +832,6 @@ public abstract class Wizard implements PropertyChangeListener{
         if( standalone)
           work_area.add(SharedData.getStatusPane(), gbc);
 
-        //CommandHandler command_handler = new CommandHandler(this);
         save_wizard    .addActionListener( command_handler );
         load_wizard    .addActionListener( command_handler );
         first_button   .addActionListener( command_handler );
@@ -862,7 +872,9 @@ public abstract class Wizard implements PropertyChangeListener{
         forms.add( f );
         //each Form will send out a PropertyChange new value from 0 to 100,
         //so the Wizard needs 100 units for each Form
-        progress.setMaximum(forms.size() * MAX_PROGRESS);
+        wizProgress.setMaximum(forms.size());
+        wizProgress.setString("Wizard Progress: "+(getCurrentFormNumber()+1)
+                              + " of " + forms.size() + " Forms done");
     }
 
     /**
@@ -924,12 +936,26 @@ public abstract class Wizard implements PropertyChangeListener{
         form_panel.add( f.getPanel() );
         f.setVisible(true);
 
+        //reset the progress bars - especially useful when loading up a Wizard
+        //from a file
+        if(f.done())
+        {
+          formProgress.setString(f + " Done");
+          /*wizProgress.setString("Wizard Progress: "+(getCurrentFormNumber() + 1)
+                                + " of " + forms.size() + " Forms done");*/
+          formProgress.setValue(FORM_PROGRESS);
+          //wizProgress.setValue(getCurrentFormNumber() + 1);
+        }
+        else
+        {
+          formProgress.setString(f + " Progress");
+          formProgress.setValue(0);
+        }
+
         //add the listener (this) to the Form's parameters
         f.addParameterPropertyChangeListener(this);
 
-        //add the listener(this Wizard's progress bar) to the Form's list of
-        //PropertyChangeListeners
-        f.addPropertyChangeListener(progress);
+        f.addPropertyChangeListener(formProgress);
         
         form_panel.validate();
         form_num = index;
@@ -1032,19 +1058,19 @@ public abstract class Wizard implements PropertyChangeListener{
     }
 
     /**
-     * Invalidate all forms starting with the number specified.  This
-     * implicitly sets the correct progress bar value when exec_forms() calls
-     * it at the end of its execution.  
+     * Invalidate all forms starting with the number specified.
      */
     protected void invalidate(int start){
         for( int i=start ; i<forms.size() ; i++ ){
           getForm(i).invalidate();
         }
-        //Although well-designed Forms will have more advanced capabilities for
-        //setting the progress bar level, this progress bar code needs to stay 
-        //in order to handle things like OperatorForms. 
-        if(progress.getValue()>start)
-          progress.setValue(start * MAX_PROGRESS);
+        //we are farther along then the invalidated Form, so reset the progress
+        //bar and label
+        if(wizProgress.getValue()>start){
+          wizProgress.setValue(start);
+          wizProgress.setString("Wizard Progress: "+(getCurrentFormNumber() + 1)
+                                + " of " + forms.size() + " Forms done");
+        }
     }
 
     /**
@@ -1061,34 +1087,32 @@ public abstract class Wizard implements PropertyChangeListener{
      * Execute all forms up to the number specified.
      */
     protected void exec_forms(int end){
-      progress.setString("Executing...");
       modified = true;
       Form f = getCurrentForm();
       // execute the previous forms
       for( int i=0 ; i <= end ; i++ ){
         f=getForm(i);
         if(!f.done()){
-          if(DEBUG) System.out.print("EXECUTING "+i);
+          formProgress.setValue(0);
+          formProgress.setString("Executing " + f);
+          
           Object worked=f.getResult();
-          if(DEBUG) System.out.println("  W="+worked+" D="+f.done());
+          
           if( (worked instanceof ErrorString) ||  
               (worked instanceof Boolean && (!((Boolean)worked).booleanValue())) ){
-            if(DEBUG) System.out.println("BREAKING "+i);
             end=i-1;
             break;
           }
+          
         }
-
-        //The setValue() call below is redundant, but is left in for clarity.
-        //invalidate() actually calls its equivalent at the end of its
-        //execution.
-        //progress.setValue((end+1) * MAX_PROGRESS);
+        wizProgress.setValue((end+1));
+        wizProgress.setString("Wizard Progress: " + (getCurrentFormNumber()+1) +
+                              " of " + forms.size() + " Forms done");
+        formProgress.setValue(FORM_PROGRESS);
+        formProgress.setString(f + " Done");
       }
 
-      // invalidate subsequent forms - this implicitly sets the value for the
-      // progress bar
       invalidate(end+1);
-      progress.setString("Execute Progress");
     }
 
     /**
