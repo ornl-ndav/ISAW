@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.47  2004/03/19 17:18:44  dennis
+ *  Removed unused variables
+ *
  *  Revision 1.46  2004/03/15 06:10:55  dennis
  *  Removed unused import statements.
  *
@@ -906,8 +909,6 @@ private void UpdateImageReadout( int row )
 
 private void SetGraphCursorFromImage( )
 {
-  Point pix_pt          = image_Jpanel.getCurrent_pixel_point();
-  int col = image_Jpanel.ImageCol_of_PixelCol( pix_pt.x );
   floatPoint2D float_pt = image_Jpanel.getCurrent_WC_point();
                                                // interpolation is needed to
                                                // get the y value along the 
