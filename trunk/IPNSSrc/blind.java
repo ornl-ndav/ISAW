@@ -53,6 +53,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2004/04/21 19:09:17  dennis
+ * Changed main test program to work with version of FindPeaks that
+ * has min and max time channels as parameters.
+ *
  * Revision 1.20  2004/03/19 17:17:33  dennis
  * Removed unused variables
  *
@@ -1089,7 +1093,7 @@ public class blind {
                                     "C:\\Ipns\\Isaw2\\SampleRuns\\instprm.dat",
                                              1,"0:7000");
         lcab.getResult(); 
-        FindPeaks fp = new FindPeaks( ds,0, 15,1);
+        FindPeaks fp = new FindPeaks( ds,0, 15,1, 0, 1000 );
         V = (Vector)(fp.getResult());
         CentroidPeaks cp = new CentroidPeaks(ds, V);
 
