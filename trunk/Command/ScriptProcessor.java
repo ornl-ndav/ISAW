@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2001/11/27 18:40:44  dennis
+ * Added code to set the Result to null after an
+ * if statement if finished. (Ruth)
+ *
  * Revision 1.15  2001/11/12 21:28:41  dennis
  *   1. Added Choice to the permissible data types for script parameters.
  *
@@ -791,6 +795,7 @@ private int executeForBlock( Document Doc , int start , boolean execute,
          return line;
         }  
       Object X = ExecLine.getResult();
+      
       if( X instanceof Integer)
          if( ((Integer)X).intValue()==0) X = new Boolean(false);
          else X = new Boolean(true);
@@ -812,7 +817,7 @@ private int executeForBlock( Document Doc , int start , boolean execute,
       if( perror >= 0 ) 
         return j;
       S = getLine ( Doc , j );
-       if(Debug) 
+      if(Debug) 
            System.out.println("ExIf:: Els or Elseif?"+S);
       if( S == null)
        { seterror( 0 , "Improper line" );
@@ -831,6 +836,7 @@ private int executeForBlock( Document Doc , int start , boolean execute,
                                    (!b) && execute, 0 );
              x = 2;
             }
+      
       if(Debug) 
         System.out.println( "ExIf:: aft exec 1st block, perror=" + perror );
       if( perror >= 0) 
@@ -849,6 +855,8 @@ private int executeForBlock( Document Doc , int start , boolean execute,
         lerror = line;
          return j;
        }  
+       
+       ExecLine.Result=null;
       if( Debug) 
         System.out.println( "ExIF end OK, line is " + j );       
       return j;
