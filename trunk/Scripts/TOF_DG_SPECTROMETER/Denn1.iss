@@ -1,6 +1,8 @@
 # Put parameters here: 
 # $Date$
 #
+$Category=Operator, Instrument Type, TOF_NDGS
+
 $  path   DataDirectoryString       Path?
 $  instrument  InstrumentNameString(hrcs)     Instrument?
 $  background_runs   String(2444)    background runs

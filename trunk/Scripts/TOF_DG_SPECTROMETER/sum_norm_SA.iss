@@ -1,5 +1,7 @@
 # Sum by Group ID and normalize with Solid angle HRCS macro
 # $Date$
+$Category=Operator, Instrument Type, TOF_NDGS
+
 $  path               DataDirectoryString     Data File Path:
 $  instrument         InstrumentNameString    Instrument Prefix(eg:hrcs)
 $  sample_run         Integer		      Sample Run Number(3499, 3498 ...)
