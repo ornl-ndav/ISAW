@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:49:20  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:10:27  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -43,44 +46,61 @@ package devTools.Hawk.classDescriptor.threads;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UTFDataFormatException;
 import java.util.StringTokenizer;
 import java.util.Vector;
+
+import javax.swing.JOptionPane;
 
 import devTools.Hawk.classDescriptor.gui.frame.ProgressGUI;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
-import devTools.Hawk.classDescriptor.tools.dataFileUtilities;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This file reads data from a native Hawk file and creates a project.  Because the file is read 
+ * in a separate thread, the gui does not seem to freeze.
+ * @author Dominic Kramer
  */
 public class JDFFileReaderThread extends Thread
 {
-	protected dataFileUtilities data;
-	protected Vector vec;
+	/**
+	 * The name of the native Hawk file from which the data is read.
+	 */
+	protected String filename;
+	/**
+	 * This is the window that shows the progress of the thread.
+	 */
 	protected ProgressGUI progress;
-	protected int length;
+	/**
+	 * The Vector of Interface objects created.
+	 */
+	protected Vector vec;
 	
-	public JDFFileReaderThread(dataFileUtilities DATA, Vector VEC)
+	/**
+	 * Creates a new JDFFileReaderThread.
+	 * @param VEC The Vector to add the Interfaces created to.
+	 */
+	public JDFFileReaderThread(String STR, Vector VEC)
 	{
-		data = DATA;
+		filename = STR;
 		vec = VEC;
-		
-		progress = new ProgressGUI(0,getNumberOfLines(data.getFileName()),"Opening File");
+
+		progress = new ProgressGUI(0,getNumberOfLines(filename),"Opening File");
 		progress.setVisible(true);
 	}
 	
+	/**
+	 * This method reads the data and creates Interfaces.  Do not call this method to start the thread.  Call 
+	 * start() which in turn will call this method.
+	 */
 	public void run()
 	{
 		try
 		{
 			int num = 0;
-			//BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(data.getFileName())));
-			DataInputStream reader = new DataInputStream(new FileInputStream(data.getFileName()));
+			DataInputStream reader = new DataInputStream(new FileInputStream(filename));
 			
 			
 			String line = readFileLine(reader); //this is the project's name
@@ -95,7 +115,7 @@ public class JDFFileReaderThread extends Thread
 					progress.setText("Data for class "+num+" read\n");
 						
 					num++;
-					vec.add(intF.Clone());
+					vec.add(intF.getClone());
 					
 					line = readFileLine(reader);
 					progress.setValue(num);
@@ -116,7 +136,13 @@ public class JDFFileReaderThread extends Thread
 		}
 	}
 	
-	public String readFileLine(DataInputStream dat)
+	/**
+	 * This reads a line of data from the file.  Note:  the file is a binary file so you have to 
+	 * use this method to actually read a line.
+	 * @param dat The DataInputStream to read the file from.
+	 * @return The next line from the file.
+	 */
+	public String readFileLine(DataInputStream dat) throws UTFDataFormatException, FileNotFoundException, IOException
 	{
 		String answer = null;
 		
@@ -128,15 +154,55 @@ public class JDFFileReaderThread extends Thread
 				
 				StringTokenizer tokenizer = new StringTokenizer(answer,"\n");
 				answer = tokenizer.nextToken();
-			} 
-			catch (Exception e)
-			{
-				SystemsManager.printStackTrace(e);
+
 			}
+/*
+			catch (UTFDataFormatException e)
+			{
+				JOptionPane opPane = new JOptionPane();
+				JOptionPane.showMessageDialog(opPane,"The file "+filename+" could not be read because its data has been corrupted.\n" +
+					"Make sure it is a "+SystemsManager.getHawkFileExtensionWithoutPeriod()+" file written by Hawk and not just " +
+						"a file that ends in "+SystemsManager.getHawkFileExtensionWithoutPeriod()+"."
+					,"File Not Found"
+					,JOptionPane.ERROR_MESSAGE);
+			}
+			catch (FileNotFoundException e)
+			{
+				JOptionPane opPane = new JOptionPane();
+				JOptionPane.showMessageDialog(opPane,"The file "+filename+" does not exist."
+					,"File Not Found"
+					,JOptionPane.ERROR_MESSAGE);
+			}
+*/
+			catch (EOFException e)
+			{
+				try
+				{
+					int num = dat.available();
+					//if num == 0, then the exception was thrown because the end of the 
+					//file was reached.  However, this exception is used to stop the reading of the 
+					//by catching the exception.  So if num == 0, the exception occured for the 
+					//correct reason.
+					if (num != 0)
+						SystemsManager.printStackTrace(e);
+				}
+				catch(Exception error)
+				{
+					SystemsManager.printStackTrace(e);
+					SystemsManager.printStackTrace(error);
+				}
+			}
+			
 		
 		return answer;
 	}
 	
+	/**
+	 * This gets the number of lines in the String str.  More specifically, it finds the number of times 
+	 * \n appears in the string.
+	 * @param str The String to check.
+	 * @return The number of lines.
+	 */
 	public int getNumberOfLines(String str)
 	{
 		int num = 0;
@@ -150,11 +216,23 @@ public class JDFFileReaderThread extends Thread
 					num++;
 			}
 			reader.close();			
+
+		}
+		catch (UTFDataFormatException e)
+		{
+			JOptionPane opPane = new JOptionPane();
+			JOptionPane.showMessageDialog(opPane,"The file "+filename+" could not be read because its data has been corrupted.\n" +
+				"Make sure it is a "+SystemsManager.getHawkFileExtensionWithoutPeriod()+" file written by Hawk and not just " +
+					"a file that ends in "+SystemsManager.getHawkFileExtensionWithoutPeriod()+"."
+				,"File Not Found"
+				,JOptionPane.ERROR_MESSAGE);
 		}
 		catch (EOFException e)
-		{}
+		{  /*if this exception is caught it means that the end of the file is reached which is ok.*/}
 		catch (IOException e)
-		{}
+		{
+			SystemsManager.printStackTrace(e);
+		}
 		
 		return num;
 	}

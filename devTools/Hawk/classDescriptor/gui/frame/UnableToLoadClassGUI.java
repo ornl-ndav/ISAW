@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 19:05:31  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:52  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -59,30 +62,56 @@ import javax.swing.JTable;
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class creates a window that is used when loading classes from .class files.  The window 
+ * contains a JTable that contains any errors that occured while loading classes along with what 
+ * caused the error.
+ * @author Dominic Kramer
  */
 public class UnableToLoadClassGUI implements ActionListener
 {
+	/**
+	 * The base component of the window.
+	 */
 	private JFrame frame;
+	/**
+	 * This is the table that contains any errors that occur while trying to load classes.
+	 */
 	private JTable table;
+	/**
+	 * A Vector of Vectors of Strings which holds the messages to place in the JTable table.
+	 */
 	private Vector errorVec;
+	/**
+	 * The pane that the JTable table is placed in to allow the user to scroll through the table.
+	 */
 	private JScrollPane scrollPane;
+	/**
+	 * Set to true if an error has occured and the this window should be displayed.
+	 */
 	private boolean showErrorBox;
 	
+	/**
+	 * Instantiates the errorVec and initializes showErrorBox to false.  The components of the window 
+	 * are not instantiated.
+	 */
 	public UnableToLoadClassGUI()
 	{
 		errorVec = new Vector();
 		showErrorBox = false;
 	}
 	
+	/**
+	 * True if this window should be displayed and false if not.
+	 * @return True if this window should be displayed.
+	 */
 	public boolean showErrorBox()
 	{
 		return showErrorBox;
 	}
 	
+	/**
+	 * Creates all of the components in the window and displays the window.
+	 */	
 	public void showGUI()
 	{
 		frame = new JFrame();
@@ -121,6 +150,14 @@ public class UnableToLoadClassGUI implements ActionListener
 		frame.setVisible(true);
 	}
 	
+	/**
+	 * This method is called if an error occurs that cannot be resolved.  Then data representing 
+	 * the error is added to the JTable table.
+	 * @param filename The name of the .class or .jar file from which a class was supposed to be loaded 
+	 * and caused an error.
+	 * @param classname The name of the class that was supposed to be loaded.
+	 * @param e The actual Throwable object which represents the error.
+	 */
 	public void processThrowable(String filename, String classname, Throwable e)
 	{
 		showErrorBox = true;
@@ -154,6 +191,9 @@ public class UnableToLoadClassGUI implements ActionListener
 		errorVec.add(rowVec);
 	}
 	
+	/**
+	 * Handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
 			frame.dispose();

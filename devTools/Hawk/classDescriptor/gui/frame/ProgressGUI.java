@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:56:38  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:51  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -56,22 +59,52 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class makes a window that displays the progress of a working process.
+ * @author Dominic Kramer
  */
 public class ProgressGUI extends JFrame implements ActionListener
 {
+	/**
+	 * The window's title.
+	 */
 	protected String title;
+	/**
+	 * The progress bar which displays how far the progress has gone.
+	 */
 	protected JProgressBar bar;
+	/**
+	 * The button that can cancel the process or close the window depending on if the 
+	 * process is done or not.
+	 */
 	protected JButton button;
+	/**
+	 * The text area that displays what the process is currently doing or other information about 
+	 * the process.
+	 */
 	protected JTextArea textArea;
+	/**
+	 * The JProgressBar's current value.
+	 */
 	protected int value;
+	/**
+	 * The JProgressBar's minimum value.
+	 */
 	protected int min;
+	/**
+	 * The JProgressBar's maximum value.
+	 */
 	protected int max;
+	/**
+	 * Set to true if the process is supposed to be cancelled.
+	 */
 	protected boolean isCancelled;
 	
+	/**
+	 * Create a new ProgressGUI object.
+	 * @param MIN The JProgressBar's minimum value.
+	 * @param MAX The JProgressBar's maximum value.
+	 * @param TITLE The window's title.
+	 */
 	public ProgressGUI(int MIN, int MAX, String TITLE)
 	{
 		isCancelled = false;
@@ -123,58 +156,94 @@ public class ProgressGUI extends JFrame implements ActionListener
 			pack();
 	}
 	
-	public void setString(String str)
-	{
-		bar.setString(str);
-	}
-	
+	/**
+	 * Set the text in the JProgressBar.
+	 * @param str The text.
+	 */
 	public void setProgressBarString(String str)
 	{
 		bar.setString(str);
 	}
 	
+	/**
+	 * Set the JProgressBar state as an indeterminant state if bol is equal to true.  
+	 * The JProgressBar is in a normal state if bol is equal to false.
+	 * @param bol Either true or false.
+	 */	
 	public void setIndeterminante(boolean bol)
 	{
 		bar.setIndeterminate(bol);
 	}
 	
+	/**
+	 * Get the JProgressBar's maximum value.
+	 * @return The maximum value.
+	 */
 	public int getMaximum()
 	{
 		return bar.getMaximum();
 	}
-		
+	
+	/**
+	 * Set the JProgressBar's maximum value.
+	 * @param num The maximum value.
+	 */
 	public void setMaximum(int num)
 	{
 		bar.setMaximum(num);
 	}
 	
+	/**
+	 * Determine if the process is cancelled.
+	 * @return True if the process is cancelled.
+	 */
 	public boolean isCancelled()
 	{
 		return isCancelled;
 	}
 	
+	/**
+	 * Append the String str to the JTextArea.
+	 * @param str The text.
+	 */
 	public void appendMessage(String str)
 	{
 		textArea.append(str+"\n");
 		pack();
 	}
 	
+	/**
+	 * Set the JTextArea's text.
+	 * @param str The text.
+	 */
 	public void setText(String str)
 	{
 		textArea.setText(str);
 		pack();
 	}
 	
+	/**
+	 * Get the JTextArea's text.
+	 * @return The text.
+	 */
 	public String getText()
 	{
 		return textArea.getText();
 	}
 	
+	/**
+	 * Get the JProgressBar's current value.
+	 * @return The current value.
+	 */
 	public int getValue()
 	{
 		return value;
 	}
 	
+	/**
+	 * Set the JProgressBar's current value.
+	 * @param num The current value.
+	 */
 	public void setValue(int num)
 	{
 		value = num;
@@ -183,12 +252,18 @@ public class ProgressGUI extends JFrame implements ActionListener
 		pack();
 	}
 	
+	/**
+	 * Used to signal that the process is completed.
+	 */
 	public void isCompleted()
 	{
 		button.setText("Done");
 		button.setActionCommand("done");
 	}
 	
+	/**
+	 * Handle ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
 		if (event.getActionCommand().equals("cancelled"))
@@ -204,8 +279,16 @@ public class ProgressGUI extends JFrame implements ActionListener
 		}
 	}
 	
+	/**
+	 * Class which handles closing the window.
+	 * @author Dominic Kramer
+	 */
 	protected class WindowDestroyer extends WindowAdapter
 	{
+		/**
+		 * Handles closing the window.
+		 * @param event The event that is sent to close the window.
+		 */
 		public void windowClosing(WindowEvent event)
 		{
 			dispose();

@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:49:50  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:10:27  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -53,28 +56,50 @@ import devTools.Hawk.classDescriptor.tools.SystemsManager;
 import devTools.Hawk.classDescriptor.tools.dataFileUtilities;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class is used to write data about a Project to a file in a separate thread.  Because the 
+ * data is written in another thread, the gui does not seem to freeze.
+ * @author Dominic Kramer
  */
 public class JDFFileWriterThread extends Thread
 {
+	/**
+	 * This is a Vector of Interface objects.  The data from each Interface object 
+	 * is written to a file.
+	 */
 	protected Vector vec;
+	/**
+	 * The window displaying the progress of this thread.
+	 */
 	protected ProgressGUI progress;
+	/**
+	 * The project whose data is to be written to a file.
+	 */
 	protected Project pro;
+	/**
+	 * This object is used to write the data.
+	 */
 	protected dataFileUtilities data;
 	
-	public JDFFileWriterThread(Vector VEC, Project PRO, dataFileUtilities DATA)
+	/**
+	 * This creates a new thread in which the data about the Project supplied 
+	 * will be writen to the file.
+	 * @param PRO The project whose data is to be written.
+	 * @param DATA The dataFileUtilities object used to write the data.
+	 */
+	public JDFFileWriterThread(Project PRO, dataFileUtilities DATA)
 	{
-		vec = VEC;
 		pro = PRO;
+		vec = pro.getInterfaceVec();
 		data = DATA;
 		StatisticsManager manager = new StatisticsManager(pro);
 		progress = new ProgressGUI(0,manager.getTotalNumberOfClassesAndInterfaces(),"Saving Project "+pro.getProjectName());
 		progress.setVisible(true);
 	}
 	
+	/**
+	 * This method actually writes the data.  Call the start() method to start the thread.  The start() method will in turn call this 
+	 * method to write the data.
+	 */
 	public void run()
 	{
 		try
@@ -108,6 +133,7 @@ public class JDFFileWriterThread extends Thread
 		catch (ClassCastException e)
 		{
 			System.out.println("A ClassCastException was thrown in printlnAndWriteClass(Vector) probably because you didn't pass a vector of Interface objects to the function.");
+			SystemsManager.printStackTrace(e);
 		}
 	}
 }

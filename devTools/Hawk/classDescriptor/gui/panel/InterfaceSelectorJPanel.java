@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:45:14  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:09:42  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -47,7 +50,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.FileNotFoundException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -59,7 +61,6 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -69,17 +70,22 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import DataSetTools.util.RobustFileFilter;
-import devTools.Hawk.classDescriptor.gui.frame.HorizontalInterfacePanelGUI;
 import devTools.Hawk.classDescriptor.gui.frame.InterfaceSelectorSaveAsGUI;
-import devTools.Hawk.classDescriptor.gui.frame.VerticalInterfacePanelGUI;
 import devTools.Hawk.classDescriptor.gui.internalFrame.JavadocsGUI;
 import devTools.Hawk.classDescriptor.gui.internalFrame.ShortenedSourceGUI;
 import devTools.Hawk.classDescriptor.gui.internalFrame.SingleUMLGUI;
 import devTools.Hawk.classDescriptor.gui.internalFrame.SourceCodeGUI;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
+import devTools.Hawk.classDescriptor.tools.SystemsManager;
 import devTools.Hawk.classDescriptor.tools.dataFileUtilities;
 
+/**
+ * This is a special type of panel that contains a JList.  The panel contains information about a specific project and contains 
+ * object to view information about this project.  The list contains all of the projects interfaces.  The panel can be used to 
+ * create a project.  Currently, this class is not really needed any more, may be removed, and is still under construction.
+ * @author Dominic Kramer
+ */
 public class InterfaceSelectorJPanel extends ProjectSelectorJPanel implements ActionListener, ListSelectionListener
 {
 	//This JPanel is a lot like ProjectSelectorJPanel, except
@@ -87,6 +93,8 @@ public class InterfaceSelectorJPanel extends ProjectSelectorJPanel implements Ac
 	//2.  The contents of list are Strings which represent the elements in Project.interfaceVec 
 	
 	//INTFVEC is a Vector of Interface objects
+	protected Vector ProjectVec;
+	
 	public InterfaceSelectorJPanel(Vector INTFVEC)
 	{
 		//now to instantiate the Vector of Project objects
@@ -95,10 +103,7 @@ public class InterfaceSelectorJPanel extends ProjectSelectorJPanel implements Ac
 		
 		//now to instantiate the Continer and main panel everything is added on
 			setLayout(new BorderLayout());
-		
-		//this initially has a new window pop up if the list is selected
-			openNewAlphaWindowOnSelect = true;
-		
+				
 		//now to make the list for the gui		
 			//this model allows you to modify the list
 			model = new DefaultListModel();
@@ -296,32 +301,6 @@ public class InterfaceSelectorJPanel extends ProjectSelectorJPanel implements Ac
 		{
 				return (Project)(ProjectVec.elementAt(0));
 		}
-			
-	/**
-	* This sets openNewAlphaWindowOnSelect to either true or false.  Set it to true 
-	* if you want a new AlphabeticalListGUI to appear
-	* when the user selects a new Project from the Jlist.  Set to false if you
-	* want the new Projects information to appear in the AlphabeticalListGUI
-	* already open.  Note:  In AlphabeticalListGUI.java when the user closes the
-	* GUI, the setOpenNewAlphaWindowOnSelect(true) is automatically selected to
-	* have a new GUI window pop up.
-	* @param bol True for a new window to pop up, and false otherwise.
-	*/	
-		public void setOpenNewAlphaWindowOnSelect(boolean bol)
-		{
-			openNewAlphaWindowOnSelect = bol;
-		}
-	
-	/**
-	* This is used in if statements to decide whether or not to open a new 
-	* AlphabeticalListGUI if the current class trying to obtain the information
-	* can't due to encapsulation.
-	* @return The value of openNewAlphaWindowOnSelect
-	*/
-		public boolean getOpenNewAlphaWindowOnSelect()
-		{
-			return openNewAlphaWindowOnSelect;
-		}
 	
 	/**
 	* Handles the action events that happen in the GUI such as button clicks and
@@ -369,7 +348,7 @@ public class InterfaceSelectorJPanel extends ProjectSelectorJPanel implements Ac
 			
 				JFileChooser chooser = new JFileChooser();
 					RobustFileFilter jdfFilter = new RobustFileFilter();
-					jdfFilter.addExtension("jdf");
+					jdfFilter.addExtension(SystemsManager.getHawkFileExtensionWithoutPeriod());
 					chooser.setFileFilter(jdfFilter);			
 				int returnVal = chooser.showDialog(frame, "Select");
 			
@@ -384,8 +363,6 @@ public class InterfaceSelectorJPanel extends ProjectSelectorJPanel implements Ac
 					String abstractFileName = chooser.getSelectedFile().getName();
 				
 					String project_Name = "";
-					try
-					{						
 						dataFileUtilities data = new dataFileUtilities(fileName, true);
 						if (data != null)
 						{
@@ -405,16 +382,6 @@ public class InterfaceSelectorJPanel extends ProjectSelectorJPanel implements Ac
 								model.addElement( "    "+((Interface)(newProject.getInterfaceVec().elementAt(i))).toString() );
 							}
 						}
-					}
-					catch(FileNotFoundException e)
-					{
-						//custom title, error icon
-							JOptionPane opPane = new JOptionPane();
-							JOptionPane.showMessageDialog(opPane,
-								"The file you selected is either not of the correct type or has been corrupted.\nPlease choose a file that ends in .jdf",
-								"File Error",
-								JOptionPane.ERROR_MESSAGE);
-					}
 				}				
 			}
 			else if (event.getActionCommand().equals("remove.Interface"))
@@ -489,30 +456,6 @@ public class InterfaceSelectorJPanel extends ProjectSelectorJPanel implements Ac
 				catch(NotAnInterfaceException e)
 				{
 					System.out.println("A NotAnInterfaceException was thrown in InterfaceSelectorJPanel.java where event.getActionCommand() = "+event.getActionCommand());
-				}
-			}
-			else if (event.getActionCommand().equals("popup.horizontal"))
-			{
-				try
-				{	
-					HorizontalInterfacePanelGUI hPanel = new HorizontalInterfacePanelGUI(getSelectedInterface(), ((Project)ProjectVec.elementAt(0)).getProjectName());
-					hPanel.setVisible(true);
-				}
-				catch(NotAnInterfaceException e)
-				{
-						System.out.println("A NotAnInterfaceException was thrown in InterfaceSelectorJPanel.java where event.getActionCommand() = "+event.getActionCommand());
-				}
-			}
-			else if (event.getActionCommand().equals("popup.vertical"))
-			{
-				try
-				{
-					VerticalInterfacePanelGUI vPanel = new VerticalInterfacePanelGUI(getSelectedInterface(), ((Project)ProjectVec.elementAt(0)).getProjectName());
-					vPanel.setVisible(true);
-				}
-				catch(NotAnInterfaceException e)
-				{
-						System.out.println("A NotAnInterfaceException was thrown in InterfaceSelectorJPanel.java where event.getActionCommand() = "+event.getActionCommand());
 				}
 			}
 			else if (event.getActionCommand().equals("Save"))

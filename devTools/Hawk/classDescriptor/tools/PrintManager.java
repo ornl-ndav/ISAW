@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:56:04  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:10:47  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -57,23 +60,42 @@ import devTools.Hawk.classDescriptor.modeledObjects.InterfaceDefn;
 import devTools.Hawk.classDescriptor.modeledObjects.MethodDefn;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class has general methods used for printing class information to a file.  If you want to print
+ * information about classes to a file you should use either ASCIIPrintFileManager or HTMLPrintFileManager.
+ * Do not directly use this class.  It is here to make it easier to create sub-classes for printing class information.
+ * @author Dominic Kramer
  */
 public class PrintManager extends RandomAccessFile
 {
-	public PrintManager(String file, String access) throws FileNotFoundException
+	/**
+	 * Creates a new PrintManager object.  This essentially makes a RandomAccessFile object.
+	 * This constructor is used in subclasses of this class.
+	 * @param file The name of the file you want to write to
+	 * @param access The read-write access to the file as specified by a RandomAccessFile (i.e. "r", "w", or "rw")
+	 * @throws FileNotFoundException
+	 */
+	protected PrintManager(String file, String access) throws FileNotFoundException
 	{
 		super(file,access);
 	}
 	
-	public PrintManager(String access) throws FileNotFoundException
+	/**
+	 * Creates a new PrintManager object.  This essentially makes a RandomAccessFile object.
+	 * When this constructor is used a file chooser is opened allowing the user to select a file to print to.
+	 * This constructor is used in subclasses of this class.
+	 * @param access The read-write access to the file as specified by a RandomAccessFile (i.e. "r", "w", or "rw")
+	 * @throws FileNotFoundException
+	 */
+	protected PrintManager(String access) throws FileNotFoundException
 	{
 		super(getAbsoluteFileName(),access);
 	}
 	
+	/**
+	 * This opens a file chooser to allow the user to choose which file to print the information to.
+	 * This method is used in the constructor PrintManager(String) to ask the user for a file.
+	 * @return The full name of the file selected
+	 */
 	public static String getAbsoluteFileName()
 	{
 		String absoluteName = "";
@@ -195,11 +217,25 @@ public class PrintManager extends RandomAccessFile
 		//ex.  +Person(int, double, int, float, String):void
 	}
 	
+	/**
+	 * This returns the name line from a UML diagram
+	 * @param intfd An InterfaceDefn object
+	 * @param shortJava True if you want to shorten java names
+	 * @param shortOther True if you want to shorten non-java names
+	 * @return A UML representation of the InterfaceDefn object's name
+	 */
 	public static String getUMLNameLine(InterfaceDefn intfd, boolean shortJava, boolean shortOther)
 	{
 		return intfd.getInterface_name(shortJava,shortOther);
 	}
 	
+	/**
+	 * This returns the attribute line for the AttributeDefn object in UML format.
+	 * @param attDefn The AttributeDefn object to describe
+	 * @param shortJava True if you want to shorten java names
+	 * @param shortOther True if you want to shorten non-java names
+	 * @return A UML representation of the AttributeDefn object 
+	 */
 	public static String getUMLAttributeLine(AttributeDefn attDefn, boolean shortJava, boolean shortOther)
 	{
 		Vector charVector = attDefn.getAttribute_char_vector();
@@ -213,6 +249,13 @@ public class PrintManager extends RandomAccessFile
 		return attLine;
 	}
 	
+	/**
+	 * This returns the constructor line for the ConstructorDefn object in UML format.
+	 * @param constDefn The ConstructorDefn object to describe
+	 * @param shortJava True if you want to shorten java names
+	 * @param shortOther True if you want to shorten non-java names
+	 * @return A UML representation of the ConstructorDefn object 
+	 */
 	public static String getUMLConstructorLine(ConstructorDefn constDefn, boolean shortJava, boolean shortOther)
 	{
 		Vector charVector = constDefn.getConst_char_vector();
@@ -240,6 +283,13 @@ public class PrintManager extends RandomAccessFile
 		return constLine;
 	}
 	
+	/**
+	 * This returns the method line for the MethodDefn object in UML format.
+	 * @param methDefn The MethodDefn object to describe
+	 * @param shortJava True if you want to shorten java names
+	 * @param shortOther True if you want to shorten non-java names
+	 * @return A UML representation of the MethodDefn object 
+	 */
 	public static String getUMLMethodLine(MethodDefn methDefn, boolean shortJava, boolean shortOther)
 	{
 		Vector charVector = methDefn.getMethod_char_vector();

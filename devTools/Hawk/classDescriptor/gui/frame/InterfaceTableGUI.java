@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:46:31  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:51  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -50,17 +53,33 @@ import javax.swing.table.DefaultTableModel;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class is still in the developmental stage.  It could possibly be a means 
+ * of displaying information about a class or interface in a more compact way.
+ * @author Dominic Kramer
  */
 public class InterfaceTableGUI extends JFrame implements ActionListener
 {
+	/**
+	 * The Interface whose data is being displayed.
+	 */
 	private Interface currentInterface;
+	/**
+	 * The JTable table's model to handle modifying the table.
+	 */
 	private DefaultTableModel model;
+	/**
+	 * The table which holds the Interface object's data.
+	 */
 	private JTable table;
 	
+	/**
+	 * Create a new InterfaceTableGUI.
+	 * @param INTF The interface whose data is to be used.
+	 * @param title The title of the window.
+	 * @param shortJava Set this to true if java names are to be shortened.  For example, 
+	 * java.lang.String will be shortened to String.
+	 * @param shortOther Set this to true if non-java names are to be shortened.
+	 */
 	public InterfaceTableGUI(Interface INTF, String title, boolean shortJava, boolean shortOther)
 	{
 		setTitle(title);
@@ -70,6 +89,9 @@ public class InterfaceTableGUI extends JFrame implements ActionListener
 		model = new DefaultTableModel();
 	}
 	
+	/**
+	 * Handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent e)
 	{
 
