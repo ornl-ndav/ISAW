@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/04/26 13:14:04  rmikk
+ *  null constructor is now public
+ *  Used the new xml_utils Attr read method( for immutable Attributes)
+ *  Improved documentation
+ *
  *  Revision 1.13  2004/03/15 06:10:37  dennis
  *  Removed unused import statements.
  *
@@ -71,8 +76,10 @@ package  DataSetTools.dataset;
 
 import gov.anl.ipns.Util.Numeric.Format;
 
+import gov.anl.ipns.Util.SpecialStrings.*;
 import java.text.*;
 import java.io.*;
+import java.util.*;
 
 /**
  * The concrete class for an attribute whose value is a float.  
@@ -118,7 +125,7 @@ public class FloatAttribute extends Attribute
     this.value = value;
   }
 
-  private FloatAttribute(  )
+  public FloatAttribute(  )
   {
     super( "" );
     this.value = 0.0f;
@@ -175,14 +182,30 @@ public class FloatAttribute extends Attribute
                                (this.value + (float)attr.getNumericValue()) );
   }
 
+
+  /**
+    *  This method writes the information in this FloatAttribute to the output
+    *  stream in an xml format
+    */
   public boolean XMLwrite( OutputStream stream, int mode )
   {
     return xml_utils.AttribXMLwrite( stream, mode, this);
   }
 
+
+  /**
+    *  This method reads information from the input stream and assignd it to 
+    *  the corresponding fields of this FloatAttribute.
+    *  This method assumes the leading tag has been read.
+    */
   public boolean XMLread( InputStream stream )
   {
-    return xml_utils.AttribXMLread(stream, this);
+	Object Res= xml_utils.AttribXMLread(stream, new FloatAttribute());
+	 if( Res instanceof ErrorString)
+		return false;
+	  value =((Float) (((Vector)Res).lastElement())).floatValue();
+	  name =((String) (((Vector)Res).firstElement())).toString();
+	 return true;//(Attribute)(new FloatAttribute(name,value));
   }
 
   /**
