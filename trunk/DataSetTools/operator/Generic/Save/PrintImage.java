@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/06/15 19:12:50  robertsonj
+ * Print image now allows the user to select some printer option as well as
+ * State of the view that they would like to print
+ *
  * Revision 1.9  2004/06/01 20:05:20  dennis
  * Fixed minor error in getDocumentation() method, that prevented
  * the code from compiling.  Made minor improvements in format.
@@ -40,9 +44,16 @@
  * Revision 1.7  2004/05/27 19:18:22  robertsonj
  * *** empty log message ***
  *
+ *Rivision 1.8 2004/06/14 robertson
+ *added Functionality: Added viewerStates so you can change the apperence of the printed file
+ *
  * Rivision 1.7 2004/05/27 robertson
+<<<<<<< PrintImage.java
+ * added functionality: Print in landscape, pick printer from list, print x number ofcopies, choose print quality.
+=======
  * added functionality: Print in landscape, pick printer from list, 
  * print x copies, choose print quality.
+>>>>>>> 1.9
  * 
  * Revision 1.6  2004/05/04 19:03:50  dennis
  * Now clears DataSetPG after getting value, to avoid memory leak.
@@ -73,6 +84,7 @@ import DataSetTools.parameter.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
 
+
 import javax.print.*;
 import javax.print.attribute.*;
 import javax.print.attribute.standard.*;
@@ -80,6 +92,7 @@ import java.util.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+
 
 /**
 *  This operator will Print a View of the DataSet corresponding to one of the
@@ -94,6 +107,8 @@ public class PrintImage extends GenericSave{
      super("Print Image");
      setDefaultParameters();
    }
+
+   
   
 
   /**
@@ -112,17 +127,10 @@ public class PrintImage extends GenericSave{
    *                        location will be considered
    *   @param PrintOptions (not implemented yet).For options like Portrait, etc.
    */
-   public PrintImage( DataSet DS, 
-                      String  view_type, 
-                      Vector  State,
-                      int     width, 
-                      int     height, 
-                      String  PrintName, 
-                      String  PrintLocation, 
-                      Vector  PrintOptions, 
-                      String  orientation, 
-	                  int     copies){
-   this();
+   public PrintImage( DataSet DS, String view_type,
+   int width, int height, String PrintName, 
+	  String PrintLocation, String PrintOptions, String orientation, int copies){
+   	  this();
    	  
       parameters = new Vector();
       addParameter( new DataSetPG( "Select DataSet",DS));
@@ -130,7 +138,7 @@ public class PrintImage extends GenericSave{
 	  addParameter( new StringPG( "View Name", view_type));
 	  addParameter(new BooleanPG("Landscape" , orientation));
       addParameter( new IntegerPG("copies", copies));
-      addParameter( new ArrayPG("State info", null));
+      addParameter( new StringPG("State info", null));
 	  addParameter( new IntegerPG("quality", 1));
 	  addParameter( new IntegerPG("height",height));
       addParameter( new IntegerPG("width", width));
@@ -146,7 +154,7 @@ public class PrintImage extends GenericSave{
 	  addParameter( new BooleanPG("LandScape",""));//7
       addParameter( new IntegerPG("Copies", 1));
 	  addParameter( new IntegerPG("quality",0));//8
-      addParameter( new ArrayPG("State info", null));//2
+      addParameter( new StringPG("State info", null));//2
 	  addParameter( new IntegerPG("height",500));//4
       addParameter( new IntegerPG("width", 500));//3
   }
@@ -161,29 +169,45 @@ public class PrintImage extends GenericSave{
      ((DataSetPG)(getParameter(0))).clear();  //needed to avoid memory leak
 
      String ViewName = getParameter(2).getValue().toString();
-     Vector State = ((ArrayPG)(getParameter(6))).getVectorValue();
+     String state = getParameter(6).toString();
      int  width = ((IntegerPG)(getParameter(8))).getintValue();
      int height = ((IntegerPG)(getParameter(7))).getintValue();
      String PrintName = getParameter(1).getValue().toString();
      boolean orientation =((BooleanPG)(getParameter(3))).getbooleanValue();
      int quality = ((IntegerPG)(getParameter(5))).getintValue();
      int copies = ((IntegerPG)(getParameter(4))).getintValue();
+     //System.out.println(state);
+    // System.out.println(state.substring(21, (state.length() - 6)));
      
-   
+ 
      // Set up the Viewer State here
-     DataSetViewer DSV = ViewManager.getDataSetView(DS, ViewName, null);
-     DSV.validate();
+     DataSetViewer DSV;
+     if(state.equals(null))
+     {
+     DSV = ViewManager.getDataSetView(DS, ViewName, null);
+     }else
+     {
+     	ViewerState newState = new ViewerState();
+     	ViewerState changedState;
+     	changedState = newState.setViewerState(state);
+     	DSV = ViewManager.getDataSetView(DS,ViewName, changedState);
+     }
+     
      DSV.setSize(width-5, height-5);
      JFrame jf = new JFrame();
      jf.setSize(width, height);
      jf.getContentPane().setLayout( new GridLayout(1,1));
      jf.getContentPane().add(DSV);
+	 jf.addWindowListener(new MyWindowListener(DSV, PrintName, orientation, quality, copies, jf));
+
      jf.addWindowListener(new MyWindowListener(DSV, PrintName, orientation,
                                                quality, copies, jf));
 	 jf.show();
-	
      return "Success";
   }
+
+  	
+  
   class MyWindowListener extends WindowAdapter{
 	DataSetViewer DSV;
  	String PrintLocation;
@@ -192,14 +216,20 @@ public class PrintImage extends GenericSave{
  	int quality;
  	boolean orientation;
  	int copies;
+ 
+  	public MyWindowListener(DataSetViewer DSV, String PrintName, 
+  														boolean orientation, int quality, int copies, JFrame jf)
 
-  	public MyWindowListener (DataSetViewer DSV, 
-                                 String        PrintName, 
-                                 boolean       orientation, 
-                                 int           quality, 
-                                 int           copies, 
-                                 JFrame        jf)
+
   	{
+
+			this.DSV = DSV;
+			this.PrintName = PrintName;
+			this.jf = jf;
+			this.orientation = orientation;
+			this.quality = quality;
+			this.copies = copies;
+
           this.DSV = DSV;
 
           this.PrintName = PrintName;
@@ -207,22 +237,21 @@ public class PrintImage extends GenericSave{
           this.orientation = orientation;
           this.quality = quality;
           this.copies = copies;
+
   	}
 	
   public void windowOpened(WindowEvent winevt){
     printResult(DSV,PrintLocation, PrintName, orientation, quality, copies, jf);
   }
  
-  	public void printResult( DataSetViewer DSV, 
-                                 String        PrintLocation, 
-                                 String        PrintName, 
-                                 boolean       orientation, 
-                                 int           quality, 
-                                 int           copies, 
-                                 JFrame        jf){
+
+  	public void printResult(DataSetViewer DSV, String PrintLocation, String PrintName, 
+  										boolean orientation, int quality, int copies, JFrame jf){
+	
 	
      DocFlavor myFormat = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
       Doc myDoc = null;
+
      PrintUtilities pr_utils = new PrintUtilities(DSV);
      // Set the document type
     
@@ -246,10 +275,7 @@ public class PrintImage extends GenericSave{
   	}
 
   	// To determine the level of quality. (may not work with laser printers
-	if (quality != 0)
-  	System.out.println("Past quality check");
-      PrintService[] services =
-	PrintServiceLookup.lookupPrintServices(myFormat, aset);
+      PrintService[] services = PrintServiceLookup.lookupPrintServices(myFormat, aset);
 	
 
      // Create a print job from one of the print services
@@ -326,6 +352,17 @@ public class PrintImage extends GenericSave{
     s.append("@algorithm- Creates the desired image and puts it into a ");                                           
     s.append("JFrame. Then it attempts to find a printer to print this image to");
     s.append("@param DS - The DataSet whose view is to be printed");
+
+	s.append("@param PrinterName- the name of the printer. If blank, any printer ");
+	s.append("will be considered");
+	s.append("@param view_type- The name of the view used by the ViewManager. ");
+	s.append("This is the String that appears in Isaw's View Menu");
+	s.append("@param Landscape- Boolean value FALSE for portrait(default), TRUE for landscape");
+	s.append("@param Copies- integer value that corresponds to the number of copies you would like");
+	s.append("@param Quality- integer value, 1 for draft, 2 for normal, 3 for best");
+	s.append("@param stateInfo- uses the ViewerState class.  This string must be of the form");
+	s.append(" Name Value,Name Value,.....,Name Value.  Where the name and values must be part of the ");
+	s.append(" ViewState class.  The values are below.");
     s.append("@param PrinterName - The printer to which is to be printed to");
     s.append("@param view_type- The name of the view used by the ViewManager. ");
     s.append("This is the String that appears in Isaw's View Menu");
@@ -335,8 +372,8 @@ public class PrintImage extends GenericSave{
     s.append("@param State -A Vector containing entries that are Vectors with two "); 
     s.append("elements: of State's Name and its value(not implemented yet)");
     s.append("@param width- The width of the image(will be scaled to fit the paper)");
+    s.append("@param height- The height of the image in pixels(Also scaled)");  
     s.append("@param height- The height of the image in pixels(Also scaled)");
-   
     s.append("@return Always returns the string 'Success' or an ErrorString ");
     s.append("<P><P> Some DataSetViewer States are<table bofder=1>");
     s.append("<tr><td>ColorScale</td> <td>Most Views</td><td> String ");
