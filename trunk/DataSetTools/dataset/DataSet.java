@@ -10,6 +10,9 @@
  *                 blocks. 
  *
  *  $Log$
+ *  Revision 1.11  2001/04/02 20:49:40  dennis
+ *  Added method to remove an operator from the DataSet.
+ *
  *  Revision 1.10  2001/02/15 23:29:05  dennis
  *  Now the copy() method will not attempt to copy a DataSet
  *  into itself.  The observers will just be notified with
@@ -950,6 +953,24 @@ public class DataSet implements IAttributeList,
     operators.addElement( operator );
     operator.setDefaultParameters();
   }
+
+
+  /**
+   * Removes all instances of an operator from this DataSet that have same 
+   * class as the specified operator. 
+   *
+   * @param  op  An instance of an operator of the type that is to be removed
+   *             from this DataSet.
+   */
+  public void removeOperator( Operator op )
+  {
+    for ( int i = operators.size()-1; i >= 0; i-- )
+    { 
+      if ( operators.elementAt(i).getClass().equals( op.getClass()) )
+        operators.removeElementAt(i); 
+    }
+  }
+
 
 
   /**
