@@ -7,6 +7,9 @@ package OverplotView.components.containers;
  * that is necessary for graphing objects of its type.
  *
  * $Log$
+ * Revision 1.4  2000/07/12 14:58:39  neffk
+ * added a makefile for generating documentation
+ *
  * Revision 1.3  2000/07/06 20:11:19  neffk
  * added these files, just to make sure, since they had a ? in front of them
  * when updating.
@@ -82,7 +85,7 @@ public class GraphableData extends DataSet
     yrangeU  = new UniformXScale( 0, 1, 2 );
 
     offset = 0.0f;
-    offsetData = null;
+    calculateOffset();
 
     marker = new sgtMarker( 0 );
     color = new sgtEntityColor( Color.black );

@@ -330,7 +330,18 @@ day 189>
                 
 day 192>    
 -DONE: 174-3: ControlPanel.java 1.2  
+TODO: 192-0: take a look at the nexus stuff and get back to worlton about it
 
+
+day 193>
+-meeting with frank vivio canceled
+-meeting rescheduled to 16:30 193-2000
+-meeting with instrument scientists
+-TODO: 193-0: error bars.  
+-193-0-0: error bars without the little dashes that occure on the top and 
+            bottom (for the first pass)
+-TODO: 193-1: compel the legend to update.  this will probably involve finding
+                where in isawLineProfileLayout the key is cleared.
 
 
 

@@ -11,6 +11,9 @@ package OverplotView;
  * @see DataSetTools.viewer.DataSetViewer\
  *
  * $Log$
+ * Revision 1.3  2000/07/12 14:58:39  neffk
+ * added a makefile for generating documentation
+ *
  * Revision 1.2  2000/07/07 21:57:13  neffk
  * changed the aspect ratio of the graph to 1:2 (vertical:horizontal)
  *
@@ -292,7 +295,7 @@ public class SelectedGraphView
 
       //System.out.println( "controls resized: " + c.getComponent().getSize() );
       //System.out.println( "graph size: " + graphD  );
-      graph.calculateGraphSize( graphD );
+      //graph.calculateGraphSize( graphD );
     }
   }
 
@@ -331,7 +334,7 @@ public class SelectedGraphView
   {
     public void actionPerformed( ActionEvent e ) 
     {
-      manager.redraw();
+      //manager.redraw();
     }
   }
 
