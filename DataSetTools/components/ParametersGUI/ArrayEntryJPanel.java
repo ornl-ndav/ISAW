@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/08/28 03:27:42  bouzekc
+ * Removed unused instance variables.  Removed unnecessary String
+ * instantiation.
+ *
  * Revision 1.13  2003/08/25 14:59:07  rmikk
  * -Included a JScrollPane around the list box
  *
@@ -93,12 +97,10 @@ import DataSetTools.parameter.ParameterViewer;
 import DataSetTools.parameter.VectorPG;
 
 import DataSetTools.util.PropertyChanger;
-import DataSetTools.util.StringUtil;
 
 import java.awt.*;
 import java.awt.event.*;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -117,13 +119,13 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   PropertyChanger, KeyListener {
   //~ Instance fields **********************************************************
 
-  private final String UP_LABEL       = new String( "Move Item Up" );
-  private final String DOWN_LABEL     = new String( "Move Item Down" );
-  private final String DELETE_LABEL   = new String( "Delete Item" );
-  private final String ADD_LABEL      = new String( "Add Item" );
-  private final String CHANGE_LABEL   = new String( "Change Value" );
-  private final String DONE_LABEL     = new String( "Done" );
-  private final String SHOW_LABEL     = new String( "Show Item" );
+  private final String UP_LABEL       = "Move Item Up";
+  private final String DOWN_LABEL     = "Move Item Down";
+  private final String DELETE_LABEL   = "Delete Item";
+  private final String ADD_LABEL      = "Add Item";
+  private final String CHANGE_LABEL   = "Change Value";
+  private final String DONE_LABEL     = "Done";
+  private final String SHOW_LABEL     = "Show Item";
   private JList jlist;
   private DefaultListModel jlistModel;
   private JButton Delete;
@@ -136,8 +138,6 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   private PropertyChangeSupport pcs;
   private Vector oldVector;
   private ParameterGUI param;
-  private JFrame jf                   = null;
-  private boolean isShowing           = false;
   private int position                = -1;
 
   //~ Constructors *************************************************************
