@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2003/10/16 17:21:24  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.21  2003/03/14 20:47:07  dennis
  *  The UpdateDataSetNow() method now verifies that it actually
  *  got a DataSet when one was requested.
@@ -320,7 +323,7 @@ public class LiveDataManager extends    Thread
  *  Get a GetDataCommand object configured with the full list of available
  *  IDs and complete XRange for getting the full DataSet from server.
  *
- *  @param  data_set_num  The number of the DataSet whose X range is
+ *  @param  ds_num        The number of the DataSet whose X range is
  *                        to be returned.
  *
  *  @return a GetDataCommand object with values suitable for getting the 
