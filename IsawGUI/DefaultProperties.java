@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2002/08/15 18:46:48  pfpeterson
+ *  Replaced hrmecs live data/file servers urls to be the new machines.
+ *
  *  Revision 1.12  2002/08/12 20:25:40  pfpeterson
  *  Changed all calls to be FilenameUtil.fixSeparator rather than
  *  StringUtil.fixSeparator.
@@ -292,15 +295,15 @@ public class DefaultProperties{
             .append("# Live Data Server Options").append(eol)
             .append("#").append(eol)
             .append("Inst1_Name=HRMECS").append(eol)
-            .append("Inst1_Path=zeus.pns.anl.gov;6088").append(eol)
+            .append("Inst1_Path=hrmecs.pns.anl.gov;6088").append(eol)
             .append("Inst2_Name=QUIP").append(eol)
             .append("Inst2_Path=vulcan.pns.anl.gov;6088").append(eol)
             .append(eol)
             .append("#").append(eol)
             .append("# Remote Data Server Options").append(eol)
             .append("#").append(eol)
-            .append("IsawFileServer1_Name=IPNS(zeus)").append(eol)
-            .append("IsawFileServer1_Path=zeus.pns.anl.gov;6089").append(eol)
+            .append("IsawFileServer1_Name=IPNS(hrmecs)").append(eol)
+            .append("IsawFileServer1_Path=hrmecs.pns.anl.gov;6089").append(eol)
             .append("IsawFileServer2_Name=Test(dmikk-Isaw)").append(eol)
             .append("IsawFileServer2_Path=dmikk.mscs.uwstout.edu;6089")
             .append(eol)
