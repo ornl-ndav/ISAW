@@ -31,6 +31,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2001/07/17 20:43:38  dennis
+ *  Now checks validDataSet() before using it.
+ *  Removed un-used doLayout() method.
+ *  Added option to draw HGraph using rebinned data.
+ *  The image and HGraph are now drawn based on the
+ *  x_scale obtained from getXConversionScale() method.
+ *  requestFocus() is now called for the image panel
+ *  by ProcessImageMouseEvent().
+ *
  *  Revision 1.20  2001/07/02 21:02:29  dennis
  *  Removed internal class: LogScaleMouseHandler, that is no longer
  *  needed.  It was needed with early versions of jdk to work around
@@ -185,6 +194,7 @@ public class ImageView extends    DataSetViewer
   private static final String TRACK_IMAGE_CURSOR = 
                                          "Graph Cursor Tracks Image Cursor";
   private static final String HORIZONTAL_SCROLL  = "Horizontal Scroll";
+  private static final String H_GRAPH_REBINNED   = "Graph Rebinned Data";
 
   private static final String NO_MULTI_PLOT        = "Don't Graph Selected";
   private static final String MULTI_PLOT_OVERLAY   = "Overlaid";
@@ -221,8 +231,6 @@ public class ImageView extends    DataSetViewer
   private JSlider      hgraph_scale_slider = new JSlider(JSlider.HORIZONTAL,
                                                          0, 1000, 0);
   private ClosedInterval  y_range;
-  private float           x_min,
-                          x_max;
   
   private JCheckBoxMenuItem track_image_cursor_button = null;
   private JCheckBoxMenuItem use_color_button    = null;
@@ -248,6 +256,9 @@ public ImageView( DataSet data_set, ViewerState state )
 
   AddOptionsToMenu();
 
+  if ( !validDataSet() )
+    return;
+
   init();
   MakeImage( false );
   getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(), data_set );
@@ -264,14 +275,16 @@ public ImageView( DataSet data_set, ViewerState state )
 /* ----------------------------- redraw --------------------------------- */
 /**
  * Redraw all or part of the image. The amount that needs to be redrawn is
- * determined by the "reason" parameter.  In addition to the reasons provided
- * by the base class, this also responds to the reason X_RANGE_CHANGED.
+ * determined by the "reason" parameter.  
  *
  * @param  reason  The reason the redraw is needed.
  *
  */
 public void redraw( String reason )
 {
+  if ( !validDataSet() )
+    return;
+
   if ( reason == IObserver.SELECTION_CHANGED )
   {
     MakeSelectionImage( true );
@@ -293,7 +306,10 @@ public void redraw( String reason )
     }
   }
   else
+  {
     MakeImage( true );
+    DrawSelectedHGraphs();
+  }
 }
 
 /* ----------------------------- setDataSet ------------------------------- */
@@ -308,8 +324,15 @@ public void setDataSet( DataSet ds )
 {
   setVisible(false);
   super.setDataSet( ds );
+
+  if ( !validDataSet() )
+    return;
+
   init(); 
   redraw( NEW_DATA_SET );
+
+  if ( ds.getNum_entries() == 0 )
+    return;
                                                         // restore the old zoom 
                                                         // region if it's valid 
   CoordBounds zoom_region = getState().getZoomRegion( ds );
@@ -322,29 +345,6 @@ public void setDataSet( DataSet ds )
 
   DrawDefaultDataBlock();
   setVisible(true);
-}
-
-/* ----------------------------- doLayout ------------------------------- */
-/**
- * This method first resets the divider location and the calls the super class
- * doLayout method.  This was an attempt at reducing the amount of "flicker"
- * as internal frames were moved on a DeskTop.
- *
- */
-
-public void doLayout()
-{
-/*
-  if ( main_split_pane != null )
-    main_split_pane.my_setDividerLocation( 0.7f );
-*/
-/* With both calls to setDividerLocation, the viewer "flickers" as it
-   is moved in an internal frame.  
-  if ( left_split_pane != null )
-    left_split_pane.my_setDividerLocation( 0.7f );
-*/
-
-  super.doLayout();
 }
 
 
@@ -562,6 +562,12 @@ private void AddOptionsToMenu()
   cb_button.setState( getState().getHorizontal_scrolling() );
   cb_button.addActionListener( option_menu_handler );
   option_menu.add( cb_button );
+
+  cb_button = new JCheckBoxMenuItem( H_GRAPH_REBINNED );
+  cb_button.setState( getState().getRebin() );
+  cb_button.addActionListener( option_menu_handler );
+  option_menu.add( cb_button );
+
 }
 
 
@@ -572,28 +578,23 @@ private void AddOptionsToMenu()
  */
 private void MakeImage( boolean redraw_flag )
 { 
-  float         image_data[][];
-  Data          data_block;
-  Data          rebinned_data_block;
-  int           num_rows = getDataSet().getNum_entries();
-  if ( num_rows == 0 )
+  if ( !validDataSet() )
     return;
 
-//  int num_cols = getDataSet().getMaxXSteps();
-  int num_cols = (int)n_bins_ui.getValue();
+  float   image_data[][];
+  Data    data_block;
+  Data    rebinned_data_block;
 
-  float x_min = x_range_ui.getMin();
-  float x_max = x_range_ui.getMax();
-/*
-  UniformXScale x_scale = getDataSet().getXRange();
-  if ( x_scale.getEnd_x() == x_scale.getStart_x() ) 
-    num_cols = 1;
-  else
-    num_cols = (int)( num_cols * ( x_max - x_min ) /
-                                 ( x_scale.getEnd_x() - x_scale.getStart_x()));
-*/
+  int     num_rows = getDataSet().getNum_entries();
+
+  UniformXScale x_scale = getXConversionScale();
+  int   num_cols = x_scale.getNum_x() + 1;
+  float x_min    = x_scale.getStart_x();
+  float x_max    = x_scale.getEnd_x();
+
+  x_scale = new UniformXScale( x_min, x_max, num_cols );
+
 //  System.out.println("XRange is        " + x_scale );
-  
 //  System.out.println("Making image with" + num_rows + " rows" );
 //  System.out.println("num_cols         " + num_cols );
 //  System.out.println("on interval [" + x_min + ", " + x_max + "]" );
@@ -602,20 +603,19 @@ private void MakeImage( boolean redraw_flag )
        num_rows < 1   )    // #### degenerate size of JPanel, so just return
     return;
 
-  UniformXScale x_scale = new UniformXScale( x_min, x_max, num_cols );
-
   image_data = new float[ num_rows ][];
 
   for ( int i = 0; i < num_rows; i++ )
   {
     data_block = getDataSet().getData_entry(i);
     rebinned_data_block = (Data)data_block.clone();
-
+/*
     if ( !rebinned_data_block.isFunction() )           // need to treat it as
       rebinned_data_block.ConvertToFunction( false );  // intensity for image
                                                        // display when starting
                                                        // with widely different
                                                        // sizes of x-bins
+*/
     rebinned_data_block.ResampleUniformly( x_scale );  
 
     image_data[i] = rebinned_data_block.getY_values();
@@ -690,8 +690,8 @@ private Component MakeControlArea()
 
   String label = getDataSet().getX_units();         
   UniformXScale x_scale  = getDataSet().getXRange();
-  x_min = x_scale.getStart_x();
-  x_max = x_scale.getEnd_x();
+  float x_min = x_scale.getStart_x();
+  float x_max = x_scale.getEnd_x();
   x_range_ui = new TextRangeUI(label, x_min, x_max );
   x_range_ui.setPreferredSize( new Dimension(120, 50) );
   control_area.add( x_range_ui );
@@ -1004,8 +1004,21 @@ private void DrawHGraph( int index, int graph_num, boolean pointed_at )
 {
   Data  data_block = getDataSet().getData_entry( index );
 
+  if ( getState().getRebin() )
+  {
+    UniformXScale x_scale = getXConversionScale();
+    int num_cols = x_scale.getNum_x() + 1;
+    float x_min  = x_scale.getStart_x();
+    float x_max  = x_scale.getEnd_x();
+    x_scale = new UniformXScale( x_min, x_max, num_cols );
+
+    data_block = (Data)data_block.clone();
+    data_block.ResampleUniformly( x_scale );
+  }
+  
   float x[] = data_block.getX_scale().getXs();
   float y[] = data_block.getY_values();
+
   Color color_list[] = { 
                          Color.red, 
                          Color.orange, 
@@ -1104,6 +1117,8 @@ private Point ProcessImageMouseEvent( MouseEvent e,
                                       int        last_image_row,
                                       int        last_image_col  )
 {
+  image_Jpanel.requestFocus();
+  
   Point pix_pt          = image_Jpanel.getCurrent_pixel_point();
   int row = image_Jpanel.ImageRow_of_PixelRow( pix_pt.y );
   int col = image_Jpanel.ImageCol_of_PixelCol( pix_pt.x );
@@ -1293,6 +1308,7 @@ private class ConsumeKeyAdapter extends     KeyAdapter
 }
 
 
+/* ------------------------------- finalize ------------------------------ */
   /**
    *  Trace the finalization of objects
    */
@@ -1303,6 +1319,9 @@ private class ConsumeKeyAdapter extends     KeyAdapter
   }
 */
 
+
+/* -------------------------- OptionMenuHandler -------------------------- */
+
   private class OptionMenuHandler implements ActionListener,
                                              Serializable
   {
@@ -1310,13 +1329,19 @@ private class ConsumeKeyAdapter extends     KeyAdapter
     {
       String action = e.getActionCommand();
  
-      if ( action == TRACK_IMAGE_CURSOR )
+      if ( action.equals( TRACK_IMAGE_CURSOR ) )
         return;
 
-       else if ( action == HORIZONTAL_SCROLL )
+       else if ( action.equals( HORIZONTAL_SCROLL ) )
        {
          boolean state = ((JCheckBoxMenuItem)e.getSource()).getState();
          SetHorizontalScrolling( state );
+       }
+       else if ( action.equals( H_GRAPH_REBINNED ) )
+       {
+         boolean state = ((JCheckBoxMenuItem)e.getSource()).getState();
+         getState().setRebin( state );
+         DrawSelectedHGraphs();
        }
        else
        {
@@ -1328,6 +1353,8 @@ private class ConsumeKeyAdapter extends     KeyAdapter
   }
 
 
+/* ------------------------ ImageHScrollBarListener ---------------------- */
+
   private class ImageHScrollBarListener implements AdjustmentListener,
                                                    Serializable
   {
@@ -1336,6 +1363,9 @@ private class ConsumeKeyAdapter extends     KeyAdapter
         SyncHGraphScrollBar();
     }
   }
+
+
+/* ------------------------ X_Range_Listener ----------------------------- */
 
   private class X_Range_Listener implements ActionListener,
                                             Serializable
@@ -1347,6 +1377,8 @@ private class ConsumeKeyAdapter extends     KeyAdapter
   }
 
 
+/* ------------------------ NumBins_Listener ----------------------------- */
+
   private class NumBins_Listener implements ActionListener,
                                             Serializable
   {
@@ -1357,13 +1389,14 @@ private class ConsumeKeyAdapter extends     KeyAdapter
   }
 
 
+/* ------------------------ MultiPlotMenuHandler ------------------------- */
+
   private class MultiPlotMenuHandler implements ActionListener,
                                                 Serializable
   {
     public void actionPerformed( ActionEvent e )
     {
       String action  = e.getActionCommand();
-
                                                 // color or hidden line option
                                                 // change
       if ( action == MULTI_PLOT_COLOR     ||     
