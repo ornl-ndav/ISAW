@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/06/25 20:33:12  bouzekc
+ * Removed several unused private variables.  Removed
+ * unnecessary instantiation of a String.
+ *
  * Revision 1.15  2003/06/13 22:59:28  bouzekc
  * Added processing of date information for scripts.  Removed
  * yet more embedded tabs.
@@ -130,8 +134,6 @@ public class HTMLizer{
   private static String         help_dir  = null;
   private        File           help_out  = null;
   private        FileWriter     out       = null;
-  private        BufferedReader reader    = null;
-  private        String         op_name   = null;
   private static Vector         op_vector = null;
 
   /* -----------------CONSTRUCTOR----------------------------------------- */
@@ -186,7 +188,6 @@ public class HTMLizer{
     int op_vector_size = op_vector.size();
     Operator op;
     String op_class;
-    boolean found = false;
 
     for( int i = 0; i < op_vector_size; i++ ){
       op = (Operator)op_vector.get(i);  // get the jth Operator
@@ -640,7 +641,7 @@ public class HTMLizer{
 
     // check for valid index information
     if( space < 0 )
-      return new String("Please insert spaces.");
+      return "Please insert spaces.";
 
     if( newline < 0 )
       newline = m.length();
