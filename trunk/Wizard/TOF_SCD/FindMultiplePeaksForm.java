@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.24  2003/08/28 20:55:25  bouzekc
+ * Set histDS and Operator DataSet parameters to null when they are not used.
+ * This should avoid an out of memory error.
+ *
  * Revision 1.23  2003/08/25 19:45:12  bouzekc
  * Changed minimum peak intensity to 10.
  *
@@ -450,6 +454,7 @@ public class FindMultiplePeaksForm extends Form {
       //load calibration data 
       loadSCD.setDataSet( histDS );
       obj = loadSCD.getResult(  );
+      loadSCD.setDataSet( null );
 
       if( obj instanceof ErrorString ) {
         return errorOut( "LoadSCDCalib failed: " + obj.toString(  ) );
@@ -461,6 +466,8 @@ public class FindMultiplePeaksForm extends Form {
       fPeaks.getParameter( 1 )
             .setValue( monCount );
       obj = fPeaks.getResult(  );
+      fPeaks.getParameter( 0 )
+            .setValue( null );
 
       if( obj instanceof Vector ) {
         peaksVec = ( Vector )obj;
@@ -488,6 +495,8 @@ public class FindMultiplePeaksForm extends Form {
       cenPeaks.getParameter( 1 )
               .setValue( peaksVec );
       obj = cenPeaks.getResult(  );
+      cenPeaks.getParameter( 0 )
+              .setValue( null );
 
       if( obj instanceof Vector ) {
         peaksVec = ( Vector )obj;
@@ -516,6 +525,8 @@ public class FindMultiplePeaksForm extends Form {
       wrExp.getParameter( 4 )
            .setValue( new Boolean( appendToFile ) );
       obj = wrExp.getResult(  );
+      wrExp.getParameter( 0 )
+           .setValue( null );
 
       if( obj instanceof ErrorString ) {
         return errorOut( "WriteExp failed: " + obj.toString(  ) );
@@ -530,6 +541,7 @@ public class FindMultiplePeaksForm extends Form {
       oldPercent = newPercent;
       newPercent += increment;
       super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
+      histDS = null;
     }
 
     SharedData.addmsg( "--- Done finding peaks. ---" );
