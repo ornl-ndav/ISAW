@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2003/08/28 03:00:15  bouzekc
+ *  Made setDrawValid(), getDrawValid(), getEnabled(), getEntryWidget(),
+ *  getGUIPanel(), setIgnorePropertyChange(), getIgnorePropertyChange(),
+ *  getLabel(), setName(), getName(), getType(), setValid(), and
+ *  getValid() final.  Made, addPCLToVector() and removePCLFromVector()
+ *  private.
+ *
  *  Revision 1.19  2003/08/28 02:25:08  bouzekc
  *  Made setEnabled final.  This is to avoid recoding, since the EntryWidget
  *  has a recursive setEnabled method.
@@ -189,7 +196,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @param draw boolean indicating whether or not to draw the checkbox.
    */
-  public void setDrawValid( boolean draw ) {
+  public final void setDrawValid( boolean draw ) {
     this.drawvalid = draw;
     this.updateDrawValid(  );
   }
@@ -199,7 +206,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @return boolean indicating whether or not the checkbox will be drawn.
    */
-  public boolean getDrawValid(  ) {
+  public final boolean getDrawValid(  ) {
     return drawvalid;
   }
 
@@ -223,21 +230,21 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @return boolean indicating whether or not the entrywidget is enabled.
    */
-  public boolean getEnabled(  ) {
+  public final boolean getEnabled(  ) {
     return enabled;
   }
 
   /**
    * @return The entrywidget associated with this ParameterGUI.
    */
-  public EntryWidget getEntryWidget(  ) {
+  public final EntryWidget getEntryWidget(  ) {
     return entrywidget;
   }
 
   /**
    * @return The GUI panel upon which the entrywidget is drawn.
    */
-  public JPanel getGUIPanel(  ) {
+  public final JPanel getGUIPanel(  ) {
     return guipanel;
   }
 
@@ -248,7 +255,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @param ignore boolean indicating whether to ignore property changes or
    *        not.
    */
-  public void setIgnorePropertyChange( boolean ignore ) {
+  public final void setIgnorePropertyChange( boolean ignore ) {
     ignore_prop_change = ignore;
   }
 
@@ -258,14 +265,14 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @return boolean indicating whether or not this ParameterGUI will ignore
    *         property changes.
    */
-  public boolean getIgnorePropertyChange(  ) {
+  public final boolean getIgnorePropertyChange(  ) {
     return ignore_prop_change;
   }
 
   /**
    * @return The label of this ParameterGUI.
    */
-  public JLabel getLabel(  ) {
+  public final JLabel getLabel(  ) {
     return label;
   }
 
@@ -274,7 +281,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @param The new name.
    */
-  public void setName( String name ) {
+  public final void setName( String name ) {
     this.name = name;
 
     if( !this.initialized ) {
@@ -292,14 +299,14 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @return The name of the parameter. This is normally used as the title of
    *         the parameter.
    */
-  public String getName(  ) {
+  public final String getName(  ) {
     return this.name;
   }
 
   /**
    * @return The string used in scripts to denote the particular parameter.
    */
-  public String getType(  ) {
+  public final String getType(  ) {
     return this.type;
   }
 
@@ -309,7 +316,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @param boolean indicating whether or not this ParameterGUI should be
    *        considered valid.
    */
-  public void setValid( boolean valid ) {
+  public final void setValid( boolean valid ) {
     this.valid = valid;
     this.updateDrawValid(  );
   }
@@ -317,7 +324,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   /**
    * @return Whether or not this ParameterGUI is valid.
    */
-  public boolean getValid(  ) {
+  public final boolean getValid(  ) {
     return this.valid;
   }
 
@@ -424,7 +431,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @param pcl The PropertyChangeListener to remove.
    */
-  protected void addPCLToVector( PropertyChangeListener pcl ) {
+  private void addPCLToVector( PropertyChangeListener pcl ) {
     propListeners.addElement( pcl );
     nameList.addElement( null );
   }
@@ -435,7 +442,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @param prop The property to listen for.
    * @param pcl The PropertyChangeListener to remove.
    */
-  protected void addPCLToVector( String prop, PropertyChangeListener pcl ) {
+  private void addPCLToVector( String prop, PropertyChangeListener pcl ) {
     propListeners.addElement( pcl );
     nameList.addElement( prop );
   }
@@ -507,7 +514,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @param pcl The PropertyChangeListener to remove.
    */
-  protected void removePCLFromVector( PropertyChangeListener pcl ) {
+  private void removePCLFromVector( PropertyChangeListener pcl ) {
     int nameIndex = propListeners.indexOf( pcl );
 
     propListeners.remove( pcl );
