@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2003/09/13 20:40:20  bouzekc
+ *  Fixed bug in getValue().
+ *
  *  Revision 1.25  2003/09/12 23:53:53  bouzekc
  *  Fixed null pointer bug in getValue().
  *
@@ -201,8 +204,8 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
             val=(String)this.value;
         }
 
-        if( value != null ) {
-          return FilenameUtil.setForwardSlash(value.toString());
+        if( val != null ) {
+          return FilenameUtil.setForwardSlash(val);
         } else {
           return "";
         }
