@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/01/31 19:17:14  pfpeterson
+ * Added mutator method for the real space representation.
+ *
  * Revision 1.8  2003/01/30 21:06:36  pfpeterson
  * Really is an object now. Added more error checking and methods to
  * calculate between pixel, real-space, and hkl (both directions).
@@ -226,6 +229,20 @@ public class Peak{
     return this.z;
   }
   
+  /**
+   * Mutator method for real-space representation
+   */
+  public void real(float XCM, float YCM, float WL){
+    this.xcm=XCM;
+    this.ycm=YCM;
+    this.wl=WL;
+    
+    if(calib!=null)
+      this.real_to_pixel();
+    if(UB!=null)
+      this.real_to_hkl();
+  }
+
   /**
    *  Accessor method for the horizontal position which is returned in cm.
    */
