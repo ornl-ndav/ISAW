@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/07/17 21:51:36  dennis
+ *  Now uses data file that is more like "peaks" file.  Handles
+ *  multiple runs with one detector.  (phi,chi,omega) angles
+ *  now handled correctly.
+ *
  *  Revision 1.1  2003/07/16 22:31:54  dennis
  *  Initial form of SCD calibration program.  Currently only works
  *  with one detector and one run, but most code needed for working
@@ -44,6 +49,7 @@ import java.io.*;
 import java.util.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
+import DataSetTools.instruments.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.functions.*;
@@ -67,13 +73,20 @@ public class SCDcal extends    OneVarParameterizedFunction
   public static final int DET_Y_INDEX = 5;
   public static final int DET_Z_INDEX = 6;
                                                   // OLD DETECTOR
-  public static final int    N_ROWS   = 85;
-  public static final int    N_COLS   = 85;
-  public static final double DET_SIZE = 0.25;
-  public static final double DET_D    = 0.32;
+//  public static final int    N_ROWS   = 85;
+//  public static final int    N_COLS   = 85;
+//  public static final double DET_SIZE = 0.25;  
+//  public static final double DET_D    = 0.32;
+//  public static final double DET_A    = -90.0;
+
+  public static final int    N_ROWS   = 150;     // NEW ONE DETECTOR, HIGH RES
+  public static final int    N_COLS   = 150;
+  public static final double DET_SIZE = 0.15;
+  public static final double DET_D    = 0.25;
   public static final double DET_A    = -90.0;
-  public static final double L1       = 9.378;
+
   public static final double DET_Z    = 0.0;
+  public static final double L1       = 9.378;
 
   int    n_peaks;
   int    run[]; 
@@ -93,17 +106,25 @@ public class SCDcal extends    OneVarParameterizedFunction
   UniformGrid_d grid;
   int  eval_count = 0;
 
+  Hashtable gon_rotation;
+  Hashtable nominal_position;
+
   /**
    *  Construct a function defined on the grid of (x,y) values specified, 
    *  using the parameters and parameter names specified.  The grid points
    *  are numbered in a sequence and the point's index in the sequence is 
    *  used as the one variable.
    */
-   public SCDcal( int    run[],         
-                  int    det_id[],
-                  double hkl[][],
-                  double tof[], int row[], int col[],
-                  double params[], String param_names[] )
+   public SCDcal( int                 run[],         
+                  int                 det_id[],
+                  DetectorPosition_d  det_position[],
+                  SampleOrientation_d orientation[],
+                  double              hkl[][],
+                  double              tof[], 
+                  int                 row[], 
+                  int                 col[],
+                  double              params[], 
+                  String              param_names[] )
    {
      super( "SCDcal", params, param_names );
 
@@ -134,6 +155,31 @@ public class SCDcal extends    OneVarParameterizedFunction
      double lat_par[] = lattice_calc.LatticeParamsOfUB( B_theoretical );
      System.out.println("Lattice Parameters");
      LinearAlgebra.print( lat_par );
+
+     gon_rotation     = new Hashtable();
+     for ( int i = 0; i < run.length; i++ )
+     {
+       Integer key = new Integer( run[i] );
+       Object  val = gon_rotation.get( key );
+       if ( val == null )
+       { 
+         Tran3D_d tran = orientation[i].getGoniometerRotationInverse();
+         double rotation[][] = new double[3][3];
+         for ( int k = 0; k < 3; k++ )
+           for ( int j = 0; j < 3; j++ )
+             rotation[k][j] = tran.get()[k][j]; 
+         gon_rotation.put( key, rotation );
+       }
+     }
+
+     nominal_position = new Hashtable();
+     for ( int i = 0; i < run.length; i++ )
+     {
+       Integer key = new Integer( run[i] );
+       Object  val = nominal_position.get( key );
+       if ( val == null )
+         nominal_position.put( key, det_position[i] ); 
+     }
 
      for ( int i = 0; i < 3; i++ )
        for ( int j = 0; j < 3; j++ )
@@ -201,6 +247,8 @@ public class SCDcal extends    OneVarParameterizedFunction
     find_qxyz_observed();
     find_U_and_B_observed();
     find_qxyz_theoretical();
+
+    show_progress( B_observed );
   } 
 
   /**
@@ -212,47 +260,11 @@ public class SCDcal extends    OneVarParameterizedFunction
     double UB[][] = new double[3][3];
     double my_hkl[][]  = copy( hkl );
     double my_qxyz[][] = copy( qxyz_observed );
-/*
-    System.out.println("UB size = " + UB.length +" X " + UB[0].length );
-    System.out.println("my_hkl size = " + my_hkl.length +
-                                  " X " + my_hkl[0].length );
-    System.out.println("my_qxyz size = " + my_qxyz.length +
-                                   " X " + my_qxyz[0].length );
-    for ( int i = 0; i < 5; i++ )
-    {
-      System.out.println( "" + hkl[i][0] + 
-                        ", " + hkl[i][1] + 
-                        ", " + hkl[i][2] +
-                        ", " + my_qxyz[i][0] +
-                        ", " + my_qxyz[i][1] +
-                        ", " + my_qxyz[i][2] );
-                    
-    }
-    System.out.println("Error in mapping hkl to qxyz = " + error );
-*/
+
     double error = LinearAlgebra.BestFitMatrix( UB, my_hkl, my_qxyz );
     U_observed = lattice_calc.getU( UB );
     B_observed = lattice_calc.getB( UB );
 
-    if ( eval_count % 1000 == 0 )
-    {
-      System.out.println( ""+eval_count/1000 );
-      for ( int k = 0; k < 3; k++ )
-        for ( int j = 0; j < 3; j++ )
-          UB[k][j] /= (2*Math.PI);
-      double cell_params[] = lattice_calc.LatticeParamsOfUB( UB );
-      LinearAlgebra.print( cell_params );
-      double index[] = new double[n_peaks];
-      for ( int i = 0; i < index.length; i++ )
-        index[i] = i; 
-      double vals[] = getValues( index );
-      double s_dev = 0;
-      for ( int i = 0; i < vals.length; i++ )
-        s_dev += vals[i] * vals[i];
-      s_dev = Math.sqrt( s_dev/vals.length );
-      System.out.println("1 standard dev error distance in Q = " + s_dev );
-    }
-    eval_count++;
     return error;
   }
 
@@ -266,6 +278,7 @@ public class SCDcal extends    OneVarParameterizedFunction
     double t0 = parameters[T0_INDEX];
     
     DetectorPosition_d position;
+    double             rotation[][] = null;
     Position3D_d qxyz;
     double       coords[];
     for ( int peak = 0; peak < n_peaks; peak++ )
@@ -273,9 +286,8 @@ public class SCDcal extends    OneVarParameterizedFunction
       position = new DetectorPosition_d( grid.position( row[peak], col[peak] ));
       qxyz     = tof_calc_d.DiffractometerVecQ(position, l1, tof[peak] - t0);  
       coords = qxyz.getCartesianCoords();
-      qxyz_observed[peak][0] = coords[0];  
-      qxyz_observed[peak][1] = coords[1];  
-      qxyz_observed[peak][2] = coords[2];  
+      rotation = (double[][])gon_rotation.get( new Integer( run[peak] ) );
+      mult_vector( rotation, coords, qxyz_observed[peak] );
     }
   }
   
@@ -319,6 +331,32 @@ public class SCDcal extends    OneVarParameterizedFunction
     return M;
   }
 
+  /**
+   *
+   */
+  private void show_progress( double B[][] )
+  {
+    if ( eval_count % 1000 == 0 )
+    {
+      double my_B[][] = copy ( B );
+      System.out.println( ""+eval_count/1000 );
+      for ( int k = 0; k < 3; k++ )
+        for ( int j = 0; j < 3; j++ )
+          my_B[k][j] /= (2*Math.PI);
+      double cell_params[] = lattice_calc.LatticeParamsOfUB( my_B );
+      LinearAlgebra.print( cell_params );
+      double index[] = new double[n_peaks];
+      for ( int i = 0; i < index.length; i++ )
+        index[i] = i;
+      double vals[] = getValues( index );
+      double s_dev = 0;
+      for ( int i = 0; i < vals.length; i++ )
+        s_dev += vals[i] * vals[i];
+      s_dev = Math.sqrt( s_dev/vals.length );
+      System.out.println("1 standard dev error distance in Q = " + s_dev );
+    }
+    eval_count++;
+  }
 
  /* -------------------------------------------------------------------------
   *
@@ -332,70 +370,69 @@ public class SCDcal extends    OneVarParameterizedFunction
       int    line_type;
       int    run[]    = null;
       int    det[]    = null;
-      double det_a[]  = null;
-      double det_d[]  = null;
-      double chi[]    = null;
-      double phi[]    = null;
-      double omega[]  = null;
+      double det_a;
+      double det_d;
+      double chi;
+      double phi;
+      double omega;
       double hkl[][]  = null;
       double tof[]    = null;
       int    row[]    = null; 
       int    col[]    = null;
       double counts[] = null;
+      SampleOrientation_d orientation[]  = null;
+      DetectorPosition_d  det_position[] = null;
       try
       {
         TextFileReader tfr = new TextFileReader( args[0] );
         n_peaks = tfr.read_int();
         run    = new int[n_peaks];
         det    = new int[n_peaks];
-        det_a  = new double[n_peaks];
-        det_d  = new double[n_peaks];
-        chi    = new double[n_peaks];
-        phi    = new double[n_peaks];
-        omega  = new double[n_peaks];
         det    = new int[n_peaks];
         hkl    = new double[n_peaks][3];
         tof    = new double[n_peaks];
         row    = new int[n_peaks];
         col    = new int[n_peaks];
         counts = new double[n_peaks];
+        orientation  = new SampleOrientation_d[n_peaks];
+        det_position = new DetectorPosition_d[n_peaks];
         for ( int i = 0; i < n_peaks; i++ )
         {
           line_type = tfr.read_int();
-          System.out.println("Read type : " + line_type );
           if ( line_type == 0 )      // READ HEADER INFO
           {
             tfr.read_line();         // end of line 0
 
             line_type = tfr.read_int();
-            System.out.println("Read type : " + line_type );
             run[i]   = tfr.read_int();
             det[i]   = tfr.read_int(); 
-            det_a[i] = tfr.read_double();
+            det_a = tfr.read_double();
             tfr.read_double();        // IGNORE ANGLE 2
-            det_d[i] = tfr.read_double();
-            chi[i]   = tfr.read_double();
-            phi[i]   = tfr.read_double();
-            omega[i] = tfr.read_double();
+            det_d = tfr.read_double();
+            det_position[i] = new DetectorPosition_d();
+            det_position[i].setSphericalCoords( det_d, 
+                                                det_a * Math.PI/180,
+                                                0.0 ); 
+            chi   = tfr.read_double();
+            phi   = tfr.read_double();
+            omega = tfr.read_double();
+            orientation[i] = new IPNS_SCD_SampleOrientation_d((float)phi, 
+                                                            (float)chi, 
+                                                            (float)omega);
             tfr.read_line();          // end of line 1
 
             line_type = tfr.read_int();
-            System.out.println("Read type : " + line_type );
             tfr.read_line();          // end of line 2A
 
             line_type = tfr.read_int();
-            System.out.println("Read type : " + line_type );
             det_info_read = true;
           }
           if ( !det_info_read )
           {
             run[i]   = run[i-1];
             det[i]   = det[i-1];
-            det_a[i] = det_a[i-1];
-            det_d[i] = det_d[i-1];
-            chi[i]   = chi[i-1];
-            phi[i]   = phi[i-1];
-            omega[i] = omega[i-1];
+            det_position[i] = det_position[i-1];
+            orientation[i]  = orientation[i-1];
           }
           tfr.read_int();             // IGNORE SEQN
           hkl[i][0] = Math.round(tfr.read_double()); 
@@ -437,6 +474,8 @@ public class SCDcal extends    OneVarParameterizedFunction
       OneVarParameterizedFunction 
                         error_f = new SCDcal( run, 
                                               det,
+                                              det_position,
+                                              orientation,
                                               hkl,
                                               tof, row, col,
                                               parameters, parameter_names ); 
@@ -455,7 +494,7 @@ public class SCDcal extends    OneVarParameterizedFunction
         sigmas[i] = 1.0;
         index[i]  = i;
       }
-
+/*
       double vals[]   = error_f.getValues( index );
       System.out.println("error_f evaluated at all points = ");
       LinearAlgebra.print( vals );
@@ -465,7 +504,7 @@ public class SCDcal extends    OneVarParameterizedFunction
         double derivs[] = error_f.get_dFdai(index,k);
         LinearAlgebra.print( derivs );
       }
-
+*/
 //      System.exit(0);
                                            // build the data fitter and display 
                                            // the results.
