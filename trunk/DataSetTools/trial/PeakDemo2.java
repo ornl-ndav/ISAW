@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/19 17:19:50  dennis
+ * Removed unused variable(s)
+ *
  * Revision 1.6  2004/03/15 06:10:53  dennis
  * Removed unused import statements.
  *
@@ -82,8 +85,7 @@ public class PeakDemo2
     rr = new RunfileRetriever( run_A ); 
     A_monitor_ds = rr.getDataSet( 0 );
     Data monitor_data,
-         peak_data,
-         background_data;
+         peak_data;
     HistogramDataPeak peak;
     XScale x_scale;
 

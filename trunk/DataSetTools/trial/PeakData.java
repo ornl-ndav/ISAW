@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/03/19 17:19:50  dennis
+ * Removed unused variable(s)
+ *
  * Revision 1.11  2004/03/15 06:10:53  dennis
  * Removed unused import statements.
  *
@@ -284,8 +287,7 @@ public class PeakData
            n_cols,
            n_peaks;
 
-    int    last_run    = -1,
-           last_det    = -1;
+    int    last_run    = -1;
       try
       {
         TextFileReader tfr = new TextFileReader( file_name );

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/03/19 17:20:50  dennis
+ * Removed unused variable(s)
+ *
  * Revision 1.8  2004/03/15 06:10:49  dennis
  * Removed unused import statements.
  *
@@ -336,7 +339,6 @@ public class  FitPolynomialToGroup  extends    AnalyzeOp
      
     for ( int i = 0; i < p_val.length; i++ )      // evaluate the polynomial
     {                                             // at each point
-      double p;
       double x_n,
              x_0;
       double val; 

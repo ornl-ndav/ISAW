@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/19 17:20:49  dennis
+ * Removed unused variable(s)
+ *
  * Revision 1.6  2004/03/15 06:10:48  dennis
  * Removed unused import statements.
  *
@@ -58,7 +61,6 @@ package DataSetTools.operator.DataSet.Information.XAxis;
 
 import  java.io.*;
 import  DataSetTools.dataset.*;
-import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.Information.DS_Information;
 
 /**
@@ -76,7 +78,6 @@ abstract public class XAxisInformationOp extends    DS_Information
   public XAxisInformationOp( String title )
   {
     super( title );
-    Parameter parameter;
   }
 
   /* ------------------------ getCategoryList ------------------------------ */

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/03/19 17:19:50  dennis
+ * Removed unused variable(s)
+ *
  * Revision 1.9  2004/03/15 06:10:53  dennis
  * Removed unused import statements.
  *
@@ -62,7 +65,7 @@ import DataSetTools.operator.DataSet.Special.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.operator.Generic.Load.*;
 import DataSetTools.math.*;
-import DataSetTools.viewer.*;
+//import DataSetTools.viewer.*;
 
 /**
  *  Test / develop algorithms for processing HRMECS data
@@ -95,7 +98,7 @@ public class ProcessHRCS
       DataSet background_dss[] = (DataSet[])result;
       
   
-      ViewManager viewmanager;
+//      ViewManager viewmanager;
 //      viewmanager = new ViewManager( sample_dss[0], IViewManager.IMAGE );
 //      viewmanager = new ViewManager( sample_dss[1], IViewManager.IMAGE );
 //      viewmanager = new ViewManager( background_dss[0], IViewManager.IMAGE );
@@ -135,10 +138,10 @@ public class ProcessHRCS
       op.getResult();
 
       op = new DataSetSubtract( sample_dss[1], background_dss[1], true );
-      DataSet difference_ds = (DataSet)op.getResult();
+//      DataSet difference_ds = (DataSet)op.getResult();
 //      viewmanager = new ViewManager( difference_ds, IViewManager.IMAGE );
 
-      float atoms = 1.0f;
+//      float atoms = 1.0f;
       /* Commented out b/c the Operator was removed from ISAW
         op = new DoubleDifferentialCrossection( difference_ds, 
         new DataSet("dummy","Empty"),
