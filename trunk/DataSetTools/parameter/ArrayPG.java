@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/07/09 16:32:22  bouzekc
+ *  Removed unnecessary "this" qualifiers (clone() still has
+ *  its "this" qualifiers).  Sets a small preferred size on
+ *  the entry widget to avoid oversizing the GridLayout GUI
+ *  that it sits in.
+ *
  *  Revision 1.13  2003/07/01 21:06:18  bouzekc
  *  Uses execOneLine again.  Fixed a bug where execOneLine is
  *  sent a String array without quotes around the individual
@@ -95,7 +101,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.*;
-import javax.swing.JLabel;
+import java.awt.*;
 
 
 /**
@@ -113,19 +119,19 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   // ********** Constructors **********
   public ArrayPG( String name, Object val ) {
     this( name, val, false );
-    this.setDrawValid( false );
-    this.type = TYPE;
+    setDrawValid( false );
+    type = TYPE;
   }
 
   public ArrayPG( String name, Object val, boolean valid ) {
-    this.setName( name );
-    this.setValue( val );
-    this.setEnabled( true );
-    this.setValid( valid );
-    this.setDrawValid( true );
-    this.type                 = TYPE;
-    this.initialized          = false;
-    this.ignore_prop_change   = false;
+    setName( name );
+    setValue( val );
+    setEnabled( true );
+    setValid( valid );
+    setDrawValid( true );
+    type                 = TYPE;
+    initialized          = false;
+    ignore_prop_change   = false;
   }
 
   // ********** Methods to deal with the hash **********
@@ -134,20 +140,20 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * Add a single item to the vector
    */
   public void addItem( Object val ) {
-    if( this.value == null ) {
-      this.value = new Vector(  );  // initialize if necessary
+    if( value == null ) {
+      value = new Vector(  );  // initialize if necessary
     }
 
     if( val == null ) {
       return;  // don't add null to the vector
     }
 
-    if( this.value.indexOf( val ) < 0 ) {
-      this.value.add( val );  // add if unique
+    if( value.indexOf( val ) < 0 ) {
+      value.add( val );  // add if unique
     }
 
-    if( this.initialized ) {
-      ( ( JTextField )this.entrywidget ).setText( this.ArraytoString( value ) );
+    if( initialized ) {
+      ( ( JTextField )entrywidget ).setText( ArraytoString( value ) );
     }
   }
 
@@ -164,9 +170,9 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * Remove an item from the hash based on its key.
    */
   public void removeItem( Object val ) {
-    int index = this.value.indexOf( val );
+    int index = value.indexOf( val );
 
-    this.removeItem( index );
+    removeItem( index );
   }
 
   public void removeItem( int index ) {
@@ -179,15 +185,15 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * Calls Vector.clear() on the value.
    */
   public void clearValue(  ) {
-    if( this.value == null ) {
+    if( value == null ) {
       return;
     }
 
-    this.value.clear(  );
+    value.clear(  );
 
-    if( this.initialized ) {
-      ( ( JTextField )this.entrywidget ).setText( 
-        this.ArraytoString( ( Vector )value ) );
+    if( initialized ) {
+      ( ( JTextField )entrywidget ).setText( 
+        ArraytoString( ( Vector )value ) );
     }
   }
 
@@ -209,29 +215,28 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * a specific object (such as String or DataSet) without casting.
    */
   public Object getValue(  ) {
-    // return this.value;
     //Vector of DataSets
     if( 
       ( value != null ) && ( value.size(  ) > 0 ) &&
         ( value.elementAt( 0 ) instanceof DataSet ) ) {
-      return this.value;
+      return value;
     }
 
     Object val = null;
 
-    if( this.initialized ) {
-      String StringValue = ( ( JTextField )this.entrywidget ).getText(  );
+    if( initialized ) {
+      String StringValue = ( ( JTextField )entrywidget ).getText(  );
 
       val = StringtoArray( StringValue );
     } else {
-      val = this.value;
+      val = value;
     }
 
     return val;
   }
 
   public Vector getVectorValue(  ) {
-    return this.value;
+    return value;
   }
 
   /**
@@ -248,12 +253,12 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       return;
     }
 
-    if( this.initialized ) {
-      ( ( JTextField )( this.entrywidget ) ).setText( 
-        this.ArraytoString( value ) );
+    if( initialized ) {
+      ( ( JTextField )( entrywidget ) ).setText( 
+        ArraytoString( value ) );
     }
 
-    this.setValid( true );
+    setValid( true );
   }
 
   // ********** IParameterGUI requirements **********
@@ -262,11 +267,14 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * Allows for initialization of the GUI after instantiation.
    */
   public void init( Vector init_values ) {
-    if( this.initialized ) {
+    if( initialized ) {
       return;  // don't initialize more than once
     }
 
-    this.entrywidget = new JTextField( this.ArraytoString( value ) );
+    entrywidget = new JTextField( ArraytoString( value ) );
+    //we'll set a really small preferred size and let the Layout Manager take
+    //over at that point
+    entrywidget.setPreferredSize( new Dimension( 2, 2 ) );
     super.initGUI(  );
   }
 
@@ -281,18 +289,18 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       init_vec.add( init_values[i] );
     }
 
-    this.init( init_vec );
+    init( init_vec );
   }
 
   /**
    * This is an empty method. It is not used because the value
    * cannot be changed from the GUI.
    */
-  public void setEnabled( boolean enabled ) {
-    this.enabled = enabled;
+  public void setEnabled( boolean enableMe ) {
+    enabled = enableMe;
 
-    if( this.getEntryWidget(  ) != null ) {
-      ( ( JTextField )this.entrywidget ).setEditable( enabled );
+    if( getEntryWidget(  ) != null ) {
+      ( ( JTextField )entrywidget ).setEditable( enabled );
     }
   }
 
@@ -300,18 +308,18 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * Creates the string to be placed in the label for the GUI
    */
   private String stringVersion(  ) {
-    if( ( this.value == null ) || ( this.value.size(  ) <= 0 ) ) {
+    if( ( value == null ) || ( value.size(  ) <= 0 ) ) {
       return "";
     } else {
       StringBuffer result = new StringBuffer(  );
-      int numElements     = this.value.size(  );
+      int numElements     = value.size(  );
       int start           = 0;
       int index           = 0;
 
       while( start < numElements ) {
-        index = checkSame( this.value, start );
+        index = checkSame( value, start );
         result.append( 
-          shortName( this.value.elementAt( ( index + start ) - 1 ) ) + "[" +
+          shortName( value.elementAt( ( index + start ) - 1 ) ) + "[" +
           index + "]" );
         start = start + index;
 
@@ -325,7 +333,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       if( result.length(  ) > 0 ) {
         return '[' + result.toString(  ) + ']';
       } else {
-        return '[' + this.value.toString(  ) + ']';
+        return '[' + value.toString(  ) + ']';
       }
     }
   }
