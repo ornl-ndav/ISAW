@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/10/27 15:13:49  rmikk
+ *  Now uses the new Table views- with format specifiers and cursor keys
+ *
  *  Revision 1.14  2003/08/13 23:48:44  dennis
  *  Changed number of menu items from 8 to 7.  This fixes a bug I
  *  introduced when I moved the "Brent" view from the table submenu
@@ -174,7 +177,12 @@ public class TableViewMenuComponents
  public DataSetViewer getDataSetViewer( String view_type, DataSet DS, ViewerState state)
    { 
      if(view_type.indexOf("x,Row vs Col y")==0)
-       return (DataSetViewer)(new TimeSliceView( DS, state));
+       return new DataSetViewerMaker1(DS, state,
+                   new RowColTimeVirtualArray( DS, 
+                                DS.getData_entry(0).getX_scale().getStart_x(),
+                               false, false, state),
+                   new LargeJTableViewComponent(state, new dummyIVirtualArray2D()));  
+       //return (DataSetViewer)(new TimeSliceView( DS, state));
     if( DS.getSelectedIndices().length<1)
        {//DataSetTools.util.SharedData.addmsg("No data sets selected");
         if( DS == null)
@@ -187,10 +195,14 @@ public class TableViewMenuComponents
         DS.setSelectFlag(indx, true);
        }
     if( view_type.indexOf("Group x vs y")==0)
-      
       return new TableView( DS, state,"HGT,F");//tv.getGenTableModel( DS,LM,"HGT,F",DS.getSelectedIndices() ));
-    if( view_type.indexOf("x vs Group y")==0)
-      return new QuickTableGrInCols( DS, state );
+    if( view_type.indexOf("x vs Group y")==0){
+       TimeVersusGroupValues ArrayMaker = new TimeVersusGroupValues( DS,  
+                              DS.getSelectedIndices(), false, false, state);
+       LargeJTableViewComponent ViewComp =new LargeJTableViewComponent(state, new dummyIVirtualArray2D());
+       return new DataSetViewerMaker1(DS, state, ArrayMaker,ViewComp); 
+     }  
+      //return new QuickTableGrInCols( DS, state );
        //return new TableView( DS, state,"HT,GF");//tv.getGenTableModel( DS,LM,"HT,FG",DS.getSelectedIndices() ));
    
        //return new TableView( DS, state,"HTI,JF");//tv.getGenTableModel( DS,LM,"HTI,JF",DS.getSelectedIndices() ));
