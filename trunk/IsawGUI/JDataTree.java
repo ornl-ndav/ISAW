@@ -29,7 +29,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.24  2004/06/30 14:21:11  kramer
+ * The tree now handles "pointed at" messages.  Now when the user selects a
+ * spectrum in a viewer, the corresponding node on the tree is selected.
+ *
  * Revision 1.23  2004/06/29 16:48:33  kramer
+ *
  * Modified the update method.  Now when spectra are removed from a DataSet (for
  * example through a viewer) the corresponding nodes are removed from the tree.
  *
@@ -153,6 +158,7 @@ public class JDataTree
     tree.putClientProperty("JTree.lineStyle", "Angled");
     tree.addMouseListener( ml );
     tree.addKeyListener( kl );
+    //tree.setCellRenderer(new JDataTreeCellRenderer());
 
     getMyModel().insertNodeInto(  new Experiment( MODIFIED_NODE_TITLE ),
                                   (DefaultMutableTreeNode)getMyModel().getRoot(),
@@ -589,7 +595,27 @@ public class JDataTree
       ds.notifyIObservers( IObserver.SELECTION_CHANGED );
     }
   }
-
+  
+  /**
+   * Get the complete TreePath corresponding to the node 
+   * specified.
+   */
+  public static TreePath createTreePathForNode(MutableTreeNode node)
+  {
+     Stack stack = new Stack();
+        stack.push(node);
+     TreeNode parent = node.getParent();
+     while (parent != null)
+     {
+        stack.push(parent);
+        parent = parent.getParent();
+     }
+     Object[] obArr = new Object[stack.size()];
+     for (int i=0; i<obArr.length; i++)
+        obArr[i] = stack.pop();
+     
+     return new TreePath(obArr);
+  }
 
   /**
    * examines the type of change made to 'observed' and
@@ -652,6 +678,22 @@ public class JDataTree
 
       else if ( reason_str.equals(POINTED_AT_CHANGED) )
       {
+         Data data = ds.getData_entry(ds.getPointedAtIndex());
+         if (data != null)
+         {
+            MutableTreeNode node = getNodeOfObject(data);
+            if (node != null)
+            {
+               tree.setExpandsSelectedPaths(true);
+               tree.getSelectionModel().clearSelection();
+               TreePath createdPath = createTreePathForNode(node);
+               if (createdPath != null)
+               {
+                  tree.scrollPathToVisible(createdPath);
+                  tree.getSelectionModel().addSelectionPath(createdPath);
+               }
+            }
+         }
       }
 
                                        //TODO: should redraw the entire tree
