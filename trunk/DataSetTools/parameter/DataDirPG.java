@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/07/15 22:56:13  bouzekc
+ *  getValue() now uses forward slashes rather than system
+ *  dependent slashes.
+ *
  *  Revision 1.11  2003/06/11 23:03:00  bouzekc
  *  Now returns the directory name with the system-appropriate
  *  separator appended to the end.
@@ -129,7 +133,7 @@ public class DataDirPG extends BrowsePG{
     {
       String str;
 
-      str = StringUtil.setFileSeparator(
+      str = FilenameUtil.setForwardSlash(
             super.getValue().toString() + "/");
 
       return str;
