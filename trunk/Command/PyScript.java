@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/06/13 16:27:14  pfpeterson
+ * Error conversion switches from one index to zero indexed.
+ *
  * Revision 1.1  2003/06/13 14:58:34  pfpeterson
  * Added to CVS.
  *
@@ -113,7 +116,7 @@ public class PyScript extends Script{
         dumpStack=dumpStack.substring(0,index)+filename
                                                  +dumpStack.substring(index+8);
     }
-    ParseError pe=new ParseError(dumpStack,pyexcep.traceback.tb_lineno);
+    ParseError pe=new ParseError(dumpStack,pyexcep.traceback.tb_lineno-1);
     return pe;
   }
 
