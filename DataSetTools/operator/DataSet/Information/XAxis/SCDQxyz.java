@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/01/25 00:00:52  dennis
+ * If the sample orientation attribute is missing ( eg. when
+ * data is loaded from a NeXus file) this now send a message
+ * to the status pane, rather than hitting a class cast
+ * exception.
+ *
  * Revision 1.12  2004/01/07 14:44:23  dennis
  * Replaced Art & Peter's code for calculating Qxyz, with simpler, more
  * general, correct code that works for arbitrary detector positions,
@@ -195,11 +201,19 @@ public class SCDQxyz extends  XAxisInformationOp
       fmt.setMaximumFractionDigits(3);
 
       // let getResult calculate Q
-      Position3D Qpos=(Position3D)this.getResult();
-      if(Qpos==null) return "N/A";
-      float[] Q=Qpos.getCartesianCoords();
-
-      return fmt.format(Q[0])+","+fmt.format(Q[1])+","+fmt.format(Q[2]);
+      Object obj = this.getResult();
+      if ( obj instanceof Position3D )
+      {
+        Position3D Qpos=(Position3D)this.getResult();
+        float[] Q=Qpos.getCartesianCoords();
+        return fmt.format(Q[0])+","+fmt.format(Q[1])+","+fmt.format(Q[2]);
+      }
+      else 
+      {
+        if ( obj instanceof ErrorString )
+          SharedData.addmsg( (ErrorString)obj );    
+        return "N/A";
+      } 
    }
 
   /**
