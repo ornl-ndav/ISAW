@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2004/01/08 14:48:07  bouzekc
+ *  Changed title to getTitle() in toString().
+ *
  *  Revision 1.32  2003/10/29 01:09:29  bouzekc
  *  Made field ds_tools and method isAbstract() protected for use with the
  *  JavaWrapperOperator.
@@ -398,7 +401,7 @@ abstract public class Operator implements Serializable
    */
   public String toString()
   {
-    return title;
+    return getTitle();
   }
 
   /* -------------------------- CopyParametersFrom ------------------------- */
