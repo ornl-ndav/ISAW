@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/08/15 03:54:26  bouzekc
+ *  Should now properly add previously existing PropertyChangeListeners to the
+ *  entrywidget.
+ *
  *  Revision 1.15  2003/08/14 18:40:27  bouzekc
  *  Made BrowseButtonListener transient.
  *
@@ -293,14 +297,20 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
      * @param pcl The property change listener to be removed.
      */
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
+      removePCLFromVector( pcl );
+      if( this.initialized ) {
         this.innerEntry.removePropertyChangeListener(pcl);
+      }
     }
     
     /**
      * @param pcl The property change listener to be added.
      */
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
+      addPCLToVector( pcl );
+      if( this.initialized ) {
         this.innerEntry.addPropertyChangeListener(pcl);
+      }
     }
     
     /**
@@ -309,6 +319,9 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
      */
     public void addPropertyChangeListener(String prop, 
                                           PropertyChangeListener pcl) {
+      addPCLToVector( prop, pcl );
+      if( this.initialized ) {
         this.innerEntry.addPropertyChangeListener(prop,pcl);
+      }
     }
 }
