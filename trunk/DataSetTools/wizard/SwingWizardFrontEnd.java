@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/01/11 00:25:50  bouzekc
+ * Removed experimental look and feel code.
+ *
  * Revision 1.7  2004/01/09 22:27:15  bouzekc
  * Implements the IGUIWizardFrontEnd.
  *
@@ -135,11 +138,6 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     formProgress      = new PropChangeProgressBar(  );
     wizProgress       = new JProgressBar(  );
     command_handler   = new CommandHandler( wiz );
-
-    try {
-      UIManager.setLookAndFeel( 
-        new com.incors.plaf.kunststoff.KunststoffLookAndFeel(  ) );
-    } catch( Exception e ) {}
   }
 
   //~ Methods ******************************************************************
