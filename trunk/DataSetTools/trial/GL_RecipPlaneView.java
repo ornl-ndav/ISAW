@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/08/11 21:32:07  dennis
+ * Placed controls in tabbed pane to save screen space.
+ * Write now writes the orientation matrix to a file as well as to screen.
+ * loadFiles() now returns false if it fails to load the files.
+ *
  * Revision 1.12  2004/08/11 05:22:46  dennis
  * Put some debug prints in  if (debug) statements.
  * The calculated integer hkl values now more nearly cover the
@@ -113,6 +118,7 @@ package DataSetTools.trial;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.dataset.*;
+import DataSetTools.util.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.math.*;
@@ -276,7 +282,9 @@ public class GL_RecipPlaneView
 
     vec_Q_space = new ThreeD_GL_Panel();
     controller  = new AltAzController( 45, 45, 1, 100, 25 );
+    controller.setPerspective( false );
 
+// ---- Display tabbed pane 
     peak_threshold_slider = new JSlider(SLIDER_MIN,SLIDER_MAX,SLIDER_DEF);
     peak_threshold_slider.setMajorTickSpacing(20);
     peak_threshold_slider.setMinorTickSpacing(5);
@@ -289,16 +297,31 @@ public class GL_RecipPlaneView
     contour_threshold_slider = MakeSlider("Iso-surface Threshold",
                                            new ContourThresholdScaleHandler());
 
-    JButton calc_fft_button = new JButton("Calculate FFTs of Projections");
+    JPanel checkbox_panel = new JPanel();
+    checkbox_panel.setLayout( new GridLayout( 4, 1 ) );
+    JCheckBox show_iso_surface = new JCheckBox( "Iso-surface" );
+    JCheckBox show_coverage    = new JCheckBox( "Detector Coverage" );
+    JCheckBox show_integer_hkl = new JCheckBox( "Integer HKL points" );
+    JButton calc_fft_button    = new JButton("Calculate FFTs of Projections");
+
+    checkbox_panel.add( show_iso_surface );
+    checkbox_panel.add( show_coverage );
+    checkbox_panel.add( show_integer_hkl );
+    checkbox_panel.add( calc_fft_button );
+
+// ----
 
     q_readout = new JLabel( UNDEFINED );
 
-    origin_vec  = new SimpleVectorReadout( ORIGIN, 
-                                           "Select",
-                                           new Vector3D(0,0,0));
-    origin_vec.setVector( new Vector3D(0,0,0) );
+    origin_vec = new SimpleVectorReadout( ORIGIN, 
+                                          "Select",
+                                          new Vector3D(0,0,0));
     vec_1  = new SimpleVectorReadout( VEC_1, "Select +" );
     vec_2  = new SimpleVectorReadout( VEC_2, "Select *" );
+
+    h_plane_ui = new LatticePlaneUI( "h" );
+    k_plane_ui = new LatticePlaneUI( "k" );
+    l_plane_ui = new LatticePlaneUI( "l" );
 
     border = new TitledBorder( LineBorder.createBlackLineBorder(),"Qxyz");
     border.setTitleFont( FontUtil.BORDER_FONT );
@@ -312,45 +335,38 @@ public class GL_RecipPlaneView
     q_panel.setLayout( new GridLayout(1,1) );
     q_panel.add( q_readout );
 
-    JPanel checkbox_panel = new JPanel();
-    checkbox_panel.setLayout( new GridLayout( 4, 1 ) );
-    JCheckBox show_iso_surface = new JCheckBox( "Iso-surface" );
-    JCheckBox show_coverage    = new JCheckBox( "Detector Coverage" );
-    JCheckBox show_integer_hkl = new JCheckBox( "Integer HKL points" );
-
-    show_iso_surface.addActionListener( new IsoSurfaceListener() );
-    show_coverage.addActionListener( new DetectorCoverageListener() );
-    show_integer_hkl.addActionListener( new IntegerHKLListener() );
-  
-    checkbox_panel.add( show_iso_surface );
-    checkbox_panel.add( show_coverage );
-    checkbox_panel.add( show_integer_hkl );
-    checkbox_panel.add( calc_fft_button );
-
     Box control_panel = new Box( BoxLayout.Y_AXIS );
     control_panel.add( controller );
-    control_panel.add( peak_threshold_slider );
-    control_panel.add( contour_threshold_slider );
-    control_panel.add( checkbox_panel );
-    control_panel.add( q_panel );
-    control_panel.add( origin_vec );
-    control_panel.add( vec_1 );
-    control_panel.add( vec_2 );
 
-    h_plane_ui = new LatticePlaneUI( "h" );
-    k_plane_ui = new LatticePlaneUI( "k" );
-    l_plane_ui = new LatticePlaneUI( "l" );
-    control_panel.add( h_plane_ui );
-    control_panel.add( k_plane_ui );
-    control_panel.add( l_plane_ui );
+    JTabbedPane tabbed_pane = new JTabbedPane();
+    tabbed_pane.setFont( FontUtil.LABEL_FONT );
 
-    JButton show_lat_param = new JButton( "Lattice Parameters" );
-    JButton write_file = new JButton("Write File");
+    Box view_controls = new Box(BoxLayout.Y_AXIS);    
+    view_controls.add( peak_threshold_slider );
+    view_controls.add( contour_threshold_slider );
+    view_controls.add( checkbox_panel );
+    tabbed_pane.addTab( "View", view_controls );
+    JPanel filler1 = new JPanel();
+    filler1.setPreferredSize( new Dimension( 120, 2000 ) );
+    view_controls.add( filler1 );
+
+    Box plane_controls = new Box(BoxLayout.Y_AXIS);    
+    plane_controls.add( q_panel );
+    plane_controls.add( origin_vec );
+    plane_controls.add( vec_1 );
+    plane_controls.add( vec_2 );
+    plane_controls.add( h_plane_ui );
+    plane_controls.add( k_plane_ui );
+    plane_controls.add( l_plane_ui );
+
+    JButton write_file = new JButton("Write Orientation Matrix");
     JPanel button_panel = new JPanel();
-    button_panel.setLayout( new GridLayout(2,1) );
-    button_panel.add( show_lat_param );
+    button_panel.setLayout( new GridLayout(1,1) );
     button_panel.add( write_file );
-    control_panel.add( button_panel );
+    plane_controls.add( button_panel );
+    tabbed_pane.addTab( "Planes", plane_controls );
+    tabbed_pane.setSelectedIndex(0);
+    control_panel.add( tabbed_pane );
 
     JPanel filler = new JPanel();
     filler.setPreferredSize( new Dimension( 120, 2000 ) );
@@ -376,10 +392,12 @@ public class GL_RecipPlaneView
     }
 
     scene_f.getContentPane().add( split_pane );
-
-//    vec_Q_space.setBackground( new Color( 20, 150, 90 ) );
-
     scene_f.setSize(970,750);
+
+    // add listeners..........................
+    show_iso_surface.addActionListener( new IsoSurfaceListener() );
+    show_coverage.addActionListener( new DetectorCoverageListener() );
+    show_integer_hkl.addActionListener( new IntegerHKLListener() );
 
     ViewControlListener c_listener = new ViewControlListener( vec_Q_space );
     controller.addActionListener( c_listener );
@@ -400,7 +418,6 @@ public class GL_RecipPlaneView
     k_plane_ui.addActionListener( plane_listener );    
     l_plane_ui.addActionListener( plane_listener );    
 
-    show_lat_param.addActionListener( new LatticeParameterListener() );
     write_file.addActionListener( new WriteFileListener() );
 
     vec_q_transformer = new Vector();
@@ -588,7 +605,7 @@ public class GL_RecipPlaneView
 
 
  /* ---------------------------- loadFiles --------------------------- */
-  public void loadFiles()
+  public boolean loadFiles()
   {
     System.out.println("Specified calibration file is : " + calib_file );
     if ( calib_file != null && calib_file.length() > 0 )
@@ -615,7 +632,10 @@ public class GL_RecipPlaneView
       ds = rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
       rr = null;
       if ( ds == null )
+      {
         System.out.println("File not found: " + file_names[count]);
+        return false;
+      }
       else
       {
         Attribute attr = ds.getAttribute( Attribute.RUN_TITLE );
@@ -628,6 +648,7 @@ public class GL_RecipPlaneView
     applyCalibrations();
 
     System.out.println("DONE loading DataSets : " + data_sets.size() );
+    return true;
   }
 
 
@@ -679,6 +700,7 @@ public class GL_RecipPlaneView
     boolean done = false;
     while (threshold < 4 * LSQ_THRESHOLD && !done )
     {
+      System.out.println("Filtering FFT using threshold = " + threshold );
       filtered_fft_ds = FilterFFTds( all_fft_ds, threshold );
       if ( filtered_fft_ds.getNum_entries() < 10 )
       {
@@ -2045,7 +2067,7 @@ public class GL_RecipPlaneView
     {
       values = refinePlane( normal, q_spacing );
       new_normal.set(values);
-      if ( new_normal.length() <= 0 )
+      if ( debug && new_normal.length() <= 0 )
         System.out.println("************ Warning, 0 length normal ********");
 
       q_spacing  = 1/new_normal.length();
@@ -2568,7 +2590,7 @@ public class GL_RecipPlaneView
 
 
 /* ------------------------- showLatticeParameters ----------------------- */
-
+/*
 private void showLatticeParameters( Vector3D a, Vector3D b, Vector3D c )
 {
   Vector3D a_normal = new Vector3D( a );
@@ -2601,7 +2623,7 @@ private void showLatticeParameters( Vector3D a, Vector3D b, Vector3D c )
   System.out.println("");
   System.out.println("-------------------------------------------------------");
 }
-
+*/
 
 /* -------------------------- MakeSlider ----------------------------- */
 
@@ -2617,6 +2639,84 @@ private JSlider MakeSlider( String title, ChangeListener listener )
   slider.setBorder( border );
   slider.addChangeListener( listener );
   return slider;
+}
+
+/* ------------------------ WriteMatrixFile ---------------------------- */
+/**
+ *  Write the best fit orientation matrix and lattice parameters to the 
+ *  specified file and to the status pane.
+ */
+public void WriteMatrixFile( String filename )
+{
+  if ( all_peaks.size() < 3 )
+  {
+    System.out.println("ERROR: Not enough peaks to fit: " + all_peaks.size());
+    return;
+  }
+
+  assignHKLs();
+
+  int k = all_peaks.size();                 // number of vectors for BestFit
+  double M[][]   = new double[3][3];
+  double q[][]   = new double[k][3];
+  double hkl[][] = new double[k][3];
+
+  for ( int i = 0; i < all_peaks.size(); i++ )
+  {
+    PeakData pd = (PeakData)all_peaks.elementAt(i);
+    q[i][0] = pd.qx;
+    q[i][1] = pd.qy;
+    q[i][2] = pd.qz;
+    hkl[i][0] = Math.round( pd.h );
+    hkl[i][1] = Math.round( pd.k );
+    hkl[i][2] = Math.round( pd.l );
+  }
+
+  double std_dev = LinearAlgebra.BestFitMatrix( M, hkl, q );
+  if ( Double.isNaN( std_dev ) )
+  {
+    System.out.println("Singular matrix when doing best fit...can't solve");
+    return;
+  }
+
+  std_dev = std_dev / Math.sqrt(k-1);
+  System.out.println("Standard deviation for fit = " + std_dev );
+
+  for ( int i = 0; i < 3; i++ )
+    for ( int j = 0; j < 3; j++ )
+       M[i][j] /= (2 * Math.PI );
+
+  double lat_parms[] = lattice_calc.LatticeParamsOfUB( M );
+
+  StringBuffer sb = new StringBuffer();
+  for ( int i = 0; i < 3; i++ )
+  {
+    for ( int j = 0; j < 3; j++ )
+      sb.append( Format.real( M[i][j], 10, 6 ) );
+    sb.append( "\n" );
+  }
+
+  for ( int i = 0; i < 7; i++ )
+    sb.append( Format.real( lat_parms[i], 10, 3 ) );
+  sb.append( "\n" );
+                                            // write zeros for error estimates
+  for ( int i = 0; i < 7; i++ )             // for now.
+    sb.append( Format.real( 0, 10, 3 ) );
+  sb.append( "\n" );
+
+  SharedData.addmsg( sb.toString() );
+
+  try
+  {
+    FileWriter fw = new FileWriter( filename, false );
+    fw.write( sb.toString() );
+    fw.flush();
+    fw.close();
+  }
+  catch ( IOException execption )
+  {
+    System.out.println("ERROR: Couldn't write to file: " + filename );
+  }
 }
 
 
@@ -2780,61 +2880,28 @@ private class CalcFFTButtonHandler implements ActionListener
 
 
 /* --------------------------- WriteFileListener ------------------------ */
-
+/*
+ *  Write the orientation matrix and lattice parameters to a file and to
+ *  the StatusPane.
+ */
 private class WriteFileListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
-    if ( all_peaks.size() < 3 )
-    {
-      System.out.println("ERROR: Not enough peaks to fit: " + all_peaks.size());
-      return;
-    }
+    JFileChooser chooser = new JFileChooser();
+    int returnVal = chooser.showOpenDialog( scene_f );
+    if(returnVal == JFileChooser.APPROVE_OPTION) 
+      WriteMatrixFile( chooser.getSelectedFile().toString() );
 
-    assignHKLs();
-    
-    int k = all_peaks.size();                 // number of vectors for BestFit
-    double M[][]   = new double[3][3];
-    double q[][]   = new double[k][3];
-    double hkl[][] = new double[k][3];
+    System.out.println("Wrote to " + chooser.getSelectedFile().toString() );
 
-    for ( int i = 0; i < all_peaks.size(); i++ )
-    {
-      PeakData pd = (PeakData)all_peaks.elementAt(i);
-      q[i][0] = pd.qx;
-      q[i][1] = pd.qy;
-      q[i][2] = pd.qz;
-      hkl[i][0] = Math.round( pd.h );
-      hkl[i][1] = Math.round( pd.k );
-      hkl[i][2] = Math.round( pd.l );
-    }
-
-    double std_dev = LinearAlgebra.BestFitMatrix( M, hkl, q );
-    if ( Double.isNaN( std_dev ) )
-    {
-      System.out.println("Singular matrix when doing best fit...can't solve");
-      return;
-    }
-
-    std_dev = std_dev / Math.sqrt(k);     // #####
-    System.out.println("Standard deviation for fit = " + std_dev );
-
-    for ( int i = 0; i < 3; i++ )
-      for ( int j = 0; j < 3; j++ )
-         M[i][j] /= (2 * Math.PI );
-
-    LinearAlgebra.print( M );
-
-    double lat_parms[] = lattice_calc.LatticeParamsOfUB( M );
-    LinearAlgebra.print( lat_parms );
-
-//    PeakData.WritePeakData( all_peaks, "fft_peaks.dat" );
+    return;
   }
 }
 
 
 /* ---------------------- LatticeParameterListener ------------------------ */
-
+/*
 private class LatticeParameterListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
@@ -2860,6 +2927,7 @@ private class LatticeParameterListener implements ActionListener
     showLatticeParameters( a, b, c );
   }
 }
+*/
 
 
 /* ------------------------- ReadoutListener ----------------------- */
