@@ -1,7 +1,7 @@
 /*
  * File:  TimeFocusGroupForm.java
  *
- * Copyright (C) 2003, Christopher Bouzek
+ * Copyright (C) 2003, Chris M. Bouzek
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,12 +22,19 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
+ *           Chris M. Bouzek <coldfusion78@yahoo.com>
+ *
  * This work was supported by the National Science Foundation under grant
  * number DMR-0218882.
  *
  * Modified: 
  *
  * $Log$
+ * Revision 1.5  2003/06/02 22:25:27  bouzekc
+ * Fixed contact information.
+ * Added call to setDefaultParameters-needed to avoid
+ * NullPointerExceptions.
+ *
  * Revision 1.4  2003/04/24 18:58:24  pfpeterson
  * Various small bug fixes. (Chris Bouzek)
  *
@@ -39,6 +46,11 @@
  *
  * Revision 1.5  2003/03/13 19:00:52  dennis
  * Added $Log$
+ * Added Revision 1.5  2003/06/02 22:25:27  bouzekc
+ * Added Fixed contact information.
+ * Added Added call to setDefaultParameters-needed to avoid
+ * Added NullPointerExceptions.
+ * Added
  * Added Revision 1.4  2003/04/24 18:58:24  pfpeterson
  * Added Various small bug fixes. (Chris Bouzek)
  * Added
@@ -85,6 +97,7 @@ public class TimeFocusGroupForm extends    Form
   public TimeFocusGroupForm( )
   {
     super("Time focus and group DataSets");
+    this.setDefaultParameters();
   }
 
   /**

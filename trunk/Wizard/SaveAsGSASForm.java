@@ -1,7 +1,7 @@
 /*
  * File:  SaveAsGSASForm.java
  *
- * Copyright (C) 2003, Christopher Bouzek
+ * Copyright (C) 2003, Chris M. Bouzek
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +22,8 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
+ *           Chris M. Bouzek <coldfusion78@yahoo.com>
+ *
  * This work was supported by the National Science Foundation under grant
  * number DMR-0218882.
  *
@@ -30,6 +32,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/06/02 22:25:05  bouzekc
+ *  Fixed contact information.
+ *  Added call to setDefaultParameters-needed to avoid
+ *  NullPointerExceptions.
+ *
  *  Revision 1.5  2003/04/24 18:57:56  pfpeterson
  *  Various small bug fixes. (Chris Bouzek)
  *
@@ -42,6 +49,11 @@
  *
  *  Revision 1.2  2003/03/13 19:04:14  dennis
  *  Added $Log$
+ *  Added Revision 1.6  2003/06/02 22:25:05  bouzekc
+ *  Added Fixed contact information.
+ *  Added Added call to setDefaultParameters-needed to avoid
+ *  Added NullPointerExceptions.
+ *  Added
  *  Added Revision 1.5  2003/04/24 18:57:56  pfpeterson
  *  Added Various small bug fixes. (Chris Bouzek)
  *  Added
@@ -80,6 +92,7 @@ public class SaveAsGSASForm extends    Form
   public SaveAsGSASForm()
   {
     super("Save as GSAS");
+    this.setDefaultParameters();
   }
 
   /**
