@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2003/07/07 22:40:05  bouzekc
+ * Now uses a class constant for the "Data Changed" event,
+ * and checks to be sure that the event is correct in
+ * propertyChange().
+ *
  * Revision 1.17  2003/07/07 21:51:30  bouzekc
  * Reorganized methods according to access privilege.
  *
@@ -151,6 +156,10 @@ import javax.swing.*;
 public abstract class VectorPG extends ParameterGUI
   implements PropertyChangeListener, ActionListener, ParamUsesString,
     PropertyChanger {
+  //~ Static fields/initializers ***********************************************
+
+  public static final String DATA_CHANGED = "Data Changed";
+
   //~ Instance fields **********************************************************
 
   private String typeName;
@@ -159,7 +168,7 @@ public abstract class VectorPG extends ParameterGUI
   private ArrayEntryJPanel GUI;
   private JButton vectorButton;
   private JPanel buttonHolder;
-  private Vector listeners    = new Vector(  );
+  private Vector listeners                = new Vector(  );
   private JDialog entryDialog;
   private JFrame entryFrame;
 
@@ -350,10 +359,13 @@ public abstract class VectorPG extends ParameterGUI
    * Triggered when the "Done" button in the ArrayEntryJPanel is clicked.
    */
   public void propertyChange( PropertyChangeEvent evt ) {
-    value = ( GUI.getValues(  ) );
-    setValid( true );
-    pcs.firePropertyChange( evt );
-    entryFrame.setVisible( false );
+    if( evt.getPropertyName(  )
+             .equals( VectorPG.DATA_CHANGED ) ) {
+      value = ( GUI.getValues(  ) );
+      setValid( true );
+      pcs.firePropertyChange( evt );
+      entryFrame.setVisible( false );
+    }
   }
 
   /**
@@ -439,7 +451,7 @@ public abstract class VectorPG extends ParameterGUI
     public void windowClosing( WindowEvent e ) {
       propertyChange( 
         new PropertyChangeEvent( 
-          this, "Data Changed", value, GUI.getValues(  ) ) );
+          this, VectorPG.DATA_CHANGED, value, GUI.getValues(  ) ) );
     }
   }
 }
