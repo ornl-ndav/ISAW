@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2003/07/22 15:16:23  dennis
+ * Replaced local "value" of h/mn, by more accurate value from
+ * tof_calc.java
+ *
  * Revision 1.17  2003/06/11 19:39:53  dennis
  * Modified getZofTime(,) to use the XScale method getI(time), which
  * does a binary search for the bin containing the time, rather than
@@ -657,8 +661,9 @@ public class Peak{
     
     if(this.L1>0f){
       //double h=(1E6*6.62606876E-34); // in kg*cm*A/us
-      //double m=1.67492716E-27; // in kg
-      double hom=0.3955974; // h/m in cm*A/us
+      //double m=1.67492716E-27;       // in kg
+      //double hom=0.3955974;          // h/m in cm*A/us 
+      double hom = tof_calc.ANGST_PER_US_PER_MM / 10;  // more accurate
       float l1=this.L1*100F;
       float l2=this.detD(); // in cm
       
@@ -716,7 +721,8 @@ public class Peak{
     }
 
     if(this.L1>0f){
-      double hom  = 0.3955974; // h/m in cm*A/us
+      // double hom  = 0.3955974; // h/m in cm*A/us
+      double hom = tof_calc.ANGST_PER_US_PER_MM / 10;  // more accurate
       float l1    = this.L1*100F;
       float l2    = this.detD(); // in cm
       
