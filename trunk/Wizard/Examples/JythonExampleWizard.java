@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.3  2003/07/09 21:51:02  rmikk
+ * Fixed parameter linking error
+ *
  * Revision 1.2  2003/07/08 20:57:01  bouzekc
  * Added missing slash to file name.
  *
@@ -101,7 +104,7 @@ public class JythonExampleWizard extends Wizard {
       { 1, 1 },  //peaks file path
       { 2, 2 },  //run numbers
       { 3, 3 },  //experiment name
-      { 7, 6 }
+      { 7, 5}
     };  //SCD calibration file
 
     String scriptsDir = SharedData.getProperty( "Script_Path" ) + "/";
@@ -115,7 +118,7 @@ public class JythonExampleWizard extends Wizard {
     JyScriptForm integrate = new JyScriptForm( 
         StringUtil.setFileSeparator( 
           scriptsDir + "integrate_multiple_runs2.py" ), "LoadFile",
-        "Integrated Peaks File", new int[]{ 0, 1, 2, 3, 6 } );
+        "Integrated Peaks File", new int[]{ 0, 1, 2, 3, 5 } );
 
     this.addForm( peaks );
     this.addForm( integrate );
