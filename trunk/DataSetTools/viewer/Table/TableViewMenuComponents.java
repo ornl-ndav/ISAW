@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/05/19 15:22:15  rmikk
+ *  -Added ContourView:Qxyz slices option to the Table
+ *      view menu
+ *
  *  Revision 1.10  2003/05/12 16:05:00  rmikk
  *  Included the Contour Qx,Qy,Qz, Contour Qx,Qz,Qy, etc
  *     as interactive views( Unfortunately only as submenus
@@ -104,7 +108,7 @@ public class TableViewMenuComponents
   /** Returns the number of menu items
   */
   public static int getNMenuItems()
-    { return 6;
+    { return 7;
     }
 
   /** Returns the menu Name associated with the menu items
@@ -124,6 +128,8 @@ public class TableViewMenuComponents
          return "Contour:Qx,Qz vs Qy";
       if( i == 5)
          return "Contour:Qy,Qz vs Qx";
+      if( i == 6 )
+         return "Contour:Qxyz slices";
       else return null;
     }
 
@@ -180,6 +186,9 @@ public class TableViewMenuComponents
 	return new ContourView( DS, state, Qax.getQxAxis(), Qax.getQzAxis(), Qax.getQyAxis());
       if( view_type.indexOf("Contour:Qy,Qz vs Qx")==0)
 	return new ContourView( DS, state, Qax.getQyAxis(), Qax.getQzAxis(), Qax.getQxAxis());
+
+      if( view_type.indexOf("Contour:Qxyz slices") == 0)
+         return new TQxQyQz( DS, state);
     return null;
 
    }
