@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2003/04/11 21:58:48  pfpeterson
+ *  Now deals with RuntimeException being thrown by Operator.getResult()
+ *  and implemented a "Halt" button.
+ *
  *  Revision 1.37  2003/03/06 22:56:20  pfpeterson
  *  No longer provides methods for receiving StatusPane. Access to
  *  StatusPane is done directly with SharedData.
@@ -152,6 +156,9 @@ public class JParametersDialog implements Serializable,
   private static int screenwidth=0; // for help dialog
   private static int screenheight=0;
     
+  private static final String APPLY="Apply";
+  private static final String HALT="Halt";
+
     public JParametersDialog( Operator  op, 
                               IDataSetListHandler ds_src, 
                               Document  sessionLog, 
@@ -478,7 +485,7 @@ public class JParametersDialog implements Serializable,
         JPanel buttonpanel = new JPanel( );
         buttonpanel.setLayout(new FlowLayout());
                
-        apply = new JButton("Apply");
+        apply = new JButton(APPLY);
         exit = new JButton("Exit");
         JButton help  = new JButton( "Help" );
           
@@ -555,6 +562,7 @@ public class JParametersDialog implements Serializable,
                                   IObservable
   {
     IObserverList OL;
+    SwingWorker worker=null;
 
     public ApplyButtonHandler()
     {
@@ -583,7 +591,14 @@ public class JParametersDialog implements Serializable,
       JParameterGUI pGUI;
       String s="";
 
-      apply.setEnabled(false);
+      if(apply.getText().equals(HALT)){
+        worker.interrupt();
+        apply.setText(APPLY);
+        exit.setEnabled(true);
+        resultsLabel.setText("HALTED OPERATION: "+op.getCommand());
+        return;
+      }
+      apply.setText(HALT);
       exit.setEnabled(false);
       resultsLabel.setText("working ...");
 
@@ -616,13 +631,18 @@ public class JParametersDialog implements Serializable,
                        .addPropertyChangeListener( SharedData.getStatusPane());
       
       // create a subclass of SwingWorker to call getResult()
-      final SwingWorker worker = new SwingWorker() {
+      worker = new SwingWorker() {
           public Object construct(){
-            Result=op.getResult();
-            return Result;
+            try{
+              Result=op.getResult();
+              return Result;
+            }catch(RuntimeException e){
+              Result=e;
+              return null;
+            }
           }
           public void finished(){
-            apply.setEnabled(true);
+            apply.setText(APPLY);
             exit.setEnabled(true);
             processResult();
           }
@@ -639,12 +659,20 @@ public class JParametersDialog implements Serializable,
       Object result = Result;
       String s="";
 
+      if(result instanceof RuntimeException){
+        ((RuntimeException)result).printStackTrace();
+        String type=result.getClass().getName();
+        int index=type.lastIndexOf(".");
+        if(index<0) index=-1;
+        resultsLabel.setText("FAILED: Encountered "+type.substring(index+1));
+        return;
+      }
+
       if( op instanceof IusesStatusPane)
         ((IusesStatusPane)op).addStatusPane( null);
       if(op instanceof java.beans.Customizer)
         ((java.beans.Customizer)op)
                     .removePropertyChangeListener( SharedData.getStatusPane());
-      Result = result;
       for( int i = 0; i < ObjectParameters.size(); i++ )
         { int k = ((Integer)ObjectParameters.elementAt(i)).intValue();
           String ParName = op.getParameter(k).getName();
