@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/04/11 16:52:59  pfpeterson
+ * Added parameter to specify how many peaks are listed in log file.
+ *
  * Revision 1.12  2003/03/26 16:29:37  pfpeterson
  * Fixed background calculation. Small code reorganization for improved
  * log writting.
@@ -151,6 +154,7 @@ public class Integrate extends GenericTOF_SCD{
     ChoiceListPG clpg=new ChoiceListPG("Centering", choices.elementAt(0));
     clpg.addItems(choices);
     addParameter(clpg);
+    addParameter(new IntegerPG("Log every nth Peak",3));
   }
   
   /**
@@ -243,6 +247,9 @@ public class Integrate extends GenericTOF_SCD{
     val=getParameter(3).getValue().toString();
     centering=choices.indexOf((String)val);
     if( centering<0 || centering>=choices.size() ) centering=0;
+
+    // then how often to log a peak
+    listNthPeak=((IntegerPG)getParameter(4)).getintValue();
 
     // now the uncertainty in the peak location
     int dX=2, dY=2, dZ=1;
