@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/04/19 19:40:40  dennis
+ *  Fixed "broken" @see javadoc comments.
+ *
  *  Revision 1.6  2002/03/13 16:26:26  dennis
  *  Converted to new abstract Data class.
  *
@@ -96,10 +99,8 @@ import  DataSetTools.operator.Generic.TOF_DG_Spectrometer.*;
   *  geometry spectrometer based on the result of applying the scattering 
   *  function operator.  
   *
-  *  @see SpectrometerScatteringFunction
+  *  @see ScatteringFunction
   *  @see DoubleDifferentialCrossection 
-  *  @see DataSetOperator
-  *  @see Operator
   */
 
 public class FrequencyDistributionFunction 
