@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/05/18 13:53:00  rmikk
+ * Now supports the NSavedFiles(int) and ShortSavedFilename(true/false) in
+ *   the IsawProps.
+ * IsawGUI.Isaw.java is also changed
+ *
  * Revision 1.7  2004/03/15 23:57:40  dennis
  * Changed some instances to static methods to be through the
  * class name instead of an instance.
@@ -106,15 +111,19 @@ public class LatestOpenedFiles{
         return;
      }
  
-     Menuu.addSeparator();
      
-     for( int i = 0 ; i < NSavedFiles ; i++ ){
+     int nSavedFiles = SharedData.getintProperty( "NSavedFiles",""+NSavedFiles);
+     boolean shortMange = SharedData.getbooleanProperty("ShortSavedFileName","false");
+     if( nSavedFiles > 0)
+       Menuu.addSeparator();
+     
+     for( int i = 0 ; i < nSavedFiles ; i++ ){
 
         String filname = pref.get( "File" + i , NO_SUCH_FILE );
         
         if( (filname != NO_SUCH_FILE) &&( (new File(filname)).exists()) ){
 
-           JMenuItem jmi = new JMenuItem( Mangle( filname ) );
+           JMenuItem jmi = new JMenuItem( Mangle( filname,shortMange ) );
            Menuu.add( jmi );
            MyActionListener actList =new MyActionListener( tree , filname , 
                                                                  IOBs ) ;
@@ -151,7 +160,10 @@ public class LatestOpenedFiles{
      //Move all the Preference key values up by "1"
 
      String filname;
-     for( int i = NSavedFiles - 2 ; i >= 0 ; i-- ){
+         
+     int nSavedFiles = SharedData.getintProperty( "NSavedFiles",""+NSavedFiles);
+
+     for( int i = nSavedFiles - 2 ; i >= 0 ; i-- ){
 
         filname = pref.get( "File" + i , NO_SUCH_FILE );
 
@@ -169,14 +181,15 @@ public class LatestOpenedFiles{
     *  Attempts to replace large parts of the path by ... so final name
     *  name has a length 40 characters
     */
-  public static String Mangle( String fName ){
+  public static String Mangle( String fName, boolean shortMang ){
 
      String fName1 = fName.replace( '\\' , '/' );
      int i = fName1.lastIndexOf( '/' );
 
      if( i < 0 )
         return fName;
-
+     if( shortMang)
+        return fName1.substring( i+1);
      if( fName.length() < 40 )
         return fName;
 
