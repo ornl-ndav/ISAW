@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/24 20:03:54  rmikk
+ * Added a field to processDS so it can get a handle on
+ * fields linked to and with NxData
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -62,9 +66,9 @@ public class NXdata_Fields  extends NXData_util implements NxData
   *@param  DS  the existing DataSet that is to be filled out
   *@return  error status: true if there is an error otherwise false
   */
-  public boolean processDS( NxNode node , DataSet DS )
+  public boolean processDS( NxNode node , NxNode nxInstr,DataSet DS )
     { errormessage = "";
-       if(super.processDS(node,ax1,ax2,dat,DS))
+       if(super.processDS(node, nxInstr, ax1, ax2, dat,DS))
          return true;
        errormessage = super.getErrorMessage();
        return false;
