@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2005/01/04 17:02:46  rmikk
+ * Now implements HiddenOperator. Its result is not a DataSet or a String
+ *
  * Revision 1.3  2004/07/31 23:11:20  rmikk
  * Removed unused imports
  *
@@ -80,7 +83,8 @@ import java.util.Vector;
  * Class designed to analyze cell scalars from BLIND to determine Laue
  * symmetry. Originally written by R. Goyette.
  */
-public class ScalarJ_base extends GenericTOF_SCD{
+public class ScalarJ_base extends GenericTOF_SCD implements
+           DataSetTools.operator.HiddenOperator{
   private static final boolean DEBUG=false;
 
   // valid values of nchoice (generic symmetry type)
