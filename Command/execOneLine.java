@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2001/08/16 20:30:50  rmikk
+ * Fixed the javadocs @see tags
+ *
  * Revision 1.26  2001/08/15 14:15:30  rmikk
  * Set Default Parameters on all operators that had their
  *    parameters changed.  The data types of these operators
@@ -344,7 +347,7 @@ public void addDataSet(DataSet dss, String vname)
 /**
 *  Removes all displays created by the CommandPane
 *
-* @see  execOneLine.Display( DataSetTools.DataSet, java.lang.String , java.lang.String)
+* @see  #Display( DataSetTools.dataset.DataSet, java.lang.String , java.lang.String)
 */
     public void removeDisplays()
     {  if( Graphs == null)
@@ -1179,8 +1182,8 @@ public void addDataSet(DataSet dss, String vname)
    Sends the data set to all Iobservers
   *@param   ds    The data set that is to be sent
  * Not implemented yet. 
-  *@see  <A href="DataSetTools.util.IObserverList.html#addIObserver(DataSetTools.util.IObserver)">
-          addIObserver</a> <P>
+  *@see  DataSetTools.util.IObserverList#addIObserver(DataSetTools.util.IObserver)
+          addIObserver  <P>
   *
  
   */
@@ -2020,7 +2023,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
  *      subtract,... will be used
 
  * Use getErrorCharPos to determine if an error occurred<br>
- *     @see getErrorCharPos()
+ *     @see #getErrorCharPos()
  */
     public void operateArith( Object R1 , Object R2 , char c )
       {
@@ -2628,7 +2631,7 @@ private Operator getSHOp( Vector Args, String Command)
    *@param  S   A string used to refer to a variable 
    *@return  The value of this string or
    *         an error message if the variable is not found
-   *  @see getErrorCharPos()
+   *  @see #getErrorCharPos()
    */
      public Object getVal( String S )
        {int i;
