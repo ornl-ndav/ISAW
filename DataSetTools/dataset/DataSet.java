@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2001/06/29 22:05:21  dennis
+ *  Removed un-needed calls to System.gc
+ *  (They introduced a large time delay!!)
+ *
  *  Revision 1.16  2001/06/07 21:19:07  dennis
  *  Added calls to System.gc() at the end of clone() and copy()
  *  methods.
@@ -338,7 +342,8 @@ public class DataSet implements IAttributeList,
 
   /**
    *  Set the list of observers to the specified list.  This method is 
-   *  needed for.  See getIObserverList().
+   *  needed to restore the list of observers after serializing the 
+   *  DataSet.  See getIObserverList().
    *
    *  @param  list  The list of observers to use for this DataSet.
    */
@@ -1407,7 +1412,6 @@ public class DataSet implements IAttributeList,
                                        //       the observers of this DataSet
                                        //       that it's contents changed.                              
     this.notifyIObservers( IObserver.DATA_CHANGED );
-    System.gc();
   }
 
 
@@ -1430,7 +1434,6 @@ public class DataSet implements IAttributeList,
         new_ds.addData_entry( (Data)d.clone() );
     }
 
-    System.gc();
     return new_ds;
   }
 
