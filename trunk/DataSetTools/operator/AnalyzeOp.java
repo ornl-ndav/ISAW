@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/05/31 20:17:29  rmikk
+ *  Added javadocs for getCommand
+ *
+ *   
  *  Revision 1.3  2001/04/26 19:04:23  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -40,6 +44,8 @@
  *  Revision 1.1  2000/11/10 23:01:10  dennis
  *  New abstract base class for operators.  Allows automatic
  *  generation of hierarchical menus using operator categories.
+ *
+ *  
  *
  */
 
