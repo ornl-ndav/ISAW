@@ -23,7 +23,14 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * This work was supported by the National Science Foundation.
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0218882.
+ *
+ * Modified: 
+ *
+ * $Log$
+ * Revision 1.4  2003/03/13 19:00:52  dennis
+ * Added $Log:$ comment to include revision information.
  *
  */
 
