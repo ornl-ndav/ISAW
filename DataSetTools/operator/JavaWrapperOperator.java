@@ -32,6 +32,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.26  2005/01/07 16:34:04  rmikk
+ * Used the new IWrappableWithCategoryList to calculate the category
+ *    list when possible
+ *
  * Revision 1.25  2005/01/04 19:55:34  rmikk
  * Fixed HiddenOperator problem.  The category list must have length 1
  *    in this case
@@ -277,7 +281,9 @@ public class JavaWrapperOperator extends GenericOperator {
     if( ( wrapped == null ) || !( wrapped instanceof Wrappable ) ) {
       return null;
     }
-
+    if( wrapped instanceof IWrappableWithCategoryList)
+       return ((IWrappableWithCategoryList)wrapped).getCategoryList();
+       
     String category = this.wrapped.getClass(  ).getPackage(  ).getName(  );
 
     if( category.startsWith( DS_OP ) ) {
