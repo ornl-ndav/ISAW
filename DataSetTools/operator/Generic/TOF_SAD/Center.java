@@ -1,4 +1,3 @@
-
 /*
  * File:  Center.java
  *
@@ -31,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/04/08 15:18:09  dennis
+ * Now uses "new" DataSetPGs consistently and calls clear() after getting the
+ * value from the DataSetPG, to avoid memory leaks.
+ * Replaced all parameters with new ParameterGUI's for consistency.
+ *
  * Revision 1.8  2004/03/15 19:33:53  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -53,12 +57,10 @@
  * Revision 1.3  2003/09/27 13:29:12  rmikk
  * Added 2 new parameters, Xdim and Ydim, and a variable useOldCode
  *
- *
  * Revision 1.2  2003/09/26 15:39:10  rmikk
  * Fixed Negative Xoff set problem
  * Used zero for the weights on row and column centers
  *    that are near the centeer
-
  */
 
 package DataSetTools.operator.Generic.TOF_SAD;
@@ -77,6 +79,7 @@ public class Center extends GenericTOF_SAD{
   float BS = 1.5f/100.0f;
   float XMAX = 3.5f/100.0f;//length in cm of square around center to use
   public static boolean useOldCode = true;
+  private boolean debug = false;
  
   public Center(){
     super( "Beam Center");
@@ -130,9 +133,8 @@ public class Center extends GenericTOF_SAD{
              new Float( -1f)));
      addParameter( new FloatPG(" dimension of detector",
              new Float( -1f)));
-
-
  }
+
   /**
   *    Finds the center of the beam as follows:<BR>
   *    1. For each row, the weighted center is found, eliminating data near
@@ -144,7 +146,11 @@ public class Center extends GenericTOF_SAD{
   */
   public Object getResult(){
      DataSet DS = ((DataSetPG)getParameter(0)).getDataSetValue();
+     ((DataSetPG)getParameter(0)).clear();
+
      DataSet SensDS = ((DataSetPG)getParameter(1)).getDataSetValue();
+     ((DataSetPG)getParameter(1)).clear();
+
      int StartTimeChan = ((IntegerPG)getParameter(2)).getintValue();
      int EndTimeChan = ((IntegerPG)getParameter(3)).getintValue();
      float Xoff = ((FloatPG)getParameter(4)).getfloatValue()/100.0f;
@@ -189,11 +195,9 @@ public class Center extends GenericTOF_SAD{
              TotCount += Dyvals[chan];
              if( sens !=0)
               CollapsedData[row][col] += Dyvals[chan]/sens;
-           
           }
      }
          
-
     float SavXoff,SavYoff;
     float[] Rowcm = new float[ DSGrid.num_rows()],
             Colcm = new float[DSGrid.num_cols()];
@@ -203,15 +207,12 @@ public class Center extends GenericTOF_SAD{
           Rowcm[i] = DSGrid.y( i+1.0f, 2.0f);
         else
           Rowcm[i] = -Ydim/2 + Ydim/DSGrid.num_rows()*( i+.5f);
-   
-    
 
     for( int j = 0; j< DSGrid.num_cols(); j++)
         if( Xdim <= 0)
           Colcm[j] = DSGrid.x(  2.0f,j+1.0f);
         else
           Colcm[j] = -Xdim/2 + Xdim/DSGrid.num_cols()*( j+.5f);
-
     
     float[] RowCenters = new float[ DSGrid.num_rows()];
     float[] ColCenters = new float[ DSGrid.num_cols()];
@@ -293,6 +294,8 @@ public class Center extends GenericTOF_SAD{
    V.addElement( V1);
    return V;
   }//getResult
+
+
   private float[] mult( float[]x, float v){
     if( x == null)
        return x;
@@ -300,6 +303,8 @@ public class Center extends GenericTOF_SAD{
        x[i] *=v;
     return x;
   }
+
+
   private int Findind(float[] Rowcm,float val, boolean start){
      int Res = Arrays.binarySearch( Rowcm, val);
      if( Res < 0)
@@ -310,7 +315,8 @@ public class Center extends GenericTOF_SAD{
        Res = Rowcm.length-1;
      return Res;
   }//Findind
- boolean debug = false;
+
+
  // Only fit CollapsedData[j][j] to XBar[j] ????
  float CalcXave( float[][] CollapsedData,float[] Rowcm, float[] ColCenters,
      int minrow, int maxrow, float Yoff, float Xoff, float[] Colcm){
@@ -348,7 +354,6 @@ public class Center extends GenericTOF_SAD{
        if( debug)
          System.out.println(CollapsedData[ IPrim][j]+"\t"+S+"\t"+
                CollapsedData[ IPrim+1][j]);
-       
      }
     //System.out.println("---------Res is "+(SUXB/SUX)+"----------------");
     debug= false; 
@@ -356,8 +361,8 @@ public class Center extends GenericTOF_SAD{
       return SUXB/SUX;
     else 
       return 0.0f;
-
  }
+
 
  float CalcYave( float[][] CollapsedData,float[] Colcm, float[] RowCenters,
      int mincol, int maxcol, float Xoff, float Yoff,  float[] Rowcm){
@@ -398,7 +403,6 @@ public class Center extends GenericTOF_SAD{
      return SUYB/SUY;
    else
      return 0.0f;
-
  }
 
  public String getDocumentation(){
@@ -429,7 +433,6 @@ public class Center extends GenericTOF_SAD{
       Res.append( "operator(ViewArray).  The Final element of the returned");
       Res.append( " Vector is a Vector whose elements are minx,maxx,miny and maxy cm.");
 
-
       Res.append( "@assumptions  The pixels within 1.5cm of the Xoffset and ");
       Res.append( "Yoffset are ignored");
 
@@ -437,9 +440,7 @@ public class Center extends GenericTOF_SAD{
       Res.append( "whose distance in the x direction from the X offset is less");
       Res.append( " than 3.5cm and likewise for the y direction");
      
-     
       return Res.toString();
-
-
  }
+
 }//Center
