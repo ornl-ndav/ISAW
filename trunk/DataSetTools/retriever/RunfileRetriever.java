@@ -12,6 +12,9 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.9  2000/07/24 15:50:12  dennis
+ *  Added MonitorPeakArea to monitor DataSet
+ *
  *  Revision 1.8  2000/07/21 20:18:02  dennis
  *  Added tests for null Runfile object which occurs if the file is not opened
  *  successfully.
@@ -338,7 +341,10 @@ public class RunfileRetriever extends    Retriever
      data_set   = ds_factory.getDataSet();
 
      if ( monitor && instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
+     {
        data_set.addOperator( new EnergyFromMonitorDS() );
+       data_set.addOperator( new MonitorPeakArea() );
+     }
 
      data_set.addLog_entry( "Loaded " + title );
      AddDataSetAttributes( data_source_name, data_set );
