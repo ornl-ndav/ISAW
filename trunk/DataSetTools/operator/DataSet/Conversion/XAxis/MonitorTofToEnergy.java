@@ -30,9 +30,8 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.6  2003/01/09 17:34:50  dennis
- *  Added getDocumentation(), main test program and java docs on getResult()
- *  (Chris Bouzek)
+ *  Revision 1.7  2003/01/13 20:28:12  dennis
+ *  Minor documentation fix. (Chris Bouzek)
  *
  *  Revision 1.5  2002/11/27 23:17:04  pfpeterson
  *  standardized header
@@ -65,7 +64,7 @@ import  DataSetTools.viewer.*;
 import  DataSetTools.retriever.*;
 
 /**
- * This operator converts a beammonitor time-of-flight DataSet to energy.  The
+ * This operator converts a beam monitor time-of-flight DataSet to energy.  The
  * DataSet must contain spectra corresponding to monitors along the beam line
  * with attributes giving the initial path length from the source to the
  * sample and the monitor position relative to the sample.  The monitor
@@ -233,7 +232,7 @@ public class MonitorTofToEnergy extends    XAxisConversionOp
   {
     StringBuffer s = new StringBuffer("");
     s.append("@overview This operator converts the X-axis units on a ");
-    s.append("beammonitor DataSet from time-of-flight to energy.\n");
+    s.append("beam monitor DataSet from time-of-flight to energy.\n");
     s.append("@assumptions The DataSet must contain spectra corresponding ");
     s.append("to monitors along the beam line with attributes giving the ");
     s.append("initial path length from the source to the sample and the ");
@@ -241,32 +240,32 @@ public class MonitorTofToEnergy extends    XAxisConversionOp
     s.append("be along the X-axis.  In addition, it is assumed that the ");
     s.append("XScale for the spectra represents the time-of-flight from the ");
     s.append("source to the monitor.\n");
-    s.append("@algorithm Creates a new beammonitor DataSet which has the same ");
+    s.append("@algorithm Creates a new DataSet which has the same ");
     s.append("title as the input DataSet, the same y-values as the input ");
     s.append("DataSet, and whose X-axis units have been converted to energy.  ");
     s.append("The new DataSet also has a message appended to its log ");
     s.append("indicating that a conversion to units of energy on the X-axis ");
     s.append("was done.\n");
-    s.append("@param ds The beammonitor DataSet to which the operation is ");
+    s.append("@param ds The beam monitor DataSet to which the operation is ");
     s.append("applied.\n");
     s.append("@param min_E The minimum energy value to be binned.\n");
     s.append("@param max_E The maximum energy value to be binned.\n");
     s.append("@param num_E The number of \"bins\" to be used between ");
     s.append("min_E and max_E.\n");
-    s.append("@return A new beammonitor DataSet which is the result of ");
+    s.append("@return A new DataSet which is the result of ");
     s.append("converting the input DataSet's X-axis units to energy.\n");
     return s.toString();
   }
 
   /* ---------------------------- getResult ------------------------------- */
   /**
-   *  Converts the input beammonitor DataSet to a DataSet which is identical
+   *  Converts the input beam monitor DataSet to a DataSet which is identical
    *  except that the new DataSet's X-axis units have been converted from
    *  time-of-flight to energy.
    *
-   *  @return DataSet whose X-axis units have been converted from
-   *  time-of-flight to energy.
-   */
+  *  @return DataSet whose X-axis units have been converted from
+  *  time-of-flight to energy.
+  */
   public Object getResult()
   {
                                      // get the current data set
@@ -413,13 +412,12 @@ public class MonitorTofToEnergy extends    XAxisConversionOp
       RunfileRetriever rr = new RunfileRetriever( file_name );
       DataSet ds1 = rr.getDataSet(1);
       ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
-      MonitorTofToEnergy op =
-                         new MonitorTofToEnergy(ds1, min_1, max_1, 100);
+      MonitorTofToEnergy op = new MonitorTofToEnergy(ds1, min_1, max_1, 100);
       DataSet new_ds = (DataSet)op.getResult();
       ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
       System.out.println(op.getDocumentation());
     }
-      catch(Exception e)
+    catch(Exception e)
     {
       e.printStackTrace();
     }
