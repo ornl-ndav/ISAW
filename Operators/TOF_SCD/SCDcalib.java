@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/03/31 21:35:40  dennis
+ *  Added check for empty list of peaks (with hkl's) read from file.
+ *
  *  Revision 1.4  2004/03/15 19:36:55  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -56,6 +59,7 @@ import DataSetTools.dataset.*;
 
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Functions.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.*;
 
@@ -409,6 +413,11 @@ public class SCDcalib extends GenericTOF_SCD
       lattice_params[i] = lat_params[i];
                                                     // load the vector of peaks
     Vector peaks = PeakData.ReadPeaks( peaksfile, runfile ); 
+
+    if ( peaks == null || peaks.size() <= 0 )
+    {
+      return new ErrorString("Failed to read " + peaksfile + " or " + runfile);
+    }
 
     PeakData peak = (PeakData)peaks.elementAt(0);
     double l1 = peak.l1;
