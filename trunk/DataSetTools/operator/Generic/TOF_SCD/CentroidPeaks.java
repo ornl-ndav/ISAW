@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/05/06 16:38:26  pfpeterson
+ * Added multiple detector support.
+ *
  * Revision 1.10  2003/02/06 18:03:27  dennis
  * Added getDocumentation() method.  (Shannon Hintzman)
  *
@@ -49,6 +52,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
 import DataSetTools.instruments.*;
+import DataSetTools.util.ErrorString;
 import DataSetTools.util.SharedData;
 import DataSetTools.retriever.RunfileRetriever;
 import java.util.*;
@@ -145,12 +149,26 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
     Vector  peaks    = (Vector) (getParameter(1).getValue());
     Vector  cpeaks   = new Vector();
     
-    XScale times=data_set.getData_entry(0).getX_scale();
-    int[][] ids=Util.createIdMap(data_set);
-    
+    int detNum=((Peak)peaks.elementAt(0)).detnum();
+    if(detNum<=0) return new ErrorString("Invalid detector number: "+detNum);
+    int[][] ids=Util.createIdMap(data_set,detNum);
+    if(ids==null) return new ErrorString("Could not initialize ids[][]");
+    XScale times=data_set.getData_entry(ids[1][1]).getX_scale();
+    if(times==null) return new ErrorString("Could not determine TOFs");
+
     Peak peak=null;
     for( int i=0 ; i<peaks.size() ; i++ ){
-      peak=Util.centroid((Peak)peaks.elementAt(i),data_set,ids);
+      peak=(Peak)peaks.elementAt(i);
+      if(peak.detnum()!=detNum){
+        detNum=peak.detnum();
+        if(detNum<=0)
+          return new ErrorString("Invalid detector number: "+detNum);
+        ids=Util.createIdMap(data_set,detNum);
+        if(ids==null) return new ErrorString("Could not initialize ids[][]");
+        times=data_set.getData_entry(ids[1][1]).getX_scale();
+        if(times==null) return new ErrorString("Could not determine TOFs");
+      }
+      peak=Util.centroid(peak,data_set,ids);
       peak.time(times);
     }
     
