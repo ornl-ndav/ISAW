@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2004/06/18 19:16:39  rmikk
+ * Eliminated an unused variable
+ *
  * Revision 1.31  2004/03/17 20:25:09  dennis
  * Fixed @see tag that was broken when view components, math and
  * util were moved to gov package.
@@ -248,12 +251,12 @@ public class opMenu extends JMenu{
             MJMenuItem x =(MJMenuItem)( e.getSource());
             int opnum = x.getopnum();
             
-            DataSet dss[];
+            //DataSet dss[];
             
             if( DS == null ) 
-                dss = null;
+              {} // dss = null;
             else 
-                dss = DS.getDataSets();
+              {} //dss = DS.getDataSets();
             
             if( opnum >=0 ){
                 Operator opn = op.getOperator( opnum );  
@@ -261,7 +264,8 @@ public class opMenu extends JMenu{
                // if( opn instanceof IObservable)
                 //    if( iobs != null)
                        // ((IObservable)opn).addIObserver( iobs );
-                JParametersDialog JP = new JParametersDialog( opn, DS, logdoc, 
+                //JParametersDialog JP = 
+                new JParametersDialog( opn, DS, logdoc, 
                                                               iobs,false);
                // if( opn instanceof IObservable)
                     //if( iobs != null)
