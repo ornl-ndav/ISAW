@@ -247,6 +247,8 @@ public class ScalarJForm extends Form
 
       matName = peaksDir + "/" + expName + runNum + ".mat";
       matName = StringUtil.setFileSeparator(matName);
+
+      SharedData.addmsg("ScalarJ is creating scalar.log for " + matName);
       
       //call ScalarJ
       obj = new ScalarJ(matName, delta, searchType).getResult();

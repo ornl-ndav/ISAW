@@ -221,6 +221,9 @@ public class BlindJForm extends Form
       matName = outputDir + "/" + expName + runNum + ".mat";
       matName = StringUtil.setFileSeparator(matName);
       matNameArray.add(matName);
+
+      SharedData.addmsg("BlindJ is creating " + matName + ".");
+      
       //call BlindJ
       obj = new BlindJ(peaksName, seqNums, matName).getResult();
 
@@ -231,7 +234,7 @@ public class BlindJForm extends Form
     SharedData.addmsg("--- BlindJForm finished. ---");
 
     SharedData.addmsg("Matrix Files listed in: ");
-    SharedData.addmsg(matName.toString());
+    SharedData.addmsg(matNameArray.toString());
 
     //set the matrix file array 
     param = (IParameterGUI)super.getParameter(4);
