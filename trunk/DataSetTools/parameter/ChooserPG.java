@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.11  2003/08/28 02:28:11  bouzekc
+ *  Removed setEnabled() method.
+ *
  *  Revision 1.10  2003/08/28 01:40:28  bouzekc
  *  Fixed bug in constructor where the passed in value was not added.
  *
@@ -207,14 +210,5 @@ abstract public class ChooserPG extends ParameterGUI{
       init_vec.add(init_values[i]);
     }
     initGUI(init_vec);
-  }
-
-  /**
-   * Set the enabled state of the EntryWidget. This produces a more
-   * pleasant effect that the default setEnabled of the widget.
-   */
-  public void setEnabled(boolean enabled){
-    this.enabled=enabled;
-    if(entrywidget!=null) entrywidget.setEnabled(this.enabled);
   }
 }
