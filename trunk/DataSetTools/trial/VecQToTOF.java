@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/03/10 17:52:44  dennis
+ *  Put print in if (debug) statement
+ *
  *  Revision 1.15  2004/03/01 06:16:14  dennis
  *  Fixed bug in QtoRowColChan().  Now properly returns null if
  *  call to QtoRowColTOF() returns null.
@@ -258,7 +261,8 @@ public class VecQToTOF
 
     if ( !right_detector_found )
     {
-      System.out.println("Didn't find right detector");
+      if ( debug )
+        System.out.println("Didn't find ith area detector, i = " + det_num );
       throw new InstantiationError("ERROR:Didn't find area det#"+det_num);
     }
 
@@ -498,7 +502,7 @@ public class VecQToTOF
   public float[] QtoRowColTOF( Vector3D q_vec )
   {
     if ( debug )
-     {
+    {
       System.out.println("**************************************************");
       System.out.println("Using Grid #" + grid.ID() );
     }
