@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.38  2004/07/01 18:58:25  millermi
+ * - Added comments to loadData(), specifying the format of header
+ *   information.
+ *
  * Revision 1.37  2004/06/01 21:56:41  millermi
  * - Switched the label and unit values.
  * - Relabeled the integration control.
@@ -537,7 +541,25 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   }
  
  /**
-  * This method loads a 200 x 200 data array from the file specified.
+  * This method loads a data array from the file specified. If no header
+  * information is provided, the data is assumed to be a 200 x 200 array.
+  * <BR><BR>
+  * Header information must be listed at the top of the data file, and follow
+  * the format below:
+  * <BR><BR>
+  * # Value Key: Value
+  * <BR><BR>
+  * Example: <B>
+  * <BR>   # Row: 20
+  * <BR>   # Column: 25
+  * <BR>   # X Label: X_Label
+  * <BR>   # X Units: SomeUnits </B>
+  * <BR> This specifies there is a 20 x 25 array of data. This also specifies
+  * the labels and units for X axis to be X_Label and SomeUnits, repectively.
+  * <BR><BR>
+  * <I>Possible Value Keys (not case sensitive):</I> 
+  * <BR> row, column, x label, y label,
+  * z label, x units, y units, z units.
   *
   *  @param  filename Filename of the data file being loaded.
   *  @return true if load was successful.
