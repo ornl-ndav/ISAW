@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/07/09 23:15:40  bouzekc
+ * Constructor now attempts to find the given filename. If not
+ * found, it looks in the Script_Path directory.
+ *
  * Revision 1.4  2003/07/09 22:25:11  bouzekc
  * Now implicitly uses OperatorForm's getTitle() to set the
  * Form title.
@@ -51,7 +55,9 @@ package DataSetTools.wizard;
 
 import DataSetTools.operator.PyOperatorFactory;
 
-import DataSetTools.util.FilenameUtil;
+import DataSetTools.util.*;
+
+import java.io.File;
 
 
 /**
@@ -71,6 +77,16 @@ public class JyScriptForm extends OperatorForm {
    */
   public JyScriptForm( String filename ) {
     super(  );
+
+    if( !( new File( filename ).exists(  ) ) ) {
+      String jyScriptsDir = SharedData.getProperty( "Script_Path" ) + "/";
+
+      //Script.java, which is ultimately called to create a new Jython script, uses
+      //forward slashes.  We are sending the String to setFileSeparator, however,
+      //to remove extra slashes.
+      filename = StringUtil.setFileSeparator( jyScriptsDir + filename );
+    }
+
     form_op = new PyOperatorFactory(  ).getInstance( filename );
     setDefaultParameters(  );
   }
