@@ -29,6 +29,11 @@
  *
  *
  * $Log$
+ * Revision 1.9  2003/07/03 15:19:12  bouzekc
+ * Added and formatted class and javadoc comments.  Removed
+ * unused inner protected constructor (this Form has only only
+ * ONE title that it can use).
+ *
  * Revision 1.8  2003/07/03 15:13:15  bouzekc
  * Added log header.
  *
@@ -56,17 +61,19 @@ import java.util.Vector;
 
 
 /**
- *  This class defines a form for loading histograms from
- *  multiple runfiles.  In addition to loading the user
- *  specified histogram, the corresponding monitor DataSet
- *  is also loaded.
+ * This class defines a form for loading histograms from multiple runfiles.  In
+ * addition to loading the user specified histogram, the corresponding monitor
+ * DataSet is also loaded.
  */
 public class LoadMultiHistogramsForm extends Form implements Serializable {
+  //~ Static fields/initializers ***********************************************
+
   protected static int RUN_NUMBER_WIDTH = 5;
 
+  //~ Constructors *************************************************************
+
   /**
-   *  Construct a LoadMultiHistogramsForm.
-   *
+   * Construct a LoadMultiHistogramsForm.
    */
   public LoadMultiHistogramsForm(  ) {
     super( "Open multiple histograms" );
@@ -74,66 +81,54 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
   }
 
   /**
-   *  Subclass constructor.
+   * Full constructor.  Uses the input parameters to create a
+   * LoadMultiHistogramsForm without the need to externally set the
+   * parameters.  It also sets the parameters needed for the associated
+   * monitor DataSets.  getResult() may be called immediately after using this
+   * constructor.
    *
-   */
-  protected LoadMultiHistogramsForm( String title ) {
-    super( title );
-    this.setDefaultParameters(  );
-  }
-
-  /**
-   *
-   *  Full constructor.  Uses the input parameters to create
-   *  a LoadMultiHistogramsForm without the need to externally
-   *  set the parameters.  It also sets the parameters needed
-   *  for the associated monitor DataSets.  getResult() may
-   *  be called immediately after using this constructor.
-   *
-   *  @param run_nums         List of integers representing
-   *                          the runfile numbers which you
-   *                          wish to load histograms from.
-   *
-   *  @param data_dir         The directory from which to load
-   *                          the runfiles from.
-   *
-   *  @param inst_name        The instrument name (e.g. HRCS)
-   *
-   *  @param hist_num         The histogram number you wish
-   *                          to load.
-   *
-   *  @param g_mask           The group mask to apply.  If
-   *                          left blank, none will be applied.
-   *
-   *  @param histograms       The Vector which you wish to store
-   *                          the loaded histograms in.
+   * @param run_nums List of integers representing the runfile numbers which
+   *        you wish to load histograms from.
+   * @param data_dir The directory from which to load the runfiles from.
+   * @param inst_name The instrument name (e.g. HRCS)
+   * @param hist_num The histogram number you wish to load.
+   * @param g_mask The group mask to apply.  If left blank, none will be
+   *        applied.
+   * @param histograms The Vector which you wish to store the loaded histograms
+   *        in.
    */
   public LoadMultiHistogramsForm( 
-    String run_nums,  // 0
-    String data_dir,  // 1
-    String inst_name,  // 2
-    int hist_num,  // 3
-    int g_mask,  // 4
-    Vector histograms )  // 5
-   {
+    String run_nums, String data_dir, String inst_name, int hist_num, int g_mask,
+    Vector histograms ) {
     this(  );
-    getParameter( 0 ).setValue( run_nums );
-    getParameter( 1 ).setValue( data_dir );
-    getParameter( 2 ).setValue( inst_name );
-    getParameter( 3 ).setValue( new Integer( hist_num ) );
-    getParameter( 4 ).setValue( new Integer( g_mask ) );
-    getParameter( 5 ).setValue( histograms );
+    getParameter( 0 )
+      .setValue( run_nums );
+    getParameter( 1 )
+      .setValue( data_dir );
+    getParameter( 2 )
+      .setValue( inst_name );
+    getParameter( 3 )
+      .setValue( new Integer( hist_num ) );
+    getParameter( 4 )
+      .setValue( new Integer( g_mask ) );
+    getParameter( 5 )
+      .setValue( histograms );
+  }
 
-    // monitor DataSets not setable <- <- <- <-
+  //~ Methods ******************************************************************
+
+  /**
+   * @return the String command used for invoking this Form in a Script.
+   */
+  public String getCommand(  ) {
+    return "LOADMULTIHISTFORM";
   }
 
   /**
-   *
-   *  Attempts to set reasonable default parameters for this form.
-   *  Included in this is the setting of the monitor DataSet list
-   *  corresponding to the respective runfiles, as well as the
-   *  corresponding type of the parameter (editable, result, or
-   *  constant).
+   * Attempts to set reasonable default parameters for this form. Included in
+   * this is the setting of the monitor DataSet list corresponding to the
+   * respective runfiles, as well as the corresponding type of the parameter
+   * (editable, result, or constant).
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
@@ -148,10 +143,7 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
   }
 
   /**
-   *
-   *  Documentation for this OperatorForm.  Follows javadoc
-   *  conventions.
-   *
+   * @return documentation for this OperatorForm.  Follows javadoc conventions.
    */
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer(  );
@@ -191,19 +183,10 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
   }
 
   /**
-   *  Returns the String command used for invoking this
-   *  Form in a Script.
-   */
-  public String getCommand(  ) {
-    return "LOADMULTIHISTFORM";
-  }
-
-  /**
-   *  Loads the specifed runfile's DataSets into an ArrayPG.  Each
-   *  runfile's DataSet array occupies a space in the ArrayPG's
-   *  Vector.
+   * Loads the specifed runfile's DataSets into an ArrayPG.  Each runfile's
+   * DataSet array occupies a space in the ArrayPG's Vector.
    *
-   *  @return A Boolean indicating success or failure.
+   * @return A Boolean indicating success or failure.
    */
   public Object getResult(  ) {
     SharedData.addmsg( "Executing... " + super.getTitle(  ) );
@@ -234,7 +217,8 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
 
     //get instrument name
     param       = ( IParameterGUI )super.getParameter( 2 );
-    inst_name   = param.getValue(  ).toString(  );
+    inst_name   = param.getValue(  )
+                       .toString(  );
 
     //get histogram number
     param   = ( IParameterGUI )super.getParameter( 3 );
@@ -243,7 +227,8 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
     //get group mask
     //how should I validate this?
     param    = ( IParameterGUI )super.getParameter( 4 );
-    g_mask   = param.getValue(  ).toString(  );
+    g_mask   = param.getValue(  )
+                    .toString(  );
 
     //get the DataSet array
     histograms   = ( ArrayPG )super.getParameter( 5 );
@@ -299,8 +284,8 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
       newPercent += increment;
       super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
     }
-      //for
 
+    //for
     histograms.setValid( true );
     monitors.setValid( true );
 
@@ -309,4 +294,3 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
     return Boolean.TRUE;
   }
 }
-  //class
