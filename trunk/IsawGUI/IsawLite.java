@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/11/29 06:36:14  bouzekc
+ * Removed unused variable oArray from line 468.
+ *
  * Revision 1.9  2003/11/16 19:01:22  bouzekc
  * Added capability to execute Operators remotely in noGUI mode.
  *
@@ -465,7 +468,6 @@ public class IsawLite{
 	int[] ilist = IntList.ToArray(part);
 	if ( ilist.length > 0 ) {
 	  Integer[] olist = new Integer[ilist.length];
-	  Vector oArray = new Vector();
 	  for (int ii = 0; ii < ilist.length;ii++){
 	    olist[ii] = new Integer(ilist[ii]);
 	    ov.add(olist[ii]);
