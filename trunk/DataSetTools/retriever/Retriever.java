@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/10/10 21:10:50  dennis
+ *  Added method getDataSet( data_set_num, ids[] ).  At this base class
+ *  level, it just calls getDataSet( data_set_num ), and issues a warning
+ *  message, so that derived classes can still function without implementing
+ *  this method.  All derived classes should eventually implement this.
+ *
  *  Revision 1.8  2001/08/09 15:22:52  dennis
  *  Added debug_retriever flag.
  *
@@ -119,6 +125,33 @@ public abstract class Retriever implements Serializable
      *         DataSet exists.
      */
     public abstract DataSet getDataSet( int data_set_num );
+
+  
+    /* -------------------------- getDataSet ---------------------------- */
+    /**
+     *  Get a DataSet from the current data source containing only the the 
+     *  specified group IDs from within the specified DataSet.
+     *  NOTE: The list of group IDs must be in increasing order.
+     *
+     *  @param  data_set_num  The number of the DataSet in this runfile
+     *                        that is to be read from the runfile.  data_set_num
+     *                        must be between 0 and numDataSets()-1
+     *
+     *  @param  ids           The list of group IDs from the specified DataSet
+     *                        that are to be read from the runfile and returned
+     *                        in the DataSet, in increasing order.
+     *
+     *  @return a DataSet containing only the specified groups, if the 
+     *          data_set_num and ID list specify a non-empty set of 
+     *          Data blocks, or null otherwise.
+     */
+    public DataSet getDataSet( int data_set_num, int ids[] )
+    {
+      System.out.println("Warning: getDataSet( data_set_num, ids ) not " +
+                         "implemented in this retriever, defaulting " +
+                         "getting all ids " );
+      return getDataSet( data_set_num );
+    }
 
 
     /* ---------------------------- getType ------------------------------ */
