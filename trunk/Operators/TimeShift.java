@@ -1,4 +1,4 @@
-/*
+  /*
  * File:  TimeShift.java
  *
  * Copyright (C) 2004 Tom Worlton
@@ -29,6 +29,11 @@
  *
  * Modified:
  *
+ * $Log$
+ * Revision 1.2  2004/04/28 19:12:18  dennis
+ * Revised version, with debug flag false. (Tom Worlton)
+ *
+ *
  * Initial version  2004/4/15 tworlon
  *
  *
@@ -51,10 +56,12 @@ public class TimeShift implements Wrappable {
   /* @param ds Sample DataSet to correct.
    * @param rep_rate  Source repetition rate
    * @param tshift  time(microseconds) of shift point.
+   * @param new_ds Whether to make a new DataSet.
    */
   public DataSet ds;
   public float rep_rate = 30.0f;
   public float tshift = 12000.0f;
+  public boolean mk_new_ds = true;
 
   //~ Methods ******************************************************************
 
@@ -88,6 +95,7 @@ public class TimeShift implements Wrappable {
     s.append( "@param ds Sample DataSet to correct for frame overlap.\n" );
     s.append( "@param rep_rate The source repetition rate.\n" );
     s.append( "@param tshift  The number of microseconds before the end of overlap.\n" );
+    s.append( "@param new_ds  Whether to make a new data set (must be true).\n");
     s.append( "@return DataSet corrected for frame overlap.\n" );
     s.append( "@error Returns an error if the specified DataSet ds is null.\n" );
 
@@ -95,8 +103,7 @@ public class TimeShift implements Wrappable {
   }
 
   /**
-   * Shifts the time scale of spectra within a dataset to correct for 
-   * frame overlap.
+   * Shifts the time scale of spectra within a dataset to correct for frame overlap.
    *
    * @return The modified DataSet.
    */
@@ -115,8 +122,13 @@ public class TimeShift implements Wrappable {
     if(DEBUG)
       System.out.println("Maximum id = " + MAX_ID);
     int first = -1;
-    if(DEBUG)
-      first = 4;
+    int last = 10000;
+    if(DEBUG) {
+      first = 2;
+      last=MAX_ID - 2;
+    }
+    float period = 1000000.0f/rep_rate;
+
     for( int id = 1; id <= MAX_ID; id++ ) {
       Data det = null;
       det = ds.getData_entry_with_id( id );
@@ -126,67 +138,75 @@ public class TimeShift implements Wrappable {
         continue;
       }
       XScale old = det.getX_scale();
-      float y_old[] = det.getCopyOfY_values();
-      float period = 1000000.0f/rep_rate;
+      float y_old[]     = det.getCopyOfY_values();
+      int old_num_y = y_old.length;
+      if(DEBUG && id < first)
+        System.out.println("old_num_y = " + old_num_y);
       float old_start_x = old.getStart_x();
-      float old_end_x = old.getEnd_x();
-      if(id <= first)
-        System.out.println("----- " + id + " -----");
-      if(id < first)
-        System.out.println("old start/end = " + old_start_x + "/" + old_end_x);
-      float old_num_x = old.getNum_x();
-      float step = (old_end_x - old_start_x);
-      if(old_num_x > 1)
-        step = (old_end_x-old_start_x)/(old_num_x-1.0f);
-      if(id < first)  {
-        System.out.println("old num_x =" + old_num_x);
-        System.out.println("Step size = " + step);
-      }
-//      float start_x = old_start_x + tshift;
-//      float end_x = tshift + period;
-      float start_x = tshift;
-      float end_x = period + tshift;
-      float deltat = end_x - start_x;
-      if(id < first)
-        System.out.println("new start/end = " + start_x + "/" + end_x);
-      int iframe = (int) (period/step+ 0.5);      
-      int num_x = (int) (deltat/step+0.5);
-      if(id < first)
-        System.out.println("new num_x =" + num_x);
-      UniformXScale newx = new UniformXScale(start_x, end_x, num_x);
-      int i1 = (int) ((tshift - old_start_x)/step);
-      int i2 = (int) ((old_end_x - old_start_x)/step);
-//  Get unshifted data and define new array
-      float y_values[] = new float[num_x];
-
-// Shift non-overlapped data to the beginning
-      if(id < first) {
-        System.out.println("Shifting non-overlapped data (" + i1 + " to " + i2 + ")");
-        System.out.println("by " + i1 + " channels.");
-      }
-      for( int i=i1; i<i2; i++) {
-        y_values[i-i1] = y_old[i];
+      float old_end_x   = old.getEnd_x();
+//      int   old_num_x   = old.getNum_x();
+      float step        = (old_end_x - old_start_x);
+      if(old_num_y > 1)
+        step = (old_end_x-old_start_x)/(old_num_y);
+      if(DEBUG && id < first)
+        System.out.println("step size = " + step);
+//  We now have all data from the old Data/XScale
+      if(id < first || id > last)  {
+        System.out.println(id + " old start_x, end_x, num_y =" + 
+                           old_start_x + "-" + old_end_x + "/" + old_num_y);
       }
 
-// Zero array for measurement gap (between old_end_x and period)
-      if(id < first) {
-        System.out.println("Zeroing gap area channels (" + i2 + " to " + iframe + ")");
-        System.out.println("shifted left by " + i1 + " channels.");
-      }
-      for(int i = i2; i< iframe; i++) {
-        y_values[i-i1] = 0.0f;
-      }
 
-// Shift overlapped data to proper time position
-      if(id < first) {
-         System.out.println("Shifting overlapped channels to end of frame");
-         System.out.println("Channels =" + (iframe-i1) + " to " + iframe);
+//  Get unshifted data and define new array, XScale and Data
+      float y_values[];
+      UniformXScale newx;
+      Data newdata = null;
+//    Shift sections of data
+      if(tshift > old_start_x && tshift < old_end_x) {
+//      Calculate new Xscale to cover a shifted full time frame
+        float start_x = tshift;
+        float end_x = period + tshift;
+        int num_y = (int) ((end_x - start_x)/step);
+        end_x = step*num_y + start_x;  //  make end_x end on a channel boundary
+        num_y = (int) ((end_x - start_x)/step);  //recalculate num_y 
+        y_values = new float[num_y];
+        if(id < first  || id > last) {
+          System.out.println(id + " Creating new XScale with start_x, end_x, num_y = "
+                              + start_x + " - " + end_x + ", " + num_y);
+        }
+        newx = new UniformXScale(start_x, end_x, num_y+1);  //there is one more x than y
+        int ns1 = (int) ((tshift - old_start_x)/step);
+        int ns2 = old_num_y - ns1;
+        int ngap = (int) (period/step + 0.5) - old_num_y;
+        if(id< first || id > last)
+          System.out.println("Shifting the first " + ns1 + " channels by " + period + " microseconds");
+//      Shift non-overlapped data ( tshift < t < old_end_x) to start of array
+        for( int i=0; i<ns2; i++) {
+          y_values[i] = y_old[i+ns1];
+        }
+//      put overlapped data after non-overlapped data and gap data
+        for( int i = ns2+ngap; i < num_y; i++) {
+          y_values[i] = y_old[i-ns2-ngap];
+        }
+        newdata = Data.getInstance(newx, y_values, id);
       }
-      for( int i = 0; i<i1; i++) {
-        y_values[i+iframe-i1] = y_old[i];
+      else {  //just add a time shift to x values and don't change y_values
+        float start_x = old_start_x + tshift;
+        float end_x = old_end_x + tshift;
+        int num_y = old_num_y;
+        newx = new UniformXScale(start_x, end_x, num_y+1);  //there is one more x than y
+        y_values = y_old;
+//        y_values = new float[num_y];
+//        for( int i = 0; i< num_y; i++) {
+//          y_values[i] = y_old[i];
+//        }
+        newdata = Data.getInstance(newx, y_values, id);
+        if(DEBUG && id < first) {
+          System.out.println("Shifting data by " + tshift);
+          System.out.println(id + " new start_x, end_x, num_y =" + 
+                           start_x + "-" + end_x + "/" + num_y);
+        }
       }
-
-      Data newdata = Data.getInstance(newx, y_values, id);
       AttributeList atlist = det.getAttributeList();
       newdata.setAttributeList( atlist );
       new_ds.addData_entry(newdata);
