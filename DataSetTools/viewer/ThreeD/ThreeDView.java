@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2002/08/02 15:34:00  dennis
+ * improved handling of POINTED_AT_CHANGED messages
+ *
  * Revision 1.24  2002/07/24 23:20:36  dennis
  * Now updates X-Conversions table when POINTED_AT_CHANGED
  * message is received.
@@ -178,6 +181,7 @@ public class ThreeDView extends DataSetViewer
   private String  group_draw_mode     = GROUP_MARKER_SMALL;
   private String  detector_draw_mode  = DETECTOR_NONE;
   private float   last_pointed_at_x   = Float.NaN;
+  private boolean redraw_cursor       = true;
   private boolean notify_ds_observers = true;
 
   private ThreeD_JPanel            threeD_panel      = null; 
@@ -274,27 +278,31 @@ public void redraw( String reason )
         System.out.println("last = " + last_pointed_at_x );
       }
 
-      if ( ds.getPointedAtX() != Float.NaN      &&
-           ds.getPointedAtX() != last_pointed_at_x )
-      {
-        last_pointed_at_x = ds.getPointedAtX();
-        notify_ds_observers = false;             // since we are setting the
-                                                 // frame controller by request,
-                                                 // don't notify ds observers
-        frame_control.setFrameValue( last_pointed_at_x );
-      }
-
       int index = ds.getPointedAtIndex();
       if ( index != DataSet.INVALID_INDEX && last_pointed_at_x != Float.NaN ) 
         conv_table.showConversions( last_pointed_at_x, index );
 
+      if ( ds.getPointedAtX() != Float.NaN      &&
+           ds.getPointedAtX() != last_pointed_at_x )
+      {
+        last_pointed_at_x = ds.getPointedAtX();
+        frame_control.setFrameValue( last_pointed_at_x );
+        redraw_cursor = false;
+      }
+
       Vector3D detector_location = group_location( ds.getPointedAtIndex() );
       Point   pixel_point;
-      if ( detector_location != null )
+      if ( detector_location != null && redraw_cursor )
       {
         pixel_point = threeD_panel.project( detector_location );
         threeD_panel.set_crosshair( pixel_point );
       }
+
+      notify_ds_observers = false;            // since we are setting the
+                                              // frame controller by request,
+                                              // don't notify ds observers
+
+      redraw_cursor = true;          // just skip drawing for one notification
    }
    else if ( reason.equals( XScaleChooserUI.N_STEPS_CHANGED ) ||
              reason.equals( XScaleChooserUI.X_RANGE_CHANGED )   )
@@ -1122,6 +1130,7 @@ private class ViewMouseMotionAdapter extends MouseMotionAdapter
        if ( index >= 0 && index < ds.getNum_entries() ) 
        {
          ds.setPointedAtIndex( index );
+         redraw_cursor = false;
          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
 
          float frame_val = frame_control.getFrameValue();
@@ -1196,6 +1205,7 @@ private class FrameControlListener implements ActionListener
       getState().set_float( ViewerState.POINTED_AT_X, frame_val );
       if ( debug )
         System.out.println("ThreeD viewer CALLING NOTIFY: " + frame_val);
+      redraw_cursor = false;
       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
     }
     notify_ds_observers = true;  // only skip one message from frame control
