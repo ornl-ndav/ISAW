@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/08/10 01:45:03  dennis
+ * Added controls to separately turn iso-surfaces, detector coverage
+ * regions and hkl marks on/off.  Added separate threshold control for
+ * iso-surfaces.  Added reset button to reset the center of the view
+ * to the origin.
+ *
  * Revision 1.10  2004/08/09 15:27:00  dennis
  * Moved code that assigns hkl values to peaks using the currently
  * selected plane normal directions, into it's own private method.
@@ -261,6 +267,9 @@ public class GL_RecipPlaneView
   public static final String CONTOUR_OBJECTS     = "Contours_";
   public static final String BOUNDARY_OBJECTS    = "Boundaries_";
   public static final String MARK_OBJECTS        = "Marks_";
+
+  public static final String UNDEFINED = "undefined";
+
   public static final String ORIGIN = " origin ";
   public static final String VEC_1  = " (+)";
   public static final String VEC_2  = " (*)";
@@ -271,6 +280,7 @@ public class GL_RecipPlaneView
   public static final int    SLICE_STEPS = 700;
 
                                                     // flags for various options
+  private boolean iso_surface_shown         = false;
   private boolean detector_boundaries_shown = false;
   private boolean hkl_marks_shown           = false;
   private boolean contours_shown            = false;
@@ -280,18 +290,21 @@ public class GL_RecipPlaneView
                                          // scaling.
   private float SLICE_SIZE_IN_Q = 20;
   private int   FFT_DATA_LENGTH = 512;
-  private int   SLIDER_DEF      = 20;
-  private int   SLIDER_MIN      = 1;
+  private int   SLIDER_DEF      = 60;
+  private int   SLIDER_MIN      = 5;
   private int   SLIDER_MAX      = 250;
-  private float thresh_scale    = 20;
-  private float LSQ_THRESHOLD   = 0.10f;
-  private final float YELLOW[]        = { 0.8f, 0.8f, 0.2f };
-  private final float CYAN[]          = { 0.2f, 0.8f, 0.8f };
-  private final float GRAY[]  = { 0.4f, 0.4f, 0.4f };
-  private final float RED[]   = { 0.8f, 0.3f, 0.3f };
-  private final float GREEN[] = { 0.3f, 0.8f, 0.3f };
-  private final float BLUE[]  = { 0.3f, 0.3f, 0.8f };
+  private float peak_threshold     = SLIDER_DEF;
+  private float contour_threshold  = SLIDER_DEF;
 
+  private float LSQ_THRESHOLD   = 0.10f;
+  private final float YELLOW[]  = { 0.8f, 0.8f, 0.2f };
+  private final float CYAN[]    = { 0.2f, 0.8f, 0.8f };
+  private final float GRAY[]    = { 0.4f, 0.4f, 0.4f };
+  private final float RED[]     = { 0.8f, 0.3f, 0.3f };
+  private final float GREEN[]   = { 0.3f, 0.8f, 0.3f };
+  private final float BLUE[]    = { 0.3f, 0.3f, 0.8f };
+
+  private FinishJFrame scene_f;
   private ImageFrame2 h_frame = null;
   private ImageFrame2 k_frame = null;
   private ImageFrame2 l_frame = null;
@@ -311,7 +324,9 @@ public class GL_RecipPlaneView
   private Color           colors[];
   private float           rgb_colors[][];
       
-  private JSlider         threshold_slider;
+  private JSlider         peak_threshold_slider;
+  private JSlider         contour_threshold_slider;
+
   private JLabel          q_readout;
   private SimpleVectorReadout   origin_vec;
   private SimpleVectorReadout   vec_1;
@@ -368,7 +383,7 @@ public class GL_RecipPlaneView
 
   public GL_RecipPlaneView()
   {
-    FinishJFrame scene_f = new FinishJFrame("Reciprocal Lattice Plane Viewer");
+    scene_f = new FinishJFrame("Reciprocal Lattice Plane Viewer");
     scene_f.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 
     JPanel q_panel = new JPanel();
@@ -376,23 +391,25 @@ public class GL_RecipPlaneView
     vec_Q_space = new ThreeD_GL_Panel();
     controller  = new AltAzController( 45, 45, 1, 100, 25 );
 
-    threshold_slider = new JSlider(SLIDER_MIN,SLIDER_MAX,SLIDER_DEF);
-    threshold_slider.setMajorTickSpacing(20);
-    threshold_slider.setMinorTickSpacing(5);
-    threshold_slider.setPaintTicks(true);
+    peak_threshold_slider = new JSlider(SLIDER_MIN,SLIDER_MAX,SLIDER_DEF);
+    peak_threshold_slider.setMajorTickSpacing(20);
+    peak_threshold_slider.setMinorTickSpacing(5);
+    peak_threshold_slider.setPaintTicks(true);
     TitledBorder border = new TitledBorder( LineBorder.createBlackLineBorder(),
-                                            "Threshold = " + SLIDER_DEF );
+                                    "Peaks Threshold = " + SLIDER_DEF );
     border.setTitleFont( FontUtil.BORDER_FONT );
-    threshold_slider.setBorder( border );
+    peak_threshold_slider.setBorder( border );
 
-    JButton apply_button = new JButton("Calc FFTs");
-    Box thresh_panel = new Box( BoxLayout.X_AXIS );
-    thresh_panel.add( threshold_slider ); 
-    thresh_panel.add( apply_button ); 
+    contour_threshold_slider = MakeSlider("Iso-surface Threshold",
+                                           new ContourThresholdScaleHandler());
 
-    q_readout = new JLabel("undefined");
+    JButton calc_fft_button = new JButton("Calculate FFTs of Projections");
 
-    origin_vec  = new SimpleVectorReadout( ORIGIN );
+    q_readout = new JLabel( UNDEFINED );
+
+    origin_vec  = new SimpleVectorReadout( ORIGIN, 
+                                           "Select",
+                                           new Vector3D(0,0,0));
     origin_vec.setVector( new Vector3D(0,0,0) );
     vec_1  = new SimpleVectorReadout( VEC_1, "Select +" );
     vec_2  = new SimpleVectorReadout( VEC_2, "Select *" );
@@ -409,9 +426,25 @@ public class GL_RecipPlaneView
     q_panel.setLayout( new GridLayout(1,1) );
     q_panel.add( q_readout );
 
+    JPanel checkbox_panel = new JPanel();
+    checkbox_panel.setLayout( new GridLayout( 4, 1 ) );
+    JCheckBox show_iso_surface = new JCheckBox( "Iso-surface" );
+    JCheckBox show_coverage    = new JCheckBox( "Detector Coverage" );
+    JCheckBox show_integer_hkl = new JCheckBox( "Integer HKL points" );
+
+    show_iso_surface.addActionListener( new IsoSurfaceListener() );
+    show_coverage.addActionListener( new DetectorCoverageListener() );
+  
+    checkbox_panel.add( show_iso_surface );
+    checkbox_panel.add( show_coverage );
+    checkbox_panel.add( show_integer_hkl );
+    checkbox_panel.add( calc_fft_button );
+
     Box control_panel = new Box( BoxLayout.Y_AXIS );
     control_panel.add( controller );
-    control_panel.add( thresh_panel );
+    control_panel.add( peak_threshold_slider );
+    control_panel.add( contour_threshold_slider );
+    control_panel.add( checkbox_panel );
     control_panel.add( q_panel );
     control_panel.add( origin_vec );
     control_panel.add( vec_1 );
@@ -464,17 +497,11 @@ public class GL_RecipPlaneView
     ViewControlListener c_listener = new ViewControlListener( vec_Q_space );
     controller.addActionListener( c_listener );
 
-    WindowShower shower = new WindowShower( scene_f );
-    EventQueue.invokeLater( shower );
-    shower = null;
+    calc_fft_button.addActionListener( new CalcFFTButtonHandler() );
 
-    apply_button.addActionListener( new ThresholdApplyButtonHandler() );
-
-    threshold_slider.addChangeListener( new ThresholdScaleEventHandler() );
+    peak_threshold_slider.addChangeListener( new PeakThresholdScaleHandler() );
     vec_Q_space.getDisplayComponent().addMouseListener( 
                  new ViewMouseInputAdapter() );
-//    vec_Q_space.getDisplayComponent().addMouseMotionListener( 
-//                 new ViewMouseInputAdapter() );
 
     ReadoutListener listener = new ReadoutListener();
     origin_vec.addActionListener( listener );
@@ -489,13 +516,13 @@ public class GL_RecipPlaneView
     show_lat_param.addActionListener( new LatticeParameterListener() );
     write_file.addActionListener( new WriteFileListener() );
 
-    Redraw();
-
     vec_q_transformer = new Vector();
     data_sets = new Vector();
     all_peaks = new Vector();
 
-    Redraw();
+    WindowShower shower = new WindowShower( scene_f );
+    EventQueue.invokeLater( shower );
+    shower = null;
   }
 
 
@@ -548,6 +575,7 @@ public class GL_RecipPlaneView
     }
   }
 
+
   /* -------------------- applyCalibrations --------------------------- */
 
   public void applyCalibrations()
@@ -555,6 +583,7 @@ public class GL_RecipPlaneView
      for ( int i = 0; i < data_sets.size(); i++ )
        applyCalibration( (DataSet)data_sets.elementAt(i) );
   }
+
 
   /* --------------------- applyCalibration ---------------------------- */
 
@@ -836,9 +865,10 @@ public class GL_RecipPlaneView
 
   public void SetThresholdScale( int value )
   {
-    thresh_scale = Math.abs( value );
-    threshold_slider.setValue(value);
+    peak_threshold = Math.abs( value );
+    peak_threshold_slider.setValue(value);
   }
+
 
 /* ---------------------------------------------------------------------
  *
@@ -1063,7 +1093,7 @@ public class GL_RecipPlaneView
      all_peaks = new Vector();
      for ( int i = 0; i < vec_q_transformer.size(); i++ )
      {
-       GL_Shape non_zero_objs[] = getPeaks(i,thresh_scale);
+       GL_Shape non_zero_objs[] = getPeaks( i, peak_threshold );
        vec_Q_space.setObjects( PEAK_OBJECTS+i, non_zero_objs);
        System.out.println("Found peaks : " + non_zero_objs.length );
      }
@@ -1101,13 +1131,13 @@ public class GL_RecipPlaneView
    *  Get an array of peaks from the specified grid, based on the specified
    *  threshold scale factor.
    *
-   *  @param index         The index of the DataGrid in the list. 
-   *  @param thresh_scale  The absolute threshold in counts.
+   *  @param index            The index of the DataGrid in the list. 
+   *  @param peak_threshold   The absolute threshold in counts.
    *
    *  @return an array of ThreeD_Objects representing the points above the
    *                      threshold.
    */
-  private GL_Shape[] getPeaks( int index, float thresh_scale )
+  private GL_Shape[] getPeaks( int index, float peak_threshold )
   {
       Data  d;
       float t;
@@ -1157,6 +1187,7 @@ public class GL_RecipPlaneView
 
       System.out.println("Discarding " + edge_pix + " edge rows and columns");
 
+//    float base_levels[] = getBaseLevels( grid, 10 );
       for ( int row = 1+edge_pix; row <= grid.num_rows()-edge_pix; row++ )
         for ( int col = 1+edge_pix; col <= grid.num_cols()-edge_pix; col++ )
         {
@@ -1167,8 +1198,8 @@ public class GL_RecipPlaneView
           ys    = d.getY_values();
           for ( int j = 0; j < ys.length; j++ )
           {
-//            if ( ys[j] > (thresh_scale / 10) * base_levels[j] )
-            if ( ys[j] > thresh_scale )
+//          if ( ys[j] > (peak_threshold / 10) * base_levels[j] )
+            if ( ys[j] > peak_threshold )
             {
               t = (times[j] + times[j+1]) / 2;     // shift by calibrated T)
               q_pos = tof_calc.DiffractometerVecQ(pos,initial_path, t + t0 );
@@ -1179,7 +1210,7 @@ public class GL_RecipPlaneView
 
               if ( keep_peak(pts[0]) )
               {
-                int color_index = (int)(ys[j]*30/thresh_scale);
+                int color_index = (int)( ys[j] * 30 / peak_threshold );
                 if ( color_index > 127 )
                   color_index = 127;
                 c = rgb_colors[ color_index ];
@@ -1654,7 +1685,13 @@ public class GL_RecipPlaneView
 
 
   /* ---------------------- getBaseLevels -------------------------- */
-  
+  /*
+   *  This method calculates threshold levels that vary with TOF, by
+   *  approximating the median value of the measurements in each time
+   *  slice.  NOTE: It seems that simple constant value thresholds actually 
+   *  work better than this.   D.M.
+   */
+/*  
   private float[] getBaseLevels( IDataGrid grid, int width )
   {
     width = 10;
@@ -1699,15 +1736,7 @@ public class GL_RecipPlaneView
       }
 
       java.util.Arrays.sort( sort_list );
-/*
-      if ( i == 10 )
-      {
-        System.out.println("sort list = " );
-        for ( int k = 0; k < sort_list.length; k++ )
-          System.out.print( " " + sort_list[k] );
-        System.out.println("END sort list = " );
-      }
-*/      
+
       levels[i] = sort_list[ sort_list.length/2 ] / (2*width + 1);
       levels[i] = levels[i] + 5*(float)Math.sqrt( levels[i] );
 //    System.out.print( " "+levels[i] );
@@ -1715,6 +1744,7 @@ public class GL_RecipPlaneView
 
     return levels;
   }
+*/
 
 
   /* ----------------------- get_data_points ---------------------------- */
@@ -1760,7 +1790,6 @@ public class GL_RecipPlaneView
 
     return d;
   }
-
 
 
 /* --------------------------- ProjectPointsUniformly --------------------- */
@@ -2010,7 +2039,6 @@ public class GL_RecipPlaneView
   }
 
 
-
 /* ------------------------- refinePlane ----------------------------- */
 /**
  *  Calculate a refined normal vector as a 3 or 4 dimensional vector and
@@ -2103,7 +2131,6 @@ public class GL_RecipPlaneView
 
     return values;
   }
-
 
 
 /* ------------------------- FilterFFTds ------------------------------- */
@@ -2620,6 +2647,24 @@ private void showLatticeParameters( Vector3D a, Vector3D b, Vector3D c )
   System.out.println("-------------------------------------------------------");
 }
 
+
+/* -------------------------- MakeSlider ----------------------------- */
+
+private JSlider MakeSlider( String title, ChangeListener listener )
+{
+  JSlider slider = new JSlider(SLIDER_MIN,SLIDER_MAX,SLIDER_DEF);
+  slider.setMajorTickSpacing(20);
+  slider.setMinorTickSpacing(5);
+  slider.setPaintTicks(true);
+  TitledBorder border = new TitledBorder( LineBorder.createBlackLineBorder(),
+                                    title + " = " + SLIDER_DEF );
+  border.setTitleFont( FontUtil.BORDER_FONT );
+  slider.setBorder( border );
+  slider.addChangeListener( listener );
+  return slider;
+}
+
+
 /* --------------------------------------------------------------------------
  *
  *  PRIVATE CLASSES
@@ -2664,14 +2709,44 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
          }
        }
        else
-         q_readout.setText( "undefined" );
+         q_readout.setText( UNDEFINED );
      }
    }
 }
 
-/* -------------------- ThresholdScaleEventHandler ------------------- */
 
-private class ThresholdScaleEventHandler implements ChangeListener
+/* ---------------------- DetectorCoverageListener ------------------- */
+
+private class DetectorCoverageListener implements ActionListener
+{
+  public void actionPerformed( ActionEvent e )
+  {
+    JCheckBox checkbox = (JCheckBox)e.getSource();
+    ShowBoundaries( checkbox.isSelected() ); 
+    vec_Q_space.Draw();
+  }
+}
+
+
+/* ---------------------- IsoSurfaceListener ------------------- */
+  
+private class IsoSurfaceListener implements ActionListener
+{    
+  public void actionPerformed( ActionEvent e )
+  {
+    JCheckBox checkbox = (JCheckBox)e.getSource();
+    iso_surface_shown = checkbox.isSelected();
+    scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    ShowContours( iso_surface_shown, contour_threshold );
+    vec_Q_space.Draw();
+    scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+  }    
+}      
+
+
+/* -------------------- PeakThresholdScaleHandler ------------------- */
+
+private class PeakThresholdScaleHandler implements ChangeListener
 {
   public void stateChanged(ChangeEvent e)
   {
@@ -2681,29 +2756,52 @@ private class ThresholdScaleEventHandler implements ChangeListener
     {
       int value = slider.getValue();
       TitledBorder border = new TitledBorder(LineBorder.createBlackLineBorder(),
-                                             "Threshold = " + value );
+                                             "Peaks Threshold = " + value );
       border.setTitleFont( FontUtil.BORDER_FONT );
-      threshold_slider.setBorder( border );
+      slider.setBorder( border );
 
-      thresh_scale = value;
-
+      peak_threshold = value;
+      scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
       ExtractPeaks();
-
-      Redraw();
+      vec_Q_space.Draw();
+      scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
   }
 }
 
 
-/* ----------------------- ThresholdApplyButtonHandler ------------------- */
+/* -------------------- ContourThresholdScaleHandler ------------------- */
 
-private class ThresholdApplyButtonHandler implements ActionListener
+private class ContourThresholdScaleHandler implements ChangeListener
+{
+  public void stateChanged(ChangeEvent e) 
+  {
+    JSlider slider = (JSlider)e.getSource();
+  
+    if ( !slider.getValueIsAdjusting() )
+    {
+      int value = slider.getValue();
+      TitledBorder border = new TitledBorder(LineBorder.createBlackLineBorder(),
+                                           "Iso-surface Threshold = " + value );
+      border.setTitleFont( FontUtil.BORDER_FONT );
+      slider.setBorder( border );
+  
+      contour_threshold = value;
+      scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+      ShowContours( iso_surface_shown, contour_threshold );
+      vec_Q_space.Draw();
+      scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
+  }
+}
+
+
+/* ----------------------- CalcFFTButtonHandler ------------------- */
+
+private class CalcFFTButtonHandler implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
-    String action  = e.getActionCommand();
-    System.out.println("Button pressed : " + action );
-    initialize( false );      
     CalculateFFTs();
   }
 }
@@ -2757,7 +2855,6 @@ private class WriteFileListener implements ActionListener
 }
 
 
-
 /* ---------------------- LatticeParameterListener ------------------------ */
 
 private class LatticeParameterListener implements ActionListener
@@ -2801,35 +2898,42 @@ private class ReadoutListener implements ActionListener
 
      if ( action.startsWith( "Select" ) )
      {
-       Vector3D position = vec_Q_space.pickedPoint();
-       if ( position == null || position.length() > 30 )
-       {
-         if ( readout.getTitle().equals(ORIGIN) )      // origin defaults to
-         {
-           readout.setVector( new Vector3D(0,0,0) );   // (0,0,0)
-           position = new Vector3D(0,0,0);
-           controller.setVRP( position );
-         }
-         else
-           readout.setVector( null );
-       }
+       Vector3D position;
+       if ( q_readout.getText().startsWith( UNDEFINED ) )
+         position = null;
        else
-       {
+         position = vec_Q_space.pickedPoint();
+
+       if ( position != null && position.length() < 50 )  // selecting valid 
+       {                                                  // position 
          if ( readout.getTitle().equals(ORIGIN) )
          {
-           readout.setVector( position );              // just move the origin
+           readout.setVector( position );                // just move the origin
            controller.setVRP( position );
          }
-         else                                          // get vector relative
-         {                                             // to the origin
+         else                                            // get vector relative
+         {                                               // to the origin
            Vector3D vec = new Vector3D( position );
            Vector3D start = new Vector3D( origin_vec.getVector() );
            start.multiply( -1 );
            vec.add( start );
            readout.setVector( vec );
          }
+       }
+       else                                              // selecting invalid
+       {                                                 // position
+         if ( readout.getTitle().equals(ORIGIN) )
+         {                                               // reset origin to 
+           position = readout.getDefault();              // default position
+           readout.setVector( position );                
+           controller.setVRP( position );
+         }
+         else                                            // reset to null
+           readout.setVector( null );
        } 
      }
+     else if ( action.startsWith("Reset") && readout.getTitle().equals(ORIGIN))
+       controller.setVRP( origin_vec.getVector() ); 
 
      Redraw();
    }
@@ -3072,14 +3176,15 @@ private class FFTListener implements IObserver
     if ( viewer.threshold.length() > 0 )
       try
       {
-        viewer.thresh_scale = (new Float(viewer.threshold)).floatValue();
-        viewer.thresh_scale = Math.abs( viewer.thresh_scale );
-        if ( viewer.thresh_scale < 3 )
+        viewer.peak_threshold = (new Float(viewer.threshold)).floatValue();
+        viewer.peak_threshold  = Math.abs( viewer.peak_threshold );
+        if ( viewer.peak_threshold < viewer.SLIDER_MIN )
         {
-          viewer.thresh_scale = 20;
-          System.out.println("threshold less than 3 ignored, using default...");
+          viewer.peak_threshold = viewer.SLIDER_DEF;
+          System.out.println("threshold less than " + viewer.SLIDER_MIN +
+                             " ignored, using default...");
         }
-        viewer.SetThresholdScale( (int)viewer.thresh_scale );
+        viewer.SetThresholdScale( (int)viewer.peak_threshold );
       }
       catch ( Exception e )
       {
