@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.51  2003/07/02 22:53:40  bouzekc
+ * Sorted methods according to access rights.
+ *
  * Revision 1.50  2003/07/02 20:05:51  bouzekc
  * Fixed bug in convertXMLToParameters which hit a null pointer
  * exception if curParam.getValue() returned null.
@@ -432,329 +435,229 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Opens a file for input or output.
+   *  Set the message that will be displayed when the user chooses
+   *  the help about option.
    *
-   *  @param saving  A boolean indicating whether you want to open the
-   *                 file for saving (true) or loading (false)
+   *  @param about_message  String giving the message to use for the
+   *                        "Help About" option.
    */
-  private File getFile( boolean saving ) {
-    int result;
-    WizardFileFilter wizFilter = new WizardFileFilter(  );
-    String save_file_abs_path;
+  public void setAboutMessage( String about_message ) {
+    this.about_message = about_message;
+  }
 
-    if( fileChooser == null ) {
-      fileChooser = new JFileChooser(  );
-      fileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
-      fileChooser.setFileFilter( wizFilter );
-    }
+  /**
+   *  Get the help about message for this wizard.
+   *
+   *  @return the String giving the help about message for this wizard.
+   */
+  public String getAboutMessage(  ) {
+    return about_message;
+  }
 
-    //try to remember the previous value the user entered
-    if( ( save_file != null ) && !save_file.toString(  ).equals( "" ) ) {
-      fileChooser.setSelectedFile( save_file );
-    }
+  /**
+   *  Get the form that is currently displayed by the wizard.
+   *
+   *  @return  The currently displayed form.
+   */
+  public Form getCurrentForm(  ) {
+    return getForm( getCurrentFormNumber(  ) );
+  }
 
-    if( saving ) {
-      result = fileChooser.showSaveDialog( save_frame );
+  /**
+   * Get the number of the form currently being shown.
+   */
+  public int getCurrentFormNumber(  ) {
+    return form_num;
+  }
+
+  /**
+   * Get the form at specified index.
+   *
+   * @return The form at the specified index.
+   */
+  public Form getForm( int index ) {
+    if( ( index >= 0 ) && ( index < forms.size(  ) ) ) {
+      return ( Form )forms.elementAt( index );
     } else {
-      result = fileChooser.showOpenDialog( save_frame );
-    }
-
-    if( result == JFileChooser.CANCEL_OPTION ) {
       return null;
     }
-
-    save_file = fileChooser.getSelectedFile(  );
-
-    if( saving ) {
-      save_file_abs_path   = save_file.toString(  );
-
-      //make sure the extension is on there
-      save_file_abs_path   = wizFilter.appendExtension( save_file_abs_path );
-      save_file            = new File( save_file_abs_path );
-    }
-
-    if( saving && save_file.exists(  ) ) {
-      String temp;
-      StringBuffer s = new StringBuffer(  );
-
-      s.append( "You are about to overwrite " );
-      s.append( save_file.toString(  ) );
-      s.append( ".\n  If this is OK, press " );
-      s.append( "<Enter> or click the <OK> button.\n  Otherwise, please " );
-      s.append( "enter a new name or click <Cancel>." );
-      temp = JOptionPane.showInputDialog( s.toString(  ) );
-
-      //if this occurred, the user clicked <Cancel>
-      if( temp == null ) {
-        return null;
-      }
-
-      if( ( temp != null ) && !temp.equals( "" ) ) {
-        temp        = wizFilter.appendExtension( temp );
-        save_file   = new File( 
-            fileChooser.getCurrentDirectory(  ) + "/" + temp );
-      }
-    }
-
-    if( ( save_file == null ) || save_file.getName(  ).equals( "" ) ) {
-      JOptionPane.showMessageDialog( 
-        save_frame, "Please enter a valid file name", "ERROR",
-        JOptionPane.ERROR_MESSAGE );
-
-      return null;
-    } else {
-      return save_file;
-    }
   }
 
   /**
+   *  Set the help message that will be displayed when the user
+   *  requests help with this wizard.
    *
-   *  Write the Forms to a file, using the conc_forms Vector.
-   *  The only things actually written are the Form's
-   *  IParameterGUI types, name, and value in XML format along with
-   *  XML tags for the Form index.
-   *
-   *  @param conc_forms The Vector of Forms to write to a file.
-   *  @param file the File to write to.
+   *  @param help_message  String giving the help message to use for this
+   *                       wizard.
    */
-  private void writeForms( Vector conc_forms, File file ) {
-    StringBuffer s = new StringBuffer(  );
-    Form f;
-
-    //String temp;
-    Object obj;
-    IParameterGUI ipg;
-    FileWriter fw  = null;
-
-    try {
-      fw = new FileWriter( file );
-
-      for( int i = 0; i < conc_forms.size(  ); i++ ) {
-        s.append( "<Form number=" );
-        s.append( i );
-        s.append( ">\n" );
-
-        f = ( Form )conc_forms.elementAt( i );
-
-        for( int j = 0; j < f.getNum_parameters(  ); j++ ) {
-          ipg = ( IParameterGUI )f.getParameter( j );
-          s.append( "<" );
-          s.append( ipg.getType(  ) );
-          s.append( ">\n" );
-          s.append( "<Name>" );
-          s.append( ipg.getName(  ) );
-          s.append( "</Name>\n" );
-          s.append( "<Value>" );
-
-          if( ipg != null ) {  //parameter is not null
-            obj = ipg.getValue(  );
-          } else {  //parameter is null, so set value to null
-            obj = null;
-          }
-
-          if( ( obj == null ) || ( obj.toString(  ).length(  ) <= 0 ) ) {
-            s.append( "emptyString" );
-          } else {
-            s.append( obj.toString(  ) );
-            s.append( "" );
-          }
-
-          s.append( "</Value>\n" );
-          s.append( "<Valid>" );
-          s.append( ipg.getValid(  ) );
-          s.append( "</Valid>\n" );
-          s.append( "</" );
-          s.append( ipg.getType(  ) );
-          s.append( ">\n" );
-        }
-
-        s.append( "</Form>\n" );
-      }
-
-      fw.write( s.toString(  ) );
-    } catch( IOException e ) {
-      e.printStackTrace(  );
-      JOptionPane.showMessageDialog( 
-        save_frame, "Error saving file.  Please rerun the wizard and try again.",
-        "ERROR", JOptionPane.ERROR_MESSAGE );
-    } finally {
-      if( fw != null ) {
-        try {
-          fw.close(  );
-          modified = false;
-        } catch( IOException e ) {
-          //let it drop on the floor
-        }
-      }
-    }
+  public void setHelpMessage( String help_message ) {
+    this.help_message = help_message;
   }
 
   /**
-   *  Loads Forms from a file.  It actually just loads the saved
-   *  IParameterGUI values into the Wizard's Forms' parameters.
+   *  Get the help message for this wizard.
+   *
+   *  @return the String giving the help message for this wizard.
    */
-  private void loadForms( File file ) {
-    char ca;
-    StringBuffer s = new StringBuffer(  );
-    int good       = -1;
-    FileReader fr  = null;
-
-    try {
-      fr   = new FileReader( file );
-
-      good = fr.read(  );
-
-      while( good >= 0 ) {
-        ca = ( char )good;
-        s.append( ca );
-        good = fr.read(  );
-      }
-
-      convertXMLtoParameters( s );
-    } catch( IOException e ) {
-      JOptionPane.showMessageDialog( 
-        save_frame, "Error loading file.  Does the file match the Wizard?",
-        "ERROR", JOptionPane.ERROR_MESSAGE );
-    } finally {
-      if( fr != null ) {
-        try {
-          fr.close(  );
-          modified = false;
-        } catch( IOException e ) {
-          //let it drop on the floor
-        }
-      }
-    }
+  public String getHelpMessage(  ) {
+    return help_message;
   }
 
   /**
-   *  Converts a StringBuffer which holds an XML String of
-   *  IParameterGUI and Form information into data that
-   *  the Wizard can understand.
-   *
-   *  @param s The StringBuffer that holds the parameter
-   *           information.
+   *  Used to set the ignorePropChanges variable.  Useful because
+   *  many things trigger property change events, with possible
+   *  undesired effects.
    */
-  private void convertXMLtoParameters( StringBuffer s )
-    throws IOException {
-    final String NAMESTART  = "<Name>";
-    final String NAMEEND    = "</Name>";
-    final String VALUESTART = "<Value>";
-    final String VALUEEND   = "</Value>";
-    final String VALIDSTART = "<Valid>";
-    final String VALIDEND   = "</Valid>";
+  public void setIgnorePropertyChanges( boolean ignore ) {
+    ignorePropChanges = ignore;
+  }
 
-    String xml             = s.toString(  );
-    String paramName;
-    String paramValue;
-    String paramValidity;
-    String typeEnd;
-    StringBuffer temp      = new StringBuffer(  );
-    StringTokenizer st;
-    int nameStartInd;
-    int nameEndInd;
-    int valueStartInd;
-    int valueEndInd;
-    int validStartInd;
-    int validEndInd;
-    int typeEndInd;
-    Form cur_form;
-    IParameterGUI curParam;
-    boolean ignoreChanges  = false;
+  /**
+   *  Accessor method to get ignorePropChanges variable.
+   */
+  public boolean getIgnorePropertyChanges(  ) {
+    return ignorePropChanges;
+  }
 
-    //remove the newline characters
-    st = new StringTokenizer( xml, "\n" );
-
-    while( st.hasMoreTokens(  ) ) {
-      temp.append( st.nextToken(  ) );
+  /**
+   *  Used to get the number of the last valid Form (i.e the Form that has
+   *  all of its parameters set to valid).
+   *
+   *  @return               The index of the last valid Form number.
+   */
+  public int getLastValidFormNum(  ) {
+    for( int i = 0; i < this.getNumForms(  ); i++ ) {
+      if( !getForm( i ).done(  ) ) {
+        return i - 1;
+      }
     }
 
-    xml = temp.toString(  );
+    return forms.size(  ) - 1;
+  }
 
-    //start going through the Forms
-    for( int i = 0; i < forms.size(  ); i++ ) {
-      cur_form = this.getForm( i );
+  /**
+   *  Accessor method to get the number of Forms.
+   *
+   *  @return     Number of Forms in this Wizard.
+   */
+  public int getNumForms(  ) {
+    return forms.size(  );
+  }
 
-      //start the parameter parsing for the Form
-      for( int j = 0; j < cur_form.getNum_parameters(  ); j++ ) {
-        //get the parameter
-        curParam   = ( IParameterGUI )( cur_form.getParameter( j ) );
+  /**
+   *  Add another form to the list of forms maintained by this
+   *  wizard.
+   *
+   *  @param f  The form to be added to the list.
+   */
+  public void addForm( Form f ) {
+    forms.add( f );
 
-        //get the parameter name from the file
-        nameStartInd   = xml.indexOf( NAMESTART );
-        nameEndInd     = xml.indexOf( NAMEEND );
-        paramName      = xml.substring( 
-            nameStartInd + NAMESTART.length(  ), nameEndInd );
+    //each Form will send out a PropertyChange new value from 0 to 100,
+    //so the Wizard needs 100 units for each Form
+    wizProgress.setMaximum( forms.size(  ) );
+    wizProgress.setString( 
+      "Wizard Progress: " + ( getCurrentFormNumber(  ) + 1 ) + " of " +
+      forms.size(  ) + " Forms done" );
+  }
 
-        //compare it to the Form parameter name
-        if( !( curParam.getName(  ).equals( paramName ) ) ) {
-          throw new IOException( 
-            "Parameter " + paramName + " does not match Form parameter " +
-            curParam.getName(  ) );
+  /**
+   *  Save the state of the wizard then exit the wizard application.
+   */
+  public void close(  ) {
+    int save_me = 1;
+
+    if( modified ) {
+      save_me = JOptionPane.showConfirmDialog( 
+          null, "Would you like to save your changes?",
+          "Would you like to save your changes?", JOptionPane.YES_NO_OPTION );
+
+      if( save_me == 0 ) {
+        save(  );
+      }
+    }
+
+    System.exit( 0 );
+  }
+
+  /**
+   *  Method to execute the Wizard without bringing up the GUI.
+   *
+   *  @param  saveFile             The Wizard Save File (*.wsf) to use.
+   */
+  public void executeNoGUI( String saveFile ) {
+    this.setIgnorePropertyChanges( true );
+
+    //load the data from the file
+    loadForms( new File( saveFile ) );
+
+    this.setIgnorePropertyChanges( false );
+    exec_forms( forms.size(  ) - 1 );
+  }
+
+  /**
+   *  Method to handle linking of parameters using the paramIndex table.
+   *  Instructions for creating this table are at the top of the Wizard.
+   *  Note that the Forms must be added before this method will work.
+   *
+   *  @param  paramTable                The table of parameters to link
+   *                                    together.
+   */
+  public void linkFormParameters( int[][] paramTable ) {
+    int numForms;
+    int numParamsToLink;
+    int nonNegFormIndex;
+    int nonNegParamIndex;
+
+    numForms          = paramTable[0].length;  //the columns in paramTable
+    numParamsToLink   = paramTable.length;  //the rows in paramTable
+    DEBUG             = false;
+
+    //find the first paramTable[row][col] != 0 parameter index
+    for( int rowIndex = 0; rowIndex < numParamsToLink; rowIndex++ ) {
+      //find the first paramTable[row][col] >= 0 parameter index.  We have to 
+      //do this before going through and linking parameters.  Otherwise, we 
+      //might "lose" some.
+      nonNegParamIndex = nonNegFormIndex = -1;  //init for each iteration
+
+      for( int formIndex = 0; formIndex < numForms; formIndex++ ) {
+        if( paramTable[rowIndex][formIndex] >= 0 ) {
+          nonNegParamIndex   = paramTable[rowIndex][formIndex];
+          nonNegFormIndex    = formIndex;
+
+          break;
         }
+      }
 
-        //get the parameter value from the file
-        valueStartInd   = xml.indexOf( VALUESTART );
-        valueEndInd     = xml.indexOf( VALUEEND );
-        paramValue      = xml.substring( 
-            valueStartInd + VALUESTART.length(  ), valueEndInd );
+      //The next bit of code handles something which should not happen:
+      //a row of negative numbers in the table.
+      if( nonNegParamIndex < 0 ) {
+        continue;  //kick to the top of the loop
+      }
 
-        if( paramValue.equals( "emptyString" ) ) {
-          curParam.setValue( "" );
-        } else {
-          curParam.setValue( paramValue );
-        }
+      for( int colIndex = 0; colIndex < numForms; colIndex++ ) {
+        if( paramTable[rowIndex][colIndex] >= 0 ) {  //don't try to link a -1
 
-        //set the parameter validity.  Read from the file, then check a few
-        //types against certain criteria.
-        //turn off property change checking for the parameter.
-        ignoreChanges = ( ( ParameterGUI )curParam ).getIgnorePropertyChange(  );
-        ( ( ParameterGUI )curParam ).setIgnorePropertyChange( true );
-
-        validStartInd   = xml.indexOf( VALIDSTART );
-        validEndInd     = xml.indexOf( VALIDEND );
-        paramValidity   = xml.substring( 
-            validStartInd + VALIDSTART.length(  ), validEndInd );
-        curParam.setValid( new Boolean( paramValidity ).booleanValue(  ) );
-
-        if( curParam instanceof DataSetPG ) {
-          curParam.setValid( false );  //DataSets not valid
-        } else if( ( curParam instanceof BrowsePG ) ) {
-          //if the value for the BrowsePG was bad (as can happen all too easily
-          //with Scripts) or the file is not found, set it invalid
-          if( 
-            ( curParam.getValue(  ) == null ) ||
-              !( new File( curParam.getValue(  ).toString(  ) ).exists(  ) ) ) {
-            curParam.setValid( false );
-          }
-        } else if( curParam instanceof ArrayPG || curParam instanceof VectorPG ) {
-          Vector v = ( Vector )( curParam.getValue(  ) );
-
-          if( ( v == null ) || v.isEmpty(  ) ) {
-            curParam.setValid( false );
-          } else {  //Test the assumption
-
-            for( int k = 0; k < v.size(  ); k++ ) {
-              if( !( new File( v.elementAt( k ).toString(  ) ).exists(  ) ) ) {
-                curParam.setValid( false );
-
-                break;
-              }
+          if( nonNegFormIndex != colIndex ) {
+            if( DEBUG ) {
+              System.out.print( "Linking " + getForm( nonNegFormIndex ) + ": " );
+              System.out.print( nonNegParamIndex + ": " );
+              System.out.print( 
+                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex )
+                  .getName(  ) );
+              System.out.print( " with " + getForm( colIndex ) + ": " );
+              System.out.print( paramTable[rowIndex][colIndex] + ": " );
+              System.out.println( 
+                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex )
+                  .getName(  ) );
             }
+
+            getForm( colIndex ).setParameter( 
+              getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ),
+              paramTable[rowIndex][colIndex] );
           }
         }
-
-        //find the index of the ending for the parameter, e.g. </DataDir>
-        typeEnd      = "</" + ( ( IParameterGUI )curParam ).getType(  ) + ">";
-        typeEndInd   = xml.indexOf( typeEnd );
-        xml          = xml.substring( 
-            typeEndInd + typeEnd.length(  ), xml.length(  ) );
-
-        //set property change checking for the parameter back to the original.
-        ( ( ParameterGUI )curParam ).setIgnorePropertyChange( ignoreChanges );
       }
-
-      //end the Parameter parsing for the Form
     }
   }
 
@@ -785,19 +688,18 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Used to set the ignorePropChanges variable.  Useful because
-   *  many things trigger property change events, with possible
-   *  undesired effects.
+   * Method to depopulate part of the view list if the
+   * parameters change.  If ignorePropChanges is set
+   * true, as it is when the Wizard is loading Forms,
+   * the viewMenu is the only thing that changes.
    */
-  public void setIgnorePropertyChanges( boolean ignore ) {
-    ignorePropChanges = ignore;
-  }
+  public void propertyChange( PropertyChangeEvent ev ) {
+    if( !ignorePropChanges ) {
+      modified = true;
+      this.invalidate( this.getCurrentFormNumber(  ) );
+    }
 
-  /**
-   *  Accessor method to get ignorePropChanges variable.
-   */
-  public boolean getIgnorePropertyChanges(  ) {
-    return ignorePropChanges;
+    this.populateViewMenu(  );
   }
 
   /**
@@ -826,31 +728,131 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Save the state of the wizard then exit the wizard application.
+   *  Show the form at the specified position in the list of forms.
+   *  If the index is invalid, an error message will be displayed in
+   *  the status pane.
+   *
+   *  @param  index  The index of the form to show.
    */
-  public void close(  ) {
-    int save_me = 1;
-
-    if( modified ) {
-      save_me = JOptionPane.showConfirmDialog( 
-          null, "Would you like to save your changes?",
-          "Would you like to save your changes?", JOptionPane.YES_NO_OPTION );
-
-      if( save_me == 0 ) {
-        save(  );
-      }
+  public void showForm( int index ) {
+    if( !frame.isShowing(  ) ) {
+      this.makeGUI(  );
+      this.showGUI(  );
     }
 
-    System.exit( 0 );
+    if( ( index < 0 ) || ( index > ( forms.size(  ) - 1 ) ) ) {  // invalid index
+      DataSetTools.util.SharedData.addmsg( 
+        "Error: invalid form number in Wizard.show(" + index + ")\n" );
+
+      return;
+    }
+
+    Form f = getCurrentForm(  );  // get rid of any current form
+
+    if( f != null ) {
+      f.setVisible( false );
+    }
+
+    form_panel.removeAll(  );
+
+    f = getForm( index );  // show the specified form
+    form_panel.add( f.getPanel(  ) );
+    f.setVisible( true );
+
+    int lastForm = this.getLastValidFormNum(  );
+
+    //reset the progress bars - especially useful when loading up a Wizard
+    //from a file
+    if( f.done(  ) ) {
+      formProgress.setString( f + " Done" );
+      wizProgress.setString( 
+        "Wizard Progress: " + ( lastForm + 1 ) + " of " + forms.size(  ) +
+        " Forms done" );
+      formProgress.setValue( FORM_PROGRESS );
+      wizProgress.setValue( lastForm + 1 );
+    } else {
+      formProgress.setString( f + " Progress" );
+      formProgress.setValue( 0 );
+      wizProgress.setValue( lastForm + 1 );
+    }
+
+    //add the listener (this) to the Form's parameters and progress bar
+    f.addPropertyChangeListener( this );
+    f.addPropertyChangeListener( formProgress );
+
+    form_panel.validate(  );
+    form_num = index;
+
+    this.enableNavButtons( true, index );
+
+    if( forms.size(  ) == 1 ) {
+      form_label.setText( f.getTitle(  ) );
+    } else {
+      form_label.setText( "Form " + ( index + 1 ) + ": " + f.getTitle(  ) );
+    }
   }
 
   /**
-   *  Accessor method to get the number of Forms.
-   *
-   *  @return     Number of Forms in this Wizard.
+   * Execute all forms up to the number specified.
    */
-  public int getNumForms(  ) {
-    return forms.size(  );
+  protected void exec_forms( int end ) {
+    modified = true;
+
+    boolean failed = false;
+    Form f;
+
+    // execute the previous forms
+    for( int i = 0; i <= end; i++ ) {
+      f = getForm( i );
+
+      if( !f.done(  ) ) {
+        formProgress.setValue( 0 );
+        formProgress.setString( "Executing " + f );
+
+        Object worked = f.getResult(  );
+
+        if( 
+          ( worked instanceof ErrorString ) ||
+            ( worked instanceof Boolean &&
+            ( !( ( Boolean )worked ).booleanValue(  ) ) ) ) {
+          failed   = true;
+          end      = i - 1;  //index to the last "good" Form
+
+          break;
+        }
+      }
+
+      if( !failed ) {
+        wizProgress.setValue( ( i + 1 ) );
+        wizProgress.setString( 
+          "Wizard Progress: " + ( i + 1 ) + " of " + forms.size(  ) +
+          " Forms done" );
+        formProgress.setValue( FORM_PROGRESS );
+        formProgress.setString( f + " Done" );
+      }
+    }
+
+    invalidate( end + 1 );
+  }
+
+  /**
+   * Invalidate all forms starting with the number specified.
+   */
+  protected void invalidate( int start ) {
+    for( int i = start; i < forms.size(  ); i++ ) {
+      getForm( i ).invalidate(  );
+    }
+
+    //we are farther along then the invalidated Form, so reset the progress
+    //bar and label
+    if( wizProgress.getValue(  ) > start ) {
+      wizProgress.setValue( start );
+      wizProgress.setString( 
+        "Wizard Progress: " + ( start + 1 ) + " of " + forms.size(  ) +
+        " Forms done" );
+      formProgress.setValue( 0 );
+      formProgress.setString( getForm( start ) + " Progress" );
+    }
   }
 
   /**
@@ -1055,113 +1057,270 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Add another form to the list of forms maintained by this
-   *  wizard.
+   *  Opens a file for input or output.
    *
-   *  @param f  The form to be added to the list.
+   *  @param saving  A boolean indicating whether you want to open the
+   *                 file for saving (true) or loading (false)
    */
-  public void addForm( Form f ) {
-    forms.add( f );
+  private File getFile( boolean saving ) {
+    int result;
+    WizardFileFilter wizFilter = new WizardFileFilter(  );
+    String save_file_abs_path;
 
-    //each Form will send out a PropertyChange new value from 0 to 100,
-    //so the Wizard needs 100 units for each Form
-    wizProgress.setMaximum( forms.size(  ) );
-    wizProgress.setString( 
-      "Wizard Progress: " + ( getCurrentFormNumber(  ) + 1 ) + " of " +
-      forms.size(  ) + " Forms done" );
-  }
+    if( fileChooser == null ) {
+      fileChooser = new JFileChooser(  );
+      fileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+      fileChooser.setFileFilter( wizFilter );
+    }
 
-  /**
-   *  Get the form that is currently displayed by the wizard.
-   *
-   *  @return  The currently displayed form.
-   */
-  public Form getCurrentForm(  ) {
-    return getForm( getCurrentFormNumber(  ) );
-  }
+    //try to remember the previous value the user entered
+    if( ( save_file != null ) && !save_file.toString(  ).equals( "" ) ) {
+      fileChooser.setSelectedFile( save_file );
+    }
 
-  /**
-   * Get the number of the form currently being shown.
-   */
-  public int getCurrentFormNumber(  ) {
-    return form_num;
-  }
-
-  /**
-   * Get the form at specified index.
-   *
-   * @return The form at the specified index.
-   */
-  public Form getForm( int index ) {
-    if( ( index >= 0 ) && ( index < forms.size(  ) ) ) {
-      return ( Form )forms.elementAt( index );
+    if( saving ) {
+      result = fileChooser.showSaveDialog( save_frame );
     } else {
+      result = fileChooser.showOpenDialog( save_frame );
+    }
+
+    if( result == JFileChooser.CANCEL_OPTION ) {
       return null;
     }
+
+    save_file = fileChooser.getSelectedFile(  );
+
+    if( saving ) {
+      save_file_abs_path   = save_file.toString(  );
+
+      //make sure the extension is on there
+      save_file_abs_path   = wizFilter.appendExtension( save_file_abs_path );
+      save_file            = new File( save_file_abs_path );
+    }
+
+    if( saving && save_file.exists(  ) ) {
+      String temp;
+      StringBuffer s = new StringBuffer(  );
+
+      s.append( "You are about to overwrite " );
+      s.append( save_file.toString(  ) );
+      s.append( ".\n  If this is OK, press " );
+      s.append( "<Enter> or click the <OK> button.\n  Otherwise, please " );
+      s.append( "enter a new name or click <Cancel>." );
+      temp = JOptionPane.showInputDialog( s.toString(  ) );
+
+      //if this occurred, the user clicked <Cancel>
+      if( temp == null ) {
+        return null;
+      }
+
+      if( ( temp != null ) && !temp.equals( "" ) ) {
+        temp        = wizFilter.appendExtension( temp );
+        save_file   = new File( 
+            fileChooser.getCurrentDirectory(  ) + "/" + temp );
+      }
+    }
+
+    if( ( save_file == null ) || save_file.getName(  ).equals( "" ) ) {
+      JOptionPane.showMessageDialog( 
+        save_frame, "Please enter a valid file name", "ERROR",
+        JOptionPane.ERROR_MESSAGE );
+
+      return null;
+    } else {
+      return save_file;
+    }
   }
 
   /**
-   *  Show the form at the specified position in the list of forms.
-   *  If the index is invalid, an error message will be displayed in
-   *  the status pane.
+   *  Shows the JavaHelp HTML page for the current form.
    *
-   *  @param  index  The index of the form to show.
    */
-  public void showForm( int index ) {
-    if( !frame.isShowing(  ) ) {
-      this.makeGUI(  );
-      this.showGUI(  );
+  private void ShowFormHelpMessage(  ) {
+    HTMLizer form_htmlizer = new HTMLizer(  );
+    String html            = form_htmlizer.createHTML( this.getCurrentForm(  ) );
+    JFrame help_frame      = new JFrame( title );
+    Dimension screen_size  = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
+
+    help_frame.setSize( 
+      new Dimension( 
+        ( int )( screen_size.getWidth(  ) / 2 ),
+        ( int )( screen_size.getHeight(  ) / 2 ) ) );
+    help_frame.getContentPane(  ).add( 
+      new JScrollPane( new JEditorPane( "text/html", html ) ) );
+    help_frame.show(  );
+  }
+
+  /**
+   *  Show the specified String in the help frame.
+   *
+   *  @param str   The message to display in a dialog.
+   *  @param title The title of the dialog.
+   */
+  private void ShowHelpMessage( String str, String title ) {
+    JOptionPane.showMessageDialog( 
+      this.frame, str, title, JOptionPane.INFORMATION_MESSAGE );
+  }
+
+  /**
+   *  Converts a StringBuffer which holds an XML String of
+   *  IParameterGUI and Form information into data that
+   *  the Wizard can understand.
+   *
+   *  @param s The StringBuffer that holds the parameter
+   *           information.
+   */
+  private void convertXMLtoParameters( StringBuffer s )
+    throws IOException {
+    final String NAMESTART  = "<Name>";
+    final String NAMEEND    = "</Name>";
+    final String VALUESTART = "<Value>";
+    final String VALUEEND   = "</Value>";
+    final String VALIDSTART = "<Valid>";
+    final String VALIDEND   = "</Valid>";
+
+    String xml             = s.toString(  );
+    String paramName;
+    String paramValue;
+    String paramValidity;
+    String typeEnd;
+    StringBuffer temp      = new StringBuffer(  );
+    StringTokenizer st;
+    int nameStartInd;
+    int nameEndInd;
+    int valueStartInd;
+    int valueEndInd;
+    int validStartInd;
+    int validEndInd;
+    int typeEndInd;
+    Form cur_form;
+    IParameterGUI curParam;
+    boolean ignoreChanges  = false;
+
+    //remove the newline characters
+    st = new StringTokenizer( xml, "\n" );
+
+    while( st.hasMoreTokens(  ) ) {
+      temp.append( st.nextToken(  ) );
     }
 
-    if( ( index < 0 ) || ( index > ( forms.size(  ) - 1 ) ) ) {  // invalid index
-      DataSetTools.util.SharedData.addmsg( 
-        "Error: invalid form number in Wizard.show(" + index + ")\n" );
+    xml = temp.toString(  );
 
-      return;
+    //start going through the Forms
+    for( int i = 0; i < forms.size(  ); i++ ) {
+      cur_form = this.getForm( i );
+
+      //start the parameter parsing for the Form
+      for( int j = 0; j < cur_form.getNum_parameters(  ); j++ ) {
+        //get the parameter
+        curParam   = ( IParameterGUI )( cur_form.getParameter( j ) );
+
+        //get the parameter name from the file
+        nameStartInd   = xml.indexOf( NAMESTART );
+        nameEndInd     = xml.indexOf( NAMEEND );
+        paramName      = xml.substring( 
+            nameStartInd + NAMESTART.length(  ), nameEndInd );
+
+        //compare it to the Form parameter name
+        if( !( curParam.getName(  ).equals( paramName ) ) ) {
+          throw new IOException( 
+            "Parameter " + paramName + " does not match Form parameter " +
+            curParam.getName(  ) );
+        }
+
+        //get the parameter value from the file
+        valueStartInd   = xml.indexOf( VALUESTART );
+        valueEndInd     = xml.indexOf( VALUEEND );
+        paramValue      = xml.substring( 
+            valueStartInd + VALUESTART.length(  ), valueEndInd );
+
+        if( paramValue.equals( "emptyString" ) ) {
+          curParam.setValue( "" );
+        } else {
+          curParam.setValue( paramValue );
+        }
+
+        //set the parameter validity.  Read from the file, then check a few
+        //types against certain criteria.
+        //turn off property change checking for the parameter.
+        ignoreChanges = ( ( ParameterGUI )curParam ).getIgnorePropertyChange(  );
+        ( ( ParameterGUI )curParam ).setIgnorePropertyChange( true );
+
+        validStartInd   = xml.indexOf( VALIDSTART );
+        validEndInd     = xml.indexOf( VALIDEND );
+        paramValidity   = xml.substring( 
+            validStartInd + VALIDSTART.length(  ), validEndInd );
+        curParam.setValid( new Boolean( paramValidity ).booleanValue(  ) );
+
+        if( curParam instanceof DataSetPG ) {
+          curParam.setValid( false );  //DataSets not valid
+        } else if( ( curParam instanceof BrowsePG ) ) {
+          //if the value for the BrowsePG was bad (as can happen all too easily
+          //with Scripts) or the file is not found, set it invalid
+          if( 
+            ( curParam.getValue(  ) == null ) ||
+              !( new File( curParam.getValue(  ).toString(  ) ).exists(  ) ) ) {
+            curParam.setValid( false );
+          }
+        } else if( curParam instanceof ArrayPG || curParam instanceof VectorPG ) {
+          Vector v = ( Vector )( curParam.getValue(  ) );
+
+          if( ( v == null ) || v.isEmpty(  ) ) {
+            curParam.setValid( false );
+          } else {  //Test the assumption
+
+            for( int k = 0; k < v.size(  ); k++ ) {
+              if( !( new File( v.elementAt( k ).toString(  ) ).exists(  ) ) ) {
+                curParam.setValid( false );
+
+                break;
+              }
+            }
+          }
+        }
+
+        //find the index of the ending for the parameter, e.g. </DataDir>
+        typeEnd      = "</" + ( ( IParameterGUI )curParam ).getType(  ) + ">";
+        typeEndInd   = xml.indexOf( typeEnd );
+        xml          = xml.substring( 
+            typeEndInd + typeEnd.length(  ), xml.length(  ) );
+
+        //set property change checking for the parameter back to the original.
+        ( ( ParameterGUI )curParam ).setIgnorePropertyChange( ignoreChanges );
+      }
+
+      //end the Parameter parsing for the Form
     }
+  }
 
-    Form f = getCurrentForm(  );  // get rid of any current form
+  /**
+   * Method to call a ParameterViewer.  Since the only "oddball" events
+   * that currently happen are for the view menu, the only commands to
+   * listen for are the ones for the current form.
+   */
+  private void displayParameterViewer( String com ) {
+    Form f;
+    IParameterGUI iparam;
+    boolean done;
+    int index;
+    int num_params;
 
-    if( f != null ) {
-      f.setVisible( false );
-    }
+    f            = this.getCurrentForm(  );
+    done         = false;
+    index        = 0;
+    num_params   = f.getNum_parameters(  );
 
-    form_panel.removeAll(  );
+    while( !done && ( index < num_params ) ) {
+      iparam   = ( IParameterGUI )f.getParameter( index );
 
-    f = getForm( index );  // show the specified form
-    form_panel.add( f.getPanel(  ) );
-    f.setVisible( true );
+      //does the command match up to a current form parameter name?
+      done = com.equals( iparam.getName(  ) );
 
-    int lastForm = this.getLastValidFormNum(  );
+      if( done ) {
+        new ParameterViewer( iparam ).showParameterViewer(  );
+      }
 
-    //reset the progress bars - especially useful when loading up a Wizard
-    //from a file
-    if( f.done(  ) ) {
-      formProgress.setString( f + " Done" );
-      wizProgress.setString( 
-        "Wizard Progress: " + ( lastForm + 1 ) + " of " + forms.size(  ) +
-        " Forms done" );
-      formProgress.setValue( FORM_PROGRESS );
-      wizProgress.setValue( lastForm + 1 );
-    } else {
-      formProgress.setString( f + " Progress" );
-      formProgress.setValue( 0 );
-      wizProgress.setValue( lastForm + 1 );
-    }
-
-    //add the listener (this) to the Form's parameters and progress bar
-    f.addPropertyChangeListener( this );
-    f.addPropertyChangeListener( formProgress );
-
-    form_panel.validate(  );
-    form_num = index;
-
-    this.enableNavButtons( true, index );
-
-    if( forms.size(  ) == 1 ) {
-      form_label.setText( f.getTitle(  ) );
-    } else {
-      form_label.setText( "Form " + ( index + 1 ) + ": " + f.getTitle(  ) );
+      index++;
     }
   }
 
@@ -1211,152 +1370,41 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   *  Used to get the number of the last valid Form (i.e the Form that has
-   *  all of its parameters set to valid).
-   *
-   *  @return               The index of the last valid Form number.
+   *  Loads Forms from a file.  It actually just loads the saved
+   *  IParameterGUI values into the Wizard's Forms' parameters.
    */
-  public int getLastValidFormNum(  ) {
-    for( int i = 0; i < this.getNumForms(  ); i++ ) {
-      if( !getForm( i ).done(  ) ) {
-        return i - 1;
+  private void loadForms( File file ) {
+    char ca;
+    StringBuffer s = new StringBuffer(  );
+    int good       = -1;
+    FileReader fr  = null;
+
+    try {
+      fr   = new FileReader( file );
+
+      good = fr.read(  );
+
+      while( good >= 0 ) {
+        ca = ( char )good;
+        s.append( ca );
+        good = fr.read(  );
       }
-    }
 
-    return forms.size(  ) - 1;
-  }
-
-  /**
-   *  Set the help message that will be displayed when the user
-   *  requests help with this wizard.
-   *
-   *  @param help_message  String giving the help message to use for this
-   *                       wizard.
-   */
-  public void setHelpMessage( String help_message ) {
-    this.help_message = help_message;
-  }
-
-  /**
-   *  Get the help message for this wizard.
-   *
-   *  @return the String giving the help message for this wizard.
-   */
-  public String getHelpMessage(  ) {
-    return help_message;
-  }
-
-  /**
-   *  Set the message that will be displayed when the user chooses
-   *  the help about option.
-   *
-   *  @param about_message  String giving the message to use for the
-   *                        "Help About" option.
-   */
-  public void setAboutMessage( String about_message ) {
-    this.about_message = about_message;
-  }
-
-  /**
-   *  Get the help about message for this wizard.
-   *
-   *  @return the String giving the help about message for this wizard.
-   */
-  public String getAboutMessage(  ) {
-    return about_message;
-  }
-
-  /**
-   *  Show the specified String in the help frame.
-   *
-   *  @param str   The message to display in a dialog.
-   *  @param title The title of the dialog.
-   */
-  private void ShowHelpMessage( String str, String title ) {
-    JOptionPane.showMessageDialog( 
-      this.frame, str, title, JOptionPane.INFORMATION_MESSAGE );
-  }
-
-  /**
-   *  Shows the JavaHelp HTML page for the current form.
-   *
-   */
-  private void ShowFormHelpMessage(  ) {
-    HTMLizer form_htmlizer = new HTMLizer(  );
-    String html            = form_htmlizer.createHTML( this.getCurrentForm(  ) );
-    JFrame help_frame      = new JFrame( title );
-    Dimension screen_size  = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
-
-    help_frame.setSize( 
-      new Dimension( 
-        ( int )( screen_size.getWidth(  ) / 2 ),
-        ( int )( screen_size.getHeight(  ) / 2 ) ) );
-    help_frame.getContentPane(  ).add( 
-      new JScrollPane( new JEditorPane( "text/html", html ) ) );
-    help_frame.show(  );
-  }
-
-  /**
-   * Invalidate all forms starting with the number specified.
-   */
-  protected void invalidate( int start ) {
-    for( int i = start; i < forms.size(  ); i++ ) {
-      getForm( i ).invalidate(  );
-    }
-
-    //we are farther along then the invalidated Form, so reset the progress
-    //bar and label
-    if( wizProgress.getValue(  ) > start ) {
-      wizProgress.setValue( start );
-      wizProgress.setString( 
-        "Wizard Progress: " + ( start + 1 ) + " of " + forms.size(  ) +
-        " Forms done" );
-      formProgress.setValue( 0 );
-      formProgress.setString( getForm( start ) + " Progress" );
-    }
-  }
-
-  /**
-   * Execute all forms up to the number specified.
-   */
-  protected void exec_forms( int end ) {
-    modified = true;
-
-    boolean failed = false;
-    Form f;
-
-    // execute the previous forms
-    for( int i = 0; i <= end; i++ ) {
-      f = getForm( i );
-
-      if( !f.done(  ) ) {
-        formProgress.setValue( 0 );
-        formProgress.setString( "Executing " + f );
-
-        Object worked = f.getResult(  );
-
-        if( 
-          ( worked instanceof ErrorString ) ||
-            ( worked instanceof Boolean &&
-            ( !( ( Boolean )worked ).booleanValue(  ) ) ) ) {
-          failed   = true;
-          end      = i - 1;  //index to the last "good" Form
-
-          break;
+      convertXMLtoParameters( s );
+    } catch( IOException e ) {
+      JOptionPane.showMessageDialog( 
+        save_frame, "Error loading file.  Does the file match the Wizard?",
+        "ERROR", JOptionPane.ERROR_MESSAGE );
+    } finally {
+      if( fr != null ) {
+        try {
+          fr.close(  );
+          modified = false;
+        } catch( IOException e ) {
+          //let it drop on the floor
         }
       }
-
-      if( !failed ) {
-        wizProgress.setValue( ( i + 1 ) );
-        wizProgress.setString( 
-          "Wizard Progress: " + ( i + 1 ) + " of " + forms.size(  ) +
-          " Forms done" );
-        formProgress.setValue( FORM_PROGRESS );
-        formProgress.setString( f + " Done" );
-      }
     }
-
-    invalidate( end + 1 );
   }
 
   /**
@@ -1398,130 +1446,85 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   * Method to depopulate part of the view list if the
-   * parameters change.  If ignorePropChanges is set
-   * true, as it is when the Wizard is loading Forms,
-   * the viewMenu is the only thing that changes.
+   *
+   *  Write the Forms to a file, using the conc_forms Vector.
+   *  The only things actually written are the Form's
+   *  IParameterGUI types, name, and value in XML format along with
+   *  XML tags for the Form index.
+   *
+   *  @param conc_forms The Vector of Forms to write to a file.
+   *  @param file the File to write to.
    */
-  public void propertyChange( PropertyChangeEvent ev ) {
-    if( !ignorePropChanges ) {
-      modified = true;
-      this.invalidate( this.getCurrentFormNumber(  ) );
-    }
-
-    this.populateViewMenu(  );
-  }
-
-  /**
-   * Method to call a ParameterViewer.  Since the only "oddball" events
-   * that currently happen are for the view menu, the only commands to
-   * listen for are the ones for the current form.
-   */
-  private void displayParameterViewer( String com ) {
+  private void writeForms( Vector conc_forms, File file ) {
+    StringBuffer s = new StringBuffer(  );
     Form f;
-    IParameterGUI iparam;
-    boolean done;
-    int index;
-    int num_params;
 
-    f            = this.getCurrentForm(  );
-    done         = false;
-    index        = 0;
-    num_params   = f.getNum_parameters(  );
+    //String temp;
+    Object obj;
+    IParameterGUI ipg;
+    FileWriter fw  = null;
 
-    while( !done && ( index < num_params ) ) {
-      iparam   = ( IParameterGUI )f.getParameter( index );
+    try {
+      fw = new FileWriter( file );
 
-      //does the command match up to a current form parameter name?
-      done = com.equals( iparam.getName(  ) );
+      for( int i = 0; i < conc_forms.size(  ); i++ ) {
+        s.append( "<Form number=" );
+        s.append( i );
+        s.append( ">\n" );
 
-      if( done ) {
-        new ParameterViewer( iparam ).showParameterViewer(  );
-      }
+        f = ( Form )conc_forms.elementAt( i );
 
-      index++;
-    }
-  }
+        for( int j = 0; j < f.getNum_parameters(  ); j++ ) {
+          ipg = ( IParameterGUI )f.getParameter( j );
+          s.append( "<" );
+          s.append( ipg.getType(  ) );
+          s.append( ">\n" );
+          s.append( "<Name>" );
+          s.append( ipg.getName(  ) );
+          s.append( "</Name>\n" );
+          s.append( "<Value>" );
 
-  /**
-   *  Method to handle linking of parameters using the paramIndex table.
-   *  Instructions for creating this table are at the top of the Wizard.
-   *  Note that the Forms must be added before this method will work.
-   *
-   *  @param  paramTable                The table of parameters to link
-   *                                    together.
-   */
-  public void linkFormParameters( int[][] paramTable ) {
-    int numForms;
-    int numParamsToLink;
-    int nonNegFormIndex;
-    int nonNegParamIndex;
-
-    numForms          = paramTable[0].length;  //the columns in paramTable
-    numParamsToLink   = paramTable.length;  //the rows in paramTable
-    DEBUG             = false;
-
-    //find the first paramTable[row][col] != 0 parameter index
-    for( int rowIndex = 0; rowIndex < numParamsToLink; rowIndex++ ) {
-      //find the first paramTable[row][col] >= 0 parameter index.  We have to 
-      //do this before going through and linking parameters.  Otherwise, we 
-      //might "lose" some.
-      nonNegParamIndex = nonNegFormIndex = -1;  //init for each iteration
-
-      for( int formIndex = 0; formIndex < numForms; formIndex++ ) {
-        if( paramTable[rowIndex][formIndex] >= 0 ) {
-          nonNegParamIndex   = paramTable[rowIndex][formIndex];
-          nonNegFormIndex    = formIndex;
-
-          break;
-        }
-      }
-
-      //The next bit of code handles something which should not happen:
-      //a row of negative numbers in the table.
-      if( nonNegParamIndex < 0 ) {
-        continue;  //kick to the top of the loop
-      }
-
-      for( int colIndex = 0; colIndex < numForms; colIndex++ ) {
-        if( paramTable[rowIndex][colIndex] >= 0 ) {  //don't try to link a -1
-
-          if( nonNegFormIndex != colIndex ) {
-            if( DEBUG ) {
-              System.out.print( "Linking " + getForm( nonNegFormIndex ) + ": " );
-              System.out.print( nonNegParamIndex + ": " );
-              System.out.print( 
-                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex )
-                  .getName(  ) );
-              System.out.print( " with " + getForm( colIndex ) + ": " );
-              System.out.print( paramTable[rowIndex][colIndex] + ": " );
-              System.out.println( 
-                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex )
-                  .getName(  ) );
-            }
-
-            getForm( colIndex ).setParameter( 
-              getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ),
-              paramTable[rowIndex][colIndex] );
+          if( ipg != null ) {  //parameter is not null
+            obj = ipg.getValue(  );
+          } else {  //parameter is null, so set value to null
+            obj = null;
           }
+
+          if( ( obj == null ) || ( obj.toString(  ).length(  ) <= 0 ) ) {
+            s.append( "emptyString" );
+          } else {
+            s.append( obj.toString(  ) );
+            s.append( "" );
+          }
+
+          s.append( "</Value>\n" );
+          s.append( "<Valid>" );
+          s.append( ipg.getValid(  ) );
+          s.append( "</Valid>\n" );
+          s.append( "</" );
+          s.append( ipg.getType(  ) );
+          s.append( ">\n" );
+        }
+
+        s.append( "</Form>\n" );
+      }
+
+      fw.write( s.toString(  ) );
+    } catch( IOException e ) {
+      e.printStackTrace(  );
+      JOptionPane.showMessageDialog( 
+        save_frame, "Error saving file.  Please rerun the wizard and try again.",
+        "ERROR", JOptionPane.ERROR_MESSAGE );
+    } finally {
+      if( fw != null ) {
+        try {
+          fw.close(  );
+          modified = false;
+        } catch( IOException e ) {
+          //let it drop on the floor
         }
       }
     }
-  }
-
-  /**
-   *  Method to execute the Wizard without bringing up the GUI.
-   *
-   *  @param  saveFile             The Wizard Save File (*.wsf) to use.
-   */
-  public void executeNoGUI( String saveFile ) {
-    this.setIgnorePropertyChanges( true );
-
-    //load the data from the file
-    loadForms( new File( saveFile ) );
-
-    this.setIgnorePropertyChanges( false );
-    exec_forms( forms.size(  ) - 1 );
   }
 
   /**
@@ -1635,6 +1638,13 @@ public abstract class Wizard implements PropertyChangeListener {
     //~ Methods ****************************************************************
 
     /**
+     *  Used to set the form number for calling exec_forms.
+     */
+    public void setFormNumber( int num ) {
+      formNum = num;
+    }
+
+    /**
      *  Required for SwingWorker.
      */
     public Object construct(  ) {
@@ -1652,13 +1662,6 @@ public abstract class Wizard implements PropertyChangeListener {
       this.enableFormParams( true );
 
       return "Success";  //unused
-    }
-
-    /**
-     *  Used to set the form number for calling exec_forms.
-     */
-    public void setFormNumber( int num ) {
-      formNum = num;
     }
 
     /**
