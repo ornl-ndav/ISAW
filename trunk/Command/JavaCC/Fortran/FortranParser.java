@@ -181,6 +181,8 @@ public class FortranParser implements FortranParserConstants {
       case ELSE_COND:
       case START_MULTI_IF:
       case END_IF:
+      case FORTRAN_DO_START:
+      case FORTRAN_END_DO:
       case VAR_ASSIGN:
       case FORTRAN_VARIABLE:
       case FORTRAN_CHAR_1:
@@ -232,6 +234,8 @@ public class FortranParser implements FortranParserConstants {
       case ELSE_COND:
       case START_MULTI_IF:
       case END_IF:
+      case FORTRAN_DO_START:
+      case FORTRAN_END_DO:
       case VAR_ASSIGN:
       case FORTRAN_VARIABLE:
       case FORTRAN_CHAR_1:
@@ -250,7 +254,7 @@ public class FortranParser implements FortranParserConstants {
       appendSemiColon = false;
       {if (true) return fCode.toString(  ) + ";\n";}
     } else {
-      {if (true) return fCode.toString(  ) + "\n";}
+      {if (true) return fCode.toString(  ).replaceAll( "\\t", "  " ) + "\n";}
     }
     throw new Error("Missing return statement in function");
   }
@@ -265,7 +269,7 @@ public class FortranParser implements FortranParserConstants {
   Token t;
   String s;
   StringBuffer buffer;
-  String[] tokenList;
+  String tokenList[];
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case FORTRAN_COMMENT:
       //matched a comment
@@ -315,14 +319,69 @@ public class FortranParser implements FortranParserConstants {
         t = jj_consume_token(END_IF);
     {if (true) return t.image.replaceAll( "endif", "}" );}
       break;
+    case FORTRAN_DO_START:
+      //start of a do statement..we'll convert this to a for loop
+        //I am guessing that Fortran uses a <= by default...
+        t = jj_consume_token(FORTRAN_DO_START);
+    //consume the 'do' and the label
+    s = t.image.trim(  );
+    s = s.substring( s.indexOf( " " ), s.length(  ) ).trim(  );
+    s = s.substring( s.indexOf( " " ), s.length(  ) ).trim(  );
+
+    //this will give us something like {i = 1, n} or { i = 1, n, 3}
+    //if a step was given
+    tokenList = s.split( "," );
+
+    buffer = new StringBuffer( "for( " );
+
+    //I want to keep some of these variables local to this case
+    {
+      int step = 1;
+      String tokenList2[] = tokenList[0].split( "=" );
+      String intVar = tokenList2[0].trim(  );
+      String start = tokenList2[1].trim(  );
+      String end = tokenList[1].trim(  );
+
+      if( tokenList.length == 3 ) {
+        step = Integer.parseInt( tokenList[2].trim(  ) );
+      }
+
+      buffer.append( intVar );
+      buffer.append( " = ");
+      buffer.append( start );
+      buffer.append( "; ");
+      buffer.append( intVar );
+
+      if( step >= 0 ) {
+        buffer.append( " <= ");
+      } else {
+        buffer.append( " >= ");
+      }
+
+      buffer.append( end );
+      buffer.append( "; " );
+      buffer.append( intVar );
+      buffer.append( " = " );
+      buffer.append( intVar );
+      buffer.append( " + ( " );
+      buffer.append( step );
+      buffer.append( " ) ) {");
+    }
+    {if (true) return buffer.toString(  );}
+      break;
+    case FORTRAN_END_DO:
+      //the end of the do... loop
+        t = jj_consume_token(FORTRAN_END_DO);
+    {if (true) return "}";}
+      break;
     case FORTRAN_ABS:
       //matched the absolute function
         t = jj_consume_token(FORTRAN_ABS);
     s = t.image;
     if( s.indexOf( "iabs" ) >= 0 ) {
-      s = s.replaceAll( "iabs", "Math.abs" );
+      s = s.replaceFirst( "iabs", "Math.abs" );
     } else {
-      s = s.replaceAll( "abs", "Math.abs" );
+      s = s.replaceFirst( "abs", "Math.abs" );
     }
 
     {if (true) return s;}
@@ -454,7 +513,7 @@ public class FortranParser implements FortranParserConstants {
     case EMPTY_LINE:
       //found an empty line, so spit it back
         t = jj_consume_token(EMPTY_LINE);
-    {if (true) return t.image;}
+    {if (true) return "";}
       break;
     default:
       jj_la1[2] = jj_gen;
@@ -481,7 +540,7 @@ public class FortranParser implements FortranParserConstants {
       jj_la1_0 = new int[] {0x8fc0900a,0x8fc09008,0x8fc09008,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x77c,0x77c,0x77c,};
+      jj_la1_1 = new int[] {0x1dfc,0x1dfc,0x1dfc,};
    }
 
   public FortranParser(java.io.InputStream stream) {
@@ -601,8 +660,8 @@ public class FortranParser implements FortranParserConstants {
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[43];
-    for (int i = 0; i < 43; i++) {
+    boolean[] la1tokens = new boolean[45];
+    for (int i = 0; i < 45; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -621,7 +680,7 @@ public class FortranParser implements FortranParserConstants {
         }
       }
     }
-    for (int i = 0; i < 43; i++) {
+    for (int i = 0; i < 45; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
