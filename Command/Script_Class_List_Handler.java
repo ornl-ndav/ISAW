@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.60  2005/01/07 17:48:15  rmikk
+ * Added code to eliminate regular python scripts from being added as
+ *   operators.  Python scripts must have a class
+ *
  * Revision 1.59  2004/05/11 00:07:37  rmikk
  * The main program now displays the debug info
  *
@@ -1026,7 +1030,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             op = null;
             if(LoadDebug) System.out.println( "Err="+e.toString());
           }
-
+          if( !((PyScriptOperator)op).isInstallableOperator())
+             op = null;
           // add it to the proper lists
           if(op!=null){
             if(op instanceof GenericOperator){
