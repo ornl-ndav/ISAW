@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/08/14 19:11:48  bouzekc
+ *  Made inner Toolkit transient.
+ *
  *  Revision 1.4  2002/11/27 23:12:34  pfpeterson
  *  standardized header
  *
@@ -65,7 +68,7 @@ import DataSetTools.util.*;
  */
 class FilteredDocument extends PlainDocument {
     private JTextComponent        textBox;
-    private Toolkit               toolkit;
+    private transient Toolkit     toolkit;
     private PropertyChangeSupport propBind;
     private StringFilterer        filter;
     
