@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2004/05/25 20:15:51  kramer
+ *  Added methods that get attribute values.
+ *
  *  Revision 1.22  2004/05/10 22:46:08  dennis
  *  Removed unused import: java.lang.reflect.
  *
@@ -80,9 +83,13 @@
 
 package  DataSetTools.dataset;
 
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.Util.File.*;
 import java.util.*;
 import java.io.*;
+
+import DataSetTools.gsastools.GsasCalib;
+import DataSetTools.instruments.SampleOrientation;
 
 /**
  * Class that maintains a list of attributes. 
@@ -616,7 +623,365 @@ public class AttributeList implements Serializable,
 
     return buffer;
   }
+  
+  /*----------------------------------------------------------------------
+   * These methods are used to obtain attributes
+   */
+   public String getAttributeTitle()
+   {
+	 return resolveStringAttribute(Attribute.TITLE);
+   }
 
+   public String getAttributeLabel()
+   {
+	 return resolveStringAttribute(Attribute.LABEL);
+   }
+
+   public int getDS_TAG()
+   {
+	 return resolveIntAttribute(Attribute.DS_TAG);
+   }
+
+   public String getUser()
+   {
+	 return resolveStringAttribute(Attribute.USER);
+   }
+
+   public String getInstrumentName()
+   {
+	 return resolveStringAttribute(Attribute.INST_NAME);
+   }
+
+   public int getInstrumentType()
+   {
+	 return resolveIntAttribute(Attribute.INST_TYPE);
+   }
+
+   public String getFileName()
+   {
+	 return resolveStringAttribute(Attribute.FILE_NAME);
+   }
+
+   public String getRunTitle()
+   {
+	 return resolveStringAttribute(Attribute.RUN_TITLE);
+   }
+
+   public int[] getRunNumber()
+   {
+	 return resolveIntArrayAttribute(Attribute.RUN_NUM);
+   }
+
+   public String getEndDate()
+   {
+	 return resolveStringAttribute(Attribute.END_DATE);
+   }
+
+   public String getEndTime()
+   {
+	 return resolveStringAttribute(Attribute.END_TIME);
+   }
+
+   public String getStartDate()
+   {
+	 return resolveStringAttribute(Attribute.START_DATE);
+   }
+
+   public String getStartTime()
+   {
+	 return resolveStringAttribute(Attribute.START_TIME);
+   }
+
+   public String getUpdateTime()
+   {
+	 return resolveStringAttribute(Attribute.UPDATE_TIME);
+   }
+
+   public DetectorPosition getDetectorPosition()
+   {
+	 return resolveDetectorPositionAttribute(Attribute.DETECTOR_POS);
+   }
+
+   public float getRawAngle()
+   {
+	 return resolveFloatAttribute(Attribute.RAW_ANGLE);
+   }
+
+   public float getRawDistance()
+   {
+	 return resolveFloatAttribute(Attribute.RAW_DISTANCE);
+   }
+
+   public float getSolidAngle()
+   {
+	 return resolveFloatAttribute(Attribute.SOLID_ANGLE);
+   }
+
+   public float getOmega()
+   {
+	 return resolveFloatAttribute(Attribute.OMEGA);
+   }
+
+   public float getDelta2Theta()
+   {
+	 return resolveFloatAttribute(Attribute.DELTA_2THETA);
+   }
+
+   public float getEfficiencyFactor()
+   {
+	 return resolveFloatAttribute(Attribute.EFFICIENCY_FACTOR);
+   }
+
+   public int[] getDetectorIDs()
+   {
+	 return resolveIntArrayAttribute(Attribute.DETECTOR_IDS);
+   }
+
+   public int[] getSegmentIDs()
+   {
+	 return resolveIntArrayAttribute(Attribute.SEGMENT_IDS);
+   }
+
+   public int getGroupID()
+   {
+	 return resolveIntAttribute(Attribute.GROUP_ID);
+   }
+
+   public int getTimeFieldType()
+   {
+	 return resolveIntAttribute(Attribute.TIME_FIELD_TYPE);
+   }
+
+   public int[] getCrate()
+   {
+	 return resolveIntArrayAttribute(Attribute.CRATE);
+   }
+
+   public int[] getSlot()
+   {
+	 return resolveIntArrayAttribute(Attribute.SLOT);
+   }
+
+   public int[] getInput()
+   {
+	 return resolveIntArrayAttribute(Attribute.INPUT);
+   }
+
+   public float getDetectorCENDistance()
+   {
+	 return resolveFloatAttribute(Attribute.DETECTOR_CEN_DISTANCE);
+   }
+
+   public float getDetectorCENAngle()
+   {
+	 return resolveFloatAttribute(Attribute.DETECTOR_CEN_ANGLE);
+   }
+
+   public float getDetectorCENHeight()
+   {
+	 return resolveFloatAttribute(Attribute.DETECTOR_CEN_HEIGHT);
+   }
+
+   public IDataGrid getDetectorDataGrid()
+   {
+	 return resolveDataGridAttribute(Attribute.DETECTOR_DATA_GRID);
+   }
+
+   public float getInitialPath()
+   {
+	 return resolveFloatAttribute(Attribute.INITIAL_PATH);
+   }
+
+   public float getEnergyIn()
+   {
+	 return resolveFloatAttribute(Attribute.ENERGY_IN);
+   }
+
+   public float getNominalEnergyIn()
+   {
+	 return resolveFloatAttribute(Attribute.NOMINAL_ENERGY_IN);
+   }
+
+   public float getEnergyOut()
+   {
+	 return resolveFloatAttribute(Attribute.ENERGY_OUT);
+   }
+
+   public float getNominalSourceToSampleTOF()
+   {
+	 return resolveFloatAttribute(Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF);
+   }
+
+   public float getSourceToSampleTOF()
+   {
+	 return resolveFloatAttribute(Attribute.SOURCE_TO_SAMPLE_TOF);
+   }
+
+   public float getT0Shift()
+   {
+	 return resolveFloatAttribute(Attribute.T0_SHIFT);
+   }
+
+   public float getSampleChi()
+   {
+	 return resolveFloatAttribute(Attribute.SAMPLE_CHI);
+   }
+
+   public float getSamplePhi()
+   {
+	 return resolveFloatAttribute(Attribute.SAMPLE_PHI);
+   }
+
+   public float getSampleOmega()
+   {
+	 return resolveFloatAttribute(Attribute.SAMPLE_OMEGA);
+   }
+
+   public SampleOrientation getSampleOrientation()
+   {
+	 return resolveSampleOrientationAttribute(Attribute.SAMPLE_ORIENTATION);
+   }
+
+   public String getSampleName()
+   {
+	 return resolveStringAttribute(Attribute.SAMPLE_NAME);
+   }
+
+   public float getTemperature()
+   {
+	 return resolveFloatAttribute(Attribute.TEMPERATURE);
+   }
+
+   public float getPressure()
+   {
+	 return resolveFloatAttribute(Attribute.PRESSURE);
+   }
+
+   public float[] getMagneticField()
+   {
+	 return resolveFloatArrayAttribute(Attribute.MAGNETIC_FIELD);
+   }
+
+   public int getNumberOfPulses()
+   {
+	 return resolveIntAttribute(Attribute.NUMBER_OF_PULSES);
+   }
+
+   public float getTotalCount()
+   {
+	 return resolveFloatAttribute(Attribute.TOTAL_COUNT);
+   }
+
+   public float getQValue()
+   {
+	 return resolveFloatAttribute(Attribute.Q_VALUE);
+   }
+
+   public GsasCalib getGSASCalib()
+   {
+	 return resolveGsasCalibAttribute(Attribute.GSAS_CALIB);
+   }
+
+   public String getGSASIParm()
+   {
+	 return resolveStringAttribute(Attribute.GSAS_IPARM);
+   }
+
+   public float[] getLatticeParam()
+   {
+	 return resolveFloatArrayAttribute(Attribute.LATTICE_PARAM);
+   }
+
+   public String getOrientMatrix()
+   {
+	 return resolveStringAttribute(Attribute.ORIENT_MATRIX);
+   }
+
+   public String getOrientFile()
+   {
+	 return resolveStringAttribute(Attribute.ORIENT_FILE);
+   }
+
+   public float getCellVolume()
+   {
+	 return resolveFloatAttribute(Attribute.CELL_VOLUME);
+   }
+
+   public String getSCDCalid()
+   {
+	 return resolveStringAttribute(Attribute.SCD_CALIB);
+   }
+
+   public String getSCDCalibFile()
+   {
+	 return resolveStringAttribute(Attribute.SCD_CALIB_FILE);
+   }
+
+   public PixelInfoList getPixelInfoList()
+   {
+	 return resolvePixelInfoListAttribute(Attribute.PIXEL_INFO_LIST);
+   }
+
+   public String getDSType()
+   {
+	 return resolveStringAttribute(Attribute.DS_TYPE);
+   }
+
+   public float getTimeOffset()
+   {
+	 return resolveFloatAttribute(Attribute.TIME_OFFSET);
+   }
+
+   public int getStartTimeSec()
+   {
+	 return resolveIntAttribute(Attribute.START_TIME_SEC);
+   }
+
+   public String getTimeOfDay()
+   {
+	 return resolveStringAttribute(Attribute.TIME_OF_DAY);
+   }
+
+   public String getDayOfMonth()
+   {
+	 return resolveStringAttribute(Attribute.DAY_OF_MONTH);
+   }
+
+   public String getUnknown()
+   {
+	 return resolveStringAttribute(Attribute.UNKNOWN);
+   }
+
+   public String getInvalidDataSet()
+   {
+	 return resolveStringAttribute(Attribute.INVALID_DATA_SET);
+   }
+
+   public String getMonitorData()
+   {
+	 return resolveStringAttribute(Attribute.MONITOR_DATA);
+   }
+
+   public String getSampleData()
+   {
+	 return resolveStringAttribute(Attribute.SAMPLE_DATA);
+   }
+
+   public String getPulseHeightData()
+   {
+	 return resolveStringAttribute(Attribute.PULSE_HEIGHT_DATA);
+   }
+
+   public String getTemperatureData()
+   {
+	 return resolveStringAttribute(Attribute.TEMPERATURE_DATA);
+   }
+
+   public String getPressureData()
+   {
+	 return resolveStringAttribute(Attribute.PRESSURE_DATA);
+   }
+   
 /* -----------------------------------------------------------------------
  *
  *  PRIVATE METHODS
@@ -642,5 +1007,98 @@ public class AttributeList implements Serializable,
     if ( IsawSerialVersion != 1 )
       System.out.println("Warning:AttributeList IsawSerialVersion != 1");
   }
+  
+  /*--------------------------------------------------------------------------------------
+   * These are helper methods for obtaining attributes.  These methods
+   * do the actual work.
+   */
+   private String resolveStringAttribute(String name)
+   {
+	 Object val = getAttributeValue(name);
+	 if ((val != null) && (val instanceof String))
+	   return (String)val;
+	 else
+	   return null;
+   }
 
+   private float resolveFloatAttribute(String name)
+   {
+	 Object val = getAttributeValue(name);
+	 if ((val != null) && (val instanceof Float))
+	   return ((Float)val).floatValue();
+	 else
+	   return Float.NaN;
+   }
+
+   private float[] resolveFloatArrayAttribute(String name)
+   {
+	 Object val = getAttributeValue(name);
+	 if ((val != null) && (val instanceof float[]))
+	   return (float[])val;
+	 else
+	   return null;
+   }
+
+   private int resolveIntAttribute(String name)
+   {
+	 Object val = getAttributeValue(name);
+	 if ((val != null) && (val instanceof Integer))
+	   return ((Integer)val).intValue();
+	 else
+	   return -1;
+   }
+
+   private int[] resolveIntArrayAttribute(String name)
+   {
+	 Object val = getAttributeValue(name);
+	 if ((val != null) && (val instanceof int[]))
+	   return (int[])val;
+	 else
+	   return null;
+   }
+
+   private DetectorPosition resolveDetectorPositionAttribute(String name)
+   {
+	 Object val = getAttributeValue(name);
+	 if ((val != null) && (val instanceof DetectorPosition))
+	   return (DetectorPosition)val;
+	 else
+	   return null;
+   }
+
+   private IDataGrid resolveDataGridAttribute(String name)
+   {
+	 Object val = getAttributeValue(name);
+	 if ((val != null) && (val instanceof IDataGrid))
+	   return (IDataGrid)val;
+	 else
+	   return null;
+   }
+
+   private GsasCalib resolveGsasCalibAttribute(String name)
+   {
+	 Object val = getAttributeValue(name);
+	 if ((val != null) && (val instanceof GsasCalibAttribute))
+	   return ((GsasCalibAttribute)val).getGsasCalib();
+	 else
+	   return null;
+   }
+
+   private SampleOrientation resolveSampleOrientationAttribute(String name)
+   {
+	 Object val = getAttributeValue(name);
+	 if ((val != null) && (val instanceof SampleOrientationAttribute))
+	   return (SampleOrientation)((SampleOrientationAttribute)val).getValue();
+	 else
+	   return null;
+   }   
+   
+   private PixelInfoList resolvePixelInfoListAttribute(String name)
+   {
+	  Object val = getAttributeValue(name);
+	  if ((val != null) && (val instanceof PixelInfoListAttribute))
+		return (PixelInfoList)((PixelInfoListAttribute)val).getValue();
+	  else
+		return null;
+   }
 }
