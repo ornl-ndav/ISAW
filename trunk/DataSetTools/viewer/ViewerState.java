@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2004/08/05 15:28:13  rmikk
+ *  Added a ViewerState to determine which mode the SliceViewer starts in- Table or Image
+ *
  *  Revision 1.37  2004/06/25 18:26:05  rmikk
  *  Changed initial value of ControlPanelWidth(%) from 75 to 25
  *
@@ -186,7 +189,11 @@ public class ViewerState  implements Serializable
   public static final String TABLE_TS_NSTEPS          ="TableTimeSliceNxSteps";
   public static final String TABLE_TS_CHAN          ="TableTimeSliceTimeInd";
   public static final String TABLE_TS_DETNUM          ="TableTimeSliceDetectorNum";
-
+  /**
+   *  If the Mode is 0 the image view appears, otherwise a table view appears
+   *  
+   */
+  public static final String SLICEVIEWMODE          ="Slice View MODE";
   private Hashtable     state = null;
 
   private CoordBounds   zoom_region;                // the image zoom region
@@ -270,7 +277,7 @@ public class ViewerState  implements Serializable
       state.put( TABLE_TS_DETNUM , new Integer( -1));
 
       state.put( CONTOUR_DATA, new Boolean(false));
-
+      state.put(SLICEVIEWMODE, new Integer(0));
       state.put(TIMEVSGROUPTABLE, new Boolean( false));
       state.put(TIMEVSGROUPTABLE_SHOWALL , new Boolean( false));
 
