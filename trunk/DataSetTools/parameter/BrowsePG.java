@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2003/12/15 01:45:30  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.31  2003/11/25 03:02:32  bouzekc
  *  Now only tries to clone the Label if it has been initialized.
  *
@@ -152,11 +155,8 @@ import java.util.Vector;
 import java.lang.String;
 import java.beans.*;
 import java.io.File;
-import java.awt.*;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.util.*;
-import DataSetTools.operator.Generic.TOF_SCD.*;
-import DataSetTools.util.PropertyChanger;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 

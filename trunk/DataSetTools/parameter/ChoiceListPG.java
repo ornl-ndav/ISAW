@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/12/15 01:45:30  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.12  2003/11/19 04:13:22  bouzekc
  *  Is now a JavaBean.
  *
@@ -76,8 +79,6 @@
 
 package DataSetTools.parameter;
 
-import DataSetTools.dataset.*;
-import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.util.SharedData;
 import java.util.Vector;
 
