@@ -1,3 +1,9 @@
+/*
+ * $Log$
+ * Revision 1.2  2003/10/17 02:58:52  bouzekc
+ * Fixed javadoc errors.  Added Log tag.
+ *
+ */
 package Jama;
 import Jama.util.*;
 
@@ -855,8 +861,8 @@ public class EigenvalueDecomposition implements java.io.Serializable {
  * ------------------------ */
 
    /** Check for symmetry, then construct the eigenvalue decomposition
-   @param A    Square matrix
-   @return     Structure to access D and V.
+   This is a structure to access D and V.
+   @param Arg    Square matrix
    */
 
    public EigenvalueDecomposition (Matrix Arg) {
@@ -908,8 +914,7 @@ public class EigenvalueDecomposition implements java.io.Serializable {
    Public Methods
  * ------------------------ */
 
-   /** Return the eigenvector matrix
-   @return     V
+   /** @return the eigenvector matrix
    */
 
    public Matrix getV () {
@@ -932,8 +937,7 @@ public class EigenvalueDecomposition implements java.io.Serializable {
       return e;
    }
 
-   /** Return the block diagonal eigenvalue matrix
-   @return     D
+   /** @return the block diagonal eigenvalue matrix
    */
 
    public Matrix getD () {
