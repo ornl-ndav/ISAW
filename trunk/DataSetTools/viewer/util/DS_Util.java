@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/07/02 16:43:59  dennis
+ *  getData_ID_String() now gets an entire attribute and
+ *  uses it's toString method.  This fixed a bug when the
+ *  attribute value was an array of integers.
+ *
  *  Revision 1.4  2001/06/04 22:42:24  dennis
  *  Added getData_ID_String() to construct border labels for the
  *  graphs in ImageView and GraphView
@@ -176,11 +181,9 @@ public final class DS_Util implements Serializable
       s += ", " + time;
 
     String sort_name = ds.getLastSortAttribute();
-    Object obj = data.getAttributeValue( sort_name );
-    if ( obj == null )
-      return s;
-
-    s += ", " + sort_name + " " + obj.toString();
+    Attribute attr = data.getAttribute( sort_name );
+    if ( attr != null )
+      s += ", " + attr.toString();
 
     if ( data.isSelected() )
       s += " (Selected)";
