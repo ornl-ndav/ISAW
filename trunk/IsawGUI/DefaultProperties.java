@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/02/13 21:45:13  pfpeterson
+ *  Removed calls to deprecated function fixSeparator.
+ *
  *  Revision 1.15  2002/11/27 23:27:07  pfpeterson
  *  standardized header
  *
@@ -117,11 +120,11 @@ public class DefaultProperties{
     public DefaultProperties(){
         String temp=System.getProperty("user.home");
         if(temp!=null){
-            UserHome=FilenameUtil.fixSeparator(temp);
+            UserHome=FilenameUtil.setForwardSlash(temp);
         }
         temp=getIsawHome();
         if(temp!=null){
-            IsawHome=FilenameUtil.fixSeparator(temp);
+            IsawHome=FilenameUtil.setForwardSlash(temp);
         }else{
             IsawHome=UserHome+separator+"ISAW";
         }
@@ -143,7 +146,7 @@ public class DefaultProperties{
      */
     public DefaultProperties( String USERHOME ){
         this();
-        UserHome=FilenameUtil.fixSeparator(USERHOME);
+        UserHome=FilenameUtil.setForwardSlash(USERHOME);
         IsawHome=USERHOME+separator+"ISAW";
         System.out.println(UserHome+","+IsawHome);
         IsawProps=defaultString();
@@ -155,7 +158,7 @@ public class DefaultProperties{
      */
     public DefaultProperties( String USERHOME, String ISAWHOME){
         this(USERHOME);
-        IsawHome=FilenameUtil.fixSeparator(ISAWHOME);
+        IsawHome=FilenameUtil.setForwardSlash(ISAWHOME);
         System.out.println(UserHome+","+IsawHome);
         IsawProps=defaultString();
     }
@@ -229,7 +232,7 @@ public class DefaultProperties{
         classFile=classFile.substring(index+5,classFile.length());
         index=classFile.indexOf(className);
         classFile=classFile.substring(0,index);
-        classFile=FilenameUtil.fixSeparator(classFile);
+        classFile=FilenameUtil.setForwardSlash(classFile);
         if(injar){
             index=classFile.lastIndexOf("/");
             if(index>=0) classFile=classFile.substring(0,index);
@@ -245,7 +248,7 @@ public class DefaultProperties{
      */
     private String resolveDir(String origDir){
         String dir=(new File(origDir)).getAbsolutePath();
-        dir=FilenameUtil.fixSeparator(dir);
+        dir=FilenameUtil.setForwardSlash(dir);
         int index=dir.indexOf("/.");
         if(index>0){
             dir=dir.substring(0,index);
@@ -369,7 +372,7 @@ public class DefaultProperties{
     public static void oldmain( String[] args ){
         Properties isawProp = new Properties(System.getProperties());
         String path = System.getProperty("user.home")+"\\";
-        path = FilenameUtil.fixSeparator(path);
+        path = FilenameUtil.setForwardSlash(path);
         //boolean windows = isWindowsPlatform();
         
         try{
@@ -387,10 +390,10 @@ public class DefaultProperties{
             
             String npath = System.getProperty("user.home")+"\\";
             String ipath = System.getProperty("user.dir")+"\\";
-            npath = FilenameUtil.fixSeparator(npath);
+            npath = FilenameUtil.setForwardSlash(npath);
             npath = npath.replace('\\','/');
             
-            ipath = FilenameUtil.fixSeparator(ipath);
+            ipath = FilenameUtil.setForwardSlash(ipath);
             ipath = ipath.replace('\\','/');
             
             File f= new File( npath + "IsawProps.dat" );
