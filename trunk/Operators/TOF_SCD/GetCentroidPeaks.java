@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/07/14 17:16:54  rmikk
+ * Eliminated the weird import
+ *
  * Revision 1.1  2004/07/14 16:20:48  rmikk
  * Initial Checkin
  * This gets the centroided peaks and returns a Vector of Peak_new objects
@@ -42,7 +45,7 @@
 
 package Operators.TOF_SCD;
 
-import java.beans.java_awt_BorderLayout_PersistenceDelegate;
+//import java.beans.java_awt_BorderLayout_PersistenceDelegate;
 
 import DataSetTools.operator.*;
 import DataSetTools.dataset.*;
