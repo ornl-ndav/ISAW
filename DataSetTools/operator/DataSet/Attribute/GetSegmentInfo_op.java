@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.2  2003/02/10 20:09:09  dennis
+ * Added getDocumentation() method. (Tyler Stelzer)
+ *
  * Revision 1.1  2003/01/15 20:21:51  dennis
  * Renamed from GetDetectorInfo_op
  *
@@ -194,6 +197,36 @@ public class GetSegmentInfo_op extends DS_Attribute
  public String DataInfoLabel( int i )
   { return "Col,Row";
    }
+   
+   
+   
+ public String getDocumentation()
+    {
+      StringBuffer Res = new StringBuffer();
+      Res.append("@overview This operator returns a vector representing");
+       Res.append(" a row corresponding to a given spectra");
+
+      Res.append("@algorithm Checks to make sure all of the data exists.  If");
+       Res.append(" it is, it will give the row corresponding to a given");
+       Res.append(" spectra");
+
+      Res.append("@param ds The data set with the data block");
+      Res.append("@param index  the position of the desired data block in");
+       Res.append(" the data block array");
+
+      Res.append("@return If successful, this operator returns the");
+       Res.append(" row(Integer) of the given data block. Otherwise, it ");
+       Res.append(" returns an error string.");
+
+      Res.append("@error No data block at position < index >");
+      Res.append("@error Data block has no SegmentInfo Attribute");
+      Res.append("@error Data block has no SegmentInfo Attribute");
+  
+     return Res.toString();
+    }  
+   
+   
+   
  /* ------------------------------- main --------------------------------- */ 
  /** 
   * Test program to verify that this will complile and run ok.  
