@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/08/10 19:50:55  dennis
+ *  Switched to new name for the default tcp server port.
+ *
  *  Revision 1.3  2001/08/09 15:24:06  dennis
  *  Put debug prints in "if (debug_retriever)" blocks.
  *
@@ -75,7 +78,7 @@ abstract public class RemoteDataRetriever extends    Retriever
   protected String   file_name    = "";
 
   private   String remote_machine = "";
-  private   int    port           = DataSetServer.DEFAULT_SERVER_PORT_NUMBER;
+  private   int    port           = DataSetServer.DEFAULT_SERVER_TCP_PORT;
   private   String user_name      = "RemoteDataRetriever";
 
 /* ----------------------------- Constructor ----------------------------- */
