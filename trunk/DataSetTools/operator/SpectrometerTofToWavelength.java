@@ -111,7 +111,7 @@ public class SpectrometerTofToWavelength extends    DataSetOperator
                                      // get the wavelength scale parameters 
     float min_wl = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float max_wl = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    int   num_wl = ( (Float)(getParameter(2).getValue()) ).intValue() + 1;
+    int   num_wl = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
 
                                      // validate wavelength bounds
     if ( min_wl > max_wl )             // swap bounds to be in proper order
