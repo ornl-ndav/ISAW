@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2003/08/15 23:56:21  bouzekc
+ * Modified to work with new IParameterGUI and ParameterGUI.
+ *
  * Revision 1.20  2003/08/15 03:59:22  bouzekc
  * Removed init() method.  Now relies on init(Vector).
  *
@@ -173,7 +176,6 @@ public abstract class VectorPG extends ParameterGUI
   private PropertyChangeSupport pcs;
   private ArrayEntryJPanel GUI;
   private JButton vectorButton;
-  private JPanel buttonHolder;
   private Vector listeners                = new Vector(  );
   private JDialog entryDialog;
   private JFrame entryFrame;
@@ -199,7 +201,6 @@ public abstract class VectorPG extends ParameterGUI
     pcs            = new PropertyChangeSupport( this );
     GUI            = null;
     vectorButton   = null;
-    buttonHolder   = null;
   }
 
   //~ Methods ******************************************************************
@@ -218,14 +219,6 @@ public abstract class VectorPG extends ParameterGUI
    */
   public JComponent getEntryWidget(  ) {
     return vectorButton;
-  }
-
-  /**
-   * Returns a JPanel that holds a button.  When the button is pressed, a new
-   * JFrame with more options appears.
-   */
-  public JPanel getGUIPanel(  ) {
-    return buttonHolder;
   }
 
   /**
@@ -331,18 +324,24 @@ public abstract class VectorPG extends ParameterGUI
    *
    * @param V The Vector to use when initializing this VectorPG.
    */
-  public void init( Vector V ) {
+  public void initGUI( Vector V ) {
     value   = ( V );
     GUI     = new ArrayEntryJPanel( param );
     GUI.addPropertyChangeListener( this );
     entrywidget = vectorButton;
     GUI.setValue( value );
     vectorButton   = new JButton( param.getName(  ) );
-    buttonHolder   = new JPanel( new GridLayout( 1, 1 ) );
-    buttonHolder.add( vectorButton );
+    entrywidget    = new JPanel( new GridLayout(  ) );
+
+    //a Box is needed so that when the entrywidget is resized
+    //smaller, the components will not overlap
+    Box widgetbox = new Box( BoxLayout.X_AXIS );
+
+    widgetbox.add( vectorButton );
+    entrywidget.add( widgetbox );
     vectorButton.addActionListener( this );
 
-    //super.initGUI(  );
+    super.initGUI(  );
   }
 
   /**
