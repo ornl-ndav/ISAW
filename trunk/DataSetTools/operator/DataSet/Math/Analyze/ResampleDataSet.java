@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/11/26 20:41:04  dennis
+ *  Added getDocumentation() method and simple main program.(Mike Miller)
+ *
  *  Revision 1.3  2002/09/19 16:01:57  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -170,6 +173,35 @@ public class ResampleDataSet extends AnalyzeOp
                                     // this operator should operate on
   }
 
+/* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns a string of the description/attributes of ResampleDataSet
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator resamples a dataset. Resampling ");
+    Res.append("is dependent on whether the dataset was newly \n");
+    Res.append("constructed or just the data blocks in the dataset \n");
+    Res.append("were altered.\n");
+    Res.append("@algorithm Given a dataset, a new copy of the dataset ");
+    Res.append("will be created and resampled(boolean = true), or the ");
+    Res.append("old dataset will be resampled and altered ");
+    Res.append("(boolean = false).\n");
+    Res.append("@param ds\n");
+    Res.append("@param min_X\n");
+    Res.append("@param max_X\n");
+    Res.append("@param num_X\n");
+    Res.append("@param make_new_ds\n");
+    Res.append("@return If make_new_ds_flag = true, return new dataset. ");
+    Res.append("If make_new_ds_flag = false, return confirmation "); 
+    Res.append("message that original dataset was altered.\n");
+    Res.append("@error Invalid X interval\n");    
+    
+    return Res.toString();
+    
+  }
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
@@ -293,5 +325,25 @@ public class ResampleDataSet extends AnalyzeOp
     return new_op;
   }
 
+/* ------------------------------- main --------------------------------- */ 
+ /** 
+  * Test program to verify that this will compile and run ok.  
+  *
+  */
+  
+  public static void main( String args[] )
+  {
+
+     System.out.println("Test of ResampleDataSet starting...");
+     DataSet ds = DataSetFactory.getTestDataSet();
+     
+     ResampleDataSet testgroup = 
+       			new ResampleDataSet(ds, 1, 10, 10, true);   
+     System.out.println("New Dataset: " + testgroup.getResult() );
+     
+     System.out.println("Raw Help Info: " + testgroup.getDocumentation() );
+    
+     System.out.println("Test of ResampleDataSet done.");   
+  }
 
 }
