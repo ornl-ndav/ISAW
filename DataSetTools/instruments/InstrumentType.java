@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/06/02 20:30:48  dennis
+ *  formIPNSFilename() now pads instrument name SAD with "1" and all
+ *  other three character instrument names with "0".  Also, the file
+ *  name is converted to all uppercase or all lower case, depending on
+ *  the case of the first character of the instrument name.
+ *  (Mixed case names are not supported.)
+ *
  *  Revision 1.16  2004/05/21 19:09:02  dennis
  *  Changed method formIPNSFileName() to extend all instrument name
  *  strings to four characters by padding zeros.  Eg. SCD is extended
@@ -334,21 +341,26 @@ public class InstrumentType implements Serializable
                                          int    run_num )
   {
     String num = ""+run_num;
-    String file_name;
  
     while ( num.length() < 4 )         // use at least 4 digits for number
       num = "0"+num;
 
-    if ( instrument.length() < 4 )    // use at least 4 digits for name
-      instrument = instrument+"0";
+    if ( instrument.length() == 3 )    // use at least 4 digits for name
+    {
+      String prefix = instrument.substring(0,2);
+      if ( prefix.equalsIgnoreCase( "SAD" ) )
+        instrument = instrument+"1";
+      else
+        instrument = instrument+"0";
+    }
 
-    file_name = instrument+num+".RUN";
+    String file_name = instrument+num+".RUN";
                                        // force all upper or all lower case
                                        // depending on the first character
     if ( Character.isUpperCase( instrument.charAt(0) ) )
-      file_name.toUpperCase();
+      file_name = file_name.toUpperCase();
     else
-      file_name.toLowerCase();
+      file_name = file_name.toLowerCase();
 
     return file_name;
   }
