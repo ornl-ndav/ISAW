@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.51  2003/06/10 19:07:45  pfpeterson
+ * Made Load(filename,varname) more forgiving with case for runfiles.
+ *
  * Revision 1.50  2003/06/10 15:28:46  pfpeterson
  * Added an explicit check to see if the file exists before trying to
  * 'Load' it. Returns a more appropriate error message with this failure.
@@ -736,15 +739,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         int i,
             j;
         
-        {
-          File file=new File(filename);
-          if(! file.exists()){
-            seterror(1000, "File does not exist: "+filename);
-            return null;
-          }
-          file=null;
-        }
-
         Util util = new Util();
         filename = StringUtil.setFileSeparator(filename);
         String Ext;
@@ -756,6 +750,37 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         
         Ext= filename.substring(i+1).toUpperCase();
         
+        {
+          File file=new File(filename);
+          String error="File does not exist: "+filename;
+          if(!file.exists()){
+            if(Ext.equals("RUN")){ // try other cases for run files
+              int index=
+                filename.lastIndexOf(SharedData.getProperty("file.separator"));
+              if(index>=0){
+                filename=filename.substring(0,index)
+                                      +filename.substring(index).toUpperCase();
+                file=new File(filename);
+                if(! file.exists()){
+                  filename=filename.substring(0,index)
+                                      +filename.substring(index).toLowerCase();
+                  file=new File(filename);
+                  if(! file.exists()){
+                    seterror(1000, error);
+                    return null;
+                  }
+                }
+              }else{
+                seterror(1000, error);
+                return null;
+              }
+            }else{
+              seterror(1000, error);
+              return null;
+            }
+          }
+        }
+
         if( Ext.equals("ISD")){
             dss= new DataSet[1];
             dss[0]= DataSet_IO.LoadDataSet(filename);
