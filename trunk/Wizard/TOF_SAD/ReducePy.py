@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.3  2004/01/05 17:52:10  rmikk
+# Jython class now subclass of GenericOperator
+#
 # Revision 1.2  2003/11/13 18:23:03  rmikk
 # Added user documentation
 #
@@ -39,11 +42,12 @@
 #
 # 
 from DataSetTools.operator.Generic.TOF_SAD import *
+from DataSetTools.operator import *
 from Wizard.TOF_SAD import *
 from Command import ScriptUtil
 from DataSetTools.util import *
 # This Jython operator form Runs the Reduce operation and prints out the results.
-class ReducePy(GenericTOF_SAD):
+class ReducePy(GenericOperator):
     def setDefaultParameters(self):
         self.super__clearParametersVector()
         self.addParameter( ArrayPG("Calibration DataSets",None))

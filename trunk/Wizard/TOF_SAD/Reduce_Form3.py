@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.3  2004/01/05 17:52:10  rmikk
+# Jython class now subclass of GenericOperator
+#
 # Revision 1.2  2003/11/13 18:24:25  rmikk
 # Added user Documentaiton
 #
@@ -38,6 +41,7 @@
 #
 # 
 from DataSetTools.operator.Generic.TOF_SAD import *
+from DataSetTools.operator import *
 from Wizard.TOF_SAD import *
 from Command import ScriptUtil
 from java.util import Vector
@@ -45,7 +49,7 @@ from java.lang import Float
 from DataSetTools.util  import StringUtil
 
 # This form operator allows for specifying the Q binning options.
-class Reduce_Form3(GenericTOF_SAD):
+class Reduce_Form3(GenericOperator):
     def setDefaultParameters(self):
         self.super__clearParametersVector()
         V= Vector()

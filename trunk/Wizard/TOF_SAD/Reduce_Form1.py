@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.3  2004/01/05 17:52:10  rmikk
+# Jython class now subclass of GenericOperator
+#
 # Revision 1.2  2003/11/13 18:23:51  rmikk
 # Added user documentation
 #
@@ -39,13 +42,14 @@
 #
 # 
 from DataSetTools.operator.Generic.TOF_SAD import *
+from DataSetTools.operator import *
 from Wizard.TOF_SAD import *
 from java.util import Vector
 from DataSetTools.wizard import *
 # This Jython operator form groups the Calibration type files inputs needed to run 
 # run the Reduce operation.  These files include the sensitivity run,the 
 # efficiency run and the background transmission run
-class Reduce_Form1(GenericTOF_SAD):
+class Reduce_Form1(GenericOperator):
     def setDefaultParameters(self):
         self.super__clearParametersVector()
         FilePG =LoadFilePG("Sensitivity File(*.dat)",None)
