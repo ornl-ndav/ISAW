@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2003/09/03 23:35:15  bouzekc
+ * Changed direct this.value call to getValue().
+ *
  * Revision 1.33  2003/09/03 14:54:04  bouzekc
  * Removed inner ActionListener class (as it is now in ArrayEntryJFrame).
  *
@@ -352,7 +355,7 @@ public abstract class VectorPG extends ParameterGUI
 
     GUI = new ArrayEntryJFrame( innerParam );
     GUI.addPropertyChangeListener( DATA_CHANGED, this );
-    GUI.setValue( value );
+    GUI.setValue( getValue(  ) );
     vectorButton   = new JButton( innerParam.getName(  ) );
     entrywidget    = new EntryWidget(  );
 
@@ -368,7 +371,7 @@ public abstract class VectorPG extends ParameterGUI
    */
   public void propertyChange( PropertyChangeEvent pce ) {
     if( pce.getPropertyName(  ) == DATA_CHANGED ) {
-      this.setValue( pce.getNewValue(  ) );
+      setValue( pce.getNewValue(  ) );
     }
 
     super.propertyChange( pce );
