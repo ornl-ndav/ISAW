@@ -32,6 +32,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2001/08/10 20:46:12  rmikk
+ * The LoadDebug variable is now public and static so it
+ * can be set to true by any application to get the debug
+ * outputs.
+ * Made the main program a test for the Script and Class
+ * loading.  "java Command.Script_Class_List_Hanlder" will
+ * now show the files being considered and possible errors.
+ *
  * Revision 1.15  2001/08/06 14:09:28  rmikk
  * Fixed a bug that cause filenames to have "//".
  * Added a boolean variable LoadDebug that, when true,
@@ -105,7 +113,7 @@ public class Script_Class_List_Handler  implements OperatorHandler
      private static int Command_Compare =257;
      private static int File_Compare = 322;
      private static boolean first = true;
-     private static boolean LoadDebug = false;
+     public static boolean LoadDebug = false;
 /** The System property Script_Path is an input to this
 */
      public Script_Class_List_Handler()
@@ -700,6 +708,7 @@ public static void main( String args[] )
           System.out.println("Properties file could not be loaded due to error :" +ex);
        }
      System.out.println("Here");
+     Script_Class_List_Handler.LoadDebug = true;
      Script_Class_List_Handler BB = new Script_Class_List_Handler();
      System.out.println("#operators ="+BB.getNum_operators());
      BB.show(257);
