@@ -10,6 +10,10 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.15  2002/06/03 16:56:08  rmikk
+ * Added a border around the Selected Graph view for printing
+ * Fixed some indents
+ *
  * Revision 1.14  2002/05/30 22:58:00  chatterjee
  * Added print feature
  *
@@ -70,12 +74,7 @@ package OverplotView;
  * ----------
  */
  import DataSetTools.dataset.*;
-//import DataSetTools.dataset.Attribute;
-//import DataSetTools.dataset.AttributeList;
-//import DataSetTools.dataset.FloatAttribute;
-//import DataSetTools.dataset.StringAttribute;
-//import DataSetTools.dataset.Data;
-//import DataSetTools.dataset.DataSet;
+
 import DataSetTools.viewer.DataSetViewer;
 import DataSetTools.util.*;
 import java.awt.Color;
@@ -126,19 +125,19 @@ public class GraphableDataManager
    {
     setLayout( new GridLayout( 1 , 1 ));
     JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
-     OptionMenuHandler option_menu_handler = new OptionMenuHandler();
-     HShift = new JCheckBoxMenuItem( "Horizontal Shift", false);
-     VShift = new JCheckBoxMenuItem( "Vertical Shift",false);
+    OptionMenuHandler option_menu_handler = new OptionMenuHandler();
+    HShift = new JCheckBoxMenuItem( "Horizontal Shift", false);
+    VShift = new JCheckBoxMenuItem( "Vertical Shift",false);
      
-     option_menu.add( HShift  );
-     option_menu.add( VShift );
+    option_menu.add( HShift  );
+    option_menu.add( VShift );
     HShift.addActionListener( option_menu_handler);
     VShift.addActionListener( option_menu_handler);
     Error =null;
     if( data_set == null)
-	Error = "No data Set";
+       Error = "No data Set";
     else if( data_set.getSelectedIndices().length <=0)
-        Error = "No Data Blocks are Selected";
+       Error = "No Data Blocks are Selected";
    
        
     graph = new sgtGraphableDataGraph();
@@ -175,12 +174,7 @@ public class GraphableDataManager
 
     //modify the menu provided by DataSetViewer
    ;
-    
-     
-    //JMenuItem exitButton = new JMenuItem( AUX_EXIT );
-    //exitButton.addActionListener( option_menu_handler );
-    //option_menu.add( exitButton );
-   
+
   }
 
   /** Needed to prevent window from drawing a blank screen in some cases.
@@ -189,6 +183,7 @@ public class GraphableDataManager
   public void paint( Graphics g)
      {super.paint(g);
       }
+
   /**
    * This will be called by the "outside world" if the contents of the
    * DataSet are changed and it is necesary to redraw the graphs using the
@@ -196,10 +191,7 @@ public class GraphableDataManager
    * selection.
    */
   public void redraw( String reason ) 
-  {  //inittt( getDataSet() );
-//    System.out.println( "DataSetViewer> " + reason + ","+ 
-//                         IObserver.SELECTION_CHANGED );
-      
+  {  
     if ( reason == IObserver.DESTROY )
     {
       graphable_data = null;
@@ -291,14 +283,17 @@ public class GraphableDataManager
     JComponent graph_component ;
     if( Error == null)
       {graph_component = graph.redraw();
+       graph_component.setBorder(
+            BorderFactory.createLineBorder( Color.black ) );
+       graph_component.setBackground( Color.white );
        graph_component.setLayout( new GridLayout( 1,1 ));
        graph_component.addComponentListener( new 
              MyComponentListener(graph.getJPane()));
-        graph_component.doLayout();
+       graph_component.doLayout();
       }
     else
      {graph_component = (new JTextArea( 15 , 30 ));
-      ((JTextArea)graph_component).setText("\n\n    "+Error);
+      ((JTextArea)graph_component).setText("\n\n    "+Error );
      
      }
     
