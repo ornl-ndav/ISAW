@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/02/28 15:14:37  dennis
+ * Added getDocumentation() method.  (Shannon Hintzman)
+ *
  * Revision 1.5  2003/02/24 21:05:17  pfpeterson
  * Changed to use IParameterGUI rather than IParameter.
  *
@@ -114,6 +117,60 @@ public class TimeFocus extends GenericTOF_Diffractometer
     getParameter(2).setValue(new Float(angle_deg));
     getParameter(3).setValue(new Float(final_L_m));
     getParameter(4).setValue(new Boolean(make_new_ds));
+  }
+
+  /* ---------------------------- getDocumentation -------------------------- */
+
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+
+    Res.append("@overview This operator will focus one or more spectra in a ");
+    Res.append("DataSet to a specified scattering angle, using the ratio ");
+    Res.append("L'*sin(theta') / L*sin(theta).");
+
+    Res.append("@algorithm If successful, this operator produces a DataSet ");
+    Res.append("where the specified groups have been focussed to the ");
+    Res.append("specified angle and final flight path values.  If the ");
+    Res.append("make_new_ds flag is true, a new DataSet is returned, ");
+    Res.append("otherwise the original (altered) DataSet will be returned.  ");
+    Res.append("If an error is encountered while focussing the Data blocks, ");
+    Res.append("any Data blocks that were already focussed will remain ");
+    Res.append("focussed.");
+    Res.append("NOTE: This operator is very similar to the TimeFocusGID ");
+    Res.append("operator, however, it gets the spectra to focus from ");
+    Res.append("the DataSet by going through all spectra in the DataSet ");
+    Res.append("and checking whether or not their ID is in the list of ");
+    Res.append("IDs to focus.  The checking is done efficiently using ");
+    Res.append("a binary search.  This faster if a large number ");
+    Res.append("of spectra, are to be focused.");
+
+    Res.append("@param  ds - DataSet for which the focusing should be done.");
+    Res.append("@param  group_str - String containing list of group ids of ");
+    Res.append("the spectra in the DataSet that should be focused.  If the ");
+    Res.append("list is empty, all spectra will be focused.");
+    Res.append("@param angle_deg - The scattering angle, 2*theta, (in ");
+    Res.append("degrees) to which the spectrum should be focused.  This ");
+    Res.append("angle must be greater than 0 and less than 180 degrees.  If ");
+    Res.append("it is less than or equal to 0, the angle will not be changed.");
+    Res.append("@param  final_L_m - The final flight path length in meters. ");
+    Res.append("This must be greater than 0.  If it is less than or equal to ");
+    Res.append("0, the final path length will not be changed.");
+    Res.append("@param  make_new_ds - Flag to indicate whether or not to ");
+    Res.append("make a new DataSet.");
+
+    Res.append("@return If successful, a DataSet is returned, where the ");
+    Res.append("specified groups have been focussed to the specified angle ");
+    Res.append("and final flight path values, otherwise it returns an ");
+    Res.append("ErrorString.");
+
+    Res.append("@error \"DataSet is null in TimeFocus\"");
+    Res.append("@error \"Invalid angle in TimeFocus \" + angle_deg ");
+    Res.append("@error \"Invalid final path in TimeFocus \" + final_L_m ");
+    Res.append("@error \"NO DetectorPosition for group \" + d.getGroup_ID()");
+    Res.append("@error \"NO initial path for group \" + d.getGroup_ID()");
+
+    return Res.toString();
   }
 
  /* ---------------------------- getCommand ------------------------------- */ 

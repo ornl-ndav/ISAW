@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/28 15:14:37  dennis
+ * Added getDocumentation() method.  (Shannon Hintzman)
+ *
  * Revision 1.3  2002/11/27 23:30:47  pfpeterson
  * standardized header
  *
@@ -114,6 +117,59 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
                                     new Boolean(make_new_ds)));
     }
     
+  /* ---------------------------- getDocumentation -------------------------- */
+ 
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    
+    Res.append("@overview This operator will focus one or more spectra in a ");
+    Res.append("DataSet to a specified scattering angle, using the ratio ");
+    Res.append("L'*sin(theta') / L*sin(theta).");
+    Res.append("NOTE: This operator is very similar to the TimeFocus ");
+    Res.append("operator, however, it gets the spectra to focus from ");
+    Res.append("the DataSet by requesting spectra with particular ");
+    Res.append("group IDs.  This is more efficient if a small number ");
+    Res.append("of spectra, selected from a large DataSet, are to be focused.");
+ 
+    Res.append("@algorithm If successful, this operator produces a DataSet ");
+    Res.append("where the specified groups have been focussed to the ");
+    Res.append("specified angle and final flight path values.  If the ");
+    Res.append("make_new_ds flag is true, a new DataSet is returned, ");
+    Res.append("otherwise the original (altered) DataSet will be returned.  ");
+    Res.append("If an error is encountered while focussing the Data blocks, ");
+    Res.append("any Data blocks that were already focussed will remain ");
+    Res.append("focussed.");
+       
+    Res.append("@param  ds - DataSet for which the focusing should be done.");
+    Res.append("@param  group_str - String containing list of group ids of ");
+    Res.append("the spectra in the DataSet that should be focused.  If the ");
+    Res.append("list is empty, all spectra will be focused.");
+    Res.append("@param angle_deg - The scattering angle, 2*theta, (in ");
+    Res.append("degrees) to which the spectrum should be focused.  This ");
+    Res.append("angle must be greater than 0 and less than 180 degrees.  If ");
+    Res.append("it is less than or equal to 0, the angle will not be changed.");
+    Res.append("@param  final_L_m - The final flight path length in meters. ");
+    Res.append("This must be greater than 0.  If it is less than or equal to ");
+    Res.append("0, the final path length will not be changed.");
+    Res.append("@param  make_new_ds - Flag to indicate whether or not to "); 
+    Res.append("make a new DataSet.");
+    
+    Res.append("@return If successful, a DataSet is returned, where the ");
+    Res.append("specified groups have been focussed to the specified angle ");
+    Res.append("and final flight path values, otherwise it returns an ");
+    Res.append("ErrorString.");
+    
+    Res.append("@error \"DataSet is null in TimeFocusGID\"");
+    Res.append("@error \"Invalid angle in TimeFocusGID \" + angle_deg ");
+    Res.append("@error \"Invalid final path in TimeFocusGID \" + final_L_m ");
+    Res.append("@error \"NO DetectorPosition for group \" + d.getGroup_ID()");
+    Res.append("@error \"NO initial path for group \" + d.getGroup_ID()");
+    
+    return Res.toString();
+  }
+  
+ /* ---------------------------- getCommand ------------------------------- */     
     /** 
      * Get the name of this operator to use in scripts
      * 
@@ -139,6 +195,7 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
         addParameter( new Parameter("Make New DataSet", new Boolean(false) ) );
     }
 
+ /* ----------------------------- getResult ------------------------------ */ 
     /** 
      *  Executes this operator using the values of the current parameters.
      *
@@ -156,7 +213,8 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
         String  group_str =  (String)(getParameter(1).getValue());
         float   angle_deg = ((Float)(getParameter(2).getValue())).floatValue();
         float   final_L_m = ((Float)(getParameter(3).getValue())).floatValue();
-        boolean make_new_ds=((Boolean)(getParameter(4).getValue())).booleanValue();
+        boolean make_new_ds
+                        =((Boolean)(getParameter(4).getValue())).booleanValue();
         
         // check for degenerate cases
         if ( ds == null )
@@ -193,7 +251,8 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
             calib=null;
             d = new_ds.getData_entry_with_id( ids[i] );     
             if(d!=null){
-                pos = (DetectorPosition)d.getAttributeValue( Attribute.DETECTOR_POS );
+                pos = (DetectorPosition)d.getAttributeValue( 
+                                                      Attribute.DETECTOR_POS );
                 if ( pos == null )
                     return new ErrorString("NO DetectorPosition for group " +
                                            d.getGroup_ID() );
@@ -251,7 +310,8 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
         
         return new_ds;
     }
-    
+
+ /* ------------------------------- clone -------------------------------- */     
     /** 
      *  Creates a clone of this operator.
      */
@@ -260,7 +320,8 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
         op.CopyParametersFrom( this );
         return op;
     }
-    
+
+ /* ------------------------------- main --------------------------------- */     
     /** 
      * Test program to verify that this will complile and run ok.  
      *
