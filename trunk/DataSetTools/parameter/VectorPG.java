@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2003/08/28 02:50:53  bouzekc
+ * Changed call from addPCLtoVector to super.addPropertyChangeListener().
+ *
  * Revision 1.28  2003/08/28 02:31:22  bouzekc
  * Now makes use of ParameterGUI's constructors.  Removed setEnabled() and
  * getType() methods.  Changed instance variable param to innerParam and
@@ -324,7 +327,7 @@ public abstract class VectorPG extends ParameterGUI
    * @param listener The listener to add.
    */
   public void addPropertyChangeListener( PropertyChangeListener listener ) {
-    addPCLToVector( listener );
+    super.addPropertyChangeListener( listener );
 
     if( initialized ) {
       pcs.addPropertyChangeListener( listener );
@@ -340,7 +343,7 @@ public abstract class VectorPG extends ParameterGUI
    */
   public void addPropertyChangeListener( 
     String property, PropertyChangeListener listener ) {
-    addPCLToVector( property, listener );
+    super.addPropertyChangeListener( property, listener );
 
     if( initialized ) {
       pcs.addPropertyChangeListener( property, listener );
@@ -410,7 +413,7 @@ public abstract class VectorPG extends ParameterGUI
    * @param listener The listener to remove
    */
   public void removePropertyChangeListener( PropertyChangeListener listener ) {
-    removePCLFromVector( listener );
+    super.removePropertyChangeListener( listener );
 
     if( initialized ) {
       pcs.removePropertyChangeListener( listener );
