@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/08/09 15:30:04  dennis
+ *  Added debug_tcp_comm flag and put debug prints in
+ *  "if ( debug_tcp_comm )" blocks.
+ *
  *  Revision 1.5  2001/08/03 21:28:55  dennis
  *  Added methods getInetAddress() and getInetAddressString().  Now keeps
  *  track of the last inet address for logging purposes.
@@ -73,6 +77,7 @@ import java.io.*;
  */
 public class TCPComm
 {
+  public    boolean            debug_tcp_comm;
   protected Socket             sock;
   private   String             last_address_string = "";
   private   InputStream        in_stream;
@@ -159,13 +164,15 @@ public class TCPComm
       out_stream.flush();
       if ( data_obj instanceof TCPCommExitClass )       // Exit request, so 
       {                                                 // shutdown connection
-        System.out.println("'Exit' sent, shutting down TCP connection");
+        if ( debug_tcp_comm )
+          System.out.println("'Exit' sent, shutting down TCP connection");
         FreeResources();
       }
     }
     catch( Exception e )                      // if we can't send, shut it down
     {
-      System.out.println("Exception in TCPComm.Send is : " + e );
+      if ( debug_tcp_comm )
+        System.out.println("Exception in TCPComm.Send is : " + e );
       FreeResources();
       throw( new IOException() );
     }
@@ -218,7 +225,8 @@ public class TCPComm
     }
     catch( IOException e )
     {
-      System.out.println("BROKEN CONNECTION");
+      if ( debug_tcp_comm )
+        System.out.println("BROKEN CONNECTION");
       data_obj = new TCPCommExitClass();
     }
     catch( Exception e )
@@ -233,7 +241,8 @@ public class TCPComm
     if ( data_obj != null &&
          data_obj instanceof TCPCommExitClass )       // Exit request received
     {                                                 // so shutdown connection
-      System.out.println("'Exit' received, shutting down TCP connection");
+      if ( debug_tcp_comm )
+        System.out.println("'Exit' received, shutting down TCP connection");
       FreeResources();
     }
 
