@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/03/18 14:42:43  dennis
+ *  Added option for popping up an additional ViewManager to the
+ *  view menu of an existing ViewManager
+ *
  *  Revision 1.9  2002/11/27 23:24:18  pfpeterson
  *  standardized header
  *
@@ -58,7 +62,7 @@ import DataSetTools.util.*;
  */
 public interface IViewManager extends IObserver
 {
-
+  public static final String ADDITIONAL_VIEW = "Additional View";
   public static final String IMAGE           = "Image View";
   public static final String SCROLLED_GRAPHS = "Scrolled Graph View";
   public static final String SELECTED_GRAPHS = "Selected Graph View";
