@@ -30,7 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2004/06/22 15:34:18  rmikk
+ *  Added documentation for setGridId method and associated variable
+ *
  *  Revision 1.40  2004/05/25 20:01:11  kramer
+ *
  *  Implemented inherited methods from the interface IAttributeList.
  *
  *  Revision 1.39  2004/04/26 13:06:48  rmikk
@@ -185,6 +189,12 @@ public abstract class Data implements IData,
   protected XScale        x_scale;
   private   boolean       use_sqrt_errors = false;
   protected AttributeList attr_list;
+  
+  /**
+   *  A Hashtable of the gridID's and their grid that have already been set 
+   * up while reading through the Datablocks in an XML file
+   */
+  transient protected Hashtable gridIDs = null;
 
   /**
    *  Create an instance of a Data object representing a function or histogram.
@@ -1378,6 +1388,16 @@ public abstract class Data implements IData,
     {
      return xml_utils.setError("Data XMLread not implemented");
     }
+    
+  /**
+   * Gives access to the Hashtable of grid's that have already been set up
+   * as the DataSet reads through the Datablocks described in an XML file
+   * @param gridIds  The Hashtable of gridID's with their associated grid
+   */
+  public void setGridIds( Hashtable gridIds ){
+    this.gridIDs = gridIds; 
+  
+  }
   
   /**
   *  Invokes the method {@link AttributeList#getAttributeTitle() getAttributeTitle()} from {@link AttributeList AttributeList}
@@ -2068,10 +2088,6 @@ public abstract class Data implements IData,
 
     return false;
   }
-Hashtable gridIDs = null;
-public void setGridIds( Hashtable gridIds ){
-  this.gridIDs = gridIds;	
-	
-}
+
 
 }
