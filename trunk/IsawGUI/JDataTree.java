@@ -2,6 +2,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.14  2001/09/04 17:17:34  chatterjee
+ * Constructor changed to accept a keySelection listener
+ *
  * Revision 1.13  2001/08/16 00:54:39  chatterjee
  * Removed comment lines
  *
@@ -164,7 +167,7 @@ public class JDataTree
    * roughly equivalent to runfiles.  DataSet objects store the actual
    * spectra, which are in the form of Data objects.
    */
-  public JDataTree( MouseListener ml ) 
+  public JDataTree( MouseListener ml, KeyListener kl) 
   {
                                       //set up the JTree object that 
                                       //Experiments objects, DataSets
@@ -175,6 +178,7 @@ public class JDataTree
     tree.setShowsRootHandles( true );
     tree.putClientProperty("JTree.lineStyle", "Angled");
     tree.addMouseListener( ml );
+    tree.addKeyListener( kl );
 
     getMyModel().insertNodeInto(  new Experiment( MODIFIED_NODE_TITLE ),
                                   (DefaultMutableTreeNode)getMyModel().getRoot(),
@@ -188,9 +192,6 @@ public class JDataTree
     add( pane );
 
   }
-
-  
-
 
   /**
    * gets the first selected node.
