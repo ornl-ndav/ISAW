@@ -53,6 +53,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/06/26 14:56:17  dennis
+ * Fixed syntax error.
+ *
  * Revision 1.15  2003/06/26 14:02:55  dennis
  * Trapped array index out of bounds problem in line 985,
  * when producing log file.  This is not a permanent fix
@@ -992,9 +995,9 @@ public class blind {
       else
       {
         System.out.println("ERROR: Index out of bounds for seq[i] = " + SEQ[i]);
-        System.out.println("i = " + i + ", 
-                            JH.length = " + JH.length + ", 
-                            SEQ.length = " + SEQ.length );
+        System.out.println("i = " + i + 
+                           ", JH.length = " + JH.length + 
+                           ", SEQ.length = " + SEQ.length );
       } 
     }
     logBuffer.append("\n");
