@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/03/04 20:27:52  dennis
+ *  Now resets "server_alive" flag to false if the connection to the
+ *  server is lost.
+ *
  *  Revision 1.11  2003/02/24 21:09:43  dennis
  *  Moved STATUS string from TCPComm to TCPServer
  *
@@ -186,13 +190,20 @@ abstract public class RemoteDataRetriever extends    Retriever
       Object obj = getObjectFromServer( getStatus() );
 
       if ( obj == null || !(obj instanceof String) )
+      {
+        if ( obj == null )
+          server_alive = false;
         return false; 
+      }
       else
         server_alive = true;
 
       String answer = (String)obj;
       if ( answer.startsWith( TCPServer.STATUS ) )
+      {
+        server_alive = true;
         return true;
+      }
       else
       {
         if ( debug_remote )
@@ -210,6 +221,7 @@ abstract public class RemoteDataRetriever extends    Retriever
                              remote_machine + " FAILED ON PORT " + port );
         System.out.println( "Exception is " +  e );
       }
+      server_alive = false;
       return false;
     }
   }
@@ -248,7 +260,6 @@ abstract public class RemoteDataRetriever extends    Retriever
  *  @return The object that was requested from the server, or null if the
  *          the server was not running, or could not provide the requested
  *          object.
- *
  */
  synchronized protected Object getObjectFromServer( CommandObject command )
  {
@@ -296,8 +307,6 @@ abstract public class RemoteDataRetriever extends    Retriever
       {
         Object obj = null;
         obj = tcp_io.Receive();
-        if ( debug_remote )
-          System.out.println( "Got " + obj );
 
         if ( debug_remote )
         {
