@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2003/07/05 18:11:29  rmikk
+ *  Added two new Attribute operators, ClearSelect and
+ *  SelectGroups, to every DataSet.
+ *
  *  Revision 1.38  2003/03/03 16:49:16  pfpeterson
  *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -313,7 +317,8 @@ public class DataSetFactory implements Serializable
     ds.addOperator( new SetDSDataAttributes() );
     ds.addOperator( new GetField() );
     ds.addOperator( new SetField() );
-
+    ds.addOperator( new SelectGroups());
+    ds.addOperator( new ClearSelect() );
     ds.addOperator( new PlotterOp() );
   }
 
