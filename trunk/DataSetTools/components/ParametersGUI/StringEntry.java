@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/12/15 02:38:19  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.4  2003/09/11 19:21:26  bouzekc
  *  Added a constructor that does not require a column number.
  *
@@ -49,13 +52,14 @@
  
 package DataSetTools.components.ParametersGUI;
 
-import javax.swing.*; 
-import javax.swing.text.*; 
-//import java.awt.Toolkit;
-import java.util.Locale;
-import java.beans.*;
-import DataSetTools.parameter.*;
-import DataSetTools.util.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
+import javax.swing.JTextField;
+import javax.swing.text.Document;
+
+import DataSetTools.util.PropertyChanger;
+import DataSetTools.util.StringFilter;
 import DataSetTools.util.StringFilterer;
 
 /**

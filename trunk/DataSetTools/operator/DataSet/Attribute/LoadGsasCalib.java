@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/12/15 02:20:38  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.7  2003/03/06 23:21:05  pfpeterson
  *  Changed call from fixSeparator to setForwardSlash
  *
@@ -58,14 +61,25 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
-import  java.io.*;
-import  java.util.Vector;
-import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
-import  DataSetTools.operator.Parameter;
-import  DataSetTools.retriever.RunfileRetriever;
-import  DataSetTools.gsastools.GsasCalib;
+import java.io.File;
+import java.io.IOException;
+import java.util.Vector;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.DetPosAttribute;
+import DataSetTools.dataset.FloatAttribute;
+import DataSetTools.dataset.GsasCalibAttribute;
+import DataSetTools.dataset.StringAttribute;
+import DataSetTools.gsastools.GsasCalib;
+import DataSetTools.math.DetectorPosition;
+import DataSetTools.math.Position3D;
+import DataSetTools.operator.Parameter;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.FilenameUtil;
+import DataSetTools.util.LoadFileString;
+import DataSetTools.util.TextFileReader;
 
 /**
  * This operator loads the time-of-flight to d-space conversion

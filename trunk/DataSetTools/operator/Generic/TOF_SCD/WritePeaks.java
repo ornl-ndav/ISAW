@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2003/12/15 02:38:18  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.13  2003/05/22 22:22:56  pfpeterson
  * Fixed sequence number problem with second detector.
  *
@@ -49,16 +52,19 @@
  */
 package DataSetTools.operator.Generic.TOF_SCD;
 
-import DataSetTools.dataset.*;
-import DataSetTools.operator.*;
-import DataSetTools.instruments.*;
-import DataSetTools.util.*;
-import DataSetTools.retriever.RunfileRetriever;
-import java.io.*;
-import java.util.*;
-import java.util.Vector;
-import java.lang.reflect.Array;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
+import java.util.Vector;
+
+import DataSetTools.operator.HiddenOperator;
+import DataSetTools.operator.Operator;
+import DataSetTools.operator.Parameter;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.StringUtil;
+import DataSetTools.util.TextFileReader;
 
 /** 
  * This operator is a small building block of an ISAW version of

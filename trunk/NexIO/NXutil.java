@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/12/15 02:29:12  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.1  2003/05/06 21:58:42  pfpeterson
  * Added to CVS.
  *
@@ -37,11 +40,10 @@ package NexIO;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
-import neutron.nexus.AttributeEntry;
-import neutron.nexus.NeXusFileInterface;
-import neutron.nexus.NexusException;
-import NexIO.CNexusFile;
+
 import ncsa.hdf.hdflib.HDFConstants;
+import neutron.nexus.AttributeEntry;
+import neutron.nexus.NexusException;
 
 /**
  * This is a class of utility functions for accessing information in a

@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.7  2003/12/15 02:17:30  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.6  2003/11/05 02:20:29  bouzekc
  * Changed to work with new Wizard and Form design.
  *
@@ -51,13 +54,9 @@
  */
 package Wizard.Examples;
 
-import DataSetTools.parameter.IParameterGUI;
 import DataSetTools.parameter.LoadFilePG;
-
-import DataSetTools.util.SharedData;
-import DataSetTools.util.StringUtil;
-
-import DataSetTools.wizard.*;
+import DataSetTools.wizard.JyScriptForm;
+import DataSetTools.wizard.Wizard;
 
 
 /**

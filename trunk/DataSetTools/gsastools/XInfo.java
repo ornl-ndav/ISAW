@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/12/15 02:33:25  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.3  2002/11/27 23:15:00  pfpeterson
  *  standardized header
  *
@@ -44,17 +47,10 @@
  */
 package DataSetTools.gsastools;
 
-import DataSetTools.dataset.*;
-import DataSetTools.util.*; 
-import java.awt.*;
-import java.io.*;
-import java.lang.Character;
-import javax.swing.*;
-import java.text.DateFormat;
-import DataSetTools.math.*;
-import DataSetTools.operator.*;
-import DataSetTools.operator.Generic.Special.*;
-import DataSetTools.retriever.RunfileRetriever;
+import DataSetTools.dataset.XScale;
+import DataSetTools.util.Format;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.StringUtil;
 
 /**
  * This class is intended to contain the bank header information for

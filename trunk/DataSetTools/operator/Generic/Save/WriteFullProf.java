@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/12/15 02:33:25  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/02/03 18:29:38  dennis
  * Added getDocumentation() method. (Joshua Olson)
  *
@@ -45,15 +48,24 @@
 
 package DataSetTools.operator.Generic.Save;
 
-import DataSetTools.dataset.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.Vector;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.gsastools.GsasUtil;
+import DataSetTools.gsastools.XInfo;
+import DataSetTools.math.DetectorPosition;
+import DataSetTools.operator.Operator;
+import DataSetTools.operator.Parameter;
 import DataSetTools.retriever.RunfileRetriever;
-import DataSetTools.math.*;
-import DataSetTools.gsastools.*;
-import DataSetTools.operator.*;
-import DataSetTools.util.*;
-import DataSetTools.writer.*;
-import java.util.*;
-import java.io.*;
+import DataSetTools.util.Format;
+import DataSetTools.util.SharedData;
 
 /** This is an operator to export files in the FullProf format.
  */

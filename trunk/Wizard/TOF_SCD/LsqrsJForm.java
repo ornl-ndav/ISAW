@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.25  2003/12/15 02:24:21  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.24  2003/11/05 02:20:30  bouzekc
  * Changed to work with new Wizard and Form design.
  *
@@ -122,19 +125,21 @@
  */
 package Wizard.TOF_SCD;
 
-import DataSetTools.operator.Operator;
-
-import DataSetTools.parameter.*;
-
-import DataSetTools.util.*;
-
-import DataSetTools.wizard.*;
-
-import Operators.TOF_SCD.*;
-
-import java.io.File;
-
 import java.util.Vector;
+
+import DataSetTools.parameter.ArrayPG;
+import DataSetTools.parameter.BooleanPG;
+import DataSetTools.parameter.DataDirPG;
+import DataSetTools.parameter.IParameterGUI;
+import DataSetTools.parameter.IntArrayPG;
+import DataSetTools.parameter.IntegerPG;
+import DataSetTools.parameter.LoadFilePG;
+import DataSetTools.parameter.StringPG;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.IntList;
+import DataSetTools.util.SharedData;
+import DataSetTools.wizard.Form;
+import Operators.TOF_SCD.LsqrsJ;
 
 
 /**
