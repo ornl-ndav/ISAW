@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/02/24 20:37:05  dennis
+ *  Now consistently replies to status requests by sending a String
+ *  that begins with "Status:".
+ *
  *  Revision 1.5  2003/02/24 13:39:19  dennis
  *  Switched to use CommandObject instead of compound command Strings.
  *
@@ -147,7 +151,7 @@ public class FileDataServer extends DataSetServer
         }
   
         else if ( command.getCommand() == CommandObject.GET_STATUS )
-          tcp_io.Send(TCPServer.ANSWER_OK);
+          tcp_io.Send(TCPComm.STATUS + TCPServer.ANSWER_OK);
  
         else
           return false;
