@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/06 21:59:22  dennis
+ * Changed to work with corrected calculation of inverse matrix.
+ *
  * Revision 1.5  2004/03/04 20:59:39  dennis
  * Now allows selecting the slice plane in either HKL or Qxyz
  * and independently allows displaying the plane in either
@@ -740,7 +743,6 @@ public class HKL_SliceView extends DataSetViewer
 
     Tran3D inverse = new Tran3D( orientation_matrix );
     inverse.invert();
-    inverse.transpose();
 
     inverse.apply_to( origin, origin );
     inverse.apply_to( u, u );
