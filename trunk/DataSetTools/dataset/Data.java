@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2002/07/10 16:02:23  pfpeterson
+ *  Added removeAttribute() methods.
+ *
  *  Revision 1.27  2002/07/08 15:38:56  pfpeterson
  *  Added SUM option to stich() which adds the counts together.
  *
@@ -347,6 +350,27 @@ public abstract class Data implements IData,
   public int getNum_attributes()
   {
     return attr_list.getNum_attributes();
+  }
+
+  /**
+   * Remove the attribute at the specified index from the list of
+   * attributes. If the index is invalid, this does nothing.
+   *
+   * @param index The position of the attribute to remove.
+   */
+  public void removeAttribute( int index ){
+      attr_list.removeAttribute(index);
+  }
+
+  /**
+   * Remove the attribute with the specified name from the list of
+   * attributes. If the named attribute is not in the list, this does
+   * nothing.
+   *
+   * @param name The name of the attribute to remove.
+   */
+  public void removeAttribute( String name ){
+      attr_list.removeAttribute( name );
   }
 
   /**
