@@ -31,7 +31,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/08/10 23:56:59  kramer
+ * Now this class uses a copy of a DataSet's y values to determine smoothed
+ * values.  As a result, previously smoothed values are not used to determine
+ * newly smoothed values.  I also improved the Javadoc documentation and added
+ * methods that will eventually be used to determine smoothed values near the
+ * start and the end of the arrays of the data used.
+ *
  * Revision 1.1  2004/07/28 20:29:27  kramer
+ *
  * This is an operator which smoothes the data in all of the Data blocks in
  * a DataSet.  Currently, this operator allows the user to smoothe the data in
  * the selected DataSet or to create a new DataSet with the smoothed data.  It
@@ -55,7 +63,19 @@ import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.Special.GenericSpecial;
 
 /**
- * 
+ * An Operator for smoothing the data from Data blocks in a DataSet.  This class 
+ * uses the Savitzky-Golay Smoothing filter to smooth the data.  Basically, if a 
+ * y value is to be smoothed, the algorithm looks at a specified number of x values  
+ * to the left and right of the point, generates a polynomial of a specified 
+ * degree that best fits the points, and uses the value of that polynomial as the 
+ * smoothed value.
+ * <p>
+ * The algorithm can be mathematically reduced to a much quicker algorithm.  This 
+ * faster algorithm will only produce the exact same results as the slower non-reduced 
+ * algorithm if the data's x values are evenly spaced.  However, it still does a 
+ * good job at smoothing for x values that are not evenly spaced if they are close 
+ * to being evenly spaced.  This class implements both the quick algorithm and the 
+ * non-reduced slower algorithm.
  */
 public class SavitzkyGolayFilter extends GenericSpecial
 {
@@ -89,18 +109,18 @@ public class SavitzkyGolayFilter extends GenericSpecial
     * Creates operator with title "Savitzky-Golay Filter" and the 
     * specified list of parameters.  The getResult method must still 
     * be used to execute the operator.
-    * @param ds         The DataSet to process.
-    * @param nL         The number of points to the left of the point 
-    *                   being processed that are used to approximate the 
-    *                   point being processed.
-    * @param nR         The number of points to the right of the point 
-    *                   being processed that are used to approximate the 
-    *                   point being processed.
-    * @param M          The order of the polynomial used to approximate 
-    *                   the data.  This is also equal to the highest 
-    *                   moment that is conserved.
-    * @pram createNewDS True if this operator should create a new 
-    *                   DataSet from the data modified.
+    * @param ds          The DataSet to process.
+    * @param nL          The number of points to the left of the point 
+    *                    being processed that are used to approximate the 
+    *                    point being processed.
+    * @param nR          The number of points to the right of the point 
+    *                    being processed that are used to approximate the 
+    *                    point being processed.
+    * @param M           The order of the polynomial used to approximate 
+    *                    the data.  This is also equal to the highest 
+    *                    moment that is conserved.
+    * @param createNewDS True if this operator should create a new 
+    *                    DataSet from the data modified.
     * @param useQuickMethod True if the quick method for smoothing the data should 
     *                       be used and false otherwise.
     */
@@ -159,7 +179,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
    }
    
    /**
-    * Replaces all y values with Savitzky-Golay smoothed values.
+    * Smooths the data from all of the Data blocks from the specified DataSet.
     * @return The DataSet containing the smoothed values or an 
     * ErrorString if an error occured.  Note:  If an error message 
     * is returned, the data has not been smoothed at all.
@@ -174,8 +194,8 @@ public class SavitzkyGolayFilter extends GenericSpecial
       int     nR        = ((Integer)(getParameter(2).getValue())).intValue();
       int     M         = ((Integer)(getParameter(3).getValue())).intValue();
       boolean makeNewDs = ((Boolean)getParameter(4).getValue()).booleanValue();
-      boolean useQuick  = ((Boolean)getParameter(5).getValue()).booleanValue();
-      
+      boolean useQuick  = ((Boolean)getParameter(5).getValue()).booleanValue();         
+         
       //now to determine if a copy of the DataSet should be used
       //or if the actual DataSet should be used
       DataSet new_ds    = null;
@@ -198,15 +218,16 @@ public class SavitzkyGolayFilter extends GenericSpecial
          returnedObject = performQuickSmoothing(new_ds,nL,nR,M);
       else
          returnedObject = performLeastSquaresSmoothing(new_ds,nL,nR,M);
-      
-      System.out.println("The elapsed time was "+timer.elapsed());
+            
       return returnedObject;
    }
    
    //-----------=[ Methods that do the quick procedure for smoothing the data]=------------
    /**
     * Uses the quick algorithm to smooth the data from all of the Data objects from the 
-    * DataSet given.
+    * DataSet given.  The quick method will return the exact same results as the long method 
+    * if the x values for the data are all equally spaced.  Otherwise, it is a good 
+    * approximation to the long method's results.
     * @param new_ds The DataSet to process.
     * @param nL     The number of points to the left of the point being 
     *               processed that are used to approximate the point 
@@ -222,30 +243,31 @@ public class SavitzkyGolayFilter extends GenericSpecial
     */
    private Object performQuickSmoothing(DataSet new_ds, int nL, int nR, int M)
    {
-      float[] c = calculateCoefficients(nL,nR,M);
+      float[][] c = calculateAll_c_Coefficients(nL,nR,M);
       
       if (c != null)
       {
          Data    data    = null;
          float[] f       = null;
+         float[] fCopy   = null;
          int     n       = -nL;
          int     i       = 0;
          float   sum     = 0;
          
          for (int dataNum=0; dataNum<new_ds.getNum_entries(); dataNum++)
          {
-            data = new_ds.getData_entry(dataNum);
-            f = data.getY_values();
-                        
-            for (i=0; i<f.length; i++)
-            {
-               sum = 0;
-               for (n = -nL; n<=nR; n++)
-                  if ((i+n)>=0 && (i+n)<f.length)
-                     sum += c[n+nL]*f[i+n];
-               
-               f[i] = sum;
-            }
+            //now to get the Data object to use
+              data = new_ds.getData_entry(dataNum);
+            //and a copy of its y values
+              fCopy = data.getCopyOfY_values();
+            //and a reference to its actual array of y values
+              f = data.getY_values();
+            
+            //if (data.getX_scale() instanceof UniformXScale)
+            //   System.out.println(data+" has a uniform XScale");
+              
+            for (i=0; i<fCopy.length; i++)
+               f[i] = getQuickSmoothedValue(c,fCopy,i,nL,nR,M);
          }
          
          new_ds.addLog_entry("Savitzky-Golay Filtered");
@@ -261,7 +283,91 @@ public class SavitzkyGolayFilter extends GenericSpecial
    }
    
    /**
-    * Get the coefficients used to smooth the data.
+    * Get the smoothed value for the y value at the index <code>yIndex</code>.
+    * @param cArr     The array returned from the method 
+    *                 {@link #calculateAll_c_Coefficients(int, int, int) 
+    *                 calculateAll_c_Coefficients(int, int, int)}.
+    * @param yValues  The array of y values that are used calculate the smoothed value.
+    * @param yIndex   The index of the y value from <code>yValues</code> that 
+    *                 is to be smoothed.
+    * @param nL       The number of points to the left of the point being 
+    *                 processed that are used to approximate the point 
+    *                 being processed.
+    * @param nR       The number of points to the right of the point being 
+    *                 processed that are used to approximate the pont 
+    *                 being processed.
+    * @param M        The order of the polynomial used to approximate the 
+    *                 data.  This is also equal to the highest moment that 
+    *                 is conserved.
+    * @return         The smoothed value.
+    */
+   private float getQuickSmoothedValue(float[][] cArr, float[] yValues, int yIndex, int nL, int nR, int M)
+   {
+      boolean leftCompensate = false;
+      boolean rightCompensate = false;
+      
+      if (nL > yIndex)
+      {
+         leftCompensate = true;
+         //yIndex = nL;
+      }
+      else if (nR > yValues.length-1-yIndex)
+      {
+         rightCompensate = true;
+         //yIndex = yValues.length-1-nR;
+      }
+      
+      if (leftCompensate)
+      {
+         //This is a quick fix.  If the point is too close to the edge just return 
+         //the actual value.
+         return yValues[yIndex];
+         //return calculateValueOnSmoothedPolynomial(cArr,yValues,yIndex,nL,nR,M,-nL);
+      }
+      else if (rightCompensate)
+      {
+         //This is a quick fix.  If the point is too close to the edge just return 
+         //the actual value.
+         return yValues[yIndex];
+         //return calculateValueOnSmoothedPolynomial(cArr,yValues,yIndex,nL,nR,M,nR);
+      }
+      else
+      {
+         float sum = 0;
+         for (int n = -nL; n<=nR; n++)
+            sum += cArr[0][n+nL]*yValues[yIndex+n];
+         return sum;
+      }
+   }
+   
+   private float calculateValueOnSmoothedPolynomial(float[][] coeff, float[] yValues, int yIndex, int nL, int nR, int M, float value)
+   {
+      float[] aArr = new float[M+1];
+      for (int row=0; row<=M; row++)
+         aArr[row] = calculateValueForA(coeff,yValues,yIndex,nL,nR,M,row);
+      
+      float sum = 0;
+      for (int i=0; i<=M; i++)
+         sum += aArr[0]*Math.pow(value,i);
+      return sum;
+   }
+   
+   private float calculateValueForA(float[][] coeff, float[] yValues, int yIndex, int nL, int nR, int M, int row)
+   {
+      float sum = 0;
+      for (int column=0; column<=M; column++)
+         sum += coeff[row][column]*yValues[yIndex-nL+column];
+      return sum;
+   }
+   
+   /**
+    * Get all of the "c" coefficients used to smooth the data.  The 
+    * "c" coefficients are used to determine the coefficients of the 
+    * smoothing polynomial.
+    * <p>
+    * Basically (a of i) = (c of -nL)*f(-nL)+(c of -nL+1)*f(-nL+1)
+    * + . . . . +(c of nR)*f(nR) where (a of i) is the coefficient 
+    * from the smoothing polynomial that is multiplied by x^i.
     * @param nL The number of points to the left of the point being 
     *           processed that are used to approximate the point 
     *           being processed.
@@ -271,18 +377,25 @@ public class SavitzkyGolayFilter extends GenericSpecial
     * @param M  The order of the polynomial used to approximate the 
     *           data.  This is also equal to the highest moment that 
     *           is conserved.
-    * @return   The coefficients used to smooth the data or null if 
+    * @return   The "c" coefficients used to smooth the data or null if 
     *           they cannot be determined.
+    *           <p>
+    *           If <code>doubleArr</code> is the array returned from this 
+    *           method, then <code>doubleArr[i]</code> is the array of 
+    *           nL+nR+1 floats, each of which is one of the "c" coefficients 
+    *           corresponding to ai (the coefficient from the smoothing 
+    *           polynomial that is multiplied by x^i).
     */
-   private float[] calculateCoefficients(int nL, int nR, int M)
+   private float[][] calculateAll_c_Coefficients(int nL, int nR, int M)
    {
       float[][] B = calculateInverseOfATransposeA(nL,nR,M);
       
       if (B != null)
       {
-         float[] coefArr = new float[nL+nR+1];
-         for (int n=-nL; n<=nR; n++)
-            coefArr[n+nL] = getCoefficient(B,n,nL,nR,M);
+         float[][] coefArr = new float[M+1][nL+nR+1];
+         for (int row=0; row<=M; row++)
+            for (int n=-nL; n<=nR; n++)
+               coefArr[row][n+nL] = get_c_CoefficientAt(n,row,B,nL,nR,M);
          return coefArr;
       }
       else
@@ -290,41 +403,50 @@ public class SavitzkyGolayFilter extends GenericSpecial
    }
    
    /**
-    * Get the nth coefficient used to smooth the data.
-    * @param B  The matrix returned by {@link 
-    *           calculateInverseOfATransposeDotA(int nL, int nR, int M) 
-    *           calculateInverseOfATransposeDotA(int nL, int nR, int M)}.
-    * @param n  The number of the desired corefficient. (the 
-    *           first coefficient is found at n=-nL and the last 
-    *           coefficient is found at n=nR).
-    * @param nL The number of points to the left of the point being 
-    *           processed that are used to approximate the point 
-    *           being processed.
-    * @param nR The number of points to the right of the point being 
-    *           processed that are used to approximate the pont 
-    *           being processed.
-    * @param M  The order of the polynomial used to approximate the 
-    *           data.  This is also equal to the highest moment that 
-    *           is conserved.
-    * @return   The nth coefficient.
+    * Get the nth "c" coefficient used to smooth the data.  The "c" 
+    * coefficients are used to determine the coefficients in the 
+    * polynomial of best fit.
+    * <p>
+    * Basically (a of i) = (c of -nL)*f(-nL)+(c of -nL+1)*f(-nL+1)
+    * + . . . . +(c of nR)*f(nR) where (a of i) is the coefficient 
+    * from the smoothing polynomial that is multiplied by x^i.
+    * @param n     The number of the desired "c" coefficient. (the 
+    *              first coefficient is found at n=-nL and the last 
+    *              coefficient is found at n=nR).
+    * @param a_num If <code>a_num=i</code> the "c" coefficent returned 
+    *              is the nth coefficient used to determine ai (the 
+    *              coefficient from the smoothing polynomial that is 
+    *              multiplied by x^i).
+    * @param B     The matrix returned by {@link 
+    *              #calculateInverseOfATransposeA(int, int, int) 
+    *              calculateInverseOfATransposeDotA(int nL, int nR, int M)}.
+    * @param nL    The number of points to the left of the point being 
+    *              processed that are used to approximate the point 
+    *              being processed.
+    * @param nR    The number of points to the right of the point being 
+    *              processed that are used to approximate the pont 
+    *              being processed.
+    * @param M     The order of the polynomial used to approximate the 
+    *              data.  This is also equal to the highest moment that 
+    *              is conserved.
+    * @return      The nth coefficient.
     */
-   private float getCoefficient(float[][] B, int n, int nL, int nR, int M)
+   private float get_c_CoefficientAt(int n, int a_num, float[][] B, int nL, int nR, int M)
    {
       float sum = 0;
       for (int m=0; m<=M; m++)
-         sum += B[0][m]*Math.pow(n,m);
+         sum += B[a_num][m]*Math.pow(n,m);
       return sum;
    }
    
    /**
     * Determines the matrix that would result by taking the inverse of 
     * th matrix that would result by taking the product 
-    * of transpose of the matrix 'A' with the matrix 'A'.
+    * of transpose of the matrix "A" with the matrix "A".
     * <p>
-    * 'A' is the name of the matrix used to determine coefficients used 
-    * for smoothing the data.  This method creates the matrix 'A' which 
-    * is defined as Aij = i^j (ie the element in the ith row and jth 
-    * column of 'A' is equal to i^j).
+    * The matrix "A" is defined such that the ith row and jth column in 
+    * the matrix has the value i^j and is used to calculate the 
+    * coefficients of the polynomial of best fit.
     * @param nL The number of points to the left of the point being 
     *           processed that are used to approximate the point 
     *           being processed.
@@ -353,7 +475,10 @@ public class SavitzkyGolayFilter extends GenericSpecial
    
    /**
     * Determines the matrix that would result by taking the product 
-    * of transpose of the supplied matrix with the supplied matrix.
+    * of transpose of the matrix "A" with the matrix "A".  The 
+    * matrix "A" is defined such that the ith row and jth column 
+    * in the matrix has the value i^j and is used to calculate the 
+    * coefficients of the polynomial of best fit.
     * @param A  The matrix used in the computation.
     * @param nL The number of points to the left of the point being 
     *           processed that are used to approximate the point 
@@ -382,7 +507,9 @@ public class SavitzkyGolayFilter extends GenericSpecial
    /**
     * Calculates the element in the ith row and jth column in the matrix 
     * that would result by taking the product of transpose of the 
-    * supplied matrix with the supplied matrix.
+    * matrix "A" with the matrix "A."  The matrix "A" is defined such that 
+    * the ith row and jth column in the matrix has the value i^j and is 
+    * used to calculate the coefficients of the polynomial of best fit.
     * @param i The row number (starting at 0).
     * @param j The column number (starting at 0).
     * @param nL The number of points to the left of the point being 
@@ -416,6 +543,22 @@ public class SavitzkyGolayFilter extends GenericSpecial
    }
    
    //-----------=[ Methods that smooth the data using least-squares fitting]=----------------
+   /**
+    * Uses the long algorithm to smooth the data from all of the Data objects from the 
+    * DataSet given.
+    * @param new_ds The DataSet to process.
+    * @param nL     The number of points to the left of the point being 
+    *               processed that are used to approximate the point 
+    *               being processed.
+    * @param nR     The number of points to the right of the point being 
+    *               processed that are used to approximate the pont 
+    *               being processed.
+    * @param M      The order of the polynomial used to approximate the 
+    *               data.  This is also equal to the highest moment that 
+    *               is conserved.
+    * @return       The Object that this method wants the 
+    *               {@link #getResult() getResult()} to return.
+    */
    private Object performLeastSquaresSmoothing(DataSet new_ds, int nL, int nR, int M)
    {
       //first to test if the numbers entered are valid
@@ -427,69 +570,116 @@ public class SavitzkyGolayFilter extends GenericSpecial
       double[][] A = null;
       double[]   b = null;
       
-      //TODO This might be wrong
       Data    currentData   = null;
       float   smoothedValue = Float.NaN;
-      float[] yValues       = null;
+      float[] copyOfYValues = null;
+      float[] actualYValues = null;
       for (int i=0; i<new_ds.getNum_entries(); i++)
       {
          //now to get the current Data object
-         currentData   = new_ds.getData_entry(i);
-         //and its y values
-         yValues       = currentData.getY_values();
+           currentData   = new_ds.getData_entry(i);
+         //and its y values.  This is a copy of the array of y values
+           copyOfYValues = currentData.getCopyOfY_values();
+         //and this is a reference to the actual array of y values
+           actualYValues       = currentData.getY_values();
          
-         for (int yIndex = 0; yIndex<yValues.length; yIndex++)
+         for (int yIndex = 0; yIndex<copyOfYValues.length; yIndex++)
          {
             counter++;
             
-         	smoothedValue = getSmoothedValue(currentData,yIndex,nL,nR,M);
+         	smoothedValue = getSmoothedValue(currentData.getX_values(), copyOfYValues,
+         	                                   currentData.isHistogram(),
+         	                                     yIndex,nL,nR,M);
             if (!Float.isNaN(smoothedValue))
-            	yValues[yIndex] = smoothedValue;
+               actualYValues[yIndex] = smoothedValue;
          }
       }
-
-      System.out.println("getSmoothedValue() should have been called "+counter+" times");
       
       return new_ds;
    }
-      
-   private double[] getBMatrix(Data data, int yIndex, int nL, int nR)
+   
+   /**
+    * Get the matrix "B" used in solving for a polynomial of best fit.  The 
+    * elements in "B" are the y values used to are to be fit by the polynomial.  
+    * @param yValues The y values used in the data.
+    * @param yIndex  The index from <code>yValues</code> that is to be smoothed.
+    * @param nL     The number of points to the left of the point being 
+    *               processed that are used to approximate the point 
+    *               being processed.
+    * @param nR     The number of points to the right of the point being 
+    *               processed that are used to approximate the pont 
+    *               being processed.
+    * @return       The matrix "B" from the equation Aa=B
+    */
+   private double[] getMatrixB(float[] yValues, int yIndex, int nL, int nR)
    {
       double[] b = new double[nR+nL+1];
       
       for (int i=0; i<b.length; i++)
-         b[i] = data.getY_values()[yIndex-nL+i];
+         b[i] = yValues[yIndex-nL+i];
       return b;
    }
 
    /**
     * Get the x value corresponding the to y value at the 
-    * index <code>yIndex</code>.
-    * @param data   The Data object from which the x and y 
-    *               values are acquired.
-    * @param yIndex The index from (data.getY_values()) 
-    *               for which you want to get the 
-    *               corresponding x value.
-    * @return       The corresponding x value or Float.NaN 
-    *               if yIndex is invalid.
+    * index <code>yIndex</code>.  This method is needed because 
+    * it returns the correct x value to use if the data is from 
+    * a histogram or a function.
+    * <p>
+    * If the x and y values specified correspond to a histogram, 
+    * the average of x values at the ends of the bin that the 
+    * y value is in is returned.  Otherwise, if the x and y values 
+    * correspond to a function, the x value at the same index of 
+    * the y value is returned.
+    * @param xValues     The x values used in the data.
+    * @param yValues     The y values used in the data.
+    * @param isHistogram True if the data is from a histogram and 
+    *                    false if it is from a function.
+    * @param yIndex      The index from <code>yValues</code> 
+    *                    for which you want to get the 
+    *                    corresponding x value.
+    * @return            The corresponding x value or Float.NaN 
+    *                    if yIndex is invalid.
     */
-   private float getXValue(Data data, int yIndex)
+   private float getXValue(float[] xValues, float[] yValues, boolean isHistogram, int yIndex)
    {
-      if (yIndex<0 && yIndex>=data.getY_values().length)
-         return Float.NaN;
-      
-      if (data.isHistogram())
+      if (yIndex<0 || yIndex>=yValues.length || yIndex>=xValues.length)
       {
-         if ((yIndex+1)<data.getY_values().length)
-            return (data.getX_values()[yIndex]+data.getX_values()[yIndex+1])/2.0f;
+         System.out.println("Invalid paramter (yIndex="+yIndex+") in getXValue\n  Returning Float.NaN");
+         return Float.NaN;
+      }
+      
+      if (isHistogram)
+      {
+         if ((yIndex+1)<xValues.length)
+            return (xValues[yIndex]+xValues[yIndex+1])/2.0f;
          else
+         {
+            System.out.println("Invalid paramter (yIndex="+yIndex+" !< "+(xValues.length-1)+") in getXValue\n  Returning Float.NaN");
             return Float.NaN;
+         }
       }
       else
-         return data.getX_values()[yIndex];
+         return xValues[yIndex];
    }
    
-   private double[][] getAMatrix(Data data, int yIndex, int nL, int nR, int M)
+   /**
+    * Get the matrix "A" used in solving for a polynomial of best fit.
+    * @param isHistogram True if the data is from a histogram and false 
+    *                    if it is from a function.
+    * @param M       The degree of the polynomial of best fit.
+    * @param xValues     The x values used in the data.
+    * @param yValues The y values used in the data.
+    * @param yIndex  The index from <code>yValues</code> that is to be smoothed.
+    * @param nL      The number of points to the left of the point being 
+    *                processed that are used to approximate the point 
+    *                being processed.
+    * @param nR      The number of points to the right of the point being 
+    *                processed that are used to approximate the pont 
+    *                being processed.
+    * @return        The matrix "B" from the equation Aa=B
+    */
+   private double[][] getMatrixA(float[] xValues, float[] yValues, boolean isHistogram, int yIndex, int nL, int nR, int M)
    {
       //the matrix is in the form [column][row]
       double[][] A = new double[nR+nL+1][M+1];
@@ -501,17 +691,31 @@ public class SavitzkyGolayFilter extends GenericSpecial
       
       for (int row=0; row<nR+nL+1; row++)
       {
-         currentX = getXValue(data,yIndex);
+         currentX = getXValue(xValues, yValues,isHistogram,yIndex);
          A[row][0] = 1;
          for (int column=1; column<(M+1); column++)
             A[row][column] = A[row][column-1]*currentX;
 
          yIndex++;
       }
-
+      
       return A;
    }
    
+   /**
+    * Calculate the value of the smoothed polynomial at the x value <code>x</code>.
+    * @param x            The x value for which the y value of the smoothed value is calculated.
+    * @param coefficients The coefficients of the smoothing polynomial.
+    * @param length       The number of values from <code>coefficients</code> that actually 
+    *                     are the coefficients from the smoothing algorithm.  
+    *                     <p>
+    *                     <code>coefficients[0]</code> should be the first coefficient (the 
+    *                     coefficient paried with x^0).
+    *                     <p>
+    *                     <code>coefficients[length-1]</code> should be the last coefficient (the 
+    *                     coefficient paried with x^M (where M is the degree of the polynomial)).
+    * @return             The y value of the smoothed polynomial at the x value <code>x</code>.
+    */
    private double computeApproximateValueAt(float x, double[] coefficients, int length)
    {
       if (length >= 1)
@@ -523,14 +727,37 @@ public class SavitzkyGolayFilter extends GenericSpecial
             value += coefficients[i]*currentX;
             currentX *= x;
          }
-         
          return value;
       }
       else
+      {
+         System.out.println("Invalid paramter in method computeApproximateValueAt()");
+         System.out.println("  length="+length+" < 1");
+         System.out.println("  Returning Float.NaN");
          return Float.NaN;
+      }
    }
-      
-   private float getSmoothedValue(Data data, int yIndex, int nL, int nR, int M)
+   
+   /**
+    * Get the smoothed value for the y value at the index <code>yIndex</code>.
+    * @param xValues     The array of x values used to calculate the smoothed value.
+    * @param yValues     The array of y values that are used calculate the smoothed value.
+    * @param yIndex      The index of the y value from <code>yValues</code> that 
+    *                    is to be smoothed.
+    * @param isHistogram True if the x and y values are from a histogram and false if 
+    *                    they are from a function.
+    * @param nL          The number of points to the left of the point being 
+    *                    processed that are used to approximate the point 
+    *                    being processed.
+    * @param nR          The number of points to the right of the point being 
+    *                    processed that are used to approximate the pont 
+    *                    being processed.
+    * @param M           The order of the polynomial used to approximate the 
+    *                    data.  This is also equal to the highest moment that 
+    *                    is conserved.
+    * @return            The smoothed value.
+    */
+   private float getSmoothedValue(float[] xValues, float[] yValues, boolean isHistogram, int yIndex, int nL, int nR, int M)
    {
       boolean leftCompensate = false;
       boolean rightCompensate = false;
@@ -540,203 +767,32 @@ public class SavitzkyGolayFilter extends GenericSpecial
          leftCompensate = true;
          yIndex = nL;
       }
-      else if (nR > data.getY_values().length-1-yIndex)
+      else if (nR > yValues.length-1-yIndex)
       {
          rightCompensate = true;
-         yIndex = data.getY_values().length-1-nR;
+         yIndex = yValues.length-1-nR;
       }
       
       //now to constuct matrix 'A'
-      double[][] A = getAMatrix(data, yIndex, nL, nR, M);
+      double[][] A = getMatrixA(xValues, yValues, isHistogram, yIndex, nL, nR, M);
 
       //now to construct matrix 'b'
-      double[]   b = getBMatrix(data, yIndex, nL, nR);
+      double[]   b = getMatrixB(yValues, yIndex, nL, nR);
       
       double returnedVal = LinearAlgebra.solve(A,b);
           
       if (returnedVal == Double.NaN)
+      {
+         System.out.println("Invalid parameter in getSmoothedValue()");
+         System.out.println("  LinearAlgebra.solve() returned "+returnedVal);
+         System.out.println("  Returning Float.NaN");         
          return Float.NaN;
+      }
       if (leftCompensate)
-         return (float)computeApproximateValueAt(getXValue(data,yIndex-nL),b,M+1);
+         return (float)computeApproximateValueAt(getXValue(xValues, yValues, isHistogram, yIndex-nL),b,M+1);
       else if (rightCompensate)
-         return (float)computeApproximateValueAt(getXValue(data,yIndex+nR),b,M+1);
+         return (float)computeApproximateValueAt(getXValue(xValues, yValues, isHistogram, yIndex+nR),b,M+1);
       else
-         return (float)computeApproximateValueAt(getXValue(data,yIndex),   b,M+1);
+         return (float)computeApproximateValueAt(getXValue(xValues, yValues, isHistogram, yIndex),   b,M+1);
    }
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
 }    
-/*
-      Data    currentData   = null;
-      float   smoothedValue = Float.NaN;
-      float[] yValues       = null;
-      for (int i=0; i<new_ds.getNum_entries(); i++)
-      {
-         currentData   = new_ds.getData_entry(i);
-         yValues       = currentData.getY_values();
-         for (int yIndex = 0; yIndex<yValues.length; yIndex++)
-         {
-            smoothedValue = getSmoothedValue(currentData,yIndex,nL,nR,M);
-            if (smoothedValue != Float.NaN)
-               yValues[yIndex] = smoothedValue;
-         }
-      }
-      return new_ds;
-   }
-   
-   private float getSmoothedValue(Data data, int currentYIndex, int nL, int nR, int M)
-   {
-      double[] b = generateYMatrix(data,currentYIndex,nL,nR);
-      if (b == null)
-         return Float.NaN;
-      double[][] A = generateCoefficientMatrix(data,currentYIndex,nL,nR,M);
-      if (A == null)
-         return Float.NaN;
-      
-      LinearAlgebra.solve(A,b);
-      
-      if (b.length >= 1)
-         return (float)b[0];
-      else
-         return Float.NaN;
-   }
-   
-   private double[] generateYMatrix(Data data, int currentYIndex, int nL, int nR)
-   {
-      double[] yArr = null;
-      int i = 0;
-      try
-      {
-         if (data.getY_values() == null)
-            return null;
-         if (currentYIndex<0 || currentYIndex>=data.getY_values().length)
-            return null;
-      
-         nL = getSafeNL(currentYIndex,nL);
-         nR = getSafeNR(data.getY_values(),currentYIndex,nR);
-      
-         yArr = new double[nL+nR+1];
-         for (i=0; i<yArr.length; i++)
-            yArr[i] = data.getY_values()[currentYIndex-nL+i];
-      }
-      catch (ArrayIndexOutOfBoundsException ex)
-      {
-         System.out.println("At index="+i);
-         if (yArr == null)
-            System.out.println("yArr is null");
-         else
-            System.out.println("yArr.length="+yArr.length);
-         System.out.println("data.getY_values().length="+data.getY_values().length);
-      }
-      
-      return yArr;
-   }
-   
-   private double[][] generateCoefficientMatrix(Data data, int currentYIndex, int nL, int nR, int M)
-   {
-      if (data.getX_values() == null)
-         return null;
-      if (currentYIndex<0 || currentYIndex>=data.getY_values().length)
-         return null;
-      
-      float currentXValue = Float.NaN;
-      if (data.isHistogram())
-      {
-         //this is the number of bins (intervals in the histogram)
-         int numOfBins = data.getX_values().length - 1;
-         nL = getSafeNL(currentYIndex,nL);
-         nR = Math.min(nR, numOfBins-currentYIndex-1);
-         currentXValue = (data.getX_values()[currentYIndex]+data.getX_values()[currentYIndex+1])/2.0f;
-      }
-      else
-      {
-         //if the Data object is not a histogram, its a function
-         //then the x value at an index "i" corresponds to the y 
-         //value at the index "i".
-         nL = getSafeNL(currentYIndex,nL);
-         nR = getSafeNR(data.getX_values(),currentYIndex,nR);
-         currentXValue = data.getX_values()[currentYIndex];
-      }
-      
-      if (nL+nR<M)
-      {
-         int remainder = (M-nR-nL)%2;
-         int extra     = 0;
-         if (remainder != 0) //then M-nR-nL is odd
-            extra = 1;
-         int deltaN = (M-nR-nL+extra)/2;
-         
-         nL += deltaN;
-         nR += deltaN;
-      }
-      
-      double[][] coeffArr = new double[nL+nR+1][M+1];
-      for (int row=0; row<nL+nR+1; row++)
-         for (int column=0; column<M+1; column++)
-            coeffArr[row][column] = (float)Math.pow(currentXValue-nL+row,column);
-      
-      return coeffArr;
-   }
-   
-   private int getSafeNL(int currentIndex, int nL)
-   {
-      return Math.min(currentIndex,nL);
-   }
-   
-   private int getSafeNR(float[] valueArr, int currentIndex, int nR)
-   {
-      return Math.min(valueArr.length-currentIndex+1,nR);
-   }
-*/
