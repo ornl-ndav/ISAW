@@ -55,7 +55,7 @@ public class SpectrometerPlotter extends    DataSetOperator
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current SpectrometerTofToEnergyLoss Operator.  The list 
+   * Get a copy of the current SpectrometerPlotter Operator.  The list 
    * of parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
