@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2002/02/25 17:05:01  pfpeterson
+ *  Updated (again) for the new operator hierarchy.
+ *
  *  Revision 1.17  2002/02/22 20:37:10  pfpeterson
  *  Operator reorganization.
  *
@@ -73,8 +76,8 @@ package DataSetTools.viewer;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
-import DataSetTools.operator.DataSet.DS_Math.DataSetOp.*;
-import DataSetTools.operator.DataSet.DS_EditList.*;
+import DataSetTools.operator.DataSet.Math.DataSet.*;
+import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.viewer.util.*;
