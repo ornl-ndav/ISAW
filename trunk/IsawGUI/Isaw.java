@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.190  2004/03/15 23:57:00  dennis
+ *  Changed some references to static methods to be through
+ *  the class name, instead of an instance.
+ *
  *  Revision 1.189  2004/03/15 19:35:30  dennis
  *  Rmoved unused imports after factoring out view components,
  *  math and utilities.
@@ -1283,7 +1287,6 @@ public class Isaw
        File[] F = new File[1];
        F[0] = new File(filename);
        load_files( F );
-       
     }
  }
 
@@ -1297,7 +1300,6 @@ public class Isaw
                                     msg,
                                     FileDialog.LOAD );
     final JFileChooser fc = new JFileChooser();
-    BrowserControl bc =  new BrowserControl();
     String filename=null;
     
     public void actionPerformed( ActionEvent ev ) 
@@ -1365,8 +1367,7 @@ public class Isaw
                                   //should actually import the files
       if( s.equals(DB_IMPORT_MI) )
       {
-        BrowserControl bc = new BrowserControl();
-        bc.displayURL( DB_URL );
+        BrowserControl.displayURL( DB_URL );
         return;
       }
 
@@ -1556,13 +1557,13 @@ public class Isaw
       if( s.equals(GLOSSARY_MI) ){
 	  String S=DataSetTools.util.FilenameUtil.docDir("Glossary.html");
 	  SharedData.addmsg("Displaying glossary in web browser");
-	  if( S != null) bc.displayURL(S);
+	  if( S != null) BrowserControl.displayURL(S);
       }
 
       if( s.equals(API_DOCS_MI) ){
 	  String S=DataSetTools.util.FilenameUtil.docDir("index.html");
           if( S != null){
-              bc.displayURL(S);
+              BrowserControl.displayURL(S);
               SharedData.addmsg("Displaying API documentation"
                                          +" in web browser");
           }
@@ -1571,18 +1572,18 @@ public class Isaw
       if( s.equals(HOME_LINK_MI) ){
 	  SharedData.addmsg("Displaying ISAW homepage in"
 				     +" web browser");
-	  bc.displayURL( HOME_LINK );
+	   BrowserControl.displayURL( HOME_LINK );
       }
 
       if( s.equals(FTP_LINK_MI) ){
 	  SharedData.addmsg("Displaying ftp site in web browser");
-	  bc.displayURL( FTP_LINK );
+	  BrowserControl.displayURL( FTP_LINK );
       }
 
       if( s.equals(USERMAN_LINK_MI) ){
 	  SharedData.addmsg("Displaying user manual location"
 				     +" in web browser");
-	  bc.displayURL( USERMAN_LINK );
+	   BrowserControl.displayURL( USERMAN_LINK );
       }
 
 

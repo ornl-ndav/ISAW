@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2004/03/15 23:57:00  dennis
+ * Changed some references to static methods to be through
+ * the class name, instead of an instance.
+ *
  * Revision 1.15  2003/02/28 23:12:02  pfpeterson
  * Made Script_Class_List_Handler a private static variable.
  * ~7% improvement in time to load isaw.
@@ -162,7 +166,7 @@ class HTMLPage extends JFrame
                         Fname += "docs/html/DataSetTools/operator/Operator.html";
                         //U = new URL( "file://"+Fname);
                         //System.out.println("URL=file://"+Fname);
-                        BC.displayURL ( "file://" + Fname );
+                        BrowserControl.displayURL ( "file://" + Fname );
                         return;
                      }
                      else if( U.getFile ().indexOf ( "XX$Panel1" ) >= 0 )
