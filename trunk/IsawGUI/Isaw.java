@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.109  2002/07/17 19:24:32  rmikk
+ *  Updated the View file menu choices
+ *
  *  Revision 1.108  2002/07/16 21:47:27  rmikk
  *  Add menu items and handlers for the quick table viewers
  *
@@ -783,12 +786,12 @@ public class Isaw
     JMenuItem graphView   = new JMenuItem( SELECTED_VIEW_MI );
     JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
     JMenuItem tableView = new JMenuItem( TABLE_VIEW_MI );
-    JMenu Tables= new JMenu("Quick Tables");
+    JMenu Tables= new JMenu("Selected Table View");
     for( int k=0; k< TableViewMenuComponents.getNMenuItems(); k++)
       {JMenuItem jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k ) );
        jmi.addActionListener( new MenuItemHandler());
        Tables.add(jmi);
-       jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k ) +" w err");
+      /* jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k ) +" w err");
        jmi.addActionListener( new MenuItemHandler());
        Tables.add(jmi);
        jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k ) +" w indx");
@@ -797,6 +800,7 @@ public class Isaw
        jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k )+" w err,indx" );
        jmi.addActionListener( new MenuItemHandler());
        Tables.add(jmi);
+       */
        }
     JMenuItem contourView = new JMenuItem( CONTOUR_VIEW_MI );
     JMenuItem logView = new JMenuItem( LOG_VIEW_MI );
@@ -914,12 +918,14 @@ public class Isaw
         
          
     vMenu.add(imageView);
+    vMenu.add(threeDView);
+    vMenu.add( contourView );
     vMenu.add(s_graphView);
     vMenu.add(graphView);
-    vMenu.add(threeDView);
-    vMenu.add( tableView );
+    
+    
     vMenu.add( Tables );
-    vMenu.add( contourView );
+    vMenu.add( tableView );
     vMenu.add( logView );
     vMenu.add(instrumentInfoView);         
       
