@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/10/23 18:50:43  pfpeterson
+ *  Now supports a javax.swing.filechooser.FileFilter to be specified
+ *  for browsing options. Also fixed bug where it did not automatically
+ *  switch to the data directory if no value was specified.
+ *
  *  Revision 1.4  2002/10/10 19:15:13  pfpeterson
  *  Fixed a bug where the Data_Directory was not used if a value
  *  was not specified.
@@ -77,8 +82,6 @@ public class DataDirPG extends BrowsePG{
                     this.setValue(file.getParent());
                 }
             }
-        }else{
-            this.setValue(SharedData.getProperty("Data_Directory"));
         }
         this.type=TYPE;
     }
@@ -100,7 +103,7 @@ public class DataDirPG extends BrowsePG{
         innerEntry.addPropertyChangeListener(IParameter.VALUE, this);
         browse=new JButton("Browse");
         browse.addActionListener(new BrowseButtonListener(innerEntry,
-                                              BrowseButtonListener.DIR_ONLY));
+                                   BrowseButtonListener.DIR_ONLY,this.filter));
         entrywidget=new JPanel();
         entrywidget.add(innerEntry);
         entrywidget.add(browse);
@@ -149,6 +152,7 @@ public class DataDirPG extends BrowsePG{
         DataDirPG pg=new DataDirPG(this.name,this.value,this.valid);
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
+        pg.filter=this.filter;
         return pg;
     }
 }

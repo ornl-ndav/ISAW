@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/10/23 18:50:45  pfpeterson
+ *  Now supports a javax.swing.filechooser.FileFilter to be specified
+ *  for browsing options. Also fixed bug where it did not automatically
+ *  switch to the data directory if no value was specified.
+ *
  *  Revision 1.3  2002/10/07 15:27:47  pfpeterson
  *  Another attempt to fix the clone() bug.
  *
@@ -85,7 +90,7 @@ public class SaveFilePG extends BrowsePG{
         innerEntry.addPropertyChangeListener(IParameter.VALUE, this);
         browse=new JButton("Browse");
         browse.addActionListener(new BrowseButtonListener(innerEntry,
-                                              BrowseButtonListener.SAVE_FILE));
+                                  BrowseButtonListener.SAVE_FILE,this.filter));
         entrywidget=new JPanel();
         entrywidget.add(innerEntry);
         entrywidget.add(browse);
@@ -134,6 +139,7 @@ public class SaveFilePG extends BrowsePG{
         SaveFilePG pg=new SaveFilePG(this.name,this.value,this.valid);
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
+        pg.filter=this.filter;
         return pg;
     }
 }
