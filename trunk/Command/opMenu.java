@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2005/01/02 18:01:31  rmikk
+ * Added Tool tip to the Menu items that indicate the location of the source
+ *     code
+ *
  * Revision 1.33  2004/07/31 23:15:15  rmikk
  * Removed unused imports
  *
@@ -218,6 +222,9 @@ public class opMenu extends JMenu{
                 System.out.println("Could not create a JMenuItem");
               }else{
                 item.addActionListener( ML );
+                String FileName = myOperator.getSource();
+                if( FileName != null)
+                   item.setToolTipText( FileName );
                 current_menu.add( item );
               }
             }
