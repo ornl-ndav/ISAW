@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/02/18 22:59:00  pfpeterson
+ * Updated calls to deprecated method fixSparator.
+ *
  * Revision 1.4  2002/11/27 23:31:01  pfpeterson
  * standardized header
  *
@@ -119,7 +122,7 @@ public class Index extends    GenericTOF_SCD {
 
     // get the full file name from the script and test it out
     fullfile=getParameter(0).getValue().toString();
-    fullfile=FilenameUtil.fixSeparator(fullfile);
+    fullfile=FilenameUtil.setForwardSlash(fullfile);
     file=new File(fullfile);
     if( !file.exists() )
       return new ErrorString("file does not exist: "+fullfile);
