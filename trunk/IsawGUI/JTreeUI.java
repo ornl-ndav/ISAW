@@ -2,6 +2,9 @@
  * $Id$ 
  *
  * $Log$
+ * Revision 1.11  2001/06/28 19:13:11  neffk
+ * removed extra log message, cleaned up code a little
+ *
  * Revision 1.10  2001/06/27 19:48:21  neffk
  * cleaned up the code by moving the mouse listener to a more
  * appropriate place in the file.  also cleaned up addDataSet(...) by
@@ -44,26 +47,11 @@ import DataSetTools.instruments.*;
 import DataSetTools.components.ui.OperatorMenu;
 import java.awt.datatransfer.*;
 
-/**
- * $Id$
- *
- *
- * $Log$
- * Revision 1.10  2001/06/27 19:48:21  neffk
- * cleaned up the code by moving the mouse listener to a more
- * appropriate place in the file.  also cleaned up addDataSet(...) by
- * giving variables more appropriate names, adding comments, and reducing
- * the length of all lines to 80 characters or less
- *
- * Revision 1.9  2001/06/27 19:13:43  chatter
- * Remove empty Line
- *
- * Revision 1.8  2001/06/25 21:30:04  neffk
- * improved (incomplete) right-click menu functionality.
- *
- */
 
-public class JTreeUI extends JPanel implements IObserver, Serializable 
+public class JTreeUI 
+  extends JPanel 
+  implements IObserver, 
+             Serializable 
 {
     protected JPopupMenu m_popup;
     protected Action m_action;
