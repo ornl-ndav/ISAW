@@ -1,5 +1,5 @@
 /*
- * File:  LoadRemotejava 
+ * File:  LoadRemotejava
  *
  * Copyright (C) 2001, Dennis Mikkelson
  *
@@ -28,8 +28,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- *  
+ *
  *  $Log$
+ *  Revision 1.5  2003/01/13 17:28:58  dennis
+ *  Added getDocumentation() method. (Chris Bouzek)
+ *
  *  Revision 1.4  2002/11/27 23:21:16  pfpeterson
  *  standardized header
  *
@@ -56,19 +59,19 @@ import DataSetTools.operator.Parameter;
 import DataSetTools.parameter.*;
 
 /**
- * Operator to load all of the DataSets from a remote data source.  
- * For example, a snapshot of the monitor and histogram data can be 
- * obtained from a LiveDataServer, or the contents of a runfile and be
+ * Operator to load all of the DataSets from a remote data source.
+ * For example, a snapshot of the monitor and histogram data can be
+ * obtained from a LiveDataServer, or the contents of a runfile can be
  * obtained from a FileDataServer,
  */
 
-public class LoadRemoteData extends    GenericLoad 
+public class LoadRemoteData extends    GenericLoad
                             implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
    * Construct an operator with a default parameter list.  If this constructor
-   * is used, meaningful values for the parameters should be set before 
+   * is used, meaningful values for the parameters should be set before
    * calling getResult().
    */
    public LoadRemoteData( )
@@ -79,12 +82,14 @@ public class LoadRemoteData extends    GenericLoad
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
-   *  Construct an operator for with the specified parameter values so 
+   *  Construct an operator for with the specified parameter values so
    *  that the operation can be invoked immediately by calling getResult().
    *
    *  @param  host        The name or internet address of the remote machine.
    *  @param  port        The port number to use for the connection.
-   *  @param  file_name   The name of the file to be loaded, eg: hrcs1797.run.
+   *  @param  user_name   The user name for the remote machine.
+   *  @param  password    The password for the remote machine.
+   *  @param  file_name   The name of the file to be loaded (eg: hrcs1797.run).
    *  @param  server_type The type of the server, one of:
    *                          LIVE_DATA_SERVER  = "Live Data";
    *                          ISAW_FILE_SERVER  = "ISAW File Server";
@@ -95,7 +100,7 @@ public class LoadRemoteData extends    GenericLoad
                           String           user_name,
                           String           password,
                           String           file_name,
-                          ServerTypeString server_type ) 
+                          ServerTypeString server_type )
    {
       super( "Load Remote Data" );
 
@@ -116,11 +121,11 @@ public class LoadRemoteData extends    GenericLoad
 
       parameter = getParameter(5);
       parameter.setValue( new ServerTypeString( server_type.toString() ) );
-   } 
+   }
 
   /* -------------------------- setDefaultParameters ----------------------- */
   /**
-   *  Set the parameters to default values.  
+   *  Set the parameters to default values.
    */
   public void setDefaultParameters()
   {
@@ -130,7 +135,7 @@ public class LoadRemoteData extends    GenericLoad
     addParameter( parameter );
 
     int port = TCPServer.DEFAULT_SERVER_TCP_PORT;
-    parameter = new Parameter("Port (eg. 6089)", new Integer(port) );
+    parameter = new Parameter("Port (e.g. 6089)", new Integer(port) );
     addParameter( parameter );
 
     String user_name = System.getProperty( "user.name" );
@@ -141,7 +146,8 @@ public class LoadRemoteData extends    GenericLoad
     parameter = new Parameter("Password", password );
     addParameter( parameter );
 
-    parameter = new Parameter("File Name (eg. hrcs1797.run)", new String("") );
+    parameter = new Parameter("File Name (e.g. hrcs1797.run)",
+                 new String("") );
     addParameter( parameter );
 
     parameter = new Parameter("Server Type", new ServerTypeString() );
@@ -151,8 +157,8 @@ public class LoadRemoteData extends    GenericLoad
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: in this case, 
-   *         LoadRemote 
+   * @return the command name to be used with script processor: in this case,
+   *         LoadRemote
    *
    */
    public String getCommand()
@@ -160,11 +166,59 @@ public class LoadRemoteData extends    GenericLoad
      return "LoadRemote";
    }
 
-
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator loads all of the DataSets from a ");
+    s.append("remote data source.\n");
+    s.append("@assumptions The server type must be one of the three listed ");
+    s.append("below in the server_type parameter description.  The ");
+    s.append("specified file also must exist on the server.  Furthermore, ");
+    s.append("the specified server type must match the actual server type.\n");
+    s.append("@algorithm First this operator uses the host name, port ");
+    s.append("number, username, password, and file name to create a data ");
+    s.append("source name.\n");
+    s.append("Next it tries to open a connection to the server.  In doing ");
+    s.append("so, it checks to see whether the server is down, whether the ");
+    s.append("specified server type matches the actual server type, and ");
+    s.append("whether the specified file exists on the server.\n");
+    s.append("Finally it retrieves the DataSets from the server and places ");
+    s.append("them in an array.\n");
+    s.append("@param host The name or internet address of the remote ");
+    s.append("machine.\n");
+    s.append("@param port The port number to use for the connection.\n");
+    s.append("@param user_name The user name for the remote machine.\n");
+    s.append("@param password The password for the remote machine.\n");
+    s.append("@param file_name The name of the file to be loaded.  ");
+    s.append("(e.g.: hrcs1797.run).\n");
+    s.append("@param server_type The type of the server.  Use one of the ");
+    s.append("following:\n");
+    s.append("LIVE_DATA_SERVER = \"Live Data\"\n");
+    s.append("ISAW_FILE_SERVER = \"ISAW File Server\"\n");
+    s.append("NDS_FILE_SERVER  = \"NDS File Server\"\n");
+    s.append("@return An array of DataSets is returned as a Java Object.\n");
+    s.append("@error Returns an error if the specifed server type does not ");
+    s.append("match one of the types listed in the server_type parameter ");
+    s.append("description.\n");
+    s.append("@error Returns an error if the file is not found on the ");
+    s.append("server.\n");
+    s.append("@error Returns an error if the server is down.\n");
+    s.append("@error Returns an error if the specified server type does not ");
+    s.append("match the actual server type.\n");
+    return s.toString();
+  }
 
   /* ----------------------------- getResult ---------------------------- */
   /**
-   * @return  An array of DataSets is returned as a Java Object.
+   *  Connects to the specified remote server and retrieves the DataSets
+   *  on it.
+   *
+   *  @return  An array of DataSets is returned as a Java Object.
    */
    public Object getResult()
    {
@@ -178,7 +232,7 @@ public class LoadRemoteData extends    GenericLoad
      String server_type = ((ServerTypeString)obj).toString();
 
      user_name = user_name.trim();
-     if ( user_name.length() <= 0 ) 
+     if ( user_name.length() <= 0 )
        user_name = System.getProperty( "user.name" );
 
      String  data_source_name = host      + ";" +
@@ -199,16 +253,16 @@ public class LoadRemoteData extends    GenericLoad
 
      int n_ds = RemoteDataRetriever.SERVER_DOWN;
      if ( r != null )
-       n_ds = r.numDataSets(); 
- 
+       n_ds = r.numDataSets();
+
      if ( n_ds == RemoteDataRetriever.BAD_FILE_NAME )
        return new ErrorString( "File " + file_name + " NOT FOUND" );
-     
+
      else if ( n_ds == RemoteDataRetriever.SERVER_DOWN )
        return new ErrorString( "Can't connect to " + host + " on " + port );
-       
+
      else if ( n_ds == RemoteDataRetriever.WRONG_SERVER_TYPE )
-       return new ErrorString( "Wrong sever type: " + server_type +
+       return new ErrorString( "Wrong server type: " + server_type +
                                " on " + host + " port " + port );
      else if ( n_ds <= 0 )
        return new ErrorString( RemoteDataRetriever.error_message( n_ds ) );
@@ -224,11 +278,28 @@ public class LoadRemoteData extends    GenericLoad
 
 
    /* -------------------------------- main ------------------------------ */
-   /* 
-    * main program for test purposes only  
+   /*
+    * main program for test purposes only
     */
 
-   public static void main(String[] args)
-   {
-   } 
-} 
+    public static void main( String[] args )
+    {
+      //simple main just to test documentation and
+      //default getResult() method
+
+      LoadRemoteData op;
+      StringBuffer m = new StringBuffer();
+
+      op = new LoadRemoteData();
+
+      Object result = op.getResult();
+      m.append("\nThe results of calling getResult() for ");
+      m.append("a default instance of LoadRemoteData are:\n\n");
+      m.append(result.toString());
+      m.append("\n\nThe results of calling getDocumentation() for ");
+      m.append("LoadRemoteData are:\n\n");
+      m.append(op.getDocumentation());
+
+      System.out.print(m.toString());
+    }
+}
