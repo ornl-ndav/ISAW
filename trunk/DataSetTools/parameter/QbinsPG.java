@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/08/25 14:57:58  rmikk
+ * -Updated to work better with the Anisotropic case
+ * -Removed JScrollPane and put it into ArrayEntryJPanel
+ *
  * Revision 1.2  2003/08/22 20:13:47  bouzekc
  * Modified to work with EntryWidget.  Added call to setValue( Object) in
  * initGUI(Vector).  Added testbed main().
@@ -80,7 +84,7 @@ public class QbinsPG  extends ParameterGUI{
       if( V != null ) {
         setValue( V );
       }
-      But = new JButton( "Set Q bins");
+      But = new JButton( "Set Q bins or Qx,Qy min/max");
       entrywidget = new EntryWidget( But );
       But.addActionListener( new ButtonListener(this));      
       super.initGUI();
@@ -117,7 +121,7 @@ public class QbinsPG  extends ParameterGUI{
    private  void show(){
      if( jf == null){
        jf = new JFrame( getName());
-       jf.getContentPane().add(new JScrollPane(list));
+       jf.getContentPane().add((list));
        jf.setDefaultCloseOperation( WindowConstants.HIDE_ON_CLOSE);
        jf.addWindowListener( new WindowListener(this));
        jf.setSize( 700,400);
@@ -299,14 +303,16 @@ public class QbinsPG  extends ParameterGUI{
            R = "dQ";
        else
            R = "dQ/Q"; 
-       if( (s <=0) ||(e <=0))
-         return;
+
        if( n <=0){
           QQ.value = ( new Float( s));
           list.keyPressed( new KeyEvent(new JLabel(), KeyEvent.KEY_PRESSED ,(long)0,0,
                                  KeyEvent.VK_ENTER,'\n'));
           return;
        }
+       if( R.equals("dQ/Q"))
+       if( (s <=0) ||(e <=0))
+         return;
 
        boolean mult = false;
        if( R.equals("dQ/Q"))
@@ -343,16 +349,18 @@ public class QbinsPG  extends ParameterGUI{
           jjf.show();
 
         jjf = new JFrame("Help");
-        String ttext ="  Enter startQ, end Q, Nsteps, and dQ or dQ/Q spacings\n";
-        ttext += "\n  Then press Add to get in the lower box\n";
+        String ttext ="  Enter ,startQ ,end Q, Nsteps, and dQ or dQ/Q spacings\n";
+        ttext += "If Nsteps <=0, startQ will just be added. Use this to enter\n";
+        ttext += "  Qx min, Qx max, Qy min, then Qy max for Anisotropic analysis\n";
+        ttext += "\n  Then press Add to add to the lower list box\n";
         ttext  +="      This can be repeated to concatenate lists\n";
           
-        ttext +="\n Press DONE in lower box to record the list showing\n\n";
+        ttext +="\n Press DONE in lower list box to record the list showing\n\n";
         ttext += "   The other buttons in the bottom can be used for editting";
     
         JEditorPane jep = new JEditorPane("text/plain",ttext);
         jjf.getContentPane().add( jep);
-        jjf.setSize( 400,200);
+        jjf.setSize( 400,300);
         jjf.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         jjf.show();
       }
