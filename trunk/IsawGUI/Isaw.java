@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.128  2003/03/06 23:00:53  pfpeterson
+ *  No longer passes StatusPane to anyone. Changed default version,
+ *  removed some dead code, and lined up some blocks.
+ *
  *  Revision 1.127  2003/03/06 15:49:24  pfpeterson
  *  Changed to work with SharedData's private StatusPane.
  *
@@ -404,7 +408,6 @@ public class Isaw
 
   JPropertiesUI jpui;
   JCommandUI jcui;
-   //StatusPane IsawStatusPane;
   JMenu oMenu = new JMenu( OPERATOR_M );
   CommandPane cp;
   Util util;
@@ -444,13 +447,11 @@ public class Isaw
 
     jpui = new JPropertiesUI();
     jpui.setPreferredSize( new Dimension(200, 200) );
-    //jpui.setPreferredSize( new Dimension(400, 200) );
     jpui.setMinimumSize(new Dimension(20, 50));
 
 
     jcui = new JCommandUI( cp, sessionLog, jpui );
     jcui.setPreferredSize( new Dimension( 700, 50 ) );
-    //jcui.setPreferredSize( new Dimension( 500, 50 ) );
     jcui.setMinimumSize(new Dimension(20, 50));  
 
     MouseListener ml = new MouseListener();
@@ -461,35 +462,17 @@ public class Isaw
     kl.init();
    
     jdt.setPreferredSize(new Dimension(200, 500));
-    //jdt.setPreferredSize(new Dimension(400, 500));
     jdt.setMinimumSize(new Dimension(20, 50));
     jdt.addTreeSelectionListener(  new TreeSelectionHandler( this )  );
         
-              //checks for various command line options.
-              //some options are acted upon immediatly,
-              //others are returned in a Hashtable 
-              //object of name value pairs for 
-              //later use.  data files specified at
-              //the command line are loaded 
-              //immediatly.
+    /* Checks for various command line options. Some options are acted
+       upon immediatly, others are returned in a Hashtable object of
+       name value pairs for later use. Data files specified at the
+       command line are loaded immediatly.*/
     parse_args( args );
 
-   /* //IsawStatusPane = new StatusPane(30, 80, 
-          SharedData.status_pane.setBorder(new javax.swing.border.TitledBorder("Status"));
-          SharedData.status_pane.setEditable(true);
-          SharedData.status_pane.setLineWrap(false);
-   */
     setupMenuBar();        
-
     
-    /*JPanel StatusPanel= new JPanelwithToolBar(
-                 "Save","Clear",
-                  new SaveDocToFileListener( 
-                         SharedData.status_pane.getDocument(),null),
-                  new ClearDocListener( SharedData.status_pane.getDocument()),
-                  new JScrollPane( SharedData.status_pane),
-                  BorderLayout.EAST);
-     */                    
     cp.addPropertyChangeListener(SharedData.getStatusPane());
 
     upper_sp= new JSplitPane( JSplitPane.HORIZONTAL_SPLIT,
@@ -524,11 +507,10 @@ public class Isaw
         String version;
         String val="";
 
-        if(SharedData.VERSION.equals("Unknown_Version")){
-            version="1.4.1";
-        }else{
-            version=SharedData.VERSION;
-        }
+        if(SharedData.VERSION.equals("Unknown_Version"))
+          version="1.5.0";
+        else
+          version=SharedData.VERSION;
 
         if(Long){
             val=TITLE + " Release "+version;
@@ -588,12 +570,12 @@ public class Isaw
     JMenuBar menuBar = new JMenuBar();
 
     JMenu fMenu = new JMenu( FILE_M );
-       JMenu fileLoadDataset = new JMenu( LOAD_DATA_M );
-        JMenuItem Runfile = new JMenuItem( LOAD_LOCAL_DATA_MI ); 
-        JMenu LiveData = new JMenu( LOAD_LIVE_DATA_M );
-        JMenu RemoteData = new JMenu( LOAD_REMOTE_DATA_M );
+    JMenu fileLoadDataset = new JMenu( LOAD_DATA_M );
+    JMenuItem Runfile = new JMenuItem( LOAD_LOCAL_DATA_MI ); 
+    JMenu LiveData = new JMenu( LOAD_LIVE_DATA_M );
+    JMenu RemoteData = new JMenu( LOAD_REMOTE_DATA_M );
 
-     JMenuItem script_loader = new JMenuItem( LOAD_SCRIPT_MI );       
+    JMenuItem script_loader = new JMenuItem( LOAD_SCRIPT_MI );       
     
     JMenuItem fileSaveData = new JMenuItem( SAVE_ISAW_DATA_MI );
     //JMenuItem fileSaveDataAs = new JMenuItem( GSAS_EXPORT_MI );
@@ -618,20 +600,11 @@ public class Isaw
     JMenuItem tableView = new JMenuItem( TABLE_VIEW_MI );
     JMenu Tables= new JMenu("Selected Table View");
     for( int k=0; k< TableViewMenuComponents.getNMenuItems(); k++)
-      {JMenuItem jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k ) );
-       jmi.addActionListener( new MenuItemHandler());
-       Tables.add(jmi);
-      /* jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k ) +" w err");
-       jmi.addActionListener( new MenuItemHandler());
-       Tables.add(jmi);
-       jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k ) +" w indx");
-       jmi.addActionListener( new MenuItemHandler());
-       Tables.add(jmi);
-       jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k )+" w err,indx" );
-       jmi.addActionListener( new MenuItemHandler());
-       Tables.add(jmi);
-       */
-       }
+    {
+      JMenuItem jmi= new JMenuItem(TableViewMenuComponents.getNameMenuItem(k));
+      jmi.addActionListener( new MenuItemHandler());
+      Tables.add(jmi);
+    }
     JMenuItem contourView = new JMenuItem( CONTOUR_VIEW_MI );
     JMenuItem logView = new JMenuItem( LOG_VIEW_MI );
     JMenu instrumentInfoView = null;
@@ -641,21 +614,10 @@ public class Isaw
       // leave instrumentInfoView as null so it is not added to the menus
     }
 
-
     Script_Class_List_Handler SP = new Script_Class_List_Handler();      
     opMenu macrosMenu = new opMenu(SP, jdt, sessionLog , Isaw.this);
     macrosMenu.setOpMenuLabel( MACRO_M );
-    macrosMenu.addStatusPane( SharedData.getStatusPane() );
-
-
-
-/*
-    JMenu optionMenu = new JMenu( OPTION_M );
-    JMenuItem optionwindowsLook =  new JMenuItem( WINDOZE_MI );
-    JMenuItem optionmetalLook   =  new JMenuItem( METAL_MI );
-    JMenuItem optionmotifLook   =  new JMenuItem( MOTIF_MI );
-*/
-
+    //macrosMenu.addStatusPane( SharedData.getStatusPane() ); //REMOVE
 
     JMenu hMenu               = new JMenu( HELP_M );
     JMenuItem helpAbout       = new JMenuItem( ABOUT_MI );
@@ -667,21 +629,6 @@ public class Isaw
     JMenuItem ftpLink         = new JMenuItem( FTP_LINK_MI );
     JMenuItem docLink         = new JMenuItem( USERMAN_LINK_MI );
 
-    /*JMenuItem m_HRMECS = new JMenuItem( HRMECS_MACRO_MI );
-      JMenuItem m_LRMECS = new JMenuItem( LRMECS_MACRO_MI );
-      JMenuItem m_HIPD   = new JMenuItem( HIPD_MACRO_MI );
-      JMenuItem m_SAD    = new JMenuItem( SAD_MACRO_MI );
-      JMenuItem m_SCD    = new JMenuItem( SCD_MACRO_MI );
-      JMenuItem m_SAND   = new JMenuItem( SAND_MACRO_MI );
-      JMenuItem m_POSY1  = new JMenuItem( POSY1_MACRO_MI );
-      JMenuItem m_POSY2  = new JMenuItem( POSY2_MACRO_MI );
-      JMenuItem m_GLAD   = new JMenuItem( GLAD_MACRO_MI );
-      JMenuItem m_QENS   = new JMenuItem( QENS_MACRO_MI );
-      JMenuItem m_GPPD   = new JMenuItem( GPPD_MACRO_MI );
-      JMenuItem m_SEPD   = new JMenuItem( SEPD_MACRO_MI );
-      JMenuItem m_CHEXS  = new JMenuItem( CHEXS_MACRO_MI );*/
- 
-    //fMenu.add(dbload);
     fMenu.add(fileLoadDataset);
     fileLoadDataset.add(Runfile);
     fileLoadDataset.add(LiveData);
@@ -709,19 +656,20 @@ public class Isaw
     boolean found =true;
     for( int ii=1;  ii<14 && found;  ii++ )
     {
-      String SS = SharedData.getProperty("Inst"+new Integer(ii).toString().trim()+"_Name");
+      String SS = SharedData.getProperty("Inst"
+                                   +new Integer(ii).toString().trim()+"_Name");
       if( SS == null) 
         found=false;
       else
       {
         JMenuItem dummy = new JMenuItem(SS);
-        dummy.setToolTipText( SharedData.getProperty("Inst"+new Integer(ii).toString().trim()+"_Path"));
+        dummy.setToolTipText( SharedData.getProperty("Inst"
+                                  +new Integer(ii).toString().trim()+"_Path"));
         dummy.addActionListener( new MenuItemHandler());
         LiveData.add(dummy);
       }
     }
         
-         
     vMenu.add(imageView);
     vMenu.add(threeDView);
     vMenu.add( contourView );
@@ -756,7 +704,6 @@ public class Isaw
     //fileSaveDataAs.addActionListener( new MenuItemHandler()        );
     dbload.addActionListener(         new MenuItemHandler()        );
     
-    
     graphView.addActionListener(new MenuItemHandler()); 
          
     s_graphView.addActionListener(new MenuItemHandler()); 
@@ -767,24 +714,6 @@ public class Isaw
     contourView.addActionListener(new MenuItemHandler());  
     logView.addActionListener(new MenuItemHandler());      
     
-    /*m_HRMECS.addActionListener(new MenuItemHandler());
-      m_LRMECS.addActionListener(new MenuItemHandler());
-      m_HIPD.addActionListener(new MenuItemHandler());
-      
-      m_GPPD.addActionListener(new MenuItemHandler());
-      m_SEPD.addActionListener(new MenuItemHandler());
-      m_SAND.addActionListener(new MenuItemHandler());
-    
-      m_SAD.addActionListener(new MenuItemHandler());
-      m_SCD.addActionListener(new MenuItemHandler());
-      m_POSY1.addActionListener(new MenuItemHandler());
-    
-      m_POSY2.addActionListener(new MenuItemHandler());
-      m_QENS.addActionListener(new MenuItemHandler());
-      m_GLAD.addActionListener(new MenuItemHandler());
-      m_CHEXS.addActionListener(new MenuItemHandler());*/
-
-
     fileLoadDataset.addActionListener(new MenuItemHandler());
     removeSelectedNode.addActionListener(new MenuItemHandler());
     editProps.addActionListener(new AttributeMenuItemHandler());
@@ -1083,52 +1012,11 @@ public class Isaw
         }
 
         JDataTree jjt=IS.jdt;
-        cp.getExecScript( filename, IS, jdt, sessionLog, SharedData.getStatusPane());
+        cp.getExecScript( filename, IS, jdt, sessionLog );
       }
     }
+  }
  
- 
-    }
- 
-
-  /**
-   * what does this do?  your guess is a good as mine.
-   */
-  /* public class scriptFilter extends javax.swing.filechooser.FileFilter
-     {
-     public boolean accept(File f) 
-     {
-     boolean accept = f.isDirectory();
-     if(!accept)
-     {
-     String suffix = getSuffix(f);
-     if (suffix != null) accept = suffix.equals("iss");
-     }
-     return accept;
-     } */
-
-    /**
-     * gets the description of what files this filter shows
-     */ 
-    /* public String getDescription()
-       {
-       return "Script Files(*.iss)";
-       } */
- 
-    /**
-     * returns a file extension
-     */
-    /* public String getSuffix(File f) 
-       {
-       String s = f.getPath(), suffix = null;
-       int i = s.lastIndexOf('.');
-       if (i>0 && i<s.length() -1)
-       suffix = s.substring(i+1).toLowerCase();
-       return suffix;
-    }
-    }*/
-   
-
   /*
    *
    */ 
@@ -1186,7 +1074,7 @@ public class Isaw
             if(  (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION ) ) 
                 return;
              
-            setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );                        
+            setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );
                         
             File f =  fc.getSelectedFile();
             filename = f.toString();
@@ -1254,61 +1142,6 @@ public class Isaw
           return;
         }
       }
-
-                                       //the next 13 menu options
-                                       //execute instrument-specific
-                                       //macros on various forms of data
-
-
-      /*if( s.equals(CHEXS_MACRO_MI) ) 
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
-        if( s.equals(GLAD_MACRO_MI) ) 
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
-        if( s.equals(GPPD_MACRO_MI) ) 
-        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
-        if( s.equals(HRMECS_MACRO_MI) )
-        { */
-     /* fd.show();
-        File f = new File(  fd.getDirectory(), fd.getFile()  );
-        String dir = fd.getDirectory();
-        FileSeparator fs = new FileSeparator(dir);
-        fs.setSize(700,700);
-        fs.setVisible(true);
-      */
-      /*}
-
-      if( s.equals(HIPD_MACRO_MI) )  
-      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
-      if( s.equals(LRMECS_MACRO_MI) ) 
-      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
-      if( s.equals(POSY1_MACRO_MI) ) 
-      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
-      if( s.equals(POSY2_MACRO_MI) ) 
-      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
-      if( s.equals(QENS_MACRO_MI) ) 
-      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
-      if( s.equals(SAD_MACRO_MI) ) 
-      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
-      if( s.equals(SAND_MACRO_MI) ) 
-      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
-      if( s.equals(SCD_MACRO_MI) ) 
-      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-
-      if( s.equals(SEPD_MACRO_MI) ) 
-      SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
-      */
- 
-
  
     //menuitem for macro loader below
  
@@ -1351,33 +1184,6 @@ public class Isaw
       if( s.equals( SharedData.getProperty("Inst13_Name") )  )
         setupLiveDataServer( "Inst13_Path" );
  
-      /* if( s.equals(GSAS_EXPORT_MI) )
-	 {
-	 //fc = new JFileChooser(new File(System.getProperty("user.dir")) );
-	 if( filename == null)
-	 filename = System.getProperty("user.dir");
-	 fc.setCurrentDirectory( new File(filename));          
-	 int state = fc.showSaveDialog(null);
-	 if (state ==0 && fc.getSelectedFile() != null)
-	 {
-	 File f = fc.getSelectedFile();
-	 filename =f.toString();
-	 
-	 MutableTreeNode node = jdt.getSelectedNode();
-	 if( node instanceof DataSetMutableTreeNode )
-	 {
-	 DataSet ds = ( (DataSetMutableTreeNode)node ).getUserObject();
-	 DataSet mon_ds = 
-	 ( (DataSetMutableTreeNode)(node.getParent().getChildAt(0)) ).getUserObject();
-	 
-	 DataSetTools.writer.GsasWriter gw=
-	 new DataSetTools.writer.GsasWriter(filename);
-	 gw.writeDataSets(new DataSet[] {mon_ds,ds});
-	 }
-	 }
-	 } */
-     
-
       if( s.equals(IMAGE_VIEW_MI) )
       {
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
@@ -1392,7 +1198,7 @@ public class Isaw
                  
                  
       if( s.equals(SELECTED_VIEW_MI) )  
-      { //SharedData.status_pane.add("Hi There");
+      {
         
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
         if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
