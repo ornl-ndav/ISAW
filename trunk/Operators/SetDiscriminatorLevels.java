@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/02/04 03:17:42  hammonds
+ * Generalize by adding  max_chn.
+ * Add IntAttributes for Upper & Lower Discriminator to allow extraction to file.
+ * Adjust marker height to match each spectrum
+ *
  * Revision 1.7  2003/02/10 18:51:23  dennis
  * Added getDocumentation() method. (Josh Olson)
  *
@@ -85,6 +90,7 @@ public class SetDiscriminatorLevels extends GenericSpecial
   public SetDiscriminatorLevels( DataSet p_ds, 
                                  float   lower_frac,
                                  float   upper_frac,
+                                 float   max_chn,
                                  float   width )
   {
     super( TITLE );
@@ -93,7 +99,9 @@ public class SetDiscriminatorLevels extends GenericSpecial
     addParameter( new Parameter( "lower (fraction of peak position)", 
                                   new Float(lower_frac) ) );
     addParameter( new Parameter( "upper (fraction of peak amplitude)", 
-                                  new Float(upper_frac) ) );
+                                  new Float(max_chn) ) );
+    addParameter( new Parameter( "maximum channel", 
+                                  new Float(width) ) );
     addParameter( new Parameter( "width of interval for fit", 
                                   new Float(width) ) );
   }
@@ -121,6 +129,8 @@ public class SetDiscriminatorLevels extends GenericSpecial
                                   new Float(0.25f) ) );
     addParameter( new Parameter( "upper (fraction of peak amplitude)",
                                   new Float(1.0e-8) ) );
+    addParameter( new Parameter( "maximum channel", 
+                                  new Float(255.0) ) );
     addParameter( new Parameter( "width of interval for fit", 
                                   new Float(40) ) );
   }
@@ -162,6 +172,7 @@ public class SetDiscriminatorLevels extends GenericSpecial
     s.append("set for the lower threshold");
     s.append("@param upper_frac The fraction of the pulse amplitude to set ");
     s.append("for the upper threshold");
+    s.append("@param max_chn maximum channel to look for the peak");
     s.append("@param width Number of channels over which the peak will be ");
     s.append("fit.");
     s.append("@return If successful, this returns an array of two DataSets.");
@@ -186,13 +197,15 @@ public class SetDiscriminatorLevels extends GenericSpecial
     DataSet p_ds = (DataSet)(getParameter(0).getValue()); 
     float lower_frac = ( (Float)(getParameter(1).getValue()) ).floatValue(); 
     float upper_frac = ( (Float)(getParameter(2).getValue()) ).floatValue(); 
-    float width      = ( (Float)(getParameter(3).getValue()) ).floatValue(); 
+    float max_chn      = ( (Float)(getParameter(3).getValue()) ).floatValue(); 
+    float width      = ( (Float)(getParameter(4).getValue()) ).floatValue(); 
 
     String title = p_ds.getTitle();
 
     DataSet result_ds[] = new DataSet[2];
     result_ds[0] = (DataSet)p_ds.clone();
-    result_ds[1] = FitPeaks( result_ds[0], lower_frac, upper_frac, width );
+    result_ds[1] = FitPeaks( result_ds[0], lower_frac, upper_frac, max_chn, 
+			     width );
                       
     result_ds[0].setTitle( title + "_Levels( "+lower_frac+", "+width+")" );
     result_ds[1].setTitle( title + "_Gaussians( "+lower_frac+", "+width+")" );
@@ -218,6 +231,7 @@ public class SetDiscriminatorLevels extends GenericSpecial
   private DataSet FitPeaks( DataSet p_ds, 
                             float   lower_frac, 
                             float   upper_frac, 
+                            float   max_chn, 
                             float   peak_width )  
   {
     Data         data,
@@ -241,7 +255,7 @@ public class SetDiscriminatorLevels extends GenericSpecial
     for ( int i = 0; i < n_data; i++ )
     {
       float x1 = 50;
-      float x2 = 255;
+      float x2 = max_chn;
       float width = peak_width/2;
 
       data = p_ds.getData_entry(i);
@@ -251,7 +265,7 @@ public class SetDiscriminatorLevels extends GenericSpecial
       boolean fit_ok = false;
       float last_position = -1000;
       float position = 0;
-      while ( count < 40 && !done && !fit_ok )
+      while ( count < peak_width && !done && !fit_ok )
       {
         if ( !peak.FitPeakToData( data, x1, x2 ) )
           done = true;
@@ -299,20 +313,24 @@ public class SetDiscriminatorLevels extends GenericSpecial
           lower = 0;
         if ( lower >= y_vals.length )
           lower = y_vals.length - 1;
-        y_vals[lower] = range.getEnd_x();
+        y_vals[lower] = y_vals[(int)peak.getPosition()] * 2;
 
         if ( upper < 0 )
           upper = 0;
         if ( upper >= y_vals.length )
           upper = y_vals.length - 1;
-        y_vals[upper] = range.getEnd_x();
+        y_vals[upper] = y_vals[(int)peak.getPosition()] * 2;
+	/*        y_vals[upper] = range.getEnd_x();*/
       }
     }
 
-    for ( int i = 0; i < lower_list.length; i++ )
+    for ( int i = 0; i < lower_list.length; i++ ) {
       System.out.println("i, lower, upper = " + i + 
                          ", " + lower_list[i] +
                          ", " + upper_list[i] );
+      p_ds.getData_entry(i).getAttributeList().addAttribute(new IntAttribute("Lower Level Discriminator", lower_list[i]));
+      p_ds.getData_entry(i).getAttributeList().addAttribute(new IntAttribute("Upper Level Discriminator", upper_list[i]));
+    }
     return new_ds;
   }
 
@@ -338,7 +356,7 @@ public class SetDiscriminatorLevels extends GenericSpecial
       System.exit(1);
     }
 
-    Operator op = new SetDiscriminatorLevels( p_ds, 0.25f, 1e-8f, 40 );
+    Operator op = new SetDiscriminatorLevels( p_ds, 0.25f, 1e-8f, 255, 40 );
     Object obj = op.getResult();
     ViewManager vm;
     if ( obj instanceof DataSet[] )
