@@ -31,11 +31,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/05/23 17:41:46  dennis
+ *  Minor improvement to documentation.
+ *
  *  Revision 1.5  2001/04/26 19:10:12  dennis
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.4  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *    Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -136,8 +139,8 @@ abstract public class Operator implements Serializable
 
    /* --------------------------- Constructor ----------------------------- */
    /** 
-    * Constructs an operator object by specifying the title and list of
-    * paramters. 
+    * Constructs an operator object with a specified title and default list 
+    * of parameters.
     */
 
    protected Operator( String title )
