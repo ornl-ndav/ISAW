@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/04/30 19:48:53  pfpeterson
+ * Added methods to calculate lattice parameters for a given orientation
+ * matrix and cell scalars for a given set of lattice parameters.
+ *
  * Revision 1.10  2003/04/28 21:11:57  pfpeterson
  * Added ability to write orientation matrix to experiment files.
  *
@@ -421,5 +425,59 @@ public class Util{
       }
     }
     return null;
+  }
+
+  /**
+   * Method to calculate the lattice parameters from a given UB matrix
+   */
+  public static double[] abc(double[][] UB){
+    double[] abc=new double[7];
+    double[][] UBtrans=new double[3][3];
+    for( int i=0 ; i<3 ; i++ )
+      for( int j=0 ; j<3 ; j++ )
+        UBtrans[i][j]=UB[j][i];
+    double[][] UBsquare=LinearAlgebra.mult(UBtrans,UB);
+     if(UBsquare==null) return null;
+    double[][] invUBsquare=LinearAlgebra.getInverse(UBsquare);
+    if(invUBsquare==null) return null;
+
+    // calculate a, b, c
+    abc[0]=Math.sqrt(invUBsquare[0][0]);
+    abc[1]=Math.sqrt(invUBsquare[1][1]);
+    abc[2]=Math.sqrt(invUBsquare[2][2]);
+
+    // calculate alpha, beta, gamma
+    abc[3]=invUBsquare[1][2]/(abc[1]*abc[2]);
+    abc[4]=invUBsquare[0][2]/(abc[0]*abc[2]);
+    abc[5]=invUBsquare[0][1]/(abc[0]*abc[1]);
+    abc[3]=Math.acos(abc[3])*180./Math.PI;
+    abc[4]=Math.acos(abc[4])*180./Math.PI;
+    abc[5]=Math.acos(abc[5])*180./Math.PI;
+
+    // calculate the cell volume
+    abc[6]=abc[0]*abc[1]*Math.sin(abc[5]*Math.PI/180.);
+    abc[6]=abc[6]/Math.sqrt(UBsquare[2][2]);
+
+    return abc;
+  }
+
+  /**
+   * Method to calculate the 'cell scalars' for a given set of lattice
+   * parameters.
+   */
+  public static double[] scalars(double[] abc){
+    double[] scalars=new double[6];
+
+    // the first three scalars are the square of the lattice parameters
+    for( int i=0 ; i<3 ; i++ )
+      scalars[i]=abc[i]*abc[i];
+
+    // the other three are the dot products of the different lattice vectors
+    scalars[3]=abc[1]*abc[2]*Math.cos(abc[3]*Math.PI/180.); // b dot c
+    scalars[4]=abc[0]*abc[2]*Math.cos(abc[4]*Math.PI/180.); // a dot c
+    scalars[5]=abc[0]*abc[1]*Math.cos(abc[5]*Math.PI/180.); // a dot b
+
+    // return the result
+    return scalars;
   }
 }
