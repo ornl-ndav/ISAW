@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2004/06/18 20:32:54  rmikk
+ *  Added eoln to the two new properties NSavedFiles and ShortSavedFilename
+ *
  *  Revision 1.25  2004/05/25 12:22:44  rmikk
  *  Changed NsavedFiles to NSavedFiles
  *
@@ -337,8 +340,8 @@ public class DefaultProperties{
             .append("#").append(eol)
             .append("WIZARD_WIDTH=700").append(eol)
             .append("WIZARD_HEIGHT=600").append(eol)
-            .append("#NSavedFiles=0")
-            .append("#ShortSavedFilename=false");
+            .append("#NSavedFiles=0").append(eol)
+            .append("#ShortSavedFilename=false").append(eol);
             
 
       /* This causes more problems with nexus than it fixes. These
