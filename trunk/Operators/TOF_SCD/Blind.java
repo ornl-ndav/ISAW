@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/05/07 18:39:12  dennis
+ *  Removed redundant code that created parameters vector twice.
+ *  Changed from dos to unix format.
+ *
  *  Revision 1.14  2003/04/02 19:50:26  dennis
  *  Added minimal getDocumentation() method. (Mike Miller)
  *
@@ -128,7 +132,6 @@ public class Blind extends    GenericTOF_SCD {
     parameters = new Vector();  // must do this to create empty list of 
     // parameters
     
-    parameters=new Vector();
     LoadFilePG lfpg=new LoadFilePG("Peaks File",null);
     lfpg.setFilter(new PeaksFilter());
     addParameter(lfpg);
