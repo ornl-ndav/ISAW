@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2003/02/12 21:54:44  dennis
+ * Changed to use PixelInfoList instead of SegmentInfoList
+ *
  * Revision 1.6  2003/01/29 17:52:07  dennis
  * Added getDocumentation() method. (Chris Bouzek)
  *
@@ -56,7 +59,6 @@ package Operators;
 import java.io.*;
 import java.util.Vector;
 import DataSetTools.dataset.*;
-import DataSetTools.instruments.SegmentInfo;
 import DataSetTools.util.*;
 import DataSetTools.math.*;
 import DataSetTools.operator.*;
@@ -240,12 +242,14 @@ public class  FocusIncidentSpectrum2 extends GenericSpecial
         float theta_min=theta;
         float theta_max=theta;
 
-        SegmentInfo[] segs = (SegmentInfo[])
-                      focus_data.getAttributeValue(Attribute.SEGMENT_INFO_LIST);
+        PixelInfoList pil = (PixelInfoList)
+                      focus_data.getAttributeValue(Attribute.PIXEL_INFO_LIST);
 
         float tth;
-        for( int i=0 ; i<segs.length ; i++ ){
-            tth=(float)(180.*segs[i].getPosition().getScatteringAngle()/Math.PI);
+        for( int i=0 ; i<pil.num_pixels(); i++ ){
+            Vector3D vec = pil.pixel(i).position();
+            DetectorPosition det_pos = new DetectorPosition( vec );
+            tth=(float)(180.*det_pos.getScatteringAngle()/Math.PI);
             if(DEBUG) System.out.println("det["+i+"]="+tth);
             if(tth<theta_min) theta_min=tth;
             if(tth>theta_max) theta_max=tth;
