@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/04/28 18:58:21  dennis
+ * Now only print debug information in CalcRatios() method for the
+ * first group, and only if debugging is turned on.
+ * Turned off debugging.
+ *
  * Revision 1.4  2004/04/27 21:50:13  dennis
  *   Added InterpolateDataSet() to interpolate and extend
  * a DataSet over a new xscale.  If the new xscale covers a
@@ -88,7 +93,7 @@ import DataSetTools.operator.DataSet.Math.Analyze.*;
  */
 public class SAD_Util
 { 
-   public static boolean debug = true;
+   public static boolean debug = false;
   
    /**
     *  Don't instantiate this class
@@ -582,7 +587,7 @@ public class SAD_Util
             Cadmerr = D.getErrors();
             D = null;
 
-            if ( debug )
+            if ( debug && index == 0 )
             {
             System.out.println("sampy.length      = " + sampy.length );
             System.out.println("samperr.length    = " + samperr.length );
