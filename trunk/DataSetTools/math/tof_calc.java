@@ -4,6 +4,9 @@
  *  Ported to Java from tof_vis_calc.c
  * 
  *  $Log$
+ *  Revision 1.5  2000/07/26 20:47:00  dennis
+ *  Now allow zero parameter in velocity<->energy conversions
+ *
  *  Revision 1.4  2000/07/17 19:07:29  dennis
  *  Added methods to convert between energy and wavelength
  *
@@ -402,7 +405,7 @@ public static float  TOFofEnergy( float path_len_m, float e_meV )
 public static float VelocityFromEnergy( float e_meV )
 {
 
-  if ( e_meV <= 0.0f )                     /* NOT MEANINGFUL */
+  if ( e_meV < 0.0f )                        /* NOT MEANINGFUL */
     return( Float.NaN );
 
   float   v_m_per_us = (float)Math.sqrt( e_meV / meV_per_mm_per_us_2 )/1000;
@@ -422,7 +425,7 @@ public static float VelocityFromEnergy( float e_meV )
 public static float EnergyFromVelocity( float v_m_per_us )
 
 {
-  if ( v_m_per_us <= 0.0f )                     /* NOT MEANINGFUL */
+  if ( v_m_per_us < 0.0f )                     /* NOT MEANINGFUL */
     return( Float.NaN );
 
   float   e_meV = v_m_per_us * v_m_per_us * 1000000 * meV_per_mm_per_us_2;
