@@ -3,9 +3,11 @@
 # of gppd runs in higher frame. Uses the time shift operator.  
 # Defaults set to second frame transformation.  
 # User can either display or write a gsas(FXYE)format file or do both.
-# $Date$
 
-# Modify $Date$ : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels
+# Modify $Date$ : Ashfia Huq , ID's should remain the same 
+# (bad detectors are turned off using the discriminator levels
+
+$Category=Operator, Instrument Type, TOF_NPD
 
 $Current Boolean(true)	Is this a Current Run ?
 
