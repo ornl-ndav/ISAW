@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/05/30 22:14:12  dennis
+ *  Enabled Kevin's viewer
+ *
  *  Revision 1.5  2001/05/09 21:32:57  dennis
  *  Added code to include the ThreeDViewer
  *
@@ -95,7 +98,7 @@ import DataSetTools.viewer.util.*;
 import DataSetTools.viewer.Graph.*;
 import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
-//import OverplotView.*;                         // import this for Kevin's viewer
+import OverplotView.*;                         // import this for Kevin's viewer
 import DataSetTools.viewer.ViewerTemplate.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -237,8 +240,8 @@ public class InternalViewManager extends    JInternalFrame
       else if ( view_type == THREE_D )
         viewer = new ThreeDView( tempDataSet, state );
       else if ( view_type == SELECTED_GRAPHS )                  // Use either
-//        viewer = new SelectedGraphView( tempDataSet );          // Kevin's or
-        viewer = new ViewerTemplate( tempDataSet, state );      // Template  
+        viewer = new SelectedGraphView( tempDataSet );          // Kevin's or
+//        viewer = new ViewerTemplate( tempDataSet, state );      // Template  
       else
       {
         System.out.println( 
