@@ -10,6 +10,7 @@ package DataSetTools.math;
 
 import DataSetTools.peak.*;
 import DataSetTools.dataset.*;
+import DataSetTools.util.*;
 
 public final class tof_data_calc
 {
@@ -64,7 +65,7 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 8.5f;
   }
 
 
-
+/* --------------------------- getEfficiencyFactor ----------------------- */
 /**
  *  Calculate detector efficiency factor and correction to flight path for
  *  a detector, based on the neutron final speed.  This code was adapted from
@@ -118,6 +119,7 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 8.5f;
      return result;
     }
 
+
 /* -------------------------------------------------------------------------
  *
  *  main program for test purposes only
@@ -125,18 +127,61 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 8.5f;
  */
   public static void main( String[] args )
   {
-    float final_speed;
+    float x[]          = new float[1000];
+    float eff_arr[]    = new float[1000];
+    float fpcorr_arr[] = new float[1000];
+
+    float final_speed,
+          e_meV,
+          eff,
+          fpcorr;
     float result[];
-    for ( int i = 0; i < 50; i++ )
+    for ( int i = 0; i < 1000; i++ )
     {
-      final_speed = 200 + i * 200;
-      final_speed /= 1000000;
-      System.out.print("speed(m/us) = " + final_speed + "  " );
-      System.out.print("E(meV) = " + 
-                        tof_calc.EnergyFromVelocity(final_speed));
-      result = getEfficiencyFactor( final_speed, 1 );
-      System.out.println(" EFF = " + result[0] + "  FPCORR = " + result[1] );
+      final_speed = 0.001f + i * 0.00001f;
+      e_meV       = tof_calc.EnergyFromVelocity(final_speed);
+      result      = getEfficiencyFactor( final_speed, 1 );
+      eff         = result[0];
+      fpcorr      = result[1];
+      System.out.print("speed(m/us) = " + Format.real(final_speed,8,5) + "  " );
+      System.out.print("E(meV) = " + Format.real( e_meV, 8, 2 ));
+      System.out.print(" EFF = " + Format.real( eff, 10, 7 ) );
+      System.out.println(" FPCORR = "  + Format.real( fpcorr, 10, 7) );
+      x[i]          = final_speed;
+      eff_arr[i]    = eff;
+      fpcorr_arr[i] = fpcorr;
     }
+
+    final_speed = 0.001f; 
+    for ( int i = 0; i < 10; i++ )
+    {
+      final_speed = final_speed + 0.001011f; 
+      eff    = arrayUtil.interpolate( final_speed, x, eff_arr );
+      fpcorr = arrayUtil.interpolate( final_speed, x, fpcorr_arr );
+      System.out.println("INTERPOLATED VALUES ......" );
+      System.out.print("speed(m/us) = " + Format.real(final_speed,8,5) + "  " );
+      System.out.print(" EFF = " + Format.real( eff, 10, 7 ) );
+      System.out.println(" FPCORR = "  + Format.real( fpcorr, 10, 7) );
+
+      result      = getEfficiencyFactor( final_speed, 1 );
+      eff         = result[0];
+      fpcorr      = result[1];
+      System.out.println("CALCULATED VALUES ......" );
+      System.out.print("speed(m/us) = " + Format.real(final_speed,8,5) + "  " );
+      System.out.print(" EFF = " + Format.real( eff, 10, 7 ) );
+      System.out.println(" FPCORR = "  + Format.real( fpcorr, 10, 7) );
+    }
+
+    for ( int i = 0; i <= 100; i++ )
+    {
+      e_meV = i * 20;
+      final_speed = tof_calc.VelocityFromEnergy( e_meV );
+      System.out.print("speed(m/us) = " + Format.real(final_speed,8,5) + "  ");
+      System.out.println("E(meV) = " + Format.real( e_meV, 8, 2 ));
+    }
+
   }
+
+  
 
 }
