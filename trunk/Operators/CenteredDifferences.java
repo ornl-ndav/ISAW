@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/01/29 17:52:07  dennis
+ * Added getDocumentation() method. (Chris Bouzek)
+ *
  * Revision 1.5  2002/11/27 23:29:54  pfpeterson
  * standardized header
  *
@@ -123,6 +126,35 @@ public class CenteredDifferences extends GenericSpecial
     addParameter( new Parameter("DataSet parameter", DataSet.EMPTY_DATA_SET ) );
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator approximates the derivative of all ");
+    s.append("Data blocks in the specified DataSet using the method of ");
+    s.append("centered differences.\n");
+    s.append("@assumptions The specified DataSet is not null.\n");
+    s.append("Also, in order to be used from Isaw, this operator must be ");
+    s.append("compiled and the resulting class file must be placed in one ");
+    s.append("of the directories that Isaw looks at for operators, such as ");
+    s.append("the ../Operators subdirectory of the Isaw home directory.  For ");
+    s.append("details on what directories are searched, see the Operator-HOWTO ");
+    s.append("file, or the Isaw user manual.\n");
+    s.append("@algorithm This operator gets the original DataSet information, ");
+    s.append("and copies the title, units, etc. over to a new DataSet\n");
+    s.append("It then approximates the derivative to the data blocks, and ");
+    s.append("writes them to the new DataSet.\n");
+    s.append("@param ds DataSet to differentiate.\n");
+    s.append("@return DataSet containing the approximated derivatives of the ");
+    s.append("data blocks for all functions.\n");
+    s.append("@error Returns an error if the specified DataSet is null.\n");
+    return s.toString();
+  }
+    
  /* ----------------------------- getResult ------------------------------ */ 
  /** 
   *  Approximates the derivative of the Data blocks using a centered
@@ -130,7 +162,7 @@ public class CenteredDifferences extends GenericSpecial
   *
   *  @return  If successful, this returns a new DataSet whose Data blocks
   *           contain the derivatives of the original Data blocks.  If there
-  *           is an error, and ErrorString is returned. 
+  *           is an error, an ErrorString is returned. 
   */
   public Object getResult()
   {
@@ -209,7 +241,8 @@ public class CenteredDifferences extends GenericSpecial
   {
      System.out.println("Test of CenteredDifferences starting...");
                                                                // load a DataSet
-     String filename = "/usr/local/ARGONNE_DATA/hrcs2447.run";
+     //String filename = "/usr/local/ARGONNE_DATA/hrcs2447.run";
+     String filename = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run";
      RunfileRetriever rr = new RunfileRetriever( filename );
      DataSet ds = rr.getDataSet(1);
                                                                // make operator
@@ -224,6 +257,9 @@ public class CenteredDifferences extends GenericSpecial
      }
      else 
        System.out.println( "Operator returned " + obj );
+       /*-- added by Chris Bouzek --*/
+       System.out.println("Documentation: " + op.getDocumentation());
+       /*--------------------------*/
 
      System.out.println("Test of CenteredDifferences done.");
   }
