@@ -30,6 +30,11 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2002/11/12 23:02:42  pfpeterson
+ *  Implemented more appropriate combine and add methods. This
+ *  ignores the attribute to be combined (or added) and returns
+ *  a reference to itself.
+ *
  *  Revision 1.3  2002/11/12 18:13:37  dennis
  *  Made immutable by:
  *  1. remove setValue() method
@@ -207,52 +212,34 @@ public class GsasCalibAttribute extends   Attribute
     }
 
     /*
-     * Average the values of dif_c, dif_a, and t_zero from the current Attribute
-     * with the values from the specified Attribute to obtain values for a 
-     * new Attribute.
+     * Combine the values of the GSAS calibration. Since this doesn't
+     * make sense for calibration simply returns itself.
      *
-     *  @param attr An attribute whose values are to be averaged
-     *              with the values of the this attribute.
+     * @param attr An attribute whose values are to be averaged with
+     * the values of the this attribute. It is actually just ignored.
      *
-     *  @return A new Attribute whose values are the average of the values of 
-     *          the current and specified Attribute.
+     * @return A new Attribute whose values are the average of the
+     * values of the current and specified Attribute. Just returns
+     * reference to the attribute.
      */
-      public Attribute combine( Attribute attr ){
-      if ( !(attr instanceof GsasCalibAttribute) )       // can't combine
+    public Attribute combine( Attribute attr ){
       return this;
-
-      float dif_c  = (value.dif_c() + 
-                      ((GsasCalibAttribute)attr).value.dif_c())/2;
-      float dif_a  = (value.dif_a() + 
-                      ((GsasCalibAttribute)attr).value.dif_a())/2;
-      float t_zero = (value.t_zero() + 
-                      ((GsasCalibAttribute)attr).value.t_zero())/2;
-      
-      return new GsasCalibAttribute(name, new GsasCalib(dif_c, dif_a, t_zero));
-      }
-    
+    }
     
     /*
-     * Add the values of dif_c, dif_a, and t_zero from the current Attribute
-     * to the values from the specified Attribute to obtain values for a
-     * new Attribute. 
+     * Add the values of the GSAS calibration. Since this doesn't
+     * make sense for calibration simply returns itself.
      *
-     *  @param attr An attribute whose values are to be "added"
-     *              to the values of the this attribute.
+     * @param attr An attribute whose values are to be added to the
+     * values of the this attribute. It is actually just ignored.
      *
-     *  @return A new Attribute whose values are the sum of the values of 
-     *          the current and specified Attribute.
+     * @return A new Attribute whose values are to be added to the
+     * current Attribute. Just returns reference to the attribute
+     * (unmodified).
      */
-      public Attribute add( Attribute attr ){
-      if ( !(attr instanceof GsasCalibAttribute) )       // can't combine
+    public Attribute add( Attribute attr ){
       return this;
-      
-      float dif_c  = value.dif_c() + ((GsasCalibAttribute)attr).value.dif_c();
-      float dif_a  = value.dif_a() + ((GsasCalibAttribute)attr).value.dif_a();
-      float t_zero = value.t_zero() + ((GsasCalibAttribute)attr).value.t_zero();
-
-      return new GsasCalibAttribute(name, new GsasCalib(dif_c, dif_a, t_zero));
-      }
+    }
       
     
     /**
