@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/02/11 21:02:23  pfpeterson
+ *  Now reads orientation matrix and lattice parameters from '.x' files
+ *  as well as '.mat' files.
+ *
  *  Revision 1.5  2002/11/27 23:16:41  pfpeterson
  *  standardized header
  *
@@ -214,33 +218,51 @@ public class LoadOrientation extends    DS_Attribute {
         float[][] orient = new float[3][3];
         float     vol    = 0f;
         try{
-            fr = new TextFileReader(iparm);
-            for( int i=0 ; i<3 ; i++ ){
-                for( int j=0 ; j<3 ; j++ ){
-                    orient[j][i]=fr.read_float();
-                }
-                fr.read_line();
-            }
-            for( int i=0 ; i<6 ; i++ ){
-                lat[i]=fr.read_float();
-            }
-            vol=fr.read_float();
-            success=true;
+          fr = new TextFileReader(iparm);
+          Object res;
+          if(iparm.endsWith(".x")){ // reading from experiment file
+            // read in the lattice parameters
+            res=readLattice(fr,true);
+            if(res instanceof ErrorString)
+              return res;
+            else
+              lat=(float[])res;
+            // read in the orientation matrix
+            res=readOrient(fr,true);
+            if(res instanceof ErrorString)
+              return res;
+            else
+              orient=(float[][])res;
+          }else{ // reading from matrix file
+            // read in the orientation matrix
+            res=readOrient(fr,false);
+            if(res instanceof ErrorString)
+              return res;
+            else
+              orient=(float[][])res;
+            // read in the lattice parameters
+            res=readLattice(fr,false);
+            if(res instanceof ErrorString)
+              return res;
+            else
+              lat=(float[])res;
+          }
+          success=true;
         }catch(IOException e){
-            System.err.println("IOException: "+e.getMessage());
+          System.err.println("IOException: "+e.getMessage());
         }catch(NumberFormatException e){
-            SharedData.addmsg("NumberFormatException: "+e.getMessage());
+          SharedData.addmsg("NumberFormatException: "+e.getMessage());
         }finally{
-            if(fr!=null){
-                try{
-                    fr.close();
-                }catch(IOException e){
-                    System.err.println("Could not close "+iparm+":"
-                                       +e.getMessage());
-                }
-            }else{
-                return new ErrorString(FAILURE);
+          if(fr!=null){
+            try{
+              fr.close();
+            }catch(IOException e){
+              System.err.println("Could not close "+iparm+":"
+                                 +e.getMessage());
             }
+          }else{
+            return new ErrorString(FAILURE);
+          }
         }
         if(!success) return new ErrorString(FAILURE);
 
@@ -269,7 +291,7 @@ public class LoadOrientation extends    DS_Attribute {
         int index=iparm.lastIndexOf("/");
         if(index>=0)iparm=iparm.substring(index+1,iparm.length());
         ds.setAttribute(new StringAttribute(Attribute.ORIENT_FILE,iparm));
-        ds.setAttribute(new FloatAttribute(Attribute.CELL_VOLUME,vol));
+        //ds.setAttribute(new FloatAttribute(Attribute.CELL_VOLUME,vol));
         ds.setAttribute(new Float1DAttribute(Attribute.LATTICE_PARAM,lat));
         ds.setAttribute(new Float2DAttribute(Attribute.ORIENT_MATRIX,orient));
         ds.addLog_entry("Read Orientation Matrix From File: "+iparm);
@@ -279,6 +301,96 @@ public class LoadOrientation extends    DS_Attribute {
 
         return SUCCESS;
     }  
+
+    /**
+     * Read the orientation matrix out of the specified file.
+     */
+    public static Object readOrient(TextFileReader tfr, boolean isexpfile){
+      float[][] orient=new float[3][3];
+    
+      try{
+        if(isexpfile){
+          String start=null;
+          int i=0;
+          while( (! tfr.eof()) && (i<3) ){
+            start=tfr.read_String();
+            if(start.equals("CRS11")){ // this is a good line
+              start=tfr.read_String(); // skip the next 'word'
+              for( int j=0 ; j<3 ; j++ ){
+                orient[j][i]=tfr.read_float();
+              }
+              i++;
+            }
+          }
+        }else{
+          for( int i=0 ; i<3 ; i++ )
+            for( int j=0 ; j<3 ; j++ )
+              orient[j][i]=tfr.read_float();
+        }
+      }catch(IOException e){
+        return new ErrorString("Error while reading matrix: "+e.getMessage());
+      }catch(NumberFormatException e){
+        return new ErrorString("Error while reading matrix: "+e.getMessage());
+      }
+      
+      float det=(float)DataSetTools.math.LinearAlgebra.determinant(DataSetTools.math.LinearAlgebra.float2double(orient));
+      
+      if( det==0f )
+        return new ErrorString("Zero determinant in orientation matrix");
+      
+      return orient;
+    }
+  
+    /**
+     * Read the orientation matrix out of the specified file.
+     */
+    public static Object readLattice(TextFileReader tfr, boolean isexpfile){
+      float[] lat=new float[6];
+
+      try{
+        if(isexpfile){
+          String start=null;
+          int i=0;
+          while( !tfr.eof() && i<2 ){
+            start=tfr.read_String();
+            if(start.equals("CRS1")){ // candidate
+              System.out.println("00:"+start);
+              start=tfr.read_String();
+              if(start.equals("ABC")){ // lengths
+                System.out.println("01:"+start);
+                for( int j=0 ; j<3 ; j++ )
+                  lat[j]=tfr.read_float();
+                i++;
+              }else if(start.equals("ANGLES")){ // angles
+                System.out.println("02:"+start);
+                for( int j=3 ; j<6 ; j++ )
+                  lat[j]=tfr.read_float();
+                i++;
+              }else{
+                System.out.println("03:"+start);
+                tfr.read_line();
+              }
+            }else{
+              tfr.read_line();
+            }
+          }
+        }else{
+          for( int i=0 ; i<6 ; i++ ){
+            lat[i]=tfr.read_float();
+          }
+        }
+      }catch(IOException e){
+        return new ErrorString("Error while reading matrix: "+e.getMessage());
+      }catch(NumberFormatException e){
+        return new ErrorString("Error while reading matrix: "+e.getMessage());
+      }
+
+      for( int i=0 ; i<6 ; i++ )
+        System.out.print(lat[i]+", ");
+      System.out.println("");
+
+      return lat;
+    }
 
     /* ---------------------------- clone ----------------------------- */
     /**
