@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/02/11 15:09:38  dennis
+ * Bugfix...CommandHandler constructor can't be private.
+ * (Chris Bouzek)
+ *
  * Revision 1.5  2002/11/27 23:26:33  pfpeterson
  * standardized header
  *
@@ -588,7 +592,7 @@ public class Wizard implements Serializable{
      */
     private class CommandHandler implements ActionListener{
         private Wizard wizard;
-        private CommandHandler(Wizard wiz){
+        public CommandHandler(Wizard wiz){
             this.wizard=wiz;
         }
         public void actionPerformed( ActionEvent event ){
