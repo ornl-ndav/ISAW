@@ -30,6 +30,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/05/21 19:09:02  dennis
+ *  Changed method formIPNSFileName() to extend all instrument name
+ *  strings to four characters by padding zeros.  Eg. SCD is extended
+ *  to SCD0.  Also, formIPNSFileName now forces the name to be either
+ *  all uppercase, or all lowercase.   The name length change fixes
+ *  a bug with SCD file names when the run number changed from 9999
+ *  to 10000.  The file names changed from SCD09999.RUN to SCD010000.RUN
+ *  not SCD10000.RUN
+ *
  *  Revision 1.15  2004/03/19 17:22:05  dennis
  *  Removed unused variable(s)
  *
@@ -327,16 +336,19 @@ public class InstrumentType implements Serializable
     String num = ""+run_num;
     String file_name;
  
-    while ( num.length() < 4 )
+    while ( num.length() < 4 )         // use at least 4 digits for number
       num = "0"+num;
 
-    if ( (instrument+num).length() < 8 )
-      num = "0"+num;
+    if ( instrument.length() < 4 )    // use at least 4 digits for name
+      instrument = instrument+"0";
 
+    file_name = instrument+num+".RUN";
+                                       // force all upper or all lower case
+                                       // depending on the first character
     if ( Character.isUpperCase( instrument.charAt(0) ) )
-      file_name = instrument+num+".RUN";
+      file_name.toUpperCase();
     else
-      file_name = instrument+num+".run";
+      file_name.toLowerCase();
 
     return file_name;
   }
