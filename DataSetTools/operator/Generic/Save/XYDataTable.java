@@ -30,6 +30,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.5  2003/09/18 19:45:57  rmikk
+ * -added parameters to give channel number instead of the
+ *   xvalues
+ *
  * Revision 1.4  2003/09/08 17:15:08  rmikk
  * Changed to use the new ParameterGUI's where return values
  *   must be of the proper data type.
@@ -78,9 +82,12 @@ public class XYDataTable  extends GenericSave
     *@param outputMedia  The output can be Console, File, or Table
     *@param filename   The file where the File View sends the "view"
     *@param SelectedGroups The INDICIES of the groups to be viewed
+    *@param order- code for dimension.  Use default use HGT,F 
+    *@param  useChanvsX- to give channel numbers in place of x values
     */    
     public XYDataTable( DataSet DS, boolean showErrors , MediaList outputMedia,
-                DataDirectoryString filename, IntListString SelectedGroups )
+                DataDirectoryString filename, IntListString SelectedGroups,
+                String order , boolean useChanvsX)
       { super( "Table x,y, error");
         parameters = new Vector();
         addParameter( new Parameter( "Data Set", DS ));
@@ -90,6 +97,8 @@ public class XYDataTable  extends GenericSave
         addParameter( new Parameter("filename ", filename));
         addParameter( new IntArrayPG("Selected Group indices", 
                                     SelectedGroups));
+        addParameter( new Parameter("order ", order));
+        addParameter( new Parameter("Use Chan not X", new Boolean( useChanvsX)));
                                  
       }
 
@@ -102,6 +111,9 @@ public class XYDataTable  extends GenericSave
         addParameter( new Parameter("filename ",new String()));
         addParameter( new IntArrayPG("Selected Group indices", 
                                     ("1,3:8")));
+        addParameter( new Parameter("order ", "HGT,F"));
+        addParameter( new Parameter("Use Chan not X", new Boolean( false)));
+                                 
     }
     
  /* ---------------------- getDocumentation --------------------------- */
@@ -133,7 +145,11 @@ public class XYDataTable  extends GenericSave
     s.append("of errors will be viewed");  
     s.append("@param outputMedia The output can be Console, File, or Table");  
     s.append("@param filename The file where the File View sends the 'view'");  
-    s.append("@param SelectedGroups The INDICIES of the groups to be viewed");  
+    s.append("@param SelectedGroups The INDICIES of the groups to be viewed"); 
+
+    s.append("@param order- code for dimension.  Use default use HGT,F to get only one ");
+    s.append("column of yvalues and errors. HT,GF gives one column of yvalues per group");
+    s.append("@param  useChanvsX- to give channel numbers in place of x values"); 
     
     s.append("@return The string 'Finished' is returned when there are ");
     s.append("no errors.  Otherwise error message(s) will be returned.  ");
@@ -165,7 +181,10 @@ public class XYDataTable  extends GenericSave
                         booleanValue();
      String output = ((getParameter(2).getValue())).toString();
      String filename = getParameter(3).getValue().toString();
+     
      int[] SelGroups =( (IntArrayPG)getParameter(4)).getArrayValue();
+     String order = getParameter(5).getValue().toString();
+     boolean useChan = ((Boolean)(getParameter(6).getValue())).booleanValue();
      int mode = 0;
      //System.out.println("output="+output);
      if( output .equals("Console"))
@@ -185,10 +204,13 @@ public class XYDataTable  extends GenericSave
      //op.getResult();
      //String Used[];
      DefaultListModel sel = new DefaultListModel();
-     if( TB.getFieldInfo(DS,"X values") == null)
-       { return new ErrorString("No such field x");
+     String ChanX = "X values";
+     if( useChan)
+         ChanX = "XY index";
+     if( TB.getFieldInfo(DS,ChanX) == null)
+       { return new ErrorString("No such field "+ChanX);
         }
-     sel.addElement( TB.getFieldInfo(DS,"X values"));
+     sel.addElement( TB.getFieldInfo(DS,ChanX));
      if(TB.getFieldInfo(DS,"Y values")==null)
        return new ErrorString("No such Field y");
      sel.addElement(TB.getFieldInfo(DS,"Y values"));
@@ -204,7 +226,7 @@ public class XYDataTable  extends GenericSave
      DataSet DSS[];
      DSS = new DataSet[1];
      DSS[0] = DS;
-     TB.Showw( DSS , sel , "HGT,F" , false, (SelGroups) );
+     TB.Showw( DSS , sel , order , false, (SelGroups) );
      return "Finished";
     }
 
