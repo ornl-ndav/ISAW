@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2001/07/16 22:50:53  dennis
+ *  Added method to get an array of selected indices.
+ *
  *  Revision 1.18  2001/07/02 16:41:43  dennis
  *  Added methods:
  *    getAttribute( index )
@@ -492,6 +495,7 @@ public class DataSet implements IAttributeList,
     return index;
   }
 
+
   /**
    *  Get the number of Data objects in the DataSet that have been selected.
    *
@@ -504,6 +508,32 @@ public class DataSet implements IAttributeList,
       if ( isSelected(i) )
         count++;
     return count;
+  }
+
+
+  /**
+   *  Get the list of indices of currently selected Data blocks.
+   *
+   *  @return  an array of indices of the Data blocks that are currently
+   *           selected.  This will return an empty array if none are selected.
+   */
+  public int[] getSelectedIndices()
+  {
+    int num = getNumSelected();
+ 
+    if ( num == 0 )
+      return new int[0];
+
+    int indices[] = new int[ num ];
+    int k = 0;
+    for ( int i = 0; i < data.size(); i++ )
+      if ( isSelected(i) )
+      {
+        indices[k] = i;
+        k++;
+      }
+
+    return indices;
   }
 
 
