@@ -1,6 +1,15 @@
 /*
  * @(#)Retriever.java     0.1  99/07/06  Dennis Mikkelson
  *
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.2  2000/07/10 22:49:45  dennis
+ *  July 10, 2000 version...many changes
+ *
+ *  Revision 1.3  2000/05/11 16:19:12  dennis
+ *  added RCS logging
+ *
+ *
  */
 
 package DataSetTools.retriever;
