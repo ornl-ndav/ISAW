@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/06/09 14:50:44  bouzekc
+ * Changed errorOut() to return ErrorStrings rather than
+ * Booleans.
+ *
  * Revision 1.12  2003/06/05 22:19:42  bouzekc
  * Added code so that subclasses can more easily write
  * error messages related to incorrect parameters.
@@ -447,16 +451,24 @@ public abstract class Form extends Operator implements Serializable{
    *
    *  @param  errmessage           The error message that you want the user
    *                               to see.
+   *
+   *  @return                      A new ErrorString containing the error
+   *                               message.
    */
-  protected Boolean errorOut(Object errmessage)
+  protected Object errorOut(Object errmessage)
   {
+   String message;
    if( errmessage instanceof String )
-     SharedData.addmsg(
-       "FORM ERROR: " + errmessage + "\n");
+   {
+     message = "FORM ERROR: " + errmessage;
+     SharedData.addmsg(message);
+   }
    else
-     SharedData.addmsg(
-       "FORM ERROR: " + errmessage.toString() + "\n");
-   return new Boolean(false);
+   {
+     message = "FORM ERROR: " + errmessage.toString();
+     SharedData.addmsg(message);
+   }
+   return new ErrorString(message);
   }
 
   /**
@@ -468,8 +480,11 @@ public abstract class Form extends Operator implements Serializable{
    *
    *  @param  errmessage           The error message that you want the user
    *                               to see.
+   *
+   *  @return                      A new ErrorString containing the error
+   *                               message.
    */
-  protected Boolean errorOut(IParameterGUI param, Object errmessage)
+  protected Object errorOut(IParameterGUI param, Object errmessage)
   {
    param.setValid(false);
    return this.errorOut(errmessage);
