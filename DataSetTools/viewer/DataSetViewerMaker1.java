@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/05/17 13:54:40  rmikk
+ *  Now deals with ImageViewComponents, except for pointed at and selected
+ *
  *  Revision 1.12  2004/05/14 15:06:08  rmikk
  *  Removed unused variables
  *
@@ -85,6 +88,7 @@ package DataSetTools.viewer;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.*;
+import gov.anl.ipns.ViewTools.Components.TwoD.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
 import gov.anl.ipns.ViewTools.UI.*;
@@ -116,7 +120,7 @@ public class DataSetViewerMaker1  extends DataSetViewer
    DataSet ds;
    ViewerState state;
    IArrayMaker_DataSet viewArray;
-   IViewComponent viewComp;
+   IViewComponent2D viewComp;
    DataSetData update_array;
    DataSetXConversionsTable  Conversions;
    public float ImagePortion = .8f;
@@ -132,20 +136,20 @@ public class DataSetViewerMaker1  extends DataSetViewer
   public DataSetViewerMaker1( DataSet             ds, 
                               ViewerState         state, 
                               IArrayMaker_DataSet       viewArray, 
-                              IViewComponent      viewComp )
+                              IViewComponent2D      viewComp )
     {
      super( ds, state);
      this.viewArray = viewArray;
      this.viewComp = viewComp;
      this.ds = ds;
      this.state = state;
-     if( !(viewComp instanceof DataSetViewerMethods)){
+     /*if( !(viewComp instanceof DataSetViewerMethods)){
        SharedData.addmsg("The view component is missing the DataSetViewerMethods");
        return;
-     }
+     }*/
         
      try{
-       ((DataSetViewerMethods)viewComp).setData( viewArray.getArray());
+        viewComp.dataChanged( (IVirtualArray2D)viewArray.getArray());
      }catch(Exception ss){
           SharedData.addmsg(ss.toString());
           return;
@@ -155,7 +159,7 @@ public class DataSetViewerMaker1  extends DataSetViewer
      BoxLayout blayout = new BoxLayout( East,BoxLayout.Y_AXIS);
      
      East.setLayout( blayout);
-      JComponent[] ArrayScontrols =viewArray.getSharedControls();
+     JComponent[] ArrayScontrols =viewArray.getSharedControls();
      if( ArrayScontrols != null)
        for( int i=0; i< ArrayScontrols.length; i++)
          East.add( ArrayScontrols[i]);
@@ -174,19 +178,27 @@ public class DataSetViewerMaker1  extends DataSetViewer
      ViewMenuItem[] MenItem2 = viewArray.getSharedMenuItems();
      
      PrintComponentActionListener.setUpMenuItem( getMenuBar(), this);
-     SetUpMenuBar( getMenuBar(), MenItem1,((DataSetViewerMethods)viewComp).getSharedMenuItemPath());
+     String[]paths = null;
+     if( viewComp instanceof DataSetViewerMethods)
+         paths = ((DataSetViewerMethods)viewComp).getSharedMenuItemPath();
+     SetUpMenuBar( getMenuBar(), MenItem1, paths );
 
      SetUpMenuBar( getMenuBar(), MenItem2, viewArray.getSharedMenuItemPath());
 
      Conversions = new DataSetXConversionsTable( ds);
      East.add( Conversions.getTable());
-     East.add( Box.createRigidArea(new Dimension(30,500)) ); 
+     East.add( Box.createVerticalGlue()); 
      
      viewArray.addActionListener( new ArrayActionListener());
-     
-     viewComp.addActionListener( new CompActionListener());
+     if(viewComp instanceof DataSetViewerMethods)
+       viewComp.addActionListener( new CompActionListener());
      setLayout( new GridLayout( 1,1));
-     JScrollPane Controls = new JScrollPane( East);
+     JComponent Controls = (JComponent)East;
+     if( ArrayScontrols.length+Compcontrols.length > 7){
+     
+          Controls = new JScrollPane( East);
+          ImagePortion =ImagePortion*.85f;
+     }
      add( new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
                   viewComp.getDisplayPanel(), Controls, ImagePortion));
 
@@ -208,7 +220,11 @@ public class DataSetViewerMaker1  extends DataSetViewer
      if( bar == null)
        return;
      for( int i = 0; i< items.length; i++){
-        String path = paths[i];
+        String path=null;
+        if( paths != null)
+           path = paths[i];
+        else
+           path = items[i].getPath();
         if( path != null)
           if( path.length() > 1){
             int p1= 0;
@@ -326,7 +342,10 @@ public class DataSetViewerMaker1  extends DataSetViewer
     {
      public void actionPerformed( ActionEvent evt)
        {
-        viewComp.dataChanged();
+       // if( viewComp instanceof ImageViewComponent)
+           viewComp.dataChanged( (IVirtualArray2D)(viewArray.getArray()) );
+       // else
+		//    viewComp.dataChanged();
         Repaint();
        }
     }
