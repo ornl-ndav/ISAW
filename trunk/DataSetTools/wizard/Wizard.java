@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.74  2003/09/10 04:46:01  bouzekc
+ * Extracted method to update Form progress bar out.  Fixed bug where the
+ * first time a Form is shown, the progress bar label is not Form name
+ * specific.
+ *
  * Revision 1.73  2003/09/10 04:05:11  bouzekc
  * Added comments to linkFormParameters().
  *
@@ -665,6 +670,10 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   public void addForm( Form f ) {
     forms.add( f );
 
+    //add the listener (this) to the Form's parameters and progress bar
+    f.addPropertyChangeListener( this );
+    f.addPropertyChangeListener( formProgress );
+
     //each Form will send out a PropertyChange new value from 0 to 100,
     //so the Wizard needs 100 units for each Form
     wizProgress.setMaximum( forms.size(  ) );
@@ -885,18 +894,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       " Forms done" );
     wizProgress.setValue( lastForm + 1 );
 
-    if( f.done(  ) ) {
-      formProgress.setString( f + " Done" );
-      formProgress.setValue( FORM_PROGRESS );
-    } else {
-      formProgress.setString( f + " Progress" );
-      formProgress.setValue( 0 );
-    }
-
-    //add the listener (this) to the Form's parameters and progress bar
-    f.addPropertyChangeListener( this );
-    f.addPropertyChangeListener( formProgress );
-
     form_panel.validate(  );
     form_num = index;
 
@@ -907,6 +904,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     } else {
       form_label.setText( "Form " + ( index + 1 ) + ": " + f.getTitle(  ) );
     }
+
+    updateFormProgressBar(  );
   }
 
   /**
@@ -1003,15 +1002,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       "Wizard Progress: " + ( lastDone ) + " of " + forms.size(  ) +
       " Forms done" );
 
-    Form f = getCurrentForm(  );
-
-    if( !f.done(  ) ) {
-      formProgress.setValue( 0 );
-      formProgress.setString( f + " Progress" );
-    } else {
-      formProgress.setValue( FORM_PROGRESS );
-      formProgress.setString( f + " Done" );
-    }
+    updateFormProgressBar(  );
   }
 
   /**
@@ -1424,7 +1415,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    * Initializes the progress bars.  Called from makeGUI().
    */
   private void initProgressBars(  ) {
-    formProgress.setString( "Form Progress" );
+    //formProgress.setString( "Form Progress" );
     wizProgress.setString( 
       "Wizard Progress: 0 of " + forms.size(  ) + " Forms done" );
     formProgress.setStringPainted( true );
@@ -1432,7 +1423,9 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
     wizProgress.setMaximum( forms.size(  ) );
     wizProgress.setValue( 0 );
-    formProgress.setValue( 0 );
+
+    //formProgress.setValue( 0 );
+    updateFormProgressBar(  );
   }
 
   /**
@@ -1658,6 +1651,31 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
           //let it drop on the floor
         }
       }
+    }
+  }
+
+  /**
+   * Method to update the formProgress progress bar based on whether or not the
+   * Form is done().  This sets the value and the String label.  The basic use
+   * of this method is when you want to set the Form progress bar to
+   * completely done or completely "not done."
+   */
+  private void updateFormProgressBar(  ) {
+    Form f = getCurrentForm(  );
+
+    System.out.println( f == null );
+
+    if( f != null ) {
+      if( f.done(  ) ) {
+        formProgress.setString( f + " Done" );
+        formProgress.setValue( FORM_PROGRESS );
+      } else {
+        formProgress.setString( f + " Progress" );
+        formProgress.setValue( 0 );
+      }
+    } else {
+      formProgress.setString( "Form Progress" );
+      formProgress.setValue( 0 );
     }
   }
 
