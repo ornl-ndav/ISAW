@@ -119,13 +119,12 @@ public class FortranParser implements FortranParserConstants {
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DIGIT:
-      case WHITESPACE:
       case STRING:
       case FLOATING_POINT:
       case FORTRAN_ABS:
       case FORTRAN_SQRT:
       case FORTRAN_FLOAT_FUN:
-      case FORTRAN_INT_FUN:
+      case FORTRAN_TRUNC_FUN:
       case FORTRAN_MOD_FUN:
       case FORTRAN_INT:
       case FORTRAN_REAL:
@@ -133,7 +132,7 @@ public class FortranParser implements FortranParserConstants {
       case FORTRAN_LOGICAL:
       case FORTRAN_CHAR_1:
       case FORTRAN_CHAR_2:
-      case 34:
+      case 36:
         ;
         break;
       default:
@@ -141,7 +140,7 @@ public class FortranParser implements FortranParserConstants {
         break label_1;
       }
       codeLine = convertFortranToJava();
-      jj_consume_token(34);
+      jj_consume_token(36);
       //a newline ends the expansion, and the parser expects one, so tack it on
       //print the parsed expression
       if( standalone ) {
@@ -168,13 +167,12 @@ public class FortranParser implements FortranParserConstants {
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DIGIT:
-      case WHITESPACE:
       case STRING:
       case FLOATING_POINT:
       case FORTRAN_ABS:
       case FORTRAN_SQRT:
       case FORTRAN_FLOAT_FUN:
-      case FORTRAN_INT_FUN:
+      case FORTRAN_TRUNC_FUN:
       case FORTRAN_MOD_FUN:
       case FORTRAN_INT:
       case FORTRAN_REAL:
@@ -188,19 +186,7 @@ public class FortranParser implements FortranParserConstants {
         jj_la1[1] = jj_gen;
         break label_2;
       }
-      label_3:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case WHITESPACE:
-          ;
-          break;
-        default:
-          jj_la1[2] = jj_gen;
-          break label_3;
-        }
-        jj_consume_token(WHITESPACE);
-      }
-      fToken = convertFortranTokens();
+      /*( ( <WHITESPACE> )* )*/ fToken = convertFortranTokens();
     fCode.append( fToken );
     fCode.append( " " );
     }
@@ -236,23 +222,35 @@ public class FortranParser implements FortranParserConstants {
       break;
     case FORTRAN_FLOAT_FUN:
       t = jj_consume_token(FORTRAN_FLOAT_FUN);
-    if( t.image.indexOf( "float" ) >= 0 ) {
-      {if (true) return t.image.replaceAll( "float", "rint" );}
+    s = t.image;
+    if( s.indexOf( "float" ) >= 0 ) {
+      s = s.replaceAll( "float", "" );
     } else {
-      {if (true) return t.image.replaceAll( "real", "rint" );}
+      s = s.replaceAll( "real", "" );
     }
+
+    s = "Float.parseFloat" + s;
+
+    {if (true) return s;}
       break;
-    case FORTRAN_INT_FUN:
-      t = jj_consume_token(FORTRAN_INT_FUN);
-    {if (true) return t.image.replaceAll( "int", "round" );}
+    case FORTRAN_TRUNC_FUN:
+      t = jj_consume_token(FORTRAN_TRUNC_FUN);
+    s = t.image.replaceAll( "int", "" );
+
+    s = "new Float" + s + ".intValue()";
       break;
     case FORTRAN_MOD_FUN:
       t = jj_consume_token(FORTRAN_MOD_FUN);
     s = t.image;
-    System.out.println( "Found MOD");
     s = s.replaceAll( "mod", "" ).replaceAll( "\\)", "" ).replaceAll( "\\(", "" );
     s = s.replaceAll( ",", " % " );
     {if (true) return s;}
+      break;
+    case FORTRAN_DOUBLE:
+      //matched a double-precision floating point
+        t = jj_consume_token(FORTRAN_DOUBLE);
+    t.image = t.image.replaceAll( "double precision", "" );
+    {if (true) return convertToJavaStyle( t.image, "double" );}
       break;
     case FORTRAN_INT:
       //matched an integer
@@ -265,12 +263,6 @@ public class FortranParser implements FortranParserConstants {
         t = jj_consume_token(FORTRAN_REAL);
     t.image = t.image.replaceAll( "real", "" );
     {if (true) return convertToJavaStyle( t.image, "float" );}
-      break;
-    case FORTRAN_DOUBLE:
-      //matched a double-precision floating point
-        t = jj_consume_token(FORTRAN_DOUBLE);
-    t.image = t.image.replaceAll( "double precision", "" );
-    {if (true) return convertToJavaStyle( t.image, "double" );}
       break;
     case FORTRAN_LOGICAL:
       //matched a boolean
@@ -292,15 +284,21 @@ public class FortranParser implements FortranParserConstants {
     //comma delimited list of name, number pairs at this point
     tokenList = s.split( "\\s+|\\s*,\\s*" );
 
-    for( int i = 0; i < tokenList.length; i = i + 2 ) {
-      System.out.println( "TOKEN " + tokenList[i] );
-      buffer.append( tokenList[i] );
-      buffer.append( " = new char[" );
-      buffer.append( tokenList[i].replaceAll( "\\*", "" ) );
-      buffer.append( "]" );
+    for( int i = 0; i < tokenList.length; i++ ) {
+      if( ( i % 2 )  == 0 ) {
+        //we found a variable name, so append it and the array declaration
+        buffer.append( tokenList[i] );
+        buffer.append( " = new char[" );
+      } else {
+        //we found the array dimension, so append that
+        buffer.append( tokenList[i].replaceAll( "\\*", "" ) );
+        buffer.append( "]" );
 
-      if( i < tokenList.length - 2 ) {
-        buffer.append( "," );
+        //if we haven't reached the end of our token list, append a 
+        //comma
+        if( i < tokenList.length - 2 ) {
+                buffer.append( "," );
+        }
       }
     }
 
@@ -348,10 +346,11 @@ public class FortranParser implements FortranParserConstants {
     case STRING:
       //matched a String
         t = jj_consume_token(STRING);
-    {if (true) return t.image;}
+    //replace Fortran's double single quotes with a backslash quote
+    {if (true) return t.image.replaceAll( "''", "\\\\\"");}
       break;
     default:
-      jj_la1[3] = jj_gen;
+      jj_la1[2] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -364,7 +363,7 @@ public class FortranParser implements FortranParserConstants {
   static public Token token, jj_nt;
   static private int jj_ntk;
   static private int jj_gen;
-  static final private int[] jj_la1 = new int[4];
+  static final private int[] jj_la1 = new int[3];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -372,10 +371,10 @@ public class FortranParser implements FortranParserConstants {
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0xff818030,0xff818030,0x20,0xff818010,};
+      jj_la1_0 = new int[] {0xfe018040,0xfe018040,0xfe018040,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x7,0x3,0x0,0x3,};
+      jj_la1_1 = new int[] {0x1f,0xf,0xf,};
    }
 
   public FortranParser(java.io.InputStream stream) {
@@ -391,7 +390,7 @@ public class FortranParser implements FortranParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   static public void ReInit(java.io.InputStream stream) {
@@ -400,7 +399,7 @@ public class FortranParser implements FortranParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   public FortranParser(java.io.Reader stream) {
@@ -416,7 +415,7 @@ public class FortranParser implements FortranParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   static public void ReInit(java.io.Reader stream) {
@@ -425,7 +424,7 @@ public class FortranParser implements FortranParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   public FortranParser(FortranParserTokenManager tm) {
@@ -440,7 +439,7 @@ public class FortranParser implements FortranParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   public void ReInit(FortranParserTokenManager tm) {
@@ -448,7 +447,7 @@ public class FortranParser implements FortranParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   static final private Token jj_consume_token(int kind) throws ParseException {
@@ -495,15 +494,15 @@ public class FortranParser implements FortranParserConstants {
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[35];
-    for (int i = 0; i < 35; i++) {
+    boolean[] la1tokens = new boolean[37];
+    for (int i = 0; i < 37; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 3; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -515,7 +514,7 @@ public class FortranParser implements FortranParserConstants {
         }
       }
     }
-    for (int i = 0; i < 35; i++) {
+    for (int i = 0; i < 37; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
