@@ -1,5 +1,5 @@
 /*
- * File:  ImageFrame.java
+ * File:  ImageFrame2.java
  *
  * Copyright (C) 2003, Dennis Mikkelson, Mike Miller
  *
@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/08/26 06:00:02  millermi
+ * - Replaced EXIT_ON_CLOSE with HIDE_ON_CLOSE so it does not
+ *   close other windows.
+ * - Removed unnecessary code, including import statements.
+ *
  * Revision 1.4  2003/08/25 15:55:35  dennis
  * No longer exits entire application when window is closed.
  * Sets correct title on Frame, when axes change.
@@ -73,10 +78,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import DataSetTools.components.View.TwoD.ImageViewComponent;
-import DataSetTools.components.View.*;
+import DataSetTools.components.View.AxisInfo2D;
+import DataSetTools.components.View.IVirtualArray2D;
+import DataSetTools.components.View.VirtualArray2D;
 import DataSetTools.components.View.Menu.ViewMenuItem;
-import DataSetTools.components.View.ViewControls.*;
-import DataSetTools.components.image.*;
 import DataSetTools.components.containers.SplitPaneWithState;
 
 /**
@@ -104,7 +109,7 @@ public class ImageFrame2 extends JFrame
     menu_bar.add(new JMenu("File")); 
     menu_bar.add(new JMenu("Options"));
     
-//    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     setBounds(0,0,700,500);
     
     setData(iva);
@@ -136,7 +141,7 @@ public class ImageFrame2 extends JFrame
     menu_bar.add(new JMenu("File")); 
     menu_bar.add(new JMenu("Options"));
     
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     setBounds(0,0,700,500);
     
     setData(temp);
@@ -196,16 +201,11 @@ public class ImageFrame2 extends JFrame
     ivc.addActionListener( new ImageListener() );
     Box controls = new Box(BoxLayout.Y_AXIS);
     JComponent[] ctrl = ivc.getSharedControls();
-    int ctrlcounter = 0;
+    //int ctrlcounter = 0;
     for( int i = 0; i < ctrl.length; i++ )
     {
-//      if( ctrl[i] instanceof ControlCheckboxButton ) 
-//      {
-//        if( !((ControlCheckboxButton)ctrl[i]).
-//          getTitle().equals("Selection Overlay") )
-        controls.add(ctrl[i]);
-	ctrlcounter++;
-//      }
+      controls.add(ctrl[i]);
+      //ctrlcounter++;
     }
     JPanel spacer = new JPanel();
 //    spacer.setPreferredSize(new Dimension(0,((10-ctrlcounter)*40) ) );
@@ -220,11 +220,11 @@ public class ImageFrame2 extends JFrame
     
     for( int i = 0; i < menus.length; i++ )
     {
-       if( ViewMenuItem.PUT_IN_FILE.toLowerCase().equals(
-    		menus[i].getPath().toLowerCase()) )
-    	  menu_bar.getMenu(0).add( menus[i].getItem() ); 
-       else // put in options menu
-    	  menu_bar.getMenu(1).add( menus[i].getItem() );	   
+      if( ViewMenuItem.PUT_IN_FILE.toLowerCase().equals(
+               menus[i].getPath().toLowerCase()) )
+        menu_bar.getMenu(0).add( menus[i].getItem() ); 
+      else // put in options menu
+        menu_bar.getMenu(1).add( menus[i].getItem() ); 	  
     }	   
   }
   
