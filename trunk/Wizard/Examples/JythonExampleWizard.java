@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.4  2003/07/09 23:16:51  bouzekc
+ * Works with the new versions of ScriptForm and JyScriptForm.
+ *
  * Revision 1.3  2003/07/09 21:51:02  rmikk
  * Fixed parameter linking error
  *
@@ -104,21 +107,14 @@ public class JythonExampleWizard extends Wizard {
       { 1, 1 },  //peaks file path
       { 2, 2 },  //run numbers
       { 3, 3 },  //experiment name
-      { 7, 5}
+      { 7, 5 }
     };  //SCD calibration file
 
-    String scriptsDir = SharedData.getProperty( "Script_Path" ) + "/";
-
-    //Script.java, which is ultimately called to create a new Jython script, uses
-    //forward slashes.  We are sending the String to setFileSeparator, however,
-    //to remove extra slashes.
     JyScriptForm peaks = new JyScriptForm( 
-        StringUtil.setFileSeparator( scriptsDir + "find_multiple_peaks2.py" ),
-        "LoadFile", "Peaks File" );
+        "find_multiple_peaks2.py", "LoadFile", "Peaks File" );
     JyScriptForm integrate = new JyScriptForm( 
-        StringUtil.setFileSeparator( 
-          scriptsDir + "integrate_multiple_runs2.py" ), "LoadFile",
-        "Integrated Peaks File", new int[]{ 0, 1, 2, 3, 5 } );
+        "integrate_multiple_runs2.py", "LoadFile", "Integrated Peaks File",
+        new int[]{ 0, 1, 2, 3, 5 } );
 
     this.addForm( peaks );
     this.addForm( integrate );
