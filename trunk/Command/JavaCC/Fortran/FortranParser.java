@@ -478,10 +478,10 @@ public class FortranParser implements FortranParserConstants {
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x1f81200a,0x1f812008,0x1f812008,};
+      jj_la1_0 = new int[] {0x8fc0900a,0x8fc09008,0x8fc09008,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0xef9,0xef9,0xef9,};
+      jj_la1_1 = new int[] {0x77c,0x77c,0x77c,};
    }
 
   public FortranParser(java.io.InputStream stream) {
@@ -601,8 +601,8 @@ public class FortranParser implements FortranParserConstants {
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[44];
-    for (int i = 0; i < 44; i++) {
+    boolean[] la1tokens = new boolean[43];
+    for (int i = 0; i < 43; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -621,7 +621,7 @@ public class FortranParser implements FortranParserConstants {
         }
       }
     }
-    for (int i = 0; i < 44; i++) {
+    for (int i = 0; i < 43; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

@@ -15,38 +15,37 @@ public interface FortranParserConstants {
   int VARIABLE = 9;
   int OPERAND = 10;
   int ARRAY_VARIABLE = 11;
-  int STRING_COMP = 12;
-  int STRING = 13;
-  int FLOATING_POINT = 14;
-  int BOOL_CONST = 15;
-  int FORTRAN_COMMENT = 16;
-  int INT_IDENT = 17;
-  int FLOAT_IDENT = 18;
-  int CHAR_VARIABLE = 19;
-  int MATH_INT_VAR = 20;
-  int MATH_FLOAT_VAR = 21;
-  int SIMPLE_MATH_COMP = 22;
-  int FORTRAN_MATH_FUN = 23;
-  int FORTRAN_ABS = 24;
-  int FORTRAN_FLOAT_FUN = 25;
-  int FORTRAN_TRUNC_FUN = 26;
-  int FORTRAN_MOD_FUN = 27;
-  int FORTRAN_FRACTION_FUN = 28;
-  int OPERATOR = 29;
-  int SIMPLE_EXPRESSION = 30;
-  int NESTED_EXPRESSION = 31;
-  int FORTRAN_EXPRESSION = 32;
-  int COND_OPS = 33;
-  int COND_START = 34;
-  int SINGLE_IF = 35;
-  int ELSE_COND = 36;
-  int START_MULTI_IF = 37;
-  int END_IF = 38;
-  int VAR_ASSIGN = 39;
-  int F_VAR = 40;
-  int FORTRAN_VARIABLE = 41;
-  int FORTRAN_CHAR_1 = 42;
-  int FORTRAN_CHAR_2 = 43;
+  int STRING = 12;
+  int FLOATING_POINT = 13;
+  int BOOL_CONST = 14;
+  int FORTRAN_COMMENT = 15;
+  int INT_IDENT = 16;
+  int FLOAT_IDENT = 17;
+  int CHAR_VARIABLE = 18;
+  int MATH_INT_VAR = 19;
+  int MATH_FLOAT_VAR = 20;
+  int SIMPLE_MATH_COMP = 21;
+  int FORTRAN_MATH_FUN = 22;
+  int FORTRAN_ABS = 23;
+  int FORTRAN_FLOAT_FUN = 24;
+  int FORTRAN_TRUNC_FUN = 25;
+  int FORTRAN_MOD_FUN = 26;
+  int FORTRAN_FRACTION_FUN = 27;
+  int OPERATOR = 28;
+  int SIMPLE_EXPRESSION = 29;
+  int NESTED_EXPRESSION = 30;
+  int FORTRAN_EXPRESSION = 31;
+  int COND_OPS = 32;
+  int COND_START = 33;
+  int SINGLE_IF = 34;
+  int ELSE_COND = 35;
+  int START_MULTI_IF = 36;
+  int END_IF = 37;
+  int VAR_ASSIGN = 38;
+  int F_VAR = 39;
+  int FORTRAN_VARIABLE = 40;
+  int FORTRAN_CHAR_1 = 41;
+  int FORTRAN_CHAR_2 = 42;
 
   int DEFAULT = 0;
 
@@ -63,7 +62,6 @@ public interface FortranParserConstants {
     "<VARIABLE>",
     "<OPERAND>",
     "<ARRAY_VARIABLE>",
-    "<STRING_COMP>",
     "<STRING>",
     "<FLOATING_POINT>",
     "<BOOL_CONST>",
