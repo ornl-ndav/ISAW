@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/04/02 15:29:21  dennis
+ *  Added method getMeasuredPeakPositions() to return the measured
+ *  peaks (row,col,tof) values used in the calibration.
+ *  Added method getTheoreticalPeakPositions() to return the theoretical
+ *  (row,col,tof) values calculated using the new calibrated instrument
+ *  parameters.
+ *
  *  Revision 1.12  2004/04/01 20:59:00  dennis
  *  Added log file PrintStream to constructor.  Modified methods
  *  ShowProgress() and ShowOldCalibrationInfo() to print to log file.
@@ -92,6 +99,7 @@ import java.io.*;
 import java.util.*;
 import DataSetTools.math.*;
 import DataSetTools.dataset.*;
+import DataSetTools.instruments.*;
 
 /**
  * This class implements a parameterized "function" that calculates the
@@ -123,6 +131,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
 
   private PrintStream log_file = null;
 
+  private Vector peaks_vector;
   private int    n_peaks;
   private int    run[]; 
   private int    id[];
@@ -134,6 +143,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
   public double U_observed[][];
   public double B_observed[][];
   public double B_theoretical[][];
+  public double A_matrix[][];
 
   private double qxyz_observed[][];
   private double qxyz_theoretical[][];
@@ -174,6 +184,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
                                    // empty arrays and then change the values
      super( "SCDcal", new double[n_used], new String[n_used] );
      this.log_file = log_file;
+     this.peaks_vector = peaks_vector;
 
      int used_index = 0;                        // set up copies of the 
      for ( int i = 0; i < params.length; i++ )  // sub lists that are actually
@@ -235,11 +246,11 @@ public class SCDcal   extends    OneVarParameterizedFunction
                                    // hashtable is critical, and the copy 
                                    // may disturb it.
 
-     B_theoretical = lattice_calc.A_matrix( lattice_params );     
-     System.out.println("Material Matrix = " );
-     LinearAlgebra.print( B_theoretical );
-     B_theoretical = LinearAlgebra.getInverse( B_theoretical ); 
+     A_matrix = lattice_calc.A_matrix( lattice_params );
+     System.out.println("A_matrix = " );
+     LinearAlgebra.print( A_matrix );
 
+     B_theoretical = LinearAlgebra.getInverse( A_matrix ); 
      System.out.println("B_theoretical = " );
      LinearAlgebra.print( B_theoretical );
 
@@ -250,7 +261,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
      for ( int i = 0; i < 3; i++ )
        for ( int j = 0; j < 3; j++ )
          B_theoretical[i][j] *= 2*Math.PI;
-     System.out.println("Final B_theoretical = " );
+     System.out.println("2 * PI * B_theoretical = " );
      LinearAlgebra.print( B_theoretical );
 
      gon_rotation_inverse = new Hashtable();
@@ -416,6 +427,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
     return error;
   }
 
+
   /**
    *  Calculate the list of observed qxyz values, using the measured tof,
    *  row and col values with the current values of the instrument parameters. 
@@ -519,6 +531,71 @@ public class SCDcal   extends    OneVarParameterizedFunction
       for ( int j = 0; j < A[0].length; j++ )
         M[i][j] = A[i][j];
     return M;
+  }
+
+
+  /**
+   *  Get list of triples, row, col, time-of-flight for the measured peaks
+   */ 
+  public float[][] getMeasuredPeakPositions()
+  {
+     float positions[][] = new float[n_peaks][3];
+     for ( int i = 0; i < n_peaks; i++ )
+     {
+       PeakData peak = (PeakData)peaks_vector.elementAt(i);
+       positions[i][0] = (float)peak.row;
+       positions[i][1] = (float)peak.col;
+       positions[i][2] = (float)peak.tof;
+     }
+     return positions;
+  }
+
+
+  /**
+   *  Get list of triples, row, col, time-of-flight for the expected peaks
+   */
+  public float[][] getTheoreticalPeakPositions()
+  {
+     double l1 = all_parameters[L1_INDEX];
+     double t0 = all_parameters[T0_INDEX];
+     double a  = all_parameters[A_INDEX];
+     double sx = all_parameters[SX_INDEX];
+     double sy = all_parameters[SY_INDEX];
+     double sz = all_parameters[SZ_INDEX];
+
+     DetectorPosition_d pixel_position;
+     Vector3D_d         pixel_vec;
+     Vector3D_d         sample_shift;
+     double             sample_shift_array[] = {-sx, -sy, -sz};
+     double             rotation[][] = null;
+     double             rotation_inv[][] = null;
+     Position3D_d qxyz;
+     double       coords[] = new double[3];
+
+     float positions[][] = new float[n_peaks][3];
+     for ( int i = 0; i < n_peaks; i++ )
+     {
+       PeakData peak = (PeakData)peaks_vector.elementAt(i);
+       UniformGrid_d grid_d = (UniformGrid_d)grids.get( new Integer( id[i] ) );
+       UniformGrid grid = new UniformGrid( grid_d, false ); 
+       float phi   = (float)peak.orientation.getPhi();
+       float chi   = (float)peak.orientation.getChi();
+       float omega = (float)peak.orientation.getOmega();
+       
+       IPNS_SCD_SampleOrientation orientation = 
+                           new IPNS_SCD_SampleOrientation( phi, chi, omega );
+
+       VecQMapper mapper = new VecQMapper( grid, 
+                                          (float)l1, 
+                                          (float)t0, 
+                                           orientation );
+
+       Vector3D q_vec = new Vector3D( (float)qxyz_theoretical[i][0],
+                                      (float)qxyz_theoretical[i][1],
+                                      (float)qxyz_theoretical[i][2] );
+       positions[i] = mapper.QtoRowColTOF( q_vec );
+     }
+     return positions;
   }
 
 
