@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.71  2004/05/14 03:29:24  bouzekc
+ * Fixed annoying bug that would switch the script selector combo box to
+ * "Isaw Script" no matter what type of script was loaded.  It now changes
+ * based on script type.
+ *
  * Revision 1.70  2004/03/15 19:34:45  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -516,10 +521,10 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
       addDataSets( SP );
 
       if( Language != null ) {
-        if( SP instanceof IScriptProcessor ) {
-          Language.setSelectedIndex( 0 );
-        } else {
+        if( SP instanceof DataSetTools.operator.PyScriptOperator ) {
           Language.setSelectedIndex( 1 );
+        } else {
+          Language.setSelectedIndex( 0 );
         }
       }
     } else if( evt.getSource(  ) instanceof SaveDocToFileListener ) {
