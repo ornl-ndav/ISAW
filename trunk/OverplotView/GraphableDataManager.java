@@ -10,6 +10,11 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.16  2002/07/12 18:21:48  rmikk
+ * Changed the Constructor to include the state variable so
+ *    that the previous states are retained when changing the
+ *    view.
+ *
  * Revision 1.15  2002/06/03 16:56:08  rmikk
  * Added a border around the Selected Graph view for printing
  * Fixed some indents
@@ -106,9 +111,9 @@ public class GraphableDataManager
   /**
    * default constructor
    */
-  public GraphableDataManager( DataSet data_set )
+  public GraphableDataManager( DataSet data_set, DataSetTools.viewer.ViewerState state )
   {
-    super(data_set);
+    super(data_set , state);
     JMenu jm = menu_bar.getMenu(DataSetViewer.EDIT_MENU_ID);
     JMenuItem jmi = new JMenuItem("Graph");
     jm.add( jmi);
