@@ -12,6 +12,9 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.10  2000/07/25 16:37:31  dennis
+ *  Added NUMBER_OF_PULSES attribute to each spectrum
+ *
  *  Revision 1.9  2000/07/24 15:50:12  dennis
  *  Added MonitorPeakArea to monitor DataSet
  *
@@ -609,7 +612,12 @@ public class RunfileRetriever extends    Retriever
     float_attr =new FloatAttribute(Attribute.EFFICIENCY_FACTOR, 1 );
     attr_list.setAttribute( float_attr );
 
-    
+    // Number of pulses...... 
+    int_attr = new IntAttribute( Attribute.NUMBER_OF_PULSES, 
+                                     run_file.NumOfPulses( ));
+    attr_list.setAttribute( int_attr );
+
+
     // Total Counts  ........
     try{
     float_attr = new FloatAttribute( Attribute.TOTAL_COUNT, 
@@ -922,7 +930,9 @@ public class RunfileRetriever extends    Retriever
 
     type   = run_file.DetectorType( det_id );
     length = Runfile.LENGTH[ type ] / 100;   // convert cm to m
-    width  = Runfile.WIDTH[ type ] / 100;    // convert cm to m
+//    width  = Runfile.WIDTH[ type ] / 100;    // convert cm to m
+    width = .0254f;                        // assume 1" outside diameter to
+                                             // match Chun's results
 
     nom_radius = (float) run_file.RawFlightPath( det_id );
     nom_height = (float) run_file.RawDetectorHeight( det_id );
