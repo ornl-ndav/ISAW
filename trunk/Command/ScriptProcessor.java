@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.35  2003/03/14 15:19:47  pfpeterson
+ * Major reworking of class. Now processes Script objects, only instantiates swing components when necessary, and removed obsolete code.
+ *
  * Revision 1.34  2003/03/13 21:27:10  pfpeterson
  * Fixed bug where we didn't skip comments while processing parameter lines.
  *
@@ -143,12 +146,11 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   private Document logDocument = null;
   
   private boolean Debug = false;
-  private StringBuffer macroBuffer=null;
-  private Document MacroDocument = null;
   private Vector vnames= new Vector();
   private String command ="UNKNOWN";
   private String Title = "UNKNOWN";
   private String CategoryList="OPERATOR";
+  private Script script=null;
   
   /**
    * Constructor to take care of the common parts of initializing the
@@ -158,8 +160,6 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     super("UNKNOWN");
     ExecLine=new Command.execOneLine();
     ExecLine.resetError();
-    OL = new IObserverList() ;
-    PL = new PropertyChangeSupport( (Object)this );
     seterror(-1,"");
     lerror=-1;
   }
@@ -172,14 +172,14 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    */
   public ScriptProcessor ( String TextFileName ){
     this();
-    macroBuffer=Util.readTextFile(TextFileName);
+    this.script=new Script(TextFileName);
     setDefaultParameters();
     Title = TextFileName;
   }
   
   public ScriptProcessor( StringBuffer buffer ){
     this();
-    macroBuffer=buffer;
+    this.script=new Script(buffer);
     setDefaultParameters();
   }
 
@@ -187,12 +187,11 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    * Constructor that can be used to run Macros- non visual?
    *
    * @param  Doc      The Document that has macro commands
-   * @param  O        Observer for the Send command
    */
-  public ScriptProcessor ( Document Doc  ){
+   public ScriptProcessor ( Document Doc  ){
     this();
     if( Doc==null || Doc.getLength()==0 ) return;
-    this.setDocument(Doc);
+    this.script=new Script(Doc);
     setDefaultParameters(); 
   }
   
@@ -206,7 +205,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     ExecLine.setIObserverList( IOlist);
   }
    
-  /** Sets the whole list of property change listeners.  
+  /**
+   * Sets the whole list of property change listeners.  
    *   NOTE: Used when alternating between different languages
    */
   public void setPropertyChangeList( PropertyChangeSupport PcSupp) 
@@ -231,19 +231,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     Title = title;
   }
   
-  private void initialize(){
-  }
-  
-  /**
-   * Initializes the Visual Editor Elements
-   */ 
-  private void init(){
-  }
-  
   public void setDocument( Document doc){
-    MacroDocument = doc;
-    CommandPane.fixUP(MacroDocument);
-    macroBuffer=null;
+    this.script=new Script(doc);
   }
   
   /**
@@ -256,6 +245,36 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     ExecLine.addDataSet( dss ) ; 
   }
 
+  /**
+   * Executes one line of a Script
+   *
+   * @param script The Script with the line in it
+   * @param line  The line in the document to be executed
+   */
+  public  void execute1( Script script, int line ){
+    String S ; 
+    
+    if( script==null ) return;
+    if( line < 0 )return ;    
+    S = script.getLine(line);
+    
+    if( S == null ){
+      seterror( 0 , "Bad Line number");
+      lerror = line;
+      return;
+    }
+    int kk = ExecLine.execute( S , 0 , S.length() ) ; 
+    perror = ExecLine.getErrorCharPos() ; 
+    if( perror >= 0 ){
+      lerror = line ; 
+      serror = ExecLine.getErrorMessage() ; 
+    }else if( kk < S.length() - 1 ){
+      lerror = line ;  
+      perror = kk ; 
+      serror = "Extra Characters at the end of command" ; 
+    } 
+  }
+  
   /**
    * Executes one line in a Document
    *
@@ -306,53 +325,50 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   }
 
   /**
-   * executes all the lines of code in the document
+   * executes all the lines of code in the script
    *
-   *@param  Doc  The document that has the program in it
+   * @param  script The script that has the program in it
    */
-  public void execute( Document Doc ){
+  public void execute( Script script ){
     int line ; 
-    Element E ; 
-    if( Doc == null ) 
-      return ;      
-
-    E = Doc.getDefaultRootElement() ; 
+    if(script==null)
+      return;
 
     ExecLine.initt() ; 
 
     ExecLine.resetError();
     perror = -1 ; 
-    line = executeBlock( Doc , 0 ,  true ,0 ) ; 
+    line = executeBlock( script , 0 ,  true ,0 ) ; 
     if( perror < 0)
       seterror( ExecLine.getErrorCharPos(),ExecLine.getErrorMessage());
     if( perror >= 0 ) 
       if( lerror < 0 )lerror = line;
-    if( line  <  E.getElementCount() )
+    if(line<script.numLines())
       if( perror < 0 ){
         seterror(  line , "Did Not finish program" ) ; 
         lerror = line;
       }
+    
   }
     
-  private int executeBlock ( Document Doc, int start, boolean exec,
-                             int onerror ){
+  private int executeBlock( Script script, int start, boolean exec,
+                            int onerror ){
     int line ;
     String S ; 
         
-    if( Doc == null){
+
+    if( script == null){
       seterror (0 , "No Document");
       if( Debug)System.out.println("NO DOCUMENT");
       lerror = 0;
       return 0 ;
     }
-    Element E = Doc.getDefaultRootElement();
-    Element F;                 
     line = start ; 
     if(Debug)
       System.out.print( "In exeBlock line ,ex=" + line+","+
                         exec + perror ) ; 
-    while ( ( line < E.getElementCount() ) && ( perror < 0 ) ){
-      S = getLine( Doc , line );
+    while ( ( line < script.numLines() ) && ( perror < 0 ) ){
+      S = script.getLine( line );
 
       if( S !=  null ){
         int i ; 
@@ -374,14 +390,14 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       }else if( S.toUpperCase().trim().indexOf( "END ERROR" ) == 0 ){
         return line ; 
       }else if( S.toUpperCase().trim().indexOf( "ON ERROR" ) == 0 ){
-        line = executeErrorBlock( Doc , line , exec ) ;               
+        line = executeErrorBlock( script , line , exec ) ;               
       }else if( onerror > 0 ){
       }else if( S.toUpperCase().trim().indexOf( "FOR " ) == 0 ){
-        line = executeForBlock ( Doc , line , exec ,onerror ) ; 
+        line = executeForBlock ( script , line , exec ,onerror ) ; 
       }else if( S.toUpperCase().trim().indexOf( "ENDFOR" ) == 0 ){
         return line ; 
       }else if( S.toUpperCase().trim().indexOf("IF ") == 0){
-        line = executeIfStruct( Doc, line, exec , onerror );
+        line = executeIfStruct( script, line, exec , onerror );
       }else if( S.toUpperCase().trim().equals("ELSE")){
         return line;
       }else if( S.toUpperCase().trim().indexOf("ELSEIF") == 0){
@@ -392,7 +408,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       }else if( exec ){
         //can transverse a sequence of lines. On error , if then
         ExecLine.resetError();               
-        execute1( Doc  , line ) ; 
+        execute1( script  , line ) ;
       }
           
       if( perror >= 0 ){
@@ -404,7 +420,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       if(Debug)System.out.println( " Thru" +line) ; 
       boolean done = false;
       while( !done ){
-        String SS = getLine( Doc,line,  false );
+        String SS = script.getLine( line );
         if( SS == null )
           done = true;
         else if( SS.length() < 1)
@@ -419,20 +435,18 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     return line; 
   }
     
-  private int executeForBlock( Document Doc , int start , boolean execute, 
+  private int executeForBlock( Script script , int start , boolean execute, 
                                int onerror ){
     String var; 
     int i, j, k, n; 
     int line;  
     String S; 
-    Element  E, F;  
     Vector V;
-    if( Doc == null ) return -1 ; 
-    E = Doc.getDefaultRootElement() ; 
+    if(script==null) return -1;
     if( start < 0 ) return start ; 
-    if( start >= E.getElementCount() ) return start ;  
+    if( start >= script.numLines() ) return start ;  
         
-    S = getLine( Doc , start );
+    S = script.getLine( start );
     if( S == null){
       seterror ( 0 , "Internal Errorb" ) ; 
       return start ; 
@@ -482,7 +496,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       V = new Vector();
       var ="MMM";
     }   
-    line = nextLine( Doc, start );
+    line = nextLine( script, start );
          
     int kline = line;
     for( int jj = 0; jj< n ;jj++){
@@ -496,16 +510,16 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       }
             
       //if(execute) 
-      kline = executeBlock( Doc , line , execute ,0 ) ; 
+      kline = executeBlock( script , line , execute ,0 ) ; 
       if ( (perror >= 0) && (onerror == 0) )
         return kline ; 
             
-      if( kline >= E.getElementCount() ){
+      if( kline >= script.numLines() ){
         seterror( 0 , "No EndFor for a FORb" + S ) ; 
         return kline ; 
       }
               
-      S = getLine( Doc , kline );
+      S = script.getLine( kline );
       if( S == null ){
         seterror( 0 ,  "Internal error" ) ; 
         return kline ; 
@@ -523,20 +537,18 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     return kline ; 
   }
 
-  private int executeErrorBlock( Document Doc , int start , boolean execute ){
+  private int executeErrorBlock( Script script, int start, boolean execute ){
     String var;      
     int i, j, k; 
     int line; 
     String S; 
     int mode; 
-    Element E, F;  
     if(Debug) System.out.println("In exec Error" ); 
-    if( Doc == null ) return -1;
-    E = Doc.getDefaultRootElement();
+    if(script==null) return -1;
     if( start < 0 ) return start;
-    if( start >= E.getElementCount() ) return start;
+    if(start>=script.numLines());
        
-    S = getLine( Doc , start);
+    S = script.getLine(start);
        
     if( S == null ){
       seterror ( 0 , "Internal Errorc" );
@@ -546,25 +558,25 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       seterror ( 0, "internal error d" );
       return start ; 
     }
-    line = executeBlock( Doc , nextLine( Doc ,start)  , execute, 0 );
+    line = executeBlock( script, nextLine( script ,start)  , execute, 0 );
     if( perror >= 0 ){
       ExecLine.resetError();
       perror = -1 ; 
       serror="";
       if(Debug) System.out.println("In ExERROR ERROR occured");
            
-      line = executeBlock( Doc , line , false, 1 );
+      line = executeBlock( script , line , false, 1 );
       mode = 0 ;
       if(Debug) System.out.println("After EXERROR ocurred "+line);
     }else
       mode = 1;
  
-    if( line >= E.getElementCount() ){
+    if( line >= script.numLines() ){
       seterror ( 0 , " No ENDERROR for On Error" ) ; 
       return line ; 
     }
 
-    S = getLine( Doc , line );
+    S = script.getLine( line );
     if( S == null ){
       seterror ( 0 , "Internal Errorc" );
       return start;
@@ -572,7 +584,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     if( S.toUpperCase().trim().equals( "ELSE ERROR" ) ){
       if(Debug)
         System.out.println("ELSE ERROR on line="+line+","+execute+mode);
-      line =executeBlock( Doc , nextLine( Doc , line) , execute, mode );
+      line =executeBlock( script, nextLine(script, line), execute, mode );
           
       if( perror >= 0){
         lerror = line;
@@ -580,7 +592,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         int pperror = perror;
         perror = -1;
         //not done cause did not reset error on this line????
-        line = executeBlock( Doc, line, execute, 1);
+        line = executeBlock( script, line, execute, 1);
         perror = pperror;
         if(Debug)System.out.println("ELSE ERROR ERROR2, line,perror ="+
                                     line+","+perror);
@@ -593,7 +605,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       return line ;  
     }
 
-    S = getLine( Doc , line );
+    S = script.getLine( line );
     if( S == null ){
       seterror ( 0 , "Internal Errorc" ) ; 
       return start ; 
@@ -602,7 +614,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       seterror( 0 , " NO ELSE or END Error for On ERRor" );
     }
 
-    if(Debug)System.out.println("ENd ERROR occurred"+perror+","+line+","
+    if(Debug)System.out.println("END ERROR occurred"+perror+","+line+","
                                 +lerror);
 
     if( perror < 0)
@@ -611,14 +623,14 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       return line + 1; // in case nested on errors 
   }
 
-  private int executeIfStruct( Document Doc, int line, boolean execute,
+  private int executeIfStruct( Script script, int line, boolean execute,
                                int onerror ){
     String S;
     int i , 
       j;
     if( Debug) 
       System.out.print("Start if line=" + line);
-    S = getLine( Doc, line );
+    S = script.getLine( line );
     if( Debug)
       System.out.println( ":: line is " + S );
     if( S == null){
@@ -672,14 +684,14 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       System.out.println("aft eval b and err ="+b+","+perror);
     if( perror >= 0 )
       return line;
-    line = nextLine( Doc, line );
-    j = executeBlock ( Doc , line , b && execute , 0 ) ;
+    line = nextLine( script, line );
+    j = executeBlock ( script , line , b && execute , 0 ) ;
     if( Debug)
       System.out.println( "ExIf::aft exe 1st block, perror=" +
                           perror +serror );
     if( perror >= 0 )
       return j;
-    S = getLine ( Doc , j );
+    S = script.getLine ( j );
     if(Debug)
       System.out.println("ExIf:: Els or Elseif?"+S);
     if( S == null){
@@ -690,11 +702,10 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     int x=0;
     if( S.toUpperCase().trim().indexOf( "ELSE" ) == 0)
       if( S.toUpperCase().trim().indexOf( "ELSEIF" ) == 0 ){
-        j = executeIfStruct( Doc , j , !b && execute ,0);  
+        j = executeIfStruct( script , j , !b && execute ,0);  
         return j;
       }else{
-        j = executeBlock( Doc , nextLine( Doc , j ) , 
-                          (!b) && execute, 0 );
+        j = executeBlock( script, nextLine( script, j ), (!b) && execute, 0 );
         x = 2;
       }
       
@@ -703,7 +714,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     if( perror >= 0) 
       return j;
 
-    S = getLine ( Doc , j );
+    S = script.getLine ( j );
     if( Debug ) 
       System.out.println( "ExIf:: ENDIF?" + S );
     if( S == null){
@@ -773,18 +784,21 @@ public class ScriptProcessor  extends ScriptProcessorOperator
 
     index=line.indexOf("#");
     if(index==0){ // could be comment
-      index=line.indexOf("#$$");
-      if(index<0) // it is a comment
+      //index=line.indexOf("#$$");
+      //if(index<0) // it is a comment
+      if(line.indexOf("#$$")<0)
         return true; // it dealt with things correctly
     }
 
     // trim off the marker flag
-    if(index<0)
+    index=line.indexOf("#$$");
+    if(index>=0){
+      buffer=new StringBuffer(line.substring(index+3).trim());
+    }else{
       index=line.indexOf("$");
-    if(Debug) System.out.println("start="+index);
-    if(index<0)
-      return false;
-    buffer=new StringBuffer(line.substring(index+1).trim());
+      if(index<0) return false; // something wrong
+      buffer=new StringBuffer(line.substring(index+1).trim());
+    }
 
     // get the variable name
     VarName=StringUtil.getString(buffer);
@@ -993,21 +1007,22 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     return true;
   }
 
-  private int nextLine( Document Doc, int line1 ){
-    boolean done = false;
-    int line = line1;  
-    while( !done ){
-      String SS = getLine( Doc,line,  false );
-      if( SS == null )
-        done = true;
-      else if( SS.length() < 1)
-        done = true;
-      else if( SS.charAt( SS.length() - 1) != '\\' )
-        done = true;
+  private int nextLine( Script script, int line1 ){
+    boolean done=false;
+    int line=line1;
+    String SS=null;
+    while(!done){
+      SS=script.getLine(line);
+      if(SS==null)
+        done=true;
+      else if(SS.length()<1)
+        done=true;
+      else if(SS.charAt(SS.length()-1)!='\\')
+        done=true;
       else
-        line ++;
+        line++;
     }
-    line++  ; 
+    line++;
     return line;
   }
 
@@ -1118,6 +1133,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    */
   public void addIObserver( IObserver iobs ){
     ExecLine. addIObserver( this ) ; 
+    if(OL==null) OL=new IObserverList();
     OL.addIObserver( iobs ) ; 
   }
 
@@ -1129,7 +1145,10 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    */
   public void deleteIObserver( IObserver iobs ){
     ExecLine.deleteIObserver( this ) ; 
-    OL.deleteIObserver( iobs ) ; 
+    if(OL==null)
+      OL=new IObserverList();
+    else
+      OL.deleteIObserver( iobs ) ; 
   }
     
   /**
@@ -1137,12 +1156,15 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    */
   public void deleteIObservers(){
     ExecLine.deleteIObservers();
-    OL.deleteIObservers();
+    if(OL==null)
+      OL=new IObserverList();
+    else
+      OL.deleteIObservers();
   }
 
   public String getVersion(){
     return "6-01-2001";
-  } 
+  }
 
   /**
    * Gets the position in a line where the error occurred
@@ -1174,29 +1196,19 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    *  constructor.
    */
   public void setDefaultParameters(){
+    if(this.script==null) return; // don't do anything before there is a script
+
     String Line;
       
     if( Debug) 
       System.out.println("Start get Def par"+ perror);
 
-    // create the text to get parameters from
-    String text=null;
-    if(macroBuffer!=null){
-      text=macroBuffer.toString();
-    }else{
-      if( MacroDocument == null) 
-        return;
-      try{
-        text=MacroDocument.getText(0,MacroDocument.getLength());
-      }catch(BadLocationException e){
-        // let it drop on the floor
-      }
-    }
+    String text=this.script.toString();
 
     // check that string isn't empty
     if( text==null || text.length()<=0 )
       return;
-       
+
     // remove everything after the last suspected parameter and create
     // a StringBuffer
     StringBuffer buffer=null;
@@ -1322,20 +1334,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     }// for i=0 to Num_parameters
 
     int k =lerror; 
-    if(MacroDocument==null){
-      if(macroBuffer==null){
-        return new ErrorString("NO SCRIPT FOUND");
-      }else{
-        Document doc=new PlainDocument();
-        try{
-          doc.insertString(0,macroBuffer.toString(),null);
-        }catch(BadLocationException e){
-          // let it drop on the floor
-        }
-        this.setDocument(doc);
-      }
-    }
-    k = executeBlock( MacroDocument ,0 ,true ,0) ;
+    k = executeBlock( this.script,0 ,true ,0) ;
          
     if( getErrorMessage().equals(execOneLine.WN_Return))
       seterror( -1,"");
@@ -1371,6 +1370,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    * "Display"
    */
   public void propertyChange(PropertyChangeEvent e){
+    if(PL==null) PL=new PropertyChangeSupport(this);
     PL.firePropertyChange( e );
   }
 
@@ -1395,6 +1395,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    *@see DataSetTools.util.IObserver
    */ 
   public void update(  Object observed_obj ,  Object reason ){
+    if(OL==null) OL=new IObserverList();
     if( !(reason instanceof String))
       OL.notifyIObservers( this  ,  reason  );
     else
