@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/12 16:09:46  pfpeterson
+ * Now automatically disable constant and result parameters.
+ *
  * Revision 1.1  2002/02/27 17:27:03  dennis
  * Subclass of Parameter that includes extra information and GUI
  * components for use in Wizards.
@@ -56,6 +59,7 @@ public class WizardParameter extends Parameter
   private JParameterGUI  param_gui;
   private JCheckBox      check_box;
   private JPanel         extended_gui;
+  private boolean        enabled;
 
 
   /**
@@ -69,6 +73,7 @@ public class WizardParameter extends Parameter
     check_box = new JCheckBox( "", value_set );
     check_box.setEnabled( false );
     extended_gui = new JPanel();
+    enabled=true;
     MakeGUIPanel(); 
   }
 
@@ -117,6 +122,7 @@ public class WizardParameter extends Parameter
     super.setValue( object );
     check_box.setSelected( true );
     param_gui = JParameterGUI.getInstance( this );
+    this.setEnabled(enabled);
     MakeGUIPanel();
   }
 
@@ -157,6 +163,15 @@ public class WizardParameter extends Parameter
   {
     return extended_gui;
   }
+
+    public void setEnabled(boolean en){
+        this.enabled=en;
+        param_gui.setEnabled(en);
+    }
+
+    public boolean getEnabled(){
+        return this.enabled;
+    }
 
   /**
    *  Build the default GUI, containing the parameter GUI and checkbox,
