@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.45  2005/04/04 22:32:49  dennis
+ *  Now also adds GetPixelInfo operator for TOF_Diffractometers,
+ *  TOF_DG_Spectrometers, TOF_Reflectometers and TOF_IDG_Spectrometers,
+ *  since such instruments either have, or will likely have LPSDs or
+ *  area detectors in the future.
+ *
  *  Revision 1.44  2004/08/17 15:13:35  rmikk
  *  Added code to prevent output from an operator to show up in strange places
  *
@@ -425,6 +431,7 @@ public class DataSetFactory implements Serializable
   {
     if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
     {
+      ds.addOperator( new GetPixelInfo_op() );   
       ds.addOperator( new DiffractometerTofToD() );
       ds.addOperator( new DiffractometerTofToQ() );
       ds.addOperator( new DiffractometerTofToEnergy() );
@@ -435,8 +442,8 @@ public class DataSetFactory implements Serializable
     }
     else if ( instrument_type == InstrumentType.TOF_SCD )  // will be different
     {                                                      // when SCD properly
-      ds.addOperator( new GetPixelInfo_op() );             // supported
-      ds.addOperator( new DiffractometerTofToD() );
+      ds.addOperator( new GetPixelInfo_op() );             // supported  
+      ds.addOperator( new DiffractometerTofToD() ); 
       ds.addOperator( new DiffractometerTofToQ() );
       ds.addOperator( new SCDQxyz() );
       ds.addOperator( new DiffractometerTofToEnergy() );
@@ -451,7 +458,7 @@ public class DataSetFactory implements Serializable
     }
     else if ( instrument_type == InstrumentType.TOF_SAD )  // will be different
     {                                                      // when SAD properly
-      ds.addOperator( new GetPixelInfo_op() );             // supported
+      ds.addOperator( new GetPixelInfo_op() );             // supported  
       ds.addOperator( new DiffractometerTofToD() );
       ds.addOperator( new DiffractometerTofToQ() );
       ds.addOperator( new DiffractometerQxyz() );
@@ -461,6 +468,7 @@ public class DataSetFactory implements Serializable
     }
     else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
     {
+      ds.addOperator( new GetPixelInfo_op() );   
       ds.addOperator( new SpectrometerTofToEnergyLoss() );
       ds.addOperator( new SpectrometerTofToEnergy() );
       ds.addOperator( new SpectrometerTofToWavelength() );
@@ -472,12 +480,14 @@ public class DataSetFactory implements Serializable
     else if ( instrument_type == InstrumentType.TOF_IDG_SPECTROMETER )
     {                                                    // will be different
                                                          // when IDG_S properly
-      ds.addOperator( new TrueAngle() );                 // supported  
+      ds.addOperator( new GetPixelInfo_op() );           // supported  
+      ds.addOperator( new TrueAngle() );        
     }
     else if ( instrument_type == InstrumentType.TOF_REFLECTOMETER )
     {                                                    // will be different
                                                          // when REFLT properly
-      ds.addOperator( new TrueAngle() );                 // supported  
+      ds.addOperator( new GetPixelInfo_op() );           // supported  
+      ds.addOperator( new TrueAngle() );                
     }
     else
         DataSetTools.util.SharedData.addmsg(
