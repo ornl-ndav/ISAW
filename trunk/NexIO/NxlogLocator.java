@@ -62,10 +62,18 @@ public class NxlogLocator
     */
    private void scanForNxLogUnderNode(NxNode node)
    {
+      if (node == null)
+         return;
+      else if (node.getNodeClass().equalsIgnoreCase("CDF0.0"))
+         return;  //CDF0.0 nodes contain links to everything in the entire 
+                  //NeXus file.  If they are "scanned" an infinite loop will 
+                  //occur because they contain a link to themselves.
+      
       if (isNxLog(node))
          logNodeVec.add(node);
       
-      for (int i=0; i<node.getNChildNodes(); i++)
+      int numChildren = node.getNChildNodes();
+      for (int i=0; i<numChildren; i++)
          scanForNxLogUnderNode(node.getChildNode(i));
    }
    
@@ -79,7 +87,7 @@ public class NxlogLocator
       NxNode ithLogNode = (NxNode)logNodeVec.elementAt(i);
       
       //TODO FIXME I DON'T KNOW IF THIS IS IMPLEMENTED CORRECTLY
-      return new DataSetInfo(null,ithLogNode,0,0,"");
+      return new DataSetInfo(ithLogNode,ithLogNode,0,0,"");
    }
    
    public int getNumNxLogDataSets()
@@ -95,7 +103,11 @@ public class NxlogLocator
     */
    public static boolean isNxLog(NxNode node)
    {
-      return node.getNodeClass().equals("NXlog");
+      String str = new String();
+      if (node == null || (str = node.getNodeClass()) == null)
+         return false;
+      else
+         return str.equals("NXlog");
    }
    
    /**
@@ -104,8 +116,10 @@ public class NxlogLocator
     */
    public static void main(String[] args)
    {
-      NxNode node =(NxNode) new NexNode(args[0]);
-      NxNode rootNode = node.getChildNode("Entry0");
+      System.out.println("Using file:  "+args[0]);
+      
+      NxNode rootNode =(NxNode) new NexNode(args[0]);
+      rootNode = rootNode.getChildNode("Entry0");
       //node = node.getChildNode("Sample");
       //node = node.getChildNode("Beam");
       //node = node.getChildNode("Log_2");
