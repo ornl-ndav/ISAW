@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2004/07/14 16:37:24  rmikk
+ * Added .RAW extension so ISIS files can be retrieved
+ *
  * Revision 1.27  2004/06/18 19:32:05  rmikk
  * Eliminated several unused variables
  *
@@ -171,7 +174,8 @@ public class Util
 
       else if( filename.toUpperCase().endsWith( ".CSD" ) )
          r = new IdeasRetriever( filename );
-
+      else if( filename.toUpperCase().endsWith(".RAW"))
+         r= new IsisRetriever(filename);
       else
          r = new RunfileRetriever( filename );
 
