@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/10/20 22:11:21  dennis
+ *  Server will now halt of started with either -h or -H to
+ *  request help on usage.
+ *
  *  Revision 1.7  2003/02/24 21:09:14  dennis
  *  Moved STATUS string from TCPComm to TCPServer
  *
@@ -178,7 +182,7 @@ public class FileDataServer extends DataSetServer
     server.parseArgs( args );
 
     if ( StringUtil.commandPresent( "-h", args )  ||
-         StringUtil.commandPresent( "-h", args )  )
+         StringUtil.commandPresent( "-H", args )  )
       System.exit(1);
 
     Date date = new Date( System.currentTimeMillis() );
