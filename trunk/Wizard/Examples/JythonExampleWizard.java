@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.2  2003/07/08 20:57:01  bouzekc
+ * Added missing slash to file name.
+ *
  * Revision 1.1  2003/07/08 18:11:14  bouzekc
  * Added to CVS.
  *
@@ -101,7 +104,7 @@ public class JythonExampleWizard extends Wizard {
       { 7, 6 }
     };  //SCD calibration file
 
-    String scriptsDir = SharedData.getProperty( "Script_Path" );
+    String scriptsDir = SharedData.getProperty( "Script_Path" ) + "/";
 
     //Script.java, which is ultimately called to create a new Jython script, uses
     //forward slashes.  We are sending the String to setFileSeparator, however,
