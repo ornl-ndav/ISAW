@@ -29,6 +29,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2003/08/08 16:31:43  chatterjee
+ * The 'Modified' folder in the Tree view now opens up and the
+ * scrollbar moves to it when a modified dataset is put into it.
+ * Modified datasets can come through GUI driven operations
+ * or from scripts.
+ *
  * Revision 1.18  2003/03/27 15:57:36  pfpeterson
  * Notifies IObservers of DESTROY when multiple DataSets or an Experiment
  * is DESTROYed.
@@ -281,6 +287,9 @@ public class JDataTree
     getModifiedExperiment().setUserObject( ds );
 
     getMyModel().reload(  getModifiedExperiment()  );
+    tree.expandRow( 0 );
+    tree.expandRow( 1 );
+    tree.scrollRowToVisible(1);
 
   }
 
