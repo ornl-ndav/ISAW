@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/07/01 21:06:18  bouzekc
+ *  Uses execOneLine again.  Fixed a bug where execOneLine is
+ *  sent a String array without quotes around the individual
+ *  elements.  Added documentation to StringtoArray.
+ *
  *  Revision 1.12  2003/06/27 18:52:53  bouzekc
  *  Now uses a simple string parsing routine rather than
  *  execOneLine to parse the array in stringToArray().
@@ -79,6 +84,8 @@
  *
  */
 package DataSetTools.parameter;
+
+import Command.execOneLine;
 
 import DataSetTools.components.ParametersGUI.HashEntry;
 
@@ -440,11 +447,21 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     return apg;
   }
 
+  /**
+   *  Method to turn a String into a Vector array.  It can handle nifty things
+   *  like [ISAWDS1, ISAWDS2] which, if a runfile is loaded, will actually be
+   *  turned into an array of DataSets.
+   *
+   *  @param   S                 The String to turn into an array.
+   */
   public static Vector StringtoArray( String S ) {
     if( S == null ) {
       return null;
     }
 
+    //now, the array may come in in a "bad" format...i.e. [String1, String2],
+    //rather than ["String1","String2"] which is what execOneLine expects.  So,
+    //we'll parse the String into a Vector
     String temp     = S;
     Vector elements = new Vector(  );
 
@@ -462,7 +479,27 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       elements.add( st.nextToken(  ).trim(  ) );
     }
 
-    return elements;
+    //now return it to the correct String format
+    S = ArrayPG.ArraytoString( elements );
+
+    //now we can send it to execOneLine
+    execOneLine execLine = new execOneLine(  );
+    int r                = execLine.execute( S, 0, S.length(  ) );
+
+    if( execLine.getErrorCharPos(  ) >= 0 ) {
+      return new Vector(  );
+    }
+
+    //parse the string and try to get a result
+    Object result = execLine.getResult(  );
+
+    //no dice...either no result, or we got a result, but it was not useful 
+    //to us.
+    if( ( result == null ) || !( result instanceof Vector ) ) {
+      return new Vector(  );
+    }
+
+    return ( Vector )result;
   }
 
   public static String ArraytoString( Vector V ) {
