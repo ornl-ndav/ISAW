@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2001/07/25 18:08:30  dennis
+ *  Now initializes state from the system properties and
+ *  stores most state info in a heap.  Added generic
+ *  methods to get/set Strings, ints and floats by name
+ *  in the state object.
+ *
  *  Revision 1.10  2001/07/23 18:34:07  dennis
  *  Now gets default color scale from System.properties, if possible.
  *
@@ -68,6 +74,7 @@
 package DataSetTools.viewer;
 
 import  java.io.*;
+import  java.util.*;
 import  DataSetTools.components.image.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
@@ -83,10 +90,20 @@ import  DataSetTools.util.*;
 
 public class ViewerState  implements Serializable
 {
-  private String        color_scale;
-  private boolean       rebin;
-  private boolean       horizontal_scrolling;
-  private float         horizontal_scroll_fraction;
+  public static final int    ERROR_INT         = Integer.MIN_VALUE;
+
+  public static final String COLOR_SCALE       = "ColorScale";
+  public static final String REBIN             = "RebinFlag";
+  public static final String H_SCROLL          = "HScrollFlag";
+  public static final String H_SCROLL_POSITION = "HScrollPosition";
+  public static final String POINTED_AT_INDEX  = "PointedAtIndex";
+  public static final String V_AZIMUTH         = "ViewAzimuthAngle";
+  public static final String V_ALTITUDE        = "ViewAltitudeAngle";
+  public static final String V_DISTANCE        = "ViewDistance";
+  public static final String V_GROUPS          = "ViewGroups";
+  public static final String V_DETECTORS       = "ViewDetectors";
+
+  private Hashtable     state = null;
   private int           pointed_at_index;
 
   private CoordBounds   zoom_region;                // the image zoom region
@@ -102,136 +119,219 @@ public class ViewerState  implements Serializable
      */
     public ViewerState( )
     {
-      SharedData sd = new SharedData();
-      color_scale = System.getProperty( "ViewerColorScale" );
+      state = new Hashtable();
+                                                    // initialize state from
+                                                    // IsawProps.dat file, if
+                                                    // possible.
+      SharedData sd = new SharedData();            
+      SharedData.isaw_props.reload();
+                                                       // color scale ......
+      String scale_name = getProperty( COLOR_SCALE, 
+                                       IndexColorMaker.HEATED_OBJECT_SCALE );
+      state.put( COLOR_SCALE, scale_name );
 
-      if ( color_scale == null )
-      {
-        System.out.println("Using Default Color Scale");
-        color_scale              = IndexColorMaker.HEATED_OBJECT_SCALE;
-      } 
+                                                       // rebin ......
+      Boolean rebin_flag = getBooleanProperty( REBIN, "true" );
+      state.put( REBIN, rebin_flag );
 
-      rebin                      = true;
-      horizontal_scrolling       = false;
-      horizontal_scroll_fraction = 0.5f;
-      pointed_at_index           = 0;
+                                                       // h_scroll ......
+      Boolean scroll_flag = getBooleanProperty( H_SCROLL, "false" );
+      state.put( H_SCROLL, scroll_flag );
+
+      Float h_scroll_position = getFloatProperty( H_SCROLL_POSITION, "0" );
+      state.put( H_SCROLL_POSITION, h_scroll_position );  
+
+      Integer pointed_at_index = getIntegerProperty( POINTED_AT_INDEX, "0" );
+      state.put( POINTED_AT_INDEX, pointed_at_index );
+
+      Float azimuth = getFloatProperty( V_AZIMUTH, "45" );
+      state.put( V_AZIMUTH, azimuth ); 
+
+      Float altitude = getFloatProperty( V_ALTITUDE, "20" );
+      state.put( V_ALTITUDE, altitude );
+
+      Float distance = getFloatProperty( V_DISTANCE, "-1" );
+      state.put( V_DISTANCE, distance );
+
+      String v_detectors = getProperty( V_DETECTORS, "NOT DRAWN" );
+      state.put( V_DETECTORS, v_detectors );
+
+      String v_groups = getProperty( V_GROUPS, "NOT DRAWN" );
+      state.put( V_GROUPS, v_groups );
+
+
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
       ds_x_label = "";
       ds_y_label = "";
     }
 
-   /**
-    *  Get the name of the color scale to use
-    *
-    *  @return  The name of the color scale to use.  This will be one of
-    *           the color scales supported by the IndexColorMaker class.
-    *
-    *  @see DataSetTools.components.image.IndexColorMaker
-    */
-   public String getColor_scale()
+  /* ---------------------------- set_String --------------------------- */
+  /**
+   * Set the named String entry in this ViewerState object.
+   *
+   * @param  name   The name of the String state entry to set.
+   * @param  string The value of the String entry to set.
+   */
+   public void set_String( String name, String string  )
    {
-     return color_scale;
+     state.put( name, string );
    }
 
-   /**
-    *  Set the name of the color scale to use.
-    *
-    *  @param  scale_name  This should be one of the color scale names
-    *                      supported by the IndexColorMaker class
-    *
-    *  @see DataSetTools.components.image.IndexColorMaker
-    */
-   public void setColor_scale( String scale_name )
+  /* ---------------------------- get_String --------------------------- */
+  /**
+   * Get the named string entry from this ViewerState object.
+   *
+   * @param  name  The name of the string state entry to get.
+   *
+   * @eturn  The string value of the named entry as is set in this 
+   *         ViewerState object.  If the named entry does not exist, 
+   *         a blank string is returned.
+   */
+   public String get_String( String name )
    {
-     color_scale = scale_name;
-   }
+     Object value = state.get( name );
+     if ( value == null )
+     {
+        System.out.println("ERROR: in ViewerState.get_string " +
+                            name + " NOT FOUND" );
+        return "";
+     }
 
+     if ( value instanceof String )
+       return (String)value;
 
-   /**
-    *  Get the state of the rebin flag.
-    *
-    *  @return  the value of the rebin flag.
-    */
-   public boolean getRebin()
-   {
-     return rebin;
-   }
-
-   /**
-    *  Set the state of the rebin flag.
-    *
-    *  @param  rebin  flag indicating whether or not the data should be 
-    *                 rebinned 
-    */
-   public void setRebin( boolean rebin )
-   {
-     this.rebin = rebin;
+     System.out.println("ERROR: in ViewerState.get_string " +
+                         name + " ENTRY IS NOT A STRING" );
+     return "";
    }
 
 
-   /**
-    *  Get the state of the horizontal scrolling flag. 
-    *
-    *  @return  the value of the horizontal scrolling flag.
-    */
-   public boolean getHorizontal_scrolling()
+  /* ---------------------------- set_boolean --------------------------- */
+  /**
+   * Set the named boolean entry in this ViewerState object.
+   *
+   * @param  name  The name of the boolean state entry to set.
+   * @param  flag  The value, true or false of the boolean state entry to set.
+   */
+   public void set_boolean( String name, boolean flag )
    {
-     return horizontal_scrolling;
-   }
-
-   /**
-    *  Set the state of the horizontal scrolling flag.
-    *
-    *  @param  horizontal_scrolling  flag indicating whether or not horizontal
-    *                                scrolling should be used. 
-    */
-   public void setHorizontal_scrolling( boolean horizontal_scrolling )
-   {
-     this.horizontal_scrolling = horizontal_scrolling;
-   }
-
-   /**
-    *  Get the relative position of the horizontal scrolling bar.
-    *
-    *  @return  A value between 0.0 and 1.0 giving the relative position
-    *           of the horizontal scroll bar.
-    */
-   public float getHorizontal_scroll_fraction()
-   {
-     return horizontal_scroll_fraction;
-   }
-
-   /**
-    *  Set the relative position of the horizontal scrolling bar.
-    *
-    *  @param  position  A value between 0.0 and 1.0 giving the relative 
-    *                    position of the horizontal scroll bar.
-    */
-   public void setHorizontal_scroll_fraction( float position )
-   {
-     this.horizontal_scroll_fraction = position;
+     state.put( name, new Boolean( flag ));
    }
 
 
-   /**
-    *  Get the last "POINTED AT" index that was saved.
-    *
-    *  @return  The last saved "POINTED AT" index.
-    */
-   public int getPointedAtIndex()
+  /* ---------------------------- get_boolean --------------------------- */
+  /**
+   * Get the named boolean entry from this ViewerState object.
+   *
+   * @param  name  The name of the boolean state entry to get.
+   *
+   * @eturn The value, true or false of the boolean state entry
+   *        as is set in this ViewerState object.  If the named
+   *        entry does not exist, false is returned.
+   */
+   public boolean get_boolean( String name )
    {
-     return pointed_at_index;
+     Object  value = state.get( name );
+     if ( value == null )
+     {
+        System.out.println("ERROR: in ViewerState.get_boolean " + 
+                            name + " NOT FOUND");
+        return false;
+     }
+
+     if ( value instanceof Boolean )
+       return ((Boolean)value).booleanValue();
+
+     System.out.println("ERROR: in ViewerState.get_boolean " +
+                         name + " ENTRY IS NOT A BOOLEAN" );
+     return false;
    }
 
-   /**
-    *  Save the specified "POINTED AT" index.
-    *
-    *  @param  index  The "POINTED AT" index to be saved. 
-    */
-   public void setPointedAtIndex( int index )
+
+
+  /* ------------------------------ set_int ----------------------------- */
+  /**
+   * Set the named int entry in this ViewerState object.
+   *
+   * @param  name  The name of the int state entry to set.
+   * @param  i_val The value of the int state entry to set.
+   */
+   public void set_int( String name, int i_val )
    {
-      pointed_at_index = index;
+     state.put( name, new Integer( i_val ));
    }
+
+
+  /* ------------------------------- get_int ----------------------------- */
+  /**
+   * Get the named int entry from this ViewerState object.
+   *
+   * @param  name  The name of the int state entry to get.
+   *
+   * @eturn The value of the named int state entry as is set in this 
+   *        ViewerState object.  If the named entry does not exist
+   *        ERROR_INT is returned.
+   */
+   public int get_int( String name )
+   {
+     Object  value = state.get( name );
+     if ( value == null )
+     {
+        System.out.println("ERROR: in ViewerState.get_int " +
+                            name + " NOT FOUND");
+        return ERROR_INT;
+     }
+
+     if ( value instanceof Integer )
+       return ((Integer)value).intValue();
+
+     System.out.println("ERROR: in ViewerState.get_int " +
+                         name + " ENTRY IS NOT AN INTEGER" );
+     return ERROR_INT;
+   }
+
+
+  /* ------------------------------ set_float --------------------------- */
+  /**
+   * Set the named float entry in this ViewerState object.
+   *
+   * @param  name  The name of the float state entry to set.
+   * @param  f_val The value of the float state entry to set.
+   */
+   public void set_float( String name, float f_val )
+   {
+     state.put( name, new Float( f_val ));
+   }
+
+
+  /* ------------------------------- get_float ----------------------------- */
+  /**
+   * Get the named float entry from this ViewerState object.
+   *
+   * @param  name  The name of the float state entry to get.
+   *
+   * @eturn The value of the named float state entry as is set in this
+   *        ViewerState object.  If the named entry does not exist
+   *        Float.NaN is returned.
+   */
+   public float get_float( String name )
+   {
+     Object  value = state.get( name );
+     if ( value == null )
+     {
+        System.out.println("ERROR: in ViewerState.get_float " +
+                            name + " NOT FOUND");
+        return Float.NaN;
+     }
+
+     if ( value instanceof Float )
+       return ((Float)value).floatValue();
+
+     System.out.println("ERROR: in ViewerState.get_float " +
+                         name + " ENTRY IS NOT A FLOAT" );
+     return Float.NaN;
+   }
+
 
    /**
     *  Get the last zoom region that was saved.
@@ -288,5 +388,111 @@ public class ViewerState  implements Serializable
       ds_y_units = ds.getY_units();
       ds_name    = ds.getTitle();
    }
+
+/* -------------------------------------------------------------------------
+ *
+ *  PRIVATE METHODS
+ *
+ */
+
+ /**
+  *  Get the String value of a system property with no leading or trailing 
+  *  blanks.
+  *
+  *  @return  The trimmed property string, if the named property was set,
+  *           or null if the named property was not set.
+  */
+  private String getProperty( String name, String default_string )
+  {
+    String property = System.getProperty( name, default_string );
+    if ( property != null )
+    {
+      property = property.trim();
+      if ( property.length() < 1 )
+        property = null;
+    }
+    return property;
+  }
+
+ /**
+  *  Get the Boolean value of system property that should be a Boolean value.
+  *
+  *  @return The Boolean value of the specified property if the property was
+  *          set and was a valid Boolean value, or null otherwise.
+  */
+  private Boolean getBooleanProperty( String name, String default_string )
+  {
+    String property = getProperty( name, default_string );
+    Boolean  value  = null;
+
+    if ( property != null )
+      value = new Boolean( property );
+
+    return value;
+  }
+
+
+ /**
+  *  Get the Integer value of system property that should be an Integer value.
+  *
+  *  @return The Integer value of the specified property if the property was
+  *          set and was a valid Integer value, or null otherwise.
+  */
+  private Integer getIntegerProperty( String name, String default_string )
+  {
+    String  property = getProperty( name, default_string );
+    Integer value    = null;
+
+    if ( property != null )
+    {
+      try
+      {
+        value = new Integer( property );
+      }
+      catch ( NumberFormatException e1 )
+      {
+        try
+        {
+          value = new Integer( default_string );
+        }
+        catch ( NumberFormatException e2 )
+        {}
+      }
+    }
+
+    return value;
+  }
+
+
+ /**
+  *  Get the Float value of system property that should be a Float value. 
+  *
+  *  @return The Float value of the specified property if the property was
+  *          set and was a valid Float value, or null otherwise.
+  */
+  private Float getFloatProperty( String name, String default_string )
+  {
+    String property = getProperty( name, default_string );
+    Float  value    = null;
+
+    if ( property != null )
+    {
+      try
+      {
+        value = new Float( property );
+      }
+      catch ( NumberFormatException e1 )
+      {
+        try
+        {
+          value = new Float( default_string );
+        }
+        catch ( NumberFormatException e2 )
+        {}
+      }
+    }
+
+    return value;
+  }
 
 }
