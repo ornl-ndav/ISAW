@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/09/11 19:52:18  rmikk
+ * Added GetField to the new DataSets
+ *
  * Revision 1.10  2003/09/11 14:59:45  rmikk
  * -Included the GPL
  * -eliminated the DataSet.Add, Subtract, etc. methods and did
@@ -569,7 +572,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         
         DataSet RelSamp = RUNSds[1];
         DataSet RelBackground = RUNBds[1];
-        
         if (IF2D != 1) {
              
 	    xscl = new VariableXScale(qu);
@@ -577,11 +579,13 @@ public class Reduce_KCL  extends GenericTOF_SAD{
             DataSet SSampQ = SumQs( SampGrid, xscl, RUNSds[0], SensGrid, Eff);
             DataSet SBackQ  = SumQs( BackGrid, xscl, RUNSds[0], SensGrid, Eff);
             DataSet SDifQ = (DataSet)((new DataSetSubtract( SSampQ,SBackQ,true)).getResult());
-            SSampQ.setTitle("Neutron Corrected Sample-" + RUNS);
+            DataSetFactory.addOperators( SSampQ);
+            DataSetFactory.addOperators( SBackQ);
+            DataSetFactory.addOperators( SDifQ);
+            SSampQ.setTitle("s"+RUNS);
+            SBackQ.setTitle("b"+ RUNS);
 
-            SBackQ.setTitle("Neutron Corrected Background-" + RUNS);
-
-            SDifQ.setTitle("Neutron Corrected Sample-Background-" + RUNS);
+            SDifQ.setTitle("sn" + RUNS);
             SampGrid = BackGrid=SensGrid = null;
             RelSamp = RelBackground = Sens = Eff=RUNSds[0]=null;
             Vector V = new Vector();
