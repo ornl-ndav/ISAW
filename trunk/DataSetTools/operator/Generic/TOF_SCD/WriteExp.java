@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/02/12 22:56:30  pfpeterson
+ * Writes out as much of the crystal symmetry and orientation matrix
+ * as possible rather than all or nothing.
+ *
  * Revision 1.6  2003/02/12 20:03:11  dennis
  * Switched to use PixelInfoList instead of SegmentInfoList
  *
@@ -406,55 +410,40 @@ public class WriteExp extends GenericTOF_SCD{
     value=ds.getAttributeValue(Attribute.CELL_VOLUME);
     if(value!=null && value instanceof Float){
       vol=((Float)value).floatValue();
-    }else{
-      crystinfo=null;
-      return;
+      sb.append("CRS0  VSIGV  "+Format.real(vol,9,4)+"  "+Format.real(0f,8,4)
+                +Format.string("\n",49));
     }
 
     // get the lattice parameters
     value=ds.getAttributeValue(Attribute.LATTICE_PARAM);
     if(value!=null && value instanceof float[]){
       latt=(float[])value;
-    }else{
-      crystinfo=null;
-      return;
+      sb.append("CRS1  ABC   "+Format.real(latt[0],10,4)
+                +Format.real(latt[1],10,4)+Format.real(latt[2],10,4)
+                +Format.string("\n",39));
+      sb.append("CRS1  ABCSIG"+Format.real(0f,10,4)+Format.real(0f,10,4)
+                +Format.real(0f,10,4)+Format.string("\n",39));
+      sb.append("CRS1  ANGLES"+Format.real(latt[3],10,4)
+                +Format.real(latt[4],10,4)+Format.real(latt[5],10,4)
+                +Format.string("\n",39));
+      sb.append("CRS1  ANGSIG"+Format.real(0f,10,4)+Format.real(0f,10,4)
+                +Format.real(0f,10,4)+Format.string("\n",39));
     }
 
     // get the orientation matrix
     value=ds.getAttributeValue(Attribute.ORIENT_MATRIX);
     if(value!=null && value instanceof float[][]){
       orient=(float[][])value;
-    }else{
-      crystinfo=null;
-      return;
+      sb.append("CRS11 UBMAT1"+Format.real(orient[0][0],10,6)
+                +Format.real(orient[1][0],10,6)+Format.real(orient[2][0],10,6)
+                +Format.string("\n",39));
+      sb.append("CRS11 UBMAT2"+Format.real(orient[0][1],10,6)
+                +Format.real(orient[1][1],10,6)+Format.real(orient[2][1],10,6)
+                +Format.string("\n",39));
+      sb.append("CRS11 UBMAT3"+Format.real(orient[0][2],10,6)
+                +Format.real(orient[1][2],10,6)+Format.real(orient[2][2],10,6)
+                +Format.string("\n",39));
     }
-
-    // format the unit cell volume
-    sb.append("CRS0  VSIGV  "+Format.real(vol,9,4)+"  "+Format.real(0f,8,4)
-              +Format.string("\n",49));
-
-    // format the lattice parameters
-    sb.append("CRS1  ABC   "+Format.real(latt[0],10,4)
-              +Format.real(latt[1],10,4)+Format.real(latt[2],10,4)
-              +Format.string("\n",39));
-    sb.append("CRS1  ABCSIG"+Format.real(0f,10,4)+Format.real(0f,10,4)
-              +Format.real(0f,10,4)+Format.string("\n",39));
-    sb.append("CRS1  ANGLES"+Format.real(latt[3],10,4)
-              +Format.real(latt[4],10,4)+Format.real(latt[5],10,4)
-              +Format.string("\n",39));
-    sb.append("CRS1  ANGSIG"+Format.real(0f,10,4)+Format.real(0f,10,4)
-              +Format.real(0f,10,4)+Format.string("\n",39));
-
-    // format the orientation matrix
-    sb.append("CRS11 UBMAT1"+Format.real(orient[0][0],10,6)
-              +Format.real(orient[1][0],10,6)+Format.real(orient[2][0],10,6)
-              +Format.string("\n",39));
-    sb.append("CRS11 UBMAT2"+Format.real(orient[0][1],10,6)
-              +Format.real(orient[1][1],10,6)+Format.real(orient[2][1],10,6)
-              +Format.string("\n",39));
-    sb.append("CRS11 UBMAT3"+Format.real(orient[0][2],10,6)
-              +Format.real(orient[1][2],10,6)+Format.real(orient[2][2],10,6)
-              +Format.string("\n",39));
 
     // set the cystal symmetry info
     crystinfo=sb.toString();
