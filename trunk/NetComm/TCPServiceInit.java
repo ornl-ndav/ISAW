@@ -8,6 +8,10 @@
  *               Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2001/02/15 21:25:28  dennis
+ *  Changed the time out period to "0" which means an
+ *  infinite timeout period
+ *
  *  Revision 1.2  2001/01/31 14:19:47  dennis
  *  Made the class public.
  *
@@ -70,7 +74,7 @@ import java.net.*;
     */
     public void run()
     {
-      final int TIMEOUT_MS = 60000;
+      final int TIMEOUT_MS = 0;    // zero is interpreted as timeout = infinity
       while ( true )
       try
       {
