@@ -31,11 +31,15 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.13  2003/10/08 22:39:09  dennis
- *  Reverting to previous version, that was in ISAW 1.5.1 beta 8.
- *  The most recent checkin (10/07/03) also removed the clone() method
- *  and was not consistent with the version in CVS.  ISAW crashed on
- *  startup with null pointer exception.
+ *  Revision 1.14  2003/10/11 19:27:14  bouzekc
+ *  Removed declaration of ParamUsesString as the superclass declares this
+ *  already.  Removed clone() definition as the superclass implements this
+ *  using reflection.  getValue() now returns a new Float(0.0) if the internal
+ *  value is null.
+ *
+ *  Revision 1.12  2003/10/07 18:38:51  bouzekc
+ *  Removed declaration of "implements ParamUsesString" as the
+ *  StringEntryPG superclass now declares it.
  *
  *  Revision 1.11  2003/09/13 23:29:46  bouzekc
  *  Moved calls from setValid(true) to validateSelf().
@@ -86,7 +90,7 @@ import DataSetTools.util.*;
 /**
  * This is class is to deal with float parameters.
  */
-public class FloatPG extends StringEntryPG implements ParamUsesString{
+public class FloatPG extends StringEntryPG {
     protected static final String         TYPE   = "Float";
 
     // ********** Constructors **********
@@ -111,10 +115,13 @@ public class FloatPG extends StringEntryPG implements ParamUsesString{
     }
 
     /**
-     * Override the default method.
+     * Override the default method.  Note that if the internal value is null,
+     * this will return 0.0.
+     *
+     * @return The value of this FloatPG.
      */
     public Object getValue() throws NumberFormatException{
-        Object val=super.getValue();
+        Object val = value;
 
         if(val instanceof Float)
           return val;
@@ -125,8 +132,7 @@ public class FloatPG extends StringEntryPG implements ParamUsesString{
         else if(val instanceof String)
           return new Float((String)val);
         else
-          throw new ClassCastException("Could not coerce "
-                                    +val.getClass().getName()+" into a Float");
+          return new Float( 0.0f );
     }
 
     /**
@@ -138,7 +144,7 @@ public class FloatPG extends StringEntryPG implements ParamUsesString{
 
     /**
      * Overrides the default version of setValue to properly deal with
-     * floats.
+     * floats.  This will be 0.0 if no other valid value is set.
      */
     public void setValue(Object value){
       Float floatval=null;
@@ -164,7 +170,6 @@ public class FloatPG extends StringEntryPG implements ParamUsesString{
       }else{
         this.value=value;
       }
-      validateSelf();
     }
 
     /**
@@ -220,14 +225,4 @@ public class FloatPG extends StringEntryPG implements ParamUsesString{
         fpg.initGUI(null);
         fpg.showGUIPanel();
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        FloatPG pg=new FloatPG(this.name,this.value,this.valid);
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        return pg;
-    }
 }
