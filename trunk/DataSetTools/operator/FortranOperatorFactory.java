@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2004/01/30 00:04:23  bouzekc
+ * Spruced up the javadocs in the class description.
+ *
  * Revision 1.3  2004/01/28 22:19:53  bouzekc
  * Removed code to set the temporary compile directory, as it was no longer
  * needed.  Added to the main() test method.
@@ -72,23 +75,32 @@ import java.io.*;
  * <li>
  * For functions that need arguments, global variables should be used.
  * </li>
- * </ul>
- * 
- * No complex variables no  operator no single implicit variable initialization
+ * <li>No complex variables </li>
+ * <li>No power ("**") operator </li>
+ * <li>No single implicit variable initialization:<br>
  * (e.g. creating an implicit integer and initializing it like: imyint = 1
  * )...this is not a compiler, and I do not keep track of  variables.  If I
  * allow implicit variable initialization, then there is no way to do
  * assignments.  It is allowed if there is more than one variable  (e.g.
- * myvar1 = 1, myvar2 = 2). no implicit type conversion yet no
- * multidimensional character arrays -------------------- IF statements
- * -------------------- single line if statements must truly be on a single
- * line, like: if (this is true) do this NOT if(this is true) do this 'else'
- * statements are their own line, however: if (...) then ... elseif( ... )
- * then ... else ... if creating a multiple line if, there can be no single
- * line if statements.  For example this is invalid: if( x .ge. 5 ) x = 5 + 7
- * elseif( tr .ge. 7 ) d = 9 else d = 5 + 7 -------------------- LOOPS
- * -------------------- All labels for loops must be numbers The step, if
- * given, for a loop must be an actual number, not a variable
+ * myvar1 = 1, myvar2 = 2). </li>
+ * <li>No implicit type conversion yet</li>
+ * <li>No multidimensional character arrays </li>
+ * <li>Single line if statements must truly be on a single
+ * line, like: <br><br>
+ * if (this is true) do this <br><br>
+ * <b>NOT</b><br><br> 
+ * if(this is true) do this 'else'</li>
+ * <li>If statements are their own line, however, e.g.:<br><br>
+ * if (...) then ... elseif( ... )<br>
+ * then ... else ... </li>
+ * <li>When creating a multiple line if statement, there can be no single
+ * line if statements.  For example, this is invalid:<br><br> 
+ * if( x .ge. 5 ) x = 5 + 7<br>
+ * elseif( tr .ge. 7 ) d = 9 <br>
+ * else d = 5 + 7 </li>
+ * <li>All labels for loops must be numbers</li>
+ * <li> The step, if given, for a loop must be an actual number, not a variable
+ * </li></ul>
  */
 public class FortranOperatorFactory {
   //~ Constructors *************************************************************
@@ -154,7 +166,7 @@ public class FortranOperatorFactory {
    */
   public static void main( String[] args ) {
     Operator myop = FortranOperatorFactory.getInstance( 
-      "/home/students/bouzekc/ISAW/Operators/MyFortran.f" );
+      "/home/coldfire/ISAW/Operators/MyFortran.f" );
     System.out.println( myop.getResult(  ) );
   }
 
@@ -168,6 +180,7 @@ public class FortranOperatorFactory {
    */
   private static Wrappable createFortranWrapped( String fileName ) {
     String code         = createWrappedCodeFromFortran( fileName );
+    System.out.println( code );
     Wrappable myWrapped = null;
 
     try {
