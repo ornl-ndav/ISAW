@@ -93,7 +93,6 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
       }
     }
     return intExpansion;
-                        //[";", ",", "?", "*", "&"] ) >
   }
 
   static final public Vector ExpansionList() throws ParseException {
@@ -107,11 +106,14 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DIGIT:
       case VARIABLE:
+      case WINDOWS_PATH:
+      case UNIX_PATH:
       case STRING:
       case COLON_PAIR:
       case STEPPED_COLON_PAIR:
       case FLOATING_POINT:
-      case 18:
+      case EMPTY_ARRAY:
+      case 23:
         ;
         break;
       default:
@@ -119,7 +121,7 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
         break label_1;
       }
       expandedList = Expansion();
-      jj_consume_token(16);
+      jj_consume_token(21);
       //a semicolon ends the expansion
       //print the parsed expression
       if( standalone ) {
@@ -149,7 +151,7 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case WHITESPACE:
-      case 17:
+      case 22:
         ;
         break;
       default:
@@ -157,8 +159,8 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
         break label_2;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 17:
-        jj_consume_token(17);
+      case 22:
+        jj_consume_token(22);
         label_3:
         while (true) {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -186,8 +188,8 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
           }
         }
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 17:
-          jj_consume_token(17);
+        case 22:
+          jj_consume_token(22);
           label_5:
           while (true) {
             switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -261,10 +263,10 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
 
     {if (true) return t.image;}
       break;
-    case 18:
-      jj_consume_token(18);
+    case 23:
+      jj_consume_token(23);
       recursedElement = Expansion();
-      jj_consume_token(19);
+      jj_consume_token(24);
     //tell the outside program to NOT expand this Vector
     expandVectorIntoElements = false;
     {if (true) return recursedElement;}
@@ -299,6 +301,35 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
 
     {if (true) return expandIntList( first, last, step );}
       break;
+    case EMPTY_ARRAY:
+      //someone did not add anything to the array, so return an empty String
+        t = jj_consume_token(EMPTY_ARRAY);
+    {if (true) return "";}
+      break;
+    case WINDOWS_PATH:
+      //windows path.  
+        t = jj_consume_token(WINDOWS_PATH);
+    /*if( !t.image.startsWith( "\"" ) ) {
+      t.image = t.image.substring( 1, t.image.length(  ) );
+    }
+    if( !t.image.endsWith( "\"" ) ) {
+      t.image = t.image.substring( 0, t.image.length(  ) - 1);
+    }*/
+
+    {if (true) return t.image;}
+      break;
+    case UNIX_PATH:
+      //unix path.  
+        t = jj_consume_token(UNIX_PATH);
+    /*if( !t.image.startsWith( "\"" ) ) {
+      t.image = t.image.substring( 1, t.image.length(  ) );
+    }
+    if( !t.image.endsWith( "\"" ) ) {
+      t.image = t.image.substring( 0, t.image.length(  ) - 1);
+    }*/
+
+    {if (true) return t.image;}
+      break;
     default:
       jj_la1[7] = jj_gen;
       jj_consume_token(-1);
@@ -319,7 +350,7 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
       jj_la1_0();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x4f808,0x20020,0x20,0x20,0x20,0x20000,0x20020,0x4f808,};
+      jj_la1_0 = new int[] {0x9f1c08,0x400020,0x20,0x20,0x20,0x400000,0x400020,0x9f1c08,};
    }
 
   public ParameterGUIParser(java.io.InputStream stream) {
@@ -439,8 +470,8 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[20];
-    for (int i = 0; i < 20; i++) {
+    boolean[] la1tokens = new boolean[25];
+    for (int i = 0; i < 25; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -456,7 +487,7 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
         }
       }
     }
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 25; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
