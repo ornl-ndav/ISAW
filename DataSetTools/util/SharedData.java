@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/06/14 15:54:10  pfpeterson
+ *  Added some convenience methods for getting system properties
+ *  and adding a message to the status bar.
+ *
  *  Revision 1.7  2002/03/07 22:24:32  pfpeterson
  *  Put global version information in here.
  *
@@ -94,4 +98,24 @@ public class SharedData implements java.io.Serializable
   // be removed.
   public static final Operator old_op = new SpectrometerPlotter();
  
+    /**
+     * Convenience method to ease adding to the status pane.
+     */
+    public static void addmsg(Object value){
+        status_pane.add(value);
+    }
+
+    /**
+     * Convenience method to speed up getting system properties.
+     */
+    public static String getProperty(String prop){
+        return isaw_props.get(prop);
+    }
+
+    /**
+     * Convenience method to speed up getting system properties.
+     */
+    public static String getProperty(String prop, String def){
+        return isaw_props.get(prop,def);
+    }
 }
