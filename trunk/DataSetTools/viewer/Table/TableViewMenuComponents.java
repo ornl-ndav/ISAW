@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/08/08 17:56:55  dennis
+ *  Removed "Brent" view, which had been added for testing purposes.
+ *
  *  Revision 1.12  2003/06/06 19:07:23  rmikk
  *  Added Brent's viewer to the TableMenu list
  *
@@ -136,8 +139,6 @@ public class TableViewMenuComponents
          return "Contour:Qy,Qz vs Qx";
       if( i == 6 )
          return "Contour:Qxyz slices";
-      if( i==7)
-         return "Brent";
       else return null;
     }
 
@@ -197,12 +198,6 @@ public class TableViewMenuComponents
 
       if( view_type.indexOf("Contour:Qxyz slices") == 0)
          return new TQxQyQz( DS, state);
-
-      if( view_type.indexOf("Brent") == 0)
-         { DataSetData dsd = new DataSetData( DS );
-           FunctionViewComponent viewComp = new FunctionViewComponent( dsd);
-           return new DataSetViewerMaker(DS, state, dsd, viewComp);
-         }
     return null;
 
    }
