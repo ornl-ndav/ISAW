@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2001/08/14 21:51:08  dennis
+ *  The destroy() method now sends closing event instead of closing
+ *  the view manager itself..  Added method free_resouces() to
+ *  close down the view manager as previously done by destroy().
+ *
  *  Revision 1.16  2001/08/14 15:17:44  dennis
  *  Added check for num entries <=0 and dataSet null.
  *
@@ -225,7 +230,7 @@ public class ViewManager extends    JFrame
       {
         public void windowClosing(WindowEvent ev)
         {
-          destroy();
+          free_resources();
         }
       });
 
@@ -315,17 +320,16 @@ public class ViewManager extends    JFrame
    }
 
   /**
-   *  Destroy the current ViewManager and remove it from the list of 
-   *  observers of the current DataSet.
+   *  Send WINDOW_CLOSING event to shutdown the ViewManager cleanly and
+   *  completely.
    */
    public void destroy()
    {
-     dataSet.deleteIObserver( this );
-     tempDataSet.deleteIObserver( this );
-     viewer = null;
-     dispose(); 
-     System.gc();
+     WindowEvent win_ev = new WindowEvent( view_manager,
+                                           WindowEvent.WINDOW_CLOSING );
+     view_manager.dispatchEvent( win_ev );
    }
+
 
    /**
     *  Update the ViewManager due to a change in the DataSet.  This 
@@ -448,6 +452,20 @@ public class ViewManager extends    JFrame
  *
  *  Private Methods
  */
+
+  /**
+   *  Destroy the current ViewManager and remove it from the list of
+   *  observers of the current DataSet when window closing event is received.
+   */
+   private void free_resources()
+   {
+     dataSet.deleteIObserver( this );
+     tempDataSet.deleteIObserver( this );
+     viewer = null;
+     dispose();
+     System.gc();
+   }
+
 
    private void makeTempDataSet( boolean use_default_conversion_range )
    {
@@ -709,6 +727,7 @@ private String CurrentConversionName()     // get current conversion name
     public void actionPerformed( ActionEvent e )
     {
       String action = e.getActionCommand();
+
       if ( action.equals( CLOSE_LABEL ))
         destroy();
       else if ( action.equals( SAVE_NEW_DATA_SET ))
