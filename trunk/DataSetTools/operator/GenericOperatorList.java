@@ -4,6 +4,9 @@
  *  Maintain list of generic operators and create instance of them as needed.  
  *
  *  $Log$
+ *  Revision 1.11  2000/10/03 21:28:51  dennis
+ *  Renamed FudgeFactor operator to DetectorNormalizationFactors operator
+ *
  *  Revision 1.10  2000/08/03 22:09:44  dennis
  *  added operator to pause for a specified number of milli-seconds
  *
@@ -38,7 +41,7 @@ public class GenericOperatorList implements Serializable
                                           "OneFile",
                                           "Mon",
                                           "OneHist",
-                                          "FF",
+                                          "DetNormFac",
                                           "PrintDS",
                                           "Pause"    };
 
@@ -126,8 +129,8 @@ public class GenericOperatorList implements Serializable
     else if ( op_name.equals( "OneHist" ) )
       return new LoadOneHistogramDS();
 
-    else if ( op_name.equals( "FF" ) )
-      return new SpectrometerFudgeFactor();
+    else if ( op_name.equals( "DetNormFac" ) )
+      return new SpectrometerDetectorNormalizationFactor();
 
     else if ( op_name.equals( "PrintDS" ) )
       return new DataSetPrint();
