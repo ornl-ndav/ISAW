@@ -4,6 +4,10 @@
  * Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2001/02/20 23:02:50  dennis
+ *  Added constants for MIN_DELAY and MAX_DELAY.  Also, made
+ *  minor improvement to documentation.
+ *
  *  Revision 1.2  2001/02/16 16:39:01  dennis
  *  Do 20 small sleeps, to allow a changed sleep time to
  *  take effect faster.  Added some @see comments.
@@ -36,12 +40,16 @@ import DataSetTools.util.*;
 public class LiveDataManager extends    Thread 
                              implements Serializable
 {
-  LiveDataRetriever retriever   = null;
-  DataSet           data_sets[] = new DataSet[0];
-  boolean           ignore[]    = new boolean[0];     // flags to mark which
+  public static final int  MIN_DELAY = 10;          // minimum delay in seconds
+  public static final int  MAX_DELAY = 600;         // maximum delay in seconds
+
+  private LiveDataRetriever retriever   = null;
+  private DataSet           data_sets[] = new DataSet[0];
+  private boolean           ignore[]    = new boolean[0];
+                                                      // flags to mark which
                                                       // data sets won't be
                                                       // automatically updated
-  int               time_ms     = 20000;
+  private int               time_ms     = 3*MIN_DELAY*1000;
 
 /**
  *  Construct a LiveDataManager to get data from a LiveDataServer running
@@ -69,7 +77,7 @@ public class LiveDataManager extends    Thread
   }
 
 /**
- *  Get the number of distinct DataSets from this LiveDataServer. 
+ *  Get the number of distinct DataSets from the current data source. 
  *  The monitors are placed into one DataSet.  Any sample histograms are 
  *  placed into separate DataSets.  
  *   
@@ -96,7 +104,7 @@ public class LiveDataManager extends    Thread
 
 
 /**
- *  Get the specified DataSet from this runfile.
+ *  Get the specified DataSet from the current data source.
  * 
  *  @param  data_set_num  The number of the DataSet in this runfile 
  *                        that is to be read from the runfile.  data_set_num
@@ -118,11 +126,16 @@ public class LiveDataManager extends    Thread
  *  from the current data source.
  *
  *  @param  seconds  The number of seconds between automatic updates of the
- *                   DataSets.  This must be at least 10 seconds.
+ *                   DataSets.  This must be between the values given by
+ *                   MIN_DELAY and MAX_DELAY.
  */
  public void setUpdateInterval( double seconds )
  {
-   if ( seconds >= 10 )
+   if ( seconds <= MIN_DELAY )
+     time_ms = MIN_DELAY * 1000;
+   else if ( seconds >= MAX_DELAY )
+     time_ms = MAX_DELAY * 1000;
+   else  
      time_ms = (int)( 1000 * seconds );
  }
 
