@@ -1,6 +1,39 @@
 /*
- *  @(#)  PeakDemo2.java    1.0  2000/06/13    Dennis Mikkelson
- *  ( Derived from PeakDemo.java )
+ * File:   PeakDemo2.java
+ *
+ * Copyright (C) 2000, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ *
+ * $Log$
+ * Revision 1.2  2001/04/26 15:28:54  dennis
+ * Added copyright and GPL info at the start of the file.
+ *
  *
  */
 
@@ -14,8 +47,7 @@ import DataSetTools.math.*;
 import DataSetTools.peak.*;
 
 /**
-  *    This class provides a basic demo of reading DataSets from runfiles, 
-  *  showing the DataSets as images and scrolled graphs.
+  *  Fit peak in monitor data ( Derived from PeakDemo.java )
   *
   *    IMPORTANT!! Since this demo does NOT provide for any user interaction, 
   *  you will have to edit this source file to specify different runfiles to 
