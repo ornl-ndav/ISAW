@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2003/05/12 19:23:08  pfpeterson
+ * Changed number of significant digits written to matrix file to
+ * match fortran.
+ *
  * Revision 1.13  2003/05/06 16:39:28  pfpeterson
  * Fixed small bug in detector_angle(DataSet,int) which was not checking
  * for detector number.
@@ -518,13 +522,13 @@ public class Util{
       }
 
       // lattice parameters
-      for( int i=0 ; i<6 ; i++ )
-        sb.append(Format.real(abc[i],10,5));
-      sb.append(Format.real(abc[6],10,2)+"\n");
+      for( int i=0 ; i<7 ; i++ )
+        sb.append(Format.real(abc[i],10,3));
+      sb.append("\n");
       // sigmas
-      for( int i=0; i < 6; i++)
-        sb.append(Format.real(sig[i],10,5));
-      sb.append(Format.real(sig[6],10,2)+"\n");
+      for( int i=0 ; i<7 ; i++)
+        sb.append(Format.real(sig[i],10,3));
+      sb.append("\n");
     }
     //Write results to the matrix file
     FileWriter fw=null;
