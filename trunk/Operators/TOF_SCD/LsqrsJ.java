@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2003/06/27 18:02:50  bouzekc
+ * Now returns an ErrorString when the matrix file is not
+ * specified.  Also returns an ErrorString rather than the
+ * original error if Util.writeMatrix fails.
+ *
  * Revision 1.16  2003/06/27 15:00:05  bouzekc
  * Now traps error which occurred if the matrix file was not
  * specified.  In that case, the lsqrs log file is returned
@@ -246,7 +251,6 @@ public class LsqrsJ extends GenericTOF_SCD {
 
     //upper limit of range
     int upperLimit = keepRange[keepRange.length - 1];
-    String matDir  = null;
     String logfile;
 
     {
@@ -281,15 +285,13 @@ public class LsqrsJ extends GenericTOF_SCD {
         file = new File( matfile );
 
         if( file.isDirectory(  ) ) {
-          matDir    = matfile;  //we'll need this later
           matfile   = null;
         }
       }
 
       if( matfile == null ) {
-        //apparently this is not an error, only a warning...?
-        SharedData.addmsg( 
-          "WARN(" + getCommand(  ) + "): not writing to matrix file" );
+        return new ErrorString( 
+          "Matrix file has not been specified" );
       }
 
       file = null;
@@ -587,35 +589,12 @@ public class LsqrsJ extends GenericTOF_SCD {
 
     // write the log file
     {
-      if( 
-        ( matfile == null ) &&
-          ( ( matDir == null ) || ( matDir.length(  ) <= 0 ) ) ) {
-        //this shouldn't happen, but just in case...
-        return new ErrorString( 
-          "No directory to write the matrix file or log file to was given." );
-      }
-
       logfile = "lsqrs.log";
 
-      int index;
+      int index = matfile.lastIndexOf( "/" );
 
-      if( matfile != null ) {
-        index = matfile.lastIndexOf( "/" );
-
-        if( index >= 0 ) {
-          logfile = matfile.substring( 0, index + 1 ) + logfile;
-        }
-      } else {
-        index = matDir.length(  ) - 1;  //matDir.lastIndexOf("/");
-
-        if( index >= 0 ) {
-          if( matDir.lastIndexOf( "/" ) != index ) {
-            //need to add a slash
-            logfile = matDir + "/" + logfile;
-          } else {
-            logfile = matDir + "/" + logfile;
-          }
-        }
+      if( index >= 0 ) {
+        logfile = matfile.substring( 0, index + 1 ) + logfile;
       }
 
       String warn = writeLog( logfile, logBuffer.toString(  ) );
@@ -628,20 +607,17 @@ public class LsqrsJ extends GenericTOF_SCD {
     }
 
     // update the matrix file
-    if( matfile != null ) {
-      ErrorString error = Util.writeMatrix( 
-          matfile, double2float( UB ), double2float( abc ),
-          double2float( sig_abc ) );
+    ErrorString error = Util.writeMatrix( 
+      matfile, double2float( UB ), double2float( abc ),
+      double2float( sig_abc ) );
 
-      if( error != null ) {
-        return error;
-      } else {
-        SharedData.addmsg( "Wrote file: " + matfile );
-
-        return matfile;
-      }
+    if( error != null ) {
+      return new ErrorString(
+        "LsqrsJ failed to update matrix file: " + error);
     } else {
-      return logfile;
+      SharedData.addmsg( "Wrote file: " + matfile );
+
+      return matfile;
     }
   }
 
