@@ -30,6 +30,10 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.3  2003/03/25 19:39:57  pfpeterson
+ *  Fixed bug with updating the DataSets listed in the combo box by
+ *  allowing multiple calls to init.
+ *
  *  Revision 1.2  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -42,6 +46,7 @@ package DataSetTools.parameter;
 
 import java.util.Vector;
 import DataSetTools.components.ParametersGUI.HashEntry;
+import DataSetTools.dataset.DataSet;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -142,17 +147,19 @@ abstract public class ChooserPG extends ParameterGUI{
    * Allows for initialization of the GUI after instantiation.
    */
   public void init(Vector init_values){
-    if(this.initialized) return; // don't initialize more than once
-    if(init_values!=null){
+    if(init_values!=null && init_values.size()>0){
+      this.vals=new Vector();
+      if(this.value!=null && this.value!=DataSet.EMPTY_DATA_SET)
+        this.addItem(this.value);
       if(init_values.size()==1){
         this.setValue(init_values.elementAt(0));
-      }else if(init_values.size()>1){
+      }else{
         for( int i=0 ; i<init_values.size() ; i++ ){
           this.addItem(init_values.elementAt(i));
         }
-      }else{
-        // something is not right, should throw an exception
       }
+    }else{
+      // something is not right, should throw an exception
     }
 
     // set up the combobox
