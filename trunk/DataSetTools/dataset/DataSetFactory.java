@@ -1,5 +1,28 @@
 /*
  * @(#)DataSetFactory.java     0.1  99/06/07  Dennis Mikkelson
+ *
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.3  2000/07/10 22:23:55  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.18  2000/06/15 14:12:25  dennis
+ *  Replaced 4 operators with renamed versions for consistency:
+ *    Integrate()         replaced by    IntegrateGroup()
+ *    CalculateMoment()   replaced by    CalculateMomentOfGroup()
+ *    SumSelectedData()   replaced by    SumByAttribute()
+ *    SelectData()        replaced by    ExtractByAttribute()
+ *
+ *  Revision 1.17  2000/06/08 15:10:16  dennis
+ *  Added new operator DeleteByAttribute
+ *
+ *  Revision 1.16  2000/05/23 18:51:50  dennis
+ *  removed sort on one attribute operator.
+ *
+ *  Revision 1.15  2000/05/11 16:00:45  dennis
+ *  Added RCS logging
+ *
+ *
  */
 
 package  DataSetTools.dataset;
@@ -137,34 +160,30 @@ public class DataSetFactory implements Serializable
       new_ds.addLog_entry( log_info );
                                                     // add the list of generic
                                                     // data set operations
-    
-
-    
-
-    new_ds.addOperator( new Integrate() );
-    new_ds.addOperator( new CalculateMoment() );
-    new_ds.addOperator( new DataSetCrossSection() );
-    new_ds.addOperator( new SumSelectedData() );
-   
-   new_ds.addOperator( new SpectrometerEvaluator() );
-    new_ds.addOperator( new SelectData() );
-    new_ds.addOperator( new DataSetSort() );
-    new_ds.addOperator( new DataSetMultiSort() );
-    new_ds.addOperator( new DataSetMerge() );
-    
-    new_ds.addOperator( new DataSetAdd() );
-    new_ds.addOperator( new DataSetSubtract() );
-    new_ds.addOperator( new DataSetMultiply() );
-    new_ds.addOperator( new DataSetDivide()   );
-    
     new_ds.addOperator( new DataSetScalarAdd() );
     new_ds.addOperator( new DataSetScalarSubtract() );
     new_ds.addOperator( new DataSetScalarMultiply() );
     new_ds.addOperator( new DataSetScalarDivide() );
-    
-    
 
-   
+    new_ds.addOperator( new DataSetAdd() );
+    new_ds.addOperator( new DataSetSubtract() );
+    new_ds.addOperator( new DataSetMultiply() );
+    new_ds.addOperator( new DataSetDivide()   );
+
+    new_ds.addOperator( new IntegrateGroup() );
+    new_ds.addOperator( new CalculateMomentOfGroup() );
+    new_ds.addOperator( new DataSetCrossSection() );
+    new_ds.addOperator( new SumByAttribute() );
+    new_ds.addOperator( new ExtractByAttribute() );
+
+    new_ds.addOperator( new DataSetSort() );
+    new_ds.addOperator( new DataSetMultiSort() );
+
+    new_ds.addOperator( new DeleteByAttribute() );
+    new_ds.addOperator( new DeleteCurrentlySelected() );
+    new_ds.addOperator( new SumCurrentlySelected() );
+
+    new_ds.addOperator( new DataSetMerge() );
 
     return new_ds;
   }

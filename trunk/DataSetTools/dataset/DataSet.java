@@ -1,9 +1,45 @@
 /*
- * @(#)DataSet.java     1.02  99/06/04  Dennis Mikkelson
+ * @(#)DataSet.java     1.03  2000/03/16  Dennis Mikkelson
  *
  * 1.02  99/06/04  Added a vector of operations to the data set.  When a
  *                 data set is constructed, the list of operations that are
  *                 allowed on this data set should also be specified.
+ *
+ * 1.03 2000/03/16 Added routines to work with "selection" tags on the Data
+ *                 blocks.  Also added routine to delete the selected Data
+ *                 blocks. 
+ *
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.3  2000/07/10 22:23:54  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.27  2000/06/15 15:17:32  dennis
+ *  Added methods insertData_entry() and replaceData_entry()
+ *
+ *  Revision 1.26  2000/06/15 14:15:33  dennis
+ *  Added methods to get/set the list of observers as a whole.  This was
+ *  needed to make the object serializable.  Specifically, if the DataSet
+ *  is serialized, all objects that it refers to would also be serialized,
+ *  includeing the viewers, etc.  Since this was not desired, it was
+ *  necessary to serialize the DataSet in four steps:
+ *    1.get the list of observers
+ *    2.remove all observers from the DataSet itself
+ *    3.serialize the DataSet
+ *    4.set the original list of obervers back in the DataSet
+ *
+ *  Revision 1.25  2000/06/08 15:10:47  dennis
+ *  Added wrapper methods th directly set/get attributes without getting
+ *  the entire list of attributes.
+ *
+ *  Revision 1.24  2000/05/12 15:44:34  dennis
+ *  Modified the getXRange() method to use a new form of UniformXScale.expand()
+ *  that does not alter the current UniformXScale.
+ *
+ *  Revision 1.23  2000/05/11 16:00:45  dennis
+ *  Added RCS logging
+ *
+ *
  */
 
 package  DataSetTools.dataset;
@@ -15,7 +51,7 @@ import DataSetTools.operator.*;
 import DataSetTools.util.*;
 
 /**
- * The concrete root class for a set of data objects.  A DataSet object
+ * The concrete root class for a set of Data objects.  A DataSet object
  * bundles together a vector of Data objects with associated units, labels,
  * title, attributes and log information.  Data objects can be added to or 
  * removed from the data set using the methods of this class.  Also, the
@@ -28,12 +64,17 @@ import DataSetTools.util.*;
  */
 
 public class DataSet implements IAttributeList,
-                                Serializable
+                                Serializable,
+                                IObservable
 {
+  public static final int INVALID_GROUP_ID = -1;
+  public static final int INVALID_INDEX    = -1;
+
   private String        title;      // NOTE: we force a DataSet to have a title
                                     // and also keep the same title as an
                                     // attribute.  The title can only be 
                                     // changed using the setTitle() method.
+  private int           pointed_at_index;
   private String        x_units;
   private String        x_label;
   private String        y_units;
@@ -42,6 +83,7 @@ public class DataSet implements IAttributeList,
   private Vector        data;
   private Vector        operators;
   private OperationLog  op_log;
+  private IObserverList observers;
 
   /**
    * Constructs an empty data set with the specified title, initial log
@@ -68,14 +110,16 @@ public class DataSet implements IAttributeList,
                   String        y_units,
                   String        y_label )
   {
-    this.op_log     = (OperationLog)op_log.clone();
-    this.x_units    = x_units;
-    this.x_label    = x_label;
-    this.y_units    = y_units;
-    this.y_label    = y_label;
-    this.attr_list  = new AttributeList();
-    this.data       = new Vector();
-    this.operators  = new Vector();
+    this.op_log           = (OperationLog)op_log.clone();
+    this.x_units          = x_units;
+    this.x_label          = x_label;
+    this.y_units          = y_units;
+    this.y_label          = y_label;
+    this.attr_list        = new AttributeList();
+    this.data             = new Vector();
+    this.operators        = new Vector();
+    this.observers        = new IObserverList();
+    this.pointed_at_index = INVALID_INDEX;
 
     setTitle( title );
   }
@@ -125,9 +169,463 @@ public class DataSet implements IAttributeList,
 
 
   /**
+   *  Add the specified object to the list of observers to notify when this
+   *  observable object changes.
+   *
+   *  @param  iobs   The observer object that is to be notified.
+   *
+   */
+   public void addIObserver( IObserver iobs )
+   {
+     observers.addIObserver( iobs );
+   }
+
+
+  /**
+   *  Remove the specified object from the list of observers to notify when
+   *  this observable object changes.
+   *
+   *  @param  iobs   The observer object that should no longer be notified.
+   *
+   */
+   public void deleteIObserver( IObserver iobs )
+   {
+     observers.deleteIObserver( iobs );
+   }
+
+
+  /**
+   *  Remove all objects from the list of observers to notify when this
+   *  observable object changes.
+   */
+   public void deleteIObservers( )
+   {
+     observers.deleteIObservers();
+   }
+
+
+  /**
+   *  Notify all observers in the list ( by calling their update(,) method )
+   *  that the observed object has changed.
+   *
+   * @param  reason        Object indicating the nature of the change in the
+   *                       observable object, or specifying the action that the
+   *                       observer should take.  This is passed as the second
+   *                       parameter to the update(,) method of the observers
+   *                       and will typically be a String.
+   */
+   public void notifyIObservers( Object reason )
+   {
+     observers.notifyIObservers( this, reason );
+   }
+
+  /**
+   *  Get a copy of the list of observers.  This method is needed for
+   *  serializing a DataSet.  In particular, if a DataSet is serialized, all
+   *  of it's observers are also serialized.  To avoid this, the code that
+   *  serializes the DataSet should proceed as follows:
+   *    1. Get a copy of the list of observers getIObserverList()
+   *    2. Delete all the observers from the the DataSet using 
+   *       deleteIObservers()
+   *    3. Serialize the DataSet
+   *    4. Reset the list of observers using setIObserverList() 
+   *
+   *  @return the current list of observers for this DataSet
+   */
+   public IObserverList getIObserverList()
+   {
+     return (IObserverList)observers.clone();
+   }
+
+
+  /**
+   *  Set the list of observers to the specified list.  This method is 
+   *  needed for.  See getIObserverList().
+   *
+   *  @param  list  The list of observers to use for this DataSet.
+   */
+   public void setIObserverList( IObserverList list )
+   {
+     observers = (IObserverList)list.clone();
+   }
+
+
+
+  /**
    * Returns the title of the data set 
    */
   public String getTitle() { return title; }
+
+
+  /**
+   *  Set the selected flags of all Data objects in this DataSet to false.
+   *
+   *  @return  true if the state of some "selected" flag was actually changed.
+   */
+  public boolean clearSelections()
+  {
+    boolean changed = false;
+    Data d;
+
+    for ( int i = 0; i < data.size(); i++ )
+    {
+      d = (Data)data.elementAt(i);
+      if ( d.isSelected() )
+      {
+        d.setSelected(false);
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
+
+  /**
+   *  Set the selected flag of the specified Data object to the specified value.
+   *  If the index is not valid, there is no effect.
+   *
+   *  @param  index     The position of the Data object in this DataSet whose
+   *                    selection flag is to be set.
+   *  @param  selected  New value for the selected flag.
+   */
+  public void setSelectFlag( int index, boolean selected )
+  {
+    if ( index >= 0 && index < data.size() )
+      ((Data)data.elementAt(index)).setSelected( selected );
+    else
+      System.out.println("Error: setSelectFlag(i,s) called with invalid index");
+  }
+
+
+  /**
+   *  Set the selected flag of the specified Data object to same value as the
+   *  selected flag of the specified Data object.  If the index is not valid, 
+   *  there is no effect.
+   *
+   *  @param  index     The position of the Data object in this DataSet whose
+   *                    selection flag is to be set.
+   *  @param  d         The Data object whose selection flag is to be copied.
+   */
+  public void setSelectFlag( int index, Data d )
+  {
+    if ( index >= 0 && index < data.size() )
+      ((Data)data.elementAt(index)).setSelected( d );
+    else
+      System.out.println("Error: setSelectFlag(i,d) called with invalid index");
+  }
+
+
+  /**
+   *  Get the selected flag of the specified Data object.
+   *
+   *  @param   index  The position of the Data object in this DataSet whose
+   *                  selection flag is to be returned.
+   *  @return  true if the specified Data object is selected, false otherwise.
+   */
+  public boolean isSelected( int index )
+  {
+    boolean flag = false;
+    if ( index >= 0 && index < data.size() )
+      flag = ((Data)data.elementAt(index)).isSelected();
+    else
+      System.out.println("Error: isSelected called with invalid index");
+
+    return flag;
+  }
+
+  /**
+   *  Toggle the selected flag of the specified Data object to the specified 
+   *  value.  If the index is not valid, there is no effect.
+   *
+   *  @param  index     The position of the Data object in this DataSet whose
+   *                    selection flag is to be toggled.
+   */
+  public void toggleSelectFlag( int index )
+  {
+    if ( index >= 0 && index < data.size() )
+      ((Data)data.elementAt(index)).toggleSelected( );
+    else
+      System.out.println("Error: toggleSelectFlag called with invalid index");
+  }
+
+  /**
+   *  Get the index of the most recently selected Data object in this DataSet.
+   *
+   *  @return  the index of the most recently selected Data object in this
+   *           DataSet.  If no Data objects are selected, this returns
+   *           INVALID_INDEX. 
+   */
+  public int getMostRecentlySelectedIndex( )
+  {
+    int  index   = INVALID_INDEX;
+    long max_tag =  0;
+    Data d       = null;
+
+    for ( int i = 0; i < data.size(); i++ )
+    {
+      d = (Data)data.elementAt(i);
+      if ( d.getSelectionTagValue() > max_tag )
+      {
+        max_tag = d.getSelectionTagValue();
+        index = i;
+      }
+    }
+
+    return index;
+  }
+
+  /**
+   *  Get the number of Data objects in the DataSet that have been selected.
+   *
+   *  @return the number of Data objects currently marked as selected.
+   */
+  public int getNumSelected() 
+  {
+    int count = 0;
+    for ( int i = 0; i < data.size(); i++ )
+      if ( isSelected(i) )
+        count++;
+    return count;
+  }
+
+
+  /**
+   *  Hide all selected Data objects, or all the un-selected Data objects in the
+   *  DataSet.
+   *
+   *  @param  status  Determines whether the currently selected, or currently
+   *                  un-selected Data objects are hidden.  If status == true,
+   *                  the currently selected Data objects are hidden.  If
+   *                  status == false, the currently un-selected Data objects
+   *                  are hidden. 
+   *
+   *  @return This returns true if some Data object's hidden state was set, and
+   *  returns false if the call to this method had no effect.
+   */
+  public boolean hideSelected( boolean status )
+  {
+    boolean hidden_changed = false;
+
+    for ( int i = 0; i < data.size(); i++ )
+      if ( isSelected(i) == status )
+      {
+        ((Data)data.elementAt(i)).setHide(true);
+        hidden_changed = true;
+      } 
+
+    return hidden_changed;
+  }
+
+
+  /**
+   *  Determine whether the specified Data object is marked as "hidden".
+   *
+   *  @param  index  The position of the Data object to be checked in the list
+   *                 of Data objects for this Data set.
+   *  
+   *  @return  Returns true if the specified Data object is marked as hidden
+   *           and returns false otherwise.
+   */
+  public boolean isHidden( int index )
+  {
+    boolean flag = false;
+    if ( index >= 0 && index < data.size() )
+      flag = ((Data)data.elementAt(index)).isHidden();
+    else
+      System.out.println("Error: isSelected called with invalid index");
+
+    return flag;
+  }
+
+
+  /**
+   *  Clear all "hide" flags for the Data objects in this DataSet. 
+   *
+   *  @return  true if the state of some "hide" flag was actually changed. 
+   */
+  public boolean clearHideFlags()
+  {
+    boolean changed = false;
+    Data d;
+
+    for ( int i = 0; i < data.size(); i++ )
+    {
+      d = (Data)data.elementAt(i);
+      if ( d.isHidden() )
+      {
+        d.setHide( false );
+        changed = true;
+      }
+    } 
+
+    return changed;
+  }
+
+
+  /**
+   *  Get the number of Data objects in the DataSet that have been hidden.
+   *
+   *  @return the number of Data objects currently marked as hidden.
+   */
+  public int getNumHidden()
+  {
+    int count = 0;
+    for ( int i = 0; i < data.size(); i++ )
+      if ( isHidden(i) )
+        count++;
+    return count;
+  }
+
+
+  /**
+   *  Remove all selected Data objects, or all un-selected Data objects from 
+   *  the DataSet.
+   *
+   *  @param  status  Determines whether the currently selected, or currently
+   *                  un-selected Data objects are removed.  If status == true,
+   *                  the currently selected Data objects are removed.  If
+   *                  status == false, the currently un-selected Data objects
+   *                  are removed.
+   *
+   *  @return This returns true if some Data object was removed, and returns  
+   *  false if the call to this method had no effect.
+   */
+  public boolean removeSelected( boolean status )
+  {
+    boolean some_removed = false;
+                                     //  NOTE: We must remove in reverse order
+
+    for ( int i = data.size() - 1; i >= 0; i-- )
+      if ( isSelected(i) == status )
+      {
+        data.removeElementAt(i);
+        some_removed = true;
+      }
+
+    return some_removed;
+  }
+
+ 
+  /**
+   *  Form a new group consisting either of all the currently selected
+   *  Data objects, or of all the un-selected Data objects.
+   *
+   *  @param  status  Determines whether the currently selected, or currently
+   *                  un-selected Data objects are grouped.  If status == true,
+   *                  the currently selected Data objects are grouped.  If
+   *                  status == false, the currently un-selected Data objects
+   *                  are grouped.
+   *
+   *  @return Return the ID of the new group that was constructed, or 
+   *          INVALID_INDEX if there were no Data objects with the specified
+   *          selection status.
+   */
+  public int groupSelected( boolean status )
+  {
+    int     new_group_ID = getMaxGroupID() + 1;
+    boolean group_formed = false;
+    Data    d;
+
+    for ( int i = 0; i < data.size(); i++ )
+    {
+      if ( isSelected(i) == status )
+      {
+        d = (Data)data.elementAt(i);
+        d.setGroup_ID( new_group_ID );
+        group_formed = true;
+      }
+    }
+ 
+    if ( group_formed )
+      return new_group_ID;
+    else
+      return INVALID_INDEX;
+  }
+
+  /**
+   *  Clear all group_ID information in this DataSet by setting all group IDs
+   *  to INVALID_GROUP_ID.
+   *
+   *  @return  true if the state of some Group_ID was actually changed.
+   */
+  public boolean clearGroupIDs()
+  {
+    boolean changed = false;
+    Data d;
+
+    for ( int i = 0; i < data.size(); i++ )
+    {
+      d = (Data)data.elementAt(i);
+      if ( d.getGroup_ID() != INVALID_GROUP_ID )
+      {
+        d.setGroup_ID( INVALID_GROUP_ID );
+        changed = true;
+      }
+    }
+
+    return changed;
+  }
+
+
+  /**
+   *  Get the largest group ID of any group in this Data set.
+   *
+   *  @return Returns the largest group ID of any Data object in this DataSet,
+   *          or INVALID_GROUP_ID if this DataSet is empty, or no groups have
+   *          been formed.
+   */
+  public int getMaxGroupID()
+  {
+    int    max_group_ID = INVALID_GROUP_ID; 
+    int    id;
+    Data   d;
+
+    for ( int i = 0; i < data.size(); i++ )
+    {
+      d = (Data)data.elementAt(i);
+      id = d.getGroup_ID(); 
+      if ( id > max_group_ID )
+        max_group_ID = id;
+    }
+ 
+    return max_group_ID;
+  } 
+  
+
+  /**
+   *  Specify the index of a Data object that is to be considered "pointed at"
+   *  temporarily by the user.
+   *
+   *  @param  i    The index to record as "pointed at".  This index must be
+   *               be a valid index into the list of Data objects.  If the 
+   *               index is invalid, the "pointed at" index is recorded as 
+   *               INVALID_INDEX. 
+   */
+  public void setPointedAtIndex( int i )
+  {
+    if ( i >= 0 && i < data.size() )
+      pointed_at_index = i;
+    else
+      pointed_at_index = INVALID_INDEX;
+  }
+
+  /**
+   *  Get the index of a Data object that is to be considered "pointed at"
+   *  temporarily by the user. 
+   *
+   *  @return  The index of the Data object that has been designated as
+   *           "pointed at".  If no valid index has been designated, the value
+   *           returned is INVALID_INDEX.
+   */
+  public int getPointedAtIndex( )
+  {
+    // This check is necessary, since we might have deleted some elements
+    // from the DataSet, after the pointed_at_index was set.
+    if ( pointed_at_index < 0  || pointed_at_index >= data.size() )
+      pointed_at_index = INVALID_INDEX;
+    
+    return pointed_at_index;
+  }
 
 
   /**
@@ -181,7 +679,7 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Returns the number of tabulated data objects in the data set 
+   * Returns the number of Data objects in the DataSet 
    */
   public int getNum_entries() { return data.size(); }
 
@@ -191,7 +689,7 @@ public class DataSet implements IAttributeList,
    * specified group ID.  If there is no data object with the correct ID, this
    * returns null.
    *
-   * @param  gourp_id      The group id of the requested Data object in the 
+   * @param  group_id      The group id of the requested Data object in the 
    *                       list of Data objects in this DataSet.
    */
   public Data getData_entry_with_id( int group_id )
@@ -205,7 +703,7 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Returns a reference to the tabulated data object from the specified 
+   * Returns a reference to the Data object from the specified 
    * position in the data set if the index is valid, otherwise return null.
    *
    * @param  index   The index of the requested Data object in the list of
@@ -221,7 +719,7 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Adds a new tabulated data object to the list of data objects.
+   * Adds a new Data object to the end of the list of Data objects.
    *
    * @param  entry   The Data object to be added to the list of Data objects
    *                 in this DataSet.
@@ -229,6 +727,50 @@ public class DataSet implements IAttributeList,
   public void addData_entry( Data entry )
   {
     data.addElement( entry );
+  }
+
+
+  /**
+   * Inserts a new Data object at the spcecified position in 
+   * the list of Data objects.  If the specified position does not exist,
+   * it is added to the end of the list.
+   *
+   * @param  entry   The Data object to be inserted in the list of Data objects
+   *                 in this DataSet.
+   *
+   * @param  index   The position where the Data object is to be inserted.
+   */
+  public void insertData_entry( Data entry, int index )
+  {
+    if ( index >= 0 && index < data.size() )
+      data.insertElementAt( entry, index );
+    else
+      data.addElement( entry );
+  }
+
+  /**
+   * Replaces the Data object at the spcecified position in the list of Data 
+   * objects with the specified Data entry.  If the specified position does 
+   * not exist, this method has no effect on the DataSet and returns false.
+   *
+   * @param  entry   The Data object to be inserted in the list of Data objects
+   *                 in this DataSet.
+   *
+   * @param  index   The position where the Data object is to be replaced.
+   *
+   * @return  Returns true if the index was a valid index in the list of
+   *          Data objects and the specified entry replaced the Data object
+   *          in that position.  Returns false if the index was not valid.
+   */
+  public boolean replaceData_entry( Data entry, int index )
+  {
+    if ( index >= 0 && index < data.size() )
+    {
+      data.setElementAt( entry, index );
+      return true;
+    }
+    else
+      return false;
   }
 
 
@@ -257,9 +799,21 @@ public class DataSet implements IAttributeList,
        if ( ((Data)data.elementAt( i )).getGroup_ID() == group_id )
        {
          data.removeElementAt(i);           // found the id, so remove the
-         return;                            // the data block and exit
+         return;                            // the data object and exit
        }
   }
+
+
+  /**
+   * Removes all Data objects from the vector of Data objects for this DataSet.
+   *
+   */
+  public void removeAll_data_entries(  )
+  {
+     data.clear();
+  }
+
+
 
 
   /**
@@ -317,11 +871,12 @@ public class DataSet implements IAttributeList,
   {
     operator.setDataSet( this );
     operators.addElement( operator );
+    operator.setDefaultParameters();
   }
 
 
   /**
-   * Get the range of X values for the collection of Data blocks in this
+   * Get the range of X values for the collection of Data objects in this
    * data set.
    */
   public UniformXScale getXRange()
@@ -344,15 +899,14 @@ public class DataSet implements IAttributeList,
     for ( int i = 1; i < this.getNum_entries(); i++ )
     {
       data_block = (Data)getData_entry( i );
-      range.expand( data_block.getX_scale() );
+      range = range.expand( data_block.getX_scale() );
     }
 
     return range;
   }
 
-
   /**
-   * Get the range of Y values for the collection of Data blocks in this
+   * Get the range of Y values for the collection of Data objects in this
    * data set.
    */
   public UniformXScale getYRange()
@@ -390,10 +944,10 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Get the maximum number of X steps for the Data blocks in this DataSet.
+   * Get the maximum number of X steps for the Data objects in this DataSet.
    *
    *  @return   An integer giving the largest number of X steps for any 
-   *            Data block in this DataSet
+   *            Data object in this DataSet
    */
   public int getMaxXSteps()
   {
@@ -401,10 +955,11 @@ public class DataSet implements IAttributeList,
     XScale         x_scale;
     int            num_steps;
     int            max_steps = 0;
+    int            num_entries = getNum_entries();
 
-    if ( this.getNum_entries() > 0 )
+    for (int i = 0; i < num_entries; i++ )
     {
-      data_block = (Data)getData_entry( 0 );
+      data_block = (Data)getData_entry( i );
       x_scale    = data_block.getX_scale();
       num_steps  = x_scale.getNum_x();
 
@@ -429,11 +984,6 @@ public class DataSet implements IAttributeList,
    */
   public boolean SameUnits( DataSet ds ) 
   { 
-     System.out.println("this x_units = " + x_units );
-     System.out.println("this y_units = " + y_units );
-     System.out.println("ds   x_units = " + ds.x_units );
-     System.out.println("ds   y_units = " + ds.y_units );
-
      if ( x_units.equalsIgnoreCase( ds.x_units )  &&
           y_units.equalsIgnoreCase( ds.y_units )     )
        return true;
@@ -500,7 +1050,7 @@ public class DataSet implements IAttributeList,
   }
 
   /**
-   *  Set the list of attributes for this Data object to be a COPY of the 
+   *  Set the list of attributes for this DataSet object to be a COPY of the 
    *  specified list of attributes.
    */
   public void setAttributeList( AttributeList attr_list )
@@ -510,6 +1060,72 @@ public class DataSet implements IAttributeList,
     setTitle( this.title );   // force the attribute list to contain the
                               // correct title
   }
+
+  /**
+   * Gets the number of attributes set for this object.
+   */
+  public int getNum_attributes()
+  {
+    return attr_list.getNum_attributes();
+  }
+
+  /**
+   * Set the value of the specified attribute in the list of attributes.
+   * If the attribute is already present in the list, the value is changed
+   * to the value of the new attribute.  If the attribute is not already
+   * present in the list, the new attribute is added to the list.
+   *
+   *  @param  attribute    The new attribute to be set in the list of
+   *                       attributes.
+   */
+  public void setAttribute( Attribute attribute )
+  {
+    attr_list.setAttribute( attribute );
+  }
+
+
+  /**
+   * Set the value of the specified attribute in the list of attributes at
+   * at the specified position.  If the attribute is already present in the
+   * list, the value is changed to the value of the new attribute.  If the
+   * attribute is not already present in the list, the new attribute is added
+   * to the list.
+   *
+   *  @param  attribute    The new attribute to be set in the list of
+   *                       attributes.
+   *
+   *  @param  index        The position where the attribute is to be
+   *                       inserted.
+   */
+  public void setAttribute( Attribute attribute, int index )
+  {
+    attr_list.setAttribute( attribute, index );
+  }
+
+
+  /**
+   * Get the value of the attribute at the specified index from the list of
+   * attributes. If the index is invalid, this returns null.
+   *
+   * @param  name  The name of the attribute value to get.
+   */
+  public Object  getAttributeValue( int index )
+  {
+    return attr_list.getAttributeValue( index );
+  }
+
+
+  /**
+   * Get the value of the attribute with the specified name from the list of
+   * attributes.  If the named attribute is not in the list, this returns null.
+   *
+   * @param  name  The name of the attribute value to get.
+   */
+  public Object getAttributeValue( String name )
+  {
+    return attr_list.getAttributeValue( name );
+  }
+
 
 
   /**
@@ -542,7 +1158,7 @@ public class DataSet implements IAttributeList,
       attr_list = getData_entry(i).getAttributeList();
       one_attr = attr_list.getAttribute( attr_name );
       if ( one_attr == null )
-        return false;               // attribute missing from this Data block
+        return false;               // attribute missing from this Data object 
       
       attr[i]     = one_attr;
       position[i] = i;
@@ -578,7 +1194,7 @@ public class DataSet implements IAttributeList,
           position[k+1] = temp;
         }
    }
-                                                  // copy the data blocks to
+                                                  // copy the data objects to
     Vector new_data = new Vector();               // a new vector in the right
     for ( int i = 0; i < n; i++ )                 // order
       new_data.addElement( data.elementAt( position[i] ) );
@@ -606,12 +1222,12 @@ public class DataSet implements IAttributeList,
 
   /**
    * Clone the current DataSet, including the operation log, the list of
-   * operators and the list of individual Data blocks.
+   * operators and the list of individual Data objects.
    */
    public Object clone()
   {
     DataSet new_ds = empty_clone();
-                                      // now copy the list of Data blocks.
+                                      // now copy the list of Data objects.
     Data data;
     int num_entries = getNum_entries();
     for ( int i = 0; i < num_entries; i++ )
@@ -647,6 +1263,8 @@ public class DataSet implements IAttributeList,
                                       // copy the list of attributes.
     AttributeList attr_list = getAttributeList();
     new_ds.setAttributeList( attr_list );
+
+    new_ds.pointed_at_index = pointed_at_index;
     
     return new_ds;
   }
@@ -666,5 +1284,15 @@ public class DataSet implements IAttributeList,
     else 
     return title;
   }
+
+  /**
+   *  Trace the finalization of objects
+   */
+/*
+  protected void finalize() throws IOException
+  {
+    System.out.println( "finalize DataSet" );
+  }
+*/
 
 }
