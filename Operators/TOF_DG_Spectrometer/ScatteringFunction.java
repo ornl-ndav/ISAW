@@ -30,6 +30,12 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.12  2004/05/10 20:42:31  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.11  2004/03/19 17:10:55  dennis
  *  Removed unused variables
  *
@@ -376,9 +382,7 @@ public class ScatteringFunction extends GenericTOF_DG_Spectrometer
     {
       System.out.println("DSDODE returned:" + ddif_ds );
       if ( ddif_ds instanceof DataSet )
-      {
-        ViewManager vm1 = new ViewManager((DataSet)ddif_ds,IViewManager.IMAGE);
-      }
+        new ViewManager((DataSet)ddif_ds,IViewManager.IMAGE);
     }
 
    op = new ScatteringFunction( (DataSet)ddif_ds, 1, true );
@@ -389,9 +393,7 @@ public class ScatteringFunction extends GenericTOF_DG_Spectrometer
     {
       System.out.println("SCAT returned:" + scat_ds );
       if ( scat_ds instanceof DataSet )
-      {
-        ViewManager vm3 = new ViewManager((DataSet)scat_ds,IViewManager.IMAGE);
-      }
+        new ViewManager((DataSet)scat_ds,IViewManager.IMAGE);
     }
 
    System.out.println("End of test of ScatteringFunction");

@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/05/10 20:42:27  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.6  2004/03/14 20:23:46  dennis
  * Put in package DataSetTools.trial
  *
@@ -62,11 +68,10 @@ public class TestIntegHist
     String       run = "/usr/home/dennis/ARGONNE_DATA/SEPD_DATA/SEPD16444.RUN";
 
     RunfileRetriever rr;    
-    ViewManager view_manager;  
     rr = new RunfileRetriever( run ); 
     monitor_ds = rr.getDataSet( 0 );
 
-    view_manager = new ViewManager( monitor_ds, IViewManager.IMAGE);
+    new ViewManager( monitor_ds, IViewManager.IMAGE);
 
     Operator op = new IntegrateGroup( monitor_ds, 4, 3000, 25000 );
 

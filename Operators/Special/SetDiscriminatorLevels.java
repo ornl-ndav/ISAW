@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/05/10 20:42:29  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.1  2004/05/07 17:57:03  dennis
  * Moved operators that extend GenericSpecial from Operators
  * to Operators/Special
@@ -371,13 +377,13 @@ public class SetDiscriminatorLevels extends GenericSpecial
 
     Operator op = new SetDiscriminatorLevels( p_ds, 0.25f, 1e-8f, 255, 40 );
     Object obj = op.getResult();
-    ViewManager vm;
+
     if ( obj instanceof DataSet[] )
     {
       DataSet ds_a[] = (DataSet[])obj;
 
       for ( int i = 0; i < ds_a.length; i++ )
-        vm = new ViewManager( ds_a[i], IViewManager.IMAGE );
+        new ViewManager( ds_a[i], IViewManager.IMAGE );
     }
     else
       System.out.println("Operator returned " + obj );

@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/05/10 20:42:21  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.6  2004/03/19 17:22:05  dennis
  *  Removed unused variable(s)
  *
@@ -449,6 +455,6 @@ public class IdeasRetriever extends Retriever{
     System.out.println( "NUMDS: "+ sim_ret.numDataSets() );
 
     DataSet ds = sim_ret.getDataSet(0);
-    ViewManager vm = new ViewManager( ds, ViewManager.IMAGE );    
+    new ViewManager( ds, ViewManager.IMAGE );    
   }
 }
