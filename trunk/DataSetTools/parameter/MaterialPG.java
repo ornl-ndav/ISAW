@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/02/04 20:32:52  pfpeterson
+ *  Now uses the MaterialFilter in the GUI.
+ *
  *  Revision 1.4  2002/11/27 23:22:42  pfpeterson
  *  standardized header
  *
@@ -82,7 +85,8 @@ public class MaterialPG extends StringPG{
                 // something is not right, should throw an exception
             }
         }
-        entrywidget=new StringEntry(this.getStringValue(),20);
+        entrywidget=new StringEntry(this.getStringValue(),20,
+                                    new MaterialFilter());
         entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
         this.setEnabled(this.getEnabled());
         this.packupGUI();
