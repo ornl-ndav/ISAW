@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/04/28 21:11:57  pfpeterson
+ * Added ability to write orientation matrix to experiment files.
+ *
  * Revision 1.9  2003/04/22 14:32:14  pfpeterson
  * Changed formatting when writting a matrix file.
  *
@@ -69,7 +72,8 @@ import DataSetTools.instruments.*;
 import DataSetTools.math.*;
 import DataSetTools.util.ErrorString;
 import DataSetTools.util.Format;
-import java.io.FileOutputStream;
+import DataSetTools.util.TextFileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class Util{
@@ -320,42 +324,102 @@ public class Util{
    */
   public static ErrorString writeMatrix( String filename, float[][] UB,
                                          float[] abc, float[] sig){
-    StringBuffer sb= new StringBuffer(10*3+1);
+    StringBuffer sb;
+    if(filename.endsWith(".x")){ // writing an experiment file
+      sb=new StringBuffer(81*8);
+      TextFileReader tfr=null;
+      try{
+        tfr=new TextFileReader(filename);
+        String line=null;
+        while(!tfr.eof()){
+          line=tfr.read_line();
+          if(line.startsWith("CRS0  VSIGV")){ // cell volume
+            sb.append("CRS0  VSIGV"+Format.real(abc[6],11,4)
+                      +Format.real(sig[6],10,4)+"\n");
+          }else if(line.startsWith("CRS1  ABC   ")){ // lattice param lengths
+            sb.append("CRS1  ABC   ");
+            for(int i=0 ; i<3 ; i++ )
+              sb.append(Format.real(abc[i],10,4));
+            sb.append(Format.string("\n",39));
+          }else if(line.startsWith("CRS1  ABCSIG")){ // uncertainties in param lengths
+            sb.append("CRS1  ABCSIG");
+            for(int i=0 ; i<3 ; i++ )
+              sb.append(Format.real(sig[i],10,4));
+            sb.append(Format.string("\n",39));
+          }else if(line.startsWith("CRS1  ANGLES")){ // lattice param angles
+            sb.append("CRS1  ANGLES");
+            for(int i=3 ; i<6 ; i++ )
+              sb.append(Format.real(abc[i],10,3));
+            sb.append(Format.string("\n",39));
+          }else if(line.startsWith("CRS1  ANGSIG")){ // uncertainties in param angles
+            sb.append("CRS1  ANGSIG");
+            for(int i=3 ; i<6 ; i++ )
+              sb.append(Format.real(sig[i],10,3));
+            sb.append(Format.string("\n",39));
+          }else if(line.startsWith("CRS11 UBMAT1")){ // orientation matrix
+            sb.append("CRS11 UBMAT1");
+            for(int j=0 ; j<3 ; j++)
+              sb.append(Format.real(UB[j][0],10,6));
+            sb.append(Format.string("\n",39));
+          }else if(line.startsWith("CRS11 UBMAT2")){ // orientation matrix
+            sb.append("CRS11 UBMAT2");
+            for(int j=0 ; j<3 ; j++)
+              sb.append(Format.real(UB[j][1],10,6));
+            sb.append(Format.string("\n",39));
+          }else if(line.startsWith("CRS11 UBMAT3")){ // orientation matrix
+            sb.append("CRS11 UBMAT3");
+            for(int j=0 ; j<3 ; j++)
+              sb.append(Format.real(UB[j][2],10,6));
+            sb.append(Format.string("\n",39));
+          }else{
+            sb.append(line+"\n");
+          }
+        }
+      }catch( IOException e ){
+        return new ErrorString("Reading Experiment File: "+e.getMessage());
+      }finally{
+        try{
+          if(tfr!=null) tfr.close();
+        }catch(IOException e){
+          // let it drop on the floor
+        }
+      }
+    }else{ // writing a matrix file
+      sb= new StringBuffer(10*3+1);
 
-    // the UB matrix
-    for( int i=0 ; i<3 ; i++ ){
-      for (int j=0 ; j<3 ;j++ )
-        sb.append(Format.real(UB[j][i],10,6));
-      sb.append("\n");
+      // the UB matrix
+      for( int i=0 ; i<3 ; i++ ){
+        for (int j=0 ; j<3 ;j++ )
+          sb.append(Format.real(UB[j][i],10,6));
+        sb.append("\n");
+      }
+
+      // lattice parameters
+      for( int i=0 ; i<6 ; i++ )
+        sb.append(Format.real(abc[i],10,5));
+      sb.append(Format.real(abc[6],10,2)+"\n");
+      // sigmas
+      for( int i=0; i < 6; i++)
+        sb.append(Format.real(sig[i],10,5));
+      sb.append(Format.real(sig[6],10,2)+"\n");
     }
-
-    // lattice parameters
-    for( int i=0 ; i<6 ; i++ )
-      sb.append(Format.real(abc[i],10,5));
-    sb.append(Format.real(abc[6],10,2)+"\n");
-    // sigmas
-    for( int i=0; i < 6; i++)
-      sb.append(Format.real(sig[i],10,5));
-    sb.append(Format.real(sig[6],10,2)+"\n");
-
     //Write results to the matrix file
-    FileOutputStream fout = null;
+    FileWriter fw=null;
     try{
-      fout = new FileOutputStream( filename );
-      fout.write( sb.toString().getBytes());
-      fout.flush();
-    }catch( IOException e){
+      fw=new FileWriter(filename,false);
+      fw.write(sb.toString());
+      fw.flush();
+    }catch(IOException e){
       return new ErrorString("Writing Matrix File: "+e.getMessage());
     }finally{
-      if(fout!=null){
+      if(fw!=null){
         try{
-          fout.close();
+          fw.close();
         }catch(IOException e){
           // let it drop on the floor
         }
       }
     }
-
     return null;
   }
 }
