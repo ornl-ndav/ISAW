@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.55  2003/07/09 16:29:12  bouzekc
+ * Now shows last valid Form when the Wizard is loading.  Fixed
+ * bug where if save files were successively loaded, the progress
+ * bar did not update correctly.  When saving or loading, the
+ * file chooser now starts in the ISAW_HOME directory.
+ *
  * Revision 1.54  2003/07/08 22:31:58  bouzekc
  * Now properly sets the progress bar labels when a Form is
  * executed and/or invalidated.
@@ -536,7 +542,8 @@ public abstract class Wizard implements PropertyChangeListener {
 
   /**
    * Used to get the number of the last valid Form (i.e the Form that has all
-   * of its parameters set to valid).
+   * of its parameters set to valid).  Note that a negative number (ideally
+   * -1) is returned if no Forms are valid.
    *
    * @return The index of the last valid Form.
    */
@@ -694,7 +701,14 @@ public abstract class Wizard implements PropertyChangeListener {
     this.setIgnorePropertyChanges( true );
 
     loadForms( f );
-    showForm( 0 );
+
+    int lastValidNum = getLastValidFormNum(  );
+
+    if( lastValidNum < 0 ) {
+      showForm( 0 );
+    } else {
+      showForm( lastValidNum );
+    }
 
     //now we want to return to a state where the Wizard can listen to
     //property changes
@@ -775,21 +789,21 @@ public abstract class Wizard implements PropertyChangeListener {
     form_panel.add( f.getPanel(  ) );
     f.setVisible( true );
 
-    int lastForm = this.getLastValidFormNum(  );
+    int lastForm = getLastValidFormNum(  );
 
     //reset the progress bars - especially useful when loading up a Wizard
     //from a file
+    wizProgress.setString( 
+      "Wizard Progress: " + ( lastForm + 1 ) + " of " + forms.size(  ) +
+      " Forms done" );
+    wizProgress.setValue( lastForm + 1 );
+
     if( f.done(  ) ) {
       formProgress.setString( f + " Done" );
-      wizProgress.setString( 
-        "Wizard Progress: " + ( lastForm + 1 ) + " of " + forms.size(  ) +
-        " Forms done" );
       formProgress.setValue( FORM_PROGRESS );
-      wizProgress.setValue( lastForm + 1 );
     } else {
       formProgress.setString( f + " Progress" );
       formProgress.setValue( 0 );
-      wizProgress.setValue( lastForm + 1 );
     }
 
     //add the listener (this) to the Form's parameters and progress bar
@@ -1098,6 +1112,10 @@ public abstract class Wizard implements PropertyChangeListener {
       fileChooser = new JFileChooser(  );
       fileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
       fileChooser.setFileFilter( wizFilter );
+
+      //start out in the ISAW_HOME directory
+      fileChooser.setCurrentDirectory( 
+        new File( SharedData.getProperty( "ISAW_HOME" ) ) );
     }
 
     //try to remember the previous value the user entered
@@ -1145,7 +1163,8 @@ public abstract class Wizard implements PropertyChangeListener {
       if( ( temp != null ) && !temp.equals( "" ) ) {
         temp        = wizFilter.appendExtension( temp );
         save_file   = new File( 
-            fileChooser.getCurrentDirectory(  ) + "/" + temp );
+            StringUtil.setFileSeparator( 
+              fileChooser.getCurrentDirectory(  ) + "/" + temp ) );
       }
     }
 
