@@ -5,19 +5,18 @@
    <meta name="GENERATOR" content="Mozilla/4.73 [en] (Windows NT 5.0; U) [Netscape]">
 </head>
 <body>
-<a href="CommandPane.html">CONTENTS</a> , <a href ="Commands.html">Previous</a> , <a href = "Grammer.html">Next</a>
+<a href="CommandPane.html">CONTENTS</a>
 <p><a NAME="#rith"></a>Arithmetic Operations :+,-, *, /, &amp;, and ^(power)
-<br>&nbsp;
-<br>&nbsp;
 <ul>These binary operations(Except &amp;) can be between Data Sets, a Data
 Set and a float, between two integers, between two floats, or between two
 strings(&amp; only).
 <p>&nbsp;Mixed types are allowed and are converted. "&amp;" is always string
-add so non string data is converted to strings.</ul>
+add so non string data is converted to strings.
+<P> <B>Logical operations</B> AND, OR, and NOT operate on two booleans.<BR>
+<B>Relational operators</b> are >, >=, < , <= , <> , = or ==
+</ul>
 
 <hr>Assignment operator =
-<br>&nbsp;
-<br>&nbsp;
 <ul>To store a quantity in the local workspace memory, use "=" just like
 it is used in FORTRAN</ul>
 
@@ -25,7 +24,7 @@ it is used in FORTRAN</ul>
 <ul>
 <ol type="1">
 <h3>
-There are several forms of load. (* proposed)</h3>
+There are several forms of load. </h3>
 
 <li>
 <b>Load String Filename</b></li>
@@ -36,39 +35,35 @@ There are several forms of load. (* proposed)</h3>
 <b>Load String Filename, String VariableName</b></li>
 
 <br><b>Load( String Filename , String VariableName )</b>
-<p>The names of the variables are varname0, varname1, varname2, etc.
-<br>and also varname[o], varname[1], ... varname[i]
+<br>The names of the variables are varname[0], varname[1], varname[2], etc.
+<P>
 <li>
 <b>Integer Load String Filename</b></li>
 
 <br><b>Integer Load(String Filename)</b>
 <br><b>Integer Load String Filename, String VariableName</b>
 <br><b>Integer Load( String Filename , String VariableName )</b>
-<p>The return value is the number of datasets loaded.
-<br>These files are loaded into the local workspace
-<P>
- <LI> <b> Load DataSet[] </b><br>
-    This add the array of data sets to the name space of the executable code<P>.
-    This form allow for user defined variable names, and parenthesis.
-</ol>
+
+<br>The return value is the number of datasets loaded.
+<br>These files are loaded into the local workspace</ol><P>
+<UL> NOTE: if the extension of the filename is
+   <li>"run" a runfile will be loaded and converted to a list of data sets
+   <li>"isd" a java binary data set( see <A href="#Save">Save</a>) will be loaded
+ </ul>
 </ul>
 
 <hr><a NAME="Display"></a>Display
-<ul>The * means proposed
-<br>&nbsp;
-<br>&nbsp;
+<ul>
 <ol type ="1">
 <li>
 <b>Display Object Expr</b></li>
 
-<p><br>&nbsp;The expression can be a variable or constant of any type.
-The data sets will be displayed in an external viewer of type IMAGE.
-<br>&nbsp;
-<br>&nbsp;
+<br>&nbsp;The expression can be a variable or constant of any type.
+The data sets will be displayed in an external viewer of type IMAGE.<P>
 <li>
 <b>*Display Object Expr, String ImageType</b></li>
 
-<p><br>&nbsp;ImageType should be either "IMAGE" or "SCROLLED_GRAPHS" or
+<br>&nbsp;ImageType should be either "IMAGE" or "SCROLLED_GRAPHS" or
 "SELECTED_GRAPHS"</ol>
 </ul>
 
@@ -79,10 +74,11 @@ Listener</ul>
 </ul>
 
 <hr><a NAME="Save"></a>Save
-<br>&nbsp;
-<br>&nbsp;
 <ul><b>Save DataSet, String Filename</b>
-<p>&nbsp;This may have some problems in conjunction with Isaw</ul>
+<br>&nbsp;This will save the data set in "java binary form". NOTE this form could change
+  from one version of Isaw and/or Java to the next.<P>
+  Use the extension ".isd" on the filename to reload it back into Isaw or the Command Pane.
+  See <A href="#Load">Load</a></ul>
 
 <hr><a NAME="Peak"></a>Peak
 <ul>FitPeak
@@ -92,7 +88,7 @@ Not implemented yet
 <p>
 <hr><a NAME="Rebin"></a>Rebin
 <ul>
-<ul><b>DataSet Rebin(DataSet , float a, float b , int n, boolean)</b></ul>
+<ul><b>DataSet Rebin(DataSet , float a, float b , int n)</b></ul>
 </ul>
 Not implemented Yet
 <p>
@@ -100,7 +96,7 @@ Not implemented Yet
 <ul>Transform X
 <br>&nbsp;
 <br>&nbsp;
-<ul><b>DataSet TranX( DataSet , String, boolean )</b></ul>
+<ul><b>DataSet TranX( DataSet , String )</b></ul>
 </ul>
 Not implemented yet
 <p>
@@ -108,7 +104,7 @@ Not implemented yet
 <ul>Transform Y
 <br>&nbsp;
 <br>&nbsp;
-<ul><b>DataSet TranY(DataSet, String, boolean )</b></ul>
+<ul><b>DataSet TranY(DataSet, String )</b></ul>
 </ul>
 Not implemented yet
 <p>
@@ -122,7 +118,7 @@ Not implemented yet
 <b>DataSet Add( DataSet, float value , boolean make_new_s)</b></li>
 
 <li>
-<b>* DataSet Add( DataSet, DataSet , integer , boolean )</b></li>
+<b>* DataSet Add( DataSet, DataSet , integer )</b></li>
 
 <ul>&nbsp;Not implemented yet</ul>
 </ol>
@@ -202,21 +198,21 @@ make_new_ds)</ul>
 <br>&nbsp;
 <br>&nbsp;
 <ul><b>DataSet DelAtt( DataSet , String <a href="Attributes.html">attr_name</a>
-, float min, float max , boolean status , boolean make_new_ds)</b></ul>
+, float min, float max , boolean make_new_ds)</b></ul>
 </ul>
 
 <hr><a NAME="ExtSel"></a>ExtSel
 <ul>Extract currently Selected
 <br>&nbsp;
 <br>&nbsp;
-<ul><b>DataSet ExtSel( DataSet , boolean  )</b></ul>
+<ul><b>DataSet ExtSel( DataSet , boolean , boolean )</b></ul>
 </ul>
 Not implemented yet
 <p>
 <hr><a NAME="ExtAt"></a>ExtAtt
 <ul>Extract by Attribute
 <ul><b>DataSet ExtAtt( DataSet , String <a href="Attributes.html">attr_name</a>
-, boolean keep , float min , float max )</b></ul>
+, float min , float max , boolean keep )</b></ul>
 </ul>
 
 <hr><a NAME="Eval"></a>Eval
@@ -301,7 +297,7 @@ Not implemented yet
 num_E)</b></ul>
 </ul>
 
-<hr><a NAME="ToWL">ToWL</a>
+<hr><a NAME="ToWL"></a>ToWL
 <ul>Tof to Wave Length
 <br>&nbsp;
 <br>&nbsp;
@@ -309,12 +305,12 @@ num_E)</b></ul>
 integer nwaveL)</b></ul>
 </ul>
 
-<hr><a NAME="ToQE">ToQE</a>
+<hr><a NAME="ToQE"></a>ToQE
 <ul>Tof to QE
 <ul><b>DataSet ToQE( DataSet , float minQ, float maxQ, integer nbins)</b></ul>
 </ul>
 
-<hr><a NAME="ToYAngle">ToYAngle</a>
+<hr><a NAME="ToYAngle"></a>ToYAngle
 <ul>Tof to True Angle
 <br>&nbsp;
 <br>&nbsp;
@@ -323,46 +319,6 @@ nbins)</b></ul>
 </ul>
 
 <hr>
-<A Name = "SetAttr">SetAttr</a><br>
-<ul>
-  <li> Set a Data Set Attribute<ul>
-        <b> void SetAttr( DataSet ds , String Attribute , Object New_Value)</b></ul>
-  <li> Set A Data Block Attribute<ul>
-     <b> void SetAttr( DataSet ds , int index , String Attribute , Object New_Value ) </b></ul>
-</ul>
-<hr>
-<A Name = "GetAttr">GetAttr</a><br>
-<ul>
-<li> Get a Data Set Attribute<ul>
-        <b> Object GetAttr( DataSet ds , String Attribute)</b></ul>
-  <li> Set A Data Block Attribute<ul>
-     <b> Object GetAttr( DataSet ds , int index , String Attribute  ) </b></ul>
-
-</ul>
-
-<hr>
-<A Name = "SetAttrs">SetAttrs</a><br>
-<ul> Sets Attributes on ALL data blocks of a data Set
- <ul><b> void SetAttrs( DataSet ds , String Attribute , Object New_Value)</b></ul>
-</ul>
-<hr>
-<A Name = "SetField">SetField</a><br>
-  <ul> Set a Data Set Field<ul><b>
-       void SetField( DataSet ds , String FieldName , Object New_Value ) </b></ul>
-  </ul>
-   <B> NOTE:</b> Changing the Title field will change the variable name of the data set. i.e. the name 
-    the command Pane uses to refer to the data set.<P>
-<hr>
-<A name = "GetField" >GetField</a> <br>
- <ul> Get a Data Set Field<ul><b>
-      Object GetField( DataSet ds , String FieldName )</b></ul>
- </ul>
-<hr>
-<A name ="SumRunfiles">SumRunfiles</a><P>
- <ul> Sums Run files
-<UL><B> DataSet[2] SumRunfiles( String path, String instrument, String runs,
-                        String   group_mask,
-                        boolean  compare_monitor_pulse)
-    </b></ul>
 </body>
 </html>
+
