@@ -30,6 +30,11 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.22  2003/12/02 00:24:42  bouzekc
+ *  Fixed bug that invalidated this ParameterGUI when initGUI was called.
+ *  Fixed bug that prevented previous values from being saved when initGUI()
+ *  was called.
+ *
  *  Revision 1.21  2003/11/25 03:02:32  bouzekc
  *  Now only tries to clone the Label if it has been initialized.
  *
@@ -237,8 +242,12 @@ abstract public class ChooserPG extends ParameterGUI{
     // set up the combobox
     setEntryWidget(new EntryWidget(new HashEntry(this.vals)));
     super.initGUI();
+    //ignore prop changes because we are about to change the value
+    boolean ignore = getIgnorePropertyChange(  );
+    setIgnorePropertyChange( true );
     //GUI won't properly update without this
-    setValue(getValue());
+    setValue( super.getValue(  ) );
+    setIgnorePropertyChange( ignore );
   }
 
   /**
