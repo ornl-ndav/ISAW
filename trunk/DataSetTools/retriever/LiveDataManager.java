@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/06/06 21:22:59  dennis
+ *  Now uses ActionEvents to notify listeners that the Runfile
+ *  has been changed.
+ *
  *  Revision 1.5  2001/04/25 21:57:47  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -58,6 +62,8 @@ package DataSetTools.retriever;
 import java.io.*;
 import java.net.*;
 import java.lang.*;
+import java.util.*;
+import java.awt.event.*;
 import NetComm.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
@@ -75,9 +81,11 @@ import DataSetTools.util.*;
 public class LiveDataManager extends    Thread 
                              implements Serializable
 {
-  public static final int  MIN_DELAY = 10;          // minimum delay in seconds
-  public static final int  MAX_DELAY = 600;         // maximum delay in seconds
+  public static final int    MIN_DELAY   = 10;       // minimum delay in seconds
+  public static final int    MAX_DELAY   = 600;      // maximum delay in seconds
+  public static final String RUN_CHANGED = "Run Changed";
 
+  private Vector            listeners   = null;        
   private LiveDataRetriever retriever   = null;
   private DataSet           data_sets[] = new DataSet[0];
   private int               ds_type[]   = new int[0];
@@ -87,6 +95,8 @@ public class LiveDataManager extends    Thread
                                                       // automatically updated
   private int               time_ms     = 3*MIN_DELAY*1000;
 
+
+/* ----------------------------- Constructor ----------------------------- */
 /**
  *  Construct a LiveDataManager to get data from a LiveDataServer running
  *  on a specified instrument computer.
@@ -98,10 +108,12 @@ public class LiveDataManager extends    Thread
   public LiveDataManager(String data_source_name) 
   {
     retriever = new LiveDataRetriever( data_source_name );
+    listeners = new Vector();
     SetUpLocalCopies();
     this.start();
   }
 
+/* ----------------------------- numDataSets ----------------------------- */
 /**
  *  Get the number of distinct DataSets from the current data source. 
  *  The monitors are placed into one DataSet.  Any sample histograms are 
@@ -114,6 +126,7 @@ public class LiveDataManager extends    Thread
     return data_sets.length;
   }
 
+/* -------------------------------- getType ------------------------------ */
 /**
  * Get the type of the specified data set from the current data source.
  * The type is an integer flag that indicates whether the data set contains
@@ -129,6 +142,7 @@ public class LiveDataManager extends    Thread
   }
 
 
+/* ------------------------------ getDataSet ----------------------------- */
 /**
  *  Get the specified DataSet from the current data source.
  * 
@@ -147,6 +161,7 @@ public class LiveDataManager extends    Thread
   }
 
 
+/* --------------------------- setUpdateInterval -------------------------- */
 /**
  *  Set the time interval after which the DataSets will be updated with data
  *  from the current data source.
@@ -166,6 +181,20 @@ public class LiveDataManager extends    Thread
  }
 
 
+/* --------------------------- getUpdateInterval -------------------------- */
+/**
+ *  Set the time interval after which the DataSets will be updated with data
+ *  from the current data source.
+ *
+ *  @return  The number of seconds between automatic updates of the DataSets.
+ */
+ public double getUpdateInterval( )
+ {
+   return time_ms/1000.0;
+ }
+
+
+/* -------------------------- setUpdateIgnoreFlag ------------------------- */
 /**
  *  Select whether or not the specified DataSet should be ignored during
  *  automatic updates from the current data source.
@@ -183,6 +212,25 @@ public class LiveDataManager extends    Thread
  }
 
 
+/* -------------------------- getUpdateIgnoreFlag ------------------------- */
+/**
+ *  Get the current state of the update ignore flag.
+ *
+ *  @param  data_set_num  The number of the DataSet whose ignore flag is
+ *                        requested.
+ *
+ *  @return  the update ignore flag for the specified DataSet.
+ */
+ public boolean getUpdateIgnoreFlag( int data_set_num )
+ {
+   if ( data_set_num >= 0 && data_set_num < data_sets.length )
+     return this.ignore[ data_set_num ];
+ 
+   else
+     return true;
+ }
+
+/* ---------------------------- UpdateDataSetNow -------------------------- */
 /**
  *  Request an immediate update of the specified DataSet.
  *
@@ -197,9 +245,45 @@ public class LiveDataManager extends    Thread
      System.out.println("ERROR!!!! same data set" );
 
    if ( temp_ds != null )
-     data_sets[data_set_num].copy( temp_ds );    // copy notifies the observers
+   {                                             // check for change of DataSet
+                                                 // and re-initialize if needed
+
+     if ( !temp_ds.getTitle().equals( data_sets[data_set_num].getTitle() ) )
+       SetUpLocalCopies();
+     else
+       data_sets[data_set_num].copy( temp_ds );  // copy notifies the observers
                                                  // of the DataSets 
+   }
  }
+
+ /* ------------------------ addActionListener -------------------------- */
+ /**
+  *  Add an ActionListener for this LiveDataManager.  Whenever a DataSet with
+  *  a new title is obtained from the LiveDataServer, an action event will
+  *  be sent to the listeners, indicating that the DataSet has been changed. 
+  *
+  *  @param listener  An ActionListener whose ActionPerformed() method is
+  *                   to be called when a DataSet with a new title is received.
+  */
+
+  public void addActionListener( ActionListener listener )
+  {
+    listeners.add( listener );
+  }
+
+ /* ------------------------ removeActionListener ------------------------ */
+ /**
+  *  Remove the specified ActionListener from this LiveDataManager.  If
+  *  the specified ActionListener is not in the list of ActionListeners for
+  *  for this LiveDatamanager this method has no effect.
+  *
+  *  @param listener  The ActionListener to be removed.
+  */
+
+  public void removeActionListener( ActionListener listener )
+  {
+    listeners.remove( listener );
+  }
 
 
 /**
@@ -234,29 +318,58 @@ public class LiveDataManager extends    Thread
  *
  */
 
-/**
- *  Construct a LiveDataManager to get data from a LiveDataServer running
- *  on a specified instrument computer.
- *
- *  @param data_source_name  The host name for the instrument computer.  It
- *                           is assumed that a LiveDataServer is running on
- *                           that computer on the required port.
- */
+/* --------------------------- SetUpLocalCopies -------------------------- */
+
   private void SetUpLocalCopies()
   {
     if ( retriever != null )
     {
-      int num_ds = retriever.numDataSets();
-      data_sets = new DataSet[ num_ds ];
-      ds_type   = new int    [ num_ds ];
-      ignore    = new boolean[ num_ds ];
+      int num_ds      = retriever.numDataSets();
+      int num_to_save = Math.min( num_ds, data_sets.length );
 
-      for ( int i = 0; i < data_sets.length; i++ )
+      if ( num_ds != data_sets.length )           // we must resize our lists
       {
-        ds_type[i]   = retriever.getType(i);
-        data_sets[i] = retriever.getDataSet(i);
-        ignore[i]    = false;
+        DataSet new_data_sets[] = new DataSet[ num_ds ];
+        int     new_ds_type[]   = new int    [ num_ds ];
+        boolean new_ignore[]    = new boolean[ num_ds ];
+
+        for ( int i = 0; i < num_to_save; i++ )           // save what we can
+        {                                                 // of the old ones
+          new_data_sets[i] = data_sets[i];
+
+          DataSet temp_ds  = retriever.getDataSet(i);
+          new_data_sets[i].copy( temp_ds );              // copy notifies any
+                                                         // observers of the ds
+          new_ignore[i]    = ignore[i];
+        }
+        data_sets = new_data_sets;
+        ds_type   = new_ds_type;
+        ignore    = new_ignore;
+                                                          // initialize new ones
+        for ( int i = num_to_save; i < num_ds; i++ )
+        {
+          ds_type[i]   = retriever.getType(i);
+          data_sets[i] = retriever.getDataSet(i);
+          ignore[i]    = true;
+        }
       }
+
+      else                                              // refresh our existing
+        for ( int i = 0; i < num_ds; i++ )              // lists
+        {
+          ds_type[i]   = retriever.getType(i);
+
+          DataSet temp_ds  = retriever.getDataSet(i);
+          data_sets[i].copy( temp_ds );                  // copy notifies any
+                                                         // observers of the ds
+        }
+
+      for ( int i = 0; i < listeners.size(); i++ )    // all of the listeners
+      {
+        ActionListener listener = (ActionListener)listeners.elementAt(i);
+        listener.actionPerformed( new ActionEvent( this, 0, RUN_CHANGED ) );
+      }
+
     }
   }
 
