@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2004/01/08 22:30:31  bouzekc
+ * Removed several unused variables.
+ *
  * Revision 1.1  2003/10/30 18:38:04  bouzekc
  * Added to CVS.
  *
@@ -113,12 +116,6 @@ public class WrappedCrunch implements Wrappable {
     }
 
     // initialize new data set to be the same as the old
-    String title       = ds.getTitle(  );
-    OperationLog oplog = ds.getOp_log(  );
-    String x_units     = ds.getX_units(  );
-    String x_label     = ds.getX_label(  );
-    String y_units     = ds.getY_units(  );
-    String y_label     = ds.getY_label(  );
     DataSet new_ds     = null;
 
     // initialize new_ds
@@ -129,8 +126,6 @@ public class WrappedCrunch implements Wrappable {
     }
 
     // first remove detectors below min_count
-    int[] bad_det = new int[new_ds.getNum_entries(  )];
-    int bi        = 0;
     int MAX_ID    = new_ds.getMaxGroupID(  );
 
     for( int i = 1; i <= MAX_ID; i++ ) {
