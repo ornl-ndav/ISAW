@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/08/15 23:50:04  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.8  2003/06/06 18:51:47  pfpeterson
  *  Removed unneeded code due to new abstract grandparent.
  *
@@ -101,33 +105,35 @@ public class InstNamePG extends StringPG implements ParamUsesString{
         this.setValid(valid);
     }
 
-    static void main(String args[]){
+    /*
+    * Testbed.
+    */
+    /*public static void main(String args[]){
         InstNamePG fpg;
 
         fpg=new InstNamePG("a","1f");
         System.out.println(fpg);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new InstNamePG("b","10f");
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new InstNamePG("c","100f",false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new InstNamePG("d","1000f",true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
-
-    }
+    }*/
 
     /**
      * Definition of the clone method.
