@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.36  2003/09/09 23:56:19  bouzekc
+ * Removed a this.type = TYPE in the constructor, as it conflicts with
+ * ArrayPG's type.
+ *
  * Revision 1.35  2003/09/09 23:00:58  bouzekc
  * Added method to assist derived classes in implementing validateSelf().
  * Added method to retrieve internal parameter.
@@ -209,7 +213,7 @@ import javax.swing.*;
  * are Vectors with a common Object data type for each elements.  This GUI is
  * best for a medium sized list.  The list appears in a list box where the
  * values can be edited deleted, and/or rearranged. A vector of choicelist
- * should go through this constructor
+ * should go through this constructor.
  */
 public abstract class VectorPG extends ParameterGUI
   implements PropertyChangeListener, ParamUsesString {
@@ -241,7 +245,6 @@ public abstract class VectorPG extends ParameterGUI
    */
   public VectorPG( String name, Object val ) {
     super( name, val );
-    this.type = TYPE;
   }
 
   /**
@@ -257,7 +260,6 @@ public abstract class VectorPG extends ParameterGUI
    */
   public VectorPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    this.type = TYPE;
   }
 
   //~ Methods ******************************************************************
