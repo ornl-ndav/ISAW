@@ -8,7 +8,7 @@ import java.util.*;
 public class FortranParser implements FortranParserConstants {
   //don't want to continually recreate this thing
   private static FortranParser myParser;
-  private static boolean expandVectorIntoElements = true;
+  private static boolean appendSemiColon = false;
   private static boolean standalone = false;
 
   /**
@@ -70,6 +70,8 @@ public class FortranParser implements FortranParserConstants {
     String s, String type ) {
     StringBuffer buffer = new StringBuffer( type );
     buffer.append( " " );
+    //make sure these get a semicolon
+    appendSemiColon = true;
 
     //the parentheses should NOT be right at the beginning of the declaration
     if( s.indexOf( "(" ) > 0 ) {
@@ -102,6 +104,15 @@ public class FortranParser implements FortranParserConstants {
     }
 
     return buffer.toString(  );
+  }
+
+  /**
+   * Simply replaces any occurrences of opName in s with Math.opName.
+   * 
+   * @return The converted String.
+   */
+  private static String convertMath( String s, String opName ){
+    return s.replaceAll( opName, "Math." + opName );
   }
 
 /**
@@ -143,6 +154,9 @@ public class FortranParser implements FortranParserConstants {
       case FORTRAN_FLOOR_FUN:
       case FORTRAN_FRACTION_FUN:
       case FORTRAN_EXPRESSION:
+      case SINGLE_IF:
+      case START_MULTI_IF:
+      case END_IF:
       case VAR_ASSIGN:
       case FORTRAN_INT:
       case FORTRAN_REAL:
@@ -204,6 +218,9 @@ public class FortranParser implements FortranParserConstants {
       case FORTRAN_FLOOR_FUN:
       case FORTRAN_FRACTION_FUN:
       case FORTRAN_EXPRESSION:
+      case SINGLE_IF:
+      case START_MULTI_IF:
+      case END_IF:
       case VAR_ASSIGN:
       case FORTRAN_INT:
       case FORTRAN_REAL:
@@ -221,7 +238,12 @@ public class FortranParser implements FortranParserConstants {
     fCode.append( fToken );
     fCode.append( " " );
     }
-    {if (true) return fCode.toString(  ).trim(  ) + ";\n";}
+    if( appendSemiColon ) {
+      appendSemiColon = false;
+      {if (true) return fCode.toString(  ) + ";\n";}
+    } else {
+      {if (true) return fCode.toString(  ) + "\n";}
+    }
     throw new Error("Missing return statement in function");
   }
 
@@ -254,66 +276,88 @@ public class FortranParser implements FortranParserConstants {
     case VAR_ASSIGN:
       //variable assignment
         t = jj_consume_token(VAR_ASSIGN);
+    appendSemiColon = true;
     {if (true) return t.image;}
+      break;
+    case SINGLE_IF:
+      //single line if
+        t = jj_consume_token(SINGLE_IF);
+    appendSemiColon = true;
+    {if (true) return t.image.replaceAll( ".lt.", "<" ).replaceAll( ".gt.", ">" );}
+      break;
+    case START_MULTI_IF:
+      //start of multi line if
+        t = jj_consume_token(START_MULTI_IF);
+    {if (true) return t.image.replaceAll( ".lt.", "<" )
+                          .replaceAll( ".gt.", ">" )
+                          .replaceAll( "then", "{");}
+      break;
+    case END_IF:
+      //end if
+        t = jj_consume_token(END_IF);
+    {if (true) return t.image.replaceAll( "endif", "}" );}
       break;
     case FORTRAN_ABS:
       //matched the absolute function
         t = jj_consume_token(FORTRAN_ABS);
-    if( t.image.indexOf( "iabs" ) >= 0 ) {
-      {if (true) return t.image.replaceAll( "iabs", "Math.abs" );}
+    s = t.image;
+    if( s.indexOf( "iabs" ) >= 0 ) {
+      s.replaceAll( "iabs", "Math.abs" );
     } else {
-      {if (true) return t.image.replaceAll( "abs", "Math.abs" );}
+      s.replaceAll( "abs", "Math.abs" );
     }
+
+    {if (true) return s;}
       break;
     case FORTRAN_SQRT:
       //square root function
         t = jj_consume_token(FORTRAN_SQRT);
-    {if (true) return t.image.replaceAll( "sqrt", "Math.sqrt" );}
+    {if (true) return convertMath( t.image, "sqrt" );}
       break;
     case FORTRAN_SIN:
       //sine function
         t = jj_consume_token(FORTRAN_SIN);
-    {if (true) return t.image.replaceAll( "sin", "Math.sin" );}
+    {if (true) return convertMath( t.image, "sin" );}
       break;
     case FORTRAN_ASIN:
       //arcsine function
         t = jj_consume_token(FORTRAN_ASIN);
-    {if (true) return t.image.replaceAll( "asin", "Math.asin" );}
+    {if (true) return convertMath( t.image, "asin" );}
       break;
     case FORTRAN_COS:
       //cosine function
         t = jj_consume_token(FORTRAN_COS);
-    {if (true) return t.image.replaceAll( "cos", "Math.cos" );}
+    {if (true) return convertMath( t.image, "cos" );}
       break;
     case FORTRAN_ACOS:
       //arccosine function
         t = jj_consume_token(FORTRAN_ACOS);
-    {if (true) return t.image.replaceAll( "acos", "Math.acos" );}
+    {if (true) return convertMath( t.image, "acos" );}
       break;
     case FORTRAN_TAN:
       //tangent function
         t = jj_consume_token(FORTRAN_TAN);
-    {if (true) return t.image.replaceAll( "tan", "Math.tan" );}
+    {if (true) return convertMath( t.image, "tan" );}
       break;
     case FORTRAN_ATAN:
       //tangent function
         t = jj_consume_token(FORTRAN_ATAN);
-    {if (true) return t.image.replaceAll( "atan", "Math.atan" );}
+    {if (true) return convertMath( t.image, "atan" );}
       break;
     case FORTRAN_LOG:
       //log function
         t = jj_consume_token(FORTRAN_LOG);
-    {if (true) return t.image.replaceAll( "log", "Math.log" );}
+    {if (true) return convertMath( t.image, "log" );}
       break;
     case FORTRAN_EXP:
       //exp function
         t = jj_consume_token(FORTRAN_EXP);
-    {if (true) return t.image.replaceAll( "exp", "Math.exp" );}
+    {if (true) return convertMath( t.image, "exp" );}
       break;
     case FORTRAN_FLOOR_FUN:
       //floor function
         t = jj_consume_token(FORTRAN_FLOOR_FUN);
-    {if (true) return t.image.replaceAll( "floor", "Math.floor" );}
+    {if (true) return convertMath( t.image, "floor" );}
       break;
     case FORTRAN_FRACTION_FUN:
       //fraction function
@@ -388,6 +432,7 @@ public class FortranParser implements FortranParserConstants {
       //matched a character or character array where each variable is
         //explicitly given a length
         t = jj_consume_token(FORTRAN_CHAR_1);
+    appendSemiColon = true;
     s = t.image;
     buffer = new StringBuffer( "char " );
 
@@ -422,6 +467,7 @@ public class FortranParser implements FortranParserConstants {
       //matched a character or character array where each variable is
         //given a length specified in the character *n declaration
         t = jj_consume_token(FORTRAN_CHAR_2);
+    appendSemiColon = true;
     s = t.image;
     buffer = new StringBuffer( "char " );
 
@@ -490,10 +536,10 @@ public class FortranParser implements FortranParserConstants {
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0xfe02c04a,0xfe02c048,0xfe02c048,};
+      jj_la1_0 = new int[] {0xf80b010a,0xf80b0108,0xf80b0108,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0xff0ff,0xff0ff,0xff0ff,};
+      jj_la1_1 = new int[] {0x1ffc3ff,0x1ffc3ff,0x1ffc3ff,};
    }
 
   public FortranParser(java.io.InputStream stream) {
@@ -613,8 +659,8 @@ public class FortranParser implements FortranParserConstants {
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[52];
-    for (int i = 0; i < 52; i++) {
+    boolean[] la1tokens = new boolean[57];
+    for (int i = 0; i < 57; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -633,7 +679,7 @@ public class FortranParser implements FortranParserConstants {
         }
       }
     }
-    for (int i = 0; i < 52; i++) {
+    for (int i = 0; i < 57; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
