@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2002/09/20 16:46:53  dennis
+ *  Now uses IParameter rather than Parameter
+ *
  *  Revision 1.24  2002/07/23 18:22:44  dennis
  *  Now passes "pointed at" x values between the DataSet
  *  and the tempDataSet.
@@ -175,6 +178,7 @@ import DataSetTools.viewer.Table.*;
 import DataSetTools.viewer.Contour.*;
 import DataSetTools.viewer.OverplotView.*;
 import DataSetTools.viewer.ViewerTemplate.*;
+import DataSetTools.parameter.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -556,13 +560,13 @@ public class ViewManager extends    JFrame
        if ( x_scale == null || use_default_conversion_range ) 
        {
          op.setDefaultParameters();
-         Parameter p = op.getParameter(2);                // 0 means use the
+         IParameter p = op.getParameter(2);                // 0 means use the
          if ( p.getName().equals( Parameter.NUM_BINS ))   // number of bins
            p.setValue( new Integer( 0 ) );                // in the DataSet
        }
        else
        {                                           // try to set the parameters
-         Parameter p = op.getParameter(2);
+         IParameter p = op.getParameter(2);
          if ( !p.getName().equals( Parameter.NUM_BINS ))
            op.setDefaultParameters();              // fall back to defaults
          else

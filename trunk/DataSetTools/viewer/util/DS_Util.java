@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/09/20 16:47:11  dennis
+ *  Now uses IParameter rather than Parameter
+ *
  *  Revision 1.8  2002/07/15 19:35:56  dennis
  *  getData_ID_String() Now uses Data getLabel() method to form part
  *  of the ID String.  The ID String now consists of:
@@ -73,6 +76,7 @@ package DataSetTools.viewer.util;
 import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
+import DataSetTools.parameter.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
@@ -107,7 +111,7 @@ public final class DS_Util implements Serializable
 
     DataSetOperator  op;
     int              n_params;
-    Parameter        param;
+    IParameter       param;
 
     int n_ops         = ds.getNum_operators();
     for ( int i = 0; i < n_ops; i++ )
@@ -146,7 +150,7 @@ public final class DS_Util implements Serializable
 
     DataSetOperator  op;
     int              n_params;
-    Parameter        param;
+    IParameter       param;
     int              max_bins = -2;
     int              n_bins;
 
