@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/05/29 21:36:56  bouzekc
+ *  Now allows multiple FileFilters to be used.  As a
+ *  result, a Vector of FileFilters has replaced the
+ *  single FileFilter used before.  Also added an
+ *  AddFilter method and changed SetFilter to allow
+ *  setting a default FileFilter.
+ *
  *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -63,6 +70,7 @@ import java.beans.*;
 import java.io.File;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.util.SharedData;
+import DataSetTools.operator.Generic.TOF_SCD.*;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -74,9 +82,13 @@ public class BrowsePG extends ParameterGUI{
     protected static int VIS_COLS  = 12;
     protected static int HIDE_COLS = StringPG.DEF_COLS;
 
-    protected StringEntry innerEntry = null;
-    protected JButton     browse     = null;
-    protected FileFilter  filter     = null;
+    protected StringEntry innerEntry  = null;
+    protected JButton     browse      = null;
+    protected Vector      filter_vector;
+    protected BrowseButtonListener browselistener;
+    protected int choosertype;
+    
+    private int defaultindex;
 
     // ********** Constructors **********
     public BrowsePG(String name, Object value){
@@ -99,6 +111,9 @@ public class BrowsePG extends ParameterGUI{
           this.setValue(datadir);
         }
         this.setValid(valid);
+        this.filter_vector = new Vector();
+        choosertype = BrowseButtonListener.LOAD_FILE;
+        defaultindex = -1;
     }
 
     // ********** IParameter requirements **********
@@ -160,8 +175,12 @@ public class BrowsePG extends ParameterGUI{
         innerEntry=new StringEntry(this.getStringValue(),StringPG.DEF_COLS);
         innerEntry.addPropertyChangeListener(IParameter.VALUE, this);
         browse=new JButton("Browse");
-        browse.addActionListener(new BrowseButtonListener(innerEntry,
-                                   BrowseButtonListener.DIR_ONLY,this.filter));
+        if(browselistener == null){
+          browselistener = new BrowseButtonListener(innerEntry,
+                                     choosertype,this.filter_vector);
+          browselistener.setFileFilter(defaultindex);
+        }
+        browse.addActionListener(browselistener);
         entrywidget=new JPanel();
         entrywidget.add(innerEntry);
         entrywidget.add(browse);
@@ -192,40 +211,91 @@ public class BrowsePG extends ParameterGUI{
      * Set the FileFilter to be used when the browse button is pressed
      */
     public void setFilter( FileFilter filefilter){
-        this.filter=filefilter;
+      boolean found = false;
+      for( int i = 0; i < filter_vector.size(); i ++ ){
+        if(filter_vector.elementAt(i).getClass().isInstance(filefilter)){
+          found = true;
+          defaultindex = i;
+          break;
+        }
+      }
+
+      if(!found)
+        defaultindex = -1;
     }
 
-    static void main(String args[]){
+    /**
+     * Adds a FileFilter.
+     */
+    public void addFilter(FileFilter filefilter){
+        filter_vector.add(filefilter);
+    }
+
+    public static void main(String args[]){
         BrowsePG fpg;
+        //y position and delta y, so that multiple windows can 
+        //be displayed without too much overlap
         int y=0, dy=70;
-        String defString="/IPNShome/pfpeterson/IsawProps.dat";
+        
+        String defString="/IPNShome/bouzekc/IsawProps.dat";
 
-        fpg=new BrowsePG("a",defString);
+        fpg=new BrowsePG("Enabled, not valid, no filters",defString);
         System.out.println(fpg);
         fpg.init();
         fpg.showGUIPanel(0,y);
         y+=dy;
-
-        fpg=new BrowsePG("b",defString);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new BrowsePG("c",defString,false);
+        
+        //disabled browse button GUI
+        fpg=new BrowsePG("Disabled, not valid, no filters",defString);
         System.out.println(fpg);
         fpg.setEnabled(false);
         fpg.init();
         fpg.showGUIPanel(0,y);
         y+=dy;
 
-        fpg=new BrowsePG("d",defString,true);
+        fpg=new BrowsePG("Disabled, not valid, no filters",defString,false);
+        System.out.println(fpg);
+        fpg.setEnabled(false);
+        fpg.init();
+        fpg.showGUIPanel(0,y);
+        y+=dy;
+
+        fpg=new BrowsePG("Valid, enabled, no filters",defString,true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
         fpg.init();
         fpg.showGUIPanel(0,y);
 
+        fpg=new BrowsePG("Enabled, not valid, multiple filters",defString);
+        System.out.println(fpg);
+        //add some FileFilters
+        fpg.addFilter(new ExpFilter());
+        fpg.addFilter(new MatrixFilter());
+        fpg.addFilter(new IntegrateFilter());
+        fpg.init();
+        fpg.showGUIPanel(0,y);
+        y+=dy;
+
+        fpg=new BrowsePG("Enabled, not valid, one filter",defString);
+        System.out.println(fpg);
+        //add some FileFilters
+        fpg.addFilter(new IntegrateFilter());
+        fpg.init();
+        fpg.showGUIPanel(0,y);
+        y+=dy;
+
+        fpg=new BrowsePG(
+          "Enabled, not valid, multiple filters, reassigned filter", defString);
+        System.out.println(fpg);
+        //add some FileFilters
+        IntegrateFilter intf = new IntegrateFilter();
+        fpg.addFilter(new ExpFilter());
+        fpg.addFilter(intf);
+        fpg.addFilter(new MatrixFilter());
+        fpg.setFilter(intf);
+        fpg.init();
+        fpg.showGUIPanel(0,y);
+        y+=dy;
     }
 
     /**
@@ -235,7 +305,7 @@ public class BrowsePG extends ParameterGUI{
         BrowsePG bpg=new BrowsePG(this.name,this.value,this.valid);
         bpg.setDrawValid(this.getDrawValid());
         bpg.initialized=false;
-        bpg.filter=this.filter;
+        bpg.filter_vector=this.filter_vector;
         return bpg;
     }
 }
