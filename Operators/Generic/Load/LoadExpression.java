@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/06/17 22:28:24  dennis
+ * Adapted to double precision version of Expression
+ *
  * Revision 1.2  2002/04/18 18:24:19  dennis
  * Now checks for successful parsing of function.
  * Changed the default function.
@@ -167,11 +170,11 @@ public class LoadExpression extends GenericLoad
                                                           " ,;:\t\n\r\f"); 
     String par_val_strings[] = StringUtil.extract_tokens( par_values, 
                                                           " ,;:\t\n\r\f"); 
-    float  parameter_values[] = new float[par_val_strings.length];
+    double parameter_values[] = new double[par_val_strings.length];
     try
     {
       for ( int i = 0; i < parameter_values.length; i++ )
-        parameter_values[i] = Float.valueOf( par_val_strings[i] ).floatValue();
+        parameter_values[i] = Double.valueOf(par_val_strings[i]).doubleValue();
     }
     catch( NumberFormatException e )
     {
