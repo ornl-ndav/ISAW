@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2003/08/28 15:45:13  bouzekc
+ *  Instantiated internal PropertyChangeSupport.  This removes several
+ *  chances at NullPointerExceptions.
+ *
  *  Revision 1.21  2003/08/28 04:56:12  bouzekc
  *  The internal PropertyChangeSupport now fires an event when propertyChange()
  *  is invoked.
@@ -191,6 +195,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     setDrawValid( true );
     initialized          = false;
     ignore_prop_change   = false;
+    topPCS               = new PropertyChangeSupport( this );
   }
 
   //~ Methods ******************************************************************
@@ -342,9 +347,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   public void addPropertyChangeListener( PropertyChangeListener pcl ) {
     addPCLToVector( pcl );
 
-    if( topPCS != null ) {
-      topPCS.addPropertyChangeListener( pcl );
-    }
+    topPCS.addPropertyChangeListener( pcl );
 
     if( this.initialized ) {
       entrywidget.addPropertyChangeListener( pcl );
@@ -364,9 +367,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     String prop, PropertyChangeListener pcl ) {
     addPCLToVector( prop, pcl );
 
-    if( topPCS != null ) {
-      topPCS.addPropertyChangeListener( prop, pcl );
-    }
+    topPCS.addPropertyChangeListener( prop, pcl );
 
     if( this.initialized ) {
       entrywidget.addPropertyChangeListener( prop, pcl );
@@ -397,6 +398,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     }
 
     this.setValid( false );
+
     topPCS.firePropertyChange( ev );
   }
 
@@ -411,9 +413,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   public void removePropertyChangeListener( PropertyChangeListener pcl ) {
     removePCLFromVector( pcl );
 
-    if( topPCS != null ) {
-      topPCS.removePropertyChangeListener( pcl );
-    }
+    topPCS.removePropertyChangeListener( pcl );
 
     if( this.initialized ) {
       entrywidget.removePropertyChangeListener( pcl );
