@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.85  2002/03/04 20:31:03  pfpeterson
+ *  Default properties file comments out more lines if ISAW is not found
+ *  in the classpath.
+ *
  *  Revision 1.84  2002/02/27 17:31:58  pfpeterson
  *  Made the StatusPane larger (look for JSplitPane sp1).
  *
@@ -1592,9 +1596,11 @@ public class Isaw
 
       if( s.equals(API_DOCS_MI) ){
 	  String S=DataSetTools.util.FilenameUtil.docDir("index.html");
-	  SharedData.status_pane.add("Displaying API documentation"
-				     +" in web browser");
-	  if( S != null) bc.displayURL(S);
+          if( S != null){
+              bc.displayURL(S);
+              SharedData.status_pane.add("Displaying API documentation"
+                                         +" in web browser");
+          }
       }
 
       if( s.equals(HOME_LINK_MI) ){
@@ -1869,7 +1875,7 @@ public class Isaw
         SharedData.isaw_props.reload();
         SharedData.status_pane.add( "IsawProps saved successfully") ;     
 	kp.dispose();
-      }else if( s.equals("Quit") ){ 
+      }else if( s.equals("Exit") ){ 
         kp.dispose();
       }
       else
