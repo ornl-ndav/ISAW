@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2005/02/03 06:36:50  kramer
+ * Added the parseISO8601(String dateString) and getISO8601String(Date date)
+ * methods which get a Date from an String written in ISO8601 format and a
+ * String written in ISO8601 format from a Date.
+ *
  * Revision 1.22  2004/12/23 18:47:05  rmikk
  * Fixed indentation and added lines between code.
  *
@@ -89,12 +94,16 @@
 package NexIO;
 
 
-import neutron.nexus.*;
 import gov.anl.ipns.Util.Sys.StringUtil;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import neutron.nexus.NexusFile;
 
 
 /**
@@ -117,21 +126,32 @@ public class NxNodeUtils {
         System.out.println("UINT32=" + NexusFile.NX_UINT32);
         System.out.println("UINT8=" + NexusFile.NX_UINT8);
     }
-  
+    
     /**
      * Attempts to parse a date string with various formats including
      * "- ,/, and ." separators for month,year,day specifiers.
      * @param  DateString  a String that represents a data
      * @return The Date object corresponding to the DateString
      */
-    public static Date parse(String DateString) {
+    public static Date parse(String DateString)
+    {
+       return parse(DateString," ");
+    }
+    
+    /**
+     * Attempts to parse a date string with various formats including
+     * "- ,/, and ." separators for month,year,day specifiers.
+     * @param  DateString  a String that represents a data
+     * @return The Date object corresponding to the DateString
+     */
+    private static Date parse(String DateString, String dateTimeSeparator) {
         Date Result;
         SimpleDateFormat fmt = new SimpleDateFormat();
     
         fmt.setLenient(true);
     
-        String Date_formats[] = {"yyyy-MM-dd", "yyyy.MM.dd",
-                //"yyyy-MMM-dd" , "yyyy.MMM.dd" , 
+        String Date_formats[] = {"yyyy", "yyyy-MM", "yyyy-MM-dd", 
+                "yyyy.MM.dd",//"yyyy-MMM-dd" , "yyyy.MMM.dd" , 
                 "yyyy-M-d", "yyyy.M.d", "yy.MM.dd", "yy.N.d",
                 "MM/dd/yyyy", "MM/dd/yy", "M/d/yyyy", "M/d/yy",
                 "MMM/dd/yyyy", "MMM/d/yyyy", "MMM/dd/yy", "MMM/d/yy",
@@ -144,7 +164,9 @@ public class NxNodeUtils {
     
         for (int i = 0; i < Date_formats.length; i++) {
             for (int k = 0; k < Time_formats.length; k++) {
-                String pattern = Date_formats[ i] + " " + Time_formats[  k ];
+                String pattern = Date_formats[ i] + 
+                                    dateTimeSeparator + 
+                                       Time_formats[  k ];
         
                 pattern = pattern.trim();
         
@@ -162,7 +184,124 @@ public class NxNodeUtils {
         return null;
     
     }
-
+    
+    /**
+     * Attempts to parse the date string and create a Date object describing 
+     * the date listed in the string.  This method is specifically made to 
+     * parse date strings written in ISO8601 format.
+     * @param dateString The string that represents the date.
+     * @return The Date object describing the date and time listed in the 
+     *         string or null if it can't be determined.
+     */
+    public static Date parseISO8601(String dateString)
+    {
+       return parse(dateString,"T");
+    }
+    /*
+       String strToUse = dateString;
+       long deltaTime = 0;
+       
+       if (dateString.endsWith("Z"))
+       {
+          strToUse = dateString.substring(0,dateString.length()-1);
+          deltaTime = 0;
+       }
+       else
+       {
+          int timeZoneIndex = strToUse.indexOf('+');
+          if (timeZoneIndex != -1)
+          {
+             
+          }
+          else
+          {
+             timeZoneIndex = strToUse.indexOf('-');
+             if (timeZoneIndex != -1)
+             {
+                
+             }
+          }
+       }
+       
+       StringTokenizer tokenizer = new StringTokenizer(dateString,".");
+       int numTokens = tokenizer.countTokens();
+        if (numTokens >= 2)
+       {
+          
+       }
+    }*/
+    
+    public static String getISO8601String(Date date)
+    {
+       int year = Calendar.getInstance().get(Calendar.YEAR);
+       //one is added because Calendar.getInstance().get(Calendar.MONTH) = 0
+       //  to refer to January but the ISO8601 standard uses 01 to represent 
+       //  January
+       int month = Calendar.getInstance().get(Calendar.MONTH)+1;
+       int dayOfMonth = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+       
+       
+       int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+       int minute = Calendar.getInstance().get(Calendar.MINUTE);
+       int second = Calendar.getInstance().get(Calendar.SECOND);
+       int milliseconds = Calendar.getInstance().get(Calendar.MILLISECOND);
+       
+       int zoneOffsetMs = Calendar.getInstance().get(Calendar.ZONE_OFFSET);
+       
+       
+       DecimalFormat twoDigitFormat = new DecimalFormat("00");
+       DecimalFormat fourDigitFormat = new DecimalFormat("0000");
+       
+       StringBuffer dateBuffer = new StringBuffer();
+          dateBuffer.append(fourDigitFormat.format(year));
+          dateBuffer.append("-");
+          dateBuffer.append(twoDigitFormat.format(month));
+          dateBuffer.append("-");
+          dateBuffer.append(twoDigitFormat.format(dayOfMonth));
+          dateBuffer.append("T");
+          dateBuffer.append(twoDigitFormat.format(hour));
+          dateBuffer.append(":");
+          dateBuffer.append(twoDigitFormat.format(minute));
+          
+          if (second != 0 || milliseconds != 0)
+          {
+             dateBuffer.append(":");
+             dateBuffer.append(twoDigitFormat.format(second));
+          }
+          
+          if (milliseconds != 0)
+          {
+             DecimalFormat threeDigitFormat = new DecimalFormat("000");
+             dateBuffer.append(".");
+             dateBuffer.append(threeDigitFormat.format(milliseconds));
+          }
+          
+          if (zoneOffsetMs == 0)
+          {
+             dateBuffer.append("Z");
+          }
+          else
+          {
+             //TODO Test if zoneOffsetMs>0 then +hh:mm should be used (and not 
+             //  -hh:mm
+             if (zoneOffsetMs>0)
+                dateBuffer.append("+");
+             else //then its negative
+                dateBuffer.append("-");
+             
+             int totalPosOffsetMs = Math.abs(zoneOffsetMs);
+             int totalPosOffsetSec = totalPosOffsetMs/1000;
+             int totalPosOffsetMin = totalPosOffsetSec/60;
+             int hourToUse = totalPosOffsetMin/60;
+             int extraMins = totalPosOffsetMin-hourToUse*60;
+             
+             dateBuffer.append(twoDigitFormat.format(hourToUse));
+             dateBuffer.append(twoDigitFormat.format(extraMins));
+          }
+          
+          return dateBuffer.toString();
+    }
+ 
     /**
      * Attempts to create an array of the given type and length
      *
