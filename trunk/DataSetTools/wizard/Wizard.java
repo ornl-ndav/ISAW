@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2003/06/13 22:07:04  bouzekc
+ * Now uses the appendExtension() in RobustFileFilter.
+ *
  * Revision 1.27  2003/06/12 22:01:42  bouzekc
  * Fixed bug where it tried to set parameter values to
  * "emptyString"
@@ -264,13 +267,14 @@ public abstract class Wizard implements PropertyChangeListener{
     private File getFile(boolean saving)
     {
       int result;
+      WizardFileFilter wizFilter = new WizardFileFilter();
       String save_file_abs_path;
       if(fileChooser == null)
       {
         fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(
           JFileChooser.FILES_ONLY);
-        fileChooser.setFileFilter(new WizardFileFilter());
+        fileChooser.setFileFilter(wizFilter);
       }
 
       if((save_file !=null) && !save_file.toString().equals(""))
@@ -289,8 +293,8 @@ public abstract class Wizard implements PropertyChangeListener{
       if(saving)
       {
         save_file_abs_path = save_file.toString();
-        save_file_abs_path = FileExtension.appendExtension(save_file_abs_path, 
-                           fileChooser.getFileFilter());
+        //make sure the extension is on there
+        save_file_abs_path = wizFilter.appendExtension(save_file_abs_path);
         save_file = new File(save_file_abs_path);
       }
 
@@ -306,7 +310,7 @@ public abstract class Wizard implements PropertyChangeListener{
         temp = JOptionPane.showInputDialog(s.toString());
         if(temp != null && !temp.equals(""))
         {
-          temp = FileExtension.appendExtension(temp, fileChooser.getFileFilter());
+          temp = wizFilter.appendExtension(temp);
           save_file = new File(fileChooser.getCurrentDirectory() + "/" + temp);
         }
       }
