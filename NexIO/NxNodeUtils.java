@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/06/18 19:38:55  pfpeterson
+ * ShowW() now calls method in StringUtil.
+ *
  * Revision 1.13  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -56,6 +59,7 @@
  */
 package NexIO;
 
+import DataSetTools.util.StringUtil;
 import neutron.nexus.*;
 import java.lang.*;
 import java.io.*;
@@ -243,122 +247,14 @@ public class NxNodeUtils{
     }
   }  //fixUnsignedArray
 
-
-  /**
-   * Utility to view array objects
-   */
-  public String ShowwArr( Object X ){
-    String Res = "[";
-    
-    if( X instanceof int[] ){
-      int u[] = ( int[] )X;
-      
-      for( int i = 0; i < java.lang.Math.min( 100, u.length ); i++ ){
-        Res = Res + u[i];
-        if( i < u.length - 1 )
-          Res = Res + ",";
-      }
-      if( u.length > 100 )
-        Res += ( ",......" );
-      
-    }else if( X instanceof char[] ){
-      return new String( ( char[] )X );
-    }else if( X instanceof short[] ){
-      short u[] = ( short[] )X;
-      
-      for( int i = 0; i < java.lang.Math.min( 100, u.length ); i++ ){
-        Res = Res + u[i];
-        if( i < u.length - 1 )
-          Res = Res + ",";
-      }
-      if( u.length > 100 )
-        Res += ( ",......" );
-      
-    }else if( X instanceof Object[] ){
-      Object u[] = ( Object[] )X;
-      
-      for( int i = 0; i < java.lang.Math.min( 100, u.length ); i++ ){
-        Res = Res + Showw( u[i] );
-        if( i < u.length - 1 )
-          Res = Res + ",";
-      }
-      if( u.length > 100 )
-        Res += ( ",......" );
-      
-    }else if( X instanceof byte[] ){
-      byte u[] = ( byte[] )X;
-      
-      for( int i = 0; i < java.lang.Math.min( 100, u.length ); i++ ){
-        Res = Res + ( char )u[i];
-        if( i < u.length - 1 )
-          Res = Res + ",";
-      }
-      if( u.length > 100 )
-        Res += ( ",......" );
-      
-    }else if( X instanceof long[] ){
-      long u[] = ( long[] )X;
-      
-      for( int i = 0; i < java.lang.Math.min( 100, u.length ); i++ ){
-        Res = Res + u[i];
-        if( i < u.length - 1 )
-          Res = Res + ",";
-      }
-      if( u.length > 100 )
-        Res += ( ",......" );
-      
-    }else if( X instanceof float[] ){
-      float u[] = ( float[] )X;
-      
-      for( int i = 0; i < java.lang.Math.min( 100, u.length ); i++ ){
-        Res = Res + u[i];
-        if( i < u.length - 1 )
-          Res = Res + ",";
-      }
-      if( u.length > 100 )
-        Res += ( ",......" );
-      
-    }else if( X instanceof double[] ){
-      double u[] = ( double[] )X;
-      
-      for( int i = 0; i < java.lang.Math.min( 100, u.length ); i++ ){
-        Res = Res + u[i];
-        if( i < u.length - 1 )
-          Res = Res + ",";
-      }
-      if( u.length > 100 )
-        Res += ( ",......" );
-      
-    }else if( X instanceof Vector ){
-      int n = ( ( Vector )X ).size();
-      
-      for( int i = 0; i < java.lang.Math.min( 100, n ); i++ ){
-        Res = Res + Showw( ( ( Vector )X ).elementAt( i ) );
-        if( i < n - 1 )
-          Res = Res + ",";
-      }
-      if( n >= 100 )
-        Res += ( ",......" );
-      
-    }else{
-      return X.toString();
-    }
-    return Res + "]";
-    
-  }
-
-
   /**
    * Shows the value of many, many types of Objects
+   *
+   * @deprecated calls should be made to {@link
+   * DataSetTools.util.StringUtil StringUtil}
    */
   public String Showw( Object X ){
-    if( X == null )
-      return "(null)";
-    if( X.getClass().isArray() )
-      return ShowwArr( X );
-    if( X instanceof Vector )
-      return ShowwArr( X );
-    return X.toString();
+    return StringUtil.toString(X);
   }
 
 
