@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/02/26 15:45:21  rmikk
+ * Added a getDimension routine
+ *
  * Revision 1.2  2001/07/24 20:10:44  rmikk
  * Added and equals to determine if two entries are links
  * of each other
@@ -63,6 +66,8 @@ public interface NxNode
    public Attr getAttribute( int index );
 
    public String getErrorMessage();
+
+   public int[] getDimension();//of the Node's value
 
    public Object getAttrValue( String AttrName );
 
