@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/07/26 19:02:44  pfpeterson
+ *  Fixed bug in code. Now produces gsas compliant time maps.
+ *
  *  Revision 1.1  2002/07/25 19:28:41  pfpeterson
  *  Added to CVS.
  *
@@ -62,7 +65,7 @@ public class TimeMap{
     public TimeMap(XScale xscale){
         tmax=xscale.getEnd_x();
         nval=0;
-        clockwidth=0f;
+        clockwidth=1000f;
         mapno=0;
 
         // initialize temporary arrays
@@ -100,7 +103,7 @@ public class TimeMap{
         }
 
         // determine the number of records/lines when written out
-        nrec=(int)(((float)nval*3f+1f)/10f+0.9f);
+        nrec=(int)(((float)nval+1f)/10f+0.9f);
     }
 
     /**
@@ -166,10 +169,10 @@ public class TimeMap{
 
         sb.append(TIMEMAP).append("    ")
             .append(this.mapno).append("  ")
-            .append(Format.integer(this.nval,3)).append("  ")
+            .append(Format.integer(this.nval*3+1,3)).append("  ")
             .append(Format.integer(this.nrec,3)).append(" ")
-            .append(TIMEMAP).append("  ")
-            .append(Format.integer(this.clockwidth,3)).append("  ");
+            .append(TIMEMAP).append("   ")
+            .append(Format.real(this.clockwidth,7,1)).append("  ");
 
         return sb.toString();
     }
