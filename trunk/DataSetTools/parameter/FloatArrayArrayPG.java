@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/08/15 23:50:04  bouzekc
+ * Modified to work with new IParameterGUI and ParameterGUI
+ * classes.  Commented out testbed main().
+ *
  * Revision 1.6  2003/06/23 20:17:52  bouzekc
  * Fixed GPL file name.
  *
@@ -72,11 +76,14 @@ public class FloatArrayArrayPG extends VectorPG{
     setValue( value);
   }
 
+  /*
+   * Testbed
+   */
   public static void main( String args[] ){
     JFrame jf = new JFrame("Test");
     jf.getContentPane().setLayout( new GridLayout( 1,2));
     FloatArrayArrayPG IaPg = new FloatArrayArrayPG( "Enter FloatArray list", null);
-    IaPg.init();
+    IaPg.initGUI(null);
     jf.getContentPane().add(IaPg.getGUIPanel());
     JButton  jb = new JButton("Result");
     jf.getContentPane().add(jb);

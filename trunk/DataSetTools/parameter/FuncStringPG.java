@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/08/15 23:50:04  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.6  2003/06/06 18:51:47  pfpeterson
  *  Removed unneeded code due to new abstract grandparent.
  *
@@ -75,32 +79,34 @@ public class FuncStringPG extends StringPG implements ParamUsesString{
         this.type=TYPE;
     }
 
-    static void main(String args[]){
+    /*
+     * Testbed.
+     */
+    public static void main(String args[]){
         FuncStringPG fpg;
 
         fpg=new FuncStringPG("a","1f");
         System.out.println(fpg);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new FuncStringPG("b","10f");
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new FuncStringPG("c","100f",false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new FuncStringPG("d","1000f",true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
-
     }
 
     /**

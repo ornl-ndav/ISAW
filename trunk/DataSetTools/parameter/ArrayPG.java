@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2003/08/15 23:50:03  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.21  2003/08/06 17:12:39  bouzekc
  *  Removed debugging println() in stringtoArray().  Now prints the message
  *  rather than the stacktrace when a ParseException is caught.
@@ -117,9 +121,9 @@
  */
 package DataSetTools.parameter;
 
-import Command.execOneLine;
-
 import Command.JavaCC.*;
+
+import Command.execOneLine;
 
 import DataSetTools.components.ParametersGUI.HashEntry;
 
@@ -298,85 +302,75 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @return A Vector of Objects corresponding to the Strings.
    */
   public static Vector StringtoArray( String S ) {
-    try{
+    try {
       //prep the string a little
       //the ";" is needed for the ParameterGUIParser-it will be thrown away
       S = S.trim(  );
+
       return ParameterGUIParser.parseText( S );
     } catch( ParseException pe ) {
-      System.out.println(  pe.getMessage(  ) );
+      System.out.println( pe.getMessage(  ) );
+
       return new Vector(  );
     }
+
     /*if( S == null ) {
-      return null;
-    }
-
-    //now, the array may come in in a "bad" format...i.e. [String1, String2],
-    //rather than ["String1","String2"] which is what execOneLine expects.  So,
-    //we'll parse the String into a Vector
-    String temp          = S;
-    String expansion;
-    String frontTemp;
-    String backTemp;
-    Vector elements      = new Vector(  );
-    Vector expanded;
-    execOneLine execLine = new execOneLine(  );
-    int colIndex;
-
-    //pull out the brackets
-    temp   = temp.replace( '[', ' ' );
-    temp   = temp.replace( ']', ' ' );
-
-    //pull out the quotes
-    temp = temp.replace( '"', ' ' );
-
-    //extract the elements
-    StringTokenizer st = new StringTokenizer( temp, "," );
-
-    while( st.hasMoreTokens(  ) ) {
-      //trim out the white space
-      elements.add( st.nextToken(  ).trim(  ) );
-    }
-
-    //expand on a:b...if this is here, it will be an element in the Vector.
-    //Backwards traverse so we can remove a:b elements and parse them
-    for( int k = elements.size(  ) - 1; k >= 0; k-- ) {
-      //ignore bad types...we will assume that they wanted a String
-      expansion   = elements.elementAt( k )
-                            .toString(  );
-      colIndex = expansion.indexOf( ":" );
-
-      if( colIndex > 0 ) {
-        //we need to trap things like C:\\windows
-        frontTemp   = expansion.substring( 0, colIndex );
-        backTemp    = expansion.substring( colIndex + 1, expansion.length(  ) );
-
-        try {
-          //try this as a digit:digit pair.  We don't care about the parse,
-          //just whether or not we can
-          Integer.parseInt( frontTemp );
-          Integer.parseInt( backTemp );
-
-          //if we got this far, we are good to go, so remove the element
-          elements.remove( k );
-
-          //assuming this is an integer expansion, and execOneLine needs "[]"
-          expansion = "[" + expansion + "]";
-
-          //add the Collection (i.e. new Vector)
-          elements.addAll( k, parseLine( execLine, expansion ) );
-        } catch( NumberFormatException nfe ) {
-          //not an expandable integer list, so just drop this exception on the
-          //floor
-        }
-      }
-    }
-
-    //now return it to the correct String format
-    S = ArrayPG.ArraytoString( elements );
-
-    //now we can send it to execOneLine
-    return parseLine( execLine, S );*/
+       return null;
+       }
+       //now, the array may come in in a "bad" format...i.e. [String1, String2],
+       //rather than ["String1","String2"] which is what execOneLine expects.  So,
+       //we'll parse the String into a Vector
+       String temp          = S;
+       String expansion;
+       String frontTemp;
+       String backTemp;
+       Vector elements      = new Vector(  );
+       Vector expanded;
+       execOneLine execLine = new execOneLine(  );
+       int colIndex;
+       //pull out the brackets
+       temp   = temp.replace( '[', ' ' );
+       temp   = temp.replace( ']', ' ' );
+       //pull out the quotes
+       temp = temp.replace( '"', ' ' );
+       //extract the elements
+       StringTokenizer st = new StringTokenizer( temp, "," );
+       while( st.hasMoreTokens(  ) ) {
+         //trim out the white space
+         elements.add( st.nextToken(  ).trim(  ) );
+       }
+       //expand on a:b...if this is here, it will be an element in the Vector.
+       //Backwards traverse so we can remove a:b elements and parse them
+       for( int k = elements.size(  ) - 1; k >= 0; k-- ) {
+         //ignore bad types...we will assume that they wanted a String
+         expansion   = elements.elementAt( k )
+                               .toString(  );
+         colIndex = expansion.indexOf( ":" );
+         if( colIndex > 0 ) {
+           //we need to trap things like C:\\windows
+           frontTemp   = expansion.substring( 0, colIndex );
+           backTemp    = expansion.substring( colIndex + 1, expansion.length(  ) );
+           try {
+             //try this as a digit:digit pair.  We don't care about the parse,
+             //just whether or not we can
+             Integer.parseInt( frontTemp );
+             Integer.parseInt( backTemp );
+             //if we got this far, we are good to go, so remove the element
+             elements.remove( k );
+             //assuming this is an integer expansion, and execOneLine needs "[]"
+             expansion = "[" + expansion + "]";
+             //add the Collection (i.e. new Vector)
+             elements.addAll( k, parseLine( execLine, expansion ) );
+           } catch( NumberFormatException nfe ) {
+             //not an expandable integer list, so just drop this exception on the
+             //floor
+           }
+         }
+       }
+       //now return it to the correct String format
+       S = ArrayPG.ArraytoString( elements );
+       //now we can send it to execOneLine
+       return parseLine( execLine, S );*/
   }
 
   /**
@@ -476,7 +470,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    *
    * @param init_values The Vector of values to initialize this ArrayPG to.
    */
-  public void init( Vector init_values ) {
+  public void initGUI( Vector init_values ) {
     if( initialized ) {
       return;  // don't initialize more than once
     }
@@ -495,14 +489,15 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    *
    * @param init_values The array of Objects to initialize this ArrayPG to.
    */
-  public void init( Object[] init_values ) {
+  public void initGUI( Object[] init_values ) {
     Vector init_vec = new Vector(  );
 
     for( int i = 0; i < init_values.length; i++ ) {
       init_vec.add( init_values[i] );
     }
 
-    init( init_vec );
+    //call the "regular" initGUI( Vector )
+    initGUI( init_vec );
   }
 
   /**
@@ -527,58 +522,53 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     }
   }
 
-  /**
+  /*
    * Main method for testing purposes.
    */
-  static void main( String[] args ) {
-    ArrayPG fpg;
-    int y  = 0;
-    int dy = 70;
-
-    Vector vals = new Vector(  );
-
-    vals.add( "C:\\\\Windows\\System" );
-    vals.add( "/home/myhome/atIPNS" );
-    vals.add( "some/more\\random@garbage!totry2" );
-    vals.add( "10:15" );
-
-    fpg = new ArrayPG( "a", vals );
-    System.out.println( "Before calling init, the ArrayPG is " );
-    System.out.println( fpg );
-    fpg.init(  );
-    System.out.print( fpg.getValue(  ) + "\n" );
-    System.exit( 0 );
-
-    /*fpg.showGUIPanel( 0, y );
-       y += dy;
-       vals.add( new StringBuffer( "tim" ) );
-       fpg = new ArrayPG( "b", vals );
-       System.out.println( fpg );
-       fpg.setEnabled( false );
-       fpg.init(  );
-       fpg.showGUIPanel( 0, y );
-       y += dy;
-       vals = new Vector(  );
-       for( int i = 1; i <= 20; i++ ) {
-         vals.add( new Integer( i ) );
-       }
-       fpg = new ArrayPG( "c", vals, false );
-       System.out.println( fpg );
-       fpg.setEnabled( false );
-       fpg.init(  );
-       fpg.showGUIPanel( 0, y );
-       y += dy;
-       vals = new Vector(  );
-       for( float f = 1f; f < 100; f *= 2 ) {
-         vals.add( new Float( f ) );
-       }
-       fpg = new ArrayPG( "d", vals, true );
-       System.out.println( fpg );
-       fpg.setDrawValid( true );
-       fpg.init( vals );
-       fpg.showGUIPanel( 0, y );
-       y += dy;*/
-  }
+  /*public static void main( String[] args ) {
+     ArrayPG fpg;
+     int y  = 0;
+     int dy = 70;
+     Vector vals = new Vector(  );
+     vals.add( "C:\\\\Windows\\System" );
+     vals.add( "/home/myhome/atIPNS" );
+     vals.add( "some/more\\random@garbage!totry2" );
+     vals.add( "10:15" );
+     fpg = new ArrayPG( "a", vals );
+     System.out.println( "Before calling init, the ArrayPG is " );
+     System.out.println( fpg );
+     fpg.initGUI( vals );
+     System.out.print( fpg.getValue(  ) + "\n" );
+     fpg.showGUIPanel( 0, y );
+        y += dy;
+        vals.add( new StringBuffer( "tim" ) );
+        fpg = new ArrayPG( "b", vals );
+        System.out.println( fpg );
+        fpg.setEnabled( false );
+        fpg.init(  );
+        fpg.showGUIPanel( 0, y );
+        y += dy;
+        vals = new Vector(  );
+        for( int i = 1; i <= 20; i++ ) {
+          vals.add( new Integer( i ) );
+        }
+        fpg = new ArrayPG( "c", vals, false );
+        System.out.println( fpg );
+        fpg.setEnabled( false );
+        fpg.init(  );
+        fpg.showGUIPanel( 0, y );
+        y += dy;
+        vals = new Vector(  );
+        for( float f = 1f; f < 100; f *= 2 ) {
+          vals.add( new Float( f ) );
+        }
+        fpg = new ArrayPG( "d", vals, true );
+        System.out.println( fpg );
+        fpg.setDrawValid( true );
+        fpg.init( vals );
+        fpg.showGUIPanel( 0, y );
+        y += dy;
+     }*/
 
   /**
    * Determines how many elements are of the same class.

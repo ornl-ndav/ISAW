@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/08/15 23:50:04  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.5  2003/08/15 03:52:32  bouzekc
  *  Removed unnecessary initialization=true statement.
  *
@@ -180,7 +184,7 @@ public class BooleanPG extends ParameterGUI
   /**
    * Allows for initialization of the GUI after instantiation.
    */
-  public void init(Vector init_values){
+  public void initGUI(Vector init_values){
     if(this.initialized) return; // don't initialize more than once
 
     if(init_values!=null){
@@ -207,33 +211,35 @@ public class BooleanPG extends ParameterGUI
     }
   }
 
-  static void main(String args[]){
+  /*
+   * Testbed.
+   */
+  /*public static void main(String args[]){
     BooleanPG fpg;
 
     fpg=new BooleanPG("a",new Boolean(false));
     System.out.println(fpg);
-    fpg.init();
+    fpg.initGUI(null);
     fpg.showGUIPanel();
 
     fpg=new BooleanPG("b",new Boolean(true));
     System.out.println(fpg);
     fpg.setEnabled(false);
-    fpg.init();
+    fpg.initGUI(null);
     fpg.showGUIPanel();
 
     fpg=new BooleanPG("c",new Boolean(true),false);
     System.out.println(fpg);
     fpg.setEnabled(false);
-    fpg.init();
+    fpg.initGUI(null);
     fpg.showGUIPanel();
 
     fpg=new BooleanPG("d",new Boolean(false),true);
     System.out.println(fpg);
     fpg.setDrawValid(true);
-    fpg.init();
+    fpg.initGUI(null);
     fpg.showGUIPanel();
-
-  }
+  }*/
 
   /**
    * Definition of the clone method.

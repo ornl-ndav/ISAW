@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/08/15 23:50:05  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.11  2003/08/15 03:57:37  bouzekc
  *  Should now properly add PropertyChangeListeners before GUI is initialized.
  *
@@ -355,7 +359,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
    *
    * @param init_values The values to initialize the GUI to.
    */
-  public void init( Vector init_values ) {
+  public void initGUI( Vector init_values ) {
     if( this.initialized ) {
       return;  // don't initialize more than once
     }
@@ -381,14 +385,14 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     super.initGUI(  );
   }
 
-  /**
+  /*
    * Main method for testing purposes.
    *
    * @param args Unused.
    */
-  public static void main( String[] args ) {
+  /*public static void main( String[] args ) {
     JFrame mainWindow = new JFrame(  );
-    RadioButtonPG rpg = new RadioButtonPG( "Tester", false );
+    RadioButtonPG rpg = new RadioButtonPG( "Tester", true );
 
     rpg.addItem( "Choice 1" );
     rpg.addItem( "Choice 2" );
@@ -396,13 +400,13 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     rpg.addItem( "Choice 3" );
     rpg.setValue( 2 );
     System.out.println( rpg.getValue(  ) );
-    rpg.init( null );
+    rpg.initGUI( null );
 
     //rpg.setValue( "Choice 5" );
     rpg.setValue( "Choice 1" );
     System.out.println( rpg.getValue(  ) );
     rpg.showGUIPanel(  );
-  }
+  }*/
 
   /**
    * Utility method to allow adding external action listeners to this PG's list
