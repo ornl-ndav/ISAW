@@ -30,6 +30,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2003/03/10 06:05:00  dennis
+ *  Now records the last command that was used to load the local
+ *  copy of a DataSet and also the next command that should be
+ *  used when an update is requested for the DataSet.  Added
+ *  method setNextUpdateCommand()
+ *  Methods getDataSet(i) and UpdateDataSet(i) now just call the
+ *  versions that take a command as a parameter, after forming
+ *  the appropriate command.
+ *  getDataSet(command) just returns the local copy if there is
+ *  one, unless the command for getting it has changed, or the
+ *  run has changed (i.e. new data name).
+ *
  *  Revision 1.19  2003/03/07 22:51:15  dennis
  *  Added methods to GET_DS_ID_RANGE and GET_DS_X_RANGE
  *  Added method to stop the thread "cleanly" by setting a
@@ -86,10 +98,18 @@ public class LiveDataManager extends    Thread
   public static final int    MAX_DELAY   = 600;      // maximum delay in seconds
   public static final String DATA_CHANGED   = "Data Changed ";
 
-  private Vector            listeners   = null;        
-  private LiveDataRetriever retriever   = null;
-  private DataSet           data_sets[] = new DataSet[0];
-  private boolean           ignore[]    = new boolean[0];
+  private Vector            listeners      = null;        
+  private LiveDataRetriever retriever      = null;
+  private DataSet           data_sets[]    = new DataSet[0];
+  private GetDataCommand    next_command[] = new GetDataCommand[0];
+                                                      // holds the next command
+                                                      // that should be used for
+                                                      // a DataSet update
+  private GetDataCommand    last_command[] = new GetDataCommand[0];
+                                                      // track last command used
+                                                      // to get a DataSet so 
+                                                      // auto update can use it
+  private boolean           ignore[]        = new boolean[0];
                                                       // flags to mark which
                                                       // data sets won't be
                                                       // automatically updated
@@ -155,8 +175,11 @@ public class LiveDataManager extends    Thread
 
 /* ------------------------------ getDataSet ----------------------------- */
 /**
- *  Get the specified DataSet from the current data source.
- * 
+ *  Get a copy of the current DataSet.  IF a new command has been requested,
+ *  use it.  If no new command request is listed, use the last command.
+ *  If there is no last command, just get the full DataSet.
+ *  IF possible, just return the current copy stored in the LiveDataManager.
+ *
  *  @param  ds_num  The number of the DataSet to be returned.
  *    
  *  @return the requested DataSet.
@@ -166,68 +189,29 @@ public class LiveDataManager extends    Thread
     if ( ds_num < 0 )
       return null;
 
-    if ( ds_num >= data_sets.length  &&
-         ds_num <  numDataSets() )
-      SetUpLocalCopies();
+   GetDataCommand command = null;
 
-    if ( ds_num >= 0 && ds_num < data_sets.length )      // valid ds_num, so 
-    {                                                    // work with copy
-      if ( data_sets[ ds_num ] == null || 
-          !data_sets[ ds_num ].getTitle().equals(getDataSetName(ds_num) ) )
-      {
-        UpdateDataSetNow( ds_num );                       // bad local copy
-      }
-      return data_sets[ds_num];          
-    }
-    else 
-      return null;
+   if ( ds_num >= 0                  &&        // try to use the next command
+        ds_num < next_command.length )         // or reuse the last command     
+   { 
+     if( next_command[ds_num] != null  )
+       command = next_command[ds_num];
+     else if ( last_command[ ds_num ] != null )
+       command = last_command[ds_num];
+   }
+
+   if ( command == null )                      // if all else fails get the 
+     command = getDefaultCommand( ds_num );    // full DataSet
+
+    return getDataSet( command );
   }
 
-
-/* ------------------------------ getDataSet ----------------------------- */
-/**
- *  Get the specified portion of the specified DataSet from the current 
- *  data source.
- *
- *  @param  data_set_num  The number of the DataSet to be returned.
- *  @param  group_ids     String listing the required group IDs. 
- *  @param  min_x         The start of the interval of x values for which
- *                        the data is needed.
- *  @param  max_x         The end of the interval of x values for which
- *                        the data is needed.
- *  @param  rebin_factor  Integer giving the number of adjacent bins that
- *                        should be combined.
- *  @param  attr_mode     Integer code for number of attributes requested,
- *                        one of:
- *                           Attribute.NO_ATTRIBUTES 
- *                           Attribute.ANALYSIS_ATTRIBUTES 
- *                           Attribute.FULL_ATTRIBUTES 
- *
- *  @return the requested DataSet.
- */
-  public DataSet getDataSet( int    data_set_num, 
-                             String group_ids,
-                             float  min_x,
-                             float  max_x,
-                             int    rebin_factor,
-                             int    attr_mode      )
-  {
-    CommandObject command = RemoteDataRetriever.getDataSet(
-                                        "",
-                                        data_set_num,
-                                        group_ids,
-                                        min_x, 
-                                        max_x,
-                                        rebin_factor,
-                                        attr_mode  );
-
-    return (DataSet) retriever.getObjectFromServer( command );
-  }
 
 /* ------------------------------ getDataSet ----------------------------- */
 /**
  *  Get the specified portion of the specified DataSet from the current
- *  data source.
+ *  data source.  If the command matches the last command used to get this
+ *  DataSet, just return a reference to the local copy.
  *
  *  @param  command  The GetDataCommand object specifying the portion of the
  *                   DataSet to get.
@@ -246,12 +230,15 @@ public class LiveDataManager extends    Thread
       SetUpLocalCopies();
 
     if ( ds_num >= 0 && ds_num < data_sets.length )      // valid ds_num, so
-    {                                                    // work with copy
-      if ( data_sets[ ds_num ] == null ||
+    {                                                    // work with copy, if
+                                                         // possible
+      if ( data_sets[ ds_num ] == null               ||
+          (last_command[ ds_num ] != null && 
+          !command.equals( last_command[ds_num] ))   ||
           !data_sets[ ds_num ].getTitle().equals(getDataSetName(ds_num) ) )
       {
-        UpdateDataSetNow( command );                     // bad local copy
-      }
+        UpdateDataSetNow( command );    // if no local copy, or doesn't match 
+      }                                 // command, or doesn't match title
       return data_sets[ds_num];   
     }
     else
@@ -400,6 +387,24 @@ public class LiveDataManager extends    Thread
  }
 
 
+/* ------------------------- setNextUpdateCommand ------------------------- */
+/**
+ *  Set the command to use the next time a DataSet is updated.
+ *
+ *  @param  command  the new command
+ */
+ public void setNextUpdateCommand( GetDataCommand command )
+ {
+   if ( command.getCommand() == CommandObject.GET_DS )
+   {
+     int ds_num = command.getDataSetNumber();
+     if ( ds_num >= 0 && ds_num < next_command.length )
+       next_command[ ds_num ] = command; 
+   }
+ }
+
+
+
 /* -------------------------- getUpdateIgnoreFlag ------------------------- */
 /**
  *  Get the current state of the update ignore flag.
@@ -435,38 +440,30 @@ public class LiveDataManager extends    Thread
 
 /* ---------------------------- UpdateDataSetNow -------------------------- */
 /**
- *  Request an immediate update of the specified DataSet.
+ *  Request an immediate update of the specified DataSet using the command
+ *  stored in the next_command list, or the default command to get the 
+ *  full DataSet, if no next_command has been defined.
  *
- *  @param  data_set_num  The number of the DataSet that is to be updated
- *                        immediately.
+ *  @param  ds_num  The number of the DataSet that is to be updated
+ *                  immediately.
  */
- synchronized public void UpdateDataSetNow( int data_set_num )
+ synchronized public void UpdateDataSetNow( int ds_num )
  {
-   if ( data_set_num < 0 )
-     return;
+   GetDataCommand command = null;
 
-   if ( data_set_num > data_sets.length - 1 )
-     SetUpLocalCopies();
-
-   getting_ds = data_set_num; // if a thread starts to get a  DataSet, set flag
-                              // so the run() method doesn't queue up another
-                              // request for a DataSet.               
-
-   DataSet temp_ds = retriever.getDataSet( data_set_num );
-
-   if ( temp_ds == data_sets[data_set_num] )
-     System.out.println("ERROR!!!! same data set" );
-
-   if ( temp_ds != null )
-   { 
-     if ( data_sets[data_set_num] == null )             // save new DataSet
-       data_sets[data_set_num] = temp_ds;
-     else                                               // or copy to current DS
-       data_sets[data_set_num].shallowCopy( temp_ds );  // copy notifies the
-                                                        // DataSet's observers
+   if ( ds_num >= 0                  &&        // try to use the next command
+        ds_num < next_command.length )         // or reuse the last command
+   {
+     if( next_command[ds_num] != null  )
+       command = next_command[ds_num];
+     else if ( last_command[ ds_num ] != null )
+       command = last_command[ds_num];
    }
 
-   getting_ds = -1;                                      // reset the flag
+   if ( command == null )                      // if all else fails get the
+     command = getDefaultCommand( ds_num );    // full DataSet
+
+   UpdateDataSetNow( command );
  }
 
 
@@ -480,7 +477,6 @@ public class LiveDataManager extends    Thread
  */
  synchronized public void UpdateDataSetNow( GetDataCommand command )
  {
-   
    int data_set_num = command.getDataSetNumber();
    if ( data_set_num < 0 )
      return;
@@ -499,6 +495,9 @@ public class LiveDataManager extends    Thread
 
    if ( temp_ds != null )
    {
+     last_command[ data_set_num ] = command;            // save the command.
+     next_command[ data_set_num ] = command;
+
      if ( data_sets[data_set_num] == null )             // save new DataSet
        data_sets[data_set_num] = temp_ds;
      else                                               // or copy to current DS
@@ -614,13 +613,16 @@ public class LiveDataManager extends    Thread
          if ( !name.equals( last_data_name ) )        // notify LiveDataMonitor
          {
            last_data_name = name;
+           SetUpLocalCopies();
            send_message(  DATA_CHANGED + "Run 2: " + name );
          }
 
          for ( int i = 0; i < data_sets.length; i++ )    // update the DataSets
          {
            if ( !ignore[i] )                             // we are interested in
+           {
              UpdateDataSetNow( i );
+           }
          }
        } 
      }
@@ -670,21 +672,29 @@ public class LiveDataManager extends    Thread
 
     if ( num_ds != data_sets.length )           // we must resize our lists
     {
-      DataSet new_data_sets[] = new DataSet[ num_ds ];
-      boolean new_ignore[]    = new boolean[ num_ds ];
+      DataSet new_data_sets[]       = new DataSet[ num_ds ];
+      GetDataCommand new_last_cmd[] = new GetDataCommand[ num_ds ];
+      GetDataCommand new_next_cmd[] = new GetDataCommand[ num_ds ];
+      boolean new_ignore[]          = new boolean[ num_ds ];
 
       for ( int i = 0; i < num_to_save; i++ )           // save what we can
       {                                                 // of the old ones
         new_data_sets[i] = data_sets[i];
-        new_ignore[i]    = ignore[i];
+        new_last_cmd[i]  = null;                        // reset the commands
+        new_next_cmd[i]  = getDefaultCommand(i);        // since the DataSet
+        new_ignore[i]    = ignore[i];                   // changed
       }
-      data_sets = new_data_sets;
-      ignore    = new_ignore;
+      data_sets    = new_data_sets;
+      last_command = new_last_cmd;
+      next_command = new_next_cmd;
+      ignore       = new_ignore;
                                                         // initialize new ones
       for ( int i = num_to_save; i < num_ds; i++ )
       {
-        data_sets[i] = null;
-        ignore[i]    = true;
+        data_sets[i]    = null;
+        last_command[i] = null;                         // reset the commands
+        next_command[i] = getDefaultCommand(i);
+        ignore[i]       = true;
       }
 
       send_message(  DATA_CHANGED + "SetUpLocalCopies 3: " );
