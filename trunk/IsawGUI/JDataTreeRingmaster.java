@@ -12,6 +12,10 @@ package IsawGUI;
  * associated with the generated right-click menu.
  *
  * $Log$
+ * Revision 1.5  2001/07/11 16:40:37  neffk
+ * modified to reflect change in JOperationsMenuHandler's constructor's
+ * arguments.
+ *
  * Revision 1.4  2001/07/02 20:27:36  neffk
  * now right-click menu allows the user to delete a single DataSet from the
  * tree.  also, the framework for manipulating runfile entries in the
@@ -349,8 +353,7 @@ public class JDataTreeRingmaster
     dss[0] = ds;
     JMenu ops_popup_menu = new JMenu( "Operations" );
     OperatorMenu om = new OperatorMenu();
-//    JPopupMenuListener popup_listener = null;
-    JOperationsMenuHandler popup_listener = new JOperationsMenuHandler( dss, tree );
+    JOperationsMenuHandler popup_listener = new JOperationsMenuHandler( dss, tree, false );
     om.build( ops_popup_menu, ds_ops, popup_listener );
     ops_popup_menu.setPopupMenuVisible( true );
 
