@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/05/17 22:20:20  pfpeterson
+ * Added checkbox for exporting monitor spectrum. The integrated
+ * monitor count is still included in the file.
+ *
  * Revision 1.1  2002/02/22 20:58:15  pfpeterson
  * Operator reorganization.
  *
@@ -80,13 +84,14 @@ public class WriteGSAS extends GenericSave
     *@param DS  The data set that is to be saved in gsas format
     *@param filename the name of the file where the data will be saved
     */
-   public WriteGSAS( DataSet MS, DataSet DS, String filename )
+   public WriteGSAS( DataSet MS, DataSet DS, String filename, Boolean em )
     {
      super( "Save as GSAS File" );
      parameters = new Vector();
      addParameter( new Parameter("Monitor" , MS ));
      addParameter( new Parameter("Data Set" , DS ));
      addParameter( new Parameter("Output File", filename ));
+     addParameter( new Parameter("Export Monitor", em));
     }
 
    public void setDefaultParameters()
@@ -95,6 +100,7 @@ public class WriteGSAS extends GenericSave
      addParameter( new Parameter("Monitor" , new DataSet("","") ));
      addParameter( new Parameter("Data Set" , new DataSet("","") ));
      addParameter( new Parameter("Output File", "filename"));
+     addParameter( new Parameter("Export Monitor", Boolean.TRUE));
     }  
    
   /** 
@@ -113,11 +119,13 @@ public class WriteGSAS extends GenericSave
    */
    public Object getResult()
     { 
-      DataSet MS       = (DataSet)( getParameter(0).getValue());
-      DataSet DS       = (DataSet)( getParameter(1).getValue());
-      String  filename = (String) ( getParameter(2).getValue());
+      DataSet MS       =(DataSet)( getParameter(0).getValue());
+      DataSet DS       =(DataSet)( getParameter(1).getValue());
+      String  filename =(String) ( getParameter(2).getValue());
+      boolean em       =((Boolean)(getParameter(3).getValue())).booleanValue();
 
-      GsasWriter gw=new GsasWriter(filename);
+      //System.out.println("(WG)EXPORT MONITOR: "+em);
+      GsasWriter gw=new GsasWriter(filename,em);
       gw.writeDataSets(new DataSet[] {MS , DS});
 
       return "Success";

@@ -43,6 +43,7 @@ import  DataSetTools.gsastools.*;
 
 public class GsasWriter extends Writer
 {
+    boolean export_monitor;
     /**
      * Construct the Writer for the specified destination name.
      *
@@ -51,12 +52,22 @@ public class GsasWriter extends Writer
      *                               the fully qualified file name.
      */
 
-    public GsasWriter( String data_destination_name )
-    {
-      super(data_destination_name);
+    public GsasWriter( String data_destination_name ){
+        this(data_destination_name,true);
     }
 
-    
+    /**
+     * Construct the Writer for the specified destination name.
+     *
+     * @param data_destination_name  This identifies the data destination.  
+     *                               For file data writers, this should be 
+     *                               the fully qualified file name.
+     */
+    public GsasWriter( String data_destination_name, boolean em ){
+        super(data_destination_name);
+        export_monitor=em;
+    }
+
     /**
      * Send the specified array of data sets to the current data
      * destination.  If an array of DataSets includes both monitor and
@@ -70,6 +81,7 @@ public class GsasWriter extends Writer
      * the filename to denote which histogram is saved.
      */
     public void writeDataSets( DataSet ds[] ){
+        //System.out.println("(GW)EXPORT MONITOR: "+export_monitor);
 	String dsType="";
 	gsas_filemaker gf;
 
@@ -82,7 +94,8 @@ public class GsasWriter extends Writer
 	}else if(ds.length==1){
 	    gf=new gsas_filemaker(ds[0],data_destination_name);
 	}else if(ds.length==2){
-	    gf=new gsas_filemaker(ds[0],ds[1],data_destination_name);
+	    gf=new gsas_filemaker(ds[0],ds[1],data_destination_name,
+                                  export_monitor);
 	    gf.write();
 	    gf.close();
 	}else{
@@ -94,7 +107,8 @@ public class GsasWriter extends Writer
 		    String outfile=
 			outString(data_destination_name,ds[i].toString(),i);
 		    if(mon!=null){
-			gf=new gsas_filemaker(mon,ds[i],outfile);
+			gf=new gsas_filemaker(mon,ds[i],outfile,
+                                              export_monitor);
 		    }else{
 			gf=new gsas_filemaker(ds[i],outfile);
 		    }
