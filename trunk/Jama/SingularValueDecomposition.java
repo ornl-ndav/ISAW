@@ -1,3 +1,9 @@
+/*
+ * $Log$
+ * Revision 1.2  2003/10/17 03:13:51  bouzekc
+ * Fixed javadoc errors.  Added Log tag.
+ *
+ */
 package Jama;
 import Jama.util.*;
 
@@ -43,8 +49,8 @@ public class SingularValueDecomposition implements java.io.Serializable {
  * ------------------------ */
 
    /** Construct the singular value decomposition
-   @param A    Rectangular matrix
-   @return     Structure to access U, S and V.
+   This is a structure to access U, S and V.
+   @param Arg  Rectangular matrix
    */
 
    public SingularValueDecomposition (Matrix Arg) {
