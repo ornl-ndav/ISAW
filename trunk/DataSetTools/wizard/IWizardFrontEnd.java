@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/01/09 22:26:13  bouzekc
+ * Separated out some methods into IGUIWizardFrontEnd.
+ *
  * Revision 1.3  2004/01/08 14:52:35  bouzekc
  * Replaced arrows on navigational buttons with words.  Changed
  * "View Parameters" to "View."
@@ -46,41 +49,26 @@
  */
 package DataSetTools.wizard;
 
-import java.beans.PropertyChangeListener;
-
 import java.io.*;
 
 
 /**
- * This is a package level interface defining the front end GUI for a Wizard.
+ * This is a package level interface defining the front end for a Wizard.
  */
 interface IWizardFrontEnd {
   //~ Static fields/initializers ***********************************************
 
-  public static final String EXIT_COMMAND        = "Exit";
-  public static final String FIRST_COMMAND       = "First Form";
-  public static final String BACK_COMMAND        = "Back One";
-  public static final String NEXT_COMMAND        = "Forward One";
-  public static final String LAST_COMMAND        = " Last Form";
-  public static final String CLEAR_COMMAND       = "Reset";
-  public static final String CLEAR_ALL_COMMAND   = "Reset All";
-  public static final String EXEC_ALL_COMMAND    = "Do All";
-  public static final String EXEC_COMMAND        = "Do";
-  public static final String WIZARD_HELP_COMMAND = "on Wizard";
-  public static final String FORM_HELP_COMMAND   = "on Current Form";
-  public static final String SAVE_WIZARD_COMMAND = "Save Wizard State";
-  public static final String LOAD_WIZARD_COMMAND = "Load Wizard State";
-  public static final String VIEW_MENU           = "View";
-  public static final String SET_PROJECT_DIR     = "Set Project Directory";
-  public static final int FORM_PROGRESS          = 100;
-  public static final int EXEC_ALL_IND           = 0;
-  public static final int EXEC_IND               = 1;
-  public static final int CLEAR_IND              = 2;
-  public static final int FIRST_IND              = 3;
-  public static final int BACK_IND               = 4;
-  public static final int NEXT_IND               = 5;
-  public static final int LAST_IND               = 6;
-  public static final int CLEAR_ALL_IND          = 7;
+  public static final int FIRST_COMMAND       = 1;
+  public static final int BACK_COMMAND        = 2;
+  public static final int NEXT_COMMAND        = 3;
+  public static final int LAST_COMMAND        = 4;
+  public static final int CLEAR_COMMAND       = 5;
+  public static final int CLEAR_ALL_COMMAND   = 6;
+  public static final int EXEC_COMMAND        = 7;
+  public static final int EXEC_ALL_COMMAND    = 8;
+  public static final int SAVE_WIZARD_COMMAND = 9;
+  public static final int LOAD_WIZARD_COMMAND = 10;
+  public static final int EXIT_COMMAND        = 11;
 
   //~ Methods ******************************************************************
 
@@ -93,22 +81,6 @@ interface IWizardFrontEnd {
    * @return the File that has been retrieved.
    */
   public File getFile( boolean saving );
-
-  /**
-   * Accessor method for the progress indicator.  For example, invoking this on
-   * SwingWizardFrontEnd will get the internal progress bar.
-   *
-   * @return The PropertyChanger progress indicator.
-   */
-  public PropertyChangeListener getFormProgressIndicator(  );
-
-  /**
-   * Utility method to set the progress widget value and label.
-   *
-   * @param value The new value to set.
-   * @param label The new label to set
-   */
-  public void setFormProgressParameters( int value, String label );
 
   /**
    * Exits the wizard application.  If the Wizard has been changed and not been
@@ -143,18 +115,4 @@ interface IWizardFrontEnd {
    * Shows the last valid Form.
    */
   public void showLastValidForm(  );
-
-  /**
-   * Method to update the formProgress progress widget based on whether or not
-   * the Form is done().  This sets the value and the String label.  The basic
-   * use of this method is when you want to set the Form progress to
-   * completely done or completely "not done."
-   */
-  public void updateFormProgress(  );
-
-  /**
-   * Updates the wizProgress widget showing the overall progress of the Wizard
-   * based on the last form completed at the time of the method call.
-   */
-  public void updateWizardProgress(  );
 }
