@@ -29,12 +29,20 @@
  * Modified: 
  *
  * $Log$
+ * Revision 1.6  2003/03/19 23:07:37  pfpeterson
+ * Expanded TimeFocusGroupForm to allow for up to 20 'banks' to be
+ * focused and grouped. (Chris Bouzek)
+ *
  * Revision 1.5  2003/03/19 15:08:33  pfpeterson
  * Uses the TimeFocusGroupForm rather than TimeFocusForm and GroupingForm.
  * (Chris Bouzek)
  *
  * Revision 1.4  2003/03/13 19:00:52  dennis
  * Added $Log$
+ * Added Revision 1.6  2003/03/19 23:07:37  pfpeterson
+ * Added Expanded TimeFocusGroupForm to allow for up to 20 'banks' to be
+ * Added focused and grouped. (Chris Bouzek)
+ * Added
  * Added Revision 1.5  2003/03/19 15:08:33  pfpeterson
  * Added Uses the TimeFocusGroupForm rather than TimeFocusForm and GroupingForm.
  * Added (Chris Bouzek)
@@ -61,6 +69,8 @@ import DataSetTools.parameter.*;
  */
 public class TimeFocusGroupWizard
 {
+
+  private static final int NUM_PARAMS = 60;
 
   /**
    *  The main program constructs a new Wizard, defines the parameters to
@@ -106,12 +116,15 @@ public class TimeFocusGroupWizard
     //for TimeFocusGroupForm
     w.setParameter( "TimeFocusGroupResults",
                     new ArrayPG( "Time Focus Results", new Vector(), false));
-    w.setParameter("FocusIDs",
-                   new StringPG("List of group IDs to focus", new String("1:50"), false));
-    w.setParameter("NewAngle",
-                   new FloatPG("New angle in degrees", new Float(30.0f), false));
-    w.setParameter("NewFPath",
-                   new FloatPG("New final path (m)", new Float(4.0f), false));
+    for( int i = 0; i < (NUM_PARAMS / 3); i++ )
+    {
+      w.setParameter("FocusIDs" + i,
+                     new IntArrayPG("List of group IDs to focus", new String(""), false));
+      w.setParameter("NewAngle" + i,
+                     new FloatPG("New angle in degrees", new Float(30.0f), false));
+      w.setParameter("NewFPath" + i,
+                     new FloatPG("New final path (m)", new Float(4.0f), false));
+    }
 
     //for SaveAsGSASForm
     w.setParameter("GSASDir",
@@ -136,7 +149,19 @@ public class TimeFocusGroupWizard
 
     //time focus and group form
     String const_parms1[] = {"RunList"};
-    String edit_parms1[] = {"FocusIDs", "NewAngle", "NewFPath"};
+    String edit_parms1[] = new String[NUM_PARAMS];
+    
+    int index = 0;
+    int numbering = 0;
+    while( index < NUM_PARAMS )
+    {
+      edit_parms1[index] = "FocusIDs" + numbering;
+      edit_parms1[index + 1] = "NewAngle" + numbering;
+      edit_parms1[index + 2] =  "NewFPath" + numbering;
+      index += 3;
+      numbering++;
+    }
+    
     String result_parms1[] = {"TimeFocusGroupResults"};
     Form form1 = new TimeFocusGroupForm(  const_parms1, edit_parms1, result_parms1, w );
 
