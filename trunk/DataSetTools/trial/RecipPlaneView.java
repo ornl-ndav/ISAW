@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2004/05/03 16:29:54  dennis
+ * Removed two unused local variables.
+ * Removed method: makeGoniometerRotationInverse() that was moved
+ * to another class.
+ * Removed used of DETECTOR_CEN_ANGLE & DETECTOR_CEN_DISTANCE since
+ * the calculations now use data grids.
+ *
  * Revision 1.21  2004/04/20 17:44:35  dennis
  * Now uses EventQueue.invokeLater with a "WindowShower" to
  * show the main window, instead of doing it directly.
@@ -194,7 +201,6 @@ public class RecipPlaneView
                                          // scaling.
   private float SLICE_SIZE_IN_Q = 20;
   private int   FFT_DATA_LENGTH = 512;
-  private int   FFT_MASK_LENGTH = 16;
   private int   SLIDER_DEF      = 20;
   private int   SLIDER_MIN      = 1;
   private int   SLIDER_MAX      = 250;
@@ -601,21 +607,7 @@ public class RecipPlaneView
   }
 
 
- /* --------------------- makeGoniometerRotationInverse -------------------- */
- /*
-  *  Make the cumulative rotation matrix to "unwind" the rotations by chi,
-  *  phi and omega, to put the data into one common reference frame for the
-  *  crystal.
-  */
-  private Tran3D makeGoniometerRotationInverse( DataSet ds )
-  {
-    SampleOrientation orientation =
-        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
-
-      return orientation.getGoniometerRotationInverse();
-  }
-
-
+ 
   /* ---------------------- makeVecQTransformers --------------------- */
 
   private void makeVecQTransformers()
@@ -676,8 +668,7 @@ public class RecipPlaneView
       IDataGrid grid = transformer.getDataGrid();
       d = grid.getData_entry(1,1);
 
-      float base_levels[] = getBaseLevels( grid, 5 );
- 
+
       SampleOrientation orientation = null;
       attr = d.getAttribute(Attribute.SAMPLE_ORIENTATION);
       if ( attr != null )
@@ -692,16 +683,6 @@ public class RecipPlaneView
       attr = d.getAttribute(Attribute.T0_SHIFT);
       if ( attr != null )
         t0 = (float)attr.getNumericValue();
-
-      float det_a = -90;
-      attr = d.getAttribute(Attribute.DETECTOR_CEN_ANGLE);
-      if ( attr != null )
-        det_a = (float)attr.getNumericValue();
-
-      float det_d = .25f;
-      attr = d.getAttribute(Attribute.DETECTOR_CEN_DISTANCE);
-      if ( attr != null )
-        det_d = (float)attr.getNumericValue();
 
       int n_bins = d.getX_scale().getNum_x() - 1;
       int n_objects = grid.num_rows() * grid.num_cols() * n_bins;
@@ -1683,7 +1664,6 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
 
    private void handle_event( MouseEvent e )
    {
-     Point pt = e.getPoint();
      int index = vec_Q_space.pickID( e.getX(), e.getY(), 5 );
      if ( index != last_index )
      {
