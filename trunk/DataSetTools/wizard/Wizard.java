@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/04/24 18:56:06  pfpeterson
+ * Added functionality to save Wizards. (Chris Bouzek)
+ *
  * Revision 1.15  2003/04/02 14:56:51  pfpeterson
  * Changed to work with new Forms. (Chris Bouzek)
  *
@@ -99,17 +102,17 @@
 
 package DataSetTools.wizard;
 
-import java.util.*;
-import java.io.*;
+import java.util.Vector;
+import java.util.StringTokenizer;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import DataSetTools.operator.*;
 import DataSetTools.util.*;
-import DataSetTools.parameter.*;
-import DataSetTools.viewer.*;
-import DataSetTools.dataset.DataSet;
+import DataSetTools.parameter.IParameterGUI;
+import DataSetTools.parameter.ParameterViewer;
 import java.beans.*;
+import java.io.*;
+import DataSetTools.dataset.DataSet;
 
 /**
  *  The Wizard class provides the top level control for a sequence of
@@ -128,7 +131,7 @@ import java.beans.*;
  *  @see Form
  */
 
-public abstract class Wizard implements Serializable, PropertyChangeListener{
+public abstract class Wizard implements PropertyChangeListener{
     // size of the window
     private static final int FRAME_WIDTH   = 650;
     private static final int FRAME_HEIGHT  = 500;
@@ -162,8 +165,7 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
     // instance variables
     private JFrame       frame;
     private String       title;
-    //private Hashtable    master_list;
-    private Vector       forms;
+    protected Vector       forms;
     private int          form_num;
     private JPanel       form_panel;
     private JButton      exec_all_button;
@@ -175,6 +177,14 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
     private JProgressBar progress;
     private JMenu        view_menu;
     private CommandHandler command_handler;
+    
+    //-----------------------------------
+    protected boolean modified = false;
+    private JFrame save_frame;
+    private JFileChooser fileChooser;
+    private ObjectOutputStream  output;
+    private ObjectInputStream input;
+    //-----------------------------------
 
     /**
      * The legacy constructor
@@ -200,8 +210,317 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
         form_label  = new JLabel(" ",SwingConstants.CENTER);
         progress    = new JProgressBar();
         command_handler = new CommandHandler(this);
+
+        //-----------------------------------
+        save_frame = new JFrame("Save Form as...");
+        //-----------------------------------
     }
 
+    //-----------------------------------
+    /**
+     *  Opens a file for input or output.
+     *  
+     *  @param saving  A boolean indicating whether you want to open the
+     *                 file for saving (true) or loading (false)                      
+     */
+    private File openFile(boolean saving)
+    {
+      int result;
+      JFileChooser fileChooser = new JFileChooser();
+      fileChooser.setFileSelectionMode(
+        JFileChooser.FILES_ONLY);
+
+      if(saving)
+        result = fileChooser.showSaveDialog(save_frame);
+      else
+        result = fileChooser.showOpenDialog(save_frame);
+
+      if( result == JFileChooser.CANCEL_OPTION )
+        return null;
+
+      File opened_file = fileChooser.getSelectedFile();
+
+      if(saving && opened_file.exists())
+      {
+        String temp;
+        StringBuffer s = new StringBuffer();
+        s.append("You are about to overwrite ");
+        s.append(opened_file.toString());
+        s.append(".\n  If this is OK, press ");
+        s.append("<Enter> or click the <OK> button.\n  Otherwise, please ");
+        s.append("enter a new name or click <Cancel>.");
+        temp = JOptionPane.showInputDialog(s.toString());
+        if(temp != null && !temp.equals(""))
+          opened_file = new File(fileChooser.getCurrentDirectory() + "/" + temp);
+      }
+
+      if( opened_file== null || opened_file.getName().equals(""))
+      {
+        JOptionPane.showMessageDialog(save_frame,
+          "Please enter a valid file name",
+          "ERROR",
+          JOptionPane.ERROR_MESSAGE);
+        return null;
+      }
+      else
+        return opened_file;
+    }
+
+    /**
+    *  Closes a file.
+    */
+    private void closeFile(Object stream)
+    {
+      try
+      {
+        if(stream instanceof ObjectInputStream)
+          ((ObjectInputStream)stream).close();
+        else if (stream instanceof ObjectOutputStream)
+          ((ObjectOutputStream)stream).close();
+        save_frame.dispose();
+      }
+      catch(Exception e)
+      {
+        JOptionPane.showMessageDialog(save_frame,
+          "Could not close the file.",
+          "ERROR",
+          JOptionPane.ERROR_MESSAGE);
+        save_frame.dispose();
+      }
+    }
+
+    /**
+     *
+     *  Write the Forms to a file, using the conc_forms Vector.
+     *  The only things actually written are the Form's 
+     *  IParameterGUI types, name, and value in XML format along with 
+     *  XML tags for the Form index.
+     *
+     *  @param conc_forms The Vector of Forms to write to a file.
+     *  @param file the File to write to.
+     */
+    private void writeForms(Vector conc_forms, File file)
+    {
+      StringBuffer s = new StringBuffer();
+      Form f;
+      String temp;
+      IParameterGUI ipg;
+      try
+      {
+        FileWriter fw = new FileWriter(file);
+        for(int i = 0; i < conc_forms.size(); i++)
+        {
+          s.append("<Form number=");
+          s.append(i);
+          s.append(">\n");
+
+          /* The I/O for the save() and load() is written
+             to use \n as a delimiter.  If you change it,
+             you must also change the method of reading
+             in convertXMLtoParameters.
+          */
+          f = (Form)conc_forms.elementAt(i);
+          for(int j = 0; j < f.getNum_parameters(); j++)
+          {
+            ipg = (IParameterGUI)f.getParameter(j);
+            s.append("<");
+            s.append(ipg.getType());
+            s.append(">\n");
+            s.append("<Name>\n");
+            s.append(ipg.getName());
+            s.append("\n");
+            s.append("</Name>\n");
+            s.append("<Value>\n");
+            temp = ipg.getValue().toString();
+            if((temp == null) || (temp.equals("")))
+              s.append("emptyString\n");
+            else
+            {
+              s.append(temp);
+              s.append("\n");
+            }
+            s.append("</Value>\n");
+            s.append("</");
+            s.append(ipg.getType());
+            s.append(">\n");
+          }
+          s.append("</Form>\n");
+        }
+        /*output = new ObjectOutputStream(
+                  new FileOutputStream(file));
+
+        output.writeObject(conc_forms);
+
+        output.flush();*/
+        fw.write(s.toString());
+        fw.close();
+        modified = false;
+      }
+      catch(Exception e)
+      {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(save_frame,
+          "Error saving file.  Please rerun the wizard and try again.",
+          "ERROR",
+          JOptionPane.ERROR_MESSAGE); 
+      }
+    }
+
+    /**
+     *  Loads Forms from a file.  It actually just loads the saved
+     *  IParameterGUI values into the Wizard's Forms' parameters.
+     */
+    private void loadForms(File file)
+    {
+      //Vector loadedforms = null;
+      char ca;
+      StringBuffer s = new StringBuffer();
+      int good = -1;
+
+      try
+      {
+        FileReader fr = new FileReader(file);
+
+        good = fr.read();
+
+        while(good >=0)
+        {
+          ca = (char)good;
+          s.append(ca);
+          good = fr.read();
+        }
+
+        convertXMLtoParameters(s);
+        fr.close();
+        /*input = new ObjectInputStream(
+                  new FileInputStream(file));
+        Vector loadedforms = (Vector)input.readObject();*/
+        //return loadedforms;
+      }
+      catch(Exception e)
+      {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(save_frame,
+          "Error loading file.  Does the file match the Wizard?",
+          "ERROR",
+          JOptionPane.ERROR_MESSAGE);
+      }
+    }
+
+    /**
+     *  Converts a StringBuffer which holds an XML String of
+     *  IParameterGUI and Form information into data that
+     *  the Wizard can understand.  
+     *
+     *  @param s The StringBuffer that holds the parameter
+     *           information.
+     */
+    private void convertXMLtoParameters(StringBuffer s)
+    {
+      String x = s.toString();
+      StringBuffer f = new StringBuffer();
+      StringTokenizer st;
+      int rightbracket, leftbracket, index, num_params;
+      Form cur_form;
+      IParameterGUI ipg;
+
+      //trim the string to remove all <> stuff
+
+      rightbracket = x.indexOf('>');
+      leftbracket = x.indexOf('<');
+
+      while( (rightbracket >= 0) )
+      {
+        if(leftbracket <=1)
+        {
+          //kill the <Form=xx> substring and/or the <name/value> substring
+          x = x.substring(rightbracket + 1, x.length());
+        }
+        else
+        {
+          //found something useful.  Keep it.
+          f.append(x.substring(0, leftbracket));
+          x = x.substring(rightbracket + 1, x.length());
+        }  
+        rightbracket = x.indexOf('>');
+        leftbracket = x.indexOf('<');
+      }
+      x = f.toString();
+
+      //the token delimiter relies on the way the 
+      //file is written.  To change it, you must
+      //also change the way the file is written.
+      st = new StringTokenizer(x, "\n");
+
+      for( int j = 0; j < this.getNumForms(); j ++)
+      {
+        index = 0;
+        cur_form = this.getForm(j);
+        num_params = cur_form.getNum_parameters();
+        while((index < num_params) && (st.hasMoreTokens()))
+        {
+          ipg = (IParameterGUI)(cur_form.getParameter(index));
+          if(ipg.getName().equals(st.nextToken()));
+          ipg.setValue(st.nextToken());
+          index++;
+        }
+      }
+    }
+
+    /**
+     *  Load the state of the wizard from a file
+     */
+    public boolean load()
+    {
+      Vector loadedforms;
+      File f;
+      Form temp;
+      f = openFile(false);
+
+      if( f == null ) return false;
+
+      loadForms(f);
+      //closeFile(output);
+      //forms = loadedforms;
+      showForm(0);
+      return true;
+    }
+
+    /**
+     *  Save the state of the wizard to a file
+     */
+    public void save()
+    {
+      if(forms == null) return;
+
+      File file;
+      if(modified)
+      {
+        file = openFile(true);
+
+        if( file == null ) return;
+
+        writeForms(forms, file);
+        
+      //  closeFile(input);
+      }
+    }
+
+    /**
+     *  Save the state of the wizard then exit the wizard application.
+     */
+    public void close()
+    {
+      if(modified)
+        save();
+      System.exit(0);
+    }
+    //-----------------------------------
+
+    public int getNumForms()
+    {
+      return forms.size();
+    }
 
     protected void makeGUI(){
         GridBagConstraints gbc=new GridBagConstraints();
@@ -244,8 +563,8 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
         JMenuItem save_wizard = new JMenuItem( SAVE_WIZARD_COMMAND );
         JMenuItem load_wizard = new JMenuItem( LOAD_WIZARD_COMMAND );
         JMenuItem exit_item   = new JMenuItem( EXIT_COMMAND );
-        save_wizard.setEnabled(false);
-        load_wizard.setEnabled(false);
+        save_wizard.setEnabled(true);
+        load_wizard.setEnabled(true);
         file_menu.addSeparator();
         file_menu.add( save_wizard );
         file_menu.add( load_wizard );
@@ -401,7 +720,6 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
         }
     }
 
-
     /**
      *  Show the form at the specified position in the list of forms.
      *  If the index is invalid, an error message will be displayed in
@@ -464,22 +782,6 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
         }
 
     }
-
-
-    /**
-     *  Save the state of the wizard then exit the wizard application.
-     */
-    public abstract void close();
-
-    /**
-     *  Save the state of the wizard to a file
-     */
-    public abstract void save();
-
-    /**
-     *  Load the state of the wizard from a file
-     */
-    public abstract boolean load();
 
     /**
      *  Set the help message that will be displayed when the user
@@ -557,6 +859,7 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
      * Execute all forms up to the number specified.
      */
     protected void exec_forms(int end){
+      modified = true;
       Form f = getCurrentForm();
       // execute the previous forms
       for( int i=0 ; i<=end ; i++ ){
@@ -566,8 +869,6 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
           if(DEBUG) System.out.print("EXECUTING "+i);
           Object worked=f.getResult();
           if(DEBUG) System.out.println("  W="+worked+" D="+f.done());
-          //we already know whether or not the form is done
-          //so we just need to check whether or not the form worked
           if(worked instanceof Boolean && (!((Boolean)worked).booleanValue())){
             if(DEBUG) System.out.println("BREAKING "+i);
             end=i-1;
@@ -591,6 +892,7 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
       JMenuItem jmi;
       Form f;
       IParameterGUI iparam;
+      Object val;
       
       f = this.getCurrentForm();
 
@@ -600,9 +902,16 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
         iparam = (IParameterGUI)f.getParameter(i);
         if( iparam.getValid() )
         {
-          jmi = new JMenuItem(iparam.getName());
-          view_menu.add(jmi);
-          jmi.addActionListener( command_handler );
+          val = iparam.getValue();
+          //no need to show the values that a user can easily see
+          //such as a JTextField entry.  Uncomment the next line
+          //if you want to view things other than DataSets
+          if( val instanceof DataSet || val instanceof Vector)
+          {
+            jmi = new JMenuItem(iparam.getName());
+            view_menu.add(jmi);
+            jmi.addActionListener( command_handler );
+          }
         }
       }
 
@@ -613,6 +922,7 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
      * parameters change.
      */
     public void propertyChange(PropertyChangeEvent ev){
+        modified = true;
         this.invalidate(this.getCurrentFormNumber());
         this.populateViewMenu();
     }
@@ -637,10 +947,11 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
        while( !done && index < num_params )
        {
          iparam = (IParameterGUI)f.getParameter(index);
-         //does the command name match up to a current form parameter?
+         //does the command match up to a current form parameter name?
          done = com.equals(iparam.getName());
          if( done )
            new ParameterViewer(iparam).showParameterViewer();
+         index++;
        }  
     }
 
@@ -662,18 +973,18 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
                 form_num=0;
                 showForm(form_num);
             }else if ( command.equals( BACK_COMMAND ) ){
-                populateViewMenu();
                 if ( form_num-1 >= 0 ){
                     form_num--;
                     showForm(form_num);
+                    populateViewMenu();
                 }else{
                     DataSetTools.util.SharedData.addmsg( "FORM 0 SHOWN, CAN'T STEP BACK\n" );
                 }
             }else if ( command.equals( NEXT_COMMAND ) ){
-                populateViewMenu();
                 if ( form_num+1 < forms.size() ){
                     form_num++;
                     showForm(form_num);
+                    populateViewMenu();
                 }else{
                     DataSetTools.util.SharedData.addmsg( "NO MORE FORMS, CAN'T ADVANCE\n" );
                 }
@@ -706,7 +1017,6 @@ public abstract class Wizard implements Serializable, PropertyChangeListener{
                 close();
             }else{
               displayParameterViewer(command);
-              //new ParameterViewer(command).showParameterViewer();
             }
         }
 
