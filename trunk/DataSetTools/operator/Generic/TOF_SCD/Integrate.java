@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2003/04/16 20:42:19  pfpeterson
+ * Moves peak center of each slice during integration.
+ *
  * Revision 1.16  2003/04/15 18:54:08  pfpeterson
  * Added option to increase integration size of time slice after maximizing
  * the ratio of I/dI for the time slice.
@@ -623,17 +626,55 @@ public class Integrate extends GenericTOF_SCD{
                  +"  I/sigI   included?\n");
     }
 
+    // initialize variables for the slice integration
     float[][] IsigI=new float[zrange.length][2]; // 2nd index is I,dI
     float Itot=0f;
     float dItot=0f;
-
-    // integrate each time slice
     StringBuffer innerLog=new StringBuffer(40);
     String[] integSliceLogs=new String[zrange.length];
-    for( int k=0 ; k<zrange.length ; k++ ){
+
+    // integrate the cenZ time slice
+    innerLog.delete(0,innerLog.length());
+    innerLog.append(formatInt(cenX)+"  "+formatInt(cenY)
+                    +formatInt(getObs(ds,ids[cenX][cenY],cenZ),6));
+    tempIsigI=integratePeakSlice(ds,ids,cenX,cenY,cenZ,increaseSlice,innerLog);
+    integSliceLogs[indexZcen]=innerLog.toString();
+    // update the list of integrals if intensity is positive
+    if( tempIsigI[0]>0f ){
+      IsigI[indexZcen][0]=tempIsigI[0];
+      IsigI[indexZcen][1]=tempIsigI[1];
+      Itot=tempIsigI[0];
+      dItot=tempIsigI[1];
+    }else{
+      minZrange=cenZ+1;
+      maxZrange=cenZ-1;
+    }
+
+    float maxP;
+    // integrate the time slices before the peak
+    for( int k=indexZcen-1 ; k>=0 ; k-- ){
+      maxP=getObs(ds,ids[cenX][cenY],zrange[k]);
+      if(zrange[k]>=minZrange){
+        // determine the local maximum
+        for( int i=cenX-1 ; i<=cenX+1 ; i++ ){
+          for( int j=cenY-1 ; j<=cenY+1 ; j++ ){
+            if( i==(int)Math.round(peak.x()) && j==(int)Math.round(peak.y()))
+              continue;
+            if(getObs(ds,ids[i][j],zrange[k])>maxP){
+              maxP=getObs(ds,ids[i][j],zrange[k]);
+              cenX=i;
+              cenY=j;
+            }
+          }
+        }
+      }
+      // clear the log
       innerLog.delete(0,innerLog.length());
-      if(zrange[k]<minZrange  || zrange[k]>maxZrange)
+      innerLog.append(formatInt(cenX)+"  "+formatInt(cenY)+formatInt(maxP,6));
+      if(zrange[k]<minZrange){
+        integSliceLogs[k]=innerLog.toString();
         continue;
+      }
       tempIsigI
         =integratePeakSlice(ds,ids,cenX,cenY,zrange[k],increaseSlice,innerLog);
       integSliceLogs[k]=innerLog.toString();
@@ -642,27 +683,63 @@ public class Integrate extends GenericTOF_SCD{
         IsigI[k][0]=tempIsigI[0];
         IsigI[k][1]=tempIsigI[1];
       }else{ // or shrink what is calculated
-        if(zrange[k]==cenZ){ // if this is the peak's time slice then something
-          break;             // is wrong and we should just return
-        }else if(zrange[k]<cenZ){
-          // do nothing
-        }else if(zrange[k]>cenZ){ // shrink the range
-            maxZrange=zrange[k];
+        minZrange=zrange[k]+1;
+        continue;
+      }
+      // shrink what is calculated if the slice would not be added
+                // this is not fully correct since Itot and dItot aren't
+                // changing when a slice should be added
+      if(! compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
+        minZrange=zrange[k]+1;
+        continue;
+      }
+    }
+
+    // reset the location of the peak in x and y
+    cenX=(int)Math.round(peak.x());
+    cenY=(int)Math.round(peak.y());
+
+    // integrate the time slices after the peak
+    for( int k=indexZcen+1 ; k<zrange.length ; k++ ){
+      maxP=getObs(ds,ids[cenX][cenY],zrange[k]);
+      if(zrange[k]<=maxZrange){
+        // determine the local maximum
+        for( int i=cenX-1 ; i<=cenX+1 ; i++ ){
+          for( int j=cenY-1 ; j<=cenY+1 ; j++ ){
+            if( i==(int)Math.round(peak.x()) && j==(int)Math.round(peak.y()))
+              continue;
+            if(getObs(ds,ids[i][j],zrange[k])>maxP){
+              maxP=getObs(ds,ids[i][j],zrange[k]);
+              cenX=i;
+              cenY=j;
+            }
+          }
         }
       }
-      if(zrange[k]==cenZ){ // set the starting value for totals
-        Itot =IsigI[k][0];
-        dItot=IsigI[k][1];
-      }else{
-        // shrink what is calculated if the slice would not be added
-                   // this is not fully correct since Itot and dItot aren't
-                   // changing when a slice should be added
-        if(! compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
-          if(zrange[k]<zrange[0])
-            minZrange=zrange[k];
-          else if(zrange[k]>zrange[0])
-            maxZrange=zrange[k];
-        }
+      // clear the log
+      innerLog.delete(0,innerLog.length());
+      innerLog.append(formatInt(cenX)+"  "+formatInt(cenY)+formatInt(maxP,6));
+      if(zrange[k]>maxZrange){
+        integSliceLogs[k]=innerLog.toString();
+        continue;
+      }
+      tempIsigI
+        =integratePeakSlice(ds,ids,cenX,cenY,zrange[k],increaseSlice,innerLog);
+      integSliceLogs[k]=innerLog.toString();
+      // update the list of integrals if intensity is positive
+      if( tempIsigI[0]>0f ){
+        IsigI[k][0]=tempIsigI[0];
+        IsigI[k][1]=tempIsigI[1];
+      }else{ // or shrink what is calculated
+        maxZrange=zrange[k]-1;
+        continue;
+      }
+      // shrink what is calculated if the slice would not be added
+                // this is not fully correct since Itot and dItot aren't
+                // changing when a slice should be added
+      if(! compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
+        maxZrange=zrange[k]-1;
+        continue;
       }
     }
 
@@ -687,8 +764,8 @@ public class Integrate extends GenericTOF_SCD{
         Itot=Itot+IsigI[k][0];
         dItot=(float)Math.sqrt(dItot*dItot+IsigI[k][1]*IsigI[k][1]);
       }else{
-        minZrange=zrange[k];
-        indexZmin=k;
+        minZrange=zrange[k]+1;
+        indexZmin=k+1;
       }
     }
 
@@ -698,8 +775,8 @@ public class Integrate extends GenericTOF_SCD{
         Itot=Itot+IsigI[k][0];
         dItot=(float)Math.sqrt(dItot*dItot+IsigI[k][1]*IsigI[k][1]);
       }else{
-        maxZrange=zrange[k];
-        indexZmax=k;
+        maxZrange=zrange[k]-1;
+        indexZmax=k-1;
       }
     }
 
@@ -708,17 +785,20 @@ public class Integrate extends GenericTOF_SCD{
       // each time slice
       for( int k=0 ; k<zrange.length ; k++ ){
         log.append(formatInt(zrange[k]-cenZ)+"   "+formatInt(zrange[k])+"  ");
-        if(integSliceLogs[k]!=null)
+        if(integSliceLogs[k]!=null && integSliceLogs[k].length()>0){ 
           log.append(integSliceLogs[k]);
-        else
+          if(integSliceLogs[k].length()<20)
+            log.append("    NOT INTEGRATED");
+        }else{
           log.append("-------- NOT INTEGRATED --------");
+        }
         log.append(" "+formatFloat(IsigI[k][0]));
         log.append("  "+formatFloat(IsigI[k][1]));
         if(IsigI[k][1]>0f)
           log.append(" "+formatFloat(IsigI[k][0]/IsigI[k][1])+"      ");
         else
           log.append(" "+formatFloat(0f)+"      ");
-        if( k>indexZmin && k<indexZmax )
+        if( k>=indexZmin && k<=indexZmax )
           log.append("Yes\n");
         else
           log.append("No\n");
@@ -748,10 +828,6 @@ public class Integrate extends GenericTOF_SCD{
                int Xcen, int Ycen, int z, int increaseSlice, StringBuffer log){
     float[] IsigI=new float[2];
     float[] tempIsigI=new float[2];
-
-    if(log!=null)
-      log.append(formatInt(Xcen)+"  "+formatInt(Ycen)+" "
-                 +formatInt(getObs(ds,ids[Xcen][Ycen],z),5));
 
     int[] rng={Xcen-2,Xcen+2,Ycen-2,Ycen+2};
     int[] step={-1,1,-1,1};
