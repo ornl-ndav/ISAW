@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2005/02/03 07:22:08  kramer
+ * Now when the processDS(....) method is invoked on a NxWriteLog object,
+ * (new DataSet()) is passed to the method instead of 'null' (for the
+ * DataSet parameter).
+ *
  * Revision 1.13  2005/01/10 16:18:50  rmikk
  * Eliminated commented out code
  *
@@ -410,7 +415,7 @@ public class NxWriteDetector{
 
     NxWriteNode NxLognode = node.newChildNode("Log_1","NXlog");
     NxWriteLog writelog = new NxWriteLog( 5);
-    writelog.processDS( NxLognode, null, 1);
+    writelog.processDS( NxLognode, new DataSet(), 1);
  
   }
   //obsolete
