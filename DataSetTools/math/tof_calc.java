@@ -30,6 +30,12 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.26  2003/12/01 17:12:16  dennis
+ *  Added method getEulerAngles(u,v) to calculate Euler angles phi, chi, omega
+ *  for rotations about the z axis, x axis and z axis again, given the ortho-
+ *  normal vectors u,v that the x axis and y axis map to.  The third ortho-
+ *  normal vector, n, is generated as u X v, by this routine.
+ *
  *  Revision 1.25  2003/10/15 23:59:02  dennis
  *  Fixed javadocs to build cleanly with jdk 1.4.2
  *
@@ -691,6 +697,46 @@ public static float Omega( float two_theta )
 }
 
 
+/* ------------------------ getEulerAngles --------------------------- */
+/**
+ *  Return an array containing a set of "Euler angles" representing a
+ *  rotation that takes the orthonormal basis vectors i,j,k into another
+ *  set of orthonormal basis vectors u,v,n.   Only the basis vectors u,v
+ *  are taken as arguments since the "n" vector is calculated internally
+ *  as u X v.  "v" is then recalculated as n X u, in case v was not originally
+ *  perpendicular to "u".  All vectors will be normalized internally.
+ *  The angles of rotation are to be applied as follows:
+ *
+ *  1. Rotate about the positive z-axis by phi
+ *  2. Rotate about the positive x-axis by chi
+ *  3. Rotate about the positive z-axis by omega
+ *
+ *  NOTE: All rotations follow a right hand rule and the coordinate system is
+ *  assumed to be right handed.  Rotation angles are returned in degrees.
+ *
+ *  @param u      Vector giving the direction that the basis vector "i"
+ *                maps to.
+ *  @param v      Vector giving the direction that the basis  vector "j"
+ *                maps to.  In principle, this should be perpendicular to u,
+ *                it at least must not be collinear with u.
+ *
+ *  @return The Euler angles are returned in an array euler[], with
+ *          euler[0]=phi, euler[1]=chi, euler[2]=omega.  If u==0, v==0 or
+ *          u and v are collinear, this just returns an array of zeros.
+ */
+public static float[] getEulerAngles( Vector3D u, Vector3D v )
+{
+  Vector3D_d u_double = new Vector3D_d( u.get()[0], u.get()[1], u.get()[2] );
+  Vector3D_d v_double = new Vector3D_d( v.get()[0], v.get()[1], v.get()[2] );
+  double euler[] = tof_calc_d.getEulerAngles( u_double, v_double );
+
+  float float_euler[] = new float[ euler.length ];
+  for ( int i = 0; i < euler.length; i++ )
+    float_euler[i] = (float)euler[i];
+
+  return float_euler; 
+}
+
 /* ------------------------ makeEulerRotation ------------------------ */
 /**
  *  Make the cumulative rotation matrix representing rotation by Euler angles
@@ -911,6 +957,26 @@ public static void main( String args[] )
   s_rot = makeEulerRotationInverse( 25.0f, 35.0f, 45.0f );
   System.out.println("Tran3D = ");
   System.out.println("" + s_rot);
+
+  // Check Euler angle calculation for randomly distributed rotations
+  double error = 0;
+  int N_TRIES = 1000;
+  for ( int i = 0; i < N_TRIES; i++ )
+  {
+    float phi   = (float)(360 * Math.random());
+    float chi   = (float)(360 * Math.random());
+    float omega = (float)(360 * Math.random());
+    Tran3D rot = tof_calc.makeEulerRotation( phi, chi, omega );
+    Vector3D u = new Vector3D(rot.get()[0][0],rot.get()[1][0],rot.get()[2][0]);
+    Vector3D v = new Vector3D(rot.get()[0][1],rot.get()[1][1],rot.get()[2][1]);
+    float euler[] = getEulerAngles( u, v );
+    Tran3D rot2 = tof_calc.makeEulerRotation(euler[0],euler[1],euler[2]);
+    for ( int row = 0; row < 3; row++ )
+      for ( int col = 0; col < 3; col++ )
+        error += Math.abs( rot.get()[row][col] - rot2.get()[row][col]);
+  }
+  System.out.println( "Total Error = " + error + " in " + N_TRIES );
+
 
 
   DetectorPosition det_pos = new DetectorPosition();
