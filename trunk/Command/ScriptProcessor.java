@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2001/08/02 16:22:10  rmikk
+ * Incorporated the continuation character "\" for multiline
+ * commands
+ *
  * Revision 1.9  2001/08/01 19:12:54  rmikk
  * Fixed Array parameter handling
  *
@@ -452,8 +456,21 @@ public class ScriptProcessor  extends GenericOperator
 		return line ; 
               }
 	      if(Debug)System.out.println( " Thru" +line) ; 
-            line ++  ; 
-              
+            boolean done = false;
+            while( !done )
+              {String SS = getLine( Doc,line,  false );
+               if( SS == null )
+                  done = true;
+               else if( SS.length() < 1)
+                  done = true;
+               else if( SS.charAt( SS.length() - 1) != '\\' )
+                  done = true;
+               else
+                   line ++;
+               }
+            line++  ; 
+           
+             
 
 
 	   } ; 
@@ -800,7 +817,13 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
  *@param start  the line number to be returned
  *@return  The string representation of that line or null if there is none
  */
-   public String getLine( Document Doc, int start )
+public String getLine( Document Doc, int start )
+   { return getLine( Doc, start, true );
+   }
+
+// Same as getLine above if Contined is true.  It can be used when
+// keeping track of line numbers.
+   private String getLine( Document Doc, int start, boolean Continued )
      {
       String var ;      
       int i , j , k ; 
@@ -829,6 +852,13 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
       if( S != null) 
          if( S.charAt(S.length() - 1 )<' ' ) 
              S = S.substring( 0,S.length() - 1 );
+      if(Continued)
+      if( S.length() >0 )
+	  if( S.charAt( S.length() - 1) == '\\' )
+            { String S2 = getLine( Doc,start + 1 );
+              if( S2 != null)
+                  S = S.substring( 0, S.length() - 1 )+ S2;
+             }
       return S;
 
     }
