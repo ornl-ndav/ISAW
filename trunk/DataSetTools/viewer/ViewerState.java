@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/07/27 15:57:10  dennis
+ *  Removed debug print.
+ *
  *  Revision 1.12  2001/07/26 14:25:55  dennis
  *  Added Brightnes & Auto-Scale state variables.
  *
@@ -169,7 +172,6 @@ public class ViewerState  implements Serializable
 
       Float auto_scale = getFloatProperty( AUTO_SCALE, "0" );
       state.put( AUTO_SCALE, auto_scale );
-      System.out.println("VieweState, auto_scale = " + auto_scale );
 
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
       ds_x_label = "";
