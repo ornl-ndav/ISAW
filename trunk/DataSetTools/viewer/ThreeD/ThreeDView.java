@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2002/05/30 22:57:06  chatterjee
+ * Added print feature
+ *
  * Revision 1.20  2002/03/18 21:14:29  dennis
  * Now calculates max_radius as 0 if there are no detector groups
  * or segments.
@@ -204,7 +207,8 @@ public ThreeDView( DataSet data_set, ViewerState state )
 
   if ( !validDataSet() )
     return;
-
+  JMenuBar jmb= getMenuBar();
+  DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( jmb, this);
   init();
 
   AddOptionsToMenu();

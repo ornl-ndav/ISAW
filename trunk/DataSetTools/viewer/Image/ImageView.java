@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2002/05/30 22:57:16  chatterjee
+ *  Added print feature
+ *
  *  Revision 1.28  2002/03/13 16:11:36  dennis
  *  Converted to new abstract Data class.
  *
@@ -200,7 +203,7 @@ import DataSetTools.components.image.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.components.containers.*;
 import java.text.*;
-
+import IsawGUI.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -283,7 +286,15 @@ public ImageView( DataSet data_set, ViewerState state )
 
   if ( !validDataSet() )
     return;
-
+  JMenuBar jmb= getMenuBar();
+  /*JMenu  jm = jmb.getMenu( DataSetTools.viewer.DataSetViewer.FILE_MENU_ID );
+  JMenuItem jmi= new JMenuItem("Print");
+  int nitems= jm.getItemCount();
+  if( nitems < 0) nitems= 0;
+  jm.add(jmi, nitems );
+  jmi.addActionListener(new myActionListener(this));
+  */
+  DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( jmb, this);
   init();
   MakeImage( false );
   getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(), data_set );
@@ -291,6 +302,20 @@ public ImageView( DataSet data_set, ViewerState state )
   DrawDefaultDataBlock();
   UpdateHGraphRange();
 }
+
+class myActionListener implements ActionListener
+  { ImageView iview;
+    public myActionListener( ImageView iview)
+       {this.iview=iview;
+        }
+    public void actionPerformed( ActionEvent evt)
+    {
+   PrintUtilities printHelper = new PrintUtilities(iview);
+//new ViewManager( ds, IViewManager.IMAGE ));
+printHelper.print();
+
+     }
+   }
 
 /* -----------------------------------------------------------------------
  *
