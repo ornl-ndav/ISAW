@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/15 19:33:53  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.7  2004/03/15 03:28:35  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -63,7 +67,6 @@ import DataSetTools.parameter.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.*;
-import DataSetTools.util.*;
 
 /**
 *     This Class Finds the position of the Center of the Beam in a sand

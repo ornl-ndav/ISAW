@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/15 19:33:54  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.7  2004/03/15 03:28:37  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -64,9 +68,7 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.*;
 import java.io.*;
-import DataSetTools.util.*;
 import DataSetTools.parameter.*;
-import DataSetTools.math.*;
 
 /**
  *  This operator reads in files written by the WriteFlood operator to produce

@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/03/15 19:39:19  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.8  2002/11/27 23:27:59  pfpeterson
  *  standardized header
  *
@@ -42,7 +46,6 @@
 package NetComm;
 
 import java.net.*;
-import java.lang.*;
 import java.io.*;
 
 /**

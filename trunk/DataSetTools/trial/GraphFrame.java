@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/15 19:33:57  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.1  2004/01/07 14:57:44  dennis
  * Initial version of utility class to pop up a ViewManager, starting
  * with the SelectedGraphView, given just arrays of x,y values and a title.
@@ -39,7 +43,6 @@
 
 package DataSetTools.trial;
 
-import javax.swing.*;
 import DataSetTools.viewer.*;
 import DataSetTools.dataset.*;
 

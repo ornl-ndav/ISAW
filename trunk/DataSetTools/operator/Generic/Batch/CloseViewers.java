@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2004/03/15 19:33:51  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.4  2004/03/15 03:28:32  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -49,7 +53,6 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 import java.util.*;
 import DataSetTools.operator.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
 
 /** 
  * This operator returns a string representing the current date and

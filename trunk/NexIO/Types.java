@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/03/15 19:37:54  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.9  2004/03/15 03:36:01  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -58,11 +62,10 @@
  *
  */
 
-
 package NexIO;
 
 import gov.anl.ipns.Util.Sys.*;
-import DataSetTools.util.*;
+
 /**
  * Contains equates for this modules data types. All others should map
  * into these

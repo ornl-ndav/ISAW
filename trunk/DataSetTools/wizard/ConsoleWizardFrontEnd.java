@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/15 19:34:01  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.3  2004/03/15 03:29:04  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -48,8 +52,6 @@ package DataSetTools.wizard;
 import Command.*;
 
 import DataSetTools.parameter.*;
-
-import DataSetTools.util.*;
 
 import DataSetTools.wizard.util.*;
 

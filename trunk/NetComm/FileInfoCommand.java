@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/03/15 19:39:18  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.4  2003/03/05 13:48:26  dennis
  *  Added method equals() that does field by field comparison.
  *
@@ -48,7 +52,6 @@
 package NetComm;
 
 import java.io.*;
-import DataSetTools.dataset.*;
 
 /**
  *  This is the class for commands sent by clients to get information about

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/03/15 19:33:52  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.7  2004/03/15 03:28:33  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -64,7 +68,6 @@ import java.util.*;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
-import DataSetTools.util.*;
 import DataSetTools.operator.Parameter;
 import DataSetTools.parameter.*;
 

@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/15 19:33:58  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.3  2004/03/15 03:28:58  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -46,7 +50,6 @@
 package DataSetTools.viewer;
 
 import gov.anl.ipns.ViewTools.Components.*;
-import DataSetTools.components.View.*;
 
 /**
 *    This interface gives routines needed by a generic DataSetViewer

@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/03/15 19:34:00  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.11  2004/03/15 03:29:02  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -87,14 +91,10 @@ import gov.anl.ipns.ViewTools.Components.Menu.*;
 
 import javax.swing.*;
 import DataSetTools.viewer.*;
-import DataSetTools.components.View.Menu.*;
 import java.util.*;
 import java.awt.event.*;
-import DataSetTools.components.View.*;
 import java.io.*;
 import DataSetTools.util.*;
-
-
 
 /**
 *    This class is the produces array values that show the values for each

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/03/15 19:33:53  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.3  2003/06/16 19:07:28  pfpeterson
  *  Removed old code and updated to work with new getCategoryList() code
  *  in base operator class.
@@ -47,7 +51,6 @@
 package DataSetTools.operator.Generic.TOF_Diffractometer;
 
 import java.io.*;
-import DataSetTools.operator.Operator;
 import DataSetTools.operator.Generic.GenericOperator;
 
 /**

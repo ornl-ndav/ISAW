@@ -3,8 +3,6 @@ package Command.JavaCC.Fortran;
 
 import java.io.StringReader;
 
-import java.util.*;
-
 public class FortranParser implements FortranParserConstants {
   //don't want to continually recreate this thing
   private static FortranParser myParser;

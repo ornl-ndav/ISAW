@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/03/15 19:39:19  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.13  2004/03/15 03:35:22  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -56,8 +60,6 @@ import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
 import java.util.*;
-import DataSetTools.retriever.*;
-import DataSetTools.util.*;
 
 /**
  *  This is a base class for servers that receive TCP requests from clients

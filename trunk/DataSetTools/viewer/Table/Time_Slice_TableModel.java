@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2004/03/15 19:34:00  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.18  2004/03/15 03:29:02  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -116,7 +120,6 @@ import DataSetTools.dataset.*;
 import javax.swing.*;
 import java.util.*;
 import java.io.*;
-import DataSetTools.components.View.ViewControls.*;
 
 /** Creates a table model the displays y values at a fixed time according to row
  * and column values of the group

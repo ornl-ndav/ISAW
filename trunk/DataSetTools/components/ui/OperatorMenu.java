@@ -33,6 +33,10 @@
  *  organized according to the categories of the operators.
  *
  *  $Log$
+ *  Revision 1.8  2004/03/15 19:33:50  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.7  2004/03/15 03:27:59  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -49,9 +53,7 @@ package DataSetTools.components.ui;
 import gov.anl.ipns.ViewTools.UI.*;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2004/03/15 19:33:58  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.14  2004/03/15 03:28:58  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -84,11 +88,8 @@ import javax.swing.*;
 import javax.swing.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
-import DataSetTools.components.View.OneD.*;
 import java.awt.event.*;
 import java.awt.*;
-import DataSetTools.components.containers.*;
-import DataSetTools.components.View.ViewControls.*;
 
 public class DataSetViewerMaker  extends DataSetViewer
   {

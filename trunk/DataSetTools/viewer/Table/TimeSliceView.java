@@ -30,6 +30,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.10  2004/03/15 19:34:00  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.9  2004/03/15 03:29:02  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -78,8 +82,6 @@ import DataSetTools.viewer.*;
 import DataSetTools.components.ui.*;
 import java.awt.*;
 import java.awt.event.*;
-import DataSetTools.util.*;
-
 
 /** The DataSetViewer that gives the TimeSlice view( vs row and column) of data
 *   in table form.  The super class STableView constructs the DataSetView with a table,

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/03/15 19:33:55  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.4  2002/11/27 23:22:56  pfpeterson
  *  standardized header
  *
@@ -37,7 +41,6 @@
 
 package  DataSetTools.peak;
 
-import java.io.*;
 import DataSetTools.dataset.*;
 
 /**

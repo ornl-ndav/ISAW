@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/03/15 19:33:58  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.4  2004/03/15 03:28:43  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -49,7 +53,6 @@
 package DataSetTools.trial;
 
 import gov.anl.ipns.ViewTools.Panels.Image.*;
-import DataSetTools.components.image.*;
 import javax.swing.*;
 
 /**

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/03/15 19:33:58  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.13  2003/10/30 20:43:56  dennis
  *  Removed @see tag that referred to the OverplotView, since
  *  OverplotView has been replaced by the new selected graph view.
@@ -45,7 +49,6 @@
 package DataSetTools.viewer;
 
 import  DataSetTools.dataset.*;
-import  java.awt.*;
 import  java.io.*;
 import  javax.swing.*;
 

@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/03/15 19:33:49  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.10  2004/03/15 03:27:21  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -54,7 +58,6 @@ import javax.swing.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import java.awt.*;
-import DataSetTools.util.*;
 
 public class JAttributeNameParameterGUI extends JParameterGUI
 {

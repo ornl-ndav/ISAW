@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/15 19:33:57  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.5  2004/03/14 20:23:45  dennis
  * Put in package DataSetTools.trial
  *
@@ -45,7 +49,6 @@ import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
 
-import java.awt.*;
 import java.awt.event.*;
 
 /**

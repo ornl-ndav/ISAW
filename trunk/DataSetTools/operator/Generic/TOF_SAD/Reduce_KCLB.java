@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/15 19:33:54  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.3  2004/03/15 03:28:37  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -56,36 +60,16 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.io.*;
-import java.math.*;
 import java.util.Vector;
 import java.util.*;
 
 import Command.*;
-import DataSetTools.components.ParametersGUI.*;
-import DataSetTools.components.ui.*;
 import DataSetTools.dataset.*;
-import DataSetTools.components.containers.*;
-import DataSetTools.operator.DataSet.*;
-import DataSetTools.instruments.*;
-import DataSetTools.operator.*;
-import DataSetTools.retriever.*;
-import DataSetTools.util.*;
-import DataSetTools.viewer.*;
-import DataSetTools.viewer.Table.*;
 import DataSetTools.math.*;
-import DataSetTools.operator.DataSet.Math.DataSet.*;
-import DataSetTools.operator.DataSet.Math.Analyze.*;
-import DataSetTools.operator.DataSet.*;
 import DataSetTools.parameter.*;
-import DataSetTools.operator.DataSet.EditList.*;
-import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.operator.Parameter;
-import DataSetTools.parameter.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
-import DataSetTools.operator.DataSet.Math.Scalar.*;
-import java.io.*;
-
 
 /**
  * TITLE:        Convert Fortran To JAVA
