@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2003/04/21 15:07:30  pfpeterson
+ * Integrates a fixed box for each time slice where the default integration
+ * gives I/dI<5. Added ability to specify a specifix matrix file. Small bug
+ * fixes, documentation updates, and code cleanup.
+ *
  * Revision 1.17  2003/04/16 20:42:19  pfpeterson
  * Moves peak center of each slice during integration.
  *
@@ -124,23 +129,18 @@ public class Integrate extends GenericTOF_SCD{
    * the operator.
    *
    * @param ds DataSet to integrate
-   * @param path The directory where the experiment and matrix files
-   * will be found
-   * @param expname The "experiment name" for the analysis. The
-   * experiment file is looked for as path+expname+".x"
-   * @param intlist A list of which histograms in the experiment file
-   * to integrate. If the list is empty the program works on all
-   * histograms.
+   * @param expfile The "experiment file" for the analysis.
    */
-  public Integrate( DataSet ds, String path, String expname){
+  public Integrate( DataSet ds, String expfile){
     this(); 
 
     getParameter(0).setValue(ds);
-    getParameter(1).setValue(path);
-    getParameter(2).setValue(expname);
+    getParameter(1).setValue(expfile);
+    // parameter 2 keeps its default value
     // parameter 3 keeps its default value
     // parameter 4 keeps its default value
     // parameter 5 keeps its default value
+    // parameter 6 keeps its default value
   }
   
   /* --------------------------- getCommand ------------------------------- */ 
@@ -165,11 +165,16 @@ public class Integrate extends GenericTOF_SCD{
     if( choices==null || choices.size()==0 ) init_choices();
 
     addParameter( new Parameter("Data Set", new SampleDataSet() ) );
-    addParameter( new Parameter("Path",new DataDirectoryString()) );
-    addParameter( new Parameter("Experiment Name", new String()) );
+    LoadFilePG lfpg=new LoadFilePG("Experiment File",null);
+    lfpg.setFilter(new ExpFilter());
+    addParameter( lfpg );//new Parameter("Experiment Name", new String()) );
+    lfpg=new LoadFilePG("Matrix File",null);
+    lfpg.setFilter(new MatrixFilter());
+    addParameter( lfpg );//new Parameter("Path",new DataDirectoryString()) );
     ChoiceListPG clpg=new ChoiceListPG("Centering", choices.elementAt(0));
     clpg.addItems(choices);
     addParameter(clpg);
+    addParameter(new IntArrayPG("Time slice range","-1:3"));
     addParameter(new IntegerPG("Increase slice size by",0));
     addParameter(new IntegerPG("Log every nth Peak",3));
   }
@@ -184,15 +189,15 @@ public class Integrate extends GenericTOF_SCD{
     // overview
     sb.append("@overveiw This operator is a direct port of A.J.Schultz's INTEGRATE program. This locates peaks in a DataSet for a given orientation matrix and then determine's the integrated peak intensity.");
     // assumptions
-    sb.append("@assumptions The DataSet already has the orientation matrix and calibration loaded into it. Also, the experiment file must exist and be user readable.");
+    sb.append("@assumptions The experiment file must exist and be user readable. Also, the directory containing the experiment file must be user writtable for the integrated intensities and log file.");
     // algorithm
     sb.append("@algorithm ");
     // parameters
     sb.append("@param ds DataSet to integrate.");
-    sb.append("@param path The directory where the experiment and matrix files will be found");
-    sb.append("@param expname The \"experiment name\" for the analysis. The experiment file is looked for as path+expname+\".x\"");
+    sb.append("@param expfile The experiment file for the analysis.");
+    sb.append("@param matfile The matrix file for the analysis. If this is not specified then the orientation matrix from the dataset is used followd by the experiment file, stopping after one is found.");
     // return
-    sb.append("@return The set of integrated peaks which can then be passed to WritePeaks to be placed in a file.");
+    sb.append("@return The name of the file that the integrated intensities are written to.");
     // errors
     sb.append("@error First parameter is not a DataSet or the DataSet is empty");
     sb.append("@error Second parameter is null or does not specify an existing directory");
@@ -217,13 +222,13 @@ public class Integrate extends GenericTOF_SCD{
     Object val=null; // used for dealing with parameters
     String expfile=null;
     DataSet ds;
-    String path;
-    String expname;
+    String matfile=null;
+//    String expname; REMOVE
     int threashold=1;
     int centering=0;
     this.logBuffer=new StringBuffer();
     int listNthPeak=3;
-    int increaseSlice=0;
+    int incrSlice=0;
 
     // first get the DataSet
     val=getParameter(0).getValue();
@@ -236,24 +241,13 @@ public class Integrate extends GenericTOF_SCD{
       return new ErrorString("Value of first parameter must be a dataset");
     }
 
-    // then get the Directory
+    // then get the experiment file
     val=getParameter(1).getValue();
     if(val!=null){
-      path=FilenameUtil.setForwardSlash(val.toString()+"/");
-      File dir=new File(path);
-      if(!dir.isDirectory())
-        return new ErrorString("Path is not a directory");
-    }else{
-      return new ErrorString("Path is null");
-    }
-
-    // then get the experiment name
-    val=getParameter(2).getValue();
-    if(val!=null){
-      expname=val.toString();
-      if(expname.length()==0)
+      expfile=val.toString();
+      if(expfile.length()==0)
         return new ErrorString("Experiment Name is null");
-      expfile=FilenameUtil.setForwardSlash(path+expname+".x");
+      expfile=FilenameUtil.setForwardSlash(expfile);
       File file=new File(expfile);
       if(!file.exists())
         return new ErrorString("Could not find experiment file: "+file);
@@ -261,34 +255,59 @@ public class Integrate extends GenericTOF_SCD{
       return new ErrorString("Experiment Name is null");
     }
 
+    // then get the matrix file
+    val=getParameter(2).getValue();
+    if(val!=null){
+      matfile=FilenameUtil.setForwardSlash(val.toString());
+      File dir=new File(matfile);
+      if(dir.isDirectory())
+        matfile=null;
+    }else{
+      matfile=null;
+    }
+
     // then the centering condition
     val=getParameter(3).getValue().toString();
     centering=choices.indexOf((String)val);
     if( centering<0 || centering>=choices.size() ) centering=0;
 
+    // then the time slice range
+    int[] timeZrange={-1,3}; // default
+    {
+      int[] myZrange=((IntArrayPG)getParameter(4)).getArrayValue();
+      if(myZrange!=null && myZrange.length>=2){
+        timeZrange[0]=myZrange[0];
+        timeZrange[1]=myZrange[myZrange.length-1];
+      }else{
+        return new ErrorString("Invalid time range specified");
+      }
+    }
+
     // then how much to increase the integration size
-    increaseSlice=((IntegerPG)getParameter(4)).getintValue();
+    incrSlice=((IntegerPG)getParameter(5)).getintValue();
 
     // then how often to log a peak
-    listNthPeak=((IntegerPG)getParameter(5)).getintValue();
+    listNthPeak=((IntegerPG)getParameter(6)).getintValue();
 
     // now the uncertainty in the peak location
     int dX=2, dY=2, dZ=1;
 
     if(DEBUG){
       System.out.println("DataSet:"+ds);
-      System.out.println("Path   :"+path);
-      System.out.println("ExpName:"+expname);
+      System.out.println("ExpFile:"+expfile);
+      System.out.println("MatFile:"+matfile);
     }
 
     // add the parameter values to the logBuffer
     logBuffer.append("---------- PARAMETERS\n");
     logBuffer.append(getParameter(0).getName()+" = "+ds.toString()+"\n");
-    logBuffer.append(getParameter(1).getName()+" = "+path+"\n");
-    logBuffer.append(getParameter(2).getName()+" = "+expname+"\n");
+    logBuffer.append(getParameter(1).getName()+" = "+expfile+"\n");
+    logBuffer.append(getParameter(2).getName()+" = "+matfile+"\n");
     logBuffer.append(getParameter(3).getName()+" = "
                      +choices.elementAt(centering)+"\n");
-    logBuffer.append(getParameter(4).getName()+" = "+increaseSlice+"\n");
+    logBuffer.append(getParameter(4).getName()+" = "+timeZrange[0]+" to "
+                     +timeZrange[1]+"\n");
+    logBuffer.append(getParameter(5).getName()+" = "+incrSlice+"\n");
     logBuffer.append("Adjust center to nearest point with dX="+dX+" dY="+dY
                      +" dZ="+dZ+"\n");
 
@@ -356,7 +375,7 @@ public class Integrate extends GenericTOF_SCD{
 
     // get the orientation matrix
     float[][] UB=null;
-    {
+    if(matfile==null){ // only do this if matrix file not specified
       Object UBval=null;
       UBval=data.getAttributeValue(Attribute.ORIENT_MATRIX);
       if(UBval==null)
@@ -366,8 +385,11 @@ public class Integrate extends GenericTOF_SCD{
       UBval=null;
     }
     if(UB==null){ // try loading it
-      LoadOrientation loadorient=new LoadOrientation(ds,
-                                                  new LoadFileString(expfile));
+      LoadOrientation loadorient=null;
+      if(matfile!=null)
+        loadorient=new LoadOrientation(ds, new LoadFileString(matfile));
+      else
+        loadorient=new LoadOrientation(ds, new LoadFileString(expfile));
       Object res=loadorient.getResult();
       if(res instanceof ErrorString) return res;
       // try getting the value again
@@ -483,18 +505,16 @@ public class Integrate extends GenericTOF_SCD{
           break;
         }
       }
-      /*if(((Peak)peaks.elementAt(i)).ipkobs()<=threashold)
-        peaks.remove(i); // remove peaks below threashold*/
     }
 
     // integrate the peaks
     for( int i=peaks.size()-1 ; i>=0 ; i-- ){
       if( i%listNthPeak == 0 )
-        integratePeak((Peak)peaks.elementAt(i),ds,ids,increaseSlice,logBuffer);
+        integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
+                      logBuffer);
       else
-        integratePeak((Peak)peaks.elementAt(i),ds,ids,increaseSlice,null);
-      /*if(((Peak)peaks.elementAt(i)).inti()==0f)
-        peaks.remove(i);*/
+        integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
+                      null);
     }
 
     // centroid the peaks
@@ -520,12 +540,12 @@ public class Integrate extends GenericTOF_SCD{
       SharedData.addmsg(errmsg);
 
     // write out the peaks
-    String intfile=expfile;
+    String integfile=expfile;
     {
-      int index=intfile.lastIndexOf(".");
-      intfile=intfile.substring(0,index)+".integrate";
+      int index=integfile.lastIndexOf(".");
+      integfile=integfile.substring(0,index)+".integrate";
     }
-    WritePeaks writer=new WritePeaks(intfile,peaks,Boolean.TRUE);
+    WritePeaks writer=new WritePeaks(integfile,peaks,Boolean.TRUE);
     return writer.getResult();
   }
 
@@ -581,7 +601,7 @@ public class Integrate extends GenericTOF_SCD{
    * adds the results from each time slice to maximize the total I/dI.
    */
   private static void integratePeak(Peak peak, DataSet ds, int[][] ids,
-                                          int increaseSlice, StringBuffer log){
+                        int[] timeZrange, int increaseSlice, StringBuffer log){
     // set up where the peak is located
     float[] tempIsigI=null;
     int cenX=(int)Math.round(peak.x());
@@ -589,8 +609,8 @@ public class Integrate extends GenericTOF_SCD{
     int cenZ=(int)Math.round(peak.z());
 
     // set up the time slices to integrate
-    int minZrange=-1;
-    int maxZrange=3;
+    int minZrange=timeZrange[0];
+    int maxZrange=timeZrange[1];
     int[] zrange=new int[maxZrange-minZrange+1];
     for( int i=0 ; i<zrange.length ; i++ )
       zrange[i]=cenZ+i+minZrange;
@@ -640,12 +660,15 @@ public class Integrate extends GenericTOF_SCD{
     tempIsigI=integratePeakSlice(ds,ids,cenX,cenY,cenZ,increaseSlice,innerLog);
     integSliceLogs[indexZcen]=innerLog.toString();
     // update the list of integrals if intensity is positive
-    if( tempIsigI[0]>0f ){
+    if(tempIsigI[0]!=0f){
       IsigI[indexZcen][0]=tempIsigI[0];
       IsigI[indexZcen][1]=tempIsigI[1];
-      Itot=tempIsigI[0];
-      dItot=tempIsigI[1];
-    }else{
+      if(tempIsigI[0]>0f){
+        Itot=tempIsigI[0];
+        dItot=tempIsigI[1];
+      }
+    }        
+    if( tempIsigI[0]<=0f ){ // shrink what is calculated
       minZrange=cenZ+1;
       maxZrange=cenZ-1;
     }
@@ -679,13 +702,15 @@ public class Integrate extends GenericTOF_SCD{
         =integratePeakSlice(ds,ids,cenX,cenY,zrange[k],increaseSlice,innerLog);
       integSliceLogs[k]=innerLog.toString();
       // update the list of integrals if intensity is positive
-      if( tempIsigI[0]>0f ){
+      if(tempIsigI[0]!=0f){
         IsigI[k][0]=tempIsigI[0];
         IsigI[k][1]=tempIsigI[1];
-      }else{ // or shrink what is calculated
+      }        
+      if( tempIsigI[0]<=0f ){ // shrink what is calculated
         minZrange=zrange[k]+1;
         continue;
       }
+
       // shrink what is calculated if the slice would not be added
                 // this is not fully correct since Itot and dItot aren't
                 // changing when a slice should be added
@@ -727,13 +752,15 @@ public class Integrate extends GenericTOF_SCD{
         =integratePeakSlice(ds,ids,cenX,cenY,zrange[k],increaseSlice,innerLog);
       integSliceLogs[k]=innerLog.toString();
       // update the list of integrals if intensity is positive
-      if( tempIsigI[0]>0f ){
+      if(tempIsigI[0]!=0f){
         IsigI[k][0]=tempIsigI[0];
         IsigI[k][1]=tempIsigI[1];
-      }else{ // or shrink what is calculated
+      }        
+      if( tempIsigI[0]<=0f ){ // shrink what is calculated
         maxZrange=zrange[k]-1;
         continue;
       }
+
       // shrink what is calculated if the slice would not be added
                 // this is not fully correct since Itot and dItot aren't
                 // changing when a slice should be added
@@ -794,7 +821,7 @@ public class Integrate extends GenericTOF_SCD{
         }
         log.append(" "+formatFloat(IsigI[k][0]));
         log.append("  "+formatFloat(IsigI[k][1]));
-        if(IsigI[k][1]>0f)
+        if(IsigI[k][0]>0f && IsigI[k][1]>0f)
           log.append(" "+formatFloat(IsigI[k][0]/IsigI[k][1])+"      ");
         else
           log.append(" "+formatFloat(0f)+"      ");
@@ -824,22 +851,25 @@ public class Integrate extends GenericTOF_SCD{
    * the hard work of growing the rectangle on a time slice to
    * maximize I/dI.
    */
-  private static float[] integratePeakSlice(DataSet ds, int[][] ids,
-               int Xcen, int Ycen, int z, int increaseSlice, StringBuffer log){
+  private static float[] integratePeakSlice(DataSet ds, int[][] ids, int Xcen,
+                         int Ycen, int z, int increaseSlice, StringBuffer log){
     float[] IsigI=new float[2];
     float[] tempIsigI=new float[2];
 
-    int[] rng={Xcen-2,Xcen+2,Ycen-2,Ycen+2};
-    int[] step={-1,1,-1,1};
+    int[] init_rng= {Xcen-2,Ycen-2,Xcen+2,Ycen+2};
+    int[] rng     = {Xcen-2,Ycen-2,Xcen+2,Ycen+2};
+    int[] step    = {-1,-1,1,1};
+
+    int itteration=0;
+    final int MAX_ITTER=10;
 
     // initial run with default size for integration
-    if( checkRange(ids,rng[0],rng[2],rng[1],rng[3])){
-      tempIsigI=integrateSlice(ds,ids,rng[0],rng[2],rng[1],rng[3],z);
+    if( checkRange(ids,rng) ){
+      tempIsigI=integrateSlice(ds,ids,rng,z);
       if(tempIsigI[0]==0f || tempIsigI[1]==0f){ // something wrong
         formatRange(rng,log);
-        return IsigI;
+        itteration=MAX_ITTER;
       }
-      //if( tempIsigI[0]/tempIsigI[1] < 3f ) return IsigI; // peak is too weak
 
       if( tempIsigI[0]>0f && tempIsigI[1]>0f ){
         IsigI[0]=tempIsigI[0];
@@ -848,21 +878,18 @@ public class Integrate extends GenericTOF_SCD{
     }
 
     int direction=0;
-    int itteration=0;
     for( int i=0 ; i<4 ; i++ ){
       itteration=0;
       direction=0;
-      while(direction<2 && itteration<10){ // only change direction once
+      while(direction<2 && itteration<MAX_ITTER){ // only change direction once
         itteration++;                      // and allow a max num of itteration
         rng[i]=rng[i]+step[i];
-        if( checkRange(ids,rng[0],rng[2],rng[1],rng[3])){
-          tempIsigI=integrateSlice(ds,ids,rng[0],rng[2],rng[1],rng[3],z);
+        if( checkRange(ids,rng) ){
+          tempIsigI=integrateSlice(ds,ids,rng,z);
           if(tempIsigI[0]==0f||tempIsigI[1]==0f){ // something wrong
             formatRange(rng,log);
-            return IsigI;
+            itteration=MAX_ITTER;
           }
-          //if( tempIsigI[0]/tempIsigI[1] < 3f )   // peak is too weak
-          //return IsigI;
           if( tempIsigI[0]>0f && tempIsigI[1]>0f ){
             if( IsigI[0]/IsigI[1]<tempIsigI[0]/tempIsigI[1]){
               IsigI[0]=tempIsigI[0];
@@ -881,18 +908,26 @@ public class Integrate extends GenericTOF_SCD{
       }
     }
 
+    // use a fixed box
+    if(IsigI[0]<=IsigI[1]*5f){
+      if(checkRange(ids,rng) )
+        IsigI=integrateSlice(ds,ids,init_rng,z);
+      formatRange(init_rng,log);
+      return IsigI;
+    }
+
     // increase the size of the slice's integration (if requested)
     if(increaseSlice>0){
       rng[0]=rng[0]-increaseSlice;
-      rng[1]=rng[1]+increaseSlice;
-      rng[2]=rng[2]-increaseSlice;
+      rng[1]=rng[1]-increaseSlice;
+      rng[2]=rng[2]+increaseSlice;
       rng[3]=rng[3]+increaseSlice;
-      if( checkRange(ids,rng[0],rng[2],rng[1],rng[3])){
-        IsigI=integrateSlice(ds,ids,rng[0],rng[2],rng[1],rng[3],z);
+      if( checkRange(ids,rng) ){
+        IsigI=integrateSlice(ds,ids,rng,z);
       }else{ // goes out of range
         rng[0]=rng[0]+increaseSlice;
-        rng[1]=rng[1]-increaseSlice;
-        rng[2]=rng[2]+increaseSlice;
+        rng[1]=rng[1]+increaseSlice;
+        rng[2]=rng[2]-increaseSlice;
         rng[3]=rng[3]-increaseSlice;
       }
     }
@@ -904,18 +939,26 @@ public class Integrate extends GenericTOF_SCD{
 
   private static void formatRange(int[] rng, StringBuffer log){
     if(log==null) return;
-      log.append("  "+formatInt(rng[0])+" "+formatInt(rng[1])+"  "
-                 +formatInt(rng[2])+" "+formatInt(rng[3]));
-    
+    final int MAX_LENGTH=14;
+
+    if(log.length()>MAX_LENGTH)
+      log.delete(MAX_LENGTH,log.length());
+    log.append("  "+formatInt(rng[0])+" "+formatInt(rng[2])+"  "
+               +formatInt(rng[1])+" "+formatInt(rng[3]));
   }
 
   /**
    * Integrate around the peak in the given time slice. This
    * integrates the region passed to it.
    */
-  private static float[] integrateSlice(DataSet ds, int[][] ids, int minX, 
-                                        int minY, int maxX, int maxY, int z){
+  private static float[] integrateSlice(DataSet ds, int[][] ids,
+                                                           int[] range, int z){
     float[] IsigI=new float[2];
+
+    int minX=range[0];
+    int minY=range[1];
+    int maxX=range[2];
+    int maxY=range[3];
 
     int ibxmin=minX-1;
     int ibxmax=maxX+1;
@@ -964,8 +1007,12 @@ public class Integrate extends GenericTOF_SCD{
   /**
    * Determines whether the integration range lies on the detector.
    */
-  private static boolean checkRange(int[][] ids, int minX, int minY,
-                                    int maxX, int maxY){
+  private static boolean checkRange(int[][] ids, int[] range){
+    int minX=range[0];
+    int minY=range[1];
+    int maxX=range[2];
+    int maxY=range[3];
+
     if(minX<2) return false;
 
     if(minY<2) return false;
@@ -1332,7 +1379,7 @@ public class Integrate extends GenericTOF_SCD{
     System.out.println("LoadOrientation.RESULT="+lo.getResult());
 
     // integrate the dataset
-    Integrate op = new Integrate( rds, prefix, "quartz" );
+    Integrate op = new Integrate( rds, prefix+"quartz.x" );
     Object res=op.getResult();
     // print the results
     System.out.print("Integrate.RESULT=");
