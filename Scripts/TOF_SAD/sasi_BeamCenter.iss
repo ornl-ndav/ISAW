@@ -17,7 +17,6 @@ $Xoff     Float(0)    Enter Xoff estimate
 $Yoff    Float(0)   Enter Yoff Estimate
 $Xdim     Float(50.2)    Enter X dim in cm
 $Ydim     Float(50.2)    Enter Y dim in cm
-DSfilename = Input_Path&DSfilename
 n=load(DSfilename, "DS")
 
 Sens = ReadFlood( SensFilename,256,256)
@@ -32,6 +31,7 @@ return "X offset="&V[0]&"   Y offset="&V[1]
 
 Display "Finished"
 Return V
+
 
 
 
