@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2002/02/04 23:02:28  dennis
+ *  Added attributes to SCD Data and DataSets giving the sample orientation
+ *  "Sample Chi", "Sample Phi" and "Sample Omega"
+ *
  *  Revision 1.38  2002/01/22 20:31:25  dennis
  *  Temporarily added code for HRMECS runs 3099 & 3100 where
  *  HRMECS was run as a diffractometer.
@@ -610,10 +614,7 @@ private float CalculateEIn()
 
      for ( group_id = first_id; group_id <= last_id; group_id++ )
      {
-//      int     group_members[]  = run_file.IdsInSubgroup( group_id );
       Segment group_segments[] = run_file.SegsInSubgroup( group_id );
-//      if ( group_members.length != group_segments.length )
-//        System.out.println("ERROR: Wrong number of segments");
 
       if ( group_segments.length > 0 )  // only deal with non-trivial groups
                                         // and then pick out the groups of the
@@ -666,7 +667,6 @@ private float CalculateEIn()
                                    instrument_type,
                                    histogram_num,
                                    group_id,
-//                                  group_members, 
                                    group_segments,
                                    tf_type,
                                    spectrum      );
@@ -751,7 +751,11 @@ private float CalculateEIn()
     int_attr = new IntAttribute( Attribute.NUMBER_OF_PULSES, 
                                  run_file.NumOfPulses() );
     attr_list.setAttribute( int_attr );
-    
+
+    // SCD sample orientation, Sample Chi, Sample Phi, Sample Omega
+    if ( instrument_type == InstrumentType.TOF_SCD )
+      AddSCD_SamplePosition( attr_list );
+
     ds.setAttributeList( attr_list );
   }
 
@@ -764,7 +768,6 @@ private float CalculateEIn()
  *  @param  instrument_type  The file name for this DataSet
  *  @param  histogram_num    The histogram number for this group
  *  @param  group_id         The group_id for this group
-// *  @param  group_members    The list of Detectors that belong to this group
  *  @param  group_segments   The list of Segments that belong to this group
  *  @param  tf_type          The time field type for this group 
  *  @param  spectrum         The Data block to which the attributes are added  
@@ -774,7 +777,6 @@ private float CalculateEIn()
                                       int     instrument_type,
                                       int     histogram_num,
                                       int     group_id,
-//                                      int     group_members[], 
                                       Segment group_segments[], 
                                       int     tf_type,
                                       Data    spectrum )
@@ -799,6 +801,10 @@ private float CalculateEIn()
     // Time field type
     int_attr = new IntAttribute( Attribute.TIME_FIELD_TYPE, tf_type );
     attr_list.setAttribute( int_attr );
+
+    // SCD sample orientation, Sample Chi, Sample Phi, Sample Omega
+    if ( instrument_type == InstrumentType.TOF_SCD )
+      AddSCD_SamplePosition( attr_list );
 
     // Detector and Segment ID lists ..........
     int det_ids[] = new int[ group_segments.length ];
@@ -1037,6 +1043,26 @@ private float CalculateEIn()
 
     spectrum.setAttributeList( attr_list );
   }
+
+
+  /**
+   *  Add Chi, Phi and Omega attributes for the sample orientation for 
+   *  SCD instruments. 
+   *
+   *  @param  attr_list  The list of attributes to which the orientation
+   *                     attributes are added.  
+   */
+  private void AddSCD_SamplePosition( AttributeList attr_list )
+  {
+    FloatAttribute float_attr;
+    float_attr = new FloatAttribute( "Sample Chi", (float)run_file.Chi() );
+    attr_list.setAttribute( float_attr );
+    float_attr = new FloatAttribute( "Sample Phi", (float)run_file.Phi() );
+    attr_list.setAttribute( float_attr );
+    float_attr = new FloatAttribute("Sample Omega", (float)run_file.Omega() );
+    attr_list.setAttribute( float_attr );
+  }
+
 
 
  /**
