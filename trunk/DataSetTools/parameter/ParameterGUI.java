@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2004/03/12 21:13:49  bouzekc
+ *  Added clear() method.
+ *
  *  Revision 1.38  2004/01/08 14:49:51  bouzekc
  *  Removed unused local method variable.
  *
@@ -304,8 +307,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     this.enabled = enable;
 
     if( getEntryWidget(  ) != null ) {
-      getEntryWidget(  )
-        .setEnabled( getEnabled(  ) );
+      getEntryWidget(  ).setEnabled( getEnabled(  ) );
     }
   }
 
@@ -394,8 +396,8 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     if( getLabel(  ) == null ) {
       setLabel( new JLabel(  ) );
     }
-    getLabel(  )
-      .setText( "  " + this.getName(  ) );
+
+    getLabel(  ).setText( "  " + this.getName(  ) );
   }
 
   /**
@@ -463,8 +465,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     propertyChangeSupport.addPropertyChangeListener( pcl );
 
     if( getInitialized(  ) ) {
-      getEntryWidget(  )
-        .addPropertyChangeListener( pcl );
+      getEntryWidget(  ).addPropertyChangeListener( pcl );
     }
   }
 
@@ -483,8 +484,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     propertyChangeSupport.addPropertyChangeListener( prop, pcl );
 
     if( getInitialized(  ) ) {
-      getEntryWidget(  )
-        .addPropertyChangeListener( prop, pcl );
+      getEntryWidget(  ).addPropertyChangeListener( prop, pcl );
     }
   }
 
@@ -500,6 +500,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
           new Class[]{ String.class, Object.class } );
       ParameterGUI pg       = ( ParameterGUI )construct.newInstance( 
           new Object[]{ null, null } );
+
       pg.setName( new String( this.getName(  ) ) );
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
@@ -544,6 +545,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     if( getIgnorePropertyChange(  ) ) {
       return;
     }
+
     this.setValid( false );
     propertyChangeSupport.firePropertyChange( ev );
   }
@@ -561,8 +563,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     propertyChangeSupport.removePropertyChangeListener( pcl );
 
     if( getInitialized(  ) ) {
-      getEntryWidget(  )
-        .removePropertyChangeListener( pcl );
+      getEntryWidget(  ).removePropertyChangeListener( pcl );
     }
   }
 
@@ -591,9 +592,10 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @param gPanel The new GUI panel to use.
    */
- /* protected final void setGUIPanel( JPanel gPanel ) {
-    this.gUIPanel = gPanel;
-  }*/
+
+  /* protected final void setGUIPanel( JPanel gPanel ) {
+     this.gUIPanel = gPanel;
+     }*/
 
   /**
    * Mutator method for child classes to set the initialized state.
@@ -656,13 +658,14 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     if( getLabel(  ) == null ) {
       setLabel( new JLabel(  ) );
     }
-    getLabel(  )
-      .setText( "  " + this.getName(  ) );
+
+    getLabel(  ).setText( "  " + this.getName(  ) );
 
     // create the checkbox
     if( this.validCheck == null ) {
       this.validCheck = new JCheckBox( "" );
     }
+
     this.validCheck.setSelected( this.getValid(  ) );
     this.validCheck.setEnabled( false );
     this.validCheck.setVisible( this.getDrawValid(  ) );
@@ -670,8 +673,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     // put the gui together
     this.packupGUI(  );
     addPCLtoWidget(  );
-    getEntryWidget(  )
-      .addPropertyChangeListener( IParameter.VALUE, this );
+    getEntryWidget(  ).addPropertyChangeListener( IParameter.VALUE, this );
     setEnabled( this.getEnabled(  ) );
   }
 
@@ -685,13 +687,16 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       gUIPanel = new JPanel(  );
 
       JPanel gPanel = getGUIPanel(  );
+
       gPanel.setLayout( new BorderLayout(  ) );
 
       JPanel innerpanel = new JPanel( new GridLayout( 1, 2 ) );
+
       innerpanel.add( this.getLabel(  ) );
       innerpanel.add( this.getEntryWidget(  ) );
 
       JPanel checkpanel = new JPanel( new GridLayout( 1, 1 ) );
+
       checkpanel.add( this.validCheck );
       gPanel.add( innerpanel, BorderLayout.CENTER );
       gPanel.add( checkpanel, BorderLayout.EAST );
@@ -720,12 +725,13 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   protected final void showGUIPanel( int x, int y ) {
     if( this.getGUIPanel(  ) != null ) {
       JFrame mw = new JFrame( "Test Display of " + this.getType(  ) );
+
       mw.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-      mw.getContentPane(  )
-        .add( this.getGUIPanel(  ) );
+      mw.getContentPane(  ).add( this.getGUIPanel(  ) );
       mw.pack(  );
 
       Rectangle pos = mw.getBounds(  );
+
       pos.setLocation( x, y );
       mw.setBounds( pos );
       mw.show(  );
@@ -767,11 +773,9 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       propertyName   = ( String )propListeners.get( pcl );
 
       if( propertyName == UNKNOWN_PROPERTY ) {
-        getEntryWidget(  )
-          .addPropertyChangeListener( pcl );
+        getEntryWidget(  ).addPropertyChangeListener( pcl );
       } else {
-        getEntryWidget(  )
-          .addPropertyChangeListener( propertyName, pcl );
+        getEntryWidget(  ).addPropertyChangeListener( propertyName, pcl );
       }
     }
   }
@@ -787,6 +791,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     if( this.validCheck == null ) {  // make the checkbox if it dne
       this.validCheck = new JCheckBox( "" );
     }
+
     this.validCheck.setSelected( this.getValid(  ) );
     this.validCheck.setEnabled( false );
     this.validCheck.setVisible( this.getDrawValid(  ) );

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/12 21:13:49  bouzekc
+ * Added clear() method.
+ *
  * Revision 1.6  2004/03/12 21:12:11  bouzekc
  * Added javadocs.
  *
@@ -53,7 +56,14 @@
  */
 package DataSetTools.parameter;
 
+import DataSetTools.components.ParametersGUI.EntryWidget;
+import DataSetTools.components.ParametersGUI.StringEntry;
+
+import DataSetTools.util.FloatFilter;
+import DataSetTools.util.IntegerFilter;
+
 import java.awt.GridLayout;
+
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
@@ -62,11 +72,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.SwingConstants;
-
-import DataSetTools.components.ParametersGUI.EntryWidget;
-import DataSetTools.components.ParametersGUI.StringEntry;
-import DataSetTools.util.FloatFilter;
-import DataSetTools.util.IntegerFilter;
 
 
 /**
@@ -124,16 +129,16 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
       if( V != null ) {
         temp.addElement( V );
       }
+
       super.setValue( temp );
     }
   }
 
   /**
-   * 
    * @return A Vector representation of the Qbins.
    */
   public Object getValue(  ) {
-    if( !this.getInitialized() ) {
+    if( !this.getInitialized(  ) ) {
       return new Vector(  );
     }
 
@@ -189,34 +194,44 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
   }
 
   /**
+   * Used to clear out the PG.  This resets the Vector to an empty one.
+   */
+  public void clear(  ) {
+    setValue( new Vector(  ) );
+  }
+
+  /**
    * Initializes the GUI.
    *
    * @param V The new value.
    */
   public void initGUI( Vector V ) {
     this.setEntryWidget( new EntryWidget(  ) );
-    this.getEntryWidget().setLayout( new GridLayout( 2, 3 ) );
+    this.getEntryWidget(  ).setLayout( new GridLayout( 2, 3 ) );
     start   = new StringEntry( ".0035", 7, new FloatFilter(  ) );
     end     = new StringEntry( "1.04", 7, new FloatFilter(  ) );
     steps   = new StringEntry( "117", 5, new IntegerFilter(  ) );
     dQ      = new JRadioButton( "dQ" );
 
     JRadioButton dQQ = new JRadioButton( "dQ/Q" );
+
     dQQ.setSelected( true );
 
     ButtonGroup Group = new ButtonGroup(  );
+
     Group.add( dQ );
     Group.add( dQQ );
 
     //dQ.setSelected( true );
     JPanel jp = new JPanel( new GridLayout( 1, 2 ) );
+
     jp.add( dQ );
     jp.add( dQQ );
-    this.getEntryWidget().add( new Comb( "Start Q", start ) );
-    this.getEntryWidget().add( new Comb( "N Steps", steps ) );
-    this.getEntryWidget().add( new Comb( "End Q", end ) );
-    this.getEntryWidget().add( new Comb( "Constant", jp ) );
-    this.getEntryWidget().validate(  );
+    this.getEntryWidget(  ).add( new Comb( "Start Q", start ) );
+    this.getEntryWidget(  ).add( new Comb( "N Steps", steps ) );
+    this.getEntryWidget(  ).add( new Comb( "End Q", end ) );
+    this.getEntryWidget(  ).add( new Comb( "Constant", jp ) );
+    this.getEntryWidget(  ).validate(  );
     super.initGUI(  );
   }
 
@@ -229,6 +244,7 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
 
     if( ( val != null ) && val instanceof Vector ) {
       Vector elems = ( Vector )val;
+
       this.setValid( elems.size(  ) >= 0 );
     } else {
       this.setValid( false );
@@ -253,6 +269,9 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
       add( Comp );
     }
   }
-    //Comb
+
+  //Comb
 }
-  //Qbins1
+
+
+//Qbins1
