@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.116  2002/10/24 18:45:45  pfpeterson
+ *  No longer imports ChopTools.
+ *
  *  Revision 1.115  2002/09/30 20:54:27  pfpeterson
  *  Changed default version number.
  *
@@ -423,7 +426,6 @@
  
 package IsawGUI;
 
-import ChopTools.*;
 import Command.*;
 import DataSetTools.components.containers.SplitPaneWithState; 
 import DataSetTools.components.ParametersGUI.*;
