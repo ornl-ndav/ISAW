@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2002/06/12 13:59:49  pfpeterson
+ *  Modified the write so the data for each bank is in a single
+ *  string buffer (only one write per bank).
+ *
  *  Revision 1.17  2002/06/10 22:28:29  pfpeterson
  *  Now uses StringBuffer to speed up the writing and formating.
  *
@@ -180,6 +184,7 @@ public class gsas_filemaker
      * The method called to write out the file. 
      */
     public void write(){
+        //long offset=System.currentTimeMillis();
 	this.printRunTitle();
         this.printIParmFile();
 	this.printMonitorCount();
@@ -198,9 +203,10 @@ public class gsas_filemaker
                 count++;
             }
 	}
-	try{
-	    Thread.sleep(100);
-	} catch(Exception d){}
+        //System.out.println("time="+(System.currentTimeMillis()-offset));
+	/* try{
+           Thread.sleep(100);
+           } catch(Exception d){}*/
     }
     
     /**
@@ -427,19 +433,20 @@ public class gsas_filemaker
      * format.
      */
     private void printSTDdata( float[] y ){
-        StringBuffer sb=new StringBuffer(80);
+        StringBuffer sb=new StringBuffer((int)(81*y.length/10));
+        for(int j=0; j<y.length; j+=10){
+            for(int l=j+0; l<j+10; l++){
+                if(l>=y.length){
+                    sb.append("        ");
+                }else{
+                    sb.append("  ").append(format((int)y[l],6));
+                }
+            }
+            sb.append("\n");
+            //sb.delete(0,sb.length());
+        }
 	try{
-	    for(int j=0; j<y.length; j+=10){
-		for(int l=j+0; l<j+10; l++){
-		    if(l>=y.length){
-                        sb.append("        ");
-		    }else{
-			sb.append("  ").append(format((int)y[l],6));
-		    }
-		}
-		outStream.write(sb+"\n");
-                sb.delete(0,sb.length());
-	    }
+            outStream.write(sb+"\n");
 	} catch(Exception d){}
     }
 
@@ -459,19 +466,19 @@ public class gsas_filemaker
      * format.
      */
     private void printESDdata( float[] y , float[] dy ){
-        StringBuffer sb=new StringBuffer(80);
+        StringBuffer sb=new StringBuffer((int)(81*y.length/5));
+        for(int j=0; j<y.length; j+=5){
+            for(int l=j+0; l<j+5; l++){
+                if(l>=y.length){
+                    sb.append("        ");
+                }else{
+                    sb.append("  "+format((int)y[l],6)+"  "+format((int)dy[l],6));
+                }
+            }
+            sb.append("\n");
+        }
 	try{
-	    for(int j=0; j<y.length; j+=5){
-		for(int l=j+0; l<j+5; l++){
-		    if(l>=y.length){
-			sb.append("        ");
-		    }else{
-			sb.append("  "+format((int)y[l],6)+"  "+format((int)dy[l],6));
-		    }
-		}
-		outStream.write(sb+"\n");
-                sb.delete(0,sb.length());
-	    }
+            outStream.write(sb+"\n");
 	} catch(Exception d){}
     }
 
@@ -596,10 +603,10 @@ public class gsas_filemaker
  	try{
 	    
 	    // write the tile of the run into the file
-            StringBuffer S=new StringBuffer(80);
-            S.append((String)
+            StringBuffer sb=new StringBuffer(81);
+            sb.append((String)
                data.getAttributeList().getAttributeValue(Attribute.RUN_TITLE));
-	    outStream.write( format(S,80) +"\n");
+	    outStream.write( format(sb,80) +"\n");
 	    
 	} catch(Exception d){}
 	
