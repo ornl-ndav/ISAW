@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2003/04/17 19:51:30  pfpeterson
+ *  Fixed bug where EOL was not placed at the end of an ESD data when
+ *  the data filled the last row.
+ *
  *  Revision 1.23  2003/03/03 16:52:14  pfpeterson
  *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -351,6 +355,8 @@ public class gsas_filemaker
             //sb.append(" "+Format.real(y[i],7)+" "+Format.real(dy[i],7));
             colcount+=16;
         }
+        if(! sb.toString().endsWith("\n") )
+          sb.append("\n");
 	try{
             outStream.write(sb.toString());
 	} catch(Exception d){}
