@@ -29,43 +29,30 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/06/13 21:59:41  bouzekc
+ * Now extends RobustFileFilter to take care of common
+ * functionality.
+ *
  * Revision 1.2  2002/11/27 23:23:16  pfpeterson
  * standardized header
  *
  */
 package DataSetTools.retriever ;
 
-import javax.swing.*;
-import java.io.*;
+import DataSetTools.util.RobustFileFilter;
 
 /**
- * Filters out SDDS files, I guess!!
+ * FileFilter for SDDS files.
  */
-public class SDDSFileFilter extends javax.swing.filechooser.FileFilter{
-    public boolean accept(File f){
-	boolean accept = f.isDirectory();
-	if(!accept){
-	    String suffix = getSuffix(f);
-	    if (suffix != null) accept = suffix.equals("sdds");
-	}
-	return accept;
-    }
-
-    /**
-     * gets the description of what files this filter shows
-     */ 
-    public String getDescription(){
-	return "SDDS Files(*.sdds)";
-    }
-    
-    /**
-     * returns a file extension
-     */
-    public String getSuffix(File f){
-	String s = f.getPath(), suffix = null;
-	int i = s.lastIndexOf('.');
-	if (i>0 && i<s.length() -1)
-	    suffix = s.substring(i+1).toLowerCase();
-	return suffix;
-    }
+public class SDDSFileFilter extends RobustFileFilter{
+  /**
+   *  Default constructor.  Calls the super constructor,
+   *  sets the description, and sets the file extensions.
+   */
+  public SDDSFileFilter()
+  {
+    super();
+    super.setDescription("SDDS files (*.sdds)");
+    super.addExtension(".sdds");
+  }
 }

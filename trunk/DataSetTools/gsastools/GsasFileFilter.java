@@ -29,48 +29,32 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/06/13 21:58:14  bouzekc
+ * Now extends RobustFileFilter to take care of common
+ * functionality.
+ *
  * Revision 1.2  2002/11/27 23:15:00  pfpeterson
  * standardized header
  *
  */
 package DataSetTools.gsastools;
 
-import javax.swing.*;
-import java.io.*;
+import DataSetTools.util.RobustFileFilter;
 
 /**
- * Filters out SDDS files, I guess!!
+ * FileFilter for GSAS files.
  */
-public class GsasFileFilter extends javax.swing.filechooser.FileFilter{
-    public boolean accept(File f){
-        if(f==null) return false;
-        if(f.isDirectory()) return true;
-
-        String suffix = getSuffix(f);
-        if( suffix==null ) return false;
-        suffix=suffix.toUpperCase();
-        if( suffix.equals("GSA") ) return true;
-        if( suffix.equals("GDA") ) return true;
-        if( suffix.equals("DAT") ) return true;
-
-	return false;
-    }
-
-    /**
-     * gets the description of what files this filter shows
-     */ 
-    public String getDescription(){
-	return "GSAS (*.gsa, *.gda, *.dat)";
-    }
-    
-    /**
-     * returns a file extension
-     */
-    public String getSuffix(File f){
-	String s = f.getPath(), suffix = null;
-	int i = s.lastIndexOf('.');
-	if (i>0 && i<s.length() -1)
-	    suffix = s.substring(i+1).toLowerCase();
-	return suffix;
-    }
+public class GsasFileFilter extends RobustFileFilter{
+  /**
+   *  Default constructor.  Calls the super constructor,
+   *  sets the description, and sets the file extensions.
+   */
+  public GsasFileFilter()
+  {
+    super();
+    super.setDescription("GSAS files (*.gsa, *.gda, *.dat)");
+    super.addExtension(".gsa");
+    super.addExtension(".gda");
+    super.addExtension(".dat");
+  }
 }

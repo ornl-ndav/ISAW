@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/06/13 21:59:12  bouzekc
+ *  Now extends RobustFileFilter to take care of common
+ *  functionality.
+ *
  *  Revision 1.3  2003/06/03 15:37:24  bouzekc
  *  Removed *.matrix from getDescription().
  *
@@ -44,42 +48,20 @@
 
 package DataSetTools.operator.Generic.TOF_SCD;
 
-import javax.swing.filechooser.*;
-import java.io.File;
+import DataSetTools.util.RobustFileFilter;
 
 /**
  * FileFilter for matrix files.
  */
-public class MatrixFilter extends    FileFilter {
+public class MatrixFilter extends RobustFileFilter {
   /**
-   * Constructor that does almost nothing
+   *  Default constructor.  Calls the super constructor,
+   *  sets the description, and sets the file extensions.
    */
-  public MatrixFilter(){
+  public MatrixFilter()
+  {
     super();
+    super.setDescription("Matrix files (*.mat)");
+    super.addExtension(".mat");
   }
-
-  /**
-   * Determines if the given file will be displayed when this filter
-   * is active
-   */
-  public boolean accept(File file){
-    if(file.isDirectory())
-      return true;
-
-    String name=file.toString();
-    if(name.endsWith(".mat"))
-      return true;
-    /*else if(name.endsWith(".matrix"))
-      return true;*/
-    else
-      return false;
-  }
-
-  /**
-   * Returns a description that will appear in the dialog
-   */
-  public String getDescription(){
-    return "matrix files (*.mat)";
-  }
-
 }
