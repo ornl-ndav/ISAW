@@ -28,9 +28,13 @@
  * This work was supported by the National Science Foundation under grant
  * number DMR-0218882.
  *
- * Modified: 
+ * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/06/25 20:24:45  bouzekc
+ * Unused private variables removed, reformatted for
+ * consistency.
+ *
  * Revision 1.11  2003/06/19 16:19:59  bouzekc
  * Now uses Wizard's linkFormParameters() to link the
  * parameters in the parameter table.
@@ -53,6 +57,10 @@
  *
  * Revision 1.4  2003/03/13 19:00:52  dennis
  * Added $Log$
+ * Added Revision 1.12  2003/06/25 20:24:45  bouzekc
+ * Added Unused private variables removed, reformatted for
+ * Added consistency.
+ * Added
  * Added Revision 1.11  2003/06/19 16:19:59  bouzekc
  * Added Now uses Wizard's linkFormParameters() to link the
  * Added parameters in the parameter table.
@@ -72,33 +80,28 @@
  * Added comment to include revision information.
  *
  */
-
 package Wizard;
 
-import java.util.Vector;
-import javax.swing.*;
-import DataSetTools.wizard.*;
 import DataSetTools.parameter.IParameterGUI;
+
+import DataSetTools.wizard.*;
+
+import java.util.Vector;
+
+import javax.swing.*;
+
 
 /**
  *  This class has a main program that constructs a Wizard for time
  *  focusing and grouping spectra in a DataSet.
  */
-public class TimeFocusGroupWizard extends Wizard
-{
-  private static final int HISTOGRAMS         = 0;
-  private static final int MONITORS           = 1;
-  private static final int TIME_FOCUS_RESULTS = 2;
-  private static final int RUN_NUMBERS        = 3;
-  private static final int INSTRUMENT_NAME    = 4; 
-
+public class TimeFocusGroupWizard extends Wizard {
   /**
    *
    *  Default constructor.  Sets standalone in Wizard to true.
    */
-  public TimeFocusGroupWizard()
-  {
-    this(true);
+  public TimeFocusGroupWizard(  ) {
+    this( true );
   }
 
   /**
@@ -109,25 +112,24 @@ public class TimeFocusGroupWizard extends Wizard
    *                             is contained in something else
    *                             (false).
    */
-  public TimeFocusGroupWizard(boolean standalone)
-  {
-    super("Time Focus and Group Wizard", standalone);
-    this.createAllForms();
+  public TimeFocusGroupWizard( boolean standalone ) {
+    super( "Time Focus and Group Wizard", standalone );
+    this.createAllForms(  );
   }
 
   /**
    *  Adds and coordinates the necessary Forms for this Wizard.
    *
    *  The referential links are arranged in a tabular format.
-   *  At some point, the Wizard base class will be automating the 
+   *  At some point, the Wizard base class will be automating the
    *  links, so please follow this format.  This particular wizard follows
    *  this format.
-   * 
+   *
    *  Note that:
    *  LoadMultiHistogramsForm = lmhf
    *  TimeFocusGroupForm = tfgf
    *  SaveAsGSASForm = sagf
-   * 
+   *
    *    lmhf    tfgf    sagf
    *  |----------------------|
    *  |   5   |   0   | -1   |
@@ -144,41 +146,46 @@ public class TimeFocusGroupWizard extends Wizard
    *  The indices are accessed in the following manner, using [x][y]:
    *  x = row, y = col
    *  You must place the actual parameter number within the integer array.
-   *  For example, to set the link between LoadMultiHistogramForm's 5th 
+   *  For example, to set the link between LoadMultiHistogramForm's 5th
    *  parameter into TimeFocusGroupForm's 0th parameter, use the following:
-   *  (assuming fpi has already been declared as a two-dimensional integer 
+   *  (assuming fpi has already been declared as a two-dimensional integer
    *  array of sufficient size):
-   * 
+   *
    *  fpi[0][0] = 5;
    *  fpi[0][1] = 0;
    *
-   *  Alternately, you may create the entire table  using Java's array 
+   *  Alternately, you may create the entire table  using Java's array
    *  initialization scheme, as shown:
-   * 
+   *
    *   int fpi[][] = { {5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3} };
    */
-  private void createAllForms()
-  {
-    int fpi[][] = { {5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3} };
+  private void createAllForms(  ) {
+    int[][] fpi = {
+      { 5, 0, -1 },
+      { -1, 61, 0 },
+      { 6, -1, 1 },
+      { 0, -1, 2 },
+      { 2, -1, 3 }
+    };
 
-    LoadMultiHistogramsForm lmhf = new LoadMultiHistogramsForm();
-    TimeFocusGroupForm tfgf = new TimeFocusGroupForm();
-    SaveAsGSASForm sagf = new SaveAsGSASForm();
+    LoadMultiHistogramsForm lmhf = new LoadMultiHistogramsForm(  );
+    TimeFocusGroupForm tfgf      = new TimeFocusGroupForm(  );
+    SaveAsGSASForm sagf          = new SaveAsGSASForm(  );
 
-    this.addForm(lmhf);
-    this.addForm(tfgf);
-    this.addForm(sagf);
+    this.addForm( lmhf );
+    this.addForm( tfgf );
+    this.addForm( sagf );
 
-    super.linkFormParameters(fpi);
+    super.linkFormParameters( fpi );
   }
 
   /**
-   *  Method for running the Time Focus Group wizard 
+   *  Method for running the Time Focus Group wizard
    *   as standalone.
    */
-  public static void main(String args[])
-  {
-    TimeFocusGroupWizard w = new TimeFocusGroupWizard(true);
-    w.showForm(0);
+  public static void main( String[] args ) {
+    TimeFocusGroupWizard w = new TimeFocusGroupWizard( true );
+
+    w.showForm( 0 );
   }
 }
