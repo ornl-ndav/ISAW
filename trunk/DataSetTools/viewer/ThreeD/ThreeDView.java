@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2002/07/24 23:20:36  dennis
+ * Now updates X-Conversions table when POINTED_AT_CHANGED
+ * message is received.
+ * Now set n_bins = 0 in x_scale_ui, to default to no
+ * rebinning.
+ *
  * Revision 1.23  2002/07/23 18:24:37  dennis
  * Now sends/processes POINTED_AT_CHANGED messages when the
  * pointed at "X" value is changed as well as when the
@@ -256,11 +262,10 @@ public void redraw( String reason )
 
    else if ( reason.equals(IObserver.POINTED_AT_CHANGED) )
    {
-      if ( threeD_panel.isDoingBox() )           // ignore pointed at messages
-        return;                                  // if currently zooming in
+      if ( threeD_panel.isDoingBox() )           // don't interrupt the zoom in 
+        return;                                  // process 
 
       DataSet ds = getDataSet();
-      Vector3D detector_location = group_location( ds.getPointedAtIndex() );
 
       if ( debug )
       {
@@ -268,15 +273,22 @@ public void redraw( String reason )
         System.out.println("PAX  = " + ds.getPointedAtX() );
         System.out.println("last = " + last_pointed_at_x );
       }
-      if ( ds.getPointedAtX() != last_pointed_at_x )
+
+      if ( ds.getPointedAtX() != Float.NaN      &&
+           ds.getPointedAtX() != last_pointed_at_x )
       {
         last_pointed_at_x = ds.getPointedAtX();
         notify_ds_observers = false;             // since we are setting the
                                                  // frame controller by request,
                                                  // don't notify ds observers
-        frame_control.setFrameValue( ds.getPointedAtX() );
+        frame_control.setFrameValue( last_pointed_at_x );
       }
 
+      int index = ds.getPointedAtIndex();
+      if ( index != DataSet.INVALID_INDEX && last_pointed_at_x != Float.NaN ) 
+        conv_table.showConversions( last_pointed_at_x, index );
+
+      Vector3D detector_location = group_location( ds.getPointedAtIndex() );
       Point   pixel_point;
       if ( detector_location != null )
       {
@@ -988,10 +1000,9 @@ private void init()
   UniformXScale x_scale  = getDataSet().getXRange();
   float x_min  = x_scale.getStart_x();
   float x_max  = x_scale.getEnd_x();
-  int n_steps = getDataSet().getMaxXSteps();
-  if ( getDataSet().getData_entry(0).isHistogram() )
-    n_steps = n_steps - 1;
-  x_scale_ui = new XScaleChooserUI( "X Scale", label, x_min, x_max, n_steps );
+                                // set n_steps to 0 to default to NO REBINNING
+  x_scale_ui = new XScaleChooserUI( "X Scale", label, x_min, x_max, 0 );
+
   x_scale_ui.addActionListener( new XScaleListener() );
   control_panel.add( x_scale_ui );
 
