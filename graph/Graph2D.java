@@ -72,14 +72,14 @@ public class Graph2D extends Canvas {
 
 /**
  *  A vector list of All the axes attached
- *  @see Graph2d#attachAxis()
+ *  @see graph.Graph2D#attachAxis
  */
 
     protected Vector axis          = new Vector(4);
 
 /**
  *  A vector list of All the DataSets attached
- *  @see Graph2d#attachDataSet()
+ *  @see graph.Graph2D#attachDataSet
  *  @see DataSet
  */
 
@@ -87,14 +87,14 @@ public class Graph2D extends Canvas {
 
 /**
  *  The markers that may have been loaded
- *  @see Graph2D#setMarkers()
+ *  @see Graph2D#setMarkers
  */
 
     protected Markers markers = null;
 
 /**
  * The blinking "data loading" thread
- * @see Graph2D#startedloading()
+ * @see Graph2D#startedloading
  */
 
     protected LoadMessage load_thread = null;
@@ -691,8 +691,8 @@ public class Graph2D extends Canvas {
  *  net. Everytime this routine is called a counter is incremented
  *  the method Graph2D.finishedloading() decrements the counter. When the
  *  counter is back to zero the plotting resumes.
- *  @see Graph2D#finishedloading()
- *  @see Graph2D#loadmessage()
+ *  @see Graph2D#finishedloading
+ *  @see Graph2D#loadmessage
  *  @see LoadMessage
 */
     public void startedloading() {
@@ -711,8 +711,8 @@ public class Graph2D extends Canvas {
 /**
  * Decrement the loading Data counter by one. When it is zero resume
  * plotting.
- *  @see Graph2D#startedloading()
- *  @see Graph2D#loadmessage()
+ *  @see Graph2D#startedloading
+ *  @see Graph2D#loadmessage
  *  @see LoadMessage
 */
     public void finishedloading() {
@@ -728,8 +728,8 @@ public class Graph2D extends Canvas {
 /**
  * Change the message to be flashed on the canvas
  * @param s String contining the new message.
- * @see Graph2D#startedloading()
- * @see Graph2D#finishedloading()
+ * @see Graph2D#startedloading
+ * @see Graph2D#finishedloading
  * @see LoadMessage
 */
     public void loadmessage(String s) {
