@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/02/07 16:27:43  dennis
+ * Added getDocumentation() method. (Joshua Olson)
+ *
  * Revision 1.2  2002/11/27 23:29:54  pfpeterson
  * standardized header
  *
@@ -61,8 +64,7 @@ public class SetDetPos extends GenericSpecial
 
  /* ------------------------ Default constructor ------------------------- */ 
  /**
-  *  Creates operator with title "SetDetPos" and a  default list of
-  *  parameters.
+  *  Creates operator with title "SetDetPos" and a default list of parameters.
   */  
   public SetDetPos()
   {
@@ -122,14 +124,50 @@ public class SetDetPos extends GenericSpecial
     addParameter( new Parameter("Azimuth angle phi", new Float(0) ) );
     addParameter( new Parameter("z", new Float(0) ) );
   }
+  
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */                                                                                    
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");                                                 
+    s.append("@overview This operator provides a way to set the detector ");
+    s.append("position attribute for a data block. "); 
+    s.append("@assumptions The three float parameters can form the ");
+    s.append("cylindrical coordinates of a DetectorPosition object. \n");
+    s.append("'int_val' refers to the data block in 'ds' that the user ");
+    s.append("wants to set the detector position attribute of. \n");
+    s.append("The given DataSet 'ds' is not empty.\n");                                                                       //                           		                                                                                                              
+    s.append("@algorithm A detector position is created using the three ");
+    s.append("float parameters to form its cylindrical coordinates.  An ");
+    s.append("attribute associates the name of the detector with its ");
+    s.append("newfound coordinates. \n\n ");      
+    s.append("The detector position attribute of the data block in 'ds' ");
+    s.append("corresponding to 'int_val' is set to be equal to the attribute ");
+    s.append("mentioned in the preceding sentence. \n\n ");      
+    s.append("An entry is added to the DataSet's log indicating that this ");
+    s.append("operator has set the detector position.  The DataSet is ");
+    s.append("returned.");
+    s.append("@param ds DataSet to process ");
+    s.append("@param int_val integer group ID");
+    s.append("@param float_val1 sph_radius parameter");
+    s.append("@param float_val2 azimuth_angle parameter");
+    s.append("@param float_val3 polar_angle parameter");     
+    s.append("@return This operator returns the DataSet, whose detector ");
+    s.append("position has been set for the data block corresponding to ");
+    s.append("'int_val'.");
+    return s.toString();
+  } 									        
 
  /* ----------------------------- getResult ------------------------------ */ 
  /** 
   *  Executes this operator using the values of the current parameters.
   *
-  *  @return  If successful, this template just returns a String indicating
-  *           what the paramters were, and that the operator executed.  The
-  *           code that does the work of the operator goes here. 
+  *  @return  This operator returns the DataSet, whose detector position 
+  *           has been set for the data block corresponding to 'int_val'.  
+  *           The code that does the work of the operator goes here. 
   */
   public Object getResult()
   {
@@ -139,12 +177,11 @@ public class SetDetPos extends GenericSpecial
     float   float_val2 = ((Float)  (getParameter(3).getValue())).floatValue();
     float   float_val3 = ((Float)  (getParameter(4).getValue())).floatValue();
 
-
     DataSetTools.math.DetectorPosition detpos = new DataSetTools.math.DetectorPosition(  );
-     detpos.setCylindricalCoords(float_val1, float_val2, float_val3);
+     detpos.setCylindricalCoords(float_val1, float_val2, float_val3); 
     Attribute attr = new DetPosAttribute( Attribute.DETECTOR_POS, detpos);
     ds.getData_entry( group_index ).setAttribute(attr);
-    ds.addLog_entry("Applied the SetDetPos");
+    ds.addLog_entry("Applied the SetDetPos"); 
 
     return ds;
   }
