@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/07/03 15:30:04  bouzekc
+ * Added missing javadoc and class comments, reformatted
+ * existing comments, and rearranged methods according to
+ * access privilege.
+ *
  * Revision 1.10  2003/07/03 15:11:12  bouzekc
  * Fixed odd CVS log entries due to double inclusion of log
  * header tag.
@@ -97,22 +102,28 @@ import javax.swing.border.*;
 
 
 /**
- *  This class defines a form for time focusing spectra in
- *  a DataSet under the control of a Wizard.
+ * This class defines a form for time focusing spectra in a DataSet under the
+ * control of a Wizard.
  */
 public class TimeFocusGroupForm extends Form implements Serializable {
+  //~ Static fields/initializers ***********************************************
+
   public static final int NUM_BANKS = 20;
+
+  //~ Instance fields **********************************************************
+
   private IParameterGUI[] ipgs;
   private int new_GID;
   private Float angle;
   private Float path;
   private String focusing_GIDs;
 
+  //~ Constructors *************************************************************
+
   /**
-   *  Construct a TimeFocusGroupForm.  This constructor also
-   *  calls setDefaultParameters in order to set the permission
-   *  type of the parameters.
-   *
+   * Construct a TimeFocusGroupForm.  This constructor also calls
+   * setDefaultParameters in order to set the permission type of the
+   * parameters.
    */
   public TimeFocusGroupForm(  ) {
     super( "Time focus and group DataSets" );
@@ -120,44 +131,50 @@ public class TimeFocusGroupForm extends Form implements Serializable {
   }
 
   /**
+   * Full constructor.  Uses the input parameters to create a
+   * TimeFocusGroupForm without the need to externally set the parameters.
+   * getResult() may be called immediately after using this constructor.
    *
-   *  Full constructor.  Uses the input parameters to create
-   *  a TimeFocusGroupForm without the need to externally
-   *  set the parameters.  getResult() may
-   *  be called immediately after using this constructor.
-   *
-   *  @param hist_vector      Vector of histograms that  you
-   *                          wish to time focus and group.
-   *
-   *  @param focus_IDs        IDs to focus.
-   *
-   *  @param foc_angle        Focusing angle.
-   *
-   *  @param new_path         The new path.
-   *
-   *  @param tf_vector        The Vector which you wish to store
-   *                          the time focused histograms in.
+   * @param hist_vector Vector of histograms that  you wish to time focus and
+   *        group.
+   * @param focus_IDs IDs to focus.
+   * @param foc_angle Focusing angle.
+   * @param new_path The new path.
+   * @param tf_vector The Vector which you wish to store the time focused
+   *        histograms in.
    */
   public TimeFocusGroupForm( 
     Vector hist_vector, String focus_IDs, float foc_angle, float new_path,
     Vector tf_array ) {
     this(  );
-    getParameter( 0 ).setValue( hist_vector );
-    getParameter( 1 ).setValue( focus_IDs );
-    getParameter( 2 ).setValue( new Float( foc_angle ) );
-    getParameter( 3 ).setValue( new Float( new_path ) );
-    getParameter( 4 ).setValue( tf_array );
+    getParameter( 0 )
+      .setValue( hist_vector );
+    getParameter( 1 )
+      .setValue( focus_IDs );
+    getParameter( 2 )
+      .setValue( new Float( foc_angle ) );
+    getParameter( 3 )
+      .setValue( new Float( new_path ) );
+    getParameter( 4 )
+      .setValue( tf_array );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * @return the String command used for invoking this Form in a Script.
+   */
+  public String getCommand(  ) {
+    return "TIMEFOCUSGROUPFORM";
   }
 
   /**
-   *
-   *  Attempts to set reasonable default parameters for this form.
-   *  Included in this is a default setting of the DataSet array
-   *  corresponding to the respective runfiles' loaded histograms,
-   *  as well as the corresponding type of the parameter (editable,
-   *  result, or constant).  Since this is for a bank of 20
-   *  detectors, the setup is for 60 editable parameters.  This
-   *  can be changed by changing the constant.
+   * Attempts to set reasonable default parameters for this form. Included in
+   * this is a default setting of the DataSet array corresponding to the
+   * respective runfiles' loaded histograms, as well as the corresponding type
+   * of the parameter (editable, result, or constant).  Since this is for a
+   * bank of 20 detectors, the setup is for 60 editable parameters.  This can
+   * be changed by changing the constant.
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
@@ -183,10 +200,7 @@ public class TimeFocusGroupForm extends Form implements Serializable {
   }
 
   /**
-   *
-   *  Documentation for this OperatorForm.  Follows javadoc
-   *  conventions.
-   *
+   * @return documentation for this OperatorForm.  Follows javadoc conventions.
    */
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer(  );
@@ -220,96 +234,10 @@ public class TimeFocusGroupForm extends Form implements Serializable {
   }
 
   /**
-   *  Returns the String command used for invoking this
-   *  Form in a Script.
-   */
-  public String getCommand(  ) {
-    return "TIMEFOCUSGROUPFORM";
-  }
-
-  protected void makeGUI(  ) {
-    Box box = new Box( BoxLayout.Y_AXIS );
-
-    super.prepGUI( box );
-
-    JPanel sub_panel;
-    int[] param_type = null;
-
-    for( int i = 0; i < 3; i++ ) {
-      param_type = getParamType( i );
-
-      if( ( param_type != null ) || ( param_type.length > 0 ) ) {
-        if( i == VAR_PARAM ) {
-          sub_panel = build_focus_grid( param_type );
-        } else {
-          sub_panel = super.build_param_panel( PARAM_NAMES[i], param_type );
-        }
-
-        if( sub_panel != null ) {
-          box.add( sub_panel );
-        }
-      }
-    }
-
-    super.enableParameters(  );
-  }
-
-  /**
-   *  This builds the 'editable' portion of the form. It provides a
-   *  grid for multiple detector banks.
+   * Time focuses and groups the Vector of DataSets and loads them into a new
+   * Vector of DataSets (in an ArrayPG).
    *
-   *  @param num an int array of which parameter populate the
-   *  sub-panel
-   */
-  protected JPanel build_focus_grid( int[] num ) {
-    String title = PARAM_NAMES[VAR_PARAM];
-
-    if( ( parameters == null ) || ( parameters.size(  ) <= 0 ) ) {
-      return null;
-    }
-
-    JPanel sub_panel;
-    TitledBorder border;
-    int num_params;
-
-    num_params   = num.length;
-    sub_panel    = new JPanel(  );
-    border       = new TitledBorder( 
-        LineBorder.createBlackLineBorder(  ), title );
-    border.setTitleFont( FontUtil.BORDER_FONT );
-    sub_panel.setBorder( border );
-
-    //multiple grid entry
-    sub_panel.setLayout( new GridLayout( 0, 3 ) );
-    ipgs = new IParameterGUI[num.length];
-
-    //get the params
-    for( int i = 0; i < num_params; i++ ) {
-      IParameterGUI param = ( IParameterGUI )parameters.elementAt( num[i] );
-
-      ;
-      param.init(  );
-
-      ipgs[i] = param;
-
-      if( i < 3 ) {  //add the labels on this pass
-        sub_panel.add( param.getLabel(  ) );
-      }
-    }
-
-    for( int i = 0; i < num_params; i++ ) {
-      sub_panel.add( ipgs[i].getEntryWidget(  ) );
-    }
-
-    return sub_panel;
-  }
-
-  /**
-   *  Time focuses and groups the Vector of DataSets and loads them
-   *  into a new Vector of DataSets (in an ArrayPG).
-   *
-   *  @return true if all of the parameters are valid and all hist_ds
-   *  can be time focused and grouped; false if any significant error occurs
+   * @return Boolean indicating success or failure.
    */
   public Object getResult(  ) {
     SharedData.addmsg( "Executing...\n" );
@@ -365,10 +293,8 @@ public class TimeFocusGroupForm extends Form implements Serializable {
           while( p_index < edit_len ) {
             focusing_GIDs   = ( String )this.getEditableParamValue( 
                 ipgs[p_index] );
-            angle           = ( ( Float )this.getEditableParamValue( 
-                ipgs[p_index + 1] ) );
-            path            = ( ( Float )this.getEditableParamValue( 
-                ipgs[p_index + 2] ) );
+            angle   = ( ( Float )this.getEditableParamValue( ipgs[p_index + 1] ) );
+            path    = ( ( Float )this.getEditableParamValue( ipgs[p_index + 2] ) );
 
             if( ( focusing_GIDs == null ) || ( focusing_GIDs.length(  ) <= 0 ) ) {
               p_index += 3;
@@ -400,9 +326,8 @@ public class TimeFocusGroupForm extends Form implements Serializable {
 
               //must have a list of group IDs in order to group it
               if( focusing_GIDs.length(  ) != 0 ) {  //DO NOT make a new DataSet
-                gro      = new Grouping( 
-                    hist_ds, focusing_GIDs, new_GID, false );
-                result   = gro.getResult(  );
+                gro   = new Grouping( hist_ds, focusing_GIDs, new_GID, false );
+                result = gro.getResult(  );
               }
             } else {
               if( result instanceof ErrorString ) {
@@ -430,8 +355,8 @@ public class TimeFocusGroupForm extends Form implements Serializable {
 
             p_index += 3;
           }
-            //while
 
+          //while
           //add the time focused DataSet to time focused results
           tfgr.addItem( hist_ds );
         }  //if
@@ -445,8 +370,8 @@ public class TimeFocusGroupForm extends Form implements Serializable {
         newPercent += increment;
         super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
       }
-        //for( num_ds )
 
+      //for( num_ds )
       tfgr.setValid( true );
       SharedData.addmsg( "Finished time focusing and grouping DataSets.\n" );
 
@@ -458,11 +383,102 @@ public class TimeFocusGroupForm extends Form implements Serializable {
     }
   }
 
+  /**
+   * This builds the 'editable' portion of the form. It provides a grid for
+   * multiple detector banks.
+   *
+   * @param num an array of indices for the parameters which populate the
+   *        sub-panel
+   *
+   * @return the JPanel which this method builds.
+   */
+  protected JPanel build_focus_grid( int[] num ) {
+    String title = PARAM_NAMES[VAR_PARAM];
+
+    if( ( parameters == null ) || ( parameters.size(  ) <= 0 ) ) {
+      return null;
+    }
+
+    JPanel sub_panel;
+    TitledBorder border;
+    int num_params;
+
+    num_params   = num.length;
+    sub_panel    = new JPanel(  );
+    border       = new TitledBorder( 
+        LineBorder.createBlackLineBorder(  ), title );
+    border.setTitleFont( FontUtil.BORDER_FONT );
+    sub_panel.setBorder( border );
+
+    //multiple grid entry
+    sub_panel.setLayout( new GridLayout( 0, 3 ) );
+    ipgs = new IParameterGUI[num.length];
+
+    //get the params
+    for( int i = 0; i < num_params; i++ ) {
+      IParameterGUI param = ( IParameterGUI )parameters.elementAt( num[i] );
+
+      ;
+      param.init(  );
+
+      ipgs[i] = param;
+
+      if( i < 3 ) {  //add the labels on this pass
+        sub_panel.add( param.getLabel(  ) );
+      }
+    }
+
+    for( int i = 0; i < num_params; i++ ) {
+      sub_panel.add( ipgs[i].getEntryWidget(  ) );
+    }
+
+    return sub_panel;
+  }
+
+  /**
+   * Overridden to use the build_focus_grid() method to build the GUI.
+   */
+  protected void makeGUI(  ) {
+    Box box = new Box( BoxLayout.Y_AXIS );
+
+    super.prepGUI( box );
+
+    JPanel sub_panel;
+    int[] param_type = null;
+
+    for( int i = 0; i < 3; i++ ) {
+      param_type = getParamType( i );
+
+      if( ( param_type != null ) || ( param_type.length > 0 ) ) {
+        if( i == VAR_PARAM ) {
+          sub_panel = build_focus_grid( param_type );
+        } else {
+          sub_panel = super.build_param_panel( PARAM_NAMES[i], param_type );
+        }
+
+        if( sub_panel != null ) {
+          box.add( sub_panel );
+        }
+      }
+    }
+
+    super.enableParameters(  );
+  }
+
+  /**
+   * Gets the editable parameter values from the focus grid.  Used by
+   * getResult().
+   *
+   * @param param The parameter value to get.
+   *
+   * @return the value of the parameter.
+   */
   private Object getEditableParamValue( IParameterGUI param ) {
     Object obj;
 
     //get the focus IDs
-    if( param.getName(  ).equals( super.getParameter( 1 ).getName(  ) ) ) {
+    if( param.getName(  )
+               .equals( super.getParameter( 1 ).getName(  ) ) ) {
       String focusing_GIDs;
 
       //get the user input parameters
@@ -487,7 +503,8 @@ public class TimeFocusGroupForm extends Form implements Serializable {
       }
     }
     //get focus angle
-    else if( param.getName(  ).equals( super.getParameter( 2 ).getName(  ) ) ) {
+    else if( param.getName(  )
+                    .equals( super.getParameter( 2 ).getName(  ) ) ) {
       Float angle;
 
       obj = param.getValue(  );
@@ -504,7 +521,8 @@ public class TimeFocusGroupForm extends Form implements Serializable {
       }
     }
     //get path
-    else if( param.getName(  ).equals( super.getParameter( 3 ).getName(  ) ) ) {
+    else if( param.getName(  )
+                    .equals( super.getParameter( 3 ).getName(  ) ) ) {
       Float path;
 
       obj = param.getValue(  );
