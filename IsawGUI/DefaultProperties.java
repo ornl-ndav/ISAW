@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2002/10/24 15:15:28  pfpeterson
+ *  Changed default IsawProps.dat to have "ViewDetetors=Filled" uncommented.
+ *
  *  Revision 1.13  2002/08/15 18:46:48  pfpeterson
  *  Replaced hrmecs live data/file servers urls to be the new machines.
  *
@@ -325,13 +328,13 @@ public class DefaultProperties{
             .append("#").append(eol)
             .append("Default_Instrument=HRCS").append(eol)
             .append("ColorScale=Optimal").append(eol)
+            .append("ViewDetectors=Filled").append(eol)
+            .append("#ViewGroups=Medium").append(eol)
             .append("#RebinFlag=false").append(eol)
             .append("#HScrollFlag=false").append(eol)
             .append("#ViewAltitudeAngle=20.0").append(eol)
             .append("#ViewAzimuthAngle=45.0").append(eol)
             .append("#ViewDistance=4.5").append(eol)
-            .append("#ViewGroups=Medium").append(eol)
-            .append("#ViewDetectors=SOLID").append(eol)
             .append("#Brightness=40").append(eol)
             .append("#Auto-Scale=0.0").append(eol);
 
