@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 19:41:21  kramer
+ * Made the class implement ExternallyControlledFrame and added any inherited
+ * methods.
+ *
  * Revision 1.3  2004/03/12 19:46:15  bouzekc
  * Changes since 03/10.
  *
@@ -44,6 +48,7 @@
 package devTools.Hawk.classDescriptor.gui.frame;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -62,6 +67,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import devTools.Hawk.classDescriptor.gui.ExternallyControlledFrame;
 import devTools.Hawk.classDescriptor.gui.panel.AlphabeticalListJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.AttributeDefnOptionsJPanel;
 import devTools.Hawk.classDescriptor.gui.panel.search.ConstructorDefnOptionsJPanel;
@@ -75,7 +81,7 @@ import devTools.Hawk.classDescriptor.tools.SearchUtilities;
  * This is the window which allows the user to search for an interface meeting specific conditions.
  * @author Dominic Kramer
  */
-public class SearchGUI extends JFrame implements ActionListener, ListSelectionListener
+public class SearchGUI extends JFrame implements ActionListener, ListSelectionListener, ExternallyControlledFrame
 {
 	/** The panel used to specify the conditions one of the interface's attributes has to meet. */
 	protected AttributeDefnOptionsJPanel attributePanel;
@@ -146,7 +152,7 @@ public class SearchGUI extends JFrame implements ActionListener, ListSelectionLi
 		JPanel panel5 = new JPanel();
 			panel5.setLayout(new BorderLayout());
 			projectMadeFromSearch = new Project();
-			listPanel = new AlphabeticalListJPanel(projectMadeFromSearch,false,false,desktop,panel5);
+			listPanel = new AlphabeticalListJPanel(projectMadeFromSearch,false,false,desktop,this);
 			listPanel.setLayout(new GridLayout(1,1));
 			JPanel topPanel = new JPanel();
 			topPanel.setLayout(new BorderLayout());
@@ -198,7 +204,9 @@ public class SearchGUI extends JFrame implements ActionListener, ListSelectionLi
 			}
 			tabbedPane.setSelectedIndex(4);
 			projectMadeFromSearch.setInterfaceVec(foundVec);
-			listPanel.fillList(false,false);
+			listPanel.getShortenJavaCheckBox().setSelected(false);
+			listPanel.getShortenOtherCheckBox().setSelected(false);
+			listPanel.fillList();
 		}
 	}
 	
@@ -207,5 +215,15 @@ public class SearchGUI extends JFrame implements ActionListener, ListSelectionLi
 	 */
 	public void valueChanged(ListSelectionEvent e)
 	{
+	}
+	
+	//----The methods that are to be inherited from ExternallyControlledFrame are handled by JFrame exept this one
+	/** 
+	 * Get the Component that is being controlled.
+	 * @return this.
+	 */
+	public Component getControlledComponent()
+	{
+		return this;
 	}
 }
