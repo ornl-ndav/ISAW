@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/10/07 18:38:51  bouzekc
+ *  Removed declaration of "implements ParamUsesString" as the
+ *  StringEntryPG superclass now declares it.
+ *
  *  Revision 1.9  2003/09/09 23:06:31  bouzekc
  *  Implemented validateSelf().
  *
@@ -73,7 +77,7 @@ import DataSetTools.components.ParametersGUI.*;
  * This is a superclass to take care of many of the common details of
  * StringPGs.
  */
-public class StringPG extends StringEntryPG implements ParamUsesString{
+public class StringPG extends StringEntryPG {
     private   static final String TYPE     = "String";
 
     // ********** Constructors **********
@@ -105,7 +109,6 @@ public class StringPG extends StringEntryPG implements ParamUsesString{
         super.setEntryValue(svalue);
       else
         this.value=svalue;
-      this.setValid(true);
     }
 
     // ********** ParamUsesString requirements **********
@@ -160,16 +163,6 @@ public class StringPG extends StringEntryPG implements ParamUsesString{
         fpg.initGUI(null);
         fpg.showGUIPanel();
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        StringPG spg=new StringPG(this.name,this.value,this.valid);
-        spg.setDrawValid(this.getDrawValid());
-        spg.initialized=false;
-        return spg;
-    }
 
     /**
      * Validates this StringPG.  A StringPG is considered valid if its

@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/10/07 18:38:52  bouzekc
+ *  Removed declaration of "implements ParamUsesString" as the
+ *  StringEntryPG superclass now declares it.
+ *
  *  Revision 1.10  2003/09/09 23:06:28  bouzekc
  *  Implemented validateSelf().
  *
@@ -76,7 +80,7 @@ import DataSetTools.util.*;
 /**
  * This is class is to deal with float parameters.
  */
-public class InstNamePG extends StringPG implements ParamUsesString{
+public class InstNamePG extends StringPG {
     private static final String TYPE     = "InstName";
     private static       String propName = "Default_Instrument";
 
@@ -137,16 +141,6 @@ public class InstNamePG extends StringPG implements ParamUsesString{
         fpg.initGUI(null);
         fpg.showGUIPanel();
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        InstNamePG pg=new InstNamePG(this.name,this.value,this.valid);
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        return pg;
-    }
 
     /**
      * Validates this InstNamePG.  An InstNamePG is valid if and only if
