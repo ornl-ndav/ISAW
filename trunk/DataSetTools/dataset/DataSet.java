@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2002/08/01 19:46:18  dennis
+ *  Made more robust for serialization:
+ *  Made appropriate fields transient.
+ *  Added DataSetVersion = 1, field, to manage our own version system.
+ *  Added readObject() method that fills in values for
+ *        transient fields.
+ *
  *  Revision 1.30  2002/07/23 18:11:14  dennis
  *  Added fields: pointed_at_x, selected_interval
  *  Added methods: set/getSelectedInterval(), set/getPointedAtX()
@@ -199,16 +206,22 @@ public class DataSet implements IAttributeList,
                                 IObservable,
                                 IXmlIO 
 {
-  // CHANGE IF THE SERIALIZATION IS INCOMPATIBLE WITH PREVIOUS VERSIONS
-  static final long serialVersionUID = 1L;
+  // NOTE: any field that is static or transient is NOT serialized.
+  //
+  // CHANGE THE "serialVersionUID" IF THE SERIALIZATION IS INCOMPATIBLE WITH 
+  // PREVIOUS VERSIONS, IN WAYS THAT CAN NOT BE FIXED BY THE readObject() 
+  // METHOD.  SEE "DataSetVersion" COMMENTS BELOW.  CHANGING THIS CAUSES JAVA
+  // TO REFUSE TO READ DIFFERENT VERSIONS.
+  //
+  public  static final long serialVersionUID = 1L;
 
-  private static long current_ds_tag = 0; // Each DataSet will be assigned a
+  private static long current_ds_tag = 0; 
+                                          // Each DataSet will be assigned a
                                           // unique, immutable tag when it is
                                           // created.
 
   public static final int INVALID_GROUP_ID = -1;
   public static final int INVALID_INDEX    = -1;
-
   public static final int NOT_SORTED = -1;
   public static final int Q_SORT     =  0;
   public static final int JAVA_SORT  =  1;
@@ -221,6 +234,26 @@ public class DataSet implements IAttributeList,
   public static final DataSet EMPTY_DATA_SET 
                       = new DataSet( "EMPTY_DATA_SET","Constant Empty DataSet");
 
+  transient private IObserverList  observers;
+  transient private Vector         operators;
+  transient private long           ds_tag;
+
+  transient private int            pointed_at_index;
+  transient private float          pointed_at_x;
+  transient private ClosedInterval selected_interval;
+  transient private String         last_sort_attribute;
+  transient private boolean        xmlStandAlone; //XMLread
+
+
+  // NOTE: The following fields are serialized.  If new fields are added that
+  //       are not static, reasonable default values should be assigned in the
+  //       readObject() method for compatibility with old servers, until the
+  //       servers can be updated. 
+
+  private int           DataSetVersion = 1;  // CHANGE THIS WHEN ADDING OR
+                                             // REMOVING FIELDS, IF
+                                             // readObject() CAN FIX ANY
+                                             // COMPATIBILITY PROBLEMS
 
   private String        title;      // NOTE: we force a DataSet to have a title
                                     // and also keep the same title as an
@@ -233,16 +266,7 @@ public class DataSet implements IAttributeList,
   private Vector        data;
 
   private AttributeList attr_list;
-  private IObserverList observers;
-  private Vector        operators;
   private OperationLog  op_log;
-
-  private long          ds_tag;
-  private int           pointed_at_index;
-  private float          pointed_at_x;
-  private ClosedInterval selected_interval;
-  private String         last_sort_attribute = "";
-  private boolean        xmlStandAlone = true; //XMLread
 
   /**
    * Constructs an empty data set with the specified title, initial log
@@ -282,6 +306,9 @@ public class DataSet implements IAttributeList,
     this.pointed_at_x     = Float.NaN;
     this.selected_interval = new ClosedInterval( Float.NEGATIVE_INFINITY,
                                                  Float.POSITIVE_INFINITY );
+    this.last_sort_attribute = "";
+    this.xmlStandAlone = true;
+    
     this.ds_tag           = current_ds_tag++;   // record tag and advance to 
                                                 // the next tag value. 
     setTitle( title );
@@ -2001,6 +2028,47 @@ public class DataSet implements IAttributeList,
  *  PRIVATE METHODS
  * 
  */
+
+/* ---------------------------- readObject ------------------------------- */
+/**
+ *  The readObject method is called when objects are read from a serialized
+ *  ojbect stream, such as a file or network stream.  The non-transient and
+ *  non-static fields that are common to the serialized class and the 
+ *  current class are read by the defaultReadObject() method.  The current
+ *  readObject() method MUST include code to fill out any transient fields 
+ *  and new fields that are required in the current version but are not 
+ *  present in the serialized version being read.
+ */
+
+  private void readObject( ObjectInputStream s ) throws IOException, 
+                                                        ClassNotFoundException 
+  {
+    s.defaultReadObject();               // read basic information
+
+    ds_tag    = current_ds_tag++;        // fill out default value for transient
+    observers = new IObserverList();     // fields
+    pointed_at_index  = INVALID_INDEX;
+    pointed_at_x      = Float.NaN;
+    selected_interval = new ClosedInterval( Float.NEGATIVE_INFINITY,
+                                            Float.POSITIVE_INFINITY );
+    last_sort_attribute = "";
+    xmlStandAlone       = true;
+
+    operators = new Vector();
+    DataSetFactory.addOperators( this ); // Add the basic operators then     
+                                         // try to reconstruct operator list
+                                         // using first instrument type, if 
+                                         // all needed attributes are present
+    int inst_types[] = (int[])attr_list.getAttributeValue(Attribute.INST_TYPE);
+    String ds_type   = (String)attr_list.getAttributeValue(Attribute.DS_TYPE); 
+    if ( inst_types != null && ds_type != null && inst_types.length > 0 )
+    {
+      if ( ds_type.equals( Attribute.SAMPLE_DATA ) )
+        DataSetFactory.addOperators( this, inst_types[0] );
+      else if ( ds_type.equals( Attribute.MONITOR_DATA ) )
+        DataSetFactory.addMonitorOperators( this, inst_types[0] );
+    }
+  }
 
 /* ------------------------------- swap ---------------------------------- */
 
