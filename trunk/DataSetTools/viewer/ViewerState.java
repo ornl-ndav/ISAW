@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2002/07/15 14:37:32  rmikk
+ *  The Contour.Style property's initial value can now come
+ *    from the IsawProps.dat.  Also the default initial value is
+ *    now Raster
+ *
  *  Revision 1.17  2002/07/12 18:32:13  rmikk
  *  Added and initialized the TABLE_DATA
  *      and CONTOUR_STYLE  state fields
@@ -195,7 +200,8 @@ public class ViewerState  implements Serializable
       state.put( AUTO_SCALE, auto_scale );
 
       state.put( TABLE_DATA, "");
-      state.put(CONTOUR_STYLE, new Integer( 3));
+      Integer contour_style=SharedData.getIntegerProperty(CONTOUR_STYLE) ;
+      state.put(CONTOUR_STYLE, contour_style );
 
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
       ds_x_label = "";
