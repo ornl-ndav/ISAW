@@ -32,11 +32,17 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/12/16 00:51:27  bouzekc
+ * Fixed bug that prevented Form progress indicator from advancing
+ * incrementally.
+ *
  * Revision 1.1  2003/11/29 21:50:58  bouzekc
  * Added to CVS.
  *
  */
 package DataSetTools.wizard;
+
+import java.beans.PropertyChangeListener;
 
 import java.io.*;
 
@@ -83,6 +89,14 @@ interface IWizardFrontEnd {
    * @return the File that has been retrieved.
    */
   public File getFile( boolean saving );
+
+  /**
+   * Accessor method for the progress indicator.  For example, invoking this on
+   * SwingWizardFrontEnd will get the internal progress bar.
+   *
+   * @return The PropertyChanger progress indicator.
+   */
+  public PropertyChangeListener getFormProgressIndicator(  );
 
   /**
    * Utility method to set the progress widget value and label.
