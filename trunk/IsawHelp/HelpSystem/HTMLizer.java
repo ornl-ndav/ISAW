@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2002/12/09 15:50:45  pfpeterson
+ * Small changes in the formatting of the HTML code and shortened some lines
+ * in the source. Changes to the HTML are:
+ *  - closing parenthesis in the command name in the case when there are no
+ * parameters
+ *  - commented out HTML comments in the source code.
+ *
  * Revision 1.6  2002/12/06 20:07:00  dennis
  * -No longer creates a file when createHTML() is called.
  * -Puts bullet points in the Parameter and Error lists.
@@ -133,7 +140,7 @@ public class HTMLizer
         help_dir=FilenameUtil.fixSeparator(help_dir);
     }//constructor()
 
-    /* ------------------------- createAllHelpFiles ---------------------------- */
+    /* ---------------------- createAllHelpFiles --------------------------- */
     /** 
      * Creates the HTML files which consists of the information in an Operator's
      * getDocumentation() method.  Documentation for all Operators is produced.
@@ -155,10 +162,11 @@ public class HTMLizer
     }//createHelpFile()
 
 
-    /* ------------------------- dynamicDocCreation ------------------------- */
+    /* ------------------------- dynamicDocCreation ------------------------ */
     /** 
      * Creates the HTML formatted documentation for the Operator op_in.
-     * @param The Operator class name for which you wish to create documentation.
+     * @param The Operator class name for which you wish to create
+     * documentation.
      * @return The String which consists of the HTML formatted documentation
      * for op_in.  This can be written, as-is, to a file to produce an 
      * HTML page.
@@ -249,7 +257,7 @@ public class HTMLizer
 	return op_vector;
     }//createOperatorVector()
 
-    /* ----------------------------- getParameterInfoList ------------------------- */
+    /* -------------------------- getParameterInfoList --------------------- */
     /**
      *  Gets the parameter class names of an Operator.  If the Operator is an
      *  instance of a DataSetOperator, the first element will
@@ -333,7 +341,7 @@ public class HTMLizer
 
 	html.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Frameset//EN\"");
 	html.append("\"http://www.w3.org/TR/REC-html40/frameset.dtd\">\n");
-        html.append("<!--NewPage-->\n");
+        //html.append("<!--NewPage-->\n");
 	html.append("<html>\n");
 	html.append("<head>\n");
 	html.append("<title>\n");
@@ -343,7 +351,7 @@ public class HTMLizer
 	html.append("</head>\n");
 	html.append("<body BGCOLOR=#FFFFFF>\n");
 
-	html.append("<!-- ======== START OF OPERATOR DATA ======== -->\n");
+	//html.append("<!-- ======== START OF OPERATOR DATA ======== -->\n");
 
 	html.append("<table BORDER=\"1\" CELLPADDING=\"3\" CELLSPACING=\"0\" WIDTH=\"100%\">\n");
 	html.append("<tr BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\n");
@@ -374,6 +382,7 @@ public class HTMLizer
 	    else
 	    	html.append(", ");
 	}
+        if(num_params==0) html.append(")\n");
 	    	
 	html.append(" <br><br>\n");
 
@@ -385,7 +394,7 @@ public class HTMLizer
         else
 	    html.append( convertToHTML( op.getDocumentation(), v) );
 
-	html.append("<!-- ========= END OF OPERATOR DATA ========= -->");
+	//html.append("<!-- ========= END OF OPERATOR DATA ========= -->");
 	html.append("</body>\n");
 	html.append("</html>");
 
@@ -393,7 +402,7 @@ public class HTMLizer
       
     }//createHTML()
 
-    /* ------------------------------ writeFile() ------------------------------ */
+    /* ---------------------------- writeFile() ---------------------------- */
     /**
      *  Writes a file consisting of the String body.  The name of the file is 
      *  operator_class +"Help.html".
@@ -419,7 +428,7 @@ public class HTMLizer
       }
     }
     
-    /* --------------------------- createDefaultDocs() -------------------------- */
+    /* ------------------------- createDefaultDocs() ----------------------- */
     /**
      *  Creates the default documentation for an operator in the event that the
      *  documentation has not yet been written
@@ -430,9 +439,9 @@ public class HTMLizer
     private String createDefaultDocs(Vector[] v)
     {
     	StringBuffer s = new StringBuffer();
-	s.append("\n<!-- ========= ");
-	s.append("Parameters");
-	s.append(" detail ======== -->\n\n");
+	/*s.append("\n<!-- ========= ");
+          s.append("Parameters");
+          s.append(" detail ======== -->\n\n");*/
 
 	s.append("<table BORDER=\"1\" CELLPADDING=\"3\" CELLSPACING=\"0\" WIDTH=\"100%\">\n");
 	s.append("<tr BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\n");
@@ -461,7 +470,7 @@ public class HTMLizer
     }
     	
 
-    /* --------------------------- convertToHTML() -------------------------- */
+    /* -------------------------- convertToHTML() -------------------------- */
     /**
      *  This method converts a String that follows the @ conventions in the 
      *  JavaDoc specifications into an HTML page.  Although other purposes may 
@@ -528,9 +537,9 @@ public class HTMLizer
 	    }
 	    else
 	    {
-		s.append("\n<!-- ========= ");
-		s.append(table_title);
-		s.append(" detail ======== -->\n\n");
+                /*s.append("\n<!-- ========= ");
+                  s.append(table_title);
+                  s.append(" detail ======== -->\n\n");*/
 
 		s.append("<table BORDER=\"1\" CELLPADDING=\"3\" CELLSPACING=\"0\" WIDTH=\"100%\">\n");
 		s.append("<tr BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\n");
