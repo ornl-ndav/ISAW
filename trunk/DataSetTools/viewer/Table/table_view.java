@@ -31,6 +31,13 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.14  2001/11/27 18:37:20  dennis
+ *    1. If no indices are selected:
+ *       a) Indicated in the label with RED letters
+ *       b) The header tab shows in the table mode
+ *       c) The header information states in all capital letters:
+ *          NO SELECTED INDICES  (Ruth)
+ *
  * Revision 1.13  2001/09/06 14:18:56  dennis
  * Removed <control-M> characters.
  *
@@ -38,7 +45,7 @@
  * - The "Save to File", "Make a Table", and "Write to Console" radio
  *   buttons are now command buttons.  The Display command button is now deleted.
  * - The Prompt when Selecting Group indices is changed to include a
- *   sample entry.  The sample entry in the text box has been deleted.
+ *   sample entry.  The sample entry in the text box has been deleted.(Ruth)
  *
  * Revision 1.11  2001/08/30 14:35:58  dennis
  * Added a "Copy Selected" JMenuItem to the Select Menu
@@ -419,16 +426,23 @@ public class table_view extends JPanel implements ActionListener
      }
    public void setSelectedGRoup_Display( String S )
      { String Res ="Selected indices:";
-       
+       SelectedIndecies.setForeground( Color.black);
        if( S == null)
-          Res += "None        ";
+          {Res = "NO SELECT GROUPS";
+           SelectedIndecies.setForeground( Color.red);
+
+           }
        else if( S.length() <1)
-          Res += "None         ";
+          {Res += "NO SELECT GROUPS";
+              SelectedIndecies.setForeground( Color.red);
+
+           }
        else if( S.length() >15)
          Res += S.substring( 0,11)+"...";
        else
          Res += S;
        SelectedIndecies.setText( Res+"    " );
+      
 
      } 
  /**
@@ -845,6 +859,10 @@ public class table_view extends JPanel implements ActionListener
        row = 0;
        col = 0;
        V = new Vector();
+       if( D.getNumSelected() > 0)
+           JtabPane.setSelectedIndex( 0);
+       else
+           JtabPane.setSelectedIndex(1);
      }
    }
   int row = 0;
@@ -893,6 +911,8 @@ public class table_view extends JPanel implements ActionListener
       {String S="";
        for( int i = 0; i <V.size(); i++)
           S = S +(String)(V.elementAt( i));
+      
+
        V = new Vector();
        util.appendDoc( HeaderInfoPane.getDocument(), S );
       }
@@ -968,8 +988,12 @@ public class table_view extends JPanel implements ActionListener
     //Next Line are selected groups for each
     OutputField( "#Selected Groups" ); OutputEndField();
     for( i = 0 ; i < DSS.length ; i++ )
-     {OutputField( "#     "+ DSS[ i ].toString()+ ":"+  
-                         nd.Showw( DSS[ i ].getSelectedIndices() ));
+     { String SS ="NO SELECTED INDICES";
+       if( DSS[i].getNumSelected()>0)
+              SS= nd.Showw( DSS[ i ].getSelectedIndices() );
+        
+       OutputField( "#     "+ DSS[ i ].toString()+ ":"+  SS);
+                        
       OutputEndField();
      }
     // Next Lines are the operation logs;
