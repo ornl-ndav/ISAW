@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.49  2004/01/06 23:15:39  bouzekc
+ * Removed unused variables.
+ *
  * Revision 1.48  2003/12/15 02:06:09  bouzekc
  * Removed unused imports.
  *
@@ -793,7 +796,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     newPercent = oldPercent = increment = 0;
 
     IParameterGUI ipg;
-    Object obj;
 
     if( this.getNum_parameters(  ) <= 0 ) {
       return new ErrorString( "No parameters to check" );
