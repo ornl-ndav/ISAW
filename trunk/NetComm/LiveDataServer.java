@@ -33,6 +33,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2003/03/05 20:43:35  dennis
+ *  Now removes the TOTAL_COUNT attribute when the empty runfile is
+ *  loaded, since the counts are zero at that time anyway.  Total
+ *  count will be recalcuated by the LiveDataRetriever.
+ *
  *  Revision 1.36  2003/03/05 19:49:04  dennis
  *  GetSubsetDS now discards all attributes if the Attribute Mode is
  *  set to NO_ATTRIBUTES, and discards crate, slot, input, efficiency
@@ -322,6 +327,7 @@ public class LiveDataServer extends    DataSetServer
           for ( int k = 0; k < data_set[i].getNum_entries(); k++ )
           {
             d = data_set[i].getData_entry(k);
+            d.removeAttribute( Attribute.TOTAL_COUNT );   // is 0 at this time 
             id = d.getGroup_ID(); 
             data_list[id] = d;
             ds_index[id] = i;
