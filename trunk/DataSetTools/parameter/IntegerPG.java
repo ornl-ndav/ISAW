@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/06/06 18:50:59  pfpeterson
+ *  Now extends StringEntryPG and implements ParamUsesString.
+ *
  *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -65,17 +68,19 @@ import DataSetTools.util.*;
  * This is a superclass to take care of many of the common details of
  * IntegerPGs.
  */
-public class IntegerPG extends StringPG{
-    private static String TYPE="Integer";
+public class IntegerPG extends StringEntryPG implements ParamUsesString{
+    private static final String TYPE="Integer";
 
     // ********** Constructors **********
     public IntegerPG(String name, Object value){
         super(name,value);
+        FILTER=new IntegerFilter();
         this.type=TYPE;
     }
 
     public IntegerPG(String name, Object value, boolean valid){
         super(name,value,valid);
+        FILTER=new IntegerFilter();
         this.type=TYPE;
     }
 
@@ -87,8 +92,19 @@ public class IntegerPG extends StringPG{
         this(name, new Integer(value), valid);
     }
 
-    // ********** IParameter requirements **********
+    // ********** ParamUsesString **********
+    public String getStringValue(){
+      return this.getValue().toString();
+    }
 
+    public void setStringValue(String val) throws NumberFormatException{
+      if(initialized)
+        super.setEntryValue(val);
+      else
+        this.setValue(new Integer(val.trim()));
+    }
+
+    // ********** IParameter requirements **********
     /** 
      * Override the default method.
      */
@@ -99,8 +115,8 @@ public class IntegerPG extends StringPG{
         }else if(val instanceof Integer){
             return (Integer)val;
         }else{
-            return null;
-            // throw an exception
+            throw new ClassCastException("Could not coerce "
+                               +value.getClass().getName()+" into an Integer");
         }
     }
 
@@ -112,19 +128,32 @@ public class IntegerPG extends StringPG{
     }
 
     /**
-     * Overrides the default behavior.
+     * Overrides the default behavior. If passed null this sets the
+     * value to Integer.MIN_VALUE.
      */
     public void setValue(Object value){
-        super.setValue(value);
-        if(!this.initialized){
-            if(value instanceof Integer){
-                this.value=value;
-            }else if(value instanceof String){
-                this.value=new Integer((String)value);
-            }else{
-                // should throw an exception
-            }
-        }
+      Integer intval=null;
+
+      if(value==null){
+        intval=new Integer(Integer.MIN_VALUE);
+      }else if(value instanceof Integer){
+        intval=(Integer)value;
+      }else if(value instanceof Float){
+        intval=new Integer(Math.round(((Float)value).floatValue()));
+      }else if(value instanceof Double){
+        intval=new Integer(Math.round((int)((Double)value).doubleValue()));
+      }else if(value instanceof String){
+        this.setStringValue((String)value);
+      }else{
+        throw new ClassCastException("Could not coerce "
+                               +value.getClass().getName()+" into an Integer");
+      }
+
+      if(this.initialized){
+        super.setEntryValue(intval);
+      }else{
+        this.value=intval;
+      }
     }
 
     /**
@@ -133,39 +162,6 @@ public class IntegerPG extends StringPG{
     public void setintValue(int value){
         this.setValue(new Integer(value));
     }
-
-    // ********** IParameterGUI requirements **********
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    public void init(Vector init_values){
-        if(init_values!=null){
-            if(init_values.size()==1){
-                // the init_values is what to set as the value of the parameter
-                this.setValue(init_values.elementAt(0));
-            }else{
-                // something is not right, should throw an exception
-            }
-        }
-        //entrywidget=new IntegerField(this.getintValue(),20);
-        entrywidget=new StringEntry(this.getStringValue(),20,
-                                    new IntegerFilter());
-        entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
-        this.setEnabled(this.getEnabled());
-        super.initGUI();
-    }
-
-    /**
-     * Set the enabled state of the EntryWidget. This produces a more
-     * pleasant effect that the default setEnabled of the widget.
-     */
-    /*public void setEnabled(boolean enabled){
-      this.enabled=enabled;
-      if(this.getEntryWidget()!=null){
-      ((JTextField)this.entrywidget).setEditable(enabled);
-      }
-      // need to add stuff for actually enabling
-      }*/
 
     static void main(String args[]){
         IntegerPG fpg;
