@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/05/29 22:46:19  dennis
+ *  Minor fix to documentation.
+ *
  *  Revision 1.3  2002/04/19 15:42:32  dennis
  *  Revised Documentation
  *
@@ -87,8 +90,8 @@ public abstract class ModeledData extends    Data
 
   /**
    * Constructs a ModeledData object by specifying an "X" scale, the 
-   * ModelFunction that generates the y_values and a group id for this 
-   * data object.
+   * ModelFunction that generates the y_values, a function that describes the
+   * errors in the data and a group id for this data object.
    *
    * @param   x_scale   the list of x values for this Data object
    * @param   function  the IOneVarFunction that gnerates the y_values
@@ -110,7 +113,7 @@ public abstract class ModeledData extends    Data
  /**
    * Set the function defining the errors for this data object.
    *
-   * @param   err     New ModelFunction for the errors to use for this data 
+   * @param   err     New OneVarFunction for the errors to use for this data 
    *                  object. 
    */ 
   public void setErrors( IOneVarFunction err )
