@@ -6,6 +6,10 @@
  *  Programmer:  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.4  2001/02/22 20:58:46  dennis
+ *  Now sends all DataSets in a runfile, not just the monitor DataSet
+ *  and the first histogram.
+ *
  *  Revision 1.3  2001/02/15 21:51:15  dennis
  *  added debug message
  *
@@ -119,7 +123,7 @@ public class DASOutputTest
 
   /**
    *  The test's main program loads the histogram and monitor DataSets for 
-   *  a specified runfile, then repeatedly sends the histograms from the two
+   *  a specified runfile, then repeatedly sends the spectra from the 
    *  DataSets.
    */
   public static void main( String args[] )
@@ -166,25 +170,21 @@ public class DASOutputTest
     System.out.println( "Sending data for run " + test.file_name );
 
     RunfileRetriever rr         = new RunfileRetriever( test.file_name );
-    DataSet          monitor_ds = rr.getDataSet(0);
-    DataSet          hist_ds    = rr.getDataSet(1);
+
+    DataSet data_sets[] = new DataSet[ rr.numDataSets() ];
+    for ( int i = 0; i < data_sets.length; i++ )
+      data_sets[i] = rr.getDataSet(i);
+
     rr = null;
-/*
-    ViewManager monitor_vm   = new ViewManager( monitor_ds, IViewManager.IMAGE);
-    ViewManager histogram_vm = new ViewManager( hist_ds, IViewManager.IMAGE );
-*/
-    for ( int i = 0; i < 1000; i++ )
+
+    for ( int count = 0; count < 20000; count++ )   // repeatedly send the data 
     {
-      System.out.println("Sending data " + i );
-      test.SendDataBlocks( sender, monitor_ds, i );
-      test.SendDataBlocks( sender, hist_ds, i );
+      System.out.println("Sending data " + count );
+
+      for ( int i = 0; i < data_sets.length; i++ )         // send each DataSet
+        test.SendDataBlocks( sender, data_sets[i], count );
     }
     
-    int SIZE = 640+5;
-    byte b[] = new byte[SIZE];
-    for(int i=0; i<SIZE; i++) 
-    b[i]=(byte)(i % 128 );
-    sender.send( b, SIZE );  
   }
 
 }
