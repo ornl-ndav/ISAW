@@ -9,7 +9,7 @@
 # Modify $Date$ : Ashfia Huq , ID's should remain 
 # the same (bad detectors are turned off using the discriminator levels
 
-$Category=Operator, Instrument Type, TOF_NPD
+$Category=Macros, Instrument Type, TOF_NPD
 
 $Standard	Boolean(true)          (1) Standard (5B, sum & T focus)
 $Focus_all_tth	Boolean(false)         (2) Focus_all_2Thet (4B focus to 125)		

@@ -24,7 +24,7 @@ $ DelayNeutron        Float( .0042)                           Delayed Neutron Fr
 
 $ Title = sasi Efficiency From File
 $ Command = sasi_Efficiency
-$ Category = Operator, Instrument Type, TOF_NSAS 
+$ Category = Macros, Instrument Type, TOF_NSAS 
 
 
 n= load( CadmiumFileName, "CadDS")

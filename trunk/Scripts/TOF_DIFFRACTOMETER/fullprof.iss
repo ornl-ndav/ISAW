@@ -7,13 +7,15 @@
 # Pressure : Creates 1 bank of data with available detectors and focus to 100 degrees.
 # Choice is given to display dialog box.
 
-# Modify $Date$ : Ashfia Huq , sesample bins to start
+# Modify Date: 2005/02/17 23:11:32 : Ashfia Huq , sesample bins to start
 # at 2000 micro sec and end at 32000 micro sec with dT = 5 micro sec
 
-# Modify $Date$ : Ashfia Huq , ID's should remain the same 
+# Modify Date: 2005/02/17 23:11:32 : Ashfia Huq , ID's should remain the same 
 # (bad detectors are turned off using the discriminator levels)
 
-$Category=Operator, Instrument Type, TOF_NPD
+# CVS VERSION $Date$
+
+$Category=Macros, Instrument Type, TOF_NPD
 
 $Sort_d_by_Omega		Boolean(true)	Sort_d_by_Omega (Indiv detectors)
 $Standard        		Boolean(false)	Standard (5B, sum & T focus)

@@ -13,7 +13,7 @@
 #
 #  $Date$
 
-$Category = Operator, Utils, Examples
+$Category = Macros, Utils, Examples
 $ Title = Evaluate Expression A * exp( -k*x ) * sin( w*x )
 
 $ min_x         Float(0)       The minimum x value

@@ -27,7 +27,7 @@ $ sqrtWeight        Boolean(true)    Use 1/sqrt(y) for weightin
 
 $ Title = sasi Calculate Transmission
 $ Command = sasi_Transmission
-$ Category = Operator, Instrument Type, TOF_NSAS 
+$ Category = Macros, Instrument Type, TOF_NSAS 
 
 load SampleFileName, "Samp"
 load EmptyFileName, "Empty"

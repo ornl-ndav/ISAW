@@ -12,7 +12,7 @@
 #
 # $Date$
 
-$Category=Operator, Instrument Type, TOF_NSAS
+$Category=Macros, Instrument Type, TOF_NSAS
 
 
 $ DSfilename   LoadFileString("/IPNShome/sasi/data/sasi0017.run")   Enter DataSet Name

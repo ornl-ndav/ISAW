@@ -10,7 +10,7 @@
 #
 $Command =CenterDisplay
 $Title= Find and Show Center
-$Category=Operator, Instrument Type, TOF_NSAS
+$Category=Macros, Instrument Type, TOF_NSAS
 
 $ DSfilename   LoadFileString("/IPNShome/sand/data/sand22218.run")   Enter DataSet Name
 $ SensFilename LoadFileString("/IPNShome/sand/GeorgeUser/sens22205.dat")  Enter Sensitivity FileName

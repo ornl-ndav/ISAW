@@ -8,14 +8,16 @@
 # Users have the option to display the data.
 # Choice is given to display dialog box.
 
-# Modify $Date$ : Ashfia Huq , ID's should remain 
+# Modify Date: 2005/02/17 23:11:32 : Ashfia Huq , ID's should remain 
 # the same (bad detectors are turned off using the discriminator levels)
 
 #Write 3 column format (FXYE for GSAS) or ESD format(Original sequential format with no space)
 #Resample bins(for constant binning) to start at 2000 micro sec and end at 32000 micro sec with dT = 5 micro sec.
 #For dT/T binning make sure to check box so that data is not resampled
 
-$Category=Operator, Instrument Type, TOF_NPD
+# CVS VERSION $Date$
+
+$Category=Macros, Instrument Type, TOF_NPD
 
 $Standard		Boolean(true)        Standard (5B, sum & T focus)
 $Focus_all_tth	Boolean(false)       Focus_all_2Theta (4B focus to 125)		

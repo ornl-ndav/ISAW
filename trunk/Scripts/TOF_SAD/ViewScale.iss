@@ -16,7 +16,7 @@
 #@return The scale factor.  The Selected Graph View will be open with the dataset
 #  correpsonding to the New File and the Polynomial DataSet merged and selected
 
-$Category=Operator,Instrument Type, TOF_NSAS
+$Category=Macros,Instrument Type, TOF_NSAS
 
 $StandFile  LoadFileString("C:\ISAW\batesnist.dat")   Standard File
 $NewFile    LoadFileString("C:\ISAW\sn17.dat")        New File
