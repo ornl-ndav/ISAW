@@ -32,7 +32,14 @@
 
 10-1-30
   - Started to incorporate Variable names for Data Sets.
-   not fully tested.  Parameters not implemented yet(in CommandPane)
+    
+
+12-1-00
+  -Variable names for Datasets incorporated.  The title is no longer
+   used as the variable name
+  -Fixed error with ==
+  -Fixed error when  array index calculation had an error
+  -  & can be applied to a data set to yield its toString Value
    
 */
 package Command;
@@ -89,7 +96,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable
 
     //-----Run Space  Variables --------------
 
-   HashMap   ds =new HashMap();                                //Copy of the data set(s) passed in
+   Hashtable   ds =new Hashtable();                                //Copy of the data set(s) passed in
 	                                    //   by the constructor
     
      
@@ -102,16 +109,16 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable
     String Svals[]; 
     String Svalnames[];
 
-    HashMap BoolInfo = new HashMap();
+    Hashtable BoolInfo = new Hashtable();
     IObserverList  OL; 
     PropertyChangeSupport PC;
  
    
-    HashMap lds = new HashMap() ;                      //use getTitle for the  variable names
+    Hashtable lds = new Hashtable() ;                      //use getTitle for the  variable names
     Object Result;                     //Storage for Intermediate Results of
                                        //  operations
 
-    HashMap MacroInfo = new HashMap();                  //Stores Macros
+    Hashtable MacroInfo = new Hashtable();                  //Stores Macros
    
 
 
@@ -238,7 +245,7 @@ public void addDataSet(DataSet dss, String vname)
         long tag = dss.getTag();         
 
         //if(tag != null)
-          { vname ="DS"+new Long(tag).toString();
+          { vname ="ISAWDS"+new Long(tag).toString();
            }        
         //else vname = dss.getTitle();
         if(Debug)System.out.println("EndADD DATA SET vname="+vname);
@@ -256,7 +263,7 @@ public void addDataSet(DataSet dss, String vname)
 	   return;
        ViewManager vm;
        for( int i = 0 ; i < Graphs.size() ; i++)
-	   { vm  = (ViewManager)Graphs.get( i );
+	   { vm  = (ViewManager)Graphs.elementAt( i );
              vm.destroy();
              vm= null;
            }  
@@ -454,7 +461,7 @@ public void addDataSet(DataSet dss, String vname)
     
 //             Executes the LOAD command.
 // Brings the data sets into the local workspac
-    private int  execLoad( String S , int start, int end )
+    private int execLoad( String S , int start, int end )
       {String  C,
                filename,
                varname;
@@ -476,6 +483,7 @@ public void addDataSet(DataSet dss, String vname)
            V = getArgs( S , i + 1 , end);
       else
           V = getArgs(S , i ,end );
+      
       if( V == null )
         return perror;
       if( V.size() <=1 )
@@ -487,6 +495,8 @@ public void addDataSet(DataSet dss, String vname)
               return perror;
            }
       j =((Integer)V.lastElement()).intValue(); 
+     
+
       j = skipspaces( S , 1, j );
           if( S.charAt( i ) == '(')
              if( (j >= end) || ( j >= S.length()))
@@ -495,16 +505,18 @@ public void addDataSet(DataSet dss, String vname)
                seterror( i, ER_MisMatchParens);
              else j = skipspaces( S , 1 , j+1);
       int x = 0;
+    
+
       if(Debug)
         System.out.println("Load after Arg get");
       try{
-          if( V.get( 0 ) instanceof DataSet[] )
+          if( V.elementAt( 0 ) instanceof DataSet[] )
             {  if(Debug)  System.out.println("Load in Dataset[]");
-              DataSet DS[] = (DataSet [ ] ) V.get( 0 );
+              DataSet DS[] = (DataSet [ ] ) V.elementAt( 0 );
               x = 1;
               varname = null;
               if( V.size( ) > 2 )
-                 varname = (String ) V.get ( 1 );
+                 varname = (String ) V.elementAt ( 1 );
                x = 2;
               if( V.size( ) > 3 )
                 { seterror( start ,ER_ImproperArgument + (x+1) );
@@ -515,13 +527,16 @@ public void addDataSet(DataSet dss, String vname)
                 perror = start + 2;
               return j;
             }
+           
            if(Debug) System.out.println("Load not DataSet");
           x = 1;    
-          filename = (String) V.get(0);
+          filename = (String) V.elementAt(0);
           x = 2;
           varname=null;
+         
+
           if( V.size() == 3)
-             varname = (String) V.get(1);
+             varname = (String) V.elementAt(1);
           else if( V.size() > 3 )
             {seterror( start, ER_ExtraArguments);
              return start;
@@ -531,7 +546,11 @@ public void addDataSet(DataSet dss, String vname)
           { seterror ( start, ER_ImproperArgument + " " +x);
             return end; 
           }
+       
+
        dss = Load( filename , varname);
+      
+
        if( perror >= 0 )
          perror = start;
        
@@ -609,16 +628,22 @@ public void addDataSet(DataSet dss, String vname)
        { seterror( 1000, ER_ImproperArgument+" 1");
          return null;
        }
+   
      Ext= filename.substring(i+1).toUpperCase();
      if(Ext.equals("RUN"))
        {try{
+
              dss = util.loadRunfile( filename );
+             
+
            }
         catch( Exception s)
           { dss = null;
             seterror( 1000, s.toString());
             return dss;
           }
+         
+
          util = null;
          if( dss == null )
             {seterror( 1000 , "Data File Improper" );
@@ -657,8 +682,12 @@ public void addDataSet(DataSet dss, String vname)
         {dss= null;
           return null;
          }
+        
+
         for( i = 0 ; i < dss.length ; i++ )
          {DDs = eliminateSpaces( dss[i] );
+          
+
           String vname=DDs.getTitle();
 	  if( varname != null)
 	    if( varname.length() > 0 )
@@ -670,8 +699,11 @@ public void addDataSet(DataSet dss, String vname)
          
           if( Debug) System.out.print("error="+perror+",");       
         
- 
+          
+
           Assign( vname, DDs);
+            
+
            
           if( Debug )
             System.out.println("Assign Dat set=" + DDs.getTitle());
@@ -741,15 +773,15 @@ public void addDataSet(DataSet dss, String vname)
 
           x = 1;
 
-          DS = (DataSet) (V.get(0));
+          DS = (DataSet) (V.elementAt(0));
           x = 2;
           DisplayType="IMAGE";
           if( V.size() >2)
-             DisplayType = (String)(V.get(1));
+             DisplayType = (String)(V.elementAt(1));
           x=3;
           FrameType ="External Frame";
           if( V.size() >3 )
-            FrameType = (String) (V.get(2));
+            FrameType = (String) (V.elementAt(2));
           x = 4;
           Display( DS , DisplayType , FrameType );
          
@@ -763,13 +795,13 @@ public void addDataSet(DataSet dss, String vname)
             {seterror( i , ER_ImproperArgument+" " + x  );
              if( Debug)
               { if( x-1 < V.size())
-                 System.out.println( "V and class = "+ V.get(i) +","+V.get(i).getClass());
+                 System.out.println( "V and class = "+ V.elementAt(i) +","+V.elementAt(i).getClass());
                else System.out.println("Aft Display args ="+ DisplayType+","+FrameType);
               }
              return i;
             }
         }
-      Result = (Object) V.get(0);
+      Result = (Object) V.elementAt(0);
       if( Debug )
          System.out.println("In Display Res="+Result+Result.getClass());
      
@@ -839,7 +871,7 @@ public void addDataSet(DataSet dss, String vname)
            }
 	 ViewManager  vm = new ViewManager(ds , X );
         
-         Graphs.add( vm );
+         Graphs.addElement( vm );
       }
 
     private int  execSave( String S , int start, int end )
@@ -888,11 +920,11 @@ public void addDataSet(DataSet dss, String vname)
 
           x = 1;
 
-          DS = (DataSet) (V.get(0));
+          DS = (DataSet) (V.elementAt(0));
           x = 2;
           filename = null;
           if( V.size() >2)
-             filename = (String)(V.get(1));
+             filename = (String)(V.elementAt(1));
           x=3;
            Save( DS , filename );
           if( perror >= 0) 
@@ -1014,11 +1046,19 @@ public void addDataSet(DataSet dss, String vname)
 	if( ds == null )
 	 if(Debug)System.out.println("ds is null");
         }
-       Object DO[]=ds.values().toArray();
-       DataSet D[] =  new DataSet[DO.length];
-       if(Debug) System.out.println("sizes="+ds.size()+","+DO.length+","+D.length);
-       for(int i=0; i<DO.length;i++)
-           {D[i]=(DataSet)DO[i];
+       Enumeration D = ds.elements();//.toArray();
+       DataSet DD[] ;
+        //D =  new DataSet[DO.length];
+       //if(Debug) System.out.println("sizes="+ds.size()+","+DO.length+","+D.length);
+       //for(int i=0; i<DO.length;i++)
+          Vector VV= new Vector();
+	  int i;
+          for( i=0; D.hasMoreElements(); i++){Object X=D.nextElement();}
+	     
+	  DD = new DataSet[i];
+	  D= ds.elements();
+	  for( i=0; D.hasMoreElements(); i++)
+           {DD[i]=(DataSet)(D.nextElement());
            }
  
 /*      Collection dsvalues= ds.values();
@@ -1028,7 +1068,7 @@ public void addDataSet(DataSet dss, String vname)
       DataSet[] D =(DataSet[])(DO);
 */
       
-      return D;
+      return DD;
     }
 //Doe whole expression with And's, Or's, Not's, <, <=, and Algebraic Expressions
   private int execExpr(String S, int start, int end)
@@ -1498,9 +1538,9 @@ public void addDataSet(DataSet dss, String vname)
          if(Debug)System.out.println("getArgsA"+Result+","+perror+","+j);
          if( perror >= 0 )
            return null;
-         Args.add( Result );
+         Args.addElement( Result );
          if( ( j >= S.length() ) || ( j >= end ) )
-	   {Args.add(new Integer(j));
+	   {Args.addElement(new Integer(j));
 	    return Args;
 	   }
          if( j < 0 )
@@ -1518,7 +1558,7 @@ public void addDataSet(DataSet dss, String vname)
          else
             i = j;
          }//while not done
-      Args.add(new Integer( i ));
+      Args.addElement(new Integer( i ));
       return Args;
 
      }
@@ -1709,9 +1749,8 @@ public void operateCompare( Object R1,Object R2, char c)
        if( x<=0) Result = new Boolean(false);
        else Result = new Boolean(true);
     else 
-       if( x>=0) Result = new Boolean(false);
-       else Result = new Boolean(true);
-    return;
+       if( x!=0) Result = new Boolean(false);
+           return;
 
 
 
@@ -1763,11 +1802,11 @@ private void operateLogic(Object R1 , Object R2 , char c )
           { seterror( 1000, ER_ImproperDataType);
             return ;
           }
-        if( R1 instanceof DataSet )
+        if( (R1 instanceof DataSet) &&(c!='&') )
           {operateArithDS( R1 , R2 , c );
 	   return;
 	  }
-	if( R2 instanceof DataSet )
+	if( (R2 instanceof DataSet) &&(c!='&') )
           {operateArithDS( R1 , R2 , c );
 	   return;
 	  }
@@ -1919,9 +1958,9 @@ private void operateLogic(Object R1 , Object R2 , char c )
          DS = (DataSet)R2;
 	 Arg2 = R1;
         }
-      Args.add( DS );
-      Args.add( Arg2 );
-      Args.add(new Boolean (true));
+      Args.addElement( DS );
+      Args.addElement( Arg2 );
+      Args.addElement(new Boolean (true));
       
       DoDataSetOperation( Args , Arg );
     
@@ -1989,7 +2028,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
        fit = true;
        for( k =0 ; (k < op.getNum_parameters()) && fit ; k++ )          
          { 
-           Arg2 = Args.get( k +start );
+           Arg2 = Args.elementAt( k +start );
            if( Debug)
 	       {System.out.print("Check"+Arg2.getClass());
 	        if( op.getParameter(k) != null)
@@ -2021,7 +2060,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
   private void SetOpParameters ( Operator op , Vector Args , int start )
      {int k;
       for( k = 0 ; k < op.getNum_parameters() ; k++ )
-        {if( (Args.get( k + start ) instanceof String)  &&  
+        {if( (Args.elementAt( k + start ) instanceof String)  &&  
              (op.getParameter( k ).getValue( ) instanceof SpecialString) )
 	   { try{
              Class C = op.getParameter( k ).getValue().getClass();
@@ -2029,7 +2068,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
              ArgsC[0] = Class.forName("java.lang.String");
              java.lang.reflect.Constructor Cons = C.getConstructor( ArgsC);
              Object Argvs[] = new Object[1];
-             Argvs[0] = Args.get( k + start ) ;            
+             Argvs[0] = Args.elementAt( k + start ) ;            
 
              op.getParameter( k ).setValue( Cons.newInstance(Argvs));
              }
@@ -2038,17 +2077,17 @@ private void operateLogic(Object R1 , Object R2 , char c )
              }
            }
           else
-            op.getParameter( k ).setValue( Args.get( k + start ) );
+            op.getParameter( k ).setValue( Args.elementAt( k + start ) );
         }
      }
     private void SetOpParameters1 ( Operator op , Vector Args , int start )
      {int k;
       for( k = 0 ; k < op.getNum_parameters() ; k++ )
-        {if( (Args.get( k + start ) instanceof String)  &&  
+        {if( (Args.elementAt( k + start ) instanceof String)  &&  
              (op.getParameter( k ).getValue( ) instanceof AttributeNameString) )
-            op.getParameter( k ).setValue( new AttributeNameString( (String)( Args.get(k + start) ) ));
+            op.getParameter( k ).setValue( new AttributeNameString( (String)( Args.elementAt(k + start) ) ));
           else
-            op.getParameter( k ).setValue( Args.get( k + start ) );
+            op.getParameter( k ).setValue( Args.elementAt( k + start ) );
         }
      }
     private void DoDataSetOperation( Vector Args , String Command )
@@ -2058,11 +2097,11 @@ private void operateLogic(Object R1 , Object R2 , char c )
        DataSet DS;
        Object Arg2;
        boolean fit;
-       if( !( Args.get(0)instanceof DataSet ) )
+       if( !( Args.elementAt(0)instanceof DataSet ) )
 	 {seterror( 1000 , ER_NoSuchOperator  );
 	  return;
 	 }
-       DS = (DataSet)Args.get(0);
+       DS = (DataSet)Args.elementAt(0);
        if(Debug)
 	   System.out.println("Command="+Command+":"+Args.size());
        for( i = 0 ; i < DS.getNum_operators() ; i++ )
@@ -2131,7 +2170,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
          {j = execute( S , i + 1 , end );
          if( perror >= 0 )
            return perror;
-         Args.add( Result );
+         Args.addElement( Result );
          if( ( j >= S.length() ) || ( j >= end ) )
 	   {seterror( j , ER_MisMatchParens );
 	    return j;
@@ -2163,7 +2202,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
         if(Debug)
           { System.out.print("Args = " + Args.size());
             for(i2 = 0 ; i2 < Args.size() ; i2++)
-            System.out.print(Args.get(i2) + "," + Args.get(i2).getClass() + ",");
+            System.out.print(Args.elementAt(i2) + "," + Args.elementAt(i2).getClass() + ",");
           System.out.println("");
           }
 	
@@ -2218,27 +2257,39 @@ private void operateLogic(Object R1 , Object R2 , char c )
 
         if(lds.containsKey(S.toUpperCase().trim()))
             return lds.get(S.toUpperCase().trim());
-       Object vals[],keys[];
-      
-           vals=lds.values().toArray();
-           keys=lds.keySet().toArray();
+       Enumeration vals,keyss;
+       
+           vals=lds.elements();
+           keyss=lds.keys();
          if(Debug)System.out.println("Loc DS Vals,Searchname"+S);
-         for( i=0;i<vals.length;i++)
-          if(Debug) System.out.println("val="+vals[i]);
+       
+         Object X;
+         for( i=0;vals.hasMoreElements();i++)
+          {
+           X= vals.nextElement();
+         
+            if(Debug) System.out.println("val="+X);
+            }
+         
          if(Debug)System.out.println("Loc DS Keys");
-         for( i=0;i<keys.length;i++)
-          if(Debug) System.out.println("val="+keys[i]);
-
-        vals=ds.values().toArray();
-           keys=ds.keySet().toArray();
+         for( i=0;keyss.hasMoreElements();i++)
+          { X=keyss.nextElement();
+            if(Debug) System.out.println("val="+X);}
+        
+        vals=ds.elements();
+           keyss=ds.keys();
+          
          if(Debug)System.out.println("Glob DS Vals,Searchname"+S+","+ds.size());
-         for( i=0;i<vals.length;i++)
-          if(Debug) System.out.println("val="+vals[i]);
+         for( i=0;vals.hasMoreElements();i++)
+          { X= vals.nextElement();
+            if(Debug) System.out.println("val="+X);}
+        
          if(Debug)System.out.println("Glob DS Keys");
-         for( i=0;i<keys.length;i++)
-          if(Debug) System.out.println("val="+keys[i]);
+         for( i=0;keyss.hasMoreElements();i++)
+          {X = keyss.nextElement();
+           if(Debug) System.out.println("val="+X);}
 
-
+        
 
          seterror( 1000 , ER_NoSuchVariable );
         return null;
@@ -2319,9 +2370,9 @@ private void operateLogic(Object R1 , Object R2 , char c )
          lerror = -1;
          Result=null;
          for(int i=0; i<Params.size();i++)
-           { ds.remove(Params.get(i));
+           { ds.remove(Params.elementAt(i));
             }
-         Params.clear();
+         Params= new Vector();
       }
 
 
@@ -2483,7 +2534,10 @@ private void operateLogic(Object R1 , Object R2 , char c )
 	  }
         //System.out.print("B");
         int j=execute( S, start + 1, end );
-       
+        if(perror >= 0)
+          {Result = R1;
+           return "";
+           }
         j=skipspaces( S , 1 , j);
 	//System.out.print("C"+Result+","+j);
         if( (j < 0) || ( j >= S.length()))
@@ -2582,7 +2636,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
      
       }
      private int finddDS( String SearchName,
-		          HashMap Llist)
+		          Hashtable Llist)
       {int i;
       //System.out.println("in finddDS"+SearchName);
        if( Llist == null )
@@ -2626,13 +2680,17 @@ private void operateLogic(Object R1 , Object R2 , char c )
                        Object Result)
       {int   i,
              j;
+       
       boolean found = true ;
+     
       Object X = getVal( vname );
+     
       if( (perror >= 0) && ( serror.equals( ER_NoSuchVariable)))
 	 {perror = -1;
 	  serror = "";
           found = false;
          }
+     
        if( Result instanceof Boolean)
          {if(vname.toUpperCase().equals("TRUE") || vname.toUpperCase().equals("FALSE"))
             {seterror(1000, ER_ReservedWord);
@@ -2769,21 +2827,24 @@ private void operateLogic(Object R1 , Object R2 , char c )
          }
        else if( Result instanceof DataSet )
          { DataSet D;
+         
            if(ds.containsKey(vname.toUpperCase().trim()))
             {    D =(DataSet) ds.get(vname.toUpperCase().trim());
 		D.copy((DataSet)Result);   //= (DataSet)((DataSet)Result).clone();
                  return;
               }
-          
-               D =(DataSet) ((DataSet)Result).clone();
+              
+                D =(DataSet) ((DataSet)Result).clone();
+               
                lds.put(vname.toUpperCase().trim(),D);
+              
                 return;
  
             }
 
       }//end Assign
 
-     private void Delete( String vname, HashMap DS)
+     private void Delete( String vname, Hashtable DS)
        { if(vname == null) return;
         DS.remove(vname.toUpperCase().trim()); 
        }
@@ -2850,7 +2911,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
      */
      public void addPropertyChangeListener( String propertyName,
                                             PropertyChangeListener listener)
-      {PC.addPropertyChangeListener( propertyName , listener );
+      {PC.addPropertyChangeListener(   listener );
        }
 
      /** 
@@ -2862,7 +2923,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
      */
      public void removePropertyChangeListener( String propertyName,
                                                PropertyChangeListener listener)
-       {PC.removePropertyChangeListener( propertyName , listener );
+       {PC.removePropertyChangeListener( listener );
        }
 
     
