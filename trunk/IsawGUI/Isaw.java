@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.106  2002/07/10 19:43:29  rmikk
+ *  Added Code to connect the Contour view to Isaw
+ *
  *  Revision 1.105  2002/07/08 20:49:25  pfpeterson
  *  Removed string constants from here that are now
  *  in DataSetTools.util.FontUtil.
@@ -477,6 +480,7 @@ public class Isaw
   private static final String SELECTED_VIEW_MI   = "Selected Graph View";
   private static final String THREED_VIEW_MI     = "3D View";
   private static final String TABLE_VIEW_MI      = "Table View";
+  private static final String CONTOUR_VIEW_MI    = "Contour View";
   private static final String LOG_VIEW_MI        = "Log View";
 
   private static final String INSTR_VIEW_M       = "Instrument Info";
@@ -772,6 +776,7 @@ public class Isaw
     JMenuItem graphView   = new JMenuItem( SELECTED_VIEW_MI );
     JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
     JMenuItem tableView = new JMenuItem( TABLE_VIEW_MI );
+    JMenuItem contourView = new JMenuItem( CONTOUR_VIEW_MI );
     JMenuItem logView = new JMenuItem( LOG_VIEW_MI );
     JMenu instrumentInfoView = new JMenu( INSTR_VIEW_M );
 
@@ -891,6 +896,7 @@ public class Isaw
     vMenu.add(graphView);
     vMenu.add(threeDView);
     vMenu.add( tableView );
+    vMenu.add( contourView );
     vMenu.add( logView );
     vMenu.add(instrumentInfoView);         
       
@@ -922,6 +928,7 @@ public class Isaw
     threeDView.addActionListener(new MenuItemHandler()); 
     imageView.addActionListener(new MenuItemHandler());  
     tableView.addActionListener(new MenuItemHandler());  
+    contourView.addActionListener(new MenuItemHandler());  
     logView.addActionListener(new MenuItemHandler());      
     HRMECS.addActionListener(new MenuItemHandler());
     LRMECS.addActionListener(new MenuItemHandler());
@@ -1659,6 +1666,18 @@ public class Isaw
         return;
       }
 
+      if( s.equals(CONTOUR_VIEW_MI) )
+      {   
+        DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
+        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
+            new ViewManager( ds, IViewManager.CONTOUR);
+            ds.setPointedAtIndex( 0 );
+            ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+        }else{
+            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
+        }
+        return;
+      }
       if( s.equals(LOG_VIEW_MI) )
       {   
         SDDS.java.SDDSedit.sddsEdit frame = new SDDS.java.SDDSedit.sddsEdit();
