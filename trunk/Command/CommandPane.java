@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.56  2003/06/02 14:28:05  rmikk
+ * -Added setDefaultParameter after the Run button is pressed
+ *   in case a new script was loaded in
+ *
  * Revision 1.55  2003/05/28 18:40:39  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -659,8 +663,10 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
             if( e.getSource().equals( CP.Run ) ){
                  fixUP(CP.Commands.getDocument());
                  CP.SP.setDocument(CP.Commands.getDocument());
+                 
                  CP.SP.reset();
                  CP.SP.resetError();
+                 CP.SP.setDefaultParameters(); //may change if script changes
                  
                  if( CP.SP.getErrorCharPos() >= 0){
                      CP.PC.firePropertyChange( "Display", null,
