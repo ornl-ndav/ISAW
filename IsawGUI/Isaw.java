@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.162  2003/10/30 17:15:02  dennis
+ *  Removed "OLD Selected Graph View" that used SGT.
+ *
  *  Revision 1.161  2003/10/14 22:12:37  dennis
  *  Fixed javadoc comment to build cleanly on jdk 1.4.2
  *
@@ -465,7 +468,6 @@ public class Isaw
   private static final String IMAGE_VIEW_MI      = IViewManager.IMAGE;
   private static final String SCROLL_VIEW_MI     = IViewManager.SCROLLED_GRAPHS;
   private static final String SELECTED_VIEW_MI   = IViewManager.SELECTED_GRAPHS;
-  private static final String SELECTED_VIEW_2_MI = IViewManager.SELECTED_GRAPH2;
   private static final String THREED_VIEW_MI     = IViewManager.THREE_D;
   private static final String TABLE_VIEW_MI      = IViewManager.TABLE;
   private static final String CONTOUR_VIEW_MI    = IViewManager.CONTOUR;
@@ -718,7 +720,6 @@ public class Isaw
     JMenuItem imageView   = new JMenuItem( IMAGE_VIEW_MI );
     JMenuItem s_graphView = new JMenuItem( SCROLL_VIEW_MI );
     JMenuItem graphView   = new JMenuItem( SELECTED_VIEW_MI );
-    JMenuItem graphView2  = new JMenuItem( SELECTED_VIEW_2_MI );
     JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
     JMenuItem tableView = new JMenuItem( TABLE_VIEW_MI );
     JMenu Tables= new JMenu("Selected Table View");
@@ -804,8 +805,6 @@ public class Isaw
     vMenu.add( contourView );
     vMenu.add(s_graphView);
     vMenu.add(graphView);
-    vMenu.add(graphView2);
-    
     
     vMenu.add( Tables );
     vMenu.add( tableView );
@@ -835,7 +834,6 @@ public class Isaw
     dbload.addActionListener( menu_item_handler );
     
     graphView.addActionListener(menu_item_handler); 
-    graphView2.addActionListener(menu_item_handler); 
     s_graphView.addActionListener(menu_item_handler); 
 
     threeDView.addActionListener(menu_item_handler); 
@@ -1314,7 +1312,6 @@ public class Isaw
  
       if( s.equals(IMAGE_VIEW_MI)      || 
           s.equals(SELECTED_VIEW_MI)   ||
-          s.equals(SELECTED_VIEW_2_MI) ||
           s.equals(SCROLL_VIEW_MI)     || 
           s.equals(THREED_VIEW_MI)     ||
           s.equals(TABLE_VIEW_MI)      ||

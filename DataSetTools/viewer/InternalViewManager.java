@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2003/10/30 17:16:06  dennis
+ *  Removed "OLD Selected Graph View" that used SGT.
+ *
  *  Revision 1.33  2003/08/08 17:55:49  dennis
  *  Added option to change to New Selected Graph (Brent's) view.
  *  Added "Additional View" option that was previously added to
@@ -252,9 +255,6 @@ public class InternalViewManager extends    JInternalFrame
         FunctionViewComponent viewComp = new FunctionViewComponent( dsd);
         viewer = new DataSetViewerMaker(tempDataSet, state, dsd, viewComp);
       }
-      else if ( view_type.equals( SELECTED_GRAPH2 ))             // use either
-        viewer = new GraphableDataManager( tempDataSet, state ); // Kevin's or
-//        viewer = new ViewerTemplate( tempDataSet, state );     // Template
       else if ( view_type.equals( TABLE)) //TABLE ) )
          viewer = new TabView( tempDataSet, state );
       else if ( view_type.equals( CONTOUR ) )
@@ -665,10 +665,6 @@ private void BuildViewMenu()
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
-  button = new JMenuItem( SELECTED_GRAPH2 );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
-  
   JMenu Tables = new JMenu( "Selected Table View");
   view_menu.add( Tables);
   
