@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/07/12 22:27:35  dennis
+ *  Added FitExpressionToGroup operator
+ *
  *  Revision 1.21  2002/07/10 15:59:55  pfpeterson
  *  Added new operator to data.
  *
@@ -275,6 +278,7 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new CalculateMomentOfGroup() );
     new_ds.addOperator( new DataSetCrossSection() );
     new_ds.addOperator( new FitPolynomialToGroup() );
+    new_ds.addOperator( new FitExpressionToGroup() );
 
     new_ds.addOperator( new DeleteByAttribute() );
     new_ds.addOperator( new SumByAttribute() );
