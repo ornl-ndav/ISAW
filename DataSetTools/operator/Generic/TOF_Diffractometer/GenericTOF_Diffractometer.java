@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2005/01/07 17:52:52  dennis
+ *  Now sets category list based on instrument type String from Operator
+ *  base class.
+ *
  *  Revision 1.4  2004/03/15 19:33:53  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -44,13 +48,12 @@
  *  Revision 1.1  2002/05/31 19:24:51  dennis
  *  Base class for Generic (add on) operators for time-of-flight
  *  Diffractometers
- *
- *
  */
 
 package DataSetTools.operator.Generic.TOF_Diffractometer;
 
 import java.io.*;
+import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.GenericOperator;
 
 /**
@@ -87,8 +90,9 @@ abstract public class GenericTOF_Diffractometer extends    GenericOperator
   public String[] getCategoryList()
   {
     if(categoryList==null)
-      categoryList=createCategoryList();
+      categoryList = Operator.TOF_NPD;
 
     return categoryList;
   }
+
 } 
