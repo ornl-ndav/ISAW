@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2002/10/24 19:36:22  pfpeterson
+ * More appropriately deals with a FileNotFound exception.
+ *
  * Revision 1.11  2002/10/08 15:15:50  rmikk
  * Incorporates the getDocumentation method from the
  *    operators
@@ -87,6 +90,7 @@ class HTMLPage extends JFrame
    private
    JEditorPane editorPane = new JEditorPane();
    String OperatorPane = null;
+  private boolean isValid=false;
 
    /** Constructor and creator of the HTML viewer.
     *
@@ -102,7 +106,7 @@ class HTMLPage extends JFrame
     *     it is a script, the command, the title, and the argument data types.     
     */
    public
-   HTMLPage( String url ) {
+   HTMLPage( String url ){
       Container contentPane = getContentPane ();
 		
       try
@@ -111,8 +115,13 @@ class HTMLPage extends JFrame
       }
       catch( IOException ex )
       {
-         ex.printStackTrace (); 
-         return;
+        if(ex instanceof java.io.FileNotFoundException){
+          DataSetTools.util.SharedData.addmsg("Could not find "
+                                              +ex.getMessage());
+        }else{
+          ex.printStackTrace (); 
+        }
+        return;
       }
 
       contentPane.add ( new JScrollPane( editorPane ), 
@@ -172,6 +181,7 @@ class HTMLPage extends JFrame
             }
          }
       );
+      this.isValid=true;
    }
 
    private
