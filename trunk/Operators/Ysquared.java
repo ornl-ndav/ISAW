@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/02/22 20:45:07  pfpeterson
+ * Operator reorganization.
+ *
  * Revision 1.2  2001/11/27 18:22:49  dennis
  * Fixed getCommand to return proper command name and added
  * operator title to constructor java docs.
@@ -43,6 +46,7 @@
 package Operators;
 
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
