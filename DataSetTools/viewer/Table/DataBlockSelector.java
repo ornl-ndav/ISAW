@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/12/12 19:48:07  rmikk
+ * Removed javadoc error
+ * Increased the side of the Field selector window
+ *
  * Revision 1.3  2003/12/11 22:09:04  rmikk
  * Added a kill command to remove orphaned windows
  *
@@ -77,11 +81,6 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
     /**
       *  Constructor
       *  @param DS  The data set to be viewed
-      *  @param FieldNames  the list of Field Names that will be viewed and 
-      *                    possibly sorted on. The Field Name, "Group ID", is 
-      *                    automatically added.  The other Field names MUST
-      *                    correspond to DataBlock attributes that are listed
-      *                    in the TableGenerator View.
       *  @param state  the Viewer state. This is not implemented yet.
       */
     public DataBlockSelector(DataSet DS,  ViewerState state) {
@@ -705,7 +704,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
             jf.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             jf.addWindowListener( new myWindowAdapter());
             opened = true;
-            jf.setSize(100, 300);
+            jf.setSize(200, 300);
             //------------------ Set up Field Choices -----------------
             DefaultListModel listmod = new DefaultListModel();
             Data Db = DS.getData_entry(0);
