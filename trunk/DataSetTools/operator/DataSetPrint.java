@@ -3,6 +3,9 @@
  *                                  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2000/08/03 21:49:13  dennis
+ *  Moved JFrameMessageCHOP to DataSetTools/components/ui
+ *
  *  Revision 1.1  2000/08/03 21:43:40  dennis
  *  Dongfeng's utility for quick printing.
  *
@@ -16,6 +19,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
+import  DataSetTools.components.ui.*;
 
 /**
  * This operator converts Print data information.
