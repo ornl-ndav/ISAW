@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:42:52  kramer
+ * Replaced the line
+ *   if ( gui.getProjectSelectorJPanel().noProjectsListed())
+ *     with
+ *   if ( gui.getProjectSelectorJPanel().getNoProjectsListed())
+ *
  * Revision 1.3  2004/03/12 19:46:19  bouzekc
  * Changes since 03/10.
  *
@@ -105,7 +111,7 @@ public class LoadClassThread extends Thread
 
 		if (gui.createNewProject())
 		{
-			if ( gui.getProjectSelectorJPanel().noProjectsListed())
+			if ( gui.getProjectSelectorJPanel().getNoProjectsListed())
 			{
 				gui.getProjectSelectorJPanel().getModel().remove(0);
 			}
