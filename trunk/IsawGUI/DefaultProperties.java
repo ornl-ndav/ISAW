@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/04/08 18:22:14  pfpeterson
+ *  Added properties to set JSplitPanel portions on startup.
+ *
  *  Revision 1.6  2002/03/28 20:54:29  pfpeterson
  *  Resolved ISAW_HOME from ./ to an absolute directory.
  *
@@ -296,6 +299,12 @@ public class DefaultProperties{
             +"IsawFileServer2_Path=dmikk.mscs.uwstout.edu;6089"+newline
             +"NDSFileServer1_Name=Test(dmikk-NDS)"+newline
             +"NDSFileServer1_Path=dmikk.mscs.uwstout.edu;6008"+newline
+            +newline
+            +"#"+newline
+            +"# Screen Size"+newline
+            +"#"+newline
+            +"# Status_Height=0.2"+newline
+            +"# Tree_Width=0.2"+newline
             +newline
             +"#"+newline
             +"# Viewer Options"+newline
