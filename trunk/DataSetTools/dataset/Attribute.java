@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2002/02/04 22:59:41  dennis
+ *  Temporarily added strings for Sample Chi, Phi and Omega for SCD.
+ *  These are currently commented out.
+ *
  *  Revision 1.16  2001/12/21 17:29:33  dennis
  *  Added attribute for Segment IDS.  This is currently commented
  *  out to avoud breaking the server<->client communication.
@@ -162,6 +166,10 @@ abstract public class Attribute implements Serializable
 //public static final String  SOURCE_TO_SAMPLE_TOF = 
 //                                                "Source to Sample TOF";
 
+
+//public static final String  SAMPLE_CHI        = "Sample Chi";
+//public static final String  SAMPLE_PHI        = "Sample Phi";
+//public static final String  SAMPLE_Omega      = "Sample Omega";
   public static final String  SAMPLE_NAME       = "Sample Name";
   public static final String  TEMPERATURE       = "Temperature";
   public static final String  PRESSURE          = "Pressure";
