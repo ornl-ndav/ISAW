@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/24 19:33:43  bouzekc
+ * Removed unused variables in main().
+ *
  * Revision 1.5  2003/07/22 19:16:41  dennis
  * Replaced local constant: HOM = 0.3955974, for 'h' / mass of neutron
  * by value calculated from physical constants in tof_calc.
@@ -64,12 +67,8 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 import DataSetTools.dataset.*;
-import DataSetTools.instruments.*;
 import DataSetTools.math.*;
-import DataSetTools.util.*;
 import DataSetTools.operator.Parameter;
-import DataSetTools.operator.DataSet.DataSetOperator;
-import DataSetTools.parameter.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
 
@@ -358,7 +357,7 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
     {
        RunfileRetriever rr = new RunfileRetriever( file_name );
        DataSet ds1 = rr.getDataSet(1);
-       ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+       new ViewManager(ds1, IViewManager.IMAGE);
        SCDhkl op = new SCDhkl(ds1, index, TOF);
        p.append("\nThe results of calling this operator are:\n");
 

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/01/24 19:33:43  bouzekc
+ * Removed unused variables in main().
+ *
  * Revision 1.6  2003/01/14 20:56:25  dennis
  * Added getDocumentation() method and basic main test program.
  * (Chris Bouzek)
@@ -300,7 +303,7 @@ public class XDateTime extends  XAxisInformationOp
     {
        RunfileRetriever rr = new RunfileRetriever( file_name );
        DataSet ds1 = rr.getDataSet(1);
-       ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+       new ViewManager(ds1, IViewManager.IMAGE);
        XDateTime op = new XDateTime(ds1, index, TOF);
        p.append("\nThe results of calling this operator are:\n");
 

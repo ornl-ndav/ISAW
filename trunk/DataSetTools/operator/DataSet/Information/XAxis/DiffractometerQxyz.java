@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/24 19:33:43  bouzekc
+ * Removed unused variables in main().
+ *
  * Revision 1.4  2003/01/13 20:24:13  dennis
  * Added getDocumentation() method, simple main test program and
  * javadocs on getResult(). (Chris Bouzek)
@@ -54,7 +57,6 @@ import  java.util.*;
 import  java.text.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
-import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
 import  DataSetTools.viewer.*;
@@ -268,7 +270,7 @@ public class DiffractometerQxyz extends    XAxisInformationOp
     {
       RunfileRetriever rr = new RunfileRetriever( file_name );
       DataSet ds1 = rr.getDataSet(1);
-      ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+      new ViewManager(ds1, IViewManager.IMAGE);
       DiffractometerQxyz op =
       new DiffractometerQxyz(ds1, index, TOF);
 
