@@ -6,11 +6,34 @@
  * This operator multiplies two DataSets by multiplying the corresponding 
  * Data "blocks" in the DataSets.
  *
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.4  2000/07/10 22:35:54  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.6  2000/06/14 21:42:40  dennis
+ *  getResult() method now calls DSOpsImplementation.DoDSBinaryOp( this )
+ *  so that add, subtract, multiply and divide can all share the same
+ *  basic implemention.
+ *
+ *  Revision 1.5  2000/06/09 16:12:35  dennis
+ *  Added getCommand() method to return the abbreviated command string for
+ *  this operator
+ *
+ *  Revision 1.4  2000/05/16 15:36:34  dennis
+ *  Fixed clone() method to also copy the parameter values from
+ *  the current operator.
+ *
+ *  Revision 1.3  2000/05/11 16:41:28  dennis
+ *  Added RCS logging
+ *
+ *
  */
 
 package DataSetTools.operator;
 
 import  java.io.*;
+import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 
@@ -34,12 +57,6 @@ public class DataSetMultiply extends  DataSetOperator
   public DataSetMultiply( )
   {
     super( "Multiply by a DataSet" );
-
-    Parameter parameter = new Parameter( 
-                             "DataSet to Multiply by", 
-                             new DataSet("DataSetToMultiplyBy",
-                                         "Empty DataSet")  );
-    addParameter( parameter );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -50,10 +67,15 @@ public class DataSetMultiply extends  DataSetOperator
    *
    *  @param  ds              The DataSet to which the operation is applied
    *  @parm   ds_to_multiply  The DataSet to multiply DataSet ds by
+   *  @param  make_new_ds     Flag that determines whether a new DataSet is
+   *                          constructed, or the Data blocks of the second
+   *                          DataSet are just multiplied times the Data blocks
+   *                          of the first DataSet.
    */
 
-  public DataSetMultiply( DataSet             ds,
-                          DataSet             ds_to_multiply )
+  public DataSetMultiply( DataSet  ds,
+                          DataSet  ds_to_multiply,
+                          boolean  make_new_ds )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -62,58 +84,50 @@ public class DataSetMultiply extends  DataSetOperator
     Parameter parameter = getParameter( 0 );
     parameter.setValue( ds_to_multiply );
 
+    parameter = getParameter( 1 );
+    parameter.setValue( new Boolean( make_new_ds ) );
+
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
   }
 
 
+  /* ---------------------------- getCommand ------------------------------- */
+  /**
+   * Returns the abbreviated command string for this operator.
+   */
+   public String getCommand()
+   {
+     return "Mult";
+   }
+
+
+ /* -------------------------- setDefaultParmeters ------------------------- */
+ /**
+  *  Set the parameters to default values.
+  */
+  public void setDefaultParameters()
+  {
+    parameters = new Vector();  // must do this to clear any old parameters
+
+    Parameter parameter = new Parameter(
+                             "DataSet to Multiply by",
+                             new DataSet("DataSetToMultiplyBy",
+                                         "Empty DataSet")  );
+    addParameter( parameter );
+
+    parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
+    addParameter( parameter );
+  }
+
+
   /* ---------------------------- getResult ------------------------------- */
 
-                                     // Get the second DataSet from the 
-                                     // parameter list and multiply  
-                                     // corresponding Data objects by Data 
-                                     // objects in the current DataSet.
   public Object getResult()
-  {                                  // get the DataSet to multiply 
-    DataSet ds_to_multiply = (DataSet)(getParameter(0).getValue());
+  {
+    return DSOpsImplementation.DoDSBinaryOp( this );
+  }
 
-                                     // get the current data set
-    DataSet ds = this.getDataSet();
-
-    if ( !ds.SameUnits( ds_to_multiply ) )  // DataSets are NOT COMPATIBLE TO 
-      {                                     // COMBINE
-        ErrorString message = new ErrorString(
-                           "ERROR: DataSets have different units" );
-        System.out.println( message );
-        return message;
-      }
-                                     // construct a new data set with the same
-                                     // title, units, and operations as the
-                                     // current DataSet, ds
-    DataSet new_ds = ds.empty_clone(); 
-    new_ds.addLog_entry( "Multiplied by " + ds_to_multiply );
-    new_ds.CombineAttributeList( ds_to_multiply );
-
-                                            // do the operation
-    int num_data = ds.getNum_entries();
-    Data data,
-         multiply_data,
-         new_data;
-    for ( int i = 0; i < num_data; i++ )
-    {
-      data = ds.getData_entry( i );        // get reference to the data entry
-
-      multiply_data = ds_to_multiply.getData_entry_with_id( data.getGroup_ID());
- 
-      if ( multiply_data != null )         // there is a corresponding entry
-      {                                    // to try to subtract 
-        new_data = data.multiply( multiply_data );  
-        if ( new_data != null )            // if they could be multiplied 
-          new_ds.addData_entry( new_data );      
-      }
-    }
-    return new_ds;
-  }  
 
   /* ------------------------------ clone ------------------------------- */
   /**
@@ -126,6 +140,7 @@ public class DataSetMultiply extends  DataSetOperator
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
+    new_op.CopyParametersFrom( this );
 
     return new_op;
   }

@@ -3,19 +3,39 @@
  *                                  99/08/16   Added constructor to allow
  *                                             calling operator directly
  *             
- * This operator sorts a DataSet based on multiple attributes of the Data 
- * entries.
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.4  2000/07/10 22:35:53  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.9  2000/06/09 16:12:35  dennis
+ *  Added getCommand() method to return the abbreviated command string for
+ *  this operator
+ *
+ *  Revision 1.8  2000/06/08 15:25:59  dennis
+ *  Changed type casting of attribute names from (SpecialString) to
+ *  (AttributeNameString).
+ *
+ *  Revision 1.7  2000/05/16 15:36:34  dennis
+ *  Fixed clone() method to also copy the parameter values from
+ *  the current operator.
+ *
+ *  Revision 1.6  2000/05/11 16:41:28  dennis
+ *  Added RCS logging
+ *
  *
  */
 
 package DataSetTools.operator;
 
 import  java.io.*;
+import  java.util.Vector;
 import  DataSetTools.util.*;
 import  DataSetTools.dataset.*;
 
 /**
-  *  Sort a data set using multiple attributes. 
+  * This operator sorts a DataSet based on multiple attributes of the Data 
+  * entries.
   */
 
 public class DataSetMultiSort  extends    DataSetOperator 
@@ -32,43 +52,7 @@ public class DataSetMultiSort  extends    DataSetOperator
 
   public DataSetMultiSort( )
   {
-    super( "Sort on mutliple group attributes" );
-                                               // First Key.....
-
-    Parameter parameter = new Parameter("First Group Attribute to Sort on",
-                               new AttributeNameString("Raw Detector Angle") );
-    addParameter( parameter );
-
-    parameter = new Parameter("Sort in Increasing Order?", new Boolean(true) );
-    addParameter( parameter );
-
-    parameter = new Parameter("Use this attribute to sort?", new Boolean(true));
-    addParameter( parameter );
-
-                                               // Second Key.....
-
-    parameter = new Parameter("Second Group Attribute to Sort on",
-                               new AttributeNameString("Raw Detector Angle") );
-    addParameter( parameter );
-
-    parameter = new Parameter("Sort in Increasing Order?", new Boolean(true) );
-    addParameter( parameter );
-  
-    parameter = new Parameter("Use this attribute to sort?",new Boolean(false));
-    addParameter( parameter );
-
-                                               // Third Key.....
-
-    parameter = new Parameter("Third Group Attribute to Sort on",
-                               new AttributeNameString("Raw Detector Angle") );
-    addParameter( parameter );
-
-    parameter = new Parameter("Sort in Increasing Order?", new Boolean(true) );
-    addParameter( parameter );
-  
-    parameter = new Parameter("Use this attribute to sort?",new Boolean(false));
-    addParameter( parameter );
-
+    super( "Sort on group attributes" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -96,25 +80,30 @@ public class DataSetMultiSort  extends    DataSetOperator
    *                       the items in increasing ( vs. decreasing ) order
    *  @param  use_it_3     Flag that indicates whether this attribute is to
    *                       actually be used, or is to be ignored.
+   *  @param  make_new_ds  Flag that determines whether the sort creates a
+   *                       new DataSet and returns the new DataSet as a value,
+   *                       or just does the sort "in place" and just returns
+   *                       a message indicating the sort was done.
    */
 
-  public DataSetMultiSort( DataSet             ds,
-                           AttributeNameString attr_name_1,
-                           boolean             increasing_1,
-                           boolean             use_it_1,
-                           AttributeNameString attr_name_2,
-                           boolean             increasing_2,
-                           boolean             use_it_2,
-                           AttributeNameString attr_name_3,
-                           boolean             increasing_3,
-                           boolean             use_it_3     )
+  public DataSetMultiSort( DataSet   ds,
+                           String    attr_name_1,
+                           boolean   increasing_1,
+                           boolean   use_it_1,
+                           String    attr_name_2,
+                           boolean   increasing_2,
+                           boolean   use_it_2,
+                           String    attr_name_3,
+                           boolean   increasing_3,
+                           boolean   use_it_3,
+                           boolean   make_new_ds     )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
     Parameter parameter = getParameter( 0 );            // first attribute
-    parameter.setValue( attr_name_1 );
+    parameter.setValue( new AttributeNameString(attr_name_1) );
 
     parameter = getParameter( 1 );
     parameter.setValue( new Boolean( increasing_1 ) );
@@ -124,7 +113,7 @@ public class DataSetMultiSort  extends    DataSetOperator
 
 
     parameter = getParameter( 3 );                      // second attribute
-    parameter.setValue( attr_name_2 );
+    parameter.setValue( new AttributeNameString(attr_name_2) );
 
     parameter = getParameter( 4 );
     parameter.setValue( new Boolean( increasing_2 ) );
@@ -134,7 +123,7 @@ public class DataSetMultiSort  extends    DataSetOperator
 
 
     parameter = getParameter( 6 );                      // third attribute
-    parameter.setValue( attr_name_3 );
+    parameter.setValue( new AttributeNameString(attr_name_3) );
 
     parameter = getParameter( 7 );
     parameter.setValue( new Boolean( increasing_3 ) );
@@ -142,8 +131,67 @@ public class DataSetMultiSort  extends    DataSetOperator
     parameter = getParameter( 8 );
     parameter.setValue( new Boolean( use_it_3 ) );
 
+    parameter = getParameter( 9 );
+    parameter.setValue( new Boolean( make_new_ds ) );
+
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
+  }
+
+  /* ---------------------------- getCommand ------------------------------- */
+  /**
+   * Returns the abbreviated command string for this operator.
+   */
+   public String getCommand()
+   {
+     return "SortMK";
+   }
+
+
+ /* -------------------------- setDefaultParmeters ------------------------- */
+ /**
+  *  Set the parameters to default values.
+  */
+  public void setDefaultParameters()
+  {
+    parameters = new Vector();  // must do this to clear any old parameters
+
+    Parameter parameter = new Parameter("First Group Attribute to Sort on",
+                               new AttributeNameString(Attribute.RAW_ANGLE) );
+    addParameter( parameter );
+
+    parameter = new Parameter("Sort in Increasing Order?", new Boolean(true) );
+    addParameter( parameter );
+
+    parameter = new Parameter("Use this attribute to sort?", new Boolean(true));
+    addParameter( parameter );
+
+                                               // Second Key.....
+
+    parameter = new Parameter("Second Group Attribute to Sort on",
+                               new AttributeNameString(Attribute.RAW_ANGLE) );
+    addParameter( parameter );
+
+    parameter = new Parameter("Sort in Increasing Order?", new Boolean(true) );
+    addParameter( parameter );
+
+    parameter = new Parameter("Use this attribute to sort?",new Boolean(false));
+    addParameter( parameter );
+
+                                               // Third Key.....
+
+    parameter = new Parameter("Third Group Attribute to Sort on",
+                               new AttributeNameString(Attribute.RAW_ANGLE) );
+    addParameter( parameter );
+
+    parameter = new Parameter("Sort in Increasing Order?", new Boolean(true) );
+    addParameter( parameter );
+
+    parameter = new Parameter("Use this attribute to sort?",new Boolean(false));
+    addParameter( parameter );
+
+    parameter = new Parameter("Create new DataSet?", new Boolean(false) );
+    addParameter( parameter );
   }
 
 
@@ -152,20 +200,28 @@ public class DataSetMultiSort  extends    DataSetOperator
   public Object getResult()
   {                                  // get the parameters
 
-    String attr_name_1 = ((SpecialString)getParameter(0).getValue()).toString();
+    String attr_name_1 = 
+               ((AttributeNameString)getParameter(0).getValue()).toString();
     boolean increasing_1 = ((Boolean)getParameter(1).getValue()).booleanValue();
     boolean use_it_1     = ((Boolean)getParameter(2).getValue()).booleanValue();
 
-    String attr_name_2 = ((SpecialString)getParameter(3).getValue()).toString();
+    String attr_name_2 = 
+               ((AttributeNameString)getParameter(3).getValue()).toString();
     boolean increasing_2 = ((Boolean)getParameter(4).getValue()).booleanValue();
     boolean use_it_2     = ((Boolean)getParameter(5).getValue()).booleanValue();
 
-    String attr_name_3 = ((SpecialString)getParameter(6).getValue()).toString();
+    String attr_name_3 = 
+               ((AttributeNameString)getParameter(6).getValue()).toString();
     boolean increasing_3 = ((Boolean)getParameter(7).getValue()).booleanValue();
     boolean use_it_3     = ((Boolean)getParameter(8).getValue()).booleanValue();
 
+    boolean make_new_ds = ((Boolean)getParameter(9).getValue()).booleanValue();
+
     DataSet ds     = this.getDataSet();
-    DataSet new_ds = (DataSet)ds.clone();
+
+    DataSet new_ds = ds;
+    if ( make_new_ds )
+      new_ds = (DataSet)ds.clone();
 
                                    // now try to sort on each of the attributes
                                    // requested.  If the sort succeeds, add a 
@@ -206,7 +262,14 @@ public class DataSetMultiSort  extends    DataSetOperator
       }
     }
 
-    return new_ds;
+    if ( make_new_ds )
+      return new_ds;
+    else
+    {
+      new_ds.notifyIObservers( IObserver.DATA_REORDERED );
+      return new String("DataSet sorted");
+    }
+
   }  
 
   /* ------------------------------ clone ------------------------------- */
@@ -221,6 +284,7 @@ public class DataSetMultiSort  extends    DataSetOperator
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
+    new_op.CopyParametersFrom( this );
 
     return new_op;
   }

@@ -1,36 +1,14 @@
 /*
- * @(#)SpectrometerTofToEnergyLoss.java   0.3  99/06/15   Dennis Mikkelson
+ * @(#)SpectrometerTofToQ.java   0.1  2000/07/06   Dennis Mikkelson
  *
- *                                 99/08/16   Added constructor to allow
- *                                            calling operator directly
- *                               2000/04/21   Added methods to set better
- *                                            default parameters. Now it
- *                                            is derived from the class
- *                                            XAxisConversionOperator
+ *                              Convert time axis to Q axis for Spectrometer
+ *                             ( Modified from SpectrometerTofToEnergy.java )
  *             
  *  $Log$
- *  Revision 1.5  2000/07/10 22:36:19  dennis
+ *  Revision 1.1  2000/07/10 22:36:21  dennis
  *  July 10, 2000 version... many changes
  *
- *  Revision 1.13  2000/06/09 16:12:35  dennis
- *  Added getCommand() method to return the abbreviated command string for
- *  this operator
- *
- *  Revision 1.12  2000/05/25 18:49:06  dennis
- *  Fixed bug: DataSet attributes were not copied properly.
- *
- *  Revision 1.11  2000/05/16 15:36:34  dennis
- *  Fixed clone() method to also copy the parameter values from
- *  the current operator.
- *
- *  Revision 1.10  2000/05/15 21:43:45  dennis
- *  now uses constant Parameter.NUM_BINS rather than the string
- *  "Number of Bins"
- *
- *  Revision 1.9  2000/05/11 16:41:28  dennis
- *  Added RCS logging
- *   
- *   
+ *  
  */
 
 package DataSetTools.operator;
@@ -42,15 +20,14 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 
 /**
- * This operator converts a neutron time-of-flight DataSet to energy.  The
- * DataSet must contain spectra with attributes giving the detector position
- * and initial energy. In addition, it is assumed that the XScale for the
- * spectra represents the time-of-flight from the sample to the detector.
- * 
+ * This operator converts neutron time-of-flight DataSet to Q.  The
+ * DataSet must contain spectra with an attribute giving the detector position.
+ * In addition, it is assumed that the XScale for the spectra represents the
+ * time-of-flight from the sample to the detector.
  */
 
-public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator 
-                                         implements Serializable
+public class SpectrometerTofToQ extends    XAxisConversionOperator 
+                                implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
@@ -61,10 +38,11 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
    * to apply the operator to the DataSet this operator was added to.
    */
 
-  public SpectrometerTofToEnergyLoss( )
+  public SpectrometerTofToQ( )
   {
-    super( "Convert to Energy Loss" );
+    super( "Convert to Q" );
   }
+
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
@@ -73,29 +51,29 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
    *  by calling getResult().
    *
    *  @param  ds          The DataSet to which the operation is applied
-   *  @param  min_E       The minimum energy loss value to be binned
-   *  @param  max_E       The maximum energy loss value to be binned
-   *  @param  num_E       The number of "bins" to be used between min_E and
-   *                      max_E
+   *  @param  min_Q       The minimum Q value to be binned
+   *  @param  max_Q       The maximum Q value to be binned
+   *  @param  num_Q       The number of "bins" to be used between min_Q and
+   *                      max_Q
    */
 
-  public SpectrometerTofToEnergyLoss( DataSet     ds,
-                                      float       min_E,
-                                      float       max_E,
-                                      int         num_E )
+  public SpectrometerTofToQ( DataSet     ds,
+                             float       min_Q,
+                             float       max_Q,
+                             int         num_Q )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
     Parameter parameter = getParameter( 0 );
-    parameter.setValue( new Float( min_E ) );
+    parameter.setValue( new Float( min_Q ) );
 
     parameter = getParameter( 1 );
-    parameter.setValue( new Float( max_E ) );
+    parameter.setValue( new Float( max_Q ) );
 
     parameter = getParameter( 2 );
-    parameter.setValue( new Integer( num_E ) );
+    parameter.setValue( new Integer( num_Q ) );
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
@@ -108,7 +86,7 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
    */
    public String getCommand()
    {
-     return "ToEL";
+     return "ToQ";
    }
 
 
@@ -123,25 +101,24 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
     parameters = new Vector();  // must do this to clear any old parameters
 
     Parameter parameter;
-    
+
     if ( scale == null )
-      parameter = new Parameter( "Min Energy Loss(meV)", new Float(-50.0) );
+      parameter = new Parameter( "Min Q(inv A)", new Float(5.0) );
     else
-      parameter = new Parameter( "Min Energy Loss(meV)",
+      parameter = new Parameter( "Min Q(inv A)", 
                                   new Float(scale.getStart_x()) );
     addParameter( parameter );
 
     if ( scale == null )
-      parameter = new Parameter( "Max Energy Loss(meV)", new Float(50.0) );
+      parameter = new Parameter("Max Q(inv A)", new Float(500.0) );
     else
-      parameter = new Parameter( "Max Energy Loss(meV)",
-                                  new Float(scale.getEnd_x()) );
+      parameter = new Parameter("Max Q(inv A)", new Float(scale.getEnd_x()));
+
     addParameter( parameter );
 
-    parameter = new Parameter( Parameter.NUM_BINS, new Integer( 500) );
+    parameter = new Parameter( Parameter.NUM_BINS, new Integer( 500 ) );
     addParameter( parameter );
   }
-
 
   /* -------------------------- new_X_label ---------------------------- */
   /**
@@ -151,7 +128,7 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
    */
    public String new_X_label()
    {
-     return new String( "E Loss(meV)" );
+     return new String( "Q(inv A)" );
    }
 
 
@@ -180,21 +157,21 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
     Data data               = ds.getData_entry( i );
     AttributeList attr_list = data.getAttributeList();
 
-                                             // get the detector position and
-                                             // initial energy 
+                                             // get the detector position
     DetectorPosition position=(DetectorPosition)
                        attr_list.getAttributeValue( Attribute.DETECTOR_POS);
 
     Float energy_in_obj=(Float)attr_list.getAttributeValue(Attribute.ENERGY_IN);
 
-    if( position == null || energy_in_obj == null)     // make sure it has the
+    if( position == null || energy_in_obj == null )    // make sure it has the
       return Float.NaN;                                // needed attributes
-                                                       // to convert it to D
+                                                       // to convert it to Q
 
     float spherical_coords[] = position.getSphericalCoords();
-    float energy_in        = energy_in_obj.floatValue();
+    float e_in               = energy_in_obj.floatValue();
 
-    return (energy_in - tof_calc.Energy( spherical_coords[0], x ));
+    float e_out = tof_calc.Energy( spherical_coords[0], x );
+    return tof_calc.SpectrometerQ( e_in, e_out, position.getScatteringAngle() );
   }
 
 
@@ -209,49 +186,47 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
                                      // current DataSet, ds
     DataSetFactory factory = new DataSetFactory( 
                                      ds.getTitle(),
-                                     "meV",
-                                     "EnergyLoss",
+                                     "inv A",
+                                     "Q",
                                      "Counts",
                                      "Scattering Intensity" );
 
     // #### must take care of the operation log... this starts with it empty
     DataSet new_ds = factory.getDataSet(); 
     new_ds.copyOp_log( ds );
-    new_ds.addLog_entry( "Converted to Energy Loss" );
+    new_ds.addLog_entry( "Converted to Q" );
 
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
 
-                                     // get the energy scale parameters 
-    float min_E = ( (Float)(getParameter(0).getValue()) ).floatValue();
-    float max_E = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    int   num_E = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
+                                     // get the Q scale parameters 
+    float min_Q = ( (Float)(getParameter(0).getValue()) ).floatValue();
+    float max_Q = ( (Float)(getParameter(1).getValue()) ).floatValue();
+    int   num_Q = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
 
-                                     // validate energy bounds
-    if ( min_E > max_E )             // swap bounds to be in proper order
+                                     // validate Q bounds
+    if ( min_Q > max_Q )             // swap bounds to be in proper order
     {
-      float temp = min_E;
-      min_E = max_E;
-      max_E = temp;
+      float temp = min_Q;
+      min_Q = max_Q;
+      max_Q = temp;
     }
 
-    XScale new_e_scale;
-    if ( num_E <= 1.0 || min_E >= max_E )       // no valid scale set
-      new_e_scale = null;
+    XScale new_Q_scale;
+    if ( num_Q < 2 || min_Q >= max_Q )      // no valid scale set
+      new_Q_scale = null;
     else
-      new_e_scale = new UniformXScale( min_E, max_E, num_E );  
+      new_Q_scale = new UniformXScale( min_Q, max_Q, num_Q );  
 
                                             // now proceed with the operation 
                                             // on each data block in DataSet 
     Data             data,
                      new_data;
     DetectorPosition position;
-    float            energy_in;
-    Float            energy_in_obj;
     float            y_vals[];              // y_values from one spectrum
-    float            e_vals[];              // energy values at bin boundaries
+    float            Q_vals[];              // Q values at bin boundaries
                                             // calculated from tof bin bounds
-    XScale           E_scale;
+    XScale           Q_scale;
     float            spherical_coords[];
     int              num_data = ds.getNum_entries();
     AttributeList    attr_list;
@@ -262,52 +237,61 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
       attr_list = data.getAttributeList();
                                            // get the detector position and
                                            // initial path length 
+
       position=(DetectorPosition)
-                   attr_list.getAttributeValue(Attribute.DETECTOR_POS);
+                      attr_list.getAttributeValue(Attribute.DETECTOR_POS);
 
-      energy_in_obj=(Float)
-                      attr_list.getAttributeValue(Attribute.ENERGY_IN);
+      Float energy_in_obj=
+                      (Float)attr_list.getAttributeValue(Attribute.ENERGY_IN);
 
-      if( position != null && energy_in_obj != null)
-                                                       // has needed attributes 
-      {                                                // so convert it to E
-                                       // calculate energies at bin boundaries
-        energy_in        = energy_in_obj.floatValue();
-
+      if( position != null && energy_in_obj != null )     
+      {                               // has needed attributes so convert to Q 
+                                      // calculate Qs at bin boundaries
         spherical_coords = position.getSphericalCoords();
-        e_vals           = data.getX_scale().getXs();
-        for ( int i = 0; i < e_vals.length; i++ )
-          e_vals[i] = energy_in - 
-                      tof_calc.Energy( spherical_coords[0], e_vals[i] );
-  
-        E_scale = new VariableXScale( e_vals );
-        y_vals  = data.getCopyOfY_values();
+        float e_in       = energy_in_obj.floatValue();
 
-        new_data = new Data( E_scale, y_vals, data.getGroup_ID() ); 
+        Q_vals           = data.getX_scale().getXs();
+        for ( int i = 0; i < Q_vals.length; i++ )
+        {
+          float e_out      = tof_calc.Energy( spherical_coords[0], Q_vals[i] );
+          Q_vals[i] = tof_calc.SpectrometerQ( e_in, 
+                                              e_out, 
+                                              position.getScatteringAngle() );
+        } 
+                                               // reorder values to keep in
+                                               // increasing order
+        arrayUtil.Reverse( Q_vals );
+        Q_scale = new VariableXScale( Q_vals );
+
+        y_vals = data.getCopyOfY_values();
+        arrayUtil.Reverse( y_vals );
+
+        new_data = new Data( Q_scale, y_vals, data.getGroup_ID() ); 
                                                 // create new data block with 
-        new_data.setSqrtErrors();               // non-uniform E_scale and 
+        new_data.setSqrtErrors();               // non-uniform Q_scale and 
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 
-        if ( new_e_scale != null )              // rebin if a valid scale was
-          new_data.ReBin( new_e_scale );        // specified
+        if ( new_Q_scale != null )              // rebin if a valid scale was
+          new_data.ReBin( new_Q_scale );        // specified
 
         new_ds.addData_entry( new_data );      
       }
     }
-//    ChopTools.chop_dataDrawer.drawgraphDataSet(new_ds);
+
     return new_ds;
   }  
 
+
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current SpectrometerTofToEnergyLoss Operator.  The list 
-   * of parameters and the reference to the DataSet to which it applies are
+   * Get a copy of the current SpectrometerTofToQ Operator.  The list of
+   * parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
   public Object clone()
   {
-    SpectrometerTofToEnergyLoss new_op = new SpectrometerTofToEnergyLoss( );
+    SpectrometerTofToQ new_op = new SpectrometerTofToQ( );
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
@@ -315,7 +299,6 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
 
     return new_op;
   }
-
 
 
 }
