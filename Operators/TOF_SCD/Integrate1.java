@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2004/07/29 14:01:44  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.2  2004/06/23 20:39:54  rmikk
  * Now includes all the options from the first integrate operator.
  * Adds two new Integrate One Point add-ins and allows for an
@@ -184,7 +187,7 @@ public class Integrate1 extends GenericTOF_SCD{
    * @param lognum      The peak multiples to log - i.e. 3 logs
    *                    1, 3, 6, 9...
    * @param append      Append to file (true/false);
-   * @param use_shoebox Flag to specify using same-size shoebox around all peaks,
+   * @param PeakAlg     String to specify using same-size shoebox around all peaks,
    *                    rather than trying to maximize I/sigI
    * @param box_x_range The range of x (delta col) values to use around the peak 
    *                    position

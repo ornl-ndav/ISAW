@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/07/29 14:01:20  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.1  2004/07/14 16:26:08  rmikk
  * Initial Checkin.
  * IndexJ with peak Vector input and  Orientation matrix output
@@ -81,9 +84,9 @@ public class IndexJ_base extends    GenericTOF_SCD {
   /**
    *  Construct operator to execute index.
    *
-   *  @param peaksfile The name of the peaks file to index. This name is
-   *  used to generate the experiment name used by index.
-   *  @param Orientation matrix 
+   *  @param peaks The Vector of peaks Objects to index. 
+   *  @param UB   Orientation matrix 
+   * @param RestrRuns   The int list of restricted runs
    *  @param delta The error parameter for indexing peaks (h = k = l)
    */
   
