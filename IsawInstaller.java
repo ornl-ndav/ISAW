@@ -32,6 +32,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.24  2004/07/28 21:31:46  dennis
+ * Added ISIS.jar
+ *
  * Revision 1.23  2004/06/08 01:26:35  dennis
  * Fixed syntax error in batch file to run Isaw on Windows.
  *
@@ -604,13 +607,13 @@ public class IsawInstaller extends JFrame
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
 		+"java -mx128m -cp \""+fixSeparator(isaw_home)
-                +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;jogl.jar;"
+                +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;jogl.jar;"
                 +"jhall.jar;.\" IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+ newline
 		+"rem --"+newline
-		+"rem java -mx128m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;jogl.jar;"
+		+"rem java -mx128m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;jogl.jar;"
 		+"jhall.jar;.\" IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
@@ -618,7 +621,7 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"export LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -mx128m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:"+
+		+"$JAVA -mx128m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/jogl.jar"
 		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(SUN_ID)){
@@ -627,7 +630,7 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:"+
+		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/jogl.jar"
 		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
@@ -638,6 +641,7 @@ public class IsawInstaller extends JFrame
                 +isaw_home+"/sgt_v2.jar:"
                 +isaw_home+"/gov.jar:"
                 +isaw_home+"/IPNS.jar:"
+                +isaw_home+"/ISIS.jar:"
                 +isaw_home+"/jnexus.jar:"
                 +isaw_home+"/sdds.jar:"
                 +isaw_home+"/jogl.jar:"
