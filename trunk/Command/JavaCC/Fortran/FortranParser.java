@@ -114,27 +114,37 @@ public class FortranParser implements FortranParserConstants {
   static final public String parseCode() throws ParseException {
   String codeLine = "";
     if( standalone ) {
-      System.out.println( "Please type in a line of Fortran code " +
-        "or ^D to quit:\n" );
+      /*System.out.println( "Please type in a line of Fortran code " +
+        "or ^D to quit:\n" );*/
     }
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case LINE_END:
       case DIGIT:
       case STRING:
       case FLOATING_POINT:
       case FORTRAN_ABS:
       case FORTRAN_SQRT:
+      case FORTRAN_SIN:
+      case FORTRAN_ASIN:
+      case FORTRAN_COS:
+      case FORTRAN_ACOS:
+      case FORTRAN_TAN:
+      case FORTRAN_ATAN:
+      case FORTRAN_LOG:
+      case FORTRAN_EXP:
       case FORTRAN_FLOAT_FUN:
       case FORTRAN_TRUNC_FUN:
       case FORTRAN_MOD_FUN:
+      case FORTRAN_FLOOR_FUN:
+      case FORTRAN_FRACTION_FUN:
       case FORTRAN_INT:
       case FORTRAN_REAL:
       case FORTRAN_DOUBLE:
       case FORTRAN_LOGICAL:
       case FORTRAN_CHAR_1:
       case FORTRAN_CHAR_2:
-      case 34:
         ;
         break;
       default:
@@ -142,14 +152,14 @@ public class FortranParser implements FortranParserConstants {
         break label_1;
       }
       codeLine = convertFortranToJava();
-      jj_consume_token(34);
+      jj_consume_token(LINE_END);
       //a newline ends the expansion, and the parser expects one, so tack it on
       //print the parsed expression
       if( standalone ) {
-        System.out.println( codeLine );
-        System.out.println(  );
+        System.out.print( codeLine );
+        /*System.out.println(  );
         System.out.println( "Please type in another line of Fortran code or ^D to quit:" );
-        System.out.println(  );
+        System.out.println(  );*/
       }
     }
     {if (true) return codeLine;}
@@ -173,9 +183,19 @@ public class FortranParser implements FortranParserConstants {
       case FLOATING_POINT:
       case FORTRAN_ABS:
       case FORTRAN_SQRT:
+      case FORTRAN_SIN:
+      case FORTRAN_ASIN:
+      case FORTRAN_COS:
+      case FORTRAN_ACOS:
+      case FORTRAN_TAN:
+      case FORTRAN_ATAN:
+      case FORTRAN_LOG:
+      case FORTRAN_EXP:
       case FORTRAN_FLOAT_FUN:
       case FORTRAN_TRUNC_FUN:
       case FORTRAN_MOD_FUN:
+      case FORTRAN_FLOOR_FUN:
+      case FORTRAN_FRACTION_FUN:
       case FORTRAN_INT:
       case FORTRAN_REAL:
       case FORTRAN_DOUBLE:
@@ -194,7 +214,7 @@ public class FortranParser implements FortranParserConstants {
     }
     //convert single spaces to one space, then trim it and append the
     //Java line closer semicolon.  This may fail for Strings-we will see...
-    {if (true) return fCode.toString(  ).replaceAll( "\\s+", " " ).trim(  ) + ";";}
+    {if (true) return fCode.toString(  ).replaceAll( "\\s+", " " ).trim(  ) + ";\n";}
     throw new Error("Missing return statement in function");
   }
 
@@ -220,8 +240,66 @@ public class FortranParser implements FortranParserConstants {
     }
       break;
     case FORTRAN_SQRT:
-      t = jj_consume_token(FORTRAN_SQRT);
+      //square root function
+        t = jj_consume_token(FORTRAN_SQRT);
     {if (true) return t.image.replaceAll( "sqrt", "Math.sqrt" );}
+      break;
+    case FORTRAN_SIN:
+      //sine function
+        t = jj_consume_token(FORTRAN_SIN);
+    {if (true) return t.image.replaceAll( "sin", "Math.sin" );}
+      break;
+    case FORTRAN_ASIN:
+      //arcsine function
+        t = jj_consume_token(FORTRAN_ASIN);
+    {if (true) return t.image.replaceAll( "asin", "Math.asin" );}
+      break;
+    case FORTRAN_COS:
+      //cosine function
+        t = jj_consume_token(FORTRAN_COS);
+    {if (true) return t.image.replaceAll( "cos", "Math.cos" );}
+      break;
+    case FORTRAN_ACOS:
+      //arccosine function
+        t = jj_consume_token(FORTRAN_ACOS);
+    {if (true) return t.image.replaceAll( "acos", "Math.acos" );}
+      break;
+    case FORTRAN_TAN:
+      //tangent function
+        t = jj_consume_token(FORTRAN_TAN);
+    {if (true) return t.image.replaceAll( "tan", "Math.tan" );}
+      break;
+    case FORTRAN_ATAN:
+      //tangent function
+        t = jj_consume_token(FORTRAN_ATAN);
+    {if (true) return t.image.replaceAll( "atan", "Math.atan" );}
+      break;
+    case FORTRAN_LOG:
+      //log function
+        t = jj_consume_token(FORTRAN_LOG);
+    {if (true) return t.image.replaceAll( "log", "Math.log" );}
+      break;
+    case FORTRAN_EXP:
+      //exp function
+        t = jj_consume_token(FORTRAN_EXP);
+    {if (true) return t.image.replaceAll( "exp", "Math.exp" );}
+      break;
+    case FORTRAN_FLOOR_FUN:
+      //floor function
+        t = jj_consume_token(FORTRAN_FLOOR_FUN);
+    {if (true) return t.image.replaceAll( "floor", "Math.floor" );}
+      break;
+    case FORTRAN_FRACTION_FUN:
+      //fraction function
+        t = jj_consume_token(FORTRAN_FRACTION_FUN);
+    //based upon the Javadocs for the Math.IEEERemainder() method,
+    //this will compute the remainder of whatever the argument was
+    //divided by 1 (e.g. 3.14 / 1, which would give 0.14 as a remainder
+    s = t.image;
+    s = s.replaceAll( "fraction", "" ).replaceAll( "\\(", "").replaceAll( "\\)", "");
+    s = "Math.IEERemainder( " + s.trim(  ) + ", 1)";
+
+    {if (true) return s;}
       break;
     case FORTRAN_FLOAT_FUN:
       //matched the float() function
@@ -243,6 +321,8 @@ public class FortranParser implements FortranParserConstants {
     s = t.image.replaceAll( "int", "" );
 
     s = "new Float" + s + ".intValue()";
+
+    {if (true) return s;}
       break;
     case FORTRAN_MOD_FUN:
       //matched the mod() function
@@ -377,10 +457,10 @@ public class FortranParser implements FortranParserConstants {
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0xff80c080,0xff80c080,0xff80c080,};
+      jj_la1_0 = new int[] {0xffc06042,0xffc06040,0xffc06040,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x7,0x3,0x3,};
+      jj_la1_1 = new int[] {0x7ff,0x7ff,0x7ff,};
    }
 
   public FortranParser(java.io.InputStream stream) {
@@ -500,8 +580,8 @@ public class FortranParser implements FortranParserConstants {
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[35];
-    for (int i = 0; i < 35; i++) {
+    boolean[] la1tokens = new boolean[43];
+    for (int i = 0; i < 43; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -520,7 +600,7 @@ public class FortranParser implements FortranParserConstants {
         }
       }
     }
-    for (int i = 0; i < 35; i++) {
+    for (int i = 0; i < 43; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

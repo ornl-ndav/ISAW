@@ -4,44 +4,54 @@ package Command.JavaCC.Fortran;
 public interface FortranParserConstants {
 
   int EOF = 0;
-  int WHITESPACE = 3;
-  int ONE_PLUS_WS = 4;
-  int OPT_WS = 5;
-  int UNSIGNED_DIGIT = 6;
-  int DIGIT = 7;
-  int CHARACTER = 8;
-  int RESERVED_CHAR = 9;
-  int VAR_RESERVED_CHAR = 10;
-  int DIGICHAR = 11;
-  int VARIABLE = 12;
-  int ARRAY_VARIABLE = 13;
-  int STRING = 14;
-  int FLOATING_POINT = 15;
-  int INT_IDENT = 16;
-  int FLOAT_IDENT = 17;
-  int MULTI_VARIABLE = 18;
-  int CHAR_VARIABLE = 19;
-  int MATH_INT_VAR = 20;
-  int MATH_FLOAT_VAR = 21;
-  int MATH_VAR = 22;
-  int FORTRAN_ABS = 23;
-  int FORTRAN_SQRT = 24;
-  int FORTRAN_FLOAT_FUN = 25;
-  int FORTRAN_TRUNC_FUN = 26;
-  int FORTRAN_MOD_FUN = 27;
-  int FORTRAN_INT = 28;
-  int FORTRAN_REAL = 29;
-  int FORTRAN_DOUBLE = 30;
-  int FORTRAN_LOGICAL = 31;
-  int FORTRAN_CHAR_1 = 32;
-  int FORTRAN_CHAR_2 = 33;
+  int LINE_END = 1;
+  int WHITESPACE = 2;
+  int ONE_PLUS_WS = 3;
+  int OPT_WS = 4;
+  int UNSIGNED_DIGIT = 5;
+  int DIGIT = 6;
+  int CHARACTER = 7;
+  int RESERVED_CHAR = 8;
+  int VAR_RESERVED_CHAR = 9;
+  int DIGICHAR = 10;
+  int VARIABLE = 11;
+  int ARRAY_VARIABLE = 12;
+  int STRING = 13;
+  int FLOATING_POINT = 14;
+  int INT_IDENT = 15;
+  int FLOAT_IDENT = 16;
+  int MULTI_VARIABLE = 17;
+  int CHAR_VARIABLE = 18;
+  int MATH_INT_VAR = 19;
+  int MATH_FLOAT_VAR = 20;
+  int MATH_VAR = 21;
+  int FORTRAN_ABS = 22;
+  int FORTRAN_SQRT = 23;
+  int FORTRAN_SIN = 24;
+  int FORTRAN_ASIN = 25;
+  int FORTRAN_COS = 26;
+  int FORTRAN_ACOS = 27;
+  int FORTRAN_TAN = 28;
+  int FORTRAN_ATAN = 29;
+  int FORTRAN_LOG = 30;
+  int FORTRAN_EXP = 31;
+  int FORTRAN_FLOAT_FUN = 32;
+  int FORTRAN_TRUNC_FUN = 33;
+  int FORTRAN_MOD_FUN = 34;
+  int FORTRAN_FLOOR_FUN = 35;
+  int FORTRAN_FRACTION_FUN = 36;
+  int FORTRAN_INT = 37;
+  int FORTRAN_REAL = 38;
+  int FORTRAN_DOUBLE = 39;
+  int FORTRAN_LOGICAL = 40;
+  int FORTRAN_CHAR_1 = 41;
+  int FORTRAN_CHAR_2 = 42;
 
   int DEFAULT = 0;
 
   String[] tokenImage = {
     "<EOF>",
-    "\"\\n\"",
-    "\"\\r\"",
+    "<LINE_END>",
     "<WHITESPACE>",
     "<ONE_PLUS_WS>",
     "<OPT_WS>",
@@ -64,16 +74,25 @@ public interface FortranParserConstants {
     "<MATH_VAR>",
     "<FORTRAN_ABS>",
     "<FORTRAN_SQRT>",
+    "<FORTRAN_SIN>",
+    "<FORTRAN_ASIN>",
+    "<FORTRAN_COS>",
+    "<FORTRAN_ACOS>",
+    "<FORTRAN_TAN>",
+    "<FORTRAN_ATAN>",
+    "<FORTRAN_LOG>",
+    "<FORTRAN_EXP>",
     "<FORTRAN_FLOAT_FUN>",
     "<FORTRAN_TRUNC_FUN>",
     "<FORTRAN_MOD_FUN>",
+    "<FORTRAN_FLOOR_FUN>",
+    "<FORTRAN_FRACTION_FUN>",
     "<FORTRAN_INT>",
     "<FORTRAN_REAL>",
     "<FORTRAN_DOUBLE>",
     "<FORTRAN_LOGICAL>",
     "<FORTRAN_CHAR_1>",
     "<FORTRAN_CHAR_2>",
-    "\";\"",
   };
 
 }

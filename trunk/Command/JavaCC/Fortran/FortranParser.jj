@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2004/01/14 04:37:43  bouzekc
+ * Added remainder of geometric math functions, added code to handle
+ * the Fortran fraction() function using Math.IEEERemainder().
+ *
  * Revision 1.5  2004/01/14 01:54:33  bouzekc
  * Cleaned up old, unused token statements, and more explicitly defined
  * each token so that there is no ambiguity between the regular
@@ -175,8 +179,10 @@ PARSER_END( FortranParser )
 // -CHRIS BOUZEK
 //~----------------------------------------------------------------------------   
 
-SKIP : {
-  "\n" | "\r"
+//lines in Fortran are not ended with a semicolon or anything
+//nice like that
+TOKEN : {
+  < LINE_END: ("\n"| "\r"| "\r\n") >
 }
 
 //whitespace: space or tab
@@ -290,7 +296,11 @@ TOKEN : {
   ) >
 }
 
-//Fortran tokens.  Recall that in Fortran, untyped variables starting with
+//~----------------------------------------------------------------------------
+// FORTRAN SECTION
+//~----------------------------------------------------------------------------
+
+//Recall that in Fortran, untyped variables starting with
 //an I, J, K, L, M, or N are considered integers, while untyped variables
 //starting with any other letter are considered reals.
 TOKEN: {
@@ -356,6 +366,10 @@ TOKEN: {
   ) >
 }
 
+//~----------------------------------------------------------------------------
+//FORTRAN MATH ROUTINES
+//~----------------------------------------------------------------------------
+
 //absolute function
 TOKEN: {
   < FORTRAN_ABS: (
@@ -370,6 +384,78 @@ TOKEN: {
   < FORTRAN_SQRT: (
     <OPT_WS>
     "sqrt(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
+  ) >
+}
+
+//sine function
+TOKEN: {
+  < FORTRAN_SIN: (
+    <OPT_WS>
+    "sin(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
+  ) >
+}
+
+//arcsine function
+TOKEN: {
+  < FORTRAN_ASIN: (
+    <OPT_WS>
+    "asin(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
+  ) >
+}
+
+//cosine function
+TOKEN: {
+  < FORTRAN_COS: (
+    <OPT_WS>
+    "cos(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
+  ) >
+}
+
+//arccosine function
+TOKEN: {
+  < FORTRAN_ACOS: (
+    <OPT_WS>
+    "acos(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
+  ) >
+}
+
+//tangent function
+TOKEN: {
+  < FORTRAN_TAN: (
+    <OPT_WS>
+    "tan(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
+  ) >
+}
+
+//arctangent function
+TOKEN: {
+  < FORTRAN_ATAN: (
+    <OPT_WS>
+    "atan(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
+  ) >
+}
+
+//log function
+TOKEN: {
+  < FORTRAN_LOG: (
+    <OPT_WS>
+    "log(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
+  ) >
+}
+
+//Euler's (exp) function
+TOKEN: {
+  < FORTRAN_EXP: (
+    <OPT_WS>
+    "exp(" <MATH_FLOAT_VAR> ")"
     <OPT_WS>
   ) >
 }
@@ -400,6 +486,28 @@ TOKEN: {
     <OPT_WS>
   ) >
 }
+
+//floor() function
+TOKEN: {
+  < FORTRAN_FLOOR_FUN: (
+    <OPT_WS>
+    "floor(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
+  ) >
+}
+
+//fraction() function-I used the Java IEEERemainder for this one
+TOKEN: {
+  < FORTRAN_FRACTION_FUN: (
+    <OPT_WS>
+    "fraction(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
+  ) >
+}
+
+//~----------------------------------------------------------------------------
+//FORTRAN VARIABLE TYPES
+//~----------------------------------------------------------------------------
 
 //integer variable
 TOKEN : {
@@ -484,18 +592,18 @@ String parseCode(  ) : {
 { 
   {
     if( standalone ) {
-      System.out.println( "Please type in a line of Fortran code " +
-        "or ^D to quit:\n" );
+      /*System.out.println( "Please type in a line of Fortran code " +
+        "or ^D to quit:\n" );*/
     }
   }
-  ( codeLine = convertFortranToJava(  ) ";"{
+  ( codeLine = convertFortranToJava(  ) <LINE_END>{
       //a newline ends the expansion, and the parser expects one, so tack it on
       //print the parsed expression
       if( standalone ) {
-        System.out.println( codeLine );
-        System.out.println(  );
+        System.out.print( codeLine );
+        /*System.out.println(  );
         System.out.println( "Please type in another line of Fortran code or ^D to quit:" );
-        System.out.println(  );
+        System.out.println(  );*/
       }
     }
   )*
@@ -532,7 +640,7 @@ String convertFortranToJava(  ) : {
   {
     //convert single spaces to one space, then trim it and append the
     //Java line closer semicolon.  This may fail for Strings-we will see...
-    return fCode.toString(  ).replaceAll( "\\s+", " " ).trim(  ) + ";";
+    return fCode.toString(  ).replaceAll( "\\s+", " " ).trim(  ) + ";\n";
   }
 }
 
@@ -558,8 +666,66 @@ String convertFortranTokens(  ) : {
     }
   }
 |
+  //square root function
   t = <FORTRAN_SQRT> {
     return t.image.replaceAll( "sqrt", "Math.sqrt" );
+  }
+|
+  //sine function
+  t = <FORTRAN_SIN> {
+    return t.image.replaceAll( "sin", "Math.sin" );
+  }
+|
+  //arcsine function
+  t = <FORTRAN_ASIN> {
+    return t.image.replaceAll( "asin", "Math.asin" );
+  }
+|
+  //cosine function
+  t = <FORTRAN_COS> {
+    return t.image.replaceAll( "cos", "Math.cos" );
+  }
+|
+  //arccosine function
+  t = <FORTRAN_ACOS> {
+    return t.image.replaceAll( "acos", "Math.acos" );
+  }
+|
+  //tangent function
+  t = <FORTRAN_TAN> {
+    return t.image.replaceAll( "tan", "Math.tan" );
+  }
+|
+  //tangent function
+  t = <FORTRAN_ATAN> {
+    return t.image.replaceAll( "atan", "Math.atan" );
+  }
+|
+  //log function
+  t = <FORTRAN_LOG> {
+    return t.image.replaceAll( "log", "Math.log" );
+  }
+|
+  //exp function
+  t = <FORTRAN_EXP> {
+    return t.image.replaceAll( "exp", "Math.exp" );
+  }
+|
+  //floor function
+  t = <FORTRAN_FLOOR_FUN> {
+    return t.image.replaceAll( "floor", "Math.floor" );
+  }
+|
+  //fraction function
+  t = <FORTRAN_FRACTION_FUN> {
+    //based upon the Javadocs for the Math.IEEERemainder() method,
+    //this will compute the remainder of whatever the argument was
+    //divided by 1 (e.g. 3.14 / 1, which would give 0.14 as a remainder
+    s = t.image;
+    s = s.replaceAll( "fraction", "" ).replaceAll( "\\(", "").replaceAll( "\\)", "");
+    s = "Math.IEERemainder( " + s.trim(  ) + ", 1)";
+
+    return s;
   }
 | 
   //matched the float() function
@@ -581,6 +747,8 @@ String convertFortranTokens(  ) : {
     s = t.image.replaceAll( "int", "" );
     
     s = "new Float" + s + ".intValue()";
+    
+    return s;
   }
 |
   //matched the mod() function
