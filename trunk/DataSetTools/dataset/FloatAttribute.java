@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/03/10 20:59:07  dennis
+ *  Use exponential format for the string form of small values.
+ *  The default format previously just displayed 0.
+ *
  *  Revision 1.10  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -60,6 +64,7 @@ package  DataSetTools.dataset;
 
 import java.text.*;
 import java.io.*;
+import DataSetTools.util.Format;
 
 /**
  * The concrete class for an attribute whose value is a float.  
@@ -185,8 +190,13 @@ public class FloatAttribute extends Attribute
    */
   public String getStringValue()
   {
-     NumberFormat f = NumberFormat.getInstance();
-     return f.format( value );
+     if ( Math.abs(value) >= 0.1 )                   // use default format
+     {
+       NumberFormat f = NumberFormat.getInstance();
+       return f.format( value );
+     }
+     else
+       return  Format.singleExp( value, 10 );
   }
 
   /**
