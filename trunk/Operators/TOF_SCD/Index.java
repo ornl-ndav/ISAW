@@ -179,89 +179,90 @@ public class Index extends    GenericTOF_SCD {
     try{
       process=SysUtil.startProcess(command,dir);
       BufferedReader in=SysUtil.getSTDINreader(process);
+      BufferedReader err=SysUtil.getSTDERRreader(process);
       BufferedWriter out=SysUtil.getSTDOUTwriter(process);
       
       // skip over the first couple of lines
-      SysUtil.jumpline(in,"PEAKS.LOG file");
+      SysUtil.jumpline(in,err,"PEAKS.LOG file");
 
       // we want to index a peaks file
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       SysUtil.writeline(out,"1");
       System.out.println(output+"1");
 
       // enter the experiment name
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("Experiment name")<0 ){
         if( output!=null && output.length()>0){
           System.out.println(output);
         }
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       SysUtil.writeline(out,expname);
       System.out.println(output+expname);
 
       // answer no to restricting sequence numbers
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("Restrictions")<0 ){
         if( output!=null && output.length()>0){
           System.out.println(output);
         }
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       SysUtil.writeline(out,"n");
       System.out.println(output+"n");
       
       // answer no to restricting histograms
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("Restrictions")<0 ){
         if( output!=null && output.length()>0){
           System.out.println(output);
         }
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       SysUtil.writeline(out,"n");
       System.out.println(output+"n");
       
       // tell it where to get the orientation matrix from
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("Enter 1, 2")<0 ){
         if( output!=null && output.length()>0){
           System.out.println(output);
         }
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       SysUtil.writeline(out,"3");
       System.out.println(output+"3");
       
       // tell it to use the default crystal
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("Crystal No.")<0 ){
         if( output!=null && output.length()>0){
           System.out.println(output);
         }
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       SysUtil.writeline(out,"");
       System.out.println(output+"");
 
       // tell it to use the default error bars
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("Delta h,k,l")<0 ){
         if( output!=null && output.length()>0){
           System.out.println(output);
         }
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       SysUtil.writeline(out,delta+" "+delta+" "+delta);
       System.out.println(output+delta+" "+delta+" "+delta);
 
       // we want to retain the new file
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("DO YOU WISH TO RETAIN")<0 ){
         if( output!=null && output.length()>0){
           System.out.println(output);
         }
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       SysUtil.writeline(out,"y");
       System.out.println(output+"y");

@@ -220,28 +220,29 @@ public class Scalar extends    GenericTOF_SCD {
       String temp;
       process=SysUtil.startProcess(command,dir);
       BufferedReader in=SysUtil.getSTDINreader(process);
+      BufferedReader err=SysUtil.getSTDERRreader(process);
       BufferedWriter out=SysUtil.getSTDOUTwriter(process);
       
       // skip over the first couple of lines
-      SysUtil.jumpline(in,"Scalars obtained");
+      SysUtil.jumpline(in,err,"Scalars obtained");
       
       // enter the value of delta
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("PARAMETER DELTA")<0 ){
         if( output!=null && output.length()>0){
           System.out.println(output);
         }
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       temp=Float.toString(delta);
       SysUtil.writeline(out,temp);
       System.out.println(output+temp);
       
       // enter the symmetry we are searching for
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("METHOD OF SEARCH")<0 ){
         if(output!=null) System.out.println(output);
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       if(choice==0){
         temp=Integer.toString(1);
@@ -251,33 +252,33 @@ public class Scalar extends    GenericTOF_SCD {
         temp=Integer.toString(2);
         SysUtil.writeline(out,temp);
         System.out.println(output+temp);
-        SysUtil.jumpline(in,"EXIT");
-        output=SysUtil.readline(in);
+        SysUtil.jumpline(in,err,"EXIT");
+        output=SysUtil.readline(in,err);
         temp=Integer.toString(choice);
         SysUtil.writeline(out,temp);
         System.out.println(output+temp);
       }
 
       // then skip down to the results and print them
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || (output.indexOf("TRANSFORMATION MATRIX")<0 
                                     && output.indexOf("NO MATCHES FOUND")<0) ){
         if(output!=null) System.out.println(output);
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       if(output.indexOf("NO MATCHES FOUND")>=0){
         System.out.println(output);
         eString=new ErrorString("NO MATCHES FOUND");
         return null;
       }
-      output=SysUtil.readline(in); // first line is empty
+      output=SysUtil.readline(in,err); // first line is empty
       System.out.println(output);
 
       // construct the matrix
       matrix=new StringBuffer();
       matrix.append("[");
       for( int i=0 ; i<3 ; i++ ){
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
         matrix.append("["+output.trim()+"]");
         if(i!=2) matrix.append(",");
         System.out.println(output);
