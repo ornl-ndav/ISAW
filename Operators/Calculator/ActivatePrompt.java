@@ -31,11 +31,17 @@
  * Modified:	
  *
  * $Log$
+ * Revision 1.6  2003/02/04 16:28:14  pfpeterson
+ * Now uses IParameterGUI and changed returns on errors to ErrorString.
+ *
  * Revision 1.5  2002/11/27 23:30:05  pfpeterson
  * standardized header
  *
  * Revision 1.4  2002/10/29 16:00:23  dennis
  * Added getDocumentation method, and $Log$
+ * Added getDocumentation method, and Revision 1.6  2003/02/04 16:28:14  pfpeterson
+ * Added getDocumentation method, and Now uses IParameterGUI and changed returns on errors to ErrorString.
+ * Added getDocumentation method, and
  * Added getDocumentation method, and Revision 1.5  2002/11/27 23:30:05  pfpeterson
  * Added getDocumentation method, and standardized header
  * Added getDocumentation method, and tag. (Mike Miller)
@@ -44,12 +50,15 @@
  */
 package Operators.Calculator;
 
+import DataSetTools.dataset.*;
+import DataSetTools.materials.*;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.Calculator.*;
-import DataSetTools.dataset.*;
-import java.util.*;
-import DataSetTools.materials.*;
+import DataSetTools.parameter.*;
+import DataSetTools.util.ErrorString;
 import java.text.DecimalFormat;
+import java.util.*;
+
 /** 
  *  
  */
@@ -79,8 +88,7 @@ public class ActivatePrompt extends GenericCalculator
   */
   public ActivatePrompt( String sample ){//,
       this(); 
-      parameters = new Vector();
-      addParameter( new Parameter("Sample Composition", new String(sample) ) );
+      getParameter(0).setValue(sample);
   }
 
  /* ---------------------------getDocumentation--------------------------- */
@@ -126,7 +134,7 @@ public class ActivatePrompt extends GenericCalculator
   public void setDefaultParameters()
   {
     parameters = new Vector();
-    addParameter(new Parameter("Sample Composition", new String("La,Mn,O_3")));
+    addParameter(new MaterialPG("Sample Composition", "La,Mn,O_3"));
   }
 
  /* ----------------------------- getResult ------------------------------ */ 
@@ -137,18 +145,21 @@ public class ActivatePrompt extends GenericCalculator
   *  of the activated sample.
   */
   public Object getResult(){
-	String sample   = (String)(getParameter(0).getValue());
+        // get the material
+        String sample=getParameter(0).getValue().toString();
+        if( sample==null || sample.length()<=0 )
+          return new ErrorString("Invalid sample: "+sample);
+        Material material=null;
+        try{
+          material=new Material(sample);
+        }catch(InstantiationError e){
+          return new ErrorString("Invalid sample: "+sample);
+        }
+        if(material==null || material.numAtoms()<=0)
+          return new ErrorString("Invalid sample: "+sample);
+
+        // set up the return string
 	String rs=null;
-
-	if(sample==null){
-	    return "no sample";
-	}
-
-	// get the material from the sample string
-	Material material = new Material(sample);
-	if(material.numAtoms()<=0){
-	    return "invalid sample: "+sample;
-	}
 
 	// calculate the prompt activity
 	float prompt=0.0f;
@@ -161,8 +172,7 @@ public class ActivatePrompt extends GenericCalculator
 	    if(prompt==Float.POSITIVE_INFINITY){
 		rs="radioactive sample";
 	    }else{
-		rs=new String((new DecimalFormat("#######0.")).format(prompt)
-			      +" nCi/g");
+		rs=(new DecimalFormat("#######0.")).format(prompt)+" nCi/g";
 	    }
 	}else{
 	    rs="no activation";
