@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/04/19 15:42:28  dennis
+ *  Revised Documentation
+ *
  *  Revision 1.2  2002/04/11 21:05:24  dennis
  *  Now uses the OneVariableFunction classes from package
  *  DataSetTools.functions.  Also includes a main program
@@ -146,8 +149,12 @@ public class FunctionModel extends    ModeledData
 
 
   /**
-   * Returns a reference to list of the error values for this function.  
-   * If no error values have been set, this returns null.
+   *  Get a list of error estimates for this Data object, by evaluating the
+   *  previously specified error estimate function at the points of
+   *  current x_scale. If no error function has been set, this returns null.
+   *
+   *  @return  array of error estimates for the y values of this function,
+   *           or null if no error estimate function was specified.
    */
   public float[] getErrors()
   { 
@@ -172,6 +179,9 @@ public class FunctionModel extends    ModeledData
    * Return a new FunctionModel object containing a copy of the x_scale, 
    * function, error function, group_id and attributes from the current 
    * FunctionModel object.
+   *
+   * @return a "deep" copy of the current FunctionModel is returned as
+   *         a generic Object.
    */
   public Object clone()
   {

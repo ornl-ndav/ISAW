@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/04/19 15:42:32  dennis
+ *  Revised Documentation
+ *
  *  Revision 1.2  2002/04/11 21:03:55  dennis
  *  Now uses the OneVariableFunction classes from package
  *  DataSetTools.functions.
@@ -117,7 +120,7 @@ public abstract class ModeledData extends    Data
   }
 
   /**
-    * Set the error array for this data object to the square root of the
+    * Set the error function for this data object to the square root of the
     * corresponding y value.
     */ 
   public void setSqrtErrors( )

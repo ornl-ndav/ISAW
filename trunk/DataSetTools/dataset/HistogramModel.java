@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/04/19 15:42:29  dennis
+ *  Revised Documentation
+ *
  *  Revision 1.2  2002/04/11 21:05:29  dennis
  *  Now uses the OneVariableFunction classes from package
  *  DataSetTools.functions.  Also includes a main program
@@ -101,8 +104,8 @@ public class HistogramModel extends    ModeledData
   }
 
   /**
-   * Returns a reference to a list of "Y" values obtained by evaluating the
-   * histogram at the bin centers of the current x_scale.
+   * Returns a list of "Y" values obtained by evaluating the histogram at 
+   * the bin centers of the current x_scale.
    */
   public float[] getY_values()
   { 
@@ -157,9 +160,12 @@ public class HistogramModel extends    ModeledData
 
 
   /**
-   *  Get a list of "Y" values for this Data object, by evaluating the
-   *  histogram at the bin centers of the specified x_scale.
-   *  If no error function has been set, this returns null.
+   *  Get a list of error estimates for this Data object, by evaluating the
+   *  previously specified error estimate function at the bin centers of 
+   *  current x_scale. If no error function has been set, this returns null.
+   *
+   *  @return  array of error estimates for the y values of this histogram,
+   *           or null if no error estimate function was specified.
    */
   public float[] getErrors()
   { 
@@ -187,6 +193,9 @@ public class HistogramModel extends    ModeledData
    * Return a new HistogramModel object containing a copy of the x_scale, 
    * function, error function, group_id and attributes from the current 
    * FunctionModel object.
+   *
+   * @return a "deep" copy of the current HistogramModel is returned as
+   *         a generic Object. 
    */
   public Object clone()
   {

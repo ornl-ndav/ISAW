@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/04/19 15:42:33  dennis
+ *  Revised Documentation
+ *
  *  Revision 1.3  2002/04/04 18:25:10  dennis
  *  Added getInstance() methods to create HistogramTable or FunctionTable
  *  objects from any Data object.
@@ -45,7 +48,6 @@
  *  interface. FunctionTable and HistogramTable are concrete derived
  *  classes for storing tabulated functions and frequency histograms
  *  respectively.
- *
  */
 
 package  DataSetTools.dataset;
@@ -85,9 +87,6 @@ public abstract class TabulatedData extends    Data
    * @param   y_values  the list of y values for this Data object
    * @param   group_id  an integer id for this data object
    *
-   * @see DataSetTools.dataset.XScale
-   * @see DataSetTools.dataset.DataSet
-   * @see DataSetTools.dataset.Attribute
    */
   public TabulatedData( XScale  x_scale, float y_values[], int group_id )
   {
@@ -96,9 +95,10 @@ public abstract class TabulatedData extends    Data
     this.errors   = null;
   }
 
+
   /**
-   * Constructs a Data object by specifying an "X" scale, 
-   * "Y" values and an array of error values.
+   * Constructs a Data object by specifying an "X" scale, "Y" values, an array 
+   * of error values and a group_id. 
    *
    * @param   x_scale   the list of x values for this data object 
    * @param   y_values  the list of y values for this Data object
@@ -107,9 +107,6 @@ public abstract class TabulatedData extends    Data
    *                    length of the list of y_values.  
    * @param   group_id  an integer id for this data object
    *
-   * @see DataSetTools.dataset.XScale
-   * @see DataSetTools.dataset.DataSet
-   * @see DataSetTools.dataset.Attribute
    */
   public TabulatedData( XScale x_scale, 
                         float  y_values[], 
@@ -120,8 +117,11 @@ public abstract class TabulatedData extends    Data
     this.setErrors( errors );
   }
 
+
   /**
-   * Returns a reference to the list of "Y" values
+   * Get the table of y values for this TabulatedData object.
+   *
+   * @return a reference to the list of "Y" values for this Data object.
    */
   public float[] getY_values()
   { 
@@ -130,8 +130,22 @@ public abstract class TabulatedData extends    Data
 
 
   /**
-   *  Create an instance of a FunctionData or HistogramData object, from the
-   *  given Data object.
+   *  Create an instance of a FunctionTable or HistogramTable object, using 
+   *  values from given Data object.   The type of object constructed  
+   *  (histogram or function) is determined by the "type" parameter.  If
+   *  the requested type does not match the type of the given Data object,
+   *  a conversion will be made.  For conversion purposes, histograms are 
+   *  considered to be frequency histograms and functions are considered to
+   *  be "density" functions.  That is, histograms are assumed to represent
+   *  the number of events in each bin and functions are assumed to represent
+   *  events per unit x.  Consequently, when a conversion is done, the 
+   *  y values are scaled by the bin width.  Specifically, if "d" is a 
+   *  function, the new histogram will have y_values given by:
+   *  y_histogram = y_function * delta_x  where delta_x is the bin width. 
+   *  A new x scale will be generated with bin boundaries centered between
+   *  the original x_values.  Conversely, if "d" is a histogram, the new
+   *  function will have y_values given by: y_function = y_histogram / delta_x.
+   *  In this case, a new x scale will be generated using the bin centers. 
    *
    *  @param  d         The Data object that provides the y-values, x_scale,
    *                    errors and attributes for the new TabulatedData object
@@ -151,8 +165,10 @@ public abstract class TabulatedData extends    Data
 
 
   /**
-   *  Create an instance of a FunctionData or HistogramData object, from the
-   *  given Data object.  
+   *  Create an instance of a FunctionTable or HistogramTable object, using 
+   *  values from the given Data object.  If the given Data object is a
+   *  histogram, this will construct a HistogramTable, otherwise it will
+   *  construct a FunctionTable. 
    *
    *  @param  d         The Data object that provides the y-values, x_scale,
    *                    errors and attributes for the new TabulatedData object
@@ -169,7 +185,6 @@ public abstract class TabulatedData extends    Data
     else
       return new FunctionTable( d, true, group_id );
   }
-
 
 
 /**
@@ -208,6 +223,8 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
   /**
    * Returns a reference to the list of the error values.  If no error values 
    * have been set, this returns null.
+   *
+   * @return the list of error estimates for this Data object. 
    */
   public float[] getErrors()
   { 
