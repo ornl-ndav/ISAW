@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/11/20 19:41:09  rmikk
+ * Uses FilenameUtil.URLSpacetoSpace to eliminate the %20
+ * in resource names from jar files
+ *
  * Revision 1.8  2003/11/17 22:10:52  dennis
  * Added the name of the jar file to the exception message
  * thrown by Command.ParameterClassList.processJar(), if the
@@ -166,6 +170,8 @@ public class ParameterClassList{
     return param;
   }
 
+
+ 
   /**
    * Find the name of the jar file that holds this class
    * (ParameterClassList). If this class is not in a jar this returns
@@ -178,15 +184,15 @@ public class ParameterClassList{
     String classFile=this.getClass().getResource(className).toString();
 
     if( (classFile==null) || !(classFile.startsWith("jar:")) ) return null;
-
+    
     // trim out parts and set this to be forwardslash
     classFile=classFile.substring(5,classFile.indexOf(className));
     classFile=FilenameUtil.setForwardSlash(classFile);
 
     // chop off a little bit more
     classFile=classFile.substring(4,classFile.length()-1);
-
-    return classFile;
+  
+    return FilenameUtil.URLSpacetoSpace(classFile);
   }
 
   /**
@@ -195,7 +201,6 @@ public class ParameterClassList{
   private void processJar(String jarname){
     ZipFile zf=null;
     Enumeration entries=null;
-
     // open the zip file and get the list of entries
     try{
       zf=new ZipFile(jarname);
