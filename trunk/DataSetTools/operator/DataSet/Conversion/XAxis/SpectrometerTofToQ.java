@@ -1,5 +1,5 @@
 /*
- * File:  SpectrometerTofToQ.java 
+ * File:  SpectrometerTofToQ.java
  *
  * Copyright (C) 1999, Dennis Mikkelson
  *
@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/01/09 17:15:02  dennis
+ *  Added getDocumentation(), main test program and java docs on getResult()
+ *  (Chris Bouzek)
+ *
  *  Revision 1.7  2002/11/27 23:17:04  pfpeterson
  *  standardized header
  *
@@ -63,9 +67,11 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.retriever.*;
 
 /**
- * This operator converts neutron time-of-flight DataSet to Q.  The
+ * This operator converts spectrometer time-of-flight DataSet to Q.  The
  * DataSet must contain spectra with an attribute giving the detector position.
  * In addition, it is assumed that the XScale for the spectra represents the
  * time-of-flight from the sample to the detector.
@@ -127,7 +133,8 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: in this case, ToQ
+   * @return the command name to be used with script processor: 
+   *         in this case, ToQ
    */
    public String getCommand()
    {
@@ -135,7 +142,7 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -151,7 +158,7 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
       parameter = new Parameter( "Min Q("+FontUtil.INV_ANGSTROM+")",
                                  new Float(5.0) );
     else
-      parameter = new Parameter( "Min Q("+FontUtil.INV_ANGSTROM+")", 
+      parameter = new Parameter( "Min Q("+FontUtil.INV_ANGSTROM+")",
                                   new Float(scale.getStart_x()) );
     addParameter( parameter );
 
@@ -220,11 +227,11 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
 
     float e_out = tof_calc.Energy( spherical_coords[0], x );
 
-    float Q1 = tof_calc.SpectrometerQ( e_in, 
-                                       e_out, 
+    float Q1 = tof_calc.SpectrometerQ( e_in,
+                                       e_out,
                                        position.getScatteringAngle() );
 
-    float v_in  = tof_calc.VelocityFromEnergy( e_in ); 
+    float v_in  = tof_calc.VelocityFromEnergy( e_in );
     float v_out = tof_calc.VelocityFromEnergy( e_out );
 
     float Qx = (float) ( tof_calc.MN_KG / tof_calc.H_BAR_ES *
@@ -233,7 +240,7 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
     float Qy = (float)( -tof_calc.MN_KG / tof_calc.H_BAR_ES *
                       v_out * Math.sin( spherical_coords[2] ) *
                               Math.sin( spherical_coords[1] ));
-                                    
+
     float Qz = (float)( -tof_calc.MN_KG / tof_calc.H_BAR_ES *
                       v_out * Math.cos( spherical_coords[2] ));
     float Q = (float)Math.sqrt( Qx*Qx + Qy*Qy + Qz*Qz );
@@ -243,8 +250,44 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
     return Q;
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator converts the X-axis units on a ");
+    s.append("DataSet from spectrometer time-of-flight to Q values.\n");
+    s.append("@assumptions The DataSet must contain spectra with an ");
+    s.append("attribute giving the detector position.  In addition, ");
+    s.append("it is assumed that the XScale for the spectra represents ");
+    s.append("the time-of-flight from the sample to the detector.\n");
+    s.append("@algorithm Creates a new DataSet which has the same title ");
+    s.append("as the input DataSet, the same y-values as the input DataSet, ");
+    s.append("and whose X-axis units have been converted to Q values.  ");
+    s.append("The new DataSet also has a message appended to its log ");
+    s.append("indicating that a conversion to units of Q values on the ");
+    s.append("X-axis was done.");
+    s.append("@param ds The DataSet to which the operation is applied.");
+    s.append("@param min_Q The minimum Q value to be binned.");
+    s.append("@param max_Q The maximum Q value to be binned.");
+    s.append("@param num_Q The number of \"bins\" to be used between ");
+    s.append("min_Q and max_Q.");
+    s.append("@return A new DataSet which is the result of converting the ");
+    s.append("input DataSet's X-axis units to Q values.");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+   *  Converts the input DataSet to a DataSet which is identical except that
+   *  the new DataSet's X-axis units have been converted from spectrometer
+   *  time-of-flight to Q values.
+   *
+   *  @return DataSet whose X-axis units have been converted to Q values.
+   */
 
   public Object getResult()
   {
@@ -253,7 +296,7 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
-    DataSetFactory factory = new DataSetFactory( 
+    DataSetFactory factory = new DataSetFactory(
                                      ds.getTitle(),
                                      "inv A",
                                      "Q",
@@ -261,14 +304,14 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
                                      "Scattering Intensity" );
 
     // #### must take care of the operation log... this starts with it empty
-    DataSet new_ds = factory.getDataSet(); 
+    DataSet new_ds = factory.getDataSet();
     new_ds.copyOp_log( ds );
     new_ds.addLog_entry( "Converted to Q" );
 
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
 
-                                     // get the Q scale parameters 
+                                     // get the Q scale parameters
     float min_Q = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float max_Q = ( (Float)(getParameter(1).getValue()) ).floatValue();
     int   num_Q = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
@@ -285,10 +328,10 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
     if ( num_Q < 2 || min_Q >= max_Q )      // no valid scale set
       new_Q_scale = null;
     else
-      new_Q_scale = new UniformXScale( min_Q, max_Q, num_Q );  
+      new_Q_scale = new UniformXScale( min_Q, max_Q, num_Q );
 
-                                            // now proceed with the operation 
-                                            // on each data block in DataSet 
+                                            // now proceed with the operation
+                                            // on each data block in DataSet
     Data             data,
                      new_data;
     DetectorPosition position;
@@ -306,7 +349,7 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
       data = ds.getData_entry( j );        // get reference to the data entry
       attr_list = data.getAttributeList();
                                            // get the detector position and
-                                           // initial path length 
+                                           // initial path length
 
       position=(DetectorPosition)
                       attr_list.getAttributeValue(Attribute.DETECTOR_POS);
@@ -314,8 +357,8 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
       Float energy_in_obj=
                       (Float)attr_list.getAttributeValue(Attribute.ENERGY_IN);
 
-      if( position != null && energy_in_obj != null )     
-      {                               // has needed attributes so convert to Q 
+      if( position != null && energy_in_obj != null )
+      {                               // has needed attributes so convert to Q
                                       // calculate Qs at bin boundaries
         spherical_coords = position.getSphericalCoords();
         float e_in       = energy_in_obj.floatValue();
@@ -326,13 +369,13 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
           float e_out      = tof_calc.Energy( spherical_coords[0], Q_vals[i] );
 
          /*
-          Q_vals[i] = tof_calc.SpectrometerQ( e_in, 
-                                              e_out, 
+          Q_vals[i] = tof_calc.SpectrometerQ( e_in,
+                                              e_out,
                                               position.getScatteringAngle() );
           */
 
-          float v_in  = tof_calc.VelocityFromEnergy( e_in ); 
-          float v_out = tof_calc.VelocityFromEnergy( e_out ); 
+          float v_in  = tof_calc.VelocityFromEnergy( e_in );
+          float v_out = tof_calc.VelocityFromEnergy( e_out );
 
           float Qx = (float) ( tof_calc.MN_KG / tof_calc.H_BAR_ES *
                      ( v_in - v_out * Math.sin( spherical_coords[2] ) *
@@ -340,11 +383,11 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
           float Qy = (float)( -tof_calc.MN_KG / tof_calc.H_BAR_ES *
                       v_out * Math.sin( spherical_coords[2] ) *
                               Math.sin( spherical_coords[1] ));
-                  
+
           float Qz = (float)( -tof_calc.MN_KG / tof_calc.H_BAR_ES *
                       v_out * Math.cos( spherical_coords[2] ));
           Q_vals[i] = (float)Math.sqrt( Qx*Qx + Qy*Qy + Qz*Qz );
-        } 
+        }
                                                // reorder values to keep in
                                                // increasing order
         arrayUtil.Reverse( Q_vals );
@@ -356,25 +399,25 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
         if ( errors != null )
           arrayUtil.Reverse( errors );
 
-        new_data = Data.getInstance( Q_scale, 
-                                     y_vals, 
-                                     errors, 
-                                     data.getGroup_ID() ); 
-                                                // create new data block with 
-                                                // non-uniform Q_scale and 
+        new_data = Data.getInstance( Q_scale,
+                                     y_vals,
+                                     errors,
+                                     data.getGroup_ID() );
+                                                // create new data block with
+                                                // non-uniform Q_scale and
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 
                                                 // resample if a valid
         if ( new_Q_scale != null )              // scale was specified
-          new_data.resample( new_Q_scale, IData.SMOOTH_NONE );  
+          new_data.resample( new_Q_scale, IData.SMOOTH_NONE );
 
-        new_ds.addData_entry( new_data );      
+        new_ds.addData_entry( new_data );
       }
     }
 
     return new_ds;
-  }  
+  }
 
 
   /* ------------------------------ clone ------------------------------- */
@@ -394,5 +437,30 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
     return new_op;
   }
 
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    float min_1 = (float)0.225, max_1 = (float)2.544;
+    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run";
+                       //"D:\\ISAW\\SampleRuns\\hrcs2447.run";
+
+    try
+    {
+      RunfileRetriever rr = new RunfileRetriever( file_name );
+      DataSet ds1 = rr.getDataSet(1);
+      ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+      SpectrometerTofToQ op = new SpectrometerTofToQ(ds1, min_1, max_1, 1000);
+      DataSet new_ds = (DataSet)op.getResult();
+      ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+      System.out.println(op.getDocumentation());
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+  }
 
 }

@@ -1,6 +1,6 @@
 /*
- * File:  SpectrometerTofToWavelength.java 
- *             
+ * File:  SpectrometerTofToWavelength.java
+ *
  * Copyright (C) 1999, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/01/09 17:15:03  dennis
+ * Added getDocumentation(), main test program and java docs on getResult()
+ * (Chris Bouzek)
+ *
  * Revision 1.7  2002/11/27 23:17:04  pfpeterson
  * standardized header
  *
@@ -62,16 +66,18 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.retriever.*;
 
 /**
- * This operator converts a neutron time-of-flight DataSet for a Spectrometer
- * to wavelength.  The DataSet must contain spectra with an attribute giving 
- * the detector position. In addition, it is assumed that the XScale for the 
- * spectra represents the time-of-flight from the SAMPLE to the detector. 
+ * This operator converts a spectrometer time-of-flight DataSet for a Spectrometer
+ * to wavelength.  The DataSet must contain spectra with an attribute giving
+ * the detector position. In addition, it is assumed that the XScale for the
+ * spectra represents the time-of-flight from the SAMPLE to the detector.
  *
  */
 
-public class SpectrometerTofToWavelength extends    XAxisConversionOp 
+public class SpectrometerTofToWavelength extends    XAxisConversionOp
                                          implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -126,7 +132,7 @@ public class SpectrometerTofToWavelength extends    XAxisConversionOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: 
+   * @return the command name to be used with script processor:
    *         in this case, ToWL
    */
    public String getCommand()
@@ -216,10 +222,45 @@ public class SpectrometerTofToWavelength extends    XAxisConversionOp
     return tof_calc.Wavelength( spherical_coords[0], x );
   }
 
-
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator converts the X-axis units on a ");
+    s.append("DataSet from spectrometer time-of-flight to wavelength.");
+    s.append("@assumptions The DataSet must contain spectra with an ");
+    s.append("attribute giving the detector position.  In addition, ");
+    s.append("it is assumed that the XScale for the spectra represents ");
+    s.append("the time-of-flight from the sample to the detector.\n");
+    s.append("@algorithm Creates a new DataSet which has the same title ");
+    s.append("as the input DataSet, the same y-values as the input DataSet, ");
+    s.append("and whose X-axis units have been converted to wavelength.  ");
+    s.append("The new DataSet also has a message appended to its log ");
+    s.append("indicating that a conversion to units of wavelength on the ");
+    s.append("X-axis was done.  ");
+    s.append("@param ds The DataSet to which the operation is applied.");
+    s.append("@param min_wl The minimum wavelength value to be binned.");
+    s.append("@param max_wl The maximum wavelength value to be binned.");
+    s.append("@param num_wl The number of \"bins\" to be used between ");
+    s.append("min_wl and max_wl.");
+    s.append("@return A new DataSet which is the result of converting the ");
+    s.append("input DataSet's X-axis units to wavelength.");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+   *  Converts the input DataSet to a DataSet which is identical except that
+   *  the new DataSet's X-axis units have been converted from spectrometer
+   *  time-of-flight to wavelength.
+   *
+   *  @return DataSet whose X-axis units have been converted from spectrometer
+   *  time-of-flight to wavelength.
+   */
   public Object getResult()
   {
                                      // get the current data set
@@ -227,7 +268,7 @@ public class SpectrometerTofToWavelength extends    XAxisConversionOp
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
-    DataSetFactory factory = new DataSetFactory( 
+    DataSetFactory factory = new DataSetFactory(
                                      ds.getTitle(),
                                      "Angstroms",
                                      "Wavelength",
@@ -235,14 +276,14 @@ public class SpectrometerTofToWavelength extends    XAxisConversionOp
                                      "Scattering Intensity" );
 
     // #### must take care of the operation log... this starts with it empty
-    DataSet new_ds = factory.getDataSet(); 
+    DataSet new_ds = factory.getDataSet();
     new_ds.copyOp_log( ds );
     new_ds.addLog_entry( "Converted to Wavelength" );
 
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
 
-                                     // get the wavelength scale parameters 
+                                     // get the wavelength scale parameters
     float min_wl = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float max_wl = ( (Float)(getParameter(1).getValue()) ).floatValue();
     int   num_wl = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
@@ -259,10 +300,10 @@ public class SpectrometerTofToWavelength extends    XAxisConversionOp
     if ( num_wl < 2 || min_wl >= max_wl )      // no valid scale set
       new_wl_scale = null;
     else
-      new_wl_scale = new UniformXScale( min_wl, max_wl, num_wl );  
+      new_wl_scale = new UniformXScale( min_wl, max_wl, num_wl );
 
-                                            // now proceed with the operation 
-                                            // on each data block in DataSet 
+                                            // now proceed with the operation
+                                            // on each data block in DataSet
     Data             data,
                      new_data;
     DetectorPosition position;
@@ -281,48 +322,48 @@ public class SpectrometerTofToWavelength extends    XAxisConversionOp
       attr_list = data.getAttributeList();
 
                                            // get the detector position and
-                                           // initial path length 
+                                           // initial path length
       position=(DetectorPosition)
                    attr_list.getAttributeValue(Attribute.DETECTOR_POS);
 
-      if( position != null )           // has needed attributes so convert it 
+      if( position != null )           // has needed attributes so convert it
                                        // to wavelength
-      { 
+      {
                                        // calculate wavelength at bin boundaries
         spherical_coords = position.getSphericalCoords();
         wl_vals          = data.getX_scale().getXs();
         for ( int i = 0; i < wl_vals.length; i++ )
           wl_vals[i] = tof_calc.Wavelength( spherical_coords[0], wl_vals[i] );
-  
+
         wl_scale = new VariableXScale( wl_vals );
 
         y_vals = data.getY_values();
         errors = data.getErrors();
 
-        new_data = Data.getInstance( wl_scale, 
-                                     y_vals, 
-                                     errors, 
+        new_data = Data.getInstance( wl_scale,
+                                     y_vals,
+                                     errors,
                                      data.getGroup_ID() );
-                                                 // create new data block with 
-                                                 // non-uniform E_scale and 
+                                                 // create new data block with
+                                                 // non-uniform E_scale and
                                                  // the original y_vals.
         new_data.setAttributeList( attr_list );  // copy the attributes
 
                                                  // resample if a valid
         if ( new_wl_scale != null )              // scale was specified
-          new_data.resample( new_wl_scale, IData.SMOOTH_NONE ); 
+          new_data.resample( new_wl_scale, IData.SMOOTH_NONE );
 
-        new_ds.addData_entry( new_data );      
+        new_ds.addData_entry( new_data );
       }
     }
 
     return new_ds;
-  }  
+  }
 
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current SpectrometerTofToWavelength Operator.  The list 
+   * Get a copy of the current SpectrometerTofToWavelength Operator.  The list
    * of parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
@@ -335,6 +376,33 @@ public class SpectrometerTofToWavelength extends    XAxisConversionOp
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    float min_1 = (float)0.393, max_1 = (float)4.442;
+    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run";
+                       //"D:\\ISAW\\SampleRuns\\hrcs2447.run";
+
+    try
+    {
+      RunfileRetriever rr = new RunfileRetriever( file_name );
+      DataSet ds1 = rr.getDataSet(1);
+      ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+      SpectrometerTofToWavelength op =
+                    new SpectrometerTofToWavelength(ds1, min_1, max_1, 1000);
+      DataSet new_ds = (DataSet)op.getResult();
+      ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+      System.out.println(op.getDocumentation());
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
   }
 
 }
