@@ -29,6 +29,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.4  2003/08/26 17:58:14  bouzekc
+ * Added call to this() in Components[] constructor.  Moved call to super()
+ * into default constructor.
+ *
  * Revision 1.3  2003/08/22 19:29:30  bouzekc
  * Added default constructor.
  *
@@ -50,6 +54,7 @@ import DataSetTools.util.PropertyChanger;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.*;
 
 import java.beans.*;
@@ -96,7 +101,7 @@ public class EntryWidget extends JPanel implements PropertyChanger,
    * @param comp The Component to use for this entrywidget.
    */
   public EntryWidget( Component comp ) {
-    super(  );
+    this(  );
     this.add( comp );
   }
 
@@ -107,6 +112,8 @@ public class EntryWidget extends JPanel implements PropertyChanger,
    * @param comps The components to add.
    */
   public EntryWidget( Component[] comps ) {
+    this(  );
+
     for( int i = 0; i < comps.length; i++ ) {
       innerComponents.add( comps[i] );
       this.add( comps[i] );
