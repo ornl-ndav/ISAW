@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2002/07/31 14:54:25  pfpeterson
+ *  Now lists AddDataSetOperator.
+ *
  *  Revision 1.23  2002/07/26 22:48:47  pfpeterson
  *  Added "Exec" to the list of operators.
  *
@@ -118,6 +121,7 @@ public class GenericOperatorList implements Serializable
                                           "SaveNX",
                                           "SaveGSAS",
                                           "SaveFullProf",
+                                          "AddDataSetOp",
                                           "FindPeaks",
                                           "CentroidPeaks",
                                           "RealSpacePeaks",
@@ -242,6 +246,9 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals("NumBins"))
         return new NumBins();
+
+    else if ( op_name.equals("AddDataSetOp"))
+        return new DataSetTools.operator.Generic.Special.AddDataSetOperator();
 
     else if ( op_name.equals( "FindPeaks" ) )
       return new DataSetTools.operator.Generic.TOF_SCD.FindPeaks();
