@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/02/28 14:53:47  pfpeterson
+ *  Changed call of deprecated fixSeparator to setFileSeparator.
+ *
  *  Revision 1.4  2003/02/28 14:50:10  dennis
  *  Added getDocumentation() method. (Tyler Stelzer)
  *
@@ -220,7 +223,7 @@ public class DataSetPrint extends    GenericOperator
     try
     {
         filename = ds.getTitle()+"_"+index+".prt";
-        filename = StringUtil.fixSeparator( filename );
+        filename = StringUtil.setFileSeparator( filename );
         File f = new File(filename);
         FileOutputStream op = new FileOutputStream(f);
         OutputStreamWriter opw =new OutputStreamWriter(op);
