@@ -62,13 +62,11 @@ import javax.swing.border.*;
  */
 public class ScriptForm extends OperatorForm implements Serializable {
   /**
-   *  Construct an ScriptForm with the given title.
-   *
-   *  @param  title           The title to show on this form
+   *  Construct an ScriptForm with the title "Script Form."
    *
    */
   public ScriptForm(  ) {
-    super(  );
+    super( "Script Form" );
   }
 
   /**
@@ -76,12 +74,27 @@ public class ScriptForm extends OperatorForm implements Serializable {
    *  This creates a ScriptOperator, and allows the use of that
    *  Operator for the getResult() method.
    *
-   *  @param  title           The title to show on this form
+   *  @param  filename           The Script file name to use.
    *
    */
   public ScriptForm( String filename ) {
-    this(  );
+    //must have super() call be the first, but we want only the Script
+    //filename, so we'll trim off the rest.  I could have used File's getName()
+    //method, but I did not want to create a File Object.
+    super( 
+      filename.substring( 
+        ( FilenameUtil.setForwardSlash( filename ) ).lastIndexOf( '/' ) + 1,
+        filename.length(  ) ) );
     super.form_op = new ScriptOperator( filename );
-    super.setDefaultParameters(  );
+  }
+
+  /**
+   *  Testbed.
+   */
+  public static void main( String[] args ) {
+    ScriptForm form = new ScriptForm( 
+        "/IPNShome/bouzekc/ISAW/Scripts/find_multiple_peaks.iss" );
+
+    System.out.println( "The Script title is " + form.getTitle(  ) );
   }
 }
