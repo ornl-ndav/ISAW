@@ -69,7 +69,7 @@ public class Atom{
 	    isotopefile = isotopefile+java.io.File.separator+"ISAW";
 	}
 	isotopefile = isotopefile.trim();
-	isotopefile = isotopefile+java.io.File.separator+"lib";
+	isotopefile = isotopefile+java.io.File.separator+"Databases";
 	isotopefile = isotopefile+java.io.File.separator+"ScattInfo.dat";
 	if( new File(isotopefile).exists()){
 	    // do nothing
