@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/11/23 23:46:16  rmikk
+ * Eliminated some Debugging prints
+ *
  * Revision 1.1  2003/11/16 21:40:17  rmikk
  * Initial Checkin
  *
@@ -94,13 +97,10 @@ public class ProcessmNxData implements IProcessNxData {
         
         if( Child.getNodeClass().equals("NXdata")){
            NxNode datanode = (Child.getChildNode( "data"));
-           System.out.println("in NXdata node label =" + 
-                ConvertDataTypes.StringValue(datanode.getAttrValue("label")).trim());
            if( datanode != null)
               if( datanode.getAttrValue("label") != null)
                  if( label.equals( ConvertDataTypes.StringValue
                              ( datanode.getAttrValue("label")).trim())){
-                    System.out.println("Child "+i+" has label"+startGroupID);
                     Process1NxData proc =new Process1NxData();
                     NxfileStateInfo StateSav = new NxfileStateInfo(State);
                     int N = DS.getNum_entries();
