@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/05/03 16:26:14  dennis
+ *  Removed unused local variable.
+ *
  *  Revision 1.1  2004/04/02 15:06:11  dennis
  *  Class for mapping from Q vectors to row,col,time, etc. for a single
  *  detector, accounting for goniometer rotations.  This was
@@ -209,7 +212,6 @@ public class VecQMapper
     Vector3D corner2 = grid.position( grid.num_rows(), grid.num_cols() );
     Vector3D temp = new Vector3D( corner1 );
     temp.subtract( corner2 );
-    float diag = temp.length();
 
     det_center = new Vector3D( corner1 );   // find "center" as average of
     det_center.multiply( 0.5f );            // two opposite corners
