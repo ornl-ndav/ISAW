@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/10/25 14:55:58  chatterjee
+ * Changed the command name of this operator to Abs_MScatt_Correct.
+ *
  * Revision 1.1  2004/10/14 15:12:29  chatterjee
  * Operator to correct wavelength dependent effects of absorption and
  * Multiple-Scattering in a background subtracted vanadium run for GPPD.
@@ -98,7 +101,7 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
                          3.104279270,0.0,0.0,0.0,0.0,0.0};
 
     /** 
-     *  Creates operator with title "BKSUB" and a default list of
+     *  Creates operator with title "Absorp_MultiScatt_Correction" and a default list of
      *  parameters.
      */  
     public Absorp_MultiScatt_Correction()
@@ -226,7 +229,7 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
      * operator in Scripts
      */
     public String getCommand(){
-        return "Absorp_MultiScatt_Correction";
+        return "Abs_MScatt_Correct";
     }
 
     /** 
