@@ -2,6 +2,9 @@
  * @(#)DoubleDifferentialCrossection.java   0.1  2000/07/25   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.9  2000/08/08 21:15:58  dennis
+ *  Commented out some debug/informational prints.
+ *
  *  Revision 1.8  2000/08/03 21:43:01  dennis
  *  This version has been checked and works ok.
  *
@@ -223,8 +226,8 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
                     attr_list.getAttributeValue(Attribute.NUMBER_OF_PULSES);
       num_pulses  = Int_val.intValue();
 
-      System.out.println("ID = " + data.getGroup_ID()+
-                        " SA = " + Format.real( solid_angle, 12, 6 ));
+//   System.out.println("ID = " + data.getGroup_ID()+
+//                      " SA = " + Format.real( solid_angle, 12, 6 ));
       position = (DetectorPosition)
                   attr_list.getAttributeValue(Attribute.DETECTOR_POS);
       spherical_coords = position.getSphericalCoords();
