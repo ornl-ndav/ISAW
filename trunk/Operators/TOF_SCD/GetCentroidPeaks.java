@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/07/31 23:05:44  rmikk
+ * Removed Unused Import
+ *
  * Revision 1.2  2004/07/14 17:16:54  rmikk
  * Eliminated the weird import
  *
@@ -52,7 +55,7 @@ import DataSetTools.dataset.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import java.util.*;
-import gov.anl.ipns.Util.Numeric.*;
+//import gov.anl.ipns.Util.Numeric.*;
 import DataSetTools.instruments.*;
 
 
