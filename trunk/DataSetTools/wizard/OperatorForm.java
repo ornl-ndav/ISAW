@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.15  2003/07/02 16:07:54  bouzekc
+ * Removed unnecessary references to "this".
+ *
  * Revision 1.14  2003/07/02 16:00:30  bouzekc
  * Fixed javadoc error, added constructor for creating an
  * OperatorForm with a given title.
@@ -90,8 +93,8 @@ public class OperatorForm extends Form implements HiddenOperator {
    */
   public OperatorForm(  ) {
     super( "Operator Form" );
-    this.result_param = null;
-    this.setDefaultParameters(  );
+    result_param = null;
+    setDefaultParameters(  );
   }
 
   /**
@@ -102,8 +105,8 @@ public class OperatorForm extends Form implements HiddenOperator {
    */
   public OperatorForm( String title ) {
     super( title );
-    this.result_param = null;
-    this.setDefaultParameters(  );
+    result_param = null;
+    setDefaultParameters(  );
   }
 
   /**
@@ -117,7 +120,7 @@ public class OperatorForm extends Form implements HiddenOperator {
   public OperatorForm( Operator op ) {
     super( op.getTitle(  ) );
     form_op = op;
-    this.setDefaultParameters(  );
+    setDefaultParameters(  );
   }
 
   /**
@@ -138,7 +141,7 @@ public class OperatorForm extends Form implements HiddenOperator {
    */
   public OperatorForm( Operator op, String type, String name ) {
     this( op );
-    this.setParamClass( type );
+    setParamClass( type );
     result_param.setName( name );
   }
 
@@ -165,11 +168,11 @@ public class OperatorForm extends Form implements HiddenOperator {
    */
   public OperatorForm( Operator op, String type, String name, int[] indices ) {
     this( op );
-    this.setParamClass( type );
+    setParamClass( type );
     result_param.setName( name );
     super.HAS_CONSTANTS   = true;
-    this.constIndices     = indices;
-    this.setDefaultParameters(  );
+    constIndices          = indices;
+    setDefaultParameters(  );
   }
 
   /* ---------------------------- getCommand ------------------------------- */
@@ -198,12 +201,12 @@ public class OperatorForm extends Form implements HiddenOperator {
 
     //Operator failed - exit out
     if( result instanceof ErrorString ) {
-      this.result_param.setValue( null );
+      result_param.setValue( null );
 
       return errorOut( result.toString(  ) );
     }
 
-    this.result_param.setValue( result );
+    result_param.setValue( result );
 
     if( result != null ) {
       SharedData.addmsg( "Success! " + result.toString(  ) );
