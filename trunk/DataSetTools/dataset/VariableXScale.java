@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/11/12 19:59:32  dennis
+ *  Removed clone() method... since XScales are immutable, there is no
+ *  need to clone them.
+ *
  *  Revision 1.7  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -262,17 +266,6 @@ public class VariableXScale extends XScale implements Serializable
 
      return new VariableXScale( new_x );     // return the new XScale
    }
-
-
-  /**
-   * Creates a new VariableXScale object with the same data as the original
-   * VariableXScale object.
-   */
-  public Object clone()
-  {
-    VariableXScale copy = new VariableXScale( x );
-    return copy;
-  }
 
 
   /*
