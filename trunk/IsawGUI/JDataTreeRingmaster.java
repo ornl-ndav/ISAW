@@ -12,6 +12,9 @@ package IsawGUI;
  * associated with the generated right-click menu.
  *
  * $Log$
+ * Revision 1.3  2001/06/28 19:16:44  neffk
+ * karma boost
+ *
  * Revision 1.2  2001/06/27 20:19:36  neffk
  * added the appropriate constructor so that JTreeUI and CommandPane can
  * remain up to date when the menus provided by this class change the DataSet
@@ -250,9 +253,12 @@ public class JDataTreeRingmaster
             DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode)(  tps[i].getLastPathComponent()  );
             Data d = (Data)dmtn.getUserObject();
             d.setSelected( true );
-
+          }
+          if( tps.length > 0 )  //karma += 10;
+          {
             DataSet ds = traverseUpToDataSet( tps[0] );
-            ds.notifyIObservers( IObserver.SELECTION_CHANGED );
+            if( ds != null )
+              ds.notifyIObservers( IObserver.SELECTION_CHANGED );
           }
         }
         else if(  item_e.getActionCommand() == MENU_CLEAR  )
