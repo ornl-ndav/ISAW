@@ -31,15 +31,18 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/02/28 19:57:47  dennis
+ * Modified import statements due to operator reorganization.
+ *
  * Revision 1.2  2001/04/26 15:29:10  dennis
  * Added copyright and GPL info at the start of the file.
  *
  */
 
-import javax.swing.*;
-
 import DataSetTools.dataset.*;
+import DataSetTools.dataset.Data;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.Math.Analyze.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
 
