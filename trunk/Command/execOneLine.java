@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.49  2003/06/10 15:20:05  pfpeterson
+ * Fixed null pointer exception while loading.
+ *
  * Revision 1.48  2003/06/06 22:27:38  pfpeterson
  * Made reference to Script_Class_List_Handler a static variable.
  *
@@ -660,15 +663,13 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         
         dss = Load( filename , varname);
         
-        int length = dss.length;
-        
         if( perror >= 0 )
             perror = start;
         
         if( dss == null )
             Result = new Integer( 0);
         else
-            Result = new Integer( length );
+            Result = new Integer( dss.length );
         dss = null;
         return j;
         
