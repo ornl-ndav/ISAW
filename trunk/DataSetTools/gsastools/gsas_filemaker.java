@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2002/05/17 22:19:49  pfpeterson
+ *  Added checkbox for exporting monitor spectrum. The integrated
+ *  monitor count is still included in the file.
+ *
  *  Revision 1.13  2002/02/22 20:35:45  pfpeterson
  *  Fixed to work with GSAS (again) by removing STD from bank header.
  *
@@ -104,12 +108,15 @@ public class gsas_filemaker
     private float bCoef4;
     private String type;
     private int monNum;
+    private boolean export_monitor;
     
     /**
      * This constructor is in place just in case one is needed. It
      * actually does nothing
      */
-    public gsas_filemaker(){}
+    public gsas_filemaker(){
+        this.export_monitor=true;
+    }
     
     /**
      * This constructor sets the output filename and opens the output
@@ -121,7 +128,8 @@ public class gsas_filemaker
 	try{
 	    FileOutputStream op= new FileOutputStream(f);
 	    outStream=new OutputStreamWriter(op);
-	    System.out.println("The GSAS file name is " +filename);
+            DataSetTools.util.SharedData.status_pane.add("The GSAS file "
+                                                         +"name is "+filename);
 	} catch(Exception e){}
     }
     
@@ -143,6 +151,16 @@ public class gsas_filemaker
 	this.setMon(mon_ds);
     }
 
+    /**
+     * This constructor allows for the exporting of the monitor to be
+     * specified.
+     */
+    public gsas_filemaker( DataSet mon_ds, DataSet ds, String filename,
+                           boolean em){
+        this(mon_ds,ds,filename);
+        this.export_monitor=em;
+    }
+
     /** 
      * The method called to write out the file. 
      */
@@ -150,7 +168,8 @@ public class gsas_filemaker
 	this.printRunTitle();
 	this.printMonitorCount();
 	this.printBankInfo();
-	this.printMonitorSpectrum();
+        //System.out.println("(GF)EXPORT MONITOR: "+export_monitor);
+        if(export_monitor) this.printMonitorSpectrum();
 
 	// write out the data
 	for(int i=1; i<=data.getMaxGroupID() ; i++){
