@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.12  2004/03/13 23:36:18  bouzekc
+ * Changed clearValue() to clear().
+ *
  * Revision 1.11  2004/02/11 04:10:01  bouzekc
  * Uses the new wizard classes with the indeterminate progress bars.
  *
@@ -241,8 +244,8 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
     monitors     = ( ArrayPG )super.getParameter( 6 );
 
     //clear it out when the form is re-run
-    histograms.clearValue(  );
-    monitors.clearValue(  );
+    histograms.clear(  );
+    monitors.clear(  );
 
     Object validCheck = validateSelf(  );
 
