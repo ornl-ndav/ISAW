@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.90  2002/04/10 15:39:21  pfpeterson
+ *  Added System properties to control MW width and height. Also improved
+ *  changing the divider positions in the SplitPanes and removed SplitPanes
+ *  that weren't used (get some screen space).
+ *
  *  Revision 1.89  2002/04/08 18:22:15  pfpeterson
  *  Added properties to set JSplitPanel portions on startup.
  *
@@ -352,6 +357,7 @@ import java.applet.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.*;
+import java.beans.*;
 import java.io.*;
 import java.io.IOException; 
 import java.lang.*;
@@ -366,6 +372,7 @@ import java.util.zip.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.JTree.*;
+import javax.swing.plaf.basic.BasicRootPaneUI;
 import javax.swing.plaf.metal.MetalLookAndFeel.*;
 import javax.swing.text.*;
 import javax.swing.tree.*;
@@ -513,9 +520,9 @@ public class Isaw
   JTextArea propsText = new JTextArea(5,20);
   JFrame kp;
 
-  JSplitPane upper_sp;
-  JSplitPane main_sp;
-
+  static boolean    initialized=false;
+  static JSplitPane upper_sp;
+  static JSplitPane main_sp;
 
   /**
    * Creates a JFrame that displays different Isaw components.
@@ -548,6 +555,12 @@ public class Isaw
 
     MouseListener ml = new MouseListener();
     KeyListener kl = new KeyListener(); 
+    this.addComponentListener( new ComponentAdapter(){
+        public void componentResized(ComponentEvent ev){
+            mw_resized(ev.getComponent().getWidth(),
+                       ev.getComponent().getHeight());
+        }
+    });
     jdt = new JDataTree( ml, kl);
     ml.init();
     kl.init();
@@ -583,51 +596,142 @@ public class Isaw
                   BorderLayout.EAST);
                          
     cp.addPropertyChangeListener(SharedData.status_pane);
-    JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-    JSplitPane rightPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-    leftPane.setOneTouchExpandable(false);
-    rightPane.setOneTouchExpandable(false);
- 
-    rightPane.setBottomComponent(jcui);
-    rightPane.setResizeWeight( RIGHT_WEIGHT );
-    //leftPane.setBottomComponent(jpui);
-    leftPane.setTopComponent(jdt);
-    leftPane.setResizeWeight( LEFT_WEIGHT );
- 
-/*
-    JSplitPane sp= new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
-                                           leftPane, 
-                                           rightPane,
-                                           0.25f);
-*/
-    JSplitPane sp;
-    JSplitPane sp1;
-    {
-        float tree_width=
-            (new Float(System.getProperty("Tree_Width","0.2"))).floatValue();
-        upper_sp= new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
-                                    leftPane, 
-                                    rightPane, 
-                                    tree_width);
-        
-        float status_height=
-           (new Float(System.getProperty("Status_Height","0.2"))).floatValue();
-        main_sp= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT,
-                                     upper_sp,
-                                     StatusPanel,
-                                     1f-status_height );
-        /* System.out.println("tree_width="+tree_width
-           +" status_height="+status_height); */
-    }
-    //upper_sp.setDividerLocation((double)0.5f);
-       
+
+    upper_sp= new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
+                                      jdt, jcui, 0.2f);
+    upper_sp.addPropertyChangeListener(new PropertyChangeListener(){
+       public void propertyChange(PropertyChangeEvent ev){
+         if(initialized && 
+            JSplitPane.DIVIDER_LOCATION_PROPERTY.equals(ev.getPropertyName())
+            &&((Integer)ev.getNewValue()).intValue()>0){
+
+             float tol=.01f;
+             float tree=
+                 Float.parseFloat(System.getProperty("Tree_Width",".2"));
+             int newDiv=((Integer)(ev.getNewValue())).intValue();
+             int paneWidth=((JSplitPane)(ev.getSource())).getWidth();
+             float newPercent=Float.parseFloat(
+                            Format.real((double)newDiv/(double)paneWidth,3,2));
+             float treePercent=tree;
+
+             //System.out.print("(d:"+newDiv+" p:"+paneWidth
+             //+" %:"+newPercent+") "+tree+" -> ");
+             if(tree>1f){
+                 tol=.02f;
+                 treePercent=Float.parseFloat(
+                        Format.real((double)tree/(double)paneWidth,3,2));
+             }
+
+             if(Math.abs(treePercent-newPercent)>tol){
+                 if(tol>.01f){
+                     tree=newDiv;
+                 }else{
+                     tree=newPercent;
+                 }
+             }
+             System.setProperty("Tree_Width",Float.toString(tree));
+             //System.out.println(tree+" ");
+         }
+       }
+    });
+
+    main_sp= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT,
+                                     upper_sp, StatusPanel, 1f-0.2f );
+    main_sp.addPropertyChangeListener(new PropertyChangeListener(){
+      public void propertyChange(PropertyChangeEvent ev){
+         if(initialized && 
+            JSplitPane.DIVIDER_LOCATION_PROPERTY.equals(ev.getPropertyName())
+            &&((Integer)ev.getNewValue()).intValue()>0){
+             
+             float tol=.01f;
+             float status=
+                 Float.parseFloat(System.getProperty("Status_Height",".2"));
+             int newDiv=((Integer)(ev.getNewValue())).intValue();
+             int paneHeight=((JSplitPane)(ev.getSource())).getHeight();
+             float newPercent=Float.parseFloat(
+                      Format.real(1.0-(double)newDiv/(double)paneHeight,3,2));
+             float statusPercent=status;
+                
+             if(newPercent<=0f) return;
+
+             //System.out.print("(d:"+newDiv+" p:"+paneHeight
+             //+" %:"+newPercent+") "+status+" -> ");
+             if(status>1f){
+                 tol=.02f;
+                 statusPercent=Float.parseFloat(
+                        Format.real((double)status/(double)paneHeight,3,2));
+             }
+             
+             if(Math.abs(statusPercent-newPercent)>tol){
+                 if(tol>.01f){
+                     status=paneHeight-newDiv;
+                 }else{
+                     status=newPercent;
+                 }
+             }
+             System.setProperty("Status_Height",Float.toString(status));
+             //System.out.println(status+" ");
+         }
+      }
+    });
+
     upper_sp.setOneTouchExpandable(true);
     Container con = getContentPane();
     con.add(main_sp);
   }
     
- 
+    /**
+     * Print version information
+     */
+    public static void printVersion(){
+        System.out.print("Loading " + TITLE + " Release ");
+        if(SharedData.VERSION.equals("Unknown_Version")){
+            System.out.print("1.3.1 alpha");
+        }else{
+            System.out.print(SharedData.VERSION );
+        }
+        if(SharedData.BUILD_DATE.equals("Unknown_Build_Date")){
+            System.out.println("");
+        }else{ 
+            System.out.println(" Built "+SharedData.BUILD_DATE);
+        }
+    }
      
+    /**
+     * Set the size of the ISAW main window using values found in the
+     * System properties.
+     */
+    public void setBounds(){
+        int x,y,window_height,window_width;
+        double sys_width,sys_height;
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+        /* read in values for default screen size from system properties */
+        sys_width=Double.parseDouble(System.getProperty("Isaw_Width","0.8"));
+        sys_height=Double.parseDouble(System.getProperty("Isaw_Height","0.4"));
+        //System.out.println("("+sys_width+","+sys_height+")");
+
+        /* assume a 4:3 aspect ratio for the monitor */
+        if(sys_width>1.0){
+            window_width = (int)sys_width;
+        }else{
+            window_width = (int)(screenSize.height*4*sys_width/3);
+        }
+        if(sys_height>1.0){
+            window_height = (int)sys_height;
+        }else{
+            window_height = (int)(screenSize.height*sys_height);
+        }
+        //System.out.println("("+window_width+","+window_height+")");
+        
+        /* set the top left corner such that the window is centered
+         * horizontally and 3/4 of the way down vertically */
+        y = (int)(screenSize.height - window_height)*3/4;
+        x = (int)(screenSize.height*4/3 - window_width)/2;
+
+        this.setBounds(x,y,window_width,window_height);
+    }
+
   /**
    * Sets up the menubar that is used for all operations on DataSets
    */
@@ -1826,6 +1930,33 @@ public class Isaw
     }
 
 
+    /**
+     * Handle resizing the internal parts of ISAW when the main window
+     * resizes.
+     */
+    private static void mw_resized(int width, int height){
+        if(!initialized) return;
+        
+        // Set the tree width
+        double tree_width=
+            Double.parseDouble(System.getProperty("Tree_Width","0.2"));
+        if(tree_width>1.0){
+            upper_sp.setDividerLocation((int)tree_width);
+        }else{
+            upper_sp.setDividerLocation(tree_width);
+        }
+        
+        // Set the status height. Remember that the divider location
+        // is relative from the top of the pane.
+        double status_height=
+            Double.parseDouble(System.getProperty("Status_Height","0.2"));
+        if(status_height>1.0){
+            main_sp.setDividerLocation(main_sp.getHeight()-(int)status_height);
+        }else{
+            main_sp.setDividerLocation(1.0-status_height);
+        }
+    }
+
   /*
    * allows the user to edit the properties file in their home
    * directory (IsawProps.dat).
@@ -1940,50 +2071,48 @@ public class Isaw
     splash_thread = null;
     sp = null;
 
+    //int x,y,window_height,window_width;
+    /* read in values for default screen size from system properties */
+    //{
+    //double isawwidth=
+    //(new Double(System.getProperty("IsawWidth","0.8"))).doubleValue();
+    //double isawheight=
+    //(new Double(System.getProperty("IsawHeight","0.4"))).doubleValue();
+    //System.out.println("("+isawwidth+","+isawheight+")");
+    //
     /* assume a 4:3 aspect ratio for the monitor */
-    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    int window_height = (int)(screenSize.height*0.4);
-    int window_width = (int)(screenSize.height*4*0.8/3);
-
+    //Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    //window_height = (int)(screenSize.height*isawwidth);
+    //window_width = (int)(screenSize.height*4*isawheight/3);
+    //
     /* set the top left corner such that the window is centered
      * horizontally and 3/4 of the way down vertically */
-    int y = (int)(screenSize.height - window_height)*3/4;
-    int x = (int)(screenSize.height*4/3 - window_width)/2;
+    //y = (int)(screenSize.height - window_height)*3/4;
+    //x = (int)(screenSize.height*4/3 - window_width)/2;
+    //System.out.println("("+x+","+y+","+window_width+","+window_height+")");
+    //}
 
-    System.out.print("Loading " + TITLE + " Release ");
-    if(SharedData.VERSION.equals("Unknown_Version")){
-        System.out.print("1.3.0");
-    }else{
-        System.out.print(SharedData.VERSION );
-    }
-    if(SharedData.BUILD_DATE.equals("Unknown_Build_Date")){
-        System.out.println("");
-    }else{ 
-        System.out.println(" Built "+SharedData.BUILD_DATE);
-    }
+
+
+    printVersion();
+
     JFrame Isaw = new Isaw( args );
     Isaw.pack();
-    Isaw.setBounds(x,y,window_width,window_height);
+    //Isaw.setBounds(x,y,window_width,window_height);
+    ((Isaw)Isaw).setBounds();
     Isaw.show();
     Isaw.validate();
     //SharedData.status_pane.add("Hi There");
-    Isaw.addWindowListener( 
-      new WindowAdapter()
-      {
-        public void windowClosing( WindowEvent e ) 
-        {
-          System.exit(0);
-        } 
-      } 
-    );  
-    //Isaw.addActionListener(new WindowResizeListener());
+    Isaw.addWindowListener( new WindowAdapter(){
+            public void windowClosing( WindowEvent ev ){
+                //System.out.println("windowClosing:"+ev.toString());
+                System.exit(0);
+            } 
+        } );
+    initialized=true;
+    mw_resized(Isaw.getWidth(),Isaw.getHeight());
   }
  
-
-
-
-
-  
   /**
    * since this object is an IObserver, this method is called to
    * make changes as per notification.
@@ -2302,14 +2431,5 @@ public class Isaw
       }
     }
   }
-
-    /* class WindowResizeListener implements ActionListener{
-       public void WindowResizeListener(){
-       
-       }
-       
-       public void actionPerformed(ActionEvent ev){
-       System.out.println("WindowEvent:"+ev.toString());
-       }
-       } */
 }
+
