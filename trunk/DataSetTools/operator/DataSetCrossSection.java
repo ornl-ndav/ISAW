@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.11  2001/06/04 20:02:47  dennis
+ *  Modified to use Quick Sort on DataSet, when possible.
+ *
  *  Revision 1.10  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -252,7 +255,7 @@ public class DataSetCrossSection extends    AnalyzeOp
                                      // clone the DataSet and sort the clone
                                      // based on the specified attribute.
     ds = (DataSet)ds.clone();
-    if ( !ds.Sort(attr_name, true) )
+    if ( !ds.Sort( attr_name, true, DataSet.Q_SORT ) )
       {
         ErrorString message = new ErrorString(
                            "ERROR: DataSetCrossSection faiiled...no attribute:"                            + attr_name );
