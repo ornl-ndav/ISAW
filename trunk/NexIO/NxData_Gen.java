@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/04/01 20:24:17  rmikk
+ * cnvertoint expanded to convert float arrays, etc. to int
+ *
  * Revision 1.4  2002/02/26 15:44:12  rmikk
  * This module can now be used to load in Monitor data that has been inadvertently labeled NXdata. It does not have two axes
  *
@@ -189,9 +192,21 @@ public class NxData_Gen extends NXData_util implements NxData
           return ( ( Integer )X ).intValue();
 
        if( X instanceof int[] )
-	   if( ( ( int[] )X ).length == 1 ) 
+	   if( ( ( int[] )X ).length >= 1 ) 
                 return ( ( int[] )X )[ 0 ];
-       errormessage = "improper data type to convert to int";
+       if( X instanceof float[] )
+	   if( ( ( float[] )X ).length == 1 ) 
+                return new Float(( ( float[] )X )[ 0 ]).intValue();
+        if( X instanceof long[] )
+	   if( ( ( long[] )X ).length >= 1 ) 
+                return new Long(( ( long[] )X )[ 0 ]).intValue();
+        if( X instanceof short[] )
+	   if( ( ( short[] )X ).length >= 1 ) 
+                return new Short(( ( short[] )X )[ 0 ]).intValue();
+       if( X instanceof double[] )
+	   if( ( ( double[] )X ).length >= 1 ) 
+                return new Double(( ( double[] )X )[ 0 ]).intValue();
+       errormessage = "improper data type to convert to int "+X.getClass();
        return -1;
 
     }
