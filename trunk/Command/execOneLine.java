@@ -31,12 +31,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.63  2003/10/22 19:54:31  rmikk
- * Fixed javadoc error
- *
- * Revision 1.62  2003/10/20 16:27:50  rmikk
- * Fixed javadoc errors
- * Improved releasing of data from this scripting system
+ * Revision 1.64  2003/11/22 20:37:05  rmikk
+ * Updated the javadocs for the Send command
  *
  * Revision 1.61  2003/09/14 17:57:03  rmikk
  * -Added code to reduce the holding on to Data Sets and
@@ -345,8 +341,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      */
     public  void initt(){
         clearHT( BoolInfo);
-        clearHT(ArrayInfo);
-        clearHT(lds);
         BoolInfo = null;
         BoolInfo = new Hashtable();
         BoolInfo.put("FALSE",new Boolean(false));
@@ -369,7 +363,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         Params= new Vector();
         
         //ds= new Hashtable();
-        
+        ArrayInfo.clear();
         ArrayInfo = null;
         ArrayInfo=new Hashtable();
         System.gc();
@@ -400,27 +394,12 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
    public void clearHT( Hashtable  HT){
      if( HT == null)
        return;
-     Object X=null;
-     for(Enumeration E = HT.keys();E.hasMoreElements();){
-         Object O = E.nextElement();
-         X = HT.remove(O);
-         if( X != null)
-           Clearr(X);
-         X = null;
-     }
      HT.clear();
    }
    public void clearVec( Vector V){
       if(V==null)
         return;
-      Object X=null;
-      for( int i = V.size()-1; i>=0; i--){
-         
-         X = V.remove( i);
-         Clearr(X);
-         X = null;
-      }
-      V.clear();
+      V.removeAllElements();
    }
  
 
@@ -1252,8 +1231,8 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * ScriptUtil.save
      *
      * @param ds The data set to be saved
-     * @param filename The filename to which the data set is to be
-     * saved( as java binary format)
+     * @param filename The filename to which the data set is to be.
+     *  The Extension determines the format for saving.
      * @see ScriptUtil#save
      *
      */
@@ -2404,8 +2383,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * Can be used by other parsers. Use the getResult() method to
      * determine the value
      *
-     * @param LeftValue  left operand to be operated on
-     * @param RightValue right operand to be operated on
+     * @param LeftValue, RightValue the two objects to be operated on
      * @param operation +,-,*, or /
      *
      * NOTE: The data types will converted if possible and the
@@ -3859,7 +3837,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
    
 
     /** 
-     * @param iobs The Iobserver who wants to be notified of a new data
+     * @param obs The Iobserver who wants to be notified of a new data
      * set.
      */
     public void addIObserver( IObserver iobs ){
@@ -3907,7 +3885,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     /** 
      * @param listener The listener who wants to be notified of a non
      * Data Set "Display" value
-     * @param propertyName Must be Display
+     * @param PropertyName Must be Display
      */
      public void addPropertyChangeListener( String propertyName,
                                             PropertyChangeListener listener){
@@ -3917,7 +3895,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     /** 
      * @param listener The listener who no longer wants to be notified
      * of a non Data Set "Display" value
-     * @param propertyName Must be Display
+     * @param PropertyName Must be Display
      */
      public void removePropertyChangeListener( String propertyName,
                                                PropertyChangeListener listener){
