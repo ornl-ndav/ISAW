@@ -31,6 +31,9 @@
  * Modified:
  *             
  * $Log$
+ * Revision 1.3  2002/11/26 20:41:04  dennis
+ * Added getDocumentation() method and simple main program.(Mike Miller)
+ *
  * Revision 1.2  2002/09/19 16:01:56  pfpeterson
  * Now uses IParameters rather than Parameters.
  *
@@ -152,10 +155,10 @@ public class  IntegrateGroup  extends    AnalyzeOp
    *  @param  ds          The DataSet to which the operation is applied
    *  @param  group_id    The group_id of the Data block that is to be
    *                      integrated
-   *  @param  a           The left hand endpoint of the interval [a, b] over
-   *                      which each Data block is integrated
-   *  @param  b           The righ hand endpoint of the interval [a, b] over
-   *                      which each Data block is integrated
+   *  @param  a           The left hand endpoint of the interval [a, b] 
+   *                      over which each Data block is integrated
+   *  @param  b           The right hand endpoint of the interval [a, b] 
+   *                      over which each Data block is integrated
    */
 
   public IntegrateGroup( DataSet      ds,
@@ -179,6 +182,30 @@ public class  IntegrateGroup  extends    AnalyzeOp
                                     // this operator should operate on
   }
 
+/* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns a string of the description/attributes of IntegrateGroup
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator integrates a given data block ");
+    Res.append("over the interval specified.\n");
+    Res.append("@algorithm Given a data set, a specified data block ID, ");
+    Res.append("and the interval of integration, an integration of the ");
+    Res.append("group will occur.\n");
+    Res.append("@param ds\n");
+    Res.append("@param group_id\n");
+    Res.append("@param a\n");
+    Res.append("@param b\n");
+    Res.append("@return a float value containing the integration ");
+    Res.append("of the data block\n"); 
+    Res.append("@error Invalid group ID\n");    
+    
+    return Res.toString();
+    
+  }
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
@@ -263,4 +290,24 @@ public class  IntegrateGroup  extends    AnalyzeOp
   }
 
 
+ /* ------------------------------- main --------------------------------- */ 
+ /** 
+  * Test program to verify that this will compile and run ok.  
+  *
+  */
+  
+  public static void main( String args[] )
+  {
+
+     System.out.println("Test of IntegrateGroup starting...");
+     DataSet ds = DataSetFactory.getTestDataSet();
+     
+     IntegrateGroup testgroup = new IntegrateGroup(ds, 1, 0, 10);   
+     System.out.println("Integration result: " + testgroup.getResult() );
+     
+     System.out.println( testgroup.getDocumentation() );
+    
+     System.out.println("Test of IntegrateGroup done.");
+     
+  } 
 }
