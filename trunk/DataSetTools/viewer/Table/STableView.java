@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.15  2003/10/15 03:43:12  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.14  2003/09/05 21:44:04  rmikk
  * Eliminated Debug Prints
  *
@@ -381,7 +384,10 @@ public class STableView  extends DataSetViewer
    }
 
 
- /** Initializes the state variables for the show error/index options<P>
+ /** 
+  * Initializes the state variables for the show error/index options.
+  *
+  * <br>
   * Subclasses can add extra  state information and initializations before or after this.<P>
   * NOTE: All variables in a subclass should be initialized here.
   */
@@ -420,7 +426,9 @@ public class STableView  extends DataSetViewer
      }
 
   
-   /** Subclasses can redefine this for faster saves<P>
+   /** Subclasses can redefine this for faster saves.
+    *
+    * <br>
    *   NOTE: the header information has already been written
    */
    public void SaveFileInfo(OutputStream fout)
