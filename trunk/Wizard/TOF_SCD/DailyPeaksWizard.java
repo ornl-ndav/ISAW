@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/07/14 15:34:29  bouzekc
+ * Removed link to IntegrateMultiRunsForm's run numbers
+ * parameter.
+ *
  * Revision 1.7  2003/07/03 14:16:30  bouzekc
  * Added comments and ordered methods according to access
  * privilege.
@@ -141,7 +145,7 @@ public class DailyPeaksWizard extends Wizard {
     int[][] fpi = {
       { 0, -1, -1, 0 },  //raw data path 
       { 1, 1, 1, 1 },  //peaks file path
-      { 2, 0, 0, 2 },  //run numbers
+      { 2, 0, 0, -1 },  //run numbers
       { 3, 2, 2, 3 },  //experiment name
       { 8, -1, -1, 5 },  //SCD calibration file
       { 7, -1, -1, 8 }
