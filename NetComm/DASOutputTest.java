@@ -6,6 +6,9 @@
  *  Programmer:  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.5  2001/04/20 20:26:48  dennis
+ *  Fixed documentation for the squence of bytes sent by SendSpectrum.
+ *
  *  Revision 1.4  2001/02/22 20:58:46  dennis
  *  Now sends all DataSets in a runfile, not just the monitor DataSet
  *  and the first histogram.
@@ -58,11 +61,14 @@ public class DASOutputTest
   /**
    *   Send one array of y_values, scaled by a scale factor.  The array
    *   of y_values is converted to a sequence of bytes and sent in the sequence:
-   *   MAGIC_NUMBER
-   *   ID
-   *   STARTING CHANNEL INDEX
-   *   NUMBER OF CHANNELS
-   *   LIST OF CHANNEL Y_VALUES
+   *   MAGIC_NUMBER ( 4 bytes )
+   *   LENGTH OF INSTRUMENT NAME (1 byte)
+   *   INSTRUMENT NAME ( typically 3-4 bytes )
+   *   RUN NUMBER ( 4 bytes )
+   *   GROUP ID ( 4 bytes )
+   *   STARTING CHANNEL INDEX ( 4 bytes )
+   *   NUMBER OF CHANNELS ( 4 bytes )
+   *   LIST OF CHANNEL Y_VALUES ( N * 4 bytes ) 
    */
   public void SendSpectrum( UDPSend sender, 
                             int     id, 
