@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/07/29 16:18:05  dennis
+ * Now writes L1 and complete information on detector (num rows, cols,
+ * height, width, up_vector and base_vector) to peaks file.
+ *
  * Revision 1.8  2003/07/28 21:59:02  dennis
  * Added option '-B' to ignore border pixels.  Removed debug print
  * of qxyz vs hkl values, since they can be written to a file
@@ -528,8 +532,17 @@ public class RecipPlaneView
               pd.phi   = orientation.getPhi();
               pd.chi   = orientation.getChi();
               pd.omega = orientation.getOmega();
+              pd.l1    = initial_path; 
               pd.det_a = det_a;
               pd.det_d = det_d;
+              pd.n_rows = grid.num_rows();
+              pd.n_cols = grid.num_cols();
+              pd.width  = grid.width();
+              pd.height = grid.height();
+              float coords[] = grid.y_vec().get();
+              pd.up_vec = new Vector3D_d( coords[0], coords[1], coords[2] );
+              coords = grid.x_vec().get();
+              pd.base_vec = new Vector3D_d( coords[0], coords[1], coords[2] );
               pd.tof = t;
               pd.row = row;
               pd.col = col;
@@ -1460,19 +1473,36 @@ private class WriteFileListener implements ActionListener
         PeakData pd = (PeakData)all_peaks.elementAt(i);
         if ( pd.run_num != last_run || pd.det_id != last_id )
         {
-          writer.println("0 NRUN DETNUM DETA DETA2 DETD CHI PHI OMEGA MONCNT");
-          writer.print  ("1 ");
+          writer.print("0   NRUN DETNUM DETA   DETA2    DETD");
+          writer.print("     CHI     PHI   OMEGA  MONCNT      L1"); 
+          writer.print(" ROW COL  HEIGHT   WIDTH");
+          writer.print(" BASE_VX BASE_VY BASE_VZ");
+          writer.print("   UP_VX   UP_VY   UP_VZ");
+          writer.println();
+          writer.print("1 ");
           writer.print( Format.integer( pd.run_num, 6 ) );
           writer.print( Format.integer( pd.det_id, 4 ) );
           writer.print( Format.real(pd.det_a, 8, 2 ));
           writer.print( Format.real(pd.det_a2, 8, 2 ));
-          writer.print( Format.real(pd.det_d, 8, 2 ));
+          writer.print( Format.real(pd.det_d, 8, 4 ));
           writer.print( Format.real(pd.chi, 8, 2 ));
           writer.print( Format.real(pd.phi, 8, 2 ));
           writer.print( Format.real(pd.omega, 8, 2 ));
           writer.print( Format.real(pd.moncnt, 8, 2 ));
+          writer.print( Format.real(pd.l1, 8, 4) );
+          writer.print( Format.integer( pd.n_rows, 4 ) );
+          writer.print( Format.integer( pd.n_cols, 4 ) );
+          writer.print( Format.real(pd.height, 8, 2 ));
+          writer.print( Format.real(pd.width, 8, 2 ));
+          writer.print( Format.real(pd.base_vec.get()[0], 8, 4 ));
+          writer.print( Format.real(pd.base_vec.get()[1], 8, 4 ));
+          writer.print( Format.real(pd.base_vec.get()[2], 8, 4 ));
+          writer.print( Format.real(pd.up_vec.get()[0], 8, 4 ));
+          writer.print( Format.real(pd.up_vec.get()[1], 8, 4 ));
+          writer.print( Format.real(pd.up_vec.get()[2], 8, 4 ));
           writer.println();
-          writer.println("2  SEQN  H  K  L  COL  ROW  TOF  IPK  QX  QY  QZ");
+          writer.print("2   SEQN      H      K      L COL ROW");
+          writer.println("       TOF     IPK     QX     QY     QZ");
           last_run = pd.run_num;
           last_id  = pd.det_id;
         }
@@ -1483,7 +1513,7 @@ private class WriteFileListener implements ActionListener
         writer.print( Format.real(pd.l, 7, 2 ));
         writer.print( Format.integer( pd.col, 4 ) );
         writer.print( Format.integer( pd.row, 4 ) );
-        writer.print( Format.real( pd.tof, 12, 2 ) );
+        writer.print( Format.real( pd.tof, 10, 2 ) );
         writer.print( Format.real( pd.counts, 8, 1 ) );
         writer.print( Format.real( pd.qx, 7, 2 ) );
         writer.print( Format.real( pd.qy, 7, 2 ) );
@@ -1539,7 +1569,7 @@ private class LatticeParameterListener implements ActionListener
     for ( int i = 0; i < all_peaks.size(); i++ )
     {
        PeakData pd = (PeakData)all_peaks.elementAt(i);
-       q = new Vector3D( pd.qx, pd.qy, pd.qz );
+       q = new Vector3D( (float)pd.qx, (float)pd.qy, (float)pd.qz );
        float h = q.dot(a)/mag_a;
        float k = q.dot(b)/mag_b;
        float l = q.dot(c)/mag_c;
@@ -1817,29 +1847,43 @@ private class FFTListener implements IObserver
 
   /* ------------------------- PeakData ------------------------------ */
   /*
-   *  class for recording basic peak info, to write out to file.
+   *  class for recording complete peak info, to write out to file.
    */
   public class PeakData
   {
-    int   run_num = 0;
-    int   det_id  = 0;
-    float det_a   = 0,
-          det_a2   =0;
-    float det_d;
-    float moncnt = 0;
-    float h   = 0, 
-          k   = 0, 
-          l   = 0;
-    int   row = 0, 
-          col = 0;
-    float tof = 0;
-    float qx  = 0,
-          qy  = 0,
-          qz  = 0;
-    float chi = 0,
-          phi = 0,
-          omega = 0;
-    float counts;
+    int    run_num = 0;                // Run info .....
+    double moncnt = 0;
+
+    double chi   = 0,                  // Instrument info .....
+           phi   = 0,
+           omega = 0;
+    double l1    = 9.378;
+
+    int    det_id = 0;                 // Detector info ......
+
+    double det_a  = 0,                 // Detector position
+           det_a2 = 0,
+           det_d  = .23;
+                                       // Detector orientation
+    Vector3D_d up_vec   = new Vector3D_d( 0, 1, 0 );
+    Vector3D_d base_vec = new Vector3D_d( 1, 0, 0 );
+
+    int    n_rows = 100,               // Detector size
+           n_cols = 100;
+    double width  = .15,
+           height = .15;
+
+    double counts = 0;                 // Peak info .....
+    int    row = 0,                    // Measured position
+           col = 0;
+    double tof = 0;
+    double qx  = 0,                    // Q position
+           qy  = 0,
+           qz  = 0;
+    double h   = 0,                    // Miller indices
+           k   = 0, 
+           l   = 0;
+
   }
 
   /* ---------------------------- main ---------------------------------- */
