@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/10/16 00:11:00  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.5  2002/11/27 23:18:49  pfpeterson
  *  standardized header
  *
@@ -101,7 +104,7 @@ public class DataSetAdd extends    DataSetOp
    *  by calling getResult().
    *
    *  @param  ds          The DataSet to which the operation is applied
-   *  @parm   ds_to_add   The DataSet to be added to DataSet ds.
+   *  @param  ds_to_add   The DataSet to be added to DataSet ds.
    *  @param  make_new_ds Flag that determines whether a new DataSet is
    *                      constructed, or the Data blocks of the second 
    *                      DataSet are just added to the Data blocks of the
