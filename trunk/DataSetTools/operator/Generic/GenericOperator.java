@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:27:27  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 20:56:53  pfpeterson
  *  Operator reorganization.
  *
@@ -55,8 +58,8 @@ import DataSetTools.operator.Operator;
  * derived from this class.
  *
  * @see Operator
- * @see GenericLoad
- * @see GenericBatch
+ * @see DataSetTools.operator.Generic.Load.GenericLoad
+ * @see DataSetTools.operator.Generic.Batch.GenericBatch
  *
  */
 

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:27:48  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 20:57:55  pfpeterson
  *  Operator reorganization.
  *
@@ -87,7 +90,7 @@ import DataSetTools.operator.Parameter;
 /**
  * Operator to load a specific histogram from an IPNS runfile 
  *
- * @see Operator
+ * @see DataSetTools.operator.Operator
  */
 
 public class LoadOneHistogramDS extends    GenericLoad 

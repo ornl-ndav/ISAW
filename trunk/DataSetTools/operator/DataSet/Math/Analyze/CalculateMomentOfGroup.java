@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:25:42  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 21:02:26  pfpeterson
  *  Operator reorganization.
  *
@@ -99,7 +102,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.math.*;
-import  DataSetTools.operator.Parameter;
+import  DataSetTools.operator.*;
 
 /**
   *  Calculate the specified moment of the selected Data block over the  
@@ -110,7 +113,7 @@ import  DataSetTools.operator.Parameter;
   *  integration is done is specified by the two endpoints a, b where it is 
   *  assumed that a < b.
   *
-  *  @see DataSetOperator
+  *  @see DataSetTools.operator.DataSet.DataSetOperator
   *  @see Operator
   */
 

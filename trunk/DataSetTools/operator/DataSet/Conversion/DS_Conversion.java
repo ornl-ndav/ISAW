@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:25:09  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 21:00:28  pfpeterson
  *  Operator reorganization.
  *
@@ -56,7 +59,9 @@ import DataSetTools.operator.DataSet.DataSetOperator;
  * different units.
  *
  * @see DataSetOperator
- * @see XAxisConversionOp 
+ * @see DataSetTools.operator.DataSet.Conversion.XAxis.XAxisConversionOp 
+ * @see DataSetTools.operator.DataSet.Conversion.YAxis.YAxisConversionOp 
+ * @see DataSetTools.operator.DataSet.Conversion.XYAxis.XYAxisConversionOp 
  *
  */
 
