@@ -31,6 +31,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.8  2001/08/16 02:55:38  dennis
+ *  The combine() method now averages the positions by averaging the
+ *  spherical coordinates.
+ *
  *  Revision 1.7  2001/07/10 18:50:10  dennis
  *  Fixed error in comment.
  *
@@ -120,8 +124,9 @@ public class DetPosAttribute extends Attribute
   /**
    * Combine the value of this attribute with the value of the attribute
    * passed as a parameter to obtain a new value for this attribute.  The
-   * new value is obtained by averaging the 3D Positions represented by
-   * the two attributes.
+   * new value is obtained by "averaging" the 3D Positions represented by
+   * the two attributes.  The "averaging" is done by averaging the 
+   * components in spherical coordinates. 
    *
    *  @param   attr   A DetPosAttribute whose position is to be averaged 
    *                  with the value of the this attribute.
@@ -131,17 +136,17 @@ public class DetPosAttribute extends Attribute
      if ( !(attr instanceof DetPosAttribute) )       // can't combine
        return;
 
-     float xyz[] = new float[3]; 
-     float this_xyz[],
-           other_xyz[];
+     float pos[] = new float[3]; 
+     float this_pos[],
+           other_pos[];
 
-     this_xyz  = this.value.getCartesianCoords();
-     other_xyz = ((DetectorPosition)attr.getValue()).getCartesianCoords();
+     this_pos  = this.value.getSphericalCoords();
+     other_pos = ((DetectorPosition)attr.getValue()).getSphericalCoords();
 
      for ( int i = 0; i < 3; i++ )
-       xyz[i] = ( this_xyz[i] + other_xyz[i] ) / 2.0f;
+       pos[i] = ( this_pos[i] + other_pos[i] ) / 2.0f;
   
-     this.value.setCartesianCoords( xyz[0], xyz[1], xyz[2] );
+     this.value.setSphericalCoords( pos[0], pos[1], pos[2] );
   }
 
 
