@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/07/31 23:08:24  rmikk
+ * Removed unused imports
+ *
  * Revision 1.1  2004/07/14 16:27:30  rmikk
  * Initial Checkin
  * LsqrsJ with peaks vector input and orientation matrix output
@@ -42,7 +45,7 @@ import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
-import java.io.File;
+//import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Vector;
@@ -50,7 +53,7 @@ import java.util.Vector;
 import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
 import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
-import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
+//import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
 import DataSetTools.operator.Generic.TOF_SCD.Util;
 import DataSetTools.parameter.*;
 import DataSetTools.util.FilenameUtil;
