@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/10/18 21:22:02  bouzekc
+ * Now uses HTML file for help message.
+ *
  * Revision 1.11  2003/07/16 16:29:13  bouzekc
  * Now uses the base class's wizardLoader().
  *
@@ -119,14 +122,7 @@ public class InitialPeaksWizard extends Wizard {
   public InitialPeaksWizard( boolean standalone ) {
     super( "Initial SCD Peaks Wizard", standalone );
     this.createAllForms(  );
-
-    StringBuffer s = new StringBuffer(  );
-
-    s.append( "This Wizard is designed to be used as an initial\n" );
-    s.append( "tool for finding peaks from SCD run files.  It\n" );
-    s.append( "applies BlindJ, IndexJ, ScalarJ, and LsqrsJ\n" );
-    s.append( "to the output .peaks file from the first Form.\n" );
-    this.setHelpMessage( s.toString(  ) );
+    this.setHelpURL( "IPW.html" );
   }
 
   //~ Methods ******************************************************************
@@ -143,33 +139,30 @@ public class InitialPeaksWizard extends Wizard {
    * Adds and coordinates the necessary Forms for this Wizard.
    */
   private void createAllForms(  ) {
-    int[][] fpi = {
+    int[][] fpi                     = {
       { 9, 0, 0, -1, 0, 0 },  //peaks file 
       { -1, 2, 1, 0, -1, -1 }
     };  //matrix
-
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
 
     //the return types of all of these Operator Forms is LoadFilePG,
     //hence the "LoadFile"
-    OperatorForm blindjform = new OperatorForm( 
+    OperatorForm blindjform  = new OperatorForm( 
         new BlindJ(  ), LOADFILETYPE, "BlindJ log file", new int[]{ 0 } );
-    OperatorForm indexjform = new OperatorForm( 
+    OperatorForm indexjform  = new OperatorForm( 
         new IndexJ(  ), LOADFILETYPE, "IndexJ log file", new int[]{ 0, 1 } );
     OperatorForm scalarjform = new OperatorForm( 
         new ScalarJ(  ), LOADFILETYPE, "ScalarJ log file", new int[]{ 0 } );
-    OperatorForm lsqrsjform = new OperatorForm( 
+    OperatorForm lsqrsjform  = new OperatorForm( 
         new LsqrsJ(  ), LOADFILETYPE, "LsqrsJ log file", new int[]{ 0 } );
     OperatorForm indexjform2 = new OperatorForm( 
         new IndexJ(  ), LOADFILETYPE, "IndexJ log file", new int[]{ 0 } );
-
     this.addForm( peaksform );
     this.addForm( blindjform );
     this.addForm( indexjform );
     this.addForm( scalarjform );
     this.addForm( lsqrsjform );
     this.addForm( indexjform2 );
-
     super.linkFormParameters( fpi );
   }
 }
