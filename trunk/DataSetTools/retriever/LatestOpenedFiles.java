@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/01/24 20:35:03  bouzekc
+ * Changed ( new JOptionPane()).showMessageDialog() to
+ * JOptionPane.showMessageDialog(), as it is a static method.
+ *
  * Revision 1.3  2003/12/14 18:22:50  rmikk
  * Added the new DataSets to the ISAW program completely. Now, the datablock attributes
  * should appear
@@ -121,7 +125,7 @@ public class LatestOpenedFiles{
         pref = Preferences.userNodeForPackage( 
                    Class.forName( "DataSetTools.retriever.Retriever" ) );
      }catch( Exception s1 ){
-        ( new JOptionPane() ).showMessageDialog( null , "No Preferences " +
+        JOptionPane.showMessageDialog( null , "No Preferences " +
                                        s1 );
           return false;
      }
@@ -218,7 +222,7 @@ class MyActionListener implements ActionListener{
 
      }catch( Exception ss ){
 
-        ( new JOptionPane() ).showMessageDialog( null , "Error :" + ss );
+        JOptionPane.showMessageDialog( null , "Error :" + ss );
         ss.printStackTrace();
         SharedData.addmsg( "Error :" + ss ); 
      }
