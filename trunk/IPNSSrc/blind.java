@@ -53,6 +53,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/04/30 19:56:23  pfpeterson
+ * Code cleanup after finding out what some of the variable names
+ * physically represent. This means D1,D2,...,D6 are replaced with
+ * abc[7] and A2,..,DAB,... are replaced with scalars[6].
+ *
  * Revision 1.8  2003/02/21 16:56:55  pfpeterson
  * Further completed writting the log file, now is just missing sequence
  * numbers. Changed methods to be instance rather than static. Also more
@@ -99,41 +104,15 @@ public class blind {
 
   //orientation matrix
   public double[] u = null;
-  //Cell Scalars
-  public double A2;
-  public double B2;
-  public double C2;
-
-  public double DAB;
-  public double DAC;
-  public double DBC;
-  public double cellVol;
-
   //Cell dimensions
-  public double D1;
-  public double D2;
-  public double D3;
-  public double D4;
-  public double D5;
-  public double D6;
+  public double[] abc; //a,b,c,alpha,beta,gamma,cellVol
+
   public String errormessage="";
   private StringBuffer logBuffer;
 
   public blind(){
     u=null;
-    A2=0.;
-    B2=0.;
-    C2=0.;
-    DAB=0.;
-    DAC=0.;
-    DBC=0.;
-    cellVol=0.;
-    D1=0.;
-    D2=0.;
-    D3=0.;
-    D4=0.;
-    D5=0.;
-    D6=0.;
+    abc=new double[7];
     errormessage="";
 
     // create the logfile contents
@@ -354,9 +333,8 @@ public class blind {
             System.out.println(" "+xa[i]+"    "+ya[i]+"    "+za[i]);
             System.out.println(" D="+d);
           }
-          errormessage="  ALL REFLECTIONS COPLANAR-PROGRAM TERMINATING ";
-          return;
         }
+        return;
       }
       for( i=0 ; i<3 ; i++ ){
         b[i+0*3] = xa[i];
@@ -1072,7 +1050,7 @@ public class blind {
   }
 
   /**
-   *
+   * Create the majority of the log file contents.
    */
   public void lst( double[] HH, double[] XX,double[] YY, double[] ZZ,
                    double[] A, int[] JH, double MW, double[] B,double D,
@@ -1080,12 +1058,14 @@ public class blind {
     double d=0;
     double[] AI = new double[9];
     d=mi(B,AI);
-    cellVol = 1.0/d;
-    System.out.print(" CELL VOLUME=  "+format(cellVol,1)+"\n\n");
-    logBuffer.append(" CELL VOLUME=  "+format(cellVol,1)+"\n\n");
+    abc[6] = 1.0/d;
+    System.out.print(" CELL VOLUME=  "+format(abc[6],1)+"\n\n");
+    logBuffer.append(" CELL VOLUME=  "+format(abc[6],1)+"\n\n");
     printB("in aais,B,AI=",B,5);
     printB("in aais,B,AI=",AI,3);
 
+    // calculate the cell scalars
+    double A2,B2,C2,DAB,DAC,DBC;
     A2=AI[-3+3*1]*AI[-3+3*1]+AI[-3+3*2]*AI[-3+3*2]+AI[-3+3*3]*AI[-3+3*3];
     B2=AI[-2+3*1]*AI[-2+3*1]+AI[-2+3*2]*AI[-2+3*2]+AI[-2+3*3]*AI[-2+3*3];
     C2=AI[-1+3*1]*AI[-1+3*1]+AI[-1+3*2]*AI[-1+3*2]+AI[-1+3*3]*AI[-1+3*3];
@@ -1102,28 +1082,28 @@ public class blind {
     logBuffer.append(format(DBC,9,2)+format(DAC,8,2)+format(DAB,8,2)+"\n\n");
 
 
-    D1=Math.sqrt(A2);
-    D2=Math.sqrt(B2);
-    D3=Math.sqrt(C2);
-    D4=DBC/(D2*D3);
-    D5=DAC/(D1*D3);
-    D6=DAB/(D1*D2);
-    D4=57.296*Math.atan(Math.sqrt(1.-D4*D4)/D4);
-    if (D4 < 0) D4=D4+180.;
-    D5=57.296*Math.atan(Math.sqrt(1.-D5*D5)/D5);
-    if (D5< 0) D5=D5+180.;
-    D6=57.296*Math.atan(Math.sqrt(1.-D6*D6)/D6);
-    if (D6 < 0) D6=D6+180.;
-    System.out.println("A="+format(D1,8,3)+"   B="+format(D2,8,3)
-                     +"   C="+format(D3,8,3));
-    System.out.println("ALPHA="+format(D4,7,2)+"   BETA="+format(D5,7,2)
-                     +"   GAMMA="+format(D6,7,2));
-    logBuffer.append("A="+format(D1,8,3)+"   B="+format(D2,8,3)
-                     +"   C="+format(D3,8,3)+"\n");
-    logBuffer.append("ALPHA="+format(D4,7,2)+"   BETA="+format(D5,7,2)
-                     +"   GAMMA="+format(D6,7,2)+"\n\n");
-
-
+    // calculate the lattice parameters
+    abc[0]=Math.sqrt(A2);
+    abc[1]=Math.sqrt(B2);
+    abc[2]=Math.sqrt(C2);
+    abc[3]=DBC/(abc[1]*abc[2]);
+    abc[4]=DAC/(abc[0]*abc[2]);
+    abc[5]=DAB/(abc[0]*abc[1]);
+    abc[3]=57.296*Math.atan(Math.sqrt(1.-abc[3]*abc[3])/abc[3]);
+    if (abc[3] < 0) abc[3]=abc[3]+180.;
+    abc[4]=57.296*Math.atan(Math.sqrt(1.-abc[4]*abc[4])/abc[4]);
+    if (abc[4]< 0) abc[4]=abc[4]+180.;
+    abc[5]=57.296*Math.atan(Math.sqrt(1.-abc[5]*abc[5])/abc[5]);
+    if (abc[5] < 0) abc[5]=abc[5]+180.;
+    System.out.println("A="+format(abc[0],8,3)+"   B="+format(abc[1],8,3)
+                     +"   C="+format(abc[2],8,3));
+    System.out.println("ALPHA="+format(abc[3],7,2)
+                       +"   BETA="+format(abc[4],7,2)
+                       +"   GAMMA="+format(abc[5],7,2));
+    logBuffer.append("A="+format(abc[0],8,3)+"   B="+format(abc[1],8,3)
+                     +"   C="+format(abc[2],8,3)+"\n");
+    logBuffer.append("ALPHA="+format(abc[3],7,2)+"   BETA="+format(abc[4],7,2)
+                     +"   GAMMA="+format(abc[5],7,2)+"\n\n");
     System.out.println("");
 
     System.out.print("     #   SEQ     H     K     L\n");
@@ -1331,8 +1311,9 @@ public class blind {
       System.out.println("");
     }
 
-    System.out.println(BLIND.D1+" "+BLIND.D2+" "+BLIND.D3+" "+BLIND.D4+" "+
-                       BLIND.D5+" "+BLIND.D6+" "+BLIND.cellVol);
+    for( int i=0 ; i<BLIND.abc.length ; i++ )
+      System.out.print(BLIND.abc[i]+" ");
+    System.out.println();
   }
 
   private static void printB(String label, Object b){
