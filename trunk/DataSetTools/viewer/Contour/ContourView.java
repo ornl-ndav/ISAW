@@ -36,6 +36,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2002/10/07 16:17:32  rmikk
+ *  Fixed a missing parenthesis
+ *
  *  Revision 1.18  2002/10/07 15:01:24  rmikk
  *  Introduced a constructor that used an IAxesHandler
  *
@@ -186,7 +189,7 @@ public class ContourView extends DataSetViewer
      { this( ds, state1, null,null,null);
       }
   public ContourView( DataSet ds, ViewerState state, IAxesHandler Transf)
-     {this( ds, state,Transf.getAxis(0), Transf.getAxis(1), Transf.getAxis(2);
+     {this( ds, state,Transf.getAxis(0), Transf.getAxis(1), Transf.getAxis(2));
       this.Transf = Transf;
       }
   public ContourView( DataSet ds, ViewerState state1 ,IAxisHandler axis1,
