@@ -1,3 +1,43 @@
+
+/*
+ * File:  Center.java
+ *
+ * Copyright (C) 2003, Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact :  Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ *
+ * $Log$
+ * Revision 1.2  2003/09/26 15:39:10  rmikk
+ * Fixed Negative Xoff set problem
+ * Used zero for the weights on row and column centers
+ *    that are near the centeer
+ *
+ */
+
 package DataSetTools.operator.Generic.TOF_SAD;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
@@ -116,7 +156,6 @@ public class Center extends GenericTOF_SAD{
 
     for( int j = 0; j< DSGrid.num_cols(); j++)
         Colcm[j] = DSGrid.x(  2.0f,j+1.0f);
-   
     float[] RowCenters = new float[ DSGrid.num_rows()];
     float[] ColCenters = new float[ DSGrid.num_cols()];
     float[] RowCentWts = new float[ DSGrid.num_rows()];
@@ -171,13 +210,16 @@ public class Center extends GenericTOF_SAD{
            ColCenters[col-1] = 0.0f;
      
      
-     float YAve = CalcXave( CollapsedData,Rowcm, ColCenters,rstart,rend, Yoff)/2.0f +Yoff;
-     float XAve = CalcYave (CollapsedData,Colcm, RowCenters,cstart,cend, Xoff)/2.0f+Xoff;
+     float YAve = CalcXave( CollapsedData,Rowcm, ColCenters,rstart,rend, Yoff,
+                   Xoff,  Colcm)/2.0f +Yoff;
+     float XAve = CalcYave (CollapsedData,Colcm, RowCenters,cstart,cend, Xoff,
+                   Yoff, Rowcm)/2.0f+Xoff;
     
      //System.out.println("Xoff,yoff="+XAve+","+YAve+","+rstart+","+rend+","+cstart+","+cend);
+
+    //System.out.println(XAve+"\t"+YAve+"\t"+(Cx/Cwx+Xoff) +"\t"+(Cy/Cwx+Yoff));
      Xoff = XAve;
      Yoff = YAve;
-    
     if( Math.abs( SavXoff-Xoff) <.000009)
        if( Math.abs( SavYoff-Yoff) <.000009) 
           done = true;
@@ -186,7 +228,7 @@ public class Center extends GenericTOF_SAD{
        done = true;
     }//While not Done
    Vector V = new Vector();
-   V.addElement( new Float( -Xoff*100f));
+   V.addElement( new Float( Xoff*100f));
    V.addElement( new Float( Yoff*100f));
    V.addElement( CollapsedData);
    V.addElement( RowCenters);// multiply these by 100 too
@@ -206,7 +248,7 @@ public class Center extends GenericTOF_SAD{
  boolean debug = false;
  // Only fit CollapsedData[j][j] to XBar[j] ????
  float CalcXave( float[][] CollapsedData,float[] Rowcm, float[] ColCenters,
-     int minrow, int maxrow, float Yoff){
+     int minrow, int maxrow, float Yoff, float Xoff, float[] Colcm){
      float SUXB = 0, SUX = 0;
      //System.out.println("CalcxAve--yoffset");
      for( int j = minrow; j<= maxrow; j++){
@@ -214,15 +256,25 @@ public class Center extends GenericTOF_SAD{
        if( debug)
        System.out.print("J"+j+"\t"+
               (ColCenters[j-1]+Yoff));
-             
-       float Delta = (CollapsedData[ IPrim+1][j]-CollapsedData[ IPrim][j])/
+       float v2 =CollapsedData[ IPrim+1][j];
+       float v1 =CollapsedData[ IPrim][j];
+       if( (Rowcm[IPrim]-Yoff)*(Rowcm[IPrim+1-1]-Yoff)+
+                 (Colcm[j-1]-Xoff)*(Colcm[j-1]-Xoff) < BS*BS)
+         v2 =0;
+
+       if( (Rowcm[IPrim-1]-Yoff)*(Rowcm[IPrim-1]-Yoff)+
+                 (Colcm[j-1]-Xoff)*(Colcm[j-1]-Xoff) < BS*BS)
+         v1 =0;
+                
+       float Delta = (v2-v1)/
                 (Rowcm[IPrim+1-1] -Rowcm[IPrim-1-1]);
-       float S =CollapsedData[ IPrim][j] +Delta*(ColCenters[j-1]+Yoff -Rowcm[IPrim-1]);
+       float S = v1 +Delta*(ColCenters[j-1]+Yoff -Rowcm[IPrim-1]);
        SUXB += S*ColCenters[j-1];
        SUX += S;
        if( debug)
          System.out.println(CollapsedData[ IPrim][j]+"\t"+S+"\t"+
                CollapsedData[ IPrim+1][j]);
+       
      }
     //System.out.println("---------Res is "+(SUXB/SUX)+"----------------");
     debug= false; 
@@ -234,7 +286,7 @@ public class Center extends GenericTOF_SAD{
  }
 
  float CalcYave( float[][] CollapsedData,float[] Colcm, float[] RowCenters,
-     int mincol, int maxcol, float Xoff){
+     int mincol, int maxcol, float Xoff, float Yoff,  float[] Rowcm){
    float  SUYB = 0.0f,SUY = 0.0f;
    //System.out.println("CalcYAve-coloffset");
    for( int j = mincol; j<=maxcol; j++){
@@ -242,9 +294,18 @@ public class Center extends GenericTOF_SAD{
        if( debug)
        System.out.print("J"+j+"\t"+
               (RowCenters[j-1]));
-       float Delta = (CollapsedData[j][ IPrim+1]-CollapsedData[j][ IPrim])/
+       float v2 =CollapsedData[ j][IPrim+1];
+       float v1 =CollapsedData[ j][IPrim];
+       if( (Colcm[IPrim]-Yoff)*(Colcm[IPrim+1-1]-Yoff)+
+                 (Rowcm[j-1]-Xoff)*(Rowcm[j-1]-Xoff) < BS*BS)
+         v2 =0;
+
+       if( (Colcm[IPrim-1]-Xoff)*(Colcm[IPrim-1]-Xoff)+
+                 (Rowcm[j-1]-Yoff)*(Rowcm[j-1]-Yoff) < BS*BS)
+         v1 =0;
+       float Delta = (v2-v1)/
                  (Colcm[IPrim+1-1] -Colcm[IPrim -1-1]);
-       float S =CollapsedData[j][ IPrim] +Delta*(RowCenters[j-1]+Xoff -Colcm[IPrim-1]);
+       float S =v1 +Delta*(RowCenters[j-1]+Xoff -Colcm[IPrim-1]);
        //ERROR??                                              RowCenters here  
        SUYB += S*RowCenters[j-1];
        SUY += S;  
