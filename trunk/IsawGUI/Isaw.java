@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.161  2003/10/14 22:12:37  dennis
+ *  Fixed javadoc comment to build cleanly on jdk 1.4.2
+ *
  *  Revision 1.160  2003/10/09 20:06:14  dennis
  *  Changed version to 1.6.0 alpha 1
  *
@@ -875,7 +878,7 @@ public class Isaw
    * of the datasets.  Modified DataSet objects should be added by 
    * calling 'addModifiedDataSet()'.  
    *
-   * @param ds   Array of DataSets
+   * @param dss  Array of DataSets
    * @param name String identifying the Runfile
    */
   protected void addNewDataSets( DataSet[] dss, String name )
