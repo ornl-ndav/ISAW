@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/06/14 20:49:07  rmikk
+ *  Implements the IXmlIO interface
+ *
  *  Revision 1.21  2002/03/13 16:08:33  dennis
  *  Data class is now an abstract base class that implements IData
  *  interface. FunctionTable and HistogramTable are concrete derived
@@ -163,7 +166,8 @@ import DataSetTools.util.*;
 
 public class DataSet implements IAttributeList,
                                 Serializable,
-                                IObservable
+                                IObservable,
+                                IXmlIO 
 {
   private static long current_ds_tag = 0; // Each DataSet will be assigned a
                                           // unique, immutable tag when it is
@@ -203,6 +207,7 @@ public class DataSet implements IAttributeList,
   private long          ds_tag;
   private int           pointed_at_index;
   private String        last_sort_attribute = "";
+  private boolean       xmlStandAlone = true; //XMLread
 
   /**
    * Constructs an empty data set with the specified title, initial log
@@ -287,6 +292,23 @@ public class DataSet implements IAttributeList,
     this( title, log_info, "X UNITS", "X LABEL", "Y UNITS", "Y LABEL");
   }
 
+  /**
+  * Constructs an empty data set with no log info and an empty string for
+  * the title.  This routine creates a data set that will then be filled up
+  * by the XMLread method
+  *
+  * @param xmlStandAlone   <ul>
+  *         <li>true to read from the start of an xml file. The <?xml processing
+  *             tag and the <DataSet tag will be read
+  *         <li> false means that the XMLread assumes that the DataSet tag has
+  *              been read but NOT its xml attributes
+  *          </ul>
+  *  @see #XMLread( java.io.InputStream)
+  */ 
+  public DataSet( boolean xmlStandAlone)
+  { this("",(String)(null));
+    this.xmlStandAlone = xmlStandAlone;
+  }
 
   /**
    *  Add the specified object to the list of observers to notify when this
@@ -1015,6 +1037,7 @@ public class DataSet implements IAttributeList,
   }
 
 
+
   /**
    * Returns a reference to the operation in the list of available operators 
    * on this data set with the specified TITLE.  If the named operator is not
@@ -1539,6 +1562,199 @@ public class DataSet implements IAttributeList,
   }
 
 
+  /**
+  * Implements the IXmlIO interface.  This routine "writes" the
+  * dataset. In standalone mode it writes the xml header.
+  *
+  * @param  stream  the OutputStream to which the xml data is to be written
+  * @param  mode    Either IXmlIO.Base64 to write spectra information 
+  *                 efficiently or IXmlIO.Normal to produce ASCII values
+  *
+  * @returns  true if successful otherwise false
+  *
+  * @see  #DataSet( boolean) Constructor
+  *
+  */
+  public boolean XMLwrite( OutputStream stream, int mode )
+  { StringBuffer SS = new StringBuffer(200);
+    if( xmlStandAlone)
+    { SS.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+      SS.append("<DataSet ");
+    }
+    SS.append(" version=\"0.0.0.0.1\" ");
+    SS.append( "TITLE=\"");
+    SS.append( title);
+    SS.append("\"  ");
+    SS.append("X_UNITS=\"");
+    SS.append( x_units); SS.append("\"\n      ");
+    SS.append("X_LABEL=\"");
+    SS.append( x_label); SS.append("\"\n      ");
+    SS.append("Y_UNITS=\"");  SS.append( y_units);
+    SS.append("\"     ");
+    SS.append( "Y_LABEL=\""); SS.append(y_label);
+    SS.append("\">\n\n");
+    try
+    {
+      stream.write( SS.substring( 0 ).getBytes());
+     
+      boolean b=attr_list.XMLwrite( stream, mode);
+    
+      if(!b)
+        return false;
+     
+      OperatorList ol = new OperatorList( this );
+      if(!ol.XMLwrite( stream, mode))
+        return false;
+      stream.write("\n".getBytes());
+      if(!op_log.XMLwrite( stream, mode))
+        return false;
+      stream.write("\n".getBytes());
+
+      DataSetList dsl =new DataSetList( this );
+      if(!dsl.XMLwrite( stream, mode ))
+        return false;
+      stream.write("\n".getBytes());
+
+      stream.write("</DataSet>\n".getBytes());
+    }
+    catch( Exception s)
+    { return xml_utils.setError( "DataSetWrite err="+s.getClass() +" "+
+                 s.getMessage());
+    }
+    
+
+    return true;
+
+  }
+
+  //Internal to external names for fields
+  private String XLateDSFields=":TITLE;"+
+                               DSFieldString.TITLE+":"+
+                              "X_UNITS;"+
+                               DSFieldString.X_UNITS+":"+
+                              "X_LABEL;"+
+                               DSFieldString.X_LABEL+":"+ 
+                              "Y_LABEL;"+
+                               DSFieldString.Y_LABEL+":"+ 
+                              "Y_UNITS;"+
+                               DSFieldString.Y_UNITS+":";
+
+  /**
+  * Implements the IXmlIO interface.  This routine "reads" the
+  * dataset. In standalone mode it reads past the xml header. All reads 
+  * assume the starting tag ( here DataSet) has already been consumed
+  *
+  * @param  stream  the InputStream from which the xml data is read
+  *
+  * @return true if succesful otherwise false
+  *
+  * @see #DataSet( boolean)  standalone mode
+  */
+  public boolean XMLread( InputStream stream )
+  { 
+    String Tag;
+    if( xmlStandAlone)
+    { Tag = xml_utils.getTag( stream);
+      if( Tag ==  null)
+        return xml_utils.setError( xml_utils.getErrorMessage());
+    
+      if(Tag.equals("?xml"))
+      { if(!xml_utils.skipAttributes( stream))
+          return xml_utils.setError( xml_utils.getErrorMessage());
+        Tag = xml_utils.getTag( stream);
+        if( Tag ==  null)
+          return xml_utils.setError( xml_utils.getErrorMessage()); 
+       }      
+
+      
+      if(!Tag.equals("DataSet"))
+        return xml_utils.setError("Improper start tag. Should be DataSet" +Tag);
+    }
+
+
+    Vector V = xml_utils.getNextAttribute( stream );
+    
+    if( V == null) 
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    boolean done = V.size()<2;
+     
+    while( !done)
+    { String S = (String)(V.firstElement());
+      int i= XLateDSFields.indexOf(":"+S+";");
+      
+      if( i >= 0)
+      { S = XLateDSFields.substring( i+S.length()+2,
+                      XLateDSFields.indexOf(":", i+S.length()+2));   
+                    
+        DataSetTools.operator.DataSet.Attribute.SetField sf= 
+                (new DataSetTools.operator.DataSet.Attribute.SetField(
+                this, new DSSettableFieldString(S),
+               V.lastElement()));
+        sf .getResult(); 
+      }
+      V = xml_utils.getNextAttribute( stream );
+      if( V == null)
+        return  xml_utils.setError( xml_utils.getErrorMessage());
+      done = V.size()<2;
+       
+                  
+    
+    }
+    
+    if( !xml_utils.skipAttributes( stream ))
+      return xml_utils.setError( xml_utils.getErrorMessage());
+
+    Tag = xml_utils.getTag( stream);
+    if( Tag ==  null)
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    if(!Tag.equals("AttributeList"))
+      return xml_utils.setError("Improper start tag. Should be AttributeList:"
+                          +Tag);
+    if( !xml_utils.skipAttributes( stream ))
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    attr_list= new AttributeList();
+    if(!attr_list.XMLread( stream))
+      return false;
+      
+    
+    Tag = xml_utils.getTag( stream);
+    if( Tag ==  null)
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    if(!Tag.equals("OperatorList"))
+      return xml_utils.setError("Improper start tag. Should be DataSet:"+
+                                                      Tag);
+    if( !xml_utils.skipAttributes( stream ))
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    OperatorList ol = new OperatorList( this);
+    if(!ol.XMLread( stream))
+      return false;
+     
+    Tag = xml_utils.getTag( stream);
+    if( Tag ==  null)
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    if(!Tag.equals("OperationLog"))
+      return xml_utils.setError("Improper start tag. Should be DataSet:"
+                             +Tag);
+    if( !xml_utils.skipAttributes( stream ))
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    
+    if(!op_log.XMLread( stream))
+      return false;
+     
+    Tag = xml_utils.getTag( stream);
+    if( Tag ==  null)
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    if(!Tag.equals("DataList"))
+      return xml_utils.setError("Improper start tag. Should be DataList:"
+             +Tag);
+    if( !xml_utils.skipAttributes( stream ))
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    DataSetList dsl = new DataSetList( this);
+    if(!dsl.XMLread( stream) )
+      return false;
+     
+    return true;
+  }
   /**
    *  Provide an identifier string for this DataSet
    */
