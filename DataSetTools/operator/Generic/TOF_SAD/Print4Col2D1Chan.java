@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/10/22 20:06:00  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.1  2003/08/15 19:34:43  rmikk
  * Initial Checkin
  *
@@ -153,8 +156,8 @@ public class Print4Col2D1Chan extends GenericTOF_SAD{
    }
 
    /**
-   *       Starts a program that will take the name of a file storing a DataSet
-   *  @param args[0]  the name of the file storing the DataSet.
+   *       Starts a program that will take the name of a file storing a DataSet.
+   *  args[0]  the name of the file storing the DataSet.
    *  @return  a file with the name xxx.dat in the directory where the programe
    *          was started. This file is in the 4 Col format
    */
