@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/05/02 22:02:58  pfpeterson
+ * Prints out lattice parameters resulting from each transformation matrix.
+ *
  * Revision 1.6  2003/05/02 14:25:04  pfpeterson
  * More code cleanup. Changed the sigma variables to be more like the scalars.
  *
@@ -125,6 +128,7 @@ public class ScalarJ extends GenericTOF_SCD{
   private double[] scalars = null;
   private double[] sig     = new double[6];
   private double[] sigsq   = new double[6];
+  private double[][] UB    = new double[3][3];
   private int nequal= 0;
   private int nchoice= NO_RESTRICTION;
   private int ncell= 0;
@@ -397,7 +401,7 @@ public class ScalarJ extends GenericTOF_SCD{
     // determine if this is an experiment file
     boolean isexpfile=!(filename.endsWith(".mat"));
     TextFileReader tfr=null;
-    float[][] UB=null;
+    float[][] myUB=null;
 
     // read in the orientation matrix
     try{
@@ -409,7 +413,7 @@ public class ScalarJ extends GenericTOF_SCD{
         else if(result instanceof ErrorString)
           return (ErrorString)result;
         else if(result instanceof float[][])
-          UB=(float[][])result;
+          myUB=(float[][])result;
         else
           return new ErrorString("Failed to read orientation from "+filename);
         result=null;
@@ -425,8 +429,9 @@ public class ScalarJ extends GenericTOF_SCD{
         }
     }
 
+    this.UB=LinearAlgebra.float2double(myUB);
     // generate the scalars from it
-    double[] abc=Util.abc(LinearAlgebra.float2double(UB));
+    double[] abc=Util.abc(this.UB);
     if(abc==null)
       return new ErrorString("Could not get lattice parameters from UB");
     scalars=Util.scalars(abc);
@@ -1089,6 +1094,8 @@ public class ScalarJ extends GenericTOF_SCD{
     i = 1;
 
 
+    double[][] transf=new double[3][3];
+    double[] abc=null;
     for( int n=0 ; n<imax ; n++ ){
       if( l[n]==npick || nchoice==NO_RESTRICTION || nchoice==SYMMETRIC ){
         System.out.println(" ");
@@ -1100,13 +1107,24 @@ public class ScalarJ extends GenericTOF_SCD{
         System.out.println(" ");
         i++;
         nflag = true;
-        for( int m=1 ; m<=3 ; m++ ){
-          System.out.print("");
+        for( int m=1 ; m<=3 ; m++ ){ // create transformation matrix
           for( int j=1 ; j<=3 ; j++ )
-            System.out.print(Format.real(trans[m+((j+3*k[n])*3)-13],4)+" ");
-
+            transf[j-1][m-1]=trans[m+((j+3*k[n])*3)-13];
+        }
+        for( int ii=0 ; ii<3 ; ii++ ){ // print the matrix
+          for( int jj=0 ; jj<3 ; jj++ ){
+            System.out.print(Format.real(transf[jj][ii],4)+" ");
+          }
           System.out.println();
         }
+        abc=Util.abc(LinearAlgebra.mult(this.UB,transf));
+        System.out.println();
+        // print the lattice parameters
+        System.out.println("     a        b        c      alpha     beta    "
+                           +"gamma  cellvol");
+        for( int ii=0 ; ii<abc.length ; ii++ )
+          System.out.print(Format.real(abc[ii],8,2)+" ");
+        System.out.println();
       }
     }
 
