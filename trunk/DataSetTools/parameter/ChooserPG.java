@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.4  2003/06/05 22:34:34  bouzekc
+ *  Added method to retrieve the index of a given item.
+ *
  *  Revision 1.3  2003/03/25 19:39:57  pfpeterson
  *  Fixed bug with updating the DataSets listed in the combo box by
  *  allowing multiple calls to init.
@@ -105,6 +108,13 @@ abstract public class ChooserPG extends ParameterGUI{
   public void removeItem( Object val ){
     int index=vals.indexOf(val);
     if(index>=0) vals.remove(index);
+  }
+
+  /**
+   *  Get the index of an item.
+   */
+  public int getIndex(Object val){
+    return vals.indexOf(val);
   }
 
   // ********** IParameter requirements **********
