@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/03/24 19:22:37  pfpeterson
+ * Fixed histogram renumbering bug. Still exists if the run being appended
+ * to the file should be placed before the first run.
+ *
  * Revision 1.9  2003/03/21 20:13:52  pfpeterson
  * Fixed a memory leak with the operator keeping a reference to the
  * dataset and monitor.
@@ -210,6 +214,7 @@ public class WriteExp extends GenericTOF_SCD{
     String  calibfile = getParameter(3).getValue().toString();
     int     monid     = ((Integer)getParameter(4).getValue()).intValue();
     boolean append    = ((Boolean)(getParameter(5).getValue())).booleanValue();
+    boolean change_run_one=false;
 
     // read in the calibration if not in append mode
     if(!append){
@@ -240,6 +245,7 @@ public class WriteExp extends GenericTOF_SCD{
     else{
       if(run_num<run_one){
         run_one=run_num;
+        change_run_one=true;
         exp_title=(String)ds.getAttributeValue(Attribute.RUN_TITLE);
       }
     }
@@ -277,26 +283,16 @@ public class WriteExp extends GenericTOF_SCD{
 
       // -------------------- previous data's information
       if(append && exist_hist!=null && exist_hist.length()>0){
-        int num_early=0;
-        for( int i=0 ; i<runs.length ; i++ ){
-          if(runs[i]<run_num){
-            num_early++;
-          }
-        }
-        if(num_early>0){
-          String match="HST"+Format.real(num_early+1,3);
-          int index=exist_hist.indexOf(match);
-          if(DEBUG) System.out.println("*****"+index+"*****"+match);
-          if(index<0){
-            out.write(exist_hist);
-            exist_hist=null;
-          }else if(index==0){
-            // something wrong
-            return new ErrorString("Could not find earlier data");
-          }else{
-            out.write(exist_hist.substring(0,index-1));
-            exist_hist=exist_hist.substring(index);
-          }
+        int index=findSplit(exist_hist,runs,run_num,run_one);
+        if(index<0){ // just append
+          out.write(exist_hist);
+          exist_hist=null;
+        }else if(index==0){
+          // something wrong
+          return new ErrorString("Could not find earlier data");
+        }else{
+          out.write(exist_hist.substring(0,index-1));
+          exist_hist=exist_hist.substring(index);
         }
       }
 
@@ -304,9 +300,12 @@ public class WriteExp extends GenericTOF_SCD{
       parseDetInfoList(ds);
       out.write(histogram(run_num-run_one+1,monid));
 
-      // -------------------- successor data's information
+      // -------------------- following data's information
       if(append && exist_hist!=null && exist_hist.length()>0){
-        out.write(fix_old(exist_hist));
+        if(change_run_one)
+          out.write(fix_old(exist_hist));
+        else
+          out.write(exist_hist);
       }
 
       // -------------------- instrument information
@@ -325,6 +324,35 @@ public class WriteExp extends GenericTOF_SCD{
     return filename;
   }
   
+  /**
+   * Determines the starting index of the first histogram that is
+   * after the one being added. Returns -1 if it can't find the right
+   * place
+   */
+  private static int findSplit(String old_hist, int[] runs,int run_num,
+                                                                 int run_zero){
+    int num_early=0;
+    for( int i=0 ; i<runs.length ; i++ ){
+      if(runs[i]<run_num)
+        num_early++;
+    }
+    
+    if(num_early>0){
+      if(num_early>=runs.length) return -1; // nothing special to do
+
+      int index=-1;
+      String match=null;
+      for( int i=num_early ; i<runs.length ; i++ ){
+        
+        match="HST"+Format.real(runs[i]-run_zero+1,3);
+        index=old_hist.indexOf(match);
+        if(index>0)
+          return index;
+      }
+    }
+    return -1;
+  }
+
   /* ------------------------------- clone -------------------------------- */ 
   /** 
    *  Creates a clone of this operator.
@@ -895,7 +923,6 @@ public class WriteExp extends GenericTOF_SCD{
     }catch(NumberFormatException e){
       return new ErrorString(e.getMessage());
     }
-
 
     return null;
   }
