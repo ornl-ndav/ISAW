@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2005/02/10 00:20:12  kramer
+ * Now this class will find and return DataSets made from NXlog nodes.
+ *
  * Revision 1.24  2005/01/10 16:41:28  rmikk
  * Added blank spacing
  *
@@ -125,6 +128,8 @@ public class ExtGetDS{
   Vector EntryToDSs;
   boolean setupDSs;
   boolean debug=false;
+  /** Used to search through a NeXus file for all of its NXlog nodes. */
+  NxlogLocator nxLogLocator;
 
   /**
    *  Constructor 
@@ -137,6 +142,7 @@ public class ExtGetDS{
     this.filename = filename ;
     errormessage = "" ;
     EntryToDSs= new Vector() ;
+    this.nxLogLocator = new NxlogLocator(this.node);
   }
 
   /**
@@ -179,7 +185,6 @@ public class ExtGetDS{
    *   @return a String with the name and type of data set this is
    */
   public String[] getDataSetInfo( int data_set_num){
-    
     if( !setupDSs ) 
       setUpDataSetList() ;
       
@@ -206,7 +211,6 @@ public class ExtGetDS{
 
 
  public DataSet getDataSet( int data_set_num ){
-   
    if( !setupDSs ) 
      setUpDataSetList() ;
      
@@ -214,6 +218,7 @@ public class ExtGetDS{
      
      DataSetTools.util.SharedData.addmsg("invalid data set number "
                                          +data_set_num);
+     System.out.println("  Leaving getDataSet()");
      return  null;
 
    }
@@ -232,7 +237,15 @@ public class ExtGetDS{
    instrType = (new Inst_Type()).getIsawInstrNum( EntryState.description );
    
    if( dsInf.NxdataNode != null){
-     
+      
+      if (NxlogLocator.isNxLog(dsInf.NxdataNode))
+      {
+         //TODO Verify that this should still return 'dataSet' 
+         //     even if processDS(....) encounters and error and quits
+         DataSet dataSet = new DataSet();
+         (new Nxlog()).processDS(dsInf.NxdataNode,dataSet);
+         return dataSet;
+      }
   
       DataSetFactory DSF = new DataSetFactory( "" ) ;
       DS = DSF.getTofDataSet(instrType) ; 
@@ -407,7 +420,6 @@ public class ExtGetDS{
   //  The Node, DefaultID's and NXentry are saved in a DataSetInfo Structure
   //  The DataSetInfo Structure is an internal class in this file
   private void setUpDataSetList(){
-    
     setupDSs = true;
     int startID = 1;
     //--------------------- Get all Monitors ------------------------
@@ -504,7 +516,10 @@ public class ExtGetDS{
        }//if node Class is NXentry
       }//if( node class == NXentry
     
-  //------------------ need to get the NXlogs ------------------
+    //------------------ now to get the NXlogs ------------------
+    int numLogDS = nxLogLocator.getNumNxLogDataSets();    
+    for (int i=0; i<numLogDS; i++)
+       EntryToDSs.add(nxLogLocator.getNxLogDataSet(i));    
   } 
 
   /**
