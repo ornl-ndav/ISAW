@@ -2,6 +2,9 @@
 # generic Makefile for isaw
 #
 # $Log$
+# Revision 1.7  2000/08/04 20:32:25  neffk
+# routine check-in.
+#
 # Revision 1.6  2000/07/10 15:42:34  neffk
 # selection/deselection can be done by double-clicking on the items in the
 # lists on the 'Select' tab.
@@ -22,6 +25,7 @@
 
 CONTAINERS = components/containers
 UTIL = util
+HOME = /IPNShome/neffk
 
 
 silent:
@@ -38,6 +42,7 @@ list:
 	echo "run-all       - runs IsawGUI (user)"
 	echo "docs          - creates documentation (user)"
 	echo "tags-all      - creates tags in the source tree (developer only)"
+	echo "progress      - copy IPNS_progress"
 	echo "--------------------------------------------------"
 	echo ""
 
@@ -84,6 +89,16 @@ tags-all:
 	ctags *.java
 	cd components/containers;  ctags *.java;  cd ../..
 	cd util;  ctags *.java;  cd ..
+
+
+
+#
+# progress report / worklog
+#
+progress:
+	cp IPNS_progress.text $(HOME)/www/html/argonne/
+
+
 
 
 clean: 
