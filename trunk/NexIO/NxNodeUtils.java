@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/07/25 21:18:30  rmikk
+ * Added features to Showw vectors
+ *
  * Revision 1.3  2001/07/24 20:11:12  rmikk
  * Eliminated a debug print
  *
@@ -327,7 +330,18 @@ public String ShowwArr( Object X )
           Res += (",......");
      System.out.println("double length="+u.length); 
     }   
-   else 
+   else if( X instanceof Vector )
+     {int n=((Vector)X).size();
+      for( int i = 0; i < java.lang.Math.min( 100, n ); i++)
+       { Res =Res+Showw( ((Vector)X).elementAt( i ));
+       if( i<n-1)Res = Res+",";
+        } 
+       if( n  >=100)
+          Res += (",......");
+      System.out.println("Vector length="+ n);  
+     } 
+     
+   else
     {System.out.println("SHnot supported"+X.getClass());
      return null;
     }
