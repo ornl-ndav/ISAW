@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.3  2003/08/22 19:29:30  bouzekc
+ * Added default constructor.
+ *
  * Revision 1.2  2003/08/22 18:57:32  bouzekc
  * Added method to recursively enable/disable all Components contained within
  * this EntryWidget.  Modified ActionListener and KeyListener methods to more
@@ -76,6 +79,15 @@ public class EntryWidget extends JPanel implements PropertyChanger,
   private PropertyChangeSupport propBind = new PropertyChangeSupport( this );
 
   //~ Constructors *************************************************************
+
+  /**
+   * Default constructor.  Simply calls super(  ), and is here to facilitate
+   * easier layout of complex EntryWidgets by allowing you to set Layout
+   * Managers and the like before adding components.
+   */
+  public EntryWidget(  ) {
+    super(  );
+  }
 
   /**
    * Creates an EntryWidget that consists of a single Component (such as a
