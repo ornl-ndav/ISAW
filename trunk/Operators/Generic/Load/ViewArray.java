@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/01/30 02:24:37  bouzekc
+ * Removed unused variables and imports.
+ *
  * Revision 1.1  2004/01/08 23:51:37  rmikk
  * Initial Checkin
  *
@@ -41,7 +44,6 @@
 
 package Operators.Generic.Load;
 
-import DataSetTools.operator.Wrappable;
 import DataSetTools.operator.*;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.TwoD.*;
@@ -156,7 +158,6 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
   public Object getResult() {
    
     float[][] data= (float[][])(getParameter(0).getValue());
-    String Title  = getParameter(1).getValue().toString();
     float minx= ((FloatPG)getParameter(2)).getfloatValue(), 
           maxx=((FloatPG)getParameter(3)).getfloatValue(),
           miny =((FloatPG)getParameter(4)).getfloatValue(),

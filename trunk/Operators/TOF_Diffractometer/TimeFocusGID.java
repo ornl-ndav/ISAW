@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/01/30 02:26:34  bouzekc
+ * Removed unused variables and imports.
+ *
  * Revision 1.6  2003/12/15 02:38:18  bouzekc
  * Removed unused imports.
  *
@@ -56,7 +59,6 @@ package Operators.TOF_Diffractometer;
 import java.util.Vector;
 
 import DataSetTools.dataset.Attribute;
-import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.DetPosAttribute;
@@ -262,7 +264,6 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
         // set up what focus_dif_c is
         float            focus_dif_c=0f;
         GsasCalib        calib=null;
-        AttributeList    attr_list;
 
         for ( int i = 0; i < ids.length; i++ ){
             calib=null;
@@ -356,8 +357,8 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
             if ( obj instanceof DataSet ){            // we got a DataSet back
                 // so show it and original
                 DataSet new_ds = (DataSet)obj;
-                ViewManager vm1 = new ViewManager( ds,     IViewManager.IMAGE );
-            ViewManager vm2 = new ViewManager( new_ds, IViewManager.IMAGE );
+                new ViewManager( ds,     IViewManager.IMAGE );
+                new ViewManager( new_ds, IViewManager.IMAGE );
             }else
                 System.out.println( "Operator returned " + obj );
         }else{
