@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/04/04 18:25:10  dennis
+ *  Added getInstance() methods to create HistogramTable or FunctionTable
+ *  objects from any Data object.
+ *  Moved scalar add(), subtract(), multiply() and divide() methods
+ *  to Data.java
+ *
  *  Revision 1.2  2002/03/18 21:38:21  dennis
  *  Minor fix to documentation.
  *
@@ -122,6 +128,50 @@ public abstract class TabulatedData extends    Data
     return y_values;
   }
 
+
+  /**
+   *  Create an instance of a FunctionData or HistogramData object, from the
+   *  given Data object.
+   *
+   *  @param  d         The Data object that provides the y-values, x_scale,
+   *                    errors and attributes for the new TabulatedData object
+   *  @param  group_id  The group_id to use for the new TabulatedData object
+   *  @param  type      String specifying the type of Tabulated data object 
+   *                    to construct, Data.FUNCTION or Data.HISTOGRAM
+   *
+   *  @return  a new TabulatedData object with values determined by d.  
+   */
+  public static TabulatedData getInstance( Data d, int group_id, String type ) 
+  {
+    if ( type.equalsIgnoreCase( Data.FUNCTION ) )
+      return new FunctionTable( d, true, group_id );
+    else
+      return new HistogramTable( d, true, group_id );
+  }
+
+
+  /**
+   *  Create an instance of a FunctionData or HistogramData object, from the
+   *  given Data object.  
+   *
+   *  @param  d         The Data object that provides the y-values, x_scale,
+   *                    errors and attributes for the new TabulatedData object
+   *  @param  group_id  The group_id to use for the new TabulatedData object
+   *
+   *  @return  a new TabulatedData object with values determined by d.
+   *           If the given Data object, d, is a histogram, a HistogramTable
+   *           will be returned, otherwise a FunctionTable will be returned. 
+   */
+  public static TabulatedData getInstance( Data d, int group_id )
+  {
+    if ( d.isHistogram() )
+      return new HistogramTable( d, true, group_id );
+    else
+      return new FunctionTable( d, true, group_id );
+  }
+
+
+
 /**
  *  Get a list of "Y" values for this Data object, resampled at the x
  *  values specified by the XScale.
@@ -204,127 +254,6 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
       else
         this.errors[i] = (float)Math.sqrt( -this.y_values[i] );
     }
-  }
-
-
-
-  /**
-    * Construct a new Data object by ADDING the specified value "x" to each
-    * "y" value of the  current Data object.  The error in the value "x" 
-    * is specified.  If the current Data object has an error array,
-    * the error values will be combined with the specified error and
-    * set in the new Data object.
-    *
-    * @param   x    The value to be added to the y values of the current 
-    *               data object
-    * @param   err  The error bound for the specified value "x".
-    */
-
-  public Data add( float x, float err )
-  {
-    TabulatedData temp = (TabulatedData)this.clone();
-    for ( int i = 0; i < temp.y_values.length; i++ )
-      temp.y_values[i] += x;
-    
-    if ( this.errors != null ) 
-      for ( int i = 0; i < temp.errors.length; i++ )
-        temp.errors[i] = (float) Math.sqrt( this.errors[i] * this.errors[i] +
-                                                       err * err ); 
-    else
-      temp.errors = null;
-
-    return temp; 
-  }
-
-
-  /**
-    * Construct a new Data object by SUBTRACTING the specified value "x" 
-    * from each "y" value of the  current Data object.  The error in the value 
-    * "x" is specified.  If the current Data object has an error array,
-    * the error values will be combined with the specified error and set
-    * in the Data object.
-    *
-    * @param   x    The value to be added to the y values of the current
-    *               data object
-    * @param   err  The error bound for the specified value "x".
-    */
-
-  public Data subtract( float x, float err )
-  {
-    TabulatedData temp = (TabulatedData)this.clone();
-    for ( int i = 0; i < temp.y_values.length; i++ )
-      temp.y_values[i] -= x;
-    
-    if ( this.errors != null )
-      for ( int i = 0; i < temp.errors.length; i++ )
-        temp.errors[i] = (float) Math.sqrt( this.errors[i] * this.errors[i] +
-                                                       err * err );
-    else
-      temp.errors = null;
-
-    return temp; 
-  }
-
-
-  /**
-    * Construct a new Data object by MULTIPLYING the specified value "x"
-    * times each "y" value of the  current Data object.  The error in the value
-    * "x" is specified.  If the current Data object has an error array,
-    * the error values will be combined with the specified error and set
-    * in the new Data object. 
-    *
-    * @param   x    The value to be multiplied times the y values of the current
-    *               data object
-    * @param   err  The error bound for the specified value "x".
-    */
-
-  public Data multiply( float x, float err )
-  {
-    TabulatedData temp = (TabulatedData)this.clone();
-    for ( int i = 0; i < temp.y_values.length; i++ )
-      temp.y_values[i] *= x;
-    
-    if ( this.errors != null )
-      for ( int i = 0; i < temp.errors.length; i++ )
-        temp.errors[i] = (float) Math.sqrt( 
-                         this.errors[i] * x * this.errors[i] * x + 
-                         err * this.y_values[i] * err * this.y_values[i] );
-    else
-      temp.errors = null;
-
-    return temp; 
-  }
-
-  /**
-    * Construct a new Data object by DIVIDING the specified value "x"
-    * into each "y" value of the  current Data object.  The error in the value
-    * "x" is specified.  If the current Data object has an error array,
-    * the error values will be combined with the specified error and set in
-    * the new Data object. 
-    *
-    * @param   x    The value to be divided into the y values of the current
-    *               data object
-    * @param   err  The error bound for the specified value "x".
-    */
-
-  public Data divide( float x, float err )
-  {
-    if ( x == 0.0f )
-      return null;
-
-    TabulatedData temp = (TabulatedData)this.clone();
-    for ( int i = 0; i < temp.y_values.length; i++ )
-      temp.y_values[i] /= x;
-    
-    if ( this.errors != null ) 
-      for ( int i = 0; i < temp.errors.length; i++ )
-        temp.errors[i] = temp.y_values[i] * (float) Math.sqrt( 
-          this.errors[i] / this.y_values[i] * this.errors[i] / this.y_values[i]+
-          err / x * err / x ); 
-    else
-      temp.errors = null;
-
-    return temp;
   }
 
 
