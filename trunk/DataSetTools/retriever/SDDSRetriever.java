@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/04/08 15:46:40  dennis
+ * Adds XDateTime operator to the DataSets so that the Date and Time
+ * corresponding to a particular elapsed time in seconds can be
+ * displayed.
+ *
  * Revision 1.3  2002/04/05 16:31:00  chatterjee
  * Fixed the label/units error appearing in the SelectedGraph view
  *
@@ -51,6 +56,7 @@ import SDDS.java.SDDS.*;
 import javax.swing.*;
 import java.lang.reflect.*;
 import javax.swing.filechooser.FileFilter;
+import DataSetTools.operator.DataSet.Information.XAxis.*;
 
 
 public class SDDSRetriever extends Retriever
@@ -152,6 +158,7 @@ public class SDDSRetriever extends Retriever
 
 
   	 DS[n_ds] = ds_factory[n_ds].getDataSet();
+         DS[n_ds].addOperator( new XDateTime() ); 
                                                       // While there are more Data 
                                                       // blocks with the same units
 
