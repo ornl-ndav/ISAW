@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/02/20 17:49:45  dennis
+ * Added getDocumentation() method. (Joshua Olson)
+ *
  * Revision 1.6  2002/11/27 23:31:01  pfpeterson
  * standardized header
  *
@@ -65,7 +68,8 @@ public class Scalar extends    GenericTOF_SCD {
   /**
    *  Construct operator to execute scalar.
    *
-   *  @param delta The error parameter for finding higher symmetry
+   *  @param dir    The directory to run in
+   *  @param delta  The error parameter for finding higher symmetry
    *  @param choice The number of the type of search to do
    */
   
@@ -126,13 +130,6 @@ public class Scalar extends    GenericTOF_SCD {
     addParameter(choiceparm);
   }
   
-  /**
-   * This returns the help documentation
-   */
-  public String getDocumentation(){
-    return super.getDocumentation();
-  }
-  
   /* --------------------------- getCommand ------------------------------ */
   /**
    * @return the command name to be used with script processor, in
@@ -141,6 +138,120 @@ public class Scalar extends    GenericTOF_SCD {
   public String getCommand(){
     return "Scalar";
   }
+
+ /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */                                                                             
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");                                        
+    s.append("@overview This operator is intended to run A.J. Schultz's ");
+    s.append("\"scalar\" program. This is not heavily tested but works ");
+    s.append("fairly well.");
+
+    s.append("@assumptions The criteria a) through d) in the first paragrah ");
+    s.append("of the 'Algorithm' section are met. \n");
+    s.append("'delta' can be successfully stored as a float. \n");
+    s.append("The parameter 'choice' is an integer that corresponds to one ");
+    s.append("of the symmetries in the vector 'choices'. \n");
+    s.append("The operating system is windows or linux. \n");
+    s.append("Scalar executable can be found. \n");
+
+    s.append("@algorithm The parameter 'dir' is a string indicating the ");
+    s.append("directory to run in.  The operator checks the following ");
+    s.append("conditions: \n ");
+    s.append("a) 'dir' is a non-empty string \n ");
+    s.append("b) the directory indicated by 'dir' exists and is valid\n ");
+    s.append("c) the log file in this directory exists \n ");
+    s.append("d) the log file can be read \n ");
+    s.append("If any of these conditions are not met, then an error string is");
+    s.append(" returned and execution of the operator terminates.  Otherwise ");
+    s.append("the operator continues. \n\n ");
+
+    s.append("The operator then checks to see if 'delta' can be successfully ");
+    s.append("stored as a float.  If it cannot, then an error string is ");
+    s.append("returned and execution of the operator terminates.  Otherwise ");
+    s.append("the operator continues. \n\n ");
+
+    s.append("The vector 'choices' is an existing variable of the class.  ");
+    s.append("This vector contains different types of symmetries.  These ");
+    s.append("symmetries are as follows: \n ");
+    s.append("1)  Highest Symmetry \n ");
+    s.append("2)  P - Cubic  \n ");
+    s.append("3)  F - Cubic  \n ");
+    s.append("4)  R - Hexagonal  \n ");
+    s.append("5)  I - Cubic  \n ");
+    s.append("6)  I - Tetragonal  \n ");
+    s.append("7)  I - Orthorombic  \n ");
+    s.append("8)  P - Tetragonal  \n ");
+    s.append("9)  P - Hexagonal  \n ");
+    s.append("10) C - Orthorombic \n ");
+    s.append("11) C - Monoclinic  \n ");
+    s.append("12) F - Orthorombic  \n ");
+    s.append("13) P - Orthorombic  \n ");
+    s.append("14) P - Monoclinic  \n ");
+    s.append("15) P - Triclinic \n ");
+    s.append("The parameter 'choice' is an integer that corresponds to one of "); 
+    s.append("the symmetries.  The operator determines at what position the ");
+    s.append("symmetry corresponding to 'choice' appears in the vector ");
+    s.append("'choices'. This position (ie maybe the 3rd or 8th position) is ");
+    s.append("stored as an int.  If that integer position is less than zero, ");
+    s.append("then it is made equal to zero. \n\n ");
+
+    s.append("'dir', 'delta', and the integer position and its ");
+    s.append("corresponding symmetry are printed to the console. \n\n ");
+
+    s.append("The operator then checks if the operating system is either ");
+    s.append("windows or linux.  If it is not, then an error string is ");
+    s.append("returned and execution of the operator terminates.  Otherwise ");
+    s.append("the operator continues. \n\n ");
+
+    s.append("The operator searches for scalar executable.  If none is ");
+    s.append("found, then an error string is returned and execution of the ");
+    s.append("operator terminates.  Otherwise the operator continues. \n\n ");
+
+    s.append("The scalar's name is printed to the console. \n\n\n ");
+
+    s.append("( The steps described in the next paragraph are an ");
+    s.append("overview of the remainder of the operator, and are all ");
+    s.append("done in a try block.  The types of errors that are caught ");
+    s.append("are described in the last paragraph of this section. ) \n\n ");
+
+    s.append("The value of 'delta' is entered ( by using SysUtil.writeline");
+    s.append("() ).  The symmetry we are searching for, indicated ");
+    s.append("by 'choice', is entered.  Now the results are calculated in ");
+    s.append("the form of a transformation matrix.  If these results cannot ");
+    s.append("be found, then an error string is returned and execution of the");
+    s.append(" operator terminates.  Otherwise a matrix is constructed, ");
+    s.append("containing the results. \n\n\n");
+
+    s.append("Some errors are caught at the end of the operator's execution.");
+    s.append("  Any input/output exception or InterruptedException is ");
+    s.append("caught.  An error string is returned if the process is not ");
+    s.append("ready to properly exit.  If an error string was established ");
+    s.append(" at some earlier time, then that string is returned.  Otherwise");
+    s.append(" it is safe to assume that everything went well, and the ");
+    s.append("transformation matrix is returned. ");
+
+    s.append("@param dir The directory to run in ");
+    s.append("@param delta The error parameter for finding higher symmetry ");
+    s.append("@param choice The number indicating what type of search to do ");
+    s.append("(part of a choicelist)");
+
+    s.append("@return If successful, this returns a matrix consisting of the ");
+    s.append("results. \n");
+    s.append("If the transformation matrix cannot be created or found, then ");
+    s.append("'null' is returned.");
+
+    s.append("@error Returns an appropriate error string when any of the ");
+    s.append("'Assumptions' are not true. ");
+    s.append("@error A few other errors are discussed in the last paragraph");
+    s.append(" of the 'Algorithm' section.");
+
+    return s.toString();
+  }  
   
   /* --------------------------- getResult ------------------------------- */
   /*
