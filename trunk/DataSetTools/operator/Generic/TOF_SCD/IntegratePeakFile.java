@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/05/04 19:02:25  dennis
+ * Now clears DataSetPG after getting value, to avoid memory leak.
+ *
  * Revision 1.3  2004/05/03 16:33:47  dennis
  * Removed checkReal() method and "choices" and "centering"
  * variables that are not used when integrating peaks from a file.
@@ -437,6 +440,8 @@ public class IntegratePeakFile extends GenericTOF_SCD{
 
     // first get the DataSet
     val=getParameter(0).getValue();
+    ((DataSetPG)getParameter(0)).clear();    // needed to avoid memory leak
+
     if( val instanceof DataSet){
       if(((DataSet)val).getNum_entries()>0)
         ds=(DataSet)val;

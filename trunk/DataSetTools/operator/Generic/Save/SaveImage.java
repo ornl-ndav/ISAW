@@ -1,4 +1,3 @@
-
 /*
  * File:SaveImage.java 
  *             
@@ -32,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/05/04 19:03:50  dennis
+ * Now clears DataSetPG after getting value, to avoid memory leak.
+ *
  * Revision 1.4  2004/03/15 19:33:52  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -114,6 +116,8 @@ public class SaveImage  extends GenericSave{
   */
   public Object getResult(){
     DataSet ds = ((DataSet)(getParameter(0).getValue()));
+    ((DataSetPG)getParameter(0)).clear();    // needed to avoid memory leak
+     
     String view = getParameter(1).getValue().toString();
     String SaveFileName = getParameter(2).getValue().toString();
     int width = ((IntegerPG)getParameter(3)).getintValue();
