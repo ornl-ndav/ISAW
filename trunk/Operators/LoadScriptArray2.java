@@ -1,5 +1,5 @@
 /*
- * File: SetupReader.java
+ * File LoadScriptArray2.java
  *
  * Copyright (C) 1999, Alok Chatterjee
  *
@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/02/26 23:03:02  hammonds
+ *  Fixed problem caused by leading white space.
+ *
  *  Revision 1.1  2003/02/26 17:47:39  hammonds
  *  Added this second version to allow ragged arrays to be loaded into a script.  This takes only a filename, it automatically skips lines starting with # and figures out when it hits the end of file and end of a line.
  *
@@ -130,7 +133,7 @@ public class LoadScriptArray2 extends GenericBatch implements Serializable
       while ( !f.eof() ) {
 	StringBuffer in_line = new StringBuffer();
 	in_line = new StringBuffer( f.read_line() );
-
+	StringUtil.trim(in_line);
 	if ( in_line.toString().startsWith("#") ){
 	  //Skip this line it is a comment.
 	}
@@ -187,7 +190,6 @@ public class LoadScriptArray2 extends GenericBatch implements Serializable
 	    }  // End of Integer Catch
 
 	  }  //End of while that tests for end of line
-	  //	    System.out.println(data_out);
 
 	  data_out_V.add(data_out.clone());
 	} // end of line go get the next
