@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/05/24 16:51:46  pfpeterson
+ *  modified to include UpstreamMonitorID, DownstreamMonitorID,
+ *  and NumBins.
+ *
  *  Revision 1.20  2002/02/22 20:49:24  pfpeterson
  *  Operator reorganization.
  *
@@ -111,6 +115,9 @@ public class GenericOperatorList implements Serializable
                                           "CentroidPeaks",
                                           "RealSpacePeaks",
                                           "WritePeaks",
+                                          "UpMonitorID",
+                                          "DnMonitorID",
+                                          "NumBins",
                                           "Pause",
                                           "Echo"    };
 
@@ -215,6 +222,15 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "SaveGSAS" ) )
       return new WriteGSAS();
+
+    else if ( op_name.equals("UpMonitorID"))
+        return new UpstreamMonitorID();
+
+    else if ( op_name.equals("DnMonitorID"))
+        return new DownstreamMonitorID();
+
+    else if ( op_name.equals("NumBins"))
+        return new NumBins();
 
     else if ( op_name.equals( "FindPeaks" ) )
       return new DataSetTools.operator.Generic.TOF_SCD.FindPeaks();
