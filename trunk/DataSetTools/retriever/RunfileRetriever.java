@@ -12,6 +12,11 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.7  2000/07/18 19:54:28  dennis
+ *  Added flexible routines for calculating average positions from either RAW
+ *  or EFFECTIVE values and optionally weighting the values by the corresponding
+ *  solid angles.
+ *
  *  Revision 1.6  2000/07/17 20:54:19  dennis
  *  Temporarily added EnergyFromMonitorDS() operator to monitor DataSets
  *
@@ -344,7 +349,8 @@ public class RunfileRetriever extends    Retriever
         {
            raw_spectrum = run_file.Get1DSpectrum( group_id );
 
-//         ShowGroupDetectorInfo( group_id, histogram_num );
+   //      if ( group_id == 7 || group_id == 52 )
+   //        ShowGroupDetectorInfo( group_id, histogram_num );
 
           if ( raw_spectrum.length >= 1 )
           {
@@ -520,12 +526,22 @@ public class RunfileRetriever extends    Retriever
     }
 
     // Detector position ..........
-//  angle      = (float)run_file.DetectorAngle(group_members[0], histogram_num);
-    angle      = (float)getAverageAngle(group_members, histogram_num);
- 
+    //
+    // For now, form weighted average of raw detector angles and heights,
+    // but use the effective (not raw) flight path length
+    float solid_angles[] = GrpSolidAngles( group_id );
+    angle      = getAverageAngle( group_members, 
+                                  histogram_num, 
+                                  solid_angles,
+                                  true  );   
     angle      *= (float)(Math.PI / 180.0);
-    height     = getAverageHeight( group_members );
-    final_path = (float)run_file.FlightPath( group_members[0], histogram_num );
+
+    height     = getAverageHeight( group_members, solid_angles, true );
+
+    final_path = getAverageFlightPath( group_members, 
+                                       histogram_num, 
+                                       solid_angles,
+                                       false );
     float r    = (float)Math.sqrt( final_path * final_path - height * height );
     position.setCylindricalCoords( r, angle, height );
 
@@ -557,7 +573,7 @@ public class RunfileRetriever extends    Retriever
     //float_attr =new FloatAttribute(Attribute.SOLID_ANGLE,
     //                               run_file.SolidAngle( group_id ) );
     float_attr =new FloatAttribute(Attribute.SOLID_ANGLE,
-                                   SolidAngle( group_id ) );
+                                   GrpSolidAngle( group_id ) );
     attr_list.setAttribute( float_attr );
 
     // Efficiency Factor 
@@ -581,21 +597,100 @@ public class RunfileRetriever extends    Retriever
   }
 
 
-
  /**
-  *  get the average "z" position for the detectors that are in the specified
+  *  get the average flight path for the detectors that are in the specified
   *  group.  This routine should probably be put in the IPNS Runfile package.
   *
-  *  @param  ids   Array of detector ids for this group
-  *  @return the averages of the "z" positions of the detectors in this group
-  */ 
-  private float getAverageHeight( int ids[] )
+  *  @param  ids      Array of detector ids for this group
+  *  @param  hist_num The histogram number for which the flight path is to
+  *                   be found.
+  *  @param  raw      If true, get the raw flight path, otherwise get the
+  *                   effective flight path.
+  *
+  *  @return the averages of the flight paths of the detectors in this group
+  */
+  private float getAverageFlightPath( int ids[], int hist_num, boolean raw )
   {
     float total = 0;
     try
     {
       for ( int i = 0; i < ids.length; i++ )
-        total += run_file.DetectorHeight( ids[i] );
+        if ( raw )
+          total += run_file.RawFlightPath( ids[i] );
+        else
+          total += run_file.FlightPath( ids[i], hist_num );
+    }
+    catch ( Exception e )
+    {
+      System.out.println("Exception in RunfileRetriever.getAverageFlightPath:");
+      System.out.println( "Exception is " + e );
+    }
+
+    return total / ids.length;
+  }
+
+
+ /**
+  *  get the WEIGHTED average flight path for the detectors that are in the 
+  *  specified group, weighted by the solid angle of the detectors.  
+  *  This routine should probably be put in the IPNS Runfile package.
+  *
+  *  @param  ids      Array of detector ids for this group
+  *  @param  hist_num The histogram number for which the flight path is to
+  *                   be found.
+  *  @param  solid_angles  Array of detector solid angles for this group
+  *  @param  raw      If true, get the raw flight path, otherwise get the
+  *                   effective flight path.
+  *
+  *  @return the averages of the flight paths of the detectors in this group
+  */
+  private float getAverageFlightPath( int      ids[], 
+                                      int      hist_num,
+                                      float    solid_angles[],
+                                      boolean  raw )
+  {
+    float total = 0;
+    float sum   = 0;
+    try
+    {
+      for ( int i = 0; i < ids.length; i++ )
+      {
+        if ( raw )
+          total += solid_angles[i] * run_file.RawFlightPath( ids[i] );
+        else
+          total += solid_angles[i] * run_file.FlightPath( ids[i], hist_num );
+        sum   += solid_angles[i];
+      }
+    }
+    catch ( Exception e )
+    {
+      System.out.println("Exception in RunfileRetriever.getAverageFlightPath:");      System.out.println( "Exception is " + e );
+    }
+
+    return total / sum;
+  }
+
+
+ /**
+  *  get the average "z" position for the detectors that are in the specified
+  *  group.  This routine should probably be put in the IPNS Runfile package.
+  *
+  *  @param  ids      Array of detector ids for this group
+  *  @param  raw      If true, get the raw "z" value, otherwise get the
+  *                   effective "z" value.
+  *
+  *  @return the averages of the "z" positions of the detectors in this group
+  */ 
+  private float getAverageHeight( int ids[], boolean raw )
+  {
+    float total = 0;
+    try
+    {
+      for ( int i = 0; i < ids.length; i++ )
+        if ( raw )
+          total += run_file.RawDetectorHeight( ids[i] );
+        else
+          total += run_file.DetectorHeight( ids[i] );
     }
     catch ( Exception e )
     {
@@ -607,6 +702,43 @@ public class RunfileRetriever extends    Retriever
   }
 
 
+ /**
+  *  get the WEIGHTED average "z" position for the detectors that are in 
+  *  the specified group, weighted by the solid angle of the detectors.  
+  *  This routine should probably be put in the IPNS Runfile package.
+  *
+  *  @param  ids           Array of detector ids for this group
+  *  @param  solid_angles  Array of detector solid angles for this group
+  *  @param  raw           If true, get the raw "z" value, otherwise get the
+  *                        effective "z" value.
+  *  
+  *  @return the averages of the "z" positions of the detectors in this group
+  */
+  private float getAverageHeight(int ids[], float solid_angles[], boolean raw)
+  {
+    float total = 0;
+    float sum   = 0;
+    try
+    {
+      for ( int i = 0; i < ids.length; i++ )
+      {
+        if ( raw )
+          total += solid_angles[i] * run_file.RawDetectorHeight( ids[i] );
+        else
+          total += solid_angles[i] * run_file.DetectorHeight( ids[i] );
+        sum   += solid_angles[i];
+      }
+    }
+    catch ( Exception e )
+    {
+      System.out.println( "Exception in RunfileRetriever.getAverageHeight:" );
+      System.out.println( "Exception is " + e );
+    }
+
+    return total / sum;
+  }
+
+
 
  /**
   *  get the average horizontal angle for the detectors that are in the 
@@ -614,21 +746,24 @@ public class RunfileRetriever extends    Retriever
   *  Runfile package.
   *
   *  @param  ids   Array of detector ids for this group
+  *  @param  hist_num      The histogram number for which the average angle
+  *                        is to be found
+  *  @param  raw           If true, get the raw angle, otherwise get the
+  *                        effective angle.
+  *
   *  @return the averages of the horizontal angles of the detectors in this 
   *          group
   */
-  private float getAverageAngle( int ids[], int hist_num )
+  private float getAverageAngle( int ids[], int hist_num, boolean raw )
   {
     float total = 0;
     try
     {
       for ( int i = 0; i < ids.length; i++ )
-      {
-//        total += run_file.DetectorAngle( ids[i], hist_num );
-        total += run_file.RawDetectorAngle( ids[i] );
-//        System.out.println("ID = " + ids[i] + 
-//                          " Angle = " + run_file.RawDetectorAngle( ids[i] ) );
-      }
+        if ( raw )
+          total += run_file.RawDetectorAngle( ids[i] );
+        else
+          total += run_file.DetectorAngle( ids[i], hist_num );
     }
     catch ( Exception e )
     {
@@ -637,6 +772,50 @@ public class RunfileRetriever extends    Retriever
     }
 
     return total / ids.length;  
+  }
+
+
+
+ /**
+  *  get the WEIGHTED average horizontal angle for the detectors that are in 
+  *  the specified group, weighted by the solid angle of the detectors.  
+  *  This routine should probably be put in the IPNS Runfile package.
+  *
+  *  @param  ids           Array of detector ids for this group
+  *  @param  hist_num      The histogram number for which the average angle
+  *                        is to be found
+  *  @param  solid_angles  Array of detector solid angles for this group
+  *  @param  raw           If true, get the raw angle, otherwise get the
+  *                        effective angle.
+  *
+  *  @return the averages of the horizontal angles of the detectors in this
+  *          group
+  */
+  private float getAverageAngle( int      ids[],  
+                                 int      hist_num, 
+                                 float    solid_angles[],
+                                 boolean  raw )
+  {
+    float total = 0;
+    float sum   = 0;
+    try
+    {
+      for ( int i = 0; i < ids.length; i++ )
+      {
+        if ( raw )
+          total += solid_angles[i] * run_file.RawDetectorAngle( ids[i] );
+        else
+          total += solid_angles[i] * run_file.DetectorAngle( ids[i], hist_num );
+        sum   += solid_angles[i];
+      }
+    }
+    catch ( Exception e )
+    {
+      System.out.println( "Exception in RunfileRetriever.getAverageAngle:" );
+      System.out.println( "Exception is " + e );
+    }
+
+    return total / sum;
   }
 
 
@@ -649,13 +828,61 @@ public class RunfileRetriever extends    Retriever
   *
   *  @return The total solid angle 
   */
-  private float SolidAngle( int group_id )
+  private float GrpSolidAngle( int group_id )
   {
     int ids[] = run_file.IdsInSubgroup( group_id );
 
     float solid_angle = 0;
-    int   id,
-          type;
+    int   id;
+
+    for ( int det_count = 0; det_count < ids.length; det_count++ )
+    {
+      id     = ids[ det_count ];
+      solid_angle += DetSolidAngle( id );
+    }
+
+    return solid_angle; 
+  }
+
+
+ /**
+  *
+  *  Calculate array of solid angles for the list of detectors in a group
+  *
+  *  @param  group_id  The id of the group for which the list of detector
+  *                    whose solid angle is to be computed.  *
+  *
+  *  @return The list of solid angles subtended by the detectors in the 
+  *          specified group.
+  */
+  private float[] GrpSolidAngles( int group_id )
+  {
+    int   ids[]          = run_file.IdsInSubgroup( group_id );
+    float solid_angles[] = new float[ ids.length ];
+
+    int   id;
+    for ( int det_count = 0; det_count < ids.length; det_count++ )
+    {
+      id     = ids[ det_count ];
+      solid_angles[ det_count ] = DetSolidAngle( id );
+    }
+
+    return solid_angles;
+  }
+
+
+ /**
+  *
+  *  Calculate the solid angle for the specified single detector
+  *
+  *  @param  det_id  The id of the detector whose solid angle is to be computed.
+  *
+  *  @return The solid angle subtended by the detector.
+  */
+  private float DetSolidAngle( int det_id )
+  {
+    float solid_angle = 0;
+    int   type;
     float area,
           length,
           width,
@@ -664,31 +891,27 @@ public class RunfileRetriever extends    Retriever
           nom_height,
           nom_dist;
 
-    for ( int det_count = 0; det_count < ids.length; det_count++ )
-    {
-      id     = ids[ det_count ];
-      type   = run_file.DetectorType( id );
-      length = Runfile.LENGTH[ type ] / 100;   // convert cm to m
-      width  = Runfile.WIDTH[ type ] / 100;    // convert cm to m
+    type   = run_file.DetectorType( det_id );
+    length = Runfile.LENGTH[ type ] / 100;   // convert cm to m
+    width  = Runfile.WIDTH[ type ] / 100;    // convert cm to m
 
-      nom_radius = (float) run_file.RawFlightPath( id );           
-      nom_height = (float) run_file.DetectorHeight( id );           
-      nom_dist   = (float) Math.sqrt( nom_radius * nom_radius +
+    nom_radius = (float) run_file.RawFlightPath( det_id );
+    nom_height = (float) run_file.RawDetectorHeight( det_id );
+    nom_dist   = (float) Math.sqrt( nom_radius * nom_radius +
                                       nom_height * nom_height );
 
-      raw_dist = (float) Math.sqrt( nom_dist * nom_dist -
-                                    length * length / 12.0 );
-      solid_angle += length*width / (raw_dist * raw_dist);  
-//      System.out.println("nom_dist = " + nom_dist +
-//                         "  raw_dist = " + raw_dist + 
-//                         " length = " + length +
-//                         " width = " + width );
-    }
+    raw_dist = (float) Math.sqrt( nom_dist * nom_dist -
+                                  length * length / 12.0 );
+    solid_angle += length*width / (raw_dist * raw_dist);
+//  System.out.println("nom_dist = " + nom_dist +
+//                     "  raw_dist = " + raw_dist +
+//                     " length = " + length +
+//                     " width = " + width  +
+//                     " solid ang = " + solid_angle );
 
-//    System.out.println("Group ID: "+ group_id + " SA = " + solid_angle );
-    return solid_angle; 
-
+    return solid_angle;
   }
+
 
 
 /**
@@ -729,39 +952,88 @@ public class RunfileRetriever extends    Retriever
         solid_angle = length*width / (raw_dist * raw_dist);
 
         System.out.println("ID = " + ids[i] +
-           "  Ang= " + (float)run_file.RawDetectorAngle( ids[i] ) +
-           "  Ht= " + (float)nom_height +
+           "  RawAng= " + (float)run_file.RawDetectorAngle( ids[i] ) +
+           "  EffAng= " + (float)run_file.DetectorAngle( ids[i], hist ) +
+           "  RawHt= " + (float)nom_height +
+           "  EffHt= " + (float)run_file.DetectorHeight( id ) +
            "  Pth= " + (float)nom_radius +
+           "  EffPth= " + (float)run_file.FlightPath( id, hist ) +
            "  RawD= " + raw_dist +
            "  SAng= " + solid_angle );
         total_solid_angle += solid_angle;
       }
-      System.out.println("Group Effective Values:" );
+      System.out.println("Total solid angle = " + total_solid_angle );
+
+      System.out.println("Runfile's Group Effective Values:" );
       System.out.println(
            "Ang= " + (float)run_file.DetectorAngle( ids[0], hist ) +
            "  Ht= " +(float)run_file.DetectorHeight( ids[0] ) +
-           "  Pth= " + (float)run_file.FlightPath( ids[0], hist ) +
-           "  NomD= " + (float) nom_dist +
-           "  SAng = " + total_solid_angle );
+           "  Pth= " + (float)run_file.FlightPath( ids[0], hist ) ); 
 
+      // Show position using RAW data and WEIGHTED average
+      float solid_angs[] = GrpSolidAngles( group_id );
       DetectorPosition position = new DetectorPosition();
 
-      float angle  = (float)run_file.DetectorAngle( ids[0], hist );
+      float angle  = getAverageAngle( ids, hist, solid_angs, true );
       angle       *= (float)(Math.PI / 180.0);
-      float height = getAverageHeight( ids );
-      float path   = (float)run_file.FlightPath( ids[0], hist );
+      float height = getAverageHeight( ids, solid_angs, true );
+      float path   = getAverageFlightPath( ids, hist, solid_angs, true );
       float r      = (float)Math.sqrt( path * path - height * height );
       position.setCylindricalCoords( r, angle, height );
 
-    // Show effective position
       float sphere_coords[] = position.getSphericalCoords();
+      System.out.println( "Raw Position, weighted by solid angle ............");
+      System.out.println( " R = " + sphere_coords[0] +
+                          " Theta = " + sphere_coords[1]*180/3.14159265f +
+                          " Phi = " + sphere_coords[2]*180/3.14159265f );
+
+      // Show effective position using RAW data and simple average
+      angle  = getAverageAngle( ids, hist, true );
+      angle *= (float)(Math.PI / 180.0);
+      height = getAverageHeight( ids, true );
+      path   = getAverageFlightPath( ids, hist, true );
+      r      = (float)Math.sqrt( path * path - height * height );
+      position.setCylindricalCoords( r, angle, height );
+
+      sphere_coords = position.getSphericalCoords();
+      System.out.println( "Raw Position, averaged ..................");
+      System.out.println( " R = " + sphere_coords[0] +
+                          " Theta = " + sphere_coords[1]*180/3.14159265f +
+                          " Phi = " + sphere_coords[2]*180/3.14159265f );
+
+
+      // Show position using EFFECTIVE data and WEIGHTED average
+      angle  = getAverageAngle( ids, hist, solid_angs, false );
+      angle *= (float)(Math.PI / 180.0);
+      height = getAverageHeight( ids, solid_angs, false );
+      path   = getAverageFlightPath( ids, hist, solid_angs, false );
+      r      = (float)Math.sqrt( path * path - height * height );
+      position.setCylindricalCoords( r, angle, height );
+
+      sphere_coords = position.getSphericalCoords();
+      System.out.println( "Eff Position, weighted by solid angle ...........");
+      System.out.println( " R = " + sphere_coords[0] +
+                          " Theta = " + sphere_coords[1]*180/3.14159265f +
+                          " Phi = " + sphere_coords[2]*180/3.14159265f );
+
+      // Show position using EFFECTIVE data and simple average
+      angle  = getAverageAngle( ids, hist, false );
+      angle *= (float)(Math.PI / 180.0);
+      height = getAverageHeight( ids, false );
+      path   = getAverageFlightPath( ids, hist, false );
+      r      = (float)Math.sqrt( path * path - height * height );
+      position.setCylindricalCoords( r, angle, height );
+
+      sphere_coords = position.getSphericalCoords();
+      System.out.println( "Eff Position, averaged ..................");
       System.out.println( " R = " + sphere_coords[0] +
                           " Theta = " + sphere_coords[1]*180/3.14159265f +
                           " Phi = " + sphere_coords[2]*180/3.14159265f );
     }
     catch ( Exception e )
     {
-      System.out.println( "Exception in RunfileRetriever.getAverageAngle:" );
+      System.out.println( 
+                 "Exception in RunfileRetriever.ShowGroupDetectorInfo:" );
       System.out.println( "Exception is " + e );
     }
   }
