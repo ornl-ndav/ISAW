@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2004/05/03 16:31:18  dennis
+ *  Removed getValidDataSet() method that is no longer used.
+ *
  *  Revision 1.25  2004/03/15 06:10:51  dennis
  *  Removed unused import statements.
  *
@@ -736,18 +739,6 @@ public class LiveDataManager extends    Thread
     }
   }
 
-/* --------------------------- getValidDataSet -------------------------- */
-/*
- *  Get a valid DataSet that will be the specified DataSet if it is non-null
- *  and will be a copy of the EMPTY_DATASET if the specified DataSet is null 
- */
-  private DataSet getValidDataSet( DataSet ds )
-  {
-    if ( ds == null )
-      return (DataSet)DataSet.EMPTY_DATA_SET.clone();
-
-    return ds; 
-  }
 
 /* --------------------------- fixTotalCounts -------------------------- */
 /*
