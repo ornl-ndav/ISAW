@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/02/16 05:25:04  millermi
+ * - Added methods getErrors(), setErrors(), setSquareRootErrors(),
+ *   and getErrorValue() which allow an array of errors to be
+ *   associated with the data in that array.
+ * - ******THE METHODS ABOVE STILL NEED TO HAVE A MEANINGFUL
+ *   IMPLEMENTATION WRITTEN FOR THEM.******
+ *
  * Revision 1.9  2004/02/07 20:13:50  rmikk
  * Fixed Error when initial fields are not present
  *
@@ -696,6 +703,128 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
         }
     
         public void setAllValues(float f) {} 
+  
+      /**
+       * Set the error values that correspond to the data. The dimensions of the
+       * error values array should match the dimensions of the data array. Zeroes
+       * will be used to fill undersized error arrays. Values that are in an array
+       * that exceeds the data array will be ignored.
+       *
+       *  @param  error_values The array of error values corresponding to the data.
+       *  @return true if data array dimensions match the error array dimensions.
+       */
+       public boolean setErrors( float[][] error_values )
+       {/*
+         errors_set = true;
+         // by setting these values, do not use the calculated
+         // square-root errors
+         setSquareRootErrors( false );
+         
+         // Check to see if error values array is same size as data array.
+         // If so, reference the array passed in.
+         if( error_values.length == getNumRows() &&
+             error_values[0].length == getNumColumns() )
+         {
+           errorArray = error_values;
+           return true;
+         }
+         // If dimensions are not equal, copy values that are valid into an array
+         // the same size as the data.
+         else
+         {
+           errorArray = new float[getNumRows()][getNumColumns()];
+           // If error_values is too large, the extra values are ignored
+           // by these "for" loops. If too small, the zeroes are inserted.
+           for( int row = 0; row < getNumRows(); row++ )
+           {
+             for( int col = 0; col < getNumColumns(); col++ )
+             {
+               if( row >= error_values.length || col >= error_values[0].length )
+               {
+        	 errorArray[row][col] = 0;
+               }
+               else
+               {
+        	 errorArray[row][col] = error_values[row][col];
+               }
+             }
+           }
+           return false;
+         }*/
+         return false; // remove if uncommenting code above
+       }
+       
+      /**
+       * Get the error values corresponding to the data. setSquareRootErrors(true)
+       * or setErrors(array) must be called to have meaningful values returned.
+       * By default, null will be returned. If square-root values are
+       * desired and the data value is negative, the square-root of the positive
+       * value will be returned. If setErrors() was called, then the error array
+       * passed in will be returned (this array will be always have the same
+       * dimensions as the data, it will be modified if the dimensions are
+       * different).
+       *
+       *  @return error values of the data.
+       */
+       public float[][] getErrors()
+       {/*
+         // if setSquareRootErrors(true) was called
+         if( use_sqrt )
+         {
+           float[][] sqrt_errors = new float[getNumRows()][getNumColumns()];
+           for( int row = 0; row < getNumRows(); row++ )
+           {
+             for( int col = 0; col < getNumColumns(); col++ )
+             {
+               sqrt_errors[row][col] = (float)
+        		 Math.sqrt( (double)Math.abs( getDataValue(row,col) ) );
+             }
+           }
+           return sqrt_errors;
+         }
+         // if the errors were set using the setErrors() method
+         if( errors_set )
+           return errorArray;
+         // if neither use_sqrt nor errors_set, return null.*/
+         return null;
+       }
+       
+      /**
+       * Use this method to specify whether to use error values that were passed
+       * into the setErrors() method or to use the square-root of the data value.
+       *
+       *  @param  use_sqrt_errs If true, use square-root.
+       *			If false, use set error values if they exist.
+       */
+       public void setSquareRootErrors( boolean use_sqrt_errs )
+       {
+         //use_sqrt = use_sqrt_errs;
+       }
+      
+      /**
+       * Get an error value for a given row and column. Returns Float.NaN if
+       * row or column are invalid.
+       *
+       *  @param  row Row number.
+       *  @param  column Column number.
+       *  @return error value for data at [row,column]. If row or column is invalid,
+       *	  or if setSquareRootErrors() or setErrors is not called,
+       *	  Float.NaN is returned.
+       */
+       public float getErrorValue( int row, int column )
+       {/*
+         // make sure row/column are valid values.
+         if( row >= getNumRows() || column >= getNumColumns() )
+           return Float.NaN;
+         // return sqrt error value if specified.
+         if( use_sqrt )
+           return (float)Math.sqrt( (double)Math.abs( getDataValue(row,column) ) );
+         // if the errors were set using the setErrors() method, return them
+         if( errors_set )
+           return errorArray[row][column];
+         // if neither use_sqrt or errors_set, then return NaN*/
+         return Float.NaN;
+       }
 
         //--------------------------------- Internal Methods -----------------
         /** 
