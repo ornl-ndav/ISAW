@@ -3,10 +3,37 @@
  *             
  * This operator resamples a DataSet containing spectra from detectors at
  * a variety of different angles to a set of spectra at a uniform set of angles.
- */
-
-/*
- * $LOG:$
+ *
+ *
+ * $Log$
+ * Revision 1.4  2000/11/10 22:41:34  dennis
+ *    Introduced additional abstract classes to better categorize the operators.
+ * Existing operators were modified to be derived from one of the new abstract
+ * classes.  The abstract base class hierarchy is now:
+ *
+ *  Operator
+ *
+ *   -GenericOperator
+ *      --GenericLoad
+ *      --GenericBatch
+ *
+ *   -DataSetOperator
+ *     --DS_EditList
+ *     --DS_Math
+ *        ---ScalarOp
+ *        ---DataSetOp
+ *        ---AnalyzeOp
+ *     --DS_Attribute
+ *     --DS_Conversion
+ *        ---XAxisConversionOp
+ *        ---YAxisConversionOp
+ *        ---XYAxesConversionOp
+ *     --DS_Special
+ *
+ *    To allow for automatic generation of hierarchial menus, each new operator
+ * should fall into one of these categories, or a new category should be
+ * constructed within this hierarchy for the new operator.
+ *
  *
  */
 
@@ -28,9 +55,11 @@ import  DataSetTools.util.*;
   *  produce a two-dimensional set of values which will be cut into rows
   *  to produce a new DataSet.
   *
+  *  @see YAxisConversionOp
+  *
   */
 
-public class TrueAngle extends    DataSetOperator 
+public class TrueAngle extends    YAxisConversionOp 
                        implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -276,6 +305,11 @@ public class TrueAngle extends    DataSetOperator
       else
         new_data = new Data( x_scale, y_vals[row], row+1 );
 
+      raw_angle = row * (max_angle - min_angle) / n_bins + min_angle;
+      Attribute angle_attr = new FloatAttribute( Attribute.RAW_ANGLE, 
+                                                 raw_angle );
+      new_data.setAttribute( angle_attr ); 
+
       new_ds.addData_entry( new_data );      
     }
 
@@ -296,6 +330,21 @@ public class TrueAngle extends    DataSetOperator
     new_op.setDataSet( this.getDataSet() );
 
     return new_op;
+  }
+
+
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    TrueAngle op = new TrueAngle();
+
+    String list[] = op.getCategoryList();
+    System.out.println( "Categories are: " );
+    for ( int i = 0; i < list.length; i++ )
+      System.out.println( list[i] );
   }
 
 }

@@ -2,6 +2,34 @@
  * @(#)SpectrometerScatteringFunction.java   0.1  2000/07/26   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.8  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
+ *
  *  Revision 1.7  2000/10/03 22:09:55  dennis
  *  Now adds the operators:
  *    SpectrometerFrequencyDistributionFunction
@@ -49,7 +77,7 @@ import  DataSetTools.math.*;
   *  @see Operator
   */
 
-public class SpectrometerScatteringFunction extends    DataSetOperator 
+public class SpectrometerScatteringFunction extends    DS_Special 
                                             implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */

@@ -1,12 +1,36 @@
 /*
  * @(#)GetDSAttribute.java   00-07-12  Ruth Mikkelson
  *             
- * This operator sets a DataSet Attribute
+ * This operator gets a DataSet Attribute
  *
- *  
- * $Log$
- * Revision 1.3  2000/11/07 15:50:33  dennis
- * Major rewrite... properly supports getting selections.
+ *  $Log$
+ *  Revision 1.4  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
  *
  *
  */
@@ -19,14 +43,13 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 
 /**
-  *  Allows the user to set attributes
+  *  Allows the user to get attributes on a DataSet
   *
-  *  @see DataSetOperator
-  *  @see Operator
+  *  @see DS_Attribute
   */
 
-public class GetDSAttribute extends    DataSetOperator 
-                                   implements Serializable
+public class GetDSAttribute extends  DS_Attribute 
+                                     implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
@@ -48,14 +71,13 @@ public class GetDSAttribute extends    DataSetOperator
    *  parameter values so that the operation can be invoked immediately 
    *  by calling getResult().
    *
-   *  @param  ds          The DataSet to which the operation is applied
+   *  @param  ds       The DataSet to which the operation is applied
    *  @parm   Attrib   The Attribute to be set.
    *
    */
 
-  public GetDSAttribute  ( DataSet    ds,
-                         AttributeNameString  Attrib
-			   )
+  public GetDSAttribute  ( DataSet              ds,
+                           AttributeNameString  Attrib )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -63,8 +85,6 @@ public class GetDSAttribute extends    DataSetOperator
 
     Parameter parameter = getParameter( 0 );
     parameter.setValue( Attrib);
-
-    
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
@@ -89,7 +109,8 @@ public class GetDSAttribute extends    DataSetOperator
     parameters = new Vector();  // must do this to clear any old parameters
 
 
-    Parameter parameter = new Parameter( "Attribute?", new AttributeNameString("") );
+    Parameter parameter = new Parameter( "Attribute?", 
+                                          new AttributeNameString("") );
     addParameter( parameter );
   }
 
@@ -123,6 +144,20 @@ public class GetDSAttribute extends    DataSetOperator
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    GetDSAttribute op = new GetDSAttribute();
+
+    String list[] = op.getCategoryList();
+    System.out.println( "Categories are: " );
+    for ( int i = 0; i < list.length; i++ )
+      System.out.println( list[i] );
   }
 
 }

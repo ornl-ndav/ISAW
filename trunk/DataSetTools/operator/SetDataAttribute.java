@@ -3,6 +3,35 @@
  *             
  * This operator sets a Data Attribute on a particular Data block in a DataSet
  *
+ *  $Log$
+ *  Revision 1.4  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
+ *
  *
  */
 
@@ -16,12 +45,11 @@ import  DataSetTools.util.*;
 /**
   *  Allows the user to set attributes
   *
-  *  @see DataSetOperator
-  *  @see Operator
+  *  @see DS_Attribute 
   */
 
-public class SetDataAttribute extends    DataSetOperator 
-                                   implements Serializable
+public class SetDataAttribute extends    DS_Attribute 
+                              implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
