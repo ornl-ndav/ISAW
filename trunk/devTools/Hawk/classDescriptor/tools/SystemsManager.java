@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 21:07:42  kramer
+ * Added methods for getting the preferences and pixmap directories.
+ * Added methods for getting icons.
+ * Modified the method printStackTrace(Throwable e) to not print an error log.
+ *
  * Revision 1.3  2004/03/12 19:46:20  bouzekc
  * Changes since 03/10.
  *
@@ -44,10 +49,10 @@
 package devTools.Hawk.classDescriptor.tools;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.net.URL;
 
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 /**
@@ -82,6 +87,79 @@ public class SystemsManager
 	}
 	
 	/**
+	 * Get Hawk's directory for storing preferences files.
+	 * @return Hawk's directory for preferencesfiles.
+	 */
+	public static String getClassDescriptorPreferencesDirectory()
+	{
+		return (getClassDescriptorHomeDirectory()+System.getProperty("file.separator")+"preferences");
+	}
+	
+	/**
+	 * Get the directory in the jar file where the pixmaps are stored.  This is not a directory in the .hawk directory in the 
+	 * user's home directory.  Instead this is a directory in the same area as the .java and .class files.  Also, the directory 
+	 * returned ends with "/".
+	 */
+	public static String getPixmapDirectory()
+	{
+		//return ("devTools"+System.getProperty("file.separator")+"Hawk"+System.getProperty("file.separator")+"classDescriptor"+System.getProperty("file.separator")+"pixmaps");
+		return "devTools/Hawk/classDescriptor/pixmaps/";
+	}
+	
+	/**
+	 * Get an ImageIcon that contains a transparent pixmap.
+	 */
+	public static ImageIcon getBlankIcon()
+	{
+		return getImageIconOrBlankIcon("blank.png");
+	}
+		
+	/**
+	 * Get an image icon representing the picture at the location given.  This method 
+	 * can obtain a picture from inside a jar file.
+	 * @param location The location of the picture.
+	 * @return An ImageIcon representing the picture or null if the picture could not be found.
+	 */
+	public static ImageIcon getImageIconFromAbsolutePath(String location)
+	{
+		URL imageURL = ClassLoader.getSystemClassLoader().getResource(location);
+		ImageIcon icon = null;
+		if (imageURL != null)
+			icon = new ImageIcon(imageURL);
+		
+		return icon;
+	}
+	
+	/**
+	 * Gets an ImageIcon encapsulating a pixmap from the pixmap directory.  This method looks in the directory 
+	 * specified by the method SystemsManager.getPixmapDirectory() for the pixmap with the filename "name".
+	 * @param name The name of the image file.
+	 * @return An ImageIcon holding the image specified by the pixmap with the filename "name."  If the file could 
+	 * not be found, null is returned.
+	 */
+	public static ImageIcon getImageIconOrNull(String name)
+	{
+		String location = SystemsManager.getPixmapDirectory()+name;
+		ImageIcon icon = SystemsManager.getImageIconFromAbsolutePath(location);
+		return icon;
+	}
+	
+	/**
+	 * Gets an ImageIcon encapsulating a pixmap from the pixmap directory.  This method looks in the directory 
+	 * specified by the method SystemsManager.getPixmapDirectory() for the pixmap with the filename "name".
+	 * @param name The name of the image file.
+	 * @return An ImageIcon holding the image specified by the pixmap with the filename "name."  If the file could 
+	 * not be found, the file "blank.png" (a transparent pixmap) will be used.
+	 */
+	public static ImageIcon getImageIconOrBlankIcon(String name)
+	{
+		ImageIcon icon = SystemsManager.getImageIconFromAbsolutePath(SystemsManager.getPixmapDirectory()+name);
+		if (icon == null)
+			icon = SystemsManager.getImageIconFromAbsolutePath(SystemsManager.getPixmapDirectory()+"blank.png");
+		return icon;
+	}
+		
+	/**
 	 * This gets the file extension for native Hawk files with a period in from of it.
 	 * @return .hjp
 	 */
@@ -99,13 +177,23 @@ public class SystemsManager
 		return "hjp";
 	}
 	
+	/**
+	 * Returns true if the file ends with .hjp and false otherwise.  This method 
+	 * does not validate if the file was created by Hawk or if its data is corrupt.
+	 * @param file The file in question.
+	 * @return True if the file ends in .hjp and false otherwise.
+	 */
+	public static boolean isAHawkNativeFile(File file)
+	{
+		return file.getAbsolutePath().endsWith(getHawkFileExtension());
+	}	
 		/**
 		 * Get the current version.
 		 * @return The version number.
 		 */
 		public static String getVersion()
 		{
-			return "0.8.02.3-3";
+			return "0.8.02.4beta";
 		}
 		
 		/**
@@ -114,7 +202,7 @@ public class SystemsManager
 		 */
 		public static String getBuildDate()
 		{
-			return "Wednesday March 10, 2004 at 4:30 PM CST";
+			return "Monday May 17, 2004 at 3:14 PM CST";
 		}
 		
 		/**
@@ -157,6 +245,14 @@ public class SystemsManager
 		 */
 		public static void printStackTrace(Throwable e)
 		{
+			System.err.println(e);
+			System.out.println();
+			System.out.println(e.getClass().getName());
+			StackTraceElement[] traceArray = e.getStackTrace();
+			for (int i = 0; i < traceArray.length; i++)
+				System.out.println("  "+traceArray[i]);
+				
+			/*
 			String filename = System.getProperty("user.home")+System.getProperty("file.separator")+System.currentTimeMillis()+"HawkErrorLog.txt";
 			while ((new File(filename)).exists())
 				filename = System.getProperty("user.home")+System.getProperty("file.separator")+System.currentTimeMillis()+"HawkErrorLog.txt";
@@ -218,6 +314,7 @@ public class SystemsManager
 				"\nhelp in developing Hawk by sending error reports and comments is " +
 				"\ngreatly appreciated.");
 			}
+			*/
 		}
 		
 		/**
@@ -257,6 +354,23 @@ public class SystemsManager
 						}
 					}
 					
+					File preferencesDir = new File(getClassDescriptorPreferencesDirectory());
+					
+					if (!preferencesDir.exists() && answer)
+					{
+						boolean madePrefs = preferencesDir.mkdir();
+						
+						if (!madePrefs)
+						{
+							JOptionPane oPane = new JOptionPane();
+							JOptionPane.showMessageDialog(oPane,
+								"Hawk could not start because the directory "+preferencesDir.getAbsolutePath()+" could not be created.",
+								"Error",
+								JOptionPane.ERROR_MESSAGE);
+		
+							answer = false;
+						}
+					}
 				}
 				else
 				{
