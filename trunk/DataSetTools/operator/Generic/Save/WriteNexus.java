@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/02/03 22:52:54  dennis
+ * Added getDocumentationMethod() and java docs for getResult().
+ * (Joshua Olson)
+ *
  * Revision 1.2  2002/11/27 23:21:28  pfpeterson
  * standardized header
  *
@@ -64,10 +68,10 @@ public class WriteNexus extends GenericSave
 /** This form can be used from java.  Here the parameters are known and set.
 *  The getResult method must still be used to get the operator code to run.<P>
 *@param Monitor   The Monitor dataset( Could be null).<P>
-*@param  Histogram The Histogram or nonMonitor data set<P>
+*@param  Histogram The Histogram or non-Monitor data set<P>
 *@param  filename  the name where the file is to be written.  If the extension
 *    is xml(case insensitive) the output will be in xml format, otherwise
-*    the output will be to a nexus file
+*    the output will be to a nexus file.
 */
     public WriteNexus( DataSet Monitor, DataSet Histogram, String filename )
     {super( "Save as Nexus(or xml) File");
@@ -82,6 +86,32 @@ public class WriteNexus extends GenericSave
  public String getCommand()
    {return "SaveNX";
    }
+                                                                                
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview  This operator writes a Histogram DataSet with ");
+    s.append("its associated Monitor to a Nexus file or xml file.");
+    s.append("@assumptions The given data set Histogram is not empty.\n");                                                            
+    s.append("@algorithm The operator determines the filename and what ");
+    s.append("type of file it should be (nexus or xml).  Then a DataSet ");
+    s.append("object is created, called 'DS'. Monitor and Histogram are ");
+    s.append("added to DS.  Then DS is written to the indicated file and the ");
+    s.append("string 'Success' is returned.");
+    s.append("@param Monitor The Monitor dataset (can be null)");
+    s.append("@param Histogram The Histogram (or non-Monitor) data set ");
+    s.append("@param filename The name of the file where the data ");
+    s.append("will be saved.  If the extension is xml (case insensitive) ");
+    s.append("then the output will be in xml format, otherwise the output ");
+    s.append("will be to a nexus file.");
+    s.append("@return Always returns the string 'Success'.");
+    return s.toString();
+  }
 
 /** Sets default parameters.  This sets the data types of the parameters.
 */
