@@ -28,6 +28,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/03/05 20:59:35  hammonds
+ *  Added support for Boolean and Array input.
+ *
  *  Revision 1.1  2003/03/04 15:21:07  hammonds
  *  Added this operator to accept on the text terminal for ISAW Scripts.
  *
@@ -38,10 +41,12 @@ package Operators;
 import java.io.*;
 import java.util.*;
 import  DataSetTools.operator.Operator;
+import  DataSetTools.util.IntList;
+import  DataSetTools.util.IntListString;
 import  DataSetTools.util.ErrorString;
 import  DataSetTools.operator.Generic.Batch.*;
 import  DataSetTools.parameter.StringPG;
-
+import  Command.execOneLine;
 
 
 /**
@@ -108,7 +113,8 @@ public class TextPrompt extends GenericBatch implements Serializable
     System.out.println(":");
 
     if ( !(inType.equals("String") || inType.equals("Integer") || 
-	   inType.equals("Float") )) {
+	   inType.equals("Float") || inType.equals("Array") ||
+	   inType.equals("Boolean") )) {
       return new ErrorString("TextPrompt: Invalid Type:" + inType );
     }
     //    byte inB = ' ';
@@ -146,6 +152,83 @@ public class TextPrompt extends GenericBatch implements Serializable
 				+ " could not be cast as an Integer");
       }
     }
+    if ( inType.equals("Array") ) {
+      Vector ov = new Vector();
+      inLine = inLine.trim();
+      if ( inLine.charAt(0) != '[' && 
+	   inLine.charAt(inLine.trim().length() -1) != ']' ) {
+	ErrorString es = 
+	  new ErrorString( "TextPromt: Arrays must be enclosed in " +
+		      "braces e.g. [1:8,13] or [1.4,4.5,8.6]" );
+	return es;
+      }
+      inLine = inLine.substring(1,inLine.length()-1);
+      int lastInd = 0;
+      int ind = 0;
+      while (ind != -1) {
+	String part = new String();
+	ind = inLine.indexOf(",", lastInd );
+	if (ind != -1 )
+	  part = inLine.substring( lastInd, ind );
+	else 
+	  part = inLine.substring( lastInd );
+	
+	lastInd = ind+1;
+	part=part.trim();
+	int[] ilist = IntList.ToArray(part);
+	if ( ilist.length > 0 ) {
+	  Integer[] olist = new Integer[ilist.length];
+	  Vector oArray = new Vector();
+	  for (int ii = 0; ii < ilist.length;ii++){
+	    olist[ii] = new Integer(ilist[ii]);
+	    ov.add(olist[ii]);
+	  }
+	  
+	}
+	else {
+	  try {
+	    Integer iv = new Integer(part);
+	    ov.add(iv);
+	    
+	  }
+	  catch (NumberFormatException iex) {
+	    try {
+	      Float fv = new Float(part);
+	      ov.add(fv);
+	    }
+	    catch ( NumberFormatException fex ) {
+	      if ( part.equalsIgnoreCase("true") ) {
+		ov.add(new Boolean(true));
+	      }
+	      else if (part.equalsIgnoreCase("false")){
+		ov.add(new Boolean(false));
+	      }
+	      else {
+		ov.add(part);
+	      }
+	    }
+	  }
+	}
+      }
+      return ov;
+    }
+      
+    
+    
+    if (inType.equals("Boolean")) {
+      if ( inLine.equalsIgnoreCase("true") || inLine.equalsIgnoreCase("yes") ){
+	return new Boolean(true);
+      }
+      else if (inLine.equalsIgnoreCase("false") || 
+	      inLine.equalsIgnoreCase("no") ){
+	return new Boolean(false);
+      }
+      else {
+	return new ErrorString("TextPrompt: Value " + inLine +
+			       "could not be cast as a Boolean");
+      }
+    }
+
     return new ErrorString("TextPrompt: ERROR");
 
   }
