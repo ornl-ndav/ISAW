@@ -29,6 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.23  2003/06/03 15:15:12  bouzekc
+ * Fixed some documentation errors.
+ * Reformatted getDocumentation() to stay within 80 columns.
+ * Added a full constructor so that an Integrate instance
+ * can be created without the need to send in
+ * IParameterGUIs.
+ *
  * Revision 1.22  2003/06/03 15:02:21  pfpeterson
  * Catches an ArrayIndexOutOfBounds exception in IntegratePeak.
  *
@@ -154,12 +161,11 @@ public class Integrate extends GenericTOF_SCD{
   }
   
   /** 
-   * Creates operator with title "Find Peaks" and the specified list
+   * Creates operator with title "Integrate" and the specified list
    * of parameters. The getResult method must still be used to execute
    * the operator.
    *
    * @param ds DataSet to integrate
-   * @param expfile The "experiment file" for the analysis.
    */
   public Integrate( DataSet ds){
     this(); 
@@ -171,6 +177,40 @@ public class Integrate extends GenericTOF_SCD{
     // parameter 4 keeps its default value
     // parameter 5 keeps its default value
     // parameter 6 keeps its default value
+  }
+
+  /** 
+   * Creates operator with title "Integrate" and the specified list
+   * of parameters. The getResult method must still be used to execute
+   * the operator.  This is a convenience constructor so that a full
+   * Integrate Operator can be constructed without the need to 
+   * pass in IParameterGUIs.
+   *
+   * @param ds          DataSet to integrate
+   * @param integfile   The "integrate file" for the analysis.
+   * @param matfile     The matrix file to use for the analysis.
+   * @param slicerange  The time slice range.
+   * @param slicedelta  The amount to increase slicesize by.
+   * @param lognum      The peak multiples to log - i.e. 3 logs
+   *                    1, 3, 6, 9...
+   * @param append      Append to file (true/false);
+   */
+  public Integrate( DataSet ds, String integfile, String matfile,
+                    String slicerange, int slicedelta, int lognum,
+                    boolean append){
+    this(); 
+
+    setParameter(new DataSetPG("DataSet", ds, false), 0);
+    setParameter(new SaveFilePG("Integrate File", 
+                 integfile, false), 1);
+    setParameter(new LoadFilePG("Matrix File", 
+                 matfile, false), 2);
+    setParameter(new IntArrayPG("Time Slice Range", 
+                 slicerange, false), 4);
+    setParameter(new IntegerPG("Increase Slice Size by", 
+                 slicedelta, false), 5);
+    setParameter(new IntegerPG("Log every nth Peak",lognum, false), 6);
+    setParameter(new BooleanPG("Append",false), 7);
   }
   
   /* --------------------------- getCommand ------------------------------- */ 
@@ -195,7 +235,7 @@ public class Integrate extends GenericTOF_SCD{
     if( choices==null || choices.size()==0 ) init_choices();
 
     // parameter(0)
-    addParameter( new Parameter("Data Set", new SampleDataSet() ) );
+    addParameter( new DataSetPG("Data Set", new SampleDataSet(), false ) );
     // parameter(1)
     SaveFilePG sfpg=new SaveFilePG("Integrate File",null);
     sfpg.setFilter(new IntegrateFilter());
@@ -209,11 +249,11 @@ public class Integrate extends GenericTOF_SCD{
     clpg.addItems(choices);
     addParameter(clpg);
     // parameter(4)
-    addParameter(new IntArrayPG("Time slice range","-1:3"));
+    addParameter(new IntArrayPG("Time Slice Range","-1:3"));
     // parameter(5)
-    addParameter(new IntegerPG("Increase slice size by",0));
+    addParameter(new IntegerPG("Increase Slice Size by",0));
     // parameter(6)
-    addParameter(new IntegerPG("Log every nth Peak",3));
+    addParameter(new IntegerPG("Log Every nth Peak",3));
     // parameter(7)
     addParameter(new BooleanPG("Append",false));
   }
@@ -226,27 +266,41 @@ public class Integrate extends GenericTOF_SCD{
     StringBuffer sb=new StringBuffer("");
 
     // overview
-    sb.append("@overveiw This operator is a direct port of A.J.Schultz's INTEGRATE program. This locates peaks in a DataSet for a given orientation matrix and then determine's the integrated peak intensity.");
+    sb.append("@overview This operator is a direct port of A.J.Schultz's ");
+    sb.append("INTEGRATE program. This locates peaks in a DataSet for a ");
+    sb.append("given orientation matrix and then determines the integrated ");
+    sb.append("peak intensity.\n");
     // assumptions
-    sb.append("@assumptions The experiment file must exist and be user readable. Also, the directory containing the experiment file must be user writtable for the integrated intensities and log file.");
+    sb.append("@assumptions The experiment file must exist and be user ");
+    sb.append("readable.  Also, the directory containing the experiment file ");
+    sb.append("must be user writeable for the integrated intensities and log ");
+    sb.append("file.\n");
     // algorithm
     sb.append("@algorithm ");
     // parameters
-    sb.append("@param ds DataSet to integrate.");
-    sb.append("@param expfile The experiment file for the analysis.");
-    sb.append("@param matfile The matrix file for the analysis. If this is not specified then the orientation matrix from the dataset is used followd by the experiment file, stopping after one is found.");
+    sb.append("@param ds DataSet to integrate.\n");
+    sb.append("@param expfile The experiment file for the analysis.\n");
+    sb.append("@param matfile The matrix file for the analysis.  If this is ");
+    sb.append("not specified then this Operator tries to use the orientation ");
+    sb.append("matrix from the DataSet.  If that is not found, then it tries ");
+    sb.append("to use the matrix from the experiment file.\n");
     // return
-    sb.append("@return The name of the file that the integrated intensities are written to.");
+    sb.append("@return The name of the file that the integrated intensities ");
+    sb.append("are written to.\n");
     // errors
-    sb.append("@error First parameter is not a DataSet or the DataSet is empty");
-    sb.append("@error Second parameter is null or does not specify an existing directory");
-    sb.append("@error Third parameter is null or does not specify an existing experiment.");
-    sb.append("@error When there is an IOException while reading the experiment file.");
-    sb.append("@error If there is no pixel 1,1 in the dataset.");
-    sb.append("@error No detector calibration found in the dataset.");
-    sb.append("@error No orientation matrix found in the dataset.");
-    sb.append("@error No detector number found");
-    sb.append("@error When the initial flight path is zero");
+    sb.append("@error First parameter is not a DataSet or the DataSet is ");
+    sb.append("empty.\n");
+    sb.append("@error Second parameter is null or does not specify an ");
+    sb.append("existing directory.\n");
+    sb.append("@error Third parameter is null or does not specify an ");
+    sb.append("existing experiment.\n");
+    sb.append("@error When any errors occur while reading the experiment ");
+    sb.append("file.\n");
+    sb.append("@error No pixel 1,1 in the DataSet.\n");
+    sb.append("@error No detector calibration found in the DataSet.\n");
+    sb.append("@error No orientation matrix found in the DataSet.\n");
+    sb.append("@error No detector number found.\n");
+    sb.append("@error When the initial flight path is zero.\n");
 
     return sb.toString();
   }
