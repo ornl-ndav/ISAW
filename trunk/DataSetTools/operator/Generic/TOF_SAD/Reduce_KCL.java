@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/10/28 19:56:40  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.15  2003/10/22 20:21:48  rmikk
  * Fixed javadoc errors
  *
@@ -275,8 +278,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     *    @param RUNSds1   the Histogram  for the sample
     *    @param RUNBds0  the  monitor for the Background
     *    @param RUNBds1  the  Histogramfor the Background
-    *    @param RUNBds0  null or the monitor for the  Cadmium run
-    *    @param RUNBds1  null or the  Histogram for the  Cadmium run
+    *    @param RUNCds0  null or the monitor for the  Cadmium run
+    *    @param RUNCds1  null or the  Histogram for the  Cadmium run
     *    @param BETADN  The delayed neutron fraction
     *    @param SCALE   The scale factor to be applied to all data
     *    @param  THICK  The sample thickness in m
