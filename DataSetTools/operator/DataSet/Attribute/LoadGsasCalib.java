@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/02/06 20:34:37  dennis
+ *  Added getDocumentation() method. (Tyler Stelzer)
+ *
  *  Revision 1.5  2002/11/27 23:16:41  pfpeterson
  *  standardized header
  *
@@ -364,6 +367,37 @@ public class LoadGsasCalib extends    DS_Attribute {
         
         return new_op;
     }
+    
+    
+    public String getDocumentation()
+    {
+      StringBuffer Res = new StringBuffer();
+      Res.append("@overview This operator loads the time-of-flight to d-space");
+       Res.append(" conversion parameters from a GSAS instrument parameter");
+       Res.append(" file. The only lines that are read are the ICONS lines.");
+
+      Res.append("@algorithm Open the file if it exists and is readable.");
+       Res.append(" Then Read the time-of-flight to d-space conversion");
+       Res.append(" only reading the ICONS lines.");
+
+      Res.append("@param  ds  The DataSet to which the");
+       Res.append(" operation is applied");
+      Res.append("@param  iparm  The name of the iparm file.");
+      Res.append("@param  seq_num  Whether to use sequential bank");
+       Res.append(" numbering or not.");
+
+      Res.append("@return Returns an error string if the file does not exist");
+      Res.append(" or the file is not readable.  If it is successful, it");
+      Res.append(" returns the String \"Read Instrument Parameter File\"");
+
+      Res.append("@error file does not exist");
+      Res.append("@error file is not readable");
+  
+     return Res.toString();
+    }
+    
+    
+    
 
     /*public static void main(String args[]){
       String runfile="/IPNShome/pfpeterson/data/CsC60/SEPD18805.RUN";
