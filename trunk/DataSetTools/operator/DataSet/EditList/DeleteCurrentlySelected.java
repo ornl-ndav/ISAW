@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:01:13  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.1  2002/02/22 21:01:54  pfpeterson
  *  Operator reorganization.
  *
@@ -108,6 +111,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
   *  Remove Data blocks that are marked as selected, or that are not marked
@@ -159,7 +163,7 @@ public class DeleteCurrentlySelected  extends    DS_EditList
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Boolean( status ) );
 
     parameter = getParameter( 1 );

@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:05:07  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.1  2002/02/22 20:56:51  pfpeterson
  *  Operator reorganization.
  *
@@ -102,6 +105,7 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.components.ui.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  * This operator converts Print data information.
@@ -140,7 +144,7 @@ public class DataSetPrint extends    GenericOperator
   {
     this();
 
-    Parameter parameter = getParameter(0);
+    IParameter parameter = getParameter(0);
     parameter.setValue( ds );
     
     parameter = getParameter( 1 );
