@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/02/22 20:35:06  pfpeterson
+ *  Operator Reorganization.
+ *
  *  Revision 1.19  2001/07/16 22:50:53  dennis
  *  Added method to get an array of selected indices.
  *
@@ -136,6 +139,7 @@ import java.util.Vector;
 import java.io.*;
 import java.lang.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.*;
 import DataSetTools.util.*;
 
 /**
