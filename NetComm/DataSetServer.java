@@ -31,6 +31,16 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/08/07 21:27:25  dennis
+ *    Removed command to get DS_TYPE and get NUM_DS... now only uses
+ *  get DS_TYPES, for the whole list of types.  This is simpler,
+ *  reduces the number of requests needed and allows LiveDataServer
+ *  and FileDataServer to handle the same requests.
+ *    extractIntParameter() now treats the last item in a command
+ *  string as an int parameter.
+ *    find_file() now tries upper and lower case versions of the
+ *  file name as well as the original file specified.
+ *
  *  Revision 1.1  2001/08/03 21:27:16  dennis
  *  Base class for TCP servers that process requests for DataSets.
  *  Maintains a list of directories and defines some commands.
@@ -59,9 +69,7 @@ import DataSetTools.retriever.*;
 public class DataSetServer extends TCPServer 
 {
   public static final String COMMAND_GET_DS      = "COMMAMD:GET_DATA_SET ";
-  public static final String COMMAND_GET_DS_TYPE = "COMMAND:GET_DATA_SET_TYPE ";
   public static final String COMMAND_GET_DS_TYPES= "COMMAND:GET_DS_TYPES ";
-  public static final String COMMAND_GET_NUM_DS  = "COMMAND:GET_NUM_DATA_SETS ";
 
   protected  Vector  directory_names = null;
 
@@ -103,30 +111,30 @@ public class DataSetServer extends TCPServer
 
   /* -------------------------- extractIntParameter ----------------------- */
   /**
-   *  Extract the first integer value occuring in a command string.
+   *  Extract the last integer value occuring in a command string.
    *
-   *  @param command  A command string containing an integer parameter following
-   *                  a space ' ' character. 
+   *  @param command  A command string ending with a space and an integer 
+   *                  parameter.
    */
   protected int extractIntParameter( String command )
   {
-    int first_space = command.indexOf( " " );       // extract string following 
-                                                    // the first space, if
-                                                    // possible
-    if ( first_space < 0 )
+    int last_space = command.lastIndexOf( " " );   
+ 
+    if ( last_space < 0 )
       return -1;
     
-    command = command.substring( first_space + 1 );
-    command.trim();
+    String int_string = command.substring( last_space + 1 );
+    int_string.trim();
 
-    int next_space = command.indexOf( " " );
-    String int_string = " ";
-    if ( next_space < 0 )
-      int_string = command;
-    else
-      int_string = command.substring( 0, next_space );
-
-    int parameter = (Integer.valueOf( int_string )).intValue();
+    int parameter;
+    try
+    {
+      parameter = (Integer.valueOf( int_string )).intValue();
+    }
+    catch ( NumberFormatException e )
+    {
+      parameter = -1;
+    }
     return parameter;
   }
 
@@ -153,6 +161,8 @@ public class DataSetServer extends TCPServer
       return null;
  
     String temp = full_name.toUpperCase();
+    System.out.println("get_retriever, file_name = " + file_name );
+    System.out.println("get_retriever, full_name = " + full_name );
     if ( temp.endsWith( "RUN" ) )
       retriever = new RunfileRetriever( full_name );
 
@@ -178,18 +188,29 @@ public class DataSetServer extends TCPServer
   {
     int     dir_num = 0;
     String  full_name;
+    String  dir_name;
+    File    file;
 
     while ( dir_num < directory_names.size() )
     {
-      full_name  = (String)directory_names.elementAt( dir_num );
-      full_name += file_name;
+      dir_name  = (String)directory_names.elementAt( dir_num );
 
-      File file = new File ( full_name );
-
+      full_name = dir_name + file_name;                  // try it as specified
+      file = new File ( full_name );
       if ( file.exists() )
         return full_name;
-      else
-        dir_num++;   
+
+      full_name = dir_name + file_name.toUpperCase();    // try it UPPER CASE
+      file = new File ( full_name );
+      if ( file.exists() )
+        return full_name;
+
+      full_name = dir_name + file_name.toLowerCase();    // try it lower case
+      file = new File ( full_name );
+      if ( file.exists() )
+        return full_name;
+
+      dir_num++;   
     }
 
     return null;
