@@ -1,11 +1,8 @@
 package Operators.TOF_SCD;
-import java.util.*;
 
 import DataSetTools.operator.*;
-
 import Command.JavaCC.Fortran.*;
 
-import gov.anl.ipns.Util.SpecialStrings.*;
 
 public class TOFINT implements Wrappable,HiddenOperator{
 
