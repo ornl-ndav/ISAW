@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/10/10 00:56:06  bouzekc
+ * Removed import of PyOperatorFactory.
+ *
  * Revision 1.6  2003/08/11 18:02:42  bouzekc
  * Now uses PyScriptOperator.
  *
@@ -56,7 +59,6 @@
  */
 package DataSetTools.wizard;
 
-import DataSetTools.operator.PyOperatorFactory;
 import DataSetTools.operator.PyScriptOperator;
 
 import DataSetTools.util.*;
