@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2002/02/14 16:54:44  pfpeterson
+ *  Added operator to convert SCD pixel position to real space.
+ *
  *  Revision 1.18  2002/02/05 22:13:37  pfpeterson
  *  Added references so TOF_SCD operators can be used in scripts.
  *
@@ -96,6 +99,7 @@ public class GenericOperatorList implements Serializable
                                           "SaveGSAS",
                                           "FindPeaks",
                                           "CentroidPeaks",
+                                          "RealSpacePeaks",
                                           "WritePeaks",
                                           "Pause",
                                           "Echo"    };
@@ -207,6 +211,9 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "CentroidPeaks" ) )
       return new DataSetTools.operator.Generic.TOF_SCD.CentroidPeaks();
+
+    else if ( op_name.equals( "RealSpacePeaks" ) )
+      return new DataSetTools.operator.Generic.TOF_SCD.RealSpacePeaks();
 
     else if ( op_name.equals( "WritePeaks" ) )
       return new DataSetTools.operator.Generic.TOF_SCD.WritePeaks();
