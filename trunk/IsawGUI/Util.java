@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2003/08/28 18:53:42  dennis
+ * Added support for loading .csd files (concatenated files
+ * from Ideas MC simulation.)
+ * Did minor clean up of code for SDDS files.
+ *
  * Revision 1.21  2003/06/06 22:28:36  pfpeterson
  * Changed to use a BufferedReader for reading in text files.
  *
@@ -119,19 +124,20 @@ public class Util
     */
    public DataSet[] loadRunfile( String filename )
    {
-
       filename = StringUtil.setFileSeparator( filename );
 
       Retriever r;
 
       if( filename.endsWith( "nxs" ) ||
-         filename.endsWith( "NXS" ) ||
-         filename.endsWith( "hdf" ) ||
-         filename.endsWith( "HDF" ) )
+          filename.endsWith( "NXS" ) ||
+          filename.endsWith( "hdf" ) ||
+          filename.endsWith( "HDF" ) )
          r = new NexusRetriever( filename );
+
       else if( filename.toUpperCase().endsWith("ZIP") ||
                filename.toUpperCase().endsWith("XMI"))
          r = new XmlDFileRetriever( filename);
+
       else if( filename.toUpperCase().endsWith( ".ISD" ) )
       {
          DataSet dss[];
@@ -144,20 +150,14 @@ public class Util
       }
       else if( filename.toUpperCase().endsWith( ".GSA" ) 
                || filename.toUpperCase().endsWith( ".GDA" ) )
-      {
-          r=new GsasRetriever(filename);
-      }
-      else if( filename.toUpperCase().endsWith( ".SDDS" ) )
-      {
-         DataSet dss[];
-         SDDSRetriever sdds_ret = new SDDSRetriever( filename );
-         int num_of_ds = sdds_ret.numDataSets();
+        r=new GsasRetriever(filename);
 
-         dss = new DataSet[num_of_ds];
-         for( int i = 0; i < num_of_ds; i++ )
-            dss[i] = sdds_ret.getDataSet( i );
-         return dss;
-      }
+      else if( filename.toUpperCase().endsWith( ".SDDS" ) )
+         r = new SDDSRetriever( filename );
+
+      else if( filename.toUpperCase().endsWith( ".CSD" ) )
+         r = new IdeasRetriever( filename );
+
       else
          r = new RunfileRetriever( filename );
 
