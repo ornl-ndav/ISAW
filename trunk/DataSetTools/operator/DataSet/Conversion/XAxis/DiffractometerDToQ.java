@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/01/24 19:10:46  bouzekc
+ * Removed unused variables from main().  Removed unused imports.
+ *
  * Revision 1.7  2003/12/15 01:51:44  bouzekc
  * Removed unused imports.
  *
@@ -279,7 +282,6 @@ public class DiffractometerDToQ extends XAxisConversionOp{
         float            errors[];       // errors from one spectrum
         float            Q_vals[];      // Q values at bin boundaries
         XScale           Q_scale;
-        float            angle_radians;
         int              num_data = ds.getNum_entries();
         AttributeList    attr_list;
 
@@ -339,10 +341,10 @@ public class DiffractometerDToQ extends XAxisConversionOp{
      */
     public static void main( String[] args )
     {
-      float min_1 = (float)0.5;
-      float max_1 = (float)1.0;
-      float min_2 = (float)6.5;
-      float max_2 = (float)12.0;
+      float min_1 = 0.5f;
+      float max_1 = 1.0f;
+      float min_2 = 6.5f;
+      float max_2 = 12.0f;
       String file_name = "/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
       //"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";
 
@@ -356,12 +358,12 @@ public class DiffractometerDToQ extends XAxisConversionOp{
                              new DiffractometerTofToD(ds1, min_1, max_1, 6000);
 
         DataSet new_ds1 = (DataSet)tofd.getResult();
-        ViewManager viewer = new ViewManager(new_ds1, IViewManager.IMAGE);
+        new ViewManager(new_ds1, IViewManager.IMAGE);
 
         DiffractometerDToQ op = 
                            new DiffractometerDToQ(new_ds1, min_2, max_2, 1000);
         DataSet new_ds2 = (DataSet)op.getResult();
-        ViewManager new_viewer = new ViewManager(new_ds2, IViewManager.IMAGE);
+        new ViewManager(new_ds2, IViewManager.IMAGE);
         System.out.println(op.getDocumentation());
       }
       catch(Exception e)

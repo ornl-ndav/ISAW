@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  *  $Log$
+ *  Revision 1.12  2004/01/24 19:10:46  bouzekc
+ *  Removed unused variables from main().  Removed unused imports.
+ *
  *  Revision 1.11  2002/12/20 17:11:01  dennis
  *  Added getDocumentation() method, java docs for getResult() and
  *  simple main test program. (Chris Bouzek)
@@ -449,18 +452,18 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
    */
   public static void main( String[] args )
   {
-    float min_1 = (float)5.0, max_1 = (float)7.0;
+    float min_1 = 5.0f, max_1 = 7.0f;
     String file_name = "/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
                      /*"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";*/
     try
     {
       RunfileRetriever rr = new RunfileRetriever( file_name );
       DataSet ds1 = rr.getDataSet(1);
-      ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+      new ViewManager(ds1, IViewManager.IMAGE);
       DiffractometerTofToQ op = 
                            new DiffractometerTofToQ(ds1, min_1, max_1, 100);
       DataSet new_ds = (DataSet)op.getResult();
-      ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+      new ViewManager(new_ds, IViewManager.IMAGE);
       System.out.println(op.getDocumentation());
     }
     catch(Exception e)

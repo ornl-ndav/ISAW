@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/24 19:10:47  bouzekc
+ * Removed unused variables from main().  Removed unused imports.
+ *
  * Revision 1.5  2003/01/09 17:15:04  dennis
  * Added getDocumentation(), main test program and java docs on getResult()
  * (Chris Bouzek)
@@ -53,7 +56,6 @@ package DataSetTools.operator.DataSet.Conversion.XAxis;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
@@ -384,7 +386,7 @@ public class TofToChannel extends  XAxisConversionOp
    */
   public static void main( String[] args )
   {
-		float min_1 = (float)0.0, max_1 = (float)4000;
+		float min_1 = 0.0f, max_1 = 4000f;
 		String file_name =
 		"/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
 		//"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";
@@ -393,10 +395,10 @@ public class TofToChannel extends  XAxisConversionOp
 		{
 			RunfileRetriever rr = new RunfileRetriever( file_name );
 			DataSet ds1 = rr.getDataSet(1);
-    	ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+    	new ViewManager(ds1, IViewManager.IMAGE);
     	TofToChannel op = new TofToChannel(ds1, min_1, max_1, 4000);
     	DataSet new_ds = (DataSet)op.getResult();
-    	ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+    	new ViewManager(new_ds, IViewManager.IMAGE);
 			System.out.println(op.getDocumentation());
 		}
 		catch(Exception e)

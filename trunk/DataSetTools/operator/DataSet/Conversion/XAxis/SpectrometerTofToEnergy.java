@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/01/24 19:10:47  bouzekc
+ *  Removed unused variables from main().  Removed unused imports.
+ *
  *  Revision 1.6  2003/01/09 17:14:52  dennis
  *  Added getDocumentation(), main test program and java docs on getResult()
  *  (Chris Bouzek)
@@ -382,18 +385,18 @@ public class SpectrometerTofToEnergy extends    XAxisConversionOp
    */
   public static void main( String[] args )
   {
-    float min_1 = (float)4.0, max_1 = (float)503;
+    float min_1 = 4.0f, max_1 = 503f;
     String file_name = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run ";
                        //"D:\\ISAW\\SampleRuns\\hrcs2447.run ";
     try
     {
       RunfileRetriever rr = new RunfileRetriever( file_name );
       DataSet ds1 = rr.getDataSet(1);
-      ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+      new ViewManager(ds1, IViewManager.IMAGE);
       SpectrometerTofToEnergy op =
                    new SpectrometerTofToEnergy(ds1, min_1, max_1, 1000);
       DataSet new_ds = (DataSet)op.getResult();
-      ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+      new ViewManager(new_ds, IViewManager.IMAGE);
       System.out.println(op.getDocumentation());
     }
     catch(Exception e)
