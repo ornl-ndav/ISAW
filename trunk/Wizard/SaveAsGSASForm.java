@@ -32,6 +32,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/06/18 19:54:58  bouzekc
+ *  Now pads run numbers less than 5 digits with zeroes.
+ *  Uses errorOut() to indicate parameter errors.  More robust
+ *  parameter error checking.  Now fires off property change
+ *  events in a semi-intelligent way.  Uses super.getResult() for
+ *  initializing PropertyChanger variables.
+ *
  *  Revision 1.7  2003/06/03 23:04:28  bouzekc
  *  Fixed full constructor to avoid excessive garbage
  *  collection.
@@ -55,6 +62,13 @@
  *
  *  Revision 1.2  2003/03/13 19:04:14  dennis
  *  Added $Log$
+ *  Added Revision 1.8  2003/06/18 19:54:58  bouzekc
+ *  Added Now pads run numbers less than 5 digits with zeroes.
+ *  Added Uses errorOut() to indicate parameter errors.  More robust
+ *  Added parameter error checking.  Now fires off property change
+ *  Added events in a semi-intelligent way.  Uses super.getResult() for
+ *  Added initializing PropertyChanger variables.
+ *  Added
  *  Added Revision 1.7  2003/06/03 23:04:28  bouzekc
  *  Added Fixed full constructor to avoid excessive garbage
  *  Added collection.
@@ -248,8 +262,7 @@ public class SaveAsGSASForm extends    Form
     boolean export_mon, seq_num;
     IParameterGUI param;
     DataSet mds, group_ds;
-    String gsas_dir, save_name, inst_name;
-    boolean DEBUG = true;
+    String gsas_dir, save_name, inst_name, runNum;
     int[] run_numbers;
 
     //get the results
@@ -264,10 +277,14 @@ public class SaveAsGSASForm extends    Form
 
     //get the user input parameters
     //get directory
-    //should be no need to check this for validity
     param = (IParameterGUI)super.getParameter(4);
-    gsas_dir = param.getValue().toString() + "/";
-    param.setValid(true);
+    gsas_dir = StringUtil.setFileSeparator(
+                 param.getValue().toString() + "/");
+    if(new File(gsas_dir).exists())
+      param.setValid(true);
+    else
+      return errorOut(param,
+          "You must enter a valid GSAS file directory.");
 
     param = (IParameterGUI)super.getParameter(5);
     //this one doesn't need to be checked for validity
@@ -279,6 +296,11 @@ public class SaveAsGSASForm extends    Form
     param.setValid(true);
     seq_num = ((BooleanPG)param).getbooleanValue();
 
+    super.getResult();
+
+    //set the increment amount
+    increment = (1.0f / grouped.size()) * 100.0f;
+
     //go through the vector
     for( int i = 0; i < grouped.size(); i++ )
     {
@@ -286,30 +308,33 @@ public class SaveAsGSASForm extends    Form
       group_ds = (DataSet)grouped.elementAt(i);
       mds = (DataSet)monitors.elementAt(i);
 
+      runNum = DataSetTools
+               .util
+               .Format
+               .integerPadWithZero(run_numbers[i], 5);
+
       //save the GSAS file
-      save_name = gsas_dir + inst_name + run_numbers[i] + ".gsa";
+      save_name = gsas_dir + inst_name + runNum + ".gsa";
       op = new WriteGSAS(mds, group_ds,
                          save_name, new Boolean(export_mon),
                          new Boolean(seq_num));
-      if( DEBUG )
-        SharedData.addmsg(mds.toString());
       result = op.getResult();
 
       if( result instanceof String && result.equals("Success") )
-        SharedData.addmsg("File " + save_name + "saved.\n");
+        SharedData.addmsg("File " + save_name + "saved.");
       else  //something went wrong
-      {
-        SharedData.addmsg(
-          "File " + save_name + "could not be saved.\n");
-        return new Boolean(false);
-      }
+        return errorOut(
+          "File " + save_name + "could not be saved.");
+
+      //fire a property change event off to any listeners
+      oldPercent = newPercent;
+      newPercent += increment;
+      super.fireValueChangeEvent((int)oldPercent, (int)newPercent);
     }
 
-    SharedData.addmsg("Finished saving GSAS files.\n\n");
+    SharedData.addmsg("Finished saving GSAS files.");
 
-    return new Boolean(true);
+    return Boolean.TRUE;
 
   }
-
-
 }//class
