@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/01/08 23:21:21  dennis
+ * Slice size in pixels is now a named constant.  Slice is now properly
+ * centered in ImageFrame.
+ *
  * Revision 1.9  2003/01/08 21:52:29  dennis
  * Now sets runfile retriever and DataSet to null when no longer used,
  * to allow earlier garbage collection.  Also, makes 400x400 image instead
@@ -104,6 +108,7 @@ public class SCDRecipLat
   public static final String A_B_SLICE = "a*<->b* Slice";
   public static final String B_C_SLICE = "b*<->c* Slice";
   public static final String C_A_SLICE = "c*<->a* Slice";
+  public static final int    SLICE_SIZE = 400;
 
   ImageFrame a_b_frame = null;
   ImageFrame b_c_frame = null;
@@ -622,13 +627,16 @@ public class SCDRecipLat
   }
 
   /* ------------------------- make_slice ---------------------------- */
-  private float[][] make_slice( Vector3D origin, Vector3D base, Vector3D up )
+  private float[][] make_slice( Vector3D origin, 
+                                Vector3D base,
+                                Vector3D up,
+                                int      n_pixels )
   {
     if( origin == null || base == null || up == null )
       return null;
 
-    int n_rows = 400;
-    int n_cols = 400;
+    int n_rows = n_pixels;
+    int n_cols = n_rows;
     float image[][] = new float[n_rows][n_cols];
 
     float size;
@@ -653,7 +661,7 @@ public class SCDRecipLat
     float b2[] = base2.get();
     float orig[] = origin.get();
     Vector3D q = new Vector3D();
-    float step = size/250;
+    float step = size/(n_rows/2);
     float d_row, d_col;
     float value;
     int   n_non_zero;
@@ -663,8 +671,8 @@ public class SCDRecipLat
     for ( int row = 0; row < n_rows; row++ )
       for ( int col = 0; col < n_cols; col++ )
       {
-        d_row = (250-row)*step;        
-        d_col = (col-250)*step;        
+        d_row = (n_rows/2 - row)*step;        
+        d_col = (col - n_rows/2)*step;        
         q.set( orig[0] + d_row * b2[0] + d_col * b1[0], 
                orig[1] + d_row * b2[1] + d_col * b1[1], 
                orig[2] + d_row * b2[2] + d_col * b1[2]  );
@@ -800,7 +808,8 @@ private class SliceButtonListener implements ActionListener
     {
       image = make_slice( origin_vec.getVector(), 
                           a_star_vec.getVector(),
-                          b_star_vec.getVector() );
+                          b_star_vec.getVector(),
+                          SLICE_SIZE );
       if ( a_b_frame == null )
         a_b_frame = new ImageFrame( image, A_B_SLICE );
       else
@@ -810,7 +819,8 @@ private class SliceButtonListener implements ActionListener
     {
       image = make_slice( origin_vec.getVector(), 
                           b_star_vec.getVector(),
-                          c_star_vec.getVector() );
+                          c_star_vec.getVector(),
+                          SLICE_SIZE );
       if ( b_c_frame == null )
         b_c_frame = new ImageFrame( image, B_C_SLICE );
       else
@@ -820,7 +830,8 @@ private class SliceButtonListener implements ActionListener
     {
       image = make_slice( origin_vec.getVector(), 
                           c_star_vec.getVector(),
-                          a_star_vec.getVector() );
+                          a_star_vec.getVector(),
+                          SLICE_SIZE );
       if ( c_a_frame == null )
         c_a_frame = new ImageFrame( image, C_A_SLICE );
       else
