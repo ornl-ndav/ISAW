@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2003/10/19 19:59:20  rmikk
+ * Added documentation
+ * Converted the x values to micro seconds
+ * Used a common XScale for all Data blocks in one Nexus block
+ *
  * Revision 1.17  2003/10/15 03:05:47  bouzekc
  * Fixed javadoc errors.
  *
@@ -104,6 +109,7 @@ public class NXData_util{
     errormessage = "";
   }
 
+
   public void setTimeFieldType( int time_field_type ){
     timeFieldType = time_field_type;
   }
@@ -119,6 +125,9 @@ public class NXData_util{
 
   /**
    * Converts an object into a float array(if possible) or null.
+   * @param X  an Object 
+   * @return  a float array(possibly with one element) corresponding to the elements
+   *          in X or null if it is not possible.
    *@see #getErrorMessage()
    */
   public static float[] Arrayfloatconvert( Object X ){
@@ -202,7 +211,10 @@ public class NXData_util{
 
 
   /**
-   * gets the index-th element of an array X( if possible) or 0.
+   * Gets the index-th element of an array X( if possible) or 0.
+   *  @parameter  X  some Object
+   *  @parameter  index  the position in X( could be an array or Vector )
+   *  @return  the ith element of X converted to a float or Float.NaN
    */
   public static float getfloatEntry( Object X, int index ){
     //errormessage = "";
@@ -261,7 +273,7 @@ public class NXData_util{
     }
   }
 
-
+ //Gets the name of the node that corresponds to Phi
   private String getPhiName( NxNode detNode ){
     NxNode nx = detNode.getChildNode( "two_theta" );
     
@@ -276,7 +288,7 @@ public class NXData_util{
     
   }
 
-
+  //Gets the name of the field that corresponds to theta
   private String getThetaName( NxNode detNode ){
     if( getPhiName( detNode ).equals( "two_theta" ) )
       return "phi";
@@ -290,6 +302,13 @@ public class NXData_util{
    * get attributes that are connected to the NXdetector node
    * corresponding to this node and assigns them to the appropriate
    * data blocks
+   * @param detNode  A NxNode corresponding to the NxDetector Node for the block
+   *             of Data in DS from start_index to end_index
+   * @param  DS  The data set that is being built
+   * @param  start_index  The index of the first Data block associated with this
+   *                      NxDetector Node
+   * @param  end_index  One greater than the index of the last Data block associated 
+   *                    with this NxDetector Node
    */
   public void setOtherAttributes( NxNode detNode, DataSet DS, int start_index,
                                   int end_index ){
@@ -310,7 +329,6 @@ public class NXData_util{
 
     efficiency = -1;
     NxNode nx, ndis;
-    
     if( detNode == null )
       return;
     ndis = detNode.getChildNode( "distance" );
@@ -544,7 +562,7 @@ public class NXData_util{
    * @param dataname the name of the NxData's (signal=1) field.
    * @param DS the existing DataSet that is to be filled out
    *
-   * @return True if there an error ocurred during processing.
+   * @return true if  an error ocurred during processing.
    */
    public boolean processDS( NxNode node, NxNode instrNode, String axis1,
                              String axis2, String dataname, DataSet DS ){
@@ -777,12 +795,14 @@ public class NXData_util{
 
      errormessage = "";
      int startIndex = DS.getNum_entries();
-     
+     NXData_util.UnitsAdjust( xvals, "us", DS.getX_units());
+     DS.setX_units("us");
+     XScale xscl = new VariableXScale( xvals);
      for( group_id = 0; group_id < ny; group_id++ ){
        System.arraycopy( fdata, group_id * xlength, yvals, 0, xlength );
        int xx = DS.getNum_entries() + 1;
        
-       newData = Data.getInstance( new VariableXScale( xvals ), yvals, xx );
+       newData = Data.getInstance( xscl, yvals, xx );
        
        //  if( timeFieldType >= 0 )
        //    newData.setAttribute( new IntAttribute( 
@@ -802,6 +822,13 @@ public class NXData_util{
      return false;
    }
 
+  /**
+  *    Converts a Nexus Position to an Isaw Detector Position
+  *    @param distance  The distance a detector is from the sample
+  *    @param  phi   The scattering angle
+  *    @param theta  The angle of the detector when projected to a horizontal plane
+  *    @return The Isaw DetectorPosition of the detector
+  */
   public static DetectorPosition convertToIsaw( float distance, float phi,
                                                 float theta ){
     Position3D p3 = new Position3D();
@@ -815,13 +842,15 @@ public class NXData_util{
   }
 
   /**
-   * returns r, theta, phi
+   * Converts Isaw's Detector Position to Nexus's coordinates
+   * @param  DP  An ISAW DetectorPosition
+   * @return  The Nexus name for that position?
    */
   public float[] converToNex( DetectorPosition DP ){
     return DP.getSphericalCoords();
   }
 
-
+ 
   private float[] HistogramOffsetadjust( float[] xvals, NxNode Ax1nd ){
     if( xvals == null )
       return null;
@@ -848,6 +877,12 @@ public class NXData_util{
 
   /**
    * Gets the corresponding NxDetector node for this NxData block
+   * @param node   The NxData node for which the corresponding NxDetector node is needed
+   * @param instrNode  The NxInstrument node for the NxEntry that node is in
+   * @param  DS   The data set which is being built( not used)
+   * @param  ax1Link The link name for the NXdata's axis 1 SDS field 
+   * @param  ax2Link The link name for the NXdata's axis 2 SDS field 
+   * @return the NxDetector node in instrNode that corresponds to the NxData node node.
    */
   public NxNode getCorrespNxDetector( NxNode node,NxNode instrNode,DataSet DS,
                                       String ax1Link, String ax2Link ){
@@ -866,22 +901,32 @@ public class NXData_util{
     
   }
 
-
+  /**
+  *   Adjusts the data in a float array in oldUnits to newUnits
+  *   @param  d   the original float array on input/The corresponding array in the
+  *                new units
+  *   @param  newUnits  the new units( ISAW specific) to convert to
+  *   @param  oldUnits  the units that the elements of d are in
+  */
   public static void UnitsAdjust(float[] d, String newUnits, String oldUnits){
+   
     if( oldUnits == null )
       return;
     if( d == null )
       return;
     if( d.length < 1 )
       return;
-    
+
     float f = NxNodeUtils.getConversionFactor( oldUnits, newUnits );
+
     if( f == Float.NaN )
       return;
     
     for( int i = 0; i < d.length; i++ )
       d[i] = f * d[i];
   }
+
+
 
   /**
    * Test program for NXData_util
