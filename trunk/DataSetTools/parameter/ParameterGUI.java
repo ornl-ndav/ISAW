@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2003/08/30 17:36:52  bouzekc
+ *  Added documentation to reflect the need to set the type in the constructor.
+ *
  *  Revision 1.22  2003/08/28 15:45:13  bouzekc
  *  Instantiated internal PropertyChangeSupport.  This removes several
  *  chances at NullPointerExceptions.
@@ -137,7 +140,8 @@ import javax.swing.*;
  * ParameterGUIs.  DO NOT instantiate initGUI( Vector ) from the interface
  * IParameterGUI in this class.  It is meant to be instantiated in the child
  * class, and the child class should call super.initGUI() to create the full
- * GUI.
+ * GUI.  In addition, to set the type of this ParameterGUI, the constructor
+ * MUST perform a this.type = "SOMETYPE" assignment.
  */
 public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   PropertyChangeListener, java.io.Serializable {
