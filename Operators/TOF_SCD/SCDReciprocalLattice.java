@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/08/11 21:33:14  dennis
+ * Now checks if files loaded ok and returns an error string if not.
+ * Returns "Success" if files are loaded ok.
+ *
  * Revision 1.10  2004/07/30 13:28:01  dennis
  * Now calls viewer.SetThresholdScale before finding peaks.  This
  * fixes a problem with handling files with a large number of counts.
@@ -143,7 +147,9 @@ public class SCDReciprocalLattice implements Wrappable
                                Orientation_Matrix.toString() );
 
     viewer.SetThresholdScale( Threshold_Level );
-    viewer.loadFiles();
+
+    if ( !viewer.loadFiles() )
+      return new ErrorString("Couldn't load files");
     viewer.initialize( true );
     viewer.ShowContours( Show_Contours, Contour_Level );
     viewer.ShowBoundaries( Show_Regions );
@@ -151,6 +157,6 @@ public class SCDReciprocalLattice implements Wrappable
     if ( Calculate_FFTs )
       viewer.CalculateFFTs();
 
-    return null;
+    return "Success";
   }
 }
