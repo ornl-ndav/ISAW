@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/11/05 04:36:09  bouzekc
+ *  Code cleanup in validateSelf().
+ *
  *  Revision 1.12  2003/10/11 19:24:33  bouzekc
  *  Removed declaration of "ParamUsesString" as the superclass declares it
  *  already.  Removed clone() definition as the superclass implements it
@@ -131,7 +134,13 @@ public class MaterialPG extends StringPG {
      * will pass through a MaterialFilter.
      */
     public void validateSelf(  ) {
-      setValid( getStringFilter(  ).isOkay( 0, getValue(  ).toString(  ), "" ) );
+      StringFilterer sf = getStringFilter(  );
+
+      if( sf == null ) {
+        setValid( false );
+      } else {
+        setValid( sf.isOkay( 0, getValue(  ).toString(  ), "" ) );
+      }
     }
 
 }
