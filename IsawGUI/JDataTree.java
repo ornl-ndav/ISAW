@@ -29,7 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.27  2004/07/14 20:03:16  kramer
+ * Fixed a NullPointerException that would occasionaly originate from
+ * getSelectedNode().  I simplified the method to use more specific methods
+ * from the JTree class, but the method's functionality is still the same.
+ *
  * Revision 1.26  2004/07/14 18:51:25  kramer
+ *
  * Now the tree QUICKLY handles selection changed messages and makes the
  * selected nodes' text blue (and makes unselected nodes' text black).
  * If a spectrum is selected in a viewer the corresponding node in the tree
@@ -193,19 +199,38 @@ public class JDataTree
   }
 
   /**
-   * gets the first selected node.
+   * Gets the first selected node.
+   * @return The first selected node or<br>
+   * null if there aren't any nodes selected
    */ 
   public MutableTreeNode getSelectedNode()
   {
+    TreePath path = tree.getSelectionPath();
+    if (path != null)
+       return (MutableTreeNode)path.getLastPathComponent();
+    else
+       return null;
+    
+    /*
+    //Here is another implementation that checks for null
+    //but is probably to complicated
     TreePath selectedPath = null;
     if(  tree.getSelectionCount() > 0  )
     {
       int[] selectedRows = tree.getSelectionRows();
-      selectedPath =  tree.getPathForRow(selectedRows[0]); 
-      return (MutableTreeNode)selectedPath.getLastPathComponent();
+      //selectedRows is either an empty array or null if 
+      //nothing is selected
+      if (selectedRows != null)
+      {
+         selectedPath =  tree.getPathForRow(selectedRows[0]); 
+         //selectedPath is null if the selected row is not visible
+         if (selectedPath != null)
+            return (MutableTreeNode)selectedPath.getLastPathComponent();
+      }
     }
-    else 
-      return null;
+    
+    return null;
+    */
   }
  
   
