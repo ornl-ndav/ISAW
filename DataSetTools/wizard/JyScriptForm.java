@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/07/07 20:35:51  bouzekc
+ * Now implicitly sets HAS_CONSTANTS by way of
+ * setConstantParamIndices().  Now takes Script name command
+ * line arguments.  Removed default constructor.
+ *
  * Revision 1.2  2003/07/03 14:13:02  bouzekc
  * Added all missing javadoc comments and formatted existing
  * comments.
@@ -52,13 +57,6 @@ import DataSetTools.util.FilenameUtil;
  */
 public class JyScriptForm extends OperatorForm {
   //~ Constructors *************************************************************
-
-  /**
-   * Construct an JyScriptForm with the title "JyScript Form."
-   */
-  public JyScriptForm(  ) {
-    super( "Jython Script Form" );
-  }
 
   /**
    * Construct a JyScriptForm with the given filename.  This uses
@@ -113,7 +111,6 @@ public class JyScriptForm extends OperatorForm {
     this( filename );
     setParamClass( type );
     result_param.setName( name );
-    HAS_CONSTANTS = true;
     setConstantParamIndices( indices );
     setDefaultParameters(  );
   }
@@ -124,8 +121,7 @@ public class JyScriptForm extends OperatorForm {
    * Testbed.
    */
   public static void main( String[] args ) {
-    JyScriptForm form = new JyScriptForm( 
-        "/IPNShome/bouzekc/JythonScripts/find_multiple_peaks2.py" );
+    JyScriptForm form = new JyScriptForm( args[0] );
 
     System.out.println( "The Script title is " + form.getTitle(  ) );
   }
