@@ -30,8 +30,12 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.7  2004/06/22 15:36:26  rmikk
+ *  Added documentation for setGridId method and associated variable
+ *  Removed unused variables
+ *
  *  Revision 1.6  2004/04/26 13:08:49  rmikk
- *  Now implements XMLread and XMLwrite
+ *  Now implements read and XMLwrite
  *
  *  Revision 1.5  2004/03/15 06:10:36  dennis
  *  Removed unused import statements.
@@ -87,6 +91,12 @@ public class DetectorPixelInfo implements IPixelInfo ,IXmlIO
   private short      row;
   private short      col;
   private IDataGrid  grid;
+  
+  /**
+    *  A Hashtable of the gridID's and their grid that have already been set 
+    * up while reading through the Datablocks in an XML file
+    */
+  private transient Hashtable gridIDs = null;
 
   /**
    *  Construct a DetectorPixelInfo object with the specified id, row, column
@@ -358,16 +368,19 @@ public class DetectorPixelInfo implements IPixelInfo ,IXmlIO
   public boolean XMLread(java.io.InputStream stream)
   {
     String S=xml_utils.getTag(stream);
-    boolean b=xml_utils.skipAttributes(stream);
+    //boolean b=;
+    xml_utils.skipAttributes(stream);
     String V=xml_utils.getValue(stream);
     try{
       id=(new Integer(V.trim())).intValue();
       S=xml_utils.getTag(stream);
-      b=xml_utils.skipAttributes(stream);
+      //b=
+      xml_utils.skipAttributes(stream);
       V=xml_utils.getValue(stream);
       row=(new Integer(V.trim())).shortValue();
       S=xml_utils.getTag(stream);
-      b=xml_utils.skipAttributes(stream);
+      //b=
+      xml_utils.skipAttributes(stream);
       V=xml_utils.getValue(stream);
       col=(new Integer(V.trim())).shortValue();
     }catch(Exception ss){
@@ -380,58 +393,58 @@ public class DetectorPixelInfo implements IPixelInfo ,IXmlIO
     int grid_id,nrows,ncols;
     String units;
     float w,h,d;
-    float[] center,yvec,zvec,xvec;
+    float[] center,yvec,xvec;//,zvec
      
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     V=xml_utils.getValue(stream);
     grid_id=(new Integer(V.trim())).intValue();
 
     S=xml_utils.getTag(stream);
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     units=xml_utils.getValue(stream).trim();
     
     S=xml_utils.getTag(stream);
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     V=xml_utils.getValue(stream).trim();
     center = getDataList( V);
     
     S=xml_utils.getTag(stream);
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     V=xml_utils.getValue(stream).trim();
     xvec= getDataList(V);
     
     S=xml_utils.getTag(stream);
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     V=xml_utils.getValue(stream).trim();
     yvec= getDataList(V);
 	
     S=xml_utils.getTag(stream);
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     V=xml_utils.getValue(stream).trim();
-    zvec= getDataList(V);
+    //zvec= getDataList(V);
 	
     S=xml_utils.getTag(stream);
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     V=xml_utils.getValue(stream).trim();
     w= (new Float(V)).floatValue();
 	
     S=xml_utils.getTag(stream);
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     V=xml_utils.getValue(stream).trim();
     h= (new Float(V)).floatValue();
 	
     S=xml_utils.getTag(stream);
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     V=xml_utils.getValue(stream).trim();
     d= (new Float(V)).floatValue();
 
     S=xml_utils.getTag(stream);
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     V=xml_utils.getValue(stream).trim();
     nrows= (new Integer(V)).intValue();
 	
     S=xml_utils.getTag(stream);
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     V=xml_utils.getValue(stream).trim();
     ncols= (new Integer(V)).intValue(); 
     if( gridIDs != null)
@@ -446,7 +459,7 @@ public class DetectorPixelInfo implements IPixelInfo ,IXmlIO
     }
    
     S=xml_utils.getTag(stream);
-    b=xml_utils.skipAttributes(stream);
+    xml_utils.skipAttributes(stream);
     if(!(S.equals("/DetectorPixelInfo")))
       return false;
     return true;
@@ -546,7 +559,7 @@ public class DetectorPixelInfo implements IPixelInfo ,IXmlIO
 }
 
 
-  private Hashtable gridIDs = null;
+  
 
   /**
     *  Sets the Grids already in use by the current data set
