@@ -28,6 +28,12 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.8  2003/06/11 22:43:59  bouzekc
+ * Added code to input three delta values (h, k, and l).
+ * Added code to allow specifying a matrix file to apply to
+ * certain runs or to overall runs.  Updated documentation.
+ * Moved calls to setFileSeparator() out of the loop.
+ *
  * Revision 1.7  2003/06/10 21:55:07  bouzekc
  * Added parameter for IndexJ log file viewing.  Moved error
  * checking into loop to avoid a potential missed getResult()
@@ -120,8 +126,10 @@ public class IndexJForm extends Form
     getParameter(0).setValue(runnums);
     getParameter(1).setValue(peaksPath);
     getParameter(2).setValue(new Float(delta));
-    getParameter(3).setValue(new Boolean(update));
-    getParameter(4).setValue(expName);
+    getParameter(3).setValue(new Float(delta));
+    getParameter(4).setValue(new Float(delta));
+    getParameter(5).setValue(new Boolean(update));
+    getParameter(6).setValue(expName);
   }
 
   /**
@@ -137,19 +145,29 @@ public class IndexJForm extends Form
     //1
     addParameter(new DataDirPG("Peaks File Path",null));
     //2
-    addParameter(new FloatPG("Delta",0.20f));
-    //3
-    addParameter(new BooleanPG("Update Peaks File",true));
-    //4
     addParameter(new StringPG("Experiment Name",null));
+    //3
+    addParameter(new FloatPG("Delta (h)",0.10f));
+    //4
+    addParameter(new FloatPG("Delta (k)",0.10f));
     //5
+    addParameter(new FloatPG("Delta (l)",0.10f));
+    //6
+    addParameter(new BooleanPG("Update Peaks File",true));
+    //7
+    addParameter(new BooleanPG("Specify a Matrix File?", false));
+    //8
+    addParameter(new SaveFilePG("Matrix File to Load", ""));
+    //9
+    addParameter(new IntArrayPG("Restrict Runs", ""));
+    //10
     addParameter(new LoadFilePG("JIndex Log",null));
 
 
     if(HAS_CONSTANTS)
-      setParamTypes(new int[]{0,1,4},new int[]{2,3}, new int[]{5});
+      setParamTypes(new int[]{0,1,2},new int[]{3,4,5,6,7,8,9}, new int[]{10});
     else
-      setParamTypes(null, new int[]{0,1,2,3,4}, new int[]{5});
+      setParamTypes(null, new int[]{0,1,2,3,4,5,6,7,8,9}, new int[]{10});
   }
 
 
@@ -163,9 +181,11 @@ public class IndexJForm extends Form
   {
     StringBuffer s = new StringBuffer();
     s.append("@overview This is a Form to add extra functionality to ");
-    s.append("IndexJ.  It uses multiple expName#.matrix files when ");
-    s.append("getResult() is called.  In addition, it \"knows\" which ");
-    s.append("runs to restrict for each matrix file.  Other than that, ");
+    s.append("IndexJ.  If specMatrix is false, it uses multiple ");
+    s.append("lsexpName#.matrix files when getResult() is called.  ");
+    s.append("In addition, it \"knows\" which runs to restrict for each ");
+    s.append("matrix file.  If specMatrix is true, the matrix files and the ");
+    s.append("runs to restrict can be specified.  Other than that, ");
     s.append("it functions in a similar manner to IndexJ.\n");
     s.append("@assumptions It is assumed that:\n");
     s.append("The matrix files have the format \"<experiment name><run number>");
@@ -179,9 +199,16 @@ public class IndexJForm extends Form
     s.append("@param runnums The run numbers used for naming the matrix ");
     s.append("files.\n");
     s.append("@param peaksPath The path where the peaks file is located.\n");
-    s.append("@param delta Error parameter for indexing peaks.\n");
-    s.append("@param update Whether to update the peaks file.\n");
     s.append("@param expName The experiment name.\n");
+    s.append("@param delta_h Error parameter for indexing peaks (h).\n");
+    s.append("@param delta_k Error parameter for indexing peaks (k).\n");
+    s.append("@param delta_l Error parameter for indexing peaks (l).\n");
+    s.append("@param update Whether to update the peaks file.\n");
+    s.append("@param specMatrix Whether to specify a matrix file or let ");
+    s.append("IndexJ apply the ls#expName.mat files to the *.peaks file.\n");
+    s.append("@param matFile If specMatrix is true, the matrix file to load.\n");
+    s.append("@param restrictRuns If specMatrix is true, the runs to restrict.\n");
+    s.append("@param indexLog The log resulting from IndexJ's operation.\n");
     s.append("@return A Boolean indicating success or failure of the Form's ");
     s.append("execution.\n");
     s.append("@error No valid run numbers are entered.\n");
@@ -214,10 +241,10 @@ public class IndexJForm extends Form
     SharedData.addmsg("Calculating h, k, and l values for each run...");
     IParameterGUI param;
     String peaksDir, expName, peaksName, runNum, matInputPath, matrixFrom, 
-           matName;
+           matName, restrictRuns;
     Object obj;
-    float delta;
-    boolean update;
+    float delta_h, delta_k, delta_l;
+    boolean update, useSpecMat;
     int[] runsArray;
 
     //gets the run numbers
@@ -234,45 +261,12 @@ public class IndexJForm extends Form
 
     //gets the input path
     param = (IParameterGUI)super.getParameter(1);
-    obj = param.getValue();
-
-    if( (obj != null) && (obj.toString().length() > 0) )
-    {
-        peaksDir = obj.toString();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-        "ERROR: you must enter a valid peaks file directory.");
-
-    //gets the delta
-    param = (IParameterGUI)super.getParameter(2);
-    obj = param.getValue();
-
-    if( (obj != null) && (obj instanceof Float) )
-    {
-        delta = ((Float)obj).floatValue();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-        "ERROR: you must enter a valid delta value.");
-
-    //gets the update value 
-    param = (IParameterGUI)super.getParameter(3);
-    obj = param.getValue();
-
-    if( (obj != null) && (obj instanceof Boolean) )
-    {
-        update = ((Boolean)obj).booleanValue();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-        "ERROR: you must enter a valid update value.");
+    peaksDir = StringUtil.setFileSeparator(
+                 param.getValue().toString() + "/");
+    param.setValid(true);
 
     //gets the experiment name
-    param = (IParameterGUI)super.getParameter(4);
+    param = (IParameterGUI)super.getParameter(2);
     obj = param.getValue();
 
     if( (obj != null) && (obj.toString().length() > 0) )
@@ -284,43 +278,104 @@ public class IndexJForm extends Form
       return errorOut(param, 
         "ERROR: you must enter a valid experiment name.");
 
+    //gets the delta_h
+    param = (IParameterGUI)super.getParameter(3);
+    obj = param.getValue();
+
+    if( (obj != null) && (obj instanceof Float) )
+    {
+        delta_h = ((Float)obj).floatValue();
+        param.setValid(true);
+    }
+    else
+      return errorOut(param, 
+        "ERROR: you must enter a valid delta value.");
+
+    //gets the delta_k
+    param = (IParameterGUI)super.getParameter(4);
+    obj = param.getValue();
+
+    if( (obj != null) && (obj instanceof Float) )
+    {
+        delta_k = ((Float)obj).floatValue();
+        param.setValid(true);
+    }
+    else
+      return errorOut(param, 
+        "ERROR: you must enter a valid delta value.");
+
+    //gets the delta_l
+    param = (IParameterGUI)super.getParameter(5);
+    obj = param.getValue();
+
+    if( (obj != null) && (obj instanceof Float) )
+    {
+        delta_l = ((Float)obj).floatValue();
+        param.setValid(true);
+    }
+    else
+      return errorOut(param, 
+        "ERROR: you must enter a valid delta value.");
+
+    //gets the update value 
+    param = (IParameterGUI)super.getParameter(6);
+    param.setValid(true);
+    update = ((BooleanPG)param).getbooleanValue();
+
+    //get the "use matrix" boolean value
+    param = (IParameterGUI)super.getParameter(7);
+    param.setValid(true);
+    useSpecMat = ((BooleanPG)param).getbooleanValue();
+
     //peaks file name - make sure it is right for the system
-    peaksName = StringUtil.setFileSeparator(
-      peaksDir + "/" + expName + ".peaks");
+    peaksName = peaksDir + expName + ".peaks";
 
     //no need to continually recreate this Operator in a loop
     indexJOp = new IndexJ();
     indexJOp.getParameter(0).setValue(peaksName);
-    indexJOp.getParameter(3).setValue(new Float(delta));
-    indexJOp.getParameter(4).setValue(new Boolean(update));
+    indexJOp.getParameter(3).setValue(new Float(delta_h));
+    indexJOp.getParameter(4).setValue(new Float(delta_k));
+    indexJOp.getParameter(5).setValue(new Float(delta_l));
+    indexJOp.getParameter(6).setValue(new Boolean(update));
 
-    //if the lsqrs matrix files exist, this is their format
-    runNum = formatRunNum(runsArray[0]);
-    matName = StringUtil.setFileSeparator(peaksDir + "/ls" + 
-                expName + runNum + ".mat");
-
-    //if there is no matrix file, run off BlindJ's output
-    if( !(new File(matName).exists()) )
+    if(useSpecMat)  //user wants to use a specific matrix file
     {
-      //the name of the matrix file - make sure it is right for the system
-      matName = StringUtil.setFileSeparator(
-                  peaksDir + "/" + expName + ".mat");
+      //get the matrix name and be sure the file exists
+      param = (IParameterGUI)super.getParameter(8);
+      matName = (String)param.getValue().toString();
+
+      if( !(new File(matName).exists()) )
+        return errorOut(param,
+                 "ERROR: The specified matrix file does not exist.");
+
+      //get the restrict runs value
+      param = (IParameterGUI)super.getParameter(9);
+      restrictRuns = (String)param.getValue().toString();
+                 
       SharedData.addmsg("IndexJ is updating " + peaksName + " with " + matName);
       indexJOp.getParameter(1).setValue(matName);
+      indexJOp.getParameter(2).setValue(restrictRuns);
       obj = indexJOp.getResult();
       if(obj instanceof ErrorString)
         return errorOut("IndexJ failed: " + obj.toString());
     }
-    else     //otherwise, use LsqrsJ's output
+    else  //try to find the matrix files
     {
+      //if the lsqrs matrix files exist, this is their format
+      runNum = formatRunNum(runsArray[0]);
+      matName = peaksDir + "ls" + expName + runNum + ".mat";
+      if( !(new File(matName).exists()) )
+        return errorOut(param,
+                 "ERROR: No least squares matrix files exist.  " + 
+                 "Please specify a matrix file.");
+
       for(int i = 0; i < runsArray.length; i++)
       {
         //load the run numbers.  We don't want to remove the leading zeroes!
         runNum = formatRunNum(runsArray[i]);
                
         //the name of the matrix file - make sure it is right for the system
-        matName = StringUtil.setFileSeparator(
-                    peaksDir + "/ls" + expName + runNum + ".mat");
+        matName = peaksDir + "ls" + expName + runNum + ".mat";
       
         SharedData.addmsg("IndexJ is updating " + peaksName + " with " + matName);
 
@@ -336,7 +391,7 @@ public class IndexJForm extends Form
     }
 
     //set the indexj log file parameter
-    param = (IParameterGUI)getParameter(5);
+    param = (IParameterGUI)getParameter(10);
     param.setValue(obj);
   
     SharedData.addmsg("--- IndexJForm finished. ---");
