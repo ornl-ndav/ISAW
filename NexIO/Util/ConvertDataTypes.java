@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/12/23 13:25:57  rmikk
+ * Fixed indentations and spacings between lines
+ *
  * Revision 1.7  2004/03/15 19:37:54  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -116,28 +119,40 @@ public class ConvertDataTypes{
   public static int[]   intArrayValue( Object O) {
      if( O == null)
         return null;
+        
      try{
         if( O.getClass().isArray()){
+          
            int[] Res = new int[ Array.getLength(O)];
            for( int i=0; i< Res.length; i++){
+             
               Object El = Array.get( O,i);
               if( El instanceof Number)
+              
                  Res[i] = ((Number)El).intValue();
+                 
               else if( El instanceof String)
+              
                  Res[i] = (new Integer( (String)El)).intValue(); 
+                 
            }
            return Res; 
+           
         }else if( O instanceof Number){
+          
            int[] Res = new int[1];
            Res[0] = ((Number)O).intValue();
            return Res;
+           
         }else if( O instanceof String){
+          
            int[] Res = new int[1];
            Res[0] = (new Integer( (String)O)).intValue(); 
            return Res;
   
         }
      }catch( Exception S){}
+     
      return null;
 
     
@@ -149,10 +164,13 @@ public class ConvertDataTypes{
    */
   public static float  floatValue( Object O){
      float[] Res = floatArrayValue( O);
+     
      if( Res == null)
         return Float.NaN;
+        
      if( Res.length < 1)
         return Float.NaN;
+        
      return Res[0];
 
   };
@@ -163,10 +181,13 @@ public class ConvertDataTypes{
    */
   public static int intValue( Object O){
      int[] Res = intArrayValue( O);
+     
      if( Res == null)
         return java.lang.Integer.MIN_VALUE;
+        
      if( Res.length < 1)
         return java.lang.Integer.MIN_VALUE;
+        
      return Res[0];
 
   };
@@ -174,21 +195,31 @@ public class ConvertDataTypes{
   private static char[] cnvertTochar( byte[] L){
      if( L == null)
         return null;
+        
      char[] Res = new char[ L.length];
      for( int i=0; i< L.length; i++)
         Res[i] = (char)L[i];
+        
      return Res;
 
   }
   private static int findNext( char[] L, char[] F, int start){
-     int n = 0;
+    
      for( int i = start; (i >=0) && (i < L.length); i++){
+       
         boolean match = true;
         for( int j = 0; (j< F.length) &&(match); j++)
-           if( i+j >L.length) match = false;
-           else if( L[i+j] != F[j]) match = false;
-        if(match) return i;
+        
+           if( i+j >L.length)
+              match = false;
+              
+           else if( L[i+j] != F[j])
+              match = false;
+              
+        if(match) 
+           return i;
      }
+     
      return -1;
   }
   /** end is not included
@@ -196,12 +227,22 @@ public class ConvertDataTypes{
   private static int countt( char[]L, char [] F, int start, int end){
      int n = 0;
      for( int i = start; (i >=0) && (i < end); i++){
+       
         boolean match = true;
         for( int j = 0; (j< F.length) &&(match); j++)
-           if( i+j >L.length) match = false;
-           else if( L[i+j] != F[j]) match = false;
-        if(match) n++;
+        
+           if( i+j >L.length)
+           
+             match = false;
+             
+           else if( L[i+j] != F[j]) 
+           
+              match = false;
+              
+        if(match)
+           n++;
      }
+     
      return n;
   }
 
@@ -212,19 +253,26 @@ public class ConvertDataTypes{
    */
   public static String[] charArraystoStrings( char[] L){
     char[] two0= new char[2];
-    two0[0]=0; two0[1] = 0;
+    two0[0]=0; 
+    two0[1] = 0;
+    
     char[] one0= new char[1];
     one0[0] = 0;
     int n = countt( L,one0,0,L.length);
-    if( n <=0) n++;
+    if( n <=0)
+      n++;
     String[] Res = new String[n];
     int k=0;
     for( int i=0; i < n; i++){
+      
        int k1 = findNext(L,one0,k);
-       if( k1 <0) k1 = L.length;
+       if( k1 <0) 
+          k1 = L.length;
+          
        Res[i] = new String (L,k,k1 - k );
        k =k1+1;
     }
+    
    return Res;
   }
 
@@ -235,25 +283,31 @@ public class ConvertDataTypes{
   public static String[] StringArrayValue( Object O){
      if( O == null)
         return null;
+        
      if( O instanceof char[]){
         return charArraystoStrings( (char[])O);
 
      }
+     
      if( O instanceof byte[])
         return charArraystoStrings( cnvertTochar( (byte[])O));
+        
      else if( O.getClass().isArray()){
+       
         String[] Res = new String[ Array.getLength(O)];
         for( int i=0; i< Res.length; i++){
+          
            Object El = Array.get( O,i);
            Res[i] = El.toString();
         }
+        
         return Res; 
         
      }else {
+       
         String[] Res = new String[1];
         Res[0] = O.toString();
         return Res;
-  
      }
   };
 
@@ -262,12 +316,16 @@ public class ConvertDataTypes{
    *  not possible.
    */
   public static String StringValue( Object O){
-     if( O == null) return null;
+     if( O == null) 
+        return null;
+        
      String[] X = StringArrayValue( O);
      if( X == null)
        return null;
+       
      if( X.length < 1)
        return null;
+       
      return X[0]; 
 
   };
@@ -312,7 +370,9 @@ public class ConvertDataTypes{
    *   Adjusts all values in an array to the proper units
    *   @param  d   the array to be adjusted
    *   @param oldUnits  the units that the array is currently in
-   *   @param StdUnits  the Isaw Standard units{us,m,etc.}
+   *   @param StdUnits  the Isaw Standard units{must be radians, meters,Kelvin,
+   *                                                    us,grams,
+   *                   Mev,or steradian}
    *   @param mult   should be 1 unless StdUnits are not desired. The conversion
    *                 factor to StdUnits is multiplied by mult
    *   @param add    should be 0 unless StdUnits are not desired. The result after
@@ -323,8 +383,10 @@ public class ConvertDataTypes{
                  float mult, float add){ //y = mx+b
     if( oldUnits == null )
       return ;
+      
     if( d == null )
       return;
+      
     if( d.length < 1 )
       return;
 
@@ -335,6 +397,7 @@ public class ConvertDataTypes{
     
     for( int i = 0; i < d.length; i++ )
       d[i] =mult* f * d[i]+add;
+      
   } 
 
   /**
@@ -343,6 +406,7 @@ public class ConvertDataTypes{
   public static DetectorPosition convertToIsaw(float distance,
                                              float phi,
                                              float theta){
+                                               
      DetectorPosition dp = new DetectorPosition();
      float[] f =Types.convertFromNexus(distance, phi, theta);
      dp.setSphericalCoords( f[0],f[2],f[1]);
@@ -354,6 +418,7 @@ public class ConvertDataTypes{
    *  @see NexIO.NxNodeUtils#parse(String)
   */
   public static java.util.Date parse(java.lang.String DateString){
+    
      return NxNodeUtils.parse( DateString);
   }
 
@@ -362,8 +427,10 @@ public class ConvertDataTypes{
    *    or DS is null nothing happens.
    */
   public static void addAttribute( DataSet DS, Attribute att){
+    
      if( att == null)
        return;
+       
      DS.setAttribute( att);
   }
 
@@ -373,8 +440,10 @@ public class ConvertDataTypes{
    *    or DS is null nothing happens.
    */
   public static void addAttribute(Data DB, Attribute att){
+    
      if( att == null)
         return;
+        
      DB.setAttribute( att);
   }
 
@@ -383,11 +452,14 @@ public class ConvertDataTypes{
    */
   public  static DetPosAttribute CreateDetPosAttribute( String AttributeName,
                                                     Object value)
-   {if(value == null) return null;
-    if( !(value instanceof DetectorPosition))
+   {
+     if(value == null) 
+        return null;
+        
+     if( !(value instanceof DetectorPosition))
         return null;
 
-    return new DetPosAttribute( AttributeName, (DetectorPosition)value);
+     return new DetPosAttribute( AttributeName, (DetectorPosition)value);
    }
 
   /** 
@@ -395,9 +467,12 @@ public class ConvertDataTypes{
    */
   public  static FloatAttribute CreateFloatAttribute( String AttributeName, 
                            Object value){
+                             
      float V = floatValue(value);
+     
      if( Float.isNaN( V))
         return null;
+        
      return new FloatAttribute( AttributeName, V);
         
   }
@@ -407,7 +482,9 @@ public class ConvertDataTypes{
    */
   public  static Float1DAttribute CreateFloat1DAttribute( String AttributeName, 
                                                     Object value)
-        {return null;}
+     {
+       return null;
+     }
 
 
 
@@ -416,9 +493,11 @@ public class ConvertDataTypes{
    */
   public  static IntAttribute CreateIntAttribute( String AttributeName, 
                   Object value){
+                    
      int V = intValue(value);
      if( V== Integer.MIN_VALUE)
         return null;
+        
      return new IntAttribute( AttributeName, V);
         
   }
@@ -429,9 +508,11 @@ public class ConvertDataTypes{
    */
   public  static StringAttribute CreateStringAttribute( String AttributeName, 
                            Object value){
+                             
      String V = StringValue(value);
      if( V == null)
         return null;
+        
      return new StringAttribute( AttributeName, V);
         
   }
@@ -442,7 +523,9 @@ public class ConvertDataTypes{
    */
   public  static SampleOrientationAttribute CreateSampleOrientationAttribute( 
                         String AttributeName, Object value)
-        {return null;}
+    {
+     return null;
+    }
 
 
   /**
@@ -450,19 +533,22 @@ public class ConvertDataTypes{
    */
   public static  PixelInfoListAttribute CreatePixelInfoListAttribute( 
                  String AttributeName, Object value)
-        {return null;}
+    {
+     return null;
+    }
 
   /**
    *   Converts the NeXus InstrumentName( Description) to the corresponding
    *   Isaw Instrument Number
    */
   public int getIsawInstrumentNumber( String NeXusAnalysisCode){
+    
      return (new Inst_Type()).getIsawInstrNum( NeXusAnalysisCode);
+     
   }
 
 
-  private static float AngleConversionFactor( String OldUnits ){ //base radians
-     boolean hasDegree = false;
+  private static float AngleConversionFactor( String OldUnits ){ //base radians   
     
      if( ";rad;radian;r;".indexOf( ";" + OldUnits + ";" ) >= 0 )
         return 1.0f;
@@ -475,6 +561,7 @@ public class ConvertDataTypes{
 
 
   private static float LengthConversionFactor( String OldUnits ){ //base m
+    
      int n = getNumericStart( OldUnits);
      float factor = 1;
      if( n >0)
@@ -511,6 +598,7 @@ public class ConvertDataTypes{
 
 
   private static float TempConversionFactor( String OldUnits ){ //base Kelvin
+    
      if( "kelvin;k;".indexOf( OldUnits.toLowerCase() + ";" ) >= 0 )
         return 1.0f;
 
@@ -521,9 +609,11 @@ public class ConvertDataTypes{
   }
 
 
-  private static float TimeConversionFactor( String OldUnits ){ //us 
+  private static float TimeConversionFactor( String OldUnits ){ //us
+     
      int n = getNumericStart( OldUnits);
      float factor = 1;
+     
      if( n >0)
         try{
           factor = (new Float( OldUnits.substring( 0,n))).floatValue();
@@ -534,25 +624,38 @@ public class ConvertDataTypes{
      OldUnits = OldUnits.substring(n);
      if( OldUnits == null)
         return factor;
+        
      if( OldUnits.length() < 1)
         return factor;
+        
      if( OldUnits.charAt(0)=='*')
         OldUnits = OldUnits.substring(1);
    
      if("s;sec;second;seconds;".indexOf(OldUnits+";") >=0)
         return factor*1000000.0f;
-     if( "ms;msec;mseconds;msecond;millis;millisec;milliseconds".indexOf(OldUnits+";")>=0)
+        
+     if( "ms;msec;mseconds;msecond;millis;millisec;milliseconds".
+                                                  indexOf(OldUnits+";")>=0)
         return factor*1000.0f;
-     if("us;usec;useconds;usecond;micros;microsec;microseconds;".indexOf( OldUnits+";") >=0)
+        
+     if("us;usec;useconds;usecond;micros;microsec;microseconds;".
+                                                  indexOf( OldUnits+";") >=0)
+     
         return factor;
-     if("ns;nsec;nseconds;nanos;nanosec;nanosecond;nanoseconds;".indexOf( OldUnits+";") >=0)
+        
+     if("ns;nsec;nseconds;nanos;nanosec;nanosecond;nanoseconds;".
+                                                  indexOf( OldUnits+";") >=0)
         return factor*.001f;
+        
      if("min;minute;minutes;".indexOf(OldUnits+";")>=0)
         return factor*60*1000000.0f;
+        
      if("hr;hour;hrs;hours;".indexOf(OldUnits+";")>=0)
         return 60*factor*1000000.0f;
+        
      if("day;days;".indexOf(OldUnits+";")>=0)
         return 24*60*factor*1000000.0f;
+        
 
      return 1.0f;
     
@@ -560,37 +663,49 @@ public class ConvertDataTypes{
 
 
   private static float MassConversionFactor( String OldUnits ){ //grams
+    
      return 1.0f;
   }
 
 
   private static float EnergyConversionFactor( String OldUnits ){ //Mev
+    
      return 1.0f;
   }
 
  private static int getNumericStart( String S){
-     int n=0;
-     boolean decimalDone = false, expOn = false, leadSign=true;
+    
+     boolean decimalDone = false, 
+             expOn = false, 
+             leadSign=true;
 
      for( int i = 0; i< S.length(); i++){
+       
       char c= S.charAt(i);
-      if( Character.isDigit( c)){ 
+      if( Character.isDigit( c)){
+         
           leadSign = false;}
+          
       else if( (c=='.') && !decimalDone&&!expOn){
+        
           leadSign = false;
           decimalDone = true;
       }
       else if( ("+-".indexOf(c) >=0) && leadSign)
+      
           leadSign = false;
+          
       else if( ("Ee^".indexOf( c) >=0) && !expOn){
+        
           expOn = true;
           leadSign = true;
           decimalDone = true;
+          
       }else
+      
          return i;
-        
-
      }
+     
      return S.length();
   }
  
