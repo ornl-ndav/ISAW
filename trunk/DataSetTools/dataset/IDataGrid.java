@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2003/02/20 19:45:00  dennis
+ *  Now implements Serializable.
+ *
  *  Revision 1.1  2003/02/04 18:15:06  dennis
  *  Initial version.
  *
@@ -52,7 +55,7 @@ import DataSetTools.math.*;
  * can implement this interface, as needed, to describe a non-uniform grid.
  */  
 
-public interface IDataGrid 
+public interface IDataGrid extends Serializable
 {
   /**
    *  Get the ID of the current data grid (i.e. detector).  This ID should be 
