@@ -3,6 +3,12 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.4  2001/07/25 15:53:47  neffk
+ * added a new constructor to create an empty Experiment.  also changed
+ * the setUserObject function to only reset the Experiment when passed
+ * a DataSet[] instead of cooking, baking a cake, and cleaning the
+ * kitchen sink.
+ *
  * Revision 1.3  2001/07/23 13:52:18  neffk
  * added a select flag, removed update().
  *
@@ -37,6 +43,13 @@ public class Experiment
   private Vector          dataset_nodes  = null;
   private String          name           = null;
   private boolean         selected       = false;
+
+
+  public Experiment( String name )
+  {
+    this.name = name;
+    dataset_nodes = new Vector();
+  }
 
 
   public Experiment( DataSet[] dss, String name )
@@ -210,33 +223,15 @@ public class Experiment
    */
   public void setUserObject( Object obj )
   {
-                                       //if 'obj' is a DataSet[], clear
-                                       //all objects in this container and
-                                       //initialized w/ the elements of 'obj'
-    if( obj instanceof DataSet[] )
+    DataSet[] dss = (DataSet[])obj;
+    dataset_nodes = new Vector();
+   
+    for( int i=0;  i<dss.length;  i++ )
     {
-      DataSet[] dss = (DataSet[])obj;
-      dataset_nodes = new Vector();
-    
-      for( int i=0;  i<dss.length;  i++ )
-      {
-        DataSetMutableTreeNode node = new DataSetMutableTreeNode( dss[i] );
-        node.setParent( this );
+      DataSetMutableTreeNode node = new DataSetMutableTreeNode( dss[i] );
+      node.setParent( this );
 
-        dataset_nodes.addElement( node );
-      }
-    }
-
-                                       //if 'obj' is a DataSet object and
-                                       //it's already stored here, just
-                                       //update it.
-    else if( obj instanceof DataSet )
-    {
-      DataSet ds = (DataSet)obj;
-
-      for( int i=0;  i<dataset_nodes.size();  i++ )
-        if(  ( (DataSetMutableTreeNode)dataset_nodes.get(i) ).getUserObject().equals( ds )  )
-          ( (DataSetMutableTreeNode)dataset_nodes.get(i) ).setUserObject( ds );
+      dataset_nodes.addElement( node );
     }
   }
   
@@ -248,7 +243,12 @@ public class Experiment
    */
   public DataSet getUserObject( int index )
   {
-    DataSetMutableTreeNode node = (DataSetMutableTreeNode)dataset_nodes.get( index );
-    return node.getUserObject();
+    if( dataset_nodes != null )
+    {
+      DataSetMutableTreeNode node = (DataSetMutableTreeNode)dataset_nodes.get( index );
+      return node.getUserObject();
+    }
+    else
+      return DataSet.EMPTY_DATA_SET;
   }
 }
