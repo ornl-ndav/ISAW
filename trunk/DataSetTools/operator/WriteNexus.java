@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/08/01 19:04:25  dennis
+ * Added information on possible extensions to filename default parameter.
+ *
  * Revision 1.1  2001/07/30 21:20:59  rmikk
  * Initial Checkin
  *
@@ -88,7 +91,7 @@ public void setDefaultParameters()
      parameters = new Vector();
      addParameter( new Parameter( "Monitor Data Set", new DataSet("","")));
      addParameter( new Parameter( "Histogram Data Set", new DataSet("","")));
-     addParameter( new Parameter("filename", "Test" ));
+     addParameter( new Parameter("filename(.nxs or .xml)", "Test.nxs" ));
   }
 
 /** Executes or runs this operator using the values of the current parameters
