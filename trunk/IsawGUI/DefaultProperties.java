@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2003/12/15 01:51:44  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.21  2003/11/25 19:04:06  rmikk
  *  Replaced %20 by a space after a call to Resource.
  *
@@ -110,7 +113,6 @@
 package IsawGUI;
 
 import java.io.*;
-import java.io.IOException; 
 import java.util.Properties;
 import DataSetTools.util.*;
 

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/12/15 01:51:44  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.7  2003/01/09 20:40:15  dennis
  * Small documentation fix. (Chris Bouzek)
  *
@@ -58,7 +61,6 @@
 
 package DataSetTools.operator.DataSet.Conversion.XAxis;
 
-import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;

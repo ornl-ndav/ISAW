@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/12/15 01:56:37  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.7  2003/01/23 19:28:54  dennis
  *  Added getDocumentation() method and java docs on getResult().
  *  (Chris Bouzek)
@@ -60,13 +63,14 @@
 
 package DataSetTools.operator.Generic.Special;
 
-import  java.io.*;
-import  java.util.Vector;
-import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
-import  DataSetTools.operator.Parameter;
-import  DataSetTools.retriever.RunfileRetriever;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.util.Vector;
+
+import DataSetTools.operator.Parameter;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.SysUtil;
 
 /**
  * This operator makes system calls. It does grab the process's STDOUT
