@@ -7,6 +7,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/07/13 14:29:33  dennis
+ *  Removed redundant TOTAL_COUNTS attribute, leaving only TOTAL_COUNT
+ *
  *  Revision 1.3  2000/07/10 22:23:51  dennis
  *  July 10, 2000 version... many changes
  *
@@ -69,7 +72,6 @@ abstract public class Attribute implements Serializable
   public static final String  DETECTOR_IDS      = "Detector IDs";
   public static final String  GROUP_ID          = "Group ID";
   public static final String  TIME_FIELD_TYPE   = "Time Field Type";
-  public static final String  TOTAL_COUNT       = "Total Count";
 
   public static final String  INITIAL_PATH      = "Initial Path";
   public static final String  ENERGY_IN         = "Energy In";
@@ -81,7 +83,7 @@ abstract public class Attribute implements Serializable
   public static final String  PRESSURE          = "Pressure";
   public static final String  MAGNETIC_FIELD    = "Magnetic Field";
   public static final String  NUMBER_OF_PULSES  = "Number of Pulses";
-  public static final String  TOTAL_COUNTS      = "Total Counts";
+  public static final String  TOTAL_COUNT       = "Total Count";
   private String name;
 
 
