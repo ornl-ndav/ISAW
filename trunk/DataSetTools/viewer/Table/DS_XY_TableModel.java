@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/10/07 14:44:14  rmikk
+ * Extends TableViewModel so it can be used with the STable
+ *   framework
+ * Include viewing of the time index
+ * Fixed up the code to reuse existing code
+ *
  * Revision 1.4  2002/06/10 22:33:42  pfpeterson
  * Now only creates one string buffer when writting.
  *
@@ -70,23 +76,25 @@ import java.io.*;
 *     data sets)
 */  
 
-public class DS_XY_TableModel extends AbstractTableModel
+public class DS_XY_TableModel extends TableViewModel
                                implements ActionListener 
   {float xvalMin , 
          dx; 
          int[] Groups; 
    float[] xvals = null;
    DataSet DS;
-   boolean includeErrors;
-
+   boolean includeErrors, includeIndex;
+   int ncolsPgroup=1;
    /** Constructor for dS_XY_TableModel
    *@param  DS  the data set to be modeled
    *@param Groups  The list of groups to be displayed
    *@param includeErrors  if true the errors will be displayed too
    */
-   public DS_XY_TableModel( DataSet DS , int[] Groups , boolean includeErrors )
+   public DS_XY_TableModel( DataSet DS , int[] Groups , boolean includeErrors ,
+                     boolean includeIndex )
      { super();
        this.Groups = Groups;
+       Arrays.sort( this.Groups);
        this.DS = DS;
        float[] u= null;
        this.includeErrors = includeErrors;
@@ -100,7 +108,8 @@ public class DS_XY_TableModel extends AbstractTableModel
              if( ( xvals[ i + 1 ] - xvals[ i ] ) < dx )
                dx = xvals[ i + 1 ] - xvals[ i ];
          }
-
+       if(includeErrors) ncolsPgroup++;
+       if( includeIndex) ncolsPgroup++;
       }
 
    /** Returns the number of rows 
@@ -117,17 +126,19 @@ public class DS_XY_TableModel extends AbstractTableModel
   public int getColumnCount()
       {if( Groups == null )
              return 0;
+       int S = 1+Groups.length;
        if( includeErrors )
-            return 1 + 2 * Groups.length;
-       else 
-             return 1 + Groups.length;
+            S+= Groups.length;
+       if( includeIndex)
+            S += Groups.length;
+       return S;
        }
 
   /**Returns the value at row , column
   */
   public Object getValueAt( int row , int column )
       {// Bounds Checking
-       if( row < 0 ) 
+       /*if( row < 0 ) 
            return "";
        if( column < 0 )
             return "";
@@ -147,7 +158,7 @@ public class DS_XY_TableModel extends AbstractTableModel
         int Group = column - 1;
         if( Group >= Groups.length ) 
              Group = Group - Groups.length;
-
+       
          
         //Determine WHICH yvalue, its index,  or error is to be returned
         float[] Gxvals = DS.getData_entry( Group ).getX_scale().getXs();
@@ -169,19 +180,40 @@ public class DS_XY_TableModel extends AbstractTableModel
             index = p - 1;
         if( index  < 0 ) 
              return "";
-       
-          
-        //Now return the appropriate value
-        float vals[];
-        if( !includeErrors ||(  column  < 1 + Groups.length ) )
-           vals =  DS.getData_entry( Group ).getY_values();
-        else
-           vals = DS.getData_entry( Group ).getErrors();
-        if( vals == null ) 
+        */
+        int Group = getGroup( row, column);
+        float time = getTime( row,column);
+        if( column == 0)
+           return new Float( time);
+        if( Group < 0)
            return "";
+        XScale xscl= DS.getData_entry( Group ).getX_scale();
+        int index = xscl.getI(time);
+        if( index > 0)
+          if( xscl.getX(index)-time > time -xscl.getX(index - 1))
+            index--;
+        if( (time -xscl.getX(index))> 1E-5*java.lang.Math.abs(time))
+           return ""; 
+        //Now return the appropriate value
+        float[] vals=null;
+        int offset = (column-1)/ncolsPgroup;
+        offset = column-1-ncolsPgroup*offset;
+        if( offset == 0 )
+           vals =  DS.getData_entry( Group ).getY_values();
+        else if( offset ==1)
+           if( includeErrors)
+              vals = DS.getData_entry( Group ).getErrors();
+           else vals = null;
+        else if( offset ==2)
+            vals = null;
+           
+        if( vals == null ) 
+           return new Integer(index);
         if( vals.length  <= index )
             return "";
-     
+        if( index < 0)
+            return "";
+
         return new Float( vals[ index ] );
        }
 
@@ -190,10 +222,22 @@ public class DS_XY_TableModel extends AbstractTableModel
   public String getColumnName( int column )
     {if( column == 0 )
          return "X";
-     if( column - 1 < Groups.length )
-         return "Y:Gr" + Groups[ column - 1 ];
-     else
-         return "Er:Gr" + Groups[ column - 1 - Groups.length ];
+     int Gr = getGroup( 0, column);
+     if( Gr < 0) return "";
+     int n=ncolsPgroup;
+     
+     String dd ="Y:Gr";
+     int offset = (column-1)/n;
+     offset = column -1 - n*offset ;
+     if( offset ==1)
+       if( includeErrors) dd = "Er:Gr";
+       else dd = "Ind:Gr";
+     else if( offset == 2)
+       dd = "Ind:Gr";
+     int ind = Groups[Gr];
+     
+     return dd + DS.getData_entry(ind ).getGroup_ID();
+  
    } 
 
 
@@ -297,6 +341,49 @@ public class DS_XY_TableModel extends AbstractTableModel
         
     
    }
+ /** returns the group corresponding the the JTable entry at row, col
+    */
+    public int getGroup( int row, int column)
+     { if( column <= 0) return -1;
+       if( column >= getColumnCount())
+         return -1;
+       
+       return  (column-1)/ncolsPgroup; 
+     
+      }
+
+    /** returns the time corresponding the the JTable entry at row, col
+    */
+    public  float getTime( int row, int column)
+     { if( (row < 0) ||(row >= getRowCount()) )
+          return Float.NaN;
+       return xvals[row];
+      }
+    /** returns the JTable row corresponding the the Given GroupINDEX and time
+    */
+    public int getRow( int Group, float time)
+     { int nn = Arrays.binarySearch( xvals, time); 
+       
+       if( nn < 0)
+         nn = -(nn+1);
+       if( nn<0) nn=0;
+       if( nn >= xvals.length)
+          nn=xvals.length-1;
+       
+       if( nn > 0)
+         if( (time -xvals[nn-1])< (xvals[nn]-time))
+           nn--;
+       return nn;
+      }
+    /** returns the JTable column corresponding the the Given GroupINDEX and time
+    */
+    public  int getCol( int Group, float time)
+     {  if( (Group < 0)|| (Group >= DS.getNum_entries()))
+           return -1;
+         int nn = Arrays.binarySearch(Groups, Group);
+         if( nn < 0) return -1;
+        return 1+nn*ncolsPgroup;
+      }
 /** Test program.  Have a run filename as the argument
 *@param  the filename to test
 */
@@ -327,7 +414,7 @@ public static void main( String args[] ){
   for( int i = 0;i < Groups.length;i++ ) 
        Groups[ i ] = i;
    
-  DS_XY_TableModel tbMod = new DS_XY_TableModel( DSS[ k ] , Groups ,true );
+  DS_XY_TableModel tbMod = new DS_XY_TableModel( DSS[ k ] , Groups ,true ,false);
   
   JTable jtb = new JTable( tbMod );
   jtb.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
