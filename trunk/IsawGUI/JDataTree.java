@@ -2,6 +2,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.15  2002/11/07 16:32:25  pfpeterson
+ * Properly ignores message from DataSets telling viewers to close.
+ *
  * Revision 1.14  2001/09/04 17:17:34  chatterjee
  * Constructor changed to accept a keySelection listener
  *
@@ -634,7 +637,10 @@ public class JDataTree
       {
         deleteNode(  observed, true  );
       }
-
+      else if( reason_str.equals(CLOSE_VIEWERS) )
+      {
+        // do nothing
+      }
       else if( reason_str.equals(DATA_REORDERED) )
       {
                                        //force tree to update its leaves
