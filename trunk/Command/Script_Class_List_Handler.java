@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2002/08/19 22:01:49  pfpeterson
+ * Added code to create a vector of DataSetOperators. Two lines
+ * of code to call the new methods have been commented out until
+ * they are needed.
+ *
  * Revision 1.30  2002/08/19 15:24:01  pfpeterson
  * Revived some dead code to make Scripts work.
  *
@@ -153,6 +158,7 @@ import java.lang.*;
 import DataSetTools.util.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
+import DataSetTools.operator.DataSet.DataSetOperator;
 import DataSetTools.components.ParametersGUI.*;
 
 /** 
@@ -165,6 +171,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     //Contains ordering for file names
     private static final Vector SortOnFileName = new Vector();
     private static  final Vector opList  = new Vector();
+    private static  final Vector dsOpList  = new Vector();
     private String errorMessage= "";
     private static int Command_Compare =257;
     private static int File_Compare = 322;
@@ -292,7 +299,22 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @return An instance of an Operator that subclasses the Generic
      * operator <P> or null if it cannot create this class.
      */
-    public  Operator getClassInst( String filename ){
+    public  GenericOperator getClassInst( String filename ){
+        return (GenericOperator)getClassInst(filename,true);
+    }
+
+    /** 
+     * Utility that tries to create an Operator for a .class
+     * filename
+     *
+     * @param filename The name of the class file.
+     * @param isgeneric Whether the class should be a GenericOperator
+     * (true) or DataSetOperator false)
+     *
+     * @return An instance of an Operator that subclasses the Generic
+     * operator <P> or null if it cannot create this class.
+     */
+    public  Operator getClassInst( String filename, boolean isgeneric ){
         String path;
         if( filename == null ){
             System.out.println("No Name");
@@ -343,7 +365,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         }
         
         
-        GenericOperator XX=null;
+        Operator XX=null;
         if( CPath.startsWith("/") || CPath.indexOf(":")>=0 ){
             // go through the classpath to shorten the classname appropriately
             for( path = getNextPath( pathlist, null ) ; path != null;
@@ -366,7 +388,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                     CPath=CPathFix+"."+classname;
                     
                     try{
-                        XX=getGenOperator(CPath);
+                        if(isgeneric)
+                            XX=getGenOperator(CPath);
+                        else
+                            XX=getDSOperator(CPath);
                     }catch(ClassNotFoundException e){
                         if(LoadDebug) System.out.print("(ClassNotFound:"
                                                        +e.getMessage()+") ");
@@ -382,7 +407,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                     if( XX == null){
                         return null;
                     }else{
-                        return XX;
+                        if(isgeneric)
+                            return (GenericOperator)XX;
+                        else
+                            return (DataSetOperator)XX;
                     }
                 }
             }
@@ -393,7 +421,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             // try getting an instance of the operator without shortening
             // the name...this picks up classes in a jar file
             try{
-                XX=getGenOperator(CPath.replace('/','.')+"."+classname);
+                if(isgeneric){
+                    XX=getGenOperator(CPath.replace('/','.')+"."+classname);
+                }else{
+                    XX=getDSOperator(CPath.replace('/','.')+"."+classname);
+                }
             }catch(ClassNotFoundException e){
                 if(LoadDebug) System.out.print("(ClassNotFound:"
                                                +e.getMessage()+") ");
@@ -698,15 +730,61 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         if(injar){ // we are working from a jar file
             // remove a little bit more from classFile
             classFile=classFile.substring(4,classFile.length()-1);
+            /*
+              UNCOMMENT THIS TO PROCESS DATASETOPERATORS
+              processDataSetOperators(classFile,true);
+            */
             if( LoadDebug) System.out.println("----PATH="+classFile);
             ProcessJar(classFile,opList);
         }else{     // isaw is unpacked
+            /*
+              UNCOMMENT THIS TO PROCESS DATASETOPERATORS
+              processDataSetOperators(classFile+"/DataSetTools/operator/DataSet",
+              false);
+            */
             File opDir=new File(classFile+"/DataSetTools/operator/Generic");
             if(opDir.exists() && opDir.isDirectory()){
                 if( LoadDebug) System.out.println("----PATH="+classFile+"/DataSetTools/operator/Generic");
                 ProcessDirectory(opDir,opList);
             }
         }
+    }
+
+    /**
+     * Method to populate the vector of DataSetOperators.
+     */
+    private void processDataSetOperators(String dir, boolean inJar){
+        if(LoadDebug) System.out.println("-----DSPATH="+dir);
+        if(inJar){
+            ZipFile zf=null;
+            try{
+                zf=new ZipFile(dir);
+            }catch(IOException e){
+                return; // something wrong, just exit out
+            }
+            Enumeration entries=zf.entries();
+            ZipEntry entry=null;
+            String name=null;
+            String matchname=
+                FilenameUtil.fixSeparator("DataSetTools/operator/DataSet");
+            if(!dir.endsWith("Isaw.jar"))return; // only works with Isaw
+            
+            // go through the entries
+            while(entries.hasMoreElements()){
+                entry=(ZipEntry)entries.nextElement();
+                name = FilenameUtil.fixSeparator(entry.getName());
+                if( (name.endsWith(".class")) && (name.indexOf(matchname)>=0) ){
+                    add(name,dsOpList);
+                }
+            }
+        }else{
+            File opDir=new File(dir);
+            if( opDir.exists() && opDir.isDirectory() ){
+                    ProcessDirectory(opDir,dsOpList);
+            }
+        }
+        if(LoadDebug) System.out.println("=====Number of DataSet operators: "
+                                         +dsOpList.size());
     }
 
     private void processPaths( String ScrPaths){
@@ -819,10 +897,15 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 System.out.println( "NO "+X.getErrorMessage() );
             }
         }else if(Extension.equalsIgnoreCase("class")){ // it is a class
-            Operator X = getClassInst( filename );
+            boolean isgeneric=!(opList==dsOpList);
+            Operator X = getClassInst( filename, isgeneric);
             if( X != null ){
                 if(LoadDebug) System.out.println( "OK" );
-                add( X );
+                if(isgeneric){  // add in the normal way
+                    add( X );
+                }else{ // add it to the DSList
+                    opList.addElement(X);
+                }
             }else{
                 if(LoadDebug) System.out.println( "NO ");
             }
@@ -958,8 +1041,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @throws InstatiationException
      * @throws IllegalAccessException
      */
-    private GenericOperator getGenOperator( String classname ) throws
-     ClassNotFoundException, InstantiationException, IllegalAccessException{
+    private Operator getOperatorInst( String classname ) throws
+        ClassNotFoundException, InstantiationException, IllegalAccessException{
         // make sure we have something to get
         if(classname==null) return null;
 
@@ -967,10 +1050,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             try{
                 Class C = Class.forName( classname );
                 Object XX = C.newInstance();
-                if( XX instanceof GenericOperator){
-                    return (GenericOperator)XX;
+                if( XX instanceof Operator){
+                    return (Operator)XX;
                 }else{
-                    if(LoadDebug) System.out.print("(Not Generic OP) ");
+                    if(LoadDebug) System.out.print("(Not Operator) ");
                     return null;
                 }
             }catch(NoClassDefFoundError e){
@@ -984,6 +1067,50 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         }
         // nothing works, just return null
         return null;
+    }
+
+    /**
+     * Method to get an instance of the operator if possible. The
+     * method calls getOperatorInst(classname) and checks if the
+     * Operator is a GenericOperator.
+     *
+     * @param classname the package qualified name of the class.
+     *
+     * @return A generic operator or null.
+     *
+     * @throws ClassNotFoundException
+     * @throws InstatiationException
+     * @throws IllegalAccessException
+     */
+    private GenericOperator getGenOperator( String classname ) throws
+     ClassNotFoundException, InstantiationException, IllegalAccessException{
+        Operator op=getOperatorInst(classname);
+        if(op instanceof GenericOperator)
+            return (GenericOperator)op;
+        else
+            return null;
+    }
+
+    /**
+     * Method to get an instance of the operator if possible. The
+     * method calls getOperatorInst(classname) and checks if the
+     * Operator is a DataSetOperator.
+     *
+     * @param classname the package qualified name of the class.
+     *
+     * @return A generic operator or null.
+     *
+     * @throws ClassNotFoundException
+     * @throws InstatiationException
+     * @throws IllegalAccessException
+     */
+    private DataSetOperator getDSOperator( String classname ) throws
+     ClassNotFoundException, InstantiationException, IllegalAccessException{
+        Operator op=getOperatorInst(classname);
+        if(op instanceof DataSetOperator)
+            return (DataSetOperator)op;
+        else
+            return null;
     }
 
     private int CommandListIndex(int index){
@@ -1035,7 +1162,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         Script_Class_List_Handler BB = new Script_Class_List_Handler();
         System.out.println("-------------------------------------------"
                            +"-------------------------------");
-        System.out.println("#operators ="+BB.getNum_operators());
+        System.out.println("=====Number of Generic operators: "
+                           +BB.getNum_operators());
         BB.show(257);
         
         System.exit( 0 );
