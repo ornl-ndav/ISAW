@@ -28,6 +28,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.7  2003/06/10 19:54:00  bouzekc
+ * Fixed bug where the peaks file was not written with every
+ * run.
+ * Updated documentation.
+ *
  * Revision 1.6  2003/06/10 16:45:48  bouzekc
  * Moved creation of Operators out of the for loop and
  * into a private method to avoid excessive Object re-creation.
@@ -98,7 +103,7 @@ public class FindMultiplePeaksForm extends Form
   
   public FindMultiplePeaksForm(String rawpath, String outpath, String runnums, 
                                String expname, int num_peaks, 
-                               int min_int, boolean append, String line2use,
+                               int min_int, boolean append, int line2use,
                                String calibfile)
   {
     this();
@@ -109,7 +114,7 @@ public class FindMultiplePeaksForm extends Form
     getParameter(4).setValue(new Integer(num_peaks));
     getParameter(5).setValue(new Integer(min_int));
     getParameter(6).setValue(new Boolean(append));
-    getParameter(7).setValue(line2use);
+    getParameter(7).setValue(new Integer(line2use));
     getParameter(8).setValue(calibfile);
   }
 
@@ -176,6 +181,7 @@ public class FindMultiplePeaksForm extends Form
     s.append("@param num_peaks The maximum number of peaks to return.\n");
     s.append("@param min_int The minimum peak intensity to look for.\n");
     s.append("@param append Append to file (yes/no).\n");
+    s.append("@param line2use SCD calibration file line to use.\n");
     s.append("@param calibfile SCD calibration file.\n");
     s.append("@return A Boolean indicating success or failure of the Form's ");
     s.append("execution.\n");
@@ -214,7 +220,7 @@ public class FindMultiplePeaksForm extends Form
   {
     SharedData.addmsg("Executing...\n");
     IParameterGUI param;
-    int maxPeaks, minIntensity, histNum, SCDline;
+    int maxPeaks, minIntensity, SCDline;
     Float monCount;
     String rawDir, outputDir, saveName, expName, calibFile, loadName;
     String runNum, expFile;
@@ -323,7 +329,7 @@ public class FindMultiplePeaksForm extends Form
     //to avoid excessive object creation, we'll create all of the 
     //Operators here, then just set their parameters in the loop
     createFindPeaksOperators(calibFile, maxPeaks, minIntensity,
-                             saveName, appendToFile, expFile, SCDline);
+                             saveName, expFile, SCDline);
 
     for(int i = 0; i < runsArray.length; i++)
     {
@@ -402,6 +408,7 @@ public class FindMultiplePeaksForm extends Form
       // write out the results to the .peaks file
 
       wrPeaks.getParameter(1).setValue(peaksVec);
+      wrPeaks.getParameter(2).setValue(new Boolean(appendToFile));
       obj = wrPeaks.getResult();
       if(obj instanceof ErrorString)
         return errorOut("WritePeaks failed: " + obj.toString());
@@ -411,6 +418,7 @@ public class FindMultiplePeaksForm extends Form
 
       wrExp.getParameter(0).setValue(histDS);
       wrExp.getParameter(1).setValue(monDS);
+      wrExp.getParameter(4).setValue(new Boolean(appendToFile));
       obj = wrExp.getResult();
       if(obj instanceof ErrorString)
         return errorOut("WriteExp failed: " + obj.toString());
@@ -448,8 +456,6 @@ public class FindMultiplePeaksForm extends Form
    *
    *  @param  peaksName              Fully qualified peaks file name.
    *
-   *  @param  append                 Whether to append to peaks file.
-   *
    *  @param  expFile                Fully qualified experiment file name.
    *
    *  @param  SCDline                The line to use from the SCD calib file.
@@ -457,8 +463,7 @@ public class FindMultiplePeaksForm extends Form
    */
   private void createFindPeaksOperators(String calibFile, int maxPeaks,
                                         int minInten, String peaksName, 
-                                        boolean append, String expFile, 
-                                        int SCDline)
+                                        String expFile, int SCDline)
   {
     loadHist = new LoadOneHistogramDS();
     loadMon = new LoadMonitorDS(); 
@@ -498,11 +503,9 @@ public class FindMultiplePeaksForm extends Form
     //WritePeaks
 
     wrPeaks.getParameter(0).setValue(peaksName);
-    wrPeaks.getParameter(2).setValue(new Boolean(append));
 
     //WriteExp
     wrExp.getParameter(2).setValue(expFile);
     wrExp.getParameter(3).setValue(new Integer(1));
-    wrExp.getParameter(4).setValue(new Boolean(append));
   }
 }
