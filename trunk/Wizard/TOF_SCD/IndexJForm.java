@@ -27,6 +27,10 @@
  * This work was supported by the National Science Foundation under grant
  * number DMR-0218882.
  *
+ * $Log$
+ * Revision 1.3  2003/06/06 15:12:01  bouzekc
+ * Added log message header to file.
+ *
  */
 
 package Wizard.TOF_SCD;
