@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/07/18 16:27:47  neffk
+ *  now uses an IDataSetListHandler object to get/keep a current list
+ *  of DataSet objects.
+ *
  *  Revision 1.7  2001/07/11 16:27:38  neffk
  *  added IntervalSelectionOP as a valid type of GUI parameter.
  *
@@ -67,7 +71,6 @@ public class JParametersDialog implements Serializable,
                                IObservable
 {
     private Operator op;
-    private DataSet  ds_list[];  
     private IObserver io;
     IsawGUI.Util util = new IsawGUI.Util();
     Document sessionLog;  
@@ -76,14 +79,19 @@ public class JParametersDialog implements Serializable,
     JLabel resultsLabel = new JLabel("    Result");
     ApplyButtonHandler APH;
     
+                                 //allows acess to a dynamic list
+                                 //of DataSet objects in the tree
+                                 //w/o a reference to the actual tree.
+    IDataSetListHandler ds_src;
+    
     
     public JParametersDialog( Operator  op, 
-                              DataSet   ds_list[], 
+                              IDataSetListHandler ds_src, 
                               Document  sessionLog, 
                               IObserver io )
     {   
         this.op =op;
-        this.ds_list = ds_list;
+        this.ds_src = ds_src;
         this.sessionLog = sessionLog;    
         this.io = io;
         opDialog = new JDialog( new JFrame(), op.getTitle(),true);
@@ -166,8 +174,12 @@ public class JParametersDialog implements Serializable,
              paramGUI = new JAttributeNameParameterGUI(param, attr_list);
            }
 
+
+                //TODO: fix this so ds_src.getDataSets() is called every time
+                //      an operation is done (e.g. the 'Apply' button is pressed)
+
            else if((param.getValue() instanceof DataSet)  )
-                 paramGUI = new JDataSetParameterGUI(param, ds_list);
+                 paramGUI = new JDataSetParameterGUI(  param, ds_src.getDataSets()  );
                 
            else if( param.getValue() instanceof DataDirectoryString )
            { 
