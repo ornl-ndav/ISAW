@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/10/15 02:37:50  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.7  2003/06/18 20:34:23  pfpeterson
  * Changed calls for NxNodeUtils.Showw(Object) to
  * DataSetTools.util.StringUtil.toString(Object)
@@ -55,7 +58,7 @@ import java.io.*;
 
 /**
  * Class that handles writing information to a Nexus file using the
- * Nexus Api<P>
+ * Nexus Api<br><br>
  *
  * NOTE: An internal representation is saved an only sent to a nexus
  * file when the write routine is executed.
@@ -286,7 +289,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
    * @param AttrName the name of this attribute
    * @param AttrValue the value of this attribute
    * @param type the type in NexIO.Types.java for this attribute
-   * @param rank the length of rank is the number of dimensions and
+   * @param ranks the length of rank is the number of dimensions and
    * rank[i] is size of the array for dimension i.
    *
    * @see NexIO.Types#Int Type names
