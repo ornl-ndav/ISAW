@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/02/24 13:39:19  dennis
+ *  Switched to use CommandObject instead of compound command Strings.
+ *
  *  Revision 1.7  2002/11/27 23:27:59  pfpeterson
  *  standardized header
  *
@@ -55,9 +58,6 @@ import DataSetTools.util.*;
 
 public class DataSetServer extends TCPServer 
 {
-  public static final String COMMAND_GET_DS      = "COMMAMD:GET_DATA_SET ";
-  public static final String COMMAND_GET_DS_TYPES= "COMMAND:GET_DS_TYPES ";
-  public static final String COMMAND_GET_NAME    = "COMMAND:GET_NAME ";
 
   protected  Vector  directory_names = null;
 
