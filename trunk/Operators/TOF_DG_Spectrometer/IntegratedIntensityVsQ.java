@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/10/02 20:14:19  pfpeterson
+ * Fixed a missing missing factor of 1/2.
+ *
  * Revision 1.1  2002/09/25 22:18:33  pfpeterson
  * Added to CVS.
  *
@@ -157,7 +160,7 @@ public class IntegratedIntensityVsQ extends GenericTOF_DG_Spectrometer{
         float Q[] = new float[ ds.getNum_entries() ];
         float xs[], ys[];
         float Ei=0f;
-        float Eavg=b-a;
+        float Eavg=(b+a)/2f;
         double Qtemp=0.;
         for ( int i = 0; i < ds.getNum_entries(); i++ ){
             Data d = ds.getData_entry( i );  // use method IntegrateHistogram to
