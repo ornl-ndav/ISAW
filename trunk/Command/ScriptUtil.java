@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/09/14 17:41:46  rmikk
+ * -Fixed errors when two operators with the same
+ *  command name have the same number of arguments.
+ *
  * Revision 1.6  2003/09/08 18:25:16  rmikk
  * Fixed the handling of special strings from scripts.
  *
@@ -466,6 +470,7 @@ public class ScriptUtil{
     // now do the type checking
     if(operator==null){
       int opNum=findOperator(candidates,param_vals);
+      
       if(opNum<0)
         throw new MissingResourceException("Could not find command \""+command
                             +"\"","Command.Script_Class_List_Handler",command);
@@ -492,7 +497,8 @@ public class ScriptUtil{
     if(param_vals!=null) num_vals=param_vals.length;
     if(num_vals>num_param)
       throw new IndexOutOfBoundsException("too many values for the number of "
-                                          +"parameters");
+                                          +"parameters for op"+operator.getCommand()+
+                                 operator.getClass());
     int max=Math.min(num_vals,num_param);
     // copy over the values into the parameters
     
@@ -558,7 +564,7 @@ public class ScriptUtil{
         }
       }
       // made it through all the parameters so this must be okay
-      return i;
+      return candidates[i];
     }
 
     // didn't find what we want so return error
@@ -604,7 +610,7 @@ public class ScriptUtil{
       num_param[i]=SCLH.getNumParameters(candidates[i]);
       if(num_vals==num_param[i]){
         has_matching=true;
-        break;
+       // break;
       }else if(num_vals>num_param[i]){
         candidates[i]=-1;
       }
