@@ -3,6 +3,9 @@
  *
  * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
  * 
+ *12-1-00
+ *   -(Fix)Initializing Vector V has the specialized JParameterGUI object so
+ *    a lot of code was streamlined and made more general.
  */
  
 package Command;
@@ -76,7 +79,7 @@ public class JScriptParameterDialog implements Serializable
         {  
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
             
-            param =((JParameterGUI)( V.get(i+1))).getParameter();
+          /*  param =((JParameterGUI)( V.elementAt(i+1))).getParameter();
 	    //System.out.println("JScrParGUI DT="+param.getValue());
             if( param.getValue() == null )
                  paramGUI = new JObjectParameterGUI(param);
@@ -123,15 +126,15 @@ public class JScriptParameterDialog implements Serializable
             param.setValue(XX);
             paramGUI= new JStringParameterGUI( param);
             }    
-            else
+          else
             {
                 System.out.println("Unsupported Parameter in JParamatersDialog"+param.getValue().getClass());
                 return ;
             }
-               
+        */       
                 
             //Add other kinds of parameter types here.
-            
+            paramGUI=(JParameterGUI)(V.elementAt(i+1));
             opDialog.getContentPane().add(paramGUI.getGUISegment());
             vparamGUI.addElement(paramGUI);
          //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
