@@ -14,13 +14,15 @@
  * USA.
  *
  * Original log:
- * $Header$
- * $Log$
- * Revision 1.1  2004/01/28 21:42:32  bouzekc
- * Added to CVS.
- *
  * Revision 1.1  1998/11/06 10:37:03  graham
  * Initial revision
+ * 
+ * $Log$
+ * Revision 1.2  2004/01/28 21:43:26  bouzekc
+ * Moved original log messages.
+ *
+ * Revision 1.1  2004/01/28 21:42:32  bouzekc
+ * Added to CVS.
  *
  *
  */
