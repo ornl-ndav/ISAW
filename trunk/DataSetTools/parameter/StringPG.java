@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
+ *  Only creates GUI once init is called.
+ *
  *  Revision 1.5  2002/11/27 23:22:43  pfpeterson
  *  standardized header
  *
@@ -155,8 +158,7 @@ public class StringPG extends ParameterGUI{
         entrywidget=new StringEntry(this.getStringValue(),DEF_COLS);
         entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
         this.setEnabled(this.getEnabled());
-        this.packupGUI();
-        this.initialized=true;
+        super.initGUI();
     }
 
     /**
