@@ -3,6 +3,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.6  2002/05/30 16:53:17  chatterjee
+ * Gets the label for the group and puts it in the tree
+ *
  * Revision 1.5  2001/07/31 16:00:51  neffk
  * added the extinguish() method to help reclaim this object's memory
  * when it's removed from the tree.
@@ -55,7 +58,7 @@ public class DataMutableTreeNode
   public DataMutableTreeNode( Data d )
   {
     this.parent = parent;
-    name = new String(  "Group #" + d.getGroup_ID()  );
+    name=(String)d.getAttributeValue(1);
     setUserObject( d );
   }
 
