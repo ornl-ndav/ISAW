@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/11 18:18:30  bouzekc
+ * Documented file using javadoc statements.
+ * Modified class to use ISAW's SharedData class to get access to a copy of the GNU liscense to display
+ *   in the GUI.
+ *
  * Revision 1.3  2004/02/07 05:30:39  bouzekc
  * Made the path to the GPL relative to ISAW_HOME.
  *
@@ -55,13 +60,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
+import java.net.URL;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -72,14 +79,22 @@ import devTools.Hawk.classDescriptor.tools.SystemsManager;
 import DataSetTools.util.*;
 
 /**
- * @author kramer
- *
- * 
+ * This class is used to open a window displaying information about Hawk.  It contains
+ * the author's name along with a button giving access to the liscense information.
+ * @author Dominic Kramer
  */ 
 public class AboutGUI extends JFrame implements ActionListener
 {
+	/**
+	 * This is the window that holds the liscense information.  This window 
+	 * is displayed when the user selects the button specifying to view the 
+	 * liscense.
+	 */
 	private JFrame licenseFrame;
 	
+	/**
+	 * General constructor which creates the window and everything in it.
+	 */
 	public AboutGUI()
 	{
 		setTitle("About Hawk");
@@ -114,9 +129,12 @@ public class AboutGUI extends JFrame implements ActionListener
 			
 			buttonPanel.add(viewButton);
 			buttonPanel.add(closeButton);
-		
-		ImageIcon hawkIcon = new ImageIcon("devTools.Hawk.classDescriptor/pixmaps/about_hawk.png");
-		
+
+		ImageIcon hawkIcon = new ImageIcon();
+		URL imageURL = ClassLoader.getSystemClassLoader().getResource("devTools/Hawk/classDescriptor/pixmaps/about_hawk.png");		
+		if (imageURL != null)
+			hawkIcon = new ImageIcon(imageURL);
+
 		mainPanel.add(new JLabel(hawkIcon), BorderLayout.NORTH);
 		mainPanel.add(infoPanel, BorderLayout.CENTER);
 		mainPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -125,6 +143,9 @@ public class AboutGUI extends JFrame implements ActionListener
 		pack();
 	}
 	
+	/**
+	 * Handles ActionEvents
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
 		if (event.getActionCommand().equals("Close"))
@@ -147,22 +168,27 @@ public class AboutGUI extends JFrame implements ActionListener
 			try
 			{
 				BufferedReader gnuReader = new BufferedReader(
-          new FileReader( FilenameUtil.setForwardSlash( 
-            SharedData.getProperty( "ISAW_HOME" ) +
-            "/devTools/Hawk/classDescriptor/gui/license/LICENSE.txt") ) );
+        new FileReader(/*"devTools.Hawk.classDescriptor.gui.license.LICENSE.txt"));*/
+        FilenameUtil.setForwardSlash( 
+          SharedData.getProperty( "ISAW_HOME" ) +
+          "/devTools/Hawk/classDescriptor/gui/license/LICENSE.txt") ) );
+            
 				while (line != null)
 				{
 					license.append(line+"\n");
 					line = gnuReader.readLine();
 				}
 			}
-			catch(IOException e)
+			catch (FileNotFoundException e)
 			{
-				System.out.println("An IOException was thrown in actionPerformed(ActionEvent) in AboutGUI.java:");
-				System.err.println(e);
-				StackTraceElement[] traceArray = e.getStackTrace();
-				for (int i = 0; i < traceArray.length; i++)
-						System.out.println("     "+traceArray[i]);
+				JOptionPane opPane = new JOptionPane();
+				JOptionPane.showMessageDialog(opPane,"The liscense agreement could not be found." 
+					,"Error"
+					,JOptionPane.ERROR_MESSAGE);
+			}
+			catch(Exception e)
+			{
+				SystemsManager.printStackTrace(e);
 			}
 			
 			JScrollPane scrollpane = new JScrollPane(license);
@@ -189,15 +215,31 @@ public class AboutGUI extends JFrame implements ActionListener
 		}
 	}
 	
+	/**
+	 * This class is used to extend the actions that occur when the user 
+	 * selects to close the AboutGUI window.
+	 * @author Dominic Kramer
+	 */
 	private class WindowDestroyer extends WindowAdapter
 	{
+			/**
+			 * Used to allow multiple windows use the same WindowDestroyer class.  
+			 * Each window has its own name.
+			 */
 			private String name;
 			
+			/**
+			 * Constructor allowing the window's name to be specified
+			 * @param str The windows name
+			 */
 			public WindowDestroyer(String str)
 			{
 				name = str;
 			}
 			
+			/**
+			 * Handles WindowEvents that would be called when the window is closing.
+			 */
 			public void windowClosing(WindowEvent event)
 			{
 				if (name.equals("main"))	
