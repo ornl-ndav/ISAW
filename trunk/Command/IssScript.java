@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/06/27 17:49:49  dennis
+ * Fixed problem: user.home/ISAW/Scripts directory did not appear
+ * correctly on Macros menu. (Ruth)
+ *
  * Revision 1.7  2003/06/26 15:00:06  rmikk
  * Improved the getMacro( MacroName) method to get matches
  *    ONLY if the line is _$_Title_= title (Underscores represent
@@ -289,7 +293,8 @@ public class IssScript extends Script{
     addDir(Eliminate1TrailingSlash(SharedData.getProperty("ISAW_HOME")),"Isaw Scripts");
 
     // user home directory
-    addDir(Eliminate1TrailingSlash(SharedData.getProperty("user.home")),"User Scripts");
+    String S = FilenameUtil.setForwardSlash(SharedData.getProperty("user.home"));
+    addDir(Eliminate1TrailingSlash(S)+"/ISAW","User Scripts");
 
     // group home directories
     addDirs(Eliminate1TrailingSlash(SharedData.getProperty("GROUP_HOME")),"Group Home");
