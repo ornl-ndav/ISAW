@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2001/06/08 22:07:42  dennis
+ *  setDataSet() now always sets the ZoomRegion in the state
+ *  object.
+ *
  *  Revision 1.17  2001/06/04 22:44:28  dennis
  *  Now uses DS_Util.getData_ID_String() to construct border labels for the
  *  horizontal graph.
@@ -301,14 +305,11 @@ public void setDataSet( DataSet ds )
                                                         // region if it's valid 
   CoordBounds zoom_region = getState().getZoomRegion( ds );
   if ( zoom_region != null )
-  {
     image_Jpanel.setLocalWorldCoords( zoom_region );
-                                                        // if setting the zoom
-                                                        // region altered it,
-                                                        // save the new region
-    getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(),
-                              getDataSet()  );
-  }
+                                                        // syncrhonize the 
+                                                        // saved zoom region,
+                                                        // with the panel's 
+  getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(), ds );
 
   DrawDefaultDataBlock();
   setVisible(true);
