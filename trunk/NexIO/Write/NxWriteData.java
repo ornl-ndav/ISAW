@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2005/01/20 21:52:08  dennis
+ * Fixed minor javadoc error.
+ *
  * Revision 1.15  2005/01/14 23:32:37  rmikk
  * Fixed some logical errors in saving.  Eliminated( erroneously?) the 
  * dimensions with size 1.
@@ -1492,9 +1495,7 @@ public class NxWriteData {
     /**
      * Returns the IDataGrid associated with the given data block
      * @param db  the data block with the IDataGrid
-     * @return  The data grid associated with this data block or null if none
-     * @author MikkelsonR
-     * 
+     * @return  The IDataGrid associated with this data block or null if none
      */
     public static IDataGrid getDataGrid(Data db) {
 
@@ -1516,7 +1517,7 @@ public class NxWriteData {
      *  Returns the IDataGrid in the DataSet DS with grid number = gridNum
      * @param DS    The data set with the IDataGrid
      * @param gridNum  The grid number for the grid
-     * @return   THe IDataGrid in the data set DS with the given gridNum or null. 
+     * @return   The IDataGrid in the data set DS with the given gridNum or null. 
      */
     public static IDataGrid getAreaGrid(DataSet DS, int gridNum) {
     
