@@ -31,7 +31,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/09/22 20:52:02  kramer
+ * Now the user can choose to smooth only particular data blocks by
+ * specifying their IDs.  Previously, ALL of the data blocks in a DataSet
+ * were smoothed.  The selection of smoothing particular data blocks works
+ * with both the "quick" and "long" methods for smoothing the data.
+ *
  * Revision 1.2  2004/08/10 23:56:59  kramer
+ *
  * Now this class uses a copy of a DataSet's y values to determine smoothed
  * values.  As a result, previously smoothed values are not used to determine
  * newly smoothed values.  I also improved the Javadoc documentation and added
@@ -52,7 +59,9 @@
 package Operators.Special;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.SpecialStrings.IntListString;
 import gov.anl.ipns.Util.Sys.ElapsedTime;
 
 import java.util.Vector;
@@ -93,6 +102,11 @@ public class SavitzkyGolayFilter extends GenericSpecial
    private static final boolean DEFAULT_CREATE_NEW_DATASET = true;
    /** Whether the quick method should be used to smooth the data. */
    private static final boolean DEFAULT_USE_QUICK_METHOD   = true;
+   /**
+    * String that signals all Data objects/x values should be used in a 
+    * calculation.
+    */
+   private static final String ALL = "ALL";
    
    /**
     * Creates operator with title "Savitzky-Golay Filter" and a 
@@ -124,7 +138,8 @@ public class SavitzkyGolayFilter extends GenericSpecial
     * @param useQuickMethod True if the quick method for smoothing the data should 
     *                       be used and false otherwise.
     */
-   public SavitzkyGolayFilter(DataSet ds, int nL, int nR, int M, boolean createNewDS, boolean useQuickMethod)
+   public SavitzkyGolayFilter(DataSet ds, int nL, int nR, int M, boolean createNewDS, boolean useQuickMethod, 
+   		IntList dataBlockList, IntList xValueList)
    {
       this();
       getParameter(0).setValue(ds);
@@ -133,6 +148,8 @@ public class SavitzkyGolayFilter extends GenericSpecial
       getParameter(3).setValue(new Integer(M));
       getParameter(4).setValue(new Boolean(createNewDS));
       getParameter(5).setValue(new Boolean(useQuickMethod));
+      getParameter(6).setValue(dataBlockList);
+      //getParameter(7).setValue(xValueList);
    }
    
    /** 
@@ -145,7 +162,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
    {
       return COMMAND;
    }
-   
+      
    /** 
     * Sets default values for the parameters.
     */
@@ -158,6 +175,8 @@ public class SavitzkyGolayFilter extends GenericSpecial
       addParameter( new Parameter("Degree of smoothing polynomial", new Integer(DEFAULT_M)));
       addParameter( new Parameter("Create new data set", new Boolean(DEFAULT_CREATE_NEW_DATASET)));
       addParameter( new Parameter("Use quick method", new Boolean(DEFAULT_USE_QUICK_METHOD)));
+      addParameter( new Parameter("Data blocks to use", new IntListString(ALL)));
+      //addParameter( new Parameter("X range", new IntListString(ALL)));
    }
    
    //TODO Make new documentation
@@ -195,7 +214,16 @@ public class SavitzkyGolayFilter extends GenericSpecial
       int     M         = ((Integer)(getParameter(3).getValue())).intValue();
       boolean makeNewDs = ((Boolean)getParameter(4).getValue()).booleanValue();
       boolean useQuick  = ((Boolean)getParameter(5).getValue()).booleanValue();         
-         
+      String usedDataBlocksString = ((IntListString)getParameter(6).
+         getValue()).toString();
+      
+      /*
+       * Now both methods support smoothing only specified group ids
+      if (!useQuick && !usedDataBlocksString.equalsIgnoreCase(ALL))
+         return new ErrorString("  Specific group IDs can only be smoothed " +
+               "if the quick method is used.");
+               */
+      
       //now to determine if a copy of the DataSet should be used
       //or if the actual DataSet should be used
       DataSet new_ds    = null;
@@ -211,6 +239,12 @@ public class SavitzkyGolayFilter extends GenericSpecial
          return new ErrorString("  The number of points right of the center cannot be negative");
       if (M<0)
          return new ErrorString("  The degree of the smoothing polynomial cannot be negative");
+      
+      new_ds.addLog_entry("Savitzky-Golay Filtered");
+      if (nR == 1)
+         new_ds.addLog_entry("  "+nL+" left and "+nR+" right point used with a polynomial of degree "+M);
+      else
+         new_ds.addLog_entry("  "+nL+" left and "+nR+" right points used with a polynomial of degree "+M);
       
       //now to use the appropriate smoothing algorithm
       Object returnedObject = null;
@@ -250,36 +284,212 @@ public class SavitzkyGolayFilter extends GenericSpecial
          Data    data    = null;
          float[] f       = null;
          float[] fCopy   = null;
-         int     n       = -nL;
-         int     i       = 0;
-         float   sum     = 0;
+
+         //String usedXDomainString = ((IntListString)getParameter(7).
+         //		getValue()).toString();
          
-         for (int dataNum=0; dataNum<new_ds.getNum_entries(); dataNum++)
+         String usedDataBlocksString = ((IntListString)getParameter(6).
+         		getValue()).toString();
+         Object dataBounds = getDataObjectBounds(new_ds,usedDataBlocksString);
+         
+         if (dataBounds instanceof String && 
+               ((String)dataBounds).equalsIgnoreCase(ALL))
          {
-            //now to get the Data object to use
-              data = new_ds.getData_entry(dataNum);
-            //and a copy of its y values
-              fCopy = data.getCopyOfY_values();
-            //and a reference to its actual array of y values
-              f = data.getY_values();
-            
-            //if (data.getX_scale() instanceof UniformXScale)
-            //   System.out.println(data+" has a uniform XScale");
-              
-            for (i=0; i<fCopy.length; i++)
-               f[i] = getQuickSmoothedValue(c,fCopy,i,nL,nR,M);
+         	for (int i=0; i<new_ds.getNum_entries(); i++)
+         	{
+               //now to get the Data object to use
+                 data = new_ds.getData_entry(i);
+               //get a copy of the Data object's y values
+                 fCopy = data.getCopyOfY_values();
+               //and a reference to its actual array of y values
+                 f = data.getY_values();
+               //TODO:  Change this so that it doesn't always say ALL
+               //       as the second argument.  Instead, this should be a 
+               //       String describing the x values to use.
+               quickSmoothDataObject(data,ALL,c,f,fCopy,nL,nR,M);
+         	}
          }
-         
-         new_ds.addLog_entry("Savitzky-Golay Filtered");
-         if (nR == 1)
-            new_ds.addLog_entry("  "+nL+" left and "+nR+" right point used with a polynomial of degree "+M);
-         else
-            new_ds.addLog_entry("  "+nL+" left and "+nR+" right points used with a polynomial of degree "+M);
+         else if (dataBounds instanceof int[])
+         {
+         	int[] dataIndexArray = (int[])dataBounds;
+            
+            //for (int i=0; i<dataIndexArray.length; i++)
+            //   System.out.println("dataIndexArray["+i+"]="+dataIndexArray[i]);
+            
+         	for (int i=0; i<dataIndexArray.length; i++)
+         	{
+                //now to get the Data object to use
+         		  data = new_ds.getData_entry_with_id(dataIndexArray[i]);
+                //if data == null then there isn't a Data object for the 
+                //index "i".  Thus, ignore quick smoothing it.
+                if (data != null)
+                {
+                   //get a copy of the Data object's y values
+                      fCopy = data.getCopyOfY_values();
+                   //and a reference to its actual array of y values
+                      f = data.getY_values();
+                      //TODO:  Change this so that it doesn't always say ALL
+                      //       as the second argument.  Instead, this should be a 
+                      //       String describing the x values to use.
+                   quickSmoothDataObject(data,ALL,c,f,
+                         fCopy,nL,nR,M);
+                }
+          	}
+         }
          
          return new_ds;
       }
       else
          return new ErrorString("  The data cannot be smoothed using the entered values.");
+   }
+   
+   private Object getDataObjectBounds(DataSet ds, String dataBounds)
+   {
+      if (dataBounds.equalsIgnoreCase(ALL))
+         return ALL;
+      else
+      {
+         int[] dataArray = IntList.ToArray(dataBounds);
+         int[] actualArray = new int[dataArray.length];
+         int finalIndex = 0;
+         int firstID = ds.getData_entry(0).getGroup_ID();
+         int lastID = ds.getData_entry(ds.getNum_entries()-1).getGroup_ID();
+         
+         Vector invalidIDVec = new Vector();
+
+         for (int i=0; i<dataArray.length; i++)
+         {
+            if (dataArray[i]>=firstID && dataArray[i]<=lastID)
+            {
+               actualArray[finalIndex] = dataArray[i];
+               finalIndex++;
+            }
+            else
+               invalidIDVec.add(new Integer(dataArray[i]));
+         }
+         
+         if (invalidIDVec.size() > 0)
+         {
+            StringBuffer buffer = new StringBuffer("  Group ");
+            if (invalidIDVec.size()==1)
+            {
+               buffer.append("ID ");
+               buffer.append(invalidIDVec.elementAt(0));
+               buffer.append(" does ");
+            }
+            else
+            {
+               buffer.append("IDs ");
+               for (int i=0; i<(invalidIDVec.size()-1); i++)
+               {
+                  buffer.append(invalidIDVec.elementAt(i));
+                  if (invalidIDVec.size() >= 3)
+                     buffer.append(",");
+                  buffer.append(" ");
+               }
+               buffer.append("and ");
+               buffer.append(invalidIDVec.lastElement());
+               buffer.append(" do ");
+            }
+            
+            buffer.append("not exist for the data set ");
+            buffer.append(ds);
+               
+            ds.addLog_entry(buffer.toString());
+         }
+         
+         int[] finalArray = new int[finalIndex];
+         System.arraycopy(actualArray,0,finalArray,0,finalIndex);
+         return finalArray;
+      }
+   }
+   
+   /*
+   private Object getXRange(Data data, String xRangeString)
+   {
+      if (xRangeString.equalsIgnoreCase(ALL))
+         return ALL;
+      else
+      {
+         float firstXVal = data.getX_scale().getStart_x();
+         float lastXVal = data.getX_scale().getEnd_x();
+         
+         int[] xValueArray = IntList.ToArray(xRangeString);
+         float[] fxValueArray = new float[xValueArray.length];
+         for (int i=0; i<xValueArray.length; i++)
+            fxValueArray[i] = xValueArray[i];
+         
+         if (fxValueArray.length == 2)
+         {
+            if (fxValueArray[0] <= firstXVal)
+               fxValueArray[0] = firstXVal;
+            else if (fxValueArray[0] >  lastXVal)
+               return new ErrorString("The minimum value of the x range " +
+                     " cannot be larger than "+lastXVal);
+            
+            if (fxValueArray[1] >= lastXVal)
+               fxValueArray[1] = lastXVal;
+            else if (fxValueArray[1] < firstXVal)
+               return new ErrorString("The maximum value of the x range " +
+                     " cannot be smaller than "+firstXVal);
+            
+            if (fxValueArray[0] == firstXVal && fxValueArray[1] == lastXVal)
+               return ALL;
+         }
+         
+         int[] usefulXValueArray = new int[xValueArray.length];
+         int numOfElements = 0;
+         
+         for (int i=0; i<xValueArray.length; i++)
+         {
+            if (xValueArray[i]>=data.getX_scale().getStart_x() &&
+                xValueArray[i]<=data.getX_scale().getEnd_x())
+            {
+               usefulXValueArray[numOfElements] = xValueArray[i];
+               numOfElements++;
+            }
+         }
+      }
+   }
+   */
+   
+   private void quickSmoothDataObject(Data data, String xRange, float[][] c, float[] f, float[] fCopy, int nL, int nR, int M)
+   {
+      int minIndex = 0;
+      int maxIndex = 0;
+      
+      if (!xRange.equalsIgnoreCase(ALL))
+      {
+         int[] xValueArray = IntList.ToArray(xRange);
+         //int xValArrIndex = 0;
+         int index = 0;
+         for (int i=0; i<xValueArray.length; i++)
+         {
+         	if (i == (data.getX_values().length-1))
+         	{
+         		index = data.getX_scale().getI(xValueArray[i]);
+         		if (data.isHistogram())
+             		index--;
+         	}
+         	else
+         		index = data.getX_scale().getI_GLB(xValueArray[i]);
+
+         	f[index] = getQuickSmoothedValue(c,fCopy,index,nL,nR,M);
+         }
+      }
+      else
+      {
+      	 //NOTE:  If the Data object represents a histogram, the 
+      	 //       range might have to be i=0; i<fCopy.length-1;
+      	 //       But right now this should work.
+         for (int i=0; i<fCopy.length; i++)
+           f[i] = getQuickSmoothedValue(c,fCopy,i,nL,nR,M);
+      }
+      
+      //else
+      //   System.out.println("xRange was passed to the method "+
+      //         "quickSmoothDataObject(....) as an invalid type:  "+
+      //         xRange.getClass());
    }
    
    /**
@@ -559,43 +769,66 @@ public class SavitzkyGolayFilter extends GenericSpecial
     * @return       The Object that this method wants the 
     *               {@link #getResult() getResult()} to return.
     */
-   private Object performLeastSquaresSmoothing(DataSet new_ds, int nL, int nR, int M)
+   private Object performLeastSquaresSmoothing(DataSet new_ds, 
+                                                int nL, int nR, int M)
    {
       //first to test if the numbers entered are valid
       if (nR+nL<M)
-         return new ErrorString("  The sum of the left and right points and 1 must be at least equal to the degree of the polynomial");
-      
-      int counter = 0;
-      
-      double[][] A = null;
-      double[]   b = null;
+         return new ErrorString("  The sum of the left and right points and " +
+               "1 must be at least equal to the degree of the polynomial");
       
       Data    currentData   = null;
-      float   smoothedValue = Float.NaN;
-      float[] copyOfYValues = null;
-      float[] actualYValues = null;
-      for (int i=0; i<new_ds.getNum_entries(); i++)
+      
+      String idBoundsString = ((IntListString)getParameter(6).
+         getValue()).toString();
+      Object idBounds = getDataObjectBounds(new_ds,idBoundsString);
+      
+      if (idBounds instanceof ErrorString)
+         return idBounds;
+      else if (idBounds instanceof String && 
+                  ((String)idBounds).equalsIgnoreCase(ALL))
       {
-         //now to get the current Data object
-           currentData   = new_ds.getData_entry(i);
-         //and its y values.  This is a copy of the array of y values
-           copyOfYValues = currentData.getCopyOfY_values();
-         //and this is a reference to the actual array of y values
-           actualYValues       = currentData.getY_values();
-         
-         for (int yIndex = 0; yIndex<copyOfYValues.length; yIndex++)
+         for (int i=0; i<new_ds.getNum_entries(); i++)
          {
-            counter++;
-            
-         	smoothedValue = getSmoothedValue(currentData.getX_values(), copyOfYValues,
-         	                                   currentData.isHistogram(),
-         	                                     yIndex,nL,nR,M);
-            if (!Float.isNaN(smoothedValue))
-               actualYValues[yIndex] = smoothedValue;
+            //now to get the current Data object
+               currentData   = new_ds.getData_entry(i);
+            leastSquaresSmoothDataObject(currentData,nL,nR,M);
+         }
+      }
+      else if (idBounds instanceof int[])
+      {
+         int[] ids = (int[])idBounds;
+         for (int i=0; i<ids.length; i++)
+         {
+            currentData = new_ds.getData_entry_with_id(ids[i]);
+            if (currentData != null)
+               leastSquaresSmoothDataObject(currentData,nL,nR,M);
+            else
+               System.out.println("The data block with id "+ids[i]+
+                     " could not be smoothed because it doesn't exist.");
          }
       }
       
       return new_ds;
+   }
+   
+   private void leastSquaresSmoothDataObject(Data currentData, 
+                        int nL, int nR, int M)
+   {
+      //and its y values.  This is a copy of the array of y values
+         float[] copyOfYValues = currentData.getCopyOfY_values();
+      //and this is a reference to the actual array of y values
+         float[] actualYValues = currentData.getY_values();
+      float smoothedValue = 0;
+         
+      for (int yIndex = 0; yIndex<copyOfYValues.length; yIndex++)
+      {
+         smoothedValue = getSmoothedValue(currentData.getX_values(), copyOfYValues,
+                                            currentData.isHistogram(),
+                                              yIndex,nL,nR,M);
+         if (!Float.isNaN(smoothedValue))
+            actualYValues[yIndex] = smoothedValue;
+      }
    }
    
    /**
@@ -631,6 +864,9 @@ public class SavitzkyGolayFilter extends GenericSpecial
     * y value is in is returned.  Otherwise, if the x and y values 
     * correspond to a function, the x value at the same index of 
     * the y value is returned.
+    * <p>
+    * It is up to the caller of this method to verify that 
+    * <code>yIndex</code> is valid.
     * @param xValues     The x values used in the data.
     * @param yValues     The y values used in the data.
     * @param isHistogram True if the data is from a histogram and 
@@ -641,21 +877,15 @@ public class SavitzkyGolayFilter extends GenericSpecial
     * @return            The corresponding x value or Float.NaN 
     *                    if yIndex is invalid.
     */
-   private float getXValue(float[] xValues, float[] yValues, boolean isHistogram, int yIndex)
+   private float getXValue(float[] xValues, boolean isHistogram, int yIndex)
    {
-      if (yIndex<0 || yIndex>=yValues.length || yIndex>=xValues.length)
-      {
-         System.out.println("Invalid paramter (yIndex="+yIndex+") in getXValue\n  Returning Float.NaN");
-         return Float.NaN;
-      }
-      
       if (isHistogram)
       {
          if ((yIndex+1)<xValues.length)
             return (xValues[yIndex]+xValues[yIndex+1])/2.0f;
          else
          {
-            System.out.println("Invalid paramter (yIndex="+yIndex+" !< "+(xValues.length-1)+") in getXValue\n  Returning Float.NaN");
+            System.out.println("Invalid paramter ((yIndex+1)="+(yIndex+1)+" !< xValues.length="+(xValues.length)+") in getXValue\n  Returning Float.NaN");
             return Float.NaN;
          }
       }
@@ -691,12 +921,16 @@ public class SavitzkyGolayFilter extends GenericSpecial
       
       for (int row=0; row<nR+nL+1; row++)
       {
-         currentX = getXValue(xValues, yValues,isHistogram,yIndex);
+        if (yIndex<0 || yIndex>=yValues.length || yIndex>=xValues.length)
+           System.out.println("Invalid paramter (yIndex="+yIndex+") in getMatrixA\n  Returning Float.NaN");
+        else
+        {
+         currentX = getXValue(xValues,isHistogram,yIndex);
          A[row][0] = 1;
          for (int column=1; column<(M+1); column++)
             A[row][column] = A[row][column-1]*currentX;
-
-         yIndex++;
+        }
+        yIndex++;
       }
       
       return A;
@@ -789,10 +1023,46 @@ public class SavitzkyGolayFilter extends GenericSpecial
          return Float.NaN;
       }
       if (leftCompensate)
-         return (float)computeApproximateValueAt(getXValue(xValues, yValues, isHistogram, yIndex-nL),b,M+1);
+      {
+        if ((yIndex-nL)<0 || (yIndex-nL)>=yValues.length || (yIndex-nL)>=xValues.length)
+        {
+           System.out.println("Invalid paramter (y Index="+yIndex+") in getSmoothedValue\n  Returning Float.NaN");
+           return Float.NaN;
+        }
+        else
+          return (float)computeApproximateValueAt(getXValue(xValues, isHistogram, yIndex-nL),b,M+1);
+      }
       else if (rightCompensate)
-         return (float)computeApproximateValueAt(getXValue(xValues, yValues, isHistogram, yIndex+nR),b,M+1);
+      {
+        if ((yIndex+nR)<0 || (yIndex+nR)>=yValues.length || (yIndex+nR)>=xValues.length)
+        {
+           System.out.println("Invalid paramter (y Index="+yIndex+") in getSmoothedValue\n  Returning Float.NaN");
+           return Float.NaN;
+        }
+        else
+          return (float)computeApproximateValueAt(getXValue(xValues, isHistogram, yIndex+nR),b,M+1);
+      }
       else
-         return (float)computeApproximateValueAt(getXValue(xValues, yValues, isHistogram, yIndex),   b,M+1);
+      {
+        if (yIndex<0 || yIndex>=yValues.length || yIndex>=xValues.length)
+        {
+           System.out.println("Invalid paramter (y Index="+yIndex+") in getSmoothedValue\n  Returning Float.NaN");
+           return Float.NaN;
+        }
+          return (float)computeApproximateValueAt(getXValue(xValues, isHistogram, yIndex),   b,M+1);
+      }
    }
-}    
+   
+   /*
+   private class CustomIntList extends IntList
+   {
+      public static int[] ToArray( String string_list )
+      {
+         if (string_list.equalsIgnoreCase("ALL"));
+         	return new int[];
+         else
+         	return super.ToArray(string_list);
+      }
+   }
+   */
+}
