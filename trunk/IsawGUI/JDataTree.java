@@ -2,6 +2,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.16  2002/11/18 22:30:29  pfpeterson
+ * Added a "DEBUG" variable which is checked before untrapped updates
+ * are printed to the command line.
+ *
  * Revision 1.15  2002/11/07 16:32:25  pfpeterson
  * Properly ignores message from DataSets telling viewers to close.
  *
@@ -160,6 +164,7 @@ public class JDataTree
   private JTree tree;
 
   public static final String MODIFIED_NODE_TITLE = "Modified";
+  public static boolean DEBUG=false;
 
   /**
    * the main container for various forms of data in the ISAW application.
@@ -671,12 +676,15 @@ public class JDataTree
                                        //TODO: should redraw the entire tree
       else if( (String)reason == GROUPS_CHANGED )
       {
-        System.out.println( "unimplemented" );
+        if(DEBUG)
+          System.out.println( "unimplemented: GROUPS_CHANGED" );
       }
 
       else
       {
-        System.out.println( "untrapped update(...) message in JDataTree" );
+        if(DEBUG)
+          System.out.println( "untrapped update(...) message in JDataTree: "
+                              +(String)reason );
       }
 
       return; 
