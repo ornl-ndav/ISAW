@@ -46,7 +46,7 @@ import java.text.DecimalFormat;
  * A.J.Schultz's PEAKS program. This program takes a list of peaks and
  * calculates their centers using a centroid method.
  */
-public class CentroidPeaks extends GenericTOF_SCD{
+public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
     private static final String     TITLE                 = "Centroid Peaks";
     private static final int        time_notice_frequency = 20;
     private static final SharedData shared                = new SharedData();

@@ -49,7 +49,7 @@ import java.text.DecimalFormat;
  * compares them to adjacent columns. The difference is due to how
  * ISAW stores the dataset.
  */
-public class FindPeaks extends GenericTOF_SCD{
+public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     private static final String     TITLE                 = "Find Peaks";
     private static final int        time_notice_frequency = 20;
     private static final SharedData shared                = new SharedData();
