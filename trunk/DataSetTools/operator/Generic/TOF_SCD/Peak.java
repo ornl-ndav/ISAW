@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.20  2003/08/05 21:35:34  dennis
+ * Added comment on shifting time channel by one when translating
+ * to external form in toString().
+ *
  * Revision 1.19  2003/07/28 20:01:37  dennis
  * clone() method now also copies the UB and inverse UB matrix,
  * if they are set.
@@ -1049,7 +1053,8 @@ public class Peak{
     if(Float.isNaN(z)){
       rs=rs+"     "+z;
     }else{
-      rs=rs+format(df_se_tw.format(z+1),7);
+      rs=rs+format(df_se_tw.format(z+1),7); // internally z is stored as one 
+                                            // less than the file representation
     }
     rs=rs+format(df_se_tw.format(xcm),7)
       +format(df_se_tw.format(ycm),7)
