@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/06/18 22:48:38  bouzekc
+ *  Added method to return StringFilterer associated with the
+ *  entrywidget.
+ *
  *  Revision 1.3  2003/06/10 13:48:32  bouzekc
  *  Fixed NullPointerException in init().
  *
@@ -111,6 +115,18 @@ abstract public class StringEntryPG extends ParameterGUI{
       return;
     }
     this.setValid(true);
+  }
+
+  /**
+   *  Accessor method to allow access to the StringFilter so that the outside
+   *  world can pre-check any values that it wants to send in.
+   *
+   *  @return                    The StringFilterer (interface implemented by
+   *                             StringFilter) that this PG uses.
+   */
+  public StringFilterer getStringFilter()
+  {
+    return ((StringEntry)this.entrywidget).getStringFilter();
   }
 
   // ********** IParameterGUI requirements **********
