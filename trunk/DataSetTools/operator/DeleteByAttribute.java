@@ -2,6 +2,9 @@
  * @(#)DeleteByAttribute.java   0.1  2000/06/06   Dennis Mikkelson
  *             
  * $Log$
+ * Revision 1.2  2000/11/07 15:54:16  dennis
+ * Replaced "Data blocks" with "Groups" in operator title.
+ *
  * Revision 1.1  2000/07/10 22:36:02  dennis
  * July 10, 2000 version... many changes
  *
@@ -42,7 +45,7 @@ public class DeleteByAttribute extends    DataSetOperator
 
   public DeleteByAttribute( )
   {
-    super( "Delete Data blocks by Attribute" );
+    super( "Delete Groups by Attribute" );
   }
 
 
