@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.53  2003/06/26 14:11:24  bouzekc
+ * Removed commented-out sections of code.
+ *
  * Revision 1.52  2003/06/26 13:55:18  bouzekc
  * Removed unused local variables.
  *
@@ -562,7 +565,6 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         }
       }
             
-      //if(execute) 
       kline = executeBlock( script , line , execute ,0 ) ; 
       if ( (perror >= 0) && (onerror == 0) )
         return kline ; 
@@ -840,8 +842,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
 
     index=line.indexOf("#");
     if(index==0){ // could be comment
-      //index=line.indexOf("#$$");
-      //if(index<0) // it is a comment
+      //if(index<0) it is a comment
       if(line.indexOf("#$$")<0)
         return true; // it dealt with things correctly
     }
@@ -941,69 +942,18 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         addParameter( new BooleanPG( Prompt, new Boolean (true)) );
       }
     }else if( DataType.equals("ARRAY")){
-     /* if( InitValue != null)
-        ExecLine.execute(InitValue , 0 , InitValue.length());
-      Vector V = new Vector();
-      if( InitValue != null )
-        if( ExecLine.getErrorCharPos() < 0){
-          if( ExecLine.getResult() instanceof Vector)
-            V = (Vector)(ExecLine.getResult());
-        }
-      */
       addParameter( new ArrayPG( Prompt, InitValue));
     }else if( DataType.equals("DATADIRECTORYSTRING")){
-      /*String DirPath = null;
-      if(InitValue!=null && InitValue.length()>0){
-        DirPath=InitValue;
-      }else{
-        DirPath=SharedData.getProperty("Data_Directory")+"\\";
-      }
-      if( DirPath != null )
-        DirPath = 
-          DataSetTools.util.StringUtil.setFileSeparator( DirPath);
-      else
-        DirPath = "";
-      */
       addParameter( new DataDirPG( Prompt, null));
-                                 //  new DataDirectoryString(DirPath)));
     }else if( DataType.equals("DSSETTABLEFIELDSTRING")){
-      /*if(InitValue == null)
-        addParameter( new Parameter( Prompt ,
-                                     new DSSettableFieldString() ));
-      else
-        addParameter( new Parameter( Prompt ,
-                               new DSSettableFieldString(InitValue.trim()) ) );
-      */
       DSSettableFieldString dsf = new DSSettableFieldString();
       ChoiceListPG choice= new ChoiceListPG( Prompt, InitValue);
       for( int i = 0; i< dsf.num_strings(); i++)
         choice.addItem( dsf.getString(i));
       addParameter( choice);
     }else if( DataType.equals("LOADFILESTRING")){ 
-      /*String DirPath=null;
-      if(InitValue!=null && InitValue.length()>0){
-        DirPath=InitValue;
-      }else{
-        DirPath=SharedData.getProperty("Data_Directory")+"\\";
-      }
-      if(DirPath!=null)
-        DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
-      else
-        DirPath="";
-      */
       addParameter(new LoadFilePG(Prompt, InitValue));
     }else if( DataType.equals("SAVEFILESTRING")){ 
-      /*String DirPath=null;
-      if(InitValue!=null && InitValue.length()>0){
-        DirPath=InitValue;
-      }else{
-        DirPath=SharedData.getProperty("Data_Directory")+"\\";
-      }
-      if(DirPath!=null)
-        DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
-      else
-        DirPath="";
-      */
       addParameter(new SaveFilePG(Prompt,InitValue));
     }else if( DataType.equals( "INTLIST" )){
        if(InitValue != null)
@@ -1017,7 +967,6 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         addParameter( new Parameter( Prompt,new DSFieldString() ));
       else
         addParameter( new SaveFilePG( Prompt, InitValue ));
-                                     //new DSFieldString(InitValue.trim()) ));
     }else if( DataType.equals( "INSTRUMENTNAMESTRING")){
       String XX=null;
       if(InitValue!=null && InitValue.length()>0)
@@ -1045,44 +994,14 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       for( nn=0; nn< V.size(); nn++){
         cpg.addItem( (V.elementAt(nn)).toString()) ;
       }
-      //StringChoiceList SL = new StringChoiceList(ss);
      
      
-      addParameter(  cpg);//new Parameter(Prompt, SL));
+      addParameter(  cpg);
     }else if ( DataType.equals( "DATASET") ){
-      /*DataSet dd = new DataSet("DataSet","");
-      if( InitValue != null){
-        ExecLine.execute( InitValue, 0, InitValue.length());
-        if( ExecLine.getErrorCharPos() < 0 )
-          if( ExecLine.getResult() instanceof DataSet )
-            dd = ( DataSet )( ExecLine.getResult() );
-      }
-      Parameter PP = new Parameter( Prompt , dd);
-      */
       addParameter ( new DataSetPG(Prompt, null));// PP );
     }else if ( DataType.equals( "SAMPLEDATASET") ){
-      /*SampleDataSet dd = new SampleDataSet();
-      if( InitValue != null){
-        ExecLine.execute( InitValue, 0, InitValue.length());
-                   
-        if( ExecLine.getErrorCharPos() < 0 )
-          if( ExecLine.getResult() instanceof SampleDataSet )
-            dd = ( SampleDataSet )( ExecLine.getResult() );
-      }
- 
-      Parameter PP = new Parameter( Prompt , dd);
-      */
       addParameter ( new SampleDataSetPG(Prompt, null) );
     }else if ( DataType.equals( "MONITORDATASET") ){
-      /*MonitorDataSet dd = new MonitorDataSet();
-      if( InitValue != null){
-        ExecLine.execute( InitValue, 0, InitValue.length());
-        if( ExecLine.getErrorCharPos() < 0 )
-          if( ExecLine.getResult() instanceof MonitorDataSet )
-            dd = ( MonitorDataSet )( ExecLine.getResult() );
-      }
-      Parameter PP = new Parameter( Prompt , dd);
-      */
       addParameter ( new MonitorDataSetPG( Prompt, null) );
     }else{
       IParameter param = param_types.getInstance( DataType_C);
@@ -1272,7 +1191,6 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   public int getErrorCharPos(){
     if(ExecLine == null ) return -1;
     return perror;
-    //return ExecLine.getErrorCharPos();
   }
 
   /**
@@ -1433,7 +1351,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
           S = S + getParameter( i ).getValue().toString();            
         ExecLine.resetError() ;
                 
-        /*int j = */ExecLine.execute ( S , 0 , S.length());
+        ExecLine.execute ( S , 0 , S.length());
         perror =ExecLine.getErrorCharPos() ;
                 
         if( perror >= 0 )
