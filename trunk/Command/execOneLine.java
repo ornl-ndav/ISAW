@@ -1,4 +1,4 @@
-/*op.getParameter(k).getValue()*
+/*
  * File:  execOneLine.java 
  *             
  * Copyright (C) 2001, Ruth Mikkelson
@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.39  2003/01/02 20:45:26  rmikk
+ * Includes two methods to setIObserverList and setPropertyChangeList
+ *
  * Revision 1.38  2002/12/16 20:43:45  pfpeterson
  * Fixed problem where execOneLine.getSHOp did not find operators where subclassing
  * happened with the parameters. This was fixed by changing a comparison of classes
@@ -178,7 +181,21 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         OL = new IObserverList();        
         PC = new PropertyChangeSupport( this );
     }
-    
+
+    /** Sets the whole list of property change listeners  
+    *   NOTE: Used when alternating between different languages
+    */
+    public void setPropertyChangeList( PropertyChangeSupport PcSupp) {
+       PC = PcSupp;
+    }
+     
+    /** Sets the whole IObserverList.  
+    *   NOTE: Used when alternating between different languages
+    */
+    public void setIObserverList( IObserverList IOlist){
+      OL = IOlist;
+    }
+      
     /**
      * This constructor adds the data set to the variable space
      */
