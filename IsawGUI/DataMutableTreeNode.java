@@ -3,6 +3,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.2  2001/07/18 16:30:36  neffk
+ * 0) removed dependancy on DefaultMutableTreeNode.
+ * 1) removed DataMutableTreeNode( Data, MutableTreeNode )
+ *
  * Revision 1.1  2001/07/15 05:38:34  neffk
  * contains Data object in JDataTree.
  *
@@ -15,7 +19,6 @@ import java.util.Enumeration;
 import java.util.Vector;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  * encapsulates a Data object.
@@ -29,7 +32,12 @@ public class DataMutableTreeNode
   private String          name   = null;
 
 
-  public DataMutableTreeNode( Data d, MutableTreeNode parent )
+  public DataMutableTreeNode()
+  {
+  }
+
+
+  public DataMutableTreeNode( Data d )
   {
     this.parent = parent;
     name = new String(  "Group #" + d.getGroup_ID()  );
@@ -65,7 +73,7 @@ public class DataMutableTreeNode
    */
   public TreeNode getChildAt( int childIndex )
   {
-    return new DefaultMutableTreeNode();
+    return new DataMutableTreeNode();
   }
 
 
