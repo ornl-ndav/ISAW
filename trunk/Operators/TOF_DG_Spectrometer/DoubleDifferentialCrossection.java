@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.12  2004/05/03 16:22:58  dennis
+ *  Removed unused local variables
+ *
  *  Revision 1.11  2004/03/15 19:36:54  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -363,7 +366,6 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
 
     AttributeList attr_list;
     Float   Float_val;
-    Integer Int_val;
     float   solid_angle,
             scale_factor;
 
@@ -374,8 +376,6 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
           new_y_vals[],
           new_errors[],
           tof,
-          delta_tof,
-          def,
           tsec,
           eff,
           flux;
