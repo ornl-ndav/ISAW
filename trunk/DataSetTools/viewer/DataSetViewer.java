@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/07/20 16:57:48  dennis
+ *  Removed string constants BINS_CHANGED and X_RANGE_CHANGED
+ *  moved to XScaleChooserUI. Made getXConversionScale return
+ *  a arbitray XScale object
+ *
  *  Revision 1.8  2001/07/17 20:35:47  dennis
  *  Added validDataSet() method to check for null or empty
  *  DataSets.
@@ -90,8 +95,6 @@ public abstract class DataSetViewer extends    JPanel
     public static final int OPTION_MENU_ID = 3;
 
     public static final String NEW_DATA_SET    = "New Data Set";
-    public static final String BINS_CHANGED    = "Bins Changed";
-    public static final String X_RANGE_CHANGED = "X Range Changed";
 
     private   DataSet     data_set; // The Data Set being viewed 
     private   ViewerState state;    // state information for the DataSetViewer
@@ -217,7 +220,7 @@ public abstract class DataSetViewer extends    JPanel
      *                  any subsequent conversions operations.
      *
      */
-    public UniformXScale getXConversionScale()
+    public XScale getXConversionScale()
     {
       return null;
     } 
