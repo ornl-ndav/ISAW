@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2002/04/03 19:53:34  pfpeterson
+ * Added SampleDataSet and MonitorDataSet.
+ *
  * Revision 1.18  2002/04/02 22:51:05  pfpeterson
  * Provides for LoadFileString and SaveFileString.
  *
@@ -1597,21 +1600,44 @@ public void setDefaultParameters()
            
 
             } 
-          /* else if ( DT.equals( "MonitorDataSet".toUpperCase()) )
-             {
-             System.out.println("MonitorDataSet in ScriptProcessor");
-             MonitorDataSet dd = new MonitorDataSet();
-             if( InitValue != null)
-             {ExecLine.execute( InitValue, 0, InitValue.length());
-             System.out.println("InitValue="+InitValue);
-             if( ExecLine.getErrorCharPos() < 0 )
-             if( ExecLine.getResult() instanceof MonitorDataSet )
-             dd = ( MonitorDataSet )( ExecLine.getResult() );
-             }
-             System.out.println("DataSet="+dd.toString());
-             Parameter PP = new Parameter( Message , dd);
-             addParameter ( PP );
-             }*/ 
+          else if ( DT.equals( "SampleDataSet".toUpperCase()) )
+            {
+                //System.out.print("MonitorDataSet in ScriptProcessor: ");
+                SampleDataSet dd = new SampleDataSet();
+                if( InitValue != null)
+                    {ExecLine.execute( InitValue, 0, InitValue.length());
+                    System.out.println("InitValue="+InitValue);
+                    if( ExecLine.getErrorCharPos() < 0 )
+                        if( ExecLine.getResult() instanceof SampleDataSet )
+                            dd = ( SampleDataSet )( ExecLine.getResult() );
+                    }
+                /* if(dd instanceof DataSet){
+                   System.out.println("DataSet="+dd.toString());
+                   }else if(dd instanceof MonitorDataSet){
+                   System.out.println("MonitorDataSet="+dd.toString());
+                   } */
+                Parameter PP = new Parameter( Message , dd);
+                addParameter ( PP );
+            }
+          else if ( DT.equals( "MonitorDataSet".toUpperCase()) )
+            {
+                //System.out.print("MonitorDataSet in ScriptProcessor: ");
+                MonitorDataSet dd = new MonitorDataSet();
+                if( InitValue != null)
+                    {ExecLine.execute( InitValue, 0, InitValue.length());
+                    System.out.println("InitValue="+InitValue);
+                    if( ExecLine.getErrorCharPos() < 0 )
+                        if( ExecLine.getResult() instanceof MonitorDataSet )
+                            dd = ( MonitorDataSet )( ExecLine.getResult() );
+                    }
+                /* if(dd instanceof DataSet){
+                   System.out.println("DataSet="+dd.toString());
+                   }else if(dd instanceof MonitorDataSet){
+                   System.out.println("MonitorDataSet="+dd.toString());
+                   } */
+                Parameter PP = new Parameter( Message , dd);
+                addParameter ( PP );
+            }
           else
             { seterror( start+12 , "Data Type not supported " + DT);
 	    lerror = i;
