@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/04/02 14:56:51  pfpeterson
+ * Changed to work with new Forms. (Chris Bouzek)
+ *
  * Revision 1.14  2003/03/19 15:03:24  pfpeterson
  * Better implementation of the view menu. It is dynamically created
  * to contain only valid parameters. (Chris Bouzek)
@@ -125,7 +128,7 @@ import java.beans.*;
  *  @see Form
  */
 
-public class Wizard implements Serializable, PropertyChangeListener{
+public abstract class Wizard implements Serializable, PropertyChangeListener{
     // size of the window
     private static final int FRAME_WIDTH   = 650;
     private static final int FRAME_HEIGHT  = 500;
@@ -153,16 +156,13 @@ public class Wizard implements Serializable, PropertyChangeListener{
     private String about_message = "Default Help About Message";
     private boolean standalone   = true;
 
-    // the status pane
-    //public static TextArea status_display = new TextArea();
-
     // debugging
     private static final boolean DEBUG=false;
 
     // instance variables
     private JFrame       frame;
     private String       title;
-    private Hashtable    master_list;
+    //private Hashtable    master_list;
     private Vector       forms;
     private int          form_num;
     private JPanel       form_panel;
@@ -192,9 +192,7 @@ public class Wizard implements Serializable, PropertyChangeListener{
      * @param standalone If is running by itself
      */
     public Wizard( String title, boolean standalone){
-        //status_display = new TextArea();
         this.title  = title;
-        master_list = new Hashtable();
         forms       = new Vector();
         form_num    = -1;
         frame       = new JFrame( title );
@@ -243,17 +241,11 @@ public class Wizard implements Serializable, PropertyChangeListener{
                                  JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                  JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        JMenuItem save_form   = new JMenuItem( SAVE_FORM_COMMAND );
-        JMenuItem load_form   = new JMenuItem( LOAD_FORM_COMMAND );
         JMenuItem save_wizard = new JMenuItem( SAVE_WIZARD_COMMAND );
         JMenuItem load_wizard = new JMenuItem( LOAD_WIZARD_COMMAND );
         JMenuItem exit_item   = new JMenuItem( EXIT_COMMAND );
-        save_form.setEnabled(false);
-        load_form.setEnabled(false);
         save_wizard.setEnabled(false);
         load_wizard.setEnabled(false);
-        file_menu.add( save_form );
-        file_menu.add( load_form );
         file_menu.addSeparator();
         file_menu.add( save_wizard );
         file_menu.add( load_wizard );
@@ -349,8 +341,6 @@ public class Wizard implements Serializable, PropertyChangeListener{
           work_area.add(SharedData.getStatusPane(), gbc);
 
         //CommandHandler command_handler = new CommandHandler(this);
-        save_form      .addActionListener( command_handler );
-        load_form      .addActionListener( command_handler );
         save_wizard    .addActionListener( command_handler );
         load_wizard    .addActionListener( command_handler );
         first_button   .addActionListener( command_handler );
@@ -372,46 +362,13 @@ public class Wizard implements Serializable, PropertyChangeListener{
     }
 
     /**
-     *  This method adds a new parameter to the master list of
-     *  parameters maintained by the Wizard.
-     *
-     *  @param  name   A descriptive name for this parameter.
-     *  @param  param  The parameter to be added to the master list
-     */
-    public void setParameter( String name, IParameterGUI param ){
-        master_list.put( name, param );
-    }
-
-
-    /**
-     *  This method gets a parameter from the master list of
-     *  parameters maintained by the Wizard.
-     *
-     *  @param  name   the name of the paramter to be retrieved from the
-     *                 master list.
-     *  @return param  The parameter from the master list that is identified
-     *                 by the given name.  If there is no such parameter, this
-     *                 returns null.
-     */
-    public IParameterGUI getParameter( String name ){
-        Object obj = master_list.get( name );
-        if ( obj == null || !(obj instanceof IParameterGUI )){
-            DataSetTools.util.SharedData.addmsg("name not found in Wizard.getParameter()"
-                                  +name+"\n");
-            return null;
-        }else{
-            return (IParameterGUI)obj;
-        }
-    }
-
-    /**
      *  Add another form to the list of forms maintained by this
      *  wizard.
      *
      *  @param f  The form to be added to the list.
      */
-    public void add( Form f ){
-        forms.addElement( f );
+    public void addForm( Form f ){
+        forms.add( f );
         progress.setMaximum(forms.size());
     }
 
@@ -452,29 +409,29 @@ public class Wizard implements Serializable, PropertyChangeListener{
      *
      *  @param  index  The index of the form to show.
      */
-    public void show( int index ){
+    public void showForm( int index ){
         if( !frame.isShowing()){
             this.makeGUI();
             this.showGUI();
         }
 
         if ( index < 0 || index > forms.size()-1 ){  // invalid index
-            DataSetTools.util.SharedData.addmsg("Error: invalid form number in Wizard.show()"
-                                  + index + "\n");
+            DataSetTools.util.SharedData.addmsg("Error: invalid form number in Wizard.show("
+                                  + index + ")\n");
             return;
         }
 
         Form f = getCurrentForm();          // get rid of any current form
         if ( f != null ){
-            //form_panel.remove(f.getPanel());
-            f.hide();
+            f.setVisible(false);
         }
 
         form_panel.removeAll();
 
         f = getForm(index);           // show the specified form
         form_panel.add( f.getPanel() );
-        f.show();
+        f.setVisible(true);
+        f.addParameterPropertyChangeListener(this);
         form_panel.validate();
         form_num = index;
 
@@ -512,29 +469,17 @@ public class Wizard implements Serializable, PropertyChangeListener{
     /**
      *  Save the state of the wizard then exit the wizard application.
      */
-    public void close(){
-        DataSetTools.util.SharedData.addmsg("close(): Not Fully Implemented\n");
-        save();
-        frame.dispose();
-        if(standalone) System.exit(0); // this should only be done if this is
-                                       // running as a stand alone application
-    }
-
+    public abstract void close();
 
     /**
      *  Save the state of the wizard to a file
      */
-    public void save(){
-        DataSetTools.util.SharedData.addmsg("Wizard State save() Not Implemented\n");
-    }
+    public abstract void save();
 
     /**
      *  Load the state of the wizard from a file
      */
-    public boolean load(){
-        DataSetTools.util.SharedData.addmsg("Wizard State load() Not Implemented\n");
-        return false;
-    }
+    public abstract boolean load();
 
     /**
      *  Set the help message that will be displayed when the user
@@ -619,10 +564,11 @@ public class Wizard implements Serializable, PropertyChangeListener{
         f=getForm(i);
         if(!f.done()){
           if(DEBUG) System.out.print("EXECUTING "+i);
-          //invalidate(i);
-          boolean worked=f.execute();
+          Object worked=f.getResult();
           if(DEBUG) System.out.println("  W="+worked+" D="+f.done());
-          if(!worked || !f.done()){
+          //we already know whether or not the form is done
+          //so we just need to check whether or not the form worked
+          if(worked instanceof Boolean && (!((Boolean)worked).booleanValue())){
             if(DEBUG) System.out.println("BREAKING "+i);
             end=i-1;
             break;
@@ -638,23 +584,23 @@ public class Wizard implements Serializable, PropertyChangeListener{
     /**
      *
      * Creates the view menu and listeners for all of the currently
-     * validated parameters in the wizard.  Actually, what it does
-     * at this point is creates a view menu and listeners for
-     * every parameter, validated or not.
+     * validated parameters in the current Form.  
      */
     private void populateViewMenu()
     {
       JMenuItem jmi;
-      String param_name;
+      Form f;
+      IParameterGUI iparam;
       
+      f = this.getCurrentForm();
+
       view_menu.removeAll();
-      //get the keys
-      Enumeration e = master_list.keys();
-      while( e.hasMoreElements() ){
-        param_name = (String)e.nextElement();
-        if( ((ParameterGUI)master_list.get(param_name)).getValid() )
+      for( int i = 0; i < f.getNum_parameters(); i++ )
+      {
+        iparam = (IParameterGUI)f.getParameter(i);
+        if( iparam.getValid() )
         {
-          jmi = new JMenuItem(param_name);
+          jmi = new JMenuItem(iparam.getName());
           view_menu.add(jmi);
           jmi.addActionListener( command_handler );
         }
@@ -667,7 +613,35 @@ public class Wizard implements Serializable, PropertyChangeListener{
      * parameters change.
      */
     public void propertyChange(PropertyChangeEvent ev){
+        this.invalidate(this.getCurrentFormNumber());
         this.populateViewMenu();
+    }
+
+    /**
+     * Method to call a ParameterViewer.  Since the only "oddball" events
+     * that currently happen are for the view menu, the only commands to 
+     * listen for are the ones for the current form.
+     */
+     private void displayParameterViewer(String com)
+     {
+       Form f;
+       IParameterGUI iparam;
+       boolean done;
+       int index, num_params;
+
+       f = this.getCurrentForm();
+       done = false;
+       index = 0;
+       num_params = f.getNum_parameters();
+       
+       while( !done && index < num_params )
+       {
+         iparam = (IParameterGUI)f.getParameter(index);
+         //does the command name match up to a current form parameter?
+         done = com.equals(iparam.getName());
+         if( done )
+           new ParameterViewer(iparam).showParameterViewer();
+       }  
     }
 
     
@@ -686,24 +660,26 @@ public class Wizard implements Serializable, PropertyChangeListener{
 
             if ( command.equals( FIRST_COMMAND) ){
                 form_num=0;
-                show(form_num);
+                showForm(form_num);
             }else if ( command.equals( BACK_COMMAND ) ){
+                populateViewMenu();
                 if ( form_num-1 >= 0 ){
                     form_num--;
-                    show(form_num);
+                    showForm(form_num);
                 }else{
                     DataSetTools.util.SharedData.addmsg( "FORM 0 SHOWN, CAN'T STEP BACK\n" );
                 }
             }else if ( command.equals( NEXT_COMMAND ) ){
+                populateViewMenu();
                 if ( form_num+1 < forms.size() ){
                     form_num++;
-                    show(form_num);
+                    showForm(form_num);
                 }else{
                     DataSetTools.util.SharedData.addmsg( "NO MORE FORMS, CAN'T ADVANCE\n" );
                 }
             }else if ( command.equals( LAST_COMMAND ) ){
                 form_num=forms.size()-1;
-                show(form_num);
+                showForm(form_num);
             }else if ( command.equals( CLEAR_COMMAND ) ){
                 invalidate(0);
             }else if ( command.equals( EXEC_ALL_COMMAND) ){
@@ -719,50 +695,20 @@ public class Wizard implements Serializable, PropertyChangeListener{
             }else if ( command.equals( FORM_HELP_COMMAND ) ){
                 Form f = getCurrentForm();
                 if ( f != null )
-                    ShowHelpMessage(f.getHelpMessage(),"Help: "+f.getTitle());
+                    ShowHelpMessage(f.getDocumentation(),"Help: "+f.getTitle());
             }else if ( command.equals( SAVE_WIZARD_COMMAND ) ){
                 save();
             }else if ( command.equals( LOAD_WIZARD_COMMAND ) ){
                 load();
-            }else if ( command.equals( SAVE_FORM_COMMAND ) ){
-                Form f = getCurrentForm();
-                if ( f != null )
-                    f.save();
-            }else if ( command.equals( LOAD_FORM_COMMAND ) ){
-                Form f = getCurrentForm();
-                if ( f != null )
-                    f.load();
             }else if ( command.equals( VIEW_MENU ) ){
                 populateViewMenu();
             }else if ( command.equals( EXIT_COMMAND ) ){
                 close();
             }else{
-              new ParameterViewer(
-                wizard.getParameter(command)).showParameterViewer();
+              displayParameterViewer(command);
+              //new ParameterViewer(command).showParameterViewer();
             }
         }
 
-    }
-
-    /**
-     *  Main program for preliminary testing only.
-     */
-    public static void main( String args[] ){
-        System.out.println("Wizard Main");
-
-        Wizard w = new Wizard( "Wizard Test" );
-
-        w.setParameter( "Height",
-                  new FloatPG( "Height_Name", new Float(5.0), false ));
-        w.setParameter( "Name",
-                  new StringPG( "Name_Name","Dennis", false ));
-
-        IParameter p = w.getParameter( "Height" );
-        System.out.println("P1=" + p.getName() + ", " + p.getValue() );
-
-        p = w.getParameter( "Name" );
-        System.out.println("P2=" + p.getName() + ", " + p.getValue() );
-
-        w.show(0);
     }
 }
