@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/01/09 15:08:53  rmikk
+ * Fixed an error in the unix version that causes an exception to occur if the
+ * result of a variable in the Jython system is null.
+ *
+ * Reinitialized the variable errormessage so that when an error occurs, the next run is not affected by it.
+ *
  * Revision 1.1  2003/01/02 20:46:43  rmikk
  * Initial Checkin for the interface to Jython's Scripting language
  *
@@ -125,6 +131,7 @@ public class pyScriptProcessor extends ScriptProcessorOperator implements IObser
     */
     public  void setDocument( Document Doc)
      {doc=Doc;
+     errormessage = null;
      }
       
 
@@ -135,12 +142,11 @@ public class pyScriptProcessor extends ScriptProcessorOperator implements IObser
     *   later in the immediate pane
     */
     public Object getResult()
-     {
+     { 
       if( doc ==null) 
          return new ErrorString( "No code to translate");
       try{errormessage=null;
       
-       
        reset();
        Pinterpret.exec( doc.getText(0, doc.getLength()));
        if( eos.size() > 0)
@@ -148,16 +154,15 @@ public class pyScriptProcessor extends ScriptProcessorOperator implements IObser
            errormessage = "Error:"+eos.toString();
            return new ErrorString( "Error:"+eos.toString());
            }
-      
-       return Pinterpret.get("Result",Object.class);
+       Object O = Pinterpret.get( "Result", Object.class);
+       return  O; 
         }
       catch(org.python.core.PySyntaxError s){
-                errormessage= "ERROR:"+s.toString();
-              
-                    return new ErrorString( errormessage);}
+                errormessage= "ERROR1:"+s.toString();
+                return new ErrorString( errormessage);}
       catch(Exception s){
-           errormessage= "ERROR:"+s.toString();
-          return new ErrorString( "ERROR:"+s.toString());
+           errormessage= "ERROR2:"+s.toString();
+           return new ErrorString( "ERROR:"+s.toString());
       }
      }
      
@@ -167,13 +172,14 @@ public class pyScriptProcessor extends ScriptProcessorOperator implements IObser
    *    Resets the PythonInterpreter.  The DataSets are added and the IOBS varible is also
    *    readded
    */
-   public void  reset()
+   public void reset()
      {Pinterpret = new PythonInterpreter();
       for( int i=0; i<Dsets.size();i++)
         {DataSet DS =(DataSet)(Dsets.elementAt(i));
          Pinterpret.set("ISAWDS"+DS.getTag(),DS);
         }
       Pinterpret.set( "IOBS", obss);
+      Pinterpret.set("Result", null );
       eos = new ByteArrayOutputStream();
       Pinterpret.setErr(eos);
       Pinterpret.setOut( new DisplayOStream ());
@@ -292,7 +298,7 @@ public class pyScriptProcessor extends ScriptProcessorOperator implements IObser
    *   will have to bring up the JParametersDialog box itself( somehow)
    */
    public void setDefaultParameters()
-     {
+     {errormessage = null;
       parameters= new Vector();
      }
  
