@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2001/08/02 16:21:16  rmikk
+ * Added a routine to take care of the differing end of line
+ * indicators from different wordprocessors.
+ *
  * Revision 1.27  2001/07/18 16:23:00  neffk
  * changed the DataSet[] parameter of getExecScropt(...) to
  * IDataSetListHandler so that CommandPane could have a dynamic list
@@ -407,7 +411,8 @@ private class MyKeyListener  extends KeyAdapter
 
         if( e.getKeyChar() == KeyEvent.VK_ENTER )	
           if( e.getSource().equals( CP.Immediate ) )
-	      {  int i = CP.Immediate.getCaretPosition() ; 
+	      {  fixUP( CP.Immediate.getDocument());
+                 int i = CP.Immediate.getCaretPosition() ; 
 	          Document doc = CP.Immediate.getDocument() ;
                   Element E = doc.getDefaultRootElement(); 
 	          int line  = E.getElementIndex( i ) - 1 ;             
@@ -459,6 +464,58 @@ private class MyKeyListener  extends KeyAdapter
     
     }
   }//End MyKeyListener
+/** Attempts to fix differences in CR-LF handling of systems
+*@param Doc  the Plain document with the errant characters
+*/
+public static void fixUP( Document Doc )
+ {String S;
+  try{
+     S = Doc.getText( 0 , Doc.getLength() );
+     }
+  catch( BadLocationException e)
+     { return;
+     }
+  char c;
+  if( S.length() <= 0)
+    return;
+  if( S.length() <= 1)
+    {c= S.charAt( 0);
+     if( ( c != 10) ||( c != 13))
+       return;
+     try{
+       Doc.remove( 0 , 1 );
+       Doc.insertString( 0 , "\n" , null ); 
+        }
+     catch(BadLocationException e)
+       { return;
+        }
+    }
+  for( int i= S.length()-1; i>= 0; i--)
+   { c = S.charAt( i );
+     if( (int)c <32)
+       if( c != '\n')
+         if( (c == 10) ||( c==13))
+          {boolean remove = false;
+          
+           if( i + 1  < S.length())
+             if( S.charAt( i + 1) == '\n' )
+                remove = true;
+           if( i > 0)
+             if( S.charAt( i - 1 ) == '\n' )
+                remove = true;
+           try{
+              Doc.remove( i, 1 );
+              if( !remove )
+                  Doc.insertString( i , "\n" , null );
+              }
+           catch( BadLocationException ee){}
+                
+          }
+   }
+  
+  
+ }
+
 //*****************SECTION:MAIN********************
 /**
 * Test program for this unit- no args are used
@@ -524,7 +581,9 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
     public void actionPerformed( ActionEvent e )
     {Document doc ; 
      if( e.getSource().equals( CP.Run ) ) 
-       {CP.SP.MacroDocument = CP.Commands.getDocument();
+       { fixUP(CP.Commands.getDocument());
+        CP.SP.MacroDocument = CP.Commands.getDocument();
+        
         CP.SP.setDefaultParameters();
         if( CP.SP.getErrorCharPos() >= 0)
           {new Util().appendDoc( CP.StatusLine.getDocument(), "setDefault Error "+
@@ -535,15 +594,15 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
           }
         
         StatusLine.setText("");
+
         appendlog( logDoc, Commands.getDocument(), "CommandPane Run");
         if( CP.SP.getNum_parameters() > 0 )
 	    { if( SelectedFile !=null)
                 CP.SP.setTitle( SelectedFile.toString() );
               else
                 CP.SP.setTitle( "CommandPane");
-             DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
-                     new DataSetTools.components.ParametersGUI.JParametersDialog(CP.SP, SP, 
-                     new PlainDocument(), null);
+                JParametersDialog pDialog =   new JParametersDialog(CP.SP, SP, 
+                                               new PlainDocument(), null);
              
            }
         else
@@ -602,20 +661,22 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
          }     
     else if( e.getSource().equals( Help ) )
        {//BrowserControl H = new BrowserControl() ; 
+          
+          
            HTMLPage H;
 	 String S;
          
          S = System.getProperty("Help_Directory");
 	 if( S!= null)
-           { S = DataSetTools.util.StringUtil.fixSeparator( S);
-            // System.out.print("A");if(S!=null)System.out.println(S); else System.out.println("");
+           { S = DataSetTools.util.StringUtil.fixSeparator( S);     
+          
 
              S = S.trim();
              if( S.length() < 1) 
                 S = null;
              else if( "\\/".indexOf(S.charAt(S.length() - 1 ))< 0)
                 S = S + java.io.File.separator;
-             //System.out.println("A@="+ S + "Command/CommandPane.html");
+             
              if( new File( S + "Command/CommandPane.html").exists())
                {}
              else S = null;
