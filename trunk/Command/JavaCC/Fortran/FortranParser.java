@@ -101,6 +101,11 @@ public class FortranParser implements FortranParserConstants {
     s = replaceTypes( s, false, primitive );
 
     StringBuffer buffer = new StringBuffer(  );
+
+    if( !insideFunction ) {
+      //put a public on it
+      buffer.append( "public " );
+    }
     //make sure these get a semicolon
     appendSemiColon = true;
     s = s.trim(  );
@@ -447,6 +452,7 @@ public class FortranParser implements FortranParserConstants {
       break;
     case FUNCTION_END:
       t = jj_consume_token(FUNCTION_END);
+    insideFunction = false;
     {if (true) return "}";}
       break;
     case FUNCTION_RETURN:
