@@ -1,7 +1,7 @@
 /*
  * File:  Integrate1.java 
  *
- * Copyright (C) 2002, Peter Peterson
+ * Copyright (C) 2002, Peter Peterson, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,14 +25,20 @@
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
- *
+ * Some of this work was supported by the National Science Foundation under
+ * grant number DMR-0218882
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/06/23 20:39:54  rmikk
+ * Now includes all the options from the first integrate operator.
+ * Adds two new Integrate One Point add-ins and allows for an
+ *    experimental option
+ *
  * Revision 1.1  2004/06/18 22:22:20  rmikk
  * Initial Checkin
  *
- *
+ *  
  */
 package Operators.TOF_SCD;
 
@@ -48,7 +54,7 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import java.io.*;
 import java.util.Vector;
-
+import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 /** 
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
  */
@@ -82,6 +88,11 @@ public class Integrate1 extends GenericTOF_SCD{
    * integration range in y
    */
   private              int[] rowYrange={-2,2};
+  
+  
+  private String PeakAlg = "MaxItoSigI";
+  
+  private IntegratePt opIntPt = new IntegratePt();
 
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -90,10 +101,11 @@ public class Integrate1 extends GenericTOF_SCD{
    */  
   public Integrate1(){
     super( TITLE );
+  
   }
   
   /** 
-   * Creates operator with title "Integrate" and the specified list
+   * Creates operator with title "Integrate1" and the specified list
    * of parameters. The getResult method must still be used to execute
    * the operator.
    *
@@ -112,10 +124,10 @@ public class Integrate1 extends GenericTOF_SCD{
   }
 
   /** 
-   * Creates operator with title "Integrate" and the specified list
+   * Creates operator with title "Integrate1" and the specified list
    * of parameters. The getResult method must still be used to execute
    * the operator.  This is a convenience constructor so that a full
-   * Integrate Operator can be constructed without the need to 
+   * Integrate1 Operator can be constructed without the need to 
    * pass in IParameterGUIs.
    *
    * @param ds          DataSet to integrate
@@ -125,7 +137,8 @@ public class Integrate1 extends GenericTOF_SCD{
    * @param slicedelta  The amount to increase slicesize by.
    * @param lognum      The peak multiples to log - i.e. 3 logs
    *                    1, 3, 6, 9...
-   * @param append      Append to file (true/false)
+   * @param append      Append to file (true/false);
+   * @param PeakAlg     Name of algorithm used to integrate one peak
    * @param box_x_range The range of x (delta col) values to use around the peak 
    *                    position
    * @param box_y_range The range of y (delta row) values to use around the peak 
@@ -138,6 +151,7 @@ public class Integrate1 extends GenericTOF_SCD{
                     int     slicedelta, 
                     int     lognum,
                     boolean append,
+                    String PeakAlg,
                     String  box_x_range,
                     String  box_y_range )
   {
@@ -149,15 +163,16 @@ public class Integrate1 extends GenericTOF_SCD{
     getParameter(5).setValue(new Integer(slicedelta));
     getParameter(6).setValue(new Integer(lognum));
     getParameter(7).setValue(new Boolean(append));
+    getParameter(8).setValue(new String( PeakAlg));
     getParameter(9).setValue(box_x_range);
     getParameter(10).setValue(box_y_range);
   }
 
   /** 
-   * Creates operator with title "Integrate" and the specified list
+   * Creates operator with title "Integrate1" and the specified list
    * of parameters. The getResult method must still be used to execute
    * the operator.  This is a convenience constructor so that a full
-   * Integrate Operator can be constructed without the need to 
+   * Integrate1 Operator can be constructed without the need to 
    * pass in IParameterGUIs.
    *
    * @param ds          DataSet to integrate
@@ -169,6 +184,8 @@ public class Integrate1 extends GenericTOF_SCD{
    * @param lognum      The peak multiples to log - i.e. 3 logs
    *                    1, 3, 6, 9...
    * @param append      Append to file (true/false);
+   * @param use_shoebox Flag to specify using same-size shoebox around all peaks,
+   *                    rather than trying to maximize I/sigI
    * @param box_x_range The range of x (delta col) values to use around the peak 
    *                    position
    * @param box_y_range The range of y (delta row) values to use around the peak 
@@ -182,6 +199,7 @@ public class Integrate1 extends GenericTOF_SCD{
                     int     slicedelta, 
                     int     lognum,
                     boolean append,
+                    String PeakAlg,
                     String  box_x_range,
                     String  box_y_range )
   {
@@ -189,7 +207,8 @@ public class Integrate1 extends GenericTOF_SCD{
          integfile, matfile, 
          slicerange, slicedelta, 
          lognum, 
-         append,
+         append, 
+        PeakAlg,
          box_x_range, box_y_range ); 
     getParameter(3).setValue(choices.elementAt(choice));
   }
@@ -198,7 +217,7 @@ public class Integrate1 extends GenericTOF_SCD{
   /** 
    * Get the name of this operator to use in scripts: SCDIntegrate
    * 
-   * @return  "SCDIntegrate", the command used to invoke this 
+   * @return  "SCDIntegrate1", the command used to invoke this 
    *           operator in Scripts
    */
   public String getCommand(){
@@ -245,7 +264,14 @@ public class Integrate1 extends GenericTOF_SCD{
     // parameter(7)
     addParameter(new BooleanPG("Append",false));
 
-   
+    // parameter(8)
+    ChoiceListPG clPG = new ChoiceListPG("Integrate 1 peak method","MaxItoSigI");
+    clPG.addItem("Shoe Box");
+    clPG.addItem("MaxItoSigI-old");
+    clPG.addItem("-Background");
+    clPG.addItem("Experimental");
+    addParameter(clPG);
+
     // parameter(9)
     addParameter(new IntArrayPG("Box Delta x (col) Range","-2:2"));
 
@@ -382,8 +408,14 @@ public class Integrate1 extends GenericTOF_SCD{
 
     // then whether to append
     boolean append=((BooleanPG)getParameter(7)).getbooleanValue();
-
-
+     
+     PeakAlg =getParameter(8).getValue().toString();
+    
+     if( PeakAlg.equals("MaxItoSigI-old"))
+        IntegratePt.setIntgratePkOp(new INTEG());
+     else if( PeakAlg.equals("-Background"))
+        IntegratePt.setIntgratePkOp(new INTGT());
+     opIntPt.setDataSet(ds);
     // then the x range
     {
       int[] myXrange=((IntArrayPG)getParameter(9)).getArrayValue();
@@ -408,7 +440,7 @@ public class Integrate1 extends GenericTOF_SCD{
 
    if ( DEBUG )
    {
-    
+     System.out.println("Peak Method = " + PeakAlg);
      System.out.println("X range = " + colXrange[0] + " to " + colXrange[1] );
      System.out.println("Y range = " + rowYrange[0] + " to " + rowYrange[1] );
      System.out.println("Z range = " + timeZrange[0] + " to " + timeZrange[1] );
@@ -506,12 +538,14 @@ public class Integrate1 extends GenericTOF_SCD{
       }
       L1=null;
     }
+    
     if(init_path==0f)
       return new ErrorString("initial flight path is zero");
 
     // get the run number
     int nrun=0;
     {
+     
       Object Nrun=data.getAttributeValue(Attribute.RUN_NUM);
       if(Nrun!=null){
         if( Nrun instanceof Integer)
@@ -521,7 +555,7 @@ public class Integrate1 extends GenericTOF_SCD{
           }
       Nrun=null;
     }
-
+   
     // create a PeakFactory for use throughout this operator
     PeakFactory pkfac=new PeakFactory(nrun,0,init_path,0f,0f,0f);
     pkfac.UB(UB);
@@ -529,14 +563,14 @@ public class Integrate1 extends GenericTOF_SCD{
 
     // create a vector for the results
     Vector peaks=new Vector();
-
+   
     // integrate each detector
     Vector innerPeaks=null;
     ErrorString error=null;
     for( int i=0 ; i<det_number.length ; i++ ){
-      if(DEBUG) System.out.println("integrating "+det_number[i]);
+     
       innerPeaks=new Vector();
-      error=integrateDetector(ds,innerPeaks,pkfac,det_number[i], false);
+      error=integrateDetector(ds,innerPeaks,pkfac,det_number[i],false);
       if(DEBUG) System.out.println("ERR="+error);
       if(error!=null) return error;
       if(DEBUG) System.out.println("integrated "+innerPeaks.size()+" peaks");
@@ -544,7 +578,7 @@ public class Integrate1 extends GenericTOF_SCD{
         peaks.addAll(innerPeaks);
     }
 
-    
+  
     // write out the logfile integrate.log
     String logfile=integfile;
     {
@@ -554,10 +588,12 @@ public class Integrate1 extends GenericTOF_SCD{
     String errmsg=this.writeLog(logfile,append);
     if(errmsg!=null)
       SharedData.addmsg(errmsg);
-
+   
     // write out the peaks
     WritePeaks writer=new WritePeaks(integfile,peaks,new Boolean(append));
+  
     return writer.getResult();
+   
   }
 // ========== start of detector dependence
 
@@ -643,7 +679,7 @@ public class Integrate1 extends GenericTOF_SCD{
     logBuffer.append("========== PEAK INTEGRATION ==========\n");
     logBuffer.append("listing information about every "+listNthPeak+" peak\n");
 
-    boolean printPeak=DEBUG||false; // REMOVE
+    boolean printPeak=false; // REMOVE
     Peak peak=null;
     int seqnum=1;
     // loop over all of the possible hkl values and create peaks
@@ -692,15 +728,31 @@ public class Integrate1 extends GenericTOF_SCD{
     {
       if( i%listNthPeak == 0 )                   // integrate with logging
       {
-        
+        if ( PeakAlg.equals("Shoe Box") )
+          integrateShoebox( (Peak)peaks.elementAt(i),
+                             ds, ids,
+                             colXrange, rowYrange, timeZrange,
+                             logBuffer ); 
+        else if( PeakAlg.equals("MaxItoSigI"))
           integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
                         logBuffer);
+       else 
+          integratePeakExp((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
+             logBuffer);    
       }
       else                                      // integrate but don't log
       {
-       
+        if ( PeakAlg.equals("Shoe Box") )
+          integrateShoebox( (Peak)peaks.elementAt(i),
+                             ds, ids,
+                             colXrange, rowYrange, timeZrange,
+                             null );
+        else if(PeakAlg.equals("MAXItoSIGI"))
           integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
                         null);
+        else
+        integratePeakExp((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
+                     null);  
       }
     }
 
@@ -761,12 +813,192 @@ public class Integrate1 extends GenericTOF_SCD{
         }
       }
     }
-
+  
     return null;
   }
+  /**
+    * This method integrates the peak by using an experimental integrate peak
+    *  using the experimental IntegratePt information operator.  The low-level
+    *  code can be plugged into IntegratePt using the setIntgratePkOp() method.
+    */
+   private  void integratePeakExp( Peak peak, DataSet ds, int[][] ids,
+                         int[] timeZrange, int increaseSlice, StringBuffer log){
+
+   
+     // set up where the peak is located
+     System.out.println("in intPeakExp");
+     int cenX=(int)Math.round(peak.x());
+     int cenY=(int)Math.round(peak.y());
+     int cenZ=(int)Math.round(peak.z());
+     Data D = ds.getData_entry( ids[cenX][cenY]);
+     if( D == null)
+        return;
+     int indx = ds.getIndex_of_data(D);
+     XScale xscl= D.getX_scale();
+     float time = xscl.getX(cenZ);
+
+     addLogHeader( log, peak );
+
+     // initialize variables for the slice integration
+   
+     System.out.println(formatInt(cenX)+"  "+formatInt(cenY)
+                     +formatInt(getObs(ds,ids[cenX][cenY],cenZ),6));
+                
+     Vector V = opIntPt.Integrate(time, indx, null);
+     
+     try{                  
+    
+    float Itot = ((Float)(V.elementAt(0))).floatValue();
+    float dItot =((Float)(V.elementAt(1))).floatValue();
+    addLogPeakSummary( null, Itot, dItot );
+    
+
+     // change the peak to reflect what we just did
+     peak.inti(Itot);
+     peak.sigi(dItot);
+     }catch(Exception ss){
+        return;
+     }
+   }
+
+ 
 
 
+  /**
+   * This method integrates the peak by looking at a rectangular "shoebox"
+   * around the specified peak.  The volume specified by the shoebox is assumed 
+   * to be the peak.  The border voxels (just outside the shoebox in 3D) are 
+   * taken as the background.  If the peak position is too close to the edge
+   * of the volume of data, it cannot be integrated and this method just
+   * returns.
+   */
+   private static void integrateShoebox( Peak         peak,
+                                         DataSet      ds, 
+                                         int          ids[][], 
+                                         int          colXrange[], 
+                                         int          rowYrange[], 
+                                         int          timeZrange[],
+                                         StringBuffer log )
+   {
+     // set up where the peak is located
+     int cenX=(int)Math.round(peak.x());
+     int cenY=(int)Math.round(peak.y());
+     int cenZ=(int)Math.round(peak.z());
+
+     // we will consider the specified shoe box to the the part of the peak
+     // that is included and will consider the background to be the border
+     // "voxels" in 3D.  So we need to have some extra space around the peak.
+     // If we don't, we'll just return without integrating the peak.
+
+     int minZ = 0;
+     int maxZ = ds.getData_entry(ids[1][1]).getY_values().length - 1; 
+     if ( cenZ + timeZrange[0] < minZ )  // too close to time channel 0
+       return;                   
   
+     if ( cenZ + timeZrange[1] > maxZ )  // too close to max time channel
+       return;
+
+     int minX = 1;                           // in ids[][] the first index
+     int maxX = ids.length-1;                // is the column (i.e. X) index
+
+     if ( cenX + colXrange[0] < minX + 1 )
+       return;            
+     
+     if ( cenX + colXrange[1] > maxX - 1 )
+       return;
+
+     int minY = 1;                           // in ids[][] the second index
+     int maxY = ids[1].length-1;             // is the row (i.e. Y) index
+
+     if ( cenY + rowYrange[0] < minY + 1 )
+       return;            
+     
+     if ( cenY + rowYrange[1] > maxY - 1 )
+       return;
+
+     addLogHeader( log, peak );
+                                             // size of peak "shoebox"
+     int nX = colXrange[1]  - colXrange[0]  + 1;  
+     int nY = rowYrange[1]  - rowYrange[0]  + 1;
+
+     float n_signal =  nX    *  nY;   
+     float n_total  = (nX+2) * (nY+2);   
+     float n_border = n_total - n_signal;
+     float ratio    = n_signal/n_border;
+
+     float slice_total = 0;      // slice total on peak + background region
+     float p_sig_plus_back = 0;  // signal + background total for peak region
+     float intensity;            // intensity at one voxel
+     float border;               // total on border region only 
+     float slice_I;              // signal - background on one slice
+     float slice_sigI;           // sigI on one slice
+     float totI = 0;             // cumulative I for all slices
+     float totSigI = 0;          // cumulative sigI for all slices
+     float slice_peak;           // largest intensity in slice
+     int   slice_peak_x;         // x value of largest intensity in slice
+     int   slice_peak_y;         // y value of largest intensity in slice
+     boolean border_peak;        // set true if the largest value occurs on 
+                                 // the border of this slice
+
+                                          // range of x,y,z enclosed in shoebox
+     int first_x = cenX + colXrange[0];
+     int last_x  = cenX + colXrange[1];
+     int first_y = cenY + rowYrange[0];
+     int last_y  = cenY + rowYrange[1];
+     int first_z = cenZ + timeZrange[0];
+     int last_z  = cenZ + timeZrange[1];
+     for(int k = first_z; k <= last_z;  k++)
+     {
+       slice_peak   = -1;
+       slice_peak_x = -1;
+       slice_peak_y = -1;
+       slice_total  =  0;
+       p_sig_plus_back = 0;
+       for(int i = first_x - 1; i <= last_x + 1;   i++)
+         for(int j = first_y - 1; j <= last_y + 1; j++)
+       {
+         intensity = getObs( ds, ids[i][j], k );
+         slice_total += intensity;
+         if ( i >= first_x  &&  i <= last_x &&    // check if pixel in peak 
+              j >= first_y  &&  j <= last_y )     // region of this slice
+           p_sig_plus_back += intensity;
+
+         if ( intensity > slice_peak )
+         {
+           slice_peak = intensity;
+           slice_peak_x = i;
+           slice_peak_y = j;
+         }
+       }
+
+       if ( slice_peak_x == first_x - 1 || 
+            slice_peak_x == last_x  + 1 ||
+            slice_peak_y == first_y - 1 || 
+            slice_peak_y == last_y  + 1  )
+         border_peak = true;
+       else
+         border_peak = false;
+
+       border = slice_total - p_sig_plus_back;    // total on border region only
+       slice_I    = p_sig_plus_back - ratio * border;
+       slice_sigI = (float)Math.sqrt(p_sig_plus_back + ratio * ratio * border);
+
+       totI += slice_I;
+       totSigI = (float)Math.sqrt( slice_sigI * slice_sigI + totSigI * totSigI );
+
+       addLogSlice( log, 
+                    k-cenZ, k, 
+                    slice_peak_x, slice_peak_y, (int)slice_peak, 
+                    first_x, last_x, first_y, last_y,
+                    slice_I, slice_sigI, "Yes", border_peak );
+     }
+
+     peak.inti( totI );
+     peak.sigi( totSigI );
+
+     addLogPeakSummary( log, totI, totSigI );
+   }
+
 
   /**
    * This method integrates the peak by looking at five time slices
@@ -774,48 +1006,470 @@ public class Integrate1 extends GenericTOF_SCD{
    * each time slice to get the maximum I/dI for each time slice then
    * adds the results from each time slice to maximize the total I/dI.
    */
-  private static void integratePeak( Peak peak, DataSet ds, int[][] ids,
+  private static void integratePeak(Peak peak, DataSet ds, int[][] ids,
                         int[] timeZrange, int increaseSlice, StringBuffer log){
 
-   
+    // For debugging purposes, it' helpful to track what's going on in some 
+    // cases.  To track what is done with a particular peak, specify the hkl
+    // values and add println() statements to dump out needed values 
+    // if trace is true.
+    boolean trace = false;
+    int trace_h = -1;
+    int trace_k =  3;
+    int trace_l =  3;
+    if ( Math.round(peak.h()) == trace_h && 
+         Math.round(peak.k()) == trace_k && 
+         Math.round(peak.l()) == trace_l  )
+      trace = true;
+    trace = false;   // disable trace for now.
+
     // set up where the peak is located
-   
+    float[] tempIsigI=null;
     int cenX=(int)Math.round(peak.x());
     int cenY=(int)Math.round(peak.y());
     int cenZ=(int)Math.round(peak.z());
-    Data D = ds.getData_entry( ids[cenX][cenY]);
-    if( D == null)
-       return;
-    int indx = ds.getIndex_of_data(D);
-    XScale xscl= D.getX_scale();
-    float time = xscl.getX(cenZ);
+
+    // set up the time slices to integrate
+    int minZrange=timeZrange[0];
+    int maxZrange=timeZrange[1];
+    int[] zrange=new int[maxZrange-minZrange+1];
+    for( int i=0 ; i<zrange.length ; i++ )
+      zrange[i]=cenZ+i+minZrange;
+    minZrange=cenZ;
+    maxZrange=cenZ;
+    for( int i=0 ; i<zrange.length ; i++ ){
+      if(zrange[i]<minZrange) minZrange=zrange[i];
+      if(zrange[i]>maxZrange) maxZrange=zrange[i];
+    }
+    int minZ=0;
+    int maxZ=ds.getData_entry(ids[1][1]).getX_scale().getNum_x();
+    for( int i=0 ; i<zrange.length ; i++ ){           // can't integrate past
+      if( zrange[i]<minZ || zrange[i]>=maxZ ) return; // ends of time axis
+    }
+    
+    // determine the range in index
+    int indexZmin=0;
+    int indexZcen=0;
+    int indexZmax=0;
+    for( int i=0 ; i<zrange.length ; i++ ){
+      if(zrange[i]==minZrange) indexZmin=i;
+      if(zrange[i]==cenZ)      indexZcen=i;
+      if(zrange[i]==maxZrange) indexZmax=i;
+    }
 
     addLogHeader( log, peak );
 
     // initialize variables for the slice integration
-   
-    System.out.println(formatInt(cenX)+"  "+formatInt(cenY)
+    float[][] IsigI=new float[zrange.length][2]; // 2nd index is I,dI
+    float Itot=0f;
+    float dItot=0f;
+    StringBuffer innerLog=new StringBuffer(40);
+    String[] integSliceLogs=new String[zrange.length];
+
+    // integrate the cenZ time slice
+    innerLog.delete(0,innerLog.length());
+    innerLog.append(formatInt(cenX)+"  "+formatInt(cenY)
                     +formatInt(getObs(ds,ids[cenX][cenY],cenZ),6));
-    Vector V = (new DataSetTools.operator.DataSet.Conversion.XAxis.
-          IntegratePt()).Integrate(ds,time,indx,null);
-    try{                  
-    
-   float Itot = ((Float)(V.elementAt(0))).floatValue();
-   float dItot =((Float)(V.elementAt(1))).floatValue();
-   addLogPeakSummary( null, Itot, dItot );
-    
+    tempIsigI=integratePeakSlice(ds,ids,cenX,cenY,cenZ,increaseSlice,innerLog);
+    integSliceLogs[indexZcen]=innerLog.toString();
+    // update the list of integrals if intensity is positive
+    if(tempIsigI[0]!=0f){
+      IsigI[indexZcen][0]=tempIsigI[0];
+      IsigI[indexZcen][1]=tempIsigI[1];
+      if(tempIsigI[0]>0f){
+        Itot=tempIsigI[0];
+        dItot=tempIsigI[1];
+      }
+    }        
+    if( tempIsigI[0]<=0f ){ // shrink what is calculated
+      minZrange=cenZ+1;
+      maxZrange=cenZ-1;
+    }
+
+    float maxP;
+    // integrate the time slices before the peak
+    for( int k=indexZcen-1 ; k>=0 ; k-- ){
+      maxP=getObs(ds,ids[cenX][cenY],zrange[k]);
+      if(zrange[k]>=minZrange){
+        // determine the local maximum
+        for( int i=cenX-1 ; i<=cenX+1 ; i++ ){
+          for( int j=cenY-1 ; j<=cenY+1 ; j++ ){
+            if( i==(int)Math.round(peak.x()) && j==(int)Math.round(peak.y()))
+              continue;
+            if(getObs(ds,ids[i][j],zrange[k])>maxP){
+              maxP=getObs(ds,ids[i][j],zrange[k]);
+              cenX=i;
+              cenY=j;
+            }
+          }
+        }
+      }
+      // clear the log
+      innerLog.delete(0,innerLog.length());
+      innerLog.append(formatInt(cenX)+"  "+formatInt(cenY)+formatInt(maxP,6));
+      if(zrange[k]<minZrange){
+        integSliceLogs[k]=innerLog.toString();
+        continue;
+      }
+      tempIsigI
+        =integratePeakSlice(ds,ids,cenX,cenY,zrange[k],increaseSlice,innerLog);
+      integSliceLogs[k]=innerLog.toString();
+      // update the list of integrals if intensity is positive
+      if(tempIsigI[0]!=0f){
+        IsigI[k][0]=tempIsigI[0];
+        IsigI[k][1]=tempIsigI[1];
+      }        
+      if( tempIsigI[0]<=0f ){ // shrink what is calculated
+        minZrange=zrange[k]+1;
+        continue;
+      }
+
+      // shrink what is calculated if the slice would not be added
+                // this is not fully correct since Itot and dItot aren't
+                // changing when a slice should be added
+      if(! increasingIsigI(Itot,dItot,IsigI[k][0],IsigI[k][1]) && 
+         ! is_significant (Itot,dItot,IsigI[k][0],IsigI[k][1]) ) {
+        minZrange=zrange[k]+1;
+        continue;
+      }
+    }
+
+    // reset the location of the peak in x and y
+    cenX=(int)Math.round(peak.x());
+    cenY=(int)Math.round(peak.y());
+
+    // integrate the time slices after the peak
+    try{
+      for( int k=indexZcen+1 ; k<zrange.length ; k++ ){
+        maxP=getObs(ds,ids[cenX][cenY],zrange[k]);
+        if(zrange[k]<=maxZrange){
+          // determine the local maximum
+          for( int i=cenX-1 ; i<=cenX+1 ; i++ ){
+            for( int j=cenY-1 ; j<=cenY+1 ; j++ ){
+              if( i==(int)Math.round(peak.x()) && j==(int)Math.round(peak.y()))
+                continue;
+              if(getObs(ds,ids[i][j],zrange[k])>maxP){
+                maxP=getObs(ds,ids[i][j],zrange[k]);
+                cenX=i;
+                cenY=j;
+              }
+            }
+          }
+        }
+        // clear the log
+        innerLog.delete(0,innerLog.length());
+        innerLog.append(formatInt(cenX)+"  "+formatInt(cenY)+formatInt(maxP,6));
+        if(zrange[k]>maxZrange){
+          integSliceLogs[k]=innerLog.toString();
+          continue;
+        }
+        tempIsigI
+          =integratePeakSlice(ds,ids,cenX,cenY,zrange[k],increaseSlice,innerLog);
+        integSliceLogs[k]=innerLog.toString();
+        // update the list of integrals if intensity is positive
+        if(tempIsigI[0]!=0f){
+          IsigI[k][0]=tempIsigI[0];
+          IsigI[k][1]=tempIsigI[1];
+        }        
+        if( tempIsigI[0]<=0f ){ // shrink what is calculated
+          maxZrange=zrange[k]-1;
+          continue;
+        }
+
+        // shrink what is calculated if the slice would not be added
+        // this is not fully correct since Itot and dItot aren't
+        // changing when a slice should be added
+        if(! increasingIsigI(Itot,dItot,IsigI[k][0],IsigI[k][1]) && 
+           ! is_significant (Itot,dItot,IsigI[k][0],IsigI[k][1]) ) {
+          maxZrange=zrange[k]-1;
+          continue;
+        }
+      }
+    }catch(ArrayIndexOutOfBoundsException e){
+      // let it drop on the floor
+    }
+
+    // determine the range to bother trying to sum over
+    for( int i=0 ; i<zrange.length ; i++ ){
+      if(zrange[i]==minZrange) indexZmin=i;
+      if(zrange[i]==cenZ)      indexZcen=i;
+      if(zrange[i]==maxZrange) indexZmax=i;
+    }
+
+    // figure out what to add to the total
+
+    // cenZ has already been added (but do a quick check anyhow)
+    if( Itot==0f && dItot==0f){
+      indexZmin=indexZcen+1;
+      indexZmax=indexZcen-1;
+    }
+
+    // now the previous slices
+    for( int k=indexZcen-1 ; k>=indexZmin ; k-- ){
+      if( increasingIsigI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ||
+          is_significant (Itot,dItot,IsigI[k][0],IsigI[k][1]) ) {
+        Itot=Itot+IsigI[k][0];
+        dItot=(float)Math.sqrt(dItot*dItot+IsigI[k][1]*IsigI[k][1]);
+      }else{
+        minZrange=zrange[k]+1;
+        indexZmin=k+1;
+      }
+    }
+
+    // now the following slices
+    for( int k=indexZcen+1 ; k<=indexZmax ; k++ ){
+      if( increasingIsigI(Itot,dItot,IsigI[k][0],IsigI[k][1])  ||
+          is_significant (Itot,dItot,IsigI[k][0],IsigI[k][1])  ) {
+        Itot=Itot+IsigI[k][0];
+        dItot=(float)Math.sqrt(dItot*dItot+IsigI[k][1]*IsigI[k][1]);
+      }else{
+        maxZrange=zrange[k]-1;
+        indexZmax=k-1;
+      }
+    }
+
+   if ( trace )
+     for ( int k = 0; k < IsigI.length; k++ )
+       System.out.println("slice, I, sigI = " + k + 
+                          ", " + IsigI[k][0] + ", " + IsigI[k][1] ); 
+
+    // then add information to the log file
+    if(log!=null){
+      // each time slice
+      for( int k=0 ; k<zrange.length ; k++ ){
+        log.append(formatInt(zrange[k]-cenZ)+"   "+formatInt(zrange[k])+"  ");
+        if(integSliceLogs[k]!=null && integSliceLogs[k].length()>0){ 
+          log.append(integSliceLogs[k]);
+          if(integSliceLogs[k].length()<20)
+            log.append("    NOT INTEGRATED");
+        }else{
+          log.append("-------- NOT INTEGRATED --------");
+        }
+        log.append(" "+formatFloat(IsigI[k][0]));
+        log.append("  "+formatFloat(IsigI[k][1]));
+        if(IsigI[k][0]>0f && IsigI[k][1]>0f)
+          log.append(" "+formatFloat(IsigI[k][0]/IsigI[k][1])+"      ");
+        else
+          log.append(" "+formatFloat(0f)+"      ");
+        if( k>=indexZmin && k<=indexZmax )
+          log.append("Yes\n");
+        else
+          log.append("No\n");
+      }
+
+      addLogPeakSummary( log, Itot, dItot );
+    }
 
     // change the peak to reflect what we just did
     peak.inti(Itot);
     peak.sigi(dItot);
-    }catch(Exception ss){
-       return;
+  }
+
+  /**
+   * Integrate a peak while varying the range in x and y. This does
+   * the hard work of growing the rectangle on a time slice to
+   * maximize I/dI.
+   */
+  private static float[] integratePeakSlice(DataSet ds, int[][] ids, int Xcen,
+                         int Ycen, int z, int increaseSlice, StringBuffer log){
+    float[] IsigI=new float[2];
+    float[] tempIsigI=new float[2];
+
+    int[] init_rng= {Xcen-2,Ycen-2,Xcen+2,Ycen+2};
+    int[] rng     = {Xcen-2,Ycen-2,Xcen+2,Ycen+2};
+    int[] step    = {-1,-1,1,1};
+
+    int itteration=0;
+    final int MAX_ITTER=10;
+
+    // initial run with default size for integration
+    if( checkRange(ids,rng) ){
+      tempIsigI=integrateSlice(ds,ids,rng,z);
+      if(tempIsigI[0]==0f || tempIsigI[1]==0f){ // something wrong
+        formatRange(rng,log);
+        itteration=MAX_ITTER;
+      }
+
+      if( tempIsigI[0]>0f && tempIsigI[1]>0f ){
+        IsigI[0]=tempIsigI[0];
+        IsigI[1]=tempIsigI[1];
+      }
+    }
+
+    int direction=0;
+    for( int i=0 ; i<4 ; i++ ){
+      itteration=0;
+      direction=0;
+      while(direction<2 && itteration<MAX_ITTER){ // only change direction once
+        itteration++;                      // and allow a max num of itteration
+        rng[i]=rng[i]+step[i];
+        if( checkRange(ids,rng) ){
+          tempIsigI=integrateSlice(ds,ids,rng,z);
+          if(tempIsigI[0]==0f||tempIsigI[1]==0f){ // something wrong
+            formatRange(rng,log);
+            itteration=MAX_ITTER;
+          }
+          if( tempIsigI[0]>0f && tempIsigI[1]>0f ){
+            if( IsigI[0]/IsigI[1]<tempIsigI[0]/tempIsigI[1]){
+              IsigI[0]=tempIsigI[0];
+              IsigI[1]=tempIsigI[1];
+            }else{ // change direction
+              step[i]=-1*step[i];
+              rng[i]=rng[i]+step[i];
+              direction++;
+            }
+          }
+        }else{ // change direction
+          step[i]=-1*step[i];
+          rng[i]=rng[i]+step[i];
+          direction++;
+        }
+      }
+    }
+
+    // use a fixed box
+    if(IsigI[0]<=IsigI[1]*5f){
+      if(checkRange(ids,init_rng) )
+        IsigI=integrateSlice(ds,ids,init_rng,z);
+      formatRange(init_rng,log);
+      return IsigI;
+    }
+
+    // increase the size of the slice's integration (if requested)
+    if(increaseSlice>0){
+      rng[0]=rng[0]-increaseSlice;
+      rng[1]=rng[1]-increaseSlice;
+      rng[2]=rng[2]+increaseSlice;
+      rng[3]=rng[3]+increaseSlice;
+      if( checkRange(ids,rng) ){
+        IsigI=integrateSlice(ds,ids,rng,z);
+      }else{ // goes out of range
+        rng[0]=rng[0]+increaseSlice;
+        rng[1]=rng[1]+increaseSlice;
+        rng[2]=rng[2]-increaseSlice;
+        rng[3]=rng[3]-increaseSlice;
+      }
+    }
+
+    // add information to the log and return the integral
+    formatRange(rng,log);
+    return IsigI;
+  }
+
+  /**
+   * Integrate around the peak in the given time slice. This
+   * integrates the region passed to it.
+   */
+  private static float[] integrateSlice(DataSet ds, int[][] ids,
+                                                           int[] range, int z){
+    float[] IsigI=new float[2];
+
+    int minX=range[0];
+    int minY=range[1];
+    int maxX=range[2];
+    int maxY=range[3];
+
+    int ibxmin=minX-1;
+    int ibxmax=maxX+1;
+    int ibymin=minY-1;
+    int ibymax=maxY+1;
+
+    float isigtot = (float)((maxX-minX+1)*(maxY-minY+1));
+    float ibktot  = (float)((ibxmax-ibxmin+1)*(ibymax-ibymin+1)-isigtot);
+    float stob    = isigtot/ibktot;
+
+    float ibtot=0f;
+    float istot=0f;
+
+    float intensity;
+
+    for( int i=minX-1 ; i<=maxX+1 ; i++ ){
+      for( int j=minY-1 ; j<=maxY+1 ; j++ ){
+        intensity=getObs(ds,ids[i][j],z);
+        ibtot=ibtot+intensity;
+        if( i>=minX && i<=maxX && j>=minY && j<=maxY )
+          istot=istot+intensity;
+      }
+    }
+
+    ibtot=ibtot-istot;
+    IsigI[0]=istot-stob*ibtot;
+    IsigI[1]=(float)Math.sqrt(istot+stob*stob*ibtot);
+
+    return IsigI;
+  }
+  
+  /**
+   * Utility method to determine whether adding I,dI to Itot,dItot
+   * will increase the overall I/sigI ratio or not
+   */
+  private static boolean increasingIsigI( float Itot, float dItot, 
+                                          float I,    float dI)  
+  {
+    if(I<=0f || dI==0f) return false;
+    if(Itot==0f && dItot==0f) return true;
+
+    float myItot=Itot+I;
+    float myDItot=(float)Math.sqrt(dItot*dItot+dI*dI);
+    
+    return ( (Itot/dItot)<(myItot/myDItot) );
+  }
+
+  /**
+   * Check whether or not the additional intensity is at least 1% of the
+   * total AND the I/sigI ratio is at least 2.
+   */
+  private static boolean is_significant( float Itot, 
+                                         float dItot, 
+                                         float I, 
+                                         float dI)
+  {
+    // System.out.print("is_significant: " + Itot + ", " + dItot + 
+    //                                ", " + I    + ", " + dI );
+    if(I<=0f || dI==0f)
+    {
+      // System.out.println(" false, since I <=, dI = 0 ");
+      return false;
+    }
+
+    if(Itot==0f && dItot==0f) 
+    {
+      // System.out.println(" true, since Itot, dItot = 0 ");
+      return true;
+    }
+
+    if ( (I > 0.01 * Itot) && I > 2*dI )
+    {
+      // System.out.println(" true, since I > 0.01 Itot && I > 2*dI ");
+      return true;
+    }
+    else
+    {
+      // System.out.println(" false ");
+      return false;
     }
   }
 
- 
- 
-  
+
+  /**
+   * Determines whether the integration range lies on the detector.
+   */
+  private static boolean checkRange(int[][] ids, int[] range){
+    int minX=range[0];
+    int minY=range[1];
+    int maxX=range[2];
+    int maxY=range[3];
+
+    if(minX<2) return false;
+
+    if(minY<2) return false;
+
+    if(maxX>ids.length-2) return false;
+
+    if(maxY>ids[0].length-2) return false;
+
+    return true;
+  }
 
   /**
    * Put the peak at the nearest maximum within the given deltas
@@ -1163,12 +1817,12 @@ public class Integrate1 extends GenericTOF_SCD{
   private static void addLogHeader( StringBuffer log, Peak peak )
   {
     // add some information to the log file (if necessary)
-    {
-      System.out.println("\n******************** hkl = "+formatInt(peak.h())+" "
+    if(log!=null){
+      log.append("\n******************** hkl = "+formatInt(peak.h())+" "
                  +formatInt(peak.k())+" "+formatInt(peak.l())
                  +"   at XYT = "+formatInt(peak.x())+" "+formatInt(peak.y())
-                 +" "+formatInt(peak.z()+1)+" ********************\n");
-      System.out.println("Layer  T   maxX maxY  IPK     dX       dY      Ihkl     sigI"
+                 +" "+formatInt(peak.z())+" ********************\n");
+      log.append("Layer  T   maxX maxY  IPK     dX       dY      Ihkl     sigI"
                  +"  I/sigI   included?\n");
     }
   }
@@ -1219,15 +1873,15 @@ public class Integrate1 extends GenericTOF_SCD{
                                          float        Itot, 
                                          float        sigItot )
   {
-    
+    if ( log != null )
     {
-      System.out.print("***** Final       Ihkl = "+formatFloat(Itot)+"       sigI = "
+      log.append("***** Final       Ihkl = "+formatFloat(Itot)+"       sigI = "
                  +formatFloat(sigItot)+"       I/sigI = ");
       if(sigItot>0f)
-      System.out.print(formatFloat(Itot/sigItot));
+        log.append(formatFloat(Itot/sigItot));
       else
-      System.out.print(formatFloat(0f));
-      System.out.print(" *****\n");
+        log.append(formatFloat(0f));
+      log.append(" *****\n");
     }
   }
 
