@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/08/19 17:07:01  pfpeterson
+ * Reformated file to make it easier to read.
+ *
  * Revision 1.3  2001/06/01 21:14:13  rmikk
  * Added Documentation for javadocs etc.
  *
@@ -42,52 +45,46 @@ import javax.swing.*;
 import java.awt.*;
 import javax.swing.text.*;
 
-/** Creates a cusor that covers letters
+/**
+ * Creates a cusor that covers letters
  */
-public class MyCursor extends DefaultCaret
-
-{  int w, h;
+public class MyCursor extends DefaultCaret{
+    int w, h;
   
-  /** Paints the cursor over the letters
-  */
-    public void paint(Graphics g)
-    {  
-     if(!isVisible()) return;
-     try{
-	JTextComponent c = getComponent();
-        int dot =getDot();
-        Rectangle r = c.modelToView(dot);
-        g.setColor(new Color(1,1,1,100));//c.getCaretColor());
+    /**
+     * Paints the cursor over the letters
+     */
+    public void paint(Graphics g){
+        if(!isVisible()) return;
         try{
-           String cc= c.getDocument().getText(dot,1);
-           FontMetrics fm= g.getFontMetrics();
-           w= fm.charWidth(cc.charAt(0));
-           if(w<=0) w=5;
-           h=fm.getHeight();
-            g.fillRect(r.x, r.y,w,h);
-          }
-       catch(Exception s)
-         {System.out.println("cursor paint exc="+s);
-           }
-      }
-    catch(BadLocationException e)
-	{System.err.println(e);
+            JTextComponent c = getComponent();
+            int dot =getDot();
+            Rectangle r = c.modelToView(dot);
+            g.setColor(new Color(1,1,1,100));//c.getCaretColor());
+            try{
+                String cc= c.getDocument().getText(dot,1);
+                FontMetrics fm= g.getFontMetrics();
+                w= fm.charWidth(cc.charAt(0));
+                if(w<=0) w=5;
+                h=fm.getHeight();
+                g.fillRect(r.x, r.y,w,h);
+            }catch(Exception s){
+                System.out.println("cursor paint exc="+s);
+            }
+        }catch(BadLocationException e){
+            System.err.println(e);
 	}
     }
-
-   /** Specifies the region that is damaged when the cursor moves
-   */
-    protected synchronized void damage(Rectangle r)
-    { 
-     if(r==null) return;
-     x=r.x;
-     y=r.y;
-     width=w+1;
-     height=h+1;
-      repaint();
+    
+   /**
+    * Specifies the region that is damaged when the cursor moves
+    */
+    protected synchronized void damage(Rectangle r){
+        if(r==null) return;
+        x=r.x;
+        y=r.y;
+        width=w+1;
+        height=h+1;
+        repaint();
     }
-
 }
-
-
-
