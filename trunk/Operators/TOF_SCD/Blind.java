@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/12/15 01:45:30  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.15  2003/05/07 18:39:12  dennis
  *  Removed redundant code that created parameters vector twice.
  *  Changed from dos to unix format.
@@ -91,7 +94,6 @@ package Operators.TOF_SCD;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.util.*;
-import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.Generic.TOF_SCD.*;
 import  DataSetTools.parameter.*;
 

@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/12/15 01:45:31  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.10  2003/10/18 21:22:02  bouzekc
  * Now uses HTML file for help message.
  *
@@ -69,24 +72,7 @@
  */
 package Wizard.TOF_SCD;
 
-import DataSetTools.operator.*;
-
-import DataSetTools.parameter.*;
-
-import DataSetTools.util.*;
-
 import DataSetTools.wizard.*;
-
-import Operators.TOF_SCD.*;
-
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
 
 
 /**

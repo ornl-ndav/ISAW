@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/12/15 01:45:30  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.11  2003/05/06 16:38:26  pfpeterson
  * Added multiple detector support.
  *
@@ -51,14 +54,10 @@ package DataSetTools.operator.Generic.TOF_SCD;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
-import DataSetTools.instruments.*;
 import DataSetTools.util.ErrorString;
 import DataSetTools.util.SharedData;
 import DataSetTools.retriever.RunfileRetriever;
-import java.util.*;
 import java.util.Vector;
-import java.lang.reflect.Array;
-import java.text.DecimalFormat;
 
 /** 
  * This operator is a small building block of an ISAW version of
