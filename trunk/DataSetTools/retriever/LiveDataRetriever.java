@@ -5,6 +5,13 @@
  *              Alok Chatterjee
  *
  *  $Log$
+ *  Revision 1.6  2001/02/22 21:03:32  dennis
+ *  Now gets all of the DataSets from the LiveDataServer.
+ *  Also, changed methods for getting the number and types of DataSets
+ *  to get that information from the LiveDataServer, rather than
+ *  assuming that there were just two DataSets, a monitor and histogram
+ *  DataSet.
+ *
  *  Revision 1.5  2001/02/15 23:23:01  dennis
  *  Added finalize() method and made Exit() private.
  *  Now finalize() calls Exit().
@@ -40,11 +47,8 @@ import NetComm.*;
 public class LiveDataRetriever extends    Retriever 
                                implements Serializable
 {
-  public static final int TIMEOUT_MS       = 60000;
+  public static final int TIMEOUT_MS = 60000;
 
-  int     num_data_sets=0;  // the number of distinct DataSets for this server 
-                            // monitors and detectors from different histograms
-                            // are placed in separate DataSets. 
   TCPComm tcp_io = null;
 
 /**
@@ -64,8 +68,6 @@ public class LiveDataRetriever extends    Retriever
       Socket sock = new Socket( data_source_name, 
                                 LiveDataServer.SERVER_PORT_NUMBER );
       tcp_io      = new TCPComm( sock, TIMEOUT_MS );
-
-      num_data_sets = 2;
     }
     catch( Exception e ) 
     {
@@ -83,7 +85,17 @@ public class LiveDataRetriever extends    Retriever
  */  
   public int numDataSets()
   { 
-    return num_data_sets;
+    Object obj = getObjectFromServer( LiveDataServer.COMMAND_GET_NUM_DS );
+
+    if ( obj != null && obj instanceof Integer )
+    {
+      int num = ((Integer)obj).intValue();
+      if ( num >= 0 )
+        return num;
+    }
+
+    return 0;                                   // somethings wrong, so no
+                                                // DataSets are available
   }
 
 /**
@@ -94,12 +106,17 @@ public class LiveDataRetriever extends    Retriever
 
   public int getType( int data_set_num )
   {
-    if ( data_set_num == 0 )
-      return Retriever.MONITOR_DATA_SET;
-    else if ( data_set_num == 1 )
-      return Retriever.HISTOGRAM_DATA_SET;
-    else
-      return Retriever.INVALID_DATA_SET;
+    Object obj = getObjectFromServer( LiveDataServer.COMMAND_GET_DS_TYPE + 
+                                      data_set_num );
+
+    if ( obj != null && obj instanceof Integer )
+    {
+      int num = ((Integer)obj).intValue();
+      return num;
+    }
+
+    return Retriever.INVALID_DATA_SET;          // somethings wrong, so 
+                                                // DataSet type is invalid
   }
 
 
@@ -114,43 +131,15 @@ public class LiveDataRetriever extends    Retriever
  */
   public DataSet getDataSet( int data_set_num )
   {
-    if ( data_set_num < 0 || data_set_num > 1 )
-      return null;
+    System.out.println( "For ds #" + data_set_num + " type = " + 
+                         getType( data_set_num ) );
 
-    boolean request_sent = false;
+    Object obj = getObjectFromServer( 
+                           LiveDataServer.COMMAND_GET_DS + data_set_num );
+    if ( obj != null && obj instanceof DataSet )
+      return (DataSet)obj;
 
-    try
-    {
-      if ( data_set_num == 0 )
-        tcp_io.Send( new String("GET MONITORS") );
-      else
-        tcp_io.Send( new String("GET HISTOGRAM") );
-      request_sent = true;
-    }
-    catch ( Exception e )
-    {
-      System.out.println("EXCEPTION asking for DataSet " + e );
-    }
-    
-    if ( request_sent )
-    {
-      try
-      { 
-        Object obj = null;
-        obj = tcp_io.Receive();
-        System.out.println( "Got " + obj );
-
-        DataSet ds = null;
-        ds = (DataSet)obj;
-        return ds;
-      }
-      catch ( Exception e )
-      {
-        System.out.println("EXCEPTION receiving DataSet " + e );
-      }
-    }
-
-    return null;
+    return (DataSet)(DataSet.EMPTY_DATA_SET.clone());
   }
 
 /**
@@ -168,6 +157,50 @@ public class LiveDataRetriever extends    Retriever
       System.out.println( "Exception in LiveDataRetriever.Exit():" + e );
     }
   }
+
+
+/**
+ *
+ */
+ private Object getObjectFromServer( String command )
+ {
+    System.out.println("LiveDataRetriever sending command:" + command );
+    boolean request_sent = false;
+
+    try
+    {
+      System.out.println( "Command sent: " + command );
+      tcp_io.Send( command );
+      request_sent = true;
+    }
+    catch ( Exception e )
+    {
+      System.out.println("EXCEPTION in LiveDataRetriever:" + e );
+      System.out.println("while sending command: " + command );
+    }
+
+    if ( request_sent )
+    {
+      try
+      {
+        Object obj = null;
+        obj = tcp_io.Receive();
+        System.out.println( "Got " + obj );
+
+        System.out.println("LiveDataRetriever finished command:" + command );
+        return obj;
+      }
+      catch ( Exception e )
+      {
+        System.out.println("EXCEPTION in LiveDataRetriever:" + e );
+        System.out.println("while receiving response to command: " + command );
+      }
+    }
+
+    System.out.println("LiveDataRetriever failed command:" + command );
+    return null;
+  }
+
 
 /**
  *  Finalize method to make sure that the TCP connection is closed if this
