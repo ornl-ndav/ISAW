@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2003/07/23 21:51:52  rmikk
+ * Added a clone method so operators can now call operators
+ *  again
+ *
  * Revision 1.26  2003/06/18 18:16:23  pfpeterson
  * Removed dead code, constructor throws an exception on failure, implements
  * PropertyChanger rather than Customizer, pushed off more work onto the
@@ -261,6 +265,10 @@ public class ScriptOperator extends GenericOperator
         return SP.getResult();
     }
 
+     public Object clone(){
+       ScriptOperator S = new ScriptOperator( filename);
+       return S;
+     }
     /**
      * Allows running of Scripts without Isaw and/or the CommandPane
      */
