@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2003/07/21 22:11:19  rmikk
+ *  Fixed bug in stitch. Error array not allocated if
+ *    square root errors were calculated( Dennis)
+ *
  *  Revision 1.35  2003/02/10 13:28:37  dennis
  *  getAttributeList() now returns a reference to the attribute list,
  *  not a clone.
@@ -1149,8 +1153,13 @@ public abstract class Data implements IData,
     if ( new_data.errors != null )
     {
       has_error_info = true;
-      if ( temp_data.errors == null )   // if no previous error values set,
-        temp_data.setSqrtErrors( true );// use the sqrt of number of counts
+      if ( temp_data.errors == null )   // if no previous error values set     
+      {                                 // allocate error array and set default
+        int n = temp_data.y_values.length;
+        temp_data.errors = new float[ n ];
+        for ( int i = 0; i < n; i++ )
+          temp_data.errors[i] = 0; 
+      }
     }
                                         // record the extent of the original
                                         // XScales
