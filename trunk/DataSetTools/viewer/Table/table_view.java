@@ -29,6 +29,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.35  2003/07/18 22:02:55  rmikk
+ * Fixed a possible error in Merging the xvals from several
+ * groups
+ *
  * Revision 1.34  2003/06/18 20:37:28  pfpeterson
  * Changed calls for NxNodeUtils.Showw(Object) to
  * DataSetTools.util.StringUtil.toString(Object)
@@ -1593,14 +1597,12 @@ public class table_view extends JPanel implements ActionListener
     */
    public static float[] MergeXvals( int dbi, DataSet DS, float xvals[], boolean UseAll, int[] SelIndices )
    {
-
+      float Res[] = null;
       if( SelIndices == null )
          SelIndices = DS.getSelectedIndices();
       if( SelIndices == null )
          if( !UseAll )return xvals;
-
       int N;
-
       if( UseAll )
          N = DS.getNum_entries();
       else
@@ -1620,6 +1622,8 @@ public class table_view extends JPanel implements ActionListener
             XScale XX = DB.getX_scale();
 
             xvals = XX.getXs();
+
+            Res = xvals;
 
          }
          else if( DS.getData_entry( db ) != null )
@@ -1670,7 +1674,7 @@ public class table_view extends JPanel implements ActionListener
                   n++;
                }
             }
-            float Res[];
+           
 
             Res = new float[ n  ];
             j = 0;
@@ -1711,12 +1715,13 @@ public class table_view extends JPanel implements ActionListener
                }
             }
 
-            xvals = Res;
+            //xvals = Res;
          }//Merge
 
       }//for each data block
 
-      return xvals;
+      //return xvals;
+       return Res;
    }
 
 
