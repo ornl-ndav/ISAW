@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/03/05 13:48:26  dennis
+ *  Added method equals() that does field by field comparison.
+ *
  *  Revision 1.4  2003/02/24 13:35:19  dennis
  *  Added command to get the server type.
  *
@@ -41,7 +44,6 @@
  *
  *  Revision 1.1  2003/02/19 21:56:49  dennis
  *  Intial version of command objects for client/server communication.
- *
  */
 
 package NetComm;
@@ -192,6 +194,31 @@ public class CommandObject implements Serializable
         return ("Command is: " + command + ":" + command_names[i] );
 
     return ("Command code: " + command + " is invalid" );
+  }
+
+
+  /**
+   *  Check whether or not the data members in this command object match
+   *  the data members in the other specified command object.
+   *
+   *  @param  other  The other CommandObject that is compared to the 
+   *                 current object.
+   *
+   *  @return  True if the fields match, false otherwise.
+   */
+  public boolean equals( CommandObject other )
+  {
+    if ( other == this )                         // same object
+      return true;
+                                                 // if not same, then compare
+                                                 // the data members
+    if ( command == other.command           &&
+         username.equals( other.username )  &&
+         password.equals( other.password )  )
+      return true;
+
+    else
+      return false; 
   }
 
  /* ---------------------------- readObject ------------------------------- */
