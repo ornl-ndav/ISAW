@@ -26,6 +26,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/02/26 17:21:49  rmikk
+ * Now writes to DataSetTools.util.SharedData.status_pane
+ *
  * Revision 1.3  2002/11/27 23:31:16  pfpeterson
  * standardized header
  *
@@ -51,7 +54,7 @@ public class ExampleWizard
   public static void main( String args[] )
   {                                                     // build the wizard
     Wizard w = new Wizard( "Example Wizard" ); 
-    Wizard.status_display.append("Example Wizard Main\n");
+    DataSetTools.util.SharedData.addmsg("Example Wizard Main\n");
 
                                                         // define the master
                                                         // list of parameters
