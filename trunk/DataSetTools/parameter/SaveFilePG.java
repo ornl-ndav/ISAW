@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/12/15 02:29:13  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.12  2003/11/19 04:13:23  bouzekc
  *  Is now a JavaBean.
  *
@@ -77,13 +80,9 @@
  */
 
 package DataSetTools.parameter;
-import javax.swing.*;
-import java.util.Vector;
-import java.lang.String;
-import java.beans.*;
 import java.io.File;
-import DataSetTools.components.ParametersGUI.*;
-import DataSetTools.operator.Generic.TOF_SCD.*;
+
+import DataSetTools.components.ParametersGUI.BrowseButtonListener;
 
 /**
  * This is a particular case of the BrowsePG used for loading a single

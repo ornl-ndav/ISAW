@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/12/15 02:38:18  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.3  2003/01/23 19:21:03  dennis
  *  Added getDocumentation() method. (Chris Bouzek)
  *
@@ -45,13 +48,13 @@
 
 package DataSetTools.operator.Generic.Special;
 
-import  java.io.*;
-import  java.util.Vector;
-import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
-import  DataSetTools.operator.Parameter;
-import  DataSetTools.retriever.RunfileRetriever;
+import java.util.Vector;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.operator.Parameter;
+import DataSetTools.retriever.RunfileRetriever;
 
 /**
  * This operator determines what the group ID of the upstream monitor

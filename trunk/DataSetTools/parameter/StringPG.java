@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/12/15 02:38:19  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.13  2003/11/19 04:13:23  bouzekc
  *  Is now a JavaBean.
  *
@@ -75,11 +78,6 @@
  */
 
 package DataSetTools.parameter;
-import javax.swing.*;
-import java.util.Vector;
-import java.lang.String;
-import java.beans.*;
-import DataSetTools.components.ParametersGUI.*;
 
 /**
  * This is a superclass to take care of many of the common details of

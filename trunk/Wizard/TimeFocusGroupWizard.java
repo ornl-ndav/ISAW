@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2003/12/15 02:38:18  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.16  2003/07/16 16:28:46  bouzekc
  * Now uses the base class's wizardLoader().
  *
@@ -87,13 +90,7 @@
  */
 package Wizard;
 
-import DataSetTools.parameter.IParameterGUI;
-
-import DataSetTools.wizard.*;
-
-import java.util.Vector;
-
-import javax.swing.*;
+import DataSetTools.wizard.Wizard;
 
 
 /**

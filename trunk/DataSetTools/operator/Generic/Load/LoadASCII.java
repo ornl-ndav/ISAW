@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/12/15 02:17:30  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.4  2003/02/18 23:02:21  pfpeterson
  * Added debug statements and better ErrorString. Also modified read to end of
  * file to stop at first blank line.
@@ -48,12 +51,22 @@
  */
 package DataSetTools.operator.Generic.Load;
 
-import DataSetTools.operator.*;
-import DataSetTools.util.*;
-import DataSetTools.dataset.*;
-import DataSetTools.viewer.*;
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Vector;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.DataSetFactory;
+import DataSetTools.dataset.StringAttribute;
+import DataSetTools.dataset.VariableXScale;
+import DataSetTools.operator.Operator;
+import DataSetTools.operator.Parameter;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.LoadFileString;
+import DataSetTools.util.StringUtil;
+import DataSetTools.util.TextFileReader;
 
 /** 
  *  This operator provides a means to load an N-column ascii data file

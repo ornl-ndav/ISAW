@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.36  2003/12/15 02:29:12  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.35  2003/11/29 20:48:33  bouzekc
  * Fixed a lingering bug left over from the conversion to pure result
  * parameters.  This bug would cause OperatorForms to invalidate
@@ -126,16 +129,15 @@
  */
 package DataSetTools.wizard;
 
-import Command.ParameterClassList;
+import java.util.Vector;
 
 import DataSetTools.operator.HiddenOperator;
 import DataSetTools.operator.Operator;
-
-import DataSetTools.parameter.*;
-
-import DataSetTools.util.*;
-
-import java.util.Vector;
+import DataSetTools.parameter.IParameter;
+import DataSetTools.parameter.IParameterGUI;
+import DataSetTools.parameter.StringPG;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.SharedData;
 
 
 /**

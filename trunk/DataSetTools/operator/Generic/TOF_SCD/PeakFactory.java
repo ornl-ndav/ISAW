@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/12/15 02:29:12  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/10/17 02:19:06  bouzekc
  * Updated javadocs and fixed javadoc errors.
  *
@@ -42,9 +45,8 @@
  */
 package DataSetTools.operator.Generic.TOF_SCD;
 
-import java.io.*;
+import DataSetTools.dataset.XScale;
 import DataSetTools.math.LinearAlgebra;
-import DataSetTools.dataset.*;
 
 /**
  * Factory class for building Peaks.

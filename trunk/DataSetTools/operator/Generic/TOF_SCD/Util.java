@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2003/12/15 02:38:18  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.14  2003/05/12 19:23:08  pfpeterson
  * Changed number of significant digits written to matrix file to
  * match fortran.
@@ -83,14 +86,23 @@
  */
 package DataSetTools.operator.Generic.TOF_SCD;
 
-import DataSetTools.dataset.*;
-import DataSetTools.instruments.*;
-import DataSetTools.math.*;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.IDataGrid;
+import DataSetTools.dataset.IntAttribute;
+import DataSetTools.dataset.IntListAttribute;
+import DataSetTools.dataset.PixelInfoList;
+import DataSetTools.dataset.PixelInfoListAttribute;
+import DataSetTools.math.LinearAlgebra;
+import DataSetTools.math.Position3D;
+import DataSetTools.math.Vector3D;
 import DataSetTools.util.ErrorString;
 import DataSetTools.util.Format;
 import DataSetTools.util.TextFileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 
 public class Util{
   /**

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/12/15 02:38:18  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.5  2003/04/17 20:38:33  pfpeterson
  * Added a check that IntList returned a non-empty array.
  *
@@ -50,16 +53,25 @@
  */
 package Operators.TOF_Diffractometer;
 
-import DataSetTools.operator.*;
-import DataSetTools.operator.Generic.TOF_Diffractometer.*;
-import DataSetTools.operator.DataSet.EditList.*;
-import DataSetTools.retriever.*;
-import DataSetTools.dataset.*;
+import java.util.Vector;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.AttributeList;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.DetPosAttribute;
+import DataSetTools.dataset.XScale;
 import DataSetTools.gsastools.GsasCalib;
-import DataSetTools.viewer.*;
-import DataSetTools.util.*;
-import DataSetTools.math.*;
-import java.util.*;
+import DataSetTools.math.DetectorPosition;
+import DataSetTools.math.tof_data_calc;
+import DataSetTools.operator.Operator;
+import DataSetTools.operator.Parameter;
+import DataSetTools.operator.Generic.TOF_Diffractometer.GenericTOF_Diffractometer;
+import DataSetTools.retriever.RunfileRetriever;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.IntList;
+import DataSetTools.viewer.IViewManager;
+import DataSetTools.viewer.ViewManager;
 
 /** 
  *  This operator will focus one or more spectra in a DataSet to a specified

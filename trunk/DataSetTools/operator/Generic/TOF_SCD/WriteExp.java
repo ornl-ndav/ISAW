@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2003/12/15 02:33:25  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.14  2003/06/10 21:10:38  bouzekc
  * Fixed getDocumentation() error (one too many @params).
  *
@@ -82,16 +85,26 @@
 
 package DataSetTools.operator.Generic.TOF_SCD;
 
-import DataSetTools.dataset.*;
-import DataSetTools.operator.DataSet.Attribute.*;
-import DataSetTools.parameter.*;
-import DataSetTools.operator.*;
-import DataSetTools.instruments.*;
-import DataSetTools.math.*;
-import DataSetTools.util.*;
-import DataSetTools.retriever.RunfileRetriever;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Vector;
-import java.io.*;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.operator.Operator;
+import DataSetTools.operator.Parameter;
+import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
+import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
+import DataSetTools.retriever.RunfileRetriever;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.Format;
+import DataSetTools.util.LoadFileString;
+import DataSetTools.util.MonitorDataSet;
+import DataSetTools.util.SampleDataSet;
+import DataSetTools.util.SaveFileString;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.TextFileReader;
 
 /** 
  * This operator is a building block of an ISAW version of

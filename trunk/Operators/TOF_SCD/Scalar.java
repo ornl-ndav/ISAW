@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/12/15 02:33:25  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.7  2003/02/20 17:49:45  dennis
  * Added getDocumentation() method. (Joshua Olson)
  *
@@ -39,12 +42,21 @@
 
 package Operators.TOF_SCD;
 
-import  java.io.*;
-import  java.util.Vector;
-import  DataSetTools.util.*;
-import  DataSetTools.operator.Parameter;
-import  DataSetTools.operator.Generic.TOF_SCD.*;
-import  DataSetTools.parameter.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.util.Vector;
+
+import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
+import DataSetTools.parameter.ChoiceListPG;
+import DataSetTools.parameter.DataDirPG;
+import DataSetTools.parameter.FloatPG;
+import DataSetTools.parameter.IParameter;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.StringUtil;
+import DataSetTools.util.SysUtil;
 
 /**
  * This operator is intended to run A.J. Schultz's "scalar"

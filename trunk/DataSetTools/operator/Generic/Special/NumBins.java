@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/12/15 02:24:21  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.4  2003/07/07 15:53:05  bouzekc
  *  Fixed code comment errors, added missing param tags in
  *  constructor javadoc code and getDocumentation().
@@ -52,13 +55,13 @@
 
 package DataSetTools.operator.Generic.Special;
 
-import  java.io.*;
-import  java.util.Vector;
-import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
-import  DataSetTools.operator.Parameter;
-import  DataSetTools.retriever.RunfileRetriever;
+import java.util.Vector;
+
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.XScale;
+import DataSetTools.operator.Parameter;
+import DataSetTools.retriever.RunfileRetriever;
 
 /**
  * This operator determines what the number of bins of a given

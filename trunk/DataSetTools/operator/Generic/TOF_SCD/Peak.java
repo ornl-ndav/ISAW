@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.21  2003/12/15 02:29:12  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.20  2003/08/05 21:35:34  dennis
  * Added comment on shifting time channel by one when translating
  * to external form in toString().
@@ -88,10 +91,12 @@
  */
 package DataSetTools.operator.Generic.TOF_SCD;
 
-import java.io.*;
 import java.text.DecimalFormat;
-import DataSetTools.math.*;
-import DataSetTools.dataset.*;
+
+import DataSetTools.dataset.XScale;
+import DataSetTools.math.LinearAlgebra;
+import DataSetTools.math.Tran3D;
+import DataSetTools.math.tof_calc;
 
 /**
  * Methods for getting information about atoms dependent on the

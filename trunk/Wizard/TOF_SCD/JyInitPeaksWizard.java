@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/12/15 02:17:29  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/11/30 02:33:35  bouzekc
  * Calls wizardLoader() instead of showForm().
  *
@@ -43,24 +46,14 @@
  */
 package Wizard.TOF_SCD;
 
-import DataSetTools.operator.*;
-
-import DataSetTools.parameter.*;
-
-import DataSetTools.util.*;
-
-import DataSetTools.wizard.*;
-
-import Operators.TOF_SCD.*;
-
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
+import DataSetTools.parameter.LoadFilePG;
+import DataSetTools.wizard.JyScriptForm;
+import DataSetTools.wizard.OperatorForm;
+import DataSetTools.wizard.Wizard;
+import Operators.TOF_SCD.BlindJ;
+import Operators.TOF_SCD.IndexJ;
+import Operators.TOF_SCD.LsqrsJ;
+import Operators.TOF_SCD.ScalarJ;
 
 
 /**
