@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/07/29 16:00:07  pfpeterson
+ *  Fixed two bugs:
+ *   - Confirms that process was started before returning.
+ *   - Stops printing once encounters a null string.
+ *
  *  Revision 1.1  2002/07/26 22:45:32  pfpeterson
  *  Added to CVS.
  *
@@ -114,7 +119,7 @@ public class Exec extends    GenericSpecial {
             BufferedReader in=new BufferedReader(in_reader);
             while(true){
                 output=in.readLine();
-                if( output==null || output.length()<=0 )
+                if( output==null )
                     break;
                 else
                     System.out.println(output);
@@ -125,7 +130,10 @@ public class Exec extends    GenericSpecial {
         }catch(InterruptedException e){
             SharedData.addmsg("InterruptedException reported: "+e.getMessage());
         }finally{
-            return new Integer(process.exitValue());
+            if(process!=null)
+                return new Integer(process.exitValue());
+            else
+                return new Integer(-1);
         }
     }  
 
