@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/03/10 06:10:37  dennis
+ * Now checks that it has the required attributes before doing
+ * the calculation and returns ErrorStrings if not.
+ *
  * Revision 1.9  2003/02/18 20:22:16  dennis
  * Switched to use SampleOrientation attribute instead of separate
  * phi, chi and omega values.
@@ -227,6 +231,18 @@ public class SCDQxyz extends  XAxisInformationOp
      float x    = ((Float)(getParameter(1).getValue())).floatValue();
      Data    d  = ds.getData_entry(i);
 
+                                                // check for needed Attributes
+     Attribute attr;                      
+     attr = d.getAttribute(Attribute.INITIAL_PATH);
+     if ( attr == null )
+       return new ErrorString("Missing INITIAL_PATH Attribute"); 
+     attr = d.getAttribute(Attribute.DETECTOR_CEN_DISTANCE);
+     if ( attr == null )
+       return new ErrorString("Missing DETECTOR_CEN_DISTANCE Attribute");
+     attr = d.getAttribute(Attribute.DETECTOR_CEN_ANGLE);
+     if ( attr == null )
+       return new ErrorString("Missing DETECTOR_CEN_ANGLE Attribute");
+
      float[] Q={0f,0f,0f};
      float[] calib=(float[])d.getAttributeValue(Attribute.SCD_CALIB);
      float init_path=
@@ -316,8 +332,12 @@ public class SCDQxyz extends  XAxisInformationOp
       fmt.setMaximumFractionDigits(3);
       
       // let getResult calculate Q
-      Position3D Qpos=(Position3D)this.getResult();
-      if(Qpos==null) return "N/A";
+      Object obj = this.getResult();
+
+      if ( obj == null || !(obj instanceof Position3D) )
+        return "N/A";
+
+      Position3D Qpos=(Position3D)obj;
       float[] Q=Qpos.getCartesianCoords();
 
       return fmt.format(Q[0])+","+fmt.format(Q[1])+","+fmt.format(Q[2]);
