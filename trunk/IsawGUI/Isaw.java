@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.145  2003/08/01 13:29:43  rmikk
+ *  Placed a try-catch throwable structure around the main
+ *    program to get a stack trace for any uncaught errors
+ *
  *  Revision 1.144  2003/07/31 20:12:17  rmikk
  *  Added a print before a printStack trace for the error message
  *
@@ -490,7 +494,7 @@ public class Isaw
    *              name of the program.
    */
   public Isaw( String[] args ) 
-  {
+  { 
     super( TITLE+" "+getVersion(false) );
                       //used for loading runfiles
     if(showTiming)
@@ -505,25 +509,21 @@ public class Isaw
       System.out.println("02:"+(System.currentTimeMillis()-time)/1000.);
     cp.addIObserver( this );
     cp.setLogDoc(sessionLog);
-
     WindowResizeListener wrl=new WindowResizeListener(this);
 
     jpui = new JPropertiesUI();
     jpui.setPreferredSize( new Dimension(200, 200) );
     jpui.setMinimumSize(new Dimension(20, 50));
 
-
     jcui = new JCommandUI( cp, sessionLog, jpui );
     jcui.setPreferredSize( new Dimension( 700, 50 ) );
     jcui.setMinimumSize(new Dimension(20, 50));  
-
     MouseListener ml = new MouseListener();
     KeyListener kl = new KeyListener(); 
     this.addComponentListener(wrl);
     jdt = new JDataTree( ml, kl);
     ml.init();
     kl.init();
-   
     jdt.setPreferredSize(new Dimension(200, 500));
     jdt.setMinimumSize(new Dimension(20, 50));
     jdt.addTreeSelectionListener(  new TreeSelectionHandler( this )  );
@@ -533,14 +533,12 @@ public class Isaw
        name value pairs for later use. Data files specified at the
        command line are loaded immediatly.*/
     parse_args( args );
-
     if(showTiming)
       System.out.println("03:"+(System.currentTimeMillis()-time)/1000.);
     setupMenuBar();        
     if(showTiming)
       System.out.println("04:"+(System.currentTimeMillis()-time)/1000.);
 
-    
     cp.addPropertyChangeListener(SharedData.getStatusPane());
 
     upper_sp= new JSplitPane( JSplitPane.HORIZONTAL_SPLIT,
@@ -550,7 +548,6 @@ public class Isaw
         if(sp_comp[i] instanceof BasicSplitPaneDivider)
             sp_comp[i].addMouseListener(wrl);
     }
-    
     main_sp= new JSplitPane( JSplitPane.VERTICAL_SPLIT,
                              upper_sp,SharedData.getStatusPane());
     sp_comp=main_sp.getComponents();
@@ -558,7 +555,6 @@ public class Isaw
         if(sp_comp[i] instanceof BasicSplitPaneDivider)
             sp_comp[i].addMouseListener(wrl);
     }
-
     upper_sp.setOneTouchExpandable(true);
     Container con = getContentPane();
     con.add(main_sp);
@@ -1781,9 +1777,11 @@ public class Isaw
     * entry point for the ISAW application.
     */
   public static void main( String[] args ) 
-  {
-    initScriptList(); // initialize Script_Class_List_Handler
-    for( int i=0 ; i<Array.getLength(args) ; i++ ){
+  { try{
+      System.out.println("Start of IsawMain");
+      initScriptList(); // initialize Script_Class_List_Handler
+    
+      for( int i=0 ; i<Array.getLength(args) ; i++ ){
         if("--version".equals(args[i])){
             System.out.println(getVersion(true));
             System.exit(0);
@@ -1793,34 +1791,37 @@ public class Isaw
         }else if("-t".equals(args[i])){
           showTiming=true;
         }
+      }
+   
+      // load IsawProps.dat into the system properties
+      SharedData.isaw_props.reload();
+      // show the splashscreen
+      SplashWindowFrame sp = new SplashWindowFrame();
+      Thread splash_thread = new Thread(sp);
+      splash_thread.start();
+      splash_thread = null;
+      sp = null;
+    
+      System.out.println("Loading "+getVersion(true));
+ 
+      JFrame Isaw = new Isaw( args );
+      Isaw.pack();
+      //Isaw.setBounds(x,y,window_width,window_height);
+      ((Isaw)Isaw).setBounds();
+      Isaw.show();
+      Isaw.validate();
+      //SharedData.status_pane.add("Hi There");
+      Isaw.addWindowListener( new WindowAdapter(){
+             public void windowClosing( WindowEvent ev ){
+                  //System.out.println("windowClosing:"+ev.toString());
+                 System.exit(0);
+             } 
+         } );
+      mw_resized(Isaw.getWidth(),Isaw.getHeight());
+    }catch( Throwable ss){
+      System.out.println("Error :"+ss.toString() );
+      ss.printStackTrace();
     }
-
-    // load IsawProps.dat into the system properties
-    SharedData.isaw_props.reload();
-
-    // show the splashscreen
-    SplashWindowFrame sp = new SplashWindowFrame();
-    Thread splash_thread = new Thread(sp);
-    splash_thread.start();
-    splash_thread = null;
-    sp = null;
-
-    System.out.println("Loading "+getVersion(true));
-
-    JFrame Isaw = new Isaw( args );
-    Isaw.pack();
-    //Isaw.setBounds(x,y,window_width,window_height);
-    ((Isaw)Isaw).setBounds();
-    Isaw.show();
-    Isaw.validate();
-    //SharedData.status_pane.add("Hi There");
-    Isaw.addWindowListener( new WindowAdapter(){
-            public void windowClosing( WindowEvent ev ){
-                //System.out.println("windowClosing:"+ev.toString());
-                System.exit(0);
-            } 
-        } );
-    mw_resized(Isaw.getWidth(),Isaw.getHeight());
   }
  
   /**
