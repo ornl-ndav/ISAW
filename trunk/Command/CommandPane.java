@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.59  2003/07/18 22:00:48  rmikk
+ * Added code so that the Send in scripts works in the
+ * immediate pane and also when a script with no
+ * parameters is run
+ *
  * Revision 1.58  2003/07/01 21:42:48  rmikk
  * Changed the Dialog box to be non-modal. It still reports
  *    error conditions.
@@ -525,7 +530,9 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                                                  "#$ Start Immediate Run");
                     new IsawGUI.Util().appendDoc(CP.logDoc,
                      ScriptProcessor.getLine(CP.Immediate.getDocument(), line));
+                    CP.SP.addIObserver( CP);
                     CP.SP.execute1( Immediate.getDocument() , line ) ;
+                    CP.SP.deleteIObserver( CP);
                     new IsawGUI.Util()
                         .appendDoc(CP.logDoc,"#$ End Immediate Run"); 
                     if( CP.SP.getErrorCharPos() >= 0 ){
@@ -723,7 +730,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                      pDialog.addActionListener( this );
                      return;
                  }else{
-                     CP.SP.setIObserverList( IObslist);
+                     CP.SP.addIObserver( CP);
                      CP.SP.getResult();
                      CP.SP.deleteIObservers();
                       }
