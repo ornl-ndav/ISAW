@@ -30,6 +30,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/11/12 00:47:20  dennis
+ *  Made immutable by:
+ *  1. remove setValue() method
+ *  2. add() & combine() methods now return a new Attribute
+ *  3. getValue() returns copy of the array value
+ *
+ *  Also:
+ *  4. Since it is now immutable, clone() method is not needed and
+ *     was removed
+ *  5. Default constructor is now private, since the value can't
+ *     be set from outside of the class
+ *
  *  Revision 1.1  2002/08/22 14:55:59  pfpeterson
  *  Added to CVS.
  *
@@ -90,104 +102,115 @@ public class Float2DAttribute extends Attribute{
         }
     }
     
-    public Float2DAttribute(){
+    private Float2DAttribute(){
         super( "" );
         this.value =new float[1][1];
         this.value[0][0]=0f;
     }
 
     /**
-     * Returns the float value of this attribute, as a generic object.
+     * Returns a copy of the two dimensional array of floats for this 
+     * attribute as a generic object.
      */
     public Object getValue(){
-        return( value );
+        return( getFloatValue() );
     }
 
-    /**
-     * Set the value for the float attribute using a generic object.
-     * The actual class of the object must be a Float object.
-     */
-    public boolean setValue( Object obj ){
-        if ( obj instanceof float[][] ){
-            this.setFloatValue( (float[][])obj );
-            return true;
-        }else{
-            return false;
-        }
-    }   
 
     /**
-     * Returns the float value of this attribute as a float.
+     * Returns a copy of the two dimensional array of floats for this attribute
+     * as a two dimensional float array.
      */
     public float[][] getFloatValue(){
-        return value;
+      float new_value[][] = new float[ value.length ][ value[0].length ];
+
+      for ( int i = 0; i < value.length; i++ ) 
+        System.arraycopy( value[i], 0, new_value[i], 0, value[i].length );
+
+      return new_value;
     }
 
-    /**
-     * Set the value for the float attribute using a float.
-     */
-    public void setFloatValue( float[][] value ){
-        this.value = value;
-    }
     
     /**
      * Combine the value of this attribute with the value of the
-     * attribute passed as a parameter to obtain a new value for this
-     * attribute.  The new value is just the average of the values of
-     * the two attributes.
+     * attribute passed as a parameter to obtain a new Attribute whose 
+     * value is a combination of the two attributes.  If the sizes of the
+     * the arrays don't match, this returns the current attribute.  If the
+     * sizes match, the new attribute is obtained by averaging the 
+     * corresponding values in the arrays.
      *
      *  @param attr An attribute whose value is to be "combined" with
      *  the value of the this attribute.
+     *
+     *  @return The current attribute, if the array sizes don't match, or
+     *     a new Float2DAttribute whose values are the averages of the values
+     *     of the current Attribute and the specified Attribute's values.
      */
-    public void combine( Attribute attr ){
+    public Attribute combine( Attribute attr ){
+        if ( attr == null || value == null )
+          return this;  // can't do anything;
+
         float[][] other;
         if(attr instanceof Float2DAttribute)
             other=((Float2DAttribute)attr).getFloatValue();
         else
-            return; // can't do anything
+            return this; // can't do anything
 
         // confirm that we are comparing to a rectangular attribute
-        if( !this.isRectangular(other) ) return;
+        if( !this.isRectangular(other) ) return this;
         // first dimension must be the same size
-        if( this.value.length != other.length ) return;
+        if( this.value.length != other.length ) return this;
         // second dimension must be the same size
-        if( this.value[0].length != other[0].length ) return;
+        if( this.value[0].length != other[0].length ) return this;
 
         // it is okay to do the operation
+        float new_value[][] = new float[value.length][value[0].length];
         for( int i=0 ; i<this.value.length ; i++ ){
             for( int j=0 ; j<this.value[i].length ; j++ ){
-                this.value[i][j]=(this.value[i][j]+other[i][j])/2f;
+                new_value[i][j]=(this.value[i][j]+other[i][j])/2f;
             }
         }
+        return new Float2DAttribute( name, new_value );
     }
     
     /**
      * Add the value of the specified attribute to the value of this
-     * attribute obtain a new value for this attribute.
+     * attribute obtain a new Attribute object whose value is the sum of
+     * entries from this attribute and the other attribute.
      *
      *  @param attr An attribute whose value is to be "added" to the
      *  value of the this attribute.
+     *
+     *  @return The current attribute, if the array sizes don't match, or
+     *     a new Float2DAttribute whose values are the sums of the values
+     *     of the current Attribute and the specified Attribute's values.
      */
-    public void add( Attribute attr ){
+    public Attribute add( Attribute attr ){
+        if ( attr == null || value == null )
+          return this;  // can't do anything;
+
         float[][] other;
+
         if(attr instanceof Float2DAttribute)
             other=((Float2DAttribute)attr).getFloatValue();
         else
-            return; // can't do anything
+            return this; // can't do anything
 
         // confirm that we are comparing to a rectangular attribute
-        if( !this.isRectangular(other) ) return;
+        if( !this.isRectangular(other) ) return this;
         // first dimension must be the same size
-        if( this.value.length != other.length ) return;
+        if( this.value.length != other.length ) return this;
         // second dimension must be the same size
-        if( this.value[0].length != other[0].length ) return;
+        if( this.value[0].length != other[0].length ) return this;
 
         // it is okay to do the operation
+        float new_value[][] = new float[value.length][value[0].length];
         for( int i=0 ; i<this.value.length ; i++ ){
             for( int j=0 ; j<this.value[i].length ; j++ ){
-                this.value[i][j]=this.value[i][j]+other[i][j];
+                new_value[i][j]=this.value[i][j]+other[i][j];
             }
         }
+        return new Float2DAttribute( name, new_value );
     }
 
     public boolean XMLwrite( OutputStream stream, int mode ){
@@ -312,7 +335,7 @@ public class Float2DAttribute extends Attribute{
                 read_value[i][j]=StringUtil.getFloat(float_array);
             }
         }
-        this.setValue(read_value);
+        value = read_value;
 
         //-------------------- get End tags
         Tag =xml_utils.getTag( stream ); 
@@ -371,12 +394,6 @@ public class Float2DAttribute extends Attribute{
         return this.getName() + ": " + this.getStringValue();
     }
     
-    /**
-     * Returns a copy of the current attribute
-     */
-    public Object clone(){
-        return new Float2DAttribute( this.getName(), value );
-    }
 
     /* ------------------------- PRIVATE METHODS --------------------------- */
 
