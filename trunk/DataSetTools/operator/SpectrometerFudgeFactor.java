@@ -3,6 +3,11 @@
  *                                                    Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2000/08/02 21:11:45  dennis
+ *  Made this an instance of a generic Operator rather than a DataSetOperator
+ *  so that it does not have to be placed in the list of operators for
+ *  DataSets.
+ *
  *  Revision 1.1  2000/08/02 20:16:25  dennis
  *  SpectrometerFudgeFactor operator to calibrate detectors based on
  *  a vanadium run.
@@ -23,7 +28,7 @@ import  DataSetTools.util.*;
  * 
  */
 
-public class SpectrometerFudgeFactor extends    DataSetOperator 
+public class SpectrometerFudgeFactor extends    Operator 
                                      implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -51,8 +56,10 @@ public class SpectrometerFudgeFactor extends    DataSetOperator
 
   public SpectrometerFudgeFactor( DataSet     ds)
   {
-    this();                         
-    setDataSet( ds );               
+    this();
+
+    Parameter parameter = getParameter(0);
+    parameter.setValue( ds );
   }
 
 
@@ -74,6 +81,10 @@ public class SpectrometerFudgeFactor extends    DataSetOperator
   {
      parameters = new Vector();  // must do this to create empty list of 
                                  // parameters
+
+     Parameter parameter = new Parameter( "Vanadium Calibration Run",
+                    new DataSet("Vanadium Calibration Run", "Empty DataSet"));
+     addParameter( parameter );
   }
 
 
@@ -85,10 +96,9 @@ public class SpectrometerFudgeFactor extends    DataSetOperator
                         XKCON = 0.086165f;
     
     float ELAM = ECON*LAMCON*LAMCON;
-    
-                                     
                                      // get the current data set
-    DataSet ds = this.getDataSet();
+    DataSet ds = (DataSet)(getParameter(0).getValue());
+ 
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
@@ -221,22 +231,6 @@ public class SpectrometerFudgeFactor extends    DataSetOperator
     return new_ds;
   }  
 
-  /* ------------------------------ clone ------------------------------- */
-  /**
-   * Get a copy of the current SpectrometerFudgeFactor Operator.  The list 
-   * of parameters and the reference to the DataSet to which it applies are
-   * also copied.
-   */
-  public Object clone()
-  {
-    SpectrometerFudgeFactor new_op = new SpectrometerFudgeFactor( );
-                                                 // copy the data set associated
-                                                 // with this operator
-    new_op.setDataSet( this.getDataSet() );
-    new_op.CopyParametersFrom( this );
-
-    return new_op;
-  }
 
 public static void pause(int time)
 { 
