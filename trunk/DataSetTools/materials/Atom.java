@@ -32,6 +32,7 @@ package DataSetTools.materials;
 
 import java.io.*;
 import DataSetTools.util.TextFileReader;
+import DataSetTools.util.*;
 
 /**
  * Methods for getting information about atoms dependent on the
@@ -63,9 +64,9 @@ public class Atom{
     private static String isotopefile = null;
 
     static{
-	isotopefile = System.getProperty( "ISAW_HOME" );
+	isotopefile = SharedData.getProperty( "ISAW_HOME" );
 	if(isotopefile==null){
-	    isotopefile=System.getProperty("user.home");
+	    isotopefile=SharedData.getProperty("user.home");
 	    isotopefile = isotopefile+java.io.File.separator+"ISAW";
 	}
 	isotopefile = isotopefile.trim();
