@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/09/13 23:35:58  bouzekc
+ *  Fixed bug in validateSelf().
+ *
  *  Revision 1.13  2003/09/13 23:16:40  bouzekc
  *  Removed calls to setEnabled in initGUI(Vector), since ParameterGUI.init()
  *  already calls this.
@@ -202,7 +205,12 @@ public abstract class StringEntryPG extends ParameterGUI {
    * implement their own validate() method.
    */
   public void validateSelf(  ) {
-    setValid( getStringFilter(  ).isOkay( 0, getValue(  ).toString(  ), "" ) );
+    StringFilterer sf = getStringFilter(  );
+    if( sf == null ) {
+      setValid( false );
+    } else {
+      setValid( getStringFilter(  ).isOkay( 0, getValue(  ).toString(  ), "" ) );
+    }
   }
 
   /**
