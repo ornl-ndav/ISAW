@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2001/08/14 15:11:55  dennis
+ *  Added status method.
+ *
  *  Revision 1.16  2001/08/13 23:27:43  dennis
  *  Now has separate error messages for bad user name and bad password.
  *
@@ -253,6 +256,26 @@ public class LiveDataRetriever extends    RemoteDataRetriever
 
     return null;
   }
+
+
+/* ------------------------------- status ------------------------------- */
+/**
+ *  Get a status message for the current retriever state.  By default, this
+ *  just returns a string message corresponding to an error code obtained
+ *  from the numDataSets method.
+ */
+ public String status()
+ {
+   Object obj = getObjectFromServer( TCPServer.COMMAND_GET_STATUS + file_name );
+
+   if ( obj != null && obj instanceof String )
+     return (String)obj;
+
+   if ( !isConnected() )
+     return NOT_CONNECTED_STRING;
+
+   return SERVER_ERROR_STRING; 
+ }
 
 
 /* ------------------------------------------------------------------------
