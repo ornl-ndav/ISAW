@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2003/06/12 22:01:42  bouzekc
+ * Fixed bug where it tried to set parameter values to
+ * "emptyString"
+ *
  * Revision 1.26  2003/06/12 21:20:17  bouzekc
  * Fixed bug where save() would crash if a null value was
  * used.  Updated convertXMLtoParameters to be smarter -
@@ -547,7 +551,11 @@ public abstract class Wizard implements PropertyChangeListener{
           valueEndInd = xml.indexOf(VALUEEND);
           paramValue = xml.substring(valueStartInd + VALUESTART.length(),
                                     valueEndInd);
-          curParam.setValue(paramValue);
+          if(paramValue.equals("emptyString"))
+            curParam.setValue("");
+          else
+            curParam.setValue(paramValue);
+          
           //System.out.println(paramValue);
 
           //get/set the parameter validity
