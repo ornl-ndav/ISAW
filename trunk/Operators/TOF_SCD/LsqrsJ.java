@@ -29,6 +29,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.22  2003/07/28 18:51:17  dennis
+ * Fixed off by one error in extracting x,y,z values from the
+ * result of Peak.toString().  The "x" value lost it's leading
+ * digit, if it had two leading digits.  This made the recorded
+ * value of x wrong in the least squares log file, in some cases.
+ *
  * Revision 1.21  2003/07/09 21:02:45  bouzekc
  * Added comments and rearranged methods according to access
  * rights.
@@ -524,7 +530,7 @@ public class LsqrsJ extends GenericTOF_SCD {
           peakString.substring( 2, 11 ) + "   " +
           peakString.substring( 12, 17 ) + "   " +
           peakString.substring( 18, 21 ) + "   " +
-          peakString.substring( 22, peakString.length(  ) - 32 ) + " " +
+          peakString.substring( 21, peakString.length(  ) - 32 ) + " " +
           Format.real( q[i][0], 7, 3 ) + Format.real( q[i][1], 7, 3 ) +
           Format.real( q[i][2], 7, 3 ) + "\n" );
         logBuffer.append( 
