@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2002/07/12 18:14:54  pfpeterson
+ *  Now only uses SharedData.getProperty().
+ *
  *  Revision 1.15  2002/07/12 15:35:42  pfpeterson
  *  Uses SharedData.getProperty() instead of System.getProperty().
  *
@@ -142,42 +145,44 @@ public class ViewerState  implements Serializable
       SharedData sd = new SharedData();            
       SharedData.isaw_props.reload();
                                                        // color scale ......
-      String scale_name = getProperty( COLOR_SCALE ); 
+      String scale_name = SharedData.getProperty( COLOR_SCALE ); 
       state.put( COLOR_SCALE, scale_name );
 
                                                        // rebin ......
-      Boolean rebin_flag = getBooleanProperty( REBIN, "true" );
+      Boolean rebin_flag = SharedData.getBooleanProperty( REBIN );
       state.put( REBIN, rebin_flag );
 
                                                        // h_scroll ......
-      Boolean scroll_flag = getBooleanProperty( H_SCROLL, "false" );
+      Boolean scroll_flag = SharedData.getBooleanProperty( H_SCROLL );
       state.put( H_SCROLL, scroll_flag );
 
-      Float h_scroll_position = getFloatProperty( H_SCROLL_POSITION, "0" );
+      Float h_scroll_position = 
+          SharedData.getFloatProperty( H_SCROLL_POSITION );
       state.put( H_SCROLL_POSITION, h_scroll_position );  
 
-      Integer pointed_at_index = getIntegerProperty( POINTED_AT_INDEX, "0" );
+      Integer pointed_at_index = 
+          SharedData.getIntegerProperty( POINTED_AT_INDEX );
       state.put( POINTED_AT_INDEX, pointed_at_index );
 
-      Float azimuth = getFloatProperty( V_AZIMUTH, "45" );
+      Float azimuth = SharedData.getFloatProperty( V_AZIMUTH );
       state.put( V_AZIMUTH, azimuth ); 
 
-      Float altitude = getFloatProperty( V_ALTITUDE, "20" );
+      Float altitude = SharedData.getFloatProperty( V_ALTITUDE );
       state.put( V_ALTITUDE, altitude );
 
-      Float distance = getFloatProperty( V_DISTANCE, "-1" );
+      Float distance = SharedData.getFloatProperty( V_DISTANCE );
       state.put( V_DISTANCE, distance );
 
-      String v_detectors = getProperty( V_DETECTORS, "NOT DRAWN" );
+      String v_detectors = SharedData.getProperty( V_DETECTORS );
       state.put( V_DETECTORS, v_detectors );
 
-      String v_groups = getProperty( V_GROUPS, "NOT DRAWN" );
+      String v_groups = SharedData.getProperty( V_GROUPS );
       state.put( V_GROUPS, v_groups );
 
-      Integer brightness = getIntegerProperty( BRIGHTNESS, "40" );
+      Integer brightness = SharedData.getIntegerProperty( BRIGHTNESS );
       state.put( BRIGHTNESS, brightness );
 
-      Float auto_scale = getFloatProperty( AUTO_SCALE, "0" );
+      Float auto_scale = SharedData.getFloatProperty( AUTO_SCALE );
       state.put( AUTO_SCALE, auto_scale );
 
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
@@ -415,130 +420,4 @@ public class ViewerState  implements Serializable
       ds_name    = ds.getTitle();
       ds_n_rows  = ds.getNum_entries();
    }
-
-/* -------------------------------------------------------------------------
- *
- *  PRIVATE METHODS
- *
- */
-
- /**
-  *  Get the String value of a system property with no leading or trailing 
-  *  blanks.
-  *
-  *  @return  The trimmed property string, if the named property was set,
-  *           or null if the named property was not set.
-  */
-  private String getProperty( String name )
-  {
-    String property = SharedData.getProperty( name );
-    if ( property != null )
-    {
-      property = property.trim();
-      if ( property.length() < 1 )
-        property = null;
-    }
-    return property;
-  }
-
- /**
-  *  Get the String value of a system property with no leading or trailing 
-  *  blanks.
-  *
-  *  @return  The trimmed property string, if the named property was set,
-  *           or null if the named property was not set.
-  */
-  private String getProperty( String name, String default_string )
-  {
-    String property = SharedData.getProperty( name, default_string );
-    if ( property != null )
-    {
-      property = property.trim();
-      if ( property.length() < 1 )
-        property = null;
-    }
-    return property;
-  }
-
- /**
-  *  Get the Boolean value of system property that should be a Boolean value.
-  *
-  *  @return The Boolean value of the specified property if the property was
-  *          set and was a valid Boolean value, or null otherwise.
-  */
-  private Boolean getBooleanProperty( String name, String default_string )
-  {
-    String property = getProperty( name, default_string );
-    Boolean  value  = null;
-
-    if ( property != null )
-      value = new Boolean( property );
-
-    return value;
-  }
-
-
- /**
-  *  Get the Integer value of system property that should be an Integer value.
-  *
-  *  @return The Integer value of the specified property if the property was
-  *          set and was a valid Integer value, or null otherwise.
-  */
-  private Integer getIntegerProperty( String name, String default_string )
-  {
-    String  property = getProperty( name, default_string );
-    Integer value    = null;
-
-    if ( property != null )
-    {
-      try
-      {
-        value = new Integer( property );
-      }
-      catch ( NumberFormatException e1 )
-      {
-        try
-        {
-          value = new Integer( default_string );
-        }
-        catch ( NumberFormatException e2 )
-        {}
-      }
-    }
-
-    return value;
-  }
-
-
- /**
-  *  Get the Float value of system property that should be a Float value. 
-  *
-  *  @return The Float value of the specified property if the property was
-  *          set and was a valid Float value, or null otherwise.
-  */
-  private Float getFloatProperty( String name, String default_string )
-  {
-    String property = getProperty( name, default_string );
-    Float  value    = null;
-
-    if ( property != null )
-    {
-      try
-      {
-        value = new Float( property );
-      }
-      catch ( NumberFormatException e1 )
-      {
-        try
-        {
-          value = new Float( default_string );
-        }
-        catch ( NumberFormatException e2 )
-        {}
-      }
-    }
-
-    return value;
-  }
-
 }
