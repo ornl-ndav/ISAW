@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/06/09 20:43:24  pfpeterson
+ *  Implents ParamUsesString and works better with null values.
+ *
  *  Revision 1.10  2003/06/06 18:49:44  pfpeterson
  *  Made abstract and removed clone method.
  *
@@ -89,7 +92,7 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
  * This is a superclass to take care of many of the common details of
  * BrowsePGs.
  */
-abstract public class BrowsePG extends ParameterGUI{
+abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
     private static String TYPE     = "Browse";
 
     protected static int VIS_COLS  = 12;
@@ -129,6 +132,16 @@ abstract public class BrowsePG extends ParameterGUI{
         defaultindex = -1;
     }
 
+    // ********** ParamUsesString requirements **********
+
+    public String getStringValue(){
+        return (String)this.getValue();
+    }
+
+    public void setStringValue(String value){
+      this.setValue(value);
+    }
+
     // ********** IParameter requirements **********
 
     /**
@@ -147,34 +160,28 @@ abstract public class BrowsePG extends ParameterGUI{
         return value;
     }
 
-    public String getStringValue(){
-        return (String)this.getValue();
-    }
-
     /**
      * Sets the value of the parameter.
      */
     public void setValue(Object value){
+        String svalue=null;
+        if(value==null)
+          svalue=null;
+        else if(value instanceof String)
+          svalue=(String)value;
+        else
+          svalue=value.toString();
+        
+        if(svalue==null || svalue.length()<=0) svalue=null;
+
         if(this.initialized){
-            if(value==null){
-                ((JTextField)this.innerEntry).setText("");
+            if(svalue==null){
+              ((JTextField)this.innerEntry).setText("");
             }else{
-                if(value instanceof String){
-                    ((JTextField)this.innerEntry).setText((String)value);
-                }else{
-                    ((JTextField)this.innerEntry).setText(value.toString());
-                }
+              ((JTextField)this.innerEntry).setText(svalue);
             }
         }else{
-            if(value==null){
-              this.value = null;
-            }else{
-                if(value instanceof String){
-                  this.value = value;
-                }else{
-                  this.value = value.toString();
-                }
-             }    
+          this.value=svalue;
         }
         this.setValid(true);
     }
