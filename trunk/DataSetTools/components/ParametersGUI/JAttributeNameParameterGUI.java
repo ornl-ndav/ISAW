@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/08/10 18:38:27  rmikk
+ *  Deleted the call to the opDialog's setPreferredSize method
+ *
  *  Revision 1.3  2001/06/26 18:37:23  dennis
  *  Added Copyright and GPL license.
  *  Removed un-needed imports and improved
@@ -58,7 +61,7 @@ public class JAttributeNameParameterGUI extends JParameterGUI
        combobox = new JComboBox();
        combobox.setEditable(true);
        JLabel label = new JLabel(parameter.getName());
-       label.setPreferredSize(new Dimension(150,25));
+       //label.setPreferredSize(new Dimension(150,25));
 
        for(int i = 0; i<attr_list.getNum_attributes(); i++)
        {
