@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.59  2003/07/14 15:33:39  bouzekc
+ * Fixed minor bugs with setting of progress bar values.
+ *
  * Revision 1.58  2003/07/11 21:43:37  bouzekc
  * Now correctly populates view menu when loading a Wizard
  * save file.
@@ -843,13 +846,13 @@ public abstract class Wizard implements PropertyChangeListener {
   protected void exec_forms( int end ) {
     modified = true;
 
-    boolean failed = false;
     Form f;
 
     // execute the previous forms
     for( int i = 0; i <= end; i++ ) {
       f = getForm( i );
 
+      //only do something if the Form is not done
       if( !f.done(  ) ) {
         formProgress.setValue( 0 );
         formProgress.setString( "Executing " + f );
@@ -860,22 +863,10 @@ public abstract class Wizard implements PropertyChangeListener {
           ( worked instanceof ErrorString ) ||
             ( worked instanceof Boolean &&
             ( !( ( Boolean )worked ).booleanValue(  ) ) ) ) {
-          failed   = true;
-          end      = i - 1;  //index to the last "good" Form
+          end = i - 1;  //index to the last "good" Form
+
+          break;
         }
-      }
-
-      if( !failed ) {
-        wizProgress.setValue( ( i + 1 ) );
-        wizProgress.setString( 
-          "Wizard Progress: " + ( i + 1 ) + " of " + forms.size(  ) +
-          " Forms done" );
-        formProgress.setValue( FORM_PROGRESS );
-        formProgress.setString( f + " Done" );
-      } else {
-        formProgress.setString( f + " Progress" );
-
-        break;  //don't execute any more Forms
       }
     }
 
@@ -893,15 +884,21 @@ public abstract class Wizard implements PropertyChangeListener {
         .invalidate(  );
     }
 
-    //we are farther along then the invalidated Form, so reset the progress
-    //bar and label
-    if( wizProgress.getValue(  ) > start ) {
-      wizProgress.setValue( start );
-      wizProgress.setString( 
-        "Wizard Progress: " + ( start ) + " of " + forms.size(  ) +
-        " Forms done" );
+    int lastDone = getLastValidFormNum(  ) + 1;
+
+    wizProgress.setValue( lastDone );
+    wizProgress.setString( 
+      "Wizard Progress: " + ( lastDone ) + " of " + forms.size(  ) +
+      " Forms done" );
+
+    Form f = getCurrentForm(  );
+
+    if( !f.done(  ) ) {
       formProgress.setValue( 0 );
-      formProgress.setString( getForm( start ) + " Progress" );
+      formProgress.setString( f + " Progress" );
+    } else {
+      formProgress.setValue( FORM_PROGRESS );
+      formProgress.setString( f + " Done" );
     }
   }
 
