@@ -31,6 +31,11 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.3  2002/07/26 22:04:10  rmikk
+ * Place more information in the state variable and got it
+ *   working when returning to this view.
+ * Added an XScaleChooser control to the control panel
+ *
  * Revision 1.2  2002/07/25 21:01:12  rmikk
  *  The times now reflect if the Data is Histogram or Function
  *    Data.
@@ -59,10 +64,11 @@ import DataSetTools.util.*;
 */
 public class TimeSliceView  extends STableView
  {public AnimationController acontrol ;
+  XScaleChooserUI XScl;
   public float[] xvals1;
   public int TimeIndex;
   public JPanel JRowColPanel;
-
+  public XScale x_scale;
   /** Standard constructor for DataSetViewers.<P>
   * NOTE: The data should come from an area detector
   */
@@ -91,18 +97,29 @@ public class TimeSliceView  extends STableView
    */
    public void initState( ViewerState st)
     {super.initState(state);
-     
+     if(!( state.get_String( ViewerState.TABLE_TS).equals("")))
+       {
+        return;
+       }
+     String S =state.get_String( ViewerState.TABLE_TS);
+    
+     state.set_String( ViewerState.TABLE_TS, "OK");
+    
      DataSet ds = getDataSet();
      state.set_int( "TableTS_MinRow" , 1);
      state.set_int( "TableTS_MinCol" , 1);
      state.set_int( "TableTS_MaxRow" , table_model.getRowCount());
      state.set_int( "TableTS_MaxCol" , table_model.getColumnCount());
-     state.set_int( "TableTS_TimeInd" , 0);
+     x_scale = null;
      if( xvals1 == null)
        { setXvals( calcXvals());
         
         }
-    
+    state.set_int( "TableTS_TimeInd" , getPointedAtXindex( ));
+    state.set_float("TABLE_TS_MIN_TIME", xvals1[0]);
+    state.set_float("TABLE_TS_MAX_TIME" ,xvals1[ xvals1.length - 1 ]);
+    state.set_int("TABLE_TS_NXSTEPS" , 0);
+     
      
      }
   
@@ -119,8 +136,16 @@ public class TimeSliceView  extends STableView
     int a = 0;
     if( !useAll )
       a = u[0];
+    float[] new_xvals;
+   
     Data  D = getDataSet().getData_entry(a);
-    float[] new_xvals = D.getX_values(); 
+
+    if( x_scale != null)
+       new_xvals = x_scale.getXs();
+    else
+      {
+       new_xvals = D.getX_values(); 
+      }
     
       //table_view.MergeXvals( a,getDataSet(), null, useAll, getDataSet().getSelectedIndices());
     if( D instanceof FunctionTable)
@@ -135,6 +160,11 @@ public class TimeSliceView  extends STableView
     
     
     }
+  public ViewerState getState()
+    { 
+      return state;
+    }
+
 
    /** Called by super's constructor or super.initAftMenuItems to fix up the TableViewModel 
    */
@@ -143,9 +173,14 @@ public class TimeSliceView  extends STableView
     {  
         if( getDataSet() == null)
            DataSetTools.util.SharedData.addmsg("DataSet is null in fix table");
-      
+       int i =state.get_int("TableTS_TimeInd");
+       if( i<0)
+          i=0;
+       
+       //if( i >= xvals1.length)
+       //   i= xvals1.length -1;
        Time_Slice_TableModel ttt= new Time_Slice_TableModel(getDataSet(),
-                       xvals1[state.get_int("TableTS_TimeInd")], 
+                       0.0f, 
                        showerrors, showIndices);
        ttt.setRowRange( state.get_int( "TableTS_MinRow"), state.get_int("TableTS_MaxRow"));
        ttt.setColRange( state.get_int( "TableTS_MinCol"), state.get_int("TableTS_MaxCol"));
@@ -176,7 +211,17 @@ public class TimeSliceView  extends STableView
      JRowColPanel.setBorder( BorderFactory.createTitledBorder(
                                 BorderFactory.createLoweredBevelBorder() ,"Ranges") );
      EastPanel.add( JRowColPanel);
-    
+  // XSCale Chooser
+     XScl= new XScaleChooserUI("XScale", getDataSet().getX_units(),
+                             state.get_float("TABLE_TS_MIN_TIME"),
+                             state.get_float("TABLE_TS_MAX_TIME"),
+                             state.get_int("TABLE_TS_NXSTEPS"));
+     
+     EastPanel.add( XScl);
+     x_scale = XScl.getXScale();
+     XScl.addActionListener( new MyXScaleActionListener());
+
+  //Animation Controller
      acontrol = new AnimationController();
      
        setXvals(calcXvals());
@@ -345,5 +390,27 @@ public class TimeSliceView  extends STableView
         
        }
 
+    }
+ public class MyXScaleActionListener implements ActionListener
+   {
+
+    public void actionPerformed( ActionEvent evt)
+      { x_scale= XScl.getXScale();
+       if(x_scale == null)
+         x_scale = getDataSet().getData_entry(0).getX_scale();
+       ((Time_Slice_TableModel)table_model).setXScale(x_scale );
+       
+       
+       //float[] xx = x_scale.getXs();
+       xvals1 = calcXvals();
+       
+       acontrol.setFrame_values( xvals1);
+       acontrol.setFrameValue( getDataSet().getPointedAtX());
+       state.set_int( "TableTS_TimeInd" , getPointedAtXindex( ));
+       state.set_float("TABLE_TS_MIN_TIME", xvals1[0]);
+       state.set_float("TABLE_TS_MAX_TIME" ,xvals1[ xvals1.length - 1 ]);
+       state.set_int("TABLE_TS_NXSTEPS" , x_scale.getNum_x());
+       
+       }
     }
   }
