@@ -30,12 +30,22 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/11/06 19:56:18  rmikk
+ *  Changed the proportion on the split pane so the control
+ *    panel takes less area
+ *
  *  Revision 1.1  2003/10/27 15:09:43  rmikk
+ *
  *  Initial Checkin
  *
  *  Revision 1.4  2003/08/08 15:48:24  dennis
  *  Added GPL copyright information and $Log$
+ *  Added GPL copyright information and Revision 1.2  2003/11/06 19:56:18  rmikk
+ *  Added GPL copyright information and Changed the proportion on the split pane so the control
+ *  Added GPL copyright information and   panel takes less area
+ *  Added GPL copyright information and
  *  Added GPL copyright information and Revision 1.1  2003/10/27 15:09:43  rmikk
+ *  Added GPL copyright information and
  *  Added GPL copyright information and Initial Checkin
  *  Added GPL copyright information and to record CVS
  *  login messages.
@@ -152,7 +162,7 @@ public class DataSetViewerMaker1  extends DataSetViewer
      viewComp.addActionListener( new CompActionListener());
      setLayout( new GridLayout( 1,1));
      add( new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
-                  viewComp.getDisplayPanel(), East, .70f));
+                  viewComp.getDisplayPanel(), East, .80f));
 
      invalidate();
     }
