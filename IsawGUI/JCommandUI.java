@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.20  2003/10/15 03:18:32  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.19  2003/05/28 18:58:20  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -87,7 +90,7 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
      Vector tab_titles;
      JPropertiesUI jpui;
      
-         /** @associates <{IsawGUI.JCommandUI}> */
+         /** @see IsawGUI.JCommandUI */
         // private com.sun.java.util.collections.TreeSet lnkJCommandUI;
      
   public JCommandUI(CommandPane cp, Document sessionLog, JPropertiesUI jpui)
