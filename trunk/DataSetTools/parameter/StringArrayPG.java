@@ -1,4 +1,3 @@
-
 /*
  * File:  StringArrayPG.java 
  *             
@@ -32,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/06/23 16:12:28  bouzekc
+ * Reformatted for consistent indenting.
+ *
  * Revision 1.7  2003/06/23 14:59:58  bouzekc
  * Fixed log message.  Now uses PGActionListener.
  *
@@ -56,36 +58,28 @@ import javax.swing.*;
 import java.awt.*;
 import DataSetTools.util.PGActionListener;
 
-public class StringArrayPG extends VectorPG
-  {
+public class StringArrayPG extends VectorPG{
 
-   public StringArrayPG( String Prompt, Object value)
-      { super( new StringPG("Enter String",""),"Enter String List");
-        setValue( value);
-       }
+  public StringArrayPG( String Prompt, Object value){ 
+    super( new StringPG("Enter String",""),"Enter String List");
+    setValue( value);
+  }
 
-      public static void main( String args[] )
-      {
-         JFrame jf = new JFrame("Test");
-         jf.getContentPane().setLayout( new GridLayout( 1,2));
-         StringArrayPG IaPg = new StringArrayPG( "Enter String list", null);
-         IaPg.init();
-         jf.getContentPane().add(IaPg.getGUIPanel());
-         JButton  jb = new JButton("Result");
-         jf.getContentPane().add(jb);
-         jb.addActionListener( new PGActionListener( IaPg));
-         jf.setSize( 500,100);
-         jf.invalidate();
-         jf.show();
-
-
-
-
-      }      
-public Object clone()
-  {
+  public static void main( String args[] ){
+    JFrame jf = new JFrame("Test");
+    jf.getContentPane().setLayout( new GridLayout( 1,2));
+    StringArrayPG IaPg = new StringArrayPG( "Enter String list", null);
+    IaPg.init();
+    jf.getContentPane().add(IaPg.getGUIPanel());
+    JButton  jb = new JButton("Result");
+    jf.getContentPane().add(jb);
+    jb.addActionListener( new PGActionListener( IaPg));
+    jf.setSize( 500,100);
+    jf.invalidate();
+    jf.show();
+  }      
+  public Object clone(){
     StringArrayPG faap = new StringArrayPG( getName(), getValue());
     return (Object)faap;
-
   }       
-  }
+}

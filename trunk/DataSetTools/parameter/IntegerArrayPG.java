@@ -1,4 +1,3 @@
-
 /*
  * File:  IntegerArrayPG.java 
  *             
@@ -32,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/06/23 16:12:25  bouzekc
+ * Reformatted for consistent indenting.
+ *
  * Revision 1.6  2003/06/23 14:52:44  bouzekc
  * Removed duplicate inner ActionListener class.  Now uses
  * PGActionListener.
@@ -54,37 +56,29 @@ import javax.swing.*;
 import java.awt.*;
 import DataSetTools.util.PGActionListener;
 
-public class IntegerArrayPG extends VectorPG
-  {
+public class IntegerArrayPG extends VectorPG{
 
-   public IntegerArrayPG( String Prompt, Object value)
-      { super( new IntegerPG("Enter Integer",0),"Enter Integer List");
-        setValue( value);
-       }
-
-   public Object clone()
-      {
-
-       IntegerArrayPG iapg = new IntegerArrayPG( getName(), getValue());
-       return (Object) iapg;
-
-      }
-      public static void main( String args[] )
-      {
-         JFrame jf = new JFrame("Test");
-         jf.getContentPane().setLayout( new GridLayout( 1,2));
-         IntegerArrayPG IaPg = new IntegerArrayPG( "Enter Int list", null);
-         IaPg.init();
-         jf.getContentPane().add(IaPg.getGUIPanel());
-         JButton  jb = new JButton("Result");
-         jf.getContentPane().add(jb);
-         jb.addActionListener( new PGActionListener( IaPg));
-         jf.setSize( 500,100);
-         jf.invalidate();
-         jf.show();
-
-
-
-
-      }      
+  public IntegerArrayPG( String Prompt, Object value){ 
+    super( new IntegerPG("Enter Integer",0),"Enter Integer List");
+    setValue( value);
   }
+
+  public Object clone(){
+    IntegerArrayPG iapg = new IntegerArrayPG( getName(), getValue());
+    return (Object) iapg;
+  }
+
+  public static void main( String args[] ){
+    JFrame jf = new JFrame("Test");
+    jf.getContentPane().setLayout( new GridLayout( 1,2));
+    IntegerArrayPG IaPg = new IntegerArrayPG( "Enter Int list", null);
+    IaPg.init();
+    jf.getContentPane().add(IaPg.getGUIPanel());
+    JButton  jb = new JButton("Result");
+    jf.getContentPane().add(jb);
+    jb.addActionListener( new PGActionListener( IaPg));
+    jf.setSize( 500,100);
+    jf.invalidate();
+    jf.show();
+  }      
+}
