@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.36  2003/06/26 16:20:12  bouzekc
+ * Changed button names to be more expressived.  Now starts
+ * full screen.
+ *
  * Revision 1.35  2003/06/24 22:33:54  bouzekc
  * Removed unused variables.  Removed unused closeFile
  * method.
@@ -277,19 +281,19 @@ public abstract class Wizard implements PropertyChangeListener{
 
     // string constants for the menus and buttons
     private static final String EXIT_COMMAND        = "Exit";
-    private static final String FIRST_COMMAND       = "First";
-    private static final String BACK_COMMAND        = "Back";
-    private static final String NEXT_COMMAND        = "Next";
-    private static final String LAST_COMMAND        = "Last";
-    private static final String CLEAR_COMMAND       = "Clear All";
-    private static final String EXEC_ALL_COMMAND    = "Exec All";
-    private static final String EXEC_COMMAND        = "Execute";
+    private static final String FIRST_COMMAND       = "Go to First Form";
+    private static final String BACK_COMMAND        = "Go Back One Form";
+    private static final String NEXT_COMMAND        = "Go to Next Form";
+    private static final String LAST_COMMAND        = "Go to Last Form";
+    private static final String CLEAR_COMMAND       = "Reset All Forms";
+    private static final String EXEC_ALL_COMMAND    = "Execute All Forms";
+    private static final String EXEC_COMMAND        = "Execute Current Form";
     private static final String HELP_ABOUT_COMMAND  = "About";
     private static final String WIZARD_HELP_COMMAND = "on Wizard";
     private static final String FORM_HELP_COMMAND   = "on Current Form";
-    private static final String SAVE_WIZARD_COMMAND = "Save Wizard";
-    private static final String LOAD_WIZARD_COMMAND = "Load Wizard";
-    private static final String VIEW_MENU           = "View";
+    private static final String SAVE_WIZARD_COMMAND = "Save Wizard Data";
+    private static final String LOAD_WIZARD_COMMAND = "Load Wizard Data";
+    private static final String VIEW_MENU           = "View Parameters";
 
     // default help and about messages
     private String help_message  = "Help not available for Wizard";
@@ -749,9 +753,10 @@ public abstract class Wizard implements PropertyChangeListener{
         {
           int screenheight=(int)
             Toolkit.getDefaultToolkit().getScreenSize().getHeight();
-          frame.setBounds( (screenheight*4/3-FRAME_WIDTH)/2,
-                           (screenheight-FRAME_HEIGHT)*3/10,
-                           FRAME_WIDTH, FRAME_HEIGHT );
+          int screenwidth=(int)
+            Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+          //full screen
+          frame.setBounds( 0,0, screenwidth, screenheight);
         }
 
         JMenuItem help_about  = new JMenuItem( HELP_ABOUT_COMMAND );
