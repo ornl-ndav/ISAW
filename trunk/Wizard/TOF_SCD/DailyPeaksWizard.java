@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/06/11 22:37:23  bouzekc
+ * Added Wizard help message.  Fixed parameter linking to work
+ * with updated Forms.
+ *
  * Revision 1.1  2003/06/10 21:06:49  bouzekc
  * Added to CVS.
  *
@@ -76,6 +80,14 @@ public class DailyPeaksWizard extends Wizard
   {
     super("Daily SCD Peaks Wizard", standalone);
     this.createAllForms();
+
+    StringBuffer s = new StringBuffer();
+    s.append("This Wizard is designed to be used as an daily\n");
+    s.append("tool for finding peaks from SCD run files.  It\n");
+    s.append("applies IndexJ and LsqrsJ in an iterative\n");
+    s.append("refinement to the output .peaks file from the \n");
+    s.append("first Form.\n");
+    this.setHelpMessage(s.toString());
   }
 
   /**
@@ -86,7 +98,7 @@ public class DailyPeaksWizard extends Wizard
     int fpi[][] = { {0,-1,-1,0}, //raw data path 
                     {1,1,1,1},  //peaks file path
                     {2,0,0,2},  //run numbers
-                    {3,4,2,3},  //experiment name
+                    {3,2,2,3},  //experiment name
                     {8,-1,-1,5},  //SCD calibration file
                     {7,-1,-1,8}};  //SCD calibration file line
 
