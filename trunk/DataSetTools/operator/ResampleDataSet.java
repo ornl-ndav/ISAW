@@ -2,6 +2,10 @@
  * @(#)ResampleDataSet.java   0.1 2000/08/2   Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2000/08/03 14:21:58  dennis
+ *  Now includes parameter "make_new_ds" to determine whether or not to
+ *  construct a new DataSet
+ *
  *  Revision 1.1  2000/08/03 03:01:47  dennis
  *  Operator to resample function ( or rebin histogram ) using a set of
  *  uniformly spaced points.
@@ -57,12 +61,16 @@ public class ResampleDataSet extends DataSetOperator
    *                      "bins" to be used between min_X and max_X.  For 
    *                      Tabulated functions, this specifies the number of
    *                      sample points to use.
+   *  @param  make_new_ds Flag that determines whether a new DataSet is
+   *                      constructed, or the Data blocks of the original
+   *                      DataSet are just altered.
    */
 
   public ResampleDataSet( DataSet     ds,
                           float       min_X,
                           float       max_X,
-                          int         num_X )
+                          int         num_X,
+                          boolean     make_new_ds )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -76,6 +84,9 @@ public class ResampleDataSet extends DataSetOperator
 
     parameter = getParameter( 2 );
     parameter.setValue( new Integer( num_X ) );
+
+    parameter = getParameter( 3 );
+    parameter.setValue( new Boolean( make_new_ds ) );
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
@@ -110,6 +121,9 @@ public class ResampleDataSet extends DataSetOperator
 
     parameter = new Parameter( "Num X", new Integer( 200 ) );
     addParameter( parameter );
+
+    parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
+    addParameter( parameter );
   }
 
 
@@ -119,17 +133,23 @@ public class ResampleDataSet extends DataSetOperator
   {
                                      // get the current data set
     DataSet ds = this.getDataSet();
+
+                                     // get the new x scale parameters
+    float min_X         = ( (Float)(getParameter(0).getValue()) ).floatValue();
+    float max_X         = ( (Float)(getParameter(1).getValue()) ).floatValue();
+    int   num_X         = ( (Integer)(getParameter(2).getValue()) ).intValue();
+    boolean make_new_ds = ((Boolean)getParameter(3).getValue()).booleanValue();
+
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
+    DataSet new_ds = null;
+    if ( make_new_ds )
+      new_ds = ds.empty_clone();
+    else
+      new_ds = ds;
 
-    DataSet new_ds = ds.empty_clone(); 
     new_ds.addLog_entry( "Resampled" );
-
-                                     // get the new x scale parameters 
-    float min_X = ( (Float)(getParameter(0).getValue()) ).floatValue();
-    float max_X = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    int   num_X = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
 
                                      // validate interval bounds
     if ( min_X > max_X )             // swap bounds to be in proper order
@@ -163,10 +183,21 @@ public class ResampleDataSet extends DataSetOperator
       new_data.setAttributeList( attr_list ); // copy the attributes
 
       new_data.ResampleUniformly( new_x_scale );
-      new_ds.addData_entry( new_data );      
+
+      if ( make_new_ds )
+        new_ds.addData_entry( new_data );
+      else
+        new_ds.replaceData_entry( new_data, j );
     }
 
-    return new_ds;
+    if ( make_new_ds )
+      return new_ds;
+    else
+    {
+      ds.notifyIObservers( IObserver.DATA_CHANGED );
+      return new String( "Data resampled uniformly" );
+    }
+
   }  
 
 
