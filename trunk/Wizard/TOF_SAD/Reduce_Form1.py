@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.2  2003/11/13 18:23:51  rmikk
+# Added user documentation
+#
 # Revision 1.1  2003/11/11 20:48:28  rmikk
 # Initial Checkin
 #
@@ -67,7 +70,8 @@ class Reduce_Form1(GenericTOF_SAD):
         FilePG = self.getParameter(3)
         useBackTransmission.addPropertyChangeListener( PChangeListener( FilePG))
         
-        
+    def getTitle(self):
+        return "Select Calibration files"
     def getResult(self):
         SensitivityFilename=self.getParameter(0).value
         EfficiencyFilename=self.getParameter(1).value
@@ -101,6 +105,10 @@ class Reduce_Form1(GenericTOF_SAD):
         V.addElement( BackGroundTransmissionDataSet)
         return V;
   
-           
+    def getDocumentation(self):
+        S = ""+"@overview This Form is part of the Reduce Wizard. It allows for the entry "
+        S += "of filenames of preprocessed Calibration type information for the Reduce analysis."
+        S += " These files include the efficiency, sensitivity, and background tranmission files"
+        return S
     def __init__(self):
         Operator.__init__(self,"Select Calibration files")

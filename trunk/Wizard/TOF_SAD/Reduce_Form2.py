@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.2  2003/11/13 18:24:08  rmikk
+# Added user documentation
+#
 # Revision 1.1  2003/11/11 20:49:19  rmikk
 # Initial Checkin
 #
@@ -141,6 +144,14 @@ class Reduce_Form2(GenericTOF_SAD):
         V.addElement(Boolean( useCadmium))
         V.addElement( TransmissionDataSet)
         return V
-         
+
+    def getDocumentation( self):
+        S = "@overview This Form is part of the Reduce Wizard. It allows for the entry "
+        S += "of filenames that will be processed by the Reduce analysis."
+        S += " These files include the Sample, Background, and Cadmium raw run files."
+        S += " The background sample transmission information can also be calculated from"
+        S += " the raw run file. The Neutron Delay Fraction and time channels to use for"
+        S += " fitting a polynomial to the result are needed for this calculation "
+        return S      
     def __init__(self):
         Operator.__init__(self,"Select Run files")
