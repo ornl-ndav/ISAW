@@ -1,13 +1,41 @@
 /*
- * @(#)TCPComm.java
+ * File:  TCPComm.java
  *
- *  Handles sending and receiving Java Objects via TCP. 
+ * Copyright (C) 2001, Ruth Mikkelson
+ *                     Alok Chatterjee,
+ *                     Dennis Mikkelson
  *
- *  Programmers: Ruth Mikkelson,
- *               Alok Chatterjee,
- *               Dennis Mikkelson
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/04/23 19:44:17  dennis
+ *  Added copyright and GPL info at the start of the file.
+ *
  *  Revision 1.3  2001/03/01 21:03:00  dennis
  *  Added detailed exception checking to the Recieve() method.
  *
@@ -19,8 +47,8 @@
  *  Revision 1.1  2001/01/30 23:27:28  dennis
  *  Initial version, network communications for ISAW.
  *
- *
  */
+
 package NetComm;
 
 import java.net.*;
@@ -31,7 +59,7 @@ import java.io.*;
  *  Creates Object I/O streams, given a TCP socket, and handles sending
  *  and receiving Java Objects via TCP.  To use this for a client program,
  *  the client would first construct a new Socket to connect with a server
- *  on a particular port.  Using the new Socket, the client would the
+ *  on a particular port.  Using the new Socket, the client would then
  *  construct a new TCPComm object.  Subsequently, the client can use
  *  the Send() method to send an object to the server and it can use the
  *  Receive() method to get an object from the server.
