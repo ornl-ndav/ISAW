@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/07/07 21:42:18  bouzekc
+ * Fixed bug where the JDialog wasn't fully listening to
+ * window closing events and removed extraneous comments.
+ *
  * Revision 1.15  2003/07/01 14:44:15  bouzekc
  * Uses a JDialog again.
  *
@@ -254,7 +258,6 @@ public abstract class VectorPG extends ParameterGUI
     GUI.removePropertyChangeListener( listener );
   }
 
-  //*********** end PropertyChanger methods *********************************
   //*********** ParamUsesString methods *********************************
   public String getStringValue(  ) {
     return ArrayPG.ArraytoString( ( Vector )value );
@@ -343,7 +346,7 @@ public abstract class VectorPG extends ParameterGUI
     //entryFrame.setDefaultCloseOperation( WindowConstants.HIDE_ON_CLOSE );
     entryDialog.setDefaultCloseOperation( WindowConstants.HIDE_ON_CLOSE );
 
-    //entryFrame.addWindowListener( new VectorPGWindowListener(  ) );
+    entryFrame.addWindowListener( new VectorPGWindowListener(  ) );
     entryDialog.addWindowListener( new VectorPGWindowListener(  ) );
 
     //entryDialog.getContentPane(  ).setLayout( new GridLayout( 1, 1 ) );
@@ -353,7 +356,6 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   //*********** ActionListener methods *********************************
-
   /**
    *  Called when the original button is pressed. It creates the JFrame that
    *  stores the list box and editing buttons, etc.
@@ -367,8 +369,6 @@ public abstract class VectorPG extends ParameterGUI
 
     showEntryPanel(  );
   }
-
-  //*********** end ActionListener methods *********************************
 
   /**
    *  The type name is the param's type name with the letters "Array" affixed to the end
