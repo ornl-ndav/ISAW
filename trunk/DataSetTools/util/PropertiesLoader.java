@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/05/29 16:39:26  rmikk
+ *  Fixed an error in getting Boolean properties
+ *
  *  Revision 1.13  2004/03/15 03:28:53  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -223,7 +226,7 @@ public class PropertiesLoader implements java.io.Serializable
         Boolean val=null;
 
         if(property!=null)
-            val=new Boolean(prop);
+            val=new Boolean(property);
 
         return val;
     }
