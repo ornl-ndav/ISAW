@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2004/01/24 22:49:30  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.5  2003/12/15 02:06:10  bouzekc
  * Removed unused imports.
  *
@@ -94,7 +97,6 @@ public class GsasWriter extends Writer
      */
     public void writeDataSets( DataSet ds[] ){
         //System.out.println("(GW)NUMBERING: "+seq_numbers);
-	String dsType="";
 	gsas_filemaker gf;
 
 	if( ds==null ){

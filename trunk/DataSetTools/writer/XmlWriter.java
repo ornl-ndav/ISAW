@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/01/24 22:49:30  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.3  2002/11/27 23:26:45  pfpeterson
  *  standardized header
  *
@@ -38,8 +41,6 @@
 package DataSetTools.writer;
 
 import  DataSetTools.dataset.*;
-import  java.io.*;
-import DataSetTools.retriever.*;
 import NexIO.Write.*;
 import NexIO.Write.NexApi.*;
 /**
