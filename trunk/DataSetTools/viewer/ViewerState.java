@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2002/06/17 20:30:51  dennis
+ *  ZoomRegion now only preserved if the number of spectra is the same
+ *  (in addition to having the same title, axis labels and units).
+ *
  *  Revision 1.13  2001/07/27 15:57:10  dennis
  *  Removed debug print.
  *
@@ -119,7 +123,8 @@ public class ViewerState  implements Serializable
   private String        ds_y_label;                 // if the DataSet has the
   private String        ds_x_units;                 // same units and labels
   private String        ds_y_units; 
-  private String        ds_name;                    // and the names match.
+  private String        ds_name;                    // and the names match
+  private int           ds_n_rows;                  // and have the same #rows
 
     /** 
      * Constructs a ViewerState object with default values for the
@@ -353,17 +358,18 @@ public class ViewerState  implements Serializable
     *
     *  @param  ds     The current DataSet being viewed.  The zoom region should
     *                 only be restored provided the new DataSet given to the
-    *                 viewer is using the same units and axis labels and has
+    *                 viewer is using the same units and axis labels, has
     *                 the same basic title ( eg. for IPNS runfiles this is
-    *                 the instrument name and run number ).  The title,
-    *                 axis labels and units of this DataSet are compared to 
+    *                 the instrument name and run number ) and has the same
+    *                 number of rows.  The title, axis labels and units and 
+    *                 number of rows of this DataSet are compared to 
     *                 those of the old DataSet that was passed to the 
     *                 setZoomRegion() method. 
     *
     *  @return  The last saved zoom region, provided the current DataSet has
-    *           the same axis labels as the previous DataSet for which the
-    *           zoom region was saved.  If the labels don't match, this 
-    *           method returns null.
+    *           the same name, axis labels units and number of rows as the 
+    *           previous DataSet for which the zoom region was saved.  If the 
+    *           values don't match, this method returns null.
     */
    public CoordBounds getZoomRegion( DataSet ds )
    {
@@ -375,6 +381,9 @@ public class ViewerState  implements Serializable
        units_match = true;
 
      if ( !units_match )
+       return null;
+
+     if ( ds.getNum_entries() != ds_n_rows )
        return null;
 
      if ( ds_name.equals( ds.getTitle() ) )
@@ -402,6 +411,7 @@ public class ViewerState  implements Serializable
       ds_x_units = ds.getX_units();
       ds_y_units = ds.getY_units();
       ds_name    = ds.getTitle();
+      ds_n_rows  = ds.getNum_entries();
    }
 
 /* -------------------------------------------------------------------------
