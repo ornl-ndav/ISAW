@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/07/21 22:56:58  dennis
+ * Now uses methods from Grid_util to get data grids.
+ * Essentially complete.
+ *
  * Revision 1.2  2003/07/18 20:16:06  dennis
  * Now calls tof_data_calc.SubtractDelayedNeutrons(,,)
  *
@@ -41,6 +45,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.DataSet.Attribute.*;
+import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.instruments.*;
 import DataSetTools.util.*;
@@ -169,10 +174,6 @@ public class EfficiencyRatio extends GenericTOF_SAD
 
     float   frequecy   = 30;                      // this could be a parameter
 
-    //
-    // Find the DataGrid for this detector and make sure that we have a 
-    // segmented detector. 
-    //
                                                   // clone the DataSets so we
                                                   // don't damage the original
     ds     = (DataSet)ds.clone();
@@ -191,34 +192,21 @@ public class EfficiencyRatio extends GenericTOF_SAD
       tof_data_calc.SubtractDelayedNeutrons((TabulatedData)ds.getData_entry(i),
                                              frequecy, 
                                              delayed_n );
+    //
+    // Find the DataGrid for this detector and make sure that we have a 
+    // segmented detector. 
+    //
 
-    UniformGrid grid = null;
-    Data d = null;
-    PixelInfoList pil;
-    Attribute attr;
-    boolean segmented_detector_found  = false;
-    int data_index = 0;
-    int n_data     = ds.getNum_entries();
+    int grid_ids[] = Grid_util.getAreaGridIDs( ds );
 
-    while ( !segmented_detector_found && data_index < n_data )
-    {
-     d = ds.getData_entry( data_index );
-     attr = d.getAttribute( Attribute.PIXEL_INFO_LIST );
-     if ( attr != null && attr instanceof PixelInfoListAttribute )
-     {
-        pil  = (PixelInfoList)attr.getValue();
-        grid = (UniformGrid)pil.pixel(0).DataGrid();
-        if ( grid.num_rows() > 1 || grid.num_cols() > 1 )
-          segmented_detector_found = true;
-      }
-      else
-        return new ErrorString("Need PixelInfoList attribute.");
+    if ( grid_ids.length < 1 )
+      return new ErrorString( "No Area Detectors in DataSet" );
 
-      data_index++;
-    }
+    if ( grid_ids.length > 1 )
+      return new ErrorString("Too many Area Detectors in DataSet: " + 
+                              IntList.ToString( grid_ids )          );
 
-    if ( !segmented_detector_found )
-      return new ErrorString("Need an Area Detector or LPSD");
+    UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, grid_ids[0] );
 
     // 
     // Fix the UniformGrid to point to the cloned Data blocks
@@ -231,8 +219,8 @@ public class EfficiencyRatio extends GenericTOF_SAD
     //
     Vector3D detector_position = grid.position();
     System.out.println("detector position is " + detector_position );
-    detector_position.get()[1] += x_offset/100;         // shift detector to
-    detector_position.get()[2] -= y_offset/100;         // beam center
+    detector_position.get()[1] += x_offset/100;         // shift detector so
+    detector_position.get()[2] -= y_offset/100;         // beam is centered
     grid.setCenter( detector_position );
 
     Grid_util.setEffectivePositions( ds, grid.ID() );
@@ -252,13 +240,115 @@ public class EfficiencyRatio extends GenericTOF_SAD
     else
       return new ErrorString("ERROR converting DataSet to wavelength " + obj); 
 
+    //
+    // Fix the UniformGrid to point to the cloned Data blocks
+    //
+    grid.setData_entries( ds );
+
     XScale wl_scale = ds.getData_entry( 0 ).getX_scale(); 
     Data mon_1_data = mon_ds.getData_entry_with_id( MONITOR_ID );
     mon_1_data.resample( wl_scale, IData.SMOOTH_NONE );
     
+    // 
+    // Get the efficiency Data (stored in array, indexed starting at 0
+    //
+    int eff_grid_ids[] = Grid_util.getAreaGridIDs( eff_ds );
+
+    if ( eff_grid_ids.length < 1 )
+      return new ErrorString( "No Area Detectors in Efficiency DataSet" );
+
+    if ( eff_grid_ids.length > 1 )
+      return new ErrorString("Too many Area Detectors in Efficiency DataSet: " +
+                              IntList.ToString( eff_grid_ids )          );
+
+    UniformGrid eff_grid = 
+                   (UniformGrid)Grid_util.getAreaGrid(ds, eff_grid_ids[0]);
+
+    int n_rows = eff_grid.num_rows();
+    int n_cols = eff_grid.num_cols();
+    float eff[][] = new float[n_rows][n_cols];
+    for ( int row = 1; row <= n_rows; row++ )
+      for ( int col = 1; col <= n_cols; col++ )
+        eff[row-1][col-1] = eff_grid.getData_entry( row, col ).getY_values()[0];
+
+    //
+    //  reconstruct the ifgood array
+    //
+    boolean ifgood[][] = new boolean[n_rows][n_cols];
+    for ( int row = 0; row < n_rows; row++ )
+      for ( int col = 0; col < n_cols; col++ )
+        if ( eff[row][col] == 0 )
+          ifgood[row][col] = false;
+        else
+          ifgood[row][col] = true;
+
+    //
+    //  set ifgood false for grid elements outside of the desired radius.
+    //  NOTE: radius in cm, grid units in meters.  Also, mark the pixels
+    //  as selected, if they are in the radius and ifgood was true.
+    // 
+    System.out.println("Shifted Grid is " + grid );
+    Vector3D beam_center = grid.position();
+    beam_center.get()[1] -= x_offset/100;
+    beam_center.get()[2] += y_offset/100;
+    for ( int row = 1; row <= n_rows; row++ )
+      for ( int col = 1; col <= n_cols; col++ )
+      {
+        Vector3D position = grid.position(row,col);
+        position.subtract( beam_center );
+        if ( position.length() > radius/100 )
+        {
+          ifgood[row-1][col-1] = false; 
+          grid.getData_entry(row,col).setSelected(false);
+        }
+        else
+          grid.getData_entry(row,col).setSelected(ifgood[row-1][col-1]);
+      }
+
+    int n_good = 0;
+    for ( int row = 0; row < n_rows; row++ )
+      for ( int col = 0; col < n_cols; col++ )
+        if ( ifgood[row][col] )
+          n_good++;
+
+    System.out.println("Number of pixels used = " + n_good );
+
+    //
+    //  Now do the efficiency calculation, by first multiplying the selected
+    //  spectra by 1/eff(pixel), then summing the selected spectra
+    // 
+    for ( int row = 1; row <= n_rows; row++ )
+      for ( int col = 1; col <= n_cols; col++ )
+      {
+        Data d = grid.getData_entry(row,col);
+        if ( d.isSelected() )
+          d.divide( eff[row-1][col-1], 0 ); 
+      } 
+
+    Operator sum_sel_op = new SumCurrentlySelected( ds, true, true ); 
+    DataSet sum_ds;
+    obj = sum_sel_op.getResult();
+    if ( obj instanceof DataSet )
+      sum_ds = (DataSet)obj; 
+    else
+      return obj;
+    sum_ds.clearSelections();
+
+    sum_ds.getData_entry(0).setGroup_ID(MONITOR_ID);
+    Operator divide_op = new DataSetDivide( sum_ds, mon_ds, true );
+    DataSet efr_ds;
+    obj = divide_op.getResult();
+    if ( obj instanceof DataSet )
+      efr_ds = (DataSet)obj; 
+    else
+      return obj;
+    efr_ds.clearSelections();
+
     Vector result = new Vector();
     result.addElement( ds );
     result.addElement( mon_ds );
+    result.addElement( sum_ds );
+    result.addElement( efr_ds );
 
     return result;
   }
