@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.7  2002/07/15 16:52:41  pfpeterson
+ *  Fixed bugs involving tof->d/Q conversions.
+ *
  *  Revision 1.6  2002/07/10 16:05:21  pfpeterson
  *  Use gsas calibration if possible.
  *
@@ -390,7 +393,7 @@ public class DiffractometerTofToD extends    XAxisConversionOp
         d_vals           = data.getX_scale().getXs();
         if(gsas!=null){
             for ( int i = 0; i < d_vals.length; i++ )
-                d_vals[i] = tof_calc.DSpacing( gsas.dif_a(),  gsas.dif_c(),
+                d_vals[i] = tof_calc.DSpacing( gsas.dif_c(),  gsas.dif_a(),
                                                gsas.t_zero(), d_vals[i] );
         }else{
             for ( int i = 0; i < d_vals.length; i++ )
