@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/06/10 14:49:15  pfpeterson
+ *  Fix a null pointer exception in setStringFilter.
+ *
  *  Revision 1.2  2002/11/27 23:12:35  pfpeterson
  *  standardized header
  *
@@ -105,6 +108,8 @@ public class StringEntry extends JTextField implements //StringFilterer,
      * after instantiation.
      */
     public void setStringFilter(StringFilterer sf){
+        if(sf==null)
+          sf=new StringFilter();
         this.filter=sf;
         this.filterdoc.setFilter(sf);
     }
