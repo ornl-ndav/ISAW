@@ -28,6 +28,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/07/22 18:18:39  dennis
+ * Added java docs to getResult() and added getDocumentation method.
+ * Now returns the spdxxxxx.dat and efrxxxxx.dat DataSets as the
+ * first two elements in the return vector.
+ *
  * Revision 1.3  2003/07/21 22:56:58  dennis
  * Now uses methods from Grid_util to get data grids.
  * Essentially complete.
@@ -80,7 +85,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
   
   /* ---------------------------- constructor ---------------------------- */ 
   /** 
-   *  Creates operator with title ""Efficiency Ratio" and the 
+   *  Creates operator with title "Efficiency Ratio" and the 
    *  specified list of parameters. The getResult method must still be 
    *  used to execute the operator.
    *
@@ -124,6 +129,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
     addParameter( new Parameter("Delayed Neutron Percent", 
                                  new Float(dn_fraction)) );
   }
+
   
   /* --------------------------- getCommand ------------------------------- */ 
   /** 
@@ -136,6 +142,68 @@ public class EfficiencyRatio extends GenericTOF_SAD
   {
     return "EffRatio";
   }
+
+
+  /* ------------------------ getDocumentation ---------------------------- */
+  /**
+   *  Get the documentation to be displayed by the help system.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator calculates the efficiency ratio " );
+    Res.append(" between area detector pixels in a disk around the");
+    Res.append(" and the first beam monitor.");
+    Res.append("@algorithm This first subtracts delayed neutrons from the ");
+    Res.append(" specified area detector DataSet and from the specified");
+    Res.append(" monitor DataSet.  The area detector data grid is then");
+    Res.append(" so that the beam center is at (DetD,0,0) where" );
+    Res.append(" DetD is the distance from the sample position to the");
+    Res.append(" detector.  Both the monitor DataSet and area detector");
+    Res.append(" DataSet are converted to wavelength, and the monitor");
+    Res.append(" DataSet is resampled on a wavelength grid corresponding");
+    Res.append(" to the wavelengths at the area detector center.");
+    Res.append(" The individual spectra from the area detector are then");
+    Res.append(" divided by the sensitivity values calculated by the");
+    Res.append(" DetectorSensitivity operator.  Finally, the area detector");
+    Res.append(" spectra corresponding to pixels that are within the");
+    Res.append(" specified radius of the beam center are summed and divided");
+    Res.append(" by the monitor spectrum.");
+    Res.append("@param ds - DataSet containing data from run with cadmium");
+    Res.append(" mask upstream from monitor 1 and the beam stop removed.");
+    Res.append("@param mon_ds - ataSet containing monitor data for");
+    Res.append(" the specified run.");
+    Res.append("@param eff_ds - DataSet containing the efficiencies of");
+    Res.append(" the area detector pixels.");
+    Res.append("@param x_center - The offset in the x direction of the beam");
+    Res.append(" center from the center of the detector, in centimeters.");
+    Res.append("@param y_center - The offset in the y direction of the beam");
+    Res.append(" center from the center of the detector, in centimeters.");
+    Res.append("@param radius - The radius of the circle to use, around the");
+    Res.append(" beam center, for calculating the efficiency ratio.");
+    Res.append("@param dn_fraction - he fraction of the neutrons that are");
+    Res.append(" delayed neutrons and are subtracted from the count.");
+    Res.append("@return A vector of four DataSets are returned.");
+    Res.append(" The first DataSet is the sum of the specified spectra");
+    Res.append(" from the area detector, with respect to wavelength,");
+    Res.append(" which should be written to spdxxxxx.dat.");
+    Res.append(" The second DataSet is the ratio of the summed");
+    Res.append(" spectrum to the monitor 1 spectrum, which should");
+    Res.append(" be written to efrxxxxx.dat.");
+    Res.append(" he third DataSet is a clone of the original area detector");
+    Res.append(" DataSet, converted to wavelength and divided by the");
+    Res.append(" sensitivity data.  This is returned for information");
+    Res.append(" purposes.  If the unselected Data are deleted and the");
+    Res.append(" resulting DataSet is viewed in the ThreeD view, a quick");
+    Res.append(" visual check on the center and disk of included spectra");
+    Res.append(" can be made.  Finally, the monitor DataSet, converted to");
+    Res.append(" wavelength is returned, so that comparisons can be made.");
+    Res.append(" ");
+
+    return Res.toString();
+  }
+
+
   
   /* ----------------------- setDefaultParameters ------------------------- */ 
   /** 
@@ -156,9 +224,38 @@ public class EfficiencyRatio extends GenericTOF_SAD
     addParameter( new Parameter("Radius(cm) to use", new Float(5)) );
     addParameter( new Parameter("Delayed Neutron Percent", new Float(0.11)) );
   }
+
   
   /* ----------------------------- getResult ------------------------------ */ 
   /** 
+   *
+   *  Execute the operator using the current values of the parameters.
+   *  This first subtracts delayed neutrons from the specified area detector
+   *  DataSet and from the specified monitor DataSet.  The area detector 
+   *  data grid is the shifted so that the beam center is at (DetD,0,0) where
+   *  DetD is the distance from the sample position to the detector. 
+   *  Both the monitor DataSet and area detector DataSet are converted to
+   *  wavelength, and the monitor DataSet is resampled on a wavelength grid
+   *  corresponding to the wavelengths at the area detector center.  The 
+   *  individual spectra from the area detector are then divided by the
+   *  sensitivity values calculate by the DetectorSensitivity operator.
+   *  Finally, the area detector spectra corresponding to pixels that are
+   *  within the specified radius of the beam center are summed and divided
+   *  by the monitor spectrum.
+   *
+   *  @return A vector of four DataSets are returned.  The first DataSet is
+   *            the sum of the specified spectra from the area detector,
+   *            with respect to wavelength, which should be written to
+   *            spdxxxxx.dat.  The second DataSet is the ratio of the summed
+   *            spectrum to the monitor 1 spectrum, which should be written
+   *            to efrxxxxx.dat.  The third DataSet is a clone of the
+   *            original area detector DataSet, converted to wavelength and
+   *            divided by the sensitivity data.  This is returned for 
+   *            information purposes.  If the unselected Data are deleted
+   *            and the resulting DataSet is viewed in the ThreeD view, a
+   *            quick visual check on the center and disk of included spectra
+   *            can be made.  Finally, the monitor DataSet, converted to 
+   *            wavelength is returned, so that comparisons can be made.
    */
   public Object getResult()
   {
@@ -345,11 +442,17 @@ public class EfficiencyRatio extends GenericTOF_SAD
     efr_ds.clearSelections();
 
     Vector result = new Vector();
-    result.addElement( ds );
-    result.addElement( mon_ds );
-    result.addElement( sum_ds );
-    result.addElement( efr_ds );
+    result.addElement( sum_ds );   // The "raw" spectrum to go to spdxxxxx.dat
 
+    result.addElement( efr_ds );   // The "efficiency ratio" to go to 
+                                   // efrxxxxx.dat
+
+    result.addElement( ds );       // for information purposes, return area ds
+                                   // with the spectra selected that were
+                                   // summed to find the area detector spectrum
+
+    result.addElement( mon_ds );   // for information purposes, return the 
+                                   // monitor spectrum
     return result;
   }
 
