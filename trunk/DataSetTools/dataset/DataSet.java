@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/06/04 20:01:33  dennis
+ *  Added Quick Sort option to Sort() method.
+ *
  *  Revision 1.12  2001/04/25 19:03:35  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -136,6 +139,9 @@ public class DataSet implements IAttributeList,
 
   public static final int INVALID_GROUP_ID = -1;
   public static final int INVALID_INDEX    = -1;
+
+  public static final int Q_SORT           =  0;
+  public static final int BUBBLE_SORT      =  1;
 
                                           // Some operators need a default 
                                           // DataSet to hold in a parameter.
@@ -1257,23 +1263,26 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   *  Sort the list of Data entries based on the specified attribute.
+   *  Sort the list of Data entries based on the specified attribute.  If
+   *  a stable sort is needed, specify BUBBLE_SORT, else specify Q_SORT.
    *
    *  @param  attr_name   The name of the attribute on which to sort.  The
    *                      attr_name parameter must be the name of an attribute
    *                      that is stored with every Data entry in this data
    *                      set.
+   *  @param  increasing  Flag indicating whether to sort the list in 
+   *                      increasing or decreasing order.
+   *  @param  sort_type   Flag specifying the sort type, either
+   *                      DataSet.Q_SORT or DataSet.BUBBLE_SORT.
    *
    *  @return    This returns true if the DataSet entries were sorted and 
    *             returns false otherwise.
    */
-  public boolean Sort( String attr_name, boolean sort_increasing )
+  public boolean Sort( String attr_name, boolean increasing, int sort_type )
   {
-    int n     = data.size();
-    int pass, 
-        k;
+    int n = data.size();
 
-    if ( n <= 0 )         // an empty list is sorted by default
+    if ( n <= 1 )            // empty or short list is sorted by default
       return true;
 
     int       position[] = new int[ n ];
@@ -1292,36 +1301,11 @@ public class DataSet implements IAttributeList,
       position[i] = i;
     }
 
-   if ( sort_increasing )                           // put in increasing order
-   {
-    for ( pass = 1; pass < n; pass++ )
-      for ( k = 0; k < n - pass; k++ )
-        if ( attr[k].compare( attr[k+1] ) > 0 )     // swap both attr & index
-        {
-          one_attr  = attr[k];
-          attr[k]   = attr[k+1];
-          attr[k+1] = one_attr;
+    if ( sort_type == Q_SORT )
+      QSort( attr, position, 0, n-1, increasing );
+    else
+      BubbleSort( attr, position, increasing );
 
-          int temp      = position[k];
-          position[k]   = position[k+1];
-          position[k+1] = temp;
-        }
-   }
-   else                                              // put in decreasing order
-   {
-    for ( pass = 1; pass < n; pass++ )
-      for ( k = 0; k < n - pass; k++ )
-        if ( attr[k].compare( attr[k+1] ) < 0 )      // swap both attr & index
-        {
-          one_attr  = attr[k];
-          attr[k]   = attr[k+1];
-          attr[k+1] = one_attr;
-
-          int temp      = position[k];
-          position[k]   = position[k+1];
-          position[k+1] = temp;
-        }
-   }
                                                   // copy the data objects to
     Vector new_data = new Vector();               // a new vector in the right
     for ( int i = 0; i < n; i++ )                 // order
@@ -1471,5 +1455,99 @@ public class DataSet implements IAttributeList,
     System.out.println( "finalize DataSet" );
   }
 */
+
+
+/* -----------------------------------------------------------------------
+ *
+ *  PRIVATE METHODS
+ * 
+ */
+
+/* ---------------------------- BubbleSort -------------------------------- */
+
+  private static void BubbleSort( Attribute list[], 
+                                  int       index[], 
+                                  boolean   increasing )
+  {
+   int pass, 
+       k;
+   int n = index.length;
+
+   if ( increasing )                                 // put in increasing order
+   {
+     for ( pass = 1; pass < n; pass++ )
+       for ( k = 0; k < n - pass; k++ )
+         if ( list[ index[k] ].compare( list[ index[k+1] ] ) > 0 )
+         {                                          
+           int temp   = index[k];
+           index[k]   = index[k+1];
+           index[k+1] = temp;
+         }
+    }
+    else                                              // put in decreasing order
+    {
+     for ( pass = 1; pass < n; pass++ )
+       for ( k = 0; k < n - pass; k++ )
+         if ( list[ index[k] ].compare( list[ index[k+1] ] ) < 0 )
+         {                                                
+           int temp   = index[k];
+           index[k]   = index[k+1];
+           index[k+1] = temp;
+         }
+    }
+  }
+
+
+/* ------------------------------- swap ---------------------------------- */
+
+  private static void swap( int index[], int i, int j )
+  {
+    int  temp = index[i];
+    index[i]  = index[j];
+    index[j]  = temp;
+  }
+
+
+/* -------------------------------- QSort --------------------------------- */
+
+   private void QSort( Attribute list[], 
+                       int       index[],
+                       int       start, 
+                       int       end, 
+                       boolean   increasing )
+   {
+     int   i = start;
+     int   j = end;
+
+     if ( i >= j )                      // at most one element, so we're
+       return;                          // done with this sublist
+
+     swap( index, start, (i+j)/2 );
+
+     while ( i < j )
+     {
+       if ( increasing )
+       {
+         while ( i < end && list[index[i]].compare( list[index[start]] ) <= 0 )
+           i++;
+         while ( list[index[j]].compare( list[index[start]] ) > 0 )
+           j--;
+       }
+       else
+       {
+         while ( i < end && list[index[i]].compare( list[index[start]] ) >= 0 )
+           i++;
+         while ( list[index[j]].compare( list[index[start]] ) < 0 )
+           j--;
+       }
+ 
+       if ( i < j )
+         swap( index, i, j );
+     }
+     swap( index, start, j );
+
+     QSort( list, index, start, j-1, increasing );
+     QSort( list, index, j+1, end, increasing );
+ } 
 
 }
