@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.9  2002/06/14 20:59:48  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.8  2001/08/16 02:55:38  dennis
  *  The combine() method now averages the positions by averaging the
  *  spherical coordinates.
@@ -59,7 +62,7 @@ package  DataSetTools.dataset;
 
 import   java.text.*;
 import   DataSetTools.math.*;
-
+import   java.io.*;
 /**
  * The concrete class for an attribute whose value is a Position3D object.  
  *
@@ -86,7 +89,11 @@ public class DetPosAttribute extends Attribute
     this.value = new DetectorPosition( value );
   }
 
-
+  public DetPosAttribute()
+  {
+    super("");
+    this.value = new DetectorPosition();
+  }
   /**
    * Returns a copy the DetectorPosition object that is the value of this
    * attribute, as a generic object.
@@ -119,7 +126,85 @@ public class DetPosAttribute extends Attribute
    {
      return new DetectorPosition( value );
    }
+   public boolean XMLwrite( OutputStream stream, int mode )
+    { try{StringBuffer SS = new StringBuffer(1000);
+       SS.append("<DetPosAttribute>\n<name>");
+       SS.append(name);
+       SS.append("</name>\n");
+       SS.append( "<value>\n");
+       stream.write( SS.substring(0).getBytes());
+       if(!((Position3D)this.value).XMLwrite( stream, mode))
+         return false;
+       stream.write( "</value>\n</DetPosAttribute>\n".getBytes());
+       return true;
+          }
+      catch( Exception s)
+        {return xml_utils.setError( "IO Err="+s.getMessage());
+         }
+      
+     }
+  public boolean XMLread( InputStream stream )
+    {try{
+//-----------------get name v
+      String Tag = xml_utils.getTag( stream );
+      if( Tag == null)
+        return xml_utils.setError( xml_utils.getErrorMessage());
+      if(!xml_utils.skipAttributes( stream))
+         return xml_utils.setError( xml_utils.getErrorMessage());
+      if( !Tag.equals("name"))
+        return xml_utils.setError("name Tag Missing in Det pos");
+      name = xml_utils.getValue( stream);
+      if( name == null)
+        return xml_utils.setError("name Tag Missing in Det pos");
 
+      Tag =xml_utils.getEndTag( stream );
+      if( Tag == null)
+        return xml_utils.setError( xml_utils.getErrorMessage());
+      if( !Tag.equals("/name"))
+        return xml_utils.setError("name Tag not nested in Det pos");
+      if(!xml_utils.skipAttributes( stream))
+         return xml_utils.setError( xml_utils.getErrorMessage());
+
+//----------------  get value field----------------
+      Tag =xml_utils.getTag( stream );
+      if( Tag == null)
+        return xml_utils.setError( xml_utils.getErrorMessage());
+      if( !Tag.equals("value"))
+        return xml_utils.setError("missing value tag in Det Pos"+Tag); 
+      if(!xml_utils.skipAttributes( stream))
+         return xml_utils.setError( xml_utils.getErrorMessage());
+//-----------actual values
+      Tag =xml_utils.getTag( stream );
+      if( Tag == null)
+        return xml_utils.setError( xml_utils.getErrorMessage());
+      if( !Tag.equals("DetectorPosition"))
+        return xml_utils.setError("missing DetectorPosition tag in Det Pos"+Tag); 
+      if(!xml_utils.skipAttributes( stream))
+         return xml_utils.setError( xml_utils.getErrorMessage());
+      if(!((Position3D)this.value).XMLread( stream))
+          return false;
+//-------------------- get End tags
+      Tag =xml_utils.getTag( stream ); 
+      if( Tag == null)
+        return xml_utils.setError( xml_utils.getErrorMessage());
+      if( !Tag.equals("/value"))
+        return xml_utils.setError("Tags not nested in Pos 3D"+Tag);
+      if(!xml_utils.skipAttributes( stream ))
+        return xml_utils.setError( xml_utils.getErrorMessage());
+
+      Tag =xml_utils.getTag( stream ); 
+      if( Tag == null)
+        return xml_utils.setError( xml_utils.getErrorMessage());
+      if( !Tag.equals("/DetPosAttribute"))
+        return xml_utils.setError("Tags not nested in Pos 3D"+Tag);
+      if(!xml_utils.skipAttributes( stream ))
+        return xml_utils.setError( xml_utils.getErrorMessage());
+      return true;
+    }
+    catch( Exception s)
+    { return xml_utils.setError( "Exception ="+s.getMessage());
+     }
+    }
 
   /**
    * Combine the value of this attribute with the value of the attribute

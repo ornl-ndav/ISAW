@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/06/14 21:00:09  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.6  2001/04/25 19:03:49  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -54,6 +57,7 @@
 package  DataSetTools.dataset;
 
 import java.text.*;
+import java.io.*;
 
 /**
  * The concrete class for an attribute whose value is a float.  
@@ -80,7 +84,11 @@ public class FloatAttribute extends Attribute
     this.value = value;
   }
 
-
+  public FloatAttribute(  )
+  {
+    super( "" );
+    this.value = 0.0f;
+  }
   /**
    * Returns the float value of this attribute, as a generic object.
    */
@@ -150,7 +158,13 @@ public class FloatAttribute extends Attribute
      this.value = (float)( this.value + attr.getNumericValue() );
   }
 
+  public boolean XMLwrite( OutputStream stream, int mode )
+    {return xml_utils.AttribXMLwrite( stream, mode, this);
 
+     }
+  public boolean XMLread( InputStream stream )
+    {return xml_utils.AttribXMLread(stream, this);
+    }
 
   /**
    * Get a numeric value to be used for sorting based on this attribute.
