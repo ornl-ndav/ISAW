@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/08/28 03:10:04  bouzekc
+ * Modified to work with the new ParameterGUI.
+ *
  * Revision 1.3  2003/08/25 14:57:58  rmikk
  * -Updated to work better with the Anisotropic case
  * -Removed JScrollPane and put it into ArrayEntryJPanel
@@ -64,19 +67,15 @@ import DataSetTools.util.*;
 */
 public class QbinsPG  extends ParameterGUI{
 
-    private JButton But;
-    private ArrayEntryJPanel list;
-    private Qbins1PG  Qbins1;
+    private JButton But = null;
+    private ArrayEntryJPanel list = null;
+    private Qbins1PG  Qbins1 = null;
     private JFrame jf = null;
     private boolean isShowing = false;
 
     public QbinsPG( String Prompt, Object Value){
-       super();
-       setName( Prompt);
-       setValue( Value);
-       But = null;
-       list = null;
-       Qbins1 = null;
+       super(Prompt, Value);
+       this.type = "Qbins";
     }
 
 
@@ -89,23 +88,6 @@ public class QbinsPG  extends ParameterGUI{
       But.addActionListener( new ButtonListener(this));      
       super.initGUI();
     }
-
-   /**
-   *     returns Qbins, a Type that can be used for parameters in
-   *    iss scripts
-   */
-   public String getType(){
-     return "Qbins";
-   }
-
-
-
-   public void setEnabled( boolean Enabled){
-      But.setEnabled( Enabled);
-
-   }
-
-
 
    public Object clone(){
       QbinsPG X = new QbinsPG( getName(), getValue());
@@ -215,7 +197,7 @@ public class QbinsPG  extends ParameterGUI{
      ArrayEntryJPanel list;
      AddListener_C AddListener;
      public Qbins1PG(){
-        super();
+        super("Qbins1PG", null);
         Container = null;
      }
 
@@ -259,10 +241,6 @@ public class QbinsPG  extends ParameterGUI{
      
           return value;
      
-    }
-    public void setEnabled( boolean enabled){
-
-
     }
 
     //not needed.  Got at list through keyListener
