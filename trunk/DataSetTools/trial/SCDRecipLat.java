@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/10/29 22:20:47  dennis
+ * Now uses 3D ball objects (drawn as squares) to represent the
+ * data points.  Also, the threshold for peaks in a time slice is
+ * based on the 10*average intensity in the time slice.
+ *
  * Revision 1.2  2002/08/05 19:06:04  pfpeterson
  * Set the package so it can be called when inside a jar.
  *
@@ -143,6 +148,42 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
     System.out.println("  -H,-h  print this message");
    }
 
+
+ /* ------------------------- findAverages ---------------------- */
+ /*
+  *  Find the average intensity at each time slice.
+  */
+  public static float[] findAverages( DataSet ds )
+  {
+    if ( ds == null || ds.getNum_entries() <= 0 )
+      return null;
+                                       // find out how many times there are
+    Data d = ds.getData_entry(0);
+    float y[] = d.getY_values();
+    float sums[] = new float[ y.length ];
+
+    for ( int i = 0; i < y.length; i++ )        // zero out the counters
+      sums[i] = 0;
+
+                                                // now total the values at all
+                                                // times
+    for ( int index = 0; index < ds.getNum_entries(); index++ )
+    {
+      d = ds.getData_entry(index);
+      y = d.getY_values();
+      for ( int i = 0; i < sums.length; i++ )
+        sums[i]++;
+    }
+
+    int n_pixels = ds.getNum_entries();
+    for ( int i = 0; i < sums.length; i++ )
+      sums[i] /= n_pixels;
+
+    return sums;
+  }
+
+
+
   /* ------------------------- main -------------------------------- */
 
   public static void main( String args[] )
@@ -188,93 +229,101 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
 
     controller.setDistanceRange( 0.1f, 500 );
     controller.addControlledPanel( vec_Q_space );
-    for ( int count = 0; count < file_names.length; count++ )
-    {
-    System.out.println("Loading file: " + file_names[count]);
-    RunfileRetriever rr = new RunfileRetriever( file_names[count] );
-    DataSet ds = rr.getDataSet( 1 );
-    if ( ds == null )
-      System.out.println("File not found: " + file_names[count]);
-    Data    d  = ds.getData_entry(0);
-    float omega = ((Float)ds.getAttributeValue(Attribute.SAMPLE_OMEGA))
-                         .floatValue();
-    float phi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_PHI))
-                         .floatValue();
-    float chi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_CHI))
-                         .floatValue();
 
-    Tran3D omegaR = new Tran3D();
-    Tran3D phiR   = new Tran3D();
-    Tran3D chiR   = new Tran3D();
-    Tran3D one_eighty_z = new Tran3D();
-    Tran3D combinedR = new Tran3D();
-
-    Vector3D i_vec = new Vector3D( 1, 0, 0 );
-    Vector3D k_vec = new Vector3D( 0, 0, 1 );
-
-    one_eighty_z.setRotation( 180, k_vec );
-    phiR.setRotation( -phi, k_vec );
-    chiR.setRotation( -chi, i_vec );
-    omegaR.setRotation( +omega, k_vec );   // rotate by +45 deg, about z,
-                                           // (using right hand rule)
-    combinedR.setIdentity();
-    combinedR.multiply_by( phiR );
-    combinedR.multiply_by( chiR );
-    combinedR.multiply_by( omegaR );
-    System.out.println("phi, chi, omega = " + phi +
-                                       ", " + chi +
-                                       ", " + omega );
-    int n_data = ds.getNum_entries();
-    int n_bins = d.getX_scale().getNum_x() - 1;
-
-    int n_objects         = n_data * n_bins;
-    IThreeD_Object objs[] = new IThreeD_Object[n_objects];
-    Vector3D       pts[]  = new Vector3D[1];
-    pts[0]                = new Vector3D();
-    float t;
-    float cart_coords[];
-
+    float times[];
+    float aves[];
+    float ys[];
+    IThreeD_Object objs[] = null;
     Color colors[] = IndexColorMaker.getColorTable(
                                 IndexColorMaker.HEATED_OBJECT_SCALE, 128 );
+    Position3D q_pos;
+    Color c;
 
-    int obj_index = 0;
-    for ( int i = 0; i < n_data; i++ )
+    for ( int count = 0; count < file_names.length; count++ )
     {
-      d = ds.getData_entry(i);
-      DetectorPosition pos = (DetectorPosition)
-                              d.getAttributeValue( Attribute.DETECTOR_POS );
-      float initial_path = ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).                                   floatValue();
-      float times[] = d.getX_scale().getXs();
-      float ys[]    = d.getY_values();
-      for ( int j = 0; j < ys.length; j++ )
+      System.out.println("Loading file: " + file_names[count]);
+      RunfileRetriever rr = new RunfileRetriever( file_names[count] );
+      DataSet ds = rr.getDataSet( 1 );
+      if ( ds == null )
+        System.out.println("File not found: " + file_names[count]);
+      Data    d  = ds.getData_entry(0);
+      float omega = ((Float)ds.getAttributeValue(Attribute.SAMPLE_OMEGA))
+                         .floatValue();
+      float phi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_PHI))
+                         .floatValue();
+      float chi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_CHI))
+                         .floatValue();
+
+      Tran3D omegaR = new Tran3D();
+      Tran3D phiR   = new Tran3D();
+      Tran3D chiR   = new Tran3D();
+      Tran3D one_eighty_z = new Tran3D();
+      Tran3D combinedR = new Tran3D();
+
+      Vector3D i_vec = new Vector3D( 1, 0, 0 );
+      Vector3D k_vec = new Vector3D( 0, 0, 1 );
+
+      one_eighty_z.setRotation( 180, k_vec );
+      phiR.setRotation( -phi, k_vec );
+      chiR.setRotation( -chi, i_vec );
+      omegaR.setRotation( +omega, k_vec );   // rotate by +45 deg, about z,
+                                             // (using right hand rule)
+      combinedR.setIdentity();
+      combinedR.multiply_by( phiR );
+      combinedR.multiply_by( chiR );
+      combinedR.multiply_by( omegaR );
+      System.out.println("phi, chi, omega = " + phi +
+                                         ", " + chi +
+                                         ", " + omega );
+      int n_data = ds.getNum_entries();
+      int n_bins = d.getX_scale().getNum_x() - 1;
+
+      int n_objects   = n_data * n_bins;
+      objs            = new IThreeD_Object[n_objects];
+      Vector3D pts[]  = new Vector3D[1];
+      pts[0]          = new Vector3D();
+      float t;
+      float cart_coords[];
+
+      int obj_index = 0;
+      aves = findAverages( ds );
+      for ( int i = 0; i < n_data; i++ )
       {
-        float tof_weight = (float)Math.sqrt(times[n_bins]/times[j]);
-        tof_weight /= thresh_scale;
-        if ( ys[j] > 35/tof_weight )
+        d = ds.getData_entry(i);
+        DetectorPosition pos = (DetectorPosition)
+                              d.getAttributeValue( Attribute.DETECTOR_POS );
+        float initial_path = 
+             ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
+        times = d.getX_scale().getXs();
+        ys    = d.getY_values();
+        for ( int j = 0; j < ys.length; j++ )
         {
-          t = (times[j] + times[j+1]) / 2;
-          Position3D q_pos = tof_calc.DiffractometerVecQ(pos, initial_path, t);
+          if ( ys[j] > 10*thresh_scale * aves[j] )
+          {
+            t = (times[j] + times[j+1]) / 2;
+            q_pos = tof_calc.DiffractometerVecQ(pos,initial_path,t);
 
-          cart_coords = q_pos.getCartesianCoords();
-          pts[0].set( cart_coords[0], cart_coords[1], cart_coords[2] );
-          combinedR.apply_to( pts[0], pts[0] );
+            cart_coords = q_pos.getCartesianCoords();
+            pts[0].set( cart_coords[0], cart_coords[1], cart_coords[2] );
+            combinedR.apply_to( pts[0], pts[0] );
 
-          int color_index = (int)(ys[j]*tof_weight/100 * 127.0f);
-          if ( color_index > 127 )
-            color_index = 127;
-          Color c = colors[ color_index ];
-          objs[obj_index] = new Polymarker( pts, c );
-          obj_index++;
+            int color_index = (int)(ys[j]*3.0f/thresh_scale);
+            if ( color_index > 127 )
+              color_index = 127;
+            c = colors[ color_index ];
+            objs[obj_index] = new Ball( pts[0], 0.02f, c );
+            obj_index++;
+          }
         }
       }
-    }
-    System.out.println("Number of points = " + obj_index );
-    IThreeD_Object non_zero_objs[] = new IThreeD_Object[obj_index];
-    for ( int i = 0; i < obj_index; i++ )
-      non_zero_objs[i] = objs[i];
+      System.out.println("Number of points = " + obj_index );
+      IThreeD_Object non_zero_objs[] = new IThreeD_Object[obj_index];
+      for ( int i = 0; i < obj_index; i++ )
+        non_zero_objs[i] = objs[i];
 
-    vec_Q_space.setObjects( file_names[count], non_zero_objs );
-    draw_axes(1, vec_Q_space );
+      vec_Q_space.setObjects( file_names[count], non_zero_objs );
+      draw_axes(1, vec_Q_space );
+//    System.gc();
    }
      
     System.out.println("All files loaded");
