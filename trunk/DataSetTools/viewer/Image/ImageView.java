@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.42  2003/07/05 19:17:09  dennis
+ *  Adapted to the new form of the setNamedColorModel() method from the
+ *  ImageJPanel class.
+ *
  *  Revision 1.41  2003/04/18 15:21:53  dennis
  *  Now explicitly sets vertical scrolling true, so that vertical
  *  scrolling is done when there are more spectra than pixels.
@@ -387,7 +391,7 @@ private void init()
   image_Jpanel = new ImageJPanel();
   image_Jpanel.setVerticalScrolling(true);
   image_Jpanel.setNamedColorModel( 
-                   getState().get_String( ViewerState.COLOR_SCALE), true );
+               getState().get_String( ViewerState.COLOR_SCALE), true, true );
                                                // make box to contain both the
                                                // image and selection indicator
   Box image_area = new Box( BoxLayout.X_AXIS );
@@ -696,7 +700,7 @@ private Component MakeControlArea()
                                                   // make a color scale bar
   color_scale_image = new ColorScaleImage();
   color_scale_image.setNamedColorModel( 
-                       getState().get_String( ViewerState.COLOR_SCALE), true );
+                getState().get_String( ViewerState.COLOR_SCALE), true, true );
   control_area.add( color_scale_image );
 
   log_scale_slider.setPreferredSize( new Dimension(120,50) );
@@ -1433,8 +1437,8 @@ private class ConsumeKeyAdapter extends     KeyAdapter
        }
        else
        {
-         image_Jpanel.setNamedColorModel( action, true );
-         color_scale_image.setNamedColorModel( action, true );
+         image_Jpanel.setNamedColorModel( action, true, true );
+         color_scale_image.setNamedColorModel( action, true, true );
          getState().set_String( ViewerState.COLOR_SCALE, action );
        }
     }
