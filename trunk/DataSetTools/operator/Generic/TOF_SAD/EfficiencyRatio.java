@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/08/19 19:05:22  rmikk
+ * -Fixed an error
+ * -Renamed  Data from the flood run, sensory data.
+ *
  * Revision 1.6  2003/07/31 15:46:27  dennis
  * Set titles on returned DataSets containing the summed area detector
  * spectrum and the efficiency ratio.  Added log messages to these
@@ -104,7 +108,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
    *  @param  mon_ds   DataSet containing monitor data for the specified 
    *                   run.
    *
-   *  @param  eff_ds   DataSet containing the efficiencies of the area
+   *  @param  sens_ds  DataSet containing the sensitivities of the area
    *                   detector pixels.
    *
    *  @param  x_center The offset in the x direction of the beam center
@@ -121,7 +125,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
    */
   public EfficiencyRatio( DataSet ds, 
                           DataSet mon_ds,
-                          DataSet eff_ds,
+                          DataSet sens_ds,
                           float   x_center, 
                           float   y_center, 
                           float   radius,
@@ -131,7 +135,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
     parameters = new Vector();
     addParameter( new Parameter("Cadmium Mask Histogram", ds) );
     addParameter( new Parameter("Cadmium Mask Monitor", mon_ds) );
-    addParameter( new Parameter("Detector Efficiencies", eff_ds) );
+    addParameter( new Parameter("Detector Sensitivities", sens_ds) );
     addParameter( new Parameter("X(cm) offset of beam", new Float(x_center)));
     addParameter( new Parameter("Y(cm) offset of beam", new Float(y_center)));
     addParameter( new Parameter("Radius to use", new Float(radius)));
@@ -182,7 +186,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
     Res.append(" mask upstream from monitor 1 and the beam stop removed.");
     Res.append("@param mon_ds - ataSet containing monitor data for");
     Res.append(" the specified run.");
-    Res.append("@param eff_ds - DataSet containing the efficiencies of");
+    Res.append("@param sens_ds - DataSet containing the sensitivities of");
     Res.append(" the area detector pixels.");
     Res.append("@param x_center - The offset in the x direction of the beam");
     Res.append(" center from the center of the detector, in centimeters.");
@@ -272,7 +276,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
 
     DataSet ds         = (DataSet)(getParameter(0).getValue());
     DataSet mon_ds     = (DataSet)(getParameter(1).getValue());
-    DataSet eff_ds     = (DataSet)(getParameter(2).getValue());
+    DataSet sens_ds    = (DataSet)(getParameter(2).getValue());
     float   x_offset   = ((Float)(getParameter(3).getValue())).floatValue();
     float   y_offset   = ((Float)(getParameter(4).getValue())).floatValue();
     float   radius     = ((Float)(getParameter(5).getValue())).floatValue();
@@ -358,17 +362,17 @@ public class EfficiencyRatio extends GenericTOF_SAD
     // 
     // Get the efficiency Data (stored in array, indexed starting at 0
     //
-    int eff_grid_ids[] = Grid_util.getAreaGridIDs( eff_ds );
+    int eff_grid_ids[] = Grid_util.getAreaGridIDs( sens_ds );
 
     if ( eff_grid_ids.length < 1 )
-      return new ErrorString( "No Area Detectors in Efficiency DataSet" );
+      return new ErrorString( "No Area Detectors in Sensitivitiy DataSet" );
 
     if ( eff_grid_ids.length > 1 )
-      return new ErrorString("Too many Area Detectors in Efficiency DataSet: " +
+      return new ErrorString("Too many Area Detectors in Sensitivity DataSet: " +
                               IntList.ToString( eff_grid_ids )          );
 
     UniformGrid eff_grid = 
-                   (UniformGrid)Grid_util.getAreaGrid(ds, eff_grid_ids[0]);
+                   (UniformGrid)Grid_util.getAreaGrid(sens_ds, eff_grid_ids[0]);
 
     int n_rows = eff_grid.num_rows();
     int n_cols = eff_grid.num_cols();
