@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.104  2002/07/02 17:05:16  pfpeterson
+ *  Added public string constants for lambda, angstrom, and inv(angstrom).
+ *
  *  Revision 1.103  2002/06/28 13:38:42  rmikk
  *  -Uses the NEW status pane.  The new status pane includes not only the text area but now the scroll bars and buttons.
  *    These features do not need to be added by the standalone ISAW application.
@@ -438,6 +441,10 @@ public class Isaw
   implements Serializable, IObserver
 {
      
+  public static final String Angstrom    = "\u00c5";
+  public static final String InvAngstrom = "Inv("+Angstrom+")";
+  public static final String Lambda      = "\u03bb";
+
   private static final String TITLE              = "ISAW";
     //private static final String VERSION            = "Release 1.2";
 
