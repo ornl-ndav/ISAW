@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.40  2005/01/28 19:28:22  dennis
+ *  Added category Utils->Tests
+ *
  *  Revision 1.39  2005/01/20 21:51:43  dennis
  *  Fixed minor javadoc error.
  *
@@ -104,8 +107,8 @@
  *  this change.
  *
  *  Revision 1.20  2002/12/02 17:27:26  pfpeterson
- *  Moved the default documentation into a 'public static final String' so it can be
- *  checked against by outside classes.
+ *  Moved the default documentation into a 'public static final String' so 
+ *  it can be checked against by outside classes.
  *
  *  Revision 1.19  2002/11/27 23:16:15  pfpeterson
  *  standardized header
@@ -203,6 +206,9 @@ abstract public class Operator implements Serializable
    
    public static final String[] UTILS_EXAMPLES = {"operator","Utils",
                                                              "Examples"};
+   
+   public static final String[] UTILS_TESTS = {"operator","Utils", 
+                                                          "Tests"};
    
    public static final String[] UTILS_DATA_SET = {"operator","Utils",
                                                              "DataSet"};
