@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.61  2003/07/16 16:28:09  bouzekc
+ * Now handles command line arguments in this base class.
+ *
  * Revision 1.60  2003/07/14 20:56:09  bouzekc
  * Moved the initialization of fileChooser and the saving
  * of the files to private methods.  Made the exception
@@ -630,12 +633,8 @@ public abstract class Wizard implements PropertyChangeListener {
    * @param saveFile The Wizard Save File (.wsf) to use.
    */
   public void executeNoGUI( String saveFile ) {
-    this.setIgnorePropertyChanges( true );
-
     //load the data from the file
     loadForms( new File( saveFile ) );
-
-    this.setIgnorePropertyChanges( false );
     exec_forms( forms.size(  ) - 1 );
   }
 
@@ -717,10 +716,6 @@ public abstract class Wizard implements PropertyChangeListener {
       return false;
     }
 
-    //set the property change checking for the Wizard to false, otherwise it
-    //messes up our loading of valid result parameters
-    this.setIgnorePropertyChanges( true );
-
     loadForms( f );
 
     int lastValidNum = getLastValidFormNum(  );
@@ -732,10 +727,6 @@ public abstract class Wizard implements PropertyChangeListener {
     }
 
     this.populateViewMenu(  );
-
-    //now we want to return to a state where the Wizard can listen to
-    //property changes
-    this.setIgnorePropertyChanges( false );
 
     return true;
   }
@@ -842,6 +833,45 @@ public abstract class Wizard implements PropertyChangeListener {
       form_label.setText( f.getTitle(  ) );
     } else {
       form_label.setText( "Form " + ( index + 1 ) + ": " + f.getTitle(  ) );
+    }
+  }
+
+  /**
+   * This method tries take away some of the tedious work of handling command
+   * line options when running the Wizard.
+   *
+   * @param argv[] The String array of command line arguments that is sent to
+   *        the main() method of the derived Wizards.
+   */
+  public void wizardLoader( String[] argv ) {
+    String helpMessage = "Options\t\tDescription\t\t\tCommand line input\n" +
+      "#1:\t\tLoad a \"fresh\" Wizard\t\tNo options needed\n" +
+      "#2:\t\tRun without a GUI\t\t--nogui [WizardSaveFile]\n" +
+      "#3:\t\tLoad with a template or \n" +
+      "\t\tpreviously saved file\t\t[WizardSaveFile]\n";
+
+    if( argv.length == 0 ) {
+      this.showForm( 0 );
+    } else if( argv.length == 1 ) {
+      if( argv[0].equals( "--help" ) || argv[0].equals( "-h" ) ) {
+        System.out.println( helpMessage );
+      } else if( argv[0].startsWith( "-" ) ) {
+        //tried to specify an option with no arguments
+        System.out.println( helpMessage );
+      } else {
+        //assume everything is OK
+        this.loadForms( new File( argv[0] ) );
+        this.showForm( 0 );
+      }
+    } else if( argv.length == 2 ) {
+      if( argv[0].equals( "--nogui" ) ) {
+        this.executeNoGUI( argv[1] );
+      } else {
+        System.out.println( helpMessage );
+      }
+    } else {
+      //not usable input.  Print a help message.
+      System.out.println( helpMessage );
     }
   }
 
@@ -1474,7 +1504,9 @@ public abstract class Wizard implements PropertyChangeListener {
 
   /**
    * Loads Forms from a file.  It actually just loads the saved IParameterGUI
-   * values into the Wizard's Forms' parameters.
+   * values into the Wizard's Forms' parameters.  This method also sets the
+   * Wizard to ignore property changes while the Forms are being loaded.  This
+   * is necessary for correct parameter validation.
    *
    * @param file The Wizard Save File to load information from.
    */
@@ -1485,6 +1517,9 @@ public abstract class Wizard implements PropertyChangeListener {
     FileReader fr  = null;
 
     try {
+      //set the property change checking for the Wizard to false, otherwise it
+      //messes up our loading of valid result parameters
+      this.setIgnorePropertyChanges( true );
       fr   = new FileReader( file );
 
       good = fr.read(  );
@@ -1499,9 +1534,14 @@ public abstract class Wizard implements PropertyChangeListener {
       convertXMLtoParameters( s );
     } catch( IOException e ) {
       JOptionPane.showMessageDialog( 
-        save_frame, "Error loading file.  Does the file match the Wizard?",
-        "ERROR", JOptionPane.ERROR_MESSAGE );
+        save_frame,
+        "Error loading " + file.toString(  ) +
+        ".  Is that file for this Wizard?", "ERROR", JOptionPane.ERROR_MESSAGE );
     } finally {
+      //now we want to return to a state where the Wizard can listen to
+      //property changes
+      this.setIgnorePropertyChanges( false );
+
       if( fr != null ) {
         try {
           fr.close(  );
