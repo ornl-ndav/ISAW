@@ -31,6 +31,12 @@
  *
  *
  *  $Log$
+ *  Revision 1.18  2003/07/09 14:39:40  dennis
+ *  The getI(x) method returns the index of the "Least Upper Bound"
+ *  of x in the x-values of this XScale.  The new method getI_GLB(x)
+ *  returns the "Greatest Lower Bound" of x in the x-values of this
+ *  XScale.
+ *
  *  Revision 1.17  2003/02/24 13:33:54  dennis
  *  Added method restrict() to restrict an XScale to the intersection
  *  of the XScale and a ClosedInterval.
@@ -240,7 +246,8 @@ abstract public class XScale implements Serializable
 
 
   /**
-   *  Get the position of the specified x-value in this XScale.
+   *  Get the position (or index of the LUB) of the specified x-value in
+   *  this XScale.
    *
    *  @param  x    The x value to find in the "list" of x values represented
    *               by this x scale.
@@ -251,8 +258,36 @@ abstract public class XScale implements Serializable
    *          the index of the first x that is greater than or equal to the 
    *          specified x.  If the specified x value is above the end of 
    *          the x scale, the number of points in the x scale is returned.
+   *          This is the index of the Least Upper Bound (chosen from the
+   *          list of values in the XScale) for the specified x_value.
    */
   abstract public int getI( float x );
+
+
+  /**
+   *  Get the position (or index of the GLB) of the specified x-value in this 
+   *  XScale.
+   *
+   *  @param  x_value   The x value to find in the "list" of x values 
+   *                    represented by this x scale.
+   *
+   *  @return The position "i" in the list of x-values, where the specified
+   *          x occurs, if it is in the list.  If the specified x is greater 
+   *          than or equal to the first x in the "list", this function returns
+   *          the index of the last x that is less than or equal to the
+   *          specified x.  If the specified x value is below the start of
+   *          the x scale, -1 is returned.
+   *          This is the index of the Greatest Lower Bound (chosen from the
+   *          list of values in the XScale) for the specified x_value.
+   */
+  public int getI_GLB( float x_value ) 
+  {
+    int position = getI( x_value );
+    if ( getX( position ) == x_value )
+      return position;
+    else
+      return position - 1;
+  }
 
 
   /**
