@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.38  2002/12/16 20:43:45  pfpeterson
+ * Fixed problem where execOneLine.getSHOp did not find operators where subclassing
+ * happened with the parameters. This was fixed by changing a comparison of classes
+ * using 'equals' to a comparison using 'instanceof'. Now accepts Integers will be
+ * accepted as Floats. Also changed a variable name to make it more clear to the
+ * people reading the source.
+ *
  * Revision 1.37  2002/11/27 23:12:10  pfpeterson
  * standardized header
  *
@@ -2176,7 +2183,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         int i = SH.getOperatorPosition( Command );
         if( i < 0)
             return null;
-        int j = i;
+        int j = 0;
         boolean done = false;
         boolean found = false;
         while( (!done) && (!found ) ){
@@ -2185,13 +2192,15 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             if( n == Args.size()){
                 found = true;
                 for( j = 0; (j < n) && found; j++){
-                    Object P = SH.getOperatorParameter( i , j );
-                    if( P == null){
+                    Object param = SH.getOperatorParameter( i , j );
+                    if( param == null){
                     }else if( (Args.elementAt( j ) instanceof String)
-                              &&(P instanceof SpecialString)){
+                              &&(param instanceof SpecialString)){
                     }else if( (Args.elementAt(j) instanceof  Integer)
-                              &&(P instanceof  Float)){
-                    }else if(Args.elementAt(j).getClass().equals(P.getClass())){
+                              &&(param instanceof  Float)){
+                    }else if( (Args.elementAt(j) instanceof  Float)
+                              &&(param instanceof  Integer)){
+                    }else if(Args.elementAt(j).getClass().isInstance(param)){
                     }else found = false; 
                 }
             }
