@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/12/12 17:29:19  rmikk
+ * Fixed an error that assumed ALL strings end in (char)0
+ *
  * Revision 1.2  2003/11/23 23:49:22  rmikk
  * Implemented the method CreateDetectorPositionAttribute
  *
@@ -193,6 +196,7 @@ public class ConvertDataTypes{
     char[] one0= new char[1];
     one0[0] = 0;
     int n = countt( L,one0,0,L.length);
+    if( n <=0) n++;
     String[] Res = new String[n];
     int k=0;
     for( int i=0; i < n; i++){
