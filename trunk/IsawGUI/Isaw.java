@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.49  2001/08/02 19:06:27  neffk
+ *  added DB_IMPORT_MI, a menu item to pops up a browser to search
+ *  through ANL's database of past experiments.
+ *
  *  Revision 1.48  2001/07/31 19:47:40  neffk
  *  adds Isaw.java as a listener when new live data clients are created.
  *  also, changed some formatting, finished removing the 'Option' menu.
@@ -245,6 +249,7 @@ public class Isaw
   private static final String LOAD_ISAW_DATA_MI  = "Load ISAW Data";
   private static final String SAVE_ISAW_DATA_MI  = "Save ISAW Data";
   private static final String GSAS_EXPORT_MI     = "Export GSAS File";
+  private static final String DB_IMPORT_MI       = "Import from Database";
   private static final String EXIT_MI            = "Exit";
 
   private static final String EDIT_M             = "Edit";
@@ -322,6 +327,7 @@ public class Isaw
   private static final String SAND_URL   = "http://www.pns.anl.gov/SAND/";
   private static final String SCD_URL    = "http://www.pns.anl.gov/SCD/";
   private static final String SEPD_URL   = "http://www.pns.anl.gov/SEPD/";
+  private static final String DB_URL     = "http://www.pns.anl.gov/ISAW/";
 
   JDataTree jdt;
   JPropertiesUI jpui;
@@ -433,6 +439,7 @@ public class Isaw
     JMenuItem fileLoadDataset = new JMenuItem( LOAD_ISAW_DATA_MI );
     JMenuItem fileSaveData = new JMenuItem( SAVE_ISAW_DATA_MI );
     JMenuItem fileSaveDataAs = new JMenuItem( GSAS_EXPORT_MI );
+    JMenuItem dbload = new JMenuItem( DB_IMPORT_MI );
     JMenuItem fileExit = new JMenuItem( EXIT_MI );
 
 
@@ -507,6 +514,8 @@ public class Isaw
     fMenu.add(fileSaveData);
     fMenu.add(fileSaveDataAs);
     fMenu.addSeparator();
+    fMenu.add(dbload);
+    fMenu.addSeparator();
     fMenu.add(fileExit);
  
     eMenu.add(removeSelectedNode);
@@ -555,14 +564,16 @@ public class Isaw
     vMenu.add(instrumentInfoView);         
       
     hMenu.add(helpISAW);
-    fileExit.addActionListener(new MenuItemHandler());
-    Runfile.addActionListener(new LoadMenuItemHandler());
-    LiveData.addActionListener(new LoadMenuItemHandler());
+    fileExit.addActionListener(       new MenuItemHandler()        );
+    Runfile.addActionListener(        new LoadMenuItemHandler()    );
+    LiveData.addActionListener(       new LoadMenuItemHandler()    );
 
-    script_loader.addActionListener(new ScriptLoadHandler(this));
+    script_loader.addActionListener(  new ScriptLoadHandler(this)  );
 
-    fileSaveData.addActionListener(new MenuItemHandler());
-    fileSaveDataAs.addActionListener(new MenuItemHandler());
+    fileSaveData.addActionListener(   new MenuItemHandler()        );
+    fileSaveDataAs.addActionListener( new MenuItemHandler()        );
+    dbload.addActionListener(         new MenuItemHandler()        );
+    
     
     graphView.addActionListener(new MenuItemHandler()); 
          
@@ -754,6 +765,8 @@ public class Isaw
        if( s.equals(CLEAR_SELECTION_MI) )
          jdt.clearSelections();
  
+
+
 
       if( s.equals(SET_GLOBAL_ATTR_MI) )
       {   
@@ -950,7 +963,7 @@ public class Isaw
             FileDialog fc = new FileDialog(  new Frame(), 
                                              title, 
                                              FileDialog.SAVE  );
-            fc.setDirectory( "C:\\" );
+            fc.setDirectory(  System.getProperty( "user.home" )  );
             fc.show();
                         
             File f = new File(  fc.getDirectory(), fc.getFile()  );
@@ -969,6 +982,15 @@ public class Isaw
                        
 
 
+                                  //browse ANL database for data files.
+                                  //in the future, this menu item probably
+                                  //should actually import the files
+      if( s.equals(DB_IMPORT_MI) )
+      {
+        BrowserControl bc = new BrowserControl();
+        bc.displayURL( DB_URL );
+      }
+
                                   //loads a file that was stored using
                                   //ISAW's proprietary file structure (?)
                                   //instead of other neutron data formats.
@@ -984,7 +1006,7 @@ public class Isaw
           FileDialog fc = new FileDialog(  new Frame(), 
                                            msg, 
                                            FileDialog.LOAD  );
-          fc.setDirectory("C:\\");
+          fc.setDirectory(  System.getProperty( "user.home" )  );
           fc.show();
           File f = new File( fc.getDirectory(), fc.getFile() );
           String filename = f.toString();
