@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/07/17 18:54:44  rmikk
+ * Fixed the Group Homes to allow semicolons
+ *
  * Revision 1.8  2003/06/27 17:49:49  dennis
  * Fixed problem: user.home/ISAW/Scripts directory did not appear
  * correctly on Macros menu. (Ruth)
@@ -153,7 +156,7 @@ public class IssScript extends Script{
     }
 
     // initialize the hashtable if necessary
-    if(HOMES==null) initHomes();
+    if(HOMES == null) initHomes();
 
     // try getting value from filename
     if(this.filename.equals(UNKNOWN)){
@@ -297,16 +300,46 @@ public class IssScript extends Script{
     addDir(Eliminate1TrailingSlash(S)+"/ISAW","User Scripts");
 
     // group home directories
-    addDirs(Eliminate1TrailingSlash(SharedData.getProperty("GROUP_HOME")),"Group Home");
+    String[] GroupDir = getGroupDirs(SharedData.getProperty("GROUP_HOME"));
+    for( int i = 0; i  < GroupDir.length; i++){
+      addDirs(Eliminate1TrailingSlash( GroupDir[i]),"Group Home");  
+    }
     int group=1;
     String group_home=Eliminate1TrailingSlash(SharedData.getProperty("GROUP"+group+"_HOME"));
     while(group_home!=null && group_home.length()>0){
+      GroupDir = getGroupDirs(group_home);
+      for( int i = 0; i  < GroupDir.length; i++){
+           addDirs(Eliminate1TrailingSlash( GroupDir[i]), "GROUP"+group+"_HOME");   
+      }
       addDirs(group_home,"Group"+group+" Scripts");
       group=group+1;
       group_home=Eliminate1TrailingSlash(SharedData.getProperty("GROUP"+group+"_HOME"));
     }
   }
 
+  private static String[] getGroupDirs( String GroupName){
+    if( GroupName == null)
+      return new String[0];
+    int nsemicolons = 0;
+    int i;
+    for( i = GroupName.indexOf( ";", 0); (i > 0) && ( i< GroupName.length()); i++){
+       nsemicolons++;
+       i = GroupName.indexOf( ";",  i + 1);
+    }
+    String[] Res = new String[ nsemicolons + 1];
+
+    int j = 0;
+    int k = 0;
+    for( i = GroupName.indexOf( ";", 0); (i > 0) && ( i< GroupName.length()); i++){
+       Res[k] = GroupName.substring( j, i);
+       j = i+1;
+       i = GroupName.indexOf( ";", j);
+       k++;
+    }
+   Res[k] = GroupName.substring(j);
+   return Res;
+      
+  }
   /**
    * Add a set of directories to the hashtable of directories. Names
    * in the hashtable take precedence over new ones.
@@ -345,9 +378,9 @@ public class IssScript extends Script{
       if(! line.startsWith("$") ) continue;
       if( line.length() <2) continue;
       line = line.substring( 1).trim();
-      int index=line.toUpperCase().indexOf(name);
-      if( index!=0 ) continue;
-      index=line.indexOf("=");
+      int index = line.toUpperCase().indexOf(name);
+      if( index != 0 ) continue;
+      index = line.indexOf("=");
       if( index < 0)  continue;
       if( line.substring( 0, index).trim().length() != name.length())
          continue;
