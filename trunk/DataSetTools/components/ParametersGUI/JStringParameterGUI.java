@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/08/06 20:16:59  rmikk
+ *  Adjusted this to take care of the IntListString parameter
+ *
  *  Revision 1.3  2001/06/26 18:37:43  dennis
  *  Added Copyright and GPL license.
  *  Removed un-needed imports and improved
@@ -42,7 +45,7 @@ import javax.swing.*;
 import DataSetTools.operator.*;
 import java.awt.*;
 import java.io.*;
-
+import DataSetTools.util.*;
 
 public class JStringParameterGUI extends JParameterGUI implements Serializable
 {
@@ -52,8 +55,10 @@ public class JStringParameterGUI extends JParameterGUI implements Serializable
     public JStringParameterGUI(Parameter parameter)
     { 
        super(parameter);
-       
-       String value = ((String)parameter.getValue()).toString();
+       String value;
+      
+           value = ((String)parameter.getValue()).toString();
+     
        JLabel label = new JLabel(parameter.getName());
        label.setPreferredSize(new Dimension(170,25));
        stringText = new JTextField(20);
@@ -75,7 +80,16 @@ public class JStringParameterGUI extends JParameterGUI implements Serializable
     {
         String s = stringText.getText();
         String value = new String(s);
+        
         parameter.setValue(value);
         return parameter;
+        
+       
     }
 }
+
+
+
+
+
+
