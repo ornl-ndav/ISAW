@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2003/12/19 14:30:37  rmikk
+ * Fixed error when a nexus file has two NXentries.
+ *
  * Revision 1.20  2003/12/15 14:39:22  rmikk
  * Fixed a null pointer exception
  * Changed the getDataSetInfo method to correspond to the hasInformation interface
@@ -419,11 +422,12 @@ public class ExtGetDS{
   //  The Node, DefaultID's and NXentry are saved in a DataSetInfo Structure
   //  The DataSetInfo Structure is an internal class in this file
   private void setUpDataSetList(){
-    String labels=";";
+    
     setupDSs = true;
     int startID = 1;
     //--------------------- Get all Monitors ------------------------
     for( int i = 0; i< node.getNChildNodes();i++){
+      String labels=";";
       NxNode nn=node.getChildNode(i);
       if( nn.getNodeClass().equals( "NXentry" ) ){
         // Get monitors first
