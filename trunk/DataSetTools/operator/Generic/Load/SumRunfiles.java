@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/03/21 15:51:53  dennis
+ *  Changed MONITOR_EXTENT_FACTOR to LOW_E_EXTENT factor
+ *  (from tof_data_calc) when comparing energies to
+ *  decide whether or not to include runs.
+ *
  *  Revision 1.6  2003/01/13 17:47:54  dennis
  *  Added getDocumentation() method. (Chris Bouzek)
  *  Added javadocs to getResult(). (Dennis Mikkelson)
@@ -384,9 +389,9 @@ public class SumRunfiles extends    GenericLoad
                                       // runfile
        {
          mon_1[0] = new HistogramDataPeak( datasets[0].getData_entry(0),
-                               tof_data_calc.MONITOR_PEAK_EXTENT_FACTOR );
+                               tof_data_calc.LOW_E_EXTENT );
          mon_2[0] = new HistogramDataPeak( datasets[0].getData_entry(1),
-                               tof_data_calc.MONITOR_PEAK_EXTENT_FACTOR );
+                               tof_data_calc.LOW_E_EXTENT );
 
          mon_1[0].setEvaluationMode( IPeak.PEAK_ONLY );
          float area_1 = mon_1[0].Area( );
@@ -431,9 +436,9 @@ public class SumRunfiles extends    GenericLoad
                                           // the values from the first runfile
            {
              mon_1[i] = new HistogramDataPeak(monitor_ds.getData_entry(0),
-                                  tof_data_calc.MONITOR_PEAK_EXTENT_FACTOR );
+                                  tof_data_calc.LOW_E_EXTENT );
              mon_2[i] = new HistogramDataPeak(monitor_ds.getData_entry(1),
-                                  tof_data_calc.MONITOR_PEAK_EXTENT_FACTOR );
+                                  tof_data_calc.LOW_E_EXTENT );
 
              mon_1[i].setEvaluationMode( IPeak.PEAK_ONLY );
              float area = mon_1[i].Area( );
@@ -538,7 +543,7 @@ public class SumRunfiles extends    GenericLoad
         {
           HistogramDataPeak peak = new HistogramDataPeak(
                                    datasets[0].getData_entry(mon),
-                                   tof_data_calc.MONITOR_PEAK_EXTENT_FACTOR );
+                                   tof_data_calc.LOW_E_EXTENT );
           peak.PrintPeakInfo( "SUM: Monitor " + (mon+1), IPeak.PEAK_ONLY );
 
           float position = peak.getPosition();
