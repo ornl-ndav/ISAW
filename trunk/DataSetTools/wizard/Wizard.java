@@ -32,6 +32,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.71  2003/08/27 23:10:41  bouzekc
+ * Now implements Serializable.  Added code to set a projects directory using
+ * a config file in the user's home directory.  Renamed private method
+ * ShowFormHelpMessage to showFormHelpMessage.  Added a menu to easily set the
+ * projects directory.  Parameters which meet the previously existing type
+ * criteria now are added to the View menu, regardless of whether they are
+ * valid or not.  Moved the return out of the finally block in SwingWorker's
+ * construct method.
+ *
  * Revision 1.70  2003/08/16 01:34:56  bouzekc
  * Is now more aggressive when trying to determine if a File exists in
  * convertXMLtoParameters().
@@ -423,10 +432,9 @@ import javax.swing.*;
  *
  * @see Form
  */
-public abstract class Wizard implements PropertyChangeListener {
+public abstract class Wizard implements PropertyChangeListener, Serializable {
   //~ Static fields/initializers ***********************************************
 
-  // string constants for the menus and buttons
   private static final String EXIT_COMMAND        = "Exit";
   private static final String FIRST_COMMAND       = " << ";
   private static final String BACK_COMMAND        = " < ";
@@ -442,46 +450,44 @@ public abstract class Wizard implements PropertyChangeListener {
   private static final String SAVE_WIZARD_COMMAND = "Save Wizard State";
   private static final String LOAD_WIZARD_COMMAND = "Load Wizard State";
   private static final String VIEW_MENU           = "View Parameters";
-
-  // debugging
-  private static boolean DEBUG = false;
+  private static final String SET_PROJECT_DIR     = "Set Project Directory";
+  private static boolean DEBUG                    = false;
 
   //~ Instance fields **********************************************************
 
-  private final int FORM_PROGRESS = 100;
-  private final int STRUT_HEIGHT  = 5;
-  private final int EXEC_ALL_IND  = 0;
-  private final int EXEC_IND      = 1;
-  private final int CLEAR_IND     = 2;
-  private final int FIRST_IND     = 3;
-  private final int BACK_IND      = 4;
-  private final int NEXT_IND      = 5;
-  private final int LAST_IND      = 6;
-  private final int CLEAR_ALL_IND = 7;
-
-  // default help and about messages
-  private String help_message  = "Help not available for Wizard";
-  private String about_message = "Default Help About Message";
-  private boolean standalone   = true;
-
-  // instance variables
-  private JFrame frame;
+  private final int FORM_PROGRESS  = 100;
+  private final int STRUT_HEIGHT   = 5;
+  private final int EXEC_ALL_IND   = 0;
+  private final int EXEC_IND       = 1;
+  private final int CLEAR_IND      = 2;
+  private final int FIRST_IND      = 3;
+  private final int BACK_IND       = 4;
+  private final int NEXT_IND       = 5;
+  private final int LAST_IND       = 6;
+  private final int CLEAR_ALL_IND  = 7;
+  private final String CONFIG_FILE = SharedData.getProperty( "user.home" ) +
+    "/" + "wizard.cfg";
+  private String help_message                          = "Help not available for Wizard";
+  private String about_message                         = "Default Help About Message";
+  private boolean standalone                           = true;
+  private transient JFrame frame;
   private String title;
   protected Vector forms;
   private int form_num;
-  private JPanel form_panel;
-  private JLabel form_label;
-  private PropChangeProgressBar formProgress;
-  private JProgressBar wizProgress;
-  private JMenu view_menu;
-  private CommandHandler command_handler;
+  private transient JPanel form_panel;
+  private transient JLabel form_label;
+  private transient PropChangeProgressBar formProgress;
+  private transient JProgressBar wizProgress;
+  private transient JMenu view_menu;
+  private transient CommandHandler command_handler;
   private boolean modified;
-  private JFrame save_frame;
-  private JFileChooser fileChooser;
-  private File save_file;
-  private AbstractButton[] wizButtons;
+  private transient JFrame save_frame;
+  private transient JFileChooser fileChooser;
+  private transient File save_file;
+  private transient AbstractButton[] wizButtons;
   private boolean ignorePropChanges;
-  private WizardFileFilter wizFilter;
+  private transient WizardFileFilter wizFilter;
+  private String projectsDirectory;
 
   //~ Constructors *************************************************************
 
@@ -514,6 +520,8 @@ public abstract class Wizard implements PropertyChangeListener {
     command_handler   = new CommandHandler( this );
     save_frame        = new JFrame( "Save Form as..." );
     wizFilter         = new WizardFileFilter(  );
+
+    tryToLoadProjectsDir(  );
   }
 
   //~ Methods ******************************************************************
@@ -629,6 +637,20 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
+   * Sets the directory for the Wizard save files to go into.
+   */
+  public void setProjectsDirectory( String dir ) {
+    projectsDirectory = dir;
+  }
+
+  /**
+   * Gets the directory for the Wizard save files to go into.
+   */
+  public String getProjectsDirectory(  ) {
+    return projectsDirectory;
+  }
+
+  /**
    * Add another form to the list of forms maintained by this wizard.
    *
    * @param f The Form to be added to the list.
@@ -659,6 +681,11 @@ public abstract class Wizard implements PropertyChangeListener {
       if( save_me == 0 ) {
         save(  );
       }
+    }
+
+    //save the projects directory
+    if( getProjectsDirectory(  ) != null ) {
+      TextWriter.writeASCII( CONFIG_FILE, getProjectsDirectory(  ) );
     }
 
     System.exit( 0 );
@@ -1186,25 +1213,6 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   * Shows the JavaHelp HTML page for the current form.
-   */
-  private void ShowFormHelpMessage(  ) {
-    HTMLizer form_htmlizer = new HTMLizer(  );
-    String html            = form_htmlizer.createHTML( this.getCurrentForm(  ) );
-    JFrame help_frame      = new JFrame( title );
-    Dimension screen_size  = Toolkit.getDefaultToolkit(  )
-                                    .getScreenSize(  );
-
-    help_frame.setSize( 
-      new Dimension( 
-        ( int )( screen_size.getWidth(  ) / 2 ),
-        ( int )( screen_size.getHeight(  ) / 2 ) ) );
-    help_frame.getContentPane(  )
-              .add( new JScrollPane( new JEditorPane( "text/html", html ) ) );
-    help_frame.show(  );
-  }
-
-  /**
    * Show the specified String in the help frame.
    *
    * @param str The message to display in a dialog.
@@ -1431,9 +1439,11 @@ public abstract class Wizard implements PropertyChangeListener {
     fileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
     fileChooser.setFileFilter( wizFilter );
 
-    //start out in the current directory
-    fileChooser.setCurrentDirectory( 
-      new File( SharedData.getProperty( "user.dir" ) ) );
+    //start out in the projects directory
+    if( this.getProjectsDirectory(  ) != null ) {
+      fileChooser.setCurrentDirectory( 
+        new File( this.getProjectsDirectory(  ) ) );
+    }
   }
 
   /**
@@ -1449,6 +1459,26 @@ public abstract class Wizard implements PropertyChangeListener {
     wizProgress.setMaximum( forms.size(  ) );
     wizProgress.setValue( 0 );
     formProgress.setValue( 0 );
+  }
+
+  /**
+   * Launches a JFileChooser so the user can set the project directory.
+   */
+  private void launchProjectChooser(  ) {
+    JFileChooser projChooser = new JFileChooser(  );
+
+    projChooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
+
+    if( getProjectsDirectory(  ) != null ) {
+      projChooser.setCurrentDirectory( new File( getProjectsDirectory(  ) ) );
+    }
+
+    int result = projChooser.showOpenDialog( 
+        new JFrame( "Select Project Directory" ) );
+
+    if( result != JFileChooser.CANCEL_OPTION ) {
+      setProjectsDirectory( projChooser.getSelectedFile(  ).toString(  ) );
+    }
   }
 
   /**
@@ -1516,35 +1546,38 @@ public abstract class Wizard implements PropertyChangeListener {
    * @return Array of JMenus to add to a menu bar.
    */
   private JMenu[] makeMenu(  ) {
-    JMenu[] menuList = new JMenu[3];
-    JMenu file_menu  = new JMenu( "File" );
-    JMenu help_menu  = new JMenu( "Help" );
+    JMenu[] menuList   = new JMenu[4];
+    JMenu file_menu    = new JMenu( "File" );
+    JMenu project_menu = new JMenu( "Project Directory" );
+    JMenu help_menu    = new JMenu( "Help" );
 
-    view_menu        = new JMenu( VIEW_MENU );
+    view_menu          = new JMenu( VIEW_MENU );
 
     JMenuItem help_about = new JMenuItem( HELP_ABOUT_COMMAND );
     JMenuItem wizard_help = new JMenuItem( WIZARD_HELP_COMMAND );
     JMenuItem form_help = new JMenuItem( FORM_HELP_COMMAND );
+    JMenuItem setDir   = new JMenuItem( SET_PROJECT_DIR );
+    JMenuItem save_wizard = new JMenuItem( SAVE_WIZARD_COMMAND );
+    JMenuItem load_wizard = new JMenuItem( LOAD_WIZARD_COMMAND );
+    JMenuItem exit_item = new JMenuItem( EXIT_COMMAND );
 
     help_menu.add( help_about );
     help_menu.addSeparator(  );
     help_menu.add( wizard_help );
     help_menu.add( form_help );
-
-    JMenuItem save_wizard = new JMenuItem( SAVE_WIZARD_COMMAND );
-    JMenuItem load_wizard = new JMenuItem( LOAD_WIZARD_COMMAND );
-    JMenuItem exit_item   = new JMenuItem( EXIT_COMMAND );
-
-    save_wizard.setEnabled( true );
-    load_wizard.setEnabled( true );
     file_menu.addSeparator(  );
     file_menu.add( save_wizard );
     file_menu.add( load_wizard );
     file_menu.addSeparator(  );
     file_menu.add( exit_item );
+    project_menu.add( setDir );
+
+    save_wizard.setEnabled( true );
+    load_wizard.setEnabled( true );
     menuList[0]   = file_menu;
     menuList[1]   = view_menu;
-    menuList[2]   = help_menu;
+    menuList[2]   = project_menu;
+    menuList[3]   = help_menu;
 
     help_about.addActionListener( command_handler );
     wizard_help.addActionListener( command_handler );
@@ -1553,13 +1586,14 @@ public abstract class Wizard implements PropertyChangeListener {
     view_menu.addActionListener( command_handler );
     save_wizard.addActionListener( command_handler );
     load_wizard.addActionListener( command_handler );
+    setDir.addActionListener( command_handler );
 
     return menuList;
   }
 
   /**
-   * Creates the view menu and listeners for all of the currently validated
-   * parameters in the current Form.
+   * Creates the view menu and listeners for certain types of parameters in the
+   * current Form.
    */
   private void populateViewMenu(  ) {
     JMenuItem jmi;
@@ -1572,23 +1606,82 @@ public abstract class Wizard implements PropertyChangeListener {
     view_menu.removeAll(  );
 
     for( int i = 0; i < f.getNum_parameters(  ); i++ ) {
-      iparam = ( IParameterGUI )f.getParameter( i );
+      iparam   = ( IParameterGUI )f.getParameter( i );
 
-      if( iparam.getValid(  ) ) {
-        val = iparam.getValue(  );
+      val = iparam.getValue(  );
 
-        /*semi-sophisticated attempt at being able to view
-           DataSets, Vectors of items, and files.  Things like
-           Strings and ints, which are easily viewable on the
-           Form, should not be sent to the ParameterViewer. */
-        if( 
-          ( iparam instanceof DataSetPG ) || ( iparam instanceof ArrayPG ) ||
-            ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ||
-            ( iparam instanceof StringPG && val instanceof String &&
-            ( ( ( String )val ).indexOf( '.' ) > 0 ) ) ) {
-          jmi = new JMenuItem( iparam.getName(  ) );
-          view_menu.add( jmi );
-          jmi.addActionListener( command_handler );
+      /*semi-sophisticated attempt at being able to view
+         DataSets, Vectors of items, and files.  Things like
+         Strings and ints, which are easily viewable on the
+         Form, should not be sent to the ParameterViewer. */
+      if( 
+        ( iparam instanceof DataSetPG ) || ( iparam instanceof ArrayPG ) ||
+          ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ||
+          ( iparam instanceof StringPG &&
+          ( val.toString(  )
+                 .indexOf( '.' ) > 0 ) ) ) {
+        jmi = new JMenuItem( iparam.getName(  ) );
+        view_menu.add( jmi );
+        jmi.addActionListener( command_handler );
+      }
+    }
+  }
+
+  /**
+   * Shows the JavaHelp HTML page for the current form.
+   */
+  private void showFormHelpMessage(  ) {
+    HTMLizer form_htmlizer = new HTMLizer(  );
+    String html            = form_htmlizer.createHTML( this.getCurrentForm(  ) );
+    JFrame help_frame      = new JFrame( title );
+    Dimension screen_size  = Toolkit.getDefaultToolkit(  )
+                                    .getScreenSize(  );
+
+    help_frame.setSize( 
+      new Dimension( 
+        ( int )( screen_size.getWidth(  ) / 2 ),
+        ( int )( screen_size.getHeight(  ) / 2 ) ) );
+    help_frame.getContentPane(  )
+              .add( new JScrollPane( new JEditorPane( "text/html", html ) ) );
+    help_frame.show(  );
+  }
+
+  /**
+   * Attempts to load the projects directory from a file.
+   *
+   * @return true if loaded successfully, false otherwise.
+   */
+  private boolean tryToLoadProjectsDir(  ) {
+    TextFileReader tfr = null;
+    StringBuffer s     = new StringBuffer(  );
+
+    try {
+      tfr = new TextFileReader( new FileReader( CONFIG_FILE ) );
+
+      while( !tfr.eof(  ) ) {
+        s.append( tfr.read_line(  ) );
+      }
+
+      setProjectsDirectory( s.toString(  ) );
+
+      return true;
+    } catch( IOException e ) {
+      System.err.println( 
+        "Error reading " + StringUtil.setFileSeparator( CONFIG_FILE ) );
+
+      return false;
+    } catch( NullPointerException ne ) {
+      System.err.println( 
+        "File " + StringUtil.setFileSeparator( CONFIG_FILE ) + " is empty." );
+
+      return false;
+    } finally {
+      if( tfr != null ) {
+        try {
+          tfr.close(  );
+          modified = false;
+        } catch( IOException e ) {
+          //let it drop on the floor
         }
       }
     }
@@ -1754,7 +1847,7 @@ public abstract class Wizard implements PropertyChangeListener {
         Form f = getCurrentForm(  );
 
         if( f != null ) {
-          ShowFormHelpMessage(  );
+          showFormHelpMessage(  );
         }
       } else if( command.equals( SAVE_WIZARD_COMMAND ) ) {
         save(  );
@@ -1762,6 +1855,8 @@ public abstract class Wizard implements PropertyChangeListener {
         load(  );
       } else if( command.equals( VIEW_MENU ) ) {
         populateViewMenu(  );
+      } else if( command.equals( SET_PROJECT_DIR ) ) {
+        launchProjectChooser(  );
       } else if( command.equals( EXIT_COMMAND ) ) {
         close(  );
       } else {
@@ -1797,8 +1892,6 @@ public abstract class Wizard implements PropertyChangeListener {
      * @return "Success" - unused.
      */
     public Object construct(  ) {
-      String message = "Success";
-
       //can't have users mutating the values!
       enableNavButtons( false, getCurrentFormNumber(  ) );
 
@@ -1807,6 +1900,8 @@ public abstract class Wizard implements PropertyChangeListener {
       try {
         //here is where the time intensive work is.
         exec_forms( formNum );
+
+        return "Success";
       } catch( Throwable e ) {
         //crashed hard when executing an outside Operator, Form, or Script
         //try to salvage what we can
@@ -1824,18 +1919,17 @@ public abstract class Wizard implements PropertyChangeListener {
             SharedData.getProperty( "user.dir" ) + "/wizard.err" );
 
         TextWriter.writeStackTrace( errFile, e );
-        message = "Failure";
 
         //reset the progress bars by re-showing the Form
         showForm( getCurrentFormNumber(  ) );
+
+        return "Failure";
       } finally {
         populateViewMenu(  );
 
         enableNavButtons( true, getCurrentFormNumber(  ) );
 
         this.enableFormParams( true );
-
-        return message;  //unused
       }
     }
 
