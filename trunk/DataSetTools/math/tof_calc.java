@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.22  2003/07/11 18:46:28  dennis
+ *  Added versions of makeEulerRotation() and makeEulerRotationInverse()
+ *  that produce the rotations as 3x3 arrays of doubles.
+ *
  *  Revision 1.21  2003/05/24 21:50:39  dennis
  *  Fixed spelling of method name TOFofDiffractometerQ().
  *
@@ -62,6 +66,8 @@
  */
 
 package DataSetTools.math;
+
+import DataSetTools.util.*;
 
 /**
  *  This contains basic conversions for time-of-flight neutron scattering
@@ -707,6 +713,65 @@ public static Tran3D makeEulerRotation( float phi, float chi, float omega )
    return omegaR;
 }
 
+/* ------------------------ makeEulerRotation ------------------------ */
+/**
+ *  Make the double precision rotation matrix representing rotation by Euler
+ *  angles chi, phi and omega.  This produces a matrix representing the
+ *  following sequence of rotations, applied in the order listed:
+ *
+ *  1. Rotate about the positive z-axis by phi
+ *  2. Rotate about the positive x-axis by chi
+ *  3. Rotate about the positive z-axis by omega
+ *
+ *  NOTE: All rotations follow a right hand rule and the coordinate system is
+ *  assumed to be right handed.  Rotation angles are specified in degrees.
+ *
+ *  @param phi    Angle to rotate about the +z-axis
+ *  @param chi    Angle to rotate (the rotated system) about the +x-axis
+ *  @param omega  Angle to rotate (the rotated system) about the +z-axis
+ *
+ *  @return The cumulative rotation matrix omegaRz * chiRx * phiRz,
+ *          which carries out these rotations, starting with rotation by
+ *          phi about the z-axis.
+ */
+public static double[][] makeEulerRotation( double phi, 
+                                            double chi, 
+                                            double omega )
+{
+   phi   *= Math.PI/180;
+   chi   *= Math.PI/180;
+   omega *= Math.PI/180;
+
+   double sin_phi = Math.sin( phi );
+   double cos_phi = Math.cos( phi );
+
+   double sin_chi = Math.sin( chi );
+   double cos_chi = Math.cos( chi );
+
+   double sin_omega = Math.sin( omega );
+   double cos_omega = Math.cos( omega );
+
+   double phiR[][] = {  { cos_phi, -sin_phi, 0 },
+                        { sin_phi,  cos_phi, 0 },
+                        {    0,        0,    1 } };
+
+   double chiR[][] = {  { 1,    0,        0    },
+                        { 0, cos_chi, -sin_chi },
+                        { 0, sin_chi,  cos_chi } };
+
+   double omegaR[][] = {  { cos_omega, -sin_omega, 0 },
+                          { sin_omega,  cos_omega, 0 },
+                          {    0,          0,      1 } };
+
+   // build the matrix product (omegaR * chiR * phiR).  When applied to a
+   // vector v as in  (omegaR * chiR * phiR)v, this has the effect of doing
+   // the rotation phiR first!.
+
+   double result[][] = LinearAlgebra.mult( omegaR, chiR );
+   result = LinearAlgebra.mult( result, phiR );
+   return result;
+}
+
 
 /* ---------------------- makeEulerRotationInverse -------------------- */
 /*
@@ -748,6 +813,47 @@ public static Tran3D makeEulerRotationInverse(float phi, float chi, float omega)
   return inverse;
 }
 
+/* ---------------------- makeEulerRotationInverse -------------------- */
+/*
+ *  Make the double precision rotation matrix that reverses rotation by Euler 
+ *  angles chi, phi and omega.  This produces a matrix representing the
+ *  following sequence of rotations, applied in the order listed:
+ *
+ *  1. Rotate about the positive z-axis by minus omega
+ *  2. Rotate about the positive x-axis by minus chi
+ *  3. Rotate about the positive z-axis by minus phi
+ *
+ *  NOTE: All rotations follow a right hand rule and the coordinate system is
+ *  assumed to be right handed.  Rotation angles are specified in degrees.
+ *  To use this to "unwind" the goniometer rotations on the SCD at IPNS with
+ *  the values of phi, chi and omega stored in the IPNS runfiles, use:
+ *
+ *     makeEulerRotationInverse(phi, chi, -omega)
+ *
+ *  @param phi    phi angle that the goniometer was rotated by about +z axis
+ *  @param chi    chi angle that the goniometer was rotated by about +x axis
+ *  @param omega  omega angle that the goniometer was rotated by about +z axis
+ *
+ *  @return The cumulative rotation matrix that reversed the rotations by
+ *          phi, chi and omega.  This returns the matrix product:
+ *
+ *          phiRz_inverse * chiRx_inverse * omegaRz_inverse
+ *
+ *          which which carries out these rotations, starting with rotation by
+ *          minus omega about the z-axis.
+ */
+public static double[][] makeEulerRotationInverse( double phi, 
+                                                   double chi, 
+                                                   double omega )
+{
+  double inverse[][] = makeEulerRotation( phi, chi, omega );
+
+                           // NOTE: A Rotation matrix is an orthogonal
+                           //       transformation and so it's transpose is
+                           //       it's inverse.
+  return LinearAlgebra.getTranspose( inverse );
+}
+
 
 /* --------------------------------- main -------------------------------- */
 /**
@@ -756,6 +862,36 @@ public static Tran3D makeEulerRotationInverse(float phi, float chi, float omega)
 
 public static void main( String args[] )
 {
+  int n_times = 100000;
+  ElapsedTime timer = new ElapsedTime();
+
+  timer.reset();
+  double d_rot[][] = null;
+  for ( int i = 0; i < n_times; i++ )
+    d_rot = makeEulerRotation( 25.0, 35.0, 45.0 );
+  System.out.println("Time to make double precision form: " + 
+                      timer.elapsed() / n_times ); 
+  System.out.println("Double precision Euler rotation = " );
+  LinearAlgebra.print( d_rot );
+
+  Tran3D s_rot = null;
+  timer.reset();
+  for ( int i = 0; i < n_times; i++ )
+    s_rot = makeEulerRotation( 25.0f, 35.0f, 45.0f );
+  System.out.println("Time to make single precision form: " + 
+                      timer.elapsed() / n_times ); 
+  System.out.println("Single precision Euler rotation (Tran3d) = ");
+  System.out.println("" + s_rot);
+
+  System.out.println("Double precision inverse Euler rotation = " );
+  d_rot = makeEulerRotationInverse( 25.0, 35.0, 45.0 );
+  LinearAlgebra.print( d_rot );
+
+  s_rot = makeEulerRotationInverse( 25.0f, 35.0f, 45.0f );
+  System.out.println("Tran3D = ");
+  System.out.println("" + s_rot);
+
+
   DetectorPosition det_pos = new DetectorPosition();
   det_pos.setCartesianCoords( 0, 0.32f, 0 ); 
 
