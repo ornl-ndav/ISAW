@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2004/01/24 20:57:51  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.17  2003/06/18 20:36:56  pfpeterson
  *  Changed calls for NxNodeUtils.Showw(Object) to
  *  DataSetTools.util.StringUtil.toString(Object)
@@ -81,7 +84,6 @@
 
 package DataSetTools.util;
 
-import DataSetTools.operator.*;
 import IsawHelp.HelpSystem.*;
 /**
  *  Objects of this class have one instance of objects that are to be shared

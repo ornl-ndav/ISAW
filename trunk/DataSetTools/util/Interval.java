@@ -29,6 +29,9 @@
 
  *
  * $Log$
+ * Revision 1.8  2004/01/24 20:54:24  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.7  2003/12/16 00:02:10  bouzekc
  * Removed unused imports.
  *
@@ -53,7 +56,6 @@ public class Interval
 {
   public static final String SEPARATOR = ":";
 
-  private int      defaultEndpoint = 0;
   private String   attr_type = null;
   private Endpoint low, high;
 
