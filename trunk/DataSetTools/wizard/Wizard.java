@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.41  2003/06/26 22:19:42  bouzekc
+ * Changed Wizard height to 75% of full screen to
+ * accomodate taller Forms.
+ *
  * Revision 1.40  2003/06/26 19:35:40  bouzekc
  * Shrunk Wizard opening size to 75% full screen width and
  * 60% full screen height.
@@ -812,11 +816,10 @@ public abstract class Wizard implements PropertyChangeListener {
 
     {
       int screenheight = ( int )(Toolkit.getDefaultToolkit(  ).getScreenSize(  )
-                                       .getHeight(  ) * 0.60f);
+                                       .getHeight(  ) * 0.75f);
       int screenwidth = ( int )(Toolkit.getDefaultToolkit(  ).getScreenSize(  )
                                       .getWidth(  ) * 0.75f);
 
-      //full screen
       frame.setBounds( 0, 0, screenwidth, screenheight );
     }
 
@@ -890,8 +893,6 @@ public abstract class Wizard implements PropertyChangeListener {
       tempBox.add( wizProgress );
       progress_panel.add( tempBox, gbc );
 
-      //progress_panel.add( formProgress,     gbc );
-      //progress_panel.add( wizProgress,     gbc );
       gbc.weightx     = 1.0;
       gbc.fill        = GridBagConstraints.NONE;
       gbc.gridwidth   = GridBagConstraints.REMAINDER;
