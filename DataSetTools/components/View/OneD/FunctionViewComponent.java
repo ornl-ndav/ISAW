@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.48  2004/03/12 22:35:32  serumb
+ *  Now uses IVirtualArrayList1D.
+ *
  *  Revision 1.47  2004/03/10 23:37:28  millermi
  *  - Changed IViewComponent interface, no longer
  *    distinguish between private and shared controls/
@@ -146,7 +149,7 @@
 package DataSetTools.components.View.OneD;
 
 import DataSetTools.components.ParametersGUI.*;
-import DataSetTools.components.View.*;  // IVirtualArray1D
+import DataSetTools.components.View.*;  // IVirtualArrayList1D
 import DataSetTools.components.View.TwoD.*;
 import DataSetTools.components.View.Transparency.*;  //Axis Overlays
 import DataSetTools.components.View.ViewControls.*;
@@ -229,7 +232,7 @@ public class FunctionViewComponent implements IViewComponent1D,
   
   public static final String GRAPHJPANEL        = "Graph JPanel";
   
-  private transient IVirtualArray1D Varray1D;  //An object containing our
+  private transient IVirtualArrayList1D Varray1D;  //An object containing our
                                                // array of data
   private Point[] selectedset;  //To be returned by getSelectedSet()   
   private transient Vector Listeners   = null;
@@ -257,13 +260,12 @@ public class FunctionViewComponent implements IViewComponent1D,
    *
    *  @param varr The IVirtual array containing data for producing the graph.
    */
-  public FunctionViewComponent( IVirtualArray1D varr ) {
+  public FunctionViewComponent( IVirtualArrayList1D varr ) {
 
     Varray1D    = varr;  // Get reference to varr
     precision   = 4;
     font        = FontUtil.LABEL_FONT2;
     gjp         = new GraphJPanel(  );
-   
 
     //initialize the pointed at graph to 0
        float x1[] = {0};
@@ -325,7 +327,7 @@ public class FunctionViewComponent implements IViewComponent1D,
    *  @param varr  The IVirtual array containing data for producing the graph.
    *  @param state The state of a previous Function View Component.
    */
-  public FunctionViewComponent( IVirtualArray1D varr, ObjectState state ) {
+  public FunctionViewComponent( IVirtualArrayList1D varr, ObjectState state ) {
 
     this(varr);
     setObjectState(state);
@@ -588,7 +590,7 @@ public class FunctionViewComponent implements IViewComponent1D,
   /**
    * This method will return the virtual array. 
    */
-  public IVirtualArray1D getArray(  ) {
+  public IVirtualArrayList1D getArray(  ) {
     return Varray1D;
   }
 
@@ -653,7 +655,7 @@ public class FunctionViewComponent implements IViewComponent1D,
 /**
    * To be continued...
    */
-  public void dataChanged( IVirtualArray1D pin_varray )  // pin == "passed in"
+  public void dataChanged( IVirtualArrayList1D pin_varray )  // pin == "passed in"
    {
     if (Varray1D != pin_varray){
 
