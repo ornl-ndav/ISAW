@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/08/05 21:37:14  dennis
+ * Decrement time channel by one when reading from SCD Peaks file,
+ * since Peak.java increments the time channel by one when
+ * translating to external form.
+ *
  * Revision 1.7  2003/08/04 15:49:09  dennis
  * Temporarily made 'l1' and the grid public, for use by the SCDcalib
  * operator, that is in a different package.
@@ -460,7 +465,7 @@ public class PeakData
       pd.row     = p.y();
       pd.col     = p.x();
 
-      int    bin = (int)p.z();
+      int    bin = (int)p.z() - 1;            // file stores time channel + 1
       if ( bin >= xscale.getNum_x() - 1 )
         pd.tof = xscale.getX( xscale.getNum_x() - 1 );
       else if ( bin >= 0 )
