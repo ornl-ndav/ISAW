@@ -29,6 +29,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/01/10 15:35:21  rmikk
+ *  Added a Constructor to include a StatusPane.
+ *  Added this StatusPane to operators that support the
+ *    IusesStatusPane and java.beans.Customizer interface
+ *     (i.e. had addPropertyChangeListener)
+ *
  *  Revision 1.19  2001/11/19 19:01:53  dennis
  *   Added a new constructor that lets this dialog box be modal. (Ruth)
  *
@@ -131,6 +137,7 @@ public class JParametersDialog implements Serializable,
                                  //of DataSet objects in the tree
                                  //w/o a reference to the actual tree.
     IDataSetListHandler ds_src;
+    StatusPane stat_pane=null;
     
     public JParametersDialog( Operator  op, 
                               IDataSetListHandler ds_src, 
@@ -144,7 +151,14 @@ public class JParametersDialog implements Serializable,
                               IDataSetListHandler ds_src, 
                               Document  sessionLog, 
                               IObserver io , boolean modal )
-    {   
+     {this(op,ds_src,sessionLog,io,modal,null);
+     }
+     public JParametersDialog( Operator  op, 
+                              IDataSetListHandler ds_src, 
+                              Document  sessionLog, 
+                              IObserver io , boolean modal,
+                              StatusPane sp )
+    {   stat_pane=sp;
         this.op =op;
         this.ds_src = ds_src;
         this.sessionLog = sessionLog;    
@@ -252,8 +266,8 @@ public class JParametersDialog implements Serializable,
                else
                  attr_list = new AttributeList();
              }
-             System.out.println("Num attributes="+
-                    attr_list.getNum_attributes());
+             //System.out.println("Num attributes="+
+              //      attr_list.getNum_attributes());
              paramGUI = new JAttributeNameParameterGUI(param, attr_list);
            }
 
@@ -311,8 +325,8 @@ public class JParametersDialog implements Serializable,
         }
      
         else 
-        {
-           System.out.println("Unsupported Parameter in JParamatersDialog");
+        {  if( stat_pane != null)
+           stat_pane.add("Unsupported Parameter in JParamatersDialog");
                 return ;
         }
         Size1 = paramGUI.getGUISegment().getPreferredSize().height;
@@ -404,17 +418,16 @@ public class JParametersDialog implements Serializable,
   public class MyComponentListener extends ComponentAdapter
   {
    public void componentHidden(ComponentEvent e)
-      { System.out.println( "in Component Hidden ");       
+      {       
       }
    public void componentResized(ComponentEvent e)
-      {System.out.println("in Component resized");
+      {
       }
    public void componentMoved(ComponentEvent e)
-      {System.out.println( "In Component moved");
+      {
       }
    public void componentShown(ComponentEvent e)
-      { System.out.println( "In componentShown ");
-      }
+      { 
   }
 */
   public class ApplyButtonHandler implements ActionListener,
@@ -475,8 +488,19 @@ public class JParametersDialog implements Serializable,
 
       //util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
       opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-      
+      if(stat_pane !=null)
+        {if( op instanceof IusesStatusPane)
+          ((IusesStatusPane)op).addStatusPane( stat_pane);
+         if(op instanceof java.beans.Customizer)
+           ((java.beans.Customizer)op).addPropertyChangeListener( stat_pane);
+         }
       Object result = op.getResult();
+      if(stat_pane !=null)
+        {if( op instanceof IusesStatusPane)
+          ((IusesStatusPane)op).addStatusPane( null);
+         if(op instanceof java.beans.Customizer)
+           ((java.beans.Customizer)op).removePropertyChangeListener( stat_pane);
+         }
       Result = result;
       for( int i = 0; i < ObjectParameters.size(); i++ )
         { int k = ((Integer)ObjectParameters.elementAt(i)).intValue();
@@ -488,7 +512,8 @@ public class JParametersDialog implements Serializable,
       opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       if (result == null)
       {
-         System.out.println("Result was null  :");
+         if(stat_pane!=null)
+           stat_pane.add("Result was null  :");
             
          resultsLabel.setText("Result was null  :");
          util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
