@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/08/15 00:06:19  bouzekc
+ *  Made entrywidget protected again.
+ *
  *  Revision 1.9  2003/08/15 00:05:01  bouzekc
  *  Filled in javadoc comments.
  *
@@ -89,7 +92,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
 
   // instance variables for IParameterGUI
   protected JLabel label;
-  private JComponent entrywidget;
+  protected JComponent entrywidget;
   protected JPanel guipanel;
   protected boolean enabled;
   protected boolean drawvalid;
