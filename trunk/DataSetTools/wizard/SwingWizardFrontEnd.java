@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/09 15:35:17  bouzekc
+ * Now correctly disposes of the window when it is not standalone and exits the
+ * system when it is.
+ *
  * Revision 1.5  2004/01/08 15:01:33  bouzekc
  * Added code for arbitrary file (text or runfile) viewing.
  *
@@ -117,11 +121,19 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
     wiz               = wizard;
     wizButtons        = new AbstractButton[8];  //number of buttons
     frame             = new JFrame( wiz.getTitle(  ) );
+    
+    if( wiz.getStandalone(  ) ) {
+      frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+    } else {
+      frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+    }
+    
     form_panel        = new JPanel(  );
     form_label        = new JLabel( " ", SwingConstants.CENTER );
     formProgress      = new PropChangeProgressBar(  );
     wizProgress       = new JProgressBar(  );
     command_handler   = new CommandHandler( wiz );
+
   }
 
   //~ Methods ******************************************************************
@@ -226,7 +238,12 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
     if( wiz.getProjectsDirectory(  ) != null ) {
       TextWriter.writeASCII( Wizard.CONFIG_FILE, wiz.getProjectsDirectory(  ) );
     }
-    System.exit( 0 );
+    
+   if( wiz.getStandalone(  ) ) {
+      System.exit( 0 );
+    } else {
+      frame.dispose(  );
+    }
   }
 
   /**
