@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.11  2004/02/11 04:10:01  bouzekc
+ * Uses the new wizard classes with the indeterminate progress bars.
+ *
  * Revision 1.10  2003/09/11 21:21:44  bouzekc
  * Updated to work with new Form class.
  *
@@ -248,9 +251,6 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
       return validCheck;
     }
 
-    //set the increment amount
-    increment = ( 1.0f / run_numbers.length ) * 100.0f;
-
     for( int i = 0; i < run_numbers.length; i++ ) {
       file_name   = run_dir +
         InstrumentType.formIPNSFileName( inst_name, run_numbers[i] );
@@ -281,11 +281,6 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
 
         return errorOut( errMessage );
       }
-
-      //fire a property change event off to any listeners
-      oldPercent = newPercent;
-      newPercent += increment;
-      super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
     }
 
     //for

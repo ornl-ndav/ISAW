@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/02/11 04:10:01  bouzekc
+ *  Uses the new wizard classes with the indeterminate progress bars.
+ *
  *  Revision 1.15  2003/12/15 02:44:08  bouzekc
  *  Removed unused imports.
  *
@@ -295,9 +298,6 @@ public class SaveAsGSASForm extends Form implements Serializable {
       return validCheck;
     }
 
-    //set the increment amount
-    increment = ( 1.0f / grouped.size(  ) ) * 100.0f;
-
     //go through the vector
     for( int i = 0; i < grouped.size(  ); i++ ) {
       //get the DataSet in each Vector "slot"
@@ -320,11 +320,6 @@ public class SaveAsGSASForm extends Form implements Serializable {
 
         return errorOut( "File " + save_name + "could not be saved." );
       }
-
-      //fire a property change event off to any listeners
-      oldPercent = newPercent;
-      newPercent += increment;
-      super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
     }
 
     SharedData.addmsg( "Finished saving GSAS files." );
