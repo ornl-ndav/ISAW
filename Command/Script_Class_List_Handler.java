@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.54  2003/12/15 00:48:27  rmikk
+ * Uncommented out some code in main so it can again be used to debug classpath,etc.
+ * problems
+ *
+
  * Revision 1.53  2003/12/14 19:18:08  bouzekc
  * Removed unused import statements.
  *
@@ -42,6 +47,7 @@
  * Revision 1.51  2003/11/18 22:21:41  bouzekc
  * Now finds ISAW_HOME Operators when a non-System ClassLoader is used.
  *
+
  * Revision 1.50  2003/10/10 00:58:51  bouzekc
  * Removed references to PyOperatorFactory.
  *
