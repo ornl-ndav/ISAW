@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/04/14 21:28:36  pfpeterson
+ *  No longer stores information about valid state.
+ *
  *  Revision 1.5  2002/11/27 23:16:15  pfpeterson
  *  standardized header
  *
@@ -54,7 +57,6 @@ public class Parameter extends Object implements Serializable, IParameter
 
   private String name;
   private Object value;
-  private boolean valid;
 
   /**
    *  Construct a Parameter object using the specified name an value
@@ -63,7 +65,6 @@ public class Parameter extends Object implements Serializable, IParameter
   {
     this.name  = name;
     this.value = value;
-    this.valid = false;
   }
 
     /**
@@ -110,20 +111,6 @@ public class Parameter extends Object implements Serializable, IParameter
     Parameter new_parameter = new Parameter( name, value );
     return new_parameter;
   }
-
-    /**
-     * Accessor method.
-     */
-    public void setValid(boolean valid){
-        this.valid=valid;
-    }
-
-    /**
-     * Mutator method.
-     */
-    public boolean getValid(){
-        return this.valid;
-    }
 
     /**
      * This returns null. Should be overridden by subclasses.
