@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/12/02 17:27:26  pfpeterson
+ *  Moved the default documentation into a 'public static final String' so it can be
+ *  checked against by outside classes.
+ *
  *  Revision 1.19  2002/11/27 23:16:15  pfpeterson
  *  standardized header
  *
@@ -111,6 +115,17 @@ abstract public class Operator implements Serializable
    public static final String  MONO_CHROM_SCD            = "Mono Chrom SCD";
    public static final String  MONO_CHROM_SAD            = "Mono Chrom SAD";
    public static final String  MONO_CHROM_REFLECTOMETER  = "Mono Chrom REFLECT";
+
+   public static final String DEFAULT_DOCS =  "This is the placeholder "
+     +"documentation. The full documentation needs to be written using the "
+     +"following options in a manner consistent with JavaDocs\n\n"
+     +"@overview\n\n"
+     +"@assumptions\n\n"
+     +"@algorithm\n\n"
+     +"@param\n\n"
+     +"@return\n\n"
+     +"@error";
+
 
    private   String    title;
    protected Vector    parameters;
@@ -343,16 +358,7 @@ abstract public class Operator implements Serializable
    * Returns a string containing the end-user documentation for the
    * new help system.
    */
-  public String getDocumentation()
-  {
-      return "This is the placeholder documentation. " +
-             "The full documentation needs to be written using the following "+
-             "options in a manner consistent with JavaDocs\n\n"
-            +"@overview\n\n"
-            +"@assumptions\n\n"
-            +"@algorithm\n\n"
-            +"@param\n\n"
-            +"@return\n\n"
-            +"@error";
+  public String getDocumentation(){
+    return DEFAULT_DOCS;
   }
 } 
