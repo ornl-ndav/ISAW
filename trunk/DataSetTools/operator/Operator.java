@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2003/10/23 16:56:16  bouzekc
+ *  Added method getResultRemotely().
+ *
  *  Revision 1.30  2003/08/11 18:00:24  bouzekc
  *  Added protected final method to reset the parameters Vector.
  *
@@ -104,6 +107,8 @@ import java.util.Vector;
 import java.io.*;
 import DataSetTools.parameter.IParameter;
 import DataSetTools.util.StringUtil;
+import DataSetTools.util.SharedData;
+import NetComm.RemoteOpExecClient;
 
 /**
  * The base class for operators.  An operator object provides information about
@@ -173,6 +178,25 @@ abstract public class Operator implements Serializable
    */ 
    abstract public Object getResult();
 
+   /**
+    * Uses RemoteOpExecClient to get a remote result.  The connection is made
+    * using the REMOTE_HOST and REMOTE_PORT specified in IsawProps.dat.
+    *
+    * @return The result of executing this Operator remotely.
+    */
+   public Object getResultRemotely(  ) {
+     RemoteOpExecClient operatorExecutor = new RemoteOpExecClient(  );
+
+     operatorExecutor.setHost( SharedData.getProperty( "REMOTE_HOST" ) );
+     String port = SharedData.getProperty( "REMOTE_PORT" );
+     operatorExecutor.setPort( Integer.parseInt( port ) );
+     operatorExecutor.MakeConnection(  );
+
+     Object result = operatorExecutor.getResult( this );
+     operatorExecutor.Exit(  );
+
+     return result;
+   }
 
   /* ------------------------------ getTitle ----------------------------- */
   /**
