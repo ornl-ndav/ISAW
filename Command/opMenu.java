@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2001/06/25 16:38:57  rmikk
+ * Incorporated tests for improper inputs
+ *
  * Revision 1.7  2001/06/05 16:50:35  rmikk
  * Changed props.dat to IsawProps.dat
  *
@@ -75,8 +78,10 @@ public opMenu(OperatorHandler op , DataSetListHandler DS, Document logdoc , IObs
   int       num_components;                   // number of submenu components
   JMenuItem comp;  
   String    categories[];
+  boolean found;
   MActionListener ML= new MActionListener( op , DS , logdoc, iobs);
                                                  // correct submenu
+  found = false;
   for ( int i = 0; i < op.getNum_operators(); i++ )
   {
                                               // the list starts two entries, 
@@ -93,40 +98,55 @@ public opMenu(OperatorHandler op , DataSetListHandler DS, Document logdoc , IObs
        {categories = new String[1];
         categories[0]=Operator.OPERATOR; 
        }
-   
-    for ( cat_index = 1; cat_index < categories.length; cat_index++ ) 
+    found = true;
+    for ( cat_index = 1; (cat_index < categories.length) &&(found); cat_index++ ) 
     {
        num_components = current_menu.getMenuComponentCount();
-       boolean found = false;
+       found = false;
        comp_index = 0;
-       while ( comp_index < num_components && !found )
+     while ( comp_index < num_components && !found )
        {
          comp = (JMenuItem)(current_menu.getItem( comp_index) );
          if(comp instanceof JMenu)
          if ( comp.getLabel().equalsIgnoreCase( categories[cat_index] ) )
-         {
-           found = true;
-           current_menu = (JMenu)((JMenuItem)comp);        // we found the category, advance 
-         }                                    // the current menu pointer
+           {
+            found = true;
+            current_menu = (JMenu)((JMenuItem)comp);        // we found the category, advance 
+           }                                    // the current menu pointer
          comp_index++;
        }
        if ( !found )                          // if we don't find it, add it
        {
          JMenu new_menu = new JMenu( categories[cat_index] );
-         current_menu.add( new_menu );
-         current_menu = new_menu;            // advance the current menu pointer
+         if( new_menu == null)
+             {System.out.println("Could not create a JMenu"+cat_index+","+categories.length);
+	      found = false;             
+             }
+         else
+         {
+          new_menu.setDelay(200);
+          current_menu.add( new_menu );
+          current_menu = new_menu;            // advance the current menu pointer
+          found = true;
+	 }
        }
     }
                                              // after stepping through the meun
                                              // tree, add the new operator title
-    String Title=op.getOperator(i).getTitle();
-    if( Title.equals("UNKNOWN"))
-       Title = op.getOperator(i).getCommand();
-    MJMenuItem item = new MJMenuItem( Title,i );
-    item.addActionListener( ML );
-    current_menu.add( item );
+    if( found)
+     { String Title=op.getOperator(i).getTitle();
+       if( Title.equals("UNKNOWN"))
+          Title = op.getOperator(i).getCommand();
+       MJMenuItem item = new MJMenuItem( Title,i );
+       if( item == null)
+	   {System.out.println("Could not create a JMenuItem");
+           }
+       else
+         {item.addActionListener( ML );
+          current_menu.add( item );
+         }
+     }
   }
-   
   }//constructor
 
 private class MActionListener implements ActionListener
@@ -218,5 +238,6 @@ public static void main( String args[] )
    JF.show();
   }
 }
+
 
 
