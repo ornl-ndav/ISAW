@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/11/19 04:06:54  bouzekc
+ * This class is now a JavaBean.  Added code to clone() to copy all
+ * PropertyChangeListeners.
+ *
  * Revision 1.7  2003/10/11 19:11:53  bouzekc
  * Now implements clone using reflection.
  *
@@ -70,6 +74,8 @@ import DataSetTools.util.IntegerFilter;
 
 import java.awt.*;
 import java.awt.event.*;
+
+import java.beans.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -114,7 +120,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    */
   public UniformXScalePG( String name, Object val ) {
     super( name, val );
-    this.type = TYPE;
+    this.setType( TYPE );
   }
 
   /**
@@ -129,7 +135,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    */
   public UniformXScalePG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    this.type = TYPE;
+    this.setType( TYPE );
   }
 
   /**
@@ -146,7 +152,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
 
     UniformXScale scale = new UniformXScale( start, end, steps );
     setValue( scale );
-    this.type = TYPE;
+    this.setType( TYPE );
   }
 
   /**
@@ -165,7 +171,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
 
     UniformXScale scale = new UniformXScale( start, end, steps );
     setValue( scale );
-    this.type = TYPE;
+    this.setType( TYPE );
   }
 
   //~ Methods ******************************************************************
@@ -249,25 +255,30 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
       }
     }
 
-    if( scale != null ) {
-      this.value = scale;
+    if( getInitialized(  ) && ( scale != null ) ) {
+      start.setText( new Float( scale.getStart_x(  ) ).toString(  ) );
+      end.setText( new Float( scale.getEnd_x(  ) ).toString(  ) );
+      steps.setText( new Float( scale.getStep(  ) ).toString(  ) );
     }
+    super.setValue( scale );
   }
 
   /**
    * Uses the internal XScalePGHelper to convert the inner UniformXScale to a
    * Vector and return it.  If the internal value is null and this is
-   * initialized, it will first trigger the creation of the inner
+   * getInitialized(), it will first trigger the creation of the inner
    * UniformXScale the same way that clicking on the "Create" button would.
    *
    * @return The Vector of values for this UniformXScalePG.
    */
   public Object getValue(  ) {
-    if( value == null ) {
-      createXScaleFromGUIValues(  );
+    Object scaleVal = super.getValue(  );
+
+    if( getInitialized(  ) ) {
+      scaleVal = createXScaleFromGUIValues(  );
     }
 
-    return XScalePGHelper.convertXScaleToVector( ( XScale )this.value );
+    return XScalePGHelper.convertXScaleToVector( ( XScale )scaleVal );
   }
 
   /**
@@ -285,7 +296,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    * @return The internal UniformXScale.
    */
   public XScale getXScaleValue(  ) {
-    return ( XScale )this.value;
+    return ( XScale )super.getValue(  );
   }
 
   /**
@@ -296,15 +307,17 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    *        Vector is valid for this UniformXScalePG.
    */
   public void initGUI( Vector vals ) {
-    if( this.initialized ) {
+    if( this.getInitialized(  ) ) {
       return;
     }
 
     if( vals != null ) {
       setValue( vals );
     }
-    entrywidget = new EntryWidget(  );
-    entrywidget.setLayout( new BorderLayout(  ) );
+    setEntryWidget( new EntryWidget(  ) );
+
+    EntryWidget wijit = getEntryWidget(  );
+    wijit.setLayout( new BorderLayout(  ) );
 
     JPanel innerPanel = new JPanel(  );
     innerPanel.setLayout( new GridLayout( 0, 2 ) );
@@ -317,10 +330,10 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     innerPanel.add( new JLabel( "Number of steps" ) );
     steps = new StringEntry( "", new IntegerFilter(  ) );
     innerPanel.add( steps );
-    entrywidget.add( innerPanel, BorderLayout.CENTER );
+    wijit.add( innerPanel, BorderLayout.CENTER );
 
     JButton createButton = new JButton( CREATE_LABEL );
-    entrywidget.add( createButton, BorderLayout.SOUTH );
+    wijit.add( createButton, BorderLayout.SOUTH );
     createButton.addActionListener( new UniformXScalePGListener(  ) );
     super.initGUI(  );
   }
@@ -365,8 +378,22 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );
 
-      if( this.initialized ) {
+      if( this.getInitialized(  ) ) {
         pg.initGUI( null );
+      }
+
+      if( getPropListeners(  ) != null ) {
+        java.util.Enumeration e    = getPropListeners(  )
+                                       .keys(  );
+        PropertyChangeListener pcl = null;
+        String propertyName        = null;
+
+        while( e.hasMoreElements(  ) ) {
+          pcl            = ( PropertyChangeListener )e.nextElement(  );
+          propertyName   = ( String )getPropListeners(  )
+                                       .get( pcl );
+          pg.addPropertyChangeListener( propertyName, pcl );
+        }
       }
 
       return pg;
@@ -392,12 +419,15 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
 
   /**
    * Creates an XScale from the filled in GUI values.
+   *
+   * @return The new UniformXScale.
    */
-  private void createXScaleFromGUIValues(  ) {
+  private UniformXScale createXScaleFromGUIValues(  ) {
     float startNum = Float.parseFloat( start.getText(  ) );
     float endNum   = Float.parseFloat( end.getText(  ) );
     int stepNum    = Integer.parseInt( steps.getText(  ) );
-    setValue( new UniformXScale( startNum, endNum, stepNum ) );
+
+    return new UniformXScale( startNum, endNum, stepNum );
   }
 
   //~ Inner Classes ************************************************************
@@ -415,7 +445,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
      */
     public void actionPerformed( ActionEvent ae ) {
       if( ae.getActionCommand(  ) == CREATE_LABEL ) {
-        createXScaleFromGUIValues(  );
+        setValue( createXScaleFromGUIValues(  ) );
       }
     }
   }
