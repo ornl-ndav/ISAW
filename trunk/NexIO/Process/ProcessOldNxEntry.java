@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/02/16 02:17:23  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.2  2003/12/12 15:23:11  rmikk
  * Set the title of the DataSet
  *
@@ -46,8 +49,7 @@ package NexIO.Process;
 import NexIO.*;
 import NexIO.State.*;
 import DataSetTools.dataset.*;
-import NexIO.Util.*;
-import NexIO.Query.*;
+
 
 /**
  *   This class processes an NXentry.  There is only one of these. It uses

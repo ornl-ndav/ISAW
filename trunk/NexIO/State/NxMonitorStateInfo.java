@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/02/16 02:18:22  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.1  2003/11/16 21:45:48  rmikk
  * Initial Checkin
  *
@@ -38,7 +41,6 @@
 
 package NexIO.State;
 import NexIO.*;
-import NexIO.Util.*;
 
 /**
  *   This class contains state information needed to process an NXmonitor entry
