@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/03/03 16:32:06  pfpeterson
+ *  Only creates GUI once init is called.
+ *
  *  Revision 1.1  2003/02/05 16:31:45  pfpeterson
  *  Added to CVS.
  *
@@ -134,6 +137,8 @@ public class BooleanPG extends ParameterGUI implements ActionListener{
    * Allows for initialization of the GUI after instantiation.
    */
   public void init(Vector init_values){
+    if(this.initialized) return; // don't initialize more than once
+
     if(init_values!=null){
       if(init_values.size()==1){
         // the init_values is what to set as the value of the parameter
@@ -145,7 +150,7 @@ public class BooleanPG extends ParameterGUI implements ActionListener{
     entrywidget=new JCheckBox("",((Boolean)this.getValue()).booleanValue());
     ((JCheckBox)entrywidget).addActionListener(this);
     this.setEnabled(this.getEnabled());
-    this.packupGUI();
+    super.initGUI();
     this.initialized=true;
   }
 

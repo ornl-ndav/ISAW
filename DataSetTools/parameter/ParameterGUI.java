@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/03/03 16:32:06  pfpeterson
+ *  Only creates GUI once init is called.
+ *
  *  Revision 1.4  2002/11/27 23:22:43  pfpeterson
  *  standardized header
  *
@@ -90,8 +93,10 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
      */
     public void setName(String name){
         this.name=name;
+        if(! this.initialized) return;
+
         if(this.label==null){
-            label=new JLabel();
+          label=new JLabel();
         }
         label.setText("  "+this.getName());
     }
@@ -195,6 +200,25 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
         this.updateDrawValid();
     }
 
+    protected void initGUI(){
+      this.initialized=true;
+
+      // create the label
+      if(this.label==null)
+        this.label=new JLabel();
+      label.setText("  "+this.getName());
+
+      // create the checkbox
+      if(this.validcheck==null)
+        this.validcheck=new JCheckBox("");
+      this.validcheck.setSelected(this.getValid());
+      this.validcheck.setEnabled(false);
+      this.validcheck.setVisible(this.getDrawValid());
+
+      // put the gui together
+      this.packupGUI();
+    }
+
     public void init(){
         this.init(null);
     }
@@ -240,6 +264,8 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
      * Utility method to centralize dealing with the checkbox.
      */
     private void updateDrawValid(){
+        if(! this.initialized) return;
+  
         if(this.validcheck==null){     // make the checkbox if it dne
             this.validcheck=new JCheckBox("");
         }
