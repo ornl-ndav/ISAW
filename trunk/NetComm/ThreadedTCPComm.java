@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/08/09 15:30:51  dennis
+ *  Put debug prints in "if ( debug_tcp_comm )" blocks.
+ *
  *  Revision 1.5  2001/04/23 19:44:24  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -120,7 +123,8 @@ public class ThreadedTCPComm extends TCPComm
 
           if ( data_obj instanceof TCPCommExitClass ) 
           {
-            System.out.println("'Exit' received in TCP_thread.run() ");
+            if ( debug_tcp_comm )
+              System.out.println("'Exit' received in TCP_thread.run() ");
             break;
           }
         }
