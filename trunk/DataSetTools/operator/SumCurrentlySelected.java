@@ -1,10 +1,39 @@
 /*
- * @(#)SumCurrentlySelected.java   0.1  2000/05/10   Dennis Mikkelson
+ * File:  SumCurrentlySelected.java 
  *             
- * This operator sums all "selected" Data blocks in a DataSet, then deletes
- * the selected Data blocks and adds the new summed Data block.
+ * Copyright (C) 1999, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/04/26 19:11:48  dennis
+ * Added copyright and GPL info at the start of the file.
+ *
  * Revision 1.3  2000/11/10 22:41:34  dennis
  *    Introduced additional abstract classes to better categorize the operators.
  * Existing operators were modified to be derived from one of the new abstract
@@ -37,7 +66,7 @@
  * Replaced "Data blocks" with "Groups" in operator title.
  *
  * Revision 1.1  2000/07/10 22:36:25  dennis
- * July 10, 2000 version... many changes
+ * Now Using CVS 
  *
  * Revision 1.6  2000/06/14 22:17:51  dennis
  * Placed make_new_ds parameter last in list of parameters for consistency
@@ -68,8 +97,8 @@ import  DataSetTools.util.*;
 
 /**
   *  Replace Data blocks with the sum of the Data blocks.  Data blocks that 
-  *  are marked as selected, or that are  not marked as selected, are summed
-  *  and replaced depending on the paramters. 
+  *  are marked as selected, or, alternatively, that are not marked 
+  *  as selected, are summed and replaced depending on the paramters. 
   */
 
 public class SumCurrentlySelected  extends    DataSetOp 
