@@ -112,6 +112,33 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
       jtb.setInputMap( JComponent.WHEN_FOCUSED, inp_map);
     
     }
+  
+ // setState() and getState() are required by IPreserveState interface   
+ /**
+  * This method will set the current state variables of the object to state
+  * variables wrapped in the ObjectState passed in.
+  *
+  *  @param  new_state
+  */
+  public void setObjectState( ObjectState new_state )
+  {
+    System.out.println("***Currently Unimplemented***");
+  }
+ 
+ /**
+  * This method will get the current values of the state variables for this
+  * object. These variables will be wrapped in an ObjectState.
+  *
+  *  @param  isDefault Should selective state be returned, that used to store
+  *                    user preferences common from project to project?
+  *  @return if true, the default state containing user preferences,
+  *          if false, the entire state, suitable for project specific saves.
+  */ 
+  public ObjectState getObjectState( boolean isDefault )
+  {
+    System.out.println("***Currently Unimplemented***");
+    return new ObjectState();
+  }
  
    private void SetUpNewJtb(){
       removeAll();
