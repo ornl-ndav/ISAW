@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/08/16 02:23:37  bouzekc
+ *  BooleanPG now has PropertyChangeListener support.
+ *
  *  Revision 1.6  2003/08/15 23:50:04  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -87,6 +90,7 @@ public class BooleanPG extends ParameterGUI
     this.type=TYPE;
     this.initialized=false;
     this.ignore_prop_change=false;
+    topPCS = new PropertyChangeSupport( this );
   }
     
   public BooleanPG(String name, boolean value){
@@ -255,7 +259,10 @@ public class BooleanPG extends ParameterGUI
    * Deal with the state changing. This sets valid to false.
    */
   public void actionPerformed(ActionEvent e){
-    if(e.paramString().indexOf("ACTION_PERFORMED")==0)
+    if(e.paramString().indexOf("ACTION_PERFORMED")==0) {
       this.setValid(false);
+      boolean newval = getbooleanValue();
+      topPCS.firePropertyChange( IParameter.VALUE, new Boolean(!newval), new Boolean(newval) );
+    }
   }
 }
