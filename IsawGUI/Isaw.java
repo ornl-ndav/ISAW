@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.173  2003/12/14 18:27:49  rmikk
+ *  The Isaw.update method nows deals with arrays of DataSets. It adds these to
+ *    the ISAW system with all the listeners attached
+ *  Did not add a filename to the LatestOpened if it was unsuccessfully loaded
+ *
  *  Revision 1.172  2003/12/12 18:17:00  dennis
  *  Changed version to 1.6.0 alpha 7.
  *
@@ -532,6 +537,7 @@ public class Isaw
   JPropertiesUI jpui;
   JCommandUI jcui;
   JMenu oMenu = new JMenu( OPERATOR_M );
+  JMenu fMenu; //File JMenu to add new opened files to the list
   CommandPane cp;
   Util util;
   Object Script_Path, 
@@ -694,7 +700,7 @@ public class Isaw
         
     JMenuBar menuBar = new JMenuBar();
 
-    JMenu fMenu = new JMenu( FILE_M );
+    fMenu = new JMenu( FILE_M );
     JMenu fileLoadDataset = new JMenu( LOAD_DATA_M );
     JMenuItem Runfile = new JMenuItem( LOAD_LOCAL_DATA_MI ); 
     JMenu LiveData = new JMenu( LOAD_LIVE_DATA_M );
@@ -881,7 +887,7 @@ public class Isaw
    * @param dss  Array of DataSets
    * @param name String identifying the Runfile
    */
-  protected void addNewDataSets( DataSet[] dss, String name )
+  public void addNewDataSets( DataSet[] dss, String name )
   {
     jdt.addExperiment( dss, name );
     for(int i =0; i<dss.length; i++)
@@ -1263,6 +1269,7 @@ public class Isaw
           DataSet[] dss = new DataSet[1];  dss[0] = ds;
           addNewDataSets(  dss, dss[0].toString()  );
           LatestOpenedFiles.addNewOpenedFile( filename);
+          
         }
         catch( Exception e )
         {
@@ -1837,7 +1844,8 @@ public class Isaw
     {  
                                   //currently we only allow 
                                   //String and DataSet objects
-    if( !( reason instanceof String) && !( reason instanceof DataSet) )   
+    if( !( reason instanceof String) && !( reason instanceof DataSet) && !
+               (reason instanceof DataSet[]) )   
       return;
  
                                   //this means that a new DataSet has
@@ -1863,7 +1871,12 @@ public class Isaw
     {
 //      System.out.println( "reason (Isaw.java): " + (String)reason );
     }
-    else
+    else if( reason instanceof DataSet[]){
+       DataSet[] DSS = (DataSet[])reason;
+       if( DSS != null) if(DSS.length > 0)
+           addNewDataSets( DSS, DSS[0].getTag()+":"+DSS[0].toString());
+ 
+    }else
       SharedData.addmsg( "unsupported type in Isaw.update()" );
   }
  
@@ -2018,7 +2031,9 @@ public class Isaw
         {
          DataSet DSS[];
          DSS = util.loadRunfile(  files[i].getPath()  );
-         LatestOpenedFiles.addNewOpenedFile((files[i].getPath()));
+         if( DSS != null)
+            LatestOpenedFiles.addNewOpenedFile(files[i].getPath());
+             
          if( DSS != null)
            if( DSS.length > 0)
             {
@@ -2031,7 +2046,6 @@ public class Isaw
 	}
     return;
   }
-
 
   /**
    *
