@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.71  2002/01/09 19:33:43  rmikk
+ *  -Incorporated a Status Pane.  It is static and has the name
+ *    IsawStatusPane.  It can be used as follows:
+ *          Isaw.IsawStatusPane.add( Message)
+ *   ONLY IF ISAW is RUNNING with a non null StatusPane
+ *
  *  Revision 1.70  2002/01/09 15:45:11  rmikk
  *  Changed the message given when an exception occurs.
  *  Also return from this procedure after this exception
@@ -424,6 +430,7 @@ public class Isaw
 
   JPropertiesUI jpui;
   JCommandUI jcui;
+  static StatusPane IsawStatusPane;
   JMenu oMenu = new JMenu( OPERATOR_M );
   CommandPane cp;
   Util util;
@@ -487,6 +494,18 @@ public class Isaw
 
     setupMenuBar();        
 
+    IsawStatusPane = new StatusPane(30, 80, 
+          new javax.swing.border.TitledBorder("Status"),
+          true,false);
+    JPanel StatusPanel= new JPanelwithToolBar(
+                 "Save","Clear",
+                  new SaveDocToFileListener( 
+                         IsawStatusPane.getDocument(),null),
+                  new ClearDocListener( IsawStatusPane.getDocument()),
+                  new JScrollPane( IsawStatusPane),
+                  BorderLayout.EAST);
+                         
+    cp.addPropertyChangeListener(IsawStatusPane);
     JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
     JSplitPane rightPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
     leftPane.setOneTouchExpandable(false);
@@ -507,11 +526,17 @@ public class Isaw
     JSplitPane sp= new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
                                            leftPane, 
                                            rightPane, 
-                                           0.2f );
-        
+                                           0.20f);
+
+    JSplitPane sp1= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT,
+                                            sp,
+                                      StatusPanel,
+                                            0.85f );
+   
+       
     sp.setOneTouchExpandable(true);
     Container con = getContentPane();
-    con.add(sp);
+    con.add(sp1);
   }
     
  
@@ -819,7 +844,7 @@ public class Isaw
    */
   public void addModifiedDataSet( DataSet ds )
   {
-//    System.out.println( "Isaw: addModifiedDataSet(...)" );
+//    Isaw.IsawStatusPane( "Isaw: addModifiedDataSet(...)" );
 
     jdt.addToModifiedExperiment( ds );
 
@@ -1022,8 +1047,8 @@ public class Isaw
           else return;
         } 
         catch( Exception e )
-        {
-          System.out.println( "Choose a input file" );
+        {  Isaw.IsawStatusPane.add("Chooce an input file");
+          //System.out.println( "Choose a input file" );
           return;
         }
 
@@ -1103,7 +1128,7 @@ public class Isaw
 
     
     public void actionPerformed( ActionEvent ev ) 
-    {
+    { 
       String s = ev.getActionCommand();
       if( s.equals(EXIT_MI) )
         System.exit(0);
@@ -1140,7 +1165,7 @@ public class Isaw
           }
           catch( Exception e ) 
           {
-            System.out.println( "Error "+e );
+            Isaw.IsawStatusPane.add( "Error "+e );
             return;
           } 
          
@@ -1191,6 +1216,7 @@ public class Isaw
         catch( Exception e )
         {
           e.printStackTrace();
+          return;
         }
       }
                        
@@ -1242,13 +1268,13 @@ public class Isaw
 
 
       if( s.equals(CHEXS_MACRO_MI) ) 
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(GLAD_MACRO_MI) ) 
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(GPPD_MACRO_MI) ) 
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(HRMECS_MACRO_MI) )
       { 
@@ -1262,31 +1288,31 @@ public class Isaw
       }
 
       if( s.equals(HIPD_MACRO_MI) )  
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(LRMECS_MACRO_MI) ) 
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(POSY1_MACRO_MI) ) 
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(POSY2_MACRO_MI) ) 
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(QENS_MACRO_MI) ) 
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SAD_MACRO_MI) ) 
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SAND_MACRO_MI) ) 
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SCD_MACRO_MI) ) 
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SEPD_MACRO_MI) ) 
-        System.out.println( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
 
  
 
@@ -1364,12 +1390,13 @@ public class Isaw
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
         else
-          System.out.println( "nothing is currently highlighted in the tree" );
+          Isaw.IsawStatusPane( "nothing is currently highlighted in the tree" );
       }
                  
                  
       if( s.equals(SELECTED_VIEW_MI) )  
-      {
+      { Isaw.IsawStatusPane.add("Hi There");
+        
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
         if(  ds != DataSet.EMPTY_DATA_SET  )
         {
@@ -1378,7 +1405,7 @@ public class Isaw
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
         else
-          System.out.println( "nothing is currently highlighted in the tree" );
+          Isaw.IsawStatusPane.add( "nothing is currently highlighted in the tree" );
       }
                          
                  
@@ -1392,7 +1419,7 @@ public class Isaw
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
         else
-          System.out.println( "nothing is currently highlighted in the tree" );
+          Isaw.IsawStatusPane.add( "nothing is currently highlighted in the tree" );
       }
                  
 
@@ -1406,7 +1433,7 @@ public class Isaw
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
         else
-          System.out.println( "nothing is currently highlighted in the tree" );
+          Isaw.IsawStatusPane.add( "nothing is currently highlighted in the tree" );
         return;
       }
 
@@ -1420,7 +1447,7 @@ public class Isaw
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
         else
-          System.out.println( "nothing is currently highlighted in the tree" );
+          Isaw.IsawStatusPane.add( "nothing is currently highlighted in the tree" );
         return;
       }
 
@@ -1445,7 +1472,7 @@ public class Isaw
 	    H.show();
 	}
 	catch(Exception e){
-	    System.out.println("CANNOT FIND HELP FILE");
+	    Isaw.IsawStatusPane.add("CANNOT FIND HELP FILE");
 	}
         
 	H.show();
@@ -1463,7 +1490,7 @@ public class Isaw
 	    H.show();
 	}
 	catch(Exception e){
-	    System.out.println("CANNOT FIND HELP FILE");
+	    Isaw.IsawStatusPane.add("CANNOT FIND HELP FILE");
 	}
         
 	H.show();
@@ -1482,7 +1509,7 @@ public class Isaw
 	    H.show();
 	}
 	catch(Exception e){
-	    System.out.println("CANNOT FIND HELP FILE");
+	    Isaw.IsawStatusPane.add("CANNOT FIND HELP FILE");
 	}
         
 	H.show();
@@ -1653,7 +1680,7 @@ public class Isaw
 
       else
       {
-        System.out.println( "type not appropriate for operators" );
+        Isaw.IsawStatusPane.add( "type not appropriate for operators" );
 
         oMenu.removeAll();
         oMenu.add(  new JMenuItem( "[empty]" )  );
@@ -1727,7 +1754,7 @@ public class Isaw
       propsText.setCaretPosition(0);   
     }
     else
-      System.out.println("Document is null");   
+      Isaw.IsawStatusPane.add("Document is null");   
   }
 
 
@@ -1746,14 +1773,14 @@ public class Isaw
       { 
         (new Util()).saveDoc( doc , filename );        
         SharedData.isaw_props.reload();
-        System.out.println( "IsawProps saved successfully") ;     
+        Isaw.IsawStatusPane.add( "IsawProps saved successfully") ;     
       }
       else if( s.equals("Quit") )
       { 
         kp.dispose();
       }
       else
-        System.out.println( "Unable to quit" );
+        Isaw.IsawStatusPane.add( "Unable to quit" );
     }
   }
 
@@ -1768,7 +1795,7 @@ public class Isaw
     String path = System.getProperty("user.home")+"\\";
     path = StringUtil.fixSeparator(path);
     boolean windows = isWindowsPlatform();
-
+    
     try 
     {
       FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
@@ -2023,6 +2050,7 @@ public class Isaw
     Isaw.setBounds(x,y,window_width,window_height);
     Isaw.show();
     Isaw.validate();
+    //Isaw.IsawStatusPane.add("Hi There");
     Isaw.addWindowListener( 
       new WindowAdapter()
       {
@@ -2074,7 +2102,7 @@ public class Isaw
 //      System.out.println( "reason (Isaw.java): " + (String)reason );
     }
     else
-      System.out.println( "unsupported type in Isaw.update()" );
+      Isaw.IsawStatusPane( "unsupported type in Isaw.update()" );
   }
  
  
@@ -2145,7 +2173,7 @@ public class Isaw
       for( int i=0;  i<filenames.length;  i++ )
         if(  isForced( filenames[i] )  )
         {
-          System.out.println(  "loading (forced): " + removeForce( filenames[i] )  );
+          Isaw.IsawStatusPane(  "loading (forced): " + removeForce( filenames[i] )  );
           files[i] = new File(  removeForce( filenames[i] )  );
         }
         else if(  filter.accept_filename( filenames[i] )  )
@@ -2154,7 +2182,7 @@ public class Isaw
           files[i] = new File( filenames[i] );
         }
         else
-          System.out.println(  "failed: " + filenames[i]  );
+          Isaw.IsawStatusPane(  "failed: " + filenames[i]  );
 
       load_files( files );
 
