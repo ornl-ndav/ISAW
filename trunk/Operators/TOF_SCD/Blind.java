@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/10/07 18:41:59  pfpeterson
+ *  Made getResult() more windows friendly.
+ *
  *  Revision 1.4  2002/10/02 21:59:30  pfpeterson
  *  Fixed bug where it wouldn't try to execute on windows machines.
  *
@@ -125,7 +128,15 @@ public class Blind extends    GenericTOF_SCD {
 
         // first check if the OS is acceptable
         if(! SysUtil.isOSokay(SysUtil.LINUX_WINDOWS) )
-            return new ErrorString(fail+": must be using linux system");
+            return new ErrorString(fail+": must be using linux or windows "+
+                                   "system");
+
+        // confirm that the name of the peaksfile is a non-null string
+        if( peaksfile==null || peaksfile.length()==0 )
+            return new ErrorString(fail+": must specify a peaks file");
+
+        // standardize the peaks filename
+        peaksfile=FilenameUtil.fixSeparator(peaksfile);
 
         // then confirm the peaks file exists
         if(! SysUtil.fileExists(peaksfile) )
@@ -136,7 +147,7 @@ public class Blind extends    GenericTOF_SCD {
         if(index>0){
             direc=peaksfile.substring(0,index);
         }else{
-            direc=null;
+            return new ErrorString(fail+": directory not found");
         }
         peaksfile=peaksfile.substring(index+1);
 
