@@ -30,6 +30,11 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2003/02/07 18:41:55  dennis
+ *  Added merge() method for combining lists of pixels.
+ *  Added serial version ID and ReadObject methods needed for "stable"
+ *  serialization.
+ *
  *  Revision 1.1  2003/02/05 22:16:33  dennis
  *  Initial Version (not complete).
  *
@@ -39,12 +44,31 @@ package  DataSetTools.dataset;
 
 import java.io.*;
 import DataSetTools.math.*;
+import java.util.*;
 
 /**
  */  
 
 public class PixelInfoList 
 {
+  // NOTE: any field that is static or transient is NOT serialized.
+  //
+  // CHANGE THE "serialVersionUID" IF THE SERIALIZATION IS INCOMPATIBLE WITH
+  // PREVIOUS VERSIONS, IN WAYS THAT CAN NOT BE FIXED BY THE readObject()
+  // METHOD.  SEE "IsawSerialVersion" COMMENTS BELOW.  CHANGING THIS CAUSES
+  // JAVA TO REFUSE TO READ DIFFERENT VERSIONS.
+  //
+  public  static final long serialVersionUID = 1L;
+
+
+  // NOTE: The following fields are serialized.  If new fields are added that
+  //       are not static, reasonable default values should be assigned in the
+  //       readObject() method for compatibility with old servers, until the
+  //       servers can be updated.
+  private int IsawSerialVersion = 1;         // CHANGE THIS WHEN ADDING OR
+                                             // REMOVING FIELDS, IF
+                                             // readObject() CAN FIX ANY
+                                             // COMPATIBILITY PROBLEMS
   private IPixelInfo list[] = null; 
 
   /**
@@ -59,6 +83,10 @@ public class PixelInfoList
     this.list = new IPixelInfo[ list.length ];
     for ( int i = 0; i < list.length; i++ )
       this.list[i] = list[i];
+
+    if ( list.length > 1 )
+      Arrays.sort( list, new PixelInfoComparator() );
+
   }
 
   /**
@@ -250,7 +278,7 @@ public class PixelInfoList
     {
       delta[i] = list[i].Delta2Theta();
       position = new DetectorPosition( list[i].position() );
-      angle[i] = position.getScatteringAngle(); 
+      angle[i] = (float)(180.0/Math.PI) * position.getScatteringAngle(); 
     }
                                     // find the min & max scattering angles
     int min_index = 0;
@@ -265,6 +293,143 @@ public class PixelInfoList
 
     return  angle[max_index] - angle[min_index] + 
            (delta[max_index] + delta[min_index])/2;
+  }
+
+
+  /**
+   *  Form a PixelInfoList by merging the current list with the specified list,
+   *  recording each pixel only once and keeping the list ordered by ID.
+   *  If no changes are needed to the current list, this just returns the
+   *  current list. 
+   *
+   *  @param  other_pil  the list to merge with the current list.
+   * 
+   *  @return true if a non-trivial merge operation was done, return false
+   *          if the new list is the same as the old list.
+   */
+  public PixelInfoList merge( PixelInfoList other_pil )
+  {            
+                                    // do it quickly in various special cases
+    if ( other_pil == null || other_pil.list.length == 0 )
+      return this;
+
+    if ( list.length == other_pil.list.length )
+    {
+      boolean same_ids = true;
+      int i = 0;
+      while ( same_ids && i < list.length )
+      {
+        if ( list[i].ID() != other_pil.list[i].ID() )
+          same_ids = false;
+        i++;
+      }
+      if ( same_ids )
+        return this;
+    }
+                          // in general, merge the lists, only keeping distinct
+                          // pixel IDs.
+    IPixelInfo temp[] = new IPixelInfo[ list.length + other_pil.list.length ];
+    int i        = 0,
+        j        = 0,
+        num_used = 0;
+    int last_pix = -1;
+    int pix_i;
+    int pix_j;
+    boolean used_other_list = false;
+
+    while ( i < list.length && j < other_pil.list.length )
+    {
+      pix_i = list[ i ].ID();
+      pix_j = other_pil.list[ j ].ID();
+      if ( pix_i < pix_j )
+      {
+        if ( pix_i != last_pix )
+        {
+          temp[ num_used ] = list[i];
+          last_pix = pix_i;
+          num_used++;
+        }
+        i++;
+      }
+      else if ( pix_i > pix_j )
+      {
+        if ( pix_j != last_pix )
+        {
+          temp[ num_used ] = other_pil.list[ j ];
+          last_pix = pix_j;
+          num_used++;
+          used_other_list = true;
+        }
+        j++;
+      }
+      else     // pix_i == pix_j, so use seg_i if it is not already in the list
+      {
+        if ( pix_i != last_pix )
+        {
+          temp[ num_used ] = list[i];
+          last_pix = pix_i;
+          num_used++;
+        }
+        i++;
+        j++;
+      }
+    }
+
+    if ( i < list.length )                   // leftover values in current list
+    {
+      System.arraycopy( list, i, temp, num_used, list.length - i );
+      num_used += list.length - i;
+    }
+
+    else if (j < other_pil.list.length )      // leftover values in other list
+    {
+      System.arraycopy( other_pil.list, j, temp, num_used,
+                        other_pil.list.length - j );
+      num_used += other_pil.list.length - j;
+      used_other_list = true;
+    }
+
+    if ( !used_other_list )
+      return this;
+                             // otherwise copy the values into a new array
+                             // if needed and return a new PixelInfoList object
+    IPixelInfo new_list[];
+    if ( num_used < temp.length )
+    {
+      new_list = new IPixelInfo[ num_used ];
+      System.arraycopy( temp, 0, new_list, 0, num_used );
+    }
+    else
+      new_list = temp;
+
+    return new PixelInfoList( new_list );
+  }
+
+
+/* -----------------------------------------------------------------------
+ *
+ *  PRIVATE METHODS
+ *
+ */
+
+/* ---------------------------- readObject ------------------------------- */
+/**
+ *  The readObject method is called when objects are read from a serialized
+ *  ojbect stream, such as a file or network stream.  The non-transient and
+ *  non-static fields that are common to the serialized class and the
+ *  current class are read by the defaultReadObject() method.  The current
+ *  readObject() method MUST include code to fill out any transient fields
+ *  and new fields that are required in the current version but are not
+ *  present in the serialized version being read.
+ */
+
+  private void readObject( ObjectInputStream s ) throws IOException,
+                                                        ClassNotFoundException
+  {
+    s.defaultReadObject();               // read basic information
+
+    if ( IsawSerialVersion != 1 )
+      System.out.println("Warning:PixelInfoList IsawSerialVersion != 1");
   }
 
 
@@ -296,21 +461,92 @@ public class PixelInfoList
 
     short row = 9;                                  // show info on one pixel
     short col = 4;
-    DetectorPixelInfo test_pixel = 
-                          new DetectorPixelInfo( 2, row, col, test_grid );
+    
+    DetectorPixelInfo test_pixel;
+   
+    for ( int i = 0; i < 4; i++ )
+    {
+      test_pixel = new DetectorPixelInfo( i+2, row, col, test_grid );
  
-    System.out.print( test_pixel.toString() );    // show basic pixel info
-    System.out.println("---------------------------------------");
-    System.out.println("At row = " + row + " col = " + col );
-    System.out.println("position() = " + test_pixel.position() );
-    System.out.println("x_vec()    = " + test_pixel.x_vec() );
-    System.out.println("y_vec()    = " + test_pixel.y_vec() );
-    System.out.println("z_vec()    = " + test_pixel.z_vec() );
-    System.out.println("width()    = " + test_pixel.width() );
-    System.out.println("depth()    = " + test_pixel.depth() );
-    System.out.println("height()   = " + test_pixel.height() );
-    System.out.println("SolidAngle()  = " + test_pixel.SolidAngle() );
-    System.out.println("Delta2Theta() = " + test_pixel.Delta2Theta() );
+      System.out.print( test_pixel.toString() );    // show basic pixel info
+      System.out.println("---------------------------------------");
+      System.out.println("At row = " + row + " col = " + col );
+      System.out.println("position() = " + test_pixel.position() );
+      System.out.println("x_vec()    = " + test_pixel.x_vec() );
+      System.out.println("y_vec()    = " + test_pixel.y_vec() );
+      System.out.println("z_vec()    = " + test_pixel.z_vec() );
+      System.out.println("width()    = " + test_pixel.width() );
+      System.out.println("depth()    = " + test_pixel.depth() );
+      System.out.println("height()   = " + test_pixel.height() );
+      System.out.println("SolidAngle()  = " + test_pixel.SolidAngle() );
+      System.out.println("Delta2Theta() = " + test_pixel.Delta2Theta() );
+      if ( i == 0 )
+      {
+        row = 0;
+        col = 0;
+      }
+      else if ( i == 1 )
+      {
+        row = 84;
+        col = 84;
+      }
+      else if ( i == 2 )
+      {
+        row = 42;
+        col = 42;
+      }
+    }
+
+    IPixelInfo list[] = new IPixelInfo[4];
+    for ( row = 0; row < 2; row++ )
+      for ( col = 0; col < 2; col++ )
+        list[row * 2 + col] = new DetectorPixelInfo( 
+                                          (short)((row+5)*2+col+5+100),
+                                          (short)(row+5),
+                                          (short)(col+5),
+                                          test_grid );
+
+
+    PixelInfoList pi_list = new PixelInfoList( list );
+    System.out.println("................................");
+    System.out.println("ave_pos = " + pi_list.average_position() );
+    System.out.println("eff_pos = " + pi_list.effective_position() );
+    System.out.println("row     = " + pi_list.row() );
+    System.out.println("col     = " + pi_list.col() );
+    System.out.println("ave_row = " + pi_list.average_row() );
+    System.out.println("ave_col = " + pi_list.average_col() );
+    System.out.println("num_pix = " + pi_list.num_pixels() );
+    System.out.println("sol_ang = " + pi_list.SolidAngle() );
+    System.out.println("del 2 t = " + pi_list.Delta2Theta() );
+
+    System.out.println("The first list's IDs are: " );
+    for ( int i = 0; i < pi_list.num_pixels(); i++ )
+      System.out.println( "Pixel ID is: " + pi_list.pixel(i).ID() );
+
+                                           // make a second list an test merge
+    list = new IPixelInfo[9];
+    for ( row = 0; row < 3; row++ )
+      for ( col = 0; col < 3; col++ )
+        list[row * 3 + col] = new DetectorPixelInfo( 
+                                          (short)((row+2)*3+col+2+100),
+                                          (short)(row+2),
+                                          (short)(col+2),
+                                          test_grid );
+
+    PixelInfoList pi_list_2 = new PixelInfoList( list );
+    System.out.println("The second list's IDs are: " );
+    for ( int i = 0; i < pi_list_2.num_pixels(); i++ )
+      System.out.println( "Pixel ID is: " + pi_list_2.pixel(i).ID() );
+
+    PixelInfoList merged_list = pi_list_2.merge( pi_list );
+    System.out.println("The merged list's IDs are: " );
+    for ( int i = 0; i < merged_list.num_pixels(); i++ )
+      System.out.println( "Pixel ID is: " + merged_list.pixel(i).ID() );
+
+    if ( pi_list_2.equals(merged_list) )
+      System.out.println("Used same list");
+    else
+      System.out.println("Made new list");
   }
 
 } 
