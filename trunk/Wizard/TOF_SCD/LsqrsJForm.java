@@ -28,6 +28,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.10  2003/06/18 19:58:23  bouzekc
+ * Uses super.getResult() for initializing PropertyChanger
+ * variables.  Now fires off property change events in a
+ * semi-intelligent manner.
+ *
  * Revision 1.9  2003/06/17 20:37:56  bouzekc
  * Fixed setDefaultParameters so all parameters have a
  * visible checkbox.  Added more robust error checking on
@@ -255,10 +260,6 @@ public class LsqrsJForm extends Form
     int[] runsArray;
     LsqrsJ leastSquares;
 
-    //the scalar log file - ALWAYS valid
-    param = (IParameterGUI)getParameter(6);
-    param.setValid(true);
-
     //gets the run numbers
     param = (IParameterGUI)getParameter(0);
     obj = param.getValue();
@@ -329,9 +330,13 @@ public class LsqrsJForm extends Form
         "ERROR: you must enter a valid transformation matrix.");
     }
 
+    //the scalar log file - ALWAYS valid
+    param = (IParameterGUI)getParameter(6);
+    param.setValid(true);
+
+
     //peaks file
     peaksName = peaksDir + expName + ".peaks";
-
 
    //call LsqrsJ - this is the same every time, so keep it out of the loop
    leastSquares = new LsqrsJ();
@@ -339,9 +344,14 @@ public class LsqrsJForm extends Form
    leastSquares.getParameter(2).setValue(restrictSeq);
    leastSquares.getParameter(3).setValue(xFormMat);
 
+    //validate the parameters and set the progress bar variables
+    super.getResult();
+
+    //set the increment amount
+    increment = (1.0f / runsArray.length) * 100.0f;
+
     for(int i = 0; i < runsArray.length; i++)
     {
-      /*Get the run number. We don't want to remove the leading zeroes!*/
       runNum = DataSetTools
                .util
                .Format
@@ -359,6 +369,11 @@ public class LsqrsJForm extends Form
 
       if(obj instanceof ErrorString)
         return errorOut("LsqrsJ failed: " + obj.toString());
+
+      //fire a property change event off to any listeners
+      oldPercent = newPercent;
+      newPercent += increment;
+      super.fireValueChangeEvent((int)oldPercent, (int)newPercent);
     }
 
     //now put out an orientation matrix for all of the runs.
@@ -390,8 +405,7 @@ public class LsqrsJForm extends Form
     IParameterGUI param;
     //the scalar log file - ALWAYS valid
     param = (IParameterGUI)getParameter(6);
-    if(new File(param.getValue().toString()).exists())
-    param.setValid(true);
+      param.setValid(true);
     if(useIdentCheckBox == null)
       setIdentityParameter();
     //after the first time through, we don't want to change the
