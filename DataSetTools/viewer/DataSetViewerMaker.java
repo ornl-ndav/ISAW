@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/11/21 14:49:18  rmikk
+ *  Implemented the DataSetViewer.setDataSet method
+ *
  *  Revision 1.6  2003/10/31 14:48:42  dennis
  *  Fixed CVS log tag.
  *
@@ -57,13 +60,13 @@ public class DataSetViewerMaker  extends DataSetViewer
   {
    DataSet ds;
    ViewerState state;
-   IVirtualArray1D viewArray;
+   DataSetData viewArray;
    FunctionViewComponent viewComp;
    DataSetData update_array;
 
    public DataSetViewerMaker( DataSet               ds, 
                               ViewerState           state, 
-                              IVirtualArray1D       viewArray, 
+                              DataSetData           viewArray, 
                               FunctionViewComponent viewComp )
      {
       super( ds, state);
@@ -120,11 +123,26 @@ public class DataSetViewerMaker  extends DataSetViewer
        else if( reason.equals( "POINTED AT CHANGED" )) 
           viewComp.dataChanged();
     }
+    /**
+     *  Change the DataSet being viewed to the specified DataSet.  Derived
+     *  classes should override this and take what additional steps are needed
+     *  to change the specific viewer to the deal with the new DataSet.
+     *
+     *  @param  ds  The new DataSet to be viewed
+     */
+    public void setDataSet( DataSet ds )
+    {
+      super.setDataSet(ds);
+      viewArray.setDataSet(ds);
+    }
+    
 
   public class ArrayActionListener  implements ActionListener
     {
      public void actionPerformed( ActionEvent evt)
        {
+         
+         viewComp.dataChanged(new DataSetData( getDataSet() ));
        }
      }
 
