@@ -30,6 +30,12 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2004/08/02 20:11:56  rmikk
+ * Can now set ISX, ISY, and ISZ with this operator
+ * Assumes that the integrate information operator( Title="Integrate1") is an operator of the
+ *    data set.
+ * Reflects changes to the IntegratePt operator.
+ *
  * Revision 1.2  2004/07/31 23:12:05  rmikk
  * Removed unused imports
  *
@@ -46,7 +52,7 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 //import Command.*;
 //import java.io.*;
 import DataSetTools.dataset.*;
-
+import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 
 /**
  * This class lets the user plug in an alternate IntegratePeak routine of a
@@ -60,6 +66,9 @@ public class SetNewIntegratePk implements Wrappable {
   public DataSet DS;  // The Data Set to add the IntegratePk operator to
   public LoadFileString filename; //The filename(java or class) with the Wrappable
                                   // that integrates the peak
+  public int ISX = 1;
+  public int ISY = 1;
+  public int ISZ = 1;
 
   /**
    *  Return SetIntegrate the name used to invoke this operator in scripts
@@ -99,6 +108,12 @@ public class SetNewIntegratePk implements Wrappable {
    * 
    */
   public Object calculate(  ) {
+  	if( DS == null)
+  	  return  new ErrorString("No DataSet");
+  	DataSetOperator op = DS.getOperator( "Integrate1");
+  	if( op == null)
+  	   return new ErrorString("No integrate op. Use addDataSetOperator to get one");
+  	IntegratePt DSoperator = (IntegratePt)op;
     if( filename == null)
        return new ErrorString("Improper Filename");
     String fil = filename.toString();
@@ -156,16 +171,10 @@ public class SetNewIntegratePk implements Wrappable {
     }
     if( !(operator instanceof Wrappable))
       return new ErrorString("Class must be a Wrappable");
-    DataSetTools.operator.DataSet.Conversion.XAxis.IntegratePt.setIntgratePkOp(
-             (Wrappable)operator);
+      
+    DSoperator.setIntgratePkOp( (Wrappable)operator, ISX,ISY,ISZ);
             
-    //-------------------- Now add IntegratePt to the list of DataSet Operators---  
-    if( DS != DataSet.EMPTY_DATA_SET){
     
-      DataSetOperator op =DS.getOperator("Integrate1");
-      if( op == null)
-        DS.addOperator(new DataSetTools.operator.DataSet.Conversion.XAxis.IntegratePt());
-    }
     return "Success";
   }
 }
