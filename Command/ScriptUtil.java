@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/19 22:31:26  pfpeterson
+ * Removed an empty statement to make jikes happy.
+ *
  * Revision 1.3  2003/06/19 22:28:59  pfpeterson
  * More appropriate setting of parameters in an operator.
  *
@@ -638,7 +641,7 @@ public class ScriptUtil{
     }
 
     // shrink the array and return
-    return reduceArray(candidates);;
+    return reduceArray(candidates);
   }
 
   /**
