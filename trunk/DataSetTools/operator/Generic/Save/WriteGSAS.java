@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/03/20 19:23:14  pfpeterson
+ * Changed default values after talking with J. Richardson.
+ *
  * Revision 1.7  2003/02/03 21:49:07  dennis
  * Added getDocumentationMethod() and java docs for getResult().
  * (Joshua Olson)
@@ -77,7 +80,6 @@ import java.util.*;
 public class WriteGSAS extends GenericSave{
   public WriteGSAS(){
     super( "Save as GSAS " );
-    setDefaultParameters();
   }
 
   /** 
@@ -105,8 +107,8 @@ public class WriteGSAS extends GenericSave{
     SaveFilePG sfpg=new SaveFilePG("Output File",null);
     sfpg.setFilter(new GsasFileFilter());
     addParameter( sfpg );
-    addParameter( new Parameter("Export Monitor", Boolean.TRUE));
-    addParameter( new Parameter("Sequential Bank Numbering", Boolean.FALSE));
+    addParameter( new Parameter("Export Monitor", Boolean.FALSE));
+    addParameter( new Parameter("Sequential Bank Numbering", Boolean.TRUE));
   }  
    
   /** 
