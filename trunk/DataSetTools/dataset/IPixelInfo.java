@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2004/04/26 13:21:22  rmikk
+ *  Added a method to setGridIDs, which passes in a Hashtable of gridIds and
+ *    actual grids that are already used by this DataSet
+ *
  *  Revision 1.4  2004/03/15 06:10:38  dennis
  *  Removed unused import statements.
  *
@@ -48,7 +52,7 @@
 package  DataSetTools.dataset;
 
 import gov.anl.ipns.MathTools.Geometry.*;
-
+import java.util.*;
 import java.io.*;
 
 /**
@@ -178,5 +182,11 @@ public interface IPixelInfo extends Serializable
    */
   public float Delta2Theta( );
   
+  /**
+   * Sets the list of Grids already set up so the XMLread does not create a
+   * new grid for each PixelInfo Attribute
+   * @param gridIDs
+   */
+  public void setGridIDs(Hashtable gridIDs); 
 } 
 
