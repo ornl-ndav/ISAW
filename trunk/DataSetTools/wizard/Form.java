@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/06/05 22:19:42  bouzekc
+ * Added code so that subclasses can more easily write
+ * error messages related to incorrect parameters.
+ * Added code to allow selective setting of constant
+ * parameters by external classes.
+ *
  * Revision 1.11  2003/05/16 15:30:48  pfpeterson
  * Removed a redundant call to setDefaultParameters() immediately after
  * super(String).
@@ -96,7 +102,7 @@ import java.awt.GridLayout;
 import java.beans.*;
 import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
-import DataSetTools.util.PropertyChanger;
+import DataSetTools.util.*;
 
 /**
  *  The Form class is controls one operation of the sequence of operations
@@ -130,6 +136,10 @@ public abstract class Form extends Operator implements Serializable{
   public static final int RESULT_PARAM = 2;
 
   private int[][]  param_ref = null;
+
+  //used for standalone or first Forms.  Default is standalone.
+  protected boolean HAS_CONSTANTS = false; 
+
   /**
    *  Construct a form with the given title to work with 
    *  the specified Wizard.  Note that the integer
@@ -414,5 +424,54 @@ public abstract class Form extends Operator implements Serializable{
           .addPropertyChangeListener(IParameter.VALUE,w);
       }
     }
+  }
+
+  /**
+   *  Sets the HAS_CONSTANTS variable so that the Form can be
+   *  run as a standalone or first Form, or as a Form that
+   *  relies on previous Forms.
+   *
+   *  @param    constant    Set true if this is a Form that
+   *                        relies on previous Forms, or
+   *                        false if it is a standalone Form.
+   */
+  public void setHasConstants(boolean constant)
+  {
+    this.HAS_CONSTANTS = constant;
+  }
+
+  /**
+   *  Convenience method for subclassed Forms to return an
+   *  "invalid" message to the Wizard, and output an appropriate
+   *  error message to the user.
+   *
+   *  @param  errmessage           The error message that you want the user
+   *                               to see.
+   */
+  protected Boolean errorOut(Object errmessage)
+  {
+   if( errmessage instanceof String )
+     SharedData.addmsg(
+       "FORM ERROR: " + errmessage + "\n");
+   else
+     SharedData.addmsg(
+       "FORM ERROR: " + errmessage.toString() + "\n");
+   return new Boolean(false);
+  }
+
+  /**
+   *  Convenience method for subclassed Forms to return an
+   *  "invalid" message to the Wizard, and output an appropriate
+   *  error message to the user as well as invalidating a Form.
+   *
+   *  @param  param                The IParameterGUI to set invalid.
+   *
+   *  @param  errmessage           The error message that you want the user
+   *                               to see.
+   */
+  protected Boolean errorOut(IParameterGUI param, Object errmessage)
+  {
+   param.setValid(false);
+   return this.errorOut(errmessage);
   }
 }
