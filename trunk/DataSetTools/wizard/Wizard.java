@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/03/11 19:51:20  pfpeterson
+ * First implementation of the 'View DataSet' button (Chris Bouzek).
+ *
  * Revision 1.11  2003/03/06 15:50:18  pfpeterson
  * Changed to work with SharedData's private StatusPane.
  *
@@ -132,6 +135,7 @@ public class Wizard implements Serializable{
     private static final String LOAD_FORM_COMMAND   = "Load Current Form";
     private static final String SAVE_WIZARD_COMMAND = "Save Wizard";
     private static final String LOAD_WIZARD_COMMAND = "Load Wizard";
+    private static final String VIEW_COMMAND        = "View DataSet(s)";
 
     // default help and about messages
     private String help_message  = "Help not available for Wizard";
@@ -288,6 +292,11 @@ public class Wizard implements Serializable{
         next_button          = new JButton( NEXT_COMMAND  );
         last_button          = new JButton( LAST_COMMAND  );
         JButton exec_button  = new JButton( EXEC_COMMAND  );
+
+        JButton view_button = new JButton( VIEW_COMMAND);
+        view_button.setEnabled(true);
+        button_panel.add(view_button);
+
         back_button.setEnabled(false);
         next_button.setEnabled(false);
         if(forms.size()>1){
@@ -342,6 +351,7 @@ public class Wizard implements Serializable{
         wizard_help    .addActionListener( command_handler );
         form_help      .addActionListener( command_handler );
         exit_item      .addActionListener( command_handler );
+        view_button    .addActionListener( command_handler );
     }
 
     protected void showGUI(){
