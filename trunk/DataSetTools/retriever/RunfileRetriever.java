@@ -1,7 +1,7 @@
 /*
  * File:  RunfileRetriever.java
  *
- * Copyright (C) 1999, Dennis Mikkelson
+ * Copyright (C) 1999-2001, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,6 +31,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2001/12/14 22:13:12  dennis
+ *  Refined calculations for DG Spectrometers.  It now calculates the
+ *  energy from the monitor peaks in the constructor and stores the
+ *  calculated value as the ENERGY_IN attribute.  It also uses the
+ *  calculated value of ENERGY_IN to calculate the time of flight
+ *  from the source to the sample.  The calculated and nominal
+ *  source to sample TOFs are also stored as attributes.
+ *
  *  Revision 1.35  2001/10/17 18:33:45  dennis
  *  Now adds crate, slot and input attributes for each spectrum.
  *
@@ -206,8 +214,11 @@ public class RunfileRetriever extends    Retriever
                             // DataSet number in this runfile.
   Runfile run_file;
 
-  private static int instrument_type = InstrumentType.UNKNOWN;
+  private int instrument_type = InstrumentType.UNKNOWN;
 
+  private float calculated_E_in = 0;     // incident energy calculated from
+                                         // the beam monitors, for direct
+                                         // geometry spectrometers.  
 /**
  *  Construct a runfile retriever for a specific file.
  *
@@ -237,6 +248,7 @@ public class RunfileRetriever extends    Retriever
     try
     {
       run_file         = new Runfile( file_name );
+      run_file.LeaveOpen();
       instrument_type  = run_file.InstrumentType();
       if ( instrument_type == InstrumentType.UNKNOWN )
         instrument_type = InstrumentType.getIPNSInstrumentType( file_name );
@@ -268,6 +280,8 @@ public class RunfileRetriever extends    Retriever
             data_set_type[ num_data_sets ] = MONITOR_DATA_SET;
             histogram[ num_data_sets ]     = hist;
             num_data_sets++;
+            if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
+              calculated_E_in = CalculateEIn();
           }
           if ( has_pulse_height )
           { 
@@ -284,6 +298,7 @@ public class RunfileRetriever extends    Retriever
 
         }
       }
+      run_file.Close();
     }
     catch( Exception e ) 
     {
@@ -407,6 +422,66 @@ public class RunfileRetriever extends    Retriever
 
     return getDataSet( data_set_num, instrument_type );
   }
+
+
+/**
+ *  Calculate the incident energy from the monitor spectra for a direct
+ *  geometry spectrometer.  In this case, this method is called from the
+ *  constructor, after the runfile has been opened and the instrument type
+ *  has been deterimined. 
+ */
+private float CalculateEIn()
+{
+  int first_id = run_file.MinSubgroupID( 1 );
+  int last_id  = run_file.MaxSubgroupID( 1 );
+                                                // if not enough monitors, just
+                                                // return the nominal value.
+  if ( last_id < 0 || first_id < 0 || last_id < first_id + 1 )               
+    return (float)run_file.EnergyIn();
+
+  int  n_monitors = 0;
+  Data d[] = new Data[2];                       // use first two monitors to
+                                                // calculate the energy
+  try
+  {
+    int group_id = first_id;
+    while ( group_id <= last_id && n_monitors < 2 )
+    {
+      if ( run_file.IsSubgroupBeamMonitor(group_id) )
+      {
+        float bin_boundaries[] = run_file.TimeChannelBoundaries(group_id);
+        float raw_spectrum[]   = run_file.Get1DSpectrum( group_id );
+        XScale x_scale = new VariableXScale( bin_boundaries );
+        d[n_monitors] = new Data( x_scale, raw_spectrum, n_monitors ); 
+
+        DetectorPosition det_position = new DetectorPosition();
+
+        Segment group_segments[] = run_file.SegsInSubgroup( group_id );
+        float seg_angle  = (float)run_file.RawDetectorAngle( group_segments[0] );
+              seg_angle *= (float)(Math.PI / 180.0);
+        float seg_height = (float)run_file.RawDetectorHeight( group_segments[0]);
+        float seg_path   = (float)run_file.RawFlightPath( group_segments[0] );
+              seg_path   = Math.abs( seg_path );
+
+        det_position.setCylindricalCoords( seg_path, seg_angle, seg_height );
+
+        Attribute pos_attr = new DetPosAttribute( Attribute.DETECTOR_POS, 
+                                                  det_position );
+        d[n_monitors].setAttribute( pos_attr );
+        n_monitors++;
+      }
+      group_id++;
+    }
+  }
+  catch ( IOException e )
+  {
+    System.out.println( "ERROR: no monitor data in runfile " + run_file );
+    return (float)run_file.EnergyIn();
+  }
+
+  float e_in = tof_data_calc.EnergyFromMonitorData( d[0], d[1] );
+  return e_in;
+}
 
 
 /**
@@ -551,17 +626,13 @@ public class RunfileRetriever extends    Retriever
           else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER &&
                    !is_monitor                                           )
            {
-             source_to_sample_tof = (float)run_file.SourceToSampleTime();
+             source_to_sample_tof = 
+                        (float)run_file.SourceToSampleTime( calculated_E_in );
+
              if ( !Float.isInfinite(source_to_sample_tof) )
                for ( int i = 0; i < bin_boundaries.length; i++ )
                  bin_boundaries[i] -= source_to_sample_tof;
            }
-/*  ####
-           System.out.println("bin boundaries for group ID " + group_id );
-           for ( int ii = 0; ii < bin_boundaries.length; ii++ )
-             System.out.print(" " + bin_boundaries[ii] );
-           System.out.println();
-*/
            x_scale = new VariableXScale( bin_boundaries );
         }
 
@@ -729,8 +800,15 @@ public class RunfileRetriever extends    Retriever
                                      (float)run_file.EnergyIn() );
       attr_list.setAttribute( float_attr );
 
-      float_attr =new FloatAttribute(Attribute.ENERGY_IN,
-                                     (float)run_file.EnergyIn() );
+      float_attr =new FloatAttribute(Attribute.ENERGY_IN, calculated_E_in );
+      attr_list.setAttribute( float_attr );
+
+      float_attr =new FloatAttribute("Nominal Source to Sample TOF",
+                                     (float)run_file.SourceToSampleTime() );
+      attr_list.setAttribute( float_attr );
+
+      float_attr =new FloatAttribute("Source to Sample TOF",
+                        (float)run_file.SourceToSampleTime( calculated_E_in ) );
       attr_list.setAttribute( float_attr );
     }
 
