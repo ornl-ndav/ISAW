@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/24 19:10:47  bouzekc
+ * Removed unused variables from main().  Removed unused imports.
+ *
  * Revision 1.4  2003/06/16 19:02:27  pfpeterson
  * Removed old code and updated to work with new getCategoryList() code
  * in base operator class.
@@ -51,9 +54,6 @@ package DataSetTools.operator.DataSet.Conversion.XAxis;
 import  java.io.*;
 import  java.text.*;
 import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
-import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.Conversion.DS_Conversion;
 
 /**
@@ -72,7 +72,6 @@ abstract public class XAxisConversionOp extends    DS_Conversion
   public XAxisConversionOp( String title )
   {
     super( title );
-    Parameter parameter;
   }
 
   /* ------------------------ getCategoryList ------------------------------ */

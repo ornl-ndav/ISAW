@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/01/24 19:10:47  bouzekc
+ *  Removed unused variables from main().  Removed unused imports.
+ *
  *  Revision 1.7  2003/01/13 20:28:12  dennis
  *  Minor documentation fix. (Chris Bouzek)
  *
@@ -403,7 +406,7 @@ public class MonitorTofToEnergy extends    XAxisConversionOp
    */
   public static void main( String[] args )
   {
-    float min_1 = (float)45.0, max_1 = (float)80.0;
+    float min_1 = 45.0f, max_1 = 80.0f;
     String file_name = "/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
                        //"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";
 
@@ -411,10 +414,10 @@ public class MonitorTofToEnergy extends    XAxisConversionOp
     {
       RunfileRetriever rr = new RunfileRetriever( file_name );
       DataSet ds1 = rr.getDataSet(1);
-      ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+      new ViewManager(ds1, IViewManager.IMAGE);
       MonitorTofToEnergy op = new MonitorTofToEnergy(ds1, min_1, max_1, 100);
       DataSet new_ds = (DataSet)op.getResult();
-      ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+      new ViewManager(new_ds, IViewManager.IMAGE);
       System.out.println(op.getDocumentation());
     }
     catch(Exception e)
