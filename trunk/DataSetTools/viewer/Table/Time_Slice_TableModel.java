@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/03/12 17:10:49  rmikk
+ * Eliminated a null pointer error if Data.getErrors() returns null
+ * Added several method stubs to get this class more in line
+ *    with our new ViewArray producer
+ *
  * Revision 1.10  2003/03/03 16:58:52  pfpeterson
  * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -116,7 +121,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     *@param  time  the time of this time slice
     */
    public Time_Slice_TableModel( DataSet DS, float time, boolean showErrors, boolean showInd )
-   {
+   {   System.out.println("to time-slice TB model, show="+showErrors+","+showInd);
       Time = time;
 
       int[] row = new int[DS.getNum_entries()];
@@ -436,9 +441,9 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          yvals = db.getErrors();
       else
          return new Integer(Grp);//returns group index instead of time index
-       
-
       if( index < 0 )
+         return new Integer( 0 );
+      else if( yvals == null)
          return new Integer( 0 );
       else if( index >= yvals.length )
          return new Integer( 0 );
@@ -482,7 +487,15 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          }
    }
 
+   public JMenuItem[] getJMenuItems( int MenuTitle)
+     {return null;}
+   public JComponent[] getControlComponents()
+      {return null;}
 
+   public void addActionListener( ActionListener list)
+     {}
+   public void removeActionListener( ActionListener list)
+    {}
    /** Test program for this module */
    public static void main( String args[] )
    {
