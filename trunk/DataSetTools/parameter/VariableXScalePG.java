@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/10/11 19:32:48  bouzekc
+ * Really implemented validateSelf().
+ *
  * Revision 1.3  2003/09/09 23:33:18  bouzekc
  * Added definition of type to the constructors.
  *
@@ -148,7 +151,6 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
           allFloats = false;
         }
       }
-
       scale = new VariableXScale( elems );
     }
 
@@ -188,7 +190,8 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
      tester.add( new Float( 1.9f ) );
      tester.add( new Float( 6.0f ) );
      tester.add( new Float( 11.4f ) );
-     tester.add( new Float( 19.6f ) );
+     //this should generate an error from VariableXScale.java
+     tester.add( new Float( 9.6f ) );
      vxpg.setValue( tester );
      System.out.println( "With a Vector value" );
      System.out.println( vxpg.getValue(  ) );
@@ -227,5 +230,33 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
    */
   public XScale getXScaleValue(  ) {
     return ( XScale )this.value;
+  }
+
+  /**
+   * Validates this VariableXScalePG.  A VariableXScalePG is considered valid
+   * if it contains all Float elements in monotonic increasing order.
+   */
+  public void validateSelf(  ) {
+    super.validateSelf(  );
+
+    Vector elems = getVectorValue(  );
+
+    if( elems != null ) {
+      boolean greater = true;
+      float num1;
+      float num2;
+
+      for( int i = 0; ( i < ( elems.size(  ) - 1 ) ) && greater; i++ ) {
+        num1   = ( ( Float )elems.get( i ) ).floatValue(  );
+        num2   = ( ( Float )elems.get( i + 1 ) ).floatValue(  );
+
+        if( num1 >= num2 ) {
+          greater = false;
+        }
+      }
+      setValid( greater );
+    } else {
+      setValid( false );
+    }
   }
 }
