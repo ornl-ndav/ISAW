@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/10/14 21:52:38  dennis
+ *  Fixed javadoc problem so that it builds cleanly on jdk 1.4.2.
+ *  Fixed javadocs for getCommand().
+ *
  *  Revision 1.4  2003/04/22 21:53:31  hammonds
  *  Efficiency change so that a new vector is not created every time a new Constructor is called.
  *
@@ -65,22 +69,13 @@ import  IPNS.Runfile.*;
 
 public class LoadScriptArray2 extends GenericBatch implements Serializable
 {    
-  
 	
   /* -------------------------- Constructor -------------------------- */
   /**
    *  Construct a LoadScriptArray2 Operator to read from the specified file.  
-   *  Theconstructor will throw an exception if the file can't be opened.  The
-   *  other methods of this class should not be used if the file can't be
-   *  opened.
    *
    *  @param file_name  The fully qualified file name.
-   *  @param num_head The number of header lines that should be
-   *  skipped while reading in the file
-   *  @param num_data The number of data lines to read in. If set to
-   *  zero all lines until the end of file are read.
-
-  */
+   */
 
   public LoadScriptArray2( String file_name )
   {  
@@ -95,17 +90,16 @@ public class LoadScriptArray2 extends GenericBatch implements Serializable
   } 
 
 
-
-
   /** 
    * Get the name of this operator, used in scripts
-   * @return "SetupReader", the command used to invoke this operator
+   * @return "LoadScriptArray", the command used to invoke this operator
    * in Scripts
    */
   public String getCommand()
   {
     return "LoadScriptArray";
   }
+
   /** 
    * Sets default values for the parameters. The parameters set must
    * match the data types of the parameters used in the constructor.
@@ -161,9 +155,9 @@ public class LoadScriptArray2 extends GenericBatch implements Serializable
 		  String sVal = StringUtil.getString( in_line );
 		  char[] dq = {'"'};
 		  String quote = new String(dq);
-		  if (sVal.startsWith( quote ) ) { // If string starts with quote
-		                                   // must assume look past white
-		                                   // space
+		  if (sVal.startsWith( quote ) ) {// If string starts with quote
+		                                  // must assume look past white
+		                                  // space
 		    String tempString = sVal.substring(1);
 		    sVal = tempString;
 		    if ( sVal.endsWith( quote )) {  // This is the last part
@@ -253,9 +247,6 @@ public class LoadScriptArray2 extends GenericBatch implements Serializable
                                                  // display any message string
                                                  // that might be returned
     System.out.println("Operator returned: " + obj );
-
-                                                 // if the operator produced a
-
   }
 }
 
