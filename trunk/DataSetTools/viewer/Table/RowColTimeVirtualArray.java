@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/05/06 17:35:45  rmikk
+ * Added a setTime Method 
+ * Added an argument to the Selected2D constructor
+ * Access to the super.setTime is now through the SetTime method
+ *
  * Revision 1.12  2004/03/15 19:34:00  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -648,6 +653,27 @@ public class RowColTimeVirtualArray extends
      }
   }
   /**
+   *  This method sets the time, notifies listeners and advances the animation
+   *  control
+   * @param time  the new time
+   * NOTE: This is currently called only when a pointed at event occurs
+   */
+  public void setTime( float time){
+  	super.setTime(time);
+  	acontrol.setFrameValue( time);
+	notifyActionListeners( IArrayMaker.DATA_CHANGED);
+  	
+  }
+  /**
+   *  Invokes super.setTime only. For internal use. setTime notifies listeners
+   * and moves the time animation control
+   */
+  public void SetTime( float time){
+  	 super.setTime( time);
+  	
+  }
+  
+  /**
   *    Returns the selected data corresponding to the give PointedAt
   *    condition
   *    @param PointedAtGroupIndex   The index in the DataSet of the group
@@ -661,7 +687,8 @@ public class RowColTimeVirtualArray extends
                                          float PointedAtTime)
     {
      return new SelectedData2D( getRow(PointedAtGroupIndex,PointedAtTime),
-                                getCol(PointedAtGroupIndex,PointedAtTime));
+                                getCol(PointedAtGroupIndex,PointedAtTime),
+                                PointedAtTime);
     }
 
 
@@ -990,7 +1017,7 @@ public class RowColTimeVirtualArray extends
      for( int i = timeIndStart; i <= timeIndEnd; i++ ){
         S.append("\n\nTime="+xvals1[i]+"\n\t");
         
-        setTime(xvals1[i]);
+        SetTime(xvals1[i]);
         for( int j= MinCol; j<=MaxCol; j++)
           S.append("Col "+j+"\t");
         S.append("\n");
@@ -1014,7 +1041,7 @@ public class RowColTimeVirtualArray extends
     }
     catch( Exception ss)
       { SharedData.addmsg("IO error="+ss.toString());}
-    setTime(saveTime);
+    SetTime(saveTime);
    }
   
 
@@ -1071,7 +1098,7 @@ public class RowColTimeVirtualArray extends
         TimeIndex = 0;
      else if( TimeIndex >= x_scale.getNum_x())
         TimeIndex = x_scale.getNum_x()-1;
-     setTime( x_scale.getX( TimeIndex));
+     SetTime( x_scale.getX( TimeIndex));
      
      int DetNum = state.get_int( ViewerState.TABLE_TS_DETNUM);
      if( DetNum >= 0)
@@ -1138,7 +1165,7 @@ public class RowColTimeVirtualArray extends
            acontrol.setFrameNumber( 0);
         else
            acontrol.setFrameValue(  X );
-        setTime( acontrol.getFrameValue());
+        SetTime( acontrol.getFrameValue());
         state.set_int( "TableTS_TimeInd" , getPointedAtXindex( ));
         state.set_float("TABLE_TS_MIN_TIME", xvals1[0]);
         state.set_float("TABLE_TS_MAX_TIME" ,xvals1[ xvals1.length - 1 ]);
@@ -1170,7 +1197,7 @@ public class RowColTimeVirtualArray extends
            
         state.set_int( "TableTS_TimeInd", acontrol.getFrameNumber());
          
-        setTime( xvals1[acontrol.getFrameNumber()]);
+        SetTime( xvals1[acontrol.getFrameNumber()]);
         
         notifyActionListeners( IArrayMaker.DATA_CHANGED);
         if( acontrol.getFrameNumber() != FrameNumber) 
