@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2001/11/27 18:39:57  dennis
+ * Change the javadocs to reflect that this Save now works and it
+ * only saves in java binary form. (Ruth)
+ *
  * Revision 1.29  2001/11/12 21:18:39  dennis
  *   1. & between a string and boolean or Vector now changes these
  *      non string data type to string.
@@ -1037,7 +1041,7 @@ public void addDataSet(DataSet dss, String vname)
  *@param      DisplayType   The type of display
  *
  * NOTE: DisplayType must be "IMAGE" , "Scrolled_Graph", or "Selected_Graph"<Br>
- *       FrameType must be "External Frame" or "Internal Frame"
+ *       FrameType must be "External Frame" or "Internal Frame". 
  */
     public void Display( DataSet ds , String DisplayType , String FrameType )
       {  String X = null;
@@ -1133,10 +1137,8 @@ public void addDataSet(DataSet dss, String vname)
 /**
  *This Method saves the data set to a file
  *@param       ds        The data set to be saved
- *@param      filename  The filename to which is to be saved
+ *@param      filename  The filename to which the data set is to be saved( as java binary format)
 
-  Needs work.  All IObservers of the data set will also be saved
-  presently
  */
     public void Save( DataSet ds , String filename )
     { //System.out.println("Start Save Sub with ds, filename "+ ds +","+filename);
