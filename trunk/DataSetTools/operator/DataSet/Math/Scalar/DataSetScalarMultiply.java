@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/10/16 00:09:50  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.4  2002/11/27 23:19:03  pfpeterson
  *  standardized header
  *
@@ -85,7 +88,7 @@ public class DataSetScalarMultiply extends    ScalarOp
    *  by calling getResult().
    *
    *  @param  ds          The DataSet to which the operation is applied
-   *  @parm   value       The value to multiply times each point in each Data
+   *  @param  value       The value to multiply times each point in each Data
    *                      block in ds 
    *  @param  make_new_ds Flag that determines whether a new DataSet is
    *                      constructed, or the value is just multiplied times
@@ -106,6 +109,7 @@ public class DataSetScalarMultiply extends    ScalarOp
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
   }
+
 
   /* ---------------------------- getDocumentation -------------------------- */
  
