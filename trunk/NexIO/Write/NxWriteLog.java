@@ -50,12 +50,11 @@ public class NxWriteLog
    {
       System.out.println("Inside NxWriteLog.processDS(....)");
       
-      errormessage = "Improper inputs to Nxlog";
-      if( nxLognode == null)
-        return true;
-      if( ds == null)
-        return true;
       errormessage = "";
+      if( nxLognode == null)
+        return setErrorMessage("Null NxWriteNode passed to Nxlog");
+      if( ds == null)
+        return setErrorMessage("Null DataSet passed to Nxlog");      
       
       //FIXME THIS METHOD NEEDS TO BE IMPLEMENTED TO WRITE ACTUAL DATA FROM 
       //      THE DATASET
@@ -78,14 +77,23 @@ public class NxWriteLog
       
          String startDateStr = ds.getStartDate();
          String startTimeStr = ds.getStartTime();
-         Date startDate = NxNodeUtils.parse(startDateStr+" "+startTimeStr);
-         String startTime_ISO8601 = NxNodeUtils.getISO8601String(startDate);
-         timeNode.addAttribute(Nxlog.START_ATTRIBUTE_NAME,
-                               startTime_ISO8601.getBytes(),
-                               Types.Char,
-                               Inst_Type.
-                                  makeRankArray(startTime_ISO8601.length(),
-                                                -1,-1,-1,-1));
+         Date startDate = null;
+         if (startDateStr != null && startTimeStr != null)
+         {
+            startDate = NxNodeUtils.parse(startDateStr+" "+startTimeStr);
+            if (startDate != null)
+            {
+               String startTime_ISO8601 = 
+                  NxNodeUtils.getISO8601String(startDate);
+               timeNode.addAttribute(Nxlog.START_ATTRIBUTE_NAME,
+                                     startTime_ISO8601.getBytes(),
+                                     Types.Char,
+                                     Inst_Type.
+                                     makeRankArray(startTime_ISO8601.length(),
+                                                   -1,-1,-1,-1));
+            }
+         }
+         
          //"second" is the official name used for NeXus files
          String timeUnit = "second";
          timeNode.addAttribute(Nxlog.UNITS_ATTRIBUTE_NAME,
@@ -97,16 +105,22 @@ public class NxWriteLog
       //now to write the duration
       String endDateStr = ds.getEndDate();
       String endTimeStr = ds.getEndTime();
-      Date endDate = NxNodeUtils.parse(endDateStr+" "+endTimeStr);
-      
-      long durationMs = endDate.getTime()-startDate.getTime();
-      float durationSec = durationMs/1000f;
-      NxWriteNode durationNode = nxLognode.newChildNode(Nxlog.
-                                                           DURATION_PARAM_NAME,
+      if (endDateStr != null && endTimeStr != null)
+      {
+         Date endDate = NxNodeUtils.parse(endDateStr+" "+endTimeStr);
+         if (endDate != null && startDate != null)
+         {
+            long durationMs = endDate.getTime()-startDate.getTime();
+            float durationSec = durationMs/1000f;
+            NxWriteNode durationNode = nxLognode.newChildNode(Nxlog.
+                                                        DURATION_PARAM_NAME,
                                                         "SDS");
-         durationNode.setNodeValue(new Float(durationSec),
-                                   Types.Float,
-                                   Inst_Type.makeRankArray(1,-1,-1,-1,-1));
+               durationNode.setNodeValue(new Float(durationSec),
+                                         Types.Float,
+                                         Inst_Type.
+                                            makeRankArray(1,-1,-1,-1,-1));
+         }
+      }
       
       //now to write the values to the file
       NxWriteNode valueNode = nxLognode.newChildNode(Nxlog.VALUE_PARAM_NAME,
@@ -138,13 +152,16 @@ public class NxWriteLog
       
       //now to write the description to the file
       String description = ds.getAttributeLabel();
-      NxWriteNode descriptionNode = 
-         nxLognode.newChildNode(Nxlog.DESC_PARAM_NAME,"SDS");
-         descriptionNode.setNodeValue(description,
-                                      Types.Char,
-                                      Inst_Type.
-                                         makeRankArray(
+      if (description != null)
+      {
+         NxWriteNode descriptionNode = 
+            nxLognode.newChildNode(Nxlog.DESC_PARAM_NAME,"SDS");
+            descriptionNode.setNodeValue(description,
+                                         Types.Char,
+                                         Inst_Type.
+                                           makeRankArray(
                                             description.length(),-1,-1,-1,-1));
+      }
       return false;
       /*
       errormessage ="";
