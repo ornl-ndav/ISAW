@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.50  2002/08/01 22:44:15  dennis
+ *  Monitor operators are now added using the DataSetFactory's
+ *  addMonitorOperators() method
+ *
  *  Revision 1.49  2002/07/31 21:52:41  dennis
  *  Fixed bug that caused the first monitor Data block to not
  *  be loaded.
@@ -715,18 +719,7 @@ private float CalculateEIn()
                                             // Add some special operators
                                             // for monitors 
      if ( is_monitor )
-     {
-       if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
-       {
-         data_set.addOperator( new EnergyFromMonitorDS() );
-         data_set.addOperator( new MonitorPeakArea() );
-       }
-       else if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
-         data_set.addOperator( new FocusIncidentSpectrum() );
-
-       data_set.addOperator( new MonitorTofToEnergy() );
-       data_set.addOperator( new MonitorTofToWavelength() );
-     }
+       DataSetFactory.addMonitorOperators( data_set, instrument_type );
 
                                             // Fix the label and units for
      if ( is_pulse_height )                 // Pulse height spectra
