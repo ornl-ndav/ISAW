@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/05/04 19:01:33  dennis
+ * Now clears DataSetPG after using value, to avoid memory leak.
+ *
  * Revision 1.11  2004/03/15 19:36:55  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -198,8 +201,11 @@ public class ViewQxQyQz extends GenericTOF_SCD
   *
   */
   public Object getResult()
-  { DataSet ds = (DataSet)(getParameter(0).getValue());
-    String choice = (getParameter(1).getValue()).toString();
+  { 
+     DataSet ds = (DataSet)(getParameter(0).getValue());
+     ((DataSetPG)getParameter(0)).clear();    // needed to avoid memory leak
+
+     String choice = (getParameter(1).getValue()).toString();
      JFrame jf = new JFrame( "Contour View:"+ ds.toString());
 
      jf.setSize( 400,600);
