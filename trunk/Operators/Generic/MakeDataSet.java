@@ -31,6 +31,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2004/03/06 19:05:21  rmikk
+ * Tested the code to work with Vectors. This can now be used with the ISAW
+ * Scripting language
+ *
  * Revision 1.1  2004/02/29 17:59:32  rmikk
  * Initial Checkin. This operator attempts to make a DataSet from data stored
  * in (possibly multidimensional) arrays or Vectors.
@@ -160,8 +164,11 @@ public class MakeDataSet implements Wrappable {
         XScale xscl;
 
         try {
-            xscl = new VariableXScale(NexIO.Util.ConvertDataTypes.
-                                      floatArrayValue(xbins.firstElement()));
+            float[] O = NexIO.Util.ConvertDataTypes.
+                                      floatArrayValue(xbins.firstElement());
+            if( O == null)
+              return new ErrorString( "Cannot convert xvals to a float[]");
+            xscl = new VariableXScale(O);
         
         } catch (Exception ss) {
             return new ErrorString(ss);
@@ -540,9 +547,13 @@ public class MakeDataSet implements Wrappable {
 
             if (X instanceof Vector) 
                 return X;
+            if( X instanceof Number)
+                return X;
 
             if (!(X.getClass().isArray())) 
-                return null;
+               return null;
+           
+               
 
             return X;
      
@@ -553,7 +564,7 @@ public class MakeDataSet implements Wrappable {
          */
         public float  DataAt(Object O, int i) {
 
-            Object X = ElementAt(O, i);
+            Object X = ElementAt(O,i);
 
             if (X == null) 
                 return Float.NaN;
