@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2004/05/21 13:48:02  rmikk
+ * Added unused variables that call methods
+ *
  * Revision 1.16  2004/05/14 15:02:42  rmikk
  * Removed unused variables
  *
@@ -280,7 +283,7 @@ public class NexNode implements NxNode{
     errormessage = "";
     if( !open() )
       return null;
-    
+	int n = getNChildNodes();//DO NOT DELETE sets up dirinfo variable
     if( NodeName == null ){
       errormessage = "Null child not allowed in " + NodeName;
       return null;
@@ -931,6 +934,7 @@ public class NexNode implements NxNode{
       return null;
     if( AttrName == null )
       return null;
+    int n=getNAttributes();
     Object keyValue = ( attrlist.get( AttrName ) );
     
     if( keyValue == null ){
@@ -1075,7 +1079,8 @@ public class NexNode implements NxNode{
     Node1 = NN;
     Node2 = NN;
     char c = 0;
-    int n = 0;
+    int n = 0, N=0;
+    String S ="";
     int[] initslabElement=null,rank=null;
     int[] dim=null;
     while( c != 'x' ){
@@ -1104,17 +1109,17 @@ public class NexNode implements NxNode{
           n = 0;
         }
       }else if( c == 'N' ){
-       /* try{
-         // N = ( new Integer( NN.readLine() ) ).intValue();
+         try{
+           N = ( new Integer( NN.readLine() ) ).intValue();
         }catch( Exception s ){
           N = 0;
-        }*/
+        }
       }else if( c == 's' ){
-      /*  try{
+        try{
           S = NN.readLine();
         }catch( Exception s ){
           n = 0;
-        }*/
+        }
       }else if( c == 'a' ){
         System.out.println( NN.getNAttributes() );
       }else if( c == 'A' ){
