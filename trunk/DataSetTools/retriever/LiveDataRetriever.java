@@ -32,6 +32,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/06/08 16:15:18  dennis
+ *  Now allows the port number to use to be specified after
+ *  the dns name with a colon separator.
+ *  eg. dmikk.mscs.uwstout.edu:6089
+ *
  *  Revision 1.8  2001/06/07 16:39:30  dennis
  *  Now supports reconnection to the LiveDataServer, in case
  *  the connection to the server is lost, or could not be
@@ -206,10 +211,26 @@ public class LiveDataRetriever extends    Retriever
  */
   private boolean MakeConnection()
   {
+    int    port;
+    String remote_machine;
+
+    int colon_index = data_source_name.indexOf(':');
+    if ( colon_index < 0 )
+    {
+      remote_machine = data_source_name;
+      port = LiveDataServer.DEFAULT_SERVER_PORT_NUMBER;
+    }
+    else
+    {
+      remote_machine = data_source_name.substring( 0, colon_index );
+      String port_name = data_source_name.substring( colon_index+1 );
+      port_name.trim();
+      port = Integer.parseInt( port_name );
+    }
+
     try
     {
-      Socket sock = new Socket( data_source_name,
-                                LiveDataServer.SERVER_PORT_NUMBER );
+      Socket sock = new Socket( remote_machine, port );
       tcp_io      = new TCPComm( sock, TIMEOUT_MS );
       return true;
     }
@@ -217,7 +238,7 @@ public class LiveDataRetriever extends    Retriever
     {
       tcp_io = null;
       System.out.println( "LiveDataRetriever CONNECTION TO " +
-                           data_source_name + " FAILED" );
+                           remote_machine + " FAILED ON PORT " + port );
       System.out.println( "Exception is " +  e );
       return false;
     }
