@@ -1,14 +1,13 @@
 /**
  * @(#)ImageView.java  1.1 2000/04/28 Dennis Mikkelson
  *
- *  Modified:
- *
- *  1.1 2000/04/28  Dennis Mikelson
- *                  Horizontal scrolling enabled.  Now uses tables to show
- *                  equivalent units along x-axis (DataSetXConversionsTable).
- *
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.3  2000/08/03 01:49:01  dennis
+ *  Now sets the default graph as the "pointed" at Data block and notifies
+ *  observers when the viewer starts.  This fixed a bug where the user had to
+ *  first move the mouse pointer on the image before moving it on the graph in
+ *  order to use the cursor readouts on the graph.
+ *
  *  Revision 1.2  2000/08/02 01:51:10  dennis
  *  Now calls Data.ResampleUniformly() instead of Data.ReBin()
  *
@@ -852,7 +851,11 @@ private void DrawDefaultDataBlock()
 
     Data data_block = getDataSet().getData_entry(0);
     if ( data_block != null )
+    {
       DrawHGraph( data_block, 0, false );
+      getDataSet().setPointedAtIndex(0);
+      getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
+    }
     else
       System.out.println("ERROR... no Data blocks in DataSet" );
   }
