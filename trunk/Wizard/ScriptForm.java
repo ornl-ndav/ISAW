@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/02/26 17:22:07  rmikk
+ * Now writes to DataSetTools.util.SharedData.status_pane
+ *
  * Revision 1.1  2003/02/24 13:31:49  rmikk
  * Initial checkin.  Creates a form from a script or GenericOperator
  *
@@ -139,7 +142,7 @@ public class ScriptForm extends Form implements IObserver, PropertyChangeListene
    private boolean seterr( String err )
    {
       errormessage = err;
-      wizard.status_display.append( err );
+      DataSetTools.util.SharedData.addmsg( err );
       return false;
    }
 
@@ -149,12 +152,12 @@ public class ScriptForm extends Form implements IObserver, PropertyChangeListene
     *  This method will show the new value in the status_display
     */
    public void propertyChange( PropertyChangeEvent evt )
-   {
+   {  
       if( !( evt.getPropertyName().equals( "Display" ) ) )
          return;
 
-      wizard.status_display.append( ( new NexIO.NxNodeUtils() ).Showw(
-            evt.getNewValue() ) + "\n" );
+      DataSetTools.util.SharedData.addmsg( ( new NexIO.NxNodeUtils() ).Showw(
+            evt.getNewValue() ) );
 
    }
 
@@ -162,7 +165,7 @@ public class ScriptForm extends Form implements IObserver, PropertyChangeListene
     *  Executes the operator after setting its parameter values
     */
    public boolean execute()
-   {
+   { 
       if( operator == null )
          return seterr( "no operator in form" + getTitle() + ":" + errormessage );
       if( ScriptParamNames == null )
