@@ -29,6 +29,11 @@
  *
  *
  * $Log$
+ * Revision 1.35  2003/11/29 20:48:33  bouzekc
+ * Fixed a lingering bug left over from the conversion to pure result
+ * parameters.  This bug would cause OperatorForms to invalidate
+ * constant parameters.
+ *
  * Revision 1.34  2003/11/13 17:46:16  bouzekc
  * Overrides getTitle() so that its children have their titles displayed
  * correctly.
@@ -395,12 +400,6 @@ public class OperatorForm extends Form implements HiddenOperator {
       if( ( ( Boolean )allValid ).booleanValue(  ) != true ) {
         return errorOut( "Parameters are invalid." );
       }
-    }
-
-    //set the value for the internal Operator's parameters to the values that
-    //we currently have for this OperatorForm.
-    for( int pNum = 0; pNum < getNum_parameters(  ); pNum++ ) {
-      form_op.getParameter( pNum ).setValue( getParameter( pNum ).getValue(  ) );
     }
 
     Object result = form_op.getResult(  );
