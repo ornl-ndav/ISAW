@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2003/08/11 18:00:24  bouzekc
+ *  Added protected final method to reset the parameters Vector.
+ *
  *  Revision 1.29  2003/06/19 18:46:21  pfpeterson
  *  Implemented clone().
  *
@@ -414,5 +417,14 @@ abstract public class Operator implements Serializable
    */
   public String getDocumentation(){
     return DEFAULT_DOCS;
+  }
+
+  /**
+   * Utility method for clearing parameters Vector from Jython subclasses.
+   * By making this final protected, Jython code can access it in
+   * setDefaultParameters.
+   */
+  protected final void clearParametersVector(  ) {
+    parameters = new Vector(  );
   }
 } 
