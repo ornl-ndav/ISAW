@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/06/16 23:08:26  dennis
+ *  Now checks whether operator is instance of XAxisConversionOp
+ *  instead of comparing result of getCategory with
+ *  Operator.X_AXIS_CONVERSION_OP
+ *
  *  Revision 1.10  2002/11/27 23:26:11  pfpeterson
  *  standardized header
  *
@@ -57,6 +62,7 @@ import java.awt.event.*;
 import DataSetTools.parameter.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.util.*;
 
@@ -95,7 +101,7 @@ public final class DS_Util implements Serializable
     for ( int i = 0; i < n_ops; i++ )
     {
       op = ds.getOperator(i);
-      if ( op.getCategory().equals( Operator.X_AXIS_CONVERSION ))
+      if ( op instanceof XAxisConversionOp )
       {
         n_params = op.getNum_parameters();
         for ( int j = 0; j < n_params; j++ )
@@ -136,7 +142,7 @@ public final class DS_Util implements Serializable
     for ( int i = 0; i < n_ops; i++ )
     {
       op = ds.getOperator(i);
-      if ( op.getCategory().equals( Operator.X_AXIS_CONVERSION ))
+      if ( op instanceof XAxisConversionOp )
       {
         n_params = op.getNum_parameters();
         for ( int j = 0; j < n_params; j++ )
