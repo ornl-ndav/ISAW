@@ -1,5 +1,5 @@
 /*
- * File:  IParameterGUI.java 
+ * File:  IParameterGUI.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/03/12 19:54:38  bouzekc
+ *  Code reformat.
+ *
  *  Revision 1.7  2003/09/09 22:59:07  bouzekc
  *  Added a method to self-validate the IParameterGUIs.
  *
@@ -54,64 +57,72 @@
  *
  *
  */
-
 package DataSetTools.parameter;
 
 /**
- * This is an interface to be implemented by all parameters that can
- * produce a GUI. Since it extends IParameter the methods required by
- * it are also required here.
+ * This is an interface to be implemented by all parameters that can produce a
+ * GUI. Since it extends IParameter the methods required by it are also
+ * required here.
  */
-public interface IParameterGUI extends IParameter{
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    void                   initGUI(java.util.Vector init_values);
+public interface IParameterGUI extends IParameter {
+  //~ Methods ******************************************************************
 
-    /**
-     * Method for producing an alternative layout of the GUI.
-     */
-    javax.swing.JLabel     getLabel();
-    /**
-     * Method for producing an alternative layout of the GUI.
-     */
-    DataSetTools.components.ParametersGUI.EntryWidget getEntryWidget();
-    /**
-     * Method for obtaining the default layout of the GUI.
-     */
-    javax.swing.JPanel     getGUIPanel();
-    /**
-     * Determine if the entry widget is enabled.
-     */
-    boolean                getEnabled();
-    /**
-     * Set the enabled state of the EntryWidget. This produces a more
-     * pleasant effect that the default setEnabled of the widget.
-     */
-    void                   setEnabled(boolean enable);
-    /**
-     * Determine if the 'valid' checkbox will be drawn.
-     */
-    boolean                getDrawValid();
-    /**
-     * Specify if the valid checkbox will be drawn.
-     */
-    void                   setDrawValid(boolean draw);
-    /**
-     * Returns whether or not the parameter is valid. Currently used
-     * only by wizards.
-     */
-    boolean getValid();
+  /**
+   * Specify if the valid checkbox will be drawn.
+   */
+  void setDrawValid( boolean draw );
 
-    /**
-     * Set the valid state of the parameter.
-     */
-    void   setValid(boolean valid);
+  /**
+   * Determine if the 'valid' checkbox will be drawn.
+   */
+  boolean getDrawValid(  );
 
-    /**
-     * Used to let a parameter validate itself.  This is helpful for any
-     * instance where the "valid" checkbox is drawn, as it removes the need to
-     * individually validate ParameterGUIs.
-     */
-    void validateSelf(  );
+  /**
+   * Set the enabled state of the EntryWidget. This produces a more pleasant
+   * effect that the default setEnabled of the widget.
+   */
+  void setEnabled( boolean enable );
+
+  /**
+   * Determine if the entry widget is enabled.
+   */
+  boolean getEnabled(  );
+
+  /**
+   * Method for producing an alternative layout of the GUI.
+   */
+  DataSetTools.components.ParametersGUI.EntryWidget getEntryWidget(  );
+
+  /**
+   * Method for obtaining the default layout of the GUI.
+   */
+  javax.swing.JPanel getGUIPanel(  );
+
+  /**
+   * Method for producing an alternative layout of the GUI.
+   */
+  javax.swing.JLabel getLabel(  );
+
+  /**
+   * Set the valid state of the parameter.
+   */
+  void setValid( boolean valid );
+
+  /**
+   * Returns whether or not the parameter is valid. Currently used only by
+   * wizards.
+   */
+  boolean getValid(  );
+
+  /**
+   * Allows for initialization of the GUI after instantiation.
+   */
+  void initGUI( java.util.Vector init_values );
+
+  /**
+   * Used to let a parameter validate itself.  This is helpful for any instance
+   * where the "valid" checkbox is drawn, as it removes the need to
+   * individually validate ParameterGUIs.
+   */
+  void validateSelf(  );
 }
