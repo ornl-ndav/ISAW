@@ -31,6 +31,11 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.38  2001/07/23 19:23:48  neffk
+  *  added isForced(String) and removeForec(String) so that people
+  *  can force a file to be loaded, regardless of the file extension .
+  *  currently IPNS will not load a files that have changed names.
+  *
   *  Revision 1.37  2001/07/23 18:33:50  neffk
   *  make the -F option more robust by checking filename estensions.
   *  prints out success and failure messages on the console.  not that the
@@ -1689,14 +1694,19 @@ public class Isaw
                                        //of the correct formatt by
       int count = 0;                   //checking file extension
       for( int i=0;  i<filenames.length;  i++ )
-        if(  filter.accept_filename( filenames[i] )  )
+        if(  filter.accept_filename( filenames[i] )  ||  isForced( filenames[i] )  )
           count++;
 
                                        //load the files w/ acceptable
                                        //names
       File[] files = new File[ count ];
       for( int i=0;  i<filenames.length;  i++ )
-        if(  filter.accept_filename( filenames[i] )  )
+        if(  isForced( filenames[i] )  )
+        {
+          System.out.println(  "loading (forced): " + removeForce( filenames[i] )  );
+          files[i] = new File(  removeForce( filenames[i] )  );
+        }
+        else if(  filter.accept_filename( filenames[i] )  )
         {
           System.out.println( "loading: " + filenames[i] );
           files[i] = new File( filenames[i] );
@@ -1707,6 +1717,30 @@ public class Isaw
       load_files( files );
 
     }
+  }
+
+
+  private boolean isForced( String filename )
+  {
+                                 //if the filename has a bang (!)
+                                 //appended to it, then accept it
+                                 //reguardless of its extension.
+    int bang_index = filename.lastIndexOf( '!' );
+    if(  bang_index == filename.length() - 1  )
+      return true;
+    else
+      return false;
+  }
+
+
+  private String removeForce( String filename )
+  {
+    int bang_index = filename.lastIndexOf( '!' );
+
+    if( bang_index > 0 )
+      return new String( filename.substring( 0, bang_index )  );
+    else
+     return filename;
   }
 
 
