@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.39  2004/07/10 06:38:31  millermi
+ * - Added functionality for all selections to be written to
+ *   file. Previously, only the last selection was written to file.
+ *
  * Revision 1.38  2004/07/01 18:58:25  millermi
  * - Added comments to loadData(), specifying the format of header
  *   information.
@@ -1569,53 +1573,66 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	  filename = new DataFileFilter().appendExtension(filename);
 	  projectsDirectory = fc.getCurrentDirectory().toString();
 	  String[] descriptors;  // labels displayed in the SANDControlPanel.
-          Data tempdata = data_set.getData_entry(data_set.getNum_entries() - 1);
+          Data tempdata;
           Float1DAttribute fat;
-	  // figure out which type of region was selected.
-	  if( tempdata.getAttribute(SelectionJPanel.WEDGE) != null )
-	  {
-	    fat = (Float1DAttribute)
-                       tempdata.getAttribute(SelectionJPanel.WEDGE);
-	    descriptors = wedgelabels;
-	  }
-	  else if( tempdata.getAttribute(SelectionJPanel.DOUBLE_WEDGE) != null )
-	  {
-	    fat = (Float1DAttribute)
-                       tempdata.getAttribute(SelectionJPanel.DOUBLE_WEDGE);
-	    descriptors = wedgelabels;
-	  }
-	  else if( tempdata.getAttribute(SelectionJPanel.ELLIPSE) != null )
-	  {
-	    fat = (Float1DAttribute)
-                       tempdata.getAttribute(SelectionJPanel.ELLIPSE);
-	    descriptors = ellipselabels;
-	  }
-	  else  // ring selection
-	  {
-	    fat = (Float1DAttribute)
-                       tempdata.getAttribute(SelectionJPanel.RING);
-	    descriptors = ringlabels;
-	  }
-	  
-	  float[] vals = fat.getFloatValue();
-	  String at_name = fat.getName();
 	  // This portion will put the data attributes at the top of the
 	  // file, each line preceeded with a pound (#) symbol.
-	  StringBuffer header = new StringBuffer("# Run File: ");
+	  StringBuffer header = new StringBuffer("# File: ");
 	  header.append(datafile).append('\n');
-	  header.append("# Selection Type: ").append(at_name).append('\n');
-	  // make sure there are the same number of values as descriptors.
-	  int length = vals.length;
-	  if( length > descriptors.length )
-	    length = descriptors.length;
-	  for( int i = 0; i < length; i++ )
+	  SANDFileWriter.FileInfo[] info = 
+	                new SANDFileWriter.FileInfo[data_set.getNum_entries()];
+	  for( int entry = 0; entry < data_set.getNum_entries(); entry++ )
 	  {
-	    header.append("# ").append(descriptors[i]);
-	    header.append(": ").append(vals[i]).append('\n');
+	    tempdata = data_set.getData_entry(entry);
+	    // figure out which type of region was selected.
+	    if( tempdata.getAttribute(SelectionJPanel.WEDGE) != null )
+	    {
+	      fat = (Float1DAttribute)
+            		 tempdata.getAttribute(SelectionJPanel.WEDGE);
+	      descriptors = wedgelabels;
+	    }
+	    else if( tempdata.getAttribute(SelectionJPanel.DOUBLE_WEDGE) != null )
+	    {
+	      fat = (Float1DAttribute)
+            		 tempdata.getAttribute(SelectionJPanel.DOUBLE_WEDGE);
+	      descriptors = wedgelabels;
+	    }
+	    else if( tempdata.getAttribute(SelectionJPanel.ELLIPSE) != null )
+	    {
+	      fat = (Float1DAttribute)
+            		 tempdata.getAttribute(SelectionJPanel.ELLIPSE);
+	      descriptors = ellipselabels;
+	    }
+	    else  // ring selection
+	    {
+	      fat = (Float1DAttribute)
+            		 tempdata.getAttribute(SelectionJPanel.RING);
+	      descriptors = ringlabels;
+	    }
+	    
+	    float[] vals = fat.getFloatValue();
+	    String at_name = fat.getName();
+	    header.append("# Selection Type: ").append(at_name).append('\n');
+	    // make sure there are the same number of values as descriptors.
+	    int length = vals.length;
+	    if( length > descriptors.length )
+	      length = descriptors.length;
+	    for( int i = 0; i < length; i++ )
+	    {
+	      header.append("# ").append(descriptors[i]);
+	      header.append(": ").append(vals[i]).append('\n');
+	    }
+	    // Add the selection to a list, so all can be written out
+	    // to one file.
+            info[entry] = new SANDFileWriter.FileInfo( header.toString(),
+	                       tempdata.getX_scale().getXs(),
+                               tempdata.getY_values(), tempdata.getErrors() );
+	    // clear the header String after it is saved.
+	    header = header.delete(0,header.length());
 	  }
-	  SANDFileWriter.makeFile(filename,header.toString(),tempdata);
+	  SANDFileWriter.makeFile(filename,info);
         }
-      } // end else if load data
+      } // end else if save results
       else if( ae.getActionCommand().equals("Hide Results Window") )
       {
         oldview.setVisible(false);
