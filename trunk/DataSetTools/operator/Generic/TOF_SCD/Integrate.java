@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.32  2003/09/23 21:07:56  dennis
+ * Fixed index out of bounds error with shoebox integration.  The maximum
+ * y_value[] index was calculated incorrectly.
+ *
  * Revision 1.31  2003/09/20 23:09:05  dennis
  * Finished first version of shoebox integration routine.
  * No longer includes extra slice before and after (in TOF)
@@ -930,7 +934,7 @@ public class Integrate extends GenericTOF_SCD{
      // If we don't, we'll just return without integrating the peak.
 
      int minZ = 0;
-     int maxZ = ds.getData_entry(ids[1][1]).getX_scale().getNum_x() - 1; 
+     int maxZ = ds.getData_entry(ids[1][1]).getY_values().length - 1; 
      if ( cenZ + timeZrange[0] < minZ )  // too close to time channel 0
        return;                   
   
