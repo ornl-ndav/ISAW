@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/05/23 17:26:14  dennis
+ * Now uses a ViewController to change the observer's
+ * viewing position.
+ *
  * Revision 1.1  2001/05/09 21:32:00  dennis
  * Viewer to display 3D view of Data block positions, if they have and
  * attribute that is of type Position3D.
@@ -71,6 +75,7 @@ public class ThreeDView extends DataSetViewer
 {                         
   private ThreeD_JPanel       threeD_panel  = null; 
   private JPanel              control_panel = null; 
+  private AltAzController     view_control  = null;
   private SplitPaneWithState  split_pane = null;
 
 /* --------------------------------------------------------------------------
@@ -101,6 +106,8 @@ public ThreeDView( DataSet data_set, ViewerState state )
   JMenuItem button = new JMenuItem( "My new option" );
   button.addActionListener( option_menu_handler );
   option_menu.add( button );
+
+  MakeThreeD_Scene();
 }
 
 /* -----------------------------------------------------------------------
@@ -196,7 +203,7 @@ private void MakeThreeD_Scene()
         max_radius = radius;
  
       points[0]= point;
-      objects[i] = new Polymarker( points, Color.red ); 
+      objects[i] = new Polymarker( points, Color.black ); 
       objects[i].setPickID( i );
       ((Polymarker)(objects[i])).setType( Polymarker.CROSS );
       ((Polymarker)(objects[i])).setSize( 2 );
@@ -204,22 +211,23 @@ private void MakeThreeD_Scene()
   }
 
   if ( all_null )
+  {
     objects = null;
+    threeD_panel.setObjects( objects );
+  }
   else
   {
-    Tran3D view_tran = new Tran3D();
-    view_tran.setViewMatrix( new Vector3D( 2*radius, 2*radius, 2*radius ),
-                             new Vector3D( 0, 0, 0 ),
-                             new Vector3D( 0, 0, 1 ),
-                             true );
-
-    threeD_panel.setViewTran( view_tran );
-    threeD_panel.setVirtualScreenSize( 2.2f*radius, 2.2f*radius );
+    radius = max_radius;
     add_axes( objects, radius/5 );
+    view_control.setViewAngle( 50 );
+    view_control.setAltitudeAngle( 30 );
+    view_control.setAzimuthAngle( 0 );
+    view_control.setDistanceRange( 0.5f*radius, 10*radius );
+    view_control.setDistance( 2.5f*radius );
+    threeD_panel.setObjects( objects );
+    view_control.apply();
   }
 
-  threeD_panel.setObjects( objects );
-  threeD_panel.repaint();
 }
 
 
@@ -312,7 +320,14 @@ private void init()
     removeAll();
   }
   threeD_panel  = new ThreeD_JPanel();
+  threeD_panel.setBackground( Color.white );
+
+  view_control  = new AltAzController();
+  view_control.addControlledPanel( threeD_panel );
   control_panel = new JPanel();
+  control_panel.setLayout( new GridLayout( 1,1 ) );
+  control_panel.add( view_control );
+ 
                                         // make a titled border around the
                                         // whole viewer, using an appropriate
                                         // title from the DataSet. 
@@ -411,7 +426,7 @@ class ViewComponentAdapter extends ComponentAdapter
 {
   public void componentResized( ComponentEvent c )
   {
-    System.out.println("View Area resized: " + c.getComponent().getSize() );
+//    System.out.println("View Area resized: " + c.getComponent().getSize() );
   }
 }
 
