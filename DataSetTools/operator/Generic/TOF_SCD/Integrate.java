@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.33  2004/01/24 20:20:45  bouzekc
+ * Removed unused variables and unused imports.  Made unused private method
+ * getObs a public static method.
+ *
  * Revision 1.32  2003/09/23 21:07:56  dennis
  * Fixed index out of bounds error with shoebox integration.  The maximum
  * y_value[] index was calculated incorrectly.
@@ -451,7 +455,6 @@ public class Integrate extends GenericTOF_SCD{
     String integfile=null;
     DataSet ds;
     String matfile=null;
-    int threashold=1;
     this.logBuffer=new StringBuffer();
 
     // first get the DataSet
@@ -963,7 +966,6 @@ public class Integrate extends GenericTOF_SCD{
                                              // size of peak "shoebox"
      int nX = colXrange[1]  - colXrange[0]  + 1;  
      int nY = rowYrange[1]  - rowYrange[0]  + 1;
-     int nZ = timeZrange[1] - timeZrange[0] + 1;
 
      float n_signal =  nX    *  nY;   
      float n_total  = (nX+2) * (nY+2);   
@@ -1530,7 +1532,6 @@ public class Integrate extends GenericTOF_SCD{
     int maxY=y;
     int maxZ=z;
 
-    Data data=null;
     float point=0f;
     for( int i=x-dx ; i<=x+dx ; i++ ){
       for( int j=y-dy ; j<=y+dy ; j++ ){
@@ -1561,8 +1562,6 @@ public class Integrate extends GenericTOF_SCD{
     float xcm=peak.xcm();
     float ycm=peak.ycm();
     float wl=peak.wl();
-
-    boolean PRINT=true;
 
     if(wl==0f) return false;
 
@@ -1751,7 +1750,7 @@ public class Integrate extends GenericTOF_SCD{
    * Determine the observed intensity of the peak at its (rounded)
    * pixel position.
    */
-  private void getObs(Peak peak, DataSet ds, int[][] ids)
+  public static void getObs(Peak peak, DataSet ds, int[][] ids)
                                          throws ArrayIndexOutOfBoundsException{
     if( ds==null || peak==null ) return;
     int id=ids[(int)Math.round(peak.x())][(int)Math.round(peak.y())];
@@ -1943,7 +1942,6 @@ public class Integrate extends GenericTOF_SCD{
     String prefix="/IPNShome/pfpeterson/data/SCD/";
     String datfile=prefix+"SCD06496.RUN";
     DataSet rds = (new RunfileRetriever(datfile)).getDataSet(1);
-    float monct=138568f;
     
     // load the calibration file, note that we are using line 1
     LoadSCDCalib lsc=new LoadSCDCalib(rds,prefix+"instprm.dat",1,null);
