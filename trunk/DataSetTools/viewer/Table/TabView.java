@@ -31,6 +31,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.4  2001/08/13 14:38:02  rmikk
+ * Improved a Menu title to indicate the indecies are used in
+ * selection.
+ *
  * Revision 1.3  2001/08/09 21:49:59  rmikk
  * Added Documentation.
  * Incorporated Prompts to indicate that Group indecies are
@@ -52,6 +56,7 @@ import DataSetTools.components.ParametersGUI.*;
 import java.util.*;
 import Command.*;
 import java.io.*;
+import java.awt.*;
 
 /** This implements DataSetViewer by giving tables of information
  */
@@ -75,7 +80,7 @@ public class TabView extends DataSetViewer
    */ 
    public TabView( DataSet DS )
      { super( DS );
-     
+       setLayout( new GridLayout( 1,1 ));
        JMenuBar jmb = getMenuBar();
        int n = jmb.getMenuCount();
        View = Edit = Options = null;
@@ -201,7 +206,7 @@ public class TabView extends DataSetViewer
                }
             op.setDefaultParameters();
             IntListString IString = new IntListString( "1,3:5" );        
-            Parameter PP = new Parameter( "Group ID's=" , IString );        
+            Parameter PP = new Parameter( "Group Indecies=" , IString );        
             op.setParameter( PP , 1 );        
        
             DSSettableFieldString argument = new DSSettableFieldString( 
@@ -298,8 +303,8 @@ public class TabView extends DataSetViewer
       TabView tb = new TabView( DSS[1]);
       JF.getContentPane().add( tb );
       JF.setJMenuBar( tb.getMenuBar() );
-      JF.setSize( 500 , 800 );
-      tb.setSize( 500 , 750 );
+      JF.setSize( 800 , 800 );
+      //tb.setSize( 750 , 750 );
       JF.show();
       JF.validate();
   }
