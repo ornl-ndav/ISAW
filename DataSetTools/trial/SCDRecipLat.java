@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/01/05 23:33:11  dennis
+ * Now checks if value returned by VecQToTOF.intensityAtQ() is >= 0
+ * since now -1 is returned instead of 0, to indicate that the Q vector
+ * does not correspond to the detector.
+ *
  * Revision 1.13  2003/06/04 14:20:51  dennis
  * This version is just a crude "test bed" for different methods
  * of fitting a plane to points and includes an initial form of
@@ -700,7 +705,7 @@ public class SCDRecipLat
          {
            transformer = (VecQToTOF)(vec_q_transformer.elementAt(i));
            value = transformer.intensityAtQ( q );
-           if ( value != 0 )
+           if ( value >= 0 )
            {
              sum += value;
              n_non_zero++;
