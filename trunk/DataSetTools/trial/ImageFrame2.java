@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/05/10 22:43:10  dennis
+ * Test program now just instantiates a Frame to diplay
+ * calculated result, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.10  2004/03/15 06:10:52  dennis
  * Removed unused import statements.
  *
@@ -271,7 +277,7 @@ public class ImageFrame2 extends JFrame
     va2D.setAxisInfo( AxisInfo.Y_AXIS, 0f, 1500f, 
     			"TestY","TestYUnits", false );
     va2D.setTitle("ImageFrame Test");
-    ImageFrame2 im_frame = new ImageFrame2( va2D );
+    new ImageFrame2( va2D );
     // test setData() 10 times
     /*
     for( int x = 0; x < 20; x++ )

@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/05/10 22:43:10  dennis
+ * Test program now just instantiates a Frame to diplay
+ * calculated result, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.9  2004/05/10 20:42:23  dennis
  * Test program now just instantiates a ViewManager to diplay
  * calculated DataSet, rather than keeping a reference to it.
@@ -519,7 +525,7 @@ public class Q_SliceExtractor
      System.out.println("+++++Test Vector in Qxyz = " + test_vec );
      
 
-     GraphFrame gf = new GraphFrame( slice_array, "Linear Cut" ); 
+     new GraphFrame( slice_array, "Linear Cut" ); 
      VirtualArray2D va2D = new VirtualArray2D( image_array );
 
      if ( hkl_cut.equals( CONST_H ) )
@@ -547,7 +553,7 @@ public class Q_SliceExtractor
                         "K","(Index)", true );
      }
 
-     ImageFrame2 frame = new ImageFrame2( va2D );
+     new ImageFrame2( va2D );
 
      origin = new Vector3D( -5, 3.85f, 5 );
      u      = new Vector3D( .15f, 0, 0 );
@@ -584,7 +590,7 @@ public class Q_SliceExtractor
                       "H","(Index)", true );
      va2D.setAxisInfo( AxisInfo.Y_AXIS, 4.85f, 5.15f,
                       "L","(Index)", true );
-     frame = new ImageFrame2( va2D );
+     new ImageFrame2( va2D );
   }
 
 }

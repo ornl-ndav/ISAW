@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/05/10 22:43:10  dennis
+ * Test program now just instantiates a Frame to diplay
+ * calculated result, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.5  2004/03/15 19:33:58  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -115,7 +121,7 @@ public class ImageFrame extends JFrame
       for ( int j = 0; j < 500; j++ )
         test_array[i][j] = i + j;
 
-    ImageFrame im_frame = new ImageFrame( test_array, "Test" );
+    new ImageFrame( test_array, "Test" );
   }
 
 }
