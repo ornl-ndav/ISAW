@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2003/06/11 19:39:53  dennis
+ * Modified getZofTime(,) to use the XScale method getI(time), which
+ * does a binary search for the bin containing the time, rather than
+ * just doing a sequential search.
+ *
  * Revision 1.16  2003/06/02 16:30:30  pfpeterson
  * Always creates a new orientation matrix when chi,phi,omega are changed
  * and changed some comments.
@@ -840,13 +845,12 @@ public class Peak{
     if(time<xscale.getStart_x() || time>xscale.getEnd_x() )
       return -1;
     //System.out.println("02");
-    for( int i=1 ; i<xscale.getNum_x() ; i++ ){
-      if( time>=xscale.getX(i-1) && time<=xscale.getX(i) )
-        return (float)(i-1);
-    }
 
-    //System.out.println("03");
-    return -1;
+    int index = xscale.getI(time);
+    if ( time == xscale.getX(index) )
+      return index;
+    else
+      return index - 1;
   }
 
   /**
