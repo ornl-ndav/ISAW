@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/08/14 19:11:49  bouzekc
+ *  Made inner Toolkit transient.
+ *
  *  Revision 1.3  2002/11/27 23:12:35  pfpeterson
  *  standardized header
  *
@@ -63,7 +66,7 @@ import DataSetTools.parameter.*;
  * isn't found in an integer is entered.
  */
 public class StringField extends JTextField {
-    private Toolkit toolkit;
+    private transient Toolkit toolkit;
     private PropertyChangeSupport propBind=new PropertyChangeSupport(this);
 
     /**
