@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/02/26 21:42:44  pfpeterson
+ * Removed reference to Form.setCompleted(false) and split lines that
+ * were more than 80 characters.
+ *
  * Revision 1.2  2003/02/26 17:22:07  rmikk
  * Now writes to DataSetTools.util.SharedData.status_pane
  *
@@ -50,9 +54,11 @@ import DataSetTools.operator.Generic.*;
 import java.beans.*;
 
 
-/** This class creates a form that executes a Script or Java Operator
+/**
+ * This class creates a form that executes a Script or Java Operator
  */
-public class ScriptForm extends Form implements IObserver, PropertyChangeListener
+public class ScriptForm extends Form implements IObserver,
+                                                PropertyChangeListener
 {
 
    GenericOperator operator;
@@ -61,15 +67,22 @@ public class ScriptForm extends Form implements IObserver, PropertyChangeListene
    String[] ScriptParamNames, result_params;
    String title;
 
-   /** Constructor for ScriptForm
-    *  @param title    The title on the top of the form
-    *  @param const_params   The name of the parameters that cannot change
-    *  @param editable_params  The name of the parameters that can be editted
-    *  @param result_params    The name of the parameters that can get a result
-    *  @param  operator    The operator that is executed in the execute command
-    *  @param ScriptParameterNames  The wizard parameter names corresponding to the
-    *              operators arguments in the proper order for the operator
-    *  @param wizard  The wizard with the parameter names
+   /**
+    * Constructor for ScriptForm
+    *
+    * @param title The title on the top of the form
+    * @param const_params The name of the parameters that cannot
+    * change
+    * @param editable_params The name of the parameters that can be
+    * editted
+    * @param result_params The name of the parameters that can get a
+    * result
+    * @param operator The operator that is executed in the execute
+    * command
+    * @param ScriptParameterNames The wizard parameter names
+    * corresponding to the operators arguments in the proper order for
+    * the operator
+    * @param wizard The wizard with the parameter names
     *  
     *  NOTE: An error will result in this form doing nothing.
     */
@@ -108,13 +121,14 @@ public class ScriptForm extends Form implements IObserver, PropertyChangeListene
 
    }
 
-   /** This update method is required to implement the IObserver interface.
-    *   The ScriptOperators Save command invoke this method.  If reason is one
-    *   of the result_params, that result_parm will be changed to the value of
-    *   observed_obj. 
+   /**
+    * This update method is required to implement the IObserver
+    * interface.  The ScriptOperators Save command invoke this method.
+    * If reason is one of the result_params, that result_parm will be
+    * changed to the value of observed_obj.
     *
-    *  NOTE: reason should not correspond to any strings listed at the top of the
-    *  IObserver interface 
+    * NOTE: reason should not correspond to any strings listed at the
+    * top of the IObserver interface
     */
    public void update( Object observed_obj, Object reason )
    {  
@@ -138,7 +152,9 @@ public class ScriptForm extends Form implements IObserver, PropertyChangeListene
       ipgui.setValue( observed_obj );
    }
 
-   //utility method to quickly report errors everywhere
+  /**
+   * Utility method to quickly report errors everywhere
+   */
    private boolean seterr( String err )
    {
       errormessage = err;
@@ -147,9 +163,10 @@ public class ScriptForm extends Form implements IObserver, PropertyChangeListene
    }
 
    /** 
-    *  This method is required to implement the PropertyChangeListener interface.
-    *  Scripts will invoke this method with the "Display" command.
-    *  This method will show the new value in the status_display
+    * This method is required to implement the PropertyChangeListener
+    * interface.  Scripts will invoke this method with the "Display"
+    * command.  This method will show the new value in the
+    * status_display
     */
    public void propertyChange( PropertyChangeEvent evt )
    {  
@@ -162,20 +179,22 @@ public class ScriptForm extends Form implements IObserver, PropertyChangeListene
    }
 
    /** 
-    *  Executes the operator after setting its parameter values
+    * Executes the operator after setting its parameter values
     */
    public boolean execute()
    { 
       if( operator == null )
-         return seterr( "no operator in form" + getTitle() + ":" + errormessage );
+         return seterr( "no operator in form" + getTitle()+":"+errormessage );
       if( ScriptParamNames == null )
          if( operator.getNum_parameters() > 0 )
-            return seterr( "The number of operator parameters does not equal the " +
-                  "number of ScriptParamNames in form " + getTitle() );
+            return seterr( "The number of operator parameters does not equal "
+                           +"the number of ScriptParamNames in form "
+                           +getTitle() );
       if( ScriptParamNames != null )
          if( ScriptParamNames.length != operator.getNum_parameters() )
-            return seterr( "The number of operator parameters does not equal the " +
-                  "number of ScriptParamNames in form " + getTitle() );
+           return seterr("The number of operator parameters does not equal "
+                         +"the number of ScriptParamNames in form "
+                         +getTitle());
 
 
       for( int i = 0; i < operator.getNum_parameters(); i++ )
@@ -208,7 +227,6 @@ public class ScriptForm extends Form implements IObserver, PropertyChangeListene
             param.setValue( result );
          }
       validateAllParams();
-      setCompleted( true );
       return true;
 
    }
@@ -240,8 +258,10 @@ public class ScriptForm extends Form implements IObserver, PropertyChangeListene
 
     }
 
-   /**Test program for this class.  It requires a script whose name is Tscript.iss with 2 
-   * integer parameters.  The file must be in the directory where the java command was issued.
+  /**
+   * Test program for this class.  It requires a script whose name is
+   * Tscript.iss with 2 * integer parameters.  The file must be in the
+   * directory where the java command was issued.
    */
    public static void main( String args[] )
    {
