@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/07/16 22:43:16  dennis
+ * Now writes parameter estimates, parameter sgimas and Chi squared
+ * values to status pane
+ *
  * Revision 1.1  2002/07/12 22:26:43  dennis
  * Fit function defined by expression to one Data block.
  *
@@ -180,7 +184,7 @@ public class  FitExpressionToGroup  extends    AnalyzeOp
     {
       ErrorString message = new ErrorString( 
                            "ERROR: no data entry with the group_ID "+group_id );
-      System.out.println( message );
+      SharedData.addmsg( message );
       return message;
     }
 
@@ -214,7 +218,7 @@ public class  FitExpressionToGroup  extends    AnalyzeOp
     {
       ErrorString message = new ErrorString(
            "ERROR: interval invalid, [a,b] = [" + min_x + "," + max_x +"]");
-      System.out.println( message );
+      SharedData.addmsg( message );
       return message;
     }
 
@@ -280,14 +284,19 @@ public class  FitExpressionToGroup  extends    AnalyzeOp
              new MarquardtArrayFitter( model_fun, x, y, sigma, 1.0e-20, 100 );
 
     double p_sigmas[] = fitter.getParameterSigmas();
-    double p_sigmas_2[] = fitter.getParameterSigmas_2();
     double[] coefs = model_fun.getParameters();
     String[] names = model_fun.getParameterNames();
     for ( int i = 0; i < model_fun.numParameters(); i++ )
-      System.out.println(names[i] + " = " + coefs[i] +
-                         " +- " + p_sigmas[i] +
-                         " +- " + p_sigmas_2[i] );
-    System.out.println("Chi Sq = " + fitter.getChiSqr() );
+    {    
+      String info = ""+names[i] + " = ";
+      info = info + Format.singleExp( coefs[i], 14 ) + " +- ";
+      info = info + Format.singleExp( p_sigmas[i], 14 );
+      SharedData.addmsg( info );
+//      System.out.println(names[i] + " = " + coefs[i] +
+//                         " +- " + p_sigmas[i] ); 
+    }
+    SharedData.addmsg( "Chi Sq = " + Format.singleExp( fitter.getChiSqr(),14));
+    //System.out.println("Chi Sq = " + fitter.getChiSqr() );
 
     float xf[] = new float[x.length];
     for ( int i = 0; i < x.length; i++ )
