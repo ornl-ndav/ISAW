@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/07/29 19:46:11  rmikk
+ * Fixed the Menu maker to give.
+ * Checked for a null condition before invoking an imageViewComponent Method
+ *
  * Revision 1.3  2004/07/29 13:54:33  rmikk
  * redraw implemented
  *
@@ -83,7 +87,7 @@ public class ProffenViewController extends DataSetViewer implements
 		super(data_set); 
         ArrayMaker = new DataSetGRCTArrayMaker(data_set, null);
         Viewer = new ImageViewComponent( new VirtualArray2D(10,10));
-    //Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
+       // Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
         Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
 		init();
 	}
@@ -98,7 +102,7 @@ public class ProffenViewController extends DataSetViewer implements
         viewerState = state;
         ArrayMaker = new DataSetGRCTArrayMaker(data_set, null);
         Viewer = new ImageViewComponent( new VirtualArray2D(10,10));
-       // Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
+        //Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
         Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
         init();
        
@@ -161,6 +165,11 @@ public class ProffenViewController extends DataSetViewer implements
      invalidate();
     }
     
+    private int indexx( int x, int def){
+        if( x >=0)
+          return x;
+        return def;
+    }
     private void SetUpMenuItems( JMenuBar menuBar, ViewMenuItem[] Men){
     
      for( int i=0; i < Men.length; i++){
@@ -168,8 +177,8 @@ public class ProffenViewController extends DataSetViewer implements
        String path = vm.getPath();
        int j=0;
        JMenu jm = null;
-       for( int k = Math.max(path.indexOf("."),path.length()); j < path.length();
-          k = Math.max(path.indexOf(".",k+1),path.length()) ){
+       for( int k = indexx(path.indexOf("."),path.length()); j < path.length();
+          k = indexx(path.indexOf(".",k+1),path.length()) ){
           String item = path.substring(j,k);
           JMenu  jm1;
           if( j ==0){
@@ -216,7 +225,8 @@ public class ProffenViewController extends DataSetViewer implements
      
           if( reason == IObserver.POINTED_AT_CHANGED){
             floatPoint2D fpt= ArrayMaker.redrawNewSelect(  reason );
-            Viewer.setPointedAt( fpt);
+            if( fpt != null)
+                Viewer.setPointedAt( fpt);
           }	
 
 	}
