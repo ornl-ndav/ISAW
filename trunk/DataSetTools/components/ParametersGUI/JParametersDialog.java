@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.59  2004/03/23 15:54:17  rmikk
+ *  Added listeners to get all dialog and JFrames to finalize after disposing
+ *
  *  Revision 1.58  2004/03/23 14:35:08  rmikk
  *  Invoked the dialog and help frames using the WindowShower mechanism
  *  Added a dispose method
@@ -227,6 +230,7 @@ public class JParametersDialog implements Serializable,
     Vector vparamGUI = new Vector();
     JDialog opDialog;
     int Width = 0;
+    FinishJFrame jf ;
     Object Result = NOT_THROUGH;
     JLabel resultsLabel = new JLabel("    Result");
     ApplyButtonHandler APH;
@@ -267,7 +271,8 @@ public class JParametersDialog implements Serializable,
         String Title = op.getTitle();
         if( Title.equals( IssScript.UNKNOWN))
            Title = "CommandPane";
-        opDialog = new JDialog( new JFrame(), Title, modal);
+        jf = new FinishJFrame();
+        opDialog = new FinishJDialog( jf, Title, modal);
         //opDialog.addComponentListener( new MyComponentListener());       
         int Size = 0 ;
         int Size1 = 0;
@@ -937,6 +942,7 @@ public class JParametersDialog implements Serializable,
   public void dispose(){
 
      opDialog.dispose();
+     jf.dispose();
   }
   public class HelpButtonListener implements ActionListener{
 
@@ -947,7 +953,7 @@ public class JParametersDialog implements Serializable,
         screenwidth=(int)(screenheight*4/3);
       }
       
-      JFrame jf = new JFrame( "operator "+op.getCommand());
+      FinishJFrame jf = new FinishJFrame( "operator "+op.getCommand());
       JEditorPane jedPane = new JEditorPane();
       jedPane.setEditable(false);
       jedPane.setEditorKit( new HTMLEditorKit() );
@@ -960,4 +966,21 @@ public class JParametersDialog implements Serializable,
       //jf.show();
     } 
   }
+ public class FinishJDialog extends JDialog implements IFinish{
+
+    public FinishJDialog( JFrame jf, String Title, boolean modal){
+       super( jf, Title, modal);
+       addWindowListener( new FinishWindowListener());
+
+    }
+    public void finish(){
+      try{
+         finalize();
+     }catch( Throwable ss){
+
+     }
+
+    }
+
+ }
 }
