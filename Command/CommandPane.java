@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2001/09/07 16:17:02  dennis
+ * Removed debug print (Ruth)
+ *
  * Revision 1.28  2001/08/02 16:21:16  rmikk
  * Added a routine to take care of the differing end of line
  * indicators from different wordprocessors.
@@ -726,7 +729,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
          else S = "file:///" + S;
          //H.displayURL( S ) ;
           S= S.replace( '\\','/');
-          System.out.println("Source is"+S); 
+          //System.out.println("Source is"+S); 
           try{
              H = new HTMLPage( S ) ;
              Dimension D = getToolkit().getScreenSize();
