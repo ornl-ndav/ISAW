@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/07/08 20:46:09  pfpeterson
+ *  Now uses String constants in FontUtil.
+ *
  *  Revision 1.4  2002/07/02 17:06:54  pfpeterson
  *  Now uses string constants defined in IsawGUI.Isaw.
  *
@@ -102,7 +105,6 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
-import  IsawGUI.Isaw;
 
 /**
  * This operator converts neutron time-of-flight DataSet to Q.  The
@@ -188,18 +190,18 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
     Parameter parameter;
 
     if ( scale == null )
-      parameter = new Parameter( "Min Q("+Isaw.InvAngstrom+")",
+      parameter = new Parameter( "Min Q("+FontUtil.INV_ANGSTROM+")",
                                  new Float(5.0) );
     else
-      parameter = new Parameter( "Min Q("+Isaw.InvAngstrom+")", 
+      parameter = new Parameter( "Min Q("+FontUtil.INV_ANGSTROM+")", 
                                   new Float(scale.getStart_x()) );
     addParameter( parameter );
 
     if ( scale == null )
-      parameter = new Parameter("Max Q("+Isaw.InvAngstrom+")",
+      parameter = new Parameter("Max Q("+FontUtil.INV_ANGSTROM+")",
                                 new Float(500.0) );
     else
-      parameter = new Parameter("Max Q("+Isaw.InvAngstrom+")",
+      parameter = new Parameter("Max Q("+FontUtil.INV_ANGSTROM+")",
                                 new Float(scale.getEnd_x()));
 
     addParameter( parameter );
@@ -216,7 +218,7 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
    */
    public String new_X_label()
    {
-     return new String( "Q("+Isaw.InvAngstrom+")" );
+     return new String( "Q("+FontUtil.INV_ANGSTROM+")" );
    }
 
 

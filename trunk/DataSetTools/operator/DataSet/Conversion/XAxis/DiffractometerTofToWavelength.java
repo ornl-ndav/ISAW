@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/07/08 20:46:05  pfpeterson
+ * Now uses String constants in FontUtil.
+ *
  * Revision 1.4  2002/07/02 17:06:51  pfpeterson
  * Now uses string constants defined in IsawGUI.Isaw.
  *
@@ -122,7 +125,6 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
-import  IsawGUI.Isaw;
 
 /**
  * This operator converts a neutron time-of-flight DataSet for a Diffractometer, 
@@ -207,18 +209,18 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
     Parameter parameter;
 
     if ( scale == null )
-      parameter = new Parameter( "Min Wavelength("+Isaw.Angstrom+")", 
+      parameter = new Parameter( "Min Wavelength("+FontUtil.ANGSTROM+")", 
                                  new Float(0.0) );
     else
-      parameter = new Parameter( "Min Wavelength("+Isaw.Angstrom+")", 
+      parameter = new Parameter( "Min Wavelength("+FontUtil.ANGSTROM+")", 
                                   new Float(scale.getStart_x()));
     addParameter( parameter );
 
     if ( scale == null )
-      parameter = new Parameter( "Max Wavelength("+Isaw.Angstrom+")",
+      parameter = new Parameter( "Max Wavelength("+FontUtil.ANGSTROM+")",
                                  new Float(5.0) );
     else
-      parameter = new Parameter( "Max Wavelength("+Isaw.Angstrom+")", 
+      parameter = new Parameter( "Max Wavelength("+FontUtil.ANGSTROM+")", 
                                   new Float(scale.getEnd_x()));
 
     addParameter( parameter );
@@ -236,7 +238,7 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
    */
    public String new_X_label()
    {
-     return new String( Isaw.Lambda + "("+Isaw.Angstrom+")" );
+     return new String( FontUtil.LAMBDA + "("+FontUtil.ANGSTROM+")" );
    }
 
 
