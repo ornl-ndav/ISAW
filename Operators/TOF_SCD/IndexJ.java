@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/02/26 22:22:07  pfpeterson
+ * Fixed bug where was not indexing peaks that were close to integer
+ * values because index%1>.5
+ *
  * Revision 1.6  2003/02/18 22:59:00  pfpeterson
  * Updated calls to deprecated method fixSparator.
  *
@@ -258,9 +262,13 @@ public class IndexJ extends    GenericTOF_SCD {
     // unindex peaks outside of the given deltas
     for( int i=0 ; i<peaks.size() ; i++ ){
       peak=(Peak)peaks.elementAt(i);
+      float hMod=Math.abs(peak.h()-Math.round(peak.h()));
+      float kMod=Math.abs(peak.k()-Math.round(peak.k()));
+      float lMod=Math.abs(peak.l()-Math.round(peak.l()));
+
       log.append(formatHKL(peak.h(),peak.k(),peak.l()));
-      if( (delta<=Math.abs(peak.h()%1)) || (delta<=Math.abs(peak.h()%1))
-          || (delta<=Math.abs(peak.h()%1)) ){
+
+      if( (delta<=hMod) || (delta<=kMod) || (delta<=lMod) ){
         peak.sethkl(0f,0f,0f,false);
       }else{
         peak.reflag(1);
