@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/05/01 16:38:02  pfpeterson
+ * Changed some variable names to add to readability and added LOTS
+ * of comments.
+ *
  * Revision 1.3  2003/04/30 19:50:49  pfpeterson
  * Added ability to work with orientation matrix, in addition to cell
  * scalars from 'blind.log'.
@@ -79,16 +83,40 @@ import java.util.Vector;
  */
 public class ScalarJ extends GenericTOF_SCD{
   private static final boolean DEBUG=false;
+
+  // valid values of nchoice (generic symmetry type)
+  private static final int NO_RESTRICTION   = 0;
+  private static final int HIGHEST_SYMMETRY = 1;
+  private static final int KNOWN_CELL       = 2;
+  private static final int SYMMETRIC        = 3;
+
+  // valid values of ncell (cell type)
+  private static final int P_CUBIC       = 1;
+  private static final int F_CUBIC       = 2;
+  private static final int R_HEXAGONAL   = 3;
+  private static final int I_CUBIC       = 4;
+  private static final int I_TETRAGONAL  = 5;
+  private static final int I_ORTHOROMBIC = 6;
+  private static final int P_TETRAGONAL  = 7;
+  private static final int P_HEXAGONAL   = 8;
+  private static final int C_ORTHOROMBIC = 9;
+  private static final int C_MONOCLINIC  = 10;
+  private static final int F_ORTHOROMBIC = 11;
+  private static final int P_ORTHOROMBIC = 12;
+  private static final int P_MONOCLINIC  = 13;
+  private static final int P_TRICLINIC   = 14;
+
+  // valid values of nequal (specify family of valid cell types)
+  private static final int A_EQ_B_EQ_C = 1;
+  private static final int A_EQ_B_NE_C = 2;
+  private static final int A_EQ_C_NE_B = 3;
+  private static final int A_NE_B_NE_C = 4;
+
   private double delta= 0.0;
   private int i= 0;
   private int [] k= new int[60];
   private int [] l= new int[60];
-  private double r11= 0.0;
-  private double r22= 0.0;
-  private double r33= 0.0;
-  private double r23= 0.0;
-  private double r31= 0.0;
-  private double r12= 0.0;
+  private double[] scalars=null;
   private double sig11= 0.0;
   private double sig22= 0.0;
   private double sig33= 0.0;
@@ -102,7 +130,7 @@ public class ScalarJ extends GenericTOF_SCD{
   private double sig31sq= 0.0;
   private double sig12sq= 0.0;
   private int nequal= 0;
-  private int nchoice= 0;
+  private int nchoice= NO_RESTRICTION;
   private int ncell= 0;
   private int Goto= 0;
   private int npick= 0;
@@ -328,24 +356,27 @@ public class ScalarJ extends GenericTOF_SCD{
     }
 
     // lattice parameters
-    double a = sqrt(r11);
-    double b = sqrt(r22);
-    double c = sqrt(r33);
+    double a = sqrt(scalars[0]);
+    double b = sqrt(scalars[1]);
+    double c = sqrt(scalars[2]);
 
     // lattice angles
-    double alpha = Math.acos(r23/(b*c));
-    double beta  = Math.acos(r31/(a*c));
-    double gamma = Math.acos(r12/(a*b));
+    double alpha = Math.acos(scalars[3]/(b*c));
+    double beta  = Math.acos(scalars[4]/(a*c));
+    double gamma = Math.acos(scalars[5]/(a*b));
 
-    sig11 = 2.*delta*r11;
-    sig22 = 2.*delta*r22;
-    sig33 = 2.*delta*r33;
+    sig11 = 2.*delta*scalars[0];
+    sig22 = 2.*delta*scalars[1];
+    sig33 = 2.*delta*scalars[2];
     sig11sq=sig11*sig11;
     sig22sq=sig22*sig22;
     sig33sq=sig33*sig33;
-    sig23sq=2.*(delta*r23*delta*r23)+Math.pow((b*c*Math.sin(alpha)*0.017),2);
-    sig31sq=2.*(delta*r31*delta*r31)+Math.pow((a*c*Math.sin(beta)*0.017),2);
-    sig12sq=2.*(delta*r12*delta*r12)+Math.pow((a*b*Math.sin(gamma)*0.017),2);
+    sig23sq=2.*(delta*scalars[3]*delta*scalars[3])
+                              +Math.pow((b*c*Math.sin(alpha)*0.017),2);
+    sig31sq=2.*(delta*scalars[4]*delta*scalars[4])
+                              +Math.pow((a*c*Math.sin(beta)*0.017),2);
+    sig12sq=2.*(delta*scalars[5]*delta*scalars[5])
+                              +Math.pow((a*b*Math.sin(gamma)*0.017),2);
     sig23 = sqrt(sig23sq);
     sig31 = sqrt(sig31sq);
     sig12 = sqrt(sig12sq);
@@ -354,12 +385,12 @@ public class ScalarJ extends GenericTOF_SCD{
     k[i-1] = 0;
     l[i-1] = 0;
 
-    System.out.println(Format.real(r11,10,3)+" "+Format.real(sig11,10,3));
-    System.out.println(Format.real(r22,10,3)+" "+Format.real(sig22,10,3));
-    System.out.println(Format.real(r33,10,3)+" "+Format.real(sig33,10,3));
-    System.out.println(Format.real(r23,10,3)+" "+Format.real(sig23,10,3));
-    System.out.println(Format.real(r31,10,3)+" "+Format.real(sig31,10,3));
-    System.out.println(Format.real(r12,10,3)+" "+Format.real(sig12,10,3));
+    System.out.println(Format.real(scalars[0],10,3)+Format.real(sig11,11,3));
+    System.out.println(Format.real(scalars[1],10,3)+Format.real(sig22,11,3));
+    System.out.println(Format.real(scalars[2],10,3)+Format.real(sig33,11,3));
+    System.out.println(Format.real(scalars[3],10,3)+Format.real(sig23,11,3));
+    System.out.println(Format.real(scalars[4],10,3)+Format.real(sig31,11,3));
+    System.out.println(Format.real(scalars[5],10,3)+Format.real(sig12,11,3));
 
     return true;
   }
@@ -406,19 +437,20 @@ public class ScalarJ extends GenericTOF_SCD{
     double[] abc=Util.abc(LinearAlgebra.float2double(UB));
     if(abc==null)
       return new ErrorString("Could not get lattice parameters from UB");
-    double[] scalars=Util.scalars(abc);
+    scalars=Util.scalars(abc);
     if(scalars==null)
       return new ErrorString("Could not calculate scalars from "
                              +"lattice parameters");
 
     // assign the scalars to what is used here
-    r11=scalars[0];
-    r22=scalars[1];
-    r33=scalars[2];
-    r23=scalars[3];
-    r31=scalars[4];
-    r12=scalars[5];
-
+/* REMOVE
+    r11=scalars[0]; // a dot a
+    r22=scalars[1]; // b dot b
+    r33=scalars[2]; // c dot c
+    r23=scalars[3]; // b dot c
+    r31=scalars[4]; // c dot a
+    r12=scalars[5]; // a dot b
+*/
     return null;
   }
 
@@ -439,12 +471,12 @@ public class ScalarJ extends GenericTOF_SCD{
         if(tfr.read_line().trim().equalsIgnoreCase("*** CELL SCALARS ***"))
           break;
       }
-      r11=tfr.read_double();
-      r22=tfr.read_double();
-      r33=tfr.read_double();
-      r23=tfr.read_double();
-      r31=tfr.read_double();
-      r12=tfr.read_double();
+      scalars[0]=tfr.read_double();
+      scalars[1]=tfr.read_double();
+      scalars[2]=tfr.read_double();
+      scalars[3]=tfr.read_double();
+      scalars[4]=tfr.read_double();
+      scalars[5]=tfr.read_double();
     }catch( IOException e){
       return new ErrorString("Error Reading "+logfile+": "+e.getMessage());
     }catch( NumberFormatException e){
@@ -482,7 +514,7 @@ public class ScalarJ extends GenericTOF_SCD{
     this.getParameter(1).setValue(new Float(delta));
 
     nequal = 0;
-    nchoice = 0;
+    nchoice = NO_RESTRICTION;
     ncell = 0;
     System.out.println(" ");
     System.out.println("HOW WOULD YOU LIKE TO RESTRICT THE SEARCH?");
@@ -495,7 +527,7 @@ public class ScalarJ extends GenericTOF_SCD{
     ans=readans();
     try{
       if(ans==null || ans.length()<=0)
-        nchoice=0;
+        nchoice=NO_RESTRICTION;
       else
         nchoice=Integer.parseInt(ans);
     }catch(NumberFormatException e){
@@ -504,15 +536,15 @@ public class ScalarJ extends GenericTOF_SCD{
     }
 
     System.out.println(" ");
-    if (nchoice == 0){  
+    if (nchoice == NO_RESTRICTION){  
       System.out.println("NO RESTRICTIONS");
       this.getParameter(2).setValue(choices.elementAt(0));
       return true;
-    }else if (nchoice == 1){
+    }else if (nchoice == HIGHEST_SYMMETRY){
       System.out.println("SEARCHING FOR HIGHEST SYMMETRY MATCH");
       this.getParameter(2).setValue(choices.elementAt(1));
       return true;
-    }else if (nchoice == 2){
+    }else if (nchoice == KNOWN_CELL){
       System.out.println("POSSIBLE CELL TYPES ARE:");
       System.out.println("    1=P, CUBIC");
       System.out.println("    2=F, CUBIC");
@@ -542,7 +574,7 @@ public class ScalarJ extends GenericTOF_SCD{
         return false;
       }
 
-      if( ncell==0 || ncell>14)  
+      if( ncell<=0 || ncell>14)  
         return false;
 
       System.out.println(" ");
@@ -550,7 +582,7 @@ public class ScalarJ extends GenericTOF_SCD{
       System.out.println(" ");
       this.getParameter(2).setValue(choices.elementAt(ncell+1));
       return true;
-    }else if (nchoice == 3){
+    }else if (nchoice == SYMMETRIC){
       System.out.println("THE POSSIBLE SYMMETRIC SCALAR EQUALITIES ARE:");
       System.out.println("    1=(R11 EQ R22 EQ R33)");
       System.out.println("    2=(R11 EQ R22 NE R33)");
@@ -584,22 +616,22 @@ public class ScalarJ extends GenericTOF_SCD{
    * the necessary values for execution.
    */
   private boolean parseChoice(int choice){
-    nchoice = 0;
+    nchoice = NO_RESTRICTION;
     ncell = 0;
     nequal = 0;
 
     if(choice==0){ // no restrictions
-      nchoice=0;
+      nchoice=NO_RESTRICTION;
       return true;
     }else if(choice==1){ // highest symmetry
-      nchoice=1;
+      nchoice=HIGHEST_SYMMETRY;
       return true;
     }else if( choice>1 && choice<16 ){ // choose symmetry type
-      nchoice=2;
+      nchoice=KNOWN_CELL;
       ncell=choice-1;
       return true;
     }else if( choice>15 && choice<20 ){ // choice symmetric scalar equalities
-      nchoice=3;
+      nchoice=SYMMETRIC;
       nequal=choice-15;
       return true;
     }else{
@@ -641,114 +673,139 @@ public class ScalarJ extends GenericTOF_SCD{
   }
 
   /**
-   * I don't know what this does but is one of the main 'if' clauses.
+   * This runs if the following conditions exist:
+   * <UL><LI>looking for symmetry (nchoice=SYMMETRIC)</LI>
+   *     <LI>A is same length as B AND A is same length as C (within
+   *     allowable limits)</LI>
+   *     <LI>looking for symmetry other than |A|=|B|=|C|. This gives
+   *     automatic entrance into mark02</LI>
+   * </UL>
    */
   private void mark01(){
-    if( (nchoice == 3)
-          || ( abs(r11-r22) < (3.*sqrt(sig11*sig11+sig22*sig22)) )
-        && ( abs(r11-r33) < (3.*sqrt(sig11*sig11+sig33*sig33)) ) ){
+    // are looking for symmetry
+    if( (nchoice == SYMMETRIC)
+        // or |A|==|B| && |A|==|C| within uncertainties
+          || ( abs(scalars[0]-scalars[1]) < (3.*sqrt(sig11sq+sig22sq)) )
+        && ( abs(scalars[0]-scalars[2]) < (3.*sqrt(sig11sq+sig33sq)) ) ){
       if(DEBUG)System.out.println("MARK01");
     }else{
       return;
     }
 
-    if (nchoice == 3 && nequal != 1){
+    // can't look for anything other than |A|==|B|==|C|
+    if (nchoice == SYMMETRIC && nequal != A_EQ_B_EQ_C){
       Goto = 40;
       return;
     }
 
-    if(Goto!=0)
-      return;
-
-    if( abs(r23)<(3.*sig23) ){
-      if( abs(r31)<(3.*sig31) && abs(r12)<(3.*sig12) ){
+    if( abs(scalars[3])<(3.*sig23) ){ // BdotC=0
+      // AdotC=0 AND AdotB=0
+      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
         k[i-1] = 1;
         l[i-1] = 1;
         i = i+1;
       }
-      if( abs(r31+(0.5*r11))<(3.0*sqrt(sig31sq+0.25*sig11sq))
-          && abs(r12+(0.5*r11)) < (3.0*sqrt(sig12sq+0.25*sig11sq)) ){
+      // AdotC=-AdotA/2 AND AdotB=-AdotA/2
+      if( abs(scalars[4]+(0.5*scalars[0]))<(3.0*sqrt(sig31sq+0.25*sig11sq))
+         && abs(scalars[5]+(0.5*scalars[0]))<(3.0*sqrt(sig12sq+0.25*sig11sq))){
         k[i-1] = 3;
         l[i-1] = 2;
         i = i+1;
       }
     }
 
-    if( abs(r23-(-0.5*r11))<(3.0*sqrt(sig23sq+0.25*sig11sq)) ){
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq)) && abs(r12)<(3.*sig12) ){
+    // BdotC=-AdotA/2
+    if( abs(scalars[3]-(-0.5*scalars[0]))<(3.0*sqrt(sig23sq+0.25*sig11sq)) ){
+      // AdotC=BdotC AND AdotB=0
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
+          && abs(scalars[5])<(3.*sig12) ){
         k[i- 1] = 2;
         l[i- 1] = 2;
         i=i+1;
       }
-      if( abs(r12-r23)<(3.*sqrt(sig12sq+sig23sq)) && abs(r31)<(3.*sig31) ){
+      // AdotB=BdotC AND AdotC=0
+      if( abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq))
+          && abs(scalars[4])<(3.*sig31) ){
         k[i-1] = 4;
         l[i-1] = 2;
         i = i+1;
       }
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq)) 
-          && abs(r12-(-r23))<(3.*sqrt(sig12sq+sig23sq)) ){
+      // AdotC=BdotC AND AdotB=BdotC
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) 
+          && abs(scalars[5]-(-scalars[3]))<(3.*sqrt(sig12sq+sig23sq)) ){
         k[i-1] = 5;
         l[i-1] = 2;
         i = i+1;
       }
     }
 
-    if( abs(r23-(-r11/3.))<(3.*sqrt(sig23sq+(sig11sq/9.)))
-        && abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq))
-        && abs(r12-r23) < (3.*sqrt(sig12sq+sig23sq)) ){
+    // BdotC==AdotA/3 AND AdotC=BdotC AND AdotB=BdotC
+    if( abs(scalars[3]-(-scalars[0]/3.))<(3.*sqrt(sig23sq+(sig11sq/9.)))
+        && abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
+        && abs(scalars[5]-scalars[3]) < (3.*sqrt(sig12sq+sig23sq)) ){
       k[i-1] = 8;
       l[i-1] = 4;
       i = i+1;
     }
 
-    if( abs(r23-0.5*(-r11-r31))<3.*sqrt(sig23sq+0.25*sig11sq+0.25*sig31sq)
-        && abs(r12-r23)<(3.*sqrt(sig12sq+sig23sq)) && r31<0.  ){
+    // BdotC=(AdotA-AdotC)/2 AND AdotB=BdotC AND AdotC<0
+    if( abs(scalars[3]-0.5*(-scalars[0]-scalars[4]))<3.*sqrt(sig23sq+0.25*sig11sq+0.25*sig31sq)
+        && abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq))
+        && scalars[4]<0. ){
       k[i-1] = 10;
       l[i-1] = 5;
       i = i+1;
     }
 
-    if( abs(r23-0.5*(-r11-r12))<3.*sqrt(sig23sq+0.25*sig11sq+0.25*sig12sq)
-        && abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq)) && r12<0.    ){
+    // BdotC=(AdotA-AdotB)/2 AND AdotC=BdotC AND AdotB<0
+    if( abs(scalars[3]-0.5*(-scalars[0]-scalars[5]))<3.*sqrt(sig23sq+0.25*sig11sq+0.25*sig12sq)
+        && abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) && scalars[5]<0.    ){
       k[i-1] = 11;
       l[i-1] = 5;
       i = i+1;
     }
 
-    if( abs(r23-(-r11-r31-r12))<3.*sqrt(sig23sq+sig11sq+sig31sq+sig12sq)
-        && r31<0. && r12<0.  ){
+    // BdotC=AdotA-AdotC-AdotB AND AdotC<0 AND AdotB<0
+    if( abs(scalars[3]-(-scalars[0]-scalars[4]-scalars[5]))<3.*sqrt(sig23sq+sig11sq+sig31sq+sig12sq)
+        && scalars[4]<0. && scalars[5]<0.  ){
       k[i-1] = 12;
       l[i-1] = 6;
       i = i+1;
     }
 
-    if( r23<0.00 ){
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq))
-          && abs(r12-(-r23))<(3.*sqrt(sig12sq+sig23sq))  ){
+    // BdotC<0
+    if( scalars[3]<0. ){
+      // AdotC=BdotC AND AdotB=-BdotC
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
+          && abs(scalars[5]-(-scalars[3]))<(3.*sqrt(sig12sq+sig23sq))  ){
         k[i-1] = 6;
         l[i-1] = 3;
         i = i+1;
       }
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq))
-          && abs(r12-r23)<(3.*sqrt(sig12sq+sig23sq))  ){
+      // AdotC=BdotC AND AdotB=BdotC
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
+          && abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq))  ){
         k[i-1] = 7;
         l[i-1] = 3;
         i = i+1;
       }
-      if( abs(r31-(0.5*(-r11-r23)))<3.*sqrt(sig31sq+0.25*sig11sq+0.25*sig23sq)
-      && abs(r12-(0.5*(-r11-r23)))<3.*sqrt(sig12sq+0.25*sig11sq+0.25*sig23sq)){
+      // AdotC=-(AdotA+BdotC)/2 AND AdotB=-(AdotA+BdotC)/2
+      if( abs(scalars[4]-(0.5*(-scalars[0]-scalars[3])))<3.*sqrt(sig31sq+0.25*sig11sq+0.25*sig23sq)
+          && abs(scalars[5]-(0.5*(-scalars[0]-scalars[3])))<3.*sqrt(sig12sq+0.25*sig11sq+0.25*sig23sq)){
         k[i-1] = 9;
         l[i-1] = 5;
         i = i+1;
       }
-      if( abs(r31-(-r11-r23-r12))<3.*sqrt(sig31sq+sig11sq+sig23sq+sig12sq)
-          && r12<0.  ){
+      // AdotC=-(AdotA+BdotC+AdotB) && AdotB<0
+      if( abs(scalars[4]-(-scalars[0]-scalars[3]-scalars[5]))<3.*sqrt(sig31sq+sig11sq+sig23sq+sig12sq)
+          && scalars[5]<0. ){
         k[i-1] = 13;
         l[i-1] = 6;
         i = i+1;
       }
-      if( abs(r12-(-r11-r23-r31))<3.*sqrt(sig12sq+sig11sq+sig23sq+sig31sq)
-          && r31<0.  ){
+      // AdotB=-(AdotA+BdotC+AdotC) AND AdotC<0
+      if( abs(scalars[5]-(-scalars[0]-scalars[3]-scalars[4]))<3.*sqrt(sig12sq+sig11sq+sig23sq+sig31sq)
+          && scalars[4]<0. ){
         k[i-1] = 14;
         l[i-1] = 6;
         i = i+1;
@@ -757,91 +814,114 @@ public class ScalarJ extends GenericTOF_SCD{
   }  // ==================== end of mark01
 
   /**
-   * I don't know what this does but is one of the main 'if' clauses.
+   * This runs if the following conditions exist:
+   * <UL><LI>has a free pass from mark01</LI>
+   *     <LI>A is same length as B AND A is not same length as C
+   *     (within allowable limits)</LI>
+   *     <LI>looking for symmetry other than |A|=|B|!=|C|. This gives
+   *     automatic entrance into mark03</LI>
+   * </UL>
    */
   private void mark02(){
+    // free pass
     if( Goto == 40
-        || ( abs(r11-r22)<(3.*sqrt(sig11sq+sig22sq) ) 
-             && abs(r11-r33)>=(3.*sqrt(sig11sq+sig33sq)))   ){
+        // |A|==|B| AND |A|!=|C|
+        || ( abs(scalars[0]-scalars[1])<(3.*sqrt(sig11sq+sig22sq) ) 
+             && abs(scalars[0]-scalars[2])>=(3.*sqrt(sig11sq+sig33sq))) ){
       if(DEBUG) System.out.println("MARK02");
     }else{
       return;
     }
 
+    // can't look for anything other than |A|==|B|!=|C|
     Goto = 0;
-    if (nchoice == 3 && nequal != 2){
+    if (nchoice == SYMMETRIC && nequal != A_EQ_B_NE_C){
       Goto = 41;
       return;
     }
 
-    if(Goto!=0)
-      return;
-
-    if( abs(r23)<(3.*sig23)  ){
-      if( abs(r31)<(3.*sig31) && abs(r12)<(3.*sig12) ){
+    // BdotC=0
+    if( abs(scalars[3])<(3.*sig23)  ){
+      // AdotC=0 AND AdotB=0
+      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
         k[i-1] = 15;
         l[i-1] = 7;
         i = i+1;
       }
-      if( abs(r12-0.50*r11)<3.*sqrt(sig12sq+0.25*sig11sq) 
-          && abs(r31)<(3.*sig31) ){
+      // AdotB=AdotA/2 AND AdotC=0
+      if( abs(scalars[5]-0.50*scalars[0])<3.*sqrt(sig12sq+0.25*sig11sq) 
+          && abs(scalars[4])<(3.*sig31) ){
         k[i-1] = 16;
         l[i-1] = 8;
         i = i+1;
       }
-      if( abs(r12-0.50*(-r11))<3.*sqrt(sig12sq+0.25*sig11sq)
-          && abs(r31)<(3.*sig31) ){
+      // AdotB=AdotA/2 AND AdotC=0
+      if( abs(scalars[5]-0.50*(-scalars[0]))<3.*sqrt(sig12sq+0.25*sig11sq)
+          && abs(scalars[4])<(3.*sig31) ){
         k[i-1] = 17;
         l[i-1] = 8;
         i = i+1;
       }
-      if( abs(r31)<(3.*sig31) && r12>0. ){
+      // AdotC=0 AND AdotB>0
+      if( abs(scalars[4])<(3.*sig31) && scalars[5]>0. ){
         k[i-1] = 18;
         l[i-1] = 9;
         i = i+1;
       }
-      if( abs(r31)<(3.*sig31) && r12<0. ){
+      // AdotC=0 and AdotB<0
+      if( abs(scalars[4])<(3.*sig31) && scalars[5]<0. ){
         k[i-1] = 19;
         l[i-1] = 9;
         i = i+1;
       }
     }
 
-    if( abs(r23-(-0.50*r33))<3.*sqrt(sig23sq+0.25*sig33sq) ){
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq)) 
-          && abs(r12-(0.25*r33))<3.*sqrt(sig12sq+0.0625*sig33sq) ){
+    // BdotC=CdotC/2
+    if( abs(scalars[3]-(-0.50*scalars[2]))<3.*sqrt(sig23sq+0.25*sig33sq) ){
+      // AdotC=BdotC AND AdotB=CdotC/2
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) 
+          && abs(scalars[5]-(0.25*scalars[2]))<3.*sqrt(sig12sq+0.0625*sig33sq) ){
         k[i-1] = 20;
         l[i-1] = 5;
         i = i+1;
       }
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq)) && r12>0. ){
+      // AdotC=BdotC AND AdotB>0
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
+          && scalars[5]>0. ){
         k[i-1] = 21;
         l[i-1] = 6;
         i = i+1;
       }
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq)) && r12<0. ){
+      // AdotC=BdotC AND AdotB<0
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
+          && scalars[5]<0. ){
         k[i-1] = 22;
         l[i-1] = 6;
         i = i+1;
       }
     }
 
-    if( abs(r23+r33/3.)<3.*sqrt(sig23sq+sig33sq/9.)
-        && abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq))
-        && abs(r12-(-r11/2.+r33/6.))<3.*sqrt(sig12sq+sig11sq/4.+sig33sq/36.) ){
+    // BdotC=-CdotC/3 AND AdotC=BdotC AND AdotB=CdotC/6-AdotA/2
+    if( abs(scalars[3]+scalars[2]/3.)<3.*sqrt(sig23sq+sig33sq/9.)
+        && abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
+        && abs(scalars[5]-(-scalars[0]/2.+scalars[2]/6.))<3.*sqrt(sig12sq+sig11sq/4.+sig33sq/36.) ){
       k[i-1] = 23;
       l[i-1] = 3;
       i = i+1;
     }
 
-    if( r23<0. ){
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq)) ){
-        if( r12>0. ){
+    // BdotC<0
+    if( scalars[3]<0. ){
+      // AdotC=BdotC
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) ){
+        // AdotB>0
+        if( scalars[5]>0. ){
           k[i-1] = 24;
           l[i-1] = 10;
           i = i+1;
         }
-        if( r12<0. ){
+        // AdotB<0
+        if( scalars[5]<0. ){
           k[i-1] = 25;
           l[i-1] = 10;
           i = i+1;
@@ -852,84 +932,106 @@ public class ScalarJ extends GenericTOF_SCD{
   }  // ==================== end of mark02
 
   /**
-   * I don't know what this does but is one of the main 'if' clauses.
+   * This runs if the following conditions exist:
+   * <UL><LI>has a free pass from mark02</LI>
+   *     <LI>A is same length as C AND A is not same length as B
+   *     (within allowable limits)</LI>
+   *     <LI>looking for symmetry other than |A|=|C|!=|B|. This gives
+   *     automatic entrance into mark04</LI>
+   * </UL>
    */
   private void mark03(){
+    // free pass
     if( Goto == 41 
-        || (abs(r11-r33)<(3.*sqrt(sig11sq+sig33sq))
-            && abs(r11-r22) >= (3.*sqrt(sig11sq+sig22sq)))  ){
+        // |A|=|C|!=|B|
+        || (abs(scalars[0]-scalars[2])<(3.*sqrt(sig11sq+sig33sq))
+            && abs(scalars[0]-scalars[1]) >= (3.*sqrt(sig11sq+sig22sq)))  ){
       if(DEBUG) System.out.println("MARK03");
     }else{
       return;
     }
 
+    // can't look for anything other than |A|==|C|!=|B|
     Goto = 0;
-
-    if (nchoice == 3 && nequal != 3){
+    if (nchoice == SYMMETRIC && nequal != A_EQ_C_NE_B){
         Goto = 42;
         return;
     }
 
-    if(Goto!=0)
-      return;
-
-    if( abs(r23)<(3.*sig23) ){
-      if( abs(r31)<(3.*sig31) && abs(r12)<(3.*sig12) ){
+    // BdotC=0
+    if( abs(scalars[3])<(3.*sig23) ){
+      // AdotC=0 AND AdotB=0
+      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
         k[i-1] = 26;
         l[i-1] = 7;
         i = i+1;
       }
-      if( abs(r31+r11/2.)<3.*sqrt(sig31sq+sig11sq/4.) && abs(r12)<(3.*sig12) ){
+      // AdotC=-AdotA/2 AND AdotB=0
+      if( abs(scalars[4]+scalars[0]/2.)<3.*sqrt(sig31sq+sig11sq/4.)
+          && abs(scalars[5])<(3.*sig12) ){
         k[i-1] = 27;
         l[i-1] = 8;
         i = i+1;
       }
-      if( r31<0 && abs(r12)<(3.*sig12) ){
+      // AdotC<0 and AdotB=0
+      if( scalars[4]<0 && abs(scalars[5])<(3.*sig12) ){
         k[i-1] = 28;
         l[i-1] = 9;
         i = i+1;
       }
     }
 
-    if( abs(r23-(-0.50*r11))<3.*sqrt(sig23sq+0.25*sig11sq) ){
-      if( abs(r31)<(3.*sig31) && abs(r12-r11/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
+    // BdotC=-AdotA/2
+    if( abs(scalars[3]-(-0.50*scalars[0]))<3.*sqrt(sig23sq+0.25*sig11sq) ){
+      // AdotC=0 AND AdotB=AdotA/2
+      if( abs(scalars[4])<(3.*sig31)
+          && abs(scalars[5]-scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
         k[i-1] = 29;
         l[i-1] = 5;
         i = i+1;
       }
-      if( abs(r31)<(3.*sig31) && abs(r12+r11/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
+      // AdotC=0 AND AdotB=-AdotA/2
+      if( abs(scalars[4])<(3.*sig31)
+          && abs(scalars[5]+scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
         k[i-1] = 30;
         l[i-1] = 5;
         i = i+1;
       }
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq)) 
-          && abs(r12+r23)<(3.*sqrt(sig12sq+sig23sq)) ){
+      // AdotC=BdotC AND AdotB=BdotC
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) 
+          && abs(scalars[5]+scalars[3])<(3.*sqrt(sig12sq+sig23sq)) ){
         k[i-1] = 33;
         l[i-1] = 3;
         i = i+1;
       }
     }
 
-    if( r23<0. ){
-      if( abs(r31-(-r11-2.*r23))<3.*sqrt(sig31sq+sig11sq+4.*sig23sq)
-          && abs(r12-r23)<(3.*sqrt(sig12sq+sig23sq)) ){
+    // BdotC<0
+    if( scalars[3]<0. ){
+      // AdotC=-AdotA-2*BdotC AND AdotB=BdotC
+      if( abs(scalars[4]-(-scalars[0]-2.*scalars[3]))<3.*sqrt(sig31sq+sig11sq+4.*sig23sq)
+          && abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq)) ){
         k[i-1] = 34;
         l[i-1] = 11;
         i = i+1;
       }
-      if( abs(r31-(-r11-r23-r12))<3.*sqrt(sig31sq+sig11sq+sig23sq+sig12sq)
-          && r12<0. ){
+      // AdotC=-(AdotA+BdotC+AdotB) AND AdotB<0
+      if( abs(scalars[4]-(-scalars[0]-scalars[3]-scalars[5]))<3.*sqrt(sig31sq+sig11sq+sig23sq+sig12sq)
+          && scalars[5]<0. ){
         k[i-1] = 35;
         l[i-1] = 10;
         i = i+1;
       }
-      if( r31<0. ){
-        if( abs(r12-(-r23))<(3.*sqrt(sig12sq+sig23sq)) ){
+      // AdotC<0
+      if( scalars[4]<0. ){
+        // AdotB=-BdotC
+        if( abs(scalars[5]-(-scalars[3]))<(3.*sqrt(sig12sq+sig23sq)) ){
           k[i-1] = 31;
           l[i-1] = 10;
           i = i+1;
         }
-        if( abs(r12-r23)<(3.*sqrt(sig12sq+sig23sq)) ){
+        // AdotB=BdotC
+        if( abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq)) ){
           k[i-1] = 32;
           l[i-1] = 10;
           i = i+1;
@@ -939,167 +1041,214 @@ public class ScalarJ extends GenericTOF_SCD{
   }  // ==================== end of mark03
 
   /**
-   * I don't know what this does but is one of the main 'if' clauses.
+   * This runs if the following conditions exist:
+   * <UL><LI>has a free pass from mark03</LI>
+   *     <LI>A is not same length as B AND A is not same length as C
+   *     AND B is not the same length as C (within allowable
+   *     limits)</LI>
+   *     <LI>looking for symmetry other than |A|!=|C|!=|B|. This gives
+   *     automatic entrance into mark05</LI>
+   * </UL>
    */
   private void mark04(){
+    // free pass
     if( Goto == 42
-        || (abs(r11-r22)>=(3.*sqrt(sig11sq+sig22sq)) 
-            && abs(r11-r33)>=(3.*sqrt(sig11sq+sig33sq)) 
-            && abs(r22-r33) >= (3.*sqrt(sig22sq+sig33sq))) ){
+        // |A|!=|B|!=|C|
+        || (abs(scalars[0]-scalars[1])>=(3.*sqrt(sig11sq+sig22sq)) 
+            && abs(scalars[0]-scalars[2])>=(3.*sqrt(sig11sq+sig33sq)) 
+            && abs(scalars[1]-scalars[2]) >= (3.*sqrt(sig22sq+sig33sq))) ){
       if(DEBUG) System.out.println("MARK04");
     }else{
       return;
     }
-    Goto = 0;
 
-    if (nchoice == 3 && nequal != 4){
+    // can't look for anything other than |A|!=|B|!=|C|
+    Goto = 0;
+    if (nchoice == SYMMETRIC && nequal != A_NE_B_NE_C){
       Goto = 43;
       return;
     }
 
-    if(Goto!=0)
-      return;
-
-    if( abs(r23)<(3.*sig23) ){
-      if( abs(r31)<(3.*sig31) && abs(r12)<(3.*sig12) ){
+    // BdotC=0
+    if( abs(scalars[3])<(3.*sig23) ){
+      // AdotC=0 AND AdotB=0
+      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
         k[i-1] = 36;
         l[i-1] = 12;
         i = i+1;
       }
-      if( abs(r31)<(3.*sig31) 
-          && abs(r12-0.50*r11)<3.*sqrt(sig12sq+0.25*sig11sq) ){
+      // AdotC=0 AND AdotB=AdotA/2
+      if( abs(scalars[4])<(3.*sig31) 
+          && abs(scalars[5]-0.5*scalars[0])<3.*sqrt(sig12sq+0.25*sig11sq) ){
         k[i-1] = 37;
         l[i-1] = 9;
         i = i+1;
       }
-      if( abs(r31)<(3.*sig31)
-          && abs(r12-0.50*(-r11))<3.*sqrt(sig12sq+0.25*sig11sq) ){
+      // AdotC=0 AND AdotB=-AdotA/2
+      if( abs(scalars[4])<(3.*sig31)
+          && abs(scalars[5]-0.50*(-scalars[0]))<3.*sqrt(sig12sq+0.25*sig11sq)){
         k[i-1] = 38;
         l[i-1] = 9;
         i = i+1;
       }
-      if( abs(r31)<(3.*sig31) && r12>0. ){
+      // AdotC=0 AND AdotB>0
+      if( abs(scalars[4])<(3.*sig31) && scalars[5]>0. ){
         k[i-1] = 39;
         l[i-1] = 13;
         i = i+1;
       }
-      if( abs(r31)<(3.*sig31) && r12<0. ){
+      // AdotC=0 and AdotB<0
+      if( abs(scalars[4])<(3.*sig31) && scalars[5]<0. ){
         k[i-1] = 40;
         l[i-1] = 13;
         i = i+1;
       }
-      if( abs(r31+r33/2.)<3.*sqrt(sig31sq+sig33sq/4.) && abs(r12)<(3.*sig12) ){
+      // AdotC=-BdotB/2 AND AdotB=0
+      if( abs(scalars[4]+scalars[2]/2.)<3.*sqrt(sig31sq+sig33sq/4.)
+          && abs(scalars[5])<(3.*sig12) ){
         k[i-1] = 41;
         l[i-1] = 9;
         i = i+1;
       }
-      if( r31<0 && abs(r12)<(3.*sig12) ){
+      // AdotC<0 AND AdotB=0
+      if( scalars[4]<0 && abs(scalars[5])<(3.*sig12) ){
         k[i-1] = 42;
         l[i-1] = 13;
         i = i+1;
       }
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq)) && r12>0. ){
+      // AdotC=BdotC AND AdotB>0
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
+          && scalars[5]>0. ){
         k[i-1] = 43;
         l[i-1] = 10;
         i = i+1;
       }
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq)) && r12<0. ){
+      // AdotC=BdotC AND AdotB<0
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
+          && scalars[5]<0. ){
         k[i-1] = 44;
         l[i-1] = 10;
         i = i+1;
       }
     }
 
-    if( abs(r23-(0.50*r33))<3.*sqrt(sig23sq+0.25*sig33sq) ){
-      if( abs(r31)<(3.*sig31) && abs(r12)<(3.*sig12) ){
+    // BdotC=CdotC/2
+    if( abs(scalars[3]-(0.5*scalars[2]))<3.*sqrt(sig23sq+0.25*sig33sq) ){
+      // AdotC=0 AND AdotB=0
+      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
         k[i-1] = 45;
         l[i-1] = 9;
         i = i+1;
       }
-      if( abs(r31)<(3.*sig31) && abs(r12+r11/2.)<3.*sqrt(sig12sq+sig11sq/4) ){
+      // AdotC=0 AND AdotB=-AdotA/2
+      if( abs(scalars[4])<(3.*sig31)
+          && abs(scalars[5]+scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4) ){
         k[i-1] = 48;
         l[i-1] = 6;
         i = i+1;
       }
     }
 
-    if( abs(r23-(-0.50*r33))<3.*sqrt(sig23sq+0.25*sig33sq) ){
-      if( abs(r31)<(3.*sig31) && abs(r12-r11/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
+    // BdotC=-CdotC/2
+    if( abs(scalars[3]-(-0.50*scalars[2]))<3.*sqrt(sig23sq+0.25*sig33sq) ){
+      // AdotC=0 AND AdotB=AdotA/2
+      if( abs(scalars[4])<(3.*sig31)
+          && abs(scalars[5]-scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
         k[i-1] = 47;
         l[i-1] = 6;
         i = i+1;
       }
-      if( abs(r31)<(3.*sig31) && r12 > 0. ){
+      // AdotC=0 AND AdotB>0
+      if( abs(scalars[4])<(3.*sig31) && scalars[5] > 0. ){
         k[i-1] = 49;
         l[i-1] = 10;
         i = i+1;
       }
-      if( abs(r31)<(3.*sig31) && r12<0. ){
+      // AdotC=0 AND AdotB<0
+      if( abs(scalars[4])<(3.*sig31) && scalars[5]<0. ){
         k[i-1] = 50;
         l[i-1] = 10;
         i = i+1;
       }
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq))
-          && abs(r12-(0.25*r33))<3.*sqrt(sig12sq+0.25*sig33sq) ){
+      // AdotC=BdotC AND AdotB=CtodC/4
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
+          && abs(scalars[5]-(0.25*scalars[2]))<3.*sqrt(sig12sq+0.25*sig33sq) ){
         k[i-1] = 53;
         l[i-1] = 11;
         i = i+1;
       }
-      if( abs(r31-r23)<(3.*sqrt(sig31sq+sig23sq)) && r12>0. ){
+      // AdotC=BdotC AND AdotB>0
+      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
+          && scalars[5]>0. ){
         k[i-1] = 54;
         l[i-1] = 10;
         i = i+1;
       }
-      if( r31<0. && abs(r12-(-0.5*r31))<3.*sqrt(sig12sq+0.25*sig31sq) ){
+      // AdotC<0 AND AdotB=-AdotC/2
+      if( scalars[4]<0.
+          && abs(scalars[5]-(-0.5*scalars[4]))<3.*sqrt(sig12sq+0.25*sig31sq) ){
         k[i-1] = 55;
         l[i-1] = 10;
         i = i+1;
       }
     }
 
-    if( abs(r23-(0.50*r31))<3.*sqrt(sig23sq+0.25*sig31sq) && r31<0.
-        && abs(r12-0.5*r11) < 3.*sqrt(sig12sq+0.25*sig11sq) ){
+    // BdotC=AdotC/2 AND AdotC<0 AND AdotB=AdotA/2
+    if( abs(scalars[3]-(0.50*scalars[4]))<3.*sqrt(sig23sq+0.25*sig31sq)
+        && scalars[4]<0.
+        && abs(scalars[5]-0.5*scalars[0]) < 3.*sqrt(sig12sq+0.25*sig11sq) ){
       k[i-1] = 56;
       l[i-1] = 10;
       i = i+1;
     }
 
-    if( abs(r23+(r33+r31)/2.)<3.*sqrt(sig23sq+sig33sq/4.+sig31sq/4.) && r31<0.
-        && abs(r12-(0.5*(-r11-r31)))<3.*sqrt(sig12sq+sig11sq/4.+sig31sq/4.) ){
+    // BdotC=-BdotB-AdotC/2 AND AdotC<0 AND AdotB=-(AdotA+AdotC)/2
+    if( abs(scalars[3]+(scalars[2]+scalars[4])/2.)<3.*sqrt(sig23sq+sig33sq/4.+sig31sq/4.) && scalars[4]<0.
+        && abs(scalars[5]-(0.5*(-scalars[0]-scalars[4])))<3.*sqrt(sig12sq+sig11sq/4.+sig31sq/4.) ){
       k[i-1] = 58;
       l[i-1] = 10;
       i = i+1;
     }
 
-    if( r23< 0. ){
-      if( abs(r31)<(3.*sig31) && abs(r12)<(3.*sig12) ){
+    // BdotC<0
+    if( scalars[3]< 0. ){
+      // AdotC=0 AND AdotB=0
+      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
         k[i-1] = 46;
         l[i-1] = 13;
         i = i+1;
       }
-      if( abs(r12-r11/2.)<3.*sqrt(sig12sq+sig11sq/4.) && abs(r31)<(3.*sig31) ){
+      // AdotB=AdotA/2 AND AdotC=0
+      if( abs(scalars[5]-scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.)
+          && abs(scalars[4])<(3.*sig31) ){
         k[i-1] = 51;
         l[i-1] = 10;
         i = i+1;
       }
-      if( abs(r12+r11/2.)<3.*sqrt(sig12sq+sig11sq/4.) && abs(r31)<(3.*sig31) ){
+      // AdotB=-AdotA/2 AND AdotC=0
+      if( abs(scalars[5]+scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.)
+          && abs(scalars[4])<(3.*sig31) ){
         k[i-1] = 52;
         l[i-1] = 10;
         i = i+1;
       }
-      if( abs(r31+0.5*r33)<3.0*sqrt(sig31sq+sig33sq/4.)
-          && abs(r12+0.5*r23)<3.*sqrt(sig12sq+sig23sq/4.) ){
+      // AdotC=-CdotC/2 AND AdotB=-BdotC/2
+      if( abs(scalars[4]+0.5*scalars[2])<3.0*sqrt(sig31sq+sig33sq/4.)
+          && abs(scalars[5]+0.5*scalars[3])<3.*sqrt(sig12sq+sig23sq/4.) ){
         k[i-1] = 57;
         l[i-1] = 10;
         i = i+1;
       }
-      if( r31<0. ){
-        if( r12>0. ){
+      // AdotC<0
+      if( scalars[4]<0. ){
+        // AdotB>0
+        if( scalars[5]>0. ){
           k[i-1] = 59;
           l[i-1] = 14;
           i = i+1;
         }
-        if( r12<0. ){
+        // AdotB<0
+        if( scalars[5]<0. ){
           k[i-1] = 60;
           l[i-1] = 14;
           i = i+1;
@@ -1115,8 +1264,10 @@ public class ScalarJ extends GenericTOF_SCD{
     if(DEBUG) System.out.println("MARK05");
     if( k[0] == 0 || l[0] == 0 ){
       System.out.println("NO MATCH");
-      System.out.println(" FOR SCALARS "+r11+" "+r22+" "+r33+" ");
-      System.out.println("             "+r23+" "+r31+" "+r12+" ");
+      System.out.println(" FOR SCALARS "
+                         +scalars[0]+" "+scalars[1]+" "+scalars[2]+" ");
+      System.out.println("             "
+                         +scalars[3]+" "+scalars[4]+" "+scalars[5]+" ");
       return;
     }
 
@@ -1126,9 +1277,9 @@ public class ScalarJ extends GenericTOF_SCD{
       minsym = (int)(Math.min(minsym, l[j]) );
     }
 
-    if (nchoice == 1)  
+    if (nchoice == HIGHEST_SYMMETRY)  
       npick = minsym;
-    if (nchoice == 2)  
+    if (nchoice == KNOWN_CELL)  
       npick = ncell;
     boolean nflag = false;
     int imax = i;
@@ -1136,7 +1287,7 @@ public class ScalarJ extends GenericTOF_SCD{
 
 
     for( int n=0 ; n<imax ; n++ ){
-      if( l[n]==npick || nchoice==0 || nchoice==3 ){
+      if( l[n]==npick || nchoice==NO_RESTRICTION || nchoice==SYMMETRIC ){
         System.out.println(" ");
         System.out.println(" CELL "+(n+1)+"  TYPE IS ");
         System.out.println(" ");
@@ -1161,7 +1312,7 @@ public class ScalarJ extends GenericTOF_SCD{
     System.out.println((" "));
 
 
-  }  // ==================== end of mark05
+  }  // ==================== end of printResult
 
   /**
    * Main method for testing purposes and running outside of ISAW.
