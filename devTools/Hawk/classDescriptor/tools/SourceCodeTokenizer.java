@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 19:03:10  bouzekc
+ * Documented file using javadoc statements.
+ * Added getVectorFromString() method.
+ * Added field lineNumber;
+ *
  * Revision 1.1  2004/02/07 05:10:47  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -40,33 +45,51 @@
  */
 package devTools.Hawk.classDescriptor.tools;
 
+import java.util.StringTokenizer;
+import java.util.Vector;
+
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class is used to break source code into tokens.  When, the next token from the source code is obtained from the method
+ * nextToken(), the method looks at the next few characters in the String "str" and determines if the next section of the code is a 
+ * slash star comment (a comment of the form /* . . . . *\/), slash slash comment (a comment of the form //.......\n), a javadocs 
+ * comment (a comment of the form /** . . . . *\/), or actual code.  The next section is returned as an object that can be used to 
+ * determine the section type.
+ * @author Dominic Kramer
  */
 public class SourceCodeTokenizer
 {
+	/**
+	 * The String to tokenize.
+	 */
 	protected String str;
+	/**
+	 * The current offset in the string.
+	 */
 	protected int offset;
-	
+	/**
+	 * The current line number.
+	 */
+	protected int lineNumber;
+		
+	/**
+	 * Creates a SourceCodeTokenizer.
+	 * @param s The String to tokenize.
+	 */
 	public SourceCodeTokenizer(String s)
 	{
 		str = s;
 		offset = 0;
+		lineNumber = 0;
 	}
 	
 	/**
 	 * This returns a SourceCodeToken object which contains the information for the String representing the next token as well as
-	 * its type (i.e. Source Code, Comment, or Javadocs).  A section in the code is either a comment section, a javadocs section, or
-	 * a source code section.
+	 * its type (i.e. Source Code, Slash Slash Comment, Slash Star Comment, or Javadocs).  A section in the code is either a comment 
+	 * section, a javadocs section, or a source code section.
 	 * @return The next section in the code
 	 */
 	public SourceCodeToken nextToken()
 	{
-		System.out.println("offset="+offset);
-		
 		SourceCodeToken token = null;
 		boolean source = false;
 		boolean commentDoubleSlash = false;
@@ -110,27 +133,60 @@ public class SourceCodeTokenizer
 		if (source)
 		{
 			newString = processAsSource();
-			token = new SourceCodeToken(newString,SourceCodeToken.SOURCE_CODE);
+			lineNumber++;
+			token = new SourceCodeToken(getVectorFromString(newString),lineNumber,SourceCodeToken.SOURCE_CODE);
+			lineNumber = token.getLastLineNumber();
 		}
 		else if (commentDoubleSlash)
 		{
 			newString = processAsDoubleSlashComment();
-			token = new SourceCodeToken(newString,SourceCodeToken.COMMENT);
+			lineNumber++;
+			token = new SourceCodeToken(getVectorFromString(newString),lineNumber,SourceCodeToken.SLASH_SLASH_COMMENT);
+			lineNumber = token.getLastLineNumber();
 		}
 		else if (commentSlashStar)
 		{
 			newString = processAsSlashStarComment();
-			token = new SourceCodeToken(newString,SourceCodeToken.COMMENT);
+			lineNumber++;
+			token = new SourceCodeToken(getVectorFromString(newString),lineNumber,SourceCodeToken.SLASH_STAR_COMMENT);
+			lineNumber = token.getLastLineNumber();
 		}
 		else if (javadocs)
 		{
 			newString = processAsSlashStarComment();
-			token = new SourceCodeToken(newString,SourceCodeToken.JAVADOCS);
+			lineNumber++;
+			token = new SourceCodeToken(getVectorFromString(newString),lineNumber,SourceCodeToken.JAVADOCS);
+			lineNumber = token.getLastLineNumber();
 		}
 		
 		return token;
 	}
 	
+	/**
+	 * Takes the String supplied and breaks it into lines.  Each line is an element from the Vector returned.
+	 * @param str The String to use.
+	 * @return A Vector of Strings.
+	 */
+	protected Vector getVectorFromString(String str)
+	{
+		Vector vec = new Vector();
+		StringTokenizer tokenizer = new StringTokenizer(str,"\n");
+		while(tokenizer.hasMoreTokens())
+			vec.add(tokenizer.nextToken());
+		
+		return vec;
+	}
+	
+	/**
+	 * Get the number of lines that make up the string str.
+	 * @return The number of lines that make up the string str.
+	 */
+	public int getNumberOfLinesInString()
+	{
+		StringTokenizer tokenizer = new StringTokenizer(str,"\n");
+		return tokenizer.countTokens();
+	}
+
 	/**
 	 * This method assumes that offset starts from the start of a source code section.  It returns
 	 * the String representing all of the code until it reaches a /* or a // (Note /** is just a special version of /*).
@@ -138,8 +194,6 @@ public class SourceCodeTokenizer
 	 */
 	protected String processAsSource()
 	{
-		System.out.println("Entering processAsSource()");
-		
 		String result = "";
 		String next = getNextChar();
 		while ( !(result.endsWith("//") || result.endsWith("/*")) && next != null)
@@ -157,8 +211,6 @@ public class SourceCodeTokenizer
 			offset--;
 		}
 		
-		System.out.println("Leaving processAsSource()");
-		
 		return result;
 	}
 	
@@ -170,21 +222,15 @@ public class SourceCodeTokenizer
 	 */
 	protected String processAsDoubleSlashComment()
 	{
-		System.out.println("Entering processAsDoubleSlashComment()");
-		
 		String result = "";
 		String next = getNextChar();
 		while (!result.endsWith("\n") && result != null)
 		{
-			System.out.println("    result="+result);
-			System.out.println("    next="+next);
 			result += next;
 			next = getNextChar();
 		}
 		if (next != null)
 			offset--;
-
-		System.out.println("Leaving processAsDoubleSlashComment()");
 		
 		return result;
 	}
@@ -196,8 +242,6 @@ public class SourceCodeTokenizer
 	 */
 	protected String processAsSlashStarComment()
 	{
-		System.out.println("Entering processAsSlashStarComment()");
-		
 		String result = "";
 		String next = getNextChar();
 		while (!result.endsWith("*/") && next != null)
@@ -207,8 +251,6 @@ public class SourceCodeTokenizer
 		}
 		if (next != null)
 			offset--;
-
-		System.out.println("Leaving processAsSlashStarComment()");
 			
 		return result;
 	}
@@ -225,6 +267,10 @@ public class SourceCodeTokenizer
 			s = String.valueOf(str.charAt(offset));
 			offset++;
 		}
+		//this was added to convert tabs into spaces
+		if ((s != null) && (s.equals("\t")))
+			s = "   ";
+			
 		return s;
 	}
 }
