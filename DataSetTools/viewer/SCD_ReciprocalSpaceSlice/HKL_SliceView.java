@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/09/15 22:03:52  millermi
+ * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
+ *   Adding a second log required the boolean parameter to be changed
+ *   to an int. These changes may affect any ObjectState saved configurations
+ *   made prior to this version.
+ *
  * Revision 1.12  2004/05/10 22:45:16  dennis
  * Removed unused "debug" flag.
  *
@@ -459,7 +465,7 @@ public class HKL_SliceView extends DataSetViewer
                                 "," + Format.real( vector.get()[1], 5 ) +
                                 "," + Format.real( vector.get()[2], 5 ) + ")",
                        units,
-                       true );
+                       AxisInfo.LINEAR );
   } 
 
 
@@ -502,7 +508,8 @@ public class HKL_SliceView extends DataSetViewer
     }
 
     if ( title != null )
-      va2D.setAxisInfo( axis_num, shifted_min, shifted_max, "", title, true );
+      va2D.setAxisInfo( axis_num, shifted_min, shifted_max, "", title,
+                        AxisInfo.LINEAR );
     else 
       setGeneralAxis( axis_num, shifted_min, shifted_max, vector, va2D );
   }
