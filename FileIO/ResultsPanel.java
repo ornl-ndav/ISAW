@@ -57,6 +57,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/01/24 22:56:24  bouzekc
+ * Removed unused variables.
+ *
  * Revision 1.3  2004/01/23 16:11:19  dennis
  * Move source citation information (Sun Java Tech Tips) to top of file
  * with other copyright and modification information.
@@ -366,8 +369,6 @@ public class ResultsPanel extends JPanel {
     charBuffer.clear();
     charBuffer.put(text);
     charBuffer.position(0);
-    Charset charset = Charset.forName("ISO-8859-1");
-    CharsetDecoder decoder = charset.newDecoder();
     Pattern thePattern;
     if(nocase)
       thePattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
