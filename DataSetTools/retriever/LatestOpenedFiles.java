@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/26 17:08:10  rmikk
+ * Files that do not exist are no longer added to the menu
+ * Repeated filenames with different cases are no longer added
+ *   to the File menu of ISAW
+ *
  * Revision 1.4  2004/01/24 20:35:03  bouzekc
  * Changed ( new JOptionPane()).showMessageDialog() to
  * JOptionPane.showMessageDialog(), as it is a static method.
@@ -55,7 +60,7 @@ import DataSetTools.dataset.*;
 import java.awt.event.*;
 import javax.swing.*;
 import IsawGUI.*;
-
+import java.io.*;
 /**
   *  This class contains utilities to save, retrieve, act on, and add DataSet 
   *  files to menu bars. The file names are saved in the User preferences for 
@@ -97,7 +102,7 @@ public class LatestOpenedFiles{
 
         String filname = pref.get( "File" + i , NO_SUCH_FILE );
         
-        if( filname != NO_SUCH_FILE ){
+        if( (filname != NO_SUCH_FILE) &&( (new File(filname)).exists()) ){
 
            JMenuItem jmi = new JMenuItem( Mangle( filname ) );
            Menuu.add( jmi );
@@ -182,7 +187,7 @@ public class LatestOpenedFiles{
 
      for( int i = 0 ; i< NSavedFiles ; i++ )
 
-        if( pref.get( "File" + i , NO_SUCH_FILE ).equals( FileName ) )
+        if( pref.get( "File" + i , NO_SUCH_FILE ).equalsIgnoreCase( FileName ) )
            return true;
 
      return false;
