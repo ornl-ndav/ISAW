@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.19  2003/07/02 18:27:44  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.18  2003/07/02 17:05:10  bouzekc
  * Fixed bug where if setDefaultParameters() was called after
  * setting the result parameter name and type, the result
@@ -65,25 +68,15 @@ package DataSetTools.wizard;
 
 import Command.ParameterClassList;
 
-import DataSetTools.components.ParametersGUI.*;
-
-import DataSetTools.operator.*;
+//import DataSetTools.components.ParametersGUI.*;
+import DataSetTools.operator.HiddenOperator;
+import DataSetTools.operator.Operator;
 
 import DataSetTools.parameter.*;
 
 import DataSetTools.util.*;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
+import java.util.Vector;
 
 
 /**
