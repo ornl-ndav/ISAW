@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2005/02/08 23:03:13  dennis
+ * Added capability to print S(Q,E) to file.
+ *
  * Revision 1.10  2005/01/31 23:50:15  dennis
  * Transposed the image produced, so that now each row (i.e. Data block)
  * corresponds to a cut with contant energy, instead of with constant Q,
@@ -72,6 +75,7 @@ package DataSetTools.operator.DataSet.Conversion.XYAxis;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.ViewTools.UI.*;
+import gov.anl.ipns.Util.Numeric.*;
 
 import  java.io.*;
 import  java.util.Vector;
@@ -81,6 +85,7 @@ import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
 import  DataSetTools.viewer.*;
 import  DataSetTools.retriever.*;
+import  DataSetTools.util.*;
 
 /**
   *  Convert an energy spectrum from a Spectrometer into a DataSet containing
@@ -126,6 +131,8 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
    *  @param  max_E       The maximum E to include
    *  @param  n_E_bins    The number of "bins" to be used between min_E and
    *                      max_E.
+   *  @param  file_name   The name of the file to which the array of S(Q,E)
+   *                      values are written.
    */
 
   public SpectrometerTofToQE( DataSet     ds,
@@ -134,7 +141,8 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
                               int         n_Q_bins,
                               float       min_E,
                               float       max_E,
-                              int         n_E_bins )
+                              int         n_E_bins,
+                              String      file_name )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -157,6 +165,9 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
 
     parameter = getParameter(5);
     parameter.setValue( new Integer(n_E_bins) );
+
+    parameter = getParameter(6);
+    parameter.setValue( file_name );
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
@@ -182,7 +193,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter( "Min Q", new Float(0.0f) );
+    IParameter parameter = new Parameter( "Min Q", new Float(0.0f) );
     addParameter( parameter );
 
     parameter = new Parameter( "Max Q", new Float(20.0f) );
@@ -198,6 +209,9 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     addParameter( parameter );
 
     parameter = new Parameter( "Num E bins", new Integer(100));
+    addParameter( parameter );
+
+    parameter = new SaveFilePG( "Save QE array to file", null );
     addParameter( parameter );
   }
 
@@ -258,20 +272,20 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
   *  whose Y-axis units have been converted to energy.
   */
   public Object getResult()
-  {
-                                     // get the current data set
+  {                                  // get the current data set
     DataSet ds = this.getDataSet();
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
 
                                      // get the E and Q scale parameters
-    float min_Q    = ( (Float)(getParameter(0).getValue()) ).floatValue();
-    float max_Q    = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    int   n_Q_bins = ( (Integer)(getParameter(2).getValue()) ).intValue();
-    float min_E    = ( (Float)(getParameter(3).getValue()) ).floatValue();
-    float max_E    = ( (Float)(getParameter(4).getValue()) ).floatValue();
-    int   n_E_bins = ( (Integer)(getParameter(5).getValue()) ).intValue();
+    float  min_Q     = ( (Float)(getParameter(0).getValue()) ).floatValue();
+    float  max_Q     = ( (Float)(getParameter(1).getValue()) ).floatValue();
+    int    n_Q_bins  = ( (Integer)(getParameter(2).getValue()) ).intValue();
+    float  min_E     = ( (Float)(getParameter(3).getValue()) ).floatValue();
+    float  max_E     = ( (Float)(getParameter(4).getValue()) ).floatValue();
+    int    n_E_bins  = ( (Integer)(getParameter(5).getValue()) ).intValue();
+    String file_name = ((SaveFilePG)getParameter(6)).getStringValue();
 
                                         // find out if the units are time (us)
     boolean is_tof;                     // or energy (meV) 
@@ -461,7 +475,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
       }
     }
 
-                                           // this version uses cuts at constant E
+                                        // this version uses cuts at constant E
    DataSetFactory factory = new DataSetFactory(
                                      ds.getTitle(),
                                      "Q(Inv("+FontUtil.ANGSTROM+"))",
@@ -470,7 +484,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
                                      "Scattering Intensity" );
 
 
-/*                                         // this version uses cuts at constant Q
+/*                                      // this version uses cuts at constant Q
    DataSetFactory factory = new DataSetFactory(
                                      ds.getTitle(),
                                      "meV",
@@ -488,10 +502,10 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     new_ds.setAttributeList( ds.getAttributeList() );
 
     Data new_data;
-                                                  // This version creates DataSet 
-                                                  // using cuts at constant E.
-    for ( int col = 0; col < n_E_bins; col++ )    // make data entries from columns
-    {                                             // i.e. using constant E values
+                                               // This version creates DataSet 
+                                               // using cuts at constant E.
+    for ( int col = 0; col < n_E_bins; col++ ) // make data entries from columns
+    {                                          // i.e. using constant E values
 
       float const_e_slice[] = new float[ n_Q_bins ];
       for ( int row = 0; row < n_Q_bins; row++ )
@@ -508,10 +522,10 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     }
   
 /* 
-                                                  // This version creates DataSet 
-                                                  // using cuts at constant Q.
-    for ( int row = 0; row < n_Q_bins; row++ )    // make data entries from rows
-    {                                             // i.e. using constant Q values
+                                                // This version creates DataSet 
+                                                // using cuts at constant Q.
+    for ( int row = 0; row < n_Q_bins; row++ )  // make data entries from rows
+    {                                           // i.e. using constant Q values
       new_data = Data.getInstance( E_scale, QE_vals[row], row+1 );
 
       q_val = row * (max_Q - min_Q) / n_Q_bins + min_Q;
@@ -521,6 +535,18 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
       new_ds.addData_entry( new_data );
     }
 */
+    if ( file_name != null )
+    {
+      ErrorString err = PrintToFile(file_name, Q_scale, E_scale, QE_vals, null);
+      if ( err != null )
+      {
+        SharedData.addmsg( err.toString() );
+        return err;
+      }
+      else
+        SharedData.addmsg( "Wrote S(E,Q) to file " + file_name );
+    }
+    
     return new_ds;
   }
 
@@ -540,6 +566,67 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
 
     return new_op;
   }
+
+
+  /* ---------------------------- PrintToFile ------------------------------ */
+  /*
+   *  Private method to print the array of S(Q,E) values to a file
+   */
+
+  private ErrorString PrintToFile( String file_name, 
+                                   XScale Q_scale, 
+                                   XScale E_scale, 
+                                   float  QE_vals[][],
+                                   float  errs[][] )
+  {
+     FileOutputStream fout= null;
+     try 
+     {
+        fout = new FileOutputStream( file_name );
+     }
+     catch( Exception ss)
+     {
+       return new ErrorString("Could not open output file:" + file_name);
+     }
+
+     StringBuffer buff = new StringBuffer( 1000 );
+     try
+     {
+       buff.append("# Row:    " + QE_vals[0].length + "\n");
+       buff.append("# Column: " + QE_vals.length + "\n");
+       buff.append("# X Label: Momentum Transfer \n");
+       buff.append("# X Units: inv(A) \n");
+       buff.append("# Y Label: Energy Transfer \n");
+       buff.append("# Y Units: meV \n");
+       buff.append("# Z Label: Intensity \n");
+       buff.append("# Z Units: Arb. Units\n");
+       float x   = 0;
+       float y   = 0;
+       float val = 0;
+       float err = 0;
+       for( int row = 0; row < QE_vals.length; row++)
+         for( int col = 0; col < QE_vals[0].length; col++)
+         { 
+            x = Q_scale.getX( row );
+            y = E_scale.getX( col );
+            val = QE_vals[row][col];
+            buff.append( Format.real(x,15,5) );
+            buff.append( Format.real(y,15,5) );
+            buff.append( Format.real(val,15,5) );
+            buff.append( Format.real(err,15,5) + "\n" );
+
+            fout.write( buff.toString().getBytes());
+            buff.setLength(0);
+          }
+         fout.close();
+      }
+      catch( Exception e )
+      { 
+        return new ErrorString("Error: " + e.toString() );
+      }
+      return null;
+  }
+
 
   /* --------------------------- main ----------------------------------- */
   /*
@@ -564,8 +651,8 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
        RunfileRetriever rr = new RunfileRetriever( file_name );
        DataSet ds1 = rr.getDataSet(1);
         new ViewManager(ds1, IViewManager.IMAGE);
-       SpectrometerTofToQE op =
-             new SpectrometerTofToQE(ds1, minQ, maxQ, Qbins, minE, maxE, Ebins);
+       SpectrometerTofToQE op = new 
+           SpectrometerTofToQE(ds1, minQ, maxQ, Qbins, minE, maxE, Ebins, null);
        DataSet new_ds = (DataSet)op.getResult();
        new ViewManager(new_ds, IViewManager.IMAGE);
        System.out.println(op.getDocumentation());
