@@ -31,6 +31,9 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.2  2001/08/07 21:37:29  dennis
+ *  Added support for ndsRetriver.
+ *
  *  Revision 1.1  2001/08/07 15:58:25  dennis
  *  Operator for loading data from remote source such as a
  *  LiveDataServer, etc.
@@ -170,6 +173,8 @@ public class LoadRemoteData extends    GenericLoad
        r = new LiveDataRetriever( data_source_name );
      else if  ( server_type.equals( ServerTypeString.ISAW_FILE_SERVER ) )
        r = new RemoteFileRetriever( data_source_name );
+     else if  ( server_type.equals( ServerTypeString.NDS_FILE_SERVER ) )
+       r = new ndsRetriever( data_source_name );
      else
        return new ErrorString( "ERROR: Unsupported Server Type" );
 
