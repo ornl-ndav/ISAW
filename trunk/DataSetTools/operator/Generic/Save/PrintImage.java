@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/06/01 15:55:11  robertsonj
+ * *** empty log message ***
+ *
  * Revision 1.7  2004/05/27 19:18:22  robertsonj
  * *** empty log message ***
  *
@@ -320,19 +323,17 @@ public class PrintImage extends GenericSave{
     s.append("@algorithm- Creates the desired image and puts it into a ");                                           
     s.append("JFrame. Then it attempts to find a printer to print this image to");
     s.append("@param DS - The DataSet whose view is to be printed");
+    s.append("@param PrinterName - The printer to which is to be printed to")
     s.append("@param view_type- The name of the view used by the ViewManager. ");
     s.append("This is the String that appears in Isaw's View Menu");
+    s.append("@param Landscape - Boolean operator, true to print in landscape");
+    s.append("@Compies - number of copies to be printed");
+    s.append("@Quality - High, Normal, or Draft an integer 3, 2, 1, coresponds to the named values");
     s.append("@param State -A Vector containing entries that are Vectors with two "); 
     s.append("elements: of State's Name and its value(not implemented yet)");
     s.append("@param width- The width of the image(will be scaled to fit the paper)");
     s.append("@param height- The height of the image in pixels(Also scaled)");
-    s.append("@param PrintName- the name of the printer. If blank, any printer ");
-    s.append("will be considered");
-    s.append("@param PrintLocation- The location of the printer. If blank, any ");
-    s.append("location will be considered");
-    s.append("@param PrintOptions- (not implemented yet).For options like ");
-    s.append("Portrait, etc.");
-  
+   
     s.append("@return Always returns the string 'Success' or an ErrorString ");
     s.append("<P><P> Some DataSetViewer States are<table bofder=1>");
     s.append("<tr><td>ColorScale</td> <td>Most Views</td><td> String ");
