@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2002/10/24 16:51:53  pfpeterson
+ *  Removed references to SpectrometerPlotter.
+ *
  *  Revision 1.10  2002/10/07 16:33:26  pfpeterson
  *  Added an epoch time so System.currentTimeMillis() can be
  *  converted to an integer.
@@ -74,7 +77,6 @@
 package DataSetTools.util;
 
 import DataSetTools.operator.*;
-import DataSetTools.operator.DataSet.SpectrometerPlotter;
 
 /**
  *  Objects of this class have one instance of objects that are to be shared
@@ -100,11 +102,6 @@ public class SharedData implements java.io.Serializable
   */
   public static final Command.StatusPane status_pane= 
               new Command.StatusPane( 30,70);
-
-  // This is here to allow DataSets from an old version of the servers to
-  // be received by this version.  SpectromterPlotter is obsolete and should
-  // be removed.
-  public static final Operator old_op = new SpectrometerPlotter();
 
   public static final long start_time=System.currentTimeMillis();
  
