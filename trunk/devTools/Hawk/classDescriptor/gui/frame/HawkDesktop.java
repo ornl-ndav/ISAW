@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:40:46  bouzekc
+ * Documented file using javadoc statements.
+ * Added the firstWindowOpened field to support having multiple HawkDesktop windows open and have System.exit(0) be
+ *   called only if the original window is closed.  Otherwise the window is simply disposed.
+ * Added the method getIconedButton which can get icons from inside the jarfile that Hawk is in to place on buttons.
+ *
  * Revision 1.1  2004/02/07 05:08:50  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -42,13 +48,14 @@ package devTools.Hawk.classDescriptor.gui.frame;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.URL;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
@@ -57,24 +64,42 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JToolBar;
+import javax.swing.plaf.metal.MetalBorders;
 
 import devTools.Hawk.classDescriptor.gui.panel.ProjectSelectorJPanel;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This is Hawk's main window from which the user does everything.
+ * @author Dominic Kramer
  */
 public class HawkDesktop extends JFrame implements ActionListener
 {
-	protected Vector proVec;
+	/**
+	 * This is basically a modified JPanel which contains a JList of the currently opened Projects.  It 
+	 * also has support for a popup menu and has a method to obain a JMenuBar.  The ProjectSelectorJPanel 
+	 * handles ActionEvents from selecting an item from a meu or popup menu.
+	 */
 	protected ProjectSelectorJPanel proPanel;
+	/**
+	 * This is the JTabbedPane.  Each tab in the JTabbedPane 
+	 * holds a JDesktop each of which hold JInternalFrames.
+	 */
 	protected JTabbedPane tabbedPane;
 	
-	public HawkDesktop(Vector vec)
+	/**
+	 * This is set to true if this HawkDesktop is the first HawkDesktop opened.
+	 */
+	protected boolean firstWindowOpened;
+	
+	/**
+	 * Creates a HawkDesktop.
+	 * @param vec The Vector of Projects to add to the ProjectSelectorJPanel in the HawkDesktop.
+	 * @param firstOpened True if this is the first HawkDesktop window opened.
+	 */
+	public HawkDesktop(Vector vec, boolean firstOpened)
 	{
-		proVec = vec;
+		firstWindowOpened = firstOpened;
 		
 		setTitle("Hawk");
 		Dimension dim = getToolkit().getScreenSize();
@@ -89,7 +114,7 @@ public class HawkDesktop extends JFrame implements ActionListener
 			westSuperPanel.setLayout(new BorderLayout());
 			JPanel westPanel = new JPanel();
 				westPanel.setLayout(new BorderLayout());
-				proPanel = new ProjectSelectorJPanel(proVec,this);
+				proPanel = new ProjectSelectorJPanel(vec,this);
 					westPanel.add(new JLabel("Current Projects"), BorderLayout.NORTH);
 					westPanel.add(proPanel, BorderLayout.CENTER);
 						westSuperPanel.add(westPanel,BorderLayout.CENTER);
@@ -99,35 +124,58 @@ public class HawkDesktop extends JFrame implements ActionListener
 
 		JPanel topPanel = new JPanel();
 			topPanel.setLayout(new BorderLayout());
-			JPanel buttonPanel = new JPanel();
-				buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-//				JButton newButton = new JButton(new ImageIcon("jar:///pixmaps/gtk-new.png"));
-				JButton newButton = new JButton("New");
+			//JPanel buttonPanel = new JPanel();
+				//buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+			
+			JToolBar buttonPanel = new JToolBar();
+//			buttonPanel.setRollover(true);
+			buttonPanel.setFloatable(false);
+				
+				JButton newButton = getIconedJButton("devTools/Hawk/classDescriptor/pixmaps/new.png","New");
 				newButton.setToolTipText("Create a new project");
 				newButton.setActionCommand("project.new");
 				newButton.addActionListener(this);
 				buttonPanel.add(newButton);
 				
-//				JButton openButton = new JButton(new ImageIcon("jar://pixmaps/stock-open.png"));
-				JButton openButton = new JButton("Open");
+				JButton openButton = getIconedJButton("devTools/Hawk/classDescriptor/pixmaps/stock-open.png","Open");
 				openButton.setToolTipText("Open a previously saved project");
 				openButton.setActionCommand("project.open");
 				openButton.addActionListener(this);
 				buttonPanel.add(openButton);
 				
-//				JButton saveButton = new JButton(new ImageIcon("jar:pixmaps/filesave.png"));
-				JButton saveButton = new JButton("Save");
+				JButton saveButton = getIconedJButton("devTools/Hawk/classDescriptor/pixmaps/filesave.png","Save");
 				saveButton.setToolTipText("Save a project");
-				saveButton.setActionCommand("project.saveAs");
+				saveButton.setActionCommand("project.save");
 				saveButton.addActionListener(this);
 				buttonPanel.add(saveButton);
 				
-//				JButton printButton = new JButton(new ImageIcon("devTools.Hawk.classDescriptor/pixmaps/fileprint.png"));
-				JButton printButton = new JButton("Print");
+				buttonPanel.addSeparator();
+				
+				JButton viewAlphaButton = getIconedJButton("devTools/Hawk/classDescriptor/pixmaps/view_alpha.png","View Alphabetically");
+				viewAlphaButton.setToolTipText("View the project's classes and interfaces in alphabetical order");
+				viewAlphaButton.setActionCommand("alphaWindow.popup");
+				viewAlphaButton.addActionListener(this);
+				buttonPanel.add(viewAlphaButton);
+				
+				JButton viewPackagesButton = getIconedJButton("devTools/Hawk/classDescriptor/pixmaps/view_packages.png","View By Package");
+				viewPackagesButton.setToolTipText("View the project's classes and interfaces categorized by the package they're in");
+				viewPackagesButton.setActionCommand("packageWindow.popup");
+				viewPackagesButton.addActionListener(this);
+				buttonPanel.add(viewPackagesButton);
+				
+				buttonPanel.addSeparator();
+				
+				JButton printButton = getIconedJButton("devTools/Hawk/classDescriptor/pixmaps/fileprint.png","Print");
 				printButton.setToolTipText("Print class and interface information");
 				printButton.setActionCommand("project.print");
 				printButton.addActionListener(this);
 				buttonPanel.add(printButton);
+				
+				JButton searchButton = getIconedJButton("devTools/Hawk/classDescriptor/pixmaps/stock-find.png","Search");
+				searchButton.setToolTipText("Search for a class or interface");
+				searchButton.setActionCommand("project.search");
+				searchButton.addActionListener(this);
+				buttonPanel.add(searchButton);
 				
 				topPanel.add(buttonPanel, BorderLayout.CENTER);
 				topPanel.add(new JSeparator(), BorderLayout.SOUTH);				
@@ -149,6 +197,66 @@ public class HawkDesktop extends JFrame implements ActionListener
 		setJMenuBar(proPanel.getProjectJMenuBar());		
 	}
 	
+	/**
+	 * This returns a JButton with the image from the location "location" on it.  If the image
+	 * can not be found, a JButton with the text, "title" on it is returned instead.  This method 
+	 * also gives the button a MetalBorders.ButtonBorder to make the buttons appear in a more 
+	 * compact format.
+	 * @param location The location to an image to place on the JButton
+	 * @param title The text to put on the JButton if the image could not be found
+	 * @return A JButton with an image or text on it
+	 */
+	public JButton getIconedJButton(String location, String title)
+	{
+		URL imageURL = ClassLoader.getSystemClassLoader().getResource(location);
+		JButton button = new JButton();
+		if (imageURL != null)
+		{
+			ImageIcon icon = new ImageIcon(imageURL);
+			if (icon != null)
+				button.setIcon(icon);//button = new JButton(icon);
+			else
+				button.setText(title);
+		}
+		else
+			button.setText(title);
+		
+		button.setBorder(new MetalBorders.ButtonBorder());
+					
+		return button;
+	}
+	
+	/**
+	 * Returns true if this is the first HawkDesktop window open and false otherwise.
+	 */
+	public boolean isFirstWindowOpen()
+	{
+		return firstWindowOpened;
+	}
+	
+	/**
+	 * Sets or unsets this window as the first window open.
+	 * @param bol True if the window is to be set as the first window open and false otherwise.
+	 */
+	public void setFirstWindowOpen(boolean bol)
+	{
+		firstWindowOpened = bol;
+	}
+	
+	/**
+	 * Sets the title.
+	 * @param title The title.
+	 */
+	public void setHawkDesktopTitle(String title)
+	{
+		setTitle(title);
+	}
+	
+	/**
+	 * Get the names of the tabs.
+	 * @return An array of Strings each of which is the name of a tab.  The element at index 
+	 * "n" is the tab at index "n".
+	 */
 	public String[] getTabNames()
 	{
 		int num = tabbedPane.getTabCount();
@@ -160,11 +268,19 @@ public class HawkDesktop extends JFrame implements ActionListener
 		return arr;
 	}
 	
+	/**
+	 * This gets the JTabbedPane in the HawkDesktop.
+	 * @return The JTabbedPane.
+	 */
 	public JTabbedPane getTabbedPane()
 	{
 		return tabbedPane;
 	}
 	
+	/**
+	 * This gets the JDesktop pane from the tabbed pane that is currently visible.
+	 * @return The currently visible JDesktop pane.
+	 */
 	public JDesktopPane getSelectedDesktop()
 	{
 		int num = tabbedPane.getSelectedIndex();
@@ -174,22 +290,40 @@ public class HawkDesktop extends JFrame implements ActionListener
 			return null;
 	}
 	
+	/**
+	 * Sets the selected JDesktopPane.  This basically sets selected tab 
+	 * from the JTabbedPane.
+	 * @param index The index of the selected tab in the JTabbedPane.
+	 */
 	public void setSelectedDesktop(int index)
 	{
 		tabbedPane.setSelectedIndex(index);
 	}
 	
+	/**
+	 * Handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
 		proPanel.processSentEvent(event);
 	}
 	
+	/**
+	 * Handles closing the window.  If the window is the first window opened and the user 
+	 * selects to close the window, the program is shut down.  If the window is not the first 
+	 * window opened, and the user selects to close the window, the window is just closed.
+	 * @author Dominic Kramer
+	 */
 	class WindowDestroyer extends WindowAdapter
 	{
+		/**
+		 * Handles closing the window.
+		 */
 		public void windowClosing(WindowEvent event)
 		{
 			dispose();
-			System.exit(0);
+			if (firstWindowOpened)
+				System.exit(0);
 		}
 	}
 }
