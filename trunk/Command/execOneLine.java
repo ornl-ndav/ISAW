@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.41  2003/02/24 13:29:16  rmikk
+ * Eliminated an error.
+ *
  * Revision 1.40  2003/02/21 19:35:44  pfpeterson
  * Changed calls to fixSeparator appropriate (not deprecated) method.
  *
@@ -1110,7 +1113,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             }else{
                 j++;
             }
-        j = skipspaces( S , 1, j);        
+        j = skipspaces( S , 1, j);   
         if(Debug)
             System.out.print("Send"+perror+","+j);
         if( perror >= 0 )
@@ -1127,7 +1130,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
            System.out.println("Send er observ");
         */
         Object arg1,arg2;
-        if( j<2){
+        if( args.size() <= 2){
             arg1=this;
             arg2= args.firstElement();
         }else{
@@ -1138,7 +1141,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             ((DataSet)arg1).addIObserver( this);
         if( arg2 instanceof DataSet)
             ((DataSet)arg2).addIObserver( this);
- 
         OL.notifyIObservers( arg1,arg2 );
         Result = null;
         return end;
