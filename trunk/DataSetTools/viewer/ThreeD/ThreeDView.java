@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2001/06/28 20:28:19  dennis
+ * Keeps list of bytes for color indices, rather than
+ * a list of Color objects.  Also uses new form of
+ * ThreeD_JPanel with named lists of 3D objects.
+ *
  * Revision 1.5  2001/06/04 22:46:34  dennis
  * Now ignores selection changes.
  *
@@ -86,14 +91,19 @@ public class ThreeDView extends DataSetViewer
   private final int NUM_PSEUDO_COLORS   = 2 * NUM_POSITIVE_COLORS + 1;
   private final int ZERO_COLOR_INDEX    = NUM_POSITIVE_COLORS;
 
-  private ThreeD_JPanel       threeD_panel  = null; 
-  private Box                 control_panel = null; 
-  private AltAzController     view_control  = null;
-  private AnimationController frame_control = null;
-  private SplitPaneWithState  split_pane  = null;
-  private Color               colors[][]  = null;
-  private IThreeD_Object      objects[]   = null;
-  private float               log_scale[] = null;
+  private ThreeD_JPanel       threeD_panel    = null; 
+  private Box                 control_panel   = null; 
+  private AltAzController     view_control    = null;
+  private AnimationController frame_control   = null;
+  private SplitPaneWithState  split_pane      = null;
+  private byte                color_index[][] = null;
+  private Color               color_table[]   = null;
+  private IThreeD_Object      objects[]       = null;
+  private float               log_scale[]     = null;
+
+  private final String        GROUPS          = "Groups";
+  private final String        AXES            = "AXES";
+  private final String        DETECTORS       = "Detectors";
 
 /* --------------------------------------------------------------------------
  *
@@ -146,7 +156,7 @@ public void redraw( String reason )
    if ( reason == IObserver.POINTED_AT_CHANGED )
    {
       DataSet ds = getDataSet();
-      Vector3D detector_location = detector_position( ds.getPointedAtIndex() );
+      Vector3D detector_location = group_location( ds.getPointedAtIndex() );
 
       Point   pixel_point;
       if ( detector_location != null )
@@ -179,8 +189,9 @@ public void setDataSet( DataSet ds )
  *
  */
 
+/* ---------------------------- group_location --------------------------- */
 
-private Vector3D detector_position( int index )
+private Vector3D group_location( int index )
 {
   DataSet ds = getDataSet();
   int     n_data = ds.getNum_entries();
@@ -189,9 +200,9 @@ private Vector3D detector_position( int index )
     return null;
 
   Data d = ds.getData_entry(index);
-  
+ 
   Position3D position= (Position3D)d.getAttributeValue( Attribute.DETECTOR_POS);
-  
+ 
   if ( position == null )
     return null;
 
@@ -201,74 +212,49 @@ private Vector3D detector_position( int index )
   return pt_3D;
 }
 
+/* --------------------------- MakeThreeD_Scene --------------------------- */
 
 private void MakeThreeD_Scene()
 {
-  DataSet ds       = getDataSet();
-  int     n_data   = ds.getNum_entries();
+  float radius = draw_groups();
 
-  boolean all_null   = true;
-  float   max_radius = 0;
-  float   radius = 0.01f;
+  if ( radius <= 0 )
+    radius = 1;
+  
+  view_control.setViewAngle( 40 );
+  view_control.setAltitudeAngle( 30 );
+  view_control.setAzimuthAngle( 0 );
+  view_control.setDistanceRange( 0.5f*radius, 5*radius );
+  view_control.setDistance( 4f*radius );
+  view_control.apply( true );
 
-  Vector3D  points[]  = new Vector3D[1];
-  Vector3D  point;
-  points[0] = new Vector3D();
-  objects   = new IThreeD_Object[ n_data + 3 ];
-
-  for ( int i = 0; i < n_data; i++ )
-  {
-    point = detector_position( i );
-    if ( point == null )
-      objects[i] = new ThreeD_Non_Object();
-    else
-    {
-      all_null = false;
-      radius = point.length();
-      if ( radius > max_radius )
-        max_radius = radius;
- 
-      points[0]= point;
-      objects[i] = new Polymarker( points, Color.red ); 
-      objects[i].setPickID( i );
-      ((Polymarker)(objects[i])).setType( Polymarker.STAR );
-      ((Polymarker)(objects[i])).setSize( 2 );
-    }
-  }
-
-  if ( all_null )
-  {
-    objects = null;
-    threeD_panel.setObjects( objects );
-  }
-  else
-  {
-    radius = max_radius;
-    add_axes( objects, radius/5 );
-    view_control.setViewAngle( 40 );
-    view_control.setAltitudeAngle( 30 );
-    view_control.setAzimuthAngle( 0 );
-    view_control.setDistanceRange( 0.5f*radius, 5*radius );
-    view_control.setDistance( 4f*radius );
-    threeD_panel.setObjects( objects );
-    view_control.apply( true );
-  }
+  draw_axes( radius/5 );
 
   MakeColorList();
   set_colors( 0 );
 }
 
 
+/* ------------------------------ set_colors ---------------------------- */
+
 private void set_colors( int frame )
 {
-  Color new_colors[] = new Color[ colors.length ];
-  for ( int i = 0; i < colors.length; i++ )
-    new_colors[i] = colors[i][frame];
+  Color new_colors[] = new Color[ color_index.length ];
+  int   index;
+  for ( int i = 0; i < new_colors.length; i++ )
+  {
+    index = color_index[i][frame]; 
+    if ( index < 0 )
+      index += 256;
+    new_colors[i] = color_table[ index ];
+  }
 
-  threeD_panel.setColors( new_colors );
+  threeD_panel.setColors( GROUPS, new_colors );
   threeD_panel.repaint(0 );
 }
 
+
+/* ----------------------------- MakeColorList --------------------------- */
 
 private void MakeColorList()
 {
@@ -291,7 +277,7 @@ private void MakeColorList()
   if ( num_cols == 0 )
     return;
   
-  colors = new Color[num_rows][num_cols];
+  color_index = new byte[num_rows][num_cols];
 
   y_vals = new float[num_rows][];
   Data  data_block;
@@ -301,13 +287,6 @@ private void MakeColorList()
     data_block = ds.getData_entry(i);
     rebinned_data_block = (Data)data_block.clone();
 
-/*
-    if ( !rebinned_data_block.isFunction() )           // need to treat it as
-      rebinned_data_block.ConvertToFunction( false );  // intensity for image
-                                                       // display when starting
-                                                       // with widely different
-                                                       // sizes of x-bins
-*/
     rebinned_data_block.ResampleUniformly( x_scale );
     y_vals[i] = rebinned_data_block.getY_values();
   }
@@ -337,9 +316,9 @@ private void MakeColorList()
   else
     scale_factor = 0;
 
-  Color color_table[] =IndexColorMaker.getDualColorTable(
-                                         IndexColorMaker.HEATED_OBJECT_SCALE_2,
-                                         NUM_POSITIVE_COLORS );
+  color_table = IndexColorMaker.getDualColorTable(
+                                IndexColorMaker.HEATED_OBJECT_SCALE_2,
+                                NUM_POSITIVE_COLORS );
   int index;
   for ( int i = 0; i < y_vals.length; i++ )
    for ( int j = 0; j < y_vals[0].length; j++ )
@@ -350,7 +329,7 @@ private void MakeColorList()
       else
         index = (int)( ZERO_COLOR_INDEX - log_scale[(int)(-val)] );
 
-      colors[i][j] = color_table[index];
+      color_index[i][j] = (byte)index;
     }
 }
 
@@ -376,22 +355,69 @@ private void MakeColorList()
   }
 
 
-private void add_axes( IThreeD_Object objects[], float length  )
+/* ------------------------------ draw_groups -------------------------- */
+
+private float draw_groups()
 {
-  int      index = objects.length-3;
+  DataSet ds     = getDataSet();
+  int     n_data = ds.getNum_entries();
+
+  if ( n_data <= 0 )
+  {
+    threeD_panel.removeObjects( GROUPS );     // remove any existing groups
+    return 0;                                 // since they are now gone
+  }
+
+  float   max_radius = 0.01f;
+  float   radius;
+
+  Vector3D  points[] = new Vector3D[1];
+  Vector3D  point;
+  points[0] = new Vector3D();
+  objects   = new IThreeD_Object[ n_data ];
+
+  for ( int i = 0; i < n_data; i++ )
+  {
+    point = group_location( i );
+    if ( point == null )
+      objects[i] = new ThreeD_Non_Object();
+    else
+    {
+      radius = point.length();
+      if ( radius > max_radius )
+        max_radius = radius;
+
+      points[0]= point;
+      objects[i] = new Polymarker( points, Color.red );
+      objects[i].setPickID( i );
+      ((Polymarker)(objects[i])).setType( Polymarker.STAR );
+      ((Polymarker)(objects[i])).setSize( 2 );
+    }
+  }
+
+  threeD_panel.setObjects( GROUPS, objects );
+  return max_radius;
+}
+
+
+/* ------------------------------ draw_axes ----------------------------- */
+
+private void draw_axes( float length  )
+{
+  objects = new IThreeD_Object[ 3 ];
   Vector3D points[] = new Vector3D[2];
 
   points[0] = new Vector3D( 0, 0, 0 );                    // x-axis
   points[1] = new Vector3D( length, 0, 0 );
-  objects[index] = new Polyline( points, Color.red );
-  index++;
+  objects[0] = new Polyline( points, Color.red );
                                                           // y_axis
   points[1] = new Vector3D( 0, length, 0 );
-  objects[index] = new Polyline( points, Color.green );
-  index++;
+  objects[1] = new Polyline( points, Color.green );
                                                           // z_axis
   points[1] = new Vector3D( 0, 0, length );
-  objects[index] = new Polyline( points, Color.blue );
+  objects[2] = new Polyline( points, Color.blue );
+
+  threeD_panel.setObjects( AXES, objects );
 }
 
 
