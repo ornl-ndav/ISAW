@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/09/20 17:39:27  dennis
+ *  Fixed @see javadoc comment
+ *
  *  Revision 1.7  2001/08/14 15:09:16  dennis
  *  Now gets date string from DateUtil
  *
@@ -213,8 +216,6 @@ public class TCPServer implements ITCPUser
    *
    *  @param args  Array of strings from the command line, containing 
    *               command characters and arguments.
-   *
-   *  @see  showTCPServerUsage
    */ 
    public void parseArgs( String args[] )
    {

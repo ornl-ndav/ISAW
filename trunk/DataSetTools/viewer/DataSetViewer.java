@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/09/20 17:40:27  dennis
+ *  Fixed @see javadoc comment
+ *
  *  Revision 1.9  2001/07/20 16:57:48  dennis
  *  Removed string constants BINS_CHANGED and X_RANGE_CHANGED
  *  moved to XScaleChooserUI. Made getXConversionScale return
@@ -82,7 +85,9 @@ import  javax.swing.*;
  *
  *  @see DataSetTools.viewer.Image.ImageView
  *  @see DataSetTools.viewer.Graph.GraphView
- *  @see OverplotView.SelectedGraphView
+ *  @see DataSetTools.viewer.ThreeD.ThreeDView
+ *  @see DataSetTools.viewer.Table.TabView
+ *  @see OverplotView.GraphableDataManager
  *
  */ 
 

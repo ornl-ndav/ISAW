@@ -34,6 +34,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2001/09/20 17:38:10  dennis
+ *  Fixed @see javadoc comment
+ *
  *  Revision 1.21  2001/08/14 19:21:58  dennis
  *  status now returns no data message if the DAS has never sent it
  *  any data yet.
@@ -228,8 +231,6 @@ public class LiveDataServer extends    DataSetServer
    *
    *  @param args  Array of strings from the command line, containing
    *               command characters and arguments.
-   *
-   *  @see  showDataSetServerUsage
    */
    public void parseArgs( String args[] )
    {

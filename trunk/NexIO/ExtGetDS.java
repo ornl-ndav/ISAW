@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2001/09/20 17:36:44  dennis
+ * Fixed @see javadoc comment
+ *
  * Revision 1.5  2001/08/01 14:36:23  rmikk
  * Isaw's instrument type is Now tied to the NXentry
  * analysis field
@@ -94,7 +97,7 @@ public class ExtGetDS //extends Retriever
 /** Returns the type(  Histogram , Monitor , Invalid , etc. ) of the dataset
 *@param data_set_num  the data set whose type is desired
 *
-*@see DataSetTools.retriever.Retriever.data_source_name
+*@see DataSetTools.retriever.dataSource
 */
  public int getType(  int data_set_num )
    {if( nEntries == null ) 

@@ -35,6 +35,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2001/09/20 17:44:53  dennis
+ * Fixed @see javadoc comment
+ *
  * Revision 1.8  2001/06/01 21:18:00  rmikk
  * Improved documentation for getCommand() method
  *
@@ -89,7 +92,6 @@ import  ChopTools.*;
  * After tiny modification , it can be partially used for diffractometer 
  * too.
  * @see SpectrometerEvaluator
- * @see SpectrometerGrouper
  * @see SpectrometerNormalizer
  * @see SpectrometerTofToEnergyLoss
  */
