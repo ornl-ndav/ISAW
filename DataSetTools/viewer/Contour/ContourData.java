@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2003/11/23 19:50:47  rmikk
+ *  Eliminated null pointer exception when DataSets without grids are used
+ *
  *  Revision 1.19  2003/10/30 21:10:26  dennis
  *  Removed unneeded import of gov.noaa.pmel.sgt.demo, which
  *  caused a problem with javadoc 1.4.2_02
@@ -167,7 +170,7 @@ public class ContourData
      this.Axis2= Axis2;
      this.Axis3= Axis3;
      SetUpInfo( ds, Axis1, Axis2, Axis3);
-     SetUpDetNums();
+     //SetUpDetNums();
    
     }
   public ContourData( DataSet data_set )
@@ -184,63 +187,6 @@ public class ContourData
       int[][] k = new int[ds.getNum_entries() + 1][3];
       int w = 0;
 
-     /*
-      for( int i = 0; i < ds.getNum_entries(); i++ )
-      {
-         Data db = ds.getData_entry( i );
-         PixelInfoListAttribute dl = ( PixelInfoListAttribute )
-                              db.getAttribute( Attribute.PIXEL_INFO_LIST );
-         
-         if( dl == null )
-         {
-           ThetPhiData( ds, new thetaAxisHandler( ds), new phiAxisHandler( ds), 
-                        new TimeAxisHandler( ds ));
-            return;
-         }
-         else
-         {
-           IPixelInfo da = ((PixelInfoList)dl.getValue()).pixel(0);
-
-           if( da != null )
-           {
-             int row = ( int )da.row();
-             int col = ( int )da.col();
-
-             if( row > maxrows )
-                maxrows = row;
-             if( col > maxcols )
-                maxcols = col;
-
-             k[w][0] = row;
-             k[w][1] = col;
-             k[w][2] = i;
-             w++;
-           }
-
-         }
-      }
-
-      //Now that the vector holds row, column, and group index data in that order, we
-      //can build a 2d array containing the group index and using row and column values
-      //as indecies.
-      //note: the zeroth row and column will be empty
-      groups = new int[maxrows + 1][maxcols + 1];
-    
-      for( int i = 0; i < maxrows + 1; i++ )
-         {Arrays.fill( groups[i], -1 );
-        
-         }
-      for( int i = 0; i < ( w ); i++ )
-      { if( groups[ k[i][0] ][ k[i][1] ] >0)
-           {ThetPhiData( ds,  new thetaAxisHandler( ds),new phiAxisHandler( ds),
-                          new TimeAxisHandler( ds ));
-            return;
-           }
-        else
-         groups[ k[i][0] ][ k[i][1] ] = k[i][2];
-
-      }
-     */    
       x_scale = data_set.getData_entry(0).getX_scale();
       ds = (DataSet)(dsSave.clone());
       for( int j=0; j< ds.getNum_entries(); j++)
@@ -773,15 +719,19 @@ public class ContourData
    public void SetUpDetNums(){
       DetNums = Grid_util.getAreaGridIDs( ds);
       if( DetNums != null)
-        if( DetNums.length >0)
+        if( DetNums.length >0){
           DetNum = DetNums[0];
-      grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum));
-      grid.setDataEntriesInAllGrids(ds);
-      SetUpGroups();
+          grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum));
+          grid.setDataEntriesInAllGrids(ds);
+          SetUpGroups();
+        }else DetNums = null;
+     
 
    }
   //assumes grid is accurate at this instance
   private void SetUpGroups(){
+      if( DetNums== null)
+         return;
       num_rows = grid.num_rows();
       num_cols = grid.num_cols();
       Groups = new Data[ 1+ num_rows][1+num_cols];
