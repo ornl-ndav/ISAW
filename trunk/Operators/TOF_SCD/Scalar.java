@@ -275,15 +275,13 @@ public class Scalar extends    GenericTOF_SCD {
       System.out.println(output);
 
       // construct the matrix
-      matrix=new StringBuffer();
-      matrix.append("[");
+      matrix=new StringBuffer(40);
       for( int i=0 ; i<3 ; i++ ){
         output=SysUtil.readline(in,err);
-        matrix.append("["+output.trim()+"]");
-        if(i!=2) matrix.append(",");
+        matrix.append(output.trim()+"  ");
         System.out.println(output);
       }
-      matrix.append("]");
+      matrix=formMatrix(matrix);
 
       // wait for the process to terminate
       process.waitFor();
@@ -356,6 +354,36 @@ public class Scalar extends    GenericTOF_SCD {
     choices.add("P - Triclinic");
   }
   
+  /**
+   * format the matrix from scalar in a way that Lsqrs likes.
+   */
+  private static StringBuffer formMatrix(StringBuffer orig){
+    StringBuffer result=new StringBuffer(40);
+    float[][] matrix=new float[3][3];
+
+    // first get rid of extra spaces
+    StringUtil.trim(orig);
+    for( int i=0 ; i<3 ; i++ ){
+      for( int j=0 ; j<3 ; j++ ){
+        matrix[j][i]=StringUtil.getFloat(orig);
+        StringUtil.trim(orig);
+      }
+    }
+
+    result.append("[");
+    for( int i=0 ; i<3 ; i++ ){
+      result.append("[");
+      for( int j=0 ; j<3 ; j++ ){
+        result.append(Float.toString(matrix[i][j]));
+        if(j!=2) result.append(",");
+      }
+      result.append("]");
+    }
+    result.append("]");
+
+    return result;
+  }
+
   /* --------------------------- MAIN METHOD --------------------------- */
   public static void main(String[] args){
     Scalar op;
