@@ -1,5 +1,5 @@
 /*
- * File:  IntArrayPG.java 
+ * File:  IntArrayPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/03/12 20:55:41  bouzekc
+ *  Code reformat and added javadocs.
+ *
  *  Revision 1.15  2003/12/15 02:10:48  bouzekc
  *  Removed unused imports.
  *
@@ -79,82 +82,116 @@
  *
  *
  */
-
 package DataSetTools.parameter;
+
 import DataSetTools.util.IntArrayFilter;
 import DataSetTools.util.IntList;
 
+
 /**
- * This is class is to deal with Integer Arrays. Its value is stored
- * as a String.
+ * This is class is to deal with Integer Arrays. Its value is stored as a
+ * String.
  */
 public class IntArrayPG extends StringEntryPG {
-    private static final String TYPE="IntArray";
+  //~ Static fields/initializers ***********************************************
 
-    // ********** Constructors **********
-    public IntArrayPG(String name, Object value){
-        super(name,value);
-        this.setType(TYPE);
-        FILTER=new IntArrayFilter();
+  private static final String TYPE = "IntArray";
+
+  //~ Constructors *************************************************************
+
+  /**
+   * Creates a new IntArrayPG object.
+   *
+   * @param name The name of this PG.
+   * @param value The initial value of this PG.
+   */
+  public IntArrayPG( String name, Object value ) {
+    super( name, value );
+    this.setType( TYPE );
+    FILTER = new IntArrayFilter(  );
+  }
+
+  /**
+   * Creates a new IntArrayPG object.
+   *
+   * @param name The name of this PG.
+   * @param value The initial value of this PG.
+   * @param valid Whether this PG should be considered initially valid.
+   */
+  public IntArrayPG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+    this.setType( TYPE );
+    FILTER = new IntArrayFilter(  );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * @return The array value of this PG.
+   */
+  public int[] getArrayValue(  ) {
+    String svalue = ( String )getValue(  );
+
+    if( ( svalue == null ) || ( svalue.length(  ) <= 0 ) ) {
+      return null;
+    } else {
+      return IntList.ToArray( svalue );
     }
-    
-    public IntArrayPG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        this.setType(TYPE);
-        FILTER=new IntArrayFilter();
+  }
+
+  /**
+   * Sets the value of this PG using a String.
+   *
+   * @param val The new value.
+   */
+  public void setStringValue( String val ) {
+    this.setValue( val );
+  }
+
+  /**
+   * @return The value of this PG in String format.
+   */
+  public String getStringValue(  ) {
+    return ( String )this.getValue(  );
+  }
+
+  /**
+   * Sets the value of this PG.
+   *
+   * @param val The new value.
+   */
+  public void setValue( Object val ) {
+    if( this.getInitialized(  ) ) {
+      super.setEntryValue( val );
     }
 
-    public void setValue(Object val){
-      if(this.getInitialized())
-        super.setEntryValue(val);
-      
-      super.setValue(val);
-    }
+    super.setValue( val );
+  }
 
-    public int[] getArrayValue(){
-      String svalue=(String)getValue();
-      if(svalue==null || svalue.length()<=0)
-        return null;
-      else
-        return IntList.ToArray(svalue);
-    }
+  /*
+   * Testbed.
+   */
+  public static void main( String[] args ) {
+    IntArrayPG fpg;
 
-    // ********** ParamUsesString requirements **********
-    public String getStringValue(){
-      return (String)this.getValue();
-    }
-
-    public void setStringValue(String val){
-      this.setValue(val);
-    }
-
-    /*
-     * Testbed.
-     */
-    /*public static void main(String args[]){
-        IntArrayPG fpg;
-
-        fpg=new IntArrayPG("a","0:1");
-        System.out.println(fpg);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-
-        fpg=new IntArrayPG("b","0:2");
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-
-        fpg=new IntArrayPG("c","0:3",false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-
-        fpg=new IntArrayPG("d","0:4",true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(null);
-        fpg.showGUIPanel();
-    }*/
+    fpg = new IntArrayPG( "a", "0:1" );
+    System.out.println( fpg );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new IntArrayPG( "b", "0:2" );
+    System.out.println( fpg );
+    fpg.setEnabled( false );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new IntArrayPG( "c", "0:3", false );
+    System.out.println( fpg );
+    fpg.setEnabled( false );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new IntArrayPG( "d", "0:4", true );
+    System.out.println( fpg );
+    fpg.setDrawValid( true );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+  }
 }
