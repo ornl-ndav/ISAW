@@ -30,6 +30,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.84  2004/06/11 16:37:53  dennis
+ *  Made ShowGroupSegmentInfo public, for debugging purposes.
+ *  Removed tf_type from list of parameters to AddSpectrumAttributes(),
+ *  since it is no longer added as an attribute.
+ *  Modified Add_InitialEnergyInfo(), Add_SourceToSampleTOF(),
+ *  Add_AveRawDetDistance() and Add_NPD_Omega() to use the reference
+ *  to the run file that they are passed as a parameter, rather than using
+ *  the class level variable "run_file" directly.
+ *
  *  Revision 1.83  2004/05/03 16:32:11  dennis
  *  Removed nominal_eff_attr attribute that is no longer used.
  *  Removed unused "grid" variable.
@@ -807,7 +816,6 @@ private float CalculateEIn()
                                    histogram_num,
                                    group_id,
                                    group_segments,
-                                   tf_type,
                                    spectrum      );
 
             // Now add the spectrum to the DataSet -------------------------
@@ -933,7 +941,6 @@ private float CalculateEIn()
  *  @param  histogram_num    The histogram number for this group
  *  @param  group_id         The group_id for this group
  *  @param  group_segments   The list of Segments that belong to this group
- *  @param  tf_type          The time field type for this group 
  *  @param  spectrum         The Data block to which the attributes are added  
  *
  */
@@ -942,7 +949,6 @@ private float CalculateEIn()
                                       int     histogram_num,
                                       int     group_id,
                                       Segment group_segments[], 
-                                      int     tf_type,
                                       Data    spectrum )
   {
     FloatAttribute    float_attr;
@@ -1072,11 +1078,11 @@ private float CalculateEIn()
    {
       Attribute float_attr 
                  = new FloatAttribute(Attribute.NOMINAL_ENERGY_IN,
-                                     (float)run_file.EnergyIn() );
+                                     (float)runfile.EnergyIn() );
       attr_list.setAttribute( float_attr );
 
       float_attr =new FloatAttribute(Attribute.ENERGY_IN,
-                                     (float)run_file.EnergyIn() );
+                                     (float)runfile.EnergyIn() );
       attr_list.setAttribute( float_attr );
    }
 
@@ -1095,11 +1101,11 @@ private float CalculateEIn()
    {
       Attribute float_attr 
                  = new FloatAttribute(Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF,
-                                     (float)run_file.SourceToSampleTime() );
+                                     (float)runfile.SourceToSampleTime() );
       attr_list.setAttribute( float_attr );
 
       float_attr =new FloatAttribute(Attribute.SOURCE_TO_SAMPLE_TOF,
-                                     (float)run_file.SourceToSampleTime() );
+                                     (float)runfile.SourceToSampleTime() );
       attr_list.setAttribute( float_attr );
    }
 
@@ -1123,7 +1129,7 @@ private float CalculateEIn()
     
     float raw_distance = 0;  
     for ( int i = 0; i < group_segments.length; i++ )
-      raw_distance += (float)run_file.RawFlightPath( group_segments[i] );
+      raw_distance += (float)runfile.RawFlightPath( group_segments[i] );
 
     Attribute float_attr = new FloatAttribute( Attribute.RAW_DISTANCE,
                                            raw_distance/group_segments.length );
@@ -1146,7 +1152,7 @@ private float CalculateEIn()
     if ( group_segments.length < 1 )
       return; 
 
-    float raw_angle = (float)run_file.RawDetectorAngle( group_segments[0] );
+    float raw_angle = (float)runfile.RawDetectorAngle( group_segments[0] );
     float omega = tof_calc.Omega( raw_angle );
     FloatAttribute omega_attr = new FloatAttribute( Attribute.OMEGA, omega );
     attr_list.setAttribute( omega_attr );
@@ -1913,11 +1919,16 @@ private float CalculateEIn()
   }
 
 
-
 /**
- *  Show Group Detector Info
- */
-  private void ShowGroupSegmentInfo( int group_id, int hist )
+ *  Print group segment information to System.out for debugging purposes
+ *
+ *  @param  group_id  The id of the group for which the segment info
+ *                    will be printed
+ *
+ *  @param  hist      The histogram number for which the segment info
+ *                    will be printed
+ * */
+  public void ShowGroupSegmentInfo( int group_id, int hist )
   {
     Segment segs[] = run_file.SegsInSubgroup( group_id );
     int type; 
