@@ -24,7 +24,9 @@ public class GenericOperatorList implements Serializable
 {
 
   static private final String names[] = { "SumFiles",
-                                          "OneFile"  };
+                                          "OneFile",
+                                          "Mon",
+                                          "OneHist"  };
 
 
   /* ---------------------------- getNum_operators ------------------------- */
@@ -96,6 +98,12 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "OneFile" ) )
       return new LoadOneRunfile();
+
+    else if ( op_name.equals( "Mon" ) )
+      return new LoadMonitorDS();
+
+    else if ( op_name.equals( "OneHist" ) )
+      return new LoadOneHistogramDS();
 
      return null;
   }
