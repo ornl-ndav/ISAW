@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/11/24 14:14:25  rmikk
+ * Deleted segments of commented out code
+ * Eliminated debugging prints
+ * Moved the creation of the class NXbeam to NXinstrument
+ *
  * Revision 1.9  2003/10/15 02:52:57  bouzekc
  * Fixed javadoc errors.
  *
@@ -91,7 +96,7 @@ public class NxWriter{
   }
 
   /**
-   * Gets the number of hisograms in this file so far Needed when
+   * Gets the number of histograms in this file so far Needed when
    * appending files
    */
   public int getNumHistograms(){
@@ -115,30 +120,7 @@ public class NxWriter{
     String runTitle = null;
     Object run_title = null;
    
-    //if( Monitors==null) System.out.print("null  : NHist=");
-    // else System.out.print( Monitors.length+"  :NHist=");
-    // if( Histogram == null) System.out.println("null  YYYYYYYYYYYYYYy");
-    // else System.out.println( Histogram.length+"YYYYYYYYYYYY");
-    /*  if( Histogram.length > 0)
-        {run_title = Histogram[0].getAttributeValue(
-        Attribute.RUN_TITLE );
-        }
-        else if( Monitors.length > 0 )
-        run_title = Monitors[0].getAttributeValue(
-        Attribute.RUN_TITLE );
-        
-        runTitle = nd.cnvertoString( run_title );
-        
-        if( runTitle != null )
-        { byte b[];
-        b = runTitle.getBytes();
-        int rank[];
-        rank = new int[1];
-        rank[0] = b.length;
-        node.addAttribute( "run_title" , b , Types.Char , rank );
-        // System.out.println( "added run title =" + runTitle );
-        }
-    */
+    
     int instrType = getInstrumentType( Monitors, Histogram);
     NxWriteMonitor nm = new NxWriteMonitor(instrType);
     NxWriteNode n1, n2;
@@ -181,48 +163,10 @@ public class NxWriter{
         n1 = nxentry.newChildNode( //"Histogram" + 
                                    // new Integer( i+kNxentries ).toString() ,
                                   Histogram[i].getTitle()+":"+i,"NXdata" );
-        /*NxWriteNode nwNode = n1.newChildNode( "instrument" , 
-          "NXinstrument" );
-          if( nwNode == null )
-          {errormessage = n1.getErrorMessage();	      
-          return;
-          }
-          if( nw.processDS( nwNode , Histogram[i]   ) )
-          { errormessage += ";" + nw.getErrorMessage();	     
-          return;
-          }
-        */
+        
         int kk =1;
-        /* if( Monitors != null )
-           if( i == 0 )
-           for( int j = 0; j<Monitors.length; j++ )
-           if(Monitors[j]!=null)
-           for( int k = 0; k< Monitors[j].getNum_entries(); k++ )
-           {n2 = n1.newChildNode( getMonitorName( instrType,kk,
-           Monitors[j].getData_entry(k))
-           ,"NXmonitor" );
-                
-           kk++;
-           if( !nm.processDS( n2 , Monitors[j] , k ) )
-           { n2.setLinkHandle( "MonLink" + ( j ) + "_" + k ); 
-		
-           }
-           else errormessage += ";" + nm.getErrorMessage();
-              
-           }
-           else//if not the first
-           { for( j = 0; j<Monitors.length; j++ )
-           if(Monitors[j] != null)
-           for( int k = 0; k < Monitors[j].getNum_entries(); k++ )
-           { n1.addLink( "MonLink" + ( j ) + "_" + k ); 
-           // System.out.println( "in NxWriter-Wrote links" +  j  + "," );
-           }
-           }
-        */
+        
         NxWriteData nxd = new NxWriteData(instrType);
-        // if( nxd.processDS( n1 ,nwInstr , Histogram[i] , true ) )  
-        //     {errormessage += ";" +  nxd.getErrorMessage();
-        //     }
            
       }else if ( Monitors != null ){
         n1 = node.newChildNode( "Histogram0", "NXentry" );
@@ -246,13 +190,16 @@ public class NxWriter{
         errormessage +=  ";" + ne.getErrorMessage();
 
       NxWriteSample ns = new NxWriteSample(instrType);
-      if( ns.processDS( n1 , Histogram[i] ) )
+      NxWriteNode n1Sampe = n1.newChildNode("Sample","NXsample");
+      if( ns.processDS( n1Sampe , Histogram[i] ) )
         errormessage +=  ";" + ns.getErrorMessage();
       
+      /* //Done in NXsample or subclass of NXinstrument
       NxWriteBeam nb = new NxWriteBeam(instrType);
-      if( nb.processDS( n1 , Histogram[i] ) )
+      NxWriteNode n1Beam = n1.newChildNode("Beam", "NXbeam");
+      if( nb.processDS( n1Beam , Histogram[i] ) )
         errormessage += ";" + nb.getErrorMessage();
-      
+      */
     }//For each histogram
     //     (( NexWriteNode )node ).show();
     if(errormessage !="")
@@ -273,7 +220,6 @@ public class NxWriter{
     int n;
     String runTitle = null;
     Object run_title = null;
-    System.out.println("In NxWriter.Append");
    
     int instrType = getInstrumentType( Monitors, Histogram);
     NxWriteMonitor nm = new NxWriteMonitor(instrType);
@@ -315,9 +261,7 @@ public class NxWriter{
     for( int i = 0; i < n ; i++ ){
       String S;       
       if( Histogram != null ){
-        //n1 = nxentry.newChildNode( 
-        //                     Histogram[i].getTitle()+":"+i;
-        //                    "NXdata" );
+        
            
         NxWriteData nxd = new NxWriteData(instrType);
         if( nxd.processDS( nxentry ,nxInstr , Histogram[i] , true ) ){
@@ -334,9 +278,7 @@ public class NxWriter{
     if( ns.processDS( nxentry , Histogram[0] ) )
       errormessage +=  ";" + ns.getErrorMessage();
 
-    NxWriteBeam nb = new NxWriteBeam(instrType);
-    if( nb.processDS( nxentry , Histogram[0] ) )
-      errormessage += ";" + nb.getErrorMessage();
+    
   }
 
   /**
