@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.64  2003/07/18 14:38:01  bouzekc
+ * No longer uses GridBagLayout.
+ *
  * Revision 1.63  2003/07/16 18:53:48  bouzekc
  * Now saves the wizard error file in the directory the user is
  * currently in.
@@ -398,30 +401,38 @@ import javax.swing.*;
 public abstract class Wizard implements PropertyChangeListener {
   //~ Static fields/initializers ***********************************************
 
-  // size of the window
-  private static final int FORM_PROGRESS = 100;
-  private static final int STRUT_HEIGHT  = 5;
-
   // string constants for the menus and buttons
   private static final String EXIT_COMMAND        = "Exit";
-  private static final String FIRST_COMMAND       = "Go to First Form";
-  private static final String BACK_COMMAND        = "Go Back One Form";
-  private static final String NEXT_COMMAND        = "Go to Next Form";
-  private static final String LAST_COMMAND        = "Go to Last Form";
-  private static final String CLEAR_COMMAND       = "Reset All Forms";
-  private static final String EXEC_ALL_COMMAND    = "Execute All Forms";
-  private static final String EXEC_COMMAND        = "Execute Current Form";
+  private static final String FIRST_COMMAND       = " << ";
+  private static final String BACK_COMMAND        = " < ";
+  private static final String NEXT_COMMAND        = " > ";
+  private static final String LAST_COMMAND        = " >> ";
+  private static final String CLEAR_COMMAND       = "Reset";
+  private static final String CLEAR_ALL_COMMAND   = "Reset All";
+  private static final String EXEC_ALL_COMMAND    = "Do All";
+  private static final String EXEC_COMMAND        = "Do";
   private static final String HELP_ABOUT_COMMAND  = "About";
   private static final String WIZARD_HELP_COMMAND = "on Wizard";
   private static final String FORM_HELP_COMMAND   = "on Current Form";
-  private static final String SAVE_WIZARD_COMMAND = "Save Wizard Data";
-  private static final String LOAD_WIZARD_COMMAND = "Load Wizard Data";
+  private static final String SAVE_WIZARD_COMMAND = "Save Wizard State";
+  private static final String LOAD_WIZARD_COMMAND = "Load Wizard State";
   private static final String VIEW_MENU           = "View Parameters";
 
   // debugging
   private static boolean DEBUG = false;
 
   //~ Instance fields **********************************************************
+
+  private final int FORM_PROGRESS = 100;
+  private final int STRUT_HEIGHT  = 5;
+  private final int EXEC_ALL_IND  = 0;
+  private final int EXEC_IND      = 1;
+  private final int CLEAR_IND     = 2;
+  private final int FIRST_IND     = 3;
+  private final int BACK_IND      = 4;
+  private final int NEXT_IND      = 5;
+  private final int LAST_IND      = 6;
+  private final int CLEAR_ALL_IND = 7;
 
   // default help and about messages
   private String help_message  = "Help not available for Wizard";
@@ -434,13 +445,6 @@ public abstract class Wizard implements PropertyChangeListener {
   protected Vector forms;
   private int form_num;
   private JPanel form_panel;
-  private JButton exec_all_button;
-  private JButton first_button;
-  private JButton back_button;
-  private JButton next_button;
-  private JButton last_button;
-  private JButton exec_button;
-  private JButton clear_button;
   private JLabel form_label;
   private PropChangeProgressBar formProgress;
   private JProgressBar wizProgress;
@@ -450,7 +454,7 @@ public abstract class Wizard implements PropertyChangeListener {
   private JFrame save_frame;
   private JFileChooser fileChooser;
   private File save_file;
-  private JComponent[] wizComponents;
+  private AbstractButton[] wizButtons;
   private boolean ignorePropChanges;
   private WizardFileFilter wizFilter;
 
@@ -475,7 +479,7 @@ public abstract class Wizard implements PropertyChangeListener {
     modified          = false;
     this.title        = title;
     forms             = new Vector(  );
-    wizComponents     = new JComponent[7];  //number of components to disable
+    wizButtons        = new AbstractButton[8];  //number of buttons
     form_num          = -1;
     frame             = new JFrame( title );
     form_panel        = new JPanel(  );
@@ -982,194 +986,104 @@ public abstract class Wizard implements PropertyChangeListener {
   protected void makeGUI(  ) {
     LookAndFeelManager.setLookAndFeel(  );
 
-    GridBagConstraints gbc = new GridBagConstraints(  );
+    Box formControlsBox   = Box.createHorizontalBox(  );
+    Box wizardControlsBox = Box.createHorizontalBox(  );
+    Box statusBox         = Box.createHorizontalBox(  );
+    Box executionBox      = Box.createVerticalBox(  );
+    Box commBox           = Box.createVerticalBox(  );
 
-    gbc.fill        = GridBagConstraints.HORIZONTAL;
-    gbc.weightx     = 1.0;
-    gbc.anchor      = GridBagConstraints.WEST;
-    gbc.gridwidth   = GridBagConstraints.REMAINDER;
+    JButton exec_all_button  = new JButton( EXEC_ALL_COMMAND );
+    JButton first_button     = new JButton( FIRST_COMMAND );
+    JButton back_button      = new JButton( BACK_COMMAND );
+    JButton next_button      = new JButton( NEXT_COMMAND );
+    JButton last_button      = new JButton( LAST_COMMAND );
+    JButton exec_button      = new JButton( EXEC_COMMAND );
+    JButton clear_button     = new JButton( CLEAR_COMMAND );
+    JButton clear_all_button = new JButton( CLEAR_ALL_COMMAND );
 
-    JPanel work_area = new JPanel( new GridBagLayout(  ) );
-    JPanel button_panel = new JPanel( new GridBagLayout(  ) );
-    JPanel progress_panel = new JPanel( new GridBagLayout(  ) );
-    JMenuBar menu_bar = new JMenuBar(  );
-    JMenu file_menu = new JMenu( "File" );
-    JMenu help_menu = new JMenu( "Help" );
+    wizButtons[EXEC_ALL_IND] = exec_all_button;
+    wizButtons[EXEC_IND]     = exec_button;
+    wizButtons[CLEAR_IND]    = clear_button;
+    wizButtons[FIRST_IND]    = first_button;
+    wizButtons[BACK_IND]     = back_button;
+    wizButtons[NEXT_IND]     = next_button;
+    wizButtons[LAST_IND]     = last_button;
+    wizButtons[CLEAR_ALL_IND] = last_button;
 
-    view_menu       = new JMenu( VIEW_MENU );
+    JPanel work_area         = new JPanel( new BorderLayout(  ) );
+    JPanel controlsArea      = new JPanel( new BorderLayout(  ) );
+    JPanel navControlsBox    = new JPanel( new GridLayout(  ) );
+    JMenuBar menu_bar        = new JMenuBar(  );
+
+    initProgressBars(  );
 
     frame.setJMenuBar( menu_bar );
     frame.addWindowListener( new CloseWizardWindow(  ) );
     frame.getContentPane(  )
          .add( work_area );
 
-    {
-      int screenheight = ( int )( Toolkit.getDefaultToolkit(  )
-                                         .getScreenSize(  )
-                                         .getHeight(  ) * 0.75f );
-      int screenwidth = ( int )( Toolkit.getDefaultToolkit(  )
-                                        .getScreenSize(  )
-                                        .getWidth(  ) * 0.75f );
+    setInitialSize(  );
 
-      frame.setBounds( 0, 0, screenwidth, screenheight );
+    JMenu[] menuList = makeMenu(  );
+
+    for( int j = 0; j < menuList.length; j++ ) {
+      menu_bar.add( menuList[j] );
     }
-
-    JMenuItem help_about  = new JMenuItem( HELP_ABOUT_COMMAND );
-    JMenuItem wizard_help = new JMenuItem( WIZARD_HELP_COMMAND );
-    JMenuItem form_help   = new JMenuItem( FORM_HELP_COMMAND );
-
-    help_menu.add( help_about );
-    help_menu.addSeparator(  );
-    help_menu.add( wizard_help );
-    help_menu.add( form_help );
 
     JScrollPane form_scrollpane = new JScrollPane( 
         form_panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
 
-    JMenuItem save_wizard = new JMenuItem( SAVE_WIZARD_COMMAND );
-    JMenuItem load_wizard = new JMenuItem( LOAD_WIZARD_COMMAND );
-    JMenuItem exit_item   = new JMenuItem( EXIT_COMMAND );
+    // add the title to the work area
+    work_area.add( form_label, BorderLayout.NORTH );
 
-    save_wizard.setEnabled( true );
-    load_wizard.setEnabled( true );
-    file_menu.addSeparator(  );
-    file_menu.add( save_wizard );
-    file_menu.add( load_wizard );
-    file_menu.addSeparator(  );
-    file_menu.add( exit_item );
+    //set up and add the "comm" box
+    commBox.add( controlsArea );
+    commBox.add( statusBox );
 
-    menu_bar.add( file_menu );
-    menu_bar.add( view_menu );
-    menu_bar.add( help_menu );
+    //set up and add the execution box
+    executionBox.add( formControlsBox );
+    executionBox.add( wizardControlsBox );
+    controlsArea.add( executionBox, BorderLayout.NORTH );
 
-    // add the title to the panel
-    work_area.add( form_label, gbc );
+    //add the navigation controls box
+    controlsArea.add( navControlsBox, BorderLayout.SOUTH );
 
-    // add the form to the panel
-    gbc.weighty   = 50.0;
-    gbc.fill      = GridBagConstraints.BOTH;
+    //set up and add the scrolled Form panel
     form_panel.setLayout( new GridLayout( 1, 1 ) );
-    work_area.add( form_scrollpane, gbc );
+    work_area.add( form_scrollpane, BorderLayout.CENTER );
+    work_area.add( commBox, BorderLayout.SOUTH );
 
-    // add the progress bars to the panel
-    clear_button      = new JButton( CLEAR_COMMAND );
-    exec_all_button   = new JButton( EXEC_ALL_COMMAND );
+    //add the buttons and progress bars to each controls box
+    formControlsBox.add( clear_button );
+    formControlsBox.add( formProgress );
+    formControlsBox.add( exec_button );
+    wizardControlsBox.add( clear_all_button );
+    wizardControlsBox.add( wizProgress );
+    wizardControlsBox.add( exec_all_button );
 
-    if( forms.size(  ) > 1 ) {
-      gbc.weighty   = 1.0;
-      gbc.fill      = GridBagConstraints.HORIZONTAL;
-      work_area.add( progress_panel, gbc );
-      formProgress.setString( "Form Progress" );
-      wizProgress.setString( 
-        "Wizard Progress: " + ( getCurrentFormNumber(  ) + 1 ) + " of " +
-        forms.size(  ) + " Forms done" );
-      formProgress.setStringPainted( true );
-      wizProgress.setStringPainted( true );
-
-      wizProgress.setMaximum( forms.size(  ) );
-      wizProgress.setValue( 0 );
-      formProgress.setValue( 0 );
-      gbc.fill        = GridBagConstraints.NONE;
-      gbc.gridwidth   = 1;
-      progress_panel.add( clear_button, gbc );
-      gbc.weightx     = 20.0;
-      gbc.fill        = GridBagConstraints.HORIZONTAL;
-      gbc.gridwidth   = GridBagConstraints.RELATIVE;
-
-      Box tempBox     = Box.createVerticalBox(  );
-
-      tempBox.add( formProgress );
-      tempBox.add( Box.createVerticalStrut( STRUT_HEIGHT ) );
-      tempBox.add( wizProgress );
-      progress_panel.add( tempBox, gbc );
-
-      gbc.weightx     = 1.0;
-      gbc.fill        = GridBagConstraints.NONE;
-      gbc.gridwidth   = GridBagConstraints.REMAINDER;
-      gbc.anchor      = GridBagConstraints.EAST;
-      progress_panel.add( exec_all_button, gbc );
-    }
-
-    // add the navigation buttons to the panel
-    gbc.weightx     = 1.0;
-    gbc.anchor      = GridBagConstraints.WEST;
-    gbc.gridwidth   = GridBagConstraints.REMAINDER;
-    gbc.fill        = GridBagConstraints.HORIZONTAL;
-    work_area.add( button_panel, gbc );
-    first_button   = new JButton( FIRST_COMMAND );
-    back_button    = new JButton( BACK_COMMAND );
-    next_button    = new JButton( NEXT_COMMAND );
-    last_button    = new JButton( LAST_COMMAND );
-    exec_button    = new JButton( EXEC_COMMAND );
-
-    back_button.setEnabled( false );
-    next_button.setEnabled( false );
-
-    if( forms.size(  ) > 1 ) {
-      gbc.gridwidth   = 1;
-      gbc.fill        = GridBagConstraints.NONE;
-
-      if( forms.size(  ) > 2 ) {
-        button_panel.add( first_button, gbc );
-      }
-
-      button_panel.add( back_button, gbc );
-      gbc.weightx   = 20;
-      gbc.anchor    = GridBagConstraints.CENTER;
-      gbc.fill      = GridBagConstraints.HORIZONTAL;
-      button_panel.add( exec_button, gbc );
-      gbc.weightx   = 1;
-      gbc.anchor    = GridBagConstraints.EAST;
-      gbc.fill      = GridBagConstraints.NONE;
-
-      if( forms.size(  ) > 2 ) {
-        button_panel.add( next_button, gbc );
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        button_panel.add( last_button, gbc );
-      } else {
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        button_panel.add( next_button, gbc );
-      }
-    } else {
-      gbc.anchor      = GridBagConstraints.CENTER;
-      gbc.gridwidth   = GridBagConstraints.REMAINDER;
-      button_panel.add( exec_button, gbc );
-    }
+    //add the navigation buttons to the navigation controls box
+    navControlsBox.add( first_button );
+    navControlsBox.add( back_button );
+    navControlsBox.add( next_button );
+    navControlsBox.add( last_button );
 
     // add the status to the panel
-    gbc.fill      = GridBagConstraints.BOTH;
-    gbc.anchor    = GridBagConstraints.WEST;
-    gbc.weighty   = 5.0;
-
     if( standalone ) {
-      work_area.add( SharedData.getStatusPane(  ), gbc );
+      JPanel statusPanel = SharedData.getStatusPane(  );
+
+      statusBox.add( statusPanel );
+
+      //status pane will grow very large if we let it
+      statusPanel.setPreferredSize( new Dimension( 500, 100 ) );
     }
 
-    save_wizard.addActionListener( command_handler );
-    load_wizard.addActionListener( command_handler );
-    first_button.addActionListener( command_handler );
-    back_button.addActionListener( command_handler );
-    next_button.addActionListener( command_handler );
-    last_button.addActionListener( command_handler );
-    clear_button.addActionListener( command_handler );
-    exec_all_button.addActionListener( command_handler );
-    exec_button.addActionListener( command_handler );
-    help_about.addActionListener( command_handler );
-    wizard_help.addActionListener( command_handler );
-    form_help.addActionListener( command_handler );
-    exit_item.addActionListener( command_handler );
-    view_menu.addActionListener( command_handler );
+    //add the ActionListener to the buttons.
+    for( int k = 0; k < wizButtons.length; k++ ) {
+      wizButtons[k].addActionListener( command_handler );
+    }
 
-    //add the components to the JComponents array so we can easily
-    //enable/disable them
-    wizComponents[0]   = exec_all_button;
-    wizComponents[1]   = first_button;
-    wizComponents[2]   = back_button;
-    wizComponents[3]   = next_button;
-    wizComponents[4]   = last_button;
-    wizComponents[5]   = exec_button;
-    wizComponents[6]   = clear_button;
+    enableNavButtons( true, 0 );
   }
 
   /**
@@ -1257,6 +1171,20 @@ public abstract class Wizard implements PropertyChangeListener {
       //successfull opened a file
       return save_file;
     }
+  }
+
+  /**
+   * Sets the wizard's opening size.
+   */
+  private void setInitialSize(  ) {
+    int screenheight = ( int )( Toolkit.getDefaultToolkit(  )
+                                       .getScreenSize(  )
+                                       .getHeight(  ) * 0.75f );
+    int screenwidth = ( int )( Toolkit.getDefaultToolkit(  )
+                                      .getScreenSize(  )
+                                      .getWidth(  ) * 0.45f );
+
+    frame.setBounds( 0, 0, screenwidth, screenheight );
   }
 
   /**
@@ -1461,37 +1389,24 @@ public abstract class Wizard implements PropertyChangeListener {
    */
   private void enableNavButtons( boolean enable, int index ) {
     if( enable ) {
-      exec_button.setEnabled( true );
-      exec_all_button.setEnabled( true );
-      clear_button.setEnabled( true );
+      for( int i = 0; i < wizButtons.length; i++ ) {
+        wizButtons[i].setEnabled( true );
+      }
 
       // enable/disable the navigation buttons
       if( index >= ( forms.size(  ) - 1 ) ) {
-        next_button.setEnabled( false );
-      } else {
-        next_button.setEnabled( true );
-      }
-
-      if( index >= ( forms.size(  ) - 2 ) ) {
-        last_button.setEnabled( false );
-      } else {
-        last_button.setEnabled( true );
+        wizButtons[NEXT_IND].setEnabled( false );
+        wizButtons[LAST_IND].setEnabled( false );
       }
 
       if( index <= 0 ) {
-        back_button.setEnabled( false );
-      } else {
-        back_button.setEnabled( true );
-      }
-
-      if( index <= 1 ) {
-        first_button.setEnabled( false );
-      } else {
-        first_button.setEnabled( true );
+        wizButtons[BACK_IND].setEnabled( false );
+        wizButtons[FIRST_IND].setEnabled( false );
       }
     } else {
-      for( int i = 0; i < wizComponents.length; i++ ) {
-        wizComponents[i].setEnabled( false );
+      //disable all the buttons
+      for( int i = 0; i < wizButtons.length; i++ ) {
+        wizButtons[i].setEnabled( false );
       }
     }
   }
@@ -1505,9 +1420,24 @@ public abstract class Wizard implements PropertyChangeListener {
     fileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
     fileChooser.setFileFilter( wizFilter );
 
-    //start out in the ISAW_HOME directory
+    //start out in the current directory
     fileChooser.setCurrentDirectory( 
       new File( SharedData.getProperty( "user.dir" ) ) );
+  }
+
+  /**
+   * Initializes the progress bars.  Called from makeGUI().
+   */
+  private void initProgressBars(  ) {
+    formProgress.setString( "Form Progress" );
+    wizProgress.setString( 
+      "Wizard Progress: 0 of " + forms.size(  ) + " Forms done" );
+    formProgress.setStringPainted( true );
+    wizProgress.setStringPainted( true );
+
+    wizProgress.setMaximum( forms.size(  ) );
+    wizProgress.setValue( 0 );
+    formProgress.setValue( 0 );
   }
 
   /**
@@ -1559,6 +1489,55 @@ public abstract class Wizard implements PropertyChangeListener {
         }
       }
     }
+  }
+
+  /**
+   * Utility method to make the actual menu items and return them to makeGUI()
+   * so it can add them to the menu.  This also takes care of adding the
+   * ActionListener to the menu items.
+   *
+   * @return Array of JMenus to add to a menu bar.
+   */
+  private JMenu[] makeMenu(  ) {
+    JMenu[] menuList = new JMenu[3];
+    JMenu file_menu  = new JMenu( "File" );
+    JMenu help_menu  = new JMenu( "Help" );
+
+    view_menu        = new JMenu( VIEW_MENU );
+
+    JMenuItem help_about = new JMenuItem( HELP_ABOUT_COMMAND );
+    JMenuItem wizard_help = new JMenuItem( WIZARD_HELP_COMMAND );
+    JMenuItem form_help = new JMenuItem( FORM_HELP_COMMAND );
+
+    help_menu.add( help_about );
+    help_menu.addSeparator(  );
+    help_menu.add( wizard_help );
+    help_menu.add( form_help );
+
+    JMenuItem save_wizard = new JMenuItem( SAVE_WIZARD_COMMAND );
+    JMenuItem load_wizard = new JMenuItem( LOAD_WIZARD_COMMAND );
+    JMenuItem exit_item   = new JMenuItem( EXIT_COMMAND );
+
+    save_wizard.setEnabled( true );
+    load_wizard.setEnabled( true );
+    file_menu.addSeparator(  );
+    file_menu.add( save_wizard );
+    file_menu.add( load_wizard );
+    file_menu.addSeparator(  );
+    file_menu.add( exit_item );
+    menuList[0]   = file_menu;
+    menuList[1]   = view_menu;
+    menuList[2]   = help_menu;
+
+    help_about.addActionListener( command_handler );
+    wizard_help.addActionListener( command_handler );
+    form_help.addActionListener( command_handler );
+    exit_item.addActionListener( command_handler );
+    view_menu.addActionListener( command_handler );
+    save_wizard.addActionListener( command_handler );
+    load_wizard.addActionListener( command_handler );
+
+    return menuList;
   }
 
   /**
@@ -1736,8 +1715,10 @@ public abstract class Wizard implements PropertyChangeListener {
         form_num = forms.size(  ) - 1;
         showForm( form_num );
         populateViewMenu(  );
-      } else if( command.equals( CLEAR_COMMAND ) ) {
+      } else if( command.equals( CLEAR_ALL_COMMAND ) ) {
         invalidate( 0 );
+      } else if( command.equals( CLEAR_COMMAND ) ) {
+        invalidate( getCurrentFormNumber(  ) );
       } else if( command.equals( EXEC_ALL_COMMAND ) ) {
         worker = new WizardWorker(  );
         worker.setFormNumber( forms.size(  ) - 1 );
