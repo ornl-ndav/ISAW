@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/09/08 22:19:08  rmikk
+ * Made the method to find monitor ID's for upstream and
+ *    downstream monitors public and static
+ *
  * Revision 1.8  2003/09/05 21:36:35  rmikk
  * Fixed Groups in monitor to use
  * Fixed the nonCadmium calculations
@@ -637,7 +641,7 @@ public class CalcTransmission extends GenericTOF_SAD {
     return xvals;
     
   }
- private int[] setMonitorInd( DataSet ds){
+ public static int[] setMonitorInd( DataSet ds){
     int[] Res = new int[2];
     Res[0] = 0;
     Data D;
