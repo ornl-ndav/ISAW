@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2001/08/14 16:16:19  rmikk
+ * GenericBatch operators no longer show in opMenu
+ *
  * Revision 1.14  2001/08/09 14:10:24  rmikk
  * Modified  So that submenues can also start at an arbitrary
  * position in the category list (if all menu options category
@@ -116,7 +119,8 @@ private  void initt(OperatorHandler op , IDataSetListHandler DS,
   boolean found;
   MActionListener ML= new MActionListener( op , DS , logdoc, iobs);
                                                  // correct submenu
-  found = false;
+  found = false;  
+  
   for ( int i = 0; i < op.getNum_operators(); i++ )
   {
                                               // the list starts two entries, 
@@ -134,7 +138,8 @@ private  void initt(OperatorHandler op , IDataSetListHandler DS,
         categories[0]=Operator.OPERATOR; 
        }
     found = true;
-    for ( cat_index = start; (cat_index < categories.length) &&(found); cat_index++ ) 
+    if( !( op.getOperator( i ) instanceof GenericBatch ))
+    {for ( cat_index = start; (cat_index < categories.length) &&(found); cat_index++ ) 
     {
        num_components = current_menu.getMenuComponentCount();
        found = false;
@@ -181,6 +186,7 @@ private  void initt(OperatorHandler op , IDataSetListHandler DS,
           current_menu.add( item );
          }
      }
+    }//if op.getOperator( i) not instanceof Generic Batch
   }
   }//constructor
 public void setOpMenuLabel( String newText)
