@@ -9,8 +9,8 @@
 #@param    DeadDetectorLevel  The level that indicates a detector is "dead"
 
 
-$runFileName       LoadFileString("C:/new_das_runs\sand20337.run")  Enter Run file with info
-$SaveFileName      SaveFileString("C:/test_output/sens20337.dat") Enter file to save to
+$runFileName       LoadFileString("/IPNShome/sand/data/sand22205.run")  Enter Run file with info
+$SaveFileName      SaveFileString("/IPNShome/sand/GeorgeUser/sens22205.dat") Enter file to save to
 $HotDetectorLevel  Float(1.4)                     Enter the level indicating a hot detector
 $DeadDetectorLevel Float( .6)                   Enter the level indicating a dead detector
 
@@ -26,9 +26,10 @@ if  n <> 2
 endif
 
 DS = DetSens( SensData[1], DeadDetectorLevel, HotDetectorLevel)
+
 PrintFlood( DS[0],SaveFileName, "Flood")
 send DS[0]
-display DS[0], "Contour View"
-return "Success"
 
+Display DS[0], "Contour View"
 
+return "Finished"
