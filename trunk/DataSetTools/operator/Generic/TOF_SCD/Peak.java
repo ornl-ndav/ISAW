@@ -58,6 +58,11 @@ public class Peak{
     private int    nrun     = 0;
     private int    detnum   = 0;
     private float  nearedge = 0;
+    private float  detA     = 0f;
+    private float  detD     = 0f;
+    private float  chi      = 0f;
+    private float  phi      = 0f;
+    private float  omega    = 0f;
 
     /* --------------------Constructor Methods-------------------- */
     /**
@@ -322,8 +327,11 @@ public class Peak{
     /**
      *  Mutator method for the time of flight.
      */
-    public float t(float deltaT, float Tmin){
-	return 	this.t(deltaT*(this.z()+1f)+Tmin);
+    public float t(float T0, float T1){
+	float deltaT=T1-T0;
+	float remain=this.z%1f;
+
+	return 	this.t(T0+remain*deltaT);
     }
 
     /**
@@ -342,9 +350,14 @@ public class Peak{
     /**
      *  Mutator method for the wavelength.
      */
-    public float wl(float l1, float l2, float t0){
+    public float wl(float l1, float t0){
 	float h=(float)(1E6*6.62606876E-34); // in kg*cm*A/us
 	float m=(float)1.67492716E-27; // in kg
+	float l2=this.detD();
+	//System.out.print(wl+"("+l1+","+l2+","+t0+")=");
+
+	// set the time to be the new time
+	this.t(this.t()+t0);
 
 	// if any of the values are not properly defined set the wl to
 	// zero
@@ -359,7 +372,8 @@ public class Peak{
 	    +(float)Math.pow((double)this.ycm(),2.0);
 	l=l1+(float)Math.sqrt((double)l);
 
-	return 	this.wl(h*(this.t()+t0)/(m*l));
+	//System.out.println(h*(this.t())/(m*l));
+	return 	this.wl(h*(this.t())/(m*l));
     }
 
     /**
@@ -489,6 +503,86 @@ public class Peak{
 	return this.nearedge();
     }
 
+    /**
+     *  Accessor method for the detector angle
+     */
+    public float detA(){
+	return this.detA;
+    }
+    /**
+     *  Mutator method for the detector angle
+     */
+    public float detA(float DETA){
+	this.detA=DETA;
+	return this.detA();
+    }
+
+    /**
+     *  Accessor method for the detector distance
+     */
+    public float detD(){
+	return this.detD;
+    }
+    /**
+     *  Mutator method for the detector distance
+     */
+    public float detD(float DETD){
+	this.detD=DETD;
+	return this.detD();
+    }
+
+    /**
+     *  Accessor method for the sample chi
+     */
+    public float chi(){
+	return this.chi;
+    }
+    /**
+     *  Mutator method for the sample chi
+     */
+    public float chi(float CHI){
+	this.chi=CHI;
+	return this.chi();
+    }
+
+    /**
+     *  Accessor method for the sample phi
+     */
+    public float phi(){
+	return this.phi;
+    }
+    /**
+     *  Mutator method for the sample phi
+     */
+    public float phi(float PHI){
+	this.phi=PHI;
+	return this.phi();
+    }
+
+    /**
+     *  Accessor method for the sample omega
+     */
+    public float omega(){
+	return this.omega;
+    }
+    /**
+     *  Mutator method for the sample omega
+     */
+    public float omega(float OMEGA){
+	this.omega=OMEGA;
+	return this.omega();
+    }
+
+    /**
+     *  Mutator method for the sample orientation
+     */
+    public void sample_orientation(float CHI, float PHI, float OMEGA){
+	this.chi(CHI);
+	this.phi(PHI);
+	this.omega(OMEGA);
+    }
+
+
     /* --------------------- clone method --------------------- */
     /**
      *  Produce a copy of the object.
@@ -496,6 +590,10 @@ public class Peak{
     public Object clone(){
 	Peak peak=new Peak(seqnum,h,k,l,x,y,z,xcm,ycm,wl,ipkobs,inti,sigi,reflag,nrun,detnum);
 	peak.nearedge(this.nearedge());
+	peak.t(this.t());
+	peak.detA(this.detA());
+	peak.detD(this.detD());
+	peak.sample_orientation(this.chi(),this.phi(),this.omega());
 	return peak;
     }
 
@@ -530,6 +628,7 @@ public class Peak{
 	rs=rs+format(df_se_tw.format(xcm),7)
 	    +format(df_se_tw.format(ycm),7)
 	    +format(df_ei_fo.format(wl),8)
+	    //+format(df_ei_fo.format(t),8)
 	    +format(ipkobs,6)
 	    +format(df_ni_tw.format(inti),9)
 	    +format(df_ni_tw.format(sigi),9)

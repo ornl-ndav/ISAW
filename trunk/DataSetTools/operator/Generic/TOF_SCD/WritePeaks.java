@@ -71,17 +71,17 @@ public class WritePeaks extends GenericTOF_SCD{
   *
   *  @param  file      Filename to print to
   *  @param  mon_data  Monitor DataSet
-  *  @param  data_set  DataSet to find peak in
   *  @param  peaks     Vector of peaks
+  *  @param  append    Whether to append to specified file
   */
-    public WritePeaks( String file, DataSet mon_data, 
-		       DataSet data_set, Vector peaks){
+    public WritePeaks( String file, DataSet mon_data, Vector peaks, 
+		       Boolean append){
 	this(); 
 	parameters = new Vector();
 	addParameter( new Parameter("File Name", file) );
 	addParameter( new Parameter("Monitor", mon_data) );
-	addParameter( new Parameter("Histogram", data_set) );
 	addParameter( new Parameter("Vector of Peaks",peaks) );
+	addParameter( new Parameter("Append",append) );
   }
 
  /* ---------------------------- getCommand ------------------------------- */ 
@@ -106,8 +106,8 @@ public class WritePeaks extends GenericTOF_SCD{
     parameters = new Vector();
     addParameter( new Parameter("File Name", "filename" ) );
     addParameter( new Parameter("Monitor", DataSet.EMPTY_DATA_SET ) );
-    addParameter( new Parameter("Histogram", DataSet.EMPTY_DATA_SET ) );
     addParameter( new Parameter("Vector of Peaks", new Vector() ) );
+    addParameter( new Parameter("Append", Boolean.FALSE) );
   }
 
  /* ----------------------------- getResult ------------------------------ */ 
@@ -121,18 +121,20 @@ public class WritePeaks extends GenericTOF_SCD{
   {
     String  file     = (String) (getParameter(0).getValue());
     DataSet mon_data = (DataSet)(getParameter(1).getValue());
-    DataSet data_set = (DataSet)(getParameter(2).getValue());
-    Vector  peaks    = (Vector) (getParameter(3).getValue());
-    boolean append   = false;
+    Vector  peaks    = (Vector) (getParameter(2).getValue());
+    boolean append   = ((Boolean)(getParameter(3).getValue())).booleanValue();
     OutputStreamWriter outStream;
 
+    // general information
     int nrun=((Peak)peaks.elementAt(0)).nrun();
     int detnum=((Peak)peaks.elementAt(0)).detnum();
-    float deta=detector_angle(data_set);
-    float detd=detector_distance(data_set,deta);
-    float chi=((Float)data_set.getAttributeValue("Sample Chi")).floatValue();
-    float phi=((Float)data_set.getAttributeValue("Sample Phi")).floatValue();
-    float omega=((Float)data_set.getAttributeValue("Sample Omega")).floatValue();
+    float deta=((Peak)peaks.elementAt(0)).detA();
+    float detd=((Peak)peaks.elementAt(0)).detD();
+
+    // sample orientation
+    float chi=((Peak)peaks.elementAt(0)).chi();
+    float phi=((Peak)peaks.elementAt(0)).phi();
+    float omega=((Peak)peaks.elementAt(0)).omega();
 
     float moncnt=0.0f;
     if(mon_data != null){
@@ -179,61 +181,6 @@ public class WritePeaks extends GenericTOF_SCD{
 
     return file;
   }
-
- /* -------------------------- detector position ------------------------- */ 
- /**
-  * Find the detector angle by averaging over pixel angles.
-  */
-    static private float detector_angle(DataSet ds){
-	DetInfoListAttribute detI;
-	DetectorInfo det;
-	Data data=ds.getData_entry(0);
-	float angle=0f;
-	int total=0;
-	for( int i=0 ; i< ds.getNum_entries() ; i++ ){
-	    data=ds.getData_entry(i);
-	    detI=(DetInfoListAttribute)
-		data.getAttribute(Attribute.DETECTOR_INFO_LIST);
-	    det=((DetectorInfo[])detI.getValue())[0];
-	    angle+=det.getPosition().getScatteringAngle();
-	    total++;
-	    //System.out.println(total+":"+angle);
-	}
-	angle=(180*angle)/((float)(total+1)*(float)Math.PI);
-
-	return angle;
-    }
-
- /**
-  * Find the detector distance by averaging over perpendicular pixel
-  * distance.
-  */
-    static private float detector_distance(DataSet ds, float avg_angle){
-	DetInfoListAttribute detI;
-	DetectorInfo det;
-	Data data=ds.getData_entry(0);
-	float angle=0f;
-	float distance=0f;
-	int total=0;
-
-	for( int i=0 ; i< ds.getNum_entries() ; i++ ){
-	    data=ds.getData_entry(i);
-	    detI=(DetInfoListAttribute)
-		data.getAttribute(Attribute.DETECTOR_INFO_LIST);
-	    det=((DetectorInfo[])detI.getValue())[0];
-
-	    angle=det.getPosition().getScatteringAngle();
-	    angle=angle-2f*avg_angle/(float)Math.PI;
-
-	    angle=(float)Math.abs(Math.cos((double)angle));
-
-	    distance+=angle*det.getPosition().getDistance();
-	    total++;
-	}
-	distance=distance/((float)(total+1));
-
-	return distance;
-    }
 
  /* ----------------------------- formating ------------------------------ */ 
  /**
@@ -287,10 +234,10 @@ public class WritePeaks extends GenericTOF_SCD{
 	FindPeaks fo = new FindPeaks(rds,10,1);
 	Vector peaked=(Vector)fo.getResult();
 	
-	CentroidPeaks co=new CentroidPeaks(rds,peaked);
-	peaked=(Vector)co.getResult();
+	/* CentroidPeaks co=new CentroidPeaks(rds,peaked);
+	   peaked=(Vector)co.getResult(); */
 
-	WritePeaks wo = new WritePeaks(outfile,mds,rds,peaked);
+	WritePeaks wo = new WritePeaks(outfile,mds,peaked,Boolean.FALSE);
 	System.out.println(wo.getResult());
     }
 }
