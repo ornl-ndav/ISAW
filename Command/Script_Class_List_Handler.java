@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2002/08/19 15:24:01  pfpeterson
+ * Revived some dead code to make Scripts work.
+ *
  * Revision 1.29  2002/08/15 18:53:41  pfpeterson
  * More code cleanup and added functionality for extracting
  * operators that are in a jar and removed all dependency on DataSetTools.operator.GenericOperatorList.
@@ -488,8 +491,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             return i;
         if( getOperatorCommand(i) == null) 
             return -1;
-        if(! getOperatorCommand(i).equals( CommName))
-            return -1;
+        if( getOperatorCommand(i).equals( CommName))
+            return i;
         int j = i-1;
         while( j >= 0 ){
             if( getOperatorCommand( j ).equals(CommName)){
@@ -499,7 +502,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 return i;
             }
         }
-        return i;
+        if( getOperatorCommand(i).equals( CommName))
+            return i;
+        else
+            return -1;
     }
 
     /**
