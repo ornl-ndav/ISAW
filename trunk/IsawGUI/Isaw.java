@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.191  2004/03/17 20:53:49  dennis
+ *  Changed version to 1.6.1 alpha 1
+ *
  *  Revision 1.190  2004/03/15 23:57:00  dennis
  *  Changed some references to static methods to be through
  *  the class name, instead of an instance.
@@ -698,7 +701,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.6.1";
+          version="1.7.0 alpha 1";
         else
           version=SharedData.VERSION;
 
