@@ -30,6 +30,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/04/26 18:54:16  dennis
+ *   Added method Build2D_Difference_DS() that subtracts the sample
+ * and background S(Qx,Qy) faster than the general DataSet subtract
+ * operator.  This works, assuming each operand has exactly the same
+ * detector grid.  (This cut execution time for batch_reduce from
+ * 37 seconds to 15 seconds in the 2D case, on a 2.8 Ghz P4).
+ *   Removed two unused parameters from Build2D_DS().
+ *
  * Revision 1.1  2004/04/26 13:56:54  dennis
  *   Extracted and restructured calculations from Reduce_KCL.
  *   Changed SumQs_1D() and SumQs_2D() methods to step through all
@@ -191,7 +199,7 @@ public class SAD_Util
          }
        }
 
-      DataSet ds = Build2D_DS( Qxmin, Qymin, xDELTAQ, yDELTAQ,
+      DataSet ds = Build2D_DS( xDELTAQ, yDELTAQ,
                                NQxBins, NQyBins, SQXQY, SERRXY, "s2d" );
       return ds;
    }
@@ -238,8 +246,6 @@ public class SAD_Util
         }
 
       CoordBounds bounds = new CoordBounds( Qxmin, Qymin, Qxmax, Qymax );
-      System.out.println("CALCULATED COORD BOUNDS = " + bounds );
-
       return bounds;
     }
 
@@ -296,9 +302,7 @@ public class SAD_Util
    *  Build a DataSet, complete with attributes, pixel info lists, etc.
    *  from the specified 2D arrays of values and errors.
    */
-   public static DataSet Build2D_DS( float     Qxmin,      
-                                     float     Qymin, 
-                                     float     Dx,         
+   public static DataSet Build2D_DS( float     Dx,         
                                      float     Dy, 
                                      int       Nx,         
                                      int       Ny,
@@ -331,10 +335,11 @@ public class SAD_Util
        for( int col = 1; col <= Nx; col++ )
        {
          yvals = new float[1];
-         errs = new float[1];
+         errs  = new float[1];
          yvals[0] = list[row-1][col-1];
-         errs[0] = err[row-1][col-1];
-         if( col == Nx) list[row-1] = null;
+         errs[0]  = err [row-1][col-1];
+         if( col == Nx )                     // ???????
+           list[row-1] = null;
          HistogramTable Dat = 
                         new HistogramTable( xscl, yvals, errs, (row-1)*Nx+col );
 
@@ -355,6 +360,42 @@ public class SAD_Util
     Grid_util.setEffectivePositions( DS, 47 );
     return DS;
   }
+
+
+  /* ---------------------- Build2D_Difference_DS ------------------------- */
+  /**
+   *  Build a DataSet, that is the difference of the specified DataSets
+   *  containing S(Qx,Qy).  This is a specialized version that does NOT
+   *  deal with most attributes.  It allows forming the difference of the
+   *  sample minus background DataSets faster.  The DataSets are assumed
+   *  to have identical area detector grids.
+   */
+   public static DataSet Build2D_Difference_DS( DataSet ds_1, DataSet ds_2 )
+   {
+     int[] Ids= Grid_util.getAreaGridIDs( ds_1 );
+     UniformGrid grid_1 = (UniformGrid)Grid_util.getAreaGrid( ds_1, Ids[0] );
+     UniformGrid grid_2 = (UniformGrid)Grid_util.getAreaGrid( ds_2, Ids[0] );
+
+     int n_rows = grid_1.num_rows();
+     int n_cols = grid_1.num_cols();
+     float list[][] = new float[n_rows][n_cols];
+     float errs[][] = new float[n_rows][n_cols];
+     Data d1,
+          d2;
+     for ( int row = 1; row <= n_rows; row++ )
+       for ( int col = 1; col <= n_cols; col++ )
+       {
+         d1 = grid_1.getData_entry( row, col );
+         d2 = grid_2.getData_entry( row, col );
+         list[row-1][col-1] = d1.getY_values()[0] - d2.getY_values()[0];
+         errs[row-1][col-1] = SumDiffErr(d1.getErrors()[0], d2.getErrors()[0]);
+       }
+ 
+     float Dx = grid_1.width() / n_cols;
+     float Dy = grid_1.height() / n_rows;
+
+     return Build2D_DS( Dx, Dy, n_cols, n_rows, list, errs, "Difference DS" );
+   }
 
 
   /* ----------------------------- SumQs_1D ------------------------------ */
@@ -416,11 +457,11 @@ public class SAD_Util
         eff1  = Rebin( eff2, xvals, xscl );
             
         SqErrors( errs);
-        for( int chan = 0; chan < yvals.length; chan++)
-          if( eff1[chan] !=0)
+        for( int chan = 0; chan < yvals.length; chan++ )
+          if( eff1[chan] !=0 )
           {
-            Resy[chan] += yvals[chan];
-            ErrSq[chan] += errs[chan];
+            Resy[chan]   += yvals[chan];
+            ErrSq[chan]  += errs[chan];
             weight[chan] += sens*eff1[chan];
           }
       }//sens !=0
@@ -429,7 +470,7 @@ public class SAD_Util
     for( int i = 0; i< Resy.length;i++ )
       if( weight[i] > 0 )
       {
-        Resy[i] = Resy[i]/weight[i];
+        Resy[i]  = Resy[i]/weight[i];
         ErrSq[i] = (float)java.lang.Math.sqrt( ErrSq[i] )/weight[i];
       }
       else
