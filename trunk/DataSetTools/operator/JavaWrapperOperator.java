@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.17  2004/05/06 00:06:32  bouzekc
+ * FIxed an error that added a DataSetPG in where a DataDirPG should have gone.
+ *
  * Revision 1.16  2004/05/04 19:04:35  dennis
  * Now clears DataSetPG after using value, to avoid memory leak.
  *
@@ -144,41 +147,46 @@ public class JavaWrapperOperator extends GenericOperator {
   /**
    * Testbed.
    */
-
   public static void main( String[] args ) {
-     Operators.WrappedCrunch op = new Operators.WrappedCrunch(  );
-     //Operators.StringChoiceOp op = new Operators.StringChoiceOp(  );
-     //Operators.MyFortran crunch = new Operators.MyFortran(  );
-     JavaWrapperOperator wrapper = new JavaWrapperOperator( op );
-  /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
-     "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
-     new DataSetTools.viewer.ViewManager(
-       temp, DataSetTools.viewer.IViewManager.IMAGE );
-     wrapper.getParameter( 0 )
-            .setValue( temp );
-     wrapper.getParameter( 1 )
-            .setValue( new Float( 0.0f ) );
-     wrapper.getParameter( 2 )
-            .setValue( new Float( 2.0f ) );
-     wrapper.getParameter( 3 )
-            .setValue( new Boolean( true ) );
-     DataSet newDS = ( DataSet )wrapper.getResult(  );
-     new DataSetTools.viewer.ViewManager(
-       newDS, DataSetTools.viewer.IViewManager.IMAGE );*/
-  String[] catList = wrapper.getCategoryList(  );
-     for( int i = 0; i < catList.length; i++ ) {
-       System.out.println( catList[i] );
-     }
-     System.out.println( wrapper.getCommand(  ) );
-     System.out.println( wrapper.getResult(  ) );
-     //this test is good only for WrappedCrunch
-      wrapper.getParameter( 1 ).setValue( new Float( 5.0f ) );
-      JavaWrapperOperator clonedOp = ( JavaWrapperOperator )wrapper.clone(  );
-      System.out.print( "Original value: " );
-      System.out.println( wrapper.getParameter( 1 ) );
-      System.out.print( "New value: " );
-      System.out.println( clonedOp.getParameter( 1 ) );
-     }
+    Operators.WrappedCrunch op = new Operators.WrappedCrunch(  );
+
+    //Operators.StringChoiceOp op = new Operators.StringChoiceOp(  );
+    //Operators.MyFortran crunch = new Operators.MyFortran(  );
+    JavaWrapperOperator wrapper = new JavaWrapperOperator( op );
+    /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
+       "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
+       new DataSetTools.viewer.ViewManager(
+         temp, DataSetTools.viewer.IViewManager.IMAGE );
+       wrapper.getParameter( 0 )
+              .setValue( temp );
+       wrapper.getParameter( 1 )
+              .setValue( new Float( 0.0f ) );
+       wrapper.getParameter( 2 )
+              .setValue( new Float( 2.0f ) );
+       wrapper.getParameter( 3 )
+              .setValue( new Boolean( true ) );
+       DataSet newDS = ( DataSet )wrapper.getResult(  );
+       new DataSetTools.viewer.ViewManager(
+         newDS, DataSetTools.viewer.IViewManager.IMAGE );*/
+    String[] catList = wrapper.getCategoryList(  );
+
+    for( int i = 0; i < catList.length; i++ ) {
+      System.out.println( catList[i] );
+    }
+
+    System.out.println( wrapper.getCommand(  ) );
+    System.out.println( wrapper.getResult(  ) );
+
+    //this test is good only for WrappedCrunch
+    wrapper.getParameter( 1 ).setValue( new Float( 5.0f ) );
+
+    JavaWrapperOperator clonedOp = ( JavaWrapperOperator )wrapper.clone(  );
+
+    System.out.print( "Original value: " );
+    System.out.println( wrapper.getParameter( 1 ) );
+    System.out.print( "New value: " );
+    System.out.println( clonedOp.getParameter( 1 ) );
+  }
 
   /**
    * Method to create a category list from this classes nearest abstract
@@ -278,9 +286,10 @@ public class JavaWrapperOperator extends GenericOperator {
           } else if( ( type.isArray(  ) ) || ( type == Vector.class ) ) {
             //ArrayPG
             addParameter( new ArrayPG( name, val ) );
-          } else if( 
-            ( type == DataSet.class ) || ( type == DataDirectoryString.class ) ) {
+          } else if( type == DataSet.class ) {
             addParameter( new DataSetPG( name, val ) );
+          } else if( type == DataDirectoryString.class ) {
+            addParameter( new DataDirPG( name, val ) );
           } else if( type == UniformXScale.class ) {
             addParameter( new UniformXScalePG( name, val ) );
           } else if( type == VariableXScale.class ) {
@@ -293,16 +302,19 @@ public class JavaWrapperOperator extends GenericOperator {
             addParameter( new LoadFilePG( name, val ) );
           } else if( type == SaveFileString.class ) {
             addParameter( new SaveFilePG( name, val ) );
-          }else if (type == MediaList.class){
-             MediaList ml = new MediaList();
-             Vector choices = new Vector(); 
-             for( int iii=0; iii< ml.num_strings(); iii++)
-                choices.addElement(ml.getString(iii));
-             ChoiceListPG Ch= new ChoiceListPG( name,val);
-            
-             Ch.addItems(choices);
-             addParameter( Ch);
-          }else if( type == StringChoiceList.class ) {
+          } else if( type == MediaList.class ) {
+            MediaList ml   = new MediaList(  );
+            Vector choices = new Vector(  );
+
+            for( int iii = 0; iii < ml.num_strings(  ); iii++ ) {
+              choices.addElement( ml.getString( iii ) );
+            }
+
+            ChoiceListPG Ch = new ChoiceListPG( name, val );
+
+            Ch.addItems( choices );
+            addParameter( Ch );
+          } else if( type == StringChoiceList.class ) {
             addParameter( 
               new ChoiceListPG( 
                 name, ( ( StringChoiceList )val ).getStrings(  ) ) );
@@ -336,9 +348,11 @@ public class JavaWrapperOperator extends GenericOperator {
       //method.
       for( int i = 0; i < parameters.size(  ); i++ ) {
         values[i] = ( ( ParameterGUI )parameters.get( i ) ).getValue(  );
-        if ( parameters.get(i) instanceof DataSetPG )
-          ((DataSetPG)parameters.get( i )).clear();   // clear DataSetPG to 
-                                                      // avoid memory leak !
+
+        if( parameters.get( i ) instanceof DataSetPG ) {
+          ( ( DataSetPG )parameters.get( i ) ).clear(  );  // clear DataSetPG to 
+                                                           // avoid memory leak !
+        }
       }
 
       for( int k = 0; k < fieldParams.length; k++ ) {
@@ -354,8 +368,9 @@ public class JavaWrapperOperator extends GenericOperator {
               Array.set( fieldParams[k].get( wrapped ), 1, myVect.get( m ) );
             }
           }
-        } //else if( fieldParams[k].getType(  ) instanceof SpecialString ) {
-        else if( SpecialString.class.isAssignableFrom(fieldParams[k].getType(  )) ) {
+        }  //else if( fieldParams[k].getType(  ) instanceof SpecialString ) {
+        else if( 
+          SpecialString.class.isAssignableFrom( fieldParams[k].getType(  ) ) ) {
           SpecialString ss = ( SpecialString )fieldParams[k].get( wrapped );
 
           ss.setString( values[k].toString(  ) );
