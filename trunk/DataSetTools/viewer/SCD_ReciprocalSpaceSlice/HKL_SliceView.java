@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/02/02 23:55:23  dennis
+ * Added additional Axes labels for special case of
+ * constant h,k or l planes.  Added code to select
+ * mode based on whether or not an orientation matrix
+ * was loaded, and to set the SliceSelectorUI to the
+ * corresponding mode.
+ *
  * Revision 1.1  2004/01/28 23:58:26  dennis
  * Initial Version of viewer for slices in HKL.
  *
@@ -53,11 +60,10 @@ import DataSetTools.instruments.*;
 import DataSetTools.retriever.*;
 import DataSetTools.components.View.*;
 import DataSetTools.viewer.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.text.*;
-
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -95,7 +101,8 @@ public class HKL_SliceView extends DataSetViewer
 
   private Q_SliceExtractor  extractor = null;
   private Tran3D   orientation_matrix = null;
-
+  
+  private boolean hkl_mode = true;
   private boolean valid_ds = false; 
 
   private boolean debug = false;
@@ -115,7 +122,7 @@ public class HKL_SliceView extends DataSetViewer
                              // sets up the menu bar with items handled by the
                              // parent class.
 
-    slice_selector  = new SliceSelectorUI( "Select Slice" );
+    slice_selector  = new SliceSelectorUI( SliceSelectorUI.HKL_MODE );
     slice_selector.addActionListener( new SliceListener() );
 
     image_container = new JPanel();
@@ -171,6 +178,7 @@ public class HKL_SliceView extends DataSetViewer
 
   public void redraw( String reason )
   {
+    System.out.println( "redraw of viewer called ..........." + reason );
     if ( !valid_ds )
     {
       image_container.removeAll();
@@ -198,13 +206,20 @@ public class HKL_SliceView extends DataSetViewer
     u.multiply( slice_selector.getSliceWidth()/2 );
     v.multiply( slice_selector.getSliceHeight()/2 );
     
-    float slice[][] = extractor.HKL_Slice( orientation_matrix,
-                                           origin, u, v,
-                                           n_rows, n_cols );
+    float slice[][];
+    if ( orientation_matrix != null )
+      slice = extractor.HKL_Slice( orientation_matrix,
+                                   origin, u, v,
+                                   n_rows, n_cols );
+    else
+      slice = extractor.Q_Slice( origin, u, v, n_rows, n_cols );
+
+    System.out.println("Recalculated slice....." );
     if ( slice != null )
     {
-      setAxesOnIVC();
-      ivc.dataChanged( new VirtualArray2D( slice ) );
+      IVirtualArray2D va2D = new VirtualArray2D( slice );
+      setAxesAndTitle( va2D );
+      ivc.dataChanged( va2D );
     }
     else
       System.out.println("ERROR: null slice in HKL_SliceView.java");
@@ -241,6 +256,18 @@ public class HKL_SliceView extends DataSetViewer
 
     valid_ds = isValid_SCD_DataSet();
     orientation_matrix = getOrientationMatrix();
+
+    if ( orientation_matrix == null )         // ##### in the long run this
+    {
+      slice_selector.setMode( SliceSelectorUI.QXYZ_MODE ); 
+      hkl_mode = false;                       // should just disable/enable
+    }
+    else                                      // selection of HKL mode
+    {
+      slice_selector.setMode( SliceSelectorUI.HKL_MODE ); 
+      hkl_mode = true;
+    }
+
     DataSet ds_list[] = new DataSet[1];
     ds_list[0] = ds;
     extractor = new Q_SliceExtractor( ds_list );
@@ -304,14 +331,147 @@ public class HKL_SliceView extends DataSetViewer
     return true; 
   }
 
-  /* ----------------------- setAxesOnIVC -------------------------------- */
+  /* ----------------------- setAxesAndTitle ----------------------------- */
   /*
-   *  Determine appropriate axes to use on the Image View Component.
+   *  Determine appropriate axes and title for the slice 
    */
-  public void setAxesOnIVC()
+  private void setAxesAndTitle( IVirtualArray2D va2D )
   {
+    System.out.println("setAxesAndTitle called .....................");
     SlicePlane3D plane = slice_selector.getPlane();
+ 
+    Vector3D origin = plane.getOrigin();
+    Vector3D normal = plane.getNormal();
+    Vector3D u      = plane.getU();
+    Vector3D v      = plane.getV();
+    float width  = slice_selector.getSliceWidth();
+    float height = slice_selector.getSliceHeight();
 
+    if ( hkl_mode && orientation_matrix != null )
+    {
+      setHKL_Title( origin, normal, va2D );
+      setHKL_Axis( AxisInfo.X_AXIS, -width/2.0f, width/2.0f, origin, u, va2D );
+      setHKL_Axis( AxisInfo.Y_AXIS, -height/2.0f, height/2.0f, origin, v, va2D);
+    }
+    else
+    {
+      setGeneralTitle( origin, normal, va2D );
+      setGeneralAxis( AxisInfo.X_AXIS, -width/2.0f, width/2.0f, u, va2D );
+      setGeneralAxis( AxisInfo.Y_AXIS, -height/2.0f, height/2.0f, v, va2D );
+    }
+  }
+
+
+  /* --------------------------- setGeneralAxis -------------------------- */
+  /*
+   *  Set the axis information to cover the specified interval, listing
+   *  the specified vector as the direction, for the case of an arbitrary
+   *  plane.
+   */
+  private void setGeneralAxis( int              axis_num, 
+                               float            min,
+                               float            max,
+                               Vector3D         vector,
+                               IVirtualArray2D  va2D )
+  {
+     String units;
+     if ( hkl_mode )
+       units = "HKL units";
+     else
+       units = "Inverse Angstroms";
+
+     va2D.setAxisInfo( axis_num, min, max,
+                      "Direction:(" + Format.real( vector.get()[0], 5 ) +
+                                "," + Format.real( vector.get()[1], 5 ) +
+                                "," + Format.real( vector.get()[2], 5 ) + ")",
+                       units,
+                       true );
+  } 
+
+
+  /* --------------------------- setHKL_Axis -------------------------- */
+  /*
+   *  Set the axis information to cover the specified interval, listing
+   *  the specified vector as the direction, for the constant H, K or L case.
+   */
+  private void setHKL_Axis( int              axis_num,
+                            float            min,
+                            float            max,
+                            Vector3D         origin,
+                            Vector3D         vector,
+                            IVirtualArray2D  va2D )
+  {
+    String title = null;
+
+    if ( vector.dot( new Vector3D( 1, 0, 0 ) ) >= 0.99999 )
+    {
+      title = "H Index";
+      min += origin.get()[0];
+      max += origin.get()[0];
+    }
+
+    else if ( vector.dot( new Vector3D( 0, 1, 0 ) ) >= 0.99999 )
+    {
+      title = "K Index";
+      min += origin.get()[1];
+      max += origin.get()[1];
+    }
+
+    else if ( vector.dot( new Vector3D( 0, 0, 1 ) ) >= 0.99999 )
+    {
+      title = "L Index";
+      min += origin.get()[2];
+      max += origin.get()[2];
+    }
+
+    if ( title != null )
+      va2D.setAxisInfo( axis_num, min, max, "", title, true );
+    else 
+      setGeneralAxis( axis_num, min, max, vector, va2D );
+
+  }
+
+
+  /* --------------------------- setGeneralTitle -------------------------- */
+  /*
+   *  Set the title information for the case of an arbitrary plane.
+   */
+  private void setGeneralTitle( Vector3D        origin, 
+                                Vector3D        normal,
+                                IVirtualArray2D va2D )
+  {
+    va2D.setTitle( "Center:(" + Format.real( origin.get()[0], 5 ) +
+                          "," + Format.real( origin.get()[1], 5 ) +
+                          "," + Format.real( origin.get()[2], 5 ) + "), " +
+                   "Normal:(" + Format.real( normal.get()[0], 5 ) +
+                          "," + Format.real( normal.get()[1], 5 ) +
+                          "," + Format.real( normal.get()[2], 5 ) + ")" );
+  }
+
+
+  /* --------------------------- setHKL_Title -------------------------- */
+  /*
+   *  Set the title information for the constant H, K or L case.
+   */
+  private void setHKL_Title( Vector3D        origin,
+                             Vector3D        normal,
+                             IVirtualArray2D va2D )
+  {
+    String title = null;
+
+    if ( normal.dot( new Vector3D( 1, 0, 0 ) ) >= 0.99999 )
+      title = "H = " + origin.get()[0]; 
+
+    else if ( normal.dot( new Vector3D( 0, 1, 0 ) ) >= 0.99999 ) 
+      title = "K = " + origin.get()[1]; 
+
+    else if ( normal.dot( new Vector3D( 0, 0, 1 ) ) >= 0.99999 )
+      title = "L = " + origin.get()[2]; 
+
+    if ( title != null )
+      va2D.setTitle( title );
+    else 
+      setGeneralTitle( origin, normal, va2D );
   }
 
 
@@ -403,25 +563,14 @@ public class HKL_SliceView extends DataSetViewer
    */
 
   /**
-   *  Listen for resize events on the and just print out the new size to
-   *  to demonstrate how to handle such events.
-   */
-  class ViewComponentAdapter extends ComponentAdapter
-  {
-    public void componentResized( ComponentEvent c )
-    {
-      System.out.println("View Area resized: " + c.getComponent().getSize() );
-    }
-  }
-
-  /**
    *  Listen for new slice selection
    */
   private class SliceListener implements ActionListener
   {
     public void actionPerformed( ActionEvent e )
     {
-      redraw( NEW_DATA_SET );
+      System.out.println( "Slice changed ....................... ");
+      redraw( "Slice Changed" );
     }
   }
 
