@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/10/15 16:22:30  bouzekc
+ * Added the filename to the error Isaw generates when it encounters a
+ * Python script syntax error upon startup.
+ *
  * Revision 1.7  2003/08/17 23:03:44  bouzekc
  * Fixed off by one error in isValid() when reporting what line a script
  * error is on.
@@ -125,8 +129,15 @@ public class PyScript extends Script{
           continue;
       }          
       if(DEBUG) System.out.println(">>"+line+"<<");
-      DataSetTools.util.SharedData.addmsg( 
-        "Script syntax error on line " + ( i + 1 ) + ".");
+
+      //there is an error in the file, so list the name and number
+      if( filename != null ) {
+        DataSetTools.util.SharedData.addmsg( 
+          filename + " has a syntax error on line " + ( i + 1 ) + ".");
+      } else {
+        DataSetTools.util.SharedData.addmsg( 
+          "Script syntax error on line " + ( i + 1 ) + ".");
+      }
       valid=new Boolean(false);
       return valid.booleanValue();
     }
