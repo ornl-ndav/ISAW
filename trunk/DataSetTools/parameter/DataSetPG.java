@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/03/25 19:40:47  pfpeterson
+ *  Sets value to EMPTY_DATA_SET when attempt is made to set value to null.
+ *
  *  Revision 1.6  2003/02/24 20:59:14  pfpeterson
  *  Now extends ChooserPG rather than ArrayPG.
  *
@@ -72,6 +75,7 @@ public class DataSetPG extends ChooserPG{
     public DataSetPG(String name, Object value){
         super(name,value);
         this.type=TYPE;
+        if(value==null || value==DataSet.EMPTY_DATA_SET) return;
         if(!(value instanceof DataSet))
             SharedData.addmsg("WARN: Non-"+this.type
                               +" in DataSetPG constructor");
@@ -80,6 +84,7 @@ public class DataSetPG extends ChooserPG{
     public DataSetPG(String name, Object value, boolean valid){
         super(name,value,valid);
         this.type=TYPE;
+        if(value==null || value==DataSet.EMPTY_DATA_SET) return;
         if(!(value instanceof DataSet))
             SharedData.addmsg("WARN: Non-"+this.type
                               +" in DataSetPG constructor");
@@ -111,6 +116,18 @@ public class DataSetPG extends ChooserPG{
         }else{
             return null;
         }
+    }
+
+    /**
+     * Calls the parent method with DataSet.EMPTY_DATA_SET if value is
+     * null.
+     */
+    public void setValue(Object value){
+      if(value==null){
+        super.setValue(DataSet.EMPTY_DATA_SET);
+      }else{
+        super.setValue(value);
+      }
     }
 
     /**
