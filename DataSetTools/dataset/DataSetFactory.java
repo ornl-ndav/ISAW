@@ -2,6 +2,10 @@
  * @(#)DataSetFactory.java     0.1  99/06/07  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.9  2000/12/07 22:23:37  dennis
+ *  Added operators FitPolynomialToGroup(),
+ *                  ConvertFunctionToHistogram()
+ *
  *  Revision 1.8  2000/10/03 21:34:02  dennis
  *  Modified this factory to handle different types of time-of-flight
  *  instruments.
@@ -193,6 +197,8 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new IntegrateGroup() );
     new_ds.addOperator( new CalculateMomentOfGroup() );
     new_ds.addOperator( new DataSetCrossSection() );
+    new_ds.addOperator( new FitPolynomialToGroup() );
+
     new_ds.addOperator( new SumByAttribute() );
     new_ds.addOperator( new ExtractByAttribute() );
 
@@ -206,6 +212,7 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new DataSetMerge() );
     new_ds.addOperator( new ResampleDataSet() );
     new_ds.addOperator( new ConvertHistogramToFunction() );
+    new_ds.addOperator( new ConvertFunctionToHistogram() );
 
     new_ds.addOperator( new GetDataAttribute() );
     new_ds.addOperator( new SetDataAttribute() );
