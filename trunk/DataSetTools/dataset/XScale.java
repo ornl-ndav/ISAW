@@ -32,6 +32,9 @@
  *
  *
  *  $Log$
+ *  Revision 1.9  2002/07/10 15:59:29  pfpeterson
+ *  Added inRange() method.
+ *
  *  Revision 1.8  2002/06/10 20:19:52  dennis
  *  Added getI(x) and getX(i) methods to get individual points and positions
  *  of individual points in the list.
@@ -131,6 +134,17 @@ abstract public class XScale implements Serializable
    * Returns the number of "X" values.
    */
   public int getNum_x()  { return num_x; }
+
+  /**
+   * Determines if the specified "X" is within the range of the
+   * Xscale.
+   */
+  public boolean inRange( float val ){
+      if( val>=start_x && val<=end_x )
+          return true;
+      else
+          return false;
+  }
 
   /**
    * Returns the array of "X" values.  The array will have num_x entries.   
