@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.2  2003/11/13 18:24:25  rmikk
+# Added user Documentaiton
+#
 # Revision 1.1  2003/11/11 20:49:35  rmikk
 # Initial Checkin
 #
@@ -100,7 +103,15 @@ class Reduce_Form3(GenericTOF_SAD):
            Q.addElement( self.getParameter(6).getValue())
            return Q
 
-           
+    def getDocumentation( self):
+           S = "@overview This Form is part of the Reduce Wizard. It allows for the entry "
+           S += "the type of Reduce analysis desired(1D or 2D). Also the bin boundaries"
+           S += " to be used in the analysis. <P>For the 1D analysis, the bin boundaries can be" 
+           S += " practically arbitrary. They can be combinations of different lists with"
+           S += " different common ratios or different common differences. In the Set Qbins or Qx,.. dialog"
+           S += " box, if N Steps is 0 or less, only the entry from Start Q is added. This"
+           S += " means that any list can be entered.  It should be increasing" 
+           return S                 
 
     def __init__(self):
         Operator.__init__(self,"Get Qbins")
