@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2001/08/03 21:41:03  dennis
+ *  Now extends RemoteDataRetriever, which provides basic communication to
+ *  the server.
+ *
  *  Revision 1.11  2001/07/16 22:44:58  dennis
  *  Added log message giving time the LiveData was obtained.
  *
@@ -97,7 +101,7 @@ import NetComm.*;
  *  on a remote machine and extracts the DataSets corresponding to
  *  monitors and sample histograms.
  */
-public class LiveDataRetriever extends    Retriever 
+public class LiveDataRetriever extends    RemoteDataRetriever 
                                implements Serializable
 {
   public static final int TIMEOUT_MS = 60000;
@@ -197,142 +201,6 @@ public class LiveDataRetriever extends    Retriever
     return (DataSet)(DataSet.EMPTY_DATA_SET.clone());
   }
 
-
-/* ---------------------------- isConnected ----------------------------- */
-/**
- *  Check to see if the connection to the remote server has been made and
- *  is still operating;
- *
- *  @return Returns true if the connection to the remote server is still
- *          operating.
- */
-  public boolean isConnected()
-  {
-    if ( tcp_io == null )
-      return false;
-    
-    return true;
-  }
-
-
-/* --------------------------- MakeConnection ---------------------------- */
-/**
- *  Connect with the remote live data server.
- */
-  public boolean MakeConnection()
-  {
-    int    port;
-    String remote_machine;
-
-    int colon_index = data_source_name.indexOf(':');
-    if ( colon_index < 0 )
-    {
-      remote_machine = data_source_name;
-      port = LiveDataServer.DEFAULT_SERVER_PORT_NUMBER;
-    }
-    else
-    {
-      remote_machine = data_source_name.substring( 0, colon_index );
-      String port_name = data_source_name.substring( colon_index+1 );
-      port_name.trim();
-      port = Integer.parseInt( port_name );
-    }
-
-    try
-    {
-      Socket sock = new Socket( remote_machine, port );
-      tcp_io      = new TCPComm( sock, TIMEOUT_MS );
-      return true;
-    }
-    catch( Exception e )
-    {
-      tcp_io = null;
-      System.out.println( "LiveDataRetriever CONNECTION TO " +
-                           remote_machine + " FAILED ON PORT " + port );
-      System.out.println( "Exception is " +  e );
-      return false;
-    }
-  }
-
-
-/* -------------------------------- Exit --------------------------------- */
-/**
- *  Break the connection with the LiveDataServer. 
- */
-  public void Exit()
-  {
-    if ( tcp_io != null )
-      try
-      {
-        tcp_io.Send( new TCPCommExitClass() );
-      }
-      catch ( Exception e )
-      {
-        System.out.println( "Exception in LiveDataRetriever.Exit():" + e );
-      }
-  }
-
-
-/* ------------------------- getObjectFromServer ------------------------- */
-/**
- *  Send command to server and get it's response as an object.
- *
- *  @param command   The command string to send to the server.  Appropriate
- *                   commands are give as strings in LiveDataServer.java
- *
- *  @return The object that was requested from the server, or null if the
- *          the server was not running, or could not provide the requested
- *          object.
- *
- */
- synchronized private Object getObjectFromServer( String command )
- {
-    if ( tcp_io == null )
-      MakeConnection();
-
-    if ( tcp_io == null )
-    {
-      System.out.println("LiveDataRetriever can't send command:" + command );
-      return null;
-    }
-
-    System.out.println("LiveDataRetriever sending command:" + command );
-    boolean request_sent = false;
-
-    try
-    {
-      System.out.println( "Command sent: " + command );
-      tcp_io.Send( command );
-      request_sent = true;
-    }
-    catch ( Exception e )
-    {
-      System.out.println("EXCEPTION in LiveDataRetriever:" + e );
-      System.out.println("while sending command: " + command );
-      tcp_io = null;                               // the connection is gone
-    }
-
-    if ( request_sent )
-    {
-      try
-      {
-        Object obj = null;
-        obj = tcp_io.Receive();
-        System.out.println( "Got " + obj );
-
-        System.out.println("LiveDataRetriever finished command:" + command );
-        return obj;
-      }
-      catch ( Exception e )
-      {
-        System.out.println("EXCEPTION in LiveDataRetriever:" + e );
-        System.out.println("while receiving response to command: " + command );
-      }
-    }
-
-    System.out.println("LiveDataRetriever failed command:" + command );
-    return null;
-  }
 
 /* ------------------------------------------------------------------------
  *
