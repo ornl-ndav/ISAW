@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/01/24 19:43:33  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.1  2003/09/19 22:47:40  chatterjee
  *  Operator written for Sasha. Adapted from SumByAttribute.java
  *  This operator takes a product of specified groups with their corresponding
@@ -62,14 +65,10 @@ package DataSetTools.operator.DataSet.TOF_DG_Spectrometer;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
-import  DataSetTools.viewer.*;
-import  DataSetTools.operator.*;
-import DataSetTools.retriever.*;
 
 /**
   *  Sum Data blocks specified by an attribute to form a new DataSet
