@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/10/28 16:20:03  rmikk
+ * It now deals with an initial null state correctly
+ *
  * Revision 1.1  2003/10/27 15:12:34  rmikk
  * Initial Checkin
  *
@@ -75,6 +78,8 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
         this.DS = DS;
         Title = DS.getTitle();
         this.state = state;
+        if( state == null)
+          this.state = new ViewerState();
         initState();
         //Check state 
      
