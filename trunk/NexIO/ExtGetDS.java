@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2002/07/29 18:48:31  rmikk
+ * Added code to determine if the Data Set Type is pulse height
+ *
  * Revision 1.8  2002/04/01 20:05:56  rmikk
  * Each NXdata without a label attribute on its data field gives rise to a new data set.  The NXdata in a NXentry with the same label values are merged
  *
@@ -226,6 +229,8 @@ public DataSet getDataSet( int data_set_num )
    NxNode nDS = (NxNode)(((Vector)(EntryDSs.elementAt(data_set_num))).lastElement());
    if( nDS.getNodeClass().equals("NXmonitor"))
       DS.setAttribute( new StringAttribute(Attribute.DS_TYPE, Attribute.MONITOR_DATA));
+   else if( isPulseHeight( nDS.getNodeName()))
+      DS.setAttribute( new StringAttribute(Attribute.DS_TYPE, Attribute.PULSE_HEIGHT_DATA));
    else
       DS.setAttribute( new StringAttribute(Attribute.DS_TYPE, Attribute.SAMPLE_DATA));
       
@@ -263,6 +268,26 @@ public DataSet getDataSet( int data_set_num )
       }
      return DS;
     }
+
+private boolean isPulseHeight( String S)
+  { int i1=S.toUpperCase().indexOf("PULSE");
+  
+    if( i1 < 0)
+      return false;
+
+    int i2= S.toUpperCase().indexOf("HEIGHT");
+   
+    if( i2 < 0)
+       return false;
+    
+    if( i2<i1)
+       return false;
+   
+    if( i2 > i1+4)
+       return true;
+     
+    return false;
+   }
 //For monitor data sets, the groups with the largest phi is 1
 private void ReOrderGroups( DataSet DS)
  {/* boolean done=false;
@@ -343,7 +368,12 @@ private String getAnalysis( NxNode node)
       
        }
      */
-    return EntryDSs.size();
+    int u = EntryDSs.size();
+    
+    if( u >=0)
+      return EntryDSs.size();
+    else
+      return 0;
     /*int x , 
         p ;
     x = 0 ; 
