@@ -29,6 +29,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/01/11 22:04:58  rmikk
+ *  -Change DataDirectory to Data_Directory
+ *  -Added a new ParameterGUI to deal with DataDirectories
+ *   by popping up a file dialog box
+ *
  *  Revision 1.20  2002/01/10 15:35:21  rmikk
  *  Added a Constructor to include a StatusPane.
  *  Added this StatusPane to operators that support the
@@ -218,7 +223,7 @@ public class JParametersDialog implements Serializable,
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
            Size1=-1;
            param = op.getParameter(i);            
-          
+            
             if(  param.getValue() instanceof String  &&
                                op instanceof IntervalSelectionOp  )
             {
@@ -281,7 +286,7 @@ public class JParametersDialog implements Serializable,
                 
            else if( param.getValue() instanceof DataDirectoryString )
            { 
-            String DirPath = System.getProperty("DataDirectory");
+            String DirPath = System.getProperty("Data_Directory");
             if( DirPath != null )
               DirPath = DataSetTools.util.StringUtil.
                                  fixSeparator(DirPath+"\\");
@@ -289,7 +294,7 @@ public class JParametersDialog implements Serializable,
               DirPath = "";
                param.setValue( new DataDirectoryString(DirPath) );
 
-            paramGUI = new JStringParameterGUI( param ) ;
+            paramGUI = new JOneFileChooserParameterGUI( param ) ;
           }
 
 
@@ -512,8 +517,7 @@ public class JParametersDialog implements Serializable,
       opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       if (result == null)
       {
-         if(stat_pane!=null)
-           stat_pane.add("Result was null  :");
+         
             
          resultsLabel.setText("Result was null  :");
          util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
