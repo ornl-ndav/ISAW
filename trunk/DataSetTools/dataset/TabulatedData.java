@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/06/22 15:38:09  rmikk
+ *  Eliminated the gridIDs field.
+ *
  *  Revision 1.12  2004/04/26 13:25:02  rmikk
  *  XMLread now has access to all the grids already created by the data set
  *    being constructed
@@ -430,7 +433,7 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
     }
     return true;  
   }
-transient Hashtable gridIDs=new Hashtable();
+//transient Hashtable gridIDs=new Hashtable();
 
  /** Implements the IXmlIO interface so a Data Object can read itself
   *
