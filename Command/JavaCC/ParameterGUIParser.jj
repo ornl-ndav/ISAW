@@ -30,6 +30,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/11/11 19:41:33  bouzekc
+ * Now returns a new Vector when the parser finds an empty set of brackets.
+ * The previous behaviour was to return a new Vector with one element: an
+ * empty String.
+ *
  * Revision 1.8  2003/10/20 22:06:57  bouzekc
  * Fixed javadoc error.  The javadocs are actually held in the .jj file.
  *
@@ -103,9 +108,13 @@ public class ParameterGUIParser {
     } else {
       myParser.ReInit( new StringReader( text )  );
     }
-    //Vector tempy = myParser.ExpansionList(  );
-    return myParser.ExpansionList(  );
-    //return tempy;
+    Vector tempy = myParser.ExpansionList(  );
+
+    if( tempy.size(  ) == 1 && tempy.get( 0 ).equals( "" ) ) {
+      return new Vector(  );
+    }  else  {
+      return tempy;
+    }
   }
      
 
