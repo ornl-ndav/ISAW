@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/07/18 18:17:34  dennis
+ *  Rewrote using the toString() method of DetectorPosition.java
+ *
  *  Revision 1.3  2000/07/10 22:23:56  dennis
  *  July 10, 2000 version... many changes
  *
@@ -115,31 +118,11 @@ public class DetPosAttribute extends Attribute
 
 
   /**
-   * Returns a string representation of the float value of this attribute
+   * Returns a string representation of the value of this attribute
    */
    public String getStringValue()
    {
-     float cyl_coords[] = value.getCylindricalCoords();
-     
-     NumberFormat f = NumberFormat.getInstance();
-     f.setMaximumFractionDigits( 2 );
-     String scat_ang = f.format( value.getScatteringAngle() * 180.0/Math.PI );
-
-     f.setMaximumFractionDigits( 3 );
-     String r     = f.format( cyl_coords[0] );
-     f.setMaximumFractionDigits( 2 );
-     String cyl_angle = f.format( cyl_coords[1] * 180.0/Math.PI );
-     f.setMaximumFractionDigits( 3 );
-     String z     = f.format( cyl_coords[2] );
-                                                    // upper case theta: \u0398
-                                                    // lower case theta: \u03b8
-                                                    // upper case phi:   \u03a6
-                                                    // lower case phi:   \u03c6
-     String string = "2\u03b8" +"=" + scat_ang +
-                     ":r="  + r + 
-                     ","+"\u03c6" +"=" + cyl_angle + 
-                     ",z=" + z;
-     return string;
+     return value.toString();
    }
 
   /**
