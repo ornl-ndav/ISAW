@@ -5,6 +5,10 @@
  * each selection appropriatly.
  *
  * $Log$
+ * Revision 1.9  2001/07/03 13:50:31  neffk
+ * all operators can be invoked from the main menu and right-click menu
+ * once again.
+ *
  * Revision 1.8  2001/06/27 20:47:32  neffk
  * updated to play nice with the tree and command pane
  *
@@ -67,10 +71,11 @@ public class JOperationsMenuHandler
   public void actionPerformed( ActionEvent e ) 
   {
     String s = e.getActionCommand();
-    DataSetOperator op = dss[0].getOperator(0);  //use first selection
 
+//    System.out.println( "actionCommand: " + s );
     for( int i=0;  i<dss[0].getNum_operators();  i++ )
     {
+//      System.out.println(  "title: " + dss[0].getOperator(i).getTitle()  );
       if(   s.equalsIgnoreCase(  dss[0].getOperator(i).getTitle()  )   )
       {
 /*
@@ -83,6 +88,7 @@ public class JOperationsMenuHandler
                                                            sessionLog,
                                                            treeUI );
 */
+        DataSetOperator op = dss[0].getOperator(i);
         JParametersDialog pDialog = new JParametersDialog( op,
                                                            dss,
                                                            sessionLog,
