@@ -36,6 +36,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/07/30 14:37:10  rmikk
+ *  Added the XScaleChooser to the control panel
+ *
  *  Revision 1.8  2002/07/24 23:01:06  rmikk
  *  Fixed code so the Contour display moves with outside
  *    POINTED_AT events
@@ -112,6 +115,9 @@ public class ContourView extends DataSetViewer
    JPanel ConvTableHolder = null;
    JPanel rpl_Holder = null;
    JScrollPane dctScroll = null;
+   XScaleChooserUI Xscl = null;
+   JPanel  XsclHolder = null;
+   boolean acChange,XsclChange,XConvChange;
    JButton print_;
    ContourData cd;
    JSlider time_slider;
@@ -132,6 +138,8 @@ public class ContourView extends DataSetViewer
   // JPanel main= null;
    //---------------------
    JSlider intensity = null;
+
+   int PrevGroup;
    public ContourView( DataSet ds, ViewerState state1 )
    {
 
@@ -144,7 +152,7 @@ public class ContourView extends DataSetViewer
          return;
       }
       sliderTime_index = 0;
-     
+      PrevGroup = ds.getPointedAtIndex();
       if( state1 == null)
         { state = new ViewerState();
          
@@ -188,17 +196,36 @@ public class ContourView extends DataSetViewer
       ac = new AnimationController();
 
       ac.addActionListener( new MyAction() );
-    
-      setData( data_set, state.get_int( ViewerState.CONTOUR_STYLE) );
+      
+      
+      boolean b= state.get_boolean(ViewerState.CONTOUR_DATA);
+      if( !b)
+        {state.set_int( "ContourTimeStep" , 0 );
+         UniformXScale xx = getDataSet().getXRange();
+         state.set_float("ContourTimeMin", xx.getStart_x());
+         state.set_float("ContourTimeMax",xx.getEnd_x());
+         state.set_boolean(ViewerState.CONTOUR_DATA, true);
+         }
+      Xscl = new XScaleChooserUI( getDataSet().getX_label(), getDataSet().getX_units(),
+                        state.get_float("ContourTimeMin"), state.get_float("ContourTimeMax"),
+                        state.get_int("ContourTimeStep"));
 
+      Xscl.addActionListener( new MyXSCaleActionListener());
+      XsclHolder = new JPanel( new GridLayout( 1,1));
+      XsclHolder.add( Xscl);
+      acChange = true;
+      XsclChange = true;
+      XConvChange = true;
+      setData( data_set, state.get_int( ViewerState.CONTOUR_STYLE) );
+      
       //Add the components to the window
       JPanel jpEast = new JPanel();
 
       BoxLayout blay = new BoxLayout( jpEast, BoxLayout.Y_AXIS );
 
       jpEast.setLayout( blay );
-     
-   
+      
+
       intensity = new JSlider( 0, 100);
       intensity.setBorder( BorderFactory.createTitledBorder( BorderFactory.createEtchedBorder(),
                         "Intensity") );
@@ -211,6 +238,7 @@ public class ContourView extends DataSetViewer
       rpl_Holder = new MyJPanel( rpl_, Color.white);
       rpl_Holder.add( rpl_);
       setLayout(jpEast );
+     
      
        //main.setDividerLocation( .70);
      /*  main = new JPanel();
@@ -267,6 +295,7 @@ public class ContourView extends DataSetViewer
   // main splitpane with state, 
   public void setLayout(JPanel jpEast)
    {jpEast.add( ac );
+    jpEast.add(XsclHolder);
     jpEast.add(intensity);  
     jpEast.add( ConvTableHolder );
     jpEast.add( Box.createHorizontalGlue() );
@@ -288,7 +317,7 @@ public class ContourView extends DataSetViewer
   public void doLayout2()
    {if( acHolder == null)
       { super.doLayout();
-        System.out.println("Eliminate ContourView.doLayout");
+        
         return;
        }
     System.out.println("in doLayout Bounds ="+getBounds());
@@ -336,20 +365,43 @@ public class ContourView extends DataSetViewer
 
 
    private void setData( DataSet ds, int GridContourAttribute )
-   {
+   {  
       cd = new ContourData( ds );
+      cd.setXScale( Xscl.getXScale() );
       times = cd.getTimeRange();
-      if( ac != null )
-         ac.setFrame_values( times );
-
+     
+      if( (ac != null) && (acChange  ||  XsclChange) )
+        { ac.setFrame_values( times );
+          ac.setFrameValue( ds.getPointedAtX());
+          sliderTime_index = ac.getFrameNumber();
+        }
       if( ConvTableHolder == null )
          ConvTableHolder = new JPanel( new GridLayout( 1, 1 ) );
-      else if( dctScroll != null )
+      else if( XConvChange)
          ConvTableHolder.remove( dctScroll );
 
-      dct = new DataSetXConversionsTable( getDataSet() );
-      dctScroll = new JScrollPane( dct.getTable() );
-      ConvTableHolder.add( dctScroll );
+      
+      if( XConvChange )
+         {
+          dct = new DataSetXConversionsTable( getDataSet() );
+          dctScroll = new JScrollPane( dct.getTable() );
+          ConvTableHolder.add( dctScroll );
+          }
+
+      if( XsclHolder == null)
+          XsclHolder = new JPanel( new GridLayout( 1,1 ));
+      else if( XsclChange)
+          XsclHolder.remove( Xscl);
+
+      if( XsclChange)
+         {
+          Xscl = new XScaleChooserUI( getDataSet().getX_label(), getDataSet().getX_units(),
+                     state.get_float("ContourTimeMin"), state.get_float("ContourTimeMax"),
+                     state.get_int("ContourTimeStep"));
+
+          Xscl.addActionListener( new MyXSCaleActionListener());
+          XsclHolder.add( Xscl);
+          }
       init( ds, GridContourAttribute );
    }
 
@@ -429,7 +481,7 @@ public class ContourView extends DataSetViewer
       super.setDataSet( ds );
       data_set = ds;
       int GridAt = state.get_int("Contour.Style");
-     
+      acChange = XConvChange = XsclChange = true;
       setData( ds, GridAt );
       rpl_.draw();
    }
@@ -447,7 +499,7 @@ public class ContourView extends DataSetViewer
          if( state == null )
             state = new ViewerState();
          state.set_String( ViewerState.COLOR_SCALE, evt.getActionCommand() );
-  
+         acChange= XsclChange = XConvChange = false;
          setData( data_set, state.get_int("Contour.Style"));
          rpl_.draw();
       }
@@ -455,7 +507,9 @@ public class ContourView extends DataSetViewer
    class MyContStyleListener implements ActionListener
    {
       public void actionPerformed( ActionEvent evt)
-      {if( evt.getActionCommand().equals("AREA_FILL"))
+      {acChange= XsclChange = XConvChange = false;
+      
+      if( evt.getActionCommand().equals("AREA_FILL"))
          state.set_int("Contour.Style",GridAttribute.AREA_FILL );
       else if( evt.getActionCommand().equals("AREA_FILL_CONTOUR"))
          state.set_int("Contour.Style",GridAttribute.AREA_FILL_CONTOUR );
@@ -665,7 +719,7 @@ public class ContourView extends DataSetViewer
       //ContourView contour_view = new ContourView(data_set[1], CONTOUR);
 
    }
-
+   
    class MyAction implements java.awt.event.ActionListener
    {
       public void actionPerformed( java.awt.event.ActionEvent event )
@@ -683,25 +737,31 @@ public class ContourView extends DataSetViewer
             if( main == null || rpl_ == null || cd == null )
                return;
             try
-            {
+            {  
                int i = new Integer( event.getActionCommand() ).intValue();
                //if( sliderTime_index == i)
                //  return;
-               
+              
                if( i < 0 ) 
                  i=0;
                else if( i >= times.length )
                   i = times.length -1;;
                
                SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[i] ) );
+              
                data_set.setPointedAtX( times[i]);
                if( sliderTime_index != i)
-                  data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-               sliderTime_index = i;
+                  { sliderTime_index = i;
+                    data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+                   }
+                
                ( ( SimpleGrid )newData ).setZArray( newData1.getZArray() );
+              
                rpl_.draw();
+               
 
-               dct.showConversions( -1, -1 );
+
+              // dct.showConversions( -1, -1 );
             }
             catch( Exception s )
             {}
@@ -713,12 +773,14 @@ public class ContourView extends DataSetViewer
    class MyChange implements javax.swing.event.ChangeListener
    {
       public void stateChanged( javax.swing.event.ChangeEvent event )
-      {
+      { 
          Object obj = event.getSource();
 
          if( obj != intensity )
            return;
+         acChange= XsclChange = XConvChange = false;
          state.set_int ("Contour.Intensity",intensity.getValue());
+         acChange=XsclChange=XConvChange = false;
          setData( getDataSet(), state.get_int(ViewerState.CONTOUR_STYLE));
          main.repaint();
          rpl_.draw();
@@ -780,7 +842,7 @@ public class ContourView extends DataSetViewer
        
       }
    public void redraw( String reason )
-   {
+   { 
       
       if( reason == IObserver.DESTROY )
       {
@@ -805,14 +867,25 @@ public class ContourView extends DataSetViewer
         float x = data_set.getPointedAtX();
         int index =data_set.getPointedAtIndex();
         int Xindex = getPointedAtXindex();
+        boolean notify = false;
+
+        if( PrevGroup != index)
+          {notify = true;
+           PrevGroup = index;
+           if( dct != null )
+             if( times != null)
+                dct.showConversions( times[Xindex], index );
+      
+           }
         if( Xindex != sliderTime_index) // java.lang.Math.abs(cd.getTime() -x) >.00001)
           { sliderTime_index = Xindex;
             ac.setFrameNumber( Xindex );
+            
             //ac.stop();
            }
-           
-        dct.showConversions( times[Xindex], index );
-      }
+        if( notify)
+          data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED);  
+        }
       else if( reason == IObserver.GROUPS_CHANGED )
       {
          setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
@@ -864,7 +937,7 @@ public class ContourView extends DataSetViewer
 
 
       public void componentShown( ComponentEvent e )
-      { System.out.println("B");
+      { 
          //if( rpl_ != null)
          // rpl_.draw();
          componentResized( e );
@@ -883,19 +956,24 @@ public class ContourView extends DataSetViewer
       { //JPlotLayout jp = (JPlotLayout)(e.getSource());
          gov.noaa.pmel.sgt.Layer L = rpl_.getFirstLayer();
          gov.noaa.pmel.sgt.Graph g = L.getGraph();
-
+        
          if( !( g instanceof CartesianGraph ) )
             return;
          CartesianGraph cg = ( CartesianGraph )g;
 
-         // System.out.println( L.getXDtoP(e.getX())+","+L.getYDtoP(e.getY()));
-         //System.out.println( cg.getXPtoU(L.getXDtoP(e.getX()))+","+
-         //                     cg.getYPtoU(L.getYDtoP(e.getY())));
+       
          double col = cg.getXPtoU( L.getXDtoP( e.getX() ) );
          double row = cg.getYPtoU( L.getYDtoP( e.getY() ) );
          int index = cd.getGroupIndex( row, col );
          float time = cd.getTime();
+         
+         if( index < 0)
+           return;
+         if( index >= getDataSet().getNum_entries())
+           return;
+         
          data_set.setPointedAtIndex( index);
+         
          data_set.setPointedAtX( time);
          
          data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
@@ -905,6 +983,26 @@ public class ContourView extends DataSetViewer
       }
 
    }
+ class MyXSCaleActionListener implements ActionListener
+   {
+    public void actionPerformed( ActionEvent evt)
+     {
+      XScale xsc= Xscl.getXScale();
+      cd.setXScale( xsc);
+      if( xsc == null)
+        {state.set_int( "ContourTimeStep" , 0 );
+        }
+      else
+        {
+         state.set_int( "ContourTimeStep" , xsc.getNum_x() );
+         state.set_float("ContourTimeMin", xsc.getStart_x());
+         state.set_float("ContourTimeMax",xsc.getEnd_x());
+        }
+      acChange= XsclChange =true; XConvChange = false;
+      setData( getDataSet(), state.get_int("Contour.Style"));
+      rpl_.draw();
+      }
+    }
  class MyJPanel extends JPanel
    {JComponent comp;
     Color colr;
