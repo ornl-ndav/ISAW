@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/07/22 22:16:40  dennis
+ * Adapted call to CurveFit.polynomial to new form, with boolean
+ * parameter to choose statistical weighting.
+ *
  * Revision 1.5  2002/11/27 23:18:38  pfpeterson
  * standardized header
  *
@@ -288,7 +292,7 @@ public class  FitPolynomialToGroup  extends    AnalyzeOp
       y[i] = y_vals[ first_index+i ];
                                                 // Then, do the curve fitting
     double coeff[] = new double [ degree + 1 ];
-    double error   = CurveFit.Polynomial( x, y, coeff );
+    double error   = CurveFit.Polynomial( x, y, coeff, false );
     if ( error == Double.NaN )
       return new ErrorString("ERROR: couldn't fit data with polynomial");
 
