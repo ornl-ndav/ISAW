@@ -31,6 +31,9 @@
  * Modified:	
  *
  * $Log$
+ * Revision 1.7  2003/10/14 21:50:58  dennis
+ * Fixed javadoc error so that it builds cleanly on jdk 1.4.2
+ *
  * Revision 1.6  2003/02/04 16:28:14  pfpeterson
  * Now uses IParameterGUI and changed returns on errors to ErrorString.
  *
@@ -39,6 +42,9 @@
  *
  * Revision 1.4  2002/10/29 16:00:23  dennis
  * Added getDocumentation method, and $Log$
+ * Added getDocumentation method, and Revision 1.7  2003/10/14 21:50:58  dennis
+ * Added getDocumentation method, and Fixed javadoc error so that it builds cleanly on jdk 1.4.2
+ * Added getDocumentation method, and
  * Added getDocumentation method, and Revision 1.6  2003/02/04 16:28:14  pfpeterson
  * Added getDocumentation method, and Now uses IParameterGUI and changed returns on errors to ErrorString.
  * Added getDocumentation method, and
@@ -83,8 +89,6 @@ public class ActivatePrompt extends GenericCalculator
   *  execute the operator.
   *
   *  @param  sample      Sample material composition
-  *  @param  current     Facility beam current
-  *  @param  inst_fac    Instrument factor
   */
   public ActivatePrompt( String sample ){//,
       this(); 
