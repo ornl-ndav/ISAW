@@ -1,6 +1,6 @@
 /*
- * File:  XDateTime.java 
- *             
+ * File:  XDateTime.java
+ *
  * Copyright (C) 2002, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/01/14 20:56:25  dennis
+ * Added getDocumentation() method and basic main test program.
+ * (Chris Bouzek)
+ *
  * Revision 1.5  2002/11/27 23:18:10  pfpeterson
  * standardized header
  *
@@ -55,19 +59,21 @@ package DataSetTools.operator.DataSet.Information.XAxis;
 
 import  java.io.*;
 import  java.util.*;
-import  java.text.*; 
+import  java.text.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.retriever.*;
 
 /**
- *  This operator uses the StartTime attribute to produce a string giving 
+ *  This operator uses the StartTime attribute to produce a string giving
  *  the Date and Time for a specific x value.
  */
 
-public class XDateTime extends  XAxisInformationOp 
+public class XDateTime extends  XAxisInformationOp
                                 implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -79,7 +85,7 @@ public class XDateTime extends  XAxisInformationOp
    * to apply the operator to the DataSet this operator was added to.
    */
 
-  public XDateTime( ) 
+  public XDateTime( )
   {
     super( "Find Date and Time" );
   }
@@ -91,19 +97,19 @@ public class XDateTime extends  XAxisInformationOp
    *  by calling getResult().
    *
    *  @param  ds          The DataSet to which the operation is applied
-   *  @param  i           index of the Data block to use for the x-scale(time) 
+   *  @param  i           index of the Data block to use for the x-scale(time)
    *  @param  time        the time(x-value) at which the Date is to be obtained
    */
   public XDateTime( DataSet ds, int i, float time )
   {
-    this();                        
+    this();
 
-    IParameter parameter = getParameter(0); 
+    IParameter parameter = getParameter(0);
     parameter.setValue( new Integer(i) );
-    
-    parameter = getParameter(1); 
+
+    parameter = getParameter(1);
     parameter.setValue( new Float(time) );
-    
+
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
   }
@@ -111,8 +117,8 @@ public class XDateTime extends  XAxisInformationOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: 
-   *         in this case, Date 
+   * @return the command name to be used with script processor:
+   *         in this case, Date
    */
    public String getCommand()
    {
@@ -120,7 +126,7 @@ public class XDateTime extends  XAxisInformationOp
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -148,7 +154,7 @@ public class XDateTime extends  XAxisInformationOp
    */
    public String PointInfoLabel( float x, int i )
    {
-     Date date = getDate( x, i ); 
+     Date date = getDate( x, i );
 
      DateFormat df = DateFormat.getDateInstance( DateFormat.SHORT );
      return df.format(date);
@@ -169,7 +175,7 @@ public class XDateTime extends  XAxisInformationOp
    */
    public String PointInfo( float x, int i )
    {
-     Date date = getDate( x, i ); 
+     Date date = getDate( x, i );
 
      DateFormat tf = DateFormat.getTimeInstance( DateFormat.MEDIUM );
      return tf.format(date);
@@ -182,35 +188,70 @@ public class XDateTime extends  XAxisInformationOp
      Data d = ds.getData_entry( i );
      if ( d != null )
      {
-       StringAttribute start_attr = 
+       StringAttribute start_attr =
                             (StringAttribute)d.getAttribute( "StartTime" );
        if ( start_attr != null )
-       { 
+       {
          long time = 0;
 
          String start_str = start_attr.getStringValue();
          try
          {
-           double start = Double.valueOf( start_str ).doubleValue(); 
+           double start = Double.valueOf( start_str ).doubleValue();
            time = (long)start;
          }
          catch ( NumberFormatException e )
          {
            System.out.println("WARNING: StartTime attribute NOT a number" +
-                                        " in XDateTime" ); 
+                                        " in XDateTime" );
          }
          time = (long)x + time;
          return new Date( time * 1000 );
-       } 
+       }
        else
          System.out.println("StartTime attribute == null in XDateTime " );
      }
      return new Date( 0 );
    }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator uses the StartTime attribute to ");
+    s.append("produce a string giving the Date and Time for a specific ");
+    s.append("x value.\n");
+    s.append("@assumptions The StartTime attribute is a valid number ");
+    s.append("in XDateTime.\n");
+    s.append("@algorithm First this operator acquires the data entry at ");
+    s.append("the specified Data block\n");
+    s.append("Then the operator gets the StartTime attribute and converts ");
+    s.append("it to a long integer.\n");
+    s.append("Finally the operator uses this long integer to calculate ");
+    s.append("the Date.\n");
+    s.append("@param ds The DataSet to which the operation is applied.\n");
+    s.append("@param i The index of the Data block to use for the ");
+    s.append("x-scale(time).\n");
+    s.append("@param time The time(x-value) at which the Date is to be ");
+    s.append("obtained\n");
+    s.append("@return Date associated with the specified x-value.\n");
+    s.append("@error Prints a commmand line message if the StartTime ");
+    s.append("attribute is not a number in XDateTime.\n");
+    s.append("@error Prints a commmand line message if the StartTime ");
+    s.append("attribute is equal to null in XDateTime\n");
+    return s.toString();
+  }
 
-  /* ---------------------------- getResult ------------------------------- */
-
+  /* ---------------------------- getResult ------------------------------ */
+  /**
+   *  Get Date at the specified time and Data block position.
+   *
+   *  @return Date associated with the specified coordinates.
+   */
   public Object getResult()
   {
                                      // get the current data set
@@ -219,11 +260,11 @@ public class XDateTime extends  XAxisInformationOp
     float time = ( (Float)(getParameter(1).getValue()) ).floatValue();
 
     return PointInfo( time, i );
-  }  
+  }
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current DateTime Operator.  The list 
+   * Get a copy of the current DateTime Operator.  The list
    * of parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
@@ -238,4 +279,45 @@ public class XDateTime extends  XAxisInformationOp
     return new_op;
   }
 
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    int index;
+    float TOF;
+
+    StringBuffer p = new StringBuffer();
+
+    index = 70;
+    TOF = (float)3512.438;
+
+    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/SCD06496.RUN";
+                       //"D:\\ISAW\\SampleRuns\\SCD06496.RUN";
+
+    try
+    {
+       RunfileRetriever rr = new RunfileRetriever( file_name );
+       DataSet ds1 = rr.getDataSet(1);
+       ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+       XDateTime op = new XDateTime(ds1, index, TOF);
+       p.append("\nThe results of calling this operator are:\n");
+
+       if( op.getResult() == null )
+         p.append("The results of this operator are invalid.");
+
+       else
+         p.append(op.getResult().toString());
+
+       p.append("\n\nThe results of calling getDocumentation are:\n");
+       p.append(op.getDocumentation());
+
+       System.out.print(p.toString());
+     }
+     catch(Exception e)
+     {
+       e.printStackTrace();
+     }
+  }
 }
