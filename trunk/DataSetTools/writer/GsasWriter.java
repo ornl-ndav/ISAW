@@ -44,6 +44,7 @@ import  DataSetTools.gsastools.*;
 public class GsasWriter extends Writer
 {
     boolean export_monitor;
+    boolean seq_numbers;
     /**
      * Construct the Writer for the specified destination name.
      *
@@ -53,7 +54,7 @@ public class GsasWriter extends Writer
      */
 
     public GsasWriter( String data_destination_name ){
-        this(data_destination_name,true);
+        this(data_destination_name,true,false);
     }
 
     /**
@@ -62,10 +63,13 @@ public class GsasWriter extends Writer
      * @param data_destination_name  This identifies the data destination.  
      *                               For file data writers, this should be 
      *                               the fully qualified file name.
+     * @param em                     Whether to export the monitor.
+     * @param sn                     Whether to sequentially number the banks
      */
-    public GsasWriter( String data_destination_name, boolean em ){
+    public GsasWriter( String data_destination_name, boolean em, boolean sn ){
         super(data_destination_name);
         export_monitor=em;
+        seq_numbers=sn;
     }
 
     /**
@@ -81,7 +85,7 @@ public class GsasWriter extends Writer
      * the filename to denote which histogram is saved.
      */
     public void writeDataSets( DataSet ds[] ){
-        //System.out.println("(GW)EXPORT MONITOR: "+export_monitor);
+        //System.out.println("(GW)NUMBERING: "+seq_numbers);
 	String dsType="";
 	gsas_filemaker gf;
 
@@ -95,7 +99,7 @@ public class GsasWriter extends Writer
 	    gf=new gsas_filemaker(ds[0],data_destination_name);
 	}else if(ds.length==2){
 	    gf=new gsas_filemaker(ds[0],ds[1],data_destination_name,
-                                  export_monitor);
+                                  export_monitor,seq_numbers);
 	    gf.write();
 	    gf.close();
 	}else{
@@ -108,7 +112,7 @@ public class GsasWriter extends Writer
 			outString(data_destination_name,ds[i].toString(),i);
 		    if(mon!=null){
 			gf=new gsas_filemaker(mon,ds[i],outfile,
-                                              export_monitor);
+                                              export_monitor,seq_numbers);
 		    }else{
 			gf=new gsas_filemaker(ds[i],outfile);
 		    }
