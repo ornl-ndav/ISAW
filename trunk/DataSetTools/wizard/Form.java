@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2003/07/14 15:32:41  bouzekc
+ * Modified validateParameterGUIs() to better handle various
+ * cases of BrowsePGs.
+ *
  * Revision 1.31  2003/07/09 22:48:11  bouzekc
  * Now sets ChooserPGs, VectorPGs, and HashPGs valid by
  * default in validateParameterGUIs.
@@ -728,10 +732,24 @@ public abstract class Form extends Operator implements PropertyChanger {
           return errorOut( 
             ipg, "Parameter " + ipg.getName(  ) + " is invalid." );
         }
-      } else if( ipg instanceof BrowsePG ) {
+      } else if( ipg instanceof BrowsePG && !( ipg instanceof SaveFilePG ) ) {
         if( new File( ipg.getValue(  ).toString(  ) ).exists(  ) ) {
           ipg.setValid( true );
         } else {
+          return errorOut( 
+            ipg, "Parameter " + ipg.getName(  ) + " is invalid." );
+        }
+      } else if( ipg instanceof SaveFilePG ) {
+        String fileName = ipg.getValue(  )
+                             .toString(  );
+        File tempFile   = new File( fileName );
+
+        if( ( fileName.indexOf( '.' ) > 0 ) && !( tempFile.isDirectory(  ) ) ) {
+          //not a directory and it has a '.' in its name, so we'll 
+          //assume it is OK
+          ipg.setValid( true );
+        } else {
+          //don't have much choice-assume it is invalid
           return errorOut( 
             ipg, "Parameter " + ipg.getName(  ) + " is invalid." );
         }
