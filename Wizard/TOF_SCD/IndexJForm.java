@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.22  2003/09/13 23:08:34  bouzekc
+ * Now sets the value of the matrix selection parameter to "From a File"
+ * upon initialization.
+ *
  * Revision 1.21  2003/09/11 21:22:29  bouzekc
  * Updated to work with new Form class.
  *
@@ -212,32 +216,22 @@ public class IndexJForm extends Form implements ActionListener {
     if( choices == null ) {
       initChoices(  );
     }
-
     parameters = new Vector(  );
-
     addParameter( new IntArrayPG( "Run Numbers", null, false ) );  //0
-
     addParameter( new DataDirPG( "Peaks File Path", null, false ) );  //1
-
     addParameter( new StringPG( "Experiment Name", null, false ) );  //2
-
     addParameter( new FloatPG( "Delta (h)", 0.10f, false ) );  //3
-
     addParameter( new FloatPG( "Delta (k)", 0.10f, false ) );  //4
-
     addParameter( new FloatPG( "Delta (l)", 0.10f, false ) );  //5
-
     addParameter( new BooleanPG( "Update Peaks File", true, false ) );  //6
 
-    addParameter( 
-      new RadioButtonPG( "Get Matrix File From: ", choices, false ) );  //7
-
+    RadioButtonPG rpg = new RadioButtonPG( 
+        "Get Matrix File From: ", choices, false );
+    rpg.setValue( choices.get( 0 ) );
+    addParameter( rpg );  //7
     addParameter( new LoadFilePG( "Matrix File to Load", "", false ) );  //8
-
     addParameter( new IntArrayPG( "Restrict Runs", "", false ) );  //9
-
     addParameter( new LoadFilePG( "JIndex Log", " ", false ) );  //10
-
     ( ( RadioButtonPG )getParameter( 7 ) ).addActionListener( this );
 
     if( HAS_CONSTANTS ) {
@@ -254,7 +248,6 @@ public class IndexJForm extends Form implements ActionListener {
    */
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer(  );
-
     s.append( "@overview This is a Form to add extra functionality to " );
     s.append( "IndexJ.  If specMatrix is false, it uses multiple " );
     s.append( "lsexpName#.matrix files when getResult() is called.  " );
@@ -328,34 +321,34 @@ public class IndexJForm extends Form implements ActionListener {
     runsArray   = IntList.ToArray( param.getValue(  ).toString(  ) );
 
     //gets the input path
-    param      = ( IParameterGUI )super.getParameter( 1 );
-    peaksDir   = param.getValue(  )
-                      .toString(  );
+    param       = ( IParameterGUI )super.getParameter( 1 );
+    peaksDir    = param.getValue(  )
+                       .toString(  );
 
     //gets the experiment name
-    param     = ( IParameterGUI )super.getParameter( 2 );
-    expName   = param.getValue(  )
-                     .toString(  );
+    param       = ( IParameterGUI )super.getParameter( 2 );
+    expName     = param.getValue(  )
+                       .toString(  );
 
     //gets the delta_h
-    param     = ( IParameterGUI )super.getParameter( 3 );
-    delta_h   = ( ( Float )param.getValue(  ) ).floatValue(  );
+    param       = ( IParameterGUI )super.getParameter( 3 );
+    delta_h     = ( ( Float )param.getValue(  ) ).floatValue(  );
 
     //gets the delta_k
-    param     = ( IParameterGUI )super.getParameter( 4 );
-    delta_k   = ( ( Float )param.getValue(  ) ).floatValue(  );
+    param       = ( IParameterGUI )super.getParameter( 4 );
+    delta_k     = ( ( Float )param.getValue(  ) ).floatValue(  );
 
     //gets the delta_l
-    param     = ( IParameterGUI )super.getParameter( 5 );
-    delta_l   = ( ( Float )param.getValue(  ) ).floatValue(  );
+    param       = ( IParameterGUI )super.getParameter( 5 );
+    delta_l     = ( ( Float )param.getValue(  ) ).floatValue(  );
 
     //gets the update value 
-    param    = ( IParameterGUI )super.getParameter( 6 );
-    update   = ( ( BooleanPG )param ).getbooleanValue(  );
+    param       = ( IParameterGUI )super.getParameter( 6 );
+    update      = ( ( BooleanPG )param ).getbooleanValue(  );
 
     //get the "use matrix" boolean value
-    param      = ( IParameterGUI )super.getParameter( 7 );
-    matToUse   = ( ( RadioButtonPG )param ).getStringValue(  );
+    param       = ( IParameterGUI )super.getParameter( 7 );
+    matToUse    = ( ( RadioButtonPG )param ).getStringValue(  );
 
     //#8 the matrix name will be validated later - setting it valid here
     //skips the Form's parameter checking for this parameter
@@ -395,9 +388,9 @@ public class IndexJForm extends Form implements ActionListener {
     //user wants to use a specified matrix file
     if( matToUse.equals( FROM_FILE ) ) {
       //get the matrix name make sure the matrix file exists
-      param     = ( IParameterGUI )super.getParameter( 8 );
-      matName   = ( String )param.getValue(  )
-                                 .toString(  );
+      param          = ( IParameterGUI )super.getParameter( 8 );
+      matName        = ( String )param.getValue(  )
+                                      .toString(  );
 
       if( !( new File( matName ).exists(  ) ) ) {
         return errorOut( 
@@ -411,7 +404,6 @@ public class IndexJForm extends Form implements ActionListener {
       restrictRuns   = param.getValue(  )
                             .toString(  );
       param.setValid( true );
-
       SharedData.addmsg( 
         "IndexJ is updating " + peaksName + " with " + matName );
       indexJOp.getParameter( 1 )
@@ -423,13 +415,12 @@ public class IndexJForm extends Form implements ActionListener {
       if( obj instanceof ErrorString ) {
         return errorOut( "IndexJ failed: " + obj.toString(  ) );
       }
-
       super.fireValueChangeEvent( 0, 100 );
     } else {
       //try to find the matrix files.  If the lsqrs matrix files exist, 
       //this is their format:
-      runNum    = formatRunNum( runsArray[0] );
-      matName   = peaksDir + "ls" + expName + runNum + ".mat";
+      runNum      = formatRunNum( runsArray[0] );
+      matName     = peaksDir + "ls" + expName + runNum + ".mat";
 
       if( !( new File( matName ).exists(  ) ) ) {
         return errorOut( 
@@ -448,11 +439,10 @@ public class IndexJForm extends Form implements ActionListener {
                 .setValue( new Boolean( appendToLog ) );
 
         //load the run numbers.  We don't want to remove the leading zeroes!
-        runNum   = formatRunNum( runsArray[i] );
+        runNum    = formatRunNum( runsArray[i] );
 
         //the name of the matrix file
-        matName = peaksDir + "ls" + expName + runNum + ".mat";
-
+        matName   = peaksDir + "ls" + expName + runNum + ".mat";
         SharedData.addmsg( 
           "IndexJ is updating " + peaksName + " with " + matName );
 
@@ -463,7 +453,6 @@ public class IndexJForm extends Form implements ActionListener {
         //synchronize the run number in the peaks and matrix file
         indexJOp.getParameter( 2 )
                 .setValue( runNum );
-
         obj = indexJOp.getResult(  );
 
         if( obj instanceof ErrorString ) {
@@ -482,7 +471,6 @@ public class IndexJForm extends Form implements ActionListener {
     param = ( IParameterGUI )getParameter( 10 );
     param.setValue( obj );
     param.setValid( true );
-
     SharedData.addmsg( "--- IndexJForm finished. ---" );
 
     return Boolean.TRUE;
