@@ -31,9 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/07/30 16:45:51  dennis
+ * Now records sample phi, chi, omega in one SampleOrientation object
+ *
  * Revision 1.1  2003/07/30 16:30:10  dennis
  * Initial form of convenience class that groups information about a peak.
- *
  *
  */
 
@@ -43,6 +45,7 @@ import java.io.*;
 import java.util.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
+import DataSetTools.instruments.*;
 
   /*
    *  This is a convenience class for recording complete peak info with methods
@@ -64,10 +67,9 @@ public class PeakData
     int    run_num = 0;                // Run info .....
     double moncnt = 0;
 
-    double chi   = 0,                  // Instrument info .....
-           phi   = 0,
-           omega = 0;
-    double l1    = 9.378;
+                                       // Instrument info .....
+    double l1     = 9.378;
+    SampleOrientation_d orientation = new IPNS_SCD_SampleOrientation_d(0,0,0);
 
     int    det_id = 0;                 // Detector info ......
 
@@ -128,9 +130,9 @@ public class PeakData
           writer.print( Format.real(pd.det_a, 8, 2 ));
           writer.print( Format.real(pd.det_a2, 8, 2 ));
           writer.print( Format.real(pd.det_d, 8, 4 ));
-          writer.print( Format.real(pd.chi, 8, 2 ));
-          writer.print( Format.real(pd.phi, 8, 2 ));
-          writer.print( Format.real(pd.omega, 8, 2 ));
+          writer.print( Format.real(pd.orientation.getChi(), 8, 2 ));
+          writer.print( Format.real(pd.orientation.getPhi(), 8, 2 ));
+          writer.print( Format.real(pd.orientation.getOmega(), 8, 2 ));
           writer.print( Format.real(pd.moncnt, 8, 2 ));
           writer.print( Format.real(pd.l1, 8, 4) );
           writer.print( Format.integer( pd.n_rows, 4 ) );
@@ -180,6 +182,8 @@ public class PeakData
   {
     Vector peaks = new Vector();
     int line_type;
+    SampleOrientation_d  last_orientation = 
+                                  new IPNS_SCD_SampleOrientation_d(0,0,0);
     double last_det_a    = 90.0,
            last_det_a2   =  0.0, 
            last_det_d    =  1.0,
@@ -223,6 +227,9 @@ public class PeakData
             last_chi     = tfr.read_double();
             last_phi     = tfr.read_double();
             last_omega   = tfr.read_double();
+            last_orientation = new IPNS_SCD_SampleOrientation_d( last_phi, 
+                                                                 last_chi, 
+                                                                 last_omega );
             last_moncnt  = tfr.read_double();
             last_l1      = tfr.read_double();
             last_n_rows  = tfr.read_int();
@@ -248,9 +255,8 @@ public class PeakData
           peak.run_num  = last_run;               // Run Info
           peak.moncnt   = last_moncnt;
 
-          peak.chi      = last_chi;               // Instrument Info
-          peak.phi      = last_phi;
-          peak.omega    = last_omega;
+                                                  // Instrument Info
+          peak.orientation = last_orientation;               
           peak.l1       = last_l1;
 
           peak.det_id   = last_det;               // Det position & orientation
