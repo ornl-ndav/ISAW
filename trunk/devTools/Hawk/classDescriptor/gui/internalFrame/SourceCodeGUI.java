@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 19:58:57  kramer
+ * Made the gui use a SourceCodeJPanel to show the actual information.
+ *
  * Revision 1.3  2004/03/12 19:46:16  bouzekc
  * Changes since 03/10.
  *
@@ -43,21 +46,12 @@
  */
 package devTools.Hawk.classDescriptor.gui.internalFrame;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Component;
 
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.text.StyledDocument;
 
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
+import devTools.Hawk.classDescriptor.gui.panel.SourceCodeJPanel;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 
 /**
@@ -65,20 +59,12 @@ import devTools.Hawk.classDescriptor.modeledObjects.Interface;
  * or interface and has support for coloring keywords, javadoc statements, and comments.
  * @author Dominic Kramer
  */
-public class SourceCodeGUI extends ColorfulTextGUI implements ActionListener
+public class SourceCodeGUI extends DesktopInternalFrame
 {
 	/**
-	 * The pane to which the source code is written.
+	 * The SourceCodeJPanel that is located on the frame.
 	 */
-	protected JTextPane sourcePane;
-	/**
-	 * The Interface whose source code is written.
-	 */
-	protected Interface selectedInterface;
-	/**
-	 * The document associated with the JTextPane which supports writing colored text.
-	 */
-	protected StyledDocument document;
+	protected SourceCodeJPanel panel;
 	
 	/**
 	 * Create a new SourceCodeGUI.
@@ -88,10 +74,8 @@ public class SourceCodeGUI extends ColorfulTextGUI implements ActionListener
 	 */
 	public SourceCodeGUI(Interface INT, String title, HawkDesktop desk)
 	{
-		super(desk);
+		super(desk,desk.getSelectedDesktop(),INT,true,true,true,false);
 		
-		//now to instantiate selectedInterface
-			selectedInterface = INT;
 		//now to set some of the characteristics of the window
 			setTitle(title);
 			setLocation(0,0);
@@ -101,57 +85,12 @@ public class SourceCodeGUI extends ColorfulTextGUI implements ActionListener
 			setMaximizable(true);
 			setResizable(true);
 		
-		//now to make the main areas of the frame
-			Container pane = getContentPane();
-			JPanel mainPanel = new JPanel();
-			mainPanel.setLayout(new BorderLayout());
-			
-		//now to create the area for placing the source code
-		sourcePane = new JTextPane()
-			{
-				public void setSize(Dimension dim)
-				{
-					//if (dim.width < getParent().getSize().width)
-						//dim.width = getParent().getSize().width;
-					
-					if (dim.width < desktop.getSize().width)
-						dim.width = desktop.getSize().width;
-					
-					super.setSize(dim);
-				}
-				
-				public boolean getScrollableTracksViewportWidth()
-				{
-					return false;
-				}
-
-			};
-			document = sourcePane.getStyledDocument();
-			addStylesToDocument(document);
-			styleDocument(INT.getSourceCodeAsString(),document);
-						
-		//now to create the JScrollPane to put the JEditorPane on
-			JScrollPane scrollPane = new JScrollPane(sourcePane);
-		
-		//now to add the components to the main panel
-			mainPanel.add(scrollPane, BorderLayout.CENTER);
-			
-		pane.add(mainPanel);
-		
-		//Now to make the JMenuBar
-			JMenuBar sourceMenuBar = new JMenuBar();
-				JMenu fileMenu = new JMenu("File");
-					JMenuItem closeItem = new JMenuItem("Close");
-					closeItem.setActionCommand("Close");
-					closeItem.addActionListener(this);
-				fileMenu.add(closeItem);
-			sourceMenuBar.add(fileMenu);
-			sourceMenuBar.add(InternalFrameUtilities.constructViewMenu(this,true,true,true,false));
-//			refreshMoveAndCopyMenu();
-//			windowMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
-			sourceMenuBar.add(windowMenu);
-		menuBar = sourceMenuBar;
-		setJMenuBar(sourceMenuBar);
+		panel = new SourceCodeJPanel(INT,this);
+		JMenuBar menuBar = panel.createJMenuBar();
+		menuBar.add(viewMenu);
+		menuBar.add(windowMenu);
+		setJMenuBar(menuBar);
+		getContentPane().add(panel);
 		resizeAndRelocate();
 	}
 	
@@ -159,29 +98,17 @@ public class SourceCodeGUI extends ColorfulTextGUI implements ActionListener
 	 * Gets a copy of this window.
 	 * @return A copy of this window.
 	 */
-	public DesktopInternalFrame getCopy()
+	public AttachableDetachableFrame getCopy()
 	{
 		return new SourceCodeGUI(selectedInterface,getTitle(),desktop);
 	}
 	
 	/**
-	 * Handles ActionEvents.
+	 * The Components in the array returned from this method are the Components that should have the 
+	 * mouse use the waiting animation when an operation is in progress.
 	 */
-	public void actionPerformed(ActionEvent event)
+	public Component[] determineWaitingComponents()
 	{
-		if (event.getActionCommand().equals("Close"))
-		{
-			dispose();
-		}
-		else
-		{
-/*
-			SourceCodeGUI copy = (SourceCodeGUI)getCopy();
-			copy.setVisible(true);
-			processWindowChange(event,copy,this);
-*/
-			super.actionPerformed(event);
-			InternalFrameUtilities.processActionEventFromViewMenu(event,selectedInterface,desktop);
-		}
+		return panel.determineWaitingComponents();
 	}
 }
