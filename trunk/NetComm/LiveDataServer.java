@@ -34,6 +34,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2002/06/03 14:12:50  dennis
+ *  The server now sets the error arrays to null.  This saves the time to
+ *  transmit the error arrays.  Also, since the error arrays were set on
+ *  the basis of the empty runfile, the error values would have been zero
+ *  anyway.
+ *
  *  Revision 1.24  2001/12/10 22:05:24  dennis
  *  Now will pad run numbers with leading zeros, to length 4 when
  *  forming the file name string.
@@ -548,17 +554,21 @@ public class LiveDataServer extends    DataSetServer
 
   /* ----------------------------- SetToZero ---------------------------- */
   /**
-   *  Zero out all of the spectra in the specified DataSet
+   *  Zero out all of the spectra in the specified DataSet.  Also, set the
+   *  errors to null, to save communication time.
    *
    *  @param  ds   The DataSet whose entries are to be zeroed out.
    */
   private void SetToZero( DataSet ds )
   {
-    float y[];
+    float         y[];
+    TabulatedData d;
 
     for ( int i = 0; i < ds.getNum_entries(); i++ )
     {
-      y = ds.getData_entry(i).getY_values();
+      d = (TabulatedData)(ds.getData_entry(i));
+      d.setErrors(null);
+      y = d.getY_values();
       for ( int j = 0; j < y.length; j++ )
         y[j] = 0;
     }
