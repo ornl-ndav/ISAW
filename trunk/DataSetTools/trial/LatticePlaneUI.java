@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/08/11 05:18:20  dennis
+ * Added control to turn filter on and off.
+ * Now normalizes the plane normal when a new normal is set.
+ * Replaced the d_spacing label with a text entry widget, so the
+ * user can specify a different value for the d_spacing corresponding
+ * to a family of planes in reciprocal space.
+ *
  * Revision 1.5  2004/07/28 15:44:39  dennis
  * Made default value (0,0,0).
  *
@@ -51,6 +58,7 @@
  */
 package DataSetTools.trial;
 
+import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.ViewTools.UI.*;
 
@@ -63,17 +71,22 @@ public class LatticePlaneUI extends ActiveJPanel
 {
   public static final String USER_SET = "User->";
   public static final String FFT_SET  = "FFT->";
+  public static final String FILTER_OFF = "Filter OFF";
+  public static final String FILTER_ON  = "Filter ON";
 
   private JLabel       normal_label;
-  private JLabel       d_sigma_label;
+  private JLabel       sigma_label;
   private JButton      user_set;
   private JButton      fft_set;
+  private JButton      filter;
   private TextValueUI  miller_value;  
+  private TextValueUI  d_ui;
   private String       title;
 
   private float        normal[]  = { 0, 0, 0, 1 };
-  private float        sigma     = 1;
-  private float        d_spacing = 1;
+  private float        sigma     = 0;
+  private float        d_spacing = 0;
+  private boolean      filter_flag = false;
 
   public LatticePlaneUI( String title ) 
   {
@@ -87,11 +100,13 @@ public class LatticePlaneUI extends ActiveJPanel
      border.setTitleFont( FontUtil.BORDER_FONT );
      setBorder( border );
                                                          // make the controls 
-     normal_label  = new JLabel( "Normal:" );
-     d_sigma_label = new JLabel( "d:       sigma:     " );
-     user_set      = new JButton(USER_SET);
-     fft_set       = new JButton(FFT_SET);
-     miller_value  = new TextValueUI( title, 0 );
+     normal_label = new JLabel( "Normal:" );
+     d_ui         = new TextValueUI( " d ", 0 );
+     sigma_label  = new JLabel( " " + FontUtil.SIGMA + ":   " );
+     user_set     = new JButton(USER_SET);
+     fft_set      = new JButton(FFT_SET);
+     filter       = new JButton(FILTER_OFF);
+     miller_value = new TextValueUI( title, 0 );
                                                          // make the panels
      Box    container     = new Box( BoxLayout.Y_AXIS );
      JPanel panel1        = new JPanel();
@@ -105,20 +120,28 @@ public class LatticePlaneUI extends ActiveJPanel
      control_panel.setBackground( Color.white );
 
      normal_label.setFont( FontUtil.MONO_FONT0 );
-     d_sigma_label.setFont( FontUtil.MONO_FONT0 );
+     sigma_label.setFont( FontUtil.MONO_FONT0 );
+
+     Insets margins = new Insets( 0, 0, 0, 0 );
+     user_set.setMargin( margins );
+     fft_set.setMargin( margins );
+     filter.setMargin( margins );
      user_set.setFont( FontUtil.LABEL_FONT );
      fft_set.setFont( FontUtil.LABEL_FONT );
+     filter.setFont( FontUtil.LABEL_FONT );
      miller_value.setFont( FontUtil.LABEL_FONT );
                                                     // add controls and panels
      panel1.setLayout( new GridLayout(1,1) );
-     panel2.setLayout( new GridLayout(1,1) );
-     control_panel.setLayout( new GridLayout(1,3) );
+     control_panel.setLayout( new GridLayout(1,4) );
 
      panel1.add( normal_label );
-     panel2.add( d_sigma_label );
+     panel2.setLayout( new GridLayout(1,2) );
+     panel2.add( d_ui );
+     panel2.add( sigma_label );
 
      control_panel.add( user_set );
      control_panel.add( fft_set );
+     control_panel.add( filter );
      control_panel.add( miller_value );
 
      container.add( panel1 );
@@ -131,37 +154,35 @@ public class LatticePlaneUI extends ActiveJPanel
      ActionListener listener = new ButtonListener();
      user_set.addActionListener( listener );
      fft_set.addActionListener( listener );
+     filter.addActionListener( listener );
      miller_value.addActionListener( listener );
   }
 
 
 /* --------------------------- set_normal --------------------------- */
 /**
- *  Set the values to be displayed as normal vector and offset.
+ *  Set the values to be displayed as normal vector and offset.  The values
+ *  will be normalized to be of unit length, if the vector is not the zero
+ *  vector.
  */
-  public void set_normal( float normal[] )
+  public void set_normal( float new_normal[] )
   {
-    if ( normal == null || normal.length < 3 )
+    if ( new_normal == null || new_normal.length < 3 )
     {
       System.out.println(
                "ERROR: Invalid normal array in LatticePlaneUI.set_normal()" );
       return;
     }
 
-    int n_vals;
-    if ( normal.length > 3 )
-      n_vals = 4;
-    else
-      n_vals = 3;
+    Vector3D normal_vec = new Vector3D( new_normal );
+    if ( normal_vec.length() > 0 )
+      normal_vec.normalize();
 
-    this.normal = new float[n_vals];
-    
-    String text = new String();
-    for ( int i = 0; i < n_vals; i++ )
-    {
-      this.normal[i] = normal[i];
-      text += Format.real( normal[i], 5, 5 ) + " ";
-    }
+    this.normal = normal_vec.get();
+ 
+    String text = new String(" ");
+    for ( int i = 0; i < 3; i++ )
+      text += Format.real( normal[i], 5, 5 ) + "  ";
 
     normal_label.setText( text );
   }
@@ -195,9 +216,9 @@ public class LatticePlaneUI extends ActiveJPanel
     this.d_spacing = d_spacing;
     this.sigma     = sigma;
 
-    String d = Format.real( d_spacing, 5, 5 );
+    d_ui.setValue( d_spacing );
     String s = Format.real( sigma, 5, 5 );
-    d_sigma_label.setText( "d:" + d + "    " + FontUtil.SIGMA + ":" + s );
+    sigma_label.setText( " " + FontUtil.SIGMA + ": " + s );
   }
 
 
@@ -207,7 +228,7 @@ public class LatticePlaneUI extends ActiveJPanel
  */
   public float get_d_spacing()
   {
-    return this.d_spacing;
+    return d_ui.getValue();
   }
 
 
@@ -241,6 +262,17 @@ public class LatticePlaneUI extends ActiveJPanel
   }
 
 
+/* ------------------------------ filter_on ---------------------------- */
+/**
+ *  Get the state of the filter on/off toggle switch.
+ *
+ *  @return true if the filter state should be on and false otherwize.
+ */
+  public boolean filter_on()
+  {
+    return filter_flag;
+  }
+
 /* -------------------------------------------------------------------------
  *
  *  INTERNAL CLASSES
@@ -256,6 +288,20 @@ private class ButtonListener implements ActionListener
   public void actionPerformed( ActionEvent e )
   {
     String command = e.getActionCommand();
+
+    if ( command.equals( FILTER_OFF ) )    // toggle the label on filter button
+    {
+      filter.setText( FILTER_ON );
+      filter_flag = true;
+      command = FILTER_ON;
+    }
+    else if ( command.equals( FILTER_ON ) )
+    {
+      filter.setText( FILTER_OFF );
+      filter_flag = false;
+      command = FILTER_OFF;
+    }
+
     send_message( command );
   }
 }
