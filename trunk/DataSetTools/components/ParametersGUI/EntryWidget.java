@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.8  2003/11/29 06:37:31  bouzekc
+ * Removed two unused imports.
+ *
  * Revision 1.7  2003/10/20 22:43:08  bouzekc
  * Now propagates the pressed key out as a PropertyChangeEvent new value
  * when a key is pressed.
@@ -65,8 +68,6 @@ import DataSetTools.util.PropertyChanger;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
-import javax.swing.BoxLayout;
 import java.awt.event.*;
 
 import java.beans.*;
