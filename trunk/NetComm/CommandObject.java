@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/03/05 22:06:56  dennis
+ *  Added command to get the range of IDs in a DataSet
+ *
  *  Revision 1.5  2003/03/05 13:48:26  dennis
  *  Added method equals() that does field by field comparison.
  *
@@ -75,6 +78,7 @@ public class CommandObject implements Serializable
   public static final int GET_DS          = 130; // since they require
   public static final int GET_DATA_BLOCKS = 140; // additional fields
   public static final int GET_SUMMARY     = 150; // to specify the data
+  public static final int GET_DS_ID_RANGE = 160; 
   public static final int END_DATA_CMDS   = 200; // BOUND ON DATA COMMANDS
 
   public static final int GET_FILE_NAMES   = 110;// This can only be used with a
