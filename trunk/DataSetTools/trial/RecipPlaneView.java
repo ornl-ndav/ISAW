@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2004/01/05 23:33:10  dennis
+ * Now checks if value returned by VecQToTOF.intensityAtQ() is >= 0
+ * since now -1 is returned instead of 0, to indicate that the Q vector
+ * does not correspond to the detector.
+ *
  * Revision 1.16  2003/12/18 22:44:21  millermi
  * - This file was involved in generalizing AxisInfo2D to
  *   AxisInfo. This change was made so that the AxisInfo
@@ -1514,7 +1519,7 @@ public class RecipPlaneView
          {
            transformer = (VecQToTOF)(vec_q_transformer.elementAt(i));
            value = transformer.intensityAtQ( q );
-           if ( value != 0 )
+           if ( value >= 0 )
            {
              sum += value;
              n_non_zero++;
