@@ -7,6 +7,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/07/26 14:52:20  dennis
+ *  Now includes method to add() attributes.
+ *
  *  Revision 1.4  2000/07/13 14:29:33  dennis
  *  Removed redundant TOTAL_COUNTS attribute, leaving only TOTAL_COUNT
  *
@@ -178,6 +181,24 @@ abstract public class Attribute implements Serializable
      // by default, no operation is done... the value of the combined attribute
      // is just the current value
   }
+
+  /**
+   * Add the value of the specified attribute to the value of this
+   * attribute obtain a new value for this attribute.  The default behavior
+   * is just to call combine().  This will be overidden in derived classes,
+   * when special behavior needed. 
+   *
+   *  @param   attr   An attribute whose value is to be "added" to the
+   *                  value of the this attribute.
+   *
+   */
+  public void add( Attribute attr )
+  {
+    // by default, add will be the same as combine, unless this is overridden
+    // in derived classes.
+    combine(attr);
+  }
+
 
 
   /**

@@ -6,6 +6,9 @@
  *                  Removed method "greater_than" to compare objects.
  *
  *  $Log$
+ *  Revision 1.5  2000/07/26 14:52:24  dennis
+ *  Now includes method to add() attributes.
+ *
  *  Revision 1.4  2000/07/13 22:23:39  dennis
  *  Removed control-M characters
  *
@@ -106,6 +109,20 @@ public class FloatAttribute extends Attribute
   {
      this.value = (float)( this.value + attr.getNumericValue() ) / 2;
   }
+
+  /**
+   * Add the value of the specified attribute to the value of this
+   * attribute obtain a new value for this attribute.  
+   *
+   *  @param   attr   An attribute whose value is to be "added" to the
+   *                  value of the this attribute.
+   *
+   */
+  public void add( Attribute attr )
+  {
+     this.value = (float)( this.value + attr.getNumericValue() );
+  }
+
 
 
   /**
