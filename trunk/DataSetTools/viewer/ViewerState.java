@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2002/07/12 18:32:13  rmikk
+ *  Added and initialized the TABLE_DATA
+ *      and CONTOUR_STYLE  state fields
+ *
  *  Revision 1.16  2002/07/12 18:14:54  pfpeterson
  *  Now only uses SharedData.getProperty().
  *
@@ -120,6 +124,11 @@ public class ViewerState  implements Serializable
   public static final String V_DETECTORS       = "ViewDetectors";
   public static final String BRIGHTNESS        = "Brightness";
   public static final String AUTO_SCALE        = "Auto-Scale";
+  public static final String TABLE_DATA        = "table_view Data";
+   /** CONTOUR_STYLE(really "Contour.Style") is an int whose values can be
+   *          AREA_FILL(1), AREA_FILL_CONTOUR(4) ,CONTOUR(2) ,RASTER(0), or RASTER_CONTOUR(3) 
+   */
+  public static final String CONTOUR_STYLE     =  "Contour.Style";
 
   private Hashtable     state = null;
   private int           pointed_at_index;
@@ -184,6 +193,9 @@ public class ViewerState  implements Serializable
 
       Float auto_scale = SharedData.getFloatProperty( AUTO_SCALE );
       state.put( AUTO_SCALE, auto_scale );
+
+      state.put( TABLE_DATA, "");
+      state.put(CONTOUR_STYLE, new Integer( 3));
 
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
       ds_x_label = "";
