@@ -15,6 +15,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
     float[][] Trans=null;
     String[] AxisName=null;
     String[] AxisUnits=null;
+    double co,so,cp,sp,ck,sk;
    /** Data Set should be converted to Q or else this should
    */
    public QxQyQzAxesHandler( DataSet DS)
@@ -29,11 +30,12 @@ public class  QxQyQzAxesHandler implements IAxesHandler
         {omega = (float)(Math.PI/180.*((FloatAttribute)A1).getFloatValue());
           phi   = (float)(Math.PI/180.*((FloatAttribute)A2).getFloatValue());
          chi   = (float)(Math.PI/180.*((FloatAttribute)A3).getFloatValue());
-         a21 =(float)( -Math.cos(chi)*Math.sin(phi));
-         a22 = (float)(Math.cos(chi)*Math.cos(phi));
-         a31  = (float)(Math.sin(chi)*Math.sin(phi));
-          a32  = (float)(-Math.sin(chi)*Math.cos(phi));
-        
+         co= Math.cos(-omega);
+         so=Math.sin(-omega);
+         cp=Math.cos(-phi);
+         sp=Math.sin(-phi);
+         ck=Math.cos(-chi);
+         sk=Math.sin(-chi);
         }
       }
    public QxQyQzAxesHandler( DataSet ds, float[][]Transf, String[]AxisName,
@@ -128,20 +130,23 @@ public class  QxQyQzAxesHandler implements IAxesHandler
       float q3 =xyz[2]/L;
     
  
-      if( !(Float.isNaN(omega)))
+      if( (Float.isNaN(omega)))
        { Q[0] = q1; Q[1]=q2;Q[2]=q3;
+         
         }
       else
        { 
          
-         Q[0]=(float)( (Math.cos(omega)*Math.cos(phi)-Math.sin(omega)*a21)*q1+
-               (-Math.cos(omega)*Math.sin(phi)+Math.sin(omega)*a22)*q2+
-               (-Math.sin(omega)*Math.sin(chi))*q3);
-         Q[1] = (float)((-Math.sin(omega)*Math.cos(phi)+Math.cos(omega)*a21)*q1+
-                (Math.sin(omega)*Math.sin(phi)-Math.cos(omega)*a22)*q2+
-                (-Math.cos(omega)*Math.sin(chi))*q3);
-         Q[2] = (float)(a31*q1+a32*q2+Math.cos(chi)*q3);
-
+         Q[0]=(float)( q1*(cp*co+sp*so*ck)+
+                       q2*(cp*so-sp*ck*co)+
+                       q3*(sp*sk));
+         Q[1] = (float)(q1*(sp*co-cp*so*ck)+
+                        q2*(sp*so+cp*ck*co)+
+                        q3*(-cp*sk));
+         Q[2] = (float)(q1*(-so*sk)+
+                        q2*(sk*co)+
+                        q3*(ck));;
+        
          
        }     
       
@@ -642,6 +647,11 @@ public class  QxQyQzAxesHandler implements IAxesHandler
           SCDQxyz op = new SCDQxyz( ds , group, indx);
           System.out.println("Dennis'="+
               op.PointInfo( ds.getData_entry(group).getX_scale().getX(indx),
+                                       group));
+          SCDQxyz_Dennis  op1= new SCDQxyz_Dennis(ds, group,indx);
+          op1.debug=true;
+          System.out.println("Dennis new="+
+                    op1.PointInfo( ds.getData_entry(group).getX_scale().getX(indx),
                                        group));
           System.out.println("Ruth"+Ax1.getValue(group,indx)+","+
                                    Ax2.getValue(group,indx)+","+
