@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/06/04 15:10:59  rmikk
+ * Eliminated a few unused variables
+ * Added code so LargeJTable repositions itself to the pointedAt point.
+ *
  * Revision 1.13  2004/05/06 17:35:45  rmikk
  * Added a setTime Method 
  * Added an argument to the Selected2D constructor
@@ -1057,11 +1061,11 @@ public class RowColTimeVirtualArray extends
 
      if(( state.get_String( ViewerState.TABLE_TS).equals("")))
        {
-        String S =state.get_String( ViewerState.TABLE_TS);
+        //String S =state.get_String( ViewerState.TABLE_TS);
     
         state.set_String( ViewerState.TABLE_TS, "OK");
      
-        DataSet ds = DS;
+        //DataSet ds = DS;
         state.set_int( ViewerState.TABLE_TS_ROWMIN , 1);
         state.set_int( ViewerState.TABLE_TS_COLMIN , 1);
         state.set_int( ViewerState.TABLE_TS_ROWMAX , getRowCount());
@@ -1123,7 +1127,7 @@ public class RowColTimeVirtualArray extends
         min = (int)( tri.getMin());
         max = (int)( tri.getMax());
         
-        int n2 = getColumnCount();
+        //int n2 = getColumnCount();
         if(ID==1)
           {
            setRowRange( min,max);
@@ -1157,7 +1161,7 @@ public class RowColTimeVirtualArray extends
         setXScale(x_scale );
        
        
-        float[] xx = x_scale.getXs();
+        //float[] xx = x_scale.getXs();
         xvals1 = calcXvals();
         acontrol.setFrame_values(xvals1);
         float X = DS.getPointedAtX();
@@ -1202,7 +1206,9 @@ public class RowColTimeVirtualArray extends
         notifyActionListeners( IArrayMaker.DATA_CHANGED);
         if( acontrol.getFrameNumber() != FrameNumber) 
           {
-           notifyActionListeners( IViewComponent.POINTED_AT_CHANGED);
+           DS.setPointedAtX(xvals1[acontrol.getFrameNumber()]);
+           //notifyActionListeners( IViewComponent.POINTED_AT_CHANGED);
+           DS.notifyIObservers(gov.anl.ipns.Util.Messaging.IObserver.POINTED_AT_CHANGED);
           }
        }
     }
