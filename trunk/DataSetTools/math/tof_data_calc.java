@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/04/04 19:17:20  dennis
+ *  Removed some debug print statements.
+ *
  *  Revision 1.8  2002/03/13 16:22:12  dennis
  *  Converted to new abstract Data class.
  *
@@ -109,7 +112,15 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 8.5f;
        x[i] = coords[0];
      }
 
+     System.out.println("EnergyFromMonitorData ");
+     System.out.println("Monitor 0 peak = " + x[0] + 
+                        " centroid = " + centroid[0] );
+     System.out.println("Monitor 1 peak = " + x[1] + 
+                        " centroid = " + centroid[1] );
+
      float energy = tof_calc.Energy( x[1]-x[0], centroid[1]-centroid[0] );
+
+     System.out.println("Energy = " + energy);
      return energy;
   }
 
