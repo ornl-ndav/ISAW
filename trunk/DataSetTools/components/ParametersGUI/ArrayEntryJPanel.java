@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/07/07 21:21:20  bouzekc
+ * Reorganized methods according to access privilege.
+ *
  * Revision 1.6  2003/06/30 22:28:11  bouzekc
  * Changed "Show Items" to "Show Item"
  *
@@ -84,12 +87,14 @@ import javax.swing.*;
 
 
 /**
- *  This is a class to allow entry of values into one or two dimensional
- *  arrays.  It uses String entry methods to enter floats, ints, Strings,
- *  etc.  This class was extracted from VectorPG and redesigned.
+ * This is a class to allow entry of values into one or two dimensional arrays.
+ * It uses String entry methods to enter floats, ints, Strings, etc.  This
+ * class was extracted from VectorPG and redesigned.
  */
 public class ArrayEntryJPanel extends JPanel implements ActionListener,
   PropertyChanger, PropertyChangeListener, KeyListener {
+  //~ Instance fields **********************************************************
+
   private final String UP_LABEL       = new String( "Move Item Up" );
   private final String DOWN_LABEL     = new String( "Move Item Down" );
   private final String DELETE_LABEL   = new String( "Delete Item" );
@@ -113,11 +118,13 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   private boolean isShowing           = false;
   private int position                = -1;
 
+  //~ Constructors *************************************************************
+
   /**
-   *  ArrayEntryJPanel constructor.
+   * ArrayEntryJPanel constructor.
    *
-   *  @param   param   ParameterGUI that determines the resultant type of the
-   *                   elements stored in the ArrayEntryPanel.
+   * @param param ParameterGUI that determines the resultant type of the
+   *        elements stored in the ArrayEntryPanel.
    */
   public ArrayEntryJPanel( ParameterGUI param ) {
     super( new BorderLayout(  ) );
@@ -168,7 +175,8 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     dataPanel.add( param.getEntryWidget(  ), BorderLayout.CENTER );
 
     //add a key listener to the parameter
-    param.getEntryWidget(  ).addKeyListener( this );
+    param.getEntryWidget(  )
+         .addKeyListener( this );
 
     this.add( dataPanel, BorderLayout.NORTH );
 
@@ -184,62 +192,53 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     pcs = new PropertyChangeSupport( this );
   }
 
-  /**
-   *  Utility method to navigate through the GUI display.
-   *
-   *  @param  i             The direction and magnitude to move.
-   */
-  private void move( int i ) {
-    int j = jlist.getSelectedIndex(  );
+  //~ Methods ******************************************************************
 
-    if( j <= 0 ) {
-      if( i == -1 ) {
-        return;
+  /**
+   * Sets the value of the GUI elements.
+   *
+   * @param newVal The new value to set the GUI elements to.
+   */
+  public void setValue( Object newVal ) {
+    if( jlistModel != null ) {
+      jlistModel.clear(  );
+
+      if( ( newVal != null ) && newVal instanceof Vector ) {
+        for( int i = 0; i < ( ( Vector )newVal ).size(  ); i++ ) {
+          jlistModel.addElement( ( ( Vector )newVal ).elementAt( i ) );
+        }
       }
     }
 
-    if( j < 0 ) {
-      return;
-    }
-
-    if( j >= jlist.getModel(  ).getSize(  ) ) {
-      return;
-    }
-
-    if( i > 0 ) {
-      if( j == ( jlist.getModel(  ).getSize(  ) - 1 ) ) {
-        return;
-      }
-    }
-
-    Object V = jlistModel.elementAt( j );
-
-    jlistModel.removeElementAt( j );
-    jlistModel.insertElementAt( V, j + i );
-    jlist.setSelectedIndex( j + i );
+    position = -1;
   }
 
   /**
-   *  Sets the value of the parameter to the value at the position given in the
-   *  list.
-   *
-   *  @param     pos            The index of the position where the new value
-   *                            is at.
+   * end PropertyChanger requirement
    */
-  private void setInnerParameterValue( int pos ) {
-    position = pos;
-
-    if( ( pos >= 0 ) && ( pos < jlistModel.getSize(  ) ) ) {
-      param.setValue( jlistModel.elementAt( pos ) );
+  /**
+   * Accessor method to get the values in the GUI.
+   *
+   * @return A Vector of String representations of the GUI elements.
+   */
+  public Vector getValues(  ) {
+    if( jlist == null ) {
+      return new Vector(  );
     }
 
-    if( param instanceof VectorPG ) {
-      ( ( VectorPG )param ).actionPerformed( 
-        new ActionEvent( this, ActionEvent.ACTION_PERFORMED, "NEW" ) );
+    ListModel lmodel = jlist.getModel(  );
+    Vector V         = new Vector( lmodel.getSize(  ) );
+
+    for( int i = 0; i < lmodel.getSize(  ); i++ ) {
+      V.addElement( lmodel.getElementAt( i ) );
     }
+
+    return V;
   }
 
-  /******************* ActionListener requirement ********************/
+  /**
+   * ActionListener requirement
+   */
   public void actionPerformed( ActionEvent evt ) {
     JButton actionButton = ( JButton )( evt.getSource(  ) );
 
@@ -292,10 +291,32 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     }
   }
 
-  /**************** end ActionListener requirement ********************/
-  /******************* KeyListener requirement ********************/
   /**
-   *  We are interested in listening for the <Enter> key here.
+   * PropertyChanger requirement
+   */
+  public void addPropertyChangeListener( PropertyChangeListener listener ) {
+    pcs.addPropertyChangeListener( listener );
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param property DOCUMENT ME!
+   * @param listener DOCUMENT ME!
+   */
+  public void addPropertyChangeListener( 
+    String property, PropertyChangeListener listener ) {
+    pcs.addPropertyChangeListener( property, listener );
+  }
+
+  /**
+   * end ActionListener requirement
+   */
+  /**
+   * KeyListener requirement
+   */
+  /**
+   * We are interested in listening for the Enter key here.
    */
   public void keyPressed( KeyEvent evt ) {
     if( evt.getKeyCode(  ) == KeyEvent.VK_ENTER ) {
@@ -304,75 +325,86 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   }
 
   /**
-   *  Needed for implementation of KeyListener, but unnecessary here.
+   * Needed for implementation of KeyListener, but unnecessary here.
    */
   public void keyReleased( KeyEvent evt ) {}
 
   /**
-   *  Needed for implementation of KeyListener, but unnecessary here.
+   * Needed for implementation of KeyListener, but unnecessary here.
    */
   public void keyTyped( KeyEvent evt ) {}
 
-  /**************** PropertyChanger requirement ********************/
-  public void addPropertyChangeListener( PropertyChangeListener listener ) {
-    pcs.addPropertyChangeListener( listener );
+  /**
+   * Needed for PropertyChangeListener implementation.
+   *
+   * @param evt The PropertyChangeEvent to listen for.
+   */
+  public void propertyChange( PropertyChangeEvent evt ) {
+    actionPerformed( null );
   }
 
-  public void addPropertyChangeListener( 
-    String property, PropertyChangeListener listener ) {
-    pcs.addPropertyChangeListener( property, listener );
-  }
-
+  /**
+   * DOCUMENT ME!
+   *
+   * @param listener DOCUMENT ME!
+   */
   public void removePropertyChangeListener( PropertyChangeListener listener ) {
     pcs.removePropertyChangeListener( listener );
   }
 
-  /**************** end PropertyChanger requirement ********************/
   /**
-   *  Accessor method to get the values in the GUI.
+   * Sets the value of the parameter to the value at the position given in the
+   * list.
    *
-   *  @return   A Vector of String representations of the GUI elements.
+   * @param pos The index of the position where the new value is at.
    */
-  public Vector getValues(  ) {
-    if( jlist == null ) {
-      return new Vector(  );
+  private void setInnerParameterValue( int pos ) {
+    position = pos;
+
+    if( ( pos >= 0 ) && ( pos < jlistModel.getSize(  ) ) ) {
+      param.setValue( jlistModel.elementAt( pos ) );
     }
 
-    ListModel lmodel = jlist.getModel(  );
-    Vector V         = new Vector( lmodel.getSize(  ) );
-
-    for( int i = 0; i < lmodel.getSize(  ); i++ ) {
-      V.addElement( lmodel.getElementAt( i ) );
+    if( param instanceof VectorPG ) {
+      ( ( VectorPG )param ).actionPerformed( 
+        new ActionEvent( this, ActionEvent.ACTION_PERFORMED, "NEW" ) );
     }
-
-    return V;
   }
 
   /**
-   *  Sets the value of the GUI elements.
+   * Utility method to navigate through the GUI display.
    *
-   *  @param  newVal  The new value to set the GUI elements to.
+   * @param i The direction and magnitude to move.
    */
-  public void setValue( Object newVal ) {
-    if( jlistModel != null ) {
-      jlistModel.clear(  );
+  private void move( int i ) {
+    int j = jlist.getSelectedIndex(  );
 
-      if( ( newVal != null ) && newVal instanceof Vector ) {
-        for( int i = 0; i < ( ( Vector )newVal ).size(  ); i++ ) {
-          jlistModel.addElement( ( ( Vector )newVal ).elementAt( i ) );
-        }
+    if( j <= 0 ) {
+      if( i == -1 ) {
+        return;
       }
     }
 
-    position = -1;
-  }
+    if( j < 0 ) {
+      return;
+    }
 
-  /**
-   *  Needed for PropertyChangeListener implementation.
-   *
-   *  @param  evt   The PropertyChangeEvent to listen for.
-   */
-  public void propertyChange( PropertyChangeEvent evt ) {
-    actionPerformed( null );
+    if( j >= jlist.getModel(  )
+                    .getSize(  ) ) {
+      return;
+    }
+
+    if( i > 0 ) {
+      if( j == ( jlist.getModel(  )
+                        .getSize(  ) - 1 ) ) {
+        return;
+      }
+    }
+
+    Object V = jlistModel.elementAt( j );
+
+    jlistModel.removeElementAt( j );
+    jlistModel.insertElementAt( V, j + i );
+    jlist.setSelectedIndex( j + i );
   }
 }
