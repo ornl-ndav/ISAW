@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2004/05/03 16:26:14  dennis
+ *  Removed unused local variable.
+ *
  *  Revision 1.18  2004/03/15 06:10:54  dennis
  *  Removed unused import statements.
  *
@@ -324,7 +327,6 @@ public class VecQToTOF
     Vector3D corner2 = grid.position( grid.num_rows(), grid.num_cols() );
     Vector3D temp = new Vector3D( corner1 );
     temp.subtract( corner2 );
-    float diag = temp.length();
 /*
     System.out.println("n_rows,cols = " + n_rows + ", " + n_cols );
     System.out.println("u = " + u );
