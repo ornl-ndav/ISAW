@@ -1,4 +1,4 @@
-  /*
+/*
  * File:  TimeShift.java
  *
  * Copyright (C) 2004 Tom Worlton
@@ -30,15 +30,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/01/10 15:35:59  dennis
+ * Added getCategoryList method to place operator in menu system.
+ *
  * Revision 1.1  2004/05/07 17:42:49  dennis
  * Moved TimeShift from Operators to Operators/TOF_Diffractometer
  *
  * Revision 1.2  2004/04/28 19:12:18  dennis
  * Revised version, with debug flag false. (Tom Worlton)
  *
- *
  * Initial version  2004/4/15 tworlon
- *
  *
  */
 package Operators.TOF_Diffractometer;
@@ -52,7 +53,7 @@ import DataSetTools.operator.*;
  * This class is intended to be used to correct for frame overlap on GPPD
  * 
  */
-public class TimeShift implements Wrappable {
+public class TimeShift implements Wrappable, IWrappableWithCategoryList {
   //~ Instance fields **********************************************************
 
   private boolean DEBUG = false;
@@ -67,6 +68,22 @@ public class TimeShift implements Wrappable {
   public boolean mk_new_ds = true;
 
   //~ Methods ******************************************************************
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_DATA_SET;
+  }
 
   /**
    * @return The script name for this Operator.

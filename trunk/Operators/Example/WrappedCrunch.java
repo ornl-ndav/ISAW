@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/01/10 15:36:01  dennis
+ * Added getCategoryList method to place operator in menu system.
+ *
  * Revision 1.1  2004/05/07 17:36:28  dennis
  * Moved WrappedCrunch from Operators to Operators/Example
  *
@@ -61,7 +64,7 @@ import DataSetTools.operator.*;
  * This class is a copy of Crunch.java designed to showcase the ability to use
  * wrappers to create Operators indirectly.
  */
-public class WrappedCrunch implements Wrappable {
+public class WrappedCrunch implements Wrappable, IWrappableWithCategoryList {
   //~ Instance fields **********************************************************
 
   private boolean DEBUG = false;
@@ -75,7 +78,26 @@ public class WrappedCrunch implements Wrappable {
   public float width    = 2.0f;
   public boolean mk_new_ds = false;
 
+
   //~ Methods ******************************************************************
+
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_EXAMPLES;
+  }
+
 
   /**
    * @return The script name for this Operator.
