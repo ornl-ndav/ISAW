@@ -31,9 +31,9 @@
  * Modified:
  *
  * $Log$
- * Revision 1.6  2001/08/15 18:35:17  rmikk
- * Redid to show several spectra and also to use Kevin's
- * SelectedGraphView from the ViewManager
+ * Revision 1.7  2001/08/15 22:33:02  dennis
+ * Temporarily go back to DongFeng's version, to maintain compatibility
+ * with running servers.
  *
  * Revision 1.5  2001/06/01 21:18:00  rmikk
  * Improved documentation for getCommand() method
@@ -50,12 +50,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
-import  DataSetTools.viewer.*;
 
-/** Draws selected Spectra to a window<P>
-* The Title, <B>Data Plotter</b>, refers to this operator in Menu's<BR>
-* The Command, <B>Plot</b>, refers to this operator in Scripts
-*/
 public class SpectrometerPlotter extends    DataSetOperator 
                                             implements Serializable
 {
@@ -65,20 +60,6 @@ public class SpectrometerPlotter extends    DataSetOperator
     super( "Data Plotter" );
   }
 
-    /** Constructor used in Java code to set up this operator.  Use
-    *   getResult to execute the operator.
-    *@param ds  the data set which is to be plotted
-    *@param GroupIndx  <Ul>The list of Groups( their indices) that are to 
-    *                       be plotted.  Ex: 1,3:5</ul>
-    */
-    public SpectrometerPlotter( DataSet ds, IntListString GroupIndx)
-    {
-	super( "Data Plotter");
-        parameters = new Vector();
-        setDataSet( ds);
-        addParameter( new Parameter("Indices", GroupIndx));
-
-    }
  /**
   *  Set the parameters to default values.
   */
@@ -88,51 +69,31 @@ public class SpectrometerPlotter extends    DataSetOperator
 
     Parameter parameter;
 
-    parameter = new Parameter( "Indices",new IntListString("1,3:5" ) );
+    parameter = new Parameter( "Data ID", new Integer(5) );
     addParameter( parameter );
   }
 
 
   /* ---------------------------- getCommand ------------------------------- */
-  /**Returns <B>Plot</b>, the command used in Scripts to refer to this operator
-   * @return the command name to be used with script processor: in this case,\    * Plot
+  /**
+   * @return the command name to be used with script processor: in this case, SpecPlot
    */
    public String getCommand()
    {
-     return "Plot";
+     return "SpecPlot";
    }
 
 
   /* ---------------------------- getResult ------------------------------- */
-  /**  Executes the operator using the parameters that were set up
-  *@return  "Success" if there were no errors otherwise  the ErrorString
-  *             "No Data Set Selected" is returned.<P>
-  *
-  *NOTE: A SelectedGraph View will also pop up
-  */
+
   public Object getResult()
   {
                                      // get the current data set
-     /*DataSetTools.dataset.DataSet ds = this.getDataSet();
+     DataSetTools.dataset.DataSet ds = this.getDataSet();
      int   det_ID = ( (Integer)(getParameter(0).getValue()) ).intValue() ;
      
     ChopTools.chop_dataDrawer.drawgraphDataEntry(ds, det_ID);
     return null;
-    */
-    //Will use Kevin's Selected Graph View\
-    DataSet ds = getDataSet( );
-    if( ds == null)
-       return new ErrorString( "No Data Set Selected");
-    IntListString Ilist = (IntListString)(getParameter(0).getValue());
-    // Set the selected groups
-     DataSetOperator op = new SetField( ds,
-			new DSSettableFieldString( 
-                        DSFieldString.SELECTED_GROUPS), Ilist );
-     op.getResult();
-    //Call Kevin's Viewer
-    
-   ViewManager Vm= new ViewManager( ds, IViewManager.SELECTED_GRAPHS);
-   return "Success";
   }  
 
   /* ------------------------------ clone ------------------------------- */
