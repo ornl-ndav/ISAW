@@ -31,6 +31,11 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.2  2002/07/25 20:58:51  rmikk
+ * Changed Background color of the selected cell
+ * Fixed viewport to place the PointedAt cell in the center and
+ *   to work with specified row and column subranges
+ *
  * Revision 1.1  2002/07/24 20:05:20  rmikk
  * Initial Checkin
  *
@@ -132,7 +137,7 @@ public class STableView  extends DataSetViewer
       EA = new ExcelAdapter( jtb);
       jtb.setAutoResizeMode( JTable.AUTO_RESIZE_OFF);
       jtb.setColumnSelectionAllowed( true );
-      jtb.setSelectionBackground( Color.red);
+      jtb.setSelectionBackground( Color.lightGray);
       jtb.removeEditor();
       TableHolder = new JPanel( new GridLayout( 1,1));
       JscrlPane = new JScrollPane(jtb);
@@ -247,10 +252,9 @@ public class STableView  extends DataSetViewer
         
        
         InfoTable.showConversions( x, index );
-
+      
         int row = table_model.getRow( index, x);
         int col = table_model.getCol( index, x);
-
         if( row <  0)
           return;
         if( col < 0)
@@ -258,11 +262,46 @@ public class STableView  extends DataSetViewer
         if( row == jtb.getSelectedRow())
           if( col == jtb.getSelectedColumn())
             return;
-        Rectangle R = jtb.getCellRect( row-2,col-2,false);
-        JscrlPane.getViewport() .setViewPosition( new Point( R.x, R.y));
+        if( row >= jtb.getRowCount())
+           return;
+        if( col >= jtb.getColumnCount())
+           return;
+
+       
+
+        Rectangle R = jtb.getCellRect( row,col,false);
+        Rectangle Rscr = JscrlPane.getViewport().getViewRect();//getViewRect(); NG
+        int width = Rscr.width;
+        int height = Rscr.height;
+        int nrows = height/ R.height;
+        int ncols = width/R.width;
+        if( R.x > Rscr.x + Rscr.width/nrows*4)
+           if( R.x < Rscr.x -Rscr.width/nrows*4)
+             if( R.y > Rscr.y + Rscr.height/ncols*4)
+               if( R.y < Rscr.y -Rscr.height/ncols*4) 
+                 {jtb.setColumnSelectionInterval( col,col);
+                  jtb.setRowSelectionInterval(row,row);
+                   
+                 }
+                  
+        Rectangle RR = R;
+        RR.y = R.y - height/2;
+        RR.x = R.x -width/2;
+        if( col> jtb.getColumnCount() -ncols/2)
+           RR.x = jtb.getCellRect(row,java.lang.Math.min(0,col-ncols/2) ,false).x;
+        else if( col-ncols/2 <=0)
+           RR.x = jtb.getCellRect( row, 0,false).x;
+        if( row >= jtb.getRowCount() -nrows/2)//means there is a blank below. min # rows
+           RR.y = jtb.getCellRect(java.lang.Math.min(0,row-nrows/2) , col,false).y;
+       
+        else if( row -nrows/2 < 0)
+           RR.y =jtb.getCellRect( 0,col,false).y;
+
+
+        JscrlPane.getViewport() .setViewPosition( new Point( RR.x, RR.y));
+        
         jtb.setColumnSelectionInterval( col,col);
         jtb.setRowSelectionInterval(row,row);
-
       }
      
      }
