@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/04/02 15:18:02  dennis
+ * Added getDocumentation() method. (Joshua Olson)
+ *
  * Revision 1.4  2003/02/18 20:23:52  dennis
  * Switched to use SampleOrientation attribute instead of separate
  * phi, chi and omega values.
@@ -153,6 +156,66 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
   threeD_panel.setObjects( "AXES", objects );
 }
 
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */                                                                 				         
+  public String getDocumentation()
+  {                                                                                                               
+    StringBuffer s = new StringBuffer("");                                                 
+    s.append("@overview This operator reads through a sequence of SCD run ");
+    s.append("files and constructs a basic view of the peaks in 3D \"Q\" ");
+    s.append("space.");    
+    s.append("@assumptions All the run numbers in 'run_numbers' can be used ");
+    s.append("to create a file in the directory 'path'.\n");
+    s.append("All the files can be used to create a non-empty DataSet. \n");
+    s.append("@algorithm The operator stores the run numbers. A file name");
+    s.append(" is created for each run number. \n\n ");    
+    s.append("The following is done for each file name: \n ");
+    s.append("a) A file is created for the file name.  A DataSet is ");
+    s.append("constructed from this file.  If the DataSet is empty then an ");
+    s.append("error string is returned and execution of the operator ");
+    s.append("terminates.  Otherwise the operator continues. \n ");
+    s.append("b) The first entry of Data in the DataSet is stored.  The ");
+    s.append("goniometer angles (phi, chi and omega) of the Data are printed ");
+    s.append("to the console. \n\n");    
+    s.append("The following is done for each entry of Data (in each DataSet):");                       
+    s.append("\n a) The Data's DetectorPosition and initial path are stored.");
+    s.append("\n b) All the x's on the X Scale are stored in an array.");
+    s.append("\n c) All the y's are stored in an array.\n\n");       
+    s.append("The following is done for each y value in the Data: \n ");
+    s.append("The y's are compared to a threshold that varies with the t.o.f.");
+    s.append(" to determine where peaks in the diffraction pattern occur.\n\n");
+    s.append("For each y value that has a peak, the following is done: \n ");
+    s.append("a) A color is determined based upon the height of the peak.\n"); 
+    s.append("b) This peak's position is currently expressed in terms of time"); 
+    s.append(" of flight.  The operator translates this position so that it ");
+    s.append("is expressed in terms of a 3D Reciprocal Lattice space.\n");
+    s.append("c) A PolyMarker object is constructed from the new coordinates ");
+    s.append("and the color.  The PolyMarker is stored.\n\n"); 
+    s.append("So the operator has now obtained all the peaks (Polymarker ");
+    s.append("objects) for this file.\n");
+    s.append("The total number of peaks for this file is printed to the ");
+    s.append("console.\n");
+    s.append("Then the peaks are displayed in a 3D scatter plot.");     
+    s.append("\n\n The operator does this for every file.  Then the string ");
+    s.append("'Done' is returned. ");
+    s.append("\n\n\n");    
+    s.append("To summarize the 'Algorithm': \n ");
+    s.append("A file is created in the directory for each run number. \n ");
+    s.append("Each file is used to create a DataSet. \n ");
+    s.append("Each Data entry (in every DataSet) has x values and y values.\n");
+    s.append("Some of those y values have peaks.  \n ");
+    s.append("All the peaks for all the files are displayed as a 3D scatter ");
+    s.append("plot.");  
+    s.append("@param  path The directory path to the data directory ");
+    s.append("@param  run_numbers A list of run numbers to be loaded");	           
+    s.append("@return If successful, it returns the string 'Done'. ");  
+    s.append("@error Returns an error string if a DataSet cannot be  ");
+    s.append("constructed from any particular file. ");
+    return s.toString();
+  }
 
  /* ------------------------------ getResult ------------------------------- */
  /** 
@@ -221,8 +284,8 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
     {
       d = ds.getData_entry(i);
       DetectorPosition pos = (DetectorPosition)
-                              d.getAttributeValue( Attribute.DETECTOR_POS );
-      float initial_path = ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).                                   floatValue();
+                              d.getAttributeValue( Attribute.DETECTOR_POS ); 
+      float initial_path = ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
       float times[] = d.getX_scale().getXs();
       float ys[]    = d.getY_values();
       for ( int j = 0; j < ys.length; j++ )
