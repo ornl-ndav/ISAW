@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.10  2003/06/16 23:04:31  bouzekc
+ * Now set up to use the multithreaded progress bar in
+ * DataSetTools.components.ParametersGUI.
+ *
  * Revision 1.9  2003/06/11 23:04:07  bouzekc
  * No longer uses StringUtil.setFileSeparator as DataDirPG
  * now takes care of this.
@@ -250,6 +254,7 @@ public class IntegrateMultiRunsForm extends Form
     String outputDir, matrixName, calibFile, expName, rawDir, centerType;
     String integName, sliceRange, loadName, runNum;
     boolean append, first;
+    float increment;
     int timeSliceDelta, SCDline;
     DataSet histDS;
     int[] runsArray;
@@ -367,6 +372,9 @@ public class IntegrateMultiRunsForm extends Form
     createIntegrateOperators(calibFile, SCDline, integName, sliceRange,
                              timeSliceDelta, append, centerType);
 
+    //set the increment amount
+    increment = (1.0f / runsArray.length) * 100.0f;
+
     for(int i = 0; i < runsArray.length; i++)
     {
       /*load the histogram and monitor for the current run. 
@@ -417,6 +425,11 @@ public class IntegrateMultiRunsForm extends Form
         first = false;  //no longer our first time through
         append = true;  //start appending to the file
       }
+
+      //fire a property change event off to any listeners
+      //again, these are incremental changes in order to fit in with the
+      //overall Wizard progress bar
+      super.fireValueChangeEvent(-1, (int)increment);
     }
     
     SharedData.addmsg("--- IntegrateMultiRunsForm is done. ---");
