@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.9  2002/04/12 15:17:53  pfpeterson
+ * Prints message about moving properties file only when sucessful.
+ *
  * Revision 1.8  2002/04/04 20:48:50  pfpeterson
  * changed command line switch to '-mx128m'.
  *
@@ -606,12 +609,14 @@ public class IsawInstaller extends JFrame
 	    File newName=new File(filename.substring(0,last)+".old");
 	    props.renameTo(newName);
 	    
-	    String msg="Renaming existing IsawProps.dat to\n"
-	    +newName;
+            if(newName.exists()&&!props.exists()){
+                String msg="Renaming existing IsawProps.dat to\n"
+                    +newName;
 
-	    JOptionPane.showMessageDialog(IsawInstaller.this,msg,
-					  "Renaming IsawProps.dat",
-					  JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(IsawInstaller.this,msg,
+                                              "Renaming IsawProps.dat",
+                                              JOptionPane.INFORMATION_MESSAGE);
+            }
 	}
     }
 
