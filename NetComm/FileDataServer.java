@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/02/24 13:39:19  dennis
+ *  Switched to use CommandObject instead of compound command Strings.
+ *
  *  Revision 1.4  2003/02/21 13:17:35  dennis
  *  Removed un-needed clone() operations before sending empty data set.
  *  Calls Reset() before sending the array of DataSet types.
@@ -71,30 +74,33 @@ public class FileDataServer extends DataSetServer
    }
 
 
+
   /* -------------------------- ProcessCommand -------------------------- */
   /**
-   *  Method to process commands from a TCP client.  Derived classes should
-   *  override this method with methods that process the command properly
-   *  and return an appropriate object through the tcp_io object.
+   *  Method to process commands from a TCP client.  
    *
-   *  @param  command    The command string sent by the client.
+   *  @param  command    The command object sent by the client.
    *
    *  @param  tcp_io     The TCP communications object to which the response
    *                     must be sent.
+   *
+   *  @return True if the command was processed and no further action is
+   *          needed. Returns false if the command was not handled, and
+   *          so some response must still be sent back to the client.
    */
-   synchronized public void ProcessCommand( String          command,
-                                            ThreadedTCPComm tcp_io   )
+   synchronized public boolean ProcessCommand( CommandObject   command,
+                                               ThreadedTCPComm tcp_io   )
    {
       if ( debug_server )
         System.out.println("FileDataServer ProcessCommand called:"+command);
       try
       {
-        if ( command.startsWith( COMMAND_GET_DS_TYPES ) )
+        if (  command.getCommand() == CommandObject.GET_DS_TYPES )
         {
           if ( debug_server )
             System.out.println("Processing " + command );
 
-          String file_name = getArgument( command );
+          String file_name = ((GetDataCommand)command).getFilename();
           Retriever r = get_retriever( file_name );
           if ( r == null )
             tcp_io.Send( new Integer(-1) );
@@ -111,16 +117,13 @@ public class FileDataServer extends DataSetServer
           }
         }
 
-        else if ( command.startsWith( COMMAND_GET_DS ) )
+        else if ( command.getCommand() == CommandObject.GET_DS )
         { 
                          // COMMAND_GET_DS command has the form:
                          // COMMAND_GET_DS  <file_name>  <DataSet index>
 
-          String argument = getArgument( command );
-          int index = extractIntParameter( argument );
-
-          int space = argument.indexOf(' ');
-          String file_name = argument.substring( 0, space ).trim();
+          int index = ((GetDataCommand)command).getDataSetNumber();
+          String file_name = ((GetDataCommand)command).getFilename();
           Retriever r = get_retriever( file_name );
           if ( r == null )
             tcp_io.Send( DataSet.EMPTY_DATA_SET );
@@ -133,8 +136,8 @@ public class FileDataServer extends DataSetServer
               if ( debug_server )
                 System.out.println("Trying to send " + ds );
               ds.deleteIObservers(); 
-              tcp_io.Send( ds  );
               data_name = ds.getTitle();
+              tcp_io.Send( ds  );
             }
             else                                       
               tcp_io.Send( DataSet.EMPTY_DATA_SET );
@@ -143,15 +146,20 @@ public class FileDataServer extends DataSetServer
           }
         }
   
+        else if ( command.getCommand() == CommandObject.GET_STATUS )
+          tcp_io.Send(TCPServer.ANSWER_OK);
+ 
         else
-           super.ProcessCommand( command, tcp_io );
+          return false;
       }
       catch ( Exception e )
       {
         System.out.println("Error: FileDataServer command: " + command);
         System.out.println("Error: couldn't send data "+e );
+        return false;
       }  
-   
+
+    return true;
   }
 
 
