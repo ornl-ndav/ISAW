@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.3  2002/04/19 19:40:43  dennis
+ *  Fixed "broken" @see javadoc comments.
+ *
  *  Revision 1.2  2002/03/13 16:26:26  dennis
  *  Converted to new abstract Data class.
  *
@@ -128,12 +131,10 @@ import  DataSetTools.viewer.*;
   *  operator, as a function of energy loss.  
   *
   *  @see DoubleDifferentialCrossection 
-  *  @see DataSetOperator
-  *  @see Operator
   */
 
-public class ScatteringFunction extends   GenericTOF_DG_Spectrometer
-                                            implements Serializable
+public class ScatteringFunction extends GenericTOF_DG_Spectrometer
+                                        implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
