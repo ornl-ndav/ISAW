@@ -31,11 +31,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/08/05 19:06:04  pfpeterson
+ * Set the package so it can be called when inside a jar.
+ *
  * Revision 1.1  2002/08/05 05:38:40  dennis
  * Rudimentary command line version of SCD reciprocal lattice viewer.
  *
  *
  */
+
+package DataSetTools.trial;
 
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
@@ -172,12 +177,14 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
     vec_Q_space.setBackground( new Color( 90, 90, 90 ) );
     scene_f.getContentPane().add( vec_Q_space );
     scene_f.setVisible( true );
+    scene_f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     JFrame controller_f = new JFrame("Q_space Controller");
     controller_f.setBounds(0,0,200,200);
     AltAzController controller = new AltAzController();
     controller_f.getContentPane().add( controller );
     controller_f.setVisible( true );
+    controller_f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     controller.setDistanceRange( 0.1f, 500 );
     controller.addControlledPanel( vec_Q_space );
