@@ -32,6 +32,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2003/06/23 18:41:35  rmikk
+ *  Caught a throwable instead of an exception in the swing worker
+ *      code.
+ *  Result when an error occurred was converted to an ErrorString
+ *
  *  Revision 1.42  2003/06/18 20:35:08  pfpeterson
  *  Changed calls for NxNodeUtils.Showw(Object) to
  *  DataSetTools.util.StringUtil.toString(Object)
@@ -659,8 +664,8 @@ public class JParametersDialog implements Serializable,
               if( op instanceof IObservable)
                 ((IObservable)op).deleteIObserver(io);             
               return Result;
-            }catch(RuntimeException e){
-              Result=e;
+            }catch(Throwable e){
+              Result= new ErrorString( e.getMessage());
               return null;
             }
           }
