@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/06/07 21:14:48  dennis
+ *  Added periodic call to System.gc().
+ *
  *  Revision 1.7  2001/06/01 22:04:23  dennis
  *  Now runs "forever" instead of terminating after sending 20,000
  *  spectra.
@@ -156,6 +159,7 @@ public class DASOutputTest
       try  { Thread.sleep(30); }
       catch(Exception e){ System.out.println("sleep Exception"); } 
     }  
+    System.gc();
   }
 
   /**
