@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/11/09 22:25:13  rmikk
+ * -Changed the class to be a public class
+ * -This class is now valid if its value is a Vector with no elements in it
+ *
  * Revision 1.1  2003/10/11 19:29:21  bouzekc
  * Added to CVS.
  *
@@ -59,7 +63,7 @@ import javax.swing.*;
  * extracted out of QbinsPG because it did not properly support clone() with
  * the reflection set up in ParameterGUI when it was an inner class.
  */
-class Qbins1PG extends ParameterGUI implements Concatenator {
+public class Qbins1PG extends ParameterGUI implements Concatenator {
   //~ Instance fields **********************************************************
 
   private JPanel Container;
@@ -217,7 +221,7 @@ class Qbins1PG extends ParameterGUI implements Concatenator {
 
     if( ( val != null ) && val instanceof Vector ) {
       Vector elems = ( Vector )val;
-      this.setValid( elems.size(  ) > 0 );
+      this.setValid( elems.size(  ) >= 0 );
     } else {
       this.setValid( false );
     }
