@@ -53,6 +53,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/05/09 18:58:36  pfpeterson
+ * Improved log creation for easier code matenience.
+ *
  * Revision 1.9  2003/04/30 19:56:23  pfpeterson
  * Code cleanup after finding out what some of the variable names
  * physically represent. This means D1,D2,...,D6 are replaced with
@@ -117,15 +120,12 @@ public class blind {
 
     // create the logfile contents
     logBuffer=new StringBuffer(50*19);
-    System.out.println();
-    System.out.print("  *******LAUE INDEXER*******\n");
-    System.out.println();
-    System.out.print("    #  SEQ       XCM       YCM      WL\n");
+    int start=logBuffer.length();
     logBuffer.append("\n");
     logBuffer.append("  *******LAUE INDEXER*******\n");
     logBuffer.append("\n");
     logBuffer.append("    #  SEQ       XCM       YCM      WL\n");
-
+    System.out.print(logBuffer.substring(start));
   }
 
   /**
@@ -232,23 +232,20 @@ public class blind {
 
     // Manipulates the basis(the first 3 elements of xx,yy,and zz) so
     // B*Tranps(B) about diagonal
+    int start=logBuffer.length();
     for( j=0 ; j<lmt.val ; j++ ){
-      System.out.print(format(j+1,5,0)+format(seq[j+_seq_offset],5,0));
       logBuffer.append(format(j+1,5,0)+format(seq[j+_seq_offset],5,0));
       for( k=0 ; k<3 ; k++ ){
         if(k!=2){
-          System.out.print(format(angle[j+k*xx.length],10,3));
           logBuffer.append(format(angle[j+k*xx.length],10,3));
         }else{
-          System.out.print(format(angle[j+k*xx.length],10,4));
           logBuffer.append(format(angle[j+k*xx.length],10,4));
         }
       }
-      System.out.println();
       logBuffer.append("\n");
     }
-    System.out.println();
     logBuffer.append("\n");
+    System.out.print(logBuffer.substring(start));
 
     abid(lmt,xx,yy,zz);
     if( errormessage.length()>0)
@@ -325,8 +322,9 @@ public class blind {
       k++;
    
       if (k > lmt.val)  {
-        System.out.println(" ALL REFLECTIONS COPLANAR-PROGRAM TERMINATING");
+        int start=logBuffer.length();
         logBuffer.append(" ALL REFLECTIONS COPLANAR-PROGRAM TERMINATING\n");
+        System.out.print(logBuffer.substring(start));
         // 
         for( i=0 ; i<3 ; i++ ){
           if(DEBUG){
@@ -604,12 +602,11 @@ public class blind {
         }
       }
     }//while Goto==1
-    System.out.print("******************\n\n" );
-    System.out.print(" ERROR LIMIT="+format(dd.val,2)+"\n\n");
-    System.out.print(" REDUCED CELL\n\n");
+    int start=logBuffer.length();
     logBuffer.append("******************\n\n");
     logBuffer.append(" ERROR LIMIT="+format(dd.val,2)+"\n\n");
     logBuffer.append(" REDUCED CELL\n\n");
+    System.out.print(logBuffer.substring(start));
     lst(hh,xx,yy,zz,a,jh,mw,b,d,lmt,seq,den,expnum,hstnum);
     // 
     mj.val = -iz;
@@ -1059,7 +1056,7 @@ public class blind {
     double[] AI = new double[9];
     d=mi(B,AI);
     abc[6] = 1.0/d;
-    System.out.print(" CELL VOLUME=  "+format(abc[6],1)+"\n\n");
+    int start=logBuffer.length();
     logBuffer.append(" CELL VOLUME=  "+format(abc[6],1)+"\n\n");
     printB("in aais,B,AI=",B,5);
     printB("in aais,B,AI=",AI,3);
@@ -1074,12 +1071,10 @@ public class blind {
     DAC= AI[-3+3*1]*AI[-1+3*1]+AI[-3+3*2]*AI[-1+3*2]+AI[-3+3*3]*AI[-1+3*3] ;
     DBC= AI[-2+3*1]*AI[-1+3*1]+AI[-2+3*2]*AI[-1+3*2]+AI[-2+3*3]*AI[-1+3*3];
      
-    System.out.print("*** CELL SCALARS ***\n");
-    System.out.print(format(A2,9,2)+format(B2,9,2)+format(C2,9,2)+"\n");
-    System.out.print(format(DBC,9,2)+format(DAC,9,2)+format(DAB,9,2)+"\n\n");
     logBuffer.append("*** CELL SCALARS ***\n");
     logBuffer.append(format(A2,9,2)+format(B2,8,2)+format(C2,8,2)+"\n");
     logBuffer.append(format(DBC,9,2)+format(DAC,8,2)+format(DAB,8,2)+"\n\n");
+    System.out.print(logBuffer.substring(start));
 
 
     // calculate the lattice parameters
@@ -1095,30 +1090,21 @@ public class blind {
     if (abc[4]< 0) abc[4]=abc[4]+180.;
     abc[5]=57.296*Math.atan(Math.sqrt(1.-abc[5]*abc[5])/abc[5]);
     if (abc[5] < 0) abc[5]=abc[5]+180.;
-    System.out.println("A="+format(abc[0],8,3)+"   B="+format(abc[1],8,3)
-                     +"   C="+format(abc[2],8,3));
-    System.out.println("ALPHA="+format(abc[3],7,2)
-                       +"   BETA="+format(abc[4],7,2)
-                       +"   GAMMA="+format(abc[5],7,2));
+    start=logBuffer.length();
     logBuffer.append("A="+format(abc[0],8,3)+"   B="+format(abc[1],8,3)
                      +"   C="+format(abc[2],8,3)+"\n");
     logBuffer.append("ALPHA="+format(abc[3],7,2)+"   BETA="+format(abc[4],7,2)
                      +"   GAMMA="+format(abc[5],7,2)+"\n\n");
-    System.out.println("");
 
-    System.out.print("     #   SEQ     H     K     L\n");
     logBuffer.append("     #   SEQ     H     K     L\n");
     for(int  i=0;i<SEQ.length; i++){
-      System.out.print(format(i+1,6,0)+format(SEQ[i],6,0)
-                       +format(JH[(i+3)*3+0],6,0)+format(JH[(i+3)*3+1],6,0)
-                       +format(JH[(i+3)*3+2],6,0)+"\n");
       logBuffer.append(format(i+1,6,0)+format(SEQ[i],6,0)
                        +format(JH[(i+3)*3+0],6,0)+format(JH[(i+3)*3+1],6,0)
                        +format(JH[(i+3)*3+2],6,0)+"\n");
 
     }
-    System.out.println("");
     logBuffer.append("\n");
+    System.out.print(logBuffer.substring(start));
      
     u = new double[9];
     for( int i=0 ; i<3 ; i++ ){
