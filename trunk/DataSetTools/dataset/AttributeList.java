@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2004/08/13 03:30:45  millermi
+ *  - Fixed javadoc errors.
+ *  - Reduced size of lines exceeding 80 characters.
+ *
  *  Revision 1.25  2004/06/22 15:33:45  rmikk
  *  Added documentation for setGridId method and associated variable
  *  Improved error reporting
@@ -576,7 +580,7 @@ public class AttributeList implements Serializable,
   /**
     * Gives access to the Hashtable of grid's that have already been set up
     * as the DataSet reads through the Datablocks described in an XML file
-    * @param gridIds  The Hashtable of gridID's with their associated grid
+    * @param gridIDs  The Hashtable of gridID's with their associated grid
     */
   public void setGridIDs( Hashtable gridIDs){
   	this.gridIDs = gridIDs;
@@ -607,7 +611,8 @@ public class AttributeList implements Serializable,
         if(A.XMLwrite(stream,mode))
            stream.write("\n".getBytes());
         else
-           DataSetTools.util.SharedData.addmsg("Attribute "+A.getName()+" is not saved");
+           DataSetTools.util.SharedData.addmsg("Attribute "+A.getName()+
+	                                       " is not saved");
       }
       stream.write("</AttributeList>\n".getBytes());
       
@@ -688,8 +693,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.INST_NAME</code>
-    * or null if it can't be determined.
+    * Get the value of the attribute specified by
+    * <code>Attribute.INST_NAME</code> or null if it can't be determined.
     */
    public String getInstrumentName()
    {
@@ -697,8 +702,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.INST_TYPE</code>
-    * or -1 if it can't be determined.
+    * Get the value of the attribute specified by
+    * <code>Attribute.INST_TYPE</code> or -1 if it can't be determined.
     */
    public int getInstrumentType()
    {
@@ -706,8 +711,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.FILE_NAME</code>
-    * or null if it can't be determined.
+    * Get the value of the attribute specified by
+    * <code>Attribute.FILE_NAME</code> or null if it can't be determined.
     */
    public String getFileName()
    {
@@ -715,8 +720,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.RUN_TITLE</code>
-    * or null if it can't be determined.
+    * Get the value of the attribute specified by
+    * <code>Attribute.RUN_TITLE</code> or null if it can't be determined.
     */
    public String getRunTitle()
    {
@@ -724,8 +729,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.RUN_NUM</code>
-    * or null if it can't be determined.
+    * Get the value of the attribute specified by
+    * <code>Attribute.RUN_NUM</code> or null if it can't be determined.
     */
    public int[] getRunNumber()
    {
@@ -733,8 +738,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.END_DATE</code>
-    * or null if it can't be determined.
+    * Get the value of the attribute specified by
+    * <code>Attribute.END_DATE</code> or null if it can't be determined.
     */
    public String getEndDate()
    {
@@ -742,7 +747,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.END_TIME</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.END_TIME</code>
     * or null if it can't be determined.
     */
    public String getEndTime()
@@ -751,8 +757,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.START_DATE</code>
-    * or null if it can't be determined.
+    * Get the value of the attribute specified by
+    * <code>Attribute.START_DATE</code> or null if it can't be determined.
     */
    public String getStartDate()
    {
@@ -760,8 +766,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.START_TIME</code>
-    * or null if it can't be determined.
+    * Get the value of the attribute specified by
+    * <code>Attribute.START_TIME</code> or null if it can't be determined.
     */
    public String getStartTime()
    {
@@ -769,8 +775,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.UPDATE_TIME</code>
-    * or null if it can't be determined.
+    * Get the value of the attribute specified by
+    * <code>Attribute.UPDATE_TIME</code> or null if it can't be determined.
     */
    public String getUpdateTime()
    {
@@ -778,8 +784,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.DETECTOR_POS</code>
-    * or null if it can't be determined.
+    * Get the value of the attribute specified by
+    * <code>Attribute.DETECTOR_POS</code> or null if it can't be determined.
     */
    public DetectorPosition getDetectorPosition()
    {
@@ -787,8 +793,9 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.RAW_ANGLE</code>
-    * or <code>Float.NaN</code> if it can't be determined.
+    * Get the value of the attribute specified by
+    * <code>Attribute.RAW_ANGLE</code> or <code>Float.NaN</code>
+    * if it can't be determined.
     */
    public float getRawAngle()
    {
@@ -796,7 +803,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.RAW_DISTANCE</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.RAW_DISTANCE</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getRawDistance()
@@ -805,7 +813,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.SOLID_ANGLE</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.SOLID_ANGLE</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getSolidAngle()
@@ -814,7 +823,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.OMEGA</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.OMEGA</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getOmega()
@@ -823,7 +833,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.DELATA_2THETA</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.DELATA_2THETA</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getDelta2Theta()
@@ -832,7 +843,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.EFFICIENCY_FACTOR</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.EFFICIENCY_FACTOR</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getEfficiencyFactor()
@@ -841,7 +853,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.DETECTOR_IDS</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.DETECTOR_IDS</code>
     * or null if it can't be determined.
     */
    public int[] getDetectorIDs()
@@ -850,7 +863,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.SEGMENT_IDS</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.SEGMENT_IDS</code>
     * or null if it can't be determined.
     */
    public int[] getSegmentIDs()
@@ -859,7 +873,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.GROUP_ID</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.GROUP_ID</code>
     * or -1 if it can't be determined.
     */
    public int getGroupID()
@@ -868,7 +883,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.TIME_FIELD_TYPE</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.TIME_FIELD_TYPE</code>
     * or -1 if it can't be determined.
     */
    public int getTimeFieldType()
@@ -904,7 +920,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.DETECTOR_CEN_DISTANCE</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.DETECTOR_CEN_DISTANCE</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getDetectorCENDistance()
@@ -913,7 +930,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.DETECTOR_CEN_ANGLE</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.DETECTOR_CEN_ANGLE</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getDetectorCENAngle()
@@ -922,7 +940,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.DETECTOR_CEN_HEIGHT</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.DETECTOR_CEN_HEIGHT</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getDetectorCENHeight()
@@ -931,7 +950,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.DETECTOR_DATA_GRID</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.DETECTOR_DATA_GRID</code>
     * or null if it can't be determined.
     */
    public IDataGrid getDetectorDataGrid()
@@ -940,7 +960,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.INITIAL_PATH</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.INITIAL_PATH</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getInitialPath()
@@ -949,7 +970,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.ENERGY_IN</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.ENERGY_IN</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getEnergyIn()
@@ -958,7 +980,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.NOMINAL_ENERGY_IN</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.NOMINAL_ENERGY_IN</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getNominalEnergyIn()
@@ -967,7 +990,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.ENERGY_OUT</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.ENERGY_OUT</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getEnergyOut()
@@ -976,7 +1000,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getNominalSourceToSampleTOF()
@@ -985,7 +1010,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.SOURCE_TO_SAMPLE_TOF</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.SOURCE_TO_SAMPLE_TOF</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getSourceToSampleTOF()
@@ -994,7 +1020,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.T0_SHIFT</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.T0_SHIFT</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getT0Shift()
@@ -1003,7 +1030,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.SAMPLE_CHI</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.SAMPLE_CHI</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getSampleChi()
@@ -1012,7 +1040,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.SAMPLE_PHI</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.SAMPLE_PHI</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getSamplePhi()
@@ -1021,7 +1050,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.SAMPLE_OMEGA</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.SAMPLE_OMEGA</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getSampleOmega()
@@ -1030,7 +1060,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.SAMPLE_ORIENTATION</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.SAMPLE_ORIENTATION</code>
     * or null if it can't be determined.
     */
    public SampleOrientation getSampleOrientation()
@@ -1039,7 +1070,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.SAMPLE_NAME</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.SAMPLE_NAME</code>
     * or null if it can't be determined.
     */
    public String getSampleName()
@@ -1048,7 +1080,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.TEMPERATURE</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.TEMPERATURE</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getTemperature()
@@ -1057,7 +1090,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.PRESSURE</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.PRESSURE</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getPressure()
@@ -1066,7 +1100,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.MAGNETIC_FIELD</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.MAGNETIC_FIELD</code>
     * or null if it can't be determined.
     */
    public float[] getMagneticField()
@@ -1075,7 +1110,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.NUMBER_OF_PULSES</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.NUMBER_OF_PULSES</code>
     * or -1 if it can't be determined.
     */
    public int getNumberOfPulses()
@@ -1084,7 +1120,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.TOTAL_COUNT</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.TOTAL_COUNT</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getTotalCount()
@@ -1093,7 +1130,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.Q_VALUE</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.Q_VALUE</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getQValue()
@@ -1102,7 +1140,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.GSAS_CALIB</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.GSAS_CALIB</code>
     * or null if it can't be determined.
     */
    public GsasCalib getGSASCalib()
@@ -1111,7 +1150,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.GSAS_IPARM</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.GSAS_IPARM</code>
     * or null if it can't be determined.
     */
    public String getGSASIParm()
@@ -1120,7 +1160,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.LATTICE_PARAM</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.LATTICE_PARAM</code>
     * or null if it can't be determined.
     */
    public float[] getLatticeParam()
@@ -1129,7 +1170,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.ORIENT_MATRIX</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.ORIENT_MATRIX</code>
     * or null if it can't be determined.
     */
    public String getOrientMatrix()
@@ -1138,7 +1180,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.ORIENT_FILE</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.ORIENT_FILE</code>
     * or null if it can't be determined.
     */
    public String getOrientFile()
@@ -1147,7 +1190,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.CELL_VOLUME</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.CELL_VOLUME</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getCellVolume()
@@ -1156,7 +1200,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.SCD_CALIB</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.SCD_CALIB</code>
     * or null if it can't be determined.
     */
    public String getSCDCalid()
@@ -1165,7 +1210,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.SCD_CALIB_FILE</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.SCD_CALIB_FILE</code>
     * or null if it can't be determined.
     */
    public String getSCDCalibFile()
@@ -1174,7 +1220,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.PIXEL_INFO_LIST</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.PIXEL_INFO_LIST</code>
     * or null if it can't be determined.
     */
    public PixelInfoList getPixelInfoList()
@@ -1192,7 +1239,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.TIME_OFFSET</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.TIME_OFFSET</code>
     * or <code>Float.NaN</code> if it can't be determined.
     */
    public float getTimeOffset()
@@ -1201,7 +1249,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.START_TIME_SEC</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.START_TIME_SEC</code>
     * or -1 if it can't be determined.
     */
    public int getStartTimeSec()
@@ -1210,7 +1259,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.TIME_OF_DAY</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.TIME_OF_DAY</code>
     * or null if it can't be determined.
     */
    public String getTimeOfDay()
@@ -1219,7 +1269,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.DAY_OF_MONTH</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.DAY_OF_MONTH</code>
     * or null if it can't be determined.
     */
    public String getDayOfMonth()
@@ -1237,7 +1288,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.INVALID_DATA_SET</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.INVALID_DATA_SET</code>
     * or null if it can't be determined.
     */
    public String getInvalidDataSet()
@@ -1246,7 +1298,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.MONITOR_DATA</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.MONITOR_DATA</code>
     * or null if it can't be determined.
     */
    public String getMonitorData()
@@ -1255,7 +1308,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.SAMPLE_DATA</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.SAMPLE_DATA</code>
     * or null if it can't be determined.
     */
    public String getSampleData()
@@ -1264,7 +1318,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.PULSE_HEIGHT_DATA</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.PULSE_HEIGHT_DATA</code>
     * or null if it can't be determined.
     */
    public String getPulseHeightData()
@@ -1273,7 +1328,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.TEMPERATURE_DATA</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.TEMPERATURE_DATA</code>
     * or null if it can't be determined.
     */
    public String getTemperatureData()
@@ -1282,7 +1338,8 @@ public class AttributeList implements Serializable,
    }
 
    /**
-    * Get the value of the attribute specified by <code>Attribute.PRESSURE_DATA</code>
+    * Get the value of the attribute specified by
+    * <code>Attribute.PRESSURE_DATA</code>
     * or null if it can't be determined.
     */
    public String getPressureData()
@@ -1316,7 +1373,7 @@ public class AttributeList implements Serializable,
       System.out.println("Warning:AttributeList IsawSerialVersion != 1");
   }
   
-  /*--------------------------------------------------------------------------------------
+  /*---------------------------------------------------------------------------
    * These are helper methods for obtaining attributes.  These methods
    * do the actual work.
    */
@@ -1408,11 +1465,11 @@ public class AttributeList implements Serializable,
 
    /**
    * Looks for the attribute with the name <code>name</code> from the list 
-   * of attributes.  If the attribute is not in the list or a DetectorPosition object 
-   * cannot be aquired from it, <code>null</code> is returned.
+   * of attributes.  If the attribute is not in the list or a DetectorPosition
+   * object cannot be aquired from it, <code>null</code> is returned.
    * @param name The name of the attribute to search for.
-   * @return The DetectorPosition object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The DetectorPosition object aquired from the attribute with the
+   * specified name or <code>null</code> if it can't be aquired.
    */
    private DetectorPosition resolveDetectorPositionAttribute(String name)
    {
@@ -1459,35 +1516,35 @@ public class AttributeList implements Serializable,
 
    /**
    * Looks for the attribute with the name <code>name</code> from the list 
-   * of attributes.  If the attribute is not in the list or a SampleOrientation object 
-   * cannot be aquired from it, <code>null</code> is returned.
+   * of attributes.  If the attribute is not in the list or a SampleOrientation
+   * object cannot be aquired from it, <code>null</code> is returned.
    * @param name The name of the attribute to search for.
-   * @return The SampleOrientation object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The SampleOrientation object aquired from the attribute with the
+   * specified name or <code>null</code> if it can't be aquired.
    */
    private SampleOrientation resolveSampleOrientationAttribute(String name)
    {
-	 Object val = getAttributeValue(name);
-	 if ((val != null) && (val instanceof SampleOrientationAttribute))
-	   return (SampleOrientation)((SampleOrientationAttribute)val).getValue();
-	 else
-	   return null;
+     Object val = getAttributeValue(name);
+     if ((val != null) && (val instanceof SampleOrientationAttribute))
+       return (SampleOrientation)((SampleOrientationAttribute)val).getValue();
+     else
+       return null;
    }   
    
    /**
     * Looks for the attribute with the name <code>name</code> from the list 
-    * of attributes.  If the attribute is not in the list or a PixelInfoList object 
-    * cannot be aquired from it, <code>null</code> is returned.
+    * of attributes.  If the attribute is not in the list or a PixelInfoList
+    * object cannot be aquired from it, <code>null</code> is returned.
     * @param name The name of the attribute to search for.
-    * @return The PixelInfoList object aquired from the attribute with the specified 
-    * name or <code>null</code> if it can't be aquired.
+    * @return The PixelInfoList object aquired from the attribute with the
+    * specified name or <code>null</code> if it can't be aquired.
     */
    private PixelInfoList resolvePixelInfoListAttribute(String name)
    {
-	  Object val = getAttributeValue(name);
-	  if ((val != null) && (val instanceof PixelInfoListAttribute))
-		return (PixelInfoList)((PixelInfoListAttribute)val).getValue();
-	  else
-		return null;
+     Object val = getAttributeValue(name);
+     if ((val != null) && (val instanceof PixelInfoListAttribute))
+	   return (PixelInfoList)((PixelInfoListAttribute)val).getValue();
+     else
+	   return null;
    }
 }
