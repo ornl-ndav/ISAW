@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2003/07/05 19:17:31  dennis
+ * Adapted to the new form of the setNamedColorModel() method from the
+ * ImageJPanel class.
+ *
  * Revision 1.28  2003/02/12 19:44:07  dennis
  * Switched to use PixelInfoList instead of SegmentInfoList
  *
@@ -958,7 +962,7 @@ private void init()
 
   color_scale_image = new ColorScaleImage();
   color_scale_image.setNamedColorModel( 
-                     getState().get_String( ViewerState.COLOR_SCALE), true );
+              getState().get_String( ViewerState.COLOR_SCALE), true, true );
   control_panel.add( color_scale_image );
 
   log_scale_slider.setPreferredSize( new Dimension(120,50) );
@@ -1097,7 +1101,7 @@ private class OptionMenuHandler implements ActionListener
     color_table = IndexColorMaker.getDualColorTable( action,
                                                      NUM_POSITIVE_COLORS );
     set_colors( frame_control.getFrameNumber() );
-    color_scale_image.setNamedColorModel( action, true );
+    color_scale_image.setNamedColorModel( action, true, true );
     getState().set_String( ViewerState.COLOR_SCALE, action );
   }
 }
