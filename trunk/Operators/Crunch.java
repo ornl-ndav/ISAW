@@ -40,18 +40,7 @@ import DataSetTools.viewer.*;
 import java.util.*;
 
 /** 
- *  This operator provides a "template" for writing operator "plug-ins" for 
- *  Isaw.  To make a custom operator for use with ISAW, rename this file, then
- *  modify the class name, and title to an appropriate name, such as 
- *  MyOperator.java for the file and MyOperator for the class. Place the 
- *  new file in the Operators subdirectory of the Isaw home directory, or of
- *  your home directory.  Next, modify the parameters, command name and 
- *  the calculation performed as needed.  This template includes a main 
- *  program that can be used to test the operator separately.  You should also
- *  modify the main program appropriately, to separately test your operator.
- *  The operator must be compiled before Isaw is started, so that Isaw can 
- *  load the class file.  PLEASE ALSO REPLACE THE TEMPLATE COMMENTS WITH 
- *  COMMENTS APPROPRIATE FOR YOUR OPERATOR.
+ *  This operator removes empty detectors from a data set. 
  */
 public class Crunch extends GenericSpecial{
     private static final String TITLE = "Crunch";
@@ -126,7 +115,7 @@ public class Crunch extends GenericSpecial{
 					  oplog,
 					  x_units, x_label,
 					  y_units, y_label );
-	ds.addLog_entry("Applied the Crunch");
+	ds.addLog_entry("Applied Crunch");
 	Object obj=ds.clone();
 	if( obj instanceof DataSet ){
 	    new_ds = (DataSet)obj;
@@ -136,20 +125,20 @@ public class Crunch extends GenericSpecial{
 
 	int[] bad_det = new int[new_ds.getNum_entries()];
 	int bi=0;
+	int MAX_ID=new_ds.getMaxGroupID();
 	// remove the empty detectors
-	for( int i=new_ds.getNum_entries()-1 ; i>=0 ; i-- ){
-	    Data det=new_ds.getData_entry(i);
-	    Float count=(Float)
-		det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
-	    if( count.floatValue() == 0 ){
-		new_ds.removeData_entry(i);
-		//bad_det[bi]=i;
-		//bi++;
+	for( int i=1 ; i<=MAX_ID ; i++ ){
+	    Data det=new_ds.getData_entry_with_id(i);
+	    if( det == null ){
+		// do nothing
+	    }else{
+		Float count=(Float)
+		    det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+		if( count.floatValue() == 0 ){
+		    new_ds.removeData_entry_with_id(i);
+		}
 	    }
 	}
-	/* for( ; bi>=0 ; bi-- ){
-	    new_ds.removeData_entry(bad_det[bi]-1); 
-	    } */
 	    
 	return new_ds;
     }
