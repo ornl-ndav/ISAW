@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/06/10 13:48:32  bouzekc
+ *  Fixed NullPointerException in init().
+ *
  *  Revision 1.2  2003/06/09 20:30:21  pfpeterson
  *  Fixed problem with null values in the GUI.
  *
@@ -125,9 +128,11 @@ abstract public class StringEntryPG extends ParameterGUI{
       }
     }
 
-    String val="";
-    if(this.value!=null) val=this.value.toString();
-    entrywidget=new StringEntry(val,DEF_COLS,FILTER);
+    if(this.value != null)
+      entrywidget=new StringEntry(this.value.toString(),DEF_COLS,FILTER);
+    else
+      entrywidget = new StringEntry("", DEF_COLS, FILTER);
+
     entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
     this.setEnabled(this.getEnabled());
     super.initGUI();
