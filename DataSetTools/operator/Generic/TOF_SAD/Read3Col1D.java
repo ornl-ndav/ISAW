@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/04/26 13:34:05  rmikk
+ * Add the standard operators to this data set
+ *
  * Revision 1.8  2004/04/19 14:06:25  rmikk
  * Added the ability to read files created by the Table operator
  * Closed the FileInputStream at the end and with errors.
@@ -286,6 +289,7 @@ public class Read3Col1D extends GenericTOF_SAD{
         Res.setY_label("Intensity");
          }
     
+     DataSetFactory.addOperators( Res);
      return Res;
     
 
@@ -331,7 +335,7 @@ public class Read3Col1D extends GenericTOF_SAD{
     Res.append("@overview  Reads efficiency or Reduce files in 3Col format ");
     Res.append(" and produces a DataSet");
     Res.append("@param filename- the name of the file to print to");
-    Res.append("@param fileType - Either Efficiency or Reduce Results");
+    Res.append("@param fileType - Either Efficiency,Reduce Results, or Table");
     Res.append("@return  the DataSet or an error message");
     Res.append("@error - \"File Type not supported\" must be Efficiency ");
 
