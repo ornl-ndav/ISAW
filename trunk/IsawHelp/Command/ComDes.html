@@ -45,7 +45,12 @@ There are several forms of load. (* proposed)</h3>
 <br><b>Integer Load String Filename, String VariableName</b>
 <br><b>Integer Load( String Filename , String VariableName )</b>
 <p>The return value is the number of datasets loaded.
-<br>These files are loaded into the local workspace</ol>
+<br>These files are loaded into the local workspace
+<P>
+ <LI> <b> Load DataSet[] </b><br>
+    This add the array of data sets to the name space of the executable code<P>.
+    This form allow for user defined variable names, and parenthesis.
+</ol>
 </ul>
 
 <hr><a NAME="Display"></a>Display
@@ -87,7 +92,7 @@ Not implemented yet
 <p>
 <hr><a NAME="Rebin"></a>Rebin
 <ul>
-<ul><b>DataSet Rebin(DataSet , float a, float b , int n)</b></ul>
+<ul><b>DataSet Rebin(DataSet , float a, float b , int n, boolean)</b></ul>
 </ul>
 Not implemented Yet
 <p>
@@ -95,7 +100,7 @@ Not implemented Yet
 <ul>Transform X
 <br>&nbsp;
 <br>&nbsp;
-<ul><b>DataSet TranX( DataSet , String )</b></ul>
+<ul><b>DataSet TranX( DataSet , String, boolean )</b></ul>
 </ul>
 Not implemented yet
 <p>
@@ -103,7 +108,7 @@ Not implemented yet
 <ul>Transform Y
 <br>&nbsp;
 <br>&nbsp;
-<ul><b>DataSet TranY(DataSet, String )</b></ul>
+<ul><b>DataSet TranY(DataSet, String, boolean )</b></ul>
 </ul>
 Not implemented yet
 <p>
@@ -117,7 +122,7 @@ Not implemented yet
 <b>DataSet Add( DataSet, float value , boolean make_new_s)</b></li>
 
 <li>
-<b>* DataSet Add( DataSet, DataSet , integer )</b></li>
+<b>* DataSet Add( DataSet, DataSet , integer , boolean )</b></li>
 
 <ul>&nbsp;Not implemented yet</ul>
 </ol>
@@ -197,21 +202,21 @@ make_new_ds)</ul>
 <br>&nbsp;
 <br>&nbsp;
 <ul><b>DataSet DelAtt( DataSet , String <a href="Attributes.html">attr_name</a>
-, float min, float max , boolean make_new_ds)</b></ul>
+, float min, float max , boolean status , boolean make_new_ds)</b></ul>
 </ul>
 
 <hr><a NAME="ExtSel"></a>ExtSel
 <ul>Extract currently Selected
 <br>&nbsp;
 <br>&nbsp;
-<ul><b>DataSet ExtSel( DataSet , boolean , boolean )</b></ul>
+<ul><b>DataSet ExtSel( DataSet , boolean  )</b></ul>
 </ul>
 Not implemented yet
 <p>
 <hr><a NAME="ExtAt"></a>ExtAtt
 <ul>Extract by Attribute
 <ul><b>DataSet ExtAtt( DataSet , String <a href="Attributes.html">attr_name</a>
-, float min , float max , boolean keep )</b></ul>
+, boolean keep , float min , float max )</b></ul>
 </ul>
 
 <hr><a NAME="Eval"></a>Eval
@@ -345,12 +350,19 @@ nbins)</b></ul>
   <ul> Set a Data Set Field<ul><b>
        void SetField( DataSet ds , String FieldName , Object New_Value ) </b></ul>
   </ul>
+   <B> NOTE:</b> Changing the Title field will change the variable name of the data set. i.e. the name 
+    the command Pane uses to refer to the data set.<P>
 <hr>
 <A name = "GetField" >GetField</a> <br>
  <ul> Get a Data Set Field<ul><b>
       Object GetField( DataSet ds , String FieldName )</b></ul>
  </ul>
 <hr>
-
+<A name ="SumRunfiles">SumRunfiles</a><P>
+ <ul> Sums Run files
+<UL><B> DataSet[2] SumRunfiles( String path, String instrument, String runs,
+                        String   group_mask,
+                        boolean  compare_monitor_pulse)
+    </b></ul>
 </body>
 </html>
