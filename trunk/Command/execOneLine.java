@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.63  2003/10/22 19:54:31  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.62  2003/10/20 16:27:50  rmikk
  * Fixed javadoc errors
  * Improved releasing of data from this scripting system
@@ -2401,7 +2404,8 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * Can be used by other parsers. Use the getResult() method to
      * determine the value
      *
-     * @param LeftValue, RightValue the two objects to be operated on
+     * @param LeftValue  left operand to be operated on
+     * @param RightValue right operand to be operated on
      * @param operation +,-,*, or /
      *
      * NOTE: The data types will converted if possible and the
