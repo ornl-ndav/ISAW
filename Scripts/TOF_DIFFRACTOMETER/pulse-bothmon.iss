@@ -1,13 +1,14 @@
 #Ashfia Huq November 2004 
 # Script to extract Monitor counts and Number of pulses from a series of run files.
-# $Date$
 
-$Category=Macros, Instrument Type, TOF_NPD
+# CVS VERSION $Date$
+
+# Date: 2004/11/10 16:03:04 
 
 
-$run_numbers		Array([25256:25257])          		Enter run numbers like [21378]
-$path                	DataDirectoryString(C:/material)	Inputname
-$path_archive		DataDirectoryString(C:/material)	path_archive
+$run_numbers		Array([25727:25728])          		Enter run numbers like [21378]
+$path                	DataDirectoryString(/IPNShome/gppduser)	Inputname
+$path_archive		DataDirectoryString(/IPNShome/gppduser/archive_data)	path_archive
 $instrument          	InstrumentNameString    		Instrument
   
 $Current		Boolean(true)		Is this a Current Run ?
