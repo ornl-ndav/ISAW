@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/01/08 21:52:29  dennis
+ * Now sets runfile retriever and DataSet to null when no longer used,
+ * to allow earlier garbage collection.  Also, makes 400x400 image instead
+ * of 500x500 image, and checks for null vectors before drawing a slice.
+ *
  * Revision 1.8  2003/01/08 17:45:30  dennis
  * Added option to show slice through Qxyz space.  This is currently just
  * a "proof of concept", and works only for "old" SCD data.
@@ -619,8 +624,11 @@ public class SCDRecipLat
   /* ------------------------- make_slice ---------------------------- */
   private float[][] make_slice( Vector3D origin, Vector3D base, Vector3D up )
   {
-    int n_rows = 500;
-    int n_cols = 500;
+    if( origin == null || base == null || up == null )
+      return null;
+
+    int n_rows = 400;
+    int n_cols = 400;
     float image[][] = new float[n_rows][n_cols];
 
     float size;
@@ -720,7 +728,8 @@ public class SCDRecipLat
     {
       System.out.println("Loading file: " + file_names[count]);
       rr = new RunfileRetriever( file_names[count] );
-      ds = rr.getDataSet( 1 );
+      ds = rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
+      rr = null;
       if ( ds == null )
         System.out.println("File not found: " + file_names[count]);
       else
@@ -728,6 +737,7 @@ public class SCDRecipLat
         IThreeD_Object non_zero_objs[] = viewer.getPeaks( ds, thresh_scale );
         viewer.vec_Q_space.setObjects( file_names[count], non_zero_objs );
       }
+      ds = null;
    }
      
     System.out.println("All files loaded");
