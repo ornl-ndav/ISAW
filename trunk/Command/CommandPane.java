@@ -52,7 +52,7 @@ import java.awt.event.*;
 import javax.swing.border.*; 
 import DataSetTools.operator.*; 
 import java.beans.*; 
-
+import java.util.Vector;
 
 
 /** Pane to enter and execute and handle commands
@@ -64,10 +64,10 @@ import java.beans.*;
  *  most of the commands availabe in the GUI.
  */
 public class CommandPane  extends JPanel 
-                          implements KeyListener , 
-                                     ActionListener , 
+                          implements  //KeyListener , 
+                                      // ActionListener , 
 				     PropertyChangeListener , 
-                                     IObservable ,  IObserver
+                                      IObservable ,  IObserver
 {    
   
  //***********************SECTION GUI****************
@@ -90,12 +90,12 @@ public class CommandPane  extends JPanel
 
    
     IObserverList OL ; 
-
+    PropertyChangeSupport PL;
     String FilePath = null  ;                   // for macro storage and retrieval
     Document logDocument = null;
 
-    boolean Debug = false;
-
+    private boolean Debug = true;
+    private Document MacroDocument = null;
 
     /** Constructor with Visual Editor and no data sets from outside this program
      *  This can be used with a stand alone editor
@@ -106,7 +106,7 @@ public class CommandPane  extends JPanel
     
     init() ; 
     OL = new IObserverList() ; 
-      
+    PL = new PropertyChangeSupport( this );  
     }
    
 
@@ -120,6 +120,7 @@ public class CommandPane  extends JPanel
     ExecLine = new Command.execOneLine( Dat ) ; 
     init() ; 
     OL = new IObserverList() ; 
+      PL = new PropertyChangeSupport( this );  
    }
 
     /** Constructor with Visual Editor and a set of data set from outside this program
@@ -132,6 +133,7 @@ public class CommandPane  extends JPanel
      ExecLine = new Command.execOneLine( dss ) ; 
      init() ; 
      OL = new IObserverList() ; 
+       PL = new PropertyChangeSupport( this );  
     }
 
 
@@ -149,7 +151,8 @@ public class CommandPane  extends JPanel
        FileReader fr ; 
        File f ; 
        ExecLine = new Command.execOneLine() ; 
-       OL = new IObserverList() ; 
+       OL = new IObserverList() ;
+       PL = new PropertyChangeSupport( this );   
        try{
           f = new File( TextFileName ) ; 
           }
@@ -206,19 +209,25 @@ public class CommandPane  extends JPanel
      *    @param  Doc      The Document that has macro commands
      *    @param  P        The parameters and values to run the Macro
      */
-    public CommandPane( Document Doc , Parameter P )
+    public CommandPane( Document Doc , IObserver O )
       {OL = new IObserverList() ; 
-       ExecLine = new Command.execOneLine() ; 
-
+       initialize();
+       ExecLine = new Command.execOneLine() ;
+       addIObserver( O );
+       PL = new PropertyChangeSupport( this );  
+       MacroDocument = Doc ;
+        
       }
 /** 
   * Sets up the document that logs all operations
   *@param   doc     The document that logs operations
+  * Note: Not used yet
 */
     public void setLogDoc( Document doc)
     { logDocument = doc;
       ExecLine.setLogDoc( doc);
     }
+
     private void initialize()
     {
       Run  =  null ;   
@@ -231,7 +240,7 @@ public class CommandPane  extends JPanel
     /** Initializes the Visual Editor Elements
      *
      */
-    public void init()
+    private void init()
     {JPanel JP ; 
        
         Rectangle R = getBounds() ; 
@@ -243,10 +252,10 @@ public class CommandPane  extends JPanel
         Save = new JButton( "Save Prgm" ) ; 
         Help = new JButton( "Help" ) ; 
         
-        Run.addActionListener( this ) ; 
-        Open.addActionListener( this ) ; 
-        Save.addActionListener( this ) ; 
-        Help.addActionListener( this ) ; 
+        Run.addActionListener( new MyMouseListener() ) ; 
+        Open.addActionListener( new MyMouseListener() ) ; 
+        Save.addActionListener(new MyMouseListener() ) ; 
+        Help.addActionListener( new MyMouseListener() ) ; 
       
 
         setLayout( new BorderLayout() ) ; 
@@ -267,7 +276,7 @@ public class CommandPane  extends JPanel
            Commands = new JTextArea( 7 , 50 ) ; 
            Commands.setLineWrap( true ) ; 
            Immediate = new JTextArea( 5 , 50 ) ; 
-           Immediate.addKeyListener( this ) ;        
+           Immediate.addKeyListener( new MyKeyListener(this)) ;        
 	 
            JSplitPane JPS = new JSplitPane(JSplitPane.VERTICAL_SPLIT) ; 
            JScrollPane X =  new JScrollPane( Commands ) ; 
@@ -314,17 +323,24 @@ public class CommandPane  extends JPanel
 
     {
      String S ; 
-     Element E ; 
+     //Element E ; 
        
      if( Doc == null )return ; 
   
      if( line < 0 )return ; 
-     E = Doc.getDefaultRootElement().getElement( line ) ; 
-     if( E == null )return ;  
+     //E = Doc.getDefaultRootElement().getElement( line ) ; 
+     //if( E == null )return ;  
      
-     try{
-          S = Doc.getText( E.getStartOffset() , E.getEndOffset() - E.getStartOffset() - 1 ) ;         
-         
+     //try{
+         // S = Doc.getText( E.getStartOffset() , E.getEndOffset() - E.getStartOffset() - 1 ) ;         
+           S = getLine( Doc , line);
+           
+           
+          if( S == null )
+             {seterror( 0 , "Bad Line number");
+              lerror = line;
+              return;
+             }
           int kk = ExecLine.execute( S , 0 , S.length() ) ; 
           perror = ExecLine.getErrorCharPos() ; 
 	  if( perror >= 0 )
@@ -338,18 +354,18 @@ public class CommandPane  extends JPanel
                 serror = "Extra Characters at the end of command" ; 
                }
 
-         }
-     catch( javax.swing.text.BadLocationException s )
-	 {if( StatusLine == null )
-            System.out.println( "Bad line numbers" + E + "," + 
-                           E.getStartOffset() + "," + E.getEndOffset() ) ; 
-	 else 
-           {StatusLine.setText( "Bad line numbers" + E + "," + E.getStartOffset() + "," 
-                                  + E.getEndOffset() ) ; 
+        // }
+    // catch( javax.swing.text.BadLocationException s )
+	// {if( StatusLine == null )
+         //   System.out.println( "Bad line numbers" + E + "," + 
+//                           E.getStartOffset() + "," + E.getEndOffset() ) ; 
+	// else 
+          // {StatusLine.setText( "Bad line numbers" + E + "," + E.getStartOffset() + "," 
+           //                       + E.getEndOffset() ) ; 
 	   
-           }
+          // }
           
-        }
+       // }
 
     }
 
@@ -373,8 +389,47 @@ public class CommandPane  extends JPanel
               }
       
          
+      
+         
     }
+   private void execute( Parameter Args[])
+    {int i;
+     String S;
+     
+     Vector vnames = new Vector();
+     if( Args != null)
+     for( i = 0 ; i < Args.length ; i++)
+       {  if( Args[i].getValue() instanceof DataSet)
+            { DataSet ds = (DataSet)(Args[i].getValue());
+              vnames.add( ds.getTitle());
+              vnames.add( ds);
+              ds.setTitle(Args[i].getName());
+            }
+          else
+            {S = Args[i].getName().toString() + "=" ;
+             if( Args[i].getValue() instanceof String)
+                S = S + '"' +  Args[i].getValue().toString()+ '"';
+             else
+                S = S + Args[i].getValue().toString();
+             ExecLine.resetError() ;
+             int j = ExecLine.execute ( S , 0 , S.length());
+             perror =ExecLine.getErrorCharPos() ;
+             if( perror >= 0 )
+                serror = ExecLine.getErrorMessage()+" in Parameters" ;
+             if( perror >= 0)
+               {lerror = 0;
+                return;
+               }
+            }
 
+       }
+     int k = executeBlock( MacroDocument ,2 ,true ) ;
+  
+     for(i = 0 ; i < (vnames.size()/2) ; i++)
+      {DataSet ds =(DataSet)(vnames.get( 2*i + 1));
+       ds.setTitle( vnames.get( 2*i ).toString() );
+      }
+    }
    private int executeBlock ( Document Doc , int start ,  boolean exec )
      { int line ; 
        String S ; 
@@ -383,15 +438,17 @@ public class CommandPane  extends JPanel
        line = start ; 
        if(Debug)System.out.print( "In exeBlock line ,ex=" + line+","+exec + perror ) ; 
        while ( ( line < E.getElementCount() ) && ( perror < 0 ) )
-	   {F =  E.getElement( line ) ; 
-            try
-	      {
- 	       S = Doc.getText( F.getStartOffset() , F.getEndOffset() - F.getStartOffset() ) ; 
-              }
-            catch( BadLocationException s )
-		{ seterror( 1000 ,  "Internal Error p" ) ; 
-		  return line ; 
-                }
+	   {//F =  E.getElement( line ) ; 
+            //try
+	      //{
+ 	       //S = Doc.getText( F.getStartOffset() , F.getEndOffset() - F.getStartOffset() ) ; 
+              //}
+           // catch( BadLocationException s )
+		//{ seterror( 1000 ,  "Internal Error p" ) ; 
+		  //return line ; 
+               // }
+           S = getLine( Doc , line );
+           
            
            if( S !=  null )
                { 
@@ -406,6 +463,12 @@ public class CommandPane  extends JPanel
             if( S == null )
 	      {if( Debug )
                  System.out.println(" S is null " );
+               }
+            else if( S.trim() == null)
+               {
+               }
+            else if( S.trim().indexOf( "#") == 0 )
+               {
                }
             else if( S.toUpperCase().trim().indexOf( "FOR " ) == 0 )
 	      line = executeForBlock ( Doc , line , exec ) ; 
@@ -512,7 +575,8 @@ public class CommandPane  extends JPanel
        if( Doc == null ) return -1 ; 
        E = Doc.getDefaultRootElement() ; 
        if( start < 0 ) return start ; 
-       if( start >= E.getElementCount() ) return start ;   
+       if( start >= E.getElementCount() ) return start ;  
+      /* 
        F = E.getElement( start ) ; 
        try{
          S = Doc.getText( F.getStartOffset() , F.getEndOffset()  -  F.getStartOffset() ) ; 
@@ -521,6 +585,12 @@ public class CommandPane  extends JPanel
 	 {seterror ( 0 , "Internal Errorb" ) ; 
 	  return start ; 
 	 }
+       */
+       S = getLine( Doc , start );
+       if( S == null)
+	 {seterror ( 0 , "Internal Errorb" ) ; 
+	  return start ; 
+	 }         
        i =  S.toUpperCase().indexOf( "FOR " ) ; 
        if( i < 0 )
 	 { seterror ( 1 ,  "internal error" ) ; 
@@ -556,11 +626,18 @@ public class CommandPane  extends JPanel
 	      { seterror( 0 , "No EndFor for a FORb" + S ) ; 
 	        return line ; 
               }
-             F = E.getElement(line ) ; 
+            /* F = E.getElement(line ) ; 
              try{
                S = Doc.getText( F.getStartOffset() ,  F.getEndOffset() - F.getStartOffset() ) ; 
 	        }
              catch( BadLocationException s )
+	       {
+		seterror( 0 ,  "Internal error" ) ; 
+                return line ; 
+	       }
+              */
+             S = getLine( Doc , line );
+             if( S == null )
 	       {
 		seterror( 0 ,  "Internal error" ) ; 
                 return line ; 
@@ -580,7 +657,7 @@ public class CommandPane  extends JPanel
 
       }
 
-    public int executeErrorBlock( Document Doc , int start , boolean execute )
+    private int executeErrorBlock( Document Doc , int start , boolean execute )
       {String var ;      
       int i , j , k ; 
       int line ; 
@@ -593,11 +670,18 @@ public class CommandPane  extends JPanel
        E = Doc.getDefaultRootElement() ; 
        if( start < 0 ) return start ; 
        if( start >= E.getElementCount() ) return start ;   
-       F = E.getElement( start ) ; 
+       /*F = E.getElement( start ) ; 
        try{
          S = Doc.getText( F.getStartOffset() , F.getEndOffset()  -  F.getStartOffset() ) ; 
           }
        catch( BadLocationException s )
+	 {seterror ( 0 , "Internal Errorc" ) ; 
+	  return start ; 
+	 }
+       */
+       S = getLine( Doc , start);
+
+       if( S == null )
 	 {seterror ( 0 , "Internal Errorc" ) ; 
 	  return start ; 
 	 }
@@ -622,7 +706,8 @@ public class CommandPane  extends JPanel
          {seterror ( 0 , " No ENDERROR for On Error" ) ; 
 	  return line ; 
           }
-       F = E.getElement( line ) ; 
+
+/*       F = E.getElement( line ) ; 
        try{
           S = Doc.getText( F.getStartOffset() , F.getEndOffset() - F.getStartOffset() ) ; 
            }
@@ -630,6 +715,12 @@ public class CommandPane  extends JPanel
 	  {seterror ( 0 , "Internal Errorc" ) ; 
 	   return line ; 
 	  }
+*/
+      S = getLine( Doc , line );
+      if( S == null )
+	 {seterror ( 0 , "Internal Errorc" ) ; 
+	  return start ; 
+	 }
       if( S.toUpperCase().trim().equals( "ELSE ERROR" ) )
 	{ 
           line =executeBlock( Doc , line + 1 ,mode ) ;  
@@ -645,7 +736,7 @@ public class CommandPane  extends JPanel
 	}
 
          
-       F = E.getElement( line ) ; 
+/*       F = E.getElement( line ) ; 
        try{
           S = Doc.getText( F.getStartOffset() , F.getEndOffset() - F.getStartOffset() ) ; 
            }
@@ -653,7 +744,12 @@ public class CommandPane  extends JPanel
 	  {seterror ( 0 , "Internal Errorc" ) ; 
 	   return line ; 
 	  }
-
+*/
+     S = getLine( Doc , line );
+     if( S == null )
+	 {seterror ( 0 , "Internal Errorc" ) ; 
+	  return start ; 
+	 }
      if( !S.toUpperCase().trim().equals( "END ERROR") )
       {seterror( 0 , " NO ELSE or END Error for On ERRor" ) ;  }
       return line ;  
@@ -746,68 +842,72 @@ public class CommandPane  extends JPanel
       return j;
       
      } 
-  private String getLine( Document Doc, int start )
-    {
-    String var ;      
+   private String getLine( Document Doc, int start )
+     {
+      String var ;      
       int i , j , k ; 
       int line ; 
-       String S ; 
-       boolean mode ; 
-       Element  E ,
-	        F ;  
+      String S ; 
+      boolean mode ; 
+      Element  E ,
+	       F ;  
        
-       if( Doc == null ) 
-         return null ; 
-       E = Doc.getDefaultRootElement() ; 
-       if( start < 0 ) 
-         return null ; 
-       if( start >= E.getElementCount() ) 
-           return null ;   
-       F = E.getElement( start ) ; 
-       try{
-         S = Doc.getText( F.getStartOffset() , F.getEndOffset()  -  F.getStartOffset() ) ; 
-          }
-       catch( BadLocationException s )
-	 {seterror ( 0 , "Internal Errorc" ) ; 
-	  return null ; 
-	 }
+      if( Doc == null ) 
+        return null ; 
+      E = Doc.getDefaultRootElement() ; 
+      if( start < 0 ) 
+        return null ; 
+      if( start >= E.getElementCount() ) 
+         return null ;   
+      F = E.getElement( start ) ; 
+      try{
+        S = Doc.getText( F.getStartOffset() , F.getEndOffset()  -  F.getStartOffset() ) ; 
+         }
+      catch( BadLocationException s )
+	{seterror ( 0 , "Internal Errorc" ) ; 
+	 return null ; 
+	}
+     
+      if( S != null) 
+         if( S.charAt(S.length() - 1 )<' ' ) 
+             S = S.substring( 0,S.length() - 1 );
       return S;
 
     }
-    public void seterror( int poserr , String ermess )
+    private void seterror( int poserr , String ermess )
       { perror = poserr ; 
         serror = ermess ; 
       }
       
     
- public String delSpaces( String S)
-    { boolean quote,
-              onespace; 
-      int i ; 
-      String Res;
-      char prevchar;
-      if( S == null ) return null;
-      Res  = "";
-      quote = false;
-      onespace = false;
-      prevchar = 0; 
-      for ( i =0; i < S.length() ; i++)
-        {   
-        
-	 if( S.charAt( i) == '\"') 
-           {quote = ! quote;
-	    if( i > 0)
-	      if (!quote )
+    public String delSpaces( String S)
+      { boolean quote,
+                onespace; 
+        int i ; 
+        String Res;
+       char prevchar;
+       if( S == null ) return null;
+       Res  = "";
+       quote = false;
+       onespace = false;
+       prevchar = 0; 
+       for ( i =0; i < S.length() ; i++)
+         {   
+         
+           if( S.charAt( i) == '\"') 
+             {quote = ! quote;
+	      if( i > 0)
+	        if (!quote )
 		  if( S.charAt( i-1) == '\\') quote = !quote;
-            Res = Res + S.charAt ( i );
-            prevchar = S.charAt ( i );
-           }
-         else if( quote ) 
-           { Res = Res + S.charAt(i);
+              Res = Res + S.charAt ( i );
               prevchar = S.charAt ( i );
-           }
-         else if( S.charAt ( i ) == ' ')
-	   {
+             }
+           else if( quote ) 
+             { Res = Res + S.charAt(i);
+               prevchar = S.charAt ( i );
+             }
+           else if( S.charAt ( i ) == ' ')
+	     {
 	       if( " +-*/^():[]{}," . indexOf(S.charAt(i + 1 )) >= 0)
 		   {}
                else if( i+1>= S.length()){}
@@ -817,161 +917,161 @@ public class CommandPane  extends JPanel
                else
 		   Res = Res + S.charAt( i ) ; 
                prevchar = ' ';
-	   }
-         else
-	   {
+	     }
+           else
+	     {
 	       Res = Res + S.charAt(i);
                prevchar = S.charAt(i);
-	   }
+	     }
   
 
-	}
-      return Res;
+          }
+       return Res;
 
      
-    }
+      }
   // Find's the level 1 AND's and OR's in an expression
-  private   int finddANDOR( String S1, int start, int end )
-    {int i , j; 
-     boolean found; 
-     found = false;
-     String S = S1.toUpperCase();
-     if( Debug) 
-       System.out.println( "start ,endfinddANDOR=" + start + "," + end );
-      for(i = findQuote( S.toUpperCase() , 1, start, "A", "{}[]()"); 
-                                               ( i < end ) && !found  ;
-           i = findQuote( S.toUpperCase() , 1, i, "A", "{}[]()"))
-       {if(Debug) 
-           System.out.print("AND i="+i);
-       if( i + 2 >= end) i = end;
-       else if(! (S.substring( i, i+3).toUpperCase().equals( "AND" ) ) )
-	  i = i + 1 ;
-       else if (i <=0 ) 
-          i = end;
-       else if ( "+-*(^/:[,".indexOf( S.charAt( i - 1 ) ) >=0 )
-         i = i + 1;
-       else if( ! (") ]".indexOf( S.charAt( i - 1  )) >= 0 ))
-         i = i + 1 ;
-       else if( i + 4 >= end)
-         i = end;
-       else if ( "+-*^/:[,".indexOf(S.charAt( i + 3 ) ) >= 0  )
-         i = i + 1;
-       else if( (S.charAt(i + 3 ) == ' ') &&
+    private   int finddANDOR( String S1, int start, int end )
+      {int i , j; 
+       boolean found; 
+       found = false;
+       String S = S1.toUpperCase();
+       if( Debug) 
+         System.out.println( "start ,endfinddANDOR=" + start + "," + end );
+        for(i = findQuote( S.toUpperCase() , 1, start, "A", "{}[]()"); 
+                                                 ( i < end ) && !found  ;
+            i = findQuote( S.toUpperCase() , 1, i, "A", "{}[]()"))
+         {if(Debug) 
+             System.out.print("AND i="+i);
+          if( i + 2 >= end) i = end;
+          else if(! (S.substring( i, i+3).toUpperCase().equals( "AND" ) ) )
+	    i = i + 1 ;
+          else if (i <=0 ) 
+            i = end;
+          else if ( "+-*(^/:[,".indexOf( S.charAt( i - 1 ) ) >=0 )
+            i = i + 1;
+          else if( ! (") ]".indexOf( S.charAt( i - 1  )) >= 0 ))
+            i = i + 1 ;
+          else if( i + 4 >= end)
+            i = end;
+          else if ( "+-*^/:[,".indexOf(S.charAt( i + 3 ) ) >= 0  )
+            i = i + 1;
+          else if( (S.charAt(i + 3 ) == ' ') &&
                 ( "+-*(^/:[,".indexOf(S.charAt( i + 4 ) ) >= 0))
-	 {i = i + 1;}
+	    {i = i + 1;}
       
-       else
-	 found = true;
+         else
+	   found = true;
        
       }
      
  // Look for first OR
-    found = false;
-    for(j = findQuote( S , 1, start, "O", "{}[]()" ); ( j < end ) && !found  ;
-          )
-      {
-       if( Debug) 
-          System.out.print("Or j=" + j );
-       if( j + 2 >= end) 
-         j = end;
-       else if (j<=0) 
-          j = end;
-       else if(! S.substring( j, j + 2 ).toUpperCase().equals( "OR" ))
-	  j = j + 1 ;
+      found = false;
+      for(j = findQuote( S , 1, start, "O", "{}[]()" ); ( j < end ) && !found  ; )
+            
+        {
+         if( Debug) 
+            System.out.print("Or j=" + j );
+         if( j + 2 >= end) 
+           j = end;
+         else if (j<=0) 
+            j = end;
+         else if(! S.substring( j, j + 2 ).toUpperCase().equals( "OR" ))
+	    j = j + 1 ;
        
-        else if ( "+-*(^/:[," . indexOf(S.charAt( j - 1)) >= 0 )
-          j = j + 1;
-        else if( !(") ]" . indexOf(S.charAt( j - 1 ) ) >= 0 ))
-          j = j + 1;
-        else if( j + 3 >= end)
-          j = end;
-        else if ( "+-*^/:[,".indexOf(S.charAt( j + 2 )) >= 0 )
-          j = j + 1;
-        else if ( (S.charAt( j + 2) == ' ') && 
+         else if ( "+-*(^/:[," . indexOf(S.charAt( j - 1)) >= 0 )
+            j = j + 1;
+         else if( !(") ]" . indexOf(S.charAt( j - 1 ) ) >= 0 ))
+            j = j + 1;
+         else if( j + 3 >= end)
+           j = end;
+         else if ( "+-*^/:[,".indexOf(S.charAt( j + 2 )) >= 0 )
+           j = j + 1;
+         else if ( (S.charAt( j + 2) == ' ') && 
                             ("+-*(^/:[,".indexOf(S.charAt( j + 3 )) >= 0 ))
-	    j = j + 1;
+	   j = j + 1;
      
-        else
-	  found = true;
+         else
+	   found = true;
       
-       if(!found) j = findQuote( S , 1, j, "O", "{}[]()" );
+         if(!found) j = findQuote( S , 1, j, "O", "{}[]()" );
          
       }  
    
-    if ( j < i ) 
-        return j ; 
-    else 
+      if ( j < i ) 
+         return j ; 
+      else 
         return i;   
     }
 
   // Evaluates a logical expression
-  public boolean evaluate (String S, int start, int end )
-    {int i , 
-         j, 
-         k , 
-         s;
-    boolean B1 , 
-	    B2 ,
-            eq;
-    char op;
-    Object Result;
+    private boolean evaluate (String S, int start, int end )
+      {int i , 
+          j, 
+          k , 
+          s;
+      boolean B1 , 
+	     B2 ,
+             eq;
+      char op;
+      Object Result;
 
-    S= delSpaces(S);
-    if( Debug) 
-       System.out.println( "START eval" + start + "," + end );
-    if (S == null) 
+     S= delSpaces(S);
+     if( Debug) 
+        System.out.println( "START eval" + start + "," + end );
+     if (S == null) 
+        return false;
+     if( end > S.length()) 
+        end = S.length();
+     if( start < 0 ) 
+       start = 0;
+     if( start >= end ) 
        return false;
-    if( end > S.length()) 
-       end = S.length();
-    if( start < 0 ) 
-      start = 0;
-    if( start >= end ) 
-      return false;
  
     
-     i = finddANDOR( S, start, end );
-     if( Debug) 
-         System.out.println("After finddANDOR i="+i);
-     if( i < end)
-       { op = 'A';
-	 if( "Oo".indexOf(S.charAt( i )) >= 0 ) 
-           op = 'O'; 
-       }
-     else op = 'X';
+      i = finddANDOR( S, start, end );
+      if( Debug) 
+          System.out.println("After finddANDOR i="+i);
+      if( i < end)
+        { op = 'A';
+ 	 if( "Oo".indexOf(S.charAt( i )) >= 0 ) 
+            op = 'O'; 
+        }
+      else op = 'X';
+     
+      if( i < end)  
+        {B1 = evaluate( S , start , i );
+         i = i+2;
+         if(op == 'A' ) 
+           i++;
+        }
+      else
+  	 B1 = false;
     
-     if( i < end)  
-       {B1 = evaluate( S , start , i );
-        i = i+2;
-        if(op == 'A' ) 
-          i++;
-       }
-     else
-	 B1 = false;
-    
-     while( i < end)
-       {
-	   j = finddANDOR( S, i , end );
-           B2 = evaluate ( S , i , j );
-           if( op == 'A')
-	       B1 = B1 && B2;
-           else if( op == 'O')
-               B1 = B1 || B2;
-           else
-               { perror = i;
-                 return false;
-               }
+      while( i < end)
+        {
+          j = finddANDOR( S, i , end );
+          B2 = evaluate ( S , i , j );
+          if( op == 'A')
+	    B1 = B1 && B2;
+          else if( op == 'O')
+            B1 = B1 || B2;
+          else
+            { perror = i;
+              return false;
+            }
 
-           op = 'X';
-           if( j< end)
-	     {
-               op = 'A';
-               if( "Oo".indexOf(S.charAt( j )) >= 0 ) 
-                 op = 'O';
-	     }
-           else return B1;
-           i = j + 2;
-           if( op == 'A') 
-              i++;           
+          op = 'X';
+          if( j< end)
+	   {
+             op = 'A';
+             if( "Oo".indexOf(S.charAt( j )) >= 0 ) 
+               op = 'O';
+	   }
+          else return B1;
+          i = j + 2;
+          if( op == 'A') 
+            i++;           
 
        }
      // GET here if no AND's and Or's in Sub expressions;
@@ -995,16 +1095,16 @@ public class CommandPane  extends JPanel
     //  No more AND's OR's or NOT's at top level.  Try parens around these
     if( Debug )
        System.out.println("After Nots");
-     if ( S.charAt( start ) == ' ') 
-       start ++;
-     if( S.charAt( start ) == '(')
-	 { if( S.charAt( end - 1 )== ' ') end --;
+    if ( S.charAt( start ) == ' ') 
+      start ++;
+    if( S.charAt( start ) == '(')
+      { if( S.charAt( end - 1 )== ' ') end --;
 	   if( S.charAt(end - 1) != ')') 
 	       {perror =5; 
                 return false;
                }
            return evaluate ( S, start + 1 , end - 1  );
-	 }
+       }
     if( Debug )
       System.out.println("After parens");
     //Now go for the < > etc
@@ -1138,28 +1238,274 @@ public class CommandPane  extends JPanel
       
     return false;        
 	    
-  }
- private boolean StrLss( Object O1 , Object O2)
-   { if( O1 == null)
-       if( O2 == null)
+    }
+    private boolean StrLss( Object O1 , Object O2)
+      { if( O1 == null)
+        if( O2 == null)
+          return false;
+        else return true;
+        if ( O2 == null )
          return false;
-       else return true;
-     if ( O2 == null )
-      return false;
 
-      String S1 = O1.toString();
-     String S2 = O2.toString();
-     int i;
-     for( i = 0 ; i < java.lang.Math.min( S1.length() , S2.length()) ; i++)
-         if( S1.charAt(i) < S2.charAt(i))
-           return true;
-         else  if( S1.charAt(i) < S2.charAt(i))
-           return false;
-     if( S1.length() < S2.length())
-       return true;
-     else 
-       return false;
+        String S1 = O1.toString();
+        String S2 = O2.toString();
+        int i;
+        for( i = 0 ; i < java.lang.Math.min( S1.length() , S2.length()) ; i++)
+           if( S1.charAt(i) < S2.charAt(i))
+             return true;
+           else  if( S1.charAt(i) < S2.charAt(i))
+             return false;
+        if( S1.length() < S2.length())
+          return true;
+        else 
+          return false;
    }
+
+/**
+  * A utility to get parameters for a macro AND execute the macro<P>
+  * 
+  * NOTE: To use this successfully<ul>
+  * <li> The "Macro" Construtor was used 
+  *<li>  The addDataSet Method was used to add any data sets that could be used as paramers
+  *</ul>
+  *
+  * 
+  *
+  * NOTE: The result can be used by the execute( Parameter ) method
+  *
+  * @see #CommandPane( javax.swing.text.Document , DataSetTools.util.IObserver)  Constructor
+  * @see #addDataSet( DataSetTools.DataSet.DataSet ) addDataSet
+  * @see #execute( DataSetTools.operator.Parameter[]) Macro Execute
+  * @see #getErrorCharPos()
+  *@see #getErrorMessage()
+  * Sample Code Segment
+  *<Pre> 
+   *    Document D = new util().Open( filename);  
+   *    CommandPane cp = new CommandPane( D , CP );
+   *    cp.addPropertyChangeListener( CP ) ;// To get non data set DISPLAY info
+   *    
+   *    
+   *    DataSet dss[] = ExecLine.getGlobalDataset();//Data sets can come from 
+   *                                               //anywhere
+   *     if( dss != null)
+   *        for( int i = 0; i < dss.length ; i++ )
+   *          cp.addDataSet( dss [i]);
+   *     Parameter P[] = cp.GUIgetParameters();
+   *    
+   *     if( Debug) 
+   *        System.out.println("After macro execut error " + 
+   *            cp.getErrorCharPos()+ "," + cp.getErrorMessage() +","+cp.getErrorLine());
+    </pre>
+  */
+  public  void GUIgetParameters()
+     { if(Debug)System.out.println("Start of GUIgetParameters");
+       if( MacroDocument == null)
+         {seterror( 1000, "Macro Does not Exist ");
+          return ;
+         }
+       int count = 0;
+       String Line = getLine( MacroDocument , 2);
+       if( Line == null)
+         {seterror( 1000, "Macro Does not Exist ");
+          return ;
+         }
+       while( Line.trim().indexOf("#$$")>= 0)
+         { count ++;
+           Line = getLine( MacroDocument , 2+count);
+           if( Line == null)
+             {seterror( 1000, "Macro Does not Exist ");
+              return ;
+             }
+          }
+       if(Debug)
+         System.out.println(" # of parameters = " + count);
+
+       Parameter P[] = new Parameter[count];
+       Vector vname = new Vector();
+       int i;
+       String S;
+       Vector  V = new Vector();  
+       if( MacroDocument == null)
+         S = "Enter Value";
+       else
+         S = " Enter Parameter Value ";
+    
+       V.add( getLine(MacroDocument , 1 ));
+       int start = 0;
+       int j , k;
+       for( i = 0 ; i < count ; i++)
+         {Line = getLine( MacroDocument , 2+i);
+          start = Line.indexOf("#$$")+3;
+          start = ExecLine.skipspaces(Line , 1 , start );
+          j = findQuote ( Line , 1 , start, " " , "" );
+          if( (j >= 0) && ( j < Line.length() ))
+            vname.add(Line.substring( start , j).trim());
+          start = j;
+          if( start >= Line.length())
+            {seterror( start , "Improper Parameter Format");
+             return ;
+            }
+          start = ExecLine.skipspaces(Line , 1, start );
+          j = findQuote( Line , 1, start, " ", "" );
+       
+          String DT = Line.substring( start , j ).toUpperCase();
+          String Message;
+          j = ExecLine.skipspaces( Line , 1, j );
+        
+          if( j < Line.length() )
+            Message = Line.substring( j ).trim();
+          else
+            Message = "";
+          if(Debug)
+            System.out.println("in line start end="+ start + ","+DT+","+Message);
+          if( (DT .equals( "INT") ) || ( DT.equals( "INTEGER")))
+             V.add( new JIntegerParameterGUI( new Parameter ( Message , new Integer (0)) ) );
+          else if ( DT.equals( "FLOAT"))
+             V.add( new JFloatParameterGUI(  new Parameter ( Message , new Float (0.0)) ) ); 
+          else if( DT.equals( "STRING"))
+             V.add( new JStringParameterGUI( new Parameter ( Message , " " ) ) );
+          else if ( DT.equals( "DATASET") )
+           {System.out.println( "Argument is a data set");
+	   DataSet DS[] = ExecLine.getGlobalDataset();
+            DataSet dd = new DataSet("DataSet=", null);
+            Parameter PP = new Parameter( Message , dd);
+            JlocDataSetParameterGUI JJ = new JlocDataSetParameterGUI( PP , DS);
+            V.add(JJ);
+            System.out.println("Through data set argument" + JJ);
+            if(Debug)
+              {System.out.print("DS"+JJ.getClass()+","); 
+               System.out.print( JJ.getParameter()+",");
+               System.out.print(  JJ.getParameter().getValue()+",");
+              // System.out.println(JJ.getParameter().getValue().getClass());
+              }
+
+            } 
+          else
+            { seterror( i , "Data Type not supported " + DT);
+             
+              return ; 
+          }
+        
+      
+       }// For i=0 to count
+     
+     Command.JScriptParameterDialog X = new Command.JScriptParameterDialog( V, ExecLine.getGlobalDataset() );
+     if( Debug ) System.out.println( "After Dialog box");
+     V = X.getResult();
+     if( V == null)
+       return ;
+     Parameter U;
+     JParameterGUI JPP;
+     for( i = 1 ; i < V.size(); i++)
+       { JPP= (JParameterGUI)(V.get( i )) ;
+         U = JPP.getParameter();
+         P[i-1]=  new Parameter((String)( vname.get( i - 1 )), U.getValue());
+       
+       }
+     execute(P);
+     return ;
+
+         
+   } 
+
+ public Object getExecScript( String fname ,IObserver X , DataSet DDS[])
+  {    int i;
+       String S;
+      /*  S = System.getProperty("user.dir").trim();
+         if( S!=null) if( S.length() > 0 ) if(  "\\/".indexOf(S.charAt(S.length() - 1 ) ) < 0)
+	    S = S + "/";
+	 if( !new File( S + "IsawGUI/Isaw.class").exists()) 
+            S = null;
+        else
+            S=S.replace( '\\','/');
+            
+       
+        if( S == null )
+	    {String CP = System.getProperty("java.class.path").replace( '\\','/') ;
+	    int s, t ;
+            for( s = 0; (s < CP.length()) && (S == null); )
+	      {t = CP.indexOf( ";", s+1);
+               if( t < 0) t = CP.length();
+               S = CP.substring(s,t) .trim();
+               if( S.length() > 0 ) if ( S.charAt( S.length() -1) != '/') S = S + "/";
+               if( new File( S + "IsawGUI/Isaw.class").exists())
+                  {}
+               else S = null;     
+           
+                }
+              }
+         if( S == null )S = System.getProperty("user.dir").trim();;
+         FilePath = S+"Scripts";
+        final JFileChooser fc = new JFileChooser(FilePath) ; 
+        int state  ; 
+       
+             state =  fc.showOpenDialog( null  ) ;
+ 
+         if( state != JFileChooser.APPROVE_OPTION )
+             return null ; 
+         FilePath= fc.getCurrentDirectory().toString();
+	 File f = fc.getSelectedFile() ; 
+         String filename  = f.toString() ; 
+         String 
+         */
+       
+         Document doc; 
+         File  f = new File( fname);
+         System.out.println( "The filename is "  + fname ) ;                        
+	 try{  
+                  FileReader fr = new FileReader( f ) ; 
+                  int c , offset ; 
+	          String line ; 
+                  //doc = Commands.getDocument() ; 
+                 
+                  //doc.remove( 0 , doc.getLength() ) ; 
+		  doc = new PlainDocument();
+                  line = "" ; offset = 0 ; 
+                  for( c = fr.read() ; c != -1 ;   )
+	              { line = line + new Character( ( char )c ).toString() ; 
+                        if( c < 32 ) //assumes the new line character
+			    {
+                           doc.insertString( offset , line , null ) ; 
+		           offset+=line.length() ; 
+                           line = "" ; 
+
+                          }
+			
+                         c = fr.read() ; 
+                       }
+		  if( line.length() > 0 )doc.insertString( offset , line , null ) ; 
+                  fr.close() ; 
+                 // Commands.setCaretPosition(0);
+	           }
+	        catch( IOException s )
+                   {if( StatusLine != null )StatusLine.setText( "Status: unsuccessful" ) ;
+                    else System.out.println("Unsuccessful"); 
+                    serror = "unsuccessful";
+                    perror = 0;
+                    return null;
+                   }
+                 catch( javax.swing.text.BadLocationException s )
+		     {if( StatusLine != null )StatusLine.setText( "Status: unsuccessful" ) ;
+                    else System.out.println("Unsuccessful"); 
+                    serror = "unsuccessful";
+                    perror = 0;
+                    return null;
+                     }
+          
+	 CommandPane cp = new CommandPane( doc , X);
+         if( DDS != null )
+           for( i = 0; i < DDS.length ; i++)
+            cp.addDataSet(DDS[i]);
+         cp.GUIgetParameters();
+         seterror( cp.getErrorCharPos(), cp.getErrorMessage());
+         lerror = cp.getErrorLine();
+         if( perror < 0 ) 
+            return cp.getResult();
+         return serror;
+        
+
+  }
+
 //************************SECTION:EVENTS********************
     /**
      *adds an Iobserver to be notified when a new data Set is sent
@@ -1195,22 +1541,26 @@ public class CommandPane  extends JPanel
     {if(Debug)
 	System.out.println("IN PROPERTY CHANGEXXXXXX");
      if( evt.getPropertyName().equals( "Display" ) )
-	if( evt.getSource().equals( ExecLine ) )
+	//if( evt.getSource().equals( ExecLine ) )
 	  {String S;
            Object O = evt.getNewValue();     
            
-           
+           if(Debug)
+             System.out.println(" in Display Data Type ="+ O.getClass()+PL.hasListeners("Display"));
              S = O.toString();
            if( StatusLine != null)
 	      StatusLine.setText( S ) ; 
-           else
-	      System.out.println( "Display is " + S ) ; 
+          // else
+	      System.out.println( "Display is " + S ) ;
+            
+            PL.firePropertyChange("Display" , null , O );
           }
 
     }   
 
-
-  public void actionPerformed( ActionEvent e )
+private  class MyMouseListener extends MouseAdapter implements ActionListener,
+                                                               Serializable
+  {public void actionPerformed( ActionEvent e )
     {Document doc ; 
     if( e.getSource().equals( Run ) ) 
        {
@@ -1221,7 +1571,7 @@ public class CommandPane  extends JPanel
         execute( doc ) ; 
 	
        if( perror >= 0 )
-          {  StatusLine.setText( "Status: Error " + serror + " on line " + lerror + " character" + perror ) ; 
+          {  StatusLine.setText( "Status: Error " +  serror + " on line " + lerror + " character" + perror ) ; 
              Element E = doc.getDefaultRootElement();
              if( lerror >= E.getElementCount()) Commands.setCaretPosition(doc.getLength()-1);
              else if( lerror >= 0 )
@@ -1264,7 +1614,8 @@ public class CommandPane  extends JPanel
                  for( i = 0 ; i < root.getElementCount() ; i++ )
                     {line = root.getElement( i ) ; 
 		   
-		     fw.write( doc.getText( line.getStartOffset() , line.getEndOffset() - line.getStartOffset() - 1 ) ) ; 
+		     fw.write( doc.getText( line.getStartOffset() , 
+                                  line.getEndOffset() - line.getStartOffset() - 1 ) ) ; 
                      fw.write( "\n" ) ; 
                      }
 		 fw.close() ; 
@@ -1318,18 +1669,18 @@ public class CommandPane  extends JPanel
         {BrowserControl H = new BrowserControl() ; 
 	 String S;
          
-         String Base="IPNS_Software";
+         
          S= System.getProperty("user.dir").trim();
          if( S!=null) if( S.length() > 0 ) if(  "\\/".indexOf(S.charAt(S.length() - 1 ) ) < 0)
 	    S = S + "/";
-	 if( !new File( S + "IsawHelp/CommandPane.html").exists()) 
+	 if( !new File( S + "IsawHelp/Command/CommandPane.html").exists()) 
             S = null;
         else
             S=S.replace( '\\','/');
             
        
         if( S != null )
-	    S = S + "IsawHelp/CommandPane.html";
+	    S = S + "IsawHelp/Command/CommandPane.html";
         else
 	    {String CP = System.getProperty("java.class.path").replace( '\\','/') ;
 	    int s, t ;
@@ -1338,8 +1689,8 @@ public class CommandPane  extends JPanel
                if( t < 0) t = CP.length();
                S = CP.substring(s,t) .trim();
                if( S.length() > 0 ) if ( S.charAt( S.length() -1) != '/') S = S + "/";
-               if( new File( S + "IsawHelp/CommandPane.html").exists())
-                 S= S + "IsawHelp/CommandPane.html";
+               if( new File( S + "IsawHelp/Command/CommandPane.html").exists())
+                 S= S + "IsawHelp/Command/CommandPane.html";
                else S = null;     
            
                 }
@@ -1350,13 +1701,49 @@ public class CommandPane  extends JPanel
           
         
         }
-    }  
+    } 
+ }//End mouseAdapter 
 
-public String getVersion()
-  { return "7_6_00";
-  } 
-public void keyTyped( KeyEvent e )
-    {if( e.getKeyChar() == KeyEvent.VK_ENTER )	
+  public String getVersion()
+    { return "7_6_00";
+    } 
+
+private class MyKeyListener  extends KeyAdapter 
+                             implements KeyListener
+  { CommandPane CP;
+    public MyKeyListener( CommandPane CP) 
+       {this.CP = CP;
+       }
+    public void keyTyped( KeyEvent e )
+    { if( Debug )System.out.println("In keyEvent");
+      if('x' == e.getKeyChar()  )
+      { 
+        System.out.println( 
+              CP.getExecScript( "C:\\Ruth\\ISAW\\Scripts\\MacDS.txt", 
+                                CP, CP.ExecLine.getGlobalDataset()));
+       /* Document D = Commands.getDocument();
+       CommandPane cp = new CommandPane( D , CP );
+       cp.addPropertyChangeListener( CP ) ;
+       System.out.println("After init");
+       DataSet dss[] = ExecLine.getGlobalDataset();
+       if( dss != null)
+         for( int i = 0; i < dss.length ; i++ )
+            cp.addDataSet( dss [i]);
+       cp.GUIgetParameters();
+       if(perror>=0)
+         if(StatusLine != null)
+            StatusLine.setText(serror);
+       if(Debug) System.out.println("After GUIget{ara,eter");
+       
+      
+       if( Debug) 
+          System.out.println("After macro execut error " + 
+              cp.getErrorCharPos()+ "," + cp.getErrorMessage() +","+cp.getErrorLine());
+       cp = null;
+      */
+       }
+
+        if( e.getKeyChar() == KeyEvent.VK_ENTER )	
           if( e.getSource().equals( Immediate ) )
 	      {  int i = Immediate.getCaretPosition() ; 
 	          Document doc = Immediate.getDocument() ;
@@ -1383,7 +1770,8 @@ public void keyTyped( KeyEvent e )
 	          execute1( Immediate.getDocument() , line ) ;  
                   if( perror >= 0 )
                     {if( StatusLine != null )
-                        StatusLine.setText( "Status: Error " + serror + " on line " + line + " character" + perror ) ; 
+                        StatusLine.setText( "Status: Error " + serror + 
+                           " on line " + line + " character" + perror ) ; 
 		     int p;
                      Element Eline = null;
                      if( (line >= 0) &&( line < E.getElementCount()))
@@ -1406,12 +1794,53 @@ public void keyTyped( KeyEvent e )
 	      }//if immediate window
     
     }
-public void keyPressed( KeyEvent e )
-    {
-    }
-public void keyReleased( KeyEvent e )
-    {
-    }
+  }//End MyKeyListener
+
+/**
+* Gets the position in a line where the error occurred
+*
+*/
+public int getErrorCharPos()
+   { if(ExecLine == null ) return -1;
+     return ExecLine.getErrorCharPos();
+   }
+
+/**
+* Gets the Message for the error 
+*
+*/
+public String getErrorMessage()
+   { if( ExecLine == null ) return "";
+     return ExecLine.getErrorMessage();
+   }
+/**
+* Returns the line where the error occurred
+*/
+public int getErrorLine()
+  { return lerror;
+  }
+
+public Object getResult()
+  { if( ExecLine != null )
+      return ExecLine.getResult();
+    else
+      return null;
+  }
+
+/**
+*  The only "property" that changes is the "Display"<br>
+*  Use this method if you want to be notified of the Display
+*  Command for non Data Sets
+* @param  P  The class that wants to be notified
+*/
+public void addPropertyChangeListener( PropertyChangeListener P)
+  {if( ExecLine == null ) return;
+   ExecLine.addPropertyChangeListener( P );
+   if( PL == null )
+       PL = new PropertyChangeSupport( this );
+   PL.addPropertyChangeListener(P);
+  }
+
 
 public  void   update(  Object observed_obj ,  Object reason ) 
     {OL.notifyIObservers( this  ,  reason  ) ; 
@@ -1467,7 +1896,9 @@ private int findQuote(String S, int dir ,int start, String SrchChars,String brcp
       }
 //*****************SECTION:MAIN********************
 public static void  main( String args[] )
-    {JFrame F ;  CommandPane P ; 
+    { 
+
+  JFrame F ;  CommandPane P ; 
     F = new JFrame( "Test" ) ; 
     
 
@@ -1484,7 +1915,6 @@ public static void  main( String args[] )
     char c ; 
 
     }
-
 
 
 
