@@ -2,6 +2,19 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.6  2001/07/25 16:01:55  neffk
+ * mouse listener is now instantiated in Isaw.java.  this was changed
+ * so that the listener could have access to Isaw.this, allowing
+ * operations to return the newly generated DataSet object to Isaw.
+ * previously, the new DataSet object was given to an instance of
+ * JDataTree which did not know about Isaw, therefore causing problems
+ * updating observers, etc.  also, changed the 'Modified' node from a
+ * DefaultMutableTreeNode object to an Experiment object to simplify
+ * getting DataSet objects in the getDataSets() method forced by
+ * IDataSetListHandler.  also added the method 'getSelectionCount'
+ * so that the mouse listener could retain its functionality w/o any
+ * other changes.
+ *
  * Revision 1.5  2001/07/24 15:36:52  neffk
  * now adds DataSet objects and modified DataSet objects in a cleaner
  * way.  also, the modified experiment is working correctly.
@@ -115,9 +128,12 @@ public class JDataTree
     tree = new JTree(   new DefaultTreeModel(  new DefaultMutableTreeNode( "Session" )  )   );
     tree.setShowsRootHandles( true );
     tree.putClientProperty("JTree.lineStyle", "Angled");
-    tree.addMouseListener(  new MouseListener()  );
 
-    getMyModel().insertNodeInto(  new DefaultMutableTreeNode( MODIFIED_NODE_TITLE ),
+//    getMyModel().insertNodeInto(  new DefaultMutableTreeNode( MODIFIED_NODE_TITLE ),
+//                                  (DefaultMutableTreeNode)getMyModel().getRoot(),
+//                                  0  );
+
+    getMyModel().insertNodeInto(  new Experiment( MODIFIED_NODE_TITLE ),
                                   (DefaultMutableTreeNode)getMyModel().getRoot(),
                                   0  );
 
@@ -127,6 +143,15 @@ public class JDataTree
     JScrollPane pane = new JScrollPane( tree );
     add( pane );
 
+  }
+
+  
+  /**
+   * add a mouse listener to listen for mouse events on the tree.
+   */
+  public void addMouseListener( MouseListener ml )
+  {
+    tree.addMouseListener( ml );
   }
 
 
@@ -163,6 +188,12 @@ public class JDataTree
   }
 
 
+  public int getSelectionCount()
+  {
+    return tree.getSelectionCount();
+  }
+
+
   /**
    * create and add a new Experiment object to the tree.
    */
@@ -179,6 +210,9 @@ public class JDataTree
    */
   public void addExperiment( Experiment e )
   {
+    for( int i=0;  i<e.getChildCount();  i++ )
+      e.getUserObject(i).addIObserver( this );
+
     int child_count = (  (DefaultMutableTreeNode)getMyModel().getRoot()  ).getChildCount();
     getMyModel().insertNodeInto(  (MutableTreeNode)e, 
                                   (MutableTreeNode)tree.getModel().getRoot(), 
@@ -195,11 +229,10 @@ public class JDataTree
    */ 
   public void addToModifiedExperiment( DataSet ds )
   {
+    ds.addIObserver( this );
     DataSetMutableTreeNode ds_node = new DataSetMutableTreeNode( ds );
-    int index = getModifiedRoot().getChildCount();
-    getMyModel().insertNodeInto(  (MutableTreeNode)ds_node, 
-                                  getModifiedRoot(), 
-                                  index  );
+//    getModifiedExperiment().insert(  ds_node, getModifiedExperiment().getChildCount()  );
+    getModifiedExperiment().insert(  ds_node, 0  );
   }
 
 
@@ -258,14 +291,14 @@ public class JDataTree
 
   /**
    * saves us the trouble of writing this mess every time we
-   * need to do something to the Modified root node.  also allows
-   * us some flexibility in changing the structure of the tree...
+   * need to do something to the Experiment that stores the modified
+   * DataSet objects.  also allows us some flexibility in 
+   * changing the structure of the tree...
    */ 
-  protected DefaultMutableTreeNode getModifiedRoot()
+  protected Experiment getModifiedExperiment()
   {
     DefaultMutableTreeNode root = (DefaultMutableTreeNode)tree.getModel().getRoot();
-    
-    return (DefaultMutableTreeNode)root.getChildAt( 0 );
+    return (Experiment)root.getChildAt( 0 );
   }
 
 
@@ -462,38 +495,24 @@ public class JDataTree
   {
     if(  !( reason instanceof String)  &&  !( reason instanceof DataSet)  )
       return;
-                                           
-                                 //if we're sent a DataSet object, 
-                                 //create a new Experiment and add
-                                 //this DataSet object to it.
+ 
+                                          
     if( reason instanceof DataSet )
-    { 
-      DataSet ds = (DataSet)reason;
-      MutableTreeNode node = getNodeOfObject(reason);
-
-      if( node == null )
-        addToModifiedExperiment( ds );
-
-      else
-      {
-        System.out.println( "DataSet found" );
-        return;
-      }
-    }         
+      System.out.println( "ERROR: new DataSet object (JDataTree)" ); 
 
 
-    if( observed instanceof DataSet )                                  
+    if( observed instanceof DataSet  &&  reason instanceof String )                                  
     {
       DataSet ds = (DataSet)observed;
 
       DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)getNodeOfObject( observed );
 
                        //if update has been called from this object
-                       //there's no need to do it again.
+                       //after a deletion, doing it again will be a problem. 
       if( ds_node == null )
         return;
 
-      if( (String)reason == DESTROY )
+      else if( (String)reason == DESTROY )
         deleteNode( observed, true );
 
       else if( (String)reason == DATA_REORDERED )
@@ -521,13 +540,24 @@ public class JDataTree
 
       else if ( (String)reason == POINTED_AT_CHANGED )
       {
-        int index = ds.getPointedAtIndex() ;
+
+        //TODO: highlight the tree node that's pointed at
+/*
+        System.out.println( "passed" );
+
+        int index = ds.getPointedAtIndex();
+
+        System.out.println( "index: " + index );
+
         if( index >= 0 )
         {
           Data d = ds.getData_entry( index );
           JPropertiesUI pui = new JPropertiesUI();
           pui.showAttributes(  d.getAttributeList()  );
+
+          System.out.println(  d.getAttributeList().toString()  );
         }
+*/
       }
 
 
@@ -545,49 +575,6 @@ public class JDataTree
       return; 
     }           
   }
-
-  
-
-
-/*--------------------------=[ start MouseAdapter ]=--------------------------*/
-
-    class MouseListener extends MouseAdapter
-    {
-      private JDataTreeRingmaster ringmaster = null;
-
-
-      public MouseListener()
-      {
-        ringmaster = new JDataTreeRingmaster( JDataTree.this );
-      }
-
-
-      public void mousePressed( MouseEvent e ) 
-      {
-        if(  tree.getSelectionCount() > 0  ) 
-        {
-          TreePath[] selectedPath = null;
-          TreePath[] tps          = tree.getSelectionPaths();  
-
-          int button1 =  e.getModifiers() & InputEvent.BUTTON1_MASK;
-          int button3 =  e.getModifiers() & InputEvent.BUTTON3_MASK;
-           
-                                                          
-          if(  button3 == InputEvent.BUTTON3_MASK  )
-            ringmaster.generatePopupMenu( tps, e );
-
-          else if(  button1 == InputEvent.BUTTON1_MASK  )
-          {
-            if( e.getClickCount() == 1 ) 
-              ringmaster.pointAtNode( tps[0] );
-
-            else if( e.getClickCount() == 2 ) 
-              ringmaster.selectNode( tps );
-          }
-        }
-      }
-    }
-
 
 
   /*
@@ -615,7 +602,7 @@ public class JDataTree
   public Experiment[] getExperiments()
   {
     DefaultMutableTreeNode root = (DefaultMutableTreeNode)tree.getModel().getRoot();
-    int total_exp_count = root.getChildCount() + getModifiedRoot().getChildCount();
+    int total_exp_count = root.getChildCount();
 
     int e_count = 0;
     Experiment[] exps = new Experiment[ total_exp_count ];
@@ -626,9 +613,6 @@ public class JDataTree
                                                            //see class documentation
                                                            //for details.
 
-    for( int i=0;  i<getModifiedRoot().getChildCount();  i++ )
-      exps[ e_count++ ] = (Experiment)getModifiedRoot().getChildAt(i);
-   
     return exps;
   }
 
@@ -641,12 +625,28 @@ public class JDataTree
    */
   public DataSet[] getDataSets() 
   {
-    Vector ds_nodes = new Vector();
+
+    Vector dss = new Vector();
 
     DefaultMutableTreeNode root = (DefaultMutableTreeNode)tree.getModel().getRoot();
+    dss = searchFromNode( root );
 
+                                       //pack them up in an array & return
+    DataSet[] dss_array = new DataSet[ dss.size() ];
+    for( int i=0;  i<dss.size();  i++ )
+      dss_array[i] = (DataSet)dss.get(i);
+
+    System.out.println( "size: " + dss_array.length );
+
+    return dss_array;
+  }
+
+
+  private Vector searchFromNode( DefaultMutableTreeNode root )
+  {
                                     //iterativly examine each Experiment object,
                                     //searching for DataSet objects.
+    Vector ds_nodes = new Vector();
     int exp_count = root.getChildCount();
     for(  int exp_index=0;  exp_index<exp_count;  exp_index++ )
     {
@@ -668,12 +668,7 @@ public class JDataTree
       else
         System.out.println( "non-Experiment object found on first level" );
     }
-  
-    DataSet[] ds_nodes_array = new DataSet[ ds_nodes.size() ];
-    for( int i=0;  i<ds_nodes.size();  i++ )
-      ds_nodes_array[i] = (DataSet)ds_nodes.get(i);
-
-    return ds_nodes_array;
+    return ds_nodes;
   }
 
 
