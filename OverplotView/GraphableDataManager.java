@@ -10,6 +10,11 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.5  2001/08/13 14:40:46  rmikk
+ * Added layout and event code to ensure that the graph takes
+ * up the whole pane and that it shows at first and when
+ * resized
+ *
  * Revision 1.4  2001/06/29 16:29:25  neffk
  * integrated ColorAttribute class for storing color information in
  * GraphableData objects
@@ -46,6 +51,8 @@ import javax.swing.JMenuItem;
 import OverplotView.GraphableData;
 import OverplotView.IGraphableDataGraph;
 import OverplotView.graphics.sgtGraphableDataGraph;
+import java.awt.*;
+import java.awt.event.*;
 
 public class GraphableDataManager 
   extends DataSetViewer
@@ -63,6 +70,7 @@ public class GraphableDataManager
   public GraphableDataManager( DataSet data_set )
   {
     super(data_set);
+    setLayout( new GridLayout( 1 , 1 ));
     graph = new sgtGraphableDataGraph();
     StringAttribute title, subtitle1, subtitle2, 
                     x_units, y_units, x_label, y_label;
@@ -178,16 +186,32 @@ public class GraphableDataManager
                                        //generates
     removeAll();
     JComponent graph_component = graph.redraw();
+    graph_component.setLayout( new GridLayout( 1,1 ));
+    graph_component.addComponentListener( new 
+           MyComponentListener(graph_component));
     graph_component.doLayout();
+    
     add( graph_component );
 
                                        //ask swing to redraw our new
                                        //additions to the DataSetViewer
     validate();
+    graph_component.repaint();
     //setVisable( true );
   }
 
-
+  public class MyComponentListener extends ComponentAdapter
+   {JComponent g;
+    public MyComponentListener( JComponent g)
+      {this.g = g;
+      }
+    public void componentResized(ComponentEvent e)
+     {g.repaint();
+     }
+    public void componentShown(ComponentEvent e)
+     { g.repaint();
+     }
+   }
   /**
    * This will be called by the "outside world" if the viewer is to replace 
    * its reference to a DataSet by a reference to a new DataSet, ds, and
