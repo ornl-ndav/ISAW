@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/11/23 23:58:17  rmikk
+ * Updated the Instrument type conversions to all supported instruments
+ *   in the nexus community.
+ * Eliminated some debugging prints
+ * Changed references from phi to polar_angle
+ *
  * Revision 1.10  2003/03/05 20:44:06  pfpeterson
  * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -75,15 +81,23 @@ import DataSetTools.util.*;
 public class Inst_Type{
   private static Hashtable HT = null;
   private
-    static String NxNames[] = {"MonoNXPD", "UNKNOWN", "TOFNDGS", 
-                               "TOFNIGS", "TOFNPD"};
-                              //MonoNXTAS
+    static String NxNames[] = {"UNKNOWN","TOFNPD","TOFNSCD","TOFNSAS",
+                                "TOFNREF","TOFNIGS","MONONXTAS","MONONXPD",
+                                "MONONXSCD","MONONXSAS","MONONXREF"};
+
   private static int Isaw_inst_types[] = 
-     {InstrumentType.MONO_CHROM_DIFFRACTOMETER,
-      InstrumentType.UNKNOWN,
-      InstrumentType.TOF_DG_SPECTROMETER,
-      InstrumentType.TOF_IDG_SPECTROMETER,
-      InstrumentType.TOF_DIFFRACTOMETER};
+     {InstrumentType.UNKNOWN,
+      InstrumentType.TOF_DIFFRACTOMETER,
+       InstrumentType.TOF_SCD,
+      InstrumentType.TOF_SAD,
+      InstrumentType.TOF_REFLECTOMETER ,    
+      InstrumentType.TOF_IDG_SPECTROMETER ,    
+      InstrumentType.TRIPLE_AXIS_SPECTROMETER ,
+      InstrumentType.MONO_CHROM_DIFFRACTOMETER ,
+      InstrumentType.MONO_CHROM_SCD  ,
+      InstrumentType.MONO_CHROM_SAD,
+      InstrumentType.MONO_CHROM_REFLECTOMETER};
+
 
   /**
    * Initializes correspondence tables
@@ -105,6 +119,8 @@ public class Inst_Type{
     * analysis name
     */
   public int getIsawInstrNum( String NexusAnalysisName ){
+    if( NexusAnalysisName == null)
+      return InstrumentType.UNKNOWN;
     Integer I = ( Integer )( HT.get( NexusAnalysisName.trim() ) );
 
     if( I == null )
@@ -147,7 +163,6 @@ public class Inst_Type{
   public String AxisWriteHandler( int num, int kk, int instrType,
                                   NxWriteNode nxdata, NxWriteNode nxdetector,
                                   DataSet DS, int beginIndex, int endIndex ){
-    
     if( DS == null ) 
       return null;
     if( ( beginIndex < 0 ) || ( beginIndex >= endIndex ) ) 
@@ -159,7 +174,6 @@ public class Inst_Type{
       return null;
 
     String S = getLinkAxisName( instrType, num );
-    
     if( S == null ) 
       return null;
     
@@ -173,7 +187,7 @@ public class Inst_Type{
       ntof.setLinkHandle( ( "axis" + num ) + kk );
       return( "axis" + num ) + kk;
     }
-    if( S.equals( "phi" ) ){
+    if( S.equals( "polar_angle" ) ){
       float[] phi = new float[endIndex - beginIndex];
       
       for( int i = beginIndex; i < endIndex; i++ ){
@@ -188,7 +202,7 @@ public class Inst_Type{
           ((DetPosAttribute)A).getDetectorPosition().getScatteringAngle();
         
       }
-      NxWriteNode nphi = nxdetector.newChildNode( "phi", "SDS" );
+      NxWriteNode nphi = nxdetector.newChildNode( "polar_angle", "SDS" );
       
       nphi.setNodeValue( phi, Types.Float, 
                          makeRankArray( phi.length, -1, -1, -1, -1 ) );
@@ -199,7 +213,9 @@ public class Inst_Type{
       nphi.addAttribute( "long_name",("Scattering Angle"+(char)0).getBytes(),
                          Types.Char,makeRankArray( 18, -1, -1, -1, -1 ) );
       nphi.setLinkHandle( ( "axis" + num ) + kk );
-      
+      byte[] nodename =(nxdetector.getNodeName()+(char)0).getBytes();
+      nphi.addAttribute( "link", nodename, Types.Char,
+                     makeRankArray( nodename.length,-1,-1,-1,-1));
       return( "axis" + num ) + kk;
       
     }
@@ -218,6 +234,9 @@ public class Inst_Type{
       ndId.addAttribute( "axis", makeRankArray( 2, -1, -1, -1, -1 ), 
                          Types.Int, makeRankArray( num, -1, -1, -1, -1 ) );
       ndId.setLinkHandle( ( "axis" + num ) + kk );
+      byte[] nodename =(nxdetector.getNodeName()+(char)0).getBytes();
+      ndId.addAttribute( "link", nodename, Types.Char,
+                     makeRankArray( nodename.length,-1,-1,-1,-1));
       return( "axis" + num ) + kk;
     }
     //add more axis that can be linked here
@@ -230,6 +249,7 @@ public class Inst_Type{
                                            NxWriteNode nxdata,
                                            NxWriteNode nxdetector, DataSet DS,
                                            int beginIndex, int endIndex ){
+   
     if( DS == null )
       return null;
     
@@ -375,7 +395,7 @@ public class Inst_Type{
       n = 5;
     int[] Result = new int[ n];
     
-    if( n1 < 0 ){
+    /*if( n1 < 0 ){
       // do nothing
     }else if( n2 < 0 ) 
       Result[0] = n1;
@@ -387,6 +407,18 @@ public class Inst_Type{
       Result[3] = n4;
     else 
       Result[4] = n5;
+    */
+     if( n1 >=0)
+        Result[0] = n1;
+
+     if( n2 >=0)
+        Result[1] = n2;
+     if( n3 >=0)
+        Result[2] = n3;
+     if( n4 >=0)
+        Result[3] = n4;
+     if( n5 >=0)
+        Result[4] = n5;
     return 
       Result;
 
@@ -424,7 +456,7 @@ public class Inst_Type{
       if( axisNum == 1 ) 
         return "time_of_flight";
       else 
-        return "phi";
+        return "polar_angle";//changed from phi
       
     }else if( axisNum == 1 ) 
       return "time_of_flight";
