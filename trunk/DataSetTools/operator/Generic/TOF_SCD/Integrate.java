@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.25  2003/07/07 15:54:25  bouzekc
+ * Fixed errors and added missing param tags in
+ * getDocumentation().  Renamed parameter from "Center" to
+ * "Centering Type."
+ *
  * Revision 1.24  2003/06/03 22:59:19  bouzekc
  * Fixed full constructor to avoid excessive garbage
  * collection.
@@ -244,7 +249,7 @@ public class Integrate extends GenericTOF_SCD{
     lfpg.setFilter(new MatrixFilter());
     addParameter( lfpg );//new Parameter("Path",new DataDirectoryString()) );
     // parameter(3)
-    ChoiceListPG clpg=new ChoiceListPG("Centering", choices.elementAt(0));
+    ChoiceListPG clpg=new ChoiceListPG("Centering Type", choices.elementAt(0));
     clpg.addItems(choices);
     addParameter(clpg);
     // parameter(4)
@@ -270,32 +275,41 @@ public class Integrate extends GenericTOF_SCD{
     sb.append("given orientation matrix and then determines the integrated ");
     sb.append("peak intensity.\n");
     // assumptions
-    sb.append("@assumptions The experiment file must exist and be user ");
-    sb.append("readable.  Also, the directory containing the experiment file ");
+    sb.append("@assumptions The matrix file must exist and be user ");
+    sb.append("readable.  Also, the directory containing the matrix file ");
     sb.append("must be user writeable for the integrated intensities and log ");
     sb.append("file.\n");
     // algorithm
-    sb.append("@algorithm ");
+    sb.append("@algorithm First this Operator loads all the parameters.\n");
+    sb.append("Then it gets a list of detectors and determines the unique ");
+    sb.append("ones.  Next it determines the sample orientation and ");
+    sb.append("orientation matrix.  Then it determines the initial flight ");
+    sb.append("and integrates the peaks.  Finally it writes the integrated ");
+    sb.append("peaks file.\n");
     // parameters
     sb.append("@param ds DataSet to integrate.\n");
-    sb.append("@param expfile The experiment file for the analysis.\n");
-    sb.append("@param matfile The matrix file for the analysis.  If this is ");
-    sb.append("not specified then this Operator tries to use the orientation ");
-    sb.append("matrix from the DataSet.  If that is not found, then it tries ");
-    sb.append("to use the matrix from the experiment file.\n");
+    sb.append("@param intfile The integrate file to write to.\n");
+    sb.append("@param matfile The matrix file to use.\n");
+    sb.append("@param centerType The centering type to use (e.g. primitive, ");
+    sb.append("a-centered, b-centered, etc.).\n");
+    sb.append("@param timeSlice The time slice range to use.\n");
+    sb.append("@param sliceDelta The incremental amount to increase the ");
+    sb.append("slice size by.\n");
+    sb.append("@param logNPeak Log the \"nth\" peak.\n");
+    sb.append("@param append Whether to append to the file.\n");
     // return
     sb.append("@return The name of the file that the integrated intensities ");
     sb.append("are written to.\n");
     // errors
     sb.append("@error First parameter is not a DataSet or the DataSet is ");
     sb.append("empty.\n");
-    sb.append("@error Second parameter is null or does not specify an ");
-    sb.append("existing directory.\n");
+    sb.append("@error Second parameter is null or does not specify a valid ");
+    sb.append("integrate file.\n");
     sb.append("@error Third parameter is null or does not specify an ");
-    sb.append("existing experiment.\n");
-    sb.append("@error When any errors occur while reading the experiment ");
+    sb.append("existing matrix file.\n");
+    sb.append("@error When any errors occur while reading the matrix ");
     sb.append("file.\n");
-    sb.append("@error No pixel 1,1 in the DataSet.\n");
+    sb.append("@error Invalid time range specified.\n");
     sb.append("@error No detector calibration found in the DataSet.\n");
     sb.append("@error No orientation matrix found in the DataSet.\n");
     sb.append("@error No detector number found.\n");
