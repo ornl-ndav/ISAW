@@ -219,6 +219,9 @@ for i in [0:2]
     Print4Col2D1Chan( Res[i], Output_Path&GetField(Res[i], "Title")&".dat")
   endif
 endfor
+if do_2D == true
+    ss = SWV(Output_Path&GetField(Res[2], "Title")&".dat")
+  endif
 Echo("Finished REDUCE and written files: "  )
 Echo (Output_Path&GetField(Res[0], "Title") )
 Echo (Output_Path&GetField(Res[1], "Title") )
@@ -230,4 +233,5 @@ endfor
 
 Display "Finished"
 Return "Finished"
+
 
