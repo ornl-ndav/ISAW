@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/01/22 01:42:16  bouzekc
+ * Changed access of VALUE to static.
+ *
  * Revision 1.2  2003/06/17 16:44:21  bouzekc
  * No longer uses incremental changes.
  *
@@ -63,7 +66,7 @@ public class PropChangeProgressBar extends JProgressBar implements
   public void propertyChange(PropertyChangeEvent pce) 
     throws IllegalArgumentException
   {
-    if(pce.getPropertyName() != this.VALUE)
+    if(pce.getPropertyName() != PropChangeProgressBar.VALUE)
       return;
 
     Object obj = pce.getNewValue();
