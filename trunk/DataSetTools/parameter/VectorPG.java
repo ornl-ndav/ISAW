@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/06 18:49:44  pfpeterson
+ * Made abstract and removed clone method.
+ *
  * Revision 1.3  2003/05/25 19:09:16  rmikk
  * -Added more documentation
  * -Revised the Property Change handling
@@ -62,7 +65,8 @@ import java.util.*;
 *
 *   A vector of choicelist should go through this constructor
 */
-public class VectorPG extends ParameterGUI implements PropertyChangeListener
+abstract public class VectorPG extends ParameterGUI
+                                              implements PropertyChangeListener
   {
     String typeName;
     ParameterGUI param;
@@ -215,15 +219,6 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
 
       }
 
-
-
-   public Object clone()
-    {
-      VectorPG v= new VectorPG( param, getName());
-      v.setValue( value);
-      return (Object)v;
-    }
-  
    /**
    *  The type name is the param's type name with the letters "Array" affixed to the end
    */
@@ -488,6 +483,7 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
     /**
     *   Test program for this module.  There are no arguments
     */
+/*
     public static void main( String args[] )
       {
          JFrame jf = new JFrame("Test");
@@ -503,11 +499,9 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
          jf.setSize( 500,100);
          jf.invalidate();
          jf.show();
-
-
-
-
       }  
+*/
+
 static class MyActionList implements ActionListener
   {
    VectorPG vpf;
