@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2002/09/12 19:55:54  dennis
+ *  Now always uses java's sort.  This fixes a stack overflow problem when
+ *  sorting large arrays with equal values, that came up when sorting SCD
+ *  data by crate.
+ *
  *  Revision 1.32  2002/08/01 22:33:34  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -1576,8 +1581,10 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   *  Sort the list of Data entries based on the specified attribute.  If
-   *  a stable sort is needed, specify JAVA_SORT, else specify Q_SORT.
+   *  Sort the list of Data entries based on the specified attribute.  At this
+   *  time Java's sort method will be used regardless of the sort_type 
+   *  specified.  Future releases may implement other sort options.
+   *  NOTE: Java' sort is a stable sort.
    *
    *  @param  attr_name   The name of the attribute on which to sort.  The
    *                      attr_name parameter must be the name of an attribute
@@ -1586,7 +1593,8 @@ public class DataSet implements IAttributeList,
    *  @param  increasing  Flag indicating whether to sort the list in 
    *                      increasing or decreasing order.
    *  @param  sort_type   Flag specifying the sort type, either
-   *                      DataSet.Q_SORT or DataSet.JAVA_SORT.
+   *                      DataSet.Q_SORT or DataSet.JAVA_SORT.  Only JAVA_SORT
+   *                      is currently implemented.
    *
    *  @return    This returns true if the DataSet entries were sorted and 
    *             returns false otherwise.
@@ -1594,42 +1602,10 @@ public class DataSet implements IAttributeList,
 
   public boolean Sort( String attr_name, boolean increasing, int sort_type )
   {
-    int n = data.size();
-
-    if ( n <= 1 )            // empty or short list is sorted by default
+    if ( data.size() <= 1 )      // empty or short list is sorted by default
       return true;
 
-    if (sort_type != Q_SORT)
-      return JavaSort( attr_name, increasing );
-
-    int       position[] = new int[ n ];
-    Attribute attr[]     = new Attribute[ n ];
-
-                                     // save the required attribute from each
-    Attribute      one_attr;         // Data entry and the index of the Data
-    for ( int i = 0; i < n; i++ )    // entry in arrays
-    {
-      one_attr = getData_entry(i).getAttribute( attr_name );
-      if ( one_attr == null )
-        return false;               // attribute missing from this Data object 
-      
-      attr[i]     = one_attr;
-      position[i] = i;
-    }
-
-    QSort( attr, position, 0, n-1, increasing );
-
-                                                  // copy the data objects to
-    Vector new_data = new Vector();               // a new vector in the right
-    for ( int i = 0; i < n; i++ )                 // order
-      new_data.addElement( data.elementAt( position[i] ) );
-
-    data = new_data;
-
-    last_sort_attribute = attr_name;
-    setData_label( attr_name );
-
-    return true;
+    return JavaSort( attr_name, increasing );     // just use java's sort
   }
 
 
@@ -2079,57 +2055,4 @@ public class DataSet implements IAttributeList,
         DataSetFactory.addMonitorOperators( this, inst_types[0] );
     }
   }
-
-/* ------------------------------- swap ---------------------------------- */
-
-  private static void swap( int index[], int i, int j )
-  {
-    int  temp = index[i];
-    index[i]  = index[j];
-    index[j]  = temp;
-  }
-
-
-/* -------------------------------- QSort --------------------------------- */
-
-   private void QSort( Attribute list[], 
-                       int       index[],
-                       int       start, 
-                       int       end, 
-                       boolean   increasing )
-   {
-     int   i = start;
-     int   j = end;
-
-     if ( i >= j )                      // at most one element, so we're
-       return;                          // done with this sublist
-
-     swap( index, start, (i+j)/2 );
-
-     while ( i < j )
-     {
-       if ( increasing )
-       {
-         while ( i < end && list[index[i]].compare( list[index[start]] ) <= 0 )
-           i++;
-         while ( list[index[j]].compare( list[index[start]] ) > 0 )
-           j--;
-       }
-       else
-       {
-         while ( i < end && list[index[i]].compare( list[index[start]] ) >= 0 )
-           i++;
-         while ( list[index[j]].compare( list[index[start]] ) < 0 )
-           j--;
-       }
- 
-       if ( i < j )
-         swap( index, i, j );
-     }
-     swap( index, start, j );
-
-     QSort( list, index, start, j-1, increasing );
-     QSort( list, index, j+1, end, increasing );
- } 
-
 }
