@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/07/23 16:35:50  dennis
+ *  Fixed error: no longer using "==" for String comparison.
+ *
  *  Revision 1.13  2001/07/20 16:52:24  dennis
  *  Now uses an XScaleChooserUI to let the user specify new
  *  x_scales.  Also uses method Data.getY_values( x_scale )
@@ -191,10 +194,10 @@ public void redraw( String reason )
   if ( !validDataSet() )
     return;
 
-  if ( reason == IObserver.SELECTION_CHANGED )
+  if ( reason.equals( IObserver.SELECTION_CHANGED ))
     DrawSelectedGraphs();
 
-  else if ( reason == IObserver.POINTED_AT_CHANGED )
+  else if ( reason.equals( IObserver.POINTED_AT_CHANGED ))
     DrawPointedAtGraph();
 
   else
@@ -745,12 +748,12 @@ private class HGraphMouseAdapter extends    MouseAdapter
     {
       String action = e.getActionCommand();
 
-       if ( action == HORIZONTAL_SCROLL )
+       if ( action.equals( HORIZONTAL_SCROLL ))
        {
          boolean state = ((JCheckBoxMenuItem)e.getSource()).getState();
          SetHorizontalScrolling( state );
        }
-       else if ( action == DO_REBIN )
+       else if ( action.equals( DO_REBIN ))
        {
          boolean state = ((JCheckBoxMenuItem)e.getSource()).getState();
          SetRebin( state );

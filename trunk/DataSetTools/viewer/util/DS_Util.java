@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/07/23 16:39:26  dennis
+ *  Fixed error: no longer using "==" for String comparison.
+ *
  *  Revision 1.5  2001/07/02 16:43:59  dennis
  *  getData_ID_String() now gets an entire attribute and
  *  uses it's toString method.  This fixed a bug when the
@@ -98,7 +101,7 @@ public final class DS_Util implements Serializable
     for ( int i = 0; i < n_ops; i++ )
     {
       op = ds.getOperator(i);
-      if ( op.getCategory() == Operator.X_AXIS_CONVERSION )
+      if ( op.getCategory().equals( Operator.X_AXIS_CONVERSION ))
       {
         n_params = op.getNum_parameters();
         for ( int j = 0; j < n_params; j++ )
@@ -139,7 +142,7 @@ public final class DS_Util implements Serializable
     for ( int i = 0; i < n_ops; i++ )
     {
       op = ds.getOperator(i);
-      if ( op.getCategory() == Operator.X_AXIS_CONVERSION )
+      if ( op.getCategory().equals( Operator.X_AXIS_CONVERSION ))
       {
         n_params = op.getNum_parameters();
         for ( int j = 0; j < n_params; j++ )
