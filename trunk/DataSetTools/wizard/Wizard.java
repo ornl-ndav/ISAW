@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.50  2003/07/02 20:05:51  bouzekc
+ * Fixed bug in convertXMLToParameters which hit a null pointer
+ * exception if curParam.getValue() returned null.
+ *
  * Revision 1.49  2003/07/01 15:06:29  bouzekc
  * Fixed bug where if the user clicked <cancel> during the
  * overwrite prompt, it set the Wizard's modified variable to
@@ -716,7 +720,11 @@ public abstract class Wizard implements PropertyChangeListener {
         if( curParam instanceof DataSetPG ) {
           curParam.setValid( false );  //DataSets not valid
         } else if( ( curParam instanceof BrowsePG ) ) {
-          if( !( new File( curParam.getValue(  ).toString(  ) ).exists(  ) ) ) {
+          //if the value for the BrowsePG was bad (as can happen all too easily
+          //with Scripts) or the file is not found, set it invalid
+          if( 
+            ( curParam.getValue(  ) == null ) ||
+              !( new File( curParam.getValue(  ).toString(  ) ).exists(  ) ) ) {
             curParam.setValid( false );
           }
         } else if( curParam instanceof ArrayPG || curParam instanceof VectorPG ) {
