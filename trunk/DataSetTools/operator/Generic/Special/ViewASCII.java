@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/10/04 20:08:53  pfpeterson
+ *  Changed reload and close buttons to be in a menu-bar. Fixed bug
+ *  that no file could be displayed once the dialog was closed using
+ *  window decorations. Also fixed bug that the dialog could be larger
+ *  than the window.
+ *
  *  Revision 1.1  2002/09/25 18:39:56  pfpeterson
  *  Added to CVS.
  *
@@ -74,10 +80,9 @@ public class ViewASCII extends    GenericSpecial {
     private static final String FAIL       = "FAILURE";
     private static final String RELOAD     = "Reload";
     private static final String CLOSE      = "Close";
-    private static final int    MIN_WIDTH  = 50;
-    private static final int    MAX_WIDTH  = 100;
-    private static final int    MIN_HEIGHT = 20;
-    private static final int    MAX_HEIGHT = 50;
+    private static final int    FONT_SIZE  = 12;
+    private static int    MAX_WIDTH  = 0;
+    private static int    MAX_HEIGHT = 0;
 
     private JFrame    mw;
     private JTextArea textarea;
@@ -135,59 +140,54 @@ public class ViewASCII extends    GenericSpecial {
     public Object getResult(){
         filename=getParameter(0).getValue().toString();
 
+        if( (mw!=null) && (! mw.isShowing()) )mw=null;
+        
         if(mw==null){
+            // set the font for the text display
+            Font font=new Font("monospaced",Font.PLAIN,FONT_SIZE);
+
+            // set up the maximum size of the text box
+            if(MAX_WIDTH==0 && MAX_HEIGHT==0){
+               int fontwidth=12;
+               int fontheight=20;
+               
+               Dimension screenSize=Toolkit.getDefaultToolkit().getScreenSize();
+               MAX_WIDTH=(int)(screenSize.height*4f/(3f*fontwidth))-2;
+               MAX_HEIGHT=(int)(screenSize.height/fontheight)-5;
+            }
+
             // create the TextArea
             textarea=new JTextArea();//doc);
             textarea.setEditable(false);
-            textarea.setFont(new Font("monospaced",Font.PLAIN,12));
+            textarea.setFont(font);
             JScrollPane sp=new JScrollPane(textarea);
 
             // fill up the text area
             String text=readFile(filename);
             if(text!=null) return text;
 
-            // create a reload button
-            JButton reload=new JButton(RELOAD);
-            reload.addActionListener(new MyActionListener(this));
-
-            // create a close button
-            JButton close=new JButton(CLOSE);
-            close.addActionListener(new MyActionListener(this));
+            //create a menubar
+            JMenuBar menuBar=new JMenuBar();
+            JMenu fileMenu=new JMenu("File");
+            JMenuItem reloadMenu=new JMenuItem(RELOAD);
+            JMenuItem closeMenu=new JMenuItem(CLOSE);
+            menuBar.add(fileMenu);
+            fileMenu.add(reloadMenu);
+            fileMenu.add(closeMenu);
+            MyActionListener mal=new MyActionListener(this);
+            reloadMenu.addActionListener(mal);
+            closeMenu.addActionListener(mal);
 
             // create the main window to hold it all
             mw=new JFrame(filename);
             mw.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-            // initialize the grid bag constraints
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.fill=GridBagConstraints.BOTH;
-            gbc.weightx=1.0;
-            gbc.weighty=1000.0;
-            gbc.anchor=GridBagConstraints.NORTH;
-            gbc.gridwidth=GridBagConstraints.REMAINDER;
-
-            // create a panel to hold stuff
-            JPanel mwp=new JPanel();
-            mwp.setLayout(new BoxLayout(mwp,BoxLayout.Y_AXIS));
-            mw.getContentPane().add(mwp);
-
             // add the text area
-            mwp.add(sp,gbc);
-
-            // add the buttons to their own panel
-            JPanel buttons=new JPanel(new FlowLayout());
-            buttons.add(reload);
-            buttons.add(close);
-
-            // add the buttons to the main panel
-            gbc.fill=GridBagConstraints.NONE;
-            gbc.weighty=1.0;
-            gbc.anchor=GridBagConstraints.SOUTH;
-            mwp.add(buttons,gbc);
+            mw.setJMenuBar(menuBar);
+            mw.getContentPane().add(sp);
 
             // put it up on screen
             mw.pack();
-            mw.show();
         }else{
             // just fill up the text area 
             String text=readFile(filename);
@@ -195,6 +195,7 @@ public class ViewASCII extends    GenericSpecial {
         }
 
         mw.setTitle(filename);
+        mw.show();
 
         return "success";
     }  
@@ -240,7 +241,7 @@ public class ViewASCII extends    GenericSpecial {
             while(!tfr.eof()){
                 height++;
                 line=tfr.read_line();
-                if(line.length()>width) width++;
+                if(line.length()>width) width=line.length();
                 if(text!=null){
                     text=text+"\n"+line;
                 }else{
