@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2002/01/24 23:14:05  pfpeterson
+ * Adds ISAW_HOME to the classpath for loading operators if it is not already there.
+ * This is done to make operators work easier for people that don't unpack ISAW.
+ *
  * Revision 1.24  2002/01/08 19:48:38  rmikk
  * Eliminated a null pointer exception that occurred when
  * a command is not found.
@@ -291,8 +295,9 @@ public class Script_Class_List_Handler  implements OperatorHandler
       }
       private void processPaths( String ScrPaths) 
         {ScrPaths.trim();
-        if( LoadDebug)
-         System.out.println("----PATH="+ScrPaths);
+        if( LoadDebug){
+	    System.out.println("----PATH="+ScrPaths);
+	}
         ScrPaths=ScrPaths.replace(java.io.File.pathSeparatorChar,';'); 
         if( ScrPaths.lastIndexOf(';') != ';')
              ScrPaths = ScrPaths+";";
@@ -451,110 +456,136 @@ private  void add( String filename , Vector opList)
       { 
         return;
       }
-   if( LoadDebug)
+   if( LoadDebug){
         System.out.print( "Processing "+filename+":");
+   }
    i = filename.lastIndexOf('.');
    if( i< 0 )
      { 
        return;
      }
     String Extension = filename.substring( i + 1 );
-    if( Extension.equalsIgnoreCase("iss"))
-      {
+    if( Extension.equalsIgnoreCase("iss")){
        ScriptOperator X = new ScriptOperator( filename );
-       if(X.getErrorMessage().length()<=0) 
-          {add( X );
-           if( LoadDebug )
-             System.out.println( "OK" );
-          }
-       else if( LoadDebug )
-          System.out.println( "NO "+X.getErrorMessage() );
-      }
-    else
-      { Operator X = getClassInst( filename );
-        if( X != null )
-           {add( X );
-            
-           }
+       if(X.getErrorMessage().length()<=0){
+	   add( X );
+           if( LoadDebug ){
+	       System.out.println( "OK" );
+	   }
+       }else if( LoadDebug ){
+	   System.out.println( "NO "+X.getErrorMessage() );
        }
-   }
+    }else{
+	Operator X = getClassInst( filename );
+        if( X != null ){
+	    if(LoadDebug){
+		System.out.println( "OK" );
+	    }
+	    add( X );
+	}else{
+	    if(LoadDebug){
+		System.out.println( "NO ");
+	    }
+       }
+    }
+  }
 /** Utility that tries to create an GenericOperator for a .class filename
 *@param filename  The name of the class file. 
 *@return  An instance of an Operator that subclasses the Generic operator <P>
 *         or null if it cannot create this class.
 */
-public  Operator getClassInst( String filename )
-   {String path;
-   if( filename == null )
-       return null;
-   
+public  Operator getClassInst( String filename ){
+    String path;
+    if( filename == null ){
+	System.out.println("No Name");
+	return null;
+    }
+    
     filename = filename.replace('\\' , '/' );
     String pathlist = System.getProperty("java.class.path");
     pathlist=pathlist.replace('\\','/');
     pathlist=pathlist.replace(java.io.File.pathSeparatorChar,';');
+    String ScrPath=System.getProperty("ISAW_HOME");
+    if(ScrPath!=null){
+	ScrPath=ScrPath.replace('\\','/');
+	if(ScrPath.lastIndexOf('/')<ScrPath.length()){
+	    ScrPath=ScrPath+"/";
+	}
+	if(pathlist.indexOf(ScrPath+"Isaw.jar;")>=0){
+	    if(pathlist.indexOf(ScrPath+";")>=0){
+		// do nothing
+	    }else{
+		pathlist=ScrPath+";"+pathlist;
+	    }
+	}
+    }
     int i = filename.lastIndexOf('/' );
-    if( i < 0 )
-       {if( LoadDebug)
-           System.out.println( "No directory divider");
-            return null;
-       }
+    if( i < 0 ){
+	if( LoadDebug){
+	    System.out.println( "No directory divider");
+	}
+	return null;
+    }
     String CPath = filename.substring( 0 , i ).trim();
     String classname = filename.substring( i + 1 , filename.length()-6); 
     
     String CPathFix=CPath;
     
-    if( CPath == null )
-      {if( LoadDebug )
+    if( CPath == null ){
+	if( LoadDebug ){
             System.out.println("No Name");
-         
-       return null;
-      }
-    if( CPath.length() <= 0 )
-        {if( LoadDebug )
+	}
+	return null;
+    }
+    if( CPath.length() <= 0 ){
+        if( LoadDebug ){
             System.out.println("No Name");
-         return null;
-        }
+	}
+	return null;
+    }
     
     for( path = getNextPath( pathlist, null ) ; path != null;
-         path = getNextPath( pathlist, path ))
-      {String Path1=path.trim();
+         path = getNextPath( pathlist, path )){
+	String Path1=path.trim();
     
-       if( Path1 != null )
-         if( Path1.length() > 0 )
-           {if( Path1.lastIndexOf('/') == Path1.length()-1)
-              Path1=Path1.substring( 0, Path1.lastIndexOf('/' )).trim();
-            if( Path1 !=null )
-             if( Path1.length() > 0 )
-               {
-               }
+	if( Path1 != null ){
+	    if( Path1.length() > 0 ){
+		if( Path1.lastIndexOf('/') == Path1.length()-1)
+		    Path1=Path1.substring( 0, Path1.lastIndexOf('/' )).trim();
+		if( Path1 !=null )
+		    if( Path1.length() > 0 ){
+			}
             }
+	}
                    
-          if( CPath.indexOf(Path1 ) == 0 )
-            {CPathFix = CPath.substring( Path1.length()+1);
-             CPathFix =CPathFix.replace('/','.');
-             CPath=CPathFix+"."+classname;
-                     
-             try{
+	if( CPath.indexOf(Path1 ) == 0 ){
+            CPathFix = CPath.substring( Path1.length()+1);
+	    CPathFix =CPathFix.replace('/','.');
+	    CPath=CPathFix+"."+classname;
+	    
+	    try{
                 Class C = Class.forName( CPath );
                 Object XX = C.newInstance();
-                if( XX instanceof GenericOperator)
-                  { if( LoadDebug)
-                     System.out.println("OK");
+                if( XX instanceof GenericOperator){
                     return (Operator)XX;
-                  }            
-                if( LoadDebug)
-                   System.out.println("NO: Not Generic OP");
-                }
-             catch(Exception s)
-                {if( LoadDebug )
-                   System.out.println("NO-"+s);
-                }
+		}            
+                if( LoadDebug){
+		    System.out.println("NO: Not Generic OP");
+		}
+	    }catch(Exception s){
+		if( LoadDebug ){
+		    System.out.println("NO-"+s);
+		}
+	    }
 
-            }
+	}
         
-       }//Check each classpath for match
-     return null;
-   }
+    }//Check each classpath for match
+    if( LoadDebug ){
+	System.out.print(" (not in classpath) ");
+    }
+    return null;
+}
 private  void add( Operator op)
   {
    opList.addElement( op );
