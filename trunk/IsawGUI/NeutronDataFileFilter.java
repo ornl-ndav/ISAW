@@ -3,6 +3,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.8  2002/06/18 19:48:19  rmikk
+ * Added file types xmi, xmn and zip. xml replaced
+ *
  * Revision 1.7  2002/06/18 18:57:18  rmikk
  * Added filters for xmi and xmn files. XML files, either
  *   ISAW or Nexus forms
@@ -49,6 +52,7 @@ public class NeutronDataFileFilter
   public final static String XML         = "xmi";
   public final static String NXML        = "xmn";
   public final static String GSAS        = "gsa";
+  public final static String ZIP         = "zip";
   boolean SaveFilter;
 
   public NeutronDataFileFilter()
@@ -91,7 +95,8 @@ public class NeutronDataFileFilter
         extension.equals( HDF         ) ||
         extension.equals( NEXUS       ) ||        
         extension.equals( ISAW_NATIVE ) ||  
-        extension.equals( XML )
+        extension.equals( XML         ) ||
+        extension.equals( ZIP         )        
   
       )
     )
@@ -117,10 +122,10 @@ public class NeutronDataFileFilter
                           
                          
    if(!SaveFilter)
-       S =  "*."+ISAW_NATIVE+"(Temporary) *."+XML+"(Isaw XML)";
+       S =  "*."+ISAW_NATIVE+"(Temporary) *."+XML+"(Isaw XML) *.zip";
    else
        S =  "*." + ISAW_NATIVE+"(Temporary),*."+XML+",*."+GSAS+
-              "(gsas) *."+XML+"(Isaw XML)"   ;
+              "(gsas) *."+XML+"(Isaw XML) *.zip"   ;
    S += " )";
    return S;
   }
