@@ -30,6 +30,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.8  2003/02/07 14:19:20  dennis
+ *  Added getDocumentation() method. (Chris Bouzek)
+ *
  *  Revision 1.7  2002/12/11 22:31:31  pfpeterson
  *  Removed the '_2' from getCommand() and its javadocs.
  *
@@ -147,7 +150,7 @@ public class ScatteringFunction extends GenericTOF_DG_Spectrometer
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -166,8 +169,64 @@ public class ScatteringFunction extends GenericTOF_DG_Spectrometer
     addParameter( parameter );
   }
 
-
+ /* ---------------------- getDocumentation --------------------------- */
+ /**
+ *  Returns the documentation for this method as a String.  The format
+ *  follows standard JavaDoc conventions.
+ */
+ public String getDocumentation()
+ {
+   StringBuffer s = new StringBuffer("");
+   s.append("@overview This operator computes the scattering function for ");
+   s.append("a direct geometry spectrometer based on the result from the ");
+   s.append("DoubleDifferentialCrossection operator, as a function of ");
+   s.append("energy loss.\n");
+   s.append("@assumptions It is assumed that the ");
+   s.append("DoubleDifferentialCrossection operator has already been ");
+   s.append("applied.\n");
+   s.append("Furthermore, the specified cross section must be greater ");
+   s.append("than zero.\n");
+   s.append("@algorithm For each data entry in the DataSet ds, this ");
+   s.append("operator calculates the velocity in and the incident ");
+   s.append("wave vector magnitude.\n");
+   s.append("Then it compensates for detector efficiency as a function of ");
+   s.append("neutron velocity.\n");
+   s.append("Next it calculates energy loss, and uses this to find the ");
+   s.append("final energy and final velocity.\n");
+   s.append("From these the final wave vector magnitude is calculated.");
+   s.append("Next the incident wave vector magnitude, final wave vector ");
+   s.append("magnitude, and cross section are used to calculate new Y ");
+   s.append("values.\n");
+   s.append("The new Y-values are used to get conversion data, which is ");
+   s.append("used to multiply the original data.\n");
+   s.append("Once the operator has finished doing this for each data entry, ");
+   s.append("an entry is added to the DataSet's log indicating that the ");
+   s.append("scattering function was calculated.\n");
+   s.append("@param ds The sample DataSet for which the scattering function ");
+   s.append("is to be calculated.\n");
+   s.append("@param crossection The scattering cross section of the ");
+   s.append("sample.\n");
+   s.append("@param make_new_ds Flag that determines whether a new DataSet ");
+   s.append("is constructed, or the Data blocks of the original DataSet are ");
+   s.append("just altered.\n");
+   s.append("@return Returns a new DataSet which has entries made up of the ");
+   s.append("original data entries which have had the scattering function ");
+   s.append("applied if make_new_ds is true.  Otherwise, it returns a String ");
+   s.append("indicating that the scattering function was applied to the ");
+   s.append("original DataSet.\n");
+   s.append("@error Returns an error if the cross section is not greater ");
+   s.append("than zero.\n");
+   return s.toString();
+ }
+  
   /* ---------------------------- getResult ------------------------------- */
+  /** 
+    *  Calculates the scattering function for the input DataSet ds.
+    *
+    *  @return If make_new_ds = true, a new DataSet which has had a scattering
+    *  function applied is returned.  Otherwise, a String is returned 
+    *  indicating that the scattering function was applied.
+    */
 
   public Object getResult()
   {       
@@ -240,9 +299,9 @@ public class ScatteringFunction extends GenericTOF_DG_Spectrometer
 
       for ( int i = 0; i < y_vals.length; i++ )
       {
-        if ( x_vals.length > y_vals.length )  // histogram
+        if ( data.isHistogram() )                  // histogram, use bin center
           energy_loss = (x_vals[i]+x_vals[i+1])/2;
-        else                                  // function
+        else                                       // function, use point
           energy_loss = x_vals[i];
 
         final_energy = energy_in - energy_loss; 
@@ -301,6 +360,8 @@ public class ScatteringFunction extends GenericTOF_DG_Spectrometer
 
     Operator op = new DoubleDifferentialCrossection( ds, null, false,
                                                      10000, 1, true );
+                                                                                                      
+    System.out.println("Documentation: " + op.getDocumentation());
 
     Object ddif_ds = op.getResult();
     if ( ddif_ds == null )
