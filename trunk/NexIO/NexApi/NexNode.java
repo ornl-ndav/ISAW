@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/07/26 13:52:52  rmikk
+ * Removed Dependence on NDS package
+ *
  * Revision 1.2  2001/07/24 20:11:57  rmikk
  * Added routines to determine if two nodes are the same
  * link
@@ -836,7 +839,7 @@ public class NexNode implements NxNode
   /** Test program for this module: NexNode
 */
    public static void main( String args[])
-    {Command.CommandUtil.setPropsFile();
+      {DataSetTools.util.SharedData UU = new DataSetTools.util.SharedData();
     String filename ="C:\\SampleRuns\\Nex\\lrcs3000.nxs";
     if( args != null)if( args.length>0)
         filename = args[0];

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/07/26 13:52:34  rmikk
+ * Removed Dependence on NDS package
+ *
  * Revision 1.3  2001/07/24 20:01:41  rmikk
  * Major Reorganization to allow several NXdata's for one
  * DataSet ( Group those with like x values)
@@ -47,7 +50,7 @@ package NexIO ;
 //import NdsSvNode ;
 import java.io.* ;
 import NexIO.NexApi.* ;
- import NexIO.NDS.* ;
+//import NexIO.NDS.* ;
 import NexIO.* ;
 import NexIO.NexApi.* ;
 import DataSetTools.dataset.* ;
@@ -383,7 +386,7 @@ public static void main( String args[] )
       System.out.println( "Enter Option desired" ) ;
       System.out.println( "   s: from nds server" ) ;
       System.out.println( "   a. from Nexus API-local file" ) ;
-     char c = 0 ;
+     char c = 'a' ;
     try
      { 
       while ( c<=  32 )
@@ -412,12 +415,13 @@ public static void main( String args[] )
    System.out.println( "filename = " + filename + "::command= " + d ) ;
   
   NxNode node = null ;
-  NDSClient nds =null ;
+  // NDSClient nds =null ;
 
    if( d == 's' )
-   {nds = new NDSClient( "dmikk.mscs.uwstout.edu" , 6008 , 6081998 ) ;
+   {/*nds = new NDSClient( "dmikk.mscs.uwstout.edu" , 6008 , 6081998 ) ;
     nds.connect() ;
     node = ( NxNode )( new NdsSvNode( filename , nds ) ) ;
+    */
    }
   else if( d == 'a' )
     { node = ( NxNode )( new NexIO.NexApi.NexNode(  filename ) ) ;
