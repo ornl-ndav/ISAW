@@ -40,7 +40,7 @@ public class JAttributesDialog implements Serializable
     {
         this.attr_list = attr_list;
         opDialog = new JDialog(new JFrame(), nam ,true);
-        opDialog.setSize(620,400);
+        opDialog.setSize(650,450);
         opDialog.getContentPane().add(new JLabel(nam +" to be performed on Selected Node"));
        
         //Center the opdialog frame 
