@@ -2,6 +2,9 @@
 # generic Makefile for isaw
 #
 # $Log$
+# Revision 1.5  2000/07/07 21:57:13  neffk
+# changed the aspect ratio of the graph to 1:2 (vertical:horizontal)
+#
 # Revision 1.4  2000/07/06 19:55:55  neffk
 # added progress file
 #
@@ -31,6 +34,7 @@ list:
 	echo "run-all       - runs IsawGUI (user)"
 	echo "docs          - creates documentation (user)"
 	echo "distro-all    - creates distribution source tree (developer only)"
+	echo "tags-all      - creates tags in the source tree (developer only)"
 	echo "--------------------------------------------------"
 	echo ""
 
@@ -58,14 +62,13 @@ run-all:
 #
 # create documentation
 #
-DOC = /IPNShome/neffk/ISAW/OverplotView/doc/html
+DOC = /IPNShome/neffk/java/dev/doc/OverplotView
 
 docs:
-	#rm -R $(DOC)/*
-	javadoc -d $(DOC) \
-          OverplotView \
-          OverplotView.components.containers \
-          OverplotView.util
+	rm -R $(DOC)/*; javadoc -d $(DOC) \
+                          OverplotView \
+                          OverplotView.components.containers \
+                          OverplotView.util
 
 
 
@@ -96,6 +99,15 @@ distro-all:
 	cp ./$(CONTAINERS)/*.class $(DCONTAINERS)
 	cp ./$(UTIL)/*.java $(DUTIL)
 	cp ./$(UTIL)/*.class $(DUTIL)
+
+
+#
+# produces ctags 
+#
+tags-all:
+	ctags *.java
+	cd components/containers;  ctags *.java;  cd ../..
+	cd util;  ctags *.java;  cd ..
 
 
 clean: 

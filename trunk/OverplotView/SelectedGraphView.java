@@ -11,8 +11,11 @@ package OverplotView;
  * @see DataSetTools.viewer.DataSetViewer\
  *
  * $Log$
- * Revision 1.1  2000/07/06 16:17:44  neffk
- * Initial revision
+ * Revision 1.2  2000/07/07 21:57:13  neffk
+ * changed the aspect ratio of the graph to 1:2 (vertical:horizontal)
+ *
+ * Revision 1.1.1.1  2000/07/06 16:17:44  neffk
+ * imported source code
  *
  * Revision 1.13  2000/06/26 15:03:16  neffk
  * doesn't crash when the setDataSet method is called (178-0)
@@ -277,9 +280,9 @@ public class SelectedGraphView
   {
     public void componentResized( ComponentEvent c )
     {
-      System.out.println( "control size changed" );
-      System.out.println( "graph Panel size: " + graphPanel.getSize() );
-/*
+//      System.out.println( "control size changed" );
+//      System.out.println( "graph Panel size: " + graphPanel.getSize() );
+
       Dimension mainD = getSize();
       Dimension controlD = c.getComponent().getSize();
       int height = mainD.height - controlD.height;
@@ -290,7 +293,6 @@ public class SelectedGraphView
       //System.out.println( "controls resized: " + c.getComponent().getSize() );
       //System.out.println( "graph size: " + graphD  );
       graph.calculateGraphSize( graphD );
-*/
     }
   }
 
