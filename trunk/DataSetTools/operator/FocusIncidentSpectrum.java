@@ -4,6 +4,10 @@
  * Programmer:  Dennis Mikkelson
  *             
  * $Log$
+ * Revision 1.2  2000/12/15 05:11:47  dennis
+ * Added new group ID parameter to allow specifying which
+ * group ID the incident spectrum was focussed for.
+ *
  * Revision 1.1  2000/12/13 00:10:44  dennis
  * Added static method IncSpecFocus to focus the incident spectrum
  * to a bank of detectors for a powder diffractometer.
@@ -60,6 +64,7 @@ public class  FocusIncidentSpectrum  extends   DS_Special
    *  @param  theta         The nominal angle for the focussed spectrum 
    *  @param  theta_min     The minimum angle for the focussed spectrum 
    *  @param  theta_max     The maximum angle for the focussed spectrum 
+   *  @param  new_group_id  The group_id to be used for the focussed spectrum 
    */
 
   public FocusIncidentSpectrum( DataSet      ds,
@@ -70,7 +75,8 @@ public class  FocusIncidentSpectrum  extends   DS_Special
                                 float        path_length,
                                 float        theta,
                                 float        theta_min,
-                                float        theta_max )
+                                float        theta_max,
+                                int          new_group_id )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -98,6 +104,9 @@ public class  FocusIncidentSpectrum  extends   DS_Special
 
     parameter = getParameter( 7 );
     parameter.setValue( new Float( theta_max ) );
+
+    parameter = getParameter( 8 );
+    parameter.setValue( new Integer( new_group_id ) );
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
@@ -145,6 +154,9 @@ public class  FocusIncidentSpectrum  extends   DS_Special
 
     parameter = new Parameter("Maximum angle", new Float(154.9));
     addParameter( parameter );
+
+    parameter = new Parameter("New Group ID", new Integer(0));
+    addParameter( parameter );
   }
 
 
@@ -153,14 +165,15 @@ public class  FocusIncidentSpectrum  extends   DS_Special
   public Object getResult()
   {                                  // get the parameters
 
-    int   group_id    = ( (Integer)(getParameter(0).getValue()) ).intValue();
-    float t_min       = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    float t_max       = ( (Float)(getParameter(2).getValue()) ).floatValue();
-    int   num_bins    = ( (Integer)(getParameter(3).getValue()) ).intValue();
-    float path_length = ( (Float)(getParameter(4).getValue()) ).floatValue();
-    float theta       = ( (Float)(getParameter(5).getValue()) ).floatValue();
-    float theta_min   = ( (Float)(getParameter(6).getValue()) ).floatValue();
-    float theta_max   = ( (Float)(getParameter(7).getValue()) ).floatValue();
+    int   group_id     = ( (Integer)(getParameter(0).getValue()) ).intValue();
+    float t_min        = ( (Float)(getParameter(1).getValue()) ).floatValue();
+    float t_max        = ( (Float)(getParameter(2).getValue()) ).floatValue();
+    int   num_bins     = ( (Integer)(getParameter(3).getValue()) ).intValue();
+    float path_length  = ( (Float)(getParameter(4).getValue()) ).floatValue();
+    float theta        = ( (Float)(getParameter(5).getValue()) ).floatValue();
+    float theta_min    = ( (Float)(getParameter(6).getValue()) ).floatValue();
+    float theta_max    = ( (Float)(getParameter(7).getValue()) ).floatValue();
+    int   new_group_id = ( (Integer)(getParameter(8).getValue()) ).intValue();
 
                                      // get the current data set and do the 
                                      // operation
@@ -190,7 +203,7 @@ public class  FocusIncidentSpectrum  extends   DS_Special
                                                 theta,
                                                 theta_min,
                                                 theta_max,
-                                                group_id );
+                                                new_group_id );
 
     DataSet new_ds = ds.empty_clone();
     new_ds.addData_entry( new_data );
