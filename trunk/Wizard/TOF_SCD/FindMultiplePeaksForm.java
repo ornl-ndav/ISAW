@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.23  2003/08/25 19:45:12  bouzekc
+ * Changed minimum peak intensity to 10.
+ *
  * Revision 1.22  2003/07/14 16:32:44  bouzekc
  * Made run number, experiment name, and peaks file
  * parameters' initial values empty.
@@ -218,7 +221,7 @@ public class FindMultiplePeaksForm extends Form {
       new IntegerPG( "Maximum Number of Peaks", new Integer( 30 ), false ) );  //4
 
     addParameter( 
-      new IntegerPG( "Minimum Peak Intensity", new Integer( 3 ), false ) );  //5
+      new IntegerPG( "Minimum Peak Intensity", new Integer( 10 ), false ) );  //5
 
     addParameter( 
       new BooleanPG( "Append Data to File?", new Boolean( false ), false ) );  //6
