@@ -33,6 +33,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.45  2005/01/20 22:05:18  millermi
+ * - Changed x values to bin centers prior to graphing.
+ * - Replaced binarySearch() with one provided by Java utilities.
+ * - Added documentation.
+ * - Removed 2/3 multiplier from n_xvals calculation.
+ * - Known bug: Log axes cause the viewer to lock up.
+ *
  * Revision 1.44  2005/01/19 21:34:26  millermi
  * - Made changes to calculation of radial line summing.
  * - binarySearch() now returns -1 if value is not within
@@ -305,6 +312,7 @@ import gov.anl.ipns.ViewTools.UI.FontUtil;
 import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 
 import javax.swing.*;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.awt.Component;
@@ -1379,22 +1387,20 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     }
     else
     {
+      // Removed 2/3 multiplier on 1/20/05 M.M.
       // This uses eqn:
-      // max steps = (theta in radians) * (average pixel radius) * 2/3
-      n_xvals = Math.round( (float)(theta*Math.PI/180)*pix_avg_radius*2f/3f );
+      // max steps = (theta in radians) * (average pixel radius)
+      n_xvals = Math.round( (float)(theta*Math.PI/180)*pix_avg_radius );
     }
     x_scale = new UniformXScale( start_x, end_x, n_xvals );
-
-    int hit_count[]  = new int[n_xvals];
-    float y_vals[]   = new float[n_xvals];
-    float err_vals[] = new float[n_xvals];
+    // These arrays will be 1 element smaller since x_vals is bin boundaries
+    // and these are working with bins. 
+    int hit_count[]  = new int[n_xvals-1]; // Counts hits in a bin.
+    float y_vals[]   = new float[n_xvals-1];
+    float err_vals[] = new float[n_xvals-1];
     float err;
     float x_vals[] = x_scale.getXs();
     Point[] selected_pts = region.getSelectedPoints();
-    // this loop will sum up values at the same distance and count the number
-    // of hits at each distance.
-    // NOTE: The distance calculation is done in image row/col values, not
-    // in world coord values.
     // Map world coord origin to image origin for magnitude calculation
     floatPoint2D image_origin = 
                         image_to_world_tran.MapFrom( new floatPoint2D(0,0) );
@@ -1413,21 +1419,43 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     // Bins are radial distances, summing over a ring.
     if( integrate_by_ring )
     {
+      // This loop will sum up values at the same distance and count
+      // the number of hits at each distance.
+      // NOTE: The distance calculation is done in image row/col values,
+      // not in world coord values.
       for ( int i = 0; i < selected_pts.length; i++ )
       {
     	x = Math.abs( selected_pts[i].x - image_origin.x );
     	y = Math.abs( selected_pts[i].y - image_origin.y );
     	dist = (float)Math.sqrt( x*x + y*y );
-    	index = binarySearch( x_vals, dist );
-	// If value is on the range of x_vals, a valid index is returned.
-	// If not, -1 is returned.
-	if( !(index < 0) )
+    	// Find index of dist in the x_vals array.
+	index = Arrays.binarySearch( x_vals, dist );
+	// Since Java's binary search returns a negative insertion point
+	// if value is not exactly found, check to see if index is an
+	// insertion point (index<0) or an index (index>=0).
+	// If exact value is found (bin boundary), put count in the next bin.
+	// For this reason, any counts on the last bin boundary will be ignored.
+	// Example and explanation of index relation to bins.
+	// Array:           10   11   12   13   14   15
+	// Array index:     0    1    2    3    4    5
+	// Bin Index:       \ 0 /\ 1 /\ 2 /\ 3 /\ 4 /
+	// Insert pt:    0    1    2    3    4    5    6
+	// Bin intervals: [10,11), [11,12), [12,13), [13,14), [14,15)
+	// Values < 10 or >= 15 in this example would be ignored.	
+	if( index < 0 ) // if insertion point
 	{
-    	  y_vals[index] += data_array[ selected_pts[i].y ][ selected_pts[i].x ];
-    	  err = err_array[ selected_pts[i].y ][ selected_pts[i].x ];
-    	  err_vals[index] += err*err; 
+	  index = -(index+1); // undo the Java coding system for insertions.
+	  index = index - 1;  // insert pt - 1 = bin #
+	} // else exact value found, index = bin #.
+	// Only valid bin indices are 0 - size-2, See above example for details.
+	if( index >= 0 && index < (x_vals.length-1) )
+	{
+    	  // Proceed with calculations on given index.
+	  y_vals[index] += data_array[ selected_pts[i].y ][ selected_pts[i].x ];
     	  hit_count[index]++;
-	} // end if valid index
+    	  err = err_array[ selected_pts[i].y ][ selected_pts[i].x ];
+    	  err_vals[index] += err*err;
+	}
       } // end for all selected points.
     } // end if integrate by_rings
     // Bins are angular distance, summing over an angle.
@@ -1435,9 +1463,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     {
       // This variable is used to place the angle in the correct quadrant.
       float angle_modifier = 0;
-      // ####### These two variables are test variables. #######
-      int in_count = 0;
-      int out_count = 0;
       // System.out.println("X scale: " + x_scale );
       for ( int i = 0; i < selected_pts.length; i++ )
       {
@@ -1475,30 +1500,36 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	if( end_x > 360 && dist < start_x )
 	  dist += 360;
 	// Find index of dist in the x_vals array.
-	index = binarySearch( x_vals, dist );
-	// If value not on the range of x_vals, ignore it.
-	if( index < 0 )
+	index = Arrays.binarySearch( x_vals, dist );
+	if( index < 0 ) // if insertion point
 	{
-	  out_count++;/*
-	  System.out.println("Value: "+dist+"not on range ["+start_x+","+
-	                   end_x+"], Radius: "+Math.sqrt(x*x+y*y)+
-			   ", index = "+binarySearch( x_vals, dist ) );*/
-    	}
-	else
+	  index = -(index+1); // undo the Java coding system for insertions.
+	  index = index - 1;  // insert pt - 1 = bin #
+	} // else exact value found, index = bin #.
+	// Only valid bin indices are 0 - size-2, See above example for details.
+	if( index >= 0 && index < (x_vals.length-1) )
 	{
-	  in_count++;
     	  // Proceed with calculations on given index.
 	  y_vals[index] += data_array[ selected_pts[i].y ][ selected_pts[i].x ];
-    	  err = err_array[ selected_pts[i].y ][ selected_pts[i].x ];
-    	  err_vals[index] += err*err; 
     	  hit_count[index]++;
-	} // end else valid indices
+    	  err = err_array[ selected_pts[i].y ][ selected_pts[i].x ];
+    	  err_vals[index] += err*err;
+	}
       } // end for all points
-      // System.out.println("In/Out: "+in_count+"/"+out_count);
     } // end else integration by radial lines.
-    
+    /*
+    System.out.println("Size: "+x_vals.length);
+    System.out.print("Bin Boundaries: ");
+    for( int i = 0; i < x_vals.length; i++ )
+      System.out.print(x_vals[i]+"  ");
+    System.out.println();
+    System.out.print("Hit Counts: ");
+    for( int i = 0; i < hit_count.length; i++ )
+      System.out.print(hit_count[i]+"  ");
+    System.out.println();
+    */
     // find average value per hit.
-    for( int bindex = 0; bindex < n_xvals; bindex++ )
+    for( int bindex = 0; bindex < hit_count.length; bindex++ )
     {
       if( hit_count[bindex] != 0 )
       {
@@ -1507,7 +1538,12 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
                                   (float)hit_count[bindex];
       }
     }
-
+    // Build a new x_scale based on bin centers instead of bin boundaries.
+    float new_start = (x_vals[0]+x_vals[1])/2f;
+    float new_end = (x_vals[x_vals.length-1]+x_vals[x_vals.length-2])/2f;
+    // X scale for bin centers.
+    UniformXScale bcx_scale = new UniformXScale(new_start,new_end,n_xvals-1);
+    
     // Bins are radial distances, summing over a ring.
     if( integrate_by_ring )
     {
@@ -1531,14 +1567,18 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       {
      	float step = (new_end_x - new_start_x) / (n_xvals-1);
      	new_start_x += step;
+	// adjust start and end to be at bin centers.
+	new_start_x += step/2f;
+	new_end_x -= step/2f;
       }
 
       //System.out.println("Using Q between " + new_start_x + 
       //			  " and " + new_end_x );
       // first bin gone, so n_xvals-1 values
+      // Since alignment now on bin centers, now n_xvals-2 values.
       UniformXScale new_x_scale = new UniformXScale( new_start_x, 
      						     new_end_x, 
-     						     n_xvals-1 );
+     						     n_xvals-2 );
       float new_y_vals[]   = new float[ y_vals.length - 1 ];
       float new_err_vals[] = new float[ y_vals.length - 1 ];
       for ( int i = 0; i < new_y_vals.length; i++ )
@@ -1561,7 +1601,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     else
     {
       // put it into a "Data" object and then add it to the dataset
-      Data new_spectrum = new FunctionTable( x_scale, 
+      Data new_spectrum = new FunctionTable( bcx_scale, 
         				     y_vals, 
         				     err_vals,  
         				     ID );
@@ -1572,47 +1612,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       data_set.setSelectFlag( data_set.getNum_entries() - 1, true );
     } // end else integrate by radial lines.
   } // End of integrate()
- 
- /*
-  * This method efficiently finds what bin to put data in.
-  *
-  * @param  x_values The ordered array being searched
-  * @param  dist Value being searched for.
-  * @return Index of dist in the x_values array.
-  */ 
-  private int binarySearch(  float[] x_values, float dist )
-  { 
-    // If array size is 1 or 0, return index 0.
-    if( x_values.length < 2 )
-      return 0;
-    if( dist < x_values[0] || dist > x_values[x_values.length-1] )
-      return -1;
-    int bin_low = 0;
-    int bin_high = x_values.length - 1;
-    int bin = Math.round( (float)(bin_high-bin_low)/2f );
-    // half of the step from one x_value to the next.
-    float half_increment = (x_values[1] - x_values[0])/2f;
-    // if dist is within half a step of the x_value, or if the bin is an
-    // extreme, return that bin index.
-    while( !( dist <= (x_values[bin] + half_increment) &&
-              dist > (x_values[bin] - half_increment) ) &&
-	    !( bin == bin_low || bin == bin_high ) )
-    {
-      //System.out.println("Dist/X_val/bin: " + dist + "/" + x_values[bin] +
-      //                   "/" + bin );
-      if( dist < (x_values[bin] - half_increment) )
-      {
-        bin_high = bin;
-      }
-      else
-      {
-        bin_low = bin;
-      }
-      // move bin to midpoint of bin_low and bin_high
-      bin = bin_low + Math.round((float)(bin_high-bin_low)/2f);
-    }
-    return bin;
-  }
   
  /*
   * This class is required to handle all messages within the SANDWedgeViewer.
