@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2004/06/18 18:39:18  rmikk
+ *  Got the grid to correspond to the new id that was selected
+ *
  *  Revision 1.29  2004/06/11 17:03:17  dennis
  *  Now references static method setDataEntriesInAllGrids() through the
  *  class UniformGrid, rather than through an instance.
@@ -624,6 +627,7 @@ public class ContourData
             if( ds.getData_entry(j).getX_scale() != x_scale)
                 ds.getData_entry(j).resample( x_scale,0);
          UniformGrid.setDataEntriesInAllGrids(ds);
+         grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum)); 
          //SetUpGroups();
         }
       else if( xscale != null)
