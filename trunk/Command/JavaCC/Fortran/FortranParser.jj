@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2004/01/16 01:08:21  bouzekc
+ * Added do loop capability.
+ *
  * Revision 1.15  2004/01/15 23:11:47  bouzekc
  * Every character now allowed inside comments and strings.
  *
@@ -587,6 +590,28 @@ TOKEN: {
    ) >
 }
 
+//the opening of the do... statement
+TOKEN: {
+  <FORTRAN_DO_START: (
+    ( <WS> )*
+    "do " ( <WS> )*
+    ( <DIGIT> )+ ( <WS> )* 
+    <VARIABLE>  ( <WS> )*
+     "=" ( <WS> )*
+     <OPERAND> ( <WS> )*
+     "," ( <WS> )*
+     <OPERAND> ( <WS> )*
+     ( "," ( <WS> )* ( <DIGIT> )+ ( <WS> )* )?
+  ) >
+}
+
+//the ending of the do loop
+TOKEN: {
+  <FORTRAN_END_DO: (
+  ( <WS> )* ( <DIGIT> )+ ( <WS> )* "continue" ( <WS> )*
+  ) >
+}
+
 //~----------------------------------------------------------------------------
 // FORTRAN VARIABLE ASSIGNMENTS
 //~----------------------------------------------------------------------------
@@ -720,7 +745,7 @@ String convertFortranToJava(  ) : {
       appendSemiColon = false;
       return fCode.toString(  ) + ";\n";
     } else {
-      return fCode.toString(  ) + "\n";
+      return fCode.toString(  ).replaceAll( "\\t", "  " ) + "\n";
     }
   }
 }
@@ -735,7 +760,7 @@ String convertFortranTokens(  ) : {
   Token t;
   String s;
   StringBuffer buffer;
-  String[] tokenList;
+  String tokenList[];
 }
 {
   //matched a comment
@@ -786,13 +811,68 @@ String convertFortranTokens(  ) : {
     return t.image.replaceAll( "endif", "}" );
   }
 |
+  //start of a do statement..we'll convert this to a for loop
+  //I am guessing that Fortran uses a <= by default...
+  t = <FORTRAN_DO_START> {    
+    //consume the 'do' and the label
+    s = t.image.trim(  );
+    s = s.substring( s.indexOf( " " ), s.length(  ) ).trim(  );
+    s = s.substring( s.indexOf( " " ), s.length(  ) ).trim(  );
+    
+    //this will give us something like {i = 1, n} or { i = 1, n, 3}
+    //if a step was given
+    tokenList = s.split( "," );
+    
+    buffer = new StringBuffer( "for( " );
+    
+    //I want to keep some of these variables local to this case
+    {
+      int step = 1;
+      String tokenList2[] = tokenList[0].split( "=" );
+      String intVar = tokenList2[0].trim(  );
+      String start = tokenList2[1].trim(  );
+      String end = tokenList[1].trim(  );
+      
+      if( tokenList.length == 3 ) {
+        step = Integer.parseInt( tokenList[2].trim(  ) );
+      }
+      
+      buffer.append( intVar );
+      buffer.append( " = ");
+      buffer.append( start );
+      buffer.append( "; ");
+      buffer.append( intVar );
+      
+      if( step >= 0 ) { 
+        buffer.append( " <= ");
+      } else {
+        buffer.append( " >= ");
+      }
+      
+      buffer.append( end );
+      buffer.append( "; " );
+      buffer.append( intVar );
+      buffer.append( " = " );
+      buffer.append( intVar );
+      buffer.append( " + ( " );
+      buffer.append( step );
+      buffer.append( " ) ) {");
+    }
+    return buffer.toString(  );
+  }
+|
+  //the end of the do... loop
+  t = <FORTRAN_END_DO> {
+    return "}";
+  }
+|
   //matched the absolute function
   t = <FORTRAN_ABS> {
     s = t.image;
     if( s.indexOf( "iabs" ) >= 0 ) {
-      s = s.replaceAll( "iabs", "Math.abs" );
+      s = s.replaceFirst( "iabs", "Math.abs" );
     } else {
-      s = s.replaceAll( "abs", "Math.abs" );
+      s = s.replaceFirst( "abs", "Math.abs" );
     }
     
     return s;
@@ -924,6 +1004,6 @@ String convertFortranTokens(  ) : {
 |
   //found an empty line, so spit it back
   t = <EMPTY_LINE> {
-    return t.image;
+    return "";
   }
 }
