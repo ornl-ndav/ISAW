@@ -32,6 +32,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.18  2004/05/06 00:10:26  bouzekc
+ * Replaced 3 method calls to get() with a local variable and one get() call.
+ * No need for extra overhead.
+ *
  * Revision 1.17  2004/05/06 00:06:32  bouzekc
  * FIxed an error that added a DataSetPG in where a DataDirPG should have gone.
  *
@@ -153,6 +157,7 @@ public class JavaWrapperOperator extends GenericOperator {
     //Operators.StringChoiceOp op = new Operators.StringChoiceOp(  );
     //Operators.MyFortran crunch = new Operators.MyFortran(  );
     JavaWrapperOperator wrapper = new JavaWrapperOperator( op );
+
     /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
        "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
        new DataSetTools.viewer.ViewManager(
@@ -270,16 +275,19 @@ public class JavaWrapperOperator extends GenericOperator {
           //BooleanPG
           if( ( type == Boolean.TYPE ) || ( type == Boolean.class ) ) {
             addParameter( new BooleanPG( name, val ) );
+
             //FloatPG
           } else if( 
             ( type == Float.TYPE ) || ( type == Double.TYPE ) ||
               ( type == Float.class ) || ( type == Double.class ) ) {
             addParameter( new FloatPG( name, val ) );
+
             //IntegerPG
           } else if( 
             ( type == Integer.TYPE ) || ( type == Long.TYPE ) ||
               ( type == Integer.class ) || ( type == Long.class ) ) {
             addParameter( new IntegerPG( name, val ) );
+
             //StringPG
           } else if( ( type == Character.TYPE ) || ( type == String.class ) ) {
             addParameter( new StringPG( name, val ) );
@@ -346,12 +354,16 @@ public class JavaWrapperOperator extends GenericOperator {
 
       //go through the parameter list, getting Objects for the calculate(...)
       //method.
-      for( int i = 0; i < parameters.size(  ); i++ ) {
-        values[i] = ( ( ParameterGUI )parameters.get( i ) ).getValue(  );
+      ParameterGUI pg;
 
-        if( parameters.get( i ) instanceof DataSetPG ) {
-          ( ( DataSetPG )parameters.get( i ) ).clear(  );  // clear DataSetPG to 
-                                                           // avoid memory leak !
+      for( int i = 0; i < parameters.size(  ); i++ ) {
+        pg          = ( ParameterGUI )parameters.get( i );
+        values[i]   = pg.getValue(  );
+
+        if( pg instanceof DataSetPG ) {
+          ( ( DataSetPG )pg ).clear(  );  // clear DataSetPG to 
+
+          // avoid memory leak !
         }
       }
 
