@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/08/10 13:41:32  rmikk
+ * Added code to return some error information
+ *
  * Revision 1.2  2001/08/09 16:17:15  rmikk
  * Fixed bug so that the Title is correct when loaded.( Untested)
  *
@@ -48,9 +51,9 @@ import NexIO.NDS.*;
 /**  Class used to Retrieve local nexus files
  */
 public class ndsRetriever extends Retriever
-{ExtGetDS ext ;
+{ExtGetDS ext = null;
  String errormessage ;
- NxNode node ;
+ NxNode node = null;
 
     /**
      *@param   dataSourceName  should be a local filename<P>
@@ -64,10 +67,12 @@ public class ndsRetriever extends Retriever
 	 return;
       NDSClient nds = new NDSClient( DT.getMachine() , 
                         new Integer(DT.getPort()).intValue() , 6081998 ) ;
-      nds.connect() ;
-      node = ( NxNode )( new NdsSvNode( DT.getFileName() , nds ) ) ;
-     
-      ext = new ExtGetDS( node, DT.getFileName() ) ;
+      if( !nds.connect())
+           errormessage = NxNodeUtils.ER_OPEN;
+      else
+          {node = ( NxNode )( new NdsSvNode( DT.getFileName() , nds ) ) ;     
+           ext = new ExtGetDS( node, DT.getFileName() ) ;
+          }
     }
 
     /** 
@@ -99,8 +104,14 @@ public class ndsRetriever extends Retriever
   * returns the total number of datasets of All Types
   */
    public   int  numDataSets() 
-      {int nsets = ext.numDataSets() ;
+    {if( errormessage != null)
+       if( errormessage.length() > 0 )
+          return RemoteDataRetriever.SERVER_DOWN;
+       int nsets = ext.numDataSets() ;       
        errormessage = ext.getErrorMessage() ;
+       if( errormessage != null)
+         if( errormessage.length() > 0)
+           return RemoteDataRetriever.BAD_FILE_NAME;
        return nsets ;
       }
 
