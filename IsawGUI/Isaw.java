@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.146  2003/08/01 13:55:21  dennis
+ *  Changed version to 1.5.1 alpha 9
+ *
  *  Revision 1.145  2003/08/01 13:29:43  rmikk
  *  Placed a try-catch throwable structure around the main
  *    program to get a stack trace for any uncaught errors
@@ -572,7 +575,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.5.1 alpha 8";
+          version="1.5.1 alpha 9";
         else
           version=SharedData.VERSION;
 
