@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/11/27 18:18:00  dennis
+ * Added operator title to constructor java docs.
+ *
  * Revision 1.1  2001/11/21 21:27:37  dennis
  * Example of user-supplied add-on operator.
  *
@@ -64,8 +67,8 @@ public class HelloOperator extends GenericOperator
 
  /* ------------------------- DefaultConstructor -------------------------- */
  /** 
-  *   Default constructor that is used when the parameters will be
-  *   set later
+  *  Creates operator with title "Hello Operator" and a  default list of 
+  *  parameters.
   */  
   public HelloOperator()
   {
@@ -74,8 +77,9 @@ public class HelloOperator extends GenericOperator
 
  /* ----------------------------- Constructor ----------------------------- */
  /** 
-  *  This form of the constructor specifies the parameters at construction 
-  *  time.  The getResult method must be called to actually run the operator.
+  *  Creates operator with title "Hello Operator" and the specified list 
+  *  of parameters.  The getResult method must still be used to execute 
+  *  the operator.
   *  
   *  @param  user_name   The name of the person that the operator will say
   *                      hello to.
