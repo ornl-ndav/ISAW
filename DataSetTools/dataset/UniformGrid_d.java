@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2004/06/30 18:45:26  dennis
+ *  Improved documentation on constructor to indicate that the local
+ *  coordinate system is orthonormal.
+ *
  *  Revision 1.4  2004/03/15 06:10:39  dennis
  *  Removed unused import statements.
  *
@@ -111,7 +115,10 @@ public class UniformGrid_d implements IDataGrid_d
   private boolean   data_loaded = false;
 
   /**
-   *  Construct a new UniformGrid_d object.
+   *  Construct a new UniformGrid object with an orthonormal local coordinate
+   *  system.  The basis vectors for the orthonormal coordinate system are
+   *  calculated from the specified x_vector and y_vector as described in
+   *  the setOrientation() method.
    *
    *  Note: The pixel locations are at the center of the boxes.  For example,
    *        to describe the uniform grid consisting of unit cubes filling 
