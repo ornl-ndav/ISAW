@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/08/03 00:07:58  rmikk
+ * Replaced INTGT by TOFINT
+ *
  * Revision 1.3  2004/07/29 14:01:44  rmikk
  * Fixed javadoc error
  *
@@ -71,6 +74,13 @@ public class Integrate1 extends GenericTOF_SCD{
   private              float        omega       = 0f;
   private              int          listNthPeak = 3;
   private              int          centering   = 0;
+  public static        String     OLD_INTEGRATE ="MaxIToSigI-old";
+  public static        String     NEW_INTEGRATE ="MaxIToSigI";
+  public static        String     TOFINT        ="TOFINT";
+  public static        String     EXPERIMENTAL  ="EXPERIMENTAL";
+  public static        String     SHOE_BOX      = "Shoe Box";
+    
+  
   /**
    * how much to increase the integration size after I/dI has been maximized
    */
@@ -268,11 +278,13 @@ public class Integrate1 extends GenericTOF_SCD{
     addParameter(new BooleanPG("Append",false));
 
     // parameter(8)
-    ChoiceListPG clPG = new ChoiceListPG("Integrate 1 peak method","MaxItoSigI");
-    clPG.addItem("Shoe Box");
-    clPG.addItem("MaxItoSigI-old");
-    clPG.addItem("-Background");
-    clPG.addItem("Experimental");
+    ChoiceListPG clPG = new ChoiceListPG("Integrate 1 peak method",OLD_INTEGRATE);
+    clPG.addItem(SHOE_BOX);
+    clPG.addItem(NEW_INTEGRATE);
+    
+    clPG.addItem(TOFINT);
+    clPG.addItem(EXPERIMENTAL);
+	
     addParameter(clPG);
 
     // parameter(9)
@@ -413,11 +425,11 @@ public class Integrate1 extends GenericTOF_SCD{
     boolean append=((BooleanPG)getParameter(7)).getbooleanValue();
      
      PeakAlg =getParameter(8).getValue().toString();
-    
-     if( PeakAlg.equals("MaxItoSigI-old"))
-        IntegratePt.setIntgratePkOp(new INTEG());
-     else if( PeakAlg.equals("-Background"))
-        IntegratePt.setIntgratePkOp(new INTGT());
+	
+     if( PeakAlg.equals(Integrate1.OLD_INTEGRATE))
+	    opIntPt.setIntgratePkOp(new INTEG(),1,1,1);
+     else if( PeakAlg.equals(Integrate1.TOFINT))
+	    opIntPt.setIntgratePkOp(new TOFINT(),1,1,1);
      opIntPt.setDataSet(ds);
     // then the x range
     {
@@ -731,14 +743,14 @@ public class Integrate1 extends GenericTOF_SCD{
     {
       if( i%listNthPeak == 0 )                   // integrate with logging
       {
-        if ( PeakAlg.equals("Shoe Box") )
+        if ( PeakAlg.equals(SHOE_BOX) )
           integrateShoebox( (Peak)peaks.elementAt(i),
                              ds, ids,
                              colXrange, rowYrange, timeZrange,
                              logBuffer ); 
-        else if( PeakAlg.equals("MaxItoSigI"))
+        else if( PeakAlg.equals(NEW_INTEGRATE))
           integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
-                        logBuffer);
+                        logBuffer) ;
        else 
           integratePeakExp((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
              logBuffer);    
