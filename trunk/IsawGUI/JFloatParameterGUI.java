@@ -8,7 +8,7 @@
 package IsawGUI;
 
 import javax.swing.*;
-//import javax.swing.*;
+import javax.swing.border.*;
 import DataSetTools.*;
 import DataSetTools.operator.*;
 import java.awt.*;
@@ -16,8 +16,7 @@ import java.util.zip.*;
 import java.io.Serializable;
 
 /**
- * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
- * ChopTools and graph packages.
+ * Class used to create a Float parameter type
  *
  * @version 1.0  
  */
@@ -25,28 +24,27 @@ import java.io.Serializable;
 public class JFloatParameterGUI extends JParameterGUI implements Serializable
 {
     private JPanel segment;
-    private JTextArea floatText;
+    private JTextField floatText;
     
     public JFloatParameterGUI(Parameter parameter)
     { 
        super(parameter);
        
        String value = ((Float)parameter.getValue()).toString();
-       floatText = new JTextArea();
+       JLabel label = new JLabel(parameter.getName());
+       label.setPreferredSize(new Dimension(170,25));
+       floatText = new JTextField(20);
        floatText.setText(value);
        segment = new JPanel();
-       segment.setLayout(new GridLayout(1,2));
-       segment.add(new JLabel(parameter.getName()));
+       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
+       segment.add(label);
        segment.add(floatText);
    
     }
     
-    
-    
     public JPanel getGUISegment()
     {
-        return segment;
-        
+        return segment;   
     }
 
 

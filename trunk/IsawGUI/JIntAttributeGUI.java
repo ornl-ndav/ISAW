@@ -8,7 +8,7 @@
 package IsawGUI;
 
 import javax.swing.*;
-//import javax.swing.*;
+import javax.swing.border.*;
 import DataSetTools.*;
 import DataSetTools.dataset.*;
 import java.awt.*;
@@ -25,17 +25,19 @@ import java.io.Serializable;
 public class JIntAttributeGUI extends JAttributeGUI implements Serializable
 {
     private JPanel segment;
-    private JTextArea integerText;
+    private JTextField integerText;
     public JIntAttributeGUI(IntAttribute attr)
     { 
        super(attr);
        
        String value = ((Integer)attr.getValue()).toString();
-       integerText = new JTextArea();
+       JLabel label = new JLabel(attr.getName() );
+       label.setPreferredSize(new Dimension(170,25));
+       integerText = new JTextField(20);
        integerText.setText(value);
        segment = new JPanel();
-       segment.setLayout(new GridLayout(1,2));
-       segment.add(new JLabel(attr.getName()));
+       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5));
+       segment.add(label);
        segment.add(integerText);
    
     }

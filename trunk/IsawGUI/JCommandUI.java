@@ -11,34 +11,48 @@ import java.awt.*;
 import java.awt.Color.*;
 import DataSetTools.dataset.*;
 import DataSetTools.*;
+import DataSetTools.util.*;
 import java.io.*;
 import javax.swing.*;
+import javax.swing.text.*;
 import javax.swing.tree.*;
 import javax.swing.JTree.*;
 import java.util.zip.*;
 import javax.swing.table.*;
 import java.util.*;
 import IPNS.Runfile.*;
-
+import javax.swing.border.*;
+import Command.*;
 /**
- * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
- * ChopTools and graph packages.
+ * The class that displays various JTabbed panes containing 
+ * different information. Presently contains logtree, detector info, 
+ * System info and a command pane to run macro scripts.
  *
  * @version 1.0  
  */
 
-public class JCommandUI  extends JPanel  implements Serializable
+public class JCommandUI  extends JPanel  implements IObserver, Serializable
 {
      private JTree logTree;
      private DefaultMutableTreeNode root;
      private JTable table;
      private JTabbedPane jtp;
      private JTextField textArea;
+     Document sessionLog=null;
      DefaultTreeModel model;
      DefaultTableModel dtm ;
+     DataSet current_ds = null;
+
+         /** @associates <{IsawGUI.JCommandUI}> */
+        // private com.sun.java.util.collections.TreeSet lnkJCommandUI;
      
-	 public JCommandUI()
+	 public JCommandUI(CommandPane cp, Document sessionLog)
 	 {
+
+          this.sessionLog = sessionLog;
+         JTextArea sessiontext = new JTextArea(sessionLog);
+         sessiontext.setEditable(false);
+         JScrollPane njsp = new JScrollPane(sessiontext);
 	    setLayout(new GridLayout(1,1));
         root = new DefaultMutableTreeNode("TreeLog");
         model = new DefaultTreeModel(root);
@@ -51,7 +65,10 @@ public class JCommandUI  extends JPanel  implements Serializable
         
         JScrollPane sp = new JScrollPane(table);
         JScrollPane pane = new JScrollPane(logTree);
-        
+        //setBorder(new BevelBorder (BevelBorder.RAISED));
+			setBorder(new CompoundBorder(new EmptyBorder(4,4,4,4), new EtchedBorder (EtchedBorder.RAISED)));
+
+
         Runtime rt = Runtime.getRuntime();         
 	    textArea = new JTextField("Total JVM Memory in bytes = "+ rt.totalMemory()+"\n"
 	                             +"Free JVM Memory in bytes = "+ rt.freeMemory()+"\n"
@@ -81,17 +98,22 @@ public class JCommandUI  extends JPanel  implements Serializable
         //pane.setPreferredSize(new Dimension(300,100));
         //pane.setMinimumSize(new Dimension(50,50));
        // add(pane);
-       DetectorInfo di = new DetectorInfo();
+       
        
         jtp = new JTabbedPane();
-        jtp.addTab("Operations Log", pane);
+        jtp.addTab("DataSet Log", pane);
+        jtp.addTab("Session Log", njsp);
         jtp.addTab("Detector Info", sp);
         jtp.addTab("System Properties", ta);
+	  jtp.addTab("CommandPane", cp);
         add(jtp);
 	 }
 	 
-	 public JTree showLog(DataSet ds)
+	 public void showLog(DataSet ds)
 	 {
+		if(ds == current_ds)    //Only draw the log for a different dataset.
+			return;
+		current_ds = ds; 
             DefaultMutableTreeNode level1 = new DefaultMutableTreeNode(ds); 
             if(root.getChildCount()>0)
              {
@@ -100,7 +122,7 @@ public class JCommandUI  extends JPanel  implements Serializable
              }
             model.insertNodeInto(level1, root, 0);
             int num = ds.getOp_log().numEntries();
-            System.out.println("Num of log entries" +num);
+            // System.out.println("Num of log entries" +num);
             for (int i = 0; i<num; i++)
             {
               //  System.out.println(" log entries  :" +ds.getOp_log().getEntryAt(i));
@@ -110,49 +132,79 @@ public class JCommandUI  extends JPanel  implements Serializable
                 logTree.expandRow(i);
                 logTree.expandRow(1);
             }
-          
-            
-            return (JTree)logTree;    
 	 }	 
 	 
 	 public JTable showDetectorInfo(DataSet ds)
 	 {
                
             try{
-                    System.out.println("No. of entries = "+ds.getNum_entries());
+                    // System.out.println("No. of entries = "+ds.getNum_entries());
                        
                        Object[][] detParamList = new Object[ds.getNum_entries()][7];
                     
         
-      for (int i = 0; i < ds.getNum_entries(); i++) 
+      			for (int i = 0; i < ds.getNum_entries(); i++) 
                         {
                             AttributeList  attr_list = ds.getData_entry(i).getAttributeList();
                            
-                            detParamList[i][0] = new Integer(((Integer)(attr_list.getAttributeValue(Attribute.GROUP_ID))).intValue());
-                            detParamList[i][1] = new Float(((Float)(attr_list.getAttributeValue(Attribute.RAW_ANGLE))).floatValue());
-                            detParamList[i][2] = new Float(((Float)(attr_list.getAttributeValue(Attribute.INITIAL_PATH))).floatValue());
+				    detParamList[i][0] = new 				    Integer(((Integer)(attr_list.getAttributeValue(Attribute.GROUP_ID))).intValue());
+                            detParamList[i][1] = new 				    Float(((Float)(attr_list.getAttributeValue(Attribute.RAW_ANGLE))).floatValue());
+                            detParamList[i][2] = new 				    Float(((Float)(attr_list.getAttributeValue(Attribute.INITIAL_PATH))).floatValue());
                             
                           
-      //                      detParamList[i][3] = new Float(((Float)(attr_list.getAttributeValue(Attribute.NUM_CHANNELS))).floatValue());
-      //                      detParamList[i][4] = new Float(((Float)(attr_list.getAttributeValue(Attribute.TOTAL_COUNT))).floatValue());
+      			//   detParamList[i][3] = new 
+//Float(((Float)(attr_list.getAttributeValue(Attribute.NUM_CHANNELS))).floatValue());
+      //                      detParamList[i][4] = new //Float(((Float)(attr_list.getAttributeValue(Attribute.TOTAL_COUNT))).floatValue());
                             
-                          //  detParamList[i][4] = new Float(((Float)(attr_list.getAttributeValue(Attribute.ENERGY_IN))).floatValue());
-                          //  detParamList[i][5] = new Float(((Float)(attr_list.getAttributeValue(Attribute.RAW_ANGLE))).floatValue());      
+                          //  detParamList[i][4] = new //Float(((Float)(attr_list.getAttributeValue(Attribute.ENERGY_IN))).floatValue());
+                          //  detParamList[i][5] = new //Float(((Float)(attr_list.getAttributeValue(Attribute.RAW_ANGLE))).floatValue());  
+    
                        }
 
-				         String[] columnHeading = {"ID", "Raw Angle", "Flight Path",//"Start:Time(ms)", "End:Time(ms)"
+	String[] columnHeading = {"ID", "Raw Angle", "Flight Path",//"Start:Time(ms)", "End:Time(ms)"
 				              //         , "Number of Channels", "Total Count"
 							};
-
-	                    DefaultTableModel dtm = new DefaultTableModel(detParamList, columnHeading);
-	                    table.setModel(dtm);
-                        table.setSize( 200, 200 );
+		DefaultTableModel dtm = new DefaultTableModel(detParamList, columnHeading);
+		table.setModel(dtm);
+		table.setSize( 200, 200 );
       
             }
             
              catch(Exception e){};
-           
+		ExcelAdapter myAd = new ExcelAdapter(table);
+
+
              return (JTable)table;  
 	 }
+
+
+	public void update( Object observed, Object reason )
+   	{
+			// System.out.println("Inside update in JCommandUI");
+     		if ( !( reason instanceof String) )   // currently we only allow Strings
+     		{
+       	//	 System.out.println("Error: Tree update called with wrong reason");
+       		return;
+     		}
+ 
+     		if ( observed instanceof DataSet )             
+     		{
+			DataSet ds = (DataSet)observed;
+      		// System.out.println("Update in CommandUI is called :"+ds.toString());
+
+			if ( (String)reason == DESTROY )
+        			System.out.println("");
+
+			else if ( (String)reason == SELECTION_CHANGED )
+			  showLog(ds);
+     			else
+     			{
+       		//	System.out.println("ERROR: Unsupported Tree Update:" + reason );
+       		}
+
+      		return; 
+     		}          	
+   	}
+
 
 }

@@ -8,7 +8,7 @@
 package IsawGUI;
 
 import javax.swing.*;
-//import javax.swing.*;
+import javax.swing.border.*;
 import DataSetTools.*;
 import DataSetTools.dataset.*;
 import java.awt.*;
@@ -25,17 +25,20 @@ import java.io.Serializable;
 public class JFloatAttributeGUI extends JAttributeGUI implements Serializable
 {
     private JPanel segment;
-    private JTextArea floatText;
+    private JTextField floatText;
     public JFloatAttributeGUI(FloatAttribute attr)
     { 
        super(attr);
        
        String value = ((Float)attr.getValue()).toString();
-       floatText = new JTextArea();
+       JLabel label = new JLabel(attr.getName() );
+       label.setPreferredSize(new Dimension(150,25));
+       floatText = new JTextField(20);
        floatText.setText(value);
        segment = new JPanel();
-       segment.setLayout(new GridLayout(1,2));
-       segment.add(new JLabel(attr.getName()));
+
+       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5));
+       segment.add(label);
        segment.add(floatText);
    
     }
