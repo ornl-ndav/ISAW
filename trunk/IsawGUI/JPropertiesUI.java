@@ -2,6 +2,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.7  2001/07/25 17:30:58  neffk
+ * added a debug println and cleaned up some poor indentation.
+ *
  * Revision 1.6  2001/07/11 16:47:04  neffk
  * added keywords for substitution.  some other seemingly harmless
  * changes have been made, hopefully only in the formatting of the code.
@@ -52,12 +55,9 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
 
            	showAttributes(  new AttributeList() );
 	 }  
-	 
-/*	  public void addIObserver(IObserver iobs) 
-        {this.addIObserver( iobs );
-        }
-*/
-      public JTable getPropsTable()
+	
+
+   public JTable getPropsTable()
 	 {
           return table;
        }
@@ -100,57 +100,45 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
     *
     *  @see IObserver                     
     */
-   public void update( Object observed, Object reason )
-   {
-     if ( !( reason instanceof String) )   // currently we only allow Strings
-     {
-      // System.out.println("Error: ViewManager update called with wrong reason");
-       return;
-     }
- 
+  public void update( Object observed, Object reason )
+  {
+    if(  reason instanceof DataSet )
+    {
+      System.out.println( "new DataSet object generated (JPropertiesUI.java)" );
+    }
+
     if ( observed instanceof DataSet )             
     {
-//      System.out.println("Inside update in PropertiesUI");
       DataSet ds = (DataSet)observed;
       showAttributes(ds.getAttributeList());
-//      System.out.println("Error: ViewManager update called with wrong DataSet");
-//      if ( (String)reason == DESTROY )
-//        System.out.println("Reason:" + reason );
+
+      if ( (String)reason == DESTROY )
+        System.out.println("Reason:" + reason );
     
-//      else if ( (String)reason == SELECTION_CHANGED )
-      if ( (String)reason == SELECTION_CHANGED )
-	{
-				int index = ds.getMostRecentlySelectedIndex();
-					if(index>=0)
-					{
-						Data d = ds.getData_entry(index);
-						if(d.isMostRecentlySelected())					
-							showAttributes(d.getAttributeList());
-					}
-
-			}
-		else if ( (String)reason == POINTED_AT_CHANGED )
-			{
-				//	int index = ds.getMostRecentlySelectedIndex();
-					int index = ds.getPointedAtIndex() ;
-					if(index>=0)
-					{
-						Data d = ds.getData_entry(index);
-					//	if(d.isMostRecentlySelected())	
-						  showAttributes(d.getAttributeList());
-					}
-			}
-		
-     			else
-     			{
-       			// System.out.println("ERROR: Unsupported Tree Update:" + reason );
-       		}
-
-      		return; 
-     }     
-
-     
-   }
-
-
+      else if ( (String)reason == SELECTION_CHANGED )
+      {
+        int index = ds.getMostRecentlySelectedIndex();
+        if(index>=0)
+        {
+          Data d = ds.getData_entry(index);
+          if( d.isMostRecentlySelected() )
+            showAttributes(d.getAttributeList());
+        }
+      }
+      else if ( (String)reason == POINTED_AT_CHANGED )
+      {
+        int index = ds.getPointedAtIndex() ;
+        if(index>=0)
+        {
+          Data d = ds.getData_entry( index );
+          showAttributes(  d.getAttributeList()  );
+        }
+      }
+      else
+      {
+        System.out.println("ERROR: Unsupported Tree Update:" + reason );
+      }
+      return; 
+    }     
+  }
 }
