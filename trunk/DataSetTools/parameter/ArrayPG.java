@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2003/08/22 20:12:08  bouzekc
+ *  Modified to work with EntryWidget.
+ *
  *  Revision 1.23  2003/08/16 01:38:26  bouzekc
  *  Fixed incorrect comment.
  *
@@ -128,6 +131,7 @@ import Command.JavaCC.*;
 
 import Command.execOneLine;
 
+import DataSetTools.components.ParametersGUI.EntryWidget;
 import DataSetTools.components.ParametersGUI.HashEntry;
 
 import DataSetTools.dataset.DataSet;
@@ -197,7 +201,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     enabled = enableMe;
 
     if( getEntryWidget(  ) != null ) {
-      ( ( JTextField )entrywidget ).setEditable( enabled );
+      ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setEditable( enabled );
     }
   }
 
@@ -236,7 +240,8 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     }
 
     if( initialized ) {
-      ( ( JTextField )( entrywidget ) ).setText( ArraytoString( value ) );
+      ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
+        ArraytoString( value ) );
     }
 
     setValid( true );
@@ -258,7 +263,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     Object val = null;
 
     if( initialized ) {
-      String StringValue = ( ( JTextField )entrywidget ).getText(  );
+      String StringValue = ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).getText(  );
 
       val = StringtoArray( StringValue );
     } else {
@@ -425,7 +430,8 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     }
 
     if( initialized ) {
-      ( ( JTextField )entrywidget ).setText( ArraytoString( value ) );
+      ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
+        ArraytoString( value ) );
     }
   }
 
@@ -451,7 +457,8 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     value.clear(  );
 
     if( initialized ) {
-      ( ( JTextField )entrywidget ).setText( ArraytoString( ( Vector )value ) );
+      ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
+        ArraytoString( ( Vector )value ) );
     }
   }
 
@@ -477,11 +484,12 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       return;  // don't initialize more than once
     }
 
-    entrywidget = new JTextField( ArraytoString( value ) );
+    entrywidget = new EntryWidget( new JTextField( ArraytoString( value ) ) );
 
     //we'll set a really small preferred size and let the Layout Manager take
     //over at that point
     entrywidget.setPreferredSize( new Dimension( 2, 2 ) );
+    entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
     super.initGUI(  );
   }
 
@@ -536,7 +544,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
      vals.add( "/home/myhome/atIPNS" );
      vals.add( "some/more\\random@garbage!totry2" );
      vals.add( "10:15" );
-     fpg = new ArrayPG( "a", vals );
+     fpg = new ArrayPG( "a", vals, true );
      System.out.println( "Before calling init, the ArrayPG is " );
      System.out.println( fpg );
      fpg.initGUI( vals );

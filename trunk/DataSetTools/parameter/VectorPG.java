@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2003/08/22 20:12:06  bouzekc
+ * Modified to work with EntryWidget.
+ *
  * Revision 1.25  2003/08/22 01:25:45  bouzekc
  * Removed erroneous getEntryWidget() method.
  *
@@ -149,6 +152,7 @@
 package DataSetTools.parameter;
 
 import DataSetTools.components.ParametersGUI.ArrayEntryJPanel;
+import DataSetTools.components.ParametersGUI.EntryWidget;
 
 import DataSetTools.util.PropertyChanger;
 import DataSetTools.util.StringUtil;
@@ -160,9 +164,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.beans.*;
 
 import java.util.*;
 
@@ -348,7 +350,8 @@ public abstract class VectorPG extends ParameterGUI
     GUI.addPropertyChangeListener( this );
     GUI.setValue( value );
     vectorButton   = new JButton( param.getName(  ) );
-    entrywidget    = new JPanel( new GridLayout(  ) );
+    entrywidget    = new EntryWidget(  );
+    entrywidget.setLayout( new GridLayout(  ) );
 
     //a Box is needed so that when the entrywidget is resized
     //smaller, the components will not overlap
@@ -356,6 +359,7 @@ public abstract class VectorPG extends ParameterGUI
 
     widgetbox.add( vectorButton );
     entrywidget.add( widgetbox );
+    entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
     vectorButton.addActionListener( this );
 
     super.initGUI(  );

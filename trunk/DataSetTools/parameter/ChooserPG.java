@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.8  2003/08/22 20:12:07  bouzekc
+ *  Modified to work with EntryWidget.
+ *
  *  Revision 1.7  2003/08/15 23:56:23  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI.
  *
@@ -60,6 +63,7 @@ package DataSetTools.parameter;
 import java.util.Vector;
 import DataSetTools.components.ParametersGUI.HashEntry;
 import DataSetTools.dataset.DataSet;
+import DataSetTools.components.ParametersGUI.EntryWidget;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -138,7 +142,7 @@ abstract public class ChooserPG extends ParameterGUI{
   public Object getValue(){
     Object value=null;
     if(this.initialized){
-      value=((HashEntry)this.entrywidget).getSelectedItem();
+      value=((HashEntry)(entrywidget.getComponent(0))).getSelectedItem();
     }else{
       value=this.value;
     }
@@ -154,7 +158,7 @@ abstract public class ChooserPG extends ParameterGUI{
       if(value==null){
         // do nothing
       }else{
-        ((HashEntry)this.entrywidget).setSelectedItem(value);
+        ((HashEntry)(entrywidget.getComponent(0))).setSelectedItem(value);
       }
     }else{
       this.value=value;
@@ -184,9 +188,9 @@ abstract public class ChooserPG extends ParameterGUI{
     }
 
     // set up the combobox
-    this.entrywidget=new HashEntry(this.vals);
-    this.entrywidget.setEnabled(this.enabled);
-    this.entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
+    entrywidget=new EntryWidget(new HashEntry(this.vals));
+    entrywidget.setEnabled(this.enabled);
+    entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
     super.initGUI();
     //GUI won't properly update without this
     setValue(value);
@@ -210,6 +214,6 @@ abstract public class ChooserPG extends ParameterGUI{
    */
   public void setEnabled(boolean enabled){
     this.enabled=enabled;
-    if(this.entrywidget!=null) this.entrywidget.setEnabled(this.enabled);
+    if(entrywidget!=null) entrywidget.setEnabled(this.enabled);
   }
 }
