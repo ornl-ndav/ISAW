@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/09/05 21:45:16  rmikk
+ * Implemented support for more than one detector
+ *
  * Revision 1.11  2003/03/12 17:10:49  rmikk
  * Eliminated a null pointer error if Data.getErrors() returns null
  * Added several method stubs to get this class more in line
@@ -93,6 +96,8 @@ import java.util.*;
 import java.awt.event.*;
 import DataSetTools.instruments.*;
 import java.io.*;
+import javax.swing.*;
+import DataSetTools.components.View.ViewControls.*;
 
 
 /** Creates a table model the displays y values at a fixed time according to row
@@ -113,15 +118,18 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
        tMaxrow;
    int tMincol,
        tMaxcol;
-
+   int DetNum = -1;
+   int[] DetNums=null;
+   UniformGrid grid = null;
    XScale x_scale = null;
    int firstGroup =-1;
    /** Constructor for this table model of the Data Set DS at time time
     *@param  DS  the data set for which the model will present the data
     *@param  time  the time of this time slice
     */
-   public Time_Slice_TableModel( DataSet DS, float time, boolean showErrors, boolean showInd )
-   {   System.out.println("to time-slice TB model, show="+showErrors+","+showInd);
+   public Time_Slice_TableModel( DataSet DS, float time, boolean showErrors, 
+           boolean showInd )
+   {   
       Time = time;
 
       int[] row = new int[DS.getNum_entries()];
@@ -134,8 +142,14 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       ind = showInd;
       MaxRow = -1;
       MaxCol = -1;
-
-      for( int i = 0; i < DS.getNum_entries(); i++ )
+      SetUpDetNums();
+      MaxRow = grid.num_rows();
+      MaxCol = grid.num_cols();
+      tMinrow = 0;
+      tMaxrow = MaxRow - 1;
+      tMincol = 0;
+      tMaxcol = MaxCol - 1;
+     /* for( int i = 0; i < DS.getNum_entries(); i++ )
       {
          PixelInfoListAttribute Ax = ( PixelInfoListAttribute )
                DS.getData_entry(i).getAttribute( Attribute.PIXEL_INFO_LIST );
@@ -179,12 +193,13 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
                RC_to_Group[( r - 1 ) * ( MaxCol ) + ( c - 1 )] = i;
       }
 
-      
+    */   
     firstGroup = 0;
     int[] u = DS.getSelectedIndices();
     if( u != null)
       if( u.length > 0)
         firstGroup = u[0];
+   
     x_scale = DS.getData_entry( firstGroup).getX_scale();
    }
 
@@ -266,8 +281,9 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    /** returns the number of rows
     */
    public int getRowCount()
-   {
-      if( MaxRow < 0 )
+   {  if( grid == null)
+        return 0;
+      if( grid.num_rows() < 0 )
          return 0;
       else
          return tMaxrow - tMinrow + 1;
@@ -279,17 +295,20 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    public int getColumnCount()
    {
       int n = 1;
-
+      if( grid == null)
+       return 0;
       if( err ) n++;
       if( ind )  n++;
 
-      if( MaxCol < 0 )
+      if( grid.num_rows() < 0 )
          return 0;
       else
          return( tMaxcol - tMincol + 1 ) * n;
    }
 
-
+   /**
+   *    returns the group index of the screen pixel at row and col
+   */
    public int getGroup( int row, int column )
    {
       if( Time < 0 )
@@ -318,7 +337,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       row = row + tMinrow;// -1;
       column = column + tMincol;// - 1;
 
-      int Grp = RC_to_Group[row * ( MaxCol ) + column / n];
+      int Grp = DS.getIndex_of_data(grid.getData_entry( row+1, column+1));
+          //RC_to_Group[row * ( MaxCol ) + column / n];
 
       // if( doo)
       //System.out.println( "rw col="+Grp+","+row+","+column);
@@ -343,7 +363,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    {  //System.out.println("in getRow GroupIndx="+GroupIndx+","+tMinrow+","+tMaxrow);
       if( GroupIndx < 0 )
          return -1;
-      for( int r = 0; r < MaxRow; r++ )
+     /* for( int r = 0; r < MaxRow; r++ )
          for( int c = 0; c < MaxCol; c++ )
          {//System.out.print(r*MaxCol+c+" ");
             if( RC_to_Group[ r * MaxCol + c] == GroupIndx )
@@ -354,7 +374,21 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
                   return r - tMinrow;
             }
          }
-         //System.out.println("");    
+       */  //System.out.println("");    
+
+      PixelInfoList pilist =((PixelInfoList)(DS.getData_entry(GroupIndx). 
+                       getAttributeValue( Attribute.PIXEL_INFO_LIST)));
+      for( int i=0; i< pilist.num_pixels(); i++){
+           if( pilist.pixel(i).DataGrid().ID() == DetNum){
+
+              int r= (int)pilist.row() -1;
+              if( r > tMaxrow)
+                 return -1;
+              else
+                return r -tMinrow;
+           }
+
+      }
       return -1;
    }
 
@@ -372,13 +406,27 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
      int n=1;
      if( err) n++;
      if(ind) n++;
-     for( int r = 0; r < MaxRow; r++ )
+     /*for( int r = 0; r < MaxRow; r++ )
          for( int c = 0; c < MaxCol; c++ )
             if( RC_to_Group[ r * MaxCol + c] == GroupIndx )
             { 
                if( c <= tMaxcol )
                   return n*(c - tMincol);
-            }
+            }*/
+
+      PixelInfoList pilist =((PixelInfoList)(DS.getData_entry(GroupIndx). 
+                       getAttributeValue( Attribute.PIXEL_INFO_LIST)));
+      for( int i=0; i< pilist.num_pixels(); i++){
+           if( pilist.pixel(i).DataGrid().ID() == DetNum){
+
+              int c =(int)pilist.col() -1;
+              if( c <= tMaxcol )
+                  return n*(c - tMincol);
+              else return -1;
+
+           }
+
+      }
       return -1;
    }
 
@@ -496,6 +544,62 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
      {}
    public void removeActionListener( ActionListener list)
     {}
+   public void SetUpDetNums(){
+      DetNums = Grid_util.getAreaGridIDs( DS);
+      if( DetNums != null)
+        if( DetNums.length >0)
+          DetNum = DetNums[0];
+      grid = (UniformGrid)(Grid_util.getAreaGrid( DS, DetNum));
+      grid.setDataEntriesInAllGrids(DS);
+
+   }
+  LabelCombobox  DetChoices = null;
+  public JComponent[] getControls(){
+    if( DetNums == null)
+      return new JComponent[0];
+    if( DetNums.length <2)
+      return new JComponent[0];
+    if( DetChoices == null){
+      String[] choices = new String[ DetNums.length];
+      for( int i =0; i< choices.length; i++)
+        choices[i] = ""+DetNums[i];
+      DetChoices = new LabelCombobox("Detectors", choices);
+      DetChoices.cbox.addActionListener( new DetectorActionListener());
+    }
+    
+    JComponent[] Res = new JComponent[1];
+    Res[0] = DetChoices;
+    return Res;
+  }
+  ActionListener DataChangeListener = null;
+  public void addDataChangeListener( ActionListener listener){
+    DataChangeListener = listener;
+  }
+  class DetectorActionListener implements ActionListener{
+    public void actionPerformed( ActionEvent evt){
+    int choice= DetNum;
+    try{
+       choice = (new Integer( (String)DetChoices.cbox.getSelectedItem())).
+                 intValue();
+    }catch( Exception ss){};
+    if( choice != DetNum){
+      DetNum = choice;
+      grid = (UniformGrid)Grid_util.getAreaGrid( DS, DetNum);
+      MaxRow = grid.num_rows();
+      MaxCol = grid.num_cols();
+      tMinrow = 0;
+      tMaxrow = MaxRow - 1;
+      tMincol = 0;
+      tMaxcol = MaxCol - 1;
+      if( DataChangeListener != null)
+      DataChangeListener.actionPerformed( new ActionEvent(this,
+          ActionEvent.ACTION_PERFORMED,"DataChange"));
+    }
+   } 
+
+  }//class DetectorActionListener
+  
+
    /** Test program for this module */
    public static void main( String args[] )
    {
