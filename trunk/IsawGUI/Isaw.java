@@ -70,6 +70,8 @@ public class Isaw extends JFrame implements Serializable, IObserver
     TreeSelectionModel selectionModel;
     Util util;
     CommandPane cp;
+    MyInternalFrame internalframe;
+
     Properties isawProp;
     Object Script_Path, Data_Directory, Help_Directory, Default_Instrument, Instrument_Macro_Path, 
     User_Macro_Path, Image_Path, Inst1_Path, Inst2_Path, Inst3_Path, Inst4_Path, Inst5_Path, Inst6_Path, 
@@ -156,13 +158,21 @@ public class Isaw extends JFrame implements Serializable, IObserver
 
 
           //System.getProperties().list(System.out);
+         
           input.close();
        }
        catch (IOException ex) {
           System.out.println("Properties file could not be loaded due to error :" +ex);
        }
          setupMenuBar();
-	 util = new Util();
+	 util = new Util(); 
+
+     
+       Vector mm = util.listProperties();
+
+       JScrollPane tt = util.viewProperties();
+       
+
 	 cp = new Command.CommandPane();
        cp.addIObserver(this);
        cp.setLogDoc(sessionLog);
@@ -178,7 +188,13 @@ public class Isaw extends JFrame implements Serializable, IObserver
        jcui.setPreferredSize( new Dimension( 700, 50 ) );
        jcui.setMinimumSize(new Dimension(20, 50));
        
-       
+
+
+       jcui.setTab("Properties file", tt);
+
+
+
+
        jtui = new JTreeUI(jpui,jcui, cp);
        jtui.setPreferredSize(new Dimension(200, 500));
        jtui.setMinimumSize(new Dimension(20, 50));
@@ -373,6 +389,21 @@ public class Isaw extends JFrame implements Serializable, IObserver
         JMenuItem l_POSY2 = new JMenuItem(System.getProperty("Inst11_Name"));
         JMenuItem l_QENS = new JMenuItem(System.getProperty("Inst12_Name"));
         JMenuItem l_CHEXS = new JMenuItem(System.getProperty("Inst13_Name"));
+
+	  l_HRMECS.setToolTipText(System.getProperty("Inst1_Path"));
+        l_LRMECS.setToolTipText(System.getProperty("Inst2_Path"));
+        l_GPPD.setToolTipText(System.getProperty("Inst3_Path"));
+        l_SEPD.setToolTipText(System.getProperty("Inst4_Path"));
+	  l_SAD.setToolTipText(System.getProperty("Inst5_Path"));
+        l_SAND.setToolTipText(System.getProperty("Inst6_Path"));
+        l_SCD.setToolTipText(System.getProperty("Inst7_Path"));
+        l_GLAD.setToolTipText(System.getProperty("Inst8_Path"));
+	  l_HIPD.setToolTipText(System.getProperty("Inst9_Path"));
+        l_POSY1.setToolTipText(System.getProperty("Inst10_Path"));
+        l_POSY2.setToolTipText(System.getProperty("Inst11_Path"));
+        l_QENS.setToolTipText(System.getProperty("Inst12_Path"));
+	  l_CHEXS.setToolTipText(System.getProperty("Inst13_Path"));
+  
 
 
 	  LiveData.add(l_HRMECS);
@@ -897,7 +928,7 @@ public String getDescription(){
 		      //    PrintUtilities.printComponent(jdvui.getSelectedFrame());
 
 
-/*  
+  /*
 			Toolkit toolkit = ISI.getToolkit();
 			PrinterJob job = toolkit.getPrintJob(jdvui.getSelectedFrame(),"Image",null);
                 	mPageFormat = pj.pageDialog(mPageFormat);
@@ -913,8 +944,17 @@ public String getDescription(){
 			 }
 
 */
-
-                }
+                 try{
+                  internalframe = new MyInternalFrame(jdvui.getSelectedFrame());
+                   }
+              catch(IOException ioe){System.out.println("Printer error:" +ioe.getMessage());}
+      		PrinterJob job = PrinterJob.getPrinterJob();
+      		job.setPrintable(internalframe);
+      		try{
+           			job.print();
+         		}
+      		catch(PrinterException pe){System.out.println("Printer error:" +pe.getMessage());}
+   		  }
                 
               
          
@@ -1233,61 +1273,87 @@ String url = "http://www.pns.anl.gov/CHEX/";
    // menuitem for macro loader below
 
 			if(s == System.getProperty("Inst1_Name"))
-                      { 
-   				LiveDataRetriever retriever = new LiveDataRetriever( System.getProperty("Inst1_Path") );
-    				
-                             DataSet          monitor_ds = retriever.getDataSet(0);
-    				     DataSet          hist_ds    = retriever.getDataSet(1);
-  
-
-    				    ViewManager histogram_vm = new ViewManager( hist_ds, IViewManager.IMAGE );
-				    ViewManager monitor_vm   = new ViewManager( monitor_ds, IViewManager.IMAGE);
-                            addDataSet(monitor_ds);
-                            addDataSet(hist_ds);
+                    { 
+   				String instrument_computer = System.getProperty("Inst1_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst1_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
                     }
 
                   if(s == System.getProperty("Inst2_Name"))
                       { 
              
-                        System.out.println("Inside macro loader "+s);
+                        String instrument_computer = System.getProperty("Inst2_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst2_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
                         
                       }
                    if(s == System.getProperty("Inst3_Name"))
-                      {  
-                        System.out.println("Inside  macro loader "+s);
+                      {
+                         
+                        String instrument_computer = System.getProperty("Inst3_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst3_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
+
                       }
        
                    if(s == System.getProperty("Inst4_Name"))
                       {  
-                        System.out.println("Inside  macro loader "+s);
+                        String instrument_computer = System.getProperty("Inst4_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst4_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst5_Name"))
                       {                          
-                        System.out.println("Inside  macro loader "+s);
+                        String instrument_computer = System.getProperty("Inst5_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst5_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst6_Name"))
                       {  
-                        System.out.println("Inside  macro loader "+s);
+                        String instrument_computer = System.getProperty("Inst6_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst6_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst7_Name"))
                       {  
-                        System.out.println("Inside  macro loader "+s);
+                        String instrument_computer = System.getProperty("Inst7_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst7_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst8_Name"))
                       {  
-                        System.out.println("Inside  macro loader "+s);
+                        String instrument_computer = System.getProperty("Inst8_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst8_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst9_Name"))
                       {  
-                        System.out.println("Inside  macro loader "+s);
+                        String instrument_computer = System.getProperty("Inst9_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst9_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst10_Name"))
                       {  
-                        System.out.println("Inside  macro loader "+s);
+                        String instrument_computer = System.getProperty("Inst10_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst10_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst11_Name"))
                       {                          
-                         System.out.println("Inside  macro loader "+s);
+                         String instrument_computer = System.getProperty("Inst11_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst11_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
 
                         
                   try
@@ -1358,11 +1424,17 @@ String url = "http://www.pns.anl.gov/CHEX/";
                       }
                    if(s == System.getProperty("Inst12_Name"))
                       {  
-                        System.out.println("Inside  macro loader "+s);
+                        String instrument_computer = System.getProperty("Inst12_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst12_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst13_Name"))
                       {  
-                         System.out.println("Inside  macro loader "+s);                      
+                         String instrument_computer = System.getProperty("Inst13_Path");
+				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+                        String live_name = System.getProperty("Inst13_Name") + " Live Data" ;
+				jcui.setTab(live_name, objPanel);                
                       }
 
                      if(s == "File Separator")
