@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/12 16:09:45  pfpeterson
+ * Now automatically disable constant and result parameters.
+ *
  * Revision 1.1  2002/02/27 17:27:52  dennis
  * Wizard class for controlling a sequence of "Forms" that
  * determine a calculation
@@ -76,7 +79,7 @@ public class Wizard implements Serializable
   private static final String NEXT_COMMAND  = "Next-->>";
   private static final String HELP_ABOUT_COMMAND   = "Help about...";
   private static final String WIZARD_HELP_COMMAND  = "Help on Wizard...";
-  private static final String FORM_HELP_COMMAND    = "Help on Current Form... ";
+  private static final String FORM_HELP_COMMAND    = "Help on Current Form...";
   private static final String SAVE_FORM_COMMAND    = 
                                                   "Save Current Form State...";
   private static final String LOAD_FORM_COMMAND    = 
@@ -94,6 +97,8 @@ public class Wizard implements Serializable
   private   JPanel    form_panel;
   public    Frame     help_frame = null;
   public static TextArea status_display = new TextArea();
+  private JButton back_button;
+  private JButton next_button;
 
   public Wizard( String title )
   {
@@ -146,8 +151,10 @@ public class Wizard implements Serializable
 
     button_panel.setLayout( new GridLayout(1,2) ); 
     button_panel.setMaximumSize( new Dimension( FRAME_WIDTH, BUTTON_HEIGHT ));
-    JButton back_button = new JButton( BACK_COMMAND );
-    JButton next_button = new JButton( NEXT_COMMAND );
+    back_button = new JButton( BACK_COMMAND );
+    next_button = new JButton( NEXT_COMMAND );
+    back_button.setEnabled(false);
+    next_button.setEnabled(false);
     button_panel.add( back_button );
     button_panel.add( next_button );
 
@@ -254,6 +261,18 @@ public class Wizard implements Serializable
     f.show();
     form_panel.validate();
     form_num = index;
+
+    // enable/disable the forward and back buttons
+    if( index>=forms.size()-1 ){
+        next_button.setEnabled(false);
+    }else{
+        next_button.setEnabled(true);
+    }
+    if( index<=0 ){
+        back_button.setEnabled(false);
+    }else{
+        back_button.setEnabled(true);
+    }
   }
 
 
@@ -383,63 +402,43 @@ public class Wizard implements Serializable
     {
       String command = event.getActionCommand();
 
-      if ( command.equals( NEXT_COMMAND ) )
-      {
-        if ( form_num+1 < forms.size() )
-        {
-          form_num++;
-          show(form_num);
-        }  
-        else
-          status_display.append( "NO MORE FORMS, CAN'T ADVANCE\n" );
+      if ( command.equals( NEXT_COMMAND ) ){
+          if ( form_num+1 < forms.size() ){
+              form_num++;
+              show(form_num);
+          }else{
+              status_display.append( "NO MORE FORMS, CAN'T ADVANCE\n" );
+          }
+      }else if ( command.equals( BACK_COMMAND ) ){
+          if ( form_num-1 >= 0 ){
+              form_num--;
+              show(form_num);
+          }else{
+              status_display.append( "FORM 0 SHOWN, CAN'T STEP BACK\n" );
+          }
+      }else if ( command.equals( HELP_ABOUT_COMMAND ) ){
+          ShowHelpMessage( about_message );
+      }else if ( command.equals( WIZARD_HELP_COMMAND ) ){
+          ShowHelpMessage( help_message );
+      }else if ( command.equals( FORM_HELP_COMMAND ) ){
+          Form f = getCurrentForm();
+          if ( f != null )
+              ShowHelpMessage( f.getHelpMessage() );
+      }else if ( command.equals( SAVE_WIZARD_COMMAND ) ){
+          save();
+      }else if ( command.equals( LOAD_WIZARD_COMMAND ) ){
+          load();
+      }else if ( command.equals( SAVE_FORM_COMMAND ) ){
+          Form f = getCurrentForm();
+          if ( f != null )
+              f.save();
+      }else if ( command.equals( LOAD_FORM_COMMAND ) ){
+          Form f = getCurrentForm();
+          if ( f != null )
+              f.load();
+      }else if ( command.equals( EXIT_COMMAND ) ){
+          close();
       }
-
-      else if ( command.equals( BACK_COMMAND ) )
-      {
-        if ( form_num-1 >= 0 )
-        { 
-          form_num--;
-          show(form_num);
-        }
-        else
-          status_display.append( "FORM 0 SHOWN, CAN'T STEP BACK\n" );
-      }
-
-      else if ( command.equals( HELP_ABOUT_COMMAND ) )
-        ShowHelpMessage( about_message );
-  
-      else if ( command.equals( WIZARD_HELP_COMMAND ) )
-        ShowHelpMessage( help_message );
-
-      else if ( command.equals( FORM_HELP_COMMAND ) )
-      {
-        Form f = getCurrentForm();
-        if ( f != null )
-          ShowHelpMessage( f.getHelpMessage() );
-      }
-
-      else if ( command.equals( SAVE_WIZARD_COMMAND ) )
-        save();
-
-      else if ( command.equals( LOAD_WIZARD_COMMAND ) )
-        load();
-
-      else if ( command.equals( SAVE_FORM_COMMAND ) )
-      { 
-        Form f = getCurrentForm();
-        if ( f != null )
-          f.save();
-      }
-
-      else if ( command.equals( LOAD_FORM_COMMAND ) )
-      {
-        Form f = getCurrentForm();
-        if ( f != null )
-          f.load();
-      }
-
-      else if ( command.equals( EXIT_COMMAND ) )
-        close();
     } 
   }
 
