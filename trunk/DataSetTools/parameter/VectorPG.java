@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2003/08/28 03:36:53  bouzekc
+ * Made innerParameter private and added a method to set the parameter so that
+ * the type can be set more accurately in the derived classes.
+ *
  * Revision 1.29  2003/08/28 02:50:53  bouzekc
  * Changed call from addPCLtoVector to super.addPropertyChangeListener().
  *
@@ -199,7 +203,7 @@ public abstract class VectorPG extends ParameterGUI
 
   //~ Instance fields **********************************************************
 
-  protected ParameterGUI innerParam;
+  private ParameterGUI innerParam;
   private PropertyChangeSupport pcs;
   protected ArrayEntryJPanel GUI          = null;
   private JButton vectorButton            = null;
@@ -422,6 +426,15 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   /**
+   * Sets this VectorPG's parameter.  Also resets the type to more accurately
+   * show what this VectorPG is an array of.
+   */
+  protected final void setParam( ParameterGUI param ) {
+    innerParam   = param;
+    this.type    = param.getType(  ) + " " + TYPE;
+  }
+
+  /**
    * Creates the entry panel for this VectorPG.
    */
   protected void makeEntryPanel(  ) {
@@ -445,7 +458,6 @@ public abstract class VectorPG extends ParameterGUI
     //entryDialog.getContentPane(  ).add( GUI );
     entryFrame.getContentPane(  )
               .add( GUI );
-    GUI.addPropertyChangeListener( this );
   }
 
   /**
