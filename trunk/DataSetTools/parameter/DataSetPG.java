@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/09/13 23:29:46  bouzekc
+ *  Moved calls from setValid(true) to validateSelf().
+ *
  *  Revision 1.11  2003/09/09 23:06:28  bouzekc
  *  Implemented validateSelf().
  *
@@ -180,6 +183,7 @@ public class DataSetPG extends ChooserPG implements IObserver{
         else
           throw new ClassCastException(value+" cannot be cast as a DataSet");
       }
+      validateSelf();
     }
 
     /*

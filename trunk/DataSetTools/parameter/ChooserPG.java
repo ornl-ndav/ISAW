@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.15  2003/09/13 23:29:46  bouzekc
+ *  Moved calls from setValid(true) to validateSelf().
+ *
  *  Revision 1.14  2003/09/13 23:16:40  bouzekc
  *  Removed calls to setEnabled in initGUI(Vector), since ParameterGUI.init()
  *  already calls this.
@@ -179,7 +182,7 @@ abstract public class ChooserPG extends ParameterGUI{
     }else{
       this.value=value;
     }
-    this.setValid(true);
+    validateSelf();
   }
 
   // ********** IParameterGUI requirements **********

@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/09/13 23:29:47  bouzekc
+ * Moved calls from setValid(true) to validateSelf().
+ *
  * Revision 1.4  2003/09/13 23:16:40  bouzekc
  * Removed calls to setEnabled in initGUI(Vector), since ParameterGUI.init()
  * already calls this.
@@ -245,6 +248,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     if( scale != null ) {
       this.value = scale;
     }
+    validateSelf(  );
   }
 
   /**
@@ -351,7 +355,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
   }
 
   /**
-   * Validates this UniformXScalePG.  Due to the way setValue works, a
+   * Validates this UniformXScalePG.  Due to the way getValue() works, a
    * UniformXScalePG is considered valid if getValue() returns a non-null
    * value.
    */

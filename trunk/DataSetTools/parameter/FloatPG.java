@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/09/13 23:29:46  bouzekc
+ *  Moved calls from setValid(true) to validateSelf().
+ *
  *  Revision 1.10  2003/08/15 23:50:04  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -155,7 +158,7 @@ public class FloatPG extends StringEntryPG implements ParamUsesString{
       }else{
         this.value=value;
       }
-      this.setValid(true);
+      validateSelf();
     }
 
     /**
