@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.70  2003/03/17 23:25:58  dennis
+ *  Fixed bug introduced with new DataGrid concept.  Now (again)
+ *  properly interprets Runfile.RawFlightPath() as sample to
+ *  detector distance.
+ *
  *  Revision 1.69  2003/03/11 21:51:16  dennis
  *  Supports both rotations by DetRot1() (tilts detector towards the sample)
  *  and DetRot2() (rotates detector about normal to detector surface)
@@ -1268,11 +1273,29 @@ private float CalculateEIn()
        if ( data_grid == null )   // add new detector data grid to hashtable
        {
          float det_angle  = (float)run_file.RawDetectorAngle(id);
-         float det_dist   = (float)run_file.RawFlightPath(id);
+         float final_path = (float)run_file.RawFlightPath(id);
          float det_height = (float)run_file.RawDetectorHeight(id);
+
+
+         float r = 0;                                 // patch for error with
+                                                      // group 294 in some files
+         if ( final_path * final_path < det_height * det_height )  
+         {
+           System.out.println("ERROR: in RunfileRetriever " + 
+                              "final_path < det_height");
+           System.out.println("       for detector ID = " + id );
+           System.out.println("       final_path   = " + final_path );
+           System.out.println("       det_height   = " + det_height );
+           System.out.println("       Now using r = final_path as default.");
+           r = final_path;
+         }
+         else
+           r  = (float)Math.sqrt( final_path * final_path - 
+                                  det_height * det_height );
+
          det_angle = (float)(det_angle * Math.PI/180);
          DetectorPosition det_pos = new DetectorPosition();
-         det_pos.setCylindricalCoords( det_dist, det_angle, det_height );
+         det_pos.setCylindricalCoords( r, det_angle, det_height );
          Vector3D det_cen = new Vector3D( det_pos );
  
                              // construct orthonormal coordinate system for
