@@ -29,56 +29,59 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  */
-
 package DataSetTools.wizard;
 
-import java.util.*;
-import java.io.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import DataSetTools.operator.*;
-import DataSetTools.parameter.*;
-import DataSetTools.util.*;
-import DataSetTools.components.ParametersGUI.*;
 import Command.ScriptOperator;
 
-/**
-  * The ScriptForm class is an extension of Form designed to work 
-  * with Scripts.  Although a Form is an Operator, 
-  * by creating an ScriptForm, it becomes easier to implement
-  * many of the methods by using ScriptOperator.
- */
+import DataSetTools.components.ParametersGUI.*;
 
-public class ScriptForm extends OperatorForm implements Serializable{
+import DataSetTools.operator.*;
+
+import DataSetTools.parameter.*;
+
+import DataSetTools.util.*;
+
+import java.awt.*;
+import java.awt.event.*;
+
+import java.beans.*;
+
+import java.io.*;
+
+import java.util.*;
+
+import javax.swing.*;
+import javax.swing.border.*;
+
+
+/**
+ * The ScriptForm class is an extension of Form designed to work
+ * with Scripts.  Although a Form is an Operator,
+ * by creating an ScriptForm, it becomes easier to implement
+ * many of the methods by using ScriptOperator.
+ */
+public class ScriptForm extends OperatorForm implements Serializable {
   /**
-   *  Construct an ScriptForm with the given title.  
+   *  Construct an ScriptForm with the given title.
    *
    *  @param  title           The title to show on this form
    *
    */
-  public ScriptForm()
-  {
-    super();   
-  } 
+  public ScriptForm(  ) {
+    super(  );
+  }
 
   /**
    *  Construct an ScriptForm with the given filename.
-   *  This creates a ScriptOperator, and allows the use of that 
-   *  Operator for the getResult() method.  
+   *  This creates a ScriptOperator, and allows the use of that
+   *  Operator for the getResult() method.
    *
    *  @param  title           The title to show on this form
    *
    */
-  public ScriptForm( String filename )
-  {
-    this();
-    super.form_op = new ScriptOperator(filename);
-    super.setDefaultParameters();
+  public ScriptForm( String filename ) {
+    this(  );
+    super.form_op = new ScriptOperator( filename );
+    super.setDefaultParameters(  );
   }
-
 }
-
-
