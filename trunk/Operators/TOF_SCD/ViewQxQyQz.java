@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/05/02 22:31:54  pfpeterson
+ * Migrated to IParameterGUI.
+ *
  * Revision 1.5  2003/02/24 18:54:52  dennis
  * Added getDocumentation() method. (Joshua Olson)
  *
@@ -77,7 +80,7 @@ import javax.swing.*;
 public class ViewQxQyQz extends GenericTOF_SCD
 {
   private static final String TITLE = "View Qx,Qy,Qz";
-  private static String[] choice_list={"Qx,Qy vs Qz", "Qx,Qz vs Qy", "Qy,Qz vs Qx"};
+  private static Vector choice_list=null;
 
  /* ------------------------- DefaultConstructor -------------------------- */
  /** 
@@ -100,12 +103,8 @@ public class ViewQxQyQz extends GenericTOF_SCD
    {
       super( TITLE );
 
-      IParameter parameter = getParameter(0);
-      parameter.setValue( ds );
-      StringChoiceList sl= new  StringChoiceList(choice_list);
-      sl.setString( choice);
-      parameter = getParameter(1);
-      parameter.setValue( sl );
+      getParameter(0).setValue( ds );
+      getParameter(1).setValue( choice );
    }
 
 
@@ -127,18 +126,18 @@ public class ViewQxQyQz extends GenericTOF_SCD
   */
   public void setDefaultParameters()
   { 
+    if(choice_list==null || choice_list.size()==0 ){
+      choice_list=new Vector();
+      choice_list.add("Qx,Qy vs Qz");
+      choice_list.add("Qx,Qz vs Qy");
+      choice_list.add("Qy,Qz vs Qx");
+    }
+
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter( "DataSet", DataSet.EMPTY_DATA_SET);
-
-                        
-    addParameter( parameter );
-    StringChoiceList  sl = new  StringChoiceList(choice_list);
-    
-    parameter = new Parameter("Order",sl);
-                             
-
-    addParameter( parameter );
+    addParameter(new SampleDataSetPG("Data Set",null));
+    ChoiceListPG clpg=new ChoiceListPG("Order",choice_list.elementAt(0));
+    addParameter(clpg);
   }
 
 
@@ -146,37 +145,37 @@ public class ViewQxQyQz extends GenericTOF_SCD
   /** 
    *  Returns the documentation for this method as a String.  The format 
    *  follows standard JavaDoc conventions.  
-   */                                                                 				         
+   */
   public String getDocumentation()
-  {                                   
-    StringBuffer s = new StringBuffer("");                                                 
-    s.append("@overview This operator allows views of QxQyQz spaces.  These Q");
-    s.append(" values are NOT crystal aligned. ");
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator allows views of QxQyQz spaces.  These ");
+    s.append("Q values are NOT crystal aligned. ");
     s.append("@assumptions The DataSet 'ds' is non-empty, and has a QxQyQz ");
     s.append("space present in it. \n\n");
     s.append("The string 'choice' can be used to determine which of Axis1, ");
     s.append("Axis2, and Axis3 should be made equal to Qx, Qy, or Qz. ");
     s.append("(This is further discussed in the 'Algorithm' section.) ");
     s.append("@algorithm There are 3 axis present in the DataSet indicated ");
-    s.append("by 'path'.  They are: Qx, Qy, and Qz. \n\n ");                                                                           
+    s.append("by 'path'.  They are: Qx, Qy, and Qz. \n\n ");
     s.append("The operator creates 3 axis, simply called Axis1, Axis2, and ");
     s.append("Axis3. 'choice' is a string that determines which of the axis ");
     s.append("Axis1, Axis2 or Axis3 should be made equal to Qx, Qy, or Qz. ");
     s.append("(For example, maybe Axis1 should be made equal to Qx, Axis2 ");
     s.append("should be made equal to Qz, and Axis3 should be made equal to ");
-    s.append("Qy.)  \n\n ");                                                                            
-    s.append("The operator then makes sure that Axis1, Axis2, and Axis3 have ");
-    s.append("been defined.  If any one has not, then an error string is ");
-    s.append("returned and execution of the operator terminates.  Otherwise ");
-    s.append("the operator continues. \n\n ");
+    s.append("Qy.)  \n\n ");
+    s.append("The operator then makes sure that Axis1, Axis2, and Axis3 ");
+    s.append("have been defined.  If any one has not, then an error string ");
+    s.append("is returned and execution of the operator terminates.  ");
+    s.append("Otherwise the operator continues. \n\n ");
     s.append("A ContourView is now created, consisting of 'ds' and Axis1, ");
     s.append("Axis2, and Axis3.  The ContourView is added to a JFrame, and ");
-    s.append("the JFrame is shown.  The string 'Success' is returned. ");	       
+    s.append("the JFrame is shown.  The string 'Success' is returned. ");
     s.append("@param ds The directory path that indicates where the DataSet ");
     s.append("is");
     s.append("@param choice Determines which of Axis1, Axis2, and Axis3 ");
-    s.append("should be made equal to Qx, Qy, or Qz");	       
-    s.append("@return If successful, returns the string 'Success'. ");   
+    s.append("should be made equal to Qx, Qy, or Qz");
+    s.append("@return If successful, returns the string 'Success'. ");
     s.append("@error Returns an error string if Axis1, Axis2, or Axis3 are ");
     s.append("undefined. ");
     return s.toString();
