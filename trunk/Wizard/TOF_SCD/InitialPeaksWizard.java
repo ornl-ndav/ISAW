@@ -30,6 +30,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2005/03/06 00:40:15  dennis
+ * Added more documentation explaining the two dimensional array of
+ * integers that coordinates the parameters that are shared between
+ * wizard forms.
+ *
  * Revision 1.16  2004/04/21 19:15:00  dennis
  * Changed to work with new FindMultiplePeaksForm that has the
  * min and max time channels as parameters.
@@ -132,7 +137,13 @@ public class InitialPeaksWizard extends Wizard {
   }
 
   /**
-   * Adds and coordinates the necessary Forms for this Wizard.
+   * Adds and coordinates the necessary Forms for this Wizard. Each row
+   * of the array corresponds to one of the parameters that is shared across
+   * the different forms of this wizard.  Each column corresponds to one
+   * of the forms of the wizard.  The entry in row k, column j is the 
+   * parameter number used for the kth shared parameter on form j.  A "-1"
+   * in row k, column j indicates that the kth shared parameter does not
+   * appear on form j.
    */
   private void createAllForms(  ) {
     int[][] fpi                     = {
