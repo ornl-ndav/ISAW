@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/06/22 15:36:59  rmikk
+ *  Added documentation for setGridId method and associated variable
+ *  Added Documentation
+ *
  *  Revision 1.5  2004/04/26 13:23:20  rmikk
  *  Now implements IXmlIO
  *  Added a null constructor
@@ -89,6 +93,13 @@ public class PixelInfoListAttribute extends Attribute
                                              // readObject() CAN FIX ANY
                                              // COMPATIBILITY PROBLEMS
   private PixelInfoList value = null;
+  
+ 
+  /**
+   *  A Hashtable of the gridID's and their grid that have already been set 
+   * up while reading through the Datablocks in an XML file
+   */
+  transient private Hashtable gridIDs = null;
 
   /**
    * Constructs a PixelInfoListAttribute object using the specified name 
@@ -104,6 +115,10 @@ public class PixelInfoListAttribute extends Attribute
     this.value = value;
   }
 
+  /**
+    *  Needed for the XML-IO system
+    *
+    */
   public PixelInfoListAttribute(){
      super("NoName");
      value = null;	
@@ -250,7 +265,6 @@ public class PixelInfoListAttribute extends Attribute
     System.out.println("PixelInfoList value is:");
     System.out.println(attr); 
   }
-  transient private Hashtable gridIDs = null;
 
   /**
     * This method gets a Hashtable of gridIDs that have already been used by the
