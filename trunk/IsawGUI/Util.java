@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2003/06/06 22:28:36  pfpeterson
+ * Changed to use a BufferedReader for reading in text files.
+ *
  * Revision 1.20  2003/05/28 18:58:20  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -288,12 +291,9 @@ public class Util
      StringBuffer buffer=new StringBuffer();
      try{
        fr=new FileReader(filename);
-       int c=0;
-       while(true){
-         c=fr.read();
-         if(c==-1) break;
-         buffer.append((char)c);
-       }
+       BufferedReader br=new BufferedReader(fr);
+       while(br.ready())
+         buffer.append(br.readLine()+"\n");
      }catch(FileNotFoundException e){
        SharedData.addmsg("FileNotFoundException: "+filename);
        return null;
