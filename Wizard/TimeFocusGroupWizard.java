@@ -1,7 +1,7 @@
 /*
  * File:  TimeFocusGroupWizard.java
  *
- * Copyright (C) 2003, Christopher Bouzek
+ * Copyright (C) 2003, Chris M. Bouzek
  *
  *
  * This program is free software; you can redistribute it and/or
@@ -23,12 +23,17 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
+ *           Chris M. Bouzek <coldfusion78@yahoo.com>
+ *
  * This work was supported by the National Science Foundation under grant
  * number DMR-0218882.
  *
  * Modified: 
  *
  * $Log$
+ * Revision 1.10  2003/06/02 22:26:05  bouzekc
+ * Fixed contact information.
+ *
  * Revision 1.9  2003/04/29 15:45:37  pfpeterson
  * Updated code which links parameters between forms. (Chris Bouzek)
  *
@@ -44,6 +49,9 @@
  *
  * Revision 1.4  2003/03/13 19:00:52  dennis
  * Added $Log$
+ * Added Revision 1.10  2003/06/02 22:26:05  bouzekc
+ * Added Fixed contact information.
+ * Added
  * Added Revision 1.9  2003/04/29 15:45:37  pfpeterson
  * Added Updated code which links parameters between forms. (Chris Bouzek)
  * Added
