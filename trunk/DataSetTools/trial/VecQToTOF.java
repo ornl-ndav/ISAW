@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/08/11 22:14:29  dennis
+ *  Now shifts tof by calibrated t0 value.
+ *
  *  Revision 1.9  2003/07/14 13:25:58  dennis
  *  The constructor now throws an instantiation error if the
  *  requested area detector was not found.
@@ -132,7 +135,8 @@ public class VecQToTOF
            n_cols;
   float    det_width,
            det_height;
-  float    initial_path;
+  float    initial_path,
+           t0;
   float    x_vals[] = null;
   boolean  same_xscale = false;
 
@@ -244,6 +248,13 @@ public class VecQToTOF
     else
       throw new InstantiationError(
                 "ERROR: Need initial path in VecQToTOF constructor");
+
+    attr = d.getAttribute(Attribute.T0_SHIFT);
+    if ( attr != null )
+      t0 = (float)attr.getNumericValue();
+    else
+      t0 = 0;
+
 
 //    System.out.println("DataGrid is : " + grid );
 //    System.out.println("initial path: " + initial_path);
@@ -417,8 +428,9 @@ public class VecQToTOF
       Data d = grid.getData_entry( row, col );
       x_vals = d.getX_scale().getXs();
     }
-
-    float tof = result[2];
+                                    // shift by calibrated t0, before doing
+                                    // lookup in the time scale
+    float tof = result[2] - t0;
     int index = arrayUtil.get_index_of( tof, x_vals );
     
     if ( index < 0 || index >= x_vals.length-1 )
@@ -437,6 +449,12 @@ public class VecQToTOF
  /**
   *  Transform from vector Q to fractional row, column, time-of-flight.
   *
+  *  NOTE: The time-of-flight is the "theoretical"
+  *  time of flight required to get the specified q vector.  If this value
+  *  is used to look up a time channel in an "x" scale, then the calibrated
+  *  shift in time, "t0" must be subtracted from the value returned by this
+  *  method.
+  *
   *  @param   q_vec   The q vector to be mapped back to the detector
   *
   *  @return  An array containing the fractional row, column and time-of-flight
@@ -446,7 +464,7 @@ public class VecQToTOF
   *  row and column values range from 0.5 to n_rows+0.5 and from 
   *  0.5 to n_cols+0.5.  The time-of-flight is NOT restricted to valid values
   *  for the currend Data.  If the q vector did not come from this detector 
-  *  this will return null. 
+  *  this will return null.  
   */
   public float[] QtoRowColTOF( Vector3D q_vec )
   {
@@ -584,16 +602,17 @@ public class VecQToTOF
     if ( first_col < 1 || last_col > n_cols )
       return 0; 
 
-    float tof = rc_tof[2];
+//    float tof = rc_tof[2];
     float mag_q = q_vec.length();
 
-                                             // interpolate intensity at four
+                                             // interpolate intensity at eight 
     float val[][] = new float[2][2];         // neighboring pixels    
     float first_mid,
           last_mid;
     int   first_index,
           last_index;
-    float tof_frac;
+    float tof,
+          tof_frac;
     
     for ( int i = 0; i < 2; i++ )
       for ( int j = 0; j < 2; j++ )
@@ -613,9 +632,12 @@ public class VecQToTOF
       pix_position.normalize();
       float    angle = (float)( Math.acos( pix_position.dot( unit_k ) ));
  
+                                              // before finding tof in x-scale
+                                              // shift to account for
+                                              // calibrated t0
       tof = tof_calc.TOFofDiffractometerQ( angle, 
                                            initial_path+final_path, 
-                                           mag_q );
+                                           mag_q )  - t0;
       if ( !same_xscale )
         x_vals = d.getX_scale().getXs();
 
