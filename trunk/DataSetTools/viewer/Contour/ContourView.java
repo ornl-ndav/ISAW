@@ -38,6 +38,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2003/05/12 16:01:41  rmikk
+ *  Removed some commented out code.
+ *  Eliminated a redraw when a mouse is clicked on the
+ *    corresponding view
+ *  Fixed code to work with the axes cases( non row-col-time)
+ *    interactively
+ *
  *  Revision 1.26  2003/05/05 17:50:18  dennis
  *  Made JPlotLayout rpl_ an instance variable, rather than a static
  *  class variable.  This fixes a problem when multiple contour views
@@ -220,6 +227,8 @@ public class ContourView extends DataSetViewer
    boolean notify = true, stop=false;
    float note_time;
    float note_group; 
+   int index_mouse = -1; //used to make sure a mouse click event is not
+   float time_mouse =Float.NaN; //sent back to redraw
    protected IAxesHandler Transf;
    MyMouseListener cursors;
   public ContourView( DataSet ds, ViewerState state1 )
@@ -636,17 +645,14 @@ public class ContourView extends DataSetViewer
      state.set_int("Contour.Style", GridContourAttribute);
      if( ( main != null ) )
         if( rpl_Holder != null)  
-          {//main.remove( rpl_Holder);
-           //main.remove( rpl_ );
+          {
            rpl_Holder.remove( rpl_);
           }
         else 
            System.out.println("main != null && rpl_Holder is null");
      rpl_ = this.makeGraph( times[sliderTime_index], state );
       
-     //rpl_.setKeyBoundsP(new Rectangle2D.Double(2.0,2.0,ls.width,1.0 )); 
-     //rpl_.setKeyLocationP( new Point2D.Double( 2.0,2.0));
-
+   
      rpl_.addMouseListener( cursors );
      //gridKeyPane = rpl_.getKeyPane();
      //rpl_.setBatch(true);
@@ -1132,11 +1138,12 @@ public class ContourView extends DataSetViewer
               
                SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[i] ) );
               
+               if( axis1== null)
                data_set.setPointedAtX( times[i]);
              
               
                sliderTime_index = i;
-               if( notify)
+               if( notify &&(axis1==null))
                  {
                   data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
                   notify=false;
@@ -1145,7 +1152,7 @@ public class ContourView extends DataSetViewer
                   note_group = data_set.getPointedAtIndex();
                  }
                   
-               else
+               else if( axis1== null)
                   notify=true;
                 
                ( ( SimpleGrid )newData ).setZArray( newData1.getZArray() );
@@ -1231,6 +1238,20 @@ public class ContourView extends DataSetViewer
      {float X = getDataSet().getPointedAtX();
       if( Float.isNaN(X))
          return 0;
+      if( axis3 != null)//times is now NOT an xscale type array
+        { int indx =getDataSet().getPointedAtIndex();
+          Data D = getDataSet().getData_entry(indx);
+          if( D == null)
+            return 0;
+          DataSetTools.dataset.XScale xscl = D.getX_scale();
+          if( xscl== null)
+            return 0;
+          else
+            {int xindex = xscl.getI(X);
+             return xindex;
+            }
+
+        }
       int index = java.util.Arrays.binarySearch( times, X);
       if( index < 0)
          index =-index-1;
@@ -1268,6 +1289,13 @@ public class ContourView extends DataSetViewer
       { 
         float x = data_set.getPointedAtX();
         int index =data_set.getPointedAtIndex();
+        if( index_mouse == index)
+          if( time_mouse == x)
+            {
+              time_mouse = Float.NaN;
+              index_mouse = -1;
+              return;
+             }
         if( stop)
           {if( x == note_time)
             if( note_group==index)
@@ -1277,17 +1305,19 @@ public class ContourView extends DataSetViewer
             return;
            }
         int Xindex = getPointedAtXindex();
-       
 
         if( PrevGroup != index)
           {notify = true;
            PrevGroup = index;
            if( dct != null )
              if( times != null)
-                dct.showConversions( times[Xindex], index );
+                if( axis3 ==null)
+                    dct.showConversions( times[Xindex], index );
+                else
+                   dct.showConversions( x, index );
             
            }
-       
+        if( axis3==null)
         if( (Xindex != sliderTime_index) || !rpldrawn) 
           { sliderTime_index = Xindex;
              notify = false;
@@ -1295,6 +1325,17 @@ public class ContourView extends DataSetViewer
            
             //ac.stop();
            }
+       if(axis3 != null)
+         { 
+           float t3 = axis3.getValue( index, Xindex);
+            notify = false;
+            ac.setFrameValue( t3);
+            sliderTime_index =ac.getFrameNumber();
+            if( dct != null )
+             if( times != null)
+                dct.showConversions( x, index );
+
+          }
        // if( notify)
           //data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED);  
         }
@@ -1407,7 +1448,7 @@ public class ContourView extends DataSetViewer
        Component cc = (Component)e.getSource();
        if( e.getSource() instanceof JPane)
        { JPane jp = (JPane) e.getSource();
-         System.out.println("in getSource instance of JPane");
+         
          cc = jp.getParent();
          if( cc == null) return;
          if( !(cc instanceof JPanel)) return;
@@ -1441,7 +1482,7 @@ public class ContourView extends DataSetViewer
          double row = cg.getYPtoU( L.getYDtoP( e.getY() ) );
          int index = cd.getGroupIndex( row, col );
          float time = cd.getTime( row, col);
-         
+
          if( index < 0)
            {dct.showConversions( 0.0f, -1 ); 
             return;
@@ -1451,7 +1492,14 @@ public class ContourView extends DataSetViewer
            {dct.showConversions( 0.0f, -1 ); 
             return;
            }
-          
+         
+         if( Float.isNaN(time))
+          { 
+            return; 
+           } 
+        
+         index_mouse = index;
+         time_mouse = time; 
          data_set.setPointedAtIndex( index);
          
          data_set.setPointedAtX( time);
