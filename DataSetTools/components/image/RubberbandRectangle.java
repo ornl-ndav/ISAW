@@ -1,7 +1,13 @@
 /*
- * @(#) RubberbandRectangle.java 
+ *  File:  RubberbandRectangle.java 
+ *
+ *  Adapted from "graphic JAVA", David M. Geary, Alan L. McClellan, 
+ *  SunSoft Press/Prentice Hall, 1997
  *
  *  $Log$
+ *  Revision 1.5  2001/04/23 21:14:12  dennis
+ *  Added citation of source: the text "Graphic Java".
+ *
  *  Revision 1.4  2001/01/29 21:39:32  dennis
  *  Now uses CVS version numbers.
  *
