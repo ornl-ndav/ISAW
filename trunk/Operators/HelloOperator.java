@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/02/03 18:52:38  dennis
+ * Added getDocumentation() operator. (Joshua Olson)
+ *
  * Revision 1.4  2002/11/27 23:29:54  pfpeterson
  * standardized header
  *
@@ -103,6 +106,38 @@ public class HelloOperator extends GenericOperator
   {
     return "SayHello";
   }
+  
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */                                                                                 
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");                                                 
+    s.append("@overview This operator provides an example of an operator ");
+    s.append("that takes a person's name as a parameter and returns a string ");
+    s.append("that says hello. \n\n In order to be used from Isaw, this ");
+    s.append("operator must be compiled and the resulting class file must ");
+    s.append("be placed in one of the directories that Isaw looks at for ");
+    s.append("operators, such as the ../Operators subdirectory of the Isaw ");
+    s.append("home directory.  For details on what directories are ");
+    s.append("searched, see the Operator-HOWTO file, or the Isaw user ");
+    s.append("manual. \n\n NOTE: This operator can also be run as a ");
+    s.append("separate program, since it has a main program for testing ");
+    s.append("purposes.  The main program merely uses the operator to load ");
+    s.append("a simple test file and pops up a view of the data. ");
+    s.append("@assumptions The user will pass in their name as a string.\n");                                                               
+    s.append("@algorithm A string (intended to be the user's name) is ");
+    s.append("passed in by the user.  In the event that an empty string is ");
+    s.append("passed, the operator will substitute 'John Doe'.  The ");
+    s.append("operator then returns a string that prints 'Hello' to ");
+    s.append("the user.");
+    s.append("@param user_name The name for the operator to greet.");
+    s.append("@return Returns the string 'Hello [name you passed in], ");
+    s.append("how are you today?'");
+    return s.toString();
+  }  
 
  /* ------------------------ setDefaultParameters ------------------------- */
  /** 

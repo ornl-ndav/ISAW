@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/02/03 18:52:38  dennis
+ * Added getDocumentation() operator. (Joshua Olson)
+ *
  * Revision 1.4  2002/11/27 23:29:54  pfpeterson
  * standardized header
  *
@@ -62,6 +65,9 @@ import java.util.*;
  *  Isaw home directory.  For details on what directories are searched, see
  *  the Operator-HOWTO file, or the Isaw user manual.<p>
  *
+ *  NOTE: This only works for TabulatedData objects such as "
+ *        "HistogramTable or FunctionTable Data objects."
+ *
  *  NOTE: This operator can also be run as a separate program, since it
  *  has a main program for testing purposes.  The main program merely loads
  *  a DataSet, applies the operator and then shows both the original and
@@ -89,7 +95,7 @@ public class Ysquared extends GenericSpecial
   *  of parameters.  The getResult method must still be used to execute
   *  the operator.
   *  
-  *  @param  ds   The DataSet to process.
+  *  @param  p_ds   The DataSet to process.
   */
   public Ysquared( DataSet p_ds )
   {
@@ -110,7 +116,6 @@ public class Ysquared extends GenericSpecial
     return "Ysquared";
   }
 
-
  /* ------------------------ setDefaultParameters ------------------------- */
  /** 
   * Sets default values for the parameters.  The parameters set must match the 
@@ -122,10 +127,45 @@ public class Ysquared extends GenericSpecial
     addParameter( new Parameter( "Data Set to Process", new DataSet("","") ));
   }
 
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */                                                                                 
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");                                                 
+    s.append("@overview  This operator provides a simple example of an ");
+    s.append("operator that accesses the data stored in a DataSet.  In ");
+    s.append("order to demonstrate access to the data, it just alters the ");
+    s.append("current y values for the Data blocks to be the squares of ");
+    s.append("the y values originally there. \n \n In order to be used from ");
+    s.append("Isaw, this operator must be compiled and the resulting class ");
+    s.append("file must be placed in one of the directories that Isaw looks ");
+    s.append("at for operators, such as the .../Operators subdirectory of ");
+    s.append("the Isaw home directory.  For details on what directories ");
+    s.append("are searched, see the Operator-HOWTO file, or the Isaw ");
+    s.append("user manual. \n \n NOTE: This operator can also be run as a ");
+    s.append("separate program, since it has a main program for testing ");
+    s.append("purposes.  The main program merely loads a DataSet, applies ");
+    s.append("the operator and then shows both the original and new DataSet.");
+    s.append("@assumptions The given data set p_ds is not empty. \n");                                                                
+    s.append("@algorithm Each entry in the given data set p_ds is a ");
+    s.append("spectrum.  Each spectrum has channel(s), and each channel ");
+    s.append("has a y value.  Every y value is squared.  \n\n This is ");
+    s.append("recorded in the DataSet's log by adding the string 'Squared ");
+    s.append("the Y-values' as an entry in the log.  A string is returned ");
+    s.append("indicating success.");
+    s.append("NOTE: This only works for TabulatedData objects such as ");
+    s.append("HistogramTable or FunctionTable Data objects.");
+    s.append("@param p_ds The DataSet to process");
+    s.append("@return Returns the string 'Operator completed successfully'.");
+    return s.toString();
+  }
 
  /* ------------------------------ getResult ------------------------------- */
  /** 
-  *  Executes this operator using the current values of the parameters.
+  *  Replaces all y values of all Data blocks by the original value squared.
   *
   *  @return  This returns a string indicating that the DataSet was altered.
   */
