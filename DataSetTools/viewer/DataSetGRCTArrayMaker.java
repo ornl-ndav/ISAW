@@ -35,6 +35,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 15:52:32  rmikk
+ * Fixed off by one errors
+ * Fixed row/col mixup between the two models
+ *
  * Revision 1.3  2004/05/24 13:47:19  rmikk
  * Added Documentation
  * Implemented change in the number of steps on the XScaleUserUI
@@ -770,14 +774,18 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
      */ 
     public float getDataValue( int row, int column ) {
 
-        int f = Permutation[ 0 ] ;
-        int n = Permutation[ 1 ] ;
+        int f = Permutation[ 1 ] ;
+        int n = Permutation[ 0 ] ;
+        float[] spixel_min=new float[5], 
+              spixel_max = new float[5];
+        System.arraycopy(pixel_min,0,spixel_min,0,5);
 
-        pixel_min[ f ]  = Handler[f ] .getMin( row );
-        pixel_max[ f ]  = Handler[ f ] .getMax( row );
-        pixel_min[ n ]  = Handler[ n ] .getMin( column );
-        pixel_max[ n ]  = Handler[ n ] .getMax( column );
-        return Handler[ 4 ] .getValue( DataSets, pixel_min, pixel_max ); 
+	    System.arraycopy(pixel_max,0,spixel_max,0,5);
+        spixel_min[ f ]  = Handler[f ] .getMin( row );
+        spixel_max[ f ]  = Handler[ f ] .getMax( row );
+        spixel_min[ n ]  = Handler[ n ] .getMin( column );
+        spixel_max[ n ]  = Handler[ n ] .getMax( column );
+        return Handler[ 4 ] .getValue( DataSets, spixel_min, spixel_max ); 
      
     }
   
@@ -859,7 +867,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
      */ 
     public int getNumRows() {
 
-        int f = Permutation[ 0 ] ;
+        int f = Permutation[ 1 ] ;
 
         return Handler[ f ] .getNSteps();
 
@@ -875,7 +883,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
      */
     public int getNumColumns() {
 
-        int f = Permutation[ 1 ] ;
+        int f = Permutation[ 0 ] ;
 
         return Handler[ f ] .getNSteps();
 
@@ -1219,9 +1227,9 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public float getMax( int i ) {
 
             if ( Nslices <= 0 ) 
-                return (int) Math.min( startIndx + i + 1, endIndx );
+                return (int) Math.min( startIndx + i + 1, endIndx +1 );
 
-            return (int) Math.min( i * D + D + startIndx, endIndx );
+            return (int) Math.min( i * D + D + startIndx, endIndx +1);
 
         }
 
@@ -1276,8 +1284,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                     first = Res;
 
             }
-
-            Res -= first * ( minInds[ 4 ]  - (int) minInds[ 4 ]  );
+			if(!Float.isNaN(first))
+              Res -= first * ( minInds[ 4 ]  - (int) minInds[ 4 ]  );
             if ( maxInds[ 4 ]  == (int) maxInds[ 4 ] ) 
                 return Res;
 
@@ -1373,9 +1381,9 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public float getMax( int i ) {
 
             if ( Nslices <= 0 )
-                return (int) Math.min( i + 1 + startIndx, endIndx );
+                return (int) Math.min( i + 1 + startIndx, endIndx +1 );
 
-            return (int) Math.min( i * D + 1 + startIndx, endIndx );
+            return (int) Math.min( i * D + 1 + startIndx, endIndx +1 );
 
         }
   
@@ -1433,8 +1441,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                 }
 
             }
-
-            Res -= first * ( minInds[ 3 ]  - (int) minInds[ 3 ] );
+			if(!Float.isNaN(first))
+              Res -= first * ( minInds[ 3 ]  - (int) minInds[ 3 ] );
             if ( maxInds[ 3 ]  == (int) maxInds[ 3 ] ) 
                 return Res;
 
@@ -1513,9 +1521,9 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public float getMin( int i ) {
 
             if ( Nslices <= 0 )
-                 return (int) Math.min( i + 1 + startCol, endCol );
+                 return (int) Math.min( i  + startCol, endCol );
 
-            return (int) Math.min( i * D + 1 + startCol, endCol );
+            return (int) Math.min( i * D + startCol, endCol );
       
         }
 
@@ -1532,9 +1540,9 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public float getMax( int i ) {
 
             if ( Nslices <= 0 )
-                 return (int) Math.min( i + 2 + startCol, endCol );
+                 return (int) Math.min( i + 1 + startCol, endCol +1 );
 
-            return Math.min( i * D + 2 + startCol, endCol );
+            return Math.min( i * D + 1 + startCol, endCol +1 );
 
         }
 
@@ -1592,7 +1600,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                     first = Res;
     
             }
-            Res -= first * ( minInds[ 2 ]  - (int) minInds[ 2 ]  );
+            if(!Float.isNaN(first))
+              Res -= first * ( minInds[ 2 ]  - (int) minInds[ 2 ]  );
             if ( maxInds[ 2 ]  == (int) maxInds[ 2 ] ) 
                 return Res;
 
@@ -1670,7 +1679,6 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
    
 
 
-
         /**
          * Returns the Maximum row number( starting at 1 ) associated with 
          * the i-th slice
@@ -1680,12 +1688,11 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public float getMax( int i ) {
 
             if ( Nslices <= 0 )
-                return (int) Math.min( i + 1 + startRow, endRow );
+                return (int) Math.min( i + 1 + startRow, endRow +1 );
 
-            return (int) Math.min( i * D + D + startRow, endRow );
+            return (int) Math.min( i * D + D + startRow, endRow +1 );
 
         }
-
 
 
         /**
@@ -1695,7 +1702,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public int getNSteps() {
 
             if ( Nslices <= 0 )
-                return endRow - startRow;
+                return endRow - startRow + 1;
 
             return Nslices;
 
@@ -1718,15 +1725,12 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public float getValue( DataSet[] DSS, float[] minInds, 
                                                     float[] maxInds ) {
 
-
-            // DataSet DS = DSS[ (int)minInds[ 4 ] ];
-            // int gridNum = GridNums[ (int)minInds[ 3 ] ];
-            // int col =(int)minInds[ 2 ] ;
             float[] savMin = new float[ 5 ] , 
                     savMax = new float[ 5 ] ;
 
             System.arraycopy( minInds, 0, savMin, 0, 5 );
             System.arraycopy( maxInds, 0, savMax, 0, 5 );
+            
             float Res = 0;
             float first = Float.NaN;
 
@@ -1740,7 +1744,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     
             }
 
-            Res -= first * ( minInds[ 1 ]  - (int) minInds[ 1 ] );
+			if(!Float.isNaN(first))
+              Res -= first * ( minInds[ 1 ]  - (int) minInds[ 1 ] );
             if ( maxInds[ 1 ]  == (int) maxInds[ 1 ] ) 
                 return Res;
 
@@ -1909,8 +1914,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                     first = Res;
     
             }
-
-            Res -= first * ( minInds[ 1 ]  - (int) minInds[ 1 ] );
+			if(!Float.isNaN(first))
+               Res -= first * ( minInds[ 1 ]  - (int) minInds[ 1 ] );
             if ( Ind_max == (int) Ind_max )
                 return Res;
 
