@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2004/05/21 22:02:01  dennis
+ *  Fixed name of parameter in javadoc comment.
+ *
  *  Revision 1.23  2004/05/11 18:23:48  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -105,8 +108,6 @@
  *
  *  Revision 1.1  2002/06/06 16:14:30  pfpeterson
  *  Added to CVS.
- *
- *
  */
 package DataSetTools.parameter;
 
@@ -269,11 +270,12 @@ public class FloatPG extends StringEntryPG {
   /**
    * Convenience method to set the proper type value right away.
    *
-   * @param The new float value.
+   * @param  value  The new float value.
    */
   public void setfloatValue( float value ) {
     this.setValue( new Float( value ) );
   }
+
   /*
    * Testbed.
    */
