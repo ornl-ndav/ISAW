@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.45  2003/12/15 02:44:08  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.44  2003/11/25 03:02:33  bouzekc
  * Now only tries to clone the Label if it has been initialized.
  *
@@ -218,18 +221,16 @@
  */
 package DataSetTools.parameter;
 
-import DataSetTools.components.ParametersGUI.ArrayEntryJFrame;
-import DataSetTools.components.ParametersGUI.EntryWidget;
-
-import java.beans.*;
-
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.Vector;
 
-import java.util.*;
+import javax.swing.JButton;
 
-import javax.swing.*;
+import DataSetTools.components.ParametersGUI.ArrayEntryJFrame;
+import DataSetTools.components.ParametersGUI.EntryWidget;
 
 
 /**

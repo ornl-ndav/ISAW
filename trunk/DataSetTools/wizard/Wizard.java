@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.96  2003/12/15 02:44:07  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.95  2003/11/29 21:53:01  bouzekc
  * Refactored GUI front end into SwingWizardFrontEnd.java.
  *
@@ -437,16 +440,9 @@
  */
 package DataSetTools.wizard;
 
-import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
-
 import DataSetTools.parameter.*;
 
 import DataSetTools.util.*;
-
-import DataSetTools.wizard.util.*;
-
-import java.awt.*;
-import java.awt.event.*;
 
 import java.beans.*;
 
@@ -456,8 +452,6 @@ import java.net.URL;
 
 import java.util.StringTokenizer;
 import java.util.Vector;
-
-import javax.swing.*;
 
 
 /**

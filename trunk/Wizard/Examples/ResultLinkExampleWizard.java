@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/12/15 02:44:08  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/09/27 00:52:24  bouzekc
  * Main method() now uses wizardLoader() method.  This is in keeping with
  * the other wizards.
@@ -45,13 +48,10 @@
  */
 package Wizard.Examples;
 
-import DataSetTools.parameter.IParameterGUI;
-
-import DataSetTools.wizard.*;
-
-import Operators.TOF_SCD.*;
-
-import java.util.Vector;
+import DataSetTools.wizard.OperatorForm;
+import DataSetTools.wizard.Wizard;
+import Operators.TOF_SCD.BlindJ;
+import Operators.TOF_SCD.LsqrsJ;
 
 
 /**

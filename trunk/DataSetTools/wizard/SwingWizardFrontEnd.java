@@ -32,38 +32,60 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/12/15 02:44:07  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.1  2003/11/29 21:50:58  bouzekc
  * Added to CVS.
  *
  */
 package DataSetTools.wizard;
 
-import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
-
-import DataSetTools.parameter.*;
-
-import DataSetTools.util.*;
-
-import DataSetTools.wizard.util.*;
-
-import ExtTools.SwingWorker;
-
-import IsawHelp.HelpSystem.HTMLizer;
-
-import java.awt.*;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.io.*;
-
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Vector;
 
-import javax.swing.*;
+import javax.swing.AbstractButton;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+
+import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
+import DataSetTools.parameter.ArrayPG;
+import DataSetTools.parameter.DataSetPG;
+import DataSetTools.parameter.IParameterGUI;
+import DataSetTools.parameter.LoadFilePG;
+import DataSetTools.parameter.ParameterViewer;
+import DataSetTools.parameter.SaveFilePG;
+import DataSetTools.parameter.StringPG;
+import DataSetTools.parameter.VectorPG;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.StringUtil;
+import DataSetTools.util.TextWriter;
+import DataSetTools.wizard.util.WizardFileFilter;
+import ExtTools.SwingWorker;
+import IsawHelp.HelpSystem.HTMLizer;
 
 
 /**

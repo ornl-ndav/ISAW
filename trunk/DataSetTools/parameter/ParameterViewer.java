@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/12/15 02:47:33  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.10  2003/08/16 01:41:03  bouzekc
  * Is now more aggressive when determining if a File exists in
  * tryToDisplayASCII().
@@ -71,24 +74,32 @@
  */
 package DataSetTools.parameter;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.Vector;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+
 import DataSetTools.dataset.DataSet;
-
 import DataSetTools.operator.Generic.Special.ViewASCII;
-
-import DataSetTools.parameter.*;
-
-import DataSetTools.util.*;
-
-import DataSetTools.viewer.*;
-
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.TextWriter;
+import DataSetTools.viewer.IViewManager;
+import DataSetTools.viewer.ViewManager;
 
 
 /**

@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/12/15 02:44:08  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.5  2003/11/19 04:13:23  bouzekc
  * Is now a JavaBean.
  *
@@ -51,18 +54,11 @@
  */
 package DataSetTools.parameter;
 
-import DataSetTools.components.ParametersGUI.ArrayEntryJFrame;
-import DataSetTools.components.ParametersGUI.EntryWidget;
-
-import DataSetTools.dataset.VariableXScale;
-import DataSetTools.dataset.XScale;
-
-import java.awt.GridLayout;
-
 import java.util.Vector;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
+import DataSetTools.components.ParametersGUI.ArrayEntryJFrame;
+import DataSetTools.dataset.VariableXScale;
+import DataSetTools.dataset.XScale;
 
 
 /**
