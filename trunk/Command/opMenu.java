@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2001/08/09 14:10:24  rmikk
+ * Modified  So that submenues can also start at an arbitrary
+ * position in the category list (if all menu options category
+ * list agrees to n positions, those first n positions can be
+ * omitted from the menu)
+ *
  * Revision 1.13  2001/08/06 22:14:41  rmikk
  * Fixed Error so Data Sets are now sent to the tree
  *
@@ -85,8 +91,20 @@ public class opMenu extends JMenu
 *@see #OperatorHandler , #DataSetTools.components.ParametersGUI.IDataSetListHandler , 
 *@see #DataSetTools.util.IObserver
 */
-public opMenu(OperatorHandler op , IDataSetListHandler DS, Document logdoc , IObserver iobs)
-  {super("Operations");
+public opMenu(OperatorHandler op , IDataSetListHandler DS, Document logdoc , 
+           IObserver iobs)
+    {
+       super("Operations");
+       initt( op, DS, logdoc, iobs, 1);
+    }
+public opMenu(OperatorHandler op , IDataSetListHandler DS, 
+        Document logdoc , IObserver iobs , int start)
+    { super("Operations");
+      initt( op, DS, logdoc, iobs, start);
+    }
+private  void initt(OperatorHandler op , IDataSetListHandler DS, 
+        Document logdoc , IObserver iobs , int start)
+  {
    this.op = op;
    this.DS = DS;
    this.iobs = iobs;
@@ -116,7 +134,7 @@ public opMenu(OperatorHandler op , IDataSetListHandler DS, Document logdoc , IOb
         categories[0]=Operator.OPERATOR; 
        }
     found = true;
-    for ( cat_index = 1; (cat_index < categories.length) &&(found); cat_index++ ) 
+    for ( cat_index = start; (cat_index < categories.length) &&(found); cat_index++ ) 
     {
        num_components = current_menu.getMenuComponentCount();
        found = false;
