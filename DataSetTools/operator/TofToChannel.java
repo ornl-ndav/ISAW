@@ -24,7 +24,7 @@ import  DataSetTools.util.*;
   *  Convert a neutron time-of-flight DataSet to Channel. 
   */
 
-public class TofToChannel extends  XAxisConversionOperator 
+public class TofToChannel extends  XAxisConversionOp 
                                    implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */

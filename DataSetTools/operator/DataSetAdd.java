@@ -6,9 +6,37 @@
  * This operator adds two DataSets by adding the corresponding Data "blocks" in
  * the DataSets.
  *
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
+ *
  *  Revision 1.4  2000/10/03 22:13:10  dennis
+ *
  *  Now uses the constant empty DataSet, DataSet.EMPTY_DATA_SET,
  *   as a place holder for the DataSet parameter.
  *
@@ -54,7 +82,7 @@ import  DataSetTools.util.*;
   *  @see Operator
   */
 
-public class DataSetAdd extends    DataSetOperator 
+public class DataSetAdd extends    DataSetOp 
                                    implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
