@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2001/07/20 14:01:13  rmikk
+ * 1. Enabled THREE_D displays of data sets.
+ * 2. Can now load Nexus files using IsawGUI.Util's load
+ *    function
+ *
  * Revision 1.21  2001/06/29 19:12:02  rmikk
  * Eliminated a "check nop" system output
  *
@@ -710,31 +715,8 @@ public void addDataSet(DataSet dss, String vname)
        }
    
      Ext= filename.substring(i+1).toUpperCase();
-     if(Ext.equals("RUN"))
-       {try{
-
-             dss = util.loadRunfile( filename );
-             
-
-           }
-        catch( Exception s)
-          { dss = null;
-            seterror( 1000, s.toString());
-            return dss;
-          }
-         
-
-         util = null;
-         if( dss == null )
-            {seterror( 1000 , "Data File Improper" );
-             return null;
-             }
-         if( dss.length <= 0 )
-           {seterror( 1000 , "Data File Improper" );
-            return  null;
-            }
-        }
-     else if( Ext.equals("ISD"))
+    
+     if( Ext.equals("ISD"))
         {dss= new DataSet[1];
          dss[0]= DataSet_IO.LoadDataSet(filename);
          if(dss == null)
@@ -758,10 +740,31 @@ public void addDataSet(DataSet dss, String vname)
              return null;
             }
          }
-      else
-        {dss= null;
-          return null;
-         }
+      else// (Ext.equals("RUN")or hdf or)
+       {try{
+
+             dss = util.loadRunfile( filename );
+             
+
+           }
+        catch( Exception s)
+          { dss = null;
+            seterror( 1000, s.toString());
+            return dss;
+          }
+         
+        
+         util = null;
+         if( dss == null )
+            {seterror( 1000 , "Data File Improper" );
+             return null;
+             }
+         if( dss.length <= 0 )
+           {seterror( 1000 , "Data File Improper" );
+            return  null;
+            }
+        }
+     
         
 
         for( i = 0 ; i < dss.length ; i++ )
@@ -983,10 +986,16 @@ public void addDataSet(DataSet dss, String vname)
  */
     public void Display( DataSet ds , String DisplayType , String FrameType )
       {  String X = null;
-         if( Debug) System.out.println( "IN DISPLAY1 args="+DisplayType +","+FrameType);
-         if( DisplayType.toUpperCase().equals("IMAGE")) X = IViewManager.IMAGE;
-         else if( DisplayType.toUpperCase().equals("SCROLLED_GRAPH")) X = IViewManager.SCROLLED_GRAPHS;
-         else if( DisplayType.toUpperCase().equals("SELECTED_GRAPH")) X = IViewManager.SELECTED_GRAPHS;
+         if( Debug) System.out.println( "IN DISPLAY1 args="+DisplayType +
+                                      ","+FrameType);
+         if( DisplayType.toUpperCase().equals("IMAGE"))
+                 X = IViewManager.IMAGE;
+         else if( DisplayType.toUpperCase().equals("SCROLLED_GRAPH")) 
+              X = IViewManager.SCROLLED_GRAPHS;
+         else if( DisplayType.toUpperCase().equals("SELECTED_GRAPH")) 
+             X = IViewManager.SELECTED_GRAPHS;
+         else if( DisplayType.toUpperCase().equals("THREE_D"))
+	     X = IViewManager.THREE_D;
          else
            { seterror( 1000 , ER_ImproperArgument+" "+ DisplayType );
              return;
