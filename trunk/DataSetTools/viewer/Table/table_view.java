@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.36  2003/10/15 03:38:07  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.35  2003/07/18 22:02:55  rmikk
  * Fixed a possible error in Merging the xvals from several
  * groups
@@ -241,7 +244,7 @@ public class table_view extends JPanel implements ActionListener
 
    /** Constructor that creates the JPanel components that allow for the
     *   selection of the fields that are to be displayed
-    *@param  DS[]  The list of data sets to be viewed( for The TableViewer there
+    *@param  DS  The list of data sets to be viewed( for The TableViewer there
     *               is only one data set in this list
     */
    public table_view( DataSet DS[] )
@@ -468,8 +471,10 @@ public class table_view extends JPanel implements ActionListener
 
 
    /**
-    *  Restores the state of this system to the way it was the previous time
-    * the ViewManager visited this module.<BR>
+    * Restores the state of this system to the way it was the previous time
+    * the ViewManager visited this module.
+    *
+    * <br>
     * The used indices, filename, output choice, useAll and Data Block sequential
     * fields are all saved as one String
     */
@@ -1116,22 +1121,28 @@ public class table_view extends JPanel implements ActionListener
    }
 
 
-   /** Will be the new Showw
-    *The GENERAL entry point to the Table View.  The Mode must be set with constructor.
+   /** 
+    * Will be the new Showw.  The GENERAL entry point to the Table View.  
+    * The Mode must be set with constructor.
+    * @see  #getFieldInfo
     *
-    *@param   DSS[] the Array of data sets to be viewed. Only an array with one element has been tested
-    *@param   selModel <ul> Stores the fields to be displayed. Use getFieldInfo to get proper
-    *                        elements in the selModel<ul>
-    *@see  #getFieldInfo( DataSet , String )
-    *@param order  <ul> Indicates which index will be looped first, second, etc.  Eg.
-    *           <BR> HGT,F : 1st rows Hist 0, then Hist 1. In Hist 0 group the first rows are Group 0, then 1
-    *                        In the Group 0 rows the first rows are times,  The comma means the selected
-    *                        Fields are listed across the colums<P>
-    *                HT,GF : 1st rows are Hist 0, then 1.. In Hist i, the first rows are the first time, 
-    *                   2nd time,etc. The 1st columns deal with Group 0, then Group 1... In the Group 0
-    *                   columns Field 1 then selected Field2 are listed in that order.<P>
-    *              In the future G may be replaced by  I and J for the row and column of area detectors.
-    *            </ul>
+    *@param   DSS The Array of data sets to be viewed. Only an array with one 
+                  element has been tested
+    *@param   selModel Stores the fields to be displayed. Use getFieldInfo() to get proper
+    *                        elements in the selModel.
+    *@param order  Indicates which index will be looped first, second, etc.  
+                   For example:
+    *           <br> HGT,F : 1st rows Hist 0, then Hist 1. In Hist 0 group the 
+    *                first rows are Group 0, then 1.  In the Group 0 rows the 
+    *                first rows are times,  The comma means the selected Fields 
+    *                are listed across the colums<br><br>
+    *                HT,GF : 1st rows are Hist 0, then 1.. In Hist i, the first 
+    *                rows are the first time, 2nd time,etc. The 1st columns deal 
+    *                with Group 0, then Group 1... In the Group 0 columns
+    *                Field1 then selected Field2 are listed in that order.<br><br>
+    *                In the future G may be replaced by  I and J for the row and 
+    *                column of area detectors.
+    *  
     *@param  UseAll  A flag that when true uses all the data blocks without changing the selected data
     *                blocks.   
     *
@@ -1388,16 +1399,32 @@ public class table_view extends JPanel implements ActionListener
    }
 
 
-   /** Deprecated Views the data for the data set.  This is used for the non-GUI access
-    *    to this viewer
-    *@param  DSS  The list of data sets to be table-viewed.
-    *@param  used  The list of used fields
-    *@param  DBSeq  <OL><LI>true if the Data Blocks are viewed sequentially
-    *                    ( one above the
-    *              other. <LI>If false, the Data blocks are Viewed left to right
-    </ol>
-    *@param UseAll  <UL>true if all data blocks are to be used, otherwise only the
-    *               selected data blocks will be used</ul>
+   /** 
+    * Deprecated. Views the data for the data set.  This is used for the 
+    * non-GUI access to this viewer.
+    *
+    *@param   DSS The Array of data sets to be viewed. Only an array with one 
+                  element has been tested
+    *@param   selModel Stores the fields to be displayed. Use getFieldInfo() 
+                       to get proper elements in the selModel.
+    *@param order  Indicates which index will be looped first, second, etc.  
+                   For example:
+    *           <br> HGT,F : 1st rows Hist 0, then Hist 1. In Hist 0 group the 
+    *                first rows are Group 0, then 1.  In the Group 0 rows the 
+    *                first rows are times,  The comma means the selected Fields 
+    *                are listed across the colums<br><br>
+    *                HT,GF : 1st rows are Hist 0, then 1.. In Hist i, the first 
+    *                rows are the first time, 2nd time,etc. The 1st columns deal 
+    *                with Group 0, then Group 1... In the Group 0 columns
+    *                Field1 then selected Field2 are listed in that order.<br><br>
+    *                In the future G may be replaced by  I and J for the row and 
+    *                column of area detectors.
+    *  
+    *@param  UseAll  A flag that when true uses all the data blocks without 
+                     changing the selected data blocks.   
+    *
+    *@param SelIndecies  If not null, these indices will be used in place of the 
+                         selected indices. THE LIST MUST BE INCREASING.
     */
    public void Showw1( DataSet DSS[], DefaultListModel selModel, String order,
       boolean UseAll, int[] SelIndecies )
@@ -1585,15 +1612,17 @@ public class table_view extends JPanel implements ActionListener
    }
 
 
-   /** Creates a float[] with "all" the xvalues in groups of the SelIndices 
-    * Parameter UseAll does NOT work
-    *@param  dbi    data block, this is recursive so start at 0. It will do all
-    *@param  DS    the data set
-    *@param xvals  Result so far for the dbi's less than this dbi
-    *@param      SelIndices The index of the groups to have their xvalues merged.
-    *@result  The set of merged xvalues or null
-    *NOTE: Two xvalues are the same at a given point if they are within 1/20th of the
+   /** 
+    * Creates a float[] with "all" the xvalues in groups of the SelIndices.
+    * Parameter UseAll does NOT work!
+    * The result is the set of merged xvalues or null
+    * NOTE: Two xvalues are the same at a given point if they are within 1/20th of the
     * average length of an interval.
+    * @param  dbi    data block, this is recursive so start at 0. It will do all
+    * @param  DS    the data set
+    * @param xvals  Result so far for the dbi's less than this dbi
+    * @param UseAll Unusable.
+    * @param      SelIndices The index of the groups to have their xvalues merged.
     */
    public static float[] MergeXvals( int dbi, DataSet DS, float xvals[], boolean UseAll, int[] SelIndices )
    {
@@ -2617,7 +2646,7 @@ public class table_view extends JPanel implements ActionListener
     *@param  LM  the list model containing the list of fields to be displayed in the table
     *@param  order  the String containing the order of the rows and columns in the generated 
     *        table
-    *@param  Groups[]  The list of group indecies that are to be used
+    *@param  Groups  The list of group indecies that are to be used
     */
 
    public Gen_TableModel getGenTableModel( DataSet DS, DefaultListModel LM, String order,
@@ -2626,11 +2655,15 @@ public class table_view extends JPanel implements ActionListener
       return new Gen_TableModel( DS, LM, order, Groups );
    }
 
-   /** Table model for a General Table<P>
-    * This generates elements at a given row and column in the table recursively.<Br>
-    * The values are not stored.<Br>
+   /** 
+    * Table model for a General Table.
+    *
+    * <br><br>
+    * This generates elements at a given row and column in the table
+    * recursively.<br>
+    * The values are not stored.<br>
     * This allows for faster creation of these general tables.  Tables are now accessible
-    *   for larger data blocks.
+    * for larger data blocks.
     */
    public class Gen_TableModel extends AbstractTableModel
    {
@@ -2658,7 +2691,7 @@ public class table_view extends JPanel implements ActionListener
        *@param  LM  the list model containing the list of fields to be displayed in the table
        *@param  order  the String containing the order of the rows and columns in the generated 
        *        table
-       *@param  Groups[]  The list of group indecies that are to be used
+       *@param  Groups  The list of group indecies that are to be used
        */
       public Gen_TableModel( DataSet DS, DefaultListModel LM, String order, int Groups[] )
       {
