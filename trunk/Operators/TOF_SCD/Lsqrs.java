@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/05/07 18:36:21  dennis
+ * Removed redundant code that created parameters vector() twice.
+ *
  * Revision 1.4  2003/02/26 20:11:25  pfpeterson
  * Updated error message and javadoc to mention lsqrs (not index).
  *
@@ -89,8 +92,6 @@ public class Lsqrs extends    GenericTOF_SCD {
   public void setDefaultParameters(){
     parameters = new Vector();  // must do this to create empty list of 
                                 // parameters
-    
-    parameters=new Vector();
     LoadFilePG lfpg=new LoadFilePG("Peaks file",null);
     lfpg.setFilter(new PeaksFilter());
     addParameter(lfpg);
