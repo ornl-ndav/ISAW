@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:44:39  bouzekc
+ * Documented file using javadoc statements.
+ * Added the toString() method.
+ *
  * Revision 1.1  2004/02/07 05:10:06  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -43,7 +47,6 @@ package devTools.Hawk.classDescriptor.modeledObjects;
 import java.awt.GridLayout;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.Vector;
 
 import javax.swing.JLabel;
@@ -53,26 +56,57 @@ import javax.swing.JTextField;
 
 import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
 
+/**
+ * This class is used to represent the general properties of a class or interface.  These properties
+ * include what the class imports, implemnts, extends, its name, what package it is in, and the 
+ * characteristics that describe the class or interface (i.e. public, abstract, final, etc.).
+ * 
+ * @author Dominic Kramer
+ */
 public class InterfaceDefn
 {
 	//--------class attributes-----------------------------------------
 	
+	/**
+	 * This is a Vector of Strings each of which is one of the class or interface's characteristics
+	 * (i.e. public, abstract, final)
+	 */
 	protected Vector Interface_char_vector;  //i.e. public, abstract .... a vector of strings
 					   //this needs to be a vector because its size is not known at compile time
+	/**
+	 * The type (i.e. class or interface)
+	 */
 	protected String Interface_type;  //i.e. class, interface
+	/**
+	 * The class or interface's name
+	 */
 	protected String Interface_name;  //the Interface's name
-	
+	/**
+	 * What the class or interface extends
+	 */
 	protected String Interface_extends;  //the class/interface extended
+	/**
+	 * A Vector of Strings, each of which is the name of a class or interface that it implements
+	 */
 	protected Vector Interface_implements_vector;  //the vector of interfaces implemented
 						   //the vectorr can be a vector
 						   //of objects of type Interface or Strings
+	/**
+	 * A Vector of Strings, each of which is a item that the class or interface imports
+	 */
 	protected Vector Interface_imports_vector;  //the vector of files imported
 						//this should be a vector of strings because I have 
 						//no classes that define a package imported
+	/**
+	 * The name of the package the class or interface belongs to.
+	 */
 	protected String Package_Name;
 		
 	//---------constructors--------------------------------------------
 	
+	/**
+	 * Creates a default InterfaceDefn object.
+	 */
 	public InterfaceDefn()
 	{
 		Interface_char_vector = new Vector();
@@ -83,7 +117,17 @@ public class InterfaceDefn
 		Interface_imports_vector = new Vector();
 		Package_Name = "";
 	}
-
+	
+	/**
+	 * Creates an InterfaceDefn object given the parameters.
+	 * @param cV The Vector of Strings each of which is one of the interface's characteristics (public, private, abstract, etc.).
+	 * @param t The interface's type (either class or interface).
+	 * @param n The interface's name.
+	 * @param e The name of the interface that this interface extends.
+	 * @param iV The Vector of Strings each of which is the name of an interface that the class or interface implements.
+	 * @param imV The Vector of Strings each of which is the name of a package that the interface imports.
+	 * @param pk The name of the package that this interface is a member of.
+	 */
 	public InterfaceDefn(Vector cV, String t, String n, String e, Vector iV, Vector imV, String pk)
 	{
 		Interface_char_vector = cV;
@@ -97,66 +141,118 @@ public class InterfaceDefn
 	
 	//---------methods for setting and getting these attributes---------
 	
+	/**
+	 * Get the Vector of Strings each of which is one of the interface's characteristic (public, abstract, etc.).
+	 * @return A Vector of Strings.
+	 */
 	public Vector getInterface_char_vector()
 	{
 		return Interface_char_vector;
 	}
 	
+	/**
+	 * Set the interface's characteristics (public, abstract, etc.).
+	 * @param vec A Vector of Strings.
+	 */
 	public void setInterface_char_vector(Vector vec)
 	{
 		Interface_char_vector = vec;
 	}
 	
+	/**
+	 * Get the interface's type (either class or interface).
+	 * @return Either class or interface.
+	 */
 	public String getInterface_type()
 	{
 		return Interface_type;
 	}
 	
-	public String getInterface_type(boolean shortJava, boolean shortOther)
-	{
-		return InterfaceUtilities.getAbbreviatedName(Interface_type, shortJava, shortOther);
-	}
-	
+	/**
+	 * Set the interface's type (either class or interface).
+	 * @param str Either class or interface.
+	 */
 	public void setInterface_type(String str)
 	{
 		Interface_type = str;
 	}
-	
+	/**
+	 * Get the interface's name.
+	 * @return The interface's name.
+	 */	
 	public String getInterface_name()
 	{
 		return Interface_name;
 	}
 	
+	/**
+	 * Get the interface's name in a modified format.
+	 * @param shortJava If this is true, if the name is a java name it will be returned in a shortened form.  For example, if the name 
+	 * is java.lang.String, it will be returned as String.
+	 * @param shortOther If this is true, if the name is a non-java name, it will be returned in a shortened form.
+	 * @return The interface's name in a modified format.
+	 */
 	public String getInterface_name(boolean shortJava, boolean shortOther)
 	{
 		return InterfaceUtilities.getAbbreviatedName(Interface_name, shortJava, shortOther);
 	}
 	
+	/**
+	 * Set the interface's name.
+	 * @param str The interface's new name.
+	 */
 	public void setInterface_name(String str)
 	{
 		Interface_name = str;
 	}
 	
+	/**
+	 * Get the name of the class or interface this extends.
+	 * @return The name of the class or interface this extends.
+	 */
 	public String getInterface_extends()
 	{
 		return Interface_extends;
 	}
 	
+	/**
+	 * Get the name of the class or interface this extends in a modified form.
+	 * @param shortJava If this is true, the name will be shortened if it is a java name.  For example, 
+	 * java.lang.String will be returned as String.
+	 * @param shortOther If this is true, the name will be shortened if it is a non-java name. 
+	 * @return The name of the class or interface this extends.
+	 */
 	public String getInterface_extends(boolean shortJava, boolean shortOther)
 	{
 		return InterfaceUtilities.getAbbreviatedName(Interface_extends, shortJava, shortOther);
 	}
 	
+	/**
+	 * Set the name of the class or interface this extends.
+	 * @param pgm
+	 */
 	public void setInterface_extend(String pgm)
 	{
 		Interface_extends = pgm;
 	}
 	
+	/**
+	 * Get the Vector of Strings each of which is the name of an interface that this class implements.
+	 * @return A Vector of Strings.
+	 */
 	public Vector getInterface_implements_vector()
 	{
 		return Interface_implements_vector;
 	}
 	
+	/**
+	 * Get the Vector of Strings each of which is the name of an interface that this class implements in a modified 
+	 * format.
+	 * @param shortJava If this is set to true, if the name is a java name it will be shortened.  For example, java.lang.String 
+	 * will be returned as String.
+	 * @param shortOther If this is set to true, if the name is a non-java name it will be shortened.
+	 * @return A Vector of Strings.
+	 */
 	public Vector getInterface_implements_vector(boolean shortJava, boolean shortOther)
 	{
 		Vector vec = new Vector();
@@ -166,16 +262,32 @@ public class InterfaceDefn
 		return vec;
 	}
 	
+	/**
+	 * Set the interfaces that this class implements.
+	 * @param vec A Vector of Strings each of which is the name of an interface that this class implements.
+	 */
 	public void setInterface_implements_vector(Vector vec)
 	{
 		Interface_implements_vector = vec;
 	}
-	
+
+	/**
+	 * Get the Vector of Strings each of which is the name of a package that this class imports.
+	 * @return A Vector of Strings.
+	 */	
 	public Vector getInterface_imports_vector()
 	{
 		return Interface_imports_vector;
 	}
 	
+	/**
+	 * Get the Vector of Strings each of which is the name of a package that this class imports in a modified 
+	 * format.
+	 * @param shortJava If this is set to true, if the name is a java name it will be shortened.  For example, java.lang.String 
+	 * will be returned as String.
+	 * @param shortOther If this is set to true, if the name is a non-java name it will be shortened.
+	 * @return A Vector of Strings.
+	 */
 	public Vector getInterface_imports_vector(boolean shortJava, boolean shortOther)
 	{
 		Vector vec = new Vector();
@@ -185,36 +297,67 @@ public class InterfaceDefn
 		return vec;
 	}
 	
+	/**
+	 * Set the packages that this class imports.
+	 * @param vec A Vector of Strings each of which is the name of an interface that this class implements.
+	 */
 	public void setInterface_imports_vector(Vector vec)
 	{
 		Interface_imports_vector = vec;
 	}
-
+	
+	/**
+	 * Get the name of the package that this interface is a member of.
+	 * @return The interface's package's name.
+	 */
 	public String getPackage_Name()
 	{
 		return Package_Name;
 	}
 	
+	/**
+	 * Get the name of the package that this interface is a member of.
+	 * @param shortJava If this is set to true, if the name is a java name it will be shortened.  For example, java.lang.String 
+	 * will be returned as String.
+	 * @param shortOther If this is set to true, if the name is a non-java name it will be shortened.
+	 * @return The interface's package's name.
+	 */
 	public String getPackage_Name(boolean shortJava, boolean shortOther)
 	{
 		return InterfaceUtilities.getAbbreviatedName(Package_Name, shortJava, shortOther);
 	}
-	
+
+	/**
+	 * Set the name of the package that this interface is a member of.
+	 * @return The interface's package's name.
+	 */	
 	public void setPackage_Name(String str)
 	{
 		Package_Name = str;
 	}
 	
+	/**
+	 * True if this is an interface and false otherwise.
+	 * @return True for interfaces and false otherwise.
+	 */
 	public boolean isInterface()
 	{
 		return Interface_type.equals("interface");
 	}
-
+	
+	/**
+	 * True if this is a class and false otherwise.
+	 * @return True for classes and false otherwise.
+	 */
 	public boolean isClass()
 	{
 		return Interface_type.equals("class");
 	}
-
+	
+	/**
+	 * True if one of the characteristics is "abstract" and false otherwise.
+	 * @return True if abstract and false otherwise.
+	 */
 	public boolean isAbstract()
 	{
 		boolean answer = false;
@@ -226,19 +369,46 @@ public class InterfaceDefn
 		return answer;
 	}
 	
-	public boolean isInnerClass()
+	/**
+	 * True if this class or interface is not abstract.
+	 * @return True for non-abstract classes and interfaces.
+	 */
+	public boolean isConcrete()
+	{
+		return !isAbstract();
+	}
+	
+	/**
+	 * True if this is an inner class or interface.  The class or interface is assumed to be 
+	 * inner if its name includes a $ in it.
+	 * @return True for inner classes or interfaces.
+	 */
+	public boolean isInner()
 	{
 		int index = Interface_name.indexOf((int)'$');
 		return (index > -1);
 	}
-
+	
+	/**
+	 * True if this class or interface is not an inner class or interface.
+	 * @return True for non-inner classes or interfaces.
+	 */
+	public boolean isOuter()
+	{
+		return !isInner();
+	}
+	
 	//-----these methods print to tile specified by the PrintWriter 'writer'
 	
-	int i = 0;
-	
+	/**
+	 * Prints data about this InterfaceDefn object to the DataOutputStream writer and does not write a new line character 
+	 * at the end of the data.  This method prints the data in the native Hawk format to save the interfaceDefn object to 
+	 * a file.  This method is used in the print(DataOutputStream) method in the class Interface.
+	 */	
 	public void print(DataOutputStream writer)
 	{
 		String del = ":";
+		int i = 0;
 		try
 		{
 			writer.writeUTF("<INTERFACE>"+del);
@@ -303,7 +473,12 @@ public class InterfaceDefn
 			System.out.println("An IOException was thrown in print(RandomAccessFile) in InterfaceDefn.java");
 		}
 	}
-	
+
+	/**
+	 * Prints data about this InterfaceDefn object to the DataOutputStream writer and writes a new line character 
+	 * at the end of the data.  This method prints the data in the native Hawk format to save the interfaceDefn object to 
+	 * a file.  This method is used in the print(DataOutputStream) method in the class Interface.
+	 */	
 	public void println(DataOutputStream writer)
 	{
 		print(writer);
@@ -317,50 +492,11 @@ public class InterfaceDefn
 		}
 	}
 	
-	public void printlnLink(RandomAccessFile linker, String file)
-	{
-		printLink(linker, file);
-		try
-		{
-			linker.writeBytes("\n");
-		}
-		catch(IOException e)
-		{
-			System.out.println("An IOException was thrown in printlnLink(RandomAccessFile, String) in InterfaceDefn.java");
-		}
-	}	
-
-	public void printLink(RandomAccessFile linker, String file)
-	{
-		printLink(linker, file);
-	}
-
-	public void printExtends(RandomAccessFile writer)
-	{
-		try
-		{
-			writer.writeBytes(""+Interface_name+" "+Interface_extends);
-		}
-		catch(IOException e)
-		{
-			System.out.println("An IOException was thrown in printExtends(RandomAccessFile) in InterfaceDefn.java");
-		}
-	}
-	
-	public void printlnExtends(RandomAccessFile writer)
-	{
-		printExtends(writer);
-		try
-		{
-			writer.writeBytes("\n");
-		}
-		catch(IOException e)
-		{
-			System.out.println("An IOException was thrown in prinlnExtends(RandomAccessFile) in InterfaceDefn.java");
-		}
-	}
-	
-	public InterfaceDefn Clone()
+	/**
+	 * Makes a clone of the InterfaceDefn object supplied.
+	 * @return A clone of the InterfaceDefn object supplied.
+	 */
+	public InterfaceDefn getClone()
 	{
 		return (new InterfaceDefn( (Vector)(Interface_char_vector.clone()), (new String(Interface_type)) ,(new String(Interface_name)), (new String(Interface_extends)), (Vector)(Interface_implements_vector.clone()), (Vector)(Interface_imports_vector.clone()), (new String(Package_Name)) ));
 	}
@@ -376,7 +512,14 @@ public class InterfaceDefn
 		Interface_imports_vector = imp;	
 		Package_Name = pk;
 	}
-
+	
+	/**
+	 * This creates a JPanel with all of the textfields and labels that display the information for this InterfaceDefn object.  The textfields 
+	 * and labels are positioned vertically on the JPanel.  The panel created does not display information in a 
+	 * compact or effecient way and may be removed or significantly changed.
+	 * @deprecated
+	 * @return A JPanel.
+	 */
 	public JPanel getInterfaceDefnJPanel()
 	{
 		JPanel InterfaceDefnJPanel = new JPanel();
@@ -412,7 +555,14 @@ public class InterfaceDefn
 		
 		return InterfaceDefnJPanel;
 	}
-
+	
+	/**
+	 * This returns a String describing this InterfaceDefn object in a format similar to source code.
+	 * @param shortJava If this is set to true, if a name is a java name it will be shortened.  For example, java.lang.String 
+	 * will be returned as String.
+	 * @param shortOther If this is set to true, if a name is a non-java name it will be shortened.
+	 * @return A String.
+	 */
 	public String getStringInJavadocFormat(boolean shortJava, boolean shortOther)
 	{
 		String str = "";
@@ -428,7 +578,7 @@ public class InterfaceDefn
 			impStr = impStr + "imports " + (String)(getInterface_imports_vector(shortJava, shortOther).elementAt(i))+"\n";
 		}
 		
-		str = InterfaceUtilities.makeStringFromVector(Interface_char_vector, ", ")+getInterface_type(shortJava, shortOther)+" "+getInterface_name(shortJava, shortOther);
+		str = InterfaceUtilities.makeStringFromVector(Interface_char_vector, ", ")+getInterface_type()+" "+getInterface_name(shortJava, shortOther);
 		
 		if ( !( (Interface_extends.equals("")) || (Interface_extends.equals(null)) ) )
 			str = str + " extends " + getInterface_extends(shortJava, shortOther);
@@ -439,5 +589,13 @@ public class InterfaceDefn
 		str = str + "\n{";
 		
 		return (impStr + "\n" + str);
+	}
+	
+	/**
+	 * Get the interface's name.
+	 */
+	public String toString()
+	{
+		return Interface_name;
 	}
 }
