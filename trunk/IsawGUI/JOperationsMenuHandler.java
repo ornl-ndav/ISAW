@@ -9,6 +9,7 @@ package IsawGUI;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import DataSetTools.components.ParametersGUI.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.awt.*;
@@ -52,8 +53,10 @@ public class JOperationsMenuHandler implements ActionListener, Serializable
                 //System.out.println("We are looking for s:" +s);
             }
             if (found)
-            {
-                JParametersDialog pDialog = new JParametersDialog(op, treeUI, sessionLog);
+            {   DSgetArray DSA= new DSgetArray( treeUI );
+                DataSet Dss[];
+                Dss= DSA.getDataSets();
+                JParametersDialog pDialog = new JParametersDialog(op, Dss, sessionLog);
 
             }
         }
@@ -63,3 +66,5 @@ public class JOperationsMenuHandler implements ActionListener, Serializable
 
 
 }
+
+
