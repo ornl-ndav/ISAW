@@ -84,7 +84,8 @@ public class util {
      * @param childNodeName   The name of the child node
      * @param data   The float data stored in this leaf
      * @param ranks  The rank of the data
-     * @return
+     * @return  A node with that contains the given information that is connectected
+     *              to the parent node
      */
     public static NxWriteNode writeFA_SDS(NxWriteNode parentnode, String childNodeName,
         float[] data, int[] ranks) {
