@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.107  2002/07/12 18:24:12  pfpeterson
+ *  Uses new methods of SharedData for getting properties.
+ *
  *  Revision 1.106  2002/07/10 19:43:29  rmikk
  *  Added Code to connect the Contour view to Isaw
  *
@@ -714,8 +717,8 @@ public class Isaw
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
         /* read in values for default screen size from system properties */
-        sys_width=Double.parseDouble(SharedData.getProperty("Isaw_Width"));
-        sys_height=Double.parseDouble(SharedData.getProperty("Isaw_Height"));
+        sys_width=SharedData.getdoubleProperty("Isaw_Width");
+        sys_height=SharedData.getdoubleProperty("Isaw_Height");
         //System.out.println("("+sys_width+","+sys_height+")");
 
         /* assume a 4:3 aspect ratio for the monitor */
@@ -1964,8 +1967,7 @@ public class Isaw
      */
     private static void mw_resized(int width, int height){
         // Set the tree width
-        double tree_widthD=
-            Double.parseDouble(SharedData.getProperty("Tree_Width"));
+        double tree_widthD=SharedData.getdoubleProperty("Tree_Width");
         int tree_width=(int)tree_widthD;
         if(tree_width<=1.0){
             tree_width=(int)(tree_widthD*(double)upper_sp.getWidth());
@@ -1974,8 +1976,7 @@ public class Isaw
         
         // Set the status height. Remember that the divider location
         // is relative from the top of the pane.
-        double status_heightD=
-            Double.parseDouble(SharedData.getProperty("Status_Height"));
+        double status_heightD=SharedData.getdoubleProperty("Status_Height");
         int status_height=(int)status_heightD;
         if(status_height>1.0){
             status_height=main_sp.getHeight()-status_height;
@@ -2495,7 +2496,7 @@ public class Isaw
             float tol=.01f;
             float pane_sizeF=(float)pane_size;
             float div_posF=(float)div_pos;
-            float prop=Float.parseFloat(SharedData.getProperty(property));
+            float prop=SharedData.getfloatProperty(property);
             float newPercent=div_posF/pane_sizeF;
             float oldPercent=prop;
 
