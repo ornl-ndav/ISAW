@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/08/17 18:59:30  rmikk
+ *  Added more error checking if file cannot be created
+ *
  *  Revision 1.1  2001/07/30 20:09:09  rmikk
  *  Original checkin
  *
@@ -86,7 +89,19 @@ public class NexWriter extends Writer
     { if( ds == null)
 	return ;
       NexWriteNode nwr = new NexWriteNode( data_destination_name );
+      if( nwr.getErrorMessage() != null)
+	  if(! nwr.getErrorMessage().equals(""))
+            { System.out.println("Could not Create File");
+            
+              return;
+            } 
       NxWriter Writer = new NxWriter( (NxWriteNode)nwr  );
+      if( Writer.getErrorMessage() != null)
+        if( !Writer.getErrorMessage().equals(""))
+           {  System.out.println("Could not Create File");
+             
+              return;
+           }
       DataSet Hist[], Monit[];
       Hist = new DataSet[1];
       Monit = new DataSet[1];
