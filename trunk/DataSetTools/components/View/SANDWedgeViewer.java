@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.48  2005/02/21 00:32:04  millermi
+ * - Added more information to help().
+ *
  * Revision 1.47  2005/02/19 02:02:25  millermi
  * - Updated help() to include information on opening files, including
  *   lines containing header information.
@@ -563,25 +566,34 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 		"Attribute labels are not case sensitive, but must appear "+
 		"as listed.</I>"+
 		"<H2>Commands for SWV</H2>" +
-                "<P> SAVING USER PREFERENCES: Click on <B>File|Save User " +
+                "<P> SAVING USER PREFERENCES: Click on <B>Options|Save User " +
 		"Settings</B>. Your preferences will automatically be saved " +
 		"in SandProps.isv in your home directory. <I>This option " +
 		"will not save project specific information, such as " +
-		"selections or annotations. Use <B>Options|Save Project " +
-		"Settings</B> to save project specific details.</I><BR><BR>" +
+		"selections or annotations. Use <B>Options|Save Project</B> " +
+		"to save project specific details.</I><BR><BR>" +
+		"SAVING/OPENING PROJECT: Use <B>Options|Save Project</B> " +
+		"to save all session specific information. This option is " +
+		"useful if you wish to close the SWV but continue work at " +
+		"a later time. Use <B>Options|Open Project</B> to recall the " +
+		"saved session.Sessions will be saved in a user-named file " +
+		"ending with \".isv\".<BR><BR>"+
 		"<I>ATTENTION: Selections must be made before using the " +
 		"viewing or saving results to file. </I><BR><BR> " +
 		"VIEW RESULTS: The Results window will automatically appear " +
 		"after a selection has been made. <B>Options|Hide Results " +
 		"Window</B> will hide the window. If the window is not " +
 		"visible, <B>Options|Show Results Window</B> will cause the " +
-		"results window to appear.<BR>"+
-		"SAVE RESULTS TO FILE: Go to <B>File|Save Results</B> " +
-		"in the SWV. The new file has 3 columns: Q, Intensity, " +
+		"results window to appear.<BR><BR>"+
+		"SAVE RESULTS TO FILE: Go to <B>Options|Save Results to File" +
+		"</B> in the SWV. The new file has 3 columns: Q, Intensity, " +
 		"and Error Bounds. Information about the region is listed " +
 		"at the top of the file, prefixed by a pound symbol(#). " +
 		"<I>If multiple selections are made, only the last " +
-		"selection can be written to file.</I><BR>" +
+		"selection can be written to file.</I><BR><BR>" +
+		"SAVE/PRINT IMAGE: Use <B>File|Make Image</B> to save the " +
+		"image displayed in the SWV as a jpeg. <B>File|Print Image " +
+		"</B> will print out the image displayed in the SWV.<BR>" + 
 		"<H2>TROUBLESHOOTING</H2>" +
 		"<P><I>Why doesn't the cursor readout work?</I> Go to the " +
 		"<B>Image</B> tab, make sure the Annotation and Selection " +
