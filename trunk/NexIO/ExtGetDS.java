@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2003/12/12 15:18:41  rmikk
+ * Returned an empty DataSet instead of null when an error occurred
+ *
  * Revision 1.18  2003/12/08 23:04:58  rmikk
  * Reads in data for Attribute.USER attribute
  *
@@ -238,7 +241,7 @@ public class ExtGetDS{
       errormessage =  entry.getErrorMessage();
       DataSetTools.util.SharedData.addmsg("Nexus Input Error:"+errormessage);
       System.out.println("In ExtGetDS, errormessga="+errormessage);
-      return null;
+      return DS;
    }
   
    return DS;
