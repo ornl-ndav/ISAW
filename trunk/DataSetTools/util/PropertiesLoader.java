@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/02/13 17:29:11  pfpeterson
+ *  Moved decision making for image directory from SplashWindowFrame.
+ *
  *  Revision 1.11  2003/01/20 17:27:20  pfpeterson
  *  Specified the default for 'Default_Ext' to be 'ipns'.
  *
@@ -136,6 +139,8 @@ public class PropertiesLoader implements java.io.Serializable
             def="0.2";
         }else if( prop.equals("Status_Height") ){
             def="0.2";
+        }else if( prop.equals("IMAGE_DIR") ){
+            def=get("ISAW_HOME")+"/images/";
         }else if( prop.equals(ViewerState.COLOR_SCALE) ){
             def=
              DataSetTools.components.image.IndexColorMaker.HEATED_OBJECT_SCALE;
