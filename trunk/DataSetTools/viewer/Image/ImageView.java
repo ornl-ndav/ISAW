@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2001/07/02 21:02:29  dennis
+ *  Removed internal class: LogScaleMouseHandler, that is no longer
+ *  needed.  It was needed with early versions of jdk to work around
+ *  a bug in the slider getValueIsAdjusting() method.
+ *
  *  Revision 1.19  2001/06/29 18:36:19  dennis
  *  Now uses components: ColorScaleMenu and ColorScaleImage
  *  to change and display the current color scale.
@@ -806,7 +811,6 @@ private void MakeConnections()
    hgraph_scale_slider.addChangeListener( new HGraphScaleEventHandler() );   
 
    log_scale_slider.addChangeListener( new LogScaleEventHandler() );   
-   log_scale_slider.addMouseListener( new LogScaleMouseHandler() );
 
    image_Jpanel.addMouseMotionListener( new ImageMouseMotionAdapter() );
    image_Jpanel.addMouseListener( new ImageMouseAdapter() );
@@ -1143,32 +1147,11 @@ private class LogScaleEventHandler implements ChangeListener,
     JSlider slider = (JSlider)e.getSource();
 
                               // set image log scale when slider stops moving
-                              // #### NOTE: This should work... in fact, it 
-                              //            used to work.  With swing1.1.1beta2
-                              //            it does not work.  The kludge,
-                              //            "LogScaleMouseHandler" was added
-                              //            as a workaround.  When the slider
-                              //            is fixed, so that the method to
-                              //            getValueIsAdjusting() again works,
-                              //            The LogScaleMouseHandler should be
-                              //            removed.
     if ( !slider.getValueIsAdjusting() )
       image_Jpanel.changeLogScale( slider.getValue(), true );
   }
 } 
 
-
-
-/* ---------------------------- LogScaleMouseHandler ----------------------- */
-private class LogScaleMouseHandler extends    MouseAdapter
-                                   implements Serializable
-{
-  public void mouseReleased(MouseEvent e)
-  {
-    JSlider slider = (JSlider)e.getSource();
-    image_Jpanel.changeLogScale( slider.getValue(), true );
-  }
-}
 
 /* ------------------------- HGraphScaleEventHandler ----------------------- */
 
