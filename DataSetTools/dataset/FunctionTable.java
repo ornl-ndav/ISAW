@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/04/19 15:42:28  dennis
+ *  Revised Documentation
+ *
  *  Revision 1.3  2002/04/11 21:07:49  dennis
  *  Fixed bug in resample() method that caused y_values to be
  *  resampled twice if the errors were non-null.
@@ -211,13 +214,12 @@ public class FunctionTable extends    TabulatedData
  *                       to the specified x_value.  Currently, the only other
  *                       smoothing supported is linear interpolation, which
  *                       will be used if the smooth flag has any value other
- *                       than SMOOTH_NONE.
+ *                       than SMOOTH_NONE. ####
  *
  *  @return approximate y value at the specified x value
  */
 public float getY_value( float x_value, int smooth_flag )
 {
-  
   if ( x_value < x_scale.getStart_x() || 
        x_value > x_scale.getEnd_x()    )
     return 0;
@@ -260,6 +262,9 @@ public float getY_value( float x_value, int smooth_flag )
   /**
    * Return a new FunctionTable object containing a copy of the x_scale, 
    * y_values errors, group_id and attributes from the current Data object.
+   *
+   * @return  A "deep copy" clone of the current Data object as a generic 
+   *          object. 
    */
   public Object clone()
   {

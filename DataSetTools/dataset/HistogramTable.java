@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/04/19 15:42:30  dennis
+ *  Revised Documentation
+ *
  *  Revision 1.3  2002/04/11 21:09:21  dennis
  *  Fixed bug in HistogramTable copy constructor.  Must
  *  create new x_scale before using init() to set up the
@@ -217,7 +220,7 @@ public class HistogramTable extends    TabulatedData
  *
  *  @param  smooth_flag  Currently, for a HistogramTable, the smooth_flag has
  *                       no effect.  The count within the bin containing the
- *                       the specified x is returned.
+ *                       the specified x is returned.  #####
  *
  *  @return approximate y value at the specified x value
  */
@@ -251,6 +254,9 @@ public float getY_value( float x_value, int smooth_flag )
   /**
    * Return a new Data object containing a copy of the x_scale, y_values
    * errors, group_id and attributes from the current Data object.
+   *
+   * @return  A "deep copy" clone of the current Data object as a generic 
+   *          object.   
    */
   public Object clone()
   {
@@ -272,8 +278,12 @@ public float getY_value( float x_value, int smooth_flag )
    *  new histogram with the specified bin sizes. #### smooth_flag not 
    *  implemented yet 
    *
-   *  @param new_X  The x scale giving the set of x values to use for the
-   *                 resampling and/or rebinning operation.
+   *  @param new_X        The x scale giving the set of x values to use for the
+   *                      resampling and/or rebinning operation.
+   *
+   *  @param smooth_flag  Flag indicating the degree of smoothing to be
+   *                      applied. #### smooth_flag not not currently
+   *                      implemented.
    */
   public void resample( XScale new_X, int smooth_flag )
   {
