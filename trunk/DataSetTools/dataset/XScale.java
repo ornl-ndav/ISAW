@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/11/17 23:39:04  dennis
+ *  Minor change to format of output in toString() method.
+ *
  *  Revision 1.4  2000/07/31 20:54:11  dennis
  *  Added extra information to debug printout.
  *
@@ -111,6 +114,6 @@ abstract public class XScale implements Serializable
    */
   public String toString()
   {
-    return "XScale [ "+start_x+", "+end_x+": "+num_x+" ]"; 
+    return "["+start_x+","+end_x+"]" + " in " + num_x + " steps"; 
   }
 }
