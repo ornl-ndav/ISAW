@@ -36,6 +36,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2002/08/30 18:08:13  rmikk
+ *  -Eliminated reference to a test operator ChgOp in the
+ *   main program
+ *
  *  Revision 1.15  2002/08/30 15:33:47  rmikk
  *    -Used the Range of Y values(Contour intensities) from ContourData.java
  *    -Fixed some Units indicators
@@ -1100,8 +1104,8 @@ public class ContourView extends DataSetViewer
          System.exit(0);
         }
       */
-      Operator op = new Operators.ChgOp( ds);
-      op.getResult();
+      //Operator op = new Operators.ChgOp( ds);
+      //op.getResult();
       QxQyQzAxesHandler Qax = new QxQyQzAxesHandler(ds);
       IAxisHandler Axis1, Axis2, Axis3;
       System.out.println("ds size x_units="+ds.getNum_entries()+ds.getX_units());
