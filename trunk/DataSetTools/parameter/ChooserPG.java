@@ -30,6 +30,11 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.13  2003/09/12 20:22:01  rmikk
+ *  AddItem(one item only) now adds the item to the entrywidget too. If the
+ *    ParameterGUI has been initialized, new entries can be
+ *    added afterwards.
+ *
  *  Revision 1.12  2003/09/09 23:06:28  bouzekc
  *  Implemented validateSelf().
  *
@@ -112,7 +117,9 @@ abstract public class ChooserPG extends ParameterGUI{
   public void addItem( Object val){
     if(this.vals==null) this.vals=new Vector(); // initialize if necessary
     if(val==null) return; // don't add null to the vector
-    if(this.vals.indexOf(val)<0) this.vals.add(val); // add if unique
+    if(this.vals.indexOf(val)<0) {this.vals.add(val);
+    if( initialized)
+       ((HashEntry)(entrywidget.getComponent(0))).addItem( val);}
   }
 
   /**
