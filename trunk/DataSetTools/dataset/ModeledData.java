@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/10/03 15:42:46  dennis
+ *  Changed setSqrtErrors() to setSqrtErrors(boolean) in Data classes.
+ *  Added use_sqrt_errors flag to Data base class and changed derived
+ *  classes to use this.  Added isSqrtErrors() method to check state
+ *  of flag.  Derived classes now check this flag and calculate rather
+ *  than store the errors if the use_sqrt_errors flag is set.
+ *
  *  Revision 1.4  2002/05/29 22:46:19  dennis
  *  Minor fix to documentation.
  *
@@ -69,7 +76,6 @@ public abstract class ModeledData extends    Data
 {
   protected IOneVarFunction function        = null;
   protected IOneVarFunction errors          = null;
-  protected boolean         use_sqrt_errors = false;
   protected int             smooth_flag     = IData.SMOOTH_NONE;
 
   /**
@@ -118,18 +124,25 @@ public abstract class ModeledData extends    Data
    */ 
   public void setErrors( IOneVarFunction err )
   {
-    use_sqrt_errors = false;
+    setSqrtErrors(false);
     errors = err;
   }
 
   /**
-    * Set the error function for this data object to the square root of the
-    * corresponding y value.
-    */ 
-  public void setSqrtErrors( )
+   *  Specify whether the errors are to be estimated as the square root of
+   *  the y values.  If use_sqrt is true, the error estimates will be
+   *  calculated "on the fly" using the square root function.
+   *
+   *  @param use_sqrt If true, error estimates will be calculated as the
+   *                  square root of the y values, if false, no error estimates
+   *                  will be recorded for this Data block, unless they are
+   *                  set using setErrors().
+   */
+  public void setSqrtErrors( boolean use_sqrt )
   {
-    errors = null;
-    use_sqrt_errors = true; 
+    super.setSqrtErrors( use_sqrt );
+    if ( use_sqrt )
+      errors = null;
   }
 
 

@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/10/03 15:42:45  dennis
+ *  Changed setSqrtErrors() to setSqrtErrors(boolean) in Data classes.
+ *  Added use_sqrt_errors flag to Data base class and changed derived
+ *  classes to use this.  Added isSqrtErrors() method to check state
+ *  of flag.  Derived classes now check this flag and calculate rather
+ *  than store the errors if the use_sqrt_errors flag is set.
+ *
  *  Revision 1.4  2002/07/08 15:41:36  pfpeterson
  *  Added SUM constant to be used by stitch operations.
  *
@@ -116,7 +123,7 @@ public interface IData extends IAttributeList
   public float   getY_value( float x, int smooth_flag ); 
 
   public float[] getErrors();
-  public void    setSqrtErrors();
+  public void    setSqrtErrors( boolean use_sqrt );
 
   public void    resample( XScale x_scale, int smooth_flag );
 

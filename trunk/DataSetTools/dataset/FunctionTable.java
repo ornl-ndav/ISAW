@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/10/03 15:42:46  dennis
+ *  Changed setSqrtErrors() to setSqrtErrors(boolean) in Data classes.
+ *  Added use_sqrt_errors flag to Data base class and changed derived
+ *  classes to use this.  Added isSqrtErrors() method to check state
+ *  of flag.  Derived classes now check this flag and calculate rather
+ *  than store the errors if the use_sqrt_errors flag is set.
+ *
  *  Revision 1.7  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -198,7 +205,10 @@ public class FunctionTable extends    TabulatedData
     }
 
     init( d.getY_values() );
-    this.setErrors( d.getErrors() );
+    if ( d.isSqrtErrors() )                 // continue using sqrt errors if d
+      this.setSqrtErrors(true);             // did, otherwise copy the array
+    else
+      this.setErrors( d.getErrors() );
 
     if ( d.isHistogram() && divide )
     {
