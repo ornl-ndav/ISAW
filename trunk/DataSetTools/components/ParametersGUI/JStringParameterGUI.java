@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/04/18 22:16:19  pfpeterson
+ *  Changed the setEnabled() method to disable more appropriately.
+ *
  *  Revision 1.7  2002/03/08 16:20:49  pfpeterson
  *  Added method to disable the GUIs. This is to help out wizards.
  *
@@ -85,7 +88,7 @@ public class JStringParameterGUI extends JParameterGUI implements Serializable
 
 
     public void setEnabled(boolean en){
-        this.stringText.setEnabled(en);
+        this.stringText.setEditable(en);
     }
 
     public Parameter getParameter()
