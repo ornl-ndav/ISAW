@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2002/12/20 20:26:48  pfpeterson
+ * Now tries to get the user name from the AttributeList of the DataSet.
+ *
  * Revision 1.3  2002/12/16 21:24:10  pfpeterson
  * Added a parameter to specify the calibration file and added the 'WLNUM' to
  * the output.
@@ -222,8 +225,11 @@ public class WriteExp extends GenericTOF_SCD{
         exp_title=(String)ds.getAttributeValue(Attribute.RUN_TITLE);
       }
     }
-    if(user==null || user.length()==0 )
-      user=null;
+    if(user==null || user.length()==0 ){
+      user=(String)ds.getAttributeValue(Attribute.USER);
+      if(user==null || user.length()==0 )
+        user=null;
+    }
     if(crystinfo==null)
       getCrystSymmAndOrient(ds);
     if(instinfo==null)
