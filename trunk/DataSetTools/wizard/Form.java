@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/02/26 21:45:20  pfpeterson
+ * Changed setCompleted(false) to invalidate() and removed the completed
+ * variable b/c it's value isn't reliable.
+ *
  * Revision 1.6  2003/02/26 17:20:03  rmikk
  * Writes message to DataSetTools.util.SharedData.status_pane
  *
@@ -96,7 +100,7 @@ import DataSetTools.components.ParametersGUI.*;
  */
 
 public class Form implements Serializable, PropertyChangeListener{
-  private    boolean   completed;           // set by execute, if done ok
+  //private    boolean   completed;           // set by execute, if done ok
   private    String    title;
   private    String    help_message = "Help not available for this form ";
 
@@ -138,7 +142,7 @@ public class Form implements Serializable, PropertyChangeListener{
     this.result_params   = result_params;
     this.wizard          = wizard;
 
-    completed      = false;
+    //completed      = false;
     panel          = new JPanel();
 
     makeGUI();
@@ -359,15 +363,10 @@ public class Form implements Serializable, PropertyChangeListener{
           }
       }
 
-      this.completed=(areSet==totalParam);
-
       /* System.out.println(areSet+" of "+totalParam+" are set ->"
          +this.completed+"("+this.title+")"); */
 
-      return this.completed;
-    // check completed flag and
-    // for each required parameter, check if still valid
-    // for each result parameter, check if now set to valid value 
+      return (areSet==totalParam);
   }
 
     /**
@@ -378,19 +377,16 @@ public class Form implements Serializable, PropertyChangeListener{
     }
 
     /**
-     * Mutator method to set that the form has (not) been completed.
+     *  Sets the valid state of all result parameters to false.
      */
-    public void setCompleted(boolean val){
-        this.completed=val;
-         if(!val){ // must invalidate the results
-             if(result_params!=null){
-                 IParameterGUI param;
-                 for( int i=0 ; i<result_params.length ; i++ ){
-                     param=wizard.getParameter(result_params[i]);
-                     param.setValid(false);
-                 }
-             }
-         }
+    public void invalidate(){
+      if(result_params!=null){
+        IParameterGUI param;
+        for( int i=0 ; i<result_params.length ; i++ ){
+          param=wizard.getParameter(result_params[i]);
+          param.setValid(false);
+        }
+      }
     }
 
     /**
