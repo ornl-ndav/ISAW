@@ -3,6 +3,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.3  2001/07/20 16:33:08  neffk
+ * fixed a synch problem, fixed removeFromParent().  removed a redundant
+ * index check; karma--;
+ *
  * Revision 1.2  2001/07/18 16:38:02  neffk
  * uses DataMutableTreeNodes instead of DefaultMutableTreeNodes.
  * also, fixed setParent(...) to set the parent of this node, not
@@ -82,6 +86,7 @@ public class DataSetMutableTreeNode
 
   public int getIndex( TreeNode node )
   {
+    System.out.println(  "size in DataSetMutableTreeNode: " + data_nodes.size()  );
     return data_nodes.indexOf( node );
   }
 
@@ -121,8 +126,8 @@ public class DataSetMutableTreeNode
    */
   public void remove( int index )
   {
-    if(  index < data_nodes.size()  )
-      ds.removeData_entry( index );
+    ds.removeData_entry( index );
+    data_nodes.remove( index );
   }
 
 
@@ -131,14 +136,17 @@ public class DataSetMutableTreeNode
    */
   public void remove( MutableTreeNode node )
   {
+    DataMutableTreeNode d_node = (DataMutableTreeNode)node;
+    int group_id = d_node.getUserObject().getGroup_ID();
+    ds.removeData_entry_with_id( group_id );
+
     data_nodes.remove( node );
   }
 
 
   public void removeFromParent()
   {
-    for( int i=0;  i<data_nodes.size();  i++ )
-      ( (DataMutableTreeNode)data_nodes.get(i) ).removeFromParent();
+    parent.remove( this );
   }
 
 
