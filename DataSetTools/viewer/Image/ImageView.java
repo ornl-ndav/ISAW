@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2002/06/19 22:34:45  dennis
+ *  Fixed problem for DataSets that contain mixtures of
+ *  histograms and functions. Now separate XScales are used
+ *  for histograms and functions, with the functions evaluated
+ *  at the centers of the bins used for the histograms.
+ *
  *  Revision 1.30  2002/06/17 22:09:09  dennis
  *  When the image is "zoomed", the graph is now redrawn using the
  *  same x interval as the image.  Also, the x interval for the
@@ -624,19 +630,47 @@ private void MakeImage( boolean redraw_flag )
   int     num_rows = getDataSet().getNum_entries();
 
   UniformXScale x_scale = (UniformXScale)getXConversionScale();
-  int   num_cols = x_scale.getNum_x();
-  float x_min    = x_scale.getStart_x();
-  float x_max    = x_scale.getEnd_x();
-
+  int num_cols = x_scale.getNum_x();
   if ( num_cols < 1 || num_rows < 1   )      // #### degenerate size of JPanel
     return;
+
+  float x_min = x_scale.getStart_x();
+  float x_max = x_scale.getEnd_x();
+  float step  = 0;
+  if ( num_cols > 1 )
+    step = (x_max - x_min) / (num_cols-1);
+
+  UniformXScale histogram_scale = x_scale,           // We will need different
+                function_scale  = x_scale;           // XScales for histograms
+                                                     // and functions.
+
+  if ( num_cols == 1 )                               // invalid for histograms
+    histogram_scale = new UniformXScale(x_min-1,x_max+1,num_cols+1);
+  else
+  {                                                  // adjust x_scale to hist.
+    int num_histograms = 0;                          // or function, which ever
+    for ( int i = 0; i < num_rows; i++ )             // is more common.
+      if ( getDataSet().getData_entry(i).isHistogram() )
+        num_histograms++;
+
+    if ( num_histograms > num_rows/2 )                // derive function_scale
+                                                      // using bin centers 
+      function_scale  = new UniformXScale(x_min+step/2,x_max-step/2,num_cols-1);
+ 
+    else                                              // derive histogram_scale
+                                                      // with given bin centers 
+      histogram_scale = new UniformXScale(x_min-step/2,x_max+step/2,num_cols+1);
+  }
 
   image_data = new float[ num_rows ][];
 
   for ( int i = 0; i < num_rows; i++ )
   {
     data_block = getDataSet().getData_entry(i);
-    image_data[i] = data_block.getY_values( x_scale, IData.SMOOTH_NONE );
+    if ( data_block.isHistogram() )
+      image_data[i] = data_block.getY_values(histogram_scale,IData.SMOOTH_NONE);
+    else
+      image_data[i] = data_block.getY_values(function_scale,IData.SMOOTH_NONE);
   }
                               // set the log scale and image data, but don't
                               // remake the image yet. It's done when the
