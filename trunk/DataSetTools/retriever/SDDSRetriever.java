@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/01/24 20:36:22  bouzekc
+ * Removed unused variables and imports.
+ *
  * Revision 1.6  2002/11/27 23:23:16  pfpeterson
  * standardized header
  *
@@ -60,7 +63,6 @@
 package DataSetTools.retriever ; 
 import DataSetTools.dataset.* ;
 import SDDS.java.SDDS.*;
-import javax.swing.*;
 import java.lang.reflect.*;
 import javax.swing.filechooser.FileFilter;
 import DataSetTools.operator.DataSet.Information.XAxis.*;
@@ -89,7 +91,6 @@ public class SDDSRetriever extends Retriever
 
        String[] columnNames=null, parameterNames=null;
 	 Object[][] columnValues=null;
-	 Object[][] columnMajorOrderValues=null;
 	 Object[][] parameterValues=null;
 	 int i, j, numberOfColumns=0, numberOfParameters=0;
 	 int rows;int type =0;
