@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.53  2002/10/12 03:42:33  hammonds
+ *  changed location for getting LENGTH&WIDTH for detector elements from IPNS.Runfile.Runfile to IPNS.Calib.DC5.
+ *
  *  Revision 1.52  2002/10/03 15:50:51  dennis
  *  Replace call to Data.setSqrtErrors() to Data.setSqrtErrors(true)
  *
@@ -257,6 +260,7 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.instruments.InstrumentType;
 import DataSetTools.instruments.DetectorInfo;
 import IPNS.Runfile.*;
+import IPNS.DC5.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
 import java.util.*;
@@ -1558,8 +1562,8 @@ private float CalculateEIn()
           nom_dist;
 
     type   = run_file.DetectorType( seg );
-    length = Runfile.LENGTH[ type ] / 100;   // convert cm to m
-//    width  = Runfile.WIDTH[ type ] / 100;    // convert cm to m
+    length = DC5.LENGTH[ type ] / 100;   // convert cm to m
+//    width  = DC5.WIDTH[ type ] / 100;    // convert cm to m
     width = .0254f;                        // assume 1" outside diameter to
                                              // match Chun's results
 
@@ -1609,8 +1613,8 @@ private float CalculateEIn()
       {
         seg = segs[i];
         type = run_file.DetectorType( seg );
-        length = Runfile.LENGTH[ type ] / 100;   // convert cm to m
-        width  = Runfile.WIDTH[ type ] / 100;    // convert cm to m
+        length = DC5.LENGTH[ type ] / 100;   // convert cm to m
+        width  = DC5.WIDTH[ type ] / 100;    // convert cm to m
 
         nom_radius = (float) run_file.RawFlightPath( seg );
         nom_height = (float) run_file.RawDetectorHeight( seg );
