@@ -27,6 +27,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.10  2005/01/07 17:44:35  rmikk
+ * Added a method to determine if this operator is to be added to the
+ *   operator list by Command.Script_Class_List_Handler
+ *
  * Revision 1.9  2005/01/02 17:58:04  rmikk
  * Added a method to getFileName
  * Changed copy constructor to just use just the filename of the old 
@@ -215,6 +219,18 @@ public class PyScriptOperator extends GenericOperator
   public String getFileName(){
      return scriptFile;
   }
+  
+  
+  
+  /**
+   *   Returns true if this script is written in operator form
+   *   otherwise it returns false
+   *   @return  True if this operator can be installed.
+   */
+  public boolean isInstallableOperator(){
+    return IAmOperator;
+  }
+   
   /**
    * Accessor method to get the internal DataSet array.
    *
