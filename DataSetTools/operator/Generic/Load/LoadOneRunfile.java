@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/12/10 21:56:21  dennis
+ *  Added getDocumentation() method. (Shannon Hintzman)
+ *
  *  Revision 1.4  2002/11/27 23:21:16  pfpeterson
  *  standardized header
  *
@@ -113,10 +116,38 @@ public class LoadOneRunfile extends    GenericLoad
     addParameter( parameter );
   }
 
+  /*----------------------------getDocumentation-----------------------------*/
+  
+   public String getDocumentation()
+   {
+   	StringBuffer Res = new StringBuffer();
+	
+	Res.append("@overview This operator loads all data sets from one IPNS");
+	Res.append("runfile.");
+	
+	Res.append("@algorithm A file is read in.  If there are no DataSets ");
+    	Res.append("found in the file, then an ErrorString is returned.  ");
+	Res.append("Otherwise an array is created, the DataSets are read in ");
+	Res.append("from the file, omitted of any group IDs that should be, ");
+	Res.append("and stored in the array.");
+	
+	Res.append("@param file_name The fully qualified runfile name");
+	Res.append("@param group_mask A list of group IDs that should be ");
+	Res.append("omitted");
+	
+	Res.append("@return Returns an array with all DataSets in the ");
+        Res.append("runfile, if the runfile could be opened.");
+	
+	Res.append("@error No DataSets in \"filename\".");
+	
+	return Res.toString();
+   
+   }
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, OneFile
+   * @return	the command name to be used with script processor: in this case,
+   *           	OneFile
    *
    */
    public String getCommand()
@@ -131,7 +162,7 @@ public class LoadOneRunfile extends    GenericLoad
    * should be called after setting the appropriate parameters.
    *
    * @return  Returns an array with all DataSets in the runfile, if the 
-   *          runfile could opened.
+   *          runfile could be opened.
    */
    public Object getResult()
    {
@@ -175,8 +206,8 @@ public class LoadOneRunfile extends    GenericLoad
    {
       String mask = "20:30,40:50";
       LoadOneRunfile loader = new LoadOneRunfile( 
-                                "/IPNShome/dennis/ARGONNE_DATA/hrcs2444.run",
-                                mask );
+                             "/home/groups/SCD_PROJECT/SampleRuns/hrcs2444.run",
+                             mask );
 
 
       Object result = loader.getResult();
@@ -190,5 +221,7 @@ public class LoadOneRunfile extends    GenericLoad
       }
       else
         System.out.println( result.toString() );
+	
+      System.out.println(loader.getDocumentation());
    } 
 } 
