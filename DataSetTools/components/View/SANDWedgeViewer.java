@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.41  2004/10/21 01:35:01  millermi
+ * - Project Directory restored immediately so Load S(Qx,Qy) will
+ *   begin in the last directory saved if SandProps.isv exists.
+ * - Corrected title of graph when radial line integration is selected.
+ *
  * Revision 1.40  2004/09/15 22:00:24  millermi
  * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
  *   Adding a second log required the boolean parameter to be changed
@@ -910,6 +915,21 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       data_set.setSelectFlag( data_set.getNum_entries() - 1, true );
     setData(iva);
     sandcontrolpane = new SANDControlPanel();
+    
+    // if SandProps.isv exists, load only the project directory since the
+    // SandProps.isv is not loaded until after this information is needed.
+    // This code will restore the user's data directory.
+    String props = System.getProperty("user.home") + 
+    		   System.getProperty("file.separator") +
+    		   "SandProps.isv";
+    ObjectState project_state = new ObjectState();
+    project_state.silentFileChooser(props,false);
+    Object temp = null;
+    temp = project_state.get(DATA_DIRECTORY);    
+    if( temp != null )
+    {
+      projectsDirectory = (String)temp;
+    }
   }
 
  /*
@@ -1132,6 +1152,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     }
     else
     {
+      data_set.setTitle("Intensity vs Degrees in Region");
       data_set.setX_units("Degrees" );
       data_set.setX_label("Angle" );
     }
@@ -1977,6 +1998,12 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       this_editor.repaint();
     }
     
+   /*
+    * This method is called to disable switching between integration methods
+    * once an integration is made. This is done because the two integration
+    * methods do not have the same x-axis units, thus they cannot appear
+    * on the same graph.
+    */ 
     protected void setIntegrateRadioEnabled( boolean enable )
     {
       if( enable )
