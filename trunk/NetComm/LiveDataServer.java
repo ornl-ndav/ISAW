@@ -33,6 +33,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2003/03/14 20:43:16  dennis
+ *  Bug fix...no-longer misses last full bin, if a
+ *  rebinned DataSet is obtained.
+ *  Feature change...now includes last bin even if
+ *  it is a partial bin, after rebinning.  The counts in
+ *  the partial bin are rescaled to be comparable to the
+ *  counts in the full bins.  (The scaling used is
+ *  appropriate for uniform x-scales, but not perfect for
+ *  constant delta t/t bins.)
+ *  If a processing a command generates an exception, the
+ *  connection to the client is exited.
+ *
  *  Revision 1.40  2003/03/10 05:58:33  dennis
  *  Server now clones the Data blocks when changing the
  *  attribute lists, if they Data blocks were not already
@@ -620,6 +632,15 @@ public class LiveDataServer extends    DataSetServer
     }
     catch ( Exception e )
     {
+      try 
+      {                                          // something is wrong, so 
+        tcp_io.Send( new TCPCommExitClass() );   // break connection 
+      }
+      catch ( Exception exception )
+      {
+        System.out.println("Error: LiveDataServer couldn't send Exit, " +
+                           "after exception");
+      }
       System.out.println("Error: LiveDataServer command: " + command);
       System.out.println("Error: couldn't send data "+e );
       return false;
@@ -749,6 +770,7 @@ public class LiveDataServer extends    DataSetServer
                                          int    attr_mode )
   {
     DataSet ds =  data_set[index];
+    float scale_factor = 1;                      // for scaling partial bin
     
     if ( ds == null || ds.getNum_entries() == 0 )
       return new CompressedDataSet( DataSet.EMPTY_DATA_SET );
@@ -788,9 +810,9 @@ public class LiveDataServer extends    DataSetServer
     if ( rebin > 1 )
     {
       must_rebin = true;
-      float bins[] = x_scale.getXs();
+      float x_vals[] = x_scale.getXs();
 
-      if ( rebin >= bins.length )                     // find total counts in 
+      if ( rebin >= x_vals.length - 1 )               // find total counts in 
       {                                               // this case.
         x_scale = new UniformXScale(x_scale.getStart_x(), 
                                     x_scale.getEnd_x(),
@@ -798,10 +820,23 @@ public class LiveDataServer extends    DataSetServer
       }
       else
       {
-        float new_bins[] = new float[ bins.length/rebin ];
-        for ( int i = 0; i < new_bins.length; i++ )
-          new_bins[i] = bins[i*rebin];
-        x_scale = new VariableXScale( new_bins );
+        int n_bins     = x_vals.length - 1;
+        int new_n_bins = n_bins/rebin + 1;
+        if ( n_bins % rebin != 0 )                   // there will be a partial
+        {                                            // bin at the end
+          new_n_bins++;           
+          scale_factor = rebin / (float)(n_bins % rebin);
+        }
+ 
+        float new_x_vals[] = new float[ new_n_bins ];
+
+        for ( int i = 0; i < new_n_bins - 1; i++ )   // copy all but the last 
+          new_x_vals[i] = x_vals[i*rebin];           // bin boundary, since the
+                                                     // last bin boundary will
+                                                     // be the same as before
+        new_x_vals[ new_n_bins - 1 ] = x_vals[ x_vals.length - 1 ];
+
+        x_scale = new VariableXScale( new_x_vals );
       }
     }
 
@@ -814,7 +849,9 @@ public class LiveDataServer extends    DataSetServer
           {
             d = (Data)d.clone();
             d.resample( x_scale, Data.SMOOTH_NONE );
-          }
+            float y[] = d.getY_values();
+            y[ y.length-1 ] *= scale_factor;            // adjust counts in 
+          }                                             // last partial bin
           new_ds.addData_entry( d );
         }
 
