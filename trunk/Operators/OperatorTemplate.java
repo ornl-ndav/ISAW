@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/11/27 18:20:13  dennis
+ * Added operator title to constructor java docs.
+ *
  * Revision 1.1  2001/11/21 21:27:42  dennis
  * Example of user-supplied add-on operator.
  *
@@ -61,9 +64,9 @@ public class OperatorTemplate extends GenericSpecial
   private static final String TITLE = "Operator Template";
 
  /* ------------------------ Default constructor ------------------------- */ 
- /** 
-  *   Default constructor that is used when the parameters will be
-  *   set later
+ /**
+  *  Creates operator with title "Operator Template" and a  default list of
+  *  parameters.
   */  
   public OperatorTemplate()
   {
@@ -72,8 +75,9 @@ public class OperatorTemplate extends GenericSpecial
 
  /* ---------------------------- Constructor ----------------------------- */ 
  /** 
-  *  This form of the constructor specifies the parameters at construction 
-  *  time.  The getResult method is called to actually run the operator.
+  *  Creates operator with title "Operator Template" and the specified list
+  *  of parameters.  The getResult method must still be used to execute
+  *  the operator.
   *
   *  @param  ds          Sample DataSet to process.
   *  @param  int_val     Sample integer parameter

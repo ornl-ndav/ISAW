@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/11/27 18:21:54  dennis
+ * Added operator title to constructor java docs.
+ *
  * Revision 1.3  2001/11/21 21:31:50  dennis
  * First attempt at an operator to automatically determine discriminator
  * levels.
@@ -54,16 +57,19 @@ public class SetDiscriminatorLevels extends GenericSpecial
 
   private static final String TITLE = "Set Discriminator Levels";
 
- /** Default constructor that is used when the parameters will be
-  *   set later
+ /** 
+  *  Creates operator with title "Set Discriminator Levels" and a 
+  *  default list of parameters. 
   */  
   public SetDiscriminatorLevels()
   {
     super( TITLE );
   }
 
- /** This form can be used from java.  Here the parameters are known and set.
-  *  The getResult method must still be used to get the operator code to run.
+ /** 
+  *  Creates operator with title "Set Discriminator Levels" and the  
+  *  specified list of parameters.  The getResult method must still be 
+  *  used to execute the operator.
   *
   *  @param  p_ds        The pulse height DataSet.
   *  @param  lower_frac  The fraction of the the pulse position to set for
