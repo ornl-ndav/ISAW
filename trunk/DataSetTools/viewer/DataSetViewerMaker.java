@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/03/10 23:40:57  millermi
+ *  - Changed IViewComponent interface, no longer
+ *    distinguish between private and shared controls/
+ *    menu items.
+ *  - Combined private and shared controls/menu items.
+ *
  *  Revision 1.12  2004/03/10 15:53:23  serumb
  *  Added an Ancestor Listener to call the kill method
  *  when the view component is removed.
@@ -73,7 +79,7 @@ import DataSetTools.components.View.OneD.*;
 import java.awt.event.*;
 import java.awt.*;
 import DataSetTools.components.containers.*;
-
+import DataSetTools.components.View.ViewControls.*;
 
 public class DataSetViewerMaker  extends DataSetViewer
   {
@@ -101,14 +107,10 @@ public class DataSetViewerMaker  extends DataSetViewer
      
       East.setLayout( blayout);
 
-      JComponent[] Compcontrols = viewComp.getSharedControls();
+      ViewControl[] Compcontrols = viewComp.getControls();
       if( Compcontrols != null)
         for( int i=0; i< Compcontrols.length; i++)
           East.add( Compcontrols[i]);    
-      JComponent[] CompPcontrols = viewComp.getPrivateControls();
-      if( CompPcontrols != null)
-        for( int i=0; i< CompPcontrols.length; i++)
-          East.add( CompPcontrols[i]);  
       
       PrintComponentActionListener.setUpMenuItem( getMenuBar(), this);
       SaveImageActionListener.setUpMenuItem( getMenuBar(), this);

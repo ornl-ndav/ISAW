@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/10 23:39:25  millermi
+ * - Changed IViewComponent interface, no longer
+ *   distinguish between private and shared controls/
+ *   menu items.
+ * - Combined private and shared controls/menu items.
+ *
  * Revision 1.7  2003/12/18 22:44:21  millermi
  * - This file was involved in generalizing AxisInfo2D to
  *   AxisInfo. This change was made so that the AxisInfo
@@ -94,6 +100,7 @@ import DataSetTools.components.View.AxisInfo;
 import DataSetTools.components.View.IVirtualArray2D;
 import DataSetTools.components.View.VirtualArray2D;
 import DataSetTools.components.View.Menu.ViewMenuItem;
+import DataSetTools.components.View.ViewControls.ViewControl;
 import DataSetTools.components.containers.SplitPaneWithState;
 
 /**
@@ -216,7 +223,7 @@ public class ImageFrame2 extends JFrame
     ivc = new ImageViewComponent( data );
     ivc.setColorControlSouth(true);
     Box controls = new Box(BoxLayout.Y_AXIS);
-    JComponent[] ctrl = ivc.getSharedControls();
+    ViewControl[] ctrl = ivc.getControls();
     for( int i = 0; i < ctrl.length; i++ )
       controls.add(ctrl[i]);
     
@@ -231,7 +238,7 @@ public class ImageFrame2 extends JFrame
     if( !paneadded ) // only add the menu items for the ivc once
     {
       // get menu items from view component and place it in a menu
-      ViewMenuItem[] menus = ivc.getSharedMenuItems();
+      ViewMenuItem[] menus = ivc.getMenuItems();
     
       for( int i = 0; i < menus.length; i++ )
       {
