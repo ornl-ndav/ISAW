@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2003/03/03 16:49:16  pfpeterson
+ *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  *  Revision 1.37  2003/02/12 20:07:42  dennis
  *  Now adds PixelInfo_op instead of SegmentInfo_op
  *
@@ -450,7 +453,7 @@ public class DataSetFactory implements Serializable
       ds.addOperator( new TrueAngle() );                 // supported  
     }
     else
-        DataSetTools.util.SharedData.status_pane.add(
+        DataSetTools.util.SharedData.addmsg(
                  //System.out.println(
                  "WARNING: Unsupported instrument type in DataSetFactory" );
   }

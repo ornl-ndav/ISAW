@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/03/03 16:58:52  pfpeterson
+ * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  * Revision 1.9  2003/02/12 20:02:05  dennis
  * Switched to use PixelInfoList instead of SegmentInfoList
  *
@@ -475,8 +478,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          }
          catch( Exception ss )
          {
-            DataSetTools.util.SharedData.status_pane.add( "Save ERRor="
-               + ss );
+            DataSetTools.util.SharedData.addmsg( "Save ERRor=" + ss );
          }
    }
 

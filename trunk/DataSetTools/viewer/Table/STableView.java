@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.8  2003/03/03 16:58:52  pfpeterson
+ * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  * Revision 1.7  2002/12/11 19:06:48  rmikk
  * Fixed indentation and added documentation
  *
@@ -425,7 +428,7 @@ public class STableView  extends DataSetViewer
               }
             catch( Exception ss )
               {
-               DataSetTools.util.SharedData.status_pane.add( "Cannot Save " + 
+               DataSetTools.util.SharedData.addmsg( "Cannot Save " + 
                          ss.getClass()+":"+ss );
               }
         }

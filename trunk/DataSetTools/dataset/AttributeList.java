@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/03/03 16:49:16  pfpeterson
+ *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  *  Revision 1.16  2003/02/14 20:41:24  dennis
  *  Added method trimToSize().
  *
@@ -526,8 +529,7 @@ public class AttributeList implements Serializable,
       return true;
     }
     catch(Exception s)
-    { DataSetTools.util.SharedData.status_pane.add(
-          "Exception="+s.getMessage());
+    { DataSetTools.util.SharedData.addmsg("Exception="+s.getMessage());
        
       return false;
     }

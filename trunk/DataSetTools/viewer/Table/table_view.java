@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.32  2003/03/03 16:58:52  pfpeterson
+ * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  * Revision 1.31  2003/02/12 19:45:15  dennis
  * Switched to use PixelInfoList instead of SegmentInfoList
  *
@@ -1143,12 +1146,12 @@ public class table_view extends JPanel implements ActionListener
       }
       if( Groups == null )
       {
-         DataSetTools.util.SharedData.status_pane.add( "No Groups Selected" );
+         SharedData.addmsg( "No Groups Selected" );
          return;
       }
       if( Groups.length < 1 )
       {
-         DataSetTools.util.SharedData.status_pane.add( "No Groups Selected" );
+         SharedData.addmsg( "No Groups Selected" );
          return;
       }
       if( ( mode >= 2 ) || ( order.indexOf( 'I' ) >= 0 ) )
@@ -1168,7 +1171,7 @@ public class table_view extends JPanel implements ActionListener
          return;
       if( selModel.getSize() <= 0 )
       {
-         DataSetTools.util.SharedData.status_pane.add( "No Items have Been Selected" );
+         SharedData.addmsg( "No Items have Been Selected" );
          return;
       }
 
@@ -1369,7 +1372,7 @@ public class table_view extends JPanel implements ActionListener
       }
       catch( Exception s )
       {
-         DataSetTools.util.SharedData.status_pane.add( "File write error =" + s );
+         SharedData.addmsg( "File write error =" + s );
       }
 
    }
@@ -2295,7 +2298,7 @@ public class table_view extends JPanel implements ActionListener
                if( Hist == 0 );
             if( Group == 0 )
                if( time == 0 )
-                  SharedData.status_pane.add( "Wrong Order Descriptor" );
+                  SharedData.addmsg( "Wrong Order Descriptor" );
             return;
          }
 
