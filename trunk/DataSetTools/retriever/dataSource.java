@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/08/09 20:17:07  dennis
+ * Now properly parses shortened data source strings such as
+ * machine;port
+ * Added debug prints in "if (debug_dataSource)" block.
+ *
  * Revision 1.3  2001/08/03 21:36:04  dennis
  * getUserName() now returns the user name from the System properties,
  * if no user name is specified.
@@ -39,11 +44,11 @@
  * Revision 1.2  2001/08/01 21:52:52  dennis
  * Added java docs and changed methods to return blank strings instead of
  * null when fields are misssing.
- *
- *
  */
 
 package DataSetTools.retriever;
+
+import  NetComm.*;
 
 /**
  *  This class parses a string listing information about a data source in a
@@ -58,7 +63,9 @@ package DataSetTools.retriever;
  */
 public class dataSource
 { 
-   String Source;
+   public static boolean  debug_dataSource = false;
+
+   private String source;
 
   /* --------------------------- Constructor ------------------------- */
   /**
@@ -69,7 +76,17 @@ public class dataSource
    */
   public dataSource( String data_source_name )
   {
-    Source = data_source_name;
+    source = data_source_name;
+
+    if ( debug_dataSource )
+    {
+      System.out.println("dataSource = " + data_source_name );
+      System.out.println("Machine  = " + getMachine() );
+      System.out.println("Port     = " + getPort() );
+      System.out.println("UserName = " + getUserName() );
+      System.out.println("PassWord = " + getPassWord() );
+      System.out.println("FileName = " + getFileName() );
+    }
   }
 
   /* ------------------------------ check ------------------------------ */
@@ -105,7 +122,7 @@ public class dataSource
     if( i <= 0 ) 
       return "";
 
-    return Source.substring( 0, i ).trim();
+    return source.substring( 0, i ).trim();
   }
 
   /* ----------------------------- getPort ------------------------- */
@@ -117,7 +134,7 @@ public class dataSource
    */
   public int getPort()
   {
-    String i_string = getInteriorString(1); 
+    String i_string = getStringAfterSemicolon(1); 
 
     int     value = -1;
     Integer i;
@@ -144,7 +161,7 @@ public class dataSource
    */
   public String getUserName()
   {
-    String user_name = getInteriorString( 2 );
+    String user_name = getStringAfterSemicolon( 2 );
 
     if ( user_name.length() <= 0 )
       user_name = System.getProperty("user.name");
@@ -162,7 +179,12 @@ public class dataSource
    */
   public String getPassWord()
   {
-    return getInteriorString( 3 );
+    String password = getStringAfterSemicolon( 3 );
+
+    if ( password.length() <= 0 )
+      password = TCPServer.DEFAULT_PASSWORD;
+
+    return password;
   }
 
   /* ----------------------------- getFileName ------------------------- */
@@ -175,15 +197,7 @@ public class dataSource
    */
   public String getFileName()
   {
-    int i = getSemiColon(4);
-   
-    if ( i< 0 ) 
-      return "";
-
-    if ( i >= Source.length() )
-      return "";
-
-    return Source.substring( i+1 ).trim();
+    return getStringAfterSemicolon( 4 );
   }
 
   /* ----------------------------------------------------------------------
@@ -203,7 +217,7 @@ public class dataSource
       return -1;
 
     int c = 0;
-    for( int k = Source.indexOf(";");  k>=0; )
+    for( int k = source.indexOf(";");  k>=0; )
     {
       c++;
       if( c == i )
@@ -212,25 +226,25 @@ public class dataSource
       if( c > i )
         return -1;
 
-       k = Source.indexOf( ";", k+1 );
+       k = source.indexOf( ";", k+1 );
      }
      return -1;
    }
 
-  /* ------------------------- getInteriorString ------------------------- */
+  /* ---------------------- getStringAfterSemicolon ----------------------- */
 
-   public String getInteriorString( int index )
+   private String getStringAfterSemicolon( int index )
    {
      int i = getSemiColon( index );
      int j = getSemiColon( index + 1 );
 
-     if ((i < 0) || (j < 0) )
+     if (i < 0 )
        return "";
 
-     if( (i >= j) || (j >= Source.length()) )
-        return "";
-
-     return Source.substring( i+1, j ).trim();
+     if( j > 0 )
+       return source.substring( i+1, j ).trim();
+     else
+       return source.substring( i+1 );
    }
 
 
