@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/06/06 16:06:51  pfpeterson
+ *  Reorganized some of the code and class hierarchy.
+ *
  *  Revision 1.1  2002/05/31 19:32:10  pfpeterson
  *  Added to CVS.
  *
@@ -96,6 +99,13 @@ public class StringField extends JTextField {
     }
 
     /**
+     * Internal method to confirm that the text can be added.
+     */
+    private boolean isOkay(int offs, String inString, String curString){
+        return true;
+    }
+
+    /**
      * Internal class to do all of the formatting checks.
      */
     protected class StringDocument extends PlainDocument {
@@ -106,14 +116,14 @@ public class StringField extends JTextField {
         }
 
         /**
-         * Overrids the default insertString method. Insert if okay,
+         * Overrides the default insertString method. Insert if okay,
          * beep if not.
          */
         public void insertString(int offs, String str, AttributeSet a) 
             throws BadLocationException {
             
             String oldText=textBox.getText();
-            if(isOkay(offs,str,textBox.getText())){
+            if(textBox.isOkay(offs,str,textBox.getText())){
                 super.insertString(offs,str,a);
                 if(propBind!=null)
                     propBind.firePropertyChange(IParameter.VALUE,
@@ -135,11 +145,5 @@ public class StringField extends JTextField {
                                             oldText,textBox.getText());
         }
 
-        /**
-         * Internal method to confirm that the text can be added.
-         */
-        private boolean isOkay(int offs, String inString, String curString){
-            return true;
-        }
     }
 }
