@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/01/24 19:42:43  bouzekc
+ * Uncommented two local variable assignments.
+ *
  * Revision 1.6  2004/01/24 19:29:23  bouzekc
  * Commented out unused local variables.
  *
@@ -238,15 +241,15 @@ public class TrueAngle extends    YAxisConversionOp
     if ( n_bins <= 0 )                               // calculate the default
       n_bins = (int)(max_angle - min_angle);         // number of angle bins.
 
-    //UniformXScale angle_scale = null;
+    UniformXScale angle_scale = null;
     if ( n_bins <= 0 || min_angle >= max_angle )   // no valid range specified
     {
       ErrorString message = new ErrorString(
                       "ERROR: no valid angle range in TrueAngle operator");
       return message;
     }
-    //else
-      //angle_scale = new UniformXScale( min_angle, max_angle, n_bins + 1 );
+    else
+      angle_scale = new UniformXScale( min_angle, max_angle, n_bins + 1 );
 
                                                 // get common XScale for Data
     int num_cols = ds.getMaxXSteps();
@@ -276,7 +279,7 @@ public class TrueAngle extends    YAxisConversionOp
                      rebinned_data;
     AttributeList    attr_list;
     DetectorPosition position = null;
-    //float            scattering_angle;
+    float            scattering_angle;
     Float            delta_theta_obj = null;
     float            delta_theta;
     Float            raw_angle_obj = null;
@@ -316,7 +319,7 @@ public class TrueAngle extends    YAxisConversionOp
         return message;
       }
 
-      //scattering_angle = position.getScatteringAngle() * (float)(180.0/Math.PI);
+      scattering_angle = position.getScatteringAngle() * (float)(180.0/Math.PI);
       delta_theta = delta_theta_obj.floatValue();
       raw_angle = raw_angle_obj.floatValue();
 
