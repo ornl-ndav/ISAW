@@ -245,7 +245,7 @@ public class TrueAngle extends    DataSetOperator
     {
       System.arraycopy( zero_array, 0, resampled_col, 0, n_bins );
       for ( int row = 0; row < num_data; row++ )
-        tof_calc.ResampleBin( min_ang[row], max_ang[row], y_vals[row][col],
+        Sample.ResampleBin( min_ang[row], max_ang[row], y_vals[row][col],
                               min_angle, max_angle,  resampled_col );  
 
       for ( int row = 0; row < n_bins; row++ )
