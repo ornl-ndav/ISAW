@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2002/07/29 18:50:37  rmikk
+ * Added a total count attribute if there is none
+ * Eliminated the Time field type attribute
+ * Group ID's now start at 1 for those without defined ID's
+ *
  * Revision 1.11  2002/06/19 15:04:33  rmikk
  * Eliminated commented out code and fixed code spacing
  * and alignment.
@@ -389,6 +394,7 @@ public class NXData_util
             }
 
       }
+
       nx = detNode.getChildNode( phin );
       if( nx != null )
       {
@@ -403,6 +409,7 @@ public class NXData_util
             }
 
       }
+
       NxNodeUtils nut = new NxNodeUtils();
 
       nx = ( detNode.getChildNode( "solid_angle" ) );
@@ -524,8 +531,12 @@ public class NXData_util
                   Attribute.SOLID_ANGLE, solidAngle[ index - start_index] ) );
 
          if( Total_Count != null )// if( index <Total_Count.length)
-            DB.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT,
+            {DB.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT,
                   Total_Count[ index - start_index ] ) );
+             }
+         else
+            DB.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT,
+                  findTotCountDB(DB)) );
 
          if( slot != null )// if( index <slot.length)
             if( slot[index - start_index] >= 0 )
@@ -585,6 +596,16 @@ public class NXData_util
    }
 
 
+   private float  findTotCountDB(Data DB)
+   { float X = 0.0f;
+     float[] yVals = DB.getY_values();
+     if( yVals == null)
+        return X;
+     for( int i= 0; i < yVals.length; i++)
+        X+= yVals[i];
+     return X;
+   }
+    
    /** Fills out an existing DataSet with information from the NXdata
     * section of a Nexus datasource
     *@param node  the current node positioned to an NXdata part of a datasource
@@ -868,13 +889,13 @@ public class NXData_util
       {
 
          System.arraycopy( fdata, group_id * xlength, yvals, 0, xlength );
-         int xx = DS.getNum_entries();
-
+         int xx = DS.getNum_entries() + 1;
+         
          newData = Data.getInstance( new VariableXScale( xvals ), yvals, xx );
 
-         if( timeFieldType >= 0 )
-            newData.setAttribute( new IntAttribute( 
-                                   Attribute.TIME_FIELD_TYPE, timeFieldType ) );
+       //  if( timeFieldType >= 0 )
+       //    newData.setAttribute( new IntAttribute( 
+       //                           Attribute.TIME_FIELD_TYPE, timeFieldType ) );
 
          DS.addData_entry( newData );
       }
@@ -886,7 +907,7 @@ public class NXData_util
       if( debug )
          System.out.println( "After Save 1 NXdata, errormessage=" 
                                + errormessage + ",ngroups=" + ny );
-
+      
       return false;
    }
 
