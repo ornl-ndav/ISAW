@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/06/12 18:47:50  pfpeterson
+ *  Updated javadocs to reflect a idiosycracy of Script_Class_List_Handler.
+ *
  *  Revision 1.3  2002/11/27 23:16:27  pfpeterson
  *  standardized header
  *
@@ -71,6 +74,16 @@ import DataSetTools.operator.Operator;
  *
  * @see Operator
  * @see DataSetTools.operator.DataSet.Math.DataSet.DataSetAdd
+ *
+ * <B>NOTE:</B> No class should directly extend Operator. Instead they
+ * should extend either {@link
+ * DataSetTools.operator.Generic.GenericOperator GenericOperator} or
+ * {@link DataSetTools.operator.DataSet.DataSetOperator
+ * DataSetOperator}. If it does not then they will not be categorized
+ * by {@link Command.Script_Class_ListHandler
+ * Script_Class_List_Handler}. The effect of this is that the operatr
+ * will not be added to menus, will not be found by the help system,
+ * and will not be available in scripts.
  */
 
 abstract public class DataSetOperator extends Operator implements Serializable
