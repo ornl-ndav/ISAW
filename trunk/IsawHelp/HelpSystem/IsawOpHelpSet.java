@@ -29,6 +29,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2004/02/04 18:15:44  dennis
+ * Replaced assignment of values to local copies of the
+ * Script_Class_List_Handler, and operatorsOnly flags in the
+ * constructor of the internal "table of contents" class,
+ * IsawTOC.
+ *
  * Revision 1.8  2004/01/24 23:23:24  bouzekc
  * Removed unused variables.
  *
@@ -621,6 +627,8 @@ class IsawTOC  extends TOCView
     {
      super( hs , name , label , params );
      this.hs = hs;
+     this.sh = sh;
+     this.operatorsOnly = operatorsOnly;
      ngeneric = sh.getNum_operators();
      ndatasets = sh.getNumDataSetOperators(); 
     
