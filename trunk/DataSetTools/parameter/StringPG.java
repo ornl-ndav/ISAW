@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/07/15 21:27:33  pfpeterson
+ *  Factored out parts of the GUI.
+ *
  *  Revision 1.2  2002/06/14 14:21:14  pfpeterson
  *  Added more checks to setValue() and getValue().
  *
@@ -51,7 +54,8 @@ import DataSetTools.components.ParametersGUI.*;
  * StringPGs.
  */
 public class StringPG extends ParameterGUI{
-    private static String TYPE="String";
+    private   static String TYPE     = "String";
+    protected static int    DEF_COLS = 20;
 
     // ********** Constructors **********
     public StringPG(String name, Object value){
@@ -141,7 +145,7 @@ public class StringPG extends ParameterGUI{
             }
         }
         //entrywidget=new StringField((String)this.getValue(),20);
-        entrywidget=new StringEntry(this.getStringValue(),20);
+        entrywidget=new StringEntry(this.getStringValue(),DEF_COLS);
         entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
         this.setEnabled(this.getEnabled());
         this.packupGUI();

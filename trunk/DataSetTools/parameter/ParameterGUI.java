@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/07/15 21:27:07  pfpeterson
+ *  Factored out parts of the GUI.
+ *
  *  Revision 1.1  2002/06/06 16:14:36  pfpeterson
  *  Added to CVS.
  *
@@ -273,11 +276,17 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
         return rs;
     }
     protected void showGUIPanel(){
+        this.showGUIPanel(0,0);
+    }
+    protected void showGUIPanel(int x, int y){
         if(this.getGUIPanel()!=null){
             JFrame mw=new JFrame("Test Display of "+this.getType());
             mw.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mw.getContentPane().add(this.getGUIPanel());
             mw.pack();
+            Rectangle pos=mw.getBounds();
+            pos.setLocation(x,y);
+            mw.setBounds(pos);
             mw.show();
         }
     }
