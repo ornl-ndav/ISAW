@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/09/09 23:30:38  bouzekc
+ * Fixed NullPointerException when type is not defined in ParameterGUIs.
+ *
  * Revision 1.5  2003/07/17 19:32:57  bouzekc
  * Fixed a bug where if getInstance() returned null, the
  * construction of this class failed.
@@ -316,6 +319,11 @@ public class ParameterClassList{
 
     // get the type which will be the key in the hashtable
     String type=param.getType();
+
+    if(type == null) {
+      System.err.println("Type not defined for " + param.getClass());
+      return;
+    }
     if(type.equals("UNKNOWN")){
       if(DEBUG) System.out.println("(Type Unknown) NO");
       return;
