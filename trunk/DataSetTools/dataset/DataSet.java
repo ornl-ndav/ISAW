@@ -10,6 +10,11 @@
  *                 blocks. 
  *
  *  $Log$
+ *  Revision 1.9  2000/11/07 16:02:58  dennis
+ *  Changed the return type of the getYRange() method from a UniformXScale to
+ *  a ClosedInterval so that the case where the YRange degenerated to one point
+ *  could be handled.
+ *
  *  Revision 1.8  2000/10/03 21:37:34  dennis
  *  Modified to add a unique integer "tag" to each DataSet as it is created.
  *  Added routine to get the "tag".
@@ -976,10 +981,10 @@ public class DataSet implements IAttributeList,
    * Get the range of Y values for the collection of Data objects in this
    * data set.
    */
-  public UniformXScale getYRange()
+  public ClosedInterval getYRange()
   {
     Data           data_block;
-    UniformXScale  range;
+    ClosedInterval range;
     float          min_y, max_y, min, max;
 
     if ( this.getNum_entries() < 1 )
@@ -1001,7 +1006,7 @@ public class DataSet implements IAttributeList,
         if ( max_y > max )
           max = max_y;
       }
-      range = new UniformXScale( min, max, 2 );
+      range = new ClosedInterval( min, max );
 
       return range;
     }
