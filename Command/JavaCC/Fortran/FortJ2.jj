@@ -45,7 +45,7 @@ PARSER_BEGIN( Fcvrt)
 
  package Command.JavaCC.Fortran;
  import java.util.*;
- import Command.JavaCC.*;
+ import Command.JavaCC.Fortran.*;
  /**
    *  Constructor
    *  The main method invokes the specialized FortranTokenManager. 
@@ -826,7 +826,7 @@ String RestofEnd( String Res1 , String name):{
 
        pstrm.println("import java.util.*;\n");
        pstrm.println("import DataSetTools.operator.*;\n");
-       pstrm.println("import Command.JavaCC.*;\n");
+       pstrm.println("import Command.JavaCC.Fortran.*;\n");
        pstrm.println("import gov.anl.ipns.Util.SpecialStrings.*;\n"); 
        pstrm.println("public class "+CurrentMethodName+
                 " implements Wrappable,HiddenOperator{\n");
