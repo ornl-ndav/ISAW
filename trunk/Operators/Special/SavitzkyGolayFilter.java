@@ -31,7 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/10/03 03:44:30  kramer
+ * Now this operator can smooth a selected range of x values if and only if
+ * the quick method is used.
+ *
  * Revision 1.3  2004/09/22 20:52:02  kramer
+ *
  * Now the user can choose to smooth only particular data blocks by
  * specifying their IDs.  Previously, ALL of the data blocks in a DataSet
  * were smoothed.  The selection of smoothing particular data blocks works
@@ -102,6 +107,10 @@ public class SavitzkyGolayFilter extends GenericSpecial
    private static final boolean DEFAULT_CREATE_NEW_DATASET = true;
    /** Whether the quick method should be used to smooth the data. */
    private static final boolean DEFAULT_USE_QUICK_METHOD   = true;
+   /** The default x value where smoothing is started. */
+   private static final int DEFAULT_X_MIN = 0;
+   /** The default x value where smoothing ends. */
+   private static final int DEFAULT_X_MAX = 100000;
    /**
     * String that signals all Data objects/x values should be used in a 
     * calculation.
@@ -139,7 +148,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
     *                       be used and false otherwise.
     */
    public SavitzkyGolayFilter(DataSet ds, int nL, int nR, int M, boolean createNewDS, boolean useQuickMethod, 
-   		IntList dataBlockList, IntList xValueList)
+   		IntList dataBlockList, int xmin, int xmax)
    {
       this();
       getParameter(0).setValue(ds);
@@ -149,7 +158,8 @@ public class SavitzkyGolayFilter extends GenericSpecial
       getParameter(4).setValue(new Boolean(createNewDS));
       getParameter(5).setValue(new Boolean(useQuickMethod));
       getParameter(6).setValue(dataBlockList);
-      //getParameter(7).setValue(xValueList);
+      getParameter(7).setValue(new Integer(xmin));
+      getParameter(8).setValue(new Integer(xmax));
    }
    
    /** 
@@ -175,8 +185,9 @@ public class SavitzkyGolayFilter extends GenericSpecial
       addParameter( new Parameter("Degree of smoothing polynomial", new Integer(DEFAULT_M)));
       addParameter( new Parameter("Create new data set", new Boolean(DEFAULT_CREATE_NEW_DATASET)));
       addParameter( new Parameter("Use quick method", new Boolean(DEFAULT_USE_QUICK_METHOD)));
-      addParameter( new Parameter("Data blocks to use", new IntListString(ALL)));
-      //addParameter( new Parameter("X range", new IntListString(ALL)));
+      addParameter( new Parameter("Data blocks to use", new IntListString("0:100000")));
+      addParameter( new Parameter("X min", new Integer(DEFAULT_X_MIN)));
+      addParameter( new Parameter("X max", new Integer(DEFAULT_X_MAX)));
    }
    
    //TODO Make new documentation
@@ -214,8 +225,10 @@ public class SavitzkyGolayFilter extends GenericSpecial
       int     M         = ((Integer)(getParameter(3).getValue())).intValue();
       boolean makeNewDs = ((Boolean)getParameter(4).getValue()).booleanValue();
       boolean useQuick  = ((Boolean)getParameter(5).getValue()).booleanValue();         
-      String usedDataBlocksString = ((IntListString)getParameter(6).
+      String  usedDataBlocksString = ((IntListString)getParameter(6).
          getValue()).toString();
+      int     xmin      = ((Integer)getParameter(7).getValue()).intValue();
+      int     xmax      = ((Integer)getParameter(8).getValue()).intValue();
       
       /*
        * Now both methods support smoothing only specified group ids
@@ -223,6 +236,10 @@ public class SavitzkyGolayFilter extends GenericSpecial
          return new ErrorString("  Specific group IDs can only be smoothed " +
                "if the quick method is used.");
                */
+      
+      //first to test "ds"
+      if (ds == null)
+         return new ErrorString("  Please specify a DataSet.");
       
       //now to determine if a copy of the DataSet should be used
       //or if the actual DataSet should be used
@@ -249,7 +266,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
       //now to use the appropriate smoothing algorithm
       Object returnedObject = null;
       if (useQuick)
-         returnedObject = performQuickSmoothing(new_ds,nL,nR,M);
+         returnedObject = performQuickSmoothing(new_ds,nL,nR,M,xmin,xmax);
       else
          returnedObject = performLeastSquaresSmoothing(new_ds,nL,nR,M);
             
@@ -275,16 +292,13 @@ public class SavitzkyGolayFilter extends GenericSpecial
     * @return       The Object that this method wants the 
     *               {@link #getResult() getResult()} to return.
     */
-   private Object performQuickSmoothing(DataSet new_ds, int nL, int nR, int M)
+   private Object performQuickSmoothing(DataSet new_ds, int nL, int nR, int M, float xmin, float xmax)
    {
       float[][] c = calculateAll_c_Coefficients(nL,nR,M);
       
       if (c != null)
       {
          Data    data    = null;
-         float[] f       = null;
-         float[] fCopy   = null;
-
          //String usedXDomainString = ((IntListString)getParameter(7).
          //		getValue()).toString();
          
@@ -299,14 +313,10 @@ public class SavitzkyGolayFilter extends GenericSpecial
          	{
                //now to get the Data object to use
                  data = new_ds.getData_entry(i);
-               //get a copy of the Data object's y values
-                 fCopy = data.getCopyOfY_values();
-               //and a reference to its actual array of y values
-                 f = data.getY_values();
                //TODO:  Change this so that it doesn't always say ALL
                //       as the second argument.  Instead, this should be a 
                //       String describing the x values to use.
-               quickSmoothDataObject(data,ALL,c,f,fCopy,nL,nR,M);
+               quickSmoothDataObject(data,xmin,xmax,c,nL,nR,M);
          	}
          }
          else if (dataBounds instanceof int[])
@@ -324,15 +334,10 @@ public class SavitzkyGolayFilter extends GenericSpecial
                 //index "i".  Thus, ignore quick smoothing it.
                 if (data != null)
                 {
-                   //get a copy of the Data object's y values
-                      fCopy = data.getCopyOfY_values();
-                   //and a reference to its actual array of y values
-                      f = data.getY_values();
-                      //TODO:  Change this so that it doesn't always say ALL
-                      //       as the second argument.  Instead, this should be a 
-                      //       String describing the x values to use.
-                   quickSmoothDataObject(data,ALL,c,f,
-                         fCopy,nL,nR,M);
+                   //TODO:  Change this so that it doesn't always say ALL
+                   //       as the second argument.  Instead, this should be a 
+                   //       String describing the x values to use.
+                   quickSmoothDataObject(data,xmin,xmax,c,nL,nR,M);
                 }
           	}
          }
@@ -404,59 +409,67 @@ public class SavitzkyGolayFilter extends GenericSpecial
       }
    }
    
-   /*
-   private Object getXRange(Data data, String xRangeString)
-   {
-      if (xRangeString.equalsIgnoreCase(ALL))
-         return ALL;
-      else
-      {
-         float firstXVal = data.getX_scale().getStart_x();
-         float lastXVal = data.getX_scale().getEnd_x();
-         
-         int[] xValueArray = IntList.ToArray(xRangeString);
-         float[] fxValueArray = new float[xValueArray.length];
-         for (int i=0; i<xValueArray.length; i++)
-            fxValueArray[i] = xValueArray[i];
-         
-         if (fxValueArray.length == 2)
-         {
-            if (fxValueArray[0] <= firstXVal)
-               fxValueArray[0] = firstXVal;
-            else if (fxValueArray[0] >  lastXVal)
-               return new ErrorString("The minimum value of the x range " +
-                     " cannot be larger than "+lastXVal);
-            
-            if (fxValueArray[1] >= lastXVal)
-               fxValueArray[1] = lastXVal;
-            else if (fxValueArray[1] < firstXVal)
-               return new ErrorString("The maximum value of the x range " +
-                     " cannot be smaller than "+firstXVal);
-            
-            if (fxValueArray[0] == firstXVal && fxValueArray[1] == lastXVal)
-               return ALL;
-         }
-         
-         int[] usefulXValueArray = new int[xValueArray.length];
-         int numOfElements = 0;
-         
-         for (int i=0; i<xValueArray.length; i++)
-         {
-            if (xValueArray[i]>=data.getX_scale().getStart_x() &&
-                xValueArray[i]<=data.getX_scale().getEnd_x())
-            {
-               usefulXValueArray[numOfElements] = xValueArray[i];
-               numOfElements++;
-            }
-         }
-      }
-   }
-   */
    
-   private void quickSmoothDataObject(Data data, String xRange, float[][] c, float[] f, float[] fCopy, int nL, int nR, int M)
+   private int[] getXIndexRange(Data data, float xmin, float xmax)
    {
-      int minIndex = 0;
-      int maxIndex = 0;
+      float startX = data.getX_scale().getStart_x();
+      float endX = data.getX_scale().getEnd_x();
+      
+      if (xmax < xmin)
+         return null;
+      else if (xmin > endX)
+         return null;
+      else if (xmax < startX)
+         return null;
+            
+      float actualMin = startX;
+      float actualMax = endX;
+      
+      if (xmin >= startX)
+         actualMin = xmin;
+      
+      if (xmax <= endX)
+         actualMax = xmax;
+      
+      int[] indexArr = new int[2];
+        indexArr[0] = data.getX_scale().getI_GLB(actualMin);
+        indexArr[1] = data.getX_scale().getI(actualMax);
+        if (data.isHistogram())
+           indexArr[1]--;
+        
+      return indexArr;
+   }
+   
+   /**
+    * 
+    * @param data
+    * @param xmin  The raw minimum x value as passed to this operator.
+    * @param xmax  The raw maximum x value as passed to this operator.
+    * @param c
+    * @param nL
+    * @param nR
+    * @param M
+    */
+   private void quickSmoothDataObject(Data data, float xmin, float xmax, float[][] c, int nL, int nR, int M)
+   {
+      //get a copy of the Data object's y values
+         float[] fCopy = data.getCopyOfY_values();
+      //and a reference to its actual array of y values
+         float[] f = data.getY_values();
+      
+      int[] xIndexRange = getXIndexRange(data,xmin,xmax);
+      if (xIndexRange == null)
+         return;
+      
+      //NOTE:  If the Data object represents a histogram, the 
+      //       range might have to be i=0; i<fCopy.length-1;
+      //       But right now this should work.
+      for (int i=xIndexRange[0]; i<=xIndexRange[1]; i++)
+        f[i] = getQuickSmoothedValue(c,fCopy,i,nL,nR,M);
+      
+      /*
+      //int minIndex = 0;
+      //int maxIndex = 0;
       
       if (!xRange.equalsIgnoreCase(ALL))
       {
@@ -490,6 +503,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
       //   System.out.println("xRange was passed to the method "+
       //         "quickSmoothDataObject(....) as an invalid type:  "+
       //         xRange.getClass());
+       */
    }
    
    /**
@@ -1052,17 +1066,4 @@ public class SavitzkyGolayFilter extends GenericSpecial
           return (float)computeApproximateValueAt(getXValue(xValues, isHistogram, yIndex),   b,M+1);
       }
    }
-   
-   /*
-   private class CustomIntList extends IntList
-   {
-      public static int[] ToArray( String string_list )
-      {
-         if (string_list.equalsIgnoreCase("ALL"));
-         	return new int[];
-         else
-         	return super.ToArray(string_list);
-      }
-   }
-   */
 }
