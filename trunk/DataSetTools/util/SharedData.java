@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/03/06 15:47:53  pfpeterson
+ *  Made the StatusPane a private variable that is not initialized until
+ *  someone asks for a pointer to it. Also moved decision to print to
+ *  STDOUT rather than StatusPane into addmsg(String).
+ *
  *  Revision 1.15  2002/12/10 20:38:09  pfpeterson
  *  Removed static HelpSet instance by Ruth's recommendation.
  *
@@ -98,8 +103,18 @@ public class SharedData implements java.io.Serializable
   /** The Global StatusPane.  Everyone can "add"(Display) values on this pane
   * if Displayable or the Values will be displayed on System.out
   */
-  public static final Command.StatusPane status_pane= 
-              new Command.StatusPane( 30,70);
+  private static Command.StatusPane status_pane=  null;
+
+  /**
+   * Returns a pointer to this classes (static) StatusPane for use in
+   * GUIs. This will create the StatusPane if it does not already
+   * exist.
+   */
+  public static Command.StatusPane getStatusPane(){
+    if(status_pane==null)
+      status_pane=new Command.StatusPane( 30,70);
+    return status_pane;
+  }
 
   /** The static variable to handle the production of HTML pages
   *   from an operator
@@ -116,7 +131,22 @@ public class SharedData implements java.io.Serializable
      * Convenience method to ease adding to the status pane.
      */
     public static void addmsg(Object value){
+      if( status_pane==null || ! status_pane.isDisplayable()){
+        String string_rep = null;          
+        
+        if( value == null)  
+            string_rep = "null";  
+        else if( ! value.getClass().isArray( ))  
+            if( !(value instanceof java.util.Vector))  
+                   string_rep = value.toString();  
+        
+        if( string_rep == null)  
+            string_rep = (new NexIO.NxNodeUtils()).Showw( value);  
+
+        System.out.println( string_rep );  
+      }else{
         status_pane.add(value);
+      }
     }
 
 
