@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2001/08/13 15:06:43  dennis
+ *  Added MonitorTofToEnergy conversion operator for beam monitors.
+ *
  *  Revision 1.31  2001/07/30 18:48:09  dennis
  *  Now adds DS_TYPE attribute to the DataSets.
  *
@@ -462,7 +465,12 @@ public class RunfileRetriever extends    Retriever
 
      DataSetFactory ds_factory = new DataSetFactory( title );
 //     System.out.println("instrument_type = " + instrument_type );
-     if ( is_monitor || is_pulse_height )
+     if ( is_monitor )
+     {
+       data_set = ds_factory.getDataSet();
+       data_set.addOperator( new MonitorTofToEnergy() );
+     }
+     else if ( is_pulse_height )
        data_set = ds_factory.getDataSet();  // just generic operations
 
      else                                   // get data_set with ops for the
