@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/05/30 23:01:17  chatterjee
+ * Corrected bug that would only put consecutive columns
+ * having the same units in a dataset and not if they were
+ * separated by a column with different units.
+ *
  * Revision 1.4  2002/04/08 15:46:40  dennis
  * Adds XDateTime operator to the DataSets so that the Date and Time
  * corresponding to a particular elapsed time in seconds can be
@@ -57,14 +62,14 @@ import javax.swing.*;
 import java.lang.reflect.*;
 import javax.swing.filechooser.FileFilter;
 import DataSetTools.operator.DataSet.Information.XAxis.*;
-
+import java.util.*;
 
 public class SDDSRetriever extends Retriever
 {
    int i , m;
    SDDSFile sdds;
    int num_data_sets;    
-   DataSet[] DS, DSS;
+   DataSet[] DS;
    DataSet ds;
    String fileName;
    int page =1;
@@ -99,7 +104,6 @@ public class SDDSRetriever extends Retriever
        float y[][]= new float[cols][rows];
 	 parameterNames = sdds.getParameterNames();
 
-      DataSetFactory[] ds_factory = new DataSetFactory[cols];
       DS = new DataSet[cols];
 
 	 if (parameterNames != null) 
@@ -143,56 +147,64 @@ public class SDDSRetriever extends Retriever
     	j    = 0;     // j steps across the available data blocks
 
 	boolean done = false;
-
-	while ( j < cols && !done )           // While there are more DataSets to build
+      Hashtable  ht = new Hashtable();
+	
+    while ( j < cols && !done )           // While there are more DataSets to build
 	{
   	  if (col_units[j] == null)
      	    col_units[j] = new String("");
 
   	  String y_units = col_units[j]; 
   	  String x_units = col_units[x_col];    
-  
- 	  ds_factory[n_ds] = new DataSetFactory( columnNames[j], 
+        Object O= ht.get(col_units[j]);
+        DataSet DSS=null;
+        if(O==null)
+ 	    {DataSetFactory ds_factory = new DataSetFactory( columnNames[j], 
                                          x_units,"Time",
                                         y_units, columnNames[j]);
 
 
-  	 DS[n_ds] = ds_factory[n_ds].getDataSet();
-         DS[n_ds].addOperator( new XDateTime() ); 
-                                                      // While there are more Data 
-                                                      // blocks with the same units
+  	     DS[n_ds] = ds_factory.getDataSet();
+           DS[n_ds].addOperator( new XDateTime() ); 
+           ht.put(col_units[j], new Integer( n_ds));
+           DSS =DS[n_ds];
+           n_ds++;
+           
+          }
+       else
+          {int kk = ((Integer)O).intValue();
+           DSS = DS[kk];
+                                               // While there are more Data 
+           }                                           // blocks with the same units
 
- 	 while ( j < cols && (col_units[j] != null && y_units != null &&
-                       col_units[j].equalsIgnoreCase( y_units )) )  
- 	{
-  	   Data d  = Data.getInstance( new VariableXScale(x), y[j], j );
+ 	   Data d  = Data.getInstance( new VariableXScale(x), y[j], j );
     	   d.setAttribute( new StringAttribute(columnNames[j], col_units[j]));
 
     	   for ( i=0; i < numberOfParameters; i++ )
           d.setAttribute( new StringAttribute(parameterNames[i],
                                           parameterValues[i][0].toString()));
 
-    	   DS[n_ds].addData_entry( d );
+    	   DSS.addData_entry( d );
          j++;
-      }
+        
+                
 
-      n_ds++;
 
-  	if (j >= cols )                                     // all Data blocks used so  
+
+  	 if (j >= cols )                                     // all Data blocks used so  
      	  done = true;
-
-	} //end of outer while
+    }
+     num_data_sets= ht.size();
+	 //end of outer while
        
-      DSS = new DataSet[n_ds];
-      for(int t=0; t<n_ds; t++)
-        DSS[t] = DS[t];
-	num_data_sets = DSS.length;
-
+      
    }
 
 	public DataSet getDataSet( int data_set_num ) 
     	{ 
-        ds = DSS[data_set_num];
+        ds = DS[data_set_num];
+        if(ds==null)
+           System.out.println("getDS res=null for"+data_set_num);
         return ds ;
       }               
   
