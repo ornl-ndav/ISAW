@@ -1,4 +1,4 @@
-# 
+# Ashfia Huq 2005
 # Script to produce  gsas file by summing runs.  
 # Allows user to choose one of the five general setups.
 # Standard (Five banks, focused to 145,125,107,90,53.  +ve and -ve sides summed.
@@ -10,15 +10,14 @@
 # Choice is given to display dialog box.
 # Excludes noisy end detectors and writes one GSAS file.
 
-# Modify Date: 2005/02/17 23:11:32  : Ashfia Huq , sesample bins to start
-# at 2000 micro sec and end at 32000 micro sec with dT = 5 micro sec
-
-# Modify Date: 2005/02/17 23:11:32 : Ashfia Huq , ID's should remain the same 
-# (bad detectors are turned off using the discriminator levels
-
 # CVS VERSION $Date$
 
-$Category=Macros, Instrument Type, TOF_NPD
+# Date: 2004/08/17 22:53:14 
+
+# Modify Date: 2004/10/13 16:03:04  : Ashfia Huq , sesample bins to start
+# at 2000 micro sec and end at 32000 micro sec with dT = 5 micro sec
+
+# Modify Date: 2005/1/18 16:03:04  : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels
 
 $Standard		Boolean(true)        Standard (5B, sum & T focus)
 $Focus_all_tth	Boolean(false)       Focus_all_2Theta (4B focus to 125)		
@@ -28,13 +27,14 @@ $Pressure		Boolean(false)       Pressure (1B, selected detectors)
 
 $Current		Boolean(true)		Is this a Current Run
 
-$run_numbers	Array([22127:22131])          			Enter run numbers like [22127:22131]
-$path             DataDirectoryString    					Inputname
-$path_archive	  DataDirectoryString(C:/material//)	path_archive
-$instrument       InstrumentNameString    				Instrument
-$outputname		String(C:/material/testisaw)			  	outputname    
+$run_numbers		Array([21378])          				Enter run numbers like [21378]
+$path                	DataDirectoryString    					Inputname
+$path_archive		DataDirectoryString(/IPNShome/gppduser/archive_data/)	path_archive
+$instrument          	InstrumentNameString    				Instrument
+$outputname		String(/IPNShome/gppduser/aaaUSER_data/)  		outputname    
 
 $Display_data        Boolean(false)        Display_data?
+$FXYE_format         Boolean(true)         3 Column format?
 $dT_bin			Boolean(false)        dT/T binning ?
 $Prompt_detector_ID  Boolean(false)        Prompt_detector_ID?
 
@@ -92,9 +92,9 @@ id_val =["1:44,180:223","48:75,225:254","77:110,256:286","111:139,289:317","140:
    		endfor 
 
 	if FXYE_format == true 
-		Save3ColGSAS(Monitor, m_dsa, outputname&i&".gsa",true)
+		Save3ColGSAS(Monitor, m_dsa, outputname&".gsa",true)
 	else
-		SaveGSAS(Monitor, m_dsa, outputname&i&".gsa",true,true)
+		SaveGSAS(Monitor, m_dsa, outputname&".gsa",true,true)
 	endif
 		
 		if Display_data == true
@@ -131,9 +131,9 @@ elseif Focus_all_tth == true
    		endfor 
 
 	if FXYE_format == true 
-		Save3ColGSAS(Monitor, m_dsa, outputname&i&".gsa",true)
+		Save3ColGSAS(Monitor, m_dsa, outputname&".gsa",true)
 	else
-		SaveGSAS(Monitor, m_dsa, outputname&i&".gsa",true,true)
+		SaveGSAS(Monitor, m_dsa, outputname&".gsa",true,true)
 	endif
 		
 		if Display_data == true
@@ -197,9 +197,9 @@ elseif Kappa == true
 		endfor
 
 	if FXYE_format == true 
-		Save3ColGSAS(Monitor, m_dsa, outputname&i&".gsa",true)
+		Save3ColGSAS(Monitor, m_dsa, outputname&".gsa",true)
 	else
-		SaveGSAS(Monitor, m_dsa, outputname&i&".gsa",true,true)
+		SaveGSAS(Monitor, m_dsa, outputname&".gsa",true,true)
 	endif
 		if Display_data == true
 		m_dsaT=ToD(m_dsa,0.15,3.3,6000)
@@ -225,9 +225,9 @@ elseif Pressure == true
  	m_dsa = SumAtt(uniform_dsi, "Effective Position",true, focus_val[0]-.000005,focus_val[0]+.000005)
   		
 	if FXYE_format == true 
-		Save3ColGSAS(Monitor, m_dsa, outputname&i&".gsa",true)
+		Save3ColGSAS(Monitor, m_dsa, outputname&".gsa",true)
 	else
-		SaveGSAS(Monitor, m_dsa, outputname&i&".gsa",true,true)
+		SaveGSAS(Monitor, m_dsa, outputname&".gsa",true,true)
 	endif	
 		if Display_data == true
 		m_dsaT=ToD(m_dsa,0.15,2.8,6000)
