@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2002/12/09 13:11:31  dennis
+ *  Now checks for valid "pointed at" index, before using it as index
+ *  into list of (possibly) reordered Data blocks.
+ *
  *  Revision 1.30  2002/11/27 23:24:18  pfpeterson
  *  standardized header
  *
@@ -362,7 +366,8 @@ public class InternalViewManager extends    JInternalFrame
          }
 
          int i = tempDataSet.getPointedAtIndex();
-         dataSet.setPointedAtIndex( original_index[i] ); 
+         if ( i != DataSet.INVALID_INDEX )
+           dataSet.setPointedAtIndex( original_index[i] ); 
 
          float new_x = tempDataSet.getPointedAtX();
          float orig_x = new_x;
