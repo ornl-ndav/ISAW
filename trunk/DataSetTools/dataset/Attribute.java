@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/12/21 17:29:33  dennis
+ *  Added attribute for Segment IDS.  This is currently commented
+ *  out to avoud breaking the server<->client communication.
+ *
  *  Revision 1.15  2001/12/14 22:19:19  dennis
  *  Added attributes for LABEL and nominal and actual SOURCE_TO_SAMPLE_TOF.
  *  These attributes are currently commented out to avoid breaking the
@@ -142,6 +146,7 @@ abstract public class Attribute implements Serializable
   public static final String  DELTA_2THETA      = "\u0394"+"2"+"\u03b8";
   public static final String  EFFICIENCY_FACTOR = "Efficiency";
   public static final String  DETECTOR_IDS      = "Detector IDs";
+//public static final String  SEGMENT_IDS       = "Segment IDs";
   public static final String  GROUP_ID          = "Group ID";
   public static final String  TIME_FIELD_TYPE   = "Time Field Type";
 //public static final String  CRATE             = "Crate";
