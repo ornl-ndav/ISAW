@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/08/22 20:12:08  bouzekc
+ *  Modified to work with EntryWidget.
+ *
  *  Revision 1.7  2003/08/16 02:23:37  bouzekc
  *  BooleanPG now has PropertyChangeListener support.
  *
@@ -71,7 +74,7 @@ import javax.swing.*;
  * This is class is to deal with boolean parameters.
  */
 public class BooleanPG extends ParameterGUI 
-                                    implements ActionListener, ParamUsesString{
+                                    implements ParamUsesString{
   private static final String TYPE="Boolean";
 
   // ********** Constructors **********
@@ -90,7 +93,6 @@ public class BooleanPG extends ParameterGUI
     this.type=TYPE;
     this.initialized=false;
     this.ignore_prop_change=false;
-    topPCS = new PropertyChangeSupport( this );
   }
     
   public BooleanPG(String name, boolean value){
@@ -107,7 +109,8 @@ public class BooleanPG extends ParameterGUI
   public Object getValue(){
     Object val=null;
     if(this.initialized){
-      val=new Boolean(((JCheckBox)this.entrywidget).isSelected());
+      JCheckBox wijit = ( JCheckBox ) (entrywidget.getComponent( 0 ) );
+      val = new Boolean( wijit.isSelected(  ) );
     }else{
       val=this.value;
     }
@@ -152,9 +155,10 @@ public class BooleanPG extends ParameterGUI
 
     if(this.initialized){
         boolean newval=booval.booleanValue();
-        boolean oldval=((JCheckBox)this.entrywidget).isSelected();
+        boolean oldval = 
+          ( ( JCheckBox )( entrywidget.getComponent( 0 ) ) ).isSelected(  );
         if(newval!=oldval)
-          ((JCheckBox)this.entrywidget).doClick(); //setSelected(newval);
+          ( ( JCheckBox )( entrywidget.getComponent( 0 ) ) ).doClick(  ); 
     }else{
       this.value=booval;
     }
@@ -199,8 +203,9 @@ public class BooleanPG extends ParameterGUI
         // something is not right, should throw an exception
       }
     }
-    entrywidget=new JCheckBox("",((Boolean)this.getValue()).booleanValue());
-    ((JCheckBox)entrywidget).addActionListener(this);
+    entrywidget=new EntryWidget(new JCheckBox("",
+                                ((Boolean)this.getValue()).booleanValue()));
+    entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
     this.setEnabled(this.getEnabled());
     super.initGUI();
   }
@@ -211,14 +216,14 @@ public class BooleanPG extends ParameterGUI
   public void setEnabled(boolean enabled){
     this.enabled=enabled;
     if(this.getEntryWidget()!=null){
-      ((JCheckBox)this.entrywidget).setEnabled(this.enabled);
+      ((JCheckBox)(entrywidget.getComponent(0))).setEnabled(this.enabled);
     }
   }
 
   /*
    * Testbed.
    */
-  /*public static void main(String args[]){
+  public static void main(String args[]){
     BooleanPG fpg;
 
     fpg=new BooleanPG("a",new Boolean(false));
@@ -238,12 +243,12 @@ public class BooleanPG extends ParameterGUI
     fpg.initGUI(null);
     fpg.showGUIPanel();
 
-    fpg=new BooleanPG("d",new Boolean(false),true);
+    fpg=new BooleanPG("d",new Boolean(true),true);
     System.out.println(fpg);
     fpg.setDrawValid(true);
     fpg.initGUI(null);
     fpg.showGUIPanel();
-  }*/
+  }
 
   /**
    * Definition of the clone method.
@@ -253,16 +258,5 @@ public class BooleanPG extends ParameterGUI
     pg.setDrawValid(this.getDrawValid());
     pg.initialized=false;
     return pg;
-  }
-
-  /**
-   * Deal with the state changing. This sets valid to false.
-   */
-  public void actionPerformed(ActionEvent e){
-    if(e.paramString().indexOf("ACTION_PERFORMED")==0) {
-      this.setValid(false);
-      boolean newval = getbooleanValue();
-      topPCS.firePropertyChange( IParameter.VALUE, new Boolean(!newval), new Boolean(newval) );
-    }
   }
 }

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/08/22 20:12:07  bouzekc
+ *  Modified to work with EntryWidget.
+ *
  *  Revision 1.8  2003/08/21 21:45:18  bouzekc
  *  Added javadoc comments.
  *
@@ -127,7 +130,7 @@ public abstract class StringEntryPG extends ParameterGUI {
     Object value = null;
 
     if( this.initialized ) {
-      value = ( ( JTextField )this.entrywidget ).getText(  );
+      value = ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).getText(  );
     } else {
       value = this.value;
     }
@@ -143,12 +146,12 @@ public abstract class StringEntryPG extends ParameterGUI {
   protected void setEntryValue( Object value ) {
     if( this.initialized ) {
       if( value == null ) {
-        ( ( JTextField )this.entrywidget ).setText( "" );
+        ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( "" );
       } else {
         if( value instanceof String ) {
-          ( ( JTextField )this.entrywidget ).setText( ( String )value );
+          ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( ( String )value );
         } else {
-          ( ( JTextField )this.entrywidget ).setText( value.toString(  ) );
+          ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( value.toString(  ) );
         }
       }
     } else {
@@ -191,9 +194,11 @@ public abstract class StringEntryPG extends ParameterGUI {
     }
 
     if( this.value != null ) {
-      entrywidget = new StringEntry( this.value.toString(  ), DEF_COLS, FILTER );
+      entrywidget = new EntryWidget( 
+                      new StringEntry( this.value.toString(  ), DEF_COLS, FILTER ) );
     } else {
-      entrywidget = new StringEntry( "", DEF_COLS, FILTER );
+      entrywidget = new EntryWidget( 
+                      new StringEntry( "", DEF_COLS, FILTER ) );
     }
 
     entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
@@ -211,7 +216,7 @@ public abstract class StringEntryPG extends ParameterGUI {
     this.enabled = enabled;
 
     if( this.getEntryWidget(  ) != null ) {
-      ( ( JTextField )this.entrywidget ).setEditable( enabled );
+      ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setEditable( enabled );
     }
   }
 }

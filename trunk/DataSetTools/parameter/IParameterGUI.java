@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/08/22 20:12:05  bouzekc
+ *  Modified to work with EntryWidget.
+ *
  *  Revision 1.5  2003/08/15 23:15:32  bouzekc
  *  Removed init() from interface.
  *
@@ -69,7 +72,7 @@ public interface IParameterGUI extends IParameter{
     /**
      * Method for producing an alternative layout of the GUI.
      */
-    javax.swing.JComponent getEntryWidget();
+    DataSetTools.components.ParametersGUI.EntryWidget getEntryWidget();
     /**
      * Method for obtaining the default layout of the GUI.
      */

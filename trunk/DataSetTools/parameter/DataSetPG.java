@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/08/22 20:12:07  bouzekc
+ *  Modified to work with EntryWidget.
+ *
  *  Revision 1.9  2003/08/15 23:50:04  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -131,7 +134,7 @@ public class DataSetPG extends ChooserPG implements IObserver{
       // from choices
       this.vals.remove(observed);
       // from GUI
-      if(this.initialized) ((HashEntry)this.entrywidget).removeItem(observed);
+      if(this.initialized) ((HashEntry)(entrywidget.getComponent(0))).removeItem(observed);
       // from the value      
       if(this.value==observed){
         if(this.vals!=null && this.vals.size()>0)
@@ -187,7 +190,7 @@ public class DataSetPG extends ChooserPG implements IObserver{
         if(args.length==1){
             filename=args[0];
         }else{
-            filename="/home/coldfire/ISAW/SampleRuns/SCD06497.RUN";
+            filename="/home/students/bouzekc/ISAW/SampleRuns/SCD06497.RUN";
         }
 
         RunfileRetriever rr=new RunfileRetriever(filename);

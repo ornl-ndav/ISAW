@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/08/22 20:14:17  bouzekc
+ * Modified to work with EntryWidget.
+ *
  * Revision 1.11  2003/08/19 20:36:56  bouzekc
  * Fixedbug which caused a null pointer exception in FloatArrayArrayPG.
  *
@@ -192,9 +195,15 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     //use the inner parameter's entrywidget for entering values
     dataPanel.add( param.getEntryWidget(  ), BorderLayout.CENTER );
 
-    //add a key listener to the parameter
-    param.getEntryWidget(  )
-         .addKeyListener( this );
+    //add a key listener to the parameter's TextField components
+    Component[] temp = param.getEntryWidget(  )
+                            .getComponents(  );
+
+    for( int i = 0; i < temp.length; i++ ) {
+      if( temp[i] instanceof JTextComponent ) {
+        temp[i].addKeyListener( this );
+      }
+    }
 
     this.add( dataPanel, BorderLayout.NORTH );
 
@@ -340,12 +349,19 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
    * @param g Graphics object that is drawn on.
    */
   public void paint( Graphics g ) {
-    JComponent wijit = param.getEntryWidget(  );
+    Component[] temp = param.getEntryWidget(  )
+                            .getComponents(  );
 
-    wijit.requestFocus(  );
+    //give the focus to the first component
+    if( ( temp.length > 0 ) && ( temp[0] != null ) ) {
+      temp[0].requestFocus(  );
+    }
 
-    if( wijit instanceof JTextComponent ) {
-      ( ( JTextComponent )wijit ).selectAll(  );
+    //select all text in all JTextComponents in the EntryWidget
+    for( int i = 0; i < temp.length; i++ ) {
+      if( temp[i] instanceof JTextComponent ) {
+        ( ( JTextComponent )temp[i] ).selectAll(  );
+      }
     }
 
     super.paint( g );
@@ -422,14 +438,17 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
    * entering data into the ParameterGUI.
    */
   private void updateData(  ) {
-    JComponent wijit = param.getEntryWidget(  );
+    Component[] temp = param.getEntryWidget(  )
+                            .getComponents(  );
 
     //get the value from the data entry panel and add it
     jlistModel.addElement( param.getValue(  ) );
 
-    if( wijit instanceof JTextComponent ) {
-      //re-highlight the text
-      ( ( JTextComponent )wijit ).selectAll(  );
+    for( int i = 0; i < temp.length; i++ ) {
+      if( temp[i] instanceof JTextComponent ) {
+        //re-highlight the text
+        ( ( JTextComponent )temp[i] ).selectAll(  );
+      }
     }
   }
 }

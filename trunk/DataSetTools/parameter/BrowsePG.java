@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/08/22 20:12:08  bouzekc
+ *  Modified to work with EntryWidget.
+ *
  *  Revision 1.17  2003/08/15 23:56:22  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI.
  *
@@ -117,8 +120,7 @@ import DataSetTools.util.PropertyChanger;
  * This is a superclass to take care of many of the common details of
  * BrowsePGs.
  */
-abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
-                                                               PropertyChanger{
+abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
     private static String TYPE     = "Browse";
 
     protected static int VIS_COLS  = 12;
@@ -227,7 +229,6 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
             }
         }
         innerEntry=new StringEntry(this.getStringValue(),StringPG.DEF_COLS);
-        innerEntry.addPropertyChangeListener(IParameter.VALUE, this);
         browse=new JButton("Browse");
         if(browselistener == null){
           browselistener = new BrowseButtonListener(innerEntry,
@@ -235,7 +236,7 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
           browselistener.setFileFilter(defaultindex);
         }
         browse.addActionListener(browselistener);
-        entrywidget=new JPanel(new GridLayout());
+        entrywidget=new EntryWidget(new JPanel(new GridLayout()));
         //a Box is needed so that when the entrywidget is resized
         //smaller, the components will not overlap
 
@@ -243,6 +244,7 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
         widgetbox.add(innerEntry);
         widgetbox.add(browse);
         entrywidget.add(widgetbox);
+        entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
         this.setEnabled(this.getEnabled());
         super.initGUI();
     }
@@ -291,40 +293,5 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
      */
     public void addFilter(FileFilter filefilter){
         filter_vector.add(filefilter);
-    }
-
-    // ********** methods for PropertyChanger **********
-    // implementation of DataSetTools.util.PropertyChanger interface
-
-    /**
-     * @param pcl The property change listener to be removed.
-     */
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-      removePCLFromVector( pcl );
-      if( this.initialized ) {
-        this.innerEntry.removePropertyChangeListener(pcl);
-      }
-    }
-    
-    /**
-     * @param pcl The property change listener to be added.
-     */
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-      addPCLToVector( pcl );
-      if( this.initialized ) {
-        this.innerEntry.addPropertyChangeListener(pcl);
-      }
-    }
-    
-    /**
-     * @param pcl  The property change listener to be added.
-     * @param prop The property to listen for.
-     */
-    public void addPropertyChangeListener(String prop, 
-                                          PropertyChangeListener pcl) {
-      addPCLToVector( prop, pcl );
-      if( this.initialized ) {
-        this.innerEntry.addPropertyChangeListener(prop,pcl);
-      }
     }
 }
