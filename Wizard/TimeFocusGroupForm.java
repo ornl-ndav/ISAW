@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/08/14 19:42:27  bouzekc
+ * Fixed javadoc error.
+ *
  * Revision 1.11  2003/07/03 15:30:04  bouzekc
  * Added missing javadoc and class comments, reformatted
  * existing comments, and rearranged methods according to
@@ -140,7 +143,7 @@ public class TimeFocusGroupForm extends Form implements Serializable {
    * @param focus_IDs IDs to focus.
    * @param foc_angle Focusing angle.
    * @param new_path The new path.
-   * @param tf_vector The Vector which you wish to store the time focused
+   * @param tf_array The Vector which you wish to store the time focused
    *        histograms in.
    */
   public TimeFocusGroupForm( 
