@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2002/12/08 22:03:45  dennis
+ *  Added shared instance of HTMLizer for the new help system. (Ruth)
+ *
  *  Revision 1.13  2002/11/27 23:23:49  pfpeterson
  *  standardized header
  *
@@ -67,7 +70,7 @@
 package DataSetTools.util;
 
 import DataSetTools.operator.*;
-
+import IsawHelp.HelpSystem.*;
 /**
  *  Objects of this class have one instance of objects that are to be shared
  *  by several packages.  The shared objects are instantiated one time 
@@ -94,6 +97,19 @@ public class SharedData implements java.io.Serializable
   */
   public static final Command.StatusPane status_pane= 
               new Command.StatusPane( 30,70);
+
+  /** The static variable to handle the production of HTML pages
+  *   from an operator
+  */
+  public static final HTMLizer HTMLPageMaker = new HTMLizer();
+
+
+  /** The static HelpSet variable for the CommandPane Help
+  *   documentation
+  */
+  public static final IsawOpHelpSet  CommandPaneHelpSet =
+             new IsawOpHelpSet( false );
+
 
   public static final long start_time=System.currentTimeMillis();
  
