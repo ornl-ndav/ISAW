@@ -1848,7 +1848,7 @@ public class execOneLine implements IObservable ,
                }
                 
 	    else if( ( Arg2 instanceof String ) && 
-                          ( op.getParameter(k).getValue() instanceof AttributeNameString ) )
+                          ( op.getParameter(k).getValue() instanceof SpecialString ) )
 	      {if(Debug)System.out.print("D");
 	      }
                  
@@ -1864,7 +1864,31 @@ public class execOneLine implements IObservable ,
          }//For k
         return fit;
      }
-    private void SetOpParameters ( Operator op , Vector Args , int start )
+  private void SetOpParameters ( Operator op , Vector Args , int start )
+     {int k;
+      for( k = 0 ; k < op.getNum_parameters() ; k++ )
+        {if( (Args.get( k + start ) instanceof String)  &&  
+             (op.getParameter( k ).getValue( ) instanceof SpecialString) )
+	   { try{
+             Class C = op.getParameter( k ).getValue().getClass();
+             Class ArgsC[] = new Class[1];
+             ArgsC[0] = Class.forName("java.lang.String");
+             java.lang.reflect.Constructor Cons = C.getConstructor( ArgsC);
+             Object Argvs[] = new Object[1];
+             Argvs[0] = Args.get( k + start ) ;
+             
+
+             op.getParameter( k ).setValue( Cons.newInstance(Argvs));
+             }
+           catch( Exception s )
+             {System.out.println("Internal ERROR XXXX"+ s);
+             }
+           }
+          else
+            op.getParameter( k ).setValue( Args.get( k + start ) );
+        }
+     }
+    private void SetOpParameters1 ( Operator op , Vector Args , int start )
      {int k;
       for( k = 0 ; k < op.getNum_parameters() ; k++ )
         {if( (Args.get( k + start ) instanceof String)  &&  
