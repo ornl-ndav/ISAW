@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.50  2001/08/07 22:11:39  rmikk
+ *  Fixed session log report when a file is loaded in.
+ *
  *  Revision 1.49  2001/08/02 19:06:27  neffk
  *  added DB_IMPORT_MI, a menu item to pops up a browser to search
  *  through ANL's database of past experiments.
@@ -461,7 +464,7 @@ public class Isaw
 
 
     Script_Class_List_Handler SP = new Script_Class_List_Handler();      
-    opMenu macrosMenu = new opMenu(SP, jdt, sessionLog , this);
+    opMenu macrosMenu = new opMenu(SP, jdt, sessionLog , Isaw.this);
     macrosMenu.setOpMenuLabel( MACRO_M );
 
 
@@ -1698,7 +1701,7 @@ public class Isaw
    * make changes as per notification.
    */ 
   public void update( Object observed, Object reason )
-  {
+    {  
                                   //currently we only allow 
                                   //String and DataSet objects
     if( !( reason instanceof String) && !( reason instanceof DataSet) )   
@@ -1844,10 +1847,11 @@ public class Isaw
   {
     if(  files != null  &&  files.length > 0  )
       for( int i=0;  i<files.length;  i++ ) 
-        addNewDataSets(  util.loadRunfile(  files[i].getPath()  ), 
+        {addNewDataSets(  util.loadRunfile(  files[i].getPath()  ), 
                          files[i].getName()  );
-
-    util.appendDoc(  sessionLog, "Load " + files.toString()  );
+   
+        util.appendDoc(  sessionLog, "Load " + files[i].toString()  );
+	}
   }
 
 
