@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/02/10 18:51:23  dennis
+ * Added getDocumentation() method. (Josh Olson)
+ *
  * Revision 1.6  2002/11/27 23:29:54  pfpeterson
  * standardized header
  *
@@ -121,28 +124,76 @@ public class SetDiscriminatorLevels extends GenericSpecial
     addParameter( new Parameter( "width of interval for fit", 
                                   new Float(40) ) );
   }
+                                                                              
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */                                                                                    
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");                                                 
+    s.append("@overview Creates operator with title 'Set Discriminator ");
+    s.append("Levels' and the specified list of parameters. \n"); 
+    s.append("NOTE: This is a \"work in progress\". ");
+    s.append("@assumptions The parameters will accurately meet the ");  
+    s.append("description given in the 'Parameters' section. ");                         		                                                                                                              
+    s.append("@algorithm The title of 'p_ds' is stored.  \n\n ");
+    s.append("An array of two DataSet objects is declared.  The first ");
+    s.append("DataSet in this array is set to be a clone of 'p_ds'.  The ");
+    s.append("second is set to be the result of fitting the first one's ");
+    s.append("Gaussian distribution to the major peaks in the data blocks & ");
+    s.append("marking recommended upper and lower discriminator levels.  (The");
+    s.append(" viewer corresponding to the second DataSet should have a ");
+    s.append("column of assorted white dots on the left and right side of ");
+    s.append("the image.  These are the lower and upper discriminator ");
+    s.append("levels.) \n\n ");                                                                  	       
+    s.append("The title of the first DataSet is set to be four separate ");
+    s.append("things combined into one string.  These four things are: \n ");
+    s.append("a) the title of 'p_ds' \n");
+    s.append("b) the string  \"_Levels( \" \n");  
+    s.append("c) 'lower_frac' \n");
+    s.append("d) 'width' \n\n");
+    s.append("The title of the second DataSet is set to be the same four  ");
+    s.append("things, except \"_Gaussians( \" replaces \"_Levels( \". \n\n");       
+    s.append("The array containing the two DataSets is returned. ");  
+    s.append("@param p_ds The pulse height DataSet");
+    s.append("@param lower_frac The fraction of the the pulse position to ");
+    s.append("set for the lower threshold");
+    s.append("@param upper_frac The fraction of the pulse amplitude to set ");
+    s.append("for the upper threshold");
+    s.append("@param width Number of channels over which the peak will be ");
+    s.append("fit.");
+    s.append("@return If successful, this returns an array of two DataSets.");
+    s.append("\nThe first is a clone of the original DataSet 'p_ds'. The ");
+    s.append("second is the result of fitting the first one's Gaussian ");
+    s.append("distribution to the major peaks in the data blocks & marking ");
+    s.append("recommended upper and lower discriminator levels.");
+    return s.toString();
+  } 									        
 
  /** 
   *  Executes this operator using the values of the current parameters.
   *
-  *  @return  If successful, this returns an array of DataSets, the first 
-  *           containing the Gaussian peaks fit to the data, and the second
-  *           containing the discriminator levels and a third which is
-  *           the sum of the discriminator levels and the original data.  
+  *  @return  If successful, this returns an array of two DataSets.  The first 
+  *           is a clone of the original DataSet 'p_ds'. The second is the 
+  *	      result of fitting the first one's Gaussian distribution to the 
+  *	      major peaks in the data blocks & marking recommended upper and 
+  *	      lower discriminator levels.  
   */
   public Object getResult()
   {
-    DataSet p_ds = (DataSet)(getParameter(0).getValue());
-    float lower_frac = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    float upper_frac = ( (Float)(getParameter(2).getValue()) ).floatValue();
-    float width      = ( (Float)(getParameter(3).getValue()) ).floatValue();
+    DataSet p_ds = (DataSet)(getParameter(0).getValue()); 
+    float lower_frac = ( (Float)(getParameter(1).getValue()) ).floatValue(); 
+    float upper_frac = ( (Float)(getParameter(2).getValue()) ).floatValue(); 
+    float width      = ( (Float)(getParameter(3).getValue()) ).floatValue(); 
 
     String title = p_ds.getTitle();
 
     DataSet result_ds[] = new DataSet[2];
     result_ds[0] = (DataSet)p_ds.clone();
     result_ds[1] = FitPeaks( result_ds[0], lower_frac, upper_frac, width );
-    
+                      
     result_ds[0].setTitle( title + "_Levels( "+lower_frac+", "+width+")" );
     result_ds[1].setTitle( title + "_Gaussians( "+lower_frac+", "+width+")" );
     return result_ds;
@@ -167,7 +218,7 @@ public class SetDiscriminatorLevels extends GenericSpecial
   private DataSet FitPeaks( DataSet p_ds, 
                             float   lower_frac, 
                             float   upper_frac, 
-                            float   peak_width )
+                            float   peak_width )  
   {
     Data         data,
                  peak_data;
@@ -211,7 +262,7 @@ public class SetDiscriminatorLevels extends GenericSpecial
             fit_ok = true;
           else
           {
-            width = peak.getFWHM();
+            width = peak.getFWHM(); 
             if ( width > peak_width/2 )
               width = peak_width/2;
             x1 = peak.getPosition() - 1.1f * width;
