@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/06/21 16:06:26  robertsonj
+ * Changed the help file to relfect the changes in the viewer state class
+ *
+ * Revision 1.7  2004/06/21 10:57:31 robertsonj
+ * Changed the help file to include the name value pairs for the viewer state.
+ * fixed the border problem with the jpg saved pictures.
+ * 
  * Revision 1.6  2004/06/15 19:24:53  robertsonj
  * Save image now allows you to input a state that you would like 
  * the viewer to be saved in.
@@ -105,7 +112,7 @@ public class SaveImage  extends GenericSave{
     addParameter( new SaveFilePG("Name of file to save", filename));
     addParameter( new StringPG("State Info", state));
     addParameter( new IntegerPG("Enter Width",new Integer(width)));
-    addParameter( new IntegerPG("Enter Width",new Integer(height)));
+    addParameter( new IntegerPG("Enter Height",new Integer(height)));
     
   }
 
@@ -116,7 +123,7 @@ public class SaveImage  extends GenericSave{
     addParameter( new SaveFilePG("Name of file to save", null));
     addParameter( new StringPG("State Info", null));
     addParameter( new IntegerPG("Enter Width",new Integer(500)));
-    addParameter( new IntegerPG("Enter Width",new Integer(500)));
+    addParameter( new IntegerPG("Enter Height",new Integer(500)));
   }
 
 
@@ -154,13 +161,14 @@ public class SaveImage  extends GenericSave{
 		DSV = ViewManager.getDataSetView( ds, view, null);
     }else{
     	ViewerState myState = new ViewerState();
+    	System.out.println(stateInfo);
     	ViewerState newState = myState.setViewerState(stateInfo);
     	DSV = ViewManager.getDataSetView(ds, view, newState);
     }
-    
+    DSV.setSize(width, height);
     JFrame jf1 = new JFrame();
     jf1.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-    jf1.setSize( width, height);   
+    jf1.setSize( width+7, height+25);   
     jf1.getContentPane().setLayout( new GridLayout(1,1));
     jf1.getContentPane(). add( DSV);
     
@@ -211,55 +219,55 @@ public class SaveImage  extends GenericSave{
     s.append("@param  width-  The width of the picture in pixels. If negative, 500 will be used");
     s.append("@param  height-  The height of the picture in pixels.If negative, 500 will be used");
 	s.append("<P><P> Some DataSetViewer States are<table bofder=1>");
-	s.append("<tr><td>ColorScale</td> <td>Most Views</td><td> String ");
-	s.append("like Heat1,Rainbow</td>");
-	s.append("</tr><tr><td>RebinFlag</td><td>Image View</td><td> Boolean</td>");
-	s.append("</tr><tr><td>HScrollFlag</td> <td>Image View</td><td>??</td>");
-	s.append("</tr><tr><td>HScrollPosition</td><td>Image View </td><td>float 0 to 1</td>");
-	s.append(" </tr><tr><td>VScrollPosition</td> <td>Image View </td><td>???</td>");
-	s.append("</tr><tr><td>PointedAtIndex</td> <td> Most Views</td>" );
-	s.append("  <td> Positive Integer<#of spectra</td>");
-	s.append("</tr><tr><td>PointedAtX</td>td> Most Views</td> ");
-	s.append("<td> float corresponding to x values</td>" );
-	s.append("</tr><tr><td>Brightness</td> <td>Image and 3D views</td><td>int from 0 ");
-	s.append("to 1000</td>");
-	s.append("</tr><tr><td>ViewAzimuthAngle</td> <td>ThreeD</td><td>angle in degrees</td>");
-	s.append("</tr><tr><td>ViewAltitudeAngle</td> <td>ThreeD</td><td>angle in degrees</td>");
-	s.append(" </tr><tr><td>ViewDistance</td><td>ThreeD</td><td>dist in meters</td>");
-	s.append("</tr><tr><td>ViewGroups</td> <td>ThreeD</td><td>String(see 3Dmenu) </td>");
-	s.append(" </tr><tr><td>ViewDetectors</td> <td>ThreeD</td><td>String(see menu ");
-	s.append(" in 3D for choices)</td> ");
-	s.append("</tr><tr><td>Auto-Scale</td><td>Image</td><td>float 0 to 100</td>");
-	s.append("</tr><tr><td>table_view Data</td> <td>TableView(time slice</td>");
-	s.append(" <td>String OK if set</td>");
-	s.append("<td>String:Contains \"Err\"or \"index\"if they are to be shown</td>");
-	s.append("</tr><tr><td>Contour.Style</td> </td>Contour View<td></td>");
-	s.append("<td> 1 for AREA_FILL, 4 for AREA_FILL_CONTOUR ,2 for CONTOUR ,");
-	s.append("0 for RASTER,  3 for RASTER_CONTOUR </td>");
-	s.append("</tr><tr><td>ContourTimeMin</td> <td>Contour</td> <td>float min time</td>");
-	s.append("</tr><tr><td>Time Slice Table</td> </td><td></td> <td></td>");
-	s.append("</tr><tr><td>ContourTimeMax</td> <td>Contour</td> <td>float max time</td>");
-	s.append("</tr><tr><td>ContourTimeStep</td> <td>Contour</td> <td>");
-	s.append("int for Xscale chooser number of time steps</td>");
-	s.append("</tr><tr><td>Contour.Intensity</td><td>Controu</td>");
-	s.append("<td> int 0 to 100, intensity</td>");
-	s.append("</tr><tr><td>TableTS_TimeInd</td><td>TimeSlice Table View</td>");
-	s.append(" <td>int:Pointed at time channel or slice channel</td>");
-	s.append("</tr><tr><td>TableTS_MinRow</td><td>TimeSlice Table View</td>");
-	s.append("<td> int:Min row to include(1 to #rows)</td>");
-	s.append("</tr><tr><td>TableTS_MaxRow</td><td>TimeSlice Table View</td>");
-	s.append(" <td> int:Max row to include(1 to #rows)</td>");
-	s.append("</tr><tr><td>TableTS_MinCol</td><td>TimeSlice Table View</td>");
-	s.append(" <td> int:Min col to include(1 to #rows)</td>");
-	s.append("</tr><tr><td>TableTS_MaxCol</td><td>TimeSlice Table View</td>");
-	s.append("<td> int:Max col to include(1 to #rows)</td>");
-	s.append("</tr><tr><td>TABLE_TS_MIN_TIME</td><td>TimeSlice Table View</td>");
-	s.append("<td>float: min time to include</td>");
-	s.append("</tr><tr><td>TABLE_TS_MAX_TIME</td><td>TimeSlice Table View</td>");
-	s.append(" <td>float: max time to include</td>");
-	s.append("</tr><tr><td>TABLE_TS_NXSTEPS</td><td>TimeSlice Table View</td>");
-	s.append("<td>float: # of time steps for Xsclae</td>");
-	s.append(" </tr></table>");
+s.append("<tr><td>ColorScale</td> <td>Most Views</td><td> String ");
+s.append("like Heat1,Rainbow</td>");
+s.append("</tr><tr><td>RebinFlag</td><td>Image View</td><td> Boolean</td>");
+s.append("</tr><tr><td>HScrollFlag</td> <td>Image View</td><td>??</td>");
+s.append("</tr><tr><td>HScrollPosition</td><td>Image View </td><td>float 0 to 1</td>");
+s.append(" </tr><tr><td>VScrollPosition</td> <td>Image View </td><td>???</td>");
+s.append("</tr><tr><td>PointedAtIndex</td> <td> Most Views</td>" );
+s.append("  <td> Positive Integer<#of spectra</td>");
+s.append("</tr><tr><td>PointedAtX</td>td> Most Views</td> ");
+s.append("<td> float corresponding to x values</td>" );
+s.append("</tr><tr><td>Brightness</td> <td>Image and 3D views</td><td>int from 0 ");
+s.append("to 1000</td>");
+s.append("</tr><tr><td>ViewAzimuthAngle</td> <td>ThreeD</td><td>angle in degrees</td>");
+s.append("</tr><tr><td>ViewAltitudeAngle</td> <td>ThreeD</td><td>angle in degrees</td>");
+s.append(" </tr><tr><td>ViewDistance</td><td>ThreeD</td><td>dist in meters</td>");
+s.append("</tr><tr><td>ViewGroups</td> <td>ThreeD</td><td>String(see 3Dmenu) </td>");
+s.append(" </tr><tr><td>ViewDetectors</td> <td>ThreeD</td><td>String(see menu ");
+s.append(" in 3D for choices)</td> ");
+s.append("</tr><tr><td>AutoScale</td><td>Image</td><td>float 0 to 100</td>");
+s.append("</tr><tr><td>tableview Data</td> <td>TableView(time slice</td>");
+s.append(" <td>String OK if set</td>");
+s.append("<td>String:Contains \"Err\"or \"index\"if they are to be shown</td>");
+s.append("</tr><tr><td>ContourStyle</td> </td>Contour View<td></td>");
+s.append("<td> 1 for AREA_FILL, 4 for AREA_FILL_CONTOUR ,2 for CONTOUR ,");
+s.append("0 for RASTER,  3 for RASTER_CONTOUR </td>");
+s.append("</tr><tr><td>ContourTimeMin</td> <td>Contour</td> <td>float min time</td>");
+s.append("</tr><tr><td>TimeSliceTable</td> </td><td></td> <td></td>");
+s.append("</tr><tr><td>ContourTimeMax</td> <td>Contour</td> <td>float max time</td>");
+s.append("</tr><tr><td>ContourTimeStep</td> <td>Contour</td> <td>");
+s.append("int for Xscale chooser number of time steps</td>");
+s.append("</tr><tr><td>ContourIntensity</td><td>Controu</td>");
+s.append("<td> int 0 to 100, intensity</td>");
+s.append("</tr><tr><td>TableTimeSliceTimeInd</td><td>TimeSlice Table View</td>");
+s.append(" <td>int:Pointed at time channel or slice channel</td>");
+s.append("</tr><tr><td>TableTimeSliceMinRow</td><td>TimeSlice Table View</td>");
+s.append("<td> int:Min row to include(1 to #rows)</td>");
+s.append("</tr><tr><td>TableTimeSliceMaxRow</td><td>TimeSlice Table View</td>");
+s.append(" <td> int:Max row to include(1 to #rows)</td>");
+s.append("</tr><tr><td>TableTimeSliceMinCol</td><td>TimeSlice Table View</td>");
+s.append(" <td> int:Min col to include(1 to #rows)</td>");
+s.append("</tr><tr><td>TableTimeSliceMaxCol</td><td>TimeSlice Table View</td>");
+s.append("<td> int:Max col to include(1 to #rows)</td>");
+s.append("</tr><tr><td>TableTimeSliceMinTime</td><td>TimeSlice Table View</td>");
+s.append("<td>float: min time to include</td>");
+s.append("</tr><tr><td>TableTimeSliceMaxTime</td><td>TimeSlice Table View</td>");
+s.append(" <td>float: max time to include</td>");
+s.append("</tr><tr><td>TableTimeSliceNxSteps</td><td>TimeSlice Table View</td>");
+s.append("<td>float: # of time steps for Xsclae</td>");
+s.append(" </tr></table>");
     s.append("@return the string 'Success' or an Error Condition below");
     s.append( "@error  extension on save file name is improper");
     s.append( "@error   no appropriate writer is found for the extension");
