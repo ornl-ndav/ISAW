@@ -31,6 +31,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/07/29 22:34:21  dennis
+ *  Made row[] and col[] values for peaks double instead of integer,
+ *  in preparation to work with centroided peaks.
+ *  Added method ShowOldCalibrationInfo() to print out the calibration
+ *  information currently used by the SCD software, for each detector.
+ *  Made ShowProgress method public.
+ *  Main program now displays results using fitter.getResultsString()
+ *  convenience method.
+ *
  *  Revision 1.5  2003/07/29 21:29:35  dennis
  *  Now uses named constants for indices to all parameters that
  *  can be optimized.  Added detector distance parameter, but either
@@ -91,8 +100,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
   private int    id[];
   private double hkl[][];      // list of hkl triples for ith point in ith row
   private double tof[];
-  private int    row[];
-  private int    col[];
+  private double row[];
+  private double col[];
 
   private double U_observed[][];
   private double B_observed[][];
@@ -129,8 +138,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
                   SampleOrientation_d orientation[],
                   double              hkl[][],
                   double              tof[], 
-                  int                 row[], 
-                  int                 col[],
+                  double              row[], 
+                  double              col[],
                   double              params[], 
                   String              param_names[],
                   int                 n_used,
@@ -336,7 +345,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
     find_U_and_B_observed();
     find_qxyz_theoretical();
 
-    show_progress( B_observed, false );
+    eval_count++;
+    if ( eval_count % 1000 == 0 )
+     ShowProgress();
   } 
 
   /**
@@ -462,72 +473,114 @@ public class SCDcal   extends    OneVarParameterizedFunction
   }
 
   /**
-   *
+   *  Show the progress of the calibration calculation by printing the
+   *  observed lattice parameters, standard deviation in the current 
+   *  function values (i.e. differences between Q theoretical and
+   *  Q observed) and the current parameter estimates.
    */
-  private void show_progress( double B[][], boolean show )
-  {
-    if ( eval_count % 1000 == 0 || show )
-    {                                  // first show observed cell parameters
+  public void ShowProgress( )
+  {                                    // first show observed cell parameters
                                        // for current stage of calibration
-      double my_B[][] = copy ( B );
-      System.out.println( ""+eval_count/1000 );
-      for ( int k = 0; k < 3; k++ )
-        for ( int j = 0; j < 3; j++ )
-          my_B[k][j] /= (2*Math.PI);
+    double my_B[][] = copy ( B_observed );
+    System.out.println( ""+eval_count/1000 );
+    for ( int k = 0; k < 3; k++ )
+      for ( int j = 0; j < 3; j++ )
+        my_B[k][j] /= (2*Math.PI);
 
-      double cell_params[] = lattice_calc.LatticeParamsOfUB( my_B );
-      System.out.println("==================================================");
-      System.out.println("Observed cell parameters now are.... "); 
-      LinearAlgebra.print( cell_params );
+    double cell_params[] = lattice_calc.LatticeParamsOfUB( my_B );
+    System.out.println("==================================================");
+    System.out.println("Observed cell parameters now are.... "); 
+    LinearAlgebra.print( cell_params );
                                       
                                        // then show the standard deviation of
                                        // the error in q, from all zeros
-      double index[] = new double[n_peaks];
-      for ( int i = 0; i < index.length; i++ )
-        index[i] = i;
+    double index[] = new double[n_peaks];
+    for ( int i = 0; i < index.length; i++ )
+      index[i] = i;
 
-      double vals[] = getValues( index );
-      double s_dev = 0;
-      for ( int i = 0; i < vals.length; i++ )
-        s_dev += vals[i] * vals[i];
+    double vals[] = getValues( index );
+    double s_dev = 0;
+    for ( int i = 0; i < vals.length; i++ )
+      s_dev += vals[i] * vals[i];
 
-      s_dev = Math.sqrt( s_dev/vals.length );
+    s_dev = Math.sqrt( s_dev/vals.length );
 
-      System.out.println();
-      System.out.println("1 standard dev error distance in Q = " + s_dev );
+    System.out.println();
+    System.out.println("1 standard dev error distance in Q = " + s_dev );
 
                                        // finally, dump out the current
                                        // parameter estimates
-      int det_count = 0;
-      System.out.println();
-      System.out.println("Instrument & Sample parameters: " );
-      for ( int i = 0; i < all_parameters.length; i ++ )
+    int det_count = 0;
+    System.out.println();
+    System.out.println("Instrument & Sample parameters: " );
+    for ( int i = 0; i < all_parameters.length; i ++ )
+    {
+      if ( (i - DET_BASE_INDEX) % N_DET_PARAMS == 0 )
       {
-        if ( (i - DET_BASE_INDEX) % N_DET_PARAMS == 0 )
-        {
-          System.out.println();
-          System.out.println();
-          System.out.println("Parameters for Detector " + det_count );
-          det_count++;
-        }
-        if ( used_p_index[i] >= 0 )
-          System.out.print( " " + Format.real(all_parameters[i], 12, 5 ) );
+        System.out.println();
+        System.out.println();
+        System.out.println("Parameters for Detector " + det_count );
+        det_count++;
       }
-      System.out.println();
+      if ( used_p_index[i] >= 0 )
+        System.out.print( " " + Format.real(all_parameters[i], 12, 5 ) );
     }
-    eval_count++;
-  }
-
-
-  static private void show_parameter( String name, 
-                                      double value, 
-                                      double sig1  )
-  {
-    System.out.print( Format.string(name,17)  );
-    System.out.print( Format.real(value,20,9) + "  +-" );
-    System.out.print( Format.real(sig1, 20,9) );
     System.out.println();
   }
+
+
+  /**
+   *  For each detector, show the calibration values that are currently
+   *  used in the SCD software, 7/29/2003.
+   */
+  public void ShowOldCalibrationInfo()
+  {
+    int det_count = 0;
+    Enumeration e = grids.elements();
+    while ( e.hasMoreElements())
+    {
+      UniformGrid_d grid = (UniformGrid_d)e.nextElement();
+      System.out.println();
+      System.out.println("USING DETECTOR: " + grid.ID());
+      System.out.println();
+
+      System.out.print( Format.real( 100 * all_parameters[L1_INDEX], 9, 3 ) );
+      System.out.print( Format.real( all_parameters[T0_INDEX], 8, 3 ) );
+
+      int index = DET_BASE_INDEX + det_count * N_DET_PARAMS;
+                                                       // width and height are
+                                                       // from outer edge to
+                                                       // outer edge.
+      double x2cm = 100 * 
+                    all_parameters[ index + DET_WIDTH_INDEX ] / grid.num_cols();
+      double y2cm = 100 * 
+                    all_parameters[ index + DET_HEIGHT_INDEX] / grid.num_rows();
+
+                                                //this is to edge of detector
+                                                //not center of first pixel
+      double xLeft  = 100 * all_parameters[index + DET_X_OFF_INDEX]
+                        - x2cm * grid.num_cols() / 2.0;
+
+      double yLower = 100 * all_parameters[index + DET_Y_OFF_INDEX]
+                      - y2cm * grid.num_rows() / 2.0;
+
+      double phi   = all_parameters[ index + DET_PHI_INDEX ];
+      double chi   = all_parameters[ index + DET_CHI_INDEX ];
+      double omega = all_parameters[ index + DET_OMEGA_INDEX ];
+      det_count++;
+
+      System.out.print( Format.real( x2cm, 11, 6 ) );
+      System.out.print( Format.real( y2cm, 11, 6 ) );
+      System.out.print( Format.real( xLeft,  11, 6 ) );
+      System.out.print( Format.real( yLower, 11, 6 ) );
+      System.out.println();
+      System.out.print( Format.real( phi, 11, 6 ) );
+      System.out.print( Format.real( chi, 11, 6 ) );
+      System.out.print( Format.real( omega, 11, 6 ) );
+      System.out.println();
+    }
+  }
+
 
  /* -------------------------------------------------------------------------
   *
@@ -563,8 +616,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
       double omega;
       double hkl[][]  = null;
       double tof[]    = null;
-      int    row[]    = null; 
-      int    col[]    = null;
+      double row[]    = null; 
+      double col[]    = null;
       double counts[] = null;
       SampleOrientation_d orientation[]  = null;
       DetectorPosition_d  det_position[] = null;
@@ -575,11 +628,10 @@ public class SCDcal   extends    OneVarParameterizedFunction
         n_peaks = tfr.read_int();
         run    = new int[n_peaks];
         det    = new int[n_peaks];
-        det    = new int[n_peaks];
         hkl    = new double[n_peaks][3];
         tof    = new double[n_peaks];
-        row    = new int[n_peaks];
-        col    = new int[n_peaks];
+        row    = new double[n_peaks];
+        col    = new double[n_peaks];
         counts = new double[n_peaks];
         orientation  = new SampleOrientation_d[n_peaks];
         det_position = new DetectorPosition_d[n_peaks];
@@ -645,8 +697,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
           hkl[i][0] = Math.round(tfr.read_double()); 
           hkl[i][1] = Math.round(tfr.read_double()); 
           hkl[i][2] = Math.round(tfr.read_double()); 
-          col[i]    = tfr.read_int();
-          row[i]    = tfr.read_int();
+          col[i]    = tfr.read_double();
+          row[i]    = tfr.read_double();
           tof[i]    = tfr.read_double();
           counts[i] = tfr.read_double();
           tfr.read_line();            // end of line 3
@@ -770,20 +822,12 @@ public class SCDcal   extends    OneVarParameterizedFunction
         LinearAlgebra.print( derivs );
       }
 */
-//      System.exit(0);
                                            // build the data fitter and display 
                                            // the results.
       MarquardtArrayFitter fitter = 
       new MarquardtArrayFitter(error_f, x_index, z_vals, sigmas, 1.0e-16, 100);
 
-      double p_sigmas[];
-      double coefs[];
-      String names[];
-      p_sigmas = fitter.getParameterSigmas();
-      coefs = error_f.getParameters();
-      names = error_f.getParameterNames();
-      for ( int i = 0; i < error_f.numParameters(); i++ )
-        show_parameter( names[i], coefs[i], p_sigmas[i] );
+      System.out.println( fitter.getResultsString() );
 
       System.out.println();
       System.out.println("RESULTS -----------------------------------------"); 
@@ -804,49 +848,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
       LinearAlgebra.print( UB );
 
       System.out.println();
-      error_f.show_progress( error_f.B_observed, true );
+      error_f.ShowProgress();
 
-      det_count = 0;
-      e = grids.elements();
-      while ( e.hasMoreElements())
-      {
-        UniformGrid_d grid = (UniformGrid_d)e.nextElement();
-        System.out.println();
-        System.out.println("USING DETECTOR: " + grid.ID());
-        System.out.println();
-
-        System.out.print( Format.real( 100*parameters[L1_INDEX], 9, 3 ) );
-        System.out.print( Format.real( parameters[T0_INDEX], 8, 3 ) );
-                                                 
-        index = DET_BASE_INDEX + det_count * N_DET_PARAMS;
-                                                       // width and height are
-                                                       // from outer edge to 
-                                                       // outer edge.
-        double x2cm = 100*parameters[ index + DET_WIDTH_INDEX ]  / N_COLS; 
-        double y2cm = 100*parameters[ index + DET_HEIGHT_INDEX ] / N_ROWS;  
-
-                                                //this is to edge of detector
-                                                //not center of first pixel
-        double xLeft  = 100*parameters[index + DET_X_OFF_INDEX] 
-                        - x2cm*N_COLS/2.0;
-
-        double yLower = 100*parameters[index + DET_Y_OFF_INDEX]
-                        - y2cm*N_ROWS/2.0;
-
-        phi   = parameters[ index + DET_PHI_INDEX ];
-        chi   = parameters[ index + DET_CHI_INDEX ];
-        omega = parameters[ index + DET_OMEGA_INDEX ];
-        det_count++;
-
-        System.out.print( Format.real( x2cm, 11, 6 ) );
-        System.out.print( Format.real( y2cm, 11, 6 ) );
-        System.out.print( Format.real( xLeft,  11, 6 ) );
-        System.out.print( Format.real( yLower, 11, 6 ) );
-        System.out.println();      
-        System.out.print( Format.real( phi, 11, 6 ) );
-        System.out.print( Format.real( chi, 11, 6 ) );
-        System.out.print( Format.real( omega, 11, 6 ) );
-        System.out.println();      
-      } 
+      error_f.ShowOldCalibrationInfo();
     }
 }
