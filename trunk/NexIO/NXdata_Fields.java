@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/20 16:14:39  pfpeterson
+ * reformating
+ *
  * Revision 1.2  2001/07/24 20:03:54  rmikk
  * Added a field to processDS so it can get a handle on
  * fields linked to and with NxData
@@ -43,42 +46,46 @@ package NexIO;
 
 import DataSetTools.dataset.*;
 
-/** An Implementation of NxData where the names of the axes and data fields
- *  in NxData are known.  (Only for 2 axes so far)
+/**
+ * An Implementation of NxData where the names of the axes and data
+ * fields in NxData are known.  (Only for 2 axes so far)
  */
-public class NXdata_Fields  extends NXData_util implements NxData
-  {String ax1,ax2,dat;
+public class NXdata_Fields  extends NXData_util implements NxData{
+  String ax1,ax2,dat;
   String errormessage;
-
-   /**  Created with the known axes and data field names
-  */
-   public NXdata_Fields(String axis1name , String axis2name , 
-                           String dataname )
-     { ax1 = axis1name;
-      ax2 = axis2name;
-      dat = dataname;
-      errormessage = "";
-      }
   
- /** Fills out an existing DataSet with information from the NXdata
+  /**
+   *  Created with the known axes and data field names
+   */
+  public NXdata_Fields(String axis1name , String axis2name , String dataname ){
+    ax1 = axis1name;
+    ax2 = axis2name;
+    dat = dataname;
+    errormessage = "";
+  }
+  
+  /**
+   * Fills out an existing DataSet with information from the NXdata
    * section of a Nexus datasource
-  *@param node  the current node positioned to an NXdata part of a datasource
-  *@param  DS  the existing DataSet that is to be filled out
-  *@return  error status: true if there is an error otherwise false
-  */
-  public boolean processDS( NxNode node , NxNode nxInstr,DataSet DS )
-    { errormessage = "";
-       if(super.processDS(node, nxInstr, ax1, ax2, dat,DS))
-         return true;
-       errormessage = super.getErrorMessage();
-       return false;
+   *
+   * @param node the current node positioned to an NXdata part of a
+   * datasource
+   * @param DS the existing DataSet that is to be filled out
+   *
+   * @return error status: true if there is an error otherwise false
+   */
+  public boolean processDS( NxNode node , NxNode nxInstr,DataSet DS ){
+    errormessage = "";
+    if(super.processDS(node, nxInstr, ax1, ax2, dat,DS))
+      return true;
+    errormessage = super.getErrorMessage();
+    return false;
+  }
 
-     }
-/** Returns the error or warning message or "" if none
-*/
- public String getErrorMessage()
-   { 
-     return errormessage;
-    }
-
-   }
+  /**
+   *Returns the error or warning message or "" if none
+   */
+  public String getErrorMessage(){
+    return errormessage;
+  }
+}

@@ -31,17 +31,19 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/11/20 16:14:33  pfpeterson
+ * reformating
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
  */
 
 package NexIO;
-/** Interface for all attributes
+/**
+ * Interface for all attributes
  */
-public interface Attr
- {  
-    public String getItemName();
-    public Object getItemValue();  
-
-  }
+public interface Attr{
+  public String getItemName();
+  public Object getItemValue();  
+}

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/20 16:14:40  pfpeterson
+ * reformating
+ *
  * Revision 1.2  2002/04/01 20:18:47  rmikk
  * Changed an argument to the ProcessDS method from the DataSet index to the NxNode of the first NXdata
  *
@@ -45,16 +48,15 @@ import DataSetTools.dataset.*;
 /** Interface that all processors of NXentry info should implement<P>
  *NOTE: There is only ONE implementer
  */
-public interface NXentry
- {
+public interface NXentry{
 
   public String getErrorMessage();
  
- //index parameter is there in case that there is more
- //   than one NXdata per NXentry
+  /**
+   * index parameter is there in case that there is more than one
+   * NXdata per NXentry
+   */
   public boolean processDS(DataSet DS, NxNode Mon_DB);
                             
-
-  //
   //public void setNxData(NxData nd);
- }
+}

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/20 16:15:42  pfpeterson
+ * reformating
+ *
  * Revision 1.2  2001/07/30 20:10:14  rmikk
  * added a show() routine
  *
@@ -39,86 +42,70 @@
  *
  */
 
-
 package NexIO.Write;
 
-
-/** Interface for all Write nodes that can be viewed as node based.
-* Implementations of this interface will include Nexus node format for
-* Nexus files and Nexus-based XML files
-*/
-public interface NxWriteNode
-{
-   /**
+/**
+ * Interface for all Write nodes that can be viewed as node based.
+ * Implementations of this interface will include Nexus node format
+ * for Nexus files and Nexus-based XML files
+ */
+public interface NxWriteNode{
+  /**
    * returns error message or "" if none
    */
-    public String getErrorMessage();
+  public String getErrorMessage();
 
-    /** Gets the number of children with classname of this node
-     *  Used to find the number of NXentry's in a file that has
-    *   Already been opened ONLY
+  /**
+   * Gets the number of children with classname of this node Used to
+   * find the number of NXentry's in a file that has Already been
+   * opened ONLY
    */
-   public int getNumClasses( String classname );
+  public int getNumClasses( String classname );
 
 
-   /** Creates a new child and connects it to the parent
+  /**
+   * Creates a new child and connects it to the parent
    */
-    public NxWriteNode newChildNode( String node_name , String class_name );   
+  public NxWriteNode newChildNode( String node_name , String class_name );   
 
-   /**
+  /**
    * Sets this node's value. If an array Value will be linear
    * This routine will convert to the correct type and dimensions
    */
-    public void setNodeValue( Object Value ,int type , int ranks[]);
+  public void setNodeValue( Object Value ,int type , int ranks[]);
 
-   /**
-   *All attributes should be  a linear array
+  /**
+   * All attributes should be  a linear array
    */
-    public void addAttribute( String AttrName, Object AttrValue,
-                              int type, int ranks[]);
+  public void addAttribute( String AttrName, Object AttrValue,
+                            int type, int ranks[]);
 
-//------------------ Links ----------------------------
-    /** Adds an already set up link as a child of this node
-   *@param  linkhandle   A name used to refer to a link
-    */
-    public void addLink( String linkhandle );
-
-    /** Sets up a link thus Avoiding saving the same information twice
-    *@param linkhandle   the name used to refer to this link
-    *NOTE: Each link should have a separate name
-    */
-    public void  setLinkHandle(String linkhandle);
-
-
-//------------------ Saving --------------------------
-
-    /** Writes node to file if it can. 
-   * The node cannot have attributes, children, or links incorporated
-   * after this method is executed.
-   *NOTE: ONLY the Root node invoke this operation
+  //------------------ Links ----------------------------
+  /**
+   * Adds an already set up link as a child of this node
+   *
+   * @param  linkhandle   A name used to refer to a link
    */
-    public void write();
-    public void show();
-    public void close();
+  public void addLink( String linkhandle );
 
+  /**
+   * Sets up a link thus Avoiding saving the same information twice
+   *
+   * @param linkhandle the name used to refer to this link
+   *
+   * NOTE: Each link should have a separate name
+   */
+  public void  setLinkHandle(String linkhandle);
+
+
+  //------------------ Saving --------------------------
+  /**
+   * Writes node to file if it can. The node cannot have attributes,
+   * children, or links incorporated after this method is executed.
+   *
+   * NOTE: ONLY the Root node invoke this operation
+   */
+  public void write();
+  public void show();
+  public void close();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,4 +1,3 @@
-
 /*
  * File:  AttrImp.java 
  *             
@@ -32,30 +31,36 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/11/20 16:14:34  pfpeterson
+ * reformating
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
  */
 package NexIO;
-import NexIO.*;
-/** a standard implementation of Attr
- */
-public class AttrImp implements NexIO.Attr
- {String key;
-  Object Value;  
 
-    public AttrImp( String key , Object Value)
-        {this.key= key;
-         this.Value=Value;
-        }
+/**
+ * a standard implementation of Attr
+ */
+public class AttrImp implements NexIO.Attr{
+  String key;
+  Object Value;  
   
-    public String getItemName()
-         { return key;
-         }
-    public Object getItemValue()
-          {return Value;}
-   
-    public String show()
-    { return "key=" + key + "::Value=" + Value.toString();
-    }
+  public AttrImp( String key , Object Value){
+    this.key= key;
+    this.Value=Value;
   }
+  
+  public String getItemName(){
+    return key;
+  }
+
+  public Object getItemValue(){
+    return Value;
+  }
+   
+  public String show(){
+    return "key=" + key + "::Value=" + Value.toString();
+  }
+}

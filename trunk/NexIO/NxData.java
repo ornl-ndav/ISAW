@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/11/20 16:14:44  pfpeterson
+ * reformating
+ *
  * Revision 1.3  2002/02/26 15:42:11  rmikk
  * Added a set for the timeField field to put into the TimeField attribute.
  *    All NXdata are   merged.  To unmerge, extract with the TimefieldType
@@ -44,28 +47,37 @@
  * New Nexus datasource IO handlers
  *
  */
+
 package NexIO;
-/** Interface for all processors of the NXdata part of the Nexus file
- * specification
- */
 import DataSetTools.dataset.*;
 
-public interface NxData
-  {
+/**
+ * Interface for all processors of the NXdata part of the Nexus file
+ * specification
+ */
 
-   /** Fills out an existing DataSet with information from the NXdata
+public interface NxData{
+  
+  /**
+   * Fills out an existing DataSet with information from the NXdata
    * section of a Nexus datasource
-  *@param node  the current node positioned to an NXdata part of a datasource
-  *@param  DS  the existing DataSet that is to be filled out
-  *@return  error status: true if there is an error otherwise false
-  */
-   public boolean processDS( NxNode node , NxNode instrNode, DataSet DS );
-
-  /** Returns an error or warning message or "" if none
-  */
-   public String getErrorMessage();
-
-   /** When several NXdata's are in an NXentry, they can be tagged using this method
+   *
+   * @param node the current node positioned to an NXdata part of a
+   * datasource
+   * @param DS the existing DataSet that is to be filled out
+   *
+   * @return error status: true if there is an error otherwise false
    */
-   public void setTimeFieldType( int t);
-  }
+  public boolean processDS( NxNode node , NxNode instrNode, DataSet DS );
+
+  /**
+   * Returns an error or warning message or "" if none
+   */
+  public String getErrorMessage();
+
+  /**
+   * When several NXdata's are in an NXentry, they can be tagged using
+   * this method
+   */
+  public void setTimeFieldType( int t);
+}
