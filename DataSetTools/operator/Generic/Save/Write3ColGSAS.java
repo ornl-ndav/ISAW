@@ -31,11 +31,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/03/09 23:14:12  dennis
+ * Added carriage return and line feed to the original 80 column GSAS
+ * output files.  (Alok Chatterjee)
+ *
  * Revision 1.1  2005/02/17 22:06:04  dennis
  * Initial version of operator to export files in the GSAS 3Col FXYE format.
  * (Alok Chatterjee)
  * Removed unused imports and two unused variables. (dennis)
- *
  *
  */
 
@@ -75,6 +78,7 @@ public class Write3ColGSAS extends GenericSave{
     private OutputStreamWriter outstream;
     private String             run_title;
     private String             run_file;
+
     DataSet ds = null;
     String month, year;
 
@@ -255,7 +259,7 @@ public class Write3ColGSAS extends GenericSave{
             data.append("  "+Format.real( y[i],10,4));
             data.append("  "+Format.real(dy[i],10,4));
             data.append("                                            ");
-            data.append(EOL);
+            data.append("\r"+"\n");
         }
 
         // write out the data
@@ -278,7 +282,7 @@ public class Write3ColGSAS extends GenericSave{
 
         // add the run title if defined
         if( this.run_title!=null && this.run_title.length()>0 && banknum==1){
-            header.append( Format.string(this.run_title,80,false) +"\n");
+            header.append( Format.string(this.run_title,80,false) +"\r"+"\n");
             startline++;
         }
 
@@ -286,13 +290,13 @@ public class Write3ColGSAS extends GenericSave{
         if( this.run_file!=null && this.run_file.length()>0 && banknum==1 ){
 
           	Float count = (Float)mon_data.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
-            header.append( Format.string("# Monitor: "+count,80,false) +"\n");
+            header.append( Format.string("# Monitor: "+count,80,false) +"\r"+"\n");
             startline++;
         }
  
         // add the run file name if defined
         if( this.run_file!=null && this.run_file.length()>0 && banknum==1){
-            header.append( Format.string("# Original data file: "+this.run_file,80,false) +"\n");
+            header.append( Format.string("# Original data file: "+this.run_file,80,false) +"\r"+"\n");
             startline++;
         }
 
@@ -309,7 +313,7 @@ public class Write3ColGSAS extends GenericSave{
             float flight_path=initial_path+(pos.getSphericalCoords())[0];
            if (banknum==1) 
            { 
-            header.append( Format.string("# Scattering_angle= "+Format.real(angle,6,2)+" deg"+ " Total_length= "+Format.real(flight_path,5,2)+" m",80,false) + "\n");
+            header.append( Format.string("# Scattering_angle= "+Format.real(angle,6,2)+" deg"+ " Total_length= "+Format.real(flight_path,5,2)+" m",80,false) +"\r"+"\n");
 
            }
         // add spacing lines if necessary
@@ -333,15 +337,16 @@ public class Write3ColGSAS extends GenericSave{
              tag = 1 ;
           else 
              tag = 2;
-            header.append( Format.string("# Vanadium run: "+OO+year+'_'+tag+".van"+"    "+"Parameter run: "+OO+year+'_'+tag+".prm" ,80,false) +"\n");
+            header.append( Format.string("# Vanadium run: "+OO+year+'_'+tag+".van"+"    "+"Parameter run: "+OO+year+'_'+tag+".prm" ,80,false) +"\r"+"\n");
         
        }
         // add the GSAS bank header line
         XScale xscale = d.getX_scale();
         XInfo info=new XInfo(xscale,units,"FXYE");//GsasUtil.getType(d));
-        header.append( Format.string("BANK "+bankLabel+" "+info.toString(),80,false) +"\n");
+        header.append( Format.string("BANK "+bankLabel+" "+info.toString(),80,false) +"\r"+"\n");
         startline++;
         }
+
 
 
         // write out the information
