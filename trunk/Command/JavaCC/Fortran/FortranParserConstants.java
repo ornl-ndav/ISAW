@@ -16,37 +16,39 @@ public interface FortranParserConstants {
   int DIGICHAR = 10;
   int VARIABLE = 11;
   int ARRAY_VARIABLE = 12;
-  int STRING = 13;
-  int FLOATING_POINT = 14;
-  int BOOL_CONST = 15;
-  int INT_IDENT = 16;
-  int FLOAT_IDENT = 17;
-  int EQ = 18;
-  int CHAR_VARIABLE = 19;
-  int MATH_INT_VAR = 20;
-  int MATH_FLOAT_VAR = 21;
-  int MATH_VAR = 22;
-  int FORTRAN_ABS = 23;
-  int FORTRAN_SQRT = 24;
-  int FORTRAN_SIN = 25;
-  int FORTRAN_ASIN = 26;
-  int FORTRAN_COS = 27;
-  int FORTRAN_ACOS = 28;
-  int FORTRAN_TAN = 29;
-  int FORTRAN_ATAN = 30;
-  int FORTRAN_LOG = 31;
-  int FORTRAN_EXP = 32;
-  int FORTRAN_FLOAT_FUN = 33;
-  int FORTRAN_TRUNC_FUN = 34;
-  int FORTRAN_MOD_FUN = 35;
-  int FORTRAN_FLOOR_FUN = 36;
-  int FORTRAN_FRACTION_FUN = 37;
-  int FORTRAN_INT = 38;
-  int FORTRAN_REAL = 39;
-  int FORTRAN_DOUBLE = 40;
-  int FORTRAN_LOGICAL = 41;
-  int FORTRAN_CHAR_1 = 42;
-  int FORTRAN_CHAR_2 = 43;
+  int STRING_COMP = 13;
+  int STRING = 14;
+  int FLOATING_POINT = 15;
+  int BOOL_CONST = 16;
+  int FORTRAN_COMMENT = 17;
+  int INT_IDENT = 18;
+  int FLOAT_IDENT = 19;
+  int EQ = 20;
+  int CHAR_VARIABLE = 21;
+  int MATH_INT_VAR = 22;
+  int MATH_FLOAT_VAR = 23;
+  int MATH_VAR = 24;
+  int FORTRAN_ABS = 25;
+  int FORTRAN_SQRT = 26;
+  int FORTRAN_SIN = 27;
+  int FORTRAN_ASIN = 28;
+  int FORTRAN_COS = 29;
+  int FORTRAN_ACOS = 30;
+  int FORTRAN_TAN = 31;
+  int FORTRAN_ATAN = 32;
+  int FORTRAN_LOG = 33;
+  int FORTRAN_EXP = 34;
+  int FORTRAN_FLOAT_FUN = 35;
+  int FORTRAN_TRUNC_FUN = 36;
+  int FORTRAN_MOD_FUN = 37;
+  int FORTRAN_FLOOR_FUN = 38;
+  int FORTRAN_FRACTION_FUN = 39;
+  int FORTRAN_INT = 40;
+  int FORTRAN_REAL = 41;
+  int FORTRAN_DOUBLE = 42;
+  int FORTRAN_LOGICAL = 43;
+  int FORTRAN_CHAR_1 = 44;
+  int FORTRAN_CHAR_2 = 45;
 
   int DEFAULT = 0;
 
@@ -64,9 +66,11 @@ public interface FortranParserConstants {
     "<DIGICHAR>",
     "<VARIABLE>",
     "<ARRAY_VARIABLE>",
+    "<STRING_COMP>",
     "<STRING>",
     "<FLOATING_POINT>",
     "<BOOL_CONST>",
+    "<FORTRAN_COMMENT>",
     "<INT_IDENT>",
     "<FLOAT_IDENT>",
     "<EQ>",

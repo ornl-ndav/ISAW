@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2004/01/14 19:59:09  bouzekc
+ * Added ability to add comments.  Fixed bug where multiple double
+ * initializations crashed.
+ *
  * Revision 1.9  2004/01/14 06:38:17  bouzekc
  * Now handles initialization in variable declaration for scalar and array
  * types as well as mixed types.  Removed the MULTI_VARIABLE token, as it
@@ -204,7 +208,7 @@ TOKEN : {
 
 //at least one whitespace character
 TOKEN : {
-  < #ONE_PLUS_WS: ( <WHITESPACE> )+ >
+  < ONE_PLUS_WS: ( <WHITESPACE> )+ >
 }
 
 //one or more whitespace characters
@@ -267,6 +271,21 @@ TOKEN: {
   ) >
 }
 
+//component of a String.  Refactored so that it could be used in comments
+//as well
+TOKEN: {
+  < #STRING_COMP: (
+      <DIGICHAR> | 
+      <RESERVED_CHAR> |
+      <VAR_RESERVED_CHAR> | 
+      <ONE_PLUS_WS> | 
+      <FLOATING_POINT> |
+      <DIGIT> |
+      ":" |
+      "''"  
+  ) >
+}
+
 //String.  Represented by opening and closing double quotes, with
 //digits, characters, reserved characters, variable reserved characters,
 //one or more whitespaces, floating point numbers, :, '', 
@@ -275,14 +294,7 @@ TOKEN : {
   < STRING: (
     <OPT_WS>
     ( "\"" ) ( 
-      <DIGICHAR> | 
-      <RESERVED_CHAR> |
-      <VAR_RESERVED_CHAR> | 
-      <ONE_PLUS_WS> | 
-      <FLOATING_POINT> |
-      <DIGIT> |
-      ":" |
-      "''" 
+      <STRING_COMP>
     )* ( "\"" )
     <OPT_WS> 
   ) >
@@ -312,6 +324,10 @@ TOKEN : {
 // FORTRAN SECTION
 //~----------------------------------------------------------------------------
 
+//~----------------------------------------------------------------------------
+// FORTRAN CONSTANTS
+//~----------------------------------------------------------------------------
+
 //handles the Fortran logical (i.e. boolean) constants
 TOKEN: {
   < #BOOL_CONST: (
@@ -320,6 +336,18 @@ TOKEN: {
     ) <OPT_WS> 
   ) >
 }
+
+//This is the Fortran comment.  The C must be in the first column, following
+//Fortran style
+TOKEN: {
+  < FORTRAN_COMMENT: (
+    ( "C " | "c " ) <OPT_WS> ( <STRING_COMP> )* <OPT_WS>
+  ) >
+} 
+
+//~----------------------------------------------------------------------------
+// FORTRAN VARIABLE TYPES
+//~----------------------------------------------------------------------------
 
 //Recall that in Fortran, untyped variables starting with
 //an I, J, K, L, M, or N are considered integers, while untyped variables
@@ -561,10 +589,10 @@ TOKEN : {
     <OPT_WS> 
     "double precision" 
     ( 
-      <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <DIGIT> )+ )? ) 
+      <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <FLOATING_POINT> )+ )? ) 
     ) 
     (  
-      "," ( <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <DIGIT> )+ )? ) )  
+      "," ( <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <FLOATING_POINT> )+ )? ) )  
     )* 
     <OPT_WS> 
   ) >
@@ -668,9 +696,7 @@ String convertFortranToJava(  ) : {
   )*
 
   {
-    //convert single spaces to one space, then trim it and append the
-    //Java line closer semicolon.  This may fail for Strings-we will see...
-    return fCode.toString(  ).replaceAll( "\\s+", " " ).trim(  ) + ";\n";
+    return fCode.toString(  ).trim(  ) + ";\n";
   }
 }
 
@@ -687,6 +713,15 @@ String convertFortranTokens(  ) : {
   String[] tokenList;
 }
 {
+  //matched a comment
+  t = <FORTRAN_COMMENT> {
+    s = t.image;
+    //we know that the comment 'C' is always in the first column
+    s = s.substring( 1, s.length(  ) );
+    s = "//" + s;
+    return s;
+  }
+|
   //matched the absolute function
   t = <FORTRAN_ABS> {
     if( t.image.indexOf( "iabs" ) >= 0 ) {
@@ -892,5 +927,10 @@ String convertFortranTokens(  ) : {
   t = <STRING> {
     //replace Fortran's double single quotes with a backslash quote
     return t.image.replaceAll( "''", "\\\\\"");
+  }
+|
+  //found an empty line, so spit it back
+  t = <ONE_PLUS_WS> {
+    return t.image;
   }
 }
