@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/10/20 16:37:16  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.4  2002/12/10 22:03:22  dennis
  * Added getDocumentation() method. (Tyler Stelzer)
  *
@@ -87,7 +90,6 @@ public class SetDSDataAttributes extends    DS_Attribute
    *  @parm   Attrib      The Attribute to be set.
    *  @param  new_Value   The new value of the Attribute
    */
-
   public SetDSDataAttributes  ( DataSet              ds,
                                 AttributeNameString  Attrib,
                                 Object               new_Value )

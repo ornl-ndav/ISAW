@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.6  2003/10/20 16:39:29  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.5  2003/09/18 19:45:57  rmikk
  * -added parameters to give channel number instead of the
  *   xvalues
@@ -82,8 +85,8 @@ public class XYDataTable  extends GenericSave
     *@param outputMedia  The output can be Console, File, or Table
     *@param filename   The file where the File View sends the "view"
     *@param SelectedGroups The INDICIES of the groups to be viewed
-    *@param order- code for dimension.  Use default use HGT,F 
-    *@param  useChanvsX- to give channel numbers in place of x values
+    *@param order code for dimension.  Use default use HGT,F 
+    *@param  useChanvsX to give channel numbers in place of x values
     */    
     public XYDataTable( DataSet DS, boolean showErrors , MediaList outputMedia,
                 DataDirectoryString filename, IntListString SelectedGroups,

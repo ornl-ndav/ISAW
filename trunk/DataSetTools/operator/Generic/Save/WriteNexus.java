@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/10/20 16:38:47  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.3  2003/02/03 22:52:54  dennis
  * Added getDocumentationMethod() and java docs for getResult().
  * (Joshua Olson)
@@ -160,7 +163,7 @@ public Object clone()
   }
 /** Test program for this module.  
 * It just test to see if classpaths are correct, etc.
-*@returns  "OKKK" to System.out if successful
+*@return  "OKKK" to System.out if successful
 */
 public static void main( String args[] )
  {

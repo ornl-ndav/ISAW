@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/10/20 16:41:15  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.5  2002/11/27 23:23:16  pfpeterson
  * standardized header
  *
@@ -80,10 +83,10 @@ public class ndsRetriever extends Retriever
     }               
   
   /**
-  * @param  the data set index
+  * @param  data_set_num the data set index
   * @return the type( Histogram/monitor/invalid/etc.) of the data 
   *
-  *@see DataSetTools.retriever.dataSource
+  * @see DataSetTools.retriever.dataSource
 
   */ 
    public   int getType( int data_set_num ) 
