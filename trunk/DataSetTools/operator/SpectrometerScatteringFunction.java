@@ -2,6 +2,10 @@
  * @(#)SpectrometerScatteringFunction.java   0.1  2000/07/26   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.5  2000/08/08 21:14:05  dennis
+ *  Now adds the GeneralizedEnergyDistribution function operator to the
+ *  DataSet.
+ *
  *  Revision 1.4  2000/08/03 21:42:48  dennis
  *  This version has been checked and works ok.
  *
@@ -237,6 +241,8 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
       else
         new_ds.replaceData_entry( new_data, index );
     }
+
+    new_ds.addOperator(new SpectrometerGeneralizedEnergyDistributionFunction());
 
     if ( make_new_ds )
       return new_ds;
