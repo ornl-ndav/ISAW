@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/11/12 23:28:54  dennis
+ *  Added getDocumentation and main methods.  Added JavaDoc comments for the
+ *  getResult() method.  (modified by: Tyler Stelzer)
+ *
  *  Revision 1.3  2002/09/19 16:02:13  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -114,6 +118,8 @@ import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.operator.*;
 
 /**
   *  Add corresponding Data "blocks" from the current DataSet to Data "blocks"
@@ -124,7 +130,7 @@ import  DataSetTools.parameter.*;
   *  that they have the same units, the same number of data values and extend 
   *  over the same X-interval.
   *
-  *  The tile of this operator is "Add a DataSet".
+  *  The title of this operator is "Add a DataSet".
   *
   *  The command name for this operator is "Add".
   *
@@ -210,7 +216,16 @@ public class DataSetAdd extends    DataSetOp
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+  * @return returns a new DataSet or an Error String.
+  *      If "create a new DataSet" is selected and operation is successful, a
+  *      reference to a new DataSet will be returned.  If it is successful with out
+  *      creating a new DataSet, a reference to the current DataSet will be returned.  If
+  *      the operation is not successful, an error string will be returned.  Possible errors
+  *      include "unsupported operation", "DataSets have different units", and 
+  *      "no compatible Data blocks to combine in.
+  *
+  */	
   public Object getResult()
   {       
     return DSOpsImplementation.DoDSBinaryOp( this );
@@ -230,6 +245,61 @@ public class DataSetAdd extends    DataSetOp
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+  
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    
+    Res.append("@overview This operator adds two DataSets together.  When the");
+     Res.append(" operation is successful and a new DataSet is created, a");
+     Res.append(" reference to this new DataSet is returned.  If a new");
+     Res.append(" DataSet is NOT created, the result is stored in the current");
+     Res.append(" DataSet and a reference to the current DataSet is returned.");
+     Res.append(" If the operation is NOT successful, an error string is");
+     Res.append(" returned.");
+     
+    Res.append("@algorithm Construct a new DataSet with the same title, units");
+     Res.append(" and operations as the current DataSet. Add the values of");
+     Res.append(" each DataSet.  If make a new DataSet is selected, the new");
+     Res.append(" values will be stored in a new DataSet.  If it is not");
+     Res.append(" selected, the new values will be stored in the current");
+     Res.append(" DataSet.");
+    
+    Res.append("@param ds - the current DataSet on which the operator will be");
+     Res.append(" performed.");
+    Res.append("@param ds_to_add - the DataSet to add to the current DataSet.");
+    Res.append("@param make_new_ds - a boolean value which determines if a");
+     Res.append(" new DataSet is created or not.");
+    
+    Res.append("@return returns a new DataSet or an Error String.");
+     Res.append(" If \"create a new DataSet\" is selected and operation is");
+     Res.append(" successful, a reference to a new DataSet will be returned.");
+     Res.append(" If it is successful without creating a new DataSet, a");
+     Res.append(" reference to the current DataSet will bereturned. If the");
+     Res.append(" operation is not successful, an error string will be");
+     Res.append(" returned");
+     
+    Res.append("@error Unsupported operation");
+    Res.append("@error DataSets have different units");
+    Res.append("@error No compatible Data blocks");
+     
+     return Res.toString();
+  }
+     
+  public static void main(String []args)
+  {
+    DataSet ds1 = DataSetFactory.getTestDataSet();
+    DataSet ds2 = DataSetFactory.getTestDataSet();
+    ViewManager viewer = new ViewManager(ds1, ViewManager.IMAGE);
+    
+    Operator op = new DataSetAdd(ds1, ds2, true);
+    DataSet new_ds = (DataSet)op.getResult();
+    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);
+    
+    String document = op.getDocumentation();
+    System.out.println(document);
+    System.out.println("\n" + op.getResult().toString());
   }
 
 }
