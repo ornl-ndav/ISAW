@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/03/26 20:52:45  pfpeterson
+ * Finished implementing the setting of reflection flags as disscussed
+ * with A.Schultz.
+ *
  * Revision 1.5  2003/03/20 21:56:54  pfpeterson
  * Centroid now deals with ArrayOutOfBoundsException in an appropriate manner.
  *
@@ -219,8 +223,6 @@ public class Util{
     try{
       for( int i=col-3 ; i<=col+3 ; i++ ){
         for( int j=row-3 ; j<=row+3 ; j++ ){
-          //        if( (i>groups.length-1) || (j>groups[0].length-1) )
-          //peak.reflag(peak20)
           data=ds.getData_entry(ids[i][j]);
           if(data==null) return null;
           surround[i-col+3][j-row+3][0]=data.getY_values()[time-1];
@@ -263,7 +265,7 @@ public class Util{
     
     // total count must be greater than zero for this to make sense
     if(asum<=0){
-      peak.reflag(reflag+30);
+      peak.reflag(reflag+20);
       return peak;
     }
     // centroid the peaks
@@ -278,7 +280,7 @@ public class Util{
     
     if( dx>1.0 || dy>1.0 || dz>1.0 ){
       // don't shift positions if it is moving more than one bin
-      peak.reflag(reflag+30);
+      peak.reflag(reflag+20);
       return peak;
     }else{
       // update the peak
