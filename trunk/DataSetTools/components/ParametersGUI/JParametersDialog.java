@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.53  2003/11/23 19:53:42  rmikk
+ *  Reported Throwable error messages on the status pane too. They are
+ *  usually too long.
+ *
  *  Revision 1.52  2003/09/15 12:33:43  rmikk
  *  Fixed an inequality error
  *
@@ -192,6 +196,7 @@ public class JParametersDialog implements Serializable,
 {
     
     public static final String OPERATION_THROUGH = "OPERATION THROUGH";
+    public static final String NOT_THROUGH = "NOT THROUGH";
     private Operator op;
     private IObserver io;
     IsawGUI.Util util = new IsawGUI.Util();
@@ -199,7 +204,7 @@ public class JParametersDialog implements Serializable,
     Vector vparamGUI = new Vector();
     JDialog opDialog;
     int Width = 0;
-    Object Result = null;
+    Object Result = NOT_THROUGH;
     JLabel resultsLabel = new JLabel("    Result");
     ApplyButtonHandler APH;
     Vector ObjectParameters ;
@@ -258,7 +263,8 @@ public class JParametersDialog implements Serializable,
         HeaderPanel.add( BB.createGlue() );
         BB.add( HeaderPanel );
         Size1 = new JLabel( SS ).getPreferredSize().height;
-      
+        
+        
         if( Size1 < 0)
 	    Size += 10;
         else
@@ -279,6 +285,7 @@ public class JParametersDialog implements Serializable,
         int x = screenSize.width - size.width;
         //opDialog.setSize(570,450);
         opDialog.setLocation(x, y);
+        
 
         int num_param = op.getNum_parameters();
        
@@ -291,7 +298,7 @@ public class JParametersDialog implements Serializable,
         //op.setDefaultParameters();
         ObjectParameters = new Vector();
         for (int i = 0; i<num_param; i++)
-        {  
+        {
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
            Size1=-1;
            iparam = op.getParameter(i);
@@ -535,6 +542,7 @@ public class JParametersDialog implements Serializable,
             
              }
           }//for i < nparameters
+
         JPanel Filler = new JPanel();
         Filler.setPreferredSize( new Dimension(120,2000));
         BB.add( Filler ); 
@@ -551,7 +559,8 @@ public class JParametersDialog implements Serializable,
            Size += Size1;    
         JPanel buttonpanel = new JPanel( );
         buttonpanel.setLayout(new FlowLayout());
-               
+         
+            
         apply = new JButton(APPLY);
         exit = new JButton("Exit");
         JButton help  = new JButton( "Help" );
@@ -580,8 +589,10 @@ public class JParametersDialog implements Serializable,
         
         opDialog.setSize((int)(.4* Width) , new Float(Size +.8).intValue());
         opDialog.validate();
-                 
+       
+        opDialog.show();       
         opDialog.setVisible(true);
+       
       }
        
   public void addIObserver(IObserver iobs) 
@@ -742,9 +753,10 @@ public class JParametersDialog implements Serializable,
               notifyListeners( OPERATION_THROUGH); 
               return Result;
             }catch(Throwable e){
-              Result= new ErrorString("Errrrr="+ e.toString());
+              Result= new ErrorString("Error="+ e.toString());
               e.printStackTrace();
               notifyListeners( OPERATION_THROUGH);
+              SharedData.addmsg( Result);
               return Result;
             }
            
