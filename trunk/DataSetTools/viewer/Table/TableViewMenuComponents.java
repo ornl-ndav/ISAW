@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/08/13 23:48:44  dennis
+ *  Changed number of menu items from 8 to 7.  This fixes a bug I
+ *  introduced when I moved the "Brent" view from the table submenu
+ *  to the main view menu.
+ *
  *  Revision 1.13  2003/08/08 17:56:55  dennis
  *  Removed "Brent" view, which had been added for testing purposes.
  *
@@ -53,7 +58,8 @@
  *     that uses the  DS_XY_TableModel.
  *
  *  Revision 1.7  2002/08/21 15:46:55  rmikk
- *   If there are no selected Groups the pointed At group or if none,group 0 is selected
+ *   If there are no selected Groups the pointed At group or if none,
+ *   group 0 is selected
  *
  *  Revision 1.6  2002/07/26 22:01:51  rmikk
  *  Replaced the null for the state in the TimeSliceView with
@@ -117,7 +123,8 @@ public class TableViewMenuComponents
   /** Returns the number of menu items
   */
   public static int getNMenuItems()
-    { return 8;
+    {
+      return 7;
     }
 
   /** Returns the menu Name associated with the menu items
