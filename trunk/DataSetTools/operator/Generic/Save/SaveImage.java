@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/06/24 15:28:40  robertsonj
+ * Implemented a windowlistener so the save image from scripts would get 
+ * a nice clean picture of the stated viewer.
+ *
  * Revision 1.7  2004/06/21 16:06:26  robertsonj
  * Changed the help file to relfect the changes in the viewer state class
  *
@@ -69,7 +73,7 @@
 package DataSetTools.operator.Generic.Save;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
-
+import java.awt.event.*;
 import java.awt.*;
 import DataSetTools.parameter.*;
 import java.util.*;
@@ -171,27 +175,60 @@ public class SaveImage  extends GenericSave{
     jf1.setSize( width+7, height+25);   
     jf1.getContentPane().setLayout( new GridLayout(1,1));
     jf1.getContentPane(). add( DSV);
+
     
-    jf1.validate();
     
-    jf1.show();
+	jf1.validate();
+	Graphics2D gr = bimg.createGraphics();
+	jf1.addWindowListener(new MyWindowListener(SaveFileName, extension, bimg, DSV, gr, jf1));
+	//DSV.paint( gr);
+	jf1.show();
+	
+    
    
-    Graphics2D gr = bimg.createGraphics();
-  
-    DSV.paint( gr);
-    jf1.dispose();
+	//DSV.paint( gr);
+
+    //jf1.dispose();
+	return "Success";
+ }
  
-    try{
-      FileOutputStream fout =new FileOutputStream( SaveFileName);
-      if( !javax.imageio.ImageIO.write( bimg, extension ,fout ))
-           return new ErrorString( " no appropriate writer is found");;
-      fout.close();
-    }catch( Exception ss){
-       return new ErrorString( ss.toString());
-    }
-    
-    return "Success";
-  }//getResult
+ class MyWindowListener extends WindowAdapter{
+ 	public String SaveFileName;
+ 	public String extension;
+ 	public BufferedImage bimg;
+ 	public DataSetViewer DSV;
+ 	public Graphics2D gr;
+ 	public JFrame jf1;
+ 
+ 	public MyWindowListener(String filename, String pin_extension, BufferedImage pin_bimg, 
+ 								DataSetViewer pin_DSV, Graphics2D pin_gr, JFrame pin_jf1)
+ 	{
+ 		SaveFileName = filename;
+ 		extension = pin_extension;
+ 		bimg = pin_bimg;
+ 		DSV = pin_DSV;
+ 		gr = pin_gr;
+ 		jf1 = pin_jf1;
+ 	//This should be in the window listener for this page.
+ 	}
+    public void windowOpened(WindowEvent winevt){
+    	DSV.paint(gr);
+    	saveResult(SaveFileName, extension, bimg, DSV, jf1);
+ 	}//getResult
+}
+public void saveResult(String filename, String extension, BufferedImage bimg,
+							 DataSetViewer DSV, JFrame jf1){
+	try{
+		  FileOutputStream fout =new FileOutputStream( filename);
+		  if( !javax.imageio.ImageIO.write( bimg, extension ,fout ))
+			   //return new ErrorString( " no appropriate writer is found");;
+		  fout.close();
+		}catch( Exception ss){
+		   //return new ErrorString( ss.toString());
+		}
+		jf1.dispose();
+	}	
+
 
 /* ---------------------- getDocumentation --------------------------- */
   /** 
