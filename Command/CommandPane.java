@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.46  2003/01/07 16:06:43  rmikk
+ * Fixed error so choice of Jython interpreter is not allowed if the Jython system is absent
+ *
  * Revision 1.45  2003/01/02 20:42:13  rmikk
  * Now supports the python interpreter in addition to ISAW's Script interpreter
  *    1) Adds a Combo box to choose interpreter
@@ -696,7 +699,9 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
               ScriptProcessorOperator sp = ScriptInterpretFetch.
                              getScriptProcessor( Fname, Commands.getDocument() );
               if( sp == null)
-                 sp = new ScriptProcessor( Commands.getDocument() );
+                 {sp = new ScriptProcessor( Commands.getDocument() );
+                  indx = 0;
+                 }
               SP = sp;
               SP.setIObserverList( IObslist );
               SP.setPropertyChangeList( PC );     
