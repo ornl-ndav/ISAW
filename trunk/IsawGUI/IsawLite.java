@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/05/22 20:38:34  pfpeterson
+ * First implementation of nogui mode. Copied code for working with
+ * command line from Operators.TextPrompt.
+ *
  * Revision 1.1  2003/05/22 18:32:05  pfpeterson
  * Added to CVS.
  *
@@ -44,12 +48,20 @@ import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Operator;
 import DataSetTools.parameter.IParameter;
 import DataSetTools.parameter.DataSetPG;
+import DataSetTools.parameter.StringPG;
+import DataSetTools.util.DataDirectoryString;
 import DataSetTools.util.ErrorString;
-import DataSetTools.util.SharedData;
+import DataSetTools.util.LoadFileString;
+import DataSetTools.util.SaveFileString;
+import DataSetTools.util.IntList;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.util.Vector;
 
 /**
  * Methods for loading executing an operator using a variety of
@@ -219,6 +231,164 @@ public class IsawLite{
   }
 
   /**
+   * Deals with nogui interactions. This modifies the parameter in
+   * place and returns an ErrorString if anything goes wrong.
+   */
+  public static ErrorString readUser(IParameter iparm){
+    String inPrompt = iparm.getName();
+    String inType   = iparm.getType();
+    String inDef    = null;
+
+    // fix up the type
+    if(inType==null){
+      Object val=iparm.getValue();
+      if(val instanceof int[])
+        inType="Array";
+      else if(val instanceof float[])
+        inType="Array";
+      else{
+        String name=val.getClass().getName().toString();
+        int index=name.lastIndexOf(".");
+        if(index>=0)
+          inType=name.substring(index+1);
+        else
+          inType=name;
+      }
+    }
+
+    // fix up the default value
+    if( iparm instanceof StringPG )
+      inDef=((StringPG)iparm).getStringValue();
+    else
+      inDef=iparm.getValue().toString();
+
+    Object newVal=readUser(inPrompt,inType,inDef);
+    if( newVal instanceof ErrorString){
+      return (ErrorString)newVal;
+    }else{
+      iparm.setValue(newVal);
+      return null;
+    }
+  }
+
+  /**
+   * Deals with the nogui interactions.
+   */
+  public static Object readUser(String inPrompt, String inType, String inDef){
+    System.out.print(inPrompt);
+    if ( !inDef.trim().equals("") ) {
+      System.out.print( "( Default: " + inDef + " )");
+    }
+    System.out.println(":");
+
+    if ( !(inType.equals("String") || inType.equals("Integer") || 
+	   inType.equals("Float") || inType.equals("Array") ||
+	   inType.equals("Boolean") || inType.equals("DataDirectoryString") ||
+	   inType.equals("LoadFileString") || 
+	   inType.equals("SaveFileString") ) ) {
+      return new ErrorString("Invalid Type:" + inType );
+    }
+
+    String inLine = new String();
+    try{
+      InputStreamReader inStr = new InputStreamReader(System.in);
+      BufferedReader br = new BufferedReader(inStr);
+      inLine = br.readLine();
+      if ( inLine.length() == 0 ) inLine = inDef;
+    }catch (IOException e){
+      // let it drop on the floor
+    }
+
+    if( inType.equals("String") ){
+      return inLine;
+    }else if( inType.equals("DataDirectoryString") ){
+      return new DataDirectoryString(inLine);
+    }else if( inType.equals("LoadFileString") ){
+      return new LoadFileString(inLine);
+    }else if( inType.equals("SaveFileString") ){
+      return new SaveFileString(inLine);
+    }else if( inType.equals("Float") ){
+      try {
+	Float inFloat = new Float(inLine);
+	return inFloat;
+      }catch( NumberFormatException e){
+	return new ErrorString( "Value: " + inLine 
+				+ " could not be cast as a Float");
+      }
+    }else if( inType.equals("Integer") ){
+      try {
+	Integer inInteger = new Integer( inLine );
+	return inInteger;
+      }catch ( NumberFormatException e ){
+	return new ErrorString( "Value: " + inLine 
+				+ " could not be cast as an Integer");
+      }
+    }else if (inType.equals("Boolean")) {
+      inLine=inLine.toUpperCase();
+      if ( inLine.equals("TRUE") || inLine.equals("YES") )
+	return new Boolean(true);
+      else if (inLine.equals("FALSE") || inLine.equals("NO") )
+	return new Boolean(false);
+      else
+	return new ErrorString("TextPrompt: Value " + inLine +
+			       "could not be cast as a Boolean");
+    }else if( inType.equals("Array") ) {
+      Vector ov = new Vector();
+      inLine = inLine.trim();
+      if ( inLine.charAt(0) != '[' && 
+	   inLine.charAt(inLine.trim().length() -1) != ']' ) {
+        return new ErrorString( "Arrays must be enclosed in " +
+                                "braces e.g. [1:8,13] or [1.4,4.5,8.6]" );
+      }
+      inLine = inLine.substring(1,inLine.length()-1);
+      int lastInd = 0;
+      int ind = 0;
+      while (ind != -1) {
+	String part = new String();
+	ind = inLine.indexOf(",", lastInd );
+	if (ind != -1 )
+	  part = inLine.substring( lastInd, ind );
+	else 
+	  part = inLine.substring( lastInd );
+	
+	lastInd = ind+1;
+	part=part.trim();
+	int[] ilist = IntList.ToArray(part);
+	if ( ilist.length > 0 ) {
+	  Integer[] olist = new Integer[ilist.length];
+	  Vector oArray = new Vector();
+	  for (int ii = 0; ii < ilist.length;ii++){
+	    olist[ii] = new Integer(ilist[ii]);
+	    ov.add(olist[ii]);
+	  }
+	}else {
+	  try {
+	    Integer iv = new Integer(part);
+	    ov.add(iv);
+	  }catch(NumberFormatException iex){
+	    try{
+	      Float fv = new Float(part);
+	      ov.add(fv);
+	    }
+	    catch ( NumberFormatException fex ) {
+	      if( part.equalsIgnoreCase("true") ){
+		ov.add(new Boolean(true));
+	      }else if( part.equalsIgnoreCase("false") ){
+		ov.add(new Boolean(false));
+	      }else{
+		ov.add(part);
+	      }
+	    }
+	  }
+	}
+      }
+      return ov;
+    }else{
+      return new ErrorString("TextPrompt: ERROR");
+    }
+  }
+
+  /**
    * Allows running of Scripts and Operators without Isaw and/or the
    * CommandPane
    */
@@ -275,20 +445,35 @@ public class IsawLite{
     Object result=null;
     if(operator.getNum_parameters()==0){
       result=operator.getResult();
-      // process the result
-      if(result instanceof ErrorString)
-        exit("ERROR: "+result.toString(),-1);
-      else
-        exit("Result: "+result,0);
     }else if(operator.getNum_parameters()>0){
-      JParametersDialog diag=new JParametersDialog(operator,null,null,null);
-      diag.addWindowListener( new WindowAdapter(){
-          public void windowClosed(WindowEvent e){
-            exit(null,0);
-          }
-        });
+      if(GUI){ // GUI mode
+        JParametersDialog diag=new JParametersDialog(operator,null,null,null);
+        diag.addWindowListener( new WindowAdapter(){
+            public void windowClosed(WindowEvent e){
+              exit(null,0);
+            }
+          });
+      }else{ // NOGUI mode
+        // process the parameters
+        num_param=operator.getNum_parameters();
+        IParameter iparm=null;
+        ErrorString error=null;
+        for( int i=0 ; i<num_param ; i++ ){
+          iparm=operator.getParameter(i);
+          error=readUser(iparm);
+          if(error!=null)
+            exit(error.toString(),-1);
+        }
+        result=operator.getResult();
+      }
     }else{
       exit("Unusual number of parameters (less than zero)",-1);
     }
+
+    // process the result
+    if(result instanceof ErrorString)
+      exit("ERROR: "+result.toString(),-1);
+    else
+      exit("Result: "+result,0);
   }
 }
