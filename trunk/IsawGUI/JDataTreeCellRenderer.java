@@ -29,7 +29,15 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  * $Log$
+ * Revision 1.3  2004/07/30 16:01:51  kramer
+ * Added methods to test if a DataSetMutableTreeNode represents a pulsed height
+ * DataSet.  Now the renderer uses different icons for DataMutableTreeNodes
+ * corresponding to a monitor, pulsed height histogram, and 'regular' histogram.
+ * It also uses a special icon for pulsed height DataSets.  Changed the icons
+ * from .gif to .png format.
+ *
  * Revision 1.2  2004/07/19 20:01:58  kramer
+ *
  * Modified the tree to use custom icons located in ISAW's image directory.  If
  * an icon doesn't exist or isn't really an icon, the renderer will use the
  * corresponding default icon (as displayed in a JTree).  Also, now when a Data
@@ -47,7 +55,6 @@ import gov.anl.ipns.Util.Sys.StringUtil;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.File;
@@ -75,20 +82,39 @@ public class JDataTreeCellRenderer extends DefaultTreeCellRenderer
    private static final String MODIFIED_EXPERIMENT_NAME = "Modified";
    
    /** The icon for the root node of the tree. */
-   private static final ImageIcon ROOT_IMAGE          = getImageIconForName("root.gif");
-   /** The icon for a node representing a DataSet that is representing a monitor. */
-   private static final ImageIcon MONITOR_IMAGE       = getImageIconForName("monitor.gif");
-   /** The icon for a node representing a DataSet that is representing a histogram. */
-   private static final ImageIcon HISTOGRAM_IMAGE     = getImageIconForName("histogram.gif");
-   /** The icon for a node representing a Data object. */
-   private static final ImageIcon DATA_IMAGE          = getImageIconForName("data.gif");
-   /** The icon for a node representing a Data object that is selected. */
-   private static final ImageIcon SELECTED_DATA_IMAGE = getImageIconForName("data_selected.gif");
-   /** The icon for an Experiment tree node. */
-   private static final ImageIcon EXPERIMENT_IMAGE    = getImageIconForName("experiment.gif");
-   /** The icon for the tree's 'Modified' node. */
-   private static final ImageIcon MODIFIED_IMAGE      = getImageIconForName("modified.gif");
+   private static final ImageIcon ROOT_IMAGE          = getImageIconForName("session.png");
    
+   /** The icon for a node representing a DataSet that is representing a histogram. */
+   private static final ImageIcon HISTOGRAM_IMAGE     = getImageIconForName("histogram.png");
+   /** The icon for a node representing a Data object. */
+   private static final ImageIcon DATA_IMAGE          = getImageIconForName("data.png");
+   /** The icon for a node representing a Data object that is selected. */
+   private static final ImageIcon SELECTED_DATA_IMAGE = getImageIconForName("data_selected.png");
+   
+   /** The icon for an Experiment tree node. */
+   private static final ImageIcon EXPERIMENT_IMAGE    = getImageIconForName("experiment.png");
+   /** The icon for the tree's 'Modified' node. */
+   private static final ImageIcon MODIFIED_IMAGE      = getImageIconForName("modified.png");
+   
+   /** The icon for a pulse height DataSet. */
+   private static final ImageIcon PULSE_HEIGHT_DATASET_IMAGE
+                                                      = getImageIconForName("pulse_height_dataset.png");
+   /** The icon for node representing a pulse height Data block. */
+   private static final ImageIcon PULSE_HEIGHT_DATA_IMAGE
+                                                      = getImageIconForName("pulse_height_data_block.png");
+   /** The icon for node representing a selected pulse height Data block. */
+   private static final ImageIcon SELECTED_PULSE_HEIGHT_DATA_IMAGE
+                                                      = getImageIconForName("selected_pulse_height_data_block.png");
+   
+   /** The icon for a node representing a DataSet that is representing a monitor. */
+   private static final ImageIcon MONITOR_IMAGE       = getImageIconForName("monitor_dataset.png");
+   /** The icon for a node representing a Data object in a monitor DataSet. */
+   private static final ImageIcon MONITOR_DATA_BLOCK_IMAGE
+                                                      = getImageIconForName("monitor_data_block.png");
+   /** The icon for a node representing a selected Data object in a monitor DataSet. */
+   private static final ImageIcon SELECTED_MONITOR_DATA_BLOCK_IMAGE
+                                                      = getImageIconForName("selected_monitor_data_block.png");
+
    /**
     * Get the configured component which is to be placed in the tree.
     */
@@ -98,27 +124,71 @@ public class JDataTreeCellRenderer extends DefaultTreeCellRenderer
    {
       super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, 
             row, hasFocus);
-            
+         
       if (value instanceof DataMutableTreeNode)
       {
-         if (((DataMutableTreeNode)value).isSelected())
-         {
-            if (SELECTED_DATA_IMAGE != null)
-               setIcon(SELECTED_DATA_IMAGE);
-            else
-               setIcon(DATA_IMAGE);
-            setForeground(Color.BLUE);
-         }
-         else
-         {
-            setIcon(DATA_IMAGE);
-            setForeground(Color.BLACK);
-         }
+            if (((DataMutableTreeNode)value).getParent() instanceof DataSetMutableTreeNode )
+            {
+               if (isAPulseHeight((DataSetMutableTreeNode)((DataMutableTreeNode)value).getParent()))
+               {
+                  if (((DataMutableTreeNode)value).isSelected())
+                  {
+                     if (SELECTED_PULSE_HEIGHT_DATA_IMAGE != null)
+                        setIcon(SELECTED_PULSE_HEIGHT_DATA_IMAGE);
+                     else
+                        setIcon(PULSE_HEIGHT_DATA_IMAGE);
+                     
+                     setForeground(Color.BLUE);
+                  }
+                  else
+                  {
+                     setIcon(PULSE_HEIGHT_DATA_IMAGE);
+                     setForeground(Color.BLACK);
+                  }
+               }
+               else if (isAMonitor((DataSetMutableTreeNode)((DataMutableTreeNode)value).getParent()))
+               {
+                  if (((DataMutableTreeNode)value).isSelected())
+                  {
+                     if (SELECTED_MONITOR_DATA_BLOCK_IMAGE != null)
+                        setIcon(SELECTED_MONITOR_DATA_BLOCK_IMAGE);
+                     else
+                        setIcon(MONITOR_DATA_BLOCK_IMAGE);
+                     
+                     setForeground(Color.BLUE);
+                  }
+                  else
+                  {
+                     setIcon(MONITOR_DATA_BLOCK_IMAGE);
+                     setForeground(Color.BLACK);
+                  }
+               }
+               else
+               {
+                  if (((DataMutableTreeNode)value).isSelected())
+                  {
+                     if (SELECTED_DATA_IMAGE != null)
+                        setIcon(SELECTED_DATA_IMAGE);
+                     else
+                        setIcon(DATA_IMAGE);
+
+                     setForeground(Color.BLUE);
+                  }
+                  else
+                  {
+                     setIcon(DATA_IMAGE);
+                     setForeground(Color.BLACK);
+                  }
+               }
+            }
+            //if its parent is not a DataSet don't set a custom icon
       }
       else if (value instanceof DataSetMutableTreeNode)
       {
          if (isAMonitor((DataSetMutableTreeNode)value))
             setIcon(MONITOR_IMAGE);
+         else if (isAPulseHeight((DataSetMutableTreeNode)value))
+            setIcon(PULSE_HEIGHT_DATASET_IMAGE);
          else
             setIcon(HISTOGRAM_IMAGE);
       }
@@ -156,17 +226,36 @@ public class JDataTreeCellRenderer extends DefaultTreeCellRenderer
     */
    private static boolean isAMonitor(DataSetMutableTreeNode dsNode)
    {
-      String nodeName = dsNode.toString();
-      int index = nodeName.indexOf(':');
-      if (index>=0 && (index+1)<nodeName.length())
-      {
-         char ch = nodeName.charAt(index+1);
-         return (ch == 'M');
-      }
+      return matchesPattern(dsNode.toString(),'M');
+   }
+   
+   /**
+    * Used to determine if the DataSetMutableTreeNode represents a pulse height 
+    * DataSet.  If it has a name with the format *:P* (where * represents any 
+    * sequence of characters), it is considered a pulse height DataSet.
+    */
+   private static boolean isAPulseHeight(DataSetMutableTreeNode dsNode)
+   {
+      return matchesPattern(dsNode.toString(),'P');
+   }
+   
+   /**
+    * Used to determine if the String <code>str</code> maches the 
+    * pattern *:<code>identifier</code>* (where * represents any sequence of characters).  
+    * The comparison is case sensitive.
+    * @param str The String to process
+    * @param identifier The special character right after the colon.
+    * @return True if <code>str</code> matches the pattern *:<code>identifier</code>* 
+    * and false otherwise.
+    */
+   private static boolean matchesPattern(String str, char identifier)
+   {
+      int index = str.indexOf(':');
+      if (index>=0 && (index+1)<str.length())
+         return (str.charAt(index+1) == identifier);
       else
          return false;
    }
-   
    /**
     * Get the ImageIcon corresponding to the icon in ISAW's image's 
     * directory with the specified name.
