@@ -27,6 +27,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/05/14 20:15:00  pfpeterson
+ * Now deals with possible ErrorString being returned by blind.bias.
+ *
  * Revision 1.6  2003/05/13 20:17:46  pfpeterson
  * Changed to work with most recent version of IPNSSrc.blind
  *
@@ -227,7 +230,8 @@ public class BlindJ extends  GenericTOF_SCD {
     blind BLIND=new blind();
     ErrorString error=BLIND.blaue( peaks,xx,yy,zz,seq);
     if(error!=null) return error;
-    BLIND.bias(peaks.size()+3,xx,yy,zz,seq);
+    error=BLIND.bias(peaks.size()+3,xx,yy,zz,seq);
+    if(error!=null) return error;
 
     // write the log file
     int index=matrixfile.lastIndexOf("/");
