@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.78  2003/09/13 20:56:32  bouzekc
+ * Now adds itself to Forms as a PropertyChangeListener for property name
+ * IParameter.VALUE and adds its progress bars as PropertyChangeListeners
+ * that listen to all changes.
+ *
  * Revision 1.77  2003/09/13 00:22:29  bouzekc
  * Now sets the BrowsePG Form ParameterGUIs' directories to the project
  * directory when loading a non-saved Wizard.  Removed an error message
@@ -681,7 +686,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     forms.add( f );
 
     //add the listener (this) to the Form's parameters and progress bar
-    f.addPropertyChangeListener( this );
+    f.addPropertyChangeListener( IParameter.VALUE, this );
     f.addPropertyChangeListener( formProgress );
 
     //each Form will send out a PropertyChange new value from 0 to 100,
