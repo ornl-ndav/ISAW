@@ -6,8 +6,11 @@ package OverplotView;
  * graphing implemented by the sgt package
  *
  * $Log$
- * Revision 1.1  2000/07/06 16:17:44  neffk
- * Initial revision
+ * Revision 1.2  2000/07/07 21:57:13  neffk
+ * changed the aspect ratio of the graph to 1:2 (vertical:horizontal)
+ *
+ * Revision 1.1.1.1  2000/07/06 16:17:44  neffk
+ * imported source code
  *
  * Revision 1.12  2000/06/22 14:04:30  neffk
  * new comments and a few changes in formatting
@@ -146,13 +149,17 @@ public class sgtSelectedGraph
       //System.out.println(  instruction.toString()  );
 
 
+      //add data to the graph
       for( int i=0;  i<graphableDataBlocks.size();  i++ )
         graph.addData(  (GraphableData)graphableDataBlocks.get(i)  );
 
-      graph.setXRange(  new Range2D( instruction.getXRange().x,
-                                     instruction.getXRange().y )  );
-      graph.setYRange(  new Range2D( instruction.getYRange().x,
-                                     instruction.getYRange().y )  );
+      if( instruction.getXRange() != null && instruction.getYRange() != null  )
+      {
+        graph.setXRange(  new Range2D( instruction.getXRange().x,
+                                       instruction.getXRange().y )  );
+        graph.setYRange(  new Range2D( instruction.getYRange().x,
+                                       instruction.getYRange().y )  );
+      }
 
       graphPanel.removeAll();
       graphPanel.setLayout(  new GridLayout( 1, 1 )  );
@@ -213,9 +220,23 @@ public class sgtSelectedGraph
   {
     System.out.println( "sgtSelectedGraph::calculateGraphSize(): " + d );
 
-    graph.setXMax( d.width );
-    graph.setYMax( d.height );
-    redraw();
+/*
+    System.out.println(  "x size (physical) " + graph.getXAxisP().toString()  );
+    System.out.println(  "y size (physical) " + graph.getYAxisP().toString()  );
+*/
+
+    Point2D.Double height = new Point2D.Double( 0, 1 );
+    Point2D.Double width = new Point2D.Double( 0, d.width/d.height );
+
+//    graph = new isawLineProfileLayout( width, height ); 
+
+//    graph.setYAxisP(  new Point2D.Double( 0, 1 )  );
+//    graph.setXAxisP(  new Point2D.Double( 0, (double)d.width/(double)d.height )  );
+//    graph.setOrigin(  new Point2D.Double( 0.0, -0.15 )  );
+//    redraw();
+
+    System.out.println(  "x size (physical) " + graph.getXAxisP().toString()  );
+    System.out.println(  "y size (physical) " + graph.getYAxisP().toString()  );
   }
 
 

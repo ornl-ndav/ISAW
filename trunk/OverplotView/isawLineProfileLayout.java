@@ -15,6 +15,7 @@ package  OverplotView;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.awt.*;
+import javax.swing.*;
 
 import gov.noaa.noaaserver.sgt.*;
 import gov.noaa.noaaserver.sgt.datamodel.*;
@@ -65,12 +66,25 @@ public class isawLineProfileLayout extends GraphicLayout
   Color paneColor_ = Color.white;
   Color keyPaneColor_ = Color.white;
 */  
+/*
   double xSize_ =  6.00;  //XSIZE_
   double xMin_  =  0.60;  //XMIN_
   double xMax_  =  5.00;  //XMAX_
   double ySize_ =  4.50;  //YSIZE_
   double yMin_  =  0.75;  //YMIN_
   double yMax_  =  3.50;  //YMAX_
+*/
+
+
+  //use these to create the correct aspect ratio?
+  double xMin_  =  0.5;  //XMIN_
+  double xMax_  =  5.50;  //XMAX_
+  double yMin_  =  0.5;  //YMIN_
+  double yMax_  =  2.50;  //YMAX_
+
+  double xSize_ =  6.00;  //XSIZE_
+  double ySize_ =  3.00;  //YSIZE_
+
   
   double mainTitleHeight_ = 0.30;  //MAIN_TITLE_HEIGHT_
   double titleHeight_     = 0.22;  //TITLE_HEIGHT_
@@ -100,54 +114,82 @@ public class isawLineProfileLayout extends GraphicLayout
 
 
 
+/*-------------------------------=[ x-axis ]=---------------------------------*/
+
   /**
-   * set user(?) sizes of the x axis
+   * set physical size of the x axis.  p.x = xMax_, p.y = xMin_ 
+   *
    */
-  public void setXMax( float f ) 
+  public void setXAxisP( Point2D.Double p ) 
   {
-    xMax_ = f;
+    xMax_ = p.x;
+    xMin_ = p.y;
   }
 
 
 
-  /**
-   * set user(?) sizes of the x axis
+  /*
+   * get physical size of the x axis.  p.x = xMax_, p.y = xMin_
+   *
    */
-  public void setXMin( float f ) 
+  public Point2D.Double getXAxisP()
   {
-    xMin_ = f;
+    return new Point2D.Double( xMax_, xMin_ );
   }
 
 
 
+/*-------------------------------=[ y-axis ]=---------------------------------*/
+
+
   /**
-   * set user(?) sizes of the y axis
+   * set physical size of the y axis.  p.x = yMax_, p.y = yMin_ 
+   *
    */
-  public void setYMax( float f ) 
+  public void setYAxisP( Point2D.Double p )
   {
-    xMax_ = f;
+    yMax_ = p.x;
+    yMin_ = p.y;
   }
 
 
 
-  /**
-   * set user(?) sizes of the y axis
+  /*
+   * get physical size of the y axis.  p.x = yMax_, p.y = yMin_
+   *
    */
-  public void setYMin( float f ) 
+  public Point2D.Double getYAxisP()
   {
-    xMin_ = f;
+    return new Point2D.Double( yMax_, yMin_ );
   }
 
 
 
+/*----------------------------=[ constructors ]=------------------------------*/
 
   /**
    * Default constructor. No Logo image is used and the LineKey
    * will be in the same Pane.
    */
-  public isawLineProfileLayout() {
+  public isawLineProfileLayout() 
+  {
     this("", null, false);
     setTitles( "", "", "" );
+  }
+
+
+
+  public isawLineProfileLayout( Point2D.Double x, Point2D.Double y ) 
+  {
+    this("", null, false);
+    setTitles( "", "", "" );
+
+    xMax_ = x.x;
+    xMin_ = x.y;
+
+    yMax_ = y.x;
+    yMin_ = y.y;
+
   }
 
 
@@ -159,7 +201,8 @@ public class isawLineProfileLayout extends GraphicLayout
    * @param img Logo image
    * @param is_key_pane if true LineKey is in separate pane
    */
-  public isawLineProfileLayout(String id, Image img, boolean is_key_pane) {
+  public isawLineProfileLayout( String id, Image img, boolean is_key_pane ) 
+  {
     super(id, img, new Dimension(400,300));
     Layer layer, key_layer;
     CartesianGraph graph;
@@ -167,9 +210,8 @@ public class isawLineProfileLayout extends GraphicLayout
     PlainAxis xbot, yleft;
     double xpos, ypos;
     int halign;
-//
-// create Pane and descendants for the LineProfile layout
-//
+
+    //create Pane and descendants for the LineProfile layout
     setLayout(new StackedLayout());
     setBackground(paneColor_);
     layer = new Layer("Layer 1", new Dimension2D(xSize_, ySize_));
@@ -196,21 +238,25 @@ public class isawLineProfileLayout extends GraphicLayout
       layer.addChild(lineKey_);
     }
 
-    // add Icon
-    if(iconImage_ != null) {
+
+    //add Icon
+    if( iconImage_ != null ) 
+    {
       logo_ = new Logo(new Point2D.Double(0.0, ySize_), Logo.TOP, Logo.LEFT);
       logo_.setImage(iconImage_);
       layer.addChild(logo_);
       Rectangle bnds = logo_.getBounds();
       xpos = layer.getXDtoP(bnds.x + bnds.width) + 0.05;
       halign = SGLabel.LEFT;
-    } else {
+    } 
+    else 
+    {
       xpos = (xMin_ + xMax_)*0.5;
       halign = SGLabel.CENTER;
     }
-//
-// title
-//
+
+
+    //title
     ypos = ySize_ - 1.2f*mainTitleHeight_;
     Font titleFont = new Font("Helvetica", Font.BOLD, 14);
     mainTitle_ = new SGLabel("Line Profile Title", 
@@ -242,17 +288,17 @@ public class isawLineProfileLayout extends GraphicLayout
     layer.addChild(title3_);
     
     layerCount_ = 0;
-//
-// create LineCartesianGraph and transforms
-//
+
+
+    //create LineCartesianGraph and transforms
     graph = new CartesianGraph("Profile Graph 1");
     xt = new LinearTransform(xMin_, xMax_, 0.0, 1.0);
     yt = new LinearTransform(yMin_, yMax_, 0.0, 1.0);
     graph.setXTransform(xt);
     graph.setYTransform(yt);
-//
-// create axes
-//
+
+
+    //create axes
     Font axfont = new Font("Helvetica", Font.ITALIC, 14);
     xbot = new PlainAxis("Bottom Axis");
     xbot.setRangeU(new Range2D(0.0, 1.0));
@@ -279,20 +325,23 @@ public class isawLineProfileLayout extends GraphicLayout
 
 
 
-  public String getLocationSummary(SGTData grid) {
+  public String getLocationSummary(SGTData grid) 
+  {
     return "";
   }
 
 
 
-  public void addData(Collection lines) {
+  public void addData( Collection lines ) 
+  {
     addData(lines, null);
   }
 
 
 
-  public void addData(Collection lines, String descrip) {
-    //    System.out.println("addData(Collection) called");
+  public void addData( Collection lines, String descrip ) 
+  {
+    //System.out.println("addData(Collection) called");
     for(int i=0; i < lines.size(); i++) {
       SGTLine line = (SGTLine)lines.elementAt(i);
       addData(line, line.getTitle());
@@ -307,7 +356,8 @@ public class isawLineProfileLayout extends GraphicLayout
    *
    * @param data datum data to be added
    */
-  public void addData(SGTData datum) {
+  public void addData( SGTData datum ) 
+  {
     addData(datum, null);
   }
 
@@ -362,33 +412,35 @@ public class isawLineProfileLayout extends GraphicLayout
       // determine range and titles from data
 
       data = (SGTData)data_.firstElement();
-      xRange = findRange((SGTLine)data, X_AXIS);
-      yRange = findRange((SGTLine)data, Y_AXIS);
+      xRange = findRange( (SGTLine)data, X_AXIS );
+      yRange = findRange( (SGTLine)data, Y_AXIS );
       zUp_ = ((SGTLine)data).getYMetaData().isReversed();
       
       if(  Double.isNaN(xRange.start) || Double.isNaN(yRange.start)  ) 
         data_good = false;
       
-      if(data_good) 
+      if( data_good ) 
       {
-        if(!zUp_) 
+        if( !zUp_ ) 
         {
           save = yRange.end;
           yRange.end = yRange.start;
           yRange.start = save;
         }
 
-        xnRange = Graph.computeRange(xRange, 6);
-        ynRange = Graph.computeRange(yRange, 6);
+        //compute a nice range from this data's range (in user coord plane)
+        xnRange = Graph.computeRange( xRange, 6 );
+        ynRange = Graph.computeRange( yRange, 6 );
 
-        origin = new Point2D.Double(xnRange.start, ynRange.start);
+        origin = new Point2D.Double( xnRange.start, ynRange.start );
+        //origin = computedOrigin;
       }
              
-      xLabel =  "" + ((SGTLine)data).getXMetaData().getUnits() + "";
-      yLabel =  "" + ((SGTLine)data).getYMetaData().getUnits() + "";
+      xLabel = ( (SGTLine)data ).getXMetaData().getUnits();
+      yLabel = ( (SGTLine)data ).getYMetaData().getUnits();
 
 
-      // attach information to pane and descendents
+      //attach information to pane and descendents
       try 
       {
         layer = getLayer("Layer 1");
@@ -400,18 +452,18 @@ public class isawLineProfileLayout extends GraphicLayout
       graph = (CartesianGraph)layer.getGraph();
 
 
-      // axes
+      //axes
       try 
       {
-        Font tfont = new Font("Helvetica", Font.PLAIN, 14);
-        xbot = (PlainAxis)graph.getXAxis("Bottom Axis");
-        if(data_good) 
+        Font tfont = new Font( "Helvetica", Font.PLAIN, 14 );
+        xbot = (PlainAxis)graph.getXAxis( "Bottom Axis" );
+        if( data_good ) 
         {
-          xbot.setRangeU(xnRange);
-          xbot.setDeltaU(xnRange.delta);
-          xbot.setLocationU(origin);
+          xbot.setRangeU( xnRange );
+          xbot.setDeltaU( xnRange.delta );
+          xbot.setLocationU( origin );
         }
-        xtitle = new SGLabel(  "xaxis title", 
+        xtitle = new SGLabel( "xaxis title", 
                                xLabel, 
                                new Point2D.Double(0.0, 0.0)  );
         xtitle.setFont(tfont);
@@ -437,7 +489,7 @@ public class isawLineProfileLayout extends GraphicLayout
       }
 
 
-      // transforms
+      //transforms
       if(data_good) 
       {
         xt = (LinearTransform)graph.getXTransform();
@@ -468,7 +520,7 @@ public class isawLineProfileLayout extends GraphicLayout
 
 
 
-      // add to lineKey
+      //add to lineKey
       if(descrip == null) 
       {
         lineTitle = new SGLabel(  "line title", 
@@ -490,8 +542,9 @@ public class isawLineProfileLayout extends GraphicLayout
 
       // more than one data set...
       // add new layer
-      if(((SGTLine)datum).getYMetaData().isReversed() != zUp_) {
-	//        System.out.println("New datum has reversed ZUp!");
+      if(((SGTLine)datum).getYMetaData().isReversed() != zUp_) 
+      {
+	//System.out.println("New datum has reversed ZUp!");
         SGTData modified = flipZ(datum);
         datum = modified;
       }
@@ -500,41 +553,53 @@ public class isawLineProfileLayout extends GraphicLayout
       data_good = false;
       layerCount_++;
 
-      // loop over data sets, getting ranges
-      if(isOverlayed()) 
+      //loop over data sets, getting ranges
+      if(  isOverlayed()  ) 
       {
         Range2D xTotalRange = new Range2D();
         Range2D yTotalRange = new Range2D();
         
         boolean first = true;
          
-        for (Enumeration e = data_.elements() ; e.hasMoreElements() ;) {
+        for (Enumeration e = data_.elements() ; e.hasMoreElements() ;) 
+        {
           data = (SGTData)e.nextElement();
           xRange = findRange((SGTLine)data, X_AXIS);
           yRange = findRange((SGTLine)data, Y_AXIS);
-          if(!((SGTLine)data).getYMetaData().isReversed()) {
+          if(!((SGTLine)data).getYMetaData().isReversed()) 
+          {
             save = yRange.start;
             yRange.start = yRange.end;
             yRange.end = save;
           }
-          if(first) {
-            if(Double.isNaN(xRange.start) || Double.isNaN(yRange.start)) {
+          if(first) 
+          {
+            if(Double.isNaN(xRange.start) || Double.isNaN(yRange.start)) 
+            {
               first = true;
-            } else {
+            }
+            else 
+            {
               first = false;
               data_good = true;
               xTotalRange = new Range2D(xRange.start, xRange.end);
               yTotalRange = new Range2D(yRange.start, yRange.end);
             }
-          } else {
-            if(!Double.isNaN(xRange.start) && !Double.isNaN(yRange.start)) {
+          } 
+          else 
+          {
+            if(!Double.isNaN(xRange.start) && !Double.isNaN(yRange.start)) 
+            {
               data_good = true;
               xTotalRange.start = Math.min(xTotalRange.start, xRange.start);
               xTotalRange.end = Math.max(xTotalRange.end, xRange.end);
-              if(!((SGTLine)data).getYMetaData().isReversed()) {
+              if(!((SGTLine)data).getYMetaData().isReversed()) 
+              {
                 yTotalRange.start = Math.max(yTotalRange.start, yRange.start);
                 yTotalRange.end = Math.min(yTotalRange.end, yRange.end);
-              } else {
+              }
+              else 
+              {
                 yTotalRange.start = Math.min(yTotalRange.start, yRange.start);
                 yTotalRange.end = Math.max(yTotalRange.end, yRange.end);
               }
@@ -548,7 +613,8 @@ public class isawLineProfileLayout extends GraphicLayout
         }
         graph = (CartesianGraph)layer.getGraph();
         
-        if(data_good) {
+        if(data_good) 
+        {
           xnRange = Graph.computeRange(xTotalRange, 6);
           ynRange = Graph.computeRange(yTotalRange, 6);
           origin = new Point2D.Double(xnRange.start, ynRange.start);
@@ -575,7 +641,7 @@ public class isawLineProfileLayout extends GraphicLayout
         xt = (LinearTransform)graph.getXTransform();
         yt = (LinearTransform)graph.getYTransform();
 
-        if(data_good) 
+        if( data_good ) 
         {
           xt.setRangeU(xnRange);
           yt.setRangeU(ynRange);
@@ -609,13 +675,11 @@ public class isawLineProfileLayout extends GraphicLayout
             (  (sgtMarker)(graphableData.getMarkerType())  ).getSGTMarker(),
             (  (sgtEntityColor)(graphableData.getColor())  ).getSGTColor()  );
         }
-
-
         newGraph.setData(datum, lineAttr);
 
 
-        // add to lineKey
-        if(descrip == null) 
+        //add to lineKey
+        if( descrip == null ) 
         {
           xLabel = ((SGTLine)datum).getXMetaData().getName();
           lineTitle = new SGLabel(  "line title", 
@@ -641,7 +705,8 @@ public class isawLineProfileLayout extends GraphicLayout
  * Flip the zaxis.  Reverse the direction of the z axis by changing the sign
  * of the axis values and isBackward flag.
  */
-  private SGTData flipZ(SGTData in) {
+  private SGTData flipZ(SGTData in) 
+  {
     SGTMetaData zmetaout;
     SGTMetaData zmetain;
     SimpleLine out = null;
@@ -650,9 +715,9 @@ public class isawLineProfileLayout extends GraphicLayout
     double[] newValues;
     values = line.getYArray();
     newValues = new double[values.length];
-    for(int i=0; i < values.length; i++) {
+    for(int i=0; i < values.length; i++) 
       newValues[i] = -values[i];
-    }
+    
     out = new SimpleLine(line.getXArray(), newValues, line.getTitle());
     zmetain = line.getYMetaData();
     zmetaout = new SGTMetaData(zmetain.getName(), zmetain.getUnits(),
@@ -663,10 +728,14 @@ public class isawLineProfileLayout extends GraphicLayout
     out.setYMetaData(zmetaout);
     return (SGTData)out;
   }
-/**
- * Clear the current zoom.
- */
-  public void resetZoom() {
+
+
+
+  /**
+   * Clear the current zoom.
+   */
+  public void resetZoom() 
+  {
     SGTData data;
     Range2D xRange, yRange;
     boolean data_good = false;
@@ -717,6 +786,10 @@ public class isawLineProfileLayout extends GraphicLayout
       setYRange(yTotalRange, false);
     }
   }
+
+
+
+
 /**
  * Reset the x range. This method is designed to provide
  * zooming functionality.
@@ -755,29 +828,40 @@ public class isawLineProfileLayout extends GraphicLayout
       }
     } catch (AxisNotFoundException e) {}
   }
-/**
- * Empty method for this Layout.
- */
-  public void setXRange(TimeRange trnge) {
-  }
+
+
+
   /**
- * Reset the y range. This method is designed to provide
- * zooming functionality.
- *
- * @param rnge new y range
- */
-  public void setYRange(Range2D rnge) {
+   * Empty method for this Layout.
+   */
+  public void setXRange(TimeRange trnge) 
+  {
+  }
+
+
+
+  /**
+   * Reset the y range. This method is designed to provide
+   * zooming functionality.
+   * 
+   * @param rnge new y range
+   */
+  public void setYRange(Range2D rnge) 
+  {
     setYRange(rnge, true);
   }
 
-/**
- * Reset the y range. This method is designed to provide
- * zooming functionality.
- *
- * @param rnge new y range
- * @param testZUp test to see if Z is Up
- */
-  public void setYRange(Range2D rnge, boolean testZUp) {
+
+
+  /**
+   * Reset the y range. This method is designed to provide
+   * zooming functionality.
+   *
+   * @param rnge new y range
+   * @param testZUp test to see if Z is Up
+   */
+  public void setYRange(Range2D rnge, boolean testZUp) 
+  {
     SGTData grid;
     Point2D.Double origin;
     PlainAxis xbot, yleft;
@@ -819,22 +903,40 @@ public class isawLineProfileLayout extends GraphicLayout
       }
     } catch (AxisNotFoundException e) {}
   }
-/**
- * Empty method for this Layout.
- */
-  public void setYRange(TimeRange trnge) {
+
+
+
+  /**
+   * Empty method for this Layout.
+   */
+  public void setYRange(TimeRange trnge) 
+  {
   }
-  private void setAllClip(Pane pane, double xmin, double xmax, double ymin, double ymax) {
+
+
+
+  private void setAllClip( Pane pane, 
+                           double xmin, 
+                           double xmax, 
+                           double ymin, 
+                           double ymax) 
+  {
     Layer ly;
     Component[] comps = pane.getComponents();
-    for(int i=0; i < comps.length; i++) {
-      if(comps[i] instanceof Layer) {
+    for(int i=0; i < comps.length; i++) 
+    {
+      if(comps[i] instanceof Layer) 
+      {
         ly = (Layer)comps[i];
         ((CartesianGraph)ly.getGraph()).setClip(xmin, xmax, ymin, ymax);
       }
     }
   }
-  private void setAllClipping(Pane pane, boolean clip) {
+
+
+
+  private void setAllClipping(Pane pane, boolean clip) 
+  {
     Layer ly;
     Component[] comps = pane.getComponents();
     for(int i=0; i < comps.length; i++) {
@@ -844,7 +946,11 @@ public class isawLineProfileLayout extends GraphicLayout
       }
     }
   }
-  public void clear() {
+
+
+
+  public void clear() 
+  {
     data_.removeAllElements();
     Layer layer = getFirstLayer();
     ((CartesianGraph)layer.getGraph()).setRenderer(null);
@@ -852,7 +958,8 @@ public class isawLineProfileLayout extends GraphicLayout
     add(layer);   // restore first layer
     lineKey_.clearAll();
     draw();
-    if(keyPane_ != null)keyPane_.draw();
+    if(keyPane_ != null)
+      keyPane_.draw();
   }
 
 
@@ -882,7 +989,8 @@ public class isawLineProfileLayout extends GraphicLayout
 
 
 
-  public void setLayerSizeP(Dimension2D d) {
+  public void setLayerSizeP(Dimension2D d) 
+  {
     double xMax = d.width - (xSize_ - xMax_);
     double yMax = d.height - (ySize_ - yMax_);
     Component[] comps = getComponents();
@@ -920,15 +1028,10 @@ public class isawLineProfileLayout extends GraphicLayout
 
 
 
-  private boolean useMarks = false;
+  private Point2D.Double computedOrigin;
 
-  /**
-   * enable marks instead of solid lines
-   */
-  public void useMarks( boolean v )
+  public void setOrigin( Point2D.Double p )
   {
-    useMarks = v;
+    computedOrigin = p;
   }
-
-
 }
