@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/05/14 15:04:05  rmikk
+ * Removed unused variables
+ *
  * Revision 1.12  2004/03/15 03:36:03  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -700,8 +703,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     if( ranks.length < ndims-1 )
       return null;
    
-    int XX[]; 
-    XX = new int[ 2 ]; 
+ 
     errormessage = "";
   
     //System.out.print( "Z"+type+","+type1 );
@@ -709,7 +711,6 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     
     S = S.substring( 5 ).trim();//First letters are "class "
    
-    String S1 = S;
     //Create MultiDimensioned array
     
     for( int i = 1 ; i< ndims-1 ; i++ )
@@ -791,19 +792,15 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       System.out.println( "ERRORA:"+nw.getErrorMessage() );
       System.exit( 0 );
     }
-    char c = 0;
-    String S1 = null;
-    String S2 = null;
-    int ndims , type = NexIO.Types.Int;
-    int ranks[] , values[];
-    ranks = values = null;
-    NexWriteNode n1 , n2 , nnn;
-    nnn = nw;
+    int ranks[] ;
+    ranks = null;
+    NexWriteNode n1 , n2 ;
+    //nnn = nw;
     n1 = nw;
     n2 = null;
     ranks = new int[ 1 ];
     ranks[ 0 ] = 9;
-    ndims = 1;
+    //ndims = 1;
     nw.addAttribute( "filenamee", (Object)(new String("Hi There").getBytes()),
                      NexIO.Types.Char , ranks );
     n1 = ( NexWriteNode )nw.newChildNode( "entry1" , "NXentry" );
@@ -833,10 +830,9 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     int ndims , type = NexIO.Types.Int;
     int ranks[] , values[];
     ranks  = values = null;
-    NexWriteNode n1 , n2 , nnn;
+    NexWriteNode n1 ,  nnn;
     nnn = nw;
     n1 = nw;
-    n2 = null;
     ndims = 1;
     while( c!= 'x' ){
       System.out.println("Enter option desired" );

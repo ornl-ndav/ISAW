@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/05/14 15:03:52  rmikk
+ * Removed unused variables
+ *
  * Revision 1.6  2003/10/15 02:52:57  bouzekc
  * Fixed javadoc errors.
  *
@@ -114,7 +117,7 @@ public class NxWriteInstrument{
     errormessage = "";
     NxWriteNode n1 = null;
     Object X = DS.getAttributeValue( Attribute.INST_NAME );
-    int ranks[] , intval[];
+    int ranks[] ;
     char cc = 0;
     
     if( X != null ){

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/05/14 15:03:52  rmikk
+ * Removed unused variables
+ *
  * Revision 1.6  2004/02/16 02:19:23  bouzekc
  * Removed unused imports.
  *
@@ -102,7 +105,6 @@ public class NxWriteMonitor{
     if( datablock >= ndatablocks )
       return true;
     errormessage = "";
-    int i = datablock;
     // --------- Time_of Flight node( Centered) --------------------------
     NxWriteNode n1 = Inst_Type.makeXvalnode( DS,datablock,datablock+1, node);
 

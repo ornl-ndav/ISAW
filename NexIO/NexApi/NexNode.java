@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2004/05/14 15:02:42  rmikk
+ * Removed unused variables
+ *
  * Revision 1.15  2004/03/15 03:36:02  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -277,7 +280,6 @@ public class NexNode implements NxNode{
     errormessage = "";
     if( !open() )
       return null;
-    int n = getNChildNodes();
     
     if( NodeName == null ){
       errormessage = "Null child not allowed in " + NodeName;
@@ -929,7 +931,6 @@ public class NexNode implements NxNode{
       return null;
     if( AttrName == null )
       return null;
-    int n = getNAttributes();
     Object keyValue = ( attrlist.get( AttrName ) );
     
     if( keyValue == null ){
@@ -1075,9 +1076,7 @@ public class NexNode implements NxNode{
     Node2 = NN;
     char c = 0;
     int n = 0;
-    int N = 0;
     int[] initslabElement=null,rank=null;
-    String S = "";
     int[] dim=null;
     while( c != 'x' ){
       System.out.println("Select Option Desired" );
@@ -1105,17 +1104,17 @@ public class NexNode implements NxNode{
           n = 0;
         }
       }else if( c == 'N' ){
-        try{
-          N = ( new Integer( NN.readLine() ) ).intValue();
+       /* try{
+         // N = ( new Integer( NN.readLine() ) ).intValue();
         }catch( Exception s ){
           N = 0;
-        }
+        }*/
       }else if( c == 's' ){
-        try{
+      /*  try{
           S = NN.readLine();
         }catch( Exception s ){
           n = 0;
-        }
+        }*/
       }else if( c == 'a' ){
         System.out.println( NN.getNAttributes() );
       }else if( c == 'A' ){
