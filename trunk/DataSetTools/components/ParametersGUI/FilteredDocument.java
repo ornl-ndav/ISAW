@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/02/10 05:30:56  bouzekc
+ *  Uses IsawToolkit.beep() rather than Toolkit.beep().
+ *
  *  Revision 1.6  2003/12/14 19:20:40  bouzekc
  *  Removed unused imports.
  *
@@ -57,7 +60,6 @@
 package DataSetTools.components.ParametersGUI;
 
 import javax.swing.text.*; 
-import java.awt.Toolkit;
 import java.beans.*;
 import DataSetTools.parameter.*;
 import DataSetTools.util.*;
@@ -69,7 +71,6 @@ import DataSetTools.util.*;
  */
 class FilteredDocument extends PlainDocument {
     private JTextComponent        textBox;
-    private transient Toolkit     toolkit;
     private PropertyChangeSupport propBind;
     private StringFilterer        filter;
     
@@ -81,7 +82,6 @@ class FilteredDocument extends PlainDocument {
                             PropertyChangeSupport pb){
         super();
         this.textBox  = T;
-        this.toolkit  = Toolkit.getDefaultToolkit();
         this.setPropBind(pb);
         this.filter   = sf; //setFilter(sf);
     }
@@ -104,7 +104,7 @@ class FilteredDocument extends PlainDocument {
             if(propBind!=null)
                 this.fireValueChange(oldText,textBox.getText());
         }else{
-            toolkit.beep();
+            IsawToolkit.beep();
         }
     }
     

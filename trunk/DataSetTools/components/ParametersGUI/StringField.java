@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/02/10 05:30:56  bouzekc
+ *  Uses IsawToolkit.beep() rather than Toolkit.beep().
+ *
  *  Revision 1.8  2004/01/29 18:16:53  dennis
  *  Fixed javadoc error.
  *
@@ -64,8 +67,6 @@
 package DataSetTools.components.ParametersGUI;
 
 import DataSetTools.parameter.*;
-
-import java.awt.Toolkit;
 
 import java.beans.*;
 
@@ -213,7 +214,7 @@ public abstract class StringField extends JTextField {
             IParameter.VALUE, oldText, textBox.getText(  ) );
         }
       } else {
-        Toolkit.getDefaultToolkit(  ).beep(  );
+        DataSetTools.util.IsawToolkit.beep(  );
       }
     }
 
