@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.12  2004/03/11 07:41:15  bouzekc
+ * Now handles StringChoiceList correctly.
+ *
  * Revision 1.11  2004/03/11 06:14:34  bouzekc
  * Removed dead code.
  *
@@ -123,190 +126,43 @@ public class JavaWrapperOperator extends GenericOperator {
   //~ Methods ******************************************************************
 
   /**
-   * @return The ISS command name for this Operator.
-   */
-  public String getCommand(  ) {
-    if( wrapped.getCommand(  ) == null ) {
-      return super.getCommand(  );
-    }
-
-    return wrapped.getCommand(  );
-  }
-
-  /**
-   * Sets the default parameters.
-   */
-  public void setDefaultParameters(  ) {
-    Class type  = null;
-    Object val  = null;
-    String name = null;
-
-    if( fieldParams != null ) {
-      parameters = new Vector(  );
-
-      try {
-        for( int i = 0; i < fieldParams.length; i++ ) {
-          type   = fieldParams[i].getType(  );
-
-          //get the value of the field for the wrapped Object
-          val    = fieldParams[i].get( wrapped );
-
-          //get the name
-          name   = fieldParams[i].getName(  );
-
-          //BooleanPG
-          if( ( type == Boolean.TYPE ) || ( type == Boolean.class ) ) {
-            addParameter( new BooleanPG( name, val ) );
-
-            //FloatPG
-          } else if( 
-            ( type == Float.TYPE ) || ( type == Double.TYPE ) ||
-              ( type == Float.class ) || ( type == Double.class ) ) {
-            addParameter( new FloatPG( name, val ) );
-
-            //IntegerPG
-          } else if( 
-            ( type == Integer.TYPE ) || ( type == Long.TYPE ) ||
-              ( type == Integer.class ) || ( type == Long.class ) ) {
-            addParameter( new IntegerPG( name, val ) );
-
-            //StringPG
-          } else if( ( type == Character.TYPE ) || ( type == String.class ) ) {
-            addParameter( new StringPG( name, null ) );
-          } else if( ( type.isArray(  ) ) || ( type == Vector.class ) ) {
-            //ArrayPG
-            addParameter( new ArrayPG( name, val ) );
-          } else if( 
-            ( type == DataSet.class ) || ( type == DataDirectoryString.class ) ) {
-            addParameter( new DataSetPG( name, val ) );
-          } else if( type == UniformXScale.class ) {
-            addParameter( new UniformXScalePG( name, val ) );
-          } else if( type == VariableXScale.class ) {
-            addParameter( new VariableXScalePG( name, val ) );
-          } else if( type == InstrumentNameString.class ) {
-            addParameter( new InstNamePG( name, val ) );
-          } else if( type == IntListString.class ) {
-            addParameter( new IntArrayPG( name, val ) );
-          } else if( type == LoadFileString.class ) {
-            addParameter( new LoadFilePG( name, val ) );
-          } else if( type == SaveFileString.class ) {
-            addParameter( new SaveFilePG( name, val ) );
-          } else if( type == StringChoiceList.class ) {
-            addParameter( new ChoiceListPG( name, val ) );
-          }
-        }
-      } catch( IllegalAccessException iae ) {
-        iae.printStackTrace(  );
-      }
-    }
-  }
-
-  /**
-   * @return The javadoc formatted documentation for this Operator.
-   */
-  public String getDocumentation(  ) {
-    if( wrapped.getDocumentation(  ) == null ) {
-      return super.getDocumentation(  );
-    }
-
-    return wrapped.getDocumentation(  );
-  }
-
-  /**
-   * Returns the result of executing the Wrappable's calculate() method.
-   */
-  public Object getResult(  ) {
-    try {
-      Object[] values = new Object[parameters.size(  )];
-
-      //go through the parameter list, getting Objects for the calculate(...)
-      //method.
-      for( int i = 0; i < parameters.size(  ); i++ ) {
-        values[i] = ( ( ParameterGUI )parameters.get( i ) ).getValue(  );
-      }
-
-      for( int k = 0; k < fieldParams.length; k++ ) {
-        if( fieldParams[k].getType(  ).isArray(  ) ) {
-          //this means that we have hit an ArrayPG
-          //make sure we can go through the vector
-          if( values[k] instanceof Vector ) {
-            Vector myVect = ( Vector )values[k];
-
-            //iterate through the vector of values and set each of the field
-            //param's values to the element value
-            for( int m = 0; m < myVect.size(  ); m++ ) {
-              Array.set( fieldParams[k].get( wrapped ), 1, myVect.get( m ) );
-            }
-          }
-        } else {
-          fieldParams[k].set( wrapped, values[k] );
-        }
-      }
-
-      //send the values through calculate(...)
-      return wrapped.calculate(  );
-    } catch( IllegalAccessException iae ) {
-      iae.printStackTrace(  );
-
-      return null;
-    }
-  }
-
-  /**
-   * Accessor method for the title of this Operator.  Uses the file name  of
-   * the Wrappable internal instance.
-   *
-   * @return The title of this JavaWrapperOperator.
-   */
-  public String getTitle(  ) {
-    String[] packageNames = super.getTitle(  ).split( "\\." );
-
-    return packageNames[packageNames.length - 1];
-  }
-
-  /**
    * Testbed.
    */
+
   public static void main( String[] args ) {
-    Operators.WrappedCrunch op = new Operators.WrappedCrunch(  );
-
-    //Operators.MyFortran crunch = new Operators.MyFortran(  );
-    JavaWrapperOperator wrapper = new JavaWrapperOperator( op );
-
-    /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
-       "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
-       new DataSetTools.viewer.ViewManager(
-         temp, DataSetTools.viewer.IViewManager.IMAGE );
-       wrapper.getParameter( 0 )
-              .setValue( temp );
-       wrapper.getParameter( 1 )
-              .setValue( new Float( 0.0f ) );
-       wrapper.getParameter( 2 )
-              .setValue( new Float( 2.0f ) );
-       wrapper.getParameter( 3 )
-              .setValue( new Boolean( true ) );
-       DataSet newDS = ( DataSet )wrapper.getResult(  );
-       new DataSetTools.viewer.ViewManager(
-         newDS, DataSetTools.viewer.IViewManager.IMAGE );*/
-    String[] catList = wrapper.getCategoryList(  );
-
-    for( int i = 0; i < catList.length; i++ ) {
-      System.out.println( catList[i] );
-    }
-
-    System.out.println( wrapper.getCommand(  ) );
-    System.out.println( wrapper.getResult(  ) );
-
-    //this test is good only for WrappedCrunch
-    wrapper.getParameter( 1 ).setValue( new Float( 5.0f ) );
-
-    JavaWrapperOperator clonedOp = ( JavaWrapperOperator )wrapper.clone(  );
-
-    System.out.print( "Original value: " );
-    System.out.println( wrapper.getParameter( 1 ) );
-    System.out.print( "New value: " );
-    System.out.println( clonedOp.getParameter( 1 ) );
-  }
+     Operators.WrappedCrunch op = new Operators.WrappedCrunch(  );
+     //Operators.StringChoiceOp op = new Operators.StringChoiceOp(  );
+     //Operators.MyFortran crunch = new Operators.MyFortran(  );
+     JavaWrapperOperator wrapper = new JavaWrapperOperator( op );
+  /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
+     "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
+     new DataSetTools.viewer.ViewManager(
+       temp, DataSetTools.viewer.IViewManager.IMAGE );
+     wrapper.getParameter( 0 )
+            .setValue( temp );
+     wrapper.getParameter( 1 )
+            .setValue( new Float( 0.0f ) );
+     wrapper.getParameter( 2 )
+            .setValue( new Float( 2.0f ) );
+     wrapper.getParameter( 3 )
+            .setValue( new Boolean( true ) );
+     DataSet newDS = ( DataSet )wrapper.getResult(  );
+     new DataSetTools.viewer.ViewManager(
+       newDS, DataSetTools.viewer.IViewManager.IMAGE );*/
+  String[] catList = wrapper.getCategoryList(  );
+     for( int i = 0; i < catList.length; i++ ) {
+       System.out.println( catList[i] );
+     }
+     System.out.println( wrapper.getCommand(  ) );
+     System.out.println( wrapper.getResult(  ) );
+     //this test is good only for WrappedCrunch
+      wrapper.getParameter( 1 ).setValue( new Float( 5.0f ) );
+      JavaWrapperOperator clonedOp = ( JavaWrapperOperator )wrapper.clone(  );
+      System.out.print( "Original value: " );
+      System.out.println( wrapper.getParameter( 1 ) );
+      System.out.print( "New value: " );
+      System.out.println( clonedOp.getParameter( 1 ) );
+     }
 
   /**
    * Method to create a category list from this classes nearest abstract
@@ -353,6 +209,151 @@ public class JavaWrapperOperator extends GenericOperator {
 
     // split up into an array and return
     return catList;
+  }
+
+  /**
+   * @return The ISS command name for this Operator.
+   */
+  public String getCommand(  ) {
+    if( wrapped.getCommand(  ) == null ) {
+      return super.getCommand(  );
+    }
+
+    return wrapped.getCommand(  );
+  }
+
+  /**
+   * Sets the default parameters.
+   */
+  public void setDefaultParameters(  ) {
+    Class type  = null;
+    Object val  = null;
+    String name = null;
+
+    if( fieldParams != null ) {
+      parameters = new Vector(  );
+
+      try {
+        for( int i = 0; i < fieldParams.length; i++ ) {
+          type   = fieldParams[i].getType(  );
+
+          //get the value of the field for the wrapped Object
+          val    = fieldParams[i].get( wrapped );
+
+          //get the name
+          name   = fieldParams[i].getName(  );
+
+          //BooleanPG
+          if( ( type == Boolean.TYPE ) || ( type == Boolean.class ) ) {
+            addParameter( new BooleanPG( name, val ) );
+            //FloatPG
+          } else if( 
+            ( type == Float.TYPE ) || ( type == Double.TYPE ) ||
+              ( type == Float.class ) || ( type == Double.class ) ) {
+            addParameter( new FloatPG( name, val ) );
+            //IntegerPG
+          } else if( 
+            ( type == Integer.TYPE ) || ( type == Long.TYPE ) ||
+              ( type == Integer.class ) || ( type == Long.class ) ) {
+            addParameter( new IntegerPG( name, val ) );
+            //StringPG
+          } else if( ( type == Character.TYPE ) || ( type == String.class ) ) {
+            addParameter( new StringPG( name, null ) );
+          } else if( ( type.isArray(  ) ) || ( type == Vector.class ) ) {
+            //ArrayPG
+            addParameter( new ArrayPG( name, val ) );
+          } else if( 
+            ( type == DataSet.class ) || ( type == DataDirectoryString.class ) ) {
+            addParameter( new DataSetPG( name, val ) );
+          } else if( type == UniformXScale.class ) {
+            addParameter( new UniformXScalePG( name, val ) );
+          } else if( type == VariableXScale.class ) {
+            addParameter( new VariableXScalePG( name, val ) );
+          } else if( type == InstrumentNameString.class ) {
+            addParameter( new InstNamePG( name, val ) );
+          } else if( type == IntListString.class ) {
+            addParameter( new IntArrayPG( name, val ) );
+          } else if( type == LoadFileString.class ) {
+            addParameter( new LoadFilePG( name, val ) );
+          } else if( type == SaveFileString.class ) {
+            addParameter( new SaveFilePG( name, val ) );
+          } else if( type == StringChoiceList.class ) {
+            addParameter( 
+              new ChoiceListPG( 
+                name, ( ( StringChoiceList )val ).getStrings(  ) ) );
+          }
+        }
+      } catch( IllegalAccessException iae ) {
+        iae.printStackTrace(  );
+      }
+    }
+  }
+
+  /**
+   * @return The javadoc formatted documentation for this Operator.
+   */
+  public String getDocumentation(  ) {
+    if( wrapped.getDocumentation(  ) == null ) {
+      return super.getDocumentation(  );
+    }
+
+    return wrapped.getDocumentation(  );
+  }
+
+  /**
+   * Returns the result of executing the Wrappable's calculate() method.
+   */
+  public Object getResult(  ) {
+    try {
+      Object[] values = new Object[parameters.size(  )];
+
+      //go through the parameter list, getting Objects for the calculate(...)
+      //method.
+      for( int i = 0; i < parameters.size(  ); i++ ) {
+        values[i] = ( ( ParameterGUI )parameters.get( i ) ).getValue(  );
+      }
+
+      for( int k = 0; k < fieldParams.length; k++ ) {
+        if( fieldParams[k].getType(  ).isArray(  ) ) {
+          //this means that we have hit an ArrayPG
+          //make sure we can go through the vector
+          if( values[k] instanceof Vector ) {
+            Vector myVect = ( Vector )values[k];
+
+            //iterate through the vector of values and set each of the field
+            //param's values to the element value
+            for( int m = 0; m < myVect.size(  ); m++ ) {
+              Array.set( fieldParams[k].get( wrapped ), 1, myVect.get( m ) );
+            }
+          }
+        } else if( fieldParams[k].getType(  ) == StringChoiceList.class ) {
+          SpecialString ss = ( SpecialString )fieldParams[k].get( wrapped );
+
+          ss.setString( values[k].toString(  ) );
+        } else {
+          fieldParams[k].set( wrapped, values[k] );
+        }
+      }
+
+      //send the values through calculate(...)
+      return wrapped.calculate(  );
+    } catch( IllegalAccessException iae ) {
+      iae.printStackTrace(  );
+
+      return null;
+    }
+  }
+
+  /**
+   * Accessor method for the title of this Operator.  Uses the file name  of
+   * the Wrappable internal instance.
+   *
+   * @return The title of this JavaWrapperOperator.
+   */
+  public String getTitle(  ) {
+    String[] packageNames = super.getTitle(  ).split( "\\." );
+
+    return packageNames[packageNames.length - 1];
   }
 
   /**
