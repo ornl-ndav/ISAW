@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/07/23 15:03:41  rmikk
+ * Set the errors after the clone to square root errors if the
+ *   error array is null
+ *
  * Revision 1.3  2003/07/23 14:35:11  rmikk
  * Incorporated the weighting for the polynomial fit
  *
@@ -158,6 +162,9 @@ public class CalcTransmission extends GenericTOF_SAD {
      Sample = (DataSet)(Sample.clone());
      Empty = (DataSet)(Empty.clone());
      Cadmium = (DataSet)(Cadmium.clone());
+     setErrors( Sample);
+     setErrors( Empty);
+     setErrors( Cadmium);
      if( NeutronDelay > 0){
        applyNeutronDelay( Sample, NeutronDelay );
        applyNeutronDelay( Empty, NeutronDelay );
@@ -401,7 +408,17 @@ public class CalcTransmission extends GenericTOF_SAD {
 
   }
 
+  private void setErrors( DataSet D){
+    if( D == null)
+      return;
+    for( int i=0; i< D.getNum_entries(); i++){
+      Data db = D.getData_entry(i);
+      if( db.getErrors() == null)
+         db.setSqrtErrors( true );
 
+    }
+
+  }
   public String getDocumentation(){
       StringBuffer Res = new StringBuffer();
       Res.append( "@overview - This class creates a transmission data set in");
@@ -446,9 +463,6 @@ public class CalcTransmission extends GenericTOF_SAD {
       return Res.toString();
 
   
-
-
-
   }
 
 }//CalcTransmisson
