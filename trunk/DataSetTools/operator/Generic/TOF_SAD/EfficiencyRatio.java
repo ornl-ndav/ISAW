@@ -28,6 +28,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/07/31 15:46:27  dennis
+ * Set titles on returned DataSets containing the summed area detector
+ * spectrum and the efficiency ratio.  Added log messages to these
+ * DataSets.  Removed unneeded clone method.
+ *
  * Revision 1.5  2003/07/28 14:15:43  rmikk
  * Changed Prompt and initial value for Neutron Delay input
  * Used the DataSetTools.parameter parameters for input
@@ -390,8 +395,8 @@ public class EfficiencyRatio extends GenericTOF_SAD
     // 
     System.out.println("Shifted Grid is " + grid );
     Vector3D beam_center = grid.position();
-    beam_center.get()[1] -= x_offset/100;
-    beam_center.get()[2] += y_offset/100;
+    beam_center.get()[1] -= x_offset/100;  // in sample centered coords, det y
+    beam_center.get()[2] += y_offset/100;  // "up" and det x in -y direction
     for ( int row = 1; row <= n_rows; row++ )
       for ( int col = 1; col <= n_cols; col++ )
       {
@@ -426,6 +431,12 @@ public class EfficiencyRatio extends GenericTOF_SAD
           d.divide( eff[row-1][col-1], 0 ); 
       } 
 
+    
+    int run_num = -1;
+    Attribute attr = ds.getAttribute( Attribute.RUN_NUM );
+    if ( attr != null )
+      run_num = (int)attr.getNumericValue();
+
     Operator sum_sel_op = new SumCurrentlySelected( ds, true, true ); 
     DataSet sum_ds;
     obj = sum_sel_op.getResult();
@@ -434,6 +445,8 @@ public class EfficiencyRatio extends GenericTOF_SAD
     else
       return obj;
     sum_ds.clearSelections();
+    sum_ds.setTitle( "AD Sum(" + run_num + ")" );
+    sum_ds.addLog_entry( "Summed central pixels in radius " + radius + " cm");
 
     sum_ds.getData_entry(0).setGroup_ID(MONITOR_ID);
     Operator divide_op = new DataSetDivide( sum_ds, mon_ds, true );
@@ -444,6 +457,9 @@ public class EfficiencyRatio extends GenericTOF_SAD
     else
       return obj;
     efr_ds.clearSelections();
+    efr_ds.setTitle( "Eff Ratio(" + run_num + ")" );
+    efr_ds.addLog_entry("Efficiency Ratio of central portion of Area " +
+                        "Detector to M1 monitor");
 
     Vector result = new Vector();
     result.addElement( sum_ds );   // The "raw" spectrum to go to spdxxxxx.dat
@@ -460,16 +476,6 @@ public class EfficiencyRatio extends GenericTOF_SAD
     return result;
   }
 
-  /* ------------------------------- clone -------------------------------- */ 
-  /** 
-   *  Creates a clone of this operator.
-   */
-  public Object clone()
-  {
-    Operator op = new EfficiencyRatio();
-    op.CopyParametersFrom( this );
-    return op;
-  }
   
   /* ------------------------------- main --------------------------------- */ 
   /** 
