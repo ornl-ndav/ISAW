@@ -1,7 +1,7 @@
 /*
  * File:  HelloOperatorWizard.java
  *
- * Copyright (C) 2003, Christopher M. Bouzek
+ * Copyright (C) 2003, Chris M. Bouzek
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,10 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
- *           Chris Bouzek <coldfusion78@yahoo.com>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
+ *
+ *           Chris M. Bouzek <coldfusion78@yahoo.com>
  *
  * This work was supported by the National Science Foundation.
  *
@@ -78,34 +79,12 @@ public class HelloOperatorWizard extends Wizard
   private void createAllForms()
   {
     HelloOperator hop = new HelloOperator("Chris Bouzek");
-    //Operator always calls setDefaultParameters
-    //since it has only one constructor, which takes a title
-    //and Form has only one constructor, which takes a title
-    //this is a slight problem-Operator attempts to call
-    //setDefaultParameters on a null form_op in OperatorForm
     OperatorForm of = new OperatorForm(hop);
     this.addForm(of);
   }
 
-  /*
-   *
-   *  Overridden methods.
-   */
-  public boolean  load()
-  {
-    return false;
-  }
-  public void save()
-  {
-  }
-  public void close()
-  {
-    this.save();
-    System.exit(0);
-  }
-
   /**
-   *  Method for running the Time Focus Group wizard 
+   *  Method for running the HelloOperator wizard 
    *   as standalone.
    */
   public static void main(String args[])
