@@ -34,6 +34,9 @@
  * data set.
  *
  *  $Log$
+ *  Revision 1.3  2002/10/09 21:14:58  dennis
+ *  Added main program for testing purposes.
+ *
  *  Revision 1.2  2002/09/19 16:02:33  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -47,7 +50,7 @@
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.5  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *    Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -102,7 +105,9 @@ package DataSetTools.operator.DataSet.Math.Scalar;
 
 import  java.io.*;
 import  java.util.Vector;
+import  DataSetTools.viewer.*;
 import  DataSetTools.dataset.*;
+import  DataSetTools.operator.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
@@ -162,7 +167,8 @@ public class DataSetScalarAdd extends    ScalarOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case Add
+   * @return the command name to be used with script processor: 
+   *         in this case Add
    */
    public String getCommand()
    {
@@ -218,13 +224,12 @@ public class DataSetScalarAdd extends    ScalarOp
    */
   public static void main( String[] args )
   {
-    DataSetScalarAdd ob = new DataSetScalarAdd();
+    DataSet ds = DataSetFactory.getTestDataSet();
+    ViewManager viewer = new ViewManager(ds, ViewManager.IMAGE); 
 
-    String list[] = ob.getCategoryList();
-    System.out.println( "Categories are: " );
-    for ( int i = 0; i < list.length; i++ )
-      System.out.println( list[i] );
-
+    Operator op = new DataSetScalarAdd( ds, 100, true );
+    DataSet new_ds = (DataSet)op.getResult();
+    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE); 
   }
 
 }
