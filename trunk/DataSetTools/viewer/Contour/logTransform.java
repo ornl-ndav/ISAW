@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/01/24 22:22:24  bouzekc
+ *  Removed unused imports and local variables.
+ *
  *  Revision 1.9  2003/10/15 03:56:36  bouzekc
  *  Fixed javadoc errors.
  *
@@ -73,7 +76,6 @@
 package DataSetTools.viewer.Contour;
 import gov.noaa.pmel.sgt.*;
 import gov.noaa.pmel.util.*;
-import java.lang.Math.*;
 
 public class logTransform  implements Transform
   {
@@ -228,7 +230,7 @@ public class logTransform  implements Transform
       bu =.1f;
       mp = 100/(pend-pstart);   //y = mp(p-pstart)+bp
       bp=0;
-      float u = intensity;     // y = a*Math.log( x+ b)/Math.log(10)+K;
+      //float u = intensity;     // y = a*Math.log( x+ b)/Math.log(10)+K;
       a = 332.2;
       if( intensity > 50)
         a = 4.7418*(intensity-50)+332.3;
@@ -257,8 +259,8 @@ public class logTransform  implements Transform
    { System.out.println("Here");
      logTransform lt = new logTransform( 0.,100., .1, 100., 
                     ( new Integer(args[0])).intValue());
-      logTransform lt1=new logTransform( 0.,10., 20., 50., 0);
-     logTransform lt2=new logTransform( 0.,10., 20., 50., 100);
+      //logTransform lt1=new logTransform( 0.,10., 20., 50., 0);
+     //logTransform lt2=new logTransform( 0.,10., 20., 50., 100);
    /*  for( int i=0; i<50; i++)
       { double f=20.+30.*i/50.;
        // System.out.println(f+","+lt1.getTransP(f)+","+lt.getTransP(f)+","+lt2.getTransP(f)+
