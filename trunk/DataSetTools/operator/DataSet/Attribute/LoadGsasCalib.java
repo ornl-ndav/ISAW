@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/03/06 23:21:05  pfpeterson
+ *  Changed call from fixSeparator to setForwardSlash
+ *
  *  Revision 1.6  2003/02/06 20:34:37  dennis
  *  Added getDocumentation() method. (Tyler Stelzer)
  *
@@ -144,7 +147,7 @@ public class LoadGsasCalib extends    DS_Attribute {
     public Object getResult(){  
         DataSet ds = getDataSet();
         String iparm = getParameter(0).getValue().toString();
-        iparm=FilenameUtil.fixSeparator(iparm);
+        iparm=FilenameUtil.setForwardSlash(iparm);
         this.seq_numbering=
             ((Boolean)getParameter(1).getValue()).booleanValue();
         if(DEBUG)System.out.println("seq_numbering="+this.seq_numbering);
