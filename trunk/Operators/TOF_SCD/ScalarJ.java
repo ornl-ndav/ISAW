@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2004/01/30 02:37:44  bouzekc
+ * Removed unused variables.
+ *
  * Revision 1.12  2003/06/09 22:01:47  bouzekc
  * getResult() now returns the name of the log file
  * and prints a message to SharedData.
@@ -117,22 +120,6 @@ public class ScalarJ extends GenericTOF_SCD{
   private static final int HIGHEST_SYMMETRY = 1;
   private static final int KNOWN_CELL       = 2;
   private static final int SYMMETRIC        = 3;
-
-  // valid values of ncell (cell type)
-  private static final int P_CUBIC       = 1;
-  private static final int F_CUBIC       = 2;
-  private static final int R_HEXAGONAL   = 3;
-  private static final int I_CUBIC       = 4;
-  private static final int I_TETRAGONAL  = 5;
-  private static final int I_ORTHOROMBIC = 6;
-  private static final int P_TETRAGONAL  = 7;
-  private static final int P_HEXAGONAL   = 8;
-  private static final int C_ORTHOROMBIC = 9;
-  private static final int C_MONOCLINIC  = 10;
-  private static final int F_ORTHOROMBIC = 11;
-  private static final int P_ORTHOROMBIC = 12;
-  private static final int P_MONOCLINIC  = 13;
-  private static final int P_TRICLINIC   = 14;
 
   // valid values of nequal (specify family of valid cell types)
   private static final int A_EQ_B_EQ_C = 1;
@@ -272,9 +259,16 @@ public class ScalarJ extends GenericTOF_SCD{
     StringBuffer sb=new StringBuffer(80*5);
 
     // overview
-    sb.append("@overview This is a java version of \"SCALAR\" maintained by A.J.Schultz and originally written by R.Goyette. JScalar will read in information from blind.log and write out its results to the console that spawned the process.");
+    sb.append("@overview This is a java version of \"SCALAR\" " );
+    sb.append( "maintained by A.J.Schultz and originally written by " );
+    sb.append( "R.Goyette. JScalar will read in information from " );
+    sb.append( "blind.log and write out its results to the console that " );
+    sb.append( "spawned the process.");
     // parameters
-    sb.append("@param String file to get scalars from. If it is \"blind.log\" then the scalars are read directly. This will also calculate the scalars from an orientation matrix found in either a \"matrix\" or \"experiment\" file.");
+    sb.append("@param String file to get scalars from. If it is " );
+    sb.append( "\"blind.log\" then the scalars are read directly. This " );
+    sb.append( "will also calculate the scalars from an orientation matrix " );
+    sb.append( "found in either a \"matrix\" or \"experiment\" file.");
     sb.append("@param float delta parameter");
     sb.append("@param int restrictions on the resulting symmetry");
     // return
