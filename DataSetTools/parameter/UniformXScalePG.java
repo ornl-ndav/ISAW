@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/02/14 05:07:16  bouzekc
+ * Made private members default access to avoid a performance hit with
+ * synthetic accessor methods.
+ *
  * Revision 1.10  2003/11/25 03:02:33  bouzekc
  * Now only tries to clone the Label if it has been initialized.
  *
@@ -429,7 +433,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    *
    * @return The new UniformXScale.
    */
-  private UniformXScale createXScaleFromGUIValues(  ) {
+  final UniformXScale createXScaleFromGUIValues(  ) {
     float startNum = Float.parseFloat( start.getText(  ) );
     float endNum   = Float.parseFloat( end.getText(  ) );
     int stepNum    = Integer.parseInt( steps.getText(  ) );
