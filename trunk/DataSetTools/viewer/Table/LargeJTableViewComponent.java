@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.15  2004/11/11 19:50:44  millermi
+ *  - No longer implements IAxisAddible since AxisOverlay2D is not used.
+ *
  *  Revision 1.14  2004/08/23 21:12:16  rmikk
  *  Eliminated a null pointer exception in Instrument Table view
  *
@@ -86,7 +89,7 @@ import DataSetTools.components.ParametersGUI.*;
 *   is handled here
 */
 public class LargeJTableViewComponent  extends JPanel implements IViewComponent2D,
-   DataSetViewerMethods, IAxisAddible
+   DataSetViewerMethods//, IAxisAddible
  {
   IntTableModel table_model;
   IVirtualArray2D Array; 
