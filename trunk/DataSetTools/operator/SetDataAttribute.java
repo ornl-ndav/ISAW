@@ -1,10 +1,7 @@
 /*
  * @(#)SetDataAttribute.java   00-07-12  Ruth Mikkelson
  *             
- * This operator sets a DataSet Attribute
- *
- * ---------------------------------------------------------------------------
- *  
+ * This operator sets a Data Attribute on a particular Data block in a DataSet
  *
  *
  */
@@ -48,7 +45,8 @@ public class SetDataAttribute extends    DataSetOperator
    *  by calling getResult().
    *
    *  @param  ds          The DataSet to which the operation is applied
-   *  @param  index       The index of the data block whose attribute is to be set
+   *  @param  index       The index of the data block whose attribute is to 
+   *                      be set
    *  @parm   Attrib      The Attribute to be set.
    *  @param  new_Value   The new value of the Attribute
    */
@@ -83,7 +81,7 @@ public class SetDataAttribute extends    DataSetOperator
    */
    public String getCommand()
    {
-     return "SetDataAttr";
+     return "SetAttr";
    }
 
 
@@ -140,14 +138,15 @@ public class SetDataAttribute extends    DataSetOperator
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current SetDataAttribute Operator.  The list of parameters 
-   * and the reference to the DataSet to which it applies is copied.
+   * Get a copy of the current SetDataAttribute Operator.  The list of 
+   * parameters  and the reference to the DataSet to which it applies is 
+   * copied.
    */
   public Object clone()
   {
     SetDataAttribute new_op    = new SetDataAttribute( );
-                                                 // copy the data set associated
-                                                 // with this operator
+                                                // copy the data set associated
+                                                // with this operator
     new_op.setDataSet( this.getDataSet() );
     new_op.CopyParametersFrom( this );
 
