@@ -27,6 +27,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.6  2004/02/07 19:48:47  rmikk
+ * Catches PyExceptions instead of the subclass PySyntaxError
+ * Attempts to return a meaningful line number
+ *
  * Revision 1.5  2004/01/08 14:48:54  bouzekc
  * Made call to generateError() static, as it is a static method.
  *
@@ -93,6 +97,7 @@ public class PyScriptOperator extends GenericOperator
   private String errormessage;
   private ByteArrayOutputStream eos;
   private boolean IAmOperator = false;
+  private int errLineNum = -1;
 
   //~ Constructors *************************************************************
 
@@ -295,8 +300,9 @@ public class PyScriptOperator extends GenericOperator
     if( errormessage == null ) {
       return -1;
     }
-
-    return 00;
+    if( errLineNum >=0)
+        return errLineNum;
+    return 0;
   }
 
   /**
@@ -426,6 +432,7 @@ public class PyScriptOperator extends GenericOperator
    * @return Result of executing the Script.
    */
   public final Object getResult(  ) {
+    errLineNum = -1;
     if( !IAmOperator ) {
       //we must be working with a document that does not have a class
       //definition, so we'll try to just execute the document text
@@ -457,10 +464,10 @@ public class PyScriptOperator extends GenericOperator
         }
 
         return result;
-      } catch( PySyntaxError s ) {
+      } catch( PyException s ) {
         //hit some sort of Python syntax error
-        errormessage = "ERROR1:" + s.toString(  );
-
+        errormessage = "ERROR1:" + s.toString();
+        errLineNum = s.traceback.tb_lineno -1;
         return new ErrorString( errormessage );
       } catch( Exception s ) {
         //some other exception-hopefully we don't ever hit this.
