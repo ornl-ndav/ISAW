@@ -10,13 +10,15 @@
 # Choice is given to display dialog box.
 # Excludes noisy end detectors and writes one GSAS file.
 
-# Modify $Date$ : Ashfia Huq , sesample bins to start
+# Modify Date: 2005/02/17 23:11:32  : Ashfia Huq , sesample bins to start
 # at 2000 micro sec and end at 32000 micro sec with dT = 5 micro sec
 
-# Modify $Date$ : Ashfia Huq , ID's should remain the same 
+# Modify Date: 2005/02/17 23:11:32 : Ashfia Huq , ID's should remain the same 
 # (bad detectors are turned off using the discriminator levels
 
-$Category=Operator, Instrument Type, TOF_NPD
+# CVS VERSION $Date$
+
+$Category=Macros, Instrument Type, TOF_NPD
 
 $Standard		Boolean(true)        Standard (5B, sum & T focus)
 $Focus_all_tth	Boolean(false)       Focus_all_2Theta (4B focus to 125)		

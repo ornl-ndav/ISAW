@@ -16,7 +16,7 @@ $DeadDetectorLevel Float( .6)                   Enter the level indicating a dea
 
 $Title = sasi Calculate Sensitivity
 $Command = sasi_Sensitivity
-$Category = Operator, Instrument Type, TOF_NSAS
+$Category = Macros, Instrument Type, TOF_NSAS
 
 n= load( runFileName, "SensData")
 

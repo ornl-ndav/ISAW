@@ -18,7 +18,7 @@ $num_cols          Integer(18948)                   Enter the num of cols in the
 
 $Title = lpsd Calculate Sensitivity
 $Command = lpsd_Sensitivity
-$Category = Operator, Instrument Type, TOF_NSAS
+$Category = Macros, Instrument Type, TOF_NSAS
 
 n= load( runFileName, "SensData")
 #send SensData[1]

@@ -4,10 +4,12 @@
 # Defaults set to second frame transformation.  
 # User can either display or write a gsas(FXYE)format file or do both.
 
-# Modify $Date$ : Ashfia Huq , ID's should remain the same 
+# Modify Date: 2005/02/17 23:11:31 : Ashfia Huq , ID's should remain the same 
 # (bad detectors are turned off using the discriminator levels
 
-$Category=Operator, Instrument Type, TOF_NPD
+# CVS_VERSION $Date$
+
+$Category=Macros, Instrument Type, TOF_NPD
 
 $Current Boolean(true)	Is this a Current Run ?
 

@@ -4,7 +4,7 @@
 #This script only works for files accessed by the remote server
 #
 
-$Category=Operator, Instrument Type, TOF_NPD
+$Category=Macros, Instrument Type, TOF_NPD
 
 $host            String                     Host
 $port            Int                        port

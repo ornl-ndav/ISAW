@@ -7,7 +7,7 @@
 #
 #  $Date$
 
-$Category = Operator, Utils, Examples 
+$Category = Macros, Utils, Examples 
 
 #
 #  1. Load the data from a simple ASCII file and mark the first group as

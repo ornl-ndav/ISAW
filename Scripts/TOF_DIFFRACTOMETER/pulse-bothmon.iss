@@ -2,7 +2,7 @@
 # Script to extract Monitor counts and Number of pulses from a series of run files.
 # $Date$
 
-$Category=Operator, Instrument Type, TOF_NPD
+$Category=Macros, Instrument Type, TOF_NPD
 
 
 $run_numbers		Array([25256:25257])          		Enter run numbers like [21378]
