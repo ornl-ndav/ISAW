@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/08/14 20:24:36  dennis
+ *  Added SaveGSAS operator
+ *
  *  Revision 1.15  2001/08/07 15:59:15  dennis
  *  Added LoadRemoteData operator.
  *
@@ -83,6 +86,7 @@ public class GenericOperatorList implements Serializable
                                           "DetNormFac",
                                           "PrintDS",
                                           "SaveNX",
+                                          "SaveGSAS",
                                           "Pause",
                                           "Echo"    };
 
@@ -181,6 +185,9 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "SaveNX" ) )
       return new WriteNexus();
+
+    else if ( op_name.equals( "SaveGSAS" ) )
+      return new WriteGSAS();
 
     else if ( op_name.equals( "Pause" ) )
       return new pause();
