@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2002/07/12 15:38:59  rmikk
+ *  Added code to include the Contour View
+ *
  *  Revision 1.18  2002/02/25 17:05:01  pfpeterson
  *  Updated (again) for the new operator hierarchy.
  *
@@ -85,6 +88,7 @@ import DataSetTools.viewer.Graph.*;
 import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
 import DataSetTools.viewer.Table.*;
+import DataSetTools.viewer.Contour.*;
 import OverplotView.*;                      // import this for Kevin's viewer
 import DataSetTools.viewer.ViewerTemplate.*;
 import java.awt.*;
@@ -238,6 +242,8 @@ public class InternalViewManager extends    JInternalFrame
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
       else if ( view_type.equals( TABLE ) )
         viewer = new TabView( tempDataSet, state );
+      else if( view_type.equals( CONTOUR))
+        viewer= new ContourView( tempDataSet, state);
       else
       {
         System.out.println( "ERROR: Unsupported view type in InternalViewManager:" );
@@ -582,6 +588,10 @@ private void BuildViewMenu()
   view_menu.add( button );
 
   button = new JMenuItem( TABLE );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+
+  button = new JMenuItem( CONTOUR );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 }
