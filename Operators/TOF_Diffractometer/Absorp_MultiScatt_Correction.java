@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/01/07 19:56:45  dennis
+ * Now extends TOF_GLAD
+ *
  * Revision 1.2  2004/10/25 14:55:58  chatterjee
  * Changed the command name of this operator to Abs_MScatt_Correct.
  *
@@ -48,7 +51,7 @@ import java.io.*;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Parameter;
-import DataSetTools.operator.Generic.TOF_Diffractometer.GenericTOF_Diffractometer;
+import DataSetTools.operator.Generic.TOF_GLAD.*;
 import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;
@@ -58,7 +61,7 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
   *  This operator produces the vanadium parameter file required by GSAS 
   *  for GPPD runs
   */
-public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
+public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
  {
     private static final String TITLE = "Absorp_MultiScatt_Correction";
     private OutputStreamWriter outStream;
