@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2005/01/10 16:13:27  rmikk
+ * Groupx Home are now replaced by the name followint GROUPx_NAME in
+ *    IsawProps.dat
+ *
  * Revision 1.10  2004/03/15 03:30:14  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -202,7 +206,13 @@ public class IssScript extends Script{
       for( int i=0 ; i<minorArray.length ; i++ )
         this.categoryList[i+2]=minorArray[i];
     }
-    
+    String catText =categoryList[1].toUpperCase();
+    catText=catText.replace(' ','_');
+    if( catText.toUpperCase().endsWith("_HOME")){
+      catText = catText.substring(0,catText.length()-5)+"_NAME";
+      categoryList[1] = DataSetTools.util.SharedData.getProperty(catText, categoryList[1]);
+    }
+  
     return this.categoryList;
   }
 
