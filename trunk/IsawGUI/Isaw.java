@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.52  2001/08/08 20:20:51  dennis
+ *  Now reloads the properties file after editing/saving.
+ *
  *  Revision 1.51  2001/08/08 18:08:46  chatter
  *  DB search URl added
  *
@@ -1479,6 +1482,7 @@ public class Isaw
       if( s.equals("Save IsawProps") )
       { 
         (new Util()).saveDoc( doc , filename );        
+        SharedData.isaw_props.reload();
         System.out.println( "IsawProps saved successfully") ;     
       }
       else if( s.equals("Quit") )
