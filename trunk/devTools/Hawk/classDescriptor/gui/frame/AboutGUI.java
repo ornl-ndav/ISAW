@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/02/07 05:30:39  bouzekc
+ * Made the path to the GPL relative to ISAW_HOME.
+ *
  * Revision 1.2  2004/02/07 05:24:32  bouzekc
  * Changed all instances of "liscense" to "license".
  *
@@ -65,6 +68,8 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
+
+import DataSetTools.util.*;
 
 /**
  * @author kramer
@@ -141,7 +146,10 @@ public class AboutGUI extends JFrame implements ActionListener
 			String line = "";
 			try
 			{
-				BufferedReader gnuReader = new BufferedReader(new FileReader("devTools.Hawk.classDescriptor/gui/license/LICENSE.txt"));
+				BufferedReader gnuReader = new BufferedReader(
+          new FileReader( FilenameUtil.setForwardSlash( 
+            SharedData.getProperty( "ISAW_HOME" ) +
+            "/devTools/Hawk/classDescriptor/gui/license/LICENSE.txt") ) );
 				while (line != null)
 				{
 					license.append(line+"\n");
