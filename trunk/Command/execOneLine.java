@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.59  2003/07/15 16:43:19  rmikk
+ * Removed a Display window from the Vector of open
+ * displays when the window is closed.  This is done as
+ * the script is executing.
+ *
  * Revision 1.58  2003/07/14 16:47:35  rmikk
  * Added type checking code to prevent a run time error
  *
@@ -1102,9 +1107,19 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * Frame" or "Internal Frame".
      */
     public void Display( DataSet ds , String DisplayType , String FrameType ){
-      Graphs.addElement(ScriptUtil.display(ds,DisplayType));
+      ViewManager vm = ScriptUtil.display(ds,DisplayType);
+      Graphs.addElement(vm);
+      vm.addWindowListener( new DisplayWindowListener() );
     }
 
+    class DisplayWindowListener extends WindowAdapter{
+        public void windowClosed(WindowEvent e) {
+           Window W = e.getWindow();
+           Graphs.removeElement( W);
+           W = null;
+        }
+
+    }//DisplayWindowListener
     private int  execSave( String S , int start, int end ){
         int i = start;
         int j;
