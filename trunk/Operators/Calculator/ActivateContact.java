@@ -31,11 +31,17 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/02/04 16:28:14  pfpeterson
+ *  Now uses IParameterGUI and changed returns on errors to ErrorString.
+ *
  *  Revision 1.5  2002/11/27 23:30:05  pfpeterson
  *  standardized header
  *
  *  Revision 1.4  2002/10/29 15:57:33  dennis
  *  Added getDocumentation method, and $Log$
+ *  Added getDocumentation method, and Revision 1.6  2003/02/04 16:28:14  pfpeterson
+ *  Added getDocumentation method, and Now uses IParameterGUI and changed returns on errors to ErrorString.
+ *  Added getDocumentation method, and
  *  Added getDocumentation method, and Revision 1.5  2002/11/27 23:30:05  pfpeterson
  *  Added getDocumentation method, and standardized header
  *  Added getDocumentation method, and tag. (Mike Miller)
@@ -46,7 +52,9 @@ package Operators.Calculator;
 
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.Calculator.*;
+import DataSetTools.parameter.*;
 import DataSetTools.dataset.*;
+import DataSetTools.util.ErrorString;
 import java.util.*;
 import DataSetTools.materials.*;
 import java.text.DecimalFormat;
@@ -80,9 +88,8 @@ public class ActivateContact extends GenericCalculator
   */
   public ActivateContact( String sample, float mass){
     this(); 
-    parameters = new Vector();
-    addParameter( new Parameter("Sample Composition", new String(sample) ) );
-    addParameter( new Parameter("Sample Mass",        new Float(mass) ) );
+    getParameter(0).setValue(sample);
+    getParameter(1).setValue(new Float(mass));
   }
 
 /* ---------------------------getDocumentation--------------------------- */
@@ -128,8 +135,8 @@ public class ActivateContact extends GenericCalculator
   public void setDefaultParameters()
   {
     parameters = new Vector();
-    addParameter( new Parameter("Sample Composition", new String("La,Mn,O_3")));
-    addParameter( new Parameter("Sample Mass (in g)", new Float(5))  );
+    addParameter( new MaterialPG("Sample Composition", "La,Mn,O_3") );
+    addParameter( new FloatPG("Sample Mass (in g)", 5f) );
   }
 
  /* ----------------------------- getResult ------------------------------ */ 
@@ -140,19 +147,40 @@ public class ActivateContact extends GenericCalculator
   *  of the activated sample.
   */
   public Object getResult(){
-	String sample   = (String)(getParameter(0).getValue());
-	float  mass     = ((Float)(getParameter(1).getValue())).floatValue();
+        // get the material
+        String sample=getParameter(0).getValue().toString();
+        if( sample==null || sample.length()<=0 )
+          return new ErrorString("Invalid sample: "+sample);
+        Material material=null;
+        try{
+          material=new Material(sample);
+        }catch(InstantiationError e){
+          return new ErrorString("Invalid sample: "+sample);
+        }
+        if(material==null || material.numAtoms()<=0)
+          return new ErrorString("Invalid sample: "+sample);
+
+        // get the mass
+        float mass=Float.NaN;
+        if( getParameter(1) instanceof FloatPG ){
+          mass=((FloatPG)getParameter(1)).getfloatValue();
+        }else{
+          Object val=getParameter(1).getValue();
+          if( val instanceof Float )
+            mass=((Float)val).floatValue();
+          else if( val instanceof Integer )
+            mass=((Integer)val).floatValue();
+          else if( val instanceof Double )
+            mass=((Double)val).floatValue();
+          else
+            return new ErrorString("mass parameter of unknown type");
+          val=null;
+        }
+        if( Float.isNaN(mass) )
+          return new ErrorString("Mass is not a number");
+
+        // set up the return string
 	String rs=null;
-
-	if(sample==null){
-	    return "no sample";
-	}
-
-	// get the material from the sample string
-	Material material = new Material(sample);
-	if(material.numAtoms()<=0){
-	    return "invalid sample: "+sample;
-	}
 
 	// calculate dose per gram in mRAD/g*hr
 	float dose=0.0f;
@@ -171,8 +199,7 @@ public class ActivateContact extends GenericCalculator
 	    if(dose==Float.POSITIVE_INFINITY){
 		rs="radioactive sample";
 	    }else{
-		rs=new String((new DecimalFormat("#######0.00")).format(dose)
-			      +" mrem/hr");
+		rs=(new DecimalFormat("#######0.00")).format(dose)+" mrem/hr";
 	    }
 	}else{
 	    rs="no activation";

@@ -31,11 +31,17 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/02/04 16:28:14  pfpeterson
+ *  Now uses IParameterGUI and changed returns on errors to ErrorString.
+ *
  *  Revision 1.4  2002/11/27 23:30:05  pfpeterson
  *  standardized header
  *
  *  Revision 1.3  2002/10/29 16:02:24  dennis
  *  Added getDocumentation method, and $Log$
+ *  Added getDocumentation method, and Revision 1.5  2003/02/04 16:28:14  pfpeterson
+ *  Added getDocumentation method, and Now uses IParameterGUI and changed returns on errors to ErrorString.
+ *  Added getDocumentation method, and
  *  Added getDocumentation method, and Revision 1.4  2002/11/27 23:30:05  pfpeterson
  *  Added getDocumentation method, and standardized header
  *  Added getDocumentation method, and tag. (Mike Miller)
@@ -44,12 +50,15 @@
  */
 package Operators.Calculator;
 
+import DataSetTools.dataset.*;
+import DataSetTools.materials.*;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.Calculator.*;
-import DataSetTools.dataset.*;
-import java.util.*;
-import DataSetTools.materials.*;
+import DataSetTools.parameter.*;
+import DataSetTools.util.ErrorString;
 import java.text.DecimalFormat;
+import java.util.*;
+
 /** 
  *  
  */
@@ -82,10 +91,9 @@ public class ActivateStorage extends GenericCalculator
                            float  inst_fac)
   {
     this(); 
-    parameters = new Vector();
-    addParameter( new Parameter("Sample Composition", new String(sample) ) );
-    addParameter( new Parameter("Beam Current",       new Float(current) ) );
-    addParameter( new Parameter("Instrument Factor",  new Float(inst_fac) ) );
+    getParameter(0).setValue(sample);
+    getParameter(1).setValue(new Float(current));
+    getParameter(2).setValue(new Float(inst_fac));
   }
 
 /* ---------------------------getDocumentation--------------------------- */
@@ -133,9 +141,9 @@ public class ActivateStorage extends GenericCalculator
   public void setDefaultParameters()
   {
     parameters = new Vector();
-    addParameter( new Parameter("Sample Composition", new String("La,Mn,O_3")));
-    addParameter( new Parameter("Beam Current (in microAmp)", new Float(15))  );
-    addParameter( new Parameter("Instrument Factor (LANSCE HIPD=1.0)", new Float(0.5)) );
+    addParameter( new MaterialPG("Sample Composition", "La,Mn,O_3"));
+    addParameter( new FloatPG("Beam Current (in microAmp)", 15f)  );
+    addParameter( new FloatPG("Instrument Factor (LANSCE HIPD=1.0)", 0.5f) );
   }
 
  /* ----------------------------- getResult ------------------------------ */ 
@@ -146,20 +154,61 @@ public class ActivateStorage extends GenericCalculator
   *  the activated sample.
   */
   public Object getResult(){
-	String sample   = (String)(getParameter(0).getValue());
-	float  current  = ((Float)(getParameter(1).getValue())).floatValue();
-	float  inst_fac = ((Float)(getParameter(2).getValue())).floatValue();
+        // get the material
+        String sample=getParameter(0).getValue().toString();
+        if( sample==null || sample.length()<=0 )
+          return new ErrorString("Invalid sample: "+sample);
+        Material material=null;
+        try{
+          material=new Material(sample);
+        }catch(InstantiationError e){
+          return new ErrorString("Invalid sample: "+sample);
+        }
+        if(material==null || material.numAtoms()<=0)
+          return new ErrorString("Invalid sample: "+sample);
+
+        // get the current
+        float current=Float.NaN;
+        if( getParameter(1) instanceof FloatPG ){
+          current=((FloatPG)getParameter(1)).getfloatValue();
+        }else{
+          Object val=getParameter(1).getValue();
+          if( val instanceof Float )
+            current=((Float)val).floatValue();
+          else if( val instanceof Integer )
+            current=((Integer)val).floatValue();
+          else if( val instanceof Double )
+            current=((Double)val).floatValue();
+          else
+            return new ErrorString("current parameter of unknown type");
+          val=null;
+        }
+        if( Float.isNaN(current) )
+          return new ErrorString("Current is not a number");
+
+        // get the instrument factor
+        float inst_fac=Float.NaN;
+        if( getParameter(2) instanceof FloatPG ){
+          inst_fac=((FloatPG)getParameter(2)).getfloatValue();
+        }else{
+          Object val=getParameter(2).getValue();
+          if( val instanceof Float )
+            inst_fac=((Float)val).floatValue();
+          else if( val instanceof Integer )
+            inst_fac=((Integer)val).floatValue();
+          else if( val instanceof Double )
+            inst_fac=((Double)val).floatValue();
+          else
+            return new ErrorString("instrument factor parameter of unknown "
+                                   +"type");
+          val=null;
+        }
+        if( Float.isNaN(inst_fac) )
+          return new ErrorString("instrument factor is not a number");
+
+        // set up the return string
 	String rs=null;
 
-	if(sample==null){
-	    return "no sample";
-	}
-
-	// get the material from the sample string
-	Material material = new Material(sample);
-	if(material.numAtoms()<=0){
-	    return "invalid sample: "+sample;
-	}
 
 	// the storage time of the sample is the longest element
 	// storage time
@@ -180,8 +229,7 @@ public class ActivateStorage extends GenericCalculator
 
 	// format the result
 	if(time>0.0f){
-	    rs=new String((new DecimalFormat("#######0.00")).format(time)
-			  +" days");
+	    rs=(new DecimalFormat("#######0.00")).format(time)+" days";
 	    if(material.numAtoms()>1){
 		rs=rs+" due to "+atom;
 	    }
