@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/07/30 22:04:04  dennis
+ * Modified to work with the current PeakData object.
+ *
  * Revision 1.9  2003/07/29 16:18:05  dennis
  * Now writes L1 and complete information on detector (num rows, cols,
  * height, width, up_vector and base_vector) to peaks file.
@@ -529,20 +532,28 @@ public class RecipPlaneView
               global_obj_index++;
               PeakData pd = new PeakData();
               pd.run_num = runs[run_num_index];
-              pd.phi   = orientation.getPhi();
-              pd.chi   = orientation.getChi();
-              pd.omega = orientation.getOmega();
+              pd.orientation = new IPNS_SCD_SampleOrientation_d(
+                                                      orientation.getPhi(), 
+                                                      orientation.getChi(), 
+                                                      orientation.getOmega());
               pd.l1    = initial_path; 
-              pd.det_a = det_a;
-              pd.det_d = det_d;
-              pd.n_rows = grid.num_rows();
-              pd.n_cols = grid.num_cols();
-              pd.width  = grid.width();
-              pd.height = grid.height();
-              float coords[] = grid.y_vec().get();
-              pd.up_vec = new Vector3D_d( coords[0], coords[1], coords[2] );
+              float coords[] = grid.position().get();
+              Vector3D_d center = new Vector3D_d( coords[0], 
+                                                  coords[1], 
+                                                  coords[2] );
               coords = grid.x_vec().get();
-              pd.base_vec = new Vector3D_d( coords[0], coords[1], coords[2] );
+              Vector3D_d base   = new Vector3D_d( coords[0], 
+                                                  coords[1], 
+                                                  coords[2] );
+              coords = grid.y_vec().get();
+              Vector3D_d up     = new Vector3D_d( coords[0], 
+                                                  coords[1], 
+                                                  coords[2] );
+              pd.grid  = new UniformGrid_d( 
+                                   grid.ID(), grid.units(),
+                                   center, base, up,
+                                   grid.width(), grid.height(), grid.depth(),
+                                   grid.num_rows(), grid.num_cols() );
               pd.tof = t;
               pd.row = row;
               pd.col = col;
@@ -550,7 +561,6 @@ public class RecipPlaneView
               pd.qy  = pts[0].get()[1];
               pd.qz  = pts[0].get()[2];
               pd.counts = ys[j];
-              pd.det_id = grid.ID();
               pd.run_num = 
                 (int)(d.getAttribute(Attribute.RUN_NUM).getNumericValue());
               all_peaks.add( pd );
@@ -1457,77 +1467,7 @@ private class WriteFileListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
-    Vector3D points[] = get_data_points();
-   
-    try
-    {
-      FileWriter out_file = new FileWriter( "fft_peaks.dat" );
-      PrintWriter writer  = new PrintWriter( out_file );
-      writer.println(""+all_peaks.size() );
-
-      int last_run = -1;
-      int last_id  = -1;
-      int i        = 0;
-      while (i < all_peaks.size() )
-      {
-        PeakData pd = (PeakData)all_peaks.elementAt(i);
-        if ( pd.run_num != last_run || pd.det_id != last_id )
-        {
-          writer.print("0   NRUN DETNUM DETA   DETA2    DETD");
-          writer.print("     CHI     PHI   OMEGA  MONCNT      L1"); 
-          writer.print(" ROW COL  HEIGHT   WIDTH");
-          writer.print(" BASE_VX BASE_VY BASE_VZ");
-          writer.print("   UP_VX   UP_VY   UP_VZ");
-          writer.println();
-          writer.print("1 ");
-          writer.print( Format.integer( pd.run_num, 6 ) );
-          writer.print( Format.integer( pd.det_id, 4 ) );
-          writer.print( Format.real(pd.det_a, 8, 2 ));
-          writer.print( Format.real(pd.det_a2, 8, 2 ));
-          writer.print( Format.real(pd.det_d, 8, 4 ));
-          writer.print( Format.real(pd.chi, 8, 2 ));
-          writer.print( Format.real(pd.phi, 8, 2 ));
-          writer.print( Format.real(pd.omega, 8, 2 ));
-          writer.print( Format.real(pd.moncnt, 8, 2 ));
-          writer.print( Format.real(pd.l1, 8, 4) );
-          writer.print( Format.integer( pd.n_rows, 4 ) );
-          writer.print( Format.integer( pd.n_cols, 4 ) );
-          writer.print( Format.real(pd.height, 8, 2 ));
-          writer.print( Format.real(pd.width, 8, 2 ));
-          writer.print( Format.real(pd.base_vec.get()[0], 8, 4 ));
-          writer.print( Format.real(pd.base_vec.get()[1], 8, 4 ));
-          writer.print( Format.real(pd.base_vec.get()[2], 8, 4 ));
-          writer.print( Format.real(pd.up_vec.get()[0], 8, 4 ));
-          writer.print( Format.real(pd.up_vec.get()[1], 8, 4 ));
-          writer.print( Format.real(pd.up_vec.get()[2], 8, 4 ));
-          writer.println();
-          writer.print("2   SEQN      H      K      L COL ROW");
-          writer.println("       TOF     IPK     QX     QY     QZ");
-          last_run = pd.run_num;
-          last_id  = pd.det_id;
-        }
-        writer.print("3 ");                               // line type 3, data
-        writer.print( Format.integer( i, 6 ) );
-        writer.print( Format.real(pd.h, 7, 2 ));
-        writer.print( Format.real(pd.k, 7, 2 ));
-        writer.print( Format.real(pd.l, 7, 2 ));
-        writer.print( Format.integer( pd.col, 4 ) );
-        writer.print( Format.integer( pd.row, 4 ) );
-        writer.print( Format.real( pd.tof, 10, 2 ) );
-        writer.print( Format.real( pd.counts, 8, 1 ) );
-        writer.print( Format.real( pd.qx, 7, 2 ) );
-        writer.print( Format.real( pd.qy, 7, 2 ) );
-        writer.print( Format.real( pd.qz, 7, 2 ) );
-        writer.println();
-        i++;
-      }
-      out_file.close();
-    }
-    catch ( Exception exception )
-    {
-      System.out.println("Exception in WriteFileListener");
-      System.out.println(exception);
-    }
+    PeakData.WritePeaks( all_peaks, "fft_peaks.dat" );
   }
 }
 
@@ -1845,46 +1785,6 @@ private class FFTListener implements IObserver
   }
 }
 
-  /* ------------------------- PeakData ------------------------------ */
-  /*
-   *  class for recording complete peak info, to write out to file.
-   */
-  public class PeakData
-  {
-    int    run_num = 0;                // Run info .....
-    double moncnt = 0;
-
-    double chi   = 0,                  // Instrument info .....
-           phi   = 0,
-           omega = 0;
-    double l1    = 9.378;
-
-    int    det_id = 0;                 // Detector info ......
-
-    double det_a  = 0,                 // Detector position
-           det_a2 = 0,
-           det_d  = .23;
-                                       // Detector orientation
-    Vector3D_d up_vec   = new Vector3D_d( 0, 1, 0 );
-    Vector3D_d base_vec = new Vector3D_d( 1, 0, 0 );
-
-    int    n_rows = 100,               // Detector size
-           n_cols = 100;
-    double width  = .15,
-           height = .15;
-
-    double counts = 0;                 // Peak info .....
-    int    row = 0,                    // Measured position
-           col = 0;
-    double tof = 0;
-    double qx  = 0,                    // Q position
-           qy  = 0,
-           qz  = 0;
-    double h   = 0,                    // Miller indices
-           k   = 0, 
-           l   = 0;
-
-  }
 
   /* ---------------------------- main ---------------------------------- */
   public static void main( String args[] )
