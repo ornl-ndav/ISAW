@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/11/16 21:52:23  rmikk
+ * -The default GroupIDs are now different for every Spectra in a NeXus file
+ * -Incorporated the new methods that follow the State model
+ *
  * Revision 1.13  2003/10/15 03:05:49  bouzekc
  * Fixed javadoc errors.
  *
@@ -71,8 +75,13 @@ import DataSetTools.math.*;
 import IPNS.Runfile.* ;
 import java.util.* ;
 import java.lang.reflect.*;
+import NexIO.State.*;
+import NexIO.Process.*;
+import NexIO.Util.*;
+import DataSetTools.util.*;
 
-/**  Class that retrieves DataSets from sources that NxNode interface
+/**  Class that retrieves DataSets from sources with an NxNode interface AND
+ *  which
  * <ol>
  *<li> Satisfy the NxNode interface
  *<li> The node class structure and return types satisfy the Nexus Standard
@@ -81,24 +90,25 @@ import java.lang.reflect.*;
  * a nexus dataserver module( NexIO.NDS ). Future plans are to extend this to
  * retrieve XML documents
  */
-public class ExtGetDS{ //extends Retriever 
-  NxNode node ;
+public class ExtGetDS{ 
+  NxNode node ;//Top Node
   String filename ;
   String errormessage ;
-  Vector EntryDSs;
+  Vector EntryToDSs;
   boolean setupDSs;
   boolean debug=false;
 
   /**
-   *@param node the NxNode used to communicate with the underlying
-   *datasource
-   *@param filename the filename
+   *  Constructor 
+   *  @param node the NxNode used to communicate with the underlying
+   *                 datasource
+   *  @param filename the filename
    */
   public ExtGetDS( NxNode node , String filename ){
     this.node = node ;
     this.filename = filename ;
     errormessage = "" ;
-    EntryDSs= new Vector() ;
+    EntryToDSs= new Vector() ;
   }
 
   /**
@@ -109,118 +119,124 @@ public class ExtGetDS{ //extends Retriever
    */
   public int getType(  int data_set_num ){
     if(!setupDSs ) 
-      setUpPointers() ;
-    /* if( debug) System.out.println("in getType for "+data_set_num);
-       int x , 
-       p ;
-       x = 0 ;
-       p = 0 ;
-       while( p< nEntries.size() )
-       {
-       x = x + ( ( Integer )nmonitors.elementAt( p ) ).intValue() ;
-       if( data_set_num < x ) 
-       return Retriever.MONITOR_DATA_SET ;
-       x = x + ( ( Integer )ndatasets.elementAt( p ) ).intValue() ;
-       if( data_set_num < x ) 
-       return Retriever.HISTOGRAM_DATA_SET ;
-       p++  ;
-       }
-    */
+      setUpDataSetList() ;
+    
     if( data_set_num < 0)
       return Retriever.INVALID_DATA_SET ;
-    if( data_set_num >= EntryDSs.size())
+    if( data_set_num >= EntryToDSs.size())
       return Retriever.INVALID_DATA_SET ;
-    Vector VV =(Vector)(EntryDSs.elementAt(data_set_num));
-    NxNode nd= (NxNode)(VV.lastElement());
-    if(nd.getNodeClass().equals("NXmonitor"))
+
+    DataSetInfo VV =(DataSetInfo)(EntryToDSs.elementAt(data_set_num));
+    NxNode nd= (VV.NxdataNode);
+    if(nd == null)
       return Retriever.MONITOR_DATA_SET ;
+    else if( nd.getNodeName().toUpperCase().indexOf("Pulse")>=0)
+      return Retriever.PULSE_HEIGHT_DATA_SET;
     else
       return Retriever.HISTOGRAM_DATA_SET ;
   }
 
   /**
-   * Returns the DataSet or null if a fatal error occurs
+   *    Sets the id's of a data set that are to be retrieved
+   *    @param  ids   the list of id's to be retrieved. If null all are to
+   *                  be retrieved
    */
-  public DataSet getDataSet( int data_set_num ){
+  public void setIDs( int[] ids){
+  }
+
+
+  /**
+   *   Returns a string describing the given data set
+   *   @param  data_set_num  the index of the data set to be retrieved
+   *   @return a String with the name and type of data set this is
+   */
+  public String getDataSetInfo( int data_set_num){
     if( !setupDSs ) 
-      setUpPointers() ;
-    /* int nxentry ,  
-       offset ;
-       boolean monitor ;
-       int x , 
-       p , 
-       nhists ;
-       x = 0 ;
-       p = 0 ;
-       if(debug) System.out.println("in getDataSet "+data_set_num);
-       nhists =0 ;
-       nxentry = -1 ;
-       monitor =  false ;
-       offset = -1 ;
-       int x1 ;
-       while( ( p< nEntries.size()&&( nxentry < 0 ) ) )
-       {int u = ( ( Integer )nmonitors.elementAt( p ) ).intValue() ;
-       x1 = x ;
-       if( x + u <= data_set_num )
-       { x = x + u ;
-       u = ( ( Integer )ndatasets.elementAt( p ) ).intValue() ;
-       if( x + u<= data_set_num )
-       { x = x + u ;
-       nhists  += u ;
-       }
-       else
-       {monitor = false ;
-       nxentry = p ;               
-       offset = data_set_num-x1 ;
-       nhists += offset ;
-       }
-       }
-       else
-       {monitor = true ;
-       nxentry = p ;
-       offset = data_set_num - x ; 
-       }
-       
-       p++  ;
+      setUpDataSetList() ;
+    if( data_set_num < 0)
+        return null;
+    if( data_set_num >= EntryToDSs.size())
+       return null;
+    DataSetInfo dsInf = ((DataSetInfo)( EntryToDSs.elementAt( data_set_num)));
+    String S;
+    if( dsInf.NxdataNode == null)
+       S = "(NxMonitor)";
+    else
+       S = "("+dsInf.NxdataNode.getNodeClass()+")";
+    S += dsInf.NxentryNode.getNodeName();
+    if( dsInf.NxdataNode != null)
+       S += "."+ dsInf.NxdataNode.getNodeName();
+    //System.out.println("node "+ data_set_num+"has groupids from"+dsInf.startGroupID+
+     //         " to "+ dsInf.endGroupID);
+    return S;
+  }
+
+
+ public DataSet getDataSet( int data_set_num ){
+   if( !setupDSs ) 
+     setUpDataSetList() ;
+   if( (data_set_num <0) ||( data_set_num >= EntryToDSs.size())){
+     DataSetTools.util.SharedData.addmsg("invalid data set number "
+                                         +data_set_num);
+     return  null;
+
+   }
+   DataSetInfo dsInf = (DataSetInfo)(EntryToDSs.elementAt(data_set_num));
     
-       }
-       if( ( nxentry < 0 ) ||(  offset < 0 ) )
-       {errormessage = "Improper Dataset number" + data_set_num ;
-       return null ;
-       } 
-       
-       NxNode nd = node.getChildNode( 
-       ( String )( nEntries.elementAt( nxentry ) ) ) ;
-    */
-    if( (data_set_num <0) ||( data_set_num >= EntryDSs.size())){
+   NxNode EntryNode= dsInf.NxentryNode;
+   AttributeList AL = getGlobalAttributes() ;
+   NxfileStateInfo FileState = new NxfileStateInfo( node);
+   NxEntryStateInfo EntryState = new NxEntryStateInfo( EntryNode,FileState);
+   DataSet DS;
+   if( dsInf.NxdataNode != null){
+      Inst_Type it = new Inst_Type();
+      int instrType = (new Inst_Type()).getIsawInstrNum( EntryState.description );
+ 
+  
+      DataSetFactory DSF = new DataSetFactory( "" ) ;
+      DS = DSF.getTofDataSet(instrType) ; 
+      DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType));  
+   }else
+      DS = new MonitorDataSet();
+   DS.setAttributeList( AL ) ;
+ 
+   FileState.Push( EntryState);
+   ProcessNxEntry entry = new ProcessNxEntry();
+   boolean res = entry.processDS( DS, EntryNode, dsInf.NxdataNode, FileState,
+           dsInf.startGroupID);
+   if( res){
+      errormessage =  entry.getErrorMessage();
+      DataSetTools.util.SharedData.addmsg("Nexus Input Error:"+errormessage);
+      System.out.println("In ExtGetDS, errormessga="+errormessage);
+      return null;
+   }
+   return DS;
+
+  }
+
+  /**
+   * Returns the DataSet or null if a fatal error occurs Obsolete
+   */
+  private DataSet getDataSet1( int data_set_num ){
+    if( !setupDSs ) 
+      setUpDataSetList() ;
+
+    if( (data_set_num <0) ||( data_set_num >= EntryToDSs.size())){
       DataSetTools.util.SharedData.addmsg("invalid data set number "
                                           +data_set_num);
       return  null;
     }
     
     NxNode nd2 ;
-    nd2= (NxNode)(((Vector)(EntryDSs.elementAt(data_set_num))).firstElement());
+    nd2= (((DataSetInfo)(EntryToDSs.elementAt(data_set_num))).NxentryNode);
     AttributeList AL = getGlobalAttributes() ;
     
-   String Analysis = getAnalysis( nd2 );
-   
-   Inst_Type it = new Inst_Type();
-   int instrType = (new Inst_Type()).getIsawInstrNum( Analysis );
+    String Analysis = getAnalysis( nd2 );
+    
+    Inst_Type it = new Inst_Type();
+    int instrType = (new Inst_Type()).getIsawInstrNum( Analysis );
   
-   /*if( (Analysis == null) ||(Analysis =="")|| 
-     (instrType ==InstrumentType.UNKNOWN))
-     {
-     
-     NxNode n2 = nd2.getChildNode( "analysis");
-     if( n2 != null)            
-     { Object OO = n2.getAttrValue( "isaw_instr_type");
-     if( OO instanceof int[])
-     if( Array.getLength( OO) ==1)
-     instrType = ((int[])OO)[0];
-     
-     }      
-     }
-   */
+   
    DataSetFactory DSF = new DataSetFactory( "" ) ;
    DataSet DS = DSF.getTofDataSet(instrType) ;   
    DS.setAttributeList( AL ) ;
@@ -229,8 +245,8 @@ public class ExtGetDS{ //extends Retriever
    list[0] = instrType;
    DS.setAttribute( new IntListAttribute( Attribute.INST_TYPE, list ));
 
-   NxNode nDS = (NxNode)(((Vector)(EntryDSs.elementAt(data_set_num))).lastElement());
-   if( nDS.getNodeClass().equals("NXmonitor"))
+   NxNode nDS = (((DataSetInfo)(EntryToDSs.elementAt(data_set_num))).NxdataNode);
+   if( nDS == null)
      DS.setAttribute( new StringAttribute(Attribute.DS_TYPE, Attribute.MONITOR_DATA));
    else if( isPulseHeight( nDS.getNodeName()))
      DS.setAttribute( new StringAttribute(Attribute.DS_TYPE, Attribute.PULSE_HEIGHT_DATA));
@@ -238,21 +254,7 @@ public class ExtGetDS{ //extends Retriever
      DS.setAttribute( new StringAttribute(Attribute.DS_TYPE, Attribute.SAMPLE_DATA));
    
    if( !ProcessNxentryNode( nd2 ,  DS , nDS ) ){
-     /*String S = "M" ;
-       if( getType( data_set_num ) == ( Retriever.HISTOGRAM_DATA_SET ) )
-       S = "H" ;
-       else nhists++;
-       S = S + nhists ;
-       String F = filename ;
-       int k = filename.lastIndexOf( "." ) ;
-       if( k>0 )
-       F = filename.substring( 0 , k ) ;
-       F = F.replace( '\\' , '/' ) ;
-       k = F.lastIndexOf(  '/' ) ;
-       if( k>= 0 )
-       F = F.substring( k + 1 ) ;
-       S = S + "_" + F ;
-     */
+    
      String S = nDS.getNodeName();
      DS.setTitle( S ) ;
      
@@ -265,7 +267,7 @@ public class ExtGetDS{ //extends Retriever
    }else{
      DataSetTools.util.SharedData.addmsg( "ERROR:"+errormessage+" ds num="
                                           +data_set_num);
-     return DS; 
+     return null; 
    }
    return DS;
   }
@@ -289,51 +291,14 @@ public class ExtGetDS{ //extends Retriever
     
     return false;
   }
-
-  //For monitor data sets, the groups with the largest phi is 1
-  //private void ReOrderGroups( DataSet DS){
-    /* boolean done=false;
-       Data sav;
-       while(!done)
-       { done=true;
-       for(int i=0;i+1<DS.getNum_entries();i++)
-       { Data D1= DS.getData_entry(i);
-       Data D2=DS.getData_entry(i+1);
-       if( D1.getX_scale().getXs().length>D2.getX_scale().getXs().length)
-       {done=false;
-       sav=D1;
-       D1=D2;
-       D2=sav;
-       }
-       else 
-       {DetPosAttribute A1,A2;
-       A1=(DetPosAttribute)D1.getAttribute(Attribute.DETECTOR_POS);
-       A2=(DetPosAttribute)D1.getAttribute(Attribute.DETECTOR_POS);
-       if( (A1 !=null) &&(A2 !=null))
-       if( java.lang.Math.abs(((DetectorPosition)A1.getValue()).getSphericalCoords()[2] ) >
-       java.lang.Math.abs(((DetectorPosition)A1.getValue()).getSphericalCoords()[2] ))
-       {done = false;
-       sav= D2;
-       D2=D1;
-       D1=sav;
-       }
-       
-       
-       }
-       }
-       }
-    */
-  //}
-
+  
+  //  Returns an attribute list of the NeXus Global attributes that can then
+  //   be added to a data set
   private AttributeList getGlobalAttributes(){
     AttributeList Res = new AttributeList() ;
-    //Object X = node.getAttrValue( "file_name" ) ;
-    // NxData_Gen ndd = new NxData_Gen() ;
-    // if( X != null )
-    //{
-    //String S = ndd.cnvertoString( X ) ;
+   
     Res.addAttribute( new StringAttribute(  Attribute.FILE_NAME , filename ) ) ;
-    //}
+   
     return Res ;
   }
 
@@ -359,115 +324,119 @@ public class ExtGetDS{ //extends Retriever
    */
   public int numDataSets( ){
     if(!setupDSs) 
-      setUpPointers() ;
-    /* System.out.println("#data sets="+EntryDSs.size());
-       for(int i=0;i<EntryDSs.size();i++)
-       { Vector V;
-       V=(Vector)(EntryDSs.elementAt(i));
-       NxNode nd= (NxNode)(V.firstElement());
-       System.out.println(nd.show());
-       System.out.println("                 -------------------   ");
-       V=(Vector)(EntryDSs.elementAt(i));
-       nd= (NxNode)(V.lastElement());
-       System.out.println(nd.show());
-       System.out.println("==========================");
-       
-       }
-    */
-    int u = EntryDSs.size();
+      setUpDataSetList() ;
+    int u = EntryToDSs.size();
     
     if( u >=0)
-      return EntryDSs.size();
+      return EntryToDSs.size();
     else
       return 0;
-    /*int x , 
-      p ;
-      x = 0 ; 
-      p = 0 ;
-      while( p< nEntries.size() )
-      {
-      x = x + ( ( Integer )nmonitors.elementAt( p ) ).intValue() ;
-      
-      x = x + ( ( Integer )ndatasets.elementAt( p ) ).intValue() ;
-      
-      p++ ;
-      }
-      return  x ;
-    */
+    
   }
 
-  private void setUpPointers(){
+  // Method to which(0,1,2..) label in labels a given string is
+  private int Position( String labels, String label){
+    int Res = 0;
+    int i = labels.indexOf( ";"+label+";") ;
+    if( i < 0)
+       return i;
+    for( int k =0; k < i  ; ){
+      if( k < i) Res++;
+      k++;
+      k = labels.indexOf( ";",k);
+     
+    }
+    return Res;
+  }
+
+  // Goes thru a NeXus files and finds all Data Sets.
+  //  The Node, DefaultID's and NXentry are saved in a DataSetInfo Structure
+  //  The DataSetInfo Structure is an internal class in this file
+  private void setUpDataSetList(){
     String labels=";";
     setupDSs = true;
-    for( int i = 0; i<node.getNChildNodes();i++){
+    int startID = 1;
+    //--------------------- Get all Monitors ------------------------
+    for( int i = 0; i< node.getNChildNodes();i++){
       NxNode nn=node.getChildNode(i);
       if( nn.getNodeClass().equals( "NXentry" ) ){
-        boolean monitor=false;
+        // Get monitors first
+        int nmonitors = 0;
+        for( int j=0; j < nn.getNChildNodes(); j++){
+           NxNode mm = nn.getChildNode( j ) ;
+           if( mm.getNodeClass().equals( "NXmonitor" ) ){
+              nmonitors ++;
+           }
+        }
+        
+        if( nmonitors > 0)
+          EntryToDSs.addElement( new DataSetInfo( nn, null, startID,
+                         startID+nmonitors -1, null));
+
+        
+        startID += nmonitors;
+
+        // ----------  Now get all NXdata with ---------------------------
+        //------------label attributes on their data field(merged)--------------
+        
+        int start = EntryToDSs.size();
         for( int j = 0 ; j < nn.getNChildNodes() ; j++ ){
           NxNode mm = nn.getChildNode( j ) ;
-          if( mm.getNodeClass().equals( "NXmonitor" ) ){
-            if(!monitor){
-              Vector V = new Vector();
-              V.addElement(nn); V.addElement(mm);
-              EntryDSs.addElement( V);
-              monitor=true;
-            } 
-          }else if( mm.getNodeClass().equals( "NXdata" ) ){
+           if( mm.getNodeClass().equals( "NXdata" ) ){
+            NxNode dat=mm.getChildNode("data");
+            if( dat != null){
+              Object O= dat.getAttrValue("label");
+              String S = new NxData_Gen().cnvertoString(O);
+              if( S != null){
+                if(  labels.indexOf(";"+S+";") < 0){
+                   labels+=S.trim()+";";
+                   EntryToDSs.addElement( new DataSetInfo(nn,mm,-1,0, S));
+                }
+                int k =Position(labels,S.trim());
+                int[] dim= dat.getDimension();
+                
+                int nGroups = 1;
+                for( int ii=0; ii+1< dim.length;ii++) nGroups *= dim[ii];
+                DataSetInfo dsInf = (DataSetInfo)(EntryToDSs.elementAt(k+start));
+                dsInf.endGroupID +=nGroups;
+              }//has label field
+            }//has data field 
+
+           }//class is NXdata
+          }//for child nodes
+        
+            // Determine ID ranges for each data set
+        for( int k = startID; k < EntryToDSs.size(); k++){
+          DataSetInfo dsInf = (DataSetInfo)(EntryToDSs.elementAt(k));
+          dsInf.startGroupID = startID;
+          dsInf.endGroupID +=startID;
+          dsInf.endGroupID--;
+          startID = dsInf.endGroupID;
+        }
+        
+        
+        //--------Now get DataSets that are not to be merged---------
+        for( int j = 0 ; j < nn.getNChildNodes() ; j++ ){
+          NxNode mm = nn.getChildNode( j ) ;
+           if( mm.getNodeClass().equals( "NXdata" ) ){
             NxNode dat=mm.getChildNode("data");
             if(dat != null){
               Object O= dat.getAttrValue("label");
               String S = new NxData_Gen().cnvertoString(O);
-              Vector V = new Vector();
-              V.addElement(nn); 
-              if( (O == null)||(S ==null))
-                V.addElement(mm);
-              else if( labels.indexOf(";"+S+";") <0){
-                V.addElement(mm);
-                labels+=S+";";
+              if( (O == null)||(S ==null)){
+                int[] dim = dat.getDimension();
+                int nGroups = 1;
+                for( int ii=0; ii+1< dim.length;ii++) nGroups *= dim[ii];
+                EntryToDSs.addElement(new DataSetInfo(nn,mm,startID,startID+nGroups -1,null));
+                startID  += nGroups;
               }
-              if( V.size() ==2)
-                EntryDSs.addElement(V);
-            }else{  //if dat != null
-              Vector V=new Vector();
-              V.addElement( nn);
-              V.addElement( mm);
-              EntryDSs.addElement(V);
             }
           }//if NXdata node
         }//for  NxEntries children
+       }//if node Class is NXentry
       }//if( node class == NXentry
-    }
-
-    /*int nmon ,  
-      ndats ;
-      nEntries = new Vector() ;
-      nmonitors = new Vector() ;
-      ndatasets = new Vector() ;  
-      nmon=ndats=0; 
-      for( int i = 0 ; i < node.getNChildNodes() ; i++ )
-      {NxNode nn = node.getChildNode( i ) ;
-      if( nn.getNodeClass().equals( "NXentry" ) )
-      {nEntries.addElement( nn.getNodeName() ) ;
-      NxNode mm ;
-      nmon = 0 ;
-      ndats = 0 ;
-      for( int j = 0 ; j < nn.getNChildNodes() ; j++ )
-      {mm = nn.getChildNode( j ) ;
-      if( mm.getNodeClass().equals( "NXmonitor" ) )
-      nmon++  ;
-      if( mm.getNodeClass().equals( "NXdata" ) )
-      ndats++  ;
-      }
-      if( nmon > 0 )
-      nmon = 1 ;
-      if( ndats > 0)
-      ndats = 1;
-      nmonitors.addElement( new Integer( nmon ) ) ;
-      ndatasets.addElement( new Integer( ndats ) ) ;
-      }
-      }
-      if(debug) System.out.println("nmonitors, ndatasets="+nmon+","+ndats);
-    */
+    
+  //------------------ need to get the NXlogs ------------------
   } 
 
   /**
@@ -477,16 +446,13 @@ public class ExtGetDS{ //extends Retriever
     return errormessage ;
   }
  
+  //  Obsolete
   private boolean ProcessNxentryNode( NxNode node, DataSet DS, NxNode nxdata ){
     int i , nchildren ;
     boolean res ;
     NXentry_TOFNDGS Entry ;
     errormessage = "" ;
-    /*if( index < 0 ) 
-      {
-      errormessage = "improper index" + index ;
-      return false ;
-      }*/
+   
     nchildren = node.getNChildNodes() ;
     
     if( nchildren < 0 ){
@@ -577,17 +543,12 @@ public class ExtGetDS{ //extends Retriever
    * Test program for the module ExtGetDS
    */
   public static void main( String args[] ){
-    System.out.println( "Enter Option desired" ) ;
-    System.out.println( "   s: from nds server" ) ;
-    System.out.println( "   a. from Nexus API-local file" ) ;
+   // System.out.println( "Enter Option desired" ) ;
+    //System.out.println( "   s: from nds server" ) ;
+    //System.out.println( "   a. from Nexus API-local file" ) ;
     char c = 'a' ;
-    try{
-      while ( c<=  32 )
-        c = ( char ) System.in.read() ;
-    }catch( IOException s ){
-      System.out.println( "IOExceptio =" + s ) ;
-      System.exit( 0 ) ;
-    }
+   
+    
     char d = c ;
     System.out.println( "now enter filename" ) ;
     String filename = "" ;
@@ -607,7 +568,7 @@ public class ExtGetDS{ //extends Retriever
   
     NxNode node = null ;
     // NDSClient nds =null ;
-    
+     
     if( d == 's' ){
       /*nds = new NDSClient( "dmikk.mscs.uwstout.edu" , 6008 , 6081998 ) ;
         nds.connect() ;
@@ -617,7 +578,7 @@ public class ExtGetDS{ //extends Retriever
       node = ( NxNode )( new NexIO.NexApi.NexNode(  filename ) ) ;
     }else
       System.exit( 0 ) ;
-  
+    System.out.println("A");
     ExtGetDS X = null ;
     if( node.getErrorMessage() == "" )
       X = new ExtGetDS( node , filename ) ;
@@ -628,17 +589,42 @@ public class ExtGetDS{ //extends Retriever
       System.out.println( "Node create error =" + node.getErrorMessage() ) ;
       System.exit( 0 ) ;
     }
+    System.out.println("B");
     System.out.println( "num data sets = " + X.numDataSets() ) ;
     // System.out.println( X.nEntries.size() + "," + 
     //                 X.nmonitors.size() + "," + X.ndatasets.size() ) ;
    
-    for( int i = 0 ; i < X.numDataSets() ; i++  ){
+    /*for( int i = 0 ; i < X.numDataSets() ; i++  ){
+      System.out.println("ds num="+i+":"+X.getDataSetInfo(i));
       System.out.println( "Typexx = " + i ) ;
       DataSet DS = X.getDataSet( i ) ;
       if( DS == null )
         System.out.println( "DS cReate ERROR = " +  X.getErrorMessage() ) ;
       else  DataSet_IO.SaveDataSet( DS , "C:\\Test" 
                                     +new Integer(i).toString().trim()+".isd");
+     
+    }*/
+
+   // Test new stuff
+    System.out.println("ere get data set");
+     while( 3==3){
+        for( int i = 0; i< X.numDataSets(); i++)
+           System.out.println( i+":"+X.getDataSetInfo(i)); 
+      c =0;
+      try{
+         while( c < 33)
+              c = (char)System.in.read();
+     }catch( Exception sss){}
+      
+     int dsnum = new Integer( new String( ""+c)).intValue();
+     DataSet DS = X.getDataSet( dsnum);
+     if( DS == null)
+        System.out.println( X.getErrorMessage());
+     else
+        new ViewManager( DS, IViewManager.IMAGE);
+
+
     }
   }//end main
+
 }
