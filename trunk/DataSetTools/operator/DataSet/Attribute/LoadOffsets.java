@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/21 22:40:47  dennis
+ *  Added getDocumentation() method, documentation on getResult() and
+ *  simple main program to test getDocumentation(). (Chris Bouzek)
+ *
  *  Revision 1.2  2002/11/12 00:07:28  dennis
  *  No longer uses setValue() method of Attributes, since Attributes are
  *  now immutable.
@@ -108,7 +112,7 @@ public class LoadOffsets extends    DS_Attribute {
     }
 
 
-    /* ------------------------ setDefaultParmeters ----------------------- */
+    /* ------------------------ setDefaultParameters ----------------------- */
     /**
      *  Set the parameters to default values.
      */
@@ -118,9 +122,41 @@ public class LoadOffsets extends    DS_Attribute {
         addParameter(new Parameter( "Offsets", new LoadFileString("")));
     }
     
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator loads a set of offsets from ");
+    s.append("a simple two-column ASCII file into a DataSet.");
+    s.append("@assumptions The file containing the set of offsets ");
+    s.append("does indeed exist, and contains usable information ");
+    s.append("in the correct format.");
+    s.append("@algorithm Reads the group ID and time offsets from ");
+    s.append("file.  Locates the group ID within the DataSet, and ");
+    s.append("sets the time offset for that group ID.");
+    s.append("@param The DataSet to which the operation is applied.");
+    s.append("@param The name of the offsets file.");
+    s.append("@return A String which tells the user that the ");
+    s.append("offsets have been added.  Note that the DataSet is ");
+    s.append("modifed, and appropriate messages are added to the ");
+    s.append("log file.");
+    s.append("@error Returns an error if the file containing the ");
+    s.append("offsets cannot be found.");
+    s.append("@error Returns an error if the file containing the ");
+    s.append("offsets cannot be closed after opening.");
+    return s.toString();
+  }
     
     /* -------------------------- getResult ----------------------------- */
-    
+    /**
+     *  Adds the time offset for particular group IDs for this DataSet. 
+     *  @return A String notifying the user that the offsets have been
+     *  added to the DataSet.
+     */
     public Object getResult(){  
         DataSet ds = getDataSet();
         String offsets = (String)getParameter(0).getValue();
@@ -185,15 +221,14 @@ public class LoadOffsets extends    DS_Attribute {
         return new_op;
     }
 
-    public static void main(String args[]){
-        String runfile="/IPNShome/pfpeterson/data/II_VI/SEPD/"
-            +"dec2001/runfiles/sepd18124.run";
-        LoadFileString offfile
-            =new LoadFileString("/IPNShome/pfpeterson/trial.offsets");
-        //System.out.println(runfile);
-        DataSet rds=(new RunfileRetriever(runfile)).getDataSet(1);
-        
-        LoadOffsets op=new LoadOffsets(rds,offfile);
-        op.getResult();
+    /* --------------------------------- main() ------------------------ */
+    /**  
+     *  Main method for testing purposes.
+     */
+    public static void main(String args[])
+    {
+	LoadOffsets lo = new LoadOffsets();
+	System.out.println("The documentation for this operator is: ");
+	System.out.println(lo.getDocumentation());
     }
 }

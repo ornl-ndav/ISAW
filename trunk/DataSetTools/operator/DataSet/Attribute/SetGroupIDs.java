@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/21 22:40:47  dennis
+ *  Added getDocumentation() method, documentation on getResult() and
+ *  simple main program to test getDocumentation(). (Chris Bouzek)
+ *
  *  Revision 1.2  2002/09/19 16:00:11  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -122,7 +126,7 @@ public class SetGroupIDs extends    DS_Attribute
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -134,8 +138,48 @@ public class SetGroupIDs extends    DS_Attribute
     addParameter( parameter ); 
   }
 
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator sets the Group IDs for all ");
+    s.append("Data blocks in the DataSet."); 
+    s.append("@assumptions The Group IDs are non-negative.");
+    s.append("  The DataSet is non-empty.");
+    s.append("@algorithm Sets the Group IDs for all Data blocks in the ");
+    s.append("Data Set.  If the list of Group IDs has negative ");
+    s.append("values, or is empty, the position of the Data block in ");
+    s.append("the DataSet's list of Data blocks will be used as the ");
+    s.append("Group ID.  If the list of Group IDs is non-empty and ");
+    s.append("valid, then the Group IDs will be assigned to the Data ");
+    s.append("blocks in order.  If there are too many Group IDs in the ");
+    s.append("list, the extra IDs are ignored.  If there are not enough ");
+    s.append("Group IDs in the list to assign an ID to every Data block, ");
+    s.append("then the remaining Data blocks will be assigned IDs ");
+    s.append("sequentially, starting with the first un-used ID. ");
+    s.append("@param The DataSet whose Data block's IDs are to be set.");
+    s.append("@param String specifying the list of group IDs to set on "); 
+    s.append("the Data blocks.  If this is empty or invalid, the ");
+    s.append("indices 0,1,2,3... will be assigned to the Data ");
+    s.append("blocks in order.");
+    s.append("@return A String which details what Group IDs the blocks ");
+    s.append("in the DataSet were changed to.  Note that the DataSet is");
+    s.append("modifed, and appropriate messages are added to the log file.");
+    s.append("@error Returns an error if the DataSet is empty.");
+    return s.toString();
+  }
+
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+    *  Sets the Group IDs for all Data blocks in the DataSet.
+    *  @return A String which details what Group IDs the blocks in the DataSet
+    *  were changed to.
+    */
 
   public Object getResult()
   {  
@@ -197,4 +241,17 @@ public class SetGroupIDs extends    DS_Attribute
     return new_op;
   }
 
+    /* --------------------------------- main() ------------------------ */
+    /**  
+     *  Main method for testing purposes.
+     */
+    public static void main(String args[])
+    {
+	SetGroupIDs sgi = new SetGroupIDs();
+	Object ob = sgi.getResult();
+	System.out.println("The result of calling this operator is:"); 
+	System.out.println(ob.toString());
+	System.out.println("The documentation for this operator is: ");
+	System.out.println(sgi.getDocumentation());
+    }
 }
