@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/04/02 19:49:00  dennis
+ * Added getDocumentation() method.  (Joshua Olson)
+ *
  * Revision 1.5  2003/02/18 22:59:00  pfpeterson
  * Updated calls to deprecated method fixSparator.
  *
@@ -91,12 +94,12 @@ public class Index extends    GenericTOF_SCD {
     addParameter(new FloatPG("Delta",0.05f));
   }
   
-  /**
-   * This returns the help documentation
-   */
+  /*
+   // This returns the help documentation   
   public String getDocumentation(){
     return super.getDocumentation();
   }
+  */
   
   /* --------------------------- getCommand ------------------------------ */
   /**
@@ -106,6 +109,78 @@ public class Index extends    GenericTOF_SCD {
   public String getCommand(){
     return "Index";
   }
+  
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */                                                                                    
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");                                                       
+    s.append("@overview This operator is intended to run A.J. Schultz's ");
+    s.append("\"index\" program. This is not heavily tested but works fairly ");
+    s.append("well.  Its main purpose is to index a peaks file.");     
+    s.append("@assumptions None of the statements A) through H) in the ");
+    s.append("'Errors' section should be true.  \n");                      		                 				                                                                   		                                                                                                              
+    s.append("@algorithm The full file name 'file' is tested.  This may ");  
+    s.append("generate error A) (as described in the 'Errors' section). \n\n");            
+    s.append("The directory is determined, and the operator attempts to ");
+    s.append("create an experiment name from the *.peaks file.  This may ");
+    s.append("cause error B) or C). \n\n ");                                                                                      
+    s.append("The experiment file is determined.  This may cause error D). \n");    
+    s.append("\n If the command (the index executable) was not previously ");
+    s.append("set, then the operator determines it with the ");
+    s.append("getFullIndexName() method.  \n ");
+    s.append("If after the last sentence the command has still not been ");
+    s.append("initialized to something other than null, then error E) ");
+    s.append("occurs.  \n\n");    
+    s.append("The operator now checks if 'delta' is either a FloatPG or ");
+    s.append("Float value.  If it is not, then error F) occurs.  Otherwise ");
+    s.append("the value is stored.  \n\n");    
+    s.append("The operator now proceeds to index the peaks file.  \n\n");    
+    s.append("The experiment name is entered.  The operator indicates the ");
+    s.append("following:  \n");
+    s.append("* sequence numbers and histograms should not be restricted  \n");
+    s.append("* the location of the orientation matrix  \n");
+    s.append("* the default crystal and the default error bars should be "); 
+    s.append("used  \n");
+    s.append("* the new file should be retained  \n\n");      
+    s.append("Any IOException or InterruptedException is caught, and an ");
+    s.append("appropriate message(s) is printed to the status pane. \n\n");                    
+    s.append("If the process is not null, but an improper exit occured, then ");
+    s.append("error G) occurrs.  If eString (an error string) has been ");
+    s.append("initialized to something other than null, then eString is ");
+    s.append("returned.  Otherwise the number of indexed peaks is returned.\n");
+    s.append("If the process is null, then error H) occurs (and in this case ");
+    s.append("the indexed peaks file is not returned).  ");                                                                                
+    s.append("@param file The path to the name of the peaks file to index ");
+    s.append("@param delta The error parameter for indexing peaks ");           
+    s.append("@return * If any of the errors in the 'Errors' section occur, ");
+    s.append("then the appropriate error string is returned.  \n");
+    s.append("* If the string 'eString' (an error string) is equal to ");
+    s.append("something other than null at the end of the operator's ");
+    s.append("execution, then 'eString' is returned.  \n");
+    s.append("* Otherwise the indexed peaks file is returned.");            
+    s.append("@error An error string is returned if any of the following ");
+    s.append("occur (while preparing to index the file):");    
+    s.append("@error A) the file indicated by 'file' does not exist, is not ");
+    s.append("a regular file, or is not readable.");                                                                      
+    s.append("@error B) this file has an invalid filename, or the directory ");
+    s.append("cannot be found.");
+    s.append("@error C) an experiment name cannot be created from this file.");                                                                       
+    s.append("@error D) the experiment file does not exist, is not a regular ");
+    s.append("file, or is not readable.");                                                                     
+    s.append("@error E) index executable cannot be found.");                                                             
+    s.append("@error F) 'delta' is an invalid value (is not a FloatPG or ");
+    s.append("Float value) \n");
+    s.append("@error An error string is returned if any of the following ");
+    s.append("occur (while indexing the file):");    	
+    s.append("@error G) the process made an improper exit.");    								       
+    s.append("@error H) the process is not initialized by the end of the ");
+    s.append("operator's execution.");        
+    return s.toString();
+  }   
   
   /* --------------------------- getResult ------------------------------- */
   /*
