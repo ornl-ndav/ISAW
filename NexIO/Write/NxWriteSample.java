@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/11/24 14:12:15  rmikk
+ * Implemented NxWriteSample
+ * Changed the signature on the processDS method
+ *
  * Revision 1.4  2002/11/27 23:29:19  pfpeterson
  * standardized header
  *
@@ -53,9 +57,10 @@ import DataSetTools.dataset.*;
  */
 public class NxWriteSample{
   String errormessage;
-
+  int instrType;
   public NxWriteSample(int instrType){
     errormessage = "";
+    this.instrType = instrType;
   }
 
   /**
@@ -68,11 +73,34 @@ public class NxWriteSample{
   /**
    * Writes the NXsample information from a data set to a Nexus file
    *
-   * @param node a NXsample node
+   * @param node a NXentry node
    * @param DS the data set with the information to be written
    */
   public boolean processDS( NxWriteNode node , DataSet DS){
     errormessage = "";
+    
+    NxWriteNode NxSampNode = node.newChildNode( "Sample", "NXsample");
+    
+    Object X = DS.getAttributeValue( Attribute.SAMPLE_NAME);
+    if( X !=  null){
+      String Samp_name = NexIO.Util.ConvertDataTypes.StringValue( X);
+      if( Samp_name != null){
+        NxWriteNode Instrnode = node.newChildNode( "sample", "NXsample");
+        NxWriteNode nameNode = Instrnode.newChildNode( "name", "SDS");
+        int[] ranks = new int[1];
+        ranks[0] = Samp_name.length()+1;
+        nameNode.setNodeValue( (Samp_name+(char)0).getBytes(),
+                     NexIO.Types.Char,ranks);
+    }}
+    NxWriteNode NxLognode = NxSampNode.newChildNode("Log_7","NXlog");
+    NxWriteLog writelog = new NxWriteLog( 5);
+    writelog.processDS( NxLognode, null, 7);
+
+    
+    NxWriteBeam writeBeam = new NxWriteBeam(instrType);
+    NxWriteNode beamNode = NxSampNode.newChildNode("Beam", "NXbeam");
+    if( writeBeam.processDS( beamNode, DS))
+        errormessage += writeBeam.getErrorMessage();
     return false;
   }
 }
