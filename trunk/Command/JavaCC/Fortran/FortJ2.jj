@@ -54,7 +54,7 @@ public class Fcvrt {
    private static final int indentDelta = 2;
    ListHandler Variable=new ListHandler();
    String CurrentMethodName = null;
-   int mode =0;//0 start,1-sub/fxn line,2-declarations,3-statements,4-END->0
+   int mode =0;   //0 start,1-sub/fxn line,2-declarations,3-statements,4-END->0
    boolean lastStatementSimple = true;
    String doLabels=";";
    String Parameters=";";
@@ -939,6 +939,10 @@ String RestofEnd( String Res1 , String name):{
           mode = 3;
           return makeUpAssignmentStatement(name, params, s);
        }
+  | <IF><EOLN>
+     {indent--;
+      return Pretty(indent, "}\n");
+     }
 }
 /*
 void RestOfParamList():{
