@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/08/09 16:17:15  rmikk
+ * Fixed bug so that the Title is correct when loaded.( Untested)
+ *
  * Revision 1.1  2001/08/01 21:04:43  rmikk
  * Initial Checkin
  *
@@ -64,7 +67,7 @@ public class ndsRetriever extends Retriever
       nds.connect() ;
       node = ( NxNode )( new NdsSvNode( DT.getFileName() , nds ) ) ;
      
-      ext = new ExtGetDS( node, dataSourceName ) ;
+      ext = new ExtGetDS( node, DT.getFileName() ) ;
     }
 
     /** 
