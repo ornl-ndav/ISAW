@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2003/12/21 18:14:41  rmikk
+ *  Fixed an error if the grid are all null
+ *
  *  Revision 1.23  2003/12/15 20:07:00  rmikk
  *  Eliminated rescaling when XScales are the same
  *  Removed the use of the Groups variable and completely replaced it by
@@ -210,9 +213,10 @@ public class ContourData
       ds = (DataSet)(dsSave.clone());
       SetUpDetNums();
       if( grid == null)
-        for( int j=0; j< ds.getNum_entries(); j++)
+        for( int j=0; j< ds.getNum_entries(); j++){
             if( ds.getData_entry(j).getX_scale() != x_scale)
                ds.getData_entry(j).resample( x_scale,0);
+            }
       else
         for( int row = 1; row <= grid.num_rows(); row++)
           for( int col = 1; col <= grid.num_cols(); col++){
