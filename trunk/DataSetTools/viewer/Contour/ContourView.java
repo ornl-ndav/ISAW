@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2003/05/02 19:20:40  dennis
+ *  Now uses ClosedInterval.niceGrid() method to calculate values to
+ *  use for contour levels.
+ *
  *  Revision 1.24  2003/03/19 19:35:50  rmikk
  *  Added a Menu option( Edit/SpreadSheet/Intensity)
  *   on the viewer to calculate the Intensity of the zoomed
@@ -788,236 +792,29 @@ public class ContourView extends DataSetViewer
        
     }
 
-  public static double getPow10( int power)
-    {return java.lang.Math.pow( 10.0, 0.0+power);
-     }
-  private int digVal( double v, int digit)
-    {
-     if( v==0)
-        return 0;
-     if( v<0)
-        v = -v;
-     int Ldigit = getLeadDigPos( v);
-     if( digit > Ldigit)
-        return 0;
-     double pow10 = getPow10( digit-1);
-     double rerror =1 - getPow10(6+Ldigit-digit);
-     double v1 = (int)(v/pow10);
-     if( v/pow10 -v1 > rerror) 
-        v1=v1+1;
-     v1 = v -pow10*v1;
-     double v2 = (int)(v1*10.0/pow10);
-     rerror =1 - getPow10(6+Ldigit-digit-1);
-     if( v1*10.0/pow10 -v2 > rerror)
-        v2 = v2+1;
-     return (int)v2;
-         
-    }
-  // takes abs value, converts to string. Makes sure there is a decimal point.
-  // Attempts to deal with trailing 9's and 0's  and leading 0's
-  public static String fixUp( double v)
-    {v = java.lang.Math.abs(v);
-     String Res = new Double( v).toString().trim();
-     if( Res.indexOf('.') < 0)
-        Res +='.';
-     int pdot = Res.indexOf('.');
-     while( (Res.length() >8) && (Res.length()>= pdot)) //too long
-       {Res = Res.substring( 0, Res.length()-1);
-       }
-     if( Res.length() > 8)
-       {char[] cc= new char[Res.length()-1-7];
-        Arrays.fill(cc, '0');
-        Res = Res.substring(0,8)+new String(cc) +".";
-       }
-     while( Res.charAt(0) =='0')
-        Res = Res.substring(1);
-     while( Res.charAt(Res.length()-1) == '0')
-        Res = Res.substring(0, Res.length() -1);
-
-       // now check for trailing 9's
-     int Nnines=0;
-     for( int i = Res.length()-1; Res.charAt(i) =='9'; i--)
-        Nnines++;
-     if( Nnines ==0)
-        return Res;
-     if( Res.length() < 8)
-        return Res;
-     Res = Res.substring( 0,Res.length() - Nnines);
-
-     if( Res.charAt(Res.length()-1) !='.')
-        return Res.substring( 0, Res.length()-1) + 
-               (char)((int)Res.charAt( Res.length()-1)+1);
-     String SRes=".";
-     for( int i=Res.length()-2; i >=0; i--)
-        if( Res.charAt(i) !='9')
-           return Res.substring(0,i)+(char)((int)Res.charAt(i) +1) + SRes;
-        else
-           SRes = '0'+SRes;
-     return "1"+SRes;
-
-      }
-
 
   public static double[] clevelsFrom( ClosedInterval YRange)
-    {double start =(double) YRange.getStart_x();
-     double end = (double)YRange.getEnd_x();
-     int sgns=1;
-     int sgne=1;
-     if( start < 0) 
-        sgns=-1;
-     if( end < 0) 
-        sgne = -1;
-     String Sstart = fixUp( start);
-     String Send = fixUp( end);
-     int pDotStart = Sstart.indexOf('.');
-     int pDotEnd = Send.indexOf('.');
-     // Get digits to line up and have equal length
-     char[] cc;
-     if( pDotStart < pDotEnd)
-       {cc= new char[pDotEnd-pDotStart];
-        Arrays.fill(cc,'0');
-        Sstart = new String( cc )+Sstart;
-       }
-     else if( pDotEnd < pDotStart)
-       {cc= new char[pDotStart-pDotEnd];
-        Arrays.fill(cc,'0');
-        Send = new String( cc )+Send;
-       }
+    {
+      float min = YRange.getStart_x();
+      float max = YRange.getEnd_x();
 
-     if( Sstart.length() < Send.length())
-       {cc= new char[Send.length()-Sstart.length()];
-        Arrays.fill(cc,'0');
-        Sstart +=new String( cc );
-       }
-     else if( Send.length() < Sstart.length())
-       {cc= new char[Sstart.length()- Send.length()];
-        Arrays.fill(cc,'0');
-        Send += new String(cc);
-       }
-     //Find the number of leading base 10 digits that match
-     int nmatch = 0;
-     boolean done= false;
-     for( int i=0; (i<Sstart.length())&&(i < Send.length())&& !done; i++)
-        if( Sstart.charAt(i) == Send.charAt(i))
-           nmatch++;
-        else
-           done = true;
-      //
-     char cStart,cEnd;
-     double[] Res = null;
-     if( nmatch == Sstart.length())
-        if( sgns*sgne > 0)
-          {Res = new double[1];
-           Res[0] = start;
-           return Res;
-          }
-        else
-          {if( Sstart.charAt(0) == '.')
-              nmatch = 1; // include decimal point
-           else
-               nmatch =0;
-           if( Sstart.length() <= nmatch)
-             {Sstart +='0';
-              Send +='0';
-             }
-            
-           cStart = Sstart.charAt(nmatch);
-           if(cStart == '.')
-              nmatch++;
-           if( Sstart.length() <= nmatch)
-             {Sstart +='0';
-              Send +='0';
-             }
-           cStart = Sstart.charAt(nmatch);
-           cEnd =Send.charAt( nmatch);
-           
-          }
-     else // not all digits match
-       {cStart = Sstart.charAt(nmatch);
-        cEnd = Send.charAt( nmatch);
-          
-       }
-         
-     int ncontours = (int)cEnd-(int)'0' - (int)(sgne*sgns)*((int)cStart-(int)'0');
-     if( ncontours < 0) 
-        ncontours = -ncontours;
-     if(sgns <0) 
-        ncontours++;
-     if( ncontours > 7)
-       {Res = new double[ ncontours + 1];
-        int pdot = Sstart.indexOf('.');
-        double delta = getPow10(pdot - nmatch -1);
-        String SstartB= Sstart.substring(0, nmatch + 1);
-          
-        for( int j=nmatch+1;j<Sstart.length();j++)
-           if( Sstart.charAt(j)=='.')
-              SstartB +='.';
-           else
-              SstartB +='0';
-        double ss= sgns*new Double( SstartB).doubleValue();
-        if( sgns < 0)
-           ss -=delta;
-            
-        for( int j=0; j < ncontours + 1 ;j++)
-          {Res[j]= ss+j*delta;
-          } 
-        return Res;
-       }
-     else //use 2 digits
-       {char cStart2,cEnd2;
-        while( Sstart.length() <= nmatch+1)
-          {Sstart +='0';
-           Send +='0';
-          }   
-        int kk = 0;
-        if( Sstart.charAt(nmatch + 1 + kk) =='.') 
-           kk++;
-        if( kk>=Sstart.length())
-          {Sstart += '0';
-           Send   += '0';
-          }
-        cStart2= Sstart.charAt( nmatch+1+kk);
-        cEnd2 =Send.charAt( nmatch+1 +kk);
-        ncontours = 10*((int)cEnd -(int)'0')+(int)cEnd2-(int)'0' -
-                      (int)(sgns*sgne)*(10*((int)cStart-(int)'0')+(int)cStart2-(int)'0');
-        if( ncontours < 0) 
-           ncontours = -ncontours;
-          
-        //if( ncontours >10)
-          {int step = ncontours/10;
-           if( step <2) 
-              step = 1;
-           else if( step < 4) 
-              step =2;
-           else 
-              step = 5;
-           int pdot = Sstart.indexOf('.');
-           double delta = step*getPow10(pdot-nmatch-2);
-           ncontours =(int)( ncontours/(float)step +.3)+1;
-           Res = new double[ncontours ];
-           String SstartB=  Sstart.substring(0, nmatch+kk+1);
-           int ichar = (int)cStart2-(int)'0';
-           ichar = step * (int)( ichar/(float)step +.45)+(int)'0';
-           if(pdot == SstartB.length())
-             {SstartB+='.';
-              kk++;
-             }
-           SstartB +=(char)ichar;
-           for( int j=nmatch+kk+2; j<Sstart.length();j++)
-              if( Sstart.charAt(j)=='.')
-                 SstartB +='.';
-              else
-                 SstartB +='0';
-           double jStart = sgns*new Double( SstartB).doubleValue();
-           if(sgns < 0)
-              jStart -= delta;
-           for( int j=0; j< ncontours ; j++)
-              Res[j]= jStart+j*delta;
-           return Res;
-          }    
-       }
-     //System.out.println("XHere");    
-     //return Res;
+      if ( (max - min) < 10 )      // just use one contour level at half max
+      {
+        double values[] = new double[1];
+        values[0] = max/2;
+        return values;
+      }
+
+      // use more levels if we have a large number of counts, use 
+      int n_levels = (int)(3 * Math.sqrt( max-min ));
+ 
+      float grid_pts[] = YRange.niceGrid(n_levels);
+  
+      double values[] = new double[ grid_pts.length ]; 
+      for ( int i = 0; i < values.length; i++ )
+        values[i] = grid_pts[i];
+ 
+      return values;
     }
 
 
