@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2004/04/21 19:42:28  dennis
+ * Added beamstop size to the test code in the main method.
+ *
  * Revision 1.23  2004/04/21 15:48:44  chatterjee
  * Fixed 2D case binning out-of-bounds error
  *
@@ -1300,7 +1303,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
                 Eff[0], Sens[0],toVec(qu), RUNSds[0], RUNSds[1],
                 RUNBds[0],RUNBds[1], RUNCds[0],RUNCds[1], BETADN, SCALE, .1f,
                 //     0f,0f);
-                .000725f, .006909f, -200, -200, true);
+                .000725f, .006909f, -200, -200, true, 1.5f );
         Object O = Reduce_KCL.getResult();
         //new float[]{-.5f,.5f,-.5f,.5f}
         System.out.println("Finished O=" + O);
