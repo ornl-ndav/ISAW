@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2002/10/23 22:28:18  pfpeterson
+ * Fixed a bug where a DataDirectoryString in a script was not
+ * converted to the DataDirectoryString class.
+ *
  * Revision 1.22  2002/08/19 17:07:06  pfpeterson
  * Reformated file to make it easier to read.
  *
@@ -1070,7 +1074,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
                        DataSetTools.util.StringUtil.fixSeparator( DirPath+"\\");
                 else
                     DirPath = "";
-                addParameter( new Parameter( Message, DirPath));
+                addParameter( new Parameter( Message,
+                                            new DataDirectoryString(DirPath)));
             }else if( DT.equals("DSSettableFieldString".toUpperCase())){
                 if(InitValue == null)
                     addParameter( new Parameter( Message ,
