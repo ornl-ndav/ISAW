@@ -1,0 +1,294 @@
+document: $Id$
+contents: worklog of kevin neff for summer of 2000, IPNS, argonne national labs
+creation: webproject5, day 151 2000, IPNS @ anl-east
+contact:  kevin neff kpsych@N-O-S-P-A-M.yahoo.com 360-G219 X5658
+----------
+
+
+day 150>
+-moved into webproject5 (700mhz coppermine p3)
+-found a function parser & asked for permission to use (& source code)
+  -http://www.eteks.com/applets/displayfunction.html
+  -info@eteks.com 
+
+
+
+day 151>
+-started moving SelectedGraphView to sgt 2.0b1
+  -incomplete source? dwd@pmel.noaa.gov contacted, reply recieved
+-installed sgt 1.0 and compiled SelectedGraph successuflly
+-compelled the sysadmin to install jikes
+-compiled and ran SelectedGraphView.  now i'm in the black ;)
+-finally got sgt to redraw without reconstructing the object
+  -used pane.draw() method after checking Component.isShowing()
+  -Pane.draw() breaks current window/range adjustment (window tab)
+
+
+
+day 152>
+-worked on resizing the graph
+-removed some cruffy code & worked on replacing it
+  -created GraphableDataManager class
+  -created RedrawInstruction class
+
+
+
+day 155>
+-worked on the restructuring of SelectedGraph (above)
+-grabbed some stuff off my home hdd
+-read up on cvs
+
+
+
+day 158>
+-worked on getting graph drawn
+-flushed out all of the problems involving ranging and the window tab
+
+
+
+day 159>
+-solved redraw problem, broke offset calculations
+
+
+
+day 165>
+-worked on c type grammar
+
+
+
+day 166>
+-aborted language development after much discussion about the functionality of
+ said language.  basically, the language doesn't need to do anything more than
+ parse expressions and do semantic checking on a few primative types.  with
+ such a simple definition of the language, there's no need for a real 
+ interpreter, and so we're going to use ruth's hack instead.
+-discussed the possibility of using cvs.  
+-TODO: 166-1: set up a cvs repository.  possilby speak with rodney porter 
+              and/or rick about previous repository. (before 172?)
+-TODO: 166-2: slice SelectedGraphView off the main source tree (DataSetTools) 
+              and package it into 'package SelectedGraphView' (before 
+              15.0 on 167)
+-TODO: 166-3: get the SelectedGraphView module working at some usable level 
+              (before ~185)
+
+
+
+day 167>
+-DONE: job 166-2
+-improved the redrawing functionality of SelectedGraphView
+-worked on offset of SelectedGraphView
+
+
+
+day 171>
+-TODO: 171-0: Make the graph larger, i.e. the full width of the view panel.
+-TODO: 171-1: Use the selected property of the DataSet to determine which 
+                spectra to display.
+-TODO: 171-2: When a spectrum is selected or deselected from the selected graph
+                view, set or clear the selected attribute in the dataset.
+-TODO: 171-3: When you switch to the selected graph view, automatically graph 
+                the selected spectra using default options for line type, etc.
+-TODO: 171-4: *Make the bottom part of the display (controls, etc) optional so 
+                we can view a larger plot.  This could be done through the 
+                view menu or through controls built into the selected graph 
+                view panel.
+-TODO: 171-5: Make the legend larger and/or make it resizeable.  possibly
+                another tab
+-DONE: 171-4
+-Q: why does image view's pointedAt not change when the mouse is clicked 
+    (and not dragged)?
+
+
+
+day 172>
+-worked on a non-recursive Makefile for SelectedGraphView
+-graph (without offset) is drawn correctly
+-distribution #1 of SelectedGraphView is out in 
+ /IPNShome/neffk/java/distro/SelectedGraphView-1.  read README first.
+
+
+
+day 173>
+-worked on building a dependancy graph for the Makefile
+-worked w/ jdb and javadt
+-offsets are working properly
+
+
+
+day 174>
+-Q: editable attributes in ISAW?
+-Q: more meaningful name for modified datasets?  currently they are given the
+    name of the first dataset selected (before choosing the operator to
+    apply)
+-TODO: 174-0: *place SelectedGraphView's graph and controls in a split pane
+-DONE: 174-0: verified, worlton.  worlton suggested that a percentage be 
+                used to maintain screen areas, and hence ToDo 174-4
+-TODO: 174-1: ?add run number into delimiter in potentially graphable data list
+-DONE: 174-1: works, but is not what worlton had in mind.  hold off until we 
+                decide a better way to name things.  probably the situation
+                will be resolved by adding some capability to DataSetViewer
+                for making sure names are unique.  the name will probably be 
+                generated from the attributes of the Data (block).
+-TODO: 174-2: ?add title of dataset in viewer title
+-174-2: since the DataSetViewer does not have a constructor that sets the title
+          of the frame, how does one set the title of the frame that a viewer is
+          instantiated within?  perhaps a constructor should be added, maybe
+          DataSetViewer( DataSet d, String title ) which would call the 
+          corresponding constructor of the super class (JFrame).  note that 
+          there is a setName() method in JComponent, but this has no effect 
+          on the title.
+-TODO: 174-3: ?add or remove a data block w/ a double click
+-TODO: 174-4: ?create a SplitPaneWithState that responds to resizing events in
+                a way that changes the divider so that it maintains a screen 
+                area that is defined by a percentage instead of an offset.
+-TODO: 174-5: ?add histogram data to strings that identify data blocks in the
+                selection control (when added as an attribute)
+-TODO: 174-6: !make graphable data transfer from one list to the other instead
+                of staying in one list and being added & removed from the other
+-174-6: this may be a bad idea in the case that a sort is performed in the 
+          middle of the selection process.  only the data in the left hand
+          window would be sorted, and the sort could be ambiguous if there are
+          only a few items in the left list.
+-TODO: 174-7: *keep track of selected spectra based on their run number and 
+                group number so that when the dataset is pulled out from under
+                the viewer, selections remain.
+-174-7: actually, when a dataset is changed (sorted, axis converted), the
+          the dataset is pulled out from under the viewer by (the view manager
+          calling setDataSet().  this new dataset has its selection tags set or
+          unset identically to the original dataset, so there's no reason to
+          keep track of it ourselves.
+-DONE: 174-7
+-TODO: 174-8: *fix scaling problem in graph.  for some reason, the graph is
+                zoomed out when the graph button is used.  when the user
+                executes a ctrl-r_click in the graph, the graph zooms properly
+                to a useful size.
+-TODO: 174-9: *fix distro-all rule in Makefile
+
+
+
+day 175>
+-DONE: 174-9: 
+-174-8: appears to work better now... this is effected by 174-0, so i'm not
+          really done w/ it.
+-TODO: 175-0: *take care of the meaning of offset throughout the program.  the
+                slider control spits out a number that is between 0 and 1. 
+                this number is a percentage of the height of the tallest
+                spectra.  theoretically, no one needs to offset something two 
+                times the height of the tallest spectra.  at that point, it's
+                just an excercise in scaling the graph.
+-175-0: mostly works... when only two spectra are graphed, the offsets work
+          all right.  when a third is added, everything goes to hell.  
+-TODO: 175-1: add line types, markers, and such to graph
+-TODO: 175-2: add legend/key
+-TODO: 175-3: error bars
+
+
+
+day 178>
+-Q: do axis conversions change the selection attributes?
+-DONE: 175-0: works w/ an arbitrary number of graphs.  modified files:
+                SelectionPane.java v1.21
+                GraphableDataManager.java v1.2
+-TODO: 178-0: *fix viewer so that it doesn't crash when an axis transform is
+                applied to the data.
+-DONE: 178-0: files modified:
+                SelectedGraphView.java v1.13
+-TODO: 178-1: display attributes of the currently PointedAt data block in the
+                'graph' tab
+-TODO: 178-2: implement a 'select by attribute' concept
+-TODO: 178-3: add the appropriate newlines in the graph properties pane, 
+                specifically, where the log data is displayed.
+-175-1: make line and symbols selection work per spectra (as opposed to a
+          global selector).
+-175-1: based on the list of spectra to be graphed, create a tabbed pane
+          within the 'Graph' tab, where each pane contains the controls for
+          one particular spectra.
+
+
+day 179>
+-Q: is there some way to change the initial position of the application?  with
+      fvwm2, when i run IsawGUI.Isaw, the window pops up partially off the
+      screen.
+-175-1: set up the 'graph' pane to control the properties of a data block.
+          something like a list of selected spectra and a bunch of controls,
+          including colors and symbols.  this means that the GraphableData 
+          class must (as planned) contain information about markers and
+          colors.  GraphableDataManager must contain a list of acceptable 
+          markers and colors (and therefore must pass the list through 
+          sgtSelectedGraph to isawLineProfileLayout.
+-TODO: 179-0: *remove parentheses from around axis lables
+-DONE: 179-0:
+
+
+
+day 180>
+-TODO: 180-0: *update() method should be used to set selection instead of 
+                using the constructor of GraphableDataManager.
+-180-0: also, *respond to messages from the ViewManager.
+-TODO: 180-1: *make GraphableDataManager extend a Hashtable, using the string 
+                given by <GraphableData>.getID() as the key, and the 
+                GraphableData object itself as the value.
+-Q: if you could be a punctuation mark, which one would you be?  explain.
+
+
+
+day 181>
+-urinated
+-filled water bottle half way
+-Q: what about workspaces?  a way to arrange the screen and controls that is
+      most effective for the indevidual, since many people will be using this
+      application for a great deal of time.  (especially since window$ crashes
+      so often, the amount of time moving controls around and such would be
+      significant)
+-Q: is it possible to update marks in ImageView when s is relased instead
+      of when the mouse button is released?
+-180-0-0: almost works, but for some reason when i have ImageView and 
+            SelectedGraphView open, if i select in ImageView, the first spectra
+            displays itself as marked.  there are no problems from SGV
+-DONE: 180-1:
+-DONE: 180-0: done except for issue 180-0-0
+
+
+
+day 182>
+-175-1: set up UI w/ two lists, one for spectra (sync'd w/ selected spectra)
+          and one for colors.  now, a new method, addData( GraphableData ),
+          needs to be added to isawLineProfileLayout.  this will allow
+          isawProfileLayout to take advantage of the color and marker
+          information that GraphableData objects contain.
+-TODO: 182-0: don't allow multiple copies of data in the 'Graph' tab
+-DONE: 182-0:
+-175-1: changed GraphableData class, isawLineProfileLayout class, Marker 
+          interface, EntityColor interface, sgtMarker class, and 
+          sgtEntityColor class to make color part of GraphableData, and to
+          make isawLineProfileLayout get this data from it's parameters, as
+          opposed to mod'ing through an internal list.
+-TODO: 182-1: make graph and data appear on screen.  this problem may be 
+                related to getting data to the graph.
+
+
+day 183>
+-175-1-183-0: make attributes viewable in graph panel
+-175-1-183-0: done
+
+
+day 184> 
+-175-1-183-1: fix color selection so that it works
+-175-1-183-1: done.
+-DONE: 175-1: works with color and marker selection.  a JColorSelector would
+                be a nice improvement over the JList of <Color>.toString()'s.  
+                also, it would be nice to have some graphical way of
+                representing the markers, as opposed to numbers
+
+
+
+
+                
+    
+            
+
+
+
+
+
+
