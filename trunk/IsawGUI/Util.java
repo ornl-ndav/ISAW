@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2003/10/14 22:08:04  dennis
+ * Fixed javadoc so that it builds cleanly on jdk 1.4.2.
+ * Also, corrected javadoc to include support for NeXus, GSAS, ISD
+ * and XML files.
+ *
  * Revision 1.22  2003/08/28 18:53:42  dennis
  * Added support for loading .csd files (concatenated files
  * from Ideas MC simulation.)
@@ -118,9 +123,10 @@ public class Util
 
 
    /**
-    * This returns an array of DataSets that are created from a runfile. 
+    * This returns an array of DataSets that are created from a runfile,
+    * NeXus file, "ISD" file, GSAS file or XML file. 
     *
-    * @filename String that gives the absolute path for a runfile  
+    * @param String that gives the fully qualified file name  
     */
    public DataSet[] loadRunfile( String filename )
    {
