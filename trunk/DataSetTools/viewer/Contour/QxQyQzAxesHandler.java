@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/05/08 15:34:39  rmikk
+ * Used the SCDQxyz operqator to calculate the Qx, Qy, and Qz
+ *    values.
+ *
  * Revision 1.11  2003/02/18 20:24:29  dennis
  * Switched to use SampleOrientation attribute instead of separate
  * phi, chi and omega values.
@@ -61,7 +65,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
      { ds = DS;
        x_units = ds.getX_units();
        x_label= ds.getX_label();
-      SampleOrientation orientation =
+      /*SampleOrientation orientation =
         (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
      
       if( orientation != null )
@@ -75,6 +79,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
          ck=Math.cos(-chi);
          sk=Math.sin(-chi);
         }
+       */
       }
    public QxQyQzAxesHandler( DataSet ds, float[][]Transf, String[]AxisName,
                               String[] AxisUnits)
@@ -147,8 +152,41 @@ public class  QxQyQzAxesHandler implements IAxesHandler
    public float[] getQunitVect( int GroupIndex)
      {if( this.GroupIndex == GroupIndex)
         return Q;
-      Data D = ds.getData_entry( GroupIndex);
-      if( D == null)
+      
+        Data D = ds.getData_entry( GroupIndex);
+      //Will use Dennis' SCD operator
+       float time =D.getX_scale().getStart_x();
+       SCDQxyz op = new SCDQxyz( ds , GroupIndex, time);
+       Object Qw = op.getResult();
+      
+       FloatAttribute Fat = (FloatAttribute)(D.getAttribute( Attribute.INITIAL_PATH ));
+         DetPosAttribute DPa = (DetPosAttribute)D.getAttribute(Attribute.DETECTOR_POS);
+      
+      if( DPa == null) return null;
+     
+      DetectorPosition DP = DPa.getDetectorPosition();
+       scatteringAngle = DP.getScatteringAngle();
+      pathLength = Fat.getFloatValue() +DP.getDistance();
+       if( Qw == null) 
+         return null;
+      
+       if( (Qw instanceof Position3D))
+          Q = ((Position3D) Qw).getCartesianCoords();
+       else
+          return null;
+      
+       if( Q.length < 3)
+         return Q;
+       float L = (float)java.lang.Math.sqrt( Q[0]*Q[0]+ Q[1]*Q[1]+Q[2]*Q[2]);
+       if( L !=0)
+         {
+         Q[0]=Q[0]/L;
+         Q[1]=Q[1]/L;
+         Q[2]=Q[2]/L;
+         }
+       this.GroupIndex = GroupIndex;
+     
+      /*if( D == null)
         return null;
        Q = new float[3];
 
@@ -186,13 +224,10 @@ public class  QxQyQzAxesHandler implements IAxesHandler
                         q3*(ck));;
         
          
-       }     
-      
-  
-     
+       } 
+      */
 
-      FloatAttribute Fat = (FloatAttribute)(D.getAttribute( Attribute.INITIAL_PATH ));
-      pathLength = Fat.getFloatValue() +DP.getDistance();
+
       return Q;
       }
 
@@ -272,7 +307,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
           {DataSetTools.util.SharedData.addmsg("x-unit unknown-"+x_units);
             errorReported = true;
           }
-
+ 
         return tof_calc.DiffractometerQ(scatteringAngle, pathLength, v);
       
         
@@ -319,7 +354,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
      /** Gets the axis value for this Group and xvalue<P>
       * NOTE: The y value can be gotten with getX(i)
       */
-      public float  getValue( int GroupIndex, int xIndex)
+      public float getValue( int GroupIndex, int xIndex)
          { if( GroupIndex <0)
              return 0f;
            if( GroupIndex >= ds.getNum_entries())
@@ -333,6 +368,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
            Data D = ds.getData_entry( GroupIndex);
            if( D == null)
              return 0f;
+           
            return cnvrtToQ(D.getX_scale().getX(xIndex))*Q[0];
           } 
 
@@ -681,12 +717,12 @@ public class  QxQyQzAxesHandler implements IAxesHandler
                  else c=0;
                             }
           if(c !=0){
-          
-          SCDQxyz op = new SCDQxyz( ds , group, indx);
+          float time = ds.getData_entry(group).getX_scale().getX(indx);
+          SCDQxyz op = new SCDQxyz( ds , group, time);
           System.out.println("Dennis'="+
               op.PointInfo( ds.getData_entry(group).getX_scale().getX(indx),
                                        group));
-          SCDQxyz_Dennis  op1= new SCDQxyz_Dennis(ds, group,indx);
+          SCDQxyz_Dennis  op1= new SCDQxyz_Dennis(ds, group,time);
           op1.debug=true;
           System.out.println("Dennis new="+
                     op1.PointInfo( ds.getData_entry(group).getX_scale().getX(indx),
