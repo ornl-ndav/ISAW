@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/02/25 19:46:32  pfpeterson
+ *  Changed reference to deprecated fixSeparator to new method.
+ *
  *  Revision 1.6  2002/11/27 23:12:34  pfpeterson
  *  standardized header
  *
@@ -141,7 +144,7 @@ abstract public class JParameterGUI
      {
        String DirPath = System.getProperty("Data_Directory");
        if( DirPath != null )
-         DirPath = DataSetTools.util.StringUtil.  fixSeparator(DirPath+"\\");
+         DirPath = DataSetTools.util.StringUtil.setFileSeparator(DirPath+"\\");
        else
          DirPath = "";
 
