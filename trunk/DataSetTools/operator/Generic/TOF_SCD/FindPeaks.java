@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.21  2004/03/01 06:12:03  dennis
+ * Fixed documentation of parameters to constructor.
+ *
  * Revision 1.20  2004/01/24 20:31:15  bouzekc
  * Removed/commented out unused variables/imports.
  *
@@ -110,7 +113,9 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
    *  of parameters. The getResult method must still be used to execute
    *  the operator.
    *
-   *  @param  data_set    DataSet to find peak in
+   *  @param  data_set    DataSet to find peaks in
+   *  @param  moncount    Integrated monitor count
+   *  @param  maxNumPeaks The maximum number of peaks to keep
    *  @param  min_count   Minimum number of counts peak must have
    */
   public FindPeaks( DataSet data_set, float moncount, int maxNumPeaks,
@@ -137,8 +142,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   
   /* ------------------------ getDocumentation ---------------------------- */
  
-  public String getDocumentation()
-  {
+  public String getDocumentation() {
     StringBuffer Res = new StringBuffer();
     
     Res.append("@overview This program finds the peaks in a column slice and");
