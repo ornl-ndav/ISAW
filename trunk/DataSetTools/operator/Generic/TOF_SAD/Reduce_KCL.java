@@ -1,6 +1,6 @@
 /*
- * File:  Reduce_KCL.java 
- *             
+ * File:  Reduce_KCL.java
+ *
  * Copyright (C) 2003, Ruth Mikkelson and Alok Chatterjee
  *
  * This program is free software; you can redistribute it and/or
@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2004/04/22 20:33:53  dennis
+ * Removed unused variables
+ *
  * Revision 1.25  2004/04/21 20:45:33  dennis
  * Changed default value for beamstop size to 1.5, instead of 0.
  * This allows the new version to work with old scripts for
@@ -121,7 +124,7 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
  * TITLE:        Convert Fortran To JAVA
  * Description:  SMALL ANGLE NEUTRON SCATTERING ANALYSIS ROUTINE
  PRODUCE either A RADIALLY AVERAGED S(Q) VS Q ARRAY; SN(RUN#).dat
- OR PRODUCING AN S(QX,QY) ARRAY.	SN@D(RUN#).BIN
+ OR PRODUCING AN S(QX,QY) ARRAY.        SN@D(RUN#).BIN
 
  PROGRAM REQUIRES
  File AREA DETECTOR SENSITIVITY and CELLS MASK FROM AREADETSEN
@@ -143,21 +146,33 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
     private boolean debug = false; 
 
-    public static int Nedge = 1;                   //mask off edge detectors or those
-   // public static float Radmin = 1.5f / 100;     //too close from the origin for SAND detector
-    public  float Radmin;                          // = 2.1f / 100;too close from the origin for SASI detector
-    public static float Radmax = 100.0f / 100;     //too far from the origin for SAND detector
+    public static int Nedge = 1;                 // mask off edge detectors 
+                                                 // or those
+   // public static float Radmin = 1.5f / 100;   // too close to the origin 
+                                                 // for SAND detector
+    public  float Radmin;                        // = 2.1f / 100; too close to
+                                                 // the origin for SASI detector
+    public static float Radmax = 100.0f / 100;   // too far from the origin for 
+                                                 // SAND detector
     public float bs_dim;
-    DataSet TransS, TransB, Eff, Sens;
+
+    DataSet TransS,
+            TransB, 
+            Eff, 
+            Sens;
+
     float[] qu;
+
     DataSet[]RUNBds = new DataSet[2];
     DataSet[]RUNCds = new DataSet[2];;
     DataSet[]RUNSds = new DataSet[2];
+
     boolean useTransB;
     public String INSTR;
     public String INAME;
     String str1;
     int MaxSlice;
+
     /**
      *Parameters
      */
@@ -178,9 +193,21 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     /**
      *   Variables
      */
-    String ANS, ANSDN, ANSCH, ANSNL, ANSSD, ANSCOL, ANISOT, ANSAGN, ANSPLT, ANSCL, ANSD;
+    String ANS,
+           ANSDN, 
+           ANSCH, 
+           ANSNL, 
+           ANSSD, 
+           ANSCOL, 
+           ANISOT, 
+           ANSAGN, 
+           ANSPLT, 
+           ANSCL, 
+           ANSD;
+
     String ansbt;
     String  REDUCEOUT;
+
     char[]  tttt1 = new char[80];
     char[]  users1 = new char[20];
     byte[] tttt = new byte[80];
@@ -309,14 +336,14 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     *    @param  THICK     The sample thickness in m
     *    @param  XOFF      The Xoffset of beam from the center in meters
     *    @param  YOFF      The Yoffset of beam from center in meters
-    *    @param NQxBins    The number of Qx bins if 2D,otherwise use a neg number
-    *    @param NQyBins    The number of Qx bins if 2D,otherwise use a neg number 
+    *    @param NQxBins   The number of Qx bins if 2D,otherwise use a neg number
+    *    @param NQyBins   The number of Qx bins if 2D,otherwise use a neg number
     *    @param useTransB  Use the background Transmission run
     *    @param bs_dim     New beam stop dimensions
    */
  
 
-    public Reduce_KCL(DataSet TransS, DataSet TransB, DataSet Eff, DataSet Sens,
+   public Reduce_KCL(DataSet TransS, DataSet TransB, DataSet Eff, DataSet Sens,
         Vector quV, DataSet RUNSds0, DataSet RUNSds1, DataSet RUNBds0, 
         DataSet RUNBds1,DataSet RUNCds0,DataSet RUNCds1, float BETADN, 
         float SCALE, float THICK,
@@ -507,17 +534,10 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
         LABELX = "Q    (A**-1)";
         LABELY = "I(Q)   (CM**-1)";
-        int NCHRX = 12;
-        int NCHRY = 15;
-        int NCHRM = 0;
-        int ICURVE = -1;
-        int IFERR = 1;
-        BufferedReader NCHR;
 
         /***
          * INITIALIZE
          */
-        int IUI = 5;
         OUTUNIT = 9;
         HISTNUM = 1;
         IFDELAY = 1;
@@ -571,7 +591,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         float L1 = At.getFloatValue();
 
         L2 = grid.position().length();
-        int NSLICE = NUMX * NUMY;
 
         double TOFDIST = L1 + L2;
         
@@ -582,8 +601,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
         XDIM = grid.width();
         YDIM = grid.height();
-        double SFX = XDIM / NUMX;
-        double SFY = YDIM / NUMY;
 
         for( int i=0;i<1;i++){
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[0].getData_entry(
@@ -725,12 +742,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         Res = (new DataSetSubtract(RelSamp, RelBackground, true)).getResult();
         if (Res instanceof ErrorString)
             return Res;
-        DataSet RelDiff = (DataSet) Res;
         LLOW = .5*(LAMBDA[0]+  //Change to subrange of times
                LAMBDA[1]);
-        PixelInfoList pilistx = ((PixelInfoList)RelSamp.getData_entry(0).
-              getAttributeValue( Attribute.PIXEL_INFO_LIST));
-        IPixelInfo ipinfx =pilistx.pixel(0);
         
         float[] mins = SampGrid.position(1f,1f).get();
         float[] maxs = SampGrid.position( (float) NUMX, (float) NUMY).get();
@@ -757,15 +770,12 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         BQXQY=sss(DIVx,DIVy);BERRXY=sss(DIVx,DIVy);SBQXQY=sss(DIVx,DIVy); 
         SBERRXY=sss(DIVx,DIVy);;
         
-	int nn =0;
         float[] eff = Eff.getData_entry(0).getY_values();
-        float[] effErr = Eff.getData_entry(0).getErrors();
         float[] Mon = RUNSds[0].getData_entry(MonitorInd[0]).getY_values();
-        float[] MonErr = RUNSds[0].getData_entry(MonitorInd[0]).getErrors();
         Data Dback,Dsamp;
         DetectorPosition detPos ;
         float[]Qxy,SampYvals,BackYvals,SampErrs,BackErrs,wlvals;
-        float scatAngle,Len,sens,sensErr,lambdaAv,Q,Qx,Qy,DNx,DNy ;
+        float scatAngle,Len,sens,lambdaAv,Q,Qx,Qy,DNx,DNy;
         int row,col,k,Nx,Ny;
 	for( int i = 0; i< RelSamp.getNum_entries(); i++){
 	   Dsamp =RelSamp.getData_entry(i);
@@ -787,7 +797,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 	   SampYvals = Dsamp.getY_values();
 	   BackYvals = Dback.getY_values();
            sens = SensGrid.getData_entry( row, col).getY_values()[0];
-           sensErr =SensGrid.getData_entry( row, col).getErrors()[0];	   
 	   SampErrs = Dsamp.getErrors();
 	   BackErrs = Dback.getErrors(); 
 	   wlvals = Dsamp.getX_scale().getXs();
@@ -847,7 +856,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 	  }
 
         WTQXQY = null;
-        eff = effErr= Mon=MonErr = null;
+        eff = Mon = null;
         Qxy= SampYvals= BackYvals= SampErrs= BackErrs= wlvals= null;
         Dback = Dsamp = null;
 
@@ -967,8 +976,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
        float[] ErrSq = new float[ Resy.length];
        float [] weight = new float[ Resy.length];
        float sens, sensErr;
-       float[] yvals, errs, xvals, eff,eff1,eff2,effMon;
-       Data D, D1, D2;
+       float[] yvals, errs, xvals, eff,eff1,eff2;
+       Data D;
        Arrays.fill( Resy,0.0f);
        Arrays.fill( ErrSq, 0.0f);
        Arrays.fill( weight, 0.0f);
@@ -980,7 +989,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
        for( int i = 0; i< eff.length; i++)
           eff2[i]= eff[i]*monit[i];
       
-       boolean done = false;
        for( int row = 1; row <= SampGrid.num_rows(); row++)
          for( int col = 1; col <= SampGrid.num_cols(); col++){
             sens = SensGrid.getData_entry(row, col).getY_values()[0];
@@ -1070,7 +1078,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
      float[]  CadmMonerr =  CadmMon.getData_entry(MonitorInd[0]).getErrors();
      float[]  Efferr = Eff.getData_entry(0).getErrors();
      Data D;
-     float err1,err2,err3, Num,Den, sens,senserr;
+     float err1,err2,err3, Num, sens,senserr;
      int row,col;
      for( row = 1; row <= SampGr.num_rows(); row++)
        for( col = 1; col <= SampGr.num_cols(); col++){
@@ -1136,12 +1144,9 @@ public class Reduce_KCL  extends GenericTOF_SAD{
       float[] Res = D.getX_scale().getXs();
       float scatAngle =((DetectorPosition) D.getAttributeValue( 
                     Attribute.DETECTOR_POS)).getScatteringAngle();
-       float a = Res[Res.length-1];
        for( int i = 0; i< Res.length; i++){
           Res[i] = tof_calc.DiffractometerQofWavelength( scatAngle, Res[i]);
        }
-      PixelInfoList pilist =(PixelInfoList)(D.getAttributeValue(
-                  Attribute.PIXEL_INFO_LIST));
       return Res;
   }
 
@@ -1156,7 +1161,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     float[] xx= qu_scale.getXs();
     float[] Res = new float[ xx.length-1];
     Arrays.fill( Res, 0.0f);
-    int i, j,k;
+    int i, j;
     i = xvals.length - 1;
     //xvals are in reverse order
     for( j=0; j + 1< xx.length; j++){
@@ -1278,7 +1283,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         DataSet[] RUNSds = null, RUNBds = null, RUNCds = null;
         DataSet[] TransS = null, TransB = null, Eff = null, Sens = null;
         float[] qu = new float[117];
-        String Path, Instrument;
         float BETADN, SCALE;
 
         BETADN = 0.0011f;
@@ -1304,12 +1308,12 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         }
 
         System.out.println("Before calling Reduce_KCLxxxxxxxxxxxxxxxxxxxxxxxxxx");
-        Reduce_KCL Reduce_KCL = new Reduce_KCL(TransS[0], TransB[0],
+        Reduce_KCL reduce_KCL = new Reduce_KCL(TransS[0], TransB[0],
                 Eff[0], Sens[0],toVec(qu), RUNSds[0], RUNSds[1],
                 RUNBds[0],RUNBds[1], RUNCds[0],RUNCds[1], BETADN, SCALE, .1f,
                 //     0f,0f);
                 .000725f, .006909f, -200, -200, true, 1.5f );
-        Object O = Reduce_KCL.getResult();
+        Object O = reduce_KCL.getResult();
         //new float[]{-.5f,.5f,-.5f,.5f}
         System.out.println("Finished O=" + O);
         Vector V = (Vector) O;
