@@ -31,79 +31,86 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/11/20 16:14:51  pfpeterson
+ * reformating
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
  */
+
 package NexIO;
+
 import DataSetTools.dataset.*;
 import NexIO.*;
 
-/** This class is used to process the NxSample part of a Nexus datasource
+/**
+ * This class is used to process the NxSample part of a Nexus datasource
  */
-public class NxSample
-{String errormessage;
-    public NxSample()
-     {
+public class NxSample{
+  String errormessage;
+
+  public NxSample(){
     errormessage = "";
-     }
+  }
 
 
-    /**Returns error and warning messages or "" if there is none
+  /**
+   * Returns error and warning messages or "" if there is none
    */
-   public String getErrorMessage()
-     {
-       return errormessage;
-      }
+  public String getErrorMessage(){
+    return errormessage;
+  }
 
 
-    /** Fills out an existing DataSet with information from the NXsample
+  /**
+   * Fills out an existing DataSet with information from the NXsample
    * section of a Nexus datasource
-  *@param node  the current node positioned to an NXsample part of a datasource
-  *@param  DS  the existing DataSet that is to be filled out
-  *@return  error status: true if there is an error otherwise false
-  */
-    public boolean processDS( NxNode node , DataSet DS )
-      {errormessage = "Improper NxSampel inputs";
-       if( node == null ) 
-          return true;
-       if( DS == null ) 
-            return true;
-       if( !node.getNodeClass().equals( "NXsample" ) ) 
-           return true;
-       errormessage = "";
-       NxNode X = node.getChildNode( "name" );
-       if( X!= null )
-        {Object val = X.getNodeValue();
-         String S = new NxData_Gen().cnvertoString( val );
-         if(  S!=  null )
-           DS.setAttribute(  new StringAttribute( Attribute.SAMPLE_NAME , S ) ); 
-        }
-       X = node.getChildNode( "temperature" );
-       if( X!= null )
-        {Object val = X.getNodeValue();
-         if( val != null )
-          {  Float S = new NxData_Gen().cnvertoFloat( val );
-             if( S!= null )
-             if( S.floatValue()!= ( java.lang.Float.NaN ) ) 
-               DS.setAttribute( new FloatAttribute( Attribute.TEMPERATURE , S.floatValue() ) );
-           } 
-        }
-      X = node.getChildNode( "pressure" );
-       if( X!= null )
-        {Object val = X.getNodeValue();
-         if( val != null )
-          {  Float S = new NxData_Gen().cnvertoFloat( val );
-             if( S!= null )
-             if( S.floatValue()!= ( java.lang.Float.NaN ) ) 
-               DS.setAttribute( new FloatAttribute( Attribute.PRESSURE , S.floatValue() ) );
-           } 
-        }
-      return false;  
-      }
-
-
-
-
-
+   *
+   * @param node the current node positioned to an NXsample part of a
+   * datasource
+   * @param  DS  the existing DataSet that is to be filled out
+   *
+   * @return error status: true if there is an error otherwise false
+   */
+  public boolean processDS( NxNode node , DataSet DS ){
+    errormessage = "Improper NxSampel inputs";
+    if( node == null ) 
+      return true;
+    if( DS == null ) 
+      return true;
+    if( !node.getNodeClass().equals( "NXsample" ) ) 
+      return true;
+    errormessage = "";
+    NxNode X = node.getChildNode( "name" );
+    if( X!= null ){
+      Object val = X.getNodeValue();
+      String S = new NxData_Gen().cnvertoString( val );
+      if(  S!=  null )
+        DS.setAttribute(  new StringAttribute( Attribute.SAMPLE_NAME , S ) ); 
+    }
+    X = node.getChildNode( "temperature" );
+    if( X!= null ){
+      Object val = X.getNodeValue();
+      if( val != null ){
+        Float S = new NxData_Gen().cnvertoFloat( val );
+        if( S!= null )
+          if( S.floatValue()!= ( java.lang.Float.NaN ) ) 
+            DS.setAttribute( new FloatAttribute( Attribute.TEMPERATURE,
+                                                 S.floatValue() ) );
+      } 
+    }
+    X = node.getChildNode( "pressure" );
+    if( X!= null ){
+      Object val = X.getNodeValue();
+      if( val != null ){
+        Float S = new NxData_Gen().cnvertoFloat( val );
+        if( S!= null )
+          if( S.floatValue()!= ( java.lang.Float.NaN ) ) 
+            DS.setAttribute( new FloatAttribute( Attribute.PRESSURE,
+                                                 S.floatValue() ) );
+      } 
+    }
+    return false;  
+  }
 }
