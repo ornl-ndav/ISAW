@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/07/17 20:37:04  bouzekc
+ *  Now properly updates internal value.  The value can now be
+ *  set by using the internal index.
+ *
  *  Revision 1.5  2003/07/17 20:25:04  bouzekc
  *  Separated adding values to the inner choice list from
  *  adding values to the actual buttons.  Now requires a call
@@ -197,11 +201,28 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     }
 
     if( this.initialized ) {
-      ( ( JRadioButton )radioButtons.elementAt( radioIndex ) ).setSelected( 
-        true );
+      setValue( radioIndex );
     } else {
       this.value = sVal;
     }
+  }
+
+  /**
+   * Utility to set the value of this RadioButtonPG to a particular index.  If
+   * the GUI has not been initialized, this does nothing.
+   *
+   * @param index The index to set the value to.
+   */
+  public void setValue( int index ) {
+    if( !initialized ) {
+      return;
+    }
+
+    JRadioButton selectedButton = ( ( JRadioButton )radioButtons.elementAt( 
+        index ) );
+
+    selectedButton.setSelected( true );
+    value = selectedButton.getText(  );
   }
 
   /**
@@ -310,9 +331,12 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     rpg.addItem( "Choice 2" );
     rpg.addItem( "Choice 3" );
     rpg.addItem( "Choice 3" );
+    rpg.setValue( 2 );
+    System.out.println( rpg.getValue(  ) );
 
     //rpg.setValue( "Choice 5" );
     rpg.setValue( "Choice 1" );
+    System.out.println( rpg.getValue(  ) );
     rpg.showGUIPanel(  );
   }
 
