@@ -36,6 +36,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/07/15 22:13:33  rmikk
+ *  Added an intensity slider
+ *
  *  Revision 1.4  2002/07/12 21:14:07  rmikk
  *  Changed documentation to get log messages to record
  *    automatically
@@ -95,6 +98,7 @@ public class ContourView extends DataSetViewer
    JMenuItem tree_;
    DataSetXConversionsTable dct;
    JPanel ConvTableHolder = null;
+   JPanel rpl_Holder = null;
    JScrollPane dctScroll = null;
    JButton print_;
    ContourData cd;
@@ -110,13 +114,14 @@ public class ContourView extends DataSetViewer
    ViewerState state = null;  
    JLabel time_label = new JLabel( "" );
    SplitPaneWithState main = null;
+   //JSplitPane main = null;
+  // JPanel main= null;
+   JSlider intensity = null;
    public ContourView( DataSet ds, ViewerState state1 )
    {
 
       super( ds, state1 );  // Records the data_set and current ViewerState
-      // object in the parent class and then
-      // sets up the menu bar with items handled by the
-      // parent class.
+ 
       data_set = ds;
       state = state1;
       if( !validDataSet() )
@@ -124,14 +129,13 @@ public class ContourView extends DataSetViewer
          return;
       }
       sliderTime_index = 0;
-      
+     
       if( state1 == null)
         { state = new ViewerState();
          
         }
-      /*
-       * Create a new ViewManager to contain the graph.
-       */
+       state.set_int ("Contour.Intensity",50);
+   //Create the Menu bar items
       JMenuBar menu_bar = getMenuBar();
       JMenu jm = menu_bar.getMenu( DataSetViewer.EDIT_MENU_ID );
 
@@ -139,7 +143,7 @@ public class ContourView extends DataSetViewer
       jm.add( tree_ );
       tree_.addActionListener( new MyAction() );
       DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( menu_bar, this );
-      //main.setLayout(new BorderLayout());
+      
       jm = menu_bar.getMenu( DataSetViewer.OPTION_MENU_ID );
       jm.add( new ColorScaleMenu( new ColorActionListener() ) );
 
@@ -171,21 +175,79 @@ public class ContourView extends DataSetViewer
       ac.addActionListener( new MyAction() );
     
       setData( data_set, state.get_int( ViewerState.CONTOUR_STYLE) );
+
+      //Add the components to the window
       JPanel jpEast = new JPanel();
 
       BoxLayout blay = new BoxLayout( jpEast, BoxLayout.Y_AXIS );
 
       jpEast.setLayout( blay );
       jpEast.add( ac );
+   
+      intensity = new JSlider( 0, 100);
+      intensity.setBorder( BorderFactory.createTitledBorder( BorderFactory.createEtchedBorder(),
+                        "Intensity") );
+      jpEast.add(intensity);
+      intensity.addChangeListener( new MyChange());
+      
 
       jpEast.add( ConvTableHolder );
       jpEast.add( Box.createHorizontalGlue() );
-      main = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT, rpl_, jpEast, .7f );
-      setLayout( new GridLayout( 1, 1 ) );
-      add( main );
+      rpl_Holder = new JPanel( new GridLayout( 1,1));
+      rpl_Holder.add( rpl_);
+      
+       main = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,  rpl_Holder,  jpEast, .70f);
+       //main.setDividerLocation( .70);
+     /*  main = new JPanel();
+      GridBagLayout gbl = new GridBagLayout();
+      GridBagConstraints gbc = new GridBagConstraints();
+     
+      main.setLayout( new BorderLayout());
+      //gbc.fill = GridBagConstraints.BOTH;
+      gbc.weightx=2;
+     // gbc.gridx = 0;
+    
+     // gbl.setConstraints( rpl_Holder, gbc);
+     
+      //main.add(rpl_, BorderLayout.CENTER);
+      gbc.weightx = 1;
+     
+      //gbc.gridx = 3;
+      
+      //gbl.setConstraints( jpEast, gbc);
+     
+      main.add( jpEast, BorderLayout.EAST);
+    */
+  /* all grid bag layout for all components
+       main = new JPanel();
+  
+      GridBagLayout gbl = new GridBagLayout();
+      GridBagConstraints gbc = new GridBagConstraints();
+      gbc.weightx =2;
+      gbc.gridheight = 6;
+      gbl.setConstraints( rpl_Holder, gbc);
 
+      gbc.weightx =1;
+      gbc.gridheight = 1;
+      gbc.gridwidth =  GridBagConstraints.REMAINDER;
+      gbl.setConstraints( ac, gbc);
+
+      gbl.setConstraints( intensity, gbc);
+
+      gbc.gridheight =3;
+      gbl.setConstraints( ConvTableHolder, gbc);
+
+      main.add( rpl_Holder);
+      main.add( ac);
+      main.add( intensity);
+      main.add( ConvTableHolder);
+  // end grid bag layout for all components
+  */
       main.addComponentListener( new MyComponentListener() );
-      main.validate();
+      add( main);
+      setLayout( new GridLayout( 1,1));
+      validate();
+
    }
 
   public ViewerState getState()
@@ -230,20 +292,23 @@ public class ContourView extends DataSetViewer
          ac.setTextLabel( data_set.getX_units() + "=" );
       }
       state.set_int("Contour.Style", GridContourAttribute);
-      if( !( rpl_ == null ) )
-         if( main != null )
-         {
-            main.remove( rpl_ );
+      if( ( main != null ) )
+       if( rpl_Holder != null)  
+         { //main.remove( rpl_Holder);
+            //main.remove( rpl_ );
+             rpl_Holder.remove( rpl_);
          }
+        else System.out.println("main != null && rpl_Holder is null");
       rpl_ = this.makeGraph( times[sliderTime_index], state );
-
+      
       //rpl_.setKeyBoundsP(new Rectangle2D.Double(2.0,2.0,ls.width,1.0 )); 
       //rpl_.setKeyLocationP( new Point2D.Double( 2.0,2.0));
 
       rpl_.addMouseListener( new MyMouseListener() );
       //gridKeyPane = rpl_.getKeyPane();
       //rpl_.setBatch(true);
-      //rpl_.setLayout( new GridLayout( 1,1));
+      rpl_.setLayout( new GridLayout( 1,1));
+      
       // rpl_.setKeyAlignment(AbstractPane.BOTTOM, AbstractPane.CENTER);
       /*
        * Layout the plot, key, buttons, and slider.
@@ -271,7 +336,11 @@ public class ContourView extends DataSetViewer
        */
       //rpl_.setBatch(false);
       if( main != null )
-         main.setLeftComponent( rpl_ );
+       if( rpl_Holder != null)
+         {  rpl_Holder.add( rpl_);
+           //main.setLeftComponent( rpl_ );
+           validate();
+          }
 
    }
 
@@ -299,15 +368,8 @@ public class ContourView extends DataSetViewer
          if( state == null )
             state = new ViewerState();
          state.set_String( ViewerState.COLOR_SCALE, evt.getActionCommand() );
-
-         /* ClosedInterval cli= getDataSet().getYRange();
-          Range2D datar = new Range2D(cli.getStart_x(), cli.getEnd_x(), 
-          (cli.getEnd_x() - cli.getStart_x()) / nlevels );
-          IndexedColorMap ii=createColorMap( datar, state, (ContourLevels)null);
-          gridAttr_.setColorMap(ii);
-          //will have to redraw whole thing init_rpl, 
-          */
-         init( data_set, state.get_int("Contour.Style"));
+  
+         setData( data_set, state.get_int("Contour.Style"));
          rpl_.draw();
       }
    }
@@ -324,7 +386,6 @@ public class ContourView extends DataSetViewer
          state.set_int("Contour.Style",GridAttribute.CONTOUR );
       else if( evt.getActionCommand().equals("RASTER"))
          state.set_int("Contour.Style",GridAttribute.RASTER );
-      
       setData( data_set , state.get_int("Contour.Style"));
       rpl_.draw();
       }
@@ -348,28 +409,6 @@ public class ContourView extends DataSetViewer
       button.add( print_ );
       return button;
    }
-
-
-   JPanel makeSliderPanel()
-   {
-
-      JPanel slider = new JPanel();
-
-      slider.setLayout( new FlowLayout() );
-      time_slider = new JSlider( 0, times.length - 1 );
-      MyChange l = new MyChange();
-
-      time_slider.addChangeListener( l );
-      //time_slider.setExtent(100);
-      time_slider.setMinorTickSpacing( 1 );
-      time_slider.setMinorTickSpacing( 10 );
-      time_slider.setValue( 1 );
-      time_label.setText( "" + times[time_slider.getValue()] );
-      slider.add( time_label );
-      slider.add( time_slider );
-      return slider;
-   }
-
 
    void edit_actionPerformed( java.awt.event.ActionEvent e )
    {
@@ -529,7 +568,7 @@ public class ContourView extends DataSetViewer
       IndexedColorMap cmap = new IndexedColorMap( IndexColorMaker.getColorTable( ColorMap, ncolors ) );
 
       cmap.setTransform( new logTransform( 0.0, ncolors - 1.0,
-            datar.start, datar.end ,1.0f) );
+            datar.start, datar.end ,state.get_int("Contour.Intensity")) );
       //IndexedColorMap cmap = new IndexedColorMap(IndexColorMaker.getColorTable(ColorMap, 18),clevels);
       return cmap;
    }
@@ -569,10 +608,11 @@ public class ContourView extends DataSetViewer
                int i = new Integer( event.getActionCommand() ).intValue();
 
                sliderTime_index = i;
-               if( i < 0 ) return;
-               if( i >= times.length )
-                  return;
-
+               if( i < 0 ) 
+                 i=0;
+               else if( i >= times.length )
+                  i = times.length -1;;
+               
                SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[i] ) );
 
                ( ( SimpleGrid )newData ).setZArray( newData1.getZArray() );
@@ -593,8 +633,14 @@ public class ContourView extends DataSetViewer
       {
          Object obj = event.getSource();
 
-         if( obj == time_slider )
-            slider_changePerformed( event );
+         if( obj != intensity )
+           return;
+         state.set_int ("Contour.Intensity",intensity.getValue());
+         setData( getDataSet(), state.get_int(ViewerState.CONTOUR_STYLE));
+         main.repaint();
+         rpl_.draw();
+        
+            
       }
    }
 
@@ -689,7 +735,7 @@ public class ContourView extends DataSetViewer
    class MyComponentListener extends ComponentAdapter
    {
       public void componentResized( ComponentEvent e )
-      {
+      { 
          if( rpl_ == null )
             return;
 
@@ -702,7 +748,7 @@ public class ContourView extends DataSetViewer
          if( R.height <= 0 )
             return;
 
-         main.invalidate();
+         //main.invalidate();
 
          rpl_.draw();
 
@@ -710,7 +756,7 @@ public class ContourView extends DataSetViewer
 
 
       public void componentShown( ComponentEvent e )
-      {
+      { System.out.println("B");
          //if( rpl_ != null)
          // rpl_.draw();
          componentResized( e );
