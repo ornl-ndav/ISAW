@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2002/11/29 22:50:36  dennis
+ *  Now uses InstrumentType.formIPNSFileName() to form proper file name
+ *  based on instrument name and run number from UDP packet.
+ *
  *  Revision 1.26  2002/11/27 23:27:59  pfpeterson
  *  standardized header
  *
@@ -56,6 +60,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
 import DataSetTools.util.*;
+import DataSetTools.instruments.*;
 
 /**
  *  LiveDataServer that receives UDP packets containing spectra from a DAS,
@@ -215,17 +220,11 @@ public class LiveDataServer extends    DataSetServer
   {
     instrument_name  = new_instrument.toLowerCase();
     run_number       = new_run_number;
-                                                         // pad run_number with
-                                                         // leading 0's to at 
-                                                         // least length 4.
-    String run_number_string = new String();
-    run_number_string = "" + run_number;
-    while ( run_number_string.length() < 4 )
-       run_number_string = "0" + run_number_string;
 
-    String file_name = instrument_name + run_number_string + ".run"; 
+    String file_name = InstrumentType.formIPNSFileName( new_instrument,
+                                                        new_run_number );
+    System.out.println("FileName: " + file_name );
 
-    System.out.println( "FileName: " + file_name );
     Retriever rr = get_retriever( file_name );
 
     if ( rr != null )
@@ -340,6 +339,7 @@ public class LiveDataServer extends    DataSetServer
       spec_buffer[i] = ByteConvert.toInt( buffer, start );
       start += 4;
     }
+
                                               // record the spectrum values in
                                               // the first DataSet possible
     int ds_num = 0;
