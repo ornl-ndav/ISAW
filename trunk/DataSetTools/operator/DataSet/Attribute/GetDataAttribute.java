@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/02/07 13:46:37  dennis
+ *  Added getDocumentation() method. (Mike Miller)
+ *
  *  Revision 1.3  2002/11/27 23:16:41  pfpeterson
  *  standardized header
  *
@@ -83,7 +86,7 @@ public class GetDataAttribute extends    DS_Attribute
    *  @param  ds          The DataSet to which the operation is applied.
    *  @param  index       The index of the data block whose attribute is to 
    *                      be set.
-   *  @parm   Attrib      The Attribute to be set.
+   *  @param   Attrib     The Attribute to be set.
    * 
    */
 
@@ -107,6 +110,29 @@ public class GetDataAttribute extends    DS_Attribute
                                     // this operator should operate on
   }
 
+/* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns a string of the description/attributes of GetDataAttribute
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator returns the attribute ");
+    Res.append("value of the data.\n");
+    Res.append("@algorithm Given a data set, an index, and the ");
+    Res.append("attribute name, the attribute value for the data ");
+    Res.append("at the index is found.\n");
+    Res.append("@param ds\n");
+    Res.append("@param index\n");
+    Res.append("@param Attrib\n");
+    Res.append("@return an Object containing the attribute value\n"); 
+    Res.append("@error Improper index\n");  
+    Res.append("@error Attribute the_attribute is not in the list\n");   
+    
+    return Res.toString();
+    
+  }
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
@@ -135,10 +161,14 @@ public class GetDataAttribute extends    DS_Attribute
   }
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+   * @return An Object is returned containing the value of the attribute.
+   * The data type of this value depends on the dataset. 
+   */
 
   public Object getResult()
   { 
-     Attribute A;
+//     Attribute A;
      DataSet ds = getDataSet();
 
      int index = ((Integer) (getParameter(0).getValue())).intValue();
@@ -170,5 +200,32 @@ public class GetDataAttribute extends    DS_Attribute
 
     return new_op;
   }
+  
+ /* ------------------------------- main --------------------------------- */ 
+ /** 
+  * Test program to verify that this will compile and run ok.  
+  *
+  */
+  
+  public static void main( String args[] )
+  {
+
+     System.out.println("Test of GetDataAttribute starting...");
+     DataSet ds = DataSetFactory.getTestDataSet();
+     Data d = ds.getData_entry(1);
+     Integer i = new Integer(1);
+     AttributeNameString at_name = new
+             AttributeNameString( d.getAttribute(1).getName() );
+     
+     GetDataAttribute test_group = new GetDataAttribute( ds, i, at_name );
+     
+     Object attrib_value = test_group.getResult(); 
+     System.out.println( "Attribute value: " + attrib_value.toString() );
+     
+     System.out.println( test_group.getDocumentation() );
+    
+     System.out.println("Test of GetDataAttribute done.");
+     
+  } 
 
 }

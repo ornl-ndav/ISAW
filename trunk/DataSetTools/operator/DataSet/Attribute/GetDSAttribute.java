@@ -32,6 +32,9 @@
  * This operator gets a DataSet Attribute
  *
  *  $Log$
+ *  Revision 1.4  2003/02/07 13:46:37  dennis
+ *  Added getDocumentation() method. (Mike Miller)
+ *
  *  Revision 1.3  2002/11/27 23:16:41  pfpeterson
  *  standardized header
  *
@@ -82,7 +85,7 @@ public class GetDSAttribute extends  DS_Attribute
    *  by calling getResult().
    *
    *  @param  ds       The DataSet to which the operation is applied
-   *  @parm   Attrib   The Attribute to be set.
+   *  @param  Attrib   The Attribute to be set.
    *
    */
 
@@ -98,6 +101,28 @@ public class GetDSAttribute extends  DS_Attribute
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
+  }
+
+/* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns a string of the description/attributes of GetDSAttribute
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator returns the attribute ");
+    Res.append("value of the data set.\n");
+    Res.append("@algorithm Given a data set and the attribute ");
+    Res.append("name, the attribute value for the data set ");
+    Res.append("is found.\n");
+    Res.append("@param ds\n");
+    Res.append("@param Attrib\n");
+    Res.append("@return an Object containing the attribute value\n"); 
+    Res.append("@error Attribute the_attribute is not in the list\n");   
+    
+    return Res.toString();
+    
   }
 
   /* ---------------------------- getCommand ------------------------------- */
@@ -126,9 +151,12 @@ public class GetDSAttribute extends  DS_Attribute
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+   * @return An Object is returned containing the value of the attribute.
+   * The data type of this value depends on the dataset. 
+   */
   public Object getResult()
-    { Attribute A;
+    { //Attribute A;
      DataSet ds = getDataSet();
      String S = ((AttributeNameString)(getParameter(0).getValue())).toString();
     
@@ -162,12 +190,18 @@ public class GetDSAttribute extends  DS_Attribute
    */
   public static void main( String[] args )
   {
+    System.out.println("Test of GetDSAttribute starting...");
+    
     GetDSAttribute op = new GetDSAttribute();
 
     String list[] = op.getCategoryList();
     System.out.println( "Categories are: " );
     for ( int i = 0; i < list.length; i++ )
       System.out.println( list[i] );
+    System.out.println();
+    System.out.println( op.getDocumentation() );
+    
+    System.out.println("Test of GetDSAttribute done.");
   }
 
 }

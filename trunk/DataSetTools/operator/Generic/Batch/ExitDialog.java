@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/07 13:50:01  dennis
+ * Added getDocumentation() method. (Mike Miller)
+ *
  * Revision 1.3  2002/11/27 23:20:53  pfpeterson
  * standardized header
  *
@@ -52,9 +55,10 @@ import  DataSetTools.operator.Generic.Batch.GenericBatch;
 import  DataSetTools.parameter.*;
 
 /**
- * This operator is used by scripts to make the JParametersDialog box to exit if this
- * is the last operator executed in a script or is the argument of the script Return statement.
- * This is equivalent to pressing the Exit button in the JParametersDialog box.
+ * This operator is used by scripts to make the JParametersDialog box to exit 
+ * if this is the last operator executed in a script or is the argument of the 
+ * script Return statement. This is equivalent to pressing the Exit button in 
+ * the JParametersDialog box.
  */
 
 public class ExitDialog extends  GenericBatch 
@@ -70,14 +74,27 @@ public class ExitDialog extends  GenericBatch
     super( "Exit Dialogue " );
   }
 
-
-
- 
-
+ /* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns a string of the description/attributes of GetDSAttribute
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator is equivalent to pressing the Exit ");
+    Res.append("button in the JParametersDialog box.\n");
+    Res.append("@algorithm An instance of ExitClass is created ");
+    Res.append("and returned.\n");
+    Res.append("@return an Object containing a new ExitClass instance\n"); 
+    
+    return Res.toString();    
+  }
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, ExitDialog
+   * @return	the command name to be used with script processor: in this case,
+   * ExitDialog
    */
    public String getCommand()
    {
@@ -112,6 +129,22 @@ public class ExitDialog extends  GenericBatch
     return (Object)( new ExitDialog());
   }
 
+  /* --------------------------- main ----------------------------------- */
+  /**
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    System.out.println("Test of ExitDialog starting...");
+
+    ExitDialog op = new ExitDialog();
+    
+    System.out.println( op.getResult().toString() );
+    System.out.println();
+    System.out.println( op.getDocumentation() );
+    
+    System.out.println("Test of ExitDialog done.");
+  }
 
 
 }

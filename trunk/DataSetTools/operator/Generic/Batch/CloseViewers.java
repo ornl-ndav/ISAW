@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/02/07 13:50:01  dennis
+ * Added getDocumentation() method. (Mike Miller)
+ *
  * Revision 1.2  2002/11/27 23:20:52  pfpeterson
  * standardized header
  *
@@ -63,6 +66,25 @@ public class CloseViewers extends GenericBatch{
   public CloseViewers(DataSet ds){
     this();
     getParameter(0).setValue(ds);
+  }
+  
+ /* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns a string of the description/attributes of GetDSAttribute
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator closes all of the viewers ");
+    Res.append("associated with a given data set.\n");
+    Res.append("@algorithm Given a data set, all associated viewers ");
+    Res.append("will be closed.\n");
+    Res.append("@param ds\n");
+    Res.append("@return a String verifying successful close\n"); 
+    Res.append("@error Encountered null DataSet in getResult\n");   
+    
+    return Res.toString();    
   }
 
   /** 
@@ -109,5 +131,22 @@ public class CloseViewers extends GenericBatch{
     CloseViewers op = new CloseViewers();
     op.CopyParametersFrom( this );
     return op;
+  }
+
+  /* --------------------------- main ----------------------------------- */
+  /**
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    System.out.println("Test of CloseViewers starting...");
+    DataSet ds = DataSetFactory.getTestDataSet();
+    CloseViewers op = new CloseViewers(ds);
+    
+    System.out.println( op.getResult() );
+    System.out.println();
+    System.out.println( op.getDocumentation() );
+    
+    System.out.println("Test of CloseViewers done.");
   }
 }
