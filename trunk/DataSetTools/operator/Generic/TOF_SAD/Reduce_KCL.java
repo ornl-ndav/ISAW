@@ -30,13 +30,9 @@
  * Modified:
  *
  * $Log$
- * Revision 1.27  2004/04/26 18:57:41  dennis
- *   Major restructuring of previous "prototype" version.  All low level
- * routines are now static methods in the SAD_Util class, so that they
- * can be reused and maintained more easily.
+ * Revision 1.28  2004/04/26 19:01:42  dennis
+ * Removed redundant log message.
  *
- *
- * $Log$
  * Revision 1.27  2004/04/26 18:57:41  dennis
  *   Major restructuring of previous "prototype" version.  All low level
  * routines are now static methods in the SAD_Util class, so that they
