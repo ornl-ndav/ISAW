@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.56  2001/08/16 18:53:02  chatterjee
+ *  Checking in merged version
+ *
  *  Revision 1.55  2001/08/16 00:40:18  rmikk
  *  NDS  server was set to notify Isaw and not the JTree
  *
@@ -263,7 +266,7 @@ public class Isaw
 
   private static final String FILE_M             = "File";
   private static final String LOAD_DATA_M        = "Load Data";
-  private static final String LOAD_LIVE_DATA_M   = "Load Live Data";
+  private static final String LOAD_LIVE_DATA_M   = "Live";
   private static final String LOAD_LOCAL_DATA_MI = "Local";
   private static final String LOAD_REMOTE_DATA_M = "Remote";
 
@@ -353,7 +356,7 @@ public class Isaw
   private static final String SAND_URL   = "http://www.pns.anl.gov/SAND/";
   private static final String SCD_URL    = "http://www.pns.anl.gov/SCD/";
   private static final String SEPD_URL   = "http://www.pns.anl.gov/SEPD/";
-  private static final String DB_URL     = "http://www.pns.anl.gov/ISAW/DBSearch.html";
+  private static final String DB_URL     = "http://www.pns.anl.gov/ISAW/";
 
   JDataTree jdt;
   JPropertiesUI jpui;
@@ -1353,7 +1356,7 @@ public class Isaw
     public void setupLiveDataServer( String instr )
     {
       String instrument_computer = System.getProperty( instr );
-      System.out.println( "loading: live data from " + instrument_computer );
+     // System.out.println( "loading: live data from " + instrument_computer );
 
       LiveDataMonitor monitor = new LiveDataMonitor( instrument_computer );
 
@@ -1894,7 +1897,7 @@ public class Isaw
         }
         else if(  filter.accept_filename( filenames[i] )  )
         {
-          System.out.println( "loading: " + filenames[i] );
+        //  System.out.println( "loading: " + filenames[i] );
           files[i] = new File( filenames[i] );
         }
         else
@@ -1938,10 +1941,18 @@ public class Isaw
   {
     if(  files != null  &&  files.length > 0  )
       for( int i=0;  i<files.length;  i++ ) 
-        {addNewDataSets(  util.loadRunfile(  files[i].getPath()  ), 
-                         files[i].getName()  );
+        {
+         DataSet DSS[];
+         DSS = util.loadRunfile(  files[i].getPath()  );
+         if( DSS != null)
+           if( DSS.length > 0)
+            {
+              addNewDataSets( DSS , 
+                         ""+DSS[0].getTag()+":"+files[i].getName()  );
    
-        util.appendDoc(  sessionLog, "Load " + files[i].toString()  );
+               util.appendDoc(  sessionLog, "Load " + files[i].toString()  );
+               return;
+            }
 	}
   }
 
