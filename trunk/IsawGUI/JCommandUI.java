@@ -2,6 +2,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.15  2001/08/15 22:32:08  chatterjee
+ * Added a JPanelwithToolBar with a SAVE button to the sessionLog tab pane
+ *
  * Revision 1.14  2001/08/14 19:31:12  chatterjee
  * Made use of class Command.JPanelWithToolbar  that will
  * add  buttons at the top of a JTabbed component to exit or save the
@@ -127,7 +130,7 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
        jtp = new JTabbedPane();
         jtp.addTab("Attributes", pp);
         jtp.addTab("DataSet Log", pane);
-        jtp.addTab("Session Log", njsp);
+        jtp.addTab("Session Log", new JPanelwithToolBar( "Save", new MySaveHandler(),njsp));
         jtp.addTab("System Props", ta);
         //jtp.addTab("Det Info", sp);
        jtp.addTab("Scripts", cp);
@@ -158,7 +161,18 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
                  , null, 0 );
 
   }
-
+ private class MySaveHandler implements ActionListener
+   {
+     public void actionPerformed( ActionEvent e )
+       { JFileChooser Jf = new JFileChooser();
+         int res =Jf.showSaveDialog( null );
+         if( res != JFileChooser.APPROVE_OPTION)
+           return;
+         File f = Jf.getSelectedFile();
+         Util util = new Util();
+         util.saveDoc( sessionLog, f.toString());
+        }
+    }
 
   /**
    * adds a tab and pops it up to the front.
