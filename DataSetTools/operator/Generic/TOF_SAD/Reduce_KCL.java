@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2004/01/24 20:05:19  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.17  2003/12/02 15:58:18  rmikk
  * Changed (Float) to (Number) to eliminate a Class Cast exception when
  *   dealing with Python
@@ -69,36 +72,19 @@ package DataSetTools.operator.Generic.TOF_SAD;
 import java.io.*;
 import java.lang.String;
 import java.lang.Math;
-import java.math.*;
 import java.lang.Object;
 import java.util.Vector;
 import java.util.*;
 
 import Command.*;
-import DataSetTools.components.ParametersGUI.*;
-import DataSetTools.components.ui.*;
 import DataSetTools.dataset.*;
-import DataSetTools.components.containers.*;
-import DataSetTools.operator.DataSet.*;
-import DataSetTools.instruments.*;
-import DataSetTools.operator.*;
-import DataSetTools.retriever.*;
 import DataSetTools.util.*;
-import DataSetTools.viewer.*;
-import DataSetTools.viewer.Table.*;
 import DataSetTools.math.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
-import DataSetTools.operator.DataSet.Math.Analyze.*;
-import DataSetTools.operator.DataSet.*;
 import DataSetTools.parameter.*;
-import DataSetTools.operator.DataSet.EditList.*;
-import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.operator.Parameter;
-import DataSetTools.parameter.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
-import DataSetTools.operator.DataSet.Math.Scalar.*;
-import java.io.*;
 
 /**
  * TITLE:        Convert Fortran To JAVA
