@@ -1,0 +1,152 @@
+<!--
+  File: FortranJavaTut.html
+ 
+  Copyright (C) 2003, Chris M. Bouzek
+ 
+  Permission is granted to copy, distribute and/or modify this document
+  under the terms of the GNU Free Documentation License, Version 1.2
+  or any later version published by the Free Software Foundation;
+  with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+  Texts.
+ 
+  You should have received a copy of the GNU Free Documentation License
+  along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ 
+  Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+            Department of Mathematics, Statistics and Computer Science
+            University of Wisconsin-Stout
+            Menomonie, WI 54751, USA
+ 
+            Chris Bouzek <coldfusion78@yahoo.com>
+ 
+  This work was supported by the National Science Foundation under grant
+  number DMR-0218882.
+ 
+  For further information, see <http://www.pns.anl.gov/ISAW/>
+ 
+  $Log$
+  Revision 1.1  2004/03/30 01:00:11  bouzekc
+  Added to CVS.
+
+  Revision 1.1  2004/03/30 00:57:26  bouzekc
+  Added to CVS.
+
+
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <title>Java Tutorial for Fortan Programmers</title>
+  <meta name="GENERATOR" content="Quanta Plus">
+</head>
+<body>
+<strong><div align="center">Java Tutorial for Fortran Programmers</div></strong><br>
+<hr><br>
+By Chris M. Bouzek<br><hr><br>
+This document is a mixture of a tutorial and a quick reference for Fortran programmers
+who would like to make the move to Java programming.  It does not aim to be a
+comprehensive guide for developing in Java.  Rather, it serves as a gentle entry into
+the world of cross-platform, object oriented programming in Java.<br><hr><br>
+<strong><div align="center">Essential differences between Fortran and Java</div></strong>
+<br><hr><br>
+<ul>
+  <li> In Java, comments start with a "//" rather than a "C". </li>
+  <li> Column position has no relevance in Java, i.e. a statement or comment
+  may begin and end in any column, although the 80 column limit is still observed
+  by convention. </li>
+  <li> Variable names in Java may be 255 characters long, and have roughly the
+  same naming conventions as Fortran (e.g. they may not start with a number). </li>
+  <li> There are no implicit variables in Java, i.e. if you do not give a variable
+  a type when you declare it, the compiler will complain. </li>
+  <li> Although character arrays can be used for text strings, Java has a much more
+  useful String class that we will explore later. </li>
+  <li> goto statements are not allowed in Java. </li>
+  <li> Nearly every Java statement requires a semicolon at the end. </li>
+  <li>  </li>
+  <li>  </li>
+  <li>  </li>
+  <li>  </li>
+  <li>  </li>
+  <li>  </li>
+  <li>  </li>
+  <li>  </li>
+</ul>
+<strong><div align="center">Basic Types</div></strong><br><hr><br>
+Fortran and Java share many similar data types, although the Fortran <strong>complex</strong>
+variable is not supported in Java.  Below is a table listing showing some of the parallels
+between Java and Fortran.<br><br><div align="center">
+<table border=1>
+  <thead>
+    <tr>
+      <th scope=col> Fortran data type </th>
+      <th scope=col> Java data type </th>
+      <th scope=col> Description </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td> integer </td>
+      <td> int </td>
+      <td> integer value </td>
+    </tr>
+    <tr>
+      <td> real </td>
+      <td> float </td>
+      <td> single precision floating point value </td>
+    </tr>
+    <tr>
+      <td> double precision </td>
+      <td> double </td>
+      <td> double precision floating point value </td>
+    </tr>
+    <tr>
+      <td> logical </td>
+      <td> boolean </td>
+      <td> true/false value </td>
+    </tr>
+    <tr>
+      <td> character </td>
+      <td> char </td>
+      <td> ASCII character value </td>
+    </tr>
+    <tr>
+      <td>  </td>
+      <td>  </td>
+      <td>  </td>
+    </tr>
+    <tr>
+      <td>  </td>
+      <td>  </td>
+      <td>  </td>
+    </tr>
+  </tbody>
+</table>
+</div><br><hr><br>
+<strong><div align="center">Declaring Variables</div></strong><br><hr><br>
+In general, declaring variables in Java is the same as declaring variables in Fortran.
+Here are some examples of declaring integer values:<br><br>
+<pre>
+int myint1;          //declare an integer named myint1
+int myint2 = 255;    //declare an integer named myint2 and initialize it to 255
+</pre><br><br>
+Note the use of the semicolon at the end of the statement, as it is almost always required after
+a Java statement.  We can also declare a floating point variables:<br><br>
+<pre>
+float myfloat1;         //declare a floating point named myfloat1
+float myfloat2 = 2.0f;  //declare a floating point named myfloat2 and initialize it to 2.0
+</pre><br><br>
+Note here that we used 2.0f rather than 2.0.  This is due to a quirk in Java: it does not allow
+what is called a "narrowing conversion" from double precision to single precision floating
+point values.  To illustrate:<br><br>
+<pre>
+float badfloat = 2.0;    //this will not work
+double mydouble = 2.0;   //but this will
+</pre><br><br>
+<br><hr><br>
+<strong><div align="center">Conditional Statements</div></strong>
+The contents of this document are licensed under the
+<a href="http://www.gnu.org/copyleft/fdl.html" >GNU Free 
+Documentation License</a> license.
+</body>
+</html>
