@@ -30,6 +30,9 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.8  2004/06/22 15:35:00  rmikk
+  *  Added documentation for setGridId method and associated variable
+  *
   *  Revision 1.7  2004/04/26 13:07:46  rmikk
   *  Passes on the Hashtable with already created Grids for this DataSet to
   *    subclasses(Data) that uses it
@@ -67,10 +70,15 @@ import java.lang.reflect.*;
 
 /**
 * A utility class that deals with the list of Data in a DataSet
+* for reading and writing a DataSet in XML
 */
 public class DataSetList  implements IXmlIO
 { DataSet ds;
-
+  /**
+   *  A Hashtable of the gridID's and their grid that have already been set 
+   * up while reading through the Datablocks in an XML file
+   */
+  transient Hashtable gridIds = new Hashtable(); 
   /**
   * Constructor for the DataList
   *
@@ -183,7 +191,7 @@ public class DataSetList  implements IXmlIO
     return true;
   }
 
-  transient Hashtable gridIds = new Hashtable();
+ 
  /**
   * Implements the IXmlIO interface so a list of Data can read itself
   *
