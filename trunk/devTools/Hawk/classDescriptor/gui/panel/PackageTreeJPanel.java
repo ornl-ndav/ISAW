@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:53:35  bouzekc
+ * Documented file using javadoc statements.
+ * Removed usage of the HorizontalInterfacePanelGUI and VerticalInterfacePanelGUI
+ * classes.
+ *
  * Revision 1.1  2004/02/07 05:09:43  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -70,8 +75,6 @@ import javax.swing.tree.TreeSelectionModel;
 
 import devTools.Hawk.classDescriptor.gui.frame.FileAssociationGUI;
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
-import devTools.Hawk.classDescriptor.gui.frame.HorizontalInterfacePanelGUI;
-import devTools.Hawk.classDescriptor.gui.frame.VerticalInterfacePanelGUI;
 import devTools.Hawk.classDescriptor.gui.internalFrame.JavadocsGUI;
 import devTools.Hawk.classDescriptor.gui.internalFrame.ShortenedSourceGUI;
 import devTools.Hawk.classDescriptor.gui.internalFrame.SingleUMLGUI;
@@ -82,10 +85,22 @@ import devTools.Hawk.classDescriptor.tools.FileAssociationManager;
 import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This is a special JPanel which contains a JTree which displays interfaces in a project by their package 
+ * names.  This is how the tree will look.
+ * <br> (Project's name)'s Packages
+ * <br> |
+ * <br> +-Package1
+ * <br> ....|
+ * <br> ....+-class1
+ * <br> ....+-class2
+ * <br> ..........
+ * <br> ..........
+ * <br> |
+ * <br> +-Package2
+ * <br> .....
+ * <br> .....
+ * <br> .....
+ * @author Dominic Kramer
  */
 public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, ActionListener
 {
@@ -94,21 +109,68 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 	 */
 	private Vector packageVec;
 	/**
-	 * This is the JTree that the elements are placed onto.
+	 * This is the project whose interfaces are added to the tree.
 	 */
 	private Project project;
+	/**
+	 * This is the JTree that the elements are placed onto.
+	 */
 	private JTree tree;
+	/**
+	 * The trees root node.
+	 */
 	private DefaultMutableTreeNode rootNode;
+	/**
+	 * The model that handles modifying the tree.
+	 */
 	private DefaultTreeModel model;
+	/**
+	 * The menubar associated with this panel.
+	 */
 	private JMenuBar menuBar;
+	/**
+	 * The popup menu associated with this panel.
+	 */
 	private JPopupMenu popup;
+	/**
+	 * The JInternalFrame that this panel is placed onto.
+	 */
 	private JInternalFrame frame;
+	/**
+	 * The JCheckBox that contains the option to shorten package names 
+	 * if they are java names.
+	 */
 	private JCheckBox shortenPackageJavaBox;
+	/**
+	 * The JCheckBox that contains the option to shorten class names 
+	 * if they are java names.
+	 */
 	private JCheckBox shortenClassJavaBox;
+	/**
+	 * The JCheckBox that contains the option to shorten package names 
+	 * if they are non-java names.
+	 */
 	private JCheckBox shortenPackageOtherBox;
+	/**
+	 * The JCheckBox that contains the option to shorten class names 
+	 * if they are non-java names.
+	 */
 	private JCheckBox shortenClassOtherBox;
+	/**
+	 * The HawkDesktop onto which this panel is added.
+	 */
 	private HawkDesktop desktop;
 	
+	/**
+	 * Create a new PackageTreeJPanel.
+	 * @param pro The project associated with this panel.
+	 * @param FRAME The frame that this panel is added to.
+	 * @param packageShortJava Set this to true if package names are to be shortened if they are java names.
+	 * @param packageShortOther Set this to true if package names are to be shrotened if they are non-java names.
+	 * @param classShortJava Set this to true if class names are to be shortened if they are java names.
+	 * @param classShortOther Set this to ture if class names are to be shortened if they are non-java names.
+	 * @param desk The HawkDesktop onto which this panel is on.
+	 */
 	public PackageTreeJPanel(Project pro, JInternalFrame FRAME, boolean packageShortJava, boolean packageShortOther, boolean classShortJava, boolean classShortOther, HawkDesktop desk)
 	{			
 		desktop = desk;
@@ -258,31 +320,63 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 			tree.addMouseListener(popupListener);
 	}
 	
+	/**
+	 * Get the project associated with this panel.
+	 * @return The project.
+	 */
 	public Project getProject()
 	{
 		return project;
 	}
 	
+	/**
+	 * Get the JCheckBox that contains the option to shorten class names 
+	 * if they are java names.
+	 * @return The JCheckBox.
+	 */
 	public JCheckBox getShortenClassJavaBox()
 	{
 		return shortenClassJavaBox;
 	}
 	
+	/**
+	 * Get the JCheckBox that contains the option to shorten class names 
+	 * if they are non-java names.
+	 * @return The JCheckBox.
+	 */
 	public JCheckBox getShortenClassOtherBox()
 	{
 		return shortenClassOtherBox;
 	}
 	
+	/**
+	 * Get the JCheckBox that contains the option to shorten package names 
+	 * if they are java names.
+	 * @return The JCheckBox.
+	 */
 	public JCheckBox getShortenPackageJavaBox()
 	{
 		return shortenPackageJavaBox;
 	}
 	
+	/**
+	 * Get the JCheckBox that contains the option to shorten package names 
+	 * if they are non-java names.
+	 * @return The JCheckBox.
+	 */
 	public JCheckBox getShortenPackageOtherBox()
 	{
 		return shortenPackageOtherBox;
 	}
-
+	
+	/**
+	 * Fills the tree with nodes.  The nodes use either the full name for classes and interfaces or 
+	 * shortened names depending on the parameters supplied.
+	 * @param packageShortJava Set this to true if package names are to be shortened if they are java names.
+	 * @param packageShortOther Set this to true if package names are to be shortened if they are non-java names.
+	 * @param classShortJava Set this to true if class names are to be shortened if they are java names.
+	 * @param classShortOther Set this to true if class names are to be shortened if they are non-java names.
+	 */
 	public void fillTree(boolean packageShortJava, boolean packageShortOther, boolean classShortJava, boolean classShortOther)
 	{
 		rootNode.removeAllChildren();
@@ -305,51 +399,71 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 		model.reload();
 		}
 	
+	/**
+	 * Gets the currently selected Interface from the JTree.  If no nodes are selected or if the node 
+	 * selected does not correspond to an Interface, null is returned.
+	 * @return The selected Interface or null.
+	 */
 	public Interface getSelectedInterface()
 	{
 		Interface intF = null;
 		TreePath treePath = tree.getSelectionPath();
-		int count = treePath.getPathCount();
-		if (count<3)
-			intF = null;
-		else
+		if (treePath != null)
 		{
-			String str = (String)((DefaultMutableTreeNode)tree.getLastSelectedPathComponent()).getUserObject();
-			int i=0;
-			int j=0;
-			boolean found = false;
-			while (!found && i<packageVec.size())
+			int count = treePath.getPathCount();
+			if (count<3)
+				intF = null;
+			else
 			{
-				j=0;
-				while (!found && j<((Vector)packageVec.elementAt(i)).size())
+				String str = (String)((DefaultMutableTreeNode)tree.getLastSelectedPathComponent()).getUserObject();
+				int i=0;
+				int j=0;
+				boolean found = false;
+				while (!found && i<packageVec.size())
 				{
-					if ( ((Interface)((Vector)packageVec.elementAt(i)).elementAt(j)).getPgmDefn().getInterface_name(shortenClassJavaBox.isSelected(), shortenClassOtherBox.isSelected()).equals(str))
+					j=0;
+					while (!found && j<((Vector)packageVec.elementAt(i)).size())
 					{
-						found = true;
-						intF = ((Interface)((Vector)packageVec.elementAt(i)).elementAt(j));
+						if ( ((Interface)((Vector)packageVec.elementAt(i)).elementAt(j)).getPgmDefn().getInterface_name(shortenClassJavaBox.isSelected(), shortenClassOtherBox.isSelected()).equals(str))
+						{
+							found = true;
+							intF = ((Interface)((Vector)packageVec.elementAt(i)).elementAt(j));
+						}
+						j++;
 					}
-					j++;
+					i++;
 				}
-				i++;
 			}
-		}		
+		}
+				
 		return intF;
 	}
 	
+	/**
+	 * Get the menubar associated with this panel.  This menubar contains 
+	 * all of the menus and items that the user can select and this class will 
+	 * know what to do with the events.  
+	 * @return The JMenuBar.
+	 */
 	public JMenuBar getJMenuBar()
 	{			
 		return menuBar;
 	}
 	
+	/**
+	 * Handles the JTree's value changing.
+	 * @param e The event to process.
+	 */
 	public void valueChanged(TreeSelectionEvent e)
 	{
 
 	}
-
+	
+	/**
+	 * Handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
-		Interface intF = getSelectedInterface();
-		
 		if (event.getActionCommand().equals("Save"))
 		{
 			
@@ -360,58 +474,55 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 		}
 		else if (event.getActionCommand().equals("popup.singleUML"))
 		{
+			Interface intF = getSelectedInterface();
+			
 			if (intF != null)
 			{
 				SingleUMLGUI singleUML = null;
-				singleUML = new SingleUMLGUI(intF, intF.getPgmDefn().getInterface_name(), true, false,desktop);		
+				singleUML = new SingleUMLGUI(intF, intF.getPgmDefn().getInterface_name(true,false), true, false,desktop);		
 				
 				if (singleUML != null)
 				{
 					singleUML.setVisible(true);
 					desktop.getSelectedDesktop().add(singleUML);
+					singleUML.setAsSelected(true);
 				}
 			}
 		}		
 		else if (event.getActionCommand().equals("popup.shortenedSource"))
 		{
+			Interface intF = getSelectedInterface();
+			
 			if (intF != null)
 			{
-				ShortenedSourceGUI popupSsg = new ShortenedSourceGUI(intF, project.getProjectName(), true, false,desktop);
+				ShortenedSourceGUI popupSsg = new ShortenedSourceGUI(intF, getSelectedInterface().getPgmDefn().getInterface_name(true,false), true, false,desktop);
 				popupSsg.setVisible(true);
 				desktop.getSelectedDesktop().add(popupSsg);
+				popupSsg.setAsSelected(true);
 			}
 		}
 		else if (event.getActionCommand().equals("popup.sourceCode"))
 		{
+			Interface intF = getSelectedInterface();
+			
 			if (intF != null)
 			{
-				SourceCodeGUI popupSource = new SourceCodeGUI(intF, project.getProjectName(),desktop);
+				SourceCodeGUI popupSource = new SourceCodeGUI(intF, getSelectedInterface().getPgmDefn().getInterface_name(),desktop);
 				popupSource.setVisible(true);
+				desktop.getSelectedDesktop().add(popupSource);
+				popupSource.setAsSelected(true);
 			}
 		}
 		else if (event.getActionCommand().equals("popup.javadocs"))
 		{
+			Interface intF = getSelectedInterface();
+			
 			if (intF != null)
 			{
-				JavadocsGUI javagui = new JavadocsGUI(intF, project.getProjectName(),desktop);
+				JavadocsGUI javagui = new JavadocsGUI(intF,getSelectedInterface().getPgmDefn().getInterface_name(),desktop);
 				javagui.setVisible(true);
 				desktop.getSelectedDesktop().add(javagui);
-			}
-		}
-		else if (event.getActionCommand().equals("popup.horizontal"))
-		{
-			if (intF != null)
-			{
-				HorizontalInterfacePanelGUI hPanel = new HorizontalInterfacePanelGUI(intF, project.getProjectName());
-				hPanel.setVisible(true);
-			}
-		}
-		else if (event.getActionCommand().equals("popup.vertical"))
-		{
-			if (intF != null)
-			{
-				VerticalInterfacePanelGUI vPanel = new VerticalInterfacePanelGUI(intF, project.getProjectName());
-				vPanel.setVisible(true);
+				javagui.setAsSelected(true);
 			}
 		}
 		else if (event.getActionCommand().equals("properties.shorten"))
@@ -459,6 +570,7 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 	/**
 	* This class handles what to do when the user wants to open
 	* a popup menu.
+	* @author Dominic Kramer
 	*/
 	class PopupListener extends MouseAdapter 
 	{
@@ -482,6 +594,10 @@ public class PackageTreeJPanel extends JPanel implements TreeSelectionListener, 
 		}
 	}
 	
+	/**
+	 * Listens to events thrown from the JTree.
+	 * @author Dominic Kramer
+	 */
 	class PackageTreeModelListener implements TreeModelListener
 	{
 		public void treeNodesChanged(TreeModelEvent e) {}
