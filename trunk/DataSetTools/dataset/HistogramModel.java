@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/05/29 22:46:49  dennis
+ *  Minor fixes to documentation.
+ *
  *  Revision 1.3  2002/04/19 15:42:29  dennis
  *  Revised Documentation
  *
@@ -104,8 +107,11 @@ public class HistogramModel extends    ModeledData
   }
 
   /**
-   * Returns a list of "Y" values obtained by evaluating the histogram at 
-   * the bin centers of the current x_scale.
+   *  Generate a histogram by evaluating the function at the bin centers of 
+   *  the current x_scale.
+   *
+   *  @return  A new array listing the y-values of the function at the
+   *           centers of the bins determined by the current x-scale.  
    */
   public float[] getY_values()
   { 
@@ -113,15 +119,15 @@ public class HistogramModel extends    ModeledData
   }
 
   /**
-   *  Get a list of "Y" values for this Data object, by evaluating the
-   *  histogram at the bin centers of the specified x_scale.
+   *  Generate a histogram by smoothing values obtained by evaluating the 
+   *  function at the bin centers of the specified x_scale.
    *
    *  @param  x_scale      The XScale to be used for evaluating the histogram.
    *  @param  smooth_flag  Flag indicating the type of smoothing to use,
    *                       as defined in IData. #### not currently implemented
    *                       
-   *  @return  A new array listing approximate y-values corresponding to the
-   *           given x-scale.  
+   *  @return  A new array listing smoothed y-values of the function at the
+   *           centers of the bins determined by the specified x-scale.  
    */
   public float[] getY_values( XScale x_scale, int smooth_flag )
   {
@@ -192,7 +198,7 @@ public class HistogramModel extends    ModeledData
   /**
    * Return a new HistogramModel object containing a copy of the x_scale, 
    * function, error function, group_id and attributes from the current 
-   * FunctionModel object.
+   * HistogramModel object.
    *
    * @return a "deep" copy of the current HistogramModel is returned as
    *         a generic Object. 

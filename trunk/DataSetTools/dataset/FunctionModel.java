@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/05/29 22:47:30  dennis
+ *  Minor fixes to documentation.
+ *
  *  Revision 1.3  2002/04/19 15:42:28  dennis
  *  Revised Documentation
  *
@@ -105,10 +108,11 @@ public class FunctionModel extends    ModeledData
   }
 
   /**
-   * Returns a list of "Y" values obtained by evaluating the function at 
-   * the current x_scale.
+   *  Generate a list of "Y" values for this Data object, by 
+   *  evaluating the function at the x values of the current XScale.
    *
-   * @return A new array listing approximate y-values at the current x_scale.
+   *  @return A new array listing y-values at the points of the 
+   *          current x_scale.
    */
   public float[] getY_values()
   { 
@@ -116,15 +120,15 @@ public class FunctionModel extends    ModeledData
   }
 
   /**
-   *  Get a list of "Y" values for this Data object, by evaluating the
-   *  function at the x values specified by the XScale.
+   *  Generate a list of smoothed "Y" values for this Data object, by 
+   *  evaluating the function at the x values specified by the XScale.
    *
    *  @param  x_scale      The XScale to be used for evaluating the function.
    *  @param  smooth_flag  Flag indicating the type of smoothing to use,
    *                       as defined in IData. #### not currently implemented
    *                       
-   *  @return  A new array listing approximate y-values corresponding to the
-   *           given x-scale.  
+   *  @return  A new array listing smoothed y-values of the function at the
+   *           points specified by the given x-scale.  
    */
   public float[] getY_values( XScale x_scale, int smooth_flag )
   {
