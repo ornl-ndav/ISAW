@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/08/14 15:09:16  dennis
+ *  Now gets date string from DateUtil
+ *
  *  Revision 1.6  2001/08/14 01:32:14  dennis
  *  Added comments to ProcessCommand() method.  Now usually makes
  *  a log entry before doing the command.
@@ -120,8 +123,7 @@ public class TCPServer implements ITCPUser
    public TCPServer()
    {
      log = new Hashtable();
-     Date date = new Date( System.currentTimeMillis() );
-     start_time = date.toString();
+     start_time = DateUtil.default_string();
    }
 
   /* --------------------------- setServerName ------------------------- */
@@ -537,8 +539,7 @@ public class TCPServer implements ITCPUser
 
     public LogEntry( String command, int requests )
     {
-      Date date = new Date( System.currentTimeMillis() );
-      this.date      = date.toString();
+      this.date      = DateUtil.default_string();
       this.command   = command;
       total_requests = requests;
     }
