@@ -28,6 +28,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/10/10 00:50:04  bouzekc
+ * Now extends IDataSetListHandler, PropertyChanger, IObserver, and
+ * PropertyChangeListener.  Added setPropertyChangeList(), setTitle(),
+ * getNum_parameters(), and setDefaultParameters().
+ *
  * Revision 1.3  2002/11/27 23:12:10  pfpeterson
  * standardized header
  *
@@ -36,13 +41,17 @@ package Command;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.util.*;
+import java.beans.*;
+import DataSetTools.components.ParametersGUI.*;
+import DataSetTools.operator.Generic.*;
 
 /**
  * Interface for a Script Processor<P>
  *
  * NOTE: Implementations of this should also implement Generic Operator
  */
-public interface IScriptProcessor {
+public interface IScriptProcessor extends IDataSetListHandler, PropertyChanger, 
+                                          IObserver, PropertyChangeListener {
 
     //ISAW Interface routines
     /**
@@ -56,18 +65,12 @@ public interface IScriptProcessor {
  
     /**
      * The IObserver is usually ISAW. If the script creates a new Data
-     * Set it can be sent * to "all IOBSERVERS"
+     * Set it can be sent to "all IOBSERVERS"
      */
     public void  addIObserver(IObserver iobs);
     public  void  deleteIObserver(IObserver iobs) ;
     public void deleteIObservers() ;
     
-    /**
-     * ISAW only uses the property "Display". The new Value is the
-     * value(.toString()) that is displayed
-     */
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener P); 
-
  /**
   * This is the document to log actions performed by the script.
   * Hopefully the log document will eventually be executable to redo a
@@ -122,6 +125,26 @@ public interface IScriptProcessor {
      * Returns a message about the error
      */
     public String getErrorMessage() ;
+
+    /**
+     * Sets the whole list of property change listeners.
+     */
+    public void setPropertyChangeList( PropertyChangeSupport pcs ) ;
+
+    /**
+     * Gets the number of parameters for an Operator-like script.
+     */
+    public int getNum_parameters(  );
+
+    /**
+     * Sets the title.
+     */
+    public void setTitle( String title );
+
+    /**
+     * Sets default parameters for Operator-like scripts.
+     */
+    public void setDefaultParameters(  );
 
     //utilities
 
