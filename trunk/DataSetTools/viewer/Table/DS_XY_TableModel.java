@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/06/10 21:46:07  rmikk
+ * Optimized the save using StringBuffer's and the new
+ *    methods in XScale to getX(i) and getI(x)
+ *
  * Revision 1.2  2002/06/07 22:36:49  pfpeterson
  * Added some error checking and an option to specify the dataset
  * number when running the main program.
@@ -84,7 +88,6 @@ public class DS_XY_TableModel extends AbstractTableModel
        float[] u= null;
        this.includeErrors = includeErrors;
        if( DS != null )
-
          { xvals = table_view.MergeXvals( 0, DS, u, false, Groups); 
            if( xvals.length>1 ) 
               dx = xvals[ 1 ] -  xvals[ 0 ];
@@ -206,31 +209,91 @@ public class DS_XY_TableModel extends AbstractTableModel
        {filename = jf.getSelectedFile().toString();
         File ff = new File( filename );
         FileOutputStream fout = new FileOutputStream( ff );
+       
+       
+        StringBuffer S =new StringBuffer( 8192); 
         for( int i = 0; i < getRowCount(); i++ )
-         {for( int j = 0; j < getColumnCount(); j++ )
-            fout.write( ( getValueAt( i , j ).toString() + "\t" ).getBytes() );
-          fout.write( ( "\n" ).getBytes() );
+         {float x = xvals[ i ];
+          
+          for( int j = 0; j < getColumnCount(); j++ )
+            {float v= x;
+           
+             String V="";
+             if( j == 0)
+                V +=x;
+             else
+              {Data DB;
+               int jj =j-1;
+               if( jj >= Groups.length)
+                 jj = jj- Groups.length;
+               DB = DS.getData_entry( Groups[jj] );
+              
+               XScale xs = DB.getX_scale();
+              
+               int indx = xs.getI(x);
+              
+               if( indx < 0)
+                 indx = 0;
+               if( indx > DB.getX_scale().getNum_x())
+                 indx = DB.getX_scale().getNum_x();
+             
+               if( x > xs.getX(indx) +dx/20.0 )
+                 indx++;
+             
+               if( xs.getX(indx) != Float.NaN)
+                 if( x < xs.getX(indx)-dx/20.0 )
+                    indx--;
+             
+               if( j == 0)
+                 V =""+x;
+               else if( xs.getX( indx) == Float.NaN)
+                 {V="";}
+               else if(x > xs.getX(indx) +dx/20.0 )
+                 {
+                 
+                 V="";}
+               else if(x < xs.getX(indx)-dx/20.0 )
+                  {
+                    V ="";}
+             
+               else 
+                { float[] vals;
+                 
+                  if( !includeErrors ||(  j  < 1 + Groups.length ) )
+ 
+                    vals =  DB.getY_values();
+                  else
+                    vals = DB.getErrors();
+                  if( vals == null ) 
+                    {
+                       V="";}
+                  else if( vals.length  <= indx )
+                    {
+                         V="";}
+                  else 
+                    V+= vals[indx];
+                }
+              }
+           
+             S.append(V);//getValueAt( i , j ).toString());
+             S.append ( "\t") ;
+             
+             }
+          S .append( "\n");
+         if( S.length() >6000)
+            {fout.write( (S.substring(0) ).getBytes() );
+             
+             S=new StringBuffer( 8192);;
+            }
           }
-    
-        System.out.println( "Through" );
+         fout.write( (S.substring(0)+ "\n" ).getBytes() ); 
         fout.close( ); 
-        
-       /* table_view X = new table_view(1); 
-        X.setFileName( filename);
-        DataSet[] DSS = new DataSet[1];
-        DSS[0]= DS;
-        DefaultListModel ListModel = new DefaultListModel();
-        ListModel.addElement( X.getFieldInfo( DS, "X values"));
-        ListModel.addElement( X.getFieldInfo( DS , "Y values"));
-        
-        X.Showw( DSS, ListModel,"HT,FG",false,Groups);
-       */
         System.out.println( "Closed" );
-   
-        
+ 
         }
        catch( Exception ss ){
-               DataSetTools.util.SharedData.status_pane.add( "Cannot Save " + ss );}
+          DataSetTools.util.SharedData.status_pane.add( "Cannot Save " + 
+                ss.getClass()+":"+ss );}
         
     
    }
