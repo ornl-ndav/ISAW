@@ -1,5 +1,5 @@
 /*
- * File:  ChoiceListPG.java 
+ * File:  ChoiceListPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/03/11 01:42:16  bouzekc
+ *  Reformatted code.
+ *
  *  Revision 1.13  2003/12/15 01:45:30  bouzekc
  *  Removed unused imports.
  *
@@ -76,35 +79,40 @@
  *
  *
  */
-
 package DataSetTools.parameter;
 
 import DataSetTools.util.SharedData;
+
 import java.util.Vector;
+
 
 /**
  * This class represents a parameter where there is a list of Strings
  * to choose from.
  */
-public class ChoiceListPG extends ChooserPG{
+public class ChoiceListPG extends ChooserPG {
     // static variables
-    private   static String TYPE     = "ChoiceList";
-    protected static int    DEF_COLS = ChooserPG.DEF_COLS;
+    private static String TYPE = "ChoiceList";
+    protected static int DEF_COLS = ChooserPG.DEF_COLS;
 
     // ********** Constructors **********
-    public ChoiceListPG(String name, Object value){
-        this(name,value,false);
+    public ChoiceListPG(String name, Object value) {
+        this(name, value, false);
         this.setDrawValid(false);
         this.setType(TYPE);
     }
 
-    public ChoiceListPG(String name, Object value, boolean valid){
-        super(name,value,valid);
+    public ChoiceListPG(String name, Object value, boolean valid) {
+        super(name, value, valid);
+        System.out.println("CHOICELIST " + value.getClass());
         this.setType(TYPE);
-        if( value != null)
-        if(!(value instanceof String))
-            SharedData.addmsg("WARN: Non-String"
-                              +" in ChoiceListPG constructor");
+
+        if (value != null) {
+            if (!(value instanceof String)) {
+                SharedData.addmsg("WARN: Non-String" +
+                    " in ChoiceListPG constructor");
+            }
+        }
     }
 
     // ********** Methods to deal with the hash **********
@@ -114,15 +122,21 @@ public class ChoiceListPG extends ChooserPG{
      * superclass's method once it confirms the value to be added is a
      * DataSet.
      */
-    public void addItem( Object val){
-        if(val instanceof String) super.addItem(val);
+    public void addItem(Object val) {
+        if (val instanceof String) {
+            super.addItem(val);
+        }
     }
 
-    public void addItems( Vector values){
+    public void addItems(Vector values) {
         Object obj;
-        for( int i=0 ; i<values.size() ; i++ ){
-            obj=values.elementAt(i);
-            if(obj!=null) this.addItem(obj);
+
+        for (int i = 0; i < values.size(); i++) {
+            obj = values.elementAt(i);
+
+            if (obj != null) {
+                this.addItem(obj);
+            }
         }
     }
 
@@ -168,12 +182,12 @@ public class ChoiceListPG extends ChooserPG{
         y+=dy;
     }*/
 
-  /**
-   * Validates this ChoiceListPG.  A valid ChoiceListPG is one where getValue()
-   * returns a non-null String.  
-   */
-  public void validateSelf(  ) {
-    Object val = getValue(  );
-    setValid( val != null && val instanceof String );
-  }
+    /**
+     * Validates this ChoiceListPG.  A valid ChoiceListPG is one where getValue()
+     * returns a non-null String.
+     */
+    public void validateSelf() {
+        Object val = getValue();
+        setValid((val != null) && val instanceof String);
+    }
 }
