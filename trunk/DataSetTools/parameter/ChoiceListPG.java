@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/06/02 22:09:27  bouzekc
+ *  Modified clone() to work with a Vector of FileFilters.
+ *
  *  Revision 1.6  2003/02/24 20:59:14  pfpeterson
  *  Now extends ChooserPG rather than ArrayPG.
  *
@@ -152,7 +155,10 @@ public class ChoiceListPG extends ChooserPG{
      */
     public Object clone(){
         ChoiceListPG pg=new ChoiceListPG(this.name,this.value,this.valid);
-        pg.vals=(Vector)this.vals.clone();
+        if((this.vals) == null)
+          pg.vals = null;
+        else
+          pg.vals=(Vector)this.vals.clone();
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
         return pg;
