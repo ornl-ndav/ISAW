@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.23  2004/01/09 00:18:35  bouzekc
+ *  setValue() now adds the item if it is not in the list already.
+ *
  *  Revision 1.22  2003/12/02 00:24:42  bouzekc
  *  Fixed bug that invalidated this ParameterGUI when initGUI was called.
  *  Fixed bug that prevented previous values from being saved when initGUI()
@@ -132,14 +135,12 @@ abstract public class ChooserPG extends ParameterGUI{
   // ********** Constructors **********
   public ChooserPG(String name, Object val){
     super(name, val);
-    addItem(val);
     setValue(val);
     this.setType(TYPE);
   }
 
   public ChooserPG(String name, Object val, boolean valid){
     super(name, val, valid);
-    addItem(val);
     setValue(val);
     this.setType(TYPE);
   }
@@ -196,7 +197,8 @@ abstract public class ChooserPG extends ParameterGUI{
   }
 
   /**
-   * Sets the value of the parameter.
+   * Sets the value of the parameter.  This will add an item to the list
+   * if it is not in there already.
    */
   public void setValue(Object val){
     if(vals == null) {
@@ -204,8 +206,7 @@ abstract public class ChooserPG extends ParameterGUI{
     }
 
     if(vals.indexOf(val) < 0) {
-      //can't find it, so return
-      return;
+      addItem( val );
     }
     
     //update the GUI part
