@@ -1,8 +1,12 @@
 /*
- * @(#)Retriever.java     0.1  99/07/06  Dennis Mikkelson
+ * @(#)Retriever.java
  *
- * ---------------------------------------------------------------------------
+ *  Programmer: Dennis Mikkelson
+ *
  *  $Log$
+ *  Revision 1.4  2001/01/29 21:12:05  dennis
+ *  Now uses CVS revision numbers.
+ *
  *  Revision 1.3  2000/10/10 20:24:02  dennis
  *  Added constant for PULSE_HEIGHT_DATASET
  *
@@ -11,7 +15,6 @@
  *
  *  Revision 1.3  2000/05/11 16:19:12  dennis
  *  added RCS logging
- *
  *
  */
 
