@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/09/05 21:36:35  rmikk
+ * Fixed Groups in monitor to use
+ * Fixed the nonCadmium calculations
+ *
  * Revision 1.7  2003/08/19 20:54:15  rmikk
  * Eliminated a debug display in the middle of the code
  *
@@ -155,9 +159,10 @@ public class CalcTransmission extends GenericTOF_SAD {
   */
   public Object getResult(){
      log = new StringBuffer(1000);
-     DataSet Sample = ((MonitorDataSetPG)getParameter(0)).getDataSetValue();
-     DataSet Empty = ((MonitorDataSetPG)getParameter(1)).getDataSetValue();
-     DataSet Cadmium = ((MonitorDataSetPG)getParameter(2)).getDataSetValue();
+     DataSet Sample = (DataSet)((MonitorDataSetPG)getParameter(0)).
+                              getDataSetValue();
+     DataSet Empty = ((DataSetPG)getParameter(1)).getDataSetValue();
+     DataSet Cadmium = ((DataSetPG)getParameter(2)).getDataSetValue();
      DataSet SampleDs =((SampleDataSetPG)getParameter(3)).getDataSetValue();
      boolean useCadmium = ((Boolean)(getParameter(4).getValue())).booleanValue();
      float NeutronDelay =((FloatPG)getParameter(5)).getfloatValue();
@@ -165,7 +170,31 @@ public class CalcTransmission extends GenericTOF_SAD {
      int polyfitIndx2=((IntegerPG)getParameter(7)).getintValue();
      int degree=((IntegerPG)getParameter(8)).getintValue();
      boolean weight = ((Boolean)(getParameter(9).getValue())).booleanValue();
-   
+     int Monitor0 = 0;
+     int Monitor1 = 2;
+     int SampMonitor0GroupID = 1;
+     int CadMonitor0GroupID = 1;
+     int EmpMonitor0GroupID = 1;
+     int SampMonitor1GroupID = 3;
+     int CadMonitor1GroupID = 3;
+     int EmpMonitor1GroupID = 3;
+     int[] MonIndx = setMonitorInd( Sample);
+     if( MonIndx == null)
+       return new ErrorString("Could not find matching upStream and downStream monitors");
+     Monitor0 = MonIndx[0];
+     Monitor1 = MonIndx[1];
+     
+      SampMonitor0GroupID = Sample.getData_entry(Monitor0).getGroup_ID();
+      CadMonitor0GroupID = Cadmium.getData_entry(Monitor0).getGroup_ID();
+      EmpMonitor0GroupID = Empty.getData_entry(Monitor0).getGroup_ID();
+      SampMonitor1GroupID = Sample.getData_entry(Monitor1).getGroup_ID();
+     
+      if( useCadmium)
+        CadMonitor1GroupID = Cadmium.getData_entry(Monitor1).getGroup_ID();
+      EmpMonitor1GroupID = Empty.getData_entry(Monitor1).getGroup_ID();
+    System.out.println("FF"+Monitor0+","+Monitor1+","+SampMonitor0GroupID+","+
+           CadMonitor0GroupID+","+EmpMonitor0GroupID+","+SampMonitor1GroupID+","+
+           CadMonitor1GroupID+","+EmpMonitor1GroupID);
      if( !useCadmium)
         Cadmium = null;
      log.append("number of monitor detectors :");
@@ -173,14 +202,14 @@ public class CalcTransmission extends GenericTOF_SAD {
      //--------------- Neutron Delay
      Sample = (DataSet)(Sample.clone());
      Empty = (DataSet)(Empty.clone());
-     Cadmium = (DataSet)(Cadmium.clone());
+     if( Cadmium != null) Cadmium = (DataSet)(Cadmium.clone());
      setErrors( Sample);
      setErrors( Empty);
-     setErrors( Cadmium);
+     if( Cadmium != null)setErrors( Cadmium);
      if( NeutronDelay > 0){
        applyNeutronDelay( Sample, NeutronDelay );
        applyNeutronDelay( Empty, NeutronDelay );
-       applyNeutronDelay( Cadmium, NeutronDelay );
+       if( Cadmium != null)applyNeutronDelay( Cadmium, NeutronDelay );
      }
  
      //------------Convert to llambda------------------
@@ -236,7 +265,6 @@ public class CalcTransmission extends GenericTOF_SAD {
 
       }
 
-    
   
  
   // Resample the monitor's time channels to agree with the SampleDS's XScale
@@ -259,31 +287,34 @@ public class CalcTransmission extends GenericTOF_SAD {
      //----------- resample Monitors----------------
       int n = SampleDs.getNum_entries();
       XScale xscl = SampleDs.getData_entry(n/2).getX_scale();
-      Sample.getData_entry(0).resample(xscl,IData.SMOOTH_NONE );
-      Empty.getData_entry(0).resample(xscl,IData.SMOOTH_NONE);
+      Sample.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE );
+      Empty.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE);
       if( Cadmium != null)
-         Cadmium.getData_entry(0).resample(xscl,IData.SMOOTH_NONE);
-      Sample.getData_entry(2).resample(xscl,IData.SMOOTH_NONE);
-      Empty.getData_entry(2).resample(xscl,IData.SMOOTH_NONE);
+         Cadmium.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE);
+      Sample.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
+      Empty.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
       if( Cadmium != null)
-         Cadmium.getData_entry(2).resample(xscl,IData.SMOOTH_NONE);
+         Cadmium.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
+      
+     
 
-     ReportToLog1( Sample);
-     ReportToLog2( Sample);
+     ReportToLog1( Sample,Monitor0,Monitor1);
+     ReportToLog2( Sample,Monitor0,Monitor1);
 
-     ReportToLog2( Empty);
+     ReportToLog2( Empty,Monitor0,Monitor1);
 
      if( Cadmium != null)
-       ReportToLog2( Cadmium);
-
-     ReportToLog3( Sample, Empty, Cadmium);
-     
+       ReportToLog2( Cadmium,Monitor0,Monitor1);
+   
+     ReportToLog3( Sample, Empty, Cadmium,Monitor0,Monitor1);
     
      //------------ Calculate downstream monitor Relative monitors-------
      DataSet RelCadmium = null;
      Object Res = null;
+    
+     
      if(useCadmium){
-       Res = ((new DataSetDivide_1( Cadmium, Cadmium, 1, true)).getResult());
+       Res = ((new DataSetDivide_1( Cadmium, Cadmium, CadMonitor0GroupID, true)).getResult());
        if( Res instanceof ErrorString)
           return Res;
        if( Res instanceof String)
@@ -292,14 +323,17 @@ public class CalcTransmission extends GenericTOF_SAD {
      }
      
      DataSet RelSamp;
-     Res = (new DataSetDivide_1( Sample,Sample,1, true)).getResult();
+     Res = (new DataSetDivide_1( Sample,Sample,SampMonitor0GroupID, true)).getResult();
      if( Res instanceof ErrorString)
         return Res;
      if( Res instanceof String)
           return new ErrorString( (String)Res);
      RelSamp = (DataSet) Res;
+
+      
+     
      DataSet RelEmpty;
-     Res = (new DataSetDivide_1( Empty,Empty, 1, true)).getResult();
+     Res = (new DataSetDivide_1( Empty,Empty, EmpMonitor0GroupID, true)).getResult();
      if( Res instanceof ErrorString)
         return Res;
      if( Res instanceof String)
@@ -309,7 +343,7 @@ public class CalcTransmission extends GenericTOF_SAD {
    
      //----- Subtract off cadmium run ----------------------
      if( useCadmium){
-       Res = (new DataSetSubtract_1( RelSamp, RelCadmium,3, true)).getResult();
+       Res = (new DataSetSubtract_1( RelSamp, RelCadmium,CadMonitor1GroupID, true)).getResult();
        if( Res instanceof ErrorString )
           return Res;
        if( Res instanceof String)
@@ -317,7 +351,7 @@ public class CalcTransmission extends GenericTOF_SAD {
        
        RelSamp =(DataSet)Res;
 
-       Res = (new DataSetSubtract_1( RelEmpty, RelCadmium, 3,true)).getResult();
+       Res = (new DataSetSubtract_1( RelEmpty, RelCadmium, CadMonitor1GroupID,true)).getResult();
        if( Res instanceof ErrorString)
           return Res;
        if( Res instanceof String)
@@ -325,17 +359,18 @@ public class CalcTransmission extends GenericTOF_SAD {
        RelEmpty =(DataSet)Res;
      }
 
-
+   
      //----------------  Divide adjusted sample by ajusted empty------------
-     Res = (new DataSetDivide_1( RelSamp, RelEmpty, 3,true)).getResult();
+     Res = (new DataSetDivide_1( RelSamp, RelEmpty, EmpMonitor1GroupID,true)).getResult();
      if( Res instanceof ErrorString)
         return Res;
        if( Res instanceof String)
           return new ErrorString( (String)Res);
      DataSet Result_t = (DataSet) Res;
      Result_t.setTitle("tr_whole");
-     Result_t.setSelectFlag(  2, true);
-     
+    
+     Result_t.setSelectFlag(  Monitor1, true);
+    
      ExtractCurrentlySelected  opx = new ExtractCurrentlySelected(
                   Result_t,true, true);
       
@@ -360,6 +395,7 @@ public class CalcTransmission extends GenericTOF_SAD {
     if( Cadmium != null)
       runs[2] = runNum3;
     tr.setAttribute(new IntListAttribute(  Attribute.RUN_NUM, runs) );
+   
 
     //-------------- Now apply the Poly fit---------------------
     if( degree <= 0)
@@ -406,6 +442,8 @@ public class CalcTransmission extends GenericTOF_SAD {
 
  //  Returns the Largest Run Number
  private int getRunNum( DataSet ds){
+   if( ds == null)
+     return -1;
    Attribute A = ds.getAttribute( Attribute.RUN_NUM);
    if( A == null)
      A = ds.getData_entry(0).getAttribute( Attribute.RUN_NUM);
@@ -488,18 +526,18 @@ public class CalcTransmission extends GenericTOF_SAD {
   }
   //Gives widths of time bins
 
-  private void ReportToLog1( DataSet ds){
+  private void ReportToLog1( DataSet ds, int Mon0, int Mon1){
     
      log.append("    I          WIDTH-M1           WIDTH-M2\n");
-     float initialPath1 = ((FloatAttribute)(ds.getData_entry(0).
+     float initialPath1 = ((FloatAttribute)(ds.getData_entry(Mon0).
                         getAttribute( Attribute.INITIAL_PATH))).getFloatValue();
 
-     float initialPath2 = ((FloatAttribute)(ds.getData_entry(2).
+     float initialPath2 = ((FloatAttribute)(ds.getData_entry(Mon1).
                         getAttribute( Attribute.INITIAL_PATH))).getFloatValue();
      float[] lvals = ds.getData_entry(0).getX_scale().getXs();
-     float[] xvals=cvrtToTime( lvals, initialPath1,ds.getData_entry(0));
+     float[] xvals=cvrtToTime( lvals, initialPath1,ds.getData_entry(Mon0));
      float[] lvals1=ds.getData_entry(2).getX_scale().getXs();
-     float[] xvals1 =cvrtToTime( lvals1, initialPath2,ds.getData_entry(2));
+     float[] xvals1 =cvrtToTime( lvals1, initialPath2,ds.getData_entry(Mon1));
      
      for( int i=0; i+1< xvals.length; i++){
         log.append(Format.integer( i+1.0,5));
@@ -514,18 +552,18 @@ public class CalcTransmission extends GenericTOF_SAD {
 
   }
 
-  private void ReportToLog2( DataSet ds){
+  private void ReportToLog2( DataSet ds, int Mon0, int Mon1){
 
    
     log.append("***********************************************\n");
     log.append(" LAMBDA    M1-pancake-sample   M2trans-BSMon-sample\n");
     
-     float[] lvals = ds.getData_entry(0).getX_scale().getXs();
+     float[] lvals = ds.getData_entry(Mon0).getX_scale().getXs();
      //float[] xvals=cvrtToTime( lvals, initialPath,ds.getData_entry(0));
-     float[] lvals1=ds.getData_entry(2).getX_scale().getXs();
+     float[] lvals1=ds.getData_entry(Mon1).getX_scale().getXs();
      //float[] xvals1 =cvrtToTime( lvals1, initialPath,ds.getData_entry(2));
-     float[] yvals1= ds.getData_entry(0).getY_values();
-     float[] yvals2 = ds.getData_entry(2).getY_values();
+     float[] yvals1= ds.getData_entry(Mon0).getY_values();
+     float[] yvals2 = ds.getData_entry(Mon1).getY_values();
      for( int i=0;i+1< lvals.length; i++){
         log.append(Format.real((lvals[i]+lvals[i+1])/2.0, 12,6));
         log.append(Format.integer( (double)yvals1[i],12));
@@ -541,23 +579,49 @@ public class CalcTransmission extends GenericTOF_SAD {
     double Res;
    return ((Float) (Db.getAttribute( Attribute.TOTAL_COUNT).getValue())).doubleValue();
   }
-  private void ReportToLog3(DataSet Sample,DataSet Empty, DataSet Cadmium){
+  private void ReportToLog3(DataSet Sample,DataSet Empty, DataSet Cadmium,
+              int Mon0, int Mon1){
+      int Mon3 =0;
+      if( Mon0 ==0)Mon3 = 1;
+      if( Mon1 ==0)Mon3 = 1;
+      if( Mon0 ==1)if(Mon3==1)Mon3 = 2;
+      if( Mon1 ==1)if(Mon3==1)Mon3 = 2;
+      if( Mon0 ==2)if(Mon3==2)Mon3 = 3;
+      if( Mon1 ==2)if(Mon3==2)Mon3 = 3;
+      if( Mon0 ==3)if(Mon3==3)Mon3 = 4;
+      if( Mon1 ==3)if(Mon3==3)Mon3 = 4;
+      int Monx = -1;
+      if( Sample.getData_entry(Mon3).getX_scale().getNum_x() == 
+               Sample.getData_entry(Mon1).getX_scale().getNum_x())
+          Monx =Mon3;
+       if( Monx ==Mon3){
+          if( Mon3==Monx)Mon3++;
+          if( Mon0 == Mon3) Mon3++;
+          if( Mon3==Monx)Mon3++;
+          if( Mon1 == Mon3) Mon3++;
+          if( Mon3==Monx)Mon3++;
+          if( Mon0 == Mon3) Mon3++;
+          
+          if( Mon1 == Mon3) Mon3++;
+        
+
+       }
       log.append("         UPSTREAM MON      Beamstop MON             PROTONS\n");
-      log.append(" SAMPLE  = "+Format.integer(getTotCount(Sample.getData_entry(0)),10));
-      log.append( Format.integer(getTotCount(Sample.getData_entry(2)),20));
+      log.append(" SAMPLE  = "+Format.integer(getTotCount(Sample.getData_entry(Mon0)),10));
+      log.append( Format.integer(getTotCount(Sample.getData_entry(Mon1)),20));
       
       log.append( Format.integer(getTotCount(Sample.getData_entry(1)),20)+"\n");
 
 
-      log.append(" EMPTY   = "+Format.integer(getTotCount(Empty.getData_entry(0)),10));
-      log.append( Format.integer(getTotCount(Empty.getData_entry(2)),20));
+      log.append(" EMPTY   = "+Format.integer(getTotCount(Empty.getData_entry(Mon0)),10));
+      log.append( Format.integer(getTotCount(Empty.getData_entry(Mon1)),20));
       
       log.append( Format.integer(getTotCount(Empty.getData_entry(1)),20)+"\n");
 
       if( Cadmium == null)
          return;
-      log.append(" CADMIUM = "+Format.integer(getTotCount(Cadmium.getData_entry(0)),10));
-      log.append( Format.integer(getTotCount(Cadmium.getData_entry(2)),20));
+      log.append(" CADMIUM = "+Format.integer(getTotCount(Cadmium.getData_entry(Mon0)),10));
+      log.append( Format.integer(getTotCount(Cadmium.getData_entry(Mon1)),20));
       
       log.append( Format.integer(getTotCount(Cadmium.getData_entry(1)),20)+"\n");
       
@@ -566,8 +630,6 @@ public class CalcTransmission extends GenericTOF_SAD {
   private float[] cvrtToTime( float[] lvals1, float initialPath, Data db){
     DetectorPosition dp =(DetectorPosition)
                   db.getAttributeValue(Attribute.DETECTOR_POS);
-    System.out.println("Det Pos="+StringUtil.toString(dp.getCartesianCoords())+
-          "for "+db);
     float L2 = dp.getCartesianCoords()[0];
     float[] xvals = new float[ lvals1.length];
     for( int i = 0; i< xvals.length; i++)
@@ -575,4 +637,26 @@ public class CalcTransmission extends GenericTOF_SAD {
     return xvals;
     
   }
+ private int[] setMonitorInd( DataSet ds){
+    int[] Res = new int[2];
+    Res[0] = 0;
+    Data D;
+    int nchannels = ds.getData_entry(0).getX_scale().getNum_x();
+    for( int i= 0; i< ds.getNum_entries(); i++)
+      if( i != Res[0]){
+        D = ds.getData_entry( i );
+        if( D.getX_scale().getNum_x() == nchannels)
+          if(((Number)( D.getAttributeValue( Attribute.TOTAL_COUNT)))
+                 .floatValue() > 0){
+           Res[1] = i;
+           return Res;
+         }
+     }
+    
+      
+    return null;
+    }//setMonitorInd
+
+ 
+
 }//CalcTransmisson
