@@ -6,6 +6,9 @@ package OverplotView;
  * graphing implemented by the sgt package
  *
  * $Log$
+ * Revision 1.6  2000/08/04 20:32:25  neffk
+ * routine check-in.
+ *
  * Revision 1.5  2000/07/28 14:51:24  neffk
  * changed the position of the graph so that one can see the units and lable for
  * the horizontal axis.
@@ -133,6 +136,7 @@ public class sgtSelectedGraph
   public void redraw( RedrawInstruction instruction )
   {
 
+    //create graph if it doesn't exist
     if(  graph == null  &&  instruction.draw()  )
     {
       System.out.println( "initializing graph..." );
@@ -153,11 +157,11 @@ public class sgtSelectedGraph
     // add data to graph
     if(  instruction.add()  &&  !instruction.draw()  )
     {
-      //System.out.println(  instruction.toString()  );
+      System.out.println(  instruction.toString()  );
       graphableDataBlocks.add(  instruction.getData()  );
     }  
    
-    // draw/update graph
+    //draw/update graph
     else if(  instruction.draw()  &&  
               graphPanel.isShowing()  &&
               graphableDataBlocks.size() > 0  &&

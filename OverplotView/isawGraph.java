@@ -4,6 +4,9 @@ package  OverplotView;
  * $Id$
  *
  * $Log$
+ * Revision 1.3  2000/08/04 20:32:25  neffk
+ * routine check-in.
+ *
  * Revision 1.2  2000/07/28 14:55:48  neffk
  * reworked the zooming so that both vertical and horizontal aspects are
  * changed with respect to the selection window.
@@ -39,7 +42,7 @@ public class isawGraph
   // save handles to unique components
   //
   Logo logo_;
-  LineKey lineKey_;
+  LineKey lineKey_ = null;
   int layerCount_;
 
   double xSize_ =  5.00;  //XSIZE_
@@ -121,7 +124,7 @@ public class isawGraph
     yOriginU = yOrigU;
 
     Layer layer;
-    CartesianGraph graph;
+    CartesianGraph graph = null;
     LinearTransform xt, yt;
     PlainAxis xbot, yleft;
 
@@ -166,6 +169,14 @@ public class isawGraph
     yleft.setLocationU(  new Point2D.Double( xOriginU, yOriginU )  );
     yleft.setLabelFont( axfont );
     graph.addYAxis( yleft );
+
+    //create legend
+    lineKey_ = new LineKey();
+    lineKey_.setId("Line Key");
+    lineKey_.setVAlign(LineKey.TOP);
+    lineKey_.setHAlign(LineKey.RIGHT);
+    lineKey_.setLocationP(new Point2D.Double(xSize_ - 0.01, ySize_));
+    layer.addChild(lineKey_);
 
     layer.setGraph( graph );
   }
@@ -251,6 +262,8 @@ public class isawGraph
                                       getBaseUnit(),
                                       Units.X_AXIS  );
 
+
+
     if(data_.size() == 0)
     {
       super.addData(datum);
@@ -262,22 +275,12 @@ public class isawGraph
       data = (SGTData)data_.firstElement();
       xRange = findRange( (SGTLine)data, X_AXIS );
       yRange = findRange( (SGTLine)data, Y_AXIS );
-//      zUp_ = ((SGTLine)data).getYMetaData().isReversed();
 
       if(  Double.isNaN(xRange.start) || Double.isNaN(yRange.start)  )
         data_good = false;
 
       if( data_good )
       {
-/*
-        if( !zUp_ )
-        {
-          save = yRange.end;
-          yRange.end = yRange.start;
-          yRange.start = save;
-        }
-*/
-
         //compute a nice range from this data's range (in user coord plane)
         xnRange = Graph.computeRange( xRange, 6 );
         ynRange = Graph.computeRange( yRange, 6 );
@@ -367,24 +370,14 @@ public class isawGraph
       }
       graph.setData(data, lineAttr);
 
-/*
+
       //add to lineKey
-      if(descrip == null)
-      {
-        lineTitle = new SGLabel(  "line title",
-                                  xLabel,
-                                  new Point2D.Double(0.0, 0.0)  );
-      }
-      else
-      {
-        lineTitle = new SGLabel(  "line title",
-                                  descrip,
-                                  new Point2D.Double(0.0, 0.0)  );
-      }
+      lineTitle = new SGLabel(  "line title",
+                                descrip,
+                                new Point2D.Double(0.0, 0.0)  );
       lineTitle.setHeightP(keyHeight_);
       lineKey_.addLineGraph(  (LineCartesianRenderer)graph.getRenderer(),
                               lineTitle  );
-*/
     }
     else
     {
@@ -529,7 +522,6 @@ public class isawGraph
         newGraph.setData(datum, lineAttr);
 
 
-/*
         //add to lineKey
         if( descrip == null )
         {
@@ -545,7 +537,6 @@ public class isawGraph
         lineTitle.setHeightP(keyHeight_);
         lineKey_.addLineGraph(
             (LineCartesianRenderer)newGraph.getRenderer(), lineTitle  );
-*/
       }
     }
   }
@@ -815,6 +806,7 @@ public class isawGraph
 
   public void clear() 
   {
+    lineKey_.clearAll();
     data_.removeAllElements();
     removeAll();
     draw();
@@ -824,6 +816,7 @@ public class isawGraph
 
   public void clearDataOnly() 
   {
+    lineKey_.clearAll();
     data_.removeAllElements();
     Layer layer = getFirstLayer();
     if(  ((CartesianGraph)layer.getGraph()).getRenderer() != null  )
@@ -877,10 +870,7 @@ public class isawGraph
     title2_.setLocationP(new Point2D.Double(xpos, ypos));
     ypos = ypos - 1.1f*warnHeight_;
     title3_.setLocationP(new Point2D.Double(xpos, ypos));
-    if(keyPane_ == null)
-    {
-      lineKey_.setLocationP(new Point2D.Double(d.width - 0.01, d.height));
-    }
+    lineKey_.setLocationP(new Point2D.Double(d.width - 0.01, d.height));
   }
 
 }
