@@ -122,9 +122,11 @@ public class FortranParser implements FortranParserConstants {
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LINE_END:
+      case ONE_PLUS_WS:
       case DIGIT:
       case STRING:
       case FLOATING_POINT:
+      case FORTRAN_COMMENT:
       case FORTRAN_ABS:
       case FORTRAN_SQRT:
       case FORTRAN_SIN:
@@ -179,9 +181,11 @@ public class FortranParser implements FortranParserConstants {
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ONE_PLUS_WS:
       case DIGIT:
       case STRING:
       case FLOATING_POINT:
+      case FORTRAN_COMMENT:
       case FORTRAN_ABS:
       case FORTRAN_SQRT:
       case FORTRAN_SIN:
@@ -213,9 +217,7 @@ public class FortranParser implements FortranParserConstants {
     fCode.append( fToken );
     fCode.append( " " );
     }
-    //convert single spaces to one space, then trim it and append the
-    //Java line closer semicolon.  This may fail for Strings-we will see...
-    {if (true) return fCode.toString(  ).replaceAll( "\\s+", " " ).trim(  ) + ";\n";}
+    {if (true) return fCode.toString(  ).trim(  ) + ";\n";}
     throw new Error("Missing return statement in function");
   }
 
@@ -231,6 +233,15 @@ public class FortranParser implements FortranParserConstants {
   StringBuffer buffer;
   String[] tokenList;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case FORTRAN_COMMENT:
+      //matched a comment
+        t = jj_consume_token(FORTRAN_COMMENT);
+    s = t.image;
+    //we know that the comment 'C' is always in the first column
+    s = s.substring( 1, s.length(  ) );
+    s = "//" + s;
+    {if (true) return s;}
+      break;
     case FORTRAN_ABS:
       //matched the absolute function
         t = jj_consume_token(FORTRAN_ABS);
@@ -438,6 +449,11 @@ public class FortranParser implements FortranParserConstants {
     //replace Fortran's double single quotes with a backslash quote
     {if (true) return t.image.replaceAll( "''", "\\\\\"");}
       break;
+    case ONE_PLUS_WS:
+      //found an empty line, so spit it back
+        t = jj_consume_token(ONE_PLUS_WS);
+    {if (true) return t.image;}
+      break;
     default:
       jj_la1[2] = jj_gen;
       jj_consume_token(-1);
@@ -460,10 +476,10 @@ public class FortranParser implements FortranParserConstants {
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0xff806042,0xff806040,0xff806040,};
+      jj_la1_0 = new int[] {0xfe02c04a,0xfe02c048,0xfe02c048,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0xfff,0xfff,0xfff,};
+      jj_la1_1 = new int[] {0x3fff,0x3fff,0x3fff,};
    }
 
   public FortranParser(java.io.InputStream stream) {
@@ -583,8 +599,8 @@ public class FortranParser implements FortranParserConstants {
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[44];
-    for (int i = 0; i < 44; i++) {
+    boolean[] la1tokens = new boolean[46];
+    for (int i = 0; i < 46; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -603,7 +619,7 @@ public class FortranParser implements FortranParserConstants {
         }
       }
     }
-    for (int i = 0; i < 44; i++) {
+    for (int i = 0; i < 46; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
