@@ -31,6 +31,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2001/11/09 18:25:29  dennis
+ *   1. Made Changes to use arbitrary SciptProcessorOperator's like Jython
+ *   2. The statusLine is now resizable
+ *   3. The title bar in the stand alone CommandPane now says
+ *      Command Pane instead of Test.
+ *   4. The latest filename now appears as the title of the
+ *      Program Editor window.
+ *   5. Changed several utility routines from ScriptProcessor to static methods
+ *
  * Revision 1.29  2001/09/07 16:17:02  dennis
  * Removed debug print (Ruth)
  *
@@ -192,7 +201,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener ,
     String FilePath = null  ;             // for macro storage and retrieval
     File SelectedFile = null;
     Document logDoc=null;
-    public ScriptProcessor  SP;
+    public ScriptProcessorOperator  SP;
     boolean Debug = false;
 /**
 *  Creates the JPanel for editing and executing scripts
@@ -269,9 +278,9 @@ public void setLogDoc(Document doc)
         
            //JPS.add( X ) ;
            SplitPaneWithState JPS = new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT ,
-                        X , Y , .75f);              
-           add( JPS , BorderLayout.CENTER); 
-           X = null;
+                        X , Y , .75f);    
+           //add( JPS , BorderLayout.CENTER);           
+            X = null;
           
 	  
          StatusLine = new JTextArea( 3 , 50 ) ; 
@@ -280,7 +289,11 @@ public void setLogDoc(Document doc)
          X.setBorder(new TitledBorder( "Status" ));
 	 //StatusLine.setBorder( new TitledBorder( "Status" ));
          StatusLine.setEditable( false );
-	 add( X , BorderLayout.SOUTH ) ; 
+         SplitPaneWithState Center= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT ,
+                      JPS,  X,.80f);
+  
+        add(Center, BorderLayout.CENTER);         
+	 //add( X , BorderLayout.SOUTH ) ; 
          
      try{        
        FilePath = System.getProperty("Script_Path");  
@@ -407,7 +420,7 @@ private class MyKeyListener  extends KeyAdapter
     { 
       if('x' == 'y') //e.getKeyChar())   used for testing macros)
       { 
-        line = CP.SP.getNextMacroLine( Commands.getDocument(), line);
+        line = ScriptProcessor.getNextMacroLine( Commands.getDocument(), line);
         System.out.println( "line ="+line);
      
        }
@@ -432,13 +445,13 @@ private class MyKeyListener  extends KeyAdapter
                  
              
 	          
-	          CP.SP.ExecLine.resetError() ; 
+	          CP.SP.resetError() ; 
                  // if( StatusLine != null )
                     // StatusLine.setText( "" ) ; 
                     new IsawGUI.Util().appendDoc(CP.logDoc,"#$ Start Immediate Run");
-                   new IsawGUI.Util().appendDoc(CP.logDoc,CP.SP.getLine(CP.Immediate.getDocument(), line));
+                   new IsawGUI.Util().appendDoc(CP.logDoc,ScriptProcessor.getLine(CP.Immediate.getDocument(), line));
 	          CP.SP.execute1( Immediate.getDocument() , line ) ;
-                  
+                  System.out.println("ERR Pos="+CP.SP.getErrorCharPos());
                    new IsawGUI.Util().appendDoc(CP.logDoc,"#$ End Immediate Run"); 
                   if( CP.SP.getErrorCharPos() >= 0 )
                     {if( StatusLine != null )
@@ -546,7 +559,7 @@ public static void  main( String args[] )
        }
       JFrame F ;  
     CommandPane P; 
-      F = new JFrame( "Test" ); 
+      F = new JFrame( "Command Pane" ); 
 
      P = new CommandPane(); 
      Dimension D = P.getToolkit().getScreenSize();
@@ -585,14 +598,14 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
     {Document doc ; 
      if( e.getSource().equals( CP.Run ) ) 
        { fixUP(CP.Commands.getDocument());
-        CP.SP.MacroDocument = CP.Commands.getDocument();
+        CP.SP.setDocument(CP.Commands.getDocument());
         
         CP.SP.setDefaultParameters();
         if( CP.SP.getErrorCharPos() >= 0)
           {new Util().appendDoc( CP.StatusLine.getDocument(), "setDefault Error "+
                                  CP.SP.getErrorMessage()+" at position "+
                                     CP.SP.getErrorCharPos()+" on line "+CP.SP.getErrorLine()); 
-           CP.SP.MacroDocument = null;
+           CP.SP.setDocument (null);
            return;
           }
         
@@ -604,18 +617,18 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
                 CP.SP.setTitle( SelectedFile.toString() );
               else
                 CP.SP.setTitle( "CommandPane");
-                JParametersDialog pDialog =   new JParametersDialog(CP.SP, SP, 
+              JParametersDialog pDialog =   new JParametersDialog((GenericOperator)(CP.SP), SP, 
                                                new PlainDocument(), null);
              
            }
         else
            CP.SP.getResult();
-
+        
         if( CP.SP.getErrorCharPos() >= 0)
           {new Util().appendDoc( StatusLine.getDocument(), "Error "+
                                 CP.SP.getErrorMessage()+" at position "+
                                 CP.SP.getErrorCharPos()+" on line "+CP.SP.getErrorLine()); 
-           CP.SP.MacroDocument = null;
+           CP.SP.setDocument( null);
            CP.setErrorCursor( Commands, SP.getErrorLine(), SP.getErrorCharPos()); 
 
            return;
@@ -623,11 +636,11 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
                }
    
      else if( e.getSource().equals( CP.Clear ))
-      {if( CP.SP.ExecLine == null ) return;
+      {if( CP.SP == null ) return;
     
-       CP.SP.ExecLine.removeDisplays();
+       CP.SP.reset();
        CP.StatusLine.setText("");
-       CP.SP.ExecLine.initt();
+      
       }
     else if( e.getSource().equals( CP.Save ) || e.getSource().equals( CP.Open ))
         {final JFileChooser fc = new JFileChooser(FilePath) ; 
@@ -656,7 +669,25 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
 		 doc = (new Util()).openDoc( filename );
                  if( doc != null)
                   {Commands.setDocument( doc ); 
-                   Commands.setCaretPosition(0);   
+                   Commands.setCaretPosition(0); 
+		   Commands.setBorder(
+		        new TitledBorder( "Last File:"+filename ));
+                   /*Container X = CP.getParent();
+                    while( X!= null)  
+                     {if( X instanceof JFrame)
+                       {((JFrame)X).setTitle(filename);
+                         X = null;
+                        }
+		      else if( X instanceof JScrollPane)
+		        { ((JScrollPane)X).setBorder(
+			      new TitledBorder( "Prgm Editor:"+filename ));
+			   X = null;
+			}
+                      else
+                      X = X.getParent();		      
+                     } 
+		    */
+		    
                   }
                 else
                   System.out.println("Document is null");   
