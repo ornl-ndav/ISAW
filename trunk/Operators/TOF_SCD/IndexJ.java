@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/02/28 20:58:18  pfpeterson
+ * Changed a Parameter to a BooleanPG.
+ *
  * Revision 1.7  2003/02/26 22:22:07  pfpeterson
  * Fixed bug where was not indexing peaks that were close to integer
  * values because index%1>.5
@@ -119,7 +122,7 @@ public class IndexJ extends    GenericTOF_SCD {
     matfilepg.setFilter(new MatrixFilter());
     addParameter(matfilepg);
     addParameter(new FloatPG("Delta",0.05f));
-    addParameter(new Parameter("update peaks file",Boolean.TRUE));
+    addParameter(new BooleanPG("update peaks file",true));
   }
   
   /**
