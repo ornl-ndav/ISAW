@@ -142,12 +142,8 @@ from Operators.Generic import *
 from Command import *
 from DataSetTools.operator.DataSet.Math.Scalar import *
 #------------------ Get Filename ---------------
-Prompt = Vector()
-Prompt.addElement("Enter FileName")
-Val = Vector()
-Val.addElement(LoadFileString())
-InputBox("FileName", Prompt, Val, Vector()).getResult()
-FileName = Val.elementAt(0).toString()
+
+FileName = "C:/ISAW/SampleRuns/GPPD12358.run"
 
 #---------Get the DataSets ----------------
 
@@ -197,6 +193,10 @@ IOBS.notifyIObservers( DDS[n], DDS[n])
 # Modified:
 #
 # $Log$
+# Revision 1.5  2003/11/22 21:54:36  rmikk
+# Python example could not use the InputBox method because it was not
+# started with the ParametersDialog Box.
+#
 # Revision 1.4  2003/11/22 20:43:57  rmikk
 # Added examples of Python scripting
 #
