@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/01/06 23:18:28  bouzekc
+ * Changed access method for the internal Wizard variable so that it
+ * was more direct.
+ *
  * Revision 1.3  2003/12/16 00:51:27  bouzekc
  * Fixed bug that prevented Form progress indicator from advancing
  * incrementally.
@@ -851,7 +855,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
      */
     public void actionPerformed( ActionEvent event ) {
       String command = event.getActionCommand(  );
-      int curFormNum = wiz.getCurrentFormNumber(  );
+      int curFormNum = wizard.getCurrentFormNumber(  );
 
       if( command == FIRST_COMMAND ) {
         showForm( 0 );
@@ -865,7 +869,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
             "FORM 0 SHOWN, CAN'T STEP BACK\n" );
         }
       } else if( command == NEXT_COMMAND ) {
-        if( ( curFormNum + 1 ) < wiz.getNumForms(  ) ) {
+        if( ( curFormNum + 1 ) < wizard.getNumForms(  ) ) {
           showForm( ++curFormNum );
           populateViewMenu(  );
         } else {
@@ -873,20 +877,20 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
             "NO MORE FORMS, CAN'T ADVANCE\n" );
         }
       } else if( command == LAST_COMMAND ) {
-        showForm( wiz.getNumForms(  ) - 1 );
+        showForm( wizard.getNumForms(  ) - 1 );
         populateViewMenu(  );
       } else if( command == CLEAR_ALL_COMMAND ) {
-        wiz.invalidate( 0 );
+        wizard.invalidate( 0 );
       } else if( command == CLEAR_COMMAND ) {
-        wiz.invalidate( wiz.getCurrentFormNumber(  ) );
+        wizard.invalidate( wizard.getCurrentFormNumber(  ) );
       } else if( command == EXEC_ALL_COMMAND ) {
-        worker = new WizardWorker(  );
-        worker.setFormNumber( wiz.getNumForms(  ) - 1 );
+        worker = new WizardWorker( wizard );
+        worker.setFormNumber( wizard.getNumForms(  ) - 1 );
         worker.start(  );
       } else if( command == EXEC_COMMAND ) {
         //a new SwingWorker needs to be created for each click of the
         //execute button
-        worker = new WizardWorker(  );
+        worker = new WizardWorker( wizard );
         worker.setFormNumber( curFormNum );
         worker.start(  );
       } else if( command == WIZARD_HELP_COMMAND ) {
@@ -894,9 +898,9 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
       } else if( command == FORM_HELP_COMMAND ) {
         showFormHelpMessage(  );
       } else if( command == SAVE_WIZARD_COMMAND ) {
-        wiz.save(  );
+        wizard.save(  );
       } else if( command == LOAD_WIZARD_COMMAND ) {
-        wiz.load(  );
+        wizard.load(  );
       } else if( command == VIEW_MENU ) {
         populateViewMenu(  );
       } else if( command == SET_PROJECT_DIR ) {
@@ -919,6 +923,17 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
     //~ Instance fields ********************************************************
 
     private int formNum = 0;
+    private Wizard wizard;
+    
+    /**
+     * Constructor to allow direct linking of the enclosing class's Wizard
+     * variable.
+     * 
+     * @param wiz The enclosing class's Wizard.
+     */
+    public WizardWorker( Wizard wiz ) {
+      wizard = wiz;
+    }
 
     //~ Methods ****************************************************************
 
@@ -938,12 +953,12 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
      */
     public Object construct(  ) {
       //can't have users mutating the values!
-      enableNavButtons( false, wiz.getCurrentFormNumber(  ) );
+      enableNavButtons( false, wizard.getCurrentFormNumber(  ) );
       this.enableFormParams( false );
 
       try {
         //here is where the time intensive work is.
-        wiz.exec_forms( formNum );
+        wizard.exec_forms( formNum );
 
         return "Success";
       } catch( Throwable e ) {
@@ -956,12 +971,12 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
         displayAndSaveErrorMessage( e, "wizard", message );
 
         //reset the progress bars by re-showing the Form
-        showForm( wiz.getCurrentFormNumber(  ) );
+        showForm( wizard.getCurrentFormNumber(  ) );
 
         return "Failure";
       } finally {
         populateViewMenu(  );
-        enableNavButtons( true, wiz.getCurrentFormNumber(  ) );
+        enableNavButtons( true, wizard.getCurrentFormNumber(  ) );
         this.enableFormParams( true );
       }
     }
@@ -973,7 +988,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
      * @param enable Whether to enable parameters or not.
      */
     private void enableFormParams( boolean enable ) {
-      Form f            = wiz.getCurrentForm(  );
+      Form f            = wizard.getCurrentForm(  );
       int[] var_indices = f.getVarParamIndices(  );
 
       for( int j = 0; j < var_indices.length; j++ ) {
