@@ -9,7 +9,6 @@ package IsawGUI;
 
 import javax.swing.*;
 //import javax.swing.*;
-import DataSetTools.*;
 import DataSetTools.dataset.*;
 import java.awt.*;
 import java.util.zip.*;
@@ -32,7 +31,7 @@ public class JStringAttributeGUI extends JAttributeGUI implements Serializable
        
        String value = ((String)attr.getValue()).toString();
        JLabel label = new JLabel(attr.getName());
-       label.setPreferredSize(new Dimension(170,25));
+       label.setPreferredSize(new Dimension(150,25));
        stringText = new JTextField(20);
        stringText.setText(value);
        segment = new JPanel();
