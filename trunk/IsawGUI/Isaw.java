@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.68  2001/12/20 20:32:36  chatterjee
+ *  Added a view menuitem Log View that will show the ancillary log SDDS file
+ *  in a table. This is using the package from APS.
+ *
  *  Revision 1.67  2001/12/11 17:56:47  pfpeterson
  *  Modified the help menu system. Now includes, About, Operations (old help), Command Pane, and links to online resources.
  *
@@ -287,6 +291,7 @@ import javax.swing.text.*;
 import javax.swing.tree.*;
 import NetComm.*;
 import NexIO.*;
+//import SDDS.java.SDDSedit.*;
  
 
  /**
@@ -330,6 +335,7 @@ public class Isaw
   private static final String SELECTED_VIEW_MI   = "Selected Graph View";
   private static final String THREED_VIEW_MI     = "3D View";
   private static final String TABLE_VIEW_MI      = "Table View";
+  private static final String LOG_VIEW_MI        = "Log View";
 
   private static final String INSTR_VIEW_M       = "Instrument Info";
 
@@ -538,6 +544,7 @@ public class Isaw
     JMenuItem graphView   = new JMenuItem( SELECTED_VIEW_MI );
     JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
     JMenuItem tableView = new JMenuItem( TABLE_VIEW_MI );
+    JMenuItem logView = new JMenuItem( LOG_VIEW_MI );
     JMenu instrumentInfoView = new JMenu( INSTR_VIEW_M );
 
 
@@ -652,6 +659,7 @@ public class Isaw
     vMenu.add(graphView);
     vMenu.add(threeDView);
     vMenu.add( tableView );
+    vMenu.add( logView );
     vMenu.add(instrumentInfoView);         
       
     hMenu.add(helpAbout);
@@ -679,7 +687,8 @@ public class Isaw
 
     threeDView.addActionListener(new MenuItemHandler()); 
     imageView.addActionListener(new MenuItemHandler());  
-    tableView.addActionListener(new MenuItemHandler());      
+    tableView.addActionListener(new MenuItemHandler());  
+    logView.addActionListener(new MenuItemHandler());      
     HRMECS.addActionListener(new MenuItemHandler());
     LRMECS.addActionListener(new MenuItemHandler());
     HIPD.addActionListener(new MenuItemHandler());
@@ -1404,6 +1413,15 @@ public class Isaw
           System.out.println( "nothing is currently highlighted in the tree" );
         return;
       }
+
+      if( s.equals(LOG_VIEW_MI) )
+      {   
+        SDDS.java.SDDSedit.sddsEdit frame = new SDDS.java.SDDSedit.sddsEdit();
+	  frame.pack();
+        frame.setVisible(true); 
+        frame.setSize(400,500);
+        frame.setTitle("SDDS Editor");
+      }
            
       if( s.equals(ABOUT_MI) )
       {
@@ -1656,6 +1674,7 @@ public class Isaw
    */
   private void propsDisplay() 
   {
+   
     kp = new JFrame();
     kp.setSize(400,600);
 
