@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/07/25 16:55:28  pfpeterson
+ *  Added reference to the fullprof writer.
+ *
  *  Revision 1.21  2002/05/24 16:51:46  pfpeterson
  *  modified to include UpstreamMonitorID, DownstreamMonitorID,
  *  and NumBins.
@@ -111,6 +114,7 @@ public class GenericOperatorList implements Serializable
                                           "Table",
                                           "SaveNX",
                                           "SaveGSAS",
+                                          "SaveFullProf",
                                           "FindPeaks",
                                           "CentroidPeaks",
                                           "RealSpacePeaks",
@@ -222,6 +226,9 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "SaveGSAS" ) )
       return new WriteGSAS();
+
+    else if ( op_name.equals( "SaveFullProf" ) )
+      return new WriteFullProf();
 
     else if ( op_name.equals("UpMonitorID"))
         return new UpstreamMonitorID();
