@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2001/07/16 22:44:58  dennis
+ *  Added log message giving time the LiveData was obtained.
+ *
  *  Revision 1.10  2001/06/11 17:58:43  dennis
  *  Made Exit() and MakeConnection() public so that they
  *  can be called from the LiveDataManager.  This was
@@ -86,6 +89,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import java.io.*;
 import java.net.*;
+import java.util.*;
 import NetComm.*;
 
 /**
@@ -183,7 +187,12 @@ public class LiveDataRetriever extends    Retriever
     Object obj = getObjectFromServer( 
                            LiveDataServer.COMMAND_GET_DS + data_set_num );
     if ( obj != null && obj instanceof DataSet )
-      return (DataSet)obj;
+    {
+      DataSet ds = (DataSet)obj;
+      Date date = new Date( System.currentTimeMillis() );
+      ds.addLog_entry( "Live Data as of: " + date );
+      return ds;
+    }
 
     return (DataSet)(DataSet.EMPTY_DATA_SET.clone());
   }
