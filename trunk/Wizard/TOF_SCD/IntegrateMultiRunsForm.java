@@ -28,6 +28,9 @@
  * number DMR-0218882.
  * 
  * $Log$
+ * Revision 1.37  2004/08/17 05:18:00  rmikk
+ * Fixed an error in the parameters
+ *
  * Revision 1.36  2004/08/06 14:41:47  rmikk
  * Now uses the new Integrate1 class.  This class allows for several different
  * integrate one Peak options, including an experimental option.
@@ -427,7 +430,7 @@ public class IntegrateMultiRunsForm extends Form {
     append           = ( ( BooleanPG )param ).getbooleanValue(  );
 
     //shoebox parameters
-    IntegMethod  = super.getParameter( 10 ).toString();
+    IntegMethod  = super.getParameter( 10 ).getValue().toString();
     
     param            = ( IParameterGUI )super.getParameter( 11 );
     boxDeltaX        = ( ( IntArrayPG )param ).getStringValue(  );
