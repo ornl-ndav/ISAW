@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2005/03/23 01:56:49  dennis
+ * Removed unnecessary semicolons.
+ *
  * Revision 1.8  2004/12/23 13:25:57  rmikk
  * Fixed indentations and spacings between lines
  *
@@ -111,7 +114,7 @@ public class ConvertDataTypes{
      return null;
 
         
-  };
+  }
  
   /**
    *  returns an int array corresponding to the object O or null if not possible
@@ -156,7 +159,7 @@ public class ConvertDataTypes{
      return null;
 
     
-   };
+   }
 
    /**
    *  returns a float corresponding to the object O or Float.NaN if not possible.
@@ -173,7 +176,7 @@ public class ConvertDataTypes{
         
      return Res[0];
 
-  };
+  }
 
    /**
    *  returns an int corresponding to the object O or Integer.MIN_VALUE if 
@@ -190,7 +193,7 @@ public class ConvertDataTypes{
         
      return Res[0];
 
-  };
+  }
 
   private static char[] cnvertTochar( byte[] L){
      if( L == null)
@@ -309,7 +312,7 @@ public class ConvertDataTypes{
         Res[0] = O.toString();
         return Res;
      }
-  };
+  }
 
   /**
    *  returns a String corresponding to the Object O or null if 
@@ -328,7 +331,7 @@ public class ConvertDataTypes{
        
      return X[0]; 
 
-  };
+  }
 
 
   /**
