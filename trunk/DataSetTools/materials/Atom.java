@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/02/03 22:46:55  pfpeterson
+ * Fixed a labeling bug with various cross sections. Small speed
+ * and readability improvements.
+ *
  * Revision 1.4  2002/11/27 23:15:35  pfpeterson
  * standardized header
  *
@@ -57,10 +61,10 @@ public class Atom{
     private float  I_b_coh            = Float.NaN;
     private float  R_b_inc            = Float.NaN;
     private float  I_b_inc            = Float.NaN;
-    private float  R_xs_coh           = Float.NaN;
-    private float  I_xs_coh           = Float.NaN;
-    private float  R_xs_inc           = Float.NaN;
-    private float  I_xs_inc           = Float.NaN;
+    private float  xs_coh             = Float.NaN;
+    private float  xs_inc             = Float.NaN;
+    private float  xs_tot             = Float.NaN;
+    private float  xs_abs             = Float.NaN;
     private float  storeT             = Float.NaN;
     private float  promptAct          = Float.NaN;
     private float  contactDose        = Float.NaN;
@@ -182,95 +186,60 @@ public class Atom{
      *  Takes a line from the isotopic information database and
      *  divides it into the appropriate instance variables.
      */
-    private boolean splitIsotopeInfo( String line){
-	int start = 0;
-	int stop;
-	//System.out.println("line01:"+line);
+  private boolean splitIsotopeInfo( String line){
+    StringBuffer sb=new StringBuffer(line); // convert to StringBuffer
+    StringUtil.trim(sb);                    // for fast access
 
-	stop  = line.indexOf(" ");
-	line=line.substring(stop).trim();
+    StringUtil.getString(sb); // get rid of element/isotope tag
 
-	stop  = line.indexOf(" ");
-	String concS=line.substring(start,stop);
-	if(isotope==0){
-	    this.abundance=100.0f;
-	}else{
-	    this.abundance=checkNullFloat(concS);
-	}
-	line=line.substring(stop).trim();
+    // the natural abundance of the isotope
+    this.abundance=checkNullFloat(sb);
+    if(isotope==0) this.abundance=100f;
 
-	stop  = line.indexOf(" ");
-	String molarMassS=line.substring(start,stop);
-	this.molarMass=checkNullFloat(molarMassS);
-	line=line.substring(stop).trim();
+    // molar mass
+    this.molarMass=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String densityS=line.substring(start,stop);
-	this.density=checkNullFloat(densityS);
-	line=line.substring(stop).trim();
+    // density
+    this.density=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String halflifeS=line.substring(start,stop);
-	this.halflife=checkNullFloat(halflifeS);
-	line=line.substring(stop).trim();
+    // half life
+    this.halflife=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String R_b_cohS=line.substring(start,stop);
-	this.R_b_coh=checkNullFloat(R_b_cohS);
-	line=line.substring(stop).trim();
+    // real portion of the coherent scattering length
+    this.R_b_coh=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String I_b_cohS=line.substring(start,stop);
-	this.I_b_coh=checkNullFloat(I_b_cohS);
-	line=line.substring(stop).trim();
+    // imaginary portion of the coherent scattering length
+    this.I_b_coh=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String R_b_incS=line.substring(start,stop);
-	this.R_b_inc=checkNullFloat(R_b_incS);
-	line=line.substring(stop).trim();
+    // real portion of the incoherent scattering length
+    this.R_b_inc=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String I_b_incS=line.substring(start,stop);
-	this.I_b_inc=checkNullFloat(I_b_incS);
-	line=line.substring(stop).trim();
+    // imaginary portion of the incoherent scattering length
+    this.I_b_inc=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String R_xs_cohS=line.substring(start,stop);
-	this.R_xs_coh=checkNullFloat(R_xs_cohS);
-	line=line.substring(stop).trim();
+    // coherent scattering cross section CHANGE ME
+    this.xs_coh=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String I_xs_cohS=line.substring(start,stop);
-	this.I_xs_coh=checkNullFloat(I_xs_cohS);
-	line=line.substring(stop).trim();
+    // incoherent scattering cross section CHANGE ME
+    this.xs_coh=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String R_xs_incS=line.substring(start,stop);
-	this.R_xs_inc=checkNullFloat(R_xs_incS);
-	line=line.substring(stop).trim();
+    // total scattering cross section CHANGE ME
+    this.xs_tot=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String I_xs_incS=line.substring(start,stop);
-	this.I_xs_inc=checkNullFloat(I_xs_incS);
-	line=line.substring(stop).trim();
+    // scattering absorption cross section CHANGE ME
+    this.xs_abs=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String storeTS=line.substring(start,stop);
-	this.storeT=checkNullFloat(storeTS);
-	line=line.substring(stop).trim();
+    // time needed to store before no longer 'hot'
+    this.storeT=checkNullFloat(sb);
 
-	stop  = line.indexOf(" ");
-	String promptActS=line.substring(start,stop);
-	this.promptAct=checkNullFloat(promptActS);
-	line=line.substring(stop).trim();
+    // prompt activity
+    this.promptAct=checkNullFloat(sb);
 
-	stop  = line.length();
-	String contactDoseS=line.substring(start,stop);
-	this.contactDose=checkNullFloat(contactDoseS);
-	line=line.substring(stop).trim();
+    // contact dose
+    this.contactDose=checkNullFloat(sb);
 
-	return true;
-    }
+    return true;
+  }
 
     /**
      *  Check that a String value from the isotope file is not equal
@@ -289,7 +258,9 @@ public class Atom{
      *  Convert the String value from the isotope file into the
      *  appropriate float.
      */
-    private static float checkNullFloat( String value){
+    private static float checkNullFloat( StringBuffer stringbuffer){
+        String value=StringUtil.getString(stringbuffer);
+
 	int index=0;
 	if(value.indexOf("*")>=0){
 	    // the isotope is naturally radioactive
@@ -465,35 +436,31 @@ public class Atom{
     }
 
     /**
-     *  Accessor method for the real part of the coherent scattering
-     *  cross-section
+     *  Accessor method for the coherent scattering cross-section
      */
-    public float R_xs_coh(){
-	return this.R_xs_coh;
+    public float xs_coh(){
+	return this.xs_coh;
     }
 
     /**
-     *  Accessor method for the imaginary part of the coherent
-     *  scattering cross-section
+     *  Accessor method for the coherent scattering cross-section
      */
-    public float I_xs_coh(){
-	return this.I_xs_coh;
+    public float xs_inc(){
+	return this.xs_inc;
     }
 
     /**
-     *  Accessor method for the real part of the incoherent scattering
-     *  cross-section
+     *  Accessor method for the total scattering cross-section
      */
-    public float R_xs_inc(){
-	return this.R_xs_inc;
+    public float xs_tot(){
+	return this.xs_tot;
     }
 
     /**
-     *  Accessor method for the imaginary part of the incoherent scattering
-     *  cross-section
+     *  Accessor method for the scattering absorption cross-section
      */
-    public float I_xs_inc(){
-	return this.I_xs_inc;
+    public float xs_abs(){
+	return this.xs_abs;
     }
 
     /**
@@ -528,8 +495,8 @@ public class Atom{
 			       +"  density="+density+"  half-life="+halflife);
 	    System.out.println("b:  coh("+R_b_coh+", "+I_b_coh+")  inc("
 			       +R_b_inc+", "+I_b_inc+")");
-	    System.out.println("xs: coh("+R_xs_coh+", "+I_xs_coh+")  inc("
-			       +R_xs_inc+", "+I_xs_inc+")");
+	    System.out.println("xs: coh"+xs_coh+"  inc"
+			       +xs_inc+"  tot"+xs_tot+"  abs"+xs_abs);
 	    System.out.println("ST="+storeT+"  PA="+promptAct+"  CD="
 			       +contactDose);
 	}
