@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.12  2004/01/24 22:41:15  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.11  2002/11/27 23:25:37  pfpeterson
  * standardized header
  *
@@ -43,10 +46,7 @@ import DataSetTools.viewer.*;
 import javax.swing.*;
 import java.awt.event.*;
 import DataSetTools.util.*;
-import DataSetTools.components.ParametersGUI.*;
-import java.util.*;
 import Command.*;
-import java.io.*;
 import java.awt.*;
 
 /** This implements DataSetViewer by giving tables of information
@@ -123,7 +123,7 @@ public class TabView extends DataSetViewer implements StateListener
          //Options.add( DSOperations );
         }
       */
-      MyActionListener  al = new MyActionListener();
+      //MyActionListener  al = new MyActionListener();
      /* fileView.addActionListener( al );
       tableView.addActionListener( al );
       consoleView.addActionListener( al );

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2004/01/24 22:41:15  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.16  2003/11/06 20:06:43  rmikk
  * The Constructor now Throws an IllegalArgument
  *    exception if the DataSet does not have enough info to
@@ -103,18 +106,11 @@ package DataSetTools.viewer.Table;
 
 
 import java.awt.event.*;
-import javax.swing.text.*;
-
 import DataSetTools.dataset.*;
-import javax.swing.table.*;
 import javax.swing.*;
 import java.util.*;
-import java.awt.event.*;
-import DataSetTools.instruments.*;
 import java.io.*;
-import javax.swing.*;
 import DataSetTools.components.View.ViewControls.*;
-import DataSetTools.util.*;
 
 /** Creates a table model the displays y values at a fixed time according to row
  * and column values of the group
@@ -150,8 +146,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
            boolean showInd ) throws IllegalArgumentException
    {   
       Time = time;
-      int[] row = new int[DS.getNum_entries()];
-      int[] col = new int[DS.getNum_entries()];
+      //int[] row = new int[DS.getNum_entries()];
+      //int[] col = new int[DS.getNum_entries()];
 
       Time = time;
       this.DS = DS;
@@ -364,7 +360,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
       if( err ) n++;
       if( ind ) n++;
-      boolean doo = ( row == 1 ) && ( column == 2 );
+      //boolean doo = ( row == 1 ) && ( column == 2 );
 
       row = row + tMinrow;// -1;
       column = column + tMincol;// - 1;
@@ -633,7 +629,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          
 
       grid = (UniformGrid)(Grid_util.getAreaGrid( DS, DetNum));
-      grid.setDataEntriesInAllGrids(DS);
+      UniformGrid.setDataEntriesInAllGrids(DS);
       SetUpGroups();
    }
    public void SetUpGroups(){
@@ -705,7 +701,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     if( choice != DetNum){
       DetNum = choice;
       grid = (UniformGrid)Grid_util.getAreaGrid( DS, DetNum);
-      grid.setDataEntriesInAllGrids( DS );
+      UniformGrid.setDataEntriesInAllGrids( DS );
       MaxRow = grid.num_rows();
       MaxCol = grid.num_cols();
       SetUpGroups();
