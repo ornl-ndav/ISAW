@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2004/10/07 19:03:37  millermi
+ * - URL and error messages now displayed via SharedData
+ *   instead of System.out.println.
+ *
  * Revision 1.9  2004/06/18 19:30:50  rmikk
  * Eliminated an unused variable p
  *
@@ -106,7 +110,7 @@ or
               if( UNIX_PATH == null ) {
                 UNIX_PATH = "netscape";
               }
-              System.out.println( url );
+              SharedData.addmsg( url );
               cmd = UNIX_PATH + " " + url;
               Runtime.getRuntime().exec(cmd);
             }
@@ -114,8 +118,8 @@ or
         catch(IOException x)
         {
             // couldn't exec browser
-            System.err.println("Could not invoke browser, command=" + cmd);
-            System.err.println("Caught: " + x);
+            SharedData.addmsg("Could not invoke browser, command=" + cmd);
+            SharedData.addmsg("Caught: " + x);
         }
     }
 
