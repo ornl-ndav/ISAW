@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/08/10 22:14:51  dennis
+ *  Now sends message to LiveDataServer if the run number is 0.
+ *
  *  Revision 1.9  2001/06/08 16:13:22  dennis
  *  Change PORT to DEFAULT_PORT and now allow specifying
  *  different ports.
@@ -216,13 +219,24 @@ public static final String INSTRUMENT_COMPUTER  = "mandrake.pns.anl.gov";
     test.inst_name  = args[0].getBytes();
     test.run_number = Integer.parseInt( args[1] );
 
+    if ( test.run_number <= 0 )
+    {
+      System.out.println("Sending message with run number 0");
+      test.SendSpectrum( sender, 0, 1, new float[0] );
+      System.exit( 0 );
+    }
     test.file_name = new String(test.inst_name, 0, test.inst_name.length);
     test.file_name = test.file_name.toUpperCase();
     test.file_name = test.file_name + test.run_number + ".RUN";
 
     System.out.println( "Sending data for run " + test.file_name );
 
-    RunfileRetriever rr         = new RunfileRetriever( test.file_name );
+    RunfileRetriever rr = new RunfileRetriever( test.file_name );
+    if ( rr == null )
+    {
+      System.out.println("ERROR: runfile not found: " + test.file_name );
+      System.exit(1);
+    }
 
     DataSet data_sets[] = new DataSet[ rr.numDataSets() ];
     for ( int i = 0; i < data_sets.length; i++ )
