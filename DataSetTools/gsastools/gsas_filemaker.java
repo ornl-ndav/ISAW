@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2003/05/28 20:41:51  pfpeterson
+ *  Changed System.getProperty to SharedData.getProperty
+ *
  *  Revision 1.25  2003/04/25 15:42:54  pfpeterson
  *  Fixed bug where bank header and bank did not match.
  *
@@ -448,7 +451,7 @@ public class gsas_filemaker
      */
     private void printIParmFile(){
         String S=(String)data.getAttributeValue(Attribute.GSAS_IPARM);
-        if(S==null) S=System.getProperty("IParmFile");
+        if(S==null) S=SharedData.getProperty("IParmFile");
         //System.out.println("IParm: "+S);
         if(S!=null){
             StringBuffer sb=new StringBuffer(80);
