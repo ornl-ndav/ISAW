@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2002/10/09 16:33:34  dennis
+ *  Made form of getDocumentation() method consistent with the earlier code.
+ *
  *  Revision 1.17  2002/09/27 22:08:56  pfpeterson
  *  Added another parameter to getDocumentation method.
  *
@@ -412,17 +415,21 @@ abstract public class Operator implements Serializable
       addParameter( (IParameter)op.getParameter(i).clone() );
   }
 
+  /* -------------------------- getDocumentation --------------------------- */
   /**
    * Returns a string containing the end-user documentation for the
    * new help system.
    */
-  public String getDocumentation(){
-      return "This is the placeholder documentation. The full documentation needs to be written using the following options in a manner consistent with JavaDocs\n\n"
-          +"@overview\n\n"
-          +"@assumptions\n\n"
-          +"@algorithm\n\n"
-          +"@param\n\n"
-          +"@return\n\n"
-          +"@error";
+  public String getDocumentation()
+  {
+      return "This is the placeholder documentation. " +
+             "The full documentation needs to be written using the following "+
+             "options in a manner consistent with JavaDocs\n\n"
+            +"@overview\n\n"
+            +"@assumptions\n\n"
+            +"@algorithm\n\n"
+            +"@param\n\n"
+            +"@return\n\n"
+            +"@error";
   }
 } 
