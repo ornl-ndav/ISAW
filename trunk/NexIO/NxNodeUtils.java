@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/07/26 20:51:19  rmikk
+ * Used StringFromBytes Method to fix titles, etc.
+ *
  * Revision 1.4  2001/07/25 21:18:30  rmikk
  * Added features to Showw vectors
  *
@@ -183,13 +186,18 @@ public class NxNodeUtils
             return X;
         else if( type == NexusFile.NX_CHAR )
             {byte u[]; u =(byte[])X;
-	     if( u== null) return null;
+             return DataSetTools.nexus.NexusUtils.StringFromBytes( u );
+	     /*if( u== null) return null;
              if( u.length < 1)return "";
             
              int offset =u.length;
+             String SS;
              if( u[ u.length -1] != (byte)0)
-               return new String( (byte[])X);
-             return new String( u, 0, u.length-1);
+               SS =new String( (byte[])X);
+             else
+               SS = new String( u, 0, u.length-1);
+             return ( SS );
+	     */
             }
 
 	else if( type == NexusFile.NX_UINT16 )
