@@ -1,10 +1,9 @@
 /*
  * @(#)GetField.java   00-07-12  Ruth Mikkelson
  *             
- * This operator sets a DataSet Attribute
+ * This operator sets a DataSet Field value 
  *
- * ---------------------------------------------------------------------------
- *  
+ *  $LOG$
  *
  *
  */
@@ -37,7 +36,7 @@ public class GetField extends    DataSetOperator
 
   public GetField( )
   {
-    super( "Get Field" );
+    super( "Get DataSet Field" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -51,16 +50,14 @@ public class GetField extends    DataSetOperator
    *
    */
 
-  public GetField  ( DataSet    ds,
-                     AttributeNameString  Field
-			   )
+  public GetField  ( DataSet ds, DSFieldString  Field )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
     Parameter parameter = getParameter( 0 );
-    parameter.setValue( Field);
+    parameter.setValue( Field );
 
     
 
@@ -86,52 +83,92 @@ public class GetField extends    DataSetOperator
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-
-    Parameter parameter = new Parameter( "Field?", new AttributeNameString("") );
+    Parameter parameter = new Parameter( "Field?", new DSFieldString("Title") );
     addParameter( parameter );
-   
-   
-    
-    
   }
 
 
   /* ---------------------------- getResult ------------------------------- */
 
   public Object getResult()
-    { Attribute A;
+    { 
      DataSet ds = getDataSet();
-     String S = ((AttributeNameString)(getParameter(0).getValue())).toString();
+     String S = ((DSFieldString)(getParameter(0).getValue())).toString();
     
-    if( S.equals("Title"))
-       {return ds.getTitle();
-       }
-     else if( S.equals("X_label"))
-       {return ds.getX_label();
-       }
-     else if( S.equals("X_units")) 
+    if( S.equals( DSFieldString.TITLE ))
+        return ds.getTitle();
+       
+     else if( S.equals( DSFieldString.X_LABEL ))
+        return ds.getX_label();
+       
+     else if( S.equals( DSFieldString.X_UNITS )) 
         return ds.getX_units();     
-     else if( S.equals( "PointedAtIndex" ))
-        return new Integer( ds.getPointedAtIndex());
-    
-    
-     else if( S.equals( "Y_label" ))
+
+     else if( S.equals( DSFieldString.Y_LABEL ))
        return  ds.getY_label();
-     else if( S.equals( "Y_units" ))
+
+     else if( S.equals( DSFieldString.Y_UNITS ))
         return ds.getY_units();
-     else if ( S.equals( "MaxGroupID" ))
-        return new Integer ( ds.getMaxGroupID());
-     else if ( S.equals("MaxXSteps"))
+
+     else if ( S.equals(DSFieldString.MAX_SAMPLES) )
         return new Integer( ds.getMaxXSteps() );
-     else if ( S.equals("MostRecentlySelectedIndex"))
-        return new Integer( ds.getMostRecentlySelectedIndex());
-     else if ( S.equals( "NumSelected" ))
-       return new Integer( ds.getNumSelected());
-     
-     else if ( S.equals( "XRange" ) )
+
+     else if ( S.equals( DSFieldString.X_RANGE ) )
         return ds.getXRange();
-     else if ( S.equals( "YRange" ) )
-        return ds.getYRange(); 
+
+     else if ( S.equals( DSFieldString.Y_RANGE ) )
+        return ds.getYRange();
+
+     else if( S.equals( DSFieldString.POINTED_AT_INDEX ))
+        return new Integer( ds.getPointedAtIndex());
+
+     else if( S.equals( DSFieldString.POINTED_AT_ID ))
+     {
+        int index = ds.getPointedAtIndex();
+        if ( index < 0 )
+          return new Integer( index );
+        else
+        {
+          int id = ds.getData_entry(index).getGroup_ID();
+          return new Integer( id );
+        }
+     }
+
+     else if ( S.equals( DSFieldString.NUM_GROUPS ))
+        return new Integer ( ds.getNum_entries() );
+
+     else if ( S.equals( DSFieldString.GROUP_IDS  ) )
+     {
+       int num_data     = ds.getNum_entries();
+
+       int ids[] = new int[ num_data ];
+       for ( int i = 0; i < num_data; i++ )
+         ids[i] = ds.getData_entry(i).getGroup_ID();
+
+       String result = IntList.ToString( ids );
+       return result;
+     }
+
+     else if ( S.equals( DSFieldString.NUM_SELECTED ))
+       return new Integer( ds.getNumSelected() );
+     
+     else if ( S.equals( DSFieldString.SELECTED_GROUPS  ) )
+     {
+       int num_selected = ds.getNumSelected();
+       int num_data     = ds.getNum_entries();
+
+       int index = 0;
+       int ids[] = new int[ num_selected ];
+       for ( int i = 0; i < num_data; i++ )
+         if ( ds.isSelected(i) )
+         {
+           ids[index] = i;
+           index++;
+         }
+       String result = IntList.ToString( ids );
+       return result;
+     }
+
      else 
         return new ErrorString( "No such Field");   
      
