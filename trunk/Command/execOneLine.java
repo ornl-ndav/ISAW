@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.53  2003/06/19 21:20:18  pfpeterson
+ * Uses ScriptUtil for 'Display'.
+ *
  * Revision 1.52  2003/06/10 20:22:36  pfpeterson
  * Only gets Script_Class_List_Handler when needed. Also added polymorphism
  * for Integer to use Float.
@@ -1044,27 +1047,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * Frame" or "Internal Frame".
      */
     public void Display( DataSet ds , String DisplayType , String FrameType ){
-        String X = null;
-        if( Debug) System.out.println( "IN DISPLAY1 args="+DisplayType +
-                                       ","+FrameType);
-        if( DisplayType.toUpperCase().equals("IMAGE"))
-            X = IViewManager.IMAGE;
-        else if( DisplayType.toUpperCase().equals("SCROLLED_GRAPH")) 
-            X = IViewManager.SCROLLED_GRAPHS;
-        else if( DisplayType.toUpperCase().equals("SELECTED_GRAPH")) 
-            X = IViewManager.SELECTED_GRAPHS;
-        else if( DisplayType.toUpperCase().equals("THREE_D"))
-            X = IViewManager.THREE_D;
-        else if( DisplayType.toUpperCase().equals("TABLE"))
-            X= IViewManager.TABLE;
-        else{
-            X = DisplayType;
-            //seterror( 1000 , ER_ImproperArgument+" "+ DisplayType );
-            //return;
-        }
-        ViewManager  vm = new ViewManager(ds , X );
-        
-        Graphs.addElement( vm );
+      Graphs.addElement(ScriptUtil.display(ds,DisplayType));
     }
 
     private int  execSave( String S , int start, int end ){
