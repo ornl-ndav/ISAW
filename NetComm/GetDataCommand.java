@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/02/24 13:36:04  dennis
+ *  Fixed bug... subclass command was not recorded properly in the
+ *  constructor.
+ *
  *  Revision 1.2  2003/02/20 00:08:38  dennis
  *  Added toString() method.
  *
@@ -122,6 +126,7 @@ public class GetDataCommand extends CommandObject
     if ( END_BASIC_CMDS <  command  && 
          command        <= END_DATA_CMDS )   // only allow get data commands
     {
+      this.command      = command;
       this.filename     = filename; 
       this.ds_number    = ds_number;
       this.group_ids    = group_ids;
