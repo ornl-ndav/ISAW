@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/06/18 20:38:11  pfpeterson
+ * Gets classname from PyScript.
+ *
  * Revision 1.2  2003/06/13 14:58:05  pfpeterson
  * Implements OperatorFactory, does more checks before giving a file
  * to the enterpreter, and converts PyException to ParseError to keep
@@ -110,29 +113,23 @@ public class PyOperatorFactory extends Object implements OperatorFactory{
                                                       ClassCastException,
                                                       MissingResourceException,
                                                       ParseError{
-    String classname;
-
     // get the script
     PyScript script=new PyScript(filename);
     if(! script.isValid())
       throw new InstantiationError("Invalid Script Format");
 
     // execute the file --> this throws the PyException
-    try{
+    try{ // one is faster, the other throws exceptions with the right filename
       this.interp.exec(script.toString());
+      //this.interp.execfile(script.getFilename());
     }catch(PyException e){
       throw script.generateError(e,filename);
     }
 
     // get the name of the class within the file
-    int start=filename.lastIndexOf(File.separator);
-    if(start<0)
-      start=0;
-    else
-      start++;
+    String classname=script.getClassname();
 
     // get the class
-    classname=filename.substring(start,filename.length()-3);
     PyObject opClass=interp.get(classname);
     if(opClass==null)
       throw new MissingResourceException("Class \""+classname
