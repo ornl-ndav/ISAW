@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/06/06 16:21:34  pfpeterson
+ * Now use new parameters.
+ *
  * Revision 1.1  2002/05/28 20:35:09  pfpeterson
  * Moved files
  *
@@ -39,6 +42,7 @@
 package Wizard;
 
 import DataSetTools.wizard.*;
+import DataSetTools.parameter.*;
 
 /**
  *  This class has a main program that constructs a Wizard for doing add,
@@ -59,25 +63,24 @@ public class ActivateWizard{
         
         // define the entries in the master list
         w.setParameter( "Composition",
-                   new WizardParameter("Sample Composition", 
+                   new MaterialPG("Sample Composition", 
                                        new String("La,Mn,O_3"), false));
         w.setParameter( "Mass",
-                   new WizardParameter("Sample Mass (in g)", 
+                   new FloatPG("Sample Mass (in g)", 
                                        new Float(1),false));
         w.setParameter( "Current",
-                    new WizardParameter("Beam Current (in microAmp)",
+                    new FloatPG("Beam Current (in microAmp)",
                                         new Float(16),false));
         w.setParameter( "InstrumentFac",
-                    new WizardParameter("Instrument Factor (LANSCE HIPD=1.0)",
+                    new FloatPG("Instrument Factor (LANSCE HIPD=1.0)",
                                         new Float(1),false));
         
-        w.setParameter( "Contact",
-                    new WizardParameter("Contact Dose", new String(""),false));
-        w.setParameter( "Storage",
-                    new WizardParameter("Storage Time", new String(""),false));
-        w.setParameter( "Prompt",
-                    new WizardParameter("Prompt Activation",
-                                        new String(""),false));
+        w.setParameter("Contact",
+                       new StringPG("Contact Dose", new String(""),false));
+        w.setParameter("Storage",
+                       new StringPG("Storage Time", new String(""),false));
+        w.setParameter("Prompt",
+                       new StringPG("Prompt Activation",new String(""),false));
         
         String edit_params[]={"Composition", "Mass", 
                               "Current", "InstrumentFac"};
