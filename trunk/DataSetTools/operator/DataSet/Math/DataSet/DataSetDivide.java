@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/11/19 22:11:30  dennis
+ *  Added getDocumentation() method, main test program.  Also,
+ *  now checks that units match before dividing. (Chris Bouzek)
+ *
  *  Revision 1.3  2002/09/19 16:02:15  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -100,6 +104,7 @@
  *
  *  99/08/16   Added constructor to allow
  *             calling operator directly
+ * 
  */
 
 package DataSetTools.operator.DataSet.Math.DataSet;
@@ -111,6 +116,8 @@ import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.operator.*;
 
 /**
   *  Divide the corresponding Data "blocks" of the parameter DataSet into
@@ -177,7 +184,7 @@ public class DataSetDivide extends  DataSetOp
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -193,11 +200,51 @@ public class DataSetDivide extends  DataSetOp
     addParameter( parameter );
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator divides this DataSet by another.");
+    s.append("@assumptions The units on the two DataSets are compatible.");
+    s.append("@algorithm Uses the binary divide from DSOpsImplementation.");
+    s.append("@param The DataSet for the operation.");
+    s.append("@param The DataSet with which to divide by.");
+    s.append("@param A boolean value of true if you want a new DataSet to be ");
+    s.append("created, or false if you want the operation performed on the ");
+    s.append("original DataSet.");
+    s.append("@return The DataSet which is the result of dividing the ");
+    s.append("first DataSet by the second");
+    s.append("@return An error if the units of the two DataSets do not match.");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+   *  @return    The DataSet which is the result of dividing one DataSet
+   *             by a second DataSet.  
+   */  
   public Object getResult()
   {
+    // get the parameters which determine whether a new DataSet should be made
+    // and the DataSet to subtract.
+    Boolean make_new = (Boolean)this.getParameter(1).getValue();
+    DataSet ds_divided_by = (DataSet)this.getParameter(0).getValue();
+    DataSet current_ds = this.getDataSet();
+
+    //if units do not match
+    if( !current_ds.getX_units().equals(ds_divided_by.getX_units()) || 
+	!current_ds.getY_units().equals(ds_divided_by.getY_units()) )
+	return new 
+               ErrorString("ERROR: The units on the DataSets do not match.");
+
+    if( !make_new.booleanValue() )
+	current_ds.getOp_log().addEntry("Divided " + current_ds.toString()
+					  + " by " + ds_divided_by + ".");
+    //if the units do match
     return DSOpsImplementation.DoDSBinaryOp( this );
   }
 
@@ -218,4 +265,18 @@ public class DataSetDivide extends  DataSetOp
     return new_op;
   }
 
+  /* ---------------------------- main --------------------------------- */
+  /**
+   *  Main method for testing purposes.
+   */
+
+  public static void main( String[] args )
+  {
+    DataSet ds1 = DataSetFactory.getTestDataSet(); //create the first test DataSet
+    DataSet ds2 = DataSetFactory.getTestDataSet(); //create the second test DataSet
+    ViewManager viewer = new ViewManager(ds1, ViewManager.IMAGE);
+    Operator op = new DataSetDivide( ds1, ds2, true );
+    DataSet new_ds = (DataSet)op.getResult();
+    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);
+  }//main()
 }
