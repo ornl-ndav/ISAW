@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2005/01/07 19:34:08  rmikk
+ * Now implements IWrappableWithCategoryList
+ *
  * Revision 1.3  2004/08/02 20:11:56  rmikk
  * Can now set ISX, ISY, and ISZ with this operator
  * Assumes that the integrate information operator( Title="Integrate1") is an operator of the
@@ -61,7 +64,7 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
  * @author MikkelsonR
  *
  */
-public class SetNewIntegratePk implements Wrappable {
+public class SetNewIntegratePk implements IWrappableWithCategoryList {
  
   public DataSet DS;  // The Data Set to add the IntegratePk operator to
   public LoadFileString filename; //The filename(java or class) with the Wrappable
@@ -76,6 +79,23 @@ public class SetNewIntegratePk implements Wrappable {
   public String getCommand(  ) {
     return "SetIntegrate";
   }
+
+  
+  /**
+    * Get an array of strings listing the operator category names  for 
+    * this operator. The first entry in the array is the 
+    * string: Operator.OPERATOR. Subsequent elements of the array determine
+    * which submenu this operator will reside in.
+    * 
+    * @return  A list of Strings specifying the category names for the
+    *          menu system 
+    *        
+    */
+  public String[] getCategoryList(){
+    
+    return Operator.TOF_NSCD;
+  }
+
 
   
   public String getDocumentation(  ) {

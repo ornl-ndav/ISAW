@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/01/07 19:34:08  rmikk
+ * Now implements IWrappableWithCategoryList
+ *
  * Revision 1.11  2004/08/11 21:33:14  dennis
  * Now checks if files loaded ok and returns an error string if not.
  * Returns "Success" if files are loaded ok.
@@ -51,7 +54,7 @@ import DataSetTools.trial.*;
 import DataSetTools.operator.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
-public class SCDReciprocalLattice implements Wrappable
+public class SCDReciprocalLattice implements IWrappableWithCategoryList
 {
   public DataDirectoryString Data_Directory     = new DataDirectoryString();
   public LoadFileString      Calibration_File   = new LoadFileString();
@@ -72,6 +75,21 @@ public class SCDReciprocalLattice implements Wrappable
   public String getCommand() 
   {
     return "SCDReciprocalLattice";
+  }
+  
+  /**
+    * Get an array of strings listing the operator category names  for 
+    * this operator. The first entry in the array is the 
+    * string: Operator.OPERATOR. Subsequent elements of the array determine
+    * which submenu this operator will reside in.
+    * 
+    * @return  A list of Strings specifying the category names for the
+    *          menu system 
+    *        
+    */
+  public String[] getCategoryList(){
+    
+    return Operator.TOF_NSCD;
   }
 
   /**
