@@ -2,6 +2,11 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.10  2002/04/05 15:27:17  dennis
+ * Removed printing of error message when an update() message is received
+ * that the JPropertiesUI does not respond to.  It is not an error to
+ * not handle some message.
+ *
  * Revision 1.9  2001/08/02 19:49:24  neffk
  * now traps IObserver.DATA_DELETED message in update().  the message
  * displays an empty AttributeList object, which avoids the potential
@@ -127,7 +132,6 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
    */
   public void update( Object observed, Object reason )
   {
-
                                        //if a new DataSet is generated,
                                        //this object can just ignore it
     if(  reason instanceof DataSet )
@@ -167,10 +171,6 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
 
       else if( reason_str.equals(DATA_DELETED) )
         showAttributes(  new AttributeList()  );     
-
-      else
-        System.out.println(
-          "ERROR: Unsupported update (JProperties.java):" + reason );
 
       return; 
     }     
