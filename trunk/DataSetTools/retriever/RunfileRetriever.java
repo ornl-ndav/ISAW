@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.63  2003/02/14 20:51:52  dennis
+ *  Removed commented out SegmentInfo code.
+ *  Now uses trimToSize() method on an AttributeList before
+ *  adding the AttributeList to a DataSet or Data block.
+ *
  *  Revision 1.62  2003/02/12 20:03:10  dennis
  *  Switched to use PixelInfoList instead of SegmentInfoList
  *
@@ -682,10 +687,9 @@ private float CalculateEIn()
                                              // Although the detector data grid
                                              // is a DataSet attribute, we need
                                              // a segment to get at the detID
-//           if ( instrument_type == InstrumentType.TOF_SCD ||
-//                instrument_type == InstrumentType.TOF_SAD )
-             Add_DetectorDataGrid( data_set.getAttributeList(),
-                                   group_segments[0].DetID() );
+                                             // Also, we need a list of detectors
+         Add_DetectorDataGrid( data_set.getAttributeList(),
+                               group_segments[0].DetID() );
 
          tf_type = run_file.TimeFieldType(group_id);
          if ( tf_type != last_tf_type )      // only get the times if it's a
@@ -731,7 +735,7 @@ private float CalculateEIn()
                                    group_segments,
                                    tf_type,
                                    spectrum      );
- 
+
             // Now add the spectrum to the DataSet -------------------------
             data_set.addData_entry( spectrum );
           }
@@ -826,6 +830,7 @@ private float CalculateEIn()
     str_attr = new StringAttribute( Attribute.USER, run_file.UserName() );
     attr_list.setAttribute( str_attr );
 
+    attr_list.trimToSize();
     ds.setAttributeList( attr_list );
   }
 
@@ -1046,8 +1051,6 @@ private float CalculateEIn()
     attr_list.setAttribute( float_attr );
 
     // PixelInfo ....
-//    if ( instrument_type == InstrumentType.TOF_SCD ||
-//         instrument_type == InstrumentType.TOF_SAD )
     if ( group_segments.length > 0 )
     {
       short      row;
@@ -1075,62 +1078,15 @@ private float CalculateEIn()
       attr_list.setAttribute( 
                   new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST, pil) );
     }
-    
 
     // SegmentInfo ....
-/*
-    SegmentInfo seg_info_list[] = new SegmentInfo[ group_segments.length ];
-    DetectorPosition det_position;
-    SegmentInfo      seg_info;
 
-    for ( int id = 0; id < group_segments.length; id++ )
-    {
-      det_position = new DetectorPosition();
-      float seg_angle  = (float)run_file.RawDetectorAngle( group_segments[id] );
-            seg_angle *= (float)(Math.PI / 180.0);
-      float seg_height = (float)run_file.RawDetectorHeight( group_segments[id]);
-      float seg_path   = (float)run_file.RawFlightPath( group_segments[id] );
-      float rho = 0;                                    // patch for error with
-                                                        // group 294, some files
-      if ( seg_path * seg_path < seg_height * seg_height )  
-        rho = seg_path;
-      else
-        rho  = (float)Math.sqrt(seg_path * seg_path - seg_height * seg_height);
-
-     //if ( instrument_type == InstrumentType.TOF_SCD )// ###### temporary fix
-     //  seg_angle -= (float)Math.PI;                  // for SCD since runfile
-                                                       // rotates detector to
-                                                       // plus 90 degrees.
-                                                       // 2 of 2 places this is
-                                                       // adjusted !!!
-
-      
-      det_position.setCylindricalCoords( rho, seg_angle, seg_height );
-
-      seg_info = new SegmentInfo( group_segments[id].SegID(), 
-                                   group_segments[id].DetID(), 
-                                   group_segments[id].Row(),
-                                   group_segments[id].Column(),
-                                   det_position,
-                                   group_segments[id].Length(),
-                                   group_segments[id].Width(),
-                                   group_segments[id].Depth(),
-                                   group_segments[id].Efficiency() );
-      seg_info_list[id] = seg_info;
-
-    }
-*/
     if ( group_segments.length > 0 )
       if(instrument_type==InstrumentType.TOF_SCD)
          Add_DetectorCenterPosition(attr_list,group_segments[0].DetID());
 
     if ( group_segments.length > 0 )           // add the SegInfoListAttribute
     {
-/*
-      SegInfoListAttribute seg_info_attr = new SegInfoListAttribute( 
-                             Attribute.SEGMENT_INFO_LIST, seg_info_list );
-      attr_list.setAttribute( seg_info_attr );
-*/
                                                // add the crate, input & slot
                                                // info for the first segment
                                                // in the group
@@ -1150,8 +1106,6 @@ private float CalculateEIn()
     }
 
     // Solid angle
-    //float_attr =new FloatAttribute(Attribute.SOLID_ANGLE,
-    //                               run_file.SolidAngle( group_id ) );
     float_attr =new FloatAttribute(Attribute.SOLID_ANGLE,
                                    GrpSolidAngle( group_id ) );
     attr_list.setAttribute( float_attr );
@@ -1179,6 +1133,7 @@ private float CalculateEIn()
       e.printStackTrace();
     };
 
+    attr_list.trimToSize();
     spectrum.setAttributeList( attr_list );
   }
 
@@ -1809,38 +1764,47 @@ private float CalculateEIn()
     }
   }
 
-
   public static void main(String[] args)
   {
-//    String file_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ/SCD06496.RUN";
-    String file_name = "/usr/local/ARGONNE_DATA/SCD07940.RUN";
+//    String file_names[] = { "/usr/local/ARGONNE_DATA/SCD_QUARTZ/SCD06496.RUN" };
+    String file_names[] = { "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07940.RUN", 
+                            "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07941.RUN",
+                            "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07942.RUN",
+                            "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07943.RUN",
+                            "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07944.RUN",
+                            "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07945.RUN" };
 
     System.out.println("Start test program"); 
-    System.out.println("Loading: " + file_name +"....");
 
-    RunfileRetriever rr = new RunfileRetriever( file_name ); 
-    DataSet ds = rr.getFirstDataSet(Retriever.HISTOGRAM_DATA_SET);
-    rr = null;
-    System.out.println("Data loaded ------------------------");
+    RunfileRetriever rr;
+    DataSet ds[] = new DataSet[ file_names.length ]; 
+//    for ( int i = 0; i < 1; i++ )
+    for ( int i = 0; i < file_names.length; i++ )
+    {
+      System.out.println("Loading: " + file_names[i] +"....");
+      rr = new RunfileRetriever( file_names[i] ); 
+      ds[i] = rr.getFirstDataSet(Retriever.HISTOGRAM_DATA_SET);
+      rr = null;
+      System.out.println("Data loaded for data set # " + i + "--------------------" );
+
+      System.out.println("Trying GC...");
+      System.gc();
+    }
+ 
+    System.out.println("Trying GC...");
+    System.gc();
 
     try   { Thread.currentThread().sleep(5000); } 
     catch (InterruptedException ie) { }
 
     System.out.println("Trying GC...");
     System.gc();
-
-    try   { Thread.currentThread().sleep(5000); }                
-    catch (InterruptedException ie) { }
- 
-    System.out.println("Trying GC...");
-    System.gc();
-
-
+/*
     System.out.println("Displaying Image...");
-    ViewManager vm = new ViewManager( ds, IViewManager.IMAGE ); 
+    ViewManager vm = new ViewManager( ds[0], IViewManager.IMAGE ); 
     try   { Thread.currentThread().sleep(5000); }                
     catch (InterruptedException ie) { }
- 
+*/
     System.out.println("End test program"); 
 //    System.exit(1);
   }
