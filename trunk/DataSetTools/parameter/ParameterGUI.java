@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/08/28 00:47:55  bouzekc
+ *  Moved setEnabled() into this class because EntryWidget can recursively enable
+ *  and disable its constituent components.
+ *
  *  Revision 1.15  2003/08/22 20:12:05  bouzekc
  *  Modified to work with EntryWidget.
  *
@@ -87,8 +91,9 @@
  */
 package DataSetTools.parameter;
 
-import DataSetTools.util.PropertyChanger;
 import DataSetTools.components.ParametersGUI.*;
+
+import DataSetTools.util.PropertyChanger;
 
 import java.awt.*;
 
@@ -154,6 +159,17 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    */
   public boolean getDrawValid(  ) {
     return drawvalid;
+  }
+
+  /**
+   * Done up here because the new EntryWidget will recursively enable/disable
+   * the inner components it has.
+   *
+   * @param enable Whether to enable the EntryWidget associated with this
+   *        ParamterGUI or not.
+   */
+  public void setEnabled( boolean enable ) {
+    entrywidget.setEnabled( enable );
   }
 
   /**
