@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.100  2004/01/09 15:34:29  bouzekc
+ * Will now handle a null argument to wizardLoader().
+ *
  * Revision 1.99  2004/01/08 14:57:46  bouzekc
  * Collapsed import statements.
  *
@@ -900,7 +903,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
         .addPropertyChangeListener( frontEnd.getFormProgressIndicator(  ) );
     }
 
-    if( argv.length == 0 ) {
+    if( ( argv == null ) || ( argv.length == 0 ) ) {
       //set the projects directory for relevant parameters
       this.setBrowsePGDirectory(  );
       frontEnd.showForm( 0 );
