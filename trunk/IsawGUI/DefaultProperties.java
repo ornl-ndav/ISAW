@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2004/05/25 12:22:44  rmikk
+ *  Changed NsavedFiles to NSavedFiles
+ *
  *  Revision 1.24  2004/05/24 18:35:27  rmikk
  *  Added properties ShortSavedFilename and NsavedFiles to the 
  *  default IsawProps.dat
@@ -334,7 +337,7 @@ public class DefaultProperties{
             .append("#").append(eol)
             .append("WIZARD_WIDTH=700").append(eol)
             .append("WIZARD_HEIGHT=600").append(eol)
-            .append("#NsavedFiles=0")
+            .append("#NSavedFiles=0")
             .append("#ShortSavedFilename=false");
             
 
