@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 19:51:49  kramer
+ * Added the method determineWaitingComponents().
+ *
  * Revision 1.3  2004/03/12 19:46:16  bouzekc
  * Changes since 03/10.
  *
@@ -43,13 +46,15 @@
  */
 package devTools.Hawk.classDescriptor.gui.internalFrame;
 
+import java.awt.Component;
 import java.awt.Container;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.GridLayout;
 
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
 import devTools.Hawk.classDescriptor.gui.panel.PackageTreeJPanel;
+import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
 
 /**
@@ -81,7 +86,7 @@ public class PackageTreeGUI extends DesktopInternalFrame implements ActionListen
 	 */
 	public PackageTreeGUI(Project pro, String title, boolean packageShortJava, boolean packageShortOther, boolean classShortJava, boolean classShortOther, HawkDesktop desk)
 	{
-		super(desk);
+		super(desk,desk.getSelectedDesktop(),new Interface(),false,false,false,false);
 		
 		setTitle(title);
 		setLocation(0,0);
@@ -112,7 +117,7 @@ public class PackageTreeGUI extends DesktopInternalFrame implements ActionListen
 	 * Gets a copy of this window.
 	 * @return A copy of this window.
 	 */
-	public DesktopInternalFrame getCopy()
+	public AttachableDetachableFrame getCopy()
 	{
 		return new PackageTreeGUI(treeJPanel.getProject(),getTitle(),treeJPanel.getShortenPackageJavaBox().isSelected(),treeJPanel.getShortenPackageOtherBox().isSelected(),treeJPanel.getShortenClassJavaBox().isSelected(), treeJPanel.getShortenClassOtherBox().isSelected(),desktop);
 	}
@@ -126,6 +131,15 @@ public class PackageTreeGUI extends DesktopInternalFrame implements ActionListen
 //		copy.setVisible(true);
 //		processWindowChange(event,copy,this);
 		super.actionPerformed(event);
+	}
+	
+	/**
+	 * The Components in the array returned from this method are the Components that should have the 
+	 * mouse use the waiting animation when an operation is in progress.
+	 */
+	public Component[] determineWaitingComponents()
+	{
+		return treeJPanel.determineWaitingComponents();
 	}
 
 /*
