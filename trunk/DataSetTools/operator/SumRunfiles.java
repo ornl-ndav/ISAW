@@ -31,6 +31,9 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.11  2001/09/13 22:53:39  dennis
+ *  Added call to fixCase() on the file name in one place where it was missing.
+ *
  *  Revision 1.10  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -398,6 +401,7 @@ public class SumRunfiles extends    GenericLoad
      {      
        current_name = path + InstrumentType.formIPNSFileName( instrument,
                                                               runs[i] );
+       current_name = FilenameUtil.fixCase( current_name );
        System.out.println( "i="+i+"...Opening... " + current_name );
        try
        { 
