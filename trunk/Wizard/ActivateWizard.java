@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/04/02 15:02:46  pfpeterson
+ * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
+ *
  * Revision 1.4  2003/02/26 17:21:37  rmikk
  * Now writes to DataSetTools.util.SharedData.status_pane
  *
@@ -52,50 +55,62 @@ import DataSetTools.wizard.*;
 import DataSetTools.parameter.*;
 
 /**
- *  This class has a main program that constructs a Wizard for doing add,
- *  subtract, multiply and divide operations on a specified list of parameters.
+ *  This wizard calculates the contact dose, prompt activation, 
+ *  and storage time for the specified sample.
  */
-public class ActivateWizard{
-    /**
-     *  The main program constructs a new Wizard, defines the parameters to
-     *  be stored in the master parameter list, and constructs instances of
-     *  of the forms that define the operations available.
-     */
-    public static void main( String args[] ){
-        // build the wizard and specify the help messages.
-        Wizard w = new Wizard( "Activate Wizard" ); 
-        DataSetTools.util.SharedData.addmsg("ActivateWizard Main\n");
-        w.setHelpMessage("This wizard will let you do arithetic operations");
-        w.setAboutMessage("This is a simple Demonstation Wizard, 2/26/2002, D.M.");
-        
-        // define the entries in the master list
-        w.setParameter( "Composition",
-                   new MaterialPG("Sample Composition", 
-                                       new String("La,Mn,O_3"), false));
-        w.setParameter( "Mass",
-                   new FloatPG("Sample Mass (in g)", 
-                                       new Float(1),false));
-        w.setParameter( "Current",
-                    new FloatPG("Beam Current (in microAmp)",
-                                        new Float(16),false));
-        w.setParameter( "InstrumentFac",
-                    new FloatPG("Instrument Factor (LANSCE HIPD=1.0)",
-                                        new Float(1),false));
-        
-        w.setParameter("Contact",
-                       new StringPG("Contact Dose", new String(""),false));
-        w.setParameter("Storage",
-                       new StringPG("Storage Time", new String(""),false));
-        w.setParameter("Prompt",
-                       new StringPG("Prompt Activation",new String(""),false));
-        
-        String edit_params[]={"Composition", "Mass", 
-                              "Current", "InstrumentFac"};
-        String out_params[]={"Contact","Storage","Prompt"};
-        
-        Form form0 = new ActivateForm(  edit_params, out_params, w );
-        w.add( form0 );
-        
-        w.show(0);
-    }
+public class ActivateWizard extends Wizard{
+  /**
+   *
+   *  Default constructor.  Sets standalone in Wizard to true.
+   */
+  public ActivateWizard()
+  {
+    this(true);
+    super.setHelpMessage(
+    "This wizard calculates the contact dose, prompt activation, "
+    + "and storage time for a sample"); 
+    super.setAboutMessage(
+    "This is a simple Demonstration Wizard, 2/26/2002, D.M. 3/27/02 CMB");
+  }
+
+  /**
+   *  Constructor for setting the standalone variable in Wizard.
+   *
+   *  @param standalone          Boolean indicating whether the
+   *                             Wizard stands alone (true) or
+   *                             is contained in something else
+   *                             (false).
+   */
+  public ActivateWizard(boolean standalone)
+  {
+    super("Activate Wizard", standalone);
+    super.addForm(new ActivateForm());
+  }
+
+  /*
+   *
+   *  Overridden methods.
+   */
+  public boolean  load()
+  {
+    return false;
+  }
+  public void save()
+  {
+  }
+  public void close()
+  {
+    this.save();
+    System.exit(0);
+  }
+
+  /**
+   *  Method for running the Time Focus Group wizard 
+   *   as standalone.
+   */
+  public static void main(String args[])
+  {
+    ActivateWizard w = new ActivateWizard(true);
+    w.showForm(0);
+  }
 }
