@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2002/09/11 22:51:40  dennis
+ *     The group_id field is now set from the Attribute, if either form
+ *  of setAttribute() is called with the attribute name "Group ID" or if
+ *  setAttributeList() is called with an attribute list containing
+ *  a "Group ID" attribute.
+ *
  *  Revision 1.30  2002/08/01 22:33:34  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -420,8 +426,18 @@ public abstract class Data implements IData,
   {
     this.attr_list = (AttributeList)attr_list.clone();
 
-    setGroup_ID( this.group_id );   // force the attribute list to contain the
-                                    // correct ID
+    boolean id_set = false;
+    int     i      = 0;
+    while ( i < this.attr_list.getNum_attributes() && !id_set )
+    {
+      Attribute attribute = this.attr_list.getAttribute(i);
+      id_set = syncGroup_ID_to_Attribute( attribute );
+      i++;
+    }
+
+    if ( !id_set )
+      setGroup_ID( this.group_id );   // force the attribute list to contain the
+                                      // correct ID
   }
 
   /**
@@ -467,6 +483,7 @@ public abstract class Data implements IData,
   public void setAttribute( Attribute attribute )
   {
     attr_list.setAttribute( attribute );
+    syncGroup_ID_to_Attribute( attribute );
   }
 
   /**
@@ -485,6 +502,7 @@ public abstract class Data implements IData,
   public void setAttribute( Attribute attribute, int index )
   {
     attr_list.setAttribute( attribute, index );
+    syncGroup_ID_to_Attribute( attribute );
   }
 
 
@@ -1323,6 +1341,25 @@ public abstract class Data implements IData,
     selected     = 0;
     label_string = Attribute.GROUP_ID;
     label_is_attribute = true;
+  }
+
+/* ----------------------- syncGroup_ID_to_Attribute ---------------------- */
+/**
+ *  Set the group_id field from the specified attribute if the attribute
+ *  name is the same as the "constant" Attribute.GROUP_ID, and then return
+ *  true.  If the name is NOT the same as Attribute.GROUP_ID, then do nothing
+ *  but return false.  
+ */
+  private boolean syncGroup_ID_to_Attribute( Attribute attribute )
+  {
+    if ( attribute.getName().equals( Attribute.GROUP_ID ) )  // set the field
+    {                                                        // group_id to
+      int id = (int)(attribute.getNumericValue());           // match
+      group_id = id;
+      return true;
+    }
+
+    return false;
   }
 
 }
