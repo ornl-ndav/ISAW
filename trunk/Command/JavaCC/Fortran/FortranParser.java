@@ -36,7 +36,8 @@ public class FortranParser implements FortranParserConstants {
   public static void main( String args[] ) throws ParseException {
     standalone = true;
     myParser = new FortranParser( System.in );
-    myParser.parseCode(  );
+    System.out.println( myParser.parseCode(  ));
+   
   }
 
   /**
