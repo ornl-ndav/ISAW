@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/07/10 15:50:40  pfpeterson
+ * Now normalizes y and dy to the number of datablocks that
+ * contributed to it.
+ *
  * Revision 1.1  2002/07/08 15:44:47  pfpeterson
  * Added to CVS.
  *
@@ -55,7 +59,7 @@ import java.util.*;
  */
 public class Grouping extends GenericTOF_Diffractometer{
     private static final String  TITLE = "Diffractometer Grouping";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     /** 
      *  Creates operator with title "Time Focus" and a default 
@@ -127,37 +131,70 @@ public class Grouping extends GenericTOF_Diffractometer{
 
         // get the list of group ids
         int gid[] = IntList.ToArray( group_str );
+        if(DEBUG)System.out.println("Grouping: "+gid[0]+" to "
+                                  +gid[gid.length-1]);
 
-        // initialize the new datablock
-        Data d=ds.getData_entry_with_id(gid[0]);
-        DetectorPosition pos=(DetectorPosition)
-            d.getAttributeValue(Attribute.DETECTOR_POS);
-
-        // set up the temporary data information
+        // initialize the datablocks and positions
+        Data d=null;
+        DetectorPosition pos=null;
         Data temp_d=null;
         DetectorPosition temp_pos=null;
 
         // do the grouping
-        for( int index=1 ; index<gid.length ; index++ ){
+        for( int index=0 ; index<gid.length ; index++ ){
             temp_d=ds.getData_entry_with_id(gid[index]);
             if(DEBUG)System.out.println("Data["+index+"]="+temp_d);
             if(temp_d!=null){ // check that there is data with that gid
                 temp_pos=(DetectorPosition)
                     temp_d.getAttributeValue(Attribute.DETECTOR_POS);
-                if(temp_pos.equals(pos)){        // confirm they are focused to
-                    d=d.stitch(temp_d,Data.SUM); // the same position
+                if(d==null){
+                    d=temp_d;
+                    pos=temp_pos;
                 }else{
-                    return new ErrorString("Data to be grouped must be at "
-                                           +"same effective position");
+                    if(temp_pos.equals(pos)){       // confirm they are focused
+                        d=d.stitch(temp_d,Data.SUM);// to the same position
+                    }else{
+                        return new ErrorString("Data to be grouped must be at "
+                                               +"same effective position");
+                    }
                 }
             }
         }
         
+        // normalize the data by the number of blocks combined to make
+        // the new dataset.
+        float num_d;
+        float x[]  = d.getX_scale().getXs();
+        float y[]  = d.getCopyOfY_values();
+        float dy[] = d.getCopyOfErrors();
+        int max=x.length;
+        float xval;
+        if(d.isHistogram())max--;
+        for( int i=0 ; i<max ; i++ ){
+            num_d=0f;
+            for( int j=0 ; j<gid.length ; j++ ){
+                temp_d=ds.getData_entry_with_id(gid[j]);
+                if(temp_d!=null){
+                    if(d.isHistogram())
+                        xval=(x[i]+x[i+1])/2f;
+                    else
+                        xval=x[i];
+                    if(temp_d.getX_scale().inRange(xval))num_d+=1f;
+                }
+            }
+            if(num_d>0f){
+                y[i]=y[i]/num_d;
+                dy[i]=dy[i]/num_d;
+            }
+        }
+
         // pack it all up and return the grouped data
+        Data new_d=Data.getInstance(d.getX_scale(),y,dy,new_gid);
+        new_d.setAttributeList(d.getAttributeList());
         DataSet new_ds=ds.empty_clone();
         new_ds.addLog_entry("Grouped " + group_str + " to group " + new_gid);
-        d.setGroup_ID(new_gid);
-        new_ds.addData_entry(d);
+        //d.setGroup_ID(new_gid);
+        new_ds.addData_entry(new_d);
         return new_ds;
     }
 
