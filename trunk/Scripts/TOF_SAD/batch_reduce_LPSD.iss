@@ -16,11 +16,11 @@ Yoff =0.007103308
 #Input_Path ="/IPNShome/sand/data/"
 #Output_Path ="/IPNShome/sand/GeorgeUser/"
 
-#Input_Path ="C:/sand_lpsd_runs/"
-#Output_Path ="C:/sand_lpsd_runs/"
+Input_Path ="C:/sand_lpsd_runs/"
+Output_Path ="C:/sand_lpsd_runs/"
 
-Input_Path ="/home/dennis/SAND_LPSD_RUNS/"
-Output_Path ="/home/dennis/SAND_LPSD_RUNS/"
+#Input_Path ="/home/dennis/SAND_LPSD_RUNS/"
+#Output_Path ="/home/dennis/SAND_LPSD_RUNS/"
 
 SamplePath = Input_Path
 # Sample thickness in cm:
@@ -195,8 +195,8 @@ send Res[2]
 #Display Res[1], "NEW Selected Graph View"
 #SelectGroups( Res[2], "Group ID",0.0,0.0,"Between Max and Min", "Set Select")
 #Display Res[2], "NEW Selected Graph View"
-for i in [0:2]
-  Print3Col1D(Res[i], Output_Path&GetField(Res[i], "Title")&".dat","Reduce Results", NeutronDelay)
+for j in [0:2]
+  Print3Col1D(Res[j], Output_Path&GetField(Res[j], "Title")&".dat","Reduce Results", NeutronDelay)
 endfor
 Echo("Finished REDUCE and written files: "  )
 Echo (Output_Path&GetField(Res[0], "Title") )
@@ -204,7 +204,10 @@ Echo (Output_Path&GetField(Res[1], "Title") )
 Echo (Output_Path&GetField(Res[2], "Title") )
 #Display "Finished Reduce"
 #ExitDialog()
-
+Res=null
+RunSDS = null
+RUNCds = null
+RunBDS = null
 endfor
 
 Display "Finished"
