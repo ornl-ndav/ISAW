@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2004/06/15 20:57:03  robertsonj
+ *  Changed the setViewerState method so you may or maynot have spaces
+ *  when using the viewerStates in a script
+ *
  *  Revision 1.32  2004/06/15 20:20:20  robertsonj
  *  add setViewerState method used to set the viewer state from the 
  *  script language and from a StringPG
@@ -529,59 +533,63 @@ public class ViewerState  implements Serializable
    		String stateString = stateVariables.substring(21, (stateVariables.length() - 6)); //gets the substring that I want
     	String[] seperatedStates = stateString.split(",");
     	System.out.println("length of array "+seperatedStates.length);
+    	String tempString;
 	   	for(int i = 0; i <seperatedStates.length; i++)
 	   	{
-	   		System.out.println("The string we have now at i = " + i + "is" + seperatedStates[i]);
-	   		if(seperatedStates[i].startsWith("ColorScale")){
-	   			set_String("ColorScale", seperatedStates[i].substring(11));
-	   		}else if(seperatedStates[i].startsWith("RebinFlag")){
-	   			if(seperatedStates[i].endsWith("ue")){
+	   		tempString = seperatedStates[i].trim();
+	   		System.out.println("The string we have now at i = " + i + "is" + tempString);
+	   		System.out.print("SeperatedStates[i] = " + seperatedStates[i]);
+	   		if(tempString.startsWith("ColorScale")){
+	   			System.out.println(tempString.lastIndexOf(" "));
+	   			set_String("ColorScale", tempString.substring(tempString.lastIndexOf(" ")+1));
+	   		}else if(tempString.startsWith("RebinFlag")){
+	   			if(tempString.endsWith("ue")){
 	   				set_boolean("RebinFlag", true);
 	   			}else
 	   			{set_boolean("RebinFlag", false);
 	   			}
-	   		}else if(seperatedStates[i].startsWith("Brightness")){
-	   			set_int("Brightness", Integer.parseInt(seperatedStates[i].substring(11).trim()));
-	   		}else if(seperatedStates[i].startsWith("HScrollPosition")){
-	   			set_float("HScrollPosition", Float.parseFloat(seperatedStates[i].substring(16).trim()));
-	   		}else if(seperatedStates[i].startsWith("PointedAtIndex")){
-	   			set_int("PointedAtIndex", Integer.parseInt(seperatedStates[i].substring(15).trim()));
-	   		}else if(seperatedStates[i].startsWith("ViewAzimuthAngle")){
-	   			set_float("ViewAzimuthAngle", Float.parseFloat(seperatedStates[i].substring(16).trim()));
-	   		}else if(seperatedStates[i].startsWith("ViewAltitudeAngle")){
-	   			set_float("ViewAltitudeAngle", Float.parseFloat(seperatedStates[i].substring(17).trim()));
-	   		}else if(seperatedStates[i].startsWith("ViewDistance")){
-	   			set_float("ViewDistance", Float.parseFloat(seperatedStates[i].substring(13).trim()));
-	   		}else if(seperatedStates[i].startsWith("ViewGroups")){
-	   			set_String("ViewGroups", seperatedStates[i].substring(11));
-	   		}else if(seperatedStates[i].startsWith("ViewDetectors")){
-	   			set_String("ViewDetectors", seperatedStates[i].substring(14));
-	   		}else if(seperatedStates[i].startsWith("Auto-Scale")){
-	   			set_float("Auto-Scale", Float.parseFloat(seperatedStates[i].substring(11).trim()));
-	   		}else if(seperatedStates[i].startsWith("table_view Data")){
-	   			set_String("table_view Data", seperatedStates[i].substring(16));
-	   		}else if(seperatedStates[i].startsWith("Contour.Style")){
-	   			set_int("Contour.Style", Integer.parseInt(seperatedStates[i].substring(14).trim()));
-	   		}else if(seperatedStates[i].startsWith("ContourTimeMin")){
-				set_float("ContourTimeMin", Float.parseFloat(seperatedStates[i].substring(15).trim()));	
-	   		}else if(seperatedStates[i].startsWith("Time Slice Table Data Set")){
-	   			set_String("Time Slice Table Data Set", seperatedStates[i].substring(26));
-	   		}else if(seperatedStates[i].startsWith("TableTS_TimeInd")){
-	   			set_int("TableTS_TimeInd", Integer.parseInt(seperatedStates[i].substring(15).trim()));
-	   		}else if(seperatedStates[i].startsWith("TableTS_MinRow")){
-	   			set_int("TableTS_MinRow", Integer.parseInt(seperatedStates[i].substring(15).trim()));
-	   		}else if(seperatedStates[i].startsWith("TableTS_MaxRow")){
-	   			set_int("TableTS_MaxRow", Integer.parseInt(seperatedStates[i].substring(15).trim()));
-	   		}else if(seperatedStates[i].startsWith("TableTS_MinCol")){
-	   			set_int("TableTS_MinCol", Integer.parseInt(seperatedStates[i].substring(15).trim()));
-	   		}else if(seperatedStates[i].startsWith("TableTS_MaxCol")){
-	   			set_int("TableTS_MaxCol", Integer.parseInt(seperatedStates[i].substring(15).trim()));	
-	   		}else if(seperatedStates[i].startsWith("TABLE_TS_MIN_TIME")){
-	   			set_float("TABLE_TS_MIN_TIME", Float.parseFloat(seperatedStates[i].substring(18)));
-	   		}else if(seperatedStates[i].startsWith("TABLE_TS_MAX_TIME")){
-	   			set_float("TABLE_TS_MAX_TIME", Float.parseFloat(seperatedStates[i].substring(18)));
-	   		}else if(seperatedStates[i].startsWith("TABLE_TS_NXSTEPS")){
-	   			set_int("TABLE_TS_NXSTEPS", Integer.parseInt(seperatedStates[i].substring(17)));
+	   		}else if(tempString.startsWith("Brightness")){
+	   			set_int("Brightness", Integer.parseInt(tempString.substring(11).trim()));
+	   		}else if(tempString.startsWith("HScrollPosition")){
+	   			set_float("HScrollPosition", Float.parseFloat(tempString.substring(16).trim()));
+	   		}else if(tempString.startsWith("PointedAtIndex")){
+	   			set_int("PointedAtIndex", Integer.parseInt(tempString.substring(15).trim()));
+	   		}else if(tempString.startsWith("ViewAzimuthAngle")){
+	   			set_float("ViewAzimuthAngle", Float.parseFloat(tempString.substring(16).trim()));
+	   		}else if(tempString.startsWith("ViewAltitudeAngle")){
+	   			set_float("ViewAltitudeAngle", Float.parseFloat(tempString.substring(17).trim()));
+	   		}else if(tempString.startsWith("ViewDistance")){
+	   			set_float("ViewDistance", Float.parseFloat(tempString.substring(13).trim()));
+	   		}else if(tempString.startsWith("ViewGroups")){
+	   			set_String("ViewGroups", tempString.substring(11));
+	   		}else if(tempString.startsWith("ViewDetectors")){
+	   			set_String("ViewDetectors", tempString.substring(14));
+	   		}else if(tempString.startsWith("Auto-Scale")){
+	   			set_float("Auto-Scale", Float.parseFloat(tempString.substring(11).trim()));
+	   		}else if(tempString.startsWith("table_view Data")){
+	   			set_String("table_view Data", tempString.substring(16));
+	   		}else if(tempString.startsWith("Contour.Style")){
+	   			set_int("Contour.Style", Integer.parseInt(tempString.substring(14).trim()));
+	   		}else if(tempString.startsWith("ContourTimeMin")){
+				set_float("ContourTimeMin", Float.parseFloat(tempString.substring(15).trim()));	
+	   		}else if(tempString.startsWith("Time Slice Table Data Set")){
+	   			set_String("Time Slice Table Data Set", tempString.substring(26));
+	   		}else if(tempString.startsWith("TableTS_TimeInd")){
+	   			set_int("TableTS_TimeInd", Integer.parseInt(tempString.substring(15).trim()));
+	   		}else if(tempString.startsWith("TableTS_MinRow")){
+	   			set_int("TableTS_MinRow", Integer.parseInt(tempString.substring(15).trim()));
+	   		}else if(tempString.startsWith("TableTS_MaxRow")){
+	   			set_int("TableTS_MaxRow", Integer.parseInt(tempString.substring(15).trim()));
+	   		}else if(tempString.startsWith("TableTS_MinCol")){
+	   			set_int("TableTS_MinCol", Integer.parseInt(tempString.substring(15).trim()));
+	   		}else if(tempString.startsWith("TableTS_MaxCol")){
+	   			set_int("TableTS_MaxCol", Integer.parseInt(tempString.substring(15).trim()));	
+	   		}else if(tempString.startsWith("TABLE_TS_MIN_TIME")){
+	   			set_float("TABLE_TS_MIN_TIME", Float.parseFloat(tempString.substring(18)));
+	   		}else if(tempString.startsWith("TABLE_TS_MAX_TIME")){
+	   			set_float("TABLE_TS_MAX_TIME", Float.parseFloat(tempString.substring(18)));
+	   		}else if(tempString.startsWith("TABLE_TS_NXSTEPS")){
+	   			set_int("TABLE_TS_NXSTEPS", Integer.parseInt(tempString.substring(17)));
 	   		}
 	   		System.out.println("i = "+i);
 	   	}
