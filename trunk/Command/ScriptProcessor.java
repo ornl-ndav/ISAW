@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2003/01/02 20:43:21  rmikk
+ * Added methods to add a whole IObserverList and Property
+ *   change support.
+ *
  * Revision 1.24  2002/11/27 23:12:10  pfpeterson
  * standardized header
  *
@@ -135,6 +139,23 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         Title = TextFileName;
     }
 
+    /** Sets the whole IObserverList.  
+    *   NOTE: Used when alternating between different languages
+    */
+    public void setIObserverList( IObserverList IOlist)
+      {
+        OL = IOlist;
+        ExecLine.setIObserverList( IOlist);
+      }
+   
+    /** Sets the whole list of property change listeners.  
+    *   NOTE: Used when alternating between different languages
+    */
+    public void setPropertyChangeList( PropertyChangeSupport PcSupp) 
+      {
+        PL = PcSupp;
+        ExecLine.setPropertyChangeList( PcSupp );
+       } 
     /**
      * Constructor that can be used to run Macros- non visual?
      *
