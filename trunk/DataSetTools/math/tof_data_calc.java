@@ -31,6 +31,16 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2002/06/03 22:27:13  dennis
+ *  Added method: NewEnergyInData( data, new_e_in ) to adjust a spectrum to
+ *  to a new incident energy.  The time bin boundaries, as well as the
+ *  incident energy and source to sample attributes are adjusted.  The ratio
+ *  of the focused position, L2', to the physical position, L2, is used in
+ *  making the adjustment to the times.  Specifically, the adjusted times
+ *  t2'_corr are calculated from the focused times t2' and the source to sample
+ *  times for the two energies using: t1(E1) and t1(E2):
+ *  t2'_corr = t2' + ( t1(E1) - t1(E2) )*(L2'/L2)
+ *
  *  Revision 1.10  2002/05/02 19:04:12  pfpeterson
  *  Only integrate one sigma to calculate the first moment.
  *
@@ -63,6 +73,7 @@ package DataSetTools.math;
 import DataSetTools.peak.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
+import DataSetTools.instruments.*;
 
 /**
  *  Basic time-of-flight calculations on DataSets and Data blocks
@@ -107,7 +118,7 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 1.0f;
                   new HistogramDataPeak( mon[i], MONITOR_PEAK_EXTENT_FACTOR );
 
        float area        = peak.Area();
-       centroid[i] = peak.Moment( 0, 1) / area;
+       centroid[i] = peak.Moment(0, 1) / area;
 
        DetectorPosition position = (DetectorPosition)
                          mon[i].getAttributeValue(Attribute.DETECTOR_POS);
@@ -181,6 +192,85 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 1.0f;
 
      return result;
     }
+
+
+/**
+ *  Adjust the time bin boundaries for a direct geometry neutron time-of-flight
+ *  spectrometer to values that correspond to a different incident energy.
+ *  The data is assumed to be already time focussed to an effective secondary
+ *  flight path, L2_focused, given by the "Effective Position" attribute.  The
+ *  physical secondary flight path, L2, is assumed to be given by the 
+ *  "Det Info List" attribute.  If either of these attributes are not present,
+ *  a warning message is printed and the original Data block is returned.
+ *
+ *  @param  data      Data block containing the original focused spectrum to be 
+ *                    adjusted.
+ *
+ *  @param  new_e_in The new incident energy for which the spectrum time
+ *                    boundaries are to be adjusted.
+ * 
+ *  @return   A new Data block with it's time-of-flight "x" scale adjusted
+ *            to correspond to the new incident energy.  If the needed 
+ *            attributes are not present the original Data block is returned.
+ */
+public static Data NewEnergyInData( TabulatedData  data, 
+                                    float          new_e_in )
+{
+  float x[] = data.getX_scale().getXs();
+
+  Float Float_e = (Float)data.getAttribute(Attribute.ENERGY_IN).getValue();
+  Float Float_l = (Float)data.getAttribute(Attribute.INITIAL_PATH).getValue();
+  DetectorPosition position = (DetectorPosition)
+                     data.getAttribute(Attribute.DETECTOR_POS).getValue();
+
+  DetectorInfo det_info[] =(DetectorInfo[])
+                     data.getAttribute(Attribute.DETECTOR_INFO_LIST).getValue();
+ 
+  if ( Float_e   == null || 
+       Float_l   == null || 
+       position  == null ||
+       det_info  == null )
+  {
+    System.out.println("ERROR: missing attribute in " +
+                              "tof_data_calc.SetNewEnergyIn");
+    return data;
+  }
+
+  float focused_L2 = position.getDistance();
+  float physical_L2 = 0;                        // use average of physical dists
+  for ( int i = 0; i < det_info.length; i++ )
+    physical_L2 += det_info[i].getPosition().getDistance();  
+  physical_L2 /= det_info.length; 
+     
+  float old_e_in     = Float_e.floatValue();
+  float initial_path = Float_l.floatValue();
+
+  float t_old = tof_calc.TOFofEnergy( initial_path, old_e_in );
+  float t_new = tof_calc.TOFofEnergy( initial_path, new_e_in );
+
+  float delta_t = (t_new - t_old)*( focused_L2 / physical_L2 );
+/*
+  System.out.println("foc L2, phys L2, ratio = " + focused_L2  + ", " + 
+                                                   physical_L2 + ", " +
+                                                   focused_L2 / physical_L2 );
+*/
+
+  for ( int k = 0; k < x.length; k++ )
+    x[k] -= delta_t;
+                                          // make a new Data block with the new
+                                          // x values and same group ID, y
+                                          // values and attributes.
+  float y[] = data.getY_values();
+  XScale x_scale = new VariableXScale( x );
+  TabulatedData new_d = (TabulatedData)
+                         Data.getInstance( x_scale, y, data.getGroup_ID() );
+  new_d.setAttributeList( data.getAttributeList() );
+  new_d.setErrors( data.getCopyOfErrors() );
+  new_d.setAttribute( new FloatAttribute(Attribute.ENERGY_IN, new_e_in) );
+  new_d.setAttribute( new FloatAttribute(Attribute.SOURCE_TO_SAMPLE_TOF,t_new));
+
+  return new_d;
+}
 
 
 /**
