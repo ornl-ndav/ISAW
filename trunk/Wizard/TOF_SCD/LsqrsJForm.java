@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.11  2003/06/18 23:34:26  bouzekc
+ * Parameter error checking now handled by superclass Form.
+ *
  * Revision 1.10  2003/06/18 19:58:23  bouzekc
  * Uses super.getResult() for initializing PropertyChanger
  * variables.  Now fires off property change events in a
@@ -262,50 +265,17 @@ public class LsqrsJForm extends Form
 
     //gets the run numbers
     param = (IParameterGUI)getParameter(0);
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        runsArray = IntList.ToArray(obj.toString());
-        param.setValid(true);
-    }
-   else
-     return errorOut(param,
-       "ERROR: you must enter one or more valid run numbers.\n");
-
+    runsArray = IntList.ToArray(param.getValue().toString());
     //get input file directory 
     param = (IParameterGUI)super.getParameter(1);
     peaksDir = param.getValue().toString();
-    if(new File(peaksDir).exists())
-      param.setValid(true);
-    else
-      param.setValid(false);
-
     //gets the experiment name
     param = (IParameterGUI)super.getParameter(2);
-    obj = param.getValue();
-
-    if( (obj != null) && (obj.toString().length() > 0) )
-    {
-        expName = obj.toString();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-        "ERROR: you must enter a valid experiment name.");
-
+    expName = param.getValue().toString();
     /*get restricted sequence numbers - leave in String form
       for LsqrsJ*/
     param = (IParameterGUI)getParameter(3);
-    obj = param.getValue();
-    if( obj != null )
-    {
-        restrictSeq = obj.toString();
-        param.setValid(true);
-    }
-    else
-    return errorOut(param, 
-        "ERROR: you must enter valid sequence numbers to restrict.");
-
+    restrictSeq = param.getValue().toString();
     //get "use identity" value - this is a class value, and is actually
     //retrieved using setIdentityParameter below
     setIdentityParameter(); 
@@ -313,27 +283,16 @@ public class LsqrsJForm extends Form
     /*get transformation matrix - only set to identity if
       not first time through.  Otherwise, use user input
       value.*/
+    param = (IParameterGUI)getParameter(5);
+    xFormMat = param.getValue().toString();
 
     if(useIdentity)
       xFormMat = identmat;
-    else
-    {
-      param = (IParameterGUI)getParameter(5);
-      obj = param.getValue();
-      if( (obj != null) && (obj.toString().length() > 0) )
-      {
-        xFormMat = obj.toString();
-        param.setValid(true);
-      }
-      else
-      return errorOut(param, 
-        "ERROR: you must enter a valid transformation matrix.");
-    }
 
-    //the scalar log file - ALWAYS valid
+    //the scalar log file - ALWAYS valid.  The Form will now skip checking this
+    //parameter.
     param = (IParameterGUI)getParameter(6);
     param.setValid(true);
-
 
     //peaks file
     peaksName = peaksDir + expName + ".peaks";
@@ -344,8 +303,12 @@ public class LsqrsJForm extends Form
    leastSquares.getParameter(2).setValue(restrictSeq);
    leastSquares.getParameter(3).setValue(xFormMat);
 
-    //validate the parameters and set the progress bar variables
-    super.getResult();
+    //validate the parameters and init the progress bar variables
+    Object superRes = super.getResult();
+
+    //had an error, so return
+    if(superRes instanceof ErrorString)  
+      return superRes;
 
     //set the increment amount
     increment = (1.0f / runsArray.length) * 100.0f;
@@ -436,8 +399,6 @@ public class LsqrsJForm extends Form
   {
     if(useIdentCheckBox == null)
       useIdentCheckBox = (BooleanPG)super.getParameter( 4 );
-    //this one doesn't need to be checked for validity
-    useIdentCheckBox.setValid(true);
     useIdentity = useIdentCheckBox.getbooleanValue();
   }
 }

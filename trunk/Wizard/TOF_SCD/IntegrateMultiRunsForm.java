@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.14  2003/06/18 23:34:25  bouzekc
+ * Parameter error checking now handled by superclass Form.
+ *
  * Revision 1.13  2003/06/18 19:57:21  bouzekc
  * Uses super.getResult() for initializing PropertyChanger
  * variables.
@@ -278,44 +281,16 @@ public class IntegrateMultiRunsForm extends Form
     //get raw data directory
     param = (IParameterGUI)super.getParameter( 0 );
     rawDir = param.getValue().toString();
-    if(new File(rawDir).exists())
-      param.setValid(true);
-    else
-      param.setValid(false);
-
     //get output directory
     param = (IParameterGUI)getParameter( 1 );
     outputDir = param.getValue().toString();
-    if(new File(outputDir).exists())
-      param.setValid(true);
-    else
-      param.setValid(false);
-
     //gets the run numbers
     param = (IParameterGUI)super.getParameter(2);
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        runsArray = IntList.ToArray(obj.toString());
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-         "ERROR: you must enter one or more valid run numbers.");
-
+    runsArray = IntList.ToArray(param.getValue().toString());
     //get experiment name
     param = (IParameterGUI)getParameter( 3 );
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        expName = obj.toString();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-         "ERROR: you must enter a valid experiment name.");
-
-    //get centering type
+    expName = param.getValue().toString();
+    //get centering type - this still needs to be checked here rather than Form
     param = (IParameterGUI)getParameter( 4 );
     obj = param.getValue();
     if( obj != null  )
@@ -329,56 +304,18 @@ public class IntegrateMultiRunsForm extends Form
 
     //get calibration file name
     param = (IParameterGUI)getParameter( 5 );
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        calibFile = obj.toString();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-         "ERROR: you must enter a valid calibration file name.");
-
+    calibFile = param.getValue().toString();
     //get time slice range
     param = (IParameterGUI)getParameter( 6 );
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        sliceRange = obj.toString();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-         "ERROR: you must enter a valid time slice range.");
-
+    sliceRange = param.getValue().toString();
     //get time slice increase increment
     param = (IParameterGUI)getParameter( 7 );
-    obj = param.getValue();
-    if( obj != null && obj instanceof Integer )
-    {
-        timeSliceDelta = ((Integer)obj).intValue();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-        "ERROR: you must enter a valid integer to increment the slice size by.");
-
+    timeSliceDelta = ((Integer)param.getValue()).intValue();
     //get line number for SCD calibration file
     param = (IParameterGUI)super.getParameter( 8 );
-    obj = param.getValue();
-    if( obj != null && obj instanceof Integer )
-    {
-        SCDline = ((Integer)obj).intValue();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-         "ERROR: you must enter a valid line number to use.\n");
-
+    SCDline = ((Integer)param.getValue()).intValue();
     //get append to file value
     param = (IParameterGUI)super.getParameter( 9 );
-    //this one doesn't need to be checked for validity
-    param.setValid(true);
     append = ((BooleanPG)param).getbooleanValue();
 
     //the name for the saved *.integrate file
@@ -393,7 +330,11 @@ public class IntegrateMultiRunsForm extends Form
                              timeSliceDelta, append, centerType);
 
     //validate the parameters and set the progress bar variables
-    super.getResult();
+    Object superRes = super.getResult();
+
+    //had an error, so return
+    if(superRes instanceof ErrorString)  
+      return superRes;
 
     //set the increment amount
     increment = (1.0f / runsArray.length) * 100.0f;
