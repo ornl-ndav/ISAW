@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2003/06/10 22:32:24  bouzekc
+ * Added parameters for delta (h), delta (k), and delta (l).
+ *
  * Revision 1.14  2003/06/09 21:59:43  bouzekc
  * getResult() now returns the name of the IndexJ log file
  * and prints the number of peaks indexed to SharedData.
@@ -112,7 +115,7 @@ public class IndexJ extends    GenericTOF_SCD {
    *  used to generate the experiment name used by index.
    *  @param matrixfile The name of the file containing the
    *  orientation matrix. Currently must be a '.mat' file.
-   *  @param delta The error parameter for indexing peaks
+   *  @param delta The error parameter for indexing peaks (h = k = l)
    */
   
   public IndexJ( String peaksfile, String matrixfile, float delta,
@@ -122,7 +125,9 @@ public class IndexJ extends    GenericTOF_SCD {
     getParameter(0).setValue(peaksfile);
     getParameter(1).setValue(matrixfile);
     getParameter(3).setValue(new Float(delta));
-    getParameter(4).setValue(new Boolean(update));
+    getParameter(4).setValue(new Float(delta));
+    getParameter(5).setValue(new Float(delta));
+    getParameter(6).setValue(new Boolean(update));
   }
   
   /* ------------------------- setDefaultParmeters ----------------------- */
@@ -143,8 +148,12 @@ public class IndexJ extends    GenericTOF_SCD {
     //2
     addParameter(new IntArrayPG("Restrict Runs",null));
     //3
-    addParameter(new FloatPG("Delta",0.20f));
+    addParameter(new FloatPG("Delta h",0.20f));
     //4
+    addParameter(new FloatPG("Delta k",0.20f));
+    //5
+    addParameter(new FloatPG("Delta l",0.20f));
+    //6
     addParameter(new BooleanPG("update peaks file",true));
   }
   
@@ -190,7 +199,9 @@ public class IndexJ extends    GenericTOF_SCD {
     String      logfile     = null;  // the index.log file
     File        file        = null;  // for tests
     int         index       = 0;     // for chopping up strings
-    float       delta       = 0f;    // error in index allowed
+    float       delta_h     = 0f;    // error in index (h) allowed
+    float       delta_k     = 0f;    // error in index (k) allowed
+    float       delta_l     = 0f;    // error in index (l) allowed
     boolean     update      = false; // update the peaks file
     int         crystallite = 1;     // placeholder for future feature
     int[]       runs        = null;  // run numbers to index
@@ -234,21 +245,47 @@ public class IndexJ extends    GenericTOF_SCD {
     }
     if(runs==null || runs.length==0) runs=null;
 
-    // get the delta parameter
+    // get the delta (h) parameter
     iparm=getParameter(3);
     if(iparm instanceof FloatPG){
-      delta=((FloatPG)iparm).getfloatValue();
+      delta_h=((FloatPG)iparm).getfloatValue();
     }else{
       Object value=iparm.getValue();
       if(value instanceof Float ){
-        delta=((Float)value).floatValue();
+        delta_h=((Float)value).floatValue();
       }else{
         return new ErrorString("invalid value "+value);
       }
     }
 
-    // find out if want to update peaks file
+    // get the delta (k) parameter
     iparm=getParameter(4);
+    if(iparm instanceof FloatPG){
+      delta_k=((FloatPG)iparm).getfloatValue();
+    }else{
+      Object value=iparm.getValue();
+      if(value instanceof Float ){
+        delta_k=((Float)value).floatValue();
+      }else{
+        return new ErrorString("invalid value "+value);
+      }
+    }
+
+    // get the delta (l) parameter
+    iparm=getParameter(5);
+    if(iparm instanceof FloatPG){
+      delta_l=((FloatPG)iparm).getfloatValue();
+    }else{
+      Object value=iparm.getValue();
+      if(value instanceof Float ){
+        delta_l=((Float)value).floatValue();
+      }else{
+        return new ErrorString("invalid value "+value);
+      }
+    }
+
+    // find out if we want to update peaks file
+    iparm=getParameter(6);
     if(iparm instanceof BooleanPG){
       update=((BooleanPG)iparm).getbooleanValue();
     }else{
@@ -313,7 +350,7 @@ public class IndexJ extends    GenericTOF_SCD {
 
       log.append(formatHKL(peak.h(),peak.k(),peak.l()));
 
-      if( (delta<=hMod) || (delta<=kMod) || (delta<=lMod) ){
+      if( (delta_h<=hMod) || (delta_k<=kMod) || (delta_l<=lMod) ){
         peak.sethkl(0f,0f,0f,false);
         peak.reflag(0);
       }else{
