@@ -30,6 +30,10 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.7  2004/04/26 13:07:46  rmikk
+  *  Passes on the Hashtable with already created Grids for this DataSet to
+  *    subclasses(Data) that uses it
+  *
   *  Revision 1.6  2004/03/15 03:28:05  dennis
   *  Moved view components, math and utils to new source tree
   *  gov.anl.ipns.*
@@ -179,7 +183,7 @@ public class DataSetList  implements IXmlIO
     return true;
   }
 
-
+  transient Hashtable gridIds = new Hashtable();
  /**
   * Implements the IXmlIO interface so a list of Data can read itself
   *
@@ -274,6 +278,7 @@ public class DataSetList  implements IXmlIO
           //args[1] = new Integer( Id);
 
           D = (Data) (C.newInstance(args));
+          ((Data)D).setGridIds( gridIds );
         }
         catch(ClassNotFoundException s3)
         { return xml_utils.setError( "Data Class not found");
