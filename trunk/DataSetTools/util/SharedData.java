@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2002/12/10 20:38:09  pfpeterson
+ *  Removed static HelpSet instance by Ruth's recommendation.
+ *
  *  Revision 1.14  2002/12/08 22:03:45  dennis
  *  Added shared instance of HTMLizer for the new help system. (Ruth)
  *
@@ -104,13 +107,9 @@ public class SharedData implements java.io.Serializable
   public static final HTMLizer HTMLPageMaker = new HTMLizer();
 
 
-  /** The static HelpSet variable for the CommandPane Help
-  *   documentation
-  */
-  public static final IsawOpHelpSet  CommandPaneHelpSet =
-             new IsawOpHelpSet( false );
-
-
+  /**
+   * The time ISAW was started for timing routines to offset against.
+   */
   public static final long start_time=System.currentTimeMillis();
  
     /**
