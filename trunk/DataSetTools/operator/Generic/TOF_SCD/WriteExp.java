@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/02/12 20:03:11  dennis
+ * Switched to use PixelInfoList instead of SegmentInfoList
+ *
  * Revision 1.5  2003/01/15 20:54:26  dennis
  * Changed to use SegmentInfo, SegInfoListAttribute, etc.
  *
@@ -514,67 +517,16 @@ public class WriteExp extends GenericTOF_SCD{
    * size of the detector in rows and columns.
    */
   private void parseDetInfoList( DataSet ds ){
-    Object           val        = null;
-    SegmentInfo        segInfo    = null;
-    //DetectorPosition lowerleft  = null;
-    //DetectorPosition upperleft  = null;
-    //DetectorPosition lowerright = null;
-    int              col        = 0;
-    int              row        = 0;
-    int              mincol     = 10000;
-    int              minrow     = 10000;
+    Attribute attr=ds.getData_entry(0).getAttribute(Attribute.PIXEL_INFO_LIST);
 
-    for( int i=0 ; i<ds.getNum_entries() ; i++ ){
-      val=ds.getData_entry(i).getAttributeValue(Attribute.SEGMENT_INFO_LIST);
-      if(val!=null){
-        if(val instanceof SegmentInfo[])
-          segInfo=((SegmentInfo[])val)[0];
-        else if(val instanceof SegmentInfo)
-          segInfo=(SegmentInfo)val;
-        else
-          segInfo=null;
-      }
-
-      if(segInfo!=null){
-        // get the row and column
-        col=segInfo.getColumn();
-        row=segInfo.getRow();
-
-        // check for special positions
-        if(col<=mincol){ // could be lowerleft or upperleft
-          mincol=col;
-          if(row<=minrow){ // is lowerleft
-            minrow=row;
-            //lowerleft=segInfo.getPosition();
-            //}else if(row>=nrow){ // is upperleft
-            //upperleft=segInfo.getPosition();
-          }
-        }else if(col>ncol){ // could be lowerright
-          ncol=col;
-          if(row<=minrow){ // is lowerright
-            minrow=row;
-            //lowerright=segInfo.getPosition();
-          }
-        }
-
-        // check for the maximum row
-        if(row>nrow) nrow=row;
-      }
+    if ( attr != null && attr instanceof PixelInfoListAttribute )
+    {
+      PixelInfoList pil = (PixelInfoList)attr.getValue();
+      nrow = pil.pixel(0).DataGrid().num_rows();
+      ncol = pil.pixel(0).DataGrid().num_cols();
     }
-
-    // set the number of rows and columns
-    nrow=nrow-minrow+1;
-    ncol=ncol-mincol+1;
-
-    // calculate the height and width (the 100 is to convert to cm)
-    //height = 100f*lowerleft.distance(upperleft);
-    //width  = 100f*lowerleft.distance(lowerright);
-
-    // clear out some references
-    segInfo    = null;
-    //lowerleft  = null;
-    //upperleft  = null;
-    //lowerright = null;
+    else
+      System.out.println("ERROR: no PixelInfoListAttribute in DataSet" );
   }
 
   /**

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.62  2003/02/12 20:03:10  dennis
+ *  Switched to use PixelInfoList instead of SegmentInfoList
+ *
  *  Revision 1.61  2003/02/10 16:06:20  dennis
  *  Commented out debug print
  *
@@ -152,7 +155,7 @@ import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.DataSet.Special.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.instruments.InstrumentType;
-import DataSetTools.instruments.SegmentInfo;
+import DataSetTools.instruments.*;
 import IPNS.Runfile.*;
 import IPNS.Calib.*;
 import DataSetTools.math.*;
@@ -679,8 +682,8 @@ private float CalculateEIn()
                                              // Although the detector data grid
                                              // is a DataSet attribute, we need
                                              // a segment to get at the detID
-           if ( instrument_type == InstrumentType.TOF_SCD ||
-                instrument_type == InstrumentType.TOF_SAD )
+//           if ( instrument_type == InstrumentType.TOF_SCD ||
+//                instrument_type == InstrumentType.TOF_SAD )
              Add_DetectorDataGrid( data_set.getAttributeList(),
                                    group_segments[0].DetID() );
 
@@ -1018,9 +1021,21 @@ private float CalculateEIn()
     }
 
     // Raw Detector Angle ...........
-    float_attr =new FloatAttribute(Attribute.RAW_ANGLE,
+    float_attr = new FloatAttribute(Attribute.RAW_ANGLE,
                       (float)run_file.RawDetectorAngle( group_segments[0]) );
     attr_list.setAttribute( float_attr );
+
+    // "Raw distance"......
+    if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER &&
+         group_segments.length > 0                               )
+    {
+      float raw_distance = 0;                // needed for TOF_DG_SPECTROMETER
+      for ( int i = 0; i < group_segments.length; i++ )
+        raw_distance += (float)run_file.RawFlightPath( group_segments[i] );
+      float_attr = new FloatAttribute( Attribute.RAW_DISTANCE,
+                                       raw_distance/group_segments.length );
+      attr_list.setAttribute( float_attr );
+    }
 
     // Delta 2 theta ( range of scattering angles covered ), assuming 1" tube
     float det_width_factor = 1.45530928f;  // detector width in meters times
@@ -1031,8 +1046,8 @@ private float CalculateEIn()
     attr_list.setAttribute( float_attr );
 
     // PixelInfo ....
-    if ( instrument_type == InstrumentType.TOF_SCD ||
-         instrument_type == InstrumentType.TOF_SAD )
+//    if ( instrument_type == InstrumentType.TOF_SCD ||
+//         instrument_type == InstrumentType.TOF_SAD )
     if ( group_segments.length > 0 )
     {
       short      row;
@@ -1063,7 +1078,7 @@ private float CalculateEIn()
     
 
     // SegmentInfo ....
-
+/*
     SegmentInfo seg_info_list[] = new SegmentInfo[ group_segments.length ];
     DetectorPosition det_position;
     SegmentInfo      seg_info;
@@ -1104,16 +1119,18 @@ private float CalculateEIn()
       seg_info_list[id] = seg_info;
 
     }
-
+*/
     if ( group_segments.length > 0 )
       if(instrument_type==InstrumentType.TOF_SCD)
          Add_DetectorCenterPosition(attr_list,group_segments[0].DetID());
 
     if ( group_segments.length > 0 )           // add the SegInfoListAttribute
     {
+/*
       SegInfoListAttribute seg_info_attr = new SegInfoListAttribute( 
                              Attribute.SEGMENT_INFO_LIST, seg_info_list );
       attr_list.setAttribute( seg_info_attr );
+*/
                                                // add the crate, input & slot
                                                // info for the first segment
                                                // in the group
