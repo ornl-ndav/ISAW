@@ -1,6 +1,9 @@
 # Sample HRCS macro
 # Load and sum multiple HRCS sample and background run files
 # $Date$
+
+$Category=Operator, Instrument Type, TOF_NDGS
+
 $  path               DataDirectoryString     Data File Path:
 $  instrument         InstrumentNameString    Instrument Prefix(eg:hrcs)
 $  background_runs    Array                   Background Run Numbers(,:)

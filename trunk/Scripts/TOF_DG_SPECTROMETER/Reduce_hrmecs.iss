@@ -3,6 +3,8 @@
 #
 # Data treatment for HRMECS measurements
 #
+$Category=Operator, Instrument Type, TOF_NDGS
+
 #
 # mask defines the detectors' numbers which should be excluded 
 # from the data treatment
