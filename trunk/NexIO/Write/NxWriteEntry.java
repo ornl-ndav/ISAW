@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/12/23 19:15:19  rmikk
+ * Changed the "sec" unit to second
+ * Eliminated unused code
+ * Added blank lines between some code
+ *
  * Revision 1.10  2004/05/14 15:03:52  rmikk
  * Removed unused variables
  *
@@ -90,6 +95,7 @@ public class NxWriteEntry{
     int ranks[],intval[];
     char cc = 0;
     errormessage = "Null or improper inputs to NxEntry processor";
+    
     if( node == null)
       return true;
      
@@ -190,8 +196,9 @@ public class NxWriteEntry{
       if( n1.getErrorMessage() != "")
         errormessage += ";"+errormessage;         
     }
-
-   
+    ranks = new int[1];
+    ranks[0] = 4;
+    n1.addAttribute("version",("1.0"+cc).getBytes(),Types.Char, ranks);
     
     //--------------------- duration ---------------------------
     Object O = DS.getAttributeValue( Attribute.NUMBER_OF_PULSES );
@@ -206,7 +213,7 @@ public class NxWriteEntry{
         n1.setNodeValue( ff , Types.Float , rank ); 
         if( n1.getErrorMessage() != "" );
         errormessage += ":" + n1.getErrorMessage();
-        n1.addAttribute("units",("sec"+(char)0).getBytes(),Types.Char,
+        n1.addAttribute("units",("second"+(char)0).getBytes(),Types.Char,
                         Inst_Type.makeRankArray(4,-1,-1,-1,-1));
       }  
     }
@@ -218,33 +225,6 @@ public class NxWriteEntry{
          Inst_Type.makeRankArray(user.length()+1,-1,-1,-1,-1)); 
    }
       
-    //Moved to NXsample
-    
-    /*X = DS.getAttributeValue( Attribute.SAMPLE_NAME);
-    if( X !=  null){
-      String Samp_name = ne.cnvertoString( X);
-      if( Samp_name != null){
-        NxWriteNode Instrnode = node.newChildNode( "sample", "NXsample");
-        ranks = new int[1];
-        ranks[0] = Samp_name.length()+1;
-        Instrnode.setNodeValue( (Samp_name+cc).getBytes(),Types.Char,ranks);
-
-        NxWriteLog writelog = new NxWriteLog( 7);
-        Instrnode.show();
-        NxWriteNode logNode = Instrnode.newChildNode( "log_7","NXlog");
-     0
-...............   if( writelog.processDS( logNode, null, 7))
-         errormessage += writelog.getErrorMessage();
-
-        NxWriteBeam writeBeam = new NxWriteBeam(instr_type);
-        NxWriteNode beamNode = Instrnode.newChildNode("Beam", "NXbeam");
-        if( writeBeam.processDS( beamNode, DS))
-          errormessage += writeBeam.getErrorMessage();
-      
-      }
-    }
- */
- 
     NxWriteLog writelog1 = new NxWriteLog( 6);
     NxWriteNode logNode = node.newChildNode( "log_6","NXlog");
     if( writelog1.processDS( logNode, null, 6))
