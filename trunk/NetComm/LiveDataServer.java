@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2003/02/24 21:01:18  dennis
+ *  Removed un-needed debug print.
+ *
  *  Revision 1.33  2003/02/24 20:41:59  dennis
  *  Put debug print in 'if ( debug...' statement.
  *
@@ -516,7 +519,6 @@ public class LiveDataServer extends    DataSetServer
 
       else if ( command.getCommand() == CommandObject.GET_STATUS )
       {
-         System.out.println("LiveDataServer GOT Status request...");
          String reply = status;
 
          if ( status.startsWith(RemoteDataRetriever.NO_DATA_SETS_STRING) )
