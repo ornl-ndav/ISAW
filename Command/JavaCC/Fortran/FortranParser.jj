@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2004/01/26 21:42:14  bouzekc
+ * Now handles zero-argument functions (for the wrapper).
+ *
  * Revision 1.17  2004/01/22 00:57:36  bouzekc
  * Now accepts multidimensional arrays and empty comment lines.
  *
@@ -110,12 +113,20 @@ public class FortranParser {
   private static boolean standalone = false;
   private static final String LOGICAL = "logical";
   private static final String BOOLEAN = "boolean";
+  private static final String BOOLEAN_O = "Boolean";
   private static final String REAL = "real";
   private static final String FLOAT = "float";
+  private static final String FLOAT_O = "Float";
   private static final String F_DOUBLE = "double precision";
   private static final String J_DOUBLE = "double";
+  private static final String J_DOUBLE_O = "Double";
   private static final String F_INT = "integer";
   private static final String J_INT = "int";
+  private static final String J_INT_O = "Integer";
+  private static final String OBJECT = "Object";
+  private static String functionReturnVar;
+  private static String functionReturnType;
+  private static boolean insideFunction = false;
   
   
   /**
@@ -170,33 +181,22 @@ public class FortranParser {
    * double
    * 
    * @param s The String to convert Fortran arrays from.
+   * @param primitive true if the conversion should take place at a Java
+   * primitive level (e.g. real -> float) or an Object level (e.g. real -> Float).
    * 
    * @return The String representing the passed in String converted
    *                 to Java style array or scalar declarations.
    */
   private static String convertToJavaStyle( 
-    String s ) { 
-    String type = null;
+    String code, boolean primitive ) {
+    String s = code; 
     
     s = s.replaceAll( ".true.", "true" ).replaceAll( ".false.", "false" );
     
-    if( s.indexOf( LOGICAL ) >= 0 ) {
-      type = BOOLEAN;
-      s = s.replaceFirst( LOGICAL, "");
-    } else if( s.indexOf( F_DOUBLE ) >= 0 ) {
-      type = J_DOUBLE;
-      s = s.replaceFirst( F_DOUBLE, "");
-    } else if( ( ( s.indexOf( F_INT ) >= 0 ) ||
-                    ( s.startsWith( "i|j|k|l|m|n") ) ) ) {
-      type = J_INT;
-      s = s.replaceFirst( F_INT, "");
-    } else {
-      type = FLOAT;
-      s = s.replaceFirst( REAL, "");
-    }
+    String type = getType( s );
+    s = replaceTypes( s, false, primitive );
       
-    StringBuffer buffer = new StringBuffer( type );
-    buffer.append( " " );
+    StringBuffer buffer = new StringBuffer(  );
     //make sure these get a semicolon
     appendSemiColon = true;
     s = s.trim(  );
@@ -254,6 +254,143 @@ public class FortranParser {
     return "Math." + s.trim(  );
   }
   
+  /**
+   * Converts a Fortran function into a public Java method.  Note that since this is a
+   * wrapper, the global type for the return will be an Object, not a primitive.
+   * 
+   * @param functionHeader The header of the function.
+   * 
+   * @return The converted method header
+   */
+  private static String convertFunctionStart( String functionHeader ) {
+    String s = functionHeader;
+    String var;
+    
+    s = "public " + s.trim(  );
+    s = replaceTypes( s, true, false ).replaceFirst( "function", "" ) + "{";
+    
+    String tokens[] = s.split( "\\s+" );
+    
+    //it will, in general, look like this: "public float r()" at this point.  We want the 
+    //"r" for our return value
+    functionReturnVar = tokens[2].substring( 0, tokens[2].indexOf( "(" ) );
+    functionReturnType = getType( s );
+     
+    s = s + "\n " + convertToJavaStyle( functionReturnType + " " + functionReturnVar, false );
+
+    return s;
+  }
+  
+  /**
+   * Converts one of float, int, real, double, or boolean primitive Java type
+   * representations to uppercase Object type representations.
+   * 
+   * @param primitiveType The primitive type representation to convert.
+   * 
+   * @return The converted String representation.
+   */
+  private static String convertToObjectCase( String primitiveType ) {    
+    String var = primitiveType;
+    //now convert the type to uppercase (i.e. Object rather than primitive)
+    var = var.substring( 0, 1 ).toUpperCase(  ) + var.substring( 1, var.length(  ) );
+    //there is a space after both Int and Integer for a reason.  It should help avoid converting
+    //variables that start with Int
+    var = var.replaceFirst( "Int ", "Integer " );
+    
+    return var;
+  }
+  
+  /**
+   * This converts the standalone "return" in Fortran to a more
+   * Java-friendly "return variable" statement.
+   * 
+   * @return The Java style method/function return line.
+   */
+  private static String convertFunctionReturn(  ) {
+    appendSemiColon = true;
+    return "return new " + convertToObjectCase( functionReturnType ) + 
+              "(" + functionReturnVar + ")";
+  }
+  
+  /**
+   * Replaces the Fortran types with Java types e.g. logical -> boolean.
+   * If you want to replace the types with the more generic Object, send
+   * true in to the second parameter.
+   * 
+   * @param s The line of code to replace the type in.
+   * @param useObjectOnly use true to replace all Fortran types with 
+   * Object.
+   * @param primitive true if the conversion should take place at a Java
+   * primitive level (e.g. real -> float) or an Object level (e.g. real -> Float).
+   *  
+   * @return The converted code.
+   */
+  private static String replaceTypes( String s, boolean useObjectOnly, boolean primitive ) {
+    String newType = OBJECT;
+    if( s.indexOf( LOGICAL ) >= 0 ) {
+      if( useObjectOnly ) {
+        return s.replaceFirst( LOGICAL, OBJECT );
+      }
+      
+      if( primitive ) {
+        return s.replaceFirst( LOGICAL, BOOLEAN );
+      }
+      
+      return s.replaceFirst( LOGICAL, BOOLEAN_O );
+    } else if( s.indexOf( F_DOUBLE ) >= 0 ) {
+      if( useObjectOnly ) {
+        return s.replaceFirst( F_DOUBLE, OBJECT );
+      }
+      
+      if( primitive ) {
+        return s.replaceFirst( F_DOUBLE, J_DOUBLE );
+      }
+      
+      return s.replaceFirst( F_DOUBLE, J_DOUBLE_O );
+    } else if( ( ( s.indexOf( F_INT ) >= 0 ) ||
+                    ( s.startsWith( "i|j|k|l|m|n") ) ) ) {
+      if( useObjectOnly ) {
+        return s.replaceFirst( F_INT, OBJECT );
+      }
+      
+      if( primitive ) {
+        return s.replaceFirst( F_INT, J_INT);
+      }
+      
+      return s.replaceFirst( F_INT, J_INT_O);
+    } else {
+      if( useObjectOnly ) {
+        return s.replaceFirst( REAL, OBJECT );
+      }
+      
+      if( primitive ) {
+        return s.replaceFirst( REAL, FLOAT);
+      }
+      
+      return s.replaceFirst( REAL, FLOAT_O );
+    }
+  }
+  
+  /**
+   * Gets the type (e.g. logica;, real, etc.) from the passed in Fortran code
+   * and returns the Java type for that code.
+   * 
+   * @param s The Fortran code to determine the type from.
+   * 
+   * @return The Java type (e.g. boolean, float, etc.).
+   */
+  private static String getType( String s ) {
+    if( s.indexOf( LOGICAL ) >= 0 ) {
+      return BOOLEAN;
+    } else if( s.indexOf( F_DOUBLE ) >= 0 ) {
+      return J_DOUBLE;
+    } else if( ( ( s.indexOf( F_INT ) >= 0 ) ||
+                    ( s.startsWith( "i|j|k|l|m|n") ) ) ) {
+      return J_INT;
+    } else {      
+      return FLOAT;
+    }
+  }
 }
      
 PARSER_END( FortranParser )
@@ -262,7 +399,7 @@ PARSER_END( FortranParser )
 // A NOTE TO MAINTAINERS OF THIS CODE:
 //
 // ALL TOKENS THAT YOU ARE PROCESSING IN THE PRODUCTIONS
-// SHOULD HAVE THE <OPT_WS> BEFORE AND AFTER THEIR
+// SHOULD HAVE THE ( <WS> )* BEFORE AND AFTER THEIR
 // DECLARATIONS, UNLESS THEY ARE MEANT SPECIFICALLY TO BE
 // USED DIRECTLY BEFORE OR AFTER ANOTHER TOKEN.  IF THIS
 // RULE IS NOT FOLLOWED, THE PARSER WILL NOT ALWAYS
@@ -394,6 +531,39 @@ TOKEN: {
     ( "C " | "c " ) (~["\n"] )+ 
   ) >
 } 
+
+//~----------------------------------------------------------------------------
+// FORTRAN FUNCTIONS
+//~----------------------------------------------------------------------------
+
+//the start of a function e.g. "real function myfunction(var1, var2)"
+//since this parser is meant for wrappers, no arguments are allowed to
+//the function.  The token that allows arguments, however, exists for
+//future expansion
+TOKEN: {
+  < FUNCTION_START: ( 
+    /*( <WS> )* ( "real" | "logical" | "integer" | "double precision" ) ( <WS> )*
+    "function" ( <WS> )* <VARIABLE> ( <WS> )* "(" ( <WS> )* <VARIABLE> ( 
+      ( <WS> )* "," ( <WS> )* <VARIABLE> )* 
+    ( <WS> )* ")" ( <WS> )**/
+    ( <WS> )* ( "real" | "logical" | "integer" | "double precision" ) ( <WS> )*
+    "function" ( <WS> )* <VARIABLE> ( <WS> )* "(" ( <WS> )* ")" ( <WS> )*
+  ) >
+}
+
+//the end of a function, which we'll convert to a closing brace
+TOKEN: {
+  < FUNCTION_END: (
+    ( <WS> )* "end" ( <WS> )* 
+  ) >
+}
+
+//The return line of the function.
+TOKEN: {
+  < FUNCTION_RETURN: (
+    ( <WS> )* "return" ( <WS> )* 
+  ) >
+}
 
 //~----------------------------------------------------------------------------
 // FORTRAN VARIABLE TYPES
@@ -795,6 +965,19 @@ String convertFortranTokens(  ) : {
     s = "//" + s;
     return s;
   }
+|
+  t = <FUNCTION_START> {
+    insideFunction = true;
+    return convertFunctionStart( t.image );
+  }
+|
+  t = <FUNCTION_END> {
+    return "}";
+  }
+|
+  t = <FUNCTION_RETURN> {
+    return convertFunctionReturn(  );
+  }
 | 
   //some kind of math expression
   t = <FORTRAN_EXPRESSION> {
@@ -952,7 +1135,7 @@ String convertFortranTokens(  ) : {
   }
 |
   t = <FORTRAN_VARIABLE>{
-    return convertToJavaStyle( t.image );
+    return convertToJavaStyle( t.image, true );
   }
 |
   //matched a character or character array where each variable is
