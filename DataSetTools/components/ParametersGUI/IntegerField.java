@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/05/31 19:32:46  pfpeterson
+ *  Now fire PropertyChangeEvent when the value in widget is changed.
+ *
  *  Revision 1.1  2002/03/08 16:19:49  pfpeterson
  *  Added to CVS.
  *
@@ -41,6 +44,8 @@ import javax.swing.*;
 import javax.swing.text.*; 
 import java.awt.Toolkit;
 import java.util.Locale;
+import java.beans.*;
+import DataSetTools.parameter.*;
 
 /**
  * This class is intended to be used as a replacement for JTextField
@@ -50,6 +55,7 @@ import java.util.Locale;
  */
 public class IntegerField extends JTextField {
     private Toolkit toolkit;
+    private PropertyChangeSupport propBind=new PropertyChangeSupport(this);
 
     private static Character MINUS =new Character((new String("-")).charAt(0));
     private static Character ZERO  =new Character((new String("0")).charAt(0));
@@ -78,6 +84,20 @@ public class IntegerField extends JTextField {
         return new WholeNumberDocument(this);
     }
 
+    public void addPropertyChangeListener(String prop,
+                                          PropertyChangeListener pcl){
+        super.addPropertyChangeListener(prop,pcl);
+        if(propBind!=null) propBind.addPropertyChangeListener(prop,pcl);
+    }
+    public void addPropertyChangeListener(PropertyChangeListener pcl){
+        super.addPropertyChangeListener(pcl);
+        if(propBind!=null) propBind.addPropertyChangeListener(pcl);
+    }
+    public void removePropertyChangeListener(PropertyChangeListener pcl){
+        super.removePropertyChangeListener(pcl);
+        if(propBind!=null) propBind.removePropertyChangeListener(pcl);
+    }
+
     /**
      * Internal class to do all of the formatting checks.
      */
@@ -95,13 +115,32 @@ public class IntegerField extends JTextField {
         public void insertString(int offs, String str, AttributeSet a) 
             throws BadLocationException {
             
+            String oldText=textBox.getText();
             if(isOkay(offs,str,textBox.getText())){
                 super.insertString(offs,str,a);
+                if(propBind!=null)
+                    propBind.firePropertyChange(IParameter.VALUE,
+                                                oldText,textBox.getText());
             }else{
                 toolkit.beep();
             }
         }
 
+        /** 
+         * Overrides the default remove method.
+         */
+        public void remove(int offs, int len) throws BadLocationException{
+            String oldText=textBox.getText();
+            super.remove(offs,len);
+            //System.out.println("value:"+oldText+"->"+textBox.getText());
+            if(propBind!=null)
+                propBind.firePropertyChange(IParameter.VALUE,
+                                            oldText,textBox.getText());
+        }
+
+        /**
+         * Internal method to confirm that the text can be added.
+         */
         private boolean isOkay(int offs, String inString, String curString){
             char[]    source  = inString.toCharArray();
 
