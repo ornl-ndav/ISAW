@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/05/29 15:09:09  dennis
+ *  Now uses initializeWorldCoords to reset both the local and
+ *  global transforms.
+ *
  *  Revision 1.15  2001/04/26 14:26:55  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -645,7 +649,7 @@ private void MakeImage( boolean redraw_flag )
   image_Jpanel.setData( image_data, redraw_flag );
 
   CoordBounds bounds = new CoordBounds( x_min, 0, x_max, num_rows-1 );
-  image_Jpanel.setGlobalWorldCoords( bounds );
+  image_Jpanel.initializeWorldCoords( bounds );
 
   MakeSelectionImage( redraw_flag );
 
@@ -1087,7 +1091,7 @@ private void DrawHGraph( Data data_block, int graph_num, boolean pointed_at )
   graph_bounds.setBounds( image_bounds.getX1(), graph_bounds.getY1(),
                           image_bounds.getX2(), graph_bounds.getY2() );
 
-  h_graph.setGlobalWorldCoords( graph_bounds );
+  h_graph.initializeWorldCoords( graph_bounds );
 }
 
 
