@@ -30,6 +30,12 @@
  * Modified: 
  *
  * $Log$
+ * Revision 1.7  2003/06/18 19:55:27  bouzekc
+ * Uses errorOut() to indicate parameter errors.  More robust
+ * parameter error checking.  Now fires off property change
+ * events in a semi-intelligent way.  Uses super.getResult() for
+ * initializing PropertyChanger variables.
+ *
  * Revision 1.6  2003/06/03 23:05:17  bouzekc
  * Fixed full constructor to avoid excessive garbage
  * collection.
@@ -52,6 +58,12 @@
  *
  * Revision 1.5  2003/03/13 19:00:52  dennis
  * Added $Log$
+ * Added Revision 1.7  2003/06/18 19:55:27  bouzekc
+ * Added Uses errorOut() to indicate parameter errors.  More robust
+ * Added parameter error checking.  Now fires off property change
+ * Added events in a semi-intelligent way.  Uses super.getResult() for
+ * Added initializing PropertyChanger variables.
+ * Added
  * Added Revision 1.6  2003/06/03 23:05:17  bouzekc
  * Added Fixed full constructor to avoid excessive garbage
  * Added collection.
@@ -304,6 +316,7 @@ public class TimeFocusGroupForm extends    Form
     DataSet hist_ds;
     int num_ds, p_index, edit_len;
     IParameterGUI param;
+    String errMessage = null;
 
     //get the DataSet array
     histograms = (ArrayPG)super.getParameter(0);
@@ -316,11 +329,17 @@ public class TimeFocusGroupForm extends    Form
     
     edit_len = super.getParamType(Form.VAR_PARAM).length;
 
+    super.getResult();
+
     //make sure list exists
     if( hist_ds_vec != null )
     {
       //get the hist_ds_vec array size
       num_ds = hist_ds_vec.size();
+
+      //set the increment amount
+      increment = (1.0f / num_ds) * 100.0f;
+
       //go through the array, getting each runfile's hist_ds
       for( int i = 0; i < num_ds; i++ )
       {
@@ -344,10 +363,7 @@ public class TimeFocusGroupForm extends    Form
           //was there an error entering params?
           //if( focusing_GIDs == null || angle == null || path == null )
           if( angle == null || path == null )
-          {
-            System.out.println("ERROR");
-            return new Boolean(false);               
-          }   
+            return errorOut("Error with detector bank parameters.");
 
           //time_focus the DataSet
           if( hist_ds != DataSet.EMPTY_DATA_SET )
@@ -359,10 +375,8 @@ public class TimeFocusGroupForm extends    Form
             result = tf.getResult();
           }
           else
-          {
-            SharedData.addmsg("Encountered empty DataSet: " + hist_ds);
-            return new Boolean(false);
-          }
+            return errorOut(
+            "Encountered empty DataSet: " + hist_ds);
 
           if( result instanceof DataSet )
           {
@@ -379,27 +393,25 @@ public class TimeFocusGroupForm extends    Form
           else
           {
             if( result instanceof ErrorString )
-              SharedData.addmsg(result.toString() + "\n");
+              errMessage = result.toString();
             else
-              SharedData.addmsg("Could not time focus DataSet: "
-                                + hist_ds);
-            return new Boolean(false);
+              errMessage = "Could not time focus DataSet: " + hist_ds;
+            return errorOut(errMessage);
           }
           
           //check the grouped DataSet for correctness
           if( result instanceof DataSet )
           {
             hist_ds = (DataSet)result;
-            SharedData.addmsg(hist_ds + " grouped.\n");
+            SharedData.addmsg(hist_ds + " grouped.");
           }
           else
           {
             if( result instanceof ErrorString )
-              SharedData.addmsg(result.toString() + "\n");
+              errMessage = result.toString();
             else
-              SharedData.addmsg("Could not group DataSet: "
-                                + hist_ds);
-            return new Boolean(false);
+              errMessage = ("Could not group DataSet: " + hist_ds);
+            return errorOut(errMessage);
           }          
           
           p_index += 3;
@@ -408,23 +420,22 @@ public class TimeFocusGroupForm extends    Form
           tfgr.addItem(hist_ds);
         }//if
         else //something went wrong in previous form
-        {
-          SharedData.addmsg("Encountered non-DataSet.\n");
-          return new Boolean(false);
-        }       
+          return errorOut("Encountered non-DataSet.");
+
+        //fire a property change event off to any listeners
+        oldPercent = newPercent;
+        newPercent += increment;
+        super.fireValueChangeEvent((int)oldPercent, (int)newPercent);
         
       }//for( num_ds )
       
       tfgr.setValid(true);
-      SharedData.addmsg("Finished time focusing and grouping DataSets.\n\n");
+      SharedData.addmsg("Finished time focusing and grouping DataSets.\n");
       return new Boolean(true);
     }
     //broke, need to return false to let the wizard know
     else
-    {
-      SharedData.addmsg("No histograms selected.\n");
-      return new Boolean(false);
-    }
+      return errorOut("No histograms selected.");
 
   }
   
