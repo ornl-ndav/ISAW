@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/05/28 20:58:08  pfpeterson
+ *  Changed System.getProperty to SharedData.getProperty
+ *
  *  Revision 1.5  2003/01/13 17:28:58  dennis
  *  Added getDocumentation() method. (Chris Bouzek)
  *
@@ -138,7 +141,7 @@ public class LoadRemoteData extends    GenericLoad
     parameter = new Parameter("Port (e.g. 6089)", new Integer(port) );
     addParameter( parameter );
 
-    String user_name = System.getProperty( "user.name" );
+    String user_name = SharedData.getProperty( "user.name" );
     parameter = new Parameter("User name", user_name );
     addParameter( parameter );
 
@@ -233,7 +236,7 @@ public class LoadRemoteData extends    GenericLoad
 
      user_name = user_name.trim();
      if ( user_name.length() <= 0 )
-       user_name = System.getProperty( "user.name" );
+       user_name = SharedData.getProperty( "user.name" );
 
      String  data_source_name = host      + ";" +
                                 port      + ";" +
