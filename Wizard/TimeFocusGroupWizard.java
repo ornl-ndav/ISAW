@@ -29,6 +29,9 @@
  * Modified: 
  *
  * $Log$
+ * Revision 1.9  2003/04/29 15:45:37  pfpeterson
+ * Updated code which links parameters between forms. (Chris Bouzek)
+ *
  * Revision 1.8  2003/04/24 19:00:58  pfpeterson
  * Various small bug fixes. (Chris Bouzek)
  *
@@ -41,6 +44,9 @@
  *
  * Revision 1.4  2003/03/13 19:00:52  dennis
  * Added $Log$
+ * Added Revision 1.9  2003/04/29 15:45:37  pfpeterson
+ * Added Updated code which links parameters between forms. (Chris Bouzek)
+ * Added
  * Added Revision 1.8  2003/04/24 19:00:58  pfpeterson
  * Added Various small bug fixes. (Chris Bouzek)
  * Added
@@ -54,9 +60,9 @@
 package Wizard;
 
 import java.util.Vector;
-import java.io.*;
 import javax.swing.*;
 import DataSetTools.wizard.*;
+import DataSetTools.parameter.IParameterGUI;
 
 /**
  *  This class has a main program that constructs a Wizard for time
@@ -95,44 +101,68 @@ public class TimeFocusGroupWizard extends Wizard
 
   /**
    *  Adds and coordinates the necessary Forms for this Wizard.
-   *  Here is the breakdown of the referential links.
    *
-   *  Loaded histograms:
-   *  LoadMultiHistogramsForm[5] = TimeFocusGroupForm[0]
-   *  
-   *  Time focused results:
-   *  TimeFocusGroupForm[number of banks * 3 + 1]
-   *  = SaveAsGSASForm[0]
-   *
-   *  Monitor DataSets:
-   *  LoadMultiHistogramsForm[8] = SaveAsGSASForm[1]
-   *
-   *  Run numbers:
-   *  LoadMultiHistogramsForm[0] = SaveAsGSASForm[2]
+   *  The referential links are arranged in a tabular format.
+   *  At some point, the Wizard base class will be automating the 
+   *  links, so please follow this format.  This particular wizard follows
+   *  this format.
    * 
-   *  Instrument name:
-   *  LoadMultiHistogramsForm[2] = SaveAsGSASForm[3]
+   *  Note that:
+   *  LoadMultiHistogramsForm = lmhf
+   *  TimeFocusGroupForm = tfgf
+   *  SaveAsGSASForm = sagf
+   * 
+   *    lmhf    tfgf    sagf
+   *  |----------------------|
+   *  |   5   |   0   | -1   |
+   *  |----------------------|
+   *  |  -1   |  61   |  0   |
+   *  |----------------------|
+   *  |   6   |  -1   |  1   |
+   *  |----------------------|
+   *  |   0   |  -1   |  2   |
+   *  |----------------------|
+   *  |   2   |  -1   |  3   |
+   *  |----------------------|
+   *
+   *  The indices are accessed in the following manner, using [x][y]:
+   *  x = row, y = col
+   *  You must place the actual parameter number within the integer array.
+   *  For example, to set the link between LoadMultiHistogramForm's 5th 
+   *  parameter into TimeFocusGroupForm's 0th parameter, use the following:
+   *  (assuming fpi has already been declared as a two-dimensional integer 
+   *  array of sufficient size):
+   * 
+   *  fpi[0][0] = 5;
+   *  fpi[0][1] = 0;
+   *
+   *  Alternately, you may create the entire table  using Java's array 
+   *  initialization scheme, as shown:
+   * 
+   *   int fpi[][] = { {5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3} };
    */
   private void createAllForms()
   {
+    int fpi[][] = { {5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3} };
+
     LoadMultiHistogramsForm lmhf = new LoadMultiHistogramsForm();
     TimeFocusGroupForm tfgf = new TimeFocusGroupForm();
     SaveAsGSASForm sagf = new SaveAsGSASForm();
 
-    //pass the histograms from the load form to the 
-    //time focusing and grouping.
-    tfgf.setParameter(lmhf.getParameter(5) ,0);
-    //pass the time focus results to SaveAsGSAS
-    sagf.setParameter(tfgf.getParameter(61), 0);
-    //pass the monitor DataSets to SaveAsGSAS
-    sagf.setParameter(lmhf.getParameter(6), 1);
-    //pass the run numbers to SaveAsGSAS
-    sagf.setParameter(lmhf.getParameter(0), 2);
-    //pass the instrument name to SaveAsGSAS
-    sagf.setParameter(lmhf.getParameter(2), 3);
+    IParameterGUI ipg;
     this.addForm(lmhf);
     this.addForm(tfgf);
     this.addForm(sagf);
+
+    tfgf.setParameter(lmhf.getParameter(fpi[0][0]) ,fpi[0][1]);
+    //pass the time focus results to SaveAsGSAS
+    sagf.setParameter(tfgf.getParameter(fpi[1][1]), fpi[1][2]);
+    //pass the monitor DataSets to SaveAsGSAS
+    sagf.setParameter(lmhf.getParameter(fpi[2][0]), fpi[2][2]);
+    //pass the run numbers to SaveAsGSAS
+    sagf.setParameter(lmhf.getParameter(fpi[3][0]), fpi[3][2]);
+    //pass the instrument name to SaveAsGSAS
+    sagf.setParameter(lmhf.getParameter(fpi[4][0]), fpi[4][2]);
   }
 
   /**
