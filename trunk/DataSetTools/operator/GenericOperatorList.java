@@ -23,7 +23,8 @@ import  DataSetTools.util.*;
 public class GenericOperatorList implements Serializable
 {
 
-  static private final String names[] = { "SumFiles" };
+  static private final String names[] = { "SumFiles",
+                                          "OneFile"  };
 
 
   /* ---------------------------- getNum_operators ------------------------- */
@@ -92,6 +93,9 @@ public class GenericOperatorList implements Serializable
 
     if ( op_name.equals( "SumFiles") )
       return new SumRunfiles();
+
+    else if ( op_name.equals( "OneFile" ) )
+      return new LoadOneRunfile();
 
      return null;
   }
