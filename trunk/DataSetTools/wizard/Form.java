@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2003/06/19 16:17:21  bouzekc
+ * Changed the validateParameterGUIs method to work only with
+ * variable parameters.
+ *
  * Revision 1.18  2003/06/18 22:47:04  bouzekc
  * Added method to automatically validate nearly all
  * ParameterGUIs.
@@ -540,8 +544,8 @@ public abstract class Form extends Operator implements Serializable,
   }
 
   /**
-   *  Convenience method for checking parameters.  Although it can be
-   *  overwritten to provide a more customized approach to validating 
+   *  Convenience method for checking variable parameters.  Although it 
+   *  can be overwritten to provide a more customized approach to validating 
    *  parameters, this should not usually be necessary, as the 
    *  recommended approach is to retrieve all parameters, validate
    *  them using this method, then perform any special validations
@@ -556,8 +560,14 @@ public abstract class Form extends Operator implements Serializable,
     IParameterGUI ipg;
     Object obj;
 
-    for(int i = 0; i < parameters.size(); i++){
-      ipg = (IParameterGUI)parameters.elementAt(i);
+    if(this.getNum_parameters() <= 0) 
+      return new ErrorString("No parameters to check");
+    int[] var_indices = this.getParamType(VAR_PARAM);
+    if( var_indices == null || var_indices.length <= 0) 
+      return new ErrorString("No variable parameters to check");
+
+    for( int i = 0; i < var_indices.length; i++ ){
+      ipg = (IParameterGUI)this.getParameter(var_indices[i]); 
       if(ipg.getValid() == true)
         continue;
 
