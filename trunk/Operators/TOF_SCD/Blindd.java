@@ -27,6 +27,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/02/10 15:36:35  pfpeterson
+ * Added FileFilter to two of the parameters and modified the full
+ * constructor to be slightly cleaner.
+ *
  * Revision 1.1  2003/02/10 13:32:45  rmikk
  * Initial Checkin for the Java Blind
  *
@@ -73,14 +77,10 @@ public class Blindd extends  GenericTOF_SCD {
      */
     public Blindd( String PeaksFilename, String SeqNums, String MatFilename)
     {
-
-	this(); 
-    parameters = new Vector();
-    addParameter( new LoadFilePG("Peak filename", PeaksFilename) );
-    addParameter( new IntArrayPG("Seq nums", SeqNums) );
-    addParameter( new SaveFilePG("Mat filename", MatFilename));
-   
-
+      this();
+      getParameter(0).setValue(PeaksFilename);
+      getParameter(1).setValue(SeqNums);
+      getParameter(2).setValue(MatFilename);
     }
     
     /* --------------------------- getCommand ------------------------------- */ 
@@ -133,23 +133,30 @@ public class Blindd extends  GenericTOF_SCD {
      */
     public void setDefaultParameters(){
       parameters = new Vector();
+
+      LoadFilePG peaksfilepg=new LoadFilePG("Peak filename","" );
+      peaksfilepg.setFilter(new PeaksFilter());
+      addParameter(peaksfilepg);
+
       int[] intAr= new int[5];
       intAr[0]=30;intAr[1]=31;intAr[2]=32; intAr[3]=40;intAr[4]=42; 
-      addParameter( new LoadFilePG("Peak filename","" ) );
       addParameter( new IntArrayPG("Seq nums",intAr ) );
-      addParameter( new SaveFilePG("Mat filename","" ));
+
+      SaveFilePG matfilepg=new SaveFilePG("Matrix filename","" );
+      matfilepg.setFilter(new MatrixFilter());
+      addParameter( matfilepg );
    
     
     }
     
     /* ----------------------------- getResult ------------------------------ */ 
     /** 
-     *  Gets the desired peaks from the input peak file, runs the blind method, then
-     *  stores the resultant orientation matrix and other parameters in the given
-     *  matrix file.  A blind.log file is also created.
+     *  Gets the desired peaks from the input peak file, runs the
+     *  blind method, then stores the resultant orientation matrix and
+     *  other parameters in the given matrix file.  A blind.log file
+     *  is also created.
      *
-     *  @return If successful, this operator adds the corresponding attributes and 
-     *          operator to the data set 
+     *  @return If successful, this operator returns the word 'Success'.
      *  @see IPNSSrc.blind
      */
     public Object getResult(){
