@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/08/19 20:36:56  bouzekc
+ * Fixedbug which caused a null pointer exception in FloatArrayArrayPG.
+ *
  * Revision 1.10  2003/08/15 23:59:40  bouzekc
  * Modified to work with new IParameterGUI and ParameterGUI.
  *
@@ -105,7 +108,7 @@ import javax.swing.text.JTextComponent;
  * class was extracted from VectorPG and redesigned.
  */
 public class ArrayEntryJPanel extends JPanel implements ActionListener,
-  PropertyChanger, PropertyChangeListener, KeyListener {
+  PropertyChanger, KeyListener {
   //~ Instance fields **********************************************************
 
   private final String UP_LABEL       = new String( "Move Item Up" );
@@ -197,12 +200,6 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
 
     //just changed the value, so invalidate the parameter.
     invalidate(  );
-
-    //if we happen to have a VectorPG as an element in our ArrayJPanel, we will
-    //need to add the SetValueActionListener to it
-    if( param instanceof VectorPG ) {
-      ( ( VectorPG )param ).addPropertyChangeListener( this );
-    }
 
     pcs = new PropertyChangeSupport( this );
   }
@@ -352,15 +349,6 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     }
 
     super.paint( g );
-  }
-
-  /**
-   * Needed for PropertyChangeListener implementation.
-   *
-   * @param evt The PropertyChangeEvent to listen for.
-   */
-  public void propertyChange( PropertyChangeEvent evt ) {
-    actionPerformed( null );
   }
 
   /**
