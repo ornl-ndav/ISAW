@@ -30,6 +30,12 @@
  * Modified: 
  *
  * $Log$
+ * Revision 1.6  2003/06/03 23:05:17  bouzekc
+ * Fixed full constructor to avoid excessive garbage
+ * collection.
+ * Fixed documentation to reflect constructor
+ * parameter changes.
+ *
  * Revision 1.5  2003/06/02 22:25:27  bouzekc
  * Fixed contact information.
  * Added call to setDefaultParameters-needed to avoid
@@ -46,6 +52,12 @@
  *
  * Revision 1.5  2003/03/13 19:00:52  dennis
  * Added $Log$
+ * Added Revision 1.6  2003/06/03 23:05:17  bouzekc
+ * Added Fixed full constructor to avoid excessive garbage
+ * Added collection.
+ * Added Fixed documentation to reflect constructor
+ * Added parameter changes.
+ * Added
  * Added Revision 1.5  2003/06/02 22:25:27  bouzekc
  * Added Fixed contact information.
  * Added Added call to setDefaultParameters-needed to avoid
@@ -107,30 +119,30 @@ public class TimeFocusGroupForm extends    Form
    *  set the parameters.  getResult() may 
    *  be called immediately after using this constructor.
    *
-   *  @param hist_array       Array of histograms that  you
+   *  @param hist_vector      Vector of histograms that  you
    *                          wish to time focus and group.
    *
    *  @param focus_IDs        IDs to focus.
    *
-   *  @param foc_angle            Focusing angle.
+   *  @param foc_angle        Focusing angle.
    *
    *  @param new_path         The new path.
    *
-   *  @param tf_array         The array which you wish to store
+   *  @param tf_vector        The Vector which you wish to store
    *                          the time focused histograms in.
    */
-  public TimeFocusGroupForm(ArrayPG hist_array,
-                            IntArrayPG focus_IDs,
-                            FloatPG foc_angle,
-                            FloatPG new_path,
-                            ArrayPG tf_array)                         
+  public TimeFocusGroupForm(Vector hist_vector,
+                            String focus_IDs,
+                            float foc_angle,
+                            float new_path,
+                            Vector tf_array)                         
   {
     this();
-    setParameter(hist_array, 0);
-    setParameter(focus_IDs, 1);
-    setParameter(foc_angle, 2);
-    setParameter(new_path, 3);
-    setParameter(tf_array, 4);
+    getParameter(0).setValue(hist_vector);
+    getParameter(1).setValue(focus_IDs);
+    getParameter(2).setValue(new Float(foc_angle));
+    getParameter(3).setValue(new Float(new_path));
+    getParameter(4).setValue(tf_array);
   }  
                        
   /**
@@ -180,12 +192,12 @@ public class TimeFocusGroupForm extends    Form
     s.append("@algorithm This Form time focuses and then groups each DataSet ");
     s.append("in the ArrayPG, using the specified group IDs, new path, and ");
     s.append("new angle.  It then stores the results in another ArrayPG.\n");
-    s.append("@param hist_array Array of histograms that you wish to time ");
+    s.append("@param hist_vector Vector of histograms that you wish to time ");
     s.append("focus and group.\n");
     s.append("@param focus_IDs Group IDs to focus.\n");
     s.append("@param foc_angle Focusing angle.\n");
     s.append("@param new_path The new path.\n");
-    s.append("@param tf_array The array which you wish to store the time ");
+    s.append("@param tf_vector The Vector which you wish to store the time ");
     s.append("focused and grouped results in.\n");
     s.append("@return Presently, returns a Boolean which indicates either ");
     s.append("success or failure.\n");
