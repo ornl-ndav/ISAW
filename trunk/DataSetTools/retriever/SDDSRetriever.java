@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/04/05 16:31:00  chatterjee
+ * Fixed the label/units error appearing in the SelectedGraph view
+ *
  * Revision 1.2  2002/03/13 16:14:46  dennis
  * Converted to new abstract Data class.
  *
@@ -144,8 +147,8 @@ public class SDDSRetriever extends Retriever
   	  String x_units = col_units[x_col];    
   
  	  ds_factory[n_ds] = new DataSetFactory( columnNames[j], 
-                         "Time (" + x_units + ")",  x_units, columnNames[j] + 
-			       " ("+ y_units +")" ,y_units );
+                                         x_units,"Time",
+                                        y_units, columnNames[j]);
 
 
   	 DS[n_ds] = ds_factory[n_ds].getDataSet();
