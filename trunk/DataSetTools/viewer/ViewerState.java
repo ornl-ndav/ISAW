@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/07/26 22:00:10  rmikk
+ *  Added a Constant for states in the time slice table
+ *
  *  Revision 1.19  2002/07/23 18:18:09  dennis
  *  Added names for V_SCROLL_POSITION and POINTED_AT_X
  *
@@ -141,6 +144,8 @@ public class ViewerState  implements Serializable
    */
   public static final String CONTOUR_STYLE     =  "Contour.Style";
 
+  public static final String TABLE_TS          ="Time Slice Table";
+
   private Hashtable     state = null;
   private int           pointed_at_index;
 
@@ -208,6 +213,8 @@ public class ViewerState  implements Serializable
       state.put( TABLE_DATA, "");
       Integer contour_style=SharedData.getIntegerProperty(CONTOUR_STYLE) ;
       state.put(CONTOUR_STYLE, contour_style );
+
+      state.put( TABLE_TS, "");
 
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
       ds_x_label = "";
