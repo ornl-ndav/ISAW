@@ -27,6 +27,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/06/09 22:03:20  bouzekc
+ * Changed label on sequence numbers parameter to
+ * "Peak Sequence Numbers."
+ *
  * Revision 1.8  2003/06/05 22:04:15  bouzekc
  * Now prints a "Wrote filename: " to SharedData and returns
  * the fully qualified filename.
@@ -172,11 +176,12 @@ public class BlindJ extends  GenericTOF_SCD {
   public void setDefaultParameters(){
     parameters = new Vector();
 
-    LoadFilePG peaksfilepg=new LoadFilePG("Peak filename","" );
+    LoadFilePG peaksfilepg=new LoadFilePG("Peaks filename","" );
     peaksfilepg.setFilter(new PeaksFilter());
     addParameter(peaksfilepg);
 
-    addParameter( new IntArrayPG("Seq nums","20:32,40,42") );
+    addParameter( new IntArrayPG("Peak sequence numbers",
+                                 "20:32,40,42") );
 
     SaveFilePG matfilepg=new SaveFilePG("Matrix filename","" );
     matfilepg.setFilter(new MatrixFilter());
