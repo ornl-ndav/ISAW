@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/11/12 21:58:50  dennis
+ *  Removed clone() method, since UniformXScales are immutable, it is
+ *  not needed.  Also, made "step" private.
+ *
  *  Revision 1.8  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -110,7 +114,7 @@ public class UniformXScale extends XScale implements Serializable
                                              // REMOVING FIELDS, IF
                                              // readObject() CAN FIX ANY
                                              // COMPATIBILITY PROBLEMS
-  double step; 
+  private double step; 
 
   /**
    * Constructs a UniformXScale object by specifying the starting x, ending x 
@@ -146,7 +150,7 @@ public class UniformXScale extends XScale implements Serializable
    */
   public float[] getXs()
   {
-    float x[]   = new float[num_x];
+    float x[] = new float[num_x];
 
     for ( int i = 0; i < num_x; i++ )
       x[i] = (float)( start_x + i * step );
@@ -275,17 +279,6 @@ public class UniformXScale extends XScale implements Serializable
 
      return new UniformXScale( temp_start_x, temp_end_x, temp_num_x );
    }
-
-
-  /**
-   * Creates a new UniformXScale object with the same data as the original
-   * UniformXScale object.
-   */
-  public Object clone()
-  {
-    UniformXScale copy = new UniformXScale( start_x, end_x, num_x );
-    return( copy );
-  }
 
   /*
    * main program for basic testing only
