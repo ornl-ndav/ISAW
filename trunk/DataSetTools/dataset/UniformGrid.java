@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2003/02/14 16:46:27  dennis
+ *  Now uses row and column numbers starting at 1 instead of 0.
+ *
  *  Revision 1.4  2003/02/10 13:30:15  dennis
  *  String produced by toString() method is now more compact.
  *
@@ -43,7 +46,6 @@
  *
  *  Revision 1.1  2003/02/04 18:15:06  dennis
  *  Initial version.
- *
  */
 
 package  DataSetTools.dataset;
@@ -52,13 +54,14 @@ import java.io.*;
 import DataSetTools.math.*;
 
 /**
- *   A UniformGrid is an abstraction of a detector with equal size "pixels"
- * uniformly spaced in 3D at which data is measured.  Each position where a 
- * measurement is taken is approximated by a rectangular 3D "box" with 
+ *   A UniformGrid is an abstraction of an area detector with equal size
+ * "pixels" uniformly spaced in 3D at which data is measured.  Each position 
+ * where a measurement is taken is approximated by a rectangular 3D "box" with 
  * arbitrary orientation and dimensions.  The grid manages "topological" 
  * information about the positions.  That is, it organizes the positions 
  * into 2D arrays of 3D positions where successive entries in rows and
- * columns of the 2D array are adjacent in 3D.  
+ * columns of the 2D array are adjacent in 3D.  The rows and columns are 
+ * numbered starting with row = 1 and column = 1.
  */  
 
 public class UniformGrid implements IDataGrid 
@@ -110,7 +113,8 @@ public class UniformGrid implements IDataGrid
    *  Note: The pixel locations are at the center of the boxes.  For example,
    *        to describe the uniform grid consisting of unit cubes filling 
    *        the region of space: 0 <= x <= 5, 0 <= y < 10 and 0 <= z <= 1
-   *        we would specify:
+   *        with rows numbered 1..10 and columns numbered 1..5 we would 
+   *        specify:
    *
    *            center   = (2.5,5,0.5)
    *            x_vector = (1,0,0)
@@ -121,8 +125,8 @@ public class UniformGrid implements IDataGrid
    *            n_rows   = 10
    *            n_cols   = 5
    *     
-   *        The "box" in row 0, col 0 of the grid will be in position
-   *        (0.5,0.5,0.5).  The "box" in row 9, col 4 will be in position
+   *        The "box" in row 1, col 1 of the grid will be in position
+   *        (0.5,0.5,0.5).  The "box" in row 10, col 5 will be in position
    *        (4.5,9.5,0.5) 
    *
    *  @param  id         Unique integer ID to be used for this data grid
@@ -317,27 +321,37 @@ public class UniformGrid implements IDataGrid
   /**
    *  Find the offset in the directon of "x_vec()", from the center of the 
    *  grid to the specified position.  If row and col are integers, this 
-   *  will be the offset to the center of the specified "box".  
+   *  will be the offset to the center of the specified "box".  The rows
+   *  and columns are numbered starting with row = 1 and col = 1 in the 
+   *  lower left corner of the detector.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
    *
    *  @return the offset in the "x" direction to the specified position on
    *          the grid.
    */
   public float x( float row, float col )
   {
-    return (col * dx + col_x_offset); 
+    return ((col-1) * dx + col_x_offset); 
   }
 
   /**
    *  Find the offset in the directon of "y_vec()", from the center of the 
    *  grid to the specified position.  If row and col are integers, this 
-   *  will be the offset to the center of the specified "box".  
+   *  will be the offset to the center of the specified "box".  The rows
+   *  and columns are numbered starting with row = 1 and col = 1 in the 
+   *  lower left corner of the detector.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
    *
    *  @return the offset in the "y" direction to the specified position on
    *          the grid.
    */
   public float y( float row, float col )
   {
-    return (row * dy + row_y_offset); 
+    return ((row-1) * dy + row_y_offset); 
   }
 
   /**
@@ -347,14 +361,15 @@ public class UniformGrid implements IDataGrid
    *  The row value is returned as a float, to allow for 
    *  positions that are NOT at the exact center of a "box".  If an integer
    *  row number is needed, the value returned by this method should be
-   *  rounded.
+   *  rounded.   The rows and columns are numbered starting with row = 1 
+   *  and col = 1 in the lower left corner of the detector.
    *
    *  @return the fractional row number corresponding to the specified 
    *          position on the grid.
    */ 
   public float row( float x, float y )
   {
-    return ( (y - row_y_offset)/dy );
+    return ( (y - row_y_offset)/dy ) + 1;
   }
 
   /**
@@ -364,21 +379,27 @@ public class UniformGrid implements IDataGrid
    *  The column value is returned as a float, to allow for 
    *  positions that are NOT at the exact center of a "box".  If an integer
    *  column number is needed, the value returned by this method should be
-   *  rounded.
+   *  rounded.  The rows and columns are numbered starting with row = 1 
+   *  and col = 1 in the lower left corner of the detector.
    *
    *  @return the fractional column number corresponding to the specified 
    *          position on the grid.
    */ 
   public float col( float x, float y )
   {
-    return ( (x - col_x_offset)/dx );
+    return ( (x - col_x_offset)/dx ) + 1;
   }
 
   /**
    *  Get the position in 3D of the specified point on the grid.  If the
    *  row and col values are integers, this will be the center point of
    *  a grid "box".  If row and/or col are not integers, the position
-   *  returned will be offset from the center of the grid "box". 
+   *  returned will be offset from the center of the grid "box". The rows
+   *  and columns are numbered starting with row = 1 and col = 1 in the
+   *  lower left corner of the detector.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
    *
    *  @return A vector giving the position in 3D of the specified row
    *          and column values.
@@ -398,7 +419,12 @@ public class UniformGrid implements IDataGrid
   /**
    *  Get the width of the specified grid "box".  If row and col are not
    *  integers, they will be rounded to obtain integer values that 
-   *  specifiy a particular grid "box".
+   *  specifiy a particular grid "box".  The rows and columns are numbered 
+   *  starting with row = 1 and col = 1 in the lower left corner of the 
+   *  detector.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
    *
    *  @return The width of the specified grid "box" in the direction of 
    *          the "x_vec(row,col)".
@@ -411,7 +437,12 @@ public class UniformGrid implements IDataGrid
   /**
    *  Get the height of the specified grid "box".  If row and col are not
    *  integers, they will be rounded to obtain integer values that 
-   *  specifiy a particular grid "box".
+   *  specifiy a particular grid "box".   The rows and columns are numbered 
+   *  starting with row = 1 and col = 1 in the lower left corner of the 
+   *  detector.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
    *
    *  @return The height of the specified grid "box" in the direction of 
    *          the "y_vec(row,col)".
@@ -424,7 +455,12 @@ public class UniformGrid implements IDataGrid
   /**
    *  Get the depth of the specified grid "box".  If row and col are not
    *  integers, they will be rounded to obtain integer values that 
-   *  specifiy a particular grid "box".
+   *  specifiy a particular grid "box". The rows and columns are numbered 
+   *  starting with row = 1 and col = 1 in the lower left corner of the 
+   *  detector.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
    *
    *  @return The depth of the specified grid "box" in the direction of 
    *          the "z_vec(row,col)".
@@ -439,6 +475,11 @@ public class UniformGrid implements IDataGrid
    *  If the data grid is planar, this may return the same vector as
    *  the x_vec() method.  If the data grid is non-planar, this will be 
    *  a vector in the local "x" direction for the particular grid "box".
+   *  The rows and columns are numbered starting with row = 1 and col = 1 
+   *  in the lower left corner of the  detector.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
    *
    *  @return A vector giving the components of a vector in the local
    *          "x" direction for this grid "box".
@@ -453,6 +494,11 @@ public class UniformGrid implements IDataGrid
    *  If the data grid is planar, this may return the same vector as
    *  the y_vec() method.  If the data grid is non-planar, this will be 
    *  a vector in the local "y" direction for the particular grid "box".
+   *  The rows and columns are numbered starting with row = 1 and col = 1 
+   *  in the lower left corner of the  detector.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
    *
    *  @return A vector giving the components of a vector in the local
    *          "y" direction for this grid "box".
@@ -467,6 +513,11 @@ public class UniformGrid implements IDataGrid
    *  If the data grid is planar, this will return the same vector as
    *  the z_vec() method.  If the data grid is non-planar, this will be 
    *  a vector in the local "z" direction for the particular grid "box".
+   *  The rows and columns are numbered starting with row = 1 and col = 1 
+   *  in the lower left corner of the  detector.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
    *
    *  @return A vector giving the components of a vector in the local
    *          "z" direction for this grid "box".
@@ -487,6 +538,9 @@ public class UniformGrid implements IDataGrid
    *  where A = dx * dy is the area of the "face" of the pixel, t is the
    *  angle between the unit vector pointing towards the origin from the 
    *  center of the box and the "z" orientation vector for the box.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
    * 
    *  @return the solid angle subtended by the specified grid box.
    */
@@ -520,6 +574,9 @@ public class UniformGrid implements IDataGrid
    *  grid "box".  The box is assumed to be oriented so that the "z" vector
    *  points towards the origin.  In that case the delta two theta value
    *  will be determined by the height and width of the box.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
    *
    *  @return the range of scattering angles for the specified grid box,
    *          in degrees.
@@ -727,26 +784,33 @@ public class UniformGrid implements IDataGrid
    
     System.out.print( test.toString() );          // show basic grid info
  
-    int row = 9;                                  // show info on one pixel
-    int col = 4;
-    float x = 2.5f;
-    float y = 5f;
-    System.out.println("---------------------------------------");
-    System.out.println("At row = " + row + " col = " + col );
-    System.out.println("At x   = " + x   + " y   = " + y );
-    System.out.println("x(row,col) = " + test.x(row,col) );
-    System.out.println("y(row,col) = " + test.y(row,col) );
-    System.out.println("row(x,y)   = " + test.row(x,y) );
-    System.out.println("col(x,y)   = " + test.col(x,y) );
-    System.out.println("position(row,col) = " + test.position(row,col) );
-    System.out.println("x_vec(row,col)    = " + test.x_vec(row,col) );
-    System.out.println("y_vec(row,col)    = " + test.y_vec(row,col) );
-    System.out.println("z_vec(row,col)    = " + test.z_vec(row,col) );
-    System.out.println("width(row,col)    = " + test.width(row,col) );
-    System.out.println("depth(row,col)    = " + test.depth(row,col) );
-    System.out.println("height(row,col)   = " + test.height(row,col) );
-    System.out.println("SolidAngle(row,col)  = " + test.SolidAngle(row,col) );
-    System.out.println("Delta2Theta(row,col) = " + test.Delta2Theta(row,col) );
+    float row_list[] = { 1, 5.5f, 10 };
+    float col_list[] = { 1, 3, 5 };
+    float row; 
+    float col;
+                                                  // show info on some pixels
+    for ( int i = 0; i < row_list.length; i++ )
+    {
+      row = row_list[i];
+      col = col_list[i];
+      float x = test.x(row,col);
+      float y = test.y(row,col);
+      System.out.println("---------------------------------------");
+      System.out.println("At row = " + row + " col = " + col );
+      System.out.println("x(row,col) = " + test.x(row,col) );
+      System.out.println("y(row,col) = " + test.y(row,col) );
+      System.out.println("row(x,y)   = " + test.row(x,y) );
+      System.out.println("col(x,y)   = " + test.col(x,y) );
+      System.out.println("position(row,col) = " + test.position(row,col) );
+      System.out.println("x_vec(row,col)    = " + test.x_vec(row,col) );
+      System.out.println("y_vec(row,col)    = " + test.y_vec(row,col) );
+      System.out.println("z_vec(row,col)    = " + test.z_vec(row,col) );
+      System.out.println("width(row,col)    = " + test.width(row,col) );
+      System.out.println("depth(row,col)    = " + test.depth(row,col) );
+      System.out.println("height(row,col)   = " + test.height(row,col) );
+      System.out.println("SolidAngle(row,col)  = " + test.SolidAngle(row,col));
+      System.out.println("Delta2Theta(row,col) = " + test.Delta2Theta(row,col));
+    }
   }
 
 } 
