@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2004/09/30 23:36:46  millermi
+ *  - Now implements IPreserveState, thus making use of ObjectState.
+ *  - getObjectState() calls the getState() method, so no loss of
+ *    saved information will occur.
+ *
  *  Revision 1.14  2004/03/15 19:33:58  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -49,6 +54,8 @@
 package DataSetTools.viewer;
 
 import  DataSetTools.dataset.*;
+import  gov.anl.ipns.ViewTools.Components.ObjectState;
+import  gov.anl.ipns.ViewTools.Components.IPreserveState;
 import  java.io.*;
 import  javax.swing.*;
 
@@ -64,8 +71,16 @@ import  javax.swing.*;
  */ 
 
 public abstract class DataSetViewer extends    JPanel
-                                    implements Serializable
+                                    implements Serializable,
+				               IPreserveState
 {
+   /**
+    * "Viewer State" - This static String key references the ViewerState
+    * instance that previously managed the state information of this viewer.
+    * This key references data of type ViewerState.
+    */
+    public static final String VIEWER_STATE = "Viewer State";
+
     public static final int FILE_MENU_ID   = 0;
     public static final int EDIT_MENU_ID   = 1;
     public static final int VIEW_MENU_ID   = 2;
@@ -123,7 +138,44 @@ public abstract class DataSetViewer extends    JPanel
         menu_bar.add(viewMenu); 
         menu_bar.add(optionsMenu);
     }
-
+    
+    /**
+     * This method will set the current state variables of the object to state
+     * variables wrapped in the ObjectState passed in.
+     *
+     *  @param  new_state
+     */
+    public void setObjectState( ObjectState new_state )
+    {
+      boolean redraw = false;  // if any values are changed, repaint.
+      Object temp = new_state.get(VIEWER_STATE);
+      if( temp != null )
+      {
+    	state = (ViewerState)temp;
+    	redraw = true;  
+      }
+      
+      // If a setting was changed, redraw the view.
+      if( redraw )
+        repaint();
+    }
+ 
+    /**
+     * This method will get the current values of the state variables for this
+     * object. These variables will be wrapped in an ObjectState.
+     *
+     *  @param  isDefault Should selective state be returned, that used to store
+     *  		  user preferences common from project to project?
+     *  @return if true, the default state containing user preferences,
+     *  	if false, the entire state, suitable for project specific saves.
+     */ 
+    public ObjectState getObjectState( boolean isDefault )
+    {
+      ObjectState state = new ObjectState();
+      state.insert( VIEWER_STATE, getState() );
+      return state;
+    }
+    
     /**
      *  Change the DataSet being viewed to the specified DataSet.  Derived
      *  classes should override this and take what additional steps are needed
