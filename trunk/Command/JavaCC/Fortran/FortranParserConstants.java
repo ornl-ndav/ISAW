@@ -21,12 +21,18 @@ public interface FortranParserConstants {
   int FLOAT_IDENT = 17;
   int MULTI_VARIABLE = 18;
   int CHAR_VARIABLE = 19;
-  int FORTRAN_INT = 20;
-  int FORTRAN_REAL = 21;
-  int FORTRAN_DOUBLE = 22;
-  int FORTRAN_LOGICAL = 23;
-  int FORTRAN_CHAR_1 = 24;
-  int FORTRAN_CHAR_2 = 25;
+  int MATH_VAR = 20;
+  int FORTRAN_ABS = 21;
+  int FORTRAN_SQRT = 22;
+  int FORTRAN_FLOAT_FUN = 23;
+  int FORTRAN_INT_FUN = 24;
+  int FORTRAN_MOD_FUN = 25;
+  int FORTRAN_INT = 26;
+  int FORTRAN_REAL = 27;
+  int FORTRAN_DOUBLE = 28;
+  int FORTRAN_LOGICAL = 29;
+  int FORTRAN_CHAR_1 = 30;
+  int FORTRAN_CHAR_2 = 31;
 
   int DEFAULT = 0;
 
@@ -51,6 +57,12 @@ public interface FortranParserConstants {
     "<FLOAT_IDENT>",
     "<MULTI_VARIABLE>",
     "<CHAR_VARIABLE>",
+    "<MATH_VAR>",
+    "<FORTRAN_ABS>",
+    "<FORTRAN_SQRT>",
+    "<FORTRAN_FLOAT_FUN>",
+    "<FORTRAN_INT_FUN>",
+    "<FORTRAN_MOD_FUN>",
     "<FORTRAN_INT>",
     "<FORTRAN_REAL>",
     "<FORTRAN_DOUBLE>",
