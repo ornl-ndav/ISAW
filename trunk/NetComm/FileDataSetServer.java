@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/08/09 15:35:46  dennis
+ *  Added concept of "data_name".  Removed un-needed debug
+ *  prints and put other debug prints in "if ( debug_server )" blocks.
+ *
  *  Revision 1.1  2001/08/03 21:33:00  dennis
  *  Server for .run and .nxs files.
  *
@@ -82,21 +86,22 @@ public class FileDataSetServer extends DataSetServer
    synchronized public void ProcessCommand( String          command,
                                             ThreadedTCPComm tcp_io   )
    {
-      System.out.println("FileDataSetServer ProcessCommand called:"+command);
+      if ( debug_server )
+        System.out.println("FileDataSetServer ProcessCommand called:"+command);
       try
       {
         if ( command.startsWith( COMMAND_GET_DS_TYPES ) )
         {
-          System.out.println("Processing " + command );
+          if ( debug_server )
+            System.out.println("Processing " + command );
+
           String file_name = getArgument( command );
-          System.out.println("file_name =" + file_name );
           Retriever r = get_retriever( file_name );
           if ( r == null )
             tcp_io.Send( new Integer(-1) );
           else
           {
             int n_ds = r.numDataSets();
-            System.out.println("n_ds = " + n_ds );
             int types[] = new int[ n_ds ];
             for ( int i = 0; i < n_ds; i++ )
               types[i] = r.getType(i);
@@ -110,8 +115,6 @@ public class FileDataSetServer extends DataSetServer
         { 
                          // COMMAND_GET_DS command has the form:
                          // COMMAND_GET_DS  <file_name>  <DataSet index>
-
-          System.out.println("Processing GET DS " + command );
 
           String argument = getArgument( command );
           int index = extractIntParameter( argument );
@@ -127,10 +130,11 @@ public class FileDataSetServer extends DataSetServer
 
             if ( ds != null )                           // remove observers
             {                                           // before sending
-              System.out.println("Trying to send " + ds );
+              if ( debug_server )
+                System.out.println("Trying to send " + ds );
               ds.deleteIObservers(); 
               tcp_io.Send( ds  );
-              System.out.println("Finished sending " + ds );
+              data_name = ds.getTitle();
             }
             else                                       
               tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
@@ -171,7 +175,8 @@ public class FileDataSetServer extends DataSetServer
                                          // for clients requesting data
     System.out.println("Starting TCP server...");
     TCPServiceInit TCPinit;
-    TCPinit = new TCPServiceInit( server, DEFAULT_SERVER_PORT_NUMBER );
+//    TCPinit = new TCPServiceInit( server, DEFAULT_SERVER_PORT_NUMBER );
+    TCPinit = new TCPServiceInit( server, 6089 );
 
     TCPinit.start();
     System.out.println("TCP server started.");
