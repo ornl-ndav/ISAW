@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/12/20 17:53:08  dennis
+ * Added getDocumentation() method. (Chris Bouzek)
+ *
  * Revision 1.2  2002/11/27 23:21:16  pfpeterson
  * standardized header
  *
@@ -115,9 +118,48 @@ public class LoadASCII extends GenericLoad{
         addParameter( new Parameter("column of errors",new Integer(0)));
     }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+   public String getDocumentation()
+   {
+     StringBuffer s = new StringBuffer("");
+     s.append("@overview This operator provides a means to load an ");
+     s.append("N-column ASCII data file into ISAW.");
+     s.append("@assumptions The file exists and it contains valid ");
+     s.append("histogram data.");
+     s.append("@algorithm Uses the ASCII data in the file to create ");
+     s.append("a histogram.  It then populates a new DataSet with that ");
+     s.append("histogram.  The new DataSet has unknown values for the X-axis ");
+     s.append("scale, the Y-axis scale, the X-axis label, and the Y-axis ");
+     s.append("label.  Furthermore, a message is appended to the DataSet's ");
+     s.append("log indicating that the ASCII file was loaded.");
+     s.append("@param file_name The fully qualified ASCII file name.");
+     s.append("@param num_head The number of header lines that should be ");
+     s.append("skipped while reading in the file.");
+     s.append("@param num_data The number of data lines to read in. If set ");
+     s.append("to zero all lines until the end of file are read.");
+     s.append("@param xcol The column number (1-indexed) of the x-values.");
+     s.append("@param ycol The column number (1-indexed) of the y-values.");
+     s.append("@param dycol The column number (1-indexed) of the ");
+     s.append("dy-values.  If this is set to zero then the data will have ");
+     s.append("no errors.");
+     s.append("@return A new DataSet with the histogram that was read ");
+     s.append("from the data file.");
+     s.append("@error Returns an ErrorString if the file does not exist.");
+     s.append("@error Returns an ErrorString if the file cannot be read.");
+     s.append("@error Returns an ErrorString with the String value of the ");
+     s.append("Exception if an input/output error occurs when reading the ");
+     s.append("file.");
+     return s.toString();
+    }
+
+
     /** 
-     *  Executes this operator using the current values of the
-     *  parameters.
+     *  Creates a new DataSet using the ASCII information in the file to
+     *  form histogram data and populate the DataSet.
      *
      *  @return If successful, this returns a new DataSet with the
      *  histogram that was read from the data file.
@@ -131,7 +173,8 @@ public class LoadASCII extends GenericLoad{
         int     ycol     = ((Integer)getParameter(4).getValue()).intValue();
         int     dycol    = ((Integer)getParameter(5).getValue()).intValue();
 
-        //System.out.println(filename+" "+num_head+" "+num_data+" ("+xcol+","+ycol+","+dycol+")");
+        //System.out.println(filename+" "+num_head+" "+num_data+
+        //                   " ("+xcol+","+ycol+","+dycol+")");
         
         File file=new File(filename);
         if(! file.exists() )
@@ -263,4 +306,19 @@ public class LoadASCII extends GenericLoad{
         op.CopyParametersFrom( this );
         return op;
     }
+
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    LoadASCII op = new LoadASCII();
+    op.setDefaultParameters();
+    System.out.println("\nCalling getResult():\n");
+    System.out.println(op.getResult() + "\n");
+    System.out.println("Calling getDocumentation():\n");
+    System.out.println(op.getDocumentation());
+  }
+
 }
