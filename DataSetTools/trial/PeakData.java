@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/08/07 20:51:25  dennis
+ * Removed un-needed debug prints.
+ *
  * Revision 1.8  2003/08/05 21:37:14  dennis
  * Decrement time channel by one when reading from SCD Peaks file,
  * since Peak.java increments the time channel by one when
@@ -155,7 +158,6 @@ public class PeakData
    */
   public static boolean WritePeakData( Vector peaks, String file_name ) 
   {
-    System.out.println("Starting to write peaks " + peaks.size() );
     try
     {
       FileWriter out_file = new FileWriter( file_name );
@@ -437,7 +439,6 @@ public class PeakData
       sgrid = (UniformGrid)Grid_util.getAreaGrid( ds, grid_ids[i] );
       grid = new UniformGrid_d( sgrid, false );
       grids.put( new Integer(grid_ids[i]), grid );
-      System.out.println( "" + grid );
     }
 
     sgrid = (UniformGrid)Grid_util.getAreaGrid( ds, grid_ids[0] );
