@@ -4,6 +4,10 @@
  *  Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.11  2001/03/01 23:14:58  dennis
+ *  Now saves the zoom region and restores it when the
+ *  viewer is given a new DataSet.
+ *
  *  Revision 1.10  2001/03/01 22:32:10  dennis
  *  Now saves the last pointed at index and will redraw that
  *  Data block ( if possible ) as the default Data block, when
@@ -179,10 +183,12 @@ public class ImageView extends    DataSetViewer
 public ImageView( DataSet data_set, ViewerState state ) 
 {
   super( data_set, state );        
+
   AddOptionsToMenu();
 
   init();
   MakeImage( false );
+  getState().setZoomRegion( image_Jpanel.getLocalWorldCoords() );
 
   DrawDefaultDataBlock();
 }
@@ -242,6 +248,7 @@ public void setDataSet( DataSet ds )
   super.setDataSet( ds );
   init(); 
   redraw( NEW_DATA_SET );
+  image_Jpanel.setLocalWorldCoords( getState().getZoomRegion() );
   DrawDefaultDataBlock();
   setVisible(true);
 }
@@ -1189,13 +1196,17 @@ private class ImageZoomMouseHandler extends    MouseAdapter
 {
   public void mouseClicked (MouseEvent e)
   {
-    if ( e.getClickCount() == 2 ) 
+    if ( e.getClickCount() == 2 )                 // zoom out to full view 
+    {
       MakeSelectionImage( true );
+      getState().setZoomRegion( image_Jpanel.getGlobalWorldCoords() );
+    }
   }
 
-  public void mouseReleased(MouseEvent e)
+  public void mouseReleased(MouseEvent e)         // zoom in to sub region 
   {
     MakeSelectionImage( true );
+    getState().setZoomRegion( image_Jpanel.getLocalWorldCoords() );
   }
 }
 
