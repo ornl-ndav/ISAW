@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/08/22 20:13:47  bouzekc
+ * Modified to work with EntryWidget.  Added call to setValue( Object) in
+ * initGUI(Vector).  Added testbed main().
+ *
  * Revision 1.1  2003/08/21 15:29:18  rmikk
  * Initial Checkin
  *
@@ -56,9 +60,12 @@ import DataSetTools.util.*;
 */
 public class QbinsPG  extends ParameterGUI{
 
-    JButton But;
-    ArrayEntryJPanel list;
-    Qbins1PG  Qbins1;
+    private JButton But;
+    private ArrayEntryJPanel list;
+    private Qbins1PG  Qbins1;
+    private JFrame jf = null;
+    private boolean isShowing = false;
+
     public QbinsPG( String Prompt, Object Value){
        super();
        setName( Prompt);
@@ -70,8 +77,11 @@ public class QbinsPG  extends ParameterGUI{
 
 
     public void initGUI( Vector V){
+      if( V != null ) {
+        setValue( V );
+      }
       But = new JButton( "Set Q bins");
-      entrywidget = But;
+      entrywidget = new EntryWidget( But );
       But.addActionListener( new ButtonListener(this));      
       super.initGUI();
     }
@@ -100,9 +110,6 @@ public class QbinsPG  extends ParameterGUI{
       return X;
 
    }
-
-  JFrame jf = null;
-   boolean isShowing = false;
 
    /**
    *    Displays the Entry JFrame with the list of values
@@ -141,6 +148,16 @@ public class QbinsPG  extends ParameterGUI{
        return value;
      return new Vector();
    }
+
+   /**
+    * Testbed.
+    */
+   public static void main( String args[] ) {
+     QbinsPG tester = new QbinsPG( "Test", null );
+     tester.initGUI( null );
+     tester.showGUIPanel();
+   }
+
    class WindowListener extends WindowAdapter{
       QbinsPG QQ;
       public WindowListener( QbinsPG QQ){
@@ -200,8 +217,8 @@ public class QbinsPG  extends ParameterGUI{
 
 
      public void initGUI( Vector V){
-        Container = new JPanel();
-        Container.setLayout(new GridLayout( 2,3));
+        entrywidget = new EntryWidget(  );
+        entrywidget.setLayout(new GridLayout( 2,3));
         start = new StringEntry(".0035",7,new FloatFilter());
         end = new StringEntry("4.0",7,new FloatFilter());
         steps = new StringEntry("-1", 5,new IntegerFilter());
@@ -218,14 +235,13 @@ public class QbinsPG  extends ParameterGUI{
         Add.addActionListener( AddListener);
         Help.addActionListener( new HelpListener());
 
-        Container.add( new Comb("Start Q",start));
-        Container.add( new Comb("N Steps",steps));
-        Container.add( Add);
-        Container.add( new Comb("End Q",end));
-        Container.add( new Comb("Constant",jp));
-        Container.add( Help);
-        Container.validate();
-        entrywidget = Container;
+        entrywidget.add( new Comb("Start Q",start));
+        entrywidget.add( new Comb("N Steps",steps));
+        entrywidget.add( Add);
+        entrywidget.add( new Comb("End Q",end));
+        entrywidget.add( new Comb("Constant",jp));
+        entrywidget.add( Help);
+        entrywidget.validate();
         super.initGUI();
      }
 
