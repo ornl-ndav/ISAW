@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2004/01/15 23:11:47  bouzekc
+ * Every character now allowed inside comments and strings.
+ *
  * Revision 1.14  2004/01/15 23:02:38  bouzekc
  * Merged several tokens together due to excessive generated code size
  * (non-compileable).  Clarified if statements.
@@ -325,30 +328,14 @@ TOKEN: {
   ) >
 }
 
-//component of a String.  Refactored so that it could be used in comments
-//as well
-TOKEN: {
-  < #STRING_COMP: (
-      <CHARACTER> | 
-      <RESERVED_CHAR> |
-      <VAR_RESERVED_CHAR> | 
-      ( <WS> )+ | 
-      <FLOATING_POINT> |
-      ( <DIGIT> )+ |
-      ":" |
-      "''"  
-  ) >
-}
-
 //String.  Represented by opening and closing double quotes, with
-//digits, characters, reserved characters, variable reserved characters,
-//one or more whitespaces, floating point numbers, :, '', 
-//all "bracketed" by optional whitespace
+//pretty much anything allowed inside, all "bracketed" by optional 
+//whitespace
 TOKEN : {
   < STRING: (
     ( <WS> )*
     ( "\"" ) ( 
-      <STRING_COMP>
+      ( ~[] )* 
     )* ( "\"" )
     ( <WS> )* 
   ) >
@@ -382,7 +369,7 @@ TOKEN: {
 //Fortran style
 TOKEN: {
   < FORTRAN_COMMENT: (
-    ( "C " | "c " ) ( <WS> )* ( <STRING_COMP> )* ( <WS> )*
+    ( "C " | "c " ) (~["\n"] )+ 
   ) >
 } 
 
