@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/03/10 15:53:23  serumb
+ *  Added an Ancestor Listener to call the kill method
+ *  when the view component is removed.
+ *
  *  Revision 1.11  2004/01/24 22:02:38  bouzekc
  *  Removed unused imports.
  *
@@ -62,6 +66,7 @@
 package DataSetTools.viewer;
 
 import javax.swing.*;
+import javax.swing.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.OneD.*;
@@ -77,6 +82,7 @@ public class DataSetViewerMaker  extends DataSetViewer
    DataSetData viewArray;
    FunctionViewComponent viewComp;
    DataSetData update_array;
+
 
    public DataSetViewerMaker( DataSet               ds, 
                               ViewerState           state, 
@@ -110,8 +116,11 @@ public class DataSetViewerMaker  extends DataSetViewer
       viewArray.addActionListener( new ArrayActionListener());
       viewComp.addActionListener( new CompActionListener());
       setLayout( new GridLayout( 1,1));
-      add( new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
-          viewComp.getDisplayPanel(), East, .70f));
+      SplitPaneWithState the_pane =
+       new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
+          viewComp.getDisplayPanel(), East, .70f);
+      the_pane.addAncestorListener( new ancestor_listener());
+      add(the_pane);
       invalidate();
      }
 
@@ -119,9 +128,8 @@ public class DataSetViewerMaker  extends DataSetViewer
     {
        if ( !validDataSet() )
          return;
-
        if( reason.equals( "SELECTION CHANGED" ) )
-       { 
+       {
           update_array = new DataSetData( getDataSet() );
           viewComp.dataChanged(update_array);
          // viewComp.getGraphJPanel().repaint();
@@ -148,7 +156,6 @@ public class DataSetViewerMaker  extends DataSetViewer
     {
      public void actionPerformed( ActionEvent evt)
        {
-         
          viewComp.dataChanged(new DataSetData( getDataSet() ));
        }
      }
@@ -159,6 +166,15 @@ public class DataSetViewerMaker  extends DataSetViewer
        {
        }
     }
- 
+  private class ancestor_listener implements AncestorListener {
+    //methods
+    public void ancestorRemoved(AncestorEvent event) {
+    viewComp.kill();
+    }
+    public void ancestorAdded(AncestorEvent event){
+    };
+    public void ancestorMoved(AncestorEvent event){
+    };
+  }
 
   }//DataSetViewerMaker
