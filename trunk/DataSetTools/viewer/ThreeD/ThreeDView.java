@@ -31,8 +31,10 @@
  * Modified:
  *
  * $Log$
- * Revision 1.11  2001/07/10 22:20:46  dennis
- * Now imports DataSetTools/instruments
+ * Revision 1.12  2001/07/12 16:31:35  dennis
+ * Now allows choice of drawing "groups" using markers
+ * and/or drawing individual detector segments using
+ * markers or rectangles.
  *
  * Revision 1.10  2001/07/10 19:04:34  dennis
  * First attempt at using the new detector "segment"
@@ -109,6 +111,24 @@ public class ThreeDView extends DataSetViewer
   private final int NUM_PSEUDO_COLORS   = 2 * NUM_POSITIVE_COLORS + 1;
   private final int ZERO_COLOR_INDEX    = NUM_POSITIVE_COLORS;
 
+  private final String GROUP_MARKER_SMALL  = "Small";
+  private final String GROUP_MARKER_MEDIUM = "Medium";
+  private final String GROUP_MARKER_LARGE  = "Large";
+  private final String GROUP_MARKER_NONE   = "NOT DRAWN";
+
+  private final int SMALL_MARKER_SIZE  = 2;
+  private final int MEDIUM_MARKER_SIZE = 4;
+  private final int LARGE_MARKER_SIZE  = 7;
+
+  private final String DETECTOR_FILLED = "Filled";
+  private final String DETECTOR_HOLLOW = "Hollow";
+  private final String DETECTOR_MARKER = "Marker";
+  private final String DETECTOR_NONE   = "NOT DRAWN";
+
+  private int    group_marker_size  = SMALL_MARKER_SIZE;
+  private String group_draw_mode    = GROUP_MARKER_SMALL;
+  private String detector_draw_mode = DETECTOR_NONE;
+
   private ThreeD_JPanel            threeD_panel      = null; 
   private Box                      control_panel     = null; 
   private ImageJPanel              color_scale_image = null;
@@ -121,10 +141,11 @@ public class ThreeDView extends DataSetViewer
   private float                    log_scale[]       = null;
   private DataSetXConversionsTable conv_table        = null;
 
-  private final String        GROUPS          = "Groups";
-  private final String        GROUP_PREFIX    = "";
-  private final String        AXES            = "Axes";
-  private final String        DETECTORS       = "Detectors";
+  private final String  GROUP_PREFIX    = "";
+  private final String  DETECTOR_PREFIX = "D";
+  private final String  AXES            = "Axes";
+  private final String  BEAM            = "Beam";
+  private final String  INSTRUMENT      = "Inst";
 
 /* --------------------------------------------------------------------------
  *
@@ -217,6 +238,74 @@ private void AddOptionsToMenu()
                                                      // color options
   JMenu color_menu = new ColorScaleMenu( option_menu_handler );
   option_menu.add( color_menu );
+
+                                                     // group draw options
+  JMenu group_menu = new JMenu( "Draw Groups" );
+  option_menu.add( group_menu );
+
+  GroupDrawMenuHandler group_draw_handler = new GroupDrawMenuHandler();
+  ButtonGroup button_group = new ButtonGroup();
+  JRadioButtonMenuItem r_button = new JRadioButtonMenuItem( GROUP_MARKER_SMALL);
+  if ( group_draw_mode == GROUP_MARKER_SMALL )
+    r_button.setSelected(true);
+  r_button.addActionListener( group_draw_handler );
+  group_menu.add( r_button );
+  button_group.add( r_button );
+
+  r_button = new JRadioButtonMenuItem( GROUP_MARKER_MEDIUM );
+  if ( group_draw_mode == GROUP_MARKER_MEDIUM )
+    r_button.setSelected(true);
+  r_button.addActionListener( group_draw_handler );
+  group_menu.add( r_button );
+  button_group.add( r_button );
+
+  r_button = new JRadioButtonMenuItem( GROUP_MARKER_LARGE );
+  if ( group_draw_mode == GROUP_MARKER_LARGE )
+    r_button.setSelected(true);
+  r_button.addActionListener( group_draw_handler );
+  group_menu.add( r_button );
+  button_group.add( r_button );
+
+  r_button = new JRadioButtonMenuItem( GROUP_MARKER_NONE );
+  if ( group_draw_mode == GROUP_MARKER_NONE )
+    r_button.setSelected(true);
+  r_button.addActionListener( group_draw_handler );
+  group_menu.add( r_button );
+  button_group.add( r_button );
+
+                                                       // detector draw options
+  JMenu detector_menu = new JMenu( "Draw Detector Segments" );
+  option_menu.add( detector_menu );
+
+  DetectorDrawMenuHandler detector_draw_handler = new DetectorDrawMenuHandler();
+  button_group = new ButtonGroup();
+  r_button = new JRadioButtonMenuItem( DETECTOR_FILLED );
+  if ( detector_draw_mode == DETECTOR_FILLED )
+    r_button.setSelected(true);
+  r_button.addActionListener( detector_draw_handler );
+  detector_menu.add( r_button );
+  button_group.add( r_button );
+
+  r_button = new JRadioButtonMenuItem( DETECTOR_HOLLOW );
+  if ( detector_draw_mode == DETECTOR_HOLLOW )
+    r_button.setSelected(true);
+  r_button.addActionListener( detector_draw_handler );
+  detector_menu.add( r_button );
+  button_group.add( r_button );
+
+  r_button = new JRadioButtonMenuItem( DETECTOR_MARKER );
+  if ( detector_draw_mode == DETECTOR_MARKER )
+    r_button.setSelected(true);
+  r_button.addActionListener( detector_draw_handler );
+  detector_menu.add( r_button );
+  button_group.add( r_button );
+
+  r_button = new JRadioButtonMenuItem( DETECTOR_NONE );
+  if ( detector_draw_mode == DETECTOR_NONE )
+    r_button.setSelected(true);
+  r_button.addActionListener( detector_draw_handler );
+  detector_menu.add( r_button );
+  button_group.add( r_button );
 }
 
 
@@ -248,10 +337,17 @@ private Vector3D group_location( int index )
 
 private void MakeThreeD_Scene()
 {
-//  float radius = draw_groups();
+  float group_radius = 0;
+  float detector_radius = 0;
 
-  float radius = draw_detectors();
-  if ( radius <= 0 )
+  if ( group_draw_mode != GROUP_MARKER_NONE )
+    group_radius = draw_groups();
+
+  if ( detector_draw_mode != DETECTOR_NONE )
+    detector_radius = draw_detectors();
+
+  float radius = Math.max( group_radius, detector_radius );
+  if ( radius <= 0.01 )
     radius = 1;
   
   view_control.setViewAngle( 40 );
@@ -262,35 +358,14 @@ private void MakeThreeD_Scene()
   view_control.apply( true );
 
   draw_axes( radius/5 );
+  draw_beam( radius );
+  draw_instrument( radius );
 
   set_colors( frame_control.getFrameNumber() );
 }
 
 
 /* ------------------------------ set_colors ---------------------------- */
-/*
-private void set_colors( int frame )
-{
-  if ( color_index == null || color_index[0] == null )   // invalid color_index
-    return;
-
-  if ( frame < 0 || frame >= color_index[0].length )     // invalid frame num
-    frame = 0;                                           // so just use 0
-
-  Color new_colors[] = new Color[ color_index.length ];
-  int   index;
-  for ( int i = 0; i < new_colors.length; i++ )
-  {
-    index = color_index[i][frame]; 
-    if ( index < 0 )
-      index += 256;
-    new_colors[i] = color_table[ index ];
-  }
-
-  threeD_panel.setColors( GROUPS, new_colors );
-  threeD_panel.repaint( );
-}
-*/
 
 private void set_colors( int frame )
 {
@@ -307,7 +382,11 @@ private void set_colors( int frame )
     if ( index < 0 )
       index += 256;
 
-    threeD_panel.setColors( GROUP_PREFIX+i, color_table[index] );
+    if ( group_draw_mode != GROUP_MARKER_NONE )
+      threeD_panel.setColors( GROUP_PREFIX+i, color_table[index] );
+
+    if ( detector_draw_mode != DETECTOR_NONE )
+      threeD_panel.setColors( DETECTOR_PREFIX+i, color_table[index] );
   }
   threeD_panel.repaint( );
 }
@@ -416,14 +495,9 @@ private void MakeColorList()
 
 private float draw_groups()
 {
+//  System.out.println("Start draw_groups");
   DataSet ds     = getDataSet();
   int     n_data = ds.getNum_entries();
-
-  if ( n_data <= 0 )
-  {
-    threeD_panel.removeObjects( GROUPS );     // remove any existing groups
-    return 0;                                 // since they are now gone
-  }
 
   float   max_radius = 0.01f;
   float   radius;
@@ -431,50 +505,51 @@ private float draw_groups()
   Vector3D  points[] = new Vector3D[1];
   Vector3D  point;
   points[0] = new Vector3D();
-  IThreeD_Object objects[];
 
   for ( int i = 0; i < n_data; i++ )
   {
     point = group_location( i );
-    if ( point == null )
+    if ( point != null )
     {
-      objects = new IThreeD_Object[1];
-      objects[0] = new ThreeD_Non_Object();
-    }
-    else
-    {
+      IThreeD_Object objects[] = new IThreeD_Object[1];
       radius = point.length();
       if ( radius > max_radius )
         max_radius = radius;
 
-      objects = make_detector( point, 0.025f, 0.025f, i ); 
-/*
       points[0]= point;
-      objects[i] = new Polymarker( points, Color.red );
-      ((Polymarker)(objects[i])).setType( Polymarker.STAR );
-      ((Polymarker)(objects[i])).setSize( 2 );
-*/
+      objects[0] = new Polymarker( points, Color.red );
+      ((Polymarker)(objects[0])).setType( Polymarker.STAR );
+      ((Polymarker)(objects[0])).setSize( group_marker_size );
+      objects[0].setPickID( i );
+      threeD_panel.setObjects( GROUP_PREFIX+i, objects );
     }
-    threeD_panel.setObjects( GROUP_PREFIX+i, objects );
   }
 
-//  threeD_panel.setObjects( GROUPS, objects );
+//  System.out.println("End draw_groups");
   return max_radius;
 }
+
+/* ------------------------------ remove_groups -------------------------- */
+
+private void  remove_groups()
+{
+  DataSet ds     = getDataSet();
+  int     n_data = ds.getNum_entries();
+
+  for ( int i = 0; i < n_data; i++ )
+    threeD_panel.removeObjects( GROUP_PREFIX+i );
+}
+
 
 
 /* ------------------------------ draw_detectors -------------------------- */
 
 private float draw_detectors()
 {
+//  System.out.println("Start draw_detectors");
+
   DataSet ds     = getDataSet();
   int     n_data = ds.getNum_entries();
-
-  if ( n_data <= 0 )
-  {
-    threeD_panel.removeObjects( DETECTORS );  // remove any existing detectors 
-    return 0;                                 // since they are now gone
-  }
 
   float   max_radius = 0.01f;
   float   radius;
@@ -493,7 +568,7 @@ private float draw_detectors()
                           d.getAttributeValue( Attribute.DETECTOR_INFO_LIST );
     if ( det_info != null )
     {
-      objects = new IThreeD_Object[ 2*det_info.length ];
+      objects = new IThreeD_Object[ det_info.length ];
       for ( int k = 0; k < det_info.length; k++ )
       {
         position= det_info[k].getPosition();
@@ -502,31 +577,40 @@ private float draw_detectors()
         point = new Vector3D( coords[0], coords[1], coords[2] );
 
         if ( point == null )
-        {
-          objects[2*k]   = new ThreeD_Non_Object();
-          objects[2*k+1] = new ThreeD_Non_Object();
-        }
+          objects[k]   = new ThreeD_Non_Object();
         else
         {
           radius = point.length();
           if ( radius > max_radius )
             max_radius = radius;
 
-          detector_icon = make_detector( point, 
-                                         det_info[k].getWidth()/100, 
-                                         det_info[k].getLength()/100,
-                                         i );
-          objects[2*k]   = detector_icon[0];
-          objects[2*k+1] = detector_icon[1];
-
+          objects[k] = make_detector( point, 
+                                      det_info[k].getWidth()/100, 
+                                      det_info[k].getLength()/100,
+                                      i );
         }
       }
-      threeD_panel.setObjects( GROUP_PREFIX+i, objects );
+      threeD_panel.setObjects( DETECTOR_PREFIX+i, objects );
     }
   }
 
+//  System.out.println("End draw_detectors");
   return max_radius;
 }
+
+
+/* ------------------------------ remove_detectors -------------------------- */
+
+private void  remove_detectors()
+{
+  DataSet ds     = getDataSet();
+  int     n_data = ds.getNum_entries();
+
+  for ( int i = 0; i < n_data; i++ )
+    threeD_panel.removeObjects( DETECTOR_PREFIX+i );
+}
+
+
 
 
 /* ------------------------------ draw_axes ----------------------------- */
@@ -553,50 +637,115 @@ private void draw_axes( float length  )
 }
 
 
+/* --------------------------- draw_beam --------------------------- */
+
+private void draw_beam( float radius  )
+{
+  IThreeD_Object objects[] = new IThreeD_Object[ 15 ];
+  Vector3D points[] = new Vector3D[1];
+
+  points[0] = new Vector3D( 0, 0, 0 );                    // sample
+  Polymarker sample = new Polymarker( points, Color.red );
+  sample.setType( Polymarker.STAR );
+  sample.setSize( 10 );
+  objects[0] = sample; 
+  
+  for ( int i = 1; i < 15; i++ )                          // beam is segmented
+  {                                                       // for depth sorting
+    points = new Vector3D[2];
+    points[0] = new Vector3D( -(i-1)*radius/3, 0, 0 );    // beam in 
+    points[1] = new Vector3D( -i*radius/3, 0, 0 );        // -x-axis direction
+    objects[i] = new Polyline( points, Color.red );
+  }
+
+  threeD_panel.setObjects( BEAM, objects );
+}
+
+
+/* --------------------------- draw_instrument --------------------------- */
+
+private void draw_instrument( float radius  )
+{
+  final int N_PIECES = 180;
+  IThreeD_Object objects[] = new IThreeD_Object[ N_PIECES ];
+  Vector3D points[];
+                                                          // draw circle for
+                                                          // instrument 
+  float delta_angle = 2 * 3.14159265f / N_PIECES;
+  float angle = 0;
+  float x,
+        y;
+  for ( int i = 0; i < N_PIECES; i++ )                    // circle is segmented
+  {                                                       // for depth sorting
+    points = new Vector3D[2];
+    x = radius * (float)Math.cos( angle );
+    y = radius * (float)Math.sin( angle );
+    points[0] = new Vector3D( x, y, 0 );  
+
+    angle += delta_angle;
+    x = radius * (float)Math.cos( angle );
+    y = radius * (float)Math.sin( angle );
+    points[1] = new Vector3D( x, y, 0 );  
+    objects[i] = new Polyline( points, Color.black );
+  }
+
+  threeD_panel.setObjects( INSTRUMENT, objects );
+}
+
+
+
 /* ---------------------------- make_detector --------------------------- */
 /*
- *  Draw a detector using one rectangular facet and one polyline. 
- *  The line prevents the detector from disappearing when it would
- *  be very narrow.
+ *  Draw a detector object that is a simple rectangle, polyline, or marker. 
  */
-private IThreeD_Object[] make_detector( Vector3D point,
-                                        float    width,
-                                        float    length,
-                                        int      pick_id )
+private IThreeD_Object make_detector( Vector3D point,
+                                      float    width,
+                                      float    length,
+                                      int      pick_id )
 {
-  IThreeD_Object objects[] = new IThreeD_Object[2];
-  // #######
-  if ( width <= 0.001 )
-    width = 0.254f;
+  IThreeD_Object detector;
 
-  if ( length <= 0.001 )
-    length = 0.254f;
+  if ( detector_draw_mode == DETECTOR_MARKER )
+  {
+    Vector3D verts[] = new Vector3D[1];
+    verts[0] = point;
+    Polymarker object = new Polymarker( verts, Color.red );
+    object.setType( Polymarker.BOX );
+    object.setSize( 2 );
 
-  Vector3D verts[] = new Vector3D[4];
+    detector = object;
+  }
+  else
+  {
+    Vector3D verts[] = new Vector3D[4];
 
-  verts[0] = new Vector3D(  width/2,  length/2, 0 );
-  verts[1] = new Vector3D( -width/2,  length/2, 0 );
-  verts[2] = new Vector3D( -width/2, -length/2, 0 );
-  verts[3] = new Vector3D(  width/2, -length/2, 0 );
+    verts[0] = new Vector3D( -width/2,  length/2, 0 );
+    verts[1] = new Vector3D( -width/2, -length/2, 0 );
+    verts[2] = new Vector3D(  width/2, -length/2, 0 );
+    verts[3] = new Vector3D(  width/2,  length/2, 0 );
 
-  float coords[] = point.get();
-  Vector3D base = new Vector3D ( coords[1], -coords[0], 0 );
-  base.normalize();
+    float coords[] = point.get();
+    Vector3D base = new Vector3D ( coords[1], -coords[0], 0 );
+    base.normalize();
 
-  Vector3D n  = new Vector3D( point );
-  Vector3D up = new Vector3D();
-  up.cross( n, base );
-  up.normalize();
-  Tran3D orient = new Tran3D();
-  orient.setOrientation( base, up, point );
+    Vector3D n  = new Vector3D( point );
+    Vector3D up = new Vector3D();
+    up.cross( n, base );
+    up.normalize();
+    Tran3D orient = new Tran3D();
+    orient.setOrientation( base, up, point );
+    orient.apply_to( verts, verts );
 
-  orient.apply_to( verts, verts );
+    DataSetTools.components.ThreeD.Polygon object = 
+       new DataSetTools.components.ThreeD.Polygon( verts, Color.red );
+    if ( detector_draw_mode == DETECTOR_HOLLOW )
+      object.setType( DataSetTools.components.ThreeD.Polygon.HOLLOW );
 
-  objects[0] = new DataSetTools.components.ThreeD.Polyline( verts, Color.red );
-  objects[1] = new DataSetTools.components.ThreeD.Polygon( verts, Color.red );
+    detector = object;
+  }
 
-  objects[1].setPickID( pick_id );
-  return objects;
+  detector.setPickID( pick_id );
+  return detector;
 }
 
 
@@ -854,5 +1003,65 @@ private class FrameControlListener implements ActionListener
     set_colors( frame );
   }
 }
+
+
+/* ----------------------- GroupDrawMenuHandler ------------------------ */
+
+  private class GroupDrawMenuHandler implements ActionListener,
+                                                Serializable
+  {
+    public void actionPerformed( ActionEvent e )
+    {
+      String action  = e.getActionCommand();
+                                                 // drawing mode change
+      if ( action != group_draw_mode )
+      {
+        JRadioButtonMenuItem button = (JRadioButtonMenuItem)e.getSource();
+        button.setSelected(true);
+        group_draw_mode = action;
+
+        if ( action.equals( GROUP_MARKER_SMALL ) )
+          group_marker_size = SMALL_MARKER_SIZE;
+        else if ( action.equals( GROUP_MARKER_MEDIUM ) )
+          group_marker_size = MEDIUM_MARKER_SIZE;
+        else if ( action.equals( GROUP_MARKER_LARGE ) )
+          group_marker_size = LARGE_MARKER_SIZE;
+
+        if ( action.equals( GROUP_MARKER_NONE ) )
+          remove_groups();
+        else
+          draw_groups();
+
+        set_colors( frame_control.getFrameNumber() );
+      }
+    }
+  }
+
+
+/* ----------------------- DetectorDrawMenuHandler ------------------------ */
+
+  private class DetectorDrawMenuHandler implements ActionListener,
+                                                   Serializable
+  {
+    public void actionPerformed( ActionEvent e )
+    {
+      String action  = e.getActionCommand();
+                                                 // drawing mode change
+      if ( action != detector_draw_mode )
+      {
+        JRadioButtonMenuItem button = (JRadioButtonMenuItem)e.getSource();
+        button.setSelected(true);
+        detector_draw_mode = action;
+
+        if ( action.equals( DETECTOR_NONE ) )
+          remove_detectors();
+        else
+          draw_detectors();
+
+        set_colors( frame_control.getFrameNumber() );
+      }
+    }
+  }
+
 
 }
