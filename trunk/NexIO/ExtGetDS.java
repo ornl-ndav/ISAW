@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2003/12/15 14:39:22  rmikk
+ * Fixed a null pointer exception
+ * Changed the getDataSetInfo method to correspond to the hasInformation interface
+ *
  * Revision 1.19  2003/12/12 15:18:41  rmikk
  * Returned an empty DataSet instead of null when an error occurred
  *
@@ -169,7 +173,7 @@ public class ExtGetDS{
    *   @param  data_set_num  the index of the data set to be retrieved
    *   @return a String with the name and type of data set this is
    */
-  public String getDataSetInfo( int data_set_num){
+  public String[] getDataSetInfo( int data_set_num){
     if( !setupDSs ) 
       setUpDataSetList() ;
     if( data_set_num < 0)
@@ -177,16 +181,15 @@ public class ExtGetDS{
     if( data_set_num >= EntryToDSs.size())
        return null;
     DataSetInfo dsInf = ((DataSetInfo)( EntryToDSs.elementAt( data_set_num)));
-    String S;
-    if( dsInf.NxdataNode == null)
-       S = "(NxMonitor)";
-    else
-       S = "("+dsInf.NxdataNode.getNodeClass()+")";
-    S += dsInf.NxentryNode.getNodeName();
-    if( dsInf.NxdataNode != null)
-       S += "."+ dsInf.NxdataNode.getNodeName();
-    //System.out.println("node "+ data_set_num+"has groupids from"+dsInf.startGroupID+
-     //         " to "+ dsInf.endGroupID);
+    String[] S = new String[3];
+    S[1]  = getType( data_set_num)+"";
+    
+    if (dsInf.NxdataNode!= null)
+         S[0] = dsInf.NxdataNode.getNodeName();
+    else S[0] =dsInf.NxentryNode.getNodeName();
+   
+     S[2] = ""+dsInf.startGroupID+"-"+dsInf.endGroupID;
+   
     return S;
   }
 
@@ -342,7 +345,9 @@ public class ExtGetDS{
     
     
     NxNode ET = EntryNode.getChildNode("end_time");
-    String S = ConvertDataTypes.StringValue(ET.getNodeValue());
+    String S = null;
+    if( ET != null)
+         S= ConvertDataTypes.StringValue(ET.getNodeValue());
     if( S != null){
        Date D = NexIO.Util.ConvertDataTypes.parse(S);
        if( D != null){
