@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.82  2002/02/25 23:32:27  pfpeterson
+ *  Extracted the writing of default properties file from Isaw.java and
+ *  set new values to be more reasonable.
+ *  Added some more error checking into the routines that call various
+ *  viewers.
+ *
  *  Revision 1.81  2002/02/22 20:39:12  pfpeterson
  *  Operator reorganization.
  *
@@ -355,7 +361,7 @@ public class Isaw
 {
      
   private static final String TITLE              = "ISAW";
-  private static final String VERSION            = "Release 1.1";
+  private static final String VERSION            = "Release 1.2";
 
   private static final String FILE_M             = "File";
   private static final String LOAD_DATA_M        = "Load Data";
@@ -1444,71 +1450,66 @@ public class Isaw
       if( s.equals(IMAGE_VIEW_MI) )
       {
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != null  )
-        {
+        if(  ds != DataSet.EMPTY_DATA_SET  || ds != null){
           new ViewManager( ds, IViewManager.IMAGE );
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-        }
-        else
+        }else{
           SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
+        }
       }
                  
                  
       if( s.equals(SELECTED_VIEW_MI) )  
-      { SharedData.status_pane.add("Hi There");
+      { //SharedData.status_pane.add("Hi There");
         
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  )
-        {
+        if(  ds != DataSet.EMPTY_DATA_SET  || ds != null){
           new ViewManager( ds, IViewManager.SELECTED_GRAPHS );
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+        }else{
+            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
         }
-        else
-          SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
       }
                          
                  
       if( s.equals(SCROLL_VIEW_MI) )
       {   
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  )
-        {
+        if(  ds != DataSet.EMPTY_DATA_SET  || ds != null){
           new ViewManager( ds, IViewManager.SCROLLED_GRAPHS );
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+        }else{
+            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
         }
-        else
-          SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
       }
                  
 
       if( s.equals(THREED_VIEW_MI) )
       {   
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  )
-        {
-          new ViewManager( ds, IViewManager.THREE_D );
-          ds.setPointedAtIndex( 0 );
-          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+        if(  ds != DataSet.EMPTY_DATA_SET  || ds != null){
+            new ViewManager( ds, IViewManager.THREE_D );
+            ds.setPointedAtIndex( 0 );
+            ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+        }else{
+            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
         }
-        else
-          SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
         return;
       }
 
       if( s.equals(TABLE_VIEW_MI) )
       {   
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  )
-        {
-          new ViewManager( ds, IViewManager.TABLE );
-          ds.setPointedAtIndex( 0 );
-          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+        if(  ds != DataSet.EMPTY_DATA_SET  || ds != null){
+            new ViewManager( ds, IViewManager.TABLE );
+            ds.setPointedAtIndex( 0 );
+            ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+        }else{
+            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
         }
-        else
-          SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
         return;
       }
 
@@ -1881,235 +1882,14 @@ public class Isaw
     path = StringUtil.fixSeparator(path);
     boolean windows = isWindowsPlatform();
     
-    try 
-    {
+    try{
       FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
       isawProp.load( input );
       System.setProperties(isawProp);  
       input.close();
-    }
-    catch( IOException ex ) 
-    {
-      System.out.println(
-        "Properties file could not be loaded due to error :" +ex );
-
-      System.out.println(
-        "Creating a new Properties file called IsawProps in the directory " +
-        System.getProperty("user.home") );
-           
-      String npath = System.getProperty("user.home")+"\\";
-      String ipath = System.getProperty("user.dir")+"\\";
-      npath = StringUtil.fixSeparator(npath);
-      npath = npath.replace('\\','/');
- 
-      ipath = StringUtil.fixSeparator(ipath);
-      ipath = ipath.replace('\\','/');
- 
-      File f= new File( npath + "IsawProps.dat" );
- 
-      try
-      {
-        FileOutputStream op= new FileOutputStream(f);
-        OutputStreamWriter opw = new OutputStreamWriter(op);
-        opw.write("#This is a properties file");
-        opw.write("\n");
-        opw.write("Help_Directory="+ipath+"IsawHelp/");
-        System.setProperty("Help_Directory",  ipath+"IsawHelp/");
-        opw.write("\n");
-        opw.write("Script_Path="+ipath+"Scripts/");
-        System.setProperty("Script_Path",ipath+"Scripts/");
-        opw.write("\n");
-        opw.write("Data_Directory="+ipath+"SampleRuns/");
-        System.setProperty("Data_Directory",ipath+"SampleRuns/");
-        opw.write("\n");
-        opw.write("Default_Instrument=HRCS");
-        System.setProperty("Default_Instrument","HRCS");
-        opw.write("\n");
-        opw.write("Instrument_Macro_Path="+ipath);
-        System.setProperty("Instrument_Macro_Path",ipath);
-        opw.write("\n");
-        opw.write("User_Macro_Path="+ipath);
-        System.setProperty("User_Macro_Path",ipath);
-        opw.write("\n");
-
-        opw.write("ISAW_HOME="+ipath);
-        System.setProperty("ISAW_HOME",ipath);
-
-        opw.write("\n");
-        opw.write("Inst1_Name=HRMECS");
-        opw.write("\n"); 
-        opw.write("Inst1_Path=zeus.pns.anl.gov;6088");
-        System.setProperty("Inst1_Name", "HRMECS");
-        System.setProperty("Inst1_Path", "zeus.pns.anl.gov;6088");
-        opw.write("\n");  
-
-        opw.write("Inst2_Name=GPPD");
-        opw.write("\n"); 
-        opw.write("Inst2_Path=gppd-pc.pns.anl.gov;6088");
-        System.setProperty("Inst2_Name", "GPPD");
-        System.setProperty("Inst2_Path", "gppd-pc.pns.anl.gov;6088");
-        opw.write("\n");  
-
-        opw.write("IsawFileServer1_Name=IPNS(zeus)");
-        opw.write("\n"); 
-        opw.write("IsawFileServer1_Path=zeus.pns.anl.gov;6089");
-        System.setProperty("IsawFileServer1_Name", "IPNS");
-        System.setProperty("IsawFileServer1_Path", "zeus.pns.anl.gov;6089");
-        opw.write("\n");
-
-        opw.write("IsawFileServer2_Name=Test(dmikk-Isaw)");
-        opw.write("\n"); 
-        opw.write("IsawFileServer2_Path=dmikk.mscs.uwstout.edu;6091");
-        System.setProperty("IsawFileServer2_Name", "Test");
-        System.setProperty("IsawFileServer2_Path", "dmikk.mscs.uwstout.edu;6091");
-        opw.write("\n");
-
-        opw.write("NDSFileServer1_Name=Test(dmikk-NDS)");
-        opw.write("\n"); 
-        opw.write("NDSFileServer1_Path=dmikk.mscs.uwstout.edu;6008");
-        System.setProperty("NDSFileServer1_Name", "Test");
-        System.setProperty("NDSFileServer1_Path", "dmikk.mscs.uwstout.edu;6008");
-        opw.write("\n");
-
-        opw.write("ColorScale=Heat 2");
-        System.setProperty("ColorScale", "Heat 2");
-        opw.write("\n");  
-
-        opw.write("RebinFlag=false");
-        System.setProperty("RebinFlag", "false");
-        opw.write("\n"); 
-
-        opw.write("HScrollFlag=false");
-        System.setProperty("HScrollFlag", "false");
-        opw.write("\n"); 
-
-        opw.write("ViewAltitudeAngle=1.0");
-        System.setProperty("ViewAltitudeAngle", "1.0");
-        opw.write("\n"); 
-
-        opw.write("ViewAzimuthAngle=180");
-        System.setProperty("ViewAzimuthAngle", "180");
-        opw.write("\n"); 
-
-        opw.write("ViewDistance=0.9");
-        System.setProperty("ViewDistance", "0.9");
-        opw.write("\n"); 
-
-        opw.write("ViewGroups=NOT DRAWN");
-        System.setProperty("ViewGroups", "NOT DRAWN");
-        opw.write("\n"); 
-
-        opw.write("ViewDetectors=SOLID");
-        System.setProperty("ViewDetectors", "SOLID");
-        opw.write("\n"); 
-
-        opw.write("Brightness=40");
-        System.setProperty("Brightness", "40");
-        opw.write("\n"); 
-
-        opw.write("Auto-Scale=0.0");
-        System.setProperty("Auto-Scale", "0.0");
-        opw.write("\n"); 
-
-      /* This causes more problems with nexus than it fixes
-	 if ( windows ){
-	 opw.write("neutron.nexus.JNEXUSLIB="+ipath+"lib/jnexus.dll");
-	 System.setProperty("neutron.nexus.JNEXUSLIB",ipath+"lib/jnexus.dll");
-	 opw.write("\n");   
-	 } */
-
-
-/* 
-        opw.write("Inst2_Name=LRMECS");
-        opw.write("\n");  
-        opw.write("Inst2_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst2_Name", "LRMECS");
-        System.setProperty("Inst2_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");  
- 
-        opw.write("Inst3_Name=GPPD");
-        opw.write("\n");  
-        opw.write("Inst3_Path=gppd-pc.pns.anl.gov");
-        System.setProperty("Inst3_Name", "GPPD");
-        System.setProperty("Inst3_Path", "gppd-pc.pns.anl.gov");
-        opw.write("\n");  
- 
-        opw.write("Inst4_Name=SEPD");
-        opw.write("\n");  
-        opw.write("Inst4_Path=dmikk.mscs.uwstout.edu");
-        System.setProperty("Inst4_Name", "SEPD");
-        System.setProperty("Inst4_Path", "dmikk.mscs.uwstout.edu");
-        opw.write("\n");
- 
-        opw.write("Inst5_Name=SAD");
-        opw.write("\n");
-        opw.write("Inst5_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst5_Name", "SAD");
-        System.setProperty("Inst5_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");    
-   
-        opw.write("Inst6_Name=SAND");
-        opw.write("\n");      
-        opw.write("Inst6_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst6_Name", "SAND");
-        System.setProperty("Inst6_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");
-       
-        opw.write("Inst7_Name=SCD");
-        opw.write("\n");      
-        opw.write("Inst7_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst7_Name", "SCD");
-        System.setProperty("Inst7_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");  
-     
-        opw.write("Inst8_Name=GLAD");
-        opw.write("\n");      
-        opw.write("Inst8_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst8_Name", "GLAD");
-        System.setProperty("Inst8_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n"); 
-      
-        opw.write("Inst9_Name=HIPD");
-        opw.write("\n"); 
-        opw.write("Inst9_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst9_Name", "HIPD");
-        System.setProperty("Inst9_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");
- 
-        opw.write("Inst10_Name=POSY1");
-        opw.write("\n");      
-        opw.write("Inst10_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst10_Name", "POSY1");
-        System.setProperty("Inst10_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");  
-     
-        opw.write("Inst11_Name=POSY2");
-        opw.write("\n");  
-        opw.write("Inst11_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst11_Name", "POSY2");
-        System.setProperty("Inst11_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");  
-                
-        opw.write("Inst12_Name=QENS");
-        opw.write("\n");                 
-        opw.write("Inst12_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst12_Name", "QENS");
-        System.setProperty("Inst12_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");  
-                
-        opw.write("Inst13_Name=CHEXS");
-        opw.write("\n");                 
-        opw.write("Inst13_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst13_Name", "CHEXS");
-        System.setProperty("Inst13_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n"); 
-*/                    
-        opw.flush();
-        opw.close(); 
-      } 
-      catch( Exception d )
-      {
-      }
+    }catch( IOException ex ){
+      DefaultProperties prop=new DefaultProperties();
+      prop.write();
     }
 
 
@@ -2361,30 +2141,38 @@ public class Isaw
                        //from different DataSet objects, we'll disallow that
                        //and arbitrarily choose the parent DataSet of the
                        //first Data object selected
-    MutableTreeNode node = (MutableTreeNode)(  tps[0].getLastPathComponent()  );
-    DataSet ds = jdt.getDataSet( node );
+    DataSet ds     = DataSet.EMPTY_DATA_SET;
+    DataSet new_ds = DataSet.EMPTY_DATA_SET;
 
-
-                                //if it's just one (1) DataSet object
-                                //nothing need be done... just return it
-    node = (MutableTreeNode)tps[0].getLastPathComponent();
-    if(  node instanceof DataSetMutableTreeNode  &&  tps.length == 1  )
-     return ( (DataSetMutableTreeNode)node ).getUserObject(); 
+    try{  // pick up on the lack of TreePath
+        MutableTreeNode node 
+            = (MutableTreeNode)( tps[0].getLastPathComponent() );
+        ds = jdt.getDataSet( node );  //if it's just one (1) DataSet object
+                                      //nothing need be done... just return it
+        node = (MutableTreeNode)tps[0].getLastPathComponent();
+        if(  node instanceof DataSetMutableTreeNode  &&  tps.length == 1  )
+            return ( (DataSetMutableTreeNode)node ).getUserObject(); 
 
                                 //if there are multiple selections of
                                 //Data objects, create an empty clone
                                 //of the containing DataSet and add
                                 //the selections to the clone.
-    DataSet new_ds = ds.empty_clone();
-    new_ds.addLog_entry( "clones w/ selected subset of spectra" );
-    for( int i=0;  i<tps.length;  i++ )
-    {
-      node = (MutableTreeNode)(  tps[i].getLastPathComponent()  );
-      if(  node instanceof DataMutableTreeNode && 
-           jdt.getDataSet( node ).equals( ds )  )
-        new_ds.addData_entry(  (  (DataMutableTreeNode)node  ).getUserObject()  );
+        new_ds = ds.empty_clone();
+        new_ds.addLog_entry( "clones w/ selected subset of spectra" );
+        for( int i=0;  i<tps.length;  i++ ){
+            node = (MutableTreeNode)(  tps[i].getLastPathComponent()  );
+            if(  node instanceof DataMutableTreeNode && 
+                 jdt.getDataSet( node ).equals( ds )  )
+                new_ds.addData_entry( ( 
+                            (DataMutableTreeNode)node ).getUserObject() );
+        }
+        
+    }catch(ArrayIndexOutOfBoundsException e){
+        /* SharedData.status_pane.add("ERROR: Must choose at least "
+           +"one DataSet or DataBlock"); */
+        return DataSet.EMPTY_DATA_SET;
     }
-    
+
     return new_ds;
   }
 
