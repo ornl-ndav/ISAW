@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2004/04/12 03:44:44  millermi
+ * - Removed parenthesis from x and y units.
+ * - Changed initial size to 700 x 525, which expanded the
+ *   height of the viewer to compensate for the new marker
+ *   control added to the ImageViewComponent.
+ *
  * Revision 1.32  2004/03/30 03:21:02  millermi
  * - Added flexible file reading, now size of array and other
  *   attributes can be specified within the data file being read.
@@ -515,9 +521,9 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     float qymax = 0;
     // these are default values, taylored toward SAND data
     String xlabel = "Qx";
-    String xunit  = "(Inverse Angstroms)";
+    String xunit  = "Inverse Angstroms";
     String ylabel = "Qy";
-    String yunit  = "(Inverse Angstroms)";
+    String yunit  = "Inverse Angstroms";
     String zlabel = "";
     String zunit  = "Intensity";
     // try to open the file
@@ -791,7 +797,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     buildMenubar();
     
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    setBounds(0,0,700,485);
+    setBounds(0,0,700,525);
     data_set   = new DataSet("Intensity vs Q in Region", 
                              "Calculated Intensity vs Q in Region");
 
