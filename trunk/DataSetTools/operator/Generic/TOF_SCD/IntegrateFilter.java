@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/06/13 21:59:11  bouzekc
+ *  Now extends RobustFileFilter to take care of common
+ *  functionality.
+ *
  *  Revision 1.1  2003/05/08 19:50:28  pfpeterson
  *  Added to CVS.
  *
@@ -38,37 +42,20 @@
 
 package DataSetTools.operator.Generic.TOF_SCD;
 
-import javax.swing.filechooser.*;
-import java.io.File;
+import DataSetTools.util.RobustFileFilter;
 
 /**
- * FileFilter for matrix files.
+ * FileFilter for integrate files.
  */
-public class IntegrateFilter extends    FileFilter {
+public class IntegrateFilter extends RobustFileFilter {
   /**
-   * Constructor that does almost nothing
+   *  Default constructor.  Calls the super constructor,
+   *  sets the description, and sets the file extensions.
    */
-  public IntegrateFilter(){
+  public IntegrateFilter()
+  {
     super();
+    super.setDescription("Integrate files (*.integrate)");
+    super.addExtension(".integrate");
   }
-
-  /**
-   * Determines if the given file will be displayed when this filter
-   * is active
-   */
-  public boolean accept(File file){
-    if(file.isDirectory())
-      return true;
-
-    String name=file.toString().toUpperCase();
-    return name.endsWith(".INTEGRATE");
-  }
-
-  /**
-   * Returns a description that will appear in the dialog
-   */
-  public String getDescription(){
-    return "integrate files (*.integrate)";
-  }
-
 }

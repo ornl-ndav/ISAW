@@ -29,43 +29,30 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/06/13 22:01:37  bouzekc
+ * Now extends RobustFileFilter to take care of common
+ * functionality.
+ *
  * Revision 1.2  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
  */
 package IsawGUI;
 
-import javax.swing.*;
-import java.io.*;
+import DataSetTools.util.RobustFileFilter;
 
 /**
- * what does this do?  your guess is a good as mine.
+ * FileFilter for iss files.
  */
-public class scriptFilter extends javax.swing.filechooser.FileFilter{
-    public boolean accept(File f){
-	boolean accept = f.isDirectory();
-	if(!accept){
-	    String suffix = getSuffix(f);
-	    if (suffix != null) accept = suffix.equals("iss");
-	}
-	return accept;
-    }
-
-    /**
-     * gets the description of what files this filter shows
-     */ 
-    public String getDescription(){
-	return "Script Files(*.iss)";
-    }
-    
-    /**
-     * returns a file extension
-     */
-    public String getSuffix(File f){
-	String s = f.getPath(), suffix = null;
-	int i = s.lastIndexOf('.');
-	if (i>0 && i<s.length() -1)
-	    suffix = s.substring(i+1).toLowerCase();
-	return suffix;
-    }
+public class scriptFilter extends RobustFileFilter{
+  /**
+   *  Default constructor.  Calls the super constructor,
+   *  sets the description, and sets the file extensions.
+   */
+  public scriptFilter()
+  {
+    super();
+    super.setDescription("ISAW Script files (*.iss)");
+    super.addExtension(".iss");
+  }
 }

@@ -30,43 +30,31 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/06/13 22:00:20  bouzekc
+ * Now extends RobustFileFilter to take care of common
+ * functionality.
+ *
  * Revision 1.2  2003/06/13 16:27:51  bouzekc
  * Removed embedded tabs.  Added log message.
  *
  */
 package DataSetTools.wizard.util;
 
-import javax.swing.*;
-import java.io.*;
+import DataSetTools.util.RobustFileFilter;
 
 /**
- * Filters out .wsf (Wizard Save File) files.  I took almost all of this
- * code from gsastools.GsasFileFilter.java.
+ * Filters out .wsf (Wizard Save File) files.
  */
-public class WizardFileFilter extends javax.swing.filechooser.FileFilter
+public class WizardFileFilter extends RobustFileFilter
 {
-  public boolean accept(File f)
-  {
-    return f.getName().toUpperCase().endsWith(".WSF");
-  }
-
   /**
-   * gets the description of what files this filter shows
-   */ 
-  public String getDescription()
-  {
-    return "Wizard Save File (*.wsf)";
-  }
-    
-  /**
-   * returns a File's existing extension
+   *  Default constructor.  Calls the super constructor,
+   *  sets the description, and sets the file extensions.
    */
-  public String getSuffix(File f)
+  public WizardFileFilter()
   {
-    String s = f.getPath(), suffix = null;
-    int i = s.lastIndexOf('.');
-    if (i>0 && i<s.length() -1)
-      suffix = s.substring(i+1).toLowerCase();
-    return suffix;
+    super();
+    super.setDescription("Wizard Save File (*.wsf)");
+    super.addExtension(".wsf");
   }
 }
