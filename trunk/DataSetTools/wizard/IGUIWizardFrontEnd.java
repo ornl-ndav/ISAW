@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/04/21 17:56:06  bouzekc
+ * Removed method that set the wizard progress bar to an indeterminate state.
+ *
  * Revision 1.3  2004/02/23 17:53:50  bouzekc
  * Changed signature on methods to set the progress bar indeterminate state.
  *
@@ -84,12 +87,6 @@ interface IGUIWizardFrontEnd extends IWizardFrontEnd {
    * to indeterminate.  updateFormProgress() should change it back.
    */
   public void setFormProgressIndeterminate(  );
-
-  /**
-   * Utility method to set the Wizard progress bar indeterminate state
-   * to indeterminate.  updateWizProgress() should change it back.
-   */
-  public void setWizardProgressIndeterminate(  );
 
   /**
    * Method to update the formProgress progress widget based on whether or not

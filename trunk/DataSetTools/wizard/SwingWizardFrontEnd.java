@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2004/04/21 17:56:06  bouzekc
+ * Removed method that set the wizard progress bar to an indeterminate state.
+ *
  * Revision 1.15  2004/03/15 03:29:04  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -246,15 +249,6 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   public final void setFormProgressIndeterminate(  ) {
     formProgress.setString( "Executing " + wiz.getCurrentForm(  ) );
     formProgress.setIndeterminate( true );
-  }
-
-  /**
-   * Utility method to set the Wizard progress bar indeterminate state to
-   * indeterminate.  updateWizProgress() will change it back.
-   */
-  public final void setWizardProgressIndeterminate(  ) {
-    wizProgress.setString( "Executing " + wiz.getTitle(  ) );
-    wizProgress.setIndeterminate( true );
   }
 
   /**
