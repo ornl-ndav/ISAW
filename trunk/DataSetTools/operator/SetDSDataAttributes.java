@@ -35,7 +35,7 @@ public class SetDSDataAttributes extends    DataSetOperator
 
   public SetDSDataAttributes( )
   {
-    super( "Set Data Attribute on ALL Data blocks" );
+    super( "Set Data Attribute on ALL Groups" );
   }
 
   
