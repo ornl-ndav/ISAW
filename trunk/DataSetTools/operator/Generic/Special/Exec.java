@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/01/24 19:58:59  bouzekc
+ *  Removed/commented out unused variables/imports.
+ *
  *  Revision 1.8  2003/12/15 01:56:37  bouzekc
  *  Removed unused imports.
  *
@@ -64,7 +67,6 @@
 package DataSetTools.operator.Generic.Special;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Vector;
 
@@ -166,7 +168,6 @@ public class Exec extends    GenericSpecial {
         try{
             process=SysUtil.startProcess(command,null);
             BufferedReader in  = SysUtil.getSTDINreader(process);
-            BufferedWriter out = SysUtil.getSTDOUTwriter(process);
             BufferedReader err = SysUtil.getSTDERRreader(process);
             while(true){
                 output=in.readLine();

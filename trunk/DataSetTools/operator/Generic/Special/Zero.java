@@ -1,7 +1,6 @@
 package DataSetTools.operator.Generic.Special;
 
 import DataSetTools.dataset.*;
-import DataSetTools.operator.Operator.*;
 import DataSetTools.util.*;
 import DataSetTools.parameter.*;
 import java.util.*;

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/01/24 19:58:59  bouzekc
+ * Removed/commented out unused variables/imports.
+ *
  * Revision 1.3  2002/11/27 23:21:43  pfpeterson
  * standardized header
  *
@@ -58,7 +61,6 @@ import java.util.Vector;
  */
 public class AddDataSetOperator extends GenericSpecial{
     private static final String  TITLE = "Add DataSet Operator";
-    private static final boolean DEBUG = false;
 
     /**
      *  Creates operator with title "Add DataSet Operator" and a

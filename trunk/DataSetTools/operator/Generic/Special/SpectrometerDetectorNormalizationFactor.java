@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/01/24 19:58:59  bouzekc
+ *  Removed/commented out unused variables/imports.
+ *
  *  Revision 1.9  2003/12/15 23:56:33  bouzekc
  *  Removed unused imports.
  *
@@ -75,7 +78,6 @@ import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.DataSetFactory;
 import DataSetTools.dataset.UniformXScale;
-import DataSetTools.dataset.XScale;
 import DataSetTools.math.DetectorPosition;
 import DataSetTools.operator.Parameter;
 import DataSetTools.parameter.IParameter;
@@ -194,9 +196,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
   public Object getResult()
   {
     final float  ECON   = 5.2276f*1000000,
-                 LAMCON = 3.95541f/1000, 
-                 WVCON  = 1.5885f*1000,
-                 XKCON  = 0.086165f;
+                 LAMCON = 3.95541f/1000;
     
     float ELAM = ECON*LAMCON*LAMCON;
                                      // get the current data set
@@ -220,8 +220,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
    
-    Data             data,
-                     new_data;
+    Data             data;
     DetectorPosition position;
     float            energy_in;
     Float            energy_in_obj;
@@ -229,8 +228,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
     float            e_vals[];              // energy values at bin boundaries
                                             // calculated from tof bin bounds
     
-    XScale           E_scale;
-    float            spherical_coords[];
+    //float            spherical_coords[];
     float            scattering_angle;
     int              num_data = ds.getNum_entries();
     AttributeList    attr_list;
@@ -265,7 +263,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
         
         float EDUM = (float)(193.0f* Math.pow((energy_in/1000.0f), 0.36f));
         float EINTEG=EDUM;
-        float DUM = -EINTEG;
+        //float DUM = -EINTEG;
         
         float sum = 0.0f;
         int numofe = e_vals.length;
@@ -450,7 +448,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
     float SECOND;
     float ALPHA;
     float CA;
-    float SA;
+    //float SA;
     float CMU;
     float CM;
     float SM;
@@ -466,7 +464,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
     {
       ALPHA = ( (float)IAL-0.5f) * DALPHA;
       CA = (float)Math.cos(ALPHA);
-      SA = (float)Math.sin(ALPHA);
+      //SA = (float)Math.sin(ALPHA);
 
       // System.out.println("1.5.ALPHA CA SA : "+ALPHA+"  "+  CA +"  "+ SA);
 
