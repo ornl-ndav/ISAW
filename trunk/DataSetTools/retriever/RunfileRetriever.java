@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.82  2004/04/12 21:29:52  dennis
+ *  Split code that adds a spectrum's attributes into separate
+ *  private methods.
+ *  The set of attributes that are actually added is now determined
+ *  by the attribute level set in the Retriever base class.
+ *
  *  Revision 1.81  2004/03/19 17:22:06  dennis
  *  Removed unused variable(s)
  *
@@ -892,7 +898,7 @@ private float CalculateEIn()
     attr_list.setAttribute( str_attr );
 
     // Run Number ...........
-    Add_RunNumber( attr_list );
+    AddShared_RunNumber( attr_list );
 
     // End Date  ........
     str_attr = new StringAttribute( Attribute.END_DATE, run_file.EndDate() );
@@ -903,11 +909,11 @@ private float CalculateEIn()
     attr_list.setAttribute( str_attr );
     
     // Number of Pulses  ........
-    Add_NumberOfPulses( attr_list );
+    AddShared_NumberOfPulses( attr_list );
 
     // SCD sample orientation, Sample Chi, Sample Phi, Sample Omega
     if ( instrument_type == InstrumentType.TOF_SCD )
-        AddSCD_SampleOrientation( attr_list );
+      AddShared_SCD_SampleOrientation( attr_list );
 
     // User Name
     str_attr = new StringAttribute( Attribute.USER, run_file.UserName() );
@@ -940,71 +946,229 @@ private float CalculateEIn()
                                       Data    spectrum )
   {
     FloatAttribute    float_attr;
-    DetPosAttribute   pos_attr;
-    IntListAttribute  int_list_attr;
-    DetectorPosition  position = new DetectorPosition();
-    float             final_path;
-    float             angle;
-    float             height;
     AttributeList     attr_list = spectrum.getAttributeList();
 
-    // Run Number ...........
-    Add_RunNumber( attr_list );
+    // Run Number .......
+    // Initial Path ......
+    // Effective Position.....
+    // Total Counts ......
+    if ( add_run_attrs )  
+    {
+      AddShared_RunNumber( attr_list );                 
+      AddShared_InitialPath( attr_list );
+      Add_EffectivePosition(attr_list, group_segments, group_id, histogram_num);
+      try{
+        float total = 0;
+        float counts[] = spectrum.getY_values();
+        if ( counts != null )
+          for ( int i = 0; i < counts.length; i++ )
+            total += counts[i];
+        float_attr = new FloatAttribute( Attribute.TOTAL_COUNT, total );
+        attr_list.setAttribute( float_attr );
+      }
+      catch(Exception e)
+      {
+        System.out.println(
+                        "Exception in RunfileRetriever.AddSpectrumAttributes");
+        System.out.println("Exception is " + e );
+        e.printStackTrace();
+      };
+    }
 
-    // Time field type
-    // int_attr = new IntAttribute( Attribute.TIME_FIELD_TYPE, tf_type );
-    // attr_list.setAttribute( int_attr );
+    // Pixel Info List.....
+    // Delta 2 theta.....
+    if ( add_vis_attrs )
+    {
+      Add_PixelInfo( attr_list, group_segments );
+      // Delta 2 theta ( range of scattering angles covered ), assuming 1" tube
+      float det_width_factor = 1.45530928f;  // detector width in meters times
+                                             // 180/PI to convert from radians
+                                             // to degrees.
+      if ( group_segments.length > 0 )
+      {
+        float final_path = 
+                    (float)run_file.RawFlightPath(group_segments[0].DetID());
+        float delta_2theta = det_width_factor/final_path;
+        float_attr =new FloatAttribute(Attribute.DELTA_2THETA, delta_2theta  );
+        attr_list.setAttribute( float_attr );
+      }
+    }
 
-    // SCD sample orientation, Sample Chi, Sample Phi, Sample Omega
-    if ( instrument_type == InstrumentType.TOF_SCD )
-      AddSCD_SampleOrientation( attr_list );
+    // Raw Detector Angle ...........
+    // Omega ..........
+    if ( add_npd_attrs )
+    {
+      float_attr = new FloatAttribute(Attribute.RAW_ANGLE,
+                        (float)run_file.RawDetectorAngle( group_segments[0]) );
+      attr_list.setAttribute( float_attr );
+      if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
+        Add_NPD_Omega( attr_list, group_segments, runfile );
+    }
+
+    // Number of pulses......
+    // SCD sample orientation....
+    // SCD Detector Center & Distance .....
+    if ( add_scd_attrs )
+    {
+      AddShared_NumberOfPulses( attr_list );
+      if ( instrument_type == InstrumentType.TOF_SCD )
+      {
+         AddShared_SCD_SampleOrientation( attr_list );
+         AddSCD_DetectorCenterInfo(attr_list,group_segments[0].DetID());
+      }
+    }
+
+    // Raw distance ......
+    // Solid angle .......
+    // Initial energy ........
+    if ( add_dgs_attrs )
+    {
+      if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
+        Add_AveRawDetDistance( attr_list, group_segments, runfile );
+
+      float_attr =new FloatAttribute(Attribute.SOLID_ANGLE,
+                                     GrpSolidAngle( group_id ) );
+      attr_list.setAttribute( float_attr );
+
+      if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER)
+      {
+        Add_InitialEnergyInfo( attr_list, runfile );
+        Add_SourceToSampleTOF( attr_list, runfile );
+      }
+    }
+
+    // Final energy ...........
+    if (add_igs_attrs && instrument_type == InstrumentType.TOF_IDG_SPECTROMETER)
+    {
+      float_attr =new FloatAttribute(Attribute.ENERGY_OUT,
+                                     (float)run_file.EnergyOut() );
+      attr_list.setAttribute( float_attr );
+    }
 
     // Detector and Segment ID lists ..........
-    int det_ids[] = new int[ group_segments.length ];
-    int seg_ids[] = new int[ group_segments.length ];
-    for ( int i = 0; i < group_segments.length; i++ )
+    // Crate, Slot and Input
+    if ( add_diagnostic_attrs )
     {
-      det_ids[i] = group_segments[i].DetID();
-      seg_ids[i] = group_segments[i].SegID();
+      Add_CrateSlotInput(  attr_list, group_segments, runfile );
+      Add_DetAndSegID( attr_list, group_segments );
     }
-    int_list_attr = new IntListAttribute( Attribute.DETECTOR_IDS,
-                                          det_ids );
-    attr_list.setAttribute( int_list_attr );
 
-    int_list_attr = new IntListAttribute( "Segment IDs",
-                                           seg_ids );
-    attr_list.setAttribute( int_list_attr );
+    attr_list.trimToSize();
+    spectrum.setAttributeList( attr_list );
+  }
 
-    // Initial flight path ............
-    Add_InitialPath( attr_list );
 
-    // Initial energy ...........
-    if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
-    {
-      float_attr =new FloatAttribute(Attribute.NOMINAL_ENERGY_IN,
+  /**
+   *  Add the nominal and calibrated incident energy attributes for 
+   *  direct geometry spectrometers.
+   *
+   *  @param   attr_list       The attribute list to which the
+   *                            attribute is added
+   *  @param   runfile         The runfile from which the energy in
+   *                           is read.
+   */
+   private void Add_InitialEnergyInfo( AttributeList attr_list,
+                                       Runfile       runfile )
+   {
+      Attribute float_attr 
+                 = new FloatAttribute(Attribute.NOMINAL_ENERGY_IN,
                                      (float)run_file.EnergyIn() );
       attr_list.setAttribute( float_attr );
 
       float_attr =new FloatAttribute(Attribute.ENERGY_IN,
                                      (float)run_file.EnergyIn() );
       attr_list.setAttribute( float_attr );
+   }
 
-      float_attr =new FloatAttribute(Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF,
+
+  /**
+   *  Add the nominal and calibrated source to sample time-of-flight for 
+   *  direct geometry spectrometers.
+   *
+   *  @param   attr_list       The attribute list to which the
+   *                            attribute is added
+   *  @param   runfile         The runfile from which the energy in
+   *                           is read.
+   */
+   private void Add_SourceToSampleTOF( AttributeList attr_list,
+                                       Runfile       runfile )
+   {
+      Attribute float_attr 
+                 = new FloatAttribute(Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF,
                                      (float)run_file.SourceToSampleTime() );
       attr_list.setAttribute( float_attr );
 
       float_attr =new FloatAttribute(Attribute.SOURCE_TO_SAMPLE_TOF,
                                      (float)run_file.SourceToSampleTime() );
       attr_list.setAttribute( float_attr );
-    }
+   }
 
-    // Final energy ...........
-    if ( instrument_type == InstrumentType.TOF_IDG_SPECTROMETER )
-    {
-      float_attr =new FloatAttribute(Attribute.ENERGY_OUT,
-                                     (float)run_file.EnergyOut() );
-      attr_list.setAttribute( float_attr );
-    }
+
+  /**
+   *  Add the average raw detector distance for this group (used for 
+   *  direct geometry spectrometers).
+   *
+   *  @param   attr_list       The attribute list to which the
+   *                            attribute is added
+   *  @param   group_segments  The list of detector segments in this group
+   *  @param   runfile         The runfile from which the raw flight path
+   *                           is read.
+   */
+  private void Add_AveRawDetDistance( AttributeList attr_list,
+                                      Segment       group_segments[],
+                                      Runfile       runfile )
+  {
+    if ( group_segments.length < 1 )
+      return;
+    
+    float raw_distance = 0;  
+    for ( int i = 0; i < group_segments.length; i++ )
+      raw_distance += (float)run_file.RawFlightPath( group_segments[i] );
+
+    Attribute float_attr = new FloatAttribute( Attribute.RAW_DISTANCE,
+                                           raw_distance/group_segments.length );
+    attr_list.setAttribute( float_attr );
+  }
+
+
+
+  /**
+   *  Add the "Omega" angle used for powder diffraction by Jim Richardson.
+   *
+   *  @ param   attr_list       The attribute list to which the
+   *                            attribute is added
+   *  @ param   group_segments  The list of detector segments in this group
+   */
+  private void Add_NPD_Omega( AttributeList attr_list,
+                              Segment       group_segments[],
+                              Runfile       runfile )
+  {
+    if ( group_segments.length < 1 )
+      return; 
+
+    float raw_angle = (float)run_file.RawDetectorAngle( group_segments[0] );
+    float omega = tof_calc.Omega( raw_angle );
+    FloatAttribute omega_attr = new FloatAttribute( Attribute.OMEGA, omega );
+    attr_list.setAttribute( omega_attr );
+  }
+
+
+  /**
+   *  Add the effective position of the group as the DETECTOR_POS attribute.
+   *
+   *  @ param   attr_list       The attribute list to which the
+   *                            attribute is added
+   *  @ param   group_segments  The list of detector segments in this group
+   */
+  private void Add_EffectivePosition( AttributeList attr_list,
+                                      Segment       group_segments[],
+                                      int           group_id,
+                                      int           histogram_num  )
+  {
+    DetectorPosition  position = new DetectorPosition();
+    float             final_path;
+    float             angle;
+    float             height;
 
     // Detector position ..........
     //
@@ -1015,19 +1179,19 @@ private float CalculateEIn()
     float solid_angles[] = GrpSolidAngles( group_id );
     if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
     {
-      angle      = getAverageAngle( group_segments, 
-                                    histogram_num, 
+      angle      = getAverageAngle( group_segments,
+                                    histogram_num,
                                     solid_angles,
-                                    true  );   
+                                    true  );
       angle      *= (float)(Math.PI / 180.0);
-  
-      height     = getAverageHeight( group_segments, 
+
+      height     = getAverageHeight( group_segments,
                                      histogram_num,
-                                     solid_angles, 
+                                     solid_angles,
                                      true );
 
-      final_path = getAverageFlightPath( group_segments, 
-                                         histogram_num, 
+      final_path = getAverageFlightPath( group_segments,
+                                         histogram_num,
                                          solid_angles,
                                          false );
     }
@@ -1040,7 +1204,6 @@ private float CalculateEIn()
       height     = getAverageHeight( group_segments, histogram_num, false );
       final_path = getAverageFlightPath(group_segments, histogram_num, false);
     }
-
     // We should probably use the following to form weighted average of 
     // effective detector angles, heights and flight path lengths, for all 
     // other instruments, but for now, it doesn't work since the detector
@@ -1088,138 +1251,120 @@ private float CalculateEIn()
 //                       " Phi = " + sphere_coords[2]*180/3.14159265f );
 
 
-    pos_attr = new DetPosAttribute( Attribute.DETECTOR_POS, position );
+    Attribute pos_attr = new DetPosAttribute( Attribute.DETECTOR_POS, position);
     attr_list.setAttribute( pos_attr );
+  }
 
-    // Omega
-    if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
+
+  /**
+   *  Add the detector ID and segment ID info.
+   *
+   *  @ param   attr_list       The attribute list to which the
+   *                            attribute is added
+   *  @ param   group_segments  The list of detector segments in this group
+   */
+  private void Add_DetAndSegID( AttributeList attr_list,
+                                Segment       group_segments[] )
+  {
+    if ( group_segments.length <= 0 )
+      return;
+
+    int det_ids[] = new int[ group_segments.length ];
+    int seg_ids[] = new int[ group_segments.length ];
+    for ( int i = 0; i < group_segments.length; i++ )
     {
-      float raw_angle = 0f;
-      if ( group_segments.length >= 0 )
-        raw_angle = (float)run_file.RawDetectorAngle( group_segments[0] );
-
-      float omega = tof_calc.Omega( raw_angle );
-      FloatAttribute omega_attr = new FloatAttribute( Attribute.OMEGA, omega );
-      attr_list.setAttribute( omega_attr );
+      det_ids[i] = group_segments[i].DetID();
+      seg_ids[i] = group_segments[i].SegID();
     }
+    Attribute int_list_attr = new IntListAttribute( Attribute.DETECTOR_IDS,
+                                          det_ids );
+    attr_list.setAttribute( int_list_attr );
 
-    // Raw Detector Angle ...........
-    float_attr = new FloatAttribute(Attribute.RAW_ANGLE,
-                      (float)run_file.RawDetectorAngle( group_segments[0]) );
-    attr_list.setAttribute( float_attr );
+    int_list_attr = new IntListAttribute( Attribute.SEGMENT_IDS, seg_ids );
+    attr_list.setAttribute( int_list_attr );
+  }
 
-    // "Raw distance"......
-    if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER &&
-         group_segments.length > 0                               )
+
+  /**
+   *  Add the crate slot and input attributes, using information about the
+   *  first segment in the group.
+   *
+   *  @ param   attr_list       The attribute list to which the
+   *                            attribute is added
+   *  @ param   group_segments  The list of detector segments in this group
+   *  @ param   runfile         The runfile from which the crate, slot and
+   *                            input is read.
+   */
+  private void Add_CrateSlotInput( AttributeList attr_list, 
+                                   Segment       group_segments[],
+                                   Runfile       runfile )
+  {
+    if ( group_segments.length <= 0 )
+      return;
+
+    int crates[] = new int[ group_segments.length ];
+    int slots[]  = new int[ group_segments.length ];
+    int inputs[] = new int[ group_segments.length ];
+    for ( int id = 0; id < group_segments.length; id++ )
+    {                             
+      Segment seg = group_segments[id];        
+      crates[id] = runfile.CrateNum(seg); 
+      slots[id]  = runfile.SlotNum(seg); 
+      inputs[id] = runfile.InputNum(seg); 
+    }
+    attr_list.setAttribute( new IntListAttribute( Attribute.CRATE, crates ) );
+    attr_list.setAttribute( new IntListAttribute( Attribute.SLOT,  slots  ) );
+    attr_list.setAttribute( new IntListAttribute( Attribute.INPUT, inputs ) );
+  }
+
+
+  /**
+   *  Add the pixel info list attributes, sharing a data grid object
+   *  if possible. 
+   *
+   *  @ param   attr_list       The attribute list to which the
+   *                            attribute is added
+   *  @ param   group_segments  The list of detector segments in this group
+   */
+  private void Add_PixelInfo( AttributeList attr_list, Segment group_segments[])
+  {
+    if ( group_segments.length <= 0 )
+      return;
+
+    short      row;
+    short      col;
+    int        seg_id;
+    int        det_id;
+    IDataGrid  data_grid;
+    Integer    key;
+    IPixelInfo    list[] = new IPixelInfo[group_segments.length];
+    PixelInfoList pil;
+    for ( int i = 0; i < group_segments.length; i++ )
     {
-      float raw_distance = 0;                // needed for TOF_DG_SPECTROMETER
-      for ( int i = 0; i < group_segments.length; i++ )
-        raw_distance += (float)run_file.RawFlightPath( group_segments[i] );
-      float_attr = new FloatAttribute( Attribute.RAW_DISTANCE,
-                                       raw_distance/group_segments.length );
-      attr_list.setAttribute( float_attr );
+      Add_DetectorDataGrid( group_segments[i].DetID() );
+
+      det_id = group_segments[i].DetID();
+      seg_id = group_segments[i].SegID();
+      row = (short)group_segments[i].Row();
+      col = (short)group_segments[i].Column();
+
+      key = new Integer(det_id);
+      data_grid = (IDataGrid)det_data_grids.get( key );
+      list[i] = new DetectorPixelInfo( seg_id, row, col, data_grid );
     }
-
-    // Delta 2 theta ( range of scattering angles covered ), assuming 1" tube
-    float det_width_factor = 1.45530928f;  // detector width in meters times
-                                           // 180/PI to convert from radians
-                                           // to degrees.
-    float delta_2theta = det_width_factor/final_path;
-    float_attr =new FloatAttribute(Attribute.DELTA_2THETA, delta_2theta  );
-    attr_list.setAttribute( float_attr );
-
-    // PixelInfo ....
-    if ( group_segments.length > 0 )
-    {
-      short      row;
-      short      col;
-      int        seg_id;
-      int        det_id;
-      IDataGrid  data_grid;
-      Integer    key;
-      IPixelInfo    list[] = new IPixelInfo[group_segments.length]; 
-      PixelInfoList pil;
-      for ( int i = 0; i < group_segments.length; i++ )
-      {
-        Add_DetectorDataGrid( group_segments[i].DetID() );
-
-        det_id = group_segments[i].DetID();
-        seg_id = group_segments[i].SegID();
-        row = (short)group_segments[i].Row();
-        col = (short)group_segments[i].Column();
-
-        key = new Integer(det_id);
-        data_grid = (IDataGrid)det_data_grids.get( key );
-        list[i] = new DetectorPixelInfo( seg_id, row, col, data_grid );   
-      }
-      pil = new PixelInfoList(list);
-      attr_list.setAttribute( 
-                  new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST, pil) );
-    }
-
-    // SegmentInfo ....
-
-    if ( group_segments.length > 0 )
-      if(instrument_type==InstrumentType.TOF_SCD)
-         Add_DetectorCenterPosition(attr_list,group_segments[0].DetID());
-
-    if ( group_segments.length > 0 )           // add the SegInfoListAttribute
-    {
-                                               // add the crate, input & slot
-                                               // info for the first segment
-                                               // in the group
-      int crates[] = new int[ group_segments.length ];
-      int slots[]  = new int[ group_segments.length ];
-      int inputs[] = new int[ group_segments.length ];
-      for ( int id = 0; id < group_segments.length; id++ )
-      {
-        Segment seg = group_segments[id];        
-        crates[id] = runfile.CrateNum(seg); 
-        slots[id]  = runfile.SlotNum(seg); 
-        inputs[id] = runfile.InputNum(seg); 
-      }
-      attr_list.setAttribute( new IntListAttribute( "Crate", crates ) );
-      attr_list.setAttribute( new IntListAttribute( "Slot",  slots  ) );
-      attr_list.setAttribute( new IntListAttribute( "Input", inputs ) );
-    }
-
-    // Solid angle
-    float_attr =new FloatAttribute(Attribute.SOLID_ANGLE,
-                                   GrpSolidAngle( group_id ) );
-    attr_list.setAttribute( float_attr );
-
-    // Efficiency Factor 
-    attr_list.setAttribute( nominal_eff_attr );
-
-    // Number of pulses...... 
-    Add_NumberOfPulses( attr_list );
-
-    // Total Counts  ........
-    try{
-      float total = 0;
-      float counts[] = spectrum.getY_values();
-      if ( counts != null )
-        for ( int i = 0; i < counts.length; i++ )
-          total += counts[i]; 
-      float_attr = new FloatAttribute( Attribute.TOTAL_COUNT, total );
-      attr_list.setAttribute( float_attr );
-    }
-    catch(Exception e)
-    {
-      System.out.println("Exception in RunfileRetriever.AddSpectrumAttributes");
-      System.out.println("Exception is " + e );
-      e.printStackTrace();
-    };
-
-    attr_list.trimToSize();
-    spectrum.setAttributeList( attr_list );
+    pil = new PixelInfoList(list);
+    attr_list.setAttribute(
+                new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST, pil) );
   }
 
 
   /**
    *  Add "shared" number of pulses attribute to the specified Attribute list
+   *
+   *  @ param   attr_list       The attribute list to which the
+   *                            attribute is added
    */
-  private void Add_NumberOfPulses( AttributeList attr_list )
+  private void AddShared_NumberOfPulses( AttributeList attr_list )
   {
     if ( num_pulses_attr == null )
       num_pulses_attr =new FloatAttribute(Attribute.NUMBER_OF_PULSES,
@@ -1230,8 +1375,11 @@ private float CalculateEIn()
 
   /**
    *  Add "shared" initial path attribute to the specified Attribute list
+   *
+   *  @ param   attr_list       The attribute list to which the
+   *                            attribute is added
    */
-  private void Add_InitialPath( AttributeList attr_list )
+  private void AddShared_InitialPath( AttributeList attr_list )
   {
     if ( initial_path_attr == null )
       initial_path_attr =new FloatAttribute(Attribute.INITIAL_PATH,
@@ -1242,8 +1390,11 @@ private float CalculateEIn()
 
   /**
    *  Add "shared" run number attribute to the specified Attribute list
+   *
+   *  @ param   attr_list       The attribute list to which the
+   *                            attribute is added
    */
-  private void Add_RunNumber( AttributeList attr_list )
+  private void AddShared_RunNumber( AttributeList attr_list )
   { 
     if ( run_num_attr == null )
     {
@@ -1261,7 +1412,7 @@ private float CalculateEIn()
    *  @param  attr_list  The list of attributes to which the orientation
    *                     attribute is added.  
    */
-  private void AddSCD_SampleOrientation( AttributeList attr_list )
+  private void AddShared_SCD_SampleOrientation( AttributeList attr_list )
   {
     if ( scd_sample_orientation_attr == null )
     {
@@ -1277,13 +1428,13 @@ private float CalculateEIn()
 
   /**
    * Add raw Detector (not segment) angle and secondary flight path to
-   * the list of attributes.  
+   * the list of attributes for old SCD analysis codes.  
    *
    * @param attr_list The list of attributes to which the detector
    *                  attributes are added.
    * @param id        Detector number.
    */
-    private void Add_DetectorCenterPosition( AttributeList attr_list, int id )
+    private void AddSCD_DetectorCenterInfo( AttributeList attr_list, int id )
     {
                              // to allow sharing the attributes, we keep them 
                              // in a hash table, keyed by a string form of 
@@ -1423,8 +1574,6 @@ private float CalculateEIn()
          det_data_grids.put( key, data_grid );
        }
     }
-
-
 
 
  /**
