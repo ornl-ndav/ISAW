@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/08/28 02:28:11  bouzekc
+ *  Removed setEnabled() method.
+ *
  *  Revision 1.15  2003/08/28 02:01:58  bouzekc
  *  Modified to work with new ParameterGUI.
  *
@@ -177,23 +180,6 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
   }
 
   //~ Methods ******************************************************************
-
-  /**
-   * Set the enabled state of the JRadioButtons.
-   *
-   * @param enableMe Whether to set this RadioButtonPG enabled.
-   */
-  public void setEnabled( boolean enableMe ) {
-    enabled = enableMe;
-
-    if( ( getEntryWidget(  ) != null ) && ( radioButtons != null ) ) {
-      entrywidget.setEnabled( enabled );
-
-      for( int i = 0; i < radioButtons.size(  ); i++ ) {
-        ( ( JRadioButton )radioButtons.get( i ) ).setEnabled( enableMe );
-      }
-    }
-  }
 
   /**
    * Sets the value by using a String corresponding to a JRadioButtons label.
@@ -419,6 +405,10 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    *        it is not found.
    */
   private int getButtonIndex( String buttonName ) {
+    if( radioChoices == null ) {
+      return -1;
+    }
+
     boolean found  = false;
     int foundIndex = -1;
 

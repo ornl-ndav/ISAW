@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/08/28 02:28:09  bouzekc
+ *  Removed setEnabled() method.
+ *
  *  Revision 1.9  2003/08/28 01:43:55  bouzekc
  *  Modified to work with new ParameterGUI.
  *
@@ -204,16 +207,6 @@ public class BooleanPG extends ParameterGUI
     entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
     this.setEnabled(this.getEnabled());
     super.initGUI();
-  }
-
-  /**
-   * Set the enabled state of the JCheckBox.
-   */
-  public void setEnabled(boolean enabled){
-    this.enabled=enabled;
-    if(this.getEntryWidget()!=null){
-      ((JCheckBox)(entrywidget.getComponent(0))).setEnabled(this.enabled);
-    }
   }
 
   /*
