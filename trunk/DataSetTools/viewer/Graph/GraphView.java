@@ -4,6 +4,9 @@
  * Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.7  2001/04/02 20:43:12  dennis
+ *  num_bins_ui is now properly initilized to max X steps - 1.
+ *
  *  Revision 1.6  2001/02/09 14:20:15  dennis
  *  Added last update time to graph title, if it is present as
  *  a Data attribute.
@@ -291,7 +294,7 @@ private Component MakeControlArea()
   control_area.add( x_range_ui );
 
   int num_cols = getDataSet().getMaxXSteps();
-  n_bins_ui = new TextValueUI( "Num Bins", num_cols );
+  n_bins_ui = new TextValueUI( "Num Bins", num_cols-1 );
   control_area.add( n_bins_ui );
                                                      // Add the y-range slider
   hgraph_scale_slider.setPreferredSize( new Dimension(120,50) );
