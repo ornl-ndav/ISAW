@@ -1,7 +1,7 @@
 /*
  * File:  FitGaussianPeak.java
  *
- * Copyright (C) 2003, Dennis Mikkelson
+ * Copyright (C) 2005, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,13 +23,17 @@
  *           Menomonie, WI 54751, USA
  *
  * This work was supported by the National Science Foundation under grant
- * number DMR-0218882, and by the Intense Pulsed Neutron Source Division
+ * number DMR-0426797, and by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/04/08 19:03:54  dennis
+ * Added basic main program for testing.
+ * Fixed copyright date and NSF grant number.
+ *
  * Revision 1.1  2005/04/06 03:09:05  dennis
  * Initial version of operator to fit a Gaussian to an
  * isolated peak.
@@ -45,6 +49,8 @@ import gov.anl.ipns.MathTools.Functions.*;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import DataSetTools.retriever.*;
+import DataSetTools.viewer.*;
 
 /**
  *  This class fits a Gaussian to a peak in a specified interval of a 
@@ -59,7 +65,7 @@ public class FitGaussianPeak implements Wrappable
   public double   min_x = 22140;
   public double   max_x = 24440;
 
-  private boolean debug_flag = false;
+  private boolean debug_flag = true;
 
   /**
    *  Get the command name to be used in scripts.
@@ -114,6 +120,7 @@ public class FitGaussianPeak implements Wrappable
     s.append( "  error_in_fwhm\n" );
     return s.toString();
   }
+
 
   /**
    *  This operator uses a Marquardt type optimization routine to fit a
@@ -215,6 +222,7 @@ public class FitGaussianPeak implements Wrappable
 
     if ( debug_flag )                          // add model function to DataSet
     {
+      data_set.addLog_entry( "Added model function for peak at " + coefs[0] );
       FunctionModel model = new FunctionModel( x_scale, function, 3 ); 
       data_set.addData_entry( model );
       data_set.notifyIObservers( IObserver.DATA_CHANGED );
@@ -232,4 +240,37 @@ public class FitGaussianPeak implements Wrappable
 
     return parameters;
   }
+
+
+  /**
+   *
+   *  Main program for testing purposes.
+   *
+   */
+  public static void main( String args[] )
+  {
+    String  file_name   = "/usr2/ARGONNE_DATA/gppd12358.run";
+    RunfileRetriever rr = new RunfileRetriever( file_name );
+
+    DataSet ds = rr.getDataSet( 1 );
+    FitGaussianPeak op_core = new FitGaussianPeak();
+    op_core.data_set = ds;
+    op_core.group_id = 81;
+    op_core.min_x    = 11600;
+    op_core.max_x    = 12200;
+    Operator fit_op = new JavaWrapperOperator( op_core );
+
+    Object result = fit_op.getResult();
+    if ( result instanceof ErrorString )
+      System.out.println("Error occured: " + ((ErrorString)result).toString());
+    else if ( result instanceof Vector )
+    {
+      Vector values = (Vector)result;
+      for ( int i = 0; i < values.size(); i++ )
+        System.out.println("" + values.elementAt(i) );
+    }
+
+    new ViewManager( ds, ViewManager.IMAGE );
+  }
+
 }
