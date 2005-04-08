@@ -30,6 +30,13 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2005/04/08 21:59:52  dennis
+ * The fitted function now includes a linear background.
+ * The coefficients of the linear function and the expression
+ * defining the linear function are now added on to the end
+ * of the returned Vector.
+ * Set debug flag to false.
+ *
  * Revision 1.3  2005/04/08 21:08:31  dennis
  * Changed to return Floats instead of Doubles in the return
  * Vector.
@@ -49,6 +56,7 @@ import java.util.*;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.MathTools.Functions.*;
 
 import DataSetTools.dataset.*;
@@ -69,7 +77,7 @@ public class FitGaussianPeak implements Wrappable
   public double   min_x = 22140;
   public double   max_x = 24440;
 
-  private boolean debug_flag = true;
+  private boolean debug_flag = false;
 
   /**
    *  Get the command name to be used in scripts.
@@ -205,24 +213,57 @@ public class FitGaussianPeak implements Wrappable
       if ( y[i] > y[index_of_max] )
         index_of_max = i; 
     
-    System.out.println("n_pts = " + n_pts );
-    System.out.println("Max of " + y[index_of_max] + " at " + index_of_max );
+    if ( debug_flag )
+    {
+      System.out.println("n_pts = " + n_pts );
+      System.out.println("Max of " + y[index_of_max] + " at " + index_of_max );
+    }
 
     double fwhm = (max_x - min_x)/10;
     double amplitude = y[ index_of_max ];
-    Gaussian function = new Gaussian( x[index_of_max], amplitude, fwhm);
+    Gaussian g1 = new Gaussian( x[index_of_max], amplitude, fwhm);
+
+    String p_names[] = { "y0", "m" };
+    double p_vals[]  = { 1, 0 };
+    String x0_str    = (new Double( x[index_of_max] ) ).toString();
+    String lin_funct = "m * (x- " + x0_str + ") + y0";
+    Expression e1 = new Expression( lin_funct, "x", p_names, p_vals );
+   
+    ClosedInterval interval = new ClosedInterval((float)min_x, (float)max_x );
+    e1.setDomain( interval );
+
+    IOneVarParameterizedFunction funs[] = new IOneVarParameterizedFunction[2];
+    funs[0] = g1;
+    funs[1] = e1;
+
+    SumFunction function = new SumFunction( funs );
+    function.setDomain( interval );
+
+    double coefs[];
+    String names[];
+    if ( debug_flag )
+    {
+      System.out.println("Before fit, initial params are" );
+      coefs = function.getParameters();
+      names = function.getParameterNames();
+      for ( int i = 0; i < function.numParameters(); i++ )
+        System.out.println(names[i] + " = " + coefs[i] );
+    }
 
     CurveFitter fitter = new MarquardtArrayFitter( function, x, y, sigma, 
                                                    1.0e-20, 500 );
 
     double chi_sqr    = fitter.getChiSqr();
     double p_sigmas[] = fitter.getParameterSigmas();
-    double coefs[] = function.getParameters();
-    String names[] = function.getParameterNames();
-    System.out.println("Chi Sq = " + chi_sqr );
-    for ( int i = 0; i < function.numParameters(); i++ )
-      System.out.println(names[i] + " = " + coefs[i] + 
-                         " +- " + p_sigmas[i] );
+    coefs = function.getParameters();
+    names = function.getParameterNames();
+    if ( debug_flag )
+    {
+      System.out.println("Chi Sq = " + chi_sqr );
+      for ( int i = 0; i < function.numParameters(); i++ )
+        System.out.println(names[i] + " = " + coefs[i] + 
+                           " +- " + p_sigmas[i] );
+    }
 
     if ( debug_flag )                          // add model function to DataSet
     {
@@ -241,6 +282,7 @@ public class FitGaussianPeak implements Wrappable
       parameters.addElement( new Float( coefs[i] ) );
       parameters.addElement( new Float( p_sigmas[i] ) );
     }
+    parameters.addElement( "Background Function = " + lin_funct );
 
     return parameters;
   }
@@ -260,8 +302,8 @@ public class FitGaussianPeak implements Wrappable
     FitGaussianPeak op_core = new FitGaussianPeak();
     op_core.data_set = ds;
     op_core.group_id = 81;
-    op_core.min_x    = 11600;
-    op_core.max_x    = 12200;
+    op_core.min_x    = 11700;
+    op_core.max_x    = 13000;
     Operator fit_op = new JavaWrapperOperator( op_core );
 
     Object result = fit_op.getResult();
