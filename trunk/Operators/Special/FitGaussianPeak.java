@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/04/08 21:08:31  dennis
+ * Changed to return Floats instead of Doubles in the return
+ * Vector.
+ *
  * Revision 1.2  2005/04/08 19:03:54  dennis
  * Added basic main program for testing.
  * Fixed copyright date and NSF grant number.
@@ -230,12 +234,12 @@ public class FitGaussianPeak implements Wrappable
    
     Vector parameters = new Vector();
     parameters.addElement( "ChiSq" );
-    parameters.addElement( new Double( chi_sqr) );
+    parameters.addElement( new Float( chi_sqr) );
     for ( int i = 0; i < coefs.length; i++ )
     {
       parameters.addElement( names[i] );
-      parameters.addElement( new Double( coefs[i] ) );
-      parameters.addElement( new Double( p_sigmas[i] ) );
+      parameters.addElement( new Float( coefs[i] ) );
+      parameters.addElement( new Float( p_sigmas[i] ) );
     }
 
     return parameters;
