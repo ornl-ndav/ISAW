@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.54  2005/04/10 18:52:21  rmikk
+ *  Updated the ObjectState for a DataSetViewer right before it is being
+ *  replaced by another DataSetViewer.
+ *
  *  Revision 1.53  2005/02/02 21:53:18  dennis
  *  Added string constants for PRINT and SAVE_IMAGE options.
  *  Re-ordered File menu items.  So close option is last.
@@ -376,8 +380,11 @@ public class ViewManager extends    JFrame
      getContentPane().setVisible(false);
      getContentPane().removeAll();
     
-     if ( viewer != null )
+     if ( viewer != null ){
          state = viewer.getState();
+         ObjectState st= viewer.getObjectState( false);
+         Ostate.reset( viewType, st);
+     }
 
       viewer = ViewManager.getDataSetView( tempDataSet,view_type, state);
       if( viewer instanceof ImageView)
