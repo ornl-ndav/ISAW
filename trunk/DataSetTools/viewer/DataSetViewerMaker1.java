@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2005/04/10 18:50:19  rmikk
+ *  Implement IPreserveState and sends ObjectState info to the
+ *   DataBlockSelector and LargeJTableViewComponent
+ *
  *  Revision 1.17  2005/01/10 15:55:08  dennis
  *  Removed empty statement.
  *
@@ -112,6 +116,7 @@ import java.awt.event.*;
 import java.awt.*;
 import DataSetTools.viewer.Table.*;
 import Command.*;
+import DataSetTools.viewer.Table.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.util.*;
 import java.util.*;
@@ -127,8 +132,7 @@ import javax.swing.event.*;
 *    get the Controls and adds then to the Right part of the split pane, and maintains
 *    the DataSetXConversionsTable.
 */
-public class DataSetViewerMaker1  extends DataSetViewer
-  {
+public class DataSetViewerMaker1  extends DataSetViewer   {
    DataSet ds;
    ViewerState state;
    IArrayMaker_DataSet viewArray;
@@ -441,4 +445,32 @@ public class DataSetViewerMaker1  extends DataSetViewer
      jf.invalidate();
 
     }
+  
+  //-------------------- IPreserveState Methods & Variables-----------------
+   ObjectState Ostate= null;
+   
+   public void setObjectState( ObjectState new_state){
+      Ostate = new_state;
+      if( viewArray instanceof DataBlockSelector)
+          ((DataBlockSelector)viewArray).setObjectState( 
+                         (ObjectState)Ostate.get("DataBlockSelector"));
+      if(viewComp instanceof LargeJTableViewComponent)
+          ((LargeJTableViewComponent)viewComp).setObjectState( 
+                  (ObjectState)Ostate.get("JTable"));
+      
+   }
+   public ObjectState getObjectState( boolean is_default){
+       ObjectState state = new ObjectState();
+
+       if( viewArray instanceof DataBlockSelector)
+           state.insert("DataBlockSelector",
+                   ((DataBlockSelector)viewArray).getObjectState( is_default));
+                          
+       if(viewComp instanceof LargeJTableViewComponent)
+           state.insert("JTable",((LargeJTableViewComponent)viewComp).getObjectState 
+                   (is_default));
+       return state;
+       
+   }
+   
   }//DataSetViewerMaker1
