@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2005/04/10 18:48:50  rmikk
+ * Implements IPreserveState so field names, and sorted columns are
+ * retained.
+ *
  * Revision 1.17  2005/01/10 15:55:09  dennis
  * Removed empty statement.
  *
@@ -110,7 +114,6 @@ import DataSetTools.viewer.*;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
-
 import java.awt.event.*;
 import javax.swing.*; 
 import javax.swing.event.*;
@@ -124,14 +127,16 @@ import DataSetTools.operator.DataSet.Attribute.*;
   *  This class is the "ArrayMaker" part of a DataSetViewer that can be used
   *  to sort and select Data Blocks from a DataSet.
   */ 
-public class DataBlockSelector implements IArrayMaker_DataSet {
+public class DataBlockSelector implements IArrayMaker_DataSet,
+                       IPreserveState {
 
     DataSet DS;
     Vector Fields;      //The names of the Fields in the vies
     TableArray tbArray; // IVirtualArray2D that returns values
     ViewerState state;
     Integer[] GroupSort;
-
+    String SortFieldName="";
+    
     static final String SpFieldNames1 = "DetPos x;DetPos y;DetPos z;DetPos r;DetPos theta;";
     static final String SpFieldNames = SpFieldNames1 + "DetPos rho;DetPos phi;Group Index;Scat Ang;";
 
@@ -144,8 +149,9 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
     public DataBlockSelector(DataSet DS,  ViewerState state) {
         this.DS = DS;
         Fields = new Vector();
+        this.state = state;
         Fields.addElement("Group ID");
-        FieldNames = GetFieldNames( state);
+        FieldNames = GetFieldNames( );
         for (int i = 0; i < FieldNames.length; i++)
             if (Fields.indexOf(FieldNames[i]) < 0)
                 Fields.addElement(FieldNames[i]);
@@ -156,7 +162,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
         
     }
     String[] FieldNames ={"Scat Ang","Total Count"};
-    private String[] GetFieldNames( ViewerState state){
+    private String[] GetFieldNames( ){
 
        return FieldNames;
     }
@@ -302,7 +308,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
 
 
     /**
-     * Presently returns NO MenuItems
+     * Returns the menu options.  
      */   
     public ViewMenuItem[] getSharedMenuItems() {
         JMenuItem jmi = new JMenuItem( "Clear All");
@@ -357,7 +363,60 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
         return null;
 
     }
-
+   //------------- IPreserveState Methods ---------------
+    ObjectState Ostate = null;
+    
+    public void setObjectState(ObjectState new_state){
+        Ostate = new_state;
+        String Fieldss = (String)Ostate.get("Fields");
+        FieldNames = Fieldss.split(";");
+        Fields = new Vector();
+        Fields.addElement("Group ID");
+        
+        for (int i = 0; i < FieldNames.length; i++)
+            if (Fields.indexOf(FieldNames[i]) < 0)
+                Fields.addElement(FieldNames[i]);
+        tbArray = new TableArray(DS, Fields);
+        GroupSort = new Integer[ DS.getNum_entries()];
+        for (int i = 0; i < GroupSort.length; i++)
+            GroupSort[i] = new Integer(i);
+        
+        
+        SortFieldName =(String) Ostate.get("SortField");
+        selectedColumn = -1;
+        if(SortFieldName.equals("GroupID"))
+            selectedColumn = 0;
+        else
+            for( int  j=0; j< FieldNames.length; j++)
+                if( FieldNames[j].equals(SortFieldName))
+                    selectedColumn = j;
+        Arrays.sort(GroupSort, new comparre());
+        fireActionEvent("DataChanged");
+        
+    }
+    
+    public ObjectState getObjectState(boolean is_default){
+        ObjectState state= new ObjectState();
+        String Fields ="Scat Ang;Total Count";
+        if( !is_default){
+            Fields ="";
+            for( int i=0; i<tbArray.getNumColumns() ;i++){
+                Fields +=tbArray.getColumnName(i);
+                if( i+1 < tbArray.getNumColumns())
+                    Fields +=";";
+            }
+        }
+       state.insert("Fields", Fields);
+       if( is_default)
+           state.insert("SortField", "");
+       else
+            state.insert("SortField", SortFieldName);
+       return state;
+       
+       
+    }
+    
+    //-------------- End IPreserveState Info --------------------
 
     Vector listeners = new Vector();
 
@@ -958,9 +1017,12 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
 
     class SortActionListener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {
-            if( selectedColumn < 0) return;
-            if (selectedColumn >= tbArray.getNumColumns()) return ;
+            if( selectedColumn < 0) 
+                return;
+            if (selectedColumn >= tbArray.getNumColumns()) 
+                return ;
             Arrays.sort(GroupSort, new comparre());
+            SortFieldName = tbArray.getColumnName( selectedColumn );
             fireActionEvent("DataChanged");
         }
     }
