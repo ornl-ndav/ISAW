@@ -30,6 +30,15 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2005/04/11 02:27:09  dennis
+ * Changed tolerance parameter to fitter to 10e-8, instead of 10e-20,
+ * and changed max number of steps to 100, instead of 500.  This
+ * allows the fitting process to terminate with essentially the same
+ * values as before in a few tens of steps, rather than always going
+ * through 500 iterations, attempting to meet the unrealistic tolerance.
+ * This should speed up programs that spent most of their time in the
+ * fit, by a factor of 20-50.
+ *
  * Revision 1.4  2005/04/08 21:59:52  dennis
  * The fitted function now includes a linear background.
  * The coefficients of the linear function and the expression
@@ -251,7 +260,7 @@ public class FitGaussianPeak implements Wrappable
     }
 
     CurveFitter fitter = new MarquardtArrayFitter( function, x, y, sigma, 
-                                                   1.0e-20, 500 );
+                                                   1.0e-8, 100 );
 
     double chi_sqr    = fitter.getChiSqr();
     double p_sigmas[] = fitter.getParameterSigmas();
