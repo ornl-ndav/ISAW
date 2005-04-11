@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2005/04/11 22:00:32  dennis
+ * Now checks to make sure that all computed parameters are
+ * valid finite numbers.  If not, an error string is returned.
+ *
  * Revision 1.5  2005/04/11 02:27:09  dennis
  * Changed tolerance parameter to fitter to 10e-8, instead of 10e-20,
  * and changed max number of steps to 100, instead of 500.  This
@@ -139,6 +143,13 @@ public class FitGaussianPeak implements Wrappable
     s.append( " 'FWHM'\n" );
     s.append( "  fwhm\n" );
     s.append( "  error_in_fwhm\n" );
+
+    s.append( "@error If an error occurs during processing, an ");
+    s.append( "error string indicating the cause of the error is ");
+    s.append( "returned.");
+    s.append( "If the fit just failed to converge, check the data");
+    s.append( "to see if it is valid, or too noisy to do a");
+    s.append( "meaningful fit.");
     return s.toString();
   }
 
@@ -282,19 +293,46 @@ public class FitGaussianPeak implements Wrappable
       data_set.notifyIObservers( IObserver.DATA_CHANGED );
     }
    
+    boolean failed = false;
     Vector parameters = new Vector();
     parameters.addElement( "ChiSq" );
     parameters.addElement( new Float( chi_sqr) );
+    if ( BadValue(chi_sqr) )
+      failed = true;
+
     for ( int i = 0; i < coefs.length; i++ )
     {
       parameters.addElement( names[i] );
       parameters.addElement( new Float( coefs[i] ) );
       parameters.addElement( new Float( p_sigmas[i] ) );
+      if ( BadValue( coefs[i] ) || BadValue( p_sigmas[i] ) )
+        failed = true;
     }
     parameters.addElement( "Background Function = " + lin_funct );
 
-    return parameters;
+    if ( failed )
+      return new ErrorString( "Fit failed to converge, check data.");
+    else
+      return parameters;
   }
+
+  /**
+   *  Check for infinite or NaN values.
+   *
+   *  @param value the double value to check for validity
+   *
+   *  @return True if the value is infinite or NaN, false otherwise.
+   */
+   private boolean BadValue( double value )
+   {
+     if ( Double.isNaN( value ) )
+       return true;
+
+     if ( Double.isInfinite( value ) )
+       return true;
+
+     return false;
+   }
 
 
   /**
