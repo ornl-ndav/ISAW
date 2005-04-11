@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.56  2005/04/11 00:49:13  rmikk
+ *  Added a Save Object State and Load Object State options under the 
+ *  File Menu
+ *
  *  Revision 1.55  2005/04/11 00:16:07  rmikk
  *  Added a setObjectState and getObjectState methods
  *
@@ -788,7 +792,12 @@ private void BuildFileMenu()
      file_menu.add( gov.anl.ipns.Util.Sys.PrintComponentActionListener.
           getActiveMenuItem(PRINT, viewer));
   
-
+  JMenuItem SaveState= new JMenuItem( "Save Object State");
+  JMenuItem LoadState = new JMenuItem("Load Object State");
+  file_menu.add( SaveState );
+  file_menu.add( LoadState);
+  SaveState.addActionListener( file_menu_handler);
+  LoadState.addActionListener( file_menu_handler);
   button = new JMenuItem( CLOSE_LABEL );
   button.addActionListener( file_menu_handler );
   file_menu.add( button );
@@ -1053,7 +1062,14 @@ private float solve( float new_x ) // find what x in the original DataSet maps
       {
         DataSet new_ds = (DataSet)tempDataSet.clone();
         dataSet.notifyIObservers( new_ds );
+      }else if( action.equals("Save Object State")){
+         Ostate.openFileChooser(true);
+      }else if( action.equals("Load Object State")){
+        
+         Ostate.openFileChooser(false);
+         setObjectState(Ostate);
       }
+      
       else
         System.out.println( action );
     }
