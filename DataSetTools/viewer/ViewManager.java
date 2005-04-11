@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.55  2005/04/11 00:16:07  rmikk
+ *  Added a setObjectState and getObjectState methods
+ *
  *  Revision 1.54  2005/04/10 18:52:21  rmikk
  *  Updated the ObjectState for a DataSetViewer right before it is being
  *  replaced by another DataSetViewer.
@@ -784,6 +787,7 @@ private void BuildFileMenu()
   if( !hasPrint ) 
      file_menu.add( gov.anl.ipns.Util.Sys.PrintComponentActionListener.
           getActiveMenuItem(PRINT, viewer));
+  
 
   button = new JMenuItem( CLOSE_LABEL );
   button.addActionListener( file_menu_handler );
@@ -1177,5 +1181,29 @@ private float solve( float new_x ) // find what x in the original DataSet maps
     }catch( Throwable ss){
       System.out.println(" finalize error "+ss);
     }
+ }
+ 
+ /**
+  * Sets the ObjectState and updates the ObjectState for the current 
+  * DataSetViewer to the corresponding ObjectState
+  * 
+  * @param ObjState  The new ObjectState
+  */
+ public void setObjectState( ObjectState ObjState ){
+   
+   this.Ostate = ObjState;
+   if(Ostate == null)
+       Ostate = new ObjectState();
+   ObjectState st =(ObjectState) Ostate.get(viewType);
+   if( st !=null)
+      viewer.setObjectState( st);
+ }
+ 
+ public ObjectState getObjectState( boolean is_default){
+   ObjectState st = viewer.getObjectState( false );
+   if(  st != null)
+       Ostate.reset( viewType, st);
+   return Ostate;
+   
  }
 }
