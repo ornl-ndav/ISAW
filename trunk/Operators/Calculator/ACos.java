@@ -1,5 +1,5 @@
 /*
- * File:  ASin.java 
+ * File:  ACos.java 
  *
  * Copyright (C) 2002, Peter Peterson
  *
@@ -31,11 +31,9 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.2  2005/04/13 13:56:04  hammonds
+ *  Revision 1.1  2005/04/13 13:56:03  hammonds
  *  Add new function to ISAW
  *
- *  Revision 1.1  2005/04/12 21:51:23  hammonds
- *  Add trig methods for easy use in scripts.
  *
  *
  */
@@ -49,47 +47,47 @@ import java.text.DecimalFormat;
 import java.util.Vector;
 
 /** 
- * This operator calculates the arcsin of the given angle in degrees
+ * This operator calculates the arc cosine of the given angle in degrees
  * sample.
  */
-public class ASin extends GenericCalculator{
+public class ACos extends GenericCalculator{
   /**
-   * Creates operator with title "Arc Sin of Angle in Radians"
+   * Creates operator with title "Arc Cosine of Angle in Radians"
    */  
-  public ASin(){
-    super( "Arc Sin of Angle in Radians" );
+  public ACos(){
+    super( "Arc Cosine of Angle in Radians" );
   }
 
   /** 
-   * Creates operator with title "Arc Sin of Angle in Radians" and the
+   * Creates operator with title "Arc Cosine of Angle in Radians" and the
    * specified list of parameters. The getResult method must still be
    * used to execute the operator.
    *
-   * @param a value whose arc sine is to be returned
+   * @param a value whose arc cosine is to be returned
    */
-  public ASin( float a ){
+  public ACos( float a ){
     this(); 
     
     getParameter(0).setValue(new Float(a));
   }
 
   /**
-   * Returns description/attributes of ASin for a user
+   * Returns description/attributes of ACos for a user
    * activating the Help System
    */
   public String getDocumentation(){
     StringBuffer sb = new StringBuffer();
 
     // overview
-    sb.append("@overview This operator calculates the arc sine of the given value.");
+    sb.append("@overview This operator calculates the arc cosine of the given value.");
     // algorithm
-    sb.append("@algorithm Value is passed to java's Math.asin");
+    sb.append("@algorithm Value is passed to java's Math.acos");
     // parameters
-    sb.append("@param float value whose arc sine is to be returned");
+    sb.append("@param float value whose arc cosine is to be returned");
     // return
-    sb.append("@return arc sine of specified value in the range -pi/2 to pi/2");
+    sb.append("@return arc cosine of specified value in the range 0.0 to pi");
     // errors
-    sb.append("@error ");
+    sb.append("@error returns message string if out of range");
     
     return sb.toString();
   }
@@ -97,11 +95,11 @@ public class ASin extends GenericCalculator{
   /** 
    * Get the name of this operator to use in scripts
    * 
-   * @return  "ASin", the command used to invoke this 
+   * @return  "ACos", the command used to invoke this 
    *           operator in Scripts
    */
   public String getCommand(){
-    return "ASin";
+    return "ACos";
   }
 
   /** 
@@ -117,7 +115,7 @@ public class ASin extends GenericCalculator{
   /** 
    *  Executes this operator using the values of the current parameters.
    *
-   *  @return If successful, this operator returns the arc sine of the specified value.
+   *  @return If successful, this operator returns the arc cosine of the specified value.
    */
   public Object getResult(){
     // get the input value
@@ -126,7 +124,7 @@ public class ASin extends GenericCalculator{
     if ( (value < -1.0f) || (value > 1.0f)) {
       return new ErrorString("Input value is outside of the range -1 to 1");
     }
-    float angle = (float)Math.asin((double)value);
+    float angle = (float)Math.acos((double)value);
     
     return (new Float(angle));
   }
@@ -135,7 +133,7 @@ public class ASin extends GenericCalculator{
    *  Creates a clone of this operator.
    */
   public Object clone(){
-    ASin op = new ASin();
+    ACos op = new ACos();
     op.CopyParametersFrom( this );
     return op;
   }
@@ -146,7 +144,7 @@ public class ASin extends GenericCalculator{
    */
   public static void main( String args[] ){
     // try the operator with the default settings
-    ASin op = new ASin();
+    ACos op = new ACos();
     System.out.println("RESULT="+op.getResult());
 
     // Print help information

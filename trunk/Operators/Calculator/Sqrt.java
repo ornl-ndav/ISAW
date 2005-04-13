@@ -1,5 +1,5 @@
 /*
- * File:  ASin.java 
+ * File:  Sqrt.java 
  *
  * Copyright (C) 2002, Peter Peterson
  *
@@ -31,11 +31,8 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.2  2005/04/13 13:56:04  hammonds
+ *  Revision 1.1  2005/04/13 13:56:06  hammonds
  *  Add new function to ISAW
- *
- *  Revision 1.1  2005/04/12 21:51:23  hammonds
- *  Add trig methods for easy use in scripts.
  *
  *
  */
@@ -49,45 +46,44 @@ import java.text.DecimalFormat;
 import java.util.Vector;
 
 /** 
- * This operator calculates the arcsin of the given angle in degrees
- * sample.
+ * This operator calculates the square root of the input value
  */
-public class ASin extends GenericCalculator{
+public class Sqrt extends GenericCalculator{
   /**
-   * Creates operator with title "Arc Sin of Angle in Radians"
+   * Creates operator with title "Square Root"
    */  
-  public ASin(){
-    super( "Arc Sin of Angle in Radians" );
+  public Sqrt(){
+    super( "Square Root" );
   }
 
   /** 
-   * Creates operator with title "Arc Sin of Angle in Radians" and the
+   * Creates operator with title "Square Root" and the
    * specified list of parameters. The getResult method must still be
    * used to execute the operator.
    *
-   * @param a value whose arc sine is to be returned
+   * @param a the value whose square root will be calculated
    */
-  public ASin( float a ){
+  public Sqrt( float a ){
     this(); 
     
     getParameter(0).setValue(new Float(a));
   }
 
   /**
-   * Returns description/attributes of ASin for a user
+   * Returns description/attributes of Sqrt for a user
    * activating the Help System
    */
   public String getDocumentation(){
     StringBuffer sb = new StringBuffer();
 
     // overview
-    sb.append("@overview This operator calculates the arc sine of the given value.");
+    sb.append("@overview This operator calculates the square root of the input value.");
     // algorithm
-    sb.append("@algorithm Value is passed to java's Math.asin");
+    sb.append("@algorithm Value is passed to java's Math.sqrt");
     // parameters
-    sb.append("@param float value whose arc sine is to be returned");
+    sb.append("@param float value whose square root is to be returned");
     // return
-    sb.append("@return arc sine of specified value in the range -pi/2 to pi/2");
+    sb.append("@return Square root of input value");
     // errors
     sb.append("@error ");
     
@@ -97,11 +93,11 @@ public class ASin extends GenericCalculator{
   /** 
    * Get the name of this operator to use in scripts
    * 
-   * @return  "ASin", the command used to invoke this 
+   * @return  "Sqrt", the command used to invoke this 
    *           operator in Scripts
    */
   public String getCommand(){
-    return "ASin";
+    return "Sqrt";
   }
 
   /** 
@@ -111,7 +107,7 @@ public class ASin extends GenericCalculator{
     // new vector of parameters
     parameters = new Vector();
     // add the input parameter
-    addParameter( new FloatPG("Input Value", "0.707107"));
+    addParameter( new FloatPG("Input Value", "3.0"));
   }
 
   /** 
@@ -123,10 +119,10 @@ public class ASin extends GenericCalculator{
     // get the input value
     float value  = ((Float)getParameter(0).getValue()).floatValue();
     //Check to see if the input value is in the required range.
-    if ( (value < -1.0f) || (value > 1.0f)) {
-      return new ErrorString("Input value is outside of the range -1 to 1");
+    if ( value < 0.0 ) {
+      return new ErrorString("Sqrt: Input value must be >= 0.0");
     }
-    float angle = (float)Math.asin((double)value);
+    float angle = (float)Math.sqrt((double)value);
     
     return (new Float(angle));
   }
@@ -135,7 +131,7 @@ public class ASin extends GenericCalculator{
    *  Creates a clone of this operator.
    */
   public Object clone(){
-    ASin op = new ASin();
+    Sqrt op = new Sqrt();
     op.CopyParametersFrom( this );
     return op;
   }
@@ -146,7 +142,7 @@ public class ASin extends GenericCalculator{
    */
   public static void main( String args[] ){
     // try the operator with the default settings
-    ASin op = new ASin();
+    Sqrt op = new Sqrt();
     System.out.println("RESULT="+op.getResult());
 
     // Print help information
