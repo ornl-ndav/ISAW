@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/04/16 20:56:58  rmikk
+ * Added code to do nothing if a pointed at change notification  did not change
+ * the current pointed at.  Eliminated a StackOverflowError
+ *
  * Revision 1.11  2004/09/15 22:03:51  millermi
  * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
  *   Adding a second log required the boolean parameter to be changed
@@ -899,7 +903,14 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         return DSindx;
     }
 
-
+    int LastPointedAtIndex =-1;
+    public int getCurrentPointedAtIndex(){
+       return LastPointedAtIndex;
+    }
+    float LastPointedAtTime =-1;
+    public float getCurrentPointedAtTime(){
+        return LastPointedAtTime;
+    }
 
     /**
      * Sets the XConversion table.Assumes only one data set currently
@@ -908,7 +919,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     public void setPointedAt(floatPoint2D fpt) {
       
         float time;
-
+        LastPointedAtIndex =-1;  LastPointedAtTime = -1;
         if (Grids == null)
             return;
         time = getTime(fpt.y, fpt.x);
@@ -923,6 +934,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
 
         if (D == null)
             return;
+        LastPointedAtIndex = DSindx;
         if (getInt((Integer) state.get("NtimeChan"), 0) == 0) {
             XScale xscl = D.getX_scale();
 
@@ -933,6 +945,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         this.DSConversions.showConversions(time, DSindx);
         DataSets[0].setPointedAtIndex(DSindx);
         DataSets[0].setPointedAtX(time);
+        LastPointedAtTime = DataSets[0].getPointedAtX();
         DataSets[0].notifyIObservers(IObserver.POINTED_AT_CHANGED);
     }
 
@@ -965,9 +978,12 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     public floatPoint2D redrawNewSelect(String reason) {
       
         if (reason == IObserver.POINTED_AT_CHANGED) {
+          
             int DSindx = DataSets[0].getPointedAtIndex();
             float time = DataSets[0].getPointedAtX();
-
+            if(DSindx== this.LastPointedAtIndex)
+              if(time==this.LastPointedAtTime)
+                return null;
             this.DSConversions.showConversions(time, DSindx);
             Vector V = GetPixelInfoOp(DataSets[0], DSindx);
 
