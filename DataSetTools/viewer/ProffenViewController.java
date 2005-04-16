@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/04/16 20:57:29  rmikk
+ * Added code to do nothing if a pointed at change notification  did not change
+ * the current pointed at.  Eliminated a StackOverflowError
+ *
  * Revision 1.7  2004/08/18 17:17:54  rmikk
  * Added support for markers at integer hkl values if there is enough information
  *
@@ -317,6 +321,11 @@ public class ProffenViewController extends DataSetViewer implements
     public void redraw(String reason) {
      
         if (reason == IObserver.POINTED_AT_CHANGED) {
+            int ptIndx = this.getDataSet().getPointedAtIndex();
+            float time =this.getDataSet().getPointedAtX();
+            if(ArrayMaker.getCurrentPointedAtIndex()==ptIndx)
+              if(ArrayMaker.getCurrentPointedAtTime()==time)
+                return;
             floatPoint2D fpt = ArrayMaker.redrawNewSelect(reason);
 
             if (fpt != null)
@@ -409,7 +418,7 @@ public class ProffenViewController extends DataSetViewer implements
        
             if (evt.getActionCommand() == IViewComponent.POINTED_AT_CHANGED) {
                 floatPoint2D pt = Viewer.getPointedAt();
-
+                
                 ArrayMaker.setPointedAt(pt);
             }
         }
