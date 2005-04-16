@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2005/04/16 19:40:24  rmikk
+ *  Added Methods to work with the ObjectState. Brent's SelectedGraph View
+ *    can now remember, save, and restore its state.
+ *
  *  Revision 1.18  2005/01/10 15:55:08  dennis
  *  Removed empty statement.
  *
@@ -94,6 +98,8 @@ import gov.anl.ipns.ViewTools.Components.OneD.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 import gov.anl.ipns.ViewTools.UI.*;
+import gov.anl.ipns.ViewTools.Components.*;
+import DataSetTools.viewer.Table.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -180,6 +186,33 @@ public class DataSetViewerMaker  extends DataSetViewer
       viewComp.dataChanged(viewArray);
       repaint();
     }
+    //-------------------- IPreserveState Methods & Variables-----------------
+    ObjectState Ostate= null;
+   
+     public void setObjectState( ObjectState new_state){
+        Ostate = new_state;
+        if( viewArray instanceof IPreserveState)
+            ((IPreserveState)viewArray).setObjectState( 
+                           (ObjectState)Ostate.get("ArrayMaker"));
+        if(viewComp instanceof IPreserveState)
+            ((IPreserveState)viewComp).setObjectState( 
+                    (ObjectState)Ostate.get("View"));
+      
+     }
+     public ObjectState getObjectState( boolean is_default){
+         ObjectState state = new ObjectState();
+
+         if( viewArray instanceof IPreserveState)
+             state.insert("ArrayMaker",
+                     ((IPreserveState)viewArray).getObjectState( is_default));
+                          
+         if(viewComp instanceof IPreserveState)
+             state.insert("View",((IPreserveState)viewComp).getObjectState 
+                     (is_default));
+         return state;
+       
+     }
+   
 
   private class ancestor_listener implements AncestorListener {
     //methods
