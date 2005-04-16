@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.75  2005/04/16 18:50:49  rmikk
+ * The Display script command now returns a ViewManager when viewing a 
+ * DataSet
+ *
  * Revision 1.74  2005/01/10 20:15:12  rmikk
  * Fixed a misterious error with the & operation
  *
@@ -712,7 +716,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
 	        return i;
             }
             retn = execDisplay( S , j , end );
-            Result = null;
+            //Result = null;
             return retn;
             
         }else if( Command.equals("SAVE") ){
@@ -1018,6 +1022,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
         int    i,
             j;
         DataSet DS;
+        Result = null;
         // ----------------- check inputs ----------------------
         i = skipspaces(S,1,start);
         if( i > end) i = end;
@@ -1072,12 +1077,12 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
         if( V.size() > 1)
             if( V.elementAt( 0 ) == null){
               //PC.firePropertyChange( "Display" , null , (Object)"(null)" );
-                ScriptUtil.display("(null)");
+                Result = ScriptUtil.display("(null)");
                 return j;
             }
         if( V.size() <= 1){
             //PC.firePropertyChange( "Display" , null , (Object)"No Result" );
-             ScriptUtil.display("No Result" );
+             Result= ScriptUtil.display("No Result" );
             return j;
         }
 
@@ -1095,7 +1100,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
           if( V.size() >3 )
               FrameType = (String) (V.elementAt(2));
           x = 4;
-          Display( DS , DisplayType , FrameType );
+          Result = Display( DS , DisplayType , FrameType );
           
           if( perror >= 0 ) 
               perror = start;
@@ -1125,7 +1130,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
             return i;
         }
 
-        ScriptUtil.display( Result );
+        Result = ScriptUtil.display( Result );
 
         Result = null;
         return end;
@@ -1172,10 +1177,11 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      * Three_D", or "Selected_Graph"<Br> FrameType must be "External
      * Frame" or "Internal Frame".
      */
-    public void Display( DataSet ds , String DisplayType , String FrameType ){
+    public ViewManager Display( DataSet ds , String DisplayType , String FrameType ){
       ViewManager vm = ScriptUtil.display(ds,DisplayType);
       Graphs.addElement(vm);
       vm.addWindowListener( new DisplayWindowListener() );
+      return vm;
     }
 
     class DisplayWindowListener extends WindowAdapter{
