@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2005/04/20 21:27:01  dennis
+ * Now checks for co-planar vectors (singular UB) before
+ * trying to calculate and write the orientation matrix.
+ *
  * Revision 1.17  2004/09/16 18:12:09  dennis
  * Made calibrations on both image axes linear and provided somewhat
  * meaningful ranges of values ( |Q| ) for the axis calibrations.
@@ -2704,12 +2708,31 @@ public void WriteMatrixFile( String filename )
 
   std_dev = std_dev / Math.sqrt(k-1);
   System.out.println("Standard deviation for fit = " + std_dev );
+  if ( std_dev > 1 )
+  {
+    System.out.println("ERROR: vectors co-planar");
+    return;
+  }
 
   for ( int i = 0; i < 3; i++ )
     for ( int j = 0; j < 3; j++ )
        M[i][j] /= (2 * Math.PI );
 
+  boolean lattice_ok = true;
   double lat_parms[] = lattice_calc.LatticeParamsOfUB( M );
+  if (lat_parms == null )
+    lattice_ok = false;
+
+  if ( lattice_ok )
+    for ( int i = 0; i < lat_parms.length; i++ )
+      if ( lat_parms[i] == 0 )
+        lattice_ok = false;
+  
+  if ( !lattice_ok )
+  {
+    System.out.println("ERROR: Matrix was singular");
+    return;
+  }
 
   StringBuffer sb = new StringBuffer();
   for ( int i = 0; i < 3; i++ )
