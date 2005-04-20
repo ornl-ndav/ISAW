@@ -30,6 +30,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2005/04/20 22:03:29  dennis
+ * Temporarily modified canWrite(filename) method just return true.
+ * Should still check to see if this method is really still needed
+ * to work around problems with jnexus.  For now just return true,
+ * since NeXus files were not being found if not fully qualified
+ * with the path.
+ *
  * Revision 1.14  2005/02/12 17:18:18  rmikk
  * Use CNexusFile class instead of its super class
  * Linearize multidimensional arrays instead of letting jnexus do it. Fixes an
@@ -173,7 +180,16 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   public void setNodeName( String nodeName){
      this.nodeName = nodeName;
   }
+
   private boolean canWrite( String filename ){
+    //
+    //System.out.println("canWrite returning true for " + filename );
+    //
+    // TO DO.  Check if this method is really still needed to work around
+    // problems with jnexus.  For now just return true, since NeXus files 
+    // were not found if not fully qualified with the path.
+    return true;
+/*
     String F = filename.replace('\\','/');
     int k = F.lastIndexOf('/');   
     if( k < 0 )
@@ -210,7 +226,9 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
         return false;
     }
     return true;
+*/
   }
+
 
   /**
    * Returns the number of NXentries in this file
