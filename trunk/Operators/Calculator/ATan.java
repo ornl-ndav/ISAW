@@ -1,7 +1,7 @@
 /*
  * File:  ATan.java 
  *
- * Copyright (C) 2002, Peter Peterson
+ * Copyright (C) 2005, John Hammonds
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2005/04/21 02:32:47  hammonds
+ *  Fix Copyright
+ *
  *  Revision 1.1  2005/04/13 13:56:05  hammonds
  *  Add new function to ISAW
  *
