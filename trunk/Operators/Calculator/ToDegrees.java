@@ -1,5 +1,5 @@
 /*
- * File:  ASin.java 
+ * File:  ToDegrees.java 
  *
  * Copyright (C) 2002, Peter Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2005/04/21 02:31:52  hammonds
+ *  Update comments
+ *
  *  Revision 1.1  2005/04/12 21:51:24  hammonds
  *  Add trig methods for easy use in scripts.
  *
