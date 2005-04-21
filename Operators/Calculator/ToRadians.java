@@ -1,5 +1,5 @@
 /*
- * File:  ToDegrees.java 
+ * File:  ToRadians.java 
  *
  * Copyright (C) 2002, Peter Peterson
  *
@@ -31,7 +31,7 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.3  2005/04/21 02:46:02  hammonds
+ *  Revision 1.1  2005/04/21 02:46:03  hammonds
  *  Add in methods to provide trig to scrips
  *
  *  Revision 1.2  2005/04/21 02:31:52  hammonds
@@ -55,11 +55,11 @@ import java.util.Vector;
  * This operator calculates the arcsin of the given angle in degrees
  * 
  */
-public class ToDegrees extends GenericCalculator{
+public class ToRadians extends GenericCalculator{
   /**
    * Creates operator with title "Convert Radians To Degrees"
    */  
-  public ToDegrees(){
+  public ToRadians(){
     super( "Convert Radians To Degrees" );
   }
 
@@ -70,14 +70,14 @@ public class ToDegrees extends GenericCalculator{
    *
    * @param a value whose arc sine is to be returned
    */
-  public ToDegrees( float angrad ){
+  public ToRadians( float angrad ){
     this(); 
     
     getParameter(0).setValue(new Float(angrad));
   }
 
   /**
-   * Returns description/attributes of ToDegrees for a user
+   * Returns description/attributes of ToRadians for a user
    * activating the Help System
    */
   public String getDocumentation(){
@@ -86,11 +86,11 @@ public class ToDegrees extends GenericCalculator{
     // overview
     sb.append("@overview This operator converts an angle in radians to degrees.");
     // algorithm
-    sb.append("@algorithm Value is passed to java's Math.toDegrees");
+    sb.append("@algorithm Value is passed to java's Math.toRadians");
     // parameters
-    sb.append("@param float angle in radians to convert to degrees");
+    sb.append("@param float angle in degrees to convert to radians");
     // return
-    sb.append("@return float angle in degrees");
+    sb.append("@return float angle in radians");
     // errors
     sb.append("@error ");
     
@@ -100,11 +100,11 @@ public class ToDegrees extends GenericCalculator{
   /** 
    * Get the name of this operator to use in scripts
    * 
-   * @return  "ToDegrees", the command used to invoke this 
+   * @return  "ToRadians", the command used to invoke this 
    *           operator in Scripts
    */
   public String getCommand(){
-    return "ToDegrees";
+    return "ToRadians";
   }
 
   /** 
@@ -126,7 +126,7 @@ public class ToDegrees extends GenericCalculator{
     // get the input value
     float value  = ((Float)getParameter(0).getValue()).floatValue();
     //Check to see if the input value is in the required range.
-    float angle = (float)Math.toDegrees((double)value);
+    float angle = (float)Math.toRadians((double)value);
     
     return (new Float(angle));
   }
@@ -135,7 +135,7 @@ public class ToDegrees extends GenericCalculator{
    *  Creates a clone of this operator.
    */
   public Object clone(){
-    ToDegrees op = new ToDegrees();
+    ToRadians op = new ToRadians();
     op.CopyParametersFrom( this );
     return op;
   }
@@ -146,7 +146,7 @@ public class ToDegrees extends GenericCalculator{
    */
   public static void main( String args[] ){
     // try the operator with the default settings
-    ToDegrees op = new ToDegrees();
+    ToRadians op = new ToRadians();
     System.out.println("RESULT="+op.getResult());
 
     // Print help information
