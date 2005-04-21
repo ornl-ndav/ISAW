@@ -1,7 +1,7 @@
 /*
- * File:  ToDegrees.java 
+ * File:  Sin.java 
  *
- * Copyright (C) 2002, Peter Peterson
+ * Copyright (C) 2005, John Hammonds
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,13 +31,10 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.3  2005/04/21 02:46:02  hammonds
+ *  Revision 1.1  2005/04/21 02:46:00  hammonds
  *  Add in methods to provide trig to scrips
  *
- *  Revision 1.2  2005/04/21 02:31:52  hammonds
- *  Update comments
- *
- *  Revision 1.1  2005/04/12 21:51:24  hammonds
+ *  Revision 1.1  2005/04/12 21:51:23  hammonds
  *  Add trig methods for easy use in scripts.
  *
  *
@@ -52,45 +49,44 @@ import java.text.DecimalFormat;
 import java.util.Vector;
 
 /** 
- * This operator calculates the arcsin of the given angle in degrees
- * 
+ * This operator calculates the sin of the given angle
  */
-public class ToDegrees extends GenericCalculator{
+public class Sin extends GenericCalculator{
   /**
-   * Creates operator with title "Convert Radians To Degrees"
+   * Creates operator with title "Sin of Angle in Radians"
    */  
-  public ToDegrees(){
-    super( "Convert Radians To Degrees" );
+  public Sin(){
+    super( "Sin of Angle in Radians" );
   }
 
   /** 
-   * Creates operator with title "Convert Radians To Degrees" and the
+   * Creates operator with title "Sin of Angle in Radians" and the
    * specified list of parameters. The getResult method must still be
    * used to execute the operator.
    *
-   * @param a value whose arc sine is to be returned
+   * @param angle value in radians whose sine is to be returned
    */
-  public ToDegrees( float angrad ){
+  public Sin( float angle ){
     this(); 
     
-    getParameter(0).setValue(new Float(angrad));
+    getParameter(0).setValue(new Float(angle));
   }
 
   /**
-   * Returns description/attributes of ToDegrees for a user
+   * Returns description/attributes of Sin for a user
    * activating the Help System
    */
   public String getDocumentation(){
     StringBuffer sb = new StringBuffer();
 
     // overview
-    sb.append("@overview This operator converts an angle in radians to degrees.");
+    sb.append("@overview This operator calculates the sine of the given value.");
     // algorithm
-    sb.append("@algorithm Value is passed to java's Math.toDegrees");
+    sb.append("@algorithm Value is passed to java's Math.sin");
     // parameters
-    sb.append("@param float angle in radians to convert to degrees");
+    sb.append("@param float value in radians whose sine is to be returned");
     // return
-    sb.append("@return float angle in degrees");
+    sb.append("@return sine of specified angle");
     // errors
     sb.append("@error ");
     
@@ -100,11 +96,11 @@ public class ToDegrees extends GenericCalculator{
   /** 
    * Get the name of this operator to use in scripts
    * 
-   * @return  "ToDegrees", the command used to invoke this 
+   * @return  "Sin", the command used to invoke this 
    *           operator in Scripts
    */
   public String getCommand(){
-    return "ToDegrees";
+    return "Sin";
   }
 
   /** 
@@ -120,13 +116,13 @@ public class ToDegrees extends GenericCalculator{
   /** 
    *  Executes this operator using the values of the current parameters.
    *
-   *  @return If successful, this operator returns the arc sine of the specified value.
+   *  @return If successful, this operator returns the sine of the specified value.
    */
   public Object getResult(){
     // get the input value
     float value  = ((Float)getParameter(0).getValue()).floatValue();
     //Check to see if the input value is in the required range.
-    float angle = (float)Math.toDegrees((double)value);
+    float angle = (float)Math.sin((double)value);
     
     return (new Float(angle));
   }
@@ -135,7 +131,7 @@ public class ToDegrees extends GenericCalculator{
    *  Creates a clone of this operator.
    */
   public Object clone(){
-    ToDegrees op = new ToDegrees();
+    Sin op = new Sin();
     op.CopyParametersFrom( this );
     return op;
   }
@@ -146,7 +142,7 @@ public class ToDegrees extends GenericCalculator{
    */
   public static void main( String args[] ){
     // try the operator with the default settings
-    ToDegrees op = new ToDegrees();
+    Sin op = new Sin();
     System.out.println("RESULT="+op.getResult());
 
     // Print help information
