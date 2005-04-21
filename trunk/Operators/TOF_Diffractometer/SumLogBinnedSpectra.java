@@ -32,6 +32,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.2  2005/04/21 02:08:32  hammonds
+ *  Fixed Chop of tail end of spectrum by taking out *2 and adding -1 on the calculation of the new number of channels.
+ *
  *  Revision 1.1  2005/04/20 16:34:59  hammonds
  *  Operator added to Sum dt/t binned data into banks.
  *
@@ -325,7 +328,7 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
 	minShift = Math.min(minShift, shift[index]);
       }
       // Equal # of channels eliminated on each side
-      int newChannels = numChannels - 2*(maxShift-minShift);
+      int newChannels = numChannels - (maxShift-minShift) -1;
       float[] newData = new float[newChannels];
       float[] newTimes = new float[newChannels +1];
       //copy time data into new array for this detector
