@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2005/04/22 20:47:52  hammonds
+ *  Fixed so that terminator is CRLF and so that the last line of time map is 82 columns including CRLF.
+ *
  *  Revision 1.7  2004/03/15 03:28:15  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -62,7 +65,7 @@ import DataSetTools.dataset.XScale;
 
 public class TimeMap{
     private static String TIMEMAP = GsasUtil.TIMEMAP;
-    private static String EOL     = "\n";
+    private static String EOL     = "\r\n";
 
     private float tmax;
     private int nval;
@@ -276,7 +279,7 @@ public class TimeMap{
             colcount=0;
         }
         sb.append(Format.integer(tmax*1000/this.clockwidth,8));
-        sb.append(Format.string(EOL,81-8-colcount));
+        sb.append(Format.string(EOL,82-8-colcount));
                   
         // return a nice string
         return sb.toString();
