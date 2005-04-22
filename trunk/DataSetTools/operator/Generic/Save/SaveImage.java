@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2005/04/22 14:47:09  rmikk
+ * Closed the file after it was written
+ *
  * Revision 1.8  2004/06/24 15:28:40  robertsonj
  * Implemented a windowlistener so the save image from scripts would get 
  * a nice clean picture of the stated viewer.
@@ -220,7 +223,7 @@ public void saveResult(String filename, String extension, BufferedImage bimg,
 							 DataSetViewer DSV, JFrame jf1){
 	try{
 		  FileOutputStream fout =new FileOutputStream( filename);
-		  if( !javax.imageio.ImageIO.write( bimg, extension ,fout ))
+		  if( !javax.imageio.ImageIO.write( bimg, extension ,fout )){}
 			   //return new ErrorString( " no appropriate writer is found");;
 		  fout.close();
 		}catch( Exception ss){
