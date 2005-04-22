@@ -30,6 +30,19 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2005/04/22 17:29:47  dennis
+ * The returned vector now has a new DataSet containing the fit function that
+ * was constructed, as the last entry in the returned vector.
+ * Vector now has separate strings for the phrase "Background Function"
+ * and the actual string defining the background function as: m*(x-x0)+y0
+ * where x0 is replaced by a constant near the peak, and m and y0 are
+ * the parameters for the linear background that are returned in the
+ * vector.
+ * Updated documentation to include info on the linear background and
+ * returned DataSet.
+ * Updated main test program to also display the returned fit function
+ * DataSet.
+ *
  * Revision 1.6  2005/04/11 22:00:32  dennis
  * Now checks to make sure that all computed parameters are
  * valid finite numbers.  If not, an error string is returned.
@@ -78,10 +91,11 @@ import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 
 /**
- *  This class fits a Gaussian to a peak in a specified interval of a 
- *  specified Data block of a DataSet.  A vector containing chi_square,
- *  the names and values of the fitted parameters, together with error
- *  estimates for the fitted parameters is returned. 
+ *  This class fits a Gaussian to a peak plus linear background to data
+ *  in a specified interval of a specified Data block of a DataSet.  
+ *  A vector containing chi_square, the names and values of the fitted 
+ *  parameters, together with error estimates for the fitted parameters,
+ *  and a DataSet with the fitted curve is returned. 
  */
 public class FitGaussianPeak implements Wrappable
 {
@@ -133,16 +147,26 @@ public class FitGaussianPeak implements Wrappable
     s.append( "fitting process.  In particular, the vector contains, " );
     s.append( "in order: \n" );
     s.append( " 'ChiSqr'\n" );
-    s.append( "  chi_sqr\n" );
+    s.append( "  chi_sqrr_value\n" );
     s.append( " 'Position'\n" );
-    s.append( "  position\n" );
+    s.append( "  position_value\n" );
     s.append( "  error_in_position\n" );
     s.append( " 'Amplitude'\n" );
-    s.append( "  amplitude\n" );
+    s.append( "  amplitude_value\n" );
     s.append( "  error_in_amplitude\n" );
     s.append( " 'FWHM'\n" );
-    s.append( "  fwhm\n" );
+    s.append( "  fwhm_value\n" );
     s.append( "  error_in_fwhm\n" );
+    s.append( " 'y0'\n" );
+    s.append( "  y0_value\n" );
+    s.append( "  error_in_y0\n" );
+    s.append( " 'm'\n" );
+    s.append( "  m_value\n" );
+    s.append( "  error_in_m\n" );
+    s.append( "  Background Function\n");
+    s.append( "  m*(x-x0)+y0\n");
+    s.append( "  Fit DataSet");
+    s.append( "  DataSet_with_fit_function");
 
     s.append( "@error If an error occurs during processing, an ");
     s.append( "error string indicating the cause of the error is ");
@@ -163,16 +187,26 @@ public class FitGaussianPeak implements Wrappable
    *  @return a vector containing the following strings and values in the
    *  order listed.
    *    "ChiSqr"
-   *     chi_sqr
+   *     chi_sqr_value
    *    "Position"
-   *     position
+   *     position_value
    *     error_in_position
    *    "Amplitude"
-   *     amplitude
+   *     amplitude_value
    *     error_in_amplitude
    *    "FWHM"
-   *     fwhm
+   *     fwhm_value
    *     error_in_fwhm
+   *    "y0"
+   *     y0_value
+   *     error_in_y0
+   *    "m"
+   *     m_value
+   *     error_in_m
+   *    "Background Function"
+   *    "m*(x-x0)+y0\n"
+   *    "Fit DataSet"
+   *     DataSet_with_fit_function
    */
   public Object calculate() 
   {
@@ -288,7 +322,7 @@ public class FitGaussianPeak implements Wrappable
     if ( debug_flag )                          // add model function to DataSet
     {
       data_set.addLog_entry( "Added model function for peak at " + coefs[0] );
-      FunctionModel model = new FunctionModel( x_scale, function, 3 ); 
+      FunctionModel model = new FunctionModel( x_scale, function, group_id ); 
       data_set.addData_entry( model );
       data_set.notifyIObservers( IObserver.DATA_CHANGED );
     }
@@ -308,12 +342,23 @@ public class FitGaussianPeak implements Wrappable
       if ( BadValue( coefs[i] ) || BadValue( p_sigmas[i] ) )
         failed = true;
     }
-    parameters.addElement( "Background Function = " + lin_funct );
+    parameters.addElement( "Background Function" );
+    parameters.addElement( lin_funct );
 
     if ( failed )
       return new ErrorString( "Fit failed to converge, check data.");
     else
+    {
+      DataSet fitted_ds = data_set.empty_clone();
+      FunctionModel model = new FunctionModel( x_scale, function, group_id );
+      fitted_ds.addData_entry( model );
+      fitted_ds.addLog_entry( "Fitted ID " + group_id );
+      fitted_ds.setTitle( "Fitted ID " + group_id + 
+                          " for " + fitted_ds.getTitle() );
+      parameters.addElement( "Fit DataSet" );
+      parameters.addElement( fitted_ds );
       return parameters;
+    }
   }
 
   /**
@@ -346,6 +391,8 @@ public class FitGaussianPeak implements Wrappable
     RunfileRetriever rr = new RunfileRetriever( file_name );
 
     DataSet ds = rr.getDataSet( 1 );
+    new ViewManager( ds, ViewManager.IMAGE );
+
     FitGaussianPeak op_core = new FitGaussianPeak();
     op_core.data_set = ds;
     op_core.group_id = 81;
@@ -354,16 +401,18 @@ public class FitGaussianPeak implements Wrappable
     Operator fit_op = new JavaWrapperOperator( op_core );
 
     Object result = fit_op.getResult();
+    Vector values = null;
     if ( result instanceof ErrorString )
       System.out.println("Error occured: " + ((ErrorString)result).toString());
     else if ( result instanceof Vector )
     {
-      Vector values = (Vector)result;
+      values = (Vector)result;
       for ( int i = 0; i < values.size(); i++ )
         System.out.println("" + values.elementAt(i) );
     }
 
-    new ViewManager( ds, ViewManager.IMAGE );
+    DataSet fitted_ds = (DataSet)values.elementAt( values.size()-1 );
+    new ViewManager( fitted_ds, ViewManager.IMAGE );
   }
 
 }
