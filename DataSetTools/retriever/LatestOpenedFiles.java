@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2005/04/22 14:26:51  rmikk
+ * Checked if the IsawProps,NSavedFiles, was <= 0 before invoking the 
+ * java's Preferences.  
+ * Eliminated a warning and unused code
+ *
  * Revision 1.12  2005/01/11 14:41:20  rmikk
  * Eliminated an unused variable
  *
@@ -112,7 +117,10 @@ public class LatestOpenedFiles{
     */
   public static void setUpMenuItems( JMenu Menuu , JDataTree tree , 
                                                            IObserver IOBs ){
-     
+                                                             
+     int nSavedFiles = SharedData.getintProperty( "NSavedFiles",""+NSavedFiles);
+     if(nSavedFiles <=0)
+        return;
      Preferences pref = null;
      try{
         pref = Preferences.userNodeForPackage( 
@@ -124,7 +132,7 @@ public class LatestOpenedFiles{
      }
  
      
-     int nSavedFiles = SharedData.getintProperty( "NSavedFiles",""+NSavedFiles);
+    
      boolean shortMange = SharedData.getbooleanProperty("ShortSavedFileName","false");
      if( nSavedFiles > 0)
        Menuu.addSeparator();
@@ -152,10 +160,13 @@ public class LatestOpenedFiles{
     *  Duplicates are eliminated
     * @param Filename  the new file name to be saved to the appropriate 
     *     preferences
-    * @return true if this was a new file
+    * @return true if this was a new file and/or added to the preferences
     */
   public static boolean addNewOpenedFile( String Filename ){
     
+     int nSavedFiles = SharedData.getintProperty( "NSavedFiles",""+NSavedFiles);
+     if( nSavedFiles <=0)
+        return false;
      Preferences pref = null;
      try{
         pref = Preferences.userNodeForPackage( 
@@ -172,8 +183,7 @@ public class LatestOpenedFiles{
      //Move all the Preference key values up by "1"
 
      String filname;
-         
-     int nSavedFiles = SharedData.getintProperty( "NSavedFiles",""+NSavedFiles);
+     
 
      for( int i = nSavedFiles - 2 ; i >= 0 ; i-- ){
 
@@ -250,13 +260,8 @@ class MyActionListener implements ActionListener{
      try{
         DSS = ScriptUtil.load( filename );
         filename = filename.replace( '\\' , '/' );
-        int l = filename.lastIndexOf( '/' );
-       /* String filename1=filename;
-        
-        if( l >= 0 ) 
-           filename1 = filename.substring( l + 1 );
-      */
-        //tree.addExperiment( DSS , filename1 );
+        //int l = filename.lastIndexOf( '/' );
+     
 
         if( IOBs != null )
              IOBs.update( tree, DSS);
