@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2005/04/22 20:48:54  hammonds
+ *  Fixed so that the last line of standard 10 column output is 82 col including CRLF
+ *
  *  Revision 1.30  2005/03/09 22:59:58  dennis
  *  Added carriage return and line feed to the original
  *  80 column GSAS output files. (Alok Chatterjee)
@@ -354,7 +357,7 @@ public class gsas_filemaker
             sb.append("  ").append(Format.integer(y[i],6));
             colcount+=8;
         }
-        sb.append(Format.string("\r"+"\n",81-colcount));
+        sb.append(Format.string("\r"+"\n",82-colcount));
 	try{
             outStream.write(sb.toString());
 	}catch(IOException e){
