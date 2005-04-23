@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.76  2005/04/23 12:42:49  rmikk
+ * Double values that need to be used in  ISAW scripts are converted to 
+ * Floats.  If passed through( stored in an array or an argument to an
+ * operator) they are still Double.  Operators should check Data Types of
+ * any Vector they receive.
+ *
  * Revision 1.75  2005/04/16 18:50:49  rmikk
  * The Display script command now returns a ViewManager when viewing a 
  * DataSet
@@ -3301,7 +3307,9 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
             AssignArray(vname, Result);
             return;
         }
-     
+        if(Result instanceof Double)
+          Result = new Float( ((Double)Result).floatValue());
+          
         if( Result instanceof Boolean){
             if(vname.toUpperCase().equals("TRUE")
                || vname.toUpperCase().equals("FALSE")){
