@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.14  2005/04/23 13:13:12  rmikk
+ * Converted all initial values to a Vector of Floats or null if not possible
+ *
  * Revision 1.13  2004/05/11 18:23:48  bouzekc
  * Added/updated javadocs and reformatted for consistency.
  *
@@ -58,7 +61,7 @@
  *
  */
 package DataSetTools.parameter;
-
+import java.util.*;
 /**
  * Subclass of VectorPG to deal with one-dimensional float arrays.
  */
@@ -72,7 +75,7 @@ public class FloatArrayPG extends VectorPG {
    * @param val The value of this FloatArrayPG.
    */
   public FloatArrayPG( String name, Object val ) {
-    super( name, val );
+    super( name, FloatArrayPG.cnvrtFloat(val) );
     setParam( new FloatPG( "Enter Float", 0.0f ) );
   }
 
@@ -85,12 +88,37 @@ public class FloatArrayPG extends VectorPG {
    *        valid.
    */
   public FloatArrayPG( String name, Object val, boolean valid ) {
-    super( name, val, valid );
+    super( name, FloatArrayPG.cnvrtFloat(val), valid );
     setParam( new FloatPG( "Enter Float", 0.0f ) );
   }
 
   //~ Methods ******************************************************************
-
+   /**
+    * Converts an Object to a Vector of Floats or null if this is not possible
+    *
+    */
+   private  static java.util.Vector cnvrtFloat( Object val ){
+     if( val == null)
+       return null;
+      if( val.getClass().isArray()){
+        Vector vval = new Vector();
+        for(int i=0; i< java.lang.reflect.Array.getLength( val); i++)
+          vval.addElement( java.lang.reflect.Array.get(val,i));
+        return cnvrtFloat( vval);
+      }else if( val instanceof java.util.Vector){
+         Vector vval =(Vector)val;
+         for (int i=0; i< vval.size(); i++)
+            if( (vval).elementAt(i) instanceof Float){}
+            else if(vval.elementAt(i) instanceof Number){
+              float f  = ((Number)vval.elementAt(i)).floatValue();
+              vval.setElementAt( new Float(f), i);
+            }else
+              return null;
+         return vval;     
+              
+      }else
+        return null;
+   }
   /*
    * Testbed.
    */
