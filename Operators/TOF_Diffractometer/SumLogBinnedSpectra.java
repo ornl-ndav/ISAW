@@ -32,6 +32,11 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.3  2005/04/25 21:36:49  hammonds
+ *  Add initial flight path as parameter.
+ *  use total flight paths in calculation of shift parameter.
+ *  Fix problem shifting time with the wrong shift parameter.
+ *
  *  Revision 1.2  2005/04/21 02:08:32  hammonds
  *  Fixed Chop of tail end of spectrum by taking out *2 and adding -1 on the calculation of the new number of channels.
  *
@@ -90,7 +95,8 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
                                          int[][]     vecArray, 
 			      float[]     angArray,
 			      float[]     lenArray,
-			      float[]     resArray)
+			      float[]     resArray, 
+			      float       init_fp)
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -104,6 +110,7 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
     addParameter( new FloatArrayPG( "Focus Angle for Banks", angArray ) );
     addParameter( new FloatArrayPG( "Focus Length for Banks", lenArray ) );
     addParameter( new FloatArrayPG( "dt/t for Banks", resArray ) );
+    addParameter( new FloatPG( "Initial Flight Path of Instrument", init_fp ) );
 
   }
 
@@ -160,6 +167,7 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
     resArray.add(new Float(0.0016f));
     resArray.add(new Float(0.0032f));
     addParameter( new FloatArrayPG( "dt/t for Bank", resArray ) );
+    addParameter( new FloatPG( "Initial Flight Path of Instrument", 14.188f ) );
     
   }
 
@@ -207,6 +215,7 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
    s.append("secondary flight path length for each bank.  The bank is focused ");
    s.append("to this angle\n");
    s.append("@param resArray - a 1D array of floats that contains 1 resolution ");
+   s.append("@param init_fp - the initial flight path of the instrument");
    s.append("constant for each bank.  This constant should be the same as the ");
    s.append("dt/t constant used for the time bins for this data\n");
 
@@ -229,6 +238,7 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
     Vector  refAngle   = (Vector)getParameter(2).getValue();
     Vector  refLength   = (Vector)getParameter(3).getValue();
     Vector  resArray   = (Vector)getParameter(4).getValue();
+    float   refInitFP  = ((Float)(getParameter(5).getValue())).floatValue();
     
     if (mapArray.size() != refAngle.size() ) {
       return new ErrorString( "SumLog: #of banks in map must = #of ref angles " + mapArray.size() + ", " + refAngle.size() + "\n");
@@ -317,12 +327,15 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
 	//Need detector position to calculate shift
 	DetectorPosition pos = (DetectorPosition)
 	  bankData[index].getAttributeValue(Attribute.DETECTOR_POS );
+	
 	angle[index] = pos.getScatteringAngle();
+	float init_fp = ((Float)(initFpAttr.getValue())).floatValue();
+	System.out.println("Initial Length: " + init_fp + "\n");
 	fp[index] = pos.getDistance();
-	double LsinAng = Math.abs(Math.sin((double)angle[index]/2.0)) * fp[index];
-	double LsinRef = Math.abs(Math.sin(Math.toRadians((double)refAng[ii]/2)))* refLen[ii];
+	double LsinAng = Math.abs(Math.sin((double)angle[index]/2.0)) * (fp[index] + init_fp);
+	double LsinRef = Math.abs(Math.sin(Math.toRadians((double)refAng[ii]/2.0)))* (refLen[ii] +refInitFP);
 	shift[index] = (int)(Math.round(Math.log(LsinRef/LsinAng)/bankRes[ii]));
-	//	System.out.println(shift[index]+ ", " + Math.toDegrees(angle[index]));
+		System.out.println(shift[index]+ ", " + Math.toDegrees(angle[index]));
 	//keep track of actual max and min shift for this bank
 	maxShift = Math.max(maxShift, shift[index]);
 	minShift = Math.min(minShift, shift[index]);
@@ -332,7 +345,7 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
       float[] newData = new float[newChannels];
       float[] newTimes = new float[newChannels +1];
       //copy time data into new array for this detector
-      System.arraycopy(times, -1*minShift, newTimes, 0, newChannels+1);
+      System.arraycopy(times, maxShift, newTimes, 0, newChannels+1);
       
       for ( int index = 0; index < bankMap[ii].length; index++ ){
 	int startChan = maxShift - shift[index];
