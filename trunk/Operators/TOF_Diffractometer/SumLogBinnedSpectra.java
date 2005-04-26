@@ -32,6 +32,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.4  2005/04/26 20:06:18  hammonds
+ *  Change so that initial FP written to dataset is the reference FP not the FP from the run file.
+ *
  *  Revision 1.3  2005/04/25 21:36:49  hammonds
  *  Add initial flight path as parameter.
  *  use total flight paths in calculation of shift parameter.
@@ -330,12 +333,12 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
 	
 	angle[index] = pos.getScatteringAngle();
 	float init_fp = ((Float)(initFpAttr.getValue())).floatValue();
-	System.out.println("Initial Length: " + init_fp + "\n");
+	//	System.out.println("Initial Length: " + init_fp + "\n");
 	fp[index] = pos.getDistance();
 	double LsinAng = Math.abs(Math.sin((double)angle[index]/2.0)) * (fp[index] + init_fp);
 	double LsinRef = Math.abs(Math.sin(Math.toRadians((double)refAng[ii]/2.0)))* (refLen[ii] +refInitFP);
 	shift[index] = (int)(Math.round(Math.log(LsinRef/LsinAng)/bankRes[ii]));
-		System.out.println(shift[index]+ ", " + Math.toDegrees(angle[index]));
+	//System.out.println(shift[index]+ ", " + Math.toDegrees(angle[index]));
 	//keep track of actual max and min shift for this bank
 	maxShift = Math.max(maxShift, shift[index]);
 	minShift = Math.min(minShift, shift[index]);
@@ -354,7 +357,8 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
 	yData = bankData[index].getY_values();
 	for (int chanInd =0; chanInd < newData.length; chanInd++) {
 	  int oldChan = startChan + chanInd;
-	  newData[chanInd] += (yData[oldChan]/(times[oldChan+1] - times[oldChan]))*
+	  newData[chanInd] += 
+	    (yData[oldChan]/(times[oldChan+1] - times[oldChan]))*
 	    (newTimes[chanInd+1]-newTimes[chanInd]);
 	}
 	
@@ -363,10 +367,14 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
       newDataSet.addData_entry(Data.getInstance(newScale, newData, ii+1));
       Data tempData = newDataSet.getData_entry_with_id(ii+1);
       DetectorPosition newPos = new DetectorPosition();
-      newPos.setCylindricalCoords(refLen[ii], (float)(refAng[ii]*Math.PI/180.0f), 0.0f);
-      Attribute pos_attr = new DetPosAttribute( Attribute.DETECTOR_POS, newPos);
+      newPos.setCylindricalCoords(refLen[ii], 
+				  (float)(refAng[ii]*Math.PI/180.0f), 0.0f);
+      Attribute pos_attr = 
+	new DetPosAttribute( Attribute.DETECTOR_POS, newPos);
       tempData.setAttribute(pos_attr);
-      tempData.setAttribute(initFpAttr);
+      FloatAttribute newInitFP = 
+	new  FloatAttribute(Attribute.INITIAL_PATH, refInitFP);
+      tempData.setAttribute(newInitFP);
       //      tempData.setAttribute(
     }
     
