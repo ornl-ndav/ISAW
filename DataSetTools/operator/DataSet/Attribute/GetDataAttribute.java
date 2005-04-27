@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2005/04/27 16:48:25  hammonds
+ *  Changed output for "DetectorIDs" and "SegmentIDs".  The list is now fed into a vector so that they can be used from the scripting language.
+ *
  *  Revision 1.6  2004/03/15 06:10:44  dennis
  *  Removed unused import statements.
  *
@@ -60,7 +63,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
-
+import  java.lang.reflect.Array;
 /**
   *  Allows the user to get attributes from the Data blocks in a DataSet
   *
@@ -187,6 +190,16 @@ public class GetDataAttribute extends    DS_Attribute
        return new ErrorString(" Improper index ");
      
      Object O = D.getAttributeValue( S );
+     if (S.equals("Detector IDs") || S.equals("SegmentIDs")) {
+       
+       Vector listVect = new Vector();
+       for (int ii=0; ii<Array.getLength(O); ii++) {
+	 listVect.add(new Integer(Array.getInt(O,ii)));
+	
+       }
+       return listVect;
+     }
+
      if ( O == null)
        return new ErrorString(" Attribute "+ S + " is not in the List" );
 
