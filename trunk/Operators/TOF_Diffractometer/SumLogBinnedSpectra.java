@@ -32,6 +32,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.5  2005/04/28 21:17:49  hammonds
+ *  Fix up javadoc
+ *
  *  Revision 1.4  2005/04/26 20:06:18  hammonds
  *  Change so that initial FP written to dataset is the reference FP not the FP from the run file.
  *
@@ -87,15 +90,16 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
   /** Use Map to map detectors into banks.  Banks are focused in the proccess
    *  @param  ds
    *
-   *  @param  int[][] mapArray to map IDs->bank
+   *  @param  mapArray  array to map IDs->bank
    *
-   *  @param  float[]  angArray  refence angles for detector banks
-   *  @param  float[]  lenArray  refence length for detector banks
-   *  @param  float[]  resArray  dt/t for detector banks
+   *  @param  angArray  refence angles for detector banks
+   *  @param  lenArray   refence length for detector banks
+   *  @param  resArray   dt/t for detector banks
+   *  @param  init_fp   init_fp initial flightPath
    */
 
   public SumLogBinnedSpectra( DataSet    ds,
-                                         int[][]     vecArray, 
+                                         int[][]     mapArray, 
 			      float[]     angArray,
 			      float[]     lenArray,
 			      float[]     resArray, 
@@ -107,9 +111,7 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
     IParameter parameter = getParameter( 0 );
     parameter.setValue( ds );
    
-    addParameter( new ArrayPG("ID->Bank Map", vecArray  ) );
-
-    
+    addParameter( new ArrayPG("ID->Bank Map", mapArray  ) );
     addParameter( new FloatArrayPG( "Focus Angle for Banks", angArray ) );
     addParameter( new FloatArrayPG( "Focus Length for Banks", lenArray ) );
     addParameter( new FloatArrayPG( "dt/t for Banks", resArray ) );
