@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.219  2005/04/28 19:05:16  dennis
+ *  Changed version to 1.7.2 alpha 1
+ *
  *  Revision 1.218  2005/03/30 01:09:30  dennis
  *  Now passes in the whole DataSet whose attributes are to
  *  be displayed.  This modification was needed since the
@@ -793,7 +796,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.7.1";
+          version="1.7.2 alpha 1";
         else
           version=SharedData.VERSION;
 
