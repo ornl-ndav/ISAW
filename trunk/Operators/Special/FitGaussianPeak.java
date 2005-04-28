@@ -30,6 +30,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.8  2005/04/28 18:59:28  dennis
+ * Now makes an initial estimate of the FWHM by checking values
+ * to the left and right of the peak value until values less than
+ * half the peak amplitude are found.
+ *
  * Revision 1.7  2005/04/22 17:29:47  dennis
  * The returned vector now has a new DataSet containing the fit function that
  * was constructed, as the last entry in the returned vector.
@@ -266,15 +271,26 @@ public class FitGaussianPeak implements Wrappable
     for ( int i = 1; i < n_pts; i++ )
       if ( y[i] > y[index_of_max] )
         index_of_max = i; 
-    
+    double amplitude = y[ index_of_max ];
+
     if ( debug_flag )
     {
       System.out.println("n_pts = " + n_pts );
-      System.out.println("Max of " + y[index_of_max] + " at " + index_of_max );
+      System.out.println("Max of " + amplitude + " at " + index_of_max );
     }
 
-    double fwhm = (max_x - min_x)/10;
-    double amplitude = y[ index_of_max ];
+    // find estimate for fwhm
+    int k = index_of_max;
+    while ( k > 0 && y[ k ] > amplitude/2 )
+      k--;
+    int fwhm_i_min = k;
+
+    k = index_of_max;
+    while ( k < y.length-1 && y[ k ] > amplitude/2 )
+      k++;
+    int fwhm_i_max = k;
+
+    double fwhm = x[fwhm_i_max] - x[fwhm_i_min]; 
     Gaussian g1 = new Gaussian( x[index_of_max], amplitude, fwhm);
 
     String p_names[] = { "y0", "m" };
