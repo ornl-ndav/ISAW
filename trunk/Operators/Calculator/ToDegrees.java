@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2005/04/28 21:26:11  hammonds
+ *  Fix up javadoc
+ *
  *  Revision 1.3  2005/04/21 02:46:02  hammonds
  *  Add in methods to provide trig to scrips
  *
@@ -68,7 +71,7 @@ public class ToDegrees extends GenericCalculator{
    * specified list of parameters. The getResult method must still be
    * used to execute the operator.
    *
-   * @param a value whose arc sine is to be returned
+   * @param angrad value whose arc sine is to be returned
    */
   public ToDegrees( float angrad ){
     this(); 
