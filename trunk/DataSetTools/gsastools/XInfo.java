@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2005/04/28 17:18:24  hammonds
+ *  Change to write out time map if dt/t is used
+ *
  *  Revision 1.7  2005/02/17 21:53:19  dennis
  *  The XInfo object now includes the 3 col FXYE GSAS output
  *  format requirements. (Alok Chatterjee)
@@ -145,7 +148,10 @@ public class XInfo{
                     this.bintype=CONS;
         }
         else{
+	  this.usetimemap = true;
             this.bintype=SLOG;
+	    this.timemap= new TimeMap(xscale);
+
             this.coef1=xscale.getStart_x();
             int numX = xscale.getNum_x();
             
@@ -303,33 +309,30 @@ public class XInfo{
         StringBuffer sb=new StringBuffer(80);
         sb.append(Format.integer(nchan,7)+" ")
                      .append(Format.integer(nrec,7)+" ");
-        sb.append(Format.string(this.bintype,8)).append(" ");
-        if(this.usetimemap)
-            sb.append(Format.integer(this.coef1,4));
-        else
-            sb.append(this.coef1);
+        if(this.usetimemap && !this.type.equals(FXYE) ) {
+	  sb.append(Format.string(TIMEMAP, 8)).append(" ");
+	  sb.append(Format.integer(this.timemap.getMapNum(),4));
+	}
+        else {
+	  sb.append(Format.string(this.bintype,8)).append(" ");
+	  sb.append(this.coef1).append(" ");
+	  sb.append(this.coef2).append(" ");
+	  sb.append(this.coef3).append(" ");
+	  sb.append(this.coef4).append(" ");
+	}
         sb.append(" ");
 
         if(this.type.equals(STD))
         {
-          sb.append(this.coef2).append(" ");
-          sb.append(this.coef3).append(" ");
-          sb.append(this.coef4).append(" ");
-          sb.append(this.type);
+	  sb.append(this.type);
         }
 
         if(this.type.equals(ESD))
         {
-          sb.append(this.coef2).append(" ");
-          sb.append(this.coef3).append(" ");
-          sb.append(this.coef4).append(" ");
-          sb.append(this.type);
+	  sb.append(this.type);
         }
         if(this.type.equals(FXYE))
         {
-          sb.append(this.coef2).append(" ");
-          sb.append(this.coef3).append(" ");
-          sb.append(this.coef4).append(" ");
           sb.append(this.type);
         }
        return sb.toString();
