@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2005/04/28 21:26:40  hammonds
+ *  Fix up javadoc & Change title
+ *
  *  Revision 1.1  2005/04/21 02:46:03  hammonds
  *  Add in methods to provide trig to scrips
  *
@@ -60,7 +63,7 @@ public class ToRadians extends GenericCalculator{
    * Creates operator with title "Convert Radians To Degrees"
    */  
   public ToRadians(){
-    super( "Convert Radians To Degrees" );
+    super( "Convert Degrees To Radians" );
   }
 
   /** 
@@ -68,12 +71,12 @@ public class ToRadians extends GenericCalculator{
    * specified list of parameters. The getResult method must still be
    * used to execute the operator.
    *
-   * @param a value whose arc sine is to be returned
+   * @param angdeg value whose arc sine is to be returned
    */
-  public ToRadians( float angrad ){
+  public ToRadians( float angdeg ){
     this(); 
     
-    getParameter(0).setValue(new Float(angrad));
+    getParameter(0).setValue(new Float(angdeg));
   }
 
   /**
