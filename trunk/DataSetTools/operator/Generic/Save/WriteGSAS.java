@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/05/03 18:48:59  hammonds
+ * Update title to Save 10 Col GSAS
+ *
  * Revision 1.11  2004/05/04 19:03:51  dennis
  * Now clears DataSetPG after getting value, to avoid memory leak.
  *
@@ -87,7 +90,7 @@ import java.util.*;
  */
 public class WriteGSAS extends GenericSave{
   public WriteGSAS(){
-    super( "Save as GSAS " );
+    super( "Save as 10 Col GSAS " );
   }
 
   /** 
