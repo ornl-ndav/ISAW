@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/05/05 02:06:10  taoj
+ * added into the cvs
+ *
  * Revision 1.2  2005/01/10 15:35:59  dennis
  * Added getCategoryList method to place operator in menu system.
  *
@@ -49,8 +52,6 @@ import DataSetTools.dataset.IData;
 import DataSetTools.dataset.VariableXScale;
 import DataSetTools.dataset.XScale;
 import gov.anl.ipns.Util.Numeric.arrayUtil;
-import java.util.regex.Pattern;
-
 
 /**
  * This class subtracts the self-scattering part from sample differential 
@@ -65,14 +66,13 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
   /* @param runfile absolute path of the runfile;
    * @param ISvan the vanadium calibration's beam monitor spectrum is needed for later use;
    */
+  public DataSet ds0;
   public DataSet dcs_smp;
   public DataSet smo_van;
-//  private String[] target;
-//  private float[] formula;
-  public String SmpComposition;
-  public float temperature = 300f;
-  public float Wmin = 0.1f;
-  public float Wmax = 6.0f;
+  public DataSet dm_van;
+  public float temperature = 300.0f;
+  public float wmin = 0.1f;
+  public float wmax = 6.0f;
 
   //~ Methods ******************************************************************
 
@@ -149,22 +149,15 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
     int ngrps, ndetchannel, nmonchannel;
     int istart, iend;
     
-    String[] list_composition = Pattern.compile("[\\s,]+").split(SmpComposition);
-    int nelements = list_composition.length;
-    if (nelements%2 != 0) System.out.println("******INPUT ERROR******");
-    nelements /= 2;
-    String[] list_elements = new String[nelements];
-    float[] list_fractions = new float[nelements];
-    for (int i = 0; i < nelements; i++){
-      list_elements[i] = list_composition[2*i];
-      list_fractions[i] = (new Float(list_composition[2*i+1])).floatValue();
-    }
-    
+    GLADScatter smprun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
+    String[] list_elements = smprun.symbol;
+    float[] list_fractions = smprun.formula;
+
     ngrps = dcs_smp.getNum_entries();
     if (smo_van.getNum_entries()!=ngrps) System.out.println("\n***UNEXPECTED ERROR***---dcs and smo have different number of groups***");
         
-    W_vals_vm = GLADRunInfo.dm_van_W.getX_values();
-    y_vals_vm = GLADRunInfo.dm_van_W.getCopyOfY_values();
+    W_vals_vm = (dm_van.getData_entry(0)).getX_values();
+    y_vals_vm = (dm_van.getData_entry(0)).getCopyOfY_values();
     nmonchannel = y_vals_vm.length;
     Q_vals_vm = new float[nmonchannel+1];
     arrayUtil.Reverse( y_vals_vm );
@@ -176,9 +169,9 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
       attr_list_v = dv.getAttributeList();
       d1 =  ((Float)attr_list_d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
           
-      data_params_v = (float[])attr_list_v.getAttributeValue(GLADRunInfo.GLAD_PARM);
+      data_params_v = (float[])attr_list_v.getAttributeValue(GLADRunProps.GLAD_PARM);
       scattering_angle_v = data_params_v[0];
-      data_params_d = (float[])attr_list_d.getAttributeValue(GLADRunInfo.GLAD_PARM);
+      data_params_d = (float[])attr_list_d.getAttributeValue(GLADRunProps.GLAD_PARM);
       scattering_angle_d = data_params_d[0];
       d2 = data_params_v[1];
       if (data_params_d[1] != d2) System.out.println("\n***UNEXPECTED ERROR***---vanadium and sample data params not matched.******\n"+
@@ -210,7 +203,7 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
       van_dm_Q = Data.getInstance(Q_scale_vm, y_vals_vm, dv.getGroup_ID());
       van_dm_Q.resample( dv.getX_scale(), IData.SMOOTH_NONE );
  
-      for (int k = istart; k < iend; k++){
+      for (int k = istart; k <= iend; k++){
         q_d = 0.5f*(Q_vals_d[k]+Q_vals_d[k+1]);
         lambda_d = tof_calc.WavelengthofDiffractometerQ(scattering_angle_d, q_d);
         p = Platom.plaatom(lambda_d, list_elements, list_fractions, temperature, scattering_angle_d, d1, d2, false);
@@ -218,8 +211,12 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
             
         q_v = 0.5f*(Q_vals_v[k]+Q_vals_v[k+1]);
         lambda_v = tof_calc.WavelengthofDiffractometerQ(scattering_angle_v, q_v);            
-        if (lambda_v < Wmin || lambda_v > Wmax) y_vals_v[k] = 0.0f;
+        if (lambda_v < wmin || lambda_v > wmax) y_vals_v[k] = 0.0f;
         else y_vals_v[k] *= van_dm_Q.getY_values()[k];
+//        else y_vals_v[k]  = 1.0f;
+//        else y_vals_v[k]  = (float) Math.pow(q_v*q_v*Math.sin(scattering_angle_v/2),2);   
+//        else y_vals_v[k] *= 4*Math.PI*Math.sin(scattering_angle_v/2)/lambda_v/lambda_v;
+//        else y_vals_v[k] *= van_dm_Q.getY_values()[k]/(4*Math.PI*Math.sin(scattering_angle_v/2))*lambda_v*lambda_v;
       }
     }                               
 

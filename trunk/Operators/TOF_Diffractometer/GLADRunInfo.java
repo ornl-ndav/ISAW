@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/05/05 02:06:10  taoj
+ * added into the cvs
+ *
  * Revision 1.1  2004/07/23 17:41:51  taoj
  * test version.
  *
@@ -50,12 +53,13 @@ import java.util.ArrayList;
 
 /**
  * This class provides the IPNS GLAD instrument specific information.
+ * It is now deprecated and replaced by GLADRunProps.java and GLADScatter.java.
  * 
  */
 public class GLADRunInfo {
   
   public static final float TAU_DET = 8.0f; //detector dead time in microseconds;
-  public static final float TAU_MON = 2.0f; //monitor dead time in microsectonds;
+  public static final float TAU_MON = 2.0f; //monitor dead time in microseconds;
   public static final int NLPSDID = 335; //max of LPSD index on GLAD (detID/64);
   public static final int NLPSD = 231; //number of GLAD detector LPSD;
   public static final int NSEGMENTS = 64; //# of segments on each LPSD;
@@ -67,7 +71,7 @@ public class GLADRunInfo {
   public static final int NMONITOR = 3; //#of monitors: [0]: beam monitor, 
                                                                      //[1] transmission monitor (fudge), [2] proton monitor;
   public static final float SOURCE_PERIOD = 3.33333e4f; //IPNS running at 30 Hz;
-  public static final int DELAYED_NEUTRON_NFIT = 20; //first 20 channels used in delayed neutron correction;
+  public static final int DELAYED_NEUTRON_NFIT = 20; //first 20 channels used in delayed neutron correction fitting;
   public static final float DNFRACT = 0.00425f; //delayed neutron fraction;
   public static final float FACD = 0.41234502f; 
                           //for He3 detector: (number density)*(absorption cross section)*(detector radius)/1.8 Angstrom;
@@ -77,12 +81,15 @@ public class GLADRunInfo {
   public static final float GLADQMAX = 40.0f; //max Q for data analysis;
 //  public static final int NANGLES = 9;
 
-  public static Data dm_van_W = null; //vanadium calibration's beam monitor spectrum, needed for weighting;
+//  public static Data dm_van_W = null; //vanadium calibration's beam monitor spectrum, needed for weighting;
 
 // beam VAC info:
 
-  public static final float Vac1Bwid = 1.02f;
-  public static final float Vac1Bht = 2.30f;
+//  public static final float Vac1Bwid = 1.02f;
+//  public static final float Vac1Bht = 2.30f;
+
+    public static final float Vac1Bwid = 1.302f;
+    public static final float Vac1Bht = 2.20f;
  
 // vanadium calibration rods size info:
   public static final String[][] StdVan = {{"V"}};
@@ -103,13 +110,41 @@ public class GLADRunInfo {
   public static final float CanDensity = 0.07205f;
   public static final float[] Can1Size = {0.4636f, 0.4763f, 6.0f}; //3/8" can inner radius, outer radius, height;
   public static final float[] Can2Size = {0.3048f, 0.3175f, 4.1f}; //1/4" can;
- 
+
+/*
+//fudge for the TiZr can case:
+  public static final String[] CanVan = {"Ti", "Zr"};
+  public static final float[] CanFormula = {0.68f, 0.32f};
+  public static final float CanDensity = 0.0542f;
+  public static final float[] Can1Size = {0.40f, 0.45f, 6.0f}; //3/8" can inner radius, outer radius, height;
+  public static final float[] Can2Size = {0.3048f, 0.3175f, 4.1f}; //1/4" can;
+*/
+/*  
+//  fudge for the vanadium nuzzle case:
+  public static final String[] CanVan = {"V"};
+  public static final float[] CanFormula = {1.0f};
+  public static final float CanDensity = 0.0542f;
+  public static final float[] Can1Size = {0.5f, 0.7f, 0.15f}; //van nuzzle inner radius, outer radius, height;
+  public static final float[] Can2Size = {0.3048f, 0.3175f, 4.1f}; //1/4" can;
+*/  
+  public static final String[] NullCan = {"Ti", "Zr"};
+  public static final float[] NullCanFormula = {0.68f, 0.32f};
+  public static final float NullCanDensity = 0.0542f;
+  public static final float[] NullCanSize = {0.40f, 0.45f, 6.0f}; //TiZr "null" scattering alloy can, I/D 8 mm, O/D 9mm
+
+  
   public static int[][] BankDet2lpsdID =null; //the mapping table from bank/det to a LPSD index;
   public static boolean[] LPSDBad = null;
   public static ArrayList LDeadDet = null;
   public static ArrayList LRemovedDataID = null;
   public static final String GLAD_PARM = "GLAD Instrument Parameters";
-    
+/*defns of GLAD_PARM:  
+  scattering_angle = position.getScatteringAngle();
+  domega = ((Float)attr_list_d.getAttributeValue(Attribute.SOLID_ANGLE)).floatValue();
+  d2 = position.getDistance();
+  psi = (float)(Math.PI/2-(position.getSphericalCoords())[2]);      
+  dt_grp_params = new Float1DAttribute (GLADRunInfo.GLAD_PARM, new float[] {scattering_angle, d2, domega, psi});
+*/    
   static String GLADDetsTable = null;
 // find the pathname of GLAD detector setup file gladdets6.par;
   static{

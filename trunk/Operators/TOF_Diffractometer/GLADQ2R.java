@@ -1,7 +1,7 @@
 /*
- * File:  GLADCombine.java
+ * File:  GLADQ2R.java
  *
- * Copyright (C) 2004 J. Tao
+ * Copyright (C) 2005 J. Tao
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,67 +28,48 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *
+ *
  * Modified:
  * $Log$
- * Revision 1.3  2005/05/05 02:06:10  taoj
+ * Revision 1.1  2005/05/05 02:06:10  taoj
  * added into the cvs
  *
- * Revision 1.2  2005/01/10 15:36:00  dennis
- * Added getCategoryList method to place operator in menu system.
- *
- * Revision 1.1  2004/07/23 17:45:11  taoj
+ * Revision 1.1  2005/02/15 17:45:11  taoj
  * test version.
  *
  */
+
 package Operators.TOF_Diffractometer;
 
-import DataSetTools.operator.*;
+import Operators.TOF_Diffractometer.Ftr;
+import DataSetTools.operator.Wrappable;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
-import DataSetTools.dataset.UniformXScale;
-import DataSetTools.dataset.XScale;
 
 /**
- * This class merges differential cross section of the same Q from different
- * data block. It corresponds to the MERGE routine in the ATLAS package.
+ * This class uses Ftr.java to convert I(Q) to S(Q) and preform the Fourier transformation from S(Q)
+ * to various distribution functions. It corresponds to the FTR routine on GLAD.
  */
-public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
+public class GLADQ2R implements Wrappable {
   //~ Instance fields **********************************************************
   
   private boolean DEBUG = false;
-  /* @param int_smp sample IofQ dataset;
-   * @param flx_van weighting function calculated from vanadium in a dataset ;
+  /* @param ioq_smp sample IofQ dataset;
+   * 
    */
-//  public DataSet ds0;
-  public DataSet int_smp;
-  public DataSet flx_van;
-  public int NUMQ = 40;
-  public float GLADQMAX = 40.0f;
+  public DataSet ds0;
+  public DataSet ioq_smp;
+  public float QCut = 25.0f;
+  public float NumberDensity;
   
   //~ Methods ******************************************************************
-
-  /* ------------------------ getCategoryList ------------------------------ */
-  /**
-   * Get an array of strings listing the operator category names  for 
-   * this operator. The first entry in the array is the 
-   * string: Operator.OPERATOR. Subsequent elements of the array determine
-   * which submenu this operator will reside in.
-   * 
-   * @return  A list of Strings specifying the category names for the
-   *          menu system 
-   *        
-   */
-  public String[] getCategoryList()
-  {
-    return Operator.TOF_NGLAD;
-  }
-
 
   /**
    * @return The script name for this Operator.
    */
   public String getCommand(  ) {
-    return "GLAD_COMBINE";
+    return "GLAD_Q2R";
   }
 
   /**
@@ -127,50 +108,38 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
    *
    * @return The crunched DataSet.
    */
-  public Object calculate(  ) {
+  public Object calculate(  ) {    
     
-//    GLADRunProps runinfo = (GLADRunProps)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[0];
-//    int NUMQ = ((Integer)runinfo.ExpConfiguration.get("GLAD.ANALYSIS.NUMQ")).intValue();
-//    float GLADQMAX = ((Float)runinfo.ExpConfiguration.get("GLAD.ANALYSIS.QMAX")).floatValue();
+    System.out.println("Extracting IofQ...");
+    GLADScatter smprun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2]; 
+    float bbarsq = smprun.bbarsq;
+    if (NumberDensity != 0.0f) smprun.density = NumberDensity;
+    Data dioq = ioq_smp.getData_entry(ioq_smp.getNum_entries()-1);
+    Ftr f = new Ftr(dioq, bbarsq);    
+    f.calculateDofR(QCut, 0, smprun.density);
     
-    System.out.println("Merge data by flux weighting...");
-    Data dt, dv, dioq, dsum;
-    XScale Q_scale;
-    int numq;
-    float[] Q_vals, y_vals_int, y_vals_flx, y_vals_ioq, y_vals_sum;
+    DataSet ds = new DataSet ("DS", 
+       "Construct a dataset holding the distribution functions.",
+       "1/Angstrom", "Q",
+       "", "");
 
-    numq = (int)GLADQMAX*NUMQ+1;   
-    Q_scale = new UniformXScale(1.0f/NUMQ, GLADQMAX+1.0f/NUMQ, numq);
-    dioq = Data.getInstance(Q_scale, new float[numq-1], 1000);
-    dsum = Data.getInstance(Q_scale, new float[numq-1], 1001);    
-    float scattering_angle;
-        
-    for (int i = 0; i < flx_van.getNum_entries(); i++){
-      dv = flx_van.getData_entry(i);
-      dsum = dsum.stitch(dv, Data.SUM);
-      dt = int_smp.getData_entry(i);
-      Q_vals = dt.getX_scale().getXs();
-      y_vals_int = dt.getY_values();
-      y_vals_flx = dv.getY_values();
-      for (int k = 0; k < Q_vals.length-1; k++){
-        y_vals_flx[k] *= y_vals_int[k];
-      }
-      dioq = dioq.stitch(dv, Data.SUM);
-    }    
     
-    y_vals_ioq = dioq.getY_values();
-    y_vals_sum = dsum.getY_values();
-    for (int i = 0; i < numq-1; i++){
-      if (y_vals_sum[i] != 0){
-        y_vals_ioq[i] /= y_vals_sum[i];  
-      }
+    float fofrs[][];
+    fofrs = f.getTofR();
+//    StringBuffer output = new StringBuffer("GofR:\n");
+//    String entry;
+ 
+    for (int i = 0; i<fofrs[0].length; i++){
+      if (i<1100) {
+//        entry= "["+gofrs[0][i]+","+gofrs[1][i]+"]"+",";
+//        output.append(entry);
+        System.out.println("r:\t"+fofrs[0][i]+"\t"+"tor:\t"+fofrs[1][i]);
+      } 
+//             System.out.println("r: "+dors[0][i]+" Dr: "+dors[1][i]);
     }
-    
-    int_smp.addData_entry(dioq);
-    int_smp.setTitle(int_smp.getTitle()+" "+"--->COMBINE");
-    int_smp.setY_label("distinct scattering");
-    System.out.println("Done.");
-    return int_smp;
+//    System.out.println(output);     
+
+    return null;
   }    
 
 }
