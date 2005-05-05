@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/05/05 02:06:10  taoj
+ * added into the cvs
+ *
  * Revision 1.2  2005/01/10 15:36:00  dennis
  * Added getCategoryList method to place operator in menu system.
  *
@@ -40,17 +43,16 @@
 package Operators.TOF_Diffractometer;
 
 import DataSetTools.operator.*;
-import java.io.StringReader;
-import java.util.regex.Pattern;
 import DataSetTools.math.tof_calc;
-import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
 
 /**
- * This class preforms GLAD multiple scattering and attenuation correction;
+ * This class performs the multiple scattering and attenuation correction.
+ * It corresponds to ANALYSE/CORAL of the ATLAS package.
  */
 public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
   //~ Instance fields **********************************************************
@@ -59,17 +61,20 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
   /* @param runfile absolute path of the runfile;
    * @param ISvan the vanadium calibration's beam monitor spectrum is needed for later use;
    */
-  public boolean ISVac1 = true;
-  public boolean ISEmptyCan = false;
+
+  public DataSet ds0;
   public DataSet ds;
-  public boolean ISCanSize1 = true;
-  public boolean ISCanSize2 = false;
-  public float SmpHeight = 6.0f;
-  public String SmpComposition;
-  public float SmpNumberDensity = 0.05f;
+  public int imask; //1 for sample rod, 2 for empty can, 3 for smp+can;
+//  public float smpheight = 6.0f;
+//  public String smpcomposition;
   public float mulstep = 0.1f;
   public float absstep = 0.02f;
-  public boolean ISSilicaRod = false;
+  public boolean usemutfile = false;
+  public LoadFileString mutfile = new LoadFileString();
+  public float minw = 0.1f;
+  public float maxw = 4.3f;
+  public float dw = 0.1f;
+  public float scattererm;
   //~ Methods ******************************************************************
 
   /* ------------------------ getCategoryList ------------------------------ */
@@ -125,137 +130,88 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
     return s.toString(  );
   }
 
-  public static void glad_coral (String[][] target, float[][] formula, 
-                            float Sht, float[] radii, float[] density, float Bwid, float Bht,
-                            boolean ISmul, float astep) {
- 
-    try {
-      MutCross.run(MutCross.sigmatable);    
-      if (ISmul) {
-        String MulSetup = MutCross.MulAbsInputMaker(target, formula, Sht, radii, density, Bwid, Bht, astep);
-        StringReader input_cylmulin = new StringReader(MulSetup);
-        CylMulTof.run(input_cylmulin); 
-      } else {
-        String AbsSetup = MutCross.MulAbsInputMaker(target, formula, Sht, radii, density, Bwid, Bht, astep);
-        StringReader input_cylabsin = new StringReader(AbsSetup);
-        CylAbsTof.run(input_cylabsin, radii.length-1);       
-      }
-    } catch(Throwable t) {
-      System.out.println("unexpected error");
-      t.printStackTrace();
-      }    
-  }
-  
   /**
-   * Removes dead detectors from the specified DataSet.
+   * Performs multiple scattering and attenuation correction.
    *
    * @return The crunched DataSet.
    */
   public Object calculate(  ) {
+    float scatterern;
+    GLADScatter thisrun = null;
+    if (imask == 1) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
+    else if (imask == 2) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[3];
+    else if (imask == 3) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
+    else System.out.println("\n***UNEXPECTED ERROR***\n"+"imask: "+imask);
+
+    thisrun.mstep = mulstep;
+    thisrun.astep = absstep;
+    thisrun.minw = minw;
+    thisrun.maxw = maxw;
+    thisrun.dw = dw;
+    if(scattererm != 0.0f) thisrun.scatterern = scattererm;
     
-    String[][] target = null;
-    float[][] formula = null;
-    float Sht = 0.0f, Bwid = 0.0f, Bht = 0.0f;
-    float[] radii = null, density = null;
-    
-    if (ISCanSize1 && ISCanSize2) {
-      System.out.println("******ERROR: one can at a time please.******");
-      return null;
+    if(usemutfile == true) {
+      thisrun.setMutTable(mutfile.toString());
+      thisrun.setAbsInput();
+      thisrun.setMulInput();
     }
     
-    if (ISVac1) {
-      Bwid = GLADRunInfo.Vac1Bwid;
-      Bht = GLADRunInfo.Vac1Bht;
-    }
-    
-    String[] list_composition = Pattern.compile("[\\s,]+").split(SmpComposition);
-    int nelements = list_composition.length;
-    if (nelements%2 != 0) System.out.println("******INPUT ERROR******");
-    nelements /= 2;
-    String[] list_elements = new String[nelements];
-    float[] list_fractions = new float[nelements];
-    for (int i = 0; i < nelements; i++){
-      list_elements[i] = list_composition[2*i];
-      list_fractions[i] = (new Float(list_composition[2*i+1])).floatValue();
-    }
+    System.out.println("\n---"+GLADScatter.SMASK[imask]+"---\n"); 
         
-    if(ISCanSize1) {
-      radii = new float[] {0.0f, GLADRunInfo.Can1Size[0], GLADRunInfo.Can1Size[1]};
-//      Sht = GLADRunInfo.Can1Size[2];
-    }
-    else if (ISCanSize2) { 
-      radii = new float[] {0.0f, GLADRunInfo.Can2Size[0], GLADRunInfo.Can2Size[1]};
-//      Sht = GLADRunInfo.Can2Size[2]; 
-    }
-    Sht = SmpHeight;
-    target = new String[][] {list_elements, GLADRunInfo.CanVan};
-    formula = new float[][] {list_fractions, GLADRunInfo.CanFormula};
-    density = new float[] {SmpNumberDensity, GLADRunInfo.CanDensity};
+    System.out.println("multiple scattering calculation...");
+    CylMulTof thisrunmul = new CylMulTof(thisrun);
+    thisrunmul.runMulCorrection();
+    System.out.println("Done.\n");
     
-    if (ISSilicaRod){
-      radii = new float[] {GLADRunInfo.SilicaRodSize[0], GLADRunInfo.SilicaRodSize[1]};
-      Sht = GLADRunInfo.SilicaRodSize[2]; 
-      target = new String[][] {list_elements};
-      formula = new float[][] {list_fractions};
-      density = new float[] {SmpNumberDensity};
-    }
-    
-    System.out.println("Sample Attenuation calculation..."); 
-    glad_coral (target, formula, Sht, radii, density, Bwid,  Bht, false, absstep); //attenuation correction;
-    System.out.println("Done.");
-    
-    if (ISEmptyCan) {
-      if(ISCanSize1) {
-        radii = new float[] {GLADRunInfo.Can1Size[0], GLADRunInfo.Can1Size[1]};
-        Sht = GLADRunInfo.Can1Size[2];
-      }
-      else if (ISCanSize2) { 
-        radii = new float[] {GLADRunInfo.Can2Size[0], GLADRunInfo.Can2Size[1]};
-        Sht = GLADRunInfo.Can2Size[2]; 
-      }
-    target = new String[][] {GLADRunInfo.CanVan};
-    formula = new float[][] {GLADRunInfo.CanFormula};
-    density = new float[] {GLADRunInfo.CanDensity};  
-    } 
-    
-    if(ISEmptyCan) System.out.println("Empty can multiple scattering calculation...");
-    else System.out.println("Sample multiple scattering calculation...");
-    glad_coral (target, formula, Sht, radii, density, Bwid,  Bht, true, mulstep); //multiple scattering correction;
-    System.out.println("Done.");
+    CylAbsTof thisrunabs;
+    GLADScatter smpincanrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];    
+    if (smpincanrun.runabs0 == null) {
+      thisrunabs = new CylAbsTof(smpincanrun);
+      smpincanrun.runabs0 = thisrunabs;
+      System.out.println("Attenuation calculation...");      
+      thisrunabs.runAbsCorrection();
+      System.out.println("Done.");    
+    }    
+    else thisrunabs = smpincanrun.runabs0;
+  
+    if(imask == 2) System.out.println("Applying empty can multiple scattering and attenuation correction...");
+    else System.out.println("Applying sample multiple scattering and attenuation correction...");
     
     Data dt;
     DetectorPosition position;
     AttributeList attr_list_d;
-    float scattering_angle, q, lambda;
+    float scattering_angle, q, lambda, delta;
     float[] qlist, y_vals_n, mul, abs;
     int istart, iend;
     if (ds.getX_label() != "Q") System.out.println("******ERROR******");
     for (int i = 0; i < ds.getNum_entries(); i++) {
-    dt = ds.getData_entry(i);
-    attr_list_d = dt.getAttributeList();
-    scattering_angle = ((float[])attr_list_d.getAttributeValue(GLADRunInfo.GLAD_PARM))[0];
-    qlist = dt.getX_scale().getXs();
-    y_vals_n = dt.getY_values();
-    istart = 0;
-    iend = y_vals_n.length-1;
+      dt = ds.getData_entry(i);
+      attr_list_d = dt.getAttributeList();
+      scattering_angle = ((float[])attr_list_d.getAttributeValue(GLADRunProps.GLAD_PARM))[0];
+      qlist = dt.getX_scale().getXs();
+      y_vals_n = dt.getY_values();
+      istart = 0;
+      iend = y_vals_n.length-1;
     
-    while (y_vals_n[istart] == 0.0f) {
-      istart++;
-    }
-    while (y_vals_n[iend] == 0.0f) {
-      iend--;
-    }
+      while (y_vals_n[istart] == 0.0f) {
+        istart++;
+      }
+      while (y_vals_n[iend] == 0.0f) {
+        iend--;
+      }
       
-      for (int k = istart; k < iend; k++){
+      for (int k = istart; k <= iend; k++){
         q = .5f*(qlist[k]+qlist[k+1]);
         lambda = tof_calc.WavelengthofDiffractometerQ(scattering_angle, q);
 //      if (k == 0) System.out.println("i: "+i+" y_vals_n[0]: "+y_vals_n[k]);
-        mul = CylMulTof.getCoeff(scattering_angle, lambda);
-        abs = CylAbsTof.getCoeff(scattering_angle, lambda);
+        mul = thisrunmul.getCoeff(scattering_angle, lambda);
+        abs = thisrunabs.getCoeff(scattering_angle, lambda);
+//        delta = mul[0]/(mul[0]+mul[1]);
       
 //            if (k == 0) System.out.println("i: "+i+" y_vals_n[0]: "+y_vals_n[k]);
-        if (ISEmptyCan) {//outer shells: (can);
+        if (imask == 2) {//outer shells: (can);
           y_vals_n[k] -= mul[1];
+//          y_vals_n[k] *= delta;
 //            if (k==0) System.out.println("cell mul[1]: "+mul[1]+" abs[3]: "+abs[3]+" abs[2]: "+abs[2]);     
           y_vals_n[k] /= abs[3];
           y_vals_n[k] *= abs[2];
@@ -263,8 +219,9 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
         else {          //inner core:  calibration rod (vanadim, fused silica), or (sample+can) with (can) part subtracted;
 //            if (k==0) System.out.println("core mul[1]"+mul[1]+" abs[1]: "+abs[1]);
           y_vals_n[k] -= mul[1];
+//          y_vals_n[k] *= delta;
           y_vals_n[k] /= abs[1];
-          y_vals_n[k] /= MutCross.Nscatterers;
+          y_vals_n[k] /= thisrun.scatterern;
 //              if (y_vals_n[k] < y_vals_min) y_vals_min=y_vals_n[k];
     /*          if (y_vals_n[k] > 10.0f || y_vals_n[k] < -10.0f) {
                 y_vals_n[k]=0.0f;
@@ -278,33 +235,13 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
     ds.setTitle(ds.getTitle()+" "+"--->CORAL/ANALYSE");
 //        ds.setY_units("barns");
     ds.setY_label("Time-Of-Flight differential crosssection");
-    if(ISEmptyCan) System.out.println("Empty can multiple scattering and attenuation correction applied.");
-    else System.out.println("Sample multiple scattering and attenuation correction applied.");
+    System.out.println("Done.");
+
     return ds;
   }
 
   public static void main(String[] args) {
-   
-    String test = "Ni 1";
-    String[] list_composition = Pattern.compile("[\\s,]+").split(test);
-    int nelements = list_composition.length;
-    if (nelements%2 != 0) System.out.println("******INPUT ERROR******");
-    nelements /= 2;
-    String[] list_elements = new String[nelements];
-    float[] list_fractions = new float[nelements];
-    
 
-    for (int i = 0; i < nelements; i++){
-      list_elements[i] = list_composition[2*i];
-      list_fractions[i] = (new Float(list_composition[2*i+1])).floatValue();
-
-    }
-   
-    for (int i = 0; i < nelements; i++){
-        
-         System.out.println(list_elements[i]);
-         System.out.println(list_fractions[i]);
-       }
  
   }
 

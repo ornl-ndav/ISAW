@@ -26,10 +26,13 @@
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
- * For further information, see <http://www.pns.anl.gov/ISAW/>
+ * For further information, see <http://www.pns.anl.gov/computing/ISAW/>
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/05/05 02:06:10  taoj
+ * added into the cvs
+ *
  * Revision 1.2  2005/01/10 15:35:59  dennis
  * Added getCategoryList method to place operator in menu system.
  *
@@ -40,13 +43,14 @@
 package Operators.TOF_Diffractometer;
 
 import DataSetTools.operator.*;
-import java.io.StringReader;
+//import java.io.StringReader;
 import DataSetTools.math.tof_calc;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import Operators.Special.LowPassFilterDS0;
+
 
 /**
  * This class calculates the vanadium calibration function from a dataset of normalized vanadium intensity in
@@ -63,11 +67,11 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
    * @param DOsmooth smooth the vanadium spectra or not;
    * @param temperature vanadium rod temperature.
    */
-  public boolean ISVac1 = true;
+//  public boolean ISVac1 = true;
+  public DataSet ds0;
+//  private GLADScatter vanrun = (GLADScatter) runprops.get(1);
   public DataSet nrm_van;
   public boolean DOsmooth = false;
-  public boolean ISVanSize1 = true;
-  public boolean ISVanSize2;
   public float temperature = 300.0f;
   public float mulstep = 0.1f;
 
@@ -126,16 +130,14 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
    * @return The crunched DataSet.
    */
   public Object calculate(  ) {
+
+    System.out.println("Vanadium multiple scattering calculation...");       
+    GLADScatter vanrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[1];
+    vanrun.mstep = mulstep;
     
-    if(ISVanSize1 && ISVanSize2) {
-      System.out.println("******ERROR: one rod at a time please.******");
-      return null;
-    }    
-    
-    String[][] target = null;
-    float[][] formula = null;
-    float Sht = 0.0f, Bwid = 0.0f, Bht = 0.0f;
-    float[] radii = null, density = null;
+    CylMulTof vanrunmul = new CylMulTof(vanrun);
+    vanrunmul.runMulCorrection();
+    System.out.println("Done.");
     
     if (DOsmooth) {
       System.out.println("\n"+"STARTING FOURIER FILTERING...");
@@ -143,44 +145,21 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
       System.out.println("COMPLETE"+"\n");
     }
     
-    if (ISVac1) {
-      Bwid = GLADRunInfo.Vac1Bwid;
-      Bht = GLADRunInfo.Vac1Bht;
-    }
-    
-    target = GLADRunInfo.StdVan;
-    formula = GLADRunInfo.StdFormula;
-    density = GLADRunInfo.StdDensity;
-    if (ISVanSize1) {
-      radii = new float[] {GLADRunInfo.Van1Size[0], GLADRunInfo.Van1Size[1]};
-      Sht = GLADRunInfo.Van1Size[2];
-    } else if (ISVanSize2) {
-      radii = new float[] {GLADRunInfo.Van2Size[0], GLADRunInfo.Van2Size[1]};
-      Sht = GLADRunInfo.Van2Size[2];
-    }     
-    
-    System.out.println("Vanadium multiple scattering correction...");
-    try{
-      MutCross.run(MutCross.sigmatable);    
-      String MulSetup = MutCross.MulAbsInputMaker(target, formula, Sht, radii, density, Bwid, Bht, mulstep);
-      StringReader input_cylmulin = new StringReader(MulSetup);
-      CylMulTof.run(input_cylmulin);
-    } catch(Throwable t) {
-      System.out.println("unexpected error");
-      t.printStackTrace();
-      }
-    System.out.println("Done.");
+    System.out.println("Applying multiple scattering correction...");
       
     Data dt;
     AttributeList attr_list_d;
     float scattering_angle, d1, d2, lambda, q, p;
     float[] Q_vals_d, y_vals_n, mul = new float[2], data_params = new float[4];
     int ndetchannel;
+    String[] target = vanrun.symbol;
+    float[] formula = vanrun.formula;
+//    float abs;
     
     for (int i = 0; i < nrm_van.getNum_entries(); i++){
       dt = nrm_van.getData_entry(i);
       attr_list_d = dt.getAttributeList();
-      data_params = (float[])attr_list_d.getAttributeValue(GLADRunInfo.GLAD_PARM);
+      data_params = (float[])attr_list_d.getAttributeValue(GLADRunProps.GLAD_PARM);
       scattering_angle = data_params[0];
       d1 = ((Float)attr_list_d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
       d2 = data_params[1];
@@ -191,16 +170,40 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
       for (int k = 0; k < ndetchannel; k++){
         q = 0.5f*(Q_vals_d[k]+Q_vals_d[k+1]);
         lambda = tof_calc.WavelengthofDiffractometerQ(scattering_angle, q);
-        p = Platom.plaatom(lambda, target[0], formula[0], temperature, scattering_angle, d1, d2, true);
-        mul = CylMulTof.getCoeff(scattering_angle, lambda);
+        p = Platom.plaatom(lambda, target, formula, temperature, scattering_angle, d1, d2, true);
+        mul = vanrunmul.getCoeff(scattering_angle, lambda);
+//        abs = CylAbsTof.getCoeff(scattering_angle, lambda)[1];
+//        y_vals_n[k] /= lambda*lambda/(4*Math.PI*Math.sin(scattering_angle/2))*(mul[0]*p+mul[1]);
         y_vals_n[k] /= mul[0]*p+mul[1];
+//        y_vals_n[k] /= abs;
       }      
     }
     nrm_van.setTitle(nrm_van.getTitle()+" "+"--->VANCAL");
     nrm_van.setY_label("vanadium calibration function");
 //    nrm_van.addLog_entry("applying vancal() to calculate vanadium calibration function");
+    System.out.println("Done.");
     System.out.println("Vadadium dataset converted into the calibration function.\n");
     return nrm_van;
+  }
+
+  public static void main (String[] args) {
+     
+    GLADCrunch testcrunch = new GLADCrunch();
+      
+    GLADConfigure testconf = new GLADConfigure();
+    DataSet ds0 = (DataSet)testconf.calculate();      
+    testcrunch.ds0 = ds0;
+    testcrunch.runfile = new gov.anl.ipns.Util.SpecialStrings.LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8094.run");
+    testcrunch.noDeadDetList = true;
+    testcrunch.redpar = new gov.anl.ipns.Util.SpecialStrings.LoadFileString("/IPNShome/taoj/GLAD/gladrun.par");
+    java.util.Vector monnrm = (java.util.Vector) testcrunch.calculate();
+    
+    GLADVanCal testvancal = new GLADVanCal();
+    testvancal.ds0 = ds0;
+    testvancal.nrm_van = (DataSet)monnrm.get(1);
+    testvancal.calculate();
+    DataSetTools.viewer.ViewManager view_nrmvan = new DataSetTools.viewer.ViewManager(testvancal.nrm_van, DataSetTools.viewer.IViewManager.IMAGE);
+
   }
 
 }

@@ -1,7 +1,7 @@
 /*
- * File:  GLADCombine.java
+ * File:  GLADWeightingjava
  *
- * Copyright (C) 2004 J. Tao
+ * Copyright (C) 2005 J. Tao
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,41 +30,50 @@
  *
  * Modified:
  * $Log$
- * Revision 1.3  2005/05/05 02:06:10  taoj
+ * Revision 1.1  2005/05/05 02:06:10  taoj
  * added into the cvs
  *
- * Revision 1.2  2005/01/10 15:36:00  dennis
+ * Revision 1.2  2005/01/10 15:35:59  dennis
  * Added getCategoryList method to place operator in menu system.
  *
- * Revision 1.1  2004/07/23 17:45:11  taoj
+ * Revision 1.1  2004/07/23 17:44:45  taoj
  * test version.
  *
  */
 package Operators.TOF_Diffractometer;
 
 import DataSetTools.operator.*;
+import DataSetTools.math.tof_calc;
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
-import DataSetTools.dataset.UniformXScale;
+import DataSetTools.dataset.IData;
+import DataSetTools.dataset.VariableXScale;
 import DataSetTools.dataset.XScale;
+import gov.anl.ipns.Util.Numeric.arrayUtil;
+import java.util.regex.Pattern;
+
 
 /**
- * This class merges differential cross section of the same Q from different
- * data block. It corresponds to the MERGE routine in the ATLAS package.
+ * not yet used;
  */
-public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
+
+public class GLADWeighting implements Wrappable, IWrappableWithCategoryList {
   //~ Instance fields **********************************************************
   
   private boolean DEBUG = false;
-  /* @param int_smp sample IofQ dataset;
-   * @param flx_van weighting function calculated from vanadium in a dataset ;
+  /* @param runfile absolute path of the runfile;
+   * @param ISvan the vanadium calibration's beam monitor spectrum is needed for later use;
    */
-//  public DataSet ds0;
-  public DataSet int_smp;
-  public DataSet flx_van;
-  public int NUMQ = 40;
-  public float GLADQMAX = 40.0f;
-  
+
+  public DataSet smo_van;
+  public DataSet dm_van;
+//  private String[] target;
+//  private float[] formula;
+  public float Wmin = 0.1f;
+  public float Wmax = 6.0f;
+
   //~ Methods ******************************************************************
 
   /* ------------------------ getCategoryList ------------------------------ */
@@ -88,7 +97,7 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
    * @return The script name for this Operator.
    */
   public String getCommand(  ) {
-    return "GLAD_COMBINE";
+    return "GLAD_Weight";
   }
 
   /**
@@ -128,51 +137,60 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
    * @return The crunched DataSet.
    */
   public Object calculate(  ) {
-    
-//    GLADRunProps runinfo = (GLADRunProps)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[0];
-//    int NUMQ = ((Integer)runinfo.ExpConfiguration.get("GLAD.ANALYSIS.NUMQ")).intValue();
-//    float GLADQMAX = ((Float)runinfo.ExpConfiguration.get("GLAD.ANALYSIS.QMAX")).floatValue();
-    
-    System.out.println("Merge data by flux weighting...");
-    Data dt, dv, dioq, dsum;
-    XScale Q_scale;
-    int numq;
-    float[] Q_vals, y_vals_int, y_vals_flx, y_vals_ioq, y_vals_sum;
 
-    numq = (int)GLADQMAX*NUMQ+1;   
-    Q_scale = new UniformXScale(1.0f/NUMQ, GLADQMAX+1.0f/NUMQ, numq);
-    dioq = Data.getInstance(Q_scale, new float[numq-1], 1000);
-    dsum = Data.getInstance(Q_scale, new float[numq-1], 1001);    
-    float scattering_angle;
+    System.out.println("prepare the flux weighting function from vanadium data...");
+    Data dv, van_dm_Q;
+    AttributeList attr_list_v;
+    float scattering_angle_v, lambda_v, q_v;
+    float[] Q_vals_v, y_vals_v, W_vals_vm, Q_vals_vm, y_vals_vm;
+    float[] data_params_v = new float[4];
+    XScale Q_scale_vm;
+    int ngrps, nmonchannel;
+    
+  
+    ngrps = smo_van.getNum_entries();    
+    W_vals_vm = (dm_van.getData_entry(0)).getX_values();
+    y_vals_vm = (dm_van.getData_entry(0)).getCopyOfY_values();
+    nmonchannel = y_vals_vm.length;
+    Q_vals_vm = new float[nmonchannel+1];
+    arrayUtil.Reverse( y_vals_vm );
         
-    for (int i = 0; i < flx_van.getNum_entries(); i++){
-      dv = flx_van.getData_entry(i);
-      dsum = dsum.stitch(dv, Data.SUM);
-      dt = int_smp.getData_entry(i);
-      Q_vals = dt.getX_scale().getXs();
-      y_vals_int = dt.getY_values();
-      y_vals_flx = dv.getY_values();
-      for (int k = 0; k < Q_vals.length-1; k++){
-        y_vals_flx[k] *= y_vals_int[k];
+    for (int i = 0; i < ngrps; i++){
+
+      dv = smo_van.getData_entry(i);
+
+      attr_list_v = dv.getAttributeList();
+          
+      data_params_v = (float[])attr_list_v.getAttributeValue(GLADRunProps.GLAD_PARM);
+      scattering_angle_v = data_params_v[0];
+      Q_vals_v = dv.getX_scale().getXs();
+      y_vals_v = dv.getY_values();
+          
+                         
+      for (int k = 0; k <= nmonchannel; k++){
+        Q_vals_vm[k] = tof_calc.DiffractometerQofWavelength(scattering_angle_v, W_vals_vm[k]);
       }
-      dioq = dioq.stitch(dv, Data.SUM);
-    }    
-    
-    y_vals_ioq = dioq.getY_values();
-    y_vals_sum = dsum.getY_values();
-    for (int i = 0; i < numq-1; i++){
-      if (y_vals_sum[i] != 0){
-        y_vals_ioq[i] /= y_vals_sum[i];  
+          
+      arrayUtil.Reverse( Q_vals_vm );
+      Q_scale_vm = new VariableXScale(Q_vals_vm);
+      van_dm_Q = Data.getInstance(Q_scale_vm, y_vals_vm, dv.getGroup_ID());
+      van_dm_Q.resample( dv.getX_scale(), IData.SMOOTH_NONE );
+ 
+      for (int k = 0; k < y_vals_v.length; k++){
+        q_v = 0.5f*(Q_vals_v[k]+Q_vals_v[k+1]);
+        lambda_v = tof_calc.WavelengthofDiffractometerQ(scattering_angle_v, q_v);            
+        if (lambda_v < Wmin || lambda_v > Wmax) y_vals_v[k] = 0.0f;
+        else y_vals_v[k] *= van_dm_Q.getY_values()[k];
       }
-    }
-    
-    int_smp.addData_entry(dioq);
-    int_smp.setTitle(int_smp.getTitle()+" "+"--->COMBINE");
-    int_smp.setY_label("distinct scattering");
+    }                               
+
+
+    smo_van.setTitle(smo_van.getTitle()+" "+"--->FLUX");
+    smo_van.setY_units("counts");
+    smo_van.setY_label("calculated vanadium scattering");
     System.out.println("Done.");
-    return int_smp;
-  }    
+    return Boolean.TRUE;
+  }
 
 }
-
 
