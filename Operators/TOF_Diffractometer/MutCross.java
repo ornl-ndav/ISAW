@@ -1,14 +1,40 @@
 /*
- * Created on Mar 12, 2004
+ * File:  MutCross.java
  *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * Copyright (C) 2004 J. Tao
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Julian Tao <taoj@anl.gov>
+ *           Intense Pulsed Neutron Source Division
+ *           Argonne National Laboratory
+ *           9700 South Cass Avenue, Bldg 360
+ *           Argonne, IL 60439-4845, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ *
  */
+ 
 package Operators.TOF_Diffractometer;
+
 import java.io.File;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.StringWriter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -17,74 +43,120 @@ import DataSetTools.util.SharedData;
 
 
 /**
- * @author taoj
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class sets up a static HashMap containing atomic scattering parameter information,
+ * and also calculate a sample's scattering parameters. It corresponds to the CROSS
+ * program on GLAD.
  */
 public class MutCross {
-  static final float LAMBDA = 1.7979f; //the reference wavelength at 2200 m/s neutron
-  public static String sigmatable = null;
-  
-  static{
-    sigmatable = SharedData.getProperty( "ISAW_HOME" );
-    if (sigmatable==null){
-    sigmatable = SharedData.getProperty("user.home");
-    sigmatable += java.io.File.separator+"ISAW";
-  }
-    sigmatable = sigmatable.trim();
-    sigmatable += java.io.File.separator+"Databases";
-    sigmatable += java.io.File.separator+"sears91.dat";
-    if( new File(sigmatable).exists()){
-        // do nothing
+  public static final float RTLAMBDA = 1.7979f; //the reference wavelength at 2200 m/s neutron
+  public static String defSigmaTable = null; 
+
+  static {
+    if (GLADRunProps.ISAWDBDirectory != null) {
+      defSigmaTable = GLADRunProps.ISAWDBDirectory;
+      defSigmaTable += java.io.File.separator+"sears91.dat";
+    } else {
+      defSigmaTable = SharedData.getProperty( "ISAW_HOME" );
+      if (defSigmaTable==null){
+        defSigmaTable = SharedData.getProperty("user.home");
+        defSigmaTable += java.io.File.separator+"ISAW";
+      }
+      defSigmaTable = defSigmaTable.trim();
+      defSigmaTable += java.io.File.separator+"Databases";
+      defSigmaTable += java.io.File.separator+"sears91.dat";      
+    }
+    if( new File(defSigmaTable).exists()) {
+            // do nothing
     } else{
-      sigmatable = null;
+      defSigmaTable = null;
+    }
+  }  
+  
+  public static HashMap element_params = null;
+//  public static float Nscatterers;
+  
+  private MutCross() {
+    if (element_params == null)
+      try {
+        getSigmaTable(defSigmaTable);      
+      } catch(Throwable t) {
+        System.out.println("\n***MutCross() ERROR***\n");
+        t.printStackTrace();
+      }
+  }
+  
+  private MutCross(String sigmatable) {
+    try {
+      getSigmaTable(sigmatable);      
+    } catch(Throwable t) {
+      System.out.println("\n***MutCross(sigmatable) ERROR***\n");
+      t.printStackTrace();
     }
   }
-
-  private static HashMap element_params;
-  public static float Nscatterers;
   
-  static void run(String sigma_table) throws IOException, InterruptedException{
+  public static MutCross loadSigmaTable () {
+    return new MutCross ();
+  }
+  
+  public static MutCross loadSigmaTable (String sigmatable) {
+    return new MutCross (sigmatable);
+  }
+  
+  private void getSigmaTable(String sigmatable) throws IOException, InterruptedException{
          
-    BufferedReader fr_input = new BufferedReader(new FileReader(sigma_table));
+    BufferedReader fr_input = new BufferedReader(new FileReader(sigmatable));
     String element_symbol, line = null;
     String[] list;
-    
+    float[] scattering_params;    
+    Pattern token = Pattern.compile("\\s+");
     element_params = new HashMap();
       
-      while((line = fr_input.readLine()) != null ) {
-        if(line.charAt(0) != '#') {
-          list = Pattern.compile("\\s+").split(line.trim());
+    while((line = fr_input.readLine()) != null ) {
+      if(line.charAt(0) != '#') {
+        list = token.split(line.trim());
 //          System.out.println("<<"+line);
-          float[] scattering_params ={(new Float(list[1])).floatValue(), (new Float(list[3])).floatValue(),
+        scattering_params = new float[] {(new Float(list[1])).floatValue(), (new Float(list[3])).floatValue(),
                                                     (new Float(list[4])).floatValue(), (new Float(list[5])).floatValue()}; 
                                                     //an array that contains atomic mass, b_bar, sigma_s, sigma_a in that order;
-          element_params.put(list[2], scattering_params);
-          
-        }
+        element_params.put(list[2], scattering_params);
       }
+    }
 //      System.out.println(element_params.containsKey("O"));
 //      System.out.println(((float[])element_params.get("O"))[0]);
     fr_input.close();
   }      
+/*  
+  static String MutReader (String mutfile) throws IOException, InterruptedException{
+    String MutTable = "";
+    BufferedReader fr_input = new BufferedReader(new FileReader(mutfile));
+    String line = null;
+    while( (line = fr_input.readLine()) != null ) {
+//      if(line.charAt(0) != '#') {
+        MutTable += line+"\n";          
+//      }
+    }
 
-  public static float[] getScatteringParams (String element_symbol) {
+    fr_input.close();
+    return MutTable;
+  }
+*/
+  public float[] getScatteringParams (String element_symbol) {
     float[] scattering_params;
     if (!element_params.containsKey(element_symbol)){
       System.out.println("!!!!!!WARNING!!!!!!"+"\n"+"\""+element_symbol+"\""+" CAN'T BE FOUND.");
       return null;
     }
     else {
+//    an array that contains atomic mass, b_bar, sigma_s, sigma_a in that order;
       return (float[])element_params.get(element_symbol);
     }
   }
   
-  public static float[] getTargetSigmas (String[] elements, float[] formula) {
-    float[] sigma = {0.0f, 0.0f}, scattering_params = new float[4];
-    float b2f, sum_formula = 0.0f;
+  public float[] getTargetSigmas (String[] elements, float[] formula) {
+    float[] sigma = {0.0f, 0.0f, 0.0f}, scattering_params = new float[4]; 
+    float b2f, bbarsq = 0.0f, sum_formula = 0.0f;
     if (elements.length != formula.length) {
-      System.out.println("******ERROR******WRONG INPUT");
+      System.out.println("******ERROR******WRONG INPUT\n"+elements.length+" "+formula.length);
       return null;
     }
     else {
@@ -94,113 +166,30 @@ public class MutCross {
           b2f = scattering_params[0]/(1+scattering_params[0]);
           sigma[0] += formula[i]*scattering_params[2]*b2f*b2f;
           sigma[1] += formula[i]*scattering_params[3];
+          bbarsq += formula[i]*scattering_params[1];
         }
         else return null;
       }
       sigma[0] /= sum_formula;
       sigma[1] /= sum_formula;
+      bbarsq /= sum_formula;
+      sigma[2] = bbarsq*bbarsq/100.0f; //sigma[2] is (sum(f[i]*b[i],i=1..n)/sum(f[i],i=1..n))^2 in bars;
+//    an array that contains sigma_s, sigma_a, <b_bar>^2 in that order;
       return sigma;  
     }
   }
-  
-  public static String MutMaker (String[] target, float[] formula, float minW, float maxW, float dW){
-    String MutTable = "";
-    int nW=1;
-    float lambda = minW, sigma_t;
-    float[] sigma = getTargetSigmas(target, formula); 
-    if (sigma == null) System.out.println("*******ERROR******SIGMAS NOT FOUND."); 
-    else {
-      BufferedWriter bw = (new BufferedWriter(new StringWriter()));
-      while (lambda < maxW){
-        sigma_t = sigma[0]+sigma[1]*lambda/LAMBDA;
-        MutTable += lambda+" "+sigma_t+"\n";
-        nW++;
-        lambda += dW;
-      }
-      
-        lambda = maxW;
-        sigma_t = sigma[0]+sigma[1]*lambda/LAMBDA;
-        MutTable += lambda+" "+sigma_t+"\n";
-        MutTable = nW+"\n"+MutTable;
-      }
-//      System.out.println(MutTable);
-      return MutTable;
-    }
-    
-  public static String MulAbsInputMaker(String[][] targets, float[][] formulas, 
-                                                           float Sht, float[] radii, float[] density, 
-                                                           float Bwid, float Bht, float astep) {
-                                                             
-        float[] beam_profile = {1.0f, 1.0f};
-//        float[] target_profile = {6.000f, 0.510f, -0.510f, 2.000f, -2.000f, 2.365f, 3.635f, 0.000f, 6.000f};
-        float[] target_profile = new float[9];
-        target_profile[0] = Sht;
-        target_profile[1] =  Bwid/2.0f;
-        target_profile[2] =  -Bwid/2.0f;
-        target_profile[3] =  2.0f;
-        target_profile[4] = -2.0f;
-        target_profile[5] = (Sht-Bht)/2.0f;
-        target_profile[6] =  (Sht+Bht)/2.0f;
-        target_profile[7] = 0.0f;
-        target_profile[8] = Sht;
-        
-        float[] det_angles = {2.00f, 5.00f, 10.00f, 20.00f, 40.00f, 60.00f, 80.00f, 100.00f, 140.00f};
-//        float minW = 0.03f, maxW = 4.21f, dW = 0.02f;
-        float minW = 0.1f, maxW = 4.3f, dW = 0.1f;
-        int nan;
-        String MulAbsInput;
-        
-        nan = radii.length-1;
-        if((targets.length != nan) || (formulas.length != nan) || (density.length != nan)){
-          System.out.println("******ERROR******CHECK INPUT TO MulAbsInputMaker.");
-          return null;
-        }
-
-        float[] sigma_a = new float[nan];
-        for (int i = 0; i < nan; i++){
-          sigma_a[i] = getTargetSigmas(targets[i], formulas[i])[1];
-        }
-         
-        MulAbsInput = beam_profile.length+"\n";
-        for(int i=0; i<beam_profile.length; i++){
-          MulAbsInput += beam_profile[i]+" ";
-        }
-        MulAbsInput += "\n";
-        MulAbsInput += astep+"\n";
-        MulAbsInput += det_angles.length+"\n";
-        for(int i=0; i<det_angles.length; i++){
-          MulAbsInput += det_angles[i]+" ";
-        }
-        MulAbsInput += "\n";
-        for(int i=0; i<target_profile.length; i++){
-          MulAbsInput += target_profile[i]+" ";
-        }
-        MulAbsInput += "\n";
-        MulAbsInput += nan+"\n";
-        for(int i=0; i<nan+1; i++){
-          MulAbsInput += radii[i]+" ";  
-        }
-        MulAbsInput += "\n";
-        
-        for(int i=0; i<nan; i++){
-          MulAbsInput += density[i]+" "+sigma_a[i]+"\n";  
-          MulAbsInput += MutMaker (targets[i], formulas[i], minW, maxW, dW);
-        }
-        
-        Nscatterers = (float)(density[0]*Bht*Math.PI*(radii[1]*radii[1]-radii[0]*radii[0]));
-
-        return MulAbsInput;
-      }
-  
+       
   public static void main(String[] args) {
-    System.out.println("Default crosssection data file is "+"\""+sigmatable+"\".");
+    MutCross mc = new MutCross ();
+    System.out.println("Default crosssection data file is "+MutCross.defSigmaTable+"\n");
+ /*
     try {
-      run(sigmatable);
+      run();
     } catch(Throwable t) {
       System.out.println("unexpected error");
       t.printStackTrace();
     }
-       
+ */      
     String[][] targets = {{"C", "Cl"},{"V"}};
                        float[][] formulas = {{1.0f, 4.0f},{1.0f}};
                        float[] radii = {0.0f, 0.3048f, 0.3175f};
@@ -214,10 +203,30 @@ public class MutCross {
             float[] radii_can = new float[] {radii[1], radii[2] };
             float[] density_can = new float[] {density[1]};
 //            float[] sigma_a_can = new float[] {sigma_a[1] };
-    System.out.println(MulAbsInputMaker(targets, formulas, Sht, radii, density, Bwid, Bht, mul_astep));
-    System.out.println("\n"+"samcal: "+Nscatterers+"\n");
-    System.out.println(MulAbsInputMaker(targets_can, formulas_can, Sht, radii_can, density_can, Bwid, Bht, mul_astep));
-    System.out.println("\n"+"samcal: "+Nscatterers);
+
+//    System.out.println(mc.makeMut(targets[0], formulas[0], 0.1f, 4.3f, 0.1f));
+ 
+
+ //   System.out.println(MulAbsInputMaker(targets, formulas, Sht, radii, density, Bwid, Bht, mul_astep, new String[] {null, null}, 0.1f, 4.0f, 2.0f));
+ //   System.out.println("\n"+"samcal: "+Nscatterers+"\n");
+//    System.out.println(MulAbsInputMaker(targets_can, formulas_can, Sht, radii_can, density_can, Bwid, Bht, mul_astep));
+//    System.out.println("\n"+"samcal: "+Nscatterers);
+
+/*
+    System.out.println(MutMaker(targets[0], formulas[0], 0.1f, 4.3f, 0.1f));
+    System.out.println("\n");
+    System.out.println(MutMaker(targets[1], formulas[1], 0.1f, 4.3f, 0.1f));
+*/
+/*
+    try{
+      System.out.println(MutReader("/IPNShome/taoj/GLAD/coral/cylindrical0/GLD08094.MUT")+"done.");
+    } catch(Throwable t) {
+      System.out.println("unexpected error");
+      t.printStackTrace(); 
+    }
+*/    
+//    System.out.println("Done.");  
+  
   }
 
 }
