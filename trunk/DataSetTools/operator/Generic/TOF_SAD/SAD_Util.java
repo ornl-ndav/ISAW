@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2005/05/11 22:54:39  dennis
+ * Completed javadocs.
+ * Added some additional internal documentation.
+ *
  * Revision 1.8  2005/03/30 01:46:54  dennis
  * Removed unneeded semicolon.
  *
@@ -120,6 +124,22 @@ public class SAD_Util
   /**
    *  Form a DataSet containing S(Qx,Qy) together with error estimates.
    *
+   *  @param  RUNSds       Array of DataSets containing the monitor DataSet
+   *                       and a DataSet with the ratios R = (S/Ms-C/Mc)/Ts, 
+   *                       as a function of wavelength.
+   *  @param  Eff          DataSet containing the detector efficiency ratios as
+   *                       a function of wavelength.
+   *  @param  Sens         DataSet containing the sensitivity of each pixel
+   *  @param  sensIndex    Array containing indices into the sensitivity
+   *                       DataSet, to speed up access to the sensitivity value
+   *  @param  MonitorInd   Contains the index of the upstream monitor
+   *  @param  bounds       Bounds for the region in (Qx,Qy) that is to be
+   *                       calculated.
+   *  @param  NQxBins      Number of binx in the Qx direction
+   *  @param  NQyBins      Number of binx in the Qy direction
+   *
+   *  @return A DataSet containing the 2D array of calculated S(Qx,Qy) values
+   *          together with error estimates.
    */
    public static DataSet SumQs_2D( DataSet     RUNSds[], 
                                    DataSet     Eff,
@@ -242,8 +262,16 @@ public class SAD_Util
 
    /* --------------------------- GetQRegion ------------------------ */
    /**
-    *  Determing the 2D region to be covered when calculating 
-    *  S(Qx,Qy)
+    *  Determine the 2D region to be covered when calculating S(Qx,Qy)
+    *  as the intersection of the region covered by the detector and the
+    *  region specified by the values in qu[].
+    *
+    *  @param  SampGrid   DataGrid for the area detector 
+    *  @param  lambda     array of wavelengths to use
+    *  @param  qu         Array containing Qxmin, Qxmax, Qymin, Qymax givng
+    *                     the range of Qx,Qy to be covered
+    *
+    *  @return a CoordBounds object containing the region of (Qx,Qy) covered.
     */
     public static CoordBounds GetQRegion( UniformGrid SampGrid, 
                                           float       lambda[], 
@@ -288,6 +316,11 @@ public class SAD_Util
    /* ------------------------- BuildRunNumList ----------------------- */
    /**
     *  Make an array containing the list of run numbers for the runs used
+    *
+    *  @param  ds   Array of DataSets for the runs being used
+    *
+    *  @return an integer array containing the list of run numbers
+    *          corresponding to the specified DataSets.
     */
    public static int[] BuildRunNumList( DataSet ds[] )
    { 
@@ -312,7 +345,12 @@ public class SAD_Util
 
    /* --------------------------- AdjustGrid ---------------------------- */ 
    /**
-    *  Shift the data grid to compensate for the beam center offset
+    *  Shift the data grid for an area detector to compensate for the 
+    *  beam center offset
+    *
+    *  @param  ds    The DataSet whose data grid is to be moved.
+    *  @param  xoff  the x offset of the beam center on the detector face
+    *  @param  yoff  the y offset of the beam center on the detector face
     */
    public static void AdjustGrid(DataSet ds, float xoff, float yoff) 
    { 
@@ -325,6 +363,11 @@ public class SAD_Util
       UniformGrid.setDataEntriesInAllGrids(ds);
       Vector3D pos = grid.position();
 
+      // NOTE: xoff and yoff are specified in a local coordinate system on 
+      //       the face of the detector.  In lab coordinates this means that
+      //       the detector should be moved by specified xoff in the LAB Y
+      //       direction and by minus the specified yoffset in the LAB Z 
+      //       direction.
       pos.add(new Vector3D(0, xoff, -yoff));
       ((UniformGrid) grid).setCenter(pos);
     
@@ -336,6 +379,18 @@ public class SAD_Util
   /**
    *  Build a DataSet, complete with attributes, pixel info lists, etc.
    *  from the specified 2D arrays of values and errors.
+   *  
+   *  @param  Dx        The width of the 2D area covered by the data
+   *  @param  Dy        The height of the 2D area covered by the data
+   *  @param  Nx        The number of columns
+   *  @param  Ny        The number of rows 
+   *  @param  list      Array containing the values to store in the DataBlock
+   *                    at position (row,col)
+   *  @param  err       Array containing error estimates for the values in list
+   *  @param  DataSetName  Name to use for this DataSet
+   *  
+   *  @return  A new DataSet with a DataGrid and Nx*Ny DataBlocks each
+   *           containing on of the values from list[][].
    */
    public static DataSet Build2D_DS( float     Dx,         
                                      float     Dy, 
@@ -373,7 +428,7 @@ public class SAD_Util
          errs  = new float[1];
          yvals[0] = list[row-1][col-1];
          errs[0]  = err [row-1][col-1];
-         if( col == Nx )                     // ???????
+         if( col == Nx )                     // TODO why is the last col null?
            list[row-1] = null;
          HistogramTable Dat = 
                         new HistogramTable( xscl, yvals, errs, (row-1)*Nx+col );
@@ -404,6 +459,11 @@ public class SAD_Util
    *  deal with most attributes.  It allows forming the difference of the
    *  sample minus background DataSets faster.  The DataSets are assumed
    *  to have identical area detector grids.
+   *
+   *  @param ds_1   The DataSet from which ds_2 is subtracted.
+   *  @param ds_2   The DataSet which is subtracted from ds_1.
+   *
+   *  @return  A new DataSet containing the values (and errors) for ds_1-ds_2
    */
    public static DataSet Build2D_Difference_DS( DataSet ds_1, DataSet ds_2 )
    {
@@ -437,6 +497,21 @@ public class SAD_Util
   /**
    *  This does most of the calculations for the 1D S(Q) case.  It builds
    *  the 1D S(Q) DataSet by mapping each spectrum to Q and summing. 
+   *
+   *  @param  RUNSds       Array of DataSets containing the monitor DataSet
+   *                       and a DataSet with the ratios R = (S/Ms-C/Mc)/Ts, 
+   *                       as a function of wavelength.
+   *  @param  EffDS        DataSet containing the detector efficiency ratios as
+   *                       a function of wavelength.
+   *  @param  SensDs       DataSet containing the sensitivity of each pixel
+   *  @param  sensIndex    Array containing indices into the sensitivity
+   *                       DataSet, to speed up access to the sensitivity value
+   *  @param  MonitorInd   Contains the index of the upstream monitor
+   *  @param  xscl         XScale giving the list of bins to use when
+   *                       calculating S(Q).
+   *
+   *  @return A DataSet containing the 1D array of calculated S(Q) values
+   *          together with error estimates.
    */
   public static DataSet SumQs_1D( DataSet     RUNSds[], 
                                   DataSet     EffDS,
@@ -527,6 +602,27 @@ public class SAD_Util
   /**
    *  Calculate the ratio R = (S/Ms-C/Mc)/Ts  with errs for R/sens/eff
    *
+   *  @param  RUNSds       Array of DataSets containing the monitor DataSet
+   *                       and Sample DataSet.
+   *  @param  RUNCds       Array of DataSets containing the cadmium run
+   *                       monitor DataSet and cadmium run sample DataSet.
+   *  @param  cadIndex     Array containing indices into the cadmium DataSet 
+   *                       DataSet, to speed up access.
+   *  @param  Transm           The DataSet giving the transmission as a 
+   *                           function of wavelength.
+   *  @param  useTransmission  Boolean flag indicating whether or not to use
+   *                           divide by the transmission.
+   *  @param  Eff              DataSet containing the detector efficiency 
+   *                           ratios as a function of wavelength.
+   *  @param  SensDs       DataSet containing the sensitivity of each pixel
+   *  @param  sensIndex    Array containing indices into the sensitivity
+   *                       DataSet, to speed up access to the sensitivity value
+   *  @param  MonitorInd   Contains the index of the upstream monitor
+   *  @param  scale        The scale factor that is multiplied times the 
+   *                       calculated ratios and errors.
+   *
+   *  @return The calculated ratios are returned in the y-value arrays of
+   *          the RUNSds[] DataSets. 
    */
   public static void CalcRatios( DataSet    RUNSds[], 
                                  DataSet    RUNCds[], 
@@ -638,7 +734,7 @@ public class SAD_Util
                                     sens * Effy[i],
                                     prodErr(sens, senserr, Effy[i], Efferr[i]));
                sampy[i]   = scale * sampy[i];
-               samperr[i] = samperr[i] * scale;
+               samperr[i] = scale * samperr[i];
             }
        }//else sens ==0
      }
@@ -647,8 +743,14 @@ public class SAD_Util
 
   /* ---------------------------- prodErr -------------------------------- */
   /**
-   *  Calculate the error in a produce, based on the 
-   *  error in the two factors 
+   *  Calculate the error in a produce, based on the error in the two factors 
+   *
+   *  @param Fac1     The first factor
+   *  @param Fac1Err  Error estimate for the first factor
+   *  @param Fac2     The second factor
+   *  @param Fac2Err  Error estimate for the second factor
+   *
+   *  @return the estimate of the error in Fac1*Fac2.
    */
   public static float prodErr( float Fac1, 
                                float Fac1Err, 
@@ -662,8 +764,14 @@ public class SAD_Util
 
   /* ---------------------------- quoErr -------------------------------- */
   /**
-   *  Calculate the error in a quotient, based on the 
-   *  error in the two factors 
+   *  Calculate the error in a quotient, based on the error in the numerator
+   *  and denomoinator.
+   *  @param Num      The numerator
+   *  @param NumErr   Error estimate for the numerator
+   *  @param Den      The denominator 
+   *  @param DenErr   Error estimate for the denominator
+   *
+   *  @return the estimate of the error in Num/Den.
    */
   public static float quoErr( float Num, float NumErr, float Den, float DenErr)
   {
@@ -682,6 +790,11 @@ public class SAD_Util
   /**
    *  Calculate the error in a sum or difference, based on the 
    *  error in the two terms
+   *  @param Term1Err   Error estimate for the Term1 
+   *  @param Term2Err   Error estimate for the Term2 
+   *
+   *  @return the square root of the sum of the squares of the errors in
+   *          term1 and term2.
    */
   public static float SumDiffErr( float Term1Err, float Term2Err )
   {
@@ -692,6 +805,9 @@ public class SAD_Util
   /* ---------------------------- SqErrors ------------------------------ */
   /**
    *  Replace list of errors with list of errors squared
+   *
+   *  @param  errs   List of error estimates which are squared in this method.
+   *
    */
   public static void SqErrors( float[] errs )
   {
@@ -703,9 +819,13 @@ public class SAD_Util
 
   /* --------------------------- getQ_Values ---------------------------- */
   /**
-   *  Get the list of Q values corresponding to the list
-   *  of wavelengths for a Data block whose x values are 
-   *  in wavelength.
+   *  Get the list of Q values corresponding to the list of wavelengths 
+   *  for a Data block whose x values are in wavelength.
+   *
+   *  @param  D     A Data block giving a spectrum as a function of wavelength
+   *
+   *  @return  An array of 'Q' values corresponding the wavelengths in D
+   *           
    */
   public static float[] getQ_Values( Data D )
   {
@@ -715,9 +835,8 @@ public class SAD_Util
                                 Attribute.DETECTOR_POS)).getScatteringAngle();
 
     for( int i = 0; i< Res.length; i++)
-    {
-       Res[i] = tof_calc.DiffractometerQofWavelength( scatAngle, Res[i] );
-    }
+      Res[i] = tof_calc.DiffractometerQofWavelength( scatAngle, Res[i] );
+    
     return Res;
   }
 
@@ -731,6 +850,9 @@ public class SAD_Util
   *   @param  xvals     the x values corresponding to the old y values
   *                     ( assumes histogram )
   *   @param  qu_scale  the new XScale to be rebinned to
+  *
+  *   @return  An array of y-values obtained by rebinning the specified
+  *            y values to the new qu_scale.
   */ 
   public static float[] Rebin( float[] yvals, float[] xvals, XScale qu_scale )
   {
@@ -827,6 +949,12 @@ public class SAD_Util
   /**
    *  Get the data grid for an area detector and reset the Data entries
    *  to the correct Data blocks
+   *  
+   *  @param  DS   The DataSet from an area detector for which the Data block
+   *               references are to be reset.
+   *
+   *  @return The DataGrid for the area detector, after re-setting the 
+   *          Data block references.
    */
   public static UniformGrid SetUpGrid( DataSet DS )
   {
@@ -843,6 +971,12 @@ public class SAD_Util
    *  Set the sensitivity to zero for all pixels that are too near
    *  the edge, or whose radius is outside of [Radmin,Radmax] for
    *  the sensitivity grid for an area detector.
+   *
+   *  @param SensGrid    The DataGrid containing the sensitivity information.
+   *  @param SampGrid    The DataGrid for the sample run
+   *  @param Radmin      The minimum radius to keep
+   *  @param Radmax      The maximum radius to keep 
+   *  @param nedge       The number of edge pixels to discard
    */
   public static void ZeroAreaDetSens( UniformGrid SensGrid, 
                                       UniformGrid SampGrid,
@@ -854,6 +988,9 @@ public class SAD_Util
       for( int col = 1; col <= SensGrid.num_cols(); col++)
       {
         boolean Z = false;
+
+        // TODO  check this calculation.  It seems that this is correct if 
+        //       numbered from 0...N-1,  but the grid is numbered 1...N
         if ( (row < nedge) || (row > SensGrid.num_rows() - nedge) || 
              (col < nedge) || (col > SensGrid.num_cols() - nedge) )
           Z = true;    
@@ -877,6 +1014,11 @@ public class SAD_Util
   /* -------------------------- Init2DArray ----------------------------- */
   /**
    *  Construct a 2D array and set its values to 0.
+   *  
+   *  @param nrows  The number of rows to make
+   *  @param ncols  The number of cols to make
+   *  @return  a new float array res[][] with the specified number of rows and
+   *           columns that is filled with 0's.
    */
   public static float[][] Init2DArray( int nrows, int ncols )
   {
@@ -893,7 +1035,18 @@ public class SAD_Util
   /**
    *  Convert the given list of x values, initially representing 
    *  times-of-flight, to wavelength, based on the position of
-   *  a particular detector.
+   *  a particular detector element.
+   *
+   *  @param  x           list of x values, initially representing tof, that
+   *                      are converted to wavelength values.
+   *  @param  ds          The DataSet from which the detector element position
+   *                      is found.
+   *  @param  index       index in DataSet ds, identifying the particular
+   *                      spectrum (and hence detector element). 
+   *  @param  is_monitor  Flag indicating whether or not the specified index
+   *                      corresponds to a monitor.
+   *  @return  a reference to the list of x-values (array x) is also returned,
+   *           in addition to modifying the values in place in array x.
    */
   public static float[] ConvertXsToWL( float[] x, 
                                        DataSet ds, 
@@ -924,7 +1077,7 @@ public class SAD_Util
       return x;
     }
       
-    float initial_path       = initial_path_obj.floatValue();
+    float initial_path = initial_path_obj.floatValue();
     float total_length;
     if ( is_monitor )
     {
@@ -949,10 +1102,13 @@ public class SAD_Util
    *   resample the spectrum at the specified set of wavelength values. 
    *   This method is "memory efficient".  Since all have a common XScale there
    *   is little extra space.  
-   *  @param ds  The DataSet to be converted to WL
-   *  @param wlScale  The XScale for resultant wave lengths
-   *  @param is_monitor  True if the data set is a monitor data set
-   *  @return   returns the data set converted to wave length with appropriate operators 
+   *
+   *   @param ds          The DataSet to be converted to WL
+   *   @param wlScale     The XScale for resultant wave lengths
+   *   @param is_monitor  True if the data set is a monitor data set
+   *
+   *   @return   returns the data set converted to wave length with 
+   *             appropriate operators 
    */
    public static DataSet ConvertToWL( DataSet ds, 
                                       XScale  wlScale,
@@ -974,7 +1130,7 @@ public class SAD_Util
          arrayUtil.Reverse(yvals);
          arrayUtil.Reverse(errs);
        }
-       D1= Data.getInstance( new VariableXScale( xvals), 
+       D1= Data.getInstance( new VariableXScale( xvals ), 
                              yvals, errs, D.getGroup_ID() );
        D1.setAttributeList( alist );
        D1.resample( wlScale, IData.SMOOTH_NONE );
@@ -998,7 +1154,6 @@ public class SAD_Util
            ds.removeOperator(op);
         else if( op instanceof XYAxisConversionOp)
            ds.removeOperator( op );
-          
      }
      
      DataSetOperator op = getDSOp( pre+"WavelengthTo"+"Tof");
@@ -1017,25 +1172,36 @@ public class SAD_Util
      if( op != null)
        ds.addOperator(op);
      
-      
      return ds;
    }
+
  
- private static DataSetOperator getDSOp( String opTitle){
-   
-   try{
-      Class C = Class.forName( "DataSetTools.operator.DataSet.Conversion.XAxis." +
-                opTitle);
-      if( C.getSuperclass() != DataSetTools.operator.DataSet.Conversion.XAxis.
-                  XAxisConversionOp.class )
-        return null;
-     return (DataSetOperator)(C.newInstance());
-   }catch( Exception ss){
+ /* ----------------------------- getDSOp ------------------------------- */
+ /**
+  *  Get a new instance of a specified XAxis Conversion operator.
+  *
+  *  @param opTitle  The title of the XAxis conversion operator to get.
+  *
+  *  @return  A new instance of the specified operator, or null if it can't
+  *           be constructed.
+  */
+ private static DataSetOperator getDSOp( String opTitle )
+ {
+   try
+   {
+      Class C = Class.forName("DataSetTools.operator.DataSet.Conversion.XAxis."
+                               + opTitle);
+      if( C.getSuperclass() != 
+         DataSetTools.operator.DataSet.Conversion.XAxis.XAxisConversionOp.class)
+         return null;
+      return (DataSetOperator)(C.newInstance());
+   }
+   catch( Exception ss)
+   {
      return null;
    }
-   
-   
  }
+
 
   /* ------------------------ InterpolateDataSet ------------------------ */
   /**
@@ -1045,6 +1211,10 @@ public class SAD_Util
    *  respectively.  This is needed since the input data may not cover
    *  the full range of values needed for the new xscale.
    *
+   *  @param ds      The DataSet whose values are to be interpolated
+   *  @param xscale  The xscale at which the DataSet's values are to be
+   *                 interpolated.
+   *  @return        A new DataSet containing the interpolated Data blocks.
    */
   public static DataSet InterpolateDataSet( DataSet ds, XScale xscale )
   {
@@ -1108,6 +1278,13 @@ public class SAD_Util
     *  match the group IDS in the sample DataSet, assuming that the
     *  DataGrids are both the same size and  have their Data 
     *  references set.
+    *
+    *  @param  someGrid    A DataGrid containing references to its corresponding
+    *                      Data blocks, for which the IDs are to be set to
+    *                      match the IDs of the specified sampleGrid.
+    *  @param  sampleGrid  A DataGrid containing references to its corresponding
+    *                      Data blocks, whose IDs are to be used to set
+    *                      the IDs of the some specified grid.
     */
    public static void FixGroupIDs( UniformGrid someGrid, 
                                    UniformGrid sampleGrid ) 
@@ -1126,13 +1303,18 @@ public class SAD_Util
 
   /* ----------------------- BuildIndexOfID_Table ----------------------- */
   /**
-   *  Build a list giving the index int the DataSet of each group ID
+   *  Build a list giving the index in the DataSet of each group ID
    *  present int the DataSet.  The table size is MaxID - MinID + 2.
    *  Position 0 stores the MinID that was present in  the DataSet.  
    *  The index of the Data block with the MinID is stored in position 1
    *  and position  MaxID + MinID + 1 stores the index of the Data block
    *  with the MaxID.  To find the Data block with ID "id", use
    *  table[ id - minID + 1 ] as the index into the DataSet.
+   *
+   *  @param  ds  DataSet whose DataEntries are to be indexed via the ID table.
+   *
+   *  @return  integer array 'table' set up so that table[ id - minID + 1 ] 
+   *           contains the index in DataSet ds of the group with ID 'id'. 
    */
   public static int[]  BuildIndexOfID_Table( DataSet ds )
   {
@@ -1171,11 +1353,14 @@ public class SAD_Util
   }
 
 
-
   /* ------------------------------- toVec ------------------------------ */
   /**
-   *  Utility for main program that just puts an array of floats
-   *  into a Vector
+   *  Utility for main program that just puts an array of floats into a Vector
+   *
+   *  @param  list   list of floats to be placed in a Vector
+   *
+   *  @return A new vector containing the elements of list[] in the order
+   *          they are listed.
    */
   public static Vector toVec( float[] list )
   {
