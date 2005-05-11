@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.35  2005/05/11 22:51:56  dennis
+ * Minor improvement to documentation.
+ *
  * Revision 1.34  2005/02/09 20:16:47  dennis
  * Changed title of operator for Menu system to "Reduce_KCL"
  * to match the command name and to distinguish it from the
@@ -360,7 +363,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         else
             make_2D = true;
 
-        int MonitorInd[];
+        int MonitorInd[];        //set to contain the index of the upstream mon
         if( upStreamMonID <0)
            MonitorInd = CalcTransmission.setMonitorInd( RUNSds0 );
         else{
@@ -411,13 +414,13 @@ public class Reduce_KCL  extends GenericTOF_SAD{
          }
 
         int num_data = RUNSds[1].getNum_entries();
-        float[] tofs = RUNSds[1].getData_entry(num_data/2).getX_scale().getXs();
-        tofs = SAD_Util.ConvertXsToWL(tofs, RUNSds[1], num_data / 2, false);
+        float[] xvals= RUNSds[1].getData_entry(num_data/2).getX_scale().getXs();
+        xvals = SAD_Util.ConvertXsToWL(xvals, RUNSds[1], num_data / 2, false);
 
-        if( tofs[0] > tofs[1] ) 
-          arrayUtil.Reverse(tofs);
+        if( xvals[0] > xvals[1] ) 
+          arrayUtil.Reverse( xvals );
 
-        XScale xscl = new VariableXScale( tofs );
+        XScale xscl = new VariableXScale( xvals );
         
         SAD_Util.ConvertToWL( RUNSds[0], xscl, true );   // monitor
         SAD_Util.ConvertToWL( RUNSds[1], xscl, false );  // sample
@@ -536,7 +539,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
       Res.append("@param TransB The background Transmission data set");
       Res.append("@param  Eff   The Efficiency data set");
       Res.append("@param Sens   The sensitivity data set");
-      Res.append("@param qu     The q bins if 1d or qxmin,qxmax, qymin, qymax");
+      Res.append("@param qu     The q bins if 1d or qxmin, qxmax, " );
+      Res.append("              qymin, qymax, if 2d.");
       Res.append("@param RUNSds0   the monitor  for the sample");
 
       Res.append("@param RUNSds1  the Histogram  for the sample");
