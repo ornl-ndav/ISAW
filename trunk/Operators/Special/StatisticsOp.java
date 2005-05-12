@@ -29,6 +29,14 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *  $Log$
+ *  Revision 1.2  2005/05/12 16:02:40  dennis
+ *  Inserted missing cvslog message and tag to record logging info.
+ *
+ *  Revision 1.1  2005/05/12 15:58:20  dennis
+ *  Initial version of operator to calculate basic statistics of one Data
+ *  block, specified by index. (Grant Adams)
+ *  Added main test program (Dennis)
  */
 
 package Operators.Special;
