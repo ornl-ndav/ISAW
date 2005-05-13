@@ -30,6 +30,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2005/05/13 00:43:04  dennis
+ * Added new versions of methods SumQs_1D() and SumQs_2D() that accept
+ * a list of boolean flags indicating whether or not a particular channel
+ * should be used.  The new version of SumQs_2D() is essentially the same as
+ * the previous version, except for the extra parameter.  The new version
+ * of SumQs_1D() is quite different from the previous version.  The previous
+ * version converted the spectra to Q before summing.  This version processes
+ * each bin individually, like the 2D version, to allow omitting individual
+ * bins in a logical way.
+ *
  * Revision 1.9  2005/05/11 22:54:39  dennis
  * Completed javadocs.
  * Added some additional internal documentation.
@@ -254,6 +264,152 @@ public class SAD_Util
          }
        }
 
+      DataSet ds = Build2D_DS( xDELTAQ, yDELTAQ,
+                               NQxBins, NQyBins, SQXQY, SERRXY, "s2d" );
+      return ds;
+   }
+
+
+  /* ----------------------------- SumQs_2D -------------------------------- */
+  /**
+   *  Form a DataSet containing S(Qx,Qy) together with error estimates,
+   *  using only channels listed in the "use_chan" array.
+   *
+   *  @param  RUNSds       Array of DataSets containing the monitor DataSet
+   *                       and a DataSet with the ratios R = (S/Ms-C/Mc)/Ts, 
+   *                       as a function of wavelength.
+   *  @param  Eff          DataSet containing the detector efficiency ratios as
+   *                       a function of wavelength.
+   *  @param  Sens         DataSet containing the sensitivity of each pixel
+   *  @param  sensIndex    Array containing indices into the sensitivity
+   *                       DataSet, to speed up access to the sensitivity value
+   *  @param  MonitorInd   Contains the index of the upstream monitor
+   *  @param  bounds       Bounds for the region in (Qx,Qy) that is to be
+   *                       calculated.
+   *  @param  NQxBins      Number of binx in the Qx direction
+   *  @param  NQyBins      Number of binx in the Qy direction
+   *  @param  use_chan     array of boolean flags indicating which channel
+   *                       numbers should be used.
+   *
+   *  @return A DataSet containing the 2D array of calculated S(Qx,Qy) values
+   *          together with error estimates.
+   */
+   public static DataSet SumQs_2D( DataSet     RUNSds[],
+                                   DataSet     Eff,
+                                   DataSet     Sens,
+                                   int         sensIndex[],
+                                   int         MonitorInd[],
+                                   CoordBounds bounds,
+                                   int         NQxBins,
+                                   int         NQyBins,
+                                   boolean     use_chan[]  )
+   {
+     float Qxmin = bounds.getX1();
+     float Qxmax = bounds.getX2();
+     float Qymin = bounds.getY1();
+     float Qymax = bounds.getY2();
+
+     float xDELTAQ = ((Qxmax - Qxmin)/NQxBins);
+     float yDELTAQ = ((Qymax - Qymin)/NQyBins);
+
+     float WTQXQY[][] = Init2DArray( NQxBins, NQyBins );
+     float SQXQY [][] = Init2DArray( NQxBins, NQyBins );
+     float SERRXY[][] = Init2DArray( NQxBins, NQyBins );
+
+     float[] eff = Eff.getData_entry(0).getY_values();
+     float[] Mon = RUNSds[0].getData_entry(MonitorInd[0]).getY_values();
+     Data Dsamp;
+     DetectorPosition detPos;
+     float[] Qxy,
+             SampYvals,
+             SampErrs,
+             wlvals;
+     float scatAngle,
+           sens,
+           lambdaAv,
+           Q,
+           Qx,
+           Qy,
+           DNx,
+           DNy;
+     int Nx,
+         Ny;
+
+     FloatAttribute At = (FloatAttribute)
+             (RUNSds[1].getData_entry(0).getAttribute(Attribute.INITIAL_PATH));
+     float L1 = At.getFloatValue();
+
+     int sensIDoffset = 1 - sensIndex[0];
+     int id;
+
+     for( int i = 0; i< RUNSds[1].getNum_entries(); i++)
+     {
+       Dsamp = RUNSds[1].getData_entry(i);
+       id    = Dsamp.getGroup_ID();
+
+       detPos = ((DetectorPosition)
+                 Dsamp.getAttributeValue( Attribute.DETECTOR_POS ));
+       Vector3D q_vec =
+                new Vector3D( tof_calc.DiffractometerVecQ( detPos, L1, 1000f ));
+       q_vec.normalize();
+       Qxy = q_vec.get();
+       scatAngle = detPos.getScatteringAngle();
+
+       sens = Sens.getData_entry(sensIndex[id + sensIDoffset]).getY_values()[0];
+       SampYvals = Dsamp.getY_values();
+       SampErrs  = Dsamp.getErrors();
+       wlvals    = Dsamp.getX_scale().getXs();
+
+       for( int wk = 0; wk+1 < wlvals.length; wk++ )
+       {
+         if ( use_chan[ wk ] )
+         {
+           lambdaAv = .5f * ( wlvals[ wk ] + wlvals[ wk+1 ] );
+           Q  = tof_calc.DiffractometerQofWavelength( scatAngle, lambdaAv );
+           Qx = -Q * Qxy[1];
+           Qy =  Q * Qxy[2];
+
+           DNx = ((Qx -Qxmin)/xDELTAQ);
+           DNy = ((Qy -Qymin)/xDELTAQ);
+           Nx  = (int)java.lang.Math.floor( DNx );
+           Ny  = (int)java.lang.Math.floor( DNy );
+           if( Nx >=0       && Ny >= 0    &&
+               Qx < Qxmax   && Qy < Qymax &&
+               Nx < NQxBins && Ny < NQyBins )
+           {
+              float W =sens*eff[ wk ] * Mon[ wk ];
+
+              WTQXQY[Nx][Ny] = WTQXQY[Nx][Ny] + W; //weightYvals[ wk ];
+  
+              SQXQY[Nx][Ny] = SQXQY[Nx][Ny] + SampYvals[ wk ] * Mon[ wk ];
+
+              float U = SampErrs[ wk  ] * W;
+              SERRXY[Nx][Ny] = SERRXY[Nx][Ny] + U * U;
+            }
+            else
+            {
+              // System.out.println("out of bounds"+Qxmin+","+Q+","+Qxmax+"::"+
+              //            Qymin+","+Qy+","+Qymax);
+            }
+          }
+       }
+     }//for( int i = 0; i< RUNSds[1].getNum_entries(); i++)
+
+
+     for( int i = 0; i < NQxBins; i++ )
+       for( int j = 0; j < NQyBins; j++ )
+       {
+         if(WTQXQY[i][j] == 0)
+         {
+           SQXQY[i][j]  = 0f;
+           SERRXY[i][j] = 0f;
+         }
+         else
+         {
+           SQXQY[i][j]  = SQXQY[i][j]/WTQXQY[i][j];
+           SERRXY[i][j] = (float)java.lang.Math.sqrt(SERRXY[i][j])/WTQXQY[i][j];
+         }
+       }
       DataSet ds = Build2D_DS( xDELTAQ, yDELTAQ,
                                NQxBins, NQyBins, SQXQY, SERRXY, "s2d" );
       return ds;
@@ -596,6 +752,119 @@ public class SAD_Util
 
     return Result; 
   }//SumQs_1D 
+
+
+  /* ----------------------------- SumQs_1D -------------------------------- */
+  /**
+   *  Form a DataSet containing S(Qx,Qy) together with error estimates,
+   *  using only channels listed in the "use_chan" array, in a manner
+   *  analogous to what was done for the 2D sum.
+   *
+   *  @param  RUNSds       Array of DataSets containing the monitor DataSet
+   *                       and a DataSet with the ratios R = (S/Ms-C/Mc)/Ts, 
+   *                       as a function of wavelength.
+   *  @param  Eff          DataSet containing the detector efficiency ratios as
+   *                       a function of wavelength.
+   *  @param  Sens         DataSet containing the sensitivity of each pixel
+   *  @param  sensIndex    Array containing indices into the sensitivity
+   *                       DataSet, to speed up access to the sensitivity value
+   *  @param  MonitorInd   Contains the index of the upstream monitor
+   *  @param  xscl         XScale giving the list of bins to use when
+   *                       calculating S(Q).
+   *  @param  use_chan     array of boolean flags indicating which channel
+   *                       numbers should be used.
+   *
+   *  @return A DataSet containing the 2D array of calculated S(Qx,Qy) values
+   *          together with error estimates.
+   */
+   public static DataSet SumQs_1D( DataSet     RUNSds[],
+                                   DataSet     Eff,
+                                   DataSet     Sens,
+                                   int         sensIndex[],
+                                   int         MonitorInd[],
+                                   XScale      xscl,
+                                   boolean     use_chan[]  )
+   {
+     float[] Resy   = new float[ xscl.getNum_x()-1 ];
+     float[] ErrSq  = new float[ Resy.length ];
+     float[] Weight = new float[ Resy.length ];
+     Arrays.fill( Resy, 0.0f );
+     Arrays.fill( ErrSq, 0.0f );
+     Arrays.fill( Weight, 0.0f );
+
+     float[] eff = Eff.getData_entry(0).getY_values();
+     float[] Mon = RUNSds[0].getData_entry(MonitorInd[0]).getY_values();
+
+     Data Dsamp;
+     DetectorPosition detPos;
+     float[] SampYvals,
+             SampErrs,
+             wlvals;
+     float scatAngle,
+           sens,
+           lambdaAv,
+           Q;
+
+     int sensIDoffset = 1 - sensIndex[0];
+     int id;
+
+     for( int i = 0; i< RUNSds[1].getNum_entries(); i++)
+     {
+       Dsamp = RUNSds[1].getData_entry(i);
+       id    = Dsamp.getGroup_ID();
+
+       detPos = ((DetectorPosition)
+                 Dsamp.getAttributeValue( Attribute.DETECTOR_POS ));
+       scatAngle = detPos.getScatteringAngle();
+
+       sens = Sens.getData_entry(sensIndex[id + sensIDoffset]).getY_values()[0];
+       SampYvals = Dsamp.getY_values();
+       SampErrs  = Dsamp.getErrors();
+       wlvals    = Dsamp.getX_scale().getXs();
+
+       for( int wk = 0; wk+1 < wlvals.length; wk++ )
+       {
+         if ( use_chan[ wk ] )
+         {
+           lambdaAv = .5f * ( wlvals[ wk ] + wlvals[ wk+1 ] );
+           Q  = tof_calc.DiffractometerQofWavelength( scatAngle, lambdaAv );
+          
+           int q_index = xscl.getI_GLB( Q );
+           if ( q_index >= 0 && q_index < Resy.length )
+           {
+              float W = sens*eff[ wk ] * Mon[ wk ];
+              float U = SampErrs[ wk ] * W;
+
+              Resy[ q_index ]   += SampYvals[ wk ] * Mon[ wk ]; 
+              ErrSq[ q_index ]  += U * U; 
+              Weight[ q_index ] += W;
+           } 
+         }
+       }
+     }//for( int i = 0; i< RUNSds[1].getNum_entries(); i++)
+
+     for( int i = 0; i< Resy.length;i++ )
+       if( Weight[i] > 0 )
+       {
+         Resy[i]  = Resy[i]/Weight[i];
+         ErrSq[i] = (float)java.lang.Math.sqrt( ErrSq[i] )/Weight[i];
+       }
+       else
+       {
+         Resy[i]  = 0.0f;
+         ErrSq[i] = 0.0f;
+       }
+
+     DataSet Result = new DataSet( "s",
+                                    new OperationLog(),
+                                   "per Angstrom",
+                                   "Q","Rel Intensity",
+                                   "Intensity");
+     Data D = new HistogramTable( xscl, (Resy), (ErrSq), 0 );
+     Result.addData_entry( D );
+
+     return Result;
+   }
 
 
   /* ---------------------------- CalcRatios ----------------------------- */
