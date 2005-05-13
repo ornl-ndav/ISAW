@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.17  2005/05/13 13:12:05  rmikk
+ *  Fixed error with selecting cells in the table.
+ *
  *  Revision 1.16  2005/01/10 15:47:32  dennis
  *  Removed unused imports.
  *
@@ -120,7 +123,12 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
         
         }
      
+     initState( state );
+     Ostate = new ObjectState();
+     Ostate.insert("ViewerState", state);
     
+  
+   //myAction.addPropertyChangeListener( new TableKeyListener( this));
      this.Array=Array;
      if( Array == null)
         this.Array = new dummyIVirtualArray2D();
@@ -131,26 +139,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
      jtb = null;
      SetUpNewJtb();
       
-      initState( state );
-      //jtb.getSelectionModel().addListSelectionListener( new TableKeyListener( this ));
-       myAction = new MAction("UP");
-       inp_map = new ComponentInputMap( jtb);
-      inp_map.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP,0), "UP");
-      inp_map.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN,0), "DOWN");
-      inp_map.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT,0), "RIGHT");
-      inp_map.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT,0), "LEFT");
-      
-      act_map = new ActionMap();
-      act_map.put( "UP",new MAction("UP"));
-      act_map.put(  "DOWN",new MAction("DOWN"));
-      act_map.put(  "RIGHT",new MAction("RIGHT"));
-      act_map.put(  "LEFT",new MAction("LEFT"));
-      
-      myAction.setEnabled( true);
-      //myAction.addPropertyChangeListener( new TableKeyListener( this));
-      jtb.setActionMap( act_map);
-      jtb.setInputMap( JComponent.WHEN_FOCUSED, inp_map);
-    
+         
     }
   
  // setState() and getState() are required by IPreserveState interface   
@@ -166,9 +155,11 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
     ViewerState st = (ViewerState)new_state.get("ViewerState");
     if( st != null){
        state= st;
+  
+       
+    SetUpNewJtb();
        //Now repaint with these
-      JscrlPane.validate();
-      JscrlPane.repaint();
+    
        
     }
   }
@@ -196,27 +187,36 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
    private void SetUpNewJtb(){
       removeAll();
       jtb = new XJTable( table_model);
-      EA = new ExcelAdapter( jtb);
       jtb.setAutoResizeMode( JTable.AUTO_RESIZE_OFF);
       jtb.setColumnSelectionAllowed( true );
       jtb.setSelectionBackground( Color.lightGray);
       jtb.removeEditor();
       jtb.addMouseListener( new MyMouseListener());
-      /*JPanel jp = new JPanel( new BorderLayout());
-      JPanel west = new JPanel();
-      west.setPreferredSize( new Dimension( 40,0));
-      jp.add( west, BorderLayout.WEST);
-      jp.add(jtb, BorderLayout.CENTER);
-       JPanel North = new JPanel();
-      North.setPreferredSize( new Dimension( 0,40));
-      jp.add( North, BorderLayout.NORTH);
-       AxisOverlay2D axes =new AxisOverlay2D( this);
-       JPanel All = new JPanel();
-       */
+     
+      inp_map = new ComponentInputMap( jtb);
+      inp_map.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP,0), "UP");
+      inp_map.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN,0), "DOWN");
+      inp_map.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT,0), "RIGHT");
+      inp_map.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT,0), "LEFT");
+      
+      act_map = new ActionMap();
+      myAction = new MAction("UP");
+      act_map.put( "UP",new MAction("UP"));
+      act_map.put(  "DOWN",new MAction("DOWN"));
+      act_map.put(  "RIGHT",new MAction("RIGHT"));
+      act_map.put(  "LEFT",new MAction("LEFT"));
+//    jtb.getSelectionModel().addListSelectionListener( new TableKeyListener( this ));
+      
+       myAction.setEnabled( true);
+
+       jtb.setActionMap( act_map);
+       jtb.setInputMap( JComponent.WHEN_FOCUSED, inp_map);
+
       JscrlPane = new JScrollPane(jtb);
       add( JscrlPane );
       
-       
+
+      EA = new ExcelAdapter( jtb);
        
       setLayout( new GridLayout(1,1));
       Rectangle R = getBounds();
@@ -392,14 +392,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
   */
   public void initState( ViewerState state)
     {
-     // No State Variables to Initialize Here
-     //
-    /*//Moved to IVirutalArray
-    if( state.TABLE_DATA.equals(""))
-       {state.set_String(ViewerState.TABLE_DATA, "Y values;");
-       }
-    */
-   
+    
      }
 
 
@@ -570,11 +563,14 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
       JTable JTb;
       ExcelAdapter EA;
       IntTableModel DTM;
-      public MyJTableListener( JTable JTb, IntTableModel DTM, ExcelAdapter EA )
+      LargeJTableViewComponent viewComp;
+      public MyJTableListener( JTable JTb, IntTableModel DTM, ExcelAdapter EA,
+              LargeJTableViewComponent viewComp)
         {
          this.JTb = JTb;
          this.DTM = DTM;
          this.EA = EA;
+         this.viewComp = viewComp;
         }
 
 
@@ -583,13 +579,14 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
          JMenuItem targ = ( JMenuItem )e.getSource();
 
          if( targ.equals( JMi ) )
-           {JTb.selectAll();
+           {viewComp.jtb.selectAll();
            // JTb.setRowSelectionInterval( 0, DTM.getRowCount() - 1 );
             //JTb.setColumnSelectionInterval( 0, DTM.getColumnCount() - 1 );
            }
          else if( targ.equals( JCp ) )
            {
-            EA.actionPerformed( new ActionEvent( JTb, 0, "Copy" ) );
+            viewComp.EA.actionPerformed( new ActionEvent( 
+                         viewComp.jtb, 0, "Copy" ) );
            }
         }
      }
@@ -653,8 +650,8 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
       JMenuItem calc= new JMenuItem( "Integrate");
       
       calc.addActionListener( new IntegrateListener() );
-      JMi.addActionListener( new MyJTableListener( jtb, table_model, EA ) );
-      JCp.addActionListener( new MyJTableListener( jtb, table_model, EA ) );
+      JMi.addActionListener( new MyJTableListener( jtb, table_model, EA ,this) );
+      JCp.addActionListener( new MyJTableListener( jtb, table_model, EA ,this) );
       Res[0] = new ViewMenuItem("Edit.SpreadSheet",JMi);
       Res[1] = new ViewMenuItem("Edit.SpreadSheet",JCp);
       Res[2] = new ViewMenuItem("Edit.SpreadSheet",calc);
@@ -962,7 +959,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
            }
        else
           return;
-         notifyActionListeners( IViewComponent.POINTED_AT_CHANGED);
+      notifyActionListeners( IViewComponent.POINTED_AT_CHANGED);
            
     }//actionPerforme
     }//MAction
