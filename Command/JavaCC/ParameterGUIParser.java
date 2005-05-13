@@ -24,6 +24,28 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
     myParser.ExpansionList(  );
   }
 
+
+  // Trim's and eliminates outer [] if any   
+  private static String FixUp( String text){
+     text = text.trim();
+     if( text == null)
+        return text;
+     if( text.length()<1)
+       return text;
+     if( text.charAt(0)!='[')
+       return text;
+     if( !text.endsWith("]"))
+        return text;
+     int level =1;
+     for( int i=1; i< text.length(); i++)
+       if( text.charAt(i)=='[')
+         level++;
+       else if(text.charAt(i)==']')
+         level--;
+       else if( level <=0)
+         return text;
+     return text.substring(1,text.length()-1);
+  }
   /**
    *  Used to call the parser from an outside class.
    *
@@ -36,6 +58,7 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
   public static Vector parseText( String text ) throws ParseException {
     standalone = false;
     //need a semicolon on the end
+    text = FixUp(text);
     if( text.indexOf( ";" ) < 0 ) {
       text = text.trim(  ) + ";";
     }
@@ -45,12 +68,14 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
       myParser.ReInit( new StringReader( text )  );
     }
     Vector tempy = myParser.ExpansionList(  );
-
+    return tempy;
+   /*
     if( tempy.size(  ) == 1 && tempy.get( 0 ).equals( "" ) ) {
       return new Vector(  );
     }  else  {
       return tempy;
     }
+  */
   }
 
 
@@ -221,10 +246,10 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
     }
     }
     //if we only have one element and it is a Vector, expand the inner Vector
-    if( tempArray.size(  ) == 1 &&
+   /* if( tempArray.size(  ) == 1 &&
         tempArray.firstElement(  ) instanceof Vector ) {
       tempArray = ( Vector )( tempArray.firstElement(  ) );
-    }
+    }*/
     {if (true) return tempArray;}
     throw new Error("Missing return statement in function");
   }
