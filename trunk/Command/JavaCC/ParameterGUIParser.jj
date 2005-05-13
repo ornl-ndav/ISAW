@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2005/05/13 19:51:42  rmikk
+ * Fixed problem which disables entry of 2D mor more arrays
+ *
  * Revision 1.10  2004/01/08 21:10:16  bouzekc
  * Now more forgiving than before with path separators for file systems.
  * Allows multiple forward or back slashes for Windows, and multiple
@@ -105,8 +108,9 @@ public class ParameterGUIParser {
   public static Vector parseText( String text ) throws ParseException {
     standalone = false;
     //need a semicolon on the end
+    text = FixUp(text);
     if( text.indexOf( ";" ) < 0 ) {
-      text = text.trim(  ) + ";";
+      text = text + ";";
     }
     if( myParser == null ) {
       myParser = new ParameterGUIParser( new StringReader( text )  );
@@ -115,14 +119,35 @@ public class ParameterGUIParser {
     }
     Vector tempy = myParser.ExpansionList(  );
 
-    if( tempy.size(  ) == 1 && tempy.get( 0 ).equals( "" ) ) {
+   /* if( tempy.size(  ) == 1 && tempy.get( 0 ).equals( "" ) ) {
       return new Vector(  );
     }  else  {
       return tempy;
-    }
+    }*/
+    return tempy;
   }
-     
-
+   
+  // Trim's and eliminates outer [] if any   
+  private static String FixUp( String text){
+     text = text.trim();
+     if( text == null)
+        return text;
+     if( text.length()<1)
+       return text;
+     if( text.charAt(0)!='[')
+       return text;
+     if( !text.endsWith("]")
+        return text;
+     int level =1;
+     for( int i=1; i< text.length(); i++)
+       if( text.charAt(i)=='[')
+         level++;
+       else if(text.charAt(i)==']')
+         level--;
+       else if( level <=0)
+         return text;
+     return text.substring(1,text.length()-1);
+  }
   /**
    * Used to expand an integer list (e.g. 5:8 to 5,6,7,8).
    *
@@ -315,10 +340,11 @@ Vector Expansion(  ) : {
 
   {
     //if we only have one element and it is a Vector, expand the inner Vector
-    if( tempArray.size(  ) == 1 && 
+   /* if( tempArray.size(  ) == 1 && 
         tempArray.firstElement(  ) instanceof Vector ) {
       tempArray = ( Vector )( tempArray.firstElement(  ) );
     }
+  */
     return tempArray;
   }
 }
@@ -359,6 +385,7 @@ Object toArray(  ) : {
   "[" recursedElement = Expansion(  ) "]" {
     //tell the outside program to NOT expand this Vector
     expandVectorIntoElements = false;
+    
     return recursedElement;
   }
 |
