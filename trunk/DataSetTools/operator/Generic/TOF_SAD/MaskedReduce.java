@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/05/13 15:15:24  dennis
+ * Removed some redundant debug prints.
+ *
  * Revision 1.1  2005/05/13 00:44:47  dennis
  * This version of Reduce_KCL includes an extra parameter giving a list
  * of channels to be omitted.
@@ -347,13 +350,9 @@ public class MaskedReduce  extends GenericTOF_SAD{
         int upStreamMonID =((Integer)(getParameter(20).getValue())).intValue();
         SCALE = SCALE / THICK;
 
-        System.out.println("Just before getting chanMaskStr");
         String  chanMaskStr = 
                       ((IntListString)getParameter(21).getValue()).toString(); 
-        System.out.println("Got chanMaskStr = " + chanMaskStr );
         int[] chanMaskNums = IntList.ToArray( chanMaskStr );
-        System.out.println("Number of channels masked = " 
-                             + chanMaskNums.length);
 
         float Radmin = bs_dim/100;
         float Radmax = 100.0f / 100; 
