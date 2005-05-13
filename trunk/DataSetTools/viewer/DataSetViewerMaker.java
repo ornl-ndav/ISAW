@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2005/05/13 14:38:37  rmikk
+ *  Temporarily eliminated support for the ObjectState, until one minor error 
+ *     is fixed.
+ *
  *  Revision 1.19  2005/04/16 19:40:24  rmikk
  *  Added Methods to work with the ObjectState. Brent's SelectedGraph View
  *    can now remember, save, and restore its state.
@@ -190,14 +194,15 @@ public class DataSetViewerMaker  extends DataSetViewer
     ObjectState Ostate= null;
    
      public void setObjectState( ObjectState new_state){
-        Ostate = new_state;
+        return;
+       /* Ostate = new_state;
         if( viewArray instanceof IPreserveState)
             ((IPreserveState)viewArray).setObjectState( 
                            (ObjectState)Ostate.get("ArrayMaker"));
         if(viewComp instanceof IPreserveState)
             ((IPreserveState)viewComp).setObjectState( 
                     (ObjectState)Ostate.get("View"));
-      
+      */
      }
      public ObjectState getObjectState( boolean is_default){
          ObjectState state = new ObjectState();
