@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2005/05/13 17:38:13  rmikk
+ *  Added code to eliminate null pointer exception if the value != null
+ *     but value.toString() is null.
+ *
  *  Revision 1.36  2004/05/11 18:23:47  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -290,7 +294,9 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
     } else {
       svalue = val.toString(  );
     }
-
+    if( svalue == null)
+       svalue ="";
+       
     if( svalue.length(  ) <= 0 ) {
       svalue = "";
     }
