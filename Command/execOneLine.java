@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.77  2005/05/13 19:47:52  rmikk
+ * Added code to give a good error message if not all the arguments
+ *    for an operator match the arguments supplied.
+ *
  * Revision 1.76  2005/04/23 12:42:49  rmikk
  * Double values that need to be used in  ISAW scripts are converted to 
  * Floats.  If passed through( stored in an array or an argument to an
@@ -2740,7 +2744,10 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
 
        // ------------------ Execute the operation ------------------------
  
-        SetOpParameters( op , Args , 0);
+        if(!SetOpParameters( op , Args , 0)){
+            seterror(1000,"Improper Args for "+ op.getCommand());
+            return;
+         }
 
         
         if( op instanceof IObservable)
@@ -2848,36 +2855,43 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
     *  @param  Args  The values for the operator, op's, parameters
     *  @param  start 0 for GenericOperators and 1 for DataSetOperators
     */
-    private void SetOpParameters ( Operator op , Vector Args , int start ){
-        int k;
-        int nn = op.getNum_parameters();
-        if( Args.size()- start < nn)
-            nn = Args.size() - start;
-        for( k = 0 ; k < nn ; k++ ){
-            if( (Args.elementAt( k + start ) instanceof String)  &&  
-                (op.getParameter( k ).getValue( ) instanceof SpecialString) ){
-                if( op.getParameter(k).getValue() != null){
-                    SpecialString X=(SpecialString)
-                        (op.getParameter(k).getValue());
+    private boolean SetOpParameters ( Operator op , Vector Args , int start ){
+        int k=-1;
+        try{
+         
+           int nn = op.getNum_parameters();
+           if( Args.size()- start < nn)
+               nn = Args.size() - start;
+           for( k = 0 ; k < nn ; k++ ){
+               if( (Args.elementAt( k + start ) instanceof String)  &&  
+                   (op.getParameter( k ).getValue( ) instanceof SpecialString) ){
+                   if( op.getParameter(k).getValue() != null){
+                       SpecialString X=(SpecialString)
+                           (op.getParameter(k).getValue());
+                      
+		       X.setString((String)(Args.elementAt(k+start)));
+		   }
+               }else if( op.getParameter(k).getValue() instanceof Float){
+                   Float F = new Float(
+                              ((Number)(Args.elementAt(k + start))).floatValue());
+                   op.getParameter(k).setValue( F);
+               }else if( op.getParameter(k).getValue() instanceof Integer){
+                   Integer I = new Integer(
+                              ((Number)(Args.elementAt(k + start))).intValue());
+                   op.getParameter(k).setValue( I);
+               }else if( op.getParameter(k) instanceof DataSetPG){
+                    ((DataSetPG)op.getParameter(k)).addItem( Args.elementAt(k+start));
+                     op.getParameter( k ).setValue( Args.elementAt( k + start ) );
                     
-		    X.setString((String)(Args.elementAt(k+start)));
-		}
-            }else if( op.getParameter(k).getValue() instanceof Float){
-                Float F = new Float(
-                           ((Number)(Args.elementAt(k + start))).floatValue());
-                op.getParameter(k).setValue( F);
-            }else if( op.getParameter(k).getValue() instanceof Integer){
-                Integer I = new Integer(
-                           ((Number)(Args.elementAt(k + start))).intValue());
-                op.getParameter(k).setValue( I);
-            }else if( op.getParameter(k) instanceof DataSetPG){
-                 ((DataSetPG)op.getParameter(k)).addItem( Args.elementAt(k+start));
-                  op.getParameter( k ).setValue( Args.elementAt( k + start ) );
-                  
-            }else{
-                op.getParameter( k ).setValue( Args.elementAt( k + start ) );
-            }
+               }else{
+                   op.getParameter( k ).setValue( Args.elementAt( k + start ) );
+               }
+               return true;
+         }
+        }catch( Exception ss){
+          return false;
         }
+        return true;
     }
 
 
@@ -2913,7 +2927,10 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
                 fit = checkArgs( Args , op , 1 );
   
             if(fit){
-                SetOpParameters( op , Args , 1);
+                if(!SetOpParameters( op , Args , 1)){
+                  seterror(1000,"Improper Args for "+op.getCommand());
+                  return;
+                }
 		Result = op.getResult();
 		op.setDefaultParameters();   
                 if( Result instanceof ErrorString ){
