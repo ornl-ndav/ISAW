@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/05/13 15:53:49  dennis
+ * Fixed error in javadoc name for parameter.
+ *
  * Revision 1.2  2005/05/13 15:15:24  dennis
  * Removed some redundant debug prints.
  *
@@ -223,7 +226,7 @@ public class MaskedReduce  extends GenericTOF_SAD{
                       boolean useTransB, 
                       float   bs_dim,
                       int     upStreamMonID,
-                      String  chanMask ) 
+                      String  chanMaskStr ) 
      {
         super( Title );
         parameters = new Vector();
@@ -251,7 +254,7 @@ public class MaskedReduce  extends GenericTOF_SAD{
         addParameter( new IntegerPG("upStream Monitor ID", 
                                      new Integer(upStreamMonID)) );
         addParameter( new Parameter( "Channels to Mask", 
-                                      new IntListString( chanMask ) ));
+                                      new IntListString( chanMaskStr ) ));
      }
 
 
