@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.62  2005/05/13 18:03:21  rmikk
+ * Add a catch statement so an improper operator does not bring the system
+ *   down.
+ *
  * Revision 1.61  2005/01/10 17:39:30  rmikk
  * ELiminated a null pointer error
  *
@@ -1229,6 +1233,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 int index=classname.indexOf(".");
                 if(index>0)
                     classname=classname.substring(index+1,classname.length());
+            }catch( Throwable e1){
+              return null;
             }
         }
         // nothing works, just return null
