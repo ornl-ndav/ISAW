@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/05/14 01:52:59  dennis
+ * Removed an unused constant.
+ *
  * Revision 1.7  2004/03/15 03:28:30  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -73,7 +76,6 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 import DataSetTools.dataset.*;
-import DataSetTools.math.*;
 import DataSetTools.operator.Parameter;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
@@ -85,10 +87,7 @@ import DataSetTools.retriever.*;
  */
 
 public class SCDhkl extends  XAxisInformationOp implements Serializable{
-    private static final double PI  = Math.PI;
-//    private static final double HOM = 0.3955974;
-                                                           // more accurate;
-    private static final double HOM = tof_calc.ANGST_PER_US_PER_MM / 10;  
+
     private float[][] invU;
     private float[][] UB;
 
@@ -226,7 +225,7 @@ public class SCDhkl extends  XAxisInformationOp implements Serializable{
         // convert the Q to 1/d
         float[] Q=Qpos.getCartesianCoords();
         for( int i=0 ; i<3 ; i++ ){
-            Q[i]=(float)(Q[i]/(2.*PI));
+            Q[i]=(float)(Q[i]/(2.*Math.PI));
         }
 
         // check the current UB matrix
