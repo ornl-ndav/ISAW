@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2005/05/14 02:13:25  dennis
+ *  Removed one unused variable and constructed more detailed error
+ *  string if the file is not found.
+ *
  *  Revision 1.8  2004/07/14 16:39:21  rmikk
  *  Can now be used to retrieve ISIS files
  *
@@ -197,25 +201,18 @@ public class LoadOneDS extends    GenericLoad
      int     ids[] = IntList.ToArray( ids_string );
 
      Retriever rr = null;
-
-     String temp = file_name.toUpperCase ();
-
-     /*if ( temp.endsWith( "RUN" ) )
-       rr = new RunfileRetriever( file_name );
-     else if ( temp.endsWith("NXS") || temp.endsWith("HDF") )
-       rr = new NexusRetriever( file_name );
-     */
-     try{
      
-       rr= Command.ScriptUtil.getRetriever(file_name);
-     }catch(Exception ss){
-        rr = null;
+     try
+     {
+       rr = Command.ScriptUtil.getRetriever( file_name );
      }
-     
-
-     if ( rr == null )
+     catch(Exception ss)
+     {
+       String message = ss.toString();
        return new ErrorString("Unsupported file type: " +
-                              "must be .run, .nxs or .hdf,etc.");
+                              "must be .run, .nxs or .hdf, etc. \n" +
+                               message );
+     }
 
      DataSet ds;
      if ( ids.length == 0 )
