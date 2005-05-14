@@ -30,7 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2005/05/14 02:23:28  dennis
+ * Fixed empty flow of control statement bug.  Error message would not
+ * be formed completely.
+ *
  * Revision 1.12  2005/02/03 07:22:08  kramer
+ *
  * Now when the processDS(....) method is invoked on a NxWriteLog object,
  * (new DataSet()) is passed to the method instead of 'null' (for the
  * DataSet parameter).
@@ -216,7 +221,7 @@ public class NxWriteEntry{
         rank[0] = 1;
         n1 = node.newChildNode( "duration" ,"SDS" );
         n1.setNodeValue( ff , Types.Float , rank ); 
-        if( n1.getErrorMessage() != "" );
+        if( n1.getErrorMessage() != "" )
         errormessage += ":" + n1.getErrorMessage();
         n1.addAttribute("units",("second"+(char)0).getBytes(),Types.Char,
                         Inst_Type.makeRankArray(4,-1,-1,-1,-1));
