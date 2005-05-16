@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2005/05/16 16:28:03  dennis
+ *  Commented out debug print "length of array".
+ *
  *  Revision 1.38  2004/08/05 15:28:13  rmikk
  *  Added a ViewerState to determine which mode the SliceViewer starts in- Table or Image
  *
@@ -158,12 +161,10 @@ public class ViewerState  implements Serializable
   public static final String BRIGHTNESS        = "Brightness";
   public static final String AUTO_SCALE        = "AutoScale";
   public static final String TABLE_DATA        = "tableViewData";
-  public static final String TIMEVSGROUPTABLE          = "TimeVsGroupSet";
-  public static final String TIMEVSGROUPTABLE_SHOWALL     = "TimeVsGroupShowAll";
-    
+  public static final String TIMEVSGROUPTABLE  = "TimeVsGroupSet";
+  public static final String TIMEVSGROUPTABLE_SHOWALL = "TimeVsGroupShowAll";
   public static final String TIMEVSGROUPTABLE_SHOWERR = "ShowErrors";//(TableTimeVsGroup);
-  
-  public static final String TIMEVSGROUPTABLE_SHOWIND  = "ShowIndicies";//(Table time vs Group);
+  public static final String TIMEVSGROUPTABLE_SHOWIND = "ShowIndicies";//(Table time vs Group);
  
    /** CONTOUR_STYLE(really "Contour.Style") is an int whose values can be
    *          AREA_FILL(1), AREA_FILL_CONTOUR(4) ,CONTOUR(2) ,RASTER(0), 
@@ -173,22 +174,22 @@ public class ViewerState  implements Serializable
 
   /**if false data has not been set
   */
-  public static final String CONTOUR_DATA      =  "ContourData";
+  public static final String CONTOUR_DATA      ="ContourData";
   public static final String CONTOUR_SHOWALL   ="ShowAllGroups";
-  public static final String CONTOUR_DETNUM   ="DetectorNumber";
-  public static final String CONTOUR_COLOR_SCALE   ="ContourColorScale";
+  public static final String CONTOUR_DETNUM    ="DetectorNumber";
+  public static final String CONTOUR_COLOR_SCALE ="ContourColorScale";
   public static final String TABLE_TS          ="TimeSliceTableDataSet";
-  public static final String TABLE_TS_ERR          ="TableTimeSliceShowError";
-  public static final String TABLE_TS_IND          ="TableTimeSliceShowIndex";
-  public static final String TABLE_TS_ROWMIN          ="TableTimeSliceMinRow";
-  public static final String TABLE_TS_ROWMAX          ="TableTimeSliceMaxRow";
-  public static final String TABLE_TS_COLMIN          ="TableTimeSliceMinCol";
-  public static final String TABLE_TS_COLMAX          ="TableTimeSliceMaxCol";
-  public static final String TABLE_TS_TIMEMIN          ="TableTimeSliceMinTime";
-  public static final String TABLE_TS_TIMEMAX          ="TableTimeSliceMaxTime";
-  public static final String TABLE_TS_NSTEPS          ="TableTimeSliceNxSteps";
-  public static final String TABLE_TS_CHAN          ="TableTimeSliceTimeInd";
-  public static final String TABLE_TS_DETNUM          ="TableTimeSliceDetectorNum";
+  public static final String TABLE_TS_ERR      ="TableTimeSliceShowError";
+  public static final String TABLE_TS_IND      ="TableTimeSliceShowIndex";
+  public static final String TABLE_TS_ROWMIN   ="TableTimeSliceMinRow";
+  public static final String TABLE_TS_ROWMAX   ="TableTimeSliceMaxRow";
+  public static final String TABLE_TS_COLMIN   ="TableTimeSliceMinCol";
+  public static final String TABLE_TS_COLMAX   ="TableTimeSliceMaxCol";
+  public static final String TABLE_TS_TIMEMIN  ="TableTimeSliceMinTime";
+  public static final String TABLE_TS_TIMEMAX  ="TableTimeSliceMaxTime";
+  public static final String TABLE_TS_NSTEPS   ="TableTimeSliceNxSteps";
+  public static final String TABLE_TS_CHAN     ="TableTimeSliceTimeInd";
+  public static final String TABLE_TS_DETNUM   ="TableTimeSliceDetectorNum";
   /**
    *  If the Mode is 0 the image view appears, otherwise a table view appears
    *  
@@ -374,7 +375,6 @@ public class ViewerState  implements Serializable
    }
 
 
-
   /* ------------------------------ set_int ----------------------------- */
   /**
    * Set the named int entry in this ViewerState object.
@@ -519,6 +519,8 @@ public class ViewerState  implements Serializable
       ds_name    = ds.getTitle();
       ds_n_rows  = ds.getNum_entries();
    }
+
+
    /**
     * 
     * @param stateVariables String that holds your state information int the form of "Name Value,Name value,....,Name Value". 
@@ -552,10 +554,9 @@ public class ViewerState  implements Serializable
     */
    public ViewerState setViewerState(String stateVariables)
    {
-   	
-   		String stateString = stateVariables.substring(21, (stateVariables.length() - 6)); //gets the substring that I want
+  	String stateString = stateVariables.substring(21, (stateVariables.length() - 6)); //gets the substring that I want
     	String[] seperatedStates = stateString.split(",");
-    	System.out.println("length of array "+seperatedStates.length);
+   // 	System.out.println("length of array "+seperatedStates.length);
     	String tempString;
 	   	for(int i = 0; i <seperatedStates.length; i++)
 	   	{
@@ -617,9 +618,8 @@ public class ViewerState  implements Serializable
 	   		}else if(tempString.startsWith("TableTimeSliceNxSteps")){
 	   			set_int("TableTimeSliceNxSteps", Integer.parseInt(tempString.substring(22)));
 	   		}else if(tempString.startsWith("ControlPanelWidth(%)"))
-                 set_float("ControlPanelWidth(%)",  Float.parseFloat(tempString.substring(21)));
-        
-	   		
+
+                   set_float("ControlPanelWidth(%)",  Float.parseFloat(tempString.substring(21)));
 	   	}
 	return this;
    	}
