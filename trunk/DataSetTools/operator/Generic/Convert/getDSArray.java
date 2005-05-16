@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/05/16 20:17:42  rmikk
+ * Got the indexing for Fortran arrays fixed.  May have to add C arrays later
+ *
  * Revision 1.3  2005/01/10 16:38:18  dennis
  * Added getCategoryList method to place operator in menu system.
  *
@@ -134,7 +137,7 @@ public class getDSArray implements Wrappable, IWrappableWithCategoryList {
      else
         data = new float[nrows][ncols][ntimes];
         
-     int k=0;
+    
      for( int i=0; i< nrows; i++)
         for( int j = 0; j < ncols; j++){
 
@@ -146,7 +149,7 @@ public class getDSArray implements Wrappable, IWrappableWithCategoryList {
           for(int t=0; t < ntimes; t++ ){
           
              if( FortArray )// C array??
-                fdata[k++] = V[t];
+                fdata[(i)+(j)*nrows + t*nrows*ncols] = V[t];
              else
                 data[i][j][t] = V[t];
           
