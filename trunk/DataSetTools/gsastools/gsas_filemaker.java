@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2005/05/18 21:10:55  hammonds
+ *  Fix MONITOR line in file
+ *  Add User Name, # Pulses & Date&Time as comments in file
+ *
  *  Revision 1.31  2005/04/22 20:48:54  hammonds
  *  Fixed so that the last line of standard 10 column output is 82 col including CRLF
  *
@@ -214,6 +218,9 @@ public class gsas_filemaker
         //long offset=System.currentTimeMillis();
 	this.printRunTitle();
         this.printIParmFile();
+	this.printUserName();
+	this.printNumPulses();
+	this.printStartStopTimes();
 	this.printMonitorCount();
 	this.printBankInfo();
 
@@ -462,6 +469,68 @@ public class gsas_filemaker
     }
 
     /**
+     * Write the user name into the file with propper padding.
+     */
+    private void printUserName( ){
+ 	try{
+	    
+	    // write the tile of the run into the file
+            StringBuffer sb=new StringBuffer(81);
+	    sb.append("#  User Name: ");
+            sb.append((String)
+               data.getAttributeList().getAttributeValue(Attribute.USER));
+	    outStream.write( Format.string(sb,80,false) +"\r"+"\n");
+	    
+	} catch(Exception d){}
+	
+    }
+
+    /**
+     * Write the number of pulses into the file with propper padding.
+     */
+    private void printNumPulses( ){
+ 	try{
+	    
+	    // write the tile of the run into the file
+            StringBuffer sb=new StringBuffer(81);
+	    sb.append("#  Number Of Pulses: ");
+            sb.append((String)
+		      data.getAttributeList().getAttributeValue(Attribute.NUMBER_OF_PULSES).toString());
+	    outStream.write( Format.string(sb,80,false) +"\r"+"\n");
+	    
+	} catch(Exception d){}
+	
+    }
+
+    /**
+     * Write the user name into the file with propper padding.
+     */
+    private void printStartStopTimes( ){
+ 	try{
+	    
+	    // write the tile of the run into the file
+            StringBuffer sb=new StringBuffer(81);
+	    sb.append("#  Start Time: ");
+            sb.append((String)
+               data.getAttributeList().getAttributeValue(Attribute.START_DATE));
+	    sb.append(" ");
+            sb.append((String)
+               data.getAttributeList().getAttributeValue(Attribute.START_TIME));
+	    outStream.write( Format.string(sb,80,false) +"\r"+"\n");
+	    sb=new StringBuffer(81);
+	    sb.append("#  End Time: ");
+            sb.append((String)
+               data.getAttributeList().getAttributeValue(Attribute.END_DATE));
+	    sb.append(" ");
+            sb.append((String)
+               data.getAttributeList().getAttributeValue(Attribute.END_TIME));
+	    outStream.write( Format.string(sb,80,false) +"\r"+"\n");
+	    
+	} catch(Exception d){}
+	
+    }
+
+    /**
      * Write the instrument parameter file with propper padding.
      */
     private void printIParmFile(){
@@ -485,7 +554,7 @@ public class gsas_filemaker
 	try{
 	    float monCount=this.getMonitorCount();
 	    if(monCount>0.0f){
-                sb.append(MONITOR+": ").append(monCount);
+                sb.append("#  "+MONITOR+": ").append(monCount);
 		outStream.write (Format.string(sb,80,false)+"\r"+"\n");
 	    }
 	} catch(Exception d){}
