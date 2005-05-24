@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/05/24 21:39:25  rmikk
+ * Fixed error when cvs add a log message at an improper place(hopefully)
+ *
  * Revision 1.1  2005/05/24 21:31:55  rmikk
  * Initial Checkin of Wizard to make Wizards
  *
@@ -1168,34 +1171,32 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
     k1 = Acknow.indexOf('\n');
     if( k1 < 0) k1 = Acknow.length();
     while( k < Acknow.length()){
-       System.out.println("   k,k1="+k+","+k1);
        try{
        FSave.write((" *"+Acknow.substring(k, k1)+"\r\n").getBytes() );
        }catch(Exception sss){
           sss.printStackTrace();
           throw new IOException("sss");
       }
-       System.out.println("A");
           k=k1+1;
           if( k < Acknow.length())
            if( k1+1 < Acknow.length())
              k1= Acknow.indexOf('\n',k1+1);
            else 
              k1 =-1;
-          System.out.println("B");
+       
           if(k1<0) k1=Acknow.length();
-          System.out.println("C");
+       
     }
-    System.out.println("Got here---------");
+   
     FSave.write(" *\r\n".getBytes());
        
     FSave.write(" *\r\n".getBytes());
     FSave.write(" *\r\n".getBytes());
-    FSave.write(" * Modified:".getBytes());
+    FSave.write(" * Modified:   Log:".getBytes());
+    FSave.write( (infPanel.WizardName.getText().trim()+".java,").getBytes());
+    FSave.write(" v$\r\n".getBytes());
+    
     FSave.write(" *\r\n".getBytes());
-    FSave.write((" * $Log$
-    FSave.write((" * Revision 1.1  2005/05/24 21:31:55  rmikk
-    FSave.write((" * Initial Checkin of Wizard to make Wizards
     FSave.write((" *").getBytes());
   
     
