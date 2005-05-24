@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2005/05/24 17:29:44  serumb
+ *  Removed comments from commented out code that previously caused errors.
+ *  Now implements IpreserveState, and has a constructor that takes in the
+ *  Object State.
+ *
  *  Revision 1.20  2005/05/13 14:38:37  rmikk
  *  Temporarily eliminated support for the ObjectState, until one minor error 
  *     is fixed.
@@ -114,6 +119,7 @@ import java.awt.*;
 import gov.anl.ipns.ViewTools.Components.OneD.VirtualArrayList1D;
 
 public class DataSetViewerMaker  extends DataSetViewer
+                                 implements IPreserveState
   {
    DataSet ds;
    ViewerState state;
@@ -159,6 +165,17 @@ public class DataSetViewerMaker  extends DataSetViewer
       add(the_pane);
       invalidate();
      }
+ 
+   public DataSetViewerMaker( DataSet               ds,
+                              ViewerState           state,
+                              VirtualArrayList1D    viewArray,
+                              FunctionViewComponent viewComp,
+                              ObjectState           Ostate    )
+   {
+     this( ds, state, viewArray, viewComp);
+     setObjectState(Ostate);
+   }
+
 
   public void redraw( String reason)
     {
@@ -194,15 +211,15 @@ public class DataSetViewerMaker  extends DataSetViewer
     ObjectState Ostate= null;
    
      public void setObjectState( ObjectState new_state){
-        return;
-       /* Ostate = new_state;
+     //   return;
+        Ostate = new_state;
         if( viewArray instanceof IPreserveState)
             ((IPreserveState)viewArray).setObjectState( 
                            (ObjectState)Ostate.get("ArrayMaker"));
         if(viewComp instanceof IPreserveState)
             ((IPreserveState)viewComp).setObjectState( 
                     (ObjectState)Ostate.get("View"));
-      */
+      
      }
      public ObjectState getObjectState( boolean is_default){
          ObjectState state = new ObjectState();
