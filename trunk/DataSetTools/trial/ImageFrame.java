@@ -30,6 +30,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2005/05/25 18:01:14  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.6  2004/05/10 22:43:10  dennis
  * Test program now just instantiates a Frame to diplay
  * calculated result, rather than keeping a reference to it.
@@ -58,6 +65,7 @@
 
 package DataSetTools.trial;
 
+import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.Panels.Image.*;
 import javax.swing.*;
 
@@ -94,7 +102,7 @@ public class ImageFrame extends JFrame
     else
       panel.setData( values, true );
      
-    show();
+    WindowShower.show(this);
   }
 
 
@@ -110,7 +118,7 @@ public class ImageFrame extends JFrame
     else
       panel.setData( values, true );
 
-    show();
+    WindowShower.show(this);
   }
 
 

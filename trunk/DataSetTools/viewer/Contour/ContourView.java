@@ -38,6 +38,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.50  2005/05/25 18:01:20  dennis
+ *  Replaced direct call to .show() method for window,
+ *  since .show() is deprecated in java 1.5.
+ *  Now calls WindowShower.show() to create a runnable
+ *  that is run from the Swing thread and sets the
+ *  visibility of the window true.
+ *
  *  Revision 1.49  2005/02/27 18:38:02  rmikk
  *  Fixed problem where conversions do not update when the right arrow is
  *     moved in another view
@@ -225,6 +232,7 @@ package DataSetTools.viewer.Contour;
 import gov.anl.ipns.Util.Messaging.IObserver;
 import gov.anl.ipns.Util.Numeric.ClosedInterval;
 import gov.anl.ipns.Util.Sys.StringUtil;
+import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.Panels.Cursors.CrosshairCursor;
 import gov.anl.ipns.ViewTools.Panels.Image.IndexColorMaker;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordJPanel;
@@ -920,7 +928,7 @@ public class ContourView extends DataSetViewer
 
       ct.setModal( false );
       ct.setJPane( rpl_ );
-      ct.show();
+      WindowShower.show(ct);
    }
 
 
@@ -1244,11 +1252,10 @@ public class ContourView extends DataSetViewer
     jf.getContentPane().setLayout( new GridLayout(1,1));
     jf.getContentPane().add(cv);
     jf.validate();
-    jf.show();
-         
-
-
+    WindowShower.show(jf);
     } 
+  
+  
   class MyAction implements java.awt.event.ActionListener
    {
       public void actionPerformed( java.awt.event.ActionEvent event )

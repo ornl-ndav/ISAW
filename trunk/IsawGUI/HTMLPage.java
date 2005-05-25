@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2005/05/25 18:01:23  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.18  2005/01/10 15:55:10  dennis
  * Removed empty statement.
  *
@@ -93,6 +100,7 @@ import java.net.*;
 import Command.*;
 import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 
 /** Creates a pop up window that can display rudimentary HTML pages or pages that are
@@ -397,7 +405,7 @@ class HTMLPage extends JFrame
       jt.setDocument ( new IsawGUI.Util().openDoc ( filename ) );
       jf.getContentPane ().add ( new JScrollPane( jt ) );
       jf.setSize ( 600, 500 );
-      jf.show ();
+      WindowShower.show(jf);
       jf.validate ();
 
    }

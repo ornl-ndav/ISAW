@@ -29,6 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2005/05/25 18:01:27  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.10  2004/03/15 03:34:42  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -68,7 +75,8 @@
  */
 
 package IsawHelp.HelpSystem;
-import gov.anl.ipns.Util.Sys.StringUtil;
+
+import gov.anl.ipns.Util.Sys.*;
 
 import javax.help.*;
 import java.util.*;
@@ -597,7 +605,7 @@ public class IsawOpHelpSet extends HelpSet
      JHelp jh = new JHelp( new IsawOpHelpSet( false ) );
      jf.setSize( 500 , 500 );
      jf.getContentPane().add( jh );
-     jf.show();
+     WindowShower.show(jf);
     }
  }//class IsawOpHelpSet
 

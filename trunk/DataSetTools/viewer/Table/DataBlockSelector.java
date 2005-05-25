@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2005/05/25 18:01:21  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.18  2005/04/10 18:48:50  rmikk
  * Implements IPreserveState so field names, and sorted columns are
  * retained.
@@ -112,6 +119,7 @@ package DataSetTools.viewer.Table;
 
 import DataSetTools.viewer.*;
 import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 import java.awt.event.*;
@@ -996,7 +1004,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet,
             JList list = new JList(listmod);
 
             jf.getContentPane().add(new JScrollPane(list));
-            jf.show();
+            WindowShower.show(jf);
             list.addListSelectionListener(new myListSelectionListener());
 
         }
@@ -1065,7 +1073,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet,
         JMenuBar Men = viewer.getMenuBar();
 
         jf.setJMenuBar(Men);
-        jf.show();
+        WindowShower.show(jf);
 
     }//main
     class comparre implements Comparator {

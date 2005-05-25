@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.74  2005/05/25 18:01:10  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.73  2005/03/08 02:33:39  dennis
  * Changed title on Clear button from "Clear" to "Reset"
  *
@@ -475,7 +482,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
     Dimension D = P.getToolkit(  )
                    .getScreenSize(  );
     F.setSize( ( int )( .6 * D.width ), ( int )( .7 * D.height ) );
-    F.show(  );
+    WindowShower.show( F );
 
     /* JScrollPane X = new JScrollPane( SharedData.status_pane);
        X.setBorder(new TitledBorder( "Status" ));
@@ -1024,7 +1031,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
           jf.setSize( ( int )( .6 * D.width ), ( int )( .6 * D.height ) );
           jf.getContentPane(  )
             .add( jh.getHelpComponent(  ) );
-          jf.show(  );
+          WindowShower.show(jf);
           jf.validate(  );
 
           return;
@@ -1116,7 +1123,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
         try {
           H = new HTMLPage( S );
           H.setSize( ( int )( .6 * D.width ), ( int )( .6 * D.height ) );
-          H.show(  );
+          WindowShower.show(H);
         } catch( Exception s ) {
           // let it drop on the floor
         }

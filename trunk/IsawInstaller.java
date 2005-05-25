@@ -32,6 +32,13 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.27  2005/05/25 18:01:08  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.26  2005/03/08 02:51:12  dennis
  * Added jython.jar to the list of jar files included in the
  * script to run Isaw that is written during the installation.
@@ -136,6 +143,7 @@ import java.util.*;
 import java.text.*;
 import java.awt.*;
 import java.awt.event.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 /* 
  * This installer is based on the ZipSelfExtractor utility by Z. Steve
@@ -984,7 +992,7 @@ public class IsawInstaller extends JFrame
 
 	// ==================== put up the GUI =======================
 	mw.pack();
-	mw.show();
+	WindowShower.show(mw);
     }
 
     /* ===================== random methods ======================= */

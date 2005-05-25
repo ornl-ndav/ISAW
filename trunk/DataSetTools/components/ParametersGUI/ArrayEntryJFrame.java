@@ -32,6 +32,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2005/05/25 18:01:13  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.4  2004/03/15 03:27:20  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -58,6 +65,7 @@ import DataSetTools.parameter.VectorPG;
 
 
 import gov.anl.ipns.Util.Messaging.PropertyChanger;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -488,7 +496,7 @@ public class ArrayEntryJFrame extends JFrame implements ActionListener,
     JFrame jjf = null;
 
     if( jjf != null ) {
-      jjf.show(  );
+      WindowShower.show( jjf );
     }
 
     jjf = new JFrame( "Help" );
@@ -499,7 +507,7 @@ public class ArrayEntryJFrame extends JFrame implements ActionListener,
        .add( jep );
     jjf.setSize( 400, 300 );
     jjf.setDefaultCloseOperation( WindowConstants.HIDE_ON_CLOSE );
-    jjf.show(  );
+    WindowShower.show( jjf );
   }
 
   /**

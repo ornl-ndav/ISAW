@@ -33,6 +33,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2005/05/25 18:01:15  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.12  2005/04/16 20:56:58  rmikk
  * Added code to do nothing if a pointed at change notification  did not change
  * the current pointed at.  Eliminated a StackOverflowError
@@ -3007,10 +3014,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                 Frm.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 Frm.setSize(250, 150);
                 Frm.getContentPane().add(order);
-                Frm.show();
-
-            }
-      
+                WindowShower.show(Frm);
+            }   
         }
 
         /**
@@ -3518,7 +3523,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                 new gov.anl.ipns.ViewTools.Components.TwoD.ImageViewComponent( 
                     new dummyIVirtualArray2D())
             ));
-        fr.show();
+        WindowShower.show(fr);
 
     }
 }//DataSetGRCTArrayMaker

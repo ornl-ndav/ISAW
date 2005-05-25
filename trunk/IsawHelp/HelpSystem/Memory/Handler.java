@@ -30,6 +30,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2005/05/25 18:01:28  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.8  2004/05/29 16:51:06  rmikk
  * Removed an unused variable
  *
@@ -60,11 +67,13 @@
  *
  */
 package IsawHelp.HelpSystem.Memory;
+
 import java.net.*;
 import java.io.*;
 import javax.swing.*;
 import Command.*;
 import DataSetTools.operator.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 /** This a URLStreamHandler that is associated with a URLConnection that
  *   calculates the information at run time.  The protocol for this handler
@@ -206,12 +215,12 @@ public class Handler extends URLStreamHandler
      new Script_Class_List_Handler();
      try{
         System.setProperty("java.protocol.handler.pkgs","test");//did not work
-	URLStreamHandler MyurlStreamHandler = (URLStreamHandler)(new Handler());
-	URL url=new URL("memory","DataSet",322,"15",MyurlStreamHandler);
-	JEditorPane jep = new JEditorPane( url);
-	jf.getContentPane().add(jep);
-	jf.setSize(600,600);
-        jf.show();
+        URLStreamHandler MyurlStreamHandler = (URLStreamHandler)(new Handler());
+		URL url=new URL("memory","DataSet",322,"15",MyurlStreamHandler);
+		JEditorPane jep = new JEditorPane( url);
+		jf.getContentPane().add(jep);
+		jf.setSize(600,600);
+        WindowShower.show(jf);
         jf.validate();
        }
      catch(Exception ss)
