@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2005/05/25 20:24:43  dennis
+ * Now calls convenience method WindowShower.show() to show
+ * the window, instead of instantiating a WindowShower object
+ * and adding it to the event queue.
+ *
  * Revision 1.18  2005/04/20 21:27:01  dennis
  * Now checks for co-planar vectors (singular UB) before
  * trying to calculate and write the orientation matrix.
@@ -450,9 +455,7 @@ public class GL_RecipPlaneView
     data_sets = new Vector();
     all_peaks = new Vector();
 
-    WindowShower shower = new WindowShower( scene_f );
-    EventQueue.invokeLater( shower );
-    shower = null;
+    WindowShower.show( scene_f );
   }
 
 

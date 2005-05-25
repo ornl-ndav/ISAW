@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.57  2005/05/25 20:24:46  dennis
+ *  Now calls convenience method WindowShower.show() to show
+ *  the window, instead of instantiating a WindowShower object
+ *  and adding it to the event queue.
+ *
  *  Revision 1.56  2005/04/11 00:49:13  rmikk
  *  Added a Save Object State and Load Object State options under the 
  *  File Menu
@@ -327,9 +332,7 @@ public class ViewManager extends    JFrame
       setView( view_type ); 
                                             // actually show the viewer from
                                             // the Swing event handling thread
-      WindowShower window_shower = new WindowShower( this );
-      EventQueue.invokeLater( window_shower );
-      window_shower = null;
+      WindowShower.show( this );
       
       conversion_operator = null;
       System.gc();

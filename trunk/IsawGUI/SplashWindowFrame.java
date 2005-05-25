@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2005/05/25 20:24:53  dennis
+ *  Now calls convenience method WindowShower.show() to show
+ *  the window, instead of instantiating a WindowShower object
+ *  and adding it to the event queue.
+ *
  *  Revision 1.20  2004/03/15 03:31:26  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -160,8 +165,7 @@ public class SplashWindowFrame extends    JFrame
                                                  // actually show the window in
                                                  // the event thread, to avoid
                                                  // deadlock or race conditions
-      Runnable window_shower = new WindowShower( (Window)this );
-      EventQueue.invokeLater( window_shower );
+      WindowShower.show( (Window)this );
                                                  // start timer that kills the
                                                  // the window after some time
       Thread splash_thread = new Thread( (Runnable)parent );

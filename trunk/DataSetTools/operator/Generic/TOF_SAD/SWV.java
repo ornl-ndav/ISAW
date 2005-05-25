@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/05/25 20:24:41  dennis
+ * Now calls convenience method WindowShower.show() to show
+ * the window, instead of instantiating a WindowShower object
+ * and adding it to the event queue.
+ *
  * Revision 1.2  2005/02/09 21:05:13  dennis
  * Added getDocumentation() method, so that users can obtain
  * information on this operator and the file format for the
@@ -142,9 +147,7 @@ public class SWV  extends GenericTOF_SAD{
         // String filename = "C:/sasi/sn2d44.dat" ;
         SANDWedgeViewer swv = new SANDWedgeViewer();
         swv.loadData(filename);
-        WindowShower shower = new WindowShower(swv);
-        java.awt.EventQueue.invokeLater(shower);
-        shower = null;
+        WindowShower.show(swv);
         return "SANDWedgeView displayed";
     }
 

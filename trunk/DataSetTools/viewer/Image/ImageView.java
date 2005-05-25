@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.50  2005/05/25 20:24:46  dennis
+ *  Now calls convenience method WindowShower.show() to show
+ *  the window, instead of instantiating a WindowShower object
+ *  and adding it to the event queue.
+ *
  *  Revision 1.49  2005/03/31 22:34:38  dennis
  *  Fixed option to use colored graphs by moving call to set graph
  *  data before call to set graph color.  Earlier versions of
@@ -404,8 +409,7 @@ public static void main(String[] args)
   f.setJMenuBar( image_view.getMenuBar() );
   f.getContentPane().add(image_view);
 
-  WindowShower window_shower = new WindowShower( f );
-  EventQueue.invokeLater( window_shower );
+  WindowShower.show( f );
 }
    
 
