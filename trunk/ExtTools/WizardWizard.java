@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/05/25 03:10:35  rmikk
+ * Fixed some writing errors so the code that is produced now compiles
+ *
  * Revision 1.2  2005/05/24 21:39:25  rmikk
  * Fixed error when cvs add a log message at an improper place(hopefully)
  *
@@ -1261,6 +1264,7 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
       NLinks+=((opLinkElement)opns.get(i)).ArgLinks.size();
     }
     int[][] inf  = new int[ NLinks ][4];
+       
     NLinks = 0;
     for( int i=0; i<opns.size(); i++){
        Vector ArgLinks = ((opLinkElement)(opns.get(i))).ArgLinks;
@@ -1270,14 +1274,33 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
          int Form2Num=((opLinkElement)(oneLink.elementAt(1))).FormNum;
          int Form1Parm =((Integer)(oneLink.firstElement())).intValue();
          int Form2Parm =((Integer)(oneLink.lastElement())).intValue();
-         int Form1Num = j;
+         int Form1Num = i;
          int k = NLinks-1;
-         while( (k >= 0) &&(Form1Num <= inf[k][3]) &&
-             ( (Form1Num == inf[k][4]) ||(Form1Parm < inf[k][1]))&&
-             (Form2Num <= inf[k][0])&&
-             ((Form2Num == inf[k][0]) ||(Form2Parm < inf[k][2]))){
-              inf[k+1]=inf[k];
-             k--;
+         System.out.println("3-1-0-2:"+ Form1Num+","+Form1Parm+","+Form2Num+","+Form2Parm);
+         boolean done = false;
+         while(!done){
+           if( k<0) done = true;
+           else if( Form1Num >inf[k][3])
+              done = true;
+           else if( Form1Num <inf[k][3])
+              done = false;
+           else if( Form1Parm > inf[k][1])
+              done = true;
+           else if( Form1Parm < inf[k][1])
+               done = false;
+           else if( Form2Num > inf[k][0])
+              done = true;
+           else if( Form2Num < inf[k][0])
+               done = false;
+           else if( Form2Parm > inf[k][2])
+              done = true;
+           else if( Form2Parm < inf[k][2])
+               done = false;
+            else done = true;
+            if(!done){
+                inf[k+1]=inf[k];
+                 k--;
+            }
           }
          k++;
         inf[k][0]=Form2Num;
@@ -1290,33 +1313,38 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
        }
     }
     System.out.println("inf list");Command.ScriptUtil.display(inf);
-    String SLink ="    int[][] ParamTable ={\r\n";
+    String SLink="";
     int[] Line = new int[OpnList.size()];
     Arrays.fill(Line,-1);
     boolean start= true;
  
     for(int i =0; i< inf.length ; i++){
-      if( Line[inf[i][3]]==inf[i][1]){
+        if( i==0){
+           Line[inf[i][3]]=inf[i][1];
+           Line[inf[i][0]]=inf[i][2];  
+        }else if((inf[i-1][3]==inf[i][3]) &&
+                 (inf[i-1][1]==inf[i][1])){
+            Line[inf[i][0]]=inf[i][2];
+        }else{
+          if(start)
+            SLink +="     {";
+          else
+            SLink  += "     ,{";
+          for( int k=0; k< Line.length; k++){
+             SLink += Line[k];
+             if( k+1 < Line.length)
+               SLink +=",";
+             else 
+               SLink +="}\r\n";  
+          }
+          Arrays.fill(Line, -1);
+
+          Line[inf[i][3]]=inf[i][1];
           Line[inf[i][0]]=inf[i][2];
-         
-      }
-      else{
-        if(!start)
-          SLink +="      ,{";
-        else
-           SLink = "     {\r\n";
-        for( int k=0; k< Line.length; k++){
-          SLink += Line[k];
-          if( k+1 < Line.length)
-             SLink+=",";
-          else SLink +="}\r\n";
-          Arrays.fill(Line,-1);     
+          start = false;
         }
-        
-      }      
-        
     }
-    SLink +="   }\r\n";
+    
     
 
     FSave.write((SLink+"\r\n            };\r\n\r\n" ).getBytes());
@@ -1325,18 +1353,20 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
     start = true;
     Arrays.fill(NConstants, 0);
     for(int i=0; i< OpnList.size();i++){
-      if(start)
-        SLink ="        {";
+      if(i==0)
+        SLink +="        {";
       else
-        SLink ="        ,{";
+        SLink +="        ,{";
       Vector elt = ((opLinkElement)(opns.get(i))).ConstList;  
       for( int k=0; k<elt.size(); k++){
          if(k>0)
-           SLink +=",";
+           if( k+1 < elt.size())
+              SLink +=",";
+           
          SLink += ((Integer)(elt.elementAt(k))).intValue();
          NConstants[i]++;
       }
-      SLink +="\r\n";
+      SLink +="}\r\n";
     }
     SLink +="     };\r\n";
     FSave.write( SLink.getBytes());
@@ -1361,13 +1391,13 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
      
       
       String ResParamGui = ((opLinkElement)(opns.get(i))).ResultPG;
-      if( ResParamGui == null)
+      if( ResParamGui== null)
          ResParamGui ="";
       if( ResParamGui.length()>1)
          ResParamGui =", new "+ResParamGui+"PG(\"Result\",null)";
       String ConstList ="";
       if( (ResParamGui.length()>1) && (NConstants[i]>0)){
-        ConstList =",ConstList[i]";
+        ConstList =",ConstList["+i+"]";
       }
       if(op instanceof ScriptOperator){
         FSave.write(("   addForm( new ScriptForm(\" "+ 
@@ -1384,6 +1414,8 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
                   op.getSource().substring(6).trim()+"())));\r\n").getBytes());
       }
       else{
+        if((ResParamGui.length()<1)||(ConstList.length()<1))
+           ResParamGui=ConstList =""; 
         FSave.write(("    addForm( new OperatorForm(  new "+
                          op.getSource().substring(6).trim()+"()"+
                          ResParamGui+ConstList+"));\r\n").getBytes());
