@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/05/25 18:53:12  rmikk
+ * The ResultPG's now have different names so the wizard can detect them.
+ * The constants are now always given when there is a resultPG even if they
+ *    are new int[0];
+ *
  * Revision 1.3  2005/05/25 03:10:35  rmikk
  * Fixed some writing errors so the code that is produced now compiles
  *
@@ -1394,15 +1399,28 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
       if( ResParamGui== null)
          ResParamGui ="";
       if( ResParamGui.length()>1)
-         ResParamGui =", new "+ResParamGui+"PG(\"Result\",null)";
+         ResParamGui =", new "+ResParamGui+"PG(\"Result"+i+"\",null)";
       String ConstList ="";
-      if( (ResParamGui.length()>1) && (NConstants[i]>0)){
+      if( (ResParamGui.length()>1))
+      { if( NConstants[i]>0)
         ConstList =",ConstList["+i+"]";
+        else
+        ConstList =",new int[0]";
       }
       if(op instanceof ScriptOperator){
-        FSave.write(("   addForm( new ScriptForm(\" "+ 
-                  op.getSource().trim().replace('\\','/' )
-                  +"\""+ResParamGui+ConstList+"));\r\n").getBytes());
+        String filename = op.getSource().trim().replace('\\','/');
+        String Prefix = System.getProperty("ISAW_HOME","").replace('\\','/');
+        if(!Prefix.endsWith("/"))
+          Prefix +="/";
+        Prefix =Prefix+"Scripts/";
+        if( filename.indexOf(Prefix)!=0){
+           JOptionPane.showMessageDialog(null, "ISAW Scripts must be in ISAWHOME's Script directory");
+           System.exit(0);   
+        }
+        
+        FSave.write(("   addForm( new ScriptForm(\""+ 
+                  filename.substring( Prefix.length())
+                  +"\""+ResParamGui+ConstList+"));\r\n").getBytes( ));
       }
       else if( op instanceof PyScriptOperator){
          FSave.write(("   addForm( new JyScriptForm( \""+
@@ -1453,7 +1471,7 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
   private void WriteMain( FileOutputStream FSave, String rest){
      try{
      
-     FSave.write(("   public void main( String[] args){\r\n").getBytes());
+     FSave.write(("   public static void main( String[] args){\r\n").getBytes());
      FSave.write(("      " +  infPanel.WizardName.getText().trim()+" Wiz= new "+
                   infPanel.WizardName.getText().trim()+"(true);\r\n").getBytes());
      FSave.write( "    Wiz.wizardLoader( args );\r\n   }\r\n\r\n}\r\n".getBytes());
