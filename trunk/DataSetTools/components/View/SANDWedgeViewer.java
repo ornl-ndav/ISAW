@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.49  2005/05/25 20:24:40  dennis
+ * Now calls convenience method WindowShower.show() to show
+ * the window, instead of instantiating a WindowShower object
+ * and adding it to the event queue.
+ *
  * Revision 1.48  2005/02/21 00:32:04  millermi
  * - Added more information to help().
  *
@@ -611,9 +616,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     scroll.setVerticalScrollBarPolicy(
         			    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
     helper.getContentPane().add(scroll);
-    WindowShower shower = new WindowShower(helper);
-    java.awt.EventQueue.invokeLater(shower);
-    shower = null;
+    WindowShower.show(helper);
   }
  
  /**
@@ -1745,9 +1748,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       {
 	if( !oldview.isVisible() )
 	{
-          WindowShower shower = new WindowShower(oldview);
-          java.awt.EventQueue.invokeLater(shower);
-          shower = null;
+       WindowShower.show(oldview);
 	}
 	else
 	  oldview.toFront();
@@ -1951,9 +1952,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	  data_set.notifyIObservers(IObserver.SELECTION_CHANGED);
 	  if( !oldview.isVisible() )
 	  {
-            WindowShower shower = new WindowShower(oldview);
-            java.awt.EventQueue.invokeLater(shower);
-            shower = null;
+        WindowShower.show(oldview);
 	  }
 	  // if visible, bring it to the front.
 	  else
@@ -2491,9 +2490,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       } );
     if( args.length > 0 )
       wedgeviewer.loadData( args[0] );
-    WindowShower shower = new WindowShower(wedgeviewer);
-    java.awt.EventQueue.invokeLater(shower);
-    shower = null;
+    WindowShower.show(wedgeviewer);
   }
 
 }

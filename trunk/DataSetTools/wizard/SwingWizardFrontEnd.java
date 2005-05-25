@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2005/05/25 20:24:49  dennis
+ * Now calls convenience method WindowShower.show() to show
+ * the window, instead of instantiating a WindowShower object
+ * and adding it to the event queue.
+ *
  * Revision 1.20  2005/05/25 19:37:55  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -902,10 +907,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * thread.
    */
   private void showGUI(  ) {
-    WindowShower ws = new WindowShower( frame );
-
-    EventQueue.invokeLater( ws );
-    ws = null;
+    WindowShower.show( frame );
   }
 
   //~ Inner Classes ------------------------------------------------------------

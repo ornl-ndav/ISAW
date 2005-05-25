@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.222  2005/05/25 20:24:50  dennis
+ *  Now calls convenience method WindowShower.show() to show
+ *  the window, instead of instantiating a WindowShower object
+ *  and adding it to the event queue.
+ *
  *  Revision 1.221  2005/05/25 18:01:24  dennis
  *  Replaced direct call to .show() method for window,
  *  since .show() is deprecated in java 1.5.
@@ -2128,9 +2133,7 @@ public class Isaw
                        // displayed by the event thread, after it is completely
                        // built.  Based on "Core Java Technologies Tech Tips", 
                        // December 8, 2003
-      Runnable window_shower = new WindowShower( Isaw );
-      EventQueue.invokeLater( window_shower );
-      window_shower = null;
+      WindowShower.show( Isaw );
       
       //this has to be some of the ugliest syntax I have seen yet, but I had to do it.  I didn't know the
       //reason behind making the Isaw instance a JFrame (why not just make it of type Isaw?).
