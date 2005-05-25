@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2005/05/25 15:10:22  dennis
+ * Replaced variable name 'enum' with 'props_enum', since 'enum'
+ * is a reserved word in java release 1.5.
+ *
  * Revision 1.29  2005/01/15 01:30:28  rmikk
  * Kept newere Parameter types as parameter for Write operators
  *
@@ -421,14 +425,15 @@ public class Util
       }
       catch( IOException ex )
       {
-         System.out.println( "Properties file could not be loaded due to error :" + ex );
+         System.out.println( 
+                   "Properties file could not be loaded due to error :" + ex );
       }
 
-      Enumeration enum = props.propertyNames();
+      Enumeration props_enum = props.propertyNames();
 
-      while( enum.hasMoreElements() )
+      while( props_enum.hasMoreElements() )
       {
-         pName = enum.nextElement().toString();
+         pName = props_enum.nextElement().toString();
          pVal = props.getProperty( pName );
          Vector oo = new Vector();
 
