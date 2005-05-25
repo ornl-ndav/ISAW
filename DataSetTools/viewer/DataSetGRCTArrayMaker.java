@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2005/05/25 18:46:29  dennis
+ * Changed call to static method GetHKLRange() to be called directly
+ * as a static method, rather than as this.GetHKLRange()
+ *
  * Revision 1.13  2005/05/25 18:01:15  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -3390,7 +3394,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                                             MinValues[0] = xscl.getX((int) Math.max(0, MinValues[0]));
                                             MinValues[5] = xscl.getX((int) Math.min(xscl.getNum_x() - 1, (MinValues[5])));
                                         }
-                                        float[] range = this.GetHKLRange(grid, orient, COP, initPath,
+                                        float[] range = GetHKLRange(grid, orient, COP, initPath,
                                                 MinValues[1], MinValues[6], MinValues[2],
                                                 MinValues[7], MinValues[0], MinValues[5]);
                   
