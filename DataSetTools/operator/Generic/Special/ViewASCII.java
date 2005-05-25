@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2005/05/25 19:37:46  dennis
+ *  Replaced direct call to .show() method for window,
+ *  since .show() is deprecated in java 1.5.
+ *  Now calls WindowShower.show() to create a runnable
+ *  that is run from the Swing thread and sets the
+ *  visibility of the window true.
+ *
  *  Revision 1.8  2005/01/10 15:18:17  dennis
  *  Added getCategoryList method to put operator in new position in
  *  menus.
@@ -82,6 +89,7 @@ package DataSetTools.operator.Generic.Special;
 
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -296,7 +304,7 @@ public class ViewASCII extends    GenericSpecial
         }
 
         mw.setTitle(filename);
-        mw.show();
+        WindowShower.show(mw);
 
         return "success";
     }

@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2005/05/25 19:37:45  dennis
+ *  Replaced direct call to .show() method for window,
+ *  since .show() is deprecated in java 1.5.
+ *  Now calls WindowShower.show() to create a runnable
+ *  that is run from the Swing thread and sets the
+ *  visibility of the window true.
+ *
  *  Revision 1.5  2004/03/15 19:33:52  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -52,6 +59,7 @@
 package DataSetTools.operator.Generic.Load;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 import java.io.*;
 import java.util.*;
@@ -209,7 +217,7 @@ public class LoadSelDataSets extends    GenericLoad
      jbut.addActionListener( this);
      jf.getContentPane().add( jlist, BorderLayout.CENTER);
       jf.validate();
-     jf.show();
+     WindowShower.show(jf);
      sel = jlist.getSelectedIndices();
 
     }catch(Exception ss){

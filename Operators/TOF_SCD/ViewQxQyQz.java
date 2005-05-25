@@ -30,6 +30,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2005/05/25 19:37:56  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.12  2004/05/04 19:01:33  dennis
  * Now clears DataSetPG after using value, to avoid memory leak.
  *
@@ -81,6 +88,7 @@ import DataSetTools.parameter.*;
 import DataSetTools.viewer.Contour.*;
 import DataSetTools.dataset.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 import java.util.*;
 import java.awt.*;
@@ -245,7 +253,7 @@ public class ViewQxQyQz extends GenericTOF_SCD
     jf.getContentPane().setLayout( new GridLayout(1,1));
     jf.getContentPane().add(cv);
     jf.validate();
-    jf.show();
+    WindowShower.show(jf);
     return "Success";
   }
 

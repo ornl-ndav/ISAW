@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2005/05/25 19:37:44  dennis
+ *  Replaced direct call to .show() method for window,
+ *  since .show() is deprecated in java 1.5.
+ *  Now calls WindowShower.show() to create a runnable
+ *  that is run from the Swing thread and sets the
+ *  visibility of the window true.
+ *
  *  Revision 1.7  2004/03/15 19:33:49  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -49,6 +56,7 @@
 package DataSetTools.components.ParametersGUI;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -148,7 +156,7 @@ public class JOneFileChooserParameterGUI  extends JParameterGUI{
             new JOneFileChooserParameterGUI( new Parameter( "How it works",
                                              "C:\\SampleRuns\\gppd9899.run"));
         jf.getContentPane().add(of.getGUISegment());
-        jf.show();
+        WindowShower.show(jf);
         jf.validate();
         System.out.println( of.getParameter().getName()+","
                             +of.getParameter().getValue());
