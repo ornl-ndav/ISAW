@@ -30,6 +30,13 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.15  2005/05/25 19:37:51  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.14  2004/03/15 19:34:00  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -48,11 +55,13 @@
 
 
 package DataSetTools.viewer.Table;
+
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.viewer.*;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -265,7 +274,7 @@ public class TabView extends DataSetViewer implements StateListener
       JF.setJMenuBar( tb.getMenuBar() );
       JF.setSize( 800 , 800 );
       //tb.setSize( 750 , 750 );
-      JF.show();
+      WindowShower.show(JF);
       JF.validate();
   }
 }

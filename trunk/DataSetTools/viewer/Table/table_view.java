@@ -29,6 +29,13 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.45  2005/05/25 19:37:52  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.44  2004/07/28 18:28:37  rmikk
  * Improved code for setting the selected Data blocks to work with larger
  *   DataSets
@@ -863,7 +870,7 @@ public class table_view extends JPanel implements ActionListener
                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED ) );
 
          JF.setSize( 400, 400 );
-         JF.show();
+         WindowShower.show(JF);
          JF.validate();
          row = 0;
          col = 0;
@@ -1395,7 +1402,7 @@ public class table_view extends JPanel implements ActionListener
                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED ) );
 
          JF.setSize( 400, 400 );
-         JF.show();
+         WindowShower.show(JF);
          JF.validate();
          MakeHeaderInfo( DSS, false, SelIndecies );
          if( ( SelIndecies != null ) )
@@ -2679,7 +2686,7 @@ public class table_view extends JPanel implements ActionListener
 
       JF1.getContentPane().add( new JScrollPane( jtbl ) );
 
-      JF1.show();
+      WindowShower.show(JF1);
 
       JF1.validate();
 
@@ -3737,7 +3744,7 @@ public class table_view extends JPanel implements ActionListener
             OrderSelector OS = new OrderSelector( hasRC, Worder );
 
             OS.setSize( 400, 300 );
-            OS.show();
+            WindowShower.show(OS);
          }
          else
             Worder.value = ( ( DescrCode )O ).getCode();

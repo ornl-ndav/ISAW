@@ -28,6 +28,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2005/05/25 19:37:50  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.12  2004/06/18 18:39:55  rmikk
  * Eliminated unused variables
  *
@@ -67,10 +74,12 @@
  *
  */
 package DataSetTools.viewer.Contour;
+
 import DataSetTools.viewer.*;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.UI.*;
 
 import java.awt.event.*;
@@ -328,7 +337,7 @@ public class TQxQyQz  extends ContourView
     TQxQyQz TQ = new TQxQyQz(ds, null);
 
     jf.getContentPane().add( TQ);
-    jf.show();
+    WindowShower.show(jf);
     jf.validate();
 
 
@@ -434,7 +443,7 @@ public class TQxQyQz  extends ContourView
             Dist.addActionListener( ml);
             OK.addActionListener( ml);
             this.setSize( 400,500);
-            this.show();
+            WindowShower.show(this);
             this.validate();
             
           }

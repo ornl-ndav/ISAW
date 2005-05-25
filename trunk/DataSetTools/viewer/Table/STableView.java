@@ -30,6 +30,13 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.20  2005/05/25 19:37:51  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.19  2004/03/15 23:57:40  dennis
  * Changed some instances to static methods to be through the
  * class name instead of an instance.
@@ -744,7 +751,7 @@ public class STableView  extends DataSetViewer
       STableView stab = new STableView( DS[1], null,tbm);
       jf.getContentPane().add( stab);
       jf.setSize( 400,400);
-      jf.show();
+      WindowShower.show(jf);
 
      }
    }

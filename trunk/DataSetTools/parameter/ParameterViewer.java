@@ -32,6 +32,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2005/05/25 19:37:47  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.15  2004/05/11 18:23:54  bouzekc
  * Added/updated javadocs and reformatted for consistency.
  *
@@ -89,11 +96,8 @@
 package DataSetTools.parameter;
 
 import DataSetTools.dataset.DataSet;
-
 import DataSetTools.operator.Generic.Special.ViewASCII;
-
 import DataSetTools.retriever.RunfileRetriever;
-
 import DataSetTools.util.SharedData;
 
 import DataSetTools.viewer.IViewManager;
@@ -101,6 +105,7 @@ import DataSetTools.viewer.ViewManager;
 
 import gov.anl.ipns.Util.File.TextWriter;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -368,7 +373,7 @@ public class ParameterViewer implements ActionListener {
       button_p.add( view_b );
       button_p.add( cancel_b );
       c.add( button_p, BorderLayout.SOUTH );
-      holder.show(  );
+      WindowShower.show(holder);
     }
   }
 }

@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2005/05/25 19:37:45  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.9  2005/04/22 14:47:09  rmikk
  * Closed the file after it was written
  *
@@ -76,6 +83,7 @@
 package DataSetTools.operator.Generic.Save;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 import java.awt.event.*;
 import java.awt.*;
 import DataSetTools.parameter.*;
@@ -185,10 +193,8 @@ public class SaveImage  extends GenericSave{
 	Graphics2D gr = bimg.createGraphics();
 	jf1.addWindowListener(new MyWindowListener(SaveFileName, extension, bimg, DSV, gr, jf1));
 	//DSV.paint( gr);
-	jf1.show();
+	WindowShower.show(jf1);
 	
-    
-   
 	//DSV.paint( gr);
 
     //jf1.dispose();

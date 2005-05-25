@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2005/05/25 19:37:49  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.18  2005/01/10 15:55:04  dennis
  * Removed empty statement.
  *
@@ -99,11 +106,11 @@
  *
  */
 package DataSetTools.parameter;
-
 import DataSetTools.util.PGActionListener;
 
-import java.awt.GridLayout;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
+import java.awt.GridLayout;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -188,7 +195,7 @@ public class QbinsPG extends VectorPG {
     jb.addActionListener( new PGActionListener( qbpg ) );
     jf.setSize( 500, 100 );
     jf.invalidate(  );
-    jf.show(  );
+    WindowShower.show(jf);
   }
 
   /**

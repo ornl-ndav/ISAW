@@ -30,6 +30,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2005/05/25 19:37:45  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.16  2005/03/30 01:46:11  dennis
  * Removed unneeded semicolon.
  *
@@ -228,7 +235,7 @@ public class PrintImage extends GenericSave{
      jf.getContentPane().add(DSV);
 	 jf.addWindowListener(new MyWindowListener(DSV, PrintName, orientation, quality, copies, jf));
 
-	 jf.show();
+	 WindowShower.show(jf);
      return "Success";
   }
 

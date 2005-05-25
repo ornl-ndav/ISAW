@@ -30,6 +30,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2005/05/25 19:37:51  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.24  2005/03/28 06:02:15  serumb
  * Now uses new methods for instances of labelComboBox.
  *
@@ -130,6 +137,7 @@ package DataSetTools.viewer.Table;
 
 
 import gov.anl.ipns.ViewTools.Components.ViewControls.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 import java.awt.event.*;
 import DataSetTools.dataset.*;
@@ -765,7 +773,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
       jmbar.add( TimeMenu );
       jf.validate();
-      jf.show();
+      WindowShower.show(jf);
 
    }
 
