@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.63  2005/05/25 02:49:06  rmikk
+ * Made a private static method public so that this method will not invoke
+ *   the search for all the operators
+ *
  * Revision 1.62  2005/05/13 18:03:21  rmikk
  * Add a catch statement so an improper operator does not bring the system
  *   down.
@@ -312,7 +316,14 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return (GenericOperator)getClassInst(filename,true);
     }
 
-    static private Operator myGetClassInst(String filename, boolean isgeneric){
+    /**
+     *  Static form for getClassInst
+     * @param filename   The filename that may contain an operator
+     * @param isgeneric   True if the operator is generic
+     * @return           returns the operator or null if the file does not
+     *                   represent some form of an operator
+     */
+    static public Operator myGetClassInst(String filename, boolean isgeneric){
         if( filename == null ){
             System.out.println("No Name");
             return null;
