@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2005/05/25 19:37:46  dennis
+ *  Replaced direct call to .show() method for window,
+ *  since .show() is deprecated in java 1.5.
+ *  Now calls WindowShower.show() to create a runnable
+ *  that is run from the Swing thread and sets the
+ *  visibility of the window true.
+ *
  *  Revision 1.42  2004/05/11 18:23:54  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -187,6 +194,7 @@ package DataSetTools.parameter;
 import DataSetTools.components.ParametersGUI.*;
 
 import gov.anl.ipns.Util.Messaging.PropertyChanger;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 import java.awt.*;
 
@@ -755,7 +763,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
 
       pos.setLocation( x, y );
       mw.setBounds( pos );
-      mw.show(  );
+      WindowShower.show(mw);
     }
   }
 

@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.36  2005/05/25 19:37:41  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.35  2005/01/07 15:00:10  rmikk
  * Directories are now at the top and in alphabetical order at each level
  *
@@ -341,6 +348,6 @@ public class opMenu extends JMenu{
         JMenuBar bar= new JMenuBar();
         bar.add(opm);
         JF.setJMenuBar( bar );
-        JF.show();
+        WindowShower.show(JF);
     }
 }

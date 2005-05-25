@@ -30,6 +30,13 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.18  2005/05/25 19:37:51  dennis
+ *  Replaced direct call to .show() method for window,
+ *  since .show() is deprecated in java 1.5.
+ *  Now calls WindowShower.show() to create a runnable
+ *  that is run from the Swing thread and sets the
+ *  visibility of the window true.
+ *
  *  Revision 1.17  2005/05/13 13:12:05  rmikk
  *  Fixed error with selecting cells in the table.
  *
@@ -69,6 +76,7 @@ package DataSetTools.viewer.Table;
 //import DataSetTools.dataset.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.StringFilter.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.TwoD.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
@@ -697,7 +705,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
       //LargeJTableViewComponent stab = new LargeJTableViewComponent( DS[1], null,tbm);
       //jf.getContentPane().add( stab);
       jf.setSize( 400,400);
-      jf.show();
+      WindowShower.show(jf);
 
      }// main
 //----------------------- IViewComp Methods ----------------------------

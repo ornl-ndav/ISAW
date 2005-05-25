@@ -33,6 +33,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/05/25 19:37:45  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.2  2005/01/31 23:52:59  dennis
  * Added getCategoryList() method to explicitly place the operator
  * in Macros->Utils->System.
@@ -52,6 +59,7 @@ import DataSetTools.operator.*;
 import javax.swing.*;
 import Command.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
  
  /**
   * This class is an operator that will display a simple html help page with no 
@@ -128,7 +136,7 @@ public class ShowDoc extends GenericLoad{
     try{
        jf.getContentPane().add( new JScrollPane(
               new JEditorPane( "text/html",(new Script(filename)).toString())));
-       jf.show();
+       WindowShower.show(jf);
     }catch(Exception ss){
        return new ErrorString( ss);
     }

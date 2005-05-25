@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2005/05/25 19:37:41  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.5  2002/11/27 23:12:10  pfpeterson
  * standardized header
  *
@@ -43,9 +50,12 @@
  *
 */
 package Command;
+
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
+
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 /**
  * This a utility that quickly lets you place one or two JButtons at
@@ -152,7 +162,7 @@ public class JPanelwithToolBar  extends JPanel{
                                                         ,new MyHandler1() 
                                                         , JA ));
         JF.setSize( 400,400);
-        JF.show();
+        WindowShower.show(JF);
     }
 }
 

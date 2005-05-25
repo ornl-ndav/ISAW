@@ -30,6 +30,13 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.7  2005/05/25 19:37:44  dennis
+ *  Replaced direct call to .show() method for window,
+ *  since .show() is deprecated in java 1.5.
+ *  Now calls WindowShower.show() to create a runnable
+ *  that is run from the Swing thread and sets the
+ *  visibility of the window true.
+ *
  *  Revision 1.6  2004/03/15 19:33:50  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -61,6 +68,7 @@ package DataSetTools.components.ui;
 
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.ViewTools.UI.*;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -205,7 +213,7 @@ public class PartialDS_Selector implements IObservable
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     dialog.setLocation( (screenSize.width-width)/2, 
                         (screenSize.height-height)/2 );
-    dialog.show();
+    WindowShower.show(dialog);
   }
 
 

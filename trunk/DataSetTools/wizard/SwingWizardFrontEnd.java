@@ -32,6 +32,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2005/05/25 19:37:55  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.19  2004/05/11 23:56:34  bouzekc
  * Added code to "remember" the last window size that was set by the user
  * (with mouse dragging).  This feature uses IsawPropsMutator.
@@ -681,7 +688,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
 
     htmlDisplay.setEditable( false );
     help_frame.getContentPane(  ).add( new JScrollPane( htmlDisplay ) );
-    help_frame.show(  );
+    WindowShower.show(help_frame);
   }
 
   /**
@@ -711,7 +718,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
 
     htmlDisplay.setEditable( false );
     help_frame.getContentPane(  ).add( new JScrollPane( htmlDisplay ) );
-    help_frame.show(  );
+    WindowShower.show(help_frame);
   }
 
   /**
