@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2005/05/25 18:01:16  dennis
+ *  Replaced direct call to .show() method for window,
+ *  since .show() is deprecated in java 1.5.
+ *  Now calls WindowShower.show() to create a runnable
+ *  that is run from the Swing thread and sets the
+ *  visibility of the window true.
+ *
  *  Revision 1.18  2005/04/10 18:50:19  rmikk
  *  Implement IPreserveState and sends ObjectState info to the
  *   DataBlockSelector and LargeJTableViewComponent
@@ -441,7 +448,7 @@ public class DataSetViewerMaker1  extends DataSetViewer   {
 
      jf.setJMenuBar( dsv.getMenuBar());
    
-     jf.show();
+     WindowShower.show(jf);
      jf.invalidate();
 
     }

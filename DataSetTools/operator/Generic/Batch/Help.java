@@ -29,6 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2005/05/25 18:01:13  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.2  2004/03/15 03:28:33  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -43,6 +50,7 @@ import Command.Script_Class_List_Handler;
 import DataSetTools.operator.*;
 import DataSetTools.util.SharedData;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 import java.awt.Toolkit;
 import java.awt.Dimension;
@@ -176,7 +184,7 @@ public class Help extends GenericBatch{
     jedPane.setText(SharedData.HTMLPageMaker.createHTML(op));
     jf.getContentPane().add( new JScrollPane(jedPane) );
     jf.setSize(width,height);
-    jf.show();
+    WindowShower.show(jf);
     
     return "Displaying help for "+op.getCommand();
   }

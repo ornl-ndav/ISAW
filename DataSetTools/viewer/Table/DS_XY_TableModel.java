@@ -30,6 +30,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2005/05/25 18:01:21  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.17  2004/05/25 21:12:11  rmikk
  * Eliminated an off by one error in the selected row
  *
@@ -98,6 +105,8 @@ import javax.swing.*;
 import DataSetTools.dataset.*;
 import java.util.*;
 import java.io.*;
+
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 /** Produces a TabelModel that can be plugged into a JTable.  It has
 * the following properites.<OL type ="a">
@@ -602,7 +611,7 @@ public class DS_XY_TableModel extends TableViewModel
        Optmenu.add( save );
        Mbar.add( Optmenu );
        jf.setJMenuBar( Mbar );
-       jf.show();
+       WindowShower.show(jf);
       }
       
   }

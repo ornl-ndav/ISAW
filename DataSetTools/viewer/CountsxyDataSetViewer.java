@@ -30,21 +30,25 @@
 * Modified:
 *
 * $Log$
+* Revision 1.2  2005/05/25 18:01:14  dennis
+* Replaced direct call to .show() method for window,
+* since .show() is deprecated in java 1.5.
+* Now calls WindowShower.show() to create a runnable
+* that is run from the Swing thread and sets the
+* visibility of the window true.
+*
 * Revision 1.1  2004/08/23 20:49:03  rmikk
 * Initial Checkin
 *
 */
-
  
 package DataSetTools.viewer;
-
-
 
 
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.Table.LargeJTableViewComponent;
 import DataSetTools.viewer.Table.RowColTimeVirtualArray;
-
+import gov.anl.ipns.Util.Sys.WindowShower;
 import javax.swing.*;
 
 /**
@@ -80,7 +84,7 @@ public class CountsxyDataSetViewer extends DataSetViewerMaker1{
       jf.getContentPane().add( view);
       jf.setJMenuBar( view.getMenuBar());
       jf.setSize( 500, 400);
-      jf.show();
+      WindowShower.show(jf);
      
       }
    

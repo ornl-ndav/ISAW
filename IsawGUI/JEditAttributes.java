@@ -29,6 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2005/05/25 18:01:27  dennis
+ * Replaced direct call to .show() method for window,
+ * since .show() is deprecated in java 1.5.
+ * Now calls WindowShower.show() to create a runnable
+ * that is run from the Swing thread and sets the
+ * visibility of the window true.
+ *
  * Revision 1.5  2004/01/24 23:09:38  bouzekc
  * Removed unused imports.
  *
@@ -46,6 +53,8 @@ import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
 import DataSetTools.dataset.*;
+
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 /**
  * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
@@ -107,8 +116,8 @@ public class JEditAttributes implements Serializable
 	    }
 	    	 DefaultTableModel dtm = new DefaultTableModel(data, heading);
 	         table.setModel(dtm);
-	         	    opDialog.getContentPane().add(table);
-	                opDialog.show();
+	         opDialog.getContentPane().add(table);
+	         WindowShower.show(opDialog);
 	 }
 	 
 	  public class ApplyButtonHandler implements ActionListener
