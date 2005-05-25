@@ -35,6 +35,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2005/05/25 18:39:15  dennis
+ * Removed unused imports.
+ *
  * Revision 1.6  2005/01/10 15:55:03  dennis
  * Removed empty statement.
  *
@@ -45,7 +48,7 @@
 
  package Command.JavaCC.Fortran;
  import java.util.*;
- import Command.JavaCC.Fortran.*;
+
  /**
    *  Constructor
    *  The main method invokes the specialized FortranTokenManager. 

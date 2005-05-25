@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2005/05/25 18:39:20  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.2  2005/04/21 02:32:45  hammonds
  *  Fix Copyright
  *
@@ -46,7 +49,6 @@ import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
-import java.text.DecimalFormat;
 import java.util.Vector;
 
 /** 

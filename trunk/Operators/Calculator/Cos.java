@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2005/05/25 18:39:20  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.1  2005/04/21 02:45:58  hammonds
  *  Add in methods to provide trig to scrips
  *
@@ -41,9 +44,7 @@ package Operators.Calculator;
 
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
-import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
-import java.text.DecimalFormat;
 import java.util.Vector;
 
 /** 

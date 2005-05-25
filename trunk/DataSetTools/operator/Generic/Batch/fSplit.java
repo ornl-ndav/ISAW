@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2005/05/25 18:39:17  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.1  2005/05/16 20:48:29  hammonds
  *  First in classes to work more efficiently with filenames.
  *
@@ -38,9 +41,7 @@
  */
 package DataSetTools.operator.Generic.Batch;
 import java.io.*;
-import java.net.*;
 import DataSetTools.operator.*;
-import DataSetTools.parameter.*;
 import java.util.Vector;
 import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
