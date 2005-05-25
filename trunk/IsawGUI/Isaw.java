@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.221  2005/05/25 18:01:24  dennis
+ *  Replaced direct call to .show() method for window,
+ *  since .show() is deprecated in java 1.5.
+ *  Now calls WindowShower.show() to create a runnable
+ *  that is run from the Swing thread and sets the
+ *  visibility of the window true.
+ *
  *  Revision 1.220  2005/05/13 15:20:38  dennis
  *  Changed version to 1.7.2 alpha 2
  *
@@ -1540,8 +1547,8 @@ public class Isaw
           FileDialog fc = new FileDialog(  new Frame(), 
                                            msg, 
                                            FileDialog.LOAD  );
-	  fc.setDirectory( filename );
-          fc.show();
+          fc.setDirectory( filename );
+          WindowShower.show(fc);
           File f = new File( fc.getDirectory(), fc.getFile() );
           filename = f.toString();
           DataSet ds = DataSet_IO.LoadDataSet( filename );
@@ -1644,14 +1651,14 @@ public class Isaw
 	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
 	H.setLocation((int)(.2*4*D.height/3), (int)(.2*D.height) );
 	try{
-	    H.show();
+	    WindowShower.show(H);
 	}
 	catch(Exception e){
 	    SharedData.addmsg("CANNOT FIND HELP FILE");
 	}
         
-	H.show();
-      } 
+	WindowShower.show(H);
+    } 
                 
       if( s.equals(OPERATIONS_MI) )
       {
@@ -1663,13 +1670,13 @@ public class Isaw
 	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
 	H.setLocation((int)(.2*4*D.height/3), (int)(.2*D.height) );
 	try{
-	    H.show();
+	    WindowShower.show(H);
 	}
 	catch(Exception e){
 	    SharedData.addmsg("CANNOT FIND HELP FILE");
 	}
         
-	H.show();
+	WindowShower.show(H);
       } 
                 
       if( s.equals(COMMAND_PANE_MI) )
@@ -1680,7 +1687,7 @@ public class Isaw
             Dimension D = getToolkit().getScreenSize();
             // make the help window pop up centered and 60% of screen size
             jf.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height));
-            jf.show();
+            WindowShower.show(jf);
             return;
         }catch( Exception sss){
           // let it drop on the floor
@@ -1698,13 +1705,13 @@ public class Isaw
 	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
 	H.setLocation((int)(.2*4*D.height/3), (int)(.2*D.height) );
 	try{
-	    H.show();
+	    WindowShower.show(H);
 	}
 	catch(Exception e){
 	    SharedData.addmsg("CANNOT FIND HELP FILE");
 	}
         
-	H.show();
+	WindowShower.show(H);
       } 
                 
       if( s.equals(GLOSSARY_MI) ){
@@ -2391,7 +2398,7 @@ public class Isaw
       H.setLocation((int)Math.max(0,(int)(.5*(D.width-w*D.width))), 
                   (int)Math.max(0,(int)(.5*(D.height-h*D.height))) );
       try{
-          H.show();
+          WindowShower.show(H);
       }
       catch(Exception e){
           SharedData.addmsg("CANNOT FIND HELP FILE");
