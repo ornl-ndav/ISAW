@@ -32,6 +32,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.63  2005/05/25 20:24:39  dennis
+ *  Now calls convenience method WindowShower.show() to show
+ *  the window, instead of instantiating a WindowShower object
+ *  and adding it to the event queue.
+ *
  *  Revision 1.62  2005/01/10 15:55:03  dennis
  *  Removed empty statement.
  *
@@ -629,13 +634,8 @@ public class JParametersDialog implements Serializable,
         opDialog.setSize((int)(.4* Width) , new Float(Size +.8).intValue());
         opDialog.validate();
        
-        
-        WindowShower windShow = new WindowShower( opDialog);
-        EventQueue.invokeLater( windShow);
-         
-        //opDialog.setVisible(true);
-       
-      }
+        WindowShower.show(opDialog);  
+     }
        
   public void addIObserver(IObserver iobs) 
   {
@@ -974,9 +974,7 @@ public class JParametersDialog implements Serializable,
       JScrollPane scroll =new JScrollPane( jedPane);
       jf.getContentPane().add( scroll );
       jf.setSize( (int)(screenwidth/2), (int)(3*screenheight/4) );
-       WindowShower windShow = new WindowShower( jf);
-        EventQueue.invokeLater( windShow);       
-      //jf.show();
+      WindowShower.show(jf);
     } 
   }
  public class FinishJDialog extends JDialog implements IFinish{

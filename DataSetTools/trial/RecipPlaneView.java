@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2005/05/25 20:24:45  dennis
+ * Now calls convenience method WindowShower.show() to show
+ * the window, instead of instantiating a WindowShower object
+ * and adding it to the event queue.
+ *
  * Revision 1.25  2004/09/16 18:12:10  dennis
  * Made calibrations on both image axes linear and provided somewhat
  * meaningful ranges of values ( |Q| ) for the axis calibrations.
@@ -351,9 +356,7 @@ public class RecipPlaneView
     controller.addControlledPanel( vec_Q_space );
 
     scene_f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    WindowShower shower = new WindowShower( scene_f );
-    EventQueue.invokeLater( shower );
-    shower = null;
+    WindowShower.show( scene_f );
 
     apply_button.addActionListener( new ThresholdApplyButtonHandler() );
 
