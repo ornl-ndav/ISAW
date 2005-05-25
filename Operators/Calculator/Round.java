@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2005/05/25 18:39:21  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.1  2005/04/26 21:14:45  hammonds
  *  New method for scripting language.
  *
@@ -42,9 +45,7 @@ package Operators.Calculator;
 
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
-import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
-import java.text.DecimalFormat;
 import java.util.Vector;
 
 /** 

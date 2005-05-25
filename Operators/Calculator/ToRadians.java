@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2005/05/25 18:39:22  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.2  2005/04/28 21:26:40  hammonds
  *  Fix up javadoc & Change title
  *
@@ -49,9 +52,7 @@ package Operators.Calculator;
 
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
-import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
-import java.text.DecimalFormat;
 import java.util.Vector;
 
 /** 
