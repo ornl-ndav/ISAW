@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2005/05/25 18:39:18  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.19  2005/05/25 18:01:16  dennis
  *  Replaced direct call to .show() method for window,
  *  since .show() is deprecated in java 1.5.
@@ -123,7 +126,6 @@ import java.awt.event.*;
 import java.awt.*;
 import DataSetTools.viewer.Table.*;
 import Command.*;
-import DataSetTools.viewer.Table.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.util.*;
 import java.util.*;

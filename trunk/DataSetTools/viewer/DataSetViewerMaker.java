@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2005/05/25 18:39:18  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.21  2005/05/24 17:29:44  serumb
  *  Removed comments from commented out code that previously caused errors.
  *  Now implements IpreserveState, and has a constructor that takes in the
@@ -108,7 +111,6 @@ import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 import gov.anl.ipns.ViewTools.UI.*;
 import gov.anl.ipns.ViewTools.Components.*;
-import DataSetTools.viewer.Table.*;
 
 import javax.swing.*;
 import javax.swing.event.*;

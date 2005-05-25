@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2005/05/25 18:39:17  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.8  2005/04/28 17:18:24  hammonds
  *  Change to write out time map if dt/t is used
  *
@@ -64,7 +67,6 @@ package DataSetTools.gsastools;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.Sys.StringUtil;
 import DataSetTools.dataset.XScale;
-import DataSetTools.util.SharedData;
 
 /**
  * This class is intended to contain the bank header information for
