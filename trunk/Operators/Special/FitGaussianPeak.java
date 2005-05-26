@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.9  2005/05/26 15:27:52  dennis
+ * Replaced ViewManager.IMAGE with IViewManager.IMAGE in test
+ * program, where a ViewManager was constructed.
+ *
  * Revision 1.8  2005/04/28 18:59:28  dennis
  * Now makes an initial estimate of the FWHM by checking values
  * to the left and right of the peak value until values less than
@@ -407,7 +411,7 @@ public class FitGaussianPeak implements Wrappable
     RunfileRetriever rr = new RunfileRetriever( file_name );
 
     DataSet ds = rr.getDataSet( 1 );
-    new ViewManager( ds, ViewManager.IMAGE );
+    new ViewManager( ds, IViewManager.IMAGE );
 
     FitGaussianPeak op_core = new FitGaussianPeak();
     op_core.data_set = ds;
@@ -428,7 +432,7 @@ public class FitGaussianPeak implements Wrappable
     }
 
     DataSet fitted_ds = (DataSet)values.elementAt( values.size()-1 );
-    new ViewManager( fitted_ds, ViewManager.IMAGE );
+    new ViewManager( fitted_ds, IViewManager.IMAGE );
   }
 
 }
