@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2005/05/26 15:51:17  dennis
+ * Fixed one javadoc comment and changed Data.SMOOTH_LINEAR to
+ * IData.SOOTH_LINEAR to access the field directly.
+ *
  * Revision 1.10  2005/05/13 00:43:04  dennis
  * Added new versions of methods SumQs_1D() and SumQs_2D() that accept
  * a list of boolean flags indicating whether or not a particular channel
@@ -869,7 +873,9 @@ public class SAD_Util
 
   /* ---------------------------- CalcRatios ----------------------------- */
   /**
-   *  Calculate the ratio R = (S/Ms-C/Mc)/Ts  with errs for R/sens/eff
+   * Calculate the ratio R = (S/Ms-C/Mc)/Ts  with errs for R/sens/eff.
+   * The calculated ratios are returned in the y-value arrays of the
+   * RUNSds[] DataSets.
    *
    *  @param  RUNSds       Array of DataSets containing the monitor DataSet
    *                       and Sample DataSet.
@@ -890,8 +896,6 @@ public class SAD_Util
    *  @param  scale        The scale factor that is multiplied times the 
    *                       calculated ratios and errors.
    *
-   *  @return The calculated ratios are returned in the y-value arrays of
-   *          the RUNSds[] DataSets. 
    */
   public static void CalcRatios( DataSet    RUNSds[], 
                                  DataSet    RUNCds[], 
@@ -1499,7 +1503,7 @@ public class SAD_Util
     Operator to_hist = new ConvertHistogramToFunction( ds, false, false );
     to_hist.getResult();
 
-    ds.getData_entry(0).resample( function_scale, Data.SMOOTH_LINEAR );
+    ds.getData_entry(0).resample( function_scale, IData.SMOOTH_LINEAR );
 
     Operator to_func = new ConvertFunctionToHistogram(ds, width1, false, false);
     to_func.getResult();
