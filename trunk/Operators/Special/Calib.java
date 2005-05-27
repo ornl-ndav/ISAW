@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/05/27 03:12:04  dennis
+ * Changed to use get attribute method from AttrUtil, rather than
+ * the old get attribute method from DataSet and Data
+ *
  * Revision 1.2  2005/01/10 15:36:00  dennis
  * Added getCategoryList method to place operator in menu system.
  *
@@ -124,7 +128,7 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
    * This method determines which load routine to use and uses it.
    */
   public Object calculate(  ) {
-    String fil = DS.getFileName();
+    String fil = AttrUtil.getFileName(DS);
     clearGridData();
     if(fil == null)
       return new ErrorString("No filename for DataSet");

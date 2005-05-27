@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/05/27 03:11:25  dennis
+ * Changed to use get attribute method from AttrUtil, rather than
+ * the old get attribute method from DataSet and Data
+ *
  * Revision 1.3  2005/01/07 17:35:17  dennis
  * Now implements IWrappableWithCategoryList and includes method
  * to set which menu it appears in.
@@ -131,7 +135,7 @@ public class ScaleBySolidAngle implements IWrappableWithCategoryList
     float total = 0;
     for ( int i = 0; i < n_data; i++ )
     {
-      solid_angle[i] = new_ds.getData_entry(i).getSolidAngle();
+      solid_angle[i] = AttrUtil.getSolidAngle(new_ds.getData_entry(i));
       if ( Float.isNaN( solid_angle[i] ) )
         return new ErrorString("Missing solid angle on Data block " + i );
 

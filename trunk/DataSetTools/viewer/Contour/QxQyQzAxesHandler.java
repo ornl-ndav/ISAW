@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2005/05/27 03:13:37  dennis
+ * Changed to use get attribute method from AttrUtil, rather than
+ * the old get attribute method from DataSet and Data
+ *
  * Revision 1.18  2005/01/10 15:55:09  dennis
  * Removed empty statement.
  *
@@ -180,7 +184,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
 
        float initial_path =
              ((Float)D.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
-       SampleOrientation samporient = D.getSampleOrientation();
+       SampleOrientation samporient = AttrUtil.getSampleOrientation(D);
        if( samporient == null){
           samporient = new IPNS_SCD_SampleOrientation(0f,0f,0f);
           ds.setAttribute( new SampleOrientationAttribute(

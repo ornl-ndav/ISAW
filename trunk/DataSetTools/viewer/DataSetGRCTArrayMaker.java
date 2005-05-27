@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2005/05/27 03:14:24  dennis
+ * Changed to use get attribute method from AttrUtil, rather than
+ * the old get attribute method from DataSet and Data
+ *
  * Revision 1.14  2005/05/25 18:46:29  dennis
  * Changed call to static method GetHKLRange() to be called directly
  * as a static method, rather than as this.GetHKLRange()
@@ -3378,7 +3382,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         for (int ds = 0; ds < DataSets.length; ds++) 
             if (InRange(4, ds, MinValues)) {
                 float[][] orient = (float[][]) DataSets[ds].getAttributeValue(Attribute.ORIENT_MATRIX);
-                float initPath = DataSets[ds].getData_entry(0).getInitialPath();
+                float initPath = AttrUtil.getInitialPath(DataSets[ds].getData_entry(0));
                 SampleOrientation COP = (SampleOrientation) DataSets[ds].getAttributeValue(Attribute.SAMPLE_ORIENTATION);
 
                 if (orient != null) if (initPath > 0)if (COP != null)
