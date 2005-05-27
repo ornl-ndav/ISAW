@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.223  2005/05/27 04:06:13  dennis
+ *  fixed javadoc comment on makeNewAttributeList() method.
+ *
  *  Revision 1.222  2005/05/25 20:24:50  dennis
  *  Now calls convenience method WindowShower.show() to show
  *  the window, instead of instantiating a WindowShower object
@@ -1318,10 +1321,7 @@ public class Isaw
  
  
   /**
-   * Sets up the menubar that is used for all operations on DataSets.
-   *
-   * @param dss Array of DataSets
-   * @param name String identifying the Runfile
+   * Make a default attribute list with a few simple entries.
    */   
   private AttributeList makeNewAttributeList()
   {
