@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.45  2005/05/27 03:44:07  dennis
+ *  Removed unused imports (no longer needed since the convenience
+ *  methods to get specific attributes were removed).
+ *
  *  Revision 1.44  2005/05/27 03:21:19  dennis
  *  Removed convenience methods for getting particular attributes for
  *  TOF neutron scattering from these general purpose classes.  The
@@ -156,8 +160,6 @@ import gov.anl.ipns.Util.Numeric.*;
 import java.util.*;
 import java.io.*;
 
-import DataSetTools.gsastools.GsasCalib;
-import DataSetTools.instruments.SampleOrientation;
 
 public abstract class Data implements IData,
                                       Serializable ,
