@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2005/05/27 03:51:06  dennis
+ * Removed two private variables that saved state information that
+ * was never used.
+ *
  * Revision 1.6  2004/08/11 05:18:20  dennis
  * Added control to turn filter on and off.
  * Now normalizes the plane normal when a new normal is set.
@@ -81,16 +85,14 @@ public class LatticePlaneUI extends ActiveJPanel
   private JButton      filter;
   private TextValueUI  miller_value;  
   private TextValueUI  d_ui;
-  private String       title;
 
   private float        normal[]  = { 0, 0, 0, 1 };
   private float        sigma     = 0;
-  private float        d_spacing = 0;
   private boolean      filter_flag = false;
 
   public LatticePlaneUI( String title ) 
   {
-     this.title = title;
+//     this.title = title;
 
      String border_title = "Constant " + title + " Planes";
 
@@ -213,7 +215,6 @@ public class LatticePlaneUI extends ActiveJPanel
       return;
     }
 
-    this.d_spacing = d_spacing;
     this.sigma     = sigma;
 
     d_ui.setValue( d_spacing );
