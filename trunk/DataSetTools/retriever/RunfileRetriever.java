@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.88  2005/05/27 03:47:33  dennis
+ *  Fixed parameter name in javadoc comment.
+ *
  *  Revision 1.87  2005/02/17 16:42:39  dennis
  *  Fixed off by one error when going through list of id's associated
  *  with a particular histogram.  This caused the retriever to miss
@@ -947,7 +950,7 @@ private float CalculateEIn()
 /**
  *  Add the Spectrum attributes to the specified Data block.
  *
- *  @param  run_file         The Runfile we're reading from 
+ *  @param  runfile          The Runfile we're reading from 
  *  @param  instrument_type  The file name for this DataSet
  *  @param  histogram_num    The histogram number for this group
  *  @param  group_id         The group_id for this group
