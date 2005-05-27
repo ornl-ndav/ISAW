@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.58  2005/05/27 03:53:31  dennis
+ *  Removed unused import.
+ *
  *  Revision 1.57  2005/05/25 20:24:46  dennis
  *  Now calls convenience method WindowShower.show() to show
  *  the window, instead of instantiating a WindowShower object
@@ -212,7 +215,6 @@ import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
 import gov.anl.ipns.ViewTools.Components.*;
 
-import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
