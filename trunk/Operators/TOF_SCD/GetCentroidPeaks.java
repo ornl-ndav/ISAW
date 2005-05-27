@@ -34,6 +34,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/05/27 03:10:19  dennis
+ * Changed to use get attribute method from AttrUtil, rather than
+ * the old get attribute method from DataSet and Data
+ *
  * Revision 1.3  2004/07/31 23:05:44  rmikk
  * Removed Unused Import
  *
@@ -151,7 +155,7 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
      float[] calibTimeAdjustments = new float[GridIDs.length];
      for( int i=0; i< Grids.length; i++){
      
-       calibTimeAdjustments[i]= Grids[i].getData_entry(1,1).getT0Shift();
+       calibTimeAdjustments[i]= AttrUtil.getT0Shift(Grids[i].getData_entry(1,1));
        if( Float.isNaN(calibTimeAdjustments[i]))
           calibTimeAdjustments[i]=0f;
      }
@@ -170,8 +174,8 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
       sampOrient = new IPNS_SCD_SampleOrientation(0f,0f,0f);
     Peak_new mold = new Peak_new(0f,0f,0f, Grids[0], sampOrient.getChi(),
           sampOrient.getPhi(),sampOrient.getOmega(), 0f, 
-           xscales[0],db.getInitialPath());
-    mold.nrun(DS.getRunNumber()[0]);  
+           xscales[0], AttrUtil.getInitialPath(db));
+    mold.nrun( AttrUtil.getRunNumber(DS)[0]);  
     mold.monct(moncount);    
     for( int i=0; i < V.size(); i++){
        Peak p = (Peak)(V.elementAt(i));
@@ -186,7 +190,7 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
          pk.Grid( Grids[indx]);
          pk.time(xscales[indx]);
          pk.timeAdjust( calibTimeAdjustments[indx]);
-         pk.L1( Grids[indx].getData_entry(1,1).getInitialPath());
+         pk.L1( AttrUtil.getInitialPath(Grids[indx].getData_entry(1,1)));
          pk.ipkobs(p.ipkobs());
          Res.addElement(pk);       
        }

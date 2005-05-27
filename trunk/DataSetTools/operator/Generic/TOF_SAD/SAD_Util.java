@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/05/27 03:15:12  dennis
+ * Changed to use get attribute method from AttrUtil, rather than
+ * the old get attribute method from DataSet and Data
+ *
  * Revision 1.11  2005/05/26 15:51:17  dennis
  * Fixed one javadoc comment and changed Data.SMOOTH_LINEAR to
  * IData.SOOTH_LINEAR to access the field directly.
@@ -1414,7 +1418,7 @@ public class SAD_Util
      ds.setX_label("WaveLength");
      ds.addLog_entry( "Converted to Wavelength" );
      String pre ="";
-     if(ds.getDSType().indexOf("Monitor")>=0)
+     if( AttrUtil.getDSType(ds).indexOf("Monitor")>=0)
         pre="Monitor";
      
      for( int i=ds.getNum_operators()-1; i >=0; i--){
