@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.13  2005/05/27 03:44:09  dennis
+ *  Removed unused imports (no longer needed since the convenience
+ *  methods to get specific attributes were removed).
+ *
  *  Revision 1.12  2005/05/27 03:21:16  dennis
  *  Removed convenience methods for getting particular attributes for
  *  TOF neutron scattering from these general purpose classes.  The
@@ -60,9 +64,6 @@
 
 package  DataSetTools.dataset;
 
-import DataSetTools.gsastools.GsasCalib;
-import DataSetTools.instruments.SampleOrientation;
-import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 
 /**
  * IAttributeList provides the interface to get/set a List of attributes 
