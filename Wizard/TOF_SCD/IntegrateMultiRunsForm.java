@@ -28,6 +28,9 @@
  * number DMR-0218882.
  * 
  * $Log$
+ * Revision 1.42  2005/05/27 04:12:57  dennis
+ * Fixed javadoc comment for createIntegrateOperators() method.
+ *
  * Revision 1.41  2005/03/06 03:13:09  dennis
  * Fixed error in parameter name in javadoc comment.
  *
@@ -555,20 +558,20 @@ public class IntegrateMultiRunsForm extends Form {
    * Creates the Operators necessary for this Form and sets their constant
    * values.
    *
-   * @param calibFile SCD calibration file.
-   * @param SCDline The line to use from the SCD calib file.
-   * @param integName The name of the .integrate file.
-   * @param sliceRange The time slice range.
+   * @param calibFile      SCD calibration file.
+   * @param SCDline        The line to use from the SCD calib file.
+   * @param integName      The name of the .integrate file.
+   * @param sliceRange     The time slice range.
    * @param timeSliceDelta Amount to increase slice size by.
-   * @param d_min Minimum d for peaks that are integrated.
-   * @param append Whether to append to peaks file.
-   * @param centerType Centering type.
-   * @param use_shoebox Flag to specify using same-size shoebox around all
-   *        peaks, rather than trying to maximize I/sigI
-   * @param boxDeltaX The range of x (delta col) values to use around the peak
-   *        position
-   * @param boxDeltaY The range of y (delta row) values to use around the peak
-   *        position
+   * @param d_min          Minimum d for peaks that are integrated.
+   * @param append         Whether to append to peaks file.
+   * @param centerType     Centering type.
+   * @param IntegMethod    String specifying which integration method 
+   *                       to use.
+   * @param boxDeltaX      The range of x (delta col) values to use 
+   *                       around the peak position
+   * @param boxDeltaY      The range of y (delta row) values to use 
+   *                       around the peak position
    */
   private void createIntegrateOperators( 
       String  calibFile, 
