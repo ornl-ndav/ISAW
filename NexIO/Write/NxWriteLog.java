@@ -30,7 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/05/27 03:12:51  dennis
+ * Changed to use get attribute method from AttrUtil, rather than
+ * the old get attribute method from DataSet and Data
+ *
  * Revision 1.7  2005/02/16 02:03:58  kramer
+ *
  * Added javadoc documentation and the GNU GPL header to the file.
  *
  */
@@ -39,7 +44,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.*;
 import NexIO.Inst_Type;
 import NexIO.NxNodeUtils;
 import NexIO.Nxlog;
@@ -116,8 +121,8 @@ public class NxWriteLog
                                Inst_Type.
                                   makeRankArray(timeArr.length,-1,-1,-1,-1));
       
-         String startDateStr = ds.getStartDate();
-         String startTimeStr = ds.getStartTime();
+         String startDateStr = AttrUtil.getStartDate(ds);
+         String startTimeStr = AttrUtil.getStartTime(ds);
          Date startDate = null;
          if (startDateStr != null && startTimeStr != null)
          {
@@ -144,8 +149,8 @@ public class NxWriteLog
                                                        -1,-1,-1,-1));
          
       //now to write the duration
-      String endDateStr = ds.getEndDate();
-      String endTimeStr = ds.getEndTime();
+      String endDateStr = AttrUtil.getEndDate(ds);
+      String endTimeStr = AttrUtil.getEndTime(ds);
       if (endDateStr != null && endTimeStr != null)
       {
          Date endDate = NxNodeUtils.parse(endDateStr+" "+endTimeStr);
@@ -192,7 +197,7 @@ public class NxWriteLog
                                    makeRankArray(rawValArr.length,-1,-1,-1,-1));
       
       //now to write the description to the file
-      String description = ds.getAttributeLabel();
+      String description = AttrUtil.getLabel(ds);
       if (description != null)
       {
          NxWriteNode descriptionNode = 
