@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2005/05/27 03:08:08  dennis
+ *  Added code to check that both the attribute list and the name
+ *  of the attribute are non-null before trying to retrieve the
+ *  attribute value.
+ *
  *  Revision 1.1  2005/05/26 23:24:52  dennis
  *  This class is a collection of utility methods for getting specific
  *  attributes from DataSets and Data blocks.  The methods are "static"
@@ -84,11 +89,14 @@ public class AttrUtil
    public static String getStringValue( String         attr_name,
                                         IAttributeList attr_list  )
    {
-      Object val = attr_list.getAttributeValue(attr_name);
-      if ((val != null) && (val instanceof String))
-        return (String)val;
-      else
-        return null;
+      if ( attr_list != null && attr_name != null )
+      {
+        Object val = attr_list.getAttributeValue(attr_name);
+        if ((val != null) && (val instanceof String))
+          return (String)val;
+      }
+
+      return null;
    }
 
 
@@ -108,11 +116,14 @@ public class AttrUtil
    public static float getFloatValue( String         attr_name,
                                       IAttributeList attr_list  )
    {
-      Object val = attr_list.getAttributeValue(attr_name);
-      if ((val != null) && (val instanceof Float))
-        return ((Float)val).floatValue();
-      else
-        return Float.NaN;
+      if ( attr_list != null && attr_name != null )
+      {
+        Object val = attr_list.getAttributeValue(attr_name);
+        if ((val != null) && (val instanceof Float))
+          return ((Float)val).floatValue();
+      } 
+
+      return Float.NaN;
    }
 
 
@@ -132,11 +143,14 @@ public class AttrUtil
    public static float[] getFloatArrayValue( String         attr_name,
                                              IAttributeList attr_list  )
    {
-      Object val = attr_list.getAttributeValue(attr_name);
-      if ((val != null) && (val instanceof float[]))
-        return (float[])val;
-      else
-        return null;
+      if ( attr_list != null && attr_name != null )
+      {
+        Object val = attr_list.getAttributeValue(attr_name);
+        if ((val != null) && (val instanceof float[]))
+          return (float[])val;
+      } 
+
+      return null;
    }
 
 
@@ -156,11 +170,14 @@ public class AttrUtil
    public static int getIntValue( String         attr_name,
                                   IAttributeList attr_list  )
    {
-      Object val = attr_list.getAttributeValue(attr_name);
-      if ((val != null) && (val instanceof Integer))
-        return ((Integer)val).intValue();
-      else
-        return -1;
+      if ( attr_list != null && attr_name != null )
+      {
+        Object val = attr_list.getAttributeValue(attr_name);
+        if ((val != null) && (val instanceof Integer))
+          return ((Integer)val).intValue();
+      }
+ 
+      return -1;
    }
 
 
@@ -180,11 +197,14 @@ public class AttrUtil
    public static int[] getIntArrayValue( String         attr_name,
                                          IAttributeList attr_list  )
    {
-      Object val = attr_list.getAttributeValue(attr_name);
-      if ((val != null) && (val instanceof int[]))
-        return (int[])val;
-      else
-        return null;
+      if ( attr_list != null && attr_name != null )
+      {
+        Object val = attr_list.getAttributeValue(attr_name);
+        if ((val != null) && (val instanceof int[]))
+          return (int[])val;
+      }
+ 
+      return null;
    }
 
 
@@ -205,11 +225,14 @@ public class AttrUtil
                                              String         attr_name,
                                              IAttributeList attr_list  )
    {
-      Object val = attr_list.getAttributeValue(attr_name);
-      if ((val != null) && (val instanceof DetectorPosition))
-        return (DetectorPosition)val;
-      else
-        return null;
+      if ( attr_list != null && attr_name != null )
+      {
+        Object val = attr_list.getAttributeValue(attr_name);
+        if ((val != null) && (val instanceof DetectorPosition))
+          return (DetectorPosition)val;
+      }
+ 
+      return null;
    }
 
 
@@ -229,11 +252,14 @@ public class AttrUtil
    public static IDataGrid getDataGridValue( String         attr_name,
                                              IAttributeList attr_list  )
    {
-      Object val = attr_list.getAttributeValue(attr_name);
-      if ((val != null) && (val instanceof IDataGrid))
-        return (IDataGrid)val;
-      else
-        return null;
+      if ( attr_list != null && attr_name != null )
+      {
+        Object val = attr_list.getAttributeValue(attr_name);
+        if ((val != null) && (val instanceof IDataGrid))
+          return (IDataGrid)val;
+      }
+ 
+      return null;
    }
 
 
@@ -253,11 +279,14 @@ public class AttrUtil
    public static GsasCalib getGsasCalibValue( String         attr_name,
                                               IAttributeList attr_list  )
    {
-      Object val = attr_list.getAttributeValue(attr_name);
-      if ((val != null) && (val instanceof GsasCalibAttribute))
-        return ((GsasCalibAttribute)val).getGsasCalib();
-      else
-        return null;
+      if ( attr_list != null && attr_name != null )
+      {
+        Object val = attr_list.getAttributeValue(attr_name);
+        if ((val != null) && (val instanceof GsasCalibAttribute))
+          return ((GsasCalibAttribute)val).getGsasCalib();
+      }
+ 
+      return null;
    }
 
 
@@ -278,10 +307,14 @@ public class AttrUtil
                                                      String         attr_name,
                                                      IAttributeList attr_list )
    {
-     Object val = attr_list.getAttributeValue(attr_name);
-     if ((val != null) && (val instanceof SampleOrientationAttribute))
-       return (SampleOrientation)((SampleOrientationAttribute)val).getValue();
-     else
+      if ( attr_list != null && attr_name != null )
+      {
+         Object val = attr_list.getAttributeValue(attr_name);
+         if ((val != null) && (val instanceof SampleOrientationAttribute))
+           return 
+                (SampleOrientation)((SampleOrientationAttribute)val).getValue();
+       }
+
        return null;
    }
 
@@ -302,11 +335,14 @@ public class AttrUtil
    public static PixelInfoList getPixelInfoListValue( String         attr_name,
                                                       IAttributeList attr_list )
    {
-     Object val = attr_list.getAttributeValue(attr_name);
-     if ((val != null) && (val instanceof PixelInfoListAttribute))
-           return (PixelInfoList)((PixelInfoListAttribute)val).getValue();
-     else
-           return null;
+      if ( attr_list != null && attr_name != null )
+      {
+         Object val = attr_list.getAttributeValue(attr_name);
+         if ((val != null) && (val instanceof PixelInfoListAttribute))
+            return (PixelInfoList)((PixelInfoListAttribute)val).getValue();
+      }     
+ 
+      return null;
    }
 
 
