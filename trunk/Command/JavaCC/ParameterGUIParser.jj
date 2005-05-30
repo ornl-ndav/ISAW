@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2005/05/30 15:23:52  dennis
+ * Moved some fixes that were hand edited in machine generated java file
+ * to the ParameterGUIParser.jj file.
+ *
  * Revision 1.11  2005/05/13 19:51:42  rmikk
  * Fixed problem which disables entry of 2D mor more arrays
  *
@@ -70,6 +74,11 @@
  * Added to CVS.
  *
  */
+/* options{
+        STATIC=false;
+        DEBUG_PARSER=false;
+       }
+*/
 PARSER_BEGIN( ParameterGUIParser )
 package Command.JavaCC;
 
@@ -110,7 +119,7 @@ public class ParameterGUIParser {
     //need a semicolon on the end
     text = FixUp(text);
     if( text.indexOf( ";" ) < 0 ) {
-      text = text + ";";
+      text = text.trim() + ";";
     }
     if( myParser == null ) {
       myParser = new ParameterGUIParser( new StringReader( text )  );
@@ -136,7 +145,7 @@ public class ParameterGUIParser {
        return text;
      if( text.charAt(0)!='[')
        return text;
-     if( !text.endsWith("]")
+     if( !text.endsWith("]") )
         return text;
      int level =1;
      for( int i=1; i< text.length(); i++)
@@ -312,7 +321,7 @@ Vector ExpansionList(  ) : {
 
 Vector Expansion(  ) : {
   Vector tempArray = new Vector(  );
-  Object element, listElem;
+  Object element;
   //StringBuffer numList = new StringBuffer(  );
 }
 {
