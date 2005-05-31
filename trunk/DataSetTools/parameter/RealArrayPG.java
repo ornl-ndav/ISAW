@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2005/05/31 18:51:13  rmikk
+ *  Changed Documentation to better reflect its operations
+ *
  *  Revision 1.5  2005/01/10 16:48:18  rmikk
  *  Eliminated unused import
  *
@@ -73,8 +76,10 @@ import javax.swing.*;
 import DataSetTools.operator.*;
 
 /**
- * This is a superclass to take care of many of the common details of Array
- * Parameter GUIs.
+ * This is a class is a ParameterGUI that deals with(large) 
+ * multi(or uni)dimensional arrays of int,float,double or String.  The GUI
+ * allows for text entry of small lists.   Also, the value is passed by
+ * reference if it has the same data type as the initial data type.
  */
 public class RealArrayPG extends ParameterGUI implements ParamUsesString {
   //~ Static fields/initializers ***********************************************
