@@ -32,6 +32,11 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.28  2005/05/31 16:48:09  dennis
+ * Removed dependence on WindowShower, since the installer did not
+ * run out of the jar file when it used the WindowShower.  Now just
+ * calls setVisible(true).
+ *
  * Revision 1.27  2005/05/25 18:01:08  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -143,7 +148,6 @@ import java.util.*;
 import java.text.*;
 import java.awt.*;
 import java.awt.event.*;
-import gov.anl.ipns.Util.Sys.WindowShower;
 
 /* 
  * This installer is based on the ZipSelfExtractor utility by Z. Steve
@@ -992,7 +996,7 @@ public class IsawInstaller extends JFrame
 
 	// ==================== put up the GUI =======================
 	mw.pack();
-	WindowShower.show(mw);
+	mw.setVisible(true);
     }
 
     /* ===================== random methods ======================= */
