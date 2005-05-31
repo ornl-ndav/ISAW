@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.78  2005/05/31 20:13:27  rmikk
+ * Eliminated the javadoc error with 2 @return statements
+ *
  * Revision 1.77  2005/05/13 19:47:52  rmikk
  * Added code to give a good error message if not all the arguments
  *    for an operator match the arguments supplied.
@@ -624,7 +627,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      *
      * @return The position of the first character that was not
      * considered
-     * @return the Global variable Result contains the current value
+     * The Global variable Result contains the current value
      */
     public int execute( String S , int start , int end ){
         int i,
@@ -828,7 +831,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      * @return The position of the first character that was not
      * considered
 
-     * @return   Error conditions are in the error variables
+     * The Error conditions are in the error variables
   
      */
     private int execLoad( String S , int start, int end ){
@@ -1026,7 +1029,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      * @return The position of the first character that was not
      * considered
 
-     * @return   Error conditions are in the error variables
+     * Error conditions are in the error variables
      */
     private int  execDisplay( String S, int start, int end){
         int    i,
@@ -1297,7 +1300,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      * @return The position of the first character that was not
      * considered
 
-     * @return   Error conditions are in the error variables
+     * Error conditions are in the error variables
      */
     private int execSend(String S, int start, int end){
         int i, j;
@@ -3071,7 +3074,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
     *                represent the name of an array variable in the 
     *                execOneLine namespace
     *    @ return    the value of the variable or null if there is an error
-    *    @return     error message if there is an error
+    *    The error message is set if there is an error
     */
     private Object getValArray(String S1){
         String S = S1;
