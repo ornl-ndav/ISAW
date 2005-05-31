@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.224  2005/05/31 15:47:33  dennis
+ *  Changed version to 1.7.2 alpha 3
+ *
  *  Revision 1.223  2005/05/27 04:06:13  dennis
  *  fixed javadoc comment on makeNewAttributeList() method.
  *
@@ -814,7 +817,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.7.2 alpha 2";
+          version="1.7.2 alpha 3";
         else
           version=SharedData.VERSION;
 
