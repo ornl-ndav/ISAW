@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/06/01 20:46:50  rmikk
+ * Saved the XScale value as a local variable, so type cast error disappeared
+ * If there are no points in an XScale, created new XScale with 0 and 1 
+ *    default values.
+ * It now runs
+ *
  * Revision 1.7  2004/05/11 18:23:57  bouzekc
  * Added/updated javadocs and reformatted for consistency.
  *
@@ -76,7 +82,7 @@ import java.util.Vector;
  */
 public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
   //~ Instance fields **********************************************************
-
+  XScale XscaleValue = null;
   private final String TYPE = "VariableXScale";
 
   //~ Constructors *************************************************************
@@ -89,6 +95,7 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
    */
   public VariableXScalePG( String name, Object val ) {
     super( name, val );
+    
     setParam( new FloatPG( "Enter divisions", 0.0f ) );
     this.setType( TYPE );
   }
@@ -141,7 +148,7 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
       boolean allFloats = true;
 
       //allocate a float array since we need one for VariableXScale
-      float[] elems = new float[temp.size(  )];
+      float[] elems = new float[Math.max(2,temp.size(  ))];
 
       for( int i = 0; ( i < temp.size(  ) ) && allFloats; i++ ) {
         element = temp.get( i );
@@ -154,10 +161,15 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
           allFloats = false;
         }
       }
-
+      if( temp.size()<1){
+          elems[0]=0f;
+          elems[1]=1f;
+      }else if( temp.size()<2)
+          elems[1] = elems[0]+1;
+      
       scale = new VariableXScale( elems );
     }
-
+    XscaleValue = scale;
     super.setValue( scale );
 
     if( GUI != null ) {
@@ -173,7 +185,7 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
    * @return The Vector of values for this VariableXScalePG.
    */
   public Object getValue(  ) {
-    return XScalePGHelper.convertXScaleToVector( ( XScale )super.getValue(  ) );
+    return XScalePGHelper.convertXScaleToVector( ( XScale )XscaleValue );
   }
 
   /**
@@ -230,7 +242,7 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
    * @return The internal VariableXScale.
    */
   public XScale getXScaleValue(  ) {
-    return ( XScale )super.getValue(  );
+    return XscaleValue;
   }
 
   /**
