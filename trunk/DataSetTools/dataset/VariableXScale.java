@@ -30,11 +30,8 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.16  2005/06/01 20:29:25  rmikk
- *  Saved the XScale value as a local variable, so type cast error disappeared
- *  If there are no points in an XScale, created new XScale with 0 and 1 
- *     default values.
- *  It now runs
+ *  Revision 1.17  2005/06/01 21:42:24  dennis
+ *  Undid accidental commit by Ruth
  *
  *  Revision 1.15  2004/06/25 16:57:03  dennis
  *  restrict() method now uses getI_GLB(max) to get upper bound in interval.
@@ -150,7 +147,7 @@ public class VariableXScale extends XScale implements Serializable
       } 
     }  
   }
-  
+
   /**
    * Returns the array of "X" values specified when the constructor was called.
    */
