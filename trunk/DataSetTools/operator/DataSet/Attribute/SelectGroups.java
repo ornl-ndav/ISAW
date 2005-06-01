@@ -29,6 +29,11 @@
 
  *
  * $Log$
+ * Revision 1.6  2005/06/01 13:57:38  rmikk
+ * Changed Attribute.getValue to Attribute.getaNumericValue so all attributes
+ *    can be used for selection if the getNumericValue gives the correct
+ *    ordering
+ *
  * Revision 1.5  2004/03/15 06:10:44  dennis
  * Removed unused import statements.
  *
@@ -218,8 +223,8 @@ public class SelectGroups
         Data D = DS.getData_entry( i);
         Attribute A = D.getAttribute( attribute);
         if( A != null)
-          if( A.getValue() instanceof Number)
-            { float f = ((Number)(A.getValue() )).floatValue();
+         // if( A.getNumericValue() instanceof Number)
+            { float f = (float)(A.getNumericValue() );
               if( (f < minVal) )
                 {
                  if( !inside) 
