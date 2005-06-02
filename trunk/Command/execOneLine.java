@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.79  2005/06/02 16:31:30  dennis
+ * Fixed error in SetOpParameters() method.  Misplaced '}'
+ * enclosed a return in a for loop, which broke the
+ * setting of paramters for DataSetOperators.  This fixes
+ * the bug that broke the lruns.iss script.
+ *
  * Revision 1.78  2005/05/31 20:13:27  rmikk
  * Eliminated the javadoc error with 2 @return statements
  *
@@ -2865,23 +2871,29 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
            int nn = op.getNum_parameters();
            if( Args.size()- start < nn)
                nn = Args.size() - start;
+
            for( k = 0 ; k < nn ; k++ ){
+
                if( (Args.elementAt( k + start ) instanceof String)  &&  
                    (op.getParameter( k ).getValue( ) instanceof SpecialString) ){
+
                    if( op.getParameter(k).getValue() != null){
                        SpecialString X=(SpecialString)
                            (op.getParameter(k).getValue());
                       
 		       X.setString((String)(Args.elementAt(k+start)));
 		   }
+
                }else if( op.getParameter(k).getValue() instanceof Float){
                    Float F = new Float(
                               ((Number)(Args.elementAt(k + start))).floatValue());
                    op.getParameter(k).setValue( F);
+
                }else if( op.getParameter(k).getValue() instanceof Integer){
                    Integer I = new Integer(
                               ((Number)(Args.elementAt(k + start))).intValue());
                    op.getParameter(k).setValue( I);
+
                }else if( op.getParameter(k) instanceof DataSetPG){
                     ((DataSetPG)op.getParameter(k)).addItem( Args.elementAt(k+start));
                      op.getParameter( k ).setValue( Args.elementAt( k + start ) );
@@ -2889,12 +2901,12 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
                }else{
                    op.getParameter( k ).setValue( Args.elementAt( k + start ) );
                }
-               return true;
-         }
+          }
+          return true;
+
         }catch( Exception ss){
           return false;
         }
-        return true;
     }
 
 
