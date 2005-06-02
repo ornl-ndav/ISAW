@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2005/06/02 18:58:24  dennis
+ *  If the value of any attribute is an array of ints or an array of floats,
+ *  the ints (or floats) will now be returned in a Vector, so that they
+ *  can be used by scripts.
+ *
  *  Revision 1.7  2005/04/27 16:48:25  hammonds
  *  Changed output for "DetectorIDs" and "SegmentIDs".  The list is now fed into a vector so that they can be used from the scripting language.
  *
@@ -56,14 +61,16 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
-import gov.anl.ipns.Util.SpecialStrings.*;
-
 import  java.io.*;
 import  java.util.Vector;
+import  java.lang.reflect.Array;
+
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
-import  java.lang.reflect.Array;
+
 /**
   *  Allows the user to get attributes from the Data blocks in a DataSet
   *
@@ -121,6 +128,7 @@ public class GetDataAttribute extends    DS_Attribute
                                     // this operator should operate on
   }
 
+
 /* ---------------------------getDocumentation--------------------------- */
  /**
   *  Returns a string of the description/attributes of GetDataAttribute
@@ -142,12 +150,13 @@ public class GetDataAttribute extends    DS_Attribute
     Res.append("@error Attribute the_attribute is not in the list\n");   
     
     return Res.toString();
-    
   }
+
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, GetAttr
+   * @return  the command name to be used with script processor: 
+   *          in this case, GetAttr
    */
    public String getCommand()
    {
@@ -171,6 +180,7 @@ public class GetDataAttribute extends    DS_Attribute
     addParameter( parameter );
   }
 
+
   /* ---------------------------- getResult ------------------------------- */
   /**
    * @return An Object is returned containing the value of the attribute.
@@ -179,7 +189,6 @@ public class GetDataAttribute extends    DS_Attribute
 
   public Object getResult()
   { 
-//     Attribute A;
      DataSet ds = getDataSet();
 
      int index = ((Integer) (getParameter(0).getValue())).intValue();
@@ -190,21 +199,29 @@ public class GetDataAttribute extends    DS_Attribute
        return new ErrorString(" Improper index ");
      
      Object O = D.getAttributeValue( S );
-     if (S.equals("Detector IDs") || S.equals("SegmentIDs")) {
-       
-       Vector listVect = new Vector();
-       for (int ii=0; ii<Array.getLength(O); ii++) {
-	 listVect.add(new Integer(Array.getInt(O,ii)));
-	
-       }
-       return listVect;
-     }
 
      if ( O == null)
        return new ErrorString(" Attribute "+ S + " is not in the List" );
 
+     if ( O instanceof int[] )                // translate int[] into Vector
+     {                                        // for use in scripts
+       Vector listVect = new Vector();
+       for (int ii=0; ii<Array.getLength(O); ii++)
+         listVect.add(new Integer(Array.getInt(O,ii)));
+       return listVect;
+     }
+
+     if ( O instanceof float[] )              // translate float[] into Vector
+     {                                        // for use in scripts
+       Vector listVect = new Vector();
+       for (int ii=0; ii<Array.getLength(O); ii++)
+         listVect.add(new Float(Array.getFloat(O,ii)));
+       return listVect;
+     }
+
      return O;
   }  
+
 
   /* ------------------------------ clone ------------------------------- */
   /**
@@ -221,16 +238,15 @@ public class GetDataAttribute extends    DS_Attribute
 
     return new_op;
   }
+
   
  /* ------------------------------- main --------------------------------- */ 
  /** 
   * Test program to verify that this will compile and run ok.  
   *
   */
-  
   public static void main( String args[] )
   {
-
      System.out.println("Test of GetDataAttribute starting...");
      DataSet ds = DataSetFactory.getTestDataSet();
      Data d = ds.getData_entry(1);
@@ -246,7 +262,6 @@ public class GetDataAttribute extends    DS_Attribute
      System.out.println( test_group.getDocumentation() );
     
      System.out.println("Test of GetDataAttribute done.");
-     
   } 
 
 }

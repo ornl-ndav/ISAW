@@ -32,6 +32,11 @@
  * This operator gets a DataSet Attribute
  *
  *  $Log$
+ *  Revision 1.7  2005/06/02 18:58:23  dennis
+ *  If the value of any attribute is an array of ints or an array of floats,
+ *  the ints (or floats) will now be returned in a Vector, so that they
+ *  can be used by scripts.
+ *
  *  Revision 1.6  2004/03/15 06:10:44  dennis
  *  Removed unused import statements.
  *
@@ -55,10 +60,12 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
-import gov.anl.ipns.Util.SpecialStrings.*;
-
+import  java.lang.reflect.Array;
 import  java.io.*;
 import  java.util.Vector;
+
+import  gov.anl.ipns.Util.SpecialStrings.*;
+
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
@@ -80,11 +87,11 @@ public class GetDSAttribute extends  DS_Attribute
    * the parameters should be set ( using a GUI ) before calling getResult()
    * to apply the operator to the DataSet this operator was added to.
    */
-
   public GetDSAttribute( )
   {
     super( "Get DataSet Attribute" );
   }
+
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
@@ -96,9 +103,8 @@ public class GetDSAttribute extends  DS_Attribute
    *  @param  Attrib   The Attribute to be set.
    *
    */
-
-  public GetDSAttribute  ( DataSet              ds,
-                           AttributeNameString  Attrib )
+  public GetDSAttribute( DataSet              ds,
+                         AttributeNameString  Attrib )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -110,6 +116,7 @@ public class GetDSAttribute extends  DS_Attribute
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
   }
+
 
 /* ---------------------------getDocumentation--------------------------- */
  /**
@@ -130,12 +137,13 @@ public class GetDSAttribute extends  DS_Attribute
     Res.append("@error Attribute the_attribute is not in the list\n");   
     
     return Res.toString();
-    
   }
+
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, GetAttr
+   * @return	the command name to be used with script processor: 
+   *            in this case, GetAttr
    */
    public String getCommand()
    {
@@ -151,7 +159,6 @@ public class GetDSAttribute extends  DS_Attribute
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-
     Parameter parameter = new Parameter( "Attribute?", 
                                           new AttributeNameString("") );
     addParameter( parameter );
@@ -164,13 +171,31 @@ public class GetDSAttribute extends  DS_Attribute
    * The data type of this value depends on the dataset. 
    */
   public Object getResult()
-    { //Attribute A;
+  { 
      DataSet ds = getDataSet();
      String S = ((AttributeNameString)(getParameter(0).getValue())).toString();
     
      Object O = ds.getAttributeValue( S );
+
      if ( O == null)
-	 return new ErrorString(" Attribute "+ S+ " not in List");
+       return new ErrorString(" Attribute " + S + " not in List");
+
+     if ( O instanceof int[] )                // translate int[] into Vector
+     {                                        // for use in scripts
+       Vector listVect = new Vector();
+       for (int ii=0; ii<Array.getLength(O); ii++)
+         listVect.add(new Integer(Array.getInt(O,ii)));
+       return listVect;
+     }
+
+     if ( O instanceof float[] )              // translate float[] into Vector
+     {                                        // for use in scripts
+       Vector listVect = new Vector();
+       for (int ii=0; ii<Array.getLength(O); ii++)
+         listVect.add(new Float(Array.getFloat(O,ii)));
+       return listVect;
+     }
+
      return O;
   }  
 
@@ -182,7 +207,6 @@ public class GetDSAttribute extends  DS_Attribute
    */
   public Object clone()
   {
-    
    GetDSAttribute new_op = new GetDSAttribute( );
                                                  // copy the data set associated
                                                  // with this operator
@@ -191,6 +215,7 @@ public class GetDSAttribute extends  DS_Attribute
 
     return new_op;
   }
+
 
   /* --------------------------- main ----------------------------------- */
   /*
