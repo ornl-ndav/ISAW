@@ -34,6 +34,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2005/06/02 22:34:23  dennis
+ * Modified to just use IVirtualArray2D methods on a
+ * VirtualArray2D object.
+ *
  * Revision 1.5  2004/09/15 22:05:02  millermi
  * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
  *   Adding a second log required the boolean parameter to be changed
@@ -182,7 +186,7 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
            Xunits =getParameter(8).getValue().toString(),
            Yunits=getParameter(9).getValue().toString();
     
-    VirtualArray2D Varray= new VirtualArray2D( data);
+    IVirtualArray2D Varray= new VirtualArray2D( data);
     Varray.setAxisInfo( AxisInfo.X_AXIS,minx,maxx,
                         Xlabel,Xunits,AxisInfo.LINEAR);
     Varray.setAxisInfo( AxisInfo.Y_AXIS,miny,maxy,

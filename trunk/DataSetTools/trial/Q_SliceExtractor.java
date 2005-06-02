@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/06/02 22:34:20  dennis
+ * Modified to just use IVirtualArray2D methods on a
+ * VirtualArray2D object.
+ *
  * Revision 1.11  2004/09/15 22:03:51  millermi
  * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
  *   Adding a second log required the boolean parameter to be changed
@@ -532,7 +536,7 @@ public class Q_SliceExtractor
      
 
      new GraphFrame( slice_array, "Linear Cut" ); 
-     VirtualArray2D va2D = new VirtualArray2D( image_array );
+     IVirtualArray2D va2D = new VirtualArray2D( image_array );
 
      if ( hkl_cut.equals( CONST_H ) )
      {  
