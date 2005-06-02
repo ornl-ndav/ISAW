@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2005/06/02 22:34:19  dennis
+ * Modified to just use IVirtualArray2D methods on a
+ * VirtualArray2D object.
+ *
  * Revision 1.19  2005/05/25 20:24:43  dennis
  * Now calls convenience method WindowShower.show() to show
  * the window, instead of instantiating a WindowShower object
@@ -3269,7 +3273,7 @@ private class PlaneListener implements ActionListener
        Vector3D origin = new Vector3D( normal );
        origin.multiply((float)(miller_index * Math.PI * 2/d_spacing) );
        float image[][] = make_slice( origin, normal, base, up );
-       VirtualArray2D va2d = new VirtualArray2D( image );
+       IVirtualArray2D va2d = new VirtualArray2D( image );
 
        // ##### patch
        va2d.setAxisInfo( AxisInfo.X_AXIS, -SLICE_SIZE_IN_Q, SLICE_SIZE_IN_Q,

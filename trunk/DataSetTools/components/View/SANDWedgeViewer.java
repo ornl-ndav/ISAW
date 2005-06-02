@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.50  2005/06/02 22:34:18  dennis
+ * Modified to just use IVirtualArray2D methods on a
+ * VirtualArray2D object.
+ *
  * Revision 1.49  2005/05/25 20:24:40  dennis
  * Now calls convenience method WindowShower.show() to show
  * the window, instead of instantiating a WindowShower object
@@ -805,7 +809,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
         image_to_world_tran.setDestination( qxmin, qymax, qxmax, qymin );
 	image_to_world_tran.setSource( 0.001f, 0.001f, array[0].length-0.001f,
 				       array.length-0.001f );
-        VirtualArray2D va2D = new VirtualArray2D( array, err_array );
+        IVirtualArray2D va2D = new VirtualArray2D( array, err_array );
         va2D.setAxisInfo( AxisInfo.X_AXIS, qxmin, qxmax, 
     		            xlabel, xunit, AxisInfo.LINEAR );
         va2D.setAxisInfo( AxisInfo.Y_AXIS, qymin, qymax, 

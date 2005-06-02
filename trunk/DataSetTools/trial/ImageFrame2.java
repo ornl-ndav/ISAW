@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2005/06/02 22:34:20  dennis
+ * Modified to just use IVirtualArray2D methods on a
+ * VirtualArray2D object.
+ *
  * Revision 1.13  2004/09/16 18:10:49  dennis
  * Made calibrations on both image axes linear.
  *
@@ -280,7 +284,7 @@ public class ImageFrame2 extends JFrame
     for ( int i = 0; i < 500; i++ )
       for ( int j = 0; j < 500; j++ )
         test_array[i][j] = i + j;
-    VirtualArray2D va2D = new VirtualArray2D( test_array );
+    IVirtualArray2D va2D = new VirtualArray2D( test_array );
     va2D.setAxisInfo( AxisInfo.X_AXIS, 0f, 10000f, 
     		        "TestX","TestUnits", AxisInfo.LINEAR );
     va2D.setAxisInfo( AxisInfo.Y_AXIS, 0f, 1500f, 
