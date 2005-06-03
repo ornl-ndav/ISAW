@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.225  2005/06/03 18:44:57  dennis
+ *  Removed uneeded, extra request to reload the System properties.
+ *
  *  Revision 1.224  2005/05/31 15:47:33  dennis
  *  Changed version to 1.7.2 alpha 3
  *
@@ -1422,8 +1425,8 @@ public class Isaw
         return;
      }
     String NO_SUCH_FILE="No Such File";
-    boolean isAlready = false;
-	int nSavedFiles = SharedData.getintProperty( "NSavedFiles",""+LatestOpenedFiles.NSavedFiles);
+    boolean isAlready   = false;
+    int     nSavedFiles = SharedData.getintProperty( "NSavedFiles",""+LatestOpenedFiles.NSavedFiles);
     boolean shortMangle = SharedData.getbooleanProperty("ShortSavedFileName","false");
     for( int i = 0 ; i < nSavedFiles ; i++ ){
 
@@ -2118,8 +2121,6 @@ public class Isaw
         }
       }
    
-      // load IsawProps.dat into the system properties
-      SharedData.isaw_props.reload();
       // show the splashscreen
       new SplashWindowFrame();
 
