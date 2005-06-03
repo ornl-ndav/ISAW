@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2005/06/03 21:35:54  dennis
+ *  Added print statements showing what IsawProps.dat file is read.
+ *  Added debug flag.  If set true, the original System properties
+ *  will be printed, followed the the new System properties after
+ *  addding the properties from IsawProps.dat
+ *
  *  Revision 1.14  2004/05/29 16:39:26  rmikk
  *  Fixed an error in getting Boolean properties
  *
@@ -86,6 +92,7 @@ import DataSetTools.viewer.ViewerState;
 
 public class PropertiesLoader implements java.io.Serializable 
 {
+  private boolean debug  = false;
   private String  f_name = "";
   private boolean loaded_ok = false;
 
@@ -118,14 +125,34 @@ public class PropertiesLoader implements java.io.Serializable
   public void reload(){
     String full_name = System.getProperty( "user.home" ) + "/" + f_name;
     try{
-      FileInputStream input = new FileInputStream( full_name );
+
       Properties new_props = new Properties( System.getProperties() );
+      if ( debug )
+      {
+        System.out.println("========= " +
+                           "Initial properties are" +
+                           " ==========" );
+        new_props.list(System.out);
+      }
+
+      System.out.println("LOADING PROPERTIES FROM " + full_name + "....");
+      FileInputStream input = new FileInputStream( full_name );
       new_props.load( input );
+      if ( debug )
+      {
+        System.out.println("========== " + 
+                           "After reading IsawProps.dat, properties are" +
+                           " ==========" );
+        new_props.list(System.out);
+      }
+
       System.setProperties( new_props );
       input.close();
       loaded_ok = true;
+      System.out.println("DONE LOADING PROPERTIES.");
+
     }catch ( IOException e ){
-      System.out.println("Properties file: " + f_name + " NOT FOUND" );
+      System.out.println("Properties file: " + full_name + " NOT FOUND" );
       DefaultProperties dp=new DefaultProperties();
       dp.write();
       loaded_ok = true;
