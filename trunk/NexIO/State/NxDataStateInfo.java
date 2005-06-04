@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/06/04 20:09:51  rmikk
+ * Fixes the problem with the dimensions of NXdata.data that Fortran
+ * programmers get.  This works only with the newer NeXus files( the
+ * ones with links)
+ *
  * Revision 1.3  2004/12/23 12:53:03  rmikk
  * updated to NeXus standard v 1.0.  Uses detector_number instead of id 
  *   and looks for the axes attribute to determine axes.
@@ -119,46 +124,46 @@ public class NxDataStateInfo extends StateInfo{
      dimensions = null;
      hasIntIDField = false;
      this.startGroupID = startGroupID;
-
+     int xvals_length = -1;
      for( int i = 0; i < NxDataNode.getNChildNodes(); i++){
        
         NxNode child = NxDataNode.getChildNode( i);
         if( child.getNodeClass().equals("SDS")){
-          
+           int[] l = child.getDimension();
            int axNum = ConvertDataTypes.intValue( child.getAttrValue("axis"));
            if( (axNum >=1) &&( axNum < 4))
               axisName[axNum-1] = child.getNodeName();
-
-           if( child.getNodeName().equals("data")){
+           if((axNum ==1)&&(l!= null)&&(l.length==1))
+             xvals_length = l[0];
+        
+          if( child.getNodeName().equals("data")){
              
-              dimensions = child.getDimension();
-              
-              labelName = ConvertDataTypes.StringValue( child.getAttrValue("label"));
-              Object O= child.getAttrValue("axes");
-              if( O instanceof String[]){
-                for( int j=0; j< ((String[])O).length;j++)
-                   axisName[j]= ((String[])O)[j];
-              }
-              
+           dimensions = child.getDimension();
+             
+           labelName = ConvertDataTypes.StringValue( child.getAttrValue("label"));
+           Object O= child.getAttrValue("axes");
+           if( O instanceof String[]){
+             for( int j=0; j< ((String[])O).length;j++)
+                axisName[j]= ((String[])O)[j];
            }
+              
+        }else if( child.getNodeName().equals("id") || child.getNodeName().
+            equals("detector_number")){
+                         
+              Object O =child.getNodeValue();
+              if( O != null)
+              if( O instanceof int[]){                 
+                 hasIntIDField = true;
+        }
            String L = ConvertDataTypes.StringValue(child.getAttrValue("link")); 
           
            if( L != null){
               linkName = L;
-           } 
-           
-           if( child.getNodeName().equals("id") || child.getNodeName().
-                       equals("detector_number")){
-                         
-               Object O =child.getNodeValue();
-               if( O != null)
-                 if( O instanceof int[]){                 
-                    hasIntIDField = true;
-                 }
+           }         
+         }//Node Class is SDS   
 
-           }
-
-        }//Node Class is SDS  
+        }  //for loop
+        NexIO.Util.NexUtils.disFortranDimension(dimensions, xvals_length);
 
      }
       
