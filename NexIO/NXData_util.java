@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2005/06/04 20:13:55  rmikk
+ * Removed unused import and varible
+ * Fixed problem with NXdata.data dimensions when FORTRAN users use it
+ *
  * Revision 1.25  2004/05/14 15:03:27  rmikk
  * Removed unused variables
  *
@@ -116,6 +120,7 @@ package NexIO;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Sys.StringUtil;
 import DataSetTools.dataset.*;
+//import NexIO.Util.NexUtils;
 
 /**
  * A utility package used by many NxData implementers
@@ -434,7 +439,7 @@ public class NXData_util{
     nx = detNode.getChildNode( "efficiency" );
     if( nx != null ){
       X = nx.getNodeValue();
-      Float ff = DD.cnvertoFloat( X ); //???????????
+      //Float ff = DD.cnvertoFloat( X ); //???????????
       
       //if( ff != null )
        // if( ff.floatValue() != Float.NaN )
@@ -612,6 +617,7 @@ public class NXData_util{
      float[] Ax1 = Arrayfloatconvert( Ax1nd.getNodeValue() );
      float[] fdata = Arrayfloatconvert( datand.getNodeValue() );
      int[] ndims = datand.getDimension();
+     NexIO.Util.NexUtils.disFortranDimension(ndims, Ax1.length);
      float[] Ax2;
 
      if( Ax2nd == null ){
