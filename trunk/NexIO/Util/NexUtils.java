@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2005/06/04 20:07:03  rmikk
+ * Now Fixes in ISAW the dimensions of the NXdata.data node if possible.
+ *   This works for newer files only( those that have links to the NXdetector)
+ *
  * Revision 1.9  2005/01/14 23:38:26  rmikk
  * Fixed several errors in retrieving NXdata with several detectors.
  *
@@ -556,7 +560,7 @@ public class NexUtils implements INexUtils {
         
         NxNode dataNode = NxDataNode.getChildNode( "data" );
      
-        int[] dimensions = dataNode.getDimension();
+        int[] dimensions = DataInf.dimensions;//dataNode.getDimension();
      
         int NGroups = getNGroups( dimensions );
      
@@ -583,7 +587,7 @@ public class NexUtils implements INexUtils {
                  
         float[] xvals = ConvertDataTypes.floatArrayValue( tofNode.
                                                      getNodeValue() );
-
+        
         xvals = MakeHistogram( xvals , tofNode );
         String Xunits = ConvertDataTypes.StringValue(
                 tofNode.getAttrValue( "units" ) ); 
@@ -1124,5 +1128,34 @@ public class NexUtils implements INexUtils {
                 return i;
          
         return -1;
+    }
+    
+   /**
+    *  The dimension of NXdata blocks are sometimes reversed by Fortran
+    *  programmers 
+    * @param dim  The array of the dimensions as given by NeXus
+    * @param leadLength  The length of the fastest changing dimension
+    * NOTE if leadLength or leadLength-1 does not match the fist
+    * or last entry of dim( it should match the last), nothing is changed
+    */
+    public static void disFortranDimension( int[] dim, int leadLength){
+        if( dim == null)
+           return;
+        if(leadLength < 0)
+           return;
+         if( dim[dim.length-1]==leadLength)
+            return;
+
+         if( dim[dim.length-1]==leadLength-1)
+           return;
+           
+         if( (dim[0]!=leadLength)&&(dim[0]!=leadLength-1))
+            return;
+         for( int i=0; i< dim.length/2; i++){
+           int x = dim[i];
+           dim[i]=dim[dim.length-1-i];
+           dim[dim.length-1-i]=x;
+         }
+            
     }
 }
