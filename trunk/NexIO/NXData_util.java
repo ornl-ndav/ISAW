@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2005/06/06 13:41:32  rmikk
+ * Old NeXus files( those without a link attribute somewhere in NXdata) 
+ *    are now given a PixelInfoListAttribute
+ *
  * Revision 1.26  2005/06/04 20:13:55  rmikk
  * Removed unused import and varible
  * Fixed problem with NXdata.data dimensions when FORTRAN users use it
@@ -483,15 +487,17 @@ public class NXData_util{
     
     for( int index = start_index; index < end_index; index++ ){
       Data DB = DS.getData_entry( index );
-
+      
       if( Group_ID != null ){
         DB.setGroup_ID( Group_ID[index - start_index] );
+        
         DB.setAttribute( new StringAttribute( Attribute.LABEL,
                              "Group " + Group_ID[index - start_index] ) );
       }else{
         DB.setGroup_ID( index );
         DB.setAttribute( new StringAttribute( Attribute.LABEL,
                                               "Group " + index ) );
+                                         
       }
       
       if( Raw_Angle != null )
@@ -540,6 +546,8 @@ public class NXData_util{
       p3d.setSphericalCoords( d, t, p );
       DB.setAttribute( new DetPosAttribute(
                                 Attribute.DETECTOR_POS, convertToIsaw(d,p,t)));
+   
+                                
     }
 
     /*      //May include later
@@ -827,13 +835,23 @@ public class NXData_util{
        //    newData.setAttribute( new IntAttribute( 
        //                           Attribute.TIME_FIELD_TYPE, timeFieldType ) );
 
+//     Set PixelInfoList to have id and pixel = to groupID
+             UniformGrid gridd= new UniformGrid(group_id,
+                          "m",new Vector3D(0f,0f,0f), new Vector3D(1f,0f,0f),
+                          new Vector3D(0f,1f,0f),.001f,.001f,.001f,1,1);
+                  PixelInfoList PixList = new PixelInfoList( new DetectorPixelInfo(
+                     group_id,(short)1,(short)1,gridd));
+                  newData.setAttribute( new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST,
+                       PixList));
+     
        DS.addData_entry( newData );
      }
      int endIndex = DS.getNum_entries();
 
      if( detNode != null )
        setOtherAttributes( detNode, DS, startIndex, endIndex );
-
+    
+      
      if( debug )
        System.out.println( "After Save 1 NXdata, errormessage=" 
                            + errormessage + ",ngroups=" + ny );
