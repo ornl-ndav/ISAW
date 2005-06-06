@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2005/06/06 21:58:27  rmikk
+ * Undid the Fortan Fix for incorrect ordering of array dimensions
+ *
  * Revision 1.10  2005/06/04 20:07:03  rmikk
  * Now Fixes in ISAW the dimensions of the NXdata.data node if possible.
  *   This works for newer files only( those that have links to the NXdetector)
@@ -1139,6 +1142,7 @@ public class NexUtils implements INexUtils {
     * or last entry of dim( it should match the last), nothing is changed
     */
     public static void disFortranDimension( int[] dim, int leadLength){
+        return;/*//Was not the real problem
         if( dim == null)
            return;
         if(leadLength < 0)
@@ -1156,6 +1160,6 @@ public class NexUtils implements INexUtils {
            dim[i]=dim[dim.length-1-i];
            dim[dim.length-1-i]=x;
          }
-            
+        */    
     }
 }
