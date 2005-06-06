@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.80  2005/06/06 14:41:05  rmikk
+ * Fixed getSHOp so if there is any throwable a null operator is returned(i.e.
+ *    could not find an operator)
+ * If an op.getResult creates an exceptions, an errorstring giving the
+ *   Class name and line number of this error is given.
+ *
  * Revision 1.79  2005/06/02 16:31:30  dennis
  * Fixed error in SetOpParameters() method.  Misplaced '}'
  * enclosed a return in a for loop, which broke the
@@ -2797,6 +2803,8 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
         return null;
       }catch(ClassCastException e){
         return null;
+      }catch(Throwable s){
+        return null;
       }
     }
 
@@ -2871,29 +2879,23 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
            int nn = op.getNum_parameters();
            if( Args.size()- start < nn)
                nn = Args.size() - start;
-
            for( k = 0 ; k < nn ; k++ ){
-
                if( (Args.elementAt( k + start ) instanceof String)  &&  
                    (op.getParameter( k ).getValue( ) instanceof SpecialString) ){
-
                    if( op.getParameter(k).getValue() != null){
                        SpecialString X=(SpecialString)
                            (op.getParameter(k).getValue());
                       
 		       X.setString((String)(Args.elementAt(k+start)));
 		   }
-
                }else if( op.getParameter(k).getValue() instanceof Float){
                    Float F = new Float(
                               ((Number)(Args.elementAt(k + start))).floatValue());
                    op.getParameter(k).setValue( F);
-
                }else if( op.getParameter(k).getValue() instanceof Integer){
                    Integer I = new Integer(
                               ((Number)(Args.elementAt(k + start))).intValue());
                    op.getParameter(k).setValue( I);
-
                }else if( op.getParameter(k) instanceof DataSetPG){
                     ((DataSetPG)op.getParameter(k)).addItem( Args.elementAt(k+start));
                      op.getParameter( k ).setValue( Args.elementAt( k + start ) );
@@ -2946,7 +2948,17 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
                   seterror(1000,"Improper Args for "+op.getCommand());
                   return;
                 }
-		Result = op.getResult();
+        try{
+        
+		    Result = op.getResult();
+        }catch(Throwable s){
+          String[] SS = ScriptUtil.GetExceptionStackInfo( s,true,1);
+          String S="";
+          if( SS.length>0)
+             S = SS[0];
+          seterror (1000 ,  s.toString()+"in "+S);
+          return;
+        }
 		op.setDefaultParameters();   
                 if( Result instanceof ErrorString ){
                     seterror (1000 , ((ErrorString)Result).toString() );
