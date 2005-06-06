@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2005/06/06 15:59:30  rmikk
+ * Added Method to unravel stack dump info to report for error messages
+ *
  * Revision 1.10  2004/07/14 16:36:49  rmikk
  * Added .RAW extension so ISIS files can be retrieved
  *
@@ -86,6 +89,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.MissingResourceException;
+import java.util.Vector;
 
 /**
  * This is a utility class to locate some common tasks in scripts to
@@ -725,6 +729,26 @@ public class ScriptUtil{
     return new_array;
   }
 
+  public static String[] GetExceptionStackInfo( Throwable s, boolean excludeJava, int nlines){
+    StackTraceElement[] elts = s.getStackTrace();
+    Vector V = new Vector();
+    for(int i=0; (i < elts.length)&&(V.size()<nlines); i++){
+      String C = elts[i].getClassName();
+      if( C != null)
+      if( excludeJava &&!C.startsWith("java.")&&!C.startsWith("sun."))
+        V.addElement( "class "+C+" at line "+ elts[i].getLineNumber());
+      else
+        V.addElement( "class "+C+" at line "+ elts[i].getLineNumber());
+          
+      
+    }
+
+    String[] Res = new String[V.size()];
+    for( int k=0; k < V.size(); k++)
+       Res[k]=V.elementAt(k).toString();
+    return Res;
+      
+  }
   /**
    * MAIN METHOD FOR TESTING ONLY
    */
@@ -735,6 +759,10 @@ public class ScriptUtil{
       System.out.println("[CAUGHT");
       e.printStackTrace();
       System.out.println("]");
+      String[]S = ScriptUtil.GetExceptionStackInfo(e,true,4);
+      System.out.println("GetException results=============");
+      for( int i=0; i<S.length; i++)
+        System.out.println(S[i]);
     }
     System.out.println("WriteSCDExp="
                        +getOperator("WriteSCDExp",null).getClass().getName());
