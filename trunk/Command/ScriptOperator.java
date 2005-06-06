@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.41  2005/06/06 14:44:06  rmikk
+ * The CHOICELIST data type is now the same as the CHOICE data type in
+ *    scripts
+ *
  * Revision 1.40  2005/01/10 15:55:02  dennis
  * Removed empty statement.
  *
@@ -1513,7 +1517,7 @@ public class ScriptOperator  extends  GenericOperator
                
       addParameter( new Parameter( Prompt , STS ));
                 
-    }else if( DataType.equals("CHOICE")){
+    }else if( (DataType.equals("CHOICE"))||(DataType.equals("CHOICELIST"))){
       int nn = ExecLine.execute( InitValue, 0, InitValue.length()); 
       Vector V= new Vector();
       if( ExecLine.getErrorCharPos() <0)
