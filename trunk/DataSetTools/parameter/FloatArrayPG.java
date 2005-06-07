@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.15  2005/06/07 15:05:47  rmikk
+ * Made the initial button better  represent the data to be entered
+ *
  * Revision 1.14  2005/04/23 13:13:12  rmikk
  * Converted all initial values to a Vector of Floats or null if not possible
  *
@@ -76,7 +79,7 @@ public class FloatArrayPG extends VectorPG {
    */
   public FloatArrayPG( String name, Object val ) {
     super( name, FloatArrayPG.cnvrtFloat(val) );
-    setParam( new FloatPG( "Enter Float", 0.0f ) );
+    setParam( new FloatPG( "Enter Float Array", 0.0f ) );
   }
 
   /**

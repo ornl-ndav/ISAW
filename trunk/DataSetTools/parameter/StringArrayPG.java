@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2005/06/07 15:06:37  rmikk
+ * Made the initial button better  represent the data to be entered
+ *
  * Revision 1.15  2004/05/11 18:23:55  bouzekc
  * Added/updated javadocs and reformatted for consistency.
  *
@@ -102,7 +105,7 @@ public class StringArrayPG extends VectorPG {
    */
   public StringArrayPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    setParam( new StringPG( "Enter String", "" ) );
+    setParam( new StringPG( "Enter a String Array", "" ) );
   }
 
   //~ Methods ******************************************************************
