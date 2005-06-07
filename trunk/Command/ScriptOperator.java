@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.42  2005/06/07 15:00:11  rmikk
+ * Added the command name to the line and position of an error.  It is now
+ *   Chained  over several scripts
+ *
  * Revision 1.41  2005/06/06 14:44:06  rmikk
  * The CHOICELIST data type is now the same as the CHOICE data type in
  *    scripts
@@ -518,7 +522,7 @@ public class ScriptOperator  extends  GenericOperator
 
 
   public String getVersion(){
-    return "6-01-2001";
+    return "6-06-2005";
   }
 
   /**
@@ -535,7 +539,8 @@ public class ScriptOperator  extends  GenericOperator
    */
   public String getErrorMessage(){
     if( ExecLine == null ) return "";
-    return serror;
+    if( serror.length()<1) return serror;
+    return serror +" in "+getCommand();
   }
 
   /**
@@ -576,6 +581,8 @@ public class ScriptOperator  extends  GenericOperator
    *@see  Command.ScriptOperator
    */
   public String getCommand(){
+    if( script == null)
+       return "UNKNOWN";
     return this.script.getCommand();
   }
     
@@ -635,7 +642,7 @@ public class ScriptOperator  extends  GenericOperator
         serror = "Undefined Parameter "+i;
         perror =i;
         lerror = i;
-        return new ErrorString( serror );
+        return new ErrorString( serror +" in "+getCommand() );
         
       }else if( getParameter( i ).getValue() instanceof DataSet){
         DataSet ds = (DataSet)(getParameter( i ).getValue());        
@@ -676,9 +683,10 @@ public class ScriptOperator  extends  GenericOperator
   
     if( ExecLine != null )
       if( (ExecLine.getErrorCharPos() >= 0) && !ReturnStatement){
-        return new ErrorString( ExecLine.getErrorMessage() +" on line "+
-                                lerror+ "at position "
-                                +ExecLine.getErrorCharPos() );
+        serror=ExecLine.getErrorMessage() +" on line "+
+        lerror+ "at position "
+        +ExecLine.getErrorCharPos();
+        return new ErrorString( getErrorMessage()  );
       }else{
         return ExecLine.getResult();
       }
@@ -711,7 +719,7 @@ public class ScriptOperator  extends  GenericOperator
     perror = ExecLine.getErrorCharPos() ; 
     if( perror >= 0 ){
       lerror = line ; 
-      serror = ExecLine.getErrorMessage() ; 
+      serror = ExecLine.getErrorMessage(); 
     }else if( kk < S.length() - 1 ){
       lerror = line ;  
       perror = kk ; 
@@ -745,7 +753,7 @@ public class ScriptOperator  extends  GenericOperator
     }else if( kk < S.length() - 1 ){
       lerror = line ;  
       perror = kk ; 
-      serror = "Extra Characters at the end of command" ; 
+      serror = "Extra Characters at the end of command in "+getCommand() ; 
     } 
   }
   
