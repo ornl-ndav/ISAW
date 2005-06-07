@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.81  2005/06/07 14:57:24  rmikk
+ * An opaque Object type is now supported even as a parameter
+ * Code had to be added to ensure that no operations can be done on these
+ *    variables
+ * Caught any exception and converted it to an error condition giving
+ *    Exception type, class name, and line number where it occurred.
+ *
  * Revision 1.80  2005/06/06 14:41:05  rmikk
  * Fixed getSHOp so if there is any throwable a null operator is returned(i.e.
  *    could not find an operator)
@@ -313,7 +320,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
 
     Hashtable ArrayInfo = new Hashtable();
     Hashtable MacroInfo = new Hashtable();                  //Stores Macros
-    
+    Hashtable ObjectInfo= new Hashtable();
     
     /* ----------------------  End Symbol Table(s) --------------------------*/
     IObserverList  OL; 
@@ -642,13 +649,14 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      * The Global variable Result contains the current value
      */
     public int execute( String S , int start , int end ){
-        int i,
+        int i = start,
             j,
             j1,
             kk,
             retn;
 
-
+      try{
+      
         //----------------- Check for error conditions---------------------
 
         String Command;
@@ -827,6 +835,15 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
             return execExpr(S,start,end);                        
             
         }
+      }catch(Exception sss){
+        String[] SS = ScriptUtil.GetExceptionStackInfo(sss,true,1);
+        S ="";
+        if( SS != null) if(SS.length>0)
+           S= SS[0];
+        serror= sss.toString()+":"+ S;
+        perror = i;
+        return i;
+      }
     }
     
 
@@ -2154,6 +2171,25 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
         return Args;
         
     }
+    
+    
+    private boolean CanOp( Object Value){
+      if( Value == null )
+         return false;
+      if( Value instanceof Integer)
+         return true;
+      if( Value instanceof Float)
+         return true;
+      if( Value instanceof String)
+         return true;
+      if( Value instanceof DataSet)
+         return true;
+      if( Value instanceof Vector)
+         return true;
+      if( Value instanceof Boolean)
+         return true;
+      return false;
+    }
 
     //************************** Execute operation**************************
     /** 
@@ -2168,6 +2204,15 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
     * 
     */
     public void operateCompare( Object LeftValue,Object RightValue, char operation){
+
+      if(!CanOp(LeftValue)){
+        seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+        return;
+      }
+      if(!CanOp(RightValue)){
+         seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+         return;
+      }
         Result = null;
 
         if( (LeftValue==null) ||(RightValue==null)){
@@ -2404,6 +2449,14 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
     */
 
     private void operateLogic(Object R1 , Object R2 , char operation ){
+      if(!CanOp(R1)){
+        seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+        return;
+      }
+      if(!CanOp(R2)){
+         seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+         return;
+      }
         Result = null;
         if( R1 instanceof Integer)
             if( ((Integer)R1).intValue()==0)
@@ -2444,6 +2497,16 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      * @see #getResult()
      */
     public void operateArith( Object LeftValue , Object RightValue , char operation ){
+    //if(!CanOp(LeftValue)){
+    //  seterror(1000,ER_ImproperDataType+" "+ operation);
+    //  return;
+   // }
+    if( !CanOp(RightValue)){
+       seterror(1000,ER_ImproperDataType+" "+ operation);
+       return;
+    }
+    
+      
 	if( Debug )
             System.out.println("in Op ARith o=" + operation);
         if("#|".indexOf( operation ) >=0 ){
@@ -2623,6 +2686,14 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
     *    Executes the Array operations +,-,*,/, and &
     */
     private void operateVector( Object R1, Object R2, char c){
+        if(!CanOp(R1)){
+          seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+          return;
+        }
+        if(!CanOp(R2)){
+           seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+           return;
+        }
         int i;
         Vector Res = new Vector();
         Object r2i;
@@ -2669,6 +2740,14 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      *  Executes the DataSet arithmetic operations, +,-,*, and /
      */
     private void operateArithDS( Object R1 , Object R2 , char c ){
+      if(!CanOp(R1)){
+        seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+        return;
+      }
+      if(!CanOp(R2)){
+         seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+         return;
+      }
         String Arg;
         if( c == '+' )
             Arg = "Add";
@@ -3172,6 +3251,8 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
             return ArrayInfo.get(S.toUpperCase());
         if( BoolInfo.containsKey(S.toUpperCase()))
             return BoolInfo.get(S.toUpperCase());
+        if( ObjectInfo.containsKey( S.toUpperCase()))
+            return ObjectInfo.get(S.toUpperCase());
         
         i = findd( S.toUpperCase() , Ivalnames );
         if( isInList( i , Ivalnames ) ){
@@ -3504,8 +3585,8 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
              return;
         }
       else{
-        seterror(1000, "DataType Not supported for assignment operation");
-          
+        //seterror(1000, "DataType Not supported for assignment operation");
+         ObjectInfo.put(vname.toUpperCase().trim(), Result); 
          }
         
     }//end Assign
@@ -3841,7 +3922,12 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
                  ArrayInfo.remove( vname.toUpperCase());
                  return;
             }
-      
+
+       if(ObjectInfo.containsKey(vname.toUpperCase())){
+       
+        ObjectInfo.remove( vname.toUpperCase());
+        return;
+       }
        int i;
        if(Fvalnames !=null)
        if( Fvalnames.length>0)
