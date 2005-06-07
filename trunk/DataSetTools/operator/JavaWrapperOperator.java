@@ -32,6 +32,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.27  2005/06/07 21:34:11  rmikk
+ * Added a public static method to convert a "multidimensioned" Vector
+ *   to a multi(or 1D) dimensioned array of int, float, double, or String if
+ *   possible.
+ *
  * Revision 1.26  2005/01/07 16:34:04  rmikk
  * Used the new IWrappableWithCategoryList to calculate the category
  *    list when possible
@@ -184,6 +189,30 @@ public class JavaWrapperOperator extends GenericOperator {
    * Testbed.
    */
   public static void main( String[] args ) {
+   
+       Vector V = new Vector();
+       Vector Z = new Vector();
+       Vector W = new Vector();
+       float k=2.3f;
+       for( int u=0; u<2;u++){
+        V = new Vector();
+       for( int m=0; m<4; m++){
+          W = new Vector();
+       for(int i=0; i<3; i++){
+         
+         W.add(new Float(k));
+         k +=1;
+       }
+       V.add(W);
+       }
+       Z.add(V);
+       }
+      
+       Object Res= JavaWrapperOperator.cvrt2MultiArray(W);
+       Command.ScriptUtil.display( Res);
+       System.out.println("Class = "+ Res.getClass());
+    
+
    /* Operators.Example.WrappedCrunch op = new Operators.Example.WrappedCrunch(  );
 
     //Operators.StringChoiceOp op = new Operators.StringChoiceOp(  );
@@ -224,8 +253,9 @@ public class JavaWrapperOperator extends GenericOperator {
     System.out.print( "New value: " );
     System.out.println( clonedOp.getParameter( 1 ) );
     */
+    return;
     Vector Vmain = new Vector();
-    Vector V = new Vector();
+    V = new Vector();
       Vector V1 = new Vector();
       V1.add( new Integer(1));
       V1.add( new Integer(2));
@@ -591,24 +621,126 @@ public class JavaWrapperOperator extends GenericOperator {
        CC.add( Elt(orig,i));
      return CC;
   }
- if( !C.isPrimitive())
- if(!C.isAssignableFrom( orig.getClass()))
-    throw new IllegalArgumentException( C.toString()+" and "+
+  if( !C.isPrimitive())
+  if(!C.isAssignableFrom( orig.getClass()))
+     throw new IllegalArgumentException( C.toString()+" and "+
                      orig.getClass().toString()+" are incompatible");
- if( C == orig.getClass())
-   return orig;
- if( C == double.class)
-   return  new Double(((Number)orig).doubleValue());
- if( C == float.class)
-   return new Float(((Number)orig).floatValue());
- if( C == int.class)
-   return new Integer(((Number)orig).intValue());
- return orig;
-  
-     
-   
-   
+  if( C == orig.getClass())
+    return orig;
+  if( C == double.class)
+    return  new Double(((Number)orig).doubleValue());
+  if( C == float.class)
+    return new Float(((Number)orig).floatValue());
+  if( C == int.class)
+    return new Integer(((Number)orig).intValue());
+  return orig;   
  }
+ 
+  /**
+   * 
+   * @param V
+   * @return
+   * TODO : Start with an Object
+   */
+  public static Object cvrt2MultiArray( Vector V){
+     if( V== null)
+        return null;
+     if( V.size()<=1)
+       return null;
+    Vector info= getInfo(V.elementAt(0));
+    if( info == null)
+       return null;
+    Object Res = Array.newInstance((Class)info.firstElement(), V.size() );
+    Array.set(Res,0,info.lastElement());
+    for(int i=0; i<V.size(); i++){
+      Vector info1= getInfo(V.elementAt(i));
+      if( !info1.firstElement().equals(info.firstElement()))
+         return null;
+      if( !info.lastElement().getClass().isArray()){
+          if( info1.lastElement().getClass().isArray())
+           return null;
+      }else if( Array.getLength(info.lastElement())!=Array.getLength(info1.lastElement()))
+         return null;
+      Array.set(Res,i,info1.lastElement());
+    }      
+    return Res;
+  }
+  
+  private static Vector getInfo( Object Obj){
+     if( Obj== null)
+        return null;
+     
+    
+     int size =-1;
+    
+     if( Obj instanceof Vector){
+        size=((Vector)Obj).size();
+       
+     }else if( Obj.getClass().isArray()){
+       size = Array.getLength(Obj);
+      
+     }else  //At the primitive level
+       if( (Obj instanceof Number) ||(Obj instanceof String)||
+           (Obj.getClass().isPrimitive())){
+       Vector Res = new Vector();
+       Class C = Obj.getClass();
+       if( C.equals(Float.class)) C =  float.class;
+       else if( C.equals(Integer.class)) C =  int.class;   
+       else if( C.equals(Long.class)) C =  long.class;  
+       else if( C.equals(Byte.class)) C =  byte.class;  
+       else if( C.equals(Short.class)) C =  short.class; 
+       else if( C.equals(Double.class)) C =  double.class; 
+       else if( !C.equals(String.class))
+          return null; 
+       Res.add(C);
+       Res.add(Obj);
+       return Res;     
+     }else
+       return null;
+     if( size <1)//May at some time create 0 lengthed arrays
+       return null; 
+     
+         
+     {
+       Vector V = new Vector();
+       Vector Res = new Vector();
+       if(Obj instanceof Vector)
+          V = getInfo( ((Vector)Obj).elementAt(0));
+       else
+          V= getInfo( Array.get(Obj,0));
+       if( V == null)
+          return null;
+       Object ArrayRes = Array.newInstance((Class)V.firstElement(), size);
+       Array.set(ArrayRes,0,V.lastElement());
+       Class compClass = (Class)V.firstElement();
+       int compSize = 1;
+       if( V.lastElement().getClass().isArray())
+          compSize=Array.getLength( V.lastElement());
+       for( int i=1; i< size; i++){
+
+         if(Obj instanceof Vector)
+            V = getInfo(((Vector) Obj).elementAt(i));
+         else
+            V= getInfo( Array.get(Obj,i));
+         if( V== null)
+            return null;
+         if(!V.firstElement().equals(compClass))
+            return null;
+         if( V.lastElement().getClass().isArray()){
+            if( Array.getLength(V.lastElement())!=compSize)
+               return null;
+         }else if( compSize !=1)
+             return null;
+         Array.set(ArrayRes,i,V.lastElement());  
+                    
+       }
+       Res.add( ArrayRes.getClass());
+       Res.add(ArrayRes);
+       return Res;
+     }
+     
+    
+  }
  /**
   * Returns the number of subcomponents of the given Object
   * @param O  The Object whose length is desired.
@@ -640,5 +772,6 @@ public class JavaWrapperOperator extends GenericOperator {
       return Array.get(O,i);
     return ((Collection)O).toArray()[i];
  }
-
+ 
+ 
 }
