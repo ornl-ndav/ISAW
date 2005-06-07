@@ -32,6 +32,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2005/06/07 21:42:28  rmikk
+ *  Fixed setStringValue to accept strings and have them converted to
+ *     multi(or 1) dimensional arrays.
+ *  Checked for null values.  This is now a legitiamate value until some 
+ *    non null value has been entered to determine the data type
+ *  Added a function, LastValueSet().  This can be used by operator writers
+ *    to determine if the last value intended to be set into the parameter was
+ *    indeed set, or ignored because it was the incorrect data type.
+ *
  *  Revision 1.6  2005/05/31 18:51:13  rmikk
  *  Changed Documentation to better reflect its operations
  *
@@ -138,9 +147,34 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
    * @param val The String value to set it to.
    */
   public void setStringValue( java.lang.String val ) {
-    setValue( val );
+     try{
+     lastValOK=false;
+     Vector V = Command.JavaCC.ParameterGUIParser.parseText( val);
+     if( V == null)
+        return;
+     Object R = JavaWrapperOperator.cvrt2MultiArray(V);
+     if( R == null)
+       return;
+     if( getValue()== null)
+        setValue(R);
+     else if( getValue().getClass().equals(R.getClass()))
+        setValue(R);
+      
+     
+     }catch( Throwable s){
+         return;
+     }
   }
-
+  boolean lastValOK= false;
+  /**
+   * Needed because these parameterGUI's cannot throw exceptions( see ParameterClassList).
+   * If the data type is incorrect the previous value is kept, so the last value has not
+   * been set and the data from this GUI is invalid.
+   * @return
+   */
+  public boolean LastValueSet(){
+       return lastValOK;
+  }
   /**
    * Accessor method for this RealArrayPG's String value.
    *
@@ -157,14 +191,16 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
    */
   public void setValue( Object val ) {
     //Vector vecVal = null;
-   
+    lastValOK=false;
     Object val1 = val;
     if( val == null)
       return;//
-    
+    if( val instanceof String)
+       setStringValue( (String)val);
     if( value == null)
       if(RealArrayPG.isMultiArray(val)){
          value = val; 
+         lastValOK=true;
          valClass = value.getClass();
          return;
       }  
@@ -198,6 +234,7 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
 
     //always update internal value
     value =( val1 );
+    lastValOK = true;
   }
 
   /**
@@ -225,6 +262,7 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
         if( val2 != null){
         
           value = val2;
+          lastValOK=true;
           val = val2;
         }else{ //Set the text in the GUI to represent the value
           val2 = null;
@@ -348,7 +386,7 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
         ( ( ( Vector )init_values ).size(  ) > 0 ) ) ) {
       setValue( init_values );
     }
-
+    
     setEntryWidget( 
       new EntryWidget( 
         new JTextField( ArraytoString(unwrapArray( getValue(  ) )) ) ) );
@@ -474,7 +512,10 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
   private Vector unwrapArray( Object array ) {
     Vector vecVal  = new Vector(  );
     Object element = null;
-
+    if( array == null)
+       return new Vector();
+    if( !array.getClass().isArray())
+       return new Vector();
     for( int i = 0; i < Array.getLength( array ); i++ ) {
       element = Array.get( array, i );
 
