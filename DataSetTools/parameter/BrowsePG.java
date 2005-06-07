@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2005/06/07 15:09:13  rmikk
+ *  Added Code for the one case an object was not null but the value of
+ *     its toString() method turned out to be null
+ *
  *  Revision 1.37  2005/05/13 17:38:13  rmikk
  *  Added code to eliminate null pointer exception if the value != null
  *     but value.toString() is null.
@@ -227,7 +231,8 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
     super( name, val, valid );
     this.setType( TYPE );
 
-    if( ( val == null ) || ( val.toString(  ).length(  ) <= 0 ) ) {
+    if( ( val == null ) ||(val.toString() == null)|| 
+                              ( val.toString(  ).length(  ) <= 0 ) ) {
       String datadir = SharedData.getProperty( "Data_Directory" );
 
       this.setValue( datadir );
