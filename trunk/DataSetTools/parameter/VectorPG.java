@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.47  2005/06/07 15:10:37  rmikk
+ * Fixed a timing problem with getting values
+ *
  * Revision 1.46  2004/03/12 21:13:49  bouzekc
  * Added clear() method.
  *
@@ -437,10 +440,13 @@ public abstract class VectorPG extends ParameterGUI
     if( V != null ) {  // Usually is null so use the previous value
       setValue( V );
     }
-
+    entryFrame = null;
+    Object VV= getValue(); //Get Value before the ArrayEntryJFrame is created
+                           //  because getValue gets the value 1st from the 
+                           //  EntryJFrame
     entryFrame = new ArrayEntryJFrame( innerParam );
     entryFrame.addPropertyChangeListener( DATA_CHANGED, this );
-    entryFrame.setValue( getValue(  ) );
+    entryFrame.setValue( VV );
     vectorButton = new JButton( innerParam.getName(  ) );
     setEntryWidget( new EntryWidget(  ) );
     getEntryWidget(  ).add( vectorButton );
