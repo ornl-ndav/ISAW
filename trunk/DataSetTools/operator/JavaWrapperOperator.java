@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.28  2005/06/07 22:49:19  rmikk
+ * Removed a return that caused some orphan code in the main program
+ *
  * Revision 1.27  2005/06/07 21:34:11  rmikk
  * Added a public static method to convert a "multidimensioned" Vector
  *   to a multi(or 1D) dimensioned array of int, float, double, or String if
@@ -253,7 +256,7 @@ public class JavaWrapperOperator extends GenericOperator {
     System.out.print( "New value: " );
     System.out.println( clonedOp.getParameter( 1 ) );
     */
-    return;
+   
     Vector Vmain = new Vector();
     V = new Vector();
       Vector V1 = new Vector();
