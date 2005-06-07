@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.44  2005/06/07 16:03:57  rmikk
+ * Now allows for an Object DataType for a parameter.  This is an opaque
+ *   type which has NO supported operations in the script.  Equivalent to
+ *   the type word PlaceHolder
+ *
  * Revision 1.43  2005/06/07 15:58:45  rmikk
  * The initial values in scripts for the RadioButtonPG and any subclass of
  *    ChooserPG(besides the ones already taken care of) will be added to
@@ -1522,7 +1527,10 @@ public class ScriptOperator  extends  GenericOperator
       if( Instrument_Name == null )
         Instrument_Name = "";
       addParameter(  new InstNamePG( Prompt, Instrument_Name ));
+    }else if(DataType.equals("OBJECT")){
+       addParameter( new PlaceHolderPG( Prompt, InitValue));
     }else if( DataType.equals( "SERVERTYPESTRING")){
+    
       ServerTypeString STS = new ServerTypeString();
       ChoiceListPG clpg = new ChoiceListPG( Prompt, EliminateQuotes(InitValue));
       for( int i=0; i< STS.num_strings(); i++)
