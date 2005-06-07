@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2005/06/07 15:05:47  rmikk
+ * Made the initial button better  represent the data to be entered
+ *
  * Revision 1.14  2004/05/11 18:23:50  bouzekc
  * Added/updated javadocs and reformatted for consistency.
  *
@@ -87,7 +90,7 @@ public class IntegerArrayPG extends VectorPG {
    */
   public IntegerArrayPG( String name, Object val ) {
     super( name, val );
-    setParam( new IntegerPG( "Enter Integer", 0 ) );
+    setParam( new IntegerPG( "Enter an Integer Array", 0 ) );
   }
 
   /**
