@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.43  2005/06/07 15:58:45  rmikk
+ * The initial values in scripts for the RadioButtonPG and any subclass of
+ *    ChooserPG(besides the ones already taken care of) will be added to
+ *   the items to choose from
+ *
  * Revision 1.42  2005/06/07 15:00:11  rmikk
  * Added the command name to the line and position of an error.  It is now
  *   Chained  over several scripts
@@ -1552,7 +1557,19 @@ public class ScriptOperator  extends  GenericOperator
                         // InitValues should be addItem quantities BUT DataSetPG
         try{
              param.setName( Prompt);
-             param.setValue( EliminateQuotes(EliminateQuotes(InitValue)));
+             String O = EliminateQuotes(EliminateQuotes(InitValue));
+             
+             if(((param instanceof RadioButtonPG)||
+                                          (param instanceof ChooserPG))){
+                ExecLine.execute( InitValue, 0, InitValue.length());                           
+                Vector V= new Vector();
+                if( ExecLine.getErrorCharPos() <0)
+                  if( ExecLine.getResult() instanceof Vector)
+                    V = (Vector)(ExecLine.getResult());
+                AddItems( param, V);
+             }else 
+                  param.setValue( O );
+                  
              addParameter( param );
              return true;
             }
@@ -1574,6 +1591,22 @@ public class ScriptOperator  extends  GenericOperator
     return true;
   }
 
+  private void AddItems( IParameter param, Vector V){
+    if( V == null)
+       return;
+    if( V.size() < 1)
+      return;
+    for ( int i=0; i< V.size(); i++)
+       if( param instanceof RadioButtonPG)
+         ((RadioButtonPG)param).addItem( V.elementAt(i));
+       else if( param instanceof ChooserPG)
+         ((ChooserPG)param).addItem( V.elementAt(i));
+       else
+          return;
+          
+    
+    
+  }
   //----------------------- Text Utilities ------------------
   private int nextLine( Script script, int line1 ){
     boolean done=false;
