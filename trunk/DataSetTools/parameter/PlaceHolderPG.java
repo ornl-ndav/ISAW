@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/06/08 19:56:53  rmikk
+ * Took the handling of the value out of the ParameterGUI superclass
+ *    so it is not changed to a String for some reason
+ *
  * Revision 1.1  2004/07/14 16:59:01  rmikk
  * Initial Checkin
  *
@@ -47,12 +51,11 @@ import javax.swing.*;
 /**
  * This ParameterGUI saves an Object value which cannot be alterred by the GUI.
  * @author MikkelsonR
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ 
  */
 public class PlaceHolderPG extends ParameterGUI {
   
+  Object value = null;
   public PlaceHolderPG( String name, Object val){
     super( name, val);
     super.setType("PlaceHolder");
@@ -60,12 +63,14 @@ public class PlaceHolderPG extends ParameterGUI {
   }
 
   public Object getValue(){
-     return super.getValue();
+     if( value == null)
+        return new Object();
+     return value;
   }
   
   
   public void setValue( Object value){
-    super.setValue( value);
+    this.value = value;
   }
   
 
@@ -75,7 +80,7 @@ public class PlaceHolderPG extends ParameterGUI {
   }
   
   public void clear(){
-    super.setValue( null);
+    value = null;
   }
   
   public void initGUI( Vector V){
