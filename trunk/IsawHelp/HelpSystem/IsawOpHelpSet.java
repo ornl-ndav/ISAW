@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2005/06/08 18:49:50  dennis
+ * Fixed spelling of parameter name in java doc.
+ *
  * Revision 1.11  2005/05/25 18:01:27  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -732,14 +735,14 @@ class IsawTOC  extends TOCView
 
   /** Inserts a toc item in the tree at the end of a category list. New Nodes are 
   *   created if the category or subcategory is not present.
-  *  @param parent  the part of a TOC tree to insert toc into
-  *  @param toc      the TOCItem to insert
-  *  @param cat     the category list. Determines where in the tree to place toc
-  *  @param catpositon position in the cat[]. Used for recursion. 
+  *  @param parent      the part of a TOC tree to insert toc into
+  *  @param toc         the TOCItem to insert
+  *  @param cat         the category list. Determines where in the tree to place toc
+  *  @param catposition position in the cat[]. Used for recursion. 
   *  NOTE: Standard insert in a tree algorithm
   */
-  private static void insert( DefaultMutableTreeNode parent , TOCItem toc ,
-                              String[] cat , int catposition )
+  private static void insert( DefaultMutableTreeNode parent, TOCItem toc,
+                              String[] cat, int catposition )
     {
      DefaultMutableTreeNode node;
      if( catposition >= cat.length )
