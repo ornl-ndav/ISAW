@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/06/09 14:56:45  rmikk
+ * Fixed errors that occur when the selected class file with the static
+ *   method is missing
+ *
  * Revision 1.1  2005/06/04 20:46:48  rmikk
  * Initial Checkin
  *
@@ -63,12 +67,7 @@ import gov.anl.ipns.Util.Sys.*;
  */
 public class Method2OperatorWizard extends JFrame implements ActionListener {
   
-    public static String[] paramList = {"IntegerPG", "FloatPG", "ArrayPG", "BooleanPG",
-            "ChoicListPG", "DataDirPG", "DataSetPG", "FuncStringPG", "InstNamePG",
-            "IntArrayPG", "LoadFileArrayPG", "MaterialPG", "MonitorDataSetPG",
-            "PlaceHolderPG", "PrinterNamePG", "PulseHeightDataSetPG", "RadioButtonPG",
-            "RealArrayPG", "SampleDataSetPG", "SaveFilePG", "StringPG",
-            "UniformXScalePG", "VariableXScalePG"};
+    
    
     transient public static String OP_FILENAME = "Save filename(Operator)";
     private String OpfileName;
@@ -196,7 +195,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 return fileName.substring(S.length()).replace(File.separatorChar, '.');
             }
             k = k1 + 1;
-            k1 = ClassPth.indexOf(File.pathSeparator);
+            k1 = ClassPth.indexOf(File.pathSeparator , k);
             if (k1 < 0)
                 k1 = ClassPth.length();
          
@@ -277,7 +276,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
  
     public static String GetPrepend(String paramGUIName, Class C) {
       
-        if (";LoadFile;SaveFile;String;DataDir;FuncString;InstName;Material;RadioButton;ChoiceList;;".indexOf(";" + paramGUIName + ";") >= 0)
+        if (";LoadFile;SaveFile;String;DataDir;FuncString;InstName;Material;RadioButton;ChoiceList;;"
+                                         .indexOf(";" + paramGUIName + ";") >= 0)
             return "";
         if (!C.isPrimitive())
             return "(" + FixUpClassName(C) + ")(";
@@ -303,7 +303,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
      */
     public static String GetAppend(String paramGUIName, Class C) {
       
-        if (";LoadFile;SaveFile;String;DataDir;FuncString;InstName;RadioButton;ChoiceList;".indexOf(";" + paramGUIName + ";") >= 0)
+        if (";LoadFile;SaveFile;String;DataDir;FuncString;InstName;RadioButton;ChoiceList;"
+                                              .indexOf(";" + paramGUIName + ";") >= 0)
             return ".getValue().toString()";
         if (!C.isPrimitive())
             return ".getValue())";
@@ -472,6 +473,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
         Method meth;
         JButton ClassFileName, 
                 ViewFile;
+        ParameterInfo pinf = new ParameterInfo();
         public MethodPanel(Method2OperatorWizard W) {
           
             super();
@@ -498,6 +500,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
             MethodList.addItemListener(this);
             JP.add(MethodList);
             add(JP);
+            
             ArgListModel = new DefaultListModel();
             Arguments = new JList(ArgListModel);
             Arguments.setBorder(new TitledBorder(new LineBorder(Color.black), "Arguments"));
@@ -523,6 +526,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
             JP1.add(new JLabel("Init Value"));
             InitValue = new JTextField(12);
             JP1.add(InitValue);
+            
             JP1.add(new JLabel("Res Data type"));
             ResInf = new JLabel("          ");
             JP1.add(ResInf);
@@ -609,7 +613,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 String T = (String) ParamGUI.getSelectedItem();
 
                 if (T == null) return;
-                ParameterInfo pinf = new ParameterInfo();
+                
                 boolean f = false;
 
                 for (int k = 0; (k < pinf.getNParamTypes()) && !f; k++)
@@ -637,7 +641,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
         public void SetMethodList(String fileName) {
       
             try {
-        
+                if( W.getClassName(fileName)== null)
+                   return;
                 Class C = Class.forName(W.getClassName(fileName));
 
                 MethodList.setBorder(BorderFactory.createTitledBorder( 
@@ -822,10 +827,13 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
         
                 else if (opn.equals("Algorithm"))
                     Docc.setText(W.AlgorithmDoc);
+                    
                 else if (opn.equals("Assumptions"))
                     Docc.setText(W.AssumpDoc);
+                    
                 else if (opn.equals("Return"))
                     Docc.setText(W.ReturnDoc);
+                    
                 else if (opn.startsWith("Param")) {
                     int i = (new Integer(opn.substring(5).trim())).intValue();
 
@@ -838,6 +846,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
                     Docc.setText(W.ErrorDoc.elementAt(i).toString());
                 } else if (opn.equals("new Error")) {
+                  
                     W.ErrorDoc.addElement("");
                     Docc.setText("");
                     int k = jcmbMod.getSize();
@@ -879,16 +888,21 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 W.OverViewDoc = txt;
            
             else if (opn.equals("Algorithm"))
+            
                 W.AlgorithmDoc = txt;
             else if (opn.equals("Assumptions"))
+            
                 W.AssumpDoc = txt;
             else if (opn.equals("Return"))
+            
                 W.ReturnDoc = txt;
             else if (opn.startsWith("Param")) {
+              
                 int i = (new Integer(opn.substring(5).trim())).intValue();
 
                 W.methData.get(i).Docum = txt;
             } else if (opn.startsWith("Error")) {
+              
                 int i = (new Integer(opn.substring(5).trim())).intValue();
 
                 W.ErrorDoc.setElementAt(txt, i); 
@@ -921,8 +935,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
             if (W.methPanel.meth.getParameterTypes() != null)
                 for (int i = 0; i < W.methPanel.meth.getParameterTypes().length; i++)
                     Sections.addItem("Param" + i);
+                    
             for (int i = 0; i < W.ErrorDoc.size(); i++)
                 Sections.addItem("Error" + i);
+                
             Sections.addItem("new Error");
         }
    
@@ -1050,18 +1066,20 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 FileOutputStream fout = new FileOutputStream(W.OpfileName);
 
                 fout.write(("/*\r\n* File: " + clsName + ".java\r\n* \r\n").getBytes());
-                fout.write("* This program is free software; you can redistribute it and/or\r\n".getBytes());
-                fout.write("* modify it under the terms of the GNU General Public License\r\n".getBytes());
-                fout.write("* as published by the Free Software Foundation; either version 2\r\n".getBytes());
-                fout.write("* of the License, or (at your option) any later version.\r\n*\r\n".getBytes());
-                fout.write("* This program is distributed in the hope that it will be useful,\r\n".getBytes());
-                fout.write("* but WITHOUT ANY WARRANTY; without even the implied warranty of\r\n".getBytes());
-                fout.write("* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\r\n".getBytes());
-                fout.write("* GNU General Public License for more details.\r\n*\r\n".getBytes());
-                fout.write("* You should have received a copy of the GNU General Public License\r\n".getBytes());
-                fout.write("* along with this library; if not, write to the Free Software\r\n".getBytes());
-                fout.write("* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.\r\n".getBytes());
-                fout.write("*\r\n* Contact :  ".getBytes());
+                fout.write( (" * Copyright (C) "+Calendar.getInstance().get(Calendar.YEAR)+
+                                "     "+W.infPanel.Name.getText().trim()+"\r\n\r\n").getBytes());
+                fout.write(" * This program is free software; you can redistribute it and/or\r\n".getBytes());
+                fout.write(" * modify it under the terms of the GNU General Public License\r\n".getBytes());
+                fout.write(" * as published by the Free Software Foundation; either version 2\r\n".getBytes());
+                fout.write(" * of the License, or (at your option) any later version.\r\n*\r\n".getBytes());
+                fout.write(" * This program is distributed in the hope that it will be useful,\r\n".getBytes());
+                fout.write(" * but WITHOUT ANY WARRANTY; without even the implied warranty of\r\n".getBytes());
+                fout.write(" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\r\n".getBytes());
+                fout.write(" * GNU General Public License for more details.\r\n*\r\n".getBytes());
+                fout.write(" * You should have received a copy of the GNU General Public License\r\n".getBytes());
+                fout.write(" * along with this library; if not, write to the Free Software\r\n".getBytes());
+                fout.write(" * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.\r\n".getBytes());
+                fout.write(" *\r\n* Contact :  ".getBytes());
                 fout.write((W.infPanel.Name.getText().trim() + "<" +
                         W.infPanel.Email.getText().trim() + ">\r\n").getBytes());
                 String S = W.infPanel.Address.getText().trim();
@@ -1072,107 +1090,152 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 if (k1 < 0) k1 = S.length();
                 while (k < S.length()) {
                   
-                    fout.write(("*            " + S.substring(k, k1).trim() + "\r\n").getBytes());
+                    fout.write((" *            " + S.substring(k, k1).trim() +
+                                                          "\r\n").getBytes());
                     k = k1 + 1;
                     if (k1 < S.length())
                         k1 = S.indexOf('\n', k1 + 1);
                 }
               
-                fout.write(("*\r\n").getBytes());
+                fout.write((" *\r\n").getBytes());
                 
                 S = W.infPanel.Acknowl.getText().trim();
                 k = 0;
                 k1 = S.indexOf('\n');
                 if (k1 < 0) k1 = S.length();
                 while (k < S.length()) {
-                    fout.write(("*            " + S.substring(k, k1).trim() + "\r\n").getBytes());
+                    fout.write((" * " + S.substring(k, k1).trim() +
+                                                           "\r\n").getBytes());
                     k = k1 + 1;
                     if (k1 < S.length())
                         k1 = S.indexOf('\n', k1 + 1);
+                    if( k1<0)
+                       k1= S.length();
                 }
               
-                fout.write("*\r\n*\r\n* Modified:\r\n*\r\n* Log:".getBytes());
-                fout.write((clsName + ".java,v $\r\n*/\r\n\r\n\r\n").getBytes());
+                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * Log:".
+                                                                   getBytes());
+                fout.write((clsName + ".java,v $\r\n */\r\n\r\n\r\n").
+                                                                   getBytes());
                 
                 //Write out package information
                 fout.write(("package " + packge + ";\r\n").getBytes());
                 fout.write("import DataSetTools.operator.*;\r\n".getBytes());
-                fout.write("import DataSetTools.operator.Generic.*;\r\n".getBytes());
+                fout.write("import DataSetTools.operator.Generic.*;\r\n".
+                                                                      getBytes());
                 fout.write("import DataSetTools.parameter.*;\r\n\r\n".getBytes());
+              fout.write("import gov.anl.ipns.Util.SpecialStrings.*;\r\n\r\n".getBytes());
+                fout.write("import Command.*;\r\n".getBytes());
               
               
                 //Write out the class header
-                fout.write(("public class " + clsName + " extends GenericOperator{\r\n").getBytes());
+                fout.write(("public class " + clsName + 
+                                   " extends GenericOperator{\r\n").getBytes());
                 fout.write(("   public " + clsName + "(){\r\n     super(\"" +
-                        W.infPanel.WizardTitle.getText().trim() + "\");\r\n     }\r\n\r\n").getBytes());
+                        W.infPanel.WizardTitle.getText().trim() + 
+                                          "\");\r\n     }\r\n\r\n").getBytes());
                   
                 //Write out the getResult method       
                 fout.write("   public Object getResult(){\r\n".getBytes());
               
                 Class[] CCS = W.methPanel.meth.getParameterTypes();
-
+                fout.write("      try{\r\n\r\n".getBytes());
                 for (int i = 0; i < CCS.length; i++) {
                     MethInfData m = W.methData.get(i);
 
-                    fout.write(("      " + FixUpClassName(CCS[i]) + " " + m.varName +
-                            " = ").getBytes());
-                    fout.write((GetPrepend(m.GUIParm, CCS[i]) + "getParameter(" + i + ")" +
+                    fout.write(("         " + FixUpClassName(CCS[i]) + " " + 
+                                              m.varName + " = ").getBytes());
+                    fout.write((GetPrepend(m.GUIParm, CCS[i]) + 
+                            "getParameter(" + i + ")" +
                             GetAppend(m.GUIParm, CCS[i]) + ";\r\n").getBytes());  
                 }
-                String MethClassName = W.FixUpClassName(W.methPanel.meth.getDeclaringClass()) + "."
-                    + W.methPanel.meth.getName();
+                String MethClassName = W.FixUpClassName(W.methPanel.meth.
+                          getDeclaringClass()) + "."+ W.methPanel.meth.getName();
 
-                fout.write(("      " + FixUpClassName(W.methPanel.ResInf.getText().trim()) +
+                fout.write(("         " + 
+                          FixUpClassName(W.methPanel.ResInf.getText().trim()) +
                         " Xres=" + MethClassName + "(").getBytes());
                 for (int i = 0; i < CCS.length; i++)
-                    fout.write((W.methData.get(i).varName + sepChar(i, CCS.length)).getBytes());
+                    fout.write((W.methData.get(i).varName + 
+                                              sepChar(i, CCS.length)).getBytes());
              
-                fout.write((";\r\n      return " + MakeObj(FixUpClassName(W.methPanel.ResInf.getText().trim()))
-                        + ";\r\n   }\r\n  \r\n\r\n").getBytes());
-                   
+                fout.write((";\r\n         return " + MakeObj(FixUpClassName(
+                                          W.methPanel.ResInf.getText().trim()))
+                                        + ";\r\n       }catch(").getBytes());
+                Class[] Exceptions=   W.methPanel.meth.getExceptionTypes();
+                for( int kk=0; kk< Exceptions.length;k++){
+                  fout.write((FixUpClassName(Exceptions[kk])+" S"+kk+"){\r\n         ").getBytes());
+                  fout.write(("new ErrorString(S"+kk+".getMessage());\r\n      }catch(").getBytes());
+                }
+                fout.write(" Throwable XXX){\r\n         return new ErrorString( XXX.toString()+\":\"+ScriptUtil".getBytes());
+                fout.write(".GetExceptionStackInfo(XXX,true,1)[0]);\r\n      }\r\n   }\r\n\r\n".getBytes());  
                    
                 //Write out the getCommand     
                 fout.write(("   public String getCommand(){\r\n").getBytes());
-                fout.write(("      return \"" + W.infPanel.WizardName.getText().trim()
+                fout.write(("      return \"" +
+                           W.infPanel.WizardName.getText().trim()
                         + "\";\r\n   }\r\n\r\n").getBytes());
                 
                 
                 //Write out the setDefaultParameters 
-                fout.write("   public void setDefaultParameters(){\r\n".getBytes());
+                fout.write("   public void setDefaultParameters(){\r\n".
+                                                              getBytes());
                 fout.write("      clearParametersVector();\r\n".getBytes());
-                for (int i = 0; i < W.methPanel.meth.getParameterTypes().length; i++) {
+                for (int i = 0; i < 
+                         W.methPanel.meth.getParameterTypes().length; i++) {
+                  
                     MethInfData m = W.methData.get(i);
 
-                    fout.write(("      addParameter( new " + m.GUIParm + "PG(\"" + m.Prompt + "\"," +
-                            m.InitValue + "));\r\n").getBytes());
+                    fout.write(("      addParameter( new " + m.GUIParm +
+                                              "PG(\"" + m.Prompt + "\"," +
+                                          m.InitValue + "));\r\n").getBytes());
                 }
                 fout.write("   }\r\n\r\n".getBytes());
                
                
                 // Write out the documentation
-                fout.write("   public String getDocumentation(){\r\n".getBytes());
-                fout.write("      StringBuffer S = new StringBuffer();\r\n".getBytes());
-                fout.write("      S.append(\"@overview    \"); \r\n".getBytes());
-                fout.write(MultiLine_ify(W.OverViewDoc, "      S.append(\"", "\");\r\n").getBytes());
-                fout.write("      S.append(\"@algorithm    \"); \r\n".getBytes());
-                fout.write(MultiLine_ify(W.AlgorithmDoc, "      S.append(\"", "\");\r\n").getBytes());
-                fout.write("      S.append(\"@assumptions    \"); \r\n".getBytes());
-                fout.write(MultiLine_ify(W.AssumpDoc, "      S.append(\"", "\");\r\n").getBytes());
+                fout.write("   public String getDocumentation(){\r\n".
+                                                             getBytes());
+                fout.write("      StringBuffer S = new StringBuffer();\r\n".
+                                                              getBytes());
+                fout.write("      S.append(\"@overview    \"); \r\n".
+                                                              getBytes());
+                fout.write(MultiLine_ify(W.OverViewDoc,
+                              "      S.append(\"", "\");\r\n").getBytes());
+                fout.write("      S.append(\"@algorithm    \"); \r\n".
+                                                           getBytes());
+                fout.write(MultiLine_ify(W.AlgorithmDoc, 
+                           "      S.append(\"", "\");\r\n").getBytes());
+                fout.write("      S.append(\"@assumptions    \"); \r\n".
+                                                            getBytes());
+                fout.write(MultiLine_ify(W.AssumpDoc, 
+                             "      S.append(\"", "\");\r\n").getBytes());
                 for (MethInfData m = W.methData; m != null; m = m.Next) {
-                    fout.write("      S.append(\"@param   \");\r\n".getBytes());
-                    fout.write(MultiLine_ify(m.Docum, "      S.append(\"", "\");\r\n").getBytes());
+                    fout.write("      S.append(\"@param   \");\r\n".
+                                                         getBytes());
+                    fout.write(MultiLine_ify(m.Docum,
+                                "      S.append(\"", "\");\r\n").getBytes());
                 }
-                fout.write(("      S.append(\"@return " + W.ReturnDoc + "\");\r\n").getBytes());
+                fout.write(("      S.append(\"@return " + W.ReturnDoc + 
+                                                     "\");\r\n").getBytes());
+                                                     
                 for (int i = 0; i < W.ErrorDoc.size(); i++) {
-                    fout.write(("      S.append(\"@error " + W.ErrorDoc.elementAt(i).toString() + "\");\r\n").getBytes());
+                  
+                    fout.write(("      S.append(\"@error " + 
+                                    W.ErrorDoc.elementAt(i).toString() + 
+                                    "\");\r\n").getBytes());
                 }
-                fout.write("      return S.toString();\r\n   }\r\n".getBytes());
+                fout.write("      return S.toString();\r\n   }\r\n".
+                                                           getBytes());
+                                                           
                 fout.write("}\r\n\r\n\r\n".getBytes());
+                
                 fout.close();
                 
             } catch (Exception s) {
               
-                JOptionPane.showMessageDialog(null, "Cannot Save file " + s.toString());
+                JOptionPane.showMessageDialog(null, "Cannot Save file " + 
+                                                       s.toString());
             }
             
         }
@@ -1180,7 +1243,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
         
         
         
-        private String MultiLine_ify(String text, String prepend, String append) {
+        private String MultiLine_ify(String text, String prepend, 
+                                                       String append) {
           
             if ((text == null) || (text.length() < 1))
                 return prepend + append;
@@ -1196,7 +1260,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 j1 = j2 + 1;
                 if (j1 + 1 < text.length())
                     j2 = text.indexOf("\n", j1);
-            }
+                if( j2 <0)
+                    j2 = text.length();
+            }   
             return Res;
         }
         
@@ -1218,7 +1284,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
          * @param W  This wizard
          */
         public void SaveState(Method2OperatorWizard W) {
-          
+            check();
             String fileName = W.OpfileName;
 
             if (fileName == null) 
@@ -1261,7 +1327,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 int C = 1;
 
                 if (W.methData != null)
-                    for (MethInfData m = W.methData; m.Next != null; m = m.Next)
+                    for (MethInfData m = W.methData; m.Next != null;
+                                                          m = m.Next)
                         C++;
                 else
                     C = 0;
@@ -1284,7 +1351,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
            
             } catch (Exception s) {
               
-                JOptionPane.showMessageDialog(null, "Could not Save:" + s.toString());
+                JOptionPane.showMessageDialog(null, "Could not Save:" + 
+                                                               s.toString());
             }
         }
         
@@ -1296,7 +1364,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
          */
         public void RestoreState(Method2OperatorWizard W) {
           
-            JFileChooser jf = new JFileChooser(System.getProperty("ISAW_HOME", ""));
+            JFileChooser jf = new JFileChooser(System.getProperty(
+                                                     "ISAW_HOME", ""));
 
             if (jf.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
                 return;
@@ -1337,9 +1406,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 else {
                     W.methPanel.SetMethodList(W.methPanel.fileName);
                     W.methPanel.meth = null;
-                    for (int i = 0; (i < W.methPanel.MethodList.getItemCount()) &&
-                        (W.methPanel.meth == null); i++) {
-                        Method M = ((MethHolder) W.methPanel.MethodList.getItemAt(i)).method();
+                    for (int i = 0; (i < W.methPanel.MethodList.getItemCount()) 
+                           &&(W.methPanel.meth == null); i++) {
+                        Method M = ((MethHolder) W.methPanel.MethodList.
+                                                        getItemAt(i)).method();
 
                         if (M.getName().equals(Name)) {
                             Class[] CM = M.getParameterTypes();
