@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.45  2005/06/09 18:42:14  rmikk
+ * If the initValue is not specified, a null value is no longer set for the value
+ *    of most of the newer PG's
+ *
  * Revision 1.44  2005/06/07 16:03:57  rmikk
  * Now allows for an Object DataType for a parameter.  This is an opaque
  *   type which has NO supported operations in the script.  Equivalent to
@@ -1566,7 +1570,8 @@ public class ScriptOperator  extends  GenericOperator
         try{
              param.setName( Prompt);
              String O = EliminateQuotes(EliminateQuotes(InitValue));
-             
+             if( InitValue != null)
+             if( O != null)
              if(((param instanceof RadioButtonPG)||
                                           (param instanceof ChooserPG))){
                 ExecLine.execute( InitValue, 0, InitValue.length());                           
