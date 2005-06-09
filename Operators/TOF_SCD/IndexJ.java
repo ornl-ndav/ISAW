@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.23  2005/06/09 16:00:03  rmikk
+ * Made the method readOrient public so it can be made into an operator
+ *    and used by scripts.
+ *
  * Revision 1.22  2005/01/05 20:37:52  dennis
  * The clone() method now returns a new IndexJ operator, rather than a
  * new Index operator.
@@ -531,7 +535,7 @@ public class IndexJ extends    GenericTOF_SCD {
   /**
    * Read the orientation matrix out of the specified file.
    */
-  private static Object readOrient(String matrixfile){
+  public static Object readOrient(String matrixfile){
     TextFileReader tfr=null;
     ErrorString eString=null;
     float[][] orient=new float[3][3];
