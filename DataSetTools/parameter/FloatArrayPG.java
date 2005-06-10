@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.16  2005/06/10 15:27:40  rmikk
+ * Gave a more descriptive label for what is to be entered
+ *
  * Revision 1.15  2005/06/07 15:05:47  rmikk
  * Made the initial button better  represent the data to be entered
  *
@@ -79,7 +82,7 @@ public class FloatArrayPG extends VectorPG {
    */
   public FloatArrayPG( String name, Object val ) {
     super( name, FloatArrayPG.cnvrtFloat(val) );
-    setParam( new FloatPG( "Enter Float Array", 0.0f ) );
+    setParam( new FloatPG( "Enter a Float", 0.0f ) );
   }
 
   /**

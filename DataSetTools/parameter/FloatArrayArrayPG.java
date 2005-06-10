@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2005/06/10 15:27:42  rmikk
+ * Gave a more descriptive label for what is to be entered
+ *
  * Revision 1.14  2005/06/07 15:05:47  rmikk
  * Made the initial button better  represent the data to be entered
  *
@@ -95,7 +98,7 @@ public class FloatArrayArrayPG extends VectorPG {
    */
   public FloatArrayArrayPG( String name, Object val ) {
     super( name, val );
-    setParam( new FloatArrayPG( "Enter a list of Float Arrays", null ) );
+    setParam( new FloatArrayPG( "Enter a Float Array", null ) );
   }
 
   /**
