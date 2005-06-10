@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2005/06/10 15:28:37  rmikk
+ * Gave a more descriptive label for what is to be entered
+ *
  * Revision 1.16  2005/06/07 15:06:37  rmikk
  * Made the initial button better  represent the data to be entered
  *
@@ -92,7 +95,7 @@ public class StringArrayPG extends VectorPG {
    */
   public StringArrayPG( String name, Object val ) {
     super( name, val );
-    setParam( new StringPG( "Enter String", "" ) );
+    setParam( new StringPG( "Enter a String", "" ) );
   }
 
   /**

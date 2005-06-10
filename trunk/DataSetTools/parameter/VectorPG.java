@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.48  2005/06/10 15:28:37  rmikk
+ * Gave a more descriptive label for what is to be entered
+ *
  * Revision 1.47  2005/06/07 15:10:37  rmikk
  * Fixed a timing problem with getting values
  *
@@ -447,7 +450,7 @@ public abstract class VectorPG extends ParameterGUI
     entryFrame = new ArrayEntryJFrame( innerParam );
     entryFrame.addPropertyChangeListener( DATA_CHANGED, this );
     entryFrame.setValue( VV );
-    vectorButton = new JButton( innerParam.getName(  ) );
+    vectorButton = new JButton( innerParam.getName(  ) +" Array");
     setEntryWidget( new EntryWidget(  ) );
     getEntryWidget(  ).add( vectorButton );
     vectorButton.addActionListener( entryFrame );

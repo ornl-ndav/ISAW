@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.16  2005/06/10 15:27:42  rmikk
+ * Gave a more descriptive label for what is to be entered
+ *
  * Revision 1.15  2005/06/07 15:05:48  rmikk
  * Made the initial button better  represent the data to be entered
  *
@@ -81,7 +84,7 @@ public class LoadFileArrayPG extends VectorPG {
    */
   public LoadFileArrayPG( String name, Object val ) {
     super( name, val );
-    setParam( new LoadFilePG( "Enter Files to Load", null ) );
+    setParam( new LoadFilePG( "Enter File to Load", null ) );
   }
 
   /**
