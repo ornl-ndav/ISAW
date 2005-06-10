@@ -33,9 +33,19 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/06/10 19:29:10  rmikk
+ * Removed errors that were caused by cvs logging because of strings that
+ *   happened to be in code
+ * Fixed the case for methods that have void returns.
+ *
  * Revision 1.3  2005/06/10 19:06:49  rmikk
  * The filename of the operator should show up in the operator dialog box.
- * The output now has $Log:$
+ * The output now has $Log$
+ * The output now has Revision 1.4  2005/06/10 19:29:10  rmikk
+ * The output now has Removed errors that were caused by cvs logging because of strings that
+ * The output now has   happened to be in code
+ * The output now has Fixed the case for methods that have void returns.
+ * The output now has
  * The getResult method should be at the end
  * The category list has a text field available for it. It does not yet
  *   appear in the output.
@@ -1110,15 +1120,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                        k1= S.length();
                 }
               
-                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * $Log$
-                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * Revision 1.3  2005/06/10 19:06:49  rmikk
-                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * The filename of the operator should show up in the operator dialog box.
-                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * The output now has $Log:$
-                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * The getResult method should be at the end
-                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * The category list has a text field available for it. It does not yet
-                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n *   appear in the output.
-                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n *\r\n\r\n*/\r\n\r\n".
-                                                                   getBytes());
+                fout.write((" *\r\n *\r\n * Modified:\r\n *\r\n * $"+
+                                        "Log:"+"$\r\n\r\n */").getBytes());
+              
                
                 
                 //Write out package information
@@ -1215,9 +1219,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                                  getDeclaringClass()) + "."+ W.methPanel.meth.getName();
 
                 boolean MethReturnsVoid = false;
-                if( W.methPanel.ResInf.getText().equals( void.class.toString()))
+                if( W.methPanel.ResInf.getText().indexOf( "void")>=0)
                     MethReturnsVoid = true;
-                if( MethReturnsVoid)
+                if( !MethReturnsVoid)
                    fout.write(("         " + 
                               FixUpClassName(W.methPanel.ResInf.getText().trim()) +
                               " Xres=").getBytes());
@@ -1227,7 +1231,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 for (int i = 0; i < CCS.length; i++)
                    fout.write((W.methData.get(i).varName + 
                            sepChar(i, CCS.length)).getBytes());
-                if( MethReturnsVoid)
+                if( !MethReturnsVoid)
                    fout.write((";\r\n         return " + MakeObj(
                           FixUpClassName(W.methPanel.ResInf.getText().trim()))
                                         + ";\r\n       }catch(").getBytes());
@@ -1240,7 +1244,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                    fout.write(("new ErrorString(S"+kk+
                                ".getMessage());\r\n      }catch(").getBytes());
                 }
-                fout.write(" Throwable XXX){\r\n         return new ErrorString( XXX.toString()+\":\"+ScriptUtil".getBytes());
+                fout.write(" Throwable XXX){\r\n         return new ErrorString( XXX.toString()+\":\"\r\n             +ScriptUtil".getBytes());
                 fout.write(".GetExceptionStackInfo(XXX,true,1)[0]);\r\n      }\r\n   }\r\n\r\n".getBytes());  
                    
 
