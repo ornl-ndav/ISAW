@@ -33,6 +33,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/06/10 19:06:49  rmikk
+ * The filename of the operator should show up in the operator dialog box.
+ * The output now has $Log:$
+ * The getResult method should be at the end
+ * The category list has a text field available for it. It does not yet
+ *   appear in the output.
+ *
  * Revision 1.2  2005/06/09 14:56:45  rmikk
  * Fixed errors that occur when the selected class file with the static
  *   method is missing
@@ -103,6 +110,11 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
         TabPane.add("File", filePanel);
         getContentPane().setLayout(new GridLayout(1, 1));
         getContentPane().add(TabPane);
+        OpfileName = System.getProperty("ISAW_HOME", "");
+        if(!OpfileName.endsWith(File.separator))
+           OpfileName+= File.separator;
+        OpfileName +="Operators";
+        
        
     }
 
@@ -111,8 +123,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent evt) {
       
         if (evt.getActionCommand() == OP_FILENAME) {
-            JFileChooser jf = new JFileChooser(System.getProperty("ISAW_HOME", ""));
-
+            JFileChooser jf = new JFileChooser(OpfileName);
+            if( (new File( OpfileName).exists()))
+               jf.setSelectedFile( new File(OpfileName));
             if (jf.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
                 return;
             this.OpfileName = jf.getSelectedFile().getAbsolutePath();
@@ -121,32 +134,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 
 
-    private void Method2OperatorWizard() {
-      
-        if (OpfileName == null) {
-      
-            OpfileName = System.getProperty("ISAW_HOME");
-            if (OpfileName == null)
-                OpfileName = "";
-            else if (!OpfileName.endsWith(File.separator)) {
-        
-                OpfileName = OpfileName + File.separator;         
-            }
-        } 
-         
-        JFileChooser jf = new JFileChooser(OpfileName);
-
-        if (jf.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
-            OpfileName = null;
-            return;
-        }
-        OpfileName = jf.getSelectedFile().getAbsolutePath();
-     
-    }
-    
-    
-    
-    public void MethodChanged() {
+      public void MethodChanged() {
       
         methPanel.MethodList.removeAllItems();
         methPanel.meth = null;
@@ -215,7 +203,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
     public static String FixUpClassName(Object O) {
       
         String S = null;
-
+        
         if (O instanceof Class)
             S = O.toString();
         else if (O instanceof String)
@@ -379,8 +367,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                    Email, 
                    Instit, 
                    Address, 
-                   WizardTitle,
-                   WizardName;
+                   OperatorTitle,
+                   CommandName,
+                   CategoryList;
         JTextArea Acknowl;
         JButton Directory;
        
@@ -425,23 +414,31 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
             Acknowl.setLineWrap(true);
             JP.add(new JScrollPane(Acknowl));
             add(JP);
+            
+            JP = new JPanel(new GridLayout(1, 2));
+            JP.add(new JLabel("Category:Menu list"));            
+            CategoryList = new JTextField("Macros,MyMenu");
+            JP.add(CategoryList);
+            add(JP);
          
             JP = new JPanel(new GridLayout(1, 2));
             JP.add(new JLabel("Operator Title"));
-            WizardTitle = new JTextField();
-            JP.add(WizardTitle);
+            OperatorTitle = new JTextField();
+            JP.add(OperatorTitle);
             add(JP);
          
-            JButton jb = new JButton(OP_FILENAME);
-
-            jb.addActionListener(W);
-            add(jb);
        
             JP = new JPanel(new GridLayout(1, 2));
             JP.add(new JLabel("CommandName"));
-            WizardName = new JTextField();
-            JP.add(WizardName);
+            CommandName = new JTextField();
+            JP.add(CommandName);
             add(JP);
+            
+            JButton jb = new JButton(OP_FILENAME);
+            jb.addActionListener(W);
+            add(jb);
+            
+            add( Box.createVerticalGlue());
                         
         }
     }
@@ -1000,16 +997,16 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
         private boolean check() {
           
-            if (W.infPanel.WizardTitle.getText() == null)
+            if (W.infPanel.OperatorTitle.getText() == null)
                 return ShowMess("No Operator Title is Specified");
 
-            if (W.infPanel.WizardTitle.getText().length() < 1)
+            if (W.infPanel.OperatorTitle.getText().length() < 1)
                 return ShowMess("No Operator Title is Specified");
 
-            if (W.infPanel.WizardName.getText() == null)
+            if (W.infPanel.CommandName.getText() == null)
                 return ShowMess("No Command Name for the operator is Specified");
             
-            if (W.infPanel.WizardName.getText().length() < 1)
+            if (W.infPanel.CommandName.getText().length() < 1)
                 return ShowMess("No Command Name for the operator is Specified");
             
             if (!(new File(W.methPanel.fileName)).exists())
@@ -1113,10 +1110,16 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                        k1= S.length();
                 }
               
-                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * Log:".
+                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * $Log$
+                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * Revision 1.3  2005/06/10 19:06:49  rmikk
+                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * The filename of the operator should show up in the operator dialog box.
+                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * The output now has $Log:$
+                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * The getResult method should be at the end
+                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n * The category list has a text field available for it. It does not yet
+                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n *   appear in the output.
+                fout.write(" *\r\n *\r\n * Modified:\r\n *\r\n *\r\n\r\n*/\r\n\r\n".
                                                                    getBytes());
-                fout.write((clsName + ".java,v $\r\n */\r\n\r\n\r\n").
-                                                                   getBytes());
+               
                 
                 //Write out package information
                 fout.write(("package " + packge + ";\r\n").getBytes());
@@ -1132,48 +1135,13 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 fout.write(("public class " + clsName + 
                                    " extends GenericOperator{\r\n").getBytes());
                 fout.write(("   public " + clsName + "(){\r\n     super(\"" +
-                        W.infPanel.WizardTitle.getText().trim() + 
+                        W.infPanel.OperatorTitle.getText().trim() + 
                                           "\");\r\n     }\r\n\r\n").getBytes());
                   
-                //Write out the getResult method       
-                fout.write("   public Object getResult(){\r\n".getBytes());
-              
-                Class[] CCS = W.methPanel.meth.getParameterTypes();
-                fout.write("      try{\r\n\r\n".getBytes());
-                for (int i = 0; i < CCS.length; i++) {
-                    MethInfData m = W.methData.get(i);
-
-                    fout.write(("         " + FixUpClassName(CCS[i]) + " " + 
-                                              m.varName + " = ").getBytes());
-                    fout.write((GetPrepend(m.GUIParm, CCS[i]) + 
-                            "getParameter(" + i + ")" +
-                            GetAppend(m.GUIParm, CCS[i]) + ";\r\n").getBytes());  
-                }
-                String MethClassName = W.FixUpClassName(W.methPanel.meth.
-                          getDeclaringClass()) + "."+ W.methPanel.meth.getName();
-
-                fout.write(("         " + 
-                          FixUpClassName(W.methPanel.ResInf.getText().trim()) +
-                        " Xres=" + MethClassName + "(").getBytes());
-                for (int i = 0; i < CCS.length; i++)
-                    fout.write((W.methData.get(i).varName + 
-                                              sepChar(i, CCS.length)).getBytes());
-             
-                fout.write((";\r\n         return " + MakeObj(FixUpClassName(
-                                          W.methPanel.ResInf.getText().trim()))
-                                        + ";\r\n       }catch(").getBytes());
-                Class[] Exceptions=   W.methPanel.meth.getExceptionTypes();
-                for( int kk=0; kk< Exceptions.length;k++){
-                  fout.write((FixUpClassName(Exceptions[kk])+" S"+kk+"){\r\n         ").getBytes());
-                  fout.write(("new ErrorString(S"+kk+".getMessage());\r\n      }catch(").getBytes());
-                }
-                fout.write(" Throwable XXX){\r\n         return new ErrorString( XXX.toString()+\":\"+ScriptUtil".getBytes());
-                fout.write(".GetExceptionStackInfo(XXX,true,1)[0]);\r\n      }\r\n   }\r\n\r\n".getBytes());  
-                   
-                //Write out the getCommand     
+                              //Write out the getCommand     
                 fout.write(("   public String getCommand(){\r\n").getBytes());
                 fout.write(("      return \"" +
-                           W.infPanel.WizardName.getText().trim()
+                           W.infPanel.CommandName.getText().trim()
                         + "\";\r\n   }\r\n\r\n").getBytes());
                 
                 
@@ -1225,8 +1193,57 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                                     W.ErrorDoc.elementAt(i).toString() + 
                                     "\");\r\n").getBytes());
                 }
-                fout.write("      return S.toString();\r\n   }\r\n".
+                fout.write("      return S.toString();\r\n   }\r\n\r\n\r\n".
                                                            getBytes());
+                                                           
+                                                           
+              //Write out the getResult method       
+                fout.write("   public Object getResult(){\r\n".getBytes());
+              
+                Class[] CCS = W.methPanel.meth.getParameterTypes();
+                fout.write("      try{\r\n\r\n".getBytes());
+                for (int i = 0; i < CCS.length; i++) {
+                   MethInfData m = W.methData.get(i);
+
+                   fout.write(("         " + FixUpClassName(CCS[i]) + " " + 
+                                              m.varName + " = ").getBytes());
+                   fout.write((GetPrepend(m.GUIParm, CCS[i]) + 
+                                   "getParameter(" + i + ")" +
+                                    GetAppend(m.GUIParm, CCS[i]) + ";\r\n").getBytes());  
+                }
+                String MethClassName = W.FixUpClassName(W.methPanel.meth.
+                                 getDeclaringClass()) + "."+ W.methPanel.meth.getName();
+
+                boolean MethReturnsVoid = false;
+                if( W.methPanel.ResInf.getText().equals( void.class.toString()))
+                    MethReturnsVoid = true;
+                if( MethReturnsVoid)
+                   fout.write(("         " + 
+                              FixUpClassName(W.methPanel.ResInf.getText().trim()) +
+                              " Xres=").getBytes());
+                else
+                   fout.write("         ".getBytes());
+                fout.write((MethClassName + "(").getBytes());
+                for (int i = 0; i < CCS.length; i++)
+                   fout.write((W.methData.get(i).varName + 
+                           sepChar(i, CCS.length)).getBytes());
+                if( MethReturnsVoid)
+                   fout.write((";\r\n         return " + MakeObj(
+                          FixUpClassName(W.methPanel.ResInf.getText().trim()))
+                                        + ";\r\n       }catch(").getBytes());
+                else
+                   fout.write(";\r\n         return \"Success\";\r\n      }catch(".getBytes());                
+                Class[] Exceptions=   W.methPanel.meth.getExceptionTypes();
+                for( int kk=0; kk< Exceptions.length;k++){
+                   fout.write((FixUpClassName(Exceptions[kk])+" S"+kk+
+                                                 "){\r\n         ").getBytes());
+                   fout.write(("new ErrorString(S"+kk+
+                               ".getMessage());\r\n      }catch(").getBytes());
+                }
+                fout.write(" Throwable XXX){\r\n         return new ErrorString( XXX.toString()+\":\"+ScriptUtil".getBytes());
+                fout.write(".GetExceptionStackInfo(XXX,true,1)[0]);\r\n      }\r\n   }\r\n\r\n".getBytes());  
+                   
+
                                                            
                 fout.write("}\r\n\r\n\r\n".getBytes());
                 
@@ -1237,6 +1254,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(null, "Cannot Save file " + 
                                                        s.toString());
             }
+          
             
         }
         
@@ -1305,8 +1323,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 Oout.writeObject((Object) W.infPanel.Email.getText());
                 Oout.writeObject((Object) W.infPanel.Instit.getText());
                 Oout.writeObject((Object) W.infPanel.Name.getText());
-                Oout.writeObject((Object) W.infPanel.WizardName.getText());
-                Oout.writeObject((Object) W.infPanel.WizardTitle.getText());
+                Oout.writeObject((Object) W.infPanel.CommandName.getText());
+                Oout.writeObject((Object) W.infPanel.OperatorTitle.getText());
 
                 Oout.writeObject((Object) W.OpfileName);
            
@@ -1348,7 +1366,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                     Oout.writeObject(m.Docum);
                
                 }
-           
+                Oout.writeObject( W.infPanel.CategoryList.getText().trim());
             } catch (Exception s) {
               
                 JOptionPane.showMessageDialog(null, "Could not Save:" + 
@@ -1385,8 +1403,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 W.infPanel.Email.setText((String) Oout.readObject());
                 W.infPanel.Instit.setText((String) Oout.readObject());
                 W.infPanel.Name.setText((String) Oout.readObject());
-                W.infPanel.WizardName.setText((String) Oout.readObject());
-                W.infPanel.WizardTitle.setText((String) Oout.readObject());
+                W.infPanel.CommandName.setText((String) Oout.readObject());
+                W.infPanel.OperatorTitle.setText((String) Oout.readObject());
 
                 W.OpfileName = (String) Oout.readObject();
            
@@ -1455,6 +1473,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                     mlast = m;
                 }
 
+                  W.infPanel.CategoryList.setText((String)Oout.readObject( ));
             } catch (Exception s) {
               
                 JOptionPane.showMessageDialog(null, "Could not Load:" + 
