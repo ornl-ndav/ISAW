@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2005/06/10 15:30:49  rmikk
+ * Can now have natural initial values of start, end, numx
+ *
  * Revision 1.14  2004/05/11 18:23:56  bouzekc
  * Added/updated javadocs and reformatted for consistency.
  *
@@ -128,7 +131,9 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
   private StringEntry start;
   private StringEntry end;
   private StringEntry steps;
-
+  private float startv=Float.NaN, //Saves for the StringEntry values until
+               endv = Float.NaN;       //GUI elements are initialized
+  private  int   stepsv = -1;
   //~ Constructors *************************************************************
 
   /**
@@ -140,8 +145,37 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    */
   public UniformXScalePG( String name, Object val ) {
     super( name, val );
+    initTextBoxes(val);
     this.setType( TYPE );
   }
+//Checks val1.  It takes care of the case if val1 is a string
+ private boolean initTextBoxes(Object val1){
+   if( val1 instanceof String){
+      Vector val;
+      try{
+         val = Command.JavaCC.ParameterGUIParser.parseText((String) val1);
+      }catch( Throwable ss){
+        return false;
+      }
+       
+      try{
+        startv= ((Number)((val).elementAt(0))).floatValue();
+
+        endv= ((Number)((val).elementAt(1))).floatValue();
+        stepsv= ((Number)((val).elementAt(2))).intValue();
+       
+        setValue( startv,endv,stepsv);
+        if( getInitialized()){
+          start.setText(""+startv);
+          end.setText(""+endv);
+          steps.setText(""+stepsv);
+        }
+        return true;
+      }catch(Exception ss){
+      }
+   }
+  return false; 
+ }
 
   /**
    * Second "standard" constructor for UniformXScalePG.  Used to set a name and
@@ -155,6 +189,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    */
   public UniformXScalePG( String name, Object val, boolean valid ) {
     super( name, val, valid );
+    initTextBoxes(val);
     this.setType( TYPE );
   }
 
@@ -211,6 +246,8 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    * @param val The value to set this UniformXScale to.
    */
   public void setValue( Object val ) {
+    if( initTextBoxes( val))
+      return;
     if( 
       ( val == null ) ||
         ( !( val instanceof UniformXScale ) && !( val instanceof Vector ) ) ) {
@@ -280,12 +317,15 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     if( getInitialized(  ) && ( scale != null ) ) {
       start.setText( new Float( scale.getStart_x(  ) ).toString(  ) );
       end.setText( new Float( scale.getEnd_x(  ) ).toString(  ) );
-      steps.setText( new Float( scale.getStep(  ) ).toString(  ) );
+      steps.setText( new Integer( scale.getNum_x() ).toString(  ) );
     }
 
     super.setValue( scale );
   }
-
+  
+  private void setValue( float start, float end, int nsteps){
+    setValue( new UniformXScale(start,end,nsteps));
+  }
   /**
    * Uses the internal XScalePGHelper to convert the inner UniformXScale to a
    * Vector and return it.  If the internal value is null and this is
@@ -356,13 +396,22 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
 
     innerPanel.setLayout( new GridLayout( 0, 2 ) );
     innerPanel.add( new JLabel( "Start value" ) );
-    start = new StringEntry( "", new FloatFilter(  ) );
+    String S ="";
+    if(! Float.isNaN(startv))
+       S +=startv;
+    start = new StringEntry( S, new FloatFilter(  ) );
     innerPanel.add( start );
+    S="";
+    if(!Float.isNaN(endv))
+      S+=endv;
     innerPanel.add( new JLabel( "End value" ) );
-    end = new StringEntry( "", new FloatFilter(  ) );
+    end = new StringEntry( S, new FloatFilter(  ) );
     innerPanel.add( end );
+    S="";
+    if(stepsv >=0)
+       S+=stepsv;
     innerPanel.add( new JLabel( "Number of steps" ) );
-    steps = new StringEntry( "", new IntegerFilter(  ) );
+    steps = new StringEntry( S, new IntegerFilter(  ) );
     innerPanel.add( steps );
     wijit.add( innerPanel, BorderLayout.CENTER );
 
@@ -433,7 +482,9 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
           pg.addPropertyChangeListener( propertyName, pcl );
         }
       }
-
+      pg.startv = startv;
+      pg.endv = endv;
+      pg.stepsv = stepsv;
       return pg;
     } catch( InstantiationException e ) {
       throw new InstantiationError( e.getMessage(  ) );
