@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2005/06/10 15:58:30  rmikk
+ * Fixed dQ, and dQ/Q choice mechanism
+ *
  * Revision 1.10  2005/06/10 15:30:49  rmikk
  * Can now have natural initial values of start, end, numx
  *
@@ -312,11 +315,13 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
     start   = new StringEntry( S, 7, new FloatFilter(  ) );
     end     = new StringEntry( E, 7, new FloatFilter(  ) );
     steps   = new StringEntry( N, 5, new IntegerFilter(  ) );
-    dQ      = new JRadioButton( DQ );
+    dQ      = new JRadioButton("dQ");
 
-    JRadioButton dQQ = new JRadioButton( DQ );
-
-    dQQ.setSelected( true );
+    JRadioButton dQQ = new JRadioButton( "dQ/Q" );
+    if(dQ_v)
+       dQ.setSelected(true);
+    else
+       dQQ.setSelected( true );
 
     ButtonGroup Group = new ButtonGroup(  );
 
