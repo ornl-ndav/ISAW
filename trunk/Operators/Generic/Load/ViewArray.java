@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/06/10 22:11:36  rmikk
+ * Eliminated unused import
+ *
  * Revision 1.7  2005/06/10 22:10:30  rmikk
  * Now uses the Display2D in place of the very deprecated ViewerSim.
  * Also the data can be any object that can be converted to a float[][].
@@ -70,7 +73,7 @@ import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
 import DataSetTools.operator.Generic.Load.*;
 import gov.anl.ipns.ViewTools.Components.*;
-import gov.anl.ipns.ViewTools.Components.TwoD.*;
+//import gov.anl.ipns.ViewTools.Components.TwoD.*;
 
 import java.util.*;
 import gov.anl.ipns.ViewTools.Displays.*;
