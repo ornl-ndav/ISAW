@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2005/06/10 15:53:56  rmikk
+ * Fixed titles to be more descriptive of the data that is to be entered
+ *
  * Revision 1.5  2005/05/25 18:01:13  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -119,7 +122,7 @@ public class ArrayEntryJFrame extends JFrame implements ActionListener,
    *        elements stored in the ArrayEntryPanel.
    */
   public ArrayEntryJFrame( ParameterGUI param ) {
-    super( param.getName(  ) + " List" );
+    super( param.getName(  ) );
     innerPanel = new JPanel( new BorderLayout(  ) );
     this.setSize( 500, 300 );
 
@@ -326,7 +329,7 @@ public class ArrayEntryJFrame extends JFrame implements ActionListener,
       pcs.firePropertyChange( VectorPG.DATA_CHANGED, oldVector, newVector );
       oldVector = newVector;
       this.setVisible( false );
-    } else if( command.equals( param.getName(  ) ) ) {
+    } else if( command.equals( param.getName(  )+" Array" ) ) {
       this.setVisible( true );
     }
   }
