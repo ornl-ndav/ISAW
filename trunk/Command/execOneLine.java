@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.82  2005/06/10 20:56:14  rmikk
+ * Fixed an error in concatenating two strings
+ *
  * Revision 1.81  2005/06/07 14:57:24  rmikk
  * An opaque Object type is now supported even as a parameter
  * Code had to be added to ensure that no operations can be done on these
@@ -2497,10 +2500,10 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      * @see #getResult()
      */
     public void operateArith( Object LeftValue , Object RightValue , char operation ){
-    //if(!CanOp(LeftValue)){
-    //  seterror(1000,ER_ImproperDataType+" "+ operation);
-    //  return;
-   // }
+    if(!CanOp(LeftValue)){
+      seterror(1000,ER_ImproperDataType+" "+ operation);
+     return;
+    }
     if( !CanOp(RightValue)){
        seterror(1000,ER_ImproperDataType+" "+ operation);
        return;
@@ -2728,7 +2731,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
             Result = null;
             return;
         }else{
-            Result = R1;
+            Result = ((Vector)R1).clone();
             ((Vector)Result).addAll((Vector)R2); // must redo for Java 1.9
         }
     }//operateVector
