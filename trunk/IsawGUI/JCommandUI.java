@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.25  2005/06/10 20:09:34  dennis
+ * Added display of ISAW_HOME to System Properties panel.
+ * Renamed "User Directory" to "Current Directory".
+ *
  * Revision 1.24  2005/01/10 15:55:10  dennis
  * Removed empty statement.
  *
@@ -139,9 +143,11 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
        "Java ClassPath = "+ SharedData.getProperty("java.class.path") + "\n" +
        "Java Home = "+ SharedData.getProperty("java.home") + "\n" +
        "\n" +
+       "ISAW_HOME = "+ SharedData.getProperty("ISAW_HOME") + "\n" +
        "User Home = "+ SharedData.getProperty("user.home") + "\n" +
-       "User Directory = "+ SharedData.getProperty("user.dir") + "\n" +
+       "\n" +
        "User Name = "+ SharedData.getProperty("user.name") + "\n" +
+       "Current Directory = "+ SharedData.getProperty("user.dir") + "\n" +
        "\n" +
        "File Separator= "+ SharedData.getProperty("file.separator") + "\n" +
        "Path Separator= "+ SharedData.getProperty("path.separator") + "\n" +
