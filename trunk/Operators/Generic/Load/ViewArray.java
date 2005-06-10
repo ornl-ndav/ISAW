@@ -34,6 +34,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2005/06/10 22:10:30  rmikk
+ * Now uses the Display2D in place of the very deprecated ViewerSim.
+ * Also the data can be any object that can be converted to a float[][].
+ *
  * Revision 1.6  2005/06/02 22:34:23  dennis
  * Modified to just use IVirtualArray2D methods on a
  * VirtualArray2D object.
@@ -69,7 +73,7 @@ import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.TwoD.*;
 
 import java.util.*;
-
+import gov.anl.ipns.ViewTools.Displays.*;
 /**
   *  This class is an operator wrapper around DataSetTools.components.View.ViewerSim
   */
@@ -84,7 +88,7 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
 
    /**
     *   Constructor
-    *   @param data   the 2-D to be shown
+    *   @param data   the 2-D to be shown.It can be vectorized or int[][]. It will be converted
     *   @param Title   the Title on the display
     *   @param minx    the minimum value for the columns
     *   @param maxx    the maximum value for the columns
@@ -96,7 +100,7 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
     *   @param Yunits   the units for the rows
     */
    
-   public ViewArray( float[][] data,
+   public ViewArray( Object data,
                      String Title ,
                      float minx, 
                      float         maxx,
@@ -107,16 +111,17 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
                      String  Xunits ,
                      String  Yunits){
         this();
-        setParameter( new Parameter("",data),0);
-        setParameter( new StringPG("Enter Title",Title),1);
-        setParameter(new FloatPG("Min x",new Float(minx)),2);
-        setParameter(new FloatPG("Max x",new Float(maxx)),3);
-        setParameter(new FloatPG("Min y",new Float(miny)),4);
-        setParameter(new FloatPG("Max y",new Float(maxy)),5);
-        setParameter( new StringPG("X label",Xlabel),6);
-        setParameter( new StringPG("Enter Y label",Ylabel),7);
-        setParameter( new StringPG("Enter X units",Xunits),8);
-        setParameter( new StringPG("Enter Y units",Yunits),9);
+        parameters = new Vector();
+        addParameter( new PlaceHolderPG("",data));
+        addParameter( new StringPG("Enter Title",Title));
+        addParameter(new FloatPG("Min x",new Float(minx)));
+        addParameter(new FloatPG("Max x",new Float(maxx)));
+        addParameter(new FloatPG("Min y",new Float(miny)));
+        addParameter(new FloatPG("Max y",new Float(maxy)));
+        addParameter( new StringPG("X label",Xlabel));
+        addParameter( new StringPG("Enter Y label",Ylabel));
+        addParameter( new StringPG("Enter X units",Xunits));
+        addParameter( new StringPG("Enter Y units",Yunits));
 
   }
 
@@ -125,7 +130,7 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
   */
   public void setDefaultParameters(){
         parameters = new Vector();
-        addParameter( new Parameter("",new float[0][0]));
+        addParameter( new PlaceHolderPG("",new Object()));//So get Value works
         addParameter( new StringPG("Enter Title","Data"));
         addParameter(new FloatPG("Min x",new Float(0)));
         addParameter(new FloatPG("Max x",new Float(1)));
@@ -154,7 +159,8 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
     StringBuffer s = new StringBuffer(  );
        s.append( "@overview This class is an operator wrapper around ");
        s.append( "DataSetTools.components.View.ViewerSim" );
-       s.append( "@param data   the 2-D to be shown ");
+       s.append( "@param data   the 2-D to be shown. This operator will ");
+       s.append("   attempt to convert any object to a 2-D float array");
        s.append( "@param Title   the Title on the display ");
        s.append( "@param minx    the minimum value for the columns ");
        s.append( "@param maxx    the maximum value for the columns ");
@@ -175,8 +181,16 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
    *  Creates the View of the 2D data
    */
   public Object getResult() {
-   
-    float[][] data= (float[][])(getParameter(0).getValue());
+    Object O = getParameter(0).getValue();
+    
+    float[][] data=null;
+    try{
+       data= (float[][])JavaWrapperOperator.cvrt( (new float[0][0]).getClass(), O);
+    }catch(Exception s){
+      return new gov.anl.ipns.Util.SpecialStrings.ErrorString(
+                            "Could not convert to float[][]."+s.toString());
+      
+    }
     float minx= ((FloatPG)getParameter(2)).getfloatValue(), 
           maxx=((FloatPG)getParameter(3)).getfloatValue(),
           miny =((FloatPG)getParameter(4)).getfloatValue(),
@@ -191,8 +205,9 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
                         Xlabel,Xunits,AxisInfo.LINEAR);
     Varray.setAxisInfo( AxisInfo.Y_AXIS,miny,maxy,
                         Ylabel,Yunits,AxisInfo.LINEAR);
-    (new ViewerSim(new ImageViewComponent(Varray))).show();
-    
+   // (new ViewerSim(new ImageViewComponent(Varray))).show();
+     Display2D display = new Display2D(Varray, Display2D.IMAGE,Display.CTRL_ALL);
+    gov.anl.ipns.Util.Sys.WindowShower.show(display);
     return "Success";
   }
 
@@ -200,10 +215,10 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
    *   Test program for this operator
    */
   public static void main( String args[]){
-     float[][] dat={ {1.00f,2.0f,3.0f,4.0f},
-                     {2.0f,3.0f,4.0f,5.0f},
-                     {3.0f,4.0f,5.0f,6.0f},
-                     {4.0f,5.0f,6.0f,6.0f}};
+     int[][] dat={ {1,2,3,4},
+                     {2,3,4,5},
+                     {3,4,5,6},
+                     {4,5,6,6}};
      ViewArray  V = new ViewArray(dat,"Test",0.0f,5.0f,0.0f,10.0f,"X","Y","cm","ft");
      System.out.println( V.getResult());
 
