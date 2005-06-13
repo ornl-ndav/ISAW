@@ -32,6 +32,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.29  2005/06/13 14:25:51  rmikk
+ * If Object has the same class as the given class, the object is returned 
+ *    quickly in cvrt routine with Class argument
+ *
  * Revision 1.28  2005/06/07 22:49:19  rmikk
  * Removed a return that caused some orphan code in the main program
  *
@@ -589,8 +593,8 @@ public class JavaWrapperOperator extends GenericOperator {
   * 
   * @param C  The desired Class to put parts of orig into
   * @param orig  The variable with the data which is essentially
-  *             of the correct class except that it has Vectors
-  *             instead of arrays
+  *             of the correct class except that it can have Vector
+  *             components or array components.
   * @return   The arrayified Vector
   * @throws Exception  if this process is not possible
   */
@@ -599,7 +603,8 @@ public class JavaWrapperOperator extends GenericOperator {
      return null;
    if( orig == null)
      return null;
-     
+   if( orig.getClass().equals( C))
+       return orig;  
    if( C.isArray()){
       Class C1 = C.getComponentType();
       int n = Size(orig);
