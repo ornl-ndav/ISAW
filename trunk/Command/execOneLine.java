@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.83  2005/06/13 20:27:34  rmikk
+ * Did additional type checking with the new Object data type to ensure that
+ *   there is only one variable with a specific name
+ *
  * Revision 1.82  2005/06/10 20:56:14  rmikk
  * Fixed an error in concatenating two strings
  *
@@ -3438,6 +3442,11 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
         if(Result instanceof Double)
           Result = new Float( ((Double)Result).floatValue());
           
+        if(ObjectInfo.containsKey( vname.toUpperCase())  ){
+        
+             ObjectInfo.put(vname, Result);
+             return;
+        }
         if( Result instanceof Boolean){
             if(vname.toUpperCase().equals("TRUE")
                || vname.toUpperCase().equals("FALSE")){
@@ -3448,7 +3457,8 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
                 seterror(1000,ER_IMPROPER_DATA_TYPE+"G" );
                 return; 
             }
-            O =BoolInfo.put(vname.toUpperCase(),Result);  
+            O =BoolInfo.put(vname.toUpperCase(),Result); 
+           
            if( O != null) O = null;       
             
         }else if( Result instanceof Vector){
@@ -3587,9 +3597,23 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
              if( O != null) O = null;
              return;
         }
-      else{
+      else{//make sure vname not already in some other list
+       
         //seterror(1000, "DataType Not supported for assignment operation");
-         ObjectInfo.put(vname.toUpperCase().trim(), Result); 
+         if(BoolInfo.containsKey(vname.toUpperCase()))
+            seterror(1000, "Improper Data Type for variable "+vname);
+         else if( ds.containsKey( vname.toUpperCase()))
+            seterror(1000, "Improper Data Type for variable "+vname);
+         else if( lds.containsKey( vname.toUpperCase()))
+            seterror(1000, "Improper Data Type for variable "+vname);
+         else if( findd(vname, Svalnames) >=0 )
+            seterror(1000, "Improper Data Type for variable "+vname);
+         else if( findd(vname, Fvalnames) >=0 )
+            seterror(1000, "Improper Data Type for variable "+vname);
+         else if( findd(vname, Ivalnames) >=0 )
+            seterror(1000, "Improper Data Type for variable "+vname);
+         else 
+           ObjectInfo.put(vname.toUpperCase().trim(), Result); 
          }
         
     }//end Assign
