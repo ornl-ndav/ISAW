@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/06/13 14:30:58  rmikk
+ * Added clone method
+ * set the Entry widget in the initGUI method
+ *
  * Revision 1.2  2005/06/08 19:56:53  rmikk
  * Took the handling of the value out of the ParameterGUI superclass
  *    so it is not changed to a String for some reason
@@ -58,8 +62,9 @@ public class PlaceHolderPG extends ParameterGUI {
   Object value = null;
   public PlaceHolderPG( String name, Object val){
     super( name, val);
+    value = val;
     super.setType("PlaceHolder");
-    super.setEntryWidget( new EntryWidget(new JLabel()));
+   
   }
 
   public Object getValue(){
@@ -79,13 +84,22 @@ public class PlaceHolderPG extends ParameterGUI {
      
   }
   
+  
   public void clear(){
     value = null;
   }
   
   public void initGUI( Vector V){
-    
+    if( getInitialized())
+      return;
+     setEntryWidget( new EntryWidget(new JLabel()));
     super.initGUI();
     
+  }
+  
+  public Object clone(){
+    PlaceHolderPG p = (PlaceHolderPG)super.clone();
+    p.value = value;
+    return p;
   }
 }
