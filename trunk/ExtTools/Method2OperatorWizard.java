@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2005/06/13 20:43:05  rmikk
+ * *'s now line up in the GPL of the resultant code.
+ *
  * Revision 1.5  2005/06/10 20:47:25  rmikk
  * The getCategoryList method is now implemented and working
  *
@@ -44,6 +47,9 @@
  * Revision 1.3  2005/06/10 19:06:49  rmikk
  * The filename of the operator should show up in the operator dialog box.
  * The output now has $Log$
+ * The output now has Revision 1.6  2005/06/13 20:43:05  rmikk
+ * The output now has *'s now line up in the GPL of the resultant code.
+ * The output now has
  * The output now has Revision 1.5  2005/06/10 20:47:25  rmikk
  * The output now has The getCategoryList method is now implemented and working
  * The output now has
@@ -1019,7 +1025,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 				FileOutputStream fout = new FileOutputStream(W.OpfileName);
 
-				fout.write(("/*\r\n* File: " + clsName + ".java\r\n* \r\n").getBytes());
+				fout.write(("/* \r\n * File: " + clsName + ".java\r\n *  \r\n").getBytes());
 				fout.write(
 					(" * Copyright (C) "
 						+ Calendar.getInstance().get(Calendar.YEAR)
@@ -1037,7 +1043,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					" * as published by the Free Software Foundation; either version 2\r\n"
 						.getBytes());
 				fout.write(
-					" * of the License, or (at your option) any later version.\r\n*\r\n"
+					" * of the License, or (at your option) any later version.\r\n * \r\n"
 						.getBytes());
 				fout.write(
 					" * This program is distributed in the hope that it will be useful,\r\n"
@@ -1049,7 +1055,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\r\n"
 						.getBytes());
 				fout.write(
-					" * GNU General Public License for more details.\r\n*\r\n"
+					" * GNU General Public License for more details.\r\n * \r\n"
 						.getBytes());
 				fout.write(
 					" * You should have received a copy of the GNU General Public License\r\n"
@@ -1060,7 +1066,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				fout.write(
 					" * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.\r\n"
 						.getBytes());
-				fout.write(" *\r\n* Contact :  ".getBytes());
+				fout.write(" *\r\n * Contact :  ".getBytes());
 				fout.write(
 					(W.infPanel.Name.getText().trim()
 						+ "<"
@@ -1096,11 +1102,11 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					if (k1 < S.length())
 						k1 = S.indexOf('\n', k1 + 1);
 					if (k1 < 0)
-						k1 = S.length();
+						k1 = S.length(); 
 				}
 
 				fout.write(
-					(" *\r\n *\r\n * Modified:\r\n *\r\n * $" + "Log:" + "$\r\n\r\n */")
+					(" *\r\n *\r\n * Modified:\r\n *\r\n * $" + "Log:" + "$\r\n\r\n */\r\n\r\n")
 						.getBytes());
 
 				//Write out package information
