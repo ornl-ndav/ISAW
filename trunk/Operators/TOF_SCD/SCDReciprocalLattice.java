@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2005/06/13 15:50:22  dennis
+ * Added meaningful default values for the calibration file (instprm.dat)
+ * and orientation matrix (quartz.mat).
+ *
  * Revision 1.12  2005/01/07 19:34:08  rmikk
  * Now implements IWrappableWithCategoryList
  *
@@ -57,8 +61,8 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 public class SCDReciprocalLattice implements IWrappableWithCategoryList
 {
   public DataDirectoryString Data_Directory     = new DataDirectoryString();
-  public LoadFileString      Calibration_File   = new LoadFileString();
-  public LoadFileString      Orientation_Matrix = new LoadFileString(); 
+  public LoadFileString  Calibration_File   = new LoadFileString("instprm.dat");
+  public LoadFileString  Orientation_Matrix = new LoadFileString("quartz.mat"); 
   public IntListString       Run_Numbers        = new IntListString("8336"); 
   public int                 Threshold_Level    = 60;
   public boolean             Show_Contours      = false;
