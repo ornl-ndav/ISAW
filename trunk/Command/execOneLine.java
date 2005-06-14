@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.84  2005/06/14 13:37:53  rmikk
+ * Removed variables that represent parameters from the system before
+ * starting a new script
+ *
  * Revision 1.83  2005/06/13 20:27:34  rmikk
  * Did additional type checking with the new Object data type to ensure that
  *   there is only one variable with a specific name
@@ -460,6 +464,9 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
    public void clearVec( Vector V){
       if(V==null)
         return;
+      for( int i=0; i<V.size(); i++){
+        ds.remove(V.elementAt(i));
+      }
       V.removeAllElements();
    }
  
