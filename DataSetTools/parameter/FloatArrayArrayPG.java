@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2005/06/14 18:45:33  rmikk
+ * Returned "" in place of null
+ *
  * Revision 1.15  2005/06/10 15:27:42  rmikk
  * Gave a more descriptive label for what is to be entered
  *
@@ -142,5 +145,12 @@ public class FloatArrayArrayPG extends VectorPG {
 
     fpg.validateElements( new Float( 0.0f ).getClass(  ) );
     setValid( fpg.getValid(  ) );
+  }
+  
+  public Object getValue(){
+    java.util.Vector S =(java.util.Vector)super.getValue();
+    if( S == null)
+       return new java.util.Vector();
+    return S; 
   }
 }

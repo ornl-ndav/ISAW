@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2005/06/14 18:45:32  rmikk
+ *  Returned "" in place of null
+ *
  *  Revision 1.13  2004/05/11 18:23:54  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -174,6 +177,13 @@ public class PulseHeightDataSetPG extends DataSetPG {
     }
 
     return false;
+  }
+  
+  public Object getValue(){
+    DataSet D = (DataSet)super.getValue();
+    if( D == null)
+      return DataSetTools.dataset.DataSet.EMPTY_DATA_SET;
+    return D;
   }
 
   /*
