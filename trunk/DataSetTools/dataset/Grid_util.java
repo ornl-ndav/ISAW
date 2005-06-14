@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2005/06/14 23:15:50  dennis
+ *  Minor clarification of javadocs.
+ *
  *  Revision 1.6  2005/06/14 15:31:40  dennis
  *  Clarified javadocs indicating what conditions need to be satisfied
  *  by the DataSet for these utilities to work properly.
@@ -89,14 +92,15 @@ public class Grid_util
   /**
    *  Set the effective position (DETECTOR_POS) attribute of the Data 
    *  blocks for the specified area detector DataGrid, from the DataGrid 
-   *  pixel positions.
+   *  pixel positions.  The DataGrid for the detector MUST have previously
+   *  had references to the corresponding Data blocks set.
    *
    *  @param  ds      The DataSet for which some of the Data blocks will
    *                  have positions set from the specified grid.  NOTE:
    *                  if the DataSet contains Data blocks from several
    *                  area detectors, this method must be called once for
    *                  each area detector, if positions are to be set for
-   *                  all of the aread detetors' Data.
+   *                  all of the area detetors' Data.
    *  @param  det_id  The id of the area detector whose pixel position 
    *                  information is to be copied to the effective position 
    *                  attribute.
