@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.46  2005/06/14 22:12:15  rmikk
+ * Now gives Type mismatch error if some of the for loop elements have
+ *   incorrect data types
+ *
  * Revision 1.45  2005/06/09 18:42:14  rmikk
  * If the initValue is not specified, a null value is no longer set for the value
  *    of most of the newer PG's
@@ -920,9 +924,12 @@ public class ScriptOperator  extends  GenericOperator
     int line;  
     String S; 
     Vector V;
-    if(script==null) return -1;
-    if( start < 0 ) return start ; 
-    if( start >= script.numLines() ) return start ;  
+    if(script==null) 
+       return -1;
+    if( start < 0 ) 
+       return start ; 
+    if( start >= script.numLines() )
+       return start ;  
         
     S = script.getLine( start );
     if( S == null){
@@ -980,6 +987,7 @@ public class ScriptOperator  extends  GenericOperator
     for( int jj = 0; jj< n ;jj++){
       if(execute && (onerror ==0)){
         ExecLine.Assign(var,V.elementAt(jj)); 
+        perror=ExecLine.getErrorCharPos();
         if( (perror >= 0) && (onerror == 0) ){
           seterror(i+4 , ExecLine.getErrorMessage());
           lerror = start;
