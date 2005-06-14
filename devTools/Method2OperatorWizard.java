@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/06/14 23:08:36  rmikk
+ * Implemented the @error documentation system.
+ * Change a name to be more descriptive
+ * The Documentation TextArea now wraps lines.
+ *
  * Revision 1.2  2005/06/14 16:45:36  dennis
  * Minor improvements to form of output.
  *
@@ -740,6 +745,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			super(new BorderLayout());
 			this.W = W;
 			Docc = new JTextArea(20, 50);
+            Docc.setLineWrap( true);
 			add(new JScrollPane(Docc), BorderLayout.CENTER);
 			JPanel JP = new JPanel(new GridLayout(1, 2));
 
@@ -798,15 +804,18 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					int i = (new Integer(opn.substring(5).trim())).intValue();
 
 					Docc.setText(W.ErrorDoc.elementAt(i).toString());
-				} else if (opn.equals("new Error")) {
+                    opn="Error"+i;
+				} else if (opn.equals("Add returned Error Message")) {
 
 					W.ErrorDoc.addElement("");
 					Docc.setText("");
 					int k = jcmbMod.getSize();
 
-					jcmbMod.removeElementAt(k - 1);
-					jcmbMod.addElement("Error" + (W.ErrorDoc.size() - 1));
-					jcmbMod.addElement("new Error");
+					//jcmbMod.removeElementAt(k - 1);
+					jcmbMod.insertElementAt("Error" + (W.ErrorDoc.size() - 1),k-1);
+					//jcmbMod.addElement("Add returned Error Message");
+                    this.Sections.setSelectedIndex( k-1);
+                    opn="Error"+(W.ErrorDoc.size()-1);
 				}
 				PrevDocKey = opn;
 			}
@@ -849,8 +858,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			} else if (opn.startsWith("Error")) {
 
 				int i = (new Integer(opn.substring(5).trim())).intValue();
-
-				W.ErrorDoc.setElementAt(txt, i);
+                if( i >= W.ErrorDoc.size())
+                    W.ErrorDoc.add( txt);
+                else
+				    W.ErrorDoc.setElementAt(txt, i);
 			}
 		}
 
@@ -884,7 +895,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			for (int i = 0; i < W.ErrorDoc.size(); i++)
 				Sections.addItem("Error" + i);
 
-			Sections.addItem("new Error");
+			Sections.addItem("Add returned Error Message");
 		}
 
 	}
@@ -1158,13 +1169,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 				for (int i = 0; i < W.ErrorDoc.size(); i++) {
 
-					fout.write(
-						("      S.append(\"@error "
-							+ StringUtil.replace(
-								W.ErrorDoc.elementAt(i).toString(),
-								"\"",
-								"\\\"")
-							+ "\");\r\n")
+					fout.write(("      S.append(\"@error \");\r\n"+ 
+					    MultiLine_ify(	W.ErrorDoc.elementAt(i).toString(),
+							"      S.append(\"","\");\r\n"))
 							.getBytes());
 				}
 				fout.write("      return S.toString();\r\n   }\r\n\r\n\r\n".getBytes());
@@ -1293,6 +1300,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				j1 = j2 + 1;
 				if (j1 + 1 < text.length())
 					j2 = text.indexOf("\n", j1);
+                else
+                    j2 = text.length();
 				if (j2 < 0)
 					j2 = text.length();
 			}
