@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2005/06/14 21:07:19  dennis
+ *  Removed Instrument_Macro_Path and Script_Macro_Path from
+ *  the default properties file written by ISAW, since these
+ *  properties are no longer used.
+ *
  *  Revision 1.28  2005/01/10 16:15:39  rmikk
  *  Documented the new Property GROUPx_NAME in the IsawProps.dat file
  *
@@ -291,10 +296,6 @@ public class DefaultProperties{
             .append("html").append(eol)
             .append(defstr).append("Data_Directory=").append(IsawHome)
             .append(separator).append("SampleRuns").append(eol)
-            .append(defstr).append("Instrument_Macro_Path=").append(IsawHome)
-            .append(eol)
-            .append(defstr).append("User_Macro_Path=").append(IsawHome)
-            .append(eol)
             .append(eol)
             .append("#").append(eol)
             .append("# Live Data Server Options").append(eol)
