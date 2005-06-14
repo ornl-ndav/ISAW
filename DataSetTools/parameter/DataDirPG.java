@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2005/06/14 21:18:16  rmikk
+ *  Now uses the Data_Directory property from IsawProps.dat
+ *
  *  Revision 1.20  2004/05/11 18:23:48  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -131,6 +134,8 @@ public class DataDirPG extends BrowsePG {
    */
   public DataDirPG( String name, Object value ) {
     this( name, value, false );
+    if( value == null)
+      super.setValue( System.getProperty("Data_Directory",""));
     this.setDrawValid( false );
   }
 
@@ -158,7 +163,8 @@ public class DataDirPG extends BrowsePG {
           }
         }
       }
-    }
+    }else
+       super.setValue( System.getProperty("Data_Directory",""));
 
     this.setType( TYPE );
     this.setValid( valid );
@@ -174,7 +180,10 @@ public class DataDirPG extends BrowsePG {
    */
   public Object getValue(  ) {
     String str = FilenameUtil.setForwardSlash( super.getValue(  ).toString(  ) );
-
+    if( str == null){
+       super.setValue(System.getProperty("Data_Directory",""));
+       return System.getProperty("Data_Directory","");
+    }
     if( !str.endsWith( "/" ) ) {
       str += "/";
     }
