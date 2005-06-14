@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2005/06/14 21:38:51  rmikk
+ *  Now takes [] and quotes
+ *
  *  Revision 1.20  2005/06/14 18:45:32  rmikk
  *  Returned "" in place of null
  *
@@ -172,9 +175,17 @@ public class IntArrayPG extends StringEntryPG {
    *   Returns the string representation of the intList(Set) or ""
    */
   public Object getValue(){
-    String S = getStringValue();
+    String S = getStringValue().trim();
+    
     if( S == null)
        return "";
+    if( S.length() <1)
+       return "";
+    if( S.startsWith("["))
+      S=S.substring(1);
+    if( S.endsWith("]"))
+      S = S.substring(0, S.length()-1);
+    super.setValue(S);
     return S;
   }
   /**
