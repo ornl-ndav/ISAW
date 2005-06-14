@@ -30,6 +30,6 @@ endfor
 display "DataSet displays produce a viewer"
 display "String displays go to the Status pane"
 
-Echo ("Echo output goes to the command pane")
+Echo ("Echo output goes to the terminal window")
 
 return("done")
