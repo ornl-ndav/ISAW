@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2005/06/14 18:45:33  rmikk
+ *  Returned "" in place of null
+ *
  *  Revision 1.17  2004/05/11 18:23:56  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -220,5 +223,12 @@ public class StringPG extends StringEntryPG {
    */
   public void validateSelf(  ) {
     setValid( ( getValue(  ) != null ) );
+  }
+  
+  public Object getValue(){
+    String S = (String)super.getValue();
+    if( S == null)
+      return "";
+    return S;
   }
 }

@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/06/14 18:45:34  rmikk
+ * Returned "" in place of null
+ *
  * Revision 1.2  2005/06/14 14:25:49  rmikk
  * Fixed some initialization errors
  *
@@ -432,7 +435,7 @@ public class ParameterInfo {
   public static boolean isEqual( int i, Class val){
      IParameter p = Params.getInstance( Type[i]);
      if(p == null){
-       System.out.println("No GUI for type "+Type[i]+":::"+p);
+      
        return false;
      }
      if( val == null)

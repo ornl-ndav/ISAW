@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2005/06/14 18:45:33  rmikk
+ *  Returned "" in place of null
+ *
  *  Revision 1.20  2004/05/12 02:16:15  bouzekc
  *  Added check for null value to addItems.
  *
@@ -221,5 +224,12 @@ public class ChoiceListPG extends ChooserPG {
     Object val = getValue(  );
 
     setValid( ( val != null ) && val instanceof String );
+  }
+  
+  public Object getValue(){
+    Object S = super.getValue();
+    if( S == null)
+       return "";
+    return S;
   }
 }
