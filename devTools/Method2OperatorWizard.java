@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/06/14 16:45:36  dennis
+ * Minor improvements to form of output.
+ *
  * Revision 1.1  2005/06/13 20:53:42  rmikk
  * Moved from ExtTools
  *
@@ -49,24 +52,8 @@
  *
  * Revision 1.3  2005/06/10 19:06:49  rmikk
  * The filename of the operator should show up in the operator dialog box.
- * The output now has $Log$
- * The output now has Revision 1.1  2005/06/13 20:53:42  rmikk
- * The output now has Moved from ExtTools
- * The output now has
- * The output now has Revision 1.6  2005/06/13 20:43:05  rmikk
- * The output now has *'s now line up in the GPL of the resultant code.
- * The output now has
- * The output now has Revision 1.5  2005/06/10 20:47:25  rmikk
- * The output now has The getCategoryList method is now implemented and working
- * The output now has
- * The output now has Revision 1.4  2005/06/10 19:29:10  rmikk
- * The output now has Removed errors that were caused by cvs logging because of strings that
- * The output now has   happened to be in code
- * The output now has Fixed the case for methods that have void returns.
- * The output now has
- * The getResult method should be at the end
  * The category list has a text field available for it. It does not yet
- *   appear in the output.
+ * appear in the output.
  *
  * Revision 1.2  2005/06/09 14:56:45  rmikk
  * Fixed errors that occur when the selected class file with the static
@@ -74,7 +61,6 @@
  *
  * Revision 1.1  2005/06/04 20:46:48  rmikk
  * Initial Checkin
- *
  */
 
 package devTools;
@@ -140,7 +126,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		if (!OpfileName.endsWith(File.separator))
 			OpfileName += File.separator;
 		OpfileName += "Operators";
-
 	}
 
 	public void actionPerformed(ActionEvent evt) {
@@ -204,7 +189,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			k1 = ClassPth.indexOf(File.pathSeparator, k);
 			if (k1 < 0)
 				k1 = ClassPth.length();
-
 		}
 		return null;
 	}
@@ -266,7 +250,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				k1 = S.indexOf('\n', k1 + 1);
 		}
 		return Res;
-
 	}
 
 	/**
@@ -291,7 +274,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		if (";Float;Boolean;Integer;".indexOf(paramGUIName) >= 0)
 			return "((" + paramGUIName + "PG)(";
 		return "";
-
 	}
 
 	/**
@@ -323,7 +305,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				S += "getbooleanValue()";
 			return S;
 		}
-
 		return "";
 	}
 
@@ -348,7 +329,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		if (className.equals("char"))
 			return "new Character(Xres)";
 		return "Xres";
-
 	}
 
 	/**
@@ -445,7 +425,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			add(jb);
 
 			add(Box.createVerticalGlue());
-
 		}
 	}
 
@@ -533,7 +512,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			add(JP);
 
 			add(Box.createVerticalGlue());
-
 		}
 
 		/**
@@ -622,7 +600,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 						WindowShower.show(jf);
 					}
 			}
-
 		}
 
 		/**
@@ -657,9 +634,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 								if (!Modifier.isNative(mod))
 									if (!Modifier.isInterface(mod)) {
 										MethodList.addItem(new MethHolder(Meths[i]));
-
 									}
-
 				}
 
 			} catch (Exception s) {
@@ -706,7 +681,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				if (pinfo.isEqual(k, C)) {
 					ParamGUI.addItem(pinfo.getType(k));
 				}
-
 			}
 
 			// Now select the proper entry in the ParamGUI ComboBox
@@ -776,7 +750,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			JP.add(Sections);
 
 			add(JP, BorderLayout.NORTH);
-
 		}
 
 		String PrevDocKey = "";
@@ -836,7 +809,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					jcmbMod.addElement("new Error");
 				}
 				PrevDocKey = opn;
-
 			}
 		}
 
@@ -856,7 +828,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			String txt = null;
 
 			try {
-
 				txt = Docc.getDocument().getText(0, Docc.getDocument().getLength());
 			} catch (Exception s) {
 				return;
@@ -923,7 +894,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 	 *  from this wizard
 	 * @author mikkelsonr
 	 *
-	 *
 	 */
 	class FilePanel extends JPanel implements ActionListener {
 
@@ -953,7 +923,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				RestoreState(W);
 			else if (evt.getActionCommand().equals("Save Op"))
 				Save(W);
-
 		}
 
 		private boolean ShowMess(String message) {
@@ -997,7 +966,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			}
 			W.docPanel.SetPrevOp(); // Last info set only when changed
 			return true;
-
 		}
 
 		/**
@@ -1028,7 +996,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			clsName = packge.substring(k + 1);
 			packge = packge.substring(0, k);
 			try {
-
 				FileOutputStream fout = new FileOutputStream(W.OpfileName);
 
 				fout.write(("/* \r\n * File: " + clsName + ".java\r\n *  \r\n").getBytes());
@@ -1037,7 +1004,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 						+ Calendar.getInstance().get(Calendar.YEAR)
 						+ "     "
 						+ W.infPanel.Name.getText().trim()
-						+ "\r\n\r\n")
+						+ "\r\n" + " *" + "\r\n")
 						.getBytes());
 				fout.write(
 					" * This program is free software; you can redistribute it and/or\r\n"
@@ -1112,7 +1079,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				}
 
 				fout.write(
-					(" *\r\n *\r\n * Modified:\r\n *\r\n * $" + "Log:" + "$\r\n\r\n */\r\n\r\n")
+					(" *\r\n *\r\n * Modified:\r\n *\r\n * $" + "Log:" + "$\r\n" + " *" + "\r\n */\r\n\r\n")
 						.getBytes());
 
 				//Write out package information
@@ -1292,7 +1259,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			if (S == null)
 				return;
 			try {
-
 				fout.write(
 					"   public String[] getCategoryList(){\r\n      ".getBytes());
 				fout.write("      return new String[]{\r\n".getBytes());
@@ -1307,7 +1273,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			} catch (Exception s) {
 				return;
 			}
-
 		}
 
 		private String MultiLine_ify(String text, String prepend, String append) {
@@ -1524,7 +1489,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				JOptionPane.showMessageDialog(null, "Could not Load:" + s.toString());
 			}
 		}
-
 	}
 
 	/**
@@ -1586,9 +1550,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				return null;
 
 			return Next.get(argNum);
-
 		}
-
 	}
 
 	class CompListener extends ComponentAdapter {
