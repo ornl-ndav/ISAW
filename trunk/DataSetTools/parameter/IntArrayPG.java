@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2005/06/14 18:45:32  rmikk
+ *  Returned "" in place of null
+ *
  *  Revision 1.19  2004/05/11 18:23:49  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -162,9 +165,18 @@ public class IntArrayPG extends StringEntryPG {
    * @return The value of this PG in String format.
    */
   public String getStringValue(  ) {
-    return ( String )this.getValue(  );
+    return ( String )super.getValue(  );
   }
 
+  /**
+   *   Returns the string representation of the intList(Set) or ""
+   */
+  public Object getValue(){
+    String S = getStringValue();
+    if( S == null)
+       return "";
+    return S;
+  }
   /**
    * Sets the value of this PG.
    *
