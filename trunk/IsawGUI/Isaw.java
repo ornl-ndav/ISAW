@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.226  2005/06/14 23:36:56  dennis
+ *  Changed version to 1.7.2 alpha 4
+ *
  *  Revision 1.225  2005/06/03 18:44:57  dennis
  *  Removed uneeded, extra request to reload the System properties.
  *
@@ -820,7 +823,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.7.2 alpha 3";
+          version="1.7.2 alpha 4";
         else
           version=SharedData.VERSION;
 
@@ -2629,17 +2632,17 @@ public class Isaw
             index=param.indexOf(" ");
             if(index>0)
                 param=param.substring(index+1,param.length());
-
             return param;
         }
+
         int getWidth(String param){
             int index=param.indexOf("x");
             if(index>0)
                 return Integer.parseInt(param.substring(0,index));
             else
                 return -1;
-
         }
+
         int getHeight(String param){
             int index=param.indexOf("x");
             if(index>0){
@@ -2647,7 +2650,6 @@ public class Isaw
                 return Integer.parseInt(param.substring(index,param.length()));
             }else
                 return -1;
-
         }
     }
 }
