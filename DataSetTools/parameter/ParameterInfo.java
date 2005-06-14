@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/06/14 14:25:49  rmikk
+ * Fixed some initialization errors
+ *
  * Revision 1.1  2005/06/06 14:07:37  rmikk
  * Initial Checking
  *
@@ -64,7 +67,7 @@ public class ParameterInfo {
       //"Chooser",
       "DataDir",
       "DataSet",
-      "FloatArrayArrayPG",
+      "FloatArrayArray",
       "FloatArray",
       "Float",
       "FuncString",
@@ -80,7 +83,7 @@ public class ParameterInfo {
       "MonitorDataSet",
       "PlaceHolder",
       "PrinterName",
-      "PulseHeightDataSetPG",
+      "PulseHeightDataSet",
       "Qbins1",
       "Qbins",
       "RadioButton",
@@ -88,7 +91,7 @@ public class ParameterInfo {
       "SampleDataSet",
       "SaveFile",
       "StringArray",
-      "StringEntry",
+      //"StringEntry",
       "String",
       "UniformXScale",
       "VariableXScale"
@@ -126,7 +129,7 @@ public class ParameterInfo {
       SampleDataSetPG.class,
       SaveFilePG.class,
       StringArrayPG.class,
-      StringEntryPG.class,
+      //StringEntryPG.class,
       StringPG.class,
       UniformXScalePG.class,
       VariableXScalePG.class,
@@ -204,7 +207,7 @@ public class ParameterInfo {
       false,//SampleDataSetPG.class,
       true,//SaveFilePG.class,
       true,//StringArrayPG.class,
-      true,//StringEntryPG.class,
+     //true,//StringEntryPG.class,
       true,//StringPG.class,
       false,//UniformXScalePG.class,
       false,//VariableXScalePG.class,;
@@ -242,7 +245,7 @@ public class ParameterInfo {
       "JComboBox",//SampleDataSetPG.class,
       "JFileChooser",//SaveFilePG.class,
       "JTextField,JList,JButtons",//StringArrayPG.class,
-      "JTextField",//StringEntryPG.class,
+      //"JTextField",//StringEntryPG.class,
       "JTextField",//StringPG.class,
       "JTextFields",//UniformXScalePG.class,
       "JTextField",//VariableXScalePG.class,
@@ -272,7 +275,7 @@ public class ParameterInfo {
       "",//LoadFilePG.class,
       "",//MaterialPG.class,
       "",//MonitorDataSetPG.class,
-      "Canno change. Holds arbitrary Object. Should not use in ISAW scripts",//PlaceHolderPG.class,
+      "Cannot change. Holds arbitrary Object. Should not use in ISAW scripts",//PlaceHolderPG.class,
       "",//PrinterNamePG.class,
       "",//PulseHeightDataSetPG.class,
       "Has options for creating either uniform or logarithmic bin boundaries",//Qbins1PG.class,
@@ -428,8 +431,10 @@ public class ParameterInfo {
   
   public static boolean isEqual( int i, Class val){
      IParameter p = Params.getInstance( Type[i]);
-     if(p == null)
+     if(p == null){
+       System.out.println("No GUI for type "+Type[i]+":::"+p);
        return false;
+     }
      if( val == null)
        return false;
     if( Type[i].equals("RealArray")){
@@ -457,7 +462,10 @@ public class ParameterInfo {
      }else if( Type[i].equals("PlaceHolder"))
         return true;
      Object O = p.getValue();
+     if( O== null)
+        System.out.println("parm w null getValue  for "+ Type[i]);
      if( O != null)
+    
         if( O.getClass().equals(val))
            return true;
         else if( val.isPrimitive())
