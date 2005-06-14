@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2005/06/14 15:31:40  dennis
+ *  Clarified javadocs indicating what conditions need to be satisfied
+ *  by the DataSet for these utilities to work properly.
+ *
  *  Revision 1.5  2004/05/10 20:42:20  dennis
  *  Test program now just instantiates a ViewManager to diplay
  *  calculated DataSet, rather than keeping a reference to it.
@@ -129,13 +133,17 @@ public class Grid_util
            d.setAttribute( new DetPosAttribute(Attribute.DETECTOR_POS, pos) );
          }
        }
-
      return true;
    }
 
+
   /**
-   *  Get a list of all of the IDs of the all of the IDataGrids for 
-   *  area detectors, from a DataSet.
+   *  Get a list of all of the IDs of the all of the IDataGrids for area
+   *  detectors, from a DataSet, assuming that all of the Data blocks for 
+   *  each detector are present and are in consecutive positions in the 
+   *  DataSet.  This will be the case when a DataSet has just been loaded 
+   *  from an IPNS runfile, but may NOT be the case if Data blocks have 
+   *  been removed, inserted or reordered.
    *
    *  @param ds The DataSet to look through to find the area detector
    *            grids.
@@ -195,7 +203,11 @@ public class Grid_util
 
   /**
    *  Get an IDataGrid for an area detector, specified by detector ID,
-   *  from a DataSet.
+   *  from a DataSet, assuming that all of the Data blocks for each detector
+   *  are present and are in consecutive positions in the DataSet.  This will
+   *  be the case when a DataSet has just been loaded from an IPNS runfile,
+   *  but may NOT be the case if Data blocks have been removed, inserted
+   *  or reordered.
    *
    *  @param ds        The DataSet to look through to find the IDataGrid
    *  @param det_id    The ID of the IDataGrid, that is, the detector ID
