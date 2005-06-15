@@ -5,10 +5,10 @@
 #          -ISAW Scripts are used a shells to get parameters correct.  This type of parameter
 #              extends this feature
 #
-#@param  SampleOrientation  A Sample Orientation
+#@param  DetectorPosition   the DetectorPosition 
 #@param  Message     A Message
 
-$DetectorPosition   PlaceHolder   Sample Orientation?
+$DetectorPosition   PlaceHolder   Detector Position 
 $Message             String        Enter Message
 $category= HiddenOperator
 
