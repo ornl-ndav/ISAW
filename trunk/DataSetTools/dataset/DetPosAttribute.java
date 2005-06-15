@@ -30,6 +30,11 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.16  2005/06/15 20:18:21  rmikk
+ *  Added a static method to convert Detector Position to a Vector of Floats.
+ *    The format of the Floats depends on the Field argument.  This is wrapped
+ *    in an operator so that Scripts can have access to this information
+ *
  *  Revision 1.15  2004/04/26 13:09:54  rmikk
  *  Made the null constructor public
  *  Added more documentation
@@ -71,7 +76,8 @@ package  DataSetTools.dataset;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import   java.io.*;
-
+import DataSetTools.operator.Utils;
+import java.util.*;
 /**
  * The concrete class for an attribute whose value is a Position3D object.  
  *
@@ -356,4 +362,34 @@ public class DetPosAttribute extends Attribute
       System.out.println("Warning:DetPosAttribute IsawSerialVersion != 1");
   }
 
+  /**
+   * This static method returns the appropriate information from the DetPos.
+   * Used by an operator for Scripts
+   * @param DetPos  the detector postion
+   * @param Field   Either Spherical,Cartesian,Rectangular, or Cylindrical. 
+   *           These names are NOT case sensitive and has only 3 character 
+   *           significance
+   * @return   A Vector of Floats representing corresponding information
+   */
+
+   public static java.util.Vector DetPosGet( DetectorPosition DetPos, String Field)throws
+                         IllegalArgumentException
+   {
+      if( DetPos == null)
+          throw new IllegalArgumentException("Null Detector Position in DetPosGet");
+      if( Field == null)
+          throw new IllegalArgumentException("Null Field name in DetPosGet");
+       Field = Field.trim();
+       if( Field.length() < 3)
+          throw new IllegalArgumentException(" Improper Field name in DetPosGet");
+       Field = Field.substring(0,3);
+       if( ";SPH;REC;CYL;CAR;".indexOf(";"+Field.toUpperCase()+";")<0)
+            throw new IllegalArgumentException(" Improper Field name in DetPosGet");
+       Field = Field.toUpperCase();
+       if( Field.startsWith("SPH"))
+          return (Vector)Utils.ToVec(DetPos.getSphericalCoords());
+       if( Field.startsWith("REC") || Field.startsWith("CAR"))
+          return (Vector)Utils.ToVec(DetPos.getCartesianCoords());
+       return (Vector)Utils.ToVec(DetPos.getCylindricalCoords());
+   }
 }
