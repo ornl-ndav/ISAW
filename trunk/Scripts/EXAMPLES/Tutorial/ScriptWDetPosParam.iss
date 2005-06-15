@@ -8,7 +8,7 @@
 #@param  SampleOrientation  A Sample Orientation
 #@param  Message     A Message
 
-$SampleOrientation   PlaceHolder   Sample Orientation?
+$DetectorPosition   PlaceHolder   Sample Orientation?
 $Message             String        Enter Message
 $category= HiddenOperator
 
