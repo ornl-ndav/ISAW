@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2005/06/15 22:20:28  rmikk
+ * Now changes the Title of the Frame
+ *
  * Revision 1.8  2005/06/10 22:11:36  rmikk
  * Eliminated unused import
  *
@@ -194,6 +197,7 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
                             "Could not convert to float[][]."+s.toString());
       
     }
+    String Title = getParameter(1).getValue().toString();
     float minx= ((FloatPG)getParameter(2)).getfloatValue(), 
           maxx=((FloatPG)getParameter(3)).getfloatValue(),
           miny =((FloatPG)getParameter(4)).getfloatValue(),
@@ -210,6 +214,7 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
                         Ylabel,Yunits,AxisInfo.LINEAR);
    // (new ViewerSim(new ImageViewComponent(Varray))).show();
      Display2D display = new Display2D(Varray, Display2D.IMAGE,Display.CTRL_ALL);
+     display.setTitle( Title);
     gov.anl.ipns.Util.Sys.WindowShower.show(display);
     return "Success";
   }
@@ -222,6 +227,19 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
                      {2,3,4,5},
                      {3,4,5,6},
                      {4,5,6,6}};
+     dat= new int[1000][1000];
+     for(int i=0; i<1000;i++)
+       for(int j=0; j<1000;j++)
+          dat[i][j]=j+i*1000;
+     Vector V1 = new Vector();
+     Vector W;
+     for( int i=0; i<1000; i++){
+         W = new Vector();
+         for( int j=0; j<1000; j++)
+           W.add( new Integer( j+i*1000));
+         V1.add(W);
+     }
+       
      ViewArray  V = new ViewArray(dat,"Test",0.0f,5.0f,0.0f,10.0f,"X","Y","cm","ft");
      System.out.println( V.getResult());
 
