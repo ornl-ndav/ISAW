@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.47  2005/06/15 12:38:59  dennis
+ * Fix to deal with new error message reporting scheme for return
+ * statement. (Ruth)
+ *
  * Revision 1.46  2005/06/14 22:12:15  rmikk
  * Now gives Type mismatch error if some of the for loop elements have
  *   incorrect data types
@@ -684,7 +688,7 @@ public class ScriptOperator  extends  GenericOperator
     k = executeBlock( this.script,0 ,true ,0) ;
          
     // ------------- Check for errors -------------------
-    if( getErrorMessage().equals(execOneLine.WN_Return))
+    if( getErrorMessage().startsWith(execOneLine.WN_Return))
       seterror( -1,"");
     if( (perror < 0) && 
         !execOneLine.WN_Return.equals( ExecLine.getErrorMessage()))
