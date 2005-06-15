@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2005/06/15 13:49:39  dennis
+ *  Commented out informational message indicating where the
+ *  properties file is being loaded from.
+ *
  *  Revision 1.15  2005/06/03 21:35:54  dennis
  *  Added print statements showing what IsawProps.dat file is read.
  *  Added debug flag.  If set true, the original System properties
@@ -135,7 +139,7 @@ public class PropertiesLoader implements java.io.Serializable
         new_props.list(System.out);
       }
 
-      System.out.println("LOADING PROPERTIES FROM " + full_name + "....");
+//    System.out.println("LOADING PROPERTIES FROM " + full_name + "....");
       FileInputStream input = new FileInputStream( full_name );
       new_props.load( input );
       if ( debug )
@@ -149,7 +153,6 @@ public class PropertiesLoader implements java.io.Serializable
       System.setProperties( new_props );
       input.close();
       loaded_ok = true;
-      System.out.println("DONE LOADING PROPERTIES.");
 
     }catch ( IOException e ){
       System.out.println("Properties file: " + full_name + " NOT FOUND" );
