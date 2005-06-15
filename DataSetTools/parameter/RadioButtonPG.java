@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2005/06/15 12:49:55  dennis
+ *  getValue() method now checks for null before calling .toString()
+ *
  *  Revision 1.32  2004/03/12 21:13:49  bouzekc
  *  Added clear() method.
  *
@@ -152,8 +155,6 @@
  *
  *  Revision 1.1  2003/07/17 16:56:05  bouzekc
  *  Added to CVS.
- *
- *
  */
 package DataSetTools.parameter;
 
@@ -301,7 +302,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
         //update the GUI if it exists
         if( this.getInitialized(  ) ) {
-          JRadioButton selectedButton = ( JRadioButton )radioChoices.get( sVal );
+          JRadioButton selectedButton = ( JRadioButton )radioChoices.get(sVal);
 
           if( !selectedButton.isSelected(  ) ) {
             selectedButton.doClick(  );
@@ -321,13 +322,13 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    * @return String label of the selected radio button.
    */
   public Object getValue(  ) {
-    String sVal = super.getValue(  ).toString(  );
 
-    if( sVal == null ) {
-      sVal = "";
-    }
+    Object obj = super.getValue();
 
-    return sVal;
+    if ( obj == null )
+      return "";
+
+    return obj.toString();
   }
 
   /*
