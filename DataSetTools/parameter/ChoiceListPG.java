@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2005/06/15 12:44:05  dennis
+ *  getValue() method now returns an empty String by default ONLY if
+ *  there is no choice that can be returned.  (Ruth)
+ *
  *  Revision 1.21  2005/06/14 18:45:33  rmikk
  *  Returned "" in place of null
  *
@@ -229,7 +233,11 @@ public class ChoiceListPG extends ChooserPG {
   public Object getValue(){
     Object S = super.getValue();
     if( S == null)
-       return "";
+    {
+       if ( vals == null || vals.size() < 1 || vals.elementAt(0) == null )
+         return "";
+       return vals.elementAt(0).toString();
+    }
     return S;
   }
 }
