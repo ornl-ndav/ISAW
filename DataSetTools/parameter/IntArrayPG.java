@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2005/06/15 12:45:27  dennis
+ *  getValue() method now checks for null before calling .trim()
+ *
  *  Revision 1.21  2005/06/14 21:38:51  rmikk
  *  Now takes [] and quotes
  *
@@ -175,10 +178,14 @@ public class IntArrayPG extends StringEntryPG {
    *   Returns the string representation of the intList(Set) or ""
    */
   public Object getValue(){
-    String S = getStringValue().trim();
-    
+
+    String S = getStringValue();
+
     if( S == null)
        return "";
+
+    S = S.trim();
+
     if( S.length() <1)
        return "";
     if( S.startsWith("["))
