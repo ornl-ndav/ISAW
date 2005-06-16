@@ -14,7 +14,7 @@ DSS=ScriptUtil.load("C:/ISAW-old/SampleRuns/GPPD12358.run")
 ScriptUtil.display(DSS[1])
 
 
-op=ScriptUtil.getOperator("OmitNullData",[DSS[1]])
-op.getResult()
-#OmitNullData(DSS[1],0).getResult()
-ScriptUtil.display(DSS[1])
+op=ScriptUtil.getOperator("OmitNullData",[DSS[1],Boolean(1)])
+D=op.getResult()
+#D=OmitNullData(DSS[1],0).getResult()
+ScriptUtil.display(D)
