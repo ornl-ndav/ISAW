@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.46  2005/06/17 13:17:59  dennis
+ *  Removed method setName(), which is not used, and should not be
+ *  present, since Attributes should be immutable.
+ *
  *  Revision 1.45  2005/03/28 22:47:37  dennis
  *  Removed TITLE attribute, since the DataSet already has a
  *  field for the title.
@@ -884,17 +888,6 @@ abstract public class Attribute implements Serializable,
    * @return A reference to the String containing the attribute name. 
    */
   public String getName() { return name; }
-
-
-  /**
-   * Set the name for the attribute
-   *
-   * @param  name  The new name to use for this attribute. 
-   */
-  public void setName( String name )
-  {
-    this.name = name;
-  }
 
 
   /**
