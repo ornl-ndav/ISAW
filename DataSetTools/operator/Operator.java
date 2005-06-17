@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2005/06/17 13:16:48  dennis
+ *  Minor fixes to documentation.
+ *
  *  Revision 1.40  2005/01/28 19:28:22  dennis
  *  Added category Utils->Tests
  *
@@ -237,13 +240,13 @@ abstract public class Operator implements Serializable
     * Constructs an operator object with a specified title and default list 
     * of parameters.
     */
-
    protected Operator( String title )
    {
       this.title = title;
       parameters = null;
       setDefaultParameters();
    } 
+
 
   /* ----------------------------- getResult ---------------------------- */
   /**
@@ -257,6 +260,8 @@ abstract public class Operator implements Serializable
    */ 
    abstract public Object getResult();
 
+
+  /* -------------------------- getResultRemotely ----------------------- */
    /**
     * Uses RemoteOpExecClient to get a remote result.  The connection is made
     * using the REMOTE_HOST and REMOTE_PORT specified in IsawProps.dat.
@@ -276,6 +281,7 @@ abstract public class Operator implements Serializable
 
      return result;
    }
+
 
   /* ------------------------------ getTitle ----------------------------- */
   /**
@@ -314,6 +320,7 @@ abstract public class Operator implements Serializable
     return command;
   }
 
+
   /* ------------------------ getCategoryList ------------------------------ */
   /**
    * Get an array of strings listing the operator category names of base
@@ -335,31 +342,42 @@ abstract public class Operator implements Serializable
     return categoryList;
   }
 
-  /**
-   * Method to create a category list from this classes nearest
-   * abstract parent's package name.
-   */
-  protected String[] createCategoryList(){
-    // determine the correct abstract class
-    Class klass=this.getClass();
 
-    while(!isAbstract(klass)){
-      klass=klass.getSuperclass();
-    }
+   /* ------------------------- createCategoryList ---------------------- */
+   /**
+    * Method to create a category list from this classes nearest
+    * abstract parent's package name.
+    */
+   protected String[] createCategoryList(){
 
-    // get the category name and shorten it
-    String category=klass.getPackage().getName();
-    category = category.substring( category.indexOf( "." ) + 1, 
+     // determine the correct abstract class
+     Class klass=this.getClass();
+
+     while(!isAbstract(klass)){
+       klass=klass.getSuperclass();
+     }
+
+     // get the category name and shorten it
+     String category=klass.getPackage().getName();
+     category = category.substring( category.indexOf( "." ) + 1, 
                                                        category.length(  ) );
 
-    // split up into an array and return
-    return category.split( "\\." );
+     // split up into an array and return
+     return category.split( "\\." );
   }
 
-  static protected boolean isAbstract(Class klass){
-    int modifier=klass.getModifiers();
-    return java.lang.reflect.Modifier.isAbstract(modifier);
-  }
+
+   /* ---------------------------- isAbstract ---------------------------- */
+   /**
+    *  Check whether or not the specified class is abstract.
+    *
+    *  @param  klass  The class to check
+    */
+   static protected boolean isAbstract(Class klass){
+     int modifier=klass.getModifiers();
+     return java.lang.reflect.Modifier.isAbstract(modifier);
+   }
+
 
    /* ---------------------------- addParameter ---------------------------- */
    /**
@@ -372,12 +390,12 @@ abstract public class Operator implements Serializable
     */
    protected void addParameter( IParameter parameter )
    {
-       if(parameters==null)
+      if(parameters==null)
          parameters=new Vector();
        IParameter newParameter = (IParameter)parameter.clone();
        parameters.addElement( newParameter );
-      
    }
+
 
   /* ---------------------------- getNum_parameters ------------------------ */
   /**
@@ -417,6 +435,7 @@ abstract public class Operator implements Serializable
     else
       return null;
   }
+
 
   /* ---------------------------- setParameter --------------------------- */
   /**
@@ -460,14 +479,14 @@ abstract public class Operator implements Serializable
   /**
    *  Set the parameters to default values.  This function should be overridden
    *  in derived classes to produce a reasonable set of default parameter
-   *  values.
-   *
-   * This method was changed from abstract to throw an exception so it
-   * can play nice with jython.
+   *  values.  This method was changed from abstract to throw an exception 
+   *  so it can play nice with jython.
    */
   public void setDefaultParameters(){
-    throw new java.lang.IllegalStateException("subclass must implement setDefaultParameters()");
+    throw new java.lang.IllegalStateException(
+                             "subclass must implement setDefaultParameters()");
   }
+
 
   /* ------------------------------ toString ------------------------------- */
   /**
@@ -480,19 +499,19 @@ abstract public class Operator implements Serializable
     return getTitle();
   }
 
+
   /* -------------------------- CopyParametersFrom ------------------------- */
   /**
    * Copy the parameter list from operator "op" to the current operator.  The
    * original list of parameters is cleared before copying the new parameter
    * list. 
    *
-   *
    *  @param  op  The operator object whose parameter list is to be 
    *              copied to the current operator.
    */
   public void CopyParametersFrom( Operator op )
   {
-    int      num_param = op.getNum_parameters();
+    int num_param = op.getNum_parameters();
 
     if(parameters!=null){
       while(parameters.size()>0){
@@ -509,9 +528,11 @@ abstract public class Operator implements Serializable
       addParameter( (IParameter)op.getParameter(i) );
   }
 
+
+  /* ------------------------------ clone --------------------------------- */
   /**
-   * This should take care of clone for the majority of
-   * operators. Classes that need more can still override this method.
+   * Default clone method to take care of clone operation for the majority of
+   * operators.  Classes that need more can still override this method.
    */
   public Object clone(){
     try{
@@ -525,7 +546,8 @@ abstract public class Operator implements Serializable
     }
   }
 
-  /* -------------------------- getDocumentation --------------------------- */
+
+  /* ------------------------- getDocumentation --------------------------- */
   /**
    * Returns a string containing the end-user documentation for the
    * new help system.
@@ -534,6 +556,8 @@ abstract public class Operator implements Serializable
     return DEFAULT_DOCS;
   }
 
+
+  /* ----------------------- cleanParametersVector ------------------------ */
   /**
    * Utility method for clearing parameters Vector from Jython subclasses.
    * By making this final protected, Jython code can access it in
@@ -543,6 +567,8 @@ abstract public class Operator implements Serializable
     parameters = new Vector(  );
   }
   
+
+ /* ------------------------------- getSource ----------------------------- */
  /**
   * Returns the filename or classname associated with this operator.  It 
   * translates ScriptOperators, PyScriptOperators, and wrappables.
