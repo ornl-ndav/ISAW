@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/06/17 13:14:41  dennis
+ * Changed to use the DataSetPG.
+ *
  * Revision 1.2  2004/05/10 20:42:27  dennis
  * Test program now just instantiates a ViewManager to diplay
  * calculated DataSet, rather than keeping a reference to it.
@@ -71,6 +74,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Example.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
+import DataSetTools.parameter.*;
 import DataSetTools.viewer.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -118,7 +122,7 @@ public class CenteredDifferences extends GenericExample
   {
     this(); 
     parameters = new Vector();
-    addParameter( new Parameter("DataSet parameter", ds) );
+    addParameter( new DataSetPG("DataSet parameter", ds) );
   }
 
  /* ---------------------------- getCommand ------------------------------- */ 
@@ -141,7 +145,7 @@ public class CenteredDifferences extends GenericExample
   public void setDefaultParameters()
   {
     parameters = new Vector();
-    addParameter( new Parameter("DataSet parameter", DataSet.EMPTY_DATA_SET ) );
+    addParameter( new DataSetPG("DataSet parameter", DataSet.EMPTY_DATA_SET ) );
   }
 
   /* ---------------------- getDocumentation --------------------------- */
@@ -260,7 +264,7 @@ public class CenteredDifferences extends GenericExample
      System.out.println("Test of CenteredDifferences starting...");
                                                                // load a DataSet
      //String filename = "/usr/local/ARGONNE_DATA/hrcs2447.run";
-     String filename = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run";
+     String filename = "/usr2/ARGONNE_DATA/hrcs2447.run";
      RunfileRetriever rr = new RunfileRetriever( filename );
      DataSet ds = rr.getDataSet(1);
                                                                // make operator

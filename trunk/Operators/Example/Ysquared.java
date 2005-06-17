@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/06/17 13:14:41  dennis
+ * Changed to use the DataSetPG.
+ *
  * Revision 1.1  2004/05/07 17:23:49  dennis
  * Moved Ysquared from Operators to Operators.Example
  *
@@ -56,6 +59,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Example.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
+import DataSetTools.parameter.*;
 import DataSetTools.viewer.*;
 import java.util.*;
 
@@ -107,7 +111,7 @@ public class Ysquared extends GenericExample
   {
     this();
     parameters = new Vector();
-    addParameter( new Parameter("Data Set to Process", p_ds) );
+    addParameter( new DataSetPG("Data Set to Process", p_ds) );
   }
 
 
@@ -130,7 +134,7 @@ public class Ysquared extends GenericExample
   public void setDefaultParameters()
   {
     parameters = new Vector();
-    addParameter( new Parameter( "Data Set to Process", new DataSet("","") ));
+    addParameter( new DataSetPG( "Data Set to Process", new DataSet("","") ));
   }
 
  /* ---------------------- getDocumentation --------------------------- */
@@ -226,7 +230,7 @@ public class Ysquared extends GenericExample
                                                  // YOU MUST MODIFY THE RUN 
                                                  // NAME TO LOAD A FILE ON YOUR
                                                  // SYSTEM
-    String    run_name = "/home/dennis/ARGONNE_DATA/hrcs2447.run";
+    String    run_name = "/usr2/ARGONNE_DATA/hrcs2447.run";
     Retriever rr       = new RunfileRetriever( run_name );
     DataSet   ds       = rr.getDataSet(1);
 
