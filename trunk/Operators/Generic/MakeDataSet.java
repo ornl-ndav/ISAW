@@ -31,6 +31,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.11  2005/06/17 13:12:07  rmikk
+ * The calculate with arguments is now fully supported
+ * If the time axis values are decreasing, they are reversed along with 
+ *   the corresponding spectra
+ *
  * Revision 1.10  2005/01/10 15:36:01  dennis
  * Added getCategoryList method to place operator in menu system.
  *
@@ -144,12 +149,15 @@ public class MakeDataSet implements Wrappable, IWrappableWithCategoryList {
                  String YUnits, Vector GridWidths, Vector GridHeights) {
 
         this.errs = errs;
+        this.yvals = yvals;
+        this.xbins=xbins;
         this.Title = Title;
         this.XLabel = XLabel;
         this.XUnits = XUnits;
         this.YLabel = YLabel;
         this.YUnits = YUnits;
-
+        this.GridWidths=GridWidths;
+        this.GridHeights = GridHeights;
         return calculate();
     }       
     
@@ -195,7 +203,7 @@ public class MakeDataSet implements Wrappable, IWrappableWithCategoryList {
 
     }
 
-
+   private boolean reverse = false;
     /**
      * This method makes a DataSet out of Vectors containing arrays and/or
      * Vectors of the Data along with the errors.
@@ -221,6 +229,15 @@ public class MakeDataSet implements Wrappable, IWrappableWithCategoryList {
                                       floatArrayValue(xbinss);
             if( O == null)
               return new ErrorString( "Cannot convert xvals to a float[]");
+            if( O.length <1)
+               return  new DataSet( Title, new OperationLog(),XUnits,XLabel,
+                                YUnits,YLabel);
+            
+            if(O[0]> O[O.length-1]){
+              reverse = true;
+              gov.anl.ipns.Util.Numeric.arrayUtil.Reverse(O); 
+            }
+              
             xscl = new VariableXScale(O);
         
         } catch (RuntimeException ss) {
@@ -297,7 +314,8 @@ public class MakeDataSet implements Wrappable, IWrappableWithCategoryList {
             float[] yvalues = inf.Data(yvals);
             float[] errors = inf.Data(errs);
             Data D = null;
-
+            if( reverse)
+                gov.anl.ipns.Util.Numeric.arrayUtil.Reverse(yvalues);
             if (yvalues.length == xscl.getNum_x())
 
                 if (errors != null)
