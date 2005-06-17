@@ -7,9 +7,8 @@ import java.util.*;
 import NexIO.*;
 import Operators.Generic.MakeDataSet;
 import gov.anl.ipns.Util.SpecialStrings.*;
-//import DataSetTools.operator.*;
 import DataSetTools.dataset.*;
-import DataSetTools.viewer.*;
+
 /**
  * @author MikkelsonR
  *
@@ -191,6 +190,6 @@ public class NexViewUtils {
      return DS ;
   }
   public static void main(String[] args) {
-    System.out.println(NexViewUtils.getNxData(args[0],args[1],args[2]));
+    Command.ScriptUtil.display(NexViewUtils.getNxData(args[0],args[1],args[2]));
   }
 }
