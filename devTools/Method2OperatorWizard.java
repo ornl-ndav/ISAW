@@ -33,6 +33,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/06/17 13:09:25  rmikk
+ * Fixes String representation for classes that are arrays correctly
+ * Fixes String representation of interfaces correctly
+ * Multi line documentation for returns is now handled correctly
+ * The correct? methods are now being used for the Argument
+ *     ParameterGUI JComboBox
+ * Exceptions the static methods are now translated correctly to Java
+ *   code
+ *
  * Revision 1.3  2005/06/14 23:08:36  rmikk
  * Implemented the @error documentation system.
  * Change a name to be more descriptive
@@ -220,8 +229,37 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			return null;
 		S = S.trim();
 		if (S.startsWith("class "))
-			S = S.substring(5).trim();
-		return S;
+			S = S.substring(5);
+        else if( S.startsWith("interface "))
+            S=S.substring(9);
+        if(S != null)
+           S=S.trim();
+        String Res="";
+        boolean Arr=false;
+        while((S != null)&&( S.startsWith("["))){
+        
+          Res +="[]";
+          S=S.substring(1);
+          Arr=true;
+        }
+        if(!Arr)
+          return S;
+        if(S.equals("I"))
+          return "int"+Res;
+        if( S.equals("F"))
+          return "float"+Res;
+        if(S.equals("J"))
+          return "long"+Res;
+        if( S.equals("B"))
+          return "byte"+Res;
+        if( S.equals("S"))
+          return "short"+Res;
+        if( S.startsWith("L"))
+          return S.substring(1)+Res;
+        else
+          return S+Res;
+        
+	
 	}
 
 	/**
@@ -346,6 +384,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 		W.setSize(600, 600);
 		W.show();
+    
 	}
 
 	/**
@@ -694,8 +733,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				VarName.setText(m1.varName);
 				Prompt.setText(m1.Prompt);
 
-				for (int k = 0; k < ParamGUI.countComponents(); k++)
-					if (ParamGUI.getComponent(k).toString().equals(m1.GUIParm))
+				for (int k = 0; k < ParamGUI.getItemCount(); k++)
+					if (ParamGUI.getItemAt(k).toString().equals(m1.GUIParm))
 						ParamGUI.setSelectedIndex(k);
 				InitValue.setText(m1.InitValue);
 				lastSelection = i;
@@ -1161,11 +1200,28 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					fout.write(
 						MultiLine_ify(m.Docum, "      S.append(\"", "\");\r\n").getBytes());
 				}
+                String ret=StringUtil.replace(W.ReturnDoc, "\"", "\\\"");
+                if( ret != null)
+                  ret=ret.trim();
+                int kz=-1;
+                if( ret != null){
+                
+                   kz=ret.indexOf("\n");
+                   if( kz<0)
+                     k=ret.length();
+                }
+                if( kz>0){
+                
 				fout.write(
 					("      S.append(\"@return "
-						+ StringUtil.replace(W.ReturnDoc, "\"", "\\\"")
+						+ ret.substring(0,kz)
 						+ "\");\r\n")
 						.getBytes());
+                 if(kz < ret.length())
+                 fout.write(MultiLine_ify(ret.substring(kz),
+                                "      S.append(\"","\");\r\n").
+                                getBytes());
+                }      
 
 				for (int i = 0; i < W.ErrorDoc.size(); i++) {
 
@@ -1229,12 +1285,12 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					fout.write(
 						";\r\n         return \"Success\";\r\n      }catch(".getBytes());
 				Class[] Exceptions = W.methPanel.meth.getExceptionTypes();
-				for (int kk = 0; kk < Exceptions.length; k++) {
+				for (int kk = 0; kk < Exceptions.length; kk++) {
 					fout.write(
 						(FixUpClassName(Exceptions[kk]) + " S" + kk + "){\r\n         ")
 							.getBytes());
 					fout.write(
-						("new ErrorString(S" + kk + ".getMessage());\r\n      }catch(")
+						("return new ErrorString(S" + kk + ".getMessage());\r\n      }catch(")
 							.getBytes());
 				}
 				fout.write(
