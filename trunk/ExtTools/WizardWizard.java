@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2005/06/17 13:35:37  rmikk
+ * closed a file after reading and writing
+ * Added the PlaceHolderPG for possible Result ParameterGUI
+ *
  * Revision 1.4  2005/05/25 18:53:12  rmikk
  * The ResultPG's now have different names so the wizard can detect them.
  * The constants are now always given when there is a resultPG even if they
@@ -371,7 +375,7 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
           }
         }
         this.WizardDirectory= (String)oinp.readObject();
-        
+        oinp.close();
       
        
         
@@ -627,8 +631,9 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
       int FrSel =-1;
       int ToSel =-1;
       public  String[] RetStrings ={"Array","String","LoadFile",
-      "SaveFile","Boolean","DataSet","Float","InstName","Integer",
+      "SaveFile","Boolean","DataSet","Float","InstName","Integer","IntArray",
       "Material","MonitorDataSet","SampleDataSet","PulseHeight","PrinterName",
+      "PlaceHolder"
       };
       public VarPanel( WizardWizard W){
         super();
