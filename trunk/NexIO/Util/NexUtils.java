@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/06/17 13:23:54  rmikk
+ * Added a method getIntArrayAttriuteValue
+ *
  * Revision 1.11  2005/06/06 21:58:27  rmikk
  * Undid the Fortan Fix for incorrect ordering of array dimensions
  *
@@ -776,6 +779,29 @@ public class NexUtils implements INexUtils {
         return ConvertDataTypes.intArrayValue( Child.getNodeValue() );
 
     }
+
+
+
+
+  /**
+   *    returns null if no Attribute Name or cannot convert to an int[]
+   *    
+   */
+  public static int[] getIntArrayAttributeValue( NxNode Node , String AttrName ) {
+      if ( Node == null )
+          return null;
+        
+      if ( AttrName == null )
+          return null;
+        
+     Object Attr = Node.getAttrValue( AttrName );
+
+      if (Attr == null )
+          return null;
+        
+      return ConvertDataTypes.intArrayValue( Attr );
+
+  }
 
     /**
      *    returns null if no Field Name or cannot convert to Float
