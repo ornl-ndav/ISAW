@@ -33,6 +33,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2005/06/18 18:26:15  rmikk
+ * Omitted using default inputs when actual inputs were available
+ * Added extra global variables for more versatility in later changes to the
+ *    subcomponents.
+ * Changed listening and redrawing methodology so hopefully infinite cycles 
+ *   are not encountered.
+ * Separated out some code into methods  for more versatility in later changes to the
+ *    subcomponents.
+ *
  * Revision 1.9  2005/05/25 19:37:49  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -109,11 +118,13 @@ public class ProffenViewController extends DataSetViewer implements
     ViewControl[] vcomp;
     ViewMenuItem[] Men;
     ViewControl pan = null;
+    JTabbedPane ControlBlock= null;
     JPanel PanHolder = new JPanel(new GridLayout(1, 1)),
            intensityHolder = new JPanel(new GridLayout(1, 1)),
            colorHolder = new JPanel(new GridLayout(1, 1)),
            ViewHolder = new JPanel(new GridLayout(1, 1)),
-           ViewPanel;
+           ViewPanel= null,
+           ViewViewPanel=null;
            
     /**
      * @param data_set  The DataSet to be viewed by this viewer
@@ -137,12 +148,12 @@ public class ProffenViewController extends DataSetViewer implements
 
         mode = state.get_int(ViewerState.SLICEVIEWMODE);
         if (mode == 0)
-            Viewer = new ImageViewComponent(new VirtualArray2D(10, 10));
+            Viewer = new ImageViewComponent((IVirtualArray2D) ArrayMaker.getArray());
         else
             Viewer = new DataSetTools.viewer.Table.LargeJTableViewComponent
-                                      (null, new VirtualArray2D(10, 10));
-       
-        Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
+                                      (null, (IVirtualArray2D) ArrayMaker.getArray());
+      ArrayMaker.addActionListener(new ArrayMakerActionListener());
+        //Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
         init();
     }
     
@@ -150,8 +161,8 @@ public class ProffenViewController extends DataSetViewer implements
     // Initializes max and mins and controls
     private void init() {
       
-        Viewer.addActionListener(new ViewerActionListener());
-        ArrayMaker.addActionListener(new ArrayMakerActionListener());
+        
+       
         JPanel ControlPanel = new JPanel();
         BoxLayout layoutManager = new BoxLayout(ControlPanel, 
                                                   BoxLayout.Y_AXIS);
@@ -162,7 +173,7 @@ public class ProffenViewController extends DataSetViewer implements
         ControlPanel.add(ArrayControls[0]);
         //----------------- tabbed panels---------------------------
         //          --------------- for Array-----------------------
-        JTabbedPane ControlBlock = new JTabbedPane();
+        ControlBlock = new JTabbedPane();
 
         for (int i = 2; i + 1 < ArrayControls.length; i += 2) {
             JPanel jp = new JPanel();
@@ -177,33 +188,8 @@ public class ProffenViewController extends DataSetViewer implements
         }
         ControlBlock.addTab("Conversions", ArrayControls[1]);
         //         ------------- for viewer -------------------
-       
-        ViewPanel = new JPanel(new GridLayout(1, 1));
-        BoxLayout bLayout = new BoxLayout(ViewPanel, BoxLayout.Y_AXIS);
-
-        ViewPanel.setLayout(bLayout);
-        
-        SetUpNewViewer();
-      
-        ControlBlock.addTab("View", ViewPanel);
-       
-        ControlPanel.add(ControlBlock);
-        ControlPanel.add(PanHolder);
-        //--------------- Set up DataSetViewer ------------------------
-        Float F = new Float(20f);
-
-        if (state_Controller != null)
-            F = (Float) state_Controller.get(ViewerState.CONTROL_WIDTH);
-        float f = 20;
-
-        if (!F.isNaN())
-            f = F.floatValue();
-        setLayout(new GridLayout(1, 1));
-        ViewHolder.add(Viewer.getDisplayPanel());
-        add(new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
-                ViewHolder, ControlPanel, 1 - f / 100));
-                        
-        // -------------------- Set Up Menus ------------------------------------
+        SetUpViewComponent( ControlBlock, ControlPanel);
+       // -------------------- Set Up Menus ------------------------------------
      
         JRadioButtonMenuItem  
                 ShowImage =  new JRadioButtonMenuItem("Show Image"),
@@ -229,6 +215,37 @@ public class ProffenViewController extends DataSetViewer implements
         invalidate();
     }
 
+    private void SetUpViewComponent( JTabbedPane ControlBlock, JPanel ControlPanel){
+    
+          if( ViewViewPanel != null)
+              ViewViewPanel.removeAll();
+          ViewViewPanel = new JPanel(new GridLayout(1, 1));
+          BoxLayout bLayout = new BoxLayout(ViewViewPanel, BoxLayout.Y_AXIS);
+          Viewer.addActionListener(new ViewerActionListener());
+          ViewViewPanel.setLayout(bLayout);
+        
+          SetUpNewViewer();
+      
+          ControlBlock.addTab("View", ViewViewPanel);
+       
+          ControlPanel.add(ControlBlock);
+          ControlPanel.add(PanHolder);
+          //--------------- Set up DataSetViewer ------------------------
+          Float F = new Float(20f);
+
+          if (state_Controller != null)
+              F = (Float) state_Controller.get(ViewerState.CONTROL_WIDTH);
+          float f = 20;
+
+          if (!F.isNaN())
+              f = F.floatValue();
+          setLayout(new GridLayout(1, 1));
+          ViewHolder.removeAll();
+          ViewHolder.add(Viewer.getDisplayPanel());
+          removeAll();
+          add(new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
+                  ViewHolder, ControlPanel, 1 - f / 100));
+    }                
 
 
     private void SetUpNewViewer() {
@@ -237,7 +254,7 @@ public class ProffenViewController extends DataSetViewer implements
         pan = null;
         for (int i = 0; i < vcomp.length; i++)
             if (vcomp[i].getTitle() != ImageViewComponent.PAN_NAME)
-                ViewPanel.add(vcomp[i]);
+                  ViewViewPanel.add(vcomp[i]);
             else
                 pan = vcomp[i];
         if (pan != null)
@@ -338,6 +355,8 @@ public class ProffenViewController extends DataSetViewer implements
 
             if (fpt != null)
                 Viewer.setPointedAt(fpt);
+            Viewer.getDisplayPanel().repaint();
+            
         }	
     }
 
@@ -439,7 +458,11 @@ public class ProffenViewController extends DataSetViewer implements
         public void actionPerformed(ActionEvent evt) {
           
             if (evt.getActionCommand().equals(IArrayMaker.DATA_CHANGED)) {
-                Viewer.dataChanged((IVirtualArray2D) (ArrayMaker.getArray()));
+              
+               
+                Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
+               //DataChanged();
+                
                 if (Viewer instanceof IMarkerAddible) {
                     ((IMarkerAddible) Viewer).removeAllMarkers();
                     ((IMarkerAddible) Viewer).addMarker(
@@ -449,6 +472,36 @@ public class ProffenViewController extends DataSetViewer implements
         
             }  
         }
+      public void DataChanged(){
+        int mode = 0;
+        if( state != null)
+           mode=state.get_int(ViewerState.SLICEVIEWMODE);
+        if (mode == 0)
+          Viewer = new ImageViewComponent((IVirtualArray2D) ArrayMaker.getArray());
+        else
+           Viewer = new DataSetTools.viewer.Table.LargeJTableViewComponent
+                                             (null, (IVirtualArray2D) ArrayMaker.getArray());
+        if( state_Controller != null)
+          if( state_Controller.get("View")!= null)
+           Viewer.setObjectState( (ObjectState)state_Controller.get("View"));
+        Viewer.addActionListener(new ViewerActionListener());
+        ViewHolder.removeAll();
+        ViewHolder.add( Viewer.getDisplayPanel());
+        ViewViewPanel.removeAll();
+        PanHolder.removeAll();
+        vcomp = Viewer.getControls();
+        pan = null;
+        for (int i = 0; i < vcomp.length; i++)
+           if (vcomp[i].getTitle() != ImageViewComponent.PAN_NAME)
+               ViewViewPanel.add(vcomp[i]);
+           else
+               pan = vcomp[i];
+           if (pan != null)
+             PanHolder.add(pan);
+         ViewHolder.repaint();
+         ViewViewPanel.repaint();
+         PanHolder.repaint();
+      }
     }//ArrayMakerActionListener
 
 
