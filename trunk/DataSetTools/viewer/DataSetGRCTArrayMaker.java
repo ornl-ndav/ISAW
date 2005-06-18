@@ -33,6 +33,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2005/06/18 18:35:45  rmikk
+ * Stored the Grid data instead of its ID, for faster retrieval
+ * Used Arrays to sort the Grids
+ * Changed the Name of some of the state variables.
+ * Set the Grids on the Data Sets
+ * Reduced the chances of getting circular
+ *
  * Revision 1.15  2005/05/27 03:14:24  dennis
  * Changed to use get attribute method from AttrUtil, rather than
  * the old get attribute method from DataSet and Data
@@ -144,11 +151,11 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     IHandler[] Handler = new IHandler[ 5 ];
     float[] pixel_min;//4 is DS Num,3-GridNum, 2-col,1-row, 0 is time indicies
     float[] pixel_max;// index in given dimension
-    int[] GridNums;
+    IDataGrid[] GridNums;
 
     float MinTime, 
          MaxTime;
-    int NtimeChan = 0;// Number of channels over all, 0 use channels
+    int NTimeChan = 0;// Number of channels over all, 0 use channels
     int NrowChan = 0;// Number of row channels
     int NColChan = 0;// Number of col channels
     int NDssChan = 0;// Number of data set channels
@@ -201,6 +208,9 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     float[] initPixel_min = { 0f, 1f, 1f, 0f, 0f };
     float[] initPixel_max = {1f, 2f, 2f, 1f, 1f};
     int[] initPermutation = {0, 1, 2, 3, 4};
+    
+    IDataGrid[] V = null;
+    int top=0;
 
     // Initializes min's and max's in each dimension( DS,Grid,Col,Row and time)
     // and initializes all controls, and dimension handlers. The Object
@@ -208,8 +218,11 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     private void init() {
       
         //----------- Get ranges of rows,cols,etc in the set of data sets-----
-        Vector V = new Vector();
-
+        int NGridNums_max =0;
+        for( int i=0; i< DataSets.length; i++)
+           NGridNums_max +=DataSets[i].getNum_entries();
+        V = new IDataGrid[Math.min(2000,NGridNums_max)];
+        top=0;
         MaxChannels = -1;
         MaxRows = -1;
         MaxCols = -1;
@@ -217,43 +230,45 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         MaxTime = Float.NEGATIVE_INFINITY;
      
         for (int i = 0; i < DataSets.length; i++) {
-            int[] grid = NexIO.Write.NxWriteData.getAreaGrids(DataSets[ i ]);
-
-            if (grid != null)
-                for (int k = 0; k < grid.length; k++) {
-                    if (V.indexOf(new Integer(grid[ k ])) < 0) {
-                        V.addElement(new Integer(grid[ k ]));
-                    }
-
-                    IDataGrid G = NexIO.Write.NxWriteData.getAreaGrid( 
-                            DataSets[ i ], grid[ k ]);
-
-                    if (G.num_rows() > MaxRows) 
-                        MaxRows = G.num_rows();
-
-                    if (G.num_cols() > MaxCols)
-                        MaxCols = G.num_cols();
-
-                    XScale D = G.getData_entry(1, 1).getX_scale();
-
-                    if (D.getNum_x() > MaxChannels)
-                        MaxChannels = D.getNum_x();
-
-                    if (D.getStart_x() < MinTime)
-                        MinTime = D.getStart_x();
-
-                    if (D.getEnd_x() > MaxTime)
-                        MaxTime = D.getEnd_x();
-      
+             for( int d=0; d< DataSets[i].getNum_entries(); d++){
+                Data D = DataSets[i].getData_entry(d);
+                float mnx= D.getX_scale().getStart_x();
+                if( mnx <MinTime)
+                   MinTime = mnx;
+                mnx=D.getX_scale().getEnd_x();
+                if( mnx > MaxTime)
+                   MaxTime = mnx;
+                if( D.getX_scale().getNum_x()>MaxChannels)
+                   MaxChannels = D.getX_scale().getNum_x();
+                PixelInfoList pinf=(PixelInfoList ) D.getAttributeValue(Attribute.PIXEL_INFO_LIST) ;
+                IDataGrid grid= null;
+                if( pinf != null){
+                   grid= pinf.pixel(0).DataGrid();          
+                   Insert(grid);
                 }
-        }
+                if(grid != null){
+                
+                   if( grid.num_rows()>MaxRows)
+                     MaxRows = grid.num_rows();
+                   
+                   if( grid.num_cols()>MaxCols)
+                      MaxCols = grid.num_cols();             
+                                   
+                }
+             }
+             UniformGrid.setDataEntriesInAllGrids( DataSets[i]); 
+         }
+       
         //-------------Set the array of Grid Nums ------------------
         
-        GridNums = new int[ V.size() ];
-        for (int i = 0; i < V.size(); i++)
-            GridNums[ i ] = ((Integer) (V.elementAt(i))).intValue();
+        GridNums = new IDataGrid[top ];
+        for (int i = 0; i <top; i++){
+        
+            GridNums[ i ] = ((IDataGrid) (V[i]));
+           
+        }
             
-        java.util.Arrays.sort(GridNums);        
+        //java.util.Arrays.sort(GridNums);        
        
         //--------------Set up Controls --------------------   
         // Eliminate cases so do not step thru dimensions of length 2
@@ -336,7 +351,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             float[] xvals = new float[  end - start ];
 
             for (int i = start; i < end; i++)
-                xvals[ i - start ] = (float) GridNums[ i ];
+                xvals[ i - start ] = (float) GridNums[ i ].ID();
                 
             ACS[ 3 ].setFrame_values(xvals);
             ACS[ 3 ].setBorderTitle("Grid");
@@ -454,7 +469,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             int nsteps = 0;
 
             if (state != null)
-                nsteps = this.getInt((Integer) state.get("NtimeChan"), nsteps);
+                nsteps = this.getInt((Integer) state.get("NTimeChan"), nsteps);
             ACS[ 0 ] = new AnimationController();
             String units = "us";
 
@@ -485,6 +500,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
 
         }
 
+       
         for (int i = 0; i < 2; i++)
             SetEnabled(ACS[ Permutation[ i ] ], false);
 
@@ -509,10 +525,63 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
 
         }
 
+       
     }//init
 
-
-
+    // increase with Grid ID no repeats
+    private void Insertx( IDataGrid grid){
+       if( V== null)
+          return;
+         
+       if( grid== null)
+          return;
+       int i=top-1;
+       for( i=top-1; (i>0)&&(grid.ID()< ((IDataGrid)(V[i])).ID()); i++){}
+       if( i>=top)
+          V[top++]= grid;
+       else if( grid.ID()<((IDataGrid)(V[i])).ID())
+          V[i]= grid;
+    }
+    
+    private void Insert(IDataGrid grid){
+      if( grid == null)
+         return;
+      if( V== null)
+         return;
+      if( top +5> V.length){
+          IDataGrid[] Res = new IDataGrid[V.length+1500];
+          System.arraycopy( V,0,Res,0,V.length);
+          V=Res;
+      }
+      int ID = grid.ID();
+      //in list?
+      int k=top;
+     
+      for( int i=top-1; (i>=0)&&(V[i].ID()>ID);i--){k=i;}
+      if(k>=1)
+        if( V[k-1].ID() == ID)
+           return;
+      for(int i=top; i-1>=k;i--)
+        V[i]=V[i-1];
+      V[k]=grid;
+      top++;
+    }
+   // Returns index in the GridNum array where the GridID is
+   private int Search( IDataGrid[] GridNums, int GridID){
+      int first,mid,last;
+      first= 0; last = GridNums.length-1;
+      mid = (first+last)/2;
+      while( first < last){
+          if( GridNums[mid].ID()>GridID){
+             first = mid+1;
+          }else if( GridNums[mid].ID()<GridID)
+             last = mid-1;
+          else
+             return mid;
+          mid =(first+last)/2;
+      }
+     return -1;
+   }
     private void SetUpVariables(ObjectState state) {
         if (state == null)
             return;
@@ -525,7 +594,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         Handler[ 0 ] = new TimeHandler(
                     getFloat((Float) state.get("MinTimex"), 0f),
                     getFloat((Float) state.get("MaxTimex"), MaxTime),
-                    MaxChannels, getInt((Integer) state.get("NtimeChan"), 0));
+                    MaxChannels, getInt((Integer) state.get("NTimeChan"), 0));
         Handler[ 1 ] = new RowHandler(
                     getInt((Integer) state.get("StartRow"), 1),
                     getInt((Integer) state.get("EndRow"), MaxRows),
@@ -555,11 +624,11 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                                                "MinGridindx", "MinDSindex"};
     String[] ControlMaxVal = {"MaxTimex", "EndRow", "EndCol", "MaxGridindx",
                                                                "MaxDSindex"};
-    String[] ControlNSteps = {"NtimeChan", "NrowChan", "NcolChan", "NGridChan",
+    String[] ControlNSteps = {"NTimeChan", "NrowChan", "NcolChan", "NGridChan",
                                                                 "NDssChan"};
     private void SetUpControls(ObjectState state) {
       
-        if (state.get("NtimeChan").equals(new Integer(0)))
+        if (state.get("NTimeChan").equals(new Integer(0)))
             ControlUnits[0] = "Channel";
         else
             ControlUnits[0] = "us";
@@ -640,7 +709,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             st.insert("pixel_max", initPixel_max);
             st.insert("MinTimex", new Float(0));
             st.insert("MaxTimex", new Float(MaxChannels));
-            st.insert("NtimeChan", new Integer(0));
+            st.insert("NTimeChan", new Integer(0));
             st.insert("NrowChan", new Integer(0));
             st.insert("NcolChan", new Integer(0));
             st.insert("StartRow", new Integer(1));
@@ -934,7 +1003,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     public void setPointedAt(floatPoint2D fpt) {
       
         float time;
-        LastPointedAtIndex =-1;  LastPointedAtTime = -1;
+        //LastPointedAtIndex =-1;  LastPointedAtTime = -1;
         if (Grids == null)
             return;
         time = getTime(fpt.y, fpt.x);
@@ -942,7 +1011,9 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         //    first row to start at 0 not 1
         //    The ImageViewComponent starts where XAxisInfo says it starts.
         int DSindx = getDataBlockIndex(fpt.y, fpt.x);
-
+        if( DSindx == LastPointedAtIndex)
+           if( DataSets[0].getPointedAtX()==LastPointedAtTime)
+              return;//eliminates loop
         if (DSindx < 0) 
             return;
         Data D = DataSets[0].getData_entry(DSindx);
@@ -950,7 +1021,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         if (D == null)
             return;
         LastPointedAtIndex = DSindx;
-        if (getInt((Integer) state.get("NtimeChan"), 0) == 0) {
+        if (getInt((Integer) state.get("NTimeChan"), 0) == 0) {
             XScale xscl = D.getX_scale();
 
             time = .5f * (xscl.getX((int) (time)) +
@@ -1004,7 +1075,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
 
             if ((V == null) || (V.size() < 3))
                 return null;
-            int GridIndx = Arrays.binarySearch(GridNums, 
+            int GridIndx = Search(GridNums, 
                     ((Integer) V.elementAt(2)).intValue());
 
             if (GridIndx < 0)
@@ -1017,7 +1088,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             changed = changed || Setind(3, GridIndx);
             int timeChan = -1;
 
-            if (state.get("NtimeChan").equals(new Integer(0))) {
+            if (state.get("NTimeChan").equals(new Integer(0))) {
                 timeChan = DataSets[0].getData_entry(DSindx).
                                             getX_scale().getI_GLB(time);
                 changed = changed || Setind(0, timeChan);
@@ -1041,7 +1112,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         Arrays.fill(Displayrowcol, -1f);
         for (int i = 0; i < 2; i++)
             if (Permutation[i] == 0)
-                if (state.get("NtimeChan").equals(new Integer(0)))
+                if (state.get("NTimeChan").equals(new Integer(0)))
                     Displayrowcol[i] = timechan;//Handler[0]
                 else
                     Displayrowcol[i] = time;//indexOf(0, time);
@@ -1578,20 +1649,21 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
      *  @see    gov.anl.ipns.ViewTools.Components.AxisInfo
      */
     public AxisInfo getAxisInfo(int axiscode) {
-
+        AxisInfo A=null;
         if (axiscode == AxisInfo.X_AXIS) {
 
             int f = Permutation[ 0 ];
 
-            return getAxisInfo(f, false);
+            A= getAxisInfo(f, false);
 
         } else if (axiscode == AxisInfo.Y_AXIS) {
 
-            return getAxisInfo(Permutation[ 1 ], true);
+            A=getAxisInfo(Permutation[ 1 ], true);
 
         } else 
             return new AxisInfo();
-
+        
+        return A;
     }
     
     
@@ -1616,7 +1688,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                 Maxtimex = x;
              
             }
-            float nchan = ((Integer) state.get("NtimeChan")).intValue() - 1;
+            float nchan = ((Integer) state.get("NTimeChan")).intValue() - 1;
 
             if ((Xscales[ 0 ].getXScale() != null) && (nchan > 0))
                 return new AxisInfo(Mintimex, Maxtimex, 
@@ -1695,10 +1767,10 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         Grids = null;
         Grids = new IDataGrid[ GridNums.length ];
         for (int i = 0; i < Grids.length; i++) {
-            Grids[ i ] = 
-                    NexIO.Write.NxWriteData.getAreaGrid(DS, GridNums[ i ]);
-
+            Grids[ i ] = GridNums[i];
+                    //NexIO.Write.NxWriteData.getAreaGrid(DS, GridNums[ i ].ID());
         }
+      
 
     }
 
@@ -2396,8 +2468,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                 state.insert("MinTimex", new Float(this.MinTime));
             if (!state.reset("MaxTimex", new Float(this.MaxTime)))
                 state.insert("MaxTimex", new Float(this.MaxTime));
-            if (!state.reset("NtimeChan", new Integer(this.Nslices)))
-                state.insert("NtimeChan", new Integer(this.Nslices));
+            if (!state.reset("NTimeChan", new Integer(this.Nslices)))
+                state.insert("NTimeChan", new Integer(this.Nslices));
            
         }
    
@@ -2457,8 +2529,6 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public float getValue(DataSet[] DSS, float[] minInds,
             float[] maxInds) {
 
-            //DataSet DS = DSS[ (int)minInds[ 4 ]  ] ;
-            //int gridNum = GridNums[ (int)minInds[ 3 ] ];
             int col = (int) minInds[ 2 ];
             int row = (int) minInds[ 1 ];
             IDataGrid grid = Grids[ (int) minInds[ 3 ] ];
@@ -2635,14 +2705,40 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public void actionPerformed(ActionEvent evt) {
 
             XScaleChooserUI xscl = Xscales[ 3 ];
-
+               
             if (xscl == null)
                 return;
-            if (xscl.getNum_x() == 0)
-                Handler[ 3 ] = new GridHandler(0, GridNums.length - 1, 0);
-            else
-                Handler[ 3 ] = new GridHandler((int) xscl.getStart_x(), 
-                            (int) xscl.getEnd_x(), xscl.getNum_x() - 1);
+            if( GridNums == null)
+               return;
+            if( GridNums.length <= 1)
+               return;
+            if (xscl.getNum_x() == 0){
+            
+               
+                if( state.get("NGridChan") !=new Integer(0)){
+                   float low =(GridNums.length)*(xscl.getStart_x()-GridNums[0].ID())/(
+                                            float)(GridNums[GridNums.length-1].ID()-GridNums[0].ID());
+                   float top =GridNums.length*(xscl.getEnd_x()-GridNums[0].ID())/
+                                 (float)(GridNums[GridNums.length-1].ID()-GridNums[0].ID());
+                   Xscales[3].set("GridNum",low, top,0 );
+                   xscl=Xscales[3];
+                }
+                Handler[ 3 ] = new GridHandler((int)xscl.getStart_x(), (int)xscl.getEnd_x(), 0);
+                
+            }else{
+            
+               
+                if( state.get("NGridChan")== new Integer(0)){//Change units so change XScale
+                    int l = GridNums[GridNums.length-1].ID()-GridNums[0].ID();
+                    float low = GridNums[0].ID()+l*xscl.getStart_x()/(float)GridNums.length;
+                    float high = GridNums[0].ID()+l*xscl.getEnd_x()/(float)GridNums.length;
+                    Xscales[3].set("GridID",low,high, xscl.getNum_x());
+                    xscl = Xscales[3];
+                }
+               Handler[ 3 ] = new GridHandler((int) xscl.getStart_x(), 
+                                         (int) xscl.getEnd_x(), xscl.getNum_x() - 1);
+              
+            }
 
             notifyListeners(IArrayMaker.DATA_CHANGED);
             SetUpAnimControl(ACS[ 3 ], Handler[ 3 ]);
@@ -2717,7 +2813,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             else
                 Handler[ 2 ] = new ColHandler((int) xscl.getStart_x(), 
                             (int) xscl.getEnd_x(), xscl.getNum_x() - 1);
-
+            
             notifyListeners(IArrayMaker.DATA_CHANGED);
             SetUpAnimControl(ACS[ 2 ], Handler[ 2 ]);
 
@@ -2867,24 +2963,35 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                 return;
              
             } else if (Xscales[ 0 ].getNum_x() == 0) {
-                if (state.get("NtimeChan").equals(new Integer(0)))
+                if (state.get("NTimeChan").equals(new Integer(0))){//Just change start and end
+                
                     Handler[0] = new TimeHandler(xscl.getStart_x(),
                                 xscl.getEnd_x(), MaxChannels, 0);
-                else {// Change from time to channel
+                    state.reset("MinTimeX",new Float( xscl.getStart_x()));
+                    state.reset("MaxTimeX",new Float( xscl.getEnd_x()));
+                   
+                    
+                    
+                }else {// Change from time to channel
                     float low_r = Math.max(0, (xscl.getStart_x() - MinTime) / (MaxTime - MinTime));
                     float top_r = Math.min(1, (xscl.getEnd_x() - MinTime) / (MaxTime - MinTime));
-
+                    int numx= Xscales[0].getNum_x();
+                    if( numx <0) return;
                     if (top_r < low_r) return;
-                    Handler[0] = new TimeHandler(MaxChannels * low_r, MaxChannels * top_r, MaxChannels, 0);
+                    Handler[0] = new TimeHandler(MaxChannels * low_r, MaxChannels * top_r, MaxChannels, numx);
                    
-                    Xscales[0].set("Channel", MaxChannels * low_r, MaxChannels * top_r, 0);
+                    Xscales[0].set("Channel", MaxChannels * low_r, MaxChannels * top_r, numx);
                     Xscales[0].invalidate();
+                    state.reset("MinTimeX",new Float( MaxChannels * low_r));
+                    state.reset("MaxTimeX",new Float( MaxChannels * top_r));
+                    state.reset("NTimeChan",new Integer( numx ));
+                   
                    
                 }
              
             } else {
               
-                if (state.get("NtimeChan").equals(new Integer(0))) { //Changed from chan to time
+                if (state.get("NTimeChan").equals(new Integer(0))) { //Changed from chan to time
                     float low_r = Math.max(0, xscl.getStart_x() / MaxChannels);
                     float top_r = Math.min(1, xscl.getEnd_x() / MaxChannels);
 
@@ -2896,10 +3003,18 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                     Xscales[0].set("us", low_r, top_r, xscl.getNum_x());
                 
                     Xscales[0].invalidate();
+                  state.reset("MinTimeX",new Float( low_r));
+                  state.reset("MaxTimeX",new Float( top_r));
+                  state.reset("NTimeChan",new Integer(xscl.getNum_x()));
+                    
                 
                 } else {//Only ranges are changed
                     Handler[0] = new TimeHandler(xscl.getStart_x(), xscl.getEnd_x(), MaxChannels,
                                 xscl.getNum_x());
+
+                  state.reset("MinTimeX",new Float(xscl.getStart_x()));
+                  state.reset("MaxTimeX",new Float( xscl.getEnd_x()));
+                  state.reset("NTimeChan",new Integer(xscl.getNum_x()));
                 }
                               
             }
@@ -3388,12 +3503,13 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                 if (orient != null) if (initPath > 0)if (COP != null)
                             for (int gr = 0; gr < GridNums.length; gr++)
                                 if (InRange(3, gr, MinValues)) {
-                                    IDataGrid grid = NexIO.Write.NxWriteData.getAreaGrid(DataSets[ds], GridNums[gr]);
+                                    IDataGrid grid = GridNums[gr];
+                                              //NexIO.Write.NxWriteData.getAreaGrid(DataSets[ds], GridNums[gr]);
              
                                     XScale xscl = null;
 
                                     if (grid != null) {
-                                        if (state.get("NtimeChan").equals(new Integer(0))) {//Convert to time
+                                        if (state.get("NTimeChan").equals(new Integer(0))) {//Convert to time
                                             xscl = grid.getData_entry(1, 1).getX_scale();
                                             MinValues[0] = xscl.getX((int) Math.max(0, MinValues[0]));
                                             MinValues[5] = xscl.getX((int) Math.min(xscl.getNum_x() - 1, (MinValues[5])));
@@ -3533,5 +3649,29 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             ));
         WindowShower.show(fr);
 
+    }
+    
+    class GridIDCompare implements Comparator{
+      
+      public int compare(Object o1,
+                         Object o2){
+              if(!(o1 instanceof IDataGrid))
+                 throw new IllegalArgumentException();
+              if(!(o2 instanceof IDataGrid))
+                 throw new IllegalArgumentException();
+              if(((IDataGrid)o1).ID()<((IDataGrid)o2).ID())
+                 return -1;
+
+              if(((IDataGrid)o1).ID()>((IDataGrid)o2).ID())
+                    return 1;
+              return 0;
+              
+                         }
+      public boolean equals(Object obj){
+          if(compare(this,obj)==0)
+             return true;
+          return false;
+        
+      }
     }
 }//DataSetGRCTArrayMaker
