@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/06/19 20:30:32  rmikk
+ * Fixed error for excluding java and sun errors
+ *
  * Revision 1.11  2005/06/06 15:59:30  rmikk
  * Added Method to unravel stack dump info to report for error messages
  *
@@ -729,6 +732,15 @@ public class ScriptUtil{
     return new_array;
   }
 
+
+  /**
+   * Gets a list of strings corresponding to the printStackTrace from a throwable
+   * @param s   The throwable or Exception
+   * @param excludeJava  If true, the trace elements corresponding to java and 
+   *                       sun internals are not included
+   * @param nlines  The number of Strings returned
+   * @return       A list or max nlines Strings .
+   */
   public static String[] GetExceptionStackInfo( Throwable s, boolean excludeJava, int nlines){
     StackTraceElement[] elts = s.getStackTrace();
     Vector V = new Vector();
@@ -736,7 +748,7 @@ public class ScriptUtil{
       String C = elts[i].getClassName();
       if( C != null)
       if( excludeJava &&!C.startsWith("java.")&&!C.startsWith("sun."))
-        V.addElement( "class "+C+" at line "+ elts[i].getLineNumber());
+       {}
       else
         V.addElement( "class "+C+" at line "+ elts[i].getLineNumber());
           
