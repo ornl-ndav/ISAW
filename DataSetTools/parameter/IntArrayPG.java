@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2005/06/19 19:54:56  rmikk
+ *  Eliminated a ClassCast Exception by testing it first
+ *
  *  Revision 1.22  2005/06/15 12:45:27  dennis
  *  getValue() method now checks for null before calling .trim()
  *
@@ -171,7 +174,12 @@ public class IntArrayPG extends StringEntryPG {
    * @return The value of this PG in String format.
    */
   public String getStringValue(  ) {
-    return ( String )super.getValue(  );
+    Object Res = super.getValue();
+    if( Res == null)
+       return "";
+    if( Res.toString() == null)
+       return "";
+    return Res.toString();
   }
 
   /**
