@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.64  2005/06/19 20:31:19  rmikk
+ * In LoadDebug mode, line numbers and class where error occurs is
+ *   now indicated.
+ *
  * Revision 1.63  2005/05/25 02:49:06  rmikk
  * Made a private static method public so that this method will not invoke
  *   the search for all the operators
@@ -200,7 +204,9 @@
  * Put the order of parsing directories back to correct order.
  *
  * Revision 1.19  2001/12/07 20:40:30  pfpeterson
- * Corrected directory parser to not double load operators and scripts if isaw is installed in $HOME/ISAW. We still should account for multiply defined directories within the GROUP#_HOME listings.
+ * Corrected directory parser to not double load operators and scripts if isaw
+ * is installed in $HOME/ISAW. We still should account for multiply defined directories
+ * within the GROUP#_HOME listings.
  *
  */
 package Command;
@@ -1244,7 +1250,20 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 int index=classname.indexOf(".");
                 if(index>0)
                     classname=classname.substring(index+1,classname.length());
+                else{
+                    if( LoadDebug)System.out.print("Cannot Create Class Def");
+                    return null;
+                }
+            }catch( ClassNotFoundException e3){
+                 if(LoadDebug)
+                    System.out.print(" Class not found ");
+                 return null;     
             }catch( Throwable e1){
+              String[] SS=ScriptUtil.GetExceptionStackInfo(e1,true,1);
+              String S="";
+              if( SS!=null) if(SS.length>=1)
+                 S=SS[0];
+              if(LoadDebug)if(S.length()>1) System.out.print("err="+S);
               return null;
             }
         }
