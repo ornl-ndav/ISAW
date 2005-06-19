@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2005/06/19 21:21:30  dennis
+ *  Added PixelDepthScale=256 to default properties.  This is needed
+ *  for the correct calculation of depth values with jogl when
+ *  using the ATI proprietary drivers for FireGL T2 cards (and
+ *  possibly other ATI cards).  This is commented out by default
+ *  since it is not needed with Mesa or NVidia cards.
+ *
  *  Revision 1.29  2005/06/14 21:07:19  dennis
  *  Removed Instrument_Macro_Path and Script_Macro_Path from
  *  the default properties file written by ISAW, since these
@@ -327,6 +334,12 @@ public class DefaultProperties{
             .append("Isaw_Height=0.4").append(eol)
             .append("Tree_Width=0.2").append(eol)
             .append("Status_Height=0.2").append(eol)
+            .append(eol)
+            .append("#").append(eol)
+            .append("# PixelDepthScale=256 for ATI FireGL T2 drivers on nw8000")
+            .append(eol)
+            .append("#").append(eol)
+            .append("#PixelDepthScale=256").append(eol)
             .append(eol)
             .append("#").append(eol)
             .append("# Viewer Options").append(eol)
