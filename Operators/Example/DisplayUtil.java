@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/06/20 16:49:54  dennis
+ * Changed DisplayAsImage to Display_As_Image for consistency with
+ * the other method name in this file.
+ *
  * Revision 1.1  2005/06/20 15:19:11  dennis
  * Initial commit of file with several utility methods for
  * displaying one or more DataSets.
@@ -114,12 +118,12 @@ public class DisplayUtil
    *  @param  ds   The DataSet whose Data blocks will be used to form the
    *               image.
    */
-  public static void DisplayAsImage( DataSet ds )
+  public static void Display_As_Image( DataSet ds )
   {
     String error = null;
     if ( ds == null )
     {
-      error = "DataSet is null in DisplayAsImage";
+      error = "DataSet is null in Display_As_Image";
       throw ( new IllegalArgumentException( error ) );
     }
                                               // make a huge virtual array
@@ -175,7 +179,7 @@ public class DisplayUtil
                                               // to hold all of the spectra
                                               // as rows of the iamge
 
-    DisplayAsImage( ds );
+    Display_As_Image( ds );
 
     Vector ds_list = new Vector();
     ds_list.addElement( ds ); 
