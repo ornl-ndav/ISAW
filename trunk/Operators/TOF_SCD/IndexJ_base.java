@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2005/06/20 00:43:26  rmikk
+ * Used RealArrayPG instead of ArrayPG to get better type checking
+ *
  * Revision 1.4  2005/01/04 17:00:59  rmikk
  * Eliminated unused imports
  * Made a hidden operator because result is not a string
@@ -115,7 +118,7 @@ public class IndexJ_base extends    GenericTOF_SCD implements
                                 // parameters
     
     addParameter( new PlaceHolderPG("Peaks Vector", new Vector()));
-    addParameter(new ArrayPG("Orientation matrix", null));
+    addParameter(new RealArrayPG("Orientation matrix", new float[0][0]));
     //2
     addParameter(new IntArrayPG("Restrict Runs",null));
     //3
