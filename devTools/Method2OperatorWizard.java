@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2005/06/20 16:47:43  rmikk
+ * Added Some message boxes to indicate while a file does not work
+ *
  * Revision 1.4  2005/06/17 13:09:25  rmikk
  * Fixes String representation for classes that are arrays correctly
  * Fixes String representation of interfaces correctly
@@ -188,8 +191,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			k1 = ClassPth.length();
 		int i = fileName.lastIndexOf(".");
 
-		if (i < 0)
+		if (i < 0){
+		    JOptionPane.showMessageDialog(null, "Filename has no dots :"+fileName);
 			return null;
+        }
 		fileName = fileName.substring(0, i);
 		for (; k < ClassPth.length();) {
 			String S = ClassPth.substring(k, k1);
@@ -204,6 +209,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			if (k1 < 0)
 				k1 = ClassPth.length();
 		}
+        JOptionPane.showMessageDialog(null, "No ClassPath choice hits this filename");
 		return null;
 	}
 
@@ -605,8 +611,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			if (evt.getActionCommand().equals("FileName:Method")) {
 				JFileChooser jf = new JFileChooser(fileName);
 
-				if (jf.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
+				if (jf.showOpenDialog(null) != JFileChooser.APPROVE_OPTION){
+				  
 					return;
+                 }
 				fileName = jf.getSelectedFile().getAbsolutePath();
 				SetMethodList(fileName);
 
@@ -655,8 +663,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		public void SetMethodList(String fileName) {
 
 			try {
-				if (W.getClassName(fileName) == null)
+				if (W.getClassName(fileName) == null){
+				
 					return;
+                }
 				Class C = Class.forName(W.getClassName(fileName));
 
 				MethodList.setBorder(
@@ -683,6 +693,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 			} catch (Exception s) {
 				s.printStackTrace();
+                JOptionPane.showMessageDialog(null, "improper class:"+
+                          Command.ScriptUtil.GetExceptionStackInfo( s,true,1)[0]);
+                
 			}
 		}
 
