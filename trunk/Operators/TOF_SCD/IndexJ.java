@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.24  2005/06/20 00:44:08  rmikk
+ * Made the private method readOrient public
+ *
  * Revision 1.23  2005/06/09 16:00:03  rmikk
  * Made the method readOrient public so it can be made into an operator
  *    and used by scripts.
@@ -534,6 +537,11 @@ public class IndexJ extends    GenericTOF_SCD {
 
   /**
    * Read the orientation matrix out of the specified file.
+   * @param matrixfile The file storing the UB Matrix. It can be a
+   *                  *.x,or *.mat file
+   * @return a float[][] rerpesentation of the orientation matrix or
+   *          an ErrorString
+   * 
    */
   public static Object readOrient(String matrixfile){
     TextFileReader tfr=null;
