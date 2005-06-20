@@ -1,3 +1,4 @@
+$Category=Macros,Utils,Examples
 ##############################
 # Integer Data
 ##############################
@@ -45,7 +46,7 @@ addArr = iArr1 + iArr2
 combArr = iArr1 & iArr2
 
 Display "Integer Array 1: " & iArr1
-Display "Integer Array 2: " & iArr1
+Display "Integer Array 2: " & iArr2
 Display "Integer Array 1 + 5: " & sumArr
 Display "Integer Array 1 * 5: " & multArr
 Display "Integer Array 1 + Integer Array 2: " & addArr
@@ -74,7 +75,7 @@ extFile = datadir & fs & filename
 Display "Opening file: " & extFile
 
 n = Load extFile, "runFile"
-Display "Loaded " & " datasets"
+Display "Loaded " & n & " datasets"
 Display runFile[1]
 Send runFile[1]
 
