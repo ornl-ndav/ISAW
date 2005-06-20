@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2005/06/20 00:44:56  rmikk
+ * IMproved javadocs
+ *
  * Revision 1.3  2005/01/04 17:02:11  rmikk
  * Implements HiddenOperator.  The result is not a String or a DataSet
  *
@@ -65,7 +68,15 @@ import DataSetTools.util.SharedData;
 
 /**
  *  Finds the orientation matrix that is the best fit to the peak
- * positions and indexed h,k,l values for the peaks
+ * positions and indexed h,k,l values for the peaks.
+ * Input parameters:
+ *     A Vector of Peaks objects
+ *     String form(IntList) for the restricted run numbers 
+ *     String form(IntList) for the restricted sequence numbers 
+ *     String form for the Transformed Matrix
+ *     FileName to save result to
+ *     Integer value for the minimum peaks threshold 
+ *     String(IntList) form for the Row's and Column's to keep
  */
 public class LsqrsJ_base extends GenericTOF_SCD implements 
                            DataSetTools.operator.HiddenOperator{
