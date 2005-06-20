@@ -28,6 +28,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/06/20 15:51:25  dennis
+ * Converted from dos to unix format using dos2unix.
+ *
  * Revision 1.1  2005/06/20 03:52:38  dennis
  * Initial version of Operator to fix the LANSCE SCD data
  * as read from NeXus files.
