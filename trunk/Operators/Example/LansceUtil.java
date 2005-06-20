@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/06/20 15:50:29  dennis
+ * Minor reformatting.
+ *
  * Revision 1.1  2005/06/20 03:16:29  dennis
  * Initial checkin.  Currently just contains method to fix
  * Lansce SCD DataSets, which are ordered by column and don't
@@ -65,8 +68,8 @@ public class LansceUtil
    *  Rearrange the data from the SCD at LANSCE and add detector position
    *  information to the file.
    *
-   *  @param  ds         LANSCE SCD DataSet where each Data block holds Data from 
-   *                     one column of pixels on the area detector, at one 
+   *  @param  ds         LANSCE SCD DataSet where each Data block holds Data 
+   *                     from one column of pixels on the area detector, at one 
    *                     time-of-flight
    *
    *  @param  t_min      Minimum time-of-flight for this data
@@ -127,7 +130,8 @@ public class LansceUtil
       }
                                        // now form a new DataSet by extracting 
                                        // the values in the 3D array of counts
-                                       // in a different order, omitting edge pixels
+                                       // in a different order, omitting edge 
+                                       // pixels
     DataSetFactory factory = new DataSetFactory( ds.getTitle() );
     DataSet new_ds = factory.getTofDataSet( InstrumentType.TOF_SCD );
     XScale x_scale = new UniformXScale( t_min, t_max, N_PAGES + 1 );
@@ -182,7 +186,8 @@ public class LansceUtil
       for ( int col = 0; col < N_COLS; col++ )
       {
         list     = new IPixelInfo[1];
-        list[0]  = new DetectorPixelInfo(seg_id, (short)(row+1), (short)(col+1),grid);
+        list[0]  = new DetectorPixelInfo( seg_id, 
+                                         (short)(row+1), (short)(col+1),grid);
         pil      = new PixelInfoList( list );
         pil_attr = new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST, pil );
         new_ds.getData_entry( seg_id ).setAttribute( pil_attr );
