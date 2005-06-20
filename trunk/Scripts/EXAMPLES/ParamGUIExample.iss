@@ -1,3 +1,4 @@
+$Category=Macros,Utils,Examples
 $iData         Integer(3)                                     Enter an Integer
 $pi            Float(3.14159)                                 Enter a Float
 $decision      Boolean(True)                                  Should I do it or not?
