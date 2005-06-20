@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2005/06/20 03:13:42  dennis
+ * Added new constructor that takes an array of DataSets.
+ *
  * Revision 1.20  2005/06/02 22:34:19  dennis
  * Modified to just use IVirtualArray2D methods on a
  * VirtualArray2D object.
@@ -264,7 +267,7 @@ public class GL_RecipPlaneView
 
   private int             global_obj_index = 0;  // needed to keep the pick 
                                                  // ids distinct
-  private String          file_names[];
+//  private String          file_names[];
   private Vector          data_sets;
   private Hashtable       calibrations = null;
   private Tran3D          orientation_matrix = null;
@@ -302,11 +305,42 @@ public class GL_RecipPlaneView
       this.orient_file = orient_file;
   }
 
+  /* ---------------------------- Constructor ----------------------------- */
+
+  public GL_RecipPlaneView( DataSet ds_array[], int threshold )
+  {
+     this();
+     System.out.println("Start constructor for GL_RecipPlaneView");
+
+     SetThresholdScale( threshold );     
+     
+     if ( ds_array == null || ds_array.length < 1 )
+     {
+       System.out.println("NULL OR EMPTY DATA SET LIST in GL_RecipPlaneView");
+       return;
+     }
+
+     System.out.println("Adding " + ds_array.length + " DataSets" );
+                                         // for now just assume 1 detector per
+                                         // run in this case
+     runs = new int[ ds_array.length ];
+     for ( int i = 0; i < ds_array.length; i++ )
+     {
+       runs[i] = 1000 + i;
+       data_sets.add( ds_array[i] );
+     }
+
+     initialize( true );
+     System.out.println("End constructor for GL_RecipPlaneView");
+  }
+
 
   /* ---------------------------- Constructor ----------------------------- */
 
   public GL_RecipPlaneView()
   {
+    System.out.println("In default constructor for GL_RecipPlaneView");
+
     scene_f = new FinishJFrame("Reciprocal Lattice Plane Viewer");
     scene_f.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 
@@ -460,6 +494,7 @@ public class GL_RecipPlaneView
     all_peaks = new Vector();
 
     WindowShower.show( scene_f );
+    System.out.println("End default constructor for GL_RecipPlaneView");
   }
 
 
@@ -649,7 +684,7 @@ public class GL_RecipPlaneView
       loadOrientationMatrix( orient_file );
 
     runs = IntList.ToArray( run_nums );
-    file_names = new String[ runs.length ];
+    String file_names[] = new String[ runs.length ];
 
     for ( int i = 0; i < runs.length; i++ )
      file_names[i] = path+InstrumentType.formIPNSFileName("scd",runs[i]);
@@ -1060,8 +1095,11 @@ public class GL_RecipPlaneView
 
   private void ExtractPeaks()
   {
-    if ( debug )
+//    if ( debug )
+    {
       System.out.println("Applying threshold to extract peaks....");
+      System.out.println("There are " + vec_q_transformer.size() + " grids");
+    }
 
     all_peaks = new Vector();
     for ( int i = 0; i < vec_q_transformer.size(); i++ )
@@ -1084,6 +1122,7 @@ public class GL_RecipPlaneView
 
   private void makeVecQTransformers()
   {
+     System.out.println("Start makeVecQTransformers " );
      vec_q_transformer = new Vector();
      for ( int index = 0; index < data_sets.size(); index++ )
      { 
@@ -1963,6 +2002,8 @@ public class GL_RecipPlaneView
     {
        System.out.println("ERROR: need >= " + DIMENSION + 
                           " points in makeQR_factors");
+       if ( all_vectors != null )
+         System.out.println("Got " + all_vectors.length + " points.");
        return false;
     }
 
@@ -2770,6 +2811,9 @@ public void WriteMatrixFile( String filename )
   {
     System.out.println("ERROR: Couldn't write to file: " + filename );
   }
+
+  System.out.println("Wrote lattice parameters to: " + filename );
+
 }
 
 
@@ -3029,8 +3073,6 @@ private class WriteMatrixFileListener implements ActionListener
     int returnVal = chooser.showOpenDialog( scene_f );
     if(returnVal == JFileChooser.APPROVE_OPTION) 
       WriteMatrixFile( chooser.getSelectedFile().toString() );
-
-    System.out.println("Wrote to " + chooser.getSelectedFile().toString() );
 
     return;
   }
@@ -3381,8 +3423,9 @@ private class FFTListener implements IObserver
   /* ---------------------------- main ---------------------------------- */
   public static void main( String args[] )
   {
+    /*
     GL_RecipPlaneView viewer = new GL_RecipPlaneView();
-
+   
     viewer.parseArgs( args );
     if ( viewer.threshold.length() > 0 )
       try
@@ -3415,6 +3458,15 @@ private class FFTListener implements IObserver
       }
 
     viewer.loadFiles(); 
+    viewer.initialize( true ); 
+    */
+
+    String file_name = "/usr2/SCD_TEST/scd08336.run";
+    RunfileRetriever rr = new RunfileRetriever( file_name );
+    DataSet ds_arr[] = new DataSet[1];
+    ds_arr[0] = rr.getDataSet(2);
+    System.out.println("Loaded " + ds_arr[0] );
+    GL_RecipPlaneView viewer = new GL_RecipPlaneView(ds_arr,60);
     viewer.initialize( true ); 
   }
 
