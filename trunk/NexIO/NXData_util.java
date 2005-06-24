@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2005/06/24 03:30:49  rmikk
+ * Added some checks to eliminate array out of bounds errors with
+ *   erroneous data
+ *
  * Revision 1.27  2005/06/06 13:41:32  rmikk
  * Old NeXus files( those without a link attribute somewhere in NXdata) 
  *    are now given a PixelInfoListAttribute
@@ -488,7 +492,7 @@ public class NXData_util{
     for( int index = start_index; index < end_index; index++ ){
       Data DB = DS.getData_entry( index );
       
-      if( Group_ID != null ){
+      if( (Group_ID != null )&&(index-start_index<Group_ID.length)){
         DB.setGroup_ID( Group_ID[index - start_index] );
         
         DB.setAttribute( new StringAttribute( Attribute.LABEL,
@@ -500,7 +504,7 @@ public class NXData_util{
                                          
       }
       
-      if( Raw_Angle != null )
+      if( Raw_Angle != null )if(index-start_index<Raw_Angle.length)
         DB.setAttribute( new FloatAttribute( Attribute.RAW_ANGLE, 
                 (float)(Raw_Angle[index-start_index]*180./java.lang.Math.PI)));
 
@@ -532,7 +536,7 @@ public class NXData_util{
 
       float d, p, t;
   
-      d = p = t = 0.0f;
+      d = p = t = Float.NaN;
       if( distance != null )if( index - start_index < distance.length )
         d = distance[ index - start_index ];
       
@@ -542,11 +546,12 @@ public class NXData_util{
         p = phi[index - start_index ];
       
       Position3D p3d = new Position3D();
+      if( !Float.isNaN(d))if(!Float.isNaN(p))if(!Float.isNaN( t)){
       
-      p3d.setSphericalCoords( d, t, p );
-      DB.setAttribute( new DetPosAttribute(
+        p3d.setSphericalCoords( d, t, p );
+        DB.setAttribute( new DetPosAttribute(
                                 Attribute.DETECTOR_POS, convertToIsaw(d,p,t)));
-   
+      }
                                 
     }
 
