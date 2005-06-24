@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.85  2005/06/24 03:32:12  rmikk
+ * Fixed problem with finding variables
+ *
  * Revision 1.84  2005/06/14 13:37:53  rmikk
  * Removed variables that represent parameters from the system before
  * starting a new script
@@ -3607,21 +3610,41 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
       else{//make sure vname not already in some other list
        
         //seterror(1000, "DataType Not supported for assignment operation");
-         if(BoolInfo.containsKey(vname.toUpperCase()))
+         if(BoolInfo.containsKey(vname.toUpperCase())){
+         
+           
             seterror(1000, "Improper Data Type for variable "+vname);
-         else if( ds.containsKey( vname.toUpperCase()))
+            return;
+         }if( ds.containsKey( vname.toUpperCase())){
+         
             seterror(1000, "Improper Data Type for variable "+vname);
-         else if( lds.containsKey( vname.toUpperCase()))
+            return;
+         }if( lds.containsKey( vname.toUpperCase())){
+         
             seterror(1000, "Improper Data Type for variable "+vname);
-         else if( findd(vname, Svalnames) >=0 )
+            return;
+         }if( findd(vname, Svalnames) >=0 ){
+         
+            if(findd(vname,Svalnames)>=Svalnames.length){
+            
+               seterror(1000, "Improper Data Type for variable "+vname);
+               return;
+            }
+         }if( findd(vname, Fvalnames) >=0 ){
+           if( findd(vname,Fvalnames)>=Fvalnames.length){
+           
             seterror(1000, "Improper Data Type for variable "+vname);
-         else if( findd(vname, Fvalnames) >=0 )
+            return;
+           }
+         } if( findd(vname, Ivalnames) >=0 ){
+            if( findd(vname,Ivalnames)>=Ivalnames.length){
+            
             seterror(1000, "Improper Data Type for variable "+vname);
-         else if( findd(vname, Ivalnames) >=0 )
-            seterror(1000, "Improper Data Type for variable "+vname);
-         else 
-           ObjectInfo.put(vname.toUpperCase().trim(), Result); 
-         }
+            return;
+            }
+         } 
+         ObjectInfo.put(vname.toUpperCase().trim(), Result); 
+      }
         
     }//end Assign
 
