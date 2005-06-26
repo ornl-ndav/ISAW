@@ -30,6 +30,11 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.14  2005/06/26 23:50:56  dennis
+ *  Added utility method, AddGridToDataSet() that makes the associations
+ *  between the current DataGrid and a sequence of Data blocks in a specified
+ *  DataSet.
+ *
  *  Revision 1.13  2004/06/30 18:45:26  dennis
  *  Improved documentation on constructor to indicate that the local
  *  coordinate system is orthonormal.
@@ -899,6 +904,87 @@ public class UniformGrid implements IDataGrid
     }
 
     return complete;
+  }
+
+
+  /**
+   *  Associate the specified grid with a sequence of Data blocks in
+   *  the specified DataSet, by setting new pixel info list objects 
+   *  pointing to the specified grid, for a sequence of Data entries 
+   *  starting with the Data entry in position "min_index"
+   *  in the DataSet.  The Data blocks are assigned to the grid in row
+   *  major order starting with (row,col) = (1,1), ending with 
+   *  (row,col) = (N_ROWS, N_COLS).  There must be N_ROWS * N_COLS Data
+   *  entries remaining in the DataSet, starting with position "min_index".
+   *  The effective position (DETECTOR_POS) attribute of the Data 
+   *  blocks will be set to the corresponding pixel position on the grid.
+   *  If the "set_data_references" flag is set, the data reference field of
+   *  the grid positions will be set to point to the corresponding Data
+   *  Data block.  
+   *
+   *  @param  ds             The DataSet for which some of the Data blocks will
+   *                         be associated with the specified grid.  
+   *  @param  min_index      The index in the DataSet of the first Data block
+   *                         that will be associated with this detector.
+   *  @param  set_data_refs  If true, set the Data references on the grid
+   *                         to point to the corresponding Data blocks in
+   *                         in this DataSet.
+   *
+   * @return True, if the positions were changed and false if there was
+   *         a problem setting the positions.
+   */
+  public boolean AddGridToDataSet( DataSet   ds,
+                                   int       min_index,
+                                   boolean   set_data_refs )
+  {
+    if ( ds == null || ds.getNum_entries() == 0 )
+    {
+       System.out.println( "DataSet null in AddGridToDataSet" );
+       return false;
+    }
+    if ( ds.getNum_entries() == 0  || 
+         min_index + n_rows * n_cols > ds.getNum_entries() )
+    {
+       System.out.println( "Too few Data entries in AddGridToDataSet \n"  +
+                           "have : " + ds.getNum_entries() + "\n" +
+                           "need : " + (min_index + n_rows * n_cols) );
+       return false;
+    }
+    IPixelInfo              list[];
+    PixelInfoList           pil;
+    PixelInfoListAttribute  pil_attr;
+    Data d;
+    int seg_id;
+    int index = min_index;
+    for ( int row = 1; row <= n_rows; row++ )
+      for ( int col = 1; col <= n_cols; col++ )
+      {
+        d = ds.getData_entry( index );
+        seg_id   = d.getGroup_ID();
+        list     = new IPixelInfo[1];
+        list[0]  = new DetectorPixelInfo( seg_id,
+                                         (short)row, (short)col, this);
+        pil      = new PixelInfoList( list );
+        pil_attr = new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST, pil );
+        d.setAttribute( pil_attr );
+
+        DetectorPosition pos = new DetectorPosition( position(row,col) );
+        d.setAttribute( new DetPosAttribute(Attribute.DETECTOR_POS, pos) );
+
+        if ( set_data_refs )
+        {
+          if ( data == null )
+            data = new Data[n_rows][n_cols]; 
+          data[row-1][col-1] = d;                      // record reference
+        }
+
+        index++;
+      }
+
+    if ( set_data_refs )
+      data_loaded = true;
+
+    return true;
   }
 
 
