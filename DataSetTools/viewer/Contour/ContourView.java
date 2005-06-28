@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.51  2005/06/28 14:57:26  rmikk
+ *  Added a check for an array out of bounds error
+ *
  *  Revision 1.50  2005/05/25 18:01:20  dennis
  *  Replaced direct call to .show() method for window,
  *  since .show() is deprecated in java 1.5.
@@ -1859,11 +1862,18 @@ public class ContourView extends DataSetViewer
      }
    private float getValue( int axisLength,double[] Zvalues, int x, int y)
     { 
-     if( x < 0) return Float.NaN;
-     if( y < 0) return Float.NaN;
-     if( y >= axisLength) return Float.NaN;
+     if( x < 0) 
+         return Float.NaN;
+     if( y < 0) 
+        return Float.NaN;
+     if( y >= axisLength) 
+         return Float.NaN;
+         
      int index = (x-1)*axisLength + y;
-     if( index >= Zvalues.length) return Float.NaN;
+     if( index >= Zvalues.length) 
+        return Float.NaN;
+     if( index <0) 
+        return Float.NaN;
      return (float) Zvalues[ index];
 
     }
