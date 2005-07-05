@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2005/07/05 15:31:39  dennis
+ *  Fixed bugs in convenience methods for getting PixelInfoList,
+ *  GsasCalib and SampleOrientation attribute values.
+ *
  *  Revision 1.2  2005/05/27 03:08:08  dennis
  *  Added code to check that both the attribute list and the name
  *  of the attribute are non-null before trying to retrieve the
@@ -282,8 +286,8 @@ public class AttrUtil
       if ( attr_list != null && attr_name != null )
       {
         Object val = attr_list.getAttributeValue(attr_name);
-        if ((val != null) && (val instanceof GsasCalibAttribute))
-          return ((GsasCalibAttribute)val).getGsasCalib();
+        if ((val != null) && (val instanceof GsasCalib))
+          return (GsasCalib)val;
       }
  
       return null;
@@ -310,9 +314,8 @@ public class AttrUtil
       if ( attr_list != null && attr_name != null )
       {
          Object val = attr_list.getAttributeValue(attr_name);
-         if ((val != null) && (val instanceof SampleOrientationAttribute))
-           return 
-                (SampleOrientation)((SampleOrientationAttribute)val).getValue();
+         if ((val != null) && (val instanceof SampleOrientation))
+           return (SampleOrientation)val;
        }
 
        return null;
@@ -338,8 +341,8 @@ public class AttrUtil
       if ( attr_list != null && attr_name != null )
       {
          Object val = attr_list.getAttributeValue(attr_name);
-         if ((val != null) && (val instanceof PixelInfoListAttribute))
-            return (PixelInfoList)((PixelInfoListAttribute)val).getValue();
+         if ((val != null) && (val instanceof PixelInfoList))
+            return (PixelInfoList)val;
       }     
  
       return null;
