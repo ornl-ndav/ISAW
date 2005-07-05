@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.8  2005/07/05 15:29:37  dennis
+ *  Minor format change.
+ *
  *  Revision 1.7  2004/06/22 15:36:26  rmikk
  *  Added documentation for setGridId method and associated variable
  *  Removed unused variables
@@ -62,6 +65,7 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.File.*;
 import java.io.*;
 import java.util.*;
+
 /**
  *   A DetectorPixelInfo object provides access to information about the 
  * position, size and orientation of a rectangular box representing one  
@@ -94,9 +98,10 @@ public class DetectorPixelInfo implements IPixelInfo ,IXmlIO
   
   /**
     *  A Hashtable of the gridID's and their grid that have already been set 
-    * up while reading through the Datablocks in an XML file
+    *  up while reading through the Datablocks in an XML file
     */
   private transient Hashtable gridIDs = null;
+
 
   /**
    *  Construct a DetectorPixelInfo object with the specified id, row, column
@@ -451,9 +456,12 @@ public class DetectorPixelInfo implements IPixelInfo ,IXmlIO
       grid = (IDataGrid)(gridIDs.get( new Integer(grid_id)));
     if( grid == null){
     
-      grid = new UniformGrid(grid_id,units, new Vector3D(center[0],center[1],center[2]),
-                   new Vector3D(xvec[0],xvec[1],xvec[2]), new Vector3D(yvec[0],yvec[1],
-                      yvec[2]),w,h,d,nrows,ncols);
+      grid = new UniformGrid( grid_id, units, 
+                              new Vector3D( center[0], center[1], center[2] ),
+                              new Vector3D( xvec[0], xvec[1], xvec[2] ),
+                              new Vector3D( yvec[0], yvec[1], yvec[2] ),
+                              w, h, d,
+                              nrows, ncols);
       gridIDs.put( new Integer(grid_id), grid);
     
     }
