@@ -30,6 +30,12 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/07/05 17:10:19  dennis
+ * Added method Load_GLAD_LPSD_Info() that will serve as the
+ * "core" method for an Operator to add DataGrids corresponding
+ * to the LPSDs on GLAD, to a GLAD DataSet as read from the IPNS
+ * runfile.
+ *
  * Revision 1.1  2005/06/27 05:05:33  dennis
  * File for static utility methods for loading missing information
  * into DataSets.  Currently, there is just one public method:
@@ -66,6 +72,8 @@ import gov.anl.ipns.MathTools.Geometry.*;
 
 public class LoadUtil 
 {
+  private static boolean debug_glad = false;       // debug flag for GLAD code
+
   private LoadUtil()
   {};
 
@@ -101,7 +109,7 @@ public class LoadUtil
    *  @param  file_name  Name of file containing the detector information 
    *
    */
-  public static DataSet LoadDetectorInfo( DataSet ds, String file_name )
+  public static void LoadDetectorInfo( DataSet ds, String file_name )
   {
     try
     {
@@ -201,10 +209,23 @@ public class LoadUtil
     }
                                     // add the Diffractometer operators
     DataSetFactory.addOperators( ds, InstrumentType.TOF_DIFFRACTOMETER );
-    return ds;
   }
 
 
+  /**
+   *  Load the hashtable with all of the "name", "value string" pairs from
+   *  the file containing the detector information.  The "name" from the
+   *  file has GRID_IDN prepended where N is ID number for the grid.  This
+   *  allows the information for a particular detector to accessed from
+   *  the hashtable.
+   *
+   *  @param     f      The open TextFileReader object
+   *  @param     hash   The empty hashtable that is loaded from the file.
+   *
+   *  @return  A vector containing Strings identifying all of the DataGrids
+   *           read from the file, in the form GRID_IDN where N is the 
+   *           Grid ID assigned in the file.
+   */
   private static Vector LoadHashtable( TextFileReader f, Hashtable hash ) 
                         throws IOException
   {
@@ -229,6 +250,18 @@ public class LoadUtil
   }
 
 
+  /**
+   *  Get the specified entry from the hashtable and interpret it as
+   *  a Float value.
+   *
+   *  @param  hash   the hashtable that may or may not contain the named
+   *                 entry.
+   *  @param  name   the name of the entry to be returned as a Float
+   *
+   *  @return  A Float object giving the value of the entry specified by
+   *           the name, or null if the named entry is not present, or 
+   *           can not be interpreted as a Float.
+   */
   private static Float getFloat( Hashtable hash, String name )
   {
     String  val_string = (String)hash.get( name );
@@ -243,6 +276,18 @@ public class LoadUtil
   }
 
 
+  /**
+   *  Get the specified entry from the hashtable and interpret it as
+   *  an Integer value.
+   *
+   *  @param  hash   the hashtable that may or may not contain the named
+   *                 entry.
+   *  @param  name   the name of the entry to be returned as an Integer 
+   *
+   *  @return  A Float object giving the value of the entry specified by
+   *           the name, or null if the named entry is not present, or 
+   *           can not be interpreted as an Integer.
+   */
   private static Integer getInteger( Hashtable hash, String name )
   {
     String  val_string = (String)hash.get( name );
@@ -256,7 +301,18 @@ public class LoadUtil
     }
   }
 
-
+  /**
+   *  Get the specified entry from the hashtable and interpret it as
+   *  a Vector3D object.
+   *
+   *  @param  hash   the hashtable that may or may not contain the named
+   *                 entry.
+   *  @param  name   the name of the entry to be returned as a Vector3D
+   *
+   *  @return  A Float Vector3D giving the value of the entry specified by
+   *           the name, or null if the named entry is not present, or 
+   *           can not be interpreted as a Vector3D.
+   */
   private static Vector3D getVector( Hashtable hash, String name )
   {
     String  val_string = (String)hash.get( name );
@@ -280,6 +336,158 @@ public class LoadUtil
 
 
   /**
+   *  Load LPSD information for the IPNS GLAD instrument from the 
+   *  configuration file, gladdets6.par, as used on the old VAX systems.
+   *
+   *  @param  ds         DataSet for IPNS GLAD, in the form it is 
+   *                     currently (7/1/05) read from the IPNS Runfile.
+   *
+   *  @param  file_name  Name of file containing the GLAD detector information 
+   */
+  public static void Load_GLAD_LPSD_Info( DataSet ds, String file_name )
+  {
+    int N_ROWS      = 64;
+    int N_COLS      = 1;
+    float LPSD_HEIGHT = 0.64f;                  // NOTE: 64 needed to match 
+                                                // results from IPNS package
+    float LPSD_WIDTH  = 0.01074f;
+    float LPSD_DEPTH  = 0.01074f;
+
+    int grid_id = 1;
+    Vector3D y_vec  = new Vector3D(  0, 0, 1 );
+    Vector3D x_vec  = new Vector3D( -1, 1, 0 ); 
+    Vector3D center = new Vector3D(  0, 1, 0 ); 
+    int      bank;
+    int      n_det;
+    int      first_segment;
+    try
+    {
+      TextFileReader f = new TextFileReader( file_name );
+      while ( !f.end_of_data() )
+      {
+        bank  = f.read_int();
+        n_det = f.read_int();
+        if ( bank > 0 && n_det > 0 )       // ignore bank 0, which are monitors 
+        {                                  // and banks with 0 detectors
+           System.out.println("Processing bank " + bank + ", " + n_det );
+           for ( int i = 0; i < n_det; i++ )
+           {
+             f.read_int();                 // skip det_in_bank
+             f.read_int();                 // skip crate
+             f.read_int();                 // skip slot
+             f.read_int();                 // skip input
+             first_segment = f.read_int(); 
+             if ( first_segment >0 )
+             {
+               // for now, synthesize some positions
+               float x = (float)(2 * Math.cos( grid_id/2000f * 8 * Math.PI ));
+               float y = (float)(2 * Math.sin( grid_id/2000f * 8 * Math.PI ));
+               center = new Vector3D( x, y, 0.5f );
+               UniformGrid grid = new UniformGrid( grid_id, "m",
+                                         center, x_vec, y_vec,
+                                         LPSD_WIDTH, LPSD_HEIGHT, LPSD_DEPTH,
+                                         N_ROWS, N_COLS );
+               grid_id++;
+
+               if ( first_segment == 10817 )  // NOTE: this is fix for segment 
+                 first_segment = 10815;       // IDs in this particular detector
+
+               AssignGridForPixels( ds, grid, first_segment, N_ROWS ); 
+             }  
+           }
+         }
+         else
+         {               
+            f.read_line();
+            for ( int i = 0; i < n_det; i++ )    // skip lines for monitors
+              f.read_line(); 
+         }
+       }
+     }
+     catch ( Exception e )
+     {
+        System.out.println("Exception reading file " + file_name + "\n" + e );
+        e.printStackTrace();
+     }
+  }
+
+
+  /**
+   *  Go through all Data blocks in the DataSet, to find the Data blocks
+   *  for the specified grid, as determined by the first segment id for
+   *  this grid and the number of segments for this grid.
+   *  NOTE: This method assumes that all pixels contributing to one
+   *  Data block come from the same detector. 
+   */
+  private static void AssignGridForPixels( DataSet     ds, 
+                                           UniformGrid grid,
+                                           int         first_seg_id,
+                                           int         num_segs_in_det )
+  {
+     int n_cols = grid.num_cols();
+
+     for ( int i = 0; i < ds.getNum_entries(); i++ )
+     {
+       IData d = ds.getData_entry(i);
+       PixelInfoList pil = AttrUtil.getPixelInfoList( d );
+       if ( pil != null )
+       {
+         IPixelInfo pixel = pil.pixel(0);        // check first pixel, if it is
+         int pixel_id = pixel.ID();              // from this detector, assume
+         if ( pixel_id >= first_seg_id &&        // other pixeis in pil do too.
+              pixel_id < first_seg_id + num_segs_in_det ) 
+         {
+           IPixelInfo new_pix_arr[] = new IPixelInfo[ pil.num_pixels() ]; 
+           for ( int k = 0; k < new_pix_arr.length; k++ )
+           {
+             pixel = pil.pixel(k);
+             pixel_id = pixel.ID();
+             short row = (short)((pixel_id - first_seg_id) / n_cols + 1);
+             short col = (short)((pixel_id - first_seg_id) % n_cols + 1);
+             DetectorPixelInfo new_pixel = 
+                              new DetectorPixelInfo( pixel_id, row, col, grid );
+             new_pix_arr[k] = new_pixel;
+
+             if ( row == 5 )                     // set grid position based on
+             {                                   // the pixel in row 5, 
+                                                 // projected onto the x,y plane
+               DetectorPosition pos = AttrUtil.getDetectorPosition( d );
+               Vector3D center = new Vector3D(pos);
+               float xyz[] = center.get();
+               xyz[2] = 0;
+               
+               grid.setCenter( center );
+               Vector3D x_vec = new Vector3D( -xyz[1], xyz[0], 0 );
+               Vector3D y_vec = new Vector3D( 0, 0, 1 );
+               grid.setOrientation( x_vec, y_vec );
+             }
+           }
+           pil      = new PixelInfoList( new_pix_arr );
+           PixelInfoListAttribute pil_attr = 
+                   new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST, pil );
+           d.setAttribute( pil_attr );
+/*
+  PROPER CALCULATON OF EFFECTIVE POSITIONS, STILL NEEDS WORK.
+
+           Attribute attr = new DetPosAttribute( 
+                                    Attribute.DETECTOR_POS,
+                                    pil.effective_position() );
+           d.setAttribute( attr );
+*/
+           if ( debug_glad )
+             if ( grid.ID() >= 205 && grid.ID() <= 209 )
+             {
+               System.out.println("CHECK GRID_ID = " + grid.ID() );
+               for ( int k = 0; k < new_pix_arr.length; k++ )
+                 System.out.println( new_pix_arr[k] );
+             }
+         }
+       }
+     }
+  }
+
+  
+  /**
    *  Main program for testing purposes.
    */
   public static void main( String args[] )
@@ -288,13 +496,27 @@ public class LoadUtil
     String path      ="/home/dennis/WORK/ISAW/LANSCE/SMARTS/";
     String datapath  ="/usr2/LANSCE_DATA/smarts/";
     String file_name =datapath + "/SMARTS_E2005004_R020983.nx.hdf";
-    Retriever retriever = new NexusRetriever( file_name );
-    DataSet ds = retriever.getDataSet(2);
-
+    Retriever retriever;
+    DataSet   ds;
+/*
+    retriever = new NexusRetriever( file_name );
+    ds = retriever.getDataSet(2);
                                               // fix the data 
-    ds = LoadDetectorInfo( ds, path+"smarts_detectors.dat" );
+    LoadDetectorInfo( ds, path+"smarts_detectors.dat" );
 
     new ViewManager( ds, "Image View" );
 //  new ViewManager( ds, "3D View" );
+*/
+    path = "/usr2/ARGONNE_DATA/";
+    file_name = "glad6942.run";
+    retriever = new RunfileRetriever( path + file_name );
+    ds        = retriever.getDataSet(1); 
+
+    path = "/home/dennis/WORK/ISAW/Databases/";
+    file_name = "gladdets6.par";
+    
+    Load_GLAD_LPSD_Info( ds, path+file_name );
+
+    new ViewManager( ds, "3D View" );
   }
 }
