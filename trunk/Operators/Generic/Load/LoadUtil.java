@@ -30,6 +30,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/07/06 14:21:38  dennis
+ * Cleaned up test code in main program.  Enabled test of both
+ * loading SMARTS detector info and loading GLAD detector info.
+ * Removed a debug print.
+ *
  * Revision 1.2  2005/07/05 17:10:19  dennis
  * Added method Load_GLAD_LPSD_Info() that will serve as the
  * "core" method for an Operator to add DataGrids corresponding
@@ -369,7 +374,6 @@ public class LoadUtil
         n_det = f.read_int();
         if ( bank > 0 && n_det > 0 )       // ignore bank 0, which are monitors 
         {                                  // and banks with 0 detectors
-           System.out.println("Processing bank " + bank + ", " + n_det );
            for ( int i = 0; i < n_det; i++ )
            {
              f.read_int();                 // skip det_in_bank
@@ -492,31 +496,41 @@ public class LoadUtil
    */
   public static void main( String args[] )
   {
-                                              // load the file as best we can
-    String path      ="/home/dennis/WORK/ISAW/LANSCE/SMARTS/";
-    String datapath  ="/usr2/LANSCE_DATA/smarts/";
-    String file_name =datapath + "/SMARTS_E2005004_R020983.nx.hdf";
+    String    detector_path = null;
+    String    data_path     = null;
+    String    file_name     = null;
     Retriever retriever;
     DataSet   ds;
-/*
+
+/*  Thes first section tests the LoadDetectorInfo method, using data 
+    and detector information from the SMARTS instrument at LANSCE
+*/
+
+    data_path = "/usr2/LANSCE_DATA/smarts/";
+    file_name = data_path + "/SMARTS_E2005004_R020983.nx.hdf";
     retriever = new NexusRetriever( file_name );
-    ds = retriever.getDataSet(2);
-                                              // fix the data 
-    LoadDetectorInfo( ds, path+"smarts_detectors.dat" );
+    ds        = retriever.getDataSet(2);
+
+    detector_path = "/home/dennis/WORK/ISAW/LANSCE/SMARTS/";
+    file_name     = detector_path + "smarts_detectors.dat";
+    LoadDetectorInfo( ds, file_name );
 
     new ViewManager( ds, "Image View" );
-//  new ViewManager( ds, "3D View" );
+    new ViewManager( ds, "3D View" );
+
+/*  The second section tests the Load_GLAD_LPSD_Info method, using data
+    and detector information from the GLAD instrument at IPNS
 */
-    path = "/usr2/ARGONNE_DATA/";
-    file_name = "glad6942.run";
-    retriever = new RunfileRetriever( path + file_name );
+    data_path = "/usr2/ARGONNE_DATA/";
+    file_name = data_path + "glad6942.run";
+    retriever = new RunfileRetriever( file_name );
     ds        = retriever.getDataSet(1); 
 
-    path = "/home/dennis/WORK/ISAW/Databases/";
-    file_name = "gladdets6.par";
-    
-    Load_GLAD_LPSD_Info( ds, path+file_name );
+    detector_path = "/home/dennis/WORK/ISAW/Databases/";
+    file_name = detector_path + "gladdets6.par";
+    Load_GLAD_LPSD_Info( ds, file_name );
 
     new ViewManager( ds, "3D View" );
   }
 }
+
