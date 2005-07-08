@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.48  2005/07/08 15:55:19  rmikk
+ * Now implements Serializable
+ *
  * Revision 1.47  2005/06/15 12:38:59  dennis
  * Fix to deal with new error message reporting scheme for return
  * statement. (Ruth)
@@ -298,7 +301,8 @@ import ExtTools.SwingWorker;
  */
 public class ScriptOperator  extends  GenericOperator
                                implements  IScriptProcessor,PropertyChangeListener, IObservable,
-                                IObserver, IDataSetListHandler,PropertyChanger{
+                                IObserver, IDataSetListHandler,PropertyChanger,
+                                java.io.Serializable{
   
   Command.execOneLine ExecLine ; 
   
