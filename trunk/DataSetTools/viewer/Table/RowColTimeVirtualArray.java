@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2005/07/08 13:24:20  rmikk
+ * Eliminated a possible null pointer exception
+ *
  * Revision 1.16  2004/09/15 22:03:52  millermi
  * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
  *   Adding a second log required the boolean parameter to be changed
@@ -487,7 +490,7 @@ public class RowColTimeVirtualArray extends
         TimeIndex = 0;
      else if( TimeIndex >= xvals1.length)
         TimeIndex = x_scale.getNum_x()-1;
-     acontrol.setFrameValue( xvals1[TimeIndex]);
+     acontrol.setFrameValue( xvals1[TimeIndex]);//<========Array out of bounds 0
      acontrol.addActionListener( new MyAnimationListener());
     
      Res[3+jcomps.length] =( acontrol);
@@ -880,6 +883,11 @@ public class RowColTimeVirtualArray extends
         first = -first-1;
      if( end < 0) 
         end = -end -1;
+     if( first >= end){
+       state.set_float( ViewerState.TABLE_TS_TIMEMIN, x_scale.getStart_x());
+       state.set_float(ViewerState.TABLE_TS_TIMEMAX, x_scale.getEnd_x());
+       return x_scale.getXs();
+     }
      if( end >= new_xvals.length) 
         end = new_xvals.length -1;
      float[] Hxvals = new float[ end - first +1 -n];
@@ -897,6 +905,8 @@ public class RowColTimeVirtualArray extends
     {
      float X = DS.getPointedAtX();
      if( Float.isNaN( X))
+        return 0;
+     if( xvals1== null)
         return 0;
      int index = java.util.Arrays.binarySearch( xvals1, X);
      if( index < 0)
