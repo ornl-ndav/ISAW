@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2005/07/10 14:17:30  rmikk
+ * Implemented major changes in the GUI interface
+ *
  * Revision 1.5  2005/06/20 16:47:43  rmikk
  * Added Some message boxes to indicate while a file does not work
  *
@@ -96,8 +99,12 @@ import DataSetTools.util.SysUtil;
 import java.util.*;
 import DataSetTools.parameter.*;
 import gov.anl.ipns.Util.Sys.*;
+import javax.xml.parsers.*;
+import javax.xml.transform.stream.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import org.w3c.dom.*;
 
-//import java.io.*;
 /**
  * @author MikkelsonR
  *  This class is used to create a full java GenericOperator shell around a 
@@ -105,84 +112,147 @@ import gov.anl.ipns.Util.Sys.*;
  */
 public class Method2OperatorWizard extends JFrame implements ActionListener {
 
-	transient public static String OP_FILENAME = "Save filename(Operator)";
-	private String OpfileName;
+	transient public static String OP_FILENAME = "Browse";
+	
 	JTabbedPane TabPane;
 	InfoPanel infPanel;
 	DocPanel docPanel;
 	MethodPanel methPanel;
+    OpPanel   opPanel;
 	FilePanel filePanel;
 	DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
 	MethInfData methData;
-	String AssumpDoc = "", OverViewDoc = "", AlgorithmDoc = "", ReturnDoc = "";
-	Vector ErrorDoc = new Vector();
-
+  
+  
 	/**
 	 *  Constructor that initializes the Wizard elements 
 	 * @throws java.awt.HeadlessException
 	 */
 	public Method2OperatorWizard() throws HeadlessException {
 
-		super();
+		super( "Method to Operator Wizard");
+    
+                
 		TabPane = new JTabbedPane();
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
 		infPanel = new InfoPanel(this);
 		methPanel = new MethodPanel(this);
+        opPanel = new OpPanel( this);
 		docPanel = new DocPanel(this);
-		docPanel.addComponentListener(new CompListener(this));
 		filePanel = new FilePanel(this);
 		methData = null;
+    
 		TabPane.add("Information", infPanel);
-		TabPane.add("Method Inf", methPanel);
-		TabPane.add("Documentation", docPanel);
-		TabPane.add("File", filePanel);
+		TabPane.add("Method Info", methPanel);
+        TabPane.add("Operator Info", opPanel);
+        JScrollPane jsp = new JScrollPane( docPanel);
+        jsp.addComponentListener( new CompListener( this ));
+		TabPane.add("Documentation", jsp );
+    
 		getContentPane().setLayout(new GridLayout(1, 1));
+    
 		getContentPane().add(TabPane);
-		OpfileName = System.getProperty("ISAW_HOME", "");
-		if (!OpfileName.endsWith(File.separator))
-			OpfileName += File.separator;
-		OpfileName += "Operators";
 	}
 
 	public void actionPerformed(ActionEvent evt) {
 
 		if (evt.getActionCommand() == OP_FILENAME) {
-			JFileChooser jf = new JFileChooser(OpfileName);
-			if ((new File(OpfileName).exists()))
-				jf.setSelectedFile(new File(OpfileName));
+			JFileChooser jf = new JFileChooser(opPanel.fileName.getText());
+			if ((new File(opPanel.fileName.getText()).exists()))
+				jf.setSelectedFile(new File(opPanel.fileName.getText()));
 			if (jf.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
 				return;
-			this.OpfileName = jf.getSelectedFile().getAbsolutePath();
+			String OpfileName = jf.getSelectedFile().getAbsolutePath();
+            opPanel.setDefaults( ForceExtension(OpfileName,"java"));
 		}
 	}
-
+  
+  
+    /**
+     *  Initializes everything when a new method is chosen
+     *
+     */
 	public void MethodChanged() {
-
+        
 		methPanel.MethodList.removeAllItems();
 		methPanel.meth = null;
 		methData = null;
+        ClearDocs();
 		ArgsChanged();
 	}
 
+
+    /**
+     *  Clears the Documentation information when a new method is selected
+     *
+     */
+    public void ClearDocs(){
+
+      docPanel.newOp=true;
+      docPanel.OverView.setText("");
+      docPanel.Algorithm.setText("");
+      docPanel.Assump.setText("");
+      docPanel.Error.setText("");
+      docPanel.Return.setText("");
+      docPanel.Params=null;
+    }
+    
+    
+    /**
+     *  Clears the arguments and other settings when a new method is selected
+     *
+     */
 	public void ArgsChanged() {
 
 		methPanel.ArgListModel.clear();
-
+        methPanel.Arguments.setEnabled(false);
 		methPanel.Prompt.setText("");
+        methPanel.Prompt.setEnabled(false);
+        
 		methPanel.VarName.setText("");
+        methPanel.VarName.setEnabled(false);
 		methPanel.InitValue.setText("");
+        methPanel.InitValue.setEnabled(false);
 		methPanel.ResInf.setText("");
-		AssumpDoc = "";
-		OverViewDoc = "";
-		AlgorithmDoc = "";
-		ReturnDoc = "";
-		ErrorDoc = new Vector();
+	
+		
 		methPanel.ParamGUI.removeAllItems();
+        methPanel.ParamGUI.setEnabled( false );
 	}
+  
+  
+  
+    /**
+     *  Forces the given extension on the file
+     * @param filename    The filename to have its extension changed
+     * @param extension   The new extension( case sensitive)
+     * @return     The new filename with the correct extension
+     */
+    public static String ForceExtension( String filename,  String extension){
+       if( filename == null)
+          return null;
+       if( extension == null)
+          return filename;
+          
+       int i=filename.lastIndexOf(".");
+       extension= extension.trim();
+       if( extension.startsWith("."))
+         extension= extension.substring(1, extension.length());
+       if( i < 0)
+          return filename+"."+extension;
+       return filename.substring(0,i)+"."+extension;
+    }
+    
+    
+    /**
+     *  Finds the class name corresponding to the file.  This can be used be the method Class.forName
+     * @param fileName   The filename containing a possible class( or its java file)
+     * @return   The class name that can be used by Class.forName
+     */
 
 	public static String getClassName(String fileName) {
-
+        fileName= (new File(fileName)).getAbsolutePath();
 		String ClassPth = System.getProperty("java.class.path");
 		int k = 0;
 		int k1 = ClassPth.indexOf(File.pathSeparator);
@@ -195,10 +265,11 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		    JOptionPane.showMessageDialog(null, "Filename has no dots :"+fileName);
 			return null;
         }
+        
 		fileName = fileName.substring(0, i);
 		for (; k < ClassPth.length();) {
 			String S = ClassPth.substring(k, k1);
-
+            S = (new File(S)).getAbsolutePath();     
 			if (!S.endsWith(File.separator))
 				S += File.separator;
 			if (fileName.indexOf(S) == 0) {
@@ -209,9 +280,12 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			if (k1 < 0)
 				k1 = ClassPth.length();
 		}
-        JOptionPane.showMessageDialog(null, "No ClassPath choice hits this filename");
+        JOptionPane.showMessageDialog(null, "No ClassPath choice hits this filename:"
+                         +fileName);
 		return null;
 	}
+
+
 
 	/**
 	 *  Returns a pretty name for a class. It eliminates the leading "class "
@@ -248,6 +322,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
           S=S.substring(1);
           Arr=true;
         }
+        
+        
         if(!Arr)
           return S;
         if(S.equals("I"))
@@ -267,6 +343,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
         
 	
 	}
+
+
 
 	/**
 	 * Fixes up a String with possible \n's. A line( trimmed) is replaced
@@ -301,9 +379,13 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		return Res;
 	}
 
+
+
+
 	/**
 	 * Produces a string to prepend the string "getParameter(i)" to get the
-	 * resultant class C.  Used with GetAppend
+	 * resultant class C.  Used with GetAppend.  This is used when writing out the
+     * code in the operator file to retrieve the values from the parameters.  
 	 * @param paramGUIName  The name of the ParameterGUI
 	 * @param C   The resultant Class  
 	 * @return   A string that represents java code that must prepend 
@@ -357,6 +439,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		return "";
 	}
 
+
+
+
 	/**
 	 *  Creates java code that is to be placed in a java file that will convert
 	 *  a variable called Xres that has a primitive class(Name) like int,boolean,
@@ -380,6 +465,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		return "Xres";
 	}
 
+
+
 	/**
 	 * Used to start this wizard
 	 * @param args   are required for this method but are not used yet
@@ -388,31 +475,31 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 		Method2OperatorWizard W = new Method2OperatorWizard();
 
-		W.setSize(600, 600);
+		W.setSize(600, 400);
+        W.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE);
 		W.show();
     
 	}
 
+
+
 	/**
 	 *  This class takes care of the Information tab of the tabbed pane
-	 * @author mikkelsonr
+	 * 
 	 */
 	private class InfoPanel extends JPanel {
 
 		Method2OperatorWizard W;
 		JTextField Name,
 			Email,
-			Instit,
-			Address,
-			OperatorTitle,
-			CommandName,
-			CategoryList;
-		JTextArea Acknowl;
-		JButton Directory;
+			Instit;
+		JTextArea  Address,Acknowl;
+		
 
 		public InfoPanel(Method2OperatorWizard W) {
 
 			super();
+            int Height, Width= 580;
 			BoxLayout BL = new BoxLayout(this, BoxLayout.Y_AXIS);
 
 			setLayout(BL);
@@ -421,7 +508,11 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 			JP.add(new JLabel("Your Name"));
 			Name = new JTextField();
+            Height = Name.getPreferredSize().height*5;
+            
+            JP.setMaximumSize( new Dimension(Width ,Height ));
 			JP.add(Name);
+           
 			add(JP);
 			JP = null;
 
@@ -429,54 +520,41 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			JP.add(new JLabel("Your Email"));
 			Email = new JTextField();
 			JP.add(Email);
+            JP.setMaximumSize( new Dimension(Width,Height ));
 			add(JP);
 
 			JP = new JPanel(new GridLayout(1, 2));
 			JP.add(new JLabel("Institution"));
 			Instit = new JTextField();
 			JP.add(Instit);
+            JP.setMaximumSize( new Dimension(Width,Height ));
 			add(JP);
 
-			JP = new JPanel(new GridLayout(1, 2));
-			JP.add(new JLabel("Address"));
-			Address = new JTextField();
-			JP.add(Address);
+			JP = new JPanel();
+            BL = new BoxLayout(JP, BoxLayout.X_AXIS);
+            JP.setLayout(BL);
+			JP.add(new JLabel("Address                     "));
+			Address = new JTextArea(4,20);      
+			JP.add(new JScrollPane(Address));
+            JP.setMaximumSize( new Dimension(Width,(int)(4.5*Height) ));
 			add(JP);
 
 			JP = new JPanel();
 			BL = new BoxLayout(JP, BoxLayout.X_AXIS);
-			JP.setLayout(BL);
-			JP.add(new JLabel("Acknowlegements"));
+			JP.setLayout(BL); 
+			JP.add(new JLabel("Acknowlegements  "));
 			Acknowl = new JTextArea(5, 30);
 			Acknowl.setLineWrap(true);
 			JP.add(new JScrollPane(Acknowl));
+            JP.setMaximumSize( new Dimension(Width,5*Height ));
 			add(JP);
-
-			JP = new JPanel(new GridLayout(1, 2));
-			JP.add(new JLabel("Category:Menu list"));
-			CategoryList = new JTextField("Macros,MyMenu");
-			JP.add(CategoryList);
-			add(JP);
-
-			JP = new JPanel(new GridLayout(1, 2));
-			JP.add(new JLabel("Operator Title"));
-			OperatorTitle = new JTextField();
-			JP.add(OperatorTitle);
-			add(JP);
-
-			JP = new JPanel(new GridLayout(1, 2));
-			JP.add(new JLabel("CommandName"));
-			CommandName = new JTextField();
-			JP.add(CommandName);
-			add(JP);
-
-			JButton jb = new JButton(OP_FILENAME);
-			jb.addActionListener(W);
-			add(jb);
-
+      
 			add(Box.createVerticalGlue());
+         
 		}
 	}
+
+
 
 	/**
 	 * This class takes care of tab concerning information about the static
@@ -490,8 +568,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		implements ActionListener, ListSelectionListener, ItemListener {
 
 		Method2OperatorWizard W;
-		String fileName = "";
-		JTextField CommandName;
+		String fileName="" ;
+    
+		JTextField FileName;
 		JList Arguments;
 		DefaultListModel ArgListModel;
 		JComboBox MethodList;
@@ -502,6 +581,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		Method meth;
 		JButton ClassFileName, ViewFile;
 		ParameterInfo pinf = new ParameterInfo();
+    
+    
 		public MethodPanel(Method2OperatorWizard W) {
 
 			super();
@@ -510,14 +591,19 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 			setLayout(BL);
 			this.W = W;
-			JPanel JP = new JPanel(new GridLayout(1, 2));
-			ClassFileName = new JButton("FileName:Method");
+			JPanel JP = new JPanel();
+            BL = new BoxLayout(JP, BoxLayout.X_AXIS);
+            JP.setLayout(BL);
+            FileName= new JTextField(25);
+			ClassFileName = new JButton("Browse");
 			ClassFileName.addActionListener(this);
+            JP.add(FileName);
 			JP.add(ClassFileName);
 
 			ViewFile = new JButton("View File");
 			ViewFile.addActionListener(this);
 			JP.add(ViewFile);
+            JP.setBorder( BorderFactory.createTitledBorder("Select Class with static Method"));
 			add(JP);
 
 			JP = new JPanel(new GridLayout(1, 2));
@@ -525,7 +611,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			MethodList = new JComboBox();
 			MethodList.addActionListener(this);
 			MethodList.addItemListener(this);
+            MethodList.setEnabled(false);
 			JP.add(MethodList);
+            JP.setBorder( BorderFactory.createTitledBorder("Select Method"));
 			add(JP);
 
 			ArgListModel = new DefaultListModel();
@@ -533,36 +621,49 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			Arguments.setBorder(
 				new TitledBorder(new LineBorder(Color.black), "Arguments"));
 			Arguments.addListSelectionListener(this);
+            Arguments.setEnabled(false);
 			JP = new JPanel(new GridLayout(1, 2));
 			JP.add(new JScrollPane(Arguments));
-			JPanel JP1 = new JPanel(new GridLayout(5, 2));
+			JPanel JP1 = new JPanel(new GridLayout(4, 2));
 			JButton LabelPGui = new JButton("Param GUI");
 
 			LabelPGui.setToolTipText("Click for info on selected Parameter");
 			LabelPGui.addActionListener(this);
 			JP1.add(LabelPGui);
-			ParamGUI = new JComboBox(); //paramList );
-
+			ParamGUI = new JComboBox( ); //paramList );
+            ParamGUI.setEnabled(false);
 			fileName = System.getProperty("ISAW_HOME", "");
 			JP1.add(ParamGUI);
 			JP1.add(new JLabel("Prompt"));
 			Prompt = new JTextField(12);
+            Prompt.setEnabled(false);
 			JP1.add(Prompt);
 			JP1.add(new JLabel("Param Name"));
 			VarName = new JTextField(12);
+            VarName.setEnabled(false);
 			JP1.add(VarName);
 			JP1.add(new JLabel("Init Value"));
 			InitValue = new JTextField(12);
+            InitValue.setEnabled(false);
 			JP1.add(InitValue);
+			JP.add(JP1);     
+           
 
-			JP1.add(new JLabel("Res Data type"));
-			ResInf = new JLabel("          ");
-			JP1.add(ResInf);
-			JP.add(JP1);
+            JP.setBorder( BorderFactory.createTitledBorder("Set GUI Info for Each Parameter"));
 			add(JP);
 
-			add(Box.createVerticalGlue());
+            JP= new JPanel( new GridLayout(1,2));
+            JP.add(new JLabel("Res Data type"));
+            ResInf = new JLabel("          ");
+            JP.add(ResInf);
+            add(JP);
+            
+            JP= new JPanel();
+            JP.setPreferredSize( new Dimension(50,5000));
+			add(JP);
 		}
+
+
 
 		/**
 		 * Sets up the list of arguments for a given method in the Arguments 
@@ -570,8 +671,13 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		 *
 		 */
 		public void SetUpArgList() {
-
+           
 			W.ArgsChanged();
+            Arguments.setEnabled(true);
+            this.ParamGUI.setEnabled( true);
+            InitValue.setEnabled( true);
+            Prompt.setEnabled(true);
+            VarName.setEnabled( true);
 			if (MethodList.getSelectedIndex() >= 0) {
 
 				meth = ((MethHolder) MethodList.getSelectedItem()).method();
@@ -595,6 +701,11 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			}
 		}
 
+
+
+
+
+
 		/**
 		 *   Handles all action listening for MethodPanel class.  These
 		 *   include
@@ -608,7 +719,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		 */
 		public void actionPerformed(ActionEvent evt) {
 
-			if (evt.getActionCommand().equals("FileName:Method")) {
+			if (evt.getActionCommand().equals("Browse")) {
 				JFileChooser jf = new JFileChooser(fileName);
 
 				if (jf.showOpenDialog(null) != JFileChooser.APPROVE_OPTION){
@@ -616,9 +727,15 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					return;
                  }
 				fileName = jf.getSelectedFile().getAbsolutePath();
+                FileName.setText(ForceExtension(fileName,"class"));
+                this.MethodList.setEnabled(true);
 				SetMethodList(fileName);
+                
 
 			} else if (evt.getSource() == MethodList) {
+               
+                this.Arguments.setEnabled( true);
+                ClearDocs();
 				SetUpArgList();
 
 			} else if (evt.getSource() == ViewFile) {
@@ -654,6 +771,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			}
 		}
 
+
+
+
+
 		/**
 		 * Sets up the list of static methods from a class file
 		 * @param fileName  the name of the class file
@@ -661,7 +782,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		 *          class or causes other exceptions when looking at it 
 		 */
 		public void SetMethodList(String fileName) {
-
+            MethodChanged();
 			try {
 				if (W.getClassName(fileName) == null){
 				
@@ -690,7 +811,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 										MethodList.addItem(new MethHolder(Meths[i]));
 									}
 				}
-
+              MethodList.setEnabled( true);
 			} catch (Exception s) {
 				s.printStackTrace();
                 JOptionPane.showMessageDialog(null, "improper class:"+
@@ -699,15 +820,22 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			}
 		}
 
+
+
+
+
 		/**
 		 *  Sets up the list of arguments corresponding to a new Method
 		 */
 		public void itemStateChanged(ItemEvent e) {
-
+            
 			SetUpArgList();
 		}
 
-		int lastSelection = -1;
+
+
+		int lastSelection = -1;// Saving the new value is triggered by changing
+                               // the selected argument.
 
 		/**
 		 *  Saves the information about the previously selected argument to a
@@ -719,6 +847,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 			if (i < 0)
 				return;
+            this.ParamGUI.setEnabled( true);
+            this.Prompt.setEnabled(true);
+            this.InitValue.setEnabled(true);
+            this.VarName.setEnabled(true);
 			Class C = (Class) ((JList) (evt.getSource())).getSelectedValue();
 			MethInfData m1 = W.methData.get(lastSelection);
 
@@ -732,11 +864,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 			//Now set up the possible Entries in the ParamGUI ComboBox
 			ParamGUI.removeAllItems();
-			ParameterInfo pinfo = new ParameterInfo();
 
-			for (int k = 0; k < pinfo.getNParamTypes(); k++) {
-				if (pinfo.isEqual(k, C)) {
-					ParamGUI.addItem(pinfo.getType(k));
+			for (int k = 0; k < pinf.getNParamTypes(); k++) {
+				if (pinf.isEqual(k, C)) {
+					ParamGUI.addItem(pinf.getType(k));
 				}
 			}
 
@@ -754,6 +885,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			}
 		}
 	}
+
+
 
 	/**
 	 * A class to hold a method variable.  The toString method is used to
@@ -779,214 +912,324 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		}
 	}
 
+
+   /**
+    *  The Panel contains the information about the operator that is to be
+    * created
+    *
+    */
+    class OpPanel extends JPanel implements ActionListener{
+       Method2OperatorWizard W;
+       JTextField OperatorTitle,
+                  CommandName,
+                  CategoryList;
+      JButton Directory;
+      JTextField fileName;
+      
+      
+       public OpPanel( Method2OperatorWizard W){
+         super();
+         this.W=W;
+         BoxLayout bl = new BoxLayout(this, BoxLayout.Y_AXIS);
+         setLayout( bl);
+         
+         JPanel JP = new JPanel();
+         bl= new BoxLayout( JP,BoxLayout.X_AXIS);
+         JP.setLayout(bl);
+         
+         JP.setBorder( BorderFactory.createTitledBorder("Select Operator Output File"));
+         fileName= new JTextField(30);
+         String OpfileName = System.getProperty("ISAW_HOME", "");
+         if (!OpfileName.endsWith(File.separator))
+              OpfileName += File.separator;
+         OpfileName += "Operators";
+         fileName.setText(OpfileName);
+         fileName.addActionListener( this);
+         Directory = new JButton(OP_FILENAME);
+         Directory.addActionListener(W);
+         JP.add(fileName);
+         JP.add(Directory);
+         add(JP);
+         add(Box.createVerticalGlue());
+         JP= new JPanel( new GridLayout(3,2));
+         JP.setBorder( BorderFactory.createTitledBorder("Set Operator Descriptions"));
+      
+         JP.add(new JLabel("Operator Title"));
+         OperatorTitle = new JTextField();
+         JP.add(OperatorTitle);      
+         
+         
+         JP.add(new JLabel("Command for Scripts"));
+         CommandName = new JTextField();
+         JP.add(CommandName);
+       
+                
+         JP.add(new JLabel("Category( for menu)"));
+         CategoryList = new JTextField("Macros,MyMenu");
+         JP.add(CategoryList);
+        
+         add(JP);
+
+         JP=new JPanel();
+         JP.setPreferredSize( new java.awt.Dimension(100,5000));
+         add(JP);
+
+         
+       }
+
+
+
+       /**
+        * Sets up the information in this tab when the name of the Operator
+        *  file is changed
+        * @param opFileName  The new name of the operation file
+        */
+       public void setDefaults( String opFileName){
+         if( opFileName == null)
+            return;
+         
+         fileName.setText( opFileName );
+         int i= opFileName.lastIndexOf('.');
+         if( i<0)
+             i = opFileName.length();
+         opFileName= opFileName.substring(0, i);
+         i=opFileName.lastIndexOf( File.separatorChar);
+         if( i <0)
+           i=-1;
+        String S = opFileName.substring(i+1);
+        OperatorTitle.setText(S);
+        CommandName.setText(S);
+        
+        
+        
+       }
+      
+      
+      
+      /**
+       *  Invoked when the filename for the operator is changed in the text 
+       *  field and a return is pressed.
+       * @evt  The action event
+       */
+       public void actionPerformed( ActionEvent evt){
+          if( evt.getSource() == fileName){
+            fileName.setText( ForceExtension( fileName.getText(),"java"));
+            setDefaults( fileName.getText());
+          }
+       }
+    }
+    
+    
+    
+    
+
 	/**
 	 * Takes care of handling the Documentation tab in this application
 	 * @author mikkelsonr
 	 *
 	 *
 	 */
-	class DocPanel extends JPanel implements ActionListener, ComponentListener {
+	class DocPanel extends JPanel implements  ComponentListener {
 
 		Method2OperatorWizard W;
-		JTextArea Docc;
-		JComboBox Sections;
-		DefaultComboBoxModel jcmbMod;
-
+		JTextArea Assump,OverView,Algorithm,Return, Error;
+        JTextArea[] Params = null;
+        JScrollPane[] Pjscr= null;
+	    boolean newOp=true;
+  
 		public DocPanel(Method2OperatorWizard W) {
 
-			super(new BorderLayout());
+			super();
 			this.W = W;
-			Docc = new JTextArea(20, 50);
-            Docc.setLineWrap( true);
-			add(new JScrollPane(Docc), BorderLayout.CENTER);
-			JPanel JP = new JPanel(new GridLayout(1, 2));
-
-			jcmbMod = new DefaultComboBoxModel();
-			Sections = new JComboBox(jcmbMod);
-
-			Sections.addActionListener(this);
-			JP.add(Sections);
-
-			add(JP, BorderLayout.NORTH);
+           
+            BoxLayout bl = new BoxLayout(this, BoxLayout.Y_AXIS);
+            setLayout(bl); 
+            OverView = new JTextArea(5,60);
+            OverView.setWrapStyleWord(true);
+            Assump = new JTextArea(5,60);
+            Assump.setWrapStyleWord(true);
+            Algorithm = new JTextArea(5,60);
+            Algorithm.setWrapStyleWord(true);
+            Return = new JTextArea(3,60);
+            Return.setWrapStyleWord(true);
+            Error = new JTextArea(3,60);
+            Error.setWrapStyleWord(true);
+			newOp=true;
 		}
 
-		String PrevDocKey = "";
 
-		/**
-		 * Takes care of saving information in the text area from previous 
-		 * section and loading the information from the new section into the
-		 * text area.
-		 * 
-		 */
-		public void actionPerformed(ActionEvent evt) {
-
-			if (evt == null)
-				return;
-
-			if (evt.getSource() instanceof JComboBox) {
-
-				JComboBox bx = (JComboBox) evt.getSource();
-
-				if (bx.getItemCount() < 1)
-					return;
-				SetPrevOp();
-				String opn =
-					((JComboBox) (evt.getSource())).getSelectedItem().toString();
-
-				if (opn.equals("OverView"))
-					Docc.setText(W.OverViewDoc);
-
-				else if (opn.equals("Algorithm"))
-					Docc.setText(W.AlgorithmDoc);
-
-				else if (opn.equals("Assumptions"))
-					Docc.setText(W.AssumpDoc);
-
-				else if (opn.equals("Return"))
-					Docc.setText(W.ReturnDoc);
-
-				else if (opn.startsWith("Param")) {
-					int i = (new Integer(opn.substring(5).trim())).intValue();
-
-					String T = W.methData.get(i).Docum;
-
-					Docc.setText(T);
-
-				} else if (opn.startsWith("Error")) {
-					int i = (new Integer(opn.substring(5).trim())).intValue();
-
-					Docc.setText(W.ErrorDoc.elementAt(i).toString());
-                    opn="Error"+i;
-				} else if (opn.equals("Add returned Error Message")) {
-
-					W.ErrorDoc.addElement("");
-					Docc.setText("");
-					int k = jcmbMod.getSize();
-
-					//jcmbMod.removeElementAt(k - 1);
-					jcmbMod.insertElementAt("Error" + (W.ErrorDoc.size() - 1),k-1);
-					//jcmbMod.addElement("Add returned Error Message");
-                    this.Sections.setSelectedIndex( k-1);
-                    opn="Error"+(W.ErrorDoc.size()-1);
-				}
-				PrevDocKey = opn;
-			}
-		}
-
-		/**
-		 *  Used to save the data from the text area into the previously selected
-		 *  section
-		 *
-		 */
-		public void SetPrevOp() {
-
-			String opn = PrevDocKey;
-
-			if (opn == null)
-				return;
-			if (opn.length() < 1)
-				return;
-			String txt = null;
-
-			try {
-				txt = Docc.getDocument().getText(0, Docc.getDocument().getLength());
-			} catch (Exception s) {
-				return;
-			}
-			if (opn.equals("OverView"))
-				W.OverViewDoc = txt;
-
-			else if (opn.equals("Algorithm"))
-				W.AlgorithmDoc = txt;
-			else if (opn.equals("Assumptions"))
-				W.AssumpDoc = txt;
-			else if (opn.equals("Return"))
-				W.ReturnDoc = txt;
-			else if (opn.startsWith("Param")) {
-
-				int i = (new Integer(opn.substring(5).trim())).intValue();
-
-				W.methData.get(i).Docum = txt;
-			} else if (opn.startsWith("Error")) {
-
-				int i = (new Integer(opn.substring(5).trim())).intValue();
-                if( i >= W.ErrorDoc.size())
-                    W.ErrorDoc.add( txt);
-                else
-				    W.ErrorDoc.setElementAt(txt, i);
-			}
-		}
-
-		public void componentHidden(ComponentEvent e) {}
+	    public void componentHidden(ComponentEvent e) {}
 
 		public void componentMoved(ComponentEvent e) {}
 
 		public void componentResized(ComponentEvent e) {}
 
 		/**
-		 *  When this component is shown, the comboBox is recalculated
-		 * @author mikkelsonr
+		 *  When this component is shown and there is a new operation
+         *  All the data fields are initialized 
 		 *
-		 *
+		 * @param e   The component Event
 		 */
 		public void componentShown(ComponentEvent e) {
-
-			Sections.removeAllItems();
-			if (W.methPanel.meth == null)
-				return;
-
-			Sections.addItem("OverView");
-			Sections.addItem("Algorithm");
-			Sections.addItem("Assumptions");
-			Sections.addItem("Return");
-
-			if (W.methPanel.meth.getParameterTypes() != null)
-				for (int i = 0; i < W.methPanel.meth.getParameterTypes().length; i++)
-					Sections.addItem("Param" + i);
-
-			for (int i = 0; i < W.ErrorDoc.size(); i++)
-				Sections.addItem("Error" + i);
-
-			Sections.addItem("Add returned Error Message");
+          if( newOp){
+            
+            this.removeAll();
+            newOp = false;
+            W.methPanel.valueChanged(new ListSelectionEvent( W.methPanel.Arguments,
+                                  0,1000,false)); 
+            
+            if(Params == null){
+            
+              Params = new JTextArea[ W.methPanel.Arguments.getModel().getSize()];
+              for( int i=0; i<Params.length; i++)
+                Params[i]= new JTextArea(2,60);
+            }  
+            add( JScrollwBorder( OverView,"OverView"));
+            add( JScrollwBorder( Assump,"Assumption"));
+            add( JScrollwBorder( Algorithm,"Algorithm"));
+            add( JScrollwBorder( Return,"Return"));
+            Pjscr= new JScrollPane[Params.length];
+            for( int i=0;i<Params.length;i++){
+              String S=W.methData.get(i).varName;
+             if((S==null)||(S.length()<1))
+                 S=""+i;
+              Pjscr[i]=JScrollwBorder(Params[i], "Param:"+ S);
+              add(Pjscr[i]);
+            }
+            add( JScrollwBorder(Error,"Error"));
+            validate();
+          }else if(Pjscr != null){//set Params[i] border title 
+            for( int i=0; i< Pjscr.length; i++){
+              String S=W.methData.get(i).varName;
+              if((S==null)||(S.length()<1))
+                  S=""+i;
+              Pjscr[i].setBorder(BorderFactory.createTitledBorder("Param:"+ S));
+            }
+          }
+        
 		}
+    
+    
+       private JScrollPane JScrollwBorder( JComponent comp, String Border){
+            JScrollPane jscr= new JScrollPane(comp);
+            jscr.setBorder( BorderFactory.createTitledBorder( Border));
+            return jscr;
+       }
+       
+    
 
 	}
 
+
+
+
+
+
 	/**
 	 *  Handles saving the new operator, saving and retrieving the information
-	 *  from this wizard
+	 *  from this wizard.  This has moved to the menu bar
 	 * @author mikkelsonr
 	 *
 	 */
-	class FilePanel extends JPanel implements ActionListener {
+	class FilePanel  implements ActionListener {
 
 		Method2OperatorWizard W;
 
 		public FilePanel(Method2OperatorWizard W) {
 
-			super();
+			
 			this.W = W;
-			JButton jb = new JButton("Save Op");
+            JMenuBar jmenBar= new JMenuBar();
+            JMenu  jmenFile = new JMenu("File");
+            jmenBar.add( jmenFile);
+            
+            JMenuItem jmenContactLoad = new JMenuItem("Load Contact Info");
+            jmenContactLoad.addActionListener(this);
+            JMenuItem jmenContactSave = new JMenuItem("Save Contact Info");
+            jmenContactSave.addActionListener(this);
+            JMenuItem jb ;
+           
+			jmenFile.add( jmenContactLoad);
+			jb = new  JMenuItem("Load Session");
+			jb.addActionListener(this);
+            jmenFile.add(jb);
 
-			jb.addActionListener(this);
-			add(jb);
-			jb = new JButton("Save State");
-			jb.addActionListener(this);
-			add(jb);
-			jb = new JButton("Restore State");
-			jb.addActionListener(this);
-			add(jb);
+           
+            jb = new  JMenuItem("Create Operator");
+            jb.addActionListener(this);
+			jmenFile.add(jb);
+      
+            jmenFile.add( jmenContactSave);
+            
+            jb = new  JMenuItem("Save Session");
+            jb.addActionListener(this);
+            jmenFile.add(jb);
+            
+            jb = new JMenuItem("Exit");
+            jb.addActionListener( this);
+            jmenFile.add( jb );
+            W.setJMenuBar( jmenBar);
 		}
 
+
+        /**
+         *   Handles the menu events from the file menubar item
+         */
 		public void actionPerformed(ActionEvent evt) {
 
-			if (evt.getActionCommand().equals("Save State"))
+			if (evt.getActionCommand().equals("Save Session"))
 				SaveState(W);
-			else if (evt.getActionCommand().equals("Restore State"))
+        
+			else if (evt.getActionCommand().equals("Load Session"))
 				RestoreState(W);
-			else if (evt.getActionCommand().equals("Save Op"))
+        
+			else if (evt.getActionCommand().equals("Create Operator"))
 				Save(W);
+        
+            else if( evt.getActionCommand().equals("Save Contact Info"))
+               { 
+                 String filname = System.getProperty("user.home","");
+                 if(!filname.endsWith(File.separator))
+                     filname+=File.separator;
+                     
+                JFileChooser jf = new JFileChooser( filname+"ContactInfo.xml");
+                
+                jf.setSelectedFile(new File(filname+"ContactInfo.xml"));
+                if( jf.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
+                     SaveContact( jf.getSelectedFile(),
+                                  W.infPanel.Name.getText(),
+                                  W.infPanel.Email.getText(),
+                                   W.infPanel.Instit.getText(),
+                                  W.infPanel.Address.getText(),
+                                  W.infPanel.Acknowl.getText()
+                           );
+                }
+            else if( evt.getActionCommand().equals("Load Contact Info"))
+               {
+                 String filname = System.getProperty("user.home","");
+                 if(!filname.endsWith(File.separator))
+                     filname+=File.separator;
+                 JFileChooser jf = new JFileChooser( filname+"ContactInfo.xml");
+                 jf.setSelectedFile(new File(filname+"ContactInfo.xml"));
+                 
+                 if( jf.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+                      GetContact( jf.getSelectedFile(),W.infPanel );                     
+               
+               }
+            else if( evt.getActionCommand().equals("Exit")){
+              
+              W.dispose();
+              try{
+                 W.finalize();
+              }catch( Throwable s){
+                JOptionPane.showMessageDialog(null, "Could not finish closing the window:"+s.toString());
+              }
+              
+            }
+               
 		}
+    
+    
 
 		private boolean ShowMess(String message) {
 
@@ -994,24 +1237,28 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			return false;
 		}
 
+
+
 		private boolean check() {
 
-			if (W.infPanel.OperatorTitle.getText() == null)
+			if (W.opPanel.OperatorTitle.getText() == null)
 				return ShowMess("No Operator Title is Specified");
 
-			if (W.infPanel.OperatorTitle.getText().length() < 1)
+			if (W.opPanel.OperatorTitle.getText().length() < 1)
 				return ShowMess("No Operator Title is Specified");
 
-			if (W.infPanel.CommandName.getText() == null)
+			if (W.opPanel.CommandName.getText() == null)
 				return ShowMess("No Command Name for the operator is Specified");
 
-			if (W.infPanel.CommandName.getText().length() < 1)
+			if (W.opPanel.CommandName.getText().length() < 1)
 				return ShowMess("No Command Name for the operator is Specified");
 
 			if (!(new File(W.methPanel.fileName)).exists())
 				return ShowMess("The filename with the method does not exist");
+        
 			if (W.methPanel.meth == null)
 				return ShowMess("No method from the Method File has been selected");
+        
 			W.methPanel.valueChanged(
 				new ListSelectionEvent(
 					W.methPanel.Arguments,
@@ -1027,10 +1274,98 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				if ((m.InitValue == null) || (m.InitValue.length() < 1))
 					m.InitValue = "null";
 			}
-			W.docPanel.SetPrevOp(); // Last info set only when changed
+			 
 			return true;
 		}
+    
+    
 
+        private void GetContact( File F, InfoPanel InfPanel){
+          try{
+    
+           Document D= DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( F);
+           Node child = D.getFirstChild();
+           if( child== null)
+              return;
+           if( child.getNodeType() != Node.ELEMENT_NODE){
+             System.out.println(" First Child is not the Element NOde");
+             return;
+           }
+           Element E =(Element)child;
+           infPanel.Name.setText( E.getAttribute("Name"));
+           infPanel.Email.setText( E.getAttribute("Email"));
+           infPanel.Instit.setText( E.getAttribute("Instit"));
+           infPanel.Address.setText( E.getAttribute("Address"));
+           infPanel.Acknowl.setText( E.getAttribute("Acknowl"));
+           
+           
+          }catch(Exception s){
+            JOptionPane.showMessageDialog(null, "Could not read file:"+s.toString());
+          }
+        
+       }
+       
+       
+       
+       /**
+        *  Saves Contact information
+        */
+       private void SaveContact( File F, String Name, String  Email, 
+                              String  Instit, String  Address,  String Acknowl  ){
+           DocumentBuilderFactory DFact= DocumentBuilderFactory.newInstance();
+           DocumentBuilder DocBuilder=null;
+           try{
+           
+               DocBuilder = DFact.newDocumentBuilder();
+           }catch( Exception ss){
+             JOptionPane.showMessageDialog(null, "Cannot Save Contact Info:"+ss.toString());
+             return;
+           }
+           Document D1=null;
+           Element D = null;
+           try{
+           
+           D1 = DocBuilder.newDocument();
+           D= D1.createElement("ContactInfo");
+           D1.appendChild(D);
+           
+           
+           D.setAttribute("Name",Name);
+           
+     
+           D.setAttribute("Email",Email);
+    
+           D.setAttribute("Instit",Instit);
+ 
+           D.setAttribute("Address",Address);
+
+           D.setAttribute("Acknowl",Acknowl);
+         
+           }catch(Exception s3){
+             JOptionPane.showMessageDialog( null,"Cannot Save:"+s3.toString());
+             return;
+           }
+           
+          StreamResult output = new StreamResult( F);
+          DOMSource DSource = new DOMSource( D1);
+          Transformer Trans=null;
+          try{
+          
+            Trans = TransformerFactory.newInstance().newTransformer();
+            Trans.transform(DSource, output);
+            JOptionPane.showMessageDialog (null, "Saved Contact Info to "+ F.getAbsolutePath());
+          }catch(Exception s2){
+            JOptionPane.showMessageDialog(null, "Cannot Save ContactInfo :"+s2.toString());
+            return;
+          }
+          
+          
+           
+           
+                               
+                                
+       }                               
+                               
 		/**
 		 * Saves the information currently in the wizard to the operator file
 		 * @param W
@@ -1039,8 +1374,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 			if (!check())
 				return;
-
-			String packge = W.getClassName(W.OpfileName);
+            W.opPanel.fileName.setText( ForceExtension(W.opPanel.fileName.getText(),"java"));
+			String packge = W.getClassName(W.opPanel.fileName.getText().trim());
 
 			if (packge == null) {
 
@@ -1059,7 +1394,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			clsName = packge.substring(k + 1);
 			packge = packge.substring(0, k);
 			try {
-				FileOutputStream fout = new FileOutputStream(W.OpfileName);
+				FileOutputStream fout = new FileOutputStream(W.opPanel.fileName.getText());
 
 				fout.write(("/* \r\n * File: " + clsName + ".java\r\n *  \r\n").getBytes());
 				fout.write(
@@ -1123,6 +1458,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					k = k1 + 1;
 					if (k1 < S.length())
 						k1 = S.indexOf('\n', k1 + 1);
+                    if( k1 < 0)
+                       k1= S.length();
 				}
 
 				fout.write((" *\r\n").getBytes());
@@ -1162,7 +1499,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					("   public "
 						+ clsName
 						+ "(){\r\n     super(\""
-						+ W.infPanel.OperatorTitle.getText().trim()
+						+ W.opPanel.OperatorTitle.getText().trim()
 						+ "\");\r\n     }\r\n\r\n")
 						.getBytes());
 
@@ -1170,7 +1507,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				fout.write(("   public String getCommand(){\r\n").getBytes());
 				fout.write(
 					("      return \""
-						+ W.infPanel.CommandName.getText().trim()
+						+ W.opPanel.CommandName.getText().trim()
 						+ "\";\r\n   }\r\n\r\n")
 						.getBytes());
 
@@ -1198,22 +1535,23 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				fout.write("      StringBuffer S = new StringBuffer();\r\n".getBytes());
 				fout.write("      S.append(\"@overview    \"); \r\n".getBytes());
 				fout.write(
-					MultiLine_ify(W.OverViewDoc, "      S.append(\"", "\");\r\n")
+					MultiLine_ify(W.docPanel.OverView.getText(), "      S.append(\"", "\");\r\n")
 						.getBytes());
 				fout.write("      S.append(\"@algorithm    \"); \r\n".getBytes());
 				fout.write(
-					MultiLine_ify(W.AlgorithmDoc, "      S.append(\"", "\");\r\n")
+					MultiLine_ify(W.docPanel.Algorithm.getText(), "      S.append(\"", "\");\r\n")
 						.getBytes());
 				fout.write("      S.append(\"@assumptions    \"); \r\n".getBytes());
 				fout.write(
-					MultiLine_ify(W.AssumpDoc, "      S.append(\"", "\");\r\n")
+					MultiLine_ify(W.docPanel.Assump.getText(), "      S.append(\"", "\");\r\n")
 						.getBytes());
 				for (MethInfData m = W.methData; m != null; m = m.Next) {
 					fout.write("      S.append(\"@param   \");\r\n".getBytes());
 					fout.write(
-						MultiLine_ify(m.Docum, "      S.append(\"", "\");\r\n").getBytes());
+						MultiLine_ify(W.docPanel.Params[m.argnum].getText(), 
+                                                         "      S.append(\"", "\");\r\n").getBytes());
 				}
-                String ret=StringUtil.replace(W.ReturnDoc, "\"", "\\\"");
+                String ret=StringUtil.replace(W.docPanel.Return.getText(), "\"", "\\\"");
                 if( ret != null)
                   ret=ret.trim();
                 int kz=-1;
@@ -1236,17 +1574,18 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                                 getBytes());
                 }      
 
-				for (int i = 0; i < W.ErrorDoc.size(); i++) {
+			
 
-					fout.write(("      S.append(\"@error \");\r\n"+ 
-					    MultiLine_ify(	W.ErrorDoc.elementAt(i).toString(),
-							"      S.append(\"","\");\r\n"))
-							.getBytes());
-				}
+				fout.write(("      S.append(\"@error \");\r\n"+
+				                 MultiLine_ify(	W.docPanel.Error.getText(),
+							      "      S.append(\"","\");\r\n"))
+							    .getBytes());
+				
+ 
 				fout.write("      return S.toString();\r\n   }\r\n\r\n\r\n".getBytes());
 
 				// Write out getCategoryList method;
-				WriteCategoryList(fout, W.infPanel.CategoryList.getText().trim());
+				WriteCategoryList(fout, W.opPanel.CategoryList.getText().trim());
 
 				//Write out the getResult method       
 				fout.write("   public Object getResult(){\r\n".getBytes());
@@ -1316,13 +1655,14 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				fout.write("}\r\n\r\n\r\n".getBytes());
 
 				fout.close();
-
+                JOptionPane.showMessageDialog(null, "Saved Operator to"+W.opPanel.fileName.getText());
 			} catch (Exception s) {
 
 				JOptionPane.showMessageDialog(null, "Cannot Save file " + s.toString());
 			}
 
 		}
+
 
 		private void WriteCategoryList(FileOutputStream fout, String CatList) {
 			if (fout == null)
@@ -1377,6 +1717,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			return Res;
 		}
 
+
 		private char sepChar(int i, int length) {
 
 			if (i + 1 < length)
@@ -1385,24 +1726,22 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				return ')';
 		}
 
+
+
 		/**
 		 * Saves the information from the current wizard so this state can be
 		 * recreated by RestoreState operation
+          * 
 		 * @param W  This wizard
 		 */
 		public void SaveState(Method2OperatorWizard W) {
+      
 			check();
-			String fileName = W.OpfileName;
+			String fileName = ForceExtension(W.opPanel.fileName.getText(),"cls");
 
 			if (fileName == null)
 				return;
-			if (fileName.length() < 1)
-				return;
-			int k = fileName.lastIndexOf(".");
-
-			if (k < 0)
-				return;
-			fileName = fileName.substring(0, k) + ".cls";
+			
 			try {
 
 				FileOutputStream fout = new FileOutputStream(fileName);
@@ -1413,10 +1752,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				Oout.writeObject((Object) W.infPanel.Email.getText());
 				Oout.writeObject((Object) W.infPanel.Instit.getText());
 				Oout.writeObject((Object) W.infPanel.Name.getText());
-				Oout.writeObject((Object) W.infPanel.CommandName.getText());
-				Oout.writeObject((Object) W.infPanel.OperatorTitle.getText());
+				Oout.writeObject((Object) W.opPanel.CommandName.getText());
+				Oout.writeObject((Object) W.opPanel.OperatorTitle.getText());
 
-				Oout.writeObject((Object) W.OpfileName);
+				Oout.writeObject((Object) W.opPanel.fileName.getText());
 
 				Oout.writeObject((Object) W.methPanel.fileName);
 				Oout.writeObject((Object) W.methPanel.meth.getName());
@@ -1425,13 +1764,12 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				Oout.writeInt(CC.length);
 				for (int i = 0; i < CC.length; i++)
 					Oout.writeObject(CC[i]);
-
-				Oout.writeObject((Object) W.OverViewDoc);
-				Oout.writeObject((Object) W.AlgorithmDoc);
-				Oout.writeObject((Object) W.AssumpDoc);
-				Oout.writeObject((Object) W.ErrorDoc);
-				Oout.writeObject((Object) W.ReturnDoc);
-				Oout.writeObject((Object) W.AlgorithmDoc);
+				Oout.writeObject((Object) W.docPanel.OverView.getText());
+				Oout.writeObject((Object) W.docPanel.Algorithm.getText());
+				Oout.writeObject((Object) W.docPanel.Assump.getText());
+				Oout.writeObject((Object) W.docPanel.Error.getText());
+				Oout.writeObject((Object) W.docPanel.Return.getText());
+				Oout.writeObject((Object) W.docPanel.Algorithm.getText());
 				int C = 1;
 
 				if (W.methData != null)
@@ -1452,15 +1790,21 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					Oout.writeObject(m.Prompt);
 					Oout.writeObject(m.InitValue);
 					Oout.writeObject(m.GUIParm);
-					Oout.writeObject(m.Docum);
+                    if((W.docPanel.Params != null) && (W.docPanel.Params.length >i ))
+					  Oout.writeObject(W.docPanel.Params[i].getText());
+                    else
+                      Oout.writeObject("");
 
 				}
-				Oout.writeObject(W.infPanel.CategoryList.getText().trim());
+				Oout.writeObject(W.opPanel.CategoryList.getText().trim());
+                JOptionPane.showMessageDialog(null,"Saved Session to "+fileName);
 			} catch (Exception s) {
 
 				JOptionPane.showMessageDialog(null, "Could not Save:" + s.toString());
 			}
 		}
+    
+    
 
 		/**
 		 * Restores the state of the wizard to the state stored in the .cls file
@@ -1474,7 +1818,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			if (jf.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
 				return;
 			String fileName = jf.getSelectedFile().getAbsolutePath();
-
+            fileName= ForceExtension( fileName, "cls");
 			if (fileName == null)
 				return;
 			if (fileName.length() < 1)
@@ -1489,24 +1833,27 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				W.infPanel.Email.setText((String) Oout.readObject());
 				W.infPanel.Instit.setText((String) Oout.readObject());
 				W.infPanel.Name.setText((String) Oout.readObject());
-				W.infPanel.CommandName.setText((String) Oout.readObject());
-				W.infPanel.OperatorTitle.setText((String) Oout.readObject());
+				W.opPanel.CommandName.setText((String) Oout.readObject());
+				W.opPanel.OperatorTitle.setText((String) Oout.readObject());
 
-				W.OpfileName = (String) Oout.readObject();
-
+				String OpfileName = (String) Oout.readObject();
+                W.opPanel.fileName.setText( OpfileName);
 				W.methPanel.fileName = (String) Oout.readObject();
+                W.methPanel.FileName.setText( W.methPanel.fileName );
 				String Name = (String) Oout.readObject();
 				int CC = Oout.readInt();
 				Class[] Cl = new Class[CC];
 
 				for (int i = 0; i < Cl.length; i++)
 					Cl[i] = (Class) Oout.readObject();
-				//Class[] CS =(Class[])Oout.readObject( );
+				
 
 				if (W.methPanel.fileName == null)
 					W.MethodChanged();
+          
 				else if (W.methPanel.fileName.length() < 1)
 					W.MethodChanged();
+          
 				else {
 					W.methPanel.SetMethodList(W.methPanel.fileName);
 					W.methPanel.meth = null;
@@ -1535,25 +1882,30 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					}
 				}
 
-				W.OverViewDoc = (String) Oout.readObject();
-				W.AlgorithmDoc = (String) Oout.readObject();
-				W.AssumpDoc = (String) Oout.readObject();
-				W.ErrorDoc = (Vector) Oout.readObject();
-				W.ReturnDoc = (String) Oout.readObject();
-				W.AlgorithmDoc = (String) Oout.readObject();
+                W.docPanel.newOp=true;
+				W.docPanel.OverView.setText( (String) Oout.readObject());
+				W.docPanel.Algorithm.setText( (String) Oout.readObject());
+				W.docPanel.Assump.setText( (String) Oout.readObject());
+				W.docPanel.Error.setText( (String) Oout.readObject());
+				W.docPanel.Return.setText( (String) Oout.readObject());
+				W.docPanel.Algorithm.setText( (String) Oout.readObject());
 				int C = Oout.readInt();
 				MethInfData m, mlast = null;
-
+                
 				W.methData = null;
+                W.docPanel.Params= new JTextArea[C];
+                W.methPanel.lastSelection = -1;
 				for (int i = 0; i < C; i++) {
-
+          
 					m = new MethInfData(i);
 					m.argnum = Oout.readInt();
 					m.varName = (String) Oout.readObject();
 					m.Prompt = (String) Oout.readObject();
 					m.InitValue = (String) Oout.readObject();
 					m.GUIParm = (String) Oout.readObject();
-					m.Docum = (String) Oout.readObject();
+                    W.docPanel.Params[i]= new JTextArea(2,60);
+                    W.docPanel.Params[i].setWrapStyleWord(true);
+					W.docPanel.Params[i].setText( (String) Oout.readObject());
 					if (mlast == null) {
 						W.methData = m;
 					} else
@@ -1561,13 +1913,15 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					mlast = m;
 				}
 
-				W.infPanel.CategoryList.setText((String) Oout.readObject());
+				W.opPanel.CategoryList.setText((String) Oout.readObject());
 			} catch (Exception s) {
 
 				JOptionPane.showMessageDialog(null, "Could not Load:" + s.toString());
 			}
 		}
 	}
+
+
 
 	/**
 	 *  Linked list that stores information on the arguments
@@ -1631,6 +1985,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		}
 	}
 
+
+
 	class CompListener extends ComponentAdapter {
 
 		Method2OperatorWizard W;
@@ -1640,7 +1996,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		}
 
 		public void componentShown(ComponentEvent evt) {
-
+           
 			W.docPanel.componentShown(evt);
 		}
 	}
