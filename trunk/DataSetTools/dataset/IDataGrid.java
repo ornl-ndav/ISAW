@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.6  2005/07/11 21:00:03  dennis
+ *  Removed num_points() method, since it is redundant.
+ *
  *  Revision 1.5  2004/03/15 06:10:38  dennis
  *  Removed unused import statements.
  *
@@ -78,15 +81,6 @@ public interface IDataGrid extends Serializable
    */
   public int ID();
 
-  /**
-   *  Get the total number of points that make up this grid.  This will equal
-   *  num_rows() * num_cols().
-   *
-   *  @return a non-negative integer giving the total number of points in
-   *          this data grid.
-   */
-  public int num_points();
- 
   /**
    *  Get the units for this data grid.  The points of this IDataGrid are 
    *  positioned in some three dimensional space.  The units on each dimension
@@ -323,6 +317,7 @@ public interface IDataGrid extends Serializable
    *           bounds, this returns null.
    */
   public Data getData_entry( int row, int col );
+
 
   /**
    *  Check whether or not Data blocks have been set for each row and column

@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.15  2005/07/11 21:00:04  dennis
+ *  Removed num_points() method, since it is redundant.
+ *
  *  Revision 1.14  2005/06/26 23:50:56  dennis
  *  Added utility method, AddGridToDataSet() that makes the associations
  *  between the current DataGrid and a sequence of Data blocks in a specified
@@ -326,18 +329,6 @@ public class UniformGrid implements IDataGrid
     return id;
   }
 
-  /**
-   *  Get the total number of points that make up this grid.  This will equal
-   *  num_rows() * num_cols().
-   *
-   *  @return a non-negative integer giving the total number of points in
-   *          this data grid.
-   */
-  public int num_points()
-  {
-    return n_rows * n_cols;
-  }
- 
   /**
    *  Get the units for this data grid.  The points of this IDataGrid are 
    *  positioned in some three dimensional space.  The units on each dimension
@@ -1084,6 +1075,7 @@ public class UniformGrid implements IDataGrid
 
     return data[row-1][col-1];
   }
+
 
   /**
    *  Check whether or not Data blocks have been set for each row and column
