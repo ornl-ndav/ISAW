@@ -28,26 +28,27 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/07/11 21:05:54  dennis
+ * Minor reformatting of getDocumentation() method.
+ * Now uses System.getProperty() instead of
+ * SharedData.getProperty().
+ * Removed unused imports.
+ *
  * Revision 1.1  2005/07/06 13:30:54  dennis
  * Operator to call LoadUtil.Load_GLAD_LPSD_Info() method.
  * This operator was "largely" produced by the operator generator,
  * but was hand edited so that the ISAW_HOME path could be prepended
  * to the filename "/Databases/gladdets.par".
  *
- *
  */
 
 package Operators.Generic.Load;
 
-import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.parameter.*;
-import DataSetTools.util.*;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
-
 import Command.*;
-
 
 public class Load_GLAD_LPSD_Info extends GenericOperator{
    public Load_GLAD_LPSD_Info(){
@@ -60,9 +61,10 @@ public class Load_GLAD_LPSD_Info extends GenericOperator{
 
    public void setDefaultParameters(){
       clearParametersVector();
-      addParameter( new DataSetPG("GLAD sample DataSet",
-                                  DataSetTools.dataset.DataSet.EMPTY_DATA_SET));
-      String path      = SharedData.getProperty("ISAW_HOME");
+      addParameter( new SampleDataSetPG("GLAD sample DataSet",
+                                 DataSetTools.dataset.DataSet.EMPTY_DATA_SET));
+
+      String path      = System.getProperty("ISAW_HOME");
       String file_name = path + "/Databases/gladdets6.par";
       addParameter( new LoadFilePG("File name for GLAD detector parameters",
                                    file_name ));
@@ -72,12 +74,12 @@ public class Load_GLAD_LPSD_Info extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This operator will load LPSD information for the IPNS GLAD");
-      S.append("instrument from the configuration file, gladdets.par, as used");
-      S.append("on the old VAX systems.  The information from the file is");
-      S.append("used to make \"DataGrids\" corresponding to each of the");
-      S.append("LPSDs in the glad instrument and associate the correct");
-      S.append("Data block (spectrum) with each of the pixels of the");
-      S.append("Data grid.");
+      S.append("instrument from the configuration file, gladdets.par, as");
+      S.append("used on the old VAX systems.  The information from the");
+      S.append("file is used to make \"DataGrids\" corresponding to each");
+      S.append("of the LPSDs in the glad instrument and associate the");
+      S.append("correct Data block (spectrum) with each of the pixels");
+      S.append("of the Data grid.");
       S.append("@algorithm    "); 
       S.append("The gladdets6.par file lists the detectors in each bank");
       S.append("and the first segment ID that is associated with each of");
@@ -101,9 +103,13 @@ public class Load_GLAD_LPSD_Info extends GenericOperator{
       S.append("segment IDs and pixel info list attributes set for each");
       S.append("group.");
       S.append("@param   ");
-      S.append("ds  The GLAD DataSet to which the information is to be added.");
+      S.append("The GLAD DataSet to which the information is to be");
+      S.append("added.");
       S.append("@param   ");
-      S.append("file_name  The fully qualified name of the gladdets6.par file");
+      S.append("The fully qualified name of the gladdets6.par");
+      S.append("file.");
+      S.append("@error ");
+      S.append("");
       return S.toString();
    }
 
@@ -120,8 +126,8 @@ public class Load_GLAD_LPSD_Info extends GenericOperator{
    public Object getResult(){
       try{
 
-         DataSetTools.dataset.DataSet ds = (DataSetTools.dataset.DataSet)
-                                                (getParameter(0).getValue());
+         DataSetTools.dataset.DataSet ds = 
+                    (DataSetTools.dataset.DataSet)(getParameter(0).getValue());
          java.lang.String file_name = getParameter(1).getValue().toString();
          Operators.Generic.Load.LoadUtil.Load_GLAD_LPSD_Info(ds,file_name);
          return "Success";
@@ -131,4 +137,5 @@ public class Load_GLAD_LPSD_Info extends GenericOperator{
              +ScriptUtil.GetExceptionStackInfo(XXX,true,1)[0]);
       }
    }
+
 }
