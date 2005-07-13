@@ -31,7 +31,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2005/07/13 14:56:26  kramer
+ * An 'ElapsedTimer' and an unnecessary call to getDataBlockRange() were
+ * made in the getResult() method.  I removed these.  The timer was used
+ * for testing purposes and the data returned by the getDataBlockRange()
+ * method was not used in the getResult() method.  Also, fixed up some
+ * javadocs.
+ *
  * Revision 1.10  2005/02/18 06:39:39  kramer
+ *
+ *
  * Added user documentation for the HTML "Help" window for this operator.
  *
  * Revision 1.9  2004/12/01 20:03:46  kramer
@@ -111,7 +120,6 @@ import gov.anl.ipns.MathTools.Smoothing.QuickSavitzkyGolaySmoother;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.Util.SpecialStrings.IntListString;
-import gov.anl.ipns.Util.Sys.ElapsedTime;
 
 import java.util.Vector;
 
@@ -345,7 +353,6 @@ public class SavitzkyGolayFilter extends GenericSpecial
       return ((Boolean)getParameter(8).getValue()).booleanValue();
    }
    
-   //TODO Make new documentation
    /** 
     *  Returns the documentation for this method as a String.  The format 
     *  follows standard JavaDoc conventions.  
@@ -461,22 +468,19 @@ public class SavitzkyGolayFilter extends GenericSpecial
    
    /**
     * Smooths the data from all of the Data blocks from the specified DataSet.
+    * 
     * @return The DataSet containing the smoothed values or an 
-    * ErrorString if an error occured.  Note:  If an error message 
-    * is returned, the data has not been smoothed at all.
+    *         ErrorString if an error occured.  Note:  If an error message 
+    *         is returned, the data has not been smoothed at all.
     */
    public Object getResult()
    {
-      ElapsedTime timer = new ElapsedTime();
-      timer.reset();
-      
       DataSet ds        = getDataSet();
       int     nL        = getNumPointsLeft();
       int     nR        = getNumPointsRight();
       int     M         = getDegreeOfPolynomial();
       boolean makeNewDs = getMakeNewDataSet();
-      boolean useQuick  = getUseQuickMethod();         
-      String  usedDataBlocksString = getDataBlockRange();
+      boolean useQuick  = getUseQuickMethod();
       float   xmin      = getXMin();
       float   xmax      = getXMax();
 
@@ -803,7 +807,6 @@ public class SavitzkyGolayFilter extends GenericSpecial
     * @param xValues 
     * @param xmin
     * @param xmax
-    * @return
     */
    private int[] getXIndexRange(float[] xValues, float xmin, float xmax)
    {
