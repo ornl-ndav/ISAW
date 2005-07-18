@@ -1,0 +1,777 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title>ISAW Parameters</title>
+</head>
+  <body>
+ 
+<div style="text-align: left;"><big style="font-family: arial;"><big><big><big><span
+ style="font-weight: bold;">ISAW Parameter GUI Help</span></big></big></big></big><br>
+ </div>
+ <br>
+ <br>
+ 
+<table cellpadding="2" cellspacing="2" border="1"
+ style="text-align: left; height: 3905px; width: 100%;" width="100%">
+   <tbody>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><big><big><big><span
+ style="font-family: arial,sans-serif;"><span style="font-weight: bold;">PARAMETER<br>
+       <br>
+       </span></span></big></big></big></td>
+       <td style="vertical-align: top; text-align: center; width: 50%;"
+ width="40%"><big><big><big><span style="font-family: arial,sans-serif;"><span
+ style="font-weight: bold;">DESCRIPTION</span></span></big><br>
+       </big></big></td>
+       <td style="vertical-align: top; text-align: left; width: 35%;"
+ width="20%"><big><big><big><span style="font-family: arial,sans-serif;"><span
+ style="font-weight: bold;">EXAMPLE</span></span><br>
+       </big></big></big></td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>ArrayPG<br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>ArrayPG produces a text field that allows
+the user to enter values into an array. The result is a vector.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif">$x Array(2.00,5.00,10.0) Enter Values</font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><span style="font-style: normal;"><b>BooleanPG<br>
+       <br>
+       <br>
+       <br>
+       </b></span></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span style="font-style: normal;"><span>Boolean</span></span>PG 
+is a class that produces the checkbox GUI element for specifying true or
+false. The result is boolean.</font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x Boolean
+Enter x</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><span
+ style="font-style: normal;"><font face="Arial, sans-serif"><b>ChoiceListPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></span></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><span
+ style="font-style: normal;"><font face="Arial, sans-serif"><span>ChoiceListPG 
+is a class that produces the drop-down menu GUI element containing a list
+of values to choose from. The return value can be either a string or a numerical
+value depending on the input list. For example, if a list of strings is input 
+then the return value will be a string.</span></font></span></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x ChoiceList(
+["a","b","c","d"]) Select Value</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>DataDirPG<br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>DataDirPG produces a directory chooser window
+that is used for selecting a directory. The result is a string.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x DataDir
+Select Directory</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>DataSetPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>DataSetPG produces a drop-down menu containing
+a list of DataSets that are currently in the tree. The result is a data set.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x DataSet
+Select DataSet</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><span
+ style="font-style: normal;"><font face="Arial, sans-serif"><b>FloatArrayArrayPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></span></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><span
+ style="font-style: normal;"><font face="Arial, sans-serif"><span>FloatArrayArrayPG 
+is used to create a medium-sized, two-dimensional float array. The result
+is a vector of vectors of float values.</span></font></span></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x FloatArrayArray
+Enter Values</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>FloatArrayPG<br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>FloatArrayPG is used to create a medium-sized,
+one-dimensional float array. The result is a vector of float values.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x FloatArray
+Enter Values</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>FloatPG<br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>FloatPG produces a text field that is used
+to enter data containing a floating point value. The result is a float.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x Float(1.5)
+Enter Value</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>FuncStringPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>FuncStringPG produces a text field that is
+used to enter a string that represents a mathematical function. The result
+is a string.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x FuncString(&#8220;This
+is a string&#8221;) Enter String</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>InstNamePG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>InstNamePG produces a text field that is
+used to enter instrument names. If the initial value is left blank then the
+default instrument will be used. The default instrument can be specified
+in ISAWprops.dat under "Viewer Options" by editing the value for Default_Instrument.
+The result is a string.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x InstName(&#8220;GPPD&#8221;)
+Enter Instrument<br>
+       <br>
+ Display x<br>
+       </span></span></font></td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>IntArrayPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; font-family: arial; width: 50%;"
+ width="40%"><span>IntArrayPG produces a text field that is used to enter
+an increasing sequence of consecutive integers. Its value is stored as a
+formatted string. Individual values are separated by a comma and a set of
+consecutive values can be represented by inserting a colon between the start
+and end values. The result is a string.</span></td>
+       <td style="vertical-align: top; width: 35%;" width="20%"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x IntArray(-1,0,1,10:50)
+Enter Values<br>
+       <br>
+       </span></span></font><font face="Arial, sans-serif">Display x</font><br>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>IntegerArrayPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>IntegerArrayPG produces a list box with editing
+buttons. It is used to create medium-sized, one-dimensional integer arrays.
+The result is a vector of integers.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x IntegerArray
+( [1,3,5] ) Enter Values<br>
+       <br>
+       </span></span></font><font face="Arial, sans-serif">Display x</font><br>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>IntegerPG<br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; font-family: arial; width: 50%;"
+ width="40%">       <span>IntegerPG produces a text field that is used to
+enter integers. The result is an integer.</span></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x Integer(-1)
+Enter Integer</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>LoadFileArrayPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; font-family: arial; width: 50%;"
+ width="40%"><span>LoadFileArrayPG produces file chooser windows that allow
+the user to choose a list of files from multiple directories. The result
+is a vector containing file names.</span></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.44in; font-style: normal;"><font
+ face="Arial, sans-serif"><span>$x LoadFile(&#8220;C:/isaw/SampleRuns/GPPD1.run&#8221;)</span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>LoadFilePG<br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>LoadFilePG produces a file chooser window
+that allows the user to choose a single file. The value is a string.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.44in; font-style: normal;"><font
+ face="Arial, sans-serif"><span>$x LoadFile(&#8220;C:/isaw/SampleRuns/GPPD1.run&#8221;)</span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b><span style="font-style: normal;">MaterialPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </span></b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif">MaterialPG produces a text field that is used to
+enter material names. Chemical formulas must be typed according to the example
+to the right using commas and underscores. The result is a string.</font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><i><span>For Trifluoromethanesulfonic acid<br>
+       </span></i></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><i><span>(CHF<sub>3</sub>O<sub>3</sub>S)</span></i></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in; font-style: normal;"><font
+ face="Arial, sans-serif">$x Material(C,H,F_3,O_3,S) Enter Material</font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><span
+ style="font-style: normal;"><font face="Arial, sans-serif"><b>MonitorDataSetPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></span></td>
+       <td style="vertical-align: top; font-family: arial; width: 50%;"
+ width="40%"><span>MonitorDataSetPG produces a drop-down menu that contains
+a list of available monitor data sets. The result is a data set.</span></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 1.99in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x MonitorDataSet
+Select DataSet</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 1.99in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>PlaceHolderPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; font-family: arial; width: 50%;"
+ width="40%"><span>This ParameterGUI saves an opaque object value which cannot
+be altered by the GUI. Parameters can be passed between operators but cannot
+be modified by the scripting language.</span></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 1.99in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x PlaceHolder("abc")
+Enter x<br>
+       </span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 1.99in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>PrinterNamePG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>PrinterNamePG produces a drop-down menu that
+contains a list of printer names available to the system. The result is a
+string.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x PrinterName(\\server\HP
+Color LJ4500)</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>PulseHeightDataSetPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; font-family: arial; width: 50%;"
+ width="40%"><span>PulseHeightDataSetPG produces a drop-down menu that contains
+a list of available pulse height data sets. The result is a data set.</span></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x PulseHeightDataSet
+Select DataSet</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>Qbins1PG<br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>Qbins1PG produces a window with text fields
+that allow the user to enter start, end, and number Q bins for a sublist.
+Constant dQ or dQ/Q choices are also supported. The result is a vector of
+floats.<br>
+       <br>
+       </span></font>       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><b><i>Note:</i></b></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1.01in;"><font
+ face="Arial, sans-serif">Format follows this example:</font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in; font-style: normal;"><font
+ face="Arial, sans-serif"><span>( [ Start Value, End Value,<br>
+       </span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in; font-style: normal;"><font
+ face="Arial, sans-serif"><span>&nbsp;Number of Steps, Constant dQ or dQ/Q]
+)</span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in; font-style: normal;"><br>
+       </p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in; font-style: normal;"><font
+ face="Arial, sans-serif">True = Constant dQ</font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in; font-style: normal;"><font
+ face="Arial, sans-serif">False = Constant dQ/Q</font></p>
+       <br>
+       </td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x Qbins1(
+[1,9,5,true] ) Enter Values</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>QbinsPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>QbinsPG produces a list box with editing
+buttons that allows the user to enter a large list of Qbin boundaries with
+either constant Q widths or constant ratios. This Parameter GUI allows for
+concatenating of several of these lists. The result is a vector of floats.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x Qbins(
+[1,9,5] ) Enter Values</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>RadioButtonPG<br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; font-family: arial; width: 50%;"
+ width="40%"><span>RadioButtonPG is a class that produces radio button GUI
+elements. The result is a string.</span></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x RadioButton(
+[&#8220;a&#8221;,&#8221;b&#8221;,&#8221;c&#8221;] ) Enter x</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>RealArrayPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>RealArrayPG produces a text field that allows
+for entry of small lists. The input can be multi/uni dimensional arrays of
+integers, floats, doubles, or strings. The result is a multi-dimensional
+array that depends on the initial value.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 1.99in; text-indent: -2in; margin-right: 0.01in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x RealArray([
+[1,2,3], [4,5,6] ] ) Enter Values</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 1.99in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">Display 
+x</span></span></font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>SampleDataSetPG<br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>SampleDataSetPG produces a drop-down menu
+that contains a list of available sample data sets.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x SampleDataSet
+Select DataSet</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>SaveFilePG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif">Save<span>FilePG produces a file chooser window
+that allows the user to choose a single file in a directory. The value is
+a string.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x SaveFile
+Select File</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>StringArrayPG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>StringArrayPG produces a list box with editing
+buttons that allows users to enter one-dimensional string arrays. The result
+is a vector of strings.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x StringArray(
+[&#8220;abc&#8221;,&#8221;def&#8221;] ) Enter Values</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>StringPG<br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><font
+ face="Arial, sans-serif"><span>StringPG produces a text field that is used
+to enter a string. The result is a string.</span></font></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x String(&#8220;This
+is a string&#8221;) Enter String</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><span
+ style="font-style: normal;"><font face="Arial, sans-serif"><b>UniformXScalePG</b></font></span></td>
+       <td style="vertical-align: top; width: 50%;" width="40%"><span
+ style="font-style: normal;"><font face="Arial, sans-serif"><span>UniformXScalePG 
+produces a command pane that allows the user to specify a start value, an
+end value, and the number of X values for a uniform X scale. The result is
+a vector of float values.<br>
+       </span></font></span>       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1.01in;"><b><font
+ face="Arial, sans-serif"><i>Note:</i></font></b></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1.01in;"><font
+ face="Arial, sans-serif">Format follows this example:</font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in; font-style: normal;"><font
+ face="Arial, sans-serif"><span>( [ Start Value, End Value, <br>
+       </span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in; font-style: normal;"><font
+ face="Arial, sans-serif"><span>Number of X Values ] )</span></font></p>
+       <br>
+       </td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 0.01in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x UniformXScale(
+[1,9,5] ) Enter Values</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1.01in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+     <tr>
+       <td style="vertical-align: top; width: 15%;" width="40%"><font
+ face="Arial, sans-serif"><b>VariableXScalePG<br>
+       <br>
+       <br>
+       <br>
+       <br>
+       </b></font></td>
+       <td style="vertical-align: top; font-family: arial; width: 50%;"
+ width="40%"><span>VariableXScalePG produces a list box with editing buttons
+that allows the user to enter arbitrary X scales. The return value is a vector
+of floats.</span></td>
+       <td style="vertical-align: top; width: 35%;" width="20%">       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1.01in;"><font
+ face="Arial, sans-serif"><span><span style="font-style: normal;">$x VariableXScale
+Enter Values</span></span></font></p>
+       
+      <p
+ style="margin-bottom: 0in; margin-left: 2in; text-indent: -2in; margin-right: 1.01in; font-style: normal;"><font
+ face="Arial, sans-serif">Display x</font></p>
+       </td>
+     </tr>
+   
+  </tbody> 
+</table>
+ <br>
+ <br>
+</body>
+</html>
