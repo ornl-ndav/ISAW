@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.37  2005/07/19 18:34:21  rmikk
+ * Uses only the operation Info from Script_Class_List_Handler for setting
+ *    up the menu.  The operators are only retrieved when a menu item
+ *    is selected.
+ *
  * Revision 1.36  2005/05/25 19:37:41  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -156,6 +161,7 @@ public class opMenu extends JMenu{
     }
 
     private  void initt(Document logdoc, int start){
+       
         int cat_index;
         int comp_index;                       // index of submenu components
         int num_components;                   // number of submenu components
@@ -166,16 +172,18 @@ public class opMenu extends JMenu{
                                                   // correct submenu
         found = false;  
         
-        Operator myOperator=null;
+        OpnInfo myOperator=null;
         if( op instanceof Script_Class_List_Handler)
           Script_Class_List_Handler.reload_scripts=false;
+        Script_Class_List_Handler xop =(Script_Class_List_Handler)op;
         for ( int i = 0; i < op.getNum_operators(); i++ ){
                                                // the list starts two entries, 
                                                // "Operator", "DataSetOperator"
                                                // that we ignore.
-          myOperator=op.getOperator(i);
-          if( !( myOperator instanceof HiddenOperator) ){
-            categories = myOperator.getCategoryList();
+          myOperator=xop.getOpInfo(i); 
+          
+          if( !( myOperator.isHidden) ){
+            categories = myOperator.CatList;
                                                 // step down the category tree,
                                                 // at each level, if we don't
                                                 // find the current category,
@@ -240,15 +248,16 @@ public class opMenu extends JMenu{
                                             // after stepping through the meun
                                             // tree, add the new operator title
             if( found){
-              String Title=myOperator.getTitle();
+              String Title=myOperator.Title;
               if( Title.equals("UNKNOWN"))
-                Title = myOperator.getCommand();
+                Title = myOperator.CommandName;
               MJMenuItem item = new MJMenuItem( Title,i );
               if( item == null){
                 System.out.println("Could not create a JMenuItem");
               }else{
                 item.addActionListener( ML );
-                String FileName = myOperator.getSource();
+                String FileName = myOperator.ToolTip;
+               
                 if( FileName != null)
                    item.setToolTipText( FileName );
                 current_menu.add( item );
@@ -258,6 +267,8 @@ public class opMenu extends JMenu{
         }
         if( op instanceof Script_Class_List_Handler)
           Script_Class_List_Handler.reload_scripts=true;
+       
+       
     }//constructor
 
     public void setOpMenuLabel( String newText){
@@ -340,6 +351,7 @@ public class opMenu extends JMenu{
         }
 
         JFrame JF =  new JFrame();
+        JF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JF.setSize( 300,300);
         Script_Class_List_Handler SH = new Script_Class_List_Handler();
         System.out.println( "operators="+SH.getNum_operators());
