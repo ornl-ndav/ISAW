@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2005/07/19 19:03:16  rmikk
+ * Fixed a spelling error
+ *
  * Revision 1.17  2005/07/08 13:24:20  rmikk
  * Eliminated a possible null pointer exception
  *
@@ -161,7 +164,7 @@ public class RowColTimeVirtualArray extends
   *  <tr> <td>TABLE_TS_MAX_TIME</td><td>Last time to view</td></tr>
   *  <tr> <td>TABLE_TS_MIN_TIME</td><td>First time to view</td></tr>
   *  <tr> <td>TableTS_ShowError</td><td>Show Errors</td></tr>
-  *  <tr> <td>TableTS_ShowIndex</td><td>Show Indicies</td></tr>
+  *  <tr> <td>TableTS_ShowIndex</td><td>Show Indices</td></tr>
   *<  tr> <td>TableTS</td><td>"" to reset all states with defaults</td></tr>
   *</table>
   */
@@ -523,7 +526,7 @@ public class RowColTimeVirtualArray extends
         jmErr = new JCheckBoxMenuItem("Show Errors");
         jmErr.addActionListener( new CheckBoxListener());
         jmErr.setSelected( state.get_boolean(ViewerState.TABLE_TS_ERR));
-        jmInd = new JCheckBoxMenuItem("Show Indicies");
+        jmInd = new JCheckBoxMenuItem("Show Indices");
         jmInd.addActionListener( new CheckBoxListener());
         jmInd.setSelected( state.get_boolean(ViewerState.TABLE_TS_IND));
         Res[0] = new ViewMenuItem(jmErr);
