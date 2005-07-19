@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2005/07/19 19:02:58  rmikk
+ * Fixed a Spelling error
+ *
  * Revision 1.16  2004/09/15 22:03:52  millermi
  * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
  *   Adding a second log required the boolean parameter to be changed
@@ -521,7 +524,7 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
         jmErr = new JCheckBoxMenuItem("Show Errors");
         jmErr.addActionListener( new CheckBoxListener());
         jmErr.setSelected( state.get_boolean( ViewerState.TIMEVSGROUPTABLE_SHOWERR));
-        jmInd = new JCheckBoxMenuItem("Show Indicies");
+        jmInd = new JCheckBoxMenuItem("Show Indices");
         jmInd.addActionListener( new CheckBoxListener());
         jmInd.setSelected( state.get_boolean( ViewerState.TIMEVSGROUPTABLE_SHOWIND));
         Res[0] = new ViewMenuItem(jmErr);
