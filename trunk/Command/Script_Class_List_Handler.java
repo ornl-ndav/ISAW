@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.65  2005/07/19 18:33:04  rmikk
+ * Added a SaveState and RestoreState system for faster loading if no
+ * operators are changed.
+ *
  * Revision 1.64  2005/06/19 20:31:19  rmikk
  * In LoadDebug mode, line numbers and class where error occurs is
  *   now indicated.
@@ -221,7 +225,8 @@ import DataSetTools.util.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.operator.DataSet.DataSetOperator;
-import DataSetTools.parameter.*;
+//import DataSetTools.parameter.*;
+import javax.swing.*;
 
 /** 
  * Gets and Saves all scripts and java GenericOperators in the
@@ -256,13 +261,19 @@ public class Script_Class_List_Handler  implements OperatorHandler{
 
     private   static boolean           hasJython       = true;
 
+    private   static String            jarFileName     = null;
+    
+    private   static Hashtable         RestoredFileNames = null;
     /**
      * The System property user.home,ISAW_HOME, GROUP_HOME,
      * GROUP1_HOME,..  are the paths for the operators that are to be
      * "installed"
      */
     public Script_Class_List_Handler(){
-        init();
+           
+           Restore();
+           init();
+           RestoredFileNames = null;
     }
     
   static public String[] getPathArray(String PathList){
@@ -318,7 +329,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @return An instance of an Operator that subclasses the Generic
      * operator <P> or null if it cannot create this class.
      */
-    public  GenericOperator getClassInst( String filename ){
+    public GenericOperator getClassInst( String filename ){
         return (GenericOperator)getClassInst(filename,true);
     }
 
@@ -333,6 +344,53 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         if( filename == null ){
             System.out.println("No Name");
             return null;
+        }
+        
+        if( filename.toUpperCase().endsWith(".ISS")){
+          try{
+             ScriptOperator X = new ScriptOperator( filename );
+             if(X.getErrorMessage().length()<=0)
+                return X;
+          }catch(Throwable s){
+               return null; 
+          }
+               
+          return null;
+        }
+        if( filename.toUpperCase().endsWith(".PY")){
+          if(!hasJython){
+           return null;
+          }
+          // try to get the instance
+          Operator op=null;
+          try{
+            op=new PyScriptOperator(filename);
+          }catch(IllegalStateException e){
+            op=null;
+           
+          }catch(ClassCastException e){
+            op=null;
+           
+          }catch(MissingResourceException e){
+            op=null;
+            
+          }catch(ParseError e){
+            op=null;
+            
+          }catch(InstantiationError e){
+            op=null;
+           
+          }catch(Throwable e){
+            op = null;
+           
+          }
+          if(op != null)
+            if( !((PyScriptOperator)op).isInstallableOperator())
+              return null;
+          // add it to the proper lists
+          
+         return op;
+         
         }
         // fix up the filename
         filename = FilenameUtil.setForwardSlash(filename);
@@ -491,9 +549,9 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * Gets the Command of the index-th operator
      */
     public String getOperatorCommand( int index ){
-        Operator X = getOp1(CommandListIndex(index));
+        OpnInfo X = getOp1(CommandListIndex(index));
         if(X != null)  
-            return X.getCommand();
+            return X.CommandName;
         else 
             return null;
     }
@@ -516,11 +574,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * operator
      */
     public int getNumParameters( int index ){
-        Operator X = getOp1(CommandListIndex(index));
+        OpnInfo X = getOp1(CommandListIndex(index));
         if( X == null )
             return 0;
         else
-            return X.getNum_parameters();
+            return X.NArgs;
     }
 
     /**
@@ -528,23 +586,58 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * the master operator list
      */
     public Object getOperatorParameter( int index, int par_index){
-        Operator X = getOp1(CommandListIndex(index));
-        if( X == null ) return null;
-
-        int n = X.getNum_parameters();
+        OpnInfo Y = getOp1(CommandListIndex(index));
+        if( Y == null ) return null;
+        Operator X = Y.getOperator();
+        if( X == null)
+           return null;
+        int n = Y.NArgs;
         if( (par_index<0) || (par_index>=n) ) return null;
 
-        IParameter P = X.getParameter( par_index );
-        if( P == null ) return null;
-
-        return P.getValue();
+       return X.getParameter( par_index);
+    }
+    
+    
+    /**
+     *  Retrieves the information about an operator. The operator field may be 
+     *  null if there is no need for the actual operator.  This is for fast 
+     *  loading
+     * 
+     * @param index  The index of the operator in the Generic operator list
+     * @return  A OpnInfo class with CommandName,Title, etc. about the operator
+     */
+    public OpnInfo getOpInfo( int index){
+        return getOp1( CommandListIndex(index));
     }
 
     /**
      * Gets the index-th operator in the master list of operators
      */
     public Operator getOperator( int index ){
-      Operator X = getOp1( CommandListIndex(index) );
+      OpnInfo Y = getOp1( CommandListIndex(index) ); 
+      Operator X=null;
+      if( Y == null)
+         return null;
+      if( Y.op != null )
+          X = Y.op;
+      else if( (Y.FileName != null)&&(Y.FileName.indexOf(".jar") < 0)){
+          try{
+            
+            X=Script_Class_List_Handler.myGetClassInst( Y.FileName, true);
+            Y.op = X;
+          }catch(Exception s){
+             X= null;
+          }
+      }else if( Y.ClassName != null){
+          try{
+
+          X = (Operator)(Class.forName( Y.ClassName)).newInstance();
+          Y.op = X;
+          }catch(Exception ss){
+             X= null;
+          }
+      }
+          
       if(reload_scripts){
         if(X==null)  
           return null;
@@ -643,6 +736,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      */
     static private synchronized void init(){  
         if( !first) return;
+
+        jarFileName= null;
         processIsaw();
         /*for( int i = 0 ; i < GenericOperatorList.getNum_operators(); i++){
           Operator op = GenericOperatorList.getOperator( i );
@@ -680,11 +775,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             includeVec=addDir(ScrPaths,includeVec);
         }
         
-        /* System.out.println("********************");
-           for( int i=0 ; i<includeVec.size() ; i++ ){
-           System.out.println("* "+i+":"+includeVec.elementAt(i));
-           }
-           System.out.println("********************"); */
+     
         
         // remove redundant listings from the path
         for( int i=0 ; i<includeVec.size() ; i++ ){
@@ -695,31 +786,41 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 String jth=(String)includeVec.elementAt(j);
                 // check that i and j are unique
                 if(ith.equals(jth)){
-                    //System.out.println("REMOVING("+i+","+j+")"+jth);
                     includeVec.remove(j);
                     j--;
                 }
             }
         }
-        
-        /*System.out.println("********************");
-          for( int i=0 ; i<includeVec.size() ; i++ ){
-          System.out.println("* "+i+":"+includeVec.elementAt(i));
-          }
-          System.out.println("********************");*/
-        
+      
         for( int i=0 ; i<includeVec.size() ; i++ ){
             processPaths((String)includeVec.elementAt(i));
         }
-        
-       dsOpListI = new DataSetOperator[ dsOpList.size()];
-       for( int i=0 ; i < dsOpListI.length ; i++){
-             dsOpListI[i]= (DataSetOperator)(dsOpList.elementAt(i));
+       if( dsOpListI == null){
+       
+          dsOpListI = new DataSetOperator[ dsOpList.size()];
+          for( int i=0 ; i < dsOpListI.length ; i++){
+                dsOpListI[i]= (DataSetOperator)(dsOpList.elementAt(i));
+          }
+          dsOpList = null;
+          java.util.Arrays.sort( dsOpListI, new CommandCompare( dsOpListI));
        }
-       dsOpList = null;
-       java.util.Arrays.sort( dsOpListI, new CommandCompare( dsOpListI));
         
         toggleDebug(); 
+        //Set last modified on all Generic operators
+        for( int i=0; i < opList.size(); i++){
+          OpnInfo opnInf = (OpnInfo)(opList.elementAt(i));
+          String filename = opnInf.FileName;
+          if( filename == null)
+             System.out.println("null filename for "+opnInf.CommandName);
+          else{
+            File F = new File( filename);
+            if( !F.exists())
+              System.out.println("File does not exist for "+opnInf.CommandName);
+            else
+               opnInf.lastmodified= F.lastModified();
+          }
+        }
+        Save(true);
     }  // end of init()
 
     /**
@@ -845,18 +946,22 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         if( (classFile!=null) && (classFile.startsWith("jar:")) ) injar=true;
         // the start is to remove the jar or file
         // the end is to remove the classname
-        classFile=classFile.substring(5,classFile.indexOf(className));
+        int n=5;
+        if( injar) n=4;
+        classFile=classFile.substring(n,classFile.indexOf(className));
         // then change the separator to forward slash (should be already)
         classFile=FilenameUtil.setForwardSlash(classFile);
         classFile=FilenameUtil.URLSpacetoSpace( classFile );
         if(injar){ // we are working from a jar file
             // remove a little bit more from classFile
-            classFile=classFile.substring(4,classFile.length()-1);
+            classFile=classFile.substring(6,classFile.length()-1);
            
             processDataSetOperators(classFile,true);
            
             if( LoadDebug) System.out.println("----PATH="+classFile);
+            jarFileName = classFile;
             ProcessJar(classFile,opList);
+            jarFileName = null;
         }else{     // isaw is unpacked
             
             processDataSetOperators(classFile+"/DataSetTools/operator/DataSet",
@@ -875,6 +980,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      */
     static private void processDataSetOperators(String dir, boolean inJar){
         if(LoadDebug) System.out.println("-----DSPATH="+dir);
+        if( restored)
+           return;
         if(inJar){
             ZipFile zf=null;
             try{
@@ -920,7 +1027,9 @@ public class Script_Class_List_Handler  implements OperatorHandler{
           //ignore empty elements
           if( !paths[i].trim( ).equals( "" )  ) {
             if(isJar(paths[i])){
+                jarFileName= paths[i];
                 ProcessJar(paths[i],opList);
+                jarFileName = null;
             }else{
                 File Dir=new File(paths[i]);
                 if( Dir.isDirectory() ){
@@ -1002,9 +1111,19 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         int i;
         
         // only deal with real filenames
-        if(filename == null ) return;
-        if( LoadDebug) System.out.print( "Processing "+filename+":");
-
+        if(filename == null ) 
+           return;
+        if( LoadDebug) 
+           System.out.print( "Processing "+filename+":");
+        if( RestoredFileNames != null)
+           if( RestoredFileNames.containsKey( filename))
+              return;
+        if( RestoredFileNames != null)                  //Restored correctly
+           if( opList != Script_Class_List_Handler.opList)//DS operator
+              return;
+        if(RestoredFileNames !=null)//have already checked that the jar file is OK
+           if( jarFileName != null)
+              return;
         i = filename.lastIndexOf('.');
         // give up if there is not a '.' near the end of the name (for class)
         if( i< 0 ) return;
@@ -1013,7 +1132,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         if( Extension.equalsIgnoreCase("iss")){ // it is a script
             try{ScriptOperator X = new ScriptOperator( filename );
             if(X.getErrorMessage().length()<=0){
-                add( X );
+                OpnInfo Xop= new OpnInfo(X);
+                Xop.FileName= filename;
+                if( jarFileName != null)
+                   Xop.FileName = jarFileName;
+                add( Xop );
                 if( LoadDebug )
                     System.out.println( "OK" );
             }else if( LoadDebug ){
@@ -1060,7 +1183,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
           // add it to the proper lists
           if(op!=null){
             if(op instanceof GenericOperator){
-              add(op);
+              OpnInfo opn= new OpnInfo( op);
+              opn.FileName= filename;
+              add(opn);
+              
             }else if(op instanceof DataSetOperator){
               dsOpList.addElement(op);
             }else{
@@ -1078,7 +1204,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             if( X != null ){
                 if(LoadDebug) System.out.println( "OK" );
                 if(isgeneric){  // add in the normal way
-                    add( X );
+                    OpnInfo Xopn= new OpnInfo(X);
+                    Xopn.FileName = filename;
+                    if( jarFileName != null)
+                       Xopn.FileName = jarFileName;
+                    add( Xopn );
                 }else{ // add it to the DSList
                     opList.addElement(X);
                 }
@@ -1091,12 +1221,20 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     }
 
     static private  void add( Operator op){
-        opList.addElement( op );
+        System.out.println("in add opn only should not be here***************");
+        opList.addElement( new OpnInfo(op) );
         
         insert( opList , SortOnCommand );
         insert(opList , SortOnFileName );
     }
 
+    static private void add( OpnInfo opInf){
+      opList.addElement( opInf);
+     
+      insert( opList , SortOnCommand );
+      insert(opList , SortOnFileName );
+      
+    }
     /**
      * insert before 
      */
@@ -1119,14 +1257,15 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         if( opList.size()<= 0)
             return;
         
-        
-        Operator op = (Operator)( opList.elementAt( opList.size() - 1));
         int n = opList.size() -1;
+        String CommandName = ((OpnInfo)opList.elementAt(n)).CommandName;
+        String FileName =((OpnInfo)opList.elementAt(n)).FileName;
+        String ClassName =((OpnInfo)opList.elementAt(n)).ClassName;
         int indx = -1;
         if( rankList.equals( SortOnCommand ) )
-            indx = find( op.getCommand(), Command_Compare );
-        else if(op instanceof ScriptOperator )
-            indx = find( ((ScriptOperator)op).getFileName(), File_Compare );
+            indx = find( CommandName, Command_Compare );
+        else if(  ClassName.trim().equals("Command.ScriptOperator"))
+            indx = find( FileName, File_Compare );
         else 
             return;
         
@@ -1161,21 +1300,21 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         }else{
             for( mid =(first + last ) / 2; !done ; ){
                 int pos = ((Integer)(V.elementAt(mid))).intValue();
-                Operator opp = (Operator)(opList.elementAt(pos));
+                String CommandName= ((OpnInfo)opList.elementAt(pos)).CommandName;
+                String FileName =((OpnInfo)opList.elementAt(pos)).FileName;
+               
                 less = false;
                  
                 if( mode == Command_Compare){
-                    if( ScompareLess(opp.getCommand() , textt))
+                    if( ScompareLess(CommandName , textt))
                         less = true;
                 }else{
                     if( !(V.equals( SortOnFileName )  ) )
                         return -12;
-                    String  sopp;
-                    
-                    sopp = ((ScriptOperator)opp).getFileName();
-                    if( ScompareLess(sopp , textt) )
+                   
+                    if( ScompareLess(FileName , textt) )
                         less = true;
-                    else if( sopp.equals( textt ) )
+                    else if( FileName.equals( textt ) )
                         return mid;
                 }
                 if( less){
@@ -1196,10 +1335,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             return mid;
     }
 
-    private Operator getOp1( int index ){
+    private OpnInfo getOp1( int index ){
         if( (index<0) || (index>=opList.size()) ) return null;
 
-        Operator X = (Operator)(opList.elementAt( index));
+        OpnInfo X = (OpnInfo)(opList.elementAt( index));
         return X;
    }
 
@@ -1354,7 +1493,286 @@ public class Script_Class_List_Handler  implements OperatorHandler{
 	else
 	    return false;
     }
+    
+    
+    
+    /**
+     * This method will save the static information from this class to the file
+     * user.home\ISAW\SCLH.iii if create is true. If create is false, it will delete
+     * the file.
+     * @param create   if true the file will be created otherwise the file will be deleted
+     * 
+     */
+    public static void Save( boolean create){
+      String S = System.getProperty("user.home");
+      if(S == null){ 
+        JOptionPane.showMessageDialog( null, "There is no User Home directory");
+        return;
+      }
+      if( !S.endsWith(File.separator))
+        S+=File.separator;
+      if( !(new File(S)).exists()){
+         JOptionPane.showMessageDialog(null,"The User HOME directory does not exist");
+         return;
+      }
+      
+      String filename= S+"ISAW"+File.separator;
+      if( !(new File(filename)).exists()){
+        
+         try{ 
+           if(!(new File(filename)).mkdir()){
+             JOptionPane.showMessageDialog( null , "Cannot Create ISAW directory in your home directory");
+             return;
+            }
+         }catch(Exception ss){
+            JOptionPane.showMessageDialog( null, "Cannot create ISAW directory in your home directory:"+
+                     ss.toString());
+            return;
+         }
+      }
+      filename = filename+"SCLH.iii";
+      File F = new File( filename); 
+      if(!create){
+        
+         if(!F.exists())
+           return;
+           F.delete();
+           return;
+      }
+      if(first)
+        return;
+      try{
+        FileOutputStream fout= new FileOutputStream( F);
+        ObjectOutputStream Fout = new ObjectOutputStream(fout);
+        Fout.writeObject( System.getProperty("ISAW_HOME",""));
+        if(System.getProperty("GROUP_HOME")!= null)
+           Fout.writeObject( System.getProperty("GROUP_HOME"));
+        for( int i=1; System.getProperty("GROUP"+i+"_HOME") != null;i++)
+           Fout.writeObject( System.getProperty("GROUP"+i+"_HOME"));
+        Fout.writeObject("XXXX");
+        String className='/'+Script_Class_List_Handler.class.getName()
+                                                            .replace('.','/')+".class";
+        
+        String classFile=Script_Class_List_Handler.class.getResource(className)
+                                                                          .toString();
+        int n=5;
+        if( classFile.indexOf(".jar")>=0) n=4;
+          classFile=classFile.substring(n);
+               // then change the separator to forward slash (should be already)
+        classFile=FilenameUtil.setForwardSlash(classFile);
+        classFile=FilenameUtil.URLSpacetoSpace( classFile );
+        long TimeStamp = (new File(classFile)).lastModified();
+        Fout.writeLong( TimeStamp);
+        Fout.writeObject( System.getProperty("java.class.path"));
+        Fout.writeObject( dsOpListI);
+        Fout.writeObject( opList);
 
+        Fout.writeObject( SortOnFileName);
+        Fout.writeObject( SortOnCommand);
+        Fout.close();
+     }catch(Exception s){
+        JOptionPane.showMessageDialog(null,"Cannot save:"+s.toString());
+        F.delete();
+        s.printStackTrace();
+        Save( false );
+        return;
+     }         
+     
+    }
+    
+    
+    
+    static boolean restored=false;
+    
+    private static boolean Message(String S, ObjectInputStream oinp){
+        System.out.println(S);
+        try{
+            oinp.close();
+        }catch(Exception s){
+        }
+        return false;
+    }  
+    
+    /**
+     * This methods restores the Script_Class_List_Handler system to the system via
+     * the previous Save.  Also the System Property, Restored, will be set to "true".
+     * @return true if System is restored. If there is no file or an error occurs,
+     *                   false is returned.
+     */
+    public static synchronized boolean Restore(){
+      if( restored)
+        return true; 
+      DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
+      restored=true;
+      
+      RestoredFileNames = null;
+      String S = System.getProperty("user.home");
+      
+      if(S == null){ 
+        JOptionPane.showMessageDialog( null, "There is no User Home directory");
+        return false;
+      }
+      if(!S.endsWith( File.separator))
+        S =S+File.separator;
+      String fileName= S+"ISAW"+File.separator+"SCLH.iii";
+      if(!( new File(fileName)).exists()){
+         System.out.println("***********Could not find file");
+         return false;
+      }
+      try{
+        FileInputStream fin = new FileInputStream( fileName);
+        ObjectInputStream Fin = new ObjectInputStream( fin);
+        S = (String)Fin.readObject();
+        if( !S.equals(System.getProperty("ISAW_HOME","")))
+           return Message("ISAW HOME did not match",Fin);
+        
+        S= (String)Fin.readObject();
+        if( !S.equals("XXXX"))
+        if(!S.equals( System.getProperty("GROUP_HOME")))
+           return Message("Group HOme did not match", Fin);
+        boolean done = S.equals("XXXX");
+        for( int i=1; !done; i++){
+          S= (String)Fin.readObject();
+          if( S.equals("XXXX"))
+            done = true;
+          else if( !S.equals( System.getProperty("GROUP"+i+"_HOME" )))
+             return Message("GROUP"+i+"_HOME did not match", Fin);
+        }
+           
+        String className='/'+Script_Class_List_Handler.class.getName()
+                                                    .replace('.','/')+".class";
+        String classFile=Script_Class_List_Handler.class.getResource(className)
+                                                                      .toString(); 
+        int n=5;
+        if( classFile.indexOf(".jar")>=0) n=4;
+        classFile=classFile.substring(n);
+               // then change the separator to forward slash (should be already)
+        classFile=FilenameUtil.setForwardSlash(classFile);
+        classFile=FilenameUtil.URLSpacetoSpace( classFile );
+        long TimeStamp = (new File(classFile)).lastModified();
+        
+        if(Fin.readLong() != TimeStamp)
+           return Message("Time Stamp did not match", Fin);
+
+        S=(String)Fin.readObject();
+        if(!S.equals( System.getProperty("java.class.path")))
+           return Message("ClassPath did not match", Fin);
+        
+        dsOpListI=(DataSetOperator[])Fin.readObject( );
+         
+        Vector opListCopy=(Vector)(Fin.readObject());
+        assign(opList, opListCopy);
+        
+        if(!checkDates(opList)){
+          System.out.println("Dates did not check on Restore");
+          opList.clear();
+          SortOnFileName.clear();
+          SortOnCommand.clear();
+          dsOpList.clear();
+          first= true;
+          RestoredFileNames = null;
+          Save( false );
+          return false;
+          
+        }
+        assign(SortOnFileName,(Vector)(Fin.readObject()));
+        assign(SortOnCommand,(Vector)(Fin.readObject( )));
+        Fin.close();    
+               
+      }catch(Throwable s){
+         JOptionPane.showMessageDialog(null,"Could not retrieve:"+s.toString());
+         Save( false );
+         s.printStackTrace();
+         opList.clear();
+         SortOnFileName.clear();
+         SortOnCommand.clear();
+         dsOpList.clear();
+         first= true;
+         RestoredFileNames = null;
+         return false;
+      }      
+      
+      return true;
+     
+    }
+    
+    private static void assign( Vector V, Vector V1){
+      if( V== null)
+         return;
+      V.clear();
+      V.addAll( V1);
+      
+    }
+    
+    private static boolean checkDates( Vector V){
+      if( V== null)
+        return false;
+      RestoredFileNames = new Hashtable();
+      for( int i=0; i< V.size(); i++){
+         if(!(V.elementAt(i) instanceof OpnInfo))
+           return false;
+         OpnInfo opn= (OpnInfo)(V.elementAt(i));
+         String fileName= opn.FileName;
+         RestoredFileNames.put( fileName,"");
+         if( fileName == null)
+           return false;
+         File F= new File( fileName);
+         if(!F.exists())
+           return false;
+         opn.op = null;
+         if( F.lastModified() != opn.lastmodified){
+           if( fileName.indexOf(".jar")>0){
+             try{
+               Operator op= (Operator)Class.forName( opn.ClassName).newInstance();
+               if( op.getCommand().equals(opn.CommandName)){
+                 opn.op=op;
+               }else
+                 return false;
+               
+             }catch(Throwable s){
+                return false;
+             }
+           }else{
+             Operator op = myGetClassInst(fileName, true);
+             if(op == null)
+               return false;
+             if( !op.getCommand().equals(opn.CommandName))
+               return false;
+             opn.op =op;
+           }
+              
+          
+         }
+         
+      }
+      return true;
+    }
+    
+    /**
+     * 
+     *
+     */
+    public static void ReHash(){
+       
+       SortOnCommand.clear();  
+          //Contains ordering for file names
+       SortOnFileName.clear();
+       opList.clear();
+       
+
+       dsOpList.clear();
+       dsOpListI       = null;
+       
+       first           = true;
+       reload_scripts  = true;
+       LoadDebug       = false;
+       pathlist        = null;
+
+       hasJython       = true;
+       init();
+
+       
+    }
     /**
      * Test program for this module.  No arguments are used 
      */
@@ -1373,5 +1791,6 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         
         System.exit( 0 );
     }
-
+    
+ 
 }
