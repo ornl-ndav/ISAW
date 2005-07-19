@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2005/07/19 19:04:08  rmikk
+ *  Fixed Spelling error
+ *
  *  Revision 1.10  2005/01/18 21:49:01  rmikk
  *  Eliminated an unused variable warning
  *
@@ -112,7 +115,7 @@ public class TableView extends DataSetViewer
       jmErr = new JCheckBoxMenuItem("Show Errors");
       jmErr.addActionListener( new CheckBoxListener());
 
-      jmInd = new JCheckBoxMenuItem("Show Indicies");
+      jmInd = new JCheckBoxMenuItem("Show Indices");
       jmInd.addActionListener( new CheckBoxListener());
       jm.add( jmErr);
       jm.add( jmInd);
