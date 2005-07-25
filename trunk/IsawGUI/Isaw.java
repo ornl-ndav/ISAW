@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.228  2005/07/25 13:40:00  rmikk
+ *  Added Viewer information to Isaw's Help Menu(Mark Hannum)
+ *
  *  Revision 1.227  2005/06/20 18:59:34  dennis
  *  Changed version to 1.7.2 alpha 5
  *
@@ -972,6 +975,7 @@ public class Isaw
     JMenuItem docLink         = new JMenuItem( USERMAN_LINK_MI );
     JMenuItem TutLink         = new JMenuItem( TUTORIAL_MI);
     JMenuItem IsawPropLink    = new JMenuItem(ISAWPROPS_MI );
+    JMenuItem ViewHelpLink    = new JMenuItem("Viewers");
     JMenuItem OpWrite         = new JMenuItem( OPERATORINFO_MI);
     fMenu.add(fileLoadDataset);
     fileLoadDataset.add(Runfile);
@@ -1042,6 +1046,7 @@ public class Isaw
     hMenu.add(new IsawHelp.SiteHelp());
     hMenu.add( TutLink);
     hMenu.add( IsawPropLink);
+    hMenu.add( ViewHelpLink);
     JMenu Res= new JMenu("Resources on the Net");
     
       Res.add(homeLink);
@@ -1097,6 +1102,7 @@ public class Isaw
     docLink.addActionListener(menu_item_handler);
     TutLink.addActionListener(menu_item_handler);
     IsawPropLink.addActionListener(menu_item_handler); 
+    ViewHelpLink.addActionListener(menu_item_handler); 
     OpWrite.addActionListener(menu_item_handler);   
     menuBar.add(fMenu);
     menuBar.add(eMenu);
@@ -1776,6 +1782,14 @@ public class Isaw
 
         HTMLPage H = new HTMLPage( S ) ;
         sizeHTMLViewer(H,.6f,.6f);
+      }
+      if( s.equals("Viewers")){
+        String S=DataSetTools.util.FilenameUtil.helpDir("Viewers/ISAW_Viewer_Help_2.html");
+       
+        if(S!=null)
+           BrowserControl.displayURL( S );
+        else
+           System.out.println("Could Not Create View");
       }
       if( s.equals(OPERATORINFO_MI)){
         String S = DataSetTools.util.FilenameUtil.helpDir("user/Operators.html");
