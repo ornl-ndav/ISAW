@@ -14,17 +14,18 @@
 # @return  null or an ErrorString.   The result will be written to a file
 
 
-$ SampleFileName    LoadFileString("/IPNShome/sand/data/sand20283.run")    Enter Sample run
-$ EmptyFileName     LoadFileString("/IPNShome/sand/data/sand20287.run")    Enter Empty run
+$ SampleFileName    LoadFileString("C:/sand_lpsd_runs/sand27572.run")    Enter Sample run
+$ EmptyFileName     LoadFileString("C:/sand_lpsd_runs/sand27572.run")    Enter Empty run
 $ useCadmiumRun     Boolean( true)    Use CadmiumRun?
-$ CadmiumFileName   LoadFileString("/IPNShome/sand/data/sand20291.run")        Enter Cadmium Run
-$ DataFileName   LoadFileString("/IPNShome/sand/data/sand20290.run")           Enter Data Run
-$ SaveFileName      SaveFileString("/IPNShome/sand/GeorgeUser/T2028320287.cf") Dat file to save Transm results
+$ CadmiumFileName   LoadFileString("C:/sand_lpsd_runs/sand20291.run")        Enter Cadmium Run
+$ DataFileName   LoadFileString("C:/sand_lpsd_runs/sand27572.run")           Enter Data Run
+$ SaveFileName      SaveFileString("C:/sand_lpsd_runs/T2028320287.cf") Dat file to save Transm results
 $ NeutronDelay      Float( .0011)     Neutron Delay Fraction
 $ polyfitIndx1      Integer( 11)      First time channel for poly fit, or -1 if no fit
 $ polyfitIndx2      Integer( 70)      Last time channel for poly fit, or -1 if no fit
 $ polyDegree        Integer( 3)      The Degree of the fit polynomial
 $ sqrtWeight        Boolean( true)    Use 1/sqrt(y) for weightin
+$ TransID           Integer(2)       Enter ID for trans mon (USE 3 for BS det)
 
 $ Title = Calculate Transmission
 $ Command = Transmission
@@ -36,10 +37,10 @@ load DataFileName, "Data"
 
 if useCadmiumRun == true
   load CadmiumFileName, "Cadm"
-  DS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+  DS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
 
 else
-   DS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+   DS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
 endif
 
 send DS

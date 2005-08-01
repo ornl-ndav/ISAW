@@ -5,6 +5,7 @@
 $Category=Macros, Instrument Type, TOF_NSAS
 
 $ number_of_runs         Integer(1)                Enter number of runs
+$ TransID           Integer(2)       Enter ID for trans mon (USE 3 for BS det)
 
 #========================== Reduce run inputs =========================
 #======================================================================
@@ -119,9 +120,9 @@ Echo("Loading Background Transmission "&Cell)
 #========== Calculation of transmission for sample/camera ====================
 if useCadmiumRun == true
   load Input_Path&inst&CadmiumFile&ext, "Cadm"
-  DSS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+  DSS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
 else
-   DSS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+   DSS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
 endif
 
 TransSF = Output_Path&"T"&TransSFile&CameraFile&".cf"
@@ -139,9 +140,9 @@ Echo("Sample/Camera Transmission done ")
 
 #========== Calculation of transmission for background/camera ====================
 if useCadmiumRun == true
-  DSC = CalcTransmission( Cell[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+  DSC = CalcTransmission( Cell[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
 else
-  DSC = CalcTransmission( Cell[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+  DSC = CalcTransmission( Cell[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
 endif
 
 TransBFile = Output_Path&"T"&BackGroundTFile&CameraFile&".cf"

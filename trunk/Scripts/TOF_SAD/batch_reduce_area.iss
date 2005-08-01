@@ -6,6 +6,8 @@ $Category=Macros, Instrument Type, TOF_NSAS
 
 $ number_of_runs         Integer(1)                Enter number of runs
 $ do_2D                  Boolean(false)            Make 2D S(Qx,Qy)?
+$ TransID           Integer(2)       Enter ID for trans mon (USE 3 for BS det)
+
 
 #========================== Reduce run inputs =========================
 #======================================================================
@@ -32,10 +34,10 @@ Output_Path ="c:/sand_lpsd_runs/"
 ThickA = [0.1,0.1,0.1,0.1,0.1]
 
 # Sample Transmission runs:
-TransSFileA = [24201,22367,22369,22371]
+TransSFileA = [27572,24201,22367,22369,22371]
 
 # Sample Scattering runs:
-SampleFileA = [24201,22368,22370,22372]
+SampleFileA = [27572,24201,22368,22370,22372]
 
 # Background Transmission runs:
 BackGroundTFileA = [24158,22373,22373,22373] 
@@ -139,9 +141,9 @@ Echo("Loading Background Transmission "&Cell)
 #========== Calculation of transmission for sample/camera ====================
 if useCadmiumRun == true
   load Input_Path&inst&CadmiumFile&ext, "Cadm"
-  DSS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,3)
+  DSS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
 else
-   DSS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,3)
+   DSS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
 endif
 send DSS
 Table(DSS, true, "File", Output_Path&"T"&TransSFile&CameraFile&".dat", "0:1", "HGT,F" , false)
@@ -155,9 +157,9 @@ Echo("Sample/Camera Transmission done ")
 
 #========== Calculation of transmission for background/camera ====================
 if useCadmiumRun == true
-DSC = CalcTransmission( Cell[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,3)
+DSC = CalcTransmission( Cell[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
 else
-DSC = CalcTransmission( Cell[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,3)
+DSC = CalcTransmission( Cell[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
 endif
 TransBFile = Output_Path&"T"&BackGroundTFile&CameraFile&".cf"
 PrintFlood( DSC,TransBFile, "Transmission")
