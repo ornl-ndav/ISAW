@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.59  2005/08/02 22:31:30  rmikk
+ *  Added methods and listeners to build the help menu
+ *
  *  Revision 1.58  2005/05/27 03:53:31  dennis
  *  Removed unused import.
  *
@@ -193,7 +196,7 @@
  */
  
 package DataSetTools.viewer;
-
+ 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
@@ -201,6 +204,7 @@ import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.components.ui.*;
+import DataSetTools.util.SysUtil;
 import DataSetTools.viewer.Graph.*;
 import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
@@ -218,6 +222,7 @@ import gov.anl.ipns.ViewTools.Components.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
+import javax.swing.event.*;
 
 /**
  *  A ViewManager object manages viewers for a DataSet in an external 
@@ -421,6 +426,7 @@ public class ViewManager extends    JFrame
       BuildViewMenu();
       BuildConversionsMenu();
       BuildOptionMenu();
+      BuildHelpMenu( view_type);
       System.gc();
    }
    
@@ -478,7 +484,12 @@ public class ViewManager extends    JFrame
         }
       }catch(Throwable ss){
          System.out.println( "ERROR: Creating View:" +ss);
+         
          System.out.println( "      " + view_type );
+        
+         String[] SS= Command.ScriptUtil.GetExceptionStackInfo(ss, true,1);
+         if( SS !=null)if(SS.length>1)
+         System.out.println(" line No and class are "+SS[0]);
          System.out.println( "using " + IMAGE + " by default" );
          viewer = new ImageView( tempDataSet, state );
       }
@@ -977,7 +988,22 @@ private void BuildOptionMenu()
 */
 }
 
-
+private void BuildHelpMenu( String viewType){
+  String view= viewType.replace(' ','_').toLowerCase();
+  String F = System.getProperty("ISAW_HOME");
+ 
+  if( F== null) return;
+  if( !F.endsWith(File.separator))
+      F+=File.separator;
+  F+="IsawHelp"+File.separator+"Viewers"+File.separator+view+".html";
+  if( !(new File(F)).exists())
+     return;
+  JMenu HelpMenu = new JMenu("Help");
+  HelpMenu.addMenuListener( new HelpActionListener(view));
+  viewer.getMenuBar().add( HelpMenu);
+  
+  
+}
 private String CurrentConversionName()     // get current conversion name
 {
   String name;     
@@ -1225,6 +1251,40 @@ private float solve( float new_x ) // find what x in the original DataSet maps
    if(  st != null)
        Ostate.reset( viewType, st);
    return Ostate;
+   
+ }
+ 
+ class HelpActionListener implements MenuListener{
+    String viewName;
+    public HelpActionListener( String viewName){
+      this.viewName = viewName;
+      
+    }
+   public void menuCanceled(MenuEvent e){}
+   public void menuDeselected(MenuEvent e){}
+   public void menuSelected(MenuEvent e){
+      FinishJFrame jf = new FinishJFrame( "Viewer Help");
+      jf.setSize( 500,600);
+      String url=DataSetTools.util.FilenameUtil.helpDir("Viewers/"+viewName+".html");
+    
+      if( url==null){
+      
+         JOptionPane.showMessageDialog(null,"Cannot find this viewer's documentation");
+         return;
+      }
+      try{
+         JEditorPane edPane= new JEditorPane(url);
+         jf.getContentPane().add(new JScrollPane(edPane));
+         
+      }catch( Exception s){
+        JOptionPane.showMessageDialog(null,"Cannot show this viewer's documentation:"+s);
+        return;
+      }
+      
+      jf.show();
+     
+      
+    }
    
  }
 }
