@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/08/02 13:59:11  dennis
+ * Added code to pop up a Display3D.
+ *
  * Revision 1.1  2005/07/19 22:02:04  dennis
  * This class contains a static method to load data from the SMARTS
  * instrument at LANSCE into a list of PhysicalArray3DList objects,
@@ -45,7 +48,10 @@ import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import Operators.Generic.Load.*;
+
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.ViewTools.Displays.Display3D;
+import gov.anl.ipns.Util.Sys.WindowShower;
 
 /**
  *  This file contains a static method to load data from the SMARTS 
@@ -183,6 +189,7 @@ public class LoadSmartsData
     for ( int i = 0; i < vals.length; i+=100 )
       System.out.println(" i, val = " + i + ", " + vals[i] );
 
-    
+    Display3D display = new Display3D( data, 0, Display3D.CTRL_ALL );    
+    WindowShower.show(display);
   }
 }
