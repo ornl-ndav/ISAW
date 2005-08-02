@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/08/02 13:57:51  dennis
+ * Removed unused import.
+ *
  * Revision 1.1  2005/07/26 21:24:36  dennis
  * Demo code to load data from GLAD into a list of PhysicalArray3DList
  * objects.
@@ -49,8 +52,6 @@ import Operators.Generic.Load.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.ViewTools.Displays.Display3D;
 import gov.anl.ipns.Util.Sys.WindowShower;
-
-import Operators.Generic.Load.*;
 
 /**
  *  This file contains a static method to load data from the GLAD 
