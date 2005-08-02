@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.229  2005/08/02 19:07:50  rmikk
+ *  Changed pointer to html pages for the isaw viewers
+ *
  *  Revision 1.228  2005/07/25 13:40:00  rmikk
  *  Added Viewer information to Isaw's Help Menu(Mark Hannum)
  *
@@ -1784,7 +1787,7 @@ public class Isaw
         sizeHTMLViewer(H,.6f,.6f);
       }
       if( s.equals("Viewers")){
-        String S=DataSetTools.util.FilenameUtil.helpDir("Viewers/ISAW_Viewer_Help_2.html");
+        String S=DataSetTools.util.FilenameUtil.helpDir("Viewers/ISAW_Viewer_Help.html");
        
         if(S!=null)
            BrowserControl.displayURL( S );
