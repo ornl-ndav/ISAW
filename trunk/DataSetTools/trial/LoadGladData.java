@@ -1,5 +1,5 @@
 /*
- * File:  LoadSGladData.java
+ * File:  LoadGladData.java
  *
  * Copyright (C) 2005, Dennis Mikkelson
  *
@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/08/03 16:43:26  dennis
+ * Minor fix of javadocs.
+ *
  * Revision 1.2  2005/08/02 13:57:51  dennis
  * Removed unused import.
  *
@@ -56,6 +59,8 @@ import gov.anl.ipns.Util.Sys.WindowShower;
 /**
  *  This file contains a static method to load data from the GLAD 
  *  instrument at IPNS into a list of PhysicalArray3DList objects.
+ *  It is just a quick proof of concept class for the PhysicalArray3DList
+ *  and Display3D.
  */
 
 public class LoadGladData
