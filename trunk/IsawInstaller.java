@@ -32,6 +32,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.29  2005/08/03 19:41:14  dennis
+ * Added SSG_Tools.jar to classpath
+ *
  * Revision 1.28  2005/05/31 16:48:09  dennis
  * Removed dependence on WindowShower, since the installer did not
  * run out of the jar file when it used the WindowShower.  Now just
@@ -626,13 +629,13 @@ public class IsawInstaller extends JFrame
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
 		+"java -mx128m -cp \""+fixSeparator(isaw_home)
-                +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;jogl.jar;"
+                +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;"
                 +"jhall.jar;jython.jar;.\" IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+ newline
 		+"rem --"+newline
-		+"rem java -mx128m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;jogl.jar;"
+		+"rem java -mx128m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;"
 		+"jhall.jar;jython.jar;.\" IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
@@ -641,7 +644,7 @@ public class IsawInstaller extends JFrame
 		+"export LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
 		+"$JAVA -mx128m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
-		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/jogl.jar"
+		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/jogl.jar"
 		+":$ISAW/jhall.jar:$ISAW/jython.jar:. IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(SUN_ID)){
 	    content="#!/bin/sh"+newline
@@ -650,7 +653,7 @@ public class IsawInstaller extends JFrame
 		+"LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
 		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
-		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/jogl.jar"
+		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/jogl.jar"
 		+":$ISAW/jhall.jar:$ISAW/jython.jar:. IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
@@ -663,6 +666,7 @@ public class IsawInstaller extends JFrame
                 +isaw_home+"/ISIS.jar:"
                 +isaw_home+"/jnexus.jar:"
                 +isaw_home+"/sdds.jar:"
+                +isaw_home+"/SSG_Tools.jar:"
                 +isaw_home+"/jogl.jar:"
                 +isaw_home+"/jython.jar:"
                 +isaw_home+"/jhall.jar:. IsawGUI.Isaw\""+newline
