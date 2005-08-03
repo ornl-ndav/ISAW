@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2005/08/03 19:34:12  rmikk
+ * Updated the gridNum variable so it will show on the output
+ *
  * Revision 1.4  2005/01/10 15:28:50  dennis
  * Removed unused imports.
  *
@@ -308,6 +311,7 @@ public class Peak_new extends Peak{
   public void Grid( IDataGrid  grid){
     needUpdate = true;
     this.grid = grid;
+    super.detnum( grid.ID());
   }
   /**
    *  Accessor method for the pixel row.
