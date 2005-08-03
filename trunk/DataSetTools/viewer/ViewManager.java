@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.60  2005/08/03 19:07:26  rmikk
+ *  Changed 3d_view.html to 3D_view.html for the 3D case only.  All the other
+ *    viewers.html had lower case letters
+ *
  *  Revision 1.59  2005/08/02 22:31:30  rmikk
  *  Added methods and listeners to build the help menu
  *
@@ -991,7 +995,8 @@ private void BuildOptionMenu()
 private void BuildHelpMenu( String viewType){
   String view= viewType.replace(' ','_').toLowerCase();
   String F = System.getProperty("ISAW_HOME");
- 
+  if( viewType.startsWith("3D"))
+      view ="3D"+view.substring(2);
   if( F== null) return;
   if( !F.endsWith(File.separator))
       F+=File.separator;
