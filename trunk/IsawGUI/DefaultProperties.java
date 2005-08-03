@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2005/08/03 19:25:08  dennis
+ *  Added lines for preferred browser and default file extension.
+ *  The default file extension is not yet supported in ISAW.
+ *
  *  Revision 1.30  2005/06/19 21:21:30  dennis
  *  Added PixelDepthScale=256 to default properties.  This is needed
  *  for the correct calculation of depth values with jogl when
@@ -305,6 +309,16 @@ public class DefaultProperties{
             .append(separator).append("SampleRuns").append(eol)
             .append(eol)
             .append("#").append(eol)
+            .append("# Command to start browser for Help system").append(eol)
+            .append("#").append(eol)
+            .append("#PREFERRED_BROWSER=/usr/bin/mozilla").append(eol)
+            .append(eol)
+            .append("#").append(eol)
+            .append("# Default data file extension").append(eol)
+            .append("#").append(eol)
+            .append("#DATA_FILE_EXTENSION=hdf").append(eol)
+            .append(eol)
+            .append("#").append(eol)
             .append("# Live Data Server Options").append(eol)
             .append("#").append(eol)
             .append("Inst1_Name=HRMECS").append(eol)
@@ -319,11 +333,11 @@ public class DefaultProperties{
             .append("#").append(eol)
             .append("IsawFileServer1_Name=IPNS(hrmecs)").append(eol)
             .append("IsawFileServer1_Path=hrmecs.pns.anl.gov;6089").append(eol)
-            .append("IsawFileServer2_Name=Test(dmikk-Isaw)").append(eol)
-            .append("IsawFileServer2_Path=dmikk.mscs.uwstout.edu;6089")
+            .append("IsawFileServer2_Name=Test(UW-Stout-Isaw)").append(eol)
+            .append("IsawFileServer2_Path=isaw.mscs.uwstout.edu;6089")
             .append(eol)
-            .append("NDSFileServer1_Name=Test(dmikk-NDS)").append(eol)
-            .append("NDSFileServer1_Path=dmikk.mscs.uwstout.edu;6008")
+            .append("NDSFileServer1_Name=Test(UW-Stout-NDS)").append(eol)
+            .append("NDSFileServer1_Path=isaw.mscs.uwstout.edu;6008")
             .append(eol)
             .append(eol)
             .append("#").append(eol)
@@ -336,6 +350,7 @@ public class DefaultProperties{
             .append("Status_Height=0.2").append(eol)
             .append(eol)
             .append("#").append(eol)
+
             .append("# PixelDepthScale=256 for ATI FireGL T2 drivers on nw8000")
             .append(eol)
             .append("#").append(eol)
