@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.230  2005/08/03 19:26:07  dennis
+ *  Changed version to 1.7.2 alpha 6
+ *
  *  Revision 1.229  2005/08/02 19:07:50  rmikk
  *  Changed pointer to html pages for the isaw viewers
  *
@@ -832,7 +835,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.7.2 alpha 5";
+          version="1.7.2 alpha 6";
         else
           version=SharedData.VERSION;
 
