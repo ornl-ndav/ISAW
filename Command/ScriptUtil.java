@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2005/08/04 22:30:44  rmikk
+ * Fixed a mismatch of data type error
+ *
  * Revision 1.12  2005/06/19 20:30:32  rmikk
  * Fixed error for excluding java and sun errors
  *
@@ -579,7 +582,11 @@ public class ScriptUtil{
         param=SCLH.getOperatorParameter(candidates[i],j);
         if(param_vals[j]==null){
           // do nothing
-        }else if( compareClass(param_vals[j],param) ){
+        }else if( param == null){
+            continue outer;
+        }else if( !(param instanceof IParameter)){
+            continue outer;
+        }else if( compareClass(param_vals[j],((IParameter)param).getValue()) ){
           // do nothing
         }else{
           continue outer;
