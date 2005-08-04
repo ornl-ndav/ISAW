@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.66  2005/08/04 13:56:35  rmikk
+ * Fixed error in Filename of for linux jar files
+ *
  * Revision 1.65  2005/07/19 18:33:04  rmikk
  * Added a SaveState and RestoreState system for faster loading if no
  * operators are changed.
@@ -273,6 +276,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
            
            Restore();
            init();
+           restored = true;
            RestoredFileNames = null;
     }
     
@@ -954,7 +958,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         classFile=FilenameUtil.URLSpacetoSpace( classFile );
         if(injar){ // we are working from a jar file
             // remove a little bit more from classFile
-            classFile=classFile.substring(6,classFile.length()-1);
+            classFile=classFile.substring(5);
+            classFile= classFile.substring(0,classFile.length()-1);
            
             processDataSetOperators(classFile,true);
            
@@ -1600,10 +1605,12 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      *                   false is returned.
      */
     public static synchronized boolean Restore(){
+      if(!first)
+          return true;
       if( restored)
         return true; 
       DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
-      restored=true;
+      
       
       RestoredFileNames = null;
       String S = System.getProperty("user.home");
@@ -1689,9 +1696,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
          dsOpList.clear();
          first= true;
          RestoredFileNames = null;
+         restored=false;
          return false;
       }      
-      
+      restored=true;
       return true;
      
     }
