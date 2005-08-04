@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.68  2005/08/04 19:30:25  dennis
+ * Fixed spelling error in javadoc.
+ *
  * Revision 1.67  2005/08/04 19:27:39  dennis
  * Made new messages that are printed when the cached operator file
  * is not found, or when the time stamp doesn't match.  The messages
@@ -1364,7 +1367,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @return A generic operator or null.
      *
      * @throws ClassNotFoundException
-     * @throws InstatiationException
+     * @throws InstantiationException
      * @throws IllegalAccessException
      */
     static private Operator getOperatorInst( String classname ) throws
@@ -1431,7 +1434,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @return A generic operator or null.
      *
      * @throws ClassNotFoundException
-     * @throws InstatiationException
+     * @throws InstantiationException
      * @throws IllegalAccessException
      */
     static private GenericOperator getGenOperator( String classname ) throws
@@ -1453,7 +1456,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @return A generic operator or null.
      *
      * @throws ClassNotFoundException
-     * @throws InstatiationException
+     * @throws InstantiationException
      * @throws IllegalAccessException
      */
     static private DataSetOperator getDSOperator( String classname ) throws
@@ -1616,7 +1619,6 @@ public class Script_Class_List_Handler  implements OperatorHandler{
       if( restored)
         return true; 
       DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
-      
       
       RestoredFileNames = null;
       String S = System.getProperty("user.home");
