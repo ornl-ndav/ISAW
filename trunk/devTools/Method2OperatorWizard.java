@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2005/08/04 19:43:11  kramer
+ * Fixed the error where the return type of a method would not be displayed
+ * on the gui if the method didn't have any parameters.  Without the return
+ * type displayed, an operator could not be created based on the method.
+ *
  * Revision 1.6  2005/07/10 14:17:30  rmikk
  * Implemented major changes in the GUI interface
  *
@@ -684,6 +689,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			} else if (meth == null)
 				return;
 
+            //display the method's return type on the gui
+            ResInf.setText(meth.getReturnType().toString());
+         
+            //acquire and display the method's parameters on the gui
 			Class[] ArgClass = meth.getParameterTypes();
 			MethInfData mm = null;
 
@@ -697,7 +706,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				else
 					mm.Next = md;
 				mm = md;
-				ResInf.setText(meth.getReturnType().toString());
 			}
 		}
 
