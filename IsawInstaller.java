@@ -32,6 +32,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.30  2005/08/04 19:32:05  dennis
+ * Changed default memory size from 128M to 256M in the batch file
+ * to run ISAW.
+ *
  * Revision 1.29  2005/08/03 19:41:14  dennis
  * Added SSG_Tools.jar to classpath
  *
@@ -628,14 +632,14 @@ public class IsawInstaller extends JFrame
 		+"rem --"+newline
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
-		+"java -mx128m -cp \""+fixSeparator(isaw_home)
+		+"java -mx256m -cp \""+fixSeparator(isaw_home)
                 +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;"
                 +"jhall.jar;jython.jar;.\" IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+ newline
 		+"rem --"+newline
-		+"rem java -mx128m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;"
+		+"rem java -mx256m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;"
 		+"jhall.jar;jython.jar;.\" IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
@@ -643,7 +647,7 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"export LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -mx128m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
+		+"$JAVA -mx256m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/jogl.jar"
 		+":$ISAW/jhall.jar:$ISAW/jython.jar:. IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(SUN_ID)){
@@ -652,12 +656,12 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
+		+"$JAVA -mx256m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/jogl.jar"
 		+":$ISAW/jhall.jar:$ISAW/jython.jar:. IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
-                +"      do script with command \"java -mx128m -cp "
+                +"      do script with command \"java -mx256m -cp "
                 +isaw_home+":"
                 +isaw_home+"/Isaw.jar:"
                 +isaw_home+"/sgt_v2.jar:"
