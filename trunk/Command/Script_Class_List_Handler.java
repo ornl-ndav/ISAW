@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.67  2005/08/04 19:27:39  dennis
+ * Made new messages that are printed when the cached operator file
+ * is not found, or when the time stamp doesn't match.  The messages
+ * now indicate that this is normal and that Isaw will just take a
+ * little longer to load.
+ *
  * Revision 1.66  2005/08/04 13:56:35  rmikk
  * Fixed error in Filename of for linux jar files
  *
@@ -1623,7 +1629,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         S =S+File.separator;
       String fileName= S+"ISAW"+File.separator+"SCLH.iii";
       if(!( new File(fileName)).exists()){
-         System.out.println("***********Could not find file");
+         System.out.println("Didn't find cached operator file: " + fileName );
+         System.out.println("searching for all available operators....");
+         System.out.println("This is normal for the first time a version of ISAW is run;");
+         System.out.println("it will just take somewhat longer to start.");
          return false;
       }
       try{
@@ -1659,7 +1668,14 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         long TimeStamp = (new File(classFile)).lastModified();
         
         if(Fin.readLong() != TimeStamp)
-           return Message("Time Stamp did not match", Fin);
+        {
+           String message = "Time stamp on cached operator file didn't match. \n" +
+                            "Searching for all available operators.... \n" +
+                            "This is normal for the first time a version of ISAW is run \n" + 
+                            "after it's modified; it will just take somewhat longer to start.";
+
+           return Message(message, Fin);
+        }
 
         S=(String)Fin.readObject();
         if(!S.equals( System.getProperty("java.class.path")))
