@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/08/05 20:11:55  rmikk
+ * Use line number = -1  when using LoadSCDCalib
+ *
  * Revision 1.3  2005/05/27 03:12:04  dennis
  * Changed to use get attribute method from AttrUtil, rather than
  * the old get attribute method from DataSet and Data
@@ -144,7 +147,7 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
     loadSCD.getParameter( 0 )
         .setValue( CalibFile1.toString() );
     loadSCD.getParameter( 1 )
-        .setValue( new Integer(1 ) );
+        .setValue( new Integer(-1 ) );
     loadSCD.getParameter( 2 )
         .setValue( "" );
      loadSCD.setDataSet( DS );
