@@ -15,13 +15,13 @@ $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
 $ run_numbers         Array                  Run Number
 $ expname             String                 Experiment Name
-$ centering           String(primitive)      Centering type
-#$ calibfile           LoadFileString         SCD Calibration File
+$ centering           Choice(["primitive","a centered","b centered","c centered", "[f]ace centered","[i] body centered","[r]hombohedral centered" ])      Centering type
+$ calibfile           LoadFileString         SCD Calibration File
 $ time_slice_range    String(-1:3)           Time-slice range
 $ increase            Integer(1)             Increase slice size by
-
+$ inst                String("SCD0")         Instrument name
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
-inst = "SCD"
+#inst = "SCD"
 Display "Instrument = "&inst
 #Display "Calibration File ="&calibfile
 
@@ -33,20 +33,21 @@ append=false
 
 for i in run_numbers
   # load data
-  filename=path&inst&0&i&".RUN"
+  filename=path&inst&i&".RUN"
   Display "Loading "&filename
   Echo("Integrating peaks in "&filename)
   nn= load(filename,"ds")
   dsnum = nn-1
   # The calibration file "instprm.dat" must be in the outpath directory.
-  LoadSCDCalib(ds[dsnum],outpath&"instprm.dat",-1,"")
+  #LoadSCDCalib(ds[dsnum],outpath&"instprm.dat",-1,"")
+  Calib(ds[dsnum], calibfile)
 
   # integrate peaks
   #Display(ds[dsnum])
 
   #Gets matrix file "lsxxxx.mat" for each run
   #The "1" means that every peak will be written to the integrate.log file.
-  SCDIntegrate(ds[dsnum],outpath&expname&".integrate",outpath&"ls"&i&".mat",centering,time_slice_range,increase,1,append)
+  SCDIntegrate(ds[dsnum],outpath&expname&".integrate",outpath&"/ls"&expname&i&".mat",centering,time_slice_range,increase,1,append)
 
   #Integrate
   # write out the results
