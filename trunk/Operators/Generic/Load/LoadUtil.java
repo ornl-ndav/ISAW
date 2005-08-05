@@ -30,6 +30,12 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2005/08/05 20:54:11  dennis
+ * Added support for Instrument_Type specification in the
+ * detector information file, so that the correct operators
+ * can be added to the LANSCE/NeXus DataSet that is
+ * being "fixed".
+ *
  * Revision 1.3  2005/07/06 14:21:38  dennis
  * Cleaned up test code in main program.  Enabled test of both
  * loading SMARTS detector info and loading GLAD detector info.
@@ -83,11 +89,12 @@ public class LoadUtil
   {};
 
   /**
-   *  Load detector information (and initial path, if present) for the
-   *  specified DataSet from the specified file.  The file must list the
-   *  values on separate lines, with a single identifier at the start of the 
-   *  line.  Lines starting with "#" are ignored.  The accepted identifiers
-   *  are:
+   *  Load detector information (and initial path, and instrument type,
+   *  if present) for the specified DataSet from the specified file.  
+   *  The file must list the values on separate lines, with a single 
+   *  identifier at the start of the line.  Lines starting with "#" 
+   *  are ignored.  The accepted identifiers are:
+   *        Instrument_Type
    *        Initial_Path
    *        Num_Grids
    *        Grid_ID
@@ -116,11 +123,11 @@ public class LoadUtil
    */
   public static void LoadDetectorInfo( DataSet ds, String file_name )
   {
+    Hashtable hash = new Hashtable( 2000 );
     try
     {
       TextFileReader f = new TextFileReader( file_name );
 
-      Hashtable hash = new Hashtable( 2000 );
       Vector grid_names = LoadHashtable( f, hash );
       f.close();
                                     // set initial path iattribute in meters
@@ -212,8 +219,14 @@ public class LoadUtil
        System.out.println("Exception reading detecdtor file \n" +
                            file_name + "\n" + e );
     }
-                                    // add the Diffractometer operators
-    DataSetFactory.addOperators( ds, InstrumentType.TOF_DIFFRACTOMETER );
+                                             // add the needed operators, if 
+                                             // instrument type was specified
+    Integer InstrumentType = getInteger( hash, "INSTRUMENT_TYPE" );
+    if ( InstrumentType != null )
+    {
+      int instrument_type = InstrumentType.intValue();
+      DataSetFactory.addOperators( ds, instrument_type );
+    }
   }
 
 
