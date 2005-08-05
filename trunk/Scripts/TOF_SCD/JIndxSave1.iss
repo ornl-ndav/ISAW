@@ -20,7 +20,7 @@ $peakfilename    SaveFileString("NONE")   Filename to save peak to
 $logfile    Boolean(true)   Show log info 
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
-$ Title = Write Peaks
+$ Title = Index/Write Peaks
 OrientMat = readOrient( OrientMatFile)
 V = JIndex(peaks,OrientMat,RestrRuns, Delta,Delta,Delta)
 Display peakfilename
