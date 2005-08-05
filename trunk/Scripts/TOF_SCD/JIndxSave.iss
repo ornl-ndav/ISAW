@@ -20,11 +20,12 @@ $peakfilename    SaveFileString("NONE")   Filename to save peak to
 $logfile    Boolean(true)   Show log info 
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
+
 V = JIndex(peaks,OrientMat,RestrRuns, Delta,Delta,Delta)
-Display "A"&peakfilename
+Display "peakfilename="&peakfilename
 if peakfilename <>"NONE"
-  Display "B"
   WritePeaks(peakfilename, peaks)
+  Display "printed peaks to file"
 endif
 
 if logfile

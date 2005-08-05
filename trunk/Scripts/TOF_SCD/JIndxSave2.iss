@@ -12,38 +12,37 @@
 #                             desired)
 #@param  logfile     if true, the JIndex log file will be displayed in the
 #                    status pane
+#@param  expName    the name of the experiment(and part of the filename)
+#                   for some of the orientation matrices
 #@return   the Vector of peaks.
 
 
 $peaks     PlaceHolder        Peaks
 $Delta       Float(.20)       Deltas
 $UseLsqMats  Boolean(false)   Use Least Square Matrices
-$OrientMat   Array            Orientation Matrix file name
-
-$OrientFileNames Array        Matrix Files to Load
+$OrientMat   Array          Orientation Matrix
+$OrientFileDir  DataDirectoryString        Dir with Matrices to Load
 $RunNums     Array          Run Numbers
 $RestrRuns   IntList          Restrict Runs
 $peakfilename    SaveFileString("NONE")   Filename to save peak to
 $logfile    Boolean(true)   Show log info 
-
+$expName    String          Experiment name
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
-$ Title = Write Peaks
-if !UseLsqMats 
-  OrientMat = readOrient( OrientMatFile)
+$ Title = Index/Write Peaks
+
+if Not UseLsqMats 
+  
   V = JIndex(peaks,OrientMat,RestrRuns, Delta,Delta,Delta)
 else
    RestrNums = IntListtoArray( RestrRuns)
    if( ArrayLength(RestrNums) <=0)
      RestrNums= IntListtoArray( RunNums)
    end if
-   if ArrayLength(RestrNums) <> ArrayLength(OrientFileNames)
-      ErrorMessage("Improper lengths for RunNums and Orientation Files")
-      return
-   end if   
-   for i in[0:ArrayLength(RestrNums)]
-      Mat= readOrient( RestrNums[i])
-      Run = ""&RestrNums[i]
-      V = JIndex(peaks,Mat,Run, Delta,Delta,Delta)
+      
+   for i in RestrNums
+      Mat= readOrient( OrientFileDir&"/ls"&expName&i&".mat")
+      Run = ""&i
+      V =V& JIndex(peaks,Mat,Run, Delta,Delta,Delta)
    end for
 end if
 
