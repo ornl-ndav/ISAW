@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.61  2005/08/05 14:00:10  rmikk
+ *  Changed title and size of the help frame that pop up from the help button on
+ *  each of the viewers
+ *
  *  Revision 1.60  2005/08/03 19:07:26  rmikk
  *  Changed 3d_view.html to 3D_view.html for the 3D case only.  All the other
  *    viewers.html had lower case letters
@@ -1268,8 +1272,8 @@ private float solve( float new_x ) // find what x in the original DataSet maps
    public void menuCanceled(MenuEvent e){}
    public void menuDeselected(MenuEvent e){}
    public void menuSelected(MenuEvent e){
-      FinishJFrame jf = new FinishJFrame( "Viewer Help");
-      jf.setSize( 500,600);
+      FinishJFrame jf = new FinishJFrame( viewName+" Viewer");
+      jf.setSize( 700,700);
       String url=DataSetTools.util.FilenameUtil.helpDir("Viewers/"+viewName+".html");
     
       if( url==null){
