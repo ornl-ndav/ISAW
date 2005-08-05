@@ -31,6 +31,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2005/08/05 20:21:36  rmikk
+ * Fixed documentation to make parameters clearer and advertise that some
+ * peaks may disappear.
+ *
  * Revision 1.4  2005/06/20 00:44:56  rmikk
  * IMproved javadocs
  *
@@ -170,8 +174,8 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
     // parameters
     sb.append( "@param peaks  Vector of peaks" );
-    sb.append( "@param restrictRuns The run numbers to restrict. " );
-    sb.append( "@param restrictSeq The sequence numbers to restrict. " );
+    sb.append( "@param  Runs The run numbers to use " );
+    sb.append( "@param restrictSeq The sequence numbers to use. " );
     sb.append( "@param xFormMat The transformation matrix to use. " );
     sb.append( "@param matFile The matrix to write to. " );
     sb.append( "@param minThresh The minimum peak intensity threshold to " );
@@ -179,7 +183,8 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     sb.append( "@param keepPixels The detector pixel range to keep." );
 
     // return
-    sb.append( "@return the resultant matrix file or an errormessage");
+    sb.append( "@return the resultant matrix file or an errormessage.");
+    sb.append(" The peaks object is also indexed and some peaks may be deleted");
 
     // error
    
@@ -205,7 +210,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
      float[][] matrix = null;
      int lowerLimit;
      int upperLimit;
-
+    
      if( keepRange != null ) {
        lowerLimit   = keepRange[0];  //lower limit of range
 
@@ -290,8 +295,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
     // read in the reflections from the peaks file
     
-
-    Peak peak = null;
+     Peak peak = null;
 
     // trim out the peaks that are not in the list of selected sequence numbers
     if( seq_nums != null ) {
@@ -299,7 +303,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
         peak = ( Peak )peaks.elementAt( i );
 
         if( binsearch( seq_nums, peak.seqnum(  ) ) == -1 ) {
-          peaks.remove( i );
+           peaks.remove( i );
         }
       }
     }
@@ -666,7 +670,8 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     } else if (matfile != null) {
       SharedData.addmsg( "Wrote file: " + matfile );
 
-      return LinearAlgebra.double2float( UB );
+      float[][] F_UB=LinearAlgebra.double2float( UB );
+      return F_UB;
     }
     }catch(Exception xx){
        xx.printStackTrace();
