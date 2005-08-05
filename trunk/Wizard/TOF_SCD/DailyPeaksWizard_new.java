@@ -44,13 +44,14 @@ import DataSetTools.parameter.*;
 public class DailyPeaksWizard_new extends Wizard 
 {
      int[][] ParamTable= {     {0,-1,-1,-1,0}
-     ,{1,-1,-1,-1,1}
-     ,{2,-1,-1,5,2}
-     ,{3,-1,-1,-1,3}
+     ,{1,-1,4,4,1}
+     ,{2,-1,2,5,2}
+     ,{3,-1,1,9,3}
      ,{12,0,0,0,-1}
-     
+     ,{10,-1,-1,-1,8}
+     ,{8,-1,-1,-1,5}
      ,{-1,2,-1,6,-1}
-   
+     ,{-1,-1,7,3,-1}
    
 
             };
@@ -70,9 +71,9 @@ public class DailyPeaksWizard_new extends Wizard
         super("Daily Peaks Wizard",standalone);
      
 
-   addForm( new ScriptForm("TOF_SCD/find_multiple_peaks1.iss", new PlaceHolderPG("Result0",null),new int[0]));
+   addForm( new ScriptForm("TOF_SCD/find_multiple_peaks1.iss", new PlaceHolderPG("Peaks",null),new int[0]));
    addForm( new ScriptForm("TOF_SCD/JIndxSave1.iss", new StringPG("Result1",null),new int[0]));
-    addForm( new OperatorForm(  new Operators.TOF_SCD.LsqrsJ_base()));
+    addForm( new ScriptForm(  "TOF_SCD/LSqrs.iss",new ArrayPG( "Result",null ),ConstList[2]));
    addForm( new ScriptForm("TOF_SCD/JIndxSave2.iss"));
    addForm( new ScriptForm("TOF_SCD/integrate_multiple_runs.iss"));
       linkFormParameters( ParamTable );
