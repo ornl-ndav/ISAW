@@ -33,7 +33,18 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/08/05 22:42:46  kramer
+ * -Added the methods SetObjectSateValue(), GetObjectStateValue(), and
+ *  GetObjectStateDataType() which are used to get and set values for
+ *  specific items in the ObjectState (as specified by a path).
+ * -Added the methods ModifyObjectState() and ModifyObjectStateImpl() which
+ *  do the actual work of the methods described above.
+ * -Modified the PrintObjectState() method so that the data types of the
+ *  values in the ObjectState are included in the printout.
+ * -Added a main() method.
+ *
  * Revision 1.1  2005/08/05 16:15:27  kramer
+ *
  * Initial checkin.  This is a utility class that contains the static
  * methods that do the actual work of dealing with ObjectStates.  The
  * operators defined in this package wrap particular methods in this class.
@@ -44,8 +55,11 @@ package Operators.Special.ObjectState;
 import gov.anl.ipns.ViewTools.Components.IPreserveState;
 import gov.anl.ipns.ViewTools.Components.ObjectState;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 /**
  * This is a utility class that contains the static methods that work 
@@ -58,6 +72,11 @@ import java.util.Enumeration;
  */
 public class ObjectStateUtilities
 {
+   private static String INSERT = "insert";
+   private static String REPLACE = "replace";
+   private static String READ_VALUE = "read value";
+   private static String READ_TYPE = "read type";
+   
    /** Private to emphasize that this class should not be instantiated. */
    private ObjectStateUtilities() {}
    
@@ -201,6 +220,248 @@ public class ObjectStateUtilities
       
       preserve.setObjectState(state);
       return "Success";
+   }
+   
+   public static String SetObjectStateValue(String path, 
+                                            ObjectState state, 
+                                            Object value, 
+                                            boolean allowOverwrites, 
+                                            boolean checkTypes) 
+                                               throws Exception
+   {
+      String code = INSERT;
+      if (allowOverwrites)
+         code = REPLACE;
+      
+      ModifyObjectState(path, state, code, value, checkTypes);
+      
+      return "Success";
+   }
+   
+   public static Object GetObjectStateValue(String path, ObjectState state) 
+                                                              throws Exception
+   {
+      return ModifyObjectState(path, state, READ_VALUE, null, true);
+   }
+   
+   public static Object GetObjectStateDataType(String path, ObjectState state)
+                                                              throws Exception
+   {
+      return ModifyObjectState(path, state, READ_TYPE, null, false);
+   }
+   
+   /**
+    * Convience method that is used to access or modify an item in an 
+    * <code>ObjectState</code>.
+    * 
+    * @param fullPath  The full path to the item in the 
+    *                  <code>ObjectState</code> that is to be 
+    *                  accessed or modified.
+    * @param state     The <code>ObjectState</code> that is to be used. 
+    * @param code      Code used to specify the action that is to be done 
+    *                  to the item in the <code>ObjectState</code>.
+    *                  <p>
+    *                  The following codes are supported:
+    *                  <ul>
+    *                    <li>
+    *                        {@link #INSERT INSERT}:  
+    *                        Specifies that the value given by the 
+    *                        parameter <code>value</code> should be 
+    *                        inserted in the <code>ObjectState</code> 
+    *                        at the specified path if and only if the 
+    *                        <code>ObjectState</code> doesn't already 
+    *                        contain a value at that location.
+    *                    </li>
+    *                    <li>
+    *                        {@link #REPLACE REPLACE}:  
+    *                        Specifies that the value given by the 
+    *                        parameter <code>value</code> should be 
+    *                        inserted in the <code>ObjectState</code> 
+    *                        at the specified path overwriting any 
+    *                        value previously stored at the location.
+    *                    </li>
+    *                    <li>
+    *                        {@link #READ_TYPE READ_TYPE}:  
+    *                        Specifies that this method should obtain 
+    *                        the data type of the value at the specified 
+    *                        location in the <code>ObjectState</code>.  
+    *                        This data type is returned by this method.
+    *                    </li>
+    *                    <li>
+    *                        {@link #READ_TYPE READ_VALUE}:  
+    *                        Specifies that this method should obtain 
+    *                        the value at the specified location in 
+    *                        the <code>ObjectState</code>.  This value
+    *                        is returned by this method.
+    *                    </li>
+    *                  </ul>
+    * @param value     This value is only used if the value of the 
+    *                  parameter <code>code</code> is either 
+    *                  {@link #INSERT INSERT} or {@link #REPLACE REPLACE}.  
+    *                  In this case, this parameter specifies the value to 
+    *                  store in given <code>ObjectState</code>.
+    * @param typeSafe  Used to specify if type safety should be applied to 
+    *                  this method.  This parameter is only used if the 
+    *                  value of the parameter <code>code</code> is either 
+    *                  {@link #INSERT INSERT} or {@link #REPLACE REPLACE} 
+    *                  (which specifies that the <code>ObjectState</code> 
+    *                  should be modified).  Then, if this parameter is 
+    *                  <code>true</code>, the <code>ObjectState</code> 
+    *                  will only be modified if the data type of the 
+    *                  value already in the <code>ObjectState</code> is 
+    *                  the same as the data type of the value that is 
+    *                  going to be placed in the <code>ObjectState</code>.  
+    *                  If this parameter is <code>false</code>, no type 
+    *                  checking is done.
+    * @return          If the value of the parameter <code>code</code> is 
+    *                  either {@link #INSERT INSERT} or 
+    *                  {@link #REPLACE REPLACE} this method returns the 
+    *                  value that was inserted in the 
+    *                  <code>ObjectState</code>.  Otherwise, if the value of 
+    *                  the parameter <code>code</code> is either 
+    *                  {@link #READ_TYPE READ_TYPE} or 
+    *                  {@link #READ_VALUE READ_VALUE}, the value read from the 
+    *                  <code>ObjectState</code> is returned.  A return value 
+    *                  of <code>null</code> does not specify that an error 
+    *                  has occured in this method.  This is because if an 
+    *                  error has occured, an Exception is thrown instead.
+    * @throws Exception  If any errors occur in this method an Exception is 
+    *                    immediately thrown.  Examples of some problems 
+    *                    that could occur are, the path given might be 
+    *                    empty, too long, or not correspond to an item in 
+    *                    the <code>ObjectState</code>.  Also, the value of 
+    *                    the parameter <code>code</code> could be invalid.  
+    *                    The Exceptions thrown are designed so that their 
+    *                    error messages can be understood by the end user.
+    */
+   private static Object ModifyObjectState(String fullPath, 
+                                           ObjectState state, 
+                                           String code, Object value, 
+                                           boolean typeSafe)
+                                              throws Exception
+   {
+      if (fullPath == null)
+         throw new IllegalArgumentException("The path cannot be 'null'");
+         
+      if (state == null)
+         throw new IllegalArgumentException("The state cannot be 'null'");
+      
+      if (code == null)
+         throw new IllegalArgumentException("The modification code " +
+                                            "cannot be 'null'");
+      
+      StringTokenizer tokenizer = new StringTokenizer(fullPath, "/");
+      int numTokens = tokenizer.countTokens();
+      if (numTokens == 0)
+         throw new Exception("The path cannot be empty");
+         
+      Vector pathVec = new Vector(numTokens);
+      while (tokenizer.hasMoreTokens())
+         pathVec.add(tokenizer.nextToken());
+      
+      Object[] valueRef = new Object[] { value };
+      ModifyObjectStateImpl(pathVec, 0, state, code, valueRef, typeSafe);
+      
+      return valueRef[0];
+   }
+   
+   private static void ModifyObjectStateImpl(Vector fullPath, int index, 
+                                             ObjectState state,  
+                                             String code, Object[] value, 
+                                             boolean typeSafe) throws Exception
+   {
+      String targetKey = fullPath.elementAt(index).toString();
+      
+      Enumeration keys = state.getKeys();
+      String curKey;
+      Object curKeyVal;
+      while (keys.hasMoreElements())
+      {
+         curKey = keys.nextElement().toString();
+         if (curKey.equals(targetKey))
+         {
+            curKeyVal = state.get(curKey);
+            if ( (curKeyVal instanceof ObjectState) && 
+                 ((index+1) < fullPath.size()) )
+            {
+               ModifyObjectStateImpl(fullPath, index+1, 
+                                     (ObjectState)curKeyVal, 
+                                     code, value, typeSafe);
+               return;
+            }
+            else
+            {
+               if (index < (fullPath.size() -1))
+                  throw new Exception("The specified path is invalid "+ 
+                                      "because it contains extra invalid "+
+                                      "keys.  Its longest valid subpath is \""+
+                                      getCurrentPath(fullPath, index)+"\"");
+               else
+               {
+                  //then 'targetKey' is a valid key in the ObjectState 'state'
+                  
+                  String storedTypeName = curKeyVal.getClass().getName();
+                  
+                  if ( (code.equals(INSERT)) || (code.equals(REPLACE)) )
+                  {
+                     String newTypeName = "";
+                     boolean typeCheckFailed = false;
+                     if (value[0] != null)
+                     {
+                        newTypeName = value[0].getClass().getName();
+                        typeCheckFailed = 
+                           (typeSafe && 
+                            !newTypeName.equals(storedTypeName));
+                     }
+                     
+                     if (typeCheckFailed) 
+                           throw new Exception("The value could not be " +
+                                               "modified because its data " +
+                                               "type (" + newTypeName + 
+                                               ") does not match the data " +
+                                               "type of the value already " +
+                                               "stored in the state ("+
+                                               storedTypeName+").");
+                     
+                     if (code.equals(INSERT))
+                        state.insert(targetKey, value[0]);
+                     else if (code.equals(REPLACE))
+                        state.reset(targetKey, value[0]);
+                  }
+                  else if (code.equals(READ_TYPE))
+                     value[0] = storedTypeName;
+                  else if (code.equals(READ_VALUE))
+                     value[0] = curKeyVal;
+                  else
+                     throw new Exception("The ObjectState modification " +
+                                         "code '"+code+"' is not supported");
+                  
+                  return;
+               }
+            }
+         }
+      }
+      
+      //if the path specified is valid, this method will return from 
+      //inside the middle of the while loop.  Thus, if the while loop 
+      //terminates, the path, up to the specified 'index', is invalid.  
+      //Therefore, throw an Exception.
+      throw new Exception("The specified path is invalid.  The following " +
+                          "subpath is the first point where the path " +
+                          "became invalid:  \""+
+                          getCurrentPath(fullPath, index)+"\"");
+   }
+   
+   private static String getCurrentPath(Vector fullPath, int index)
+   {
+      StringBuffer curPath = new StringBuffer();
+      for (int i=0; i<=index; i++)
+      {
+         curPath.append(fullPath.elementAt(i));
+         curPath.append("/");
+      }
+      
+      return curPath.toString();
    }
    
    /**
@@ -396,6 +657,11 @@ public class ObjectStateUtilities
                //then append the element and the suffix
                buffer.append(element);
                buffer.append(suffix);
+               
+               //then append the type
+               buffer.append(" <");
+               buffer.append(element.getClass().getName());
+               buffer.append(">");
             }
             
             buffer.append("\n");
@@ -403,5 +669,52 @@ public class ObjectStateUtilities
       }
       
       return buffer.toString();
+   }
+   
+   private static void buildStateFromFS(ObjectState state, File file)
+   {
+      if (file.isDirectory())
+      {
+         ObjectState newState = new ObjectState();
+         state.insert(file.getName(), newState);
+         
+         File[] subFiles = file.listFiles();
+         for (int i=0; i<subFiles.length; i++)
+            buildStateFromFS(newState, subFiles[i]);
+      }
+      else
+         state.insert(file.getName(), "");
+   }
+   
+   public static void main(String[] args) throws Exception
+   {
+      ObjectState state = new ObjectState();
+      File file = new File("/home/kramer/temp/ObjectState/");
+      buildStateFromFS(state, file);
+      
+      System.out.println(PrintObjectState(state, "(", ")", true));
+      
+      SetObjectStateValue("ObjectState/a/ac/acc/a/a/a/a",state,new Integer(5),true,false);
+      SetObjectStateValue("ObjectState/a/ac/acc",state,"NEW_VALUE",true,true);
+      
+      System.out.println(PrintObjectState(state, "(", ")", true));
+      
+      Object val = GetObjectStateDataType("ObjectState/a/ac/acc", state);
+      System.out.println("type = "+val);
+      
+      val = GetObjectStateValue("ObjectState/a/ac/acc", state);
+      System.out.println("value = "+val);
+      
+      /*
+      ModifyObjectState("ObjectState/a/ac/acc", state, REPLACE, "NEW_VALUE", true);
+      
+      System.out.println(PrintObjectState(state, "(", ")", true));
+      
+      Object val = ModifyObjectState("ObjectState/a/ac/acc", state, READ_TYPE, null, true);
+      System.out.println("type = "+val);
+      
+      val = ModifyObjectState("ObjectState/a/ac/acc", state, READ_VALUE, null, true);
+      System.out.println("value = "+val);
+      */
    }
 }
