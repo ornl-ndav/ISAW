@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.42  2005/08/05 20:08:42  rmikk
+ *  Fixed setParameter to deal with the new ParameterGUI's better. Needed for
+ *   Wizards to act properly.
+ *
  *  Revision 1.41  2005/06/17 13:16:48  dennis
  *  Minor fixes to documentation.
  *
@@ -146,6 +150,7 @@ import java.util.Vector;
 import java.io.*;
 import DataSetTools.parameter.IParameter;
 import DataSetTools.util.SharedData;
+import DataSetTools.parameter.*;
 import NetComm.RemoteOpExecClient;
 
 /**
@@ -462,7 +467,15 @@ abstract public class Operator implements Serializable
       return false;
                                              // NOTE: object parameters are
                                              //       represented using null
-   
+    if( parameter instanceof IParameterGUI)
+       if(!(parameter instanceof RealArrayPG))
+           if( parameter.getClass().equals
+                    (parameters.elementAt(index).getClass())){
+               parameters.setElementAt( parameter, index);
+               return true;
+           }
+    
+                 
     Object value = ((IParameter)parameters.elementAt( index )).getValue();
     if (  value == null || parameter.getValue() == null ||
           value.getClass() == parameter.getValue().getClass() ) 
