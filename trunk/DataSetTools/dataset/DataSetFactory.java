@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.46  2005/08/05 21:00:27  dennis
+ *  Added more descriptive error message if an invalid
+ *  instrument type is passed to the addOperators() method.
+ *
  *  Revision 1.45  2005/04/04 22:32:49  dennis
  *  Now also adds GetPixelInfo operator for TOF_Diffractometers,
  *  TOF_DG_Spectrometers, TOF_Reflectometers and TOF_IDG_Spectrometers,
@@ -490,9 +494,12 @@ public class DataSetFactory implements Serializable
       ds.addOperator( new TrueAngle() );                
     }
     else
+    {
         DataSetTools.util.SharedData.addmsg(
-                 //System.out.println(
-                 "WARNING: Unsupported instrument type in DataSetFactory" );
+        "WARNING: Unsupported instrument type in DataSetFactory.addOperators");
+        DataSetTools.util.SharedData.addmsg( 
+        "Requested type " + instrument_type );
+    }
   }
 
   /**
