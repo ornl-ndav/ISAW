@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2005/08/05 20:18:12  rmikk
+ * Changed an initial value for a parameter
+ * Set the display of log info to be to the system log file and not necessarily the
+ * status pane
+ *
  * Revision 1.4  2005/01/04 17:02:46  rmikk
  * Now implements HiddenOperator. Its result is not a DataSet or a String
  *
@@ -78,7 +83,7 @@ import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Vector;
-
+import gov.anl.ipns.Util.Sys.*;
 /**
  * Class designed to analyze cell scalars from BLIND to determine Laue
  * symmetry. Originally written by R. Goyette.
@@ -217,7 +222,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
 
     if(choices==null || choices.size()==0) init_choices();
 
-    addParameter( new ArrayPG( "UB matrix", new float[0][0]));
+    addParameter( new ArrayPG( "UB matrix", null));
     addParameter(new FloatPG("Delta",0.01f));
     ChoiceListPG clpg=new ChoiceListPG("Symmetry Constraints", 
                                        choices.elementAt(0));
@@ -325,7 +330,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
     printResult();
 
     //return the logfile name and print a message
-    SharedData.addmsg("See Status pane for result");
+    //SharedData.addmsg("See Status pane for result");
     if( transf != null)
       return gov.anl.ipns.Util.Sys.StringUtil.toString(LinearAlgebra.getTranspose(
                                LinearAlgebra.double2float(transf)));
@@ -1091,6 +1096,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
    */
   private void printResult(){
     if(DEBUG) System.out.println("MARK05");
+    SharedMessages.LOGaddmsg("--- Scalar------\n");
     if( k[0] == 0 || l[0] == 0 ){
       int start=logBuffer.length();
       logBuffer.append("NO MATCH\n");
@@ -1098,7 +1104,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
                          +scalars[0]+" "+scalars[1]+" "+scalars[2]+"\n");
       logBuffer.append("             "
                          +scalars[3]+" "+scalars[4]+" "+scalars[5]+"\n");
-      SharedData.addmsg(logBuffer.substring(start));
+      SharedMessages.LOGaddmsg(logBuffer.substring(start)+"\n");
       newmat = null;
       return;
     }
@@ -1153,7 +1159,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
         for( int ii=0 ; ii<abc.length ; ii++ )
           logBuffer.append(Format.real(abc[ii],10,3)+" ");
         logBuffer.append("\n");
-        SharedData.addmsg(logBuffer.substring(start));
+        SharedMessages.LOGaddmsg(logBuffer.substring(start));
       }
     }
 
