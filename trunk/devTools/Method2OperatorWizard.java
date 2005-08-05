@@ -33,7 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/08/05 20:29:08  rmikk
+ * Added a "d" to the word Acknowle[d]gement
+ *
  * Revision 1.7  2005/08/04 19:43:11  kramer
+ *
  * Fixed the error where the return type of a method would not be displayed
  * on the gui if the method didn't have any parameters.  Without the return
  * type displayed, an operator could not be created based on the method.
@@ -547,7 +551,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			JP = new JPanel();
 			BL = new BoxLayout(JP, BoxLayout.X_AXIS);
 			JP.setLayout(BL); 
-			JP.add(new JLabel("Acknowlegements  "));
+			JP.add(new JLabel("Acknowledgements  "));
 			Acknowl = new JTextArea(5, 30);
 			Acknowl.setLineWrap(true);
 			JP.add(new JScrollPane(Acknowl));
