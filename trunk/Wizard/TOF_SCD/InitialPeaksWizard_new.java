@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/08/05 20:25:08  rmikk
+ * Fixed parameters, etc. so that they now run.  The Initial peaks wizard gives
+ * correct answers.
+ *
  * Revision 1.1  2004/07/14 16:31:48  rmikk
  * Initial Checkin
  * This is the initial peaks wizard that uses the Peak_new objects  so it can 
