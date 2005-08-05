@@ -31,6 +31,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2005/08/05 20:14:41  rmikk
+ * Changed the ParameterGUI for one the UB matrix parameter
+ * Improved Documentation on the return value
+ * Changed displaying to status pane to writing to the system log file if one has
+ *     been set up
+ *
  * Revision 1.5  2005/06/20 00:43:26  rmikk
  * Used RealArrayPG instead of ArrayPG to get better type checking
  *
@@ -68,7 +74,7 @@ import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
 import DataSetTools.parameter.*;
 import DataSetTools.util.SharedData;
-
+import gov.anl.ipns.Util.Sys.*;
 /**
  * This operator is intended to run A.J. Schultz's "index"
  * program. This is not heavily tested but works fairly well.
@@ -118,7 +124,7 @@ public class IndexJ_base extends    GenericTOF_SCD implements
                                 // parameters
     
     addParameter( new PlaceHolderPG("Peaks Vector", new Vector()));
-    addParameter(new RealArrayPG("Orientation matrix", new float[0][0]));
+    addParameter(new ArrayPG("Orientation matrix", null ));
     //2
     addParameter(new IntArrayPG("Restrict Runs",null));
     //3
@@ -155,7 +161,8 @@ public class IndexJ_base extends    GenericTOF_SCD implements
     sb.append("@param delta_l the allowable uncertainty in the calculated ");
     sb.append("l value.");
     // return
-    sb.append("@return The peaks indexed with the orientation matrix");
+    sb.append("@return The log information. The peaks of parameter 1");
+    sb.append("  are also indexed");
     // error
    
 
@@ -310,9 +317,9 @@ public class IndexJ_base extends    GenericTOF_SCD implements
   
   private void ShowLogInfo( StringBuffer log){
     this.log = log.toString();
-    SharedData.addmsg("---------- IndexJ log------------");
-    SharedData.addmsg(this.log);
-    SharedData.addmsg("------------ End IndexJ log");
+    SharedMessages.LOGaddmsg("---------- IndexJ log------------\n");
+    SharedMessages.LOGaddmsg(this.log+"\n");
+    SharedMessages.LOGaddmsg("------------ End IndexJ log\n");
   }
   /**
    * Determine whether or not to update the peak by checking it
