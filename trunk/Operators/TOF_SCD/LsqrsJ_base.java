@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2005/08/06 21:58:00  rmikk
+ * ReWrote so that no peaks objects are removed
+ *
  * Revision 1.5  2005/08/05 20:21:36  rmikk
  * Fixed documentation to make parameters clearer and advertise that some
  * peaks may disappear.
@@ -296,14 +299,18 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     // read in the reflections from the peaks file
     
      Peak peak = null;
-
+    int[] keep = new int[peaks.size()];
+    java.util.Arrays.fill(keep ,0);
+    int nargs= peaks.size();
     // trim out the peaks that are not in the list of selected sequence numbers
     if( seq_nums != null ) {
       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
         peak = ( Peak )peaks.elementAt( i );
 
         if( binsearch( seq_nums, peak.seqnum(  ) ) == -1 ) {
-           peaks.remove( i );
+           
+          keep[i] = -1;
+          nargs--;           
         }
       }
     }
@@ -312,8 +319,11 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
       peak = ( Peak )peaks.elementAt( i );
       //peak.UB(matrix);
+      if(keep[i] ==0)
       if( ( peak.h(  ) == 0 ) && ( peak.k(  ) == 0 ) && ( peak.l(  ) == 0 ) ) {
-        peaks.remove( i );
+       
+          keep[i] = -1;
+          nargs--;
       }
     }
 
@@ -321,9 +331,11 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     if( run_nums != null ) {
       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
         peak = ( Peak )peaks.elementAt( i );
-
-        if( binsearch( run_nums, peak.nrun(  ) ) == -1 ) {
-          peaks.remove( i );
+        if(keep[i] ==0)
+        if( binsearch( run_nums, peak.nrun(  ) ) == -1 ) {          
+          
+            keep[i] = -1;
+            nargs--;         
         }
       }
     }
@@ -332,9 +344,11 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     if( threshold >= 0 ) {
       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
         peak = ( Peak )peaks.elementAt( i );
-
+        if(keep[i] ==0)
         if( peak.ipkobs(  ) < threshold ) {
-          peaks.remove( i );
+        
+            keep[i] = -1;
+            nargs--;
         }
       }
     }
@@ -346,35 +360,40 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       //see if the peak pixels are within the user defined array.  We are
       //assuming a SQUARE detector, so we'll reject it if the x or y position
       //is not within our range
+      if(keep[i] ==0)
       if( 
         ( peak.x(  ) > upperLimit ) || ( peak.x(  ) < lowerLimit ) ||
           ( peak.y(  ) > upperLimit ) || ( peak.y(  ) < lowerLimit ) ) {
-        peaks.remove( i );
+        
+              keep[i] = -1;
+              nargs--;
       }
     }
 
     // can't refine nothing
-    if( peaks.size(  ) == 0 ) {
+    if( nargs<= 0 ) {
       return new ErrorString( "No peaks to refine" );
     }
 
     // can't do a least squares fit without at least 3 points
-    if( peaks.size( ) < 3 ) {
+    if( nargs < 3 ) {
       return new ErrorString( "Only " + peaks.size() + " peaks to fit in " +
                               "LsqrsJ, need at least 3" );
     }
 
 
     // create the hkl-matrix and q-matrix (q=1/d)
-    double[][] q   = new double[peaks.size(  )][3];
-    double[][] hkl = new double[peaks.size(  )][3];
-
-    for( int i = 0; i < hkl.length; i++ ) {
+    double[][] q   = new double[ nargs ][ 3 ];
+    double[][] hkl = new double[ nargs ][ 3 ];
+    int k=0;
+    for( int i = 0; i < peaks.size(); i++ ) 
+    if( keep[i]==0){
       peak        = ( Peak )peaks.elementAt( i );
-      hkl[i][0]   = Math.round( peak.h(  ) );
-      hkl[i][1]   = Math.round( peak.k(  ) );
-      hkl[i][2]   = Math.round( peak.l(  ) );
-      q[i]        = peak.getUnrotQ(  );
+      hkl[k][0]   = Math.round( peak.h(  ) );
+      hkl[k][1]   = Math.round( peak.k(  ) );
+      hkl[k][2]   = Math.round( peak.l(  ) );
+      q[k]        = peak.getUnrotQ(  );
+      k++;
     }
 
     // apply the transformation matrix
@@ -389,7 +408,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
         // multiply by the transformation matrix
         for( int j = 0; j < 3; j++ ) {
-          for( int k = 0; k < 3; k++ ) {
+          for(  k = 0; k < 3; k++ ) {
             myhkl[k] = myhkl[k] + ( matrix[k][j] * ( float )hkl[i][j] );
           }
         }
@@ -402,11 +421,14 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     }
 
     // set the new transformed hkl values back into the peaks objects. D.M.
-    for( int i = 0; i < hkl.length; i++ ) {
+    k=0;
+    for( int i = 0; i < peaks.size(); i++ )
+    if(keep[i]==0) {
       peak = ( Peak )peaks.elementAt( i );
      
       peak.UB(null);
-      peak.sethkl((float)hkl[i][0], (float)hkl[i][1], (float)hkl[i][2], false);
+      peak.sethkl((float)hkl[k][0], (float)hkl[k][1], (float)hkl[k][2], false);
+      k++;
     }
 
 
@@ -430,7 +452,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
         return new ErrorString( "ERROR in LsqrsJ: " + 
                                 " BestFitMatrix calculation failed" );
       chisq   = 0.;  // reset chisq
-      Thkl    = new double[3][peaks.size(  )];
+      Thkl    = new double[3][nargs];
 
       for( int i = 0; i < hkl.length; i++ ) {
         for( int j = 0; j < 3; j++ ) {
@@ -451,8 +473,9 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       logBuffer.append( 
         " seq#   h     k     l      x      y      z      " +
         "xcm    ycm      wl  Iobs    Qx     Qy     Qz\n" );
-
-      for( int i = 0; i < peaks.size(  ); i++ ) {
+      k=0;
+      for( int i = 0; i < peaks.size(  ); i++ ) 
+      if(keep[i]==0){
         peak = (Peak)peaks.elementAt(i);
   
                         // The first line logged for a peak has the observered
@@ -472,46 +495,22 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
                           Format.real( peak.getUnrotQ()[1], 7, 3 ) + 
                           Format.real( peak.getUnrotQ()[2], 7, 3 ) +"\n" );
 
-                        // The second line logged for a peak should have the 
-                        // theoretical values, corresponding to the indexed
-                        // hkl values
-/* This "should" eventually work, for writing out the values that correspond
-   to the integerized hkl, but the peak requires the calibration information
-   which is not currently available.  
-
-        Peak exact_peak = (Peak)peak.clone();
-                                 // now trigger the peak to recalculate it's
-                                 // values based on the integerized h,k,l.
-        exact_peak.sethkl( peak.h(), peak.k(), peak.l(), true );  
-
-        logBuffer.append( Format.string("", 21) + 
-                          Format.real( exact_peak.x(),   9, 2 ) +
-                          Format.real( exact_peak.y(),   7, 2 ) +
-                          Format.real( exact_peak.z(),   7, 2 ) +
-                          Format.real( exact_peak.xcm(), 7, 2 ) +
-                          Format.real( exact_peak.ycm(), 7, 2 ) +
-                          Format.real( exact_peak.wl(),  8, 4 ) +
-                          Format.integer( exact_peak.ipkobs(), 6 ) +
-                          Format.real( exact_peak.getUnrotQ()[0], 8, 3 ) +
-                          Format.real( exact_peak.getUnrotQ()[1], 7, 3 ) +
-                          Format.real( exact_peak.getUnrotQ()[2], 7, 3 ) +"\n");
-*/
-        logBuffer.append( Format.string("",73) +
-                          Format.real( Tq[0][i], 7, 3 ) + 
-                          Format.real( Tq[1][i], 7, 3 ) +
-                          Format.real( Tq[2][i], 7, 3 ) + "\n" );
+                  logBuffer.append( Format.string("",73) +
+                          Format.real( Tq[0][k], 7, 3 ) + 
+                          Format.real( Tq[1][k], 7, 3 ) +
+                          Format.real( Tq[2][k], 7, 3 ) + "\n" );
 
                           // The third line logged has the fractional hkl
                           // values observed for a peak, together with the
                           // difference in theoretical and observed hkl
         logBuffer.append( "      " + 
-                          Format.real( obs_hkl[0][i], 6, 2 ) +
-                          Format.real( obs_hkl[1][i], 6, 2 ) + 
-                          Format.real( obs_hkl[2][i], 6, 2 )  );
+                          Format.real( obs_hkl[0][k], 6, 2 ) +
+                          Format.real( obs_hkl[1][k], 6, 2 ) + 
+                          Format.real( obs_hkl[2][k], 6, 2 )  );
 
-        double error = Math.abs( obs_hkl[0][i] - peak.h() ) +
-                       Math.abs( obs_hkl[1][i] - peak.k() ) +
-                       Math.abs( obs_hkl[2][i] - peak.l() );
+        double error = Math.abs( obs_hkl[0][k] - peak.h() ) +
+                       Math.abs( obs_hkl[1][k] - peak.k() ) +
+                       Math.abs( obs_hkl[2][k] - peak.l() );
 
         logBuffer.append( "   Del =" + Format.real( error, 6, 3 ) + " " ); 
 
@@ -525,31 +524,12 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
           n_stars--;
         } 
         logBuffer.append( "\n" );
+        k++;
 
-/* keep this around for debugging, until values corresponding to integer hkl
-   have been calculated and written to the log file.
- 
-        logBuffer.append( "obs_hkl " + 
-                          Format.real( obs_hkl[0][i], 6, 2 ) +
-                          Format.real( obs_hkl[1][i], 6, 2 ) + 
-                          Format.real( obs_hkl[2][i], 6, 2 ) +"\n" );
-        logBuffer.append( "obs_q   " + 
-                          Format.real( obs_q[0][i], 6, 3 ) +
-                          Format.real( obs_q[1][i], 6, 3 ) + 
-                          Format.real( obs_q[2][i], 6, 3 ) +"\n" );
-        logBuffer.append( "pk_hkl  " + 
-                          Format.real( peak.h(), 6, 2 ) +
-                          Format.real( peak.k(), 6, 2 ) + 
-                          Format.real( peak.l(), 6, 2 ) +"\n" );
-        logBuffer.append( "pk_q    " + 
-                          Format.real( peak.getUnrotQ()[0], 6, 3 ) +
-                          Format.real( peak.getUnrotQ()[1], 6, 3 ) + 
-                          Format.real( peak.getUnrotQ()[2], 6, 3 ) +"\n" );
-*/
       }
 
       // calculate chisq
-      for( int i = 0; i < peaks.size(  ); i++ ) {
+      for( int i = 0; i < nargs; i++ ) {
         for( int j = 0; j < 3; j++ ) {
           chisq = chisq + ( ( q[i][j] - Tq[j][i] ) * ( q[i][j] - Tq[j][i] ) );
         }
@@ -567,10 +547,10 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     double[] sig_abc = new double[7];
 
     
-      double numFreedom      = 3. * ( peaks.size(  ) - 3. );
+      double numFreedom      = 3. * ( nargs - 3. );
       double[] temp_abc      = null;
       double[][] derivatives = new double[3][7];
-      double[][] VC          = generateVC( peaks );
+      double[][] VC          = generateVC( peaks ,keep);
 
       for( int i = 0; i < 3; i++ ) {
         // determine derivatives
@@ -579,7 +559,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
           temp_abc   = Util.abc( UB );
           UB[i][j]   = UB[i][j] - SMALL;
 
-          for( int k = 0; k < 7; k++ ) {
+          for(  k = 0; k < 7; k++ ) {
             derivatives[j][k] = ( temp_abc[k] - abc[k] ) / SMALL;
           }
         }
@@ -954,7 +934,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
   /**
    * Method to generate the hkl sums matrix
    */
-  private static double[][] generateVC( Vector peaks ) {
+  private static double[][] generateVC( Vector peaks,int[] keep ) {
     if( ( peaks == null ) || ( peaks.size(  ) <= 0 ) ) {
       return null;
     }
@@ -965,7 +945,9 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     double[] hkl = new double[3];
 
     // find the sum
-    for( int i = 0; i < peaks.size(  ); i++ ) {
+   
+    for( int i = 0; i < peaks.size(  ); i++ )
+    if(keep[i]==0) {
       peak     = ( Peak )peaks.elementAt( i );
       hkl[0]   = Math.round( peak.h(  ) );
       hkl[1]   = Math.round( peak.k(  ) );
