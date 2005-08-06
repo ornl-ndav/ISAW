@@ -51,7 +51,7 @@ for i in run_numbers
 
   #Integrate
   # write out the results
-  #WritePeaks(outpath&expname&".peaks",peaks,append)
+  WritePeaks(outpath&expname&"3.peaks",peaks,append)
   if first
     first=false
     append=true
