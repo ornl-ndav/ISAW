@@ -30,7 +30,7 @@ for i in runnums
    JLsqrs(Peaks,""&i,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep)
  
 endfor
-display "Num Peaks="&ArrrayLength(Peaks) 
+display "Num Peaks="&ArrayLength(Peaks) 
 S=""
 N=ArrayLength(runnums)
 for i in [1:N]
