@@ -1,0 +1,185 @@
+#
+# This is your ISAW-GLAD properties file ... 
+# IT SHOULD BE KEPT WITHIN the "Databases" SUBFOLDER
+#       UNDER YOUR ISAW HOME DIRECTORY; 
+# ISAW uses this file for GLAD instrument and experiment
+#      parameter infomation;
+# The '#' and '!' symbols denotes a commented line;
+# Empty lines also ignored.
+
+#
+#SOURCE:
+#
+!IPNS running at 30 Hz pulse rate;
+GLAD.SOURCE.PERIOD = 3.33333e4
+!first 20 channels used in delayed neutron correction (fitting);
+GLAD.SOURCE.DNEUTRON_NFIT = 20
+!delayed neutron fraction beta;
+GLAD.SOURCE.DNEUTRON_BETA = 0.00425
+
+#
+#VAC/BEAM:
+#
+!VAC 1 beam width; (1.30)
+GLAD.VAC1.BWID = 1.02
+!VAC 1 beam height; (2.20)
+GLAD.VAC1.BHT = 2.30
+!set beamparams[] used in ISAW manually (9 numbers square bracketed):
+GLAD.BEAM.PARAMS = 
+
+#
+#DAS:
+#
+!detector dead time in microseconds;
+GLAD.DET.TAU = 8.0
+!monitor dead time in microseconds; 
+GLAD.MON.TAU = 2.0
+!number of GLAD detector LPSD;
+GLAD.DET.NLPSD = 231
+!number of segments on each LPSD;
+GLAD.DET.NSEGMENT = 64
+!number of detector banks;
+GLAD.DET.NBANK = 10
+!max number of lpsd on each bank;
+GLAD.DET.MAX_LPSD_BANK = 53
+!max number of LPSD index on GLAD (detID/64);
+GLAD.DET.MAXLPSDID = 335
+!number of detector time channels;
+GLAD.DET.NCHANNEL = 2480
+!number of monitor time channels;
+GLAD.MON.NCHANNEL = 14950
+!detector time channel width in microseconds;
+GLAD.DET.CHANNELWIDTH = 5.0
+!monitor time channel width;
+GLAD.MON.CHANNELWIDTH = 1.0
+!number of data blocks in detector dataset;
+GLAD.DET_DS.NSPECTRUM = 914
+!number of monitors: [0]: beam monitor; 
+!                    [1]: transmission monitor (fudge);
+!                    [2]: proton monitor; 
+GLAD.MON.NMONITOR = 3    
+!for He3 detector: !(number density)*(absorption cross section) 
+!                                    *(detector radius)/1.8 Angstrom; 
+GLAD.DET.FACD = 0.41234502
+!monitor areas;
+GLAD.MON.AREA = [6.4516, 7.8e-3, 0.0]
+!monitor efficiency coefficients;
+GLAD.MON.EFF = [5.56e-5, 1.0, 0.0]
+
+#
+#scatterer:
+#
+!
+!vanadium calibration rod:
+!
+GLAD.CALIB.VAN.SYMBOL = {V}
+!formula:
+GLAD.CALIB.VAN.FORMULA = [1.0]
+!3/8" rod inner radius, outer radius, height in (cm);
+GLAD.CALIB.VAN.SIZE.1 = [0.0, 0.4763, 6.0]
+!1/4" rod
+GLAD.CALIB.VAN.SIZE.2 = [0.0, 0.3175, 4.1]
+!number density of vanadium (1/Angstrom^2);
+GLAD.CALIB.VAN.DENSITY = 0.07205
+!absorption crosssection of vanadium at 1.8 Angstrom;
+GLAD.CALIB.VAN.SIGMA_A = 5.08
+!
+!fused silica rod:
+!
+GLAD.STD.FSILICA.SYMBOL = {Si, O}
+!formula (Si:O = 1.0:2.0) ;
+GLAD.STD.FSILICA.FORMULA = [1.0, 2.0]
+!inner radius, outer radius, height; 
+GLAD.STD.FSILICA.SIZE = [0.0, 0.4415, 6.0]
+!number density;
+GLAD.STD.FSILICA.DENSITY = 0.0662
+!absorption crosssection of fused silica at 1.8 Angstrom;
+GLAD.STD.FSILICA.SIGMA_A = 0.0058
+!
+!vanadium cans:
+!
+GLAD.CAN.VAN.SYMBOL = {V}
+!formula;
+GLAD.CAN.VAN.FORMULA = [1.0]
+!number density;
+GLAD.CAN.VAN.DENSITY = 0.07205
+!3/8" can inner radius, outer radius, height;
+GLAD.CAN.VAN.SIZE.1 = [0.4636, 0.4763, 6.0]
+!1/4" can;
+GLAD.CAN.VAN.SIZE.2 = [0.3048, 0.3175, 4.1]
+!absorption crosssection of vanadium at 1.8 Angstrom;
+GLAD.CAN.VAN.SIGMA_A = 5.08
+!
+!TiZr can:
+!
+!TiZr "null" scattering alloy can, I/D 8 mm, O/D 9mm;
+GLAD.CAN.TIZR.SYMBOL = {Ti, Zr}
+GLAD.CAN.TIZR.FORMULA = [0.68, 0.32]
+GLAD.CAN.TIZR.DENSITY = 0.0542
+GLAD.CAN.TIZR.SIGMA_A =
+GLAD.CAN.TIZR.SIZE = [0.40, 0.45, 6.0]
+!
+!Vanadium nuzzle:
+!
+GLAD.CAN.VNUZZLE.SYMBOL = {V}
+GLAD.CAN.VNUZZLE.FORMULA = [1.0]
+GLAD.CAN.VNUZZLE.DENSITY = 0.07205
+GLAD.CAN.VNUZZLE.SIGMA_A = 5.08
+GLAD.CAN.VNUZZLE.SIZE = [0.5, 0.7, 0.15]
+
+#
+#experiment:
+#
+!
+!calibration(vanadium):
+!
+GLAD.EXP.CALIB = GLAD.CALIB.VAN.1 
+GLAD.EXP.CALIB.SYMBOL = 
+GLAD.EXP.CALIB.FORMULA = 
+GLAD.EXP.CALIB.SIZE = 
+GLAD.EXP.CALIB.DENSITY = 
+GLAD.EXP.CALIB.SIGMA_A = 
+!  
+!sample: 
+!  
+GLAD.EXP.SMP = GLAD.STD.FSILICA
+GLAD.EXP.SMP.SYMBOL = {Sr, Al, O}
+GLAD.EXP.SMP.FORMULA = [67, 66, 166] 
+GLAD.EXP.SMP.SIZE = 
+GLAD.EXP.SMP.DENSITY = 0.0624
+GLAD.EXP.SMP.SIGMA_A = 
+!  
+!can: 
+!  
+GLAD.EXP.CAN = 
+GLAD.EXP.CAN.SYMBOL = 
+GLAD.EXP.CAN.FORMULA = 
+GLAD.EXP.CAN.SIZE = 
+GLAD.EXP.CAN.DENSITY = 
+GLAD.EXP.CAN.SIGMA_A = 
+
+# 
+#analysis: 
+# 
+!number of beam profile parameters; 
+GLAD.ANALYSIS.NPROF = 2
+!profile parameters;
+GLAD.ANALYSIS.PROFILE = [1.0, 1.0]
+!number of angles in attenuation/multiple-scattering calculation;
+GLAD.ANALYSIS.NANGLE = 9
+!angles (degrees);
+GLAD.ANALYSIS.ANGLES = [2.0, 5.0, 10.0, 20.0, 40.0, 60.0, 80.0, 100.0, 140.0]
+!default absorption correction z increment;
+GLAD.ANALYSIS.ASTEP = 0.02
+!default multiple scattering correction z increment;
+GLAD.ANALYSIS.MSTEP = 0.1
+!number of Q bins in 1/Angstrom, Qstep = 1/NUMQ;
+GLAD.ANALYSIS.NUMQ = 40
+!max Q for data analysis;
+GLAD.ANALYSIS.QMAX = 40.0
+!minimal wavelength (angstrom) for generating MUT table;
+GLAD.ANALYSIS.MUT.MINW = 0.1
+!maximal wavelength;
+GLAD.ANALYSIS.MUT.MAXW = 4.3
+!step;
+GLAD.ANALYSIS.MUT.DW = 0.1
