@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2005/08/10 17:16:33  rmikk
+ * Now Calibrates the LANSCE SCD instrument given extra info
+ *
  * Revision 1.4  2005/08/05 20:11:55  rmikk
  * Use line number = -1  when using LoadSCDCalib
  *
@@ -57,6 +60,10 @@ import java.util.*;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import DataSetTools.math.*;
+import NexIO.Util.ConvertDataTypes;
+import DataSetTools.instruments.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 /**
  * This class is central point for calibrating "All" data sets.
  * It is currently differentiated on filename for a DataSet and the extension 
@@ -105,11 +112,18 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
   public String getDocumentation(  ) {
 
      StringBuffer s = new StringBuffer(  );
-     s.append( "@This class is central point to calibrate \"All\" data sets" );
+     s.append( "@This class is central point to calibrate/fix \"All\" data sets" );
       
      s.append( "@algorithm The Data Set filename, instrument type, ");
      s.append( "calibration filename and extension are used to determine the" );
-     s.append( " calibration procedure that is used" );
+     s.append( " calibration procedure that is used.  For example <UL>" );
+     s.append( " <LI>If the filename starts with SCD and has an extension .dat ");
+     s.append( " The LoadSCDCalib operator will fix up the data set");
+     s.append( "<LI> If the extension is .FUL, it will use Dennis' routine");
+     s.append( " to adjust the detector information");
+     s.append( "<li> If the filename starts with SCD and has an extension .lanl");
+     s.append( " Routines to extract the xml info and operators are applied to ");
+     s.append( " fix the DataSet </ul>");
      s.append( "@param DS  the DataSet to use" );
      s.append( "@param CalibFile1  The first calibration file" );
      s.append( "@param CalibFile2" );
@@ -206,12 +220,21 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
         
       }//while !eof
       setUpGrid(grid);
+      return null;
     }catch(Exception ss){
        ss.printStackTrace();
        return new ErrorString( "Calib Error="+ss);
     }
-  
-    return null;
+   String Fil=calibFile.replace('\\','/');
+   int k= Fil.lastIndexOf( "/");
+   if( k > 0)
+     Fil= Fil.substring(k+1);
+   
+   if( Fil.toLowerCase().endsWith("lanl"))
+     if(Fil.toUpperCase().startsWith("SCD"))
+       return FixLansceSCDDataFiles( DS,calibFile);
+       
+   return null;
   }
   
    private void clearGridData(){
@@ -292,5 +315,175 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
         return -1;
      }
    }
-   
+   private static Node getXmlDoc( String fileName){
+      try{
+        Node N1= DocumentBuilderFactory.newInstance().newDocumentBuilder().
+                  parse( new java.io.FileInputStream(fileName));
+        if( N1 == null) return null;          
+        NodeList Nlist= N1.getChildNodes();
+        if( Nlist == null) return null;
+        if( Nlist.getLength()<1) return null;
+        return Nlist.item(0);
+       }catch(Exception s){
+        return null;
+      }
+   }
+   public static Object FixLansceSCDDataFiles( DataSet DS, String file ){
+      Node doc = getXmlDoc( file);
+      if( doc == null)
+         return  new ErrorString("Improper fileName");
+      Object X= DS.getAttributeValue(Attribute.FILE_NAME);
+     
+      if( (X==null)||!(X instanceof String))
+        return new ErrorString("Need FileName for DataSet");
+      String fileName=(String) X;
+      int k= fileName.lastIndexOf( java.io.File.separator);
+      if( k >=0)
+        fileName=fileName.substring(k+1);
+      
+      Hashtable Info=new Hashtable();
+      Info.put("chi",new Float( Float.NaN ));
+
+     Info.put("phi", new Float( Float.NaN ));
+     Info.put("omega",new Float( Float.NaN ));
+     Info.put("L0", new Float( Float.NaN ));
+     Info.put("L1", new Float( Float.NaN ));
+     Info.put("detnum", new Integer( -1 ));
+     Info.put("width", new Float( Float.NaN ));
+     Info.put("height", new Float( Float.NaN ));
+     Info.put("tmin", new Float( Float.NaN ));
+     Info.put("tmax", new Float( Float.NaN ));
+     NodeList list = doc.getChildNodes();
+          
+     for( int i=0; i< list.getLength(); i++){
+      Node elt= list.item(i);
+      if( elt.getNodeName().toUpperCase().equals("COMMON")){
+      
+         setNodeValues( Info, elt);
+         //Only one det so get it
+         NodeList CommonList = elt.getChildNodes();
+         boolean done = false;
+         for( int j=0; (j< CommonList.getLength()) && !done ;j++){
+            Node elt1 = CommonList.item(j);
+            if( elt1.getNodeName().equals("det")){
+               setNodeValues( Info, elt1);
+               NamedNodeMap attr= elt1.getAttributes();
+               if( attr !=null){
+                 int detnum = (new Integer( attr.getNamedItem("num").getNodeValue())).intValue();
+                 if(detnum >= 0)
+                    Info.put("detnum", new Integer(detnum));
+                 done = true;
+              
+            }
+          }  
+         }  
+           
+      }else if( elt.getNodeName().toUpperCase().equals("RUNS")){
+          NodeList RunList= elt.getChildNodes();
+          boolean done = false;
+          for( int j=0;( j< RunList.getLength())&& !done; j++){
+            Node elt1 = RunList.item(j);
+            NamedNodeMap attr= elt1.getAttributes();
+            if( attr !=null){ 
+              Node fileAtt= attr.getNamedItem("filename");
+              if( fileAtt !=null){
+                 String v = fileAtt.getNodeValue();
+                  if( v !=null) 
+                    if( v.equals(fileName)){ 
+                    
+                     setNodeValues( Info, elt1); 
+                     done = true;
+                    }
+                
+              }
+            }
+       }
+        
+      }
+     }//for    
+      float chi= ((Float)(Info.get("chi"))).floatValue();
+
+     float phi= ((Float)(Info.get("phi"))).floatValue();
+     float omega= ((Float)(Info.get("omega"))).floatValue();
+     float L0= ((Float)(Info.get("L0"))).floatValue();
+     float L1= ((Float)(Info.get("L1"))).floatValue();
+     int detnum= ((Integer)(Info.get("detnum"))).intValue();
+     float width= ((Float)(Info.get("width"))).floatValue();
+     float height= ((Float)(Info.get("height"))).floatValue();
+     float tmin= ((Float)(Info.get("tmin"))).floatValue();
+     float tmax= ((Float)(Info.get("tmax"))).floatValue();
+     DataSet DS1= DS;
+     if( Float.isNaN(tmin)||Float.isNaN(tmax)||Float.isNaN(width)||Float.isNaN(height)||Float.isNaN(L1)||
+          Float.isNaN(L0)){
+             return new ErrorString("Not enough info to fix the DataSet");
+          }
+     else
+       DS1= Operators.Example.LansceUtil.FixSCD_Data(DS, tmin,tmax,width, height,L1,L0);
+     
+     if( Float.isNaN(chi)||Float.isNaN(phi)||Float.isNaN(omega)) 
+        return new ErrorString(" Cannot set Crystal orientation");
+     else{
+       LANSCE_SCD_SampleOrientation orient= new LANSCE_SCD_SampleOrientation(phi, chi,omega);
+       SampleOrientationAttribute att = new SampleOrientationAttribute( Attribute.SAMPLE_ORIENTATION,
+                 orient);
+       DS1.setAttribute( att);
+       DS1.setAttribute( new FloatAttribute( Attribute.SAMPLE_CHI,chi));
+
+       DS1.setAttribute( new FloatAttribute( Attribute.SAMPLE_PHI,phi));
+       DS1.setAttribute( new FloatAttribute( Attribute.SAMPLE_OMEGA,omega));
+       DS.copy(DS1);
+     }
+     
+     return null;
+   }
+   private static void setNodeValues( Hashtable tab, Node elt){
+     if( elt == null)
+       return;
+     if( tab == null)
+       return;
+     NodeList children = elt.getChildNodes();
+     if( children == null)
+        return;
+     for( int i=0; i< children.getLength(); i++){
+         Node elt1= children.item(i);
+         String name= elt1.getNodeName();
+         if(  ";chi;phi;omega;l0;l1;width;height;tmin;tmax;".indexOf(";"+
+                          name.toLowerCase()+";") >=0){
+            NamedNodeMap attr= elt1.getAttributes();
+            
+            String units = null;
+            if( attr.getNamedItem("units")!=null)
+               units = attr.getNamedItem("units").getNodeValue();                
+            NodeList elt1kids= elt1.getChildNodes();
+            if( elt1kids != null)if( elt1kids.getLength()==1){
+               String Value= elt1kids.item(0).getNodeValue();
+               
+               try{
+                  float f = new Float(Value).floatValue();
+                  if( !Float.isNaN(f)){
+                     f=AdjustUnits(f, units, name);
+                    tab.put(name, new Float(f));
+                  }
+               }catch(Exception s){
+               } 
+            }
+         }                   
+ 
+     }
+     
   }
+  private static float AdjustUnits( float value, String units, String FieldName){
+     String newUnits= units;
+     if( ";chi;phi;omega;".indexOf(FieldName)>=0) 
+        newUnits="radians";
+     else if(";L0;L1;width;height;".indexOf(FieldName)>=0)
+        newUnits="meter";
+     else if(";tmin;tmax".indexOf(FieldName)>=0)
+        newUnits= "microseconds";
+     float[] v= new float[1];
+     v[0]= value;
+     ConvertDataTypes.UnitsAdjust(v,units,newUnits,1f,0f);
+     return v[0];
+   }
+  
+}
