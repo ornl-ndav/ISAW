@@ -30,6 +30,12 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/08/10 15:02:16  dennis
+ * Added test code to load three LANSCE SCD runs and put them
+ * in the 3D Reciporcal Lattice view, in an attempt to verify
+ * that the values of phi, chi and omega are being interpreted
+ * correctly.
+ *
  * Revision 1.2  2005/06/20 15:50:29  dennis
  * Minor reformatting.
  *
@@ -93,6 +99,13 @@ public class LansceUtil
                                      float det_dist,
                                      float length_0 )
   {
+    System.out.println(ds);
+    System.out.println("x label = " + ds.getX_label() );
+    System.out.println("x units = " + ds.getX_units() );
+    System.out.println("x range = " + ds.getXRange() );
+    System.out.println("y label = " + ds.getY_label() );
+    System.out.println("y units = " + ds.getY_units() );
+    System.out.println("y range = " + ds.getYRange() );
                         // assume data comes in as sequences of values from
                         // columns of the area detector, starting with column 1
                         // column 2, etc of the first time slice.
@@ -221,28 +234,79 @@ public class LansceUtil
    */
   public static void main( String args[] )
   {
-                                              // load the file as best we can
-
-    String file_name = "/usr2/LANSCE_DATA/SCD/SCD_E000005_R000053.nx.hdf";
-    Retriever retriever = new NexusRetriever( file_name );
-    DataSet ds = retriever.getDataSet(3);
+                                              // load two files as best we can
+    String dir_name  = "/home/dennis/LANSCE_DATA/RUBY/";
+    String file_name = "SCD_E000005_R000087.nx.hdf";
+    Retriever retriever = new NexusRetriever( dir_name + file_name );
+    DataSet ds1 = retriever.getDataSet(3);
 
                                               // fix the data 
     float det_width  = 0.20f; 
     float det_height = 0.20f; 
-    float det_dist   = 0.45f;
+    float det_dist   = 0.465f;
     float length_0   = 9.00f;
-    ds = FixSCD_Data( ds, 
-                      1500, 8000, 
-                      det_width, det_height, 
-                      det_dist,
-                      length_0 ); 
+    ds1 = FixSCD_Data( ds1, 
+                       1500, 8000, 
+                       det_width, det_height, 
+                       det_dist,
+                       length_0 ); 
+
+    file_name = "SCD_E000005_R000088.nx.hdf";
+    retriever = new NexusRetriever( dir_name + file_name );
+    DataSet ds2 = retriever.getDataSet(3);
+
+                                              // fix the data 
+    ds2 = FixSCD_Data( ds2, 
+                       1500, 8000,
+                       det_width, det_height,
+                       det_dist,
+                       length_0 );
+
+    file_name = "SCD_E000005_R000089.nx.hdf";
+    retriever = new NexusRetriever( dir_name + file_name );
+    DataSet ds3 = retriever.getDataSet(3);
+
+                                              // fix the data 
+    ds3 = FixSCD_Data( ds3,
+                       1500, 8000,
+                       det_width, det_height,
+                       det_dist,
+                       length_0 );
+
+
+    // add Sample orientations
+
+    float  phi   =  -290;
+    float  chi   = -135;
+    float  omega =  135;
+//  SampleOrientation samp_or = new LANSCE_SCD_SampleOrientation(phi,chi,omega);
+    SampleOrientation samp_or = new LANSCE_SCD_SampleOrientation(omega,chi,phi);
+    SampleOrientationAttribute attr = 
+       new SampleOrientationAttribute( Attribute.SAMPLE_ORIENTATION, samp_or );
+    ds1.setAttribute( attr );
+
+    omega =  90;
+    phi   = -290;
+//  samp_or = new LANSCE_SCD_SampleOrientation(phi,chi,omega);
+    samp_or = new LANSCE_SCD_SampleOrientation(omega,chi,phi);
+    attr = new SampleOrientationAttribute(Attribute.SAMPLE_ORIENTATION,samp_or);
+    ds2.setAttribute( attr );
+
+    omega = 135;
+    phi   = -245;
+//  samp_or = new LANSCE_SCD_SampleOrientation(phi,chi,omega);
+    samp_or = new LANSCE_SCD_SampleOrientation(omega,chi,phi);
+    attr = new SampleOrientationAttribute(Attribute.SAMPLE_ORIENTATION,samp_or);
+    ds2.setAttribute( attr );
+
+
+/*
                                               // make a huge virtual array
                                               // to hold all of the spectra
                                               // as rows of the iamge
-    int n_groups = ds.getNum_entries();
-    int n_times  = ds.getData_entry(0).getY_values().length;
-    XScale x_scale = ds.getData_entry(0).getX_scale();
+    int n_groups = ds1.getNum_entries();
+    int n_times  = ds1.getData_entry(0).getY_values().length;
+    XScale x_scale = ds1.getData_entry(0).getX_scale();
 
     IVirtualArray2D va2D = new VirtualArray2D( n_groups, n_times );
     va2D.setAxisInfo(AxisInfo.X_AXIS, x_scale.getStart_x(), x_scale.getEnd_x(),
@@ -254,20 +318,24 @@ public class LansceUtil
                                                // virtual array
     for ( int i = 0; i < n_groups; i++ )
     {
-      float[] ys = ds.getData_entry(i).getY_values();
+      float[] ys = ds1.getData_entry(i).getY_values();
       va2D.setRowValues( ys, i, 0 );
     }
                                                // give the data to a display
     Display2D display = new Display2D( va2D, 
                                        Display2D.IMAGE,
                                        Display2D.CTRL_ALL);
-
-    DataSet ds_array[] = new DataSet[1];
-    ds_array[0] = ds;
+*/
+    DataSet ds_array[] = new DataSet[3];
+    ds_array[0] = ds1;
+    ds_array[1] = ds2;
+    ds_array[2] = ds3;
     new GL_RecipPlaneView( ds_array, 20 );
 
-    new ViewManager( ds, "3D View" );
+//  new ViewManager( ds1, "3D View" );
 
-    WindowShower.show(display);
+//  new ViewManager( ds2, "3D View" );
+
+//    WindowShower.show(display);
   }
 }
