@@ -30,6 +30,13 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2005/08/10 15:52:28  dennis
+ * Swapped rows and cols, hopefully to the order used by LANSCE.
+ * Went back to default interpretation of phi, chi & omega
+ * rotation angles.
+ * NOTE: This still does not give consistent results from
+ * multiple runs.
+ *
  * Revision 1.3  2005/08/10 15:02:16  dennis
  * Added test code to load three LANSCE SCD runs and put them
  * in the 3D Reciporcal Lattice view, in an attempt to verify
@@ -114,12 +121,12 @@ public class LansceUtil
     int N_ROWS  = 256; 
     int AREA_DET_ID = 5;
 
-    float counts[][][] = new float[N_PAGES][N_COLS][N_ROWS];
+    float counts[][][] = new float[N_PAGES][N_ROWS][N_COLS];
 
     String error = null;
-    if ( ds.getNum_entries() != N_COLS * N_PAGES )
+    if ( ds.getNum_entries() != N_ROWS * N_PAGES )
     {
-      error = "Need DataSet with " + (N_COLS * N_PAGES) + " entries " + 
+      error = "Need DataSet with " + (N_ROWS * N_PAGES) + " entries " + 
               "got " + ds.getNum_entries(); 
       throw ( new IllegalArgumentException( error ) );  
     }
@@ -127,19 +134,19 @@ public class LansceUtil
     int index = 0;
     float ys[];
     for ( int page = 0; page < N_PAGES; page++ )
-      for ( int col = 0; col < N_COLS; col++ )
+      for ( int row = 0; row < N_ROWS; row++ )
       {
          Data d = ds.getData_entry( index );
          index++;
 
          ys = d.getY_values();
-         if ( ys.length != N_ROWS )
+         if ( ys.length != N_COLS )
          {
-           error = "Need Data blocks with " + N_ROWS + " y-values " + 
+           error = "Need Data blocks with " + N_COLS + " y-values " + 
               "got " + ys.length; 
            throw ( new IllegalArgumentException( error ) );  
          } 
-         counts[page][col] = ys;
+         counts[page][row] = ys;
       }
                                        // now form a new DataSet by extracting 
                                        // the values in the 3D array of counts
@@ -155,7 +162,7 @@ public class LansceUtil
         ys = new float[N_PAGES];
         if ( row > 0 && col > 0 && row < N_ROWS-1 && col < N_COLS-1 )
           for ( int page = 0; page < N_PAGES; page++ )
-            ys[page] = counts[page][col][row];
+            ys[page] = counts[page][row][col];
           index++; 
 
         Data d = new HistogramTable( x_scale, ys, index );
@@ -243,7 +250,7 @@ public class LansceUtil
                                               // fix the data 
     float det_width  = 0.20f; 
     float det_height = 0.20f; 
-    float det_dist   = 0.465f;
+    float det_dist   = 0.665f;
     float length_0   = 9.00f;
     ds1 = FixSCD_Data( ds1, 
                        1500, 8000, 
@@ -276,29 +283,28 @@ public class LansceUtil
 
     // add Sample orientations
 
-    float  phi   =  -290;
+    float  phi   =  290;
     float  chi   = -135;
     float  omega =  135;
-//  SampleOrientation samp_or = new LANSCE_SCD_SampleOrientation(phi,chi,omega);
-    SampleOrientation samp_or = new LANSCE_SCD_SampleOrientation(omega,chi,phi);
+    SampleOrientation samp_or = new LANSCE_SCD_SampleOrientation(phi,chi,omega);
+//  SampleOrientation samp_or = new LANSCE_SCD_SampleOrientation(omega,chi,phi);
     SampleOrientationAttribute attr = 
        new SampleOrientationAttribute( Attribute.SAMPLE_ORIENTATION, samp_or );
     ds1.setAttribute( attr );
 
     omega =  90;
-    phi   = -290;
-//  samp_or = new LANSCE_SCD_SampleOrientation(phi,chi,omega);
-    samp_or = new LANSCE_SCD_SampleOrientation(omega,chi,phi);
+    phi   = 290;
+    samp_or = new LANSCE_SCD_SampleOrientation(phi,chi,omega);
+//  samp_or = new LANSCE_SCD_SampleOrientation(omega,chi,phi);
     attr = new SampleOrientationAttribute(Attribute.SAMPLE_ORIENTATION,samp_or);
     ds2.setAttribute( attr );
 
     omega = 135;
-    phi   = -245;
-//  samp_or = new LANSCE_SCD_SampleOrientation(phi,chi,omega);
-    samp_or = new LANSCE_SCD_SampleOrientation(omega,chi,phi);
+    phi   = 245;
+    samp_or = new LANSCE_SCD_SampleOrientation(phi,chi,omega);
+//  samp_or = new LANSCE_SCD_SampleOrientation(omega,chi,phi);
     attr = new SampleOrientationAttribute(Attribute.SAMPLE_ORIENTATION,samp_or);
     ds2.setAttribute( attr );
-
 
 /*
                                               // make a huge virtual array
