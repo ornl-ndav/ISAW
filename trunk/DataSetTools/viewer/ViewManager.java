@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.62  2005/08/10 14:13:26  rmikk
+ *  Made the help Frame uneditable
+ *  Connected documentation to the Instrument Table, GRX_Y, and 
+ *     Parallel y(x) data set viewers
+ *
  *  Revision 1.61  2005/08/05 14:00:10  rmikk
  *  Changed title and size of the help frame that pop up from the help button on
  *  each of the viewers
@@ -1006,6 +1011,7 @@ private void BuildHelpMenu( String viewType){
       F+=File.separator;
   F+="IsawHelp"+File.separator+"Viewers"+File.separator+view+".html";
   if( !(new File(F)).exists())
+     if( ";grx_y;parallel_y(x);instrument_table;".indexOf(";"+view+";") < 0)
      return;
   JMenu HelpMenu = new JMenu("Help");
   HelpMenu.addMenuListener( new HelpActionListener(view));
@@ -1267,14 +1273,17 @@ private float solve( float new_x ) // find what x in the original DataSet maps
     String viewName;
     public HelpActionListener( String viewName){
       this.viewName = viewName;
-      
+      if( ";grx_y;parallel_y(x);instrument_table;".indexOf(";"+viewName+";") >= 0)
+         this.viewName="selected_table_view"; 
     }
    public void menuCanceled(MenuEvent e){}
    public void menuDeselected(MenuEvent e){}
    public void menuSelected(MenuEvent e){
       FinishJFrame jf = new FinishJFrame( viewName+" Viewer");
       jf.setSize( 700,700);
-      String url=DataSetTools.util.FilenameUtil.helpDir("Viewers/"+viewName+".html");
+     
+     
+     String url=DataSetTools.util.FilenameUtil.helpDir("Viewers/"+viewName+".html");
     
       if( url==null){
       
@@ -1283,6 +1292,7 @@ private float solve( float new_x ) // find what x in the original DataSet maps
       }
       try{
          JEditorPane edPane= new JEditorPane(url);
+         edPane.setEditable( false );
          jf.getContentPane().add(new JScrollPane(edPane));
          
       }catch( Exception s){
