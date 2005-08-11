@@ -30,6 +30,9 @@
  * 
  * Modified:
  * $Log$
+ * Revision 1.4  2005/08/11 20:34:54  taoj
+ * Use the DataGrid to set up detector information & new error analysis code
+ *
  * Revision 1.3  2005/05/05 02:06:10  taoj
  * added into the cvs
  *
@@ -50,6 +53,7 @@ import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Float1DAttribute;
 import DataSetTools.dataset.Data;
+import DataSetTools.dataset.TabulatedData;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.IData;
 import DataSetTools.dataset.UniformXScale;
@@ -68,6 +72,7 @@ import java.util.Vector;
 import Operators.Special.LowPassFilterDS0;
 import DataSetTools.viewer.ViewManager;
 import DataSetTools.viewer.IViewManager;
+import Operators.Generic.Load.LoadUtil;
 
 /**
  * This class preforms deadtime and delayed neutron corrections, calculates 
@@ -219,10 +224,118 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
     return effd;
   }
 
-//double check and see if it can be made static;
-//right now the need for a reference to isVAN prevent it;
-//dead time correction routine; data groups from dead detectors also removed;
-  public static void correctDeadTime(GLADRunProps runinfo, DataSet ds, boolean needList, float lcutoff) {
+  public static void correctDeadTime(GLADRunProps runinfo, DataSet ds) {
+    
+    float npulses = ((Float)ds.getAttributeValue(Attribute.NUMBER_OF_PULSES)).floatValue();
+    int ndata = ds.getNum_entries();
+    String ds_type = (String)(ds.getAttributeValue(Attribute.DS_TYPE));
+//    int NLPSD = ((Integer)runinfo.ExpConfiguration.get("GLAD.DET.NLPSD")).intValue(); 
+    
+    if (ds_type.equals("Monitor Data")) {
+      System.out.println("\nMonitor data dead time correction...");
+      float TAU_MON = ((Float)runinfo.ExpConfiguration.get("GLAD.MON.TAU")).floatValue();
+      Data dm = ds.getData_entry(0);
+      float t_vals_m[] = dm.getX_scale().getXs(),
+            y_vals_m[] = dm.getY_values(),
+            monchannelwidth = t_vals_m[1]-t_vals_m[0];
+
+      int nmonchannel = y_vals_m.length;      
+      float monChannelCorrectionCoeff[] = new float[nmonchannel],
+            sumcount_m = TAU_MON/monchannelwidth;
+      int ntau = (int)Math.floor(sumcount_m);
+      float ftau = sumcount_m - (float)ntau;
+      if (ntau < 1) System.out.println("***Unexpected error: ntau < 1***");
+       
+      for (int k = ntau+1; k < nmonchannel; k++){
+        sumcount_m = y_vals_m[k];
+        for (int j = 0; j < ntau; j++) {
+          sumcount_m += y_vals_m[k-j-1];
+        }
+        sumcount_m += ftau*y_vals_m[k-ntau-1];
+        monChannelCorrectionCoeff[k] = 1.0f/(1-TAU_MON*sumcount_m/npulses/monchannelwidth);
+      }      
+      for (int k = 0; k < ntau+1; k++) {
+        monChannelCorrectionCoeff[k] = 1.0f;
+      }
+
+      ((TabulatedData)dm).setErrors(y_vals_m); //storing raw counts into the errors[];
+      for (int k = 0; k < nmonchannel; k++){
+        y_vals_m[k] *= monChannelCorrectionCoeff[k];
+      }
+      
+      System.out.println("Done.\n");
+    }
+    
+    else if (ds_type.equals("Sample Data")) {
+      System.out.println("\nDetector data dead time correction...");
+      float TAU_DET = ((Float)runinfo.ExpConfiguration.get("GLAD.DET.TAU")).floatValue();
+      Data dt;
+      int dtid, dtids[];
+
+      int ndt, ngid = runinfo.gridID2dataID.length;
+      int ndetchannel, ntau;
+      float ftau, lpsd_channel_counts[], sumcount, detchannelwidth, 
+            t_vals_d[], y_vals_d[];
+
+      for (int i = 0; i < ngid; i++) {
+        dtids = runinfo.gridID2dataID[i];
+        if (dtids != null) {
+          ndt = dtids.length;
+          dt = ds.getData_entry(runinfo.dataID2index[dtids[0]]);
+          t_vals_d = dt.getX_scale().getXs();
+          y_vals_d = dt.getY_values();
+          ndetchannel = y_vals_d.length;
+          lpsd_channel_counts = new float[ndetchannel];
+          detchannelwidth = t_vals_d[1] - t_vals_d[0];
+          sumcount = TAU_DET/detchannelwidth;
+          ntau = (int)Math.floor(sumcount);
+          ftau = sumcount - (float)ntau;
+          if (ntau < 1) System.out.println("***Unexpected error: ntau < 1***");
+                    
+          for (int k = 0; k < ndetchannel; k++){ 
+            sumcount = 0.0f;           
+            for (int m = 0; m < ndt; m++) {
+              dt = ds.getData_entry(runinfo.dataID2index[dtids[m]]);
+              y_vals_d = dt.getY_values();
+              sumcount += y_vals_d[k];
+              if (k > ntau) {
+                for (int l = 0; l < ntau; l++) sumcount += y_vals_d[k-l-1];                                
+                sumcount += ftau*y_vals_d[k-ntau-1];  
+              }                          
+            }                          
+            lpsd_channel_counts[k] = sumcount;                                  
+          }
+            
+          for (int m = 0; m < ndt; m++){
+            dt = ds.getData_entry(runinfo.dataID2index[dtids[m]]);
+            y_vals_d = dt.getY_values();
+            ((TabulatedData)dt).setErrors(y_vals_d);
+            for (int k = 0; k < ndetchannel; k++){
+              y_vals_d[k] *= 1/(1-TAU_DET*lpsd_channel_counts[k]/npulses/detchannelwidth);
+            }             
+          }
+        }
+      }
+      System.out.println("Done.\n");            
+
+      int nbadgrp;
+      StringBuffer removedDataIDList = new StringBuffer();
+      //removed dead detector data groups;
+      nbadgrp = runinfo.removedDataID.length;
+      for (int i = 0; i < nbadgrp; i++){
+        removedDataIDList.append(runinfo.removedDataID[i] + " ");
+        ds.removeData_entry_with_id(runinfo.removedDataID[i]);        
+      }
+      System.out.println("Remove data with ID:\n"+removedDataIDList);    
+      System.out.println("Use "+(ndata-nbadgrp)+" data groups from this runfile.\n");
+      
+    }
+    
+    else System.out.println("***UNEXPECTED ERROR***---dataset is neither \"Monitor Data\" nor \"Sample Data\"");
+     
+  }
+
+  public static void correctDeadTime0(GLADRunProps runinfo, DataSet ds, boolean needList, float lcutoff) {
     
     float npulses = ((Float)ds.getAttributeValue(Attribute.NUMBER_OF_PULSES)).floatValue();
     int ndata = ds.getNum_entries();
@@ -259,6 +372,7 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
       
       monChannelCorrectionCoeff[0] = 1.0f;
       monChannelCorrectionCoeff[1] = 1.0f;
+      ((TabulatedData)dm).setErrors(y_vals_m); //storing raw counts into the errors[];
       for (int k = 0; k < nmonchannel; k++){
         y_vals_m[k] *= monChannelCorrectionCoeff[k];
       }
@@ -337,6 +451,7 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
         dt = ds.getData_entry(i);
         t_vals_d = dt.getX_scale().getXs();
         y_vals_d = dt.getY_values();
+        ((TabulatedData)dt).setErrors(y_vals_d); //storing raw counts into the errors[];
         ndetchannel = y_vals_d.length;
 //        detChannelCorrectionCoeff = new float[ndetchannel];
         detchannelwidth = t_vals_d[1] - t_vals_d[0];
@@ -405,22 +520,25 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
      
   }
 
+
 //normalization and rebin;  
   public static void glad_norm (GLADRunProps runinfo, DataSet ds, DataSet dm){
-    Data dt, bm, bm_W, new_dt_Q, new_dt_W, new_bm_W;
+    Data dt, bm, bm_W, bm_Wr, bm_Wc, new_dt_Q, new_dt_W;
     DetectorPosition position;
     int nmonchannel, ndetchannel;
     float            tof_length_m, tof_length_d, scattering_angle, psi, domega_d;
     float            min_Q, max_Q;
     int               num_Q, IDm, IDd;
-    float            t_vals_d[], y_vals_d[], W_vals_d[], Q_vals_d[],
-                        t_vals_m[], y_vals_m[], W_vals_m[], 
-                        y_vals_n[]; 
+    float            t_vals_d[], y_vals_dr[], y_vals_dc[], W_vals_d[], Q_vals_d[],
+                     t_vals_m[], y_vals_mr[], y_vals_mc[], y_vals_mrr[], y_vals_mcr[],
+                     e_vals_m[], W_vals_m[], 
+                     y_vals_n[], e_vals_n[]; 
     float[] data_params = new float[4];   
     XScale        W_scale_d, W_scale_m, Q_scale_d, Q_scale_m, new_Q_scale;
     AttributeList    attr_list_d, attr_list_m;
     float[] wvals, effd;
-    float cc;
+    float cc, cd, cd0, cm, cm0;
+
 
     int NUMQ = ((Integer)runinfo.ExpConfiguration.get("GLAD.ANALYSIS.NUMQ")).intValue();
     float QMAX = ((Float)runinfo.ExpConfiguration.get("GLAD.ANALYSIS.QMAX")).floatValue();
@@ -437,18 +555,23 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
 
     attr_list_m = bm.getAttributeList();
     t_vals_m = bm.getX_scale().getXs();
-    y_vals_m = bm.getY_values();
-    nmonchannel = y_vals_m.length;
+    y_vals_mc = bm.getY_values();
+    y_vals_mr = bm.getErrors();
+
+    nmonchannel = y_vals_mc.length;
     tof_length_m = -(mon_position.getDistance())+((Float)attr_list_m.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
-//    System.out.println("tof_length_m: "+tof_length_m+" t_vals.length_m: "+t_vals_m.length);
-        
+//    System.out.println("tof_length_m: "+tof_length_m+" t_vals.length_m: "+t_vals_m.length);        
     W_vals_m = new float[nmonchannel+1];       
     for (int k = 0; k <= nmonchannel; k++){
       W_vals_m[k] = tof_calc.Wavelength(tof_length_m, t_vals_m[k]);
     }
     W_scale_m = new VariableXScale(W_vals_m);
-    bm_W = Data.getInstance(W_scale_m, y_vals_m, IDm);
-//    if (ISvan) GLADRunInfo.dm_van_W = (Data)dm_W.clone();      
+    
+    e_vals_m = new float[nmonchannel];
+    for (int k = 0; k < nmonchannel; k++){
+      e_vals_m[k] = (float)Math.sqrt(y_vals_mr[k]);
+    }
+    bm_W = Data.getInstance(W_scale_m, y_vals_mc, e_vals_m, IDm);     
     dm.replaceData_entry(bm_W, 0);
 
     min_Q = 1.0f/NUMQ;
@@ -467,11 +590,12 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
       psi = data_params[3];
       
       t_vals_d = dt.getX_scale().getXs();
-      y_vals_d = dt.getY_values();
+      y_vals_dc = dt.getY_values();
+      y_vals_dr = dt.getErrors();
       wvals = tvals2wvals(t_vals_d, tof_length_d);
       effd = geffcyl(runinfo, wvals, psi); 
       
-      ndetchannel = y_vals_d.length;
+      ndetchannel = y_vals_dc.length;
       float detchannelwidth = t_vals_d[1]-t_vals_d[0];
       if (ndetchannel != NDETCHANNEL) System.out.println("**WARNING**: detector time channel number: "+ndetchannel);
       if (detchannelwidth != DETCHANNELWIDTH) System.out.println("**WARNING**: monitor time channel width (us): "+detchannelwidth);
@@ -489,20 +613,38 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
       }
 
       W_scale_d = new VariableXScale( W_vals_d );     
-      new_dt_W = Data.getInstance(W_scale_d, y_vals_d, IDd);
-      new_bm_W = (Data)bm_W.clone();
-      new_bm_W.resample(W_scale_d,IData.SMOOTH_NONE);
+      new_dt_W = Data.getInstance(W_scale_d, y_vals_dc, IDd);
       y_vals_n = new_dt_W.getY_values();
-          
+      e_vals_n = new float[ndetchannel];   
+//      new_bm_W = (Data)bm_W.clone();
+//      new_bm_W.resample(W_scale_d,IData.SMOOTH_NONE);
+      bm_Wr = Data.getInstance(W_scale_m, y_vals_mr, IDm); //raw counts;
+      bm_Wc = Data.getInstance(W_scale_m, y_vals_mc, IDm+1); //corrected;
+      bm_Wc.resample(W_scale_d, IData.SMOOTH_NONE);
+      y_vals_mcr = bm_Wc.getY_values(); //rebined values;
+      bm_Wr.resample(W_scale_d, IData.SMOOTH_NONE);
+      y_vals_mrr = bm_Wr.getY_values();
+      
+//      y_vals_m = new_bm_W.getY_values();
+//      e_vals_m = new_bm_W.getErrors();
+       
       for(int k = 0; k < ndetchannel; k++){
         cc = aream*effm*.5f*(W_vals_d[k]+W_vals_d[k+1])/(domega_d*effd[k]);
-        y_vals_n[k] /= (new_bm_W.getY_values()[k]/cc);
+        cd = y_vals_n[k];
+        cm = y_vals_mcr[k];
+        cd0 = y_vals_dr[k];
+        cm0 = y_vals_mrr[k];
+        y_vals_n[k] = (float) (cc*cd/cm);
+        e_vals_n[k] = (float) (cc*cd/cm*Math.sqrt(cd0/cd/cd+cm0/cm/cm));
+
+//        y_vals_n[k] /= (new_bm_W.getY_values()[k]/cc);
       }
                 
-      arrayUtil.Reverse( Q_vals_d );
+      arrayUtil.Reverse(Q_vals_d);
       arrayUtil.Reverse(y_vals_n);
+      arrayUtil.Reverse(e_vals_n);
       Q_scale_d = new VariableXScale( Q_vals_d );
-      new_dt_Q = Data.getInstance(Q_scale_d, y_vals_n, IDd);
+      new_dt_Q = Data.getInstance(Q_scale_d, y_vals_n, e_vals_n, IDd);
       new_dt_Q.setAttributeList( attr_list_d );
       new_dt_Q.resample( new_Q_scale, IData.SMOOTH_NONE );
                     
@@ -560,24 +702,37 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
     float tof_length_m = -(mon_position.getDistance())+((Float)attr_list_m.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
     System.out.println("beam monitor TOF length: "+tof_length_m+" number of time channels: "+y_vals_m.length);
 
-    correctDeadTime(runinfo, dm, false, 0.0f);        
+    correctDeadTime(runinfo, dm);        
     float delayed_neutron_sum = gdel_neut(t_vals_m, y_vals_m, tof_length_m, dnfract, sourceT, nfit);
-    
-    if (noDeadDetList) 
-      try {
-        GLADRunProps.setBadLPSD(runinfo, redpar.toString());
-      } catch(Throwable t) {
-        System.out.println("unexpected error");
-        t.printStackTrace();
-      }
+
     for (int i = 0; i< nmonchannel; i++){
 //      if (i%1000 == 1) System.out.println("Mon Channel "+i+": "+dm.getY_values()[i]);      
       y_vals_m[i] -= delayed_neutron_sum;
 //      if (i%1000 == 1) System.out.println("Mon Channel "+i+" delayed neutron corrected: "+dm.getY_values()[i]);      
     }
-    System.out.println(delayed_neutron_sum+" subtracted from the monitor counts as the delayed neutron amount");
-                
-    correctDeadTime(runinfo, ds, noDeadDetList, lcutoff);
+    System.out.println(delayed_neutron_sum+" subtracted from the monitor counts as the delayed neutron amount.");
+
+/*
+    if (noDeadDetList) 
+      try {
+        GLADRunProps.setDetTable(runinfo);
+        GLADRunProps.setBadLPSD(runinfo, redpar.toString());
+      } catch(Throwable t) {
+        System.out.println("unexpected error");
+        t.printStackTrace();
+      }
+*/
+
+    if (noDeadDetList) {
+      LoadUtil.Load_GLAD_LPSD_Info(ds, GLADRunProps.GLADDetTable);    
+      runinfo.linkLPSDtoDataSet(ds, redpar.toString());
+      runinfo.setBadDataGroups(ds, lcutoff);
+    }
+
+//    long start = System.currentTimeMillis();                
+    correctDeadTime(runinfo, ds);
+//    long time = System.currentTimeMillis()-start;
+//    System.out.println("correctDeadTime() takes "+time+" ms.");
     
     float scattering_angle, domega, d2, psi, tof_length_d;
     float[] t_vals_d, y_vals_d;
@@ -644,13 +799,15 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
 //      testCrunch.runprops[0] = GLADRunProps.getExpProps();
       
     GLADConfigure testconf = new GLADConfigure();
+    testconf.hasCan = false;
     DataSet ds0 = (DataSet)testconf.calculate();      
     testcrunch.ds0 = ds0;
     testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8094.run");
     testcrunch.noDeadDetList = true;
-    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/GLAD/gladrun.par");
+    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/cvs/ISAW/Databases/gladrun2.par");
     Vector monnrm = (Vector) testcrunch.calculate();
-    ViewManager view_monnrm = new ViewManager((DataSet)monnrm.get(1), IViewManager.IMAGE);
+    ViewManager view_nrm = new ViewManager((DataSet)monnrm.get(0), IViewManager.IMAGE);
+    ViewManager view_mon = new ViewManager((DataSet)monnrm.get(1), IViewManager.IMAGE);
 
 /*
       float[] wvals = new float[41];
@@ -666,6 +823,23 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
       System.out.println(output);
 */
 
+/*
+    RunfileRetriever rr = new RunfileRetriever( "/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8094.run" );
+    DataSet ds = rr.getDataSet(1);
+    Data dt;
+    int k = 0;
+    StringBuffer zeroDataIDList = new StringBuffer();
+    for (int i = 0; i < ds.getNum_entries(); i++) {
+      dt = ds.getData_entry(i);
+      if (((Float)(dt.getAttributeValue(Attribute.TOTAL_COUNT))).floatValue() == 0.0f) {
+        zeroDataIDList.append(dt.getGroup_ID()+" ");
+        k++;
+      }
     }
+    System.out.println("zeroDataIDList:\n"+zeroDataIDList);
+    System.out.println(ds.getNum_entries()+" data blocks, "+k+" of them are dead");
+*/
+  
+  }
 
 }
