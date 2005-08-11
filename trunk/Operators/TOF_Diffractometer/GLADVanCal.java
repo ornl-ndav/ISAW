@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2005/08/11 20:36:51  taoj
+ * new error analysis code
+ *
  * Revision 1.3  2005/05/05 02:06:10  taoj
  * added into the cvs
  *
@@ -138,6 +141,13 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
     CylMulTof vanrunmul = new CylMulTof(vanrun);
     vanrunmul.runMulCorrection();
     System.out.println("Done.");
+
+/*    
+    System.out.println("testing vanadium absorption correction:");
+    CylAbsTof vanrunabs = new CylAbsTof(vanrun);
+    vanrunabs.runAbsCorrection();
+    System.out.println("Done.");
+*/
     
     if (DOsmooth) {
       System.out.println("\n"+"STARTING FOURIER FILTERING...");
@@ -149,12 +159,11 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
       
     Data dt;
     AttributeList attr_list_d;
-    float scattering_angle, d1, d2, lambda, q, p;
-    float[] Q_vals_d, y_vals_n, mul = new float[2], data_params = new float[4];
+    float scattering_angle, d1, d2, lambda, q, p, mulp;
+    float[] Q_vals_d, y_vals_n, e_vals_n, mul = new float[2], data_params = new float[4];
     int ndetchannel;
     String[] target = vanrun.symbol;
     float[] formula = vanrun.formula;
-//    float abs;
     
     for (int i = 0; i < nrm_van.getNum_entries(); i++){
       dt = nrm_van.getData_entry(i);
@@ -166,16 +175,17 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
       
       Q_vals_d = dt.getX_scale().getXs();
       y_vals_n = dt.getY_values();
+      e_vals_n = dt.getErrors();
       ndetchannel = Q_vals_d.length -1 ;
       for (int k = 0; k < ndetchannel; k++){
         q = 0.5f*(Q_vals_d[k]+Q_vals_d[k+1]);
         lambda = tof_calc.WavelengthofDiffractometerQ(scattering_angle, q);
         p = Platom.plaatom(lambda, target, formula, temperature, scattering_angle, d1, d2, true);
         mul = vanrunmul.getCoeff(scattering_angle, lambda);
-//        abs = CylAbsTof.getCoeff(scattering_angle, lambda)[1];
 //        y_vals_n[k] /= lambda*lambda/(4*Math.PI*Math.sin(scattering_angle/2))*(mul[0]*p+mul[1]);
-        y_vals_n[k] /= mul[0]*p+mul[1];
-//        y_vals_n[k] /= abs;
+        mulp = mul[0]*p+mul[1];
+        y_vals_n[k] /= mulp;
+        e_vals_n[k] /= mulp;
       }      
     }
     nrm_van.setTitle(nrm_van.getTitle()+" "+"--->VANCAL");
