@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2005/08/11 20:35:40  taoj
+ * new error analysis code
+ *
  * Revision 1.3  2005/05/05 02:06:10  taoj
  * added into the cvs
  *
@@ -47,7 +50,6 @@ import DataSetTools.math.tof_calc;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
-import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
 
 /**
@@ -57,7 +59,6 @@ import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
 public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
   //~ Instance fields **********************************************************
   
-  private boolean DEBUG = false;
   /* @param runfile absolute path of the runfile;
    * @param ISvan the vanadium calibration's beam monitor spectrum is needed for later use;
    */
@@ -136,7 +137,7 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
    * @return The crunched DataSet.
    */
   public Object calculate(  ) {
-    float scatterern;
+
     GLADScatter thisrun = null;
     if (imask == 1) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
     else if (imask == 2) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[3];
@@ -148,7 +149,6 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
     thisrun.minw = minw;
     thisrun.maxw = maxw;
     thisrun.dw = dw;
-    if(scattererm != 0.0f) thisrun.scatterern = scattererm;
     
     if(usemutfile == true) {
       thisrun.setMutTable(mutfile.toString());
@@ -165,6 +165,7 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
     
     CylAbsTof thisrunabs;
     GLADScatter smpincanrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];    
+    if(scattererm != 0.0f) smpincanrun.scatterern = scattererm;
     if (smpincanrun.runabs0 == null) {
       thisrunabs = new CylAbsTof(smpincanrun);
       smpincanrun.runabs0 = thisrunabs;
@@ -178,18 +179,19 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
     else System.out.println("Applying sample multiple scattering and attenuation correction...");
     
     Data dt;
-    DetectorPosition position;
     AttributeList attr_list_d;
-    float scattering_angle, q, lambda, delta;
-    float[] qlist, y_vals_n, mul, abs;
+    float scattering_angle, q, lambda, alpha;
+    float[] qlist, y_vals_n, e_vals_n, mul, abs;
     int istart, iend;
     if (ds.getX_label() != "Q") System.out.println("******ERROR******");
+    if (imask != 2) System.out.println("\nscc: "+smpincanrun.scatterern+"\n");
     for (int i = 0; i < ds.getNum_entries(); i++) {
       dt = ds.getData_entry(i);
       attr_list_d = dt.getAttributeList();
       scattering_angle = ((float[])attr_list_d.getAttributeValue(GLADRunProps.GLAD_PARM))[0];
       qlist = dt.getX_scale().getXs();
       y_vals_n = dt.getY_values();
+      e_vals_n = dt.getErrors();
       istart = 0;
       iend = y_vals_n.length-1;
     
@@ -213,15 +215,21 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
           y_vals_n[k] -= mul[1];
 //          y_vals_n[k] *= delta;
 //            if (k==0) System.out.println("cell mul[1]: "+mul[1]+" abs[3]: "+abs[3]+" abs[2]: "+abs[2]);     
-          y_vals_n[k] /= abs[3];
-          y_vals_n[k] *= abs[2];
+          alpha = abs[2]/abs[3];
+//          y_vals_n[k] /= abs[3];
+//          y_vals_n[k] *= abs[2];
+          y_vals_n[k] *= alpha;
+          e_vals_n[k] *= alpha;
         }
         else {          //inner core:  calibration rod (vanadim, fused silica), or (sample+can) with (can) part subtracted;
 //            if (k==0) System.out.println("core mul[1]"+mul[1]+" abs[1]: "+abs[1]);
           y_vals_n[k] -= mul[1];
 //          y_vals_n[k] *= delta;
-          y_vals_n[k] /= abs[1];
-          y_vals_n[k] /= thisrun.scatterern;
+          alpha = abs[1]*smpincanrun.scatterern;
+//          y_vals_n[k] /= abs[1];
+//          y_vals_n[k] /= smpincanrun.scatterern;
+          y_vals_n[k] /= alpha;
+          e_vals_n[k] /= alpha;
 //              if (y_vals_n[k] < y_vals_min) y_vals_min=y_vals_n[k];
     /*          if (y_vals_n[k] > 10.0f || y_vals_n[k] < -10.0f) {
                 y_vals_n[k]=0.0f;
