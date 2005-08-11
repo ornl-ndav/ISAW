@@ -44,10 +44,10 @@ import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
 public class GLADConfigure implements Wrappable, IWrappableWithCategoryList { 
   //~ Instance fields **********************************************************
   
-  private boolean DEBUG = false;
   /* @param configfile use ISAW GUI to input the absolute path of the configfile;
    */
   public LoadFileString configfile = new LoadFileString(GLADRunProps.GLADDefInstProps);
+  public boolean hasCan = true;
 
   //~ Methods ******************************************************************
 
@@ -121,12 +121,12 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
     smp.setAbsInput();
     smp.setMulInput();
     
-    if (runinfo.ExpConfiguration.get("GLAD.EXP.CAN") != null) {
+    if (hasCan) {
       GLADScatter can = new GLADScatter(runinfo, 2);
       can.setMutTable();
       can.setAbsInput();
       can.setMulInput();
-      System.out.println("can.muttable:\n"+can.muttable);
+//      System.out.println("can.muttable:\n"+can.muttable);
       can.anmask = 2;
       props[3] = can;
       smp = smp.insideScatter(can);
@@ -136,7 +136,7 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
 
     Attribute runprops = runinfo.getAttribute(GLADRunProps.GLAD_PROP, props);
     ds0.setAttribute(runprops, 0);
-    System.out.println("smp.muttable:\n"+smp.muttable);
+//    System.out.println("smp.muttable:\n"+smp.muttable);
     return ds0;    
   }
 
