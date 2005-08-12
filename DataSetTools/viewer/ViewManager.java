@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.63  2005/08/12 15:33:09  rmikk
+ *  Eliminated some of the hover pop up behavior for the Viewer help menus
+ *
  *  Revision 1.62  2005/08/10 14:13:26  rmikk
  *  Made the help Frame uneditable
  *  Connected documentation to the Instrument Table, GRX_Y, and 
@@ -1279,6 +1282,8 @@ private float solve( float new_x ) // find what x in the original DataSet maps
    public void menuCanceled(MenuEvent e){}
    public void menuDeselected(MenuEvent e){}
    public void menuSelected(MenuEvent e){
+     if( !((JMenu)e.getSource()).isSelected())
+         return;
       FinishJFrame jf = new FinishJFrame( viewName+" Viewer");
       jf.setSize( 700,700);
      
@@ -1288,6 +1293,7 @@ private float solve( float new_x ) // find what x in the original DataSet maps
       if( url==null){
       
          JOptionPane.showMessageDialog(null,"Cannot find this viewer's documentation");
+         ((JMenu)e.getSource()).setSelected(false);
          return;
       }
       try{
@@ -1297,9 +1303,10 @@ private float solve( float new_x ) // find what x in the original DataSet maps
          
       }catch( Exception s){
         JOptionPane.showMessageDialog(null,"Cannot show this viewer's documentation:"+s);
+        ((JMenu)e.getSource()).setSelected(false);
         return;
       }
-      
+     ((JMenu)e.getSource()).setSelected(false);
       jf.show();
      
       
