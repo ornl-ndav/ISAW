@@ -30,6 +30,13 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.10  2005/08/12 15:43:53  dennis
+ * Now returns a DataSet containing BOTH the fitted Gaussian and
+ * the original Data block, restricted to the interval on which the
+ * fit was done.
+ * The requested min/max x-values are now adjusted to points present
+ * in the XScale.
+ *
  * Revision 1.9  2005/05/26 15:27:52  dennis
  * Replaced ViewManager.IMAGE with IViewManager.IMAGE in test
  * program, where a ViewManager was constructed.
@@ -248,6 +255,9 @@ public class FitGaussianPeak implements Wrappable
     int max_i = x_scale.getI( (float)max_x );
     int n_pts = max_i - min_i + 1;
 
+    min_x = xf[ min_i ];                        // reset min & max x to actual
+    max_x = xf[ max_i ];                        // points on the XScale
+
     boolean is_hist = d.isHistogram();
     if ( is_hist && max_i > xf.length - 2 )
       return new ErrorString("Histogram points above x_max in FitGaussianPeak");
@@ -370,11 +380,29 @@ public class FitGaussianPeak implements Wrappable
     else
     {
       DataSet fitted_ds = data_set.empty_clone();
-      FunctionModel model = new FunctionModel( x_scale, function, group_id );
+      XScale model_scale  = x_scale.restrict( interval ); 
+      FunctionModel model = new FunctionModel( model_scale, function,
+                                               group_id + 1000000 );
       fitted_ds.addData_entry( model );
+
+      Data new_d = (Data)d.clone();
+      new_d.resample( model_scale, IData.SMOOTH_NONE ); 
+      fitted_ds.addData_entry( new_d );
+
       fitted_ds.addLog_entry( "Fitted ID " + group_id );
       fitted_ds.setTitle( "Fitted ID " + group_id + 
                           " for " + fitted_ds.getTitle() );
+
+      if ( debug_flag )
+      {
+        System.out.println("Requested interval = " + min_x + " to " + max_x );
+        System.out.println("model_scale = " + model_scale );
+        float new_x[] = model_scale.getXs();
+        for ( int i = 0; i < n_pts; i++ )
+          System.out.println( "old_x = " + xf[i+min_i] +
+                              "new_x = " + new_x[i] );
+      }
+
       parameters.addElement( "Fit DataSet" );
       parameters.addElement( fitted_ds );
       return parameters;
