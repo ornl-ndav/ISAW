@@ -182,8 +182,8 @@ public class INTEG implements Wrappable,HiddenOperator{
 }
 }
     MAXP1=(int)((MAXP[(int)(((1))-1)]));
-    if((((((((MAXX[(int)(((1))-1)])<(5)||(MAXX[(int)(((1))-1)])>(81))||(MAXY[(
-      int)(((1))-1)])<(5))||(MAXY[(int)(((1))-1)])>(81))||(MAXZ)<(2))||(MAXZ)>((
+    if((((((((MAXX[(int)(((1))-1)])<(5)||(MAXX[(int)(((1))-1)])>(NXS-4))||(MAXY[(
+      int)(((1))-1)])<(5))||(MAXY[(int)(((1))-1)])>(NYS-4))||(MAXZ)<(2))||(MAXZ)>((
         ((WLNUM-3))))))){
       REFLAG=(int)((500));
       return null;

@@ -68,8 +68,8 @@ C      MAXZ = Z (time) channel for MAXP(1), which is max for entire peak.
 
       MAXP1 = MAXP(1)
 
-      IF (MAXX(1).LT.5 .OR. MAXX(1).GT.81
-     1      .OR. MAXY(1).LT.5 .OR. MAXY(1).GT.81
+      IF (MAXX(1).LT.5 .OR. MAXX(1).GT.NXs-4
+     1      .OR. MAXY(1).LT.5 .OR. MAXY(1).GT.NYs-4
      2      .OR. MAXZ.LT.2 .OR. MAXZ.GT.(WLNUM-3)) THEN
             REFLAG=500
             RETURN
