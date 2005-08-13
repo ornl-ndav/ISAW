@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.64  2005/08/13 17:10:17  rmikk
+ *  Now use ActionListener and submenu for the help menu
+ *
  *  Revision 1.63  2005/08/12 15:33:09  rmikk
  *  Eliminated some of the hover pop up behavior for the Viewer help menus
  *
@@ -220,7 +223,7 @@ import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.components.ui.*;
-import DataSetTools.util.SysUtil;
+//import DataSetTools.util.SysUtil;
 import DataSetTools.viewer.Graph.*;
 import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
@@ -238,7 +241,7 @@ import gov.anl.ipns.ViewTools.Components.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
-import javax.swing.event.*;
+//import javax.swing.event.*;
 
 /**
  *  A ViewManager object manages viewers for a DataSet in an external 
@@ -1017,7 +1020,9 @@ private void BuildHelpMenu( String viewType){
      if( ";grx_y;parallel_y(x);instrument_table;".indexOf(";"+view+";") < 0)
      return;
   JMenu HelpMenu = new JMenu("Help");
-  HelpMenu.addMenuListener( new HelpActionListener(view));
+  JMenuItem About = new JMenuItem("About");
+  About.addActionListener( new HelpActionListener(view));
+  HelpMenu.add( About );
   viewer.getMenuBar().add( HelpMenu);
   
   
@@ -1272,18 +1277,16 @@ private float solve( float new_x ) // find what x in the original DataSet maps
    
  }
  
- class HelpActionListener implements MenuListener{
+ class HelpActionListener implements ActionListener{
     String viewName;
     public HelpActionListener( String viewName){
       this.viewName = viewName;
       if( ";grx_y;parallel_y(x);instrument_table;".indexOf(";"+viewName+";") >= 0)
          this.viewName="selected_table_view"; 
     }
-   public void menuCanceled(MenuEvent e){}
-   public void menuDeselected(MenuEvent e){}
-   public void menuSelected(MenuEvent e){
-     if( !((JMenu)e.getSource()).isSelected())
-         return;
+  
+   public void actionPerformed(ActionEvent e){
+    
       FinishJFrame jf = new FinishJFrame( viewName+" Viewer");
       jf.setSize( 700,700);
      
@@ -1306,8 +1309,8 @@ private float solve( float new_x ) // find what x in the original DataSet maps
         ((JMenu)e.getSource()).setSelected(false);
         return;
       }
-     ((JMenu)e.getSource()).setSelected(false);
-      jf.show();
+     
+     WindowShower.show( jf);
      
       
     }
