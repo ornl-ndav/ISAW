@@ -1,6 +1,6 @@
 /*
  * File:SaveImage.java 
- *             
+ *              
  * Copyright (C) 2003, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
@@ -31,6 +31,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2005/08/13 20:15:28  rmikk
+ * Had the two time critical operations done in the EventQueue thread
+ *   so that 2nd operation is done only  when first operation is completed.
+ * 
+ * A problem still exists with IsawLite. The System.exit() method does NOT
+ * check to see if all threads are completed so the Image may not be
+ * Saved here.
+ *
  * Revision 1.10  2005/05/25 19:37:45  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -83,8 +91,6 @@
 package DataSetTools.operator.Generic.Save;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
-import gov.anl.ipns.Util.Sys.WindowShower;
-import java.awt.event.*;
 import java.awt.*;
 import DataSetTools.parameter.*;
 import java.util.*;
@@ -103,6 +109,7 @@ public class SaveImage  extends GenericSave{
 
   BufferedImage bimg= null;
   Image Img = null;
+  boolean done=false;
   public SaveImage(){
     super("Save Image");
     setDefaultParameters();
@@ -168,75 +175,110 @@ public class SaveImage  extends GenericSave{
       return new ErrorString("Save FileName must have an extension");
     if( extension.length() <2)
       return new ErrorString("Save FileName must have an extension with more than 1 character");
-    if( width <=0) width = 500;
-    if( height <= 0) height = 500;
-    bimg= new BufferedImage(width, height,BufferedImage.TYPE_INT_RGB );
+    if( width <=0) 
+       width = 500;
+    if( height <= 0) 
+       height = 500;
+    
+    bimg= new BufferedImage(width, height,BufferedImage.TYPE_INT_RGB );    
+    Graphics2D gr = bimg.createGraphics();
+    
     DataSetViewer DSV;
     if(stateInfo.equals(null)){
 		DSV = ViewManager.getDataSetView( ds, view, null);
     }else{
     	ViewerState myState = new ViewerState();
-    	System.out.println(stateInfo);
+    	
     	ViewerState newState = myState.setViewerState(stateInfo);
     	DSV = ViewManager.getDataSetView(ds, view, newState);
     }
-    DSV.setSize(width, height);
-    JFrame jf1 = new JFrame();
-    jf1.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+    
+    
+    DSV.setMinimumSize(new Dimension(width, height));
+    DSV.setPreferredSize(new Dimension(width, height));
+    
+    JWindow jf1=null;
+    jf1 = new JWindow();
     jf1.setSize( width+7, height+25);   
     jf1.getContentPane().setLayout( new GridLayout(1,1));
     jf1.getContentPane(). add( DSV);
-
+    jf1.pack();
+    jf1.validate();
+   
+    //Invoke the following operations on EventQueue so that they finish in the
+    //    correct order
+    MRunner Run = new MRunner( DSV,gr); 
     
-    
-	jf1.validate();
-	Graphics2D gr = bimg.createGraphics();
-	jf1.addWindowListener(new MyWindowListener(SaveFileName, extension, bimg, DSV, gr, jf1));
-	//DSV.paint( gr);
-	WindowShower.show(jf1);
-	
-	//DSV.paint( gr);
-
-    //jf1.dispose();
-	return "Success";
+    SwingUtilities.invokeLater( Run );// Paints the DataSetViewer to the Image
+    SwingUtilities.invokeLater( new timer(DSV, jf1, SaveFileName, extension));
+        // After painting, THEN write out the image
+  
+    return "Success";
  }
  
- class MyWindowListener extends WindowAdapter{
- 	public String SaveFileName;
- 	public String extension;
- 	public BufferedImage bimg;
- 	public DataSetViewer DSV;
- 	public Graphics2D gr;
- 	public JFrame jf1;
+ /**
+  *  Thread for painting the DataSetViewer to the BufferedImage
+  * @author MikkelsonR
+  *
+  *
+  */
+ class MRunner implements Runnable{
+   DataSetViewer DSV;
+   Graphics gr;
+   
+   public MRunner( DataSetViewer DSV, Graphics gr){
+     this.DSV = DSV;
+     this.gr = gr;
+     done = false;
+   }
+   
+   
+   public void run(){
+     DSV.paint(gr);
+     done = true;
+   }
+ }
  
- 	public MyWindowListener(String filename, String pin_extension, BufferedImage pin_bimg, 
- 								DataSetViewer pin_DSV, Graphics2D pin_gr, JFrame pin_jf1)
- 	{
- 		SaveFileName = filename;
- 		extension = pin_extension;
- 		bimg = pin_bimg;
- 		DSV = pin_DSV;
- 		gr = pin_gr;
- 		jf1 = pin_jf1;
- 	//This should be in the window listener for this page.
- 	}
-    public void windowOpened(WindowEvent winevt){
-    	DSV.paint(gr);
-    	saveResult(SaveFileName, extension, bimg, DSV, jf1);
- 	}//getResult
-}
-public void saveResult(String filename, String extension, BufferedImage bimg,
-							 DataSetViewer DSV, JFrame jf1){
-	try{
-		  FileOutputStream fout =new FileOutputStream( filename);
-		  if( !javax.imageio.ImageIO.write( bimg, extension ,fout )){}
-			   //return new ErrorString( " no appropriate writer is found");;
-		  fout.close();
-		}catch( Exception ss){
-		   //return new ErrorString( ss.toString());
-		}
-		jf1.dispose();
-	}	
+ 
+ /**
+  * Thread to write the buffered image to the output file
+  * @author MikkelsonR
+  *
+  *
+  */
+ class timer extends Thread{
+   DataSetViewer DSV;
+   JWindow jf1;
+   String SaveFileName, extension;
+   
+   public timer( DataSetViewer DSV, JWindow jf1, String SaveFileName,
+                                                         String extension){
+                                                           
+     this.DSV = DSV;
+     this.jf1=jf1;
+     this.SaveFileName=SaveFileName;
+     this.extension= extension;
+   }
+   
+   
+   public void run(){
+    
+       try{
+           
+         FileOutputStream fout =new FileOutputStream( SaveFileName);
+         if( !javax.imageio.ImageIO.write( bimg, extension ,fout )){}
+            //return new gov.anl.ipns.Util.SpecialStrings.ErrorString( " no appropriate writer is found");;
+         fout.close();
+     
+         if( jf1 != null)
+            jf1.dispose();
+ 
+       }catch(Exception s){
+       }
+   }
+ }
+
+
 
 
 /* ---------------------- getDocumentation --------------------------- */
