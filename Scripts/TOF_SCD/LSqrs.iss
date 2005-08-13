@@ -14,7 +14,7 @@
 #
 #@return the orientation matrix for all the runs
 
-$category=Hidden
+$category=HiddenOperator
 $command=Lsqrs
 $Peaks    PlaceHolder    Peaks
 $expName   String       Name of experiment
