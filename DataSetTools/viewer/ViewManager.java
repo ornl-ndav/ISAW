@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.65  2005/08/13 21:14:34  rmikk
+ *  Changed Help submenu from About to Viewer
+ *
  *  Revision 1.64  2005/08/13 17:10:17  rmikk
  *  Now use ActionListener and submenu for the help menu
  *
@@ -1020,7 +1023,7 @@ private void BuildHelpMenu( String viewType){
      if( ";grx_y;parallel_y(x);instrument_table;".indexOf(";"+view+";") < 0)
      return;
   JMenu HelpMenu = new JMenu("Help");
-  JMenuItem About = new JMenuItem("About");
+  JMenuItem About = new JMenuItem("Viewer");
   About.addActionListener( new HelpActionListener(view));
   HelpMenu.add( About );
   viewer.getMenuBar().add( HelpMenu);
