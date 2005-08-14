@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.51  2005/08/14 21:39:38  dennis
+ *  Now handles arbitrarily many spectra, as needed for SASI, SXD
+ *  and the LANSCE SCD.
+ *  Improved vertical alignment between graph and image areas.
+ *  Some problems still remain with the selection and sort indicators
+ *  on the left side of the image area, but it should be serviceable.
+ *
  *  Revision 1.50  2005/05/25 20:24:46  dennis
  *  Now calls convenience method WindowShower.show() to show
  *  the window, instead of instantiating a WindowShower object
@@ -141,6 +148,7 @@ import gov.anl.ipns.ViewTools.Panels.Graph.*;
 import gov.anl.ipns.ViewTools.Panels.Image.*;
 import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 import gov.anl.ipns.ViewTools.UI.*;
+import gov.anl.ipns.ViewTools.Components.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -174,13 +182,21 @@ public class ImageView extends    DataSetViewer
   private static final String MULTI_PLOT_COLOR     = "Color Graphs";
   private static final String MULTI_PLOT_HIDDEN_LINES = "Remove Hidden Lines";
 
+  private static final int LEFT_SPACER_SIZE = 8;
+  private static final int SPACER_1_SIZE    = 3;
+
                                                    // Image and border
-  private ImageJPanel  image_Jpanel;   
+  private ImageJPanel2 image_Jpanel;   
   private ImageJPanel  selection_image;
   private ImageJPanel  color_scale_image;
   private JScrollPane  image_scroll_pane;
+  private JScrollBar   vert_scroll_bar;
   private String       current_multi_plot_mode = MULTI_PLOT_DIAGONAL;
   private final int    MAX_PLOTS = 16;
+
+  JPanel image_container    = new JPanel();        // Panels to contain all
+  JPanel graph_container    = new JPanel();        // parts associated with
+  JPanel graph_right_filler = new JPanel();        // graph and image area
 
   private SplitPaneWithState   main_split_pane = null;
   private SplitPaneWithState   left_split_pane = null;
@@ -431,16 +447,14 @@ private void init()
     main_split_pane.removeAll(); 
     removeAll();
   }
-  image_Jpanel = new ImageJPanel();
-  image_Jpanel.setVerticalScrolling(true);
+  image_Jpanel = new ImageJPanel2();
   image_Jpanel.setNamedColorModel( 
                getState().get_String( ViewerState.COLOR_SCALE), true, true );
                                                // make box to contain both the
                                                // image and selection indicator
-  Box image_area = new Box( BoxLayout.X_AXIS );
   JPanel spacer = new JPanel();
-  spacer.setMaximumSize( new Dimension(3, 30000) );
-  spacer.setPreferredSize( new Dimension(3, 200) );
+  spacer.setMaximumSize( new Dimension(SPACER_1_SIZE, Integer.MAX_VALUE) );
+  spacer.setPreferredSize( new Dimension(SPACER_1_SIZE, 0) );
   
   JPanel sel_image_container = new JPanel();
   selection_image = new ImageJPanel();
@@ -448,20 +462,23 @@ private void init()
   sel_image_container.setLayout( new GridLayout(1,1) );
   sel_image_container.add( selection_image );
 
-  sel_image_container.setMaximumSize( new Dimension(8, 30000) );
-  sel_image_container.setPreferredSize( new Dimension(8, 200) );
+  sel_image_container.setMaximumSize( new Dimension(LEFT_SPACER_SIZE, 30000) );
+  sel_image_container.setPreferredSize( new Dimension(LEFT_SPACER_SIZE, 0) );
 
-  image_area.add( sel_image_container );
-  image_area.add( spacer );
-  image_area.add( image_Jpanel );
+  vert_scroll_bar = new JScrollBar(); 
 
-  image_scroll_pane = new JScrollPane( image_area,
-                                      JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+  image_scroll_pane = new JScrollPane( image_Jpanel,
+                                      JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                       JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
                                           );
 
   image_scroll_pane.getHorizontalScrollBar().addAdjustmentListener( 
                                              new ImageHScrollBarListener() );
+
+  image_container.setLayout( new BorderLayout() );
+  image_container.add( sel_image_container, BorderLayout.WEST );
+  image_container.add( image_scroll_pane, BorderLayout.CENTER );
+  image_container.add( vert_scroll_bar, BorderLayout.EAST );
 
   image_data_panel  = new JPanel();
   image_table = new DataSetXConversionsTable( getDataSet() );
@@ -646,7 +663,8 @@ private void MakeImage( boolean redraw_flag )
                               // remake the image yet. It's done when the
                               // component is initially resized.     
   image_Jpanel.changeLogScale( log_scale_slider.getValue(), false );
-  image_Jpanel.setData( image_data, redraw_flag );
+  VirtualArray2D va2d = new VirtualArray2D(image_data);
+  image_Jpanel.setData( va2d, redraw_flag );
 
                                           // use slightly different coordinate
                                           // system for functions and histograms
@@ -660,9 +678,8 @@ private void MakeImage( boolean redraw_flag )
       delta_x = (x_max - x_min) / (num_cols -1);
     else
       delta_x = 0;
-    bounds = new CoordBounds( x_min-delta_x/2, 0, x_max+delta_x/2, num_rows-1 ); 
+    bounds = new CoordBounds(x_min-delta_x/2, 0, x_max+delta_x/2, num_rows-1);
   }
-
   image_Jpanel.initializeWorldCoords( bounds );
 
   MakeSelectionImage( redraw_flag );
@@ -671,6 +688,7 @@ private void MakeImage( boolean redraw_flag )
     SetHorizontalScrolling( true );                   // this was needed to
                                                       // switch DataSets after
                                                       // HScroll was enabled   
+  ConfigureVerticalScrollBar();
 }
 
 
@@ -816,7 +834,17 @@ private JComponent MakeHorGraphArea( )
 
   hgraph_scroll_pane.setBorder( border ); 
 
-  return hgraph_scroll_pane;
+  JPanel graph_left_filler  = new JPanel();
+
+  graph_left_filler.setPreferredSize( new Dimension(LEFT_SPACER_SIZE, 0 ) );
+  graph_right_filler.setPreferredSize( new Dimension( 20, 0 ) );
+  graph_right_filler.setVisible( false );
+
+  graph_container.setLayout( new BorderLayout() );
+  graph_container.add( graph_left_filler,  BorderLayout.WEST );
+  graph_container.add( graph_right_filler, BorderLayout.EAST );
+  graph_container.add( hgraph_scroll_pane, BorderLayout.CENTER );
+  return graph_container; 
 }
 
 
@@ -840,7 +868,7 @@ private JComponent MakeImageArea( )
   border.setTitleFont( FontUtil.BORDER_FONT );
   image_scroll_pane.setBorder( border );
 
-  return image_scroll_pane;
+  return image_container;
 }
 
 
@@ -857,6 +885,10 @@ private void MakeConnections()
    image_Jpanel.addMouseMotionListener( new ImageMouseMotionAdapter() );
    image_Jpanel.addMouseListener( new ImageMouseAdapter() );
    image_Jpanel.addMouseListener( new ImageZoomMouseHandler() );
+   image_Jpanel.addComponentListener( new ImageResizeListener() );
+
+   vert_scroll_bar.addAdjustmentListener( new VerticalScrollListener() );
+
    h_graph.addMouseMotionListener( new HGraphMouseMotionAdapter() );
    h_graph.addMouseListener( new HGraphMouseAdapter() );
 
@@ -905,6 +937,53 @@ private void SetHorizontalScrolling( boolean state )
                                          // have the scroll bars remain on
                                          // (or off) as the DataSet and 
                                          // number of bins are changed.
+}
+
+
+/* ----------------------- ConfigureVerticalScrollBar -------------------- */
+
+private void ConfigureVerticalScrollBar()
+{
+  if ( image_Jpanel.isShowing() )
+  {
+    int window_height = 1;                      // set default height if not
+                                                // actually shown yet
+    Dimension size = image_Jpanel.getSize(); 
+    if ( size.height > 0 )
+      window_height = size.height;
+     
+    DataSet ds = getDataSet();
+    if ( ds != null )
+    {
+      int n_rows = ds.getNum_entries();
+      vert_scroll_bar.setMinimum( 0 ); 
+      vert_scroll_bar.setMaximum( n_rows ); 
+      vert_scroll_bar.setVisibleAmount( window_height );
+      if ( n_rows > window_height )
+      {
+        vert_scroll_bar.setVisible( true );
+
+        Dimension bar_size = vert_scroll_bar.getSize();
+        bar_size.height = 0;
+        graph_right_filler.setPreferredSize( bar_size );
+        graph_right_filler.setVisible( true );
+      }
+      else
+      {
+        CoordBounds bounds = image_Jpanel.getLocalWorldCoords();
+        float x1 = bounds.getX1();
+        float y1 = 0;
+        float x2 = bounds.getX2();
+        float y2 = n_rows - 1;
+
+        image_Jpanel.setZoom_region( x1, y1, x2, y2 );
+        image_Jpanel.RebuildImage();
+
+        vert_scroll_bar.setVisible( false );
+        graph_right_filler.setVisible( false );
+      }
+    }
+  }
 }
 
 
@@ -1267,7 +1346,7 @@ private Point ProcessImageMouseEvent( MouseEvent e,
 
 /* -------------------------- UpdateHGraphRange --------------------------- */
 
-  public void UpdateHGraphRange()
+  private void UpdateHGraphRange()
   {
     int value = hgraph_scale_slider.getValue();
     getState().set_float( ViewerState.AUTO_SCALE, value/10.0f );
@@ -1500,6 +1579,45 @@ private class ConsumeKeyAdapter extends     KeyAdapter
   }
 
 
+
+/* ------------------------ VerticalScrollListener ---------------------- */
+
+  private class VerticalScrollListener implements AdjustmentListener,
+                                                  Serializable
+  {
+    public void adjustmentValueChanged( AdjustmentEvent e )
+    {
+       CoordBounds bounds = image_Jpanel.getLocalWorldCoords();
+       float x1 = bounds.getX1(); 
+       float y1 = bounds.getY1(); 
+       float x2 = bounds.getX2(); 
+       float y2 = bounds.getY2(); 
+
+       Dimension size = image_Jpanel.getSize(); 
+       y1 = e.getValue();
+       if ( size.height > 2 )
+         y2 = y1 + size.height-1;
+       else
+         y2 = y1 + 200;
+ 
+       image_Jpanel.setZoom_region( x1, y1, x2, y2 );
+       image_Jpanel.RebuildImage();
+    }
+  }
+
+
+/* ------------------------ ImageResizeListener --------------------------- */
+
+  private class ImageResizeListener extends    ComponentAdapter
+                                    implements Serializable
+  {
+     public void componentResized( ComponentEvent e )
+     {
+       ConfigureVerticalScrollBar();
+     }
+  }
+
+
 /* ------------------------ XScaleListener ----------------------------- */
 
   private class XScaleListener implements ActionListener,
@@ -1539,5 +1657,6 @@ private class ConsumeKeyAdapter extends     KeyAdapter
       }
     }
   }
+
 
 }
