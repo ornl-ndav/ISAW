@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2005/08/14 21:44:47  dennis
+ * Now adds SampleOrientation to each Data block.
+ *
  * Revision 1.5  2005/08/11 21:50:29  dennis
  * Expanded main program to make it easier to view multiple runs
  * in 3D for testing purposes.  Phi, chi & omega values for LANCE
@@ -225,11 +228,10 @@ public class LansceUtil
                                       // position info for each pixel 
     grid.setData_entries( new_ds );
     Grid_util.setEffectivePositions( new_ds, AREA_DET_ID );
-/*
+
                                       // Add sample orientation information
     float phi   = 0;
-//  float chi   = -135;
-    float chi   = 0;
+    float chi   = -135;
     float omega = 0;
 
     SampleOrientation orientation = 
@@ -238,7 +240,10 @@ public class LansceUtil
                                         Attribute.SAMPLE_ORIENTATION, 
                                         orientation );
     new_ds.setAttribute( orientation_attr );
-*/
+    for ( int i = 0; i < new_ds.getNum_entries(); i++ )
+      new_ds.getData_entry(i).setAttribute( orientation_attr );
+
+    System.out.println("**** just set sample orientation");
     return new_ds;
   }
 
