@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2005/08/15 19:33:41  rmikk
+ * Added Method to read through a GSAS file and process the lines in the
+ *    special lanl fomat for specifying div_c, dif_a and t0
+ *
  * Revision 1.4  2005/08/05 20:54:11  dennis
  * Added support for Instrument_Type specification in the
  * detector information file, so that the correct operators
@@ -72,8 +76,9 @@ import DataSetTools.instruments.*;
 
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.MathTools.Geometry.*;
-
-
+import gov.anl.ipns.Util.SpecialStrings.*;
+import java.util.regex.*;
+import DataSetTools.gsastools.*;
 /**
  *  This class contains static method for Loading detector information
  *  into a DataSet.  This is necesary if the raw data file does not 
@@ -503,11 +508,300 @@ public class LoadUtil
      }
   }
 
+  /**
+   * This Loads difc, difa and T0 from a GSAS parameter file where the information
+   * is given on the special lanl format lines
+   * @param ds   The data set
+   * @param paramFileName   The name of the parameter file
+   * @return  null or an ErrorString
+   */
+  public static Object LoadDifsGsas_lanl( DataSet ds, String paramFileName){
+    
+      if( paramFileName == null)
+         return new ErrorString("No parameter File Name is given in LoadDifsGsas");
+         
+      if( ds == null)
+         return new ErrorString("No data set given in LoadDifsGsas");
+         
+      FileInputStream f= null;
+      try{
+           f=new FileInputStream( paramFileName);
+      }catch(Exception ss){
+         return new ErrorString(ss.toString()+" in LoadDifsGsas");
+      }
+         
+      String match1= ds.getTitle();
+      match1="[\n\r]+INS   "+match1+" ";
+      String eoln="[\n\r]+";
+      Pattern pat= Pattern.compile(match1);
+      Pattern eolnPat= Pattern.compile(eoln);
+      int size=500*match1.length();
+      byte[] buffer = new byte[size ];
+      String line=null;
+      try{
+         int nread = f.read(buffer);
+         int offset =0;
+         int readResult=nread,
+             nextPosition=0;
+        String SS= new String( buffer, nextPosition , nread );
+        Matcher match= pat.matcher( SS);
+        Matcher eolnmatch = eolnPat.matcher(SS);
+         while( nextPosition < nread){
+             if(match.find()){//put rest of line into line and process
+               
+                int end= match.end();
+               
+                if( eolnmatch.find(end)){
+                  
+                   int endLine=eolnmatch.end();
+                   line=new String(buffer,end, endLine-1-end);
+                   nextPosition=endLine-1;
+                  
+                }else{
+                  
+                  line =new String(buffer, end, nread-end);
+                  readResult= f.read(buffer);
+                  if(readResult >=0){
+                    
+                    nextPosition=0;
+                    nread =readResult;
+                    line +=new String( buffer,nextPosition,nread);
+                    SS= new String(buffer,nextPosition,nread-nextPosition);
+                    //match= pat.matcher( SS);
+                    eolnmatch = eolnPat.matcher(SS);
+                    
+                  }
+                 
+                  while((readResult >=0)&&!eolnmatch.find()){
+                    
+                    readResult= f.read(buffer);
+                    offset = 0;
+                    if( readResult >=0){
+                      
+                      nread =readResult;
+                      nextPosition=0;
+                      line +=new String( buffer,0,nread);
+                      SS= new String(buffer,nextPosition,nread-nextPosition);
+                      eolnmatch = eolnPat.matcher(SS);
+                    }
+                  }
+                  
+                  if( readResult >=0){
+                    
+                    int kk= eolnmatch.end()-1;
+                    match= pat.matcher( SS);
+                    int NN= line.length()-(nread-kk)+1;
+                    line =line.substring(0,NN);
+                    nextPosition= kk-1;
+                    
+                  }else{
+                    
+                    nextPosition=nread=-1;
+                    line=null;
+                  }
+                }
+                
+                Object Res=null;
+                if( line !=null)
+                    Res=process_lanlGSASLine(ds,line.trim());
+              
+                if( Res instanceof ErrorString)
+                   return Res;
+                
+             }else if(nread >=match1.length()+2){
+               
+                nextPosition= nread=-1;
+             
+               
+             }else{//did not find a match
+               
+               nextPosition=nread=-1;
+             }
+             if( readResult >=0)
+               if( nextPosition +match1.length()+4 >nread){
+                 
+                offset = Xlate(buffer,nextPosition,nread,0);
+                nread=offset;
+                nextPosition=0;
+                readResult=f.read(buffer,offset, size-offset);
+                if(  readResult >=0){
+                
+                  nread +=readResult;
+                  SS= new String(buffer,nextPosition,nread);
+                  match= pat.matcher( SS);
+                  eolnmatch = eolnPat.matcher(SS);
+                  
+                } 
+              }
+               
+         }//while nread >=0
+      
+      }catch(Exception s2){
+        
+         return new ErrorString( s2.toString()+"in LoadDifsGsas");
+      }
+         
+      return null;
+  }
   
+  
+  
+  
+  
+  /**
+   *   Translates the elements of the buffer down 
+   * @param buffer  The buffer with elements
+   * @param start    Start position in buffer that is to be translated down
+   * @param end      One more than the last position in buffer that is to be translated down
+   * @param downto   The position(usually 0) to translate down to
+   * @return   The offset where next data can be added 
+   */
+  public static int Xlate( byte[] buffer, int start, int end, int downto){
+     if( buffer == null)
+        return 0;
+    if( end > buffer.length)
+       end= buffer.length;
+    if( end <0)
+       end =0;
+    if( start<0) start=0;
+      if((start >= end))
+         return 0;
+    for( int i=start; i<end;i++)
+        buffer[downto+i-start]=buffer[i];
+        
+    return downto+end-start;
+  }
+  
+  
+  
+  //Processes one line in the GSAS parameter file that is in lanl format
+  private static  Object process_lanlGSASLine( DataSet ds, String line){
+    
+    if( (line == null)||(line.length()<1))
+       return new ErrorString("There is no other info on special lines. Improper lanl GSAS format");
+       
+    line=line.trim();
+    String[] Data = line.split("[ ]+");
+   
+      int i=0;
+      
+      int bankNum =-1;
+      for(i=0; (i<Data.length)&&(bankNum<0);i++){
+            try{
+              bankNum= Integer.parseInt( Data[i]);
+            }catch(Exception ss){
+               bankNum=-1;
+            }
+         }
+    if( bankNum<0)
+       return new ErrorString("Data on line in lanl GSAS format has no legitimate numbers");
+      
+    float difc= Float.NaN;
+    for(; (i<Data.length)&&Float.isNaN(difc);i++){
+       try{
+         difc= Float.parseFloat( Data[i]);
+       }catch(Exception ss){
+        difc=Float.NaN;
+       }
+      }
+    if( Float.isNaN(difc))
+       return new ErrorString("Data on line in lanl GSAS format has no legitimate numbers");
+         
+         
+
+    float difa= Float.NaN;
+    for(; (i<Data.length)&&Float.isNaN(difa);i++){
+       try{
+         difa= Float.parseFloat( Data[i]);
+       }catch(Exception ss){
+          difa=Float.NaN;
+       }
+    }
+    if( Float.isNaN(difa))
+       return new ErrorString("Data on line in lanl GSAS format has no legitimate numbers");
+        
+
+    float t0= Float.NaN;
+    for(; (i<Data.length)&&Float.isNaN(t0);i++){
+       try{
+         t0= Float.parseFloat( Data[i]);
+       }catch(Exception ss){
+         t0=Float.NaN;
+       }
+    }
+      
+    if( Float.isNaN(t0))
+       return new ErrorString("Data on line in lanl GSAS format has no legitimate numbers");
+         
+    Data d=ds.getData_entry(bankNum-1);
+    if(d==null)
+       return new ErrorString("No data block at "+bankNum);
+
+    GsasCalibAttribute calibAttr=new GsasCalibAttribute(Attribute.GSAS_CALIB,
+                                      new DataSetTools.gsastools.GsasCalib(difc,difa,t0));
+    d.setAttribute(calibAttr); 
+    return null;   
+    
+  }
+  
+  
+  
+  
+  
+  /**
+   *  A test program for the method LoadDifsGsas_lanl using "fixed" filename
+   * @param args
+   */
+  public static void main( String args[]){
+    
+    DataSet[] DS=null;
+    try{
+    
+      DS = Command.ScriptUtil.load(args[0]);
+      
+    }catch(Exception ss){
+      
+       System.out.println("Error:"+ss);
+       System.exit(0);
+    }
+    
+   DataSet DD =null;
+   for( int i=0; (i< DS.length)&&(DD==null);i++){
+     
+       if( DS[i].getTitle().equals("sed_tof"))
+          DD=DS[i];
+   }
+   
+   try{
+   
+   System.out.println( LoadUtil.LoadDifsGsas_lanl( DD,"smarts_050207.iparm" ));
+   
+   }catch(Exception ss){
+     
+      ss.printStackTrace();
+   }
+   
+   
+   DataSetFactory.addOperators(DD, DataSetTools.instruments.InstrumentType.TOF_DIFFRACTOMETER);
+   
+   //Remove spectra with 0 for both dif_c and dif_a
+   for(  int i=DD.getNum_entries()-1;i>=0;i--){
+     
+     Data D=DD.getData_entry(i);
+     Object A = D.getAttributeValue( Attribute.GSAS_CALIB);
+     GsasCalib G=(GsasCalib)A;
+     if(G.dif_a()==0)if( G.dif_c()==0)
+        DD.removeData_entry(i);
+      
+   }
+   
+   Command.ScriptUtil.display(DD,"Image View");
+ 
+  }
   /**
    *  Main program for testing purposes.
    */
-  public static void main( String args[] )
+  public static void main1( String args[] )
   {
     String    detector_path = null;
     String    data_path     = null;
