@@ -1,0 +1,51 @@
+<html><body><pre>
+//FileName: ../ISAW/Operators/Example/Add2Ints1.java
+package Operators.Example;
+import DataSetTools.parameter.*;  //For IntegerPG
+import DatasetTools.operator.*;  //for add/getParameter methods
+
+public class Add2Ints1 extends 
+               DataSetTools.operator.Generic.Calculator.GenericCalculator
+                     //this sets category list
+  {
+
+   public Add2Ints1(){
+
+      super("Add2Ints 1");  //sets Title
+   }
+
+
+   public void setDefaultParameters(){
+
+     clearParametersVector();
+     addParameter( new IntegerPG("First Number", 5));
+     addParameter( new IntegerPG("Second Number", 9));
+   }
+
+
+   public Object getResult(){
+
+     int FirstNum = ((IntegerPG)getParameter(0)).getintValue();
+     int SecondNum =((IntegerPG)getParameter(1)).getintValue();
+     int Result = FirstNum + SecondNum;
+     return new Integer( Result); //return must be an object
+
+   }
+
+
+   public String getCommand(){
+
+     return "Add2Ints1";  //This is the default command
+   }
+
+  
+   public String getDocumentation(){
+        StringBuffer S= new StringBuffer();
+        S.append("@overview Adds two integers\n");
+        S.append(" @param  FirstNum  The first number to add\n");
+        S.append( " @param  SecondNum   The second number to add\n");
+        S.append("@return The sum of the two numbers\n");
+        return S.toString();
+ 
+   }
+}</pre></body></html>
