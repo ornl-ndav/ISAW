@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2005/08/15 19:45:55  rmikk
+ * Fixed up the command line info to show usage for parameters and to allow 
+ * for entering filenames and data set names
+ *
  * Revision 1.5  2005/08/15 19:33:41  rmikk
  * Added Method to read through a GSAS file and process the lines in the
  *    special lanl fomat for specifying div_c, dif_a and t0
@@ -745,7 +749,12 @@ public class LoadUtil
   }
   
   
-  
+  private static void ShowUsage(){
+      System.out.println(" There are 2 arguments");
+      System.out.println("    argument 1: is the filename");
+      System.out.println("    argument 2: the name of the dataset to convert");
+      System.out.println("    argument 3: the name of the parameter file");
+  }
   
   
   /**
@@ -754,6 +763,11 @@ public class LoadUtil
    */
   public static void main( String args[]){
     
+    if( (args==null)||(args.length <2)){
+      ShowUsage();
+      System.exit(0);
+    }
+       
     DataSet[] DS=null;
     try{
     
@@ -767,14 +781,19 @@ public class LoadUtil
     
    DataSet DD =null;
    for( int i=0; (i< DS.length)&&(DD==null);i++){
-     
-       if( DS[i].getTitle().equals("sed_tof"))
+       System.out.println("Data Set Name:"+ DS[i].getTitle() );
+       if( DS[i].getTitle().equals(args[1]))
           DD=DS[i];
+   }
+   
+   if( DD==null){
+     System.out.println(" Could not find a data set with the name "+ args[1]);
+     System.exit(0);
    }
    
    try{
    
-   System.out.println( LoadUtil.LoadDifsGsas_lanl( DD,"smarts_050207.iparm" ));
+   System.out.println( LoadUtil.LoadDifsGsas_lanl( DD,args[2]));
    
    }catch(Exception ss){
      
