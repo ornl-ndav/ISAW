@@ -29,7 +29,28 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.30  2005/08/15 03:58:31  dennis
+ * Modified deleteNodesWithPaths() so that it maintains a hashtable
+ * of DataSets that had Data blocks deleted, then just notifies those
+ * DataSets one time at the end, rather than notifying that Data
+ * was deleted for every individual block that was deleted.  This
+ * significantly improved the efficincy of deleting nodes via the
+ * tree, for "moderate" size DataSets.
+ * Modified deleteNode() to return the DataSet that was modified,
+ * IF a Data block was deleted, so that deleteNodesWithPath() can
+ * save it and notify it once at the end.
+ * NOTE: Deleting thousands of Data blocks from a DataSet
+ * with tens of thousands of Data blocks is still VERY INEFFICIENT
+ * when done from the tree.  It takes a couple of seconds at most to
+ * do this with an operator, and MANY MINUTES to do this from the tree.
+ * Most of the time is lost in the method model.removeNodeFromParent().
+ * This method takes about 1/30 second to execute on a fast machine
+ * (2Ghz pentium M) with a large DataSet (65000 entries).
+ * While the current modifications improved the speed a more than an
+ * order of magnitude, more needs to be done.
+ *
  * Revision 1.29  2004/07/30 16:09:20  kramer
+ *
  * Now when the user has a node representing a DataSet closed, opens a viewer
  * for that DataSet, and selects a spectrum, the DataSet's node in the tree
  * doesn't get unselected.
@@ -437,7 +458,8 @@ public class JDataTree
    */ 
   protected Experiment getModifiedExperiment()
   {
-    DefaultMutableTreeNode root = (DefaultMutableTreeNode)tree.getModel().getRoot();
+    DefaultMutableTreeNode root = 
+                             (DefaultMutableTreeNode)tree.getModel().getRoot();
     return (Experiment)root.getChildAt( 0 );
   }
 
@@ -460,29 +482,48 @@ public class JDataTree
    */
   public void deleteNodesWithPaths( TreePath[] tps )
   {
+    Hashtable hash = new Hashtable();     // save DataSets to notify in 
+                                          // hashtable
+    DataSet   ds   = null;
     for( int i=0;  i<tps.length;  i++ )   //this call takes care of
-      deleteNode( tps[i], true );         //observer notification
+    {                                     //observer notification
+      ds = deleteNode( tps[i], false );   //except when deleting Data blocks
+      if ( ds != null )
+        hash.put( ds, ds );
+    }
 
+    Object dss[] = hash.values().toArray();   // Now Notify any DataSets
+    for ( int i = 0; i < dss.length; i++ )    // from which we deleted Data
+    {
+      ds = (DataSet)dss[i];
+      ds.notifyIObservers( IObserver.DATA_DELETED );
+    }
   }
 
 
   /*
    * remove an arbitrary node from the tree.  Any Experiment container
    * object, DataSet object, or Data object may be removed using this
-   * function.  this method does NOT automatically notify observers 
-   * of IObserver implementers because it could potentially be quite 
-   * "expensive" to do so if many items are deleted.  the responsibility
-   * is left to the caller.
-   *
-
+   * function.  this method automatically notify observers if notify
+   * is passed in true.  If notify is passed in false, then DataSets
+   * that have individual Data blocks removed will NOT be notified.
+   * If whole DataSets or experiments are deleted these will be 
+   * sent a DESTROY message in any case.  IF notify is passed in 
+   * false, the calling code is responsible for notifying DataSets
+   * that were modified.  If any DataSet is modified by deleting 
+   * a Data block, the DataSet to be notified is returned by this 
+   * method.  
    *
    *   @param obj     the object to be removed from the tree, or the
    *                  MutableTreeNode to be removed from the tree, or
    *                  the TreePath to be removed from the tree.
    *   @param notify  notifies the DataSet's IObservers when true if 
    *                  the obj is a Data object.
+   *
+   * @return A reference to a DataSet that had a Data block deleted
+   * or null, if only whole DataSets and experiments were deleted.
    */
-  public void deleteNode( Object obj, boolean notify )
+  public DataSet deleteNode( Object obj, boolean notify )
   {
     MutableTreeNode node = null;
     if(  obj instanceof Data || 
@@ -502,15 +543,14 @@ public class JDataTree
       node = (MutableTreeNode)tp.getLastPathComponent();
     }
     else
-      return;
-
+      return null;
 
     DataSet ds = null;
     if( node instanceof Experiment )
     {
       Experiment exp = (Experiment)node;
       if(  exp.toString().equals( MODIFIED_NODE_TITLE )  )
-        return;
+        return null;
       else
       {
         if(notify){ // notify DataSet IObservers that they are going away
@@ -519,7 +559,7 @@ public class JDataTree
             ds=((DataSetMutableTreeNode)kids.nextElement()).getUserObject();
             ds.deleteIObserver(this);
             ds.notifyIObservers(IObserver.DESTROY);
-            ds.addIObserver(this);
+//          ds.addIObserver(this);
           }
         }
         getMyModel().removeNodeFromParent( node );
@@ -546,26 +586,27 @@ public class JDataTree
         ds = ( (DataSetMutableTreeNode)node ).getUserObject();
         ds.deleteIObserver( this );
         ds.notifyIObservers( IObserver.DESTROY );
-        ds.addIObserver( this );
+//      ds.addIObserver( this );
       }
 
       getMyModel().removeNodeFromParent( node );
       getMyModel().extinguishNode( node );
 
-      return;
+      return null;
     }
 
     else if( node instanceof DataMutableTreeNode )
     {
-
       DataMutableTreeNode data_node = (DataMutableTreeNode)node;
+      DataSetMutableTreeNode dataset_node = 
+                                  (DataSetMutableTreeNode)data_node.getParent();
 
-      DataSetMutableTreeNode dataset_node = (DataSetMutableTreeNode)data_node.getParent();
       ds = (DataSet)dataset_node.getUserObject();
 //      ds.removeData_entry_with_id( group_id );
 
                  //remove node from the tree 
                  //and free up the memory
+                 // TODO: speed up removeNodeFromParent
       getMyModel().removeNodeFromParent( node );
       getMyModel().extinguishNode( node );
 
@@ -574,9 +615,11 @@ public class JDataTree
                  //IObservers...
       if( notify )
         ds.notifyIObservers( IObserver.DATA_DELETED );
+
+      return ds;
     }
     
-    return;
+    return null;
   }
 
 
@@ -596,9 +639,6 @@ public class JDataTree
    */
   public void clearSelections()
   {
-
-
-
                             //notify all DataSet objects,
                             //just in case.  this could
                             //be done more efficiently by
@@ -613,7 +653,6 @@ public class JDataTree
 
     tree.getSelectionModel().clearSelection();
   }
-
 
 
   /**
@@ -653,11 +692,12 @@ public class JDataTree
       d.setSelected( true );
                                   //find the DataSet that these Data objects
                                   //belong to and have it notify its IObservers
-      DataSet ds = ( (DataSetMutableTreeNode)d_node.getParent() ).getUserObject();
+      DataSet ds =((DataSetMutableTreeNode)d_node.getParent() ).getUserObject();
       ds.notifyIObservers( IObserver.SELECTION_CHANGED );
     }
   }
   
+
   /**
    * Get the complete TreePath corresponding to the node 
    * specified.
