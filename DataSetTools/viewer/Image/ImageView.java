@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.52  2005/08/15 02:00:29  dennis
+ *  Now reinitialize everything if DataSet is changed.
+ *  Moved border to be around selection & image & vertical scrollbar
+ *  to better group selections with image rows.  There are still
+ *  problems with the selection image when there are so many spectra
+ *  that vertical scrolling is required.
+ *
  *  Revision 1.51  2005/08/14 21:39:38  dennis
  *  Now handles arbitrarily many spectra, as needed for SASI, SXD
  *  and the LANSCE SCD.
@@ -326,6 +333,7 @@ public void redraw( String reason )
   }
   else
   {
+    init();
     MakeImage( true );
     DrawSelectedHGraphs();
     UpdateHGraphRange();
@@ -445,6 +453,8 @@ private void init()
     hgraph_scroll_pane.removeAll(); 
     left_split_pane.removeAll(); 
     main_split_pane.removeAll(); 
+    image_container.removeAll();
+    graph_container.removeAll();
     removeAll();
   }
   image_Jpanel = new ImageJPanel2();
@@ -866,7 +876,8 @@ private JComponent MakeImageArea( )
   TitledBorder border = new TitledBorder(
                                 LineBorder.createBlackLineBorder(), title );
   border.setTitleFont( FontUtil.BORDER_FONT );
-  image_scroll_pane.setBorder( border );
+
+  image_container.setBorder( border );
 
   return image_container;
 }
