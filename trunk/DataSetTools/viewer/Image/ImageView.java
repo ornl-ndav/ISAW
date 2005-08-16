@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.53  2005/08/16 23:07:50  dennis
+ *  Icon displaying selection info and sort order now fixed.
+ *  A small spacer panel still needs to be added at the bottom
+ *  of the sort/selection panel, when the horizontal scroll bar is
+ *  enabled, to keep the relationship between the rows of the image
+ *  and the rows of the sort/selection panel.
+ *
  *  Revision 1.52  2005/08/15 02:00:29  dennis
  *  Now reinitialize everything if DataSet is changed.
  *  Moved border to be around selection & image & vertical scrollbar
@@ -194,7 +201,7 @@ public class ImageView extends    DataSetViewer
 
                                                    // Image and border
   private ImageJPanel2 image_Jpanel;   
-  private ImageJPanel  selection_image;
+  private ImageJPanel2 selection_image;
   private ImageJPanel  color_scale_image;
   private JScrollPane  image_scroll_pane;
   private JScrollBar   vert_scroll_bar;
@@ -459,16 +466,15 @@ private void init()
   }
   image_Jpanel = new ImageJPanel2();
   image_Jpanel.setNamedColorModel( 
-               getState().get_String( ViewerState.COLOR_SCALE), true, true );
+               getState().get_String(ViewerState.COLOR_SCALE), true, true );
                                                // make box to contain both the
                                                // image and selection indicator
-  JPanel spacer = new JPanel();
-  spacer.setMaximumSize( new Dimension(SPACER_1_SIZE, Integer.MAX_VALUE) );
-  spacer.setPreferredSize( new Dimension(SPACER_1_SIZE, 0) );
-  
   JPanel sel_image_container = new JPanel();
-  selection_image = new ImageJPanel();
-  selection_image.setVerticalScrolling(true);
+  selection_image = new ImageJPanel2();
+  selection_image.setNamedColorModel( IndexColorMaker.GRAY_SCALE, false, true );
+  selection_image.enableAutoDataRange( false );
+  selection_image.setDataRange( 0, 1 );
+
   sel_image_container.setLayout( new GridLayout(1,1) );
   sel_image_container.add( selection_image );
 
@@ -691,14 +697,16 @@ private void MakeImage( boolean redraw_flag )
     bounds = new CoordBounds(x_min-delta_x/2, 0, x_max+delta_x/2, num_rows-1);
   }
   image_Jpanel.initializeWorldCoords( bounds );
-
-  MakeSelectionImage( redraw_flag );
+  
+  CoordBounds sel_bounds = new CoordBounds( 0, 0, 1, 1 );
+  selection_image.initializeWorldCoords( sel_bounds );
 
   if ( getState().get_boolean( ViewerState.H_SCROLL ) )
     SetHorizontalScrolling( true );                   // this was needed to
                                                       // switch DataSets after
                                                       // HScroll was enabled   
   ConfigureVerticalScrollBar();
+  MakeSelectionImage( redraw_flag );
 }
 
 
@@ -728,19 +736,21 @@ private void MakeSelectionImage( boolean redraw_flag )
     if ( data_block == null )                       // something is wrong so
       return;                                       // we can't proceed.
 
+                                                    // col 1 has select flags
     if ( data_block.isSelected() )
       sel_image_data[i-first_row][1] = 1;
     else
       sel_image_data[i-first_row][1] = 0;
-
+                                                    // col 0 has group_id "code"
     group_id = data_block.getGroup_ID();
-    if ( max_group_id >= 0 )                              // group -1 maps to 0
+    if ( max_group_id >= 0 )                        // group -1 maps to 0
       sel_image_data[i-first_row][0] = (group_id+1)/(max_group_id+1);
     else                                           
       sel_image_data[i-first_row][0] = 0; 
   }
 
-  selection_image.setData( sel_image_data, redraw_flag );
+  VirtualArray2D sel_image_va2D= new VirtualArray2D(sel_image_data);
+  selection_image.setData( sel_image_va2D, redraw_flag );
 }
 
 
@@ -839,7 +849,7 @@ private JSplitPane MakeDisplayArea()
 private JComponent MakeHorGraphArea( )
 {
   TitledBorder border = new TitledBorder( LineBorder.createBlackLineBorder(),
-                    "HORIZONTAL GRAPH DISPLAY" );
+                                         "HORIZONTAL GRAPH DISPLAY" );
   border.setTitleFont( FontUtil.BORDER_FONT );
 
   hgraph_scroll_pane.setBorder( border ); 
@@ -910,6 +920,7 @@ private void MakeConnections()
    h_graph.addKeyListener( new ConsumeKeyAdapter() );
 }
 
+
 /* ------------------------ SetHorizontalScrolling ------------------------ */
 private void SetHorizontalScrolling( boolean state )
 {
@@ -927,7 +938,6 @@ private void SetHorizontalScrolling( boolean state )
     scroll_bar.setValue( position );
   }
   image_scroll_pane.doLayout();
-
                                          // make the graph have same preferred
                                          // width as the image, so horizontal
                                          // scroll bars line up better.
@@ -948,6 +958,8 @@ private void SetHorizontalScrolling( boolean state )
                                          // have the scroll bars remain on
                                          // (or off) as the DataSet and 
                                          // number of bins are changed.
+  ConfigureVerticalScrollBar();
+  MakeSelectionImage( true );
 }
 
 
@@ -1433,18 +1445,18 @@ private class ImageZoomMouseHandler extends    MouseAdapter
   {
     if ( e.getClickCount() == 2 )                 // zoom out to full view 
     {
-      MakeSelectionImage( true );
       getState().setZoomRegion( image_Jpanel.getGlobalWorldCoords(),
                                 getDataSet()  );
+      MakeSelectionImage( true );
       DrawSelectedHGraphs();
     }
   }
 
   public void mouseReleased(MouseEvent e)         // zoom in to sub region 
   {
-    MakeSelectionImage( true );
     getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(),
                               getDataSet()  );
+    MakeSelectionImage( true );
     DrawSelectedHGraphs();
   }
 }
@@ -1590,7 +1602,6 @@ private class ConsumeKeyAdapter extends     KeyAdapter
   }
 
 
-
 /* ------------------------ VerticalScrollListener ---------------------- */
 
   private class VerticalScrollListener implements AdjustmentListener,
@@ -1613,6 +1624,8 @@ private class ConsumeKeyAdapter extends     KeyAdapter
  
        image_Jpanel.setZoom_region( x1, y1, x2, y2 );
        image_Jpanel.RebuildImage();
+
+       MakeSelectionImage( true );
     }
   }
 
@@ -1625,6 +1638,7 @@ private class ConsumeKeyAdapter extends     KeyAdapter
      public void componentResized( ComponentEvent e )
      {
        ConfigureVerticalScrollBar();
+       MakeSelectionImage( true );
      }
   }
 
