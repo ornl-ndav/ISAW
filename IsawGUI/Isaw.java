@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.232  2005/08/16 14:25:40  dennis
+ *  Added "hdf" as valid way to specifiy NeXus file extensions for
+ *  the load file filter.  Added "raw" as valid way to specifiy
+ *  ISIS files, for the load file filter.  Reordered list of file
+ *  extensions.
+ *
  *  Revision 1.231  2005/08/15 13:31:01  dennis
  *  Changed version to 1.7.2 beta 1
  *
@@ -2256,8 +2262,6 @@ public class Isaw
   {
     JFileChooser fc = new JFileChooser();
 
-
-
                 //loads files in an interactive mode
     if( !batch )
     {
@@ -2270,44 +2274,63 @@ public class Isaw
         String ext=SharedData.getProperty("Default_Ext");
         if(ext!=null){
           ext=ext.toLowerCase();
-          if(ext.equals("nxs") || ext.equals("nexus"))
-            load_filter=new NexIO.NexusfileFilter();
-          else if(ext.equals("sdds"))
-            load_filter=new DataSetTools.retriever.SDDSFileFilter();
-          else if(ext.equals("ipns") || ext.equals("run"))
+
+          if (ext.equals("ipns") || ext.equals("run"))
             load_filter=new IPNS.Runfile.RunfileFilter();
-          else if(ext.equals("gsas") || ext.equals("gsa") || ext.equals("gda"))
+
+          else if (ext.equals("nxs") || ext.equals("nexus") || ext.equals("hdf"))
+            load_filter=new NexIO.NexusfileFilter();
+
+          else if (ext.equals("isis") || ext.equals("raw"))
+            load_filter=new ISIS.retriever.ISISFileFilter();
+
+          else if (ext.equals("gsas") || ext.equals("gsa") || ext.equals("gda"))
             load_filter=new DataSetTools.gsastools.GsasFileFilter();
-          else if(ext.equals("csd"))
+
+          else if (ext.equals("csd"))
             load_filter=new DataSetTools.retriever.IdeasFileFilter();
+
+          else if (ext.equals("sdds"))
+            load_filter=new DataSetTools.retriever.SDDSFileFilter();
         }
       }
-
                                        //create and display the 
                                        //file chooser, load files
       JFrame frame = new JFrame();
       fc.setCurrentDirectory(  new File( data_dir )  );
       fc.setMultiSelectionEnabled( true );
-      if(!(load_filter instanceof DataSetTools.operator.Generic.AllInOneFileFilter))
-         fc.addChoosableFileFilter( new DataSetTools.operator.Generic.AllInOneFileFilter());
-      if(!(load_filter instanceof NeutronDataFileFilter))
-          fc.setFileFilter(  new NeutronDataFileFilter()  ); 
-      if(!(load_filter instanceof DataSetTools.retriever.SDDSFileFilter))
-          fc.addChoosableFileFilter( new DataSetTools.retriever.SDDSFileFilter() );
-      if(!(load_filter instanceof DataSetTools.gsastools.GsasFileFilter))
-          fc.addChoosableFileFilter( new DataSetTools.gsastools.GsasFileFilter() );
-      if(!(load_filter instanceof NexIO.NexusfileFilter))
-          fc.addChoosableFileFilter( new NexIO.NexusfileFilter()  );
-      if(!(load_filter instanceof IPNS.Runfile.RunfileFilter))
+
+      if (!(load_filter instanceof IPNS.Runfile.RunfileFilter))
           fc.addChoosableFileFilter( new IPNS.Runfile.RunfileFilter()  );
-      if(!(load_filter instanceof DataSetTools.retriever.IdeasFileFilter))
-          fc.addChoosableFileFilter( new DataSetTools.retriever.IdeasFileFilter()  );
-      if(!(load_filter instanceof ISIS.retriever.ISISFileFilter))
+
+      if (!(load_filter instanceof NexIO.NexusfileFilter))
+          fc.addChoosableFileFilter( new NexIO.NexusfileFilter()  );
+
+      if (!(load_filter instanceof ISIS.retriever.ISISFileFilter))
          fc.addChoosableFileFilter( new ISIS.retriever.ISISFileFilter());
+
+      if (!(load_filter instanceof DataSetTools.gsastools.GsasFileFilter))
+          fc.addChoosableFileFilter( new DataSetTools.gsastools.GsasFileFilter() );
+
+      if (!(load_filter instanceof DataSetTools.retriever.IdeasFileFilter))
+          fc.addChoosableFileFilter( new DataSetTools.retriever.IdeasFileFilter()  );
+
+      if (!(load_filter instanceof DataSetTools.retriever.SDDSFileFilter))
+          fc.addChoosableFileFilter( new DataSetTools.retriever.SDDSFileFilter() );
+
+      if (!(load_filter instanceof NeutronDataFileFilter))
+          fc.setFileFilter(  new NeutronDataFileFilter()  ); 
+
+      if (!(load_filter instanceof DataSetTools.operator.Generic.AllInOneFileFilter))
+         fc.addChoosableFileFilter( new DataSetTools.operator.Generic.AllInOneFileFilter());
+
+      if (load_filter!=null) 
+        fc.setFileFilter(load_filter);
+
       Dimension d = new Dimension(650,300);
       fc.setPreferredSize(d);
-      if (load_filter!=null) fc.setFileFilter(load_filter);
-      if(  fc.showDialog(frame,null) == JFileChooser.APPROVE_OPTION  ) 
+
+      if (  fc.showDialog(frame,null) == JFileChooser.APPROVE_OPTION  ) 
       {
         setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );
          
@@ -2318,9 +2341,7 @@ public class Isaw
         load_filter = fc.getFileFilter();
       }
     }
-
-       //loads files in batch mode
-    else
+    else                               //load files in batch mode
     {
       NeutronDataFileFilter filter = new NeutronDataFileFilter();
 
