@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.54  2005/08/17 01:24:39  dennis
+ *  Size of sort/selection icon now adjusts depending on whether or
+ *  not a horizontal scroll bar is shown.  This should complete the
+ *  update of the ImageView to handle more than 32767 spectra.
+ *
  *  Revision 1.53  2005/08/16 23:07:50  dennis
  *  Icon displaying selection info and sort order now fixed.
  *  A small spacer panel still needs to be added at the bottom
@@ -197,7 +202,8 @@ public class ImageView extends    DataSetViewer
   private static final String MULTI_PLOT_HIDDEN_LINES = "Remove Hidden Lines";
 
   private static final int LEFT_SPACER_SIZE = 8;
-  private static final int SPACER_1_SIZE    = 3;
+  Dimension MIN_TOP_BOX    = new Dimension( LEFT_SPACER_SIZE, 1  );
+  Dimension MAX_BOTTOM_BOX = new Dimension( LEFT_SPACER_SIZE, 17 );
 
                                                    // Image and border
   private ImageJPanel2 image_Jpanel;   
@@ -211,6 +217,9 @@ public class ImageView extends    DataSetViewer
   JPanel image_container    = new JPanel();        // Panels to contain all
   JPanel graph_container    = new JPanel();        // parts associated with
   JPanel graph_right_filler = new JPanel();        // graph and image area
+  Box.Filler sel_image_filler   = new Box.Filler( MIN_TOP_BOX, 
+                                                  MIN_TOP_BOX, 
+                                                  MIN_TOP_BOX );
 
   private SplitPaneWithState   main_split_pane = null;
   private SplitPaneWithState   left_split_pane = null;
@@ -452,6 +461,7 @@ public static void main(String[] args)
 
 private void init()
 {
+
   if ( main_split_pane != null )     // get rid of the old components first
   {
     image_data_panel.removeAll(); 
@@ -469,17 +479,19 @@ private void init()
                getState().get_String(ViewerState.COLOR_SCALE), true, true );
                                                // make box to contain both the
                                                // image and selection indicator
-  JPanel sel_image_container = new JPanel();
+  Box sel_image_box = Box.createVerticalBox();
   selection_image = new ImageJPanel2();
   selection_image.setNamedColorModel( IndexColorMaker.GRAY_SCALE, false, true );
   selection_image.enableAutoDataRange( false );
   selection_image.setDataRange( 0, 1 );
 
-  sel_image_container.setLayout( new GridLayout(1,1) );
-  sel_image_container.add( selection_image );
+  sel_image_box.add( new Box.Filler( MIN_TOP_BOX, MIN_TOP_BOX, MIN_TOP_BOX ));
+  sel_image_box.add( selection_image );
+  sel_image_filler.changeShape( MIN_TOP_BOX, MIN_TOP_BOX, MIN_TOP_BOX );
+  sel_image_box.add( sel_image_filler );
 
-  sel_image_container.setMaximumSize( new Dimension(LEFT_SPACER_SIZE, 30000) );
-  sel_image_container.setPreferredSize( new Dimension(LEFT_SPACER_SIZE, 0) );
+  sel_image_box.setMaximumSize( new Dimension(LEFT_SPACER_SIZE, 3000) );
+  sel_image_box.setPreferredSize( new Dimension(LEFT_SPACER_SIZE, 0) );
 
   vert_scroll_bar = new JScrollBar(); 
 
@@ -492,7 +504,7 @@ private void init()
                                              new ImageHScrollBarListener() );
 
   image_container.setLayout( new BorderLayout() );
-  image_container.add( sel_image_container, BorderLayout.WEST );
+  image_container.add( sel_image_box, BorderLayout.WEST );
   image_container.add( image_scroll_pane, BorderLayout.CENTER );
   image_container.add( vert_scroll_bar, BorderLayout.EAST );
 
@@ -947,7 +959,14 @@ private void SetHorizontalScrolling( boolean state )
   h_graph.setHorizontalScrolling( state );
 
   if ( state )                            // position the graph scroll bar
+  {
     SyncHGraphScrollBar();
+    sel_image_filler.changeShape( MAX_BOTTOM_BOX,      // put larger filler at
+                                  MAX_BOTTOM_BOX,      // bottom of selection
+                                  MAX_BOTTOM_BOX );    // icon
+  }
+  else
+    sel_image_filler.changeShape( MIN_TOP_BOX, MIN_TOP_BOX, MIN_TOP_BOX );
 
   hgraph_scroll_pane.doLayout();
 
