@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.31  2005/08/17 02:07:45  dennis
+ * Now trap some null pointer exceptions that occur when deleting
+ * ranges of nodes that cross DataSet and/or Experiment boundaries.
+ *
  * Revision 1.30  2005/08/15 03:58:31  dennis
  * Modified deleteNodesWithPaths() so that it maintains a hashtable
  * of DataSets that had Data blocks deleted, then just notifies those
@@ -598,11 +602,23 @@ public class JDataTree
     else if( node instanceof DataMutableTreeNode )
     {
       DataMutableTreeNode data_node = (DataMutableTreeNode)node;
+
+      if ( data_node == null )           // node must have already been 
+        return null;                     // deleted`
+
       DataSetMutableTreeNode dataset_node = 
                                   (DataSetMutableTreeNode)data_node.getParent();
 
+      if ( dataset_node == null )        // Nothing there to delete, since
+        return null;                     // we must have previously deleted
+                                         // the DataSet 
+
       ds = (DataSet)dataset_node.getUserObject();
-//      ds.removeData_entry_with_id( group_id );
+
+      if ( ds == null )                 // Nothing to delete
+        return null;
+ 
+//    ds.removeData_entry_with_id( group_id );
 
                  //remove node from the tree 
                  //and free up the memory
