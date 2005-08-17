@@ -30,6 +30,13 @@
 
  *
  * $Log$
+ * Revision 1.3  2005/08/17 02:06:11  dennis
+ * Overide removeNodeFromParent() inherited from DefaultTreeModel,
+ * to allow catching the case where a node no longer has a parent.
+ * This happens if a selected range crosses DataSet and Experiment
+ * boundaries.  Deleting such a range leads to attempts to delete
+ * child nodes AFTER the parent is already deleted.
+ *
  * Revision 1.2  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -48,7 +55,9 @@ import javax.swing.tree.TreeNode;
  */ 
 public class JDataTreeModel extends DefaultTreeModel
 {
- 
+  boolean  debug_flag = false;    // set true to get stack dump for
+                                  // IllegalArgumentExceptions, like
+                                  // node has no parent
   /**
    * initialize super class
    */ 
@@ -57,6 +66,25 @@ public class JDataTreeModel extends DefaultTreeModel
     super( root );
   }
 
+  /**
+   *  This method overrides the removeNodeFromParent() method
+   *  of the DefaultTreeModel, to catch the case where a 
+   *  node does not have a parent.
+   *
+   *  @param node  The node to be removed
+   */
+  public void removeNodeFromParent( MutableTreeNode node )
+  {
+    try
+    {
+       super.removeNodeFromParent( node );
+    }
+    catch ( IllegalArgumentException e )
+    {
+      if ( debug_flag )
+        throw e;
+    }
+  }
 
   /**
    * removes 'node', setting that parent of each leaf to null
