@@ -29,6 +29,19 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.32  2005/08/18 16:33:40  dennis
+ *   Added a boolean parameter "notify" to selectNode() method so that
+ * notification of each individual selection can be turned off when
+ * selecting multiple Data blocks.  selectNode() now returns the DataSet
+ * set to be notified, rather than actually notifying it, if "notify" is
+ * false.
+ *   The selectNodesWithPaths() method now accumulates a "list" of all
+ * DataSets to be notified, in a hashtable, and then notifies each DataSet
+ * only one time.  This fixes the problem with slow selection of nodes in
+ * the tree.   Deleting Data blocks from DataSets, from the tree, still
+ * needs to be made more efficient.
+ *   Made some minor additions to the documentation.
+ *
  * Revision 1.31  2005/08/17 02:07:45  dennis
  * Now trap some null pointer exceptions that occur when deleting
  * ranges of nodes that cross DataSet and/or Experiment boundaries.
@@ -220,7 +233,8 @@ public class JDataTree
                                       //objects, and Data objects 
                                       //will be shown in.
 //    tree = new JTree(   new DefaultTreeModel(  new DefaultMutableTreeNode( "Session" )  )   );
-    tree = new JTree(   new JDataTreeModel(  new DefaultMutableTreeNode( "Session" )  )   );
+    tree = 
+      new JTree( new JDataTreeModel( new DefaultMutableTreeNode( "Session" )) );
     tree.setShowsRootHandles( true );
     tree.putClientProperty("JTree.lineStyle", "Angled");
     tree.addMouseListener( ml );
@@ -228,9 +242,9 @@ public class JDataTree
     tree.addKeyListener(this);
     tree.setCellRenderer(new JDataTreeCellRenderer());
 
-    getMyModel().insertNodeInto(  new Experiment( MODIFIED_NODE_TITLE ),
-                                  (DefaultMutableTreeNode)getMyModel().getRoot(),
-                                  0  );
+    getMyModel().insertNodeInto( new Experiment( MODIFIED_NODE_TITLE ),
+                                 (DefaultMutableTreeNode)getMyModel().getRoot(),
+                                 0  );
 
     setLayout(  new GridLayout(1,1)  );
     setBorder(  new CompoundBorder( new EmptyBorder(4,4,4,4), 
@@ -334,7 +348,8 @@ public class JDataTree
     for( int i=0;  i<e.getChildCount();  i++ )
       e.getUserObject(i).addIObserver( this );
 
-    int child_count = (  (DefaultMutableTreeNode)getMyModel().getRoot()  ).getChildCount();
+    int child_count = 
+             ( (DefaultMutableTreeNode)getMyModel().getRoot() ).getChildCount();
     getMyModel().insertNodeInto(  (MutableTreeNode)e, 
                                   (MutableTreeNode)tree.getModel().getRoot(), 
                                   child_count  );
@@ -351,7 +366,7 @@ public class JDataTree
     Experiment[] exps = getExperiments();
     for( int i=0;  i< exps.length;  i++ )
     {
-      System.out.println(  exps[i].toString() + " " + exp_name  );
+      // System.out.println(  exps[i].toString() + " " + exp_name  );
 
       if(  exps[i].toString().equals( exp_name )  )
         addToExperiment( ds, exps[i] );
@@ -375,7 +390,7 @@ public class JDataTree
     {
       if( dss[i] == ds )
       {
-        System.out.println( "found it" );
+        // System.out.println( "found it" );
         return;
       }
     }
@@ -411,7 +426,8 @@ public class JDataTree
    */
   public MutableTreeNode getNodeOfObject( Object obj )
   {
-    DefaultMutableTreeNode root = (DefaultMutableTreeNode)tree.getModel().getRoot();
+    DefaultMutableTreeNode root = 
+                             (DefaultMutableTreeNode)tree.getModel().getRoot();
     Enumeration e = root.breadthFirstEnumeration();
 
     while(  e.hasMoreElements()  )
@@ -489,8 +505,22 @@ public class JDataTree
     Hashtable hash = new Hashtable();     // save DataSets to notify in 
                                           // hashtable
     DataSet   ds   = null;
-    for( int i=0;  i<tps.length;  i++ )   //this call takes care of
-    {                                     //observer notification
+    for( int i=0;  i<tps.length;  i++ )  
+    {                                    
+/*
+      MutableTreeNode node = 
+        (MutableTreeNode)tps[i].getLastPathComponent();
+      if ( node instanceof Experiment )
+        System.out.println("Deleteing experiment");
+      else if ( node instanceof DataSetMutableTreeNode )
+        System.out.println("Deleting DataSet ");
+      else if ( node instanceof DataMutableTreeNode )
+        System.out.println("Deleting Data BLOCK ");
+      else 
+        System.out.println("WHAT AM I DELETEING???? " + node);
+*/       
+                                          //this call takes care of
+                                          //observer notification
       ds = deleteNode( tps[i], false );   //except when deleting Data blocks
       if ( ds != null )
         hash.put( ds, ds );
@@ -506,9 +536,9 @@ public class JDataTree
 
 
   /*
-   * remove an arbitrary node from the tree.  Any Experiment container
+   * Remove an arbitrary node from the tree.  Any Experiment container
    * object, DataSet object, or Data object may be removed using this
-   * function.  this method automatically notify observers if notify
+   * function.  This method will automatically notify observers if notify
    * is passed in true.  If notify is passed in false, then DataSets
    * that have individual Data blocks removed will NOT be notified.
    * If whole DataSets or experiments are deleted these will be 
@@ -516,15 +546,16 @@ public class JDataTree
    * false, the calling code is responsible for notifying DataSets
    * that were modified.  If any DataSet is modified by deleting 
    * a Data block, the DataSet to be notified is returned by this 
-   * method.  
+   * method.  Only one notification should be sent when many Data
+   * blocks are deleted from on DataSet.
    *
-   *   @param obj     the object to be removed from the tree, or the
-   *                  MutableTreeNode to be removed from the tree, or
-   *                  the TreePath to be removed from the tree.
-   *   @param notify  notifies the DataSet's IObservers when true if 
-   *                  the obj is a Data object.
+   *   @param obj     the object to be removed from the tree
    *
-   * @return A reference to a DataSet that had a Data block deleted
+   *   @param notify  If true, and the object is a DataMutableTreeNode,
+   *                  then notify the DataSet's IObservers that a Data
+   *                  block was deleted.
+   *
+   * @return A reference to a DataSet that had a Data block deleted,
    * or null, if only whole DataSets and experiments were deleted.
    */
   public DataSet deleteNode( Object obj, boolean notify )
@@ -590,7 +621,6 @@ public class JDataTree
         ds = ( (DataSetMutableTreeNode)node ).getUserObject();
         ds.deleteIObserver( this );
         ds.notifyIObservers( IObserver.DESTROY );
-//      ds.addIObserver( this );
       }
 
       getMyModel().removeNodeFromParent( node );
@@ -618,10 +648,9 @@ public class JDataTree
       if ( ds == null )                 // Nothing to delete
         return null;
  
-//    ds.removeData_entry_with_id( group_id );
-
-                 //remove node from the tree 
-                 //and free up the memory
+                 // Remove node from the tree and free up the memory.  This
+                 // calls DataSetMutableTreeNode.remove() which in turn removes
+                 // the node from the DataSet.
                  // TODO: speed up removeNodeFromParent
       getMyModel().removeNodeFromParent( node );
       getMyModel().extinguishNode( node );
@@ -676,32 +705,66 @@ public class JDataTree
    */ 
   public void selectNodesWithPaths( TreePath[] tps )
   {
+    Hashtable hash = new Hashtable();     // save DataSets to notify in 
+                                          // hashtable
+    DataSet ds = null;
+
     for( int i=0;  i<tps.length;  i++ )
-      selectNode(  (MutableTreeNode)tps[i].getLastPathComponent()  );
+    {
+      ds = selectNode( (MutableTreeNode)tps[i].getLastPathComponent(), false );
+      if ( ds != null )
+        hash.put( ds, ds ); 
+    }
+
+    Object dss[] = hash.values().toArray();   // Now Notify any DataSets
+    for ( int i = 0; i < dss.length; i++ )    // from which we deleted Data
+    {
+      ds = (DataSet)dss[i];
+      ds.notifyIObservers( IObserver.SELECTION_CHANGED );
+    }
+
   }
 
 
   /**
-   * selects a specific node.  the node can be of any data type
+   * Select a specific node from the tree.  The node can be of any data type
    * allowed in the tree (Experiment, DataSetMutableTreeNode, and
    * DataMutableTreeNode).  this method does NOT clear all
    * other selections; all previous selections are persistent.
+   * If notify is passed in as true, and the node is a DataMutableTreeNode,
+   * then the DataSet containing that node will be notified that a 
+   * selection was changed.  IF notify is passed in false, and the node
+   * being selected is a DataMutableTreeNode, then it is the responsibility
+   * of the calling code to notify the corresponding DataSet.  In this case 
+   * the corresponding DataSet is returned by this method.
+   *
+   *   @param node    the node to be selected.
+   *
+   *   @param notify  If true, and the node is a DataMutable tree node, 
+   *                  then notify the parent DataSet that a selection was
+   *                  changed.
+   *
+   * @return A reference to a DataSet that had a Data block selected, 
+   * or null, if only whole DataSets and experiments were selected.
+   * 
    */ 
-  public void selectNode( MutableTreeNode node )
+  public DataSet selectNode( MutableTreeNode node, boolean notify )
   {
     if( node instanceof Experiment )
     {
       Experiment exp = (Experiment)node;
       exp.setSelected( true );
+      return null;
     }
 
     if( node instanceof DataSetMutableTreeNode )
     {
       DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)node;
       ds_node.setSelected( true );
+      return null;
     }
 
-    if( node instanceof DataMutableTreeNode )
+    if ( node instanceof DataMutableTreeNode )
     {
       DataMutableTreeNode d_node = (DataMutableTreeNode)node;
       Data d = d_node.getUserObject();
@@ -709,8 +772,13 @@ public class JDataTree
                                   //find the DataSet that these Data objects
                                   //belong to and have it notify its IObservers
       DataSet ds =((DataSetMutableTreeNode)d_node.getParent() ).getUserObject();
-      ds.notifyIObservers( IObserver.SELECTION_CHANGED );
+      if ( notify )
+        ds.notifyIObservers( IObserver.SELECTION_CHANGED );
+
+      return ds;
     }
+
+    return null;
   }
   
 
@@ -757,7 +825,8 @@ public class JDataTree
 
                        //if update has been called from this object
                        //after a deletion, doing it again will be a problem. 
-      DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)getNodeOfObject( observed );
+      DataSetMutableTreeNode ds_node = 
+                            (DataSetMutableTreeNode)getNodeOfObject( observed );
       if( ds_node == null )
         return;
 
@@ -805,7 +874,8 @@ public class JDataTree
                node.setSelected(false);
                if (i < selectedIndices.length)
                {
-                  if (node.getUserObject().equals(ds.getData_entry(selectedIndices[i])))
+                  if (node.getUserObject().equals(
+                                        ds.getData_entry(selectedIndices[i])))
                   {
                      i++;
                      node.setSelected(true);
@@ -904,18 +974,19 @@ public class JDataTree
    */ 
   public Experiment[] getExperiments()
   {
-    DefaultMutableTreeNode root = (DefaultMutableTreeNode)tree.getModel().getRoot();
+    DefaultMutableTreeNode root = 
+                           (DefaultMutableTreeNode)tree.getModel().getRoot();
     int total_exp_count = root.getChildCount();
 
     int e_count = 0;
     Experiment[] exps = new Experiment[ total_exp_count ];
     for( int i=0;  i<root.getChildCount();  i++ ) 
-      exps[ e_count++ ] = (Experiment)root.getChildAt(i);  //this should be safe as
-                                                           //long as no one changes
-                                                           //the structure of the tree.
-                                                           //see class documentation
-                                                           //for details.
-
+      exps[ e_count++ ] = (Experiment)root.getChildAt(i);  
+                                                 //this should be safe as
+                                                 //long as no one changes
+                                                 //the structure of the tree.
+                                                 //see class documentation
+                                                 //for details.
     return exps;
   }
 
@@ -930,7 +1001,8 @@ public class JDataTree
   {
     Vector dss = new Vector();
 
-    DefaultMutableTreeNode root = (DefaultMutableTreeNode)tree.getModel().getRoot();
+    DefaultMutableTreeNode root = 
+                              (DefaultMutableTreeNode)tree.getModel().getRoot();
     dss = searchFromNode( root );
 
                                        //pack them up in an array & return
@@ -979,7 +1051,9 @@ public class JDataTree
           for(  int ds_index=0;  ds_index<ds_count;  ds_index++ )  //karma++
             if( exp.getChildAt( ds_index ) instanceof DataSetMutableTreeNode  )
             {
-              DataSetMutableTreeNode dsmtn = (DataSetMutableTreeNode)exp.getChildAt( ds_index );
+              DataSetMutableTreeNode dsmtn = 
+                             (DataSetMutableTreeNode)exp.getChildAt( ds_index );
+
               DataSet ds = (DataSet)dsmtn.getUserObject();
               ds_nodes.addElement( ds );
             }
@@ -998,7 +1072,9 @@ public class JDataTree
       for(  int ds_index=0;  ds_index<ds_count;  ds_index++ )  //karma++
         if( exp.getChildAt( ds_index ) instanceof DataSetMutableTreeNode  )
         {
-          DataSetMutableTreeNode dsmtn = (DataSetMutableTreeNode)exp.getChildAt( ds_index );
+          DataSetMutableTreeNode dsmtn = 
+                             (DataSetMutableTreeNode)exp.getChildAt( ds_index );
+
           DataSet ds = (DataSet)dsmtn.getUserObject();
           ds_nodes.addElement( ds );
         }
