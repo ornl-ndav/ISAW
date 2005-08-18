@@ -30,6 +30,9 @@
 
  *
  * $Log$
+ * Revision 1.9  2005/08/18 16:34:47  dennis
+ * Minor improvement to javadoc.
+ *
  * Revision 1.8  2004/05/18 15:27:02  rmikk
  * The toString method now returns the result of the DataSet's toString()
  *    method.  Now changing the title WILL change what appears in the tree
@@ -176,7 +179,9 @@ public class DataSetMutableTreeNode
 
 
   /**
-   * remove a Data object from this node
+   * Remove a Data object from this node.  NOTE: this is called by the 
+   * DefaultTreeModel.removeNodeFromParent() when nodes are removed
+   * from the tree.
    */
   public void remove( int index )
   {
@@ -186,7 +191,7 @@ public class DataSetMutableTreeNode
 
 
   /**
-   * remove a Data object from this node.
+   * Remove a Data object from this node.
    */
   public void remove( MutableTreeNode node )
   {
@@ -196,7 +201,6 @@ public class DataSetMutableTreeNode
 
     data_nodes.remove( node );
   }
-
 
   public void removeFromParent()
   {
