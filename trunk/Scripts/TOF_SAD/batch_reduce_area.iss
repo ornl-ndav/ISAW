@@ -207,8 +207,8 @@ RUNCds[1]= ExtAtt(RUNCds[1], "Group ID", true, first_area_id, last_area_id)
 TransS = ReadTransmission( TransSF, 70) 
  
 #Zero( Eff,0,0,9)
-
-Res=Reduce_KCL(TransS,TransB,Eff,Sens[0],qu,RUNSds[0],RUNSds[1],RUNBds[0],RUNBds[1],RUNCds[0],RUNCds[1],NeutronDelay,Scale,thick,Xoff,Yoff,NQxBins,NQybins,useEmptyCell)
+# Added the beam stop radius as the last parameter for Reduce_KCL, it is 1.5 cm for SAND and 2.1 cm for SASI
+Res=Reduce_KCL(TransS,TransB,Eff,Sens[0],qu,RUNSds[0],RUNSds[1],RUNBds[0],RUNBds[1],RUNCds[0],RUNCds[1],NeutronDelay,Scale,thick,Xoff,Yoff,NQxBins,NQybins,useEmptyCell,1.5)
 
 
 #Display Res[0], "NEW Selected Graph View"
