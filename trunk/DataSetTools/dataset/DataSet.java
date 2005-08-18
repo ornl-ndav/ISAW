@@ -30,6 +30,22 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.47  2005/08/18 22:56:58  dennis
+ *  Added methods:
+ *     removeData_entries( list[] ),
+ *     removeData_entries_with_ids( list[] )
+ *  to more quickly remove whole lists of Data blocks from a DataSet.
+ *  These methods return a boolean value indicating whether or not
+ *  the DataSet was actually modified.  This permits the calling
+ *  code to avoid unneeded notification of observers of the the
+ *  DataSet, if no changes were actually made.
+ *  Modified:
+ *     removeData_entry( index ),
+ *     removeData_entry_with_id( group_id )
+ *  to also return a boold value indicating whether or nat the
+ *  DataSet was actually modified.
+ *  Made some minor improvments to javadocs.
+ *
  *  Revision 1.46  2005/05/27 03:44:09  dennis
  *  Removed unused imports (no longer needed since the convenience
  *  methods to get specific attributes were removed).
@@ -168,7 +184,7 @@ import DataSetTools.instruments.*;
  * The concrete root class for a set of Data objects.  A DataSet object
  * bundles together a vector of Data objects with associated units, labels,
  * title, attributes and log information.  Data objects can be added to or 
- * removed from the data set using the methods of this class.  Also, the
+ * removed from the DataSet using the methods of this class.  Also, the
  * list of attributes is extensible and can be accessed through methods in
  * this class.
  *
@@ -245,12 +261,12 @@ public class DataSet implements IAttributeList,
   private OperationLog  op_log;
 
   /**
-   * Constructs an empty data set with the specified title, initial log
+   * Constructs an empty DataSet with the specified title, initial log
    * object, units and labels.
    *
-   * @param   title     String giving a title for the data set.
+   * @param   title     String giving a title for the DataSet.
    * @param   op_log    OperationLog object giving the initial log record
-   *                    for this data set. 
+   *                    for this DataSet. 
    * @param   x_units   String specifying the units for the "X" axis.  This 
    *                    should be specified in a standard form. 
    * @param   x_label   String identifying the quantity measured in the "X"
@@ -292,11 +308,11 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Constructs an empty data set with the specified title, initial log 
+   * Constructs an empty DataSet with the specified title, initial log 
    * string, units and labels. 
    *
-   * @param   title     String giving a title for the data set.
-   * @param   log_info  String giving log information for the data set.
+   * @param   title     String giving a title for the DataSet.
+   * @param   log_info  String giving log information for the DataSet.
    * @param   x_units   String specifying the units for the "X" axis.  This 
    *                    should be specified in a standard form. 
    * @param   x_label   String identifying the quantity measured in the "X"
@@ -321,11 +337,11 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Constructs an empty data set with the specified title and log information.
+   * Constructs an empty DataSet with the specified title and log information.
    * The units and labels are assigned default values.
    *
-   * @param   title     String giving a title for the data set.
-   * @param   log_info  String giving log information for the data set.
+   * @param   title     String giving a title for the DataSet.
+   * @param   log_info  String giving log information for the DataSet.
    *
    * @see DataSetTools.dataset.Data
    */
@@ -336,8 +352,8 @@ public class DataSet implements IAttributeList,
 
 
   /**
-  * Constructs an empty data set with no log info and an empty string for
-  * the title.  This routine creates a data set that will then be filled up
+  * Constructs an empty DataSet with no log info and an empty string for
+  * the title.  This routine creates a DataSet that will then be filled up
   * by the XMLread method
   *
   * @param xmlStandAlone   <ul>
@@ -356,8 +372,8 @@ public class DataSet implements IAttributeList,
 
 
  /**
-  * Constructs an empty data set with no log info and an empty string for
-  * the title.  This routine creates a data set that will then be filled up
+  * Constructs an empty DataSet with no log info and an empty string for
+  * the title.  This routine creates a DataSet that will then be filled up
   * by the XMLread method<P>
   *
   *  xmlStandAlone   will be set to false
@@ -466,7 +482,7 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Returns the title of the data set 
+   * Returns the title of the DataSet 
    *
    * @return  The DataSet title.
    */
@@ -474,7 +490,7 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Returns a numeric tag that is unique to this data set within a program.
+   * Returns a numeric tag that is unique to this DataSet within a program.
    * 
    * @return  The numeric tag assigned when the DataSet was constructed 
    */
@@ -906,7 +922,7 @@ public class DataSet implements IAttributeList,
    */
   public int getPointedAtIndex( )
   {
-    // This check is necessary, since we might have deleted some elements
+    // This check is necessary, since we might have eeleted some elements
     // from the DataSet, after the pointed_at_index was set.
     if ( pointed_at_index < 0  || pointed_at_index >= data.size() )
       pointed_at_index = INVALID_INDEX;
@@ -952,7 +968,7 @@ public class DataSet implements IAttributeList,
    * Sets the title of the DataSet both as an instance variable and as
    * an attribute of the DataSet.
    *
-   * @param  title   The String to use for the new title of the data set
+   * @param  title   The String to use for the new title of the DataSet 
    */
   public void setTitle( String title ) 
   { 
@@ -967,13 +983,13 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Returns the log information for the data set 
+   * Returns the log information for the DataSet 
    */
   public OperationLog getOp_log() { return op_log; }
 
 
   /**
-   * Set the entire operation log for the data set
+   * Set the entire operation log for the DataSet 
    */
   public void setOp_log( OperationLog op_log ) 
   { 
@@ -988,7 +1004,7 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Copy the operation log from the specified the data set
+   * Copy the operation log from the specified the DataSet 
    */
   public void copyOp_log( DataSet data_set )
   { 
@@ -1003,10 +1019,10 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Adds a new entry to the log information for the data set 
+   * Adds a new entry to the log information for the DataSet 
    *
    * @param log_info   The String to be added to the log information for
-   *                   this data set.
+   *                   this DataSet.
    */
   public void addLog_entry( String log_info )
   {
@@ -1027,7 +1043,7 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Returns a reference to the first data object in this data set with the 
+   * Returns a reference to the first data object in this DataSet with the 
    * specified group ID.  If there is no data object with the correct ID, this
    * returns null.
    *
@@ -1046,7 +1062,7 @@ public class DataSet implements IAttributeList,
 
   /**
    * Returns a reference to the Data object from the specified 
-   * position in the data set if the index is valid, otherwise return null.
+   * position in the DataSet if the index is valid, otherwise return null.
    *
    * @param  index   The index of the requested Data object in the list of
    *                 Data objects in this DataSet. 
@@ -1190,33 +1206,132 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Removes the data entry from the specified position in the data set.
+   * Removes the data entry from the specified position in the DataSet.
    *
    * @param  index  The index of the Data object to be removed from the list
    *                of Data objects in this DataSet.
+   *
+   * @return  true if some Data block was removed.
    */
-  public void removeData_entry( int index )
+  public boolean removeData_entry( int index )
   {
     if ( index >= 0 && index < data.size() )
+    {
       data.removeElementAt( index );
+      return true;
+    }
+    else
+      return false;
   }
 
 
   /**
-   * Removes the first data object in this data set with the specified group id.
+   * Removes all data objects in this DataSet, that are initially at any
+   * of the specified indices.  If there are no valid indices in the list
+   * this method has no effect.
+   *
+   * NOTE: It is the responsibility of the calling code to notify 
+   *       observers of the DataSet that Data has been deleted.  
+   *       This method is more efficient than repeated calls to 
+   *       removeData_entry() if many Data blocks are to be removed.
+   *
+   * @param  list[]   The list of indices to be removed.
+   *
+   * @return  true if some Data block was removed. 
+   */
+  public boolean removeData_entries( int list[] )
+  {
+                                            // first make a copy of the indices 
+                                            // so we can sort and search
+     int my_list[] = new int[ list.length ];
+     System.arraycopy( list, 0, my_list, 0, list.length );
+     Arrays.sort( my_list );
+     Vector new_data = new Vector( data.size() - my_list.length );
+
+     boolean  some_removed = false;
+     int      position;
+     for ( int i = 0; i < data.size(); i++ )  // copy over everything not listed
+     {
+       position = Arrays.binarySearch( my_list, i );
+       if ( position < 0 )
+         new_data.addElement( data.elementAt(i) );
+       else
+         some_removed = true;
+     }
+
+     if ( some_removed )    // use the new list and trim it, in case there
+     {                      // were duplicate indices.
+       data = new_data;
+       data.trimToSize();
+     }
+
+     return some_removed;
+  }
+
+
+  /**
+   * Removes the first data object in this DataSet with the specified group id.
    * If there is no data object with the correct ID, this has no effect.
    *
    * @param  group_id      The group_id of the requested Data object in the 
    *                       list of Data objects in this DataSet.
+   *
+   * @return  true if some Data block was removed.
    */
-  public void removeData_entry_with_id( int group_id )
+  public boolean removeData_entry_with_id( int group_id )
   {
      for ( int i = 0; i < data.size(); i++ )
        if ( ((Data)data.elementAt( i )).getGroup_ID() == group_id )
        {
          data.removeElementAt(i);           // found the id, so remove the
-         return;                            // the data object and exit
+         return true;                       // the data object and exit
        }
+     return false; 
+  }
+
+
+  /**
+   * Removes all data objects in this DataSet, whose group ID is in the 
+   * the specified list of group ids.  If there is no data object with 
+   * any of the specified IDs, this has no effect.  NOTE: It is the
+   * responsibility of the calling code to notify observers of the DataSet
+   * that Data has been deleted.  This method is more efficient than
+   * repeated calls to removeData_entry_with_id() if many Data blocks are
+   * to be removed.
+   *
+   * @param  group_ids[]   The list of group_ids to be removed.
+   *
+   * @return  true if some Data block was removed. 
+   */
+  public boolean removeData_entries_with_ids( int group_ids[] )
+  {
+                                               // first make a copy of the ids
+                                               // so we can sort and search
+     int ids[] = new int[ group_ids.length ];
+     System.arraycopy( group_ids, 0, ids, 0, group_ids.length );
+     Arrays.sort( ids );
+     Vector new_data = new Vector( data.size() - ids.length ); 
+
+     boolean  some_removed = false;
+     int      group_id;
+     int      position; 
+     for ( int i = 0; i < data.size(); i++ )  // copy over everything not listed
+     {
+       group_id = ((Data)data.elementAt(i)).getGroup_ID();
+       position = Arrays.binarySearch( ids, group_id );
+       if ( position < 0 )
+         new_data.addElement( data.elementAt(i) );
+       else
+         some_removed = true;
+     }
+
+     if ( some_removed )    // use the new list and trim it, in case there
+     {                      // were duplicate group_IDs.
+       data = new_data;
+       data.trimToSize();
+     }
+
+     return some_removed;
   }
 
 
@@ -1238,7 +1353,7 @@ public class DataSet implements IAttributeList,
 
   /**
    * Returns a reference to the specified operation in the list of available
-   * operators on this data set.
+   * operators on this DataSet.
    *
    * @param  index   The index of the requested operation in the list of
    *                 operators in this DataSet.
@@ -1254,7 +1369,7 @@ public class DataSet implements IAttributeList,
 
   /**
    * Returns a reference to the operation in the list of available operators 
-   * on this data set with the specified TITLE.  If the named operator is not
+   * on this DataSet with the specified TITLE.  If the named operator is not
    * in the list, this method returns null.
    *
    * @param  title   The title of the requested operation 
@@ -1279,7 +1394,7 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Adds a new operator to the list of operators for this data set.
+   * Adds a new operator to the list of operators for this DataSet.
    *
    * @param  operator    The operation to be added to the list of operations
    *                     in this DataSet.
@@ -1326,7 +1441,7 @@ public class DataSet implements IAttributeList,
 
   /**
    * Get the range of X values for the collection of Data objects in this
-   * data set.
+   * DataSet.
    */
   public UniformXScale getXRange()
   {
@@ -1357,7 +1472,7 @@ public class DataSet implements IAttributeList,
 
   /**
    * Get the range of Y values for the collection of Data objects in this
-   * data set.
+   * DataSet.
    */
   public ClosedInterval getYRange()
   {
@@ -1976,7 +2091,7 @@ public class DataSet implements IAttributeList,
 
   /**
    * Clone an EMPTY DataSet with the same title, units, label, operation log,
-   * and operators as the original data set.
+   * and operators as the original DataSet.
    */
   public DataSet empty_clone()
   {
@@ -1986,7 +2101,7 @@ public class DataSet implements IAttributeList,
       return this;
     }
 
-    DataSet new_ds = new DataSet( getTitle(),           // get a new data set
+    DataSet new_ds = new DataSet( getTitle(),           // get a new DataSet 
                                   (OperationLog) getOp_log().clone(),
                                   getX_units(),
                                   getX_label(),
