@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.48  2005/08/19 19:56:55  dennis
+ *  Remove selected now will scan the DataSet and form a list of
+ *  indices of selected Data blocks, then call removeData_entries(list)
+ *  to remove all of the Data blocks "at once", if more than one Data
+ *  block is selected.  This is more efficient than repeatedly calling
+ *  removeData_entry(), to remove many Data blocks.
+ *
  *  Revision 1.47  2005/08/18 22:56:58  dennis
  *  Added methods:
  *     removeData_entries( list[] ),
@@ -793,17 +800,28 @@ public class DataSet implements IAttributeList,
    */
   public boolean removeSelected( boolean status )
   {
-    boolean some_removed = false;
-                                     //  NOTE: We must remove in reverse order
-
-    for ( int i = data.size() - 1; i >= 0; i-- )
+    int index_to_delete[] = new int[ data.size() ];
+    int num_to_delete = 0;
+    for ( int i = 0; i < data.size(); i++ )
       if ( isSelected(i) == status )
       {
-        data.removeElementAt(i);
-        some_removed = true;
+        index_to_delete[ num_to_delete ] = i;
+        num_to_delete++;
       }
 
-    return some_removed;
+    if ( num_to_delete == 0 )
+      return false;    
+    else if ( num_to_delete == 1 )             // quicker to just delete 1
+    {
+      data.removeElementAt( index_to_delete[0] );
+      return true;
+    }
+    else
+    {
+      int list[] = new int[ num_to_delete ];
+      System.arraycopy( index_to_delete, 0, list, 0, num_to_delete );
+      return removeData_entries( list );
+    }
   }
 
  
