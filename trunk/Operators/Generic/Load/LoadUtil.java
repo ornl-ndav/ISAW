@@ -30,6 +30,13 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2005/08/19 19:58:10  rmikk
+ * Added method to "Transpose" the data in a dataset that was improperly
+ *     read from a NeXus file because the dimensions are in the incorrect
+ *    order.
+ * 
+ * Introduced a main method to test this routine
+ *
  * Revision 1.6  2005/08/15 19:45:55  rmikk
  * Fixed up the command line info to show usage for parameters and to allow 
  * for entering filenames and data set names
@@ -73,16 +80,20 @@ package Operators.Generic.Load;
 import java.io.*;
 import java.util.*;
 
+import Command.ScriptUtil;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.instruments.*;
-
+import NexIO.*;
+import NexIO.Write.*;
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import java.util.regex.*;
 import DataSetTools.gsastools.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 /**
  *  This class contains static method for Loading detector information
  *  into a DataSet.  This is necesary if the raw data file does not 
@@ -749,6 +760,148 @@ public class LoadUtil
   }
   
   
+  /**
+   * Will transpose dimensions as specified in the Xlate array
+   * @param ds  The dataset with dimensions messed up
+   * @param Xlate  A translation array. [detector,col,row,time]=[3,2,1,0] is natural
+   *      ISAW dimension order. This array should contain corresponding dimension position 
+   *      (a la C starting at 0) in the NeXus file with the property given above.
+   *      i.e. if the time axis/dimension is the 2nd array position(a la C starting at 0) in the NeXus file, 
+   *      then the last entry of of Xlate should be 2.If there is only one detector, then the first entry
+   *      of Xlate should be 3
+   * @param ntimes the #of times( not time bins if Histogram)
+   * @param nrows  number of rows in all detectors in Nexus file
+   * @param ncols the number of columns in all detectors(must be in separate NXdata if not same)
+   * @param ndet  the number of detectors in this data set
+   * @param Xscale  If the time dimension is not the first dimension, this information
+   *                must be given.
+   * @return  A dataset with the data in the proper order.
+   */
+  public static Object Transpose( DataSet ds, int[]Xlate,int nrows,
+     int ncols, int ndet,XScale Xscale, boolean isHistogram){
+    
+    
+    if( ds ==null)
+       return new ErrorString("DataSet does not exist");
+    if( Xlate==null)
+       return null;
+    if( Xlate.length <1)
+       return null;
+    
+   if( Xscale==null)
+          if( Xlate[0]==0){
+          
+              Xscale = ds.getData_entry(0).getX_scale();
+              isHistogram =ds.getData_entry(0) instanceof HistogramTable;
+          }else{
+              return new ErrorString("An XScale is needed");
+          }
+    int H=0;
+    if( isHistogram)
+       H=1;
+    int ntimes = Xscale.getNum_x()-H;
+    int nys=ds.getData_entry(0).getY_values().length ;
+    if( ds.getNum_entries()*nys!= nrows*ncols*ndet*ntimes)
+       return new ErrorString("Number of data blocks do not correspond to the rows,cols, and detectors");
+    DataSet Res = new DataSet(ds.getTitle(),"Transposed","us","Time","Counts","Intensity");
+
+    float[]yvals = new float[ntimes]; 
+    float[]errs = null;
+    if( ds.getData_entry(0).getErrors() !=null)
+        errs=new float[ntimes];
+   
+   int[] size = new int[4];
+   size[0]= ntimes;
+   size[1]=nrows;
+   size[2]=ncols;
+   size[3]=ndet;
+   int P=0;
+   
+   int[]mult= new int[4];
+   //mult[0] is time, mult[1]=row, mult[2] col mult;
+   mult[0]=mult[1]=mult[2]=mult[3]=1;
+   for( int i=0; i < 4 ; i++ ){
+     int c=Xlate[3-i];
+     for(int j=0;j <= 3; j++)
+        if( Xlate[j] < c )
+           mult[i] *= size[3-j];
+   }
+   
+    System.out.println("mults="+mult[0]+","+mult[1]+","+mult[2]+","+mult[3]);
+   
+    int Group_ID=1;
+    for( int d=0; d <ndet; d++){
+       P=d*mult[3];
+     
+      for( int r=0; r< nrows; r++){
+      int Prow= P+r*mult[2];
+      for( int c=0; c<ncols; c++){
+        Arrays.fill( yvals, 0f);
+        if( errs != null)
+            Arrays.fill( errs, 0f);
+        int Pcol =Prow+c*mult[1];
+        for(int t=0; t < ntimes; t++){
+           
+           int Ptime=Pcol+t*mult[0];
+           yvals[t]= ds.getData_entry(Ptime/nys).getY_value(Ptime%nys,IData.SMOOTH_NONE);
+           if( errs != null)
+              errs[t]=ds.getData_entry(Ptime/nys).getErrors()[Ptime%nys];
+           
+        }  //time
+        Data D=null;
+        if( isHistogram)
+           D= new HistogramTable(Xscale, yvals, errs,Group_ID++);
+        else
+           D= new FunctionTable(Xscale, yvals, errs,Group_ID++);
+        Res.addData_entry(D);
+      }//col      
+    }//row
+    }//det
+    return Res;
+   
+  }
+  /**
+   * Test program for Transpose
+   * @param args
+   */
+  public static void main( String args[]){
+    DataSet[] DDs=null;
+    try{
+      
+   
+     DDs= Command.ScriptUtil.load( args[0]);
+    }catch(Exception s){
+      System.exit(0);
+    }
+    // ----- Now get XScale------------
+    float[] xvals = new float[199];
+    xvals[0]=21568;
+    double r= Math.log(499071.8/21568.)/(double)198;
+    r = Math.pow(Math.E,r);
+    for( int i=1; i<199;i++)
+       xvals[i]=(float)(xvals[i-1]*r);
+    VariableXScale Xscale= new VariableXScale(xvals);
+    //-----------------------------
+    int[]Xlate= new int[4];
+    Xlate[0]=3; Xlate[1]=0;Xlate[2]=1;Xlate[3]=2;
+    //----------------------------------
+    Object Res =LoadUtil.Transpose( DDs[3],Xlate,128,128,1,Xscale,true);
+    if( Res instanceof ErrorString){
+       System.out.println("Error="+Res);
+       System.exit(0);
+    }
+    DataSet ds=(DataSet)Res;
+    LoadUtil.LoadDetectorInfo(ds,
+                            "C:/ISAW/SampleRuns/LansSand/lanlSand.det");
+    Command.ScriptUtil.display(ds);
+    try{
+    
+    Command.ScriptUtil.save("C:/ISAW/SampleRuns/LansSand/xxx.isd",ds);
+    }catch(Exception s){
+       System.out.println("Could not save:"+s);
+    }
+    
+  }
   private static void ShowUsage(){
       System.out.println(" There are 2 arguments");
       System.out.println("    argument 1: is the filename");
@@ -761,7 +914,7 @@ public class LoadUtil
    *  A test program for the method LoadDifsGsas_lanl using "fixed" filename
    * @param args
    */
-  public static void main( String args[]){
+  public static void main5( String args[]){
     
     if( (args==null)||(args.length <2)){
       ShowUsage();
@@ -817,6 +970,10 @@ public class LoadUtil
    Command.ScriptUtil.display(DD,"Image View");
  
   }
+ 
+   
+   
+  
   /**
    *  Main program for testing purposes.
    */
