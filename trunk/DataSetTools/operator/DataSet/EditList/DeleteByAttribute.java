@@ -30,6 +30,22 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/08/19 17:54:37  dennis
+ *   Delete will now be done more efficiently, since the DataSet is
+ * now scanned one time to find all of the Data blocks that should
+ * be deleted, and then DataSet.deleteData_entries(list) is called
+ * once to delete the whole list.  When many Data blocks are being
+ * deleted, this is much more efficient than deleting the individual
+ * Data blocks one at a time.
+ *   Added additional logic to deal with the case of missing attributes.
+ * A data block that does NOT have the required attribute will now
+ * be discarded if and only if the "discard" parameter is false.
+ * That is, a false value for "discard" is interpreted to mean that
+ * we only keep Data blocks that have the specified attribute in the
+ * required range.  A Data block that is missing the specified
+ * attribute does not meet that condition.
+ *   Also cleaned up the end user documentation in getDocumentation().
+ *
  * Revision 1.7  2004/03/15 06:10:47  dennis
  * Removed unused import statements.
  *
@@ -106,12 +122,16 @@ public class DeleteByAttribute extends    DS_EditList
    *
    *  @param  max         The upper bound for the selection criteria.
    *
-   *  @param  status      Flag that indicates whether Data blocks that meet 
+   *  @param  discard     Flag that indicates whether Data blocks that meet 
    *                      the selection criteria are to be kept or removed 
    *                      from the data set.
-   *                      If status==true, the selected blocks are deleted.
-   *                      If status==false, the un-selected blocks are deleted.
-   *
+   *                      If discard==true, the selected blocks are deleted.
+   *                      If discard==false, the un-selected blocks are deleted.
+   *                      If the attribute is missing from a Data block, and
+   *                      discard==true, the Data block is kept. 
+   *                      If the attribute is missing from a Data block, and 
+   *                      discard==false (meaning we only keep the ones with
+   *                      the specified property), the Data block is discarded.
    *  @param  make_new_ds Flag that determines whether removing the Data
    *                      blocks makes a new DataSet and returns the new
    *                      DataSet as a value, or just removes the selected
@@ -124,7 +144,7 @@ public class DeleteByAttribute extends    DS_EditList
                             String   attr_name,
                             float    min,
                             float    max,
-                            boolean  status,
+                            boolean  discard,
                             boolean  make_new_ds   )
   {
     this();                         // do the default constructor, then set
@@ -141,7 +161,7 @@ public class DeleteByAttribute extends    DS_EditList
     parameter.setValue( new Float( max ) );
 
     parameter = getParameter( 3 );
-    parameter.setValue( new Boolean( status ) );
+    parameter.setValue( new Boolean( discard ) );
 
     parameter = getParameter( 4 );
     parameter.setValue( new Boolean( make_new_ds ) );
@@ -152,7 +172,8 @@ public class DeleteByAttribute extends    DS_EditList
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, DelAtt
+   * @return  The command name to be used with script processor: 
+   *          in this case, DelAtt
    */
    public String getCommand()
    {
@@ -197,7 +218,7 @@ public class DeleteByAttribute extends    DS_EditList
             ((AttributeNameString)getParameter(0).getValue()).toString();
     float   min       = ( (Float)(getParameter(1).getValue()) ).floatValue();
     float   max       = ( (Float)(getParameter(2).getValue()) ).floatValue();
-    boolean status    = ((Boolean)getParameter(3).getValue()).booleanValue();
+    boolean discard   = ((Boolean)getParameter(3).getValue()).booleanValue();
     boolean make_new_ds = ((Boolean)getParameter(4).getValue()).booleanValue();
 
                                      // get the current data set
@@ -207,7 +228,7 @@ public class DeleteByAttribute extends    DS_EditList
     if ( make_new_ds )               // or a clone of ds
       new_ds = (DataSet)ds.clone();
 
-    if ( status )
+    if ( discard )
       new_ds.addLog_entry( "deleted groups with " + attr_name + 
                            " in [" + min + ", " + max + "]" );
     else
@@ -217,19 +238,50 @@ public class DeleteByAttribute extends    DS_EditList
     int num_data = new_ds.getNum_entries();
     Data data;
 
-    for ( int i = num_data-1; i >= 0; i-- )
-    {
-      data = new_ds.getData_entry( i );    // get reference to the data entry
-                                           // keep or reject it based on the
-                                           // attribute value.
+    boolean delete_flag = false;           // set true if attribute missing AND
+                                           // we're only keeping things IN range
+    float   val = 0;
+    int     index_to_delete[] = new int[ num_data ];
+    int     num_to_delete     = 0;
+    for ( int i = 0; i < num_data; i++ )   // get list of indices to delete
+    {                                      
+      delete_flag = false;
+      data = new_ds.getData_entry( i ); 
       Attribute attr = data.getAttributeList().getAttribute( attr_name );
-      float val = (float)attr.getNumericValue(); 
-      if (attr_name.equals( Attribute.DETECTOR_POS ))     // convert to degrees
-        val *= (float) 180.0/Math.PI;
 
-      if ( status && min <= val && val <= max  ||
-          !status && (min > val || val > max)   ) 
-        new_ds.removeData_entry( i );      
+      if ( attr != null )                  // keep or discard based on attribute
+      {
+         val = (float)attr.getNumericValue(); 
+         if (attr_name.equals( Attribute.DETECTOR_POS ))  // convert to degrees
+           val *= (float) 180.0/Math.PI;
+
+         if ( discard && min <= val && val <= max  ||
+              !discard && (min > val || val > max)   ) 
+           delete_flag = true;
+      }
+      else                               // attribute was missing, so ....
+        delete_flag = !discard;          // NOTE: If discard is false, then
+                                         // we only want to keep the ones in 
+                                         // the specified attribute range.  So, 
+                                         // in this case, if the attribute is 
+                                         // missing, we delete the Data block.
+      if ( delete_flag ) 
+      {
+        index_to_delete[ num_to_delete ] = i;
+        num_to_delete++;
+      }
+    }
+                                            // now actually delete the Data 
+    if ( num_to_delete > 0 )                // blocs listed.
+    {
+       if ( num_to_delete == 1 )
+         new_ds.removeData_entry( index_to_delete[0] ); 
+       else
+       {
+         int list[] = new int[ num_to_delete ];
+         System.arraycopy( index_to_delete, 0, list, 0, num_to_delete );
+         new_ds.removeData_entries( list );
+       }
     }
 
     if ( make_new_ds )
@@ -240,6 +292,7 @@ public class DeleteByAttribute extends    DS_EditList
       return new String("Specified Data blocks REMOVED");
     } 
   }  
+
 
   /* ------------------------------ clone ------------------------------- */
   /**
@@ -266,25 +319,38 @@ public class DeleteByAttribute extends    DS_EditList
        Res.append(" operator can either make a new DataSet, or modify the");
        Res.append(" current DataSet.");
 
-      Res.append("@algorithm Get the parameters specified by the user. Get");
-       Res.append(" the current data set. Set new_ds to either a reference");
-       Res.append(" to ds or a clone of ds.");
-       Res.append(" Get reference to the data entry. Keep or reject it");
-       Res.append(" based on the attribute value.  The range is");
-       Res.append(" min <= attribute value <= max");
+      Res.append("@algorithm Step through all of the Data blocks in the ");
+       Res.append(" DataSet, recording the indices of all of the Data " );
+       Res.append(" blocks that are to be deleted.  After finding the " );
+       Res.append(" Data blocks to delete, the DataSet method " );
+       Res.append(" deleteData_entries() is called once to delete them " );
+       Res.append(" all, and the Observers of the DataSet are notified " );
+       Res.append(" that Data was deleted." );
+       Res.append(" NOTE: If a Data block does not have the specified");
+       Res.append(" attribute, it will be deleted if the discard flag ");
+       Res.append(" is false. ");
 
       Res.append("@param ds   The DataSet to which the operation is applied");   
       Res.append("@param attr_name   The name of that attribute to be used");
        Res.append(" for the selection criterion from the data set.");   
+
       Res.append("@param  min   The lower bound for the selection criteria.");
        Res.append(" The selected Data blocks satisfy:");
        Res.append(" min <= attribute value <= max");   
+
       Res.append("@param  max   The upper bound for the selection criteria.");
-      Res.append("@param  status   Flag that indicates whether Data blocks");
+
+      Res.append("@param  discard   Flag that indicates whether Data blocks");
        Res.append(" that meet the selection criteria are to be kept or");
-       Res.append(" removed from the data set. If status==true, the selected");
-       Res.append(" blocks are deleted. If status==false, the un-selected");
+       Res.append(" removed from the data set. If discard==true, the selected");
+       Res.append(" blocks are deleted. If discard==false, the un-selected");
        Res.append(" blocks are deleted.");
+       Res.append(" If the attribute is missing from a Data block, and " );
+       Res.append(" discard==true, the Data block is kept. ");
+       Res.append(" If the attribute is missing from a Data block, and ");
+       Res.append(" discard==false (meaning we only keep the ones with");
+       Res.append(" the specified property), the Data block is discarded. ");
+
       Res.append("@param  make_new_ds   Flag that determines whether removing");
        Res.append(" the Data blocks makes a new DataSet and returns the new");
        Res.append(" DataSet as a value, or just removes the selected blocks");
