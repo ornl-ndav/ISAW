@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/08/24 20:22:01  dennis
+ * Added/moved to category DATA_SET_FILTERS_MACROS
+ *
  * Revision 1.1  2004/05/07 17:57:01  dennis
  * Moved operators that extend GenericSpecial from Operators
  * to Operators/Special
@@ -121,6 +124,19 @@ public class LowPassFilterDS extends GenericSpecial
   public String getCommand()
   {
     return "LowPassFilter";
+  }
+
+ /* ---------------------------- getCategoryList -------------------------- */
+ /**
+  *  Get the list of categories describing where this operator should appear
+  *  in the menu system.
+  *
+  *  @return an array of strings listing the menu where the operator 
+  *  should appear.
+  */
+  public String[] getCategoryList()
+  {
+    return Operator.DATA_SET_FILTERS_MACROS;
   }
 
 

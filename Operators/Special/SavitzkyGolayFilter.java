@@ -31,7 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/08/24 20:22:02  dennis
+ * Added/moved to category DATA_SET_FILTERS_MACROS
+ *
  * Revision 1.11  2005/07/13 14:56:26  kramer
+ *
  * An 'ElapsedTimer' and an unnecessary call to getDataBlockRange() were
  * made in the getResult() method.  I removed these.  The timer was used
  * for testing purposes and the data returned by the getDataBlockRange()
@@ -126,6 +130,7 @@ import java.util.Vector;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.VariableXScale;
+import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.Special.GenericSpecial;
 import DataSetTools.util.SharedData;
@@ -227,6 +232,21 @@ public class SavitzkyGolayFilter extends GenericSpecial
    {
       return COMMAND;
    }
+
+
+   /* ---------------------------- getCategoryList -------------------------- */
+   /**
+    *  Get the list of categories describing where this operator should appear
+    *  in the menu system.
+    *
+    *  @return an array of strings listing the menu where the operator 
+    *  should appear.
+    */
+    public String[] getCategoryList()
+    {
+      return Operator.DATA_SET_FILTERS_MACROS;
+    }
+
       
    /** 
     * Sets default values for the parameters.
