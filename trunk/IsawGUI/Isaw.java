@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.233  2005/08/24 16:24:17  dennis
+ *  Minor formatting and documentation changes.
+ *
  *  Revision 1.232  2005/08/16 14:25:40  dennis
  *  Added "hdf" as valid way to specifiy NeXus file extensions for
  *  the load file filter.  Added "raw" as valid way to specifiy
@@ -685,7 +688,7 @@ public class Isaw
   private static final String EDIT_ATTR_MI       = "Edit Attribute(s)";
   private static final String EDIT_PROPS_MI      = "Edit Properties File";
   private static final String CLEAR_SELECTION_MI = "Clear Selection";
-  private static final String REMOVE_NODE_MI     = "Remove Selected Node(s)";
+  private static final String REMOVE_NODE_MI     = "Remove Highlighted Node(s)";
 
   private static final String VIEW_M             = "View";
   private static final String IMAGE_VIEW_MI      = IViewManager.IMAGE;
@@ -1313,8 +1316,6 @@ public class Isaw
 
        if( s.equals(CLEAR_SELECTION_MI) )
          jdt.clearSelections();
- 
-
 
 
       if( s.equals(SET_GLOBAL_ATTR_MI) )
@@ -1917,6 +1918,8 @@ public class Isaw
      */
     public void valueChanged( TreeSelectionEvent e )
     {
+  //  System.out.println("Tree Selection Event....value changed " + e );
+
                                                   //deal w/ unselection events
       if( e.getNewLeadSelectionPath() == null )
       {
@@ -1958,8 +1961,6 @@ public class Isaw
                               //class of the selected node.
         int num_ops = ds.getNum_operators(); 
 
-//        System.out.println( "number of operators: " + num_ops );
-
         Operator ds_ops[] = new Operator[num_ops];
         for ( int i = 0; i < num_ops; i++ )
           ds_ops[i] = ds.getOperator(i);
@@ -1987,8 +1988,11 @@ public class Isaw
         oMenu.add(  new JMenuItem( "[empty]" )  );
         return; 
       }
+
     }
   }
+
+
    /**
      * Try to determine whether this application is running under Windows
      * or some other platform by examing the "os.name" property.
@@ -2568,10 +2572,10 @@ public class Isaw
 
       if(  jdt.getSelectionCount() > 0  )
       {
-        TreePath[] tps          = jdt.getSelectedNodePaths();
+        TreePath[] tps = jdt.getSelectedNodePaths();
 
-        int downKey =  KeyEvent.VK_DOWN;
-        int upKey =    KeyEvent.VK_UP;
+        int downKey = KeyEvent.VK_DOWN;
+        int upKey   = KeyEvent.VK_UP;
                                             //respond to up-down key events
         if(  downKey == KeyEvent.VK_DOWN || upKey == KeyEvent.VK_UP )
         {

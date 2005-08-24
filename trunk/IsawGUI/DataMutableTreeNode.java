@@ -30,7 +30,11 @@
 
  *
  * $Log$
+ * Revision 1.12  2005/08/24 16:24:16  dennis
+ * Minor formatting and documentation changes.
+ *
  * Revision 1.11  2004/07/07 16:03:12  kramer
+ *
  * Added a method to tag this node as selected or not.  Also, added a method
  * to determine if the node is selected.  Selected here refers to the data
  * object this node encapsulates as being selected.
@@ -79,13 +83,13 @@ public class DataMutableTreeNode
    */ 
   public DataMutableTreeNode()
   {
-  	selected = false;
+     selected = false;
   }
 
 
   public DataMutableTreeNode( Data d )
   {
-  	this();
+    this();
     name=d.getLabel();
     setUserObject( d );
   }
@@ -113,14 +117,23 @@ public class DataMutableTreeNode
    * means that the user has "highlighted" the data, and 
    * is not just pointing at it.
    */
-  public void setSelected(boolean sel) { selected = sel; }
+  public void setSelected(boolean sel)
+  { 
+    selected = sel; 
+  }
+
+
   /**
    * Determine if the data this node is representing is 
    * currently selected in a viewer.  Note:  Selected 
    * means that the user has "highlighted" the data, and 
    * is not just pointing at it.
    */
-  public boolean isSelected() { return selected; }
+  public boolean isSelected() 
+  { 
+    return selected; 
+  }
+
 
 /*------------------------------=[ TreeNode ]=--------------------------------*/
 
