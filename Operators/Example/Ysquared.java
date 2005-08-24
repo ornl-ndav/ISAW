@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/08/24 19:14:48  dennis
+ * Modified getCategoryList() to place operator in the
+ * Macros, Examples, Operator(old style) menu.
+ *
  * Revision 1.2  2005/06/17 13:14:41  dennis
  * Changed to use the DataSetPG.
  *
@@ -125,6 +129,21 @@ public class Ysquared extends GenericExample
   {
     return "Ysquared";
   }
+
+
+/* ---------------------------- getCategoryList -------------------------- */
+/**
+ *  Get the list of categories describing where this operator should appear
+ *  in the menu system.
+ *
+ *  @return an array of strings listing the menu where the operator 
+ *  should appear.
+ */
+   public String[] getCategoryList()
+   {
+     return new String[]{ "Macros", "Examples", "Operator(old style)" };
+   }
+
 
  /* ------------------------ setDefaultParameters ------------------------- */
  /** 
