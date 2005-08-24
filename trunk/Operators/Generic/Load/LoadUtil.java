@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.8  2005/08/24 18:42:14  rmikk
+ * Removed a Debug Print
+ *
  * Revision 1.7  2005/08/19 19:58:10  rmikk
  * Added method to "Transpose" the data in a dataset that was improperly
  *     read from a NeXus file because the dimensions are in the incorrect
@@ -827,7 +830,6 @@ public class LoadUtil
            mult[i] *= size[3-j];
    }
    
-    System.out.println("mults="+mult[0]+","+mult[1]+","+mult[2]+","+mult[3]);
    
     int Group_ID=1;
     for( int d=0; d <ndet; d++){
