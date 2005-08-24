@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/08/24 14:09:49  rmikk
+ * Fixed getCategoryList so that this operator appears in the same Menu
+ *    as ViewAscii
+ *
  * Revision 1.1  2005/06/18 14:20:22  rmikk
  * Initial Checkin
  *
@@ -39,13 +43,13 @@
 
 package Operators.Generic.Load;
 import DataSetTools.operator.*;
-import DataSetTools.operator.Generic.*;
+import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.parameter.*;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
-public class ViewNXdata extends GenericOperator{
+public class ViewNXdata extends GenericSpecial{
    public ViewNXdata(){
      super("View a NXdata");
      }
@@ -84,11 +88,7 @@ public class ViewNXdata extends GenericOperator{
 
 
    public String[] getCategoryList(){
-            return new String[]{
-                     "Macros",
-                     "File",
-                     "Load"
-                     };
+            return Operator.UTILS_SYSTEM;
    }
 
 
