@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.44  2005/08/24 19:47:38  dennis
+ *  Changed logical name of menu from UTILS_EXAMPLES to GENERAL_EXAMPLES.
+ *
  *  Revision 1.43  2005/08/24 19:25:02  dennis
  *  Changed UTILS_EXAMPLES string list to point to be just
  *  {"operator", "Examples"}, so that the Examples directory is at
@@ -217,13 +220,12 @@ abstract public class Operator implements Serializable
    public static final String[] UTILS_CONVERSIONS = {"operator","Utils",
                                                                 "Convert"};
    
-   public static final String[] UTILS_EXAMPLES = {"operator", "Examples"};
+   public static final String[] GENERAL_EXAMPLES = {"operator", "Examples"};
    
    public static final String[] UTILS_TESTS = {"operator","Utils", 
                                                           "Tests"};
    
-   public static final String[] UTILS_DATA_SET = {"operator","Utils",
-                                                             "DataSet"};
+   public static final String[] UTILS_DATA_SET = {"operator", "DataSet"};
    
    public static final String[] UTILS_SYSTEM = {"operator","Utils",
                                                            "System"};
