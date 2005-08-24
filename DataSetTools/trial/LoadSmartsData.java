@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/08/24 19:45:53  dennis
+ * Changed default path to detector info file.
+ *
  * Revision 1.2  2005/08/02 13:59:11  dennis
  * Added code to pop up a Display3D.
  *
@@ -161,7 +164,7 @@ public class LoadSmartsData
     String data_path = "/usr2/LANSCE_DATA/smarts/";
     String hdf_file  = data_path + "/SMARTS_E2005004_R020983.nx.hdf";
 
-    String detector_path = "/home/dennis/WORK/ISAW/LANSCE/SMARTS/";
+    String detector_path = "/home/dennis/WORK/ISAW/InstrumentInfo/LANSCE/";
     String detector_file = detector_path + "smarts_detectors.dat";
 
     PhysicalArray3DList[] data = getTOF_Histogram( hdf_file, detector_file );
