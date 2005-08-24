@@ -30,7 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/08/24 20:22:01  dennis
+ * Added/moved to category DATA_SET_FILTERS_MACROS
+ *
  * Revision 1.2  2004/09/29 22:45:36  kramer
+ *
  * Changed the title to "Butterworth Low Pass Filter 0" to distinguish this
  * operator from the regular "Butterworth Low Pass Filter" in the GUI.
  *
@@ -132,6 +136,20 @@ public class LowPassFilterDS0 extends GenericSpecial
   public String getCommand()
   {
     return "LowPassFilter0";
+  }
+
+
+ /* ---------------------------- getCategoryList -------------------------- */
+ /**
+  *  Get the list of categories describing where this operator should appear
+  *  in the menu system.
+  *
+  *  @return an array of strings listing the menu where the operator 
+  *  should appear.
+  */
+  public String[] getCategoryList()
+  {
+    return Operator.DATA_SET_FILTERS_MACROS;
   }
 
 
