@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.46  2005/08/24 20:11:30  dennis
+ *  Added/moved to Macros->Data Set->Edit List menu.
+ *
  *  Revision 1.45  2005/08/24 19:51:03  dennis
  *  Changed logical name of menu from UTILS_DATA_SET to
  *  DATA_SET_MACROS
@@ -230,6 +233,10 @@ abstract public class Operator implements Serializable
                                                           "Tests"};
    
    public static final String[] DATA_SET_MACROS = {"operator", "DataSet"};
+
+   public static final String[] DATA_SET_EDIT_LIST_MACROS = 
+                                         {"operator", "DataSet", "Edit List"};
+
    
    public static final String[] UTILS_SYSTEM = {"operator","Utils",
                                                            "System"};
