@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.45  2005/08/24 19:51:03  dennis
+ *  Changed logical name of menu from UTILS_DATA_SET to
+ *  DATA_SET_MACROS
+ *
  *  Revision 1.44  2005/08/24 19:47:38  dennis
  *  Changed logical name of menu from UTILS_EXAMPLES to GENERAL_EXAMPLES.
  *
@@ -225,7 +229,7 @@ abstract public class Operator implements Serializable
    public static final String[] UTILS_TESTS = {"operator","Utils", 
                                                           "Tests"};
    
-   public static final String[] UTILS_DATA_SET = {"operator", "DataSet"};
+   public static final String[] DATA_SET_MACROS = {"operator", "DataSet"};
    
    public static final String[] UTILS_SYSTEM = {"operator","Utils",
                                                            "System"};
