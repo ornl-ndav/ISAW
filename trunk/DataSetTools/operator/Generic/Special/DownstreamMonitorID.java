@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2005/08/24 20:29:22  dennis
+ *  Added/Moved to menu DATA_SET_INFO_MACROS
+ *
  *  Revision 1.4  2003/12/15 01:56:37  bouzekc
  *  Removed unused imports.
  *
@@ -43,14 +46,13 @@
  *
  *  Revision 1.1  2002/05/24 14:21:22  pfpeterson
  *  added to cvs
- *
- *   
  */
 
 package DataSetTools.operator.Generic.Special;
 
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
+import  DataSetTools.operator.Operator;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.retriever.RunfileRetriever;
 
@@ -102,6 +104,20 @@ public class DownstreamMonitorID extends    GenericSpecial {
     public String getCommand(){
         return "DnMonitorID";
     }
+
+   /* ---------------------------- getCategoryList -------------------------- */
+   /** 
+    *  Get the list of categories describing where this operator should appear
+    *  in the menu system.
+    *
+    *  @return an array of strings listing the menu where the operator 
+    *  should appear.
+    */
+    public String[] getCategoryList()
+    {
+      return Operator.DATA_SET_INFO_MACROS;
+    }
+
 
     /* ---------------------- getDocumentation --------------------------- */
     /**
