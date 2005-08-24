@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.33  2005/08/24 16:25:59  dennis
+ * Minor format and documenation changes.
+ *
  * Revision 1.32  2005/08/18 16:33:40  dennis
  *   Added a boolean parameter "notify" to selectNode() method so that
  * notification of each individual selection can be turned off when
@@ -709,7 +712,7 @@ public class JDataTree
                                           // hashtable
     DataSet ds = null;
 
-    for( int i=0;  i<tps.length;  i++ )
+    for( int i=0;  i<tps.length;  i++ )   // Select nodes, without doing notify
     {
       ds = selectNode( (MutableTreeNode)tps[i].getLastPathComponent(), false );
       if ( ds != null )
@@ -722,7 +725,6 @@ public class JDataTree
       ds = (DataSet)dss[i];
       ds.notifyIObservers( IObserver.SELECTION_CHANGED );
     }
-
   }
 
 
@@ -811,7 +813,7 @@ public class JDataTree
   {
     if(  !( reason instanceof String)  &&  !( reason instanceof DataSet)  )
       return;
- 
+
                                           
     if( reason instanceof DataSet )
       System.out.println( "ERROR: new DataSet object (JDataTree)" ); 
@@ -823,10 +825,12 @@ public class JDataTree
 
       DataSet ds = (DataSet)observed;
 
+ //   System.out.println("JDataTree.update called: " + reason_str + ", " + ds); 
+
                        //if update has been called from this object
                        //after a deletion, doing it again will be a problem. 
       DataSetMutableTreeNode ds_node = 
-                            (DataSetMutableTreeNode)getNodeOfObject( observed );
+                          (DataSetMutableTreeNode)getNodeOfObject( observed );
       if( ds_node == null )
         return;
 
@@ -1052,7 +1056,7 @@ public class JDataTree
             if( exp.getChildAt( ds_index ) instanceof DataSetMutableTreeNode  )
             {
               DataSetMutableTreeNode dsmtn = 
-                             (DataSetMutableTreeNode)exp.getChildAt( ds_index );
+                            (DataSetMutableTreeNode)exp.getChildAt( ds_index );
 
               DataSet ds = (DataSet)dsmtn.getUserObject();
               ds_nodes.addElement( ds );
@@ -1073,7 +1077,7 @@ public class JDataTree
         if( exp.getChildAt( ds_index ) instanceof DataSetMutableTreeNode  )
         {
           DataSetMutableTreeNode dsmtn = 
-                             (DataSetMutableTreeNode)exp.getChildAt( ds_index );
+                            (DataSetMutableTreeNode)exp.getChildAt( ds_index );
 
           DataSet ds = (DataSet)dsmtn.getUserObject();
           ds_nodes.addElement( ds );
