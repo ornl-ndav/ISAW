@@ -27,9 +27,11 @@
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
-
  *
  * $Log$
+ * Revision 1.10  2005/08/24 16:24:17  dennis
+ * Minor formatting and documentation changes.
+ *
  * Revision 1.9  2005/08/18 16:34:47  dennis
  * Minor improvement to javadoc.
  *
@@ -166,8 +168,7 @@ public class DataSetMutableTreeNode
 
 
 
-/*---------------------------=[ MutableTreeNode ]=----------------------------*/
-
+/*--------------------------=[ MutableTreeNode ]=---------------------------*/
 
   /**
    * insert a node 'child' at index.
@@ -185,6 +186,7 @@ public class DataSetMutableTreeNode
    */
   public void remove( int index )
   {
+//  System.out.println("DataSetMutableTreeNode.remove(index) called");
     ds.removeData_entry( index );
     data_nodes.remove( index );
   }
@@ -195,12 +197,15 @@ public class DataSetMutableTreeNode
    */
   public void remove( MutableTreeNode node )
   {
+    // NOTE: This does not currently get called when a node is 
+    //       deleted from the tree.  remove( index ) is used instead. 
     DataMutableTreeNode d_node = (DataMutableTreeNode)node;
     int group_id = d_node.getUserObject().getGroup_ID();
     ds.removeData_entry_with_id( group_id );
 
     data_nodes.remove( node );
   }
+
 
   public void removeFromParent()
   {
@@ -228,7 +233,7 @@ public class DataSetMutableTreeNode
     
     for( int i=0;  i<ds.getNum_entries();  i++ )
     {
-      DataMutableTreeNode node = new DataMutableTreeNode( ds.getData_entry(i) );
+      DataMutableTreeNode node = new DataMutableTreeNode(ds.getData_entry(i));
       node.setParent( this );
 
       data_nodes.addElement( node );
