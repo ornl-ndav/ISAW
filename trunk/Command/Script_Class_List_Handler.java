@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.69  2005/08/24 15:19:42  rmikk
+ * Sets up all the data in the operator info structure when a new operator
+ *    is loaded during the fast load.
+ *
  * Revision 1.68  2005/08/04 19:30:25  dennis
  * Fixed spelling error in javadoc.
  *
@@ -1752,6 +1756,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                Operator op= (Operator)Class.forName( opn.ClassName).newInstance();
                if( op.getCommand().equals(opn.CommandName)){
                  opn.op=op;
+                 opn.CatList= op.getCategoryList();
+                 opn.NArgs=op.getNum_parameters();
+                 opn.Title=op.getTitle();
+                 opn.isHidden= op instanceof HiddenOperator;
+                 
                }else
                  return false;
                
@@ -1765,6 +1774,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
              if( !op.getCommand().equals(opn.CommandName))
                return false;
              opn.op =op;
+             opn.CatList= op.getCategoryList();
+             opn.NArgs=op.getNum_parameters();
+             opn.Title=op.getTitle();
+             opn.isHidden= op instanceof HiddenOperator;
            }
               
           
