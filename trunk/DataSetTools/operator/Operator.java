@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.47  2005/08/24 20:22:00  dennis
+ *  Added/moved to category DATA_SET_FILTERS_MACROS
+ *
  *  Revision 1.46  2005/08/24 20:11:30  dennis
  *  Added/moved to Macros->Data Set->Edit List menu.
  *
@@ -237,6 +240,8 @@ abstract public class Operator implements Serializable
    public static final String[] DATA_SET_EDIT_LIST_MACROS = 
                                          {"operator", "DataSet", "Edit List"};
 
+   public static final String[] DATA_SET_FILTERS_MACROS = 
+                                         {"operator", "DataSet", "Filters"};
    
    public static final String[] UTILS_SYSTEM = {"operator","Utils",
                                                            "System"};
