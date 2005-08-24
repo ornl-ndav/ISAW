@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2005/08/24 19:25:02  dennis
+ *  Changed UTILS_EXAMPLES string list to point to be just
+ *  {"operator", "Examples"}, so that the Examples directory is at
+ *  the top level.
+ *
  *  Revision 1.42  2005/08/05 20:08:42  rmikk
  *  Fixed setParameter to deal with the new ParameterGUI's better. Needed for
  *   Wizards to act properly.
@@ -212,8 +217,7 @@ abstract public class Operator implements Serializable
    public static final String[] UTILS_CONVERSIONS = {"operator","Utils",
                                                                 "Convert"};
    
-   public static final String[] UTILS_EXAMPLES = {"operator","Utils",
-                                                             "Examples"};
+   public static final String[] UTILS_EXAMPLES = {"operator", "Examples"};
    
    public static final String[] UTILS_TESTS = {"operator","Utils", 
                                                           "Tests"};
