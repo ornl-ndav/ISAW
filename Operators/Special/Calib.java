@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2005/08/24 18:43:40  rmikk
+ * Fixed  a documentation error
+ * Added x_units/label and Y_units/label, instr type and operators to the
+ *   resultant data set
+ *
  * Revision 1.6  2005/08/24 17:04:21  rmikk
  * Added "Fix/Calib" for lansce SAND and Hippo instruments
  *
@@ -134,7 +139,7 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
      s.append( " if the 2nd calib file is a special lanl GSAS param file,Difc,Difa and ");
      s.append( " T0 will be added to the data set");
      s.append("  <LI>If the filename starts with SAND and ends in .lanl, the data in");
-     s.append("  the data set will be reorganized to fit ISAW. If the 3rd argument is");
+     s.append("  the data set will be reorganized to fit ISAW. If the 4th argument is");
      s.append("  a vector of time bins(in us) that time scale will be used");
      s.append( "@param DS  the DataSet to use" );
      s.append( "@param CalibFile1  The first calibration file" );
@@ -528,8 +533,21 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
      if( Res instanceof ErrorString)
          return Res;
      DataSet ds=(DataSet)Res;
+     ds.setTitle(DS.getTitle());
+     ds.setX_units("us");
+     ds.setY_units(DS.getY_units());
+     ds.setX_label("Time");
+     ds.setY_label(DS.getY_label());
+     
      LoadUtil.LoadDetectorInfo(ds,calibFile);
      DS.copy(ds);
+     DS.removeAllOperators();
+     
+     DS.setAttribute( new IntAttribute(Attribute.INST_TYPE,
+                  DataSetTools.instruments.InstrumentType.TOF_SAD));
+     DataSetFactory.addOperators(DS);
+     DataSetFactory.addOperators( DS, DataSetTools.instruments.InstrumentType.TOF_SAD);
+     
     return null;          
   }
    
