@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2005/08/24 20:11:31  dennis
+ * Added/moved to Macros->Data Set->Edit List menu.
+ *
  * Revision 1.2  2004/05/10 20:42:29  dennis
  * Test program now just instantiates a ViewManager to diplay
  * calculated DataSet, rather than keeping a reference to it.
@@ -131,6 +134,21 @@ import gov.anl.ipns.Util.Messaging.*;
     {
       return TITLE;
     }
+
+
+   /* ---------------------------- getCategoryList -------------------------- */
+   /**
+    *  Get the list of categories describing where this operator should appear
+    *  in the menu system.
+    *
+    *  @return an array of strings listing the menu where the operator 
+    *  should appear.
+    */
+    public String[] getCategoryList()
+    {
+      return Operator.DATA_SET_EDIT_LIST_MACROS;
+    }
+
     
     /* ---------------------- setDefaultParameters ------------------------- */ 
     /** 
