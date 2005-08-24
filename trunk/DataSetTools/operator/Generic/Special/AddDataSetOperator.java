@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2005/08/24 13:55:37  rmikk
+ * Uses File browser to select the java or class file for an operator
+ *
  * Revision 1.4  2004/01/24 19:58:59  bouzekc
  * Removed/commented out unused variables/imports.
  *
@@ -51,6 +54,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
+import DataSetTools.parameter.*;
 import java.util.Vector;
 
 /** 
@@ -124,8 +128,8 @@ public class AddDataSetOperator extends GenericSpecial{
      */
     public void setDefaultParameters(){
 	parameters = new Vector();
-	addParameter(new Parameter("DataSet",DataSet.EMPTY_DATA_SET ));
-	addParameter(new Parameter("Operator Name", "") );
+	addParameter(new DataSetPG("DataSet",DataSet.EMPTY_DATA_SET ));
+	addParameter(new LoadFilePG("Operator Name", "") );
     }
     
     /** 
@@ -135,11 +139,11 @@ public class AddDataSetOperator extends GenericSpecial{
      *  containing the the original DataSet minus the dead detectors.
      */
     public Object getResult(){
-	DataSet ds        = (DataSet)(getParameter(0).getValue());
-        String  opCommand = (String) (getParameter(1).getValue());
+	    DataSet ds        = (DataSet)(getParameter(0).getValue());
+        String filename = (String) (getParameter(1).getValue());
         Class  klass      = null;
         Object object     = null;
-
+        String opCommand= devTools.Method2OperatorWizard.getClassName(filename);
         // check that the operator is a non-null string
         if( (opCommand==null) || (opCommand.length()<=0) )
             return "Invalid Operator Name: null or empty string\n";
