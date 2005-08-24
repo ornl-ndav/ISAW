@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2005/08/24 19:47:39  dennis
+ *  Changed logical name of menu from UTILS_EXAMPLES to GENERAL_EXAMPLES.
+ *
  *  Revision 1.2  2005/01/10 15:21:18  dennis
  *  Modified getCategoryList to put derived classes in proper place in
  *  menu system.
@@ -75,7 +78,7 @@ abstract public class GenericExample extends    GenericOperator
   public String[] getCategoryList()
   {
     if(categoryList==null)
-      categoryList = Operator.UTILS_EXAMPLES;
+      categoryList = Operator.GENERAL_EXAMPLES;
 
     return categoryList;
   }
