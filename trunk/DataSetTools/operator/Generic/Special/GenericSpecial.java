@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2005/08/24 19:51:04  dennis
+ *  Changed logical name of menu from UTILS_DATA_SET to
+ *  DATA_SET_MACROS
+ *
  *  Revision 1.4  2005/01/10 15:21:18  dennis
  *  Modified getCategoryList to put derived classes in proper place in
  *  menu system.
@@ -82,7 +86,7 @@ abstract public class GenericSpecial extends    GenericOperator
   public String[] getCategoryList()
   {
     if(categoryList==null)
-      categoryList = Operator.UTILS_DATA_SET;
+      categoryList = Operator.DATA_SET_MACROS;
 
     return categoryList;
   }

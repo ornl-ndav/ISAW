@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/08/24 19:51:04  dennis
+ * Changed logical name of menu from UTILS_DATA_SET to
+ * DATA_SET_MACROS
+ *
  * Revision 1.7  2005/08/24 18:43:40  rmikk
  * Fixed  a documentation error
  * Added x_units/label and Y_units/label, instr type and operators to the
@@ -105,7 +109,7 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
    */
   public String[] getCategoryList()
   {
-    return Operator.UTILS_DATA_SET;
+    return Operator.DATA_SET_MACROS;
   }
 
 
