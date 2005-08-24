@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2005/08/24 14:16:56  rmikk
+ *  Eliminated the WindowShower for a dialog box. The program had to
+ *  halt at that point.
+ *
  *  Revision 1.6  2005/05/25 19:37:45  dennis
  *  Replaced direct call to .show() method for window,
  *  since .show() is deprecated in java 1.5.
@@ -217,7 +221,8 @@ public class LoadSelDataSets extends    GenericLoad
      jbut.addActionListener( this);
      jf.getContentPane().add( jlist, BorderLayout.CENTER);
       jf.validate();
-     WindowShower.show(jf);
+     jf.show();//Please do NOT use the WindowShower.  The program must halt at this
+               // point.
      sel = jlist.getSelectedIndices();
 
     }catch(Exception ss){
