@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2005/08/24 17:04:21  rmikk
+ * Added "Fix/Calib" for lansce SAND and Hippo instruments
+ *
  * Revision 1.5  2005/08/10 17:16:33  rmikk
  * Now Calibrates the LANSCE SCD instrument given extra info
  *
@@ -64,6 +67,8 @@ import NexIO.Util.ConvertDataTypes;
 import DataSetTools.instruments.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
+import java.io.*;
+import Operators.Generic.Load.*;
 /**
  * This class is central point for calibrating "All" data sets.
  * It is currently differentiated on filename for a DataSet and the extension 
@@ -123,7 +128,14 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
      s.append( " to adjust the detector information");
      s.append( "<li> If the filename starts with SCD and has an extension .lanl");
      s.append( " Routines to extract the xml info and operators are applied to ");
-     s.append( " fix the DataSet </ul>");
+     s.append( " fix the DataSet");
+     s.append( "<li>If the filename starts with HIPPO and ends in .lanl,detector");
+     s.append( " position information will be added to the data set. In addition");
+     s.append( " if the 2nd calib file is a special lanl GSAS param file,Difc,Difa and ");
+     s.append( " T0 will be added to the data set");
+     s.append("  <LI>If the filename starts with SAND and ends in .lanl, the data in");
+     s.append("  the data set will be reorganized to fit ISAW. If the 3rd argument is");
+     s.append("  a vector of time bins(in us) that time scale will be used");
      s.append( "@param DS  the DataSet to use" );
      s.append( "@param CalibFile1  The first calibration file" );
      s.append( "@param CalibFile2" );
@@ -233,7 +245,12 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
    if( Fil.toLowerCase().endsWith("lanl"))
      if(Fil.toUpperCase().startsWith("SCD"))
        return FixLansceSCDDataFiles( DS,calibFile);
-       
+     else if(Fil.toUpperCase().startsWith("HIPPO"))
+       return FixLansceHippoDataFiles( DS,calibFile, CalibFile2.toString());
+     else if( Fil.toUpperCase().startsWith("SAND"))
+       return FixLansceSandDataFiles( DS, calibFile,otherInformation);
+        
+     
    return null;
   }
   
@@ -328,6 +345,14 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
         return null;
       }
    }
+   
+   /**
+    * This method fixes Lansce Hippo files that are stored in their preNeXus mode
+    * @param DS  The DataSet that is to be fixed
+    * @param file  An specially formatted xml file with SampleOrientation info for each
+    *              run and also some data to  fix detector positions.
+    * @return
+    */
    public static Object FixLansceSCDDataFiles( DataSet DS, String file ){
       Node doc = getXmlDoc( file);
       if( doc == null)
@@ -436,6 +461,78 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
      
      return null;
    }
+   
+   
+   /**
+    * This method fixes Lansce Hippo files that are stored in their preNeXus mode
+    * @param DS-  The DataSet that is to be fixed
+    * @param calibFile- The specially formatted file with detector position information
+    * @param calibFile2- A GSAS parameter file with special lanl lines
+    * @return null or an ErrorString
+    */
+   public static Object FixLansceHippoDataFiles( DataSet DS,String calibFile, 
+                                                    String calibFile2){
+                                                      
+     Operators.Generic.Load.LoadUtil.LoadDetectorInfo(DS, calibFile);
+     File F = new File( calibFile2);
+     Object Res = null;
+     if( F.exists())
+       Res= Operators.Generic.Load.LoadUtil.LoadDifsGsas_lanl(DS, calibFile2);
+     return Res;
+   }
+   
+   
+  /**
+   * This method fixes Lansce Sand files that are stored in their preNeXus mode
+   * @param DS The DataSet that is to be fixed
+   * @param calibFile  The specially formatted file with detector position information
+   * @param xvalues  An optional set of xvalues for the time dimension.
+   * @return  null or an ErrorString
+   * NOTE: The detector is assumed to be a 128 by 128 detector that is stored
+   *     [det,time,row,col] in the NeXus file( but was read in as [det,col,row,time])
+   */ 
+  public static Object FixLansceSandDataFiles( DataSet DS, String calibFile,
+            Vector xvalues){
+
+       float[] xvals=null; 
+       if((xvalues != null ) &&(xvalues.size()>=2)){
+           xvals = new float[xvalues.size()];
+           int N= xvalues.size();
+           for( int i=0; (i< N)&&(xvals != null); i++){
+               try{
+                  xvals[i]=((Float)(xvalues.elementAt(i))).floatValue();
+                  if( i>0)
+                    if( xvals[i] <= xvals[i+1])
+                       xvals = null;
+               }catch(Exception s){
+                 xvals= null;
+               }
+           }
+       }    
+       if((xvalues == null ) ||(xvalues.size()<2)||(xvals == null)){
+         xvals= new float[199];
+         xvals[0]=21568;
+         double r= Math.log(499071.8/21568.)/(double)198;
+         r = Math.pow(Math.E,r);
+         for( int i=1; i<199;i++)
+            xvals[i]=(float)(xvals[i-1]*r);
+       }
+         
+      
+     VariableXScale Xscale= new VariableXScale(xvals);
+     //-----------------------------
+     int[]Xlate= new int[4];
+     Xlate[0]=3; Xlate[1]=0;Xlate[2]=1;Xlate[3]=2;
+     //----------------------------------
+     Object Res =LoadUtil.Transpose(DS,Xlate,128,128,1,Xscale,true);
+     if( Res instanceof ErrorString)
+         return Res;
+     DataSet ds=(DataSet)Res;
+     LoadUtil.LoadDetectorInfo(ds,calibFile);
+     DS.copy(ds);
+    return null;          
+  }
+   
    private static void setNodeValues( Hashtable tab, Node elt){
      if( elt == null)
        return;
