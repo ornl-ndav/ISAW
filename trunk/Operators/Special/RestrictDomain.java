@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2005/08/24 20:11:31  dennis
+ * Added/moved to Macros->Data Set->Edit List menu.
+ *
  * Revision 1.4  2005/08/24 19:51:04  dennis
  * Changed logical name of menu from UTILS_DATA_SET to
  * DATA_SET_MACROS
@@ -83,7 +86,7 @@ public class RestrictDomain implements Wrappable, IWrappableWithCategoryList
    */
   public String[] getCategoryList()
   {
-    return Operator.DATA_SET_MACROS;
+    return Operator.DATA_SET_EDIT_LIST_MACROS;
   }
 
   /* -------------------------- getCommand ------------------------------ */

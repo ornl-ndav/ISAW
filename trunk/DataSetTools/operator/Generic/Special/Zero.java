@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2005/08/24 20:11:30  dennis
+ * Added/moved to Macros->Data Set->Edit List menu.
+ *
  * Revision 1.6  2004/05/04 19:03:09  dennis
  * Now clears DataSetPG after getting value, to avoid memory leak.
  *
@@ -56,6 +59,7 @@
 
 package DataSetTools.operator.Generic.Special;
 
+import DataSetTools.operator.*;
 import DataSetTools.dataset.*;
 import DataSetTools.parameter.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
@@ -87,6 +91,21 @@ public class Zero extends GenericSpecial{
        parameters.add( new IntegerPG("last Channel to zero", new Integer(10)));
 
     }
+
+
+   /* ---------------------------- getCategoryList -------------------------- */
+   /**
+    *  Get the list of categories describing where this operator should appear
+    *  in the menu system.
+    *
+    *  @return an array of strings listing the menu where the operator 
+    *  should appear.
+    */
+    public String[] getCategoryList()
+    {
+      return Operator.DATA_SET_EDIT_LIST_MACROS;
+    }
+
 
    public Object getResult(){
 
