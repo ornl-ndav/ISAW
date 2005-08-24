@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/08/24 19:14:47  dennis
+ * Modified getCategoryList() to place operator in the
+ * Macros, Examples, Operator(old style) menu.
+ *
  * Revision 1.2  2004/05/12 14:04:35  dennis
  * Removed unused import.
  *
@@ -122,6 +126,21 @@ public class HelloOperator extends GenericExample
   {
     return "SayHello";
   }
+
+
+/* ---------------------------- getCategoryList -------------------------- */
+/**
+ *  Get the list of categories describing where this operator should appear
+ *  in the menu system.
+ *
+ *  @return an array of strings listing the menu where the operator 
+ *  should appear.
+ */
+   public String[] getCategoryList()
+   {
+     return new String[]{ "Macros", "Examples", "Operator(old style)" };
+   }
+
   
  /* ---------------------- getDocumentation --------------------------- */
   /** 
