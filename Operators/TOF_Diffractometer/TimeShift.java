@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/08/24 19:51:05  dennis
+ * Changed logical name of menu from UTILS_DATA_SET to
+ * DATA_SET_MACROS
+ *
  * Revision 1.2  2005/01/10 15:35:59  dennis
  * Added getCategoryList method to place operator in menu system.
  *
@@ -82,7 +86,7 @@ public class TimeShift implements Wrappable, IWrappableWithCategoryList {
    */
   public String[] getCategoryList()
   {
-    return Operator.UTILS_DATA_SET;
+    return Operator.DATA_SET_MACROS;
   }
 
   /**
