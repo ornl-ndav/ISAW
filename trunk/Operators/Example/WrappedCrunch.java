@@ -32,6 +32,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/08/24 19:13:32  dennis
+ * Modified getCategoryList() to place this operator in the
+ * Macros, Examples, Operator(wrapped) menu.
+ *
  * Revision 1.2  2005/01/10 15:36:01  dennis
  * Added getCategoryList method to place operator in menu system.
  *
@@ -82,30 +86,34 @@ public class WrappedCrunch implements Wrappable, IWrappableWithCategoryList {
   //~ Methods ******************************************************************
 
 
-  /* ------------------------ getCategoryList ------------------------------ */
-  /**
-   * Get an array of strings listing the operator category names  for 
-   * this operator. The first entry in the array is the 
-   * string: Operator.OPERATOR. Subsequent elements of the array determine
-   * which submenu this operator will reside in.
-   * 
-   * @return  A list of Strings specifying the category names for the
-   *          menu system 
-   *        
-   */
-  public String[] getCategoryList()
-  {
-    return Operator.UTILS_EXAMPLES;
-  }
+/* ---------------------------- getCategoryList -------------------------- */
+/**
+  * Get an array of strings listing the operator category names  for 
+  * this operator. The first entry in the array is the 
+  * string: Operator.OPERATOR. Subsequent elements of the array determine
+  * which submenu this operator will reside in.
+  * 
+  * @return  A list of Strings specifying the category names for the
+  *          menu system 
+  */
+   public String[] getCategoryList()
+   {
+     return new String[]{ "Macros", "Examples", "Operator(wrapped)" };
+     //return Operator.UTILS_EXAMPLES;
+   }
 
-
-  /**
-   * @return The script name for this Operator.
-   */
+/* ------------------------------ getCommand ---------------------------- */
+/**
+ * Get the command name to use for this operator.
+ *
+ * @return The script name for this Operator.
+ */
   public String getCommand(  ) {
     return "WRAPPED_CRUNCH";
   }
 
+
+/* ---------------------------- getDocumentation -------------------------- */
   /**
    * Returns the documentation for this method as a String.  The format follows
    * standard JavaDoc conventions.
