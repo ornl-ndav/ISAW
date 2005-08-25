@@ -29,23 +29,26 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  *
- *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/08/25 18:14:43  dennis
+ * Moved to menu category Instrument Type, TOF_NGLAD
+ *
  * Revision 1.1  2005/05/05 02:06:10  taoj
  * added into the cvs
  *
  * Revision 1.1  2004/07/23 17:44:45  taoj
  * test version.
  *
-
  */
 package Operators.TOF_Diffractometer;
 
 import java.util.Vector;
 import DataSetTools.operator.DataSet.Math.Scalar.DataSetScalarMultiply;
 import DataSetTools.operator.DataSet.Math.DataSet.DataSetAdd;
+import DataSetTools.operator.Operator;
 import DataSetTools.operator.Wrappable;
+import DataSetTools.operator.IWrappableWithCategoryList;
 import DataSetTools.math.tof_calc;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
@@ -62,7 +65,8 @@ import java.util.regex.Pattern;
  * This class combines datasets (both detector and monitor ones) from a number of runfiles with a weighting proportion to the average
  * counts of corresponding beam monitor data;
  */
-public class GLADSumRun implements Wrappable {
+public class GLADSumRun implements Wrappable, IWrappableWithCategoryList
+{
   //~ Instance fields **********************************************************
   
   private boolean DEBUG = false;
@@ -78,6 +82,24 @@ public class GLADSumRun implements Wrappable {
   public String getCommand(  ) {
     return "GLAD_SUMRUN";
   }
+
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.TOF_NGLAD;
+  }
+
 
   /**
    * Returns the documentation for this method as a String.  The format follows

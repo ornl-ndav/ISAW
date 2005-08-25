@@ -29,9 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  *
- *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/08/25 18:14:43  dennis
+ * Moved to menu category Instrument Type, TOF_NGLAD
+ *
  * Revision 1.1  2005/05/05 02:06:10  taoj
  * added into the cvs
  *
@@ -43,7 +45,9 @@
 package Operators.TOF_Diffractometer;
 
 import Operators.TOF_Diffractometer.Ftr;
+import DataSetTools.operator.Operator;
 import DataSetTools.operator.Wrappable;
+import DataSetTools.operator.IWrappableWithCategoryList;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 
@@ -51,7 +55,8 @@ import DataSetTools.dataset.DataSet;
  * This class uses Ftr.java to convert I(Q) to S(Q) and preform the Fourier transformation from S(Q)
  * to various distribution functions. It corresponds to the FTR routine on GLAD.
  */
-public class GLADQ2R implements Wrappable {
+public class GLADQ2R implements Wrappable, IWrappableWithCategoryList
+{
   //~ Instance fields **********************************************************
   
   private boolean DEBUG = false;
@@ -71,6 +76,24 @@ public class GLADQ2R implements Wrappable {
   public String getCommand(  ) {
     return "GLAD_Q2R";
   }
+
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.TOF_NGLAD;
+  }
+
 
   /**
    * Returns the documentation for this method as a String.  The format follows
