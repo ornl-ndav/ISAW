@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.52  2005/08/25 16:13:14  dennis
+ *  Added/moved to logical menu OBJECT_STATE_UTILS
+ *
  *  Revision 1.51  2005/08/25 15:45:33  dennis
  *  Added menu categories: GENERATED_OP_EXAMPLES, WRAPPED_OP_EXAMPLES
  *  and OLD_OP_EXAMPLES.
@@ -242,20 +245,27 @@ abstract public class Operator implements Serializable
    
    public static final String[] UTILS_CONVERSIONS = {"operator","Utils",
                                                                 "Convert"};
+
+   public static final String[] UTILS_TESTS = {"operator","Utils", 
+                                                          "Tests"};
+   
+   public static final String[] UTILS_SYSTEM = {"operator","Utils",
+                                                           "System"};
+   
+   public static final String[] OBJECT_STATE_UTILS = {"operator","Utils",
+                                                                "Object State"};
    
    public static final String[] GENERAL_EXAMPLES = {"operator", "Examples"};
 
    public static final String[] GENERATED_OP_EXAMPLES =
-                                        {"operator", "Examples", "Generated" };
+                            {"operator", "Examples", "Operator ( Generated )" };
 
    public static final String[] WRAPPED_OP_EXAMPLES =
-                                        {"operator", "Examples", "Wrapped" };
- 
+                            {"operator", "Examples", "Operator ( Wrapped )" };
+
    public static final String[] OLD_OP_EXAMPLES =
-                                        {"operator", "Examples", "Old Form" };
+                            {"operator", "Examples", "Operator ( Old Form )" };
  
-   public static final String[] UTILS_TESTS = {"operator","Utils", 
-                                                          "Tests"};
    
    public static final String[] DATA_SET_MACROS = {"operator", "DataSet"};
 
@@ -273,9 +283,6 @@ abstract public class Operator implements Serializable
 
    public static final String[] DATA_SET_TWEAK_MACROS =
                                          {"operator", "DataSet", "Tweak"};
-   
-   public static final String[] UTILS_SYSTEM = {"operator","Utils",
-                                                           "System"};
    
    private static String[] categoryList=null;
 

@@ -22,15 +22,16 @@
  *            University of Wisconsin-Stout
  *            Menomonie, WI 54751, USA
  *
- *
- *
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/08/25 16:13:15  dennis
+ * Added/moved to logical menu OBJECT_STATE_UTILS
+ *
  * Revision 1.1  2005/08/05 16:10:16  kramer
+ *
  * Initial checkin.  This is an operator that is used to create a new empty
  * ObjectState.  As a result, scripts can make empty ObjectStates to use.
- *
  *
  */
 
@@ -77,10 +78,7 @@ public class CreateEmptyState extends GenericOperator{
 
 
    public String[] getCategoryList(){
-            return new String[]{
-                     "Macros",
-                     "MyMenu"
-                     };
+     return Operator.OBJECT_STATE_UTILS;
    }
 
 

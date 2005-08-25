@@ -22,19 +22,20 @@
  *            University of Wisconsin-Stout
  *            Menomonie, WI 54751, USA
  *
- *
- *
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/08/25 16:13:18  dennis
+ * Added/moved to logical menu OBJECT_STATE_UTILS
+ *
  * Revision 1.1  2005/08/17 21:39:03  kramer
+ *
  * Initial checkin.  This is an Operator that is used to set the value
  * stored in an ObjectState given the full path to the data.  Currently
  * this Operator supports creating the specified path if it does not exist,
  * checking the data type of the currently stored data against the data type
  * of the new data, and allowing protection of the currently stored data by
  * specifying that data cannot be overwritten.
- *
  *
  */
 
@@ -139,10 +140,7 @@ public class SetObjectStateValue extends GenericOperator{
 
 
    public String[] getCategoryList(){
-            return new String[]{
-                     "Macros",
-                     "MyMenu"
-                     };
+     return Operator.OBJECT_STATE_UTILS;
    }
 
 
