@@ -7,7 +7,7 @@
 #
 #  $Date$
 
-$Category = Macros, Utils, Examples 
+$Category = Macros, Examples, Scripts ( ISAW )
 
 #
 #  1. Load the data from a simple ASCII file and mark the first group as

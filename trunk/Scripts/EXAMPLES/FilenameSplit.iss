@@ -1,5 +1,8 @@
-$Category = Macros, Utils, Examples
+
+$Category = Macros, Examples, Scripts ( ISAW )
+
 $Title=Demonstrate splitting filenames.
+
 $filename      LoadFileString    Enter File Name
 
 fParts = fSplit(filename)
