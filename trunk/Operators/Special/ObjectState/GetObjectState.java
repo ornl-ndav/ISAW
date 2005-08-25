@@ -27,7 +27,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/08/25 16:13:15  dennis
+ * Added/moved to logical menu OBJECT_STATE_UTILS
+ *
  * Revision 1.1  2005/08/05 16:11:35  kramer
+ *
  * Initial checkin.  This is an operator that is used to get the state
  * (encapsulated in an ObjectState) of an IPreserveState object.
  *
@@ -93,11 +97,8 @@ public class GetObjectState extends GenericOperator{
    }
 
 
-   public String[] getCategoryList(){
-            return new String[]{
-                     "Macros",
-                     "MyMenu"
-                     };
+  public String[] getCategoryList(){
+     return Operator.OBJECT_STATE_UTILS;
    }
 
 

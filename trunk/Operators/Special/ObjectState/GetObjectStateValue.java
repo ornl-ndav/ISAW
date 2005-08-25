@@ -22,16 +22,16 @@
  *            University of Wisconsin-Stout
  *            Menomonie, WI 54751, USA
  *
- *
- *
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/08/25 16:13:15  dennis
+ * Added/moved to logical menu OBJECT_STATE_UTILS
+ *
  * Revision 1.1  2005/08/17 21:29:26  kramer
+ *
  * Initial checkin.  This is an Operator that is used to access data in an
  * ObjectState given the full path to the data.
- *
- *
  */
 
 package Operators.Special.ObjectState;
@@ -95,10 +95,7 @@ public class GetObjectStateValue extends GenericOperator{
 
 
    public String[] getCategoryList(){
-            return new String[]{
-                     "Macros",
-                     "MyMenu"
-                     };
+     return Operator.OBJECT_STATE_UTILS;
    }
 
 
