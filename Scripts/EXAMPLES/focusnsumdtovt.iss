@@ -1,3 +1,6 @@
+
+$Category=Macros, Examples, Scripts ( ISAW )
+
 $filename    LoadFileString    Enter File Name
 
 Display filename
