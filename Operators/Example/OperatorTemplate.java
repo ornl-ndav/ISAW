@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/08/25 15:54:10  dennis
+ * Now placed in logical menu category: OLD_OP_EXAMPLES
+ *
  * Revision 1.1  2005/08/24 19:11:59  dennis
  * Added comments to documentation, indicating that this is an
  * example of an "old" style operator, and new operators should
@@ -140,7 +143,7 @@ public class OperatorTemplate extends GenericExample
  */
    public String[] getCategoryList()
    {
-     return new String[]{ "Macros", "Examples", "Operator(old style)" };
+     return Operator.OLD_OP_EXAMPLES;
    }
 
 
