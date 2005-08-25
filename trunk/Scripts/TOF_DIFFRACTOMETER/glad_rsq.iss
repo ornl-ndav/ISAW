@@ -11,6 +11,8 @@
 # dead detector list:
 # @param	REDPAR -path of the dead detector list file;
 
+$ Category = Macros, Instrument Type, TOF_NGLAD
+
 #================= Parameters ======================================
 
 # config file:
