@@ -31,6 +31,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/08/25 15:53:09  dennis
+ * No longer implements HiddenOperator, so it will now appear in menu.
+ * Added getCategoryList() method to control where it appears.
+ * getCategoryList() returns the logical menu WRAPPED_OP_EXAMPLES.
+ *
  * Revision 1.1  2004/05/07 17:49:00  dennis
  * Moved WrapperTemplate from Operators to Operators/Example
  *
@@ -75,7 +80,8 @@ import DataSetTools.operator.*;
  * To repeat:  You will generally not implement HiddenOperator unless you
  * do not want your Operator to show up in the menu.
  */
-public class WrapperTemplate implements Wrappable, HiddenOperator {
+public class WrapperTemplate implements Wrappable, IWrappableWithCategoryList
+{
   //~ Instance fields **********************************************************
 
   /*
@@ -96,6 +102,22 @@ public class WrapperTemplate implements Wrappable, HiddenOperator {
     return null;
   }
 
+
+/**
+  * Get an array of strings listing the operator category names  for 
+  * this operator. The first entry in the array is the 
+  * string: Operator.OPERATOR. Subsequent elements of the array determine
+  * which submenu this operator will reside in.
+  * 
+  * @return  A list of Strings specifying the category names for the
+  *          menu system 
+  */
+   public String[] getCategoryList()
+   {
+     return Operator.WRAPPED_OP_EXAMPLES;
+   }
+
+
   /**
    * Please document what your Operator does.  It can be beneficial to
    * everyone.
@@ -105,7 +127,7 @@ public class WrapperTemplate implements Wrappable, HiddenOperator {
     //writing your documentation
 
     /*StringBuffer s = new StringBuffer(  );
-       s.append( "@overview Place the overall description of your Operator in" );
+       s.append( "@overview Place the overall description of your Operator in");
        s.append( "here." );
        s.append( "@algorithm How does your Operator work?  Please provide a " );
        s.append( "succinct description here." );
@@ -115,7 +137,7 @@ public class WrapperTemplate implements Wrappable, HiddenOperator {
        // .
        // .
        // .
-       s.append( "@return What result does your Operator return? For example: " );
+       s.append( "@return What result does your Operator return? For example: ");
        s.append( "A DataSet that has had its X-axis converted to time-of-flight." );
        s.append( "@error Describe any unusual or notable errors that could " );
        s.append( "occur. For example: Error occurs if number of bins is zero." );
