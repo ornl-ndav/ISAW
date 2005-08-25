@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/08/25 15:01:06  dennis
+ * Moved to DATA_SET_EDIT_LIST_MACROS category in menus.
+ *
  * Revision 1.1  2005/04/07 19:16:24  dennis
  * Initial (rough) version of operator to set specified channels to zero
  * for one or all Data blocks in a DataSet.
@@ -50,7 +53,7 @@ import DataSetTools.operator.*;
  *  This class sets the data values to zero for the specified list of 
  *  channel numbers.   
  */
-public class MaskChannels implements Wrappable
+public class MaskChannels implements Wrappable, IWrappableWithCategoryList
 {
   public DataSet  data_set = DataSet.EMPTY_DATA_SET;
   public int      group_id = 49;
@@ -63,6 +66,19 @@ public class MaskChannels implements Wrappable
   public String getCommand() 
   {
     return "MaskChannels";
+  }
+
+
+ /**
+  *  Get the list of categories describing where this operator should appear
+  *  in the menu system.
+  *
+  *  @return an array of strings listing the menu where the operator 
+  *  should appear.
+  */
+  public String[] getCategoryList()
+  {
+    return Operator.DATA_SET_EDIT_LIST_MACROS;
   }
 
 
@@ -112,7 +128,7 @@ public class MaskChannels implements Wrappable
         if ( d != null )
         {
           if ( !(d instanceof TabulatedData ) )
-            return new ErrorString("DataSet with TabulatedData in MaskChannels");
+           return new ErrorString("DataSet with TabulatedData in MaskChannels");
           data_blocks.addElement( d );   
         }
       }
