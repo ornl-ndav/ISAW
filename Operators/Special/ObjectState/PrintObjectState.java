@@ -22,19 +22,19 @@
  *            University of Wisconsin-Stout
  *            Menomonie, WI 54751, USA
  *
- *
- *
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/08/25 16:13:17  dennis
+ * Added/moved to logical menu OBJECT_STATE_UTILS
+ *
  * Revision 1.1  2005/08/05 16:18:39  kramer
+ *
  * Initial checkin.  This is an operator that is used to get an ASCII
  * representation of an ObjectState.  It supports printing the keys in the
  * state or the keys and their values.  In addition, the way the values
  * are printed can be modified based on the parameters given to this
  * operator.
- *
- *
  */
 
 package Operators.Special.ObjectState;
@@ -127,10 +127,7 @@ public class PrintObjectState extends GenericOperator{
 
 
    public String[] getCategoryList(){
-            return new String[]{
-                     "Macros",
-                     "MyMenu"
-                     };
+     return Operator.OBJECT_STATE_UTILS;
    }
 
 
