@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2005/08/25 19:51:05  dennis
+ *  Moved to logical menu category UTILS_ACTIVATE
+ *
  *  Revision 1.2  2004/03/15 03:36:59  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -42,6 +45,7 @@
 package Operators.Calculator;
 
 import DataSetTools.materials.*;
+import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
@@ -82,6 +86,21 @@ public class ScatteringXS extends GenericCalculator{
     else if(type==2)
       getParameter(1).setValue("Incoherent Scattering");
   }
+
+
+ /* ---------------------------- getCategoryList -------------------------- */
+ /**
+  *  Get the list of categories describing where this operator should appear
+  *  in the menu system.
+  *
+  *  @return an array of strings listing the menu where the operator 
+  *  should appear.
+  */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_ACTIVATE;
+  }
+
 
   /**
    * Returns description/attributes of ScatteringXS for a user

@@ -31,6 +31,9 @@
  * Modified:	
  *
  * $Log$
+ * Revision 1.10  2005/08/25 19:51:03  dennis
+ * Moved to logical menu category UTILS_ACTIVATE
+ *
  * Revision 1.9  2004/03/15 03:36:59  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -48,29 +51,13 @@
  * standardized header
  *
  * Revision 1.4  2002/10/29 16:00:23  dennis
- * Added getDocumentation method, and $Log$
- * Added getDocumentation method, and Revision 1.9  2004/03/15 03:36:59  dennis
- * Added getDocumentation method, and Moved view components, math and utils to new source tree
- * Added getDocumentation method, and gov.anl.ipns.*
- * Added getDocumentation method, and
- * Added getDocumentation method, and Revision 1.8  2003/12/15 01:39:13  bouzekc
- * Added getDocumentation method, and Removed unused imports.
- * Added getDocumentation method, and
- * Added getDocumentation method, and Revision 1.7  2003/10/14 21:50:58  dennis
- * Added getDocumentation method, and Fixed javadoc error so that it builds cleanly on jdk 1.4.2
- * Added getDocumentation method, and
- * Added getDocumentation method, and Revision 1.6  2003/02/04 16:28:14  pfpeterson
- * Added getDocumentation method, and Now uses IParameterGUI and changed returns on errors to ErrorString.
- * Added getDocumentation method, and
- * Added getDocumentation method, and Revision 1.5  2002/11/27 23:30:05  pfpeterson
- * Added getDocumentation method, and standardized header
- * Added getDocumentation method, and tag. (Mike Miller)
- *
+ * Added getDocumentation method, and CVS LOG TAG 
  *
  */
 package Operators.Calculator;
 
 import DataSetTools.materials.*;
+import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
@@ -107,6 +94,21 @@ public class ActivatePrompt extends GenericCalculator
       this(); 
       getParameter(0).setValue(sample);
   }
+
+
+ /* ---------------------------- getCategoryList -------------------------- */
+ /**
+  *  Get the list of categories describing where this operator should appear
+  *  in the menu system.
+  *
+  *  @return an array of strings listing the menu where the operator 
+  *  should appear.
+  */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_ACTIVATE;
+  }
+
 
  /* ---------------------------getDocumentation--------------------------- */
  /**
