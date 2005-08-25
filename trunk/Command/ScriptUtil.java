@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2005/08/25 16:52:27  rmikk
+ * Added a convert to 1D int array method
+ *
  * Revision 1.13  2005/08/04 22:30:44  rmikk
  * Fixed a mismatch of data type error
  *
@@ -81,6 +84,7 @@ package Command;
 import DataSetTools.dataset.*;
 import DataSetTools.parameter.IParameter;
 import DataSetTools.parameter.IParameterGUI;
+import DataSetTools.operator.JavaWrapperOperator;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Generic.GenericOperator;
 import DataSetTools.retriever.*;
@@ -767,6 +771,30 @@ public class ScriptUtil{
        Res[k]=V.elementAt(k).toString();
     return Res;
       
+  }
+  
+  
+  /**
+   * Converts a value to an array of int's.
+   * @param val An Object that can be converted to an array of int's. It can be the
+   *             string form
+   * @return   An array of int's
+   * @throws IllegalArgumentException if the conversion is not possible
+   */
+  public static int[] cvrt2int1D( Object val)throws IllegalArgumentException{
+      if( val == null)
+         return null;
+    int[] Res = null;
+    if( val instanceof String){
+      val = DataSetTools.parameter.ArrayPG.StringtoArray((String)val);
+    }
+    try{
+         Res =(int[])DataSetTools.operator.JavaWrapperOperator.cvrt( (new int[0]).getClass(),
+                            val);
+    }catch(Exception s){
+      throw new IllegalArgumentException(s.toString());
+    }
+    return Res;
   }
   /**
    * MAIN METHOD FOR TESTING ONLY
