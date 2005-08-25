@@ -11,7 +11,7 @@ $det_size     Float(0.2)   Enter detector size(meters)
 $det_dist     Float(0.45)  Enter sample to detect distance(meters)
 $initial_path Float(9)     Enter the initial flight path(meters)
 #
-$Category=Macros,Utils,Examples
+$Category = Macros, Examples, Scripts ( ISAW )
 #
 
 load file,"ds"

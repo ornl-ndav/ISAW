@@ -1,8 +1,11 @@
+
 $ds    DataSet   Select Data Set
 $minID   Integer(5)   Minimum group ID
 $maxID   Integer(7229)   Maximum group ID
+
 $Title=Calculate sum area pixels in a time slice
-$Category=Macros,Utils,Examples
+
+$Category = Macros, Examples, Scripts ( ISAW )
 
 #Select pixels that are in the time slice
 SelectGroups(ds, "Group ID", minID, maxID, "Between Max and Min", "Set Selected")

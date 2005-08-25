@@ -9,7 +9,7 @@
 #
 #  $Date$
 
-$Category = Macros, Utils, Examples
+$Category = Macros, Examples, Scripts ( ISAW )
 
 $  path        DataDirectoryString   PathName
 $  instrument  String(GLAD)          Instrument

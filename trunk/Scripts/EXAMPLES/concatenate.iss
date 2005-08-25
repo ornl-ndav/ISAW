@@ -9,7 +9,7 @@
 #  $Date$
 
 $Title = Concatenate two Strings
-$Category = Macros, Utils, Examples
+$Category = Macros, Examples, Scripts ( ISAW )
 
 $ x  String(default string) x =
 $ y  String                 y =

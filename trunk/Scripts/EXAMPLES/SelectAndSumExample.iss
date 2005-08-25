@@ -6,11 +6,13 @@
 #@param minAngle   Minimum angle for sum
 #@param maxAngle   Maximum angle for sum
 #
-$file    LoadFile   Enter Filename
+$file      LoadFile    Enter Filename
 $minAngle  Float(40)   Enter Minimum Angle
 $maxAngle  Float(70)   Enter Maximum Angle
+
 $Title=Select by Angle, Convert to D & Sum
-$Category=Macros,Utils,Examples
+
+$Category = Macros, Examples, Scripts ( ISAW )
 
 #Load the selected file
 Load file, "sample"
@@ -36,6 +38,8 @@ display newInterest
 #says to make a new dataset
 sumInterest=SumSel(newInterest, false, true)
 
-Display the summed data in the selected graph view.
+#Display the summed data in the selected graph view.
 Display sumInterest, "SELECTED_GRAPH"
+
+Return "Done"
 
