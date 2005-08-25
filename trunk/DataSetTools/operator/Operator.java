@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.53  2005/08/25 19:50:15  dennis
+ *  Added menu category UTILS_ACTIVATE
+ *
  *  Revision 1.52  2005/08/25 16:13:14  dennis
  *  Added/moved to logical menu OBJECT_STATE_UTILS
  *
@@ -239,6 +242,9 @@ abstract public class Operator implements Serializable
 
    public static final String[] FILE_PRINT = {"operator","File",
                                                          "Print"};
+
+   public static final String[] UTILS_ACTIVATE = {"operator","Utils",
+                                                             "Activate"};
 
    public static final String[] UTILS_CALCULATORS = {"operator","Utils",
                                                           "Calculators"};
