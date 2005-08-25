@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2005/08/25 15:51:39  dennis
+ * Moved to logical menu category WRAPPED_OP_EXAMPLES
+ *
  * Revision 1.4  2005/08/24 19:47:39  dennis
  * Changed logical name of menu from UTILS_EXAMPLES to GENERAL_EXAMPLES.
  *
@@ -101,8 +104,7 @@ public class WrappedCrunch implements Wrappable, IWrappableWithCategoryList {
   */
    public String[] getCategoryList()
    {
-     return new String[]{ "Macros", "Examples", "Operator(wrapped)" };
-     //return Operator.GENERAL_EXAMPLES;
+     return Operator.WRAPPED_OP_EXAMPLES;
    }
 
 /* ------------------------------ getCommand ---------------------------- */
