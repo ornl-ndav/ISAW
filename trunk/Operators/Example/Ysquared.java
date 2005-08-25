@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/08/25 15:54:10  dennis
+ * Now placed in logical menu category: OLD_OP_EXAMPLES
+ *
  * Revision 1.3  2005/08/24 19:14:48  dennis
  * Modified getCategoryList() to place operator in the
  * Macros, Examples, Operator(old style) menu.
@@ -141,7 +144,7 @@ public class Ysquared extends GenericExample
  */
    public String[] getCategoryList()
    {
-     return new String[]{ "Macros", "Examples", "Operator(old style)" };
+     return Operator.OLD_OP_EXAMPLES;
    }
 
 

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2005/08/25 15:54:09  dennis
+ * Now placed in logical menu category: OLD_OP_EXAMPLES
+ *
  * Revision 1.4  2005/08/24 19:14:46  dennis
  * Modified getCategoryList() to place operator in the
  * Macros, Examples, Operator(old style) menu.
@@ -151,7 +154,7 @@ public class CenteredDifferences extends GenericExample
  */
    public String[] getCategoryList()
    {
-     return new String[]{ "Macros", "Examples", "Operator(old style)" };
+     return Operator.OLD_OP_EXAMPLES;
    }
 
  /* ------------------------ setDefaultParameters ------------------------- */ 
