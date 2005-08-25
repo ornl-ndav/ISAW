@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2005/08/25 16:55:01  rmikk
+ *  Added a public static createVariableXScale method
+ *
  *  Revision 1.17  2005/06/01 21:42:24  dennis
  *  Undid accidental commit by Ruth
  *
@@ -75,7 +78,8 @@
 
 package DataSetTools.dataset;
 import gov.anl.ipns.Util.Numeric.*;
-
+import gov.anl.ipns.Util.SpecialStrings.*;
+import DataSetTools.operator.*;
 import java.io.*;
 import java.util.*;
 
@@ -148,6 +152,33 @@ public class VariableXScale extends XScale implements Serializable
     }  
   }
 
+
+  /**
+   * Creates a VariableXScale if possible.
+   * @param vals  An Object containing a some type of list of values that can
+   *             be converted to a float[] then to a VariableXScale.
+   * @return  A VariableXScale or an ErrorString
+   */
+  public static Object createVariableXScale( Object vals){
+    if( vals == null)
+       return new ErrorString("There are no values");
+    float[] values=null;
+    try{
+        values=(float[])JavaWrapperOperator.cvrt((new float[0]).getClass(),
+                       vals);
+    }catch(Exception s){
+       return new ErrorString("Cannot convert data to float[]");
+    }
+    if(values==null)
+     return new ErrorString("Cannot convert data to float[]");;
+    for( int i=1; i< values.length;i++)
+      if( values[i-1]>=values[i])
+        return new ErrorString("Values are not increasing");
+    return new VariableXScale( values);
+
+         
+    
+  }
   /**
    * Returns the array of "X" values specified when the constructor was called.
    */
