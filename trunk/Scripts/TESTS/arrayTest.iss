@@ -1,7 +1,7 @@
 #Testing arrays
 # $Date$
 
-$Category = Macros, Utils, Tests
+$Category = Macros, Examples, Scripts ( ISAW )
 
 d = [1,3,5,5+2]
 # or d[]=[1,3,5,7]

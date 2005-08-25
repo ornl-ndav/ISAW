@@ -1,6 +1,6 @@
 # $Date$
 
-$Category = Macros, Utils, Tests
+$Category = Macros, Examples, Scripts ( ISAW )
 
 $x    Integer(5)   x=
 
@@ -22,5 +22,4 @@ Display x
 return "OK"
 
 #NOTE: the return value will not show up in the command pane unless
-
-# the JParametersDialog box pops up.
+#      the JParametersDialog box pops up.
