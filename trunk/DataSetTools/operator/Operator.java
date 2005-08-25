@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.50  2005/08/25 15:18:24  dennis
+ *  Added/moved to menu category DATA_SET_TWEAK_MACROS
+ *
  *  Revision 1.49  2005/08/25 14:51:36  dennis
  *  Made/added to category DATA_SET_ANALYZE_MACROS.
  *
@@ -255,6 +258,8 @@ abstract public class Operator implements Serializable
    public static final String[] DATA_SET_ANALYZE_MACROS =
                                          {"operator", "DataSet", "Analyze"};
 
+   public static final String[] DATA_SET_TWEAK_MACROS =
+                                         {"operator", "DataSet", "Tweak"};
    
    public static final String[] UTILS_SYSTEM = {"operator","Utils",
                                                            "System"};

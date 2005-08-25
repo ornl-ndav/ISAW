@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/08/25 15:18:26  dennis
+ * Added/moved to menu category DATA_SET_TWEAK_MACROS
+ *
  * Revision 1.1  2004/05/07 17:57:02  dennis
  * Moved operators that extend GenericSpecial from Operators
  * to Operators/Special
@@ -113,6 +116,7 @@ public class SetDetPos extends GenericSpecial
                                  new Float(float_val3) ) );
   }
 
+
  /* ---------------------------- getCommand ------------------------------- */ 
  /** 
   * Get the name of this operator to use in scripts
@@ -124,6 +128,24 @@ public class SetDetPos extends GenericSpecial
   {
     return "SetDetPos";
   }
+
+
+ /* ------------------------- getCategoryList --------------------------- */ 
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.DATA_SET_TWEAK_MACROS;
+  }
+
 
  /* ------------------------ setDefaultParameters ------------------------- */ 
  /** 

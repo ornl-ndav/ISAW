@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2005/08/25 15:18:25  dennis
+ * Added/moved to menu category DATA_SET_TWEAK_MACROS
+ *
  * Revision 1.8  2005/08/24 19:51:04  dennis
  * Changed logical name of menu from UTILS_DATA_SET to
  * DATA_SET_MACROS
@@ -109,7 +112,7 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
    */
   public String[] getCategoryList()
   {
-    return Operator.DATA_SET_MACROS;
+    return Operator.DATA_SET_TWEAK_MACROS;
   }
 
 
