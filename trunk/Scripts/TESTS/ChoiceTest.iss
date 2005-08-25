@@ -2,7 +2,7 @@
 # The result will ALWAYS be a string
 # $Date$
 
-$Category = Macros, Utils, Tests 
+$Category = Macros, Examples, Scripts ( ISAW )
 
 #
 # The choice is a parameter of this script

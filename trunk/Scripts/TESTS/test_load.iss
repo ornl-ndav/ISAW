@@ -1,7 +1,7 @@
 # Testing script for loading and displaying files
 # $Date$
 
-$Category = Macros, Utils, Tests
+$Category = Macros, Examples, Scripts ( ISAW ) 
 
 $  path      DataDirectoryString   Data Directory
 

@@ -8,7 +8,7 @@
 #
 # $Date$
 
-$Category = Macros, Utils, Tests
+$Category = Macros, Examples, Scripts ( ISAW )
 
 $ filename LoadFileString Runfile
 
