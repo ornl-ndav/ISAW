@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/08/25 14:51:38  dennis
+ * Made/added to category DATA_SET_ANALYZE_MACROS.
+ *
  * Revision 1.2  2004/05/10 20:42:28  dennis
  * Test program now just instantiates a ViewManager to diplay
  * calculated DataSet, rather than keeping a reference to it.
@@ -135,6 +138,19 @@ public class IntegratedIntensityVsAngle extends GenericSpecial
   public String getCommand()
   {
     return "IntensityVsAngle";
+  }
+
+ /* ---------------------------- getCategoryList -------------------------- */
+ /**
+  *  Get the list of categories describing where this operator should appear
+  *  in the menu system.
+  *
+  *  @return an array of strings listing the menu where the operator 
+  *  should appear.
+  */
+  public String[] getCategoryList()
+  {
+    return Operator.DATA_SET_ANALYZE_MACROS;
   }
 
  /* ------------------------ setDefaultParameters ------------------------- */ 

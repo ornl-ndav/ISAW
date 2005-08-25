@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/08/25 14:51:38  dennis
+ * Made/added to category DATA_SET_ANALYZE_MACROS.
+ *
  * Revision 1.3  2004/06/02 15:44:16  dennis
  * Fixed error in assigning values to parameters in the constructor
  * that accepts parameters.
@@ -57,7 +60,8 @@
  *
  * Revision 1.8  2004/02/04 03:17:42  hammonds
  * Generalize by adding  max_chn.
- * Add IntAttributes for Upper & Lower Discriminator to allow extraction to file.
+ * Add IntAttributes for Upper & Lower Discriminator to allow 
+ * extraction to file.
  * Adjust marker height to match each spectrum
  *
  * Revision 1.7  2003/02/10 18:51:23  dennis
@@ -91,6 +95,8 @@ public class SetDiscriminatorLevels extends GenericSpecial
 
   private static final String TITLE = "Set Discriminator Levels";
 
+
+ /* ----------------------------- constructor ----------------------------- */
  /** 
   *  Creates operator with title "Set Discriminator Levels" and a 
   *  default list of parameters. 
@@ -100,6 +106,8 @@ public class SetDiscriminatorLevels extends GenericSpecial
     super( TITLE );
   }
 
+
+ /* ----------------------------- constructor ----------------------------- */
  /** 
   *  Creates operator with title "Set Discriminator Levels" and the  
   *  specified list of parameters.  The getResult method must still be 
@@ -131,6 +139,8 @@ public class SetDiscriminatorLevels extends GenericSpecial
                                   new Float(width) ) );
   }
 
+
+ /* ----------------------------- getCommand ----------------------------- */
  /** 
   * Get the name of this operator to use in scripts
   * 
@@ -141,6 +151,21 @@ public class SetDiscriminatorLevels extends GenericSpecial
     return "SetDisc";
   }
 
+
+ /* ---------------------------- getCategoryList -------------------------- */
+ /**
+  *  Get the list of categories describing where this operator should appear
+  *  in the menu system.
+  *
+  *  @return an array of strings listing the menu where the operator 
+  *  should appear.
+  */
+  public String[] getCategoryList()
+  {
+    return Operator.DATA_SET_ANALYZE_MACROS;
+  }
+
+ /* --------------------------- setDefaultParameters ---------------------- */
  /** 
   * Sets default values for the parameters.  This must match the data types 
   * of the parameters.
@@ -172,7 +197,8 @@ public class SetDiscriminatorLevels extends GenericSpecial
     s.append("Levels' and the specified list of parameters. \n"); 
     s.append("NOTE: This is a \"work in progress\". ");
     s.append("@assumptions The parameters will accurately meet the ");  
-    s.append("description given in the 'Parameters' section. ");                         		                                                                                                              
+    s.append("description given in the 'Parameters' section. ");
+
     s.append("@algorithm The title of 'p_ds' is stored.  \n\n ");
     s.append("An array of two DataSet objects is declared.  The first ");
     s.append("DataSet in this array is set to be a clone of 'p_ds'.  The ");
@@ -208,6 +234,8 @@ public class SetDiscriminatorLevels extends GenericSpecial
     return s.toString();
   } 									        
 
+
+ /* ----------------------------- getResult ------------------------------- */
  /** 
   *  Executes this operator using the values of the current parameters.
   *
@@ -237,6 +265,8 @@ public class SetDiscriminatorLevels extends GenericSpecial
     return result_ds;
   }
 
+
+ /* ------------------------------ clone ------------------------------- */
  /** 
   *  Creates a clone of this operator.
   */
@@ -351,13 +381,16 @@ public class SetDiscriminatorLevels extends GenericSpecial
       System.out.println("i, lower, upper = " + i + 
                          ", " + lower_list[i] +
                          ", " + upper_list[i] );
-      p_ds.getData_entry(i).getAttributeList().addAttribute(new IntAttribute("Lower Level Discriminator", lower_list[i]));
-      p_ds.getData_entry(i).getAttributeList().addAttribute(new IntAttribute("Upper Level Discriminator", upper_list[i]));
+      p_ds.getData_entry(i).getAttributeList().addAttribute(
+                 new IntAttribute("Lower Level Discriminator", lower_list[i]));
+      p_ds.getData_entry(i).getAttributeList().addAttribute(
+                 new IntAttribute("Upper Level Discriminator", upper_list[i]));
     }
     return new_ds;
   }
 
- 
+
+ /* -------------------------------- main -------------------------------- */ 
  /** 
   * Test program to verify that this will complile and run ok.  
   *
@@ -391,6 +424,6 @@ public class SetDiscriminatorLevels extends GenericSpecial
     }
     else
       System.out.println("Operator returned " + obj );
-    
   }
+
 }

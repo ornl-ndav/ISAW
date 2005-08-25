@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.11  2005/08/25 14:51:37  dennis
+ * Made/added to category DATA_SET_ANALYZE_MACROS.
+ *
  * Revision 1.10  2005/08/12 15:43:53  dennis
  * Now returns a DataSet containing BOTH the fitted Gaussian and
  * the original Data block, restricted to the interval on which the
@@ -113,7 +116,7 @@ import DataSetTools.viewer.*;
  *  parameters, together with error estimates for the fitted parameters,
  *  and a DataSet with the fitted curve is returned. 
  */
-public class FitGaussianPeak implements Wrappable
+public class FitGaussianPeak implements Wrappable, IWrappableWithCategoryList
 {
   public DataSet  data_set = DataSet.EMPTY_DATA_SET;
   public int      group_id = 49;
@@ -129,6 +132,20 @@ public class FitGaussianPeak implements Wrappable
   public String getCommand() 
   {
     return "FitGaussian";
+  }
+
+
+ /* ---------------------------- getCategoryList -------------------------- */
+ /**
+  *  Get the list of categories describing where this operator should appear
+  *  in the menu system.
+  *
+  *  @return an array of strings listing the menu where the operator 
+  *  should appear.
+  */
+  public String[] getCategoryList()
+  {
+    return Operator.DATA_SET_ANALYZE_MACROS;
   }
 
 
