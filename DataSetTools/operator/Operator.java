@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.51  2005/08/25 15:45:33  dennis
+ *  Added menu categories: GENERATED_OP_EXAMPLES, WRAPPED_OP_EXAMPLES
+ *  and OLD_OP_EXAMPLES.
+ *
  *  Revision 1.50  2005/08/25 15:18:24  dennis
  *  Added/moved to menu category DATA_SET_TWEAK_MACROS
  *
@@ -240,7 +244,16 @@ abstract public class Operator implements Serializable
                                                                 "Convert"};
    
    public static final String[] GENERAL_EXAMPLES = {"operator", "Examples"};
-   
+
+   public static final String[] GENERATED_OP_EXAMPLES =
+                                        {"operator", "Examples", "Generated" };
+
+   public static final String[] WRAPPED_OP_EXAMPLES =
+                                        {"operator", "Examples", "Wrapped" };
+ 
+   public static final String[] OLD_OP_EXAMPLES =
+                                        {"operator", "Examples", "Old Form" };
+ 
    public static final String[] UTILS_TESTS = {"operator","Utils", 
                                                           "Tests"};
    
