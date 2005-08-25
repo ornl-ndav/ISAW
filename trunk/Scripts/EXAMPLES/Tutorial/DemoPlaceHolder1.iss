@@ -9,6 +9,8 @@
 #         PlaceHolder(opaque) variable when its contents were not one of
 #         the other supported data types
 
+$Category=Macros, Examples, Scripts ( ISAW )
+
 $DS     DataSet         Enter Data Set
 
 DetPos = GetAttr(DS,3,"Effective Position")
