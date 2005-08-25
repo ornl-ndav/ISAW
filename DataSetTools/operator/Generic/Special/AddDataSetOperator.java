@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2005/08/25 15:18:25  dennis
+ * Added/moved to menu category DATA_SET_TWEAK_MACROS
+ *
  * Revision 1.5  2005/08/24 13:55:37  rmikk
  * Uses File browser to select the java or class file for an operator
  *
@@ -121,6 +124,23 @@ public class AddDataSetOperator extends GenericSpecial{
     public String getCommand(){
 	return "addDataSetOp";
     }
+
+
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.DATA_SET_TWEAK_MACROS;
+  }
+
     
     /** 
      * Sets default values for the parameters.  This must match the
