@@ -30,7 +30,7 @@ public class copy extends DS_EditList{
      DataSet DS2= (DataSet)(getParameter(0).getValue());
      DataSet DS1= getDataSet();
      DS1.copy(DS2);
-     DS1.notifyIObservers( IObserver.DATA_CHANGED );
+     DS1.notifyIObservers( IObserver.DATA_REORDERED );
      return null;
     
   }
