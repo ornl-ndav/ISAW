@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2005/08/25 16:54:06  rmikk
+ *  Added a create UniformXScale public static method
+ *
  *  Revision 1.16  2004/06/25 16:57:03  dennis
  *  restrict() method now uses getI_GLB(max) to get upper bound in interval.
  *
@@ -144,6 +147,22 @@ public class UniformXScale extends XScale implements Serializable
    }
 
 
+  /**
+   *  Creates a UniformScales
+   * @param   start_x  the starting x
+   * @param   end_x    the ending x  
+   * @param   num_x    the number of x values.  
+   *
+   * @return  a UniformXScale
+   */
+   public static UniformXScale createUniformXScale( float start_x, float end_x, 
+            int num_x ){
+     
+     return new UniformXScale( start_x,end_x,num_x);
+   }
+   
+   
+   
   /**
    * @return the array of "X" values.  The array will have num_x entries.   
    * The "X" values are uniformly spaced and are calculated from start_x, 
