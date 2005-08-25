@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2005/08/25 13:57:38  rmikk
+ *  Removed the unused Split Pane so the bars will not show on the
+ *     selected graph view
+ *
  *  Revision 1.22  2005/05/25 18:39:18  dennis
  *  Removed unused imports.
  *
@@ -140,17 +144,17 @@ public class DataSetViewerMaker  extends DataSetViewer
       this.ds = ds;
       this.state = state;
       //viewComp.setData( viewArray);
-      JPanel East = new JPanel( new GridLayout( 1,1));
+      //JPanel East = new JPanel( new GridLayout( 1,1));
       
-      BoxLayout blayout = new BoxLayout( East,BoxLayout.Y_AXIS);
+      //BoxLayout blayout = new BoxLayout( East,BoxLayout.Y_AXIS);
      
-      East.setLayout( blayout);
+      //East.setLayout( blayout);
 
-      ViewControl[] Compcontrols = viewComp.getControls();
+      /*ViewControl[] Compcontrols = viewComp.getControls();
       if( Compcontrols != null)
         for( int i=0; i< Compcontrols.length; i++)
           East.add( Compcontrols[i]);   
-
+       */
       ViewMenuItem[] Comp_menuItems = viewComp.getMenuItems();
       if( Comp_menuItems != null)
         for( int i=0; i< Comp_menuItems.length; i++)
@@ -158,11 +162,14 @@ public class DataSetViewerMaker  extends DataSetViewer
       
       PrintComponentActionListener.setUpMenuItem( getMenuBar(), this);
       SaveImageActionListener.setUpMenuItem( getMenuBar(), this);
-      East.add( Box.createRigidArea(new Dimension(30,500)) );
+      //East.add( Box.createRigidArea(new Dimension(30,500)) );
       setLayout( new GridLayout( 1,1));
-      SplitPaneWithState the_pane =
+      JPanel  the_pane= viewComp.getDisplayPanel() ;
+      //the_pane.add(viewComp.getDisplayPanel());
+     /* SplitPaneWithState the_pane =
        new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
           viewComp.getDisplayPanel(), East, 1.00f);
+     */
       the_pane.addAncestorListener( new ancestor_listener());
       add(the_pane);
       invalidate();
