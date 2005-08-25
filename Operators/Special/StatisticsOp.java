@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  *  $Log$
+ *  Revision 1.3  2005/08/25 14:51:38  dennis
+ *  Made/added to category DATA_SET_ANALYZE_MACROS.
+ *
  *  Revision 1.2  2005/05/12 16:02:40  dennis
  *  Inserted missing cvslog message and tag to record logging info.
  *
@@ -46,8 +49,8 @@ import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 
 
-public class StatisticsOp implements Wrappable{
-
+public class StatisticsOp implements Wrappable, IWrappableWithCategoryList
+{
    public DataSet ds = null;
    public String  Op_Code = "Please give a command here.";
    public int     index = 0;
@@ -59,6 +62,20 @@ public class StatisticsOp implements Wrappable{
   public String getCommand(  ) {
     return "Statistics";
   }
+
+
+ /**
+  *  Get the list of categories describing where this operator should appear
+  *  in the menu system.
+  *
+  *  @return an array of strings listing the menu where the operator 
+  *  should appear.
+  */
+  public String[] getCategoryList()
+  {
+    return Operator.DATA_SET_ANALYZE_MACROS;
+  }
+
 
   /**
    *  documentation method as template requires
