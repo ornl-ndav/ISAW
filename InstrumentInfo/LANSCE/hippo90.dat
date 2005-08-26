@@ -1,0 +1,119 @@
+#
+Initial_Path 9.0
+#
+#  Number of detector panels for this DataSet, smarts has 12.
+#
+Num_Grids  10
+#
+Instrument_Type	1		
+Grid_ID	17		
+Num_Cols	1		
+Num_Rows	24		
+Width	0.1500		
+Height	0.3600		
+Center	0.0001 0.7000 0.0000
+X_vector	-0.016415113 2.57727E-06 -105.0000128
+Y_vector	-150.0000197 0.0235 0.023450162
+First_Index	1		
+Z_Vector	-942.1646622	335.2343136	0.002274549
+
+Grid_ID	18		
+Num_Cols	1		
+Num_Rows	24		
+Width	0.1500		
+Height	0.3600		
+Center	0.000109464 0.56633763 .4114142138
+X_vector	4.869914229 141937.8659 -195.3864314
+Y_vector	-344.9999078 0.011940742 0.075355912
+First_Index	25		
+Z_Vector			
+
+Grid_ID	19		
+Num_Cols	1		
+Num_Rows	24		
+Width	0.1500		
+Height	0.3600		
+Center	0.000109464 0.216395211 .6657124597
+X_vector	-23.0363612 229670.7373 -74.65632402
+Y_vector	-344.9999078 -0.034581977 0.067969825
+First_Index	49		
+Z_Vector			
+
+Grid_ID	20		
+Num_Cols	1		
+Num_Rows	24		
+Width	0.1500		
+Height	0.3600		
+Center	0.000109464 -0.216395149 .6657124799
+X_vector	-45.35246944 229670.7442 74.6563138
+Y_vector	-344.9999078 -0.068137452 0.03458005
+First_Index	73		
+Z_Vector			
+
+Grid_ID	21		
+Num_Cols	1		
+Num_Rows	24		
+Width	0.1500		
+Height	0.3600		
+Center	0.000109464 -0.566337544 .4114143318
+X_vector	-31.03139999 141937.9066 195.3864088
+Y_vector	-344.9999078 -0.075409616 -0.012012979
+First_Index	97		
+Z_Vector			
+
+Grid_ID	22		
+Num_Cols	1		
+Num_Rows	24		
+Width	0.1500		
+Height	0.3600		
+Center	0.000109464 -0.699999976 -7.35527E-08
+X_vector	-0.037775033 -0.025381596 241.4999331
+Y_vector	-344.9999078 -0.053949975 -0.053970004
+First_Index	121		
+Z_Vector			
+
+Grid_ID	23		
+Num_Cols	1		
+Num_Rows	24		
+Width	0.1500		
+Height	0.3600		
+Center	0.000109464 -0.566594772 -.4110600089
+X_vector	4.896887872 -141815.6652 195.4751454
+Y_vector	-344.9999078 -0.012016633 -0.075308769
+First_Index	145		
+Z_Vector			
+
+Grid_ID	24		
+Num_Cols	1		
+Num_Rows	24		
+Width	0.1500		
+Height	0.3600		
+Center	0.000109464 -0.216811374 -.6655770386
+X_vector	-22.87051092 -229624.017 74.79990042
+Y_vector	-344.9999078 0.034339802 -0.067926389
+First_Index	169		
+Z_Vector			
+
+Grid_ID	25		
+Num_Cols	1		
+Num_Rows	24		
+Width	0.1500		
+Height	0.3600		
+Center	0.000109464 0.215978634 -.6658477272
+X_vector	-45.30293663 -229717.4045 -74.51261635
+Y_vector	-344.9999078 0.068049221 -0.034644268
+First_Index	193		
+Z_Vector			
+
+Grid_ID	26		
+Num_Cols	1		
+Num_Rows	24		
+Width	0.1500		
+Height	0.3600		
+Center	0.000109464 0.566080041 -.4117685683
+X_vector	-31.03569059 -142060.1181 -195.2975701
+Y_vector	-344.9999078 0.075355351 0.011880886
+First_Index	217		
+Z_Vector			
+
+

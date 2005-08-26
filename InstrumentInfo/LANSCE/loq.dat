@@ -1,0 +1,39 @@
+#
+#    This file describes the initial path length and the sizes and positions 
+#  of the detector panels for the SMARTS instrument at LANSCE.  The information
+#  MUST occurr on lines in the order shown, with the specified names.
+#  The spectra corresponding to the first pixel on the grid MUST occur in 
+#  the DataSet in sequence, starting with the specified "First_Index".  NOTE:
+#  in this file these indicies are numbered starting at 1.  That is, the
+#  spectrum with index 1 in this file will be the spectrum in position 0
+#  of the DataSet.
+#
+#    Once a value is set, such as Num_Cols set to 32, it stays set for the
+#  remaining detectors in the file.  It can be set to a different value for
+#  any detector, and the new value will apply to all subsequent detectors,
+#  unless it is changed again.
+#
+#---------------------------------------------------------------------------
+#
+#   Initial path length from source to sample, in meters.
+#
+Initial_Path 9.
+#
+#  Number of detector panels for this DataSet, smarts has 12.
+#
+Num_Grids  1
+#
+#  Detector panel 1 is EAST UPPER LEFT
+Instrument_type  1
+#
+Grid_ID     1
+Num_Rows   128
+Num_Cols   128
+Width       .2
+Height      .2
+
+Center      .5    0  0
+X_vector     0  -1   0
+Y_vector     0   0   1
+First_Index 1
+ 
