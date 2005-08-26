@@ -28,6 +28,9 @@
  * number DMR-0218882.
  * 
  * $Log$
+ * Revision 1.43  2005/08/26 18:18:39  rmikk
+ * Made MaxIToSogI the default integrate choice
+ *
  * Revision 1.42  2005/05/27 04:12:57  dennis
  * Fixed javadoc comment for createIntegrateOperators() method.
  *
@@ -311,11 +314,12 @@ public class IntegrateMultiRunsForm extends Form {
         "SCD Calibration File Line to Use", new Integer( -1 ), false ) );      //9
     addParameter( new BooleanPG( "Append to File?", Boolean.FALSE, false ) );  //10
 
-    ChoiceListPG clPG = new ChoiceListPG("Integrate 1 peak method",Integrate1.OLD_INTEGRATE);
+    ChoiceListPG 
+    clPG= new ChoiceListPG("Integrate 1 peak method",Integrate1.NEW_INTEGRATE);
     clPG.addItem(Integrate1.SHOE_BOX);
-    clPG.addItem(Integrate1.NEW_INTEGRATE);
     clPG.addItem(Integrate1.TOFINT);
     clPG.addItem(Integrate1.EXPERIMENTAL);
+    clPG.addItem( Integrate1.OLD_INTEGRATE);
     addParameter(clPG);                                                          //11
 
     addParameter( new IntArrayPG( "Box Delta x (col) Range", "-2:2", false ) );  //12
