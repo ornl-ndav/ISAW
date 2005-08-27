@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.66  2005/08/27 13:21:55  rmikk
+ *  Updated Object state before saving it so last changes are retained
+ *
  *  Revision 1.65  2005/08/13 21:14:34  rmikk
  *  Changed Help submenu from About to Viewer
  *
@@ -1120,7 +1123,9 @@ private float solve( float new_x ) // find what x in the original DataSet maps
         DataSet new_ds = (DataSet)tempDataSet.clone();
         dataSet.notifyIObservers( new_ds );
       }else if( action.equals("Save Object State")){
-         Ostate.openFileChooser(true);
+        ObjectState st= viewer.getObjectState( false);
+        Ostate.reset( viewType, st);   
+        Ostate.openFileChooser(true);
       }else if( action.equals("Load Object State")){
         
          Ostate.openFileChooser(false);
