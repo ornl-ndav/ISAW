@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2005/08/28 15:33:48  rmikk
+ *  Made the Selection JFrame smaller and used scroll bars
+ *
  *  Revision 1.7  2005/08/24 14:16:56  rmikk
  *  Eliminated the WindowShower for a dialog box. The program had to
  *  halt at that point.
@@ -195,7 +198,7 @@ public class LoadSelDataSets extends    GenericLoad
      int[] sel = null;
      try{
        jf = new JDialog((JFrame)null,"DataSets",true);
-       jf.setSize( 400, 100*n_ds);
+       jf.setSize( 400, 30*n_ds);
        DefaultListModel listmod = new DefaultListModel();
        JList jlist = new JList(  listmod);
        for( int i=0; i< n_ds; i++){
@@ -219,7 +222,7 @@ public class LoadSelDataSets extends    GenericLoad
      jf.getContentPane().add(jbut, BorderLayout.SOUTH);
      
      jbut.addActionListener( this);
-     jf.getContentPane().add( jlist, BorderLayout.CENTER);
+     jf.getContentPane().add( new JScrollPane(jlist), BorderLayout.CENTER);
       jf.validate();
      jf.show();//Please do NOT use the WindowShower.  The program must halt at this
                // point.
