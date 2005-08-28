@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.9  2005/08/28 15:39:15  rmikk
+ * Set the Instrument Type attribute if known
+ *
  * Revision 1.8  2005/08/24 18:42:14  rmikk
  * Removed a Debug Print
  *
@@ -249,6 +252,7 @@ public class LoadUtil
     {
       int instrument_type = InstrumentType.intValue();
       DataSetFactory.addOperators( ds, instrument_type );
+      ds.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrument_type));
     }
   }
 
@@ -877,7 +881,7 @@ public class LoadUtil
     }
     // ----- Now get XScale------------
     float[] xvals = new float[199];
-    xvals[0]=21568;
+    xvals[0]=21568/10;
     double r= Math.log(499071.8/21568.)/(double)198;
     r = Math.pow(Math.E,r);
     for( int i=1; i<199;i++)
