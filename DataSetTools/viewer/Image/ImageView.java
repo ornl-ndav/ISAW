@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.56  2005/08/31 21:25:37  dennis
+ *  Fixed bug where zoom region would not be properly retained when
+ *  the window was resized.
+ *
  *  Revision 1.55  2005/08/31 20:02:01  dennis
  *  Fixed bug where ImageView "hung" when rebinning un-transformed
  *  data.  This was bug was introduced when the ImageView class was
@@ -359,7 +363,7 @@ public void redraw( String reason )
     DrawSelectedHGraphs();
     UpdateHGraphRange();
   }
-  else
+  else          
   {
     init();
     MakeImage( true );
@@ -1028,9 +1032,9 @@ private void ConfigureVerticalScrollBar()
       {
         CoordBounds bounds = image_Jpanel.getLocalWorldCoords();
         float x1 = bounds.getX1();
-        float y1 = 0;
+        float y1 = bounds.getY1();               // initially = 0;
         float x2 = bounds.getX2();
-        float y2 = n_rows - 1;
+        float y2 = bounds.getY2();               // initially = n_rows - 1;
 
         image_Jpanel.setZoom_region( x1, y1, x2, y2 );
         image_Jpanel.RebuildImage();
