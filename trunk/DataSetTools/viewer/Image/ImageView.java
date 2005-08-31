@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.55  2005/08/31 20:02:01  dennis
+ *  Fixed bug where ImageView "hung" when rebinning un-transformed
+ *  data.  This was bug was introduced when the ImageView class was
+ *  revised to handle more than 32767 spectra.
+ *
  *  Revision 1.54  2005/08/17 01:24:39  dennis
  *  Size of sort/selection icon now adjusts depending on whether or
  *  not a horizontal scroll bar is shown.  This should complete the
@@ -346,6 +351,13 @@ public void redraw( String reason )
       else
         image_sent_pointed_at = false;   // only skip one POINTED_AT message
     }
+  }
+  else if ( reason.equals( XScaleChooserUI.N_STEPS_CHANGED ) ||
+            reason.equals( XScaleChooserUI.X_RANGE_CHANGED )  )
+  {
+    MakeImage( true );
+    DrawSelectedHGraphs();
+    UpdateHGraphRange();
   }
   else
   {
@@ -692,6 +704,7 @@ private void MakeImage( boolean redraw_flag )
                               // component is initially resized.     
   image_Jpanel.changeLogScale( log_scale_slider.getValue(), false );
   VirtualArray2D va2d = new VirtualArray2D(image_data);
+
   image_Jpanel.setData( va2d, redraw_flag );
 
                                           // use slightly different coordinate
@@ -787,6 +800,7 @@ private Component MakeControlArea()
   int n_steps = getDataSet().getMaxXSteps();
   if ( getDataSet().getData_entry(0).isHistogram() )
     n_steps = n_steps - 1;
+
   x_scale_ui = new XScaleChooserUI( "X Scale", label, x_min, x_max, n_steps );
   control_area.add( x_scale_ui );
 
