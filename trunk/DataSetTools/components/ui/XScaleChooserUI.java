@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2005/08/31 18:51:05  dennis
+ *  The "set()" method now also actually sets the number of steps, in addition
+ *  to the min and max values.
+ *  Cleaned up a couple of javadoc errors.
+ *
  *  Revision 1.9  2004/05/26 18:22:45  rmikk
  *  Added Methods to getNum_x(), getStart_x(), and getEnd_x().  These 
  *     methods can be used in the case where the returned XScale is null
@@ -153,6 +158,7 @@ public class XScaleChooserUI extends    ActiveJPanel
     int num_steps = (int)n_steps_ui.getValue();
     float x_min = x_range_ui.getMin();
     float x_max = x_range_ui.getMax();
+
     int num_x;
 
     if ( num_steps <= 0 )                  // invalid, application should use
@@ -162,52 +168,64 @@ public class XScaleChooserUI extends    ActiveJPanel
     return ( new UniformXScale( x_min, x_max, num_x ) );
   }
 
+
+ /* ----------------------------- getNum_x ----------------------------- */
  /**
-  *  Returns the number of x values for a Histogram. This is the number of
+  * Get the number of x values indicated on the n_steps ui.  This is the
+  * number of bin boundaries for a Histogram. This is the number of
   * intervals +1.
   * 
+  * @return the larger of the number of steps indicated, or 0.
   */
  public int getNum_x()
   {
- 	return (int)Math.max((int)n_steps_ui.getValue(),0);
+    return (int)Math.max((int)n_steps_ui.getValue(),0);
   }
+
  
+ /* ----------------------------- getStart_x ----------------------------- */
  /**
-  * 
+  *  Get the minimum x value from the x_range control.
+  *
   * @return  The starting x value for this XScaleChooser
   */
- public float getStart_x()
-   {
-   	return x_range_ui.getMin();
-   }
+  public float getStart_x()
+  {
+    return x_range_ui.getMin();
+  }
    
+
+ /* ----------------------------- getEnd_x ----------------------------- */
  /**
+  *  Get the maximum x value from the x_range control.
   * 
   * @return The ending x value for this XScaleChooser
   */
- public float getEnd_x()
-   {
-   	return x_range_ui.getMax();
-   }
+  public float getEnd_x()
+  {
+    return x_range_ui.getMax();
+  }
    
    
+ /* ----------------------------- set ----------------------------- */
  /**
   * Changes the information on this XScaleChooserUI
+  *
   * @param UnitsLabel   The label for the units
   * @param x_min        The minimum specified value 
   * @param x_max        The maximum specified value
   * @param Nsteps       The number of steps
   */
- public void set( String UnitsLabel, float x_min, 
-                                              float x_max, int Nsteps)
-   {
-   	if( UnitsLabel != null)
-   	   x_range_ui.setLabel( UnitsLabel);
-   	x_range_ui.setMin( x_min);
-   	x_range_ui.setMax(x_max);
-   	
-   	
-   }
+  public void set( String UnitsLabel, float x_min, float x_max, int Nsteps )
+  {
+    if( UnitsLabel != null)
+      x_range_ui.setLabel( UnitsLabel );
+    x_range_ui.setMin( x_min );
+    x_range_ui.setMax( x_max );
+    n_steps_ui.setValue( Nsteps );
+  }
+
+
 /* -------------------------------------------------------------------------
  *
  * INTERNAL CLASSES 
@@ -268,7 +286,6 @@ public class XScaleChooserUI extends    ActiveJPanel
        }
      }
   }
-  
 
 
 /* -------------------------------------------------------------------------
@@ -293,7 +310,6 @@ public class XScaleChooserUI extends    ActiveJPanel
            System.out.println("Chose: " + x_scale_ui.getXScale() );
          }
        });
-
 
       f.setVisible(true);
     }
