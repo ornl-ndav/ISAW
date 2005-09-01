@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.57  2005/09/01 02:32:35  dennis
+ *  Small fixes to vertical scrolling behavior.
+ *  Now preserves size of zoomed in region when vertical scrolling.
+ *  Double click to zoom out now zooms out to maximum number of
+ *  displayable rows, not full DataSet, when vertical scrolling is on.
+ *
  *  Revision 1.56  2005/08/31 21:25:37  dennis
  *  Fixed bug where zoom region would not be properly retained when
  *  the window was resized.
@@ -220,6 +226,9 @@ public class ImageView extends    DataSetViewer
   private ImageJPanel  color_scale_image;
   private JScrollPane  image_scroll_pane;
   private JScrollBar   vert_scroll_bar;
+  private int          max_num_rows_to_show;
+  private int          rows_offset_from_scroll_top;
+
   private String       current_multi_plot_mode = MULTI_PLOT_DIAGONAL;
   private final int    MAX_PLOTS = 16;
 
@@ -382,17 +391,23 @@ public void redraw( String reason )
 
 public void setDataSet( DataSet ds )
 {
-  setVisible(false);
-  super.setDataSet( ds );
+  if ( ds == null )
+    return;
+
+  if ( ds.getNum_entries() == 0 )
+    return;
 
   if ( !validDataSet() )
     return;
 
+  setVisible(false);
+  super.setDataSet( ds );
+
   init(); 
   redraw( NEW_DATA_SET );
 
-  if ( ds.getNum_entries() == 0 )
-    return;
+  max_num_rows_to_show = ds.getNum_entries();
+  rows_offset_from_scroll_top = 0;
                                                         // restore the old zoom 
                                                         // region if it's valid 
   CoordBounds zoom_region = getState().getZoomRegion( ds );
@@ -656,7 +671,9 @@ private void MakeImage( boolean redraw_flag )
   float   image_data[][];
   Data    data_block;
 
-  int     num_rows = getDataSet().getNum_entries();
+  int num_rows = getDataSet().getNum_entries();
+  max_num_rows_to_show = num_rows;
+  rows_offset_from_scroll_top = 0;
 
   UniformXScale x_scale = (UniformXScale)getXConversionScale();
   int num_cols = x_scale.getNum_x();
@@ -1000,6 +1017,36 @@ private void SetHorizontalScrolling( boolean state )
 }
 
 
+/* ------------------------ setVerticalViewableRegion -------------------- */
+
+private void setVerticalViewableRegion( int first_row )
+{
+  CoordBounds bounds = image_Jpanel.getLocalWorldCoords();
+  float x1 = bounds.getX1(); 
+  float y1 = bounds.getY1(); 
+  float x2 = bounds.getX2();
+  float y2 = bounds.getY2();
+  
+  Dimension size = image_Jpanel.getSize();
+  y1 = first_row;
+
+  int num_rows_displayed = max_num_rows_to_show;
+  if ( num_rows_displayed < 1 )
+    num_rows_displayed = 1;
+
+  else if ( num_rows_displayed >= size.height )
+    num_rows_displayed = size.height-1;
+
+  y1 += rows_offset_from_scroll_top;
+  y2 = y1 + num_rows_displayed;
+
+  image_Jpanel.setZoom_region( x1, y1, x2, y2 );
+  image_Jpanel.RebuildImage();
+   
+  MakeSelectionImage( true );
+}
+
+
 /* ----------------------- ConfigureVerticalScrollBar -------------------- */
 
 private void ConfigureVerticalScrollBar()
@@ -1021,6 +1068,8 @@ private void ConfigureVerticalScrollBar()
       vert_scroll_bar.setVisibleAmount( window_height );
       if ( n_rows > window_height )
       {
+        rows_offset_from_scroll_top = 0;
+        max_num_rows_to_show = ds.getNum_entries();
         vert_scroll_bar.setVisible( true );
 
         Dimension bar_size = vert_scroll_bar.getSize();
@@ -1030,6 +1079,9 @@ private void ConfigureVerticalScrollBar()
       }
       else
       {
+        rows_offset_from_scroll_top = 0;
+        max_num_rows_to_show = ds.getNum_entries();
+
         CoordBounds bounds = image_Jpanel.getLocalWorldCoords();
         float x1 = bounds.getX1();
         float y1 = bounds.getY1();               // initially = 0;
@@ -1482,7 +1534,17 @@ private class ImageZoomMouseHandler extends    MouseAdapter
   {
     if ( e.getClickCount() == 2 )                 // zoom out to full view 
     {
-      getState().setZoomRegion( image_Jpanel.getGlobalWorldCoords(),
+      if ( vert_scroll_bar != null && vert_scroll_bar.isVisible() )
+      {
+        DataSet ds = getDataSet();
+        if ( ds != null )
+          max_num_rows_to_show = ds.getNum_entries();
+          rows_offset_from_scroll_top = 0;
+
+        int value = vert_scroll_bar.getValue();
+        setVerticalViewableRegion( value );
+      }
+      getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(),
                                 getDataSet()  );
       MakeSelectionImage( true );
       DrawSelectedHGraphs();
@@ -1491,10 +1553,21 @@ private class ImageZoomMouseHandler extends    MouseAdapter
 
   public void mouseReleased(MouseEvent e)         // zoom in to sub region 
   {
-    getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(),
-                              getDataSet()  );
+    CoordBounds local_bounds = image_Jpanel.getLocalWorldCoords();
+    getState().setZoomRegion( local_bounds, getDataSet() );
+
     MakeSelectionImage( true );
     DrawSelectedHGraphs();
+
+    int y1 = (int)local_bounds.getY1();    
+    int y2 = (int)local_bounds.getY2();    
+    max_num_rows_to_show = Math.abs(y2 - y1) + 1;
+                                                  // if we zoom in while 
+                                                  // vertical scroll bar is on
+                                                  // displayed region must be
+                                                  // offset
+    if ( vert_scroll_bar.isVisible() )
+      rows_offset_from_scroll_top = Math.abs(vert_scroll_bar.getValue()-y1);
   }
 }
 
@@ -1646,23 +1719,7 @@ private class ConsumeKeyAdapter extends     KeyAdapter
   {
     public void adjustmentValueChanged( AdjustmentEvent e )
     {
-       CoordBounds bounds = image_Jpanel.getLocalWorldCoords();
-       float x1 = bounds.getX1(); 
-       float y1 = bounds.getY1(); 
-       float x2 = bounds.getX2(); 
-       float y2 = bounds.getY2(); 
-
-       Dimension size = image_Jpanel.getSize(); 
-       y1 = e.getValue();
-       if ( size.height > 2 )
-         y2 = y1 + size.height-1;
-       else
-         y2 = y1 + 200;
- 
-       image_Jpanel.setZoom_region( x1, y1, x2, y2 );
-       image_Jpanel.RebuildImage();
-
-       MakeSelectionImage( true );
+       setVerticalViewableRegion( e.getValue() );
     }
   }
 
