@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/09/01 20:34:37  achatterjee
+ * Added some new parameters in the constructor.
+ *
  * Revision 1.3  2005/01/07 19:56:45  dennis
  * Now extends TOF_GLAD
  *
@@ -63,18 +66,19 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
   */
 public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
  {
-    private static final String TITLE = "Absorp_MultiScatt_Correction";
+    private static final String TITLE = "Abs_MS_Correction";
     private OutputStreamWriter outStream;
     float CONVER   = 0.0039554f;
-    float COEFF1   = 2.800f;
-    float COEFF2   = 0.0721f;
-    float COEFF3   = 4.930f;
     float COEFF4   = 1.1967f;
     float COEFF5   = -0.8667f;
+
+ /* float COEFF1   = 2.800f;
+    float COEFF2   = 0.0721f;
+    float COEFF3   = 4.930f;
     float FLTP     = 26.50000f;
-    float Q = 0.0039554f/FLTP;
-    float Q2 = COEFF1*COEFF2;
-    float sigsct = COEFF2*COEFF3;
+ */
+
+
 
     private boolean debug = true;
 
@@ -104,7 +108,7 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
                          3.104279270,0.0,0.0,0.0,0.0,0.0};
 
     /** 
-     *  Creates operator with title "Absorp_MultiScatt_Correction" and a default list of
+     *  Creates operator with title "Abs_MS_Correction" and a default list of
      *  parameters.
      */  
     public Absorp_MultiScatt_Correction()
@@ -118,8 +122,12 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
      *  @param  van_ds       Vanadium DataSet 
      *  @param  angle_deg    The scattering angle in degrees
      *  @param  rad          Radius of Vanadium Cylinder (cm)
+     *  @param  COEFF1 	     Absorption Cross Section/1.81
+     *  @param  COEFF2       Number Density of Compound
+     *  @param  COEFF3       Scattering Cross Section
+     *  @param  FLTP         Total Flight Path(L1+L2) 
      */
-    public Absorp_MultiScatt_Correction( DataSet van_ds, float angle_deg, float rad)
+    public Absorp_MultiScatt_Correction( DataSet van_ds, float angle_deg, float rad, float COEFF1, float COEFF2, float COEFF3, float FLTP)
    {
         this(); 
         parameters = new Vector();
@@ -131,6 +139,12 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
 
         addParameter( new Parameter("New Radius(rad)",
                                     new Float(rad) ) );
+
+        addParameter( new Parameter("New COEFF1", new Float(COEFF1) ) );
+        addParameter( new Parameter("New COEFF2", new Float(COEFF2) ) );
+        addParameter( new Parameter("New COEFF3", new Float(COEFF3) ) );
+        addParameter( new Parameter("New FLTP", new Float(FLTP) ) );
+
     }
 
  /* ---------------------- ZSet ------------------------------- */
@@ -228,7 +242,7 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
     /** 
      * Get the name of this operator to use in scripts
      * 
-     * @return "Absorp_MultiScatt_Correction", the command used to invoke this
+     * @return "Abs_MS_Correction", the command used to invoke this
      * operator in Scripts
      */
     public String getCommand(){
@@ -248,6 +262,11 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
 
         addParameter( new Parameter("New Angle(degrees)", new Float(147.86) ) );
         addParameter( new Parameter("New Radius(cm)", new Float(0.3175) ) );
+        addParameter( new Parameter("New COEFF1", new Float(2.8) ) );
+        addParameter( new Parameter("New COEFF2", new Float(0.072) ) );
+        addParameter( new Parameter("New COEFF3", new Float(4.93) ) );
+        addParameter( new Parameter("New FLTP", new Float(26.5) ) );
+
 
     }
 
@@ -263,6 +282,26 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
           DataSet van_ds        =  (DataSet)(getParameter(0).getValue());
           float   angle_deg     = ((Float)(getParameter(1).getValue())).floatValue();
           float   rad           = ((Float)(getParameter(2).getValue())).floatValue();
+          float   COEFF1           = ((Float)(getParameter(3).getValue())).floatValue();
+          float   COEFF2           = ((Float)(getParameter(4).getValue())).floatValue();
+          float   COEFF3           = ((Float)(getParameter(5).getValue())).floatValue();
+          float   FLTP           = ((Float)(getParameter(6).getValue())).floatValue();
+
+        float Q = 0.0039554f/FLTP;
+        float Q2 = COEFF1*COEFF2;
+        float sigsct = COEFF2*COEFF3;
+
+     System.out.println("These are the params" +COEFF1);
+     System.out.println("These are the params" +COEFF2);
+
+     System.out.println("These are the params" +COEFF3);
+
+     System.out.println("These are the params" +FLTP);
+
+     System.out.println("These are the params" +Q);
+     System.out.println("These are the params" +Q2);
+     System.out.println("These are the params" +sigsct);
+
 
           Data data = van_ds.getData_entry(0);
           float [] x1_vals = data.getX_scale().getXs(); 
@@ -338,7 +377,7 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
      *
      */
     public static void main( String args[] ){
-        System.out.println("Test of Absorp_MultiScatt_Correction starting...");
+        System.out.println("Test of Abs_MS_Correction starting...");
         if(args.length==1)
         {
             // load a DataSet
@@ -349,7 +388,7 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
             DataSet van_ds = rr1.getDataSet(1);
 
             // make operator and call it
-            Absorp_MultiScatt_Correction opb = new Absorp_MultiScatt_Correction(van_ds, 148.0f, 0.3175f);
+            Absorp_MultiScatt_Correction opb = new Absorp_MultiScatt_Correction(van_ds, 148.0f, 0.3175f,2.3207f,0.0511f,5.025f,26.5f);
             Object obj = opb.getResult();
 
             if ( obj instanceof DataSet )            // we got a DataSet back
@@ -360,9 +399,9 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
             }else
                 System.out.println( "Operator returned " + obj );
         }else{
-            System.out.println("USAGE: Absorp_MultiScatt_Correction <vfilename>");
+            System.out.println("USAGE: Abs_MS_Correction <vfilename>");
         }
             
-        System.out.println("Test of Absorp_MultiScatt_Correction done.");
+        System.out.println("Test of Abs_MS_Correction done.");
     }
 }
