@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.10  2005/09/06 14:36:48  dennis
+ * Minor reformatting to improve readability.
+ *
  * Revision 1.9  2005/08/28 15:39:15  rmikk
  * Set the Instrument Type attribute if known
  *
@@ -531,16 +534,17 @@ public class LoadUtil
   }
 
   /**
-   * This Loads difc, difa and T0 from a GSAS parameter file where the information
-   * is given on the special lanl format lines
-   * @param ds   The data set
+   * This Loads difc, difa and T0 from a GSAS parameter file where the 
+   * information is given on the special lanl format lines
+   * @param ds              The data set
    * @param paramFileName   The name of the parameter file
    * @return  null or an ErrorString
    */
   public static Object LoadDifsGsas_lanl( DataSet ds, String paramFileName){
     
       if( paramFileName == null)
-         return new ErrorString("No parameter File Name is given in LoadDifsGsas");
+         return new ErrorString(
+                         "No parameter File Name is given in LoadDifsGsas");
          
       if( ds == null)
          return new ErrorString("No data set given in LoadDifsGsas");
@@ -591,7 +595,6 @@ public class LoadUtil
                     SS= new String(buffer,nextPosition,nread-nextPosition);
                     //match= pat.matcher( SS);
                     eolnmatch = eolnPat.matcher(SS);
-                    
                   }
                  
                   while((readResult >=0)&&!eolnmatch.find()){
@@ -633,7 +636,6 @@ public class LoadUtil
              }else if(nread >=match1.length()+2){
                
                 nextPosition= nread=-1;
-             
                
              }else{//did not find a match
                
@@ -652,7 +654,6 @@ public class LoadUtil
                   SS= new String(buffer,nextPosition,nread);
                   match= pat.matcher( SS);
                   eolnmatch = eolnPat.matcher(SS);
-                  
                 } 
               }
                
@@ -667,15 +668,13 @@ public class LoadUtil
   }
   
   
-  
-  
-  
   /**
    *   Translates the elements of the buffer down 
    * @param buffer  The buffer with elements
-   * @param start    Start position in buffer that is to be translated down
-   * @param end      One more than the last position in buffer that is to be translated down
-   * @param downto   The position(usually 0) to translate down to
+   * @param start   Start position in buffer that is to be translated down
+   * @param end     One more than the last position in buffer that is to be 
+   *                translated down
+   * @param downto  The position(usually 0) to translate down to
    * @return   The offset where next data can be added 
    */
   public static int Xlate( byte[] buffer, int start, int end, int downto){
@@ -695,12 +694,12 @@ public class LoadUtil
   }
   
   
-  
   //Processes one line in the GSAS parameter file that is in lanl format
   private static  Object process_lanlGSASLine( DataSet ds, String line){
     
     if( (line == null)||(line.length()<1))
-       return new ErrorString("There is no other info on special lines. Improper lanl GSAS format");
+       return new ErrorString(
+          "There is no other info on special lines. Improper lanl GSAS format");
        
     line=line.trim();
     String[] Data = line.split("[ ]+");
@@ -716,7 +715,8 @@ public class LoadUtil
             }
          }
     if( bankNum<0)
-       return new ErrorString("Data on line in lanl GSAS format has no legitimate numbers");
+       return new ErrorString(
+                  "Data on line in lanl GSAS format has no legitimate numbers");
       
     float difc= Float.NaN;
     for(; (i<Data.length)&&Float.isNaN(difc);i++){
@@ -727,10 +727,9 @@ public class LoadUtil
        }
       }
     if( Float.isNaN(difc))
-       return new ErrorString("Data on line in lanl GSAS format has no legitimate numbers");
+       return new ErrorString(
+                  "Data on line in lanl GSAS format has no legitimate numbers");
          
-         
-
     float difa= Float.NaN;
     for(; (i<Data.length)&&Float.isNaN(difa);i++){
        try{
@@ -740,8 +739,8 @@ public class LoadUtil
        }
     }
     if( Float.isNaN(difa))
-       return new ErrorString("Data on line in lanl GSAS format has no legitimate numbers");
-        
+       return new ErrorString(
+                  "Data on line in lanl GSAS format has no legitimate numbers");
 
     float t0= Float.NaN;
     for(; (i<Data.length)&&Float.isNaN(t0);i++){
@@ -753,39 +752,47 @@ public class LoadUtil
     }
       
     if( Float.isNaN(t0))
-       return new ErrorString("Data on line in lanl GSAS format has no legitimate numbers");
+       return new ErrorString(
+                  "Data on line in lanl GSAS format has no legitimate numbers");
          
     Data d=ds.getData_entry(bankNum-1);
     if(d==null)
        return new ErrorString("No data block at "+bankNum);
 
-    GsasCalibAttribute calibAttr=new GsasCalibAttribute(Attribute.GSAS_CALIB,
-                                      new DataSetTools.gsastools.GsasCalib(difc,difa,t0));
+    GsasCalibAttribute calibAttr=new GsasCalibAttribute( Attribute.GSAS_CALIB,
+                           new DataSetTools.gsastools.GsasCalib(difc,difa,t0));
     d.setAttribute(calibAttr); 
     return null;   
-    
   }
   
   
   /**
    * Will transpose dimensions as specified in the Xlate array
    * @param ds  The dataset with dimensions messed up
-   * @param Xlate  A translation array. [detector,col,row,time]=[3,2,1,0] is natural
-   *      ISAW dimension order. This array should contain corresponding dimension position 
-   *      (a la C starting at 0) in the NeXus file with the property given above.
-   *      i.e. if the time axis/dimension is the 2nd array position(a la C starting at 0) in the NeXus file, 
-   *      then the last entry of of Xlate should be 2.If there is only one detector, then the first entry
-   *      of Xlate should be 3
+   * @param Xlate  A translation array. [detector,col,row,time]=[3,2,1,0] 
+   *               is natural ISAW dimension order. This array should contain
+   *               corresponding dimension position  (a la C starting at 0) 
+   *               in the NeXus file with the property given above.  
+   *               i.e. if the time axis/dimension is the 2nd array position
+   *               (a la C starting at 0) in the NeXus file, then the last 
+   *               entry of of Xlate should be 2.If there is only one 
+   *               detector, then the first entry of Xlate should be 3
    * @param ntimes the #of times( not time bins if Histogram)
    * @param nrows  number of rows in all detectors in Nexus file
-   * @param ncols the number of columns in all detectors(must be in separate NXdata if not same)
+   * @param ncols the number of columns in all detectors
+   *              (must be in separate NXdata if not same)
    * @param ndet  the number of detectors in this data set
-   * @param Xscale  If the time dimension is not the first dimension, this information
-   *                must be given.
+   * @param Xscale  If the time dimension is not the first dimension, 
+   *                this information must be given.
    * @return  A dataset with the data in the proper order.
    */
-  public static Object Transpose( DataSet ds, int[]Xlate,int nrows,
-     int ncols, int ndet,XScale Xscale, boolean isHistogram){
+  public static Object Transpose( DataSet ds, 
+                                  int[]   Xlate,
+                                  int     nrows,
+                                  int     ncols, 
+                                  int     ndet,
+                                  XScale  Xscale, 
+                                  boolean isHistogram){
     
     
     if( ds ==null)
@@ -809,8 +816,11 @@ public class LoadUtil
     int ntimes = Xscale.getNum_x()-H;
     int nys=ds.getData_entry(0).getY_values().length ;
     if( ds.getNum_entries()*nys!= nrows*ncols*ndet*ntimes)
-       return new ErrorString("Number of data blocks do not correspond to the rows,cols, and detectors");
-    DataSet Res = new DataSet(ds.getTitle(),"Transposed","us","Time","Counts","Intensity");
+       return new ErrorString(
+     "Number of data blocks do not correspond to the rows,cols, and detectors");
+
+    DataSet Res = new DataSet( ds.getTitle(),
+                               "Transposed","us","Time","Counts","Intensity");
 
     float[]yvals = new float[ntimes]; 
     float[]errs = null;
@@ -849,7 +859,8 @@ public class LoadUtil
         for(int t=0; t < ntimes; t++){
            
            int Ptime=Pcol+t*mult[0];
-           yvals[t]= ds.getData_entry(Ptime/nys).getY_value(Ptime%nys,IData.SMOOTH_NONE);
+           yvals[t]= ds.getData_entry(Ptime/nys).getY_value(Ptime%nys,
+                                                            IData.SMOOTH_NONE);
            if( errs != null)
               errs[t]=ds.getData_entry(Ptime/nys).getErrors()[Ptime%nys];
            
@@ -960,7 +971,8 @@ public class LoadUtil
    }
    
    
-   DataSetFactory.addOperators(DD, DataSetTools.instruments.InstrumentType.TOF_DIFFRACTOMETER);
+   DataSetFactory.addOperators( DD, 
+                   DataSetTools.instruments.InstrumentType.TOF_DIFFRACTOMETER);
    
    //Remove spectra with 0 for both dif_c and dif_a
    for(  int i=DD.getNum_entries()-1;i>=0;i--){
