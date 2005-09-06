@@ -1,0 +1,378 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <script language="JavaScript">
+<!--
+// This will resize the window when it is opened or
+// refresh/reload is clicked.
+window.resizeTo(760,668)
+-->
+
+  </script>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+</head>
+<body>
+<p class="western" style="margin-bottom: 0in;"><font
+ face="Arial, sans-serif"><font size="6"><b>Operator
+Generator</b></font></font></p>
+<p class="western" style="margin-bottom: 0in;"><font size="6"><font
+ face="Arial, sans-serif">Java Method to ISAW Operator Wizard</font></font></p>
+<p class="western"
+ style="margin-left: 0.49in; text-indent: 5.5in; margin-bottom: 0in;">
+<br>
+</p>
+<table id="toc" class="toc" style="font-family: arial;">
+  <tbody>
+    <tr>
+      <td>
+      <div id="toctitle">
+      <h2>Contents</h2>
+      </div>
+      <ul>
+        <li class="toclevel-1"><a href="#Introduction"><span
+ class="tocnumber">1</span> Introduction</a></li>
+        <li class="toclevel-1"><a href="#Getting_Started"><span
+ class="tocnumber">2</span> <span class="toctext">Getting Started</span></a></li>
+        <li class="toclevel-1"><a href="#tabs"><span class="tocnumber">3</span>
+Tabs<br>
+          </a></li>
+        <ul>
+          <li class="toclevel-2"><a href="#information"><span
+ class="tocnumber">Information Tab</span></a></li>
+          <li class="toclevel-2"><a href="#method_info"><span
+ class="tocnumber">Method Info Tab</span></a></li>
+          <li class="toclevel-2"><a href="#operator_info"><span
+ class="tocnumber">Operator Info Tab<br>
+            </span></a></li>
+          <li class="toclevel-2"><a href="#documentation"><span
+ class="tocnumber">Documentation Tab<br>
+            </span></a></li>
+        </ul>
+        <li class="toclevel-1"><a href="#menu"><span class="tocnumber">4
+Menu</span></a></li>
+        <ul>
+          <li class="toclevel-2"><a href="#File"><span class="tocnumber">File</span></a></li>
+        </ul>
+      </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p class="western"
+ style="margin-left: 0.49in; margin-right: 0.01in; margin-bottom: 0in;"><a
+ name="Introduction" id="Introduction"></a><font
+ face="Arial, sans-serif"><font size="5"><u><b><br>
+Introduction:</b></u></font></font></p>
+<p class="western"
+ style="margin-left: 0.49in; margin-right: 0.01in; margin-bottom: 0in;">
+<font face="Arial, sans-serif">The Method to Operator Wizard is
+designed to allow users to easily create custom operators from
+existing methods.&nbsp; The resulting operators
+can be invoked either through the Macros menu or a script
+command.&nbsp; Parameter GUI elements are created for each
+method argument.<br>
+</font></p>
+<p class="western"
+ style="margin-left: 0.49in; margin-right: 0.01in; margin-bottom: 0in;">
+</p>
+<p class="western"
+ style="margin-left: 0.5in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;"><br>
+<a name="Getting_Started" id="Getting_Started"></a><br>
+<font face="Arial, sans-serif"><font size="5"><u><b>Getting Started:</b></u></font></font><br>
+<br>
+<font face="Arial, sans-serif"><font size="4"><b>Launching from a
+command line</b></font></font></p>
+<p class="western"
+ style="margin-left: 0.75in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;">
+<font face="Arial, sans-serif">To launch the Method to Operator
+Wizard from a command line, type the following.</font></p>
+<p class="western"
+ style="margin-left: 0.68in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;">
+</p>
+<p class="western"
+ style="margin-left: 1in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;">
+<font face="Arial, sans-serif"><b>java devTools.Method2OperatorWizard</b></font></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;"><br>
+<a name="tabs" id="tabs"></a><br>
+<font face="Arial, sans-serif"><font size="5"><u><b>Tabs:</b></u></font></font></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;"><a
+ name="information" id="information"></a><br>
+<font face="Arial, sans-serif"><font size="4"><b>Information Tab</b></font></font></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;">
+<img src="operator_generator_files/information_tab.jpg"></p>
+<span style="font-family: &quot;times new roman&quot;,serif;"><br>
+</span>
+<p class="western"
+ style="margin-left: 0.75in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;"><font
+ face="Arial, sans-serif">The information tab is used to enter
+data about the operator&#8217;s creator. This data will
+automatically be included as part of the internal documentation for the
+operator. Information entered in this tab can also be
+stored in a separate file for use in other operators by choosing <b>Save
+Contact Info</b> under the <b>File </b>menu.</font></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;">
+<br>
+</p>
+<p class="western"
+ style="margin-left: 1in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;">
+<font face="Arial, sans-serif"><b>Your Name </b>&#8211; Enter the
+name that you would like to appear in the operator's internal
+documentation.</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;">
+<font face="Arial, sans-serif"><b>Your Email </b>&#8211; Enter the
+email address that you would like to appear in the operator's internal
+documentation.</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;">
+<font face="Arial, sans-serif"><b>Institution </b>&#8211; Enter the
+name of the institution that you would like to appear in the
+operator's internal documentation.</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;">
+<font face="Arial, sans-serif"><b>Address </b>&#8211; Enter the
+address that you would like to appear in the operator's internal
+documenation.</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;">
+<font face="Arial, sans-serif"><b>Acknowledgements </b>&#8211; Enter
+any acknowledgements that you would like to appear in the operator's
+internal documentation.</font></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;"><br>
+<a name="method_info" id="method_info"></a><br>
+<font face="Arial, sans-serif"><font size="4"><b>Method Info Tab</b></font></font></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<img src="operator_generator_files/method_info_tab.jpg"></p>
+<span style="font-family: &quot;times new roman&quot;,serif;"><br>
+</span>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;"><font
+ face="Arial, sans-serif"><font color="#000000">The method info tab
+allows users to select the static method that will perform the actual
+work of the operator as well as configure the
+parameters for that method.&nbsp;&nbsp; In order to use the method info
+tab effectively, a specific sequence of actions must be done.&nbsp; <br>
+</font></font></p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;"><font
+ face="Arial, sans-serif"><font color="#000000"><span
+ style="font-weight: bold;">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+1&nbsp; </span>First&nbsp; you must select a class with the static
+method by clicking <span style="font-weight: bold;">Browse</span>.&nbsp;
+<br>
+<span style="font-weight: bold;">&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;
+2&nbsp; </span>Select the method you would like to
+use by clicking on the <span style="font-weight: bold;">Methods</span>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; drop-down menu.<br>
+<span style="font-weight: bold;">&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
+3&nbsp; </span>Click on each parameter individually to begin
+configuring the GUI<span style="font-weight: bold;"><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; </span>and
+the associated information for that parameter.<br>
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+4&nbsp; </span>Select the Parameter GUI for the parameter that you
+would like to
+use<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; from the
+drop-down menu.<br>
+<span style="font-weight: bold;">&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; 5</span>&nbsp;
+Fill in each of the Parameter GUI text fields.<br>
+<b><br>
+Select Class
+with Static Method (1) </b>&#8211; Press the <b>Browse</b> button to find
+the Java class that contains the static method you would like to
+use.&nbsp; The selected class must be on the class path.&nbsp; Users
+may press
+the <b>View File</b> button to view the Java code for the
+selected class in a new window if needed.<br>
+</font></font></p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Select Method (2)</b> &#8211; Use the
+drop-down menu to choose a method to work with.</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<img src="operator_generator_files/select_method_menu.JPG" alt=""><br>
+<br>
+<font face="Arial, sans-serif"><b><br>
+Set GUI Info for Each </b></font><font face="Arial, sans-serif"><b>Parameter
+</b>&#8211;
+Use the "Set GUI Info for Each Parameter" area to configure the GUI to
+be
+used in each of
+the method&#8217;s parameters. </font>
+</p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+</p>
+<p class="western"
+ style="margin-left: 1.5in; margin-bottom: 0in; widows: 2; orphans: 2;"><font
+ face="Arial, sans-serif"><b><br>
+Arguments (3) </b>&#8211; The arguments
+box lists all of the available parameters for the currently selected
+method.&nbsp; Users must select each parameter separately to configure
+the corresponding GUI.&nbsp; Data contained in the Parameter GUI fields
+will be stored internally and will not be lost unless a new method is
+chosen.<br>
+</font></p>
+<p class="western"
+ style="margin-left: 1.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Param GUI</b> &#8211; Use the Param
+GUI button to view information about the currently selected parameter
+GUI.</font></p>
+<p class="western"
+ style="margin-left: 1.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+Drop-Down Menu (4) </b>&#8211; This
+menu lists all parameter GUIs that can be used for the current
+parameter &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; based on its data type.<br>
+</font></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;"><br>
+<a name="operator_info" id="operator_info"></a><br>
+<font face="Arial, sans-serif"><font size="4"><b>Operator Info Tab</b></font></font></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<img src="operator_generator_files/operator_info_tab.jpg"></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<br>
+</p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Select Operator Output File </b>&#8211;
+Press the <b>Browse </b>button to select the file to write the
+completed
+operator to.</font></p>
+<p class="western"
+ style="margin-left: 1.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Note: </b>This does not save the
+current session.&nbsp; To save the current session select <span
+ style="font-weight: bold;">Save Session</span> under the <span
+ style="font-weight: bold;">File</span> menu.<br>
+</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Set Operator Descriptions</b> &#8211;
+Use this area to edit the operator&#8217;s properties.</font></p>
+<p class="western"
+ style="margin-left: 1.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Operator Title </b>&#8211; Enter a
+title for the operator; this title will be used as the operator&#8217;s
+name in all menus.</font></p>
+<p class="western"
+ style="margin-left: 1.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Command for Scripts </b>&#8211; Use
+this text field to specify the operator name that will be used in
+scripts.</font></p>
+<p class="western"
+ style="margin-left: 1.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Category </b>&#8211; Use this text
+field to specify the menu location of the operator. Operators will
+be placed under the <b>Macros</b> menu.&nbsp; Menu levels are
+separated by commas.&nbsp; Any additional sub-menus
+that are specified will be created if they do not already exist.</font></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;"><br>
+<a name="documentation" id="documentation"></a><br>
+<font face="Arial, sans-serif"><font size="4"><b>Documentation Tab<br>
+</b></font></font></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<img src="operator_generator_files/documentation_tab.jpg"></p>
+<p class="western"
+ style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<br>
+</p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Overview</b> &#8211; Enter a brief
+description of the operator in the overview text box.</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Assumption</b> &#8211; Address any
+assumptions within the operator. This includes special data set
+requirements, positive/negative values, units of measurement, etc.<br>
+</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Algorithm </b>&#8211; Enter a brief
+desctiption of the algorithm.<br>
+</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Return</b> &#8211; Use the return
+text field to describe the operator&#8217;s return
+values to the user. Be sure to include information about the return
+type and
+units of measurement.</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Parameter </b>&#8211; Use the
+parameter text field to describe the meaning of the operator&#8217;s
+parameters to the user.<br>
+</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Error</b> &#8211; Use this text
+field to describe any known errors that might be generated by the
+operator.
+Exceptions will be translated into error messages using information in
+the exception.<br>
+</font></p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;">
+</p>
+<p class="western"
+ style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;"><br>
+</p>
+<p class="western"
+ style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;"><a
+ name="menu" id="menu"></a><br>
+<font face="Arial, sans-serif"><font size="5"><u><b>Menu Bar<br>
+</b></u></font></font></p>
+<p class="western"
+ style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;"><a
+ name="File" id="File"></a><br>
+<font face="Arial, sans-serif"><font size="4"><b>File</b></font></font></p>
+<p class="western"
+ style="margin-left: 1.25in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Load Contact Info </b>&#8211; Load
+your saved contact information into the information tab.</font></p>
+<p class="western"
+ style="margin-left: 1.25in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Load Session</b> &#8211; Load your
+saved session information into all of the tabs.</font></p>
+<p class="western"
+ style="margin-left: 1.25in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Create Operator</b> &#8211; Create
+the currently defined operator and save it to the file chosen in
+<b>Select Operator Output File </b>under the operator info tab<b>.</b></font></p>
+<p class="western"
+ style="margin-left: 1.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Note: </b>This does not save the
+current session.</font></p>
+<p class="western"
+ style="margin-left: 1.25in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Save Contact Info</b> &#8211; Save
+the data contained in the information tab as a separate file for use
+in other operators.</font></p>
+<p class="western"
+ style="margin-left: 1.25in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Save Session</b> &#8211; Save the
+current session information from all tabs as a separate file for
+later editing.</font></p>
+<p class="western"
+ style="margin-left: 1.25in; margin-bottom: 0in; widows: 2; orphans: 2;">
+<font face="Arial, sans-serif"><b>Exit</b> &#8211; Exit the Method to
+Operator Wizard.</font></p>
+</body>
+</html>
