@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2005/09/06 14:17:51  dennis
+ * Changed to extend GenericTOF_Diffractometer, rather than TOF_GLAD.
+ * This corrects an error in categorizing this operator in the menus,
+ * that I made last January.
+ *
  * Revision 1.4  2005/09/01 20:34:37  achatterjee
  * Added some new parameters in the constructor.
  *
@@ -44,8 +49,6 @@
  * Operator to correct wavelength dependent effects of absorption and
  * Multiple-Scattering in a background subtracted vanadium run for GPPD.
  *
- *
- *
  */
 package Operators.TOF_Diffractometer;
 
@@ -54,7 +57,7 @@ import java.io.*;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Parameter;
-import DataSetTools.operator.Generic.TOF_GLAD.*;
+import DataSetTools.operator.Generic.TOF_Diffractometer.*;
 import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;
@@ -64,7 +67,7 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
   *  This operator produces the vanadium parameter file required by GSAS 
   *  for GPPD runs
   */
-public class Absorp_MultiScatt_Correction extends GenericTOF_GLAD
+public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
  {
     private static final String TITLE = "Abs_MS_Correction";
     private OutputStreamWriter outStream;
