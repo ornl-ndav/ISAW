@@ -26,9 +26,11 @@
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
-
  *
  * $Log$
+ * Revision 1.7  2005/09/27 16:52:04  dennis
+ * Minor formatting improvements.
+ *
  * Revision 1.6  2005/06/01 13:57:38  rmikk
  * Changed Attribute.getValue to Attribute.getaNumericValue so all attributes
  *    can be used for selection if the getNumericValue gives the correct
@@ -69,15 +71,16 @@ import DataSetTools.components.ParametersGUI.*;
  * selects Data objects in a single DataSet object based on an attribute
  * name and range of float values for that attribute.
  */
+
 public class SelectGroups
   extends    DS_Attribute
   implements Serializable
 {
 
-  public static final String TITLE = "Select Groups";
-  public static final String INT   = "Interval";
-  public static final String INSIDE ="Between Max and Min";
-  public static final String OUTSIDE ="Outside Max and Min";
+  public static final String TITLE   = "Select Groups";
+  public static final String INT     = "Interval";
+  public static final String INSIDE  = "Between Max and Min";
+  public static final String OUTSIDE = "Outside Max and Min";
   public static final String CLEAR   = "Clear Selected";
   public static final String SET     = "Set Selected";
   String[] In_Out = {INSIDE, OUTSIDE};
@@ -105,22 +108,25 @@ public class SelectGroups
    *  operation in that the selection flags of groups that do not satisfy the
    *  criteria are NOT changed.
    *
-   *  @param  ds          The DataSet to which the operation is applied
-   *  @param  attribute   The name of the attribute used to determine values
-   *  @param  MinValue    The minimum value to compare with the attribute value
-   *  @param  MaxValue    The maximum value to compare with the attribute value
-
-   *  @param  Inside_Out  Determines if the set or clear occurs when the
-   *                      attribute value is between our outside the max and min.
-   *                      Use "Between Max and Min" or "Outside Max and Min"
-
-   *  @param  Clear_Set   Determines if the select flag on a group will be
-   *                      Clearred(use "Clear Selected") or set(use "Set Selected")
+   *  @param  ds         The DataSet to which the operation is applied
+   *  @param  attribute  The name of the attribute used to determine values
+   *  @param  MinValue   The minimum value to compare with the attribute value
+   *  @param  MaxValue   The maximum value to compare with the attribute value
+   *
+   *  @param  Inside_Out Determines if the set or clear occurs when the
+   *                     attribute value is between our outside the max and min.
+   *                     Use "Between Max and Min" or "Outside Max and Min"
+   *
+   *  @param  Clear_Set  Determines if the select flag on a group will be
+   *                     Cleared(use "Clear Selected") or set(use "Set Selected")
    *
    */
-  public SelectGroups( DataSet ds ,AttributeNameString attribute ,
-        float MinValue, float MaxValue,
-        StringChoiceList Inside_Out,  StringChoiceList Clear_Set)
+  public SelectGroups( DataSet ds, 
+                       AttributeNameString attribute,
+                       float MinValue, 
+                       float MaxValue,
+                       StringChoiceList Inside_Out,  
+                       StringChoiceList Clear_Set)
   {
     this();
     setDataSet( ds );
@@ -134,66 +140,61 @@ public class SelectGroups
 
 
     public String getDocumentation()
-      {
+    {
+      StringBuffer Res = new StringBuffer();
+      Res.append("@overview This operator, when the getResult method is ");
+      Res.append("invoked sets(clears) the selection flag on all data ");
+      Res.append("blocks whose given attribute has a value between( outside)"); 
+      Res.append(" MinValue and MaxValue( inclusive for between). This is a ");
+      Res.append( "\"union\" type operation in that the selection flags of ");
+      Res.append("groups that do not satisfy the criteria are NOT changed.");
+      Res.append("@param ds\n");
+      Res.append("@param Attrib\n");
+      Res.append("@param  MinValue    The minimum value to compare with the ");
+      Res.append( "attribute value");
+      Res.append("@param  MaxValue    The maximum value to compare with the ");
+      Res.append("attribute value ");
 
-       StringBuffer Res = new StringBuffer();
-       Res.append("@overview This operator, when the getResult method is ");
-       Res.append("invoked sets(clears) the selection flag on all data ");
-       Res.append("blocks whose given attribute has a value between( outside)"); 
-       Res.append(" MinValue and MaxValue( inclusive for between). This is a ");
-       Res.append( "\"union\" type operation in that the selection flags of ");
-       Res.append("groups that do not satisfy the criteria are NOT changed.");
-       Res.append("@param ds\n");
-       Res.append("@param Attrib\n");
-       Res.append("@param  MinValue    The minimum value to compare with the ");
-       Res.append( "attribute value");
-       Res.append("@param  MaxValue    The maximum value to compare with the ");
-       Res.append("attribute value ");
+      Res.append("@param  Inside_out   Determines if the set or clear occurs ");
+      Res.append("when the attribute value is between our outside the max and ");
+      Res.append("min. Use \"Between Max and Min\" or \"Outside Max and Min\"");
 
-       Res.append("@param  Inside_out   Determines if the set or clear occurs ");
-       Res.append("when the attribute value is between our outside the max and ");
-       Res.append("min. Use \"Between Max and Min\" or \"Outside Max and Min\"");
-
-       Res.append("@param  Clear_Set   Determines if the select flag on a ");
-       Res.append("group will be Cleared(use \"Clear Selected\") or set(use ");
-       Res.append("\"Set Selected\")");
-   
-       Res.append("@return Success"); 
-       Res.append("@error (Not reported) if attribute is missing or does not");
-       Res.append("numeric values, it is ignored(neither set or clearred)");  
-         
+      Res.append("@param  Clear_Set   Determines if the select flag on a ");
+      Res.append("group will be Cleared(use \"Clear Selected\") or set(use ");
+      Res.append("\"Set Selected\")");
+  
+      Res.append("@return Success"); 
+      Res.append("@error (Not reported) if attribute is missing or does not");
+      Res.append("numeric values, it is ignored(neither set or clearred)");  
     
-       return Res.toString();
-      }
+      return Res.toString();
+     }
+
  /* public String getCommand()
   {
     return new String( TITLE );
   }
-
 */
+
   public void setDefaultParameters()
   { 
     parameters = new Vector();  //clear old parameters
-
    
-     addParameter( new Parameter("Attribute",new AttributeNameString()));
+    addParameter( new Parameter("Attribute",new AttributeNameString()));
 
-     addParameter( new FloatPG( "Minimum Value", new Float(-50000.0)));
+    addParameter( new FloatPG( "Minimum Value", new Float(-50000.0)));
 
-     addParameter( new FloatPG( "Maximum Value", new Float(500000.0)) );
+    addParameter( new FloatPG( "Maximum Value", new Float(500000.0)) );
 
-     ChoiceListPG In_Out = new ChoiceListPG("Between?", INSIDE ) ;
+    ChoiceListPG In_Out = new ChoiceListPG("Between?", INSIDE ) ;
       In_Out.addItem( INSIDE);
       In_Out.addItem(OUTSIDE);
       addParameter( In_Out);
 
-     ChoiceListPG Clear = new ChoiceListPG("Clear?", SET ) ;
+    ChoiceListPG Clear = new ChoiceListPG("Clear?", SET ) ;
       Clear.addItem( SET);
       Clear.addItem(CLEAR);
       addParameter( Clear);
-
-
-   
   }
 
 
@@ -237,9 +238,6 @@ public class SelectGroups
                  }
               else if( inside)
                  DS.setSelectFlag( i, select);
-
-
-
              }
        }
 
