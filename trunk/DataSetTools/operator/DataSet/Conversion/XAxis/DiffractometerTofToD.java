@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.14  2005/09/27 16:36:13  dennis
+ *  Changed default "D" range for XScale to  0.1 to 4.0 Angstroms
+ *
  *  Revision 1.13  2004/03/15 06:10:45  dennis
  *  Removed unused import statements.
  *
@@ -175,7 +178,7 @@ public class DiffractometerTofToD extends    XAxisConversionOp
     Parameter parameter;
 
     if ( scale == null )
-      parameter = new Parameter("Min d("+FontUtil.ANGSTROM+")", new Float(0.0));
+      parameter = new Parameter("Min d("+FontUtil.ANGSTROM+")",new Float(0.1f));
     else
       parameter = new Parameter("Min d("+FontUtil.ANGSTROM+")", 
                                  new Float(scale.getStart_x()));  

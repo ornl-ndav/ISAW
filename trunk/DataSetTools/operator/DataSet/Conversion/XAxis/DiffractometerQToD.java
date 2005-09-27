@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/09/27 16:36:13  dennis
+ * Changed default "D" range for XScale to  0.1 to 4.0 Angstroms
+ *
  * Revision 1.11  2004/03/15 06:10:45  dennis
  * Removed unused import statements.
  *
@@ -116,7 +119,7 @@ public class DiffractometerQToD extends XAxisConversionOp{
      */
 
     public DiffractometerQToD( DataSet ds, float Dmin,
-                                        float Dmax, int num_D ){
+                               float Dmax, int num_D ){
         this();                         // do the default constructor, then set
                                         // the parameter value(s) by altering a
                                         // reference to each of the parameters
@@ -158,9 +161,9 @@ public class DiffractometerQToD extends XAxisConversionOp{
 
         if( scale!=null){
             Dmin=scale.getStart_x();
-            if( Float.isNaN(Dmin) ) Dmin=0f;
+            if( Float.isNaN(Dmin) ) Dmin=0.1f;
             Dmax=scale.getEnd_x();
-            if( Float.isNaN(Dmax) || Float.isInfinite(Dmax) ) Dmax=20f;
+            if( Float.isNaN(Dmax) || Float.isInfinite(Dmax) ) Dmax=4f;
         }
         addParameter( new Parameter( "Min d("+FontUtil.ANGSTROM+")", 
                                       new Float(Dmin) ) );
