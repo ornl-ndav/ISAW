@@ -29,6 +29,15 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2005/09/29 22:18:33  dennis
+ * If the TOTAL_COUNTS attribute is NOT set on a Data block, the
+ * total counts for that Data block will now be calculated, used
+ * for this operator AND the TOTAL_COUNTS attribute will be set
+ * on the Data block.
+ * This fixes a problem with trying to filter out bad Data blocks
+ * from HIPPO data, which do not have the TOTAL_COUNTS attribute
+ * set by the NeXus loader.
+ *
  * Revision 1.3  2005/08/24 20:11:31  dennis
  * Added/moved to Macros->Data Set->Edit List menu.
  *
@@ -184,7 +193,13 @@ public class Crunch extends GenericSpecial
       StringBuffer s = new StringBuffer("");
       s.append("@overview This operator removes detectors from a DataSet ");
       s.append("according to three criteria, all of which involve the total ");
-      s.append("counts.\n");
+      s.append("counts.  If the TOTAL_COUNT attribute is present in the ");
+      s.append("Data block for a detector, the value from the TOTAL_COUNT ");
+      s.append("attribute will be used.  If the TOTAL_COUNT attribute is ");
+      s.append("not present, the total counts will be calculated and the ");
+      s.append("calculated total counts will BOTH be used in this operator ");
+      s.append("AND will be set as the TOTAL_COUNTS attribute of the ");
+      s.append("Data block.\n");
       s.append("@assumptions The specified DataSet ds is not null.\n");
       s.append("@algorithm First this operator removes detectors with zero ");
       s.append("counts from the specified DataSet. Next it removes detectors ");
@@ -238,9 +253,26 @@ public class Crunch extends GenericSpecial
         Data det = new_ds.getData_entry(i);
         if( det == null )  
           continue;
+                                            // use TOTAL_COUNT attribute if
+                                            // present, else calculate total
         Float count = (Float)
                det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
-        if( count.floatValue() < min_count )
+        float total_count;                   
+        if ( count == null )
+        {
+          total_count = 0;
+          float ys[] = det.getY_values();
+          if ( ys != null )
+            for ( int k = 0; k < ys.length; k++ )
+              total_count += ys[k]; 
+
+          det.setAttribute(
+             new FloatAttribute( Attribute.TOTAL_COUNT, total_count) );
+        } 
+        else
+          total_count = count.floatValue();
+
+        if( total_count < min_count )
         {
           dead_ones.add( new Integer( det.getGroup_ID() ) );
           new_ds.removeData_entry(i);
