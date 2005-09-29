@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2005/09/29 22:32:43  dennis
+ * If the TOTAL_COUNTS attribute is not present in a Data block, the
+ * total_counts will be calculated and used to decide if the Data block
+ * should be discarded.
+ *
  * Revision 1.3  2005/08/24 20:11:31  dennis
  * Added/moved to Macros->Data Set->Edit List menu.
  *
@@ -84,7 +89,9 @@ import gov.anl.ipns.Util.Messaging.*;
 
 
 /** 
- *  This operator removes null Data blocks from a DataSet.
+ *  This operator removes Data blocks for which the total counts 
+ *  is zero, or for which the detector position is invalid, with
+ *  the detector placed at the sample position. 
  */
   public class OmitNullData extends GenericSpecial
   {
@@ -170,8 +177,10 @@ import gov.anl.ipns.Util.Messaging.*;
     public String getDocumentation()
     {
       StringBuffer s = new StringBuffer("");
-      s.append("@overview This operator removes null Data blocks from ");
-      s.append("a DataSet ");
+      s.append("@overview This operator removes Data blocks for which ");
+      s.append("the total counts is zero, or for which the detector ");
+      s.append("position is invalid, with the detector place at the ");
+      s.append("sample position. \n");
       s.append("@assumptions The specified DataSet ds is not null.\n");
       s.append("@algorithm This operator removes Data blocks with zero total ");
       s.append("counts from the specified DataSet. It also appends a log ");
@@ -234,6 +243,18 @@ import gov.anl.ipns.Util.Messaging.*;
             if( count.floatValue() <= min_count )
               err_string = LOW_COUNT; 
           } 
+          else    // calculate total, if TOTAL_COUNTS not present
+          {
+            float ys[] = det.getY_values();
+            if ( ys != null )
+            {
+              float total = 0;
+              for ( int k = 0; k < ys.length; k++ )
+                total += ys[k];
+              if ( total <= min_count )
+                err_string = LOW_COUNT;
+            }
+          }
         }
 
         if ( err_string == null )
