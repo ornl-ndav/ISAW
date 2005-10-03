@@ -26,9 +26,12 @@
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
-
  *
  * $Log$
+ * Revision 1.3  2005/10/03 01:35:05  dennis
+ * Made title more explanatory: "Clear All Selection Flags", instead of
+ * "Clear Groups".  Cleaned up some of the javadocs.
+ *
  * Revision 1.2  2004/01/22 02:39:54  bouzekc
  * Removed/commented out unused imports/variables.
  *
@@ -46,23 +49,20 @@ import java.lang.Object;
 import java.util.Vector;
 
 /**
- * selects Data objects in a single DataSet object based on an attribute
- * name and range of float values for that attribute.
+ *  Sets all selection flags to "false" for all Data blocks in this
+ *  DataSet.
  */
+
 public class ClearSelect
   extends    DS_Attribute
   implements Serializable
 {
 
-  public static final String TITLE = "Clear Groups";
+  public static final String TITLE = "Clear All Selection Flags";
  
 
   /**
-   * Construct an operator with a default parameter list.  If this
-   * constructor is used, the operator must be subsequently added to the
-   * list of operators of a particular DataSet.  Also, meaningful values for
-   * the parameters should be set ( using a GUI ) before calling getResult()
-   * to apply the operator to the DataSet this operator was added to.
+   * Default constructor.
    */
   public ClearSelect()
   {
@@ -71,45 +71,51 @@ public class ClearSelect
 
 
   /**
-   *  Construct an operator for a specified DataSet. When the getResult
-   *  method is called, all the select flags on all the groups of a
-   *  data set.
+   *  Construct an operator for a specified DataSet.  When the getResult
+   *  method is called, all the select flags on all the Data blocks of this 
+   *  DataSet will be set to false.
    *
-   *  @param  ds          The DataSet whose select flags will all be clearred
+   *  @param  ds  The DataSet whose select flags will be clearred
    */
   public ClearSelect( DataSet ds )
   {
     this();
     setDataSet( ds );
     setDefaultParameters();
-    
   }
 
+
+  /**
+   *  Get the end user documentation for this operator.
+   *
+   *  @return   A multi-line string describing this operator.
+   */
   public String getDocumentation()
     {
        StringBuffer Res = new StringBuffer();
-       Res.append("@overview This operator, when the getResult method is ");
-       Res.append("called clears all the select flags on all the groups ");
-       Res.append("of a data set.");
+       Res.append("@overview  This operator clears all the select flags " );
+       Res.append("on all of the Data blocks of the DataSet.");
 
        Res.append("@param ds\n");
        
        Res.append("@return Success"); 
       
        return Res.toString();
-
     }
 
 
+  /**
+   *  Set up the parameter list for this operator.  For this operator
+   *  the list is empty.
+   */
   public void setDefaultParameters()
   {
-    parameters = new Vector();  //clear old parameters
+    parameters = new Vector();             // Set empty list of parameters
   }
 
 
   /**
-   *  Clears all the select flags on all the groups of a
-   *  data set
+   *  Clears all the select flags on all the groups of the DataSet 
    */
   public Object getResult()
   { 
@@ -118,7 +124,6 @@ public class ClearSelect
     
     return "Success";
   }
-
  
   
 }
