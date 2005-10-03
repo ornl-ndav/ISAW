@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2005/10/03 02:27:52  dennis
+ * Now makes entry in the DataSet log.
+ *
  * Revision 1.8  2005/10/03 01:38:22  dennis
  * Made title more descriptive: "Select Groups by Attribute" instead
  * of "Select Groups".
@@ -252,6 +255,16 @@ public class SelectGroups
                  DS.setSelectFlag( i, select);
              }
        }
+
+    if ( select )
+      DS.addLog_entry("Applied SelectGroups() operator, " +
+                      " to select Data blocks with " + attribute + 
+                      " between " + minVal + " and " + maxVal );
+    else
+      DS.addLog_entry("Applied SelectGroups() operator, " +
+                      " to select Data blocks with " + attribute + 
+                      " less than " + minVal + " or more than " + maxVal );
+
     return "Success";
   }
 
