@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.47  2005/10/03 02:43:10  dennis
+ *  Added SelectByIndex() operator to DataSet.
+ *
  *  Revision 1.46  2005/08/05 21:00:27  dennis
  *  Added more descriptive error message if an invalid
  *  instrument type is passed to the addOperators() method.
@@ -343,7 +346,8 @@ public class DataSetFactory implements Serializable
     ds.addOperator( new SetDSDataAttributes() );
     ds.addOperator( new GetField() );
     ds.addOperator( new SetField() );
-    ds.addOperator( new SelectGroups());
+    ds.addOperator( new SelectGroups() );
+    ds.addOperator( new SelectByIndex() );
     ds.addOperator( new ClearSelect() );
     ds.addOperator( new PlotterOp() );
   }
