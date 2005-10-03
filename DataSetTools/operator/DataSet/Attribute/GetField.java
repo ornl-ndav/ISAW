@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2005/10/03 02:52:56  rmikk
+ *  Fixed Error. SelectedIDs Field now returns the selected IDs instead of the
+ *  indicies
+ *
  *  Revision 1.6  2004/03/15 06:10:44  dennis
  *  Removed unused import statements.
  *
@@ -252,7 +256,7 @@ public class GetField extends    DS_Attribute
        for ( int i = 0; i < num_data; i++ )
          if ( ds.isSelected(i) )
          {
-           ids[index] = i;
+           ids[index] = ds.getData_entry(i).getGroup_ID();
            index++;
          }
        String result = IntList.ToString( ids );
