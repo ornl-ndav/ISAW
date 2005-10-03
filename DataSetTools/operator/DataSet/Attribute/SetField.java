@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/10/03 03:07:20  dennis
+ * Fixed bug.  Selection flags are now set by Group_ID, as documented,
+ * rather than by index.
+ *
  * Revision 1.7  2004/03/15 06:10:45  dennis
  * Removed unused import statements.
  *
@@ -62,7 +66,7 @@ import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
-import  java.util.Vector;
+import  java.util.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
@@ -245,12 +249,19 @@ public class SetField extends    DS_Attribute
       { 
         int list[] = IntList.ToArray( O.toString() );
 
+        Data d;
+        int  id;
+        int  index;
+        int  n_data = ds.getNum_entries();
         ds.clearSelections();
-        if ( list.length > 0 ) 
-        for ( int i = 0; i < list.length ; i++ )
-          if( (list[i] >=0) &&( list[i] < ds.getNum_entries() ) )
-                 ds.setSelectFlag( list[i], true );
-
+        for ( int i = 0; i < n_data; i++ )
+        {
+          d  = ds.getData_entry( i );
+          id = d.getGroup_ID();
+          index = Arrays.binarySearch( list, id );
+          if ( index >= 0 )
+            d.setSelected( true );
+        }        
         ds.notifyIObservers( IObserver.SELECTION_CHANGED );
       }
       else
@@ -294,4 +305,5 @@ public class SetField extends    DS_Attribute
 	System.out.println("The documentation for this operator is: ");
 	System.out.println(sf.getDocumentation());
     }	
+
 }
