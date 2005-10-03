@@ -28,6 +28,14 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2005/10/03 01:38:22  dennis
+ * Made title more descriptive: "Select Groups by Attribute" instead
+ * of "Select Groups".
+ * Changed parameters for the constructor with parameters, to specify
+ * choices with simple Strings, instead of a full StringChoiceList
+ * object.
+ * Some documentation clean up.
+ *
  * Revision 1.7  2005/09/27 16:52:04  dennis
  * Minor formatting improvements.
  *
@@ -68,7 +76,7 @@ import DataSetTools.operator.Parameter;
 import Command.*;
 import DataSetTools.components.ParametersGUI.*;
 /**
- * selects Data objects in a single DataSet object based on an attribute
+ * Selects the Data objects in a single DataSet object based on an attribute
  * name and range of float values for that attribute.
  */
 
@@ -77,7 +85,7 @@ public class SelectGroups
   implements Serializable
 {
 
-  public static final String TITLE   = "Select Groups";
+  public static final String TITLE   = "Select Groups by Attribute";
   public static final String INT     = "Interval";
   public static final String INSIDE  = "Between Max and Min";
   public static final String OUTSIDE = "Outside Max and Min";
@@ -118,15 +126,16 @@ public class SelectGroups
    *                     Use "Between Max and Min" or "Outside Max and Min"
    *
    *  @param  Clear_Set  Determines if the select flag on a group will be
-   *                     Cleared(use "Clear Selected") or set(use "Set Selected")
+   *                     cleared (use "Clear Selected") or 
+   *                     set (use "Set Selected")
    *
    */
-  public SelectGroups( DataSet ds, 
+  public SelectGroups( DataSet             ds, 
                        AttributeNameString attribute,
-                       float MinValue, 
-                       float MaxValue,
-                       StringChoiceList Inside_Out,  
-                       StringChoiceList Clear_Set)
+                       float               MinValue, 
+                       float               MaxValue,
+                       String              Inside_Out,  
+                       String              Clear_Set)
   {
     this();
     setDataSet( ds );
@@ -139,43 +148,46 @@ public class SelectGroups
   }
 
 
-    public String getDocumentation()
-    {
-      StringBuffer Res = new StringBuffer();
-      Res.append("@overview This operator, when the getResult method is ");
-      Res.append("invoked sets(clears) the selection flag on all data ");
-      Res.append("blocks whose given attribute has a value between( outside)"); 
-      Res.append(" MinValue and MaxValue( inclusive for between). This is a ");
-      Res.append( "\"union\" type operation in that the selection flags of ");
-      Res.append("groups that do not satisfy the criteria are NOT changed.");
-      Res.append("@param ds\n");
-      Res.append("@param Attrib\n");
-      Res.append("@param  MinValue    The minimum value to compare with the ");
-      Res.append( "attribute value");
-      Res.append("@param  MaxValue    The maximum value to compare with the ");
-      Res.append("attribute value ");
-
-      Res.append("@param  Inside_out   Determines if the set or clear occurs ");
-      Res.append("when the attribute value is between our outside the max and ");
-      Res.append("min. Use \"Between Max and Min\" or \"Outside Max and Min\"");
-
-      Res.append("@param  Clear_Set   Determines if the select flag on a ");
-      Res.append("group will be Cleared(use \"Clear Selected\") or set(use ");
-      Res.append("\"Set Selected\")");
-  
-      Res.append("@return Success"); 
-      Res.append("@error (Not reported) if attribute is missing or does not");
-      Res.append("numeric values, it is ignored(neither set or clearred)");  
-    
-      return Res.toString();
-     }
-
- /* public String getCommand()
+  /**
+   *  Get the end user documentation for this operator.
+   *
+   *  @return   A multi-line string describing this operator.
+   */
+  public String getDocumentation()
   {
-    return new String( TITLE );
-  }
-*/
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator, when the getResult method is ");
+    Res.append("invoked sets(clears) the selection flag on all data ");
+    Res.append("blocks whose given attribute has a value between (outside)"); 
+    Res.append(" MinValue and MaxValue (inclusive for between). This is a ");
+    Res.append( "\"union\" type operation in that the selection flags of ");
+    Res.append("groups that do not satisfy the criteria are NOT changed.");
+    Res.append("@param ds\n");
+    Res.append("@param Attrib\n");
+    Res.append("@param  MinValue    The minimum value to compare with the ");
+    Res.append( "attribute value");
+    Res.append("@param  MaxValue    The maximum value to compare with the ");
+    Res.append("attribute value ");
 
+    Res.append("@param  Inside_out   Determines if the set or clear occurs ");
+    Res.append("when the attribute value is between our outside the max and ");
+    Res.append("min. Use \"Between Max and Min\" or \"Outside Max and Min\"");
+
+    Res.append("@param  Clear_Set   Determines if the select flag on a ");
+    Res.append("group will be Cleared(use \"Clear Selected\") or set(use ");
+    Res.append("\"Set Selected\")");
+  
+    Res.append("@return Success"); 
+    Res.append("@error (Not reported) if attribute is missing or does not");
+    Res.append("numeric values, it is ignored(neither set or clearred)");  
+    
+    return Res.toString();
+   }
+
+
+  /**
+   *  Set up the parameter list for this operator.  
+   */
   public void setDefaultParameters()
   { 
     parameters = new Vector();  //clear old parameters
@@ -240,9 +252,9 @@ public class SelectGroups
                  DS.setSelectFlag( i, select);
              }
        }
-
     return "Success";
   }
+
 
   /**
   *  Test program for this module and also ClearSelect
@@ -274,4 +286,5 @@ public class SelectGroups
     ScriptUtil.display( Ds.getSelectedIndices() );
     }
   }
+
 }
