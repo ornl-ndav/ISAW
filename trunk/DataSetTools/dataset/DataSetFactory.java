@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.48  2005/10/03 04:06:09  dennis
+ *  Added GetSelectedIndices operator to DataSet.
+ *
  *  Revision 1.47  2005/10/03 02:43:10  dennis
  *  Added SelectByIndex() operator to DataSet.
  *
@@ -348,6 +351,7 @@ public class DataSetFactory implements Serializable
     ds.addOperator( new SetField() );
     ds.addOperator( new SelectGroups() );
     ds.addOperator( new SelectByIndex() );
+    ds.addOperator( new GetSelectedIndices() );
     ds.addOperator( new ClearSelect() );
     ds.addOperator( new PlotterOp() );
   }
