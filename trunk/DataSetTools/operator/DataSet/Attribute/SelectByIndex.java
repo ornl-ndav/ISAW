@@ -25,6 +25,15 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2005/10/03 04:33:23  dennis
+ * Now notifies any observers of the DataSet that the selection was
+ * changed.  This MAY cause some performance problems if DataSets that
+ * have been loaded into the tree, or are currently displayed, have
+ * their selections changed.  However, typically when used in a script
+ * the DataSets are not also displayed or in the tree.  When used
+ * interactively from the ISAW menus, the tree and any active views
+ * should be updated when selections are changed.
+ *
  * Revision 1.1  2005/10/03 02:29:45  dennis
  * Initial version of operator to set or clear selection flags
  * with indices specified by an IntListString.
@@ -37,6 +46,7 @@ import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.Messaging.*;
 
 import java.io.Serializable;
 import java.util.Vector;
@@ -165,12 +175,16 @@ public class SelectByIndex extends    DS_Attribute
     if( clear == CLEAR )
       select = false;
     
-    int index_list[] = IntList.ToArray(index_str);
+    boolean  changed_it   = false;
+    int      index_list[] = IntList.ToArray(index_str);
     for( int i = 0; i < index_list.length; i++)
     {
       Data d = ds.getData_entry( index_list[i] );
       if ( d != null )
+      {
         d.setSelected( select );
+        changed_it = true;
+      }
     }
   
     if ( select )
@@ -179,6 +193,9 @@ public class SelectByIndex extends    DS_Attribute
     else
       ds.addLog_entry("Applied SelectByIndex() operator, " +
                       " to un-select positions " + index_str );
+
+    if ( changed_it )
+      ds.notifyIObservers( IObserver.SELECTION_CHANGED );
 
     return "Success";
   }

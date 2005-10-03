@@ -28,6 +28,15 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2005/10/03 04:33:23  dennis
+ * Now notifies any observers of the DataSet that the selection was
+ * changed.  This MAY cause some performance problems if DataSets that
+ * have been loaded into the tree, or are currently displayed, have
+ * their selections changed.  However, typically when used in a script
+ * the DataSets are not also displayed or in the tree.  When used
+ * interactively from the ISAW menus, the tree and any active views
+ * should be updated when selections are changed.
+ *
  * Revision 1.9  2005/10/03 02:27:52  dennis
  * Now makes entry in the DataSet log.
  *
@@ -71,6 +80,7 @@ import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Messaging.*;
 
 import java.io.Serializable;
 import java.util.Vector;
@@ -234,27 +244,37 @@ public class SelectGroups
     if( Inside == OUTSIDE)
        inside = false;
 
+    boolean changed_it = false;
     for( int i=0; i< DS.getNum_entries(); i++)
-      {
-        Data D = DS.getData_entry( i);
-        Attribute A = D.getAttribute( attribute);
-        if( A != null)
-         // if( A.getNumericValue() instanceof Number)
-            { float f = (float)(A.getNumericValue() );
-              if( (f < minVal) )
-                {
-                 if( !inside) 
-                  DS.setSelectFlag( i, select);
-                 }
-              else if ( f > maxVal)
-                {
-                  if( !inside)
-                  DS.setSelectFlag( i, select);
-                 }
-              else if( inside)
-                 DS.setSelectFlag( i, select);
-             }
-       }
+    {
+      Data D = DS.getData_entry( i);
+      Attribute A = D.getAttribute( attribute);
+      if( A != null)
+      { 
+        float f = (float)(A.getNumericValue() );
+        if( (f < minVal) )
+        {
+          if( !inside) 
+          {
+            DS.setSelectFlag( i, select);
+            changed_it = true;
+          }
+        }
+        else if ( f > maxVal)
+        {
+          if( !inside)
+          {
+            DS.setSelectFlag( i, select);
+            changed_it = true;
+          }
+        }
+        else if( inside)
+        {
+          DS.setSelectFlag( i, select);
+          changed_it = true;
+        }
+      }
+    }
 
     if ( select )
       DS.addLog_entry("Applied SelectGroups() operator, " +
@@ -264,6 +284,9 @@ public class SelectGroups
       DS.addLog_entry("Applied SelectGroups() operator, " +
                       " to select Data blocks with " + attribute + 
                       " less than " + minVal + " or more than " + maxVal );
+
+    if ( changed_it )
+      DS.notifyIObservers( IObserver.SELECTION_CHANGED );
 
     return "Success";
   }
