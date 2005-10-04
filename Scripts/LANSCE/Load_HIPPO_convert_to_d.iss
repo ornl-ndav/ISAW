@@ -62,7 +62,12 @@ out_directory = "/usr3/home/dennis/LANSCE_DATA/HIPPO_GLAD/"
 #
 # Form the input file name and the save file name from the parameters.
 #
-file = "HIPPO_E000002_R00" & run_num & ".nx.hdf"
+if ( run_num < 10000 )
+  file = "HIPPO_E000002_R00" & run_num & ".nx.hdf"
+else
+  file = "HIPPO_E000002_R0" & run_num & ".nx.hdf"
+endif
+ 
 save_file = "HippoImage_" & frame_num & ".jpg"
 
 #
