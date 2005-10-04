@@ -30,6 +30,13 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/10/04 23:00:29  dennis
+ * Added intArrayToVector() and floatArrayToVector() methods.
+ * VectorToGsasCalib() method uses the first three entries
+ * of the Vector, but no longer requires the vector to be
+ * precisely of length three.
+ * Minor fixes to javadocs.
+ *
  * Revision 1.1  2005/10/04 20:12:17  dennis
  * Initial version of file with static methods to do type conversions
  * for the ISAW scripting language.  The methods in this class will be
@@ -70,7 +77,7 @@ public class Convert
    * Private constructor, since this class only has static methods
    */
   private Convert()
-  {};
+  {}
 
 
   /* ---------------------- IntListToVector ------------------------- */
@@ -123,20 +130,20 @@ public class Convert
   /* ---------------------- VectorTo_intArray ----------------------- */
   /**
    *  Convert a list of numeric values in a Vector to an array 
-   *  of integers in the same ordera as the values were stored in the
-   *  Vector, by rounding the values stored in the Vector..
+   *  of integers in the same order as the values were stored in the
+   *  Vector, by rounding the values stored in the Vector.
    *
    *  @param obj  A Vector containing numeric values.  If there are non-numeric
    *              values in the Vector, an ErrorString will be returned.
    *
-   *  @return A array of ints obtained by rounding the numeric values fromt
+   *  @return An array of ints obtained by rounding the numeric values from
    *          the Vector.  Return an error string if the input parameter is 
    *          not a Vector containing numeric values.
    */ 
   public static Object VectorTo_intArray( Object obj )
   {
     if ( obj == null ) 
-      return new ErrorString( "Parameter was null in VectorToIntListString" );
+      return new ErrorString( "Parameter was null in VectorTo_intArray" );
 
     if ( !(obj instanceof Vector) )
       return new ErrorString("Parameter must be a Vector");
@@ -145,12 +152,44 @@ public class Convert
       return "";
 
     double numbers[] = getNumericArray( (Vector)obj );
-    
+    if ( numbers == null )
+      return new ErrorString("Non-numeric entry in Vector");    
+
     int ints[] = new int[ numbers.length ];
     for ( int i = 0; i < ints.length; i++ )
       ints[i] = (int)Math.round( numbers[i] ); 
 
     return ints;
+  }
+
+
+  /* ---------------------- intArrayToVector ----------------------- */
+  /**
+   *  Convert the integers in an array of ints to a vector of 
+   *  Integer objects.
+   *
+   *  @param obj  An array of ints.  If a different type of object 
+   *              is passed in, an ErrorString will be returned.
+   *
+   *  @return A Vector of Integer objects, created from the 
+   *          array of ints, in the SAME order.
+   *          Return an error string if the input parameter is 
+   *          not an int[].
+   */
+  public static Object intArrayToVector( Object obj )
+  {
+    if ( obj == null )
+      return new ErrorString( "Parameter was null in intArrayToVector" );
+
+    if ( !(obj instanceof int[]) )
+      return new ErrorString("Parameter must be an array of ints");
+
+    int arr[] = (int[])obj;
+    Vector vec = new Vector( arr.length );
+    for ( int i = 0; i < arr.length; i++ )
+      vec.add( new Integer( arr[i] ) );
+
+    return vec;
   }
 
 
@@ -169,7 +208,7 @@ public class Convert
   public static Object VectorTo_floatArray( Object obj )
   {
     if ( obj == null )
-      return new ErrorString( "Parameter was null in VectorToIntListString" );
+      return new ErrorString( "Parameter was null in VectorTo_floatArray" );
 
     if ( !(obj instanceof Vector) )
       return new ErrorString("Parameter must be a Vector");
@@ -178,12 +217,44 @@ public class Convert
       return "";
 
     double numbers[] = getNumericArray( (Vector)obj );
+    if ( numbers == null )
+      return new ErrorString("Non-numeric entry in Vector");    
 
     float floats[] = new float[ numbers.length ];
     for ( int i = 0; i < floats.length; i++ )
       floats[i] = (float)numbers[i];
 
     return floats;
+  }
+
+
+  /* ---------------------- floatArrayToVector ----------------------- */
+  /**
+   *  Convert the floats in an array of floats to a vector of 
+   *  Float objects.
+   *
+   *  @param obj  An array of floats.  If a different type of object 
+   *              is passed in, an ErrorString will be returned.
+   *
+   *  @return A Vector of Float objects, created from the 
+   *          array of floats, in the SAME order.
+   *          Return an error string if the input parameter is 
+   *          not a float[].
+   */
+  public static Object floatArrayToVector( Object obj )
+  {
+    if ( obj == null )
+      return new ErrorString( "Parameter was null in floatArrayToVector" );
+
+    if ( !(obj instanceof float[]) )
+      return new ErrorString("Parameter must be an array of floats");
+
+    float arr[] = (float[])obj;
+    Vector vec = new Vector( arr.length );
+    for ( int i = 0; i < arr.length; i++ )
+      vec.add( new Float( arr[i] ) );
+
+    return vec;
   }
 
 
@@ -214,6 +285,8 @@ public class Convert
       return "";
 
     double numbers[] = getNumericArray( (Vector)obj );
+    if ( numbers == null )
+      return new ErrorString("Non-numeric entry in Vector");    
 
     int ints[] = new int[ numbers.length ];
     for ( int i = 0; i < ints.length; i++ )
@@ -226,11 +299,11 @@ public class Convert
 
   /* ------------------------- GsasCalibToVector ------------------------- */
   /**
-   * Convert an object of type gsas_calib, that contains values for 
+   * Convert an object of type GsasCalib, that contains values for 
    * dif_C, dif_A and t_zero, to a Vector, containing these three values
    * in that order.
    *
-   * @param  gsas_calib  A gsas_calib object. 
+   * @param  gsas_calib  A GsasCalib object. 
    *
    * @return  A Vector containing dif_C, dif_A and t_zero in that order.
    *          If something other than a gsas_calib object is passed in,
@@ -275,7 +348,7 @@ public class Convert
     String error = null;
 
     if ( !(calib_vector instanceof Vector) ||
-         ((Vector)calib_vector).size() != 3 )
+         ((Vector)calib_vector).size() < 3 )
       error = "Argument MUST be a Vector starting with three numeric values.";
 
     double diff_c = getDouble( ((Vector)calib_vector).elementAt( 0 ) );
@@ -439,10 +512,20 @@ public class Convert
     for ( int i = 0; i < int_arr.length; i++ )
       System.out.println( "int val = " + int_arr[i] );
 
+    System.out.println("Converted int array to Vector ");
+    Vector int_vec = (Vector)intArrayToVector( int_arr );
+    for ( int i = 0; i < int_vec.size(); i++ )
+      System.out.println( int_vec.elementAt(i) );
+
     float float_arr[] = (float[])VectorTo_floatArray( vector );
     System.out.println( "VectorTo_floatArray....." );
     for ( int i = 0; i < float_arr.length; i++ )
-      System.out.println( "flat val = " + float_arr[i] );
+      System.out.println( "float val = " + float_arr[i] );
+
+    System.out.println("Converted float array to Vector ");
+    Vector float_vec = (Vector)floatArrayToVector( float_arr );
+    for ( int i = 0; i < float_vec.size(); i++ )
+      System.out.println( float_vec.elementAt(i) );
   }
 
 }
