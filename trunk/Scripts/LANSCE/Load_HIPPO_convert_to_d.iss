@@ -62,7 +62,7 @@ out_directory = "/usr3/home/dennis/LANSCE_DATA/HIPPO_GLAD/"
 #
 # Form the input file name and the save file name from the parameters.
 #
-file = "HIPPO_E000002_R0" & run_num & ".nx.hdf"
+file = "HIPPO_E000002_R00" & run_num & ".nx.hdf"
 save_file = "HippoImage_" & frame_num & ".jpg"
 
 #
@@ -73,7 +73,7 @@ save_file = "HippoImage_" & frame_num & ".jpg"
 #
 if bank_num = 40 
   Display "Processing bank 40"
-  bank_ds_number = 16
+  bank_ds_number = 9
   bank_max_id = 288
   bank_ids = "1:" & bank_max_id
   bank_name = "40"
@@ -82,7 +82,7 @@ endif
 
 if bank_num = 90
   Display "Processing bank 90"
-  bank_ds_number = 7
+  bank_ds_number = 3
   bank_max_id = 240
   bank_ids = "1:" & bank_max_id
   bank_name = "90"
@@ -91,7 +91,7 @@ endif
 
 if bank_num = 150 
   Display "Processing bank 150"
-  bank_ds_number = 10
+  bank_ds_number = 1
   bank_max_id = 192
   bank_ids = "1:" & bank_max_id
   bank_name = "150"
@@ -102,7 +102,7 @@ endif
 # Load the requested bank, from the requested file.  The last parameter,
 # specifying particular IDs to load is currently ignored by the NeXus reader.
 #
-ds = OneDS( data_directory & file, bank_ds_number, bank_ids )
+ds = OneDS( data_directory & "/" & file, bank_ds_number, bank_ids )
 
 #
 # Now "fix" the DataSet by loading in "approximate" detector posisions
@@ -162,7 +162,7 @@ ds_in_D = ToD( ds, min_d, max_d, num_bins )
 #
 width = 800
 height = 600
-SaveImage(ds_in_D, "Image View", out_directory & save_file, " ", width, height) 
+SaveImage(ds_in_D, "Image View", out_directory & "/" & save_file, " ", width, height) 
 
 #
 # Unfortunately, the thread that IsawLite is running in exits before the 
@@ -176,5 +176,5 @@ SaveImage(ds_in_D, "Image View", out_directory & save_file, " ", width, height)
 # it should also have had time to finish writing the file.  We are working
 # on a better fix for this.
 #
-# Display ds_in_D
+#Display ds_in_D
 Pause(1000)
