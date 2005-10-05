@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/10/05 02:49:34  dennis
+ * Converted from dos to unix text.
+ *
  * Revision 1.1  2005/10/04 23:01:34  dennis
  * Operator generated around method in
  * Operators/Generic/TypeConversions/Convert class.
