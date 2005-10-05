@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/10/05 02:32:05  dennis
+ * Commented out debug print.
+ * Converted from dos to unix text.
+ *
  * Revision 1.11  2005/08/13 20:15:28  rmikk
  * Had the two time critical operations done in the EventQueue thread
  *   so that 2nd operation is done only  when first operation is completed.
@@ -160,7 +164,7 @@ public class SaveImage  extends GenericSave{
     String view = getParameter(1).getValue().toString();
     String SaveFileName = getParameter(2).getValue().toString();
     String stateInfo = getParameter(3).toString();
-    System.out.println(stateInfo);
+//  System.out.println(stateInfo);
     int width = ((IntegerPG)getParameter(4)).getintValue();
 
 
