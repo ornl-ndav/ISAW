@@ -1,0 +1,114 @@
+#
+#    This file describes the initial path length and the sizes and positions 
+#  of the detector panels for the SMARTS instrument at LANSCE.  The information
+#  MUST occurr on lines in the order shown, with the specified names.
+#  The spectra corresponding to the first pixel on the grid MUST occur in 
+#  the DataSet in sequence, starting with the specified "First_Index".  NOTE:
+#  in this file these indicies are numbered starting at 1.  That is, the
+#  spectrum with index 1 in this file will be the spectrum in position 0
+#  of the DataSet.
+#
+#    Once a value is set, such as Num_Cols set to 32, it stays set for the
+#  remaining detectors in the file.  It can be set to a different value for
+#  any detector, and the new value will apply to all subsequent detectors,
+#  unless it is changed again.
+#
+#---------------------------------------------------------------------------
+#
+#   Optional Instrument Type ( needed if instrument type is NOT read 
+#                              properly from the run file or NeXus file ).
+#
+#   Currently (8/5/05) supported types include:
+#     1  TOF NEUTRON DIFFRACTOMETER
+#     2  TOF NEUTRON SINGLE CRYSTAL DIFFRACTOMETER  
+#     3  TOF NEUTRON SMALL ANGLE DIFFRACTOMETER
+#     5  TOF NEUTRON DIRECT GEOMETRY SPECTROMETER
+#
+Instrument_Type  1
+#
+#   Optional calibrated initial path length from source to sample, in meters.
+#
+Initial_Path 30.75
+#
+#  Number of detector panels for this DataSet, smarts has 12.
+#
+Num_Grids  12
+#
+#  Detector panel 1 is EAST UPPER LEFT
+#
+Grid_ID     1
+Num_Rows    1
+Num_Cols   32
+Width       0.4332224
+Height      0.3048
+Depth       0.0127
+Center      0.2166112    1.5   0.40575
+X_vector   -1 0 0
+Y_vector    0 0 1
+First_Index 1
+#
+#  Detector panel 2 is EAST CENTER LEFT
+#
+Grid_ID     2
+Center      0.2166112    1.5   0
+First_Index 33 
+#
+#  Detector panel 3 is EAST LOWER LEFT
+#
+Grid_ID     3
+Center      0.2166112    1.5   -0.40575
+First_Index 65 
+#
+#  Detector panel 4 is EAST UPPER RIGHT 
+#
+Grid_ID     4
+Center      -0.2166112    1.5   0.40575
+First_Index 97 
+#
+#  Detector panel 5 is EAST CENTER RIGHT 
+#
+Grid_ID     5
+Center      -0.2166112    1.5   0
+First_Index 129
+#
+#  Detector panel 6 is EAST LOWER RIGHT 
+#
+Grid_ID     6
+Center      -0.2166112    1.5   -0.40575
+First_Index 161 
+#
+#  Detector panel 7 is WEST UPPER LEFT 
+#
+Grid_ID     7 
+Center      0.2166112   -1.5   0.40575
+First_Index 193 
+#
+#  Detector panel 8 is WEST CENTER LEFT 
+#
+Grid_ID     8
+Center      0.2166112   -1.5   0
+First_Index 225
+#
+#  Detector panel 9 is WEST LOWER LEFT 
+#
+Grid_ID     9
+Center      0.2166112   -1.5   -0.40575
+First_Index 257
+#
+#  Detector panel 10 is WEST UPPER RIGHT 
+#
+Grid_ID     10 
+Center      -0.2166112   -1.5   0.40575
+First_Index 289 
+#
+#  Detector panel 11 is WEST CENTER RIGHT 
+#
+Grid_ID     11 
+Center      -0.2166112   -1.5   0
+First_Index 321 
+#
+#  Detector panel 12 is WEST LOWER RIGHT 
+#
+Grid_ID     12 
+Center      -0.2166112   -1.5   -0.40575
+First_Index 353 
