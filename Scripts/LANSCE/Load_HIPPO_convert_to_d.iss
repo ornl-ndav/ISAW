@@ -14,9 +14,14 @@
 #             
 # @algorithm    After loading the specified bank, the TofDifFix() operator
 #               is used to load nominal detector positions and calibration
-#               values for DiffC, DiffA and TZero.  Then each spectrum is
-#               integrated and if it's total counts is too small, it is
-#               discarded.  Finally, any spectra listed in the bad_ids[]
+#               values for DiffC, DiffA and TZero.  Then any spectrum that
+#               has a zero DiffC value is removed from the DataSet.  
+#               (Invalid GSAS calibration values cause problems when 
+#                converting to "d")
+#               Next, optionally, the OmitNullData operator is used to
+#               remove spectra with zero counts, or whose detector position 
+#               is improperly listed as at the origin.
+#               Finally, any spectra listed in the bad_ids[]
 #               list are discarded.  The DataSet is then converted to "d"
 #               and written to a file with a specified frame number.
 #
@@ -26,18 +31,24 @@
 #
 # @param        bank_num         The bank, 40, 90 or 150
 #
-# @parama       frame_num        A numeric suffix applied to the output
+# @param        frame_num        A numeric suffix applied to the output
 #                                file name, to allow writing a sequence
 #                                of output image files for a "movie" 
 #
 # @author       Dennis Mikkelson
 #
+# Script version 2, 10/4/05, Now checks for dif_C == 0, to determine which
+#                            spectra MUST be removed.  Additional spectra
+#                            can be removed using the OmitNullData() operator
+#                            or by listing their ID in the bad_ids list for
+#                            a particular bank.
+#
 
 $category=Macros,File,Load,LANSCE
 
-$data_directory  String            Data Directory 
-$run_num         Integer(12066)    Run Number (e.g. 12066)
-$bank_num        Integer(40)       Bank Name  (40, 90 or 150)
+$data_directory  String()          Data Directory 
+$run_num         Integer(9658)     Run Number (e.g. 9658)
+$bank_num        Integer(90)       Bank Name  (40, 90 or 150)
 $frame_num       Integer(0)        Image Frame number
 
 #
@@ -47,7 +58,7 @@ $frame_num       Integer(0)        Image Frame number
 # the input parameter declarations above and un-comment and modify the
 # hardcoded values below.
 #
-# data_directory = "/usr3/home/dennis/LANSCE_DATA/HIPPO_GLAD/"
+# data_directory = "/home/dennis/LANSCE_DATA/HIPPO_GLAD/"
 # run_num = 12066
 # bank_num = 40
 # frame_num = 0
@@ -57,7 +68,7 @@ $frame_num       Integer(0)        Image Frame number
 # to a convenient directory on your system.  You may also want to make
 # it an additional parameter to the script. 
 #
-out_directory = "/usr3/home/dennis/LANSCE_DATA/HIPPO_GLAD/"
+out_directory = "/home/dennis/LANSCE_DATA/HIPPO_GLAD/"
 
 #
 # Form the input file name and the save file name from the parameters.
@@ -117,35 +128,37 @@ gsas_param_version = "_040819"
 TofDifFix( ds, "hippo", bank_name, "", true, gsas_param_version )
 
 #
-# We should be able to get rid of the spectra that have no counts using 
-# either OmitNullData or Crunch, after the next build.  These operators
-# currently depend on the TOTAL_COUNTS attribute being set, and as of 9/29/05
-# these attributes are NOT being set when the LANSCE NeXus files are 
-# loaded.  This will be fixed in the next release.
+# Throw out anything that is missing the GSAS calibration attribute.
+# First go through and mark the bad spectra as "selected", then delete
+# the "selected" spectray.
 #
-#OmitNullData( ds, false )
-#Crunch( ds, 0.5, 2.0, false)
-#
-# So now, we will integrate each spectrum and discard those with low
-# counts, here in the script.
-#
-Display "Step 2"
-min_count = 1
-for id in [1:bank_max_id]
-  total_count = IntegGrp( ds, id, 0.0, 33333.0 )
-  if total_count < min_count then
-    DelAtt( ds, "Group ID", id, id, true, false )
-    Display "Low Counts, so Deleted id " & id
+ClearSelect( ds )
+for index in [0:bank_max_id-1]
+  gsas_calib = GetAttr( ds, index, "GSAS calibration" )
+  gsas_vec = GsasCalibToVector( gsas_calib )
+# Display  gsas_vec[0]
+  x = gsas_vec[0]
+  if  x = 0.0 then
+    index_string = ""&index
+    SelectByIndex( ds, index_string, "Set Selected" )
   endif
 endfor
 
+DelSel( ds, true, false )
+
 #
-# Some groups with non-zero counts also don't have diffC, etc.
-# We remove these explicitly
+# Un-comment the OmitNullData() operator to discard any spectra with 
+# zero counts.
+#
+#OmitNullData( ds, false )
+
+#
+# Some groups may have other problems, and should be removed.
+# We can remove these explicitly by listing the in the bad_id list
 #
 for  id in bad_ids
   DelAtt( ds, "Group ID", id, id, true, false )
-  Display "Deleting id in bad_id list " & id
+# Display "Deleting id in bad_id list " & id
 endfor
 
 #
@@ -167,7 +180,7 @@ ds_in_D = ToD( ds, min_d, max_d, num_bins )
 #
 width = 800
 height = 600
-SaveImage(ds_in_D, "Image View", out_directory & "/" & save_file, " ", width, height) 
+SaveImage(ds_in_D, "Image View", out_directory & "/" & save_file, "", width, height) 
 
 #
 # Unfortunately, the thread that IsawLite is running in exits before the 
