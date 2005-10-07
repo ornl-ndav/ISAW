@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2005/10/07 18:35:59  serumb
+ * Set the graph title to be the label for the data block.
+ *
  * Revision 1.19  2005/01/10 15:55:03  dennis
  * Removed empty statement.
  *
@@ -125,7 +128,8 @@ public class DataSetData
       else
         pointedAt = false;
       tempdata = ds.getData_entry(i);
-      title = Integer.toString(tempdata.getGroup_ID());
+ //     title = Integer.toString(tempdata.getGroup_ID());
+      title = tempdata.getLabel();
       temp = new DataArray1D( tempdata.getX_values(), tempdata.getY_values(),
                               tempdata.getErrors(), title,
 			      tempdata.isSelected(), pointedAt );
