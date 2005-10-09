@@ -27,6 +27,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.11  2005/10/09 19:15:44  rmikk
+ * Made the Python interpreter transient
+ *
  * Revision 1.10  2005/01/07 17:44:35  rmikk
  * Added a method to determine if this operator is to be added to the
  *   operator list by Command.Script_Class_List_Handler
@@ -110,14 +113,14 @@ public class PyScriptOperator extends GenericOperator
   implements IScriptProcessor {
   //~ Instance fields ----------------------------------------------------------
 
-  private PythonInterpreter     interp;
+  transient private PythonInterpreter     interp;
   private PyScript              script;
   private String                scriptFile;
   private IObserverList         obss;
   private Vector                Dsets;
   private PropertyChangeSupport PS;
   private String                errormessage;
-  private ByteArrayOutputStream eos;
+  transient private ByteArrayOutputStream eos;
   private boolean               IAmOperator = false;
   private int                   errLineNum  = -1;
 
