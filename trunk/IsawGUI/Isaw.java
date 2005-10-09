@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.236  2005/10/09 20:16:23  rmikk
+ *  Added help for the operators on ISaw's main help menu.
+ *
  *  Revision 1.235  2005/10/05 02:40:04  dennis
  *  Changed version to 1.7.2 beta 3
  *
@@ -1000,6 +1003,7 @@ public class Isaw
     JMenuItem TutLink         = new JMenuItem( TUTORIAL_MI);
     JMenuItem IsawPropLink    = new JMenuItem(ISAWPROPS_MI );
     JMenuItem ViewHelpLink    = new JMenuItem("Viewers");
+    JMenuItem OpList          = new JMenuItem("Operator List");
     JMenuItem OpWrite         = new JMenuItem( OPERATORINFO_MI);
     fMenu.add(fileLoadDataset);
     fileLoadDataset.add(Runfile);
@@ -1070,6 +1074,7 @@ public class Isaw
     hMenu.add(new IsawHelp.SiteHelp());
     hMenu.add( TutLink);
     hMenu.add( IsawPropLink);
+    hMenu.add( OpList);
     hMenu.add( ViewHelpLink);
     JMenu Res= new JMenu("Resources on the Net");
     
@@ -1126,6 +1131,7 @@ public class Isaw
     docLink.addActionListener(menu_item_handler);
     TutLink.addActionListener(menu_item_handler);
     IsawPropLink.addActionListener(menu_item_handler); 
+    OpList.addActionListener(menu_item_handler); 
     ViewHelpLink.addActionListener(menu_item_handler); 
     OpWrite.addActionListener(menu_item_handler);   
     menuBar.add(fMenu);
@@ -1723,6 +1729,25 @@ public class Isaw
         
 	WindowShower.show(H);
       } 
+     
+      if( s.equals("Operator List")){
+        try{
+          JFrame jf = new JFrame( "Operator Liwt" );
+          IsawHelp.HelpSystem.IsawOpHelpSet opSet = new IsawHelp.HelpSystem.IsawOpHelpSet( true ) ;
+          javax.help.JHelp jh = new javax.help.JHelp(opSet);
+          jf.getContentPane().add( jh );
+          Dimension D = getToolkit().getScreenSize();
+          // make the help window pop up centered and 60% of screen size
+          jf.setSize((int)(.8*4*D.height/3) , (int)(.8*D.height));
+                      
+          WindowShower.show(jf);
+
+        }catch(Throwable ss){
+          gov.anl.ipns.Util.Sys.SharedMessages.addmsg("Cannot create Help:"+ss.toString());
+          return;
+        }
+        
+      }
                 
       if( s.equals(COMMAND_PANE_MI) )
       { try{
@@ -1731,7 +1756,7 @@ public class Isaw
             jf.getContentPane().add(jh);
             Dimension D = getToolkit().getScreenSize();
             // make the help window pop up centered and 60% of screen size
-            jf.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height));
+            jf.setSize((int)(.8*4*D.height/3) , (int)(.8*D.height));
             WindowShower.show(jf);
             return;
         }catch( Exception sss){
