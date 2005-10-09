@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2005/10/09 19:20:03  rmikk
+ *  Converted old parameters to the new ParameterGUI's
+ *
  *  Revision 1.9  2005/05/14 02:13:25  dennis
  *  Removed one unused variable and constructed more detailed error
  *  string if the file is not found.
@@ -132,16 +135,16 @@ public class LoadOneDS extends    GenericLoad
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter;
+    //Parameter parameter;
 
-    parameter=new Parameter("Full File Name:", new LoadFileString("") );
-    addParameter( parameter );
+    //parameter=new LoadFilePG("Full File Name:","" );
+    addParameter( new LoadFilePG("Full File Name:","" ));
 
-    parameter = new Parameter("DataSet number (>=0)", new Integer(0) );
-    addParameter( parameter );
+   // parameter = new Parameter("DataSet number (>=0)", new Integer(0) );
+    addParameter( new IntegerPG("DataSet number (>=0)", new Integer(0) ) );
 
-    parameter = new Parameter("Data IDs to load", new String("") );
-    addParameter( parameter );
+    //parameter = new Parameter("Data IDs to load", new String("") );
+    addParameter( new StringPG("Data IDs to load", new String("") ) );
   }
 
 
@@ -201,18 +204,25 @@ public class LoadOneDS extends    GenericLoad
      int     ids[] = IntList.ToArray( ids_string );
 
      Retriever rr = null;
+
+     String temp = file_name.toUpperCase ();
+
+     /*if ( temp.endsWith( "RUN" ) )
+       rr = new RunfileRetriever( file_name );
+     else if ( temp.endsWith("NXS") || temp.endsWith("HDF") )
+       rr = new NexusRetriever( file_name );
+     */
+     try{
      
-     try
-     {
-       rr = Command.ScriptUtil.getRetriever( file_name );
+       rr= Command.ScriptUtil.getRetriever(file_name);
+     }catch(Exception ss){
+        rr = null;
      }
-     catch(Exception ss)
-     {
-       String message = ss.toString();
+     
+
+     if ( rr == null )
        return new ErrorString("Unsupported file type: " +
-                              "must be .run, .nxs or .hdf, etc. \n" +
-                               message );
-     }
+                              "must be .run, .nxs or .hdf,etc.");
 
      DataSet ds;
      if ( ids.length == 0 )
