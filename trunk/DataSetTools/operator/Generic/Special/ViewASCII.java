@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2005/10/09 20:43:15  rmikk
+ *  Replaced the file load routine by one already in IsawGUI.Util.  It now 
+ *     loads larger files more quickly
+ *
  *  Revision 1.9  2005/05/25 19:37:46  dennis
  *  Replaced direct call to .show() method for window,
  *  since .show() is deprecated in java 1.5.
@@ -333,7 +337,17 @@ public class ViewASCII extends    GenericSpecial
      * @return a null string is returned if the read went well,
      * otherwise the error message is returned.
      */
-    String readFile(String filename)
+    String readFile( String filename){
+      if(textarea!=null){
+        Document doc = (new IsawGUI.Util()).openDoc( filename);
+        textarea.setDocument(doc);
+        textarea.setColumns(MAX_WIDTH);
+        textarea.setRows(MAX_HEIGHT);
+     }
+    return null;
+
+    }
+    String readFile1(String filename)
     {
         if(filename==null) filename=this.filename;
 
