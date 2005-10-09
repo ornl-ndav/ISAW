@@ -11,14 +11,14 @@ import DataSetTools.operator.*;
  *
  */
 public class OpnInfo implements java.io.Serializable{
-     String FileName, ClassName;
+     public String FileName, ClassName;
      long lastmodified;
      transient Operator op = null;
-     String CommandName, Title;
+     public String CommandName, Title;
      boolean isHidden;
-     int NArgs;
-     String[] CatList;
-     String ToolTip;
+     public int NArgs;
+     public String[] CatList;
+     public String ToolTip;
      
      public OpnInfo( Operator op){
          this.op = op;
