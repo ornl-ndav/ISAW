@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2005/10/09 19:18:02  rmikk
+ *  Replaced a generic parameter with the parameter GUI
+ *
  *  Revision 1.8  2004/03/15 19:33:51  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -115,8 +118,8 @@ public class LoadMonitorDS extends    GenericLoad
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter("Full File Name:", "" );
-    addParameter( parameter );
+    //Parameter parameter = new Parameter("Full File Name:", "" );
+    addParameter( new LoadFilePG("Full File Name:", "" ));
   }
 
 
