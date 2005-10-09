@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2005/10/09 19:53:40  rmikk
+ * Now uses the OpInfo to set up the TOC instead of loading in 
+ *       all the operators.
+ *
  * Revision 1.12  2005/06/08 18:49:50  dennis
  * Fixed spelling of parameter name in java doc.
  *
@@ -901,8 +905,8 @@ class IsawTOC  extends TOCView
      //--------------------- Add the generic operators -------------- 
      for( int i = 0 ; i < ngeneric ; i++  )
        {
-        Operator op  = sh.getOperator( i ); //alphabetic
-        String title = op.getCommand();
+        Command.OpnInfo op  = sh.getOpInfo( i ); //alphabetic
+        String title = op.CommandName;
         if( title == null ) 
              title = "";
         
@@ -916,7 +920,7 @@ class IsawTOC  extends TOCView
              }
         TOCItem ttt = (TOCItem)addNode( letters , title ,  
                      javax.help.Map.ID.create( "Gen" + i , hs ) , hs ).getUserObject();
-        String[] cat = op.getCategoryList();
+        String[] cat = op.CatList;
         insert( Category , ttt , cat , 1 ); //Insert into the category node too.
            
        }
