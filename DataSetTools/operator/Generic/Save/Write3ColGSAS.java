@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/10/09 19:20:49  rmikk
+ * Converted old parameters to ParameterGUI's
+ *
  * Revision 1.2  2005/03/09 23:14:12  dennis
  * Added carriage return and line feed to the original 80 column GSAS
  * output files.  (Alok Chatterjee)
@@ -61,7 +64,7 @@ import DataSetTools.gsastools.XInfo;
 import DataSetTools.operator.Parameter;
 import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.util.SharedData;
-
+import DataSetTools.parameter.*;
 import DataSetTools.dataset.*;
 
 import java.util.*;
@@ -105,10 +108,10 @@ public class Write3ColGSAS extends GenericSave{
     
     public void setDefaultParameters(){
         parameters = new Vector();
-        addParameter( new Parameter("Monitor Data Set" , DataSet.EMPTY_DATA_SET ));
-        addParameter( new Parameter("Data Set" , DataSet.EMPTY_DATA_SET ));
-        addParameter( new Parameter("Output File", ""));
-        addParameter( new Parameter("Sequential Bank Numbering",
+        addParameter( new MonitorDataSetPG("Monitor Data Set" , DataSet.EMPTY_DATA_SET ));
+        addParameter( new DataSetPG("Data Set" , DataSet.EMPTY_DATA_SET ));
+        addParameter( new SaveFilePG("Output File", ""));
+        addParameter( new BooleanPG("Sequential Bank Numbering",
                                     Boolean.FALSE));
     }  
     
