@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.49  2005/10/13 18:54:06  dennis
+ *  Added operators to multiply and divide y-values by delta_X.
+ *
  *  Revision 1.48  2005/10/03 04:06:09  dennis
  *  Added GetSelectedIndices operator to DataSet.
  *
@@ -336,10 +339,12 @@ public class DataSetFactory implements Serializable
     ds.addOperator( new ResampleDataSet() );
     ds.addOperator( new ConvertHistogramToFunction() );
     ds.addOperator( new ConvertFunctionToHistogram() );
+    ds.addOperator( new DivideByDeltaX() );
+    ds.addOperator( new MultiplyByDeltaX() );
 
     ds.addOperator( new TofToChannel() );     // convert to channel for any
-                                                  // DataSet
-//    ds.addOperator( new IntervalSelectionOp() );
+                                              // DataSet
+//  ds.addOperator( new IntervalSelectionOp() );
     ds.addOperator( new SetGroupIDs() );
     ds.addOperator( new SetDataLabel() );
     ds.addOperator( new GetDataAttribute() );
