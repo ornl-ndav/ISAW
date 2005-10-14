@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.46  2005/10/14 15:28:31  dennis
+ *  The test for two XScales being "compatible" when two Data blocks are
+ *  to be added, subtracted, multiplied or divided now returns true in
+ *  the case where the XScales are the same object.  This avoids rebinning
+ *  in this case, and so avoids introducing additional roundoff errors
+ *  in the case where the XScales are the same.
+ *
  *  Revision 1.45  2005/05/27 03:44:07  dennis
  *  Removed unused imports (no longer needed since the convenience
  *  methods to get specific attributes were removed).
@@ -1402,6 +1409,9 @@ public abstract class Data implements IData,
     */
   public boolean compatible( Data d )
   {
+    if ( x_scale == d.x_scale )
+      return true;
+
     if ( !(  x_scale instanceof UniformXScale)  ||
          !(d.x_scale instanceof UniformXScale)      )
       return false;
