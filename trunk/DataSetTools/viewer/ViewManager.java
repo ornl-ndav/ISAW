@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.67  2005/10/14 15:00:15  dennis
+ *  Added missing javadocs on one method.
+ *  Minor formatting improvement.
+ *
  *  Revision 1.66  2005/08/27 13:21:55  rmikk
  *  Updated Object state before saving it so last changes are retained
  *
@@ -433,6 +437,7 @@ public class ViewManager extends    JFrame
           viewType = IMAGE;
       else 
           viewType = view_type;
+
       if( viewer instanceof IPreserveState){
          ObjectState st = (ObjectState)Ostate.get(viewType);
          if( st == null){
@@ -440,8 +445,8 @@ public class ViewManager extends    JFrame
              Ostate.insert( viewType, st);
          }
          ((IPreserveState)viewer).setObjectState( st);
-
       }
+
       getContentPane().add(viewer);
       getContentPane().setVisible(true);
 
@@ -468,6 +473,16 @@ public class ViewManager extends    JFrame
      return viewType;
    }
 
+
+   /**
+    *  Construct a DataSetViewer object for the specified type of view
+    *
+    *  @param  tempDataSet  The DataSet for which the viewer is constructed
+    *  @param  view_type    The type of view to construct 
+    *  @param  state        The initial viewer state for this DataSetViewer
+    *
+    *  @return The DataSetViewer object constructed for the DataSet
+    */
    public static DataSetViewer getDataSetView( DataSet tempDataSet,
                                                String view_type,
                                                ViewerState state){
@@ -487,7 +502,6 @@ public class ViewManager extends    JFrame
 	                                                         tempDataSet );
           FunctionViewComponent viewComp = new FunctionViewComponent(varray);
           viewer = new DataSetViewerMaker(tempDataSet, state, varray, viewComp);
-       
         }
         else if ( view_type.equals( TABLE)) //TABLE ) )
            viewer = new TabView( tempDataSet, state ); 
@@ -497,14 +511,13 @@ public class ViewManager extends    JFrame
         { 
           if( table_MenuComp == null)
              table_MenuComp= new TableViewMenuComponents();
-          viewer = table_MenuComp.getDataSetViewer(view_type, tempDataSet, state);
+          viewer = table_MenuComp.getDataSetViewer(view_type,tempDataSet,state);
           if( viewer == null)
           {
-             System.out.println( "ERROR: Unsupported view type in ViewManager:" );
+             System.out.println("ERROR: Unsupported view type in ViewManager:");
              System.out.println( "      " + view_type );
              System.out.println( "using " + IMAGE + " by default" );
              viewer = new ImageView( tempDataSet, state );
-           
           }
         }
       }catch(Throwable ss){
@@ -1137,6 +1150,7 @@ private float solve( float new_x ) // find what x in the original DataSet maps
     }
   }
 
+
   private class EditMenuHandler implements ActionListener,
                                            Serializable
   {
@@ -1203,6 +1217,7 @@ private float solve( float new_x ) // find what x in the original DataSet maps
     }
   }
 
+
   private class OptionMenuHandler implements ActionListener,
                                              Serializable
   {
@@ -1234,6 +1249,7 @@ private float solve( float new_x ) // find what x in the original DataSet maps
     }
   }
 
+
   private class ConversionMenuHandler implements ActionListener,
                                                  Serializable
   {
@@ -1252,6 +1268,8 @@ private float solve( float new_x ) // find what x in the original DataSet maps
       }
     }
   }
+
+
  public void finish(){
 
     try{
@@ -1276,6 +1294,7 @@ private float solve( float new_x ) // find what x in the original DataSet maps
    if( st !=null)
       viewer.setObjectState( st);
  }
+
  
  public ObjectState getObjectState( boolean is_default){
    ObjectState st = viewer.getObjectState( false );
@@ -1284,13 +1303,14 @@ private float solve( float new_x ) // find what x in the original DataSet maps
    return Ostate;
    
  }
+
  
  class HelpActionListener implements ActionListener{
     String viewName;
     public HelpActionListener( String viewName){
       this.viewName = viewName;
-      if( ";grx_y;parallel_y(x);instrument_table;".indexOf(";"+viewName+";") >= 0)
-         this.viewName="selected_table_view"; 
+      if(";grx_y;parallel_y(x);instrument_table;".indexOf(";"+viewName+";")>=0)
+        this.viewName="selected_table_view"; 
     }
   
    public void actionPerformed(ActionEvent e){
@@ -1298,12 +1318,13 @@ private float solve( float new_x ) // find what x in the original DataSet maps
       FinishJFrame jf = new FinishJFrame( viewName+" Viewer");
       jf.setSize( 700,700);
      
-     
-     String url=DataSetTools.util.FilenameUtil.helpDir("Viewers/"+viewName+".html");
+      String url=DataSetTools.util.FilenameUtil.helpDir(
+                                             "Viewers/"+viewName+".html");
     
       if( url==null){
       
-         JOptionPane.showMessageDialog(null,"Cannot find this viewer's documentation");
+         JOptionPane.showMessageDialog(null,
+                           "Cannot find this viewer's documentation");
          ((JMenu)e.getSource()).setSelected(false);
          return;
       }
@@ -1313,14 +1334,13 @@ private float solve( float new_x ) // find what x in the original DataSet maps
          jf.getContentPane().add(new JScrollPane(edPane));
          
       }catch( Exception s){
-        JOptionPane.showMessageDialog(null,"Cannot show this viewer's documentation:"+s);
+        JOptionPane.showMessageDialog(null,
+                         "Cannot show this viewer's documentation:"+s);
         ((JMenu)e.getSource()).setSelected(false);
         return;
       }
      
      WindowShower.show( jf);
-     
-      
     }
    
  }
