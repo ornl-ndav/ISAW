@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/10/14 15:50:24  dennis
+ * Minor fix to title String.
+ *
  * Revision 1.1  2005/10/13 18:52:25  dennis
  * Initial version of DataSetOperator to divide each y value by a
  * corresponding delta_X value.  Currently units are handled by replacing
@@ -74,7 +77,7 @@ public class DivideByDeltaX extends    AnalyzeOp
 
   public DivideByDeltaX( )
   {
-    super( "Divide sample values yi, delta_xi" );
+    super( "Divide sample values yi by delta_xi" );
   }
 
 
