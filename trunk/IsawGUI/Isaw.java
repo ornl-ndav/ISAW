@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.237  2005/10/14 15:30:16  dennis
+ *  Changed version to 1.7.2 beta 4
+ *
  *  Revision 1.236  2005/10/09 20:16:23  rmikk
  *  Added help for the operators on ISaw's main help menu.
  *
@@ -856,7 +859,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.7.2 beta 3";
+          version="1.7.2 beta 4";
         else
           version=SharedData.VERSION;
 
