@@ -31,6 +31,9 @@
  * Modified:
  *             
  * $Log$
+ * Revision 1.8  2005/10/14 15:01:02  dennis
+ * Minor formatting improvement.
+ *
  * Revision 1.7  2004/03/15 06:10:48  dennis
  * Removed unused import statements.
  *
@@ -82,7 +85,6 @@ public class ConvertFunctionToHistogram extends    AnalyzeOp
    * the parameters should be set ( using a GUI ) before calling getResult() 
    * to apply the operator to the DataSet this operator was added to. 
    */
-
   public ConvertFunctionToHistogram()
   {
     super( "Convert Tabulated Functions to Histograms" );
@@ -113,7 +115,6 @@ public class ConvertFunctionToHistogram extends    AnalyzeOp
    *                      constructed, or the Data blocks of the original
    *                      DataSet are just altered.
    */
-
   public ConvertFunctionToHistogram( DataSet  ds,
                                      float    width_1,
                                      boolean  multiply,
@@ -135,6 +136,7 @@ public class ConvertFunctionToHistogram extends    AnalyzeOp
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
   }
+
 
   /*----------------------------getDocumentation-----------------------------*/
   
@@ -176,8 +178,8 @@ public class ConvertFunctionToHistogram extends    AnalyzeOp
 	Res.append("String that reads \"Data converted to histograms\".");
 	
 	return Res.toString();
-   
    }
+
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
@@ -218,11 +220,8 @@ public class ConvertFunctionToHistogram extends    AnalyzeOp
   *  If a new DataSet is not made then the return object will be a String
   *  that says "Data converted to histograms".
   */
-  
-  
   public Object getResult()
-  {
-                                  // get the parameters specified by the user 
+  {                                // get the parameters specified by the user 
 
     float width_1       = ((Float)getParameter(0).getValue()).floatValue();
     boolean multiply    = ((Boolean)getParameter(1).getValue()).booleanValue();
@@ -261,6 +260,7 @@ public class ConvertFunctionToHistogram extends    AnalyzeOp
     }
  }  
 
+
   /* ------------------------------ clone ------------------------------- */
   /**
    * Get a copy of the current ConvertFunctionToHistogram Operator.  The list 
@@ -278,6 +278,7 @@ public class ConvertFunctionToHistogram extends    AnalyzeOp
     return new_op;
   }
   
+
   /*------------------------------ main -----------------------------------*/
   public static void main(String[] args)
   {
