@@ -168,9 +168,10 @@ endfor
 # last parameter was positive, the specified range would be uniformly divided
 # into the specified number of bins.
 #
+Display "NEW VERSION ........................................................"
 min_d = 0.1
-max_d = 8.0
-num_bins = 0
+max_d = 3.0
+num_bins = 700 
 ds_in_D = ToD( ds, min_d, max_d, num_bins )
 
 #
@@ -180,7 +181,8 @@ ds_in_D = ToD( ds, min_d, max_d, num_bins )
 #
 width = 800
 height = 600
-SaveImage(ds_in_D, "Image View", out_directory & "/" & save_file, "", width, height) 
+StateInfo = "Brightness 50,ColorScale Gray"
+SaveImage(ds_in_D, "Image View", out_directory & "/" & save_file, StateInfo, width, height) 
 
 #
 # Unfortunately, the thread that IsawLite is running in exits before the 
