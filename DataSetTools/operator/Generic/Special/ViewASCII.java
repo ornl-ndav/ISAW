@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2005/10/15 21:35:59  rmikk
+ *  The search and find next have been implemented. A JTextPane was 
+ *     used and the load time( using their load) is a little slower.
+ *
  *  Revision 1.10  2005/10/09 20:43:15  rmikk
  *  Replaced the file load routine by one already in IsawGUI.Util.  It now 
  *     loads larger files more quickly
@@ -46,6 +50,21 @@
  *  Added getCategoryList method to put operator in new position in
  *  menus.
  *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  *  Revision 1.7  2004/03/15 03:28:35  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -104,15 +123,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
+import javax.swing.*;
+import javax.swing.text.*;
 
 import DataSetTools.operator.*;
 
@@ -132,7 +144,7 @@ public class ViewASCII extends    GenericSpecial
     private static int    MAX_HEIGHT = 0;
 
     private JFrame    mw;
-    private JTextArea textarea;
+    private JTextPane textarea;
     private String    filename;
 
     /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
@@ -241,9 +253,9 @@ public class ViewASCII extends    GenericSpecial
 
         if( (mw!=null) && (! mw.isShowing()) )
           mw=null;
-
-        if(mw==null)
-        {
+        Dimension screenSize=null;
+        //if(mw==null)
+        {    
             // set the font for the text display
             Font font=new Font("monospaced",Font.PLAIN,FONT_SIZE);
 
@@ -253,51 +265,62 @@ public class ViewASCII extends    GenericSpecial
                int fontwidth=12;
                int fontheight=20;
 
-               Dimension screenSize =
+               screenSize =
                         Toolkit.getDefaultToolkit().getScreenSize();
                MAX_WIDTH=(int)(screenSize.height*4f/(3f*fontwidth))-2;
                MAX_HEIGHT=(int)(screenSize.height/fontheight)-5;
             }
-
-            // create the TextArea
-            textarea=new JTextArea();//doc);
+            mw=new JFrame(filename);
+                      mw.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+           try{   
+            StyledEditorKit edKit= new StyledEditorKit();
+            Document doc = edKit.createDefaultDocument();
+            edKit.read(new java.io.FileInputStream(filename),doc,0);
+            textarea=new JTextPane((StyledDocument)doc);//doc);
             textarea.setEditable(false);
             textarea.setFont(font);
-            JScrollPane sp=new JScrollPane(textarea);
-
+            textarea.setCaretColor((java.awt.Color.blue));  
+            }catch(Exception ss){
+              ss.printStackTrace();
+              return new gov.anl.ipns.Util.SpecialStrings.ErrorString("io Err:"+ss);
+            }
             // fill up the text area
-            String text=readFile(filename);
 
-            //an error occurred
-            if(text!=null)
-              return text;
 
-            //create a menubar
+            JScrollPane sp=new JScrollPane(textarea);
             JMenuBar menuBar=new JMenuBar();
             JMenu fileMenu=new JMenu("File");
+            JMenu EditMenu = new JMenu("Edit");
             JMenuItem reloadMenu=new JMenuItem(RELOAD);
             JMenuItem closeMenu=new JMenuItem(CLOSE);
+            JMenuItem SearchMenu = new JMenuItem( "Search" );
+            JMenuItem FindNextMenu = new JMenuItem("Find Next");
             menuBar.add(fileMenu);
+            menuBar.add(EditMenu);
             gov.anl.ipns.Util.Sys.PrintComponentActionListener.setUpMenuItem(
                                                                   menuBar, mw);
             fileMenu.add(reloadMenu);
             fileMenu.add(closeMenu);
+            EditMenu.add(SearchMenu);
+            EditMenu.add( FindNextMenu);
             MyActionListener mal=new MyActionListener(this);
             reloadMenu.addActionListener(mal);
             closeMenu.addActionListener(mal);
+            SearchMenu.addActionListener( mal);
+            FindNextMenu.addActionListener( mal);
+                       
 
             // create the main window to hold it all
-            mw=new JFrame(filename);
-            mw.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
+            
             // add the text area
             mw.setJMenuBar(menuBar);
-            mw.getContentPane().add(sp);
-
+            mw.getContentPane().add( sp );
             // put it up on screen
-            mw.pack();
+            
+            mw.setSize((int)(.6*screenSize.width),(int)(.85*screenSize.height));
+            mw.validate();
         }
-        else
+     /*   else
         {
             // just fill up the text area
             String text=readFile(filename);
@@ -306,7 +329,7 @@ public class ViewASCII extends    GenericSpecial
             if(text!=null)
               return text;
         }
-
+*/
         mw.setTitle(filename);
         WindowShower.show(mw);
 
@@ -340,9 +363,17 @@ public class ViewASCII extends    GenericSpecial
     String readFile( String filename){
       if(textarea!=null){
         Document doc = (new IsawGUI.Util()).openDoc( filename);
-        textarea.setDocument(doc);
-        textarea.setColumns(MAX_WIDTH);
-        textarea.setRows(MAX_HEIGHT);
+        try{
+          
+           textarea.setContentType("text/plain");
+           textarea.setText(doc.getText(0,doc.getLength()));
+          
+        }catch(Exception ss){
+           ss.printStackTrace();
+           textarea=null; 
+        }
+       // textarea.setColumns(MAX_WIDTH);
+       // textarea.setRows(MAX_HEIGHT);
      }
     return null;
 
@@ -403,12 +434,78 @@ public class ViewASCII extends    GenericSpecial
         if(textarea!=null){
 
             textarea.setDocument(doc);
-            if(width>MAX_WIDTH) textarea.setColumns(MAX_WIDTH);
-            if(height>MAX_HEIGHT) textarea.setRows(MAX_HEIGHT);
+            //if(width>MAX_WIDTH) textarea.setColumns(MAX_WIDTH);
+            //if(height>MAX_HEIGHT) textarea.setRows(MAX_HEIGHT);
         }
         return null;
     }
+    
+    public int Find(int prevpos,  String SearchString, Document doc){
+      if( SearchString == null)
+         return -1;
+      if( doc ==  null)
+         return -1;
+      int buffsize= Math.max(1000,SearchString.length()*10);
+      boolean found =false;
+      try{
 
+      int doclength = doc.getLength();
+      if( prevpos <0) prevpos=0;
+      if(prevpos >= doclength)
+        return -1;
+      lastpos=prevpos;
+            
+      String buff = doc.getText(prevpos,Math.min(buffsize,doclength-prevpos));
+      int nn=0;
+      if( buff.indexOf(SearchString)>=0)
+         nn=SearchString.length();
+      while(!found){
+         int k= buff.indexOf(SearchString,nn);
+         nn=0;
+         if( k>=0)
+            return lastpos+k;
+         if( buff.length()< SearchString.length())
+            return -1;
+         lastpos +=buff.length()-SearchString.length();
+         buff = doc.getText( lastpos, Math.min(buffsize,doclength-lastpos));
+         if( lastpos+SearchString.length() >= doclength)
+            return -1;
+         
+      }
+      }catch(Throwable ss){
+         return -1;
+      }
+      return -1;
+    }
+    
+     public void Positionn( JTextPane textarea, int pos){
+       if( pos < 0)
+          return;
+      
+      
+      try{
+       textarea.getCaret().setDot(pos);
+       StyledDocument doc =(StyledDocument)textarea.getDocument();
+       SimpleAttributeSet AttrSet = new SimpleAttributeSet();
+       if( lastpos >=0) if( lastpos < doc.getLength()){
+            // AttrSet.addAttribute(StyleConstants.Bold, new Boolean(false));
+       
+            doc.setCharacterAttributes(preLastPos,lastLength, AttrSet,true);
+        }
+        AttrSet = new SimpleAttributeSet();
+ 
+       AttrSet.addAttribute(StyleConstants.Bold, new Boolean(true));
+       
+       doc.setCharacterAttributes(pos, SearchString.length(), AttrSet,true);
+       
+      }catch(Throwable ss){
+        ss.printStackTrace();
+      }
+     }
+    String SearchString=null;
+    int lastpos=0;
+    int preLastPos=-1;
+    int lastLength =-1;
     class MyActionListener implements ActionListener{
         ViewASCII VA;
 
@@ -418,11 +515,37 @@ public class ViewASCII extends    GenericSpecial
 
         public void actionPerformed(ActionEvent e){
             if(e.getActionCommand().equals(RELOAD)){
-                VA.readFile(null);
+               // VA.readFile(null);
             }else if(e.getActionCommand().equals(CLOSE)){
                 VA.mw.dispose();
                 VA.mw=null;
-            }
+            }else if( e.getActionCommand().equals("Search")){
+              SearchString = javax.swing.JOptionPane.showInputDialog("Enter Search String");
+              lastpos = Find( 0,SearchString, textarea.getDocument());
+              if(lastpos <0){
+                 SearchString = null;
+                 lastpos =0;
+              }else{
+                  Positionn(textarea,lastpos);
+                  preLastPos=lastpos;
+                  lastLength= SearchString.length();
+              }
+              
+            }else if( e.getActionCommand().equals("Find Next")){
+              
+              if(SearchString ==null)
+                return;
+              lastpos = Find(lastpos,SearchString,textarea.getDocument());
+              
+              if(lastpos <0){
+                 SearchString = null;
+                 lastpos =0;
+              }else{
+                  Positionn(textarea,lastpos);
+                  preLastPos = lastpos;
+                  lastLength= SearchString.length();
+              }
+           }   
         }
     }
     /* ------------------------------ main ------------------------------- */
