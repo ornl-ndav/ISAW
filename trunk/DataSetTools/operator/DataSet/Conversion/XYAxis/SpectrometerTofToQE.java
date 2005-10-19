@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2005/10/19 17:30:30  dennis
+ * Now displays momentum transfer in direction reqeusted by Sasha.
+ * Output text file also changed to write data in form that can
+ * be read by the SandWedgeViewer, with calibrated axes in the
+ * direction requested by Sasha.
+ *
  * Revision 1.13  2005/03/07 02:53:49  dennis
  * Improved handling of case where the S(E,Q) array is NOT written
  * to a file.  Now an empty string, "", can be used for the filename
@@ -301,6 +307,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     float  min_E     = ( (Float)(getParameter(3).getValue()) ).floatValue();
     float  max_E     = ( (Float)(getParameter(4).getValue()) ).floatValue();
     int    n_E_bins  = ( (Integer)(getParameter(5).getValue()) ).intValue();
+    float  e_in      = 0;
     String file_name = ((SaveFilePG)getParameter(6)).getStringValue();
 
                                         // find out if the units are time (us)
@@ -332,7 +339,11 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
       return message;
     }
     else
-     E_scale = new UniformXScale( min_E, max_E, n_E_bins+1 );
+    {
+      if ( ds.getNum_entries() > 0 )
+        e_in = AttrUtil.getEnergyIn( ds.getData_entry(0) );
+      E_scale = new UniformXScale( e_in - max_E, e_in - min_E, n_E_bins+1 );
+    }
 
                                         // validate Q bounds
     if ( min_Q > max_Q )                // swap bounds to be in proper order
@@ -378,7 +389,6 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
 
     float            min_ang,
                      max_ang;
-    float            e_in;
     Data             data;
     DetectorPosition position = null;
     float            scattering_angle;
@@ -432,8 +442,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
         return message;
       }
 
-      energy_in_obj = (Float)attr_list.getAttributeValue(Attribute.ENERGY_IN);
-      e_in          = energy_in_obj.floatValue();
+      e_in = AttrUtil.getEnergyIn( data );
 
       scattering_angle = position.getScatteringAngle() * (float)(180.0/Math.PI);
       delta_theta = delta_theta_obj.floatValue();
@@ -550,9 +559,10 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
 
       new_data = Data.getInstance( Q_scale, const_e_slice, slice_errors, col+1);
       e_val = col * (max_E - min_E) / n_E_bins + min_E;
-      Attribute e_attr = new FloatAttribute( Attribute.ENERGY, e_val );  
+      Attribute e_attr = new FloatAttribute( Attribute.ENERGY_TRANSFER, 
+                                             e_in - e_val );  
       new_data.setAttribute( e_attr );
-      new_data.setLabel( Attribute.ENERGY );
+      new_data.setLabel( Attribute.ENERGY_TRANSFER );
 
       new_ds.addData_entry( new_data );
     }
@@ -644,13 +654,16 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
        float y   = 0;
        float val = 0;
        float err = 0;
-       for( int row = 0; row < QE_vals.length; row++)
-         for( int col = 0; col < QE_vals[0].length; col++)
+
+       int max_row = QE_vals.length - 1;
+       int max_col = QE_vals[0].length - 1;
+       for( int row = 0; row <= max_row; row++)
+         for( int col = 0; col <= max_col; col++)
          { 
             x = Q_scale.getX( row );
             y = E_scale.getX( col );
-            val = QE_vals[row][col];
-            err = errors[row][col];
+            val = QE_vals[row][max_col - col];     // Data is inverted
+            err = errors[row][max_col - col];
             buff.append( Format.real(x,15,5) );
             buff.append( Format.real(y,15,5) );
             buff.append( Format.real(val,15,5) );
