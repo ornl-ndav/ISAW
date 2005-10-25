@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2005/10/25 18:50:29  hammonds
+ *  Remove comment in the MONITOR output line.
+ *
  *  Revision 1.32  2005/05/18 21:10:55  hammonds
  *  Fix MONITOR line in file
  *  Add User Name, # Pulses & Date&Time as comments in file
@@ -554,7 +557,7 @@ public class gsas_filemaker
 	try{
 	    float monCount=this.getMonitorCount();
 	    if(monCount>0.0f){
-                sb.append("#  "+MONITOR+": ").append(monCount);
+                sb.append(MONITOR+": ").append(monCount);
 		outStream.write (Format.string(sb,80,false)+"\r"+"\n");
 	    }
 	} catch(Exception d){}
