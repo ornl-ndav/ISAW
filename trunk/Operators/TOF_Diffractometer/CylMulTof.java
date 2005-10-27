@@ -118,7 +118,7 @@ public class CylMulTof {
     String s = (br.readLine()).trim();
     int index, nlambda, nangle = angles.length;
     if ( (nlambda=(new Integer(s)).intValue()) != nw ) 
-      System.out.println("***UNEXPECTED ERROR***\ncheck number of angles in cylmultof output.\n");
+      System.out.println("***UNEXPECTED ERROR***\ncheck number of lambdas in cylmultof output.\n");
     mulcoeffs = new float[2][angles.length][nlambda];
     lambdas = new float[nlambda];
 //      System.out.println("# of wavelength: "+nlambda);

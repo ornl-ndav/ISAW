@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2005/10/27 17:58:24  taoj
+ * new version
+ *
  * Revision 1.4  2005/08/11 20:36:51  taoj
  * new error analysis code
  *
@@ -75,9 +78,8 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
 //  private GLADScatter vanrun = (GLADScatter) runprops.get(1);
   public DataSet nrm_van;
   public boolean DOsmooth = false;
-  public float temperature = 300.0f;
-  public float mulstep = 0.1f;
-
+  public float temperature = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.TEMP");
+  public float mulstep = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.MSTEP");
 
   //~ Methods ******************************************************************
 
@@ -192,7 +194,7 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
     nrm_van.setY_label("vanadium calibration function");
 //    nrm_van.addLog_entry("applying vancal() to calculate vanadium calibration function");
     System.out.println("Done.");
-    System.out.println("Vadadium dataset converted into the calibration function.\n");
+    System.out.println("Vanadium dataset converted into the calibration function.\n");
     return nrm_van;
   }
 

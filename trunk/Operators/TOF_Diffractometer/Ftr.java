@@ -4,7 +4,7 @@
  * Copyright (C) 2004 J. Tao
  *
  * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * modify it under the terms of the GNU Genernal Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  *
@@ -34,7 +34,7 @@
 
 package Operators.TOF_Diffractometer;
 
-import DataSetTools.dataset.Data;
+import DataSetTools.dataset.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -50,16 +50,15 @@ import jnt.FFT.*;
  */
 public class Ftr { 
   
-  public static final int NF = 16384, NUMQ = 40;
+  public static final int NF = 16384; //NUMQ = 40;
 
   private float qstart, qend, delq;
   private int npt;
-  private float[] qs, isoqs;
+  private float[] qs, ioqs, soqs;
   private float[] rs, dors;
-//  private String SmpComposition;
   private float NumDensity;
   
-  public Ftr(Data dioq, float bbarsq) {
+  public Ftr(Data dioq, float bbarsq, float numq) {
     float[] xs = dioq.getX_values();
     float[] ys = dioq.getCopyOfY_values();
     int n = ys.length;
@@ -68,13 +67,13 @@ public class Ftr {
     while (ys[istart] == 0.0f) istart++;
     n -= istart;
     qs =  new float[n];
-    isoqs = new float[n];
+    ioqs = new float[n];
     
     System.arraycopy(xs, istart, qs, 0, n);
-    System.arraycopy(ys, istart, isoqs, 0, n); 
+    System.arraycopy(ys, istart, ioqs, 0, n); 
          
     qstart = qs[0];
-    delq = 1.0f/NUMQ;
+    delq = 1.0f/numq;
     npt = n;
     convertIofQ2SofQ(bbarsq);
     System.out.println("qstart: "+qstart+" delq: "+delq+" npt: "+npt);
@@ -117,12 +116,12 @@ public class Ftr {
     }
     
     qs = new float[npt];
-    isoqs = new float[npt];     
+    soqs = new float[npt];     
     for (int i = 0; i<npt; i++) {
       line = fr_input.readLine();
       list = Pattern.compile("\\s+").split(line.trim());
       qs[i] = (new Float(list[1])).floatValue();
-      isoqs[i] = (new Float(list[2])).floatValue(); 
+      soqs[i] = (new Float(list[2])).floatValue(); 
     }
 
     fr_input.close();
@@ -133,7 +132,7 @@ public class Ftr {
   }
   
   float[] getSofQ () {
-    return isoqs;      
+    return soqs;      
   }
   
   void convertIofQ2SofQ (float bbarsq) {
@@ -143,21 +142,23 @@ public class Ftr {
 //    float i2s = MutCross.loadSigmaTable().getTargetSigmas(list_elements, list_fractions)[2];
     //  System.out.println("i2s: "+i2s);
     
-    int N = isoqs.length;
+    int N = ioqs.length;
+    soqs = new float[N];
     if (N != npt) System.out.println("******UNEXPECTED ERROR******");
-    for (int i = 0; i<N; i++){
-      isoqs[i] /= bbarsq;
-      isoqs[i] +=1;
+    for (int i=0; i<N; i++){
+      soqs[i] = ioqs[i]/bbarsq;
+      soqs[i] += 1;
     }
-    
-    float y = isoqs[0], tmp;
-    for (int i = 1; i<N; i++){
-      y += isoqs[i];
+       
+    float y = soqs[0], tmp;
+    for (int i = 1; i < N; i++){
+      y += soqs[i];
       y /= 2.0f;
-      tmp = isoqs[i];
-      isoqs[i] = y;
+      tmp = soqs[i];
+      soqs[i] = y;
       y = tmp;
-    }
+    } 
+  
   }
   
   float[][] getDofR () {
@@ -212,12 +213,12 @@ public class Ftr {
     return new float[][] {rs, cors};
   }    
   
-  void calculateDofR (float qcut, int iwf, float density) {
+  void calculateDofR (float qcut, int iwf, float rcut, float density) {
     NumDensity = density;
-    calculateDofR (qcut, iwf);
+    calculateDofR (qcut, iwf, rcut);
   }
   
-  void calculateDofR (float qcut, int iwf) {
+  void calculateDofR (float qcut, int iwf, float rcut) {
     int index=0, N;
     while (qs[index]<=qcut) {
       index++;  
@@ -228,67 +229,72 @@ public class Ftr {
 //    float[] qs0 = new float[N+index];
 //    float[] isoqs0 = new float[N+index];
     float[] qs0 = new float[NF];
-    float[] isoqs0 = new float[NF];
-    float yatindex=isoqs[0];
+    float[] soqs0 = new float[NF];
+    float yatindex=soqs[0];
     if (yatindex >0) {
       for (int i=0; i<index; i++) {
         qs0[i] = i*delq;
-        isoqs0[i] = (float) Math.pow(i*delq, 2)*yatindex/(float) Math.pow(index*delq, 2);    
+        soqs0[i] = (float) Math.pow(i*delq, 2)*yatindex/(float) Math.pow(index*delq, 2);    
       }       
     } else {
       for (int i=0; i<index; i++) {
         qs0[i] = i*delq;
-        isoqs0[i] = 0.0f;    
+        soqs0[i] = 0.0f;    
       }
     }
     for (int i=0; i<N; i++) {
       qs0[i+index] = qs[i];
-      isoqs0[i+index] = isoqs[i];    
+      soqs0[i+index] = soqs[i];    
     }
     for (int i=N+index; i<NF; i++) {
 //      qs0[i] = i*delq;
-      isoqs0[i] = 0.0f;    
+      soqs0[i] = 0.0f;    
     }
     
-    qs = qs0;
-    isoqs = isoqs0;
+//    qs = qs0;
+//    soqs = soqs0;
 
     float y;
 //    N += index;
-    N = NF;    
-    float[] Zdata = new float[4*N];
+    int n = NF;    
+    float[] Zdata = new float[4*n];
     float[] wf = getWMOD(iwf, qcut);   
-    for (int i = 1; i<N; i++){
-      y = qs[i]*(isoqs[i]-1)*wf[i];
+    for (int i = 1; i<n; i++){
+      y = qs0[i]*(soqs0[i]-1)*wf[i];
       Zdata[2*i] = y;
       Zdata[2*i+1] = 0;
-      Zdata[4*N-2*i] = -y;  
-      Zdata[4*N-2*i+1] = 0;
+      Zdata[4*n-2*i] = -y;  
+      Zdata[4*n-2*i+1] = 0;
     }
-    Zdata[2*N] = 0;
-    Zdata[2*N+1] = 0;
+    Zdata[2*n] = 0;
+    Zdata[2*n+1] = 0;
     
-    ComplexFloatFFT q2d = new ComplexFloatFFT_Mixed(2*N);
+    ComplexFloatFFT q2d = new ComplexFloatFFT_Mixed(2*n);
     q2d.transform(Zdata);
     
     String output = "";
-    rs = new float[N];
-    dors = new float[N];
-    for (int i = 0; i<N; i++){
+    float[] rs0 = new float[n];
+    float[] dors0 = new float[n];
+    for (int i = 0; i<n; i++){
 //      rs[i] = (float) (i*Math.PI/qcut);
-      rs[i] = (float) (i*Math.PI/NF/delq);
-      dors[i] = (float) (Zdata[2*i+1]*-delq/Math.PI);
+      rs0[i] = (float) (i*Math.PI/NF/delq);
+      dors0[i] = (float) (Zdata[2*i+1]*-delq/Math.PI);
 //      if (i<100) output += "["+rs[i]+","+dors[i]+"]"+",";
     }
+    
+    N = Math.round(rcut*NF*delq/(float)Math.PI)+2;
+    rs = new float[N];
+    dors = new float[N];    
+    System.arraycopy(rs0, 0, rs, 0, N); 
+    System.arraycopy(dors0, 0, dors, 0, N); 
 //    System.out.println("DofR: "+output);
   }
   
   float[] getWMOD (int iwf, float qcut) {
-    int N = qs.length;
-    float[] wfs = new float[N];
+    float[] wfs = new float[NF];
     double y;
     
-    for (int i = 0; i<N; i++){
+    for (int i = 0; i<NF; i++){
       switch (iwf) {
         case 0:
           wfs[i] = 1.0f;
@@ -325,6 +331,16 @@ public class Ftr {
 //    float[] ys = f1.getSofQ();
 
 //   f1.NumDensity = 0.0662f;
+
+    DataSet ds = new DataSet ("DS", 
+           "Construct a dataset holding the distribution functions.",
+           "1/Angstrom", "Q",
+           "", "");
+    Data sofq = new HistogramTable(XScale.getInstance(f1.getQ()),
+                                       f1.getSofQ(),
+                                       10000);
+    ds.addData_entry(sofq);
+    DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(ds, DataSetTools.viewer.IViewManager.IMAGE);
 
     f1.calculateDofR(25.0f, 0, 0.0662f);
     

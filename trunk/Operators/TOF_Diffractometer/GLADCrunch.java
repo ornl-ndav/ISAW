@@ -30,6 +30,9 @@
  * 
  * Modified:
  * $Log$
+ * Revision 1.5  2005/10/27 17:58:42  taoj
+ * new version
+ *
  * Revision 1.4  2005/08/11 20:34:54  taoj
  * Use the DataGrid to set up detector information & new error analysis code
  *
@@ -93,7 +96,7 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
   public LoadFileString runfile = new LoadFileString();
   public boolean noDeadDetList = false;
   public LoadFileString redpar = new LoadFileString();
-  public float lcutoff = 200.0f;
+  public float lcutoff = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.LCUTOFF");
   public boolean MonSmoothing = false;
   public boolean DetSmoothing = false;
   //~ Methods ******************************************************************
@@ -182,7 +185,7 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
     return wvals;
   }
 
-//detector efficiency calculation, a porting of geffcyl.for code based on the method by J.M. Carpenter (refer to IPNS note 17);
+//detector efficiency calculation, a porting of geffcyl.for code based on the method by J.M. Carpenter (IPNS note 17);
   public static float[] geffcyl (GLADRunProps run, float[] lambdas, float psi) {
  
     float facd = ((Float) run.ExpConfiguration.get("GLAD.DET.FACD")).floatValue();    
@@ -759,6 +762,7 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
 
 //      if (i == 0) System.out.println("deadtime t_vals_d[1078]: "+t_vals_d[1078]+" y_vals_d[1077]: "+y_vals_d[1077]);       
       delayed_neutron_sum = gdel_neut(t_vals_d, y_vals_d, tof_length_d, dnfract, sourceT, nfit);
+//      System.out.println("pid: "+dt.getGroup_ID()+" ratio: "+delayed_neutron_sum/y_vals_d[ndetchannel-1]);
       for (int k =0; k < ndetchannel; k++){
 //        if (i==409 && k%100 == 1) System.out.println("Det Channel "+k+": "+dt.getY_values()[k]); 
         y_vals_d[k] -= delayed_neutron_sum;

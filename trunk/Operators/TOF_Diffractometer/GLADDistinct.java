@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2005/10/27 17:58:08  taoj
+ * new version
+ *
  * Revision 1.4  2005/08/11 20:36:12  taoj
  * new error analysis code
  *
@@ -76,9 +79,9 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
   public DataSet dcs_smp;
   public DataSet smo_van;
   public DataSet dm_van;
-  public float temperature = 300.0f;
-  public float wmin = 0.1f;
-  public float wmax = 6.0f;
+  public float temperature = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.TEMP");
+  public float wmin = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.COMB.MINW");
+  public float wmax = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.COMB.MAXW");
 
   //~ Methods ******************************************************************
 

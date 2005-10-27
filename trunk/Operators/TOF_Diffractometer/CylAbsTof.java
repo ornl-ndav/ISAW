@@ -119,7 +119,7 @@ public class CylAbsTof {
     String s = (br.readLine()).trim();
     int index, nlambda, nangle = angles.length;
     if ( (nlambda=(new Integer(s)).intValue()) != nw ) 
-       System.out.println("***UNEXPECTED ERROR***\ncheck number of angles in cylabstof output.\n");
+       System.out.println("***UNEXPECTED ERROR***\ncheck number of lambdas in cylabstof output.\n");
     abscoeffs = new float[nan+2][nangle][nlambda];
     lambdas = new float[nlambda];
 //        System.out.println("# of wavelength: "+nlambda);

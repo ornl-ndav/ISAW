@@ -63,11 +63,13 @@ public class GLADRunProps {
   public static final String GLAD_PARM = "GLAD_Detector_Parameters";
   public static final String GLAD_PROP = "GLAD_Running_Info";
   
-  public static String ISAWDBDirectory = null;
-  public static String GLADDefInstProps = null;  
-  public static String GLADDetTable = null;
+  public static String ISAWDBDirectory;
+  public static String GLADDefInstProps;  
+  public static String GLADDetTable;
+  public static HashMap defGLADProps;
   
   static final String SYMBOL = ".SYMBOL", FORMULA = ".FORMULA", DENSITY = ".DENSITY",
+             EFFDENSITY = ".EFFDENSITY",
              SIZE = ".SIZE", SIGMA_A = ".SIGMA_A", PROFILE = ".PROFILE", ASTEP = ".ASTEP",
              MSTEP = ".MSTEP", ANGLES = ".ANGLES";    
 
@@ -84,16 +86,24 @@ public class GLADRunProps {
     GLADDefInstProps = ISAWDBDirectory + java.io.File.separator + "gladprops.dat";
     GLADDetTable = ISAWDBDirectory + java.io.File.separator+ "gladdets6.par";
 
-    if( new File(GLADDefInstProps).exists()){
-      // do nothing
-    } else{
-      GLADDefInstProps = null;
-    }
     if( new File(GLADDetTable).exists()){
       // do nothing
     } else{
       GLADDetTable = null;
+      throw new RuntimeException("!!!!!!\nGLAD detector table file not found!!!!!!");
     }
+
+    if( new File(GLADDefInstProps).exists()){
+      try {
+        defGLADProps = loadExpProps(GLADDefInstProps);     
+      } catch(Throwable t) {
+        t.printStackTrace();
+      }
+    } else{
+      GLADDefInstProps = null;
+      throw new RuntimeException("!!!!!!\ndefault GLAD property file not found!!!!!!\n");
+    }    
+    
   }
 
 //storing the info;
@@ -105,15 +115,16 @@ public class GLADRunProps {
   int dataID2index[];
   int deadDet[], removedDataID[];
 
-  /**
-   *  read in the info from the default property file.
-   */  
+
   private GLADRunProps() {
+/*
     try {
-      setExpProps(GLADDefInstProps);     
+      ExpConfiguration = loadExpProps(GLADDefInstProps);     
     } catch(Throwable t) {
       t.printStackTrace();
     }
+*/
+    ExpConfiguration = defGLADProps;    
   }
 
   /**
@@ -121,7 +132,7 @@ public class GLADRunProps {
   */  
   private GLADRunProps(String fprops) {
     try {
-      setExpProps(fprops);      
+      ExpConfiguration = loadExpProps(fprops);      
     } catch(Throwable t) {
       t.printStackTrace();
     }
@@ -161,25 +172,31 @@ public class GLADRunProps {
       return getName() + "::" + getStringValue();
     }    
   }
+
   
   public static GLADRunProps getExpProps () {
     return new GLADRunProps();
   }
+
   
   public static GLADRunProps getExpProps (String fin) {
      return new GLADRunProps(fin);
    }
   
-  private void setExpProps (String fin) throws IOException, InterruptedException {
+  public static HashMap loadExpProps (String fin) throws IOException, InterruptedException {
     Properties props = new Properties();
     FileInputStream in = new FileInputStream(fin);
     props.load(in);
     in.close(); 
 //    props.list(System.out);
 
-    ExpConfiguration = trExpProps(props);
-    System.out.println("\nHashMap ExpConfiguration:");
-    printExpHashMap (ExpConfiguration);    
+    HashMap config = trExpProps(props);
+    if (System.getProperty("Default_Instrument").equals("GLAD")) {
+      System.out.println("\nLoad GLAD properties from \""+fin+"\":");
+      printExpHashMap (config);
+    }
+
+    return config;    
   }       
 
   public static HashMap trExpProps (Properties expprop) {
@@ -326,7 +343,34 @@ public class GLADRunProps {
     }
 
   }
-
+      
+  public static float getfloatKey (HashMap hmap, String key) {
+    Object o = hmap.get(key);
+    if (o == null) return 0.0f;
+    else if (Integer.class.isInstance(o)) return ((Integer)o).floatValue();
+    else return ((Float) o).floatValue();
+//    return (o == null)?0.0f:((Float) o).floatValue();
+  }
+  
+  public static int getintKey (HashMap hmap, String key) {
+    Object o = hmap.get(key);
+    return (o == null)?0:((Integer) o).intValue();
+  }
+  
+  public static String getarrayKey (HashMap hmap, String key) {
+    Object o = hmap.get(key);
+    if (o == null) return "";
+    else if (!o.getClass().isArray()) return "";
+    else {
+      Object[] os = (Object[]) o;
+      StringBuffer a2s = new StringBuffer();
+      for (int i = 0; i < os.length; i++) {
+         a2s.append(os[i].toString()+" ");
+      }
+      return a2s.toString();
+    }
+  }
+  
   public static void setDetTable (GLADRunProps runinfo) throws IOException, InterruptedException {
 //  set up the GLAD detector mapping table from bank and detector number to the lpsd index (0..334); 
 //  NOTE: At the moment the only place this info is needed is for an user to input bad detector list in terms of bank/det number,

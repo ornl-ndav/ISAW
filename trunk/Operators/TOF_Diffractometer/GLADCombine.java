@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2005/10/27 17:57:21  taoj
+ * new version
+ *
  * Revision 1.4  2005/08/11 20:37:07  taoj
  * new error analysis code
  *
@@ -67,8 +70,8 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
 //  public DataSet ds0;
   public DataSet int_smp;
   public DataSet flx_van;
-  public int NUMQ = 40;
-  public float GLADQMAX = 40.0f;
+  public int NUMQ = GLADRunProps.getintKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.NUMQ");
+  public float GLADQMAX = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.QMAX");
   
   //~ Methods ******************************************************************
 
@@ -149,8 +152,8 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
     numq = (int)GLADQMAX*NUMQ+1;   
 //Q_scale has to be the same as the new_Q_scale used in GLADCrunch (better design?);    
     Q_scale = new UniformXScale(1.0f/NUMQ, GLADQMAX+1.0f/NUMQ, numq);
-    dioq = Data.getInstance(Q_scale, new float[numq-1], new float[numq-1], 1000);
-    dsum = Data.getInstance(Q_scale, new float[numq-1], new float[numq-1], 1001);    
+    dioq = Data.getInstance(Q_scale, new float[numq-1], new float[numq-1], 99999);
+    dsum = Data.getInstance(Q_scale, new float[numq-1], new float[numq-1], 99998);    
     float scattering_angle;
         
     for (int i = 0; i < flx_van.getNum_entries(); i++){
@@ -211,7 +214,7 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
     testcrunch.ds0 = runinfo;
     testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8094.run");
     testcrunch.noDeadDetList = true;
-    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/GLAD/gladrun2.par");
+    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/cvs/ISAW/Databases/gladrun.par");
     Vector monnrm = (Vector) testcrunch.calculate();
     DataSet mon_van = (DataSet) monnrm.get(0); 
     DataSet nrm_van = (DataSet) monnrm.get(1);
