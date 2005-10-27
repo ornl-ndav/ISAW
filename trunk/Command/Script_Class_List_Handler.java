@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.70  2005/10/27 21:13:17  rmikk
+ * Incorporated the new opInfo structure correctly into the main program
+ *
  * Revision 1.69  2005/08/24 15:19:42  rmikk
  * Sets up all the data in the operator info structure when a new operator
  *    is loaded during the fast load.
@@ -324,7 +327,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             
             Operator X = null;
             if(j >= 0)
-                X  =(Operator) opList.elementAt(j);
+                X  =((OpnInfo) opList.elementAt(j)).getOperator();
             
             //System.out.print(i+":Command="+X.getCommand());
             if( X != null){
