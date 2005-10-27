@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.49  2005/10/27 20:44:50  dennis
+ *  Added methods setSelectFlagsByID() and setSelectFlagsByIndex().
+ *
  *  Revision 1.48  2005/08/19 19:56:55  dennis
  *  Remove selected now will scan the DataSet and form a list of
  *  indices of selected Data blocks, then call removeData_entries(list)
@@ -559,6 +562,109 @@ public class DataSet implements IAttributeList,
       ((Data)data.elementAt(index)).setSelected( d.isSelected() );
     else
       System.out.println("Error: setSelectFlag(i,d) called with invalid index");
+  }
+
+
+  /**
+   * Set (or clear) the selection flag for all data blocks in this DataSet
+   * whose index is listed in the indicies list.  NOTE: The state of the 
+   * select flag is NOT changed for Data blocks NOT in the list.
+   * Also, this method does NOT automatically notify the Observers of the
+   * DataSet that some selections have been changed.  This allows code that
+   * makes multiple changes to only notify the Observers one time, after
+   * completing all changes.
+   * 
+   * @param  indicies[]   The list of indexs for which the selection
+   *                      flag will be set to the specified value.
+   *
+   * @param  selected  The new value to set for the selected flag.
+   *
+   * @return  true if the selection flag of some Data block was changed,
+   *          false otherwise. 
+   */
+  public boolean setSelectFlagsByIndex( int indices[], boolean selected )
+  {
+     boolean  some_changed = false;
+     Data     d;
+     int      position;
+     int      n_data = data.size();
+
+     if ( indices == null )
+     {
+        System.out.println("WARNING: Null array of indices in DataSet." +
+                           "setSelectFlagsByIndex()" );
+        return some_changed;
+     }
+
+     for ( int i = 0; i < indices.length; i++ )// set flags on indices listed
+     {                                         // if current value is different
+       position = indices[i];
+       if ( position >= 0 && position < n_data )
+       {
+         d = (Data)(data.elementAt( indices[i] ));
+         if ( d.isSelected() != selected )
+         { 
+           d.setSelected( selected );
+           some_changed = true; 
+         }
+       }
+     }
+
+     return some_changed;
+  }
+
+
+  /**
+   * Set (or clear) the selection flag for all data blocks in this DataSet
+   * that have an ID listed in the group_ids list.  NOTE: The state of the 
+   * select flag is NOT changed for Data blocks with group_ids NOT in the list.
+   * Also, this method does NOT automatically notify the Observers of the
+   * DataSet that some selections have been changed.  This allows code that
+   * makes multiple changes to only notify the Observers one time, after
+   * completing all changes.
+   * 
+   * @param  group_ids[]   The list of group_ids for which the selection
+   *                       flag will be set to the specified value.
+   *
+   * @param  selected  The new value to set for the selected flag.
+   *
+   * @return  true if the selection flag of some Data block was changed,
+   *          false otherwise. 
+   */
+  public boolean setSelectFlagsByID( int group_ids[], boolean selected )
+  {
+                                               // first make a copy of the ids
+                                               // so we can sort and search
+     int ids[] = new int[ group_ids.length ];
+     System.arraycopy( group_ids, 0, ids, 0, group_ids.length );
+     Arrays.sort( ids );
+
+     boolean  some_changed = false;
+     Data     d;
+     int      group_id;
+     int      position;
+
+     if ( group_ids == null )
+     {
+        System.out.println("WARNING: Null array of group IDs in DataSet." +
+                           "setSelectFlagsByID()" );
+        return some_changed;
+     }
+
+     for ( int i = 0; i < data.size(); i++ )  // set flags on IDs found, if 
+     {                                        // the current value is different
+       d = (Data)data.elementAt(i);
+       group_id = d.getGroup_ID();
+       position = Arrays.binarySearch( ids, group_id );
+       if ( position >= 0 )                               // group_id was found
+         if ( d.isSelected() != selected )
+         {
+           d.setSelected( selected );
+           some_changed = true;
+         }
+     }
+
+     return some_changed;
   }
 
 
@@ -1977,7 +2083,7 @@ public class DataSet implements IAttributeList,
 
     if ( this.equals( ds ) )
     {
-      this.notifyIObservers( IObserver.DATA_CHANGED );
+      this.notifyIObservers( IObserver.DATA_CHANGED );  //TODO: Is this needed?
       return;
     }
 
@@ -2028,7 +2134,7 @@ public class DataSet implements IAttributeList,
   {
     if ( this.equals( ds ) )
     {
-      this.notifyIObservers( IObserver.DATA_CHANGED );
+      this.notifyIObservers( IObserver.DATA_CHANGED );  // TODO: Is this needed
       return;
     }
 
