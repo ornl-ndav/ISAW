@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/10/27 20:56:45  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2005/09/06 03:20:13  dennis
  * Initial attempt at extracting detector position information from
  * mslice file.  L2 values are not in the mslice file, so the nominal
@@ -42,16 +45,10 @@ package DataSetTools.trial;
 import java.io.*;
 
 import gov.anl.ipns.Util.File.TextFileReader;
-import gov.anl.ipns.ViewTools.Components.*;
 
 import DataSetTools.dataset.*;
-import DataSetTools.retriever.*;
-import DataSetTools.viewer.*;
-import Operators.Generic.Load.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
-import gov.anl.ipns.ViewTools.Displays.Display3D;
-import gov.anl.ipns.Util.Sys.WindowShower;
 
 /**
  *  This file contains static methods to translate the "pharos_detector.phx" 
