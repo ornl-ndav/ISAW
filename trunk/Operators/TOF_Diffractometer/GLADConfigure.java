@@ -36,6 +36,8 @@ import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.operator.*;
 import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
+import gov.anl.ipns.Util.SpecialStrings.StringChoiceList;
+import java.io.File;
 
 /**
  * This operator sets up the GLAD instrument and experimental configuration
@@ -46,8 +48,18 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
   
   /* @param configfile use ISAW GUI to input the absolute path of the configfile;
    */
+  
+//  public StringChoiceList calibopt = getCalibOptions();
+//  public String calibopt = getCalibOptions().toString();
+  public String calibopt = "1: 3/8 inch vanadium rod";
+  public String smpcomposition = getComposition(1);
+  public float smpdensity = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.EXP.SMP.DENSITY"); 
+  public String canopt = "1: 3/8 inch vanadium can";
+  public float scc;
   public LoadFileString configfile = new LoadFileString(GLADRunProps.GLADDefInstProps);
   public boolean hasCan = true;
+  public boolean hasFur = false;
+  public boolean isFP = false;
 
   //~ Methods ******************************************************************
 
@@ -101,49 +113,125 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
    * @return The processed DataSet.
    */
   public Object calculate(  ) {
+    int iflag = (isFP)?8:0;
     DataSet ds0 = new DataSet ("DS0", 
-      "Construct a dummy dataset holding instrument and experimental infomation.");
+      "Construct a dummy dataset holding instrument and experiment infomation.");
 
-    Object[] props = new Object[5];
-    GLADRunProps runinfo = GLADRunProps.getExpProps(configfile.toString());
-    props[0] = runinfo;
-    
+    Object[] props = new Object[5]; //0: run info; 1: vanadium; 2: smp (rod or w/t can); 3: can; 4: furnace;
+    GLADRunProps runinfo;
+    String configfilestr = configfile.toString();
+    if (!(new File(configfilestr)).equals(new File(GLADRunProps.GLADDefInstProps))) runinfo = GLADRunProps.getExpProps(configfilestr);
+    else runinfo = GLADRunProps.getExpProps();
+    props[0] = runinfo;    
+
+    String calibstr = calibopt.toString();
+    String calibstr0 = (String) GLADRunProps.defGLADProps.get("GLAD.EXP.CALIB");
+    char sizechar = calibstr.charAt(0);
+    if ( sizechar != calibstr0.charAt(calibstr0.length()-1) && sizechar != 'x') {
+      runinfo.ExpConfiguration.put("GLAD.EXP.CALIB.SIZE", runinfo.ExpConfiguration.get("GLAD.CALIB.VAN.SIZE."+sizechar));
+    }
     GLADScatter van = new GLADScatter(runinfo, 0);
     van.setMutTable();
     van.setAbsInput();
     van.setMulInput();
-    van.anmask = 0;
+//    van.anmask = 0;
     props[1] = van;
+//    van.printScatterInfo();
     
-    GLADScatter smp = new GLADScatter(runinfo, 1);
-    smp.anmask = 1;
+    Object[] scainfo = GLADScatter.parseComposition(smpcomposition);
+    runinfo.ExpConfiguration.put("GLAD.EXP.SMP.SYMBOL", scainfo[0]);
+    runinfo.ExpConfiguration.put("GLAD.EXP.SMP.FORMULA", scainfo[1]);
+    runinfo.ExpConfiguration.put("GLAD.EXP.SMP.DENSITY", new Float(smpdensity));
+    
+    GLADScatter smp = new GLADScatter(runinfo, 1+iflag);
     smp.setMutTable();
     smp.setAbsInput();
     smp.setMulInput();
     
     if (hasCan) {
-      GLADScatter can = new GLADScatter(runinfo, 2);
+      String canstr0 = (String) GLADRunProps.defGLADProps.get("GLAD.EXP.CAN");
+      sizechar = canopt.charAt(0);
+      if ( sizechar != calibstr0.charAt(calibstr0.length()-1) && sizechar != 'x') {
+        runinfo.ExpConfiguration.put("GLAD.EXP.CAN.SIZE", runinfo.ExpConfiguration.get("GLAD.CAN.VAN.SIZE."+sizechar));
+      }
+      GLADScatter can = new GLADScatter(runinfo, 2+iflag);
       can.setMutTable();
       can.setAbsInput();
       can.setMulInput();
-//      System.out.println("can.muttable:\n"+can.muttable);
-      can.anmask = 2;
+
+      if (hasFur) {
+        GLADScatter fur = new GLADScatter(runinfo, 4);
+        fur.setMutTable();
+        fur.setAbsInput();
+        fur.setMulInput();
+        props[4] = fur;
+        fur.printScatterInfo();
+        can = can.insideScatter(fur);
+      }
+
       props[3] = can;
+//      can.printScatterInfo();
       smp = smp.insideScatter(can);
     }
-    
+    if (scc != 0.0f) smp.scatterern = scc;    
     props[2] = smp;
+//    smp.printScatterInfo();    
 
     Attribute runprops = runinfo.getAttribute(GLADRunProps.GLAD_PROP, props);
     ds0.setAttribute(runprops, 0);
 //    System.out.println("smp.muttable:\n"+smp.muttable);
     return ds0;    
   }
+  
+  public static String getComposition (int imask) {
+    
+    String[] symbol = null;
+    float[] formula = null;
+    StringBuffer composition = new StringBuffer();
+    
+    switch (imask) {
+      case 0:
+        symbol = (String[])GLADRunProps.defGLADProps.get("GLAD.EXP.CALIB.SYMBOL");
+        formula = (float[])GLADRunProps.defGLADProps.get("GLAD.EXP.CALIB.FORMULA");
+        break;
+      case 1:
+        symbol = (String[])GLADRunProps.defGLADProps.get("GLAD.EXP.SMP.SYMBOL");
+        formula = (float[])GLADRunProps.defGLADProps.get("GLAD.EXP.SMP.FORMULA");
+        break;
+      case 2:
+        symbol = (String[])GLADRunProps.defGLADProps.get("GLAD.EXP.CAN.SYMBOL");
+        formula = (float[])GLADRunProps.defGLADProps.get("GLAD.EXP.CAN.FORMULA");
+        break;
+//furnace:
+      case 4:
 
+      default:        
+    }
+        
+    for (int i = 0; i < symbol.length; i++) {
+      composition.append(symbol[i]+" "+formula[i]+" ");
+    }
+    return composition.toString();
+  }
+  
+  public static StringChoiceList getCalibOptions () {
+    String calibval = (String) GLADRunProps.defGLADProps.get("GLAD.EXP.CALIB");
+    if (calibval.endsWith("1")) return new StringChoiceList (new String[] 
+                       {"1: \"3/8 vanadium rod", "2: \"1/4 vanadium rod", "x: others"});
+    if (calibval.endsWith("2")) return new StringChoiceList (new String[] 
+                       {"2: \"1/4 vanadium rod", "1: \"3/8 vanadium rod", "x: others"});
+    else return new StringChoiceList (new String[] 
+    {"x: others", "1: \"3/8 vanadium rod", "2: \"1/4 vanadium rod"});
+  }
+  
   /* --------------------------- MAIN METHOD --------------------------- */
   public static void main (String[] args) {      
     //unit testing;
     GLADConfigure testconf = new GLADConfigure();
+    testconf.calibopt = "2:";
+    testconf.canopt = "2:";
+    testconf.smpcomposition = "C 1.0 Cl 4.0";
+    testconf.smpdensity = 0.0319f;
     DataSet ds0 = (DataSet)testconf.calculate();      
   
   }
