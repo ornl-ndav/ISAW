@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2005/10/27 17:56:44  taoj
+ * new version
+ *
  * Revision 1.4  2005/08/11 20:35:40  taoj
  * new error analysis code
  *
@@ -66,16 +69,15 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
   public DataSet ds0;
   public DataSet ds;
   public int imask; //1 for sample rod, 2 for empty can, 3 for smp+can;
-//  public float smpheight = 6.0f;
-//  public String smpcomposition;
-  public float mulstep = 0.1f;
-  public float absstep = 0.02f;
+//  public float scattererm = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.SCC");
+  public float mulstep = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.MSTEP");
+  public float absstep = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.ASTEP");
   public boolean usemutfile = false;
   public LoadFileString mutfile = new LoadFileString();
-  public float minw = 0.1f;
-  public float maxw = 4.3f;
-  public float dw = 0.1f;
-  public float scattererm;
+  public float minw = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.MUT.MINW");
+  public float maxw = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.MUT.MAXW");
+  public float dw = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.MUT.DW");
+
   //~ Methods ******************************************************************
 
   /* ------------------------ getCategoryList ------------------------------ */
@@ -139,9 +141,12 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
   public Object calculate(  ) {
 
     GLADScatter thisrun = null;
-    if (imask == 1) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
+    if (imask == 1) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];     
     else if (imask == 2) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[3];
     else if (imask == 3) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
+    else if (imask == 4) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[4];
+    else if (imask == 6) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[3];
+    else if (imask == 7) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
     else System.out.println("\n***UNEXPECTED ERROR***\n"+"imask: "+imask);
 
     thisrun.mstep = mulstep;
@@ -163,28 +168,41 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
     thisrunmul.runMulCorrection();
     System.out.println("Done.\n");
     
-    CylAbsTof thisrunabs;
-    GLADScatter smpincanrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];    
-    if(scattererm != 0.0f) smpincanrun.scatterern = scattererm;
-    if (smpincanrun.runabs0 == null) {
-      thisrunabs = new CylAbsTof(smpincanrun);
-      smpincanrun.runabs0 = thisrunabs;
-      System.out.println("Attenuation calculation...");      
-      thisrunabs.runAbsCorrection();
-      System.out.println("Done.");    
+    CylAbsTof abs_smp, abs_can = null;
+    GLADScatter smprun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
+    GLADScatter canrun = null;   
+//    if( (imask & 1) == 1 && scattererm != 0.0f) smprun.scatterern = scattererm;
+    if (smprun.abs_run == null) {
+      abs_smp = new CylAbsTof(smprun);
+      smprun.abs_run = abs_smp;
+      System.out.println("Attenuation calculation for sample...");      
+      abs_smp.runAbsCorrection();
+      System.out.println("Done.");
+      
+      if (imask >= 4) {
+        canrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[3]; 
+        abs_can = new CylAbsTof(canrun);
+        canrun.abs_run = abs_can;    
+        System.out.println("Attenuation calculation for can...");
+        abs_can.runAbsCorrection();
+        System.out.println("Done.");
+      }      
+      
     }    
-    else thisrunabs = smpincanrun.runabs0;
+    else {
+      abs_smp = smprun.abs_run;
+      if (imask >= 4) abs_can = canrun.abs_run;
+    } 
   
-    if(imask == 2) System.out.println("Applying empty can multiple scattering and attenuation correction...");
-    else System.out.println("Applying sample multiple scattering and attenuation correction...");
+    System.out.println("Applying "+GLADScatter.SMASK[imask]+" multiple scattering and attenuation correction...");
     
     Data dt;
     AttributeList attr_list_d;
     float scattering_angle, q, lambda, alpha;
-    float[] qlist, y_vals_n, e_vals_n, mul, abs;
+    float[] qlist, y_vals_n, e_vals_n, mul, abs_s, abs_c = null;
     int istart, iend;
     if (ds.getX_label() != "Q") System.out.println("******ERROR******");
-    if (imask != 2) System.out.println("\nscc: "+smpincanrun.scatterern+"\n");
+    if ((imask & 1) == 1) System.out.println("\nSample calibration constant: "+smprun.scatterern+"\n");
     for (int i = 0; i < ds.getNum_entries(); i++) {
       dt = ds.getData_entry(i);
       attr_list_d = dt.getAttributeList();
@@ -207,7 +225,8 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
         lambda = tof_calc.WavelengthofDiffractometerQ(scattering_angle, q);
 //      if (k == 0) System.out.println("i: "+i+" y_vals_n[0]: "+y_vals_n[k]);
         mul = thisrunmul.getCoeff(scattering_angle, lambda);
-        abs = thisrunabs.getCoeff(scattering_angle, lambda);
+        abs_s = abs_smp.getCoeff(scattering_angle, lambda);
+        if (imask >= 4) abs_c = abs_can.getCoeff(scattering_angle, lambda);
 //        delta = mul[0]/(mul[0]+mul[1]);
       
 //            if (k == 0) System.out.println("i: "+i+" y_vals_n[0]: "+y_vals_n[k]);
@@ -215,17 +234,29 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
           y_vals_n[k] -= mul[1];
 //          y_vals_n[k] *= delta;
 //            if (k==0) System.out.println("cell mul[1]: "+mul[1]+" abs[3]: "+abs[3]+" abs[2]: "+abs[2]);     
-          alpha = abs[2]/abs[3];
+          alpha = abs_s[2]/abs_s[3];
 //          y_vals_n[k] /= abs[3];
 //          y_vals_n[k] *= abs[2];
           y_vals_n[k] *= alpha;
           e_vals_n[k] *= alpha;
         }
-        else {          //inner core:  calibration rod (vanadim, fused silica), or (sample+can) with (can) part subtracted;
+        else if (imask == 4) {
+          y_vals_n[k] -= mul[1];
+          alpha = abs_s[3]/abs_s[4]-abs_s[2]/abs_c[1]*abs_c[2]/abs_s[4];
+          y_vals_n[k] *= alpha;
+          e_vals_n[k] *= alpha;
+        }
+        else if (imask == 6) {
+          y_vals_n[k] -= mul[1];
+          alpha = abs_s[2]/abs_c[1];
+          y_vals_n[k] *= alpha;
+          e_vals_n[k] *= alpha;
+        }
+        else if ( (imask & 1) == 1 ) {          //inner core:  calibration rod (vanadim, fused silica), or (sample+can) with (can) part subtracted;
 //            if (k==0) System.out.println("core mul[1]"+mul[1]+" abs[1]: "+abs[1]);
           y_vals_n[k] -= mul[1];
 //          y_vals_n[k] *= delta;
-          alpha = abs[1]*smpincanrun.scatterern;
+          alpha = abs_s[1]*smprun.scatterern;
 //          y_vals_n[k] /= abs[1];
 //          y_vals_n[k] /= smpincanrun.scatterern;
           y_vals_n[k] /= alpha;

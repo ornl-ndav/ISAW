@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/10/27 17:56:54  taoj
+ * new version
+ *
  * Revision 1.2  2005/08/25 18:14:43  dennis
  * Moved to menu category Instrument Type, TOF_NGLAD
  *
@@ -50,6 +53,9 @@ import DataSetTools.operator.Wrappable;
 import DataSetTools.operator.IWrappableWithCategoryList;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.FunctionTable;
+import DataSetTools.dataset.HistogramTable;
+import DataSetTools.dataset.XScale;
 
 /**
  * This class uses Ftr.java to convert I(Q) to S(Q) and preform the Fourier transformation from S(Q)
@@ -65,8 +71,10 @@ public class GLADQ2R implements Wrappable, IWrappableWithCategoryList
    */
   public DataSet ds0;
   public DataSet ioq_smp;
-  public float QCut = 25.0f;
-  public float NumberDensity;
+  public float NumberDensity = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.EXP.SMP.DENSITY");
+  public float QCut = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.QCUT");
+  public int NUMQ = GLADRunProps.getintKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.NUMQ");
+  public float RCut = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.RCUT");
   
   //~ Methods ******************************************************************
 
@@ -135,23 +143,36 @@ public class GLADQ2R implements Wrappable, IWrappableWithCategoryList
     
     System.out.println("Extracting IofQ...");
     GLADScatter smprun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2]; 
+    System.out.println("Done.");
+    System.out.println("Convert IofQ to SofQ...");
     float bbarsq = smprun.bbarsq;
     if (NumberDensity != 0.0f) smprun.density = NumberDensity;
     Data dioq = ioq_smp.getData_entry(ioq_smp.getNum_entries()-1);
-    Ftr f = new Ftr(dioq, bbarsq);    
-    f.calculateDofR(QCut, 0, smprun.density);
-    
+    Ftr f = new Ftr(dioq, bbarsq, NUMQ);
+    System.out.println("Done.");
+    System.out.println("Fourier transform to DofR...");  
+    f.calculateDofR(QCut, 0, RCut, smprun.density);
+
+/*    
     DataSet ds = new DataSet ("DS", 
        "Construct a dataset holding the distribution functions.",
        "1/Angstrom", "Q",
        "", "");
-
+*/
     
     float fofrs[][];
     fofrs = f.getTofR();
-//    StringBuffer output = new StringBuffer("GofR:\n");
-//    String entry;
- 
+    Data sofq = new HistogramTable(XScale.getInstance(f.getQ()),
+                                   f.getSofQ(),
+                                   10000);
+    Data tofr = new FunctionTable(XScale.getInstance(fofrs[0]),
+                                  fofrs[1],
+                                  10001);
+    ioq_smp.addData_entry(sofq);
+    ioq_smp.addData_entry(tofr);
+    System.out.println("Done.");
+
+/*    
     for (int i = 0; i<fofrs[0].length; i++){
       if (i<1100) {
 //        entry= "["+gofrs[0][i]+","+gofrs[1][i]+"]"+",";
@@ -161,8 +182,8 @@ public class GLADQ2R implements Wrappable, IWrappableWithCategoryList
 //             System.out.println("r: "+dors[0][i]+" Dr: "+dors[1][i]);
     }
 //    System.out.println(output);     
-
-    return null;
+*/
+    return ioq_smp;
   }    
 
 }
