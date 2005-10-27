@@ -25,6 +25,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2005/10/27 20:51:47  dennis
+ * Modified to use the new setSelectFlagsByIndex() in DataSet.
+ *
  * Revision 1.2  2005/10/03 04:33:23  dennis
  * Now notifies any observers of the DataSet that the selection was
  * changed.  This MAY cause some performance problems if DataSets that
@@ -63,18 +66,17 @@ import Command.*;
 public class SelectByIndex extends    DS_Attribute
                            implements Serializable
 {
-  public static final String TITLE   = "Select Groups by Index";
+  public static final String TITLE = "Select Groups by Index";
 
-  public static final String CLEAR   = "Clear Selected";
-  public static final String SET     = "Set Selected";
-  String[] Clear  = { CLEAR, SET };
+  public static final String CLEAR = "Clear Selected";
+  public static final String SET   = "Set Selected";
   
 
   /* ------------------------ default constructor ----------------------- */
   /**
-   * Construct an operator with a default parameter list.  If this construtor
-   * is used, meaningful values for the parameters should be set before 
-   * calling getResult().
+   * Construct an operator with a default parameter list.  If this 
+   * constructor is used, meaningful values for the parameters should 
+   * be set before calling getResult().
    */
   public SelectByIndex()
   {
@@ -122,7 +124,7 @@ public class SelectByIndex extends    DS_Attribute
   {
     StringBuffer Res = new StringBuffer();
     Res.append("@overview This operator, when the getResult method is ");
-    Res.append("invoked sets(clears) the selection flag on the data ");
+    Res.append("invoked, sets( or clears) the selection flag on the data ");
     Res.append("blocks at the specified positions in the DataSet."); 
     Res.append("This is a \"union\" type operation in that the ");
     Res.append("selection flags of groups that do not satisfy the ");
@@ -151,10 +153,11 @@ public class SelectByIndex extends    DS_Attribute
     addParameter( new Parameter( "Indices to Select or Clear", 
                                   new IntListString("-1") ) );
 
-    ChoiceListPG Clear = new ChoiceListPG("Clear?", SET ) ;
-      Clear.addItem( SET );
-      Clear.addItem( CLEAR );
-      addParameter( Clear );
+    ChoiceListPG clear = new ChoiceListPG("Clear?", SET ) ;
+      clear.addItem( SET );
+      clear.addItem( CLEAR );
+
+    addParameter( clear );
   }
 
 
@@ -175,17 +178,8 @@ public class SelectByIndex extends    DS_Attribute
     if( clear == CLEAR )
       select = false;
     
-    boolean  changed_it   = false;
     int      index_list[] = IntList.ToArray(index_str);
-    for( int i = 0; i < index_list.length; i++)
-    {
-      Data d = ds.getData_entry( index_list[i] );
-      if ( d != null )
-      {
-        d.setSelected( select );
-        changed_it = true;
-      }
-    }
+    boolean  changed_it = ds.setSelectFlagsByIndex( index_list, select );
   
     if ( select )
       ds.addLog_entry("Applied SelectByIndex() operator, " +
@@ -209,7 +203,7 @@ public class SelectByIndex extends    DS_Attribute
   */
   public static void main( String args[] )
   {
-    System.out.println("START OF TEST");
+    System.out.println("START OF TEST for SelectByIndex");
 
     DataSet[] dss = null;
     try
@@ -232,7 +226,7 @@ public class SelectByIndex extends    DS_Attribute
     {
       Data d = ds.getData_entry( i );
       if ( d.isSelected() )
-        System.out.print( ", " + i );
+        System.out.print( " " + i );
     }
     System.out.println();
 
