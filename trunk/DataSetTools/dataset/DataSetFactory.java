@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.50  2005/10/27 20:56:24  dennis
+ *  Added SelectByID() operator.
+ *
  *  Revision 1.49  2005/10/13 18:54:06  dennis
  *  Added operators to multiply and divide y-values by delta_X.
  *
@@ -355,6 +358,7 @@ public class DataSetFactory implements Serializable
     ds.addOperator( new GetField() );
     ds.addOperator( new SetField() );
     ds.addOperator( new SelectGroups() );
+    ds.addOperator( new SelectByID() );
     ds.addOperator( new SelectByIndex() );
     ds.addOperator( new GetSelectedIndices() );
     ds.addOperator( new ClearSelect() );
