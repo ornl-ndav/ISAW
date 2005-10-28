@@ -30,14 +30,15 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/10/28 15:39:15  dennis
+ * Fixed "spelling" error in javadoc comment.
+ *
  * Revision 1.2  2005/10/27 20:56:45  dennis
  * Removed unused imports.
  *
  * Revision 1.1  2005/09/05 22:05:33  dennis
  * Utility to translate Thomas Proffen's calibration file for NPDF
  * into detector position files that can be read by ISAW.
- *
- *
  */
 
 package DataSetTools.trial;
@@ -131,7 +132,7 @@ public class NPDF_Translate
    *  file.
    *
    *  @param  out_file_name   Name of the detector position file to write
-   *  @param  grids[]         Array of UniformGrids containint the detector
+   *  @param  grids           Array of UniformGrids containint the detector
    *                          position.
    *
    */
