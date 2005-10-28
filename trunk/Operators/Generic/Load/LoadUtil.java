@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.11  2005/10/28 15:44:28  dennis
+ * Minor fix to a javadoc comment.
+ *
  * Revision 1.10  2005/09/06 14:36:48  dennis
  * Minor reformatting to improve readability.
  *
@@ -103,6 +106,7 @@ import java.util.regex.*;
 import DataSetTools.gsastools.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
+
 /**
  *  This class contains static method for Loading detector information
  *  into a DataSet.  This is necesary if the raw data file does not 
@@ -348,6 +352,7 @@ public class LoadUtil
        return null;
     }
   }
+
 
   /**
    *  Get the specified entry from the hashtable and interpret it as
@@ -768,7 +773,8 @@ public class LoadUtil
   
   /**
    * Will transpose dimensions as specified in the Xlate array
-   * @param ds  The dataset with dimensions messed up
+   *
+   * @param ds     The dataset with dimensions messed up
    * @param Xlate  A translation array. [detector,col,row,time]=[3,2,1,0] 
    *               is natural ISAW dimension order. This array should contain
    *               corresponding dimension position  (a la C starting at 0) 
@@ -777,13 +783,14 @@ public class LoadUtil
    *               (a la C starting at 0) in the NeXus file, then the last 
    *               entry of of Xlate should be 2.If there is only one 
    *               detector, then the first entry of Xlate should be 3
-   * @param ntimes the #of times( not time bins if Histogram)
    * @param nrows  number of rows in all detectors in Nexus file
    * @param ncols the number of columns in all detectors
    *              (must be in separate NXdata if not same)
    * @param ndet  the number of detectors in this data set
    * @param Xscale  If the time dimension is not the first dimension, 
    *                this information must be given.
+   * @param isHistogram  Flag indicating whether or not the DataSet contains
+   *                     histogram data.
    * @return  A dataset with the data in the proper order.
    */
   public static Object Transpose( DataSet ds, 
@@ -793,7 +800,6 @@ public class LoadUtil
                                   int     ndet,
                                   XScale  Xscale, 
                                   boolean isHistogram){
-    
     
     if( ds ==null)
        return new ErrorString("DataSet does not exist");
@@ -844,7 +850,6 @@ public class LoadUtil
            mult[i] *= size[3-j];
    }
    
-   
     int Group_ID=1;
     for( int d=0; d <ndet; d++){
        P=d*mult[3];
@@ -875,8 +880,9 @@ public class LoadUtil
     }//row
     }//det
     return Res;
-   
   }
+
+
   /**
    * Test program for Transpose
    * @param args
@@ -884,8 +890,6 @@ public class LoadUtil
   public static void main( String args[]){
     DataSet[] DDs=null;
     try{
-      
-   
      DDs= Command.ScriptUtil.load( args[0]);
     }catch(Exception s){
       System.exit(0);
@@ -917,8 +921,9 @@ public class LoadUtil
     }catch(Exception s){
        System.out.println("Could not save:"+s);
     }
-    
   }
+
+
   private static void ShowUsage(){
       System.out.println(" There are 2 arguments");
       System.out.println("    argument 1: is the filename");
@@ -982,14 +987,10 @@ public class LoadUtil
      GsasCalib G=(GsasCalib)A;
      if(G.dif_a()==0)if( G.dif_c()==0)
         DD.removeData_entry(i);
-      
    }
    
    Command.ScriptUtil.display(DD,"Image View");
- 
   }
- 
-   
    
   
   /**
