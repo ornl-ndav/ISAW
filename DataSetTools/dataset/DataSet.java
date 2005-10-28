@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.50  2005/10/28 15:28:23  dennis
+ *  Fixed "spelling" error in four javadoc comments
+ *
  *  Revision 1.49  2005/10/27 20:44:50  dennis
  *  Added methods setSelectFlagsByID() and setSelectFlagsByIndex().
  *
@@ -574,7 +577,7 @@ public class DataSet implements IAttributeList,
    * makes multiple changes to only notify the Observers one time, after
    * completing all changes.
    * 
-   * @param  indicies[]   The list of indexs for which the selection
+   * @param  indicies     The list of indexs for which the selection
    *                      flag will be set to the specified value.
    *
    * @param  selected  The new value to set for the selected flag.
@@ -623,7 +626,7 @@ public class DataSet implements IAttributeList,
    * makes multiple changes to only notify the Observers one time, after
    * completing all changes.
    * 
-   * @param  group_ids[]   The list of group_ids for which the selection
+   * @param  group_ids     The list of group_ids for which the selection
    *                       flag will be set to the specified value.
    *
    * @param  selected  The new value to set for the selected flag.
@@ -1359,7 +1362,7 @@ public class DataSet implements IAttributeList,
    *       This method is more efficient than repeated calls to 
    *       removeData_entry() if many Data blocks are to be removed.
    *
-   * @param  list[]   The list of indices to be removed.
+   * @param  list   The list of indices to be removed.
    *
    * @return  true if some Data block was removed. 
    */
@@ -1423,7 +1426,7 @@ public class DataSet implements IAttributeList,
    * repeated calls to removeData_entry_with_id() if many Data blocks are
    * to be removed.
    *
-   * @param  group_ids[]   The list of group_ids to be removed.
+   * @param  group_ids   The list of group_ids to be removed.
    *
    * @return  true if some Data block was removed. 
    */
