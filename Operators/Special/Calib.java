@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2005/10/28 15:49:00  dennis
+ * Fixed "spelling" error in javadoc comment.
+ *
  * Revision 1.9  2005/08/25 15:18:25  dennis
  * Added/moved to menu category DATA_SET_TWEAK_MACROS
  *
@@ -477,13 +480,14 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
    
    /**
     * This method fixes Lansce Hippo files that are stored in their preNeXus mode
-    * @param DS-  The DataSet that is to be fixed
-    * @param calibFile- The specially formatted file with detector position information
-    * @param calibFile2- A GSAS parameter file with special lanl lines
+    * @param  DS          The DataSet that is to be fixed
+    * @param  calibFile   The specially formatted file with detector position information
+    * @param  calibFile2  A GSAS parameter file with special lanl lines
     * @return null or an ErrorString
     */
-   public static Object FixLansceHippoDataFiles( DataSet DS,String calibFile, 
-                                                    String calibFile2){
+   public static Object FixLansceHippoDataFiles( DataSet DS,
+                                                 String  calibFile, 
+                                                 String  calibFile2 ){
                                                       
      Operators.Generic.Load.LoadUtil.LoadDetectorInfo(DS, calibFile);
      File F = new File( calibFile2);
