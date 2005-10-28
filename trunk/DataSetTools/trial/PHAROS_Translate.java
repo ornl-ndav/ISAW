@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/10/28 15:39:16  dennis
+ * Fixed "spelling" error in javadoc comment.
+ *
  * Revision 1.2  2005/10/27 20:56:45  dennis
  * Removed unused imports.
  *
@@ -131,7 +134,7 @@ public class PHAROS_Translate
    *  file.
    *
    *  @param  out_file_name   Name of the detector position file to write
-   *  @param  grids[]         Array of UniformGrids containint the detector
+   *  @param  grids           Array of UniformGrids containint the detector
    *                          position.
    *
    */
