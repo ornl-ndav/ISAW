@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.71  2005/10/29 14:13:20  rmikk
+ * Fixed information on slow load problems.
+ * Hopefully Fixed error message with new installations caused by a 
+ *    different serial version? for the DataSet Operator List.
+ *
  * Revision 1.70  2005/10/27 21:13:17  rmikk
  * Incorporated the new opInfo structure correctly into the main program
  *
@@ -1678,7 +1683,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         
         if(Fin.readLong() != TimeStamp)
         {
-           String message = "Time stamp on cached operator file didn't match. \n" +
+           String message = "Time stamp on a vital class file didn't match. \n" +
                             "Searching for all available operators.... \n" +
                             "This is normal for the first time a version of ISAW is run \n" + 
                             "after it's modified; it will just take somewhat longer to start.";
@@ -1690,8 +1695,13 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         if(!S.equals( System.getProperty("java.class.path")))
            return Message("ClassPath did not match", Fin);
         
-        dsOpListI=(DataSetOperator[])Fin.readObject( );
-         
+        try{
+        
+          dsOpListI=(DataSetOperator[])Fin.readObject( );
+        }catch( Throwable s){
+            dsOpListI=null;
+            Message("DataSet operators have changed",Fin) ;
+        }
         Vector opListCopy=(Vector)(Fin.readObject());
         assign(opList, opListCopy);
         
