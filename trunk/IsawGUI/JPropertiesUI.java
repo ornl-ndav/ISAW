@@ -29,6 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2005/10/30 22:37:32  dennis
+ * The showAttributes() method now adds an instance of a RedrawPropertiesUI
+ * object to the Swing event queue, to do the actual drawing.  This fixes
+ * an intermittend bug on dual processor systems, due to altering and
+ * accessing the Vector of table rows simultaneously both in a non-Swing
+ * and in the Swing thread.  See: RedrawPropertiesUI.java
+ *
  * Revision 1.18  2005/03/30 01:08:13  dennis
  * Modified showAttributes() method to take an object
  * that implements IAttributeList.  This allows either
@@ -99,13 +106,15 @@ import javax.swing.border.*;
  *  @version 1.0
  */
 
-public class JPropertiesUI extends  JPanel implements IObserver, Serializable
+public class JPropertiesUI extends    JPanel 
+                           implements IObserver, Serializable
 {
   private JTable  table;
   private Data    data_shown = null;
 
   /**
-   *
+   *  Construct a new table for displaying the list of attributes from
+   *  a DataSet or Data object.
    */ 
   public JPropertiesUI()
   {
@@ -130,11 +139,14 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
     );
 
     showAttributes( null );
+    new ExcelAdapter(table);
   }  
  
 
   /**
+   *  Get a reference to the actual JTable displaying the attributes
    *
+   *  @return   A reference to the JTable.
    */ 
   public JTable getPropsTable()
   {
@@ -150,33 +162,11 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
    */
   public void showAttributes( IAttributeList attr_list )
   {
-    DefaultTableModel dtm = (DefaultTableModel)table.getModel();
+    // Instead of actually drawing the table, possibly in a non-Swing thread,
+    // make a new Runnable to do the drawing, and put the Runnable in the
+    // Swing event queue.
 
-    int n_rows = dtm.getRowCount();          // empty the table
-                                             // headings counts as 1 row
-    for ( int i = n_rows-1; i >= 0; i-- )
-      dtm.removeRow(i);
-
-    if ( attr_list != null )
-    {
-      if ( attr_list instanceof DataSet )    // show the DS title
-      {
-        Vector ds_name_row = new Vector(2);
-        ds_name_row.addElement( "DataSet Tag:Title" ); 
-        ds_name_row.addElement( ((DataSet)attr_list).toString() ); 
-        dtm.addRow( ds_name_row );
-      }
-                                             // show the attributes
-      for ( int i=0; i < attr_list.getNum_attributes(); i++ )
-      {
-        Attribute attr = attr_list.getAttribute(i);
-        Vector row_data = new Vector(2);
-        row_data.addElement(attr.getName()); 
-        row_data.addElement(attr.getStringValue());
-        dtm.addRow( row_data );
-      }
-    }
-    ExcelAdapter myAd = new ExcelAdapter(table);
+    SwingUtilities.invokeLater( new RedrawPropertiesUI( table, attr_list ) );
 
     data_shown = null;  // Reset the data_shown variable.  If this is called
                         // from outside this class, to display some arbitrary
