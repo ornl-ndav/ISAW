@@ -1,0 +1,1763 @@
+Instrument_Type   1
+Initial_Path     32.0
+Num_Grids  160
+#
+Grid_ID   1000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 0.84198964 0.57459944
+X_vector  0.28840306 -0.18021427 0.940397
+Y_vector  0.5299193 0.84804803 0.0
+First_Index 1
+#
+Grid_ID   2000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 0.84128594 0.5493034
+X_vector  0.2772967 -0.17327422 0.9450305
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 51
+#
+Grid_ID   3000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 0.8408115 0.5240067
+X_vector  0.26594356 -0.16617993 0.9495569
+Y_vector  0.5299192 0.8480482 0.0
+First_Index 101
+#
+Grid_ID   4000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 0.840577 0.49871004
+X_vector  0.25435033 -0.15893576 0.953963
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 151
+#
+Grid_ID   5000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 0.840577 0.4734144
+X_vector  0.2425301 -0.15154964 0.9582337
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 201
+#
+Grid_ID   6000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 0.8408115 0.4481165
+X_vector  0.23049326 -0.14402814 0.96235585
+Y_vector  0.5299192 0.8480482 0.0
+First_Index 251
+#
+Grid_ID   7000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 0.84128594 0.42282116
+X_vector  0.218254 -0.13638026 0.9663155
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 301
+#
+Grid_ID   8000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 0.84198964 0.39752516
+X_vector  0.20582794 -0.12861559 0.97009945
+Y_vector  0.5299193 0.84804803 0.0
+First_Index 351
+#
+Grid_ID   9000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 0.84198964 0.337813
+X_vector  0.1763598 -0.11020186 0.97813743
+Y_vector  0.5299193 0.84804803 0.0
+First_Index 401
+#
+Grid_ID   10000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 0.84128594 0.31157443
+X_vector  0.1633208 -0.10205417 0.98128045
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 451
+#
+Grid_ID   11000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 0.8408115 0.28533152
+X_vector  0.1500964 -0.09379061 0.9842126
+Y_vector  0.5299192 0.8480482 0.0
+First_Index 501
+#
+Grid_ID   12000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 0.840577 0.25908992
+X_vector  0.13670547 -0.085423075 0.9869218
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 551
+#
+Grid_ID   13000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 0.840577 0.23284976
+X_vector  0.12316832 -0.07696412 0.98939687
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 601
+#
+Grid_ID   14000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 0.8408115 0.20660758
+X_vector  0.10950321 -0.068425186 0.99162847
+Y_vector  0.5299192 0.8480482 0.0
+First_Index 651
+#
+Grid_ID   15000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 0.84128594 0.18036942
+X_vector  0.09573362 -0.059821013 0.9936079
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 701
+#
+Grid_ID   16000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 0.84198964 0.15412681
+X_vector  0.08187814 -0.051163148 0.99532825
+Y_vector  0.5299193 0.84804803 0.0
+First_Index 751
+#
+Grid_ID   17000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 0.84198964 0.09295252
+X_vector  0.04952708 -0.030947959 0.9982932
+Y_vector  0.5299193 0.84804803 0.0
+First_Index 801
+#
+Grid_ID   18000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 0.84128594 0.06639597
+X_vector  0.035436336 -0.022143083 0.9991267
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 851
+#
+Grid_ID   19000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 0.8408115 0.039836653
+X_vector  0.021285193 -0.013300462 0.999685
+Y_vector  0.5299192 0.8480482 0.0
+First_Index 901
+#
+Grid_ID   20000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 0.840577 0.013280163
+X_vector  0.0070997146 -0.0044363947 0.99996495
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 951
+#
+Grid_ID   21000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 0.840577 -0.013280163
+X_vector  -0.0070997146 0.0044363947 0.99996495
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 1001
+#
+Grid_ID   22000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 0.8408115 -0.039836653
+X_vector  -0.021285193 0.013300462 0.999685
+Y_vector  0.5299192 0.8480482 0.0
+First_Index 1051
+#
+Grid_ID   23000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 0.84128594 -0.06639597
+X_vector  -0.035436336 0.022143083 0.9991267
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 1101
+#
+Grid_ID   24000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 0.84198964 -0.09295252
+X_vector  -0.04952708 0.030947959 0.9982932
+Y_vector  0.5299193 0.84804803 0.0
+First_Index 1151
+#
+Grid_ID   25000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 0.84198964 -0.15412681
+X_vector  -0.08187814 0.051163148 0.99532825
+Y_vector  0.5299193 0.84804803 0.0
+First_Index 1201
+#
+Grid_ID   26000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 0.84128594 -0.18036942
+X_vector  -0.09573362 0.059821013 0.9936079
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 1251
+#
+Grid_ID   27000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 0.8408115 -0.20660758
+X_vector  -0.10950321 0.068425186 0.99162847
+Y_vector  0.5299192 0.8480482 0.0
+First_Index 1301
+#
+Grid_ID   28000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 0.840577 -0.23284976
+X_vector  -0.12316832 0.07696412 0.98939687
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 1351
+#
+Grid_ID   29000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 0.840577 -0.25908992
+X_vector  -0.13670547 0.085423075 0.9869218
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 1401
+#
+Grid_ID   30000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 0.8408115 -0.28533152
+X_vector  -0.1500964 0.09379061 0.9842126
+Y_vector  0.5299192 0.8480482 0.0
+First_Index 1451
+#
+Grid_ID   31000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 0.84128594 -0.31157443
+X_vector  -0.1633208 0.10205417 0.98128045
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 1501
+#
+Grid_ID   32000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 0.84198964 -0.337813
+X_vector  -0.1763598 0.11020186 0.97813743
+Y_vector  0.5299193 0.84804803 0.0
+First_Index 1551
+#
+Grid_ID   33000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 0.84198964 -0.39752516
+X_vector  -0.20582794 0.12861559 0.97009945
+Y_vector  0.5299193 0.84804803 0.0
+First_Index 1601
+#
+Grid_ID   34000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 0.84128594 -0.42282116
+X_vector  -0.218254 0.13638026 0.9663155
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 1651
+#
+Grid_ID   35000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 0.8408115 -0.4481165
+X_vector  -0.23049326 0.14402814 0.96235585
+Y_vector  0.5299192 0.8480482 0.0
+First_Index 1701
+#
+Grid_ID   36000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 0.840577 -0.4734144
+X_vector  -0.2425301 0.15154964 0.9582337
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 1751
+#
+Grid_ID   37000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 0.840577 -0.49871004
+X_vector  -0.25435033 0.15893576 0.953963
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 1801
+#
+Grid_ID   38000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 0.8408115 -0.5240067
+X_vector  -0.26594356 0.16617993 0.9495569
+Y_vector  0.5299192 0.8480482 0.0
+First_Index 1851
+#
+Grid_ID   39000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 0.84128594 -0.5493034
+X_vector  -0.2772967 0.17327422 0.9450305
+Y_vector  0.5299193 0.8480481 0.0
+First_Index 1901
+#
+Grid_ID   40000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 0.84198964 -0.57459944
+X_vector  -0.28840306 0.18021427 0.940397
+Y_vector  0.5299193 0.84804803 0.0
+First_Index 1951
+#
+Grid_ID   41000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 -0.84198964 -0.57459944
+X_vector  0.28840306 0.18021427 -0.940397
+Y_vector  0.5299193 -0.84804803 0.0
+First_Index 2001
+#
+Grid_ID   42000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 -0.84128594 -0.5493034
+X_vector  0.2772967 0.17327422 -0.9450305
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 2051
+#
+Grid_ID   43000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 -0.8408115 -0.5240067
+X_vector  0.26594356 0.16617993 -0.9495569
+Y_vector  0.5299192 -0.8480482 0.0
+First_Index 2101
+#
+Grid_ID   44000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 -0.840577 -0.49871004
+X_vector  0.25435033 0.15893576 -0.953963
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 2151
+#
+Grid_ID   45000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 -0.840577 -0.4734144
+X_vector  0.2425301 0.15154964 -0.9582337
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 2201
+#
+Grid_ID   46000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 -0.8408115 -0.4481165
+X_vector  0.23049326 0.14402814 -0.96235585
+Y_vector  0.5299192 -0.8480482 0.0
+First_Index 2251
+#
+Grid_ID   47000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 -0.84128594 -0.42282116
+X_vector  0.218254 0.13638026 -0.9663155
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 2301
+#
+Grid_ID   48000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 -0.84198964 -0.39752516
+X_vector  0.20582794 0.12861559 -0.97009945
+Y_vector  0.5299193 -0.84804803 0.0
+First_Index 2351
+#
+Grid_ID   49000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 -0.84198964 -0.337813
+X_vector  0.1763598 0.11020186 -0.97813743
+Y_vector  0.5299193 -0.84804803 0.0
+First_Index 2401
+#
+Grid_ID   50000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 -0.84128594 -0.31157443
+X_vector  0.1633208 0.10205417 -0.98128045
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 2451
+#
+Grid_ID   51000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 -0.8408115 -0.28533152
+X_vector  0.1500964 0.09379061 -0.9842126
+Y_vector  0.5299192 -0.8480482 0.0
+First_Index 2501
+#
+Grid_ID   52000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 -0.840577 -0.25908992
+X_vector  0.13670547 0.085423075 -0.9869218
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 2551
+#
+Grid_ID   53000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 -0.840577 -0.23284976
+X_vector  0.12316832 0.07696412 -0.98939687
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 2601
+#
+Grid_ID   54000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 -0.8408115 -0.20660758
+X_vector  0.10950321 0.068425186 -0.99162847
+Y_vector  0.5299192 -0.8480482 0.0
+First_Index 2651
+#
+Grid_ID   55000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 -0.84128594 -0.18036942
+X_vector  0.09573362 0.059821013 -0.9936079
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 2701
+#
+Grid_ID   56000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 -0.84198964 -0.15412681
+X_vector  0.08187814 0.051163148 -0.99532825
+Y_vector  0.5299193 -0.84804803 0.0
+First_Index 2751
+#
+Grid_ID   57000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 -0.84198964 -0.09295252
+X_vector  0.04952708 0.030947959 -0.9982932
+Y_vector  0.5299193 -0.84804803 0.0
+First_Index 2801
+#
+Grid_ID   58000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 -0.84128594 -0.06639597
+X_vector  0.035436336 0.022143083 -0.9991267
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 2851
+#
+Grid_ID   59000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 -0.8408115 -0.039836653
+X_vector  0.021285193 0.013300462 -0.999685
+Y_vector  0.5299192 -0.8480482 0.0
+First_Index 2901
+#
+Grid_ID   60000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 -0.840577 -0.013280163
+X_vector  0.0070997146 0.0044363947 -0.99996495
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 2951
+#
+Grid_ID   61000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 -0.840577 0.013280163
+X_vector  -0.0070997146 -0.0044363947 -0.99996495
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 3001
+#
+Grid_ID   62000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 -0.8408115 0.039836653
+X_vector  -0.021285193 -0.013300462 -0.999685
+Y_vector  0.5299192 -0.8480482 0.0
+First_Index 3051
+#
+Grid_ID   63000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 -0.84128594 0.06639597
+X_vector  -0.035436336 -0.022143083 -0.9991267
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 3101
+#
+Grid_ID   64000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 -0.84198964 0.09295252
+X_vector  -0.04952708 -0.030947959 -0.9982932
+Y_vector  0.5299193 -0.84804803 0.0
+First_Index 3151
+#
+Grid_ID   65000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 -0.84198964 0.15412681
+X_vector  -0.08187814 -0.051163148 -0.99532825
+Y_vector  0.5299193 -0.84804803 0.0
+First_Index 3201
+#
+Grid_ID   66000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 -0.84128594 0.18036942
+X_vector  -0.09573362 -0.059821013 -0.9936079
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 3251
+#
+Grid_ID   67000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 -0.8408115 0.20660758
+X_vector  -0.10950321 -0.068425186 -0.99162847
+Y_vector  0.5299192 -0.8480482 0.0
+First_Index 3301
+#
+Grid_ID   68000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 -0.840577 0.23284976
+X_vector  -0.12316832 -0.07696412 -0.98939687
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 3351
+#
+Grid_ID   69000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 -0.840577 0.25908992
+X_vector  -0.13670547 -0.085423075 -0.9869218
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 3401
+#
+Grid_ID   70000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 -0.8408115 0.28533152
+X_vector  -0.1500964 -0.09379061 -0.9842126
+Y_vector  0.5299192 -0.8480482 0.0
+First_Index 3451
+#
+Grid_ID   71000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 -0.84128594 0.31157443
+X_vector  -0.1633208 -0.10205417 -0.98128045
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 3501
+#
+Grid_ID   72000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 -0.84198964 0.337813
+X_vector  -0.1763598 -0.11020186 -0.97813743
+Y_vector  0.5299193 -0.84804803 0.0
+First_Index 3551
+#
+Grid_ID   73000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 -0.84198964 0.39752516
+X_vector  -0.20582794 -0.12861559 -0.97009945
+Y_vector  0.5299193 -0.84804803 0.0
+First_Index 3601
+#
+Grid_ID   74000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 -0.84128594 0.42282116
+X_vector  -0.218254 -0.13638026 -0.9663155
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 3651
+#
+Grid_ID   75000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 -0.8408115 0.4481165
+X_vector  -0.23049326 -0.14402814 -0.96235585
+Y_vector  0.5299192 -0.8480482 0.0
+First_Index 3701
+#
+Grid_ID   76000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 -0.840577 0.4734144
+X_vector  -0.2425301 -0.15154964 -0.9582337
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 3751
+#
+Grid_ID   77000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -1.3452044 -0.840577 0.49871004
+X_vector  -0.25435033 -0.15893576 -0.953963
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 3801
+#
+Grid_ID   78000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -1.3455796 -0.8408115 0.5240067
+X_vector  -0.26594356 -0.16617993 -0.9495569
+Y_vector  0.5299192 -0.8480482 0.0
+First_Index 3851
+#
+Grid_ID   79000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999887
+Depth     0.0254
+Center    -1.346339 -0.84128594 0.5493034
+X_vector  -0.2772967 -0.17327422 -0.9450305
+Y_vector  0.5299193 -0.8480481 0.0
+First_Index 3901
+#
+Grid_ID   80000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -1.3474652 -0.84198964 0.57459944
+X_vector  -0.28840306 -0.18021427 -0.940397
+Y_vector  0.5299193 -0.84804803 0.0
+First_Index 3951
+#
+Grid_ID   81000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 1.3896849 0.57459944
+X_vector  0.16487338 -0.2974395 0.940397
+Y_vector  0.8746198 0.48480958 0.0
+First_Index 4001
+#
+Grid_ID   82000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 1.3885233 0.5493034
+X_vector  0.15852416 -0.28598514 0.9450305
+Y_vector  0.8746197 0.48480964 0.0
+First_Index 4051
+#
+Grid_ID   83000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 1.3877404 0.5240067
+X_vector  0.15203378 -0.27427626 0.9495569
+Y_vector  0.8746198 0.48480955 0.0
+First_Index 4101
+#
+Grid_ID   84000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 1.3873532 0.49871004
+X_vector  0.14540623 -0.2623198 0.953963
+Y_vector  0.8746197 0.4848096 0.0
+First_Index 4151
+#
+Grid_ID   85000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 1.3873532 0.4734144
+X_vector  0.13864888 -0.25012922 0.9582337
+Y_vector  0.8746197 0.4848096 0.0
+First_Index 4201
+#
+Grid_ID   86000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 1.3877404 0.4481165
+X_vector  0.13176766 -0.23771521 0.96235585
+Y_vector  0.8746198 0.48480955 0.0
+First_Index 4251
+#
+Grid_ID   87000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 1.3885233 0.42282116
+X_vector  0.12477081 -0.2250925 0.9663155
+Y_vector  0.8746197 0.48480964 0.0
+First_Index 4301
+#
+Grid_ID   88000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 1.3896849 0.39752516
+X_vector  0.11766708 -0.21227707 0.97009945
+Y_vector  0.8746198 0.48480958 0.0
+First_Index 4351
+#
+Grid_ID   89000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 1.3896849 0.337813
+X_vector  0.10082084 -0.18188564 0.97813743
+Y_vector  0.8746198 0.48480958 0.0
+First_Index 4401
+#
+Grid_ID   90000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 1.3885233 0.31157443
+X_vector  0.09336675 -0.16843808 0.98128045
+Y_vector  0.8746197 0.48480964 0.0
+First_Index 4451
+#
+Grid_ID   91000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 1.3877404 0.28533152
+X_vector  0.08580663 -0.1547993 0.9842126
+Y_vector  0.8746198 0.48480955 0.0
+First_Index 4501
+#
+Grid_ID   92000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 1.3873532 0.25908992
+X_vector  0.07815138 -0.14098884 0.9869217
+Y_vector  0.8746197 0.4848096 0.0
+First_Index 4551
+#
+Grid_ID   93000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 1.3873532 0.23284976
+X_vector  0.0704125 -0.12702753 0.98939687
+Y_vector  0.8746197 0.4848096 0.0
+First_Index 4601
+#
+Grid_ID   94000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 1.3877404 0.20660758
+X_vector  0.062600456 -0.11293424 0.99162847
+Y_vector  0.8746198 0.48480955 0.0
+First_Index 4651
+#
+Grid_ID   95000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 1.3885233 0.18036942
+X_vector  0.054728713 -0.09873321 0.9936079
+Y_vector  0.8746197 0.48480964 0.0
+First_Index 4701
+#
+Grid_ID   96000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 1.3896849 0.15412681
+X_vector  0.046807844 -0.0844436 0.99532825
+Y_vector  0.8746198 0.48480958 0.0
+First_Index 4751
+#
+Grid_ID   97000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 1.3896849 0.09295252
+X_vector  0.028313488 -0.051078893 0.9982932
+Y_vector  0.8746198 0.48480958 0.0
+First_Index 4801
+#
+Grid_ID   98000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 1.3885233 0.06639597
+X_vector  0.02025814 -0.03654665 0.9991266
+Y_vector  0.8746197 0.48480964 0.0
+First_Index 4851
+#
+Grid_ID   99000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 1.3877404 0.039836653
+X_vector  0.012168252 -0.021952113 0.999685
+Y_vector  0.8746198 0.48480955 0.0
+First_Index 4901
+#
+Grid_ID   100000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 1.3873532 0.013280163
+X_vector  0.004058744 -0.0073221675 0.99996495
+Y_vector  0.8746197 0.4848096 0.0
+First_Index 4951
+#
+Grid_ID   101000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 1.3873532 -0.013280163
+X_vector  -0.004058744 0.0073221675 0.99996495
+Y_vector  0.8746197 0.4848096 0.0
+First_Index 5001
+#
+Grid_ID   102000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 1.3877404 -0.039836653
+X_vector  -0.012168252 0.021952113 0.999685
+Y_vector  0.8746198 0.48480955 0.0
+First_Index 5051
+#
+Grid_ID   103000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 1.3885233 -0.06639597
+X_vector  -0.02025814 0.03654665 0.9991266
+Y_vector  0.8746197 0.48480964 0.0
+First_Index 5101
+#
+Grid_ID   104000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 1.3896849 -0.09295252
+X_vector  -0.028313488 0.051078893 0.9982932
+Y_vector  0.8746198 0.48480958 0.0
+First_Index 5151
+#
+Grid_ID   105000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 1.3896849 -0.15412681
+X_vector  -0.046807844 0.0844436 0.99532825
+Y_vector  0.8746198 0.48480958 0.0
+First_Index 5201
+#
+Grid_ID   106000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 1.3885233 -0.18036942
+X_vector  -0.054728713 0.09873321 0.9936079
+Y_vector  0.8746197 0.48480964 0.0
+First_Index 5251
+#
+Grid_ID   107000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 1.3877404 -0.20660758
+X_vector  -0.062600456 0.11293424 0.99162847
+Y_vector  0.8746198 0.48480955 0.0
+First_Index 5301
+#
+Grid_ID   108000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 1.3873532 -0.23284976
+X_vector  -0.0704125 0.12702753 0.98939687
+Y_vector  0.8746197 0.4848096 0.0
+First_Index 5351
+#
+Grid_ID   109000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 1.3873532 -0.25908992
+X_vector  -0.07815138 0.14098884 0.9869217
+Y_vector  0.8746197 0.4848096 0.0
+First_Index 5401
+#
+Grid_ID   110000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 1.3877404 -0.28533152
+X_vector  -0.08580663 0.1547993 0.9842126
+Y_vector  0.8746198 0.48480955 0.0
+First_Index 5451
+#
+Grid_ID   111000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 1.3885233 -0.31157443
+X_vector  -0.09336675 0.16843808 0.98128045
+Y_vector  0.8746197 0.48480964 0.0
+First_Index 5501
+#
+Grid_ID   112000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 1.3896849 -0.337813
+X_vector  -0.10082084 0.18188564 0.97813743
+Y_vector  0.8746198 0.48480958 0.0
+First_Index 5551
+#
+Grid_ID   113000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 1.3896849 -0.39752516
+X_vector  -0.11766708 0.21227707 0.97009945
+Y_vector  0.8746198 0.48480958 0.0
+First_Index 5601
+#
+Grid_ID   114000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 1.3885233 -0.42282116
+X_vector  -0.12477081 0.2250925 0.9663155
+Y_vector  0.8746197 0.48480964 0.0
+First_Index 5651
+#
+Grid_ID   115000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 1.3877404 -0.4481165
+X_vector  -0.13176766 0.23771521 0.96235585
+Y_vector  0.8746198 0.48480955 0.0
+First_Index 5701
+#
+Grid_ID   116000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 1.3873532 -0.4734144
+X_vector  -0.13864888 0.25012922 0.9582337
+Y_vector  0.8746197 0.4848096 0.0
+First_Index 5751
+#
+Grid_ID   117000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 1.3873532 -0.49871004
+X_vector  -0.14540623 0.2623198 0.953963
+Y_vector  0.8746197 0.4848096 0.0
+First_Index 5801
+#
+Grid_ID   118000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 1.3877404 -0.5240067
+X_vector  -0.15203378 0.27427626 0.9495569
+Y_vector  0.8746198 0.48480955 0.0
+First_Index 5851
+#
+Grid_ID   119000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 1.3885233 -0.5493034
+X_vector  -0.15852416 0.28598514 0.9450305
+Y_vector  0.8746197 0.48480964 0.0
+First_Index 5901
+#
+Grid_ID   120000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 1.3896849 -0.57459944
+X_vector  -0.16487338 0.2974395 0.940397
+Y_vector  0.8746198 0.48480958 0.0
+First_Index 5951
+#
+Grid_ID   121000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 -1.3896849 -0.57459944
+X_vector  0.16487338 0.2974395 -0.940397
+Y_vector  0.8746198 -0.48480958 0.0
+First_Index 6001
+#
+Grid_ID   122000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 -1.3885233 -0.5493034
+X_vector  0.15852416 0.28598514 -0.9450305
+Y_vector  0.8746197 -0.48480964 0.0
+First_Index 6051
+#
+Grid_ID   123000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 -1.3877404 -0.5240067
+X_vector  0.15203378 0.27427626 -0.9495569
+Y_vector  0.8746198 -0.48480955 0.0
+First_Index 6101
+#
+Grid_ID   124000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 -1.3873532 -0.49871004
+X_vector  0.14540623 0.2623198 -0.953963
+Y_vector  0.8746197 -0.4848096 0.0
+First_Index 6151
+#
+Grid_ID   125000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 -1.3873532 -0.4734144
+X_vector  0.13864888 0.25012922 -0.9582337
+Y_vector  0.8746197 -0.4848096 0.0
+First_Index 6201
+#
+Grid_ID   126000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 -1.3877404 -0.4481165
+X_vector  0.13176766 0.23771521 -0.96235585
+Y_vector  0.8746198 -0.48480955 0.0
+First_Index 6251
+#
+Grid_ID   127000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 -1.3885233 -0.42282116
+X_vector  0.12477081 0.2250925 -0.9663155
+Y_vector  0.8746197 -0.48480964 0.0
+First_Index 6301
+#
+Grid_ID   128000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 -1.3896849 -0.39752516
+X_vector  0.11766708 0.21227707 -0.97009945
+Y_vector  0.8746198 -0.48480958 0.0
+First_Index 6351
+#
+Grid_ID   129000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 -1.3896849 -0.337813
+X_vector  0.10082084 0.18188564 -0.97813743
+Y_vector  0.8746198 -0.48480958 0.0
+First_Index 6401
+#
+Grid_ID   130000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 -1.3885233 -0.31157443
+X_vector  0.09336675 0.16843808 -0.98128045
+Y_vector  0.8746197 -0.48480964 0.0
+First_Index 6451
+#
+Grid_ID   131000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 -1.3877404 -0.28533152
+X_vector  0.08580663 0.1547993 -0.9842126
+Y_vector  0.8746198 -0.48480955 0.0
+First_Index 6501
+#
+Grid_ID   132000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 -1.3873532 -0.25908992
+X_vector  0.07815138 0.14098884 -0.9869217
+Y_vector  0.8746197 -0.4848096 0.0
+First_Index 6551
+#
+Grid_ID   133000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 -1.3873532 -0.23284976
+X_vector  0.0704125 0.12702753 -0.98939687
+Y_vector  0.8746197 -0.4848096 0.0
+First_Index 6601
+#
+Grid_ID   134000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 -1.3877404 -0.20660758
+X_vector  0.062600456 0.11293424 -0.99162847
+Y_vector  0.8746198 -0.48480955 0.0
+First_Index 6651
+#
+Grid_ID   135000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 -1.3885233 -0.18036942
+X_vector  0.054728713 0.09873321 -0.9936079
+Y_vector  0.8746197 -0.48480964 0.0
+First_Index 6701
+#
+Grid_ID   136000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 -1.3896849 -0.15412681
+X_vector  0.046807844 0.0844436 -0.99532825
+Y_vector  0.8746198 -0.48480958 0.0
+First_Index 6751
+#
+Grid_ID   137000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 -1.3896849 -0.09295252
+X_vector  0.028313488 0.051078893 -0.9982932
+Y_vector  0.8746198 -0.48480958 0.0
+First_Index 6801
+#
+Grid_ID   138000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 -1.3885233 -0.06639597
+X_vector  0.02025814 0.03654665 -0.9991266
+Y_vector  0.8746197 -0.48480964 0.0
+First_Index 6851
+#
+Grid_ID   139000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 -1.3877404 -0.039836653
+X_vector  0.012168252 0.021952113 -0.999685
+Y_vector  0.8746198 -0.48480955 0.0
+First_Index 6901
+#
+Grid_ID   140000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 -1.3873532 -0.013280163
+X_vector  0.004058744 0.0073221675 -0.99996495
+Y_vector  0.8746197 -0.4848096 0.0
+First_Index 6951
+#
+Grid_ID   141000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 -1.3873532 0.013280163
+X_vector  -0.004058744 -0.0073221675 -0.99996495
+Y_vector  0.8746197 -0.4848096 0.0
+First_Index 7001
+#
+Grid_ID   142000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 -1.3877404 0.039836653
+X_vector  -0.012168252 -0.021952113 -0.999685
+Y_vector  0.8746198 -0.48480955 0.0
+First_Index 7051
+#
+Grid_ID   143000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 -1.3885233 0.06639597
+X_vector  -0.02025814 -0.03654665 -0.9991266
+Y_vector  0.8746197 -0.48480964 0.0
+First_Index 7101
+#
+Grid_ID   144000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 -1.3896849 0.09295252
+X_vector  -0.028313488 -0.051078893 -0.9982932
+Y_vector  0.8746198 -0.48480958 0.0
+First_Index 7151
+#
+Grid_ID   145000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 -1.3896849 0.15412681
+X_vector  -0.046807844 -0.0844436 -0.99532825
+Y_vector  0.8746198 -0.48480958 0.0
+First_Index 7201
+#
+Grid_ID   146000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 -1.3885233 0.18036942
+X_vector  -0.054728713 -0.09873321 -0.9936079
+Y_vector  0.8746197 -0.48480964 0.0
+First_Index 7251
+#
+Grid_ID   147000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 -1.3877404 0.20660758
+X_vector  -0.062600456 -0.11293424 -0.99162847
+Y_vector  0.8746198 -0.48480955 0.0
+First_Index 7301
+#
+Grid_ID   148000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 -1.3873532 0.23284976
+X_vector  -0.0704125 -0.12702753 -0.98939687
+Y_vector  0.8746197 -0.4848096 0.0
+First_Index 7351
+#
+Grid_ID   149000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 -1.3873532 0.25908992
+X_vector  -0.07815138 -0.14098884 -0.9869217
+Y_vector  0.8746197 -0.4848096 0.0
+First_Index 7401
+#
+Grid_ID   150000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 -1.3877404 0.28533152
+X_vector  -0.08580663 -0.1547993 -0.9842126
+Y_vector  0.8746198 -0.48480955 0.0
+First_Index 7451
+#
+Grid_ID   151000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 -1.3885233 0.31157443
+X_vector  -0.09336675 -0.16843808 -0.98128045
+Y_vector  0.8746197 -0.48480964 0.0
+First_Index 7501
+#
+Grid_ID   152000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 -1.3896849 0.337813
+X_vector  -0.10082084 -0.18188564 -0.97813743
+Y_vector  0.8746198 -0.48480958 0.0
+First_Index 7551
+#
+Grid_ID   153000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 -1.3896849 0.39752516
+X_vector  -0.11766708 -0.21227707 -0.97009945
+Y_vector  0.8746198 -0.48480958 0.0
+First_Index 7601
+#
+Grid_ID   154000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 -1.3885233 0.42282116
+X_vector  -0.12477081 -0.2250925 -0.9663155
+Y_vector  0.8746197 -0.48480964 0.0
+First_Index 7651
+#
+Grid_ID   155000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 -1.3877404 0.4481165
+X_vector  -0.13176766 -0.23771521 -0.96235585
+Y_vector  0.8746198 -0.48480955 0.0
+First_Index 7701
+#
+Grid_ID   156000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 -1.3873532 0.4734144
+X_vector  -0.13864888 -0.25012922 -0.9582337
+Y_vector  0.8746197 -0.4848096 0.0
+First_Index 7751
+#
+Grid_ID   157000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000005
+Depth     0.0254
+Center    -0.76902246 -1.3873532 0.49871004
+X_vector  -0.14540623 -0.2623198 -0.953963
+Y_vector  0.8746197 -0.4848096 0.0
+First_Index 7801
+#
+Grid_ID   158000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.4999963
+Depth     0.0254
+Center    -0.769237 -1.3877404 0.5240067
+X_vector  -0.15203378 -0.27427626 -0.9495569
+Y_vector  0.8746198 -0.48480955 0.0
+First_Index 7851
+#
+Grid_ID   159000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.49999896
+Depth     0.0254
+Center    -0.7696711 -1.3885233 0.5493034
+X_vector  -0.15852416 -0.28598514 -0.9450305
+Y_vector  0.8746197 -0.48480964 0.0
+First_Index 7901
+#
+Grid_ID   160000
+Num_Rows  50
+Num_Cols  1
+Width     0.0254
+Height    0.5000023
+Depth     0.0254
+Center    -0.7703149 -1.3896849 0.57459944
+X_vector  -0.16487338 -0.2974395 -0.940397
+Y_vector  0.8746198 -0.48480958 0.0
+First_Index 7951
