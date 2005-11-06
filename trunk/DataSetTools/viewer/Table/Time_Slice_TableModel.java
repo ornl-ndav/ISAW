@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2005/11/06 16:30:05  rmikk
+ * updated to make accessing data elements faster
+ *
  * Revision 1.25  2005/05/25 19:37:51  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -166,7 +169,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    int DetNum = -1;
    int[] DetNums=null;
    UniformGrid grid = null;
-   Data[][] Groups = null;
+   int[][] Groups = null;
    int num_rows,num_cols;
    XScale x_scale = null;
    int firstGroup =-1;
@@ -350,7 +353,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
       row = row + tMinrow;// -1;
       column = column + tMincol;// - 1;
-      int Grp = DS.getIndex_of_data(Groups[ row+1][ column+1]);
+      int Grp = Groups[1+row][1+column/n];
           //RC_to_Group[row * ( MaxCol ) + column / n];
 
       // if( doo)
@@ -446,15 +449,26 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
    /** Returns the y value of the data set associated with the row and column at the time
     * that has been set
+    * @param   row the row of the display.  row=0 is tMinrow
+    * @param   column  the column in the display  column=0 is tMincol
     */
    public Object getValueAt( int row, int column )
    {
-
-      int Grp = getGroup( row, column );
+     
+     /* int Grp = getGroup( row, column );
       if( Grp < 0 )
          return "";
       if( Grp >= DS.getNum_entries() )
          return "";
+     */
+     if( row <0) return "";
+     if( column < 0) return "";
+     if( row >=getRowCount())
+       return "";
+     if( column >= getColumnCount())
+        return "";
+     if (Groups==null) return "";
+     if( row+ tMinrow +1 >= Groups.length) return "";
       //XScale xscl =DS.getData_entry( Grp ).getX_scale();
      // float[] xvals = DS.getData_entry( Grp ).getX_scale().getXs();
 
@@ -479,10 +493,15 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       int n = 1;
       if( err ) n++;
       if( ind ) n++;
+
+      if( column/n + tMincol+1 >= Groups[0].length) return "";
       int field = column - n * ( column / n );
 
       float[] yvals = null;
-      Data db = (Data)(DS.getData_entry( Grp).clone());
+      int index =Groups[1+tMinrow+row][1+tMincol+column/n];
+      if( index < 0)
+         return "";
+      Data db = DS.getData_entry(index);
      // if( x_scale != null)
      //   db.resample( x_scale,0);
      // XScale xscl;
@@ -501,7 +520,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       else if( field == 1 && err )
          yvals = db.getErrors();
       else
-         return new Integer(Grp);//returns group index instead of time index
+         return new Integer(index);//returns group index instead of time index
 
       
       return SumVals(x_scale,db.getX_scale(),Time, yvals);
@@ -623,10 +642,19 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    public void SetUpGroups(){
       num_rows = grid.num_rows();
       num_cols = grid.num_cols();
-      Groups = new Data[ 1+ num_rows][1+num_cols];
-      for( int row = 1; row <= num_rows; row++)
-        for( int col = 1; col <= num_cols; col++)
-           Groups[row][col] = grid.getData_entry(row,col);
+      Groups = new int[ 1+ num_rows][1+num_cols];
+      for( int i=0; i< num_rows+1; i++)
+         Arrays.fill(Groups[i],-1);
+      for( int i=0; i< DS.getNum_entries();i++){
+         Object O= (new DataSetTools.operator.DataSet.Attribute.GetPixelInfo_op(DS,i)).getResult();
+         if((O instanceof Vector)) {
+            int col = ((Integer)((Vector)O).firstElement()).intValue();
+            int row = ((Integer)((Vector)O).elementAt(1)).intValue();
+            int gridNum =((Integer)((Vector)O).elementAt(2)).intValue();
+            if( DetNum==gridNum)
+              Groups[row][col]=i;
+         }
+      }
 
    } 
 
