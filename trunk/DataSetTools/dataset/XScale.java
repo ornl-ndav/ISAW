@@ -31,6 +31,11 @@
  *
  *
  *  $Log$
+ *  Revision 1.21  2005/11/10 22:44:17  dennis
+ *  Clarified role of MACHINE_EPSILON in checking whether a VariableXScale
+ *  is essentially equal to a UniformXScale.  Also made single and double
+ *  precision versions of MACHINE_EPSILON into public static final values.
+ *
  *  Revision 1.20  2004/03/15 06:10:39  dennis
  *  Removed unused import statements.
  *
@@ -115,6 +120,14 @@ abstract public class XScale implements Serializable
   //
   public  static final long serialVersionUID = 1L;
 
+  // Machine epsilon is the largest value, eps, for which 1 + eps == 1.
+  // The values of eps are listed below for float and double, correct to the
+  // number of digits shown.
+  //
+  public static double MACHINE_EPSILON_D   = 1.1102230246251565E-16;
+  public static float  MACHINE_EPSILON     = 5.9604645E-8f;
+  public static float  TWO_MACHINE_EPSILON = 2*MACHINE_EPSILON;
+
 
   // NOTE: The following fields are serialized.  If new fields are added that
   //       are not static, reasonable default values should be assigned in the
@@ -183,8 +196,6 @@ abstract public class XScale implements Serializable
    */
   public static XScale getInstance( float x[] )
   {
-    float MACHINE_EPSILON = 1.1920929E-7f;
-
     if ( x == null || x.length == 0 )
       return null;
     else if ( x.length > 2 )
@@ -195,11 +206,12 @@ abstract public class XScale implements Serializable
       for ( int i = 0; i < x.length; i++ )     // use the Variable XScale
         if ( x[i] != 0 )
         {
-          if ( Math.abs((uniform_x[i] - x[i]) / x[i]) > MACHINE_EPSILON )
+          if ( Math.abs((uniform_x[i] - x[i]) / x[i]) > TWO_MACHINE_EPSILON )
             return new VariableXScale( x );
         }
         else if ( uniform_x[i] != 0 )
-          if (Math.abs((uniform_x[i] - x[i]) / uniform_x[i]) > MACHINE_EPSILON)
+          if (Math.abs((uniform_x[i] - x[i]) / uniform_x[i]) >
+                                                        TWO_MACHINE_EPSILON )
             return new VariableXScale( x );
     }
                              // if not Variable && not too short, it's Uniform  
