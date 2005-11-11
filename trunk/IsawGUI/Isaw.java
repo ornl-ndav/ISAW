@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.239  2005/11/11 20:31:24  rmikk
+ *  Fixed a spelling error
+ *
  *  Revision 1.238  2005/10/28 14:47:28  dennis
  *  Changed version to 1.7.2 beta 5
  *
@@ -1738,7 +1741,7 @@ public class Isaw
      
       if( s.equals("Operator List")){
         try{
-          JFrame jf = new JFrame( "Operator Liwt" );
+          JFrame jf = new JFrame( "Operator List" );
           IsawHelp.HelpSystem.IsawOpHelpSet opSet = new IsawHelp.HelpSystem.IsawOpHelpSet( true ) ;
           javax.help.JHelp jh = new javax.help.JHelp(opSet);
           jf.getContentPane().add( jh );
