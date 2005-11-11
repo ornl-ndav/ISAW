@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2005/11/11 21:11:15  rmikk
+ * Fixed the array out of bounds error
+ *
  * Revision 1.18  2005/07/19 19:03:16  rmikk
  * Fixed a spelling error
  *
@@ -1030,16 +1033,9 @@ public class RowColTimeVirtualArray extends
      int MaxRow = state.get_int(ViewerState.TABLE_TS_ROWMAX);  
      int MinCol = state.get_int(ViewerState.TABLE_TS_COLMIN);
      int MaxCol = state.get_int(ViewerState.TABLE_TS_COLMAX); 
-     int timeIndStart = Arrays.binarySearch( x_scale.getXs(), MinTime);
-     int timeIndEnd = Arrays.binarySearch( x_scale.getXs(), MaxTime);
-     if( timeIndStart < 0) timeIndStart = -timeIndStart -2;
-     if( timeIndEnd < 0) timeIndEnd = -timeIndEnd -2;
-     if( timeIndStart < 0) timeIndStart = 0;
-     if( timeIndEnd < 0) timeIndEnd = 0;
-     
-    
+  
      try{
-     for( int i = timeIndStart; i <= timeIndEnd; i++ ){
+     for( int i = 0; i < xvals1.length; i++ ){
         S.append("\n\nTime="+xvals1[i]+"\n\t");
         
         SetTime(xvals1[i]);
