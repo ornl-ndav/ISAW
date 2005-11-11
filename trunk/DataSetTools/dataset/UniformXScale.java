@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2005/11/11 00:00:29  dennis
+ *  Minor improvment to javadocs.
+ *
  *  Revision 1.17  2005/08/25 16:54:06  rmikk
  *  Added a create UniformXScale public static method
  *
@@ -148,7 +151,9 @@ public class UniformXScale extends XScale implements Serializable
 
 
   /**
-   *  Creates a UniformScales
+   *   Static method to create a UniformXScale.  This static method is 
+   * used by the Operator that creates a UniformXScale.
+   *
    * @param   start_x  the starting x
    * @param   end_x    the ending x  
    * @param   num_x    the number of x values.  
@@ -161,9 +166,11 @@ public class UniformXScale extends XScale implements Serializable
      return new UniformXScale( start_x,end_x,num_x);
    }
    
-   
-   
+
   /**
+   *  Get the array of "X" values for this XScale.  NOTE: The array of 
+   * values is generated on demand, not stored as part of the XScale object.
+   *
    * @return the array of "X" values.  The array will have num_x entries.   
    * The "X" values are uniformly spaced and are calculated from start_x, 
    * end_x and num_x.
@@ -197,7 +204,7 @@ public class UniformXScale extends XScale implements Serializable
 
 
   /**
-   *  Get the position (or index of the LUB) of the specified x-value in
+   *  Get the position (i.e. index of the LUB) of the specified x-value in
    *  this XScale.
    *
    *  @param  x    The x value to find in the "list" of x values represented
@@ -302,6 +309,7 @@ public class UniformXScale extends XScale implements Serializable
 
      return new UniformXScale( temp_start_x, temp_end_x, temp_num_x );
    }
+
 
   /**
    *  Constructs a new XScale that is the restriction of the current
