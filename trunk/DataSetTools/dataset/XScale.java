@@ -31,6 +31,10 @@
  *
  *
  *  $Log$
+ *  Revision 1.22  2005/11/13 03:07:23  dennis
+ *  Added Print() method for debugging.
+ *  Added test methods to test getX(), getXs(), getI(), getI_GLB().
+ *
  *  Revision 1.21  2005/11/10 22:44:17  dennis
  *  Clarified role of MACHINE_EPSILON in checking whether a VariableXScale
  *  is essentially equal to a UniformXScale.  Also made single and double
@@ -97,6 +101,7 @@ package  DataSetTools.dataset;
 
 import gov.anl.ipns.Util.Numeric.*;
 
+import java.util.*;
 import java.io.*;
 
 /**
@@ -124,9 +129,17 @@ abstract public class XScale implements Serializable
   // The values of eps are listed below for float and double, correct to the
   // number of digits shown.
   //
-  public static double MACHINE_EPSILON_D   = 1.1102230246251565E-16;
-  public static float  MACHINE_EPSILON     = 5.9604645E-8f;
-  public static float  TWO_MACHINE_EPSILON = 2*MACHINE_EPSILON;
+  public static final double MACHINE_EPSILON_D   = 1.1102230246251565E-16;
+  public static final float  MACHINE_EPSILON     = 5.9604645E-8f;
+  public static final float  TWO_MACHINE_EPSILON = 2*MACHINE_EPSILON;
+  
+  // Flags for terms of XScale to print
+  //
+  public static final int    BEGINNING           = 0;
+  public static final int    MIDDLE              = 1;
+  public static final int    ENDING              = 2;
+  public static final int    SOME                = 3;
+  public static final int    ALL                 = 4;
 
 
   // NOTE: The following fields are serialized.  If new fields are added that
@@ -218,20 +231,39 @@ abstract public class XScale implements Serializable
     return new UniformXScale( x[0], x[x.length-1], x.length );
   }
 
-  /**
-   * Returns the starting "X" value
-   */
-  public float getStart_x() { return start_x; }
 
   /**
-   * Returns the ending "X" value
+   * Get the starting "X" value
+   *
+   * @return the first x value in this XScale 
    */
-  public float getEnd_x()   { return end_x; }
+  public float getStart_x() 
+  { 
+     return start_x; 
+  }
+
 
   /**
-   * Returns the number of "X" values.
+   * Get the ending "X" value
+   *
+   * @return the last x value in this XScale
    */
-  public int getNum_x()  { return num_x; }
+  public float getEnd_x()   
+  { 
+     return end_x; 
+  }
+
+
+  /**
+   * Get the number of "X" values 
+   *
+   * @return the number of points in this XScale
+   */
+  public int getNum_x() 
+  { 
+    return num_x; 
+  }
+
 
   /**
    * Determines if the specified "X" is within the range of the
@@ -243,6 +275,7 @@ abstract public class XScale implements Serializable
       else
           return false;
   }
+
 
   /**
    * Returns the array of "X" values.  The array will have num_x entries.   
@@ -325,6 +358,7 @@ abstract public class XScale implements Serializable
    */
    abstract public XScale extend( XScale other_scale );
 
+
   /**
    *  Constructs a new XScale that is the restriction of the current
    *  XScale to the intersection of the ClosedInterval and the interval
@@ -394,12 +428,198 @@ abstract public class XScale implements Serializable
       return true;
   }
 
+
   /**
    *  Print the range and number of X values in this x scale
    */
   public String toString()
   {
     return "["+start_x+","+end_x+"]" + " in " + num_x + " steps"; 
+  }
+
+
+  /**
+   *  Print part of all of this XScale, depending on what print mode is
+   *  specified.
+   *
+   *  @param  message  text message at start of printout
+   *  @param  mode     integer flag BEGINNING, MIDDLE, ENDING, SOME or ALL
+   *  @param  num      number of elements to print, in cases BEGININNG, 
+   *                   MIDDLE or ENDING.
+   */
+  public void Print( String message, int mode, int num )
+  {
+    if ( message != null && message.length() > 0 )
+      System.out.println( message );
+
+    int num_to_print = num_x;
+    if ( num_to_print > num )
+      num_to_print = num;
+
+    int first = 0,
+        last;
+
+    if ( mode == BEGINNING || mode == ALL )
+      first = 0;
+    else if ( mode == MIDDLE )
+    {
+      first = num_x / 2 - num/2;
+      if ( first < 0 )
+        first = 0;
+    }
+    else if ( mode == ENDING )
+    {
+      first = num_x - num_to_print;
+      if ( first < 0 )
+        first = 0;
+    }
+    else if ( mode == SOME )
+    {
+      if ( num_x < 30 )
+      {
+        Print( message, ALL, num_x );
+        return;
+      }
+      Print( "", BEGINNING, num );
+      System.out.println("...");
+      Print( "", MIDDLE, num );
+      System.out.println("...");
+      Print( "", ENDING, num );
+      return;
+    }
+    
+    if ( mode == ALL )
+      num_to_print = num_x;
+
+    last = first + num_to_print - 1;
+    if ( last > num_x - 1 )
+      last = num_x - 1;
+
+    for ( int i = first; i <= last; i++ )
+      System.out.println( "" + i + ",  " + getX(i) );
+  }
+
+
+  /**
+   *  Verify that the points returned in an array by getXs() are the
+   *  same as those returned by individual calls to getX(). 
+   *
+   *  @param  scale      The XScale to test
+   *
+   *  @return the number of points where errors occured.
+   */
+  public static int Test_GetXsGetX( XScale scale )
+  {
+    float xs[] = scale.getXs();
+    int   error_count = 0;
+
+    for ( int i = 0; i < xs.length; i++ )
+    {
+      if ( scale.getX(i) != xs[i] )
+      {
+        error_count++;
+        System.out.println("*** ERROR: getX(i) != xs[i] " +
+                            scale.getX(i) + " != " +
+                            xs[i] );
+      }
+    }
+    return error_count;
+  }
+
+
+  /**
+   *  Verify that getX(getI(x)) == x for every point "x" in the XScale.
+   *
+   *  @param  scale      The XScale to test
+   *
+   *  @return the number of points where errors occured.
+   */
+  public static int Test_GetXofGetI( XScale scale )
+  {
+    float x;
+    int   error_count = 0;
+    for ( int i = 0; i < scale.getNum_x(); i++ )
+    {
+      x = scale.getX(i);
+      if ( x != scale.getX( scale.getI(x) ) )
+      {
+        System.out.println("ERROR:  getX(getI(x)) != x" );
+        System.out.println("getX(getI(x)) = " + scale.getX( scale.getI(x) ));
+        System.out.println("x = " + x );
+        error_count++;
+      }
+    }
+    return error_count;
+  }
+
+
+  /**
+   *  Verify that getI(x) and getI_GLB(x) return correct values 
+   *  for a collection of randomly generated "xs" in the interval 
+   *  [start_x-1, end_x+1].  For values in [start_x, end_x] this 
+   *  requires that getX(getI_GLB(x)) <= x <= getX(getI(x)).
+   *
+   *  @param  scale      The XScale to test
+   *  @param  num_points The number of random values to generate
+   *
+   *  @return the number of points where errors occured.
+   */
+  public static int Test_GetI_GetI_GLB( XScale scale, int num_points )
+  {
+    float x;
+    int   index;
+    int   error_count = 0;
+    int   lower_index;
+    Random random = new Random();
+    float a = scale.getStart_x() - 1;
+    float b = scale.getEnd_x() + 1;
+
+    for ( int i = 0; i < num_points; i++ )
+    {
+      x = random.nextFloat();
+      x = a + x * ( b - a );
+      index = scale.getI(x);
+      if ( x < scale.getStart_x() )
+      {
+         if ( index != 0 )
+         {
+            error_count++;
+            System.out.println();
+            System.out.println("error at start x");
+            System.out.println("  x           = " + x );
+            System.out.println("  getX(index) = " + scale.getX(index) );
+            System.out.println("  getI        = " + scale.getI(x) );
+         }
+      }
+      else if ( x > scale.getEnd_x() )
+      {
+         if ( index != scale.getNum_x() )
+         {
+            error_count++;
+            System.out.println();
+            System.out.println("error at end x");
+            System.out.println("  x           = " + x );
+            System.out.println("  getX(index) = " + scale.getX(index) );
+            System.out.println("  getI        = " + scale.getI(x) );
+         }
+      }
+      else
+      {
+         lower_index = scale.getI_GLB(x);
+         if ( x < scale.getX(lower_index) || x > scale.getX( index ) )
+         {
+            error_count++;
+            System.out.println();
+            System.out.println("error at mid x ");
+            System.out.println("  x           = " + x );
+            System.out.println("  getX(glb)   = " + scale.getX(lower_index) );
+            System.out.println("  getX(index) = " + scale.getX(index) );
+            System.out.println("  getI_GLB    = " + scale.getI_GLB(x) );
+            System.out.println("  getI        = " + scale.getI(x) );
+         }
+      }
+    }
+    return error_count;
   }
 
 
@@ -419,7 +639,6 @@ abstract public class XScale implements Serializable
  *  and new fields that are required in the current version but are not
  *  present in the serialized version being read.
  */
-
   private void readObject( ObjectInputStream s ) throws IOException,
                                                         ClassNotFoundException
   {
