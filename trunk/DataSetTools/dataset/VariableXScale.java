@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2005/11/13 03:43:45  dennis
+ *  Test main program now also calls some of the new tests added to
+ *  the XScale base class.
+ *
  *  Revision 1.18  2005/08/25 16:55:01  rmikk
  *  Added a public static createVariableXScale method
  *
@@ -349,6 +353,65 @@ public class VariableXScale extends XScale implements Serializable
    */
   public static void main( String args[] )
   {
+    float x_vals[] = new float[100];
+    Random random = new Random();
+    for ( int i = 0; i < x_vals.length; i++ )
+      x_vals[i] = random.nextFloat() * 1000 + 1000;
+
+    Arrays.sort( x_vals );
+    XScale scale = new VariableXScale( x_vals );
+    scale.Print("original scale.....", SOME, 25 );
+
+    //
+    // Consistency tests for getX(), getXs(), getI(), getI_GLB()
+    //
+    int error_count = 0;
+    System.out.println();
+    System.out.print( "Testing getX(getI(x))... " );
+    error_count = Test_GetXofGetI( scale );
+    System.out.println("Error count = " + error_count );
+
+    System.out.println();
+    System.out.print( "Testing getXs() and getX()... " );
+    error_count = XScale.Test_GetXsGetX( scale );
+    System.out.println("Error count = " + error_count );
+
+    int n_points = 1000000;
+    System.out.println();
+    System.out.println( "Testing getI() and getI_GLB() using " + n_points );
+    System.out.print( " points (this takes time)... " );
+    error_count = XScale.Test_GetI_GetI_GLB( scale, n_points );
+    System.out.println("Error count = " + error_count );
+
+    //
+    // Tests for extend() method
+    //
+    XScale other_scale,
+           scale_2;
+    other_scale = new UniformXScale( 900, 1500, 61 );
+    scale_2 = scale.extend( other_scale );
+    System.out.println();
+    System.out.println("Scale extended by " + other_scale );
+    scale_2.Print("extended scale.....", SOME, 25 );
+
+    other_scale = new UniformXScale( 1500, 2000.2422f, 10 );
+    scale_2 = scale.extend( other_scale );
+    System.out.println();
+    System.out.println("Scale extended by " + other_scale );
+    scale_2.Print("extended scale.....", SOME, 10 );
+
+    other_scale = new UniformXScale( 1500, 2200, 71 );
+    scale_2 = scale.extend( other_scale );
+    System.out.println();
+    System.out.println("Scale extended by " + other_scale );
+    scale_2.Print("extended scale.....", SOME, 25 );
+
+    other_scale = new UniformXScale( 900, 2200, 131 );
+    scale_2 = scale.extend( other_scale );
+    System.out.println();
+    System.out.println("Scale extended by " + other_scale );
+    scale_2.Print("extended scale.....", SOME, 25 );
+
     /*
     float  vals[]   =  {  10.0f, 10.4f, 10.8f, 11.2f, 11.6f, 12.0f };
     XScale scale    = new VariableXScale( vals );
