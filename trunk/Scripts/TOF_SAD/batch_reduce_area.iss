@@ -6,15 +6,27 @@ $Category=Macros, Instrument Type, TOF_NSAS
 
 $ number_of_runs         Integer(1)                Enter number of runs
 $ do_2D                  Boolean(false)            Make 2D S(Qx,Qy)?
-$ TransID           Integer(2)       Enter ID for trans mon (USE 3 for BS det)
-
+#$ TransID           Integer(2)       Enter ID for trans mon (USE 3 for BS det)
+$channel_mask        String("1")       Channels to mask
 
 #========================== Reduce run inputs =========================
 #======================================================================
-Xoff = 0.0008005
-Yoff =0.00705559
+Xoff = 0.001533
+Yoff =0.003799
+Scale = 687352
+#Change only if transmission ID changes.
+TransID=2
+#Change only if the starting group # for the area detector changes.
+AreaStartGroup=5
 
-
+#polyfitIndx1 & polyfitIndx are the first and last time channel no. to be
+#used by the CalcTransmission routine.  Note that if these are set to -1 the
+#limits will automatically be set to 1 & number of time channels for the area
+#detector
+polyfitIndx1 = -1
+polyfitIndx2 = -1
+#setting polyDegree to -1 sets no fitting of the transmission data.
+polyDegree = -1
 #======= Set Attribute Level to Avoid Loading Extra Attributes ========
 #======================================================================
 #======================================================================
@@ -24,55 +36,86 @@ Yoff =0.00705559
 #==================== Start of Input files ============================
 #======================================================================
 #======================================================================
-#Input_Path ="/IPNShome/sand/data/"
-#Output_Path ="/IPNShome/sand/GeorgeUser/"
+Input_Path ="/IPNShome/sand/data/"
+Output_Path ="/IPNShome/sand/GeorgeUser/"
 
-Input_Path ="c:/sand_lpsd_runs/"
-Output_Path ="c:/sand_lpsd_runs/"
+#Input_Path ="c:/sand_lpsd_runs/"
+#Output_Path ="c:/sand_lpsd_runs/"
 
 # Sample thickness in cm:
-ThickA = [0.1,0.1,0.1,0.1,0.1]
+ThickA = [0.1]
 
 # Sample Transmission runs:
-TransSFileA = [27572,24201,22367,22369,22371]
+TransSFileA = [29196]
 
 # Sample Scattering runs:
-SampleFileA = [27572,24201,22368,22370,22372]
+SampleFileA = [29197]
 
 # Background Transmission runs:
-BackGroundTFileA = [24158,22373,22373,22373] 
+BackGroundTFileA = [29188] 
 
 # Background scattering runs:
-BackGroundFileA = [24158,22374,22374,22374] 
+BackGroundFileA = [29189] 
 
 # Cadmium Transmission runs:
-CadmiumTFileA = [24166,22225,22225,22225]  
+CadmiumTFileA = [29192]  
 
 # Cadmium scattering runs:
-CadmiumFileA = [24166,22226,22226,22226,22226] 
+CadmiumFileA = [29193] 
 
 # Use Cadmium runs in transmission calculations (true/false)?
-useCadmiumRunA = [true,true,true,true,true,true,true,true,true] 
+useCadmiumRunA = [true] 
 
 # Open Camera transmission runs
-CameraTFileA = [24158,22215,22215,22215,22215] 
+CameraTFileA = [29186] 
 
 # Sensitivity .dat files (use Sensitivity.iss script to produce them)
-SensFileA = [22205,22205,22205,22205] 
+SensFileA = [29177] 
 
 # Efficiency .dat files (use Efficiency.iss sccript to produce them)
-EffFileA = [24159,22227,22227,22227,22227] 
+EffFileA = [29183] 
 
 #For transmission: Is background different from empty camera?
-useEmptyCellA = [false,false,false,false,false]
+useEmptyCellA = [true]
 
 #===================== End of Input files =======================
 #================================================================
 #================================================================
-polyfitIndx1 =   11
-polyfitIndx2  =  70
-polyDegree   =   3
 NeutronDelay =  0.0011
+
+#check for consistancy in the number of files.
+numThickA = ArrayLength(ThickA)
+numTransSFileA = ArrayLength(TransSFileA)
+numSampleFileA = ArrayLength(SampleFileA)
+numBkgdTFileA = ArrayLength(BackGroundTFileA)
+numBkgdFileA = ArrayLength(BackGroundFileA)
+numCdTFileA = ArrayLength(CadmiumTFileA)
+numCdFileA = ArrayLength(CadmiumFileA)
+numUseCdRunA = ArrayLength(useCadmiumRunA)
+numCameraTFileA = ArrayLength(CameraTFileA)
+numSensFileA = ArrayLength(SensFileA)
+numEffFileA = ArrayLength(EffFileA)
+numUseEmptyCellA = ArrayLength(useEmptyCellA)
+
+if numSampleFileA <> numThickA
+  return "Number of entries for Sample Thickness does not match number of samples"
+endif
+if numSampleFileA <> numTransSFileA
+  return "Number of entries for Transmission files does not match number of samples"
+endif
+if numSampleFileA <> numBkgdTFileA
+  return "Number of entries for Background Transmission files does not match number of samples"
+endif
+if numSampleFileA <> numBkgdFileA
+  return "Number of entries for background files does not match number of samples"
+endif
+if numSampleFileA <> numCdTFileA
+  return "Number of entries for Cadmium Transmission files does not match number of samples"
+endif
+if numSampleFileA <> numCdFileA
+  return "Number of entries for Cadmium files does not match number of samples"
+endif
+
 
 #
 # For 2D case, use 200x200 square array extending +- 0.5 inverse angstroms
@@ -101,7 +144,6 @@ sqrtWeight   =   true
 useDefault    =  true
 inst= "sand"
 ext= ".run"
-Scale = 644100
 #======================== End of Reduce run inputs ====================
 
 # loop over number of runs
@@ -138,6 +180,15 @@ Echo("Loading Sample Scattering "&Data)
 load Input_Path&inst&BackGroundTFile&ext, "Cell"
 Echo("Loading Background Transmission "&Cell)
 
+#determine the number of points in the transmission file from the number of 
+# time channels in the spectrum.
+nPtsTransFile = NumBins(Data[1], areaStartGroup, 0.0, 33333.0)
+if polyfitIndx1 = -1
+   polyfitIndx1 =   1
+endif
+if polyfitIndx2 = -1
+   polyfitIndx2  =  nPtsTransFile
+endif
 #========== Calculation of transmission for sample/camera ====================
 if useCadmiumRun == true
   load Input_Path&inst&CadmiumFile&ext, "Cadm"
@@ -163,7 +214,7 @@ DSC = CalcTransmission( Cell[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, po
 endif
 TransBFile = Output_Path&"T"&BackGroundTFile&CameraFile&".cf"
 PrintFlood( DSC,TransBFile, "Transmission")
-TransB = ReadTransmission( TransBFile, 70)
+TransB = ReadTransmission( TransBFile, nPtsTransFile)
 Table(DSC, true, "File", Output_Path&"T"&BackGroundTFile&CameraFile&".dat", "0:1", "HGT,F" , false)
 send DSC
 Echo("Background/Camera Transmission done ")
@@ -204,11 +255,13 @@ RUNCds[1]= ExtAtt(RUNCds[1], "Group ID", true, first_area_id, last_area_id)
 #Sens =ReadFlood(sensitivity, 128,128)
 #Echo("Reading Sensitivity file "&sensitivity)
 
-TransS = ReadTransmission( TransSF, 70) 
+TransS = ReadTransmission( TransSF, nPtsTransFile) 
  
 #Zero( Eff,0,0,9)
 # Added the beam stop radius as the last parameter for Reduce_KCL, it is 1.5 cm for SAND and 2.1 cm for SASI
-Res=Reduce_KCL(TransS,TransB,Eff,Sens[0],qu,RUNSds[0],RUNSds[1],RUNBds[0],RUNBds[1],RUNCds[0],RUNCds[1],NeutronDelay,Scale,thick,Xoff,Yoff,NQxBins,NQybins,useEmptyCell,1.5)
+#Res=Reduce_KCL(TransS,TransB,Eff,Sens[0],qu,RUNSds[0],RUNSds[1],RUNBds[0],RUNBds[1],RUNCds[0],RUNCds[1],NeutronDelay,Scale,thick,Xoff,Yoff,NQxBins,NQybins,useEmptyCell,1.5)
+Res=MaskedReduce(TransS,TransB,Eff,Sens[0],qu,RUNSds[0],RUNSds[1],RUNBds[0],RUNBds[1],RUNCds[0],RUNCds[1],NeutronDelay,Scale,thick,Xoff,Yoff,NQxBins,NQybins,useEmptyCell,1.5, -1, channel_mask)
+ 
 
 
 #Display Res[0], "NEW Selected Graph View"
