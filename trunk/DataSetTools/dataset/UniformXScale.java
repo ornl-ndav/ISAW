@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2005/11/17 23:04:41  dennis
+ *  Removed expand() method that was only used as a convenience in finding
+ *  the range of X-values in a DataSet, and was difficult or meaningless
+ *  to implement for other types of XScales.  This "cleans up" the XScale
+ *  concept a bit more.
+ *
  *  Revision 1.19  2005/11/13 03:43:45  dennis
  *  Test main program now also calls some of the new tests added to
  *  the XScale base class.
@@ -164,9 +170,10 @@ public class UniformXScale extends XScale implements Serializable
    *
    * @return  a UniformXScale
    */
-   public static UniformXScale createUniformXScale( float start_x, float end_x, 
-            int num_x ){
-     
+   public static UniformXScale createUniformXScale( float start_x, 
+                                                    float end_x, 
+                                                    int   num_x )
+   {
      return new UniformXScale( start_x,end_x,num_x);
    }
    
@@ -265,22 +272,6 @@ public class UniformXScale extends XScale implements Serializable
 
   /**
    *  Constructs a new UniformXScale that extends over the smallest interval
-   *  containing both this XScale and the specifed XScale.  The number of 
-   *  x-values to use is extended to the larger of the numbers of x-values 
-   *  in this XScale and the specified XScale. 
-   */
-   public UniformXScale expand( XScale scale )
-   {
-     float temp_start_x = Math.min( this.start_x, scale.start_x );
-     float temp_end_x   = Math.max( this.end_x,   scale.end_x );
-     int   temp_num_x   = Math.max( this.num_x,   scale.num_x );
-
-     return new UniformXScale( temp_start_x, temp_end_x, temp_num_x ); 
-   }
-
-
-  /**
-   *  Constructs a new UniformXScale that extends over the smallest interval
    *  containing both this XScale and the specifed XScale.  The spacing between
    *  points is the same as for the current XScale and the start_x of the
    *  new XScale is choosen so that the division points of the current XScale
@@ -292,7 +283,6 @@ public class UniformXScale extends XScale implements Serializable
    *           of the intervals covered by the current XScale and the
    *           other XScale.
    */
-
    public XScale extend( XScale other_scale )
    {
      float temp_start_x = Math.min( this.start_x, other_scale.start_x );
