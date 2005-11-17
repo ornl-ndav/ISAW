@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2005/11/17 22:59:23  dennis
+ *  Minor improvement in javadoc and formatting.
+ *
  *  Revision 1.19  2005/11/13 03:43:45  dennis
  *  Test main program now also calls some of the new tests added to
  *  the XScale base class.
@@ -158,31 +161,40 @@ public class VariableXScale extends XScale implements Serializable
 
 
   /**
-   * Creates a VariableXScale if possible.
+   *   Static method to create a VariableXScale.  This static method is 
+   * used by the Operator that creates a VariableXScale.
+   *
    * @param vals  An Object containing a some type of list of values that can
-   *             be converted to a float[] then to a VariableXScale.
+   *              be converted to a float[] then to a VariableXScale.
+   *
    * @return  A VariableXScale or an ErrorString
    */
-  public static Object createVariableXScale( Object vals){
+  public static Object createVariableXScale( Object vals )
+  {
     if( vals == null)
        return new ErrorString("There are no values");
+
     float[] values=null;
-    try{
-        values=(float[])JavaWrapperOperator.cvrt((new float[0]).getClass(),
-                       vals);
-    }catch(Exception s){
+    try
+    {
+      values=(float[])JavaWrapperOperator.cvrt((new float[0]).getClass(), vals);
+    }
+    catch( Exception s )
+    {
        return new ErrorString("Cannot convert data to float[]");
     }
-    if(values==null)
-     return new ErrorString("Cannot convert data to float[]");;
-    for( int i=1; i< values.length;i++)
-      if( values[i-1]>=values[i])
-        return new ErrorString("Values are not increasing");
-    return new VariableXScale( values);
 
-         
-    
+    if( values == null )
+     return new ErrorString("Cannot convert data to float[]");
+
+    for( int i = 1; i < values.length; i++ )
+      if( values[i-1] >= values[i] )
+        return new ErrorString("Values are not increasing");
+
+    return new VariableXScale( values );
   }
+  
+  
   /**
    * Returns the array of "X" values specified when the constructor was called.
    */
