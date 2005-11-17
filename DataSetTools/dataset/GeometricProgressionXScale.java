@@ -27,6 +27,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2005/11/17 23:05:26  dennis
+ *  Fixed error message in readObject() method
+ *
  *  Revision 1.1  2005/11/13 03:10:29  dennis
  *  Initial version of XScale object for "logarithmic" x scales.
  *  The points are of the form xk = x0 * r^k, for a fixed ratio r.
@@ -455,7 +458,8 @@ public class GeometricProgressionXScale extends XScale implements Serializable
     s.defaultReadObject();               // read basic information
 
     if ( IsawSerialVersion != 1 )
-      System.out.println("Warning:UniformXScale IsawSerialVersion != 1");
+      System.out.println(
+                 "Warning:GeometricProgressionXScale IsawSerialVersion != 1");
   }
 
 }
