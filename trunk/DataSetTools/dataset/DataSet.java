@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.51  2005/11/17 23:01:56  dennis
+ *  getXRange() calculates range directly, rather than using expand()
+ *  method of UniformXScale.
+ *  Made a few minor improvements to the javadocs and format.
+ *
  *  Revision 1.50  2005/10/28 15:28:23  dennis
  *  Fixed "spelling" error in four javadoc comments
  *
@@ -1558,7 +1563,7 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Removes all operators from this DataSet.
+   * Remove all operators from this DataSet.
    */
   public void removeAllOperators()
   {
@@ -1569,37 +1574,39 @@ public class DataSet implements IAttributeList,
   /**
    * Get the range of X values for the collection of Data objects in this
    * DataSet.
+   *
+   * @return a UniformXScale spanning the full range of all XScales in this
+   *         DataSet, with number of points equal to the largest number of
+   *         points in any XScale for this DataSet.
    */
   public UniformXScale getXRange()
   {
-    Data           data_block;
-    UniformXScale  range;
-
     if ( this.getNum_entries() < 1 )
       return null;
     else
     {
-      data_block = (Data)getData_entry( 0 );
-      range      = new UniformXScale( data_block.getX_scale().getStart_x(),
-                                      data_block.getX_scale().getEnd_x(),
-                                      2                     );
-                           // an X "range" is a UniformXScale with only
-                           // two entries. 
+      XScale range = getData_entry( 0 ).getX_scale();
+      float  min = range.getStart_x();
+      float  max = range.getEnd_x();
+      int    num = range.getNum_x();
+      for ( int i = 1; i < this.getNum_entries(); i++ )
+      {
+        range = getData_entry( i ).getX_scale();
+        min = Math.min( min, range.getStart_x() );
+        max = Math.max( max, range.getEnd_x() );
+        num = Math.max( num, range.getNum_x() );
+      }
+      return new UniformXScale( min, max, num ); 
     }
-
-    for ( int i = 1; i < this.getNum_entries(); i++ )
-    {
-      data_block = (Data)getData_entry( i );
-      range = range.expand( data_block.getX_scale() );
-    }
-
-    return range;
   }
 
 
   /**
    * Get the range of Y values for the collection of Data objects in this
    * DataSet.
+   *
+   * @return  The ClosedInterval determined by the min and max of all
+   *          "Y" values in this DataSet.
    */
   public ClosedInterval getYRange()
   {
@@ -1684,8 +1691,14 @@ public class DataSet implements IAttributeList,
 
   /**
    * Returns the units for the "X" axis 
+   *
+   * @return the String specifying the units along the X-axis for this
+   *         DataSet
    */
-  public String getX_units() { return x_units; }
+  public String getX_units() 
+  { 
+    return x_units; 
+  }
 
 
   /**
@@ -1707,8 +1720,14 @@ public class DataSet implements IAttributeList,
 
   /**
    * Returns the label for the "X" axis 
+   *
+   * @return the String specifying the label for the X-axis for this
+   *         DataSet
    */
-  public String getX_label() { return x_label; }
+  public String getX_label() 
+  { 
+    return x_label; 
+  }
 
 
   /**
@@ -1730,8 +1749,14 @@ public class DataSet implements IAttributeList,
 
   /**
    * Returns the units for the "Y" scale 
+   *
+   * @return the String specifying the units along the Y-axis for this
+   *         DataSet
    */
-  public String getY_units() { return y_units; }
+  public String getY_units() 
+  { 
+    return y_units; 
+  }
 
 
   /**
@@ -1753,8 +1778,14 @@ public class DataSet implements IAttributeList,
 
   /**
    * Returns the label for the "Y" axis 
+   *
+   * @return the String specifying the label for the X-axis for this
+   *         DataSet
    */
-  public String getY_label() { return y_label; }
+  public String getY_label() 
+  {
+    return y_label; 
+  }
 
 
   /**
@@ -1809,6 +1840,8 @@ public class DataSet implements IAttributeList,
   /**
    *  Set the list of attributes for this DataSet object to be a COPY of the 
    *  specified list of attributes.
+   *
+   *  @param  attr_list  The list of attributes to be copied
    */
   public void setAttributeList( AttributeList attr_list )
   {
@@ -1827,7 +1860,9 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Gets the number of attributes set for this object.
+   * Gets the number of attributes set for this DataSet.
+   *
+   * @return  The number of attributes in the attribute list of this DataSet.
    */
   public int getNum_attributes()
   {
