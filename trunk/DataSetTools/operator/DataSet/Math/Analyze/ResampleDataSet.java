@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2005/11/18 00:35:28  dennis
+ *  A log message will now only be recorded if the parameters that
+ *  specify the new XScale are valid.
+ *
  *  Revision 1.9  2005/11/18 00:15:29  dennis
  *  Expanded and clarified information returned by the getDocumentation()
  *  method.  Changed log message to also indicate the XScale to which
@@ -267,9 +271,6 @@ public class ResampleDataSet extends AnalyzeOp
     else
       new_ds = ds;
 
-    new_ds.addLog_entry( "Resampled to interval ["
-                          + min_X + ", " + max_X + "] in " + num_X + " steps");
-
                                      // validate interval bounds
     if ( min_X > max_X )             // swap bounds to be in proper order
     {
@@ -285,6 +286,10 @@ public class ResampleDataSet extends AnalyzeOp
     }
     else
       new_x_scale = new UniformXScale( min_X, max_X, num_X );  
+
+
+    new_ds.addLog_entry( "Resampled to interval ["
+                          + min_X + ", " + max_X + "] in " + num_X + " steps");
 
                                             // now proceed with the operation 
                                             // on each data block in DataSet 
