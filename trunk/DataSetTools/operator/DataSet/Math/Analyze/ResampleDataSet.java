@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2005/11/18 00:15:29  dennis
+ *  Expanded and clarified information returned by the getDocumentation()
+ *  method.  Changed log message to also indicate the XScale to which
+ *  the DataSet was resampled.
+ *
  *  Revision 1.8  2004/03/15 06:10:49  dennis
  *  Removed unused import statements.
  *
@@ -86,7 +91,6 @@ public class ResampleDataSet extends AnalyzeOp
    * the parameters should be set ( using a GUI ) before calling getResult()
    * to apply the operator to the DataSet this operator was added to.
    */
-
   public ResampleDataSet( )
   {
     super( "Resample" );
@@ -147,31 +151,62 @@ public class ResampleDataSet extends AnalyzeOp
   public String getDocumentation()
   {
     StringBuffer Res = new StringBuffer();
-    Res.append("@overview This operator resamples a dataset. Resampling ");
-    Res.append("is dependent on whether the dataset was newly \n");
-    Res.append("constructed or just the data blocks in the dataset \n");
-    Res.append("were altered.\n");
-    Res.append("@algorithm Given a dataset, a new copy of the dataset ");
-    Res.append("will be created and resampled(boolean = true), or the ");
-    Res.append("old dataset will be resampled and altered ");
-    Res.append("(boolean = false).\n");
-    Res.append("@param ds\n");
-    Res.append("@param min_X\n");
-    Res.append("@param max_X\n");
-    Res.append("@param num_X\n");
-    Res.append("@param make_new_ds\n");
-    Res.append("@return If make_new_ds_flag = true, return new dataset. ");
-    Res.append("If make_new_ds_flag = false, return confirmation "); 
-    Res.append("message that original dataset was altered.\n");
-    Res.append("@error Invalid X interval\n");    
+    Res.append("@overview This operator resamples a DataSet to a uniformly ");
+    Res.append("spaced set of x-values.  The resampling can be done ");
+    Res.append("in place, by altering the current DataSet, or a new ");
+    Res.append("DataSet can be created to hold the resampled vaules ");
+    Res.append("without changing the current DataSet. ");
+    
+    Res.append("@algorithm  Each Data block in the DataSet is resampled ");
+    Res.append("using the newly specified uniformly spaced x-values.  ");
+    Res.append("If a Data block contains a tabulated histogram, the ");
+    Res.append("counts of the histogram will be split (or summed) into ");
+    Res.append("the newly specified set of bins.  If a Data block ");
+    Res.append("contains a table of function values at discrete points, ");
+    Res.append("values will be interpolated to obtain new values at the ");
+    Res.append("newly specified list of uniformly spaced x-values.  ");
+    Res.append("If a Data block contains a function or histogram model ");
+    Res.append("or event data, the new set of x-values will be saved ");
+    Res.append("to be used when the 'y' values are requested.  ");
+    Res.append("If the Create new DataSet option is selected, the current ");
+    Res.append("DataSet is not changed but a new copy of the dataset ");
+    Res.append("will be created and resampled.  Otherwise the the current ");
+    Res.append("dataset will changed by being resampled 'in place'.  ");
+    Res.append("If the current DataSet is modified, observers of the ");
+    Res.append("DataSet will be notified that the Data was changed.  ");
+
+    Res.append("@param ds   The DataSet to resample\n");
+
+    Res.append("@param min_X  The first x-value in the new list of ");
+    Res.append("uniformly spaced x-values.  This must be strictly less ");
+    Res.append("than the last x-value.");
+
+    Res.append("@param max_X  The last x-value in the new list of ");
+    Res.append("uniformly spaced x-values.  This must be strictly greater ");
+    Res.append("than the first x-value.");
+
+    Res.append("@param num_X  The number uniformly spaced x-values to ");
+    Res.append("use.  This must be at least 2.");
+
+    Res.append("@param make_new_ds  Flag indicating whether to create ");
+    Res.append("a new DataSet for the resampled values, or to change the ");
+    Res.append("current DataSet 'in place'.");
+
+    Res.append("@return If make_new_ds_flag = true, return a new dataset. ");
+    Res.append("If make_new_ds_flag = false, return a confirmation "); 
+    Res.append("message that the original dataset was altered.");
+
+    Res.append("@error Invalid X interval");    
     
     return Res.toString();
-    
   }
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-@return	the command name to be used with script processor: in this case, Resample
+   *  Get the command name to be used in scripts.
+   *
+   *  @return  the command name to be used with the script processor: 
+   *           in this case, Resample
    */
    public String getCommand()
    {
@@ -204,7 +239,14 @@ public class ResampleDataSet extends AnalyzeOp
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /** 
+   *  Resample this DataSet to the UniformXScale specified by the 
+   *  paramters. 
+   *
+   *  @return If make_new_ds is true, this will return the new DataSet.
+   *          Otherwise it will return a message indicating whether or not
+   *          the DataSet was successfully modified.
+   */
   public Object getResult()
   {
                                      // get the current data set
@@ -225,7 +267,8 @@ public class ResampleDataSet extends AnalyzeOp
     else
       new_ds = ds;
 
-    new_ds.addLog_entry( "Resampled" );
+    new_ds.addLog_entry( "Resampled to interval ["
+                          + min_X + ", " + max_X + "] in " + num_X + " steps");
 
                                      // validate interval bounds
     if ( min_X > max_X )             // swap bounds to be in proper order
@@ -270,7 +313,6 @@ public class ResampleDataSet extends AnalyzeOp
       ds.notifyIObservers( IObserver.DATA_CHANGED );
       return new String( "Data resampled uniformly" );
     }
-
   }  
 
 
@@ -291,12 +333,12 @@ public class ResampleDataSet extends AnalyzeOp
     return new_op;
   }
 
+
 /* ------------------------------- main --------------------------------- */ 
  /** 
   * Test program to verify that this will compile and run ok.  
   *
   */
-  
   public static void main( String args[] )
   {
 
