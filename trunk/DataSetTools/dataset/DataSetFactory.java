@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.51  2005/11/19 15:47:01  dennis
+ *  Now adds ResampleOnGeometricProgression operator to DataSet.
+ *
  *  Revision 1.50  2005/10/27 20:56:24  dennis
  *  Added SelectByID() operator.
  *
@@ -340,6 +343,7 @@ public class DataSetFactory implements Serializable
 
     ds.addOperator( new DataSetMerge() );
     ds.addOperator( new ResampleDataSet() );
+    ds.addOperator( new ResampleOnGeometricProgression() );
     ds.addOperator( new ConvertHistogramToFunction() );
     ds.addOperator( new ConvertFunctionToHistogram() );
     ds.addOperator( new DivideByDeltaX() );
