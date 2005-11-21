@@ -103,7 +103,8 @@ public class GLADScatter implements Cloneable {
         break;
 //furnace:
       case 4:
-
+        expkeyh = "GLAD.EXP.FUR";
+        break;
       default:
         expkeyh = null;
       
@@ -166,8 +167,10 @@ public class GLADScatter implements Cloneable {
       
       if ((imask & 1) == 1) {
         scatterern = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, analykeyh+".SCC");    
-        if (scatterern == 0.0f) scatterern = (float)(density*bht*Math.PI*(rad[1]*rad[1]-rad[0]*rad[0]));
-        System.out.println("Calculated scc for sample: "+scatterern);
+        if (scatterern == 0.0f) {
+          scatterern = (float)(density*bht*Math.PI*(rad[1]*rad[1]-rad[0]*rad[0])); 
+          System.out.println("effective density: "+density+" calculated scc for sample: "+scatterern);
+        }
 //        expsetup.ExpConfiguration.put("GLAD.ANALYSIS.SCC", new Float(scatterern));
       }
        
