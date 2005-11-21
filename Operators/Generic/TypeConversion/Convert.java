@@ -30,6 +30,15 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/11/21 17:44:56  dennis
+ * Added Methods:
+ *       DetectorPositionToVector(),
+ *       VectorToSphericalDetectorPosition(),
+ *       VectorToCartesianDetectorPosition(),
+ *       VectorToCylindricalDetectorPosition()
+ * Improved error condition handling in VectorToGsasCalib() method.
+ * Simplified logic in getDouble( object ) method.  (Kurtiss Olson)
+ *
  * Revision 1.2  2005/10/04 23:00:29  dennis
  * Added intArrayToVector() and floatArrayToVector() methods.
  * VectorToGsasCalib() method uses the first three entries
@@ -63,6 +72,7 @@ import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import DataSetTools.gsastools.*;
+import gov.anl.ipns.MathTools.Geometry.*;
 
 /**
  *  This class contains static methods for converting between different
@@ -345,11 +355,10 @@ public class Convert
     if ( calib_vector == null )
       return new ErrorString( "Parameter was null in VectorToGsasCalib" );
 
-    String error = null;
-
     if ( !(calib_vector instanceof Vector) ||
          ((Vector)calib_vector).size() < 3 )
-      error = "Argument MUST be a Vector starting with three numeric values.";
+      return new ErrorString( "Argument MUST be a Vector starting"
+                               +" with three numeric values." );
 
     double diff_c = getDouble( ((Vector)calib_vector).elementAt( 0 ) );
     double diff_a = getDouble( ((Vector)calib_vector).elementAt( 1 ) );
@@ -358,14 +367,254 @@ public class Convert
     if ( Double.isNaN( diff_c ) ||
          Double.isNaN( diff_a ) ||
          Double.isNaN( t_zero )  )
-      error = "Vector components must be numeric";
-
-    if ( error != null )
-      return new ErrorString( error );
+      return new ErrorString( "Vector components must be numeric" );
 
     return new GsasCalib( (float)diff_c, (float)diff_a, (float)t_zero );
   }
+  
+  
+  /* ----------------------- DetectorPositionToVector ------------------ */
+  /**
+   * Convert an object of type DetectorPosition, that contains values for 
+   * spherical coordinates, cartesian coordinates, cylinderical coordinates,
+   * and the scattering angle, to a Vector, containing these ten values in
+   * that order.
+   *
+   * @param  det_position  A DetectorPosition object. 
+   *
+   * @return  A Vector containing sphere radius, azimuth angle, polar angle,
+   * 		  x, y, z, cylinder radius, cylinder azimuth angle, cylinder z, 
+   *          and the scattering angle in that order.  If something other 
+   *          than a DetectorPosition object is passed in, an ErrorString will
+   *          be returned.
+   */
+  public static Object DetectorPositionToVector( Object det_position )
+  {
+    if ( det_position == null ) 
+      return new ErrorString( "Parameter was null in "
+                              + "DetectorPositionToVector" );
 
+    if ( !(det_position instanceof DetectorPosition) ||
+         !(det_position instanceof DetectorPosition_d)) 
+      return new ErrorString("Argument MUST be of type DetectorPosition");	
+
+    boolean isDouble = true;
+	
+    if( det_position instanceof DetectorPosition )
+      isDouble = false;
+	
+    Vector detect_vector = new Vector(10);
+	
+    if( isDouble )
+    {
+      DetectorPosition_d pos = (DetectorPosition_d)det_position;
+      double[] sphericalArr;
+      double[] cartesianArr;
+      double[] cylindericalArr;
+      sphericalArr    = pos.getSphericalCoords();
+      cartesianArr    = pos.getCartesianCoords();
+      cylindericalArr = pos.getCylindricalCoords();
+
+      detect_vector.add( new Float( sphericalArr[0] ) );
+      detect_vector.add( new Float( sphericalArr[1] ) );
+      detect_vector.add( new Float( sphericalArr[2] ) );
+      detect_vector.add( new Float( cartesianArr[0] ) );
+      detect_vector.add( new Float( cartesianArr[1] ) );
+      detect_vector.add( new Float( cartesianArr[2] ) );
+      detect_vector.add( new Float( cylindericalArr[0] ) );
+      detect_vector.add( new Float( cylindericalArr[1] ) );
+      detect_vector.add( new Float( cylindericalArr[2] ) );
+      detect_vector.add( new Float( pos.getScatteringAngle() ) );
+    }
+    else
+    {
+      DetectorPosition pos = (DetectorPosition)det_position;
+      float[] sphericalArr;
+      float[] cartesianArr;
+      float[] cylindericalArr;
+      sphericalArr    = pos.getSphericalCoords();
+      cartesianArr    = pos.getCartesianCoords();
+      cylindericalArr = pos.getCylindricalCoords();
+
+      detect_vector.add( new Float( sphericalArr[0] ) );
+      detect_vector.add( new Float( sphericalArr[1] ) );
+      detect_vector.add( new Float( sphericalArr[2] ) );
+      detect_vector.add( new Float( cartesianArr[0] ) );
+      detect_vector.add( new Float( cartesianArr[1] ) );
+      detect_vector.add( new Float( cartesianArr[2] ) );
+      detect_vector.add( new Float( cylindericalArr[0] ) );
+      detect_vector.add( new Float( cylindericalArr[1] ) );
+      detect_vector.add( new Float( cylindericalArr[2] ) );
+      detect_vector.add( new Float( pos.getScatteringAngle() ) );
+    }
+	
+    return detect_vector;
+  }
+  
+  
+  /* ------------------ VectorToSphericalDetectorPostion --------------- */
+  /**
+   * Convert the value from a Vector containing numeric values into a 
+   * DetectorPosition object.  
+   *
+   * @param  det_vector  A Vector containing sph_radius, azimuth angle, and 
+   *                     polar angle for the spherical coordinates.
+   *
+   * @return A det_vector object, with values filled from the values in the
+   *         Vector.  If the Vector values passed in are not numeric values, 
+   *         then an ErrorString will be returned.
+   */
+  public static Object VectorToSphericalDetectorPostion( Object det_vector )
+  {
+    if ( det_vector == null )
+      return new ErrorString("Parameter was null in"
+    		                +" VectorToSphericalDetectorPostion");
+
+    if ( !(det_vector instanceof Vector) ||
+         ((Vector)det_vector).size() != 3 )
+      return new ErrorString( "Argument MUST be a Vector with"
+    		                 +" three numeric values." );
+    
+    boolean isDouble = true;
+
+    if(((Vector)det_vector).elementAt( 0 ) instanceof Float)
+    	isDouble = false;
+    
+    double sph_radius = getDouble( ((Vector)det_vector).elementAt( 0 ) );
+    double azimuth    = getDouble( ((Vector)det_vector).elementAt( 1 ) );
+    double polar      = getDouble( ((Vector)det_vector).elementAt( 2 ) );
+
+    if ( Double.isNaN( sph_radius ) ||
+         Double.isNaN( azimuth ) ||
+         Double.isNaN( polar )  )
+      return new ErrorString( "Vector components must be numeric" );
+    
+    if(isDouble)
+    {	    
+      Position3D_d pos = new Position3D_d();
+      pos.setSphericalCoords(sph_radius, azimuth, polar);
+
+      return new DetectorPosition_d( pos );
+    }
+    else
+    {	    
+      Position3D pos = new Position3D();
+      pos.setSphericalCoords((float)sph_radius, (float)azimuth, (float)polar);
+	
+      return new DetectorPosition( pos );    	
+    }
+  }
+  
+  
+  /* ------------------ VectorToCartesianDetectorPostion --------------- */
+  /**
+   * Convert the values in a Vector containing numeric values into a 
+   * DetectorPosition object.  
+   *
+   * @param  det_vector  A Vector containing x, y, and z for the cartesian 
+   *                     coordinates.
+   *
+   * @return A det_vector object, with values filled from the values in the
+   *         Vector.  If the Vector values passed in are not numeric values, 
+   *         then an ErrorString will be returned.
+   */
+  public static Object VectorToCartesianDetectorPostion( Object det_vector )
+  {
+    if ( det_vector == null )
+      return new ErrorString("Parameter was null in"
+                            +" VectorToCartesianDetectorPostion");
+
+    if ( !(det_vector instanceof Vector) || 
+          ((Vector)det_vector).size() != 3 )
+      return new ErrorString( "Argument MUST be a Vector with"
+                             +" three numeric values." );
+    
+    boolean isDouble = true;
+
+    if(((Vector)det_vector).elementAt( 0 ) instanceof Float)
+    	isDouble = false;
+    
+    double x = getDouble( ((Vector)det_vector).elementAt( 0 ) );
+    double y = getDouble( ((Vector)det_vector).elementAt( 1 ) );
+    double z = getDouble( ((Vector)det_vector).elementAt( 2 ) );
+
+    if ( Double.isNaN( x ) ||
+         Double.isNaN( y ) ||
+         Double.isNaN( z )  )
+      return new ErrorString( "Vector components must be numeric" );
+    
+    if(isDouble)
+    {	    
+      Position3D_d pos = new Position3D_d();
+      pos.setSphericalCoords(x, y, z);
+
+      return new DetectorPosition_d( pos );
+    }
+    else
+    {	    
+      Position3D pos = new Position3D();
+      pos.setSphericalCoords((float)x, (float)y, (float)z);
+
+      return new DetectorPosition( pos );    	
+    }
+  }
+  
+  
+  /* ---------------- VectorToCylindricalDetectorPostion -------------- */
+  /**
+   * Convert the values from a Vector containing numeric values into a 
+   * DetectorPosition object.  
+   *
+   * @param  det_vector  A Vector containing cylinder radius, azimuth angle,
+   *                     cylinder z for the cylindrical coordinates.
+   *
+   * @return A det_vector object, with values filled from the values in the
+   *         Vector.  If the Vector values passed in are not numeric values, 
+   *         then an ErrorString will be returned.
+   */
+  public static Object VectorToCylindricalDetectorPostion( Object det_vector )
+  {
+    if ( det_vector == null )
+      return new ErrorString("Parameter was null in"
+                             +" VectorToCylindricalDetectorPostion");
+
+    if ( !(det_vector instanceof Vector) || 
+          ((Vector)det_vector).size() != 3 )
+      return new ErrorString( "Argument MUST be a Vector with"
+                             +" three numeric values." );
+    
+    boolean isDouble = true;
+
+    if(((Vector)det_vector).elementAt( 0 ) instanceof Float)
+      isDouble = false;
+    
+    double cylinderRadius = getDouble( ((Vector)det_vector).elementAt( 0 ) );
+    double azimuthAngle   = getDouble( ((Vector)det_vector).elementAt( 1 ) );
+    double z              = getDouble( ((Vector)det_vector).elementAt( 2 ) );
+
+    if ( Double.isNaN( cylinderRadius ) ||
+         Double.isNaN( azimuthAngle ) ||
+         Double.isNaN( z )  )
+      return new ErrorString( "Vector components must be numeric" );
+    
+    if(isDouble)
+    {	    
+      Position3D_d pos = new Position3D_d();
+      pos.setSphericalCoords(cylinderRadius, azimuthAngle, z);
+
+      return new DetectorPosition_d( pos );
+    }
+    else
+    {	    
+       Position3D pos = new Position3D();
+       pos.setSphericalCoords( (float)cylinderRadius, 
+                               (float)azimuthAngle, 
+                               (float)z);
+	
+      return new DetectorPosition( pos );    	
+    }
+  }
+  
 
   /* ---------------------------- getDouble ---------------------------- */
   /**
@@ -382,14 +631,8 @@ public class Convert
     if ( obj == null )
       return Double.NaN;
 
-    if ( obj instanceof Float )
-      return ((Float)obj).floatValue();
-
-    if ( obj instanceof Integer )
-      return ((Integer)obj).intValue();
-
-    if ( obj instanceof Double )
-      return ((Double)obj).doubleValue();
+    if ( obj instanceof Number )
+      return ((Number)obj).doubleValue();
 
     return Double.NaN; 
   }
