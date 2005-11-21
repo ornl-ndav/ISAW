@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/11/21 19:11:49  taoj
+ * handles single run
+ *
  * Revision 1.2  2005/08/25 18:14:43  dennis
  * Moved to menu category Instrument Type, TOF_NGLAD
  *
@@ -49,16 +52,10 @@ import DataSetTools.operator.DataSet.Math.DataSet.DataSetAdd;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Wrappable;
 import DataSetTools.operator.IWrappableWithCategoryList;
-import DataSetTools.math.tof_calc;
-import DataSetTools.dataset.Attribute;
-import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.IData;
-import DataSetTools.dataset.VariableXScale;
 import DataSetTools.dataset.XScale;
-import gov.anl.ipns.Util.Numeric.arrayUtil;
-import java.util.regex.Pattern;
 
 
 /**
@@ -140,6 +137,8 @@ public class GLADSumRun implements Wrappable, IWrappableWithCategoryList
   public Object calculate(  ) {
 
     int nds = mon_nrm_list.size();
+    if (nds == 1) return mon_nrm_list.get(0);
+    
     float[] ratio = new float[nds];    
     
     Data bm;
