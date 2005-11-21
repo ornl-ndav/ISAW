@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2005/11/21 19:11:19  taoj
+ * rewritten
+ *
  * Revision 1.3  2005/10/27 17:56:54  taoj
  * new version
  *
@@ -72,9 +75,9 @@ public class GLADQ2R implements Wrappable, IWrappableWithCategoryList
   public DataSet ds0;
   public DataSet ioq_smp;
   public float NumberDensity = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.EXP.SMP.DENSITY");
+  public float RCut = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.RCUT");
   public float QCut = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.QCUT");
   public int NUMQ = GLADRunProps.getintKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.NUMQ");
-  public float RCut = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.RCUT");
   
   //~ Methods ******************************************************************
 
