@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.52  2005/11/21 23:13:31  dennis
+ *  Fixed spelling error on variable name in javadoc comment.
+ *
  *  Revision 1.51  2005/11/17 23:01:56  dennis
  *  getXRange() calculates range directly, rather than using expand()
  *  method of UniformXScale.
@@ -582,7 +585,7 @@ public class DataSet implements IAttributeList,
    * makes multiple changes to only notify the Observers one time, after
    * completing all changes.
    * 
-   * @param  indicies     The list of indexs for which the selection
+   * @param  indices      The list of indexes for which the selection
    *                      flag will be set to the specified value.
    *
    * @param  selected  The new value to set for the selected flag.
