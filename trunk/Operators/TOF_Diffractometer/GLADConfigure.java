@@ -60,6 +60,7 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
   public boolean hasCan = true;
   public boolean hasFur = false;
   public boolean isFP = false;
+  public boolean doDebug = false;
 
   //~ Methods ******************************************************************
 
@@ -113,10 +114,10 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
    * @return The processed DataSet.
    */
   public Object calculate(  ) {
+
     int iflag = (isFP)?8:0;
     DataSet ds0 = new DataSet ("DS0", 
       "Construct a dummy dataset holding instrument and experiment infomation.");
-
     Object[] props = new Object[5]; //0: run info; 1: vanadium; 2: smp (rod or w/t can); 3: can; 4: furnace;
     GLADRunProps runinfo;
     String configfilestr = configfile.toString();
@@ -134,14 +135,13 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
     van.setMutTable();
     van.setAbsInput();
     van.setMulInput();
-//    van.anmask = 0;
     props[1] = van;
-//    van.printScatterInfo();
+    if (doDebug) van.printScatterInfo();
     
     Object[] scainfo = GLADScatter.parseComposition(smpcomposition);
     runinfo.ExpConfiguration.put("GLAD.EXP.SMP.SYMBOL", scainfo[0]);
     runinfo.ExpConfiguration.put("GLAD.EXP.SMP.FORMULA", scainfo[1]);
-    runinfo.ExpConfiguration.put("GLAD.EXP.SMP.DENSITY", new Float(smpdensity));
+    runinfo.ExpConfiguration.put("GLAD.EXP.SMP.EFFDENSITY", new Float(smpdensity));
     
     GLADScatter smp = new GLADScatter(runinfo, 1+iflag);
     smp.setMutTable();
@@ -165,21 +165,20 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
         fur.setAbsInput();
         fur.setMulInput();
         props[4] = fur;
-        fur.printScatterInfo();
+        if (doDebug) fur.printScatterInfo();
         can = can.insideScatter(fur);
       }
 
       props[3] = can;
-//      can.printScatterInfo();
+      if (doDebug) can.printScatterInfo();
       smp = smp.insideScatter(can);
     }
     if (scc != 0.0f) smp.scatterern = scc;    
     props[2] = smp;
-//    smp.printScatterInfo();    
+    if (doDebug) smp.printScatterInfo();    
 
     Attribute runprops = runinfo.getAttribute(GLADRunProps.GLAD_PROP, props);
     ds0.setAttribute(runprops, 0);
-//    System.out.println("smp.muttable:\n"+smp.muttable);
     return ds0;    
   }
   
@@ -231,7 +230,7 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
     testconf.calibopt = "2:";
     testconf.canopt = "2:";
     testconf.smpcomposition = "C 1.0 Cl 4.0";
-    testconf.smpdensity = 0.0319f;
+    testconf.smpdensity = 0.0819f;
     DataSet ds0 = (DataSet)testconf.calculate();      
   
   }
