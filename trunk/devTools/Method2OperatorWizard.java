@@ -33,6 +33,19 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2005/11/22 19:40:37  rmikk
+ * Set Arg 0 as selected argument when a new method is first selected
+ * Sets the default command name, title, and filename for the resultant
+ *    operator to one derived from the static method.
+ * Set line wrap on in the documentation text areas
+ * Added javadocs to the resultant code.  One javadoc indicates that the
+ *    file is automatically generated
+ * 
+ * Added more spaces to the resultant code for the operator and added 
+ *    some documentation to the Method2OperatorWizard code
+ * 
+ * (Kurtiss Olson)
+ *
  * Revision 1.8  2005/08/05 20:29:08  rmikk
  * Added a "d" to the word Acknowle[d]gement
  *
@@ -132,7 +145,6 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 	DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
 	MethInfData methData;
   
-  
 	/**
 	 *  Constructor that initializes the Wizard elements 
 	 * @throws java.awt.HeadlessException
@@ -176,7 +188,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
             opPanel.setDefaults( ForceExtension(OpfileName,"java"));
 		}
 	}
-  
+
   
     /**
      *  Initializes everything when a new method is chosen
@@ -590,7 +602,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		Method meth;
 		JButton ClassFileName, ViewFile;
 		ParameterInfo pinf = new ParameterInfo();
-    
+		String methodName = "";
     
 		public MethodPanel(Method2OperatorWizard W) {
 
@@ -671,8 +683,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
             JP.setPreferredSize( new Dimension(50,5000));
 			add(JP);
 		}
-
-
+		
 
 		/**
 		 * Sets up the list of arguments for a given method in the Arguments 
@@ -690,6 +701,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			if (MethodList.getSelectedIndex() >= 0) {
 
 				meth = ((MethHolder) MethodList.getSelectedItem()).method();
+				opPanel.setFileName(MethodList.getSelectedItem().toString());
+				
 			} else if (meth == null)
 				return;
 
@@ -711,6 +724,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					mm.Next = md;
 				mm = md;
 			}
+			Arguments.setSelectedIndex(0);
 		}
 
 
@@ -935,9 +949,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
        JTextField OperatorTitle,
                   CommandName,
                   CategoryList;
-      JButton Directory;
-      JTextField fileName;
-      
+       JButton Directory;
+       JTextField fileName;
       
        public OpPanel( Method2OperatorWizard W){
          super();
@@ -954,7 +967,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
          String OpfileName = System.getProperty("ISAW_HOME", "");
          if (!OpfileName.endsWith(File.separator))
               OpfileName += File.separator;
-         OpfileName += "Operators";
+         OpfileName += "Operators"; 
+
          fileName.setText(OpfileName);
          fileName.addActionListener( this);
          Directory = new JButton(OP_FILENAME);
@@ -1015,6 +1029,20 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
         
         
        }
+       
+       public void setFileName( String operatorName )
+       {
+    	   String s = System.getProperty("ISAW_HOME", "");
+           if (!s.endsWith(File.separator))
+                s += File.separator;
+           s += "Operators"; 
+           s += File.separator;
+    	   s += operatorName;
+    	   s += ".java";
+    	   fileName.setText(s);
+    	   OperatorTitle.setText( operatorName );
+    	   CommandName.setText( operatorName );
+       }
       
       
       
@@ -1030,10 +1058,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
           }
        }
     }
-    
-    
-    
-    
+       
 
 	/**
 	 * Takes care of handling the Documentation tab in this application
@@ -1057,14 +1082,19 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
             BoxLayout bl = new BoxLayout(this, BoxLayout.Y_AXIS);
             setLayout(bl); 
             OverView = new JTextArea(5,60);
+            OverView.setLineWrap(true);
             OverView.setWrapStyleWord(true);
             Assump = new JTextArea(5,60);
+            Assump.setLineWrap(true);
             Assump.setWrapStyleWord(true);
             Algorithm = new JTextArea(5,60);
+            Algorithm.setLineWrap(true);
             Algorithm.setWrapStyleWord(true);
             Return = new JTextArea(3,60);
+            Return.setLineWrap(true);
             Return.setWrapStyleWord(true);
             Error = new JTextArea(3,60);
+            Error.setLineWrap(true);
             Error.setWrapStyleWord(true);
 			newOp=true;
 		}
@@ -1501,29 +1531,53 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				fout.write("import DataSetTools.parameter.*;\r\n\r\n".getBytes());
 				fout.write(
 					"import gov.anl.ipns.Util.SpecialStrings.*;\r\n\r\n".getBytes());
-				fout.write("import Command.*;\r\n".getBytes());
+				fout.write("import Command.*;\r\n\r\n".getBytes());
 
+				// Documentation for the getResult method
+				fout.write("/**\r\n".getBytes());
+				fout.write(" * This class has been dynamically created using the Method2OperatorWizard\r\n".getBytes());
+				fout.write(" * and usually should not be edited.\r\n".getBytes());
+				fout.write(" */\r\n".getBytes());				
+				
 				//Write out the class header
 				fout.write(
-					("public class " + clsName + " extends GenericOperator{\r\n")
+					("public class " + clsName + " extends GenericOperator{\r\n\r\n\r\n")
 						.getBytes());
+				
+				// Documentation for the constructor
+				fout.write("   /**\r\n".getBytes());
+				fout.write("	* Constructor for the operator.  Calls the super class constructor.\r\n".getBytes());
+				fout.write("    */\r\n".getBytes());
+				
 				fout.write(
 					("   public "
 						+ clsName
 						+ "(){\r\n     super(\""
 						+ W.opPanel.OperatorTitle.getText().trim()
-						+ "\");\r\n     }\r\n\r\n")
+						+ "\");\r\n     }\r\n\r\n\r\n")
 						.getBytes());
 
+				// Documentation for the getCommand method
+				fout.write("   /**\r\n".getBytes());
+				fout.write("    * Gives the user the command for the operator.\r\n".getBytes());
+				fout.write("    *\r\n".getBytes());
+				fout.write("	* @return  The command for the operator, a String.\r\n".getBytes());
+				fout.write("    */\r\n".getBytes());
+				
 				//Write out the getCommand     
 				fout.write(("   public String getCommand(){\r\n").getBytes());
 				fout.write(
 					("      return \""
 						+ W.opPanel.CommandName.getText().trim()
-						+ "\";\r\n   }\r\n\r\n")
+						+ "\";\r\n   }\r\n\r\n\r\n")
 						.getBytes());
 
-				//Write out the setDefaultParameters 
+				// Documentation for the setDefaultParameters method
+				fout.write("   /**\r\n".getBytes());
+				fout.write("    * Sets the default parameters for the operator.\r\n".getBytes());
+				fout.write("    */\r\n".getBytes());
+				
+                // Write out the setDefaultParameters 
 				fout.write("   public void setDefaultParameters(){\r\n".getBytes());
 				fout.write("      clearParametersVector();\r\n".getBytes());
 				for (int i = 0; i < W.methPanel.meth.getParameterTypes().length; i++) {
@@ -1540,29 +1594,45 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 							+ "));\r\n")
 							.getBytes());
 				}
-				fout.write("   }\r\n\r\n".getBytes());
+				fout.write("   }\r\n\r\n\r\n".getBytes());
 
+				// Documentation for the getDocumentation method
+				fout.write("   /**\r\n".getBytes());
+				fout.write("    * Writes a string for the documentation of the operator provided by\r\n".getBytes());
+				fout.write("    * the user.\r\n".getBytes());
+				fout.write("    *\r\n".getBytes());
+				fout.write("	* @return  The documentation for the operator.\r\n".getBytes());
+				fout.write("    */\r\n".getBytes());
+				
 				// Write out the documentation
 				fout.write("   public String getDocumentation(){\r\n".getBytes());
 				fout.write("      StringBuffer S = new StringBuffer();\r\n".getBytes());
+				
+				//Write out the contents of the Documentation TextArea
 				fout.write("      S.append(\"@overview    \"); \r\n".getBytes());
 				fout.write(
 					MultiLine_ify(W.docPanel.OverView.getText(), "      S.append(\"", "\");\r\n")
 						.getBytes());
-				fout.write("      S.append(\"@algorithm    \"); \r\n".getBytes());
+				
+				//Write out the contents of the Algorithm TextArea
+				fout.write("      S.append(\"@algorithm    \"); \r\n".getBytes());				
 				fout.write(
 					MultiLine_ify(W.docPanel.Algorithm.getText(), "      S.append(\"", "\");\r\n")
 						.getBytes());
-				fout.write("      S.append(\"@assumptions    \"); \r\n".getBytes());
+				
+				//Write out the contents of the Assumptions TextArea
+				fout.write("      S.append(\"@assumptions    \"); \r\n".getBytes());				
 				fout.write(
 					MultiLine_ify(W.docPanel.Assump.getText(), "      S.append(\"", "\");\r\n")
 						.getBytes());
+				
 				for (MethInfData m = W.methData; m != null; m = m.Next) {
 					fout.write("      S.append(\"@param   \");\r\n".getBytes());
 					fout.write(
 						MultiLine_ify(W.docPanel.Params[m.argnum].getText(), 
                                                          "      S.append(\"", "\");\r\n").getBytes());
 				}
+				
                 String ret=StringUtil.replace(W.docPanel.Return.getText(), "\"", "\\\"");
                 if( ret != null)
                   ret=ret.trim();
@@ -1584,20 +1654,32 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                  fout.write(MultiLine_ify(ret.substring(kz),
                                 "      S.append(\"","\");\r\n").
                                 getBytes());
-                }      
+                }      			
 
-			
-
+                //Write out the contents of the Error TextArea
 				fout.write(("      S.append(\"@error \");\r\n"+
 				                 MultiLine_ify(	W.docPanel.Error.getText(),
 							      "      S.append(\"","\");\r\n"))
-							    .getBytes());
-				
+							    .getBytes());		
  
 				fout.write("      return S.toString();\r\n   }\r\n\r\n\r\n".getBytes());
 
+				// Documentation for the getCategoryList method
+				fout.write("   /**\r\n".getBytes());
+				fout.write("    * Returns a string array with the category the operator is in.\r\n".getBytes());
+				fout.write("    *\r\n".getBytes());
+				fout.write("    * @return  An array containing the category the operator is in.\r\n".getBytes());
+				fout.write("    */\r\n".getBytes());				
+				
 				// Write out getCategoryList method;
 				WriteCategoryList(fout, W.opPanel.CategoryList.getText().trim());
+				
+				// Documentation for the getResult method
+				fout.write("   /**\r\n".getBytes());
+				fout.write("    * Returns the result of the operator, otherwise and ErrorString.\r\n".getBytes());
+				fout.write("    *\r\n".getBytes());
+				fout.write("    * @return  The result of the operator, or an ErrorString.\r\n".getBytes());
+				fout.write("    */\r\n".getBytes());	
 
 				//Write out the getResult method       
 				fout.write("   public Object getResult(){\r\n".getBytes());
@@ -1703,6 +1785,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			}
 		}
 
+
 		private String MultiLine_ify(String text, String prepend, String append) {
 
 			if ((text == null) || (text.length() < 1))
@@ -1713,8 +1796,13 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			if (j2 < 0)
 				j2 = text.length();
 			String Res = "";
+			
+		    int num = 0;
 
 			for (; j1 < text.length();) {
+				if(num == 1) {
+					prepend = prepend + " ";
+				}
 				Res += prepend
 					+ StringUtil.replace(text.substring(j1, j2).trim(), "\"", "\\\"")
 					+ append;
@@ -1725,6 +1813,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                     j2 = text.length();
 				if (j2 < 0)
 					j2 = text.length();
+				
+				num++;
 			}
 			return Res;
 		}
@@ -1950,7 +2040,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		String InitValue;
 		MethInfData Next;
 		String Docum;
-
+		
 		public MethInfData(
 			int argnum,
 			String varName,
@@ -1969,12 +2059,11 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			this(argnum, "", "", "");
 		}
 
-		public void setData(String varName, String Prompt, String GUIParm) {
+		public void setData(String varName, String Prompt, String GUIParm, String Method) {
 
 			this.varName = varName;
 			this.Prompt = Prompt;
 			this.GUIParm = GUIParm;
-
 		}
 
 		public MethInfData getNext() {
