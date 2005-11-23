@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/11/23 17:22:41  hammonds
+ * Make small changes to take out edit only differences between Reduce_KCL and Reduce_LPSD.
+ * The only variation from this is to change the variable tofs in Reduce_LPSD to xvals in order to more closely match the syntax in Reduce_KCL therby reducing differences in the files.
+ *
  * Revision 1.3  2004/06/02 15:41:22  rmikk
  * Added parameter(s) to specify monitor ID(s)
  *
@@ -54,9 +58,12 @@ import DataSetTools.parameter.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
 
+
 public class Reduce_LPSD  extends GenericTOF_SAD{
 
-    public static final int DEFAULT_NEDGE = 1;  // mask off edge detectors 
+   public static final String Title = "Reduce_LPSD";
+
+   public static final int DEFAULT_NEDGE = 1;  // mask off edge detectors 
 
    /* ---------------------------- Constructor  -------------------------- */
    /**
@@ -64,7 +71,7 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
     */
     public Reduce_LPSD()
     {
-      super("Reduce_LPSD");
+      super( Title );
     }
 
    /* ---------------------------- Constructor  -------------------------- */
@@ -105,7 +112,7 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
                       int upStreamMonID ) 
      {
         
-        super( "Reduce");
+        super( Title );
         parameters = new Vector();
         addParameter( new DataSetPG("Sample Transmission DS", TransS));
         addParameter( new DataSetPG("Background Transmission DS", TransB));
@@ -122,10 +129,10 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
         addParameter( new FloatPG("Scale Factor", new Float(SCALE)));
         addParameter( new FloatPG("Thickness in m", new Float(THICK)));
         addParameter( new BooleanPG("Use Background Transmission Run?", 
-                                     new Boolean( useTransB)));
+				    new Boolean( useTransB)));
 
         addParameter( new IntegerPG("upStream Monitor ID", 
-            new Integer(upStreamMonID)));
+				    new Integer(upStreamMonID)));
       }
 
 
@@ -152,9 +159,7 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
        addParameter( new FloatPG("Thickness in m", null));
        addParameter( new BooleanPG("Use Background Transmission Run?", 
                                     new Boolean( true ) ) );
-      addParameter( new IntegerPG("upStream Monitor ID", 
-                 new Integer(-1)));
-     
+      addParameter( new IntegerPG("upStream Monitor ID", new Integer(-1)));
     }
 
   /* ---------------------------- getResult ------------------------------- */
@@ -243,14 +248,14 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
         System.out.println(" Ngroup = " + Eff.getNum_entries() );
         
 
-       int MonitorInd[];
-       if( upStreamMonID <0)
-          MonitorInd = CalcTransmission.setMonitorInd( RUNSds0 );
-       else{
-          MonitorInd = new int[1];
-          MonitorInd[0] = RUNSds0.getIndex_of_data(
-              RUNSds0.getData_entry_with_id(upStreamMonID));
-       }
+        int MonitorInd[];        //set to contain the index of the upstream mon
+        if( upStreamMonID <0)
+           MonitorInd = CalcTransmission.setMonitorInd( RUNSds0 );
+        else{
+           MonitorInd = new int[1];
+           MonitorInd[0] = RUNSds0.getIndex_of_data(
+               RUNSds0.getData_entry_with_id(upStreamMonID));
+        }
 
         DataSet ds_list[] = new DataSet[3];
         ds_list[0] = RUNSds0;
@@ -260,9 +265,9 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
 
         System.out.println("CERTAIN STARTING PARAMETERS ARE THE FOLLOWING");
         System.out.println();
-        System.out.println(" DELAYED NEUTRON CORRECTION IS MADE =");
-        System.out.println(" THE DELAYED NEUTRON FRACTION =" + BETADN);
-        System.out.println(" MGO FILTER IS IN THE BEAM ");
+        System.out.println(" DELAYED NEUTRON CORRECTION IS MADE =" );
+        System.out.println(" THE DELAYED NEUTRON FRACTION =" + BETADN );
+        System.out.println(" MGO FILTER IS IN THE BEAM " );
 
         for( int i = 0; i < 1; i++ )
         {
@@ -291,13 +296,13 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
          }
 
         int num_data = RUNSds[1].getNum_entries();
-        float[] tofs = RUNSds[1].getData_entry(num_data/2).getX_scale().getXs();
-        tofs = SAD_Util.ConvertXsToWL(tofs, RUNSds[1], num_data / 2, false);
+        float[] xvals = RUNSds[1].getData_entry(num_data/2).getX_scale().getXs();
+        xvals = SAD_Util.ConvertXsToWL(xvals, RUNSds[1], num_data / 2, false);
 
-        if( tofs[0] > tofs[1] ) 
-          arrayUtil.Reverse(tofs);
+        if( xvals[0] > xvals[1] ) 
+          arrayUtil.Reverse( xvals );
 
-        XScale xscl = new VariableXScale( tofs );
+        XScale xscl = new VariableXScale( xvals );
         System.out.println(" ReBinning to XScale " + xscl );
 
         SAD_Util.ConvertToWL( RUNSds[0], xscl, true );   // monitor
@@ -359,6 +364,20 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
 
         return V;
     }
+
+
+    /**
+     *  Get the multi-line documentation String for this operator.
+     *
+     *  @return the documentation String.
+     */
+    public String getDocumentation() {
+
+      StringBuffer Res = new StringBuffer();
+    
+
+      return Res.toString();
+}
 
 
   /* ----------------------------- Main ---------------------------------- */
