@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.36  2005/11/23 17:22:39  hammonds
+ * Make small changes to take out edit only differences between Reduce_KCL and Reduce_LPSD.
+ * The only variation from this is to change the variable tofs in Reduce_LPSD to xvals in order to more closely match the syntax in Reduce_KCL therby reducing differences in the files.
+ *
  * Revision 1.35  2005/05/11 22:51:56  dennis
  * Minor improvement to documentation.
  *
@@ -137,7 +141,6 @@
  */
 package DataSetTools.operator.Generic.TOF_SAD;
 
-//import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 
@@ -235,10 +238,10 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         addParameter( new IntegerPG("# Qx bins", new Integer(NQxBins)));
         addParameter( new IntegerPG("# Qy bins", new Integer(NQyBins)));
         addParameter( new BooleanPG("Use Background Transmission Run?", 
-                                     new Boolean( useTransB)));
+				    new Boolean( useTransB)));
         addParameter( new FloatPG("Beam Stop Size", new Float(bs_dim)));
         addParameter( new IntegerPG("upStream Monitor ID", 
-                                     new Integer(upStreamMonID)));
+				    new Integer(upStreamMonID)));
       }
 
 
@@ -354,7 +357,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
          }
 
         float qu[] = new float[ Qu.size() ];
-        for( int i=0; i < Qu.size(); i++)
+        for( int i = 0; i < Qu.size(); i++)
           qu[i] = ((Number)Qu.elementAt(i)).floatValue();
         
         boolean make_2D;
@@ -414,7 +417,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
          }
 
         int num_data = RUNSds[1].getNum_entries();
-        float[] xvals= RUNSds[1].getData_entry(num_data/2).getX_scale().getXs();
+        float[] xvals = RUNSds[1].getData_entry(num_data/2).getX_scale().getXs();
         xvals = SAD_Util.ConvertXsToWL(xvals, RUNSds[1], num_data / 2, false);
 
         if( xvals[0] > xvals[1] ) 
@@ -567,7 +570,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
       return Res.toString();
 }
-     
+
 
   /* ----------------------------- Main ---------------------------------- */
     /**
