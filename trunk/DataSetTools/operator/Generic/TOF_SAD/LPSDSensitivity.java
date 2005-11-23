@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2005/11/23 19:19:44  hammonds
+ * Small edit changes to reduce the difference between LPSDSensitivity and DetectorSensitivity.
+ *
  * Revision 1.3  2004/05/10 20:42:21  dennis
  * Test program now just instantiates a ViewManager to diplay
  * calculated DataSet, rather than keeping a reference to it.
@@ -66,7 +69,6 @@ import java.util.*;
 public class LPSDSensitivity extends GenericTOF_SAD
 {
   private static final String  TITLE = "LPSD Detector Sensitivity";
-
 
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -112,7 +114,6 @@ public class LPSDSensitivity extends GenericTOF_SAD
     addParameter( new Parameter("Last ID", new Integer(last_id)) );
   }
 
-
   /* --------------------------- getCommand ------------------------------- */ 
   /** 
    * Get the name of this operator to use in scripts
@@ -125,7 +126,6 @@ public class LPSDSensitivity extends GenericTOF_SAD
     return "LPSDSens";
   }
   
-
   /* ------------------------ getDocumentation ---------------------------- */
   /**
    *  Get the documentation to be displayed by the help system.
@@ -148,10 +148,8 @@ public class LPSDSensitivity extends GenericTOF_SAD
     Res.append("the pixel divided by the average counts of the good pixels.");
         
     Res.append("@param ds - DataSet with the flood pattern Data.");
-
     Res.append("@param dead_level - Relative sensitivity, below which ");
     Res.append(" a pixelwill be discarded as 'dead'.");
-
     Res.append("@param hot_level - Relative sensitivity, above which a pixel ");
     Res.append(" will be discarded as 'hot', i.e. noisy.");
 
@@ -181,7 +179,6 @@ public class LPSDSensitivity extends GenericTOF_SAD
     addParameter( new Parameter("First Group ID", new Integer(16389)) );
     addParameter( new Parameter("Last Group ID", new Integer(18948)) );
   }
-
   
   /* ----------------------------- getResult ------------------------------ */ 
   /** 
@@ -248,7 +245,7 @@ public class LPSDSensitivity extends GenericTOF_SAD
 
     System.out.println();
     System.out.println("LIVE CELLS = " + sens_ds.getNum_entries() );
-    System.out.println("NET COUNTS = " + sum ); 	
+    System.out.println("NET COUNTS = " + sum ); 
     System.out.println("AVERAGE COUNTS PER CELL = " + average );
 
     //
@@ -336,7 +333,6 @@ public class LPSDSensitivity extends GenericTOF_SAD
     result.addElement( sens_ds );
 
     return result;
- 
   }
 
   

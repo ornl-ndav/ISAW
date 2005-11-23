@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2005/11/23 19:19:43  hammonds
+ * Small edit changes to reduce the difference between LPSDSensitivity and DetectorSensitivity.
+ *
  * Revision 1.9  2004/03/15 19:33:53  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -124,7 +127,9 @@ public class DetectorSensitivity extends GenericTOF_SAD
    *  @param  hot_level   Relative sensitivity, above which a pixel will be 
    *                      discarded as "hot", i.e. noisy. 
    */
-  public DetectorSensitivity( DataSet ds, float dead_level, float hot_level )
+  public DetectorSensitivity( DataSet ds,
+			      float dead_level,
+			      float hot_level )
   {
     this(); 
     parameters = new Vector();
@@ -132,7 +137,7 @@ public class DetectorSensitivity extends GenericTOF_SAD
     addParameter( new Parameter("Dead pixel threshold", new Float(dead_level)));
     addParameter( new Parameter("Hot pixel threshold", new Float(hot_level)) );
   }
-  
+
   /* --------------------------- getCommand ------------------------------- */ 
   /** 
    * Get the name of this operator to use in scripts
@@ -295,7 +300,7 @@ public class DetectorSensitivity extends GenericTOF_SAD
     //
     // Calculate the total counts and average counts only using pixels 
     // whose counts are within limits set from the dead_level and hot_level.
-    // Mark a selected those Data blocks that were used.  Keep track of the
+    // Mark as selected those Data blocks that were used.  Keep track of the
     // number of dead and hot pixels. 
     //
     double good_counts = 0;
