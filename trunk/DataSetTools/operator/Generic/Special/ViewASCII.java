@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2005/11/30 18:41:27  rmikk
+ *  ScreenSize variable is now always set to a non-null value.
+ *
  *  Revision 1.11  2005/10/15 21:35:59  rmikk
  *  The search and find next have been implemented. A JTextPane was 
  *     used and the load time( using their load) is a little slower.
@@ -50,21 +53,6 @@
  *  Added getCategoryList method to put operator in new position in
  *  menus.
  *
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
  *  Revision 1.7  2004/03/15 03:28:35  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -254,19 +242,18 @@ public class ViewASCII extends    GenericSpecial
         if( (mw!=null) && (! mw.isShowing()) )
           mw=null;
         Dimension screenSize=null;
-        //if(mw==null)
+        //if(mw == null)
         {    
             // set the font for the text display
             Font font=new Font("monospaced",Font.PLAIN,FONT_SIZE);
-
+            screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             // set up the maximum size of the text box
             if(MAX_WIDTH==0 && MAX_HEIGHT==0)
             {
                int fontwidth=12;
                int fontheight=20;
 
-               screenSize =
-                        Toolkit.getDefaultToolkit().getScreenSize();
+               
                MAX_WIDTH=(int)(screenSize.height*4f/(3f*fontwidth))-2;
                MAX_HEIGHT=(int)(screenSize.height/fontheight)-5;
             }
