@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.68  2005/12/01 19:18:54  rmikk
+ *  Now uses the new Browser
+ *
  *  Revision 1.67  2005/10/14 15:00:15  dennis
  *  Added missing javadocs on one method.
  *  Minor formatting improvement.
@@ -1315,7 +1318,7 @@ private float solve( float new_x ) // find what x in the original DataSet maps
   
    public void actionPerformed(ActionEvent e){
     
-      FinishJFrame jf = new FinishJFrame( viewName+" Viewer");
+      /*FinishJFrame jf = new FinishJFrame( viewName+" Viewer");
       jf.setSize( 700,700);
      
       String url=DataSetTools.util.FilenameUtil.helpDir(
@@ -1341,6 +1344,25 @@ private float solve( float new_x ) // find what x in the original DataSet maps
       }
      
      WindowShower.show( jf);
+     */
+     
+      String dir = System.getProperty("Help_Directory");
+      if( dir == null) 
+         return;
+      dir = dir.replace('\\','/');
+      if( !dir.endsWith("/")) dir +=dir+'/';
+      dir += "Viewers/"+viewName+".html";
+      File F = new File(dir);
+      if( !F.exists()) return;
+      
+      String url ;
+      try{
+          url=F.toURL().toExternalForm();
+      }catch(Exception ss){
+         return;
+      }
+     System.out.println("URL for viewer is "+url);
+     IsawGUI.Browser x=(new IsawGUI.Browser( url ));
     }
    
  }
