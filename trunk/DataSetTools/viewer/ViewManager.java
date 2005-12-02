@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.69  2005/12/02 18:13:22  rmikk
+ *  Fixed a typo error.
+ *
  *  Revision 1.68  2005/12/01 19:18:54  rmikk
  *  Now uses the new Browser
  *
@@ -1350,7 +1353,7 @@ private float solve( float new_x ) // find what x in the original DataSet maps
       if( dir == null) 
          return;
       dir = dir.replace('\\','/');
-      if( !dir.endsWith("/")) dir +=dir+'/';
+      if( !dir.endsWith("/")) dir +='/';
       dir += "Viewers/"+viewName+".html";
       File F = new File(dir);
       if( !F.exists()) return;
