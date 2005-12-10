@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2005/12/10 16:11:28  rmikk
+ *  Change printcomponent to the JTextArea instead of the JFrame so
+ *    that pages can be printed
+ *
  *  Revision 1.12  2005/11/30 18:41:27  rmikk
  *  ScreenSize variable is now always set to a non-null value.
  *
@@ -285,7 +289,7 @@ public class ViewASCII extends    GenericSpecial
             menuBar.add(fileMenu);
             menuBar.add(EditMenu);
             gov.anl.ipns.Util.Sys.PrintComponentActionListener.setUpMenuItem(
-                                                                  menuBar, mw);
+                                                                  menuBar, textarea);
             fileMenu.add(reloadMenu);
             fileMenu.add(closeMenu);
             EditMenu.add(SearchMenu);
