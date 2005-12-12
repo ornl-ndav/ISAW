@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.64  2005/12/12 01:22:37  rmikk
+ *  Added a printing capability to the Help menu on an operator
+ *
  *  Revision 1.63  2005/05/25 20:24:39  dennis
  *  Now calls convenience method WindowShower.show() to show
  *  the window, instead of instantiating a WindowShower object
@@ -967,16 +970,37 @@ public class JParametersDialog implements Serializable,
       }
       
       FinishJFrame jf = new FinishJFrame( "operator "+op.getCommand());
+      JMenuBar jmenBar= new JMenuBar();
+      jf.setJMenuBar(jmenBar);
+      
       JEditorPane jedPane = new JEditorPane();
       jedPane.setEditable(false);
       jedPane.setEditorKit( new HTMLEditorKit() );
+      
+      // Add the text to the JEditorPane
       jedPane.setText(SharedData.HTMLPageMaker.createHTML(op));
+      
+      //Add the action listener for printing
+      gov.anl.ipns.Util.Sys.PrintComponentActionListener.setUpMenuItem(jmenBar, jedPane);
+      
+      //Add Jeditor pane to the JFrame
       JScrollPane scroll =new JScrollPane( jedPane);
       jf.getContentPane().add( scroll );
       jf.setSize( (int)(screenwidth/2), (int)(3*screenheight/4) );
+      
       WindowShower.show(jf);
     } 
   }
+  
+  
+ /**
+  *  A dialog box that automatically executes the finish metho
+  *  on dispose.
+  * 
+  * @author mikkelsonr
+  *
+  *
+  */ 
  public class FinishJDialog extends JDialog implements IFinish{
 
     public FinishJDialog( JFrame jf, String Title, boolean modal){
