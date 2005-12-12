@@ -4,6 +4,8 @@
 #       UNDER YOUR ISAW HOME DIRECTORY; 
 # ISAW uses this file for GLAD instrument and experiment
 #      parameter infomation;
+# {value1, value2, value3,...} for a list of symbols (strings);
+# [value1, value2, value3,...] for a list of numbers (float point);
 # The '#' and '!' symbols denotes a commented line;
 # Empty lines also ignored.
 
@@ -142,21 +144,42 @@ GLAD.EXP.CALIB.SIGMA_A =
 !  
 !sample: 
 !  
-GLAD.EXP.SMP = GLAD.STD.FSILICA
-GLAD.EXP.SMP.SYMBOL = {Sr, Al, O}
-GLAD.EXP.SMP.FORMULA = [67, 66, 166] 
+GLAD.EXP.SMP = GLAD.STD.FSILICA 
+GLAD.EXP.SMP.SYMBOL = 
+GLAD.EXP.SMP.FORMULA = 
 GLAD.EXP.SMP.SIZE = 
-GLAD.EXP.SMP.DENSITY = 0.0624
+GLAD.EXP.SMP.DENSITY = 
+GLAD.EXP.SMP.EFFDENSITY = 
 GLAD.EXP.SMP.SIGMA_A = 
 !  
 !can: 
 !  
-GLAD.EXP.CAN = 
+GLAD.EXP.CAN = GLAD.CAN.VAN.1
 GLAD.EXP.CAN.SYMBOL = 
 GLAD.EXP.CAN.FORMULA = 
 GLAD.EXP.CAN.SIZE = 
 GLAD.EXP.CAN.DENSITY = 
 GLAD.EXP.CAN.SIGMA_A = 
+!  
+!flatplate:
+! 
+!angle between plane of the sample and beam;
+GLAD.EXP.FLT.SMP_ANGLE_BEAM = 45.0
+!accuracy for multiple scattering calculation;
+!GLAD.EXP.FLT.MSTEP = 0.1
+!accuracy for absorption calculation;
+!GLAD.EXP.FLT.ASTEP = 0.02
+!number of planes in calculations;
+GLAD.EXP.FLT.NPLANES = 100 
+!
+!furnace:
+!  
+GLAD.EXP.FUR = 
+GLAD.EXP.FUR.SYMBOL = 
+GLAD.EXP.FUR.FORMULA = 
+GLAD.EXP.FUR.SIZE = 
+GLAD.EXP.FUR.DENSITY = 
+GLAD.EXP.FUR.SIGMA_A = 
 
 # 
 #analysis: 
@@ -169,17 +192,35 @@ GLAD.ANALYSIS.PROFILE = [1.0, 1.0]
 GLAD.ANALYSIS.NANGLE = 9
 !angles (degrees);
 GLAD.ANALYSIS.ANGLES = [2.0, 5.0, 10.0, 20.0, 40.0, 60.0, 80.0, 100.0, 140.0]
-!default absorption correction z increment;
+!ignore a data group if its total number of counts smaller than this value;
+GLAD.ANALYSIS.LCUTOFF = 20.0
+!!default absorption correction z increment;
 GLAD.ANALYSIS.ASTEP = 0.02
 !default multiple scattering correction z increment;
 GLAD.ANALYSIS.MSTEP = 0.1
+!default Placzek calculation temperature value;
+GLAD.ANALYSIS.TEMP = 300.0 
+!sample calibration constant;
+GLAD.ANALYSIS.SCC = 
 !number of Q bins in 1/Angstrom, Qstep = 1/NUMQ;
 GLAD.ANALYSIS.NUMQ = 40
 !max Q for data analysis;
 GLAD.ANALYSIS.QMAX = 40.0
+!max Q for ftr to R;
+GLAD.ANALYSIS.QCUT = 25.0
+!max R for outputting ftr results;
+GLAD.ANALYSIS.RCUT = 8.0
 !minimal wavelength (angstrom) for generating MUT table;
 GLAD.ANALYSIS.MUT.MINW = 0.1
 !maximal wavelength;
 GLAD.ANALYSIS.MUT.MAXW = 4.3
 !step;
 GLAD.ANALYSIS.MUT.DW = 0.1
+!the value of <b_bar>^2 used in fourier transform from S(Q) to T(R)
+!if symbol & formula info is empty this value has to be given;
+!if this value is given it would not be calculated from symbol and formula;
+GLAD.ANALYSIS.B_BAR_SQR = 
+!lower wavelength (angstrom) bound for merging; 
+GLAD.ANALYSIS.COMB.MINW = 0.1
+!maximal wavelength;
+GLAD.ANALYSIS.COMB.MAXW = 6.0
