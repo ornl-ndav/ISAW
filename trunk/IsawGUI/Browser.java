@@ -1,3 +1,38 @@
+/* 
+ * File: Browser.java
+ *  
+ * Copyright (C) 2005  Dominic Kramer and Galina Pozharsky
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact :  Dennis Mikkelson<mikkelsond@uwstout.edu>
+ *            Galina Pozharsky<pozharskyg@uwstout.edu>
+ *            MSCS Department
+ *            HH237H
+ *            Menomonie, WI. 54751
+ *            (715)-232-2291
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0426797, and by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ *
+ * Modified:
+ *
+ */
+
 package IsawGUI;
 
 
@@ -35,40 +70,40 @@ import javax.swing.JToolBar;
 import javax.swing.WindowConstants;
 
 
+
 public class Browser implements HyperlinkListener, 
                                 ActionListener {
-    String source = "http://www.uwstout.edu";
+   // String source = "http://www.uwstout.edu";
     final String GO = "Go";
     final String Back = "Back";
+	 final String Forward = "Forward";
     final String Home = "Home";
     final String Print = "Print";
+    int positionOfPage = -1;
     JEditorPane ep = new JEditorPane(); //a JEditorPane allows display of HTML & RTF
     JToolBar tb = new JToolBar(); //a JToolBar sits above the JEditorPane & contains 
     JTextField tf = new JTextField(40); // the JTextField & go button
     JLabel address = new JLabel(" Address: ");
     JButton back = new JButton(Back);
+	 JButton forward = new JButton(Forward);
     JButton go = new JButton(GO);
     JButton home = new JButton(Home);
     JButton print = new JButton(Print);
     BorderLayout bl = new BorderLayout();
     JPanel panel = new JPanel(bl);
-    JFrame frame = new JFrame("ISaw browser");
+    JFrame frame = new JFrame("ISAW browser");
     protected Vector history = null;
     private String fileName;
 
-    public Browser() {
-        this("http://www.uwstout.edu");
-    }
 
-    //public Browser(String file)
-    public Browser(String source) {
-        this.source = source;
-        //fileName= file;
-        openURL(source); //this method (defined below) opens a page with address source
-
+    public Browser(String file){
+        fileName= file;
+        openURL(file);
         history = new Vector();
-        history.add(source);
+        history.add(file);
+        positionOfPage =0;
         back.setEnabled(false);
+		  forward.setEnabled(false);
 
         ep.setEditable(false); //this makes the HTML viewable only in teh JEditorPane, ep
         ep.addHyperlinkListener(this); //this adds a listener for clicking on links
@@ -77,20 +112,22 @@ public class Browser implements HyperlinkListener,
 
         panel.add(scroll, BorderLayout.CENTER); //adds the scroll pane to center of panel
 
-        tf.setActionCommand(GO); //gives the ActionListener on tf a name for its ActionEvent
         tf.setActionCommand(Back);
-        tf.setActionCommand(Home);
+		  tf.setActionCommand( Forward );
+        tf.setActionCommand( Home );
         //tf.setActionCommand(Print);
-        print.addActionListener(new gov.anl.ipns.Util.Sys.PrintComponentActionListener(ep));
+       // print.addActionListener(new gov.anl.ipns.Util.Sys.PrintComponentActionListener(ep));
+		  tf.setActionCommand( GO ); //gives the ActionListener on tf a name for its ActionEvent
 
-        tf.setEditable(true);
-        tf.addActionListener(this); //adds an ActionListener to the JTextField (so user can
+        tf.setEditable( true );
+        tf.addActionListener( this ); //adds an ActionListener to the JTextField (so user can
 
-        go.addActionListener(this); //use "Enter Key")
-        back.addActionListener(this); //use "Enter Key")
-        home.addActionListener(this);
-
+        go.addActionListener( this ); //use "Enter Key")
+        back.addActionListener( this ); //use "Enter Key")
+        home.addActionListener( this );
+        forward.addActionListener( this );
         tb.add(back); //this adds the back button to the JToolBar
+        tb.add(forward); //this adds the forward button to the JToolBar
         tb.add(home); //this adds the home button to the JToolBar
         tb.add(print); //this adds the print button to the JToolBar
         tb.add(address); //this adds the Label "Address:" to the JToolBar
@@ -99,7 +136,8 @@ public class Browser implements HyperlinkListener,
 
         panel.add(tb, BorderLayout.NORTH); //adds the JToolBar to the top (North) of panel
         frame.setContentPane(panel);
-        frame.setSize(1000, 900);
+        Dimension ScreenSize = frame.getToolkit().getScreenSize();
+        frame.setSize((int)(.5*ScreenSize.width), (int)(.8*ScreenSize.height));
         frame.setVisible(true);
     }// end Browser()
 
@@ -126,7 +164,7 @@ public class Browser implements HyperlinkListener,
             ep.setPage(url); //this sets the ep page to the URL page
             tf.setText(urlString); //this sets the JTextField, tf, to the URL
         } catch (Exception e) {
-            System.out.println("Can't open " + source + " " + e);
+            System.out.println("Can't open " + urlString + " " + e);
         }//end try-catch
     }//end openURL
 
@@ -139,7 +177,7 @@ public class Browser implements HyperlinkListener,
             openURL(he.getURL().toExternalForm());
             if (history == null) history = new Vector();
             history.add(he.getURL().toExternalForm());
-
+            positionOfPage= history.size()-1;
             if (history.size() > 1)
                 back.setEnabled(true);
 
@@ -153,11 +191,52 @@ public class Browser implements HyperlinkListener,
         if (command.equals(GO)) {
             openURL(tf.getText());
             history.add(tf.getText());
+            positionOfPage= history.size()-1;
+            forward.setEnabled( false );
         }
 
         if (command.equals(Home)) {
-            openURL(source); 
+            openURL( fileName );
+            history.add( fileName );
+            positionOfPage= history.size()-1;
+            forward.setEnabled( false ); 
+            
         }
+	   if (command.equals(Back)) {
+            try {
+               
+                String lastURL = (String) history.elementAt(positionOfPage-1);
+                //history.removeElement(lastURL);
+                //lastURL = (String) history.lastElement();
+                ep.setPage(lastURL);
+					 tf.setText(lastURL);
+					 
+                positionOfPage--;
+                if (positionOfPage <=0)
+                    back.setEnabled(false);
+                if( positionOfPage+1 >= history.size())
+                  forward.setEnabled( false);
+                else
+                   forward.setEnabled(true);
+            } catch (Exception e) {
+                System.out.println("ERROR: Trouble fetching URL" + e);
+            }
+        }
+     if (command.equals(Forward)) {
+	      positionOfPage++;
+          
+          try{
+            String thisURL = (String)history.elementAt( positionOfPage);
+            ep.setPage(thisURL);
+            tf.setText(thisURL);
+            if( positionOfPage+1 >= history.size())
+                 forward.setEnabled( false);
+            if( positionOfPage>0)
+              back.setEnabled(true);
+          }catch(Exception ss){
+              ss.printStackTrace();
+          }   
+       }	  
 
         if (command.equals(Print)) {
             PrinterJob printJob = PrinterJob.getPrinterJob();
@@ -182,25 +261,12 @@ public class Browser implements HyperlinkListener,
                 }
         }
         
-        if (command.equals(Back)) {
-            try {
-                String lastURL = (String) history.lastElement();
-
-                history.removeElement(lastURL);
-                lastURL = (String) history.lastElement();
-                // JOptionPane.showMessageDialog(null, lastURL);
-                ep.setPage(lastURL);
-                if (history.size() == 1)
-                    back.setEnabled(false);
-            } catch (Exception e) {
-                System.out.println("ERROR: Trouble fetching URL" + e);
-            }
-        }
+     
     }//end actionPerformed()
 
     public static void main(String[] args) {
-        //Browser b = new Browser("c:");
-        Browser b = new Browser();
+      
+        Browser b = new Browser(("file:///c:\\ISAW\\IsawHelp\\Command\\CommandPane.html"));    
     }
 
 }// end Browser class
