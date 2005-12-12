@@ -76,7 +76,7 @@ $SmpFile        LoadFileString("C:\Isaw\SampleRuns\glad8095.run") Sample run fil
 $BkgFile        LoadFileString("C:\Isaw\SampleRuns\glad8093.run") Background run file:
 
 # dead detector list:
-$REDPAR LoadFileString("C:\Isaw\Databases\gladrun_new.par") Bad detector list file:
+$REDPAR LoadFileString("C:\Isaw\Databases\gladrun.par") Bad detector list file:
 $lcutoff Float(20.0) lower cutoff value to remove a data block:
 
 # VANCAL (vanadium calibration function) setup:
@@ -105,7 +105,7 @@ $DoMerge 	Boolean(true)	Merge data?
 
 $QCut	Float(25.0) Qcut:
 
-runinfo=GLAD_CONFIGURE("1", "Si 1 O 2", 0.0662, "1", configfile, false)
+runinfo=GLAD_CONFIGURE("1", "Si 1 O 2", 0.0662, "1", 0, 0, configfile, false)
 
 mon_nrm_van=GLAD_CRUNCH(runinfo, VanFile, true, REDPAR)
 #mon_nrm_can=GLAD_CRUNCH(runinfo, CanFile)
