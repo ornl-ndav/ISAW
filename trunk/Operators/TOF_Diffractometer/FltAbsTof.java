@@ -28,6 +28,10 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ * $Log$
+ * Revision 1.2  2005/12/15 20:52:55  dennis
+ * Added tag for CVS logging so that future modifications can be tracked.
+ *
  *
  */
  
