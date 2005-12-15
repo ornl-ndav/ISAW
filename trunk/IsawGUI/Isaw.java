@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.241  2005/12/15 20:55:29  dennis
+ *  Changed version to 1.7.2 rc 1
+ *
  *  Revision 1.240  2005/11/21 22:54:07  dennis
  *  Changed version to 1.7.2 beta 6
  *
@@ -868,7 +871,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.7.2 beta 6";
+          version="1.7.2 rc 1";
         else
           version=SharedData.VERSION;
 
