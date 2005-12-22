@@ -25,6 +25,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2005/12/22 17:54:24  dennis
+ * Replaced  clear == CLEAR  with  clear.equalsIgnoreCase(CLEAR),
+ * so that the clear/set string works properly, using any string
+ * passed in as a parameter, not just the predfined Strings.
+ *
  * Revision 1.3  2005/10/27 20:51:47  dennis
  * Modified to use the new setSelectFlagsByIndex() in DataSet.
  *
@@ -175,7 +180,7 @@ public class SelectByIndex extends    DS_Attribute
     String  clear     = getParameter(1).getValue().toString();
 
     boolean select = true;
-    if( clear == CLEAR )
+    if( clear.equalsIgnoreCase(CLEAR) )
       select = false;
     
     int      index_list[] = IntList.ToArray(index_str);
