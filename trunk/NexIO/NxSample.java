@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2005/12/29 23:13:50  rmikk
+ * Removed useless == comparisons with Float.NaN
+ *
  * Revision 1.5  2004/12/23 18:47:50  rmikk
  * Now reads the sample_orientation Nexus field
  *
@@ -99,7 +102,7 @@ public class NxSample{
       if( val != null ){
         Float S = new NxData_Gen().cnvertoFloat( val );
         if( S!= null )
-          if( S.floatValue()!= ( java.lang.Float.NaN ) ) 
+          if( Float.isNaN(S.floatValue()) ) 
             DS.setAttribute( new FloatAttribute( Attribute.TEMPERATURE,
                                                  S.floatValue() ) );
       } 
@@ -110,7 +113,7 @@ public class NxSample{
       if( val != null ){
         Float S = new NxData_Gen().cnvertoFloat( val );
         if( S!= null )
-          if( S.floatValue()!= ( java.lang.Float.NaN ) ) 
+          if( !Float.isNaN(S.floatValue()) ) 
             DS.setAttribute( new FloatAttribute( Attribute.PRESSURE,
                                                  S.floatValue() ) );
       } 

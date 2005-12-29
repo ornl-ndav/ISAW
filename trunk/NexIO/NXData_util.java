@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2005/12/29 23:19:23  rmikk
+ * Removed useless == comparisons with Float.NaN
+ *
  * Revision 1.28  2005/06/24 03:30:49  rmikk
  * Added some checks to eliminate array out of bounds errors with
  *   erroneous data
@@ -961,7 +964,7 @@ public class NXData_util{
 
     float f = NxNodeUtils.getConversionFactor( oldUnits, newUnits );
 
-    if( f == Float.NaN )
+    if( Float.isNaN( f ) )
       return;
     
     for( int i = 0; i < d.length; i++ )

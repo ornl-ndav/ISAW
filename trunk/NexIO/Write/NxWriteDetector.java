@@ -30,7 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2005/12/29 23:17:02  rmikk
+ * Removed useless == comparisons with Float.NaN
+ *
  * Revision 1.14  2005/02/03 07:22:08  kramer
+ *
  * Now when the processDS(....) method is invoked on a NxWriteLog object,
  * (new DataSet()) is passed to the method instead of 'null' (for the
  * DataSet parameter).
@@ -602,7 +606,7 @@ public class NxWriteDetector{
       x = new float[ 1 ];
       if( ng.cnvertoFloat( X ) == null ){
         // do nothing
-      }else if( ng.cnvertoFloat( X ).floatValue() != Float.NaN ){
+      }else if(! Float.isNaN( ng.cnvertoFloat( X ).floatValue())){
         x[ 0 ] = ng.cnvertoFloat( X ).floatValue();
         rank = new int[ 1 ];
         rank[ 0 ] = 1;
@@ -1083,7 +1087,7 @@ public class NxWriteDetector{
       x = new float[ 1 ];
       if( ng.cnvertoFloat( X ) == null ){
         // do nothing
-      }else if( ng.cnvertoFloat( X ).floatValue() != Float.NaN ){
+      }else if(! Float.isNaN( ng.cnvertoFloat( X ).floatValue()) ){
         x[ 0 ] = ng.cnvertoFloat( X ).floatValue();
         rank = new int[ 1 ];
         rank[ 0 ] = 1;
