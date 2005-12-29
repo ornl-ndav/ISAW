@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2005/12/29 23:14:06  rmikk
+ * Removed useless == comparisons with Float.NaN
+ *
  * Revision 1.5  2005/03/16 17:47:58  rmikk
  * Used static references for static methods
  *
@@ -79,12 +82,12 @@ public class NxBeam{
         else
           f = Float.NaN;
       else f = Float.NaN;
-      if( f == Float.NaN){
+      if( Float.isNaN(f)){
         Float F = ng.cnvertoFloat( O );
         if( F != null)
           f = F.floatValue();
       }
-      if( f != Float.NaN){
+      if( !Float.isNaN(f )){
         FloatAttribute FA=new FloatAttribute(Attribute.NOMINAL_ENERGY_IN,(f));
        
         DS.setAttribute( FA );
@@ -107,12 +110,12 @@ public class NxBeam{
         else
           f = Float.NaN;
       else f = Float.NaN;
-      if( f == Float.NaN){
+      if( Float.isNaN(f)){
         Float F = ng.cnvertoFloat( O );
         if( F != null)
           f = F.floatValue();
       }
-      if( f != Float.NaN){
+      if(!Float.isNaN( f)){
         FloatAttribute FA = new FloatAttribute( Attribute.ENERGY_OUT,(f));
         
         DS.setAttribute( FA );
