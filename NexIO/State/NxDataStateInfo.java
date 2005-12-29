@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2005/12/29 23:04:11  rmikk
+ * Now checks for the link attribute in every SDS child of an NXdata node
+ *
  * Revision 1.4  2005/06/04 20:09:51  rmikk
  * Fixes the problem with the dimensions of NXdata.data that Fortran
  * programmers get.  This works only with the newer NeXus files( the
@@ -154,17 +157,17 @@ public class NxDataStateInfo extends StateInfo{
               if( O != null)
               if( O instanceof int[]){                 
                  hasIntIDField = true;
-        }
-           String L = ConvertDataTypes.StringValue(child.getAttrValue("link")); 
-          
-           if( L != null){
-              linkName = L;
-           }         
+              }
+                    
          }//Node Class is SDS   
-
+         String L = ConvertDataTypes.StringValue(child.getAttrValue("link")); 
+          
+         if( L != null){
+             linkName = L;
+         }
         }  //for loop
         NexIO.Util.NexUtils.disFortranDimension(dimensions, xvals_length);
-
+        
      }
       
   }
