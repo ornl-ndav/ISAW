@@ -31,6 +31,14 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2005/12/29 20:22:22  dennis
+ * Replaced 'chisq == Double.isNaN'  with  'Double.isNaN(chisq)'
+ * The original form does NOT properly check for the returned chisq
+ * value being the error return flag, NaN.  This fix will not affect
+ * the action of the operator, when everything is working correctly,
+ * but it will now return a meaningful error string, if the data is
+ * invalid.
+ *
  * Revision 1.6  2005/08/06 21:58:00  rmikk
  * ReWrote so that no peaks objects are removed
  *
@@ -448,7 +456,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       }
 
       chisq   = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
-      if ( chisq == Double.NaN )
+      if ( Double.isNaN( chisq ) )
         return new ErrorString( "ERROR in LsqrsJ: " + 
                                 " BestFitMatrix calculation failed" );
       chisq   = 0.;  // reset chisq
