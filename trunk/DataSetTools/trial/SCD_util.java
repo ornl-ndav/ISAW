@@ -26,6 +26,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/01/04 22:37:25  dennis
+ * Removed reference to test_ub, and use method in the current
+ * set of utilities.
+ *
  * Revision 1.2  2006/01/04 04:26:52  dennis
  * Modified ResidualError function.
  * It now first calculates the UB matrix, then factors the UB matrix
@@ -111,7 +115,7 @@ public class SCD_util
                                                        // to factor out Bc then
     LinearAlgebra.copy(lattice_calc.getU( U1_B1 ),U1); // get the other two 
     LinearAlgebra.copy(lattice_calc.getB( U1_B1 ),B1); // factors U1 and B1
-
+/*
     System.out.println("U1 = ");
     LinearAlgebra.print( U1 );
 
@@ -120,7 +124,7 @@ public class SCD_util
 
     System.out.println("Bc = ");
     LinearAlgebra.print( Bc );
-
+*/
     double U1_Bc[][] = LinearAlgebra.mult( U1, Bc );
 
     double U1_Bc_hkl[][] = new double[n_peaks][];
@@ -284,7 +288,7 @@ public class SCD_util
     System.out.println( "Residual lattice params = " );
     LinearAlgebra.print( residual_params );
 
-    test_ub.show_all_column_dot_products( U1 );
+    ShowAllColumnDotProducts( U1 );
     System.out.println("Determinant of U1 = " + 
                         LinearAlgebra.determinant( U1 ) );
   }
