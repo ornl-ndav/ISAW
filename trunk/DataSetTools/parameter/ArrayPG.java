@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2006/01/04 17:50:58  rmikk
+ *  Caught a parse error for this case only.  The system quits hanging
+ *
  *  Revision 1.42  2004/05/01 00:41:20  bouzekc
  *  clear() now sets a new Vector all the time.  Calling Vector.clear() did
  *  not work with ISAW DataSets.
@@ -311,7 +314,12 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
 
     if( getInitialized(  ) ) {
       val   = ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).getText(  );
-      val   = StringtoArray( val.toString(  ) );
+      try{
+       
+         val   = StringtoArray( val.toString(  ) );
+      }catch(Throwable ss){
+        return super.getValue();
+      }
     }
 
     return val;
