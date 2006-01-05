@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.32  2006/01/05 17:17:21  rmikk
+ * Fixed errors from changing order of parameters
+ *
  * Revision 1.31  2006/01/05 14:55:12  rmikk
  * Added a parameter for cell type for constrained optimization
  *
@@ -265,9 +268,9 @@ public class LsqrsJForm extends Form {
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
-        new int[]{ 0, 1, 2 }, new int[]{ 3, 5, 6 }, new int[]{ 4, 7 } );
+        new int[]{ 0, 1, 2 }, new int[]{ 3,5, 6, 7 }, new int[]{ 4, 8 } );
     } else {  //standalone or first time form
-      setParamTypes( null, new int[]{ 0, 1, 2, 3, 5, 6 }, new int[]{ 4, 7 } );
+      setParamTypes( null, new int[]{ 0, 1, 2, 3,5, 6, 7 }, new int[]{ 4, 8 } );
     }
   }
 
@@ -363,8 +366,8 @@ public class LsqrsJForm extends Form {
                           .toString(  );
 
 
-    cellType =  getParameter(5).toString();
-    
+    cellType =  ((ChoiceListPG)getParameter(5)).getValue().toString();
+    System.out.println("cellType is "+ cellType);
     //get the peak intensity threshold
     param          = ( IParameterGUI )getParameter( 6 );
     threshold      = ( Integer )( param.getValue(  ) );
@@ -436,7 +439,7 @@ public class LsqrsJForm extends Form {
     param.setValid( true );
 
     //set the log file name parameter
-    param = ( IParameterGUI )getParameter( 7 );
+    param = ( IParameterGUI )getParameter( 8 );
     param.setValue( obj.toString(  ) );
     param.setValid( true );
     SharedData.addmsg( "--- LsqrsJForm finished. ---" );
