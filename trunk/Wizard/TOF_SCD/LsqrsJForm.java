@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.31  2006/01/05 14:55:12  rmikk
+ * Added a parameter for cell type for constrained optimization
+ *
  * Revision 1.30  2004/06/04 19:03:21  dennis
  * Changed minimum run number length from 5 to 4.  This is a consequence
  * of using SCD0 as the instrument prefix in the integrate form.
@@ -243,8 +246,19 @@ public class LsqrsJForm extends Form {
       new IntArrayPG( 
         "Restrict Peaks Sequence Numbers (blank for all)", null, false ) );  //3
     addParameter( new ArrayPG( "Matrix Files", new Vector(  ), false ) );  //4
-    addParameter( 
-      new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );  //5
+    
+    ChoiceListPG choices = new ChoiceListPG("Cell Type Constraint","Triclinic");
+
+    choices.addItem("Monoclinic(b unique)");
+    choices.addItem("Monoclinic(a unique)");
+    choices.addItem("Monoclinic(c unique)");
+    choices.addItem("Orthorhombic");
+    choices.addItem("Tetragonal");
+    choices.addItem("Rhombohedral");
+    choices.addItem("Hexagonal");
+    choices.addItem("Cubic");
+    addParameter( choices) ;   
+    addParameter(  new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );  //5
     addParameter( 
       new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );  //6
     setResultParam( new LoadFilePG( "JLsqrs Log File", " ", false ) );  //7
@@ -318,6 +332,7 @@ public class LsqrsJForm extends Form {
     String peaksDir;
     String restrictSeq;
     String matFileName;
+    String cellType;
     String expName;
     String range;
     String peaksName;
@@ -347,12 +362,15 @@ public class LsqrsJForm extends Form {
     restrictSeq    = param.getValue(  )
                           .toString(  );
 
+
+    cellType =  getParameter(5).toString();
+    
     //get the peak intensity threshold
-    param          = ( IParameterGUI )getParameter( 5 );
+    param          = ( IParameterGUI )getParameter( 6 );
     threshold      = ( Integer )( param.getValue(  ) );
 
     //get the detector border range - leave in string form for LsqrsJ
-    param          = ( IParameterGUI )getParameter( 6 );
+    param          = ( IParameterGUI )getParameter( 7 );
     range          = ( ( IntArrayPG )param ).getStringValue(  );
 
     //peaks file
@@ -370,6 +388,8 @@ public class LsqrsJForm extends Form {
                 .setValue( threshold );
     leastSquares.getParameter( 6 )
                 .setValue( range );
+    leastSquares.getParameter( 7 )
+                .setValue( cellType );
 
     //validate the parameters and init the progress bar variables
     Object validCheck = validateSelf(  );
