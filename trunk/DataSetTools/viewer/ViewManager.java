@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.70  2006/01/05 17:26:46  rmikk
+ *  Eliminated a debug print
+ *
  *  Revision 1.69  2005/12/02 18:13:22  rmikk
  *  Fixed a typo error.
  *
@@ -1364,7 +1367,7 @@ private float solve( float new_x ) // find what x in the original DataSet maps
       }catch(Exception ss){
          return;
       }
-     System.out.println("URL for viewer is "+url);
+     
      IsawGUI.Browser x=(new IsawGUI.Browser( url ));
     }
    
