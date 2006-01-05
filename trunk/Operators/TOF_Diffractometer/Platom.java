@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2006/01/05 22:59:32  taoj
+ * minor changes
+ *
  * Revision 1.2  2005/05/05 02:06:10  taoj
  * added into the cvs
  *
@@ -146,7 +149,7 @@ public class Platom {
       fep=fiep*fepi;
       fl1 = (float)((fim1*fmax +fep1*fepi)/(fmx+fep));
       fl2 = (float)((fim2*fmax +fep2*fepi)/(fmx+fep));
-/* code generated using Maple;
+/* code generated using Maple IX;
     float lambda0 = wat, a=alpha, lambda1=al1,lambda2=al2;
     fl1 = (float)(lambda * (-0.5e1 * fmax * Math.pow(lambda0, 0.4e1) * Math.pow(lambda, -0.6e1) * Math.exp(-lambda0 * lambda0 * Math.pow(lambda, -0.2e1)) + 0.2e1 * fmax * Math.pow(lambda0, 0.6e1) * Math.pow(lambda, -0.8e1) * Math.exp(-lambda0 * lambda0 * Math.pow(lambda, -0.2e1)) - fepi / Math.pow(lambda, (double) (1 + 2 * a)) / (0.1e1 + Math.exp((lambda - lambda1) / lambda2)) * (double) (1 + 2 * a) / lambda - fepi / Math.pow(lambda, (double) (1 + 2 * a)) * Math.pow(0.1e1 + Math.exp((lambda - lambda1) / lambda2), -0.2e1) / lambda2 * Math.exp((lambda - lambda1) / lambda2)) / (fmax * Math.pow(lambda0, 0.4e1) * Math.pow(lambda, -0.5e1) * Math.exp(-lambda0 * lambda0 * Math.pow(lambda, -0.2e1)) + fepi / Math.pow(lambda, (double) (1 + 2 * a)) / (0.1e1 + Math.exp((lambda - lambda1) / lambda2))));
     fl2 = (float)(lambda * lambda * (0.30e2 * fmax * Math.pow(lambda0, 0.4e1) * Math.pow(lambda, -0.7e1) * Math.exp(-lambda0 * lambda0 * Math.pow(lambda, -0.2e1)) - 0.26e2 * fmax * Math.pow(lambda0, 0.6e1) * Math.pow(lambda, -0.9e1) * Math.exp(-lambda0 * lambda0 * Math.pow(lambda, -0.2e1)) + 0.4e1 * fmax * Math.pow(lambda0, 0.8e1) * Math.pow(lambda, -0.11e2) * Math.exp(-lambda0 * lambda0 * Math.pow(lambda, -0.2e1)) + fepi / Math.pow(lambda, (double) (1 + 2 * a)) / (0.1e1 + Math.exp((lambda - lambda1) / lambda2)) * (double) Math.pow((double) (1 + 2 * a), (double) 2) * Math.pow(lambda, -0.2e1) + 0.2e1 * fepi / Math.pow(lambda, (double) (1 + 2 * a)) * Math.pow(0.1e1 + Math.exp((lambda - lambda1) / lambda2), -0.2e1) * (double) (1 + 2 * a) / lambda / lambda2 * Math.exp((lambda - lambda1) / lambda2) + fepi / Math.pow(lambda, (double) (1 + 2 * a)) / (0.1e1 + Math.exp((lambda - lambda1) / lambda2)) * (double) (1 + 2 * a) * Math.pow(lambda, -0.2e1) + 0.2e1 * fepi / Math.pow(lambda, (double) (1 + 2 * a)) * Math.pow(0.1e1 + Math.exp((lambda - lambda1) / lambda2), -0.3e1) * Math.pow(lambda2, -0.2e1) * Math.pow(Math.exp((lambda - lambda1) / lambda2), 0.2e1) - fepi / Math.pow(lambda, (double) (1 + 2 * a)) * Math.pow(0.1e1 + Math.exp((lambda - lambda1) / lambda2), -0.2e1) * Math.pow(lambda2, -0.2e1) * Math.exp((lambda - lambda1) / lambda2)) / (fmax * Math.pow(lambda0, 0.4e1) * Math.pow(lambda, -0.5e1) * Math.exp(-lambda0 * lambda0 * Math.pow(lambda, -0.2e1)) + fepi / Math.pow(lambda, (double) (1 + 2 * a)) / (0.1e1 + Math.exp((lambda - lambda1) / lambda2))));

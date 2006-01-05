@@ -30,6 +30,9 @@
  * 
  * Modified:
  * $Log$
+ * Revision 1.6  2006/01/05 22:58:29  taoj
+ * minor changes
+ *
  * Revision 1.5  2005/10/27 17:58:42  taoj
  * new version
  *
@@ -541,6 +544,8 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
     AttributeList    attr_list_d, attr_list_m;
     float[] wvals, effd;
     float cc, cd, cd0, cm, cm0;
+//    float lambdamin = 2.0f, lambdamax = 2.0f;
+    float min_d = 1.9f, max_d = 2.2f, min_x, max_x;
 
 
     int NUMQ = ((Integer)runinfo.ExpConfiguration.get("GLAD.ANALYSIS.NUMQ")).intValue();
@@ -591,7 +596,13 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
       tof_length_d = ((Float)attr_list_d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue()+data_params[1];
       domega_d = data_params[2];
       psi = data_params[3];
-      
+
+// generate the calibration data file; 
+/*     
+      min_x = tof_calc.TOFofDSpacing(scattering_angle, tof_length_d, min_d);
+      max_x = tof_calc.TOFofDSpacing(scattering_angle, tof_length_d, max_d);
+      System.out.println(IDd+"\t"+scattering_angle*180.0f/(float)Math.PI+"\t"+data_params[1]+"\t"+data_params[1]+"\t"+min_x+"\t"+max_x);
+*/      
       t_vals_d = dt.getX_scale().getXs();
       y_vals_dc = dt.getY_values();
       y_vals_dr = dt.getErrors();
@@ -614,6 +625,11 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
         W_vals_d[k] = tof_calc.Wavelength(tof_length_d, t_vals_d[k]);
         Q_vals_d[k] = tof_calc.DiffractometerQ(scattering_angle, tof_length_d, t_vals_d[k]); 
       }
+
+/*
+      if (W_vals_d[0] < lambdamin) lambdamin = W_vals_d[0];
+      if (W_vals_d[ndetchannel] > lambdamax) lambdamax = W_vals_d[ndetchannel];
+*/
 
       W_scale_d = new VariableXScale( W_vals_d );     
       new_dt_W = Data.getInstance(W_scale_d, y_vals_dc, IDd);
@@ -657,6 +673,7 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
     ds.setX_units("/"+FontUtil.ANGSTROM);
     ds.setX_label( "Q" );
     ds.setY_label("Normalized Intensity");
+//    System.out.println("lambdamin: "+lambdamin+" lambdamax: "+lambdamax);
   }
 
   /**
@@ -806,12 +823,12 @@ public class GLADCrunch implements Wrappable, IWrappableWithCategoryList {
     testconf.hasCan = false;
     DataSet ds0 = (DataSet)testconf.calculate();      
     testcrunch.ds0 = ds0;
-    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8094.run");
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad9027.run");
     testcrunch.noDeadDetList = true;
-    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/cvs/ISAW/Databases/gladrun2.par");
+    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/cvs/ISAW/Databases/gladrun.par");
     Vector monnrm = (Vector) testcrunch.calculate();
-    ViewManager view_nrm = new ViewManager((DataSet)monnrm.get(0), IViewManager.IMAGE);
-    ViewManager view_mon = new ViewManager((DataSet)monnrm.get(1), IViewManager.IMAGE);
+//    ViewManager view_mon = new ViewManager((DataSet)monnrm.get(0), IViewManager.IMAGE);
+    ViewManager view_nrm = new ViewManager((DataSet)monnrm.get(1), IViewManager.IMAGE);
 
 /*
       float[] wvals = new float[41];
