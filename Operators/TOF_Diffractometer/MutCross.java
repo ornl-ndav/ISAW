@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2006/01/05 22:59:22  taoj
+ * minor changes
+ *
  * Revision 1.3  2005/12/15 20:52:56  dennis
  * Added tag for CVS logging so that future modifications can be tracked.
  *
@@ -47,12 +50,12 @@ import DataSetTools.util.SharedData;
 
 /**
  * This class sets up a static HashMap containing atomic scattering parameter information,
- * and also calculate a sample's scattering parameters. It corresponds to the CROSS
+ * and also calculates a sample's scattering parameters. It corresponds to the CROSS
  * program on GLAD.
  */
 public class MutCross {
   public static final float RTLAMBDA = 1.7979f; //the reference wavelength at 2200 m/s neutron
-  public static String defSigmaTable = null; 
+  public static String defSigmaTable = null;
 
   static {
     if (GLADRunProps.ISAWDBDirectory != null) {
@@ -83,7 +86,7 @@ public class MutCross {
       try {
         getSigmaTable(defSigmaTable);      
       } catch(Throwable t) {
-        System.out.println("\n***MutCross() ERROR***\n");
+        System.out.println("\n***MutCross() ERROR***\n"+"defSigmaTable: "+defSigmaTable);
         t.printStackTrace();
       }
   }

@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2006/01/05 22:58:46  taoj
+ * minor changes
+ *
  * Revision 1.5  2005/10/27 17:56:44  taoj
  * new version
  *
@@ -230,7 +233,7 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
 //        delta = mul[0]/(mul[0]+mul[1]);
       
 //            if (k == 0) System.out.println("i: "+i+" y_vals_n[0]: "+y_vals_n[k]);
-        if (imask == 2) {//outer shells: (can);
+        if (imask == 2) {//empty can;
           y_vals_n[k] -= mul[1];
 //          y_vals_n[k] *= delta;
 //            if (k==0) System.out.println("cell mul[1]: "+mul[1]+" abs[3]: "+abs[3]+" abs[2]: "+abs[2]);     
@@ -240,13 +243,13 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
           y_vals_n[k] *= alpha;
           e_vals_n[k] *= alpha;
         }
-        else if (imask == 4) {
+        else if (imask == 4) {//empty furnace;
           y_vals_n[k] -= mul[1];
           alpha = abs_s[3]/abs_s[4]-abs_s[2]/abs_c[1]*abs_c[2]/abs_s[4];
           y_vals_n[k] *= alpha;
           e_vals_n[k] *= alpha;
         }
-        else if (imask == 6) {
+        else if (imask == 6) {//empty can with furnace;
           y_vals_n[k] -= mul[1];
           alpha = abs_s[2]/abs_c[1];
           y_vals_n[k] *= alpha;
