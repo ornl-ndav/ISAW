@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/01/05 22:25:32  rmikk
+ * Now uses the scripts from the scratch scripts directory.  These scripts 
+ *   can be customized
+ *
  * Revision 1.2  2005/08/05 20:25:08  rmikk
  * Fixed parameters, etc. so that they now run.  The Initial peaks wizard gives
  * correct answers.
@@ -80,8 +84,8 @@ public class InitialPeaksWizard_new extends Wizard {
      path = path.replace('\\','/');
      if( !path.endsWith("/"))
        path +="/";
-     path += "Scripts/";
-     addForm( new ScriptForm(path+"TOF_SCD/find_multiple_peaks1.iss",
+     path += "Wizard/TOF_SCD/Scripts_new/";
+     addForm( new ScriptForm(path+"find_multiple_peaks1.iss",
                new PlaceHolderPG("Peaks", new Vector())));
      addForm( new OperatorForm( new BlindJ_base(),
             new ArrayPG("Orientation Matrix", null),
@@ -94,7 +98,7 @@ public class InitialPeaksWizard_new extends Wizard {
      addForm( new OperatorForm( new LsqrsJ_base(),
                  new ArrayPG("Orientation Matrix", new Vector()),
                  new int[]{0}));
-     addForm( new ScriptForm(path+"TOF_SCD/JIndxSave.iss",
+     addForm( new ScriptForm(path+"JIndxSave.iss",
                     new StringPG("Result", "")));
     /* addForm( new OperatorForm( new IndexJ_base(),
                  new StringPG("Log info", "JIndxS"),
