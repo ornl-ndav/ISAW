@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.242  2006/01/05 17:49:14  rmikk
+ *  Used the new Browser for several options in the help menu
+ *
  *  Revision 1.241  2005/12/15 20:55:29  dennis
  *  Changed version to 1.7.2 rc 1
  *
@@ -1836,14 +1839,16 @@ public class Isaw
       if( s.equals(TUTORIAL_MI)){
          String S = DataSetTools.util.FilenameUtil.helpDir("user/ISAWTutorials.html");
 
-         HTMLPage H = new HTMLPage( S ) ;
-         sizeHTMLViewer(H,.95f,.95f);
+         //HTMLPage H = new HTMLPage( S ) ;
+         //sizeHTMLViewer(H,.95f,.95f);
+         new Browser(S);
       }
       if( s.equals(ISAWPROPS_MI)){
         String S = DataSetTools.util.FilenameUtil.helpDir("user/IsawProps.html");
 
-        HTMLPage H = new HTMLPage( S ) ;
-        sizeHTMLViewer(H,.6f,.6f);
+        //HTMLPage H = new HTMLPage( S ) ;
+        //sizeHTMLViewer(H,.6f,.6f);
+        new Browser(S);
       }
       if( s.equals("Viewers")){
         String S=DataSetTools.util.FilenameUtil.helpDir("Viewers/ISAW_Viewer_Help.html");
@@ -1856,8 +1861,9 @@ public class Isaw
       if( s.equals(OPERATORINFO_MI)){
         String S = DataSetTools.util.FilenameUtil.helpDir("user/Operators.html");
 
-        HTMLPage H = new HTMLPage( S ) ;
-        sizeHTMLViewer(H,.9f,.9f);
+       // HTMLPage H = new HTMLPage( S ) ;
+       // sizeHTMLViewer(H,.9f,.9f);
+         new Browser(S);
       }
 
 
