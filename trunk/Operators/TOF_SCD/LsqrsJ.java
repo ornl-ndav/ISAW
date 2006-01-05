@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.31  2006/01/05 14:57:23  rmikk
+ * Added a parameter for cell type for constrained optimization
+ *
  * Revision 1.30  2005/12/29 20:22:20  dennis
  * Replaced 'chisq == Double.isNaN'  with  'Double.isNaN(chisq)'
  * The original form does NOT properly check for the returned chisq
@@ -178,6 +181,7 @@ import DataSetTools.parameter.IntArrayPG;
 import DataSetTools.parameter.IntegerPG;
 import DataSetTools.parameter.LoadFilePG;
 import DataSetTools.parameter.SaveFilePG;
+import DataSetTools.parameter.ChoiceListPG;
 import DataSetTools.parameter.StringPG;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
@@ -250,6 +254,21 @@ public class LsqrsJ extends GenericTOF_SCD {
     //6
     addParameter( 
       new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );
+      
+    ChoiceListPG choices = new ChoiceListPG("Cell Type Constraint","Triclinic");
+
+    choices.addItem("Monoclinic(b unique)");
+    choices.addItem("Monoclinic(a unique)");
+    choices.addItem("Monoclinic(c unique)");
+    choices.addItem("Orthorhombic");
+    choices.addItem("Tetragonal");
+    choices.addItem("Rhombohedral");
+    choices.addItem("Hexagonal");
+    choices.addItem("Cubic");
+       
+    //7   
+    addParameter( choices) ;   
+
   }
 
   /**
@@ -318,6 +337,7 @@ public class LsqrsJ extends GenericTOF_SCD {
     int[] seq_nums   = ( ( IntArrayPG )getParameter( 2 ) ).getArrayValue(  );
     int threshold    = ( ( IntegerPG )getParameter( 5 ) ).getintValue(  );
     int[] keepRange  = ( ( IntArrayPG )getParameter( 6 ) ).getArrayValue(  );
+    String cellType = getParameter(7).toString();
     float[][] matrix = null;
     int lowerLimit;
     int upperLimit;
