@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2006/01/05 23:00:45  taoj
+ * new code handling the self scattering problem for hydrogenous samples
+ *
  * Revision 1.5  2005/10/27 17:58:08  taoj
  * new version
  *
@@ -61,6 +64,8 @@ import gov.anl.ipns.Util.Numeric.arrayUtil;
 import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
 import java.util.Vector;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
+import gov.anl.ipns.MathTools.Functions.OrthoPolyFit;
+import gov.anl.ipns.MathTools.Functions.ChebyshevSum;
 
 /**
  * This class subtracts the self-scattering part from sample differential 
@@ -82,6 +87,13 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
   public float temperature = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.TEMP");
   public float wmin = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.COMB.MINW");
   public float wmax = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.COMB.MAXW");
+  public boolean doPLATOM = true;
+  public float rho = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.EXP.SMP.DENSITY");
+  public int npoly = 3;
+  public float qsteph = 0.05f;
+  public float qminh = 0.05f;
+  public float Rmin;
+  
 
   //~ Methods ******************************************************************
 
@@ -159,8 +171,10 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
             y_vals_vmr, e_vals_vmr;
     float[] data_params_d = new float[4], data_params_v = new float[4];
     XScale Q_scale_vm;
-    int ngrps, ndetchannel, nmonchannel;
+    int ngrps, nmonchannel;
     int istart, iend;
+    float qk, qmin, qmax, qdif, qfac;
+    int n1, n2;
     
     GLADScatter smprun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
     String[] list_elements = smprun.symbol;
@@ -229,13 +243,95 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
       y_vals_vmr = dmv.getY_values();
       e_vals_vmr = dmv.getErrors();
       
- 
+      n1 = istart; n2 = iend;      
       for (int k = istart; k <= iend; k++){
         q_d = 0.5f*(Q_vals_d[k]+Q_vals_d[k+1]);
-        lambda_d = tof_calc.WavelengthofDiffractometerQ(scattering_angle_d, q_d);
-        p = Platom.plaatom(lambda_d, list_elements, list_fractions, temperature, scattering_angle_d, d1, d2, false);
-        y_vals_n[k] -= p;
-            
+        lambda_d = tof_calc.WavelengthofDiffractometerQ(scattering_angle_d, q_d);        
+        if (doPLATOM) {
+          p = Platom.plaatom(lambda_d, list_elements, list_fractions, temperature, scattering_angle_d, d1, d2, false); 
+          y_vals_n[k] -= p;
+        } else {
+          if (lambda_d > wmin) n1 = k;
+          else n2 = k;
+          if (lambda_d < wmax) break;          
+        }
+      }
+      
+      if (!doPLATOM) {
+        qmin = Q_vals_d[n1];
+        qmax = Q_vals_d[n2];
+        n1 = (int)Math.ceil((qmax-qmin)/qsteph)+1;
+        float[] qhs = new float[n1];
+        for (int k = 0; k < n1; k++) qhs[k] = qmin + k*qsteph;
+        XScale qhscale = XScale.getInstance(qhs);
+        dt.resample( qhscale, IData.SMOOTH_NONE );
+        
+        n1 = y_vals_n.length;
+        double A3[] = OrthoPolyFit.opolyfit_h(Q_vals_d, y_vals_n, npoly+1)[npoly];
+        A3[0] /= 2;
+        ChebyshevSum ycheby3 = new ChebyshevSum(A3);
+        qmin = Q_vals_d[0];
+        qmax = Q_vals_d[n1-1];
+        for (int k = 0; k < n1; k++) {
+          qk = (2*Q_vals_d[k]-qmax-qmin)/(qmax-qmin);
+          y_vals_n[k] -= ycheby3.getValue(qk);
+        }
+        
+        float anfac = smprun.bbarsq;
+        if (anfac == 0.0f) throw new RuntimeException("!!!!!!sample bbarsq can't be zero!!!!!!");
+        float rmax = Rmin;
+        float rstep = (float)Math.PI/qmax;
+        int nr = Math.min((int)(rmax/rstep), 1000);
+        float pifac = (float) (0.5f*Math.PI/qmax);
+        float acons = 0.0f;
+        n2 = (int)(0.2f/qsteph);
+        for (int k = 0; k < n2; k++) acons += y_vals_n[n1-1-k];
+        acons /= n2;
+        float qs[] = new float[n1];
+        float sofq[] = new float[n1];
+        float r[] = null, gofr[] = null;
+        for (int k = 0; k < n1; k++) {
+          qs[k] = 0.5f*(Q_vals_d[k] + Q_vals_d[k+1]);
+          qdif = Q_vals_d[k+1] - Q_vals_d[k];
+          qfac = qs[k]*pifac;
+          sofq[k] = qs[k]*(y_vals_n[k]-acons)*qdif;          
+        }
+        float trfac = (float)(0.5f/Math.PI/Math.PI/rho);
+        float qr, sum;
+        if (nr > 0) {
+          pifac = (float) (0.5f*Math.PI/(nr*rstep));
+          r = new float[nr];
+          gofr = new float[nr];
+          float rfac, wfac, sinqr;
+          for (int j = 0; j < nr; j++) {
+            r[j] = (j+1)*rstep;
+            rfac = trfac;
+            wfac = r[j]*pifac;
+            sum = 0.0f;
+            for (int k = 0; k < n1; k++) {
+              qr = qs[k]*r[j];
+              sinqr = (float)Math.sin(qr);
+              sum += sofq[k]*sinqr;
+            }
+            gofr[j] = (float)(rfac*sum*Math.cos(wfac) + r[j]*anfac);
+          }                                 
+        }
+        trfac = (float) (4*Math.PI*rho*rstep);        
+        for (int k = 0; k < n1; k++) {
+          qfac = trfac/qs[k];
+          sum = 0.0f;
+          if (nr > 0)
+            for (int j = 0; j < nr; j++) {
+              qr = qs[k]*r[j];
+              sum += gofr[j]*Math.sin(qr);
+            }                           
+          else sum = 0.0f;
+          y_vals_n[k] -= sum*qfac+acons;
+        }
+        
+      }
+       
+      for (int k = istart; k <= iend; k++){      
         q_v = 0.5f*(Q_vals_v[k]+Q_vals_v[k+1]);
         lambda_v = tof_calc.WavelengthofDiffractometerQ(scattering_angle_v, q_v);            
         if (lambda_v < wmin || lambda_v > wmax) {
