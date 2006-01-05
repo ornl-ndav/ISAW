@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.32  2006/01/05 17:20:15  rmikk
+ * Updated documentation
+ * The cellType for optimization now returns the selected cell type
+ *
  * Revision 1.31  2006/01/05 14:57:23  rmikk
  * Added a parameter for cell type for constrained optimization
  *
@@ -308,6 +312,7 @@ public class LsqrsJ extends GenericTOF_SCD {
     sb.append( "@param xFormMat The transformation matrix to use. " );
     sb.append( "@param matFile The matrix to write to. " );
     sb.append( "@param minThresh The minimum peak intensity threshold to " );
+    sb.append( "@param cellType  the type of cell to be used for constrained optimization");
     sb.append( "use." );
     sb.append( "@param keepPixels The detector pixel range to keep." );
 
@@ -337,7 +342,7 @@ public class LsqrsJ extends GenericTOF_SCD {
     int[] seq_nums   = ( ( IntArrayPG )getParameter( 2 ) ).getArrayValue(  );
     int threshold    = ( ( IntegerPG )getParameter( 5 ) ).getintValue(  );
     int[] keepRange  = ( ( IntArrayPG )getParameter( 6 ) ).getArrayValue(  );
-    String cellType = getParameter(7).toString();
+    String cellType = ((ChoiceListPG)getParameter(7)).getValue().toString();
     float[][] matrix = null;
     int lowerLimit;
     int upperLimit;
