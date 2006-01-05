@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.34  2006/01/05 22:04:09  rmikk
+ * Added spacing around parenthesis for Choices of the cell type for 
+ *    constraining the optimization
+ *
  * Revision 1.33  2006/01/05 17:24:46  rmikk
  * Fixed the documentation to document the added cell type parameter
  *
@@ -255,9 +259,9 @@ public class LsqrsJForm extends Form {
     
     ChoiceListPG choices = new ChoiceListPG("Cell Type Constraint","Triclinic");
 
-    choices.addItem("Monoclinic(b unique)");
-    choices.addItem("Monoclinic(a unique)");
-    choices.addItem("Monoclinic(c unique)");
+    choices.addItem("Monoclinic ( b unique )");
+    choices.addItem("Monoclinic ( a unique )");
+    choices.addItem("Monoclinic ( c unique )");
     choices.addItem("Orthorhombic");
     choices.addItem("Tetragonal");
     choices.addItem("Rhombohedral");
