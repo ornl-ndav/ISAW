@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  * 
  * $Log$
+ * Revision 1.5  2006/01/05 22:53:46  taoj
+ * use InstrumentInfo instead of Databases as the default direcotry for configuration and detector information.
+ *
  * Revision 1.4  2005/12/15 20:52:56  dennis
  * Added tag for CVS logging so that future modifications can be tracked.
  *
@@ -53,7 +56,7 @@ import java.util.regex.Matcher;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Iterator;
-import java.lang.StringBuffer;
+//import java.lang.StringBuffer;
 import java.util.ArrayList;
 
 /**
@@ -65,8 +68,8 @@ public class GLADRunProps {
   
   public static final String GLAD_PARM = "GLAD_Detector_Parameters";
   public static final String GLAD_PROP = "GLAD_Running_Info";
-  
-  public static String ISAWDBDirectory;
+  public static String ISAWDBDirectory;   
+  public static String ISAWINSTDirectory;
   public static String GLADDefInstProps;  
   public static String GLADDetTable;
   public static HashMap defGLADProps;
@@ -79,15 +82,17 @@ public class GLADRunProps {
 //   find the pathname of GLAD property file gladprops.dat (default)
 //   and detector setup file gladdets6.par;
   static {
-    ISAWDBDirectory = SharedData.getProperty( "ISAW_HOME" );
-    if (ISAWDBDirectory == null){
-      ISAWDBDirectory = SharedData.getProperty("user.home");
-      ISAWDBDirectory += java.io.File.separator+"ISAW";
+    ISAWINSTDirectory = SharedData.getProperty( "ISAW_HOME" );
+    if (ISAWINSTDirectory == null){
+      ISAWINSTDirectory = SharedData.getProperty("user.home");
+      ISAWINSTDirectory += java.io.File.separator+"ISAW";
     } 
-    ISAWDBDirectory = ISAWDBDirectory.trim();
-    ISAWDBDirectory += java.io.File.separator+ "Databases";
-    GLADDefInstProps = ISAWDBDirectory + java.io.File.separator + "gladprops.dat";
-    GLADDetTable = ISAWDBDirectory + java.io.File.separator+ "gladdets6.par";
+    ISAWINSTDirectory = ISAWINSTDirectory.trim();
+    ISAWDBDirectory = ISAWINSTDirectory + java.io.File.separator + "Databases";
+    ISAWINSTDirectory += java.io.File.separator+ "InstrumentInfo"
+                        +java.io.File.separator+ "IPNS";
+    GLADDefInstProps = ISAWINSTDirectory + java.io.File.separator + "gladprops.dat";
+    GLADDetTable = ISAWINSTDirectory + java.io.File.separator+ "gladdets6.par";
 
     if( new File(GLADDetTable).exists()){
       // do nothing
@@ -117,6 +122,7 @@ public class GLADRunProps {
   int gridID2dataID[][];
   int dataID2index[];
   int deadDet[], removedDataID[];
+  float dataID2tofs[][];
 
 
   private GLADRunProps() {
