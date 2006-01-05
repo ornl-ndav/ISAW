@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.33  2006/01/05 17:24:46  rmikk
+ * Fixed the documentation to document the added cell type parameter
+ *
  * Revision 1.32  2006/01/05 17:17:21  rmikk
  * Fixed errors from changing order of parameters
  *
@@ -305,6 +308,7 @@ public class LsqrsJForm extends Form {
     s.append( "@param expName The experiment name.\n" );
     s.append( "@param restrictSeq The sequence numbers to restrict.\n" );
     s.append( "@param matrixFiles The Vector of LsqrsJ output matrix files.\n" );
+    s.append( "@param cellType  the type of cell to use to constrain the optimization");
     s.append( "@param minThresh The minimum peak intensity threshold to " );
     s.append( "use.\n" );
     s.append( "@param keepPixels The detector pixel range to keep.\n" );
