@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.33  2006/01/05 22:05:17  rmikk
+ * Added spacing around parenthesis for Choices of the cell type for 
+ *    constraining the optimization
+ *
  * Revision 1.32  2006/01/05 17:20:15  rmikk
  * Updated documentation
  * The cellType for optimization now returns the selected cell type
@@ -261,9 +265,9 @@ public class LsqrsJ extends GenericTOF_SCD {
       
     ChoiceListPG choices = new ChoiceListPG("Cell Type Constraint","Triclinic");
 
-    choices.addItem("Monoclinic(b unique)");
-    choices.addItem("Monoclinic(a unique)");
-    choices.addItem("Monoclinic(c unique)");
+    choices.addItem("Monoclinic ( b unique )");
+    choices.addItem("Monoclinic ( a unique )");
+    choices.addItem("Monoclinic ( c unique )");
     choices.addItem("Orthorhombic");
     choices.addItem("Tetragonal");
     choices.addItem("Rhombohedral");
