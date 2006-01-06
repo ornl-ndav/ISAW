@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.243  2006/01/06 15:23:56  dennis
+ *  Changed version to 1.7.2
+ *
  *  Revision 1.242  2006/01/05 17:49:14  rmikk
  *  Used the new Browser for several options in the help menu
  *
@@ -874,7 +877,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.7.2 rc 1";
+          version="1.7.2";
         else
           version=SharedData.VERSION;
 
