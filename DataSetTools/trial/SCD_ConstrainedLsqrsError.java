@@ -27,6 +27,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2006/01/06 06:48:34  dennis
+ *  Now returns the error rather than the error squared.
+ *  (The iteration did not converge in some cases, such as
+ *   the Triclinic case, when the error squared was returned.)
+ *
  *  Revision 1.2  2006/01/06 03:43:39  dennis
  *  Added method to get the computed U1_Bc matrix.
  *
@@ -152,7 +157,7 @@ abstract public class   SCD_ConstrainedLsqrsError
       sum_sq += diff * diff;
     }
 
-    return sum_sq;
+    return Math.sqrt( sum_sq );
   }
 
 
@@ -179,13 +184,16 @@ abstract public class   SCD_ConstrainedLsqrsError
       index = (int)indices[i];
       if ( index < 0 || index >= hkl.length )
         sum_sq[i] = 0;
-
-      predicted_q = LinearAlgebra.mult( U1_Bc, hkl[ index ] );
-
-      for ( int col = 0; col < 3; col++ )
+      else
       {
-        diff = predicted_q[col] - q[index][col];
-        sum_sq[i] += diff * diff;
+        predicted_q = LinearAlgebra.mult( U1_Bc, hkl[ index ] );
+
+        for ( int col = 0; col < 3; col++ )
+        {
+          diff = predicted_q[col] - q[index][col];
+          sum_sq[i] += diff * diff;
+        }
+        sum_sq[i] = Math.sqrt( sum_sq[i] );
       }
     }
  
