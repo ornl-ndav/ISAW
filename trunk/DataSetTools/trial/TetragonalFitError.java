@@ -27,6 +27,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2006/01/06 02:34:55  dennis
+ *  Fixed some java doc errors.  Changed main progrm to test this
+ *  class.
+ *
  *  Revision 1.1  2006/01/05 22:49:24  rmikk
  *  Initial Checkin
  *
@@ -65,7 +69,7 @@ public class TetragonalFitError extends SCD_ConstrainedLsqrsError
   /**
    *  This method is used to initialize the list of six lattice parameters
    *  from the calculated UB matrix, subject to constraints corresponding
-   *  to a Rhombohedral unit cell.
+   *  to a Tetragonal unit cell.
    */
   protected void init()
   {
@@ -89,7 +93,7 @@ public class TetragonalFitError extends SCD_ConstrainedLsqrsError
   /**
    *  This method takes values for lattice parameters "a" and "c" from
    *  params[0] and params[1].  It sets those into the list of all six
-   *  lattice parameters, using the Rhombohedral unit cell constraints.  
+   *  lattice parameters, using the Tetragonal unit cell constraints.  
    *  In addition the parameters are set in the base class.  Finally,
    *  it calculates the U1_Bc matrix used in the evaluation of the 
    *  residual error.
@@ -130,12 +134,12 @@ public class TetragonalFitError extends SCD_ConstrainedLsqrsError
                             { 0, 1, 0 },
                             { 0, 0, 1 } };
 
-      RhombohedralFitError f = new  RhombohedralFitError( hkl_vals, q_vals );
+      TetragonalFitError f = new TetragonalFitError( hkl_vals, q_vals );
       System.out.println("Total error is : " + f.TotalError() );
 
       double param[] = new double[2];
-      param[0] = 2;
-      param[1] = 5;
+      param[0] = 1;
+      param[1] = 1.1;
       f.setParameters( param );
       System.out.println("Total error is : " + f.TotalError() );
     }
