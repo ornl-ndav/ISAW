@@ -27,10 +27,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2006/01/06 03:40:54  dennis
+ *  Minor code clean-up and fixes to javadocs.
+ *
  *  Revision 1.1  2006/01/05 23:18:21  rmikk
  *  Initial Checkin
- *
- *
  *
  */
 
@@ -42,8 +43,8 @@ import gov.anl.ipns.MathTools.*;
  * This class calculates the error in the mapping:
  * U1 * Bc * hkl -> q  for a specified entry in a list of q values and 
  * corresponding Miller indices hkl assuming that the cell type is 
- * Tetragonal.  It is intended to be used for optimizing the values in 
- * the constrained "B" matrix, Bc.
+ * Monoclinic(c_unique).  It is intended to be used for optimizing the 
+ * values in the constrained "B" matrix, Bc.
  */
 
 public class Monoclinic_c_uniqueFitError extends SCD_ConstrainedLsqrsError
@@ -59,7 +60,11 @@ public class Monoclinic_c_uniqueFitError extends SCD_ConstrainedLsqrsError
   */
   public Monoclinic_c_uniqueFitError( double hkl_vals[][], double q_vals[][] )
   {
-    super("Monoclinic_c_uniqueFitError", new double[4], new String[4], hkl_vals, q_vals);
+    super( "Monoclinic_c_uniqueFitError", 
+            new double[4], 
+            new String[4], 
+            hkl_vals, 
+            q_vals );
   }
 
 
@@ -73,46 +78,40 @@ public class Monoclinic_c_uniqueFitError extends SCD_ConstrainedLsqrsError
   {
     lattice_parameters = lattice_calc.LatticeParamsOfUB( UB );
     
-    lattice_parameters[4] =90; 
-    
-    lattice_parameters[3] =90;
+    lattice_parameters[3] = 90;
+    lattice_parameters[4] = 90; 
 
     parameter_names[0] = "a"; 
     parameter_names[1] = "b";
     parameter_names[2] = "c"; 
-
     parameter_names[3] = "gamma"; 
-
 
     parameters[0] = lattice_parameters[0];         // copy over values of 'a'
     parameters[1] = lattice_parameters[1];         // and of 'b'
     parameters[2] = lattice_parameters[2];         // and of 'c'
-
-    parameters[3] = lattice_parameters[5];         //  and of 'beta'
-
-    
-
+    parameters[3] = lattice_parameters[5];         // and of 'gamma'
   }
 
 
  /* ---------------------------- setParameters --------------------------- */
   /**
-   *  This method takes values for lattice parameters "a" and "c" from
-   *  params[0] and params[1].  It sets those into the list of all six
-   *  lattice parameters, using the Monoclinic ( b unique ) unit cell constraints.  
+   *  This method takes values for lattice parameters "a", "b", "c" and
+   *  "gamma" from params[0..3].  It sets those into the list of all six
+   *  lattice parameters, using the Monoclinic ( c unique ) unit cell
+   *  constraints. 
    *  In addition the parameters are set in the base class.  Finally,
    *  it calculates the U1_Bc matrix used in the evaluation of the 
    *  residual error.
    *
-   *  @param  params  An array of length 2 containing the values for lattice
-   *                  parameters "a" and "c".
+   *  @param  params  An array of length 4 containing the values for lattice
+   *                  parameters "a", "b", "c" and "gamma".
    */
   public void setParameters( double params[] )
   {
     super.setParameters( params );
-    lattice_parameters[0] = params[0];       // set  a = b = params[0]
+    lattice_parameters[0] = params[0];
     lattice_parameters[1] = params[1];
-    lattice_parameters[2] = params[2];       // set  c = params[1]
+    lattice_parameters[2] = params[2];
 
     lattice_parameters[3] = 90;
     lattice_parameters[4] = 90;
@@ -140,14 +139,16 @@ public class Monoclinic_c_uniqueFitError extends SCD_ConstrainedLsqrsError
                             { 0, 1, 0 },
                             { 0, 0, 1 } };
 
-      Monoclinic_c_uniqueFitError f = new  Monoclinic_c_uniqueFitError( hkl_vals, q_vals );
+      Monoclinic_c_uniqueFitError f = 
+                        new Monoclinic_c_uniqueFitError( hkl_vals, q_vals );
+
       System.out.println("Total error is : " + f.TotalError() );
 
       double param[] = new double[4];
       param[0] = 1;
       param[1] = 1.1;
-      param[2]=1;
-      param[3]= 90;
+      param[2] = 1;
+      param[3] = 90;
       f.setParameters( param );
       System.out.println("Total error is : " + f.TotalError() );
     }
