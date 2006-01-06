@@ -26,6 +26,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/01/06 06:52:11  dennis
+ * Added method to calculate the BestFitMatrix, "UB" using
+ * constraints based on the unit cell type.
+ * Added test code to main program to exercise fitting using
+ * the 9 different Bravais unit cells (counting three forms
+ * of a Mononclinic cell.)
+ *
  * Revision 1.3  2006/01/04 22:37:25  dennis
  * Removed reference to test_ub, and use method in the current
  * set of utilities.
@@ -50,6 +57,8 @@
 package DataSetTools.trial;
 
 import  gov.anl.ipns.MathTools.*;
+import  gov.anl.ipns.MathTools.Functions.*;
+
 
 /**
  *  This class contains static utility methods for SCD data reduction.
@@ -230,6 +239,100 @@ public class SCD_util
   }
 
 
+
+  /* -------------------------- BestFitMatrix --------------------------- */
+  /**
+   *  This method uses a MaraquardtArrayFitter to carry out a constrained
+   *  least squares optimization of the orientation matrix for a specified
+   *  cell type.
+   *
+   *  @param  cell_type   The type of cell to be fit.  This must be one of
+   *                      the strings:
+   *                      Triclinic
+   *                      Monoclinic ( b unique )
+   *                      Monoclinic ( a unique )
+   *                      Monoclinic ( c unique )
+   *                      Orthorhombic
+   *                      Tetragonal
+   *                      Rhombohedral
+   *                      Hexagonal
+   *                      Cubic
+   *  @param  UB          A 3x3 array of doubles that will be filled with
+   *                      the best (constrained) fit matrix.
+   *  @param  hkl_vals    An Nx3 array of doubles containing the list of
+   *                      hkl values
+   *  @param  q_vals      An Nx3 array of doubles containing the list of
+   *                      corresponding q values
+   *
+   *  @return  The sum squared error after fitting.
+   */
+  public static double BestFitMatrix( String cell_type, 
+                                      double UB[][],
+                                      double hkl_vals[][],
+                                      double q_vals[][]   )
+  {
+    SCD_ConstrainedLsqrsError f = null;
+
+    if ( cell_type.startsWith( "Triclinic" ) )
+      f = new TriclinicFitError( hkl_vals, q_vals );
+
+    else if ( cell_type.startsWith( "Monoclinic ( a" ) )
+      f = new Monoclinic_a_uniqueFitError( hkl_vals, q_vals );
+
+    else if ( cell_type.startsWith( "Monoclinic ( b" ) )
+      f = new Monoclinic_b_uniqueFitError( hkl_vals, q_vals );
+
+    else if ( cell_type.startsWith( "Monoclinic ( c" ) )
+      f = new Monoclinic_c_uniqueFitError( hkl_vals, q_vals );
+
+    else if ( cell_type.startsWith( "Ortho" ) )
+      f = new OrthorhombicFitError( hkl_vals, q_vals );
+
+    else if ( cell_type.startsWith( "Tetra" ) )
+      f = new TetragonalFitError( hkl_vals, q_vals );
+
+    else if ( cell_type.startsWith( "Rhomb" ) )
+      f = new RhombohedralFitError( hkl_vals, q_vals );
+
+    else if ( cell_type.startsWith( "Hex" ) )
+      f = new HexagonalFitError( hkl_vals, q_vals );
+
+    else if ( cell_type.startsWith( "Cubic" ) )
+      f = new CubicFitError( hkl_vals, q_vals );
+
+    if ( f == null )
+    {
+      System.out.println("ERROR: f == null in BestFitMatrix");
+      System.out.println("Using basic Triclinic fit method");
+      double temp_hkl[][] = LinearAlgebra.copy( hkl_vals );
+      double temp_q[][]   = LinearAlgebra.copy( q_vals );
+      return LinearAlgebra.BestFitMatrix( UB, temp_hkl, temp_q );
+    }
+
+    double z_vals[]  = new double[ hkl_vals.length ];
+    double sigmas[]  = new double[ hkl_vals.length ];
+    double x_index[] = new double[ hkl_vals.length ];
+    for ( int i = 0; i < hkl_vals.length; i++ )
+    {
+      z_vals[i] = 0;
+      sigmas[i] = 1.0;
+      x_index[i]  = i;
+    }
+                                         // build the data fitter and display
+                                         // the results.
+    MarquardtArrayFitter fitter =
+    new MarquardtArrayFitter( f, x_index, z_vals, sigmas, 1.0e-16, 500);
+
+    // System.out.println( fitter.getResultsString() );
+    // f.ShowStatus();
+ 
+    double ApproximateUB[][] = f.getU1_Bc();
+    LinearAlgebra.copy( ApproximateUB, UB );
+
+    return f.TotalError();
+  }
+
+
   /* ------------------------------ Main --------------------------------- */
   /**
    *  Main program for testing purposes.
@@ -240,28 +343,33 @@ public class SCD_util
     double hkl_vals[][] = { { 1, 0, 0 },
                             { 2, 0, 0 }, 
                             { 3, 0, 0 }, 
+                            { 4, 0, 0 }, 
+
                             { 0, 1, 0 }, 
                             { 0, 2, 0 }, 
                             { 0, 3, 0 },
+                            { 0, 4, 0 },
+
                             { 0, 0, 1 }, 
                             { 0, 0, 2 }, 
-                            { 0, 0, 3 } };
+                            { 0, 0, 3 },
+                            { 0, 0, 4 }  };
 
     double q_vals[][] = { 
-                          { 1, 0, 0 },
-                          { 2, 0, 0 },
-                          { 3.1, 0, 1 },
-                          { 0, 0, 1 },
-                          { 0, 0, 2 },
-                          { 0, 0, 3 },
-                          { 0, 1, 0 },
-                          { 0, 2, 0 },
-                          { 0, 3, 0 },
-/*
-                          { 0, 0.866, -0.5 },
-                          { 0, 1.732, -1.0 },
-                          { 0, 2.598, -1.5 },
-*/
+                          { 1.0, 0, 0 },
+                          { 2.1, 0, 0 },
+                          { 2.9, 0, 1 },
+                          { 3.8, 0, 1 },
+
+                          { 0, 0,   1.2 },
+                          { 0, 0,   2.1 },
+                          { 0, 0.1, 3.2 },
+                          { 0, 0.1, 4.1 },
+
+                          { 0, 1.1, 0 },
+                          { 0, 2.3, 0 },
+                          { 0, 3.0, 1 },
+                          { 0, 4.1, 1 },
                         };
     
     double U1[][] = new double[3][3];
@@ -291,6 +399,33 @@ public class SCD_util
     ShowAllColumnDotProducts( U1 );
     System.out.println("Determinant of U1 = " + 
                         LinearAlgebra.determinant( U1 ) );
+
+    String cell_type[] = { "Non-Existent",
+                           "Triclinic", 
+                           "Monoclinic ( a",
+                           "Monoclinic ( b",
+                           "Monoclinic ( c",
+                           "Orthorhombic",
+                           "Tetragonal",
+                           "Rhombohedral",
+                           "Hexagonal",
+                           "Cubic" };
+ 
+    double err;
+    double UB[][] = new double[3][3];
+
+    for ( int i = 0; i < cell_type.length; i++ )
+    {
+       System.out.println("\nCell Type : " + cell_type[i] + " ......" );
+       err = BestFitMatrix( cell_type[i], UB, hkl_vals, q_vals );
+       System.out.println( "err = " + err );
+//       System.out.println( "UB = " );
+//       LinearAlgebra.print( UB );
+       lattice_parameters = lattice_calc.LatticeParamsOfUB( UB ); 
+       System.out.println("Lattice Parameters = " );
+       LinearAlgebra.print( lattice_parameters );
+    }
+
   }
 
 }
