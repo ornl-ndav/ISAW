@@ -27,6 +27,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2006/01/06 03:43:39  dennis
+ *  Added method to get the computed U1_Bc matrix.
+ *
  *  Revision 1.1  2006/01/05 22:11:44  dennis
  *  Initial version of file for constrained least squares fitting
  *  for the SCD.
@@ -187,6 +190,18 @@ abstract public class   SCD_ConstrainedLsqrsError
     }
  
     return sum_sq;
+  }
+
+
+ /* ------------------------------ getU1_Bc ----------------------------- */
+ /**
+  *  Get the current U1_Bc product matrix being used by this function.
+  *
+  *  @return A reference to this error functions U1_Bc matrix.
+  */
+  public double[][] getU1_Bc()
+  {
+    return LinearAlgebra.copy( U1_Bc );
   }
 
 
