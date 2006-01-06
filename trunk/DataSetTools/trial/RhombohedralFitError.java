@@ -27,6 +27,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2006/01/06 02:46:18  dennis
+ *  Minor fix to javadocs.
+ *  Minor code clean up.
+ *  Minor adjustment to test parameters.
+ *
  *  Revision 1.1  2006/01/05 22:43:44  rmikk
  *  Initial Checkin
  *
@@ -61,7 +66,7 @@ public class RhombohedralFitError extends SCD_ConstrainedLsqrsError
   */
   public RhombohedralFitError( double hkl_vals[][], double q_vals[][] )
   {
-    super("RhombohedralFitError", new double[2], new String[2], hkl_vals, q_vals);
+    super("RhombohedralFitError",new double[2],new String[2],hkl_vals,q_vals);
   }
 
 
@@ -74,12 +79,19 @@ public class RhombohedralFitError extends SCD_ConstrainedLsqrsError
   protected void init()
   {
     lattice_parameters = lattice_calc.LatticeParamsOfUB( UB );
-    lattice_parameters[0] = (lattice_parameters[0] + lattice_parameters[1]+lattice_parameters[2])/3;
-    lattice_parameters[1] = lattice_parameters[0];
-    lattice_parameters[2]=lattice_parameters[0];
-    lattice_parameters[3] = (lattice_parameters[3] + lattice_parameters[4]+lattice_parameters[5])/3;;
-    lattice_parameters[4] = lattice_parameters[3];
-    lattice_parameters[5] = lattice_parameters[3];
+    double average_side = ( lattice_parameters[0] + 
+                            lattice_parameters[1] +
+                            lattice_parameters[2] ) / 3;
+    lattice_parameters[0] = average_side;
+    lattice_parameters[1] = average_side;
+    lattice_parameters[2] = average_side;
+
+    double average_angle = ( lattice_parameters[3] + 
+                             lattice_parameters[4] +
+                             lattice_parameters[5] ) / 3;
+    lattice_parameters[3] = average_angle; 
+    lattice_parameters[4] = average_angle; 
+    lattice_parameters[5] = average_angle; 
 
     parameter_names[0] = "a"; 
     parameter_names[1] = "alpha";
@@ -91,7 +103,7 @@ public class RhombohedralFitError extends SCD_ConstrainedLsqrsError
 
  /* ---------------------------- setParameters --------------------------- */
   /**
-   *  This method takes values for lattice parameters "a" and "c" from
+   *  This method takes values for lattice parameters "a" and "alpha" from
    *  params[0] and params[1].  It sets those into the list of all six
    *  lattice parameters, using the Rhombohedral unit cell constraints.  
    *  In addition the parameters are set in the base class.  Finally,
@@ -99,7 +111,7 @@ public class RhombohedralFitError extends SCD_ConstrainedLsqrsError
    *  residual error.
    *
    *  @param  params  An array of length 2 containing the values for lattice
-   *                  parameters "a" and "c".
+   *                  parameters "a" and "alpha".
    */
   public void setParameters( double params[] )
   {
@@ -138,8 +150,8 @@ public class RhombohedralFitError extends SCD_ConstrainedLsqrsError
       System.out.println("Total error is : " + f.TotalError() );
 
       double param[] = new double[2];
-      param[0] = 2;
-      param[1] = 5;
+      param[0] = 1.1;
+      param[1] = 90;
       f.setParameters( param );
       System.out.println("Total error is : " + f.TotalError() );
     }
