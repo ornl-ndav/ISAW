@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.34  2006/01/06 15:21:09  dennis
+ * Added code to call the constrained least squares calculation for
+ * the UB matrix: SCD_util.BestFitMatrix(), if the cell type is
+ * anything different than Triclinic.
+ *
  * Revision 1.33  2006/01/05 22:05:17  rmikk
  * Added spacing around parenthesis for Choices of the cell type for 
  *    constraining the optimization
@@ -193,6 +198,7 @@ import DataSetTools.parameter.ChoiceListPG;
 import DataSetTools.parameter.StringPG;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
+import DataSetTools.trial.SCD_util;
 
 
 /**
@@ -316,8 +322,9 @@ public class LsqrsJ extends GenericTOF_SCD {
     sb.append( "@param xFormMat The transformation matrix to use. " );
     sb.append( "@param matFile The matrix to write to. " );
     sb.append( "@param minThresh The minimum peak intensity threshold to " );
-    sb.append( "@param cellType  the type of cell to be used for constrained optimization");
-    sb.append( "use." );
+    sb.append( "@param cellType  The type of cell to be used if the ");
+    sb.append( "@param least squares optimization is to be constrained ");
+    sb.append(  "to a particular unit cell type");
     sb.append( "@param keepPixels The detector pixel range to keep." );
 
     // return
@@ -342,11 +349,11 @@ public class LsqrsJ extends GenericTOF_SCD {
     String peaksfile = getParameter( 0 )
                          .getValue(  )
                          .toString(  );
-    int[] run_nums   = ( ( IntArrayPG )getParameter( 1 ) ).getArrayValue(  );
-    int[] seq_nums   = ( ( IntArrayPG )getParameter( 2 ) ).getArrayValue(  );
-    int threshold    = ( ( IntegerPG )getParameter( 5 ) ).getintValue(  );
-    int[] keepRange  = ( ( IntArrayPG )getParameter( 6 ) ).getArrayValue(  );
-    String cellType = ((ChoiceListPG)getParameter(7)).getValue().toString();
+    int[] run_nums   = (( IntArrayPG )getParameter( 1 )).getArrayValue();
+    int[] seq_nums   = (( IntArrayPG )getParameter( 2 )).getArrayValue();
+    int threshold    = (( IntegerPG  )getParameter( 5 )).getintValue();
+    int[] keepRange  = (( IntArrayPG )getParameter( 6 )).getArrayValue();
+    String cellType  = ((ChoiceListPG)getParameter( 7 )).getValue().toString();
     float[][] matrix = null;
     int lowerLimit;
     int upperLimit;
@@ -590,7 +597,11 @@ public class LsqrsJ extends GenericTOF_SCD {
         }
       }
 
-      chisq   = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
+      if ( cellType.startsWith( "Tri" ) )
+        chisq = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
+      else
+        chisq = SCD_util.BestFitMatrix( cellType, UB, Thkl, Tq );
+
       if ( Double.isNaN( chisq ) )
         return new ErrorString( "ERROR in LsqrsJ: " + 
                                 " BestFitMatrix calculation failed" );
