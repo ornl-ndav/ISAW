@@ -27,10 +27,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2006/01/06 03:01:53  dennis
+ *  Minor fixes to javadocs.
+ *  Fixed bug in assignement of initial values.
+ *
  *  Revision 1.1  2006/01/05 22:57:03  rmikk
  *  Initial Checkin
- *
- *
  */
 
 package DataSetTools.trial;
@@ -41,7 +43,7 @@ import gov.anl.ipns.MathTools.*;
  * This class calculates the error in the mapping:
  * U1 * Bc * hkl -> q  for a specified entry in a list of q values and 
  * corresponding Miller indices hkl assuming that the cell type is 
- * Tetragonal.  It is intended to be used for optimizing the values in 
+ * Orthorhombic.  It is intended to be used for optimizing the values in 
  * the constrained "B" matrix, Bc.
  */
 
@@ -66,43 +68,44 @@ public class OrthorhombicFitError extends SCD_ConstrainedLsqrsError
   /**
    *  This method is used to initialize the list of six lattice parameters
    *  from the calculated UB matrix, subject to constraints corresponding
-   *  to a Rhombohedral unit cell.
+   *  to a Orthorhombic unit cell.
    */
   protected void init()
   {
     lattice_parameters = lattice_calc.LatticeParamsOfUB( UB );
     
+    parameter_names[0] = "a";
+    parameter_names[1] = "b";
+    parameter_names[2] = "c";
+
     lattice_parameters[3] =90; 
     lattice_parameters[4] =90;
     lattice_parameters[5] =90;
 
-    parameter_names[0] = "a";
-    parameter_names[1] = "b";
-    parameter_names[2] = "c";
     parameters[0] = lattice_parameters[0];         // copy over values of 'a'
     parameters[1] = lattice_parameters[1];         // copy over values of 'b'
-    parameters[1] = lattice_parameters[2];         // and of 'c'
+    parameters[2] = lattice_parameters[2];         // and of 'c'
   }
 
 
  /* ---------------------------- setParameters --------------------------- */
   /**
-   *  This method takes values for lattice parameters "a" and "c" from
-   *  params[0] and params[1].  It sets those into the list of all six
-   *  lattice parameters, using the Rhombohedral unit cell constraints.  
+   *  This method takes values for lattice parameters "a", "b" and "c" from
+   *  params[0], params[1] and params[2].  It sets those into the list of all
+   *  six lattice parameters, using the Orthorhombic unit cell constraints.  
    *  In addition the parameters are set in the base class.  Finally,
    *  it calculates the U1_Bc matrix used in the evaluation of the 
    *  residual error.
    *
-   *  @param  params  An array of length 2 containing the values for lattice
-   *                  parameters "a" and "c".
+   *  @param  params  An array of length 3 containing the values for lattice
+   *                  parameters "a", "b" and "c".
    */
   public void setParameters( double params[] )
   {
     super.setParameters( params );
-    lattice_parameters[0] = params[0];       // set  a = b = params[0]
+    lattice_parameters[0] = params[0];       // set a, b and c from params[] 
     lattice_parameters[1] = params[1];
-    lattice_parameters[2] = params[2];       // set  c = params[1]
+    lattice_parameters[2] = params[2]; 
 
     lattice_parameters[3] = 90;
     lattice_parameters[4] = 90;
@@ -130,13 +133,15 @@ public class OrthorhombicFitError extends SCD_ConstrainedLsqrsError
                             { 0, 1, 0 },
                             { 0, 0, 1 } };
 
-      RhombohedralFitError f = new  RhombohedralFitError( hkl_vals, q_vals );
+      OrthorhombicFitError f = new OrthorhombicFitError( hkl_vals, q_vals );
       System.out.println("Total error is : " + f.TotalError() );
 
-      double param[] = new double[2];
-      param[0] = 2;
-      param[1] = 5;
+      double param[] = new double[3];
+      param[0] = 1;
+      param[1] = 1;
+      param[2] = 1.1;
       f.setParameters( param );
       System.out.println("Total error is : " + f.TotalError() );
     }
+
 }
