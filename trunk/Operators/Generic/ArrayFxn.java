@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2006/01/08 01:38:30  dennis
+ * Minor fix of javadoc warnings that showed up when building with
+ * the java 1.5.0_06 compiler.
+ *
  * Revision 1.6  2005/01/10 15:36:01  dennis
  * Added getCategoryList method to place operator in menu system.
  *
@@ -130,7 +134,6 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
        s.append(" @error Entry null or improper data type(NaN)");
        s.append( "occur. For example: Error occurs if number of bins is zero." );
        return s.toString(  );
-
   }
 
   /**
@@ -151,7 +154,6 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
      this.ArrayHolder= ArrayHolder;
      this.formula = Rule;
      return calculate();
-
   }
 
   Fxn F = null;
@@ -176,6 +178,7 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
  private Object Calc( Object Dat, Fxn F){
     if( Dat == null)
       return new ErrorString("Data contains a null entry");
+
     if( Dat instanceof Vector){
        Vector V = new Vector();
        for(int i=0;i<((Vector)Dat).size(); i++){
@@ -185,6 +188,7 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
          V.addElement(O);
        }
        return V;
+
     }else if( Dat instanceof Float){
        x[0]= (double)(((Float)Dat).floatValue());
        double xx= F.vall(x,1);
@@ -220,59 +224,54 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
           x[0]= (double)((float[])Dat)[i];
           double xx= F.vall(x,1);
           f[i]=(float)xx;
-
       }
      return f;
+
     }else if( Dat instanceof int[]){
       int[] f = new int[ ((int[])Dat).length];
       for( int i = 0;i < f.length; i++){
           x[0]= (double)((int[])Dat)[i];
           double xx= F.vall(x,1);
           f[i]=(int)xx;
-
       }
-      
       return f;
+
     }else if( Dat instanceof double[]){
       double[] f = new double[ ((double[])Dat).length];
       for( int i = 0;i < f.length; i++){
           x[0]= (double)((double[])Dat)[i];
           double xx= F.vall(x,1);
           f[i]=(double)xx;
-
       }
-      
      return f;
+
     }else if( Dat instanceof short[]){
       short[] f = new short[ ((short[])Dat).length];
       for( int i = 0;i < f.length; i++){
           x[0]= (double)((short[])Dat)[i];
           double xx= F.vall(x,1);
           f[i]=(short)xx;
-
       }
-      
      return f;
+
     }else if( Dat instanceof long[]){
       long[] f = new long[ ((long[])Dat).length];
       for( int i = 0;i < f.length; i++){
           x[0]= (double)((long[])Dat)[i];
           double xx= F.vall(x,1);
           f[i]=(long)xx;
-
       }
-      
       return f;
+
     }else if( Dat instanceof byte[]){
       byte[] f = new byte[ ((byte[])Dat).length];
       for( int i = 0;i < f.length; i++){
           x[0]= (double)((byte[])Dat)[i];
           double xx= F.vall(x,1);
           f[i]=(byte)xx;
-
       }
-      
      return f;
+
     }else if( Dat.getClass().isArray()){
        
        Object Res = Array.newInstance( Dat.getClass().getComponentType(), 
@@ -286,21 +285,19 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
                   " is not supported");
          O = Calc(O, F);
          Array.set(Res,i,O);
-        
-          
        }
       return Res;
 
     }else 
        return new ErrorString( "Data Type "+Dat.getClass()+" is not supported");
-   
  } 
 
+
   /**
-    *  Test program for this module
+    *  Test program for this module that displays
+    *  the value when the rule is applied to the data
+    *  {{1.0f,2.0f,3.0f},{2.3f,3.5f,7.2f},{1f,3f,5f,7f}};
     *  @param  args  Enter the rule as the first argument
-    *  @return  returns the value when the rule is applied to
-    *  {  {1.0f,2.0f,3.0f},{2.3f,3.5f,7.2f},{1f,3f,5f,7f}};
     */
   public static void main( String args[]){
 
@@ -313,6 +310,6 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
      ArrayFxn dd = new ArrayFxn();
    
      ScriptUtil.display( dd.calculate( V, args[0].trim()));
-
   }   
+
 }

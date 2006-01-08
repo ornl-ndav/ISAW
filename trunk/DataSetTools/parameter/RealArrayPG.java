@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2006/01/08 01:38:30  dennis
+ *  Minor fix of javadoc warnings that showed up when building with
+ *  the java 1.5.0_06 compiler.
+ *
  *  Revision 1.7  2005/06/07 21:42:28  rmikk
  *  Fixed setStringValue to accept strings and have them converted to
  *     multi(or 1) dimensional arrays.
@@ -159,22 +163,25 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
         setValue(R);
      else if( getValue().getClass().equals(R.getClass()))
         setValue(R);
-      
      
      }catch( Throwable s){
          return;
      }
   }
+
   boolean lastValOK= false;
+
   /**
    * Needed because these parameterGUI's cannot throw exceptions( see ParameterClassList).
    * If the data type is incorrect the previous value is kept, so the last value has not
    * been set and the data from this GUI is invalid.
-   * @return
+   *
+   * @return The current value in the lastValOK variable.
    */
   public boolean LastValueSet(){
        return lastValOK;
   }
+
   /**
    * Accessor method for this RealArrayPG's String value.
    *

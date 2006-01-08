@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/01/08 01:38:27  dennis
+ * Minor fix of javadoc warnings that showed up when building with
+ * the java 1.5.0_06 compiler.
+ *
  * Revision 1.4  2003/10/20 16:38:47  rmikk
  * Fixed javadoc error
  *
@@ -161,10 +165,10 @@ public Object clone()
     W.CopyParametersFrom( this );
     return W;
   }
-/** Test program for this module.  
-* It just test to see if classpaths are correct, etc.
-*@return  "OKKK" to System.out if successful
-*/
+
+/** Trivial test program for this module, just to see if classpaths
+ *  it just prints "OKKK".
+ */
 public static void main( String args[] )
  {
   System.out.println("OKKK");
