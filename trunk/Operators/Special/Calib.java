@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2006/01/08 01:38:31  dennis
+ * Minor fix of javadoc warnings that showed up when building with
+ * the java 1.5.0_06 compiler.
+ *
  * Revision 1.10  2005/10/28 15:49:00  dennis
  * Fixed "spelling" error in javadoc comment.
  *
@@ -214,8 +218,8 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
             clearGridData();
             currDet = detNum;
             grid =(UniformGrid) DataSetTools.dataset.Grid_util.getAreaGrid(DS, detNum);
-             
           }
+
           int colonPos = line.indexOf(':',5);
           if( (detNum >=0) && (colonPos >0)){
             int start =colonPos-1;
@@ -241,13 +245,13 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
              else if (command.equals("OMEGA"))
                 omega =(new Float(line.substring(colonPos+1).trim())).floatValue();
            }//if command legitimate
-             
           }
         }
         
       }//while !eof
       setUpGrid(grid);
       return null;
+
     }catch(Exception ss){
        ss.printStackTrace();
        return new ErrorString( "Calib Error="+ss);
@@ -264,7 +268,6 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
        return FixLansceHippoDataFiles( DS,calibFile, CalibFile2.toString());
      else if( Fil.toUpperCase().startsWith("SAND"))
        return FixLansceSandDataFiles( DS, calibFile,otherInformation);
-        
      
    return null;
   }
@@ -362,11 +365,15 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
    }
    
    /**
-    * This method fixes Lansce Hippo files that are stored in their preNeXus mode
-    * @param DS  The DataSet that is to be fixed
-    * @param file  An specially formatted xml file with SampleOrientation info for each
-    *              run and also some data to  fix detector positions.
-    * @return
+    * This method fixes Lansce Hippo files that are stored in their preNeXus
+    * mode.
+    *
+    * @param DS    The DataSet that is to be fixed
+    * @param file  An specially formatted xml file with SampleOrientation 
+    *              info for each run and also some data to  fix detector 
+    *              positions.
+    * @return an ErrorString if a problem was encountered, or null if
+    *         the work was completed.
     */
    public static Object FixLansceSCDDataFiles( DataSet DS, String file ){
       Node doc = getXmlDoc( file);

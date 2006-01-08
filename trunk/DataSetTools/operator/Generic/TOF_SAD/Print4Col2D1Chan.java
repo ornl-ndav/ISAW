@@ -1,4 +1,3 @@
-
 /*
  * File:  Print4Col2D1Chan.java 
  *             
@@ -32,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2006/01/08 01:38:29  dennis
+ * Minor fix of javadoc warnings that showed up when building with
+ * the java 1.5.0_06 compiler.
+ *
  * Revision 1.7  2004/06/11 17:03:59  dennis
  * Now references static method setDataEntriesInAllGrids() through the
  * class UniformGrid, rather than through an instance.
@@ -178,28 +181,36 @@ public class Print4Col2D1Chan extends GenericTOF_SAD{
    }
 
    /**
-   *       Starts a program that will take the name of a file storing a DataSet.
-   *  args[0]  the name of the file storing the DataSet.
-   *  @return  a file with the name xxx.dat in the directory where the programe
-   *          was started. This file is in the 4 Col format
+   *  Creates a file with the name xxx.dat in the current directory
+   *  containing the output of this operator when it is applied to
+   *  the first DataSet in a file specified on the command line.
+   *
+   *  @param args  String array, containing the name of the file 
+   *               storing the DataSet as it's first entry.
    */
    public static void main( String args[]){
+
      if( args == null)
        showUsage("args is null");
+
      if( args.length < 1)
        showUsage("not enough arguments");
+
      DataSet[]  DS = null;
+
      try{
-       DS = ScriptUtil.load( args[0]);
+       DS = ScriptUtil.load(args[0]);
      }catch( Exception sss){
        showUsage("Could not load data set");
      }
+
      if( DS == null)
        showUsage("No data sets loaded");
+
      System.out.println(" Result ="+
        ( new Print4Col2D1Chan( DS[0],"xxx.dat")).getResult());
-
    }
+
    public String getDocumentation(){
     StringBuffer Res = new StringBuffer();
     Res.append("@overview Prints Elements in an detector array with only one ");

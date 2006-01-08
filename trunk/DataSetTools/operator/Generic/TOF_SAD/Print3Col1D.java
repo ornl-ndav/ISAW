@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2006/01/08 01:38:27  dennis
+ * Minor fix of javadoc warnings that showed up when building with
+ * the java 1.5.0_06 compiler.
+ *
  * Revision 1.7  2004/04/08 15:18:09  dennis
  * Now uses "new" DataSetPGs consistently and calls clear() after getting the
  * value from the DataSetPG, to avoid memory leaks.
@@ -270,11 +274,12 @@ public class Print3Col1D extends GenericTOF_SAD{
 
 
  /**
- *  Test program for this module
+ *  Test program for this module that writes the result of applying
+ *  this operator out to the file xxx.dat in the current directory.
+ *  @param args  Array of strings containing
  *  Args[0] name of a file storing a desired DataSet
  *  Args[1] filetype
- *  Args[2]  Delayed Neutron
- *  @return file will be written in current directory to xxx.dat
+ *  Args[2] Delayed Neutron
  */
  public static void main( String args[]){
 
