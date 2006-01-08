@@ -1,4 +1,3 @@
-
 /*
  * File:  Read3Col1D.java 
  *             
@@ -32,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2006/01/08 01:38:30  dennis
+ * Minor fix of javadoc warnings that showed up when building with
+ * the java 1.5.0_06 compiler.
+ *
  * Revision 1.9  2004/04/26 13:34:05  rmikk
  * Add the standard operators to this data set
  *
@@ -76,8 +79,8 @@ import Command.*;
 /**
 * This module reads in efficiency files, Reduce files, and 3 column files produced
 * from the Table operator to produce a data set
-
 */
+
 public class Read3Col1D extends GenericTOF_SAD{
    
    private String FileTypes =";Efficiency;Reduce Results;Table;";
@@ -90,7 +93,7 @@ public class Read3Col1D extends GenericTOF_SAD{
       super( "Read 3Col for 1D");
    }
 
-   /**
+  /**
    *    Constructor for Read3Col1D(Title is Read 3Col for 1D)
    *    @param filename the name of the file,in 3Col format, with data set information
    *    @param fileType  Either "Efficiency", "Reduce Results", or "Table"
@@ -100,7 +103,6 @@ public class Read3Col1D extends GenericTOF_SAD{
       parameters = new Vector();
       parameters.add( new LoadFilePG( "Save File", filename));
       parameters.add( new ChoiceListPG("File Type", fileType));
-
    }
   
    /**
@@ -177,9 +179,7 @@ public class Read3Col1D extends GenericTOF_SAD{
            return -1;
          if( ((Integer)Res).intValue() !=1)
           return -1;
-         
        }
-      
          
        return -1;
      }
@@ -187,7 +187,6 @@ public class Read3Col1D extends GenericTOF_SAD{
         Integer N = new Integer(20);
         V.addElement( N);
         Format = "I5";
-        
         
      }else{
          V.addElement( "'B'  0.0  0.0");
@@ -202,7 +201,6 @@ public class Read3Col1D extends GenericTOF_SAD{
     if( V.elementAt(0) instanceof Integer[])
        return ((Integer[])(V.elementAt(0)))[0].intValue();
     return -2;
- 
   }
 
 
@@ -234,8 +232,8 @@ public class Read3Col1D extends GenericTOF_SAD{
       DS.setAttribute( new IntListAttribute(Attribute.RUN_NUM,RunNum));
       DS.getData_entry(0).setAttribute( new IntListAttribute(Attribute.RUN_NUM,RunNum));
       DS.setTitle( "EFR"+RunNum[0]);  
-
     }
+
     else{
       
       V.addElement( "                     ");
@@ -269,8 +267,8 @@ public class Read3Col1D extends GenericTOF_SAD{
      DS.setTitle( S+RunNum[0]);
     }
     return null;
-
   }
+
   private DataSet createDataSet( float[]xvals,float[]yvals,float[]errs, String fileType){
 
      DataSet Res = new DataSet();
@@ -291,9 +289,8 @@ public class Read3Col1D extends GenericTOF_SAD{
     
      DataSetFactory.addOperators( Res);
      return Res;
-    
-
   }
+
   private String setFormat( String fileType){
      if( fileType.equals( Print3Col1D.EFFICIENCY)){
         return "F11.5,F15.5,F15.5,/";
@@ -328,8 +325,8 @@ public class Read3Col1D extends GenericTOF_SAD{
     Result.addElement( FileIO.getEndCondition( "=",new Float( -999.0)));
     //System.out.println("EndCond="+StringUtil.toString( Result));
     return Result;
-
  }
+
  public String getDocumentation(){
     StringBuffer Res = new StringBuffer();
     Res.append("@overview  Reads efficiency or Reduce files in 3Col format ");
@@ -346,12 +343,14 @@ public class Read3Col1D extends GenericTOF_SAD{
 
 
  }
+
  /**
- *  Test program for this module.
- *  Args[0] name of a file storing information on a DataSet in 3 Col format 
- *  Args[1] filetype
- *  @return a data set will be displayed. It can be saved via the x vs Group y in the
- *     Selected Table View
+ *  Test program for this module that displays a DataSet read using
+ *  this operator. The DataSet can be saved via the x vs Group y in the
+ *  Selected Table View
+ *  @param args  Array of Strings with two entries,
+ *  Args[0]: name of a file storing information on a DataSet in 3 Col format 
+ *  Args[1]: filetype.
  */
  public static void main( String args[]){
 

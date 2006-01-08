@@ -35,6 +35,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2006/01/08 01:38:25  dennis
+ * Minor fix of javadoc warnings that showed up when building with
+ * the java 1.5.0_06 compiler.
+ *
  * Revision 1.7  2005/05/25 18:39:15  dennis
  * Removed unused imports.
  *
@@ -68,17 +72,18 @@ public class Fcvrt implements FcvrtConstants {
    int indent =2;
    String buff = null;
    public String Res ="";
+
   /**
-    *  Program that invokes this translator.
-    * @param  args args[0]  the filename of a file that contains a [sequence of]
-    *                  subroutine[s] or function[s]
-    * @return nothing but each subroutine and function will be translated
-    *          to a different java file. The filename corresponds to the 
-    *          subroutine or function name.
+    *  Program that invokes this translator and translates each
+    *  subroutine and function in the input file and places the
+    *  result in a corresponding java file. 
+    *
+    * @param  args  String array with args[0] being the name 
+    *               of a file containing a [sequence of]
+    *               subroutine[s] or function[s]
     */
   public static void main( String args[]){
       Fcvrt parser;
-
 
       parser = new Fcvrt(new FortranTokenManager(args[0]));
       try{
