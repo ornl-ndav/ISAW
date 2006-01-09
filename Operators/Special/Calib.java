@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2006/01/09 22:42:22  rmikk
+ * Removed sample orientation attributes before adding the correct ones.
+ *
  * Revision 1.11  2006/01/08 01:38:31  dennis
  * Minor fix of javadoc warnings that showed up when building with
  * the java 1.5.0_06 compiler.
@@ -470,10 +473,14 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
      if( Float.isNaN(chi)||Float.isNaN(phi)||Float.isNaN(omega)) 
         return new ErrorString(" Cannot set Crystal orientation");
      else{
+       DS1.removeAttribute( Attribute.SAMPLE_ORIENTATION);
        LANSCE_SCD_SampleOrientation orient= new LANSCE_SCD_SampleOrientation(phi, chi,omega);
        SampleOrientationAttribute att = new SampleOrientationAttribute( Attribute.SAMPLE_ORIENTATION,
                  orient);
        DS1.setAttribute( att);
+       DS1.removeAttribute( Attribute.SAMPLE_CHI );
+       DS1.removeAttribute( Attribute.SAMPLE_PHI );
+       DS1.removeAttribute( Attribute.SAMPLE_OMEGA );
        DS1.setAttribute( new FloatAttribute( Attribute.SAMPLE_CHI,chi));
 
        DS1.setAttribute( new FloatAttribute( Attribute.SAMPLE_PHI,phi));
