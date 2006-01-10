@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.8  2006/01/10 19:05:33  dennis
+ * Removed one small shift in the detector position added for testing
+ * purposes.  Rearranged main test program.
+ *
  * Revision 1.7  2006/01/10 17:40:36  dennis
  * Fixed row vs. column ordering in method to "fix" the
  * LANSCE SCD data.  The order is now known to be correct
@@ -203,8 +207,7 @@ public class LansceUtil
                                       // Add the detector position info.
                                       // First add a Data grid for the detector
     float     depth  =  0.001f;
-//  float     center_x = 0.0f;
-    float     center_x = -0.05f;
+    float     center_x = 0.0f;
     float     center_y = (float)(-det_dist / Math.sqrt(2));
     float     center_z = (float)( det_dist / Math.sqrt(2));
     Vector3D  center =  new Vector3D(  center_x, center_y, center_z );
@@ -268,8 +271,10 @@ public class LansceUtil
 
     // NOVEMBER LANSCE RUNS, detector distance 0.265 meter
     int START  = 0;
-    int N_RUNS = 5;
-    float det_dist = 0.265f;
+    int N_RUNS = 1;
+    float det_dist = 0.245f;
+//  float det_dist = 0.25f;
+//  float det_dist = 0.265f;
 //  float det_dist = 0.275f;
     int run_[]   = {  725,  726,  727,  728,  729,  730,  731,  732,  733 };
     int omega_[] = {  125,   90,   60,   85,   72,  108,   35,  100,   78 };
@@ -296,7 +301,7 @@ public class LansceUtil
     int chi_[]   = {   0,    0, -135, -135 };
     int omega_[] = {   0,   90,   90,   90 };
 */
-    DataSet ds[] = new DataSet[ run_.length ];
+    DataSet ds[] = new DataSet[ N_RUNS ];
                                               
 //  String dir_name  = "/home/dennis/LANSCE_DATA/RUBY/";
     String dir_name  = "/home/dennis/LANSCE_1_9_06/RUBY_11_x_05/";
@@ -308,7 +313,8 @@ public class LansceUtil
 //    float det_height = 0.20f; 
     float det_width  = 0.192f; 
     float det_height = 0.192f; 
-    float length_0   = 7.499858f;
+    float length_0   = 7.499858f;             // 295.27 inches based on
+                                              // engineering drawings
     float phi,
           chi,
           omega;
@@ -319,17 +325,19 @@ public class LansceUtil
     float phi_sign   = 1;                     // set these to +-1 to change
     float chi_sign   = 1;                     // the direction of rotation
     float omega_sign = 1;
+    DataSet one_ds;
     for ( int i = START; i < START+N_RUNS; i++ )
     {
       file_name = dir_name + prefix + run_[i] + suffix;
       retriever = new NexusRetriever( file_name );
-      ds[i-START] = retriever.getDataSet(3);
+      System.out.println("NOW LOADING RUN " + file_name );
+      one_ds = retriever.getDataSet(3);
 
-      ds[i-START] = FixSCD_Data( ds[i-START], 
-                         1500, 8000, 
-                         det_width, det_height, 
-                         det_dist,
-                         length_0 ); 
+      one_ds = FixSCD_Data( one_ds, 
+                            1500, 8000, 
+                            det_width, det_height, 
+                            det_dist,
+                            length_0 ); 
 
       phi   = phi_sign   * phi_[i]   + phi_offset;
       chi   = chi_sign   * chi_[i]   + chi_offset;
@@ -346,10 +354,12 @@ public class LansceUtil
       SampleOrientationAttribute attr =
         new SampleOrientationAttribute( Attribute.SAMPLE_ORIENTATION, samp_or );
 
-      ds[i-START].setAttribute( attr );
+      one_ds.setAttribute( attr );
 
-      for ( int db_index = 0; db_index < ds[i-START].getNum_entries(); db_index++ )
-        ds[i-START].getData_entry(db_index).setAttribute( attr );
+      for ( int db_index = 0; db_index < one_ds.getNum_entries(); db_index++ )
+        one_ds.getData_entry(db_index).setAttribute( attr );
+
+      ds[i-START] = one_ds;
     }
 
 /*
