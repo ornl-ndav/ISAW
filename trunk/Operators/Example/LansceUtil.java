@@ -30,6 +30,15 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2006/01/10 17:40:36  dennis
+ * Fixed row vs. column ordering in method to "fix" the
+ * LANSCE SCD data.  The order is now known to be correct
+ * and was verified using run SCD_E000005_R000781.nx.hdf
+ * which is a flood pattern with a rectangular mask in
+ * the upper left corner and a circular mask in the
+ * lower right corner (when looking at the detector
+ * from the sample position).
+ *
  * Revision 1.6  2005/08/14 21:44:47  dennis
  * Now adds SampleOrientation to each Data block.
  *
@@ -129,12 +138,12 @@ public class LansceUtil
     int N_ROWS  = 256; 
     int AREA_DET_ID = 5;
 
-    float counts[][][] = new float[N_PAGES][N_ROWS][N_COLS];
+    float counts[][][] = new float[N_PAGES][N_COLS][N_ROWS];
 
     String error = null;
-    if ( ds.getNum_entries() != N_ROWS * N_PAGES )
+    if ( ds.getNum_entries() != N_COLS * N_PAGES )
     {
-      error = "Need DataSet with " + (N_ROWS * N_PAGES) + " entries " + 
+      error = "Need DataSet with " + (N_COLS * N_PAGES) + " entries " + 
               "got " + ds.getNum_entries(); 
       throw ( new IllegalArgumentException( error ) );  
     }
@@ -142,19 +151,19 @@ public class LansceUtil
     int index = 0;
     float ys[];
     for ( int page = 0; page < N_PAGES; page++ )
-      for ( int row = 0; row < N_ROWS; row++ )
+      for ( int col = 0; col < N_COLS; col++ )
       {
          Data d = ds.getData_entry( index );
          index++;
 
          ys = d.getY_values();
-         if ( ys.length != N_COLS )
+         if ( ys.length != N_ROWS )
          {
-           error = "Need Data blocks with " + N_COLS + " y-values " + 
+           error = "Need Data blocks with " + N_ROWS + " y-values " + 
               "got " + ys.length; 
            throw ( new IllegalArgumentException( error ) );  
          } 
-         counts[page][row] = ys;
+         counts[page][col] = ys;
       }
                                        // now form a new DataSet by extracting 
                                        // the values in the 3D array of counts
@@ -170,8 +179,9 @@ public class LansceUtil
         ys = new float[N_PAGES];
         if ( row > 0 && col > 0 && row < N_ROWS-1 && col < N_COLS-1 )
           for ( int page = 0; page < N_PAGES; page++ )
-            ys[page] = counts[page][row][col];
-          index++; 
+            ys[page] = counts[page][col][row];
+
+        index++; 
 
         Data d = new HistogramTable( x_scale, ys, index );
         new_ds.addData_entry( d );
@@ -252,14 +262,34 @@ public class LansceUtil
    */
   public static void main( String args[] )
   {
-    String prefix = "SCD_E000005_R0000";
+//    String prefix = "SCD_E000005_R0000";
+    String prefix = "SCD_E000005_R000";
     String suffix = ".nx.hdf";
 
-    int N_RUNS = 2;
+    // NOVEMBER LANSCE RUNS, detector distance 0.265 meter
+    int START  = 0;
+    int N_RUNS = 5;
+    float det_dist = 0.265f;
+//  float det_dist = 0.275f;
+    int run_[]   = {  725,  726,  727,  728,  729,  730,  731,  732,  733 };
+    int omega_[] = {  125,   90,   60,   85,   72,  108,   35,  100,   78 };
+    int phi_[]   = {  320,  335,    0,   10,   42,   50,    0,  300,  290 };
+    int chi_[]   = { -120, -120, -120, -120, -120, -120, -120, -120, -120 };
+//  int chi_[]   = { +120, +120, +120, +120, +120, +120, +120, +120, +120 };
+/*
+    // NOVEMBER LANSCE RUNS, detector distance 0.465 meter
+    int N_RUNS = 9;
+    int run_[]   = {  783,  784,  785,  786,  787,  788,  789,  790,  791 };
+    int omega_[] = {  125,   90,   60,   85,   72,  108,   35,  100,   78 };
+    int phi_[]   = {  320,  335,    0,   10,   42,   50,    0,  300,  290 };
+    int chi_[]   = { +120, +120, +120, +120, +120, +120, +120, +120, +120 };
+*/
+/*
     int run_[]   = {  96,    98,   97,   95,   94,   92 };
     int phi_[]   = {  245,  290,  290,  245,  325,  325 };
     int chi_[]   = { -135, -135, -135, -135, -135, -135 };
     int omega_[] = {   90,  135,   90,  135,  135,   90 };
+*/
 /*
     int run_[]   = {  96, 96, 96, 96 };
     int phi_[]   = {   0,    0,   0,   245 };
@@ -268,15 +298,17 @@ public class LansceUtil
 */
     DataSet ds[] = new DataSet[ run_.length ];
                                               
-    String dir_name  = "/home/dennis/LANSCE_DATA/RUBY/";
+//  String dir_name  = "/home/dennis/LANSCE_DATA/RUBY/";
+    String dir_name  = "/home/dennis/LANSCE_1_9_06/RUBY_11_x_05/";
     String file_name;
     Retriever retriever;
 
                                               // fix the data 
-    float det_width  = 0.20f; 
-    float det_height = 0.20f; 
-    float det_dist   = 0.265f;
-    float length_0   = 9.00f;
+//    float det_width  = 0.20f; 
+//    float det_height = 0.20f; 
+    float det_width  = 0.192f; 
+    float det_height = 0.192f; 
+    float length_0   = 7.499858f;
     float phi,
           chi,
           omega;
@@ -287,13 +319,13 @@ public class LansceUtil
     float phi_sign   = 1;                     // set these to +-1 to change
     float chi_sign   = 1;                     // the direction of rotation
     float omega_sign = 1;
-    for ( int i = 0; i < N_RUNS; i++ )
+    for ( int i = START; i < START+N_RUNS; i++ )
     {
       file_name = dir_name + prefix + run_[i] + suffix;
       retriever = new NexusRetriever( file_name );
-      ds[i] = retriever.getDataSet(3);
+      ds[i-START] = retriever.getDataSet(3);
 
-      ds[i] = FixSCD_Data( ds[i], 
+      ds[i-START] = FixSCD_Data( ds[i-START], 
                          1500, 8000, 
                          det_width, det_height, 
                          det_dist,
@@ -313,7 +345,11 @@ public class LansceUtil
                            new LANSCE_SCD_SampleOrientation( phi, chi, omega );
       SampleOrientationAttribute attr =
         new SampleOrientationAttribute( Attribute.SAMPLE_ORIENTATION, samp_or );
-      ds[i].setAttribute( attr );
+
+      ds[i-START].setAttribute( attr );
+
+      for ( int db_index = 0; db_index < ds[i-START].getNum_entries(); db_index++ )
+        ds[i-START].getData_entry(db_index).setAttribute( attr );
     }
 
 /*
