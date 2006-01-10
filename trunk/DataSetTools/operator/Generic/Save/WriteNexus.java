@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/01/10 00:20:26  rmikk
+ * Eliminated html markers in the description
+ *
  * Revision 1.5  2006/01/08 01:38:27  dennis
  * Minor fix of javadoc warnings that showed up when building with
  * the java 1.5.0_06 compiler.
@@ -57,10 +60,10 @@ import java.util.*;
 
 /** This operator writes a Histogram DataSet with its associated
  *  Monitor to a Nexus file or xml file<P>
- * The title is : <Ul><B>Write Data Set to Nexus File</b>. This appears in
- *   menu bars </ul>
- * The Command Name is :<UL><B>SaveNX</b>. This is the name that is used in
- *   Scripts to invoke this operator </ul>
+ * The title is : <B>Write Data Set to Nexus File</b>. This appears in
+ *   menu bars <P>
+ * The Command Name is :<B>SaveNX</b>. This is the name that is used in
+ *   Scripts to invoke this operator 
  */
 public class WriteNexus extends GenericSave
 {
@@ -165,10 +168,10 @@ public Object clone()
     W.CopyParametersFrom( this );
     return W;
   }
-
-/** Trivial test program for this module, just to see if classpaths
- *  it just prints "OKKK".
- */
+/** Test program for this module.  
+* It just test to see if classpaths are correct, etc.
+*@return  "OKKK" to System.out if successful
+*/
 public static void main( String args[] )
  {
   System.out.println("OKKK");
