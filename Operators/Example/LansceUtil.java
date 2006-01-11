@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.9  2006/01/11 22:30:10  dennis
+ * Added method to set sample orientation.
+ * Added attributes for instrument name and instrument type.
+ *
  * Revision 1.8  2006/01/10 19:05:33  dennis
  * Removed one small shift in the detector position added for testing
  * purposes.  Rearranged main test program.
@@ -127,6 +131,8 @@ public class LansceUtil
                                      float det_dist,
                                      float length_0 )
   {
+    String name = "SCD_FP5";
+/*
     System.out.println(ds);
     System.out.println("x label = " + ds.getX_label() );
     System.out.println("x units = " + ds.getX_units() );
@@ -134,6 +140,7 @@ public class LansceUtil
     System.out.println("y label = " + ds.getY_label() );
     System.out.println("y units = " + ds.getY_units() );
     System.out.println("y range = " + ds.getYRange() );
+*/
                         // assume data comes in as sequences of values from
                         // columns of the area detector, starting with column 1
                         // column 2, etc of the first time slice.
@@ -175,6 +182,15 @@ public class LansceUtil
                                        // pixels
     DataSetFactory factory = new DataSetFactory( ds.getTitle() );
     DataSet new_ds = factory.getTofDataSet( InstrumentType.TOF_SCD );
+    new_ds.setAttributeList( ds.getAttributeList() );
+
+    int type[] = { InstrumentType.TOF_SCD };
+    IntListAttribute list_attr = new IntListAttribute(Attribute.INST_TYPE,type);
+    new_ds.setAttribute( list_attr ); 
+
+    StringAttribute str_attr = new StringAttribute( Attribute.INST_NAME, name );
+    new_ds.setAttribute( str_attr );
+    
     XScale x_scale = new UniformXScale( t_min, t_max, N_PAGES + 1 );
     index = 0;
     for ( int row = 0; row < N_ROWS; row++ )
@@ -188,6 +204,7 @@ public class LansceUtil
         index++; 
 
         Data d = new HistogramTable( x_scale, ys, index );
+        d.setSqrtErrors( true );
         new_ds.addData_entry( d );
       }
                                       // set some basic attributes
@@ -260,6 +277,24 @@ public class LansceUtil
     return new_ds;
   }
 
+
+  public static void AddSampleOrientationAttribute( DataSet ds,
+                                                    float   phi, 
+                                                    float   chi, 
+                                                    float   omega )
+  {
+     SampleOrientation samp_or =
+                          new LANSCE_SCD_SampleOrientation( phi, chi, omega );
+     SampleOrientationAttribute attr =
+       new SampleOrientationAttribute( Attribute.SAMPLE_ORIENTATION, samp_or );
+
+     ds.setAttribute( attr );
+
+     for ( int db_index = 0; db_index < ds.getNum_entries(); db_index++ )
+       ds.getData_entry(db_index).setAttribute( attr );
+  }
+
+
   /**
    *  Main program for testing purposes.
    */
@@ -270,24 +305,32 @@ public class LansceUtil
     String suffix = ".nx.hdf";
 
     // NOVEMBER LANSCE RUNS, detector distance 0.265 meter
-    int START  = 0;
-    int N_RUNS = 1;
-    float det_dist = 0.245f;
+    int START  = 1;
+    int N_RUNS = 7;
+//  float det_dist = 0.258f; // 9.75" det face to detector + 10mm face 
+                             // thickness
+//  float det_dist = 0.245f;
 //  float det_dist = 0.25f;
-//  float det_dist = 0.265f;
+    float det_dist = 0.265f;
 //  float det_dist = 0.275f;
-    int run_[]   = {  725,  726,  727,  728,  729,  730,  731,  732,  733 };
-    int omega_[] = {  125,   90,   60,   85,   72,  108,   35,  100,   78 };
-    int phi_[]   = {  320,  335,    0,   10,   42,   50,    0,  300,  290 };
-    int chi_[]   = { -120, -120, -120, -120, -120, -120, -120, -120, -120 };
-//  int chi_[]   = { +120, +120, +120, +120, +120, +120, +120, +120, +120 };
+    int run_[]   = { 725, 726, 727, 728, 729, 730, 731, 732, 733, 734, 735, 
+                     736, 737 };
+    int omega_[] = { 125,  90,  60,  85,  72, 108,  35, 100,  78,  55, 130,
+                     95,  60 };
+    int phi_[]   = { 320, 335,   0,  10,  42,  50,   0, 300, 290, 280, 220, 
+                     200, 200 };
+    int chi_[]   = { 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 
+                     120, 120 };
 /*
     // NOVEMBER LANSCE RUNS, detector distance 0.465 meter
-    int N_RUNS = 9;
-    int run_[]   = {  783,  784,  785,  786,  787,  788,  789,  790,  791 };
-    int omega_[] = {  125,   90,   60,   85,   72,  108,   35,  100,   78 };
-    int phi_[]   = {  320,  335,    0,   10,   42,   50,    0,  300,  290 };
-    int chi_[]   = { +120, +120, +120, +120, +120, +120, +120, +120, +120 };
+    int run_[]   = { 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793,
+                     794, 795 };
+    int omega_[] = { 125,  90,  60,  85,  72, 108,  35, 100,  78,  55, 130,
+                      95,  60 };
+    int phi_[]   = { 320, 335,   0,  10,  42,  50,   0, 300, 290, 280, 220, 
+                     200, 200 };
+    int chi_[]   = { 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,
+                     120, 120 };
 */
 /*
     int run_[]   = {  96,    98,   97,   95,   94,   92 };
@@ -309,10 +352,10 @@ public class LansceUtil
     Retriever retriever;
 
                                               // fix the data 
-//    float det_width  = 0.20f; 
-//    float det_height = 0.20f; 
-    float det_width  = 0.192f; 
-    float det_height = 0.192f; 
+    float det_width  = 0.20f; 
+    float det_height = 0.20f; 
+//    float det_width  = 0.192f; 
+//    float det_height = 0.192f; 
     float length_0   = 7.499858f;             // 295.27 inches based on
                                               // engineering drawings
     float phi,
@@ -320,7 +363,7 @@ public class LansceUtil
           omega;
     float phi_offset   = 0;                   // set these to adjust for 
     float chi_offset   = 0;                   // different zero positions
-    float omega_offset = 0;
+    float omega_offset = 90;
 
     float phi_sign   = 1;                     // set these to +-1 to change
     float chi_sign   = 1;                     // the direction of rotation
@@ -349,15 +392,7 @@ public class LansceUtil
                          ", chi = " + chi +
                          ", omega = " + omega );
 
-      SampleOrientation samp_or = 
-                           new LANSCE_SCD_SampleOrientation( phi, chi, omega );
-      SampleOrientationAttribute attr =
-        new SampleOrientationAttribute( Attribute.SAMPLE_ORIENTATION, samp_or );
-
-      one_ds.setAttribute( attr );
-
-      for ( int db_index = 0; db_index < one_ds.getNum_entries(); db_index++ )
-        one_ds.getData_entry(db_index).setAttribute( attr );
+      AddSampleOrientationAttribute( one_ds, phi, chi, omega );
 
       ds[i-START] = one_ds;
     }
