@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.11  2006/01/12 18:40:59  dennis
+ * Added code to rebin the detector to 128x128, rather than 256x256
+ *
  * Revision 1.10  2006/01/12 00:04:18  dennis
  * Added list of run numbers as attribute.
  *
@@ -80,7 +83,6 @@
  * have detector position informaiton.
  *
  */
-
 package Operators.Example;
 
 import java.util.*;
@@ -154,6 +156,15 @@ public class LansceUtil
     int N_COLS  = 256;
     int N_ROWS  = 256; 
     int AREA_DET_ID = 5;
+                                // in most cases we'll rebin the 256x256 data
+    int n_rows = N_ROWS;        // to 128x128
+    int n_cols = N_COLS;
+    boolean bin_2_by_2 = true;
+    if ( bin_2_by_2 )
+    {
+      n_rows = N_ROWS/2;
+      n_cols = N_COLS/2;
+    }
 
     float counts[][][] = new float[N_PAGES][N_COLS][N_ROWS];
 
@@ -164,7 +175,8 @@ public class LansceUtil
               "got " + ds.getNum_entries(); 
       throw ( new IllegalArgumentException( error ) );  
     }
-                       // first, extract all of the data values into a 3D array
+                       // first, extract all of the data values into a 
+                       // full resolution 3D array
     int index = 0;
     float ys[];
     for ( int page = 0; page < N_PAGES; page++ )
@@ -199,20 +211,42 @@ public class LansceUtil
     
     XScale x_scale = new UniformXScale( t_min, t_max, N_PAGES + 1 );
     index = 0;
-    for ( int row = 0; row < N_ROWS; row++ )
-      for ( int col = 0; col < N_COLS; col++ )
-      {
-        ys = new float[N_PAGES];
-        if ( row > 0 && col > 0 && row < N_ROWS-1 && col < N_COLS-1 )
-          for ( int page = 0; page < N_PAGES; page++ )
-            ys[page] = counts[page][col][row];
+    if ( bin_2_by_2 )
+    {
+      for ( int row = 0; row < n_rows; row ++ )
+        for ( int col = 0; col < n_cols; col ++ )
+        {
+          ys = new float[N_PAGES];
+          if ( row > 0 && col > 0 && row < n_rows-1 && col < n_cols-1 )
+            for ( int page = 0; page < N_PAGES; page++ )
+              ys[page] = counts[page][2*col  ][2*row  ] +
+                         counts[page][2*col+1][2*row  ] +
+                         counts[page][2*col  ][2*row+1] +
+                         counts[page][2*col+1][2*row+1];
+          index++; 
 
-        index++; 
-
-        Data d = new HistogramTable( x_scale, ys, index );
-        d.setSqrtErrors( true );
-        new_ds.addData_entry( d );
+          Data d = new HistogramTable( x_scale, ys, index );
+          d.setSqrtErrors( true );            // NOT RIGHT FOR 2x2 bins...fix
+          new_ds.addData_entry( d );
       }
+    }
+    else
+    {
+      for ( int row = 0; row < N_ROWS; row++ )
+        for ( int col = 0; col < N_COLS; col++ )
+        {
+          ys = new float[N_PAGES];
+          if ( row > 0 && col > 0 && row < N_ROWS-1 && col < N_COLS-1 )
+            for ( int page = 0; page < N_PAGES; page++ )
+              ys[page] = counts[page][col][row];
+
+          index++;
+
+          Data d = new HistogramTable( x_scale, ys, index );
+          d.setSqrtErrors( true );
+          new_ds.addData_entry( d );
+        }
+    }
                                       // set some basic attributes
                                       // set initial path attribute after
                                       // converting to positive value in meters
@@ -233,10 +267,11 @@ public class LansceUtil
     Vector3D  center =  new Vector3D(  center_x, center_y, center_z );
     Vector3D  x_vec  =  new Vector3D( -1,      0f,      0f );
     Vector3D  y_vec  =  new Vector3D(  0,  .7071f,  .7071f );
+
     IDataGrid grid   = new UniformGrid( AREA_DET_ID, "m", 
                                         center, x_vec, y_vec,
                                         det_width, det_height, depth,
-                                        N_ROWS, N_COLS );
+                                        n_rows, n_cols );
                        
                                       // Next add the pixel info to each 
                                       // Data block
@@ -244,8 +279,8 @@ public class LansceUtil
     PixelInfoList           pil;
     PixelInfoListAttribute  pil_attr;
     int seg_id = 0;                                       
-    for ( int row = 0; row < N_ROWS; row++ )
-      for ( int col = 0; col < N_COLS; col++ )
+    for ( int row = 0; row < n_rows; row++ )
+      for ( int col = 0; col < n_cols; col++ )
       {
         list     = new IPixelInfo[1];
         list[0]  = new DetectorPixelInfo( seg_id, 
@@ -323,7 +358,7 @@ public class LansceUtil
     String suffix = ".nx.hdf";
 
     // NOVEMBER LANSCE RUNS, detector distance 0.265 meter
-    int START  = 1;
+    int START  = 0;
     int N_RUNS = 1;
 //  float det_dist = 0.258f; // 9.75" det face to detector + 10mm face 
                              // thickness
@@ -441,17 +476,33 @@ public class LansceUtil
                                        Display2D.IMAGE,
                                        Display2D.CTRL_ALL);
 */
+                                               // pop up 3D view of reciprocal
+                                               // space as "sanity check"
     DataSet ds_arr[] = new DataSet[ N_RUNS ];
     for ( int i = 0; i < N_RUNS; i++ )
       ds_arr[i] = ds[i];
     new GL_RecipPlaneView( ds_arr, 100 );
-/*
-    FindPeaks op = new FindPeaks( ds_arr[0], 100000, 50, 5, 1, 324, 
+                                               // now try sending the DataSet
+                                               // through the 
+
+    FindPeaks find_op = new FindPeaks( ds_arr[0], 100000, 50, 5, 1, 324, 
                                   new IntListString( "1:255" ) ); 
-    Vector peaks = (Peak)op.getResult();
+    Vector peaks = (Vector)(find_op.getResult());
+/*
+    CentroidPeaks centroid_op = new CentroidPeaks( ds_arr[0], peaks );
+    peaks = (Vector)(centroid_op.getResult());
+*/
+    String peaks_file = "/home/dennis/LANSCE_1_9_06/RUBY_11_x_05/Ruby.peaks";
+    WritePeaks write_peaks_op = new WritePeaks( peaks_file, peaks, false );
+    System.out.println( write_peaks_op.getResult() );
+/*
+    String exp_file = "/home/dennis/LANSCE_1_9_06/RUBY_11_x_05/Ruby.x";
+    WriteExp write_exp_op = new WriteExp( ds_arr[0], null, exp_file, 1, false );
+    System.out.println( write_exp_op.getResult() );
+*/
     for ( int i = 0; i < peaks.size(); i++ )
       System.out.println( peaks.elementAt(i) );
-*/
+
 //  new ViewManager( ds1, "3D View" );
 
 //    WindowShower.show(display);
