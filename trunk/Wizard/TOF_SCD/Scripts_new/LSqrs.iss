@@ -25,9 +25,15 @@ $MinIntens  Integer(0)  Minimum Peak Intensity Threshold
 $RowColKeep  IntList(0:100) Pixel Rows and Columns to Keep
 #TODO JLsqrs deletes some peaks.  Make copies each time
 Display "peaks num="&ArrayLength(Peaks)
+N=ArrayLength(Peaks)
 for i in runnums
    filename=SaveDir&"/ls"&expName&i&".mat"
-   JLsqrs(Peaks,""&i,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep)
+   Pk1=[]
+   for j in [0:N-1]
+      Pk1=Pk1&Peaks[j]
+   endfor
+   Display "peak copy="&Pk1
+   JLsqrs(Pk1,""&i,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep)
  
 endfor
 display "Num Peaks="&ArrayLength(Peaks) 
@@ -40,7 +46,7 @@ for i in [1:N]
   endif
 endfor
 filename=SaveDir&"/ls"&expName&".mat"
-return JLsqrs(Peaks,S,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep)
+return 
 
    
    
