@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/01/12 19:07:09  rmikk
+ * Added code to use Peak_new's data instead of Peak's data
+ *
  * Revision 1.5  2005/08/03 19:34:12  rmikk
  * Updated the gridNum variable so it will show on the output
  *
@@ -147,13 +150,30 @@ public class Peak_new extends Peak{
       super.pixel( x,y ,z);
       this.grid = grid;
       this.L1 = initialPath;
+      super.L1(L1);
       sample_orient( chi, phi, omega);
       this.timeAdjustment = timeAdjustment;
+      
+      
       time( xscale);
       pixel_to_real();
       //super.real(xcm, ycm, wl);
       super.sample_orient(chi,phi,omega);
       needUpdate = false;
+      if( grid != null ){
+         Vector3D pos = grid.position();
+         //pos.multiply( -1.0f);
+         float[] pp = pos.get();
+         
+         detA2=( (float)(180.0f*Math.asin( pos.get()[2]/pos.length())/Math.PI));
+         
+         detA=(float)(180*Math.atan2(pp[1],pp[0])/Math.PI);
+         detD = detD();
+         super.detA2( detA2);
+         super.detA( detA);
+         super.detD( detD);
+      }
+      
   }
   
   
@@ -175,15 +195,14 @@ public class Peak_new extends Peak{
     return this.seqnum();
   }
   
+  
   public float detA2( float d2){
-    super.detA2(d2);
-    this.detA2 = d2;
-    return d2;
+     
+        return detA2;
   }
   
   public float detA2(){
-   
-    return super.detA2();
+    return detA2;
   }
   public float detD(){
      
@@ -194,9 +213,11 @@ public class Peak_new extends Peak{
    *  Assumes that the center is in scattering plane
    */
   public float detA(){
+    return detA; 
    
-    float[] f= grid.position().get();
+   /* float[] f= grid.position().get();
     return (float)( Math.asin( 100*f[1]/detD())/Math.PI*180);
+  */
   }
   
   public void sethkl( float H, float K, float L,boolean propogate){
@@ -311,7 +332,24 @@ public class Peak_new extends Peak{
   public void Grid( IDataGrid  grid){
     needUpdate = true;
     this.grid = grid;
+    
+    System.out.println("New grid set:"+grid.position());
     super.detnum( grid.ID());
+    this.detnum = grid.ID();
+    if( grid != null ){
+         Vector3D pos = grid.position();
+         //pos.multiply( -1.0f);
+         float[] pp = pos.get();
+         System.out.println("pos of grid"+ grid.ID()+" is ("+pp[0]+","+pp[1]+","+pp[2]);
+         detA2=( (float)(180.0f*Math.asin( pos.get()[2]/pos.length())/Math.PI));
+         
+         detA=(float)(180*Math.atan2(pp[1],pp[0])/Math.PI);
+         detD = detD();
+         super.detA2( detA2);
+         super.detA( detA);
+         super.detD( detD);
+      }  
+    
   }
   /**
    *  Accessor method for the pixel row.
@@ -595,8 +633,8 @@ public class Peak_new extends Peak{
     super.sample_orient( CHI, PHI,OMEGA);
    
     // create a new rotation matrix
-    this.ROT=makeROT(this.chi,this.phi,this.omega);
-
+     this.ROT=makeROT(this.chi,this.phi,this.omega);
+   
  /*   // update the inverse of the rotated UB matrix
     if(this.UB!=null){
       this.invUB=
@@ -698,6 +736,8 @@ public class Peak_new extends Peak{
      
        return wl;
    }
+   
+   
   private void real_to_pixel(){
    
     if( Float.isNaN(xcm))
@@ -709,6 +749,8 @@ public class Peak_new extends Peak{
     }
     wl_to_z();
   }
+  
+  
   /**
    *  Attempts to set up some z value(keeps fixed) from wl, etc.
    *
@@ -1071,13 +1113,13 @@ public class Peak_new extends Peak{
     }
       if(this.gridCenter == null)
         return null;
-      if(!Float.isNaN(xcm) && !Float.isNaN(ycm)&&!Float.isNaN(detA)&&
-                  !Float.isNaN(detD)){
+      if(!Float.isNaN(xcm) && !Float.isNaN(ycm)&&!Float.isNaN(detA())&&
+                  !Float.isNaN(detD())){
         float[] Res = new float[3],
                 Cent =gridCenter.get();
                 
         Res[2] = ycm/100;
-        double angle = (detA-90)/180*Math.PI;
+        double angle = (detA()-90)/180*Math.PI;
         Res[0] =Cent[0]+(float)(xcm*Math.cos(angle)/100);
         Res[1] =Cent[1]+(float)(xcm*Math.sin(angle)/100);
         return new Vector3D(Res);
