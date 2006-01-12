@@ -11,7 +11,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU General License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this library; if not, write to the Free Software
@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/01/12 19:15:49  rmikk
+ * Fixed FixLANSCESCD to give line number of error for extra file and Only
+ *    large data sets are fixed( indices reordered)
+ *
  * Revision 1.12  2006/01/09 22:42:22  rmikk
  * Removed sample orientation attributes before adding the correct ones.
  *
@@ -363,12 +367,16 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
         if( Nlist.getLength()<1) return null;
         return Nlist.item(0);
        }catch(Exception s){
+        String S ="Error in "+ fileName+":"+s.getMessage();
+        if( s instanceof org.xml.sax.SAXParseException)
+           S +=" at line "+((org.xml.sax.SAXParseException)s).getLineNumber();
+        (new javax.swing.JOptionPane()).showMessageDialog(null,S);
         return null;
       }
    }
    
    /**
-    * This method fixes Lansce Hippo files that are stored in their preNeXus
+    * This method fixes Lansce SCD files that are stored in their preNeXus
     * mode.
     *
     * @param DS    The DataSet that is to be fixed
@@ -379,9 +387,10 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
     *         the work was completed.
     */
    public static Object FixLansceSCDDataFiles( DataSet DS, String file ){
+                               
       Node doc = getXmlDoc( file);
       if( doc == null)
-         return  new ErrorString("Improper fileName");
+         return  new ErrorString("Improper Fix file Name");
       Object X= DS.getAttributeValue(Attribute.FILE_NAME);
      
       if( (X==null)||!(X instanceof String))
@@ -467,7 +476,7 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
           Float.isNaN(L0)){
              return new ErrorString("Not enough info to fix the DataSet");
           }
-     else
+     else if( DS.getNum_entries() > 200*300)
        DS1= Operators.Example.LansceUtil.FixSCD_Data(DS, tmin,tmax,width, height,L1,L0);
      
      if( Float.isNaN(chi)||Float.isNaN(phi)||Float.isNaN(omega)) 
@@ -486,7 +495,9 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
        DS1.setAttribute( new FloatAttribute( Attribute.SAMPLE_PHI,phi));
        DS1.setAttribute( new FloatAttribute( Attribute.SAMPLE_OMEGA,omega));
        DS.copy(DS1);
-     }
+       
+      
+      }
      
      return null;
    }
