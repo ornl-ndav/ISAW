@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2006/01/12 19:06:01  rmikk
+ * Has special code to handle/fix  LANSCE SCD Nexus files
+ *
  * Revision 1.26  2005/03/28 22:47:40  dennis
  * Removed TITLE attribute, since the DataSet already has a
  * field for the title.
@@ -282,10 +285,57 @@ public class ExtGetDS{
       errormessage =  entry.getErrorMessage();
       DataSetTools.util.SharedData.addmsg("Nexus Input Error:"+errormessage);
       System.out.println("In ExtGetDS, errormessga="+errormessage);
-      return DS;
+      //return DS;
       
    }
-  
+   String DSType = (String)DS.getAttributeValue( Attribute.DS_TYPE);
+   if( DSType == null)
+     return DS;
+   else if( DSType.toUpperCase().indexOf("SAMPLE") <0)
+     return DS;
+   
+   if(!filename.toUpperCase().endsWith(".NX.HDF"))
+     return DS;
+     
+   int startFileName = filename.lastIndexOf('/');
+   if( startFileName < 0) startFileName = filename.lastIndexOf('\\');
+   if( !filename.substring( startFileName+1, filename.length()-7).toUpperCase().startsWith(
+                 "SCD_E00000"))
+      return DS;
+   NxNode NN = EntryNode.getChildNode( "program_name");
+   if( NN == null)
+      return DS;
+   DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, 
+               DataSetTools.instruments.InstrumentType.TOF_SCD));
+   if( NN != null){
+       Object OprogName = NN.getNodeValue();
+       if( OprogName != null){
+           String progName = NexIO.Util.ConvertDataTypes.StringValue( OprogName );
+           if( progName != null) progName=progName.toUpperCase();
+           else progName ="";
+           String dt = DS.getAttribute( Attribute.END_DATE).getValue().toString();
+           Date dt1 = NexIO.Util.ConvertDataTypes.parse(dt);
+           Calendar Cal =  Calendar.getInstance();
+           Cal.set(2006,2,1);
+           Date dt2 = new Date();
+           dt2.setTime( Cal.getTimeInMillis());
+           String dir ="";
+           if(startFileName >=0)
+              dir = filename.substring(0,startFileName);
+           if( dir != null){
+             dir= dir.replace('\\','/');
+           if( !dir.endsWith("/"))
+               dir +="/";
+          
+           }
+           
+           if( dt1.before(dt2))if( dir != null) 
+           if( (progName.indexOf("LANSCE")>=0) ||(progName.indexOf("lanl")>=0))
+             Operators.Special.Calib.FixLansceSCDDataFiles( DS,dir+"SCDfix.lanl" );
+           
+       }
+       
+   }
    return DS;
 
   }
