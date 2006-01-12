@@ -45,7 +45,6 @@ for i in run_numbers
   #LoadSCDCalib(ds[dsnum],calibfile,-1,"")
   # find peaks
   
-  
   peaks1=GetCentroidPeaks(ds[dsnum],monct,num_peaks,min_int,min_time_chan,max_time_chan, RowColKeep)
   if first
     peaks=peaks1
@@ -53,6 +52,7 @@ for i in run_numbers
     peaks = peaks & peaks1
   endif
   # write out the results
+  SetAttr( ds[dsnum],"User Name","George User")
   WritePeaks(outpath&expname&".peaks",peaks1,append)
   WriteSCDExp(ds[dsnum],ds[0],outpath&expname&".x",1,append)
   if first
