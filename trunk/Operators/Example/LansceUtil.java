@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.10  2006/01/12 00:04:18  dennis
+ * Added list of run numbers as attribute.
+ *
  * Revision 1.9  2006/01/11 22:30:10  dennis
  * Added method to set sample orientation.
  * Added attributes for instrument name and instrument type.
@@ -80,13 +83,16 @@
 
 package Operators.Example;
 
+import java.util.*;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.instruments.*;
 import DataSetTools.trial.*;
+import DataSetTools.operator.Generic.TOF_SCD.*;
  
 import gov.anl.ipns.Util.Sys.WindowShower;
+import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Displays.*;
 
@@ -210,15 +216,12 @@ public class LansceUtil
                                       // set some basic attributes
                                       // set initial path attribute after
                                       // converting to positive value in meters
-    Attribute run_num = ds.getAttribute("Run Number");
-
     FloatAttribute initial_path = new FloatAttribute("Initial Path", length_0 );
     new_ds.setAttribute( initial_path );
     int num_data = new_ds.getNum_entries();
     for ( int i = 0; i < num_data; i++ )
     {
        new_ds.getData_entry(i).setAttribute( initial_path );
-       new_ds.getData_entry(i).setAttribute( run_num );
     }
 
                                       // Add the detector position info.
@@ -259,7 +262,8 @@ public class LansceUtil
     grid.setData_entries( new_ds );
     Grid_util.setEffectivePositions( new_ds, AREA_DET_ID );
 
-                                      // Add sample orientation information
+                                      // Add default sample orientation 
+                                      // and fix the run list attribute
     float phi   = 0;
     float chi   = -135;
     float omega = 0;
@@ -269,11 +273,25 @@ public class LansceUtil
     Attribute orientation_attr = new SampleOrientationAttribute(
                                         Attribute.SAMPLE_ORIENTATION, 
                                         orientation );
-    new_ds.setAttribute( orientation_attr );
-    for ( int i = 0; i < new_ds.getNum_entries(); i++ )
-      new_ds.getData_entry(i).setAttribute( orientation_attr );
 
-    System.out.println("**** just set sample orientation");
+    int run_list[] = AttrUtil.getRunNumber( new_ds );
+    if ( run_list == null )
+    {
+      int run_num = AttrUtil.getIntValue( Attribute.RUN_NUM, new_ds );
+      run_list = new int[1];
+      run_list[0] = run_num;
+    }
+    IntListAttribute run_list_attr =
+                     new IntListAttribute( Attribute.RUN_NUM, run_list );
+
+    new_ds.setAttribute( orientation_attr );
+    new_ds.setAttribute( run_list_attr );
+    for ( int i = 0; i < new_ds.getNum_entries(); i++ )
+    {
+      new_ds.getData_entry(i).setAttribute( orientation_attr );
+      new_ds.getData_entry(i).setAttribute( run_list_attr );
+    }
+
     return new_ds;
   }
 
@@ -306,7 +324,7 @@ public class LansceUtil
 
     // NOVEMBER LANSCE RUNS, detector distance 0.265 meter
     int START  = 1;
-    int N_RUNS = 7;
+    int N_RUNS = 1;
 //  float det_dist = 0.258f; // 9.75" det face to detector + 10mm face 
                              // thickness
 //  float det_dist = 0.245f;
@@ -427,7 +445,13 @@ public class LansceUtil
     for ( int i = 0; i < N_RUNS; i++ )
       ds_arr[i] = ds[i];
     new GL_RecipPlaneView( ds_arr, 100 );
-
+/*
+    FindPeaks op = new FindPeaks( ds_arr[0], 100000, 50, 5, 1, 324, 
+                                  new IntListString( "1:255" ) ); 
+    Vector peaks = (Peak)op.getResult();
+    for ( int i = 0; i < peaks.size(); i++ )
+      System.out.println( peaks.elementAt(i) );
+*/
 //  new ViewManager( ds1, "3D View" );
 
 //    WindowShower.show(display);
