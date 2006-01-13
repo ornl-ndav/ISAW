@@ -30,6 +30,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.12  2006/01/13 05:37:56  dennis
+ * Added javadocs to method for adding SampleOrientation attributes.
+ * Fixed bug where the default Sample orientation was for the IPNS
+ * SCD goniometer, rather than for the LANSCE SCD goniometer.
+ *
  * Revision 1.11  2006/01/12 18:40:59  dennis
  * Added code to rebin the detector to 128x128, rather than 256x256
  *
@@ -250,7 +255,7 @@ public class LansceUtil
                                       // set some basic attributes
                                       // set initial path attribute after
                                       // converting to positive value in meters
-    FloatAttribute initial_path = new FloatAttribute("Initial Path", length_0 );
+    FloatAttribute initial_path = new FloatAttribute("Initial Path", length_0);
     new_ds.setAttribute( initial_path );
     int num_data = new_ds.getNum_entries();
     for ( int i = 0; i < num_data; i++ )
@@ -304,7 +309,7 @@ public class LansceUtil
     float omega = 0;
 
     SampleOrientation orientation = 
-                                new IPNS_SCD_SampleOrientation(phi,chi,omega);
+                               new LANSCE_SCD_SampleOrientation(phi,chi,omega);
     Attribute orientation_attr = new SampleOrientationAttribute(
                                         Attribute.SAMPLE_ORIENTATION, 
                                         orientation );
@@ -316,6 +321,7 @@ public class LansceUtil
       run_list = new int[1];
       run_list[0] = run_num;
     }
+    System.out.println("ADDED RUN NUMBER FOR " + run_list[0] );
     IntListAttribute run_list_attr =
                      new IntListAttribute( Attribute.RUN_NUM, run_list );
 
@@ -331,6 +337,29 @@ public class LansceUtil
   }
 
 
+
+  /**
+   *  Add the sample orientation attribute to the DataSet and all of
+   *  it's Data blocks.  The rotation is initially through an angle of
+   *  phi degrees about the vertical (z-axis).  The second rotation is
+   *  through an angle of chi degrees about the horizontal (x-axis) pointed
+   *  in the direction the neutron beam travels.  The third rotation
+   *  is through an angle of omega degrees about the vertical (z-axis).
+   *  The (0,0,0) position of the goniometer is assumed to be where the
+   *  phi axis is pointing straight up, the chi circle is perpendicular to
+   *  the x-axis, and the positive direction of rotation is determined by
+   *  a right hand rule around the x and z axes.
+   *  When used with the LANSCE SCD, an offset of 90 degrees MUST be added
+   *  to the omega angle BEFORE calling this routine, since the omega=0
+   *  point on the LANSCE SCD goniomter has the chi circle perpendicular
+   *  to the y-axis, not the x-axis. 
+   *
+   *  @param  ds    The DataSet to which the sample orientation is
+   *                added.
+   *  @param  phi   The goniometer phi angle in degrees.
+   *  @param  chi   The goniometer phi angle in degrees.
+   *  @param  omega The goniometer phi angle in degrees.
+   */
   public static void AddSampleOrientationAttribute( DataSet ds,
                                                     float   phi, 
                                                     float   chi, 
@@ -357,15 +386,21 @@ public class LansceUtil
     String prefix = "SCD_E000005_R000";
     String suffix = ".nx.hdf";
 
+    int run_[]   = { 725, 728, 731 }; 
+    int omega_[] = { 125,  85,  35 };
+    int phi_[]   = { 320,  10,   0 };
+    int chi_[]   = { 120, 120, 120 };
+
     // NOVEMBER LANSCE RUNS, detector distance 0.265 meter
     int START  = 0;
-    int N_RUNS = 1;
+    int N_RUNS = 3;
 //  float det_dist = 0.258f; // 9.75" det face to detector + 10mm face 
                              // thickness
 //  float det_dist = 0.245f;
-//  float det_dist = 0.25f;
-    float det_dist = 0.265f;
+    float det_dist = 0.25f;
+//  float det_dist = 0.265f;  // value from spreadsheet 
 //  float det_dist = 0.275f;
+/*
     int run_[]   = { 725, 726, 727, 728, 729, 730, 731, 732, 733, 734, 735, 
                      736, 737 };
     int omega_[] = { 125,  90,  60,  85,  72, 108,  35, 100,  78,  55, 130,
@@ -374,6 +409,7 @@ public class LansceUtil
                      200, 200 };
     int chi_[]   = { 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 
                      120, 120 };
+*/
 /*
     // NOVEMBER LANSCE RUNS, detector distance 0.465 meter
     int run_[]   = { 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793,
@@ -416,7 +452,7 @@ public class LansceUtil
           omega;
     float phi_offset   = 0;                   // set these to adjust for 
     float chi_offset   = 0;                   // different zero positions
-    float omega_offset = 90;
+    float omega_offset = 92;
 
     float phi_sign   = 1;                     // set these to +-1 to change
     float chi_sign   = 1;                     // the direction of rotation
@@ -481,27 +517,36 @@ public class LansceUtil
     DataSet ds_arr[] = new DataSet[ N_RUNS ];
     for ( int i = 0; i < N_RUNS; i++ )
       ds_arr[i] = ds[i];
-    new GL_RecipPlaneView( ds_arr, 100 );
-                                               // now try sending the DataSet
-                                               // through the 
 
-    FindPeaks find_op = new FindPeaks( ds_arr[0], 100000, 50, 5, 1, 324, 
+    GL_RecipPlaneView recip_plane_view = new GL_RecipPlaneView( ds_arr, 100 );
+    recip_plane_view.loadOrientationMatrix("/home/dennis/Ruby_1_12_06_D.mat");
+
+                                               // now try sending the DataSet
+                                               // through peak finding, etc
+    for ( int i = 0; i < N_RUNS; i++ )
+    {
+      FindPeaks find_op = new FindPeaks( ds_arr[i], 100000, 50, 5, 1, 324, 
                                   new IntListString( "1:255" ) ); 
-    Vector peaks = (Vector)(find_op.getResult());
-/*
-    CentroidPeaks centroid_op = new CentroidPeaks( ds_arr[0], peaks );
-    peaks = (Vector)(centroid_op.getResult());
-*/
-    String peaks_file = "/home/dennis/LANSCE_1_9_06/RUBY_11_x_05/Ruby.peaks";
-    WritePeaks write_peaks_op = new WritePeaks( peaks_file, peaks, false );
-    System.out.println( write_peaks_op.getResult() );
+      Vector peaks = (Vector)(find_op.getResult());
+
+      CentroidPeaks centroid_op = new CentroidPeaks( ds_arr[i], peaks );
+      peaks = (Vector)(centroid_op.getResult());
+
+      String peaks_file = "/home/dennis/LANSCE_1_9_06/RUBY_11_x_05/Ruby.peaks";
+      WritePeaks write_peaks_op;
+      if ( i == 0 ) 
+        write_peaks_op = new WritePeaks( peaks_file, peaks, false );
+      else
+        write_peaks_op = new WritePeaks( peaks_file, peaks, true );
+      System.out.println( write_peaks_op.getResult() );
 /*
     String exp_file = "/home/dennis/LANSCE_1_9_06/RUBY_11_x_05/Ruby.x";
     WriteExp write_exp_op = new WriteExp( ds_arr[0], null, exp_file, 1, false );
     System.out.println( write_exp_op.getResult() );
 */
-    for ( int i = 0; i < peaks.size(); i++ )
-      System.out.println( peaks.elementAt(i) );
+      for ( int k = 0; k < peaks.size(); k++ )
+        System.out.println( peaks.elementAt(k) );
+    }
 
 //  new ViewManager( ds1, "3D View" );
 
