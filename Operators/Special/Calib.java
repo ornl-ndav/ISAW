@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2006/01/13 21:05:19  rmikk
+ * Used Dennis' routine to set the orientation matrix
+ *
  * Revision 1.13  2006/01/12 19:15:49  rmikk
  * Fixed FixLANSCESCD to give line number of error for extra file and Only
  *    large data sets are fixed( indices reordered)
@@ -482,18 +485,8 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
      if( Float.isNaN(chi)||Float.isNaN(phi)||Float.isNaN(omega)) 
         return new ErrorString(" Cannot set Crystal orientation");
      else{
-       DS1.removeAttribute( Attribute.SAMPLE_ORIENTATION);
-       LANSCE_SCD_SampleOrientation orient= new LANSCE_SCD_SampleOrientation(phi, chi,omega);
-       SampleOrientationAttribute att = new SampleOrientationAttribute( Attribute.SAMPLE_ORIENTATION,
-                 orient);
-       DS1.setAttribute( att);
-       DS1.removeAttribute( Attribute.SAMPLE_CHI );
-       DS1.removeAttribute( Attribute.SAMPLE_PHI );
-       DS1.removeAttribute( Attribute.SAMPLE_OMEGA );
-       DS1.setAttribute( new FloatAttribute( Attribute.SAMPLE_CHI,chi));
-
-       DS1.setAttribute( new FloatAttribute( Attribute.SAMPLE_PHI,phi));
-       DS1.setAttribute( new FloatAttribute( Attribute.SAMPLE_OMEGA,omega));
+       float conv = (float)(180/Math.PI);
+       Operators.Example.LansceUtil.AddSampleOrientationAttribute( DS1, phi*conv, chi*conv, omega*conv);
        DS.copy(DS1);
        
       
