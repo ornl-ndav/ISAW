@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/01/13 18:29:30  dennis
+ * Modified ReadPeaks() method to take a peaks file name and a DataSet
+ * rather than a peaks file name and run file name.
+ *
  * Revision 1.1  2004/07/26 21:45:32  dennis
  * Renamed from PeakData.java to emphasize that this version uses double
  * precision values for all information.
@@ -265,10 +269,6 @@ public class PeakData_d
     return true;
   }
 
- /**
-  *  Read a vector 
-  */
-
 
   /**
    *  Read a vector of PeakData objects from a specified file.
@@ -415,13 +415,14 @@ public class PeakData_d
    *                            a file in the form handled by the SCD analysis
    *                            software.
    *
-   *  @param  run_file_name     The name of one of the Runfiles used to form
-   *                            the peaks file; this provides the time scale
-   *                            and detector size information.
+   *  @param  ds                The sample histogram DataSet for one of the
+   *                            runs used to form the peaks file; this 
+   *                            provides the time scale and detector size 
+   *                            and position information.
    *
    *  @return  A vector filled with the PeakData objects read from the file.
    */
-  public static Vector ReadPeaks( String peaks_file_name, String run_file_name )
+  public static Vector ReadPeaks( String peaks_file_name, DataSet ds )
   {
     Operator op = new ReadPeaks( peaks_file_name );
 
@@ -433,11 +434,9 @@ public class PeakData_d
       return null;
     }
 
-    RunfileRetriever rr = new RunfileRetriever( run_file_name );
-    DataSet ds = (DataSet)rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
     if ( ds == null )
     {
-      System.out.println("ERROR: Couldn't read Runfile " + run_file_name );
+      System.out.println("ERROR: null DataSet passed into ReadPeaks" );
       return null;
     }
 
@@ -456,7 +455,7 @@ public class PeakData_d
     int grid_ids[]  = Grid_util.getAreaGridIDs( ds );
     if ( grid_ids.length <= 0 )
     {
-      System.out.println("ERROR: no area detectors in " + run_file_name );
+      System.out.println("ERROR: no area detectors in DataSet " + ds );
       return null;
     }
 
@@ -548,7 +547,13 @@ public class PeakData_d
     String peaks_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/quartz.peaks";
     String run_name   = "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/scd08336.run";
     System.out.println("Test loading " + peaks_name + " and " + run_name );
-    peaks = ReadPeaks( peaks_name, run_name );
+
+    RunfileRetriever rr = new RunfileRetriever( run_name );
+    DataSet ds = (DataSet)rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
+    if ( ds == null )
+      System.out.println("ERROR: Couldn't read Runfile " + run_name);
+
+    peaks = ReadPeaks( peaks_name, ds );
  
     String new_peakdata2_name = "junk_peaks2.dat";
     System.out.println("Test writing to " + new_peakdata2_name );
