@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2006/01/13 18:38:17  dennis
+ *  Updated to use new form of PeakData_d.ReadPeaks().
+ *
  *  Revision 1.10  2004/07/26 21:52:54  dennis
  *  Changed to refer to PeakData_d (renamed from PeakData).
  *
@@ -90,6 +93,7 @@ import DataSetTools.parameter.*;
 import DataSetTools.trial.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
+import DataSetTools.retriever.*;
 
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Functions.*;
@@ -768,13 +772,19 @@ public class SCDcalib extends GenericTOF_SCD
     double lattice_params[] = new double[6];
     for ( int i = 0; i < 6; i++ )
       lattice_params[i] = lat_params[i];
-                                                    // load the vector of peaks
-    Vector peaks = PeakData_d.ReadPeaks( peaksfile, runfile ); 
 
+                                                    // load the vector of peaks
+    RunfileRetriever rr = new RunfileRetriever( runfile );
+    DataSet ds = (DataSet)rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
+    if ( ds == null )
+      return new ErrorString("ERROR: Couldn't read Runfile " + runfile);
+
+    Vector peaks = PeakData_d.ReadPeaks( peaksfile, ds ); 
     if ( peaks == null || peaks.size() <= 0 )
-    {
-      return new ErrorString("Failed to read " + peaksfile + " or " + runfile);
-    }
+      return new ErrorString("Failed to read " + peaksfile );
+ 
+    ds = null;                     // We're done with this DataSet after
+                                   // loading the peaks, so get rid of it.
 
     PeakData_d peak = (PeakData_d)peaks.elementAt(0);
     double l1 = peak.l1;
