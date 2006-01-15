@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/01/15 02:07:17  rmikk
+ * Now uses The sampleorientation class to calculate ROT and invROT.  Can
+ * only be changed by Peak_new
+ *
  * Revision 1.6  2006/01/12 19:07:09  rmikk
  * Added code to use Peak_new's data instead of Peak's data
  *
@@ -64,6 +68,7 @@ import java.text.DecimalFormat;
 
 import DataSetTools.dataset.*;
 import DataSetTools.math.tof_calc;
+import DataSetTools.instruments.*;
 
 /**
  * This class contains variables describing a voxel(peak) in three formats:
@@ -113,8 +118,9 @@ public class Peak_new extends Peak{
   private IDataGrid grid = null;
   private float[]   calib    = null;
   private float[][] UB       = null;
-  private float[][] invUB    = null;
-  private float[][] ROT      = null;//{{1f,0f,0f},{0f,1f,0f},{0f,0f,1f}};
+  private float[][] invUB    ;
+  private float[][] ROT      ;
+  private float[][] invROT   ;
   private float     L1       = Float.NaN;
   private float     T0       = Float.NaN;
   private float     T1       = Float.NaN;
@@ -151,14 +157,16 @@ public class Peak_new extends Peak{
       this.grid = grid;
       this.L1 = initialPath;
       super.L1(L1);
-      sample_orient( chi, phi, omega);
+      super.sample_orient( chi, phi, omega);
       this.timeAdjustment = timeAdjustment;
       
-      
+      this.chi=chi;
+      this.phi=phi;
+      this.omega=omega;
       time( xscale);
       pixel_to_real();
       //super.real(xcm, ycm, wl);
-      super.sample_orient(chi,phi,omega);
+      //super.sample_orient(chi,phi,omega);
       needUpdate = false;
       if( grid != null ){
          Vector3D pos = grid.position();
@@ -172,9 +180,31 @@ public class Peak_new extends Peak{
          super.detA2( detA2);
          super.detA( detA);
          super.detD( detD);
+         setUpRot( grid);
       }
       
   }
+
+ private void setUpRot(IDataGrid grid){
+    ROT = null;
+    invROT =null;
+    if( grid == null) return;
+    Data D = grid.getData_entry(1,1);
+    SampleOrientation s = (SampleOrientation)D.getAttributeValue( Attribute.SAMPLE_ORIENTATION);
+    float[][] rot = s.getGoniometerRotation().get();
+    
+    
+    float[][]invrot =s.getGoniometerRotationInverse().get();
+    ROT = new float[3][3];
+    invROT = new float[3][3];
+    for( int i=0; i<3;i++)
+      for( int j=0; j<3;j++){
+
+        ROT[i][j]=rot[i][j];
+        invROT[i][j] = invrot[i][j];
+     }
+
+ }
   
   
   /* ------------------- accessor and mutator methods -------------------- */
@@ -348,6 +378,7 @@ public class Peak_new extends Peak{
          super.detA2( detA2);
          super.detA( detA);
          super.detD( detD);
+         setUpRot(grid);
       }  
     
   }
@@ -633,7 +664,7 @@ public class Peak_new extends Peak{
     super.sample_orient( CHI, PHI,OMEGA);
    
     // create a new rotation matrix
-     this.ROT=makeROT(this.chi,this.phi,this.omega);
+     //this.ROT=makeROT(this.chi,this.phi,this.omega);
    
  /*   // update the inverse of the rotated UB matrix
     if(this.UB!=null){
@@ -901,8 +932,9 @@ public class Peak_new extends Peak{
    public double[] getUnrotQ(){
     if( needUpdate)get_hkl();
     float[]   Q=this.getQ();
+    
     if( Q == null) return null;
-       float[][] invROT=LinearAlgebra.getInverse(this.ROT);
+       //float[][] invROT=LinearAlgebra.getInverse(this.ROT);
     double[]  unrotQ={0.,0.,0.};
 
     for( int i=0; i<3 ; i++ ){
@@ -910,6 +942,7 @@ public class Peak_new extends Peak{
         unrotQ[i]=unrotQ[i]+(double)(invROT[i][j]*Q[j]);
       }
     }
+    
 
     return unrotQ;
   }
@@ -923,6 +956,7 @@ public class Peak_new extends Peak{
    * @param omega angle in degrees
    */
   private static float[][] makeROT(float chi, float phi, float omega){
+    
     float[][] ROT={{1f,0f,0f},
                    {0f,1f,0f},
                    {0f,0f,1f}};
@@ -938,7 +972,7 @@ public class Peak_new extends Peak{
         ROT[i][j]=tranrot[i][j];
       }
     }
-
+   
     return ROT;
   }
 
