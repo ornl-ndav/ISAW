@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2006/01/16 04:50:35  rmikk
+ * Added documentation for the d_min argument
+ *
  * Revision 1.7  2005/03/06 00:29:03  dennis
  * Added methods to check d-spacing for peaks and remove peaks for which
  * the d-spacing is less than a specified minimum. (Requested by Art Schultz.)
@@ -357,6 +360,7 @@ public class Integrate1 extends GenericTOF_SCD{
    * @param choice      number for the centering type
    * @param slicerange  The time slice range.
    * @param slicedelta  The amount to increase slicesize by.
+   * @param d_min       Minimum d-spacing to use
    * @param lognum      The peak multiples to log - i.e. 3 logs
    *                    1, 3, 6, 9...
    * @param append      Append to file (true/false);
@@ -496,8 +500,14 @@ public class Integrate1 extends GenericTOF_SCD{
     sb.append("@param timeSlice The time slice range to use.\n");
     sb.append("@param sliceDelta The incremental amount to increase the ");
     sb.append("slice size by.\n");
+    sb.append("@param  d_min  the minimum d-spacing allowed");
     sb.append("@param logNPeak Log the \"nth\" peak.\n");
     sb.append("@param append Whether to append to the file.\n");
+    sb.append("@param Integrate method: Either MaxIToSigI-old,MaxIToSigI,");
+    sb.append( "TOFINT,EXPERIMENTAL, or Shoe Box");
+    sb.append("@param Xrange the range of dx's around an x for shoe box method");
+    sb.append("@param Yrange the range of dy's around a y for shoe box");
+    
     // return
     sb.append("@return The name of the file that the integrated intensities ");
     sb.append("are written to.\n");
