@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.35  2006/01/16 04:47:59  rmikk
+ * Fixed the documentation
+ *
  * Revision 1.34  2006/01/06 15:21:09  dennis
  * Added code to call the constrained least squares calculation for
  * the UB matrix: SCD_util.BestFitMatrix(), if the cell type is
@@ -322,10 +325,10 @@ public class LsqrsJ extends GenericTOF_SCD {
     sb.append( "@param xFormMat The transformation matrix to use. " );
     sb.append( "@param matFile The matrix to write to. " );
     sb.append( "@param minThresh The minimum peak intensity threshold to " );
+    sb.append( "@param keepPixels The detector pixel range to keep." );
     sb.append( "@param cellType  The type of cell to be used if the ");
     sb.append( "@param least squares optimization is to be constrained ");
     sb.append(  "to a particular unit cell type");
-    sb.append( "@param keepPixels The detector pixel range to keep." );
 
     // return
     sb.append( "@return If a matrix file name was given and the file was " );
