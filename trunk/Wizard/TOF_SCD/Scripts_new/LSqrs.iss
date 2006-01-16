@@ -30,7 +30,7 @@ for i in runnums
    filename=SaveDir&"/ls"&expName&i&".mat"
    Pk1=[]
    for j in [0:N-1]
-      Pk1=Pk1&Peaks[j]
+      Pk1[j]= Peaks[j]
    endfor
    Display "peak copy="&Pk1
    JLsqrs(Pk1,""&i,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep)
@@ -38,14 +38,21 @@ for i in runnums
 endfor
 display "Num Peaks="&ArrayLength(Peaks) 
 S=""
-N=ArrayLength(runnums)
-for i in [1:N]
+N1=ArrayLength(runnums)
+for i in [1:N1]
   S=S&runnums[i-1]
-  if i<N
+  if i<N1
     S=S&","
   endif
 endfor
 filename=SaveDir&"/ls"&expName&".mat"
+
+Pk1=[]
+for j in [0:N-1]
+   Pk1[j]= Peaks[j]
+endfor
+JLsqrs(Pk1,S,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep)
+    
 return 
 
    
