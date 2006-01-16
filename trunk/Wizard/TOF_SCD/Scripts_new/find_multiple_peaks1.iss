@@ -42,10 +42,11 @@ for i in run_numbers
   monct=100000.0
   #monct=IntegGrp(ds[0],1,0,50000)
   Calib(ds[dsnum], calibfile)
+
   #LoadSCDCalib(ds[dsnum],calibfile,-1,"")
   # find peaks
-  
   peaks1=GetCentroidPeaks(ds[dsnum],monct,num_peaks,min_int,min_time_chan,max_time_chan, RowColKeep)
+  
   if first
     peaks=peaks1
   else
@@ -64,6 +65,8 @@ Echo("--- find_multiple_peaks is done. ---")
 # show the peaks file
 ViewASCII(outpath&expname&".peaks")
 Display("Peaks are listed in "&outpath&expname&".peaks")
-# close the dialog automatically
+
+OpenLog(outpath&expname&".log")
+
 return peaks
 ExitDialog()
