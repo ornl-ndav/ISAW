@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2006/01/16 04:26:32  dennis
+ *  Added instrument_type flag that is set based on the file extension,
+ *  to select between calibrating the IPNS_SCD or the LANSCE_SCD.
+ *
  *  Revision 1.11  2006/01/13 18:38:17  dennis
  *  Updated to use new form of PeakData_d.ReadPeaks().
  *
@@ -94,6 +98,8 @@ import DataSetTools.trial.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
+
+import Operators.Example.*;
 
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Functions.*;
@@ -753,7 +759,7 @@ public class SCDcalib extends GenericTOF_SCD
     boolean use_rot   = ((Boolean)(getParameter(19).getValue())).booleanValue();
 
     boolean read_params = 
-                        ((Boolean)(getParameter(20).getValue())).booleanValue();
+                       ((Boolean)(getParameter(20).getValue())).booleanValue();
     String  param_file  = getParameter(21).getValue().toString(); 
 
                                                       // open the log file
@@ -774,20 +780,53 @@ public class SCDcalib extends GenericTOF_SCD
       lattice_params[i] = lat_params[i];
 
                                                     // load the vector of peaks
-    RunfileRetriever rr = new RunfileRetriever( runfile );
-    DataSet ds = (DataSet)rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
+    DataSet ds = null;
+    boolean lansce_file = true;
+    if ( runfile.endsWith("run") || runfile.endsWith("RUN") )
+      lansce_file = false;
+
+    if ( lansce_file )
+    {
+      System.out.println("Starting to load LANSCE NeXus file: " + runfile );
+      Retriever nr = new NexusRetriever( runfile );
+      ds = nr.getDataSet(3);
+    }
+    else
+    {
+      System.out.println("Starting to load IPNS file: " + runfile );
+      RunfileRetriever rr = new RunfileRetriever( runfile );
+      ds = (DataSet)rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
+    }
+
     if ( ds == null )
       return new ErrorString("ERROR: Couldn't read Runfile " + runfile);
 
-    Vector peaks = PeakData_d.ReadPeaks( peaksfile, ds ); 
+    String instrument_type = "UNDEFINED";
+
+    Vector peaks = null;
+    if ( lansce_file )
+    {
+      instrument_type = PeakData_d.LANSCE_SCD;
+      peaks = PeakData_d.ReadPeakData(peaksfile, instrument_type); 
+//    peaks = PeakData_d.ReadPeaks(peaksfile, ds, instrument_type); 
+    }
+    else
+    {
+      instrument_type = PeakData_d.IPNS_SCD;
+//    peaks = PeakData_d.ReadPeakData(peaksfile, instrument_type); 
+      peaks = PeakData_d.ReadPeaks(peaksfile, ds, instrument_type); 
+    }
+
     if ( peaks == null || peaks.size() <= 0 )
       return new ErrorString("Failed to read " + peaksfile );
  
     ds = null;                     // We're done with this DataSet after
                                    // loading the peaks, so get rid of it.
 
+    System.out.println( "Read " + peaks.size() + " peaks from file.");
     PeakData_d peak = (PeakData_d)peaks.elementAt(0);
     double l1 = peak.l1;
+    
 
     Hashtable grids = new Hashtable();
     for ( int i = 0; i < peaks.size(); i++ )
@@ -909,7 +948,8 @@ public class SCDcalib extends GenericTOF_SCD
         n_used++;
                                                      // build the one variable
                                                      // function
-    SCDcal error_f = new SCDcal( peaks,
+    SCDcal error_f = new SCDcal( instrument_type,
+                                 peaks,
                                  grids,
                                  parameters, 
                                  parameter_names,
@@ -964,7 +1004,7 @@ public class SCDcalib extends GenericTOF_SCD
     LinearAlgebra.print( error_f.B_observed );
 
     System.out.println("observed UB matrix:");
-    double UB[][] = LinearAlgebra.mult( error_f.U_observed, error_f.B_observed);
+    double UB[][] = LinearAlgebra.mult(error_f.U_observed, error_f.B_observed);
     LinearAlgebra.print( UB );
 
     System.out.println("Transpose of observed UB/(2PI)");
@@ -1007,7 +1047,7 @@ public class SCDcalib extends GenericTOF_SCD
                            Format.real( col_pairs[i].y, 13, 5 )    );
 
       log_print.println("Detector Time-of-flight Comparison, ID " + det_id );
-      log_print.print ("NOTE: The calculated T0 shift should be added to the ");
+      log_print.print("NOTE: The calculated T0 shift should be added to the ");
       log_print.println("measured value ");
       log_print.println("Theoetical     Measured");
       for ( int i = 0; i < tof_pairs.length; i++ )
