@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2006/01/16 05:50:44  dennis
+ * Increased number of one-dimensional FFTs from 20 to 30.
+ * Now displays row,col,tof, etc. in status pane for pointed at peak.
+ *
  * Revision 1.22  2006/01/13 18:35:46  dennis
  * Added code to dump out information about a peak:
  *   Qx,  Qy,  Qz,
@@ -751,7 +755,7 @@ public class GL_RecipPlaneView
 
   public void CalculateFFTs()
   {
-    int MIN_FFTS = 20;
+    int MIN_FFTS = 30;
 
     if ( debug )
       System.out.println("Projecting points...");
@@ -770,7 +774,8 @@ public class GL_RecipPlaneView
 
     if ( debug )
       System.out.println("DONE");
-    new ViewManager( all_fft_ds, IViewManager.IMAGE );  // ########
+
+//    new ViewManager( all_fft_ds, IViewManager.IMAGE );  // ########
 
     if ( debug )
       System.out.println("Filtering FFTs of all projections....");
@@ -1154,7 +1159,10 @@ public class GL_RecipPlaneView
         catch (InstantiationError e )
         {
           if ( debug )
+          {
+            System.out.println( "Error finding transformer for DataSet " + ds );
             System.out.println( e );
+          }
         }
      }
   }
@@ -2811,12 +2819,14 @@ public void WriteMatrixFile( String filename )
 
   SharedData.addmsg( sb.toString() );
 
+  boolean write_ok = false;
   try
   {
     FileWriter fw = new FileWriter( filename, false );
     fw.write( sb.toString() );
     fw.flush();
     fw.close();
+    write_ok = true;
   }
   catch ( IOException execption )
   {
@@ -2825,6 +2835,8 @@ public void WriteMatrixFile( String filename )
 
   System.out.println("Wrote lattice parameters to: " + filename );
 
+  if ( write_ok )
+    loadOrientationMatrix( filename );
 }
 
 
@@ -2961,31 +2973,35 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
              float row_col_tof[] = transformer.QtoRowColTOF( position );
              if ( row_col_ch != null )
              {
-               System.out.print("\nData for Q = " + position );
+               SharedData.addmsg("\nData for Q = " + position );
                DataSet this_ds = (DataSet)data_sets.elementAt(i);
                int[] run_numbers = AttrUtil.getRunNumber( this_ds );
                if ( run_numbers != null && run_numbers.length > 0 )
-                 System.out.print(" Run Number = " + run_numbers[0] );
+                 SharedData.addmsg(" Run Number = " + run_numbers[0] );
              }
              if ( row_col_ch != null )
              {
-               System.out.print(" \n COL ROW CHAN = ");
-               System.out.print( "   " + row_col_ch[1] );
-               System.out.print( "   " + row_col_ch[0] );
-               System.out.print( "   " + row_col_ch[2] );
+               String msg = " \n COL ROW CHAN = " +
+                            "   " + row_col_ch[1] + 
+                            "   " + row_col_ch[0] + 
+                            "   " + row_col_ch[2];
+               SharedData.addmsg( msg );
              }    
              if ( xcm_ycm_wl != null )
              {
-               System.out.print(" \n Xcm Ycm Wl = ");
-               for( int k = 0; k < 3; k++ )
-                 System.out.print( "   " + xcm_ycm_wl[k] );
+               String msg = " \n Xcm Ycm Wl = " +
+                            "   " + xcm_ycm_wl[0] + 
+                            "   " + xcm_ycm_wl[1] + 
+                            "   " + xcm_ycm_wl[2]; 
+               SharedData.addmsg( msg );
              }
              if ( row_col_tof != null )
              {
-               System.out.print(" \n COL ROW TOF = ");
-               System.out.print( "   " + row_col_tof[1] );
-               System.out.print( "   " + row_col_tof[0] );
-               System.out.print( "   " + row_col_tof[2] );
+               String msg = " \n COL ROW TOF = " +
+                            "   " + row_col_tof[1] + 
+                            "   " + row_col_tof[0] + 
+                            "   " + row_col_tof[2]; 
+               SharedData.addmsg( msg );
              }
            }
          }
