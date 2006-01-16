@@ -19,8 +19,8 @@
 
 $peaks     PlaceHolder        Peaks
 $Delta       Float(.20)       Deltas
-$UseLsqMats  Boolean(false)   Use Least Square Matrices
-$OrientMat   Array          Orientation Matrix
+$UseLsqMats  Boolean(false)   Index by run orientation matrix
+#$OrientMat   Array          Orientation Matrix
 $OrientFileDir  DataDirectoryString        Dir with Matrices to Load
 $RunNums     Array          Run Numbers
 $RestrRuns   IntList          Restrict Runs
@@ -31,20 +31,26 @@ $ CATEGORY = operator,Instrument Type, TOF_NSCD
 $ Title = Index/Write Peaks
 
 if Not UseLsqMats 
-  
+  OrientMat = readOrient( OrientFileDir&"/ls"&expName&".mat")
   V = JIndex(peaks,OrientMat,RestrRuns, Delta,Delta,Delta)
 else
-   RestrNums = IntListtoArray( RestrRuns)
-   if( ArrayLength(RestrNums) <=0)
-     RestrNums= IntListtoArray( RunNums)
-   end if
-      
+   Display "RestrRuns="&RestrRuns
+   RestrNums = IntListToVector( RestrRuns)
+   Display "RestrNums="&RestrNums
+   Display "length="& ArrayLength(RestrNums)
+   if ArrayLength(RestrNums) <=0
+     RestrNums=  RunNums
+   endif
+   V="" 
    for i in RestrNums
       Mat= readOrient( OrientFileDir&"/ls"&expName&i&".mat")
       Run = ""&i
-      V =V& JIndex(peaks,Mat,Run, Delta,Delta,Delta)
-   end for
-end if
+      Display "Run ="&Run
+      W = JIndex(peaks,Mat,Run,Delta,Delta,Delta)
+      Display "Result of JIndex is "&W
+      V =V & W
+   endfor
+endif
 
   Display peakfilename
   if peakfilename <>"NONE"
