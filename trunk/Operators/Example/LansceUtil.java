@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.13  2006/01/16 01:22:12  dennis
+ * Now includes temporary code to shift the detector.  The shift
+ * parameters should be passed in from Ruth's XML fix file.
+ *
  * Revision 1.12  2006/01/13 05:37:56  dennis
  * Added javadocs to method for adding SampleOrientation attributes.
  * Fixed bug where the default Sample orientation was for the IPNS
@@ -145,6 +149,9 @@ public class LansceUtil
                                      float length_0 )
   {
     String name = "SCD_FP5";
+
+    float det_offset_x = -8.373E-4f;
+    float det_offset_y = -0.00165f;
 /*
     System.out.println(ds);
     System.out.println("x label = " + ds.getX_label() );
@@ -273,6 +280,14 @@ public class LansceUtil
     Vector3D  x_vec  =  new Vector3D( -1,      0f,      0f );
     Vector3D  y_vec  =  new Vector3D(  0,  .7071f,  .7071f );
 
+                                      // adjust detector position for offsets
+    Vector3D  x_shift = new Vector3D( x_vec );
+    Vector3D  y_shift = new Vector3D( y_vec );
+    x_shift.multiply( det_offset_x );
+    y_shift.multiply( det_offset_y );
+    center.add( x_shift );
+    center.add( y_shift );
+
     IDataGrid grid   = new UniformGrid( AREA_DET_ID, "m", 
                                         center, x_vec, y_vec,
                                         det_width, det_height, depth,
@@ -382,25 +397,30 @@ public class LansceUtil
    */
   public static void main( String args[] )
   {
-//    String prefix = "SCD_E000005_R0000";
+//  String prefix = "SCD_E000005_R0000";
     String prefix = "SCD_E000005_R000";
     String suffix = ".nx.hdf";
-
+/*
     int run_[]   = { 725, 728, 731 }; 
     int omega_[] = { 125,  85,  35 };
     int phi_[]   = { 320,  10,   0 };
     int chi_[]   = { 120, 120, 120 };
-
+*/
     // NOVEMBER LANSCE RUNS, detector distance 0.265 meter
     int START  = 0;
-    int N_RUNS = 3;
+    int N_RUNS = 13;
 //  float det_dist = 0.258f; // 9.75" det face to detector + 10mm face 
                              // thickness
 //  float det_dist = 0.245f;
-    float det_dist = 0.25f;
-//  float det_dist = 0.265f;  // value from spreadsheet 
+//  float det_dist = 0.25f;
+    float det_dist = 0.265f;  // value from spreadsheet 
 //  float det_dist = 0.275f;
 /*
+    int run_[]   = { 725, 726, 727, 728, 729, 730, 731, 734, 735, 736, 737 };
+    int omega_[] = { 125,  90,  60,  85,  72, 108,  35,  55, 130, 95,  60 };
+    int phi_[]   = { 320, 335,   0,  10,  42,  50,   0, 280, 220, 200, 200 };
+    int chi_[]   = { 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120 };
+*/
     int run_[]   = { 725, 726, 727, 728, 729, 730, 731, 732, 733, 734, 735, 
                      736, 737 };
     int omega_[] = { 125,  90,  60,  85,  72, 108,  35, 100,  78,  55, 130,
@@ -409,7 +429,6 @@ public class LansceUtil
                      200, 200 };
     int chi_[]   = { 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 
                      120, 120 };
-*/
 /*
     // NOVEMBER LANSCE RUNS, detector distance 0.465 meter
     int run_[]   = { 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793,
@@ -452,7 +471,7 @@ public class LansceUtil
           omega;
     float phi_offset   = 0;                   // set these to adjust for 
     float chi_offset   = 0;                   // different zero positions
-    float omega_offset = 92;
+    float omega_offset = 90;
 
     float phi_sign   = 1;                     // set these to +-1 to change
     float chi_sign   = 1;                     // the direction of rotation
@@ -464,7 +483,7 @@ public class LansceUtil
       retriever = new NexusRetriever( file_name );
       System.out.println("NOW LOADING RUN " + file_name );
       one_ds = retriever.getDataSet(3);
-
+/*
       one_ds = FixSCD_Data( one_ds, 
                             1500, 8000, 
                             det_width, det_height, 
@@ -482,7 +501,7 @@ public class LansceUtil
                          ", omega = " + omega );
 
       AddSampleOrientationAttribute( one_ds, phi, chi, omega );
-
+*/
       ds[i-START] = one_ds;
     }
 
@@ -518,9 +537,11 @@ public class LansceUtil
     for ( int i = 0; i < N_RUNS; i++ )
       ds_arr[i] = ds[i];
 
-    GL_RecipPlaneView recip_plane_view = new GL_RecipPlaneView( ds_arr, 100 );
-    recip_plane_view.loadOrientationMatrix("/home/dennis/Ruby_1_12_06_D.mat");
+    GL_RecipPlaneView recip_plane_view = new GL_RecipPlaneView( ds_arr, 30 );
+//  recip_plane_view.loadOrientationMatrix("/home/dennis/Ruby_1_12_06_D.mat");
+//  recip_plane_view.loadOrientationMatrix("/home/dennis/Ruby1.mat");
 
+/*
                                                // now try sending the DataSet
                                                // through peak finding, etc
     for ( int i = 0; i < N_RUNS; i++ )
@@ -539,14 +560,15 @@ public class LansceUtil
       else
         write_peaks_op = new WritePeaks( peaks_file, peaks, true );
       System.out.println( write_peaks_op.getResult() );
-/*
+
     String exp_file = "/home/dennis/LANSCE_1_9_06/RUBY_11_x_05/Ruby.x";
     WriteExp write_exp_op = new WriteExp( ds_arr[0], null, exp_file, 1, false );
     System.out.println( write_exp_op.getResult() );
-*/
+
       for ( int k = 0; k < peaks.size(); k++ )
         System.out.println( peaks.elementAt(k) );
     }
+*/
 
 //  new ViewManager( ds1, "3D View" );
 
