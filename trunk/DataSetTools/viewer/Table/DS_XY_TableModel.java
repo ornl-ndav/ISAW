@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2006/01/16 04:41:02  rmikk
+ * eliminated comparisons with Float.NaN
+ *
  * Revision 1.18  2005/05/25 18:01:21  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -441,13 +444,13 @@ public class DS_XY_TableModel extends TableViewModel
                            if( x > xs.getX(  indx ) + dx/20.0 )
                                indx++;
                  
-                           if( xs.getX(  indx ) != Float.NaN )
+                           if(! Float.isNaN(xs.getX(  indx ))  )
                                if( x < xs.getX(  indx )-dx/20.0 )
                                    indx--;
                  
                            if( j == 0 )
                                V = "" + x;
-                           else if( xs.getX( indx ) == Float.NaN )
+                           else if( Float.isNaN(xs.getX( indx )) )
                                V = "";
                            else if(x > xs.getX(  indx ) + dx/20.0 )
                                V = "";
