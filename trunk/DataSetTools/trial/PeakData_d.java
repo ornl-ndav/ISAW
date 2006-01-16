@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/01/16 03:10:11  dennis
+ * Added method to centroid a file of PeakData_d objects.
+ * Added instrument type parameter to ReadPeaks() method, to use
+ * the same method for both IPNS and LANSCE.
+ * Added copy constructor.
+ *
  * Revision 1.2  2006/01/13 18:29:30  dennis
  * Modified ReadPeaks() method to take a peaks file name and a DataSet
  * rather than a peaks file name and run file name.
@@ -116,12 +122,15 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
    */
 public class PeakData_d
 {
+    public static final String IPNS_SCD   = "IPNS_SCD";
+    public static final String LANSCE_SCD = "LANSCE_SCD";
+
     public static final double DEFAULT_DEPTH = 0.002; // default area detector
                                                       // thickness, 2mm
     int    run_num = 0;                // Run info .....
-    double moncnt = 0;
+    double moncnt  = 0;
                                        // Instrument info .....
-    public double l1     = 9.378;
+    public double l1 = 9.378;
     SampleOrientation_d orientation;
 
                                        // Detector info ......
@@ -179,6 +188,40 @@ public class PeakData_d
   {
     this.orientation = orientation;
     this.grid = grid;
+  }
+
+
+  /**
+   *  Construct a PeakData_d object that is a shallow copy of the given
+   *  PeakData_d objec.
+   *
+   *  @param  peak  The peak data object that will be copied.
+   */
+  public PeakData_d( PeakData_d peak )
+  {
+    this.run_num = peak.run_num;       // Run info .....
+    this.moncnt  = peak.moncnt;
+                                       // Instrument info .....
+    this.l1          = peak.l1;
+    this.orientation = peak.orientation;
+
+                                       // Detector info ......
+    this.grid = peak.grid;
+                                       // Peak info .....
+    this.seqn   = peak.seqn;
+    this.counts = peak.counts;
+
+    this.row = peak.row;               // Measured position
+    this.col = peak.col;
+    this.tof = peak.tof;
+
+    this.qx = peak.qx;                 // Q position
+    this.qy = peak.qy; 
+    this.qz = peak.qz;
+
+    this.h = peak.h;                   // Miller indices
+    this.k = peak.k; 
+    this.l = peak.l;
   }
 
 
@@ -278,9 +321,17 @@ public class PeakData_d
    *                      and SCDcal, NOT the current peaks file used by
    *                      the SCD analysis codes.
    *
+   *  @param  instrument  The particular SCD for which the peaks are being
+   *                      read.  This is needed to determine how the sample
+   *                      orientation angles chi, phi and omega are interpreted.
+   *                      The default is LANSCE SCD, since the shifted 
+   *                      goniometer angles follow a strict right hand rule.
+   *                      This should be PeakData_d.IPNS_SCD or 
+   *                      PeakData_d.LANSCE_SCD.
+   *
    *  @return  A vector filled with the PeakData objects read from the file.
    */
-  public static Vector ReadPeakData( String file_name )
+  public static Vector ReadPeakData( String file_name, String instrument )
   {
     Vector              peaks            = new Vector();
 
@@ -335,7 +386,13 @@ public class PeakData_d
             chi     = tfr.read_double();
             phi     = tfr.read_double();
             omega   = tfr.read_double();
-            last_orientation = new IPNS_SCD_SampleOrientation_d(phi,chi,omega);
+            if ( instrument.equalsIgnoreCase( IPNS_SCD ) )
+              last_orientation = 
+                   new IPNS_SCD_SampleOrientation_d(phi,chi,omega);
+            else
+              last_orientation = 
+                   new LANSCE_SCD_SampleOrientation_d(phi,chi,omega);
+
             last_moncnt  = tfr.read_double();
             last_l1      = tfr.read_double();
 
@@ -406,6 +463,136 @@ public class PeakData_d
 
 
   /**
+   *  Read a list of PeakData objects from a peaks file produced by the 
+   *  GL_RecipPlaneViewer, find the centroid of the peaks for each particular
+   *  hkl from a run, and then write the centroided peaks to the output file.
+   *
+   *  @param  in_file     The PeakData file to read containg all of the 
+   *                      individual bins for each peak, as separate peak
+   *                      entries. (NOTE: This must be
+   *                      a file in the form handled by RecipPlaneView
+   *                      and SCDcal, NOT the current peaks file used by
+   *                      the SCD analysis codes.
+   *
+   *  @param  out_file    The file to which the resulting condensed 
+   *                      PeakData file to read containg the centroided
+   *                      peaks are written.
+   *
+   *  @param  instrument  The particular SCD for which the peaks are being
+   *                      read.  This is needed to determine how the sample
+   *                      orientation angles chi, phi and omega are interpreted.
+   *                      The default is LANSCE SCD, since the shifted 
+   *                      goniometer angles follow a strict right hand rule.
+   *                      This should be PeakData_d.IPNS_SCD or 
+   *                      PeakData_d.LANSCE_SCD.
+   */
+  public static void CentroidPeaksFile( String in_file,
+                                        String out_file,
+                                        String instrument )
+  {
+    Vector in_peaks = ReadPeakData( in_file, instrument );
+    Vector out_peaks = new Vector();
+
+ 
+    while ( in_peaks.size() > 0 )
+    {
+      PeakData_d cent_peak = 
+                      new PeakData_d( (PeakData_d)(in_peaks.elementAt(0) ));
+
+      cent_peak.counts = 0;
+      double qx_tot  = 0;
+      double qy_tot  = 0;
+      double qz_tot  = 0;
+
+      double row_tot = 0;
+      double col_tot = 0;
+      double tof_tot = 0;
+
+      double h_tot = 0;
+      double k_tot = 0;
+      double l_tot = 0;
+
+      int cur_h = (int)Math.round( cent_peak.h );
+      int cur_k = (int)Math.round( cent_peak.k );
+      int cur_l = (int)Math.round( cent_peak.l );
+
+      int cur_run = cent_peak.run_num;
+
+      double weight = 0;
+      double total  = 0;
+      for ( int i = in_peaks.size()-1; i >= 0; i-- )
+      {
+        PeakData_d peak = (PeakData_d)( in_peaks.elementAt(i) );
+        if ( cur_h   == (int)Math.round( peak.h )  &&
+             cur_k   == (int)Math.round( peak.k )  &&
+             cur_l   == (int)Math.round( peak.l )  &&
+             cur_run == peak.run_num               &&
+             cent_peak.grid.ID() == peak.grid.ID() )
+        {
+          in_peaks.remove( i );
+          weight = peak.counts;
+          total += weight;
+          cent_peak.counts += weight;
+
+          qx_tot  += weight * peak.qx;
+          qy_tot  += weight * peak.qy;
+          qz_tot  += weight * peak.qz;
+
+          row_tot += weight * peak.row;
+          col_tot += weight * peak.col;
+          tof_tot += weight * peak.tof;
+
+          h_tot  += weight * peak.h;
+          k_tot  += weight * peak.k;
+          l_tot  += weight * peak.l;
+        }
+      }
+      if ( weight > 0 )
+      {
+        cent_peak.qx  = qx_tot / total;
+        cent_peak.qy  = qy_tot / total;
+        cent_peak.qz  = qz_tot / total;
+
+        cent_peak.row = row_tot / total;
+        cent_peak.col = col_tot / total;
+        cent_peak.tof = tof_tot / total;
+
+        cent_peak.h  = h_tot / total;
+        cent_peak.k  = k_tot / total;
+        cent_peak.l  = l_tot / total;
+
+        out_peaks.add( cent_peak );
+      }
+    }
+
+    double TOL = 0.15;
+    for ( int i = out_peaks.size() - 1; i >= 0; i-- )
+    {
+      PeakData_d peak = (PeakData_d)( out_peaks.elementAt(i) );
+      if ( Math.abs( peak.h - Math.round(peak.h) ) > TOL   ||
+           Math.abs( peak.k - Math.round(peak.k) ) > TOL   ||
+           Math.abs( peak.l - Math.round(peak.l) ) > TOL    )
+        out_peaks.remove( i );
+    }
+
+    PeakData_d list[] = new PeakData_d[ out_peaks.size() ]; 
+    for ( int i = 0; i < out_peaks.size(); i++ )
+      list[i] = (PeakData_d)( out_peaks.elementAt(i) );
+
+    Arrays.sort( list, new PeakDataComparator() );
+
+    for ( int i = 0; i < out_peaks.size(); i++ )
+      list[i].seqn = i;
+
+    out_peaks.clear();
+    for ( int i = 0; i < list.length; i++ )
+      out_peaks.add( list[i] );
+
+    WritePeakData( out_peaks, out_file );
+  }
+
+
+  /**
    *  Read a vector of PeakData objects from an SCD peaks file AND
    *  one of the IPNS Runfiles used to form the peaks file.  The
    *  Runfile is needed to provide information about the time-of-flight
@@ -420,9 +607,19 @@ public class PeakData_d
    *                            provides the time scale and detector size 
    *                            and position information.
    *
+   *  @param  instrument  The particular SCD for which the peaks are being
+   *                      read.  This is needed to determine how the sample
+   *                      orientation angles chi, phi and omega are interpreted.
+   *                      The default is LANSCE SCD, since the shifted 
+   *                      goniometer angles follow a strict right hand rule.
+   *                      This should be PeakData_d.IPNS_SCD or 
+   *                      PeakData_d.LANSCE_SCD.
+   *
    *  @return  A vector filled with the PeakData objects read from the file.
    */
-  public static Vector ReadPeaks( String peaks_file_name, DataSet ds )
+  public static Vector ReadPeaks( String  peaks_file_name, 
+                                  DataSet ds,
+                                  String  instrument )
   {
     Operator op = new ReadPeaks( peaks_file_name );
 
@@ -510,9 +707,15 @@ public class PeakData_d
                             peaks_file_name );
       }
 
-      pd.orientation = new IPNS_SCD_SampleOrientation_d( p.phi(), 
-                                                         p.chi(), 
-                                                         p.omega() );
+      if ( instrument.equalsIgnoreCase( IPNS_SCD ) )
+        pd.orientation = new IPNS_SCD_SampleOrientation_d( p.phi(), 
+                                                           p.chi(), 
+                                                           p.omega() );
+      else
+        pd.orientation = new LANSCE_SCD_SampleOrientation_d( p.phi(), 
+                                                             p.chi(), 
+                                                             p.omega() );
+
       pd.grid = (UniformGrid_d)grids.get( new Integer(p.detnum()) );
 
       pd.qx  = 0;            // Q position, not set for now, since not needed
@@ -537,7 +740,7 @@ public class PeakData_d
    
     String peakdata_name = "fft_peaks.dat";
     System.out.println("Test loading " + peakdata_name );
-    Vector peaks = ReadPeakData( peakdata_name );
+    Vector peaks = ReadPeakData( peakdata_name, IPNS_SCD );
     System.out.println("Read peaks, # = " + peaks.size() );
 
     String new_peakdata_name = "junk_peaks.dat";
@@ -553,7 +756,7 @@ public class PeakData_d
     if ( ds == null )
       System.out.println("ERROR: Couldn't read Runfile " + run_name);
 
-    peaks = ReadPeaks( peaks_name, ds );
+    peaks = ReadPeaks( peaks_name, ds, IPNS_SCD );
  
     String new_peakdata2_name = "junk_peaks2.dat";
     System.out.println("Test writing to " + new_peakdata2_name );
