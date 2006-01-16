@@ -52,7 +52,7 @@ for i in run_numbers
 
   #Gets matrix file "lsxxxx.mat" for each run
   #The "1" means that every peak will be written to the integrate.log file.
-  SCDIntegrateA(ds[dsnum],outpath&expname&".integrate",outpath&"/ls"&expname&i&".mat",centering,time_slice_range,increase,1,append)
+  SCDIntegrateA(ds[dsnum],outpath&expname&".integrate",outpath&"/ls"&expname&i&".mat",centering,time_slice_range,increase,0.0,1,append)
 
   #Integrate
   # write out the results.Done in the integrate routine
