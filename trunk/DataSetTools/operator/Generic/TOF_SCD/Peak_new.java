@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2006/01/16 04:38:54  rmikk
+ * Added Sample orientation as an argument of a constructor so that a
+ *   peak need not be connected to any data
+ * Improved the clone method
+ *
  * Revision 1.7  2006/01/15 02:07:17  rmikk
  * Now uses The sampleorientation class to calculate ROT and invROT.  Can
  * only be changed by Peak_new
@@ -69,6 +74,7 @@ import java.text.DecimalFormat;
 import DataSetTools.dataset.*;
 import DataSetTools.math.tof_calc;
 import DataSetTools.instruments.*;
+import DataSetTools.trial.*;
 
 /**
  * This class contains variables describing a voxel(peak) in three formats:
@@ -124,6 +130,7 @@ public class Peak_new extends Peak{
   private float     L1       = Float.NaN;
   private float     T0       = Float.NaN;
   private float     T1       = Float.NaN;
+  private SampleOrientation orient = null;
   private float     timeAdjustment = 0f;//Added to T0.T1 or xscale entries
                                         // To get actual times
   private XScale    xscale   = null;
@@ -148,26 +155,28 @@ public class Peak_new extends Peak{
    *  @param initialPath  the length(m) of the primary flight path.
    */
   public Peak_new( float x, float y, float z, IDataGrid grid,
-      float chi, float phi, float omega, float timeAdjustment,
+      SampleOrientation orient, float timeAdjustment,
       XScale xscale, float initialPath ){ 
       this.x = x;
       this.y = y;
       this.z =z;
+      this.orient = orient;
       super.pixel( x,y ,z);
       this.grid = grid;
       this.L1 = initialPath;
       super.L1(L1);
-      super.sample_orient( chi, phi, omega);
+      super.sample_orient( orient.getChi(), orient.getPhi(), orient.getOmega());
       this.timeAdjustment = timeAdjustment;
       
-      this.chi=chi;
-      this.phi=phi;
-      this.omega=omega;
+      this.chi=orient.getChi();
+      this.phi= orient.getPhi();
+      this.omega= orient.getOmega();
       time( xscale);
-      pixel_to_real();
+      //pixel_to_real();
       //super.real(xcm, ycm, wl);
       //super.sample_orient(chi,phi,omega);
       needUpdate = false;
+      setT0T1( z, xscale);
       if( grid != null ){
          Vector3D pos = grid.position();
          //pos.multiply( -1.0f);
@@ -181,20 +190,30 @@ public class Peak_new extends Peak{
          super.detA( detA);
          super.detD( detD);
          setUpRot( grid);
+         update_xcm_ycm_wl();
       }
       
   }
 
+
+ private void update_xcm_ycm_wl(){
+  
+         this.xcm = 100*grid.position(y,x).get()[0];
+         this.ycm = 100*grid.position(y,x).get()[1];
+         
+         this.wl =DataSetTools.math.tof_calc.Wavelength(L1+
+                   grid.position(y,x).length(), this.t);
+
+ }
  private void setUpRot(IDataGrid grid){
     ROT = null;
     invROT =null;
     if( grid == null) return;
-    Data D = grid.getData_entry(1,1);
-    SampleOrientation s = (SampleOrientation)D.getAttributeValue( Attribute.SAMPLE_ORIENTATION);
-    float[][] rot = s.getGoniometerRotation().get();
+    
+    float[][] rot = orient.getGoniometerRotation().get();
     
     
-    float[][]invrot =s.getGoniometerRotationInverse().get();
+    float[][]invrot =orient.getGoniometerRotationInverse().get();
     ROT = new float[3][3];
     invROT = new float[3][3];
     for( int i=0; i<3;i++)
@@ -251,7 +270,33 @@ public class Peak_new extends Peak{
   }
   
   public void sethkl( float H, float K, float L,boolean propogate){
-     sethkl( H , K , L );
+    this.h=H;
+    this.k=K;
+    this.l=L;
+    if( (!propogate) ||( UB== null)){
+      super.sethkl( H , K , L ,propogate);
+      return;
+     
+    }else
+      super.sethkl( H, K, L, false);
+    float[] Q = new float[3];
+    for( int i=0; i<3;i++)
+       Q[i] = UB[i][0]*H+UB[i][1]*K+UB[i][2]*L;
+    Vector3D QQ = new Vector3D((float)(Q[0]*2*Math.PI),(float)(Q[1]*2*Math.PI),(float)(Q[2]*2*Math.PI));
+    float[] RC = VecQToTOF.RCofQVec( QQ, grid);
+    this.y = RC[0];
+    this.x = RC[1];
+    this.t = VecQToTOF.TofofQVec( QQ,grid, L1+grid.position( y,x).length());
+    update_xcm_ycm_wl();
+    this. z= xscale.getI_GLB(t);
+    CalcHKL();
+    
+  }
+  public void CalcHKL(){
+      if( UB == null)
+         return;
+      
+
   }
   /**
    * Mutator method for index
@@ -263,16 +308,7 @@ public class Peak_new extends Peak{
    * the other representations.
    */
   public void sethkl( float H, float K, float L){
-    this.h=H;
-    this.k=K;
-    this.l=L;
-    if( UB != null)
-       hkl_to_real();
-    this.real_to_pixel();
-    //super.pixel( x,y,z);
-    //super.real( xcm, ycm, wl);
-    //super.sethkl(h,k,l);
-    needUpdate = false;
+    sethkl(K, K, L, true);
   }
 
   
@@ -332,6 +368,7 @@ public class Peak_new extends Peak{
            float t0= time.getX((int)z);
            float t1 =time.getX((int)z+1);
            times(t0,t1);
+           this.t= t0 +(t1-t0)*(z-(int)z);
         }
   }
   
@@ -379,6 +416,7 @@ public class Peak_new extends Peak{
          super.detA( detA);
          super.detD( detD);
          setUpRot(grid);
+         update_xcm_ycm_wl();
       }  
     
   }
@@ -981,8 +1019,8 @@ public class Peak_new extends Peak{
    *  Produce a copy of the object.
    */
   public Object clone(){
-    if( needUpdate)get_hkl();
-   Peak_new peak=new Peak_new(x,y,z,grid,chi,phi,omega,
+    //if( needUpdate)get_hkl();
+   Peak_new peak=new Peak_new(x,y,z,grid,orient,
        timeAdjustment, xscale, L1);
     peak.detnum(detnum);
     peak.ipkobs(ipkobs);
@@ -1171,7 +1209,7 @@ public class Peak_new extends Peak{
     
     UniformGrid grid = new UniformGrid(21,"m",new Vector3D(.3f,.3f,0f), new Vector3D(1f,-1f,0f),
        new Vector3D(0f,0f,1f),.2f ,.2f,.01f,50,50);
-    Peak_new pk1=new Peak_new( 1.2f,3.5f,4.1f,grid,0f, 0f,  0f, 12f, xscl, 5f);
+    Peak_new pk1=new Peak_new( 1.2f,3.5f,4.1f,grid,new IPNS_SCD_SampleOrientation(0f,0f,0f), 12f, xscl, 5f);
     
     float[][]UB ={{1.0f,0f,0f},{0f,1f,0f},{0f,0f,1f}};
   
