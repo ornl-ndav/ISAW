@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/01/16 04:46:20  rmikk
+ * Changed to use the changed constructor for Peak_new
+ *
  * Revision 1.4  2005/05/27 03:10:19  dennis
  * Changed to use get attribute method from AttrUtil, rather than
  * the old get attribute method from DataSet and Data
@@ -172,8 +175,8 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
               Attribute.SAMPLE_ORIENTATION);
     if( sampOrient == null)
       sampOrient = new IPNS_SCD_SampleOrientation(0f,0f,0f);
-    Peak_new mold = new Peak_new(0f,0f,0f, Grids[0], sampOrient.getChi(),
-          sampOrient.getPhi(),sampOrient.getOmega(), 0f, 
+    Peak_new mold = new Peak_new(0f,0f,0f, Grids[0], sampOrient,
+           0f, 
            xscales[0], AttrUtil.getInitialPath(db));
     mold.nrun( AttrUtil.getRunNumber(DS)[0]);  
     mold.monct(moncount);    
