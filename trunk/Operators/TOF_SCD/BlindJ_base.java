@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2006/01/16 04:45:30  rmikk
+ * Changed the Command Name so that it would not be confused with
+ *   the other JBlind
+ *
  * Revision 1.2  2005/01/06 16:43:09  rmikk
  * Made a Hidden operator
  *
@@ -86,7 +90,7 @@ public class BlindJ_base extends  GenericTOF_SCD implements
    * @return  "JBlind", the command used to invoke this operator in Scripts
    */
   public String getCommand(){
-    return "JBlind";
+    return "JBlindB";
   }
     
 
