@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.3  2006/01/16 03:05:21  dennis
+ *  Changed some parameters & return values to float, which were
+ *  accidentally set to double.
+ *
  *  Revision 1.2  2006/01/16 02:00:14  dennis
  *  Added static default omega offset of 91.5 degrees for LANSCE
  *  goniometer.  This offset will be automatically applied to all
@@ -129,7 +133,7 @@ public class LANSCE_SCD_SampleOrientation extends SampleOrientation
    *
    *  @return the current value of the offset applied to omega.  
    */
-  public double getOmegaOffset()
+  public float getOmegaOffset()
   {
     return omega_offset;
   }
@@ -141,7 +145,7 @@ public class LANSCE_SCD_SampleOrientation extends SampleOrientation
    *
    *  @param  offset  The new value for the offset to be applied to omega.  
    */
-  public void setOmegaOffset( double offset )
+  public void setOmegaOffset( float offset )
   {
     omega_offset = offset;
   }
