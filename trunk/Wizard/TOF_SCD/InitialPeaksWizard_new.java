@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/01/16 04:54:53  rmikk
+ * Added Constant arguments for the forms
+ * Updated the argument link list for the new parameters added to the forms
+ *
  * Revision 1.4  2006/01/15 02:18:58  rmikk
  * Replace the Blind form with a script to read in an orientation matrix
  *
@@ -90,31 +94,32 @@ public class InitialPeaksWizard_new extends Wizard {
      path += "Wizard/TOF_SCD/Scripts_new/";
      addForm( new ScriptForm(path+"find_multiple_peaks1.iss",
                new PlaceHolderPG("Peaks", new Vector())));
-     //addForm( new OperatorForm( new BlindJ_base(),
-     //       new ArrayPG("Orientation Matrix", null),
-      //      new int[]{0}));
-     addForm( new ScriptForm(path+"Blind.iss",new ArrayPG("Orientation Matrix", null))); 
+     
+     addForm( new ScriptForm(path+"Blind.iss",new ArrayPG("Orientation Matrix", null),
+                       new int[]{0})); 
      addForm( new OperatorForm( new IndexJ_base(),
                  new StringPG("Log info", ""),
                  new int[]{0,1}));
-     addForm( new OperatorForm( new ScalarJ_base(),
-                 new StringPG("Transformation", ""), new int[]{0}));
-     //addForm( new ScriptForm(path +"Scalar.iss", new StringPG("Transformation","")));
+     
+     addForm( new ScriptForm(path +"Scalar.iss", new StringPG("Transformation",""),
+                new int[]{0}));
      addForm( new OperatorForm( new LsqrsJ_base(),
                  new ArrayPG("Orientation Matrix", new Vector()),
-                 new int[]{0}));
+                 new int[]{0,3}));
      addForm( new ScriptForm(path+"JIndxSave.iss",
-                    new StringPG("Result", "")));
+                    new StringPG("Result", ""),new int[]{0,1}));
     /* addForm( new OperatorForm( new IndexJ_base(),
                  new StringPG("Log info", "JIndxS"),
                  new int[]{0,1}));
      */            
       int[][] Xlate= { {12, 0, 0,-1, 0, 0}, //peaks vector
                        {-1, 4, 1, 0,-1,-1}, //init UB matrix
-                       {-1,-1,-1, 3, 3,-1}, //Transformation
-                       {-1,-1,-1,-1, 7, 1},  //lsqrs UB matrix
+                       {-1,-1,-1, 4, 3,-1}, //Transformation
+                       {-1,-1,-1,-1, 8, 1},  //lsqrs UB matrix
                      
                      };
+     
+
      linkFormParameters(Xlate);
      
                
