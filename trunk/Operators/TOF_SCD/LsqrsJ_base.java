@@ -31,6 +31,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2006/01/16 04:47:22  rmikk
+ * Cloned the peak argument
+ * Added the LeastSquare constraints
+ *
  * Revision 1.7  2005/12/29 20:22:22  dennis
  * Replaced 'chisq == Double.isNaN'  with  'Double.isNaN(chisq)'
  * The original form does NOT properly check for the returned chisq
@@ -74,11 +78,13 @@ import java.util.Vector;
 import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
 import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 //import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
 import DataSetTools.operator.Generic.TOF_SCD.Util;
 import DataSetTools.parameter.*;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
+import DataSetTools.trial.*;
 
 
 /**
@@ -154,6 +160,21 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     //6
     addParameter( 
       new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );
+
+    ChoiceListPG choices = new ChoiceListPG("Cell Type Constraint","Triclinic");
+
+    choices.addItem("Monoclinic ( b unique )");
+    choices.addItem("Monoclinic ( a unique )");
+    choices.addItem("Monoclinic ( c unique )");
+    choices.addItem("Orthorhombic");
+    choices.addItem("Tetragonal");
+    choices.addItem("Rhombohedral");
+    choices.addItem("Hexagonal");
+    choices.addItem("Cubic");
+       
+    //7   
+    addParameter( choices) ;   
+
   }
 
   /**
@@ -192,7 +213,9 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     sb.append( "@param minThresh The minimum peak intensity threshold to " );
     sb.append( "use." );
     sb.append( "@param keepPixels The detector pixel range to keep." );
-
+    sb.append( "@param cellType  The type of cell to be used if the ");
+    sb.append( "@param least squares optimization is to be constrained ");
+    sb.append(  "to a particular unit cell type");
     // return
     sb.append( "@return the resultant matrix file or an errormessage.");
     sb.append(" The peaks object is also indexed and some peaks may be deleted");
@@ -212,12 +235,17 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     // get the parameters
     try{
     
-     Vector peaks = (Vector)(getParameter( 0 ).getValue(  ));
-                        
+     Vector peaksPar = (Vector)(getParameter( 0 ).getValue(  ));
+     Vector peaks =new Vector();
+     for( int i=0; i< peaksPar.size(); i++){
+         peaks.addElement(((Peak_new)peaksPar.elementAt(i)).clone());
+     }                   
      int[] run_nums   = ( ( IntArrayPG )getParameter( 1 ) ).getArrayValue(  );
      int[] seq_nums   = ( ( IntArrayPG )getParameter( 2 ) ).getArrayValue(  );
      int threshold    = ( ( IntegerPG )getParameter( 5 ) ).getintValue(  );
      int[] keepRange  = ( ( IntArrayPG )getParameter( 6 ) ).getArrayValue(  );
+     String cellType  = ((ChoiceListPG)getParameter( 7 )).getValue().toString();
+
      float[][] matrix = null;
      int lowerLimit;
      int upperLimit;
@@ -455,7 +483,14 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
         }
       }
 
-      chisq   = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
+      System.out.println("CellType is "+cellType);
+      if ( cellType.startsWith( "Tri" ) )
+        chisq = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
+      else
+        chisq = SCD_util.BestFitMatrix( cellType, UB, Thkl, Tq );
+
+
+
       if ( Double.isNaN( chisq ) )
         return new ErrorString( "ERROR in LsqrsJ: " + 
                                 " BestFitMatrix calculation failed" );
