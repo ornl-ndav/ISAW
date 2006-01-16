@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2006/01/16 04:23:05  dennis
+ *  Added parameter to constructor so that the calibration process
+ *  can apply to both the LANSCE and IPNS SCD.
+ *
  *  Revision 1.17  2004/07/26 21:47:10  dennis
  *  Changed name of PeakData to PeakData_d since PeakData_d uses
  *  double precision.
@@ -185,13 +189,17 @@ public class SCDcal   extends    OneVarParameterizedFunction
                                         // for each used parameter
   private int       used_p_index[];     // index into list of params used, 
                                         // for each possible parameter
+
+  private String    instrument_type;    // PeakData_d.IPNS_SCD or
+                                        // PeakData_d.LANSCE_SCD
   /**
    *  Construct a function defined on the grid of (x,y) values specified, 
    *  using the parameters and parameter names specified.  The grid points
    *  are numbered in a sequence and the point's index in the sequence is 
    *  used as the one variable.
    */
-   public SCDcal( Vector      peaks_vector,
+   public SCDcal( String      instrument_type,
+                  Vector      peaks_vector,
                   Hashtable   grids,
                   double      params[], 
                   String      param_names[],
@@ -206,6 +214,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
                                    // empty arrays and then change the values
      super( "SCDcal", new double[n_used], new String[n_used] );
      this.log_file = log_file;
+
+     this.instrument_type = instrument_type;
      this.peaks_vector = peaks_vector;
 
      int used_index = 0;                        // set up copies of the 
@@ -664,9 +674,12 @@ public class SCDcal   extends    OneVarParameterizedFunction
          float phi   = (float)peak.orientation.getPhi();
          float chi   = (float)peak.orientation.getChi();
          float omega = (float)peak.orientation.getOmega();
-       
-         IPNS_SCD_SampleOrientation orientation = 
-                           new IPNS_SCD_SampleOrientation( phi, chi, omega );
+
+         SampleOrientation orientation = null;
+         if ( instrument_type.equals( PeakData_d.LANSCE_SCD ) )
+           orientation = new LANSCE_SCD_SampleOrientation( phi, chi, omega );
+         else
+           orientation = new IPNS_SCD_SampleOrientation( phi, chi, omega );
 
          VecQMapper mapper = new VecQMapper( grid, 
                                             (float)l1, 
@@ -860,7 +873,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
       lattice_params[5] = 90;
       lattice_params[4] = 120;
                                                     // load the vector of peaks
-      Vector peaks = PeakData_d.ReadPeakData( args[0] ); 
+      Vector peaks = PeakData_d.ReadPeakData( args[0], PeakData_d.IPNS_SCD ); 
       PeakData_d peak = (PeakData_d)peaks.elementAt(0);
       double l1 = peak.l1; 
 
@@ -962,7 +975,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
           n_used++;
                                                      // build the one variable
                                                      // function
-      SCDcal error_f = new SCDcal( peaks, 
+      SCDcal error_f = new SCDcal( PeakData_d.IPNS_SCD,
+                                   peaks, 
                                    grids,
                                    parameters, 
                                    parameter_names,
