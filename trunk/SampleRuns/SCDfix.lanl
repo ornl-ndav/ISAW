@@ -6,11 +6,11 @@
 <Common>
  <tmin units = "microseconds">1500</tmin>
  <tmax units= "microseconds">8000</tmax>
- <L0 units = "m">7.499858</L0>
+ <L0 units = "m">7.550</L0>
  <det num = "265"> 
-   <width units = "m">.2</width>
-   <height units = "m"> .2</height>
-   <L1 units = "m">.265</L1>
+   <width units = "m"> .1986</width>
+   <height units = "m"> .2026</height>
+   <L1 units = "m">0.2518</L1>
  </det>
 </Common>
 <Runs>
@@ -18,7 +18,7 @@
      <omega units = "degree">183</omega>
      <phi units = "degree">325</phi>
      <chi>  -135 </chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
      <Temperature unit = "K">300</Temperature>
   </Run>
   
@@ -26,7 +26,7 @@
       <omega units = "degree">183</omega>
       <phi units = "degree">325 </phi>
       <chi> -135 </chi>
-      <L1 units = "meter">.265</L1>
+      <L1 units = "meter">0.2518</L1>
       <Temperature unit = "K">300</Temperature>
   </Run>
   
@@ -34,28 +34,28 @@
       <omega units = "degree"> 228</omega>
       <phi units = "degree">325 </phi>
       <chi>-135</chi>
-      <L1 units = "meter">.265</L1>
+      <L1 units = "meter">0.2518</L1>
   </Run>
   
   <Run filename = "SCD_E000005_R000095.nx.hdf">  
      <omega units = "degree"> 228</omega>
      <phi units = "degree">245</phi>
      <chi> -135</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   </Run>
   
   <Run filename = "SCD_E000005_R000096.nx.hdf">
      <omega units = "degree">183</omega>
      <phi units = "degree">245 </phi>
      <chi>-135 </chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   </Run>
   
   <Run filename = "SCD_E000005_R000097.nx.hdf">
      <omega units = "degree">183</omega>
      <phi units = "degree">290</phi>
      <chi units = "degree"> -135</chi>
-     <L1 units = "meter"> .265</L1>
+     <L1 units = "meter"> 0.2518</L1>
   </Run>
   
   <Run
@@ -64,7 +64,7 @@
     <omega units = "degree"> 228</omega>
     <phi units = "degree">290 </phi>
     <chi units = "degree">-135</chi>
-    <L1 units = "meter">.265</L1>
+    <L1 units = "meter">0.2518</L1>
   </Run>
   
   <Run filename = "SCD_E000005_R000085.nx.hdf">
@@ -130,14 +130,14 @@
     <omega units = "degree"> 228</omega>
     <phi units = "degree">200</phi>
     <chi units = "degree">-135</chi>
-    <L1 units = "meter">.265</L1>
+    <L1 units = "meter">0.2518</L1>
   </Run>
   
   <Run filename = "SCD_E000005_R000103.nx.hdf">
      <omega units = "degree">183</omega>
      <phi units = "degree">200</phi>
      <chi units = "degree">-135</chi>
-     <L1 units = "meter">.265 </L1>
+     <L1 units = "meter">0.2518 </L1>
   </Run>
   
   <Run filename = "SCD_E000005_R000100.nx.hdf">
@@ -200,14 +200,14 @@
    <omega units = "degree">  125</omega>
      <phi units = "degree">320</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
 
   </Run> 
   <Run filename ="SCD_E000005_R000726.nx.hdf">
    <omega units = "degree"> 90</omega>
      <phi units = "degree">335</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   </Run> 
   
@@ -215,7 +215,7 @@
    <omega units = "degree"> 60</omega>
      <phi units = "degree">0</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   </Run> 
 
@@ -223,7 +223,7 @@
    <omega units = "degree"> 85</omega>
      <phi units = "degree">10</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   </Run> 
   
@@ -231,7 +231,7 @@
    <omega units = "degree"> 72</omega>
      <phi units = "degree">42</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   </Run> 
  
@@ -239,7 +239,7 @@
    <omega units = "degree"> 108</omega>
      <phi units = "degree">50</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   </Run> 
  
@@ -247,23 +247,23 @@
    <omega units = "degree"> 35</omega>
      <phi units = "degree">0</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   </Run> 
  
-  <Run filename ="SCD_E000005_R000732, .nx.hdf">
+  <Run filename ="SCD_E000005_R000732.nx.hdf">
    <omega units = "degree"> 100</omega>
      <phi units = "degree">300</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   </Run> 
  
-  <Run filename ="SCD_E000005_R000733, .nx.hdf">
+  <Run filename ="SCD_E000005_R000733.nx.hdf">
    <omega units = "degree"> 78</omega>
      <phi units = "degree">290</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   </Run> 
  
@@ -271,7 +271,7 @@
    <omega units = "degree"> 55</omega>
      <phi units = "degree">280</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   </Run> 
  
@@ -279,7 +279,7 @@
    <omega units = "degree"> 130</omega>
      <phi units = "degree">220</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   </Run> 
     
@@ -287,7 +287,7 @@
      <omega units = "degree"> 95</omega>
      <phi units = "degree">200</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   
   </Run> 
@@ -296,7 +296,7 @@
    <omega units = "degree"> 60</omega>
      <phi units = "degree">200</phi>
      <chi units = "degree">120</chi>
-     <L1 units = "meter">.265</L1>
+     <L1 units = "meter">0.2518</L1>
   
   
   </Run> 
