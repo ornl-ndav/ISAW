@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2006/01/16 04:49:20  rmikk
+ * Spelled Hexagonal correctly
+ * Fixed the entries in the identity matrix
+ * Added more logging information
+ *
  * Revision 1.5  2005/08/05 20:18:12  rmikk
  * Changed an initial value for a parameter
  * Set the display of log info to be to the system log file and not necessarily the
@@ -121,7 +126,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
 
   private double[][] newmat=null;
   double[][] transf=null;
-  private static String [] cell = {"P, CUBIC", "F, CUBIC", "R, HEXANONAL",
+  private static String [] cell = {"P, CUBIC", "F, CUBIC", "R, HEXAGONAL",
                         "I, CUBIC", "I, TETRAGONAL", "I, ORTHORHOMBIC",
                         "P, TETRAGONAL", "P, HEXAGONAL", "C, ORTHORHOMBIC",
                         "C, MONOCLINIC", "F, ORTHORHOMBIC", "P, ORTHORHOMBIC", 
@@ -335,7 +340,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
       return gov.anl.ipns.Util.Sys.StringUtil.toString(LinearAlgebra.getTranspose(
                                LinearAlgebra.double2float(transf)));
     else
-      return "[[1,0,0],[0,1,0],[1,0,0]]";
+      return "[[1,0,0],[0,1,0],[0,0,1]]";
   }
 
   /**
@@ -1160,6 +1165,8 @@ public class ScalarJ_base extends GenericTOF_SCD implements
           logBuffer.append(Format.real(abc[ii],10,3)+" ");
         logBuffer.append("\n");
         SharedMessages.LOGaddmsg(logBuffer.substring(start));
+        SharedMessages.LOGaddmsg("------------- End Scalar ---------------\n\n\n");
+        SharedMessages.addmsg(logBuffer.substring(start));
       }
     }
 
