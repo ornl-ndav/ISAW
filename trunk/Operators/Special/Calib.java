@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2006/01/16 04:42:54  rmikk
+ * Removed the calibrated offset of 91.5 from omega
+ *
  * Revision 1.15  2006/01/13 21:12:27  rmikk
  * Added 90 degrees to omega
  *
@@ -489,7 +492,7 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
         return new ErrorString(" Cannot set Crystal orientation");
      else{
        float conv = (float)(180/Math.PI);
-       Operators.Example.LansceUtil.AddSampleOrientationAttribute( DS1, phi*conv, chi*conv, 90+omega*conv);
+       Operators.Example.LansceUtil.AddSampleOrientationAttribute( DS1, phi*conv, chi*conv, omega*conv);
        DS.copy(DS1);
        
       
