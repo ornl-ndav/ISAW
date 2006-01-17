@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2006/01/17 19:30:31  rmikk
+ * Eliminated CalcHKL
+ * Added a few more fields to be copied in the clone
+ *
  * Revision 1.10  2006/01/17 18:22:21  dennis
  * The constructor that accepts a grid, now gets the detnum
  * field set correctly.
@@ -296,15 +300,11 @@ public class Peak_new extends Peak{
     this.t = VecQToTOF.TofofQVec( QQ,grid, L1+grid.position( y,x).length());
     update_xcm_ycm_wl();
     this. z= xscale.getI_GLB(t);
-    CalcHKL();
+    
     
   }
-  public void CalcHKL(){
-      if( UB == null)
-         return;
-      
-
-  }
+  
+  
   /**
    * Mutator method for index
    *
@@ -1033,10 +1033,12 @@ public class Peak_new extends Peak{
     peak.inti(inti);
     peak.sigi(sigi);
     peak.reflag(reflag);
+    peak.seqnum(seqnum);
     peak.nearedge=this.nearedge();
     peak.t=this.t;
-    
-    peak.monct(this.monct());
+    peak.monct = monct;
+    peak.nearedge = nearedge;
+    peak.monct(this.monct);
     
     if ( UB != null )                  
       peak.UB( UB );    // also copy the UB matrix, which also sets UB inverse
