@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2006/01/17 18:22:21  dennis
+ * The constructor that accepts a grid, now gets the detnum
+ * field set correctly.
+ *
  * Revision 1.9  2006/01/17 04:15:50  dennis
  * Removed two debug prints.
  *
@@ -165,7 +169,7 @@ public class Peak_new extends Peak{
       this.z =z;
       this.orient = orient;
       super.pixel( x,y ,z);
-      this.grid = grid;
+      this.Grid( grid );                // needed to set the super class detnum
       this.L1 = initialPath;
       super.L1(L1);
       super.sample_orient( orient.getChi(), orient.getPhi(), orient.getOmega());
