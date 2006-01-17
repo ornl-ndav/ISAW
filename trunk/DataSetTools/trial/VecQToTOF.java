@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2006/01/17 03:44:30  dennis
+ *  Made all instance variables private.
+ *
  *  Revision 1.22  2004/08/11 15:02:53  dennis
  *  Removed unneeded debug print.
  *
@@ -166,33 +169,38 @@ import DataSetTools.instruments.*;
 
 public class VecQToTOF
 {
-  static final Vector3D unit_k = new Vector3D( 1, 0, 0 );
+  private  static final Vector3D unit_k = new Vector3D( 1, 0, 0 );
  
-  boolean debug = false;  
+  private  boolean debug = false;  
 
-  IDataGrid grid;
+  private IDataGrid grid;
 
-  Tran3D   goniometerR,
-           goniometerRinv;
+  private Tran3D   goniometerR,
+                   goniometerRinv;
 
-  Vector3D det_center;  // center position of detector.
-  Vector3D u, v, n;     // vectors defining coordinate axes on face of
-                        // detector and perpendicular to the detector.
-  int      n_rows,
-           n_cols;
-  float    det_width,
-           det_height;
-  float    initial_path,
-           t0;
-  float    x_vals[] = null;
-  boolean  same_xscale = false;
+  private Vector3D det_center;  // center position of detector.
+  private Vector3D u, v, n;     // vectors defining coordinate axes on face of
+                                // detector and perpendicular to the detector.
+  private int      n_rows,
+                   n_cols;
 
-  Vector3D q_center;    // unit q_vector in direction of q from center of
-                        // detector
-  float    min_q_dot;   // dot product of unit q vector in direction of
-                        // corner pixel. (Used to quickly discard most
-                        // cases where q would not have come from this 
-                        // detector.
+  private float    det_width,
+                   det_height;
+
+  private float    initial_path,
+                   t0;
+
+  private float    x_vals[] = null;
+
+  private boolean  same_xscale = false;
+
+  private Vector3D q_center;    // unit q_vector in direction of q from
+                                // center of detector
+
+  private float    min_q_dot;   // dot product of unit q vector in direction of
+                                // corner pixel. (Used to quickly discard most
+                                // cases where q would not have come from this 
+                                // detector.
 
   /* --------------------------- constructor ------------------------- */
   /**
