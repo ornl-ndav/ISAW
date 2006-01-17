@@ -31,6 +31,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2006/01/17 22:42:35  rmikk
+ * Set the UB matrix to null and hkl values to zero for peaks that are not
+ *   indexed because they are not in selected runs or sequences
+ *
  * Revision 1.8  2006/01/16 04:47:22  rmikk
  * Cloned the peak argument
  * Added the LeastSquare constraints
@@ -430,6 +434,10 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       hkl[k][2]   = Math.round( peak.l(  ) );
       q[k]        = peak.getUnrotQ(  );
       k++;
+    }else{
+       peak =( Peak )peaks.elementAt( i );
+       peak.UB(null);
+       peak.sethkl(0f,0f,0f,false);
     }
 
     // apply the transformation matrix
@@ -571,7 +579,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
       }
 
-      // calculate chisq
+      // calculate 
       for( int i = 0; i < nargs; i++ ) {
         for( int j = 0; j < 3; j++ ) {
           chisq = chisq + ( ( q[i][j] - Tq[j][i] ) * ( q[i][j] - Tq[j][i] ) );
