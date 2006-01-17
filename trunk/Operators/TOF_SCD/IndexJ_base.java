@@ -31,6 +31,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2006/01/17 22:41:24  rmikk
+ * Set the UB matrix to null and hkl values to zero for peaks that are not
+ *   indexed because they are not in selected runs or sequences
+ *
  * Revision 1.6  2005/08/05 20:14:41  rmikk
  * Changed the ParameterGUI for one the UB matrix parameter
  * Improved Documentation on the return value
@@ -277,6 +281,12 @@ public class IndexJ_base extends    GenericTOF_SCD implements
       peak=(Peak)peaks.elementAt(i);
       if(indexpeak(peak,runs,seqs))
         peak.UB(UB);
+      else{
+      
+        peak.UB(null);
+        peak.sethkl(0f,0f,0f,false);
+        peak.reflag(0);
+      }
     }
 
     // create a StringBuffer for the log
