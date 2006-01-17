@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2006/01/17 04:15:50  dennis
+ * Removed two debug prints.
+ *
  * Revision 1.8  2006/01/16 04:38:54  rmikk
  * Added Sample orientation as an argument of a constructor so that a
  *   peak need not be connected to any data
@@ -400,14 +403,12 @@ public class Peak_new extends Peak{
     needUpdate = true;
     this.grid = grid;
     
-    System.out.println("New grid set:"+grid.position());
     super.detnum( grid.ID());
     this.detnum = grid.ID();
     if( grid != null ){
          Vector3D pos = grid.position();
          //pos.multiply( -1.0f);
          float[] pp = pos.get();
-         System.out.println("pos of grid"+ grid.ID()+" is ("+pp[0]+","+pp[1]+","+pp[2]);
          detA2=( (float)(180.0f*Math.asin( pos.get()[2]/pos.length())/Math.PI));
          
          detA=(float)(180*Math.atan2(pp[1],pp[0])/Math.PI);
