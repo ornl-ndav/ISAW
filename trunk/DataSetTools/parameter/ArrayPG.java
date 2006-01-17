@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.44  2006/01/17 22:49:13  rmikk
+ *  Ensured the getValue returns an empty Vector instead of a null
+ *
  *  Revision 1.43  2006/01/04 17:50:58  rmikk
  *  Caught a parse error for this case only.  The system quits hanging
  *
@@ -305,7 +308,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   public Object getValue(  ) {
     //Vector of DataSets
     Object val = super.getValue(  );
-
+    
     if( 
       ( val != null ) && ( ( ( Vector )val ).size(  ) > 0 ) &&
         ( ( ( Vector )val ).elementAt( 0 ) instanceof DataSet ) ) {
@@ -317,11 +320,18 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       try{
        
          val   = StringtoArray( val.toString(  ) );
+         
+         
       }catch(Throwable ss){
-        return super.getValue();
+        val= new Vector();
+       
       }
     }
-
+    if( val == null)
+      val = new Vector();
+    if( !(val instanceof Vector))
+      val = new Vector();
+    super.setValue(val);
     return val;
   }
 
