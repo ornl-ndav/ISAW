@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2006/01/17 22:44:10  rmikk
+ * Fixed the clone method to ensure that the UB and hkl values correspond
+ *   to the parent peak
+ *
  * Revision 1.11  2006/01/17 19:30:31  rmikk
  * Eliminated CalcHKL
  * Added a few more fields to be copied in the clone
@@ -1042,7 +1046,10 @@ public class Peak_new extends Peak{
     
     if ( UB != null )                  
       peak.UB( UB );    // also copy the UB matrix, which also sets UB inverse
-
+    else{
+      peak.UB(null);
+       peak.sethkl( this.h, this.k, this.l, false); 
+       }
     return peak;
   }
   
