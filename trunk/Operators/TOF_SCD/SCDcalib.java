@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2006/01/18 21:29:38  dennis
+ *  Added printout of detector position to the information dumped
+ *  to the terminal.
+ *  Switched to using indexed peaks file from InitialPeaks wizard
+ *  rather than from the 3D Reciprocal Space Viewer, for LANSCE SCD.
+ *
  *  Revision 1.12  2006/01/16 04:26:32  dennis
  *  Added instrument_type flag that is set based on the file extension,
  *  to select between calibrating the IPNS_SCD or the LANSCE_SCD.
@@ -622,22 +628,29 @@ public class SCDcalib extends GenericTOF_SCD
     for ( int i = 0; i < grids.length; i++ )
     {
       out.println("# Orientation of Detector " + grids[i].ID() + "-----------");
-      double comp[] = grids[i].x_vec().get();
-      out.println("# local x_vector:  ( " +
+      double comp[] = grids[i].position().get(); 
+      out.println("# Center position:  ( " +
+                           Format.real(comp[0], 10, 6, false) + ", " +
+                           Format.real(comp[1], 10, 6, false) + ", " +
+                           Format.real(comp[2], 10, 6, false) + ") "
+                           );
+
+      comp = grids[i].x_vec().get();
+      out.println("#  local x_vector:  ( " +
                            Format.real(comp[0], 10, 6, false) + ", " +
                            Format.real(comp[1], 10, 6, false) + ", " +
                            Format.real(comp[2], 10, 6, false) + ") " 
                            );
 
       comp = grids[i].y_vec().get();
-      out.println("# local y_vector:  ( " +
+      out.println("#  local y_vector:  ( " +
                            Format.real(comp[0], 10, 6, false) + ", " +
                            Format.real(comp[1], 10, 6, false) + ", " +
                            Format.real(comp[2], 10, 6, false) + ") "
                            );
 
       comp = grids[i].z_vec().get();
-      out.println("# detector normal: ( " + 
+      out.println("#  detector normal: ( " + 
                            Format.real(comp[0], 10, 6, false) + ", " +
                            Format.real(comp[1], 10, 6, false) + ", " +
                            Format.real(comp[2], 10, 6, false) + ") "
@@ -807,8 +820,8 @@ public class SCDcalib extends GenericTOF_SCD
     if ( lansce_file )
     {
       instrument_type = PeakData_d.LANSCE_SCD;
-      peaks = PeakData_d.ReadPeakData(peaksfile, instrument_type); 
-//    peaks = PeakData_d.ReadPeaks(peaksfile, ds, instrument_type); 
+//    peaks = PeakData_d.ReadPeakData(peaksfile, instrument_type); 
+      peaks = PeakData_d.ReadPeaks(peaksfile, ds, instrument_type); 
     }
     else
     {
