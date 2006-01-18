@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.245  2006/01/18 21:04:56  rmikk
+ *  Added the new wizards to Isaw's Wizard menu
+ *
  *  Revision 1.244  2006/01/07 23:17:00  dennis
  *  Changed version to 1.8.0 alpha 1
  *
@@ -738,11 +741,14 @@ public class Isaw
   private static final String MACRO_M            = "Macros";
   
   private static final String WIZARD_M           = "Wizards";
-  private static final String SCD_M                  = "SCD";
-  private static final String SAD_M                  = "SAD";
-  private static final String IPW_MI                  = "Initial Peaks Wizard";
-  private static final String DPW_MI                = "Daily Peaks Wizard";
-  private static final String RW_MI                   = "Reduce Wizard";
+  private static final String SCD_M              = "SCD";
+  private static final String SAD_M              = "SAD";
+  private static final String IPW_MI             = "Initial Peaks Wizard";
+  private static final String DPW_MI             = "Daily Peaks Wizard";
+  private static final String LANSCE_IPW_MI      = "Initial Peaks Wizard-New";
+  private static final String LANSCE_DPW_MI      = "Daily Peaks Wizard-New";
+  private static final String RW_MI              = "Reduce Wizard";
+  private static final String LANSCE_WIZARD_M    = "LANSCE";
 
   private static final String OPERATOR_M         = "Operations";
 
@@ -1004,14 +1010,23 @@ public class Isaw
     JMenu SADMenu = new JMenu( SAD_M );
     JMenuItem InitPeaksWItem = new JMenuItem( IPW_MI ); 
     JMenuItem DailyPeaksWItem = new JMenuItem( DPW_MI );
+    JMenu LansceWizard = new JMenu( LANSCE_WIZARD_M);
+    JMenuItem LansceInitPeaksWItem = new JMenuItem( LANSCE_IPW_MI ); 
+    JMenuItem LansceDailyPeaksWItem = new JMenuItem( LANSCE_DPW_MI );
     JMenuItem ReduceWItem = new JMenuItem( RW_MI );
     SCDMenu.add( InitPeaksWItem );
     SCDMenu.add( DailyPeaksWItem );
+    LansceWizard.add( LansceInitPeaksWItem );
+    LansceWizard.add( LansceDailyPeaksWItem );
     SADMenu.add( ReduceWItem );
     wizardMenu.add( SADMenu );
     wizardMenu.add( SCDMenu );
+    wizardMenu.add(LansceWizard);
+    
     InitPeaksWItem.addActionListener( menu_item_handler );
     DailyPeaksWItem.addActionListener( menu_item_handler );
+    LansceInitPeaksWItem.addActionListener( menu_item_handler );
+    LansceDailyPeaksWItem.addActionListener( menu_item_handler );
     ReduceWItem.addActionListener( menu_item_handler );
     //***************************************************end create Wizard menu
 
@@ -1549,7 +1564,11 @@ public class Isaw
         new Wizard.TOF_SCD.DailyPeaksWizard( false ).wizardLoader( null );
       } else if( s == RW_MI ) {
         new Wizard.TOF_SAD.ReduceWizard( false ).wizardLoader( null );
-      }  
+      }else if( s == LANSCE_IPW_MI ) {
+        new Wizard.TOF_SCD.InitialPeaksWizard_new( false ).wizardLoader( null );
+      } else if( s == LANSCE_DPW_MI ) {
+        new Wizard.TOF_SCD.DailyPeaksWizard_new( false ).wizardLoader( null );
+    }  
                     
       if( s.equals( SAVE_ISAW_DATA_MI ))
       {
