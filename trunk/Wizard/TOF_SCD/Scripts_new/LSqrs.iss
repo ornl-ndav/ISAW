@@ -6,7 +6,7 @@
 #
 #@param  Peaks the Vector of Peaks to work with
 #@param  expName  the name of the experiment(for use in filenames)
-#@param  runnums  The run numbers to not 
+#@param  runnums  Restrict run nums(blank for all) 
 #@param  RestrSeqNums the sequence nums to restrict
 #@param  SaveDir  The directory to save the mat files to
 #@param MinIntens  th minimum intenstity threshold
@@ -18,7 +18,7 @@ $category=HiddenOperator
 $command=Lsqrs
 $Peaks    PlaceHolder    Peaks
 $expName   String       Name of experiment
-$runnums   Array      Run Numbers to use("" for all)
+$runnums   Array([])      Restrict Run Numbers ("" for all)
 $RestrSeq   IntList     Sequence numbers to use("" for all)
 $SaveDir    DataDirectoryString     Directory to save files
 $MinIntens  Integer(0)  Minimum Peak Intensity Threshold
