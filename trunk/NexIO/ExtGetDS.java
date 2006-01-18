@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2006/01/18 21:50:50  rmikk
+ * Did not add the "dirrectory" / if there was no directory
+ *
  * Revision 1.27  2006/01/12 19:06:01  rmikk
  * Has special code to handle/fix  LANSCE SCD Nexus files
  *
@@ -324,7 +327,7 @@ public class ExtGetDS{
               dir = filename.substring(0,startFileName);
            if( dir != null){
              dir= dir.replace('\\','/');
-           if( !dir.endsWith("/"))
+           if( !dir.endsWith("/"))if( dir.trim().length()>0)
                dir +="/";
           
            }
