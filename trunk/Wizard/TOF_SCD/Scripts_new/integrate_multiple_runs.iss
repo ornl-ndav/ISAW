@@ -8,8 +8,8 @@
 #
 # Assumptions:
 #  - Data of interest is in histogram 2
-#  - The run number requires a '0' before it
-#  - There is a "lsxxxx.mat" file for each xxxx run.
+#  - The filename are a concatenation of the path, inst, run number and .FileExt
+#  - There is a "lsxxxx.mat" file for each xxxx run and an lsexpname.mat
 
 $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
@@ -21,10 +21,10 @@ $ time_slice_range    String(-1:3)           Time-slice range
 $ increase            Integer(1)             Increase slice size by
 $ inst                String("SCD0")         Instrument name
 $ FileExt             String(".nx.hdf")      FileExtension
-# $ d_min             float(1.0)             Minimum d-spacing
-#  $PeakAlg           Choice(["MaxIToSigI","Shoe Box","MaxIToSigI-old","TOFINT","EXPERIMENTAL"])  Integ 1 peak algorithm
-#  $Xrange            Array                 Range of x's around shoebox center
-#  $Yrange            Array                 Range of y's around shoebox center
+$ d_min             float(0.0)             Minimum d-spacing
+$PeakAlg           Choice(["MaxIToSigI","Shoe Box","MaxIToSigI-old","TOFINT","EXPERIMENTAL"])  Integ 1 peak algorithm
+$Xrange            Array([-3,3])            Range of x's around shoebox center
+$Yrange            Array([-3,3])               Range of y's around shoebox center
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 #$inst = "SCD"
 Display "Instrument = "&inst
@@ -52,7 +52,7 @@ for i in run_numbers
 
   #Gets matrix file "lsxxxx.mat" for each run
   #The "1" means that every peak will be written to the integrate.log file.
-  SCDIntegrate_new(ds[dsnum],outpath&expname&".integrate",outpath&"/ls"&expname&i&".mat",centering,time_slice_range,increase,0.0,1,append)
+  SCDIntegrate_new(ds[dsnum],outpath&expname&".integrate",outpath&"/ls"&expname&i&".mat",centering,time_slice_range,increase,d_min,1,append,PeakAlg,Xrange,Yrange)
 
   #Integrate
   # write out the results.Done in the integrate routine
