@@ -1,7 +1,7 @@
 /*
  * File:  Integrate_new.java 
  *
- * Copyright (C) 2002, Peter Peterson
+ * Copyright (C) 2002, Peter Peterson, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,15 +25,55 @@
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
- *
+ * Some of this work was supported by the National Science Foundation under
+ * grant number DMR-0218882
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
- * Revision 1.2  2006/01/16 04:39:52  rmikk
- * Added parameters for d_min and integrate method
+ * Revision 1.3  2006/01/18 00:23:59  dennis
+ * Workable adaptation of IPNS SCD integrate routine to LANSCE SCD.
+ * Lowered dependence on Peter's Peak object, that is IPNS specific.
+ * Both MaxISigI and Shoebox integrate routines working.  Missing
+ * features are:
+ *   1. Logging not working
+ *   2. Centroiding peak after shifting to max value and integrating
+ *   3. More efficient choice of range of hkl values
+ * The Wizard form still needs to be modified to pass all of the
+ * control parameters in to this operator.
  *
- * Revision 1.1  2006/01/15 05:02:27  rmikk
- * Integrate that does not use a calibration file.
+ * Revision 1.8  2006/01/16 04:50:35  rmikk
+ * Added documentation for the d_min argument
+ *
+ * Revision 1.7  2005/03/06 00:29:03  dennis
+ * Added methods to check d-spacing for peaks and remove peaks for which
+ * the d-spacing is less than a specified minimum. (Requested by Art Schultz.)
+ * Added d_min as parameter to this operator.
+ * Added old CVS log messages which were removed when this operator was
+ * checked in separately from the original integrate operator.
+ *
+ * Revision 1.6  2004/08/19 20:28:16  rmikk
+ * Eliminated some annoying prints with the experimental methods
+ *
+ * Revision 1.5  2004/08/19 19:16:54  rmikk
+ * All logging information is logged to the Global logging file in
+ *   gov.anl.ipns.Util.Sys.SharedMessages
+ *
+ * Revision 1.4  2004/08/03 00:07:58  rmikk
+ * Replaced INTGT by TOFINT
+ *
+ * Revision 1.3  2004/07/29 14:01:44  rmikk
+ * Fixed javadoc error
+ *
+ * Revision 1.2  2004/06/23 20:39:54  rmikk
+ * Now includes all the options from the first integrate operator.
+ * Adds two new Integrate One Point add-ins and allows for an
+ *    experimental option
+ *
+ * Revision 1.1  2004/06/18 22:22:20  rmikk
+ * Initial Checkin 
+ *
+ * MODIFIED VERSION OF DataSetTools/operator/Generic/TOF_SCD/Integrate.java
+ * OLD LOG MESSAGES ARE LISTED BELOW:
  *
  * Revision 1.37  2004/05/04 19:02:25  dennis
  * Now clears DataSetPG after getting value, to avoid memory leak.
@@ -179,10 +219,9 @@
  *
  * Revision 1.1  2003/01/30 21:07:23  pfpeterson
  * Added to CVS.
- *
- *
+ *  
  */
-package DataSetTools.operator.Generic.TOF_SCD;
+package DataSetTools.operator.Generic.TOF_SCD; 
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
@@ -190,20 +229,23 @@ import DataSetTools.parameter.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.instruments.*;
 import DataSetTools.util.*;
+import DataSetTools.math.*;
+import DataSetTools.trial.*;
 import DataSetTools.retriever.RunfileRetriever;
+import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.MathTools.Geometry.*;
-import DataSetTools.math.*;
+import DataSetTools.operator.Generic.TOF_SCD.*;
 import java.io.*;
 import java.util.Vector;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
-
+import Operators.TOF_SCD.*;
 /** 
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
  */
 public class Integrate_new extends GenericTOF_SCD{
-  private static final String       TITLE       = "Integrate";
+  private static final String       TITLE       = "Integrate_new";
   private static       boolean      DEBUG       = false;
   private static       Vector       choices     = null;
   private              StringBuffer logBuffer   = null;
@@ -212,17 +254,13 @@ public class Integrate_new extends GenericTOF_SCD{
   private              float        omega       = 0f;
   private              int          listNthPeak = 3;
   private              int          centering   = 0;
-
   public static        String     OLD_INTEGRATE ="MaxIToSigI-old";
   public static        String     NEW_INTEGRATE ="MaxIToSigI";
   public static        String     TOFINT        ="TOFINT";
   public static        String     EXPERIMENTAL  ="EXPERIMENTAL";
   public static        String     SHOE_BOX      = "Shoe Box";
-
-
+    
   
-  private IntegratePt opIntPt = new IntegratePt();
-
   /**
    * how much to increase the integration size after I/dI has been maximized
    */
@@ -234,18 +272,20 @@ public class Integrate_new extends GenericTOF_SCD{
   /**
    * integration range in z
    */
-  private              int[] timeZrange={-1,3};
+  private              int[] timeZrange={-1,3};  
   /**
    * integration range in x
    */
-  private              int[] colXrange={-2,2};
+  private              int[] colXrange={-2,2};  
   /**
    * integration range in y
    */
-  private              int[] rowYrange={-2,2};
-
+  private              int[] rowYrange={-2,2};   
+  
   
   private String PeakAlg = "MaxItoSigI";
+  
+  private IntegratePt opIntPt = new IntegratePt();
 
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -254,6 +294,7 @@ public class Integrate_new extends GenericTOF_SCD{
    */  
   public Integrate_new(){
     super( TITLE );
+  
   }
   
   /** 
@@ -276,10 +317,10 @@ public class Integrate_new extends GenericTOF_SCD{
   }
 
   /** 
-   * Creates operator with title "Integrate" and the specified list
+   * Creates operator with title "Integrate_new" and the specified list
    * of parameters. The getResult method must still be used to execute
    * the operator.  This is a convenience constructor so that a full
-   * Integrate Operator can be constructed without the need to 
+   * Integrate_new Operator can be constructed without the need to 
    * pass in IParameterGUIs.
    *
    * @param ds          DataSet to integrate
@@ -291,22 +332,21 @@ public class Integrate_new extends GenericTOF_SCD{
    *                    1, 3, 6, 9...
    * @param append      Append to file (true/false);
    * @param PeakAlg     Name of algorithm used to integrate one peak
-
-   * @param box_x_range The range of x (delta col) values to use around the peak 
-   *                    position
-   * @param box_y_range The range of y (delta row) values to use around the peak 
-   *                    position
+   * @param box_x_range The range of x (delta col) values to use around the  
+   *                    peak position
+   * @param box_y_range The range of y (delta row) values to use around the 
+   *                    peak position
    */
   public Integrate_new( DataSet ds, 
-                    String  integfile, 
-                    String  matfile,
-                    String  slicerange, 
-                    int     slicedelta, 
-                    int     lognum,
-                    boolean append,
+                     String  integfile, 
+                     String  matfile,
+                     String  slicerange, 
+                     int     slicedelta, 
+                     int     lognum,
+                     boolean append,
                      String  PeakAlg,
-                    String  box_x_range,
-                    String  box_y_range )
+                     String  box_x_range,
+                     String  box_y_range )
   {
     this(ds); 
 
@@ -314,18 +354,18 @@ public class Integrate_new extends GenericTOF_SCD{
     getParameter(2).setValue(matfile);
     getParameter(4).setValue(slicerange);
     getParameter(5).setValue(new Integer(slicedelta));
-    getParameter(6).setValue(new Integer(lognum));
-    getParameter(7).setValue(new Boolean(append));
-    getParameter(8).setValue(PeakAlg);
-    getParameter(9).setValue(box_x_range);
-    getParameter(10).setValue(box_y_range);
+    getParameter(7).setValue(new Integer(lognum));
+    getParameter(8).setValue(new Boolean(append));
+    getParameter(9).setValue(new String( PeakAlg));
+    getParameter(10).setValue(box_x_range);
+    getParameter(11).setValue(box_y_range);
   }
 
   /** 
-   * Creates operator with title "Integrate" and the specified list
+   * Creates operator with title "Integrate_new" and the specified list
    * of parameters. The getResult method must still be used to execute
    * the operator.  This is a convenience constructor so that a full
-   * Integrate Operator can be constructed without the need to 
+   * Integrate_new Operator can be constructed without the need to 
    * pass in IParameterGUIs.
    *
    * @param ds          DataSet to integrate
@@ -340,23 +380,23 @@ public class Integrate_new extends GenericTOF_SCD{
    * @param append      Append to file (true/false);
    * @param PeakAlg     String to specify using same-size shoebox around 
    *                    all peaks, rather than trying to maximize I/sigI
-   * @param box_x_range The range of x (delta col) values to use around the peak 
-   *                    position
-   * @param box_y_range The range of y (delta row) values to use around the peak 
-   *                    position
+   * @param box_x_range The range of x (delta col) values to use around the 
+   *                    peak position
+   * @param box_y_range The range of y (delta row) values to use around the
+   *                    peak position
    */
   public Integrate_new( DataSet ds, 
-                    String  integfile, 
-                    String  matfile,
-                    int     choice, 
-                    String  slicerange, 
-                    int     slicedelta, 
-                    float   d_min,
-                    int     lognum,
-                    boolean append,
+                     String  integfile, 
+                     String  matfile,
+                     int     choice, 
+                     String  slicerange, 
+                     int     slicedelta, 
+                     float   d_min,
+                     int     lognum,
+                     boolean append,
                      String  PeakAlg,
-                    String  box_x_range,
-                    String  box_y_range )
+                     String  box_x_range,
+                     String  box_y_range )
   {
     this(ds,
          integfile, matfile, 
@@ -373,11 +413,11 @@ public class Integrate_new extends GenericTOF_SCD{
   /** 
    * Get the name of this operator to use in scripts: SCDIntegrate
    * 
-   * @return  "SCDIntegrate", the command used to invoke this 
+   * @return  "SCDIntegrate_new", the command used to invoke this 
    *           operator in Scripts
    */
   public String getCommand(){
-    return "SCDIntegrateA";
+    return "SCDIntegrate_new";
   }
   
   /* ----------------------- setDefaultParameters ------------------------- */ 
@@ -409,14 +449,14 @@ public class Integrate_new extends GenericTOF_SCD{
     addParameter(clpg);
 
     // parameter(4)
-    addParameter(new IntArrayPG("Time Slice Range","-1:3"));
+//    addParameter(new IntArrayPG("Time Slice Range","-1:3"));
+    addParameter(new IntArrayPG("Time Slice Range","-2:4"));   // #####
 
     // parameter(5)
     addParameter(new IntegerPG("Increase Slice Size by",0));
 
     // parameter(6)
     addParameter(new FloatPG("Minimum d-spacing", 0));
-
 
     // parameter(7)
     addParameter(new IntegerPG("Log Every nth Peak",3));
@@ -426,19 +466,22 @@ public class Integrate_new extends GenericTOF_SCD{
 
     // parameter(9)
     ChoiceListPG clPG = new ChoiceListPG( "Integrate 1 peak method",
-                                           OLD_INTEGRATE);
+                                           NEW_INTEGRATE);
     clPG.addItem(SHOE_BOX);
-    clPG.addItem(NEW_INTEGRATE);
+    clPG.addItem(OLD_INTEGRATE);
     
     clPG.addItem(TOFINT);
     clPG.addItem(EXPERIMENTAL);
 	
     addParameter(clPG);
+
     // parameter(10)
-    addParameter(new IntArrayPG("Box Delta x (col) Range","-2:2"));
+//    addParameter(new IntArrayPG("Box Delta x (col) Range","-2:2"));
+    addParameter(new IntArrayPG("Box Delta x (col) Range","-3:3"));  // #####
 
     // parameter(11)
-    addParameter(new IntArrayPG("Box Delta y (row) Range","-2:2"));
+//    addParameter(new IntArrayPG("Box Delta y (row) Range","-2:2"));
+    addParameter(new IntArrayPG("Box Delta y (row) Range","-3:3"));  // ####
   }
   
   /**
@@ -475,7 +518,6 @@ public class Integrate_new extends GenericTOF_SCD{
     sb.append("@param sliceDelta The incremental amount to increase the ");
     sb.append("slice size by.\n");
     sb.append("@param  d_min  the minimum d-spacing allowed");
-    
     sb.append("@param logNPeak Log the \"nth\" peak.\n");
     sb.append("@param append Whether to append to the file.\n");
     sb.append("@param Integrate method: Either MaxIToSigI-old,MaxIToSigI,");
@@ -518,7 +560,7 @@ public class Integrate_new extends GenericTOF_SCD{
     this.logBuffer=new StringBuffer();
 
     // first get the DataSet
-    val=getParameter(0).getValue();
+    val=getParameter(0).getValue();                        // Parameter 0 ****
     ((DataSetPG)getParameter(0)).clear();    // needed to avoid memory leak
 
     if( val instanceof DataSet){
@@ -529,21 +571,24 @@ public class Integrate_new extends GenericTOF_SCD{
     }else{
       return new ErrorString("Value of first parameter must be a dataset");
     }
+    String logfile = null;
 
     // then the integrate file
-    val=getParameter(1).getValue();
+    val=getParameter(1).getValue();                        // Parameter 1 ****
     if(val!=null){
       integfile=val.toString();
       if(integfile.length()<=0)
         return new ErrorString("Integrate filename is null");
       integfile=FilenameUtil.setForwardSlash(integfile);
+      logfile=integfile;
+      
+      
     }else{
-      return new ErrorString("Integrate filename is null");
+      //return new ErrorString("Integrate filename is null");
     }
 
-
     // then get the matrix file
-    val=getParameter(2).getValue();
+    val=getParameter(2).getValue();                        // Parameter 2 ****
     if(val!=null){
       matfile=FilenameUtil.setForwardSlash(val.toString());
       File dir=new File(matfile);
@@ -554,13 +599,13 @@ public class Integrate_new extends GenericTOF_SCD{
     }
 
     // then the centering condition
-    val=getParameter(3).getValue().toString();
+    val=getParameter(3).getValue().toString();             // Parameter 3 **** 
     centering=choices.indexOf((String)val);
     if( centering<0 || centering>=choices.size() ) centering=0;
 
     // then the time slice range
     {
-      int[] myZrange=((IntArrayPG)getParameter(4)).getArrayValue();
+      int[] myZrange=((IntArrayPG)getParameter(4)).getArrayValue();// Param 4 **
       if(myZrange!=null && myZrange.length>=2){
         timeZrange[0]=myZrange[0];
         timeZrange[1]=myZrange[myZrange.length-1];
@@ -570,29 +615,27 @@ public class Integrate_new extends GenericTOF_SCD{
     }
 
     // then how much to increase the integration size
-    incrSlice=((IntegerPG)getParameter(5)).getintValue();
+    incrSlice=((IntegerPG)getParameter(5)).getintValue();          // Param 5 **
 
-     // then the d_min value
+    // then the d_min value
     float d_min = ((FloatPG)getParameter(6)).getfloatValue();      // Param 6 **
 
     // then how often to log a peak
-    listNthPeak=((IntegerPG)getParameter(6)).getintValue();
+    listNthPeak=((IntegerPG)getParameter(7)).getintValue();        // Param 7 **
 
     // then whether to append
-    boolean append=((BooleanPG)getParameter(7)).getbooleanValue();
-    //Peak Algorithm
+    boolean append=((BooleanPG)getParameter(8)).getbooleanValue(); // Param 8 **
+      
     PeakAlg =getParameter(9).getValue().toString();                // Param 9 **
-
     if( PeakAlg.equals(Integrate_new.OLD_INTEGRATE))
-        opIntPt.setIntgratePkOp(new Operators.TOF_SCD.INTEG(),1,1,1);
+        opIntPt.setIntgratePkOp(new INTEG(),1,1,1);
     else if( PeakAlg.equals(Integrate_new.TOFINT))
-        opIntPt.setIntgratePkOp(new Operators.TOF_SCD.TOFINT(),1,1,1);
+        opIntPt.setIntgratePkOp(new TOFINT(),1,1,1);
      opIntPt.setDataSet(ds);
-
 
     // then the x range
     {
-      int[] myXrange=((IntArrayPG)getParameter(9)).getArrayValue();
+      int[] myXrange=((IntArrayPG)getParameter(10)).getArrayValue();//Param 10**
       if(myXrange!=null && myXrange.length>=2){
         colXrange[0]=myXrange[0];
         colXrange[1]=myXrange[myXrange.length-1];
@@ -603,7 +646,7 @@ public class Integrate_new extends GenericTOF_SCD{
 
     // then the y range
     {
-      int[] myYrange=((IntArrayPG)getParameter(10)).getArrayValue();
+      int[] myYrange=((IntArrayPG)getParameter(11)).getArrayValue();//Param 11**
       if(myYrange!=null && myYrange.length>=2){
         rowYrange[0]=myYrange[0];
         rowYrange[1]=myYrange[myYrange.length-1];
@@ -614,7 +657,7 @@ public class Integrate_new extends GenericTOF_SCD{
 
    if ( DEBUG )
    {
-     System.out.println("Algorithm = " + PeakAlg );
+     System.out.println("Peak Method = " + PeakAlg);
      System.out.println("X range = " + colXrange[0] + " to " + colXrange[1] );
      System.out.println("Y range = " + rowYrange[0] + " to " + rowYrange[1] );
      System.out.println("Z range = " + timeZrange[0] + " to " + timeZrange[1] );
@@ -686,11 +729,13 @@ public class Integrate_new extends GenericTOF_SCD{
         UB=(float[][])UBval;
       UBval=null;
     }
+
     if(UB==null){ // try loading it
       LoadOrientation loadorient=new LoadOrientation(ds, matfile);
       Object res=loadorient.getResult();
       if(res instanceof ErrorString) return res;
       // try getting the value again
+
       Object UBval=null;
       UBval=data.getAttributeValue(Attribute.ORIENT_MATRIX);
       if(UBval==null)
@@ -701,6 +746,8 @@ public class Integrate_new extends GenericTOF_SCD{
       if(UB==null) // now give up if it isn't there
         return new ErrorString("Could not load orientation matrix");
     }
+    System.out.println("UB matrix is " );
+    LinearAlgebra.print( UB );
 
     // determine the initial flight path
     float init_path=0f;
@@ -712,6 +759,7 @@ public class Integrate_new extends GenericTOF_SCD{
       }
       L1=null;
     }
+    
     if(init_path==0f)
       return new ErrorString("initial flight path is zero");
 
@@ -727,7 +775,7 @@ public class Integrate_new extends GenericTOF_SCD{
           }
       Nrun=null;
     }
-
+   
     // create a PeakFactory for use throughout this operator
     PeakFactory pkfac=new PeakFactory(nrun,0,init_path,0f,0f,0f);
     pkfac.UB(UB);
@@ -735,14 +783,16 @@ public class Integrate_new extends GenericTOF_SCD{
 
     // create a vector for the results
     Vector peaks=new Vector();
-
+   
     // integrate each detector
     Vector innerPeaks=null;
     ErrorString error=null;
     for( int i=0 ; i<det_number.length ; i++ ){
-      if(DEBUG) System.out.println("integrating "+det_number[i]);
+
+      System.out.println("Processing detector " + det_number[i] );
+     
       innerPeaks=new Vector();
-      error=integrateDetector(ds,innerPeaks,pkfac,det_number[i], d_min);
+      error=integrateDetector(ds,innerPeaks,pkfac,det_number[i],d_min,UB);
       if(DEBUG) System.out.println("ERR="+error);
       if(error!=null) return error;
       if(DEBUG) System.out.println("integrated "+innerPeaks.size()+" peaks");
@@ -750,28 +800,29 @@ public class Integrate_new extends GenericTOF_SCD{
         peaks.addAll(innerPeaks);
     }
 
-    
     // write out the logfile integrate.log
-    String logfile=integfile;
-    {
-      int index=logfile.lastIndexOf("/");
-      logfile=logfile.substring(0,index)+"/integrate.log";
-    }
+    
+   
     String errmsg=this.writeLog(logfile,append);
     if(errmsg!=null)
       SharedData.addmsg(errmsg);
-
+   
     // write out the peaks
     WritePeaks writer=new WritePeaks(integfile,peaks,new Boolean(append));
+  
     return writer.getResult();
+   
   }
+
+
 // ========== start of detector dependence
 
   private ErrorString integrateDetector(DataSet     ds, 
                                         Vector      peaks, 
                                         PeakFactory pkfac, 
                                         int         detnum,
-                                        float       d_min )
+                                        float       d_min,
+                                        float       UB[][]  )
   {
     if(DEBUG) System.out.println("Integrating detector "+detnum);
 
@@ -799,22 +850,36 @@ public class Integrate_new extends GenericTOF_SCD{
 
     // get the calibration for this
     
-    //*float[] calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
-    //*if(calib==null)
-    //* return new ErrorString("Could not find calibration for detector " +detnum);
-    //*pkfac.calib(calib);
+// float[] calib = {1.0f, 0.153469f,0.157197f, -9.922570f, -10.169874f, 7.55f };
+//    pkfac.calib( calib );
+//    float[] calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
+//    if(calib==null)
+//     return new ErrorString("Could not find calibration for detector " +detnum);
+//    pkfac.calib(calib);
 
     // get the xscale from the data to give to the new peaks objects
     XScale times=data.getX_scale();
     pkfac.time(times);
 
     // determine the detector postion
-    float detA=Util.detector_angle(ds,detnum);
+    float detA=Util.detector_angle(ds,detnum);           // REMOVE THESE
     float detA2=Util.detector_angle2(ds,detnum);
     float detD=Util.detector_distance(ds,detnum);
+
+                                      // get proper values for detA, etc.
+    UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, detnum ); 
+    Vector3D center_vec = grid.position();
+    detD = center_vec.length();
+    float coords[] = center_vec.get();
+    detA = (float)( Math.atan2( coords[1], coords[0] ) * 180/Math.PI );
+    double radius = Math.sqrt( coords[0]*coords[0] + coords[1]*coords[1] ); 
+    detA2 = (float)( Math.atan2( coords[2], radius ) * 180/Math.PI );
+
     pkfac.detA(detA);
     pkfac.detA2(detA2);
     pkfac.detD(detD);
+
+    System.out.println("Peak factory = " + pkfac );
 
     // determine the min and max pixel-times
     int zmin=0;
@@ -830,6 +895,13 @@ public class Integrate_new extends GenericTOF_SCD{
     // determine the detector limits in hkl
     int[][] hkl_lim=minmaxhkl(pkfac, ids, times);
     float[][] real_lim=minmaxreal(pkfac, ids, times);
+
+    System.out.println("h limit from " +hkl_lim[0][0]+ " to " + hkl_lim[0][1] );
+    System.out.println("k limit from " +hkl_lim[1][0]+ " to " + hkl_lim[1][1] );
+    System.out.println("l limit from " +hkl_lim[2][0]+ " to " + hkl_lim[2][1] );
+    System.out.println("real from " +real_lim[0][0]+ " to " + real_lim[0][1] );
+    System.out.println("real from " +real_lim[1][0]+ " to " + real_lim[1][1] );
+    System.out.println("real from " +real_lim[2][0]+ " to " + real_lim[2][1] );
 
     // add the limits to the logBuffer
     logBuffer.append("---------- LIMITS\n");
@@ -849,33 +921,78 @@ public class Integrate_new extends GenericTOF_SCD{
     logBuffer.append("========== PEAK INTEGRATION ==========\n");
     logBuffer.append("listing information about every "+listNthPeak+" peak\n");
 
-    boolean printPeak=DEBUG||false; // REMOVE
+    boolean printPeak=false; // REMOVE
     Peak peak=null;
+
+    if ( DEBUG )
+    {
+      System.out.println( "PeakFactory = " + pkfac );
+      System.out.println( "(1,1,1) Peak = " + pkfac.getHKLInstance(1,1,1) );
+    }
+
+    VecQToTOF transformer = new VecQToTOF( ds );
+    Tran3D orientation_tran = new Tran3D( UB );
+
+    SampleOrientation samp_or = AttrUtil.getSampleOrientation( ds );
+    XScale x_scale = ds.getData_entry(0).getX_scale();
+    float initial_path = AttrUtil.getInitialPath( ds );
+    int run_nums[] = AttrUtil.getRunNumber( ds );
+
     int seqnum=1;
     // loop over all of the possible hkl values and create peaks
     for( int h=hkl_lim[0][0] ; h<=hkl_lim[0][1] ; h++ ){
       for( int k=hkl_lim[1][0] ; k<=hkl_lim[1][1] ; k++ ){
-        for( int l=hkl_lim[2][0] ; l<=hkl_lim[2][1] ; l++ ){
+        for( int l=hkl_lim[2][0] ; l<=hkl_lim[2][1] ; l++ )
+         {
           if( h==0 && k==0 && l==0 ) continue; // cannot have h=k=l=0
+
           if( ! checkCenter(h,k,l,centering) ){ // fails centering conditions
             if(printPeak) System.out.println(" NO CENTERING"); // REMOVE
             continue;
           }
-          peak=pkfac.getHKLInstance(h,k,l);
-          if(printPeak) System.out.print(peak.toString()); // REMOVE
-          peak.nearedge(rcBound[0],rcBound[2],rcBound[1],rcBound[3],
-                        zmin,zmax);
-          if( peak.nearedge()>=2f){
-            if( (checkReal(peak,real_lim)) ){
-              if(printPeak) System.out.println(" OK"); // REMOVE
+
+          Vector3D hkl_vec = new Vector3D( h, k, l );
+          Vector3D q_vec = new Vector3D();
+          orientation_tran.apply_to( hkl_vec, q_vec );
+          q_vec.multiply( (float)(2*Math.PI) ); 
+          float row_col_ch[] = transformer.QtoRowColChan( q_vec );  
+
+          if ( row_col_ch != null )             // peak is on the detector
+          {
+            float row  = row_col_ch[0];
+            float col  = row_col_ch[1];
+            float chan = row_col_ch[2];
+                                                // only use it if it is not
+                                                // too close to the edge
+            float delta = 3;
+            if ( row  > rcBound[0] + delta && row  < rcBound[2] - delta  &&
+                 col  > rcBound[1] + delta && col  < rcBound[3] - delta  && 
+                 chan > zmin + delta       && chan < zmax - delta         )
+            {
+              peak=new Peak_new( row_col_ch[1], row_col_ch[0], row_col_ch[2],
+                                 grid, samp_or, 0, x_scale, initial_path );
+              peak.sethkl( h, k, l, false );
               peak.seqnum(seqnum);
+              if ( run_nums != null && run_nums.length > 0 )
+                peak.nrun( run_nums[0] );
+              peak.reflag(10);                         // Mark as ok for now 
+
               peaks.add(peak);
               seqnum++;
-            }else{
-              if(printPeak) System.out.println(" NOT REAL"); // REMOVE
             }
-          }else{
-            if(printPeak) System.out.println(" BAD EDGE"); // REMOVE
+          }
+
+          if ( DEBUG && h == 4 && k == 1 && l == -3 )
+          {
+            System.out.println( "RUN NUMBER = " + 
+                                 AttrUtil.getRunNumber(ds)[0] );
+            System.out.println( "HKL == 4, 1, -3" );
+            System.out.println( "q_vec = " + q_vec );
+            if ( row_col_ch != null )
+              System.out.println( "col row ch = " + 
+                                   row_col_ch[1] + ", " +
+                                   row_col_ch[0] + ", " +
+                                   row_col_ch[2] );
           }
         }
       }
@@ -892,42 +1009,51 @@ public class Integrate_new extends GenericTOF_SCD{
         }
       }
     }
+
+
     RemovePeaksWithSmall_d( peaks, d_min, ds, detnum );
+
+    System.out.println("NUMBER OF PEAKS TO INTEGRATE " + peaks.size() );
+
+    peak = (Peak)peaks.elementAt(0);
+    System.out.println("peak x,y,z = " + peak.x() + ", " + peak.y() + ", " 
+                                       + peak.z() );
 
     // integrate the peaks
     for( int i=peaks.size()-1 ; i>=0 ; i-- )
     {
       if( i%listNthPeak == 0 )                   // integrate with logging
       {
-        if (PeakAlg.equals(SHOE_BOX)  )
-          integrateShoebox( (Peak)peaks.elementAt(i),
-                             ds, ids,
-                             colXrange, rowYrange, timeZrange,
-                             logBuffer ); 
-        else if(PeakAlg.equals(NEW_INTEGRATE) )
-          integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
-                        logBuffer);
-        else
-          integratePeakExp((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
-             logBuffer);  
-            
-      }
-      else                                      // integrate but don't log
-      {
         if ( PeakAlg.equals(SHOE_BOX) )
           integrateShoebox( (Peak)peaks.elementAt(i),
                              ds, ids,
                              colXrange, rowYrange, timeZrange,
+                             logBuffer ); 
+        else if( PeakAlg.equals(NEW_INTEGRATE))
+          integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
+                        logBuffer) ;
+       else 
+          integratePeakExp((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
+             logBuffer);    
+      }
+      else                                      // integrate but don't log
+      {
+        if ( PeakAlg.equals("Shoe Box") )
+          integrateShoebox( (Peak)peaks.elementAt(i),
+                             ds, ids,
+                             colXrange, rowYrange, timeZrange,
                              null );
-        else if(PeakAlg.equals(NEW_INTEGRATE) )
+        else if(PeakAlg.equals("MAXItoSIGI"))
           integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
                         null);
         else
         integratePeakExp((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
-                     null);
+                     null);  
       }
+
     }
 
+/*
     // centroid the peaks
     for( int i=0 ; i<peaks.size() ; i++ ){
       peak=Util.centroid((Peak)peaks.elementAt(i),ds,ids);
@@ -939,69 +1065,60 @@ public class Integrate_new extends GenericTOF_SCD{
         i--;
       }
     }
+*/
+
+    for ( int i = 0; i < peaks.size(); i++ )
+      System.out.println( (Peak)(peaks.elementAt(i)) );
 
     // things went well so return null
     return null;
   }
 
-   /*
-   *  Go through the vector of peaks and remove any peak for which 
-   *  d < d_min.
-   */ 
-  private void RemovePeaksWithSmall_d( Vector  peaks, 
-                                       float   d_min, 
-                                       DataSet ds, 
-                                       int     detnum )
-  {
-    if ( DEBUG )
-    {
-      System.out.println("Processing DataSet    " + ds );
-      System.out.println("Processing detector # " + detnum );
-    }
-    UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, detnum );
-    if ( grid != null )
-    {
-      if ( DEBUG )
-        System.out.println("Found grid for detector # " + detnum );
-      boolean keep_peak[] = new boolean[ peaks.size() ];
-      int     num_kept = 0;
-      for( int i = 0; i < peaks.size(); i++ )    // first find out which to 
-      {                                          // keep
-        Peak my_peak = (Peak)peaks.elementAt(i);
-        if( peak_d_OK( my_peak, d_min, grid ) )
-        {
-          keep_peak[i] = true;
-          num_kept++;
+  /**
+   * Create the vector of choices for the ChoiceListPG of centering.
+   */
+  private void init_choices(){
+    choices=new Vector();
+    choices.add("primitive");               // 0 
+    choices.add("a centered");              // 1
+    choices.add("b centered");              // 2
+    choices.add("c centered");              // 3
+    choices.add("[f]ace centered");         // 4
+    choices.add("[i] body centered");       // 5
+    choices.add("[r]hombohedral centered"); // 6
+  }
+
+  /**
+   * This method takes the log created throughout the calculation and
+   * writes it to a file.
+   *
+   * @return a String if anything goes wrong, null otherwise.
+   */
+  private String writeLog(String logfile,boolean append){
+    if( logBuffer==null || logBuffer.length()<=0 )
+      return "No information in log buffer";
+
+    /*FileOutputStream fout=null;
+
+    try{
+      fout=new FileOutputStream(logfile,append);
+      fout.write(logBuffer.toString().getBytes());
+      fout.flush();
+    }catch(IOException e){
+      return e.getMessage();
+    }finally{
+      if(fout!=null){
+        try{
+          fout.close();
+        }catch(IOException e){
+          // let it drop on the floor
         }
-        else
-          keep_peak[i] = false;
       }
-
-      if ( d_min > 0 )
-        SharedData.addmsg("Keeping " + num_kept + " of " + peaks.size() +
-                          " for detector " + detnum + " DataSet " + ds );
-
-      if ( num_kept < peaks.size() )             // copy over the peaks we kept
-      {
-        Peak kept_peaks[] = new Peak[ num_kept ];
-        int  index = 0;
-        for ( int i = 0; i < keep_peak.length; i++ )
-          if ( keep_peak[i] )
-          {
-            kept_peaks[index] = (Peak)peaks.elementAt(i);
-            index++;
-          }
-        peaks.clear();
-        peaks.ensureCapacity( num_kept );
-        for ( int i = 0; i < kept_peaks.length; i++ )
-          peaks.addElement( kept_peaks[i] );
-      }
-
     }
-    else
-      SharedData.addmsg("WARNING: DataGrid not found in Integrate " +
-                        "ds = " + ds + "Detector = " + detnum );
-   }
+   */
+    gov.anl.ipns.Util.Sys.SharedMessages.LOGaddmsg(logBuffer.toString());
+    return null;
+  }
 
   /**
     * This method integrates the peak by using an experimental integrate peak
@@ -1047,106 +1164,6 @@ public class Integrate_new extends GenericTOF_SCD{
      }
    }
 
- 
-
-
-  /**
-   *  Check whether or not the "d" for this peak is less than a 
-   *  specified d_min.  
-   */
-  private boolean peak_d_OK( Peak        peak,
-                             float       d_min, 
-                             UniformGrid grid  )
-  {
-    int row     = Math.round( peak.y() );
-    int col     = Math.round( peak.x() ); 
-    int channel = Math.round( peak.z() );
-
-    Data d = grid.getData_entry(row,col);
-    if ( d == null )                        // can't check d_min, so keep peak
-      return true;
-
-    float initial_path;
-    Attribute attr = d.getAttribute(Attribute.INITIAL_PATH);
-    if ( attr != null )
-      initial_path = (float)attr.getNumericValue();
-    else
-      return true;
-
-    Vector3D  position_vec = grid.position( row, col );
-    float total_path = initial_path + position_vec.length();
-
-    float t0 = 0;
-    attr = d.getAttribute(Attribute.T0_SHIFT);
-    if ( attr != null )
-      t0 = (float)attr.getNumericValue();
-
-    XScale xscale = d.getX_scale();
-    float tof = xscale.getX( channel ) + t0;
-
-    DetectorPosition position = new DetectorPosition( position_vec );
-    float angle = position.getScatteringAngle();
-
-    float d_spacing = tof_calc.DSpacing( angle, total_path, tof );
-    if ( DEBUG )
-      System.out.println("seqnum " + peak.seqnum() + 
-                         "row  = " + row + 
-                         "col  = " + col +
-                         "chan = " + channel +
-                         "d    = " + d_spacing ); 
-
-    if ( d_spacing < d_min )
-      return false;
-    else
-      return true;
-  }
-
-
-  /**
-   * Create the vector of choices for the ChoiceListPG of centering.
-   */
-  private void init_choices(){
-    choices=new Vector();
-    choices.add("primitive");               // 0 
-    choices.add("a centered");              // 1
-    choices.add("b centered");              // 2
-    choices.add("c centered");              // 3
-    choices.add("[f]ace centered");         // 4
-    choices.add("[i] body centered");       // 5
-    choices.add("[r]hombohedral centered"); // 6
-  }
-
-  /**
-   * This method takes the log created throughout the calculation and
-   * writes it to a file.
-   *
-   * @return a String if anything goes wrong, null otherwise.
-   */
-  private String writeLog(String logfile,boolean append){
-    if( logBuffer==null || logBuffer.length()<=0 )
-      return "No information in log buffer";
-
-    FileOutputStream fout=null;
-
-    try{
-      fout=new FileOutputStream(logfile,append);
-      fout.write(logBuffer.toString().getBytes());
-      fout.flush();
-    }catch(IOException e){
-      return e.getMessage();
-    }finally{
-      if(fout!=null){
-        try{
-          fout.close();
-        }catch(IOException e){
-          // let it drop on the floor
-        }
-      }
-    }
-
-    return null;
-  }
-
 
   /**
    * This method integrates the peak by looking at a rectangular "shoebox"
@@ -1177,28 +1194,46 @@ public class Integrate_new extends GenericTOF_SCD{
      int minZ = 0;
      int maxZ = ds.getData_entry(ids[1][1]).getY_values().length - 1; 
      if ( cenZ + timeZrange[0] < minZ )  // too close to time channel 0
+     {
+       peak.reflag(0);
        return;                   
+     }
   
      if ( cenZ + timeZrange[1] > maxZ )  // too close to max time channel
-       return;
+     {
+       peak.reflag(0);
+       return;                   
+     }
 
      int minX = 1;                           // in ids[][] the first index
      int maxX = ids.length-1;                // is the column (i.e. X) index
 
      if ( cenX + colXrange[0] < minX + 1 )
-       return;            
+     {
+       peak.reflag(0);
+       return;                   
+     }
      
      if ( cenX + colXrange[1] > maxX - 1 )
-       return;
+     {
+       peak.reflag(0);
+       return;                   
+     }
 
      int minY = 1;                           // in ids[][] the second index
      int maxY = ids[1].length-1;             // is the row (i.e. Y) index
 
      if ( cenY + rowYrange[0] < minY + 1 )
-       return;            
+     {
+       peak.reflag(0);
+       return;                   
+     }
      
      if ( cenY + rowYrange[1] > maxY - 1 )
-       return;
+     {
+       peak.reflag(0);
+       return;                   
+     }
 
      addLogHeader( log, peak );
                                              // size of peak "shoebox"
@@ -1268,7 +1303,7 @@ public class Integrate_new extends GenericTOF_SCD{
        slice_sigI = (float)Math.sqrt(p_sig_plus_back + ratio * ratio * border);
 
        totI += slice_I;
-       totSigI = (float)Math.sqrt( slice_sigI * slice_sigI + totSigI * totSigI );
+       totSigI = (float)Math.sqrt( slice_sigI * slice_sigI + totSigI * totSigI);
 
        addLogSlice( log, 
                     k-cenZ, k, 
@@ -1279,6 +1314,8 @@ public class Integrate_new extends GenericTOF_SCD{
 
      peak.inti( totI );
      peak.sigi( totSigI );
+     int ipkobs = (int)getObs( ds, ids[cenX][cenY], cenZ );
+     peak.ipkobs( ipkobs );
 
      addLogPeakSummary( log, totI, totSigI );
    }
@@ -1853,6 +1890,7 @@ public class Integrate_new extends GenericTOF_SCD{
         for( int k=0 ; k<2 ; k++ ){
           peak=pkfac.getPixelInstance(x_lim[i],y_lim[j],z_lim[k],
                                       time[k][0],time[k][1]);
+          System.out.println(peak);
           real[0][i+2*j+4*k]=peak.xcm();
           real[1][i+2*j+4*k]=peak.ycm();
           real[2][i+2*j+4*k]=peak.wl();
@@ -1903,6 +1941,14 @@ public class Integrate_new extends GenericTOF_SCD{
     float[][] time  = {{times.getX(z_lim[0]),times.getX(z_lim[0]+1)},
                        {times.getX(z_lim[1]-1),times.getX(z_lim[1])}};
 
+    System.out.println( "In minmaxhkl " );
+    System.out.println( "x_lims = " + x_lim[0] + " to " + x_lim[1] );
+    System.out.println( "y_lims = " + y_lim[0] + " to " + y_lim[1] );
+    System.out.println( "z_lims = " + z_lim[0] + " to " + z_lim[1] );
+    System.out.println( "time_lims = " + time[0][0] + " to " + time[0][1] );
+    System.out.println( "time_lims = " + time[1][0] + " to " + time[1][1] );
+
+
     // define a temporary peak that will be each of the corners
     Peak peak=null;
 
@@ -1941,6 +1987,13 @@ public class Integrate_new extends GenericTOF_SCD{
         hkl_lim[j][1]=Math.max(hkl_lim[j][1],hkl[j][i]);
       }
     }
+                        // KLUGE SINCE THIS IS NOT WORKING FOR LANSCE
+    hkl_lim[0][0] = -25;
+    hkl_lim[0][1] =  25;
+    hkl_lim[1][0] = -25;
+    hkl_lim[1][1] =  25;
+    hkl_lim[2][0] = -25;
+    hkl_lim[2][1] =  25;
 
     return hkl_lim;
   }
@@ -1982,6 +2035,119 @@ public class Integrate_new extends GenericTOF_SCD{
 
     return false;
   }
+
+
+  /*
+   *  Go through the vector of peaks and remove any peak for which 
+   *  d < d_min.
+   */ 
+  private void RemovePeaksWithSmall_d( Vector  peaks, 
+                                       float   d_min, 
+                                       DataSet ds, 
+                                       int     detnum )
+  {
+    if ( DEBUG )
+    {
+      System.out.println("Processing DataSet    " + ds );
+      System.out.println("Processing detector # " + detnum );
+    }
+    UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, detnum );
+    if ( grid != null )
+    {
+      if ( DEBUG )
+        System.out.println("Found grid for detector # " + detnum );
+      boolean keep_peak[] = new boolean[ peaks.size() ];
+      int     num_kept = 0;
+      for( int i = 0; i < peaks.size(); i++ )    // first find out which to 
+      {                                          // keep
+        Peak my_peak = (Peak)peaks.elementAt(i);
+        if( peak_d_OK( my_peak, d_min, grid ) )
+        {
+          keep_peak[i] = true;
+          num_kept++;
+        }
+        else
+          keep_peak[i] = false;
+      }
+
+      if ( d_min > 0 )
+        SharedData.addmsg("Keeping " + num_kept + " of " + peaks.size() +
+                          " for detector " + detnum + " DataSet " + ds );
+
+      if ( num_kept < peaks.size() )             // copy over the peaks we kept
+      {
+        Peak kept_peaks[] = new Peak[ num_kept ];
+        int  index = 0;
+        for ( int i = 0; i < keep_peak.length; i++ )
+          if ( keep_peak[i] )
+          {
+            kept_peaks[index] = (Peak)peaks.elementAt(i);
+            index++;
+          }
+        peaks.clear();
+        peaks.ensureCapacity( num_kept );
+        for ( int i = 0; i < kept_peaks.length; i++ )
+          peaks.addElement( kept_peaks[i] );
+      }
+
+    }
+    else
+      SharedData.addmsg("WARNING: DataGrid not found in Integrate " +
+                        "ds = " + ds + "Detector = " + detnum );
+   }
+
+
+  /**
+   *  Check whether or not the "d" for this peak is less than a 
+   *  specified d_min.  
+   */
+  private boolean peak_d_OK( Peak        peak,
+                             float       d_min, 
+                             UniformGrid grid  )
+  {
+    int row     = Math.round( peak.y() );
+    int col     = Math.round( peak.x() ); 
+    int channel = Math.round( peak.z() );
+
+    Data d = grid.getData_entry(row,col);
+    if ( d == null )                        // can't check d_min, so keep peak
+      return true;
+
+    float initial_path;
+    Attribute attr = d.getAttribute(Attribute.INITIAL_PATH);
+    if ( attr != null )
+      initial_path = (float)attr.getNumericValue();
+    else
+      return true;
+
+    Vector3D  position_vec = grid.position( row, col );
+    float total_path = initial_path + position_vec.length();
+
+    float t0 = 0;
+    attr = d.getAttribute(Attribute.T0_SHIFT);
+    if ( attr != null )
+      t0 = (float)attr.getNumericValue();
+
+    XScale xscale = d.getX_scale();
+    float tof = xscale.getX( channel ) + t0;
+
+    DetectorPosition position = new DetectorPosition( position_vec );
+    float angle = position.getScatteringAngle();
+
+    float d_spacing = tof_calc.DSpacing( angle, total_path, tof );
+    if ( DEBUG )
+      System.out.println("seqnum " + peak.seqnum() + 
+                         "row  = " + row + 
+                         "col  = " + col +
+                         "chan = " + channel +
+                         "d    = " + d_spacing ); 
+
+    if ( d_spacing < d_min )
+      return false;
+    else
+      return true;
+  }
+
 
   /**
    * Determine the observed intensity of the peak at its (rounded)
@@ -2052,7 +2218,7 @@ public class Integrate_new extends GenericTOF_SCD{
     return bounds;
   }
 
-  /* -------------------------------  -------------------------------- */ 
+  /* ------------------------------- clone -------------------------------- */ 
   /** 
    *  Creates a clone of this operator.
    */
