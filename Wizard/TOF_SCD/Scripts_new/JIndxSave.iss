@@ -32,7 +32,7 @@ if logfile
    Display "Save the Status pane"
    Display V
 endif
-CloseLog()
+
 return "Finished"
   
 
