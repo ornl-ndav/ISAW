@@ -30,6 +30,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2006/01/18 21:40:23  dennis
+ * Switched default intervals around peak centers back to original
+ * total length of 5.
+ * Added informational print out of the peak algorithm selected.
+ *
  * Revision 1.3  2006/01/18 00:23:59  dennis
  * Workable adaptation of IPNS SCD integrate routine to LANSCE SCD.
  * Lowered dependence on Peter's Peak object, that is IPNS specific.
@@ -449,8 +454,7 @@ public class Integrate_new extends GenericTOF_SCD{
     addParameter(clpg);
 
     // parameter(4)
-//    addParameter(new IntArrayPG("Time Slice Range","-1:3"));
-    addParameter(new IntArrayPG("Time Slice Range","-2:4"));   // #####
+    addParameter(new IntArrayPG("Time Slice Range","-1:3"));
 
     // parameter(5)
     addParameter(new IntegerPG("Increase Slice Size by",0));
@@ -476,12 +480,10 @@ public class Integrate_new extends GenericTOF_SCD{
     addParameter(clPG);
 
     // parameter(10)
-//    addParameter(new IntArrayPG("Box Delta x (col) Range","-2:2"));
-    addParameter(new IntArrayPG("Box Delta x (col) Range","-3:3"));  // #####
+    addParameter(new IntArrayPG("Box Delta x (col) Range","-2:2"));
 
     // parameter(11)
-//    addParameter(new IntArrayPG("Box Delta y (row) Range","-2:2"));
-    addParameter(new IntArrayPG("Box Delta y (row) Range","-3:3"));  // ####
+    addParameter(new IntArrayPG("Box Delta y (row) Range","-2:2"));
   }
   
   /**
@@ -895,14 +897,14 @@ public class Integrate_new extends GenericTOF_SCD{
     // determine the detector limits in hkl
     int[][] hkl_lim=minmaxhkl(pkfac, ids, times);
     float[][] real_lim=minmaxreal(pkfac, ids, times);
-
+/*
     System.out.println("h limit from " +hkl_lim[0][0]+ " to " + hkl_lim[0][1] );
     System.out.println("k limit from " +hkl_lim[1][0]+ " to " + hkl_lim[1][1] );
     System.out.println("l limit from " +hkl_lim[2][0]+ " to " + hkl_lim[2][1] );
     System.out.println("real from " +real_lim[0][0]+ " to " + real_lim[0][1] );
     System.out.println("real from " +real_lim[1][0]+ " to " + real_lim[1][1] );
     System.out.println("real from " +real_lim[2][0]+ " to " + real_lim[2][1] );
-
+*/
     // add the limits to the logBuffer
     logBuffer.append("---------- LIMITS\n");
     logBuffer.append("min hkl,  max hkl : "+hkl_lim[0][0]+" "+hkl_lim[1][0]
@@ -1019,6 +1021,8 @@ public class Integrate_new extends GenericTOF_SCD{
     System.out.println("peak x,y,z = " + peak.x() + ", " + peak.y() + ", " 
                                        + peak.z() );
 
+    System.out.println("Integration Method: " + PeakAlg );
+
     // integrate the peaks
     for( int i=peaks.size()-1 ; i>=0 ; i-- )
     {
@@ -1038,12 +1042,12 @@ public class Integrate_new extends GenericTOF_SCD{
       }
       else                                      // integrate but don't log
       {
-        if ( PeakAlg.equals("Shoe Box") )
+        if ( PeakAlg.equals( SHOE_BOX ) )
           integrateShoebox( (Peak)peaks.elementAt(i),
                              ds, ids,
                              colXrange, rowYrange, timeZrange,
                              null );
-        else if(PeakAlg.equals("MAXItoSIGI"))
+        else if(PeakAlg.equals(NEW_INTEGRATE))
           integratePeak((Peak)peaks.elementAt(i),ds,ids,timeZrange,incrSlice,
                         null);
         else
@@ -1890,7 +1894,7 @@ public class Integrate_new extends GenericTOF_SCD{
         for( int k=0 ; k<2 ; k++ ){
           peak=pkfac.getPixelInstance(x_lim[i],y_lim[j],z_lim[k],
                                       time[k][0],time[k][1]);
-          System.out.println(peak);
+//          System.out.println(peak);
           real[0][i+2*j+4*k]=peak.xcm();
           real[1][i+2*j+4*k]=peak.ycm();
           real[2][i+2*j+4*k]=peak.wl();
@@ -1940,14 +1944,14 @@ public class Integrate_new extends GenericTOF_SCD{
     int[]     z_lim ={0,times.getNum_x()-1};
     float[][] time  = {{times.getX(z_lim[0]),times.getX(z_lim[0]+1)},
                        {times.getX(z_lim[1]-1),times.getX(z_lim[1])}};
-
+/*
     System.out.println( "In minmaxhkl " );
     System.out.println( "x_lims = " + x_lim[0] + " to " + x_lim[1] );
     System.out.println( "y_lims = " + y_lim[0] + " to " + y_lim[1] );
     System.out.println( "z_lims = " + z_lim[0] + " to " + z_lim[1] );
     System.out.println( "time_lims = " + time[0][0] + " to " + time[0][1] );
     System.out.println( "time_lims = " + time[1][0] + " to " + time[1][1] );
-
+*/
 
     // define a temporary peak that will be each of the corners
     Peak peak=null;
