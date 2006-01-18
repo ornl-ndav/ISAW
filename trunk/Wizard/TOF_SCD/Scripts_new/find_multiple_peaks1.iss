@@ -61,6 +61,7 @@ for i in run_numbers
     append=true
   endif
 endfor
+
 Echo("--- find_multiple_peaks is done. ---")
 # show the peaks file
 ViewASCII(outpath&expname&".peaks")
@@ -69,4 +70,5 @@ Display("Peaks are listed in "&outpath&expname&".peaks")
 OpenLog(outpath&expname&".log")
 
 return peaks
+
 ExitDialog()
