@@ -34,6 +34,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/01/18 21:47:44  dennis
+ * Minor fix to format of help message.
+ * Switched from DOS to UNIX text.
+ *
  * Revision 1.5  2006/01/16 04:46:20  rmikk
  * Changed to use the changed constructor for Peak_new
  *
@@ -103,10 +107,9 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
        s.append( "@Uses the FindPeaks and CentroidPeaks operators to get " );
        s.append( "a Vector of Peak objects, then converts each to a Peak_new" );
        s.append( "entry ");
-       s.append( "@param DS the data set contianing the peak");
-       s.append( "@param moncount  The total counts on the Corresponding monitor");
-       s.append( " for the data set");
-         
+       s.append( "@param DS the data set contianing the peak");       
+       s.append( "@param moncount  The total counts on the Corresponding ");
+       s.append( "monitor for the data set");         
        s.append( "@param MaxNumPeaks The maximum number of peaks to fine");
        s.append( "@param MinPeakIntensity the minimum intensity for a peak");
        s.append( "@param MinTimeChannel The minimum time channel to use");
@@ -128,8 +131,8 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
   public Object calculate(  ) {
    try{
    
-     Object O = (new FindPeaks(DS, moncount,MaxNumPeaks ,MinPeakIntensity 
-                ,MinTimeChannel ,MaxTimeChannel,PixelRows)).getResult();
+     Object O = (new FindPeaks(DS, moncount,MaxNumPeaks, MinPeakIntensity,
+                     MinTimeChannel, MaxTimeChannel, PixelRows)).getResult();
     
      if( O instanceof ErrorString)
        return O;
