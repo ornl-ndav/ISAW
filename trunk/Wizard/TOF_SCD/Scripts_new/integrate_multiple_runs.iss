@@ -8,8 +8,8 @@
 #
 # Assumptions:
 #  - Data of interest is in histogram 2
-#  - The filename are a concatenation of the path, inst, run number and .FileExt
-#  - There is a "lsxxxx.mat" file for each xxxx run and an lsexpname.mat
+#  - The filename are a concatenation of the path, inst, run number and FileExt
+#  - There is a "ls[expname]xxxx.mat" file for each xxxx run and an ls[expname].mat
 
 $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
