@@ -54,19 +54,12 @@ public class DailyPeaksWizard_new extends Wizard
      ,{8,-1,-1,-1,5}  //calibFilename
      
      ,{-1,2,-1,5,-1}  //RestrRuns ????
-     ,{-1,4,-1,6,-1}  //Filename to save peaks to ??
+     ,{-1,4,-1,-1,-1}  //Filename to save peaks to ??
    
 
             };
 
-     int[][]ConstList ={
-        {}
-        ,{0}
-        ,{0,4}
-        ,{0,3,5,6,8}
-        ,{1,3,5,8,9}
-     };
-   public DailyPeaksWizard_new( ){
+       public DailyPeaksWizard_new( ){
         this( false);
       };
 
@@ -80,10 +73,11 @@ public class DailyPeaksWizard_new extends Wizard
      path += "Wizard/TOF_SCD/Scripts_new/";
 
      addForm( new ScriptForm(path+"find_multiple_peaks1.iss", new PlaceHolderPG("Peaks",null),new int[0]));
-     addForm( new ScriptForm(path+"JIndxSave1.iss", new ArrayPG("Result1",null),new int[0]));
-     addForm( new ScriptForm(  path+"LSqrs.iss",new ArrayPG( "Result",null ),ConstList[2]));
-     addForm( new ScriptForm(path+"JIndxSave2.iss"));
-     addForm( new ScriptForm(path+"integrate_multiple_runs.iss"));
+     addForm( new ScriptForm(path+"JIndxSave1.iss", new ArrayPG("Result1",null),new int[]{0}));
+     addForm( new ScriptForm(  path+"LSqrs.iss",new ArrayPG( "Result",null ),new int[]{0,1,2,4}));
+     addForm( new ScriptForm(path+"JIndxSave2.iss", new PlaceHolderPG("Peaks",null),new int[]{0,3,4,8}));
+     addForm( new ScriptForm(path+"integrate_multiple_runs.iss", new StringPG("Result",""),
+                   new int[]{0,1,2,3,5,8,9}));
      linkFormParameters( ParamTable );
     String S="" ;
     S+="This wizard does the following is the replacement for the";
