@@ -3,8 +3,8 @@
 # status pane. This inputs the orientation matrix from a file
 #@param  peaks   the Peaks Vector
 #@param Delta  the error in h,k,and l's to allow
-#@param  UseLsqMats   Use Matrices from Least Square 
-#@param  OrientMatFile   the orientation matrix
+#@param  UseLsqMats   if true indexes using each runs orientation matrix 
+#                     otherwise  indexes peaks using the total orientation matrix
 #@param OrientFileNames  Matrix Files to Load
 #@param   RunNums      Run Numbers
 #@param RestrRuns    Run numbers to not include
