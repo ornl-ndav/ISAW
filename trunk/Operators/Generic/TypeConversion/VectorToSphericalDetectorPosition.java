@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/01/29 20:27:16  dennis
+ * Used dos2unix to convert to proper UNIX text files.
+ *
  * Revision 1.1  2005/11/21 17:54:42  dennis
  * Hidden operators to pack and unpack DetectorPosition objects.
  * (Kurtiss Olson)
