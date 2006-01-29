@@ -30,6 +30,16 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2006/01/29 21:35:39  dennis
+ * Added test code to main program to test the methods:
+ *   DetectorPositionToVector()
+ *   VectorToSphericalDetectorPosition()
+ *   VectorToCartesianDetectorPosition()
+ *   VectorToCylindricalDetectorPosition()
+ * Fixed bugs in these methods.
+ * Fixed javadocs for these methods.
+ * This fixes the problem with DetectorPositionToVector() reported by Tom Worlton.
+ *
  * Revision 1.3  2005/11/21 17:44:56  dennis
  * Added Methods:
  *       DetectorPositionToVector(),
@@ -383,7 +393,7 @@ public class Convert
    * @param  det_position  A DetectorPosition object. 
    *
    * @return  A Vector containing sphere radius, azimuth angle, polar angle,
-   * 		  x, y, z, cylinder radius, cylinder azimuth angle, cylinder z, 
+   *          x, y, z, cylinder radius, cylinder azimuth angle, cylinder z, 
    *          and the scattering angle in that order.  If something other 
    *          than a DetectorPosition object is passed in, an ErrorString will
    *          be returned.
@@ -394,7 +404,7 @@ public class Convert
       return new ErrorString( "Parameter was null in "
                               + "DetectorPositionToVector" );
 
-    if ( !(det_position instanceof DetectorPosition) ||
+    if ( !(det_position instanceof DetectorPosition) && 
          !(det_position instanceof DetectorPosition_d)) 
       return new ErrorString("Argument MUST be of type DetectorPosition");	
 
@@ -454,13 +464,14 @@ public class Convert
   
   /* ------------------ VectorToSphericalDetectorPostion --------------- */
   /**
-   * Convert the value from a Vector containing numeric values into a 
-   * DetectorPosition object.  
+   * Construct a DetectorPosition object, using Spherical coordinates 
+   * stored in a Vector with three entries.  
    *
    * @param  det_vector  A Vector containing sph_radius, azimuth angle, and 
-   *                     polar angle for the spherical coordinates.
+   *                     polar angle of a point.  The radius is assumed
+   *                     to be in meters, and the angles in radians.
    *
-   * @return A det_vector object, with values filled from the values in the
+   * @return A DetectorPoition object, with values filled from the values in the
    *         Vector.  If the Vector values passed in are not numeric values, 
    *         then an ErrorString will be returned.
    */
@@ -508,14 +519,15 @@ public class Convert
   
   /* ------------------ VectorToCartesianDetectorPostion --------------- */
   /**
-   * Convert the values in a Vector containing numeric values into a 
-   * DetectorPosition object.  
+   * Construct a DetectorPosition object, using cartesian x, y, z coordinates 
+   * stored in a Vector with three entries.  
    *
-   * @param  det_vector  A Vector containing x, y, and z for the cartesian 
-   *                     coordinates.
+   * @param  det_vector  A Vector containing the x, y, and z values for the 
+   *                     DetectorPosition.  The lengths are assumed to be
+   *                     in meters.
    *
-   * @return A det_vector object, with values filled from the values in the
-   *         Vector.  If the Vector values passed in are not numeric values, 
+   * @return A DetectorPosition object, with values filled from the values in 
+   *         the Vector. If the Vector values passed in are not numeric values, 
    *         then an ErrorString will be returned.
    */
   public static Object VectorToCartesianDetectorPostion( Object det_vector )
@@ -546,14 +558,14 @@ public class Convert
     if(isDouble)
     {	    
       Position3D_d pos = new Position3D_d();
-      pos.setSphericalCoords(x, y, z);
+      pos.setCartesianCoords(x, y, z);
 
       return new DetectorPosition_d( pos );
     }
     else
     {	    
       Position3D pos = new Position3D();
-      pos.setSphericalCoords((float)x, (float)y, (float)z);
+      pos.setCartesianCoords((float)x, (float)y, (float)z);
 
       return new DetectorPosition( pos );    	
     }
@@ -562,13 +574,14 @@ public class Convert
   
   /* ---------------- VectorToCylindricalDetectorPostion -------------- */
   /**
-   * Convert the values from a Vector containing numeric values into a 
-   * DetectorPosition object.  
+   * Construct a DetectorPosition object, using Cylindrical coordinates 
+   * stored in a Vector with three entries.  
    *
-   * @param  det_vector  A Vector containing cylinder radius, azimuth angle,
-   *                     cylinder z for the cylindrical coordinates.
+   * @param  det_vector  A Vector containing the radius, azimuthal angle,
+   *                     and height z of a point.  The lengths are assumed
+   *                     to be in meters, and the angles in radians.  
    *
-   * @return A det_vector object, with values filled from the values in the
+   * @return A DetectorPosition object with values filled from the values in the
    *         Vector.  If the Vector values passed in are not numeric values, 
    *         then an ErrorString will be returned.
    */
@@ -600,16 +613,16 @@ public class Convert
     if(isDouble)
     {	    
       Position3D_d pos = new Position3D_d();
-      pos.setSphericalCoords(cylinderRadius, azimuthAngle, z);
+      pos.setCylindricalCoords(cylinderRadius, azimuthAngle, z);
 
       return new DetectorPosition_d( pos );
     }
     else
     {	    
        Position3D pos = new Position3D();
-       pos.setSphericalCoords( (float)cylinderRadius, 
-                               (float)azimuthAngle, 
-                               (float)z);
+       pos.setCylindricalCoords( (float)cylinderRadius, 
+                                 (float)azimuthAngle, 
+                                 (float)z);
 	
       return new DetectorPosition( pos );    	
     }
@@ -709,6 +722,8 @@ public class Convert
    */
   public static void main( String args[] )
   {
+                                           // Test IntListToVector for String
+
     System.out.println("Converting String 1:5,10,20:25 to vector:" );
     Object result = IntListToVector( "1:5,10,20:25" );
     if ( result instanceof ErrorString )
@@ -717,6 +732,7 @@ public class Convert
       for ( int i = 0; i < ((Vector)result).size(); i++ )
         System.out.println( (((Vector)result).elementAt(i) ) );
 
+                                           // Test IntListToVector for int[]
 
     System.out.println("Converting array 3,4,5,-10,-20,-20,3,4,3 to vector:" );
     int list_1[] = { 3,4,5,-10,-20,-20,3,4,3 };
@@ -727,6 +743,8 @@ public class Convert
       for ( int i = 0; i < ((Vector)result).size(); i++ )
         System.out.println( (((Vector)result).elementAt(i) ) );
 
+                                            // Test IntListToVector for float
+
     System.out.println("Converting Float to vector");
     result = IntListToVector( new Float(10) );
     if ( result instanceof ErrorString )
@@ -735,10 +753,14 @@ public class Convert
       for ( int i = 0; i < ((Vector)result).size(); i++ )
         System.out.println( (((Vector)result).elementAt(i) ) );
 
+                                            // Test GsasCalibToVector
+
     GsasCalib gsas_calib = new GsasCalib( 1, 2, 3 );
     Vector vector = (Vector)GsasCalibToVector( gsas_calib );
     gsas_calib = (GsasCalib)VectorToGsasCalib( vector );
     System.out.println( "GsasCalib should be 1, 2, 3 " + gsas_calib );
+
+                                            // Test VectorToGsasCalib(
 
     vector.clear();
     vector.add( new Integer(4) );
@@ -747,28 +769,79 @@ public class Convert
     gsas_calib = (GsasCalib)VectorToGsasCalib( vector );
     System.out.println( "GsasCalib should be 4, 5.3, 6.8 " + gsas_calib );
 
+                                            // Test VectorToIntListString
+
     System.out.println( "VectorToIntListString should be 4:5,7 " +
                          VectorToIntListString( vector ) );
+
+                                             // Test VectorTo_intArray
 
     int int_arr[] = (int[])VectorTo_intArray( vector );
     System.out.println( "VectorTo_intArray....." );
     for ( int i = 0; i < int_arr.length; i++ )
       System.out.println( "int val = " + int_arr[i] );
 
+                                             // Test intArrayToVector
+
     System.out.println("Converted int array to Vector ");
     Vector int_vec = (Vector)intArrayToVector( int_arr );
     for ( int i = 0; i < int_vec.size(); i++ )
       System.out.println( int_vec.elementAt(i) );
+
+                                             // Test VectorTo_floatArray
 
     float float_arr[] = (float[])VectorTo_floatArray( vector );
     System.out.println( "VectorTo_floatArray....." );
     for ( int i = 0; i < float_arr.length; i++ )
       System.out.println( "float val = " + float_arr[i] );
 
+                                             // Test floatArrayToVector
+
     System.out.println("Converted float array to Vector ");
     Vector float_vec = (Vector)floatArrayToVector( float_arr );
     for ( int i = 0; i < float_vec.size(); i++ )
       System.out.println( float_vec.elementAt(i) );
+
+                                             // Test DetectorPositionToVector
+
+    DetectorPosition det_pos = new DetectorPosition( new Vector3D(1, 2, 3) );
+    System.out.println("Detector Position = " + det_pos );
+
+    System.out.println("Coordinates are " );
+    result = DetectorPositionToVector( det_pos );
+    if ( result instanceof Vector )
+    {
+      vector = (Vector)result;
+      for ( int i = 0; i < vector.size(); i++ )
+        System.out.println("i = " + i + ",  " + vector.elementAt(i) );
+    }
+    else
+    System.out.println( "Returned Object = " + result );
+
+                                     // Test Spherical to DetectorPosition
+    Vector coords = new Vector();
+    coords.add( new Float( 3.7416575f ) );
+    coords.add( new Float( 1.1071488f ) );
+    coords.add( new Float( 0.6405223f ) );
+    det_pos = (DetectorPosition)VectorToSphericalDetectorPostion( coords );
+    System.out.println("Sphereical:Pos = " + det_pos );
+
+                                         // Test Cartesian to DetectorPosition
+    coords = new Vector();
+    coords.add( new Float( 1 ) );
+    coords.add( new Float( 2 ) );
+    coords.add( new Float( 3 ) );
+    det_pos = (DetectorPosition)VectorToCartesianDetectorPostion( coords );
+    System.out.println("Cartesian:Pos = " + det_pos );
+
+                                        // Test Cylindrical to DetectorPosition
+    coords = new Vector();
+    coords.add( new Float( 2.236068f ) );
+    coords.add( new Float( 1.1071488f ) );
+    coords.add( new Float( 3) );
+    det_pos = (DetectorPosition)VectorToCylindricalDetectorPostion( coords );
+    System.out.println("Cylindrical:Pos = " + det_pos );
+ 
   }
 
 }
