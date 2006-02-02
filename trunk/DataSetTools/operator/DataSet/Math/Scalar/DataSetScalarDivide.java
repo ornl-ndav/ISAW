@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2006/02/02 21:46:09  dennis
+ *  Corrected documentation to indicate that a String indicating
+ *  successful completion of the operator is returned if the operator
+ *  completed normally AND create new DataSet was not selected.
+ *
  *  Revision 1.6  2004/01/24 19:39:49  bouzekc
  *  Removed unused variables from main().
  *
@@ -120,38 +125,40 @@ public class DataSetScalarDivide extends    ScalarOp
   {
     StringBuffer Res = new StringBuffer();
     
-    Res.append("@overview This operator divides all data objects in a DataSet");
+    Res.append("@overview This operator divides all data Blocks in a DataSet");
     Res.append(" by a constant. If the constant equals zero an ErrorString is");
     Res.append(" returned. When the operation is successful and a new DataSet");
-    Res.append(" is created, a reference to this new DataSet is returned. If ");
-    Res.append("a new DataSet is NOT created, the result is stored in the ");
-    Res.append("current DataSet and a reference to the current DataSet is ");
-    Res.append("returned. If the operation is NOT successful, an ErrorString ");
-    Res.append("is returned.");
-     
-    Res.append("@algorithm If make a new DataSet is selected, construct a new");
-    Res.append(" DataSet with the same title, units and operations as the ");
-    Res.append("current DataSet, divide each value of the current DataSet ");
-    Res.append("by the constant and store in the new DataSet. If it is not ");
-    Res.append("selected, divide each value of the current DataSet by the ");
-    Res.append("constant value and replace the value in the current DataSet ");
-    Res.append("with it.");
-    
+    Res.append(" is created, a reference to this new DataSet is returned. ");
+
+    Res.append("If a new DataSet is NOT created, the result is ");
+    Res.append("stored in the current DataSet and a String indicating the ");
+    Res.append("operation was carried out successfully is returned.  ");
+    Res.append("If an error occurs and the operation is NOT successful, an ");
+    Res.append("ErrorString is returned.");
+  
+    Res.append("@algorithm If make a new DataSet is selected, construct a ");
+    Res.append("new DataSet with the same title, units and operations as the ");
+    Res.append("current DataSet, divide the constant value into each Data ");
+    Res.append("block of the DataSet and store in the new DataSet.  If it is ");
+    Res.append("not selected, the constant value will be divided into ");
+    Res.append("each value of the current DataSet and replace the value in ");
+    Res.append("the current DataSet.");
+
     Res.append("@param ds - the current DataSet on which the operator will be");
     Res.append(" performed.");
-    Res.append("@param value - the value to divide each point in each data ");
-    Res.append("block of the current DataSet by.");
+    Res.append("@param value - the value to divide into each point in each ");
+    Res.append("Data block of the current DataSet.");
     Res.append("@param make_new_ds - a boolean value which determines if a ");
     Res.append("new DataSet is created or not.");
     
-    Res.append("@return returns a new DataSet or an ErrorString.");
-    Res.append("If the value to divide by equals zero an ErrorString will be ");
-    Res.append("returned. If \"create a new DataSet\" is selected and the ");
-    Res.append("operation is successful, a reference to a new DataSet will be");
-    Res.append(" returned. If the operation is successful without creating a ");
-    Res.append("new DataSet, a reference to the current DataSet will be ");
-    Res.append("returned. If the operation is not successful, an ErrorString ");
-    Res.append("will be returned");
+    Res.append("@return Returns a new DataSet, an ErrorString or a String.  ");
+    Res.append("If \"create a new DataSet\" is selected and operation is ");
+    Res.append("successful, a reference to a new DataSet will be returned. ");
+    Res.append("If the operation is successful without creating a new ");
+    Res.append("DataSet, a String indicating success will be returned.  ");
+    Res.append("If the operation is not successful, an ErrorString will be ");
+    Res.append("returned.");
+
     
     Res.append("@error \"ERROR: unsupported operation in DoDSScalarOp\"");
     Res.append("@error \"ERROR: Division by zero in scalar divide\"");
@@ -189,15 +196,13 @@ public class DataSetScalarDivide extends    ScalarOp
 
 
   /* ---------------------------- getResult ------------------------------- */
-/**
-   * @return returns a DataSet or an Error String
+  /**
+   * @return returns a DataSet a String, or an Error String.
    * The return object may be a new DataSet containing the current DataSet 
    * values divided by the constant value if "Create a new DataSet" is 
-   * selected, the current data set divided by the constant value if 
-   * "Create a new DataSet" was not selected, or an ErrorString if the 
-   * operation was invalid ("Error: unsupported operation in DoDSScalarOp") 
-   * or a division by zero was attempted ("ERROR: Division by zero in scalar
-   * divide").
+   * selected.  If a new DataSet is not created a String will be returned
+   * indicating successful completion of the operation, if no error occurs,
+   * or an ErrorString will be returned, if an error does occur.
    */
   public Object getResult()
   {
