@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2006/02/02 21:46:09  dennis
+ *  Corrected documentation to indicate that a String indicating
+ *  successful completion of the operator is returned if the operator
+ *  completed normally AND create new DataSet was not selected.
+ *
  *  Revision 1.6  2004/01/24 19:39:49  bouzekc
  *  Removed unused variables from main().
  *
@@ -120,35 +125,38 @@ public class DataSetScalarMultiply extends    ScalarOp
   {
     StringBuffer Res = new StringBuffer();
     
-    Res.append("@overview This operator multiplies all data objects in a ");
+    Res.append("@overview This operator multiplies all Data blocks in a ");
     Res.append("DataSet by a constant. When the operation is successful and a");
     Res.append(" new DataSet is created, a reference to this new DataSet is ");
-    Res.append("returned. If a new DataSet is NOT created, the result is ");
-    Res.append("stored in the current DataSet and a reference to the current ");
-    Res.append("DataSet is returned. If the operation is NOT successful, an ");
-    Res.append("error string is returned.");
-     
-    Res.append("@algorithm If make a new DataSet is selected, construct a new");
-    Res.append(" DataSet with the same title, units and operations as the ");
-    Res.append("current DataSet, multiply each value of the current DataSet ");
-    Res.append("by the constant and store in the new DataSet. If it is not ");
-    Res.append("selected, multiply each value of the current DataSet by the ");
-    Res.append("constant value and replace the value in the current DataSet ");
-    Res.append("with it.");
-    
+    Res.append("returned.  If a new DataSet is NOT created, the result is ");
+    Res.append("stored in the current DataSet and a String indicating the ");
+    Res.append("operation was carried out successfully is returned.  ");
+    Res.append("If an error occurs and the operation is NOT successful, an ");
+    Res.append("ErrorString is returned.");
+  
+    Res.append("@algorithm If make a new DataSet is selected, construct a ");
+    Res.append("new DataSet with the same title, units and operations as the ");
+    Res.append("current DataSet, multiply the constant value times each value");
+    Res.append(" of the current DataSet and store in the new DataSet. ");
+    Res.append("If it is ");
+    Res.append("not selected, the constant value will be multiplied times ");
+    Res.append("each value of the current DataSet and replace the value in ");
+    Res.append("the current DataSet.");
+
     Res.append("@param ds - the current DataSet on which the operator will be");
     Res.append(" performed.");
-    Res.append("@param value - the value to multiply each point in each data ");
-    Res.append("block of the current DataSet by.");
+    Res.append("@param value - the value to multiply times each point in each");
+    Res.append(" Data block of the current DataSet.");
     Res.append("@param make_new_ds - a boolean value which determines if a ");
     Res.append("new DataSet is created or not.");
     
-    Res.append("@return returns a new DataSet or an ErrorString.");
+    Res.append("@return Returns a new DataSet, an ErrorString or a String.");
     Res.append("If \"create a new DataSet\" is selected and operation is ");
-    Res.append("successful, a reference to a new DataSet will be returned. If");
-    Res.append(" the operation is successful without creating a new DataSet, ");
-    Res.append("a reference to the current DataSet will be returned. If the ");
-    Res.append("operation is not successful, an ErrorString will be returned");
+    Res.append("successful, a reference to a new DataSet will be returned. ");
+    Res.append("If the operation is successful without creating a new ");
+    Res.append("DataSet, a String indicating success will be returned.  ");
+    Res.append("If the operation is not successful, an ErrorString will be ");
+    Res.append("returned.");
     
     Res.append("@error \"ERROR: unsupported operation in DoDSScalarOp\"");
     
@@ -185,12 +193,12 @@ public class DataSetScalarMultiply extends    ScalarOp
 
   /* ---------------------------- getResult ------------------------------- */
  /**
-   * @return returns a DataSet or an Error String
+   * @return returns a DataSet an ErrorString or a String.
    * The return object may be a new DataSet containing the current DataSet 
    * values multiplied by the constant value if "Create a new DataSet" is 
-   * selected, the current data set multiplied by the constant value if 
-   * "Create a new DataSet" was not selected, or an ErrorString if the 
-   * operation was invalid ("Error: unsupported operation in DoDSScalarOp").
+   * selected.  If a new DataSet is not created a String will be returned
+   * indicating successful completion of the operation, if no error occurs,
+   * or an ErrorString will be returned, if an error does occur.
    */
   public Object getResult()
   {
