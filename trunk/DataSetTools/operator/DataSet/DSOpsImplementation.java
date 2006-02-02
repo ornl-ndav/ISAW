@@ -34,6 +34,10 @@
  * corresponding operators.
  *
  *  $Log$
+ *  Revision 1.7  2006/02/02 22:58:38  dennis
+ *  Added method DoDataBlockScalarOp() that will add, subtract,
+ *  multiply or divide a scalar with a specified Data block.
+ *
  *  Revision 1.6  2004/03/15 06:10:41  dennis
  *  Removed unused import statements.
  *
@@ -306,7 +310,7 @@ public final class DSOpsImplementation implements Serializable
   /**
    *  Carry out the specified scalar operation on the given DataSet. This
    *  supports the scalar operations of Add, Subtract, Multiply and Divide
-   *  by scalars.
+   *  of an entire DataSet by a scalar.
    *
    *  @param  op   The operation to carry out.  This must be one of
    *                  DataSetScalarAdd,
@@ -314,12 +318,14 @@ public final class DSOpsImplementation implements Serializable
    *                  DataSetScalarMultiply,
    *                  DataSetScalarDivide.
    *               There must be two parameters to the operator, the scalar  
-   *               operand and a boolean flag indicating wheter or not
+   *               operand and a boolean flag indicating whether or not
    *               to create a new DataSet.  All parameters to the operation 
    *               must have been given values before calling this method.
    *
    *  @return An object containing the result of the operation.  This object
-   *          may be a new DataSet and ErrorString, or a String.
+   *          will be a new DataSet, if one is created, an ErrorString, if
+   *          an error occurs, or a String indicating the operation completed
+   *          successfully.
    */
 
   public static Object DoDSScalarOp( DataSetOperator op )
@@ -327,7 +333,7 @@ public final class DSOpsImplementation implements Serializable
                                                    // get the current data set
    DataSet ds  = op.getDataSet();
                                                    // get the parameters
-   float   value       = ((Float)(op.getParameter(0).getValue()) ).floatValue();
+   float   value       = ((Float)(op.getParameter(0).getValue())).floatValue();
    boolean make_new_ds =((Boolean)op.getParameter(1).getValue()).booleanValue();
 
    String op_name = op.getCommand();
@@ -387,6 +393,90 @@ public final class DSOpsImplementation implements Serializable
       return new String( op_name + " with value " + value + " DONE" );
     } 
    }
+
+
+  /* ---------------------- DoDataBlockScalarOp --------------------------- */
+  /**
+   *  Carry out the specified scalar operation on the specified Data block
+   *  of the DataSet. This supports the scalar operations of Add, Subtract, 
+   *  Multiply and Divide of one Data block by a scalar.
+   *
+   *  @param  op   The operation to carry out.  This must be one of
+   *                  DataBlockScalarAdd,
+   *                  DataBlockScalarSubtract,
+   *                  DataBlockScalarMultiply,
+   *                  DataBlockScalarDivide.
+   *               There must be three parameters to the operator, the scalar  
+   *               operand, the index of the Data block and a boolean flag 
+   *               indicating whether or not to create a new DataSet.  
+   *               All parameters to the operation must have been given 
+   *               values before calling this method.
+   *
+   *  @return An object containing the result of the operation.  This object
+   *          will be a new DataSet, if one is created, an ErrorString, if
+   *          an error occurs, or a String indicating the operation completed
+   *          successfully.
+   */
+
+  public static Object DoDataBlockScalarOp( DataSetOperator op )
+  {
+                                                   // get the current data set
+   DataSet ds  = op.getDataSet();
+                                                   // get the parameters
+   float   value       = ((Float)(op.getParameter(0).getValue())).floatValue();
+   int     index       = ((Integer)(op.getParameter(1).getValue())).intValue();
+   boolean make_new_ds =((Boolean)op.getParameter(2).getValue()).booleanValue();
+
+   String op_name = op.getCommand();
+
+   if ( op_name.equals( "Div" ) && value == 0 )
+     return new ErrorString(
+            "ERROR: Division by zero in Data block scalar Div" );
+
+   if ( index < 0 || index >= ds.getNum_entries() )
+     return new ErrorString( 
+            "ERROR: invalid index in Data block scalar " + op_name +
+            " index = " + index ); 
+
+   DataSet new_ds = null;       
+   if ( make_new_ds )              // make a clone and work with it, else just
+     new_ds = (DataSet)ds.clone(); // have new_ds point to the original ds
+   else
+     new_ds = ds;
+
+   Data data = ds.getData_entry( index );
+   Data new_data;
+                                       // carry out the operation, assuming
+                                       // zero error in the the numerical value.
+   if ( op_name.equals("Add") )
+     new_data = data.add( value, 0 );
+
+   else if ( op_name.equals("Sub") )
+     new_data = data.subtract( value, 0 );
+
+   else if ( op_name.equals( "Mult" ) )
+     new_data = data.multiply( value, 0 );
+
+   else if ( op_name.equals( "Div" ) )
+     new_data = data.divide( value, 0 );
+
+   else
+     return new ErrorString 
+            ("ERROR: unsupported operation in DoDataBlockScalarOp: " + op_name);
+
+   new_ds.replaceData_entry( new_data, index );
+   new_ds.addLog_entry( "Operation " + op_name + " with value " + value +
+                        " on Data index " + index );
+
+   if ( make_new_ds )
+     return new_ds;
+   else
+   {
+     ds.notifyIObservers( IObserver.DATA_CHANGED );
+     return new String( op_name + " Data block " + index + 
+                        " with value " + value + " DONE" );
+   }
+  }
 
 
   /* -------------------------- AddDataBlocks ---------------------------- */
