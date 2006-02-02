@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.52  2006/02/02 23:06:33  dennis
+ *  Now adds operators to add, subtract, multiply and divide
+ *  a specified Data block by a specified constant.
+ *
  *  Revision 1.51  2005/11/19 15:47:01  dennis
  *  Now adds ResampleOnGeometricProgression operator to DataSet.
  *
@@ -313,6 +317,11 @@ public class DataSetFactory implements Serializable
     ds.addOperator( new DataSetScalarSubtract() );
     ds.addOperator( new DataSetScalarMultiply() );
     ds.addOperator( new DataSetScalarDivide() );
+
+    ds.addOperator( new DataBlockScalarAdd() );
+    ds.addOperator( new DataBlockScalarSubtract() );
+    ds.addOperator( new DataBlockScalarMultiply() );
+    ds.addOperator( new DataBlockScalarDivide() );
 
     ds.addOperator( new DataSetAdd() );
     ds.addOperator( new DataSetSubtract() );
