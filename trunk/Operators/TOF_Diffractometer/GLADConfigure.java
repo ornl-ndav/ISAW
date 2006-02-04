@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *  
  * $Log$
+ * Revision 1.6  2006/02/04 02:51:35  taoj
+ * Added "isawMode" variable to toggle between using the operator GUI input and the configuration file entry for sample composition.
+ *
  * Revision 1.5  2005/12/15 20:52:56  dennis
  * Added tag for CVS logging so that future modifications can be tracked.
  *
@@ -66,6 +69,7 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
   public boolean hasFur = false;
   public boolean isFP = false;
   public boolean doDebug = false;
+  public int isawMode = 1;
 
   //~ Methods ******************************************************************
 
@@ -100,7 +104,7 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
     StringBuffer s = new StringBuffer( "" );
     s.append( "@overview This operator accepts a GLAD configuration file " );
     s.append( "in the format of Java program property file " );
-    s.append( "(for an example/template, see the \"gladprops.dat\" under /Databases " );
+    s.append( "(for an example/template, see the \"gladprops.dat\" under /InstrumentInfo/IPNS " );
     s.append( "subdirectory), parses, translates and stores the GLAD instrument and ");
     s.append( "experimental configuration information in a Java HashMap. ");
     s.append( "It also sets up one GLADScatter object for each experimental ");
@@ -143,10 +147,12 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
     props[1] = van;
     if (doDebug) van.printScatterInfo();
     
-    Object[] scainfo = GLADScatter.parseComposition(smpcomposition);
-    runinfo.ExpConfiguration.put("GLAD.EXP.SMP.SYMBOL", scainfo[0]);
-    runinfo.ExpConfiguration.put("GLAD.EXP.SMP.FORMULA", scainfo[1]);
-    runinfo.ExpConfiguration.put("GLAD.EXP.SMP.EFFDENSITY", new Float(smpdensity));
+    if (isawMode == 1) {
+      Object[] scainfo = GLADScatter.parseComposition(smpcomposition);
+      runinfo.ExpConfiguration.put("GLAD.EXP.SMP.SYMBOL", scainfo[0]);
+      runinfo.ExpConfiguration.put("GLAD.EXP.SMP.FORMULA", scainfo[1]);
+      runinfo.ExpConfiguration.put("GLAD.EXP.SMP.EFFDENSITY", new Float(smpdensity));      
+    }
     
     GLADScatter smp = new GLADScatter(runinfo, 1+iflag);
     smp.setMutTable();
