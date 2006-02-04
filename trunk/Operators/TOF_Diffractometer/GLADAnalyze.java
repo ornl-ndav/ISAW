@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2006/02/04 02:57:31  taoj
+ * Revision to handle the three annuli cases; Exception handling and error messaging for the rare cases that a dead detector list needs to updated based on an non-vanadium runfile.
+ *
  * Revision 1.6  2006/01/05 22:58:46  taoj
  * minor changes
  *
@@ -173,7 +176,7 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
     
     CylAbsTof abs_smp, abs_can = null;
     GLADScatter smprun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
-    GLADScatter canrun = null;   
+    GLADScatter canrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[3];   
 //    if( (imask & 1) == 1 && scattererm != 0.0f) smprun.scatterern = scattererm;
     if (smprun.abs_run == null) {
       abs_smp = new CylAbsTof(smprun);
@@ -183,14 +186,12 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
       System.out.println("Done.");
       
       if (imask >= 4) {
-        canrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[3]; 
         abs_can = new CylAbsTof(canrun);
         canrun.abs_run = abs_can;    
         System.out.println("Attenuation calculation for can...");
         abs_can.runAbsCorrection();
         System.out.println("Done.");
-      }      
-      
+      }            
     }    
     else {
       abs_smp = smprun.abs_run;
@@ -205,7 +206,7 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
     float[] qlist, y_vals_n, e_vals_n, mul, abs_s, abs_c = null;
     int istart, iend;
     if (ds.getX_label() != "Q") System.out.println("******ERROR******");
-    if ((imask & 1) == 1) System.out.println("\nSample calibration constant: "+smprun.scatterern+"\n");
+    if ((imask & 1) == 1) System.out.println("Sample effective density: "+smprun.effdensity+" Sample calibration constant: "+smprun.scatterern+"\n");
     for (int i = 0; i < ds.getNum_entries(); i++) {
       dt = ds.getData_entry(i);
       attr_list_d = dt.getAttributeList();
@@ -215,13 +216,17 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
       e_vals_n = dt.getErrors();
       istart = 0;
       iend = y_vals_n.length-1;
-    
-      while (y_vals_n[istart] == 0.0f) {
-        istart++;
-      }
-      while (y_vals_n[iend] == 0.0f) {
-        iend--;
-      }
+
+      try {
+        while (y_vals_n[istart] == 0.0f) istart++;  
+      } catch(IndexOutOfBoundsException e) {
+        e.printStackTrace();
+        System.out.println("!!!!!!Total number of counts is zero. This" +
+          " occurs in the rare case that a data group is alive with vanadium" +
+          " but goes dead with the current runfile/dataset. The dead detector" +
+          " list needs to be updated.!!!!!!");
+      }      
+      while (y_vals_n[iend] == 0.0f) iend--;
       
       for (int k = istart; k <= iend; k++){
         q = .5f*(qlist[k]+qlist[k+1]);
@@ -270,7 +275,7 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
                 System.out.println("\n"+"abnormal values: "+i+"\n");
               }*/
         }
-//            if (k == 0) System.out.println("i: "+i+" y_vals_n[0]: "+y_vals_n[k]);
+//            if (k == 0) System.out.println("i: "+i+" y_vals_n[k]: "+y_vals_n[k]);
       } 
     }
         
