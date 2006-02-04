@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2006/02/04 03:01:08  taoj
+ * Unit testing in the main() for a 3 annuli case. It is an equivalent of a corresponding data analysis script.
+ *
  * Revision 1.5  2005/10/27 17:57:21  taoj
  * new version
  *
@@ -206,6 +209,8 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
   }    
   
   public static void main(String[] args) {
+
+/*
     GLADConfigure testconf = new GLADConfigure();
     testconf.hasCan = false;
     DataSet runinfo = (DataSet)testconf.calculate(); 
@@ -258,7 +263,87 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
     testq2r.calculate();
     
     DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(nrm_smp, DataSetTools.viewer.IViewManager.IMAGE);
+*/
 //    DataSetTools.viewer.ViewManager nrm_van_view = new DataSetTools.viewer.ViewManager(nrm_van, DataSetTools.viewer.IViewManager.IMAGE);
+
+    GLADConfigure testconf = new GLADConfigure();
+    testconf.configfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/smptubecan.dat");
+    testconf.hasFur = true;
+    testconf.isawMode = 0;
+    testconf.doDebug = true;
+    DataSet runinfo = (DataSet)testconf.calculate(); 
+    
+    GLADCrunch testcrunch = new GLADCrunch();           
+    testcrunch.ds0 = runinfo;
+    testcrunch.runfile = new LoadFileString("/IPNShome/glad/data/glad10088.run");
+    testcrunch.noDeadDetList = true;
+    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/gladrun10068.par");
+    Vector monnrm = (Vector) testcrunch.calculate();
+    DataSet mon_van = (DataSet) monnrm.get(0); 
+    DataSet nrm_van = (DataSet) monnrm.get(1);
+
+    testcrunch.runfile = new LoadFileString("/IPNShome/glad/data/glad10100.run");
+    testcrunch.noDeadDetList = false;
+    DataSet nrm_smp = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+    
+    testcrunch.runfile = new LoadFileString("/IPNShome/glad/data/glad10068.run");
+    testcrunch.noDeadDetList = false;
+    DataSet nrm_can = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+    
+    testcrunch.runfile = new LoadFileString("/IPNShome/glad/data/glad10107.run");
+    testcrunch.noDeadDetList = false;
+    DataSet nrm_fur = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+    
+    testcrunch.runfile = new LoadFileString("/IPNShome/glad/data/glad10091.run");        
+    testcrunch.noDeadDetList = false;
+    DataSet nrm_bkg = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+
+    new DataSetSubtract(nrm_van, nrm_bkg, false).getResult();
+    new DataSetSubtract(nrm_smp, nrm_bkg, false).getResult();
+    new DataSetSubtract(nrm_can, nrm_bkg, false).getResult();
+    new DataSetSubtract(nrm_fur, nrm_bkg, false).getResult();
+    
+    GLADVanCal testvancal = new GLADVanCal();
+    testvancal.ds0 = runinfo;
+//    testvancal.DOsmooth = true;
+    testvancal.nrm_van = nrm_van;
+    testvancal.calculate();
+    new DataSetDivide(nrm_smp, nrm_van, false).getResult();
+    new DataSetDivide(nrm_can, nrm_van, false).getResult();
+    new DataSetDivide(nrm_fur, nrm_van, false).getResult();
+    
+    GLADAnalyze testanalyze = new GLADAnalyze();
+    testanalyze.ds0 = runinfo;
+    testanalyze.ds = nrm_fur;
+    testanalyze.imask = 4;
+    testanalyze.calculate();
+    new DataSetSubtract(nrm_smp, nrm_fur, false).getResult();
+    testanalyze.ds = nrm_can;
+    testanalyze.imask = 6;
+    testanalyze.calculate();
+    new DataSetSubtract(nrm_smp, nrm_can, false).getResult();
+    testanalyze.ds = nrm_smp;
+    testanalyze.imask = 7;
+    testanalyze.calculate();        
+
+    GLADDistinct testdistinct = new GLADDistinct();
+    testdistinct.ds0 = runinfo;
+    testdistinct.dcs_smp = nrm_smp;
+    testdistinct.smo_van = nrm_van;
+    testdistinct.dm_van = mon_van;
+    testdistinct.calculate();
+    
+    GLADCombine testcombine = new GLADCombine();
+    testcombine.int_smp = nrm_smp;
+    testcombine.flx_van = nrm_van;
+    testcombine.calculate();
+    
+    GLADQ2R testq2r = new GLADQ2R();
+    testq2r.ds0 = runinfo;
+    testq2r.ioq_smp = nrm_smp;
+    testq2r.calculate();
+    
+    DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(nrm_smp, DataSetTools.viewer.IViewManager.IMAGE);
 
   }
 
