@@ -26,6 +26,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/02/05 22:38:12  dennis
+ * Added convenience method:  RealToHKL to map a specified pixel and
+ * time-of-flight to hkl, given the inverse goniometer rotation and the
+ * inverse orientation matrix.
+ *
  * Revision 1.4  2006/01/06 06:52:11  dennis
  * Added method to calculate the BestFitMatrix, "UB" using
  * constraints based on the unit cell type.
@@ -57,8 +62,9 @@
 package DataSetTools.trial;
 
 import  gov.anl.ipns.MathTools.*;
+import  gov.anl.ipns.MathTools.Geometry.*;
 import  gov.anl.ipns.MathTools.Functions.*;
-
+import  DataSetTools.math.*;
 
 /**
  *  This class contains static utility methods for SCD data reduction.
@@ -331,6 +337,55 @@ public class SCD_util
 
     return f.TotalError();
   }
+
+
+  /* -------------------------- RealToHKL --------------------------- */
+  /**
+   *  Calculate the HKL value corresponding to a specified pixel position
+   *  and time of flight, given the inverse goniometer rotation and the
+   *  inverse of the orientation matrix.
+   *
+   *  @param  pixel_vec               Vector giving the location of the
+   *                                  pixel relative to the sample
+   *  @param  initial_path_m          The initial flight path length in meters
+   *
+   *  @param  tof_us                  The time-of-flight in microseconds
+   *
+   *  @param  inv_goniometer_matrix   The inverse of the goniometer rotation 
+   *                                  matrix, used to map Q from laboratory
+   *                                  coordinates to a vector in a coordinate
+   *                                  system relative to the crystal
+   *  @param  inv_orientation_matrix  The inverse of the orientation matrix.
+   *                                  NOTE: To obtain this from the "IPNS SCD" 
+   *                                  orientation matrix, the IPNS orientation 
+   *                                  matrix is transposed, then multiplied 
+   *                                  by 2*PI and finally inverted.
+   */
+  public static Vector3D RealToHKL( Vector3D   pixel_vec,
+                                    float      initial_path_m,
+                                    float      tof_us,
+                                    Tran3D     inv_goniometer_matrix,
+                                    Tran3D     inv_orientation_matrix )
+  {
+    System.out.println("++ pixel_vec = " + pixel_vec );
+    Vector3D  q_lab;      // Q vector in "laboratory coordinates
+
+    Vector3D  q_crystal;  // Q vector un-rotated by goniometer rotation, to
+                          // be in coordinate system attached to the crystal
+
+    Vector3D  hkl_vec;    // resulting hkl values 
+
+    q_lab = tof_calc.DiffractometerVecQ( pixel_vec, initial_path_m, tof_us );
+
+    q_crystal  = new Vector3D();
+    inv_goniometer_matrix.apply_to( q_lab, q_crystal );
+
+    hkl_vec = new Vector3D();
+    inv_orientation_matrix.apply_to( q_crystal, hkl_vec );
+
+    return hkl_vec;
+  }
+
 
 
   /* ------------------------------ Main --------------------------------- */
