@@ -30,6 +30,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2006/02/06 03:45:12  dennis
+ * Now finds the range of hkl covered by each run & detector
+ * using the SCD_util.DetectorToMinMaxHKL(), rather than blindly
+ * processing all HKL values in a wide range.
+ *
  * Revision 1.4  2006/01/18 21:40:23  dennis
  * Switched default intervals around peak centers back to original
  * total length of 5.
@@ -881,8 +886,6 @@ public class Integrate_new extends GenericTOF_SCD{
     pkfac.detA2(detA2);
     pkfac.detD(detD);
 
-    System.out.println("Peak factory = " + pkfac );
-
     // determine the min and max pixel-times
     int zmin=0;
     int zmax=times.getNum_x()-1;
@@ -895,8 +898,45 @@ public class Integrate_new extends GenericTOF_SCD{
     logBuffer.append("detD="+detD+"  detA="+detA+"  detA2="+detA2+"\n");
 
     // determine the detector limits in hkl
-    int[][] hkl_lim=minmaxhkl(pkfac, ids, times);
+    VecQToTOF transformer = new VecQToTOF( ds );
+
+    float UB_times_2PI[][] = new float[3][3];
+    for ( int row = 0; row < 3; row++ )
+      for ( int col = 0; col < 3; col++ )
+        UB_times_2PI[row][col] = (float)( 2 * Math.PI * UB[row][col] );
+
+    Tran3D orientation_tran = new Tran3D( UB_times_2PI );
+    Tran3D inv_orientation_tran = new Tran3D( UB_times_2PI );
+    inv_orientation_tran.invert();
+
+    SampleOrientation samp_or = AttrUtil.getSampleOrientation( ds );
+    XScale x_scale = ds.getData_entry(0).getX_scale();
+    float initial_path = AttrUtil.getInitialPath( ds );
+    int run_nums[] = AttrUtil.getRunNumber( ds );
+
+    float min_tof = x_scale.getStart_x();
+    float max_tof = x_scale.getEnd_x();
+    Vector3D min_max_hkl[] = SCD_util.DetectorToMinMaxHKL(
+                                        grid,
+                                        initial_path,
+                                        min_tof,
+                                        max_tof,
+                                        samp_or.getGoniometerRotationInverse(),
+                                        inv_orientation_tran );
+    /*
+    System.out.println("MIN, MAX HKL FOR GRID ID " + grid.ID() );
+    System.out.println("  MIN: " + min_max_hkl[0] );
+    System.out.println("  MAX: " + min_max_hkl[1] );
+    */
+    int min_h = (int)Math.round(min_max_hkl[0].get()[0]) - 1;
+    int max_h = (int)Math.round(min_max_hkl[1].get()[0]) + 1;
+    int min_k = (int)Math.round(min_max_hkl[0].get()[1]) - 1;
+    int max_k = (int)Math.round(min_max_hkl[1].get()[1]) + 1;
+    int min_l = (int)Math.round(min_max_hkl[0].get()[2]) - 1;
+    int max_l = (int)Math.round(min_max_hkl[1].get()[2]) + 1;
+
     float[][] real_lim=minmaxreal(pkfac, ids, times);
+
 /*
     System.out.println("h limit from " +hkl_lim[0][0]+ " to " + hkl_lim[0][1] );
     System.out.println("k limit from " +hkl_lim[1][0]+ " to " + hkl_lim[1][1] );
@@ -907,9 +947,10 @@ public class Integrate_new extends GenericTOF_SCD{
 */
     // add the limits to the logBuffer
     logBuffer.append("---------- LIMITS\n");
-    logBuffer.append("min hkl,  max hkl : "+hkl_lim[0][0]+" "+hkl_lim[1][0]
-                     +" "+hkl_lim[2][0]+"   "+hkl_lim[0][1]+" "+hkl_lim[1][1]
-                     +" "+hkl_lim[2][1]+"\n");
+    logBuffer.append("min hkl,  max hkl : " 
+                     +min_h+" "+max_h +" "
+                     +min_k+" "+max_k+" "
+                     +min_l+" "+max_l+"\n");
     logBuffer.append("min xcm ycm wl, max xcm ycm wl: "
                      +formatFloat(real_lim[0][0])+" "
                      +formatFloat(real_lim[1][0])+" "
@@ -932,19 +973,12 @@ public class Integrate_new extends GenericTOF_SCD{
       System.out.println( "(1,1,1) Peak = " + pkfac.getHKLInstance(1,1,1) );
     }
 
-    VecQToTOF transformer = new VecQToTOF( ds );
-    Tran3D orientation_tran = new Tran3D( UB );
-
-    SampleOrientation samp_or = AttrUtil.getSampleOrientation( ds );
-    XScale x_scale = ds.getData_entry(0).getX_scale();
-    float initial_path = AttrUtil.getInitialPath( ds );
-    int run_nums[] = AttrUtil.getRunNumber( ds );
 
     int seqnum=1;
     // loop over all of the possible hkl values and create peaks
-    for( int h=hkl_lim[0][0] ; h<=hkl_lim[0][1] ; h++ ){
-      for( int k=hkl_lim[1][0] ; k<=hkl_lim[1][1] ; k++ ){
-        for( int l=hkl_lim[2][0] ; l<=hkl_lim[2][1] ; l++ )
+    for( int h = min_h; h <= max_h; h++ ){
+      for( int k = min_k; k <= max_k; k++ ){
+        for( int l = min_l; l <= max_l; l++ )
          {
           if( h==0 && k==0 && l==0 ) continue; // cannot have h=k=l=0
 
@@ -956,7 +990,6 @@ public class Integrate_new extends GenericTOF_SCD{
           Vector3D hkl_vec = new Vector3D( h, k, l );
           Vector3D q_vec = new Vector3D();
           orientation_tran.apply_to( hkl_vec, q_vec );
-          q_vec.multiply( (float)(2*Math.PI) ); 
           float row_col_ch[] = transformer.QtoRowColChan( q_vec );  
 
           if ( row_col_ch != null )             // peak is on the detector
@@ -1015,12 +1048,12 @@ public class Integrate_new extends GenericTOF_SCD{
 
     RemovePeaksWithSmall_d( peaks, d_min, ds, detnum );
 
-    System.out.println("NUMBER OF PEAKS TO INTEGRATE " + peaks.size() );
-
-    peak = (Peak)peaks.elementAt(0);
-    System.out.println("peak x,y,z = " + peak.x() + ", " + peak.y() + ", " 
-                                       + peak.z() );
-
+    /*
+      System.out.println("NUMBER OF PEAKS TO INTEGRATE " + peaks.size() );
+      peak = (Peak)peaks.elementAt(0);
+      System.out.println("peak x,y,z = " + peak.x() + ", " + peak.y() + ", " 
+                                         + peak.z() );
+    */
     System.out.println("Integration Method: " + PeakAlg );
 
     // integrate the peaks
@@ -1922,85 +1955,6 @@ public class Integrate_new extends GenericTOF_SCD{
     return real_lim;
   }
 
-  /**
-   * Determine the edges of the detector in xcm, ycm, and wl. This
-   * assumes that ids[0][0] and ids[maxrow][maxcol] are at
-   * opposite corners of the detector
-   *
-   * @param pkfac A fully configure peak factory. It should contain
-   * all of the information necessary to go from hkl to pixel.
-   * @param ids The 2D matrix which maps row and column to the
-   * linear index of datas in DataSet
-   * @param times The detector is assumed to have the same x-axis for
-   * all pixels. This should be a safe assumption.
-   *
-   * @return A 3x2 matrix of the limits in hkl. 
-   */
-  private int[][] minmaxhkl(PeakFactory pkfac, int[][] ids, XScale times){
-    // Determine the limits in pixel and time. This is set up as
-    // arrays to shorten later code in the method.
-    int[]     x_lim ={1,ids.length-1};
-    int[]     y_lim ={1,ids[0].length-1};
-    int[]     z_lim ={0,times.getNum_x()-1};
-    float[][] time  = {{times.getX(z_lim[0]),times.getX(z_lim[0]+1)},
-                       {times.getX(z_lim[1]-1),times.getX(z_lim[1])}};
-/*
-    System.out.println( "In minmaxhkl " );
-    System.out.println( "x_lims = " + x_lim[0] + " to " + x_lim[1] );
-    System.out.println( "y_lims = " + y_lim[0] + " to " + y_lim[1] );
-    System.out.println( "z_lims = " + z_lim[0] + " to " + z_lim[1] );
-    System.out.println( "time_lims = " + time[0][0] + " to " + time[0][1] );
-    System.out.println( "time_lims = " + time[1][0] + " to " + time[1][1] );
-*/
-
-    // define a temporary peak that will be each of the corners
-    Peak peak=null;
-
-    // The hkls of the peaks will be stored in this matrix. The first
-    // index is h=0, k=1, and l=2. The second index is just the number
-    // of the peak, it just needs to be unique
-    int[][] hkl=new int[3][8];
-
-    // This looks scarier than it is. The three indices are x (i), y
-    // (j), and z (k). It is set up to reduce the amount of typing
-    // that needs to be done if there is an error in the code.
-    for( int i=0 ; i<2 ; i++ ){
-      for( int j=0 ; j<2 ; j++ ){
-        for( int k=0 ; k<2 ; k++ ){
-          peak=pkfac.getPixelInstance(x_lim[i],y_lim[j],z_lim[k],
-                                      time[k][0],time[k][1]);
-          hkl[0][i+2*j+4*k]=Math.round(peak.h());
-          hkl[1][i+2*j+4*k]=Math.round(peak.k());
-          hkl[2][i+2*j+4*k]=Math.round(peak.l());
-        }
-      }
-    }
-
-    // set the peak to null so the garbage collector can reclaim it
-    peak=null;
-
-    // the first index is h,k,l and the second index is min,max
-    int[][] hkl_lim={{hkl[0][0],hkl[0][0]},
-                     {hkl[1][0],hkl[1][0]},
-                     {hkl[2][0],hkl[2][0]}};
-    
-    // sort out the min and max values
-    for( int i=1 ; i<8 ; i++ ){
-      for( int j=0 ; j<3 ; j++ ){
-        hkl_lim[j][0]=Math.min(hkl_lim[j][0],hkl[j][i]);
-        hkl_lim[j][1]=Math.max(hkl_lim[j][1],hkl[j][i]);
-      }
-    }
-                        // KLUGE SINCE THIS IS NOT WORKING FOR LANSCE
-    hkl_lim[0][0] = -25;
-    hkl_lim[0][1] =  25;
-    hkl_lim[1][0] = -25;
-    hkl_lim[1][1] =  25;
-    hkl_lim[2][0] = -25;
-    hkl_lim[2][1] =  25;
-
-    return hkl_lim;
-  }
   
   /**
    * Checks the allowed indices of hkl given the centering type.
