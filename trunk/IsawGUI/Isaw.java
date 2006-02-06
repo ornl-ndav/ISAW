@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.246  2006/02/06 20:03:19  dennis
+ *  Changed version to 1.8.0 alpha 2
+ *
  *  Revision 1.245  2006/01/18 21:04:56  rmikk
  *  Added the new wizards to Isaw's Wizard menu
  *
@@ -886,7 +889,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.8.0_a1";
+          version="1.8.0_a2";
         else
           version=SharedData.VERSION;
 
