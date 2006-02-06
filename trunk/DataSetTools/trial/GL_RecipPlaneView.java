@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2006/02/06 00:19:29  dennis
+ * Now uses the SCD_util.DetectorToMinMaxHKL() method to find the
+ * extent of the region in HKL space covered by a detector.
+ *
  * Revision 1.23  2006/01/16 05:50:44  dennis
  * Increased number of one-dimensional FFTs from 20 to 30.
  * Now displays row,col,tof, etc. in status pane for pointed at peak.
@@ -673,6 +677,16 @@ public class GL_RecipPlaneView
       return;
     }
 
+/* // TEST CODE 
+    double or_mat_d[][] = new double[3][3];
+    for ( int i = 0; i < 3; i++ )
+      for ( int j = 0; j < 3; j++ )
+        or_mat_d[i][j] = or_mat[i][j];
+    double lat_par[] = lattice_calc.LatticeParamsOfUB( or_mat_d );
+    System.out.println("Lattice parameters = ");
+    LinearAlgebra.print( lat_par );
+*/
+
     for ( int i = 0; i < 3; i++ )
       for ( int j = 0; j < 3; j++ )
         or_mat[i][j] *= ((float)Math.PI * 2);
@@ -681,7 +695,13 @@ public class GL_RecipPlaneView
 
     orientation_matrix_inverse = new Tran3D( orientation_matrix );
     if ( !orientation_matrix_inverse.invert() )
+    {
       System.out.println("ERROR...INVALID ORIENTATION MATRIX, NO INVERSE");
+      System.out.println("Setting the orientation matrix and it's inverse ");
+      System.out.println("to null.");
+      orientation_matrix = null;
+      orientation_matrix_inverse = null;
+    }
   }
 
 
@@ -912,42 +932,6 @@ public class GL_RecipPlaneView
 
     Tran3D combinedR = transformer.getGoniometerRotationInverse();
 
-    int max_row = grid.num_rows();
-    int max_col = grid.num_cols();
-                                                   // Find Q at corner points
-    Vector3D corner_1_1   = grid.position( 1, 1 );
-    Vector3D corner_mr_1  = grid.position( max_row, 1 );
-    Vector3D corner_1_mc  = grid.position( 1, max_col );
-    Vector3D corner_mr_mc = grid.position( max_row, max_col );
-   
-    Vector3D corners[] = new Vector3D[8];
-    corners[0] = getQ( combinedR, corner_1_1,   t_min + t0, initial_path ); 
-    corners[1] = getQ( combinedR, corner_mr_1,  t_min + t0, initial_path ); 
-    corners[2] = getQ( combinedR, corner_1_mc,  t_min + t0, initial_path ); 
-    corners[3] = getQ( combinedR, corner_mr_mc, t_min + t0, initial_path ); 
-    corners[4] = getQ( combinedR, corner_1_1,   t_max + t0, initial_path ); 
-    corners[5] = getQ( combinedR, corner_mr_1,  t_max + t0, initial_path ); 
-    corners[6] = getQ( combinedR, corner_1_mc,  t_max + t0, initial_path ); 
-    corners[7] = getQ( combinedR, corner_mr_mc, t_max + t0, initial_path ); 
-
-                                             // Find Q at center & edge centers 
-    Vector3D center = grid.position( max_row/2, max_col/2 );
-    Vector3D edge1  = grid.position( 1,         max_col/2 );
-    Vector3D edge2  = grid.position( max_row,   max_col/2 );
-    Vector3D edge3  = grid.position( max_row/2, 1         );
-    Vector3D edge4  = grid.position( max_row/2, max_col   );
-    Vector3D other_points[] = new Vector3D[10];
-    other_points[0] = getQ( combinedR, center, t_min + t0, initial_path );
-    other_points[1] = getQ( combinedR, edge1,  t_min + t0, initial_path );
-    other_points[2] = getQ( combinedR, edge2,  t_min + t0, initial_path );
-    other_points[3] = getQ( combinedR, edge3,  t_min + t0, initial_path );
-    other_points[4] = getQ( combinedR, edge4,  t_min + t0, initial_path );
-    other_points[5] = getQ( combinedR, center, t_max + t0, initial_path );
-    other_points[6] = getQ( combinedR, edge1,  t_max + t0, initial_path );
-    other_points[7] = getQ( combinedR, edge2,  t_max + t0, initial_path );
-    other_points[8] = getQ( combinedR, edge3,  t_max + t0, initial_path );
-    other_points[9] = getQ( combinedR, edge4,  t_max + t0, initial_path );
-
     Tran3D inverse = new Tran3D( orientation_matrix );
     if ( !inverse.invert() )
     {
@@ -955,43 +939,13 @@ public class GL_RecipPlaneView
       return null;
     }
 
-    for ( int i = 0; i < corners.length; i++ )      // map corner Qs back to hkl
-      inverse.apply_to( corners[i], corners[i] );
-
-    float min[] = corners[0].getCopy();             // find min & max at corners
-    float max[] = corners[0].getCopy();
-    for ( int i = 1; i < corners.length; i++ )
-    {
-      float pt[] = corners[i].get();
-      for ( int k = 0; k < 3; k++ )
-      {
-        if ( pt[k] < min[k] )
-          min[k] = pt[k];
-        else if ( pt[k] > max[k] )
-          max[k] = pt[k];
-      }
-    }
-
-    for ( int i = 0; i < other_points.length; i++ )  // map other Qs back to hkl
-      inverse.apply_to( other_points[i], other_points[i] );
-
-    for ( int i = 0; i < other_points.length; i++ )
-    {
-      float pt[] = other_points[i].get();
-      for ( int k = 0; k < 3; k++ )
-      {
-        if ( pt[k] < min[k] )
-          min[k] = pt[k];
-        else if ( pt[k] > max[k] )
-          max[k] = pt[k];
-      }
-    }
-
-    Vector3D result[] = new Vector3D[2];
-    result[0] = new Vector3D( min );
-    result[1] = new Vector3D( max );
-
-    return result;
+    Vector3D new_result[] = SCD_util.DetectorToMinMaxHKL( grid, 
+                                                          initial_path,
+                                                          t_min + t0,
+                                                          t_max + t0,
+                                                          combinedR,
+                                                          inverse );
+    return new_result;
   }
 
 
