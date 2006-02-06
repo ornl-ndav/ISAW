@@ -26,6 +26,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/02/06 00:09:49  dennis
+ * Added method: DetectorToMinMaxHKL() to calculate the range of hkl values
+ * covered by a particular detector and time-of-flight range, given the
+ * initial flight path, inverse goniometer rotation and the inverse of the
+ * orientation matrix.
+ *
  * Revision 1.5  2006/02/05 22:38:12  dennis
  * Added convenience method:  RealToHKL to map a specified pixel and
  * time-of-flight to hkl, given the inverse goniometer rotation and the
@@ -65,6 +71,7 @@ import  gov.anl.ipns.MathTools.*;
 import  gov.anl.ipns.MathTools.Geometry.*;
 import  gov.anl.ipns.MathTools.Functions.*;
 import  DataSetTools.math.*;
+import  DataSetTools.dataset.*;
 
 /**
  *  This class contains static utility methods for SCD data reduction.
@@ -342,8 +349,8 @@ public class SCD_util
   /* -------------------------- RealToHKL --------------------------- */
   /**
    *  Calculate the HKL value corresponding to a specified pixel position
-   *  and time of flight, given the inverse goniometer rotation and the
-   *  inverse of the orientation matrix.
+   *  and time-of-flight, given the initial flight path, inverse goniometer
+   *  rotation and the inverse of the orientation matrix.
    *
    *  @param  pixel_vec               Vector giving the location of the
    *                                  pixel relative to the sample
@@ -360,6 +367,9 @@ public class SCD_util
    *                                  orientation matrix, the IPNS orientation 
    *                                  matrix is transposed, then multiplied 
    *                                  by 2*PI and finally inverted.
+   *
+   *  @return a vector whose first three entries are the hkl values 
+   *          corresponding to the specified conditions.
    */
   public static Vector3D RealToHKL( Vector3D   pixel_vec,
                                     float      initial_path_m,
@@ -367,7 +377,6 @@ public class SCD_util
                                     Tran3D     inv_goniometer_matrix,
                                     Tran3D     inv_orientation_matrix )
   {
-    System.out.println("++ pixel_vec = " + pixel_vec );
     Vector3D  q_lab;      // Q vector in "laboratory coordinates
 
     Vector3D  q_crystal;  // Q vector un-rotated by goniometer rotation, to
@@ -386,6 +395,111 @@ public class SCD_util
     return hkl_vec;
   }
 
+
+  /* ------------------------ DetectorToMinMaxHKL ------------------------ */
+  /**
+   *  Calculate the min and max HKL values corresponding to a specified 
+   *  detector grid over a specified time-of-flight range, given the initial
+   *  flight path, the inverse goniometer rotation and the inverse of the 
+   *  orientation matrix.
+   *
+   *  @param  grid                    The grid for the detector, giving the
+   *                                  locations of all pixels on the detector.
+   *  @param  initial_path_m          The initial flight path length in meters
+   *
+   *  @param  min_tof                 The minimum time-of-flight in microseconds
+   *  @param  max_tof                 The maximum time-of-flight in microseconds
+   *
+   *  @param  inv_goniometer_matrix   The inverse of the goniometer rotation 
+   *                                  matrix, used to map Q from laboratory
+   *                                  coordinates to a vector in a coordinate
+   *                                  system relative to the crystal
+   *  @param  inv_orientation_matrix  The inverse of the orientation matrix.
+   *                                  NOTE: To obtain this from the "IPNS SCD" 
+   *                                  orientation matrix, the IPNS orientation 
+   *                                  matrix is transposed, then multiplied 
+   *                                  by 2*PI and finally inverted.
+   *
+   *  @return an array of two vectors listing the minimum hkl values in the
+   *          first vector an the maximum hkl values in the second vector.
+   */
+  public static Vector3D[] DetectorToMinMaxHKL(
+                                             IDataGrid grid,
+                                             float     initial_path_m,
+                                             float     min_tof,
+                                             float     max_tof,
+                                             Tran3D    inv_goniometer_matrix,
+                                             Tran3D    inv_orientation_matrix )
+  {
+    int n_rows = grid.num_rows();
+    int n_cols = grid.num_cols();
+
+    Vector3D  hkl[] = new Vector3D[n_rows * n_cols + 4];  
+                                          // vector to hold positions of pixels
+                                          // whose hkl are calculated
+
+                                          // the surface in HKL is bowed
+                                          // outward at min time (max Q), so
+                                          // find the HKL at every point to be
+                                          // sure we get the max HKL.
+    int index = 0;
+    for ( int row = 1; row <= n_rows; row++ )
+      for ( int col = 1; col <= n_cols; col++ )
+        hkl[index++] = RealToHKL( grid.position( row, col ), 
+                                  initial_path_m,
+                                  min_tof,
+                                  inv_goniometer_matrix,
+                                  inv_orientation_matrix );
+
+                                          // for max time (min Q) we can just
+                                          // check the corners
+    hkl[index++] = RealToHKL( grid.position( 1, 1 ), 
+                              initial_path_m, 
+                              max_tof, 
+                              inv_goniometer_matrix, 
+                              inv_orientation_matrix );
+    hkl[index++] = RealToHKL( grid.position( 1, n_cols ),
+                              initial_path_m,  
+                              max_tof,  
+                              inv_goniometer_matrix,  
+                              inv_orientation_matrix );
+    hkl[index++] = RealToHKL( grid.position( n_rows, 1 ),
+                              initial_path_m,  
+                              max_tof,  
+                              inv_goniometer_matrix,  
+                              inv_orientation_matrix );
+    hkl[index++] = RealToHKL( grid.position( n_rows, n_cols ),
+                              initial_path_m,  
+                              max_tof,  
+                              inv_goniometer_matrix,  
+                              inv_orientation_matrix );
+
+                                            // now scan through the hkls to
+                                            // find the min and max values
+    float hkl_vals[];
+    float min_hkl_vals[] = hkl[0].getCopy(); 
+    float max_hkl_vals[] = hkl[0].getCopy(); 
+    for ( int i = 1; i < hkl.length; i++ )
+    {
+      hkl_vals = hkl[i].get(); 
+      for ( int k = 0; k < 3; k++ )
+      {
+        if ( hkl_vals[k] < min_hkl_vals[k] )
+          min_hkl_vals[k] = hkl_vals[k];
+
+        if ( hkl_vals[k] > max_hkl_vals[k] )
+          max_hkl_vals[k] = hkl_vals[k];
+      }
+    }
+                                             // make vectors out of the min &
+                                             // max hkls and return the two
+                                             // vectors in an array
+    Vector3D result[] = new Vector3D[2];
+    result[0] = new Vector3D( min_hkl_vals );
+    result[1] = new Vector3D( max_hkl_vals );
+  
+    return result;
+  }
 
 
   /* ------------------------------ Main --------------------------------- */
