@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2006/02/06 19:55:00  dennis
+ * Removed unused private method and unused import.
+ *
  * Revision 1.5  2006/02/06 03:45:12  dennis
  * Now finds the range of hkl covered by each run & detector
  * using the SCD_util.DetectorToMinMaxHKL(), rather than blindly
@@ -246,7 +249,6 @@ import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.MathTools.Geometry.*;
-import DataSetTools.operator.Generic.TOF_SCD.*;
 import java.io.*;
 import java.util.Vector;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
@@ -1867,25 +1869,6 @@ public class Integrate_new extends GenericTOF_SCD{
     }
   }
 
-  /**
-   * Determines whether the peak can be within the realspace limits specified
-   */
-  private static boolean checkReal(Peak peak, float[][] lim){
-    float wl=peak.wl();
-    if(wl==0f) return false;
-
-    float xcm=peak.xcm();
-    float ycm=peak.ycm();
-    if( xcm>=lim[0][0] && xcm<=lim[0][1] ){
-      if( ycm>=lim[1][0] && ycm<=lim[1][1] ){
-        if( wl>=lim[2][0] && wl<=lim[2][1] ){
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
 
   /**
    * Determine the edges of the detector in xcm, ycm, and wl. This
