@@ -189,16 +189,24 @@ endif
 if polyfitIndx2 = -1
    polyfitIndx2  =  nPtsTransFile
 endif
-#========== Calculation of transmission for sample/camera ====================
+
+#========== Determine which dataset will be used for cadmium monitor run in 
+#calculatation of transmission
 if useCadmiumRun == true
   load Input_Path&inst&CadmiumFile&ext, "Cadm"
-  DSS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
+  cdMonPlaceHolder = Cadm[0]
 else
-   DSS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
+  cdMonPlaceHolder = Samp[0]
 endif
+
+#========== Calculation of transmission for sample/camera ====================
+DSS = CalcTransmission( Samp[0],Empty[0],cdMonPlaceHolder,Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
 send DSS
+
 Table(DSS, true, "File", Output_Path&"T"&TransSFile&CameraFile&".dat", "0:1", "HGT,F" , false)
+
 TransSF = Output_Path&"T"&TransSFile&CameraFile&".cf"
+
 PrintFlood( DSS,TransSF, "Transmission")
 
 Echo("Sample/Camera Transmission done ")
@@ -207,29 +215,34 @@ Echo("Sample/Camera Transmission done ")
 
 
 #========== Calculation of transmission for background/camera ====================
-if useCadmiumRun == true
-DSC = CalcTransmission( Cell[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
-else
-DSC = CalcTransmission( Cell[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
-endif
+DSC = CalcTransmission( Cell[0],Empty[0],cdMonPlaceHolder,Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,TransID)
+
 TransBFile = Output_Path&"T"&BackGroundTFile&CameraFile&".cf"
+
 PrintFlood( DSC,TransBFile, "Transmission")
+
 TransB = ReadTransmission( TransBFile, nPtsTransFile)
+
 Table(DSC, true, "File", Output_Path&"T"&BackGroundTFile&CameraFile&".dat", "0:1", "HGT,F" , false)
+
 send DSC
+
 Echo("Background/Camera Transmission done ")
 
 Display "Finished Transmission runs"
 #------------------------- Code for Reduce -----------------------
 load Input_Path&inst&SampleFile&ext,"RUNSds"
 Echo("Loading Sample Scattering "&RUNSds)
+
 load Input_Path&inst&BackgroundFile&ext,"RUNBds"
 Echo("Loading Background Scattering "&RUNBds)
+
 load Input_Path&inst&CadmiumFile&ext,"RUNCds"
 Echo("Loading Cadmium Scattering "&RUNCds)
 
 EFR = Input_Path&"EFR"&EffFile&".dat"
 sensitivity = Input_Path&"sens"&SensFile&".dat"
+
 Eff =Read3Col1D( EFR,"Efficiency")
 Echo("Reading Efficiency Ratio file "&EFR)
 
