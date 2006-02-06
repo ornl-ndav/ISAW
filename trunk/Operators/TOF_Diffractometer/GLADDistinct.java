@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2006/02/06 16:00:25  taoj
+ * Error messaging the rare cases that the total number of counts of one data block is zero. Dead detector list needs to be regenerated bases on the non-vanadium run in these cases.
+ *
  * Revision 1.6  2006/01/05 23:00:45  taoj
  * new code handling the self scattering problem for hydrogenous samples
  *
@@ -221,12 +224,14 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
           
       istart = 0;
       iend = y_vals_n.length-1;
-      if (iend != (y_vals_v.length-1)) System.out.println("***UNEXPECTED ERROR***---dcs and smo unmatched***");
-//          System.out.println("ndetchannel: "+ndetchannel);
-
-      while (y_vals_n[istart] == 0.0f) {
-        istart++;
+ 
+      try {
+        while (y_vals_n[istart] == 0.0f) istart++;
+      } catch (ArrayIndexOutOfBoundsException e) {
+        System.out.println("!!!!!!UNEXPECTED ERROR: empty data group in a dataset.!!!!!!");
+        System.out.println("!!!!!!This is due to a good counting detector for vanadium becomes dead for sample(s), update the bad detector list file and redo GLAD_CRUNCH!!!!!!");
       }
+      
       while (y_vals_n[iend] == 0.0f) {
         iend--;
       }
