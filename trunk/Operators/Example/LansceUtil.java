@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.14  2006/02/06 19:26:28  dennis
+ * Removed debug print.
+ *
  * Revision 1.13  2006/01/16 01:22:12  dennis
  * Now includes temporary code to shift the detector.  The shift
  * parameters should be passed in from Ruth's XML fix file.
@@ -336,7 +339,6 @@ public class LansceUtil
       run_list = new int[1];
       run_list[0] = run_num;
     }
-    System.out.println("ADDED RUN NUMBER FOR " + run_list[0] );
     IntListAttribute run_list_attr =
                      new IntListAttribute( Attribute.RUN_NUM, run_list );
 
