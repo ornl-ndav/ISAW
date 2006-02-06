@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  * 
  * $Log$
+ * Revision 1.5  2006/02/06 15:56:05  taoj
+ * Added "effDensity" field
+ *
  * Revision 1.4  2005/12/15 20:52:56  dennis
  * Added tag for CVS logging so that future modifications can be tracked.
  *
@@ -71,6 +74,7 @@ public class GLADScatter implements Cloneable {
   float rad[];
   float tss[];
   float density;
+  float effdensity;
   String symbol[];
   float formula[];
   float sigma_a;
@@ -127,8 +131,9 @@ public class GLADScatter implements Cloneable {
     dw = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, analykeyh+".MUT.DW");
     symbol = (String[]) expsetup.ExpConfiguration.get(expkeyh+GLADRunProps.SYMBOL);
     formula = (float[]) expsetup.ExpConfiguration.get(expkeyh+GLADRunProps.FORMULA);
-    density = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, expkeyh+GLADRunProps.EFFDENSITY);
-    if (density == 0.0f) density = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, expkeyh+GLADRunProps.DENSITY);
+    density = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, expkeyh+GLADRunProps.DENSITY);
+    effdensity = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, expkeyh+GLADRunProps.EFFDENSITY);
+    if (effdensity == 0.0f) effdensity = density;
 
     sigma_a = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, expkeyh+GLADRunProps.SIGMA_A);    
     bbarsq = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, analykeyh+".B_BAR_SQR");
@@ -172,9 +177,10 @@ public class GLADScatter implements Cloneable {
       if ((imask & 1) == 1) {
         scatterern = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, analykeyh+".SCC");    
         if (scatterern == 0.0f) {
-          scatterern = (float)(density*bht*Math.PI*(rad[1]*rad[1]-rad[0]*rad[0])); 
-          System.out.println("effective density: "+density+" calculated scc for sample: "+scatterern);
+          scatterern = (float)(effdensity*bht*Math.PI*(rad[1]*rad[1]-rad[0]*rad[0])); 
+          System.out.println("effective density: "+effdensity+" input inner radius: "+rad[0]+" input outer radius: "+rad[1]);
         }
+        System.out.println("scc: "+scatterern);
 //        expsetup.ExpConfiguration.put("GLAD.ANALYSIS.SCC", new Float(scatterern));
       }
        
@@ -208,7 +214,7 @@ public class GLADScatter implements Cloneable {
 
       float comborad[];       
       if (inners.rad[i-1] != outers.rad[0]) System.out.println("\n******WARNINGS******\n" +
-                       "inner and outside annuli don't match in radius\n");
+                       "input: outside radiu of "+SMASK[inners.anmask]+" and inside radius of "+SMASK[outers.anmask]+" don't match.\n");
       comborad = new float[i+j-1];
       while (j-- > 0) comborad[i+j-1] = outers.rad[j];
       while (i-- > 1) comborad[i-1] = inners.rad[i-1];
