@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2006/02/08 19:07:53  hammonds
+ * Refactor by Extract Method.  New method is ConvertDStoWL.
+ * Rearrange some code to place Cadmium specific code together.
+ *
  * Revision 1.15  2004/06/03 16:31:36  chatterjee
  * Added code to get Monitor indicies that correspond to the
  *   specified Monitor IDs
@@ -231,26 +235,28 @@ public class CalcTransmission extends GenericTOF_SAD {
        
      }
      if( (upStreamID <0) ||(downStreamID<0)){
-            
-        int[] MonIndx = setMonitorInd( Sample);
-        if( MonIndx == null)
-          return new ErrorString("Could not find matching upStream and downStream monitors");
-        Monitor0 = MonIndx[0];
-        Monitor1 = MonIndx[1];
-      
-        SampMonitor0GroupID = Sample.getData_entry(Monitor0).getGroup_ID();
-        CadMonitor0GroupID = Cadmium.getData_entry(Monitor0).getGroup_ID();
-        EmpMonitor0GroupID = Empty.getData_entry(Monitor0).getGroup_ID();
-        //SampMonitor1GroupID = Sample.getData_entry(Monitor1).getGroup_ID();
-      
-      if( useCadmium)
-        CadMonitor1GroupID = Cadmium.getData_entry(Monitor1).getGroup_ID();
-        EmpMonitor1GroupID = Empty.getData_entry(Monitor1).getGroup_ID();
-        //System.out.println("FF"+Monitor0+","+Monitor1+","+SampMonitor0GroupID+","+
-         //  CadMonitor0GroupID+","+EmpMonitor0GroupID+","+SampMonitor1GroupID+","+
-         //  CadMonitor1GroupID+","+EmpMonitor1GroupID);
-      if( !useCadmium)
-        Cadmium = null;
+    	 
+    	 int[] MonIndx = setMonitorInd( Sample);
+    	 if( MonIndx == null)
+    		 return new ErrorString("Could not find matching upStream and downStream monitors");
+    	 Monitor0 = MonIndx[0];
+    	 Monitor1 = MonIndx[1];
+    	 
+    	 SampMonitor0GroupID = Sample.getData_entry(Monitor0).getGroup_ID();
+    	 // SampMonitor1GroupID = Sample.getData_entry(Monitor1).getGroup_ID();
+    	 EmpMonitor0GroupID = Empty.getData_entry(Monitor0).getGroup_ID();
+    	 EmpMonitor1GroupID = Empty.getData_entry(Monitor1).getGroup_ID();
+    	 
+    	 if( useCadmium) {
+    		 CadMonitor0GroupID = Cadmium.getData_entry(Monitor0).getGroup_ID();
+    		 CadMonitor1GroupID = Cadmium.getData_entry(Monitor1).getGroup_ID();
+    	 }
+    	 else {
+    		 Cadmium = null;
+    	 }
+    	 // System.out.println("FF"+Monitor0+","+Monitor1+","+SampMonitor0GroupID+","+
+    	 // CadMonitor0GroupID+","+EmpMonitor0GroupID+","+SampMonitor1GroupID+","+
+    	 // CadMonitor1GroupID+","+EmpMonitor1GroupID);
      }
      log.append("number of monitor detectors :");
      log.append(Format.integer((double)( Sample.getNum_entries()),4)+"\n");
@@ -268,58 +274,15 @@ public class CalcTransmission extends GenericTOF_SAD {
      }
  
      //------------Convert to llambda------------------
-      Operator opSample =   Sample.getOperator( "Monitor to Wavelength");
-      Operator opEmpty =   Empty.getOperator( "Monitor to Wavelength");
-      Operator opCadmium = null;
-      if( Cadmium != null)
-            opCadmium =   Cadmium.getOperator( "Monitor to Wavelength");
-
-             //Assume if op is null it is already converted to Wavelength
-      Object Result = null;
-      if( opSample != null){
-        opSample.setDefaultParameters();
-        opSample.getParameter(0).setValue(new Float( -1.0f));
-        opSample.getParameter(1).setValue(new Float( -1.0f));
-        opSample.getParameter(2).setValue( new Integer(0));
-        Result = opSample.getResult();
-        if( (Result  instanceof ErrorString)  )
-           return Result ;
-        if( Result  == null)
-           return new ErrorString( "Could not Convert Sample to Llamda");
-        Sample = (DataSet) Result;
-        Sample.setTitle("Sample-lambda and scaled");
-      }
-
-     if( opEmpty != null){
-        opEmpty.setDefaultParameters();
-        opEmpty.getParameter(0).setValue(new Float( -1.0f));
-        opEmpty.getParameter(1).setValue(new Float( -1.0f));
-        opEmpty.getParameter(2).setValue( new Integer(0));
-        Result = opEmpty.getResult();
-        if( (Result  instanceof ErrorString)  )
-           return Result ;
-        if( Result  == null)
-           return new ErrorString( "Could not Convert Sample to Llamda");
-        Empty = (DataSet) Result;
-        Empty.setTitle("Sample-lambda and scaled");
-      }
-
-
-      if( opCadmium != null){
-        opCadmium.setDefaultParameters();
-        opCadmium.getParameter(0).setValue(new Float( -1.0f));
-        opCadmium.getParameter(1).setValue(new Float( -1.0f));
-        opCadmium.getParameter(2).setValue(new Integer(0));
-        Result  = opCadmium.getResult();
-        if( (Result instanceof ErrorString)  )
-           return Result ;
-        if( Result  == null)
-           return new ErrorString( "Could not Convert Cadmium to Llamda");
-        Cadmium = (DataSet) Result;
-        Cadmium.setTitle("Cadmium-lambda and scaled");
-      }
-  
- 
+     try {
+    	 Sample = ConvertDSToWL( Sample, "Sample");
+    	 Empty = ConvertDSToWL( Empty, "Empty");
+    	 if (Cadmium != null)  Cadmium = ConvertDSToWL( Cadmium, "Cadmium");
+     }
+     catch (Exception ex){
+    	 return new ErrorString(ex.toString());
+     }
+      
   // Resample the monitor's time channels to agree with the SampleDs's XScale
     //----------Convert SampleDs's to wavelength ---------------------
      DataSet OneSampleDs = SampleDs.empty_clone();     
@@ -328,7 +291,7 @@ public class CalcTransmission extends GenericTOF_SAD {
      data_block = (Data)data_block.clone();
      OneSampleDs.addData_entry( data_block );
      Operator to_wl = new DiffractometerTofToWavelength( OneSampleDs, -1, -1, 0 );
-     Result = to_wl.getResult();
+     Object Result = to_wl.getResult();
      if( (Result  instanceof ErrorString)  )
        return Result ;
      if( Result  == null)
@@ -340,21 +303,17 @@ public class CalcTransmission extends GenericTOF_SAD {
      XScale xscl = SampleDs.getData_entry(0).getX_scale();
 
      Sample.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE );
-     Empty.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE);
-     if( Cadmium != null)
-        Cadmium.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE);
      Sample.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
-     Empty.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
-     if( Cadmium != null)
-        Cadmium.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
-      
      ReportToLog1( Sample,Monitor0,Monitor1);
      ReportToLog2( Sample,Monitor0,Monitor1);
-
+     Empty.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE);
+     Empty.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
      ReportToLog2( Empty,Monitor0,Monitor1);
-
-     if( Cadmium != null)
-       ReportToLog2( Cadmium,Monitor0,Monitor1);
+     if( Cadmium != null) {
+        Cadmium.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE);
+        Cadmium.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
+        ReportToLog2( Cadmium,Monitor0,Monitor1);
+     } 
    
      ReportToLog3( Sample, Empty, Cadmium,Monitor0,Monitor1);
     
@@ -694,5 +653,28 @@ public class CalcTransmission extends GenericTOF_SAD {
     return null;
  }//setMonitorInd
  
-
+ private DataSet ConvertDSToWL(DataSet ds, String specType) throws Exception{
+     Operator dsOp =   ds.getOperator( "Monitor to Wavelength");
+     Object Result = null;
+     if( dsOp != null){
+       dsOp.setDefaultParameters();
+       dsOp.getParameter(0).setValue(new Float( -1.0f));
+       dsOp.getParameter(1).setValue(new Float( -1.0f));
+       dsOp.getParameter(2).setValue( new Integer(0));
+       Result = dsOp.getResult();
+       if( (Result  instanceof ErrorString)  )
+          throw new Exception(Result.toString()) ;
+       if( Result  == null)
+          throw new Exception( "Could not Convert " + specType + " to Llamda");
+       ((DataSet)Result).setTitle( specType + "-lambda and scaled");
+       return ((DataSet) Result);
+     }
+     else {
+    	 return ds;
+     }
+     
+ }//ConvertDSToWL
+ 
+ 
+ 
 }//CalcTransmisson
