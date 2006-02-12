@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2006/02/12 21:39:30  dennis
+ *  Now reads the chi, phi and omega values from the XML file and
+ *  constructs a SampleOrientation object after all three have been
+ *  read, rather than using a default constructor and setting the
+ *  values one at a time as they are read.
+ *
  *  Revision 1.3  2004/06/22 15:37:45  rmikk
  *  Added the XMLread and XMLwrite methods
  *  Added a null constructor for the above methods
@@ -202,10 +208,8 @@ public class SampleOrientationAttribute extends Attribute
   }
 
 
-
   public boolean XMLread( InputStream stream )
   {
-        
     //-----------------get name field--------------------
     String Tag = xml_utils.getTag( stream );
     if( Tag == null)
@@ -220,7 +224,6 @@ public class SampleOrientationAttribute extends Attribute
         
     Tag =xml_utils.getEndTag( stream );
 
-
     if( Tag == null)
       return xml_utils.setError( xml_utils.getErrorMessage());
     if( !Tag.equals("/name" ) )
@@ -233,12 +236,12 @@ public class SampleOrientationAttribute extends Attribute
     if( Tag == null)
       return xml_utils.setError( xml_utils.getErrorMessage() );
     if( !Tag.equals("value"))
-      return xml_utils.setError( "missing value tag in SampleOrientation" + Tag ); 
+      return xml_utils.setError( "missing value tag in SampleOrientation"+Tag); 
     if(!xml_utils.skipAttributes( stream))
       return xml_utils.setError( xml_utils.getErrorMessage());
 
 
-             //-----------actual values--------
+    //-----------actual values--------
     String pcom=xml_utils.getValue( stream);
     String err = xml_utils.getErrorMessage();
     if( pcom == null ) 
@@ -246,24 +249,27 @@ public class SampleOrientationAttribute extends Attribute
     if( err != null)
       return xml_utils.setError( xml_utils.getErrorMessage() );
       
-    IPNS_SCD_SampleOrientation or = new IPNS_SCD_SampleOrientation( 0f , 0f , 0f );
     pcom = pcom.trim();
     try{
       int j = pcom.indexOf(' ');
       String S = pcom.substring(0,j).trim();
-      Float F = new Float( S);
-      float f = F.floatValue();
-      or.setPhi(  f);
+
+      Float F = new Float( S );
+      float phi = F.floatValue();
+
       pcom = pcom.substring(j).trim();
       j=pcom.indexOf(' ');
-      or.setChi((new Float( pcom.substring(0,j).trim())).floatValue() );
+      float chi   = (new Float( pcom.substring(0,j).trim())).floatValue();
+      float omega = (new Float( pcom.substring(  j).trim())).floatValue();
 
-      or.setOmega((new Float( pcom.substring(j).trim()) ).floatValue() );
-      value = or;
+      IPNS_SCD_SampleOrientation samp_orientation = 
+                            new IPNS_SCD_SampleOrientation( phi, chi , omega);
+      value = samp_orientation;
 
     }catch( Exception ss ){
            
-      DataSetTools.util.SharedData.addmsg( "Improper format for Sample orientation values" );
+      DataSetTools.util.SharedData.addmsg( 
+                        "Improper format for Sample orientation values" );
       String S ;
       if( !xml_utils.skipAttributes( stream ) )
         return false;
