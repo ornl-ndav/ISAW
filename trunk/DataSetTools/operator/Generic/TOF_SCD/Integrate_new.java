@@ -30,6 +30,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2006/02/12 20:53:10  dennis
+ * Now gets the initial path from Data block, if the initial path
+ * attribute is not set on the whole DataSet.  This fixes a problem
+ * with using Integrate_new.java on IPNS data, since the initial path
+ * was not set on the whole DataSet, but on individual Data blocks
+ * for IPNS data.
+ *
  * Revision 1.6  2006/02/06 19:55:00  dennis
  * Removed unused private method and unused import.
  *
@@ -913,7 +920,15 @@ public class Integrate_new extends GenericTOF_SCD{
 
     SampleOrientation samp_or = AttrUtil.getSampleOrientation( ds );
     XScale x_scale = ds.getData_entry(0).getX_scale();
-    float initial_path = AttrUtil.getInitialPath( ds );
+
+    float initial_path = AttrUtil.getInitialPath( ds );  // get initial path
+    int index = 0;                                       // from ds or data
+    while ( Float.isNaN( initial_path ) && index < ds.getNum_entries() )
+    {
+      initial_path = AttrUtil.getInitialPath( ds.getData_entry(index) );
+      index++;
+    }
+
     int run_nums[] = AttrUtil.getRunNumber( ds );
 
     float min_tof = x_scale.getStart_x();
@@ -925,11 +940,11 @@ public class Integrate_new extends GenericTOF_SCD{
                                         max_tof,
                                         samp_or.getGoniometerRotationInverse(),
                                         inv_orientation_tran );
-    /*
+    
     System.out.println("MIN, MAX HKL FOR GRID ID " + grid.ID() );
     System.out.println("  MIN: " + min_max_hkl[0] );
     System.out.println("  MAX: " + min_max_hkl[1] );
-    */
+    
     int min_h = (int)Math.round(min_max_hkl[0].get()[0]) - 1;
     int max_h = (int)Math.round(min_max_hkl[1].get()[0]) + 1;
     int min_k = (int)Math.round(min_max_hkl[0].get()[1]) - 1;
