@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/02/12 03:45:38  dennis
+ * Fixed calculation in update_xcm_ycm_wl().
+ * Commented out calls to super(), since this version is actually
+ * indepnendent of it's super class.  This should be changed to not
+ * be derived from the Peak() class at all.
+ *
  * Revision 1.12  2006/01/17 22:44:10  rmikk
  * Fixed the clone method to ensure that the UB and hkl values correspond
  *   to the parent peak
@@ -176,11 +182,11 @@ public class Peak_new extends Peak{
       this.y = y;
       this.z =z;
       this.orient = orient;
-      super.pixel( x,y ,z);
+      //super.pixel( x,y ,z);
       this.Grid( grid );                // needed to set the super class detnum
       this.L1 = initialPath;
-      super.L1(L1);
-      super.sample_orient( orient.getChi(), orient.getPhi(), orient.getOmega());
+      //super.L1(L1);
+      //super.sample_orient( orient.getChi(), orient.getPhi(), orient.getOmega());
       this.timeAdjustment = timeAdjustment;
       
       this.chi=orient.getChi();
@@ -201,9 +207,9 @@ public class Peak_new extends Peak{
          
          detA=(float)(180*Math.atan2(pp[1],pp[0])/Math.PI);
          detD = detD();
-         super.detA2( detA2);
-         super.detA( detA);
-         super.detD( detD);
+         //super.detA2( detA2);
+         //super.detA( detA);
+         //super.detD( detD);
          setUpRot( grid);
          update_xcm_ycm_wl();
       }
@@ -212,10 +218,13 @@ public class Peak_new extends Peak{
 
 
  private void update_xcm_ycm_wl(){
-  
+ /* 
          this.xcm = 100*grid.position(y,x).get()[0];
          this.ycm = 100*grid.position(y,x).get()[1];
-         
+*/         
+         this.xcm = 100*grid.x(y,x);
+         this.ycm = 100*grid.y(y,x);
+
          this.wl =DataSetTools.math.tof_calc.Wavelength(L1+
                    grid.position(y,x).length(), this.t);
 
@@ -253,7 +262,7 @@ public class Peak_new extends Peak{
    *  Mutator method for the sequence number.
    */
   public int seqnum(int SEQNUM){
-    super.seqnum(SEQNUM);
+    //super.seqnum(SEQNUM);
     this.seqnum=SEQNUM;
    
     return this.seqnum();
@@ -289,11 +298,11 @@ public class Peak_new extends Peak{
     this.k=K;
     this.l=L;
     if( (!propogate) ||( UB== null)){
-      super.sethkl( H , K , L ,propogate);
+      //super.sethkl( H , K , L ,propogate);
       return;
      
     }else
-      super.sethkl( H, K, L, false);
+      //super.sethkl( H, K, L, false);
     float[] Q = new float[3];
     for( int i=0; i<3;i++)
        Q[i] = UB[i][0]*H+UB[i][1]*K+UB[i][2]*L;
@@ -411,7 +420,7 @@ public class Peak_new extends Peak{
     needUpdate = true;
     this.grid = grid;
     
-    super.detnum( grid.ID());
+    //super.detnum( grid.ID());
     this.detnum = grid.ID();
     if( grid != null ){
          Vector3D pos = grid.position();
@@ -421,9 +430,9 @@ public class Peak_new extends Peak{
          
          detA=(float)(180*Math.atan2(pp[1],pp[0])/Math.PI);
          detD = detD();
-         super.detA2( detA2);
-         super.detA( detA);
-         super.detD( detD);
+         //super.detA2( detA2);
+         //super.detA( detA);
+         //super.detD( detD);
          setUpRot(grid);
          update_xcm_ycm_wl();
       }  
@@ -524,7 +533,7 @@ public class Peak_new extends Peak{
    *  Mutator method for the intensity.
    */
   public int ipkobs(int IPKOBS){
-    super.ipkobs( IPKOBS);
+    //super.ipkobs( IPKOBS);
     this.ipkobs=IPKOBS;
     return this.ipkobs();
   }
@@ -540,7 +549,7 @@ public class Peak_new extends Peak{
    *  Mutator method for the integrated intensity
    */
   public float inti(float INTI){
-    super.inti(INTI);
+    //super.inti(INTI);
     this.inti=INTI;
     return this.inti();
   }
@@ -557,7 +566,7 @@ public class Peak_new extends Peak{
    *  Mutator method for the uncertainty in integrated intensity
    */
   public float sigi(float SIGI){
-    super.sigi(SIGI);
+    //super.sigi(SIGI);
     this.sigi=SIGI;
     return this.sigi();
   }
@@ -574,7 +583,7 @@ public class Peak_new extends Peak{
    *  Mutator method for the reflection flag.
    */
   public int reflag(int REFLAG){
-    super.reflag(REFLAG);
+    //super.reflag(REFLAG);
     this.reflag=REFLAG;
     return this.reflag();
   }
@@ -590,7 +599,7 @@ public class Peak_new extends Peak{
    *  Mutator method for the run number.
    */
   public int nrun(int NRUN){
-    super.nrun(NRUN);
+    //super.nrun(NRUN);
     this.nrun=NRUN;
     return this.nrun();
     }
@@ -614,7 +623,7 @@ public class Peak_new extends Peak{
    * Mutator method for the integrated monitor intensity
    */
   public float monct(float MONCT){
-    super.monct( MONCT);
+    //super.monct( MONCT);
     this.monct=MONCT;
     return this.monct();
   }
@@ -632,7 +641,7 @@ public class Peak_new extends Peak{
    */
   public float nearedge(int MINX, int MAXX,int MINY, int MAXY,
                         int MINZ, int MAXZ){
-    super.nearedge(MINX,MAXX,MINY,MAXY,MINZ,MAXZ);
+    //super.nearedge(MINX,MAXX,MINY,MAXY,MINZ,MAXZ);
     if( this.x==-1 || this.y==-1 || this.z==-1 ){
       this.nearedge=-1;
       return this.nearedge;
@@ -673,7 +682,7 @@ public class Peak_new extends Peak{
    *  Mutator method for the primary flight path in meters.
    */
   public void L1(float path){
-      super.L1(path);
+      //super.L1(path);
       needUpdate=true;
       this.L1=path;
     }
@@ -708,7 +717,7 @@ public class Peak_new extends Peak{
     this.phi=PHI;
     this.omega=OMEGA;
     needUpdate =true;
-    super.sample_orient( CHI, PHI,OMEGA);
+    //super.sample_orient( CHI, PHI,OMEGA);
    
     // create a new rotation matrix
      //this.ROT=makeROT(this.chi,this.phi,this.omega);
