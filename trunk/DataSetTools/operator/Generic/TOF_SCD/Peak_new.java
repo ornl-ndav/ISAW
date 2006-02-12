@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2006/02/12 04:17:24  rmikk
+ * Removed a useless else statement
+ *
  * Revision 1.13  2006/02/12 03:45:38  dennis
  * Fixed calculation in update_xcm_ycm_wl().
  * Commented out calls to super(), since this version is actually
@@ -301,7 +304,7 @@ public class Peak_new extends Peak{
       //super.sethkl( H , K , L ,propogate);
       return;
      
-    }else
+    }
       //super.sethkl( H, K, L, false);
     float[] Q = new float[3];
     for( int i=0; i<3;i++)
