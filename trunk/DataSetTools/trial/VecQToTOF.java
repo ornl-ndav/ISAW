@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2006/02/13 03:28:25  dennis
+ *  Added a constructor that takes a DataSet and the DataGrid in
+ *  that DataSet for which the transformations are to be done.
+ *
  *  Revision 1.23  2006/01/17 03:44:30  dennis
  *  Made all instance variables private.
  *
@@ -184,9 +188,6 @@ public class VecQToTOF
   private int      n_rows,
                    n_cols;
 
-  private float    det_width,
-                   det_height;
-
   private float    initial_path,
                    t0;
 
@@ -221,20 +222,20 @@ public class VecQToTOF
 
   /* --------------------------- constructor ------------------------- */
   /** 
-   *  Construct a VecQToTOF conversion object, from the specified 
+   *  Construct a VecQToTOF conversion object, using the specified 
    *  area detector DataGrid from in the specified DataSet.
    *  The DataGrid must have had it's Data block references set, and the
-   *  Data blocks must be in terms of time-of-flight.  It must also have
-   *  a SampleOrientation defined and the initial flight path defined.
+   *  Data blocks must be in terms of time-of-flight.  The DataSet must also
+   *  have a SampleOrientation defined and the initial flight path defined.
    *
-   *  @param  ds   The DataSet from which the first area detector's DataGrid
-   *               is used.
+   *  @param  ds   The DataSet from which the area detector DataGrid in
+   *               position "det_index" will be used. 
    *
-   *  @param  det_num  Should be an integer, 1,2,3... which specifies whether
-   *                   the first, second, third, etc. area detector from the
-   *                   DataSet is used.
+   *  @param  det_index  Should be an integer, 1,2,3... which specifies whether
+   *                     the first, second, third, etc. area detector from the
+   *                     DataSet is used.
    */
-  public VecQToTOF( DataSet ds, int det_num )
+  public VecQToTOF( DataSet ds, int det_index )
   {
     if ( ds == null )
       throw new InstantiationError(
@@ -245,52 +246,13 @@ public class VecQToTOF
       throw new InstantiationError(
                 "ERROR: need time-of-flight DataSet in VecQToTOF constructor" );
     
-    int n_data = ds.getNum_entries();
-    int num_area_detectors_found = 0;
+    grid = Grid_util.getAreaGridByIndex( ds, det_index );
 
-    Data d = null;
-    PixelInfoList pil;
-    Attribute attr;
-    boolean area_detector_found  = false;
-    boolean right_detector_found = false;
-    int data_index = 1;
-    while ( !right_detector_found && data_index < n_data )
-    {
-      while ( !area_detector_found && data_index < n_data )
-      {
-        d = ds.getData_entry( data_index );
-        attr = d.getAttribute( Attribute.PIXEL_INFO_LIST );
-        if ( attr != null && attr instanceof PixelInfoListAttribute )
-        {
-          pil  = (PixelInfoList)attr.getValue();
-          grid = pil.pixel(0).DataGrid(); 
-          if ( grid.num_rows() > 1 && grid.num_cols() > 1 )
-          {
-            area_detector_found = true;
-            num_area_detectors_found++;
-            if ( det_num == num_area_detectors_found )
-              right_detector_found = true;
-                                                              // skip the 
-            data_index += grid.num_rows() * grid.num_cols();  // other pixels
-          }                                                   // in this grid
-        }
-        else 
-        {
-          System.out.println(
-             "ERROR: need PixelInfoList attribute in VecQToTOF constructor");
-          return;
-        }
-        data_index++;
-      }
-      if ( !right_detector_found )
-        area_detector_found = false;    // start looking for the next area det
-    }
-
-    if ( !right_detector_found )
+    if ( grid == null )
     {
       if ( debug )
-        System.out.println("Didn't find ith area detector, i = " + det_num );
-      throw new InstantiationError("ERROR:Didn't find area det#"+det_num);
+        System.out.println( "Didn't find ith area detector, i = " + det_index );
+      throw new InstantiationError( "ERROR:Didn't find area det#"+det_index );
     }
 
     if ( !grid.isData_entered() )
@@ -298,27 +260,86 @@ public class VecQToTOF
       throw new InstantiationError(
                 "ERROR: Can't set Data grid entries in VecQToTOF constructor");
 
-    attr = d.getAttribute( Attribute.INITIAL_PATH );
+    Data d = grid.getData_entry(1,1);
+    Attribute attr = d.getAttribute( Attribute.INITIAL_PATH );
     if ( attr != null )
       initial_path = (float)(attr.getNumericValue());
     else
       throw new InstantiationError(
                 "ERROR: Need initial path in VecQToTOF constructor");
 
-    attr = d.getAttribute(Attribute.T0_SHIFT);
+    init( ds, grid );
+  }
+
+
+  /* --------------------------- constructor ------------------------- */
+  /** 
+   *  Construct a VecQToTOF conversion object, using the specified 
+   *  DataGrid in the specified DataSet.
+   *  The DataGrid must have had it's Data block references set, and the
+   *  Data blocks must be in terms of time-of-flight.  The DataSet must also
+   *  have a SampleOrientation defined and the initial flight path defined.
+   *
+   *  @param  ds   The DataSet containing the area detector 
+   *
+   *  @param  new_grid  The DataGrid for the area detector to use for
+   *                    this tranformer object.
+   */
+  public VecQToTOF( DataSet ds, IDataGrid new_grid )
+  {
+    if ( ds == null )
+      throw new InstantiationError(
+                "ERROR: DataSet null in VecQToTOF constructor" );
+
+    String units = ds.getX_units();
+    if ( !units.equalsIgnoreCase( "Time(us)" ) )
+      throw new InstantiationError(
+                "ERROR: need time-of-flight DataSet in VecQToTOF constructor" );
+
+    grid = new_grid; 
+
+    if ( grid == null )
+    {
+      if ( debug )
+        System.out.println( "DataGrid null in VecQToTOF constructor" );
+      throw new InstantiationError
+                   ( "ERROR:DataGrid null in VecQToTOF constructor" );
+    }
+
+    if ( !grid.isData_entered() )
+      if ( !grid.setData_entries( ds ) )
+      throw new InstantiationError(
+                "ERROR: Can't set Data grid entries in VecQToTOF constructor");
+
+    Data d = grid.getData_entry(1,1);
+    Attribute attr = d.getAttribute( Attribute.INITIAL_PATH );
+    if ( attr != null )
+      initial_path = (float)(attr.getNumericValue());
+    else
+      throw new InstantiationError(
+                "ERROR: Need initial path in VecQToTOF constructor");
+
+    init( ds, grid );
+  }
+
+
+
+  /*
+   *  Finish the initialization that is common to all constructors
+   */ 
+  private void init( DataSet ds, IDataGrid grid )
+  {
+    Data d = grid.getData_entry( 1, 1 ); 
+    Attribute attr = d.getAttribute(Attribute.T0_SHIFT);
     if ( attr != null )
       t0 = (float)attr.getNumericValue();
     else
       t0 = 0;
 
-//    System.out.println("DataGrid is : " + grid );
-//    System.out.println("initial path: " + initial_path);
-
     n_rows = grid.num_rows();
     n_cols = grid.num_cols();
                              // to make searching quicker, save one copy of the
                              // bin boundaries for the TOF for this detector
-
     same_xscale = true;
     XScale xscale = grid.getData_entry( 1, 1 ).getX_scale();
     int col;
@@ -340,21 +361,12 @@ public class VecQToTOF
     u = grid.x_vec();
     v = grid.y_vec();
     n = grid.z_vec();
-    det_width  = grid.width();
-    det_height = grid.height();
 
     Vector3D corner1 = grid.position( 1, 1 );    
     Vector3D corner2 = grid.position( grid.num_rows(), grid.num_cols() );
     Vector3D temp = new Vector3D( corner1 );
     temp.subtract( corner2 );
-/*
-    System.out.println("n_rows,cols = " + n_rows + ", " + n_cols );
-    System.out.println("u = " + u );
-    System.out.println("v = " + v ); 
-    System.out.println("n = " + n ); 
-    System.out.println("det_width, height = " + det_width + 
-                                         ", " + det_height  );
-*/
+
     det_center = new Vector3D( corner1 );   // find "center" as average of
     det_center.multiply( 0.5f );            // two opposite corners
     temp.set( corner2 );
@@ -366,9 +378,6 @@ public class VecQToTOF
 
     goniometerR    = orientation.getGoniometerRotation();
     goniometerRinv = orientation.getGoniometerRotationInverse();    
-
-//    System.out.println("R    = " + goniometerR );
-//    System.out.println("Rinv = " + goniometerRinv );
 
     // To allow for quickly discarding q's that couldn't come from this 
     // detector & chi,phi,omega, we keep a unit vector in the direction of
