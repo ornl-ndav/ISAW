@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2006/02/13 03:26:06  dennis
+ *  Added convenience method getAreaGridByIndex() to get the N_th
+ *  area detector grid in a DataSet.
+ *
  *  Revision 1.7  2005/06/14 23:15:50  dennis
  *  Minor clarification of javadocs.
  *
@@ -226,10 +230,9 @@ public class Grid_util
     if ( ds == null || ds.getNum_entries() <= 0 )
       return null;
 
-    int           num_area_detectors_found = 0;
-    int           n_data                   = ds.getNum_entries();
-    Data          d                        = null;
-    IDataGrid     grid                     = null;
+    int           n_data = ds.getNum_entries();
+    Data          d      = null;
+    IDataGrid     grid   = null;
     PixelInfoList pil;
     Attribute     attr;
     boolean       area_detector_found  = false;
@@ -248,7 +251,6 @@ public class Grid_util
           if ( grid.num_rows() > 1 && grid.num_cols() > 1 )
           {
             area_detector_found = true;
-            num_area_detectors_found++;
             if ( det_id == grid.ID() )
               right_grid_found = true;
                                                                 // skip the
@@ -270,9 +272,84 @@ public class Grid_util
     if ( !right_grid_found )
     {
       System.out.println("ERROR:Didn't find area det#" + det_id +
-                         " in getAreaGrid");
+                         " in Grid_util.getAreaGrid()");
       return null;
     }
+    return grid;
+  }
+
+
+  /**
+   *  Get an IDataGrid for an area detector, specified by by the it's position 
+   *  in the list of area detectors, numbered 1,2,3,...etc.
+   *  This assumes that all of the Data blocks for each detector
+   *  are present and are in consecutive positions in the DataSet.  This will
+   *  be the case when a DataSet has just been loaded from an IPNS runfile,
+   *  but may NOT be the case if Data blocks have been removed, inserted
+   *  or reordered.
+   *
+   *  @param ds        The DataSet to look through to find the IDataGrid
+   *  @param det_index The index of the IDataGrid, 1, 2, 3 etc, in the
+   *                   list of area detectors in the DataSet.
+   *
+   *  @return  If the specified area detector DataGrid is found, a reference
+   *           to it will be returned.  If it is not found, null will be
+   *           returned.
+   */
+  public static IDataGrid getAreaGridByIndex( DataSet ds, int det_index )
+  {
+    if ( ds == null || ds.getNum_entries() <= 0 )
+      return null;
+
+    int n_data = ds.getNum_entries();
+    int num_area_detectors_found = 0;
+
+    Data          d    = null;
+    PixelInfoList pil  = null;
+    IDataGrid     grid = null;
+    Attribute attr;
+    boolean area_detector_found  = false;
+    boolean right_detector_found = false;
+    int data_index = 1;
+    while ( !right_detector_found && data_index < n_data )
+    {
+      while ( !area_detector_found && data_index < n_data )
+      {
+        d = ds.getData_entry( data_index );
+        attr = d.getAttribute( Attribute.PIXEL_INFO_LIST );
+        if ( attr != null && attr instanceof PixelInfoListAttribute )
+        {
+          pil  = (PixelInfoList)attr.getValue();
+          grid = pil.pixel(0).DataGrid();
+          if ( grid.num_rows() > 1 && grid.num_cols() > 1 )
+          {
+            area_detector_found = true;
+            num_area_detectors_found++;
+            if ( det_index == num_area_detectors_found )
+              right_detector_found = true;
+                                                              // skip the 
+            data_index += grid.num_rows() * grid.num_cols();  // other pixels
+          }                                                   // in this grid
+        }
+        else
+        {
+          System.out.println(
+             "ERROR: need PixelInfoList attribute in VecQToTOF constructor");
+          return null;
+        }
+        data_index++;
+      }
+      if ( !right_detector_found )
+        area_detector_found = false;    // start looking for the next area det
+    }
+
+    if ( !right_detector_found )
+    {
+      System.out.println("Didn't find ith area detector, i = " + det_index +
+                         "in Grid_util.getAreaGridByIndex()" );
+      return null;
+    }
+
     return grid;
   }
 
