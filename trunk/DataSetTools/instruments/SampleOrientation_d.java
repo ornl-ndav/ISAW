@@ -30,6 +30,13 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2006/02/13 00:09:07  dennis
+ *  Reorganized to calculate and store the goniometer rotation
+ *  matrix, and it's inverse when the object is constructed, to
+ *  allow getting these rotations more efficiently.
+ *  Removed methods to set chi, phi, omega individually.  If these
+ *  are changed, a new SampleOrientation object should be constructed.
+ *
  *  Revision 1.3  2004/03/15 06:10:40  dennis
  *  Removed unused import statements.
  *
@@ -79,13 +86,17 @@ abstract public class SampleOrientation_d implements Serializable
                                              // REMOVING FIELDS, IF
                                              // readObject() CAN FIX ANY
                                              // COMPATIBILITY PROBLEMS
-  protected double phi;
-  protected double chi;
-  protected double omega;
+  protected double    phi;
+  protected double    chi;
+  protected double    omega;
+  protected Tran3D_d  goniometer_rotation;
+  protected Tran3D_d  goniometer_rotation_inverse;
+
 
   /**
-   *  Construct a SampleOrientation_d object with the values specified in
-   *  degrees.
+   *  Construct a SampleOrientation object from the values of phi, chi and
+   *  omega, specified in degrees, following the conventions of the
+   *  particular goniometer. 
    *
    *  @param  phi    This is the angle to rotate by first about the z-axis. 
    *  @param  chi    This is the angle to rotate by second about the x-axis.
@@ -97,18 +108,10 @@ abstract public class SampleOrientation_d implements Serializable
     this.phi   = phi;
     this.chi   = chi;
     this.omega = omega;
+
+    build_transforms();
   }
  
-  /**
-   *  Set the value of the "phi" goniometer angle, for this
-   *  sample orientation.
-   *
-   *  @param  phi    The phi angle
-   */
-  public void setPhi( double phi )
-  {
-    this.phi = phi;
-  }
 
   /**
    *  Get the value of the "phi" goniometer angle, for this sample orientation.
@@ -120,15 +123,6 @@ abstract public class SampleOrientation_d implements Serializable
     return phi;
   }
 
-  /**
-   *  Set the value of the "chi" goniometer angle, for this sample orientation.
-   *
-   *  @param  chi    The chi angle
-   */
-  public void setChi( double chi )
-  {
-    this.chi = chi;
-  }
 
   /**
    *  Get the value of the "chi" goniometer angle, for this sample orientation.
@@ -140,15 +134,6 @@ abstract public class SampleOrientation_d implements Serializable
     return chi;
   }
 
-  /**
-   *  Set the value of the "omega" goniometer angle for this sample orientation.
-   *
-   *  @param  omega    The omega angle
-   */
-  public void setOmega( double omega )
-  {
-    this.omega = omega;
-  }
 
   /**
    *  Get the value of the "omega" goniometer angle for this sample orientation.
@@ -162,27 +147,50 @@ abstract public class SampleOrientation_d implements Serializable
 
   /**
    *  Get the rotation matrix representing the rotation of the sample in
-   *  the Goniometer by the current phi, chi and omega values.  The sign
-   *  conventions used are determined by the particular derived class.
+   *  the Goniometer by the current phi, chi and omega values.  The 
+   *  conventions for the interpretation of phi, chi and omega, are 
+   *  determined by the particular derived class.
    *
    *  @return the rotation matrix representing the rotation applied to 
    *          the sample using the current values of the angles phi, chi 
    *          and omega.
    */
-  abstract public Tran3D_d getGoniometerRotation();
+  public Tran3D_d getGoniometerRotation()
+  {
+    return new Tran3D_d( goniometer_rotation );  // NOTE: If Tran3D wasn't
+                                                 // mutable, we could have 
+                                                 // returned a referenc
+  }
+
 
   /**
    *  Get the inverse of the rotation matrix representing the rotation 
    *  of the sample in the Goniometer by the current phi, chi and omega 
    *  values.  The matrix returned is the matrix required to "unwind" the
    *  rotation and put measured "Q" values in the same coordinate system,
-   *  relative to the crystal.
+   *  relative to the crystal.  The conventions for the interpretation of
+   *  of phi, chi and omega, are determined by the particular derived class.
    *
    *  @return the matrix that reverses the goniometer rotations to put
    *          measured "Q" values in a coordinate system relative to the
    *          crystal.
    */
-  abstract public Tran3D_d getGoniometerRotationInverse();
+  public Tran3D_d getGoniometerRotationInverse()
+  {
+    return new Tran3D_d( goniometer_rotation_inverse );
+                                               // NOTE: If Tran3D wasn't
+                                               // mutable, we could have 
+                                               // returned a referenc
+  }
+
+
+  /**
+   *  Construct the transform representing the rotation and inverse rotation
+   *  of the goniometer, following the conventions of the specific type
+   *  of goniometer corresponding to the concrete derived class.
+   */
+  abstract protected void build_transforms();
+
 
 /* -----------------------------------------------------------------------
  *

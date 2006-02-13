@@ -30,6 +30,13 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2006/02/13 00:09:06  dennis
+ *  Reorganized to calculate and store the goniometer rotation
+ *  matrix, and it's inverse when the object is constructed, to
+ *  allow getting these rotations more efficiently.
+ *  Removed methods to set chi, phi, omega individually.  If these
+ *  are changed, a new SampleOrientation object should be constructed.
+ *
  *  Revision 1.3  2004/03/15 06:10:40  dennis
  *  Removed unused import statements.
  *
@@ -45,14 +52,13 @@
 
 package  DataSetTools.instruments;
 
-import gov.anl.ipns.MathTools.Geometry.*;
-
 import DataSetTools.math.*;
 
 /**
  *  This class stores the phi, chi and omega values and computes the 
  *  corresponding rotation matrices using the conventions employed by the
- *  SCD instrument at IPNS.
+ *  SCD instrument at IPNS, for which the direction of the omega angle
+ *  is reversed.
  */  
 
 public class IPNS_SCD_SampleOrientation_d extends SampleOrientation_d
@@ -74,36 +80,18 @@ public class IPNS_SCD_SampleOrientation_d extends SampleOrientation_d
     super( phi, chi, omega );
   }
 
-  /**
-   *  Get the rotation matrix representing the rotation of the sample in
-   *  the Goniometer by the current phi, chi and omega values.  The sign
-   *  convention used is the convention used on the SingleCrystalDiffractometer
-   *  at IPNS.  That is, omega specifies a rotation about the negative z 
-   *  axis.
-   *
-   *  @return the rotation matrix for the angles phi, chi and omega.
-   */
-  public Tran3D_d getGoniometerRotation()
-  {
-    return tof_calc_d.makeEulerRotation( phi, chi, -omega );
-  }
 
-  /**
-   *  Get the inverse of the rotation matrix representing the rotation 
-   *  of the sample in the Goniometer by the current phi, chi and omega 
-   *  values.  The matrix returned is the matrix required to "unwind" the
-   *  rotation and put measured "Q" values in the same coordinate system,
-   *  relative to the crystal.  The sign convention used is the convention 
-   *  used on the SingleCrystalDiffractometer at IPNS.  That is, omega 
-   *  specifies a rotation about the negative z-axis.
-   *
-   *  @return the matrix that reverses the goniometer rotations to put
-   *          measured "Q" values in a coordinate system relative to the
-   *          crystal.
+  /*
+   *  Construct the transforms corresponding to the IPNS SCD, where the
+   *  direction of the omega angle is reversed relative to the ISAW
+   *  conventions.
    */
-  public Tran3D_d getGoniometerRotationInverse()
+  protected void build_transforms()
   {
-    return tof_calc_d.makeEulerRotationInverse( phi, chi, -omega );
+    goniometer_rotation = tof_calc_d.makeEulerRotation( phi, chi, -omega );
+
+    goniometer_rotation_inverse =
+                   tof_calc_d.makeEulerRotationInverse( phi, chi, -omega );
   }
 
 
