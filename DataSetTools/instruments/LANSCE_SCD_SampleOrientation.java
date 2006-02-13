@@ -30,6 +30,13 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2006/02/13 00:09:06  dennis
+ *  Reorganized to calculate and store the goniometer rotation
+ *  matrix, and it's inverse when the object is constructed, to
+ *  allow getting these rotations more efficiently.
+ *  Removed methods to set chi, phi, omega individually.  If these
+ *  are changed, a new SampleOrientation object should be constructed.
+ *
  *  Revision 1.3  2006/01/16 03:05:21  dennis
  *  Changed some parameters & return values to float, which were
  *  accidentally set to double.
@@ -50,8 +57,6 @@
 
 package  DataSetTools.instruments;
 
-import gov.anl.ipns.MathTools.Geometry.*;
-
 import DataSetTools.math.*;
 
 /**
@@ -70,11 +75,13 @@ import DataSetTools.math.*;
 
 public class LANSCE_SCD_SampleOrientation extends SampleOrientation
 {
-  private static float omega_offset = 91.5f;    // default offset
+  private static  float omega_offset = 91.5f;    // default offset
+
 
   /**
    *  Construct a SampleOrientation object with the values specified in
-   *  degrees following the sign conventions for the SCD instrument at LANSCE.
+   *  degrees following the sign conventions and omega offset as needed
+   *  for the SCD instrument at LANSCE.
    *
    *  @param  phi    This is the angle (in degrees) to rotate by first 
    *                 about the positive y-axis.  The positive y-axis points
@@ -84,6 +91,7 @@ public class LANSCE_SCD_SampleOrientation extends SampleOrientation
    *                 in the direction the beam of neutrons travel.
    *                 As the goniometer is currently set up at the LANSCE SCD,
    *                 chi is fixed at 120 degrees.
+   *
    *  @param  omega  This is the angle (in degrees) to rotate by third 
    *                 about the positive y-axis.  The values read from the
    *                 goniometer are offset by approximately 91.5 degrees
@@ -92,38 +100,6 @@ public class LANSCE_SCD_SampleOrientation extends SampleOrientation
   public LANSCE_SCD_SampleOrientation( float phi, float chi, float omega  )
   {
     super( phi, chi, omega );
-  }
-
-
-  /**
-   *  Get the rotation matrix representing the rotation of the sample in
-   *  the Goniometer by the current phi, chi and omega values.  The sign
-   *  convention used is the convention used on the single crystal
-   *  diffractometer at LANSCE. 
-   *
-   *  @return the rotation matrix for the angles phi, chi and omega.
-   */
-  public Tran3D getGoniometerRotation()
-  {
-    return tof_calc.makeEulerRotation( phi, chi, omega + omega_offset );
-  }
-
-
-  /**
-   *  Get the inverse of the rotation matrix representing the rotation 
-   *  of the sample in the Goniometer by the current phi, chi and omega 
-   *  values.  The matrix returned is the matrix required to "unwind" the
-   *  rotation and put measured "Q" values in the same coordinate system,
-   *  relative to the crystal.  The sign convention used is the convention 
-   *  used on the single crystal diffractometer at LANSCE.
-   *
-   *  @return the matrix that reverses the goniometer rotations to put
-   *          measured "Q" values in a coordinate system relative to the
-   *          crystal.
-   */
-  public Tran3D getGoniometerRotationInverse()
-  {
-    return tof_calc.makeEulerRotationInverse(phi, chi, omega + omega_offset);
   }
 
 
@@ -148,6 +124,20 @@ public class LANSCE_SCD_SampleOrientation extends SampleOrientation
   public void setOmegaOffset( float offset )
   {
     omega_offset = offset;
+    build_transforms();
+  }
+
+
+  /*
+   *  Construct the transforms corresponding to the LANSCE SCD, by adding the
+   *  omega offset of about 91.5 degrees to omega.
+   */
+  protected void build_transforms()
+  {
+    goniometer_rotation =
+           tof_calc.makeEulerRotation( phi, chi, omega + omega_offset );
+    goniometer_rotation_inverse =
+           tof_calc.makeEulerRotationInverse( phi, chi, omega + omega_offset );
   }
 
 
