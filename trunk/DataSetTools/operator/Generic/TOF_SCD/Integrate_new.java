@@ -30,6 +30,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2006/02/13 05:07:45  dennis
+ * Now uses new constructor for VecQToTOF that takes a DataSet
+ * and a DataGrid (ie. detector).  This fixes a problem with
+ * integrating IPNS data from the second area detector.
+ *
  * Revision 1.7  2006/02/12 20:53:10  dennis
  * Now gets the initial path from Data block, if the initial path
  * attribute is not set on the whole DataSet.  This fixes a problem
@@ -907,7 +912,7 @@ public class Integrate_new extends GenericTOF_SCD{
     logBuffer.append("detD="+detD+"  detA="+detA+"  detA2="+detA2+"\n");
 
     // determine the detector limits in hkl
-    VecQToTOF transformer = new VecQToTOF( ds );
+    VecQToTOF transformer = new VecQToTOF( ds, grid );
 
     float UB_times_2PI[][] = new float[3][3];
     for ( int row = 0; row < 3; row++ )
