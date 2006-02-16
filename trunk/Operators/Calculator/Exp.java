@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2006/02/16 23:02:44  hammonds
+ *  Fix stray text.
+ *
  *  Revision 1.1  2006/02/16 23:01:17  hammonds
  *  New operator
  *
@@ -63,11 +66,11 @@ public class Exp extends GenericCalculator{
    *
    * @param a the value used as the input for e^inputVal will be calculated
    */
-  public Exp( float a ){package
+  public Exp( float a ){
     this(); 
     
     getParameter(0).setValue(new Float(a));
-  }package
+  }
 
   /**
    * Returns description/attributes of Sqrt for a user
