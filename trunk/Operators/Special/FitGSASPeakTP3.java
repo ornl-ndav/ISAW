@@ -60,14 +60,14 @@ public class FitGSASPeakTP3 implements Wrappable, IWrappableWithCategoryList
   public double   max_x = 24440;
   public double   alpha = 0.3;
   public double   beta = 0.03;
-  public double   sigmasqr = 300.0;
+  public double   sigmasqr = 0.0;
   public double   gamma = 0.0;
   public double   tof0 = 0.0;
-  public double   scalef = 1e5;
+  public double   scalef = 0.0;
   public double   m = 0.0;
   public double   y0 = 0.0; 
 
-  private boolean debug_flag = true;
+  private boolean debug_flag = false;
 
   /**
    *  Get the command name to be used in scripts.
@@ -240,7 +240,7 @@ public class FitGSASPeakTP3 implements Wrappable, IWrappableWithCategoryList
 
     boolean is_hist = d.isHistogram();
     if ( is_hist && max_i > xf.length - 2 )
-      return new ErrorString("Histogram points above x_max in FitGaussianPeak");
+      return new ErrorString("Histogram points above x_max in FitGSASPeakTP3");
      
     if ( n_pts < 10 )
       return new ErrorString("Too few points in interval(" + n_pts + ")" );
@@ -297,27 +297,29 @@ public class FitGSASPeakTP3 implements Wrappable, IWrappableWithCategoryList
           y0 = 0;  
 */
 
-    if (tof0 == 0) tof0 = x[index_of_max];
-//    double alpha = 0.3;
-//    double beta = 0.03;
-    double sigmasqr = Math.pow(fwhm/Gaussian.SIGMA_TO_FWHM, 2);
-//    double gamma = 0, m = 0, y0 = 0;
-
-//    double scalef = 35060.83;
-//  double tof0 = 25122.2; 
-//  double sigmasqr = 426.24;
+/*
+    double alpha = 0.3;
+    double beta = 0.03;
+    double gamma = 0, m = 0, y0 = 0;
+    double scalef = 35060.83;
+    double tof0 = 25122.2; 
+    double sigmasqr = 426.24;
+*/
+    if (sigmasqr == 0) sigmasqr = Math.pow(fwhm/Gaussian.SIGMA_TO_FWHM, 2);
     float epsvoigtargs[] = new float[] {0.0f, (float)alpha, (float)beta, (float)sigmasqr, (float)gamma,
     0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
     if ((new GSASFunctions ()).epsvoigt(epsvoigtargs) != 0) //"0" for normal exit;
         throw new RuntimeException("!!!!!!Failed to call the GSAS Fortran subroutine epsvoigt().!!!!!!");
-    double scalef = amplitude/epsvoigtargs[5];
 
+    if (tof0 == 0) tof0 = x[index_of_max];
+
+    if (scalef == 0) scalef = amplitude/epsvoigtargs[5];
 
     GSASTOFProfileFunction3 function = new GSASTOFProfileFunction3
         ( scalef, tof0, alpha, beta, sigmasqr, gamma, m, y0);   
     System.out.println("x0: "+x[index_of_max] +
                        "\nScale Factor: "+scalef +
-                       "\nAmplitude: "+function.getValue(tof0)); 
+                       "\nPeak Value: "+function.getValue(tof0)); 
                        
     ClosedInterval interval = new ClosedInterval((float)min_x, (float)max_x );
     function.setDomain( interval );
