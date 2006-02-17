@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2006/02/17 02:36:22  hammonds
+ *  Change document to use html to show e^x to show as a superscript.
+ *
  *  Revision 1.2  2006/02/16 23:02:44  hammonds
  *  Fix stray text.
  *
@@ -80,13 +83,13 @@ public class Exp extends GenericCalculator{
     StringBuffer sb = new StringBuffer();
 
     // overview
-    sb.append("@overview This operator calculates the exponential raised to the input value.");
+    sb.append("@overview This operator calculates e<sup>inputVal</sup>.");
     // algorithm
     sb.append("@algorithm Value is passed to java's Math.exp");
     // parameters
     sb.append("@param float value whose used as the exponent");
     // return
-    sb.append("@return e^inputVal");
+    sb.append("@return e<sup>inputVal</sup>");
     // errors
     sb.append("@error ");
     
