@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2006/02/20 05:17:39  dennis
+ * Increased the max number of interations from 100 to 2000 to give
+ * more opportunity for the process to converge.  Decreased the
+ * tolerance on the changes in parameters to 1e-15 instead of 1e-20.
+ *
  * Revision 1.8  2004/03/15 06:10:49  dennis
  * Removed unused import statements.
  *
@@ -313,7 +318,7 @@ public class  FitExpressionToGroup  extends    AnalyzeOp
                                            parameter_values );
     model_fun.setDomain( new ClosedInterval( min_x, max_x ) );
     MarquardtArrayFitter fitter = 
-             new MarquardtArrayFitter( model_fun, x, y, sigma, 1.0e-20, 100 );
+             new MarquardtArrayFitter( model_fun, x, y, sigma, 1.0e-15, 2000 );
 
     double p_sigmas[] = fitter.getParameterSigmas();
     double[] coefs = model_fun.getParameters();
