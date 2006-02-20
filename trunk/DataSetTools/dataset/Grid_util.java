@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2006/02/20 23:07:24  dennis
+ *  Added convenience method, getAllDataGrids( ds ), to return a
+ *  Hashtable of all detector grids in the DataSet, whether they
+ *  are single tubes, LPSDs or area detectors.
+ *
  *  Revision 1.8  2006/02/13 03:26:06  dennis
  *  Added convenience method getAreaGridByIndex() to get the N_th
  *  area detector grid in a DataSet.
@@ -80,7 +85,6 @@ import java.util.*;
 
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
-
 
 /** 
  *  This class has static utility methods for manipulating DataGrids and
@@ -146,6 +150,50 @@ public class Grid_util
 
 
   /**
+   *  Get a Hashtable of all of the IDataGrid objects of all dimensions for the
+   *  entries in a DataSet.  Simple detectors, LPSDs and area detectors will
+   *  all be returned if present in the pixel lists of the Data blocks.
+   *  Two IDataGrid objects will be considered equal if their grid IDs are
+   *  equal.  If several grid objects have the same ID, only one of the
+   *  grid objects will be returned in the list of IDataGrids.  (It is NOT
+   *  a good idea to have two IDataGrids with the same ID in the same
+   *  DataSet.)
+   *
+   *  @param ds The DataSet to look through to find the detector grids.
+   *
+   *  @return  An Hastable of detector grids, with the detector IDs as keys.
+   *           This hashtable be empty, if there are no detectors.
+   */
+  public static Hashtable getAllDataGrids( DataSet ds )
+  {
+    if ( ds == null || ds.getNum_entries() <= 0 )
+      return new Hashtable();
+
+    Hashtable  grids = new Hashtable();
+    Data          d                        = null;
+    IDataGrid     grid                     = null;
+    PixelInfoList pil;
+    Attribute     attr;
+    int           id;
+
+    for ( int i = 0; i < ds.getNum_entries(); i++ )
+    {
+       d = ds.getData_entry( i );
+       attr = d.getAttribute( Attribute.PIXEL_INFO_LIST );
+       if ( attr != null && attr instanceof PixelInfoListAttribute )
+       {
+         pil  = (PixelInfoList)attr.getValue();
+         grid = pil.pixel(0).DataGrid();
+         id = grid.ID();
+         grids.put( new Integer( id ), grid );
+       }
+    }
+
+    return grids;
+  }
+
+
+  /**
    *  Get a list of all of the IDs of the all of the IDataGrids for area
    *  detectors, from a DataSet, assuming that all of the Data blocks for 
    *  each detector are present and are in consecutive positions in the 
@@ -156,7 +204,7 @@ public class Grid_util
    *  @param ds The DataSet to look through to find the area detector
    *            grids.
    *
-   *  @return  An array listing the IDs of the area detector gris in the
+   *  @return  An array listing the IDs of the area detector grids in the
    *           specified DataSet.  This array will have length 0, if there
    *           are no area detectors.
    */
@@ -353,6 +401,7 @@ public class Grid_util
     return grid;
   }
 
+
   /**
    *
    *  Basic main program for testing... shows the DataGrids from a DataSet
@@ -381,6 +430,14 @@ public class Grid_util
       setEffectivePositions( ds, area_dets[i] );
     }
     new ViewManager( ds, ViewManager.IMAGE );
+
+    Hashtable grids = getAllDataGrids( ds );
+    Enumeration e = grids.elements();
+    while ( e.hasMoreElements() )
+    {
+      IDataGrid grid = (IDataGrid)e.nextElement();
+      System.out.println( grid );
+    }
   }
 
 }
