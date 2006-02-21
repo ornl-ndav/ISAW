@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2006/02/21 03:28:37  dennis
+ * Now uses the Grid_util.getAllDataGrids() method to get all the
+ * DataGrids for simple tubes, LPSDs or area detectors.  Finished
+ * adapting this 3D reciprocal lattice viewer to be used to view
+ * data from instruments other than just single crystal diffractometers.
+ * Also, removed a few unused variables.
+ *
  * Revision 1.24  2006/02/06 00:19:29  dennis
  * Now uses the SCD_util.DetectorToMinMaxHKL() method to find the
  * extent of the region in HKL space covered by a detector.
@@ -223,9 +230,6 @@ public class GL_RecipPlaneView
 
                                                     // flags for various options
   private boolean iso_surface_shown         = false;
-  private boolean detector_boundaries_shown = false;
-  private boolean hkl_marks_shown           = false;
-  private boolean contours_shown            = false;
 
   private final int DIMENSION = 3;       // set to 4 to allow affine transform
                                          // set to 3 to just use rotation and
@@ -830,8 +834,6 @@ public class GL_RecipPlaneView
 
   public void ShowBoundaries( boolean is_on )
   {
-    detector_boundaries_shown = is_on;
-
     if ( is_on )
     {
       for ( int i = 0; i < vec_q_transformer.size(); i++ )
@@ -850,8 +852,6 @@ public class GL_RecipPlaneView
 
   public void ShowHKL_Marks( boolean is_on )
   {
-    hkl_marks_shown = is_on;
-
     if ( is_on )
     {
       for ( int i = 0; i < vec_q_transformer.size(); i++ )
@@ -870,8 +870,6 @@ public class GL_RecipPlaneView
 
   public void ShowContours( boolean is_on, float level )
   {
-    contours_shown = is_on;
-
     if ( is_on )
     {
       for ( int i = 0; i < vec_q_transformer.size(); i++ )
@@ -1099,14 +1097,12 @@ public class GL_RecipPlaneView
         DataSet ds = (DataSet)data_sets.elementAt(index);
         try
         {
-          for ( int i = 1; i < 3; i++ )
+          Hashtable grid_hash = Grid_util.getAllDataGrids( ds );
+          Enumeration e = grid_hash.elements();
+          while ( e.hasMoreElements() )
           {
-            VecQToTOF transformer = new VecQToTOF( ds, i );
-            if ( debug )
-            {
-              System.out.println("Found Data Grid...................... " );
-              System.out.println( transformer.getDataGrid() );
-            }
+            IDataGrid grid = (IDataGrid)e.nextElement();
+            VecQToTOF transformer = new VecQToTOF( ds, grid );
             vec_q_transformer.add( transformer );
           }
         }
@@ -1158,8 +1154,10 @@ public class GL_RecipPlaneView
 
       SampleOrientation orientation = null;
       attr = d.getAttribute(Attribute.SAMPLE_ORIENTATION);
-      if ( attr != null )
+      if ( attr != null )                                     
         orientation = (SampleOrientation)attr.getValue();
+      else                                                   // provide default
+        orientation = new IPNS_SCD_SampleOrientation( 0, 0, 0 );
 
       float initial_path = 9.378f; 
       attr = d.getAttribute(Attribute.INITIAL_PATH);
