@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2006/02/21 03:22:31  dennis
+ *  Now provides identity matrices as default forward and inverse
+ *  goniometer rotations in case there is no SampleOrientation
+ *  attribute in the DataSet.  This allows this data transformation
+ *  to be used for instruments other than the single crystal
+ *  diffractometers that it was originally designed for.
+ *
  *  Revision 1.24  2006/02/13 03:28:25  dennis
  *  Added a constructor that takes a DataSet and the DataGrid in
  *  that DataSet for which the transformations are to be done.
@@ -376,9 +383,16 @@ public class VecQToTOF
     SampleOrientation orientation =
         (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
 
-    goniometerR    = orientation.getGoniometerRotation();
-    goniometerRinv = orientation.getGoniometerRotationInverse();    
-
+    if ( orientation != null )        // get the forward and inverse rotation
+    {
+      goniometerR    = orientation.getGoniometerRotation();
+      goniometerRinv = orientation.getGoniometerRotationInverse();    
+    }
+    else                              // just use the identity transformation
+    {                                 // if there is not a SampleOrientation
+      goniometerR    = new Tran3D();
+      goniometerRinv = new Tran3D();    
+    }
     // To allow for quickly discarding q's that couldn't come from this 
     // detector & chi,phi,omega, we keep a unit vector in the direction of
     // the q vector corresponding to the the detector center(q_center) as well 
