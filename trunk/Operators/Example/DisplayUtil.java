@@ -30,6 +30,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2006/02/21 03:34:01  dennis
+ * Removed obsolete code from main test program.
+ * Test program now loads and displays a GPPD file in the
+ * reciprocal lattice viewer.
+ *
  * Revision 1.2  2005/06/20 16:49:54  dennis
  * Changed DisplayAsImage to Display_As_Image for consistency with
  * the other method name in this file.
@@ -159,26 +164,9 @@ public class DisplayUtil
    */
   public static void main( String args[] )
   {
-                                              // load the file as best we can
-
-    String file_name = "/usr2/LANSCE_DATA/SCD/SCD_E000005_R000053.nx.hdf";
-    Retriever retriever = new NexusRetriever( file_name );
-    DataSet ds = retriever.getDataSet(3);
-
-                                              // fix the data 
-    float det_width  = 0.20f; 
-    float det_height = 0.20f; 
-    float det_dist   = 0.45f;
-    float length_0   = 9.00f;
-    ds = LansceUtil.FixSCD_Data( ds, 
-                                 1500, 8000, 
-                                 det_width, det_height, 
-                                 det_dist,
-                                 length_0 ); 
-                                              // make a huge virtual array
-                                              // to hold all of the spectra
-                                              // as rows of the iamge
-
+    String file_name = "/usr2/ARGONNE_DATA/gppd12358.run";
+    Retriever rr = new RunfileRetriever( file_name );
+    DataSet ds = rr.getDataSet(1); 
     Display_As_Image( ds );
 
     Vector ds_list = new Vector();
