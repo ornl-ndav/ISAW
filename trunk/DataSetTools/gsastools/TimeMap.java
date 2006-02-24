@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2006/02/24 03:54:00  hammonds
+ *  Check to make sure that all channels are divisble by trial clock value.  Was making sure t & dt had same number channels divisible by clock and that the number is not zero.
+ *
  *  Revision 1.8  2005/04/22 20:47:52  hammonds
  *  Fixed so that terminator is CRLF and so that the last line of time map is 82 columns including CRLF.
  *
@@ -330,7 +333,7 @@ public class TimeMap{
             if(  (t[i]%newclock)==0f ) tcount++;
             if( (dt[i]%newclock)==0f ) dtcount++;
         }
-        if( tcount==dtcount && tcount!=0 ){
+        if( tcount==dtcount && tcount==t.length ){
             /*for( int i=0 ; i<t.length ; i++ ){
               t[i]=t[i]/newclock;
               dt[i]=dt[i]/newclock;
@@ -347,7 +350,7 @@ public class TimeMap{
             if(  (t[i]%newclock)==0f ) tcount++;
             if( (dt[i]%newclock)==0f ) dtcount++;
         }
-        if( tcount==dtcount && tcount!=0 ){
+        if( tcount==dtcount && tcount==t.length ){
             /*for( int i=0 ; i<t.length ; i++ ){
               t[i]=t[i]/newclock;
               dt[i]=dt[i]/newclock;
