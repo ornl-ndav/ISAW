@@ -31,6 +31,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2006/02/25 23:01:06  rmikk
+ * Fixed code that sets unindexed peaks with a null UB.
+ * Fixed getNumIndexed peaks to only consider peaks in the given sequence
+ *   of runs and sequence numbers.
+ *
  * Revision 1.7  2006/01/17 22:41:24  rmikk
  * Set the UB matrix to null and hkl values to zero for peaks that are not
  *   indexed because they are not in selected runs or sequences
@@ -281,12 +286,12 @@ public class IndexJ_base extends    GenericTOF_SCD implements
       peak=(Peak)peaks.elementAt(i);
       if(indexpeak(peak,runs,seqs))
         peak.UB(UB);
-      else{
+      /*else{
       
         peak.UB(null);
         peak.sethkl(0f,0f,0f,false);
         peak.reflag(0);
-      }
+      }*/
     }
 
     // create a StringBuffer for the log
@@ -316,8 +321,9 @@ public class IndexJ_base extends    GenericTOF_SCD implements
     }
 
     ShowLogInfo( log );
+    
     // return the log file name and print the number of indexed peaks
-    SharedData.addmsg( IndexJ_base.getNumIndexed( peaks ));
+    SharedData.addmsg( IndexJ_base.getNumIndexed( peaks,runs,seqs ));
     return log.toString();
    }catch(Exception xx){
      xx.printStackTrace();
@@ -376,17 +382,20 @@ public class IndexJ_base extends    GenericTOF_SCD implements
    * This method goes through a vector of peaks and counts the number
    * of peaks that have indices.
    */
-  private static String getNumIndexed(Vector peaks){
+  private static String getNumIndexed(Vector peaks,int[]runs, int[]seqs){
     Peak peak=null;
     int numIndexed=0;
-
+    int numNotIndexed=0;
     for( int i=0 ; i<peaks.size() ; i++ ){
       peak=(Peak)peaks.elementAt(i);
-      if( peak.h()!=0 || peak.k()!=0 || peak.l()!=0 )
-        numIndexed++;
+      if(indexpeak(peak,runs,seqs))
+         if( peak.h()!=0 || peak.k()!=0 || peak.l()!=0 )
+            numIndexed++;
+         else
+        	numNotIndexed++;
     }
 
-    return "Indexed "+numIndexed+" of "+peaks.size()+" peaks";
+    return "Indexed "+numIndexed+" of "+(numIndexed+numNotIndexed)+" peaks";
   }
 
   /**
