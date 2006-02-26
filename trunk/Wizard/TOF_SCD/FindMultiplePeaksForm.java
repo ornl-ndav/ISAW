@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.35  2006/02/26 00:09:37  dennis
+ * Removed unused constant.
+ *
  * Revision 1.34  2004/05/21 19:03:20  dennis
  * Changed instrument name from SCD to SCD0.  This was needed to fix
  * file name problems when SCD run numbers went from 9999 to 10000.
@@ -180,9 +183,6 @@ import DataSetTools.wizard.Form;
  * files.
  */
 public class FindMultiplePeaksForm extends Form {
-  //~ Static fields/initializers ***********************************************
-
-  protected static int RUN_NUMBER_WIDTH = 5;
 
   //~ Instance fields **********************************************************
 
