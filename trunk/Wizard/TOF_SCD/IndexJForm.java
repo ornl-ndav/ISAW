@@ -28,6 +28,18 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.32  2006/02/26 00:08:37  dennis
+ * Now uses the minimun run number width (used to pad the run number
+ * in the matrix file name) from LsqrsJ, so that the code that reads
+ * the matrix file will have the same convention as the code that
+ * writes.  NOTE: Padding the run number to 4 digits in the matrix
+ * file name should NOT have been done in the first place, since it
+ * just introduces another possible point of failure, with no benefit.
+ * However, now that it is in use, this change fixes a bug in reading
+ * and writing the matrix file, after the change from run number 9999
+ * to 10000.
+ * Did some additional code clean up.
+ *
  * Revision 1.31  2004/03/15 03:37:40  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -173,7 +185,6 @@ import Operators.TOF_SCD.IndexJ;
 public class IndexJForm extends Form implements PropertyChangeListener {
   //~ Static fields/initializers ***********************************************
 
-  protected static int RUN_NUMBER_WIDTH = 5;
   public static final String FROM_FILE  = "From a File";
   public static final String FROM_LSQRS = "From LsqrsJ";
 
@@ -220,20 +231,13 @@ public class IndexJForm extends Form implements PropertyChangeListener {
     String runnums, String peaksPath, float delta, boolean update,
     String expName ) {
     this(  );
-    getParameter( 0 )
-      .setValue( runnums );
-    getParameter( 1 )
-      .setValue( peaksPath );
-    getParameter( 2 )
-      .setValue( new Float( delta ) );
-    getParameter( 3 )
-      .setValue( new Float( delta ) );
-    getParameter( 4 )
-      .setValue( new Float( delta ) );
-    getParameter( 5 )
-      .setValue( new Boolean( update ) );
-    getParameter( 6 )
-      .setValue( expName );
+    getParameter( 0 ).setValue( runnums );
+    getParameter( 1 ).setValue( peaksPath );
+    getParameter( 2 ).setValue( new Float( delta ) );
+    getParameter( 3 ).setValue( new Float( delta ) );
+    getParameter( 4 ).setValue( new Float( delta ) );
+    getParameter( 5 ).setValue( new Boolean( update ) );
+    getParameter( 6 ).setValue( expName );
   }
 
   //~ Methods ******************************************************************
@@ -410,27 +414,20 @@ public class IndexJForm extends Form implements PropertyChangeListener {
 
     //no need to continually recreate this Operator in a loop
     indexJOp = new IndexJ(  );
-    indexJOp.getParameter( 0 )
-            .setValue( peaksName );
-    indexJOp.getParameter( 3 )
-            .setValue( new Float( delta_h ) );
-    indexJOp.getParameter( 4 )
-            .setValue( new Float( delta_k ) );
-    indexJOp.getParameter( 5 )
-            .setValue( new Float( delta_l ) );
-    indexJOp.getParameter( 6 )
-            .setValue( new Boolean( update ) );
+    indexJOp.getParameter( 0 ).setValue( peaksName );
+    indexJOp.getParameter( 3 ).setValue( new Float( delta_h ) );
+    indexJOp.getParameter( 4 ).setValue( new Float( delta_k ) );
+    indexJOp.getParameter( 5 ).setValue( new Float( delta_l ) );
+    indexJOp.getParameter( 6 ).setValue( new Boolean( update ) );
 
     //don't append to the log file when running initially
-    indexJOp.getParameter( 7 )
-            .setValue( new Boolean( false ) );
+    indexJOp.getParameter( 7 ).setValue( new Boolean( false ) );
 
     //user wants to use a specified matrix file
     if( matToUse.equals( FROM_FILE ) ) {
       //get the matrix name make sure the matrix file exists
-      param          = ( IParameterGUI )super.getParameter( 8 );
-      matName        = ( String )param.getValue(  )
-                                      .toString(  );
+      param   = ( IParameterGUI )super.getParameter( 8 );
+      matName = ( String )param.getValue(  ).toString(  );
 
       if( !( new File( matName ).exists(  ) ) ) {
         return errorOut( 
@@ -446,49 +443,39 @@ public class IndexJForm extends Form implements PropertyChangeListener {
       param.setValid( true );
       SharedData.addmsg( 
         "IndexJ is updating " + peaksName + " with " + matName );
-      indexJOp.getParameter( 1 )
-              .setValue( matName );
-      indexJOp.getParameter( 2 )
-              .setValue( restrictRuns );
+      indexJOp.getParameter( 1 ).setValue( matName );
+      indexJOp.getParameter( 2 ).setValue( restrictRuns );
       obj = indexJOp.getResult(  );
 
       if( obj instanceof ErrorString ) {
         return errorOut( "IndexJ failed: " + obj.toString(  ) );
       }
     } else {
-      //try to find the matrix files.  If the lsqrs matrix files exist, 
-      //this is their format:
-      runNum      = formatRunNum( runsArray[0] );
-      matName     = peaksDir + "ls" + expName + runNum + ".mat";
-
-      if( !( new File( matName ).exists(  ) ) ) {
-        return errorOut( 
-          param,
-          "ERROR: No least squares matrix files exist.  " +
-          "Please specify a matrix file." );
-      }
 
       boolean appendToLog = false;
 
       for( int i = 0; i < runsArray.length; i++ ) {
-        indexJOp.getParameter( 7 )
-                .setValue( new Boolean( appendToLog ) );
+        indexJOp.getParameter( 7 ).setValue( new Boolean( appendToLog ) );
 
         //load the run numbers.  We don't want to remove the leading zeroes!
-        runNum    = formatRunNum( runsArray[i] );
+        runNum  = gov.anl.ipns.Util.Numeric.Format.integerPadWithZero(
+          runsArray[i], LsqrsJForm.RUN_NUMBER_WIDTH );
+ 
+        matName = peaksDir + "ls" + expName + runNum + ".mat";
 
-        //the name of the matrix file
-        matName   = peaksDir + "ls" + expName + runNum + ".mat";
+        if( !( new File( matName ).exists(  ) ) ) {
+        return errorOut(
+          param,
+          "ERROR: No least squares matrix files exist.  " +
+          "Please specify a matrix file." );
+        }
+
         SharedData.addmsg( 
           "IndexJ is updating " + peaksName + " with " + matName );
 
-        //call IndexJ
-        indexJOp.getParameter( 1 )
-                .setValue( matName );
-
-        //synchronize the run number in the peaks and matrix file
-        indexJOp.getParameter( 2 )
-                .setValue( runNum );
+        //call IndexJ for the current run number and matrix file
+        indexJOp.getParameter( 1 ).setValue( matName );
+        indexJOp.getParameter( 2 ).setValue( runNum );
         obj = indexJOp.getResult(  );
 
         if( obj instanceof ErrorString ) {
@@ -521,19 +508,6 @@ public class IndexJForm extends Form implements PropertyChangeListener {
       ( ( IParameterGUI )getParameter( 8 ) ).setEnabled( false );
       ( ( IParameterGUI )getParameter( 9 ) ).setEnabled( false );
     }
-  }
-
-  /**
-   * Utility method to ease "code eye."
-   *
-   * @param runNumber The RUN_NUMBER_WIDTH size number to pad with leading
-   *        zeroes.
-   *
-   * @return The runNumber padded with leading zeroes.
-   */
-  private String formatRunNum( int runNumber ) {
-    return gov.anl.ipns.Util.Numeric.Format.integerPadWithZero( 
-      runNumber, RUN_NUMBER_WIDTH );
   }
 
   /**
