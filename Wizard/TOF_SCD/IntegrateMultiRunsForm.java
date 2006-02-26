@@ -28,6 +28,9 @@
  * number DMR-0218882.
  * 
  * $Log$
+ * Revision 1.44  2006/02/26 00:09:38  dennis
+ * Removed unused constant.
+ *
  * Revision 1.43  2005/08/26 18:18:39  rmikk
  * Made MaxIToSogI the default integrate choice
  *
@@ -200,9 +203,6 @@ import Operators.TOF_SCD.*;
  * peaks file.
  */
 public class IntegrateMultiRunsForm extends Form {
-  //~ Static fields/initializers ***********************************************
-
-  protected static int RUN_NUMBER_WIDTH = 5;
 
   //~ Instance fields **********************************************************
 
