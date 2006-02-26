@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2006/02/26 02:43:40  dennis
+ * Now sets group ID to 1000000 + group_id, after copying over
+ * the attributes, so the new group id does not get reset to the
+ * original.
+ *
  * Revision 1.9  2006/02/20 05:17:39  dennis
  * Increased the max number of interations from 100 to 2000 to give
  * more opportunity for the process to converge.  Decreased the
@@ -339,10 +344,12 @@ public class  FitExpressionToGroup  extends    AnalyzeOp
     for ( int i = 0; i < x.length; i++ )
       xf[i] = (float)x[i];
     XScale x_scale = XScale.getInstance( xf ); 
-    Data model = new FunctionModel( x_scale, model_fun, 1000000+group_id );
+    Data model = new FunctionModel( x_scale, model_fun, 1 );
 
     model.setAttributeList( data.getAttributeList() ); // copy the attributes
                                                        // so the operators work
+    model.setGroup_ID( group_id + 1000000 );
+
     new_ds.addData_entry( model );
     if ( make_new_ds )
       return new_ds;  
