@@ -1,0 +1,611 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+<br>
+<br>
+<br>
+<br>
+<center>
+<font size=+1>
+<b><font size=+4><a name=1></a>ISAW Tutorial</font>
+<br>
+<br>
+<br>
+<br>
+<font size=+3>Tom Worlton
+<br>
+<br>
+<br>
+<br>
+10/30/2002</font>
+</b>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+HTML conversion and minor editing by Chris Bouzek
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</center>
+
+<br>
+<br>
+<br>
+<br>
+<hr>
+<center><font size=+2>Table of Contents</font></center>
+<ul>
+<li><a href="#installing">Installing ISAW</a></li>
+<li><a href="#isawftp">The ISAW FTP site</a></li>
+<li><a href="#running">Running ISAW</a></li>
+<li><a href="#isawprops">A sample IsawProps.dat file</a></li>
+<li><a href="#loaddata">Loading data</a></li>
+<li><a href="#viewattrib">Viewing attributes</a></li>
+<li><a href="#displayimage">Displaying an image view</a></li>
+<li><a href="#imageview">Sample image view</a></li>
+<li><a href="#cursorimage">Image view cursor interaction</a></li>
+<li><a href="#arrowimage">Image view arrow key interaction</a></li>
+<li><a href="#xaxistransform">X axis conversion</a></li>
+<li><a href="#zoomfunction">The zoom function</a></li>
+<li><a href="#viewalldatapoints">Viewing all data points</a></li>
+<li><a href="#viewercontrols">The viewer controls</a></li>
+<li><a href="#displayscrolledgraph">Displaying a scrolled graph view</a></li>
+<li><a href="#scrolledgraphview">Sample scrolled graph view</a></li>
+<li><a href="#displaytable">Displaying a table view</a></li>
+<li><a href="#tableview">Sample table view</a></li>
+<li><a href="#spectraselect">Selecting Spectra</a></li>
+<li><a href="#displayspectra">Displaying selected spectra</a></li>
+<li><a href="#spectraview">Sample image view of selected spectra</a></li>
+<li><a href="#loadspectrometer">Loading spectrometer data</a></li>
+<li><a href="#specdifops">Spectrometer/Diffractometer operations</a></li>
+<li><a href="#loadlargeDS">Loading a large DataSet</a></li>
+<li><a href="#linkviews">Demonstrating the links between views</a></li>
+<li><a href="#sketchandview">
+Comparison between the GLAD 3D view and instrument sketch</a></li>
+<li><a href="#scripts">Scripts overview</a></li>
+<li><a href="#scriptexample">Using a script to merge data</a></li>
+<li><a href="#mergedview">Image view of merged data (phase transition)</a></li>
+<li><a href="#connectlivedata">Connecting to the live data server</a></li>
+<li><a href="#viewlive">Viewing live data</a></li>
+<li><a href="#loadremotenexus">Loading a remote NeXus file</a></li>
+<li><a href="#nexusview">Image view of remote NeXus file</a></li>
+<li><a href="#viewlog">Viewing log files</a></li>
+<li><a href="#templog">Scrolled graph view of IPNS temperature log file</a></li>
+<li><a href="#pulsedata">Viewing pulse height spectra</a></li>
+<li><a href="#pulseview">Image view of LANSCE pulse height spectra</a></li>
+<li><a href="#smartsdata">Viewing LANSCE SMARTS data</a></li>
+<li><a href="#smartsview">Image view of SMARTS data</a></li>
+<li><a href="#areadetector">Viewing area detector data</a></li>
+<li><a href="#areadetectorview">Image view of area detector</a></li>
+</ul>
+<br>
+<br>
+<hr>
+<a name=installing></a><center><font size=+3>Installing ISAW</font></center><br>
+<ul>
+<li>Download and install ISAW per instructions
+(0Readme.txt) on the ISAW ftp site, <br>
+<a href="ftp://zuul.pns.anl.gov/isaw">ftp://zuul.pns.anl.gov/isaw</a><br<br>
+<ul><li> Either the Java Runtime Environment (JRE) or Java
+Development Kit (JDK) must be installed before installing ISAW. &nbsp;Java 
+distributions are different for different platforms, but the same ISAW 
+installer works on all platforms.</li><br>
+<li> Because of the size of the files, be patient when downloading and opening 
+them.</li></ul></ul>
+<br>
+<br>
+<hr>
+<a name=isawftp></a><center><font size=+3>The ISAW ftp site</font><br>
+<br>
+<br>
+<img src="images/ISAWTut001.jpg"></center>
+<br>
+<br>
+<hr>
+<a name=running></a><center><font size=+3>Running ISAW</font></center><br>
+<ul><li> Run ISAW following the instructions in "Test Installation of ISAW" 
+in the &quot;0Readme.txt&quot; file.</li><br>
+<li> The first time you run ISAW, the IsawProps.dat file will be created in 
+your home directory.  This file will contain default locations for various files 
+and directories used by ISAW, plus viewer defaults, etc.</li><br>
+<li> Choose &quot;Edit Properties File&quot; from the file menu to view and/or 
+edit this file.  Restarting ISAW is necessary to use new values.</li><br></ul>
+<br>
+<br>
+<hr>
+<a name=isawprops></a><center><font size=+3>
+A sample IsawProps.dat file</font></center><br>
+<br>
+<br>
+<table width=100%>
+<tr><td><img src="images/ISAWTut002.jpg"></td>
+<td><img src="images/ISAWTut003.jpg"></td></tr>
+</table>
+<br>
+<br>
+<hr>
+<a name=loaddata></a><center><font size=+3>Loading data</font></center><br>
+<br>
+<br>
+<table width=100%><tr><td width=50%><font size=+1>
+<ul><li> From the &quot;File&quot; menu on the menu bar, select 
+&quot;Load Data&quot;, &quot;Local&quot; and select 
+&quot;sepd16837.run&quot; from the file dialog box.</li><br>
+<li> Note that In the tree view, the file name SEPD16837.RUN 
+appears.</li><br>
+<li> Click on the &quot;pushpin&quot; icon at the left of this filename to 
+expand the view, then click on the icon to the left of H1_SEPD16837 
+to show the groups.  You may need to change component sizes to 
+see details</li></ul></font></td>
+<td>&nbsp;&nbsp;</td>
+<td><img src="images/ISAWTut004.jpg"></td></tr>
+</table>
+<br>
+<br>
+<hr>
+<a name=viewattrib></a><center><font size=+3>Viewing Attributes</font></center><br>
+<br>
+<br>
+<table width=100%><tr><td width=50%><font size=+1>
+<ul><li> Click on the DataSet H1_SEPD16837 and the 
+&quot;Attributes&quot; tab.</li><br>
+<li> Note the attributes information for the DataSet, then click on Group #1 
+and note the group attributes. &nbsp;Detector ID's 1 through 80 (1:80) 
+are summed together in group 1.</li><br>
+<li> Click on Group 5 and see how non-contiguous ID's are listed.</li></ul>
+</font></td>
+<td>&nbsp;&nbsp;</td>
+<td><img src="images/ISAWTut005.jpg"></td></tr>
+</table>
+<br>
+<br>
+<hr>
+<a name=displayimage></a><center><font size=+3>
+Displaying an Image View</font></center><br>
+<ul><li> Click on DataSet H1_SEPD16837, then select &quot;Image View&quot; 
+from the &quot;View&quot; menu.</li><br>
+<li> Note the four bands of color in the image view. &nbsp;The horizontal 
+axis refers to time-of-flight and the color indicates intensity.  The four 
+color bands represent the four detector groups. &nbsp;For DataSets with more 
+groups narrower bands will appear, down to one pixel wide. &nbsp;For larger 
+numbers of groups, vertical scroll bars will appear.</li></ul>
+<br>
+<br>
+<hr>
+<a name=imageview></a><center><font size=+3>Sample Image View</font></center><br>
+<br>
+<br>
+<center><img src="images/ISAWTut006.jpg"></center>
+<br>
+<br>
+<hr>
+<a name=cursorimage></a><center><font size=+3>Image View Cursor Interaction</font></center><br>
+<ul><li> Put the cursor over the image and drag it to different positions 
+while holding down the left mouse button.</li><br>
+<li> Notice how the readout information in the lower right changes as the 
+cursor moves. &nbsp;Also notice that the lower graph changes when you point at 
+different detector groups.</li><br>
+<li> Notice that the Attributes display on the ISAW GUI also responds to the 
+cursor pointing at different groups.</li></ul>
+<br>
+<br>
+<hr>
+<a name=arrowimage></a><center><font size=+3>
+Image View Arrow Key Interaction</font></center><br>
+<ul><li> Use the up and down arrow keys to move between detector 
+groups. &nbsp;Notice that the cross hairs move exactly one group for each 
+click.</li><br>
+<li> You can also move the cross hairs left and right using the arrow 
+keys.</li><br>
+<li> Arrow key movements will leave the cross hairs on the display.</li></ul>
+<br>
+<br>
+<hr>
+<a name=xaxistransform></a><center><font size=+3>
+X Axis Conversion</font></center><br>
+<ul><li> Select &quot;Axis Conversions&quot; from the &quot;View&quot; menu 
+and select convert to d-spacing.</li><br>
+<li> Use the cursor to find a good range of d-values and change the range 
+by clicking in the range following &quot;Angstroms&quot; in the upper right 
+of the image view and editing the numbers.  A colon separates the minimum 
+and maximum values.</li><br>
+<li> You can also use an operator to convert axes. &nbsp;This creates a new 
+DataSet and puts it in the &quot;Modified&quot; folder of the tree view.
+</li></ul>
+<br>
+<br>
+<hr>
+<a name=zoomfunction></a><center><font size=+3>The Zoom Function</font></center><br>
+<ul><li> Hold down the middle mouse button and drag the cursor over the image 
+to select an area to zoom into.  Double-click on the image to 
+unzoom. &nbsp;Select again to zoom multiple times.</li><br>
+<li> If you don't have a middle button, use the shift key with the left mouse 
+button to select the zoom region.</li><br>
+<li> The graph region will not change until you drag the cursor on the image 
+with the left mouse button down.</li></ul>
+<br>
+<br>
+<hr>
+<a name=viewalldatapoints></a><center><font size=+3>
+Viewing All Data Points</font></center><br>
+<ul><li> In the default image view the data is compressed horizontally to 
+allow the full spectrum to be shown in the view area.  To see all points, 
+select &quot;Horizontal Scroll&quot; from the &quot;Options&quot; 
+menu. &nbsp;You will now probably need to use the scroll bar to see all of the 
+data for each spectrum.</li><br>
+<li> Uncheck &quot;Horizontal Scroll&quot; to return to the default 
+(compressed) view.</li><br>
+<li> From the View menu on the image view, select &quot;Axis Conversions&quot; 
+&quot;None&quot; to return to time-of-flight axes.</li></ul>
+<br>
+<br>
+<hr>
+<a name=viewercontrols></a><center><font size=+3>The Viewer Controls</font></center><br>
+<ul><li> There are several display controls on the right of the image 
+display.</li><br>
+<ul><li> The number of steps is initially equal to the number of channels of data, 
+but the data may be rebinned into fewer steps by editing the number.</li><br>
+<li> The Brightness slider controls image brightness.  The lower half of the 
+brightness scale is for negative numbers.</li><br>
+<li> The percentage slider controls the percentage of maximum for the graph 
+display.</li></ul></ul>
+<br>
+<br>
+<hr>
+<a name=displayscrolledgraph></a><center><font size=+3>
+Displaying a Scrolled Graph View</font></center><br>
+<ul><li> With H1_SEPD16837 still highlighted on the tree view, create a 
+&quot;Scrolled Graph View&quot; from the &quot;View&quot; menu.</li><br>
+<li> Drag the new view window so both views can be seen.</li><br>
+<li> In the scrolled graph view, the spectrum for each detector group can be 
+seen individually by dragging the scroll bar.</li><br>
+<li> Drag the cursor over the scrolled graph view and watch the response on 
+the Graph Data cursor readout and the Attributes panel of the ISAW 
+GUI.</li></ul>
+<br>
+<br>
+<hr>
+<a name=scrolledgraphview></a><center><font size=+3>
+Sample Scrolled Graph View</font></center><br>
+<br>
+<br>
+<center><img src="images/ISAWTut007.jpg"></center>
+<br>
+<br>
+<hr>
+<a name=displaytable></a><center><font size=+3>
+Displaying a Table View</font></center><br>
+<ul><li> With H1_SEPD16837 still highlighted, choose 
+&quot;SelectedTable View&quot; and &quot;Group x versus y&quot; from the 
+&quot;View&quot; menu. &nbsp;By default, the table view shows just the 
+first spectrum.</li><br>
+<li> Right-click on Group #3 of H1_SEPD16837 in the tree view and choose 
+&quot;select&quot;. &nbsp;Note changes in viewers.</li><br>
+<li> Click on &quot;Options&quot; and &quot;Show Errors&quot; on the table 
+view menu bar.  Before any data manipulations, the errors are just the square 
+root of the counts in each channel.</li></ul>
+<br>
+<br>
+<hr>
+<a name=tableview></a><center><font size=+3>Sample Table View</font></center><br>
+<br>
+<br>
+<center><img src="images/ISAWTut008.jpg"></center>
+<br>
+<br>
+<hr>
+<a name=spectraselect></a><center><font size=+3>Selecting Spectra</font></center><br>
+<br>
+<br>
+<table width=100%><tr><td width=50%><font size=+1>
+<ul><li> Spectra can be marked as &quot;Selected&quot; through the tree view, 
+image view, or scrolled graph view.</li><br>
+<ul><li> On the tree view, spectra are &quot;selected&quot; by right-clicking 
+on them. &nbsp;Note that the DataSet must be selected 
+as shown in order to select multiple spectra.</li><br>
+<li> On the viewers, the spectra are &quot;selected&quot; through typing 
+&quot;S&quot; to select a single spectrum or &quot;shift-S&quot; to select a 
+range of spectra.</li></ul></ul></font></td>
+<td><center><img src="images/ISAWTut009.jpg"></center></td></tr>
+</table>
+<br>
+<br>
+<hr>
+<a name=displayspectra></a>
+<center><font size=+3>Displaying Selected Spectra</font></center><br>
+<ul><li> When there are spectra selected, the image view graph area shows up 
+to 16 of the selected spectra plus the spectrum pointed at by the 
+cursor. &nbsp;Each selected spectrum will show in blue unless the cursor also 
+points at it.</li></ul>
+<ul><li> Try the different options under &quot;Options&quot;, &quot;Graph 
+Selected (16 Max)&quot;.</li><br>
+<li> Use the Viewer "File" menu to close the DataSet viewers.</li></ul>
+<br>
+<br>
+<hr>
+<a name=spectraview></a><center><font size=+3>
+Sample Image View of Selected Spectra</font></center><br>
+<br>
+<br>
+<center><img src="images/ISAWTut010.jpg"></center>
+<br>
+<br>
+<hr>
+<a name=loadspectrometer></a><center><font size=+3>
+Loading Spectrometer Data</font></center><br>
+<ul><li> Use the ISAW GUI File menu to load file HRCS2447.RUN.</li><br>
+<li> Click on the push-pin icons to expand the tree view of the file, then 
+select DataSet H1_HRCS2447.</li><br>
+<li> Compare the operations for this DataSet with the operations for 
+DataSet H1_SEPD16837.</li></ul>
+<br>
+<br>
+<hr>
+<a name=specdifops></a>
+<center><font size=+3>Spectrometer/Diffractometer operations</font></center><br>
+<table width=100%><tr><td width=40%>
+<table>
+<tr><td><font size=+1>
+<ul><li> The operations menu adjusts to the selected DataSet, so each DataSet 
+has different operations.</li><br>
+<li> Note the difference in operations for spectrometer and diffractometer 
+DataSets.</li></ul></font></td></tr></table></td>
+<td width=60%>
+<table>
+<tr><td>
+<center><img src="images/ISAWTut011.jpg"></center></td></tr>
+<tr><td>
+<center><img src="images/ISAWTut012.jpg"></center></td></tr></table>
+</td></tr></table>
+<br>
+<br>
+<hr>
+<a name=loadlargeDS></a><center><font size=+3>
+Loading a Large DataSet</font></center><br>
+<ul><li> Download GLAD6942.RUN from the &quot;MoreSampleData&quot; folder 
+on the ISAW ftp site to the Data_Directory (Use the &quot;Data_Directory&quot; 
+listed in properties file, IsawProps.dat). &nbsp;Note that this may already 
+be included in your SampleRuns directory.</li><br>
+<li> Use the file menu to load this file.</li><br>
+<li> Note that there are more than a thousand spectra in DataSet 
+H1_GLAD6942.</li><br>
+<li> In Attributes for the groups, note that many of the groups (spectra) 
+include data from a number of detector elements.</li></ul>
+<br>
+<br>
+<hr>
+<a name=linkviews></a><center><font size=+3>
+Demonstrating the Link Between Views</font></center><br>
+<ul><li> Create an Image View of H1_GLAD6942.</li><br>
+<li> Create a 3D View of H1_GLAD6942</li><br>
+<li> Click on the title bar and drag the 3D view to uncover the Image 
+View.</li><br>
+<li> Notice how the 3D view changes as you adjust the view controls.</li><br>
+<li> Notice how the VCR-like controls at the bottom allow you to step through 
+time channels.</li></ul>
+<br>
+<br>
+<table width=100%><tr><td width=50%>
+<center><img src="images/ISAWTut013.jpg"></center></td>
+<td width=50%>
+<center><img src="images/ISAWTut014.jpg"></center></td></tr>
+</table>
+<br>
+<br>
+<hr>
+<a name=sketchandview></a><center><font size=+3>
+Comparison between the GLAD 3D View and Sketch</font></center><br>
+<ul><li> Drag the cursor over the Image view and notice the response on the 
+cursor readout area, the 3D View, and the ISAW GUI Attributes display.</li><br>
+<li> Select &quot;GLAD Link&quot; from the &quot;Instrument Info&quot; submenu 
+of the ISAW GUI &quot;View&quot; menu.</li><br>
+<li> On the 3D view, change the azimuthal angle to about -50 degrees and the 
+altitude to about 45 degrees, then compare the instrument sketch with the 3D 
+view.</li></ul>
+<br>
+<br>
+<table width=100%><tr><td width=50%>
+<table><tr><td>
+<img src="images/ISAWTut015.jpg"><br>
+</td></tr>
+<tr><td>
+<font size=+2>3D view of GLAD6942.RUN</font>
+</td></tr></table></td>
+<td width=50%>
+<table><tr><td>
+<img src="images/ISAWTut016.jpg"></center><br>
+</td></tr>
+<tr><td>
+<font size=+2>Sketch of GLAD instrument</font></td></tr></table>
+</td></tr></table>
+<br>
+<br>
+<hr>
+<a name=scripts></a><center><font size=+3>Scripts Overview</font></center><br>
+<ul><li> Scripts simplify repeating complex operations or operating on 
+a large number of files.</li><br>
+<li> Download files: gppd11472:11603.run from the &quot;MoreSampleData&quot; 
+folder at <a href="ftp://zuul.pns.anl.gov/isaw/">
+ftp://zuul.pns.anl.gov/isaw/"</a></li><br>
+<ul><li> These files are a parametric study of one sample.</li></ul></ul>
+<br>
+<br>
+<hr>
+<a name=scriptexample></a><center><font size=+3>
+Using a Script to Merge Data</font></center><br>
+<ul><li> From the &quot;Macros&quot; menu on the menu bar, select 
+Isaw Scripts.</li><br>
+<li>Select the &quot;merge_runs&quot; script.</li><br>
+<li> Enter 11472:11603 between the square brackets.</li><br>
+<li> Enter -95 in the &quot;Low angle for merging&quot; field and
+-85 in the &quot;High angle for merging&quot; field.</li><br>
+<li>&nbsp;Make sure &quot;instrument&quot; is &quot;GPPD&quot;.</li><br>
+<li> ISAW should start loading 132 files (on Windows, watch the DOS window for 
+load messages).</li><br>
+<li> When loading finishes, an image display showing one group 
+(angle -95 to -85) from each run should appear.</li><br>
+<li> Select &quot;EXIT&quot; on the dialog box.</li><br>
+<li> Use the cursor to zoom in and examine the phase transition.</li></ul>
+<br>
+<br>
+<hr>
+<a name=mergedview></a><center><font size=+3>
+Image View of Merged Data (Phase Transition)</font>
+</center>
+<br>
+<br>
+<center><img src="images/ISAWTut022.jpg"></td></tr></center>
+<br>
+<br>
+<hr>
+<a name=connectlivedata></a><center><font size=+3>
+Connecting to the Live Data Server</font></center>
+<br>
+<br>
+<table width=100%><tr><td width=50%>
+<table><tr><td><font size=+1>
+<ul><li> From the ISAW menu bar, select File, Load Data, Live, HRMECS.</li><br>
+<li> Select the tab labeled &quot;zeus.pns.anl.gov&quot;</li><br> 
+<li> Click the &quot;Show&quot; button on DataSet #1.</li></ul>
+</font></td></tr></table>
+<td width=50%>
+<table><tr><td>
+<img src="images/ISAWTut017.jpg"></td></tr>
+<tr><td>
+<img src="images/ISAWTut018.jpg"></td></tr>
+</td></tr></table>
+</td></tr></table>
+<br>
+<br>
+<hr>
+<a name=viewlive></a><center><font size=+3>Viewing Live Data</font></center><br>
+<br>
+<br>
+<table width=100%><tr><td><font size=+1>
+<ul><li> When the show or auto buttons are clicked on the live data server 
+panel, an image view is generated.</li><br>
+<li> To save the live data set in the tree, click &quot;Record&quot;</li></ul>
+</font></td><td>
+<img src="images/ISAWTut019.jpg"></td></tr></table>
+<br>
+<br>
+<hr>
+<a name=loadremotenexus></a><center><font size=+3>
+Loading a Remote NeXus File</font></center><br>
+<br>
+<br>
+<table width=100%><tr><td><font size=+1>
+<ul><li> From the ISAW menu bar, select File, Load Data, Remote, 
+Test(dmikk-Isaw)</li><br>
+<li> Enter file name lrcs3000.nxs.</li><br>
+<li> <u>Wait for</u> &quot;Operation completed&quot; message.</li><br>
+<li> Exit &quot;LoadRemote&quot; Operation and view dataset 
+H1_lrcs3000.</li><br>
+<li> NeXus files can also be loaded through an NDS server, but this is much 
+slower.</li></ul></font></td>
+<td><img src="images/ISAWTut020.jpg"></td></tr></table>
+<br>
+<br>
+<hr>
+<a name=nexusview></a><center><font size=+3>
+Image View of a Remote NeXus File</font></center><br>
+<br>
+<br>
+<center><img src="images/ISAWTut024.jpg"></center>
+<br>
+<br>
+<hr>
+<a name=viewlog></a><center><font size=+3>Viewing Log Files</font></center><br>
+<ul><li> Load the file hrcs3118.sdds</li><br>
+<ul><li> (you will have to change the file filter in the file chooser to 
+allow seeing sdds files).</li></ul><br>
+<li> Expand the tree node for the file and select the sample temperature 
+DataSet.</li><br>
+<li> Create an image view or scrolled graph view of the DataSet.</li><br>
+<li> Drag the cursor over the plot and notice the readout of temperature 
+versus time.</li></ul>
+<br>
+<br>
+<hr>
+<a name=templog></a><center><font size=+3>
+Scrolled Graph View of an IPNS Temperature Log File</font></center><br>
+<br>
+<br>
+<center><img src="images/ISAWTut021.jpg"></center>
+<br>
+<br>
+<hr>
+<a name=pulsedata></a><center><font size=+3>
+Viewing Pulse Height Spectra</font></center><br>
+<ul><li> Load the file new_smarts-o4.12.o2.nxs. &nbsp;You may have to retrieve 
+this file from <a href="ftp://zuul.pns.anl.gov/isaw/MoreSampleData">
+ftp://zuul.pns.anl.gov/isaw/MoreSampleData.</a></li><br>
+<ul><li>Note that you may have to increase the memory size in order
+for Java to load the file.  Under Java 1.4, use <br>
+<code>java -Xmx256M IsawGUI.Isaw</code><br>
+to load ISAW if you have problems loading this file.</li></ul>
+<li> Expand the tree view to show the datasets included in the file.</li><br>
+<li> Click on the DataSet "pulse_heights".</li><br>
+<li> Create an image view of the specified DataSet.</li><br>
+<li> Notice the typical pulse height shape of the spectra.</li><br>
+<li> Also notice that this is data from LANSCE!</li></ul>
+<br>
+<br>
+<hr>
+<a name=pulseview></a><center><font size=+3>
+Image View of LANSCE Pulse Height Spectra</font></center><br>
+<br>
+<br>
+<center><img src="images/ISAWTut026.jpg"></center>
+<br>
+<br>
+<hr>
+<a name=smartsdata></a><center><font size=+3>
+Viewing LANSCE SMARTS Data</font></center><br>
+<ul><li> Click on the "data" smarts DataSet.</li><br>
+<li> Create an image view.</li><br>
+<li> This is data from the SMARTS instrument at LANSCE (Los Alamos).</li><br>
+<li> Choose "View",  "Axis Conversions", "d-spacing".</li><br>
+<li> By looking at all spectra you can see that the lines are 
+curved--indicating a calibration problem, but this is their first data file 
+in this format.</li></ul>
+<br>
+<br>
+<hr>
+<a name=smartsview></a><center><font size=+3>
+Image View of SMARTS Data</font></center><br>
+<br>
+<br>
+<center><img src="images/ISAWTut025.jpg"><br></center>
+<br>
+<br>
+<hr>
+<a name=areadetector></a><center><font size=+3>
+Viewing Area Detector Data</font></center><br>
+<li> Load file SCD06496.RUN.</li><br>
+<li> Select DataSet H1_SCD06496.</li><br>
+<li> Create a Contour View.</li><br>
+<li> Cursor interaction does not work the same way on this view as the other views.</li><br>
+<li> Click on a point for cursor readout.</li><br>
+<li> Dragging the cursor with the left button down selects a zoom region.</li><br>
+<li> Shift plus click of the center mouse button unzooms.</li><br>
+<li> Forward and backwards buttons step through time-slices either one at a 
+time (&gt;) or continuously (&gt;&gt;).</li><br>
+<br>
+<br>
+<hr>
+<a name=areadetectorview></a><center><font size=+3>
+Image View of Area Detector</font></center><br>
+<br>
+<br>
+<center><img src="images/ISAWTut023.jpg"><br></center>
+</body>
+</html>
