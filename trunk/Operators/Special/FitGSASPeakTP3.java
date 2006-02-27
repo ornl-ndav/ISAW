@@ -317,9 +317,11 @@ public class FitGSASPeakTP3 implements Wrappable, IWrappableWithCategoryList
 
     GSASTOFProfileFunction3 function = new GSASTOFProfileFunction3
         ( scalef, tof0, alpha, beta, sigmasqr, gamma, m, y0);   
-    System.out.println("x0: "+x[index_of_max] +
+
+/*    System.out.println("x0: "+x[index_of_max] +
                        "\nScale Factor: "+scalef +
                        "\nPeak Value: "+function.getValue(tof0)); 
+*/
                        
     ClosedInterval interval = new ClosedInterval((float)min_x, (float)max_x );
     function.setDomain( interval );
