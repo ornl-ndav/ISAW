@@ -39,6 +39,9 @@
 #  @param   max_d           The maximum value of "d" to use,
 #                           if the data is re-binned in d.
 #
+
+$category = Macros,File,Load,LANSCE
+
 $file_name      LoadFile("/usr2/LANSCE_DATA/HDF/SMARTS-LANSCE-R23300.nx.hdf")  SMARTS File
 $use_GSAS_calib Boolean(false)  Use GSAS calibration info 
 $num_bins       Integer(0)      Number of bins in "d", or 0 to use all
@@ -78,10 +81,38 @@ endif
 # parameter and "if" statement to enable/disable it when you 
 # run the script.
 #
-Display tof_ds
+#Display tof_ds
 
 #
 # Now convert the time-of-flight DataSet to "d" and display it
-#
+# 
 ds_in_D = ToD( tof_ds, min_d, max_d, num_bins )
-Display ds_in_D 
+#Display ds_in_D 
+
+#
+# Now save the image, as an "ImageView".  Other views of the Data can also
+# be saved.  Some "advanced" options can be specified for the saved view,
+# such as color scale, etc.  The defaults are used here.
+#
+out_directory = "/home/dennis/"
+save_file = "SmartsDisplayInD.jpg"
+width = 800
+height = 600
+StateInfo = "Brightness 25,ColorScale Heat 1"
+SaveImage(ds_in_D, "Image View", out_directory & "/" & save_file, StateInfo, width, height)
+
+#
+# Unfortunately, the thread that IsawLite is running in exits before the
+# saved image file is closed properly, if we don't wait.  The "quick and dirty"
+# solution is to just introduce a pause to let the file finish writing.
+# However, it is not clear how long the pause should be.  A pause of 1000 ms
+# works on my system, but you may need to increase the pause, if your system
+# is heavily loaded.  As an additional "delay" you can un-comment the
+# Display command, which will temporarily put the image on the screen.
+# Presumably, if the system had time to get the display up on the screen,
+# it should also have had time to finish writing the file.  We are working
+# on a better fix for this.
+#
+#Display ds_in_D
+Pause(1000)
+
