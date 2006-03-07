@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2006/03/07 22:13:26  dennis
+ *  Added some javadocs and additional explanation for one algorithm.
+ *  Minor improvement to some formatting.
+ *
  *  Revision 1.25  2006/02/21 03:22:31  dennis
  *  Now provides identity matrices as default forward and inverse
  *  goniometer rotations in case there is no SampleOrientation
@@ -171,8 +175,10 @@ import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
 
 /** 
- *  This class is responsible for mapping a vector Q point to an interpolated
- *  point in the original time-of-flight DataSet for ONE area detector.
+ *  This class is responsible for mapping a vector Q point to corresponding 
+ *  points in other "spaces", such as (row, col, time-of-flight), (Xcm,Ycm,wl)
+ *  and (row, col, channel) in the original time-of-flight DataSet for ONE 
+ *  area detector with one goniometer orientation.  
  *  It also provides methods to find the interpolated intensity given a 
  *  q vector, get the goniometer rotations used and get the underlying
  *  DataGrid for the detector. 
@@ -426,7 +432,11 @@ public class VecQToTOF
 
 
  /* ---------------------------- getDataGrid ----------------------------- */
-  
+ /**
+  *  Get the DataGrid object for this particular VecQToTOF transformer object.
+  *
+  *  @return A reference to the DataGrid
+  */  
   public IDataGrid getDataGrid()
   {
     return grid;
@@ -434,14 +444,26 @@ public class VecQToTOF
 
 
   /* ------------------------- getGoniometerRotation ---------------------- */
- 
+  /**
+   *  Get the goniometer rotation that rotates the crystal from the origin
+   *  position of the goniometer to the orientation at which the measurement
+   *  was made.
+   *
+   *  @return A reference to the goniometer rotation transformation. 
+   */ 
   public Tran3D getGoniometerRotation()
   {
     return goniometerR;
   }
 
   /* ---------------------- getGoniometerRotationInverse -------------------- */
-  
+  /**
+   *  Get the inverse goniometer rotation that would rotate the crystal 
+   *  from orientation at which the measurement was made, back to the 
+   *  origin position for the goniometer.
+   *
+   *  @return A reference to the inverse goniometer rotation transformation. 
+   */ 
   public Tran3D getGoniometerRotationInverse()
   {
     return goniometerRinv;
@@ -534,7 +556,12 @@ public class VecQToTOF
   *  shift in time, "t0" must be subtracted from the value returned by this
   *  method.
   *
-  *  @param   q_vec   The q vector to be mapped back to the detector
+  *  @param   q_vec   The q vector to be mapped back to the detector.  The
+  *                   q vector is assumed to be relative to a coordinate
+  *                   system on the crystal.  It will first be rotated by
+  *                   the goniometer rotation to transform it in lab
+  *                   coordinates, before checking whether or not it would
+  *                   have been measured by the detector (i.e. DataGrid)
   *
   *  @return  An array containing the fractional row, column and time-of-flight
   *  values corresponding to this q_vector.  Integer row and column numbers
@@ -592,10 +619,17 @@ public class VecQToTOF
     if ( q[0] >= 0 )          // no solution, since q is in the wrong direction
       return null;
 
+                              // find the "scattering vector", k' by adding the
+                              // magnitude of k to the x component of q
+
     float mag_k = -(mag_q * mag_q) / (2*q[0]);
     Vector3D k_prime = new Vector3D( q[0] + mag_k, q[1], q[2] );
-    
+
+                                 // find intersection of k' with the detector
+                                 // by finding value of t for which tk' is
+                                 // on the detector plane
     float t = det_center.dot(n)/k_prime.dot(n);
+
     if ( t <= 0 )                // no solution, since the beam missed the
       return null;               // detector plane
     
@@ -617,7 +651,7 @@ public class VecQToTOF
                                               // pixel.
     float f_row = grid.row( u_comp, v_comp );
 
-    int row = Math.round( f_row );
+    int row = Math.round( f_row );          
     if ( row < 1 || row > n_rows )
       return null;
 
@@ -626,7 +660,7 @@ public class VecQToTOF
     int col = Math.round( f_col ); 
     if ( col < 1 || col > n_cols )
       return null;
-
+                                             
     float final_path = pix_position.length();
     pix_position.normalize();
     float angle = (float)( Math.acos( pix_position.dot( unit_k ) ));
@@ -814,8 +848,13 @@ public class VecQToTOF
 
   /* ------------------------- getDetectorCenter ------------------------- */
   /**
-   * Gets an accurate position of the detector's center
+   * Gets the position of the detector's center, as the average of the pixels
+   * at the [1,1] and [N_ROWS,N_COLS] locations.  For UniformGrids, this will
+   * be the same as the location returned as the position of the whole
+   * detector.
+   *
    * @param grid  The grid object describing the detector
+   *
    * @return  The position in 3D for the center of the grid
    */
   private static Vector3D getDetectorCenter( IDataGrid grid )
@@ -836,9 +875,11 @@ public class VecQToTOF
   /* -----------------------------  RCofQVec ----------------------------- */
   /**
    * Determines the row and column of the pixel on grid corresponding to the
-   * Q vector( the Q with 2PI in lab coordinates). 
+   * Q vector (the Q with 2PI in lab coordinates). 
+   *
    * @param Qlab_w2pi  The Q vector with 2PI in lab coordinates
    * @param grid       The grid describing the detector
+   *
    * @return  two floats: the first is the row(index) and the second is 
    *          the column
    */
@@ -846,24 +887,27 @@ public class VecQToTOF
   {
     if( Qlab_w2pi == null)
       return null;
+
     if( grid == null)
       return null;  
+
     float[] q = Qlab_w2pi.get();
     if ( q[0] >= 0 )          // no solution, since q is in the wrong direction
       return null;
+
     float mag_q = Qlab_w2pi.length();
     float mag_k = -(mag_q * mag_q) / (2*q[0]);
-    Vector3D n =grid.z_vec();
+    Vector3D n  = grid.z_vec();
    
     Vector3D k_prime = new Vector3D( q[0] + mag_k, q[1], q[2] );
     Vector3D det_center = getDetectorCenter( grid );
+
     float t = det_center.dot(n)/k_prime.dot(n);
     if ( t <= 0 )                // no solution, since the beam missed the
       return null;               // detector plane
     
     Vector3D det_point = new Vector3D( k_prime );
     det_point.multiply( t );
-    //Vector3D pix_position = new Vector3D( det_point );
 
     det_point.subtract( det_center );
     float u_comp = det_point.dot( grid.x_vec() );
@@ -893,7 +937,7 @@ public class VecQToTOF
   /* -------------------------- XcmYcmofQVec ----------------------------- */
   /**
    * Determines the distance from the center(cm) of the pixel on grid 
-   * corresponding to the Q vector( the Q with 2PI in lab coordinates). 
+   * corresponding to the Q vector (the Q with 2PI in lab coordinates). 
    *
    * @param Qlab_w2pi  The Q vector with 2PI in lab coordinates
    * @param grid       The grid describing the detector
@@ -902,7 +946,7 @@ public class VecQToTOF
    *           direction and the second is the distance(cm) in the
    *           grid.y_vec direction. 
    */
-  public static float[] XcmYcmofQVec( Vector3D Qlab_w2pi, IDataGrid grid)
+  public static float[] XcmYcmofQVec( Vector3D Qlab_w2pi, IDataGrid grid )
   {
     float[]RC = RCofQVec( Qlab_w2pi, grid);
     if( RC == null)
@@ -916,8 +960,8 @@ public class VecQToTOF
  
  /* --------------------------- TofofQVec ------------------------------ */
  /**
-  * Determines the TOF corresponding to the Q vector( the Q with 2PI in lab
-  *      coordinates).  
+  * Determines the TOF corresponding to the Q vector (the Q with 2PI in lab
+  * coordinates).  
   *
   * @param Qlab_w2pi            The Q vector with 2PI in lab coordinates
   * @param grid                 The grid describing the detector
@@ -938,7 +982,7 @@ public class VecQToTOF
     float angle = (float)( Math.acos( pix_position.dot( unit_k ) ));
 
     float tof = tof_calc.TOFofDiffractometerQ( angle,
-                                               initial_path_length+final_path,
+                                               initial_path_length + final_path,
                                                Qlab_w2pi.length() );
     return tof;                            
   }
@@ -946,7 +990,7 @@ public class VecQToTOF
 
   /* ---------------------------- WlofQVec ------------------------------ */
   /**
-   * Determines the wavelength corresponding to the Q vector( the Q with 2PI 
+   * Determines the wavelength corresponding to the Q vector (the Q with 2PI 
    * in lab coordinates).  
    *
    * @param Qlab_w2pi  The Q vector with 2PI in lab coordinates
@@ -960,7 +1004,7 @@ public class VecQToTOF
                                 float     initial_path_length ) 
   {
     float t = TofofQVec( Qlab_w2pi, grid, initial_path_length );
-    return tof_calc.Wavelength( initial_path_length+Qlab_w2pi.length() , t );
+    return tof_calc.Wavelength( initial_path_length + Qlab_w2pi.length(), t );
   }
   
                                                
