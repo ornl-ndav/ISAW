@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2006/03/10 05:14:47  dennis
+ * Fixed javadoc error.
+ *
  * Revision 1.17  2004/04/12 21:33:18  dennis
  * Now gets detector ID using the Util.detectorID() method, rather
  * than assuming that there is an explict DETECTOR_IDS attribute
@@ -142,14 +145,16 @@ public class LoadSCDCalib extends DS_Attribute{
     }
     
     /** 
-     *  Creates operator with title "Real Space Peaks" and the
+     *  Creates operator with title "Load SCD Calibration" and the
      *  specified list of parameters. The getResult method must still
      *  be used to execute the operator.
      *
      *  @param calib_file Calibration file to use
      */
-    public LoadSCDCalib( DataSet ds, String calib_file, int linenum,
-                                                                String groups){
+    public LoadSCDCalib( DataSet ds, 
+                         String  calib_file, 
+                         int     linenum,
+                         String  groups) {
 	this(); 
 	parameters = new Vector();
         addParameter( new Parameter("Calibration File",
