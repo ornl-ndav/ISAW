@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.86  2006/03/13 20:35:18  rmikk
+ * Now allows for Display to appear at a  place not at the beginning
+ *
  * Revision 1.85  2005/06/24 03:32:12  rmikk
  * Fixed problem with finding variables
  *
@@ -761,10 +764,10 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
             return ii;                             
             
         }else if( Command.equals( "DISPLAY" ) ){
-            if( start != 0 ){
-                seterror( i , "Must be the First command on a line" );
-	        return i;
-            }
+            //if( start != 0 ){
+           //     seterror( i , "Must be the First command on a line" );
+	       // return i;
+            //}
             retn = execDisplay( S , j , end );
             //Result = null;
             return retn;
