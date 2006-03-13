@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2006/03/13 23:15:22  rmikk
+ * Added a filter for the extension of the Contact info file name
+ *
  * Revision 1.9  2005/11/22 19:40:37  rmikk
  * Set Arg 0 as selected argument when a new method is first selected
  * Sets the default command name, title, and filename for the resultant
@@ -121,6 +124,7 @@ import DataSetTools.util.SysUtil;
 import java.util.*;
 import DataSetTools.parameter.*;
 import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.Util.File.*;
 import javax.xml.parsers.*;
 import javax.xml.transform.stream.*;
 import javax.xml.transform.*;
@@ -1252,6 +1256,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                  if(!filname.endsWith(File.separator))
                      filname+=File.separator;
                  JFileChooser jf = new JFileChooser( filname+"ContactInfo.xml");
+                 jf.setFileFilter( jf.getAcceptAllFileFilter());
+                 RobustFileFilter xmlFileFilter = new RobustFileFilter();
+                 xmlFileFilter.addExtension("xml");
+                 jf.setFileFilter( xmlFileFilter);
                  jf.setSelectedFile(new File(filname+"ContactInfo.xml"));
                  
                  if( jf.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
