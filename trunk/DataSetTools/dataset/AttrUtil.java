@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2006/03/13 22:40:26  dennis
+ *  Added method getFloatArray2DValue(), to get the value of an
+ *  attribute that is a 2D array of floats.
+ *  Fixed method getOrientMatrix() to actually get the orientation
+ *  matrix from the DataSet attributes, if there is one.
+ *
  *  Revision 1.3  2005/07/05 15:31:39  dennis
  *  Fixed bugs in convenience methods for getting PixelInfoList,
  *  GsasCalib and SampleOrientation attribute values.
@@ -133,16 +139,16 @@ public class AttrUtil
 
   /**
    * Looks for the attribute with the name <code>name</code> from the list 
-   * of attributes.  If the attribute is not in the list or a float array 
-   * cannot be aquired from it, <code>null</code> is returned.
+   * of attributes.  If the attribute is not in the list or the value is
+   * not a one-dimensional float array, <code>null</code> is returned.
    *
    * @param attr_name The name of the attribute to search for.
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the named attribute value is to be obtained.
    *
-   * @return The float array aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The float array value from the named attribute 
+   * or <code>null</code> if it doesn't exist.
    */
    public static float[] getFloatArrayValue( String         attr_name,
                                              IAttributeList attr_list  )
@@ -153,6 +159,42 @@ public class AttrUtil
         if ((val != null) && (val instanceof float[]))
           return (float[])val;
       } 
+
+      return null;
+   }
+
+
+  /**
+   * Looks for the attribute with the name <code>name</code> from the list 
+   * of attributes.  If the attribute is not in the list or the value is not 
+   * a two dimensional float array, <code>null</code> is returned.
+   * 
+   * @param attr_name The name of the attribute to search for.
+   *
+   * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
+   *                  from which the named attribute value is to be obtained.
+   *
+   * @return The two dimensional float array value from the named attribute 
+   * or <code>null</code> if it doesn't exist.
+   */
+   public static float[][] getFloatArray2DValue( String         attr_name,
+                                                 IAttributeList attr_list  )
+   {
+      if ( attr_list != null && attr_name != null )
+      {
+        Object val = attr_list.getAttributeValue(attr_name);
+
+        if ( val == null || !(val instanceof float[][]) )  // make sure we have
+          return null;                                     // a nominal 2D array
+
+        float[][] matrix = (float[][])val;
+
+        for ( int row = 0; row < matrix.length; row++ )  // make sure that each
+          if ( matrix[row] == null )                     // row exists
+            return null;
+
+        return matrix;
+      }
 
       return null;
    }
@@ -1227,9 +1269,19 @@ public class AttrUtil
    * @return The String object aquired from the attribute with the specified 
    * name or <code>null</code> if it can't be aquired.
    */
-   public static String getOrientMatrix( IAttributeList attr_list )
+   public static float[][] getOrientMatrix( IAttributeList attr_list )
    {
-      return getStringValue(Attribute.ORIENT_MATRIX, attr_list );
+     float matrix[][] = 
+                    getFloatArray2DValue( Attribute.ORIENT_MATRIX, attr_list );
+
+     if ( matrix.length < 3 )
+       return null;
+
+     for ( int row = 0; row < 3; row++ )
+       if ( matrix[row].length < 3 )
+         return null;
+ 
+     return matrix; 
    }
 
 
