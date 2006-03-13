@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.71  2006/03/13 20:24:11  rmikk
+ *  Now implements IPreserveState so it can be used with the ObjectState operators
+ *
  *  Revision 1.70  2006/01/05 17:26:46  rmikk
  *  Eliminated a debug print
  *
@@ -274,6 +277,7 @@ import javax.swing.*;
 public class ViewManager extends    JFrame
                          implements IViewManager,
                                     Serializable,
+                                    IPreserveState,
                                     IFinish
 {
    public static boolean debug_view_manager   = false;
