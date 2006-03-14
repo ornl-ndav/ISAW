@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2006/03/14 23:41:25  dennis
+ * Added the XConversions table readout for pointed at peaks.
+ *
  * Revision 1.25  2006/02/21 03:28:37  dennis
  * Now uses the Grid_util.getAllDataGrids() method to get all the
  * DataGrids for simple tubes, LPSDs or area detectors.  Finished
@@ -182,6 +185,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.math.*;
 import DataSetTools.instruments.*;
+import DataSetTools.components.ui.*;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.File.*;
@@ -274,6 +278,8 @@ public class GL_RecipPlaneView
   private JSlider         peak_threshold_slider;
   private JSlider         contour_threshold_slider;
 
+  private DataSetXConversionsTable conv_table = null;
+
   private JLabel          q_readout;
   private SimpleVectorReadout   origin_vec;
   private SimpleVectorReadout   vec_1;
@@ -283,7 +289,8 @@ public class GL_RecipPlaneView
   private LatticePlaneUI  k_plane_ui;
   private LatticePlaneUI  l_plane_ui;
 
-  private Vector          vec_q_transformer;
+  private Vector          vec_q_transformer = null;
+  private Vector          ds_of_transformer = null;
   private Vector          all_peaks;
 
   private int             global_obj_index = 0;  // needed to keep the pick 
@@ -396,6 +403,15 @@ public class GL_RecipPlaneView
     checkbox_panel.add( show_integer_hkl );
     checkbox_panel.add( calc_fft_button );
 
+    JPanel table_panel = new JPanel();
+    table_panel.setLayout( new GridLayout(1,1) );
+    conv_table = new DataSetXConversionsTable( DataSet.EMPTY_DATA_SET );
+    border = new TitledBorder(LineBorder.createBlackLineBorder(),
+                              "Selected Point Data" );
+    border.setTitleFont( FontUtil.BORDER_FONT );
+    table_panel.setBorder( border );
+    table_panel.add( conv_table.getTable() );
+
 // ----
 
     q_readout = new JLabel( UNDEFINED );
@@ -432,6 +448,8 @@ public class GL_RecipPlaneView
     view_controls.add( peak_threshold_slider );
     view_controls.add( contour_threshold_slider );
     view_controls.add( checkbox_panel );
+    view_controls.add( table_panel );
+
     tabbed_pane.addTab( "View", view_controls );
     JPanel filler1 = new JPanel();
     filler1.setPreferredSize( new Dimension( 120, 2000 ) );
@@ -1092,6 +1110,7 @@ public class GL_RecipPlaneView
   {
      System.out.println("Start makeVecQTransformers " );
      vec_q_transformer = new Vector();
+     ds_of_transformer = new Vector();
      for ( int index = 0; index < data_sets.size(); index++ )
      { 
         DataSet ds = (DataSet)data_sets.elementAt(index);
@@ -1104,6 +1123,7 @@ public class GL_RecipPlaneView
             IDataGrid grid = (IDataGrid)e.nextElement();
             VecQToTOF transformer = new VecQToTOF( ds, grid );
             vec_q_transformer.add( transformer );
+            ds_of_transformer.add( ds );
           }
         }
         catch (InstantiationError e )
@@ -2916,17 +2936,18 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
            result += ", " + Format.real( coords[2], 6, 3 );
            q_readout.setText( result );
 
-           VecQToTOF transformer;
+           VecQToTOF transformer = null;
+           DataSet   this_ds     = null;
            for ( int i = 0; i < vec_q_transformer.size(); i++ )
            {
              transformer = (VecQToTOF)(vec_q_transformer.elementAt(i));
+             this_ds = (DataSet)ds_of_transformer.elementAt(i);
              float row_col_ch[]  = transformer.QtoRowColChan( position );
              float xcm_ycm_wl[]  = transformer.QtoXcmYcmWl( position );
              float row_col_tof[] = transformer.QtoRowColTOF( position );
              if ( row_col_ch != null )
              {
                SharedData.addmsg("\nData for Q = " + position );
-               DataSet this_ds = (DataSet)data_sets.elementAt(i);
                int[] run_numbers = AttrUtil.getRunNumber( this_ds );
                if ( run_numbers != null && run_numbers.length > 0 )
                  SharedData.addmsg(" Run Number = " + run_numbers[0] );
@@ -2954,6 +2975,21 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
                             "   " + row_col_tof[0] + 
                             "   " + row_col_tof[2]; 
                SharedData.addmsg( msg );
+
+               // also, update the x-conversions table readout
+               IDataGrid grid = transformer.getDataGrid();
+               Data d = grid.getData_entry( (int)row_col_tof[0], 
+                                            (int)row_col_tof[1] );
+              
+               int data_index = this_ds.getIndex_of_data( d );
+               if ( index >= 0 )
+               {
+                 this_ds.setPointedAtIndex( data_index );
+                 this_ds.setPointedAtX( row_col_tof[2] );
+                 conv_table.setDataSet( this_ds );
+                 conv_table.showConversions( row_col_tof[2], data_index );
+               }
+
              }
            }
          }
