@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2006/03/14 23:40:07  dennis
+ * Now also makes a new TableModel, if the DataSet is changed.
+ *
  * Revision 1.16  2006/03/14 15:17:21  dennis
  * Added method to set a new DataSet to use to get the values
  * for the table.  NOTE: If the new DataSet has a different number
@@ -111,7 +114,6 @@ public class DataSetXConversionsTable  implements Serializable
   private DataSet    ds          = null;    // The DataSet for this table  
 
   private JTable     table       = null; 
-  private TableModel dataModel   = null;
 
   private Vector     data_info_ops = null;   // List of Data information ops
   private Vector     x_info_ops    = null;   // List of X-Axis information ops
@@ -135,7 +137,7 @@ public class DataSetXConversionsTable  implements Serializable
   public DataSetXConversionsTable( DataSet ds )
   {
     this.ds = ds;
-    dataModel = new DataSetXConversionTableModel();
+    TableModel dataModel = new DataSetXConversionTableModel();
     table = new JTable(dataModel);
     table.setTableHeader(null);                // disable table header
     table.setFont( FontUtil.LABEL_FONT );
@@ -186,8 +188,15 @@ public class DataSetXConversionsTable  implements Serializable
                          "setDataSet() method" );
       return;
     }
+
+    if ( this.ds == ds )         // nothing to do, so just return
+      return;
+
     this.ds = ds;
     init_operator_lists();
+
+    TableModel dataModel = new DataSetXConversionTableModel();
+    table.setModel( dataModel );
   }
 
  
