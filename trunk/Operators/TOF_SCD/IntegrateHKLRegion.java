@@ -23,19 +23,258 @@
  *           Menomonie, WI 54751, USA
  *
  * Modified:
+ * 
+ * $LOG:$
  *
  */
 package Operators.TOF_SCD;
 
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
+import DataSetTools.viewer.*;
 import DataSetTools.trial.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.Numeric.*;
 
 public class IntegrateHKLRegion
 {
+  float intensities[][][] = null;
+  int   n_steps_h = 0,
+        n_steps_k = 0,
+        n_steps_l = 0;
+  float h_min = 0,
+        h_max = 0;
+  float k_min = 0, 
+        k_max = 0;
+  float l_min = 0, 
+        l_max = 0;
+
+  /**
+   *  Calculate an approximate integral over a rectangluar region in h,k,l.
+   *  Each the specified range of h, k and l values is subdivided into the 
+   *  specified number of steps in the h, k and l directions.  The three 
+   *  dimensional array of division points, (h,k,l) are mapped back to 
+   *  points in the raw data and a value is interpolated at each point.
+   *  The sum of these values is returned.
+   *
+   *  @param  ds                 The DataSet for this run
+   *  @param  grid               The detector (grid) to be used
+   *  @param  orientation_matrix The orientation matrix determining the hkls
+   *  @param  min_h              The minimum h value
+   *  @param  max_h              The maximum h value
+   *  @param  n_h_steps          The number of intervals in the h direction
+   *  @param  min_k              The minimum k value
+   *  @param  max_k              The maximum k value
+   *  @param  n_k_steps          The number of intervals in the k direction
+   *  @param  min_l              The minimum l value
+   *  @param  max_l              The maximum l value
+   *  @param  n_l_steps          The number of intervals in the l direction
+   *
+   *  @return  An array containing three values in order: the sum of the  
+   *           intensities at the points in the specified hkl region;
+   *           the number of points that mapped back into the region covered
+   *           by the detector, and the number of points that mapped outside
+   *           of the region covered by the detector. 
+   */
+  public float[] IntegrateInterp( DataSet    ds,
+                                  IDataGrid  grid,
+                                  Tran3D     orientation_matrix,
+                                  float      min_h,
+                                  float      max_h,
+                                  int        n_h_steps,
+                                  float      min_k,
+                                  float      max_k,
+                                  int        n_k_steps,
+                                  float      min_l,
+                                  float      max_l,
+                                  int        n_l_steps )
+  {
+     float result[] = { 0, 0, 0 };    // result array is all zeros if the 
+                                      // hkl region is outside of the region
+                                      // measured by the detector.
+     //
+     // First, find the approximate range of rows, cols and channels 
+     // corresponding to the specified region in h,k,l, by mapping points 
+     // on the faces of the region of h, k, l, back into row, col, channel.
+     //
+     intensities = new float[n_h_steps+1][n_k_steps+1][n_l_steps+1];
+     h_min = min_h;
+     h_max = max_h;
+     k_min = min_k;
+     k_max = max_k;
+     l_min = min_l;
+     l_max = max_l;
+     n_steps_h = n_h_steps;
+     n_steps_k = n_k_steps;
+     n_steps_l = n_l_steps;
+
+     float  h_step = (max_h - min_h) / n_h_steps;
+     float  k_step = (max_k - min_k) / n_k_steps;
+     float  l_step = (max_k - min_k) / n_k_steps;
+
+     int    count = 0;
+     int    out_count = 0;
+     float  sum = 0;
+     float  intensity;
+     VecQToTOF transformer = new VecQToTOF( ds, grid );
+     Vector3D point        = new Vector3D();
+     float    rc_chan[];
+     for ( int page = 0; page <= n_h_steps; page++ )
+       for ( int row = 0; row <= n_k_steps; row++ )
+         for ( int col = 0; col <= n_l_steps; col++ )
+         {
+            point.set( min_h + h_step * page, 
+                       min_k + k_step * row,
+                       min_l + l_step * col );
+            orientation_matrix.apply_to( point, point );
+            intensity = transformer.intensityAtQ( point );
+            if ( intensity < 0 )
+            {
+              intensities[ page ][ row ][ col ] = 0;
+              out_count++;
+            }
+            else
+            { 
+              intensities[ page ][ row ][ col ] = intensity;
+              sum += intensity;
+              count++;
+            }
+         }
+
+     result[0] = sum;
+     result[1] = count;
+     result[2] = out_count;
+     return result;
+  }
+
+
+  /**
+   *  Sum the volume of data obtained from the last integration, in the
+   *  k and l directions, leaving a function of one variable, h.
+   *
+   *  @return a DataSet with one Data block, the summed crossections, as
+   *            a function of h.
+   */
+  public DataSet h_profile()
+  {
+    if ( intensities == null )
+    {
+      System.out.println("intensities array not set");
+      return DataSet.EMPTY_DATA_SET;
+    }
+
+    float sums[] = new float[ n_steps_h + 1 ];
+    for ( int page = 0; page <= n_steps_h; page++ )
+    {
+      sums[page] = 0;
+      for ( int row = 0; row <= n_steps_k; row++ )
+        for ( int col = 0; col <= n_steps_l; col++ )
+           sums[page] += intensities[ page ][ row ][ col ]; 
+    }
+
+    XScale x_scale = new UniformXScale( h_min, h_max, n_steps_h+1 );
+    FunctionTable profile = new FunctionTable( x_scale, sums, 1 );
+
+    String k_interval = "[" + Format.real( k_min, 10, 2 ).trim() + "," +
+                              Format.real( k_max, 10, 2 ).trim() + "]";
+    String l_interval = "[" + Format.real( l_min, 10, 2 ).trim() + "," +
+                              Format.real( l_max, 10, 2 ).trim() + "]";
+    String title = "h Profile: k, l summed in " + k_interval +"X"+l_interval;
+    DataSetFactory factory = new DataSetFactory( title,
+                                              "index", "h",
+                                              "intensity", "Summed over k, l" );
+
+    DataSet new_ds = factory.getDataSet();
+    new_ds.addData_entry( profile );
+    return new_ds;
+  }
+
+
+  /**
+   *  Sum the volume of data obtained from the last integration, in the
+   *  h and l directions, leaving a function of one variable, k.
+   *
+   *  @return a DataSet with one Data block, the summed crossections, as
+   *            a function of k.
+   */
+  public DataSet k_profile()
+  {
+    if ( intensities == null )
+    {
+      System.out.println("intensities array not set");
+      return DataSet.EMPTY_DATA_SET;
+    }
+
+    float sums[] = new float[ n_steps_k + 1 ];
+    for ( int row = 0; row <= n_steps_k; row++ )
+    {
+      sums[row] = 0;
+      for ( int page = 0; page <= n_steps_h; page++ )
+        for ( int col = 0; col <= n_steps_l; col++ )
+           sums[row] += intensities[ page ][ row ][ col ]; 
+    }
+
+    XScale x_scale = new UniformXScale( k_min, k_max, n_steps_k+1 );
+    FunctionTable profile = new FunctionTable( x_scale, sums, 1 );
+
+    String h_interval = "[" + Format.real( h_min, 10, 2 ).trim() + "," +
+                              Format.real( h_max, 10, 2 ).trim() + "]";
+    String l_interval = "[" + Format.real( l_min, 10, 2 ).trim() + "," +
+                              Format.real( l_max, 10, 2 ).trim() + "]";
+    String title = "k Profile: h, l summed in " + h_interval +"X"+l_interval;
+    DataSetFactory factory = new DataSetFactory( title,
+                                              "index", "k",
+                                              "intensity", "Summed over h, l" );
+
+    DataSet new_ds = factory.getDataSet();
+    new_ds.addData_entry( profile );
+    return new_ds;
+  }
+
+
+  /**
+   *  Sum the volume of data obtained from the last integration, in the
+   *  h and k directions, leaving a function of one variable, l.
+   *
+   *  @return a DataSet with one Data block, the summed crossections, as
+   *            a function of l.
+   */
+  public DataSet l_profile()
+  {
+    if ( intensities == null )
+    {
+      System.out.println("intensities array not set");
+      return DataSet.EMPTY_DATA_SET;
+    }
+
+    float sums[] = new float[ n_steps_l + 1 ];
+    for ( int col = 0; col <= n_steps_l; col++ )
+    {
+      sums[col] = 0;
+      for ( int page = 0; page <= n_steps_h; page++ )
+        for ( int row = 0; row <= n_steps_k; row++ )
+           sums[col] += intensities[ page ][ row ][ col ];
+    }
+
+    XScale x_scale = new UniformXScale( l_min, l_max, n_steps_l+1 );
+    FunctionTable profile = new FunctionTable( x_scale, sums, 1 );
+
+    String h_interval = "[" + Format.real( h_min, 10, 2 ).trim() + "," +
+                              Format.real( h_max, 10, 2 ).trim() + "]";
+    String k_interval = "[" + Format.real( k_min, 10, 2 ).trim() + "," +
+                              Format.real( k_max, 10, 2 ).trim() + "]";
+    String title = "l Profile: h, k summed in " + h_interval +"X"+k_interval;
+    DataSetFactory factory = new DataSetFactory( title,
+                                              "index", "l",
+                                              "intensity", "Summed over h, k" );
+
+    DataSet new_ds = factory.getDataSet();
+    new_ds.addData_entry( profile );
+    return new_ds;
+  }
+
 
   /**
    *  Calculate the total number of counts from all histogram bins that 
@@ -57,15 +296,15 @@ public class IntegrateHKLRegion
    *           summed in the data region, and the number of bins in the hkl 
    *           region that were outside of the measured data, in that order.
    */
-  public static float[] Integrate( DataSet       ds,
-                                   IDataGrid     grid,
-                                   Tran3D        orientation_matrix,
-                                   float         min_h,
-                                   float         max_h,
-                                   float         min_k,
-                                   float         max_k,
-                                   float         min_l,
-                                   float         max_l  )
+  public static float[] IntegrateInside( DataSet    ds,
+                                         IDataGrid  grid,
+                                         Tran3D     orientation_matrix,
+                                         float      min_h,
+                                         float      max_h,
+                                         float      min_k,
+                                         float      max_k,
+                                         float      min_l,
+                                         float      max_l  )
   { 
      float result[] = { 0, 0, 0 };    // result array is all zeros if the 
                                       // hkl region is outside of the region
@@ -220,7 +459,7 @@ public class IntegrateHKLRegion
    *          by 2 * PI, or null if the matrix couldn't be loaded.
    */
 
-  private static Tran3D loadOrientationMatrix( String file_name )
+  public static Tran3D loadOrientationMatrix( String file_name )
   {
     float or_mat[][] = new float[3][3];
     try
@@ -258,7 +497,7 @@ public class IntegrateHKLRegion
    *  @return A Tran3D object representing the orientation matrix multiplied
    *          by 2 * PI.
    */
-  private static Tran3D getOrientationMatrix( DataSet ds )
+  public static Tran3D getOrientationMatrix( DataSet ds )
   {
     float orientation_matrix_arr[][] = AttrUtil.getOrientMatrix( ds );
     if ( orientation_matrix_arr == null )
@@ -287,18 +526,20 @@ public class IntegrateHKLRegion
   {
     IDataGrid grid = Grid_util.getAreaGrid( ds, det_id );
     
-    float result[] = Integrate( ds, 
-                                grid, 
-                                orientation_matrix,
-                                min_h, max_h, 
-                                min_k, max_k, 
-                                min_l, max_l );
+    float result[] = IntegrateInside( ds, 
+                                      grid, 
+                                      orientation_matrix,
+                                      min_h, max_h, 
+                                      min_k, max_k, 
+                                      min_l, max_l );
     return result;
   }
 
 
   public static void main( String args[] )
   {
+    IntegrateHKLRegion integrator = new IntegrateHKLRegion(); 
+
     String data_file_name   = "/usr2/SCD_TEST/scd08336.run";
     String or_mat_file_name = "/usr2/SCD_TEST/lsquartz8336.mat";
     String calib_file_name  = "/usr2/SCD_TEST/instprm.dat";
@@ -323,7 +564,7 @@ public class IntegrateHKLRegion
     load_calib.getResult(); 
 
     float small_step = 0.1f;
-    float large_step = 0.11f;
+    float large_step = 0.15f;
 
     for ( int h = -13; h <= -3; h++ )
       for ( int k =   2; k <=  10; k++ )
@@ -336,40 +577,57 @@ public class IntegrateHKLRegion
           float min_l = l - large_step;
           float max_l = l + large_step;
 
-          float tot_result[] = Integrate( ds,
+          float tot_result[] = IntegrateInside( ds,
                                           grid,
                                           orientation_matrix,
                                           min_h, max_h,
                                           min_k, max_k,
                                           min_l, max_l );
 
-          min_h = h - small_step;
-          max_h = h + small_step;
-          min_k = k - small_step;
-          max_k = k + small_step;
-          min_l = l - small_step;
-          max_l = l + small_step;
-
-          float sig_result[] = Integrate( ds,
+          float int_result[] = integrator.IntegrateInterp( ds,
                                           grid,
                                           orientation_matrix,
-                                          min_h, max_h,
-                                          min_k, max_k,
-                                          min_l, max_l );
-          if ( sig_result[0] > 0 )
-          {
-            float n_sig    = sig_result[1];
-            float n_border = tot_result[1] - n_sig;
-            float sig      = sig_result[0];
-            float border   = tot_result[0] - sig;
- 
-            float net_sig = sig - n_sig/n_border * border;
-   
+                                          min_h, max_h, 10,
+                                          min_k, max_k, 10,
+                                          min_l, max_l, 10 );
+
+         if ( tot_result[0] > 0 && tot_result[2] <= 0 && int_result[2] <= 0 )
+         {
+            System.out.println();
             System.out.print( ""+ h + " " + k + " " + l + "    " );
-            System.out.println( net_sig );
-//          System.out.println( result[0] + "     " + (int)result[1] );
-          }
-        }
+            System.out.print( tot_result[0]/tot_result[1] + "    ");
+            System.out.println( tot_result[0] + " " + 
+                                tot_result[1] + " " + 
+                                tot_result[2] );
+            System.out.print( ""+ h + " " + k + " " + l + "    " );
+            System.out.print( int_result[0]/int_result[1] + "    ");
+            System.out.println( int_result[0] + " " + 
+                                int_result[1] + " " + 
+                                int_result[2] );
 
+         }
+        }
+/*
+    float result[] = integrator.IntegrateInterp( ds,
+                                          grid,
+                                          orientation_matrix,
+                                          -9.5f, -5.5f, 200,
+                                          4.95f, 5.05f, 10,
+                                          2.95f, 3.05f, 10 );
+*/
+    float result[] = integrator.IntegrateInterp( ds,
+                                          grid,
+                                          orientation_matrix,
+                                          -6.2f, -5.8f, 40,
+                                          4.8f, 5.2f, 40,
+                                          2.8f, 3.2f, 40 );
+    DataSet h_ds = integrator.h_profile();
+    new ViewManager( h_ds, IViewManager.SELECTED_GRAPHS );
+
+    DataSet k_ds = integrator.k_profile();
+    new ViewManager( k_ds, IViewManager.SELECTED_GRAPHS );
+
+    DataSet l_ds = integrator.l_profile();
+    new ViewManager( l_ds, IViewManager.SELECTED_GRAPHS );
   }
 }
