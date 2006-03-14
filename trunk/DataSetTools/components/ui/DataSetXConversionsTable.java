@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2006/03/14 15:17:21  dennis
+ * Added method to set a new DataSet to use to get the values
+ * for the table.  NOTE: If the new DataSet has a different number
+ * of conversion operators, the table will be resized and it is
+ * probably better to just make a whole new table.
+ *
  * Revision 1.15  2004/07/16 18:57:07  dennis
  * Fixed improper comparison with Float.NaN
  *
@@ -141,10 +147,21 @@ public class DataSetXConversionsTable  implements Serializable
       return;
     }
                                            // fill out the list of operators 
+    init_operator_lists();
+  }
+
+
+  /* ------------------------- init_operator_lists ------------------------ */
+  /**
+   *  Extract lists of IDataBlockInfo and IDataPointInfo operators from 
+   *  the DataSet, when this object is constructed, or the DataSet is changed
+   */
+  private void init_operator_lists()
+  {
     data_info_ops = new Vector();
-    x_info_ops = new Vector();
-    int n_ops         = ds.getNum_operators();
-    DataSetOperator op; 
+    x_info_ops    = new Vector();
+    int n_ops     = ds.getNum_operators();
+    DataSetOperator op;
     for ( int i = 0; i < n_ops; i++ )
     {
       op = ds.getOperator(i);
@@ -154,6 +171,25 @@ public class DataSetXConversionsTable  implements Serializable
         x_info_ops.addElement( op );
     }
   }
+
+  /* ------------------------------ setDataSet --------------------------- */
+  /**
+   *  Set a new DataSet to be used to generate the table entries.
+   *
+   *  @param ds   The new DataSet.
+   */
+  public void setDataSet( DataSet ds )
+  {
+    if ( ds == null )
+    {
+      System.out.println("ERROR: DataSet null in DataSetXConversionsTable "+
+                         "setDataSet() method" );
+      return;
+    }
+    this.ds = ds;
+    init_operator_lists();
+  }
+
  
   /* -------------------------- showConversions ---------------------------- */
   /**
