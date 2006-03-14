@@ -34,6 +34,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2006/03/14 23:35:22  dennis
+ * Made some improvements to the efficiency of the calculation.
+ * 1. When the data grid is changed, the data is copied more
+ *    efficiently.
+ * 2. The value is not recalculated if the Data block index is
+ *    not changed and the time-of-flight value is not changed.
+ * Also converted from DOS to UNIX text.
+ *
  * Revision 1.8  2005/01/02 17:54:05  rmikk
  * Trapped for a null pointer exception error
  *
@@ -75,6 +83,7 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 import java.util.*;
 import DataSetTools.parameter.*;
 import java.lang.reflect.*;
+
 /**
  * @author mikkelsonr
  *
@@ -82,7 +91,7 @@ import java.lang.reflect.*;
  */
 public class IntegratePt extends
                           DataSetTools.operator.DataSet.Math.Analyze.AnalyzeOp  
-                             implements IDataPointInfo {
+                         implements IDataPointInfo {
   DataSet DS;
   int[][][] JHist = null;
   int id =-1;
@@ -90,14 +99,19 @@ public class IntegratePt extends
   int ISX = 1;
   int ISY = 1;
   int ISZ = 1;
+
+  float     last_time = -1; 
+  int       last_dataBlockIndex = -1;
+  Wrappable last_op1    = null;
+  Vector    last_result = null;
+
   public IntegratePt(){
-    super("Integrate1");
+    super("IntegratePt");
     DS = null;
     setIntgratePkOp(op,1,1,1);
   }
+  
 
-  
-  
   /**
      *  Constructor 
      *  @param DS  The DataSet of interest
@@ -125,6 +139,8 @@ public class IntegratePt extends
     this.DS = DS;
     super.setDataSet( DS);
   }
+
+
  //--------------------- IDataInfo methods---------------------- 
   /**
    *   Applies the INTEG operator to the ith data block and time x
@@ -157,9 +173,12 @@ public class IntegratePt extends
      parameters.addElement(new IntegerPG("Group Index", 0));
      parameters.addElement(new FloatPG("Time", 0.0f));
    }
+
+
    public String getCommand(){
       return "IntegratePt";
    }
+
 
   public String getDocumentation(){
     StringBuffer s = new StringBuffer("");
@@ -177,9 +196,9 @@ public class IntegratePt extends
       s.append("integrated value of the peak), SIGI(The standard deviation ");
       s.append("of ITOT), null, or an ErrorString ");
       return s.toString();
-
-    
   }
+
+
   public Object getResult(){
        int GroupIndex = ((IntegerPG)getParameter(0)).getintValue();
        float time = ((FloatPG)getParameter(1)).getfloatValue();
@@ -192,6 +211,8 @@ public class IntegratePt extends
           V = new Vector();
        return V;     
   }
+
+
  //----------------------- Wrappable plug-ins----------------------
  public void setIntgratePkOp( Wrappable op1, int ISX ,int ISY,int ISZ){
 	if( op1 ==  null)
@@ -205,6 +226,7 @@ public class IntegratePt extends
 	this.ISZ = ISZ;
     
   }
+
   
   private static boolean errmsg( String Message){
     DataSetTools.util.SharedData.addmsg(Message);
@@ -265,6 +287,8 @@ public class IntegratePt extends
     
     return true;
   }
+
+
  //--------------------- Base method for all interfaces -------------- 
   /**
     *	Applies the INTEG operator to the ith data block of the data set DS
@@ -280,13 +304,32 @@ public class IntegratePt extends
   
     if( dataBlockIndex < 0)
       return null;
+
     if( Float.isNaN(time))
       return null;
+
     if (op1 == null)
       if( op != null)
          op1 = op;
       else
          op1 = new INTEG();
+                                                   // if this is the same time
+                                                   // data block and op, just
+                                                   // return the same value
+    if ( time == last_time                     &&
+         dataBlockIndex == last_dataBlockIndex &&
+         op1            == last_op1            )
+    {
+      if ( last_result == null )
+        return null; 
+
+      Vector saved_result = new Vector();
+      for ( int i = 0; i < last_result.size(); i++ )
+        saved_result.add( last_result.elementAt(i) );
+      return saved_result;
+    }
+
+
     //INTGT op = new INTGT();
    
     Data D = DS.getData_entry( dataBlockIndex);
@@ -300,8 +343,6 @@ public class IntegratePt extends
     col= (int)pilist.pixel(0).col(); 
     if( (row <1)||(col<1))
       return null;
-   
-       
        
     int numrows =gr.num_rows();
     int numcols = gr.num_cols();
@@ -322,11 +363,14 @@ public class IntegratePt extends
          return  null;
       for( int i=1; i<= numrows;i++)
         for( int j = 1; j <= numcols; j++)
-          for( int k=0; k< nchannels -1; k++)
-            if(gr.getData_entry(j,i) != null)
-               JHist[i-1][j-1][k] =(int) gr.getData_entry(j,i).getY_values()[k];
-            else
-               JHist[i-1][j-1][k] = 0;
+        {
+          if(gr.getData_entry(j,i) != null)
+          {
+            float y_vals[] = gr.getData_entry(j,i).getY_values();
+            for( int k=0; k< nchannels -1; k++)
+              JHist[i-1][j-1][k] =(int)y_vals[k];
+          }
+        }
     }
     setintField(op1,"ISX",ISX) ;
     setintField(op1,"ISY",ISY) ;
@@ -350,8 +394,18 @@ public class IntegratePt extends
     Vector V = new Vector();
     V.addElement(getfloatField(op,"ITOT")); 
     V.addElement(getfloatField(op,"SIGITOT"));                     
+
+    last_time           = time;                    // save parameters and
+    last_dataBlockIndex = dataBlockIndex;          // results so that we don't
+    last_op1            = op1;                     // keep recalculating them
+    last_result         = new Vector( V.size() );  // when this is called for
+    for ( int i = 0; i < V.size(); i++ )           // windows being uncovered
+      last_result.addElement( V.elementAt(i) ); 
+
     return V; 
   }
+
+
   private void setintField( Wrappable op, String Name, int val){
     try{
       Field F =  op.getClass().getField(Name);
@@ -359,6 +413,7 @@ public class IntegratePt extends
     }catch(Exception ss){
     }
   }
+
   
   private Object getfloatField( Wrappable op, String Name){
      try{
@@ -369,6 +424,8 @@ public class IntegratePt extends
        return null;
      }
   }
+
+
   private void setfloatField( Wrappable op, String Name, float val){
     try{
       Field F =  op.getClass().getField(Name);
@@ -377,6 +434,7 @@ public class IntegratePt extends
     }
   }
   
+
   private void setObjField( Wrappable op, String Name, Object val){
     try{
       Field F =  op.getClass().getField(Name);
@@ -384,6 +442,7 @@ public class IntegratePt extends
     }catch(Exception ss){
     }
   }
+
   
   public Object clone(){
   	 IntegratePt Res = new IntegratePt();
