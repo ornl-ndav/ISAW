@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2006/03/14 14:49:11  dennis
+ * Removed a redundant line of code.
+ *
  * Revision 1.13  2004/09/15 22:03:52  millermi
  * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
  *   Adding a second log required the boolean parameter to be changed
@@ -217,7 +220,6 @@ public class HKL_SliceView extends DataSetViewer
     border.setTitleFont( FontUtil.BORDER_FONT );
     control_panel.setBorder( border );
 
-    image_table = new DataSetXConversionsTable( getDataSet() );
     table_panel = new JPanel();
     table_panel.setLayout( new BorderLayout() );
     JPanel filler = new JPanel();
