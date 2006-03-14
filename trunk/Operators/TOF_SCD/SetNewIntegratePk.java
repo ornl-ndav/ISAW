@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2006/03/14 22:28:10  dennis
+ * Converted from DOS to UNIX text.
+ * Added some missing line breaks.
+ *
  * Revision 1.4  2005/01/07 19:34:08  rmikk
  * Now implements IWrappableWithCategoryList
  *
@@ -96,31 +100,36 @@ public class SetNewIntegratePk implements IWrappableWithCategoryList {
     return Operator.TOF_NSCD;
   }
 
-
   
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer(  );
        s.append( "@overview This class lets the user plug in an alternate " );
+       
        s.append(  "IntegratePeak routine of a special format. It also adds the "  );
+       
        s.append(  "Information operator the given DataSet( if it is not the "); 
        s.append( "Empty Data Set." );
        s.append( "@algorithm This operator converts the filename to a possible" );
        s.append( "classname. Then it uses Class.forName to get the class, ");
+       
        s.append(  "creating an instanceof this class. A lot of error checking");
+       
        s.append(  " is done.Next the DataSet has the IntegratePt operator added");
+       
        s.append(  " to it if it is not already one of its operators" );
        s.append( "@DS The DataSet to which the IntegratePt operator is to be");
+       
        s.append(  "added. Use the Empty DataSet if this is not desired" );
        s.append( "@filename the .class or .java file with the integrate 1 peak");
-        s.append(  "operator. There MUST be a .class file for this" );
+        
+       s.append(  "operator. There MUST be a .class file for this" );
       
        s.append( "@return Success or error messages. " );
        s.append( "@error Improper Filename; ClassPath is not set up; etc. " );
        s.append( "occur. For example: Error occurs if number of bins is zero." );
        return s.toString(  );
-
-   
   }
+
 
   /**
    *  Sets the experimental Integrate one peak class and ensures that the 
@@ -154,9 +163,8 @@ public class SetNewIntegratePk implements IWrappableWithCategoryList {
       int match = fil.indexOf(P);
       if( match ==0)
          ClassPart = fil.substring( P.length());
-      
-      
     }
+
     if(ClassPart == null)
       return new ErrorString("File is NOT on the class path");
       
@@ -197,4 +205,5 @@ public class SetNewIntegratePk implements IWrappableWithCategoryList {
     
     return "Success";
   }
+
 }
