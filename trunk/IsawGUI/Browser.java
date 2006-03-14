@@ -166,9 +166,36 @@ public class Browser implements HyperlinkListener,
         } catch (Exception e) {
             System.out.println("Can't open " + urlString + " " + e);
         }//end try-catch
-    }//end openURL
+    }// end openURL
 
-    public void hyperlinkUpdate(HyperlinkEvent he) //this allows linking
+    public void hyperlinkUpdate(HyperlinkEvent e) {
+        URL url = null;
+        if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+            JEditorPane pane = (JEditorPane) e.getSource();
+            if (e instanceof HTMLFrameHyperlinkEvent) {
+                HTMLFrameHyperlinkEvent evt = (HTMLFrameHyperlinkEvent) e;
+                HTMLDocument doc = (HTMLDocument) pane.getDocument();
+                doc.processHTMLFrameHyperlinkEvent(evt);
+                url=doc.getBase();
+            } else {
+                try {
+                    url=e.getURL();
+                    pane.setPage( url );
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+            }
+        }
+       if(url==null)
+             return;
+        if (history == null) history = new Vector();
+        history.add(url.toExternalForm());
+        positionOfPage= history.size()-1;
+        if (history.size() > 1)
+            back.setEnabled(true);
+    }
+    
+    public void hyperlinkUpdate1(HyperlinkEvent he) //this allows linking
     {
 
         HyperlinkEvent.EventType type = he.getEventType();
