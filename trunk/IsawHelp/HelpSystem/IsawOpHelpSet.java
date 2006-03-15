@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2006/03/15 20:40:07  rmikk
+ * Fixed(semi) the tree problem caused by the hidden operators
+ *
  * Revision 1.13  2005/10/09 19:53:40  rmikk
  * Now uses the OpInfo to set up the TOC instead of loading in 
  *       all the operators.
@@ -921,7 +924,11 @@ class IsawTOC  extends TOCView
         TOCItem ttt = (TOCItem)addNode( letters , title ,  
                      javax.help.Map.ID.create( "Gen" + i , hs ) , hs ).getUserObject();
         String[] cat = op.CatList;
-        insert( Category , ttt , cat , 1 ); //Insert into the category node too.
+        int kk=1;
+        if( cat != null)if(cat.length>0)if((cat[0].equalsIgnoreCase("HIDDENOPERATOR")))
+            kk=0;
+        cat[0]=cat[0].toUpperCase();
+        insert( Category , ttt , cat , kk ); //Insert into the category node too.
            
        }
 
@@ -948,7 +955,11 @@ class IsawTOC  extends TOCView
                             javax.help.Map.ID.create( "Dat" + i ,  hs ) , hs ).getUserObject();
 
         String[] cat = op.getCategoryList();
-        insert( Category , ttt , cat , 1 );
+        int kk=1;
+        if( cat != null)if(cat.length>0)if((cat[0].equalsIgnoreCase("HIDDENOPERATOR")))
+            kk=0;
+        cat[0]=cat[0].toUpperCase();
+        insert( Category , ttt , cat , kk ); //Insert into the category node too.
        }
      return topNode;
 
