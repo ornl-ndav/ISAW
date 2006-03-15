@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2006/03/15 19:31:59  rmikk
+ * Changed the command name from (null) JavaWrappedOperator
+ *
  * Revision 1.2  2005/08/25 15:53:09  dennis
  * No longer implements HiddenOperator, so it will now appear in menu.
  * Added getCategoryList() method to control where it appears.
@@ -99,7 +102,7 @@ public class WrapperTemplate implements Wrappable, IWrappableWithCategoryList
    * ArtsIntegrate) in all capital letters.
    */
   public String getCommand(  ) {
-    return null;
+    return "WrapperTemplate";
   }
 
 
