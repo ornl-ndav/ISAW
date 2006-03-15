@@ -29,6 +29,7 @@
  */
 package Operators.TOF_SCD;
 
+import java.io.*;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
@@ -50,6 +51,10 @@ public class IntegrateHKLRegion
         k_max = 0;
   float l_min = 0, 
         l_max = 0;
+
+  DataSet   ds     = null;
+  IDataGrid grid   = null;
+  Tran3D    or_mat = null;
 
   /**
    *  Calculate an approximate integral over a rectangluar region in h,k,l.
@@ -95,11 +100,9 @@ public class IntegrateHKLRegion
                                       // hkl region is outside of the region
                                       // measured by the detector.
      //
-     // First, find the approximate range of rows, cols and channels 
-     // corresponding to the specified region in h,k,l, by mapping points 
-     // on the faces of the region of h, k, l, back into row, col, channel.
+     // First, record the parameters as state information, so that they
+     // can be used when retrieving different derived results. 
      //
-     intensities = new float[n_h_steps+1][n_k_steps+1][n_l_steps+1];
      h_min = min_h;
      h_max = max_h;
      k_min = min_k;
@@ -110,20 +113,30 @@ public class IntegrateHKLRegion
      n_steps_k = n_k_steps;
      n_steps_l = n_l_steps;
 
-     float  h_step = (max_h - min_h) / n_h_steps;
-     float  k_step = (max_k - min_k) / n_k_steps;
-     float  l_step = (max_k - min_k) / n_k_steps;
+     this.ds = ds;
+     this.grid = grid;
+     this.or_mat = new Tran3D( orientation_matrix );
 
+     //
+     // Now step over the specified volume in h,k,l and evaluate the intensity
+     // at each of the points.  The intensities are both summed and saved to
+     // use for extracting derived information.
+     // 
+     intensities = new float[n_h_steps+1][n_k_steps+1][n_l_steps+1];
      int    count = 0;
      int    out_count = 0;
      float  sum = 0;
      float  intensity;
      VecQToTOF transformer = new VecQToTOF( ds, grid );
      Vector3D point        = new Vector3D();
-     float    rc_chan[];
-     for ( int page = 0; page <= n_h_steps; page++ )
-       for ( int row = 0; row <= n_k_steps; row++ )
-         for ( int col = 0; col <= n_l_steps; col++ )
+
+     float  h_step = (max_h - min_h) / n_steps_h;
+     float  k_step = (max_k - min_k) / n_steps_k;
+     float  l_step = (max_l - min_l) / n_steps_l;
+
+     for ( int page = 0; page <= n_steps_h; page++ )
+       for ( int row = 0; row <= n_steps_k; row++ )
+         for ( int col = 0; col <= n_steps_l; col++ )
          {
             point.set( min_h + h_step * page, 
                        min_k + k_step * row,
@@ -147,6 +160,102 @@ public class IntegrateHKLRegion
      result[1] = count;
      result[2] = out_count;
      return result;
+  }
+
+
+  /**
+   *  Write a list of h,k,l,x,y,z,xcm,ycm,wl,intensity values to the
+   *  specified file.  An IOException will be thrown if the file
+   *  can't be opened and written.
+   *
+   *  @param filename  The fully qualified name of the file.
+   */
+  public boolean WriteFile( String filename ) throws IOException
+  {
+     if ( intensities == null )
+       return false;
+
+     File out_f = new File( filename );
+     PrintWriter writer = new PrintWriter( out_f );
+
+     VecQToTOF transformer = new VecQToTOF( ds, grid );
+     Vector3D point        = new Vector3D();
+
+     float  h_step = (h_max - h_min) / n_steps_h;
+     float  k_step = (k_max - k_min) / n_steps_k;
+     float  l_step = (l_max - l_min) / n_steps_l;
+     float  h, 
+            k, 
+            l;
+
+     float  xcm, 
+            ycm, 
+            wl; 
+     float  det_row,
+            det_col,
+            chan,
+            value;
+
+     float rc_chan[];
+     float xcm_ycm_wl[];
+
+     writer.print( Format.string( "H", 5, true ) + " " +
+                       Format.string( "K", 5, true ) + " " +
+                       Format.string( "L", 5, true ) + "  ");
+     writer.print( Format.string( "X", 6, true ) + " " +
+                       Format.string( "Y", 6, true ) + " " +
+                       Format.string( "Z", 6, true ) + "  ");
+     writer.print( Format.string( "XCM", 7, true ) + " " +
+                       Format.string( "YCM", 7, true ) + " " +
+                       Format.string( "WL",  7, true ) + "  ");
+     writer.println( Format.string( "Interp Val", 10) );
+     
+
+     for ( int page = 0; page <= n_steps_h; page++ )
+       for ( int row = 0; row <= n_steps_k; row++ )
+         for ( int col = 0; col <= n_steps_l; col++ )
+         {
+            h = h_min + h_step * page;
+            k = k_min + k_step * row;
+            l = l_min + l_step * col;
+            point.set( h, k, l ); 
+            or_mat.apply_to( point, point );
+            rc_chan = transformer.QtoRowColChan( point );
+            xcm_ycm_wl = transformer.QtoXcmYcmWl( point );
+
+            if ( rc_chan != null )
+            {
+              det_row = rc_chan[0];
+              det_col = rc_chan[1];
+              chan    = rc_chan[2];
+              xcm     = xcm_ycm_wl[0];
+              ycm     = xcm_ycm_wl[1];
+              wl      = xcm_ycm_wl[2];
+              value   = intensities[page][row][col];
+            }
+            else
+            {
+              det_row = -1; 
+              det_col = -1;
+              chan    = -1;
+              xcm     = -1;
+              ycm     = -1;
+              wl      = -1;
+              value   = -1;
+            }
+            writer.print( Format.real( h, 5, 2 ) + " " +
+                          Format.real( k, 5, 2 ) + " " +
+                          Format.real( l, 5, 2 ) + "  " );
+            writer.print( Format.real( det_col, 6, 2 ) + " " +
+                          Format.real( det_row, 6, 2 ) + " " +
+                          Format.real( chan,    6, 2 ) + "  " );
+            writer.print( Format.real( xcm, 7, 2 ) + " " +
+                          Format.real( ycm, 7, 2 ) + " " +
+                          Format.real( wl,  7, 4 ) + "  " );
+            writer.println( Format.real( value, 10, 3 ) );
+         }
+     writer.close();
+     return true;
   }
 
 
@@ -536,9 +645,18 @@ public class IntegrateHKLRegion
   }
 
 
-  public static void main( String args[] )
+  /**
+   *  This does a basic functionality test by loading files and invoking
+   *  the integrate(), h_profile(), k_profile(), l_profile() and WriteFile()
+   *  methods.
+   */
+  public static void main( String args[] ) throws Exception
   {
-    IntegrateHKLRegion integrator = new IntegrateHKLRegion(); 
+    // 
+    //  First load up a DataSet and set the calibration information
+    //  and the orientation matrix in the DataSet.  These steps will
+    //  be assumed to be done BEFORE the integration is carried out. 
+    // 
 
     String data_file_name   = "/usr2/SCD_TEST/scd08336.run";
     String or_mat_file_name = "/usr2/SCD_TEST/lsquartz8336.mat";
@@ -546,81 +664,44 @@ public class IntegrateHKLRegion
 
     RunfileRetriever rr = new RunfileRetriever( data_file_name );
     DataSet ds = rr.getDataSet(2);
-    IDataGrid grid = Grid_util.getAreaGrid( ds, 17 );
 
-    Tran3D orientation_matrix = loadOrientationMatrix( or_mat_file_name ); 
-    System.out.println( "Tran 3D orientation_matrix " + orientation_matrix );
 
     LoadOrientation op = new LoadOrientation(ds, or_mat_file_name);
     op.getResult();
 
-    orientation_matrix = getOrientationMatrix( ds );
-    System.out.println( "From DataSet, AttrUtil: " + orientation_matrix );
-    
     LoadSCDCalib load_calib = new LoadSCDCalib( ds,
                                                 calib_file_name,
                                                 -1,
                                                 null );
     load_calib.getResult(); 
 
-    float small_step = 0.1f;
-    float large_step = 0.15f;
+    //
+    //  Now get the grid and orientation matrix out of the DataSet and
+    //  then make an instance of the integrator, integrate a peak,
+    //  get and display the profiles and write the file.  NOTE: The
+    //  integrate routine must be called once to set the state information
+    //  needed for the other methods.
+    //
+    IDataGrid grid = Grid_util.getAreaGrid( ds, 17 );
 
-    for ( int h = -13; h <= -3; h++ )
-      for ( int k =   2; k <=  10; k++ )
-        for ( int l =   1; l <=   8; l++ )
-        {
-          float min_h = h - large_step;
-          float max_h = h + large_step;
-          float min_k = k - large_step;
-          float max_k = k + large_step;
-          float min_l = l - large_step;
-          float max_l = l + large_step;
+    Tran3D orientation_matrix = getOrientationMatrix( ds );
 
-          float tot_result[] = IntegrateInside( ds,
-                                          grid,
-                                          orientation_matrix,
-                                          min_h, max_h,
-                                          min_k, max_k,
-                                          min_l, max_l );
+    System.out.println( "From DataSet, AttrUtil: " + orientation_matrix );
 
-          float int_result[] = integrator.IntegrateInterp( ds,
-                                          grid,
-                                          orientation_matrix,
-                                          min_h, max_h, 10,
-                                          min_k, max_k, 10,
-                                          min_l, max_l, 10 );
+    IntegrateHKLRegion integrator = new IntegrateHKLRegion(); 
 
-         if ( tot_result[0] > 0 && tot_result[2] <= 0 && int_result[2] <= 0 )
-         {
-            System.out.println();
-            System.out.print( ""+ h + " " + k + " " + l + "    " );
-            System.out.print( tot_result[0]/tot_result[1] + "    ");
-            System.out.println( tot_result[0] + " " + 
-                                tot_result[1] + " " + 
-                                tot_result[2] );
-            System.out.print( ""+ h + " " + k + " " + l + "    " );
-            System.out.print( int_result[0]/int_result[1] + "    ");
-            System.out.println( int_result[0] + " " + 
-                                int_result[1] + " " + 
-                                int_result[2] );
-
-         }
-        }
-/*
     float result[] = integrator.IntegrateInterp( ds,
                                           grid,
                                           orientation_matrix,
-                                          -9.5f, -5.5f, 200,
-                                          4.95f, 5.05f, 10,
-                                          2.95f, 3.05f, 10 );
-*/
-    float result[] = integrator.IntegrateInterp( ds,
-                                          grid,
-                                          orientation_matrix,
-                                          -6.2f, -5.8f, 40,
-                                          4.8f, 5.2f, 40,
-                                          2.8f, 3.2f, 40 );
+                                          -6.2f, -5.8f, 10,
+                                          4.8f, 5.2f, 10,
+                                          2.8f, 3.2f, 10 );
+
+    System.out.println( "TOTAL     = " + result[0] );
+    System.out.println( "N_COUNTED = " + result[1] );
+    System.out.println( "N_MISSED  = " + result[2] );
+
+
     DataSet h_ds = integrator.h_profile();
     new ViewManager( h_ds, IViewManager.SELECTED_GRAPHS );
 
@@ -629,5 +710,7 @@ public class IntegrateHKLRegion
 
     DataSet l_ds = integrator.l_profile();
     new ViewManager( l_ds, IViewManager.SELECTED_GRAPHS );
+
+    integrator.WriteFile( "junk.dat" );
   }
 }
