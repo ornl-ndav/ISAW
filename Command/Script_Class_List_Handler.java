@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.72  2006/03/15 19:27:34  rmikk
+ * Added returns after a cached  operator was processed  and indicated a
+ * cached status
+ *
  * Revision 1.71  2005/10/29 14:13:20  rmikk
  * Fixed information on slow load problems.
  * Hopefully Fixed error message with new installations caused by a 
@@ -1142,17 +1146,29 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         if( LoadDebug) 
            System.out.print( "Processing "+filename+":");
         if( RestoredFileNames != null)
-           if( RestoredFileNames.containsKey( filename))
+           if( RestoredFileNames.containsKey( filename)){
+
+              System.out.println("cached");
               return;
+           }
         if( RestoredFileNames != null)                  //Restored correctly
-           if( opList != Script_Class_List_Handler.opList)//DS operator
+           if( opList != Script_Class_List_Handler.opList){//DS operator
+              System.out.println("cached");
               return;
+           }
         if(RestoredFileNames !=null)//have already checked that the jar file is OK
-           if( jarFileName != null)
+           if( jarFileName != null){
+
+              System.out.println("cached");
               return;
+           }
         i = filename.lastIndexOf('.');
         // give up if there is not a '.' near the end of the name (for class)
-        if( i< 0 ) return;
+        if( i< 0 ) {
+
+            System.out.println("No Dot");
+            return;
+        }
 
         String Extension = filename.substring( i + 1 );
         if( Extension.equalsIgnoreCase("iss")){ // it is a script
