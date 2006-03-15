@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2006/03/15 17:10:56  dennis
+ * Added run number and detector ID to 3D display of
+ * detector coverage in Q.
+ *
  * Revision 1.26  2006/03/14 23:41:25  dennis
  * Added the XConversions table readout for pointed at peaks.
  *
@@ -197,6 +201,7 @@ import gov.anl.ipns.ViewTools.Panels.Image.*;
 import gov.anl.ipns.ViewTools.Panels.GL_ThreeD.*;
 import gov.anl.ipns.ViewTools.Panels.GL_ThreeD.Shapes.*;
 import gov.anl.ipns.ViewTools.Panels.GL_ThreeD.ViewControls.*;
+import gov.anl.ipns.ViewTools.Panels.GL_ThreeD.Fonts.*;
 import gov.anl.ipns.ViewTools.Panels.Contour.*;
 import gov.anl.ipns.ViewTools.UI.*;
 
@@ -247,13 +252,14 @@ public class GL_RecipPlaneView
   private float peak_threshold     = SLIDER_DEF;
   private float contour_threshold  = SLIDER_DEF;
 
-  private float LSQ_THRESHOLD   = 0.10f;
-  private final float YELLOW[]  = { 0.8f, 0.8f, 0.2f };
-  private final float CYAN[]    = { 0.2f, 0.8f, 0.8f };
-  private final float GRAY[]    = { 0.4f, 0.4f, 0.4f };
-  private final float RED[]     = { 0.8f, 0.3f, 0.3f };
-  private final float GREEN[]   = { 0.3f, 0.8f, 0.3f };
-  private final float BLUE[]    = { 0.3f, 0.3f, 0.8f };
+  private float LSQ_THRESHOLD     = 0.10f;
+  private final float YELLOW[]    = { 0.8f, 0.8f, 0.2f };
+  private final float CYAN[]      = { 0.2f, 0.8f, 0.8f };
+  private final float GRAY[]      = { 0.4f, 0.4f, 0.4f };
+  private final float LIGHTGRAY[] = { 0.6f, 0.6f, 0.6f };
+  private final float RED[]       = { 0.8f, 0.3f, 0.3f };
+  private final float GREEN[]     = { 0.3f, 0.8f, 0.3f };
+  private final float BLUE[]      = { 0.3f, 0.3f, 0.8f };
 
   private FinishJFrame scene_f;
   private ImageFrame2 h_frame = null;
@@ -1570,6 +1576,8 @@ public class GL_RecipPlaneView
                                             // number of detectors in them
                                             // and each detector has a grid.
       VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(index);
+      DataSet   ds          = (DataSet)ds_of_transformer.elementAt(index);
+
       IDataGrid grid = transformer.getDataGrid();
       d = grid.getData_entry(1,1);
 
@@ -1585,8 +1593,21 @@ public class GL_RecipPlaneView
 
       Tran3D combinedR = transformer.getGoniometerRotationInverse();
 
+                                                   // make a label for the
+                                                   // region from run & det ID
+      String label = "";
+
+      int run_list[] = AttrUtil.getRunNumber( ds );
+      if ( run_list == null )
+        run_list = AttrUtil.getRunNumber( d );
+
+      if ( run_list != null )
+        label = IntList.ToString( run_list );
+
+      label += " : " + grid.ID();
+
       GL_Shape result[];
-      result = GetRegion( grid, combinedR, initial_path, t0 );
+      result = GetRegion( grid, combinedR, initial_path, t0, label );
 
      return result;
   }
@@ -1595,11 +1616,14 @@ public class GL_RecipPlaneView
   /*
    *  Get Lines object containing contour lines with constant column value
    */
-  public GL_Shape[] GetRegion( IDataGrid grid,
-                               Tran3D    combinedR,
-                               float     initial_path,
-                               float     t0     )
+  private GL_Shape[] GetRegion( IDataGrid grid,
+                                Tran3D    combinedR,
+                                float     initial_path,
+                                float     t0,
+                                String    label     )
   {
+    GL_Shape boundaries[] = new GL_Shape[4];  // will contain edges, outer face,
+                                              // inner face and labels
     Data d = grid.getData_entry(1,1);
 
     float times[] = d.getX_scale().getXs();
@@ -1622,11 +1646,10 @@ public class GL_RecipPlaneView
       end[i]   = getQ( combinedR, corners[i], t_end   + t0, initial_path );
     }
 
-    GL_Shape boundaries[] = new GL_Shape[3];
     boundaries[0] = new Lines( start, end );
 
-    Vector3D points[] = new Vector3D[2*n_rows + 2*n_cols - 3];   // inner face
-    int index = 0;
+    Vector3D points[] = new Vector3D[2*n_rows + 2*n_cols - 3];   // outer face
+    int index = 0;                                               // at t min
     for ( int col = 1; col <= n_cols; col++ )
     {
       points[index] = 
@@ -1656,7 +1679,7 @@ public class GL_RecipPlaneView
     }
 
     boundaries[1] = new LineStrip( points ); 
-                                                         // outer face
+                                                        // inner face at t_max
     index = 0;
     for ( int col = 1; col <= n_cols; col++ )
     {
@@ -1688,11 +1711,47 @@ public class GL_RecipPlaneView
 
     boundaries[2] = new LineStrip( points );
 
-    for ( int i = 0; i < boundaries.length; i++ )
-    {
-      boundaries[i].setColor( GRAY );
-//      boundaries[i].setLighting(false);
+                                                   // set label for region 
+    Vector3D text_pt = getQ( combinedR,
+                             grid.position(),
+                             t_start+t0,
+                             initial_path );
+
+    Vector3D base = new Vector3D( 1, 0, 0 );       // calculate small row and
+    Vector3D up   = new Vector3D( 0, 1, 0 );       // column change vectors
+    if ( n_rows > 1 && n_cols > 1 )                // relative to center, then
+    {                                              // map to Q to get base & up
+      base = new Vector3D( grid.position( 1, n_cols ) );
+      base.subtract( new Vector3D( grid.position( 1, 1 ) ) );
+      base.multiply( 1.0f/n_cols );
+      base.add( grid.position() );
+      up = new Vector3D( grid.position( n_rows, 1 ) );
+      up.subtract( new Vector3D( grid.position( 1, 1 ) ) );
+      up.multiply( 1.0f/n_rows );
+      up.add( grid.position() );
     }
+    base = getQ( combinedR, base, t_start+t0, initial_path );
+    base.subtract( text_pt );
+    base.multiply( -1 );
+    up   = getQ( combinedR, up,   t_start+t0, initial_path );
+    up.subtract( text_pt );
+    if ( up.dot( new Vector3D(0,0,1) ) < 0 )         // flip the text to make
+    {                                                // it's up vector be 
+      base.multiply( -1 );                           // generally in z direction
+      up.multiply( -1 );
+    }
+                                                     // make the label centered 
+    StrokeFont font = new RomanComplex();            // on back face of region 
+    StrokeText text = new StrokeText( label, font ); // with up toward det top
+    text.setPosition( text_pt );
+    text.setOrientation( base, up );
+    text.setAlignment( StrokeText.HORIZ_CENTER, StrokeText.VERT_HALF );
+    boundaries[3] = text;
+
+    for ( int i = 0; i < boundaries.length; i++ )
+      boundaries[i].setColor( GRAY );
+
+    text.setColor( LIGHTGRAY );                      // make the label lighter
 
     return boundaries;
   }
