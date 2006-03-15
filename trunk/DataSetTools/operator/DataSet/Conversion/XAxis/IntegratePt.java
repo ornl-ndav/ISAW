@@ -34,6 +34,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2006/03/15 14:53:48  dennis
+ * Changed to use an array of floats instead of an array of ints,
+ * to avoid having to make a new copy of the data as ints.
+ *
  * Revision 1.9  2006/03/14 23:35:22  dennis
  * Made some improvements to the efficiency of the calculation.
  * 1. When the data grid is changed, the data is copied more
@@ -93,7 +97,7 @@ public class IntegratePt extends
                           DataSetTools.operator.DataSet.Math.Analyze.AnalyzeOp  
                          implements IDataPointInfo {
   DataSet DS;
-  int[][][] JHist = null;
+  float [][][] JHist = null;
   int id =-1;
   private Wrappable op;
   int ISX = 1;
@@ -356,7 +360,7 @@ public class IntegratePt extends
    
     if( (JHist == null) ||(gr.ID()!=id)){
      
-      JHist = new int[numrows][numcols][nchannels];
+      JHist = new float[numrows][numcols][nchannels];
       id = gr.ID();
       //gr.setData_entries(DS);
       if( gr == null)
@@ -367,8 +371,8 @@ public class IntegratePt extends
           if(gr.getData_entry(j,i) != null)
           {
             float y_vals[] = gr.getData_entry(j,i).getY_values();
-            for( int k=0; k< nchannels -1; k++)
-              JHist[i-1][j-1][k] =(int)y_vals[k];
+            if ( y_vals != null )
+              JHist[i-1][j-1] = y_vals;
           }
         }
     }
