@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.53  2006/03/15 14:52:08  dennis
+ *  Changed the addOperator() method to first remove any operator
+ *  of the same type as the operator being added, to avoid getting
+ *  duplicate copies of the operator.
+ *
  *  Revision 1.52  2005/11/21 23:13:31  dennis
  *  Fixed spelling error on variable name in javadoc comment.
  *
@@ -1542,7 +1547,9 @@ public class DataSet implements IAttributeList,
       return;
     }
 
-    operator.setDataSet( this );
+    removeOperator( operator );        // first remove any existing operator
+                                       // of this type, then add in the new
+    operator.setDataSet( this );       // operator that was passed in
     operators.addElement( operator );
     operator.setDefaultParameters();
   }
