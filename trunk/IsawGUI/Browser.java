@@ -30,6 +30,9 @@
  *
  *
  * Modified:
+ * $Log$
+ * Revision 1.4  2006/03/15 21:15:32  rmikk
+ * Added the cvs log tag to the GPL documentation
  *
  */
 
