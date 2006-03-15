@@ -5,7 +5,7 @@ import Command.JavaCC.Fortran.*;
 
 public class INTGT_SLICE implements Wrappable,HiddenOperator{
 
-  public int[][][] JHIST=new int[0][0][0];
+  public float[][][] JHIST=new float[0][0][0];
 
   public int[][] RANGE=new int[0][0];
 

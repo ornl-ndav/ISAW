@@ -6,7 +6,7 @@ import Command.JavaCC.Fortran.*;
 
 public class TOFINT implements Wrappable,HiddenOperator{
 
-  public int[][][] JHIST=new int[0][0][0];
+  public float[][][] JHIST=new float[0][0][0];
 
   public int NXS=0;
 
