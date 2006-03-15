@@ -78,7 +78,7 @@ public class LoadISIS implements Wrappable, HiddenOperator {
    * ArtsIntegrate) in all capital letters.
    */
   public String getCommand(  ) {
-	return null;
+	return "LoadISIS";
   }
 
   /**
