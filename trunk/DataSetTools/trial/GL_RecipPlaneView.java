@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2006/03/15 21:21:40  dennis
+ * Added control to restrict peaks displayed to a specified
+ * range of Q values.
+ * Added SCDhkl operator to DataSets if an orientation matrix
+ * was loaded, so that HKL values can be shown in the
+ * conversions table, for peaks that are picked.
+ *
  * Revision 1.27  2006/03/15 17:10:56  dennis
  * Added run number and detector ID to 3D display of
  * detector coverage in Q.
@@ -187,6 +194,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.EditList.*;
+import DataSetTools.operator.DataSet.Information.XAxis.*;
 import DataSetTools.math.*;
 import DataSetTools.instruments.*;
 import DataSetTools.components.ui.*;
@@ -243,12 +251,17 @@ public class GL_RecipPlaneView
   private final int DIMENSION = 3;       // set to 4 to allow affine transform
                                          // set to 3 to just use rotation and
                                          // scaling.
+  private float MIN_Q_DEF       = 0;
+  private float MAX_Q_DEF       = 30;
   private float INDEX_TOLERANCE = 0.1f;
   private float SLICE_SIZE_IN_Q = 20;
   private int   FFT_DATA_LENGTH = 512;
   private int   SLIDER_DEF      = 60;
   private int   SLIDER_MIN      = 5;
   private int   SLIDER_MAX      = 250;
+
+  private float min_Q_threshold    = MIN_Q_DEF;
+  private float max_Q_threshold    = MAX_Q_DEF;
   private float peak_threshold     = SLIDER_DEF;
   private float contour_threshold  = SLIDER_DEF;
 
@@ -281,6 +294,7 @@ public class GL_RecipPlaneView
   private Color           colors[];
   private float           rgb_colors[][];
       
+  private TextRangeUI     q_range_control;
   private JSlider         peak_threshold_slider;
   private JSlider         contour_threshold_slider;
 
@@ -373,7 +387,7 @@ public class GL_RecipPlaneView
 
   public GL_RecipPlaneView()
   {
-    System.out.println("In default constructor for GL_RecipPlaneView");
+//    System.out.println("In default constructor for GL_RecipPlaneView");
 
     scene_f = new FinishJFrame("Reciprocal Lattice Plane Viewer");
     scene_f.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
@@ -385,11 +399,19 @@ public class GL_RecipPlaneView
     controller.setPerspective( false );
 
 // ---- Display tabbed pane 
+
+    q_range_control = new TextRangeUI( "Min_|Q| Max_|Q|",
+                                        MIN_Q_DEF,MAX_Q_DEF );
+    TitledBorder border = new TitledBorder( LineBorder.createBlackLineBorder(),
+                                           "Range of |Q| Shown");
+    border.setTitleFont( FontUtil.BORDER_FONT );
+    q_range_control.setBorder( border );
+
     peak_threshold_slider = new JSlider(SLIDER_MIN,SLIDER_MAX,SLIDER_DEF);
     peak_threshold_slider.setMajorTickSpacing(20);
     peak_threshold_slider.setMinorTickSpacing(5);
     peak_threshold_slider.setPaintTicks(true);
-    TitledBorder border = new TitledBorder( LineBorder.createBlackLineBorder(),
+    border = new TitledBorder( LineBorder.createBlackLineBorder(),
                                     "Peaks Threshold = " + SLIDER_DEF );
     border.setTitleFont( FontUtil.BORDER_FONT );
     peak_threshold_slider.setBorder( border );
@@ -451,6 +473,7 @@ public class GL_RecipPlaneView
     tabbed_pane.setFont( FontUtil.LABEL_FONT );
 
     Box view_controls = new Box(BoxLayout.Y_AXIS);    
+    view_controls.add( q_range_control );
     view_controls.add( peak_threshold_slider );
     view_controls.add( contour_threshold_slider );
     view_controls.add( checkbox_panel );
@@ -517,6 +540,7 @@ public class GL_RecipPlaneView
 
     calc_fft_button.addActionListener( new CalcFFTButtonHandler() );
 
+    q_range_control.addActionListener( new Q_Range_Listener() );
     peak_threshold_slider.addChangeListener( new PeakThresholdScaleHandler() );
     vec_Q_space.getDisplayComponent().addMouseListener( 
                  new ViewMouseInputAdapter() );
@@ -539,7 +563,7 @@ public class GL_RecipPlaneView
     all_peaks = new Vector();
 
     WindowShower.show( scene_f );
-    System.out.println("End default constructor for GL_RecipPlaneView");
+//    System.out.println("End default constructor for GL_RecipPlaneView");
   }
 
 
@@ -786,6 +810,24 @@ public class GL_RecipPlaneView
   public void initialize( boolean extract_peaks )
   {
     makeVecQTransformers();
+
+    if ( orientation_matrix != null )         // add the orientation matrix
+    {                                         // to all DataSets and add HKL op
+      float temp[][] = orientation_matrix.get();
+      float matrix[][] = new float[3][3];
+      for ( int row = 0; row < 3; row++ )
+        for ( int col = 0; col < 3; col++ )
+          matrix[row][col] = (float)(temp[row][col] / (2.0*Math.PI));
+     
+      Attribute matrix_attr = 
+                new Float2DAttribute( Attribute.ORIENT_MATRIX, matrix );
+      for ( int i = 0; i < data_sets.size(); i++ )
+      {
+        DataSet ds = (DataSet)data_sets.elementAt(i);
+        ds.setAttribute( matrix_attr );
+        ds.addOperator( new SCDhkl() );
+      }
+    }
 
     if ( orientation_matrix == null )
       draw_Q_axes( 15, vec_Q_space );
@@ -1087,9 +1129,17 @@ public class GL_RecipPlaneView
 
   private void ExtractPeaks()
   {
+    if ( vec_q_transformer == null || vec_q_transformer.size() <= 0 )
+    {
+      System.out.println("ExtractPeaks called, but Data not available yet");
+      return;
+    }
 //    if ( debug )
     {
-      System.out.println("Applying threshold to extract peaks....");
+      System.out.println("Applying threshold to extract peaks above " +
+                         peak_threshold );
+      System.out.println("in specified Q range.....");
+
       System.out.println("There are " + vec_q_transformer.size() + " grids");
     }
 
@@ -1228,7 +1278,9 @@ public class GL_RecipPlaneView
               pts[0].set( cart_coords[0], cart_coords[1], cart_coords[2] );
               combinedR.apply_to( pts[0], pts[0] );
 
-              if ( keep_peak(pts[0]) )
+              float mag_Q = pts[0].length();
+              if ( keep_peak(pts[0]) && mag_Q >= min_Q_threshold &&
+                                        mag_Q <= max_Q_threshold )
               {
                 int color_index = (int)( ys[j] * 30 / peak_threshold );
                 if ( color_index > 127 )
@@ -2050,10 +2102,12 @@ public class GL_RecipPlaneView
   {
     if ( all_vectors == null || all_vectors.length < DIMENSION )
     {
-       System.out.println("ERROR: need >= " + DIMENSION + 
+       System.out.println("Need >= " + DIMENSION + 
                           " points in makeQR_factors");
        if ( all_vectors != null )
          System.out.println("Got " + all_vectors.length + " points.");
+       else
+         System.out.println("Got 0 points");
        return false;
     }
 
@@ -2989,6 +3043,7 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
          Vector3D position = vec_Q_space.pickedPoint( e.getX(), e.getY() );
          if ( position != null )
          {
+           Toolkit.getDefaultToolkit().beep();
            float coords[] = position.get();
            String result = new String( Format.real( coords[0], 6, 3 ) );
            result += ", " + Format.real( coords[1], 6, 3 );
@@ -3128,6 +3183,40 @@ private class PeakThresholdScaleHandler implements ChangeListener
     }
   }
 }
+
+
+/* ------------------------ Q_Range_Listener ----------------------------- */
+
+  private class Q_Range_Listener implements ActionListener
+  {
+     float last_Q_min;
+     float last_Q_max;
+
+     public Q_Range_Listener()
+     {
+       last_Q_min = q_range_control.getMin();
+       last_Q_max = q_range_control.getMax();
+     }
+
+     public void actionPerformed(ActionEvent e)
+     {
+       float Q_min = q_range_control.getMin();
+       float Q_max = q_range_control.getMax();
+
+       if ( last_Q_min != Q_min || last_Q_max != Q_max )
+       {
+         last_Q_min = Q_min;
+         last_Q_max = Q_max;
+         min_Q_threshold = Q_min;
+         max_Q_threshold = Q_max;
+
+         scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+         ExtractPeaks();
+         vec_Q_space.Draw();
+         scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+       }
+     }
+  }
 
 
 /* -------------------- ContourThresholdScaleHandler ------------------- */
