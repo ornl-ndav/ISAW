@@ -25,6 +25,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.5  2006/03/16 17:55:10  dennis
+ * Now throws exceptions if the orientation matrix, or
+ * DataGrid for the detector, are not present in the DataSet.
+ *
  * Revision 1.4  2006/03/16 05:05:13  dennis
  * Added top level static method, IntegrateHKL() to integrate a region
  * specified as a box in HKL.  This method will be used by the
@@ -84,7 +88,7 @@ public class IntegrateHKLRegion
 
   /**
    *  Calculate an approximate integral over a rectangluar region in h,k,l.
-   *  Each the specified range of h, k and l values is subdivided into the 
+   *  The specified range of h, k and l values is subdivided into the 
    *  specified number of steps in the h, k and l directions.  The three 
    *  dimensional array of division points, (h,k,l) are mapped back to 
    *  points in the raw data and a value is interpolated at each point.
@@ -720,8 +724,12 @@ public class IntegrateHKLRegion
                                      String  filename  ) throws Exception
   {
     IDataGrid grid = Grid_util.getAreaGrid( ds, det_id );
+    if ( grid == null )
+      throw new Exception("ERROR: No DataGrid found for detector " + det_id );
 
     Tran3D orientation_matrix = getOrientationMatrix( ds );
+    if ( orientation_matrix == null )
+      throw new Exception("ERROR: No Orientation matrix in DataSet");
  
     IntegrateHKLRegion integrator = new IntegrateHKLRegion();
 
@@ -799,9 +807,9 @@ public class IntegrateHKLRegion
     // for one peak, and show the results.
     //
       Vector res_vec = (Vector)IntegrateHKL( ds, 17,
-                                            -6.2f, -5.8f, 40,
-                                             4.8f,  5.2f, 40,
-                                             2.8f,  3.2f, 40,
+                                            -3.1f, -2.9f, 10,
+                                             1.9f,  2.1f, 10,
+                                             0.5f,  3.5f, 80,
                                             "Test1.dat"    );
       for ( int i = 0; i < 3; i++ )
       {
@@ -844,9 +852,9 @@ public class IntegrateHKLRegion
       float result[] = integrator.IntegrateInterp( ds,
                                                    grid,
                                                    orientation_matrix,
-                                                  -6.2f, -5.8f, 40,
-                                                   4.8f,  5.2f, 40,
-                                                   2.8f,  3.2f, 40 );
+                                                  -3.5f, -2.5f, 40,
+                                                   1.5f,  2.5f, 40,
+                                                   0.5f,  1.5f, 40 );
 
       System.out.println( "TOTAL     = " + result[0] );
       System.out.println( "N_COUNTED = " + result[1] );
