@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.65  2006/03/16 22:54:43  rmikk
+ *  Includes code for the BooleanEnable ParameterGUI
+ *
  *  Revision 1.64  2005/12/12 01:22:37  rmikk
  *  Added a printing capability to the Help menu on an operator
  *
@@ -374,7 +377,8 @@ public class JParametersDialog implements Serializable,
               if( Size1 < 0)
 	        Size += 10;
               else
-                Size += Size1;     
+                Size += Size1;
+             
              }            
            else if(iparam instanceof Parameter){
               param=(Parameter)iparam;
@@ -585,11 +589,17 @@ public class JParametersDialog implements Serializable,
 	    //# opDialog.getContentPane().add(paramGUI.getGUISegment());
               BB.add(paramGUI.getGUISegment());
               vparamGUI.addElement(paramGUI);
-             //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+                         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
             
              }
           }//for i < nparameters
-        
+
+        for( int i=0; i< vparamGUI.size();i++)
+            if(vparamGUI.elementAt(i) instanceof BooleanEnablePG)
+                    ((BooleanEnablePG)(vparamGUI.elementAt(i))).addPropertyChangeListener( new EnableParamListener( vparamGUI, i));
+    
+
+            
         JPanel Filler = new JPanel();
         Filler.setPreferredSize( new Dimension(120,2000));
         BB.add( Filler ); 
