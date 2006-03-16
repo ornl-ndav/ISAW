@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.73  2006/03/16 13:46:04  rmikk
+ * Added if in LoadDebug before some debug prints
+ *
  * Revision 1.72  2006/03/15 19:27:34  rmikk
  * Added returns after a cached  operator was processed  and indicated a
  * cached status
@@ -1148,25 +1151,25 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         if( RestoredFileNames != null)
            if( RestoredFileNames.containsKey( filename)){
 
-              System.out.println("cached");
+              if( LoadDebug) System.out.println("cached");
               return;
            }
         if( RestoredFileNames != null)                  //Restored correctly
            if( opList != Script_Class_List_Handler.opList){//DS operator
-              System.out.println("cached");
+               if( LoadDebug) System.out.println("cached");
               return;
            }
         if(RestoredFileNames !=null)//have already checked that the jar file is OK
            if( jarFileName != null){
 
-              System.out.println("cached");
+               if( LoadDebug) System.out.println("cached");
               return;
            }
         i = filename.lastIndexOf('.');
         // give up if there is not a '.' near the end of the name (for class)
         if( i< 0 ) {
 
-            System.out.println("No Dot");
+            if( LoadDebug) System.out.println("No Dot");
             return;
         }
 
