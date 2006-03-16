@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.53  2006/03/16 22:56:28  rmikk
+ * Added code to implement the BooleanEnabled ParameterGUI Feature
+ *
  * Revision 1.52  2004/03/15 03:29:04  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -613,7 +616,8 @@ public abstract class Form extends Operator implements PropertyChanger {
       param.initGUI( null );
       subBox.add( param.getGUIPanel(  ) );
     }
-
+    // implement BooleanEnabling of some of the parameters
+        
     return sub_panel;
   }
 
@@ -740,6 +744,15 @@ public abstract class Form extends Operator implements PropertyChanger {
       }
     }
     this.enableParameters(  );
+    for( int i=0; i< this.getNum_parameters(); i++){
+        IParameterGUI param = ( IParameterGUI )getParameter( i );
+        if( param instanceof BooleanEnablePG){
+            ((BooleanEnablePG)param).addPropertyChangeListener( new EnableParamListener( this, i));
+            ((BooleanEnablePG)param).fire();
+        }
+    }
+   
+    
   }
 
   /**
