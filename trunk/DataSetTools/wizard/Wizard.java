@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.108  2006/03/16 20:47:36  dennis
+ * No longer declare this to be abstract.  This allows wizards to
+ * be instantiated and dynamically configured from a script, by
+ * adding forms and linking parameters!
+ *
  * Revision 1.107  2004/04/21 19:19:10  bouzekc
  * Fixed the problem where the Wizard Progress Bar wasn't updated during
  * sequential execution of the Forms.
@@ -569,7 +574,7 @@ import java.util.*;
  *
  * @see DataSetTools.wizard.Form
  */
-public abstract class Wizard implements PropertyChangeListener, Serializable {
+public class Wizard implements PropertyChangeListener, Serializable {
   //~ Static fields/initializers ***********************************************
 
   public static final String CONFIG_FILE = SharedData.getProperty( "user.home" ) +
