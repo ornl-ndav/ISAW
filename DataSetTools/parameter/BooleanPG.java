@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2006/03/16 22:53:13  rmikk
+ *  Added a method to convert an Object to a Boolean
+ *  Eliminated several calls to setValue which could invoke a subclass' setValue
+ *    method and NOT the desired setValue
+ *
  *  Revision 1.21  2004/05/11 18:23:46  bouzekc
  *  Added/updated javadocs and reformatted for consistency.
  *
@@ -126,7 +131,7 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
    * @param value The initial value.
    */
   public BooleanPG( String name, Object value ) {
-    super( name, value );
+    super( name, convert(value) );
     this.setType( TYPE );
   }
 
@@ -138,7 +143,7 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
    * @param valid Whether this PG should be considered initially valid.
    */
   public BooleanPG( String name, Object value, boolean valid ) {
-    super( name, value, valid );
+    super( name, convert(value), valid );
     this.setType( TYPE );
   }
 
@@ -172,9 +177,34 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
    * @param val The new value to use.
    */
   public void setStringValue( String val ) {
-    Boolean BooVal = new Boolean( val.trim(  ) );
+    Boolean BooVal = convert(val);//new Boolean( val.trim(  ) );
 
-    this.setValue( BooVal );
+    setValue( BooVal);
+  }
+  
+  //Converts any object to Boolean
+  private static Boolean convert( Object value){
+      if( value == null)
+          return new Boolean(false);
+      if( value instanceof Boolean)
+          return (Boolean)value;
+      if( value instanceof String)
+          return new Boolean( (String)value);
+      if(value instanceof Integer)
+          return new Boolean( ((Integer)value).intValue() == 1);
+     if( value instanceof Vector){
+         if(((Vector)value).size() >0)
+             return convert( ((Vector)value).firstElement());
+         else
+             return convert(null);
+     }
+     if( value.getClass().isArray())
+         try{
+             return convert(java.lang.reflect.Array.get(value,0));
+         }catch(Exception ss){
+             return new Boolean(false);
+         }
+     return new Boolean(false);
   }
 
   /**
@@ -193,16 +223,16 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
    * @param val The new value.
    */
   public void setValue( Object val ) {
-    Boolean booval = null;
+   /*Boolean booval = null;
 
     if( val == null ) {
       booval = Boolean.FALSE;
     } else if( val instanceof Boolean ) {
       booval = ( Boolean )val;
     } else if( val instanceof String ) {
-      this.setStringValue( ( String )val );
+      
 
-      return;
+      booval =
     } else if( val instanceof Integer ) {
       int intval = ( ( Integer )val ).intValue(  );
 
@@ -215,7 +245,8 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
       throw new ClassCastException( 
         "Could not coerce " + val.getClass(  ).getName(  ) + " into a Boolean" );
     }
-
+  */
+    Boolean booval=convert(val);
     //update the visual checkbox
     if( this.getInitialized(  ) ) {
       boolean newval = booval.booleanValue(  );
@@ -248,7 +279,7 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
     if( !( val instanceof Boolean ) ) {
       val = null;
     }
-
+    //super.setValue(val);
     return val;
   }
 
