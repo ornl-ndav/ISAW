@@ -24,12 +24,38 @@
  *
  * Modified:
  * 
- * $LOG:$
+ * $Log$
+ * Revision 1.4  2006/03/16 05:05:13  dennis
+ * Added top level static method, IntegrateHKL() to integrate a region
+ * specified as a box in HKL.  This method will be used by the
+ * Method2OperatorWizard to form an operator with the same name.
+ *
+ * Revision 1.3  2006/03/15 23:32:40  dennis
+ * Added method to write interpolated intensites to an ascii file, with
+ * the (h,k,l,x,y,z,xcm,ycm,wl,intensity) values listed one per line.
+ * This is in roughly the same format as a peaks file.  The basic
+ * operations now just need to be called from a static method, and the
+ * static method needs to be wrapped by an operator.
+ *
+ * Revision 1.2  2006/03/14 05:31:17  dennis
+ * Added method to integrate a region in hkl by summing the values
+ * at corresponding points in x,y,channel, using interpolation to
+ * obtain values at non-integral x,y,channel points.
+ * Added methods to find h, k or l profiles of the region by summing
+ * on k,l, or h,l or h,k. respectively.
+ *
+ * Revision 1.1  2006/03/13 22:43:10  dennis
+ * Initial version of class with static methods to integrate a
+ * region specified in terms of ranges in h, k and l.  Currently,
+ * this only has a method to integrate by summing the counts from
+ * those voxels whose centers lie within the specified hkl region.
  *
  */
 package Operators.TOF_SCD;
 
 import java.io.*;
+import java.util.*;
+
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
@@ -167,6 +193,8 @@ public class IntegrateHKLRegion
    *  Write a list of h,k,l,x,y,z,xcm,ycm,wl,intensity values to the
    *  specified file.  An IOException will be thrown if the file
    *  can't be opened and written.
+   *  NOTE: The IntegrateInterp() method MUST be called once to construct
+   *  the 3D array of interpolated intensities before calling this method.
    *
    *  @param filename  The fully qualified name of the file.
    */
@@ -262,9 +290,11 @@ public class IntegrateHKLRegion
   /**
    *  Sum the volume of data obtained from the last integration, in the
    *  k and l directions, leaving a function of one variable, h.
+   *  NOTE: The IntegrateInterp() method MUST be called once to construct
+   *  the 3D array of interpolated intensities before calling this method.
    *
    *  @return a DataSet with one Data block, the summed crossections, as
-   *            a function of h.
+   *          a function of h.
    */
   public DataSet h_profile()
   {
@@ -304,9 +334,11 @@ public class IntegrateHKLRegion
   /**
    *  Sum the volume of data obtained from the last integration, in the
    *  h and l directions, leaving a function of one variable, k.
+   *  NOTE: The IntegrateInterp() method MUST be called once to construct
+   *  the 3D array of interpolated intensities before calling this method.
    *
    *  @return a DataSet with one Data block, the summed crossections, as
-   *            a function of k.
+   *          a function of k.
    */
   public DataSet k_profile()
   {
@@ -346,9 +378,11 @@ public class IntegrateHKLRegion
   /**
    *  Sum the volume of data obtained from the last integration, in the
    *  h and k directions, leaving a function of one variable, l.
+   *  NOTE: The IntegrateInterp() method MUST be called once to construct
+   *  the 3D array of interpolated intensities before calling this method.
    *
    *  @return a DataSet with one Data block, the summed crossections, as
-   *            a function of l.
+   *          a function of l.
    */
   public DataSet l_profile()
   {
@@ -621,27 +655,105 @@ public class IntegrateHKLRegion
 
 
   /**
+   *  Calculate an approximate integral over a rectangluar region in h,k,l
+   *  using the IntegrateInterp() method.  Also, use the h_profile(),
+   *  k_profile() and l_profile methods to construct DataSets with functions
+   *  of one parameter, h, k or l, by summing over the other two dimensions
+   *  in the specified region in h, k and l.  Finally, if a file is specified,
+   *  the interpolated intensities will be written to a file, along with
+   *  the h,k,l,x,y,z,xcm,ycm,wl values. NOTE: The DataSet ds must have 
+   *  the orienatation matrix already loaded using the LoadOrientation()
+   *  matrix operator.  In addition, for IPNS runfiles, it should have had 
+   *  the calibration information loaded, using the LoadSCDCalib()
+   *  operator.
    *
+   *  @param  ds                 The DataSet for this run, containing all
+   *                             needed attributes, including the orientation
+   *                             matrix.
+   *  @param  det_id             The id of the detector to use
+   *  @param  min_h              The minimum h value
+   *  @param  max_h              The maximum h value
+   *  @param  n_h_steps          The number of intervals in the h direction
+   *  @param  min_k              The minimum k value
+   *  @param  max_k              The maximum k value
+   *  @param  n_k_steps          The number of intervals in the k direction
+   *  @param  min_l              The minimum l value
+   *  @param  max_l              The maximum l value
+   *  @param  n_l_steps          The number of intervals in the l direction
+   *  @param  filename           The name of the file to write the list of
+   *                             of interpolated intensities to.  If this
+   *                             is blank, or the specified file cannot be 
+   *                             created, no file will be written.
+   *
+   *  @return This method returns a Vector with six pairs of entries.  The
+   *  pairs consist of a descriptive String followed by a value.
+   *  The first pair of entries are a String name and Float containing 
+   *  the sum of all of the interpolated intensities in and on the boundary 
+   *  of the specified region.  
+   *  The second pair of entries are a String name and an Integer giving 
+   *  the number of sample points in the specified region that mapped 
+   *  INSIDE of the specified detector's data.  
+   *  The third pair of entries are a String name and an Integer giving 
+   *  the number of sample points in the specified region that mapped 
+   *  OUTSIDE of the specified detector's data.  
+   *  The fourth pair of entries are a String name and a DataSet containing 
+   *  the "h profile", i.e. sums of the interpolated intensities in the 
+   *  directions of k and l, as a function of h. 
+   *  The fifth pair of entries are a String name and a DataSet containing 
+   *  the "k profile", i.e. sums of the interpolated intensities in the 
+   *  directions of h and l, as a function of k. 
+   *  The sixth pair of entries are a String name and a DataSet containing 
+   *  the "l profile", i.e. sums of the interpolated intensities in the 
+   *  directions of h and k, as a function of l. 
    */
-  public static Object Integrate( DataSet ds,
-                                  int     det_id,
-                                  Tran3D  orientation_matrix,
-                                  float   min_h,
-                                  float   max_h,
-                                  float   min_k,
-                                  float   max_k,
-                                  float   min_l,
-                                  float   max_l  )
+  public static Object IntegrateHKL( DataSet ds,
+                                     int     det_id,
+                                     float   min_h,
+                                     float   max_h,
+                                     int     n_h_steps,
+                                     float   min_k,
+                                     float   max_k,
+                                     int     n_k_steps,
+                                     float   min_l,
+                                     float   max_l,
+                                     int     n_l_steps,
+                                     String  filename  ) throws Exception
   {
     IDataGrid grid = Grid_util.getAreaGrid( ds, det_id );
-    
-    float result[] = IntegrateInside( ds, 
-                                      grid, 
-                                      orientation_matrix,
-                                      min_h, max_h, 
-                                      min_k, max_k, 
-                                      min_l, max_l );
-    return result;
+
+    Tran3D orientation_matrix = getOrientationMatrix( ds );
+ 
+    IntegrateHKLRegion integrator = new IntegrateHKLRegion();
+
+    float result[] = integrator.IntegrateInterp( ds,
+                                                 grid,
+                                                 orientation_matrix,
+                                                 min_h, max_h, n_h_steps,
+                                                 min_k, max_k, n_k_steps,
+                                                 min_l, max_l, n_l_steps );
+    Vector list = new Vector();
+    list.add( "Sum of interpolated intensities ");
+    list.add( new Float( result[0] ) ); 
+
+    list.add( "Number of points inside detector ");
+    list.add( new Integer( (int)result[1] ) );
+
+    list.add( "Number of points outside detector "); 
+    list.add( new Integer( (int)result[2] ) ); 
+
+    list.add( "Sums in k, l directions, as function of h ");
+    list.add( integrator.h_profile() );
+ 
+    list.add( "Sums in h, l directions, as function of k ");
+    list.add( integrator.k_profile() );
+ 
+    list.add( "Sums in h, k directions, as function of l ");
+    list.add( integrator.l_profile() );
+ 
+    if ( filename != null && filename.length() > 0 )
+      integrator.WriteFile( filename );
+
+    return list;
   }
 
 
@@ -665,7 +777,6 @@ public class IntegrateHKLRegion
     RunfileRetriever rr = new RunfileRetriever( data_file_name );
     DataSet ds = rr.getDataSet(2);
 
-
     LoadOrientation op = new LoadOrientation(ds, or_mat_file_name);
     op.getResult();
 
@@ -676,7 +787,47 @@ public class IntegrateHKLRegion
     load_calib.getResult(); 
 
     //
-    //  Now get the grid and orientation matrix out of the DataSet and
+    // Now either test the top level IntegrateHKL method, or the individual
+    // lower level methods, by integrating one peak. 
+    //
+
+    boolean test_top_level = true;
+    if ( test_top_level )
+    {
+    //
+    // To check everthing from end to end, call the IntegrateHKL method
+    // for one peak, and show the results.
+    //
+      Vector res_vec = (Vector)IntegrateHKL( ds, 17,
+                                            -6.2f, -5.8f, 40,
+                                             4.8f,  5.2f, 40,
+                                             2.8f,  3.2f, 40,
+                                            "Test1.dat"    );
+      for ( int i = 0; i < 3; i++ )
+      {
+        System.out.print  ( res_vec.elementAt( 2*i ) + " " );
+        System.out.println( (Number)res_vec.elementAt( 2*i + 1 ) );
+      }
+
+      for ( int i = 3; i < 6; i++ )
+      {
+        System.out.print  ( res_vec.elementAt( 2*i ) + " " );
+        System.out.println( res_vec.elementAt( 2*i + 1 ) );
+      }
+
+      DataSet h_ds = (DataSet)res_vec.elementAt( 7 );
+      new ViewManager( h_ds, IViewManager.SELECTED_GRAPHS );
+
+      DataSet k_ds = (DataSet)res_vec.elementAt( 9 );
+      new ViewManager( k_ds, IViewManager.SELECTED_GRAPHS );
+
+      DataSet l_ds = (DataSet)res_vec.elementAt( 11 );
+      new ViewManager( l_ds, IViewManager.SELECTED_GRAPHS );
+    }
+    else
+    {
+    //
+    //  Get the grid and orientation matrix out of the DataSet and
     //  then make an instance of the integrator, integrate a peak,
     //  get and display the profiles and write the file.  NOTE: The
     //  integrate routine must be called once to set the state information
@@ -690,27 +841,27 @@ public class IntegrateHKLRegion
 
     IntegrateHKLRegion integrator = new IntegrateHKLRegion(); 
 
-    float result[] = integrator.IntegrateInterp( ds,
-                                          grid,
-                                          orientation_matrix,
-                                          -6.2f, -5.8f, 10,
-                                          4.8f, 5.2f, 10,
-                                          2.8f, 3.2f, 10 );
+      float result[] = integrator.IntegrateInterp( ds,
+                                                   grid,
+                                                   orientation_matrix,
+                                                  -6.2f, -5.8f, 40,
+                                                   4.8f,  5.2f, 40,
+                                                   2.8f,  3.2f, 40 );
 
-    System.out.println( "TOTAL     = " + result[0] );
-    System.out.println( "N_COUNTED = " + result[1] );
-    System.out.println( "N_MISSED  = " + result[2] );
+      System.out.println( "TOTAL     = " + result[0] );
+      System.out.println( "N_COUNTED = " + result[1] );
+      System.out.println( "N_MISSED  = " + result[2] );
 
+      DataSet h_ds = integrator.h_profile();
+      new ViewManager( h_ds, IViewManager.SELECTED_GRAPHS );
 
-    DataSet h_ds = integrator.h_profile();
-    new ViewManager( h_ds, IViewManager.SELECTED_GRAPHS );
+      DataSet k_ds = integrator.k_profile();
+      new ViewManager( k_ds, IViewManager.SELECTED_GRAPHS );
 
-    DataSet k_ds = integrator.k_profile();
-    new ViewManager( k_ds, IViewManager.SELECTED_GRAPHS );
+      DataSet l_ds = integrator.l_profile();
+      new ViewManager( l_ds, IViewManager.SELECTED_GRAPHS );
 
-    DataSet l_ds = integrator.l_profile();
-    new ViewManager( l_ds, IViewManager.SELECTED_GRAPHS );
-
-    integrator.WriteFile( "junk.dat" );
+      integrator.WriteFile( "Test2.dat" );
+    }
   }
 }
