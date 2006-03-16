@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2006/03/16 21:39:27  rmikk
+ * The new defaults name for the new operator is changed to be in the same
+ * directory as the file containing the static method
+ *
  * Revision 1.10  2006/03/13 23:15:22  rmikk
  * Added a filter for the extension of the Contact info file name
  *
@@ -1034,12 +1038,25 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
         
        }
        
+       /**
+        * Sets the initial values into this tab corresponding to the
+        * new operator
+        * 
+        * @param operatorName  The name of the new operator
+        */
        public void setFileName( String operatorName )
        {
     	   String s = System.getProperty("ISAW_HOME", "");
            if (!s.endsWith(File.separator))
                 s += File.separator;
-           s += "Operators"; 
+           s += "Operators";
+           String FileName = W.methPanel.fileName;
+           if(FileName == null)
+               return;
+           int k =FileName.lastIndexOf( File.separatorChar);
+           if( k<0)
+               return;
+           s=FileName.substring(0,k);
            s += File.separator;
     	   s += operatorName;
     	   s += ".java";
