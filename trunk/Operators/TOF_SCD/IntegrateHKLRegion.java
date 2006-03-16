@@ -25,6 +25,11 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.6  2006/03/16 21:43:11  dennis
+ * Added try...catch around steps to write to file, so that
+ * if the file can't be written, the operator still completes
+ * properly.  An error message is just written to the SharedMessages.
+ *
  * Revision 1.5  2006/03/16 17:55:10  dennis
  * Now throws exceptions if the orientation matrix, or
  * DataGrid for the detector, are not present in the DataSet.
@@ -68,6 +73,7 @@ import DataSetTools.operator.DataSet.Attribute.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.Sys.*;
 
 public class IntegrateHKLRegion
 {
@@ -758,8 +764,16 @@ public class IntegrateHKLRegion
     list.add( "Sums in h, k directions, as function of l ");
     list.add( integrator.l_profile() );
  
-    if ( filename != null && filename.length() > 0 )
-      integrator.WriteFile( filename );
+    try 
+    {
+      if ( filename != null && filename.length() > 0 )
+        integrator.WriteFile( filename );
+    }
+    catch ( Exception e )
+    {
+      SharedMessages.addmsg("\n ERROR: Could not write intensities to file " 
+                            + filename + "\n" );
+    }
 
     return list;
   }
