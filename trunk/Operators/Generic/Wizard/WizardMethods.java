@@ -25,32 +25,9 @@ public class WizardMethods {
 			CNFEx.printStackTrace();
 			throw new ClassNotFoundException("Trouble creating "+retType+"PG",CNFEx);
 		}
-		/*
-		 * 
-		 try{
-			c.newInstance();
-		}
-		catch (InstantiationException iEx){
-			System.out.println("Exception in addScriptForm");
-			iEx.printStackTrace();
-			throw new InstantiationException("Trouble creating "+retType+"PG");
-		}
-		catch (IllegalAccessException ieEx){
-			System.out.println("Exception in addScriptForm");
-			ieEx.printStackTrace();
-			throw new IllegalAccessException("Trouble creating "+retType+"PG");
-		}*/
+		
 		Class[] params = {(new String()).getClass(), (new Object()).getClass()};
-		System.out.println("retName: " + params[0].getName());
-		System.out.println("retDef:  " + params[1].getName());
 		Constructor[] allConstr = c.getConstructors();
-		for (int ii=0; ii< allConstr.length; ii++){
-			Class[] constrParamsTypes = allConstr[ii].getParameterTypes();
-			for (int jj=0; jj<constrParamsTypes.length; jj++){
-				System.out.println("Parameter, Name"+ jj + ", "+ constrParamsTypes[jj].getName());
-			
-			}
-		}
 		
 		Constructor PGConstr;
 		try {
