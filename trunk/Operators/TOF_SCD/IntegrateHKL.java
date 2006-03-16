@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/03/16 18:04:42  dennis
+ * Added suffix "f" to float parameters to FloatPG so it would
+ * still compile and work under earlier versions.
+ * Converted dos to unix text.
+ *
  * Revision 1.1  2006/03/16 17:54:07  dennis
  * Operator generated around the IntegrateHKL() static method
  * from IntegrateHKLRegion.java, using the Method2OperatorWizard.
@@ -80,14 +85,14 @@ public class IntegrateHKL extends GenericOperator{
       clearParametersVector();
       addParameter( new DataSetPG("Select DataSet",DataSet.EMPTY_DATA_SET));
       addParameter( new IntegerPG("Detector ID",17));
-      addParameter( new FloatPG("Region min h",0.9));
-      addParameter( new FloatPG("Region max h",1.1));
+      addParameter( new FloatPG("Region min h",0.9f));
+      addParameter( new FloatPG("Region max h",1.1f));
       addParameter( new IntegerPG("Num steps in h",10));
-      addParameter( new FloatPG("Region min k",0.9));
-      addParameter( new FloatPG("Reginon max k",1.1));
+      addParameter( new FloatPG("Region min k",0.9f));
+      addParameter( new FloatPG("Reginon max k",1.1f));
       addParameter( new IntegerPG("Num steps in k",10));
-      addParameter( new FloatPG("Region min l",0.9));
-      addParameter( new FloatPG("Region max l",1.1));
+      addParameter( new FloatPG("Region min l",0.9f));
+      addParameter( new FloatPG("Region max l",1.1f));
       addParameter( new IntegerPG("Num steps in l",10));
       addParameter( new SaveFilePG("Log File Name",""));
    }
