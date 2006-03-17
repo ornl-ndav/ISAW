@@ -7,14 +7,37 @@ import java.util.zip.*;
 
 public class WizardMethods {
 
+	/**
+	 * This method wraps the constructor for a Wizard.  This was written in
+	 * order to allow the generation of an ISAW Operator to do this.
+	 * @param title The title for this Wizard
+	 * @param standalone Is this Wizard being run as a standalone application.  
+	 * Normally this is set to false.
+	 * @return A new Wizard object.
+	 */
 	public static Wizard createWizard(String title, boolean standalone){
 		Wizard myWiz = new Wizard(title, standalone);
-		return myWiz;
+		return myWiz; 
 	}
 	
+	/**
+	 * This method is used to add a ScriptForm to a Wizard
+	 * @param myWiz The Wizard to add the form to
+	 * @param scriptName the name of the script to add
+	 * @param retType the return type for the script.  This is the name of 
+	 * a parameterGUI without the PG extension.
+	 * @param retName A prompt for the parameter GUI used for the return value
+	 * @param retDef A default value for the return value
+	 * @param constParams A list of parameters to hold constant on this form.
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws NoSuchMethodException
+	 */
 	public static void addScriptForm(Wizard myWiz, String scriptName, String retType, 
 			String retName, Object retDef, Vector constParams) throws ClassNotFoundException,
-			InstantiationException, IllegalAccessException, NoSuchMethodException {
+			InstantiationException, IllegalAccessException, NoSuchMethodException,
+			InvocationTargetException{
 		Class c;
 		try {
 			c = Class.forName("DataSetTools.parameter."+retType + "PG");
@@ -47,6 +70,7 @@ public class WizardMethods {
 			myWiz.addForm(new ScriptForm(scriptName,(IParameterGUI)(PGConstr.newInstance(oParams)), cParams));
 		}
 		catch (InvocationTargetException ITFoc){
+			throw ITFoc;
 		}
 		
 	}
@@ -82,8 +106,39 @@ public class WizardMethods {
 		}
 		myWiz.linkFormParameters(links);
 	}
-	
+
+	/**
+	 * 
+	 * @param myWiz
+	 * @param myHelp
+	 */
+	public static void wizardSetHelpMessage(Wizard myWiz, String myHelp){
+		myWiz.setHelpMessage(myHelp);
+	}
+
+	/**
+	 * 
+	 * @param myWiz
+	 * @param myURL
+	 */
+	public static void wizardSetHelpURL(Wizard myWiz, String myURL){
+		myWiz.setHelpURL(myURL);
+	}
+
+	/**
+	 * 
+	 * @param myWiz
+	 * @param myDir
+	 */
+	public static void wizardSetProjectsDirectory(Wizard myWiz, String myDir){
+		myWiz.setProjectsDirectory(myDir);
+	}
+
+	/**
+	 * 
+	 * @param myWiz
+	 */
 	public static void wizardLoader(Wizard myWiz){
 		myWiz.wizardLoader(new String[0]);
-	}
+		}
 }
