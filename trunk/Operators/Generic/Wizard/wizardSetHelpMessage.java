@@ -32,8 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.1  2006/03/17 04:49:43  hammonds
- * Add setHelpMessage capability to script Wizard creation.
+ * Revision 1.2  2006/03/17 05:07:32  hammonds
+ * Fix parameter type for string input.
  *
  *
  */
@@ -78,7 +78,7 @@ public class wizardSetHelpMessage extends GenericOperator{
    public void setDefaultParameters(){
       clearParametersVector();
       addParameter( new PlaceHolderPG("Wizard",null));
-      addParameter( new ChoiceListPG("Help Message",""));
+      addParameter( new StringPG("Help Message",""));
    }
 
 
