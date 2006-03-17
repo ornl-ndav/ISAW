@@ -1,6 +1,6 @@
 /*
  * File:  SumLogBinnedSpectra.java 
- *        (Generic operator adapted from the corresponding DataSetOperator)
+ *
  * Copyright (C) 2005, John Hammonds
  *
  * This program is free software; you can redistribute it and/or
@@ -32,6 +32,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.7  2006/03/17 16:50:46  dennis
+ *  Fixed javadoc comment on getCommand() method.
+ *
  *  Revision 1.6  2005/05/25 18:39:22  dennis
  *  Removed unused imports.
  *
@@ -120,7 +123,7 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
   /* ---------------------------- getCommand ------------------------------- */
   /**
    * @return the command name to be used with script processor: 
-   * in this case, ScatFun
+   * in this case, SumLog 
    */
    public String getCommand()
    {
