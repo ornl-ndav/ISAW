@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.109  2006/03/20 16:33:05  hammonds
+ * Make loadForms and writeForms public methods to allow extending this to scripts.
+ *
  * Revision 1.108  2006/03/16 20:47:36  dennis
  * No longer declare this to be abstract.  This allows wizards to
  * be instantiated and dynamically configured from a script, by
@@ -1280,7 +1283,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
    *
    * @param file The Wizard Save File to load information from.
    */
-  private void loadForms( File file ) {
+  public void loadForms( File file ) {
     if( file == null ) {
       return;
     }
@@ -1334,7 +1337,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
    *
    * @param file the File to write to.
    */
-  private void writeForms( File file ) {
+  public void writeForms( File file ) {
     StringBuffer s    = new StringBuffer(  );
     Form f;
     Object obj;
