@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2006/03/27 23:04:37  hammonds
+ *  Add code to add ISAW version, Java Version and User info in the GSAS file as comments in the header.
+ *
  *  Revision 1.33  2005/10/25 18:50:29  hammonds
  *  Remove comment in the MONITOR output line.
  *
@@ -125,6 +128,8 @@ import java.io.*;
 
 import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.retriever.RunfileRetriever;
+import Operators.Generic.System.*;
+
 /**
  * Transfer diffractometer Data Set histogram to GSAS file
  * format. This class supports some of the full functionality of the
@@ -219,8 +224,9 @@ public class gsas_filemaker
      */
     public void write(){
         //long offset=System.currentTimeMillis();
-	this.printRunTitle();
-        this.printIParmFile();
+    this.printWriterInfo( );
+    this.printRunTitle();
+    this.printIParmFile();
 	this.printUserName();
 	this.printNumPulses();
 	this.printStartStopTimes();
@@ -533,6 +539,37 @@ public class gsas_filemaker
 	
     }
 
+
+    private void printWriterInfo( ){
+    	String[] versInfo = Operators.Generic.System.versionInfo.getVersionInfo();
+    	try {
+    		StringBuffer sb = new StringBuffer(81);
+    		sb.append("#This file was written using ISAW.  ISAW version info follows");
+    		outStream.write( Format.string(sb,80,false)+"\r\n");
+    		sb = new StringBuffer(81);
+    		sb.append("#------ISAW version: ");
+    		sb.append(versInfo[0]);
+    		sb.append(", BuildDate: ");
+    		sb.append(versInfo[1]);
+    		outStream.write( Format.string(sb,80,false)+"\r\n");
+    		sb = new StringBuffer(81);
+    		sb.append("#------Java Version: ");
+    		sb.append(versInfo[2]);
+    		sb.append(", on ");
+    		sb.append(versInfo[3]);
+    		outStream.write( Format.string(sb,80,false)+"\r\n");
+    		sb = new StringBuffer(81);
+    		sb.append("#------User: ");
+    		sb.append(versInfo[4]);
+    		sb.append(", on ");
+    		sb.append(versInfo[5]);
+    		outStream.write( Format.string(sb,80,false)+"\r\n");
+    		
+    		
+    	}
+    	catch(Exception d){}
+    
+    }
     /**
      * Write the instrument parameter file with propper padding.
      */
