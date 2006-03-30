@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2006/03/30 22:05:46  hammonds
+ *  Change due to the use of Vector<String> in favor of String[].
+ *
  *  Revision 1.34  2006/03/27 23:04:37  hammonds
  *  Add code to add ISAW version, Java Version and User info in the GSAS file as comments in the header.
  *
@@ -125,7 +128,7 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
-
+import java.util.*;
 import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.retriever.RunfileRetriever;
 import Operators.Generic.System.*;
@@ -541,31 +544,29 @@ public class gsas_filemaker
 
 
     private void printWriterInfo( ){
-    	String[] versInfo = Operators.Generic.System.versionInfo.getVersionInfo();
+    	Vector<String> versInfo = Operators.Generic.System.versionInfo.getVersionInfo();
     	try {
     		StringBuffer sb = new StringBuffer(81);
     		sb.append("#This file was written using ISAW.  ISAW version info follows");
     		outStream.write( Format.string(sb,80,false)+"\r\n");
     		sb = new StringBuffer(81);
     		sb.append("#------ISAW version: ");
-    		sb.append(versInfo[0]);
+    		sb.append(versInfo.elementAt(0));
     		sb.append(", BuildDate: ");
-    		sb.append(versInfo[1]);
+    		sb.append(versInfo.elementAt(1));
     		outStream.write( Format.string(sb,80,false)+"\r\n");
     		sb = new StringBuffer(81);
     		sb.append("#------Java Version: ");
-    		sb.append(versInfo[2]);
+    		sb.append(versInfo.elementAt(2));
     		sb.append(", on ");
-    		sb.append(versInfo[3]);
+    		sb.append(versInfo.elementAt(3));
     		outStream.write( Format.string(sb,80,false)+"\r\n");
     		sb = new StringBuffer(81);
     		sb.append("#------User: ");
-    		sb.append(versInfo[4]);
+    		sb.append(versInfo.elementAt(4));
     		sb.append(", on ");
-    		sb.append(versInfo[5]);
+    		sb.append(versInfo.elementAt(5));
     		outStream.write( Format.string(sb,80,false)+"\r\n");
-    		
-    		
     	}
     	catch(Exception d){}
     
