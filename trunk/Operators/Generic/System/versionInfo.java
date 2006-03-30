@@ -3,12 +3,21 @@ package Operators.Generic.System;
 import IsawGUI.Isaw;
 import DataSetTools.util.SharedData;
 import java.net.*;
-
+import java.util.*;
+/**
+ * This method is provided to allow code to more easily capture information about the 
+ * program as it is running.  The method that returns an array of strings which holds the 
+ * version information for ISAW & java as well as who ran it on what computer.  This should
+ * assist in problem diagnosis since problems will be able to be traced back to the version
+ * of the code.
+ * @author hammonds
+ *
+ */
 public class versionInfo {
-	public static String[] getVersionInfo (){
-		String[] retVal = new String[6];
+	public static Vector<String> getVersionInfo (){
+		Vector<String> retVal = new Vector<String>();
 		
-		String iawVersion = Isaw.getVersion(false);
+		String isawVersion = Isaw.getVersion(false);
 		String buildDate = SharedData.BUILD_DATE;
 		String javaVersion = System.getProperty("java.version");
 		String osName = System.getProperty("os.name");
@@ -20,12 +29,12 @@ public class versionInfo {
 		catch(UnknownHostException ex){
 			nodeName = "Unknown_Host";
 		}
-		retVal[0] = iawVersion;
-		retVal[1] = buildDate;
-		retVal[2] = javaVersion;
-		retVal[3] = osName;
-		retVal[4] = userName;
-		retVal[5] = nodeName;
+		retVal.add(isawVersion);
+		retVal.add(buildDate);
+		retVal.add(javaVersion);
+		retVal.add(osName);
+		retVal.add(userName);
+		retVal.add(nodeName);
 		
 		return retVal;
 	}
