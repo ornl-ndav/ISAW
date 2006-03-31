@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2006/03/31 05:28:19  dennis
+ * No longer allocates space for the rows of the image, since
+ * references to the array of values in the DataSet are used.
+ *
  * Revision 1.4  2006/03/31 05:20:00  dennis
  * Removed use of setValue() method in VirtualArray2D.
  *
@@ -147,7 +151,7 @@ public class DisplayUtil
     int n_times  = ds.getData_entry(0).getY_values().length;
     XScale x_scale = ds.getData_entry(0).getX_scale();
 
-    float arr[][] = new float[n_groups][n_times];
+    float arr[][] = new float[n_groups][];
     for ( int i = 0; i < n_groups; i++ )
       arr[i] = ds.getData_entry(i).getY_values();
 
