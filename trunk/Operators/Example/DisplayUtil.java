@@ -30,6 +30,12 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2006/03/31 05:20:00  dennis
+ * Removed use of setValue() method in VirtualArray2D.
+ *
+ * Revision 1.1  2006/03/30 21:52:41  dennis
+ * Initial revision
+ *
  * Revision 1.3  2006/02/21 03:34:01  dennis
  * Removed obsolete code from main test program.
  * Test program now loads and displays a GPPD file in the
@@ -134,23 +140,23 @@ public class DisplayUtil
                                               // make a huge virtual array
                                               // to hold all of the spectra
                                               // as rows of the iamge
+                                              // NOTE: THIS REQUIRES THAT EACH
+                                              // GROUP HAVE THE SAME NUMBER OF
+                                              // BINS.  
     int n_groups = ds.getNum_entries();
     int n_times  = ds.getData_entry(0).getY_values().length;
     XScale x_scale = ds.getData_entry(0).getX_scale();
 
-    IVirtualArray2D va2D = new VirtualArray2D( n_groups, n_times );
+    float arr[][] = new float[n_groups][n_times];
+    for ( int i = 0; i < n_groups; i++ )
+      arr[i] = ds.getData_entry(i).getY_values();
+
+    IVirtualArray2D va2D = new VirtualArray2D( arr );
     va2D.setAxisInfo(AxisInfo.X_AXIS, x_scale.getStart_x(), x_scale.getEnd_x(),
                       "Time-of-Flight","microseconds", AxisInfo.LINEAR );
     va2D.setAxisInfo( AxisInfo.Y_AXIS, 1f, n_groups,
                         "Group ID","", AxisInfo.LINEAR );
     va2D.setTitle( ds.toString() );
-                                               // copy the data to the 
-                                               // virtual array
-    for ( int i = 0; i < n_groups; i++ )
-    {
-      float[] ys = ds.getData_entry(i).getY_values();
-      va2D.setRowValues( ys, i, 0 );
-    }
                                                // give the data to a display
     Display2D display = new Display2D( va2D,
                                        Display2D.IMAGE,
@@ -164,9 +170,9 @@ public class DisplayUtil
    */
   public static void main( String args[] )
   {
-    String file_name = "/usr2/ARGONNE_DATA/gppd12358.run";
+    String file_name = "/usr2/SCD_TEST/scd08336.run";
     Retriever rr = new RunfileRetriever( file_name );
-    DataSet ds = rr.getDataSet(1); 
+    DataSet ds = rr.getDataSet(2); 
     Display_As_Image( ds );
 
     Vector ds_list = new Vector();
