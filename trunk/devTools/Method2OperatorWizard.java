@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2006/04/02 21:29:17  rmikk
+ * Fixed error with static methods with no arguments
+ *
  * Revision 1.11  2006/03/16 21:39:27  rmikk
  * The new defaults name for the new operator is changed to be in the same
  * directory as the file containing the static method
@@ -792,14 +795,14 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 				boolean f = false;
 
-				for (int k = 0;(k < pinf.getNParamTypes()) && !f; k++)
-					if (pinf.getType(k).equals(T)) {
+				for (int k = 0;(k < ParameterInfo.getNParamTypes()) && !f; k++)
+					if (ParameterInfo.getType(k).equals(T)) {
 						f = true;
 						JFrame jf = new JFrame("Help:" + T);
 
 						jf.setSize(300, 300);
 						jf.getContentPane().add(
-							new JEditorPane("text/html", pinf.getToolTip(k, false)));
+							new JEditorPane("text/html", ParameterInfo.getToolTip(k, false)));
 						WindowShower.show(jf);
 					}
 			}
@@ -818,11 +821,11 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		public void SetMethodList(String fileName) {
             MethodChanged();
 			try {
-				if (W.getClassName(fileName) == null){
+				if (getClassName(fileName) == null){
 				
 					return;
                 }
-				Class C = Class.forName(W.getClassName(fileName));
+				Class C = Class.forName(getClassName(fileName));
 
 				MethodList.setBorder(
 					BorderFactory.createTitledBorder(
@@ -899,9 +902,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			//Now set up the possible Entries in the ParamGUI ComboBox
 			ParamGUI.removeAllItems();
 
-			for (int k = 0; k < pinf.getNParamTypes(); k++) {
-				if (pinf.isEqual(k, C)) {
-					ParamGUI.addItem(pinf.getType(k));
+			for (int k = 0; k < ParameterInfo.getNParamTypes(); k++) {
+				if (ParameterInfo.isEqual(k, C)) {
+					ParamGUI.addItem(ParameterInfo.getType(k));
 				}
 			}
 
@@ -1442,7 +1445,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			if (!check())
 				return;
             W.opPanel.fileName.setText( ForceExtension(W.opPanel.fileName.getText(),"java"));
-			String packge = W.getClassName(W.opPanel.fileName.getText().trim());
+			String packge = getClassName(W.opPanel.fileName.getText().trim());
 
 			if (packge == null) {
 
@@ -1727,7 +1730,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 							.getBytes());
 				}
 				String MethClassName =
-					W.FixUpClassName(W.methPanel.meth.getDeclaringClass())
+					FixUpClassName(W.methPanel.meth.getDeclaringClass())
 						+ "."
 						+ W.methPanel.meth.getName();
 
@@ -1746,6 +1749,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				for (int i = 0; i < CCS.length; i++)
 					fout.write(
 						(W.methData.get(i).varName + sepChar(i, CCS.length)).getBytes());
+                fout.write(")\r\n".getBytes());
 				if (!MethReturnsVoid)
 					fout.write(
 						(";\r\n         return "
@@ -1810,9 +1814,15 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			}
 		}
 
-
+        /** 
+         * Breaks up a line and fixes comments to be placed in Java code between quotes
+         * @param text  The text to be printed/broken up along lines
+         * @param prepend  text to prepend each line
+         * @param append  text to append each line
+         * @return  The text with \n,prepends and appends included
+         */
 		private String MultiLine_ify(String text, String prepend, String append) {
-
+            
 			if ((text == null) || (text.length() < 1))
 				return prepend + append;
 			int j1 = 0;
@@ -1850,7 +1860,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			if (i + 1 < length)
 				return ',';
 			else
-				return ')';
+				return ' ';
 		}
 
 
