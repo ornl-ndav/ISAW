@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2006/04/05 18:05:45  hammonds
+ *  Modified so that the RadioButtons will appear in the order in which they are given in the input array.  This has also been modified so that a default value can be specified by adding one item to the end of the input array that starts with $ and then repeats the specified default value.  For instance if the buttons were specified by ["Input 1", "Output 3", "Test 4"], and you want "Output 3" to be the default change the input array to ["Input 1", "Output 3", "Test 4", "$Output 3"]
+ *
  *  Revision 1.33  2005/06/15 12:49:55  dennis
  *  getValue() method now checks for null before calling .toString()
  *
@@ -199,8 +202,10 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
   //keys and values are the button name, and when initGUI is called, new
   //RadioButtons are created.
   private Hashtable radioChoices = new Hashtable(  );
+  private Vector ButtonNames = new Vector();
   private ButtonGroup radioGroup;
-
+  private String defInitVal = new String();
+  
   //~ Constructors *************************************************************
 
   /**
@@ -232,9 +237,20 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
     if( val instanceof Vector ) {
       Vector tempVec = ( Vector )val;
+ //     ButtonNames = (Vector)((Vector)val).clone();
+      if ( tempVec.elementAt(tempVec.size()-1).toString().startsWith("$")) {
+    	  defInitVal = tempVec.elementAt(tempVec.size()-1).toString().substring(1);
+      }
+      else {
+    	  defInitVal = tempVec.elementAt(0).toString();
+      }
+      for ( int ii = 0; ii< ((Vector)val).size(); ii++) {
+
+    	  ButtonNames.add( ((Vector)val).elementAt(ii).toString()); 
+      }
 
       addItems( tempVec );
-      setValue( tempVec.get( tempVec.size(  ) - 1 ) );
+      setValue( defInitVal );
     } else {
       addItem( val );
       setValue( val );
@@ -375,8 +391,8 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
     if( !found ) {
       //negative number, so it doesn't exist in the list
+      ButtonNames.add(buttonName);
       radioChoices.put( buttonName, buttonName );
-
       if( getInitialized(  ) ) {
         createGUIButton( buttonName );
       }
@@ -394,6 +410,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
     }
   }
 
+  
   /**
    * Used to clear out the PG.  This resets the GUI and clears the values.
    */
@@ -419,11 +436,15 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );
-
+      pg.defInitVal = new String(this.defInitVal);
       if( radioChoices != null ) {
         pg.radioChoices = ( Hashtable )radioChoices.clone(  );
       }
 
+      if (ButtonNames != null ){
+    	  pg.ButtonNames = (Vector)ButtonNames.clone();
+      }
+    	  
       if( this.getInitialized(  ) ) {
         pg.initGUI( null );
         pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
@@ -473,24 +494,39 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
     //we will either discard all the old values and set to the new ones, or
     //create buttons for the new ones.
     if( init_values != null ) {
+        if ( init_values.elementAt(init_values.size()-1).toString().startsWith("$")) {
+      	  defInitVal = init_values.elementAt(init_values.size()-1).toString().substring(1);
+        }
+        else {
+      	  defInitVal = init_values.elementAt(0).toString();
+        }
       for( int i = 0; i < init_values.size(  ); i++ ) {
         addItem( init_values.elementAt( i ).toString(  ) );
       }
     } else if( radioChoices != null ) {
       Enumeration names = radioChoices.keys(  );
+      if ( ButtonNames.elementAt(ButtonNames.size()-1).toString().startsWith("$")) {
+      	  defInitVal = ButtonNames.elementAt(ButtonNames.size()-1).toString().substring(1);
+      	  ButtonNames.remove(ButtonNames.size()-1);
+      }
+        else {
+      	  defInitVal = ButtonNames.elementAt(0).toString();
+        }
 
-      while( names.hasMoreElements(  ) ) {
-        createGUIButton( names.nextElement(  ).toString(  ) );
+      
+      for (int ii=0; ii<ButtonNames.size(); ii++){
+      //while( names.hasMoreElements(  ) ) {
+        createGUIButton( ButtonNames.elementAt(ii).toString() );
       }
     }
-
+    setValue(defInitVal);
     super.initGUI(  );
 
     //ignore prop changes because we are about to change the value
     boolean ignore = getIgnorePropertyChange(  );
 
     setIgnorePropertyChange( true );
-    setValue( getValue(  ) );
+    setValue( defInitVal );
     setIgnorePropertyChange( ignore );
   }
 
