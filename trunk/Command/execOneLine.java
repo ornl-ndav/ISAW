@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.87  2006/04/12 19:15:35  rmikk
+ * Eliminated this reference to static variables so warnings are reduced
+ *
  * Revision 1.86  2006/03/13 20:35:18  rmikk
  * Now allows for Display to appear at a  place not at the beginning
  *
@@ -2226,11 +2229,11 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
     public void operateCompare( Object LeftValue,Object RightValue, char operation){
 
       if(!CanOp(LeftValue)){
-        seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+        seterror(1000, ER_IMPROPER_DATA_TYPE);
         return;
       }
       if(!CanOp(RightValue)){
-         seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+         seterror(1000, ER_IMPROPER_DATA_TYPE);
          return;
       }
         Result = null;
@@ -2470,11 +2473,11 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
 
     private void operateLogic(Object R1 , Object R2 , char operation ){
       if(!CanOp(R1)){
-        seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+        seterror(1000, ER_IMPROPER_DATA_TYPE);
         return;
       }
       if(!CanOp(R2)){
-         seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+         seterror(1000, ER_IMPROPER_DATA_TYPE);
          return;
       }
         Result = null;
@@ -2707,11 +2710,11 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
     */
     private void operateVector( Object R1, Object R2, char c){
         if(!CanOp(R1)){
-          seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+          seterror(1000, ER_IMPROPER_DATA_TYPE);
           return;
         }
         if(!CanOp(R2)){
-           seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+           seterror(1000, ER_IMPROPER_DATA_TYPE);
            return;
         }
         int i;
@@ -2761,11 +2764,11 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      */
     private void operateArithDS( Object R1 , Object R2 , char c ){
       if(!CanOp(R1)){
-        seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+        seterror(1000, ER_IMPROPER_DATA_TYPE);
         return;
       }
       if(!CanOp(R2)){
-         seterror(1000, this.ER_IMPROPER_DATA_TYPE);
+         seterror(1000, ER_IMPROPER_DATA_TYPE);
          return;
       }
         String Arg;
