@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2006/04/13 18:34:18  hammonds
+ *  Do some code cleanup/refactoring.
+ *
  *  Revision 1.34  2006/04/05 18:05:45  hammonds
  *  Modified so that the RadioButtons will appear in the order in which they are given in the input array.  This has also been modified so that a default value can be specified by adding one item to the end of the input array that starts with $ and then repeats the specified default value.  For instance if the buttons were specified by ["Input 1", "Output 3", "Test 4"], and you want "Output 3" to be the default change the input array to ["Input 1", "Output 3", "Test 4", "$Output 3"]
  *
@@ -173,7 +176,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import java.util.Enumeration;
+//import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -202,7 +205,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
   //keys and values are the button name, and when initGUI is called, new
   //RadioButtons are created.
   private Hashtable radioChoices = new Hashtable(  );
-  private Vector ButtonNames = new Vector();
+  private Vector<String> ButtonNames = new Vector<String>();
   private ButtonGroup radioGroup;
   private String defInitVal = new String();
   
@@ -237,17 +240,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
     if( val instanceof Vector ) {
       Vector tempVec = ( Vector )val;
- //     ButtonNames = (Vector)((Vector)val).clone();
-      if ( tempVec.elementAt(tempVec.size()-1).toString().startsWith("$")) {
-    	  defInitVal = tempVec.elementAt(tempVec.size()-1).toString().substring(1);
-      }
-      else {
-    	  defInitVal = tempVec.elementAt(0).toString();
-      }
-      for ( int ii = 0; ii< ((Vector)val).size(); ii++) {
-
-    	  ButtonNames.add( ((Vector)val).elementAt(ii).toString()); 
-      }
+      setDefInitValue(tempVec);
 
       addItems( tempVec );
       setValue( defInitVal );
@@ -307,7 +300,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    *        added.
    */
   public void setValue( Object val ) {
-    String sVal = "";
+	  String sVal = "";
 
     if( ( radioChoices != null ) && ( val != null ) ) {
       String valName = val.toString(  );
@@ -326,7 +319,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
           sVal = selectedButton.getText(  );
         }
-      }
+      }      
     }
 
     super.setValue( sVal );
@@ -355,10 +348,12 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
   public static void main( String[] args ) {
     RadioButtonPG rpg = new RadioButtonPG( "Tester", null, true );
 
-    rpg.addItem( "Choice 1" );
-    rpg.addItem( "Choice 2" );
-    rpg.addItem( "Choice 3" );
-    rpg.addItem( "Choice 3" );
+    Vector<String> choice = new Vector<String>();
+    choice.add( "Choice 1" );
+    choice.add( "Choice 2" );
+    choice.add( "Choice 3" );
+    choice.add( "Choice 3" );
+    rpg.addItems(choice);
     rpg.setValue( "Choice 3" );
     System.out.println( "MAIN " + rpg.getValue(  ) );
     rpg.initGUI( null );
@@ -416,6 +411,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    */
   public void clear(  ) {
     radioChoices = new Hashtable(  );
+    ButtonNames = new Vector<String>();
     setInitialized( false );
     getGUIPanel(  ).invalidate(  );
     initGUI( new Vector(  ) );
@@ -442,7 +438,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
       }
 
       if (ButtonNames != null ){
-    	  pg.ButtonNames = (Vector)ButtonNames.clone();
+    	  pg.ButtonNames = (Vector<String>)ButtonNames.clone();
       }
     	  
       if( this.getInitialized(  ) ) {
@@ -494,28 +490,12 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
     //we will either discard all the old values and set to the new ones, or
     //create buttons for the new ones.
     if( init_values != null ) {
-        if ( init_values.elementAt(init_values.size()-1).toString().startsWith("$")) {
-      	  defInitVal = init_values.elementAt(init_values.size()-1).toString().substring(1);
-        }
-        else {
-      	  defInitVal = init_values.elementAt(0).toString();
-        }
-      for( int i = 0; i < init_values.size(  ); i++ ) {
-        addItem( init_values.elementAt( i ).toString(  ) );
-      }
-    } else if( radioChoices != null ) {
-      Enumeration names = radioChoices.keys(  );
-      if ( ButtonNames.elementAt(ButtonNames.size()-1).toString().startsWith("$")) {
-      	  defInitVal = ButtonNames.elementAt(ButtonNames.size()-1).toString().substring(1);
-      	  ButtonNames.remove(ButtonNames.size()-1);
-      }
-        else {
-      	  defInitVal = ButtonNames.elementAt(0).toString();
-        }
-
+    	setDefInitValue( init_values);
+    	addItems(init_values);
+    } else if( ButtonNames != null ) {
+      setDefInitValue(ButtonNames);
       
       for (int ii=0; ii<ButtonNames.size(); ii++){
-      //while( names.hasMoreElements(  ) ) {
         createGUIButton( ButtonNames.elementAt(ii).toString() );
       }
     }
@@ -598,5 +578,34 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
       oldValue = getValue(  ).toString(  );
       setValue( ae.getActionCommand(  ) );
     }
+  }
+
+  /**
+   * This routine examines a vector which holds the choices for this PG to look for
+   * an appropriate default choice.  If there is more than one element to the vector, 
+   * the last item is examined.  If this element starts with "$" then the text after
+   * this character is used as the default.  If the last element does not start with "$" 
+   * or if there is only one element to the Vector, than the first element of the vector
+   * is selected as the default.  
+   * @param tVec  - A vector of choices for this PG.
+   */
+  private void setDefInitValue(Vector tVec) {
+	  if (tVec.size() > 1) {
+		  if ( tVec.elementAt(tVec.size()-1).toString().startsWith("$")) {
+			  defInitVal = tVec.elementAt(tVec.size()-1).toString().substring(1);
+			  tVec.remove(tVec.size()-1);
+		  }
+		  else {
+			  defInitVal = tVec.elementAt(0).toString();
+		  }
+		  
+	  }
+	  else {
+		  if (tVec.size() == 1){
+			  defInitVal = tVec.elementAt(0).toString();
+		  }
+	  }
+  
+  
   }
 }
