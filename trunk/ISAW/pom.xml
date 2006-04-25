@@ -10,10 +10,10 @@
     <version>0.9-SNAPSHOT</version>
   </parent>
   <groupId>ISAW</groupId>
-  <artifactId>ISAW-DataSetTools</artifactId>
+  <artifactId>isaw-core</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>DataSetTools</name>
-  <description>DataSetTools library</description>
+  <name>ISAW Core</name>
+  <description>ISAW Core Libraries</description>
   <dependencies>
     <dependency>
       <groupId>sns.dependency.isaw</groupId>
