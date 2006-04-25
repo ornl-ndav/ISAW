@@ -1,7 +1,7 @@
 #
 
 default:
-	@echo "Run 'make install' to update, build & install NXvalid."
+	@echo "Run 'make install' to update, build & install DataSetTools."
 
 update:
 	svn update
