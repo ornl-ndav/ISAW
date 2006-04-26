@@ -41,6 +41,21 @@
       <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
+      <groupId>ISAW</groupId>
+      <artifactId>jython</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>ISAW</groupId>
+      <artifactId>servlet</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>ISAW</groupId>
+      <artifactId>jhall</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>neutron.nexus</groupId>
       <artifactId>jnexus</artifactId>
       <version>0.2.2</version>
@@ -55,6 +70,9 @@
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
+		  <fork>true</fork>
+		  <meminitial>128m</meminitial>
+		  <maxmem>1024m</maxmem>
         </configuration>
       </plugin>      
       <plugin>
