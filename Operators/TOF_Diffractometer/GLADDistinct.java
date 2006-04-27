@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.8  2006/04/27 22:33:18  taoj
+ * Revision of the code handling H self-scattering.
+ *
  * Revision 1.7  2006/02/06 16:00:25  taoj
  * Error messaging the rare cases that the total number of counts of one data block is zero. Dead detector list needs to be regenerated bases on the non-vanadium run in these cases.
  *
@@ -79,7 +82,7 @@ import gov.anl.ipns.MathTools.Functions.ChebyshevSum;
 public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
   //~ Instance fields **********************************************************
   
-  private boolean DEBUG = false;
+//  private boolean DEBUG = false;
   /* @param runfile absolute path of the runfile;
    * @param ISvan the vanadium calibration's beam monitor spectrum is needed for later use;
    */
@@ -93,9 +96,10 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
   public boolean doPLATOM = true;
   public float rho = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.EXP.SMP.DENSITY");
   public int npoly = 3;
-  public float qsteph = 0.05f;
-  public float qminh = 0.05f;
-  public float Rmin;
+  public int npts = 200; //data padding for polynomial fitting;
+//  public float qsteph = 0.05f;
+//  public float qminh = 0.05f;
+//  public float Rmin = 0.3f;
   
 
   //~ Methods ******************************************************************
@@ -162,26 +166,48 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
    */
   public Object calculate(  ) {
 
+    OrthoPolyFit fitter = null;
     System.out.println("Subtract the self-scattering part of differential cross section for sample and prepare the flux weighting function from vanadium data...");
+    if (!doPLATOM) {
+//      GLADRunProps runinfo = (GLADRunProps)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[0];
+//      runinfo.ExpConfiguration.put("GLAD.ANALYSIS.NUMQ", new Float(1/qsteph));
+      System.out.println("Use order "+npoly+" orthogonal polynomial fitting instead of PLATOM to estimate the self-scattering.");    
+      fitter = new OrthoPolyFit();
+    } 
+    
     Data dt, dv, dmv;
     AttributeList attr_list_d, attr_list_v;
-    float scattering_angle_d, scattering_angle_v, d1, d2, lambda_d, q_d, lambda_v, q_v, p;
+    float scattering_angle_d, scattering_angle_v, d1, d2, lambda_d=0.0f, q_d, lambda_v, q_v, p;
     float eout, yv, ev, yvm, evm;
     float tenfactor, ymax;
-    float[] Q_vals_d, y_vals_n, Q_vals_v, y_vals_v, e_vals_v, 
+    double dtmp;
+    float[] Q_vals_d, y_vals_d, y_vals_n, Q_vals_v, y_vals_v, e_vals_v, xs, ys, 
             W_vals_vm, Q_vals_vm, 
             y_vals_vm, e_vals_vm,
             y_vals_vmr, e_vals_vmr;
+    double[] msr;
     float[] data_params_d = new float[4], data_params_v = new float[4];
     XScale Q_scale_vm;
     int ngrps, nmonchannel;
     int istart, iend;
     float qk, qmin, qmax, qdif, qfac;
     int n1, n2;
+       
+    float qhs[];
+    XScale qhscale = null;
+    double A3[];
+    ChebyshevSum ycheby3;
+    float anfac, rmax, rstep, pifac, acons, trfac,
+          qs[], sofq[], r[] = null, gofr[] = null, qr, sum,
+          rfac, wfac, sinqr;
+    int nfit, nr;
+          
     
     GLADScatter smprun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
     String[] list_elements = smprun.symbol;
     float[] list_fractions = smprun.formula;
+    anfac = smprun.bbarsq;
+    if (anfac == 0.0f) throw new RuntimeException("!!!!!!sample bbarsq can't be zero!!!!!!");
 
     ngrps = dcs_smp.getNum_entries();
     if (smo_van.getNum_entries()!=ngrps) System.out.println("\n***UNEXPECTED ERROR***---dcs and smo have different number of groups***");
@@ -217,97 +243,120 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
                                                                                            "data_params_d[1]: "+data_params_d[1]+" d2: "+d2);
           
       Q_vals_d = dt.getX_scale().getXs();
-      Q_vals_v = dv.getX_scale().getXs();
-      y_vals_n = dt.getY_values();
-      y_vals_v = dv.getY_values();
-      e_vals_v = dv.getErrors();
-          
+      y_vals_d = dt.getY_values();       
       istart = 0;
-      iend = y_vals_n.length-1;
+      iend = y_vals_d.length-1;
  
       try {
-        while (y_vals_n[istart] == 0.0f) istart++;
+        while (y_vals_d[istart] == 0.0f) istart++;
       } catch (ArrayIndexOutOfBoundsException e) {
         System.out.println("!!!!!!UNEXPECTED ERROR: empty data group in a dataset.!!!!!!");
         System.out.println("!!!!!!This is due to a good counting detector for vanadium becomes dead for sample(s), update the bad detector list file and redo GLAD_CRUNCH!!!!!!");
+        System.out.println("dataset: "+dcs_smp.getTitle());
+        System.out.println("datablock: "+dt.getGroup_ID());
       }
       
-      while (y_vals_n[iend] == 0.0f) {
+      while (y_vals_d[iend] == 0.0f) {
         iend--;
       }
-                           
-      for (int k = 0; k <= nmonchannel; k++){
-        Q_vals_vm[k] = tof_calc.DiffractometerQofWavelength(scattering_angle_v, W_vals_vm[k]);
-      }
-          
-      arrayUtil.Reverse( Q_vals_vm );
-      Q_scale_vm = new VariableXScale(Q_vals_vm);
-//      van_dm_Q = Data.getInstance(Q_scale_vm, y_vals_vm, dv.getGroup_ID());
-      dmv = Data.getInstance(Q_scale_vm, y_vals_vm, e_vals_vm, dv.getGroup_ID());
-      dmv.resample( dv.getX_scale(), IData.SMOOTH_NONE );
-      y_vals_vmr = dmv.getY_values();
-      e_vals_vmr = dmv.getErrors();
-      
-      n1 = istart; n2 = iend;      
+                                         
       for (int k = istart; k <= iend; k++){
         q_d = 0.5f*(Q_vals_d[k]+Q_vals_d[k+1]);
         lambda_d = tof_calc.WavelengthofDiffractometerQ(scattering_angle_d, q_d);        
         if (doPLATOM) {
           p = Platom.plaatom(lambda_d, list_elements, list_fractions, temperature, scattering_angle_d, d1, d2, false); 
-          y_vals_n[k] -= p;
-        } else {
-          if (lambda_d > wmin) n1 = k;
-          else n2 = k;
-          if (lambda_d < wmax) break;          
+          y_vals_d[k] -= p;
+        } 
+/*        
+        else {
+          if (lambda_d > wmax) n1 = k;
+          n2 = k;
+          if (lambda_d < wmin) break;          
         }
+*/
       }
       
       if (!doPLATOM) {
+/*        
         qmin = Q_vals_d[n1];
         qmax = Q_vals_d[n2];
         n1 = (int)Math.ceil((qmax-qmin)/qsteph)+1;
-        float[] qhs = new float[n1];
+        qhs = new float[n1];
         for (int k = 0; k < n1; k++) qhs[k] = qmin + k*qsteph;
-        XScale qhscale = XScale.getInstance(qhs);
+        qhscale = XScale.getInstance(qhs);
         dt.resample( qhscale, IData.SMOOTH_NONE );
+        Q_vals_d = dt.getX_scale().getXs();
+        y_vals_n = dt.getY_values();
+*/      
+
+        n1 = iend-istart+1;
+/*        
+        xs = new float [n1];
+        ys = new float [n1];
+        System.arraycopy(Q_vals_d, istart, xs, 0, n1);
+        System.arraycopy(y_vals_d, istart, ys, 0, n1);
+*/
+        xs = new float [npts+iend+1];
+        ys = new float [npts+iend+1];
+        System.arraycopy(Q_vals_d, 0, xs, npts, iend+1);
+        System.arraycopy(y_vals_d, 0, ys, npts, iend+1);
+        for (int k = npts; k > 0; k--)
+          xs[npts-k] = 2*Q_vals_d[npts] - Q_vals_d[npts+k];
+        fitter.opolyfit_f(xs, ys, npoly+1);
+
+        msr = fitter.getMSR();
+        nfit = 1;
+        dtmp = msr[1];
+        for (int k = 2; k <= npoly; k++) {
+          if (msr[k] > dtmp) break;
+          dtmp = msr[k];
+          nfit = k;
+        }
         
-        n1 = y_vals_n.length;
-        double A3[] = OrthoPolyFit.opolyfit_h(Q_vals_d, y_vals_n, npoly+1)[npoly];
+        if (i % 10 == 0) System.out.println(i+": "+nfit+" msr: "+msr[0]+" "+msr[1]+" "+msr[2]+" "+msr[3]);
+        ys = fitter.getFit_f(nfit);
+/*
+        for (int k = istart; k <= iend; k++)
+          y_vals_d[k] -= ys[k-istart];
+*/
+        for (int k = istart; k <= iend; k++)
+          y_vals_d[k] -= ys[npts+k];
+        
+/*
+        A3 = OrthoPolyFit.opolyfit_h(Q_vals_d, y_vals_n, npoly+1)[npoly];
         A3[0] /= 2;
-        ChebyshevSum ycheby3 = new ChebyshevSum(A3);
+//        System.out.println("A3 dimension:"+A3.length+"A3[0]: "+A3[0]+"A3[1]: "+A3[1]+"A3[2]: "+A3[2]+"A3[3]: "+A3[3]);
+        ycheby3 = new ChebyshevSum(A3);
         qmin = Q_vals_d[0];
         qmax = Q_vals_d[n1-1];
         for (int k = 0; k < n1; k++) {
           qk = (2*Q_vals_d[k]-qmax-qmin)/(qmax-qmin);
           y_vals_n[k] -= ycheby3.getValue(qk);
         }
-        
-        float anfac = smprun.bbarsq;
-        if (anfac == 0.0f) throw new RuntimeException("!!!!!!sample bbarsq can't be zero!!!!!!");
-        float rmax = Rmin;
-        float rstep = (float)Math.PI/qmax;
-        int nr = Math.min((int)(rmax/rstep), 1000);
-        float pifac = (float) (0.5f*Math.PI/qmax);
-        float acons = 0.0f;
+*/        
+/*
+        rmax = Rmin;
+        rstep = (float)Math.PI/qmax;
+        nr = Math.min((int)(rmax/rstep), 1000);
+        pifac = (float) (0.5f*Math.PI/qmax);
+        acons = 0.0f;
         n2 = (int)(0.2f/qsteph);
         for (int k = 0; k < n2; k++) acons += y_vals_n[n1-1-k];
         acons /= n2;
-        float qs[] = new float[n1];
-        float sofq[] = new float[n1];
-        float r[] = null, gofr[] = null;
+        qs = new float[n1];
+        sofq = new float[n1];
+
         for (int k = 0; k < n1; k++) {
           qs[k] = 0.5f*(Q_vals_d[k] + Q_vals_d[k+1]);
           qdif = Q_vals_d[k+1] - Q_vals_d[k];
           qfac = qs[k]*pifac;
           sofq[k] = qs[k]*(y_vals_n[k]-acons)*qdif;          
         }
-        float trfac = (float)(0.5f/Math.PI/Math.PI/rho);
-        float qr, sum;
+        trfac = (float)(0.5f/Math.PI/Math.PI/rho);
         if (nr > 0) {
           pifac = (float) (0.5f*Math.PI/(nr*rstep));
           r = new float[nr];
           gofr = new float[nr];
-          float rfac, wfac, sinqr;
           for (int j = 0; j < nr; j++) {
             r[j] = (j+1)*rstep;
             rfac = trfac;
@@ -331,12 +380,27 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
               sum += gofr[j]*Math.sin(qr);
             }                           
           else sum = 0.0f;
-          y_vals_n[k] -= sum*qfac+acons;
+          y_vals_n[k] = sum*qfac+acons;
         }
-        
+*/        
       }
-       
-      for (int k = istart; k <= iend; k++){      
+
+//      if (qhscale != null) dv.resample( qhscale, IData.SMOOTH_NONE );
+      for (int k = 0; k <= nmonchannel; k++){
+        Q_vals_vm[k] = tof_calc.DiffractometerQofWavelength(scattering_angle_v, W_vals_vm[k]);
+      }       
+
+      arrayUtil.Reverse( Q_vals_vm );
+      Q_scale_vm = new VariableXScale(Q_vals_vm);
+      dmv = Data.getInstance(Q_scale_vm, y_vals_vm, e_vals_vm, dv.getGroup_ID());
+      dmv.resample( dv.getX_scale(), IData.SMOOTH_NONE );
+      y_vals_vmr = dmv.getY_values();
+      e_vals_vmr = dmv.getErrors();      
+      Q_vals_v = dv.getX_scale().getXs();
+      y_vals_v = dv.getY_values();
+      e_vals_v = dv.getErrors();
+          
+      for (int k = 0; k < y_vals_v.length; k++){      
         q_v = 0.5f*(Q_vals_v[k]+Q_vals_v[k+1]);
         lambda_v = tof_calc.WavelengthofDiffractometerQ(scattering_angle_v, q_v);            
         if (lambda_v < wmin || lambda_v > wmax) {
@@ -356,18 +420,23 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
 //        else y_vals_v[k] *= 4*Math.PI*Math.sin(scattering_angle_v/2)/lambda_v/lambda_v;
 //        else y_vals_v[k] *= van_dm_Q.getY_values()[k]/(4*Math.PI*Math.sin(scattering_angle_v/2))*lambda_v*lambda_v;
       }
+
     }                               
 
-    dcs_smp.setTitle(dcs_smp.getTitle()+" "+"--->INTERFERE");
-    smo_van.setTitle(smo_van.getTitle()+" "+"--->FLUX");
+    dcs_smp.setTitle(dcs_smp.getTitle()+" "+"--->INTERFERE");    
     dcs_smp.setY_label("distinct scattering");
-    smo_van.setY_units("counts");
+    dcs_smp.setY_units("barns");
+
+    smo_van.setTitle(smo_van.getTitle()+" "+"--->FLUX");
     smo_van.setY_label("calculated vanadium scattering");
+//  smo_van.setY_units("counts");
     System.out.println("Done.");
     return Boolean.TRUE;
   }
 
   public static void main(String[] args) {
+
+/*
     GLADConfigure testconf = new GLADConfigure();
     testconf.hasCan = false;
     DataSet runinfo = (DataSet)testconf.calculate(); 
@@ -410,6 +479,62 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
     
     DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(nrm_smp, DataSetTools.viewer.IViewManager.IMAGE);
     DataSetTools.viewer.ViewManager nrm_van_view = new DataSetTools.viewer.ViewManager(nrm_van, DataSetTools.viewer.IViewManager.IMAGE);
+*/
+
+   GLADConfigure testconf = new GLADConfigure();
+   testconf.configfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/smpH.dat");
+   testconf.doDebug = true;
+   testconf.isawMode = 0;
+   DataSet runinfo = (DataSet)testconf.calculate(); 
+    
+   GLADCrunch testcrunch = new GLADCrunch();           
+   testcrunch.ds0 = runinfo;
+   testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5298.run");
+   testcrunch.noDeadDetList = true;
+   testcrunch.redpar = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/gladrun.par");
+   Vector monnrm = (Vector) testcrunch.calculate();
+   DataSet mon_van = (DataSet) monnrm.get(0); 
+   DataSet nrm_van = (DataSet) monnrm.get(1);
+   testcrunch.noDeadDetList = false;
+   testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5296.run");
+   DataSet nrm_can = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+   testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5299.run");
+   DataSet nrm_smp = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+   testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5295.run");
+   DataSet nrm_bkg = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+
+   new DataSetSubtract(nrm_van, nrm_bkg, false).getResult();
+   new DataSetSubtract(nrm_can, nrm_bkg, false).getResult();
+   new DataSetSubtract(nrm_smp, nrm_bkg, false).getResult();
+    
+   GLADVanCal testvancal = new GLADVanCal();
+   testvancal.ds0 = runinfo;
+   testvancal.nrm_van = nrm_van;
+   testvancal.calculate();
+   new DataSetDivide(nrm_can, nrm_van, false).getResult();
+   new DataSetDivide(nrm_smp, nrm_van, false).getResult();
+
+    
+   GLADAnalyze testanalyze = new GLADAnalyze();
+   testanalyze.ds0 = runinfo;
+   testanalyze.ds = nrm_can;
+   testanalyze.imask = 2;
+   testanalyze.calculate();
+   new DataSetSubtract(nrm_smp, nrm_can, false).getResult();
+   testanalyze.ds = nrm_smp;
+   testanalyze.imask = 3;
+   testanalyze.calculate();
+
+   GLADDistinct testdistinct = new GLADDistinct();
+   testdistinct.ds0 = runinfo;
+   testdistinct.dcs_smp = nrm_smp;
+   testdistinct.smo_van = nrm_van;
+   testdistinct.dm_van = mon_van;
+   testdistinct.doPLATOM = false;
+//   testdistinct.npoly = 0;
+   testdistinct.calculate();
+    
+   DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(nrm_smp, DataSetTools.viewer.IViewManager.IMAGE);
 
   }
 
