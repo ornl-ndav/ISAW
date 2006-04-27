@@ -1,0 +1,11 @@
+
+deploy:
+	mvn deploy:deploy-file -DgroupId=ISAW -DartifactId=jogl \
+		-Dversion=1.0-SNAPSHOT -Dpackaging=jar -Dfile=jogl.jar \
+		-DrepositoryId=sns-internal \
+		-Durl=scpexe://snsdev.ornl.gov/var/www/maven/internal
+
+local_deploy:
+	mvn install:install-file -DgroupId=ISAW -DartifactId=jogl \
+		-Dversion=1.0-SNAPSHOT -Dpackaging=jar -Dfile=jogl.jar
+
