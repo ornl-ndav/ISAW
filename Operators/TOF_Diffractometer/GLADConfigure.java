@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *  
  * $Log$
+ * Revision 1.7  2006/04/27 22:28:47  taoj
+ * Minor changes for the flat plate case.
+ *
  * Revision 1.6  2006/02/04 02:51:35  taoj
  * Added "isawMode" variable to toggle between using the operator GUI input and the configuration file entry for sample composition.
  *
@@ -140,7 +143,7 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
     if ( sizechar != calibstr0.charAt(calibstr0.length()-1) && sizechar != 'x') {
       runinfo.ExpConfiguration.put("GLAD.EXP.CALIB.SIZE", runinfo.ExpConfiguration.get("GLAD.CALIB.VAN.SIZE."+sizechar));
     }
-    GLADScatter van = new GLADScatter(runinfo, 0);
+    GLADScatter van = new GLADScatter(runinfo, iflag);
     van.setMutTable();
     van.setAbsInput();
     van.setMulInput();
@@ -171,7 +174,7 @@ public class GLADConfigure implements Wrappable, IWrappableWithCategoryList {
       can.setMulInput();
 
       if (hasFur) {
-        GLADScatter fur = new GLADScatter(runinfo, 4);
+        GLADScatter fur = new GLADScatter(runinfo, 4+iflag);
         fur.setMutTable();
         fur.setAbsInput();
         fur.setMulInput();
