@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2006/04/27 22:35:08  taoj
+ * Output other real space functions and pack them into a seperate data set.
+ *
  * Revision 1.4  2005/11/21 19:11:19  taoj
  * rewritten
  *
@@ -68,15 +71,22 @@ public class GLADQ2R implements Wrappable, IWrappableWithCategoryList
 {
   //~ Instance fields **********************************************************
   
-  private boolean DEBUG = false;
+  private boolean DEBUG = false; 
   /* @param ioq_smp sample IofQ dataset;
    * 
    */
   public DataSet ds0;
   public DataSet ioq_smp;
+  public int iwf = 0; //window function flag: 0 = square, 1 = Lorch, 2 = Welch, 3 = Modified Welch, 4 = cosine;
+  public boolean doTofR = true;
+  public boolean doGofR = true;
+  public boolean doNofR = true;
+  public boolean doCofR = true;
+  public boolean showDofR = true;
   public float NumberDensity = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.EXP.SMP.DENSITY");
   public float RCut = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.RCUT");
   public float QCut = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.QCUT");
+  public float QStart = 0.0f;
   public int NUMQ = GLADRunProps.getintKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.NUMQ");
   
   //~ Methods ******************************************************************
@@ -153,8 +163,8 @@ public class GLADQ2R implements Wrappable, IWrappableWithCategoryList
     Data dioq = ioq_smp.getData_entry(ioq_smp.getNum_entries()-1);
     Ftr f = new Ftr(dioq, bbarsq, NUMQ);
     System.out.println("Done.");
-    System.out.println("Fourier transform to DofR...");  
-    f.calculateDofR(QCut, 0, RCut, smprun.density);
+    System.out.println("Fourier transform to real space correlation functions...");  
+    f.calculateDofR(QStart, QCut, iwf, RCut, smprun.density);
 
 /*    
     DataSet ds = new DataSet ("DS", 
@@ -162,17 +172,69 @@ public class GLADQ2R implements Wrappable, IWrappableWithCategoryList
        "1/Angstrom", "Q",
        "", "");
 */
-    
-    float fofrs[][];
-    fofrs = f.getTofR();
+  
     Data sofq = new HistogramTable(XScale.getInstance(f.getQ()),
-                                   f.getSofQ(),
-                                   10000);
-    Data tofr = new FunctionTable(XScale.getInstance(fofrs[0]),
-                                  fofrs[1],
-                                  10001);
+                                       f.getSofQ(),
+                                       100000);
+    sofq.setLabel("SofQ");
     ioq_smp.addData_entry(sofq);
-    ioq_smp.addData_entry(tofr);
+    
+    DataSet ds_result = ioq_smp.empty_clone();
+    ds_result.setTitle("Analysis Result");
+    ds_result.setX_units("Angstrom");
+    ds_result.setX_label("r");
+    ds_result.setY_units("");
+    ds_result.setY_label("f(r)");  
+    if (doTofR) {
+      float tofrs[][];
+      tofrs = f.getTofR();
+      Data tofr = new FunctionTable(XScale.getInstance(tofrs[0]),
+                                        tofrs[1],
+                                        100001);
+      tofr.setLabel("TofR");                       
+      ds_result.addData_entry(tofr);                                  
+    }
+    
+    if (doGofR) {
+      float gofrs[][];
+      gofrs = f.getGofR();
+      Data gofr = new FunctionTable(XScale.getInstance(gofrs[0]),
+                                        gofrs[1],
+                                        100002);
+      gofr.setLabel("GofR");                                  
+      ds_result.addData_entry(gofr);                                  
+    }
+    
+    if (doNofR) {
+      float nofrs[][];
+      nofrs = f.getNofR();
+      Data nofr = new FunctionTable(XScale.getInstance(nofrs[0]),
+                                        nofrs[1],
+                                        100003);
+      nofr.setLabel("NofR");
+      ds_result.addData_entry(nofr);                                  
+    }
+    
+    if (doCofR) {
+      float cofrs[][];
+      cofrs = f.getCofR();
+      Data cofr = new FunctionTable(XScale.getInstance(cofrs[0]),
+                                        cofrs[1],
+                                        100004);
+      cofr.setLabel("CofR");
+      ds_result.addData_entry(cofr);                                  
+    }
+    
+    if (showDofR) {
+      float dofrs[][];
+      dofrs = f.getDofR();
+      Data dofr = new FunctionTable(XScale.getInstance(dofrs[0]),
+                                        dofrs[1],
+                                        100005);
+      dofr.setLabel("DofR");      
+      ds_result.addData_entry(dofr);                                  
+    }
+          
     System.out.println("Done.");
 
 /*    
@@ -186,7 +248,7 @@ public class GLADQ2R implements Wrappable, IWrappableWithCategoryList
     }
 //    System.out.println(output);     
 */
-    return ioq_smp;
+    return ds_result;
   }    
 
 }
