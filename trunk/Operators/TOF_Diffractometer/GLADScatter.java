@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  * 
  * $Log$
+ * Revision 1.6  2006/04/27 22:36:49  taoj
+ * Revision for the flat plate case; extra code handling the calculation of scc (sample calibration connstant, or the number of scatterers).
+ *
  * Revision 1.5  2006/02/06 15:56:05  taoj
  * Added "effDensity" field
  *
@@ -87,7 +90,9 @@ public class GLADScatter implements Cloneable {
   String absinput;
   String mulinput;
   private float bwid, bht;
-  CylAbsTof abs_run;
+//  CylAbsTof abs_run;
+//  FltAbsTof abs_run_fp;
+  CoralAbsTof abs_run;
   
   GLADScatter (GLADRunProps expsetup, int imask) {    
     
@@ -138,17 +143,15 @@ public class GLADScatter implements Cloneable {
     sigma_a = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, expkeyh+GLADRunProps.SIGMA_A);    
     bbarsq = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, analykeyh+".B_BAR_SQR");
 
-//    if (sigma_a == 0.0f) {
-      System.out.println("\nCalculate cross sections for "+SMASK[anmask]+".");
-      if (symbol == null || formula == null)
-        throw new NullPointerException("!!!!!!Unexpected error: missing symbol or formula information.!!!!!!");
-      else {
-        sigmavals = MutCross.loadSigmaTable().getTargetSigmas(symbol, formula);
-        sigma_s = sigmavals[0];
-        sigma_a = sigmavals[1];
-        if (bbarsq == 0.0f) bbarsq = sigmavals[2];
-      }
-//    }
+    System.out.println("\nCalculate cross sections for "+SMASK[anmask]+".");
+    if (symbol == null || formula == null)
+      throw new NullPointerException("!!!!!!Unexpected error: missing symbol or formula information.!!!!!!");
+    else {
+      sigmavals = MutCross.loadSigmaTable().getTargetSigmas(symbol, formula);
+      sigma_s = sigmavals[0];
+      sigma_a = sigmavals[1];
+      if (bbarsq == 0.0f) bbarsq = sigmavals[2];
+    }
 
     rad = (float[]) expsetup.ExpConfiguration.get(expkeyh+GLADRunProps.SIZE);    
     if (rad == null) {
@@ -171,26 +174,31 @@ public class GLADScatter implements Cloneable {
         beamparams[6] =  (sht+bht)/2.0f;
         beamparams[7] = 0.0f;
         beamparams[8] = sht;
-      } else 
-        beamparams = (float[]) obj;        
-      
-      if ((imask & 1) == 1) {
-        scatterern = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, analykeyh+".SCC");    
-        if (scatterern == 0.0f) {
-          scatterern = (float)(effdensity*bht*Math.PI*(rad[1]*rad[1]-rad[0]*rad[0])); 
-          System.out.println("effective density: "+effdensity+" input inner radius: "+rad[0]+" input outer radius: "+rad[1]);
-        }
-        System.out.println("scc: "+scatterern);
-//        expsetup.ExpConfiguration.put("GLAD.ANALYSIS.SCC", new Float(scatterern));
-      }
+      } else beamparams = (float[]) obj;                    
        
     } else {
+      
       tss = rad;
       s2bangle = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, "GLAD.EXP.FLT.SMP_ANGLE_BEAM");
       nplanes = GLADRunProps.getintKey(expsetup.ExpConfiguration, "GLAD.EXP.FLT.NPLANES");
-    }
-  }
 
+    }
+    
+    if ((imask & 1) == 1) {
+      scatterern = GLADRunProps.getfloatKey(expsetup.ExpConfiguration, analykeyh+".SCC");    
+      if (scatterern == 0.0f) {
+        if (isFlatPlate)  
+          scatterern = (float)(effdensity*bwid*bht*tss[0]);
+        else      
+          scatterern = (float)(effdensity*bht*Math.PI*(rad[1]*rad[1]-rad[0]*rad[0])); 
+//use scatterern from this point on;                
+//        expsetup.ExpConfiguration.put("GLAD.ANALYSIS.SCC", new Float(scatterern));
+      } 
+      if (scatterern != 0.0f)  System.out.println("sample effective density: "+effdensity
+                                                +" number of scatterers (10^24): "+scatterern);      
+    }
+    
+  }//constructor;
   
   GLADScatter insideScatter (GLADScatter outers) {
     
@@ -210,33 +218,39 @@ public class GLADScatter implements Cloneable {
     j = outers.nan+1;
     combos.nan = i+j-2;  
 
+    float comborad[] = null; 
     if (!isFlatPlate) { 
-
-      float comborad[];       
+      
       if (inners.rad[i-1] != outers.rad[0]) System.out.println("\n******WARNINGS******\n" +
                        "input: outside radiu of "+SMASK[inners.anmask]+" and inside radius of "+SMASK[outers.anmask]+" don't match.\n");
       comborad = new float[i+j-1];
       while (j-- > 0) comborad[i+j-1] = outers.rad[j];
       while (i-- > 1) comborad[i-1] = inners.rad[i-1];
       combos.rad = comborad;
-      if (inners.scatterern == 0.0f) combos.scatterern = (float)(density*bht*Math.PI*(comborad[1]*comborad[1]-comborad[0]*comborad[0]));
-      else combos.scatterern = inners.scatterern;
+
     } else {
       
-      float combotss[];
-      if (outers.anmask == 4) combotss = new float[] {inners.tss[0],
-                                      inners.tss[1], inners.tss[2],
-                                      outers.tss[0], outers.tss[1]};
-      else if (outers.anmask == 2) combotss = new float[] {inners.tss[0],
-                                            outers.tss[0], outers.tss[1]};
+      float combotss[];      
+      if (outers.anmask == 4); //displex/furnace case:
+      if (outers.anmask == 2) combotss = outers.tss;
       else {
         System.out.println("******Unexpected error: outer is neither a can nor a furnace.******");
         combotss = null;
         throw new NullPointerException();
       }      
-      combos.tss = combotss;
-    }
+      combos.tss = combotss; 
 
+    }
+    
+    if (scatterern == 0.0f) {
+      if (isFlatPlate)  
+        scatterern = (float)(effdensity*bwid*bht*tss[0]);
+      else      
+        scatterern = (float)(effdensity*bht*Math.PI*(comborad[1]*comborad[1]-comborad[0]*comborad[0])); 
+    } 
+    if (scatterern != 0.0f)  System.out.println("sample effective density: "+effdensity
+                                              +" number of scatterers (10^24): "+scatterern);      
+    combos.scatterern = scatterern;
     combos.muttable = inners.muttable + outers.muttable;
     combos.setAbsInput();
     combos.setMulInput();
@@ -291,7 +305,7 @@ public class GLADScatter implements Cloneable {
   }
 
   public void setMutTable () {
-    muttable = density+" "+sigma_a+"\n" 
+    muttable = effdensity+" "+sigma_a+"\n" 
               +makeMut();
   }
   
@@ -312,7 +326,7 @@ public class GLADScatter implements Cloneable {
       input.append(line+"\n");          
     }
     fr_input.close();
-    input.insert(0, density+" "+sigma_a+"\n");
+    input.insert(0, effdensity+" "+sigma_a+"\n");
     muttable = input.toString();
   }
   
