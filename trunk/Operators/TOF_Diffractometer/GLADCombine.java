@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2006/04/27 22:27:15  taoj
+ * Minor changes. Extra code in main() for testing purpose.
+ *
  * Revision 1.6  2006/02/04 03:01:08  taoj
  * Unit testing in the main() for a 3 annuli case. It is an equivalent of a corresponding data analysis script.
  *
@@ -57,6 +60,7 @@ import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.UniformXScale;
 import DataSetTools.dataset.XScale;
 import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import java.util.Vector;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
 
@@ -153,7 +157,7 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
     float yt, et, yv, ev;
 
     numq = (int)GLADQMAX*NUMQ+1;   
-//Q_scale has to be the same as the new_Q_scale used in GLADCrunch (better design?);    
+//Q_scale has to be the same as the new_Q_scale used in GLADCrunch (room for better design?);    
     Q_scale = new UniformXScale(1.0f/NUMQ, GLADQMAX+1.0f/NUMQ, numq);
     dioq = Data.getInstance(Q_scale, new float[numq-1], new float[numq-1], 99999);
     dsum = Data.getInstance(Q_scale, new float[numq-1], new float[numq-1], 99998);    
@@ -168,17 +172,16 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
       y_vals_flx = dv.getY_values();
       e_vals_flx = dv.getErrors();
       ndetchannel = y_vals_int.length;
-//      if (y_vals_flx[200] == 0.0f) System.out.println("i: "+i+" zero at 5 angstroms.");
       for (int k = 0; k < ndetchannel; k++){
 
         yt = y_vals_int[k];
+//        if (yt > 100) System.out.println("GID: "+dt.getGroup_ID()+" k: "+k+" "+yt);
         et = e_vals_int[k];
         yv = y_vals_flx[k];  
         ev = e_vals_flx[k];         
         y_vals_flx[k] = yv*yt;
         if (yv == 0.0f) e_vals_flx[k] = 0.0f;
         else e_vals_flx[k] = (float)(Math.abs(yv*yt)*Math.sqrt(et*et/yt/yt+ev*ev/yv/yv));
-//        y_vals_flx[k] *= y_vals_int[k];
       }
       dioq = dioq.stitch(dv, Data.SUM);
     }    
@@ -201,48 +204,65 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
       }
     }
     
+    dioq.setLabel("IofQ");
     int_smp.addData_entry(dioq);
     int_smp.setTitle(int_smp.getTitle()+" "+"--->COMBINE");
-    int_smp.setY_label("distinct scattering");
+//    int_smp.setY_label("distinct scattering");
     System.out.println("Done.");
     return int_smp;
   }    
   
-  public static void main(String[] args) {
+  public static void main(String[] args) {    
 
-/*
     GLADConfigure testconf = new GLADConfigure();
-    testconf.hasCan = false;
+    testconf.configfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/smpH.dat");
+    testconf.doDebug = true;
+    testconf.isawMode = 0;
     DataSet runinfo = (DataSet)testconf.calculate(); 
     
     GLADCrunch testcrunch = new GLADCrunch();           
     testcrunch.ds0 = runinfo;
-    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8094.run");
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5298.run");
     testcrunch.noDeadDetList = true;
-    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/cvs/ISAW/Databases/gladrun.par");
+    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/gladrun.par");
     Vector monnrm = (Vector) testcrunch.calculate();
     DataSet mon_van = (DataSet) monnrm.get(0); 
     DataSet nrm_van = (DataSet) monnrm.get(1);
     testcrunch.noDeadDetList = false;
-    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8095.run");
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5296.run");
+    DataSet nrm_can = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5299.run");
     DataSet nrm_smp = (DataSet)(((Vector)testcrunch.calculate()).get(1));
-    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8093.run");
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5295.run");
     DataSet nrm_bkg = (DataSet)(((Vector)testcrunch.calculate()).get(1));
 
-    new DataSetSubtract(nrm_van, nrm_bkg, false).getResult();
-    new DataSetSubtract(nrm_smp, nrm_bkg, false).getResult();
+    if (new DataSetSubtract(nrm_van, nrm_bkg, false).getResult()
+          instanceof ErrorString) throw new RuntimeException("!!!!!!Unexpected Error!!!!!!");
+    if (new DataSetSubtract(nrm_can, nrm_bkg, false).getResult()
+          instanceof ErrorString) throw new RuntimeException("!!!!!!Unexpected Error!!!!!!");
+    if (new DataSetSubtract(nrm_smp, nrm_bkg, false).getResult()
+          instanceof ErrorString) throw new RuntimeException("!!!!!!Unexpected Error!!!!!!");
     
     GLADVanCal testvancal = new GLADVanCal();
     testvancal.ds0 = runinfo;
-//    testvancal.DOsmooth = true;
     testvancal.nrm_van = nrm_van;
     testvancal.calculate();
-    new DataSetDivide(nrm_smp, nrm_van, false).getResult();
+    if (new DataSetDivide(nrm_can, nrm_van, false).getResult()
+          instanceof ErrorString) throw new RuntimeException("!!!!!!Unexpected Error!!!!!!");
+    if (new DataSetDivide(nrm_smp, nrm_van, false).getResult()
+          instanceof ErrorString) throw new RuntimeException("!!!!!!Unexpected Error!!!!!!");
+
     
     GLADAnalyze testanalyze = new GLADAnalyze();
     testanalyze.ds0 = runinfo;
+    testanalyze.ds = nrm_can;
+    testanalyze.imask = 2;
+    testanalyze.calculate();
+
+    if (new DataSetSubtract(nrm_smp, nrm_can, false).getResult()
+          instanceof ErrorString) throw new RuntimeException("!!!!!!Unexpected Error!!!!!!");
     testanalyze.ds = nrm_smp;
-    testanalyze.imask = 1;
+    testanalyze.imask = 3;
     testanalyze.calculate();
 
     GLADDistinct testdistinct = new GLADDistinct();
@@ -250,11 +270,153 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
     testdistinct.dcs_smp = nrm_smp;
     testdistinct.smo_van = nrm_van;
     testdistinct.dm_van = mon_van;
+    testdistinct.doPLATOM = false;
+    testdistinct.npoly = 3;
+//    testdistinct.wmax = 4.0f;
     testdistinct.calculate();
     
     GLADCombine testcombine = new GLADCombine();
     testcombine.int_smp = nrm_smp;
     testcombine.flx_van = nrm_van;
+    testcombine.NUMQ = 20;
+    testcombine.calculate();    
+    
+    DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(nrm_smp, DataSetTools.viewer.IViewManager.IMAGE);
+
+//"subself"/no-platom test;
+/*
+    GLADConfigure testconf = new GLADConfigure();
+    testconf.configfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/smpH.dat");
+    testconf.doDebug = true;
+    testconf.isawMode = 0;
+    DataSet runinfo = (DataSet)testconf.calculate(); 
+    
+    GLADCrunch testcrunch = new GLADCrunch();           
+    testcrunch.ds0 = runinfo;
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5298.run");
+    testcrunch.noDeadDetList = true;
+    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/gladrun.par");
+    Vector monnrm = (Vector) testcrunch.calculate();
+    DataSet mon_van = (DataSet) monnrm.get(0); 
+    DataSet nrm_van = (DataSet) monnrm.get(1);
+    testcrunch.noDeadDetList = false;
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5296.run");
+    DataSet nrm_can = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5299.run");
+    DataSet nrm_smp = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad5295.run");
+    DataSet nrm_bkg = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+
+    new DataSetSubtract(nrm_van, nrm_bkg, false).getResult();
+    new DataSetSubtract(nrm_can, nrm_bkg, false).getResult();
+    new DataSetSubtract(nrm_smp, nrm_bkg, false).getResult();
+    
+    GLADVanCal testvancal = new GLADVanCal();
+    testvancal.ds0 = runinfo;
+    testvancal.nrm_van = nrm_van;
+    testvancal.calculate();
+    new DataSetDivide(nrm_can, nrm_van, false).getResult();
+    new DataSetDivide(nrm_smp, nrm_van, false).getResult();
+
+    
+    GLADAnalyze testanalyze = new GLADAnalyze();
+    testanalyze.ds0 = runinfo;
+    testanalyze.ds = nrm_can;
+    testanalyze.imask = 2;
+    testanalyze.calculate();
+    new DataSetSubtract(nrm_smp, nrm_can, false).getResult();
+    testanalyze.ds = nrm_smp;
+    testanalyze.imask = 3;
+    testanalyze.calculate();
+
+    GLADDistinct testdistinct = new GLADDistinct();
+    testdistinct.ds0 = runinfo;
+    testdistinct.dcs_smp = nrm_smp;
+    testdistinct.smo_van = nrm_van;
+    testdistinct.dm_van = mon_van;
+    testdistinct.doPLATOM = false;
+    testdistinct.npoly = 0;
+    testdistinct.calculate();
+    DataSetTools.viewer.ViewManager nrm_van_view = new DataSetTools.viewer.ViewManager(nrm_van, DataSetTools.viewer.IViewManager.IMAGE);
+    
+    GLADCombine testcombine = new GLADCombine();
+    testcombine.int_smp = nrm_smp;
+    testcombine.flx_van = nrm_van;
+    testcombine.NUMQ = 20;
+    testcombine.calculate();    
+    
+    DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(nrm_smp, DataSetTools.viewer.IViewManager.IMAGE);
+
+/*
+//HDO, flat plate
+    GLADConfigure testconf = new GLADConfigure();
+    testconf.configfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/fpHDO.dat");
+    testconf.doDebug = true;
+    testconf.isawMode = 0;
+    testconf.isFP = true;
+    DataSet runinfo = (DataSet)testconf.calculate(); 
+    
+    GLADCrunch testcrunch = new GLADCrunch();           
+    testcrunch.ds0 = runinfo;
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad9733.run");
+//    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8094.run");
+    testcrunch.noDeadDetList = true;
+    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/gladrun.par");
+    Vector monnrm = (Vector) testcrunch.calculate();
+    DataSet mon_van = (DataSet) monnrm.get(0); 
+    DataSet nrm_van = (DataSet) monnrm.get(1);
+    testcrunch.noDeadDetList = false;
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad9740.run");
+    DataSet nrm_can = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad9735.run");
+//    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8095.run");
+    DataSet nrm_smp = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad9734.run");
+//    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8093.run");
+    DataSet nrm_bkg = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+
+//    DataSetTools.viewer.ViewManager nrm_can_view = new DataSetTools.viewer.ViewManager(nrm_can, DataSetTools.viewer.IViewManager.IMAGE);
+//    DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(nrm_smp, DataSetTools.viewer.IViewManager.IMAGE);
+
+    new DataSetSubtract(nrm_van, nrm_bkg, false).getResult();
+    new DataSetSubtract(nrm_can, nrm_bkg, false).getResult();
+    new DataSetSubtract(nrm_smp, nrm_bkg, false).getResult();
+    
+    GLADVanCal testvancal = new GLADVanCal();
+    testvancal.ds0 = runinfo;
+//    testvancal.DOsmooth = true;
+    testvancal.nrm_van = nrm_van;
+    testvancal.calculate();
+    new DataSetDivide(nrm_can, nrm_van, false).getResult();
+    new DataSetDivide(nrm_smp, nrm_van, false).getResult();
+
+    
+    GLADAnalyze testanalyze = new GLADAnalyze();
+    testanalyze.ds0 = runinfo;
+
+    testanalyze.ds = nrm_can;
+    testanalyze.imask = 2;
+    testanalyze.calculate();
+    new DataSetSubtract(nrm_smp, nrm_can, false).getResult();
+
+    testanalyze.ds = nrm_smp;
+    testanalyze.imask = 3;
+    testanalyze.calculate();
+
+    GLADDistinct testdistinct = new GLADDistinct();
+    testdistinct.ds0 = runinfo;
+    testdistinct.dcs_smp = nrm_smp;
+    testdistinct.smo_van = nrm_van;
+    testdistinct.dm_van = mon_van;
+    testdistinct.doPLATOM = false;
+    testdistinct.wmin = 0.48f;
+    testdistinct.wmax = 0.52f;
+    testdistinct.calculate();
+    
+    GLADCombine testcombine = new GLADCombine();
+    testcombine.int_smp = nrm_smp;
+    testcombine.flx_van = nrm_van;
+//    testcombine.NUMQ = 20;
     testcombine.calculate();
     
     GLADQ2R testq2r = new GLADQ2R();
@@ -263,9 +425,9 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
     testq2r.calculate();
     
     DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(nrm_smp, DataSetTools.viewer.IViewManager.IMAGE);
-*/
-//    DataSetTools.viewer.ViewManager nrm_van_view = new DataSetTools.viewer.ViewManager(nrm_van, DataSetTools.viewer.IViewManager.IMAGE);
 
+
+/* 3 annuli;
     GLADConfigure testconf = new GLADConfigure();
     testconf.configfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/smptubecan.dat");
     testconf.hasFur = true;
@@ -344,7 +506,73 @@ public class GLADCombine implements Wrappable, IWrappableWithCategoryList {
     testq2r.calculate();
     
     DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(nrm_smp, DataSetTools.viewer.IViewManager.IMAGE);
+*/
 
+/*
+//fused silica rod standard test
+    long start = System.currentTimeMillis(); 
+  
+    GLADConfigure testconf = new GLADConfigure();
+    testconf.hasCan = false;
+    testconf.doDebug = true;
+    testconf.isawMode = 0;
+    DataSet runinfo = (DataSet)testconf.calculate(); 
+    
+    GLADCrunch testcrunch = new GLADCrunch();           
+    testcrunch.ds0 = runinfo;
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8094.run");
+    testcrunch.noDeadDetList = true;
+    testcrunch.redpar = new LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/gladrun.par");
+    Vector monnrm = (Vector) testcrunch.calculate();
+    DataSet mon_van = (DataSet) monnrm.get(0); 
+    DataSet nrm_van = (DataSet) monnrm.get(1);
+
+    testcrunch.noDeadDetList = false;
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8095.run");
+    DataSet nrm_smp = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+    testcrunch.runfile = new LoadFileString("/IPNShome/taoj/cvs/ISAW/SampleRuns/glad8093.run");
+    DataSet nrm_bkg = (DataSet)(((Vector)testcrunch.calculate()).get(1));
+
+    new DataSetSubtract(nrm_van, nrm_bkg, false).getResult();
+    new DataSetSubtract(nrm_smp, nrm_bkg, false).getResult();
+    
+    GLADVanCal testvancal = new GLADVanCal();
+    testvancal.ds0 = runinfo;
+//    testvancal.DOsmooth = true;
+    testvancal.nrm_van = nrm_van;
+    testvancal.calculate();
+    new DataSetDivide(nrm_smp, nrm_van, false).getResult();
+    
+    GLADAnalyze testanalyze = new GLADAnalyze();
+    testanalyze.ds0 = runinfo;
+    testanalyze.ds = nrm_smp;
+    testanalyze.imask = 1;
+    testanalyze.calculate();
+
+    GLADDistinct testdistinct = new GLADDistinct();
+    testdistinct.ds0 = runinfo;
+    testdistinct.dcs_smp = nrm_smp;
+    testdistinct.smo_van = nrm_van;
+    testdistinct.dm_van = mon_van;
+    testdistinct.calculate();
+    
+    GLADCombine testcombine = new GLADCombine();
+    testcombine.int_smp = nrm_smp;
+    testcombine.flx_van = nrm_van;
+    testcombine.calculate();
+    
+    GLADQ2R testq2r = new GLADQ2R();
+    testq2r.ds0 = runinfo;
+    testq2r.ioq_smp = nrm_smp;
+    testq2r.iwf = 1;
+    DataSet ds_result = (DataSet)testq2r.calculate();
+
+    DataSetTools.viewer.ViewManager nrm_van_view = new DataSetTools.viewer.ViewManager(nrm_van, DataSetTools.viewer.IViewManager.IMAGE);    
+    DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(nrm_smp, DataSetTools.viewer.IViewManager.IMAGE);
+//  DataSetTools.viewer.ViewManager ds_result_view = new DataSetTools.viewer.ViewManager(ds_result, DataSetTools.viewer.IViewManager.IMAGE);
+    start -= System.currentTimeMillis(); 
+    System.out.println("running time (s): "+(-start));
+*/
   }
 
 }
