@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2006/04/27 22:37:54  taoj
+ * New code handling flat plate case.
+ *
  * Revision 1.5  2005/10/27 17:58:24  taoj
  * new version
  *
@@ -66,6 +69,7 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
   //~ Instance fields **********************************************************
   
   private boolean DEBUG = false;
+  private boolean isCylinder = true;
 
   /* @param ISVac1 Variable Aperture Collimator 1, which determines beam width 
    *               and height;
@@ -139,9 +143,17 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
     System.out.println("Vanadium multiple scattering calculation...");       
     GLADScatter vanrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[1];
     vanrun.mstep = mulstep;
+    isCylinder = !vanrun.isFlatPlate;
     
-    CylMulTof vanrunmul = new CylMulTof(vanrun);
-    vanrunmul.runMulCorrection();
+    CylMulTof vanrunmul = null;
+    FltMulTof vanrunmul_fp = null;
+    if (isCylinder) {
+      vanrunmul = new CylMulTof(vanrun);
+      vanrunmul.runMulCorrection();
+    } else {
+      vanrunmul_fp = new FltMulTof(vanrun);
+      vanrunmul_fp.runMulCorrection();
+    }     
     System.out.println("Done.");
 
 /*    
@@ -183,11 +195,13 @@ public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
         q = 0.5f*(Q_vals_d[k]+Q_vals_d[k+1]);
         lambda = tof_calc.WavelengthofDiffractometerQ(scattering_angle, q);
         p = Platom.plaatom(lambda, target, formula, temperature, scattering_angle, d1, d2, true);
-        mul = vanrunmul.getCoeff(scattering_angle, lambda);
+        if (isCylinder) mul = vanrunmul.getCoeff(scattering_angle, lambda);
+        else mul = vanrunmul_fp.getCoeff(scattering_angle, lambda);
 //        y_vals_n[k] /= lambda*lambda/(4*Math.PI*Math.sin(scattering_angle/2))*(mul[0]*p+mul[1]);
-        mulp = mul[0]*p+mul[1];
-        y_vals_n[k] /= mulp;
-        e_vals_n[k] /= mulp;
+          mulp = mul[0]*p+mul[1];
+          y_vals_n[k] /= mulp;
+          e_vals_n[k] /= mulp;
+
       }      
     }
     nrm_van.setTitle(nrm_van.getTitle()+" "+"--->VANCAL");
