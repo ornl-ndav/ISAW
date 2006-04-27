@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.8  2006/04/27 22:23:19  taoj
+ * Added flat plate code (test version).
+ *
  * Revision 1.7  2006/02/04 02:57:31  taoj
  * Revision to handle the three annuli cases; Exception handling and error messaging for the rare cases that a dead detector list needs to updated based on an non-vanadium runfile.
  *
@@ -83,7 +86,8 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
   public float minw = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.MUT.MINW");
   public float maxw = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.MUT.MAXW");
   public float dw = GLADRunProps.getfloatKey(GLADRunProps.defGLADProps, "GLAD.ANALYSIS.MUT.DW");
-
+  private boolean isCylinder = true;
+  
   //~ Methods ******************************************************************
 
   /* ------------------------ getCategoryList ------------------------------ */
@@ -146,14 +150,35 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
    */
   public Object calculate(  ) {
 
-    GLADScatter thisrun = null;
+    GLADScatter thisrun = null;    
+/*
     if (imask == 1) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];     
     else if (imask == 2) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[3];
     else if (imask == 3) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
     else if (imask == 4) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[4];
     else if (imask == 6) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[3];
-    else if (imask == 7) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
+    else if (imask == 7) thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];    
     else System.out.println("\n***UNEXPECTED ERROR***\n"+"imask: "+imask);
+*/
+    switch (imask) {
+      case 1:
+      case 3:
+      case 7:
+        thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
+        break;
+      case 2:
+      case 6:
+        thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[3];
+        break;
+      case 4:
+        thisrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[4];
+        break;
+      default:
+        System.out.println("\n***UNEXPECTED ERROR***\n"+"imask: "+imask);
+        break;
+    }
+
+    isCylinder = !thisrun.isFlatPlate;
 
     thisrun.mstep = mulstep;
     thisrun.astep = absstep;
@@ -170,40 +195,76 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
     System.out.println("\n---"+GLADScatter.SMASK[imask]+"---\n"); 
         
     System.out.println("multiple scattering calculation...");
-    CylMulTof thisrunmul = new CylMulTof(thisrun);
+    CoralMulTof thisrunmul = new CoralMulTof(thisrun);
     thisrunmul.runMulCorrection();
+//    FltMulTof thisrunmul_fp = null;
+
+/*    
+    if (isCylinder) {
+      thisrunmul = new CylMulTof(thisrun);
+      thisrunmul.runMulCorrection();
+    } else {
+      thisrunmul_fp = new FltMulTof(thisrun);
+      thisrunmul_fp.runMulCorrection();
+    }
+*/
+    
     System.out.println("Done.\n");
     
-    CylAbsTof abs_smp, abs_can = null;
+    CoralAbsTof abs_smp = null, abs_can = null;
+//    FltAbsTof abs_smp_fp = null, abs_can_fp = null;
     GLADScatter smprun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[2];
     GLADScatter canrun = (GLADScatter)((Object[])ds0.getAttributeValue(GLADRunProps.GLAD_PROP))[3];   
 //    if( (imask & 1) == 1 && scattererm != 0.0f) smprun.scatterern = scattererm;
-    if (smprun.abs_run == null) {
-      abs_smp = new CylAbsTof(smprun);
-      smprun.abs_run = abs_smp;
-      System.out.println("Attenuation calculation for sample...");      
-      abs_smp.runAbsCorrection();
-      System.out.println("Done.");
-      
-      if (imask >= 4) {
-        abs_can = new CylAbsTof(canrun);
-        canrun.abs_run = abs_can;    
-        System.out.println("Attenuation calculation for can...");
-        abs_can.runAbsCorrection();
+//    if (isCylinder) {
+      if (smprun.abs_run == null) {
+        abs_smp = new CoralAbsTof(smprun);
+        smprun.abs_run = abs_smp;
+        System.out.println("Attenuation calculation for sample...");      
+        abs_smp.runAbsCorrection();
         System.out.println("Done.");
-      }            
-    }    
+      
+        if (imask >= 4) {
+          abs_can = new CoralAbsTof(canrun);
+          canrun.abs_run = abs_can;    
+          System.out.println("Attenuation calculation for can...");
+          abs_can.runAbsCorrection();
+          System.out.println("Done.");
+        }            
+      } else {
+        abs_smp = smprun.abs_run;
+        if (imask >= 4) abs_can = canrun.abs_run;
+      }   
+
+//    } 
+/*    
     else {
-      abs_smp = smprun.abs_run;
-      if (imask >= 4) abs_can = canrun.abs_run;
-    } 
-  
+      if (smprun.abs_run_fp == null) {
+        abs_smp_fp = new FltAbsTof(smprun);
+        smprun.abs_run_fp = abs_smp_fp;
+        System.out.println("Attenuation calculation for flat plate sample...");      
+        abs_smp_fp.runAbsCorrection();
+        System.out.println("Done.");
+      
+        if (imask >= 4) {
+          abs_can_fp = new FltAbsTof(canrun);
+          canrun.abs_run_fp = abs_can_fp;    
+          System.out.println("Attenuation calculation for flat plate can...");
+          abs_can_fp.runAbsCorrection();
+          System.out.println("Done.");
+        }            
+      } else {
+        abs_smp_fp = smprun.abs_run_fp;
+        if (imask >= 4) abs_can_fp = canrun.abs_run_fp;
+      }   
+    }
+*/
     System.out.println("Applying "+GLADScatter.SMASK[imask]+" multiple scattering and attenuation correction...");
     
     Data dt;
     AttributeList attr_list_d;
     float scattering_angle, q, lambda, alpha;
-    float[] qlist, y_vals_n, e_vals_n, mul, abs_s, abs_c = null;
+    float[] qlist, y_vals_n, e_vals_n, mul = null, abs_s = null, abs_c = null;
     int istart, iend;
     if (ds.getX_label() != "Q") System.out.println("******ERROR******");
     if ((imask & 1) == 1) System.out.println("Sample effective density: "+smprun.effdensity+" Sample calibration constant: "+smprun.scatterern+"\n");
@@ -225,6 +286,8 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
           " occurs in the rare case that a data group is alive with vanadium" +
           " but goes dead with the current runfile/dataset. The dead detector" +
           " list needs to be updated.!!!!!!");
+        System.out.println("dataset: "+ds.getTitle());
+        System.out.println("datablock: "+dt.getGroup_ID());
       }      
       while (y_vals_n[iend] == 0.0f) iend--;
       
@@ -232,9 +295,18 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
         q = .5f*(qlist[k]+qlist[k+1]);
         lambda = tof_calc.WavelengthofDiffractometerQ(scattering_angle, q);
 //      if (k == 0) System.out.println("i: "+i+" y_vals_n[0]: "+y_vals_n[k]);
-        mul = thisrunmul.getCoeff(scattering_angle, lambda);
-        abs_s = abs_smp.getCoeff(scattering_angle, lambda);
-        if (imask >= 4) abs_c = abs_can.getCoeff(scattering_angle, lambda);
+//        if (isCylinder) {
+          mul = thisrunmul.getCoeff(scattering_angle, lambda);
+          abs_s = abs_smp.getCoeff(scattering_angle, lambda);
+          if (imask >= 4) abs_c = abs_can.getCoeff(scattering_angle, lambda);
+//        } 
+/*        
+        else {
+          mul = thisrunmul_fp.getCoeff(scattering_angle, lambda);
+          abs_s = abs_smp_fp.getCoeff(scattering_angle, lambda);
+          if (imask >= 4) abs_c = abs_can_fp.getCoeff(scattering_angle, lambda);
+        }
+*/
 //        delta = mul[0]/(mul[0]+mul[1]);
       
 //            if (k == 0) System.out.println("i: "+i+" y_vals_n[0]: "+y_vals_n[k]);
@@ -280,7 +352,7 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
     }
         
     ds.setTitle(ds.getTitle()+" "+"--->CORAL/ANALYSE");
-//        ds.setY_units("barns");
+//    ds.setY_units("barns"); //unit can't be set/changed here as GLAD_CRUNCH() result will subtract that of GLAD_ANALYZE() in a script;
     ds.setY_label("Time-Of-Flight differential crosssection");
     System.out.println("Done.");
 
