@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2006/04/27 22:20:42  taoj
+ * Windows function debugged.
+ *
  * Revision 1.3  2005/12/15 20:52:55  dennis
  * Added tag for CVS logging so that future modifications can be tracked.
  *
@@ -55,7 +58,8 @@ public class Ftr {
   
   public static final int NF = 16384; //NUMQ = 40;
 
-  private float qstart, qend, delq;
+//qbegin is the starting q value from IofQ (ISAW) or SofQ (Genie);
+  private float qbegin, qend, delq;
   private int npt;
   private float[] qs, ioqs, soqs;
   private float[] rs, dors;
@@ -75,11 +79,11 @@ public class Ftr {
     System.arraycopy(xs, istart, qs, 0, n);
     System.arraycopy(ys, istart, ioqs, 0, n); 
          
-    qstart = qs[0];
+    qbegin = qs[0];
     delq = 1.0f/numq;
     npt = n;
     convertIofQ2SofQ(bbarsq);
-    System.out.println("qstart: "+qstart+" delq: "+delq+" npt: "+npt);
+    System.out.println("qbegin: "+qbegin+" delq: "+delq+" npt: "+npt);
   }
   
  private Ftr (String file_isoq) {
@@ -104,11 +108,11 @@ public class Ftr {
     line = fr_input.readLine();
     Matcher m = Pattern.compile("start\\s=\\s+(\\d*\\.?\\d*)\\s+end\\s=\\s+(\\d*\\.?\\d*)\\s+npt=\\s+(\\d+)").matcher(line);
     if (m.find()) {
-      qstart = (new Float(m.group(1))).floatValue();
+      qbegin = (new Float(m.group(1))).floatValue();
       qend = (new Float(m.group(2))).floatValue();
       npt = (new Integer(m.group(3))).intValue();
-      delq = (qend-qstart)/(npt-1);
-      System.out.println("start="+qstart);
+      delq = (qend-qbegin)/(npt-1);
+      System.out.println("start="+qbegin);
       System.out.println("end="+qend);
       System.out.println("delq="+delq);
       System.out.println("npt="+npt);
@@ -216,18 +220,18 @@ public class Ftr {
     return new float[][] {rs, cors};
   }    
   
-  void calculateDofR (float qcut, int iwf, float rcut, float density) {
+  void calculateDofR (float qstart, float qcut, int iwf, float rcut, float density) {
     NumDensity = density;
-    calculateDofR (qcut, iwf, rcut);
+    calculateDofR (qstart, qcut, iwf, rcut);
   }
   
-  void calculateDofR (float qcut, int iwf, float rcut) {
+  void calculateDofR (float qstart, float qcut, int iwf, float rcut) {
     int index=0, N;
     while (qs[index]<=qcut) {
       index++;  
     }
     N = index;
-    index = Math.round(qstart/delq);
+    index = Math.round(qbegin/delq);
     
 //    float[] qs0 = new float[N+index];
 //    float[] isoqs0 = new float[N+index];
@@ -250,7 +254,7 @@ public class Ftr {
       soqs0[i+index] = soqs[i];    
     }
     for (int i=N+index; i<NF; i++) {
-//      qs0[i] = i*delq;
+      qs0[i] = i*delq;
       soqs0[i] = 0.0f;    
     }
     
@@ -261,66 +265,65 @@ public class Ftr {
 //    N += index;
     int n = NF;    
     float[] Zdata = new float[4*n];
-    float[] wf = getWMOD(iwf, qcut);   
+ 
     for (int i = 1; i<n; i++){
-      y = qs0[i]*(soqs0[i]-1)*wf[i];
+      y = qs0[i]*(soqs0[i]-1)*getWMOD(iwf, qstart, qcut, qs0[i]);
       Zdata[2*i] = y;
       Zdata[2*i+1] = 0;
       Zdata[4*n-2*i] = -y;  
       Zdata[4*n-2*i+1] = 0;
     }
+    
     Zdata[2*n] = 0;
     Zdata[2*n+1] = 0;
     
     ComplexFloatFFT q2d = new ComplexFloatFFT_Mixed(2*n);
     q2d.transform(Zdata);
     
-    String output = "";
     float[] rs0 = new float[n];
     float[] dors0 = new float[n];
     for (int i = 0; i<n; i++){
-//      rs[i] = (float) (i*Math.PI/qcut);
       rs0[i] = (float) (i*Math.PI/NF/delq);
       dors0[i] = (float) (Zdata[2*i+1]*-delq/Math.PI);
-//      if (i<100) output += "["+rs[i]+","+dors[i]+"]"+",";
     }
-    
     N = Math.round(rcut*NF*delq/(float)Math.PI)+2;
     rs = new float[N];
     dors = new float[N];    
-    System.arraycopy(rs0, 0, rs, 0, N); 
-    System.arraycopy(dors0, 0, dors, 0, N); 
-//    System.out.println("DofR: "+output);
+    System.arraycopy(rs0, 1, rs, 0, N); 
+    System.arraycopy(dors0, 1, dors, 0, N); 
   }
-  
-  float[] getWMOD (int iwf, float qcut) {
-    float[] wfs = new float[NF];
+
+//window function: 0 = square, 1 = Lorch, 2 = Welch, 3 = Modified Welch, 4 = cosine;    
+  float getWMOD (int iwf, float qstart, float qcut, float q) {
+
     double y;
+    float w;
     
-    for (int i = 0; i<NF; i++){
+    if (q < qstart || q > qcut) return 0.0f;
+    else {              
       switch (iwf) {
         case 0:
-          wfs[i] = 1.0f;
-          break;
-        case 1:
-          y = qs[i]*Math.PI/qcut;
-          wfs[i] =(float) (Math.sin(y)/y);
-          break;
-        case 2:
-          wfs[i] = 1.0f-(float)Math.pow(qs[i]/qcut, 2);
-          break;
-        case 3:
-          wfs[i] = 1.0f-(float)Math.pow(qs[i]/qcut, 3);
-          break;
-        case 4:
-          wfs[i] = (1.0f+(float)Math.cos(qs[i]/qcut*Math.PI))/2.0f;
-          break;
-        default:
-          wfs[i] = 1.0f;  
+        w = 1.0f;
+        break;
+      case 1:
+        y = q*Math.PI/qcut;
+        w =(float) (Math.sin(y)/y);
+        break;
+      case 2:
+        w = 1.0f-(float)Math.pow(q/qcut, 2);
+        break;
+      case 3:
+        w = 1.0f-(float)Math.pow(q/qcut, 3);
+        break;
+      case 4:
+        w = (1.0f+(float)Math.cos(q/qcut*Math.PI))/2.0f;
+        break;
+      default:
+        w = 1.0f;  
+        }
       }
-    }
     
-    return wfs;
+    return w;
   }
   
   public static void main(String[] args) {
@@ -343,23 +346,31 @@ public class Ftr {
                                        f1.getSofQ(),
                                        10000);
     ds.addData_entry(sofq);
-    DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(ds, DataSetTools.viewer.IViewManager.IMAGE);
 
-    f1.calculateDofR(25.0f, 0, 0.0662f);
+    f1.calculateDofR(0.0f, 25.0f, 1, 8.0f, 0.0662f);
     
     long t0 = System.currentTimeMillis();
     float[][] test = f1.getGofR();
-    StringBuffer output = new StringBuffer("GofR:\n");
+//    StringBuffer output = new StringBuffer("GofR:\n");
     String entry;
     for (int i = 0; i<f1.rs.length; i++){
           if (i<100) {
-            entry= "["+test[0][i]+","+test[1][i]+"]"+",";
-            output.append(entry);
+            entry= "["+test[0][i*10]+","+test[1][i*10]+"]"+",";
+//            output.append(entry);
 
           } 
-//          System.out.println("r: "+dors[0][i]+" Dr: "+dors[1][i]);
+//          System.out.println("r: "+(f1.rs)[i*10]+" dofr: "+(f1.dors)[i*10]);
         }
-    System.out.println(output);        
+//    System.out.println(output);        
+
+    float tofrs[][];
+    tofrs = f1.getTofR();
+    Data tofr = new FunctionTable(XScale.getInstance(tofrs[0]),
+                                      tofrs[1],
+                                      100001);
+    tofr.setLabel("TofR");                       
+    ds.addData_entry(tofr);   
+    DataSetTools.viewer.ViewManager nrm_smp_view = new DataSetTools.viewer.ViewManager(ds, DataSetTools.viewer.IViewManager.IMAGE);
 
     long t1 = System.currentTimeMillis();
         System.out.println("time: "+(t1-t0));     
