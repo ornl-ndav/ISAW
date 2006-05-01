@@ -32,6 +32,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.8  2006/05/01 18:58:35  hammonds
+ *  Add run number attribute to each focused bank.
+ *
  *  Revision 1.7  2006/03/17 16:50:46  dennis
  *  Fixed javadoc comment on getCommand() method.
  *
@@ -378,6 +381,7 @@ public class SumLogBinnedSpectra extends GenericTOF_Diffractometer
       FloatAttribute newInitFP = 
 	new  FloatAttribute(Attribute.INITIAL_PATH, refInitFP);
       tempData.setAttribute(newInitFP);
+      tempData.setAttribute(ds.getAttribute(Attribute.RUN_NUM ));
       //      tempData.setAttribute(
     }
     
