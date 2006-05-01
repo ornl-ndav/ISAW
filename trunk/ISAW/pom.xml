@@ -46,9 +46,9 @@
       <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>ISAW</groupId>
+      <groupId>jython</groupId>
       <artifactId>jython</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>2.1</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
