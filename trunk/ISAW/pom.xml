@@ -51,9 +51,9 @@
       <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>ISAW</groupId>
-      <artifactId>servlet</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet_api</artifactId>
+      <version>2.4</version>
     </dependency>
     <dependency>
       <groupId>ISAW</groupId>
