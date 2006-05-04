@@ -1,0 +1,231 @@
+#
+# This is your ISAW-HIPPO properties file ... 
+# THE DEFAULT FILE IS /InstrumentInfo/LANSCE/hippoprops.dat,
+#       AND SHOULD BE KEPT THERE;
+# ISAW uses this file for HIPPO instrument and experiment
+#      parameter infomation;
+# {value1, value2, value3,...} for a list of symbols (strings);
+# [value1, value2, value3,...] for a list of numbers (float point);
+# The '#' and '!' symbols denotes a commented line;
+# Empty lines also ignored.
+
+#
+#SOURCE:
+#
+!LANSCE running at 20 Hz pulse rate;
+HIPPO.SOURCE.PERIOD = 5e4
+!first 20 channels used in delayed neutron correction (fitting);
+HIPPO.SOURCE.DNEUTRON_NFIT = 20
+!delayed neutron fraction beta;
+HIPPO.SOURCE.DNEUTRON_BETA = 0.00425
+
+#
+#VAC/BEAM:
+#
+!VAC 1 beam width; (1.30)
+HIPPO.VAC1.BWID = 1.00
+!VAC 1 beam height; (2.20)
+HIPPO.VAC1.BHT = 1.00
+!set beamparams[] used in ISAW manually (9 numbers square bracketed):
+HIPPO.BEAM.PARAMS = 
+!moderator to sample distance:
+HIPPO.BEAM.D1 = 9.0
+!sample to monitor distance:
+HIPPO.BEAM.D0 = 3.0
+
+#
+#DAS:
+#
+!detector dead time in microseconds;
+HIPPO.DET.TAU = 8.0
+!monitor dead time in microseconds; 
+HIPPO.MON.TAU = 2.0
+!number of HIPPO detector LPSD;
+HIPPO.DET.NLPSD = 231
+!number of segments on each LPSD;
+HIPPO.DET.NSEGMENT = 64
+!number of detector banks;
+HIPPO.DET.NBANK = 10
+!max number of lpsd on each bank;
+HIPPO.DET.MAX_LPSD_BANK = 53
+!max number of LPSD index on HIPPO (detID/64);
+HIPPO.DET.MAXLPSDID = 335
+!number of detector time channels;
+HIPPO.DET.NCHANNEL = 2480
+!number of monitor time channels;
+HIPPO.MON.NCHANNEL = 14950
+!detector time channel width in microseconds;
+HIPPO.DET.CHANNELWIDTH = 5.0
+!monitor time channel width;
+HIPPO.MON.CHANNELWIDTH = 1.0
+!number of data blocks in detector dataset;
+HIPPO.DET_DS.NSPECTRUM = 914
+!number of monitors: [0]: beam monitor; 
+!                    [1]: transmission monitor (fudge);
+!                    [2]: proton monitor; 
+HIPPO.MON.NMONITOR = 3    
+!for He3 detector: !(number density)*(absorption cross section) 
+!                                    *(detector radius)/1.8 Angstrom; 
+HIPPO.DET.FACD = 0.41234502
+!monitor areas;
+HIPPO.MON.AREA = [6.4516, 7.8e-3, 0.0]
+!monitor efficiency coefficients;
+HIPPO.MON.EFF = [1.0, 1.0, 0.0]
+!HIPPO.MON.EFF = [5.56e-5, 1.0, 0.0]
+
+#
+#scatterer:
+#
+!
+!vanadium calibration rod:
+!
+HIPPO.CALIB.VAN.SYMBOL = {V}
+!formula:
+HIPPO.CALIB.VAN.FORMULA = [1.0]
+!3/8" rod inner radius, outer radius, height in (cm);
+HIPPO.CALIB.VAN.SIZE.1 = [0.0, 0.4763, 6.0]
+!1/4" rod
+HIPPO.CALIB.VAN.SIZE.2 = [0.0, 0.3175, 4.1]
+!number density of vanadium (1/Angstrom^2);
+HIPPO.CALIB.VAN.DENSITY = 0.07205
+!absorption crosssection of vanadium at 1.8 Angstrom;
+HIPPO.CALIB.VAN.SIGMA_A = 5.08
+!
+!fused silica rod:
+!
+HIPPO.STD.FSILICA.SYMBOL = {Si, O}
+!formula (Si:O = 1.0:2.0) ;
+HIPPO.STD.FSILICA.FORMULA = [1.0, 2.0]
+!inner radius, outer radius, height; 
+HIPPO.STD.FSILICA.SIZE = [0.0, 0.4415, 6.0]
+!number density;
+HIPPO.STD.FSILICA.DENSITY = 0.0662
+!absorption crosssection of fused silica at 1.8 Angstrom;
+HIPPO.STD.FSILICA.SIGMA_A = 0.0058
+!
+!vanadium cans:
+!
+HIPPO.CAN.VAN.SYMBOL = {V}
+!formula;
+HIPPO.CAN.VAN.FORMULA = [1.0]
+!number density;
+HIPPO.CAN.VAN.DENSITY = 0.07205
+!3/8" can inner radius, outer radius, height;
+HIPPO.CAN.VAN.SIZE.1 = [0.4636, 0.4763, 6.0]
+!1/4" can;
+HIPPO.CAN.VAN.SIZE.2 = [0.3048, 0.3175, 4.1]
+!absorption crosssection of vanadium at 1.8 Angstrom;
+HIPPO.CAN.VAN.SIGMA_A = 5.08
+!
+!TiZr can:
+!
+!TiZr "null" scattering alloy can, I/D 8 mm, O/D 9mm;
+HIPPO.CAN.TIZR.SYMBOL = {Ti, Zr}
+HIPPO.CAN.TIZR.FORMULA = [0.68, 0.32]
+HIPPO.CAN.TIZR.DENSITY = 0.0542
+HIPPO.CAN.TIZR.SIGMA_A =
+HIPPO.CAN.TIZR.SIZE = [0.40, 0.45, 6.0]
+!
+!Vanadium nuzzle:
+!
+HIPPO.CAN.VNUZZLE.SYMBOL = {V}
+HIPPO.CAN.VNUZZLE.FORMULA = [1.0]
+HIPPO.CAN.VNUZZLE.DENSITY = 0.07205
+HIPPO.CAN.VNUZZLE.SIGMA_A = 5.08
+HIPPO.CAN.VNUZZLE.SIZE = [0.5, 0.7, 0.15]
+
+#
+#experiment:
+#
+!
+!calibration(vanadium):
+!
+HIPPO.EXP.CALIB = HIPPO.CALIB.VAN.1 
+HIPPO.EXP.CALIB.SYMBOL = 
+HIPPO.EXP.CALIB.FORMULA = 
+HIPPO.EXP.CALIB.SIZE = 
+HIPPO.EXP.CALIB.DENSITY = 
+HIPPO.EXP.CALIB.SIGMA_A = 
+!  
+!sample: 
+!  
+HIPPO.EXP.SMP = HIPPO.STD.FSILICA 
+HIPPO.EXP.SMP.SYMBOL = 
+HIPPO.EXP.SMP.FORMULA = 
+HIPPO.EXP.SMP.SIZE = 
+HIPPO.EXP.SMP.DENSITY = 
+HIPPO.EXP.SMP.EFFDENSITY = 
+HIPPO.EXP.SMP.SIGMA_A = 
+!  
+!can: 
+!  
+HIPPO.EXP.CAN = HIPPO.CAN.VAN.1
+HIPPO.EXP.CAN.SYMBOL = 
+HIPPO.EXP.CAN.FORMULA = 
+HIPPO.EXP.CAN.SIZE = 
+HIPPO.EXP.CAN.DENSITY = 
+HIPPO.EXP.CAN.SIGMA_A = 
+!  
+!flatplate:
+! 
+!angle between plane of the sample and beam;
+HIPPO.EXP.FLT.SMP_ANGLE_BEAM = 45.0
+!accuracy for multiple scattering calculation;
+!HIPPO.EXP.FLT.MSTEP = 0.1
+!accuracy for absorption calculation;
+!HIPPO.EXP.FLT.ASTEP = 0.02
+!number of planes in calculations;
+HIPPO.EXP.FLT.NPLANES = 100 
+!
+!furnace:
+!  
+HIPPO.EXP.FUR = 
+HIPPO.EXP.FUR.SYMBOL = 
+HIPPO.EXP.FUR.FORMULA = 
+HIPPO.EXP.FUR.SIZE = 
+HIPPO.EXP.FUR.DENSITY = 
+HIPPO.EXP.FUR.SIGMA_A = 
+
+# 
+#analysis: 
+# 
+!number of beam profile parameters; 
+HIPPO.ANALYSIS.NPROF = 2
+!profile parameters;
+HIPPO.ANALYSIS.PROFILE = [1.0, 1.0]
+!number of angles in attenuation/multiple-scattering calculation;
+HIPPO.ANALYSIS.NANGLE = 9
+!angles (degrees);
+HIPPO.ANALYSIS.ANGLES = [2.0, 5.0, 10.0, 20.0, 40.0, 60.0, 80.0, 100.0, 140.0]
+!ignore a data group if its total number of counts smaller than this value;
+HIPPO.ANALYSIS.LCUTOFF = 20.0
+!!default absorption correction z increment;
+HIPPO.ANALYSIS.ASTEP = 0.02
+!default multiple scattering correction z increment;
+HIPPO.ANALYSIS.MSTEP = 0.1
+!default Placzek calculation temperature value;
+HIPPO.ANALYSIS.TEMP = 300.0 
+!sample calibration constant;
+HIPPO.ANALYSIS.SCC = 
+!number of Q bins in 1/Angstrom, Qstep = 1/NUMQ;
+HIPPO.ANALYSIS.NUMQ = 40
+!max Q for data analysis;
+HIPPO.ANALYSIS.QMAX = 40.0
+!max Q for ftr to R;
+HIPPO.ANALYSIS.QCUT = 25.0
+!max R for outputting ftr results;
+HIPPO.ANALYSIS.RCUT = 8.0
+!minimal wavelength (angstrom) for generating MUT table;
+HIPPO.ANALYSIS.MUT.MINW = 0.1
+!maximal wavelength;
+HIPPO.ANALYSIS.MUT.MAXW = 4.3
+!step;
+HIPPO.ANALYSIS.MUT.DW = 0.1
+!the value of <b_bar>^2 used in fourier transform from S(Q) to T(R)
+!if symbol & formula info is empty this value has to be given;
+!if this value is given it would not be calculated from symbol and formula;
+HIPPO.ANALYSIS.B_BAR_SQR = 
+!lower wavelength (angstrom) bound for merging; 
+HIPPO.ANALYSIS.COMB.MINW = 0.1
+!maximal wavelength;
+HIPPO.ANALYSIS.COMB.MAXW = 6.0
