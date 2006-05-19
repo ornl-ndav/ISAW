@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2006/05/19 16:02:23  rmikk
+ * Added a static method ToVec that converts an Object to a Vector, converting
+ * arrays and arrays of arrays to Vectors and Vector of Vectors, etc.
+ *
  * Revision 1.14  2005/08/25 16:52:27  rmikk
  * Added a convert to 1D int array method
  *
@@ -772,7 +776,52 @@ public class ScriptUtil{
     return Res;
       
   }
+  /**
+   * Converts object to a Vector, changing arrays to Vectors 
+   * @param  val   any object value
+   * @return  a Vector containing the values where all arrays are now vectors
+   *         of an errorstring if the value is not a list
+   *         
+   * NOTE: Structures that are not arrays or vectors will stay the same.      
+   */
   
+  public static Object ToVec( Object val){
+      if( val == null)
+           return new gov.anl.ipns.Util.SpecialStrings.ErrorString("null argument in ToVec");
+      Vector Res = new Vector();
+      if( val instanceof Vector)
+          for( int i=0; i< ((Vector)val).size();i++){
+              Object X = ((Vector)val).elementAt(i);
+              if( X instanceof Vector)
+                  Res.add( ToVec(X));
+              else if ( X == null)
+                  Res.add( null);
+              else if ( X.getClass().isArray())
+                 Res.add(ToVec(X));
+              else
+                   Res.add(X);
+                      
+          }
+      else if( val.getClass().isArray())
+          for( int i=0; i< java.lang.reflect.Array.getLength(val);i++){
+              Object X = java.lang.reflect.Array.get(val, i);
+              if( X instanceof Vector)
+                  Res.add( ToVec(X));
+              else if ( X == null)
+                  Res.add( null);
+              else if ( X.getClass().isArray())
+                  Res.add(ToVec(X));
+              else
+                  Res.add(X);
+                      
+          }
+      else
+         return new gov.anl.ipns.Util.SpecialStrings.ErrorString("argument in ToVec is NOT an array or Vector");
+      
+      return Res;
+      
+      
+  }
   
   /**
    * Converts a value to an array of int's.
