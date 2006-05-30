@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/05/30 19:28:21  rmikk
+ * Adds the help menu option for this program
+ *
  * Revision 1.12  2006/04/02 21:29:17  rmikk
  * Fixed error with static methods with no arguments
  *
@@ -117,7 +120,6 @@
 
 package devTools;
 
-import java.awt.HeadlessException;
 import java.awt.*;
 import javax.swing.*;
 import java.io.*;
@@ -125,6 +127,8 @@ import java.awt.event.*;
 import javax.swing.border.*;
 import java.lang.reflect.*;
 import javax.swing.event.*;
+
+import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.SysUtil;
 
@@ -1234,6 +1238,12 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
             jb = new JMenuItem("Exit");
             jb.addActionListener( this);
             jmenFile.add( jb );
+            
+            JMenu Help= new JMenu("Help");
+            jb= new JMenuItem("Info");
+            Help.add(jb);
+            jb.addActionListener(this);
+            jmenBar.add(Help);
             W.setJMenuBar( jmenBar);
 		}
 
@@ -1251,7 +1261,11 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
         
 			else if (evt.getActionCommand().equals("Create Operator"))
 				Save(W);
-        
+			else if( evt.getActionCommand().equals("Info")){
+				
+				new IsawGUI.Browser( DataSetTools.util.FilenameUtil.helpDir("wizard/operator_generator_help/operator_generator_help.html"));
+				
+			}
             else if( evt.getActionCommand().equals("Save Contact Info"))
                { 
                  String filname = System.getProperty("user.home","");
