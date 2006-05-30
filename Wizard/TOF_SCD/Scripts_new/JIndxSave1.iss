@@ -16,8 +16,8 @@ $peaks     PlaceHolder        Peaks
 $OrientMatFile   LoadFile     Orientation Matrix file name
 $RestrRuns   IntList          Restrict Runs
 $Delta       Float(.20)       Deltas
-$peakfilename    SaveFileString("NONE")   Filename to save peak to
-$logfile    Boolean(true)   Show log info 
+$peakfilename    SaveFileString("NONE")   Filename to save peak to which contains directory for the index log file
+$logfile    Boolean(true)   Show log info
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 $ Title = Index/Write Peaks
@@ -29,11 +29,21 @@ if peakfilename <>"NONE"
   WritePeaks(peakfilename, peaks)
 endif
 
-if logfile
-   Display "Log information"
-   Display V
-endif
+if logfile  AND peakfilename <>"NONE"
+  
+   outputpath =  fSplit(peakfilename)
+   S="/"
+   if EndsWith( outputpath[0],S)
+      S=""
+   endif 
+   OpenLog( outputpath[0]&S&index&".log")
+    LogMsg( V)
+  
 
+endif
+if logfile
+  Display "--------------- index log ---------------------"
+  Display V
 return OrientMat
   
 

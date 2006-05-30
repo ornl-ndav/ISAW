@@ -24,7 +24,7 @@ $UseLsqMats  Boolean(false)   Index by run orientation matrix
 $OrientFileDir  DataDirectoryString        Dir with Matrices to Load
 $RunNums     Array          Run Numbers
 $RestrRuns   IntList          Restrict Runs
-$peakfilename    SaveFileString("NONE")   Filename to save peak to
+$peakfilename    SaveFileString("NONE")   Filename to save peak to and gives directory for the index.log file
 $logfile    Boolean(true)   Show log info 
 $expName    String          Experiment name
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
@@ -52,17 +52,33 @@ else
    endfor
 endif
 
-  Display peakfilename
+  
   if peakfilename <>"NONE"
- 
+     Display peakfilename
      WritePeaks(peakfilename, peaks)
+    
   endif
 
-if logfile
-   Display "Log information"
-   Display V
-endif
 
+if logfile  AND peakfilename <>"NONE"
+   outputpath =  fSplit(peakfilename)
+   S="/"
+   if EndsWith( outputpath[0],S)
+      S=""
+   endif  
+   
+   OpenLog( outputpath[0]&S&index&".log")
+    LogMsg( V)
+  
+
+else
+   Display "Log information"
+  
+endif
+if logfile
+  Display "-------------------  index log -------------------"
+  Display V
+endif
 return peaks
   
 
