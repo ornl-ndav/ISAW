@@ -23,9 +23,11 @@ public class ParseStringMacroBase {
      * values found in the System properties.  
      */
 	public static String parseMacroString(String inStr) throws ParseException {
+		if(inStr ==null)
+			return inStr;
 		StringBuffer inStrBuf = new StringBuffer(inStr);
 		int startIndex=0;
-		while ((startIndex = inStrBuf.indexOf("$")) != -1){
+		for(startIndex = inStrBuf.indexOf("$");(startIndex >=0)&&(startIndex < inStrBuf.length());){
 			if(inStrBuf.charAt(startIndex + 1) == '{' ) {
 				int lastIndex=0;
 				if (( lastIndex = inStrBuf.indexOf("}", startIndex)) != -1){
@@ -37,12 +39,13 @@ public class ParseStringMacroBase {
 						throw new ParseException(err, startIndex);
 					}
 					inStrBuf.insert(startIndex, macroSubs);
-			    }
+				}
 				else {
 					String err = ParseStringMacroBase.getErrString(inStr, startIndex, startIndex+1);
 					throw new ParseException(err, startIndex);
 				}
-			}
+			}else
+				startIndex++;
 		}
 		return inStrBuf.toString();
 	}
