@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.49  2006/05/30 18:54:40  rmikk
+ * Replaced all Script.getLine by getLine which applied the macro exchange and
+ * now allows for line continuation
+ *
  * Revision 1.48  2005/07/08 15:55:19  rmikk
  * Now implements Serializable
  *
@@ -734,7 +738,7 @@ public class ScriptOperator  extends  GenericOperator
     
     if( script==null ) return;
     if( line < 0 )return ;    
-    S = script.getLine(line);
+    S = getLine(line);
     
     if( S == null ){
       seterror( 0 , "Bad Line number");
@@ -846,7 +850,7 @@ public class ScriptOperator  extends  GenericOperator
       System.out.print( "In exeBlock line ,ex=" + line+","+
                         exec + perror ) ; 
     while ( ( line < script.numLines() ) && ( perror < 0 ) ){
-      S = script.getLine( line );
+      S = getLine( line );
 
       if( S !=  null ){
         int i ; 
@@ -897,7 +901,8 @@ public class ScriptOperator  extends  GenericOperator
       if(Debug)System.out.println( " Thru" +line) ; 
       boolean done = false;
       while( !done ){
-        String SS = script.getLine( line );
+        String SS = script.getLine( line );//gets one physical line
+        SS=elimNonChars(SS);
         if( SS == null )
           done = true;
         else if( SS.length() < 1)
@@ -939,7 +944,7 @@ public class ScriptOperator  extends  GenericOperator
     if( start >= script.numLines() )
        return start ;  
         
-    S = script.getLine( start );
+    S = getLine( start );
     if( S == null){
       seterror ( 0 , "Internal Errorb" ) ; 
       return start ; 
@@ -1013,7 +1018,7 @@ public class ScriptOperator  extends  GenericOperator
         return kline ; 
       }
               
-      S = script.getLine( kline );
+      S = getLine( kline );
       if( S == null ){
         seterror( 0 ,  "Internal error" ) ; 
         return kline ; 
@@ -1049,7 +1054,7 @@ public class ScriptOperator  extends  GenericOperator
     if( start < 0 ) return start;
 //  if(start>=script.numLines());      // we can proceed
        
-    S = script.getLine(start);
+    S = getLine(start);
        
     if( S == null ){
       seterror ( 0 , "Internal Errorc" );
@@ -1077,7 +1082,7 @@ public class ScriptOperator  extends  GenericOperator
       return line ; 
     }
 
-    S = script.getLine( line );
+    S = getLine( line );
     if( S == null ){
       seterror ( 0 , "Internal Errorc" );
       return start;
@@ -1106,7 +1111,7 @@ public class ScriptOperator  extends  GenericOperator
       return line ;  
     }
 
-    S = script.getLine( line );
+    S = getLine( line );
     if( S == null ){
       seterror ( 0 , "Internal Errorc" ) ; 
       return start ; 
@@ -1144,7 +1149,7 @@ public class ScriptOperator  extends  GenericOperator
       j;
     if( Debug) 
       System.out.print("Start if line=" + line);
-    S = script.getLine( line );
+    S = getLine( line );
     if( Debug)
       System.out.println( ":: line is " + S );
     if( S == null){
@@ -1213,7 +1218,7 @@ public class ScriptOperator  extends  GenericOperator
     if( perror >= 0 )
       return j;
     //------------ Get end block statement --------------
-    S = script.getLine ( j );
+    S = getLine ( j );
     if(Debug)
       System.out.println("ExIf:: Els or Elseif?"+S);
     if( S == null){
@@ -1236,7 +1241,7 @@ public class ScriptOperator  extends  GenericOperator
     if( perror >= 0) 
       return j;
     //??????????????? Is it ENDIF
-    S = script.getLine ( j );
+    S = getLine ( j );
     if( Debug ) 
       System.out.println( "ExIf:: ENDIF?" + S );
     if( S == null){
@@ -1378,11 +1383,16 @@ public class ScriptOperator  extends  GenericOperator
    * @param linenum the line number that the string came from. This is
    * used in the case when an error is encountered.
    */
-  private boolean processMacroLine( String line, int linenum ){
+  private boolean processMacroLine( String lineB, int linenum ){
     String VarName, DataType, InitValue, Prompt;
     int index=-1;
     StringBuffer buffer=null;
-
+    String line ;
+    try{
+       line =Operators.Generic.System.ParseStringMacroBase.parseMacroString(lineB);
+    }catch(Exception ss){
+    	line = lineB;
+    }
     if( Debug)
       System.out.println("Line="+line);
             
@@ -1421,7 +1431,20 @@ public class ScriptOperator  extends  GenericOperator
 
     // get the variable name
     VarName=StringUtil.getString(buffer);
-
+    if( VarName.indexOf("#") >=0 )
+             return true;
+    if( VarName.indexOf("$") >=0 )
+            return true;
+    if( VarName.indexOf("*") >=0 )
+            return true;
+    if( VarName.indexOf("-") >=0 )
+            return true;
+    if( VarName.indexOf("+") >= 0)
+            return true;
+    if( VarName.indexOf("^") >=0 )
+            return true;
+    if( VarName.indexOf("&") >=0 )
+            return true;
     // get the Data Type and initial value
     int num_space=buffer.length();
     DataType=StringUtil.getString(buffer);
@@ -1643,6 +1666,7 @@ public class ScriptOperator  extends  GenericOperator
     String SS=null;
     while(!done){
       SS=script.getLine(line);
+      SS=elimNonChars( SS );
       if(SS==null)
         done=true;
       else if(SS.length()<1)
@@ -1656,6 +1680,38 @@ public class ScriptOperator  extends  GenericOperator
     return line;
   }
 
+   private String elimNonChars(String S){
+       if(S == null)
+           return S;
+       if( S.length() < 1)
+           return S;
+       while( (S.length()>0) &&( S.charAt(S.length()-1)<' '))
+               S=S.substring(0,S.length()-1);
+       return S;
+   }
+      
+   private String getLine(  int start){
+       String S1 = script.getLine(start);
+       
+       if( S1 == null) return S1;
+       String S;
+       try{
+    	   S=Operators.Generic.System.ParseStringMacroBase.parseMacroString( S1 );
+       }catch(Exception ss){
+    	   S=S1;
+       }
+       int i=1;
+       S=elimNonChars(S);
+       while( S.endsWith("\\")){
+           S = S.substring(0, S.length()-1);
+           String R = script.getLine(start+i);
+           if( R == null) return S;
+           R = elimNonChars( R );
+           S = S+R;
+           i++;
+       }
+       return S;
+   }
   /**
    * Utility to return a given line from the Document
    *
@@ -1701,7 +1757,12 @@ public class ScriptOperator  extends  GenericOperator
           if( S2 != null)
             S = S.substring( 0, S.length() - 1 )+ S2;
         }
-    return S;
+    try{
+    	return Operators.Generic.System.ParseStringMacroBase.parseMacroString( S );
+    }catch( Exception ss){    	
+    
+        return S;
+    }
   }
 
   /**
