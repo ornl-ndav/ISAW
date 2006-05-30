@@ -16,23 +16,37 @@ $peaks     PlaceHolder        Peaks
 $OrientMat   Array            Orientation Matrix
 $RestrRuns   IntList          Restrict Runs
 $Delta       Float(.20)       Deltas
-$peakfilename    SaveFileString("NONE")   Filename to save peak to
+$peakfilename    SaveFileString("NONE")   Filename to save peak to and Directory for the index log file 
 $logfile    Boolean(true)   Show log info 
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 
 V = JIndex(peaks,OrientMat,RestrRuns, Delta,Delta,Delta)
-Display "peakfilename="&peakfilename
+
 if peakfilename <>"NONE"
   WritePeaks(peakfilename, peaks)
   Display "printed peaks to file"
 endif
 
-if logfile
-   Display "Save the Status pane"
-   Display V
-endif
 
+if logfile AND  peakfilename<>"NONE"
+   outputpath =  fSplit(peakfilename)
+   S="\"
+   if EndsWith( outputpath[0],S)
+      S=""
+   endif  
+
+     SS= outputpath[0]&S&"index.log"
+    OpenLog( SS)
+
+
+     LogMsg( V)
+   
+endif
+if logfile
+ Display "------------------------ index log -------------------------"
+ Display V
+endif
 return "Finished"
   
 
