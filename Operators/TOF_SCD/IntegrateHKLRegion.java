@@ -1,7 +1,7 @@
 /*
  * File: IntegrateHKLRegion.java
  *
- * Copyright (C) 2003, Dennis Mikkelson
+ * Copyright (C) 2006, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,6 +25,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.7  2006/05/31 13:46:46  dennis
+ * Fixed copyright date in GPL.
+ *
  * Revision 1.6  2006/03/16 21:43:11  dennis
  * Added try...catch around steps to write to file, so that
  * if the file can't be written, the operator still completes
