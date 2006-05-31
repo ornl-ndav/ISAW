@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2006/05/31 01:44:43  dennis
+ * Changed to work from either time-of-flight or energy loss DataSet,
+ * rather than from time-of-flight or final energy DataSet.  Updated
+ * the javadocs and getDocumentation() method to more accurately
+ * describe the current algorithm.
+ *
  * Revision 1.14  2005/10/19 17:30:30  dennis
  * Now displays momentum transfer in direction reqeusted by Sasha.
  * Output text file also changed to write data in form that can
@@ -102,14 +108,39 @@ import  DataSetTools.viewer.*;
 import  DataSetTools.retriever.*;
 import  DataSetTools.util.*;
 
+
 /**
-  *  Convert an energy spectrum from a Spectrometer into a DataSet containing
-  *  the rows of a QE image. The Data blocks will first be rebinned into
-  *  energy bins with the same bin boundaries.  Next, for each energy-bin,
-  *  the data values from all detectors at that energy-bin, will be merged
-  *  into a set of equal Q bins, using the estimated Q coverage of each
-  *  detector.  This will produce a two-dimensional set of values which will
-  *  be cut into rows to produce a new DataSet.
+  *  Convert a time-of-flight, or energy loss spectrum from a Spectrometer 
+  *  into a DataSet containing the rows of an S(Q,E) image.  Each row of the
+  *  resulting image gives the scattering intensity at various "Q" values 
+  *  for a fixed energy loss.  That is, the Kth row contains S(Q,Ek) and the
+  *  jth column contains S(Qj,E).  
+  *
+  *  The Q and E values corresponding to each bin center are calculated.
+  *  The counts from each bin are divided by the range of Q values covered
+  *  by the bin (delta_Q).  The counts are NOT divided by the range of E
+  *  values covered by the bin (delta_E).  Division by delta_E is already
+  *  done in the DSODE operator, so it is not needed when this is applied 
+  *  to the result of the DSODE operator, or to the result of the Scattering
+  *  Function operator.  (If this operator is applied to a time-of-flight
+  *  DataSet, the results will only give a rough idea of S(Q,E), since the
+  *  corrections applied in the DSODE operator will not have been done.)
+  *  The scaled counts from each bin are then added to the bin in S(Q,E)
+  *  containing the calculated Q and E values.  The accumulated counts in
+  *  a particluar (Q,E) bin are divided by the number of bins that contribute
+  *  to it, producing an average intensity at that point in (Q,E) space. 
+  *  
+  *  The resulting two dimensional array of averaged S(Q,E) values is 
+  *  then placed into in a DataData set, with the values S(Q,Ek) forming
+  *  the kth Data block in the DataSet.  The S(Q,E) values can also be
+  *  written to a file.
+  *
+  *  NOTE: If the DSODE operator is applied before this ToQE operator,
+  *  the DSODE operator should maintain a large number of energy loss 
+  *  bins.  A large number of bins, eg. 1000-2000, reduces the artifacts
+  *  introduced by first mapping the data in a small number of Energy 
+  *  bins, and subsequently mapping them in to another small number of
+  *  (Q,E) bins.
   *
   *  @see XYAxisConversionOp
   */
@@ -131,19 +162,26 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     super( "Convert to QE plot" );
   }
 
+
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
-   *  Construct an operator for a specified DataSet and with the specified
-   *  parameter values so that the operation can be invoked immediately
-   *  by calling getResult().
+   *  Construct a ToQE operator for a specified time-of-flight, or Energy
+   *  loss DataSet using the specified parameter values so that the 
+   *  operation can be invoked immediately by calling getResult().
    *
-   *  @param  ds          The DataSet to which the operation is applied
+   *  @param  ds          The time-of-flight or Energy loss DataSet to
+   *                      which the operation will be applied
    *  @param  min_Q       The minimum Q to include
    *  @param  max_Q       The maximum Q to include
    *  @param  n_Q_bins    The number of "bins" to be used between min_Q and
    *                      max_Q.
-   *  @param  min_E       The minimum E to include
-   *  @param  max_E       The maximum E to include
+   *  @param  min_E       The minimum E to include, in meV.  NOTE: This is the
+   *                      actual energy value, not the energy loss value.
+   *                      This parameter can be set to 0.
+   *  @param  max_E       The maximum E to include, in meV.  NOTE: This is the
+   *                      actual energy value, not the energy loss value.
+   *                      This can safely be specified to be twice the
+   *                      incident energy.
    *  @param  n_E_bins    The number of "bins" to be used between min_E and
    *                      max_E.
    *  @param  file_name   The name of the file to which the array of S(Q,E)
@@ -220,18 +258,19 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     parameter = new Parameter( "Num Q bins", new Integer(100));
     addParameter( parameter );
 
-    parameter = new Parameter( "Min E", new Float(40.0f) );
+    parameter = new Parameter( "Min E", new Float(0.0f) );
     addParameter( parameter );
 
     parameter = new Parameter( "Max E", new Float(200.0f) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Num E bins", new Integer(100));
+    parameter = new Parameter( "Num E bins", new Integer(200));
     addParameter( parameter );
 
     parameter = new SaveFilePG( "Save QE array to file", null );
     addParameter( parameter );
   }
+
 
   /* ---------------------- getDocumentation --------------------------- */
   /**
@@ -241,42 +280,85 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
   public String getDocumentation()
   {
     StringBuffer s = new StringBuffer("");
-    s.append("@overview This operator converts an energy spectrum from ");
-    s.append("a Spectrometer into a DataSet containing the rows of a ");
-    s.append("QE image.  The X-Axis is in units of Q values; the Y-axis ");
-    s.append("is in units of energy.\n");
+    s.append("@overview This operator converts an energy loss or ");
+    s.append("time-of-flight spectrum from a spectrometer, into a ");
+    s.append("DataSet containing the rows of an S(Q,E) image. ");
+    s.append("Each row of the resulting image gives the scattering ");
+    s.append("intensity at various Q values for a fixed energy loss. ");
+    s.append("That is, the kth row contains S(Q,Ek) and the ");
+    s.append("jth column contains S(Qj,E).  ");
+    s.append("<p> ");
+    s.append("NOTE: If the DSODE operator is applied before this ToQE ");
+    s.append("operator, the DSODE operator should maintain a large number ");
+    s.append("of energy loss bins.  A large number of bins, eg. 1000-2000, ");
+    s.append("reduces the artifacts introduced by first mapping the data ");
+    s.append("into a small number of Energy bins using the DSODE operator ");
+    s.append("and subsequently mapping ");
+    s.append("them in to another small number of (Q,E) bins.");
+
     s.append("@assumptions The DataSet must contain spectra with an ");
     s.append("attribute giving the detector position.  In addition, ");
     s.append("it is assumed that the XScale for the spectra represents ");
-    s.append("the time-of-flight from the sample to the detector.\n");
+    s.append("either the time-of-flight from the sample to the detector ");
+    s.append("or the energy loss, E_in - E. ");
     s.append("Furthermore, a valid range of Q values must be specified, ");
     s.append("and a valid delta_2theta attribute must be available from ");
-    s.append("the DataSet.\n");
-    s.append("@algorithm The Data blocks will first be rebinned into ");
-    s.append("energy bins with the same bin boundaries.\n  Next, for ");
-    s.append("each energy-bin, the data values from all detectors at ");
-    s.append("that energy-bin will be merged into a set of equal Q ");
-    s.append("bins, using the estimated Q coverage of each detector.\n  ");
-    s.append("This will produce a two-dimensional set of values which ");
-    s.append("will be cut into rows to produce a new DataSet.  ");
-    s.append("The new DataSet also has a message appended to its log ");
-    s.append("that a conversion to a S(Q,E) plot was done.\n");
-    s.append("@param ds The DataSet to which the operation is applied.\n");
+    s.append("the DataSet.");
+    s.append("<p> ");
+
+    s.append("@algorithm The Q and E values corresponding to each bin ");
+    s.append("center are calculated.  The counts from each bin are divided ");
+    s.append("by the range of Q values covered by the bin (delta_Q). ");
+    s.append("The counts are NOT divided by the range of E values covered ");
+    s.append("by the bin (delta_E).  Division by delta_E is already ");
+    s.append("done in the DSODE operator, so it is not needed  ");
+    s.append("when this is applied to the result of the DSODE operator, ");
+    s.append("or to the result of the Scattering Function operator. ");
+    s.append("(If this operator is applied to a time-of-flight DataSet, ");
+    s.append("the results will only give a rough idea of S(Q,E), since the ");
+    s.append("corrections applied in the DSODE operator will not have been ");
+    s.append("done.) The scaled counts from each bin are then added to ");
+    s.append("the bin in S(Q,E) containing the calculated Q and E values.  ");
+    s.append("The accumulated counts in a particluar (Q,E) bin are divided ");
+    s.append("by the number of bins that contribute to it, producing an ");
+    s.append("average intensity at that point in (Q,E) space. ");
+    s.append("<p> ");
+    s.append("The resulting two dimensional array of averaged S(Q,E) values ");
+    s.append("is  then placed into in a DataSet, with the values ");
+    s.append("S(Q,Ek) forming the kth Data block in the DataSet. ");
+    s.append("The S(Q,E) values can also be written to a file. ");
+    s.append(" ");
+    s.append(" ");
+    s.append("@param ds The time-of-flight or Energy loss DataSet to ");
+    s.append("which the operation will be applied. ");
+
     s.append("@param min_Q The minimum Q value to include.\n");
+
     s.append("@param max_Q The maximum Q value to include.\n");
+
     s.append("@param n_Q_bins The number of \"bins\" to be used between ");
     s.append("min_Q and max_Q.\n");
-    s.append("@param min_E The minimum energy value to include.\n");
-    s.append("@param max_E The maximum energy value to include.\n");
+
+    s.append("@param min_E The minimum energy value to include, in meV.  ");
+    s.append("NOTE: This is the actual energy value, not the energy loss ");
+    s.append("value.  This parameter can be set to 0.");
+
+    s.append("@param max_E The maximum energy value to include, in meV.  ");
+    s.append("NOTE: This is the actual energy value, not the energy loss ");
+    s.append("value.  This can safely be specified to be twice the  ");
+    s.append("incident energy.");
+
     s.append("@param n_E_bins The number of \"bins\" to be used between ");
     s.append("min_E and max_E.\n");
+
     s.append("@param file_name The name of the file to which the array ");
     s.append("of S(Q,E) values are written.  If the named file cannot be ");
     s.append("opened, the file will not be written.  A zero length string ");
     s.append("can be used to disable writing the file.");
+
     s.append("@return A new DataSet which is the result of converting the ");
     s.append("input DataSet's X-axis units to Q values and its Y-axis units ");
-    s.append("to energy.\n");
+    s.append("to energy loss.\n");
     s.append("@error Returns an error if no valid Q range is specified.\n");
     s.append("@error Returns an error if no detector position attribute is ");
     s.append("available.\n");
@@ -284,6 +366,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     s.append("available.\n");
     return s.toString();
   }
+
 
  /* ---------------------------- getResult ------------------------------- */
  /**
@@ -365,11 +448,6 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     }
     else
       Q_scale = new UniformXScale( min_Q, max_Q, n_Q_bins+1 );
-
-
-    // Now, map the counts from each time channel in each spectrum to a
-    // point in QE space.  The values at the grid of points in QE space
-    // will be averaged.
 
                                                // set up arrays for S(Q,E),
                                                // error estimates and counters.
@@ -466,7 +544,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
         if ( is_tof )
           e_val = tof_calc.Energy( spherical_coords[0], center_x );
         else
-          e_val = center_x;
+          e_val = e_in - center_x;
                                              // calculate the q values at the
                                              // left and right edges of the
                                              // detector
@@ -599,6 +677,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     
     return new_ds;
   }
+
 
   /* ------------------------------ clone ------------------------------- */
   /**
