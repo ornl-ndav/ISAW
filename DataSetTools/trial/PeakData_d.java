@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/05/31 13:47:42  dennis
+ * Added string identifier for the ISIS SXD.
+ *
  * Revision 1.3  2006/01/16 03:10:11  dennis
  * Added method to centroid a file of PeakData_d objects.
  * Added instrument type parameter to ReadPeaks() method, to use
@@ -124,6 +127,7 @@ public class PeakData_d
 {
     public static final String IPNS_SCD   = "IPNS_SCD";
     public static final String LANSCE_SCD = "LANSCE_SCD";
+    public static final String ISIS_SXD   = "ISIS_SXD";
 
     public static final double DEFAULT_DEPTH = 0.002; // default area detector
                                                       // thickness, 2mm
