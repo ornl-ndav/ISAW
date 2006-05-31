@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.72  2006/05/31 14:31:20  rmikk
+ *  Added the Pointed At table view to the menu system.  This is not a data set
+ *  viewer
+ *
  *  Revision 1.71  2006/03/13 20:24:11  rmikk
  *  Now implements IPreserveState so it can be used with the ObjectState operators
  *
@@ -436,9 +440,14 @@ public class ViewManager extends    JFrame
     */
    public void setView( String view_type )
    {
+
+     if( view_type.equals( POINTEDAT_TABLE)){
+    	 new QuickTableViewer( this, tempDataSet);
+    	 return;
+     }
      getContentPane().setVisible(false);
      getContentPane().removeAll();
-    
+    	 
      if ( viewer != null ){
          state = viewer.getState();
          ObjectState st= viewer.getObjectState( false);
@@ -932,6 +941,11 @@ private void BuildViewMenu()
   view_menu.add( button );
 
   button = new JMenuItem( IMAGE );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+  
+
+  button = new JMenuItem( POINTEDAT_TABLE );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
