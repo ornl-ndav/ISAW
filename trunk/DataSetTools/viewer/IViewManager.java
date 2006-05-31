@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2006/05/31 14:29:27  rmikk
+ *  Added a constant for the new POINTEDAT_TABLE view
+ *
  *  Revision 1.15  2004/03/15 19:33:59  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -81,6 +84,7 @@ public interface IViewManager extends IObserver
 {
   public static final String ADDITIONAL_VIEW = "Additional View";
   public static final String IMAGE           = "Image View";
+  public static final String POINTEDAT_TABLE ="Pointed At Table View";
   public static final String SCROLLED_GRAPHS = "Scrolled Graph View";
   public static final String SELECTED_GRAPHS = "Selected Graph View";
   public static final String TABLE           = "Table Generator";
