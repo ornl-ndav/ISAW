@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2006/06/01 20:41:49  rmikk
+ * Eliminated Debu printing
+ *
  * Revision 1.2  2006/06/01 18:47:40  rmikk
  * -Added a table model for the data.
  * -Coordinated the UI more:The close button works and the Viewer does not
@@ -116,7 +119,7 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 		addWindowListener(this);
 		DrawTable();
         WindowShower.show( this );
-        System.out.println("bounds="+getBounds());
+        
 	}
 
 	
@@ -182,7 +185,7 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
         	jscr.setViewport( vpt );
         	
           }
-          
+        
           
           if( (Hug.isSelected() )&&( parent != null )&&hugg ){
          	
@@ -357,7 +360,7 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 
 	public void update(java.lang.Object observed_obj, java.lang.Object reason) {
 
-		System.out.println("H");
+		
 		if (reason.equals(IObserver.POINTED_AT_CHANGED))
 			DrawTable();
 
@@ -368,7 +371,7 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 	//------------------ ActionListenr method-------------------------
 	public void actionPerformed(ActionEvent evt) {
 
-		System.out.println("I");
+		
 		if( evt.getActionCommand().equals( "Close")){
 			removeAll();
 			table=null;
@@ -387,25 +390,25 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 	//------------------ ComponentListener  methods----------------
 	public void componentHidden(ComponentEvent e) {
 
-		System.out.println("J");
+		
 		hugg = false;
 	}
 
 	public void componentMoved(ComponentEvent e) {
 
-		System.out.println("K");
+		
 		if( Hug.isSelected())ShowTable();
 	}
 
 	public void componentResized(ComponentEvent e) {
 
-		System.out.println("L");
+		
 		if( Hug.isSelected())ShowTable();
 	}
 
 	public void componentShown(ComponentEvent e) {
 
-		System.out.println("M");
+		
 		hugg = true;
 		if( Hug.isSelected())ShowTable();
 		
