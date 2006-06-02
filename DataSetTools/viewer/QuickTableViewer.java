@@ -30,6 +30,12 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2006/06/02 21:40:37  rmikk
+ * Added the Excel Adapter
+ * Eliminated the tag in front of the file name in the title
+ * A tooltip was added to describe units and label for x vals
+ * The destroy method was made public
+ *
  * Revision 1.3  2006/06/01 20:41:49  rmikk
  * Eliminated Debu printing
  *
@@ -51,6 +57,7 @@ import javax.swing.*;
 
 import Command.ScriptUtil;
 import DataSetTools.dataset.*;
+import IsawGUI.ExcelAdapter;
 
 import java.awt.Point;
 import java.awt.event.*; 
@@ -151,7 +158,16 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 			PointedAtXindex = -1;
 		else
 			PointedAtXindex = db.getX_scale().getI_GLB( x );
-		setTitle( DS.toString() + "::" + db.toString() );
+		if( DS == null)
+			return;
+		String Title = DS.toString();
+		int k =-1;
+		if(Title != null){
+		   k = Title.indexOf(":");
+		   Title = Title.substring(k+1,Title.length());
+		}else
+			Title ="";
+		setTitle( Title + "::" + db.toString() );
 		
 		
 		
@@ -159,6 +175,8 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 		table.setAutoResizeMode( JTable.AUTO_RESIZE_ALL_COLUMNS );
 		jscr = new JScrollPane( table );
 		getContentPane( ).add( jscr );
+		table.getTableHeader().setToolTipText( "<html>xval("+DS.getX_label()+")<BR> units are "+ DS.getX_units()+"</html>");
+		new ExcelAdapter( table );
 		ShowTable();
 		
 		//WindowShower.show(this);
@@ -219,7 +237,7 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 	 * Attempts to remove all connections and destroy all resources for this JFrame
 	 *
 	 */
-	private void destroy(){
+	public void destroy(){
 		DS.deleteIObserver( this );
 		if( parent != null){
 		  parent.removeComponentListener( this );
