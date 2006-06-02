@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2006/06/02 17:07:02  taoj
+ * changes to read in an ascii S(Q) 2 column file with one line header
+ *
  * Revision 1.4  2006/04/27 22:20:42  taoj
  * Windows function debugged.
  *
@@ -88,7 +91,8 @@ public class Ftr {
   
  private Ftr (String file_isoq) {
     try {
-      getGLADISOQ (file_isoq);      
+//      getGLADISOQ (file_isoq);   
+      getSOQ(file_isoq);   
     } catch(Throwable t) {
       System.out.println("unexpected error: getGLADISOQ()");
       t.printStackTrace();
@@ -99,6 +103,50 @@ public class Ftr {
     return new Ftr(file_isoq);
   }
   
+  public static Ftr parseSOQFile (String file_soq) {
+    return new Ftr(file_soq);
+  }
+
+  private void getSOQ (String file_soq) throws IOException, InterruptedException{
+         
+    BufferedReader fr_input = new BufferedReader(new FileReader(file_soq));
+    String line;
+    String[] list;
+    
+    line = fr_input.readLine();
+    System.out.println(line);
+    Matcher m = Pattern.compile("start\\s*=\\s*(\\d*\\.?\\d*)\\s*end\\s*=\\s*(\\d*\\.?\\d*)\\s*npt\\s*=\\s*(\\d+)").matcher(line);
+    if (m.find()) {
+      qbegin = (new Float(m.group(1))).floatValue();
+      qend = (new Float(m.group(2))).floatValue();
+      npt = (new Integer(m.group(3))).intValue();
+      delq = (qend-qbegin)/(npt-1);
+      System.out.println("start="+qbegin);
+      System.out.println("end="+qend);
+      System.out.println("delq="+delq);
+      System.out.println("npt="+npt);
+    }
+    else throw new RuntimeException("******UNEXPECTED ERROR IN READING "+file_soq+"******");
+
+/*
+    for (int i = 0; i<3; i++){
+      fr_input.readLine();
+    }
+*/
+    
+    qs = new float[npt];
+    soqs = new float[npt];     
+    for (int i = 0; i<npt; i++) {
+      line = fr_input.readLine();
+      list = Pattern.compile("\\s+").split(line.trim());
+      qs[i] = (new Float(list[0])).floatValue();
+      soqs[i] = (new Float(list[1])).floatValue(); 
+    }
+
+    fr_input.close();
+  }
+
+//method to read in S(Q) in genie ascii format;  
   private void getGLADISOQ (String file_isoq) throws IOException, InterruptedException{
          
     BufferedReader fr_input = new BufferedReader(new FileReader(file_isoq));
