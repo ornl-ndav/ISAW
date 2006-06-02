@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.73  2006/06/02 21:44:06  rmikk
+ *  Put pointed at Table view under the options menu
+ *  Only a maximum of one of these are now available at any time
+ *  A new one is created with the axis conversions
+ *  A listener for when this QuickView is closed was added to adjust the
+ *     menu item referring to this Quick pointed at table view
+ *
  *  Revision 1.72  2006/05/31 14:31:20  rmikk
  *  Added the Pointed At table view to the menu system.  This is not a data set
  *  viewer
@@ -303,6 +310,7 @@ public class ViewManager extends    JFrame
                                                   // the original DataSet  
    private JCheckBoxMenuItem show_all_button;
    private JCheckBoxMenuItem link_viewers_button;
+   private JCheckBoxMenuItem ShowPointedAtTable;
 
    private ObjectState Ostate = new ObjectState();
 
@@ -324,9 +332,10 @@ public class ViewManager extends    JFrame
 
    private static final String SHOW_ALL             = "Show All";
    private static final String LINK_VIEWS           = "Link Views";
+   private static final String SHOW_POINTEDAT_TABLE ="Show the Pointed At Table";
    private static final String NO_CONVERSION_OP     = "None";
    private static TableViewMenuComponents table_MenuComp   = null;
-
+   private QuickTableViewer PointedAtView             =null;
    
     
    /**  
@@ -441,10 +450,7 @@ public class ViewManager extends    JFrame
    public void setView( String view_type )
    {
 
-     if( view_type.equals( POINTEDAT_TABLE)){
-    	 new QuickTableViewer( this, tempDataSet);
-    	 return;
-     }
+     
      getContentPane().setVisible(false);
      getContentPane().removeAll();
     	 
@@ -943,11 +949,6 @@ private void BuildViewMenu()
   button = new JMenuItem( IMAGE );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
-  
-
-  button = new JMenuItem( POINTEDAT_TABLE );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
 
   button = new JMenuItem( THREE_D );
   button.addActionListener( view_menu_handler );
@@ -1044,7 +1045,13 @@ private void BuildOptionMenu()
   link_viewers_button = new JCheckBoxMenuItem(LINK_VIEWS);
   link_viewers_button.addActionListener( option_menu_handler );
   link_viewers_button.setState( true );
+  ShowPointedAtTable = new JCheckBoxMenuItem( POINTEDAT_TABLE);
+  ShowPointedAtTable.addActionListener( option_menu_handler );
+  ShowPointedAtTable.setState(false);
+ 	 
+ 
   option_menu.add( link_viewers_button );
+  option_menu.add(  ShowPointedAtTable );
 /*
   show_all_button = new JCheckBoxMenuItem(SHOW_ALL);
   show_all_button.addActionListener( option_menu_handler );
@@ -1244,7 +1251,17 @@ private float solve( float new_x ) // find what x in the original DataSet maps
     }
   }
 
-
+  private void HandlePointedAtView(){
+	 
+	  if( this.ShowPointedAtTable.isSelected()){
+	       PointedAtView = new QuickTableViewer( this, tempDataSet);
+	       PointedAtView.addWindowListener( new MyWindowListener());   //For when it is closed
+	  }else if(PointedAtView != null){
+		  PointedAtView.destroy();
+		  PointedAtView = null;
+		  
+	  }
+  }
   private class OptionMenuHandler implements ActionListener,
                                              Serializable
   {
@@ -1255,6 +1272,8 @@ private float solve( float new_x ) // find what x in the original DataSet maps
       {
          makeTempDataSet( false ); 
          viewer.setDataSet( tempDataSet );
+      }else if( action.equals( ViewManager.POINTEDAT_TABLE)){
+    	 HandlePointedAtView();
       }
     }
   }
@@ -1292,6 +1311,9 @@ private float solve( float new_x ) // find what x in the original DataSet maps
         conversion_operator = (XAxisConversionOp)dataSet.getOperator( action ); 
         makeTempDataSet( true );
         viewer.setDataSet( tempDataSet );
+        PointedAtView.destroy();
+        PointedAtView = null;
+        HandlePointedAtView();
       }
     }
   }
@@ -1389,5 +1411,13 @@ private float solve( float new_x ) // find what x in the original DataSet maps
      IsawGUI.Browser x=(new IsawGUI.Browser( url ));
     }
    
+ }
+ class MyWindowListener extends WindowAdapter{
+	public void windowClosed(WindowEvent e) {
+		if( e.getSource().equals( PointedAtView)){
+			ShowPointedAtTable.setState( false );
+			
+		}
+	}
  }
 }
