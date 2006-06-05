@@ -32,6 +32,8 @@ Generator</b></font></font></p>
       <ul>
         <li class="toclevel-1"><a href="#Introduction"><span
  class="tocnumber">1</span> Introduction</a></li>
+<li class="toclevel-1"><a href="#Programmer_Notes"><span
+ class="tocnumber">1a</span> Programmer Notes</a></li>
         <li class="toclevel-1"><a href="#Getting_Started"><span
  class="tocnumber">2</span> <span class="toctext">Getting Started</span></a></li>
         <li class="toclevel-1"><a href="#tabs"><span class="tocnumber">3</span>
@@ -70,12 +72,26 @@ Introduction:</b></u></font></font></p>
 designed to allow users to easily create custom operators from
 existing methods.&nbsp; The resulting operators
 can be invoked either through the Macros menu or a script
-command.&nbsp; Parameter GUI elements are created for each
-method argument.<br>
+command.<br>
 </font></p>
 <p class="western"
  style="margin-left: 0.49in; margin-right: 0.01in; margin-bottom: 0in;">
 </p>
+
+<p class="western"
+ style="margin-left: 0.49in; margin-right: 0.01in; margin-bottom: 0in;"><a
+ name="Programmer_Notes" id="Programmer_Notes"></a><font
+ face="Arial, sans-serif"><font size="5"><u><b><br>
+Programmer Notes:</b></u></font></font></p>
+<p class="western"
+ style="margin-left: 0.49in; margin-right: 0.01in; margin-bottom: 0in;">
+<font face="Arial, sans-serif"> Parameter GUI elements are created for each method argument that is used.  Each static method must return an object value.  For each static method, objects include one and two-dimensional arrays, strings and error strings.  Objects do not include int, float, double, char, etc.  Error strings and exceptions can be reported by objects. <br>
+</font></p>
+<p class="western"
+ style="margin-left: 0.49in; margin-right: 0.01in; margin-bottom: 0in;">
+</p>
+
+
 <p class="western"
  style="margin-left: 0.5in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;"><br>
 <a name="Getting_Started" id="Getting_Started"></a><br>
@@ -103,7 +119,7 @@ Wizard from a command line, type the following.</font></p>
 <font face="Arial, sans-serif"><font size="4"><b>Information Tab</b></font></font></p>
 <p class="western"
  style="margin-left: 0.5in; margin-right: 0.01in; text-indent: 0in; margin-bottom: 0in;">
-<img src="operator_generator_files/information_tab.JPG"></p>
+<img src="operator_generator_files/information_tab.jpg"></p>
 <span style="font-family: &quot;times new roman&quot;,serif;"><br>
 </span>
 <p class="western"
@@ -149,7 +165,7 @@ internal documentation.</font></p>
 <font face="Arial, sans-serif"><font size="4"><b>Method Info Tab</b></font></font></p>
 <p class="western"
  style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
-<img src="operator_generator_files/method_info_tab.JPG"></p>
+<img src="operator_generator_files/method_info_tab.jpg"></p>
 <span style="font-family: &quot;times new roman&quot;,serif;"><br>
 </span>
 <p class="western"
@@ -158,7 +174,7 @@ internal documentation.</font></p>
 allows users to select the static method that will perform the actual
 work of the operator as well as configure the
 parameters for that method.&nbsp;&nbsp; In order to use the method info
-tab effectively, a specific sequence of actions must be done.&nbsp; <br>
+tab effectively, a specific sequence of steps must be completed.&nbsp; <br>
 </font></font></p>
 <p class="western"
  style="margin-left: 1in; margin-bottom: 0in; widows: 2; orphans: 2;"><font
@@ -241,7 +257,7 @@ parameter &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; based on its data type.<br>
 <font face="Arial, sans-serif"><font size="4"><b>Operator Info Tab</b></font></font></p>
 <p class="western"
  style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
-<img src="operator_generator_files/operator_info_tab.JPG"></p>
+<img src="operator_generator_files/operator_info_tab.jpg"></p>
 <p class="western"
  style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
 <br>
@@ -287,7 +303,7 @@ that are specified will be created if they do not already exist.</font></p>
 </b></font></font></p>
 <p class="western"
  style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
-<img src="operator_generator_files/documentation_tab.JPG"></p>
+<img src="operator_generator_files/documentation_tab.jpg"></p>
 <p class="western"
  style="margin-left: 0.5in; margin-bottom: 0in; widows: 2; orphans: 2;">
 <br>
