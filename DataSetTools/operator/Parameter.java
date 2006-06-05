@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2006/06/05 21:31:02  dennis
+ *  Added/fixed some java doc comments.
+ *
  *  Revision 1.6  2003/04/14 21:28:36  pfpeterson
  *  No longer stores information about valid state.
  *
@@ -60,6 +63,10 @@ public class Parameter extends Object implements Serializable, IParameter
 
   /**
    *  Construct a Parameter object using the specified name an value
+   *
+   * @param name  The new name string for this Parameter.
+   * @param object  An object of the correct type to use as the value of this
+   *                parameter.
    */
   public Parameter( String name, Object value )
   {
@@ -67,15 +74,20 @@ public class Parameter extends Object implements Serializable, IParameter
     this.value = value;
   }
 
-    /**
-     * Specify the name of the parameter.
-     */
-    public void setName(String name){
-        this.name=name;
-    }
+  /**
+   * Change the name of the parameter.
+   *
+   * @param name  The new name string for this Parameter.
+   */
+  public void setName(String name)
+  {
+    this.name=name;
+  }
                         
   /**
-   * Returns the name of the parameter
+   * Get the name of the parameter
+   *
+   * @return The string that holds the name of this parameter. 
    */
   public String getName() 
   { 
@@ -84,6 +96,8 @@ public class Parameter extends Object implements Serializable, IParameter
 
   /**
    * Returns the value of the parameter, as a generic object
+   *
+   * @return An object with the value of this parameter.
    */
   public Object getValue() 
   {  
@@ -92,6 +106,9 @@ public class Parameter extends Object implements Serializable, IParameter
 
   /**
    * Set the value for the parameter
+   *
+   * @param object  An object of the correct type to use as the value of this
+   *                parameter.
    */
   public void setValue( Object object ) 
   { 
@@ -105,6 +122,9 @@ public class Parameter extends Object implements Serializable, IParameter
    * the current parameter object.  Consequently, this "clone" method will
    * meet our current needs.  A "deep copy" would require the ability to 
    * copy an Object of any type.
+   *
+   * @return a new Parameter object with the same name and value as this
+   *         Parameter object.
    */
   public Object clone()
   {
@@ -112,11 +132,15 @@ public class Parameter extends Object implements Serializable, IParameter
     return new_parameter;
   }
 
-    /**
-     * This returns null. Should be overridden by subclasses.
-     */
-    public String getType(){
-        return null;
-    }
+  /**
+   * This returns null.  It must be overridden by subclasses to
+   * return a meaningful type String, if that behavior is needed.
+   *
+   * @return  null, by default.  
+   */
+  public String getType()
+  {
+    return null;
+  }
 
 }
