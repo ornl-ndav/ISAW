@@ -1,5 +1,5 @@
 /* 
- * File: QuickTableViewer.java
+ * File: QuickTableViewer.jav
  *  
  * Copyright (C) 2006  Ruth Mikkelson
  *
@@ -30,6 +30,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2006/06/05 19:12:27  rmikk
+ * Added a Print and a Save menu item
+ * Now sends out Pointed At Changed messages to all iobservers
+ *     of the DataSet if a row is selected in this table
+ *
  * Revision 1.4  2006/06/02 21:40:37  rmikk
  * Added the Excel Adapter
  * Eliminated the tag in front of the file name in the title
@@ -63,6 +68,8 @@ import java.awt.Point;
 import java.awt.event.*; 
 import javax.swing.table.*;
 import javax.swing.event.*;
+
+
 /**
  * This class creates a JFrame containing a table of the pointed at data block
  * values 
@@ -70,8 +77,9 @@ import javax.swing.event.*;
  *
  */
 public class QuickTableViewer extends FinishJFrame implements WindowListener, 
-                                                    IObserver,ComponentListener,
-                                                    ActionListener{
+                                                              IObserver,
+                                                              ComponentListener,
+                                                              ActionListener{
 
 	 JFrame parent;
 	 boolean hugg;
@@ -83,7 +91,7 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 	 JScrollPane jscr;
 	 int PointedAtXindex;
 	 
-	 
+	 Data db ;
 	 
 	/*
 	 * Constructor for the QuickTableViewer
@@ -97,8 +105,13 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 		this.parent.addWindowListener( this );
 		this.parent.addComponentListener( this);
 		this.DS = DS;
+		db = null;
 		DS.addIObserver( this );
-		
+		JMenu File = new JMenu("File");
+		JMenuItem Print = new JMenuItem("Print");
+		Print.addActionListener( new gov.anl.ipns.Util.Sys.PrintComponentActionListener(this));
+		JMenuItem Save= new JMenuItem( "Save");
+		Save.addActionListener( this);
 		JMenu jm = new JMenu("Options" );
 		ShowErrs= new JCheckBoxMenuItem( "Show Errors" );
 		ShowIndx = new JCheckBoxMenuItem( "Show Index" );
@@ -108,9 +121,12 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 		jm.add( ShowErrs );
 		jm.add( ShowIndx );
 		jm.add( Hug );
-		jm.add( Exit );
+		File.add( Print );
+		File.add( Save );
+		File.add( Exit );
 		
 		JMenuBar jmenbar = new JMenuBar();
+		jmenbar.add( File );
 		jmenbar.add( jm );
 		ShowErrs.addActionListener( this );
 		ShowIndx.addActionListener( this );
@@ -152,7 +168,7 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 		
 		
 		
-		Data db = DS.getData_entry( pointedAtIndex );
+		db = DS.getData_entry( pointedAtIndex );
 		float x = DS.getPointedAtX();
 		if ( Float.isNaN( x ) )
 			PointedAtXindex = -1;
@@ -177,9 +193,8 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 		getContentPane( ).add( jscr );
 		table.getTableHeader().setToolTipText( "<html>xval("+DS.getX_label()+")<BR> units are "+ DS.getX_units()+"</html>");
 		new ExcelAdapter( table );
+		table.addMouseListener( new MyMouseListener( db, table));
 		ShowTable();
-		
-		//WindowShower.show(this);
 	}
 	
 	
@@ -190,20 +205,6 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 		
 		  if( Hug == null )
 			  return;
-		  
-       
-          
-          //Center the Viewport
-          if( PointedAtXindex >= 0 )if( jscr != null ){
-        	table.changeSelection( PointedAtXindex,0, false, false);  
-        	java.awt.Rectangle R = table.getCellRect( PointedAtXindex,0,false );        
-        	R.y = Math.max( 0,R.y-getSize().height/2 );
-        	JViewport vpt = jscr.getViewport();
-        	vpt.setViewPosition( new Point( R.x, R.y ) );
-        	jscr.setViewport( vpt );
-        	
-          }
-        
           
           if( (Hug.isSelected() )&&( parent != null )&&hugg ){
          	
@@ -214,7 +215,7 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
  		      setSize( ncols*80,(int)( getToolkit().getScreenSize().height*.8 ) );
            }
          
-          //WindowShower.show( this );
+          
           table.invalidate();
           table.repaint();
           jscr.invalidate();
@@ -228,9 +229,20 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
           table.invalidate();
           table.repaint();
           
-		
+          //Center the Viewport
+          if( PointedAtXindex >= 0 )if( jscr != null ){
+        	table.changeSelection( PointedAtXindex,0, false, false);  
+        	java.awt.Rectangle R = table.getCellRect( PointedAtXindex,0,false );        
+        	R.y = Math.max( 0,R.y-getSize().height/2 );
+        	JViewport vpt = jscr.getViewport();
+        	vpt.setViewPosition( new Point( R.x, R.y ) );
+        	jscr.setViewport( vpt );
+        	
+          }
 		 
 	}
+	
+
 	
 	
 	/**
@@ -257,6 +269,9 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 		
 	}
 	
+	
+	
+	
 	/**
 	 * Main test program
 	 * @param args  Runfile, group index, pointed at x
@@ -282,6 +297,7 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 	}
 
 	 
+	
 	
 	//-------------------- window listener methods -------------------------------
 	public void windowActivated(WindowEvent e) {
@@ -384,7 +400,7 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 
 	}
 
-	
+
 	
 	//------------------ ActionListenr method-------------------------
 	public void actionPerformed(ActionEvent evt) {
@@ -399,11 +415,41 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 			hugg = false;
 			parent = null;
 			return;
+		}else if( evt.getActionCommand().equals( "Save" )){
+			JFileChooser jf = new JFileChooser();
+			if( jf.showSaveDialog( null)  !=  JFileChooser.APPROVE_OPTION )
+				return;
+			try{
+			   java.io.FileOutputStream fout = new java.io.FileOutputStream( jf.getSelectedFile() );
+			   float[] yy = db.getY_values();
+			   float[] ee =db.getErrors();
+			   int nxvals = db.getX_scale().getNum_x();
+			   XScale xscl = db.getX_scale();
+			   for( int i=0; i< nxvals; i++){
+				   fout.write( (xscl.getX(i)+"\t").getBytes() );
+				   if( i < yy.length){
+					   fout.write( (yy[i]+"\t").getBytes());
+				       if( (ee != null) && ShowErrs.isSelected())
+					       fout.write((ee[i]+"\t").getBytes());
+				       
+					   if( ShowIndx.isSelected())
+						   fout.write((i+"\t").getBytes());
+				   }
+					
+				   fout.write(("\n").getBytes());
+					   
+			   }
+			   fout.close();
+			}catch( Exception ss){
+			  JOptionPane.showMessageDialog( null, ss.toString());
+			  
+			}
+			
+			return;
 		}
 		DrawTable();
 	}
-
-	
+ 
 	
 	//------------------ ComponentListener  methods----------------
 	public void componentHidden(ComponentEvent e) {
@@ -431,6 +477,9 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 		if( Hug.isSelected())ShowTable();
 		
 	}
+	
+	
+	
 	
   /**
    * Table model for the data so not all data has to be stoews.
@@ -501,6 +550,8 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 	  }
 	  
 	  
+	  
+	  
 	  public Object getValueAt(int rowIndex, int columnIndex){
 		  
 		  if( columnIndex ==0)
@@ -532,6 +583,9 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 	  }
 	  
 	  
+	  
+	  
+	  
 	  public boolean 	isCellEditable(int rowIndex, int columnIndex){
 		  
 		   return false;
@@ -540,11 +594,43 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 	  
 	  
 	  
+	  
 	  public void 	removeTableModelListener(TableModelListener l){}
+	  
 	  
 	  
 	  public void 	setValueAt(Object aValue, int rowIndex, int columnIndex){}
 	  
 	  
    }
+   
+   
+   
+   
+   
+   //--------------------------- Mouse Listener -------------------------
+   /**
+    *   Needed to send POINTEDAT_CHANGED events to other listeners of the DataSet
+    */
+   class MyMouseListener extends MouseAdapter{
+	   Data Db;
+	   JTable tb;
+	   public MyMouseListener( Data Db, JTable tb){
+		   
+		   this.Db = Db;
+		   this.tb = tb;
+		   
+	   }
+	  
+	   
+	   
+	   public void mouseClicked( MouseEvent evt){
+		   int i = tb.getSelectedRow();
+		   float xval = Db.getX_scale().getX( i );
+		   DS.setPointedAtX( xval );
+		   DS.notifyIObservers( IObserver.POINTED_AT_CHANGED);
+	   }
+   }
+   
+   
 }
