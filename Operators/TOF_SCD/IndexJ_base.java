@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2006/06/06 19:33:32  rmikk
+ * Added documentation on the data written to a log file here.
+ *
  * Revision 1.8  2006/02/25 23:01:06  rmikk
  * Fixed code that sets unindexed peaks with a null UB.
  * Fixed getNumIndexed peaks to only consider peaks in the given sequence
@@ -171,7 +174,8 @@ public class IndexJ_base extends    GenericTOF_SCD implements
     sb.append("l value.");
     // return
     sb.append("@return The log information. The peaks of parameter 1");
-    sb.append("  are also indexed");
+    sb.append("  are also indexed and the log information is also written to");
+    sb.append( "a log file");
     // error
    
 
@@ -320,6 +324,7 @@ public class IndexJ_base extends    GenericTOF_SCD implements
       log.append(peak.toString().substring(2)+"\n");
     }
 
+    SharedMessages.LOGaddmsg( IndexJ_base.getNumIndexed( peaks,runs,seqs )+"\n");
     ShowLogInfo( log );
     
     // return the log file name and print the number of indexed peaks
