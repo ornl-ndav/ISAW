@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/06/06 19:42:02  rmikk
+ * Replaced an operator form for indexing to a script form that calls that
+ *   operator and saves the resultant file
+ *
  * Revision 1.5  2006/01/16 04:54:53  rmikk
  * Added Constant arguments for the forms
  * Updated the argument link list for the new parameters added to the forms
@@ -97,9 +101,12 @@ public class InitialPeaksWizard_new extends Wizard {
      
      addForm( new ScriptForm(path+"Blind.iss",new ArrayPG("Orientation Matrix", null),
                        new int[]{0})); 
-     addForm( new OperatorForm( new IndexJ_base(),
-                 new StringPG("Log info", ""),
-                 new int[]{0,1}));
+    // addForm( new OperatorForm( new IndexJ_base(),
+   //              new StringPG("Log info", ""),
+  //               new int[]{0,1}));
+     
+     addForm( new ScriptForm(path+"JIndex_Init1.iss", new StringPG("Log info",""),
+    		 new int[]{0,1,6,7} ));
      
      addForm( new ScriptForm(path +"Scalar.iss", new StringPG("Transformation",""),
                 new int[]{0}));
@@ -116,6 +123,8 @@ public class InitialPeaksWizard_new extends Wizard {
                        {-1, 4, 1, 0,-1,-1}, //init UB matrix
                        {-1,-1,-1, 4, 3,-1}, //Transformation
                        {-1,-1,-1,-1, 8, 1},  //lsqrs UB matrix
+                       {1 ,-1 ,6,-1, -1, -1},//path
+                       {3 ,-1 ,7,-1, -1, -1}//expname
                      
                      };
      
