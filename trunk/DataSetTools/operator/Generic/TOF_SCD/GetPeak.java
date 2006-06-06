@@ -35,7 +35,7 @@ public class GetPeak {
             ScriptUtil.display("There is no "+DetID+" for the DataSet "+DS+" in getPeakInfo");
             return null;
         }
-        PeakInfo Pinf = new PeakInfo( DetID, grid, backIntensity);
+        PeakInfo Pinf = new PeakInfo( DetID, grid, backIntensity, DS);
         
         int[] posMax= new int[6];
         posMax[0]=-1;//y pos plus 1 line of max 
