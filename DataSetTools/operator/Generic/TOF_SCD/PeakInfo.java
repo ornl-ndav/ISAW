@@ -1,40 +1,52 @@
 package DataSetTools.operator.Generic.TOF_SCD;
 import DataSetTools.dataset.*;
-
+import DataSetTools.instruments.*;
 public class PeakInfo {
+	DataSet DS;
+	SampleOrientation sampOrient;
+	XScale xscl;
+	float initialPath;
+	float T0;
+	
+	
     int ncells;
-    int maxX,maxY,maxZ;
-    int minX,minY,minZ;
+    public int maxX,maxY,maxZ;
+    public int minX,minY,minZ;
     int sumX,sumY,sumZ;
     float WsumX,WsumY,WsumZ;
-    float WX,Wy,Wz;
+    float Wx,Wy,Wz;
     float TotIntensity;
     int detNum;
     IDataGrid grid;
     float TotExtentIntensity;
     float background;
-    float backgroundIntensity;
-    public PeakInfo( int detNum, IDataGrid grid , float backgroundIntensity) {
+    public float backgroundIntensity;
+    public PeakInfo( int detNum, IDataGrid grid , float backgroundIntensity, DataSet DS) {
         super();
-        ncells=maxX=maxY=maxZ=sumX=sumY=sumZ=0;
+        ncells=0;maxX=maxY=maxZ=-1;sumX=sumY=sumZ=0;
         minX=minY=minZ=Integer.MAX_VALUE;
-        WsumX=WsumY=WsumZ=WX=Wy=Wz=TotIntensity=TotExtentIntensity=0;
+        WsumX=WsumY=WsumZ=Wx=Wy=Wz=TotIntensity=TotExtentIntensity=0;
         this.detNum = detNum;
         this.grid = grid;
         if( !Float.isNaN(backgroundIntensity) && (backgroundIntensity >0))
             background=this.backgroundIntensity=backgroundIntensity;
         else{
-            backgroundIntensity = Float.NaN;
+            backgroundIntensity = 0f;
             background = 0f;
             
         }
+        this.DS = DS;
+    	sampOrient = null;
+    	xscl = null;
+    	initialPath = Float.NaN;
+    	T0 = Float.NaN;
     }  
        
 
     public boolean addPeak( int row, int col, int timeChan, float intensity){
-        if( !Float.isNaN(backgroundIntensity))
-            if( intensity < backgroundIntensity)
-                return false;
+       // if( !Float.isNaN(backgroundIntensity))
+       //     if( intensity < backgroundIntensity)
+      //          return false;
         if( row <1) return false;
         if( col <1) return false;
         if(timeChan <0) return false;
@@ -51,7 +63,7 @@ public class PeakInfo {
         if( Ncells <=0)return false;
         if( Intensity/Ncells < backgroundIntensity)
             return false;
-        System.out.println("new Cell,row,col,timechan,intensity="+row+","+col+","+timeChan+","+intensity);
+        //System.out.println("new Cell,row,col,timechan,intensity="+row+","+col+","+timeChan+","+intensity);
         if( ncells ==0){
             minY=maxY=row;
             minX=maxX=col;
@@ -108,6 +120,9 @@ public class PeakInfo {
         WsumX +=intensity*col;
         WsumY+=intensity*row;
         WsumZ +=intensity*timeChan;
+        Wx += intensity;
+        Wy += intensity;
+        Wz += intensity;
         TotIntensity += intensity;
         if(ncells >0)
            background = (TotExtentIntensity-TotIntensity)/((1+maxX-minX)*(1+maxY-minY)*(1+maxZ-minZ)-ncells);
@@ -170,7 +185,7 @@ public class PeakInfo {
     public float getWeightedAverageRow(){
         if( ncells <=0)
             return Float.NaN;
-       System.out.println("backgroundIntensity="+backgroundIntensity);
+        
        return (WsumY-backgroundIntensity*sumY)/(TotIntensity-ncells*backgroundIntensity);  
     }
 
@@ -209,9 +224,59 @@ public class PeakInfo {
         return ncells;
     }
     
+    public int getNCellsExtent(){
+    	if(maxX <0) return 0;
+    	return (maxX-minX+1)*(maxY-minY+1)*(maxZ-minZ+1);
+    	
+    }
+    private void setUpBasics(){
+    	if(sampOrient != null)
+    		return;
+    	sampOrient= (SampleOrientation)DS.getAttributeValue( DataSetTools.dataset.Attribute.SAMPLE_ORIENTATION);
+    	Float T = ((Float)DS.getAttributeValue( DataSetTools.dataset.Attribute.T0_SHIFT));
+    	if( T == null)
+    		T0 =0f;
+    	else 
+    		T0 =T.floatValue();
+    	xscl = DS.getData_entry(0).getX_scale();
+    	Float I = ((Float)DS.getAttributeValue( DataSetTools.dataset.Attribute.INITIAL_PATH));
+    	if( I == null)
+    		initialPath = 0f;
+    	else
+    		initialPath = I.floatValue();
+    }
       
-    
-    
+    /**
+     * Creates a new type Peak from this information
+     * @return  a PeakObject
+     */
+    public Peak_new makePeak(){
+    	setUpBasics();
+    	if( ncells <0)
+    		return null;
+        if( maxX <0)
+        	return null;
+        if( ncells == (maxX-minX+1)*(maxY-minY+1)*(maxZ-minZ+1))
+        	return null;
+    	Peak_new PP= new Peak_new( getWeightedAverageCol(), getWeightedAverageRow(), getWeightedAverageChan(),
+    			     grid, sampOrient, T0, xscl, initialPath);
+    	int x = (int)(getWeightedAverageCol()+.5); 
+    	int y =(int)(.5+getWeightedAverageRow());
+    	int z =(int)(.5+getWeightedAverageChan());
+    	float peakIntensity =Float.NaN;
+    	try{
+    		peakIntensity = grid.getData_entry(y , x).getY_values()[z];
+    	}catch( Exception ss){
+    		peakIntensity = Float.NaN;
+    	}
+    	PP.ipkobs( (int)(peakIntensity+.5));
+    	PP.inti( getTotIntensity());
+    	int[] runs = (int[])DS.getAttributeValue( Attribute.RUN_NUM);
+    	if(runs != null) if( runs.length >0)
+    		PP.nrun( runs[0]);
+    	
+    	return PP;
+    }
     
     
     
