@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/06/06 22:35:56  rmikk
+ * Added a new parameter to indicate whether the new data should be
+ *    appended to the old data in the file or if false the old data is destroyed.
+ *
  * Revision 1.1  2005/08/26 15:30:57  rmikk
  * Initial Checkin's
  *
@@ -59,6 +63,7 @@ public class OpenLog extends GenericOperator{
    public void setDefaultParameters(){
       clearParametersVector();
       addParameter( new LoadFilePG("Log File Name",""));
+      addParameter( new BooleanPG("append",new Boolean(false)));
    }
 
    public String getDocumentation(){
@@ -73,6 +78,8 @@ public class OpenLog extends GenericOperator{
       S.append("If the file does not exist, the logging information will go to the status pane");
       S.append("@param   ");
       S.append("The name of the file that is to receive the logging information");
+      S.append("@param   ");
+      S.append("true to append or false to not append new info to previous information");
       S.append("@error ");
       S.append("");
       return S.toString();
@@ -92,7 +99,8 @@ public class OpenLog extends GenericOperator{
       try{
 
          java.lang.String filename = getParameter(0).getValue().toString();
-         gov.anl.ipns.Util.Sys.SharedMessages.openLog(filename);
+         boolean append = ((Boolean)(getParameter(1).getValue())).booleanValue();
+         gov.anl.ipns.Util.Sys.SharedMessages.openLog(filename, append);
          return "Success";
       }catch( Throwable XXX){
          return new ErrorString( XXX.toString()+":"
