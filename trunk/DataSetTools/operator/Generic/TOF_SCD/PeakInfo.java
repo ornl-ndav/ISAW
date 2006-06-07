@@ -21,6 +21,10 @@ public class PeakInfo {
     float TotExtentIntensity;
     float background;
     public float backgroundIntensity;
+    
+    public boolean debug = false;
+    
+    
     public PeakInfo( int detNum, IDataGrid grid , float backgroundIntensity, DataSet DS) {
         super();
         ncells=0;maxX=maxY=maxZ=-1;sumX=sumY=sumZ=0;
@@ -63,7 +67,10 @@ public class PeakInfo {
         if( Ncells <=0)return false;
         if( Intensity/Ncells < backgroundIntensity)
             return false;
-        //System.out.println("new Cell,row,col,timechan,intensity="+row+","+col+","+timeChan+","+intensity);
+        
+        if( debug)
+        	 System.out.println("new Cell,row,col,timechan,intensity="+row+","+col+","+timeChan+","+intensity);
+        
         if( ncells ==0){
             minY=maxY=row;
             minX=maxX=col;
