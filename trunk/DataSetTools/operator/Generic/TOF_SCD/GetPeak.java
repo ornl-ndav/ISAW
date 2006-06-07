@@ -8,7 +8,7 @@ import DataSetTools.dataset.*;
 
 
 public class GetPeak {
-
+	public static boolean debug = false; //level 1-Macro results, level 2-adds info about each cell 
     public GetPeak() { 
         super();
         // TODO Auto-generated constructor stub
@@ -36,7 +36,8 @@ public class GetPeak {
             return null;
         }
         PeakInfo Pinf = new PeakInfo( DetID, grid, backIntensity, DS);
-        
+        if( debug)
+        	Pinf.debug = true;
         int[] posMax= new int[6];
         posMax[0]=-1;//y pos plus 1 line of max 
         posMax[1] =-1;//y pos minus 1 line
@@ -205,18 +206,20 @@ public class GetPeak {
                row=col=timeChan=DetID=-1;
                backIntensity = Float.NaN;
            }
+           GetPeak.debug = true;
            PeakInfo pk = GetPeak.getPeakInfo(row,col,timeChan,DetID,DS,backIntensity);
            if( pk == null)
                System.out.println("Result is null");
            else{
-               System.out.println("Total Intensity="+pk.TotIntensity+","+pk.getTotIntensity());
-               System.out.println("Max extent="+pk.maxX+","+pk.maxY+","+pk.maxZ+","+
+               System.out.println("Total Intensitywo/w background="+pk.TotIntensity+","+pk.getTotIntensity());
+               System.out.println("Max extent= x:"+pk.minX+"-"+pk.maxX+";y:"+pk.minY+"-"+pk.maxY+";z:"+
+            		   pk.minZ+"-"+pk.maxZ+"; TotExtentIntensity="+
                         pk.TotExtentIntensity);
 
-               System.out.println("Min extent="+pk.minX+","+pk.minY+","+pk.minZ);
+               
                System.out.println("Middle pos ="+pk.getWeightedAverageCol()+","+pk.getWeightedAverageRow()+","+
                        pk.getWeightedAverageChan());
-               System.out.println("number of cells,background="+pk.getNCells()+","+pk.background);
+               System.out.println("number of cells/background intensity/cell="+pk.getNCells()+","+pk.background);
            }
        
        }
