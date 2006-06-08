@@ -15,13 +15,13 @@
 #@return   Finished
 
 $title=Index Peaks
-$peaks     PlaceHolder        Peaks
-$OrientMat   Array            Orientation Matrix
-$RestrRuns   IntList          Restrict Runs
-$Delta       Float(.20)       Deltas
-$path    DataDirectoryString   path to where the output information is written
-$expName   String             Experiment Name
-$logfile    Boolean(false)   Show log info 
+$peaks       PlaceHolder        Peaks
+$OrientMat   Array              Orientation Matrix
+$RestrRuns   IntList            Restrict Runs
+$Delta       Float(.20)         Deltas
+$path        DataDirectoryString   Output Data Path 
+$expName     String             Experiment Name
+$logfile     Boolean(false)     Pop Up Log Info 
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 

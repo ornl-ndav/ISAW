@@ -17,7 +17,7 @@ $ CATEGORY = operator,Instrument Type, TOF_NSCD
 $Title=Find Peaks
 $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
-$ run_numbers         Array                  Run Number
+$ run_numbers         Array                  Run Numbers
 $ expname             String                 Experiment Name
 $ num_peaks           Integer(50)            Maximum Number of Peaks
 $ min_int             Integer(3)             Minimum Peak intensity
