@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.50  2006/06/08 18:23:07  rmikk
+ * Redid the determination of the initial value(String form) for a parameter
+ *    so quotes,(, and ) work
+ *
  * Revision 1.49  2006/05/30 18:54:40  rmikk
  * Replaced all Script.getLine by getLine which applied the macro exchange and
  * now allows for line continuation
@@ -1446,34 +1450,32 @@ public class ScriptOperator  extends  GenericOperator
     if( VarName.indexOf("&") >=0 )
             return true;
     // get the Data Type and initial value
-    int num_space=buffer.length();
-    DataType=StringUtil.getString(buffer);
-    if(DataType==null) 
-         return false; // REMOVE-nope line is not long enough
-
-    // check if there is in initial value
-    index=DataType.indexOf("("); 
-    if(index>0){
-      num_space = num_space - buffer.length() - DataType.length();
-      InitValue = DataType.substring(index+1);
-      DataType=DataType.substring(0,index);
-      index=InitValue.indexOf(")");
-      if(index > 0){ // the init value is complete so trim off the ')'
-        InitValue=InitValue.substring(0,index);
-      }else{  // look in the buffer for the rest of the init value
-        index=buffer.toString().indexOf(")");
-        if(index>0){
-          InitValue=InitValue+Format.string("",num_space)
-            +buffer.substring(0,index);
-          buffer.delete(0,index+1);
-          StringUtil.trim(buffer);
-        }else{
-          InitValue=InitValue.substring(0,InitValue.length()-1);
-        }
-      }
-    }else{
-      InitValue=null;
-    }
+    
+    index = execOneLine.finddQuote( buffer.toString(),0,"( ","");
+    int nleft= buffer.length();
+    if(index <0){
+    	DataType = buffer.toString();
+    	StringUtil.getString( buffer, DataType.length());
+    	nleft = 0;
+    	InitValue = null;
+   }else{
+	    DataType = StringUtil.getString( buffer, index);
+	    if( buffer.length() <1)
+	    	InitValue = null;
+	    else if( buffer.charAt(0)!='(')
+	    	InitValue = null;
+	    else{
+	    	index = execOneLine.finddQuote( buffer.toString(),1,")","()");
+	    	if( index <0)
+	    		return false;
+	    	StringUtil.getString( buffer,1);
+	    	InitValue = StringUtil.getString(buffer, index-1);
+	    	StringUtil.getString(buffer,1);
+	    }
+	    
+	   
+   }
+    
     String DataType_C = DataType;
     DataType = DataType.toUpperCase();
 
