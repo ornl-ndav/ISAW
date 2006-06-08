@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/06/08 18:33:51  rmikk
+ * Updated to correspond to the new scripts
+ *
  * Revision 1.6  2006/06/06 19:42:02  rmikk
  * Replaced an operator form for indexing to a script form that calls that
  *   operator and saves the resultant file
@@ -100,31 +103,31 @@ public class InitialPeaksWizard_new extends Wizard {
                new PlaceHolderPG("Peaks", new Vector())));
      
      addForm( new ScriptForm(path+"Blind.iss",new ArrayPG("Orientation Matrix", null),
-                       new int[]{0})); 
+                       new int[]{0,5})); 
     // addForm( new OperatorForm( new IndexJ_base(),
    //              new StringPG("Log info", ""),
   //               new int[]{0,1}));
      
-     addForm( new ScriptForm(path+"JIndex_Init1.iss", new StringPG("Log info",""),
+     addForm( new ScriptForm(path+"JIndex_Init1.iss", new StringPG("Result",""),
     		 new int[]{0,1,6,7} ));
      
-     addForm( new ScriptForm(path +"Scalar.iss", new StringPG("Transformation",""),
-                new int[]{0}));
-     addForm( new OperatorForm( new LsqrsJ_base(),
+     addForm( new ScriptForm(path +"Scalar.iss", new StringPG("Transformation from Scalar",""),
+                new int[]{0,3}));
+     addForm( new ScriptForm(path+"LsqrsInit.iss",
                  new ArrayPG("Orientation Matrix", new Vector()),
-                 new int[]{0,3}));
+                 new int[]{0,4,10}));
      addForm( new ScriptForm(path+"JIndxSave.iss",
-                    new StringPG("Result", ""),new int[]{0,1}));
+                    new StringPG("Result", ""),new int[]{0,1,4,5}));
     /* addForm( new OperatorForm( new IndexJ_base(),
                  new StringPG("Log info", "JIndxS"),
                  new int[]{0,1}));
      */            
-      int[][] Xlate= { {12, 0, 0,-1, 0, 0}, //peaks vector
-                       {-1, 4, 1, 0,-1,-1}, //init UB matrix
-                       {-1,-1,-1, 4, 3,-1}, //Transformation
-                       {-1,-1,-1,-1, 8, 1},  //lsqrs UB matrix
-                       {1 ,-1 ,6,-1, -1, -1},//path
-                       {3 ,-1 ,7,-1, -1, -1}//expname
+      int[][] Xlate= { {13, 0, 0,-1, 0, 0}, //peaks vector
+                       {-1, 7, 1, 0,-1,-1}, //init UB matrix
+                       {-1,-1,-1, 5, 4,-1}, //Transformation
+                       {-1,-1,-1,-1,11, 1},  //lsqrs UB matrix
+                       {1 ,5 , 6, 3,10, -1},//path
+                       {3 ,-1 ,7,-1, -1, 5}//expname
                      
                      };
      
