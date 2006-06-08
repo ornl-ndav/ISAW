@@ -1,4 +1,5 @@
 #       LeastSquares on a set of runs
+#File: Wizard/TOF_SCD/Script_new/LSqrs.iss
 #@overview This does several least squares on a set of runs, 
 #producing and overall leastSquare matrix and one for each of the runs.
 #The matrices are stored in files under the name ls[expName]runNum.mat
@@ -23,7 +24,6 @@ $RestrSeq   IntList     Sequence numbers to use("" for all)
 $SaveDir    DataDirectoryString     Directory to save files
 $MinIntens  Integer(0)  Minimum Peak Intensity Threshold
 $RowColKeep  IntList(0:100) Pixel Rows and Columns to Keep
-
 
 N=ArrayLength(Peaks)
 for i in runnums

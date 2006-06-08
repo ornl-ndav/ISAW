@@ -2,6 +2,8 @@
 # Script to find peaks in multiple SCD or SXD files. 
 # $Date: 2004/07/12  $
 #
+# File: Wizard/TOF_SCD/Scripts_new/find_multiple_peaks.iss
+#
 # First specify any parameters to the script, giving the variable name,
 # data type and prompt string.  A dialog box will prompt the user for values
 # for these parameters
@@ -12,6 +14,7 @@
 #  - The Generic Calib operator is used to read the calibration file
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
+$Title=Find Peaks
 $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
 $ run_numbers         Array                  Run Number
@@ -20,6 +23,7 @@ $ num_peaks           Integer(50)            Number of Peaks
 $ min_int             Integer(3)             Minimum Peak intensity
 $ min_time_chan       Integer(0)             Minimum time channel to use 
 $ max_time_chan       Integer(1000)          Maximum time channel to use 
+$ useCalibFile        BooleanEnable( [false,1,0])  Use the calibration file below
 $ calibfile           LoadFileString         Calibration File
 $ RowColKeep          IntList( 1:200)        Row,Col's to keep
 $ inst                String("SCD0")         Instrument
@@ -45,7 +49,7 @@ for i in run_numbers
 
   #LoadSCDCalib(ds[dsnum],calibfile,-1,"")
   # find peaks
-  peaks1=GetCentroidPeaks(ds[dsnum],monct,num_peaks,min_int,min_time_chan,max_time_chan, RowColKeep)
+  peaks1=GetCentroidPeaks1(ds[dsnum],monct,num_peaks,min_int,min_time_chan,max_time_chan, RowColKeep)
   
   if first
     peaks=peaks1
@@ -67,7 +71,7 @@ Echo("--- find_multiple_peaks is done. ---")
 ViewASCII(outpath&expname&".peaks")
 Display("Peaks are listed in "&outpath&expname&".peaks")
 
-OpenLog(outpath&expname&".log")
+
 
 return peaks
 

@@ -38,7 +38,7 @@ if logfile  AND peakfilename <>"NONE"
    endif 
    OpenLog( outputpath[0]&S&index&".log")
     LogMsg( V)
-  
+    
 
 endif
 if logfile

@@ -1,6 +1,9 @@
 # This is a wrapper around JIndex(Vector Peaks... that allows for
 # saving the peaks and displaying JIndex log information in the
 # status pane.
+
+#File: Wizard/TOF_SCD/Scripts_new/JIndexSave.iss
+
 #@param  peaks   the Peaks Vector
 #@param  OrientMat   the orientation matrix
 #@param RestrRuns    Run numbers to not include
@@ -11,41 +14,32 @@
 #                    status pane
 #@return   Finished
 
-
+$title=Index Peaks
 $peaks     PlaceHolder        Peaks
 $OrientMat   Array            Orientation Matrix
 $RestrRuns   IntList          Restrict Runs
 $Delta       Float(.20)       Deltas
-$peakfilename    SaveFileString("NONE")   Filename to save peak to and Directory for the index log file 
-$logfile    Boolean(true)   Show log info 
+$path    DataDirectoryString   path to where the output information is written
+$expName   String             Experiment Name
+$logfile    Boolean(false)   Show log info 
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 
 V = JIndex(peaks,OrientMat,RestrRuns, Delta,Delta,Delta)
 
-if peakfilename <>"NONE"
-  WritePeaks(peakfilename, peaks)
-  Display "printed peaks to file"
-endif
+
+WritePeaks(path&expName&".peaks", peaks)
+Display "printed peaks to file"
 
 
-if logfile AND  peakfilename<>"NONE"
-   outputpath =  fSplit(peakfilename)
-   S="\"
-   if EndsWith( outputpath[0],S)
-      S=""
-   endif  
+SS= path&"index.log"
+OpenLog( SS)
 
-     SS= outputpath[0]&S&"index.log"
-    OpenLog( SS)
+LogMsg( V)
+CloseLog()
 
-
-     LogMsg( V)
-   
-endif
 if logfile
- Display "------------------------ index log -------------------------"
- Display V
+   ViewASCII( path&"index.log")
 endif
 return "Finished"
   
