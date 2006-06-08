@@ -2,7 +2,7 @@
 /*
  * File:  GetCentroidPeaks1.java 
  *             
- * Copyright (C) 2004, Ruth Mikkelson
+ * Copyright (C) 2006, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,6 +34,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/06/08 15:50:59  rmikk
+ * Fixed copyright.
+ * Started first cutoff at 80% of the intensity at the startinf point
+ *
  * Revision 1.1  2006/06/06 19:32:47  rmikk
  * Initial Checkin of new Centroid Peak operator. Command name is the same
  * as the old one except a 1 is added
@@ -123,16 +127,27 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 			for(int i=0;i<V.size();i++){
 				Peak P=(Peak) (V.elementAt(i));
 				V.setElementAt( GetPeakR( DS,P),i);
-				PeakInfo p = (PeakInfo)V.elementAt(i);
-				System.out.println("xx"+i+","+p.getWeightedAverageRow()+","+p.getWeightedAverageCol()+","+
-						    p.getWeightedAverageChan()+","+p.getCalcBackgroundLevel()+","+p.backgroundIntensity+","+
-						    p.minY+"-"+p.maxY+","+p.minX+"-"+p.maxX+","+p.minZ+"-"+p.maxZ+","+p.getNCells()+","+p.getTotIntensity());
 			}
-			
+
+			try{
+				java.io.FileOutputStream fout = new java.io.FileOutputStream("C:/xx.out");
+				for( int i=0; i< V.size(); i++){
+					if( V.elementAt(i)== null)
+						fout.write((i+": null\n").getBytes());
+					else{
+						PeakInfo pk =(PeakInfo)V.elementAt(i);
+						fout.write((i+":"+pk.getWeightedAverageCol()+" "+pk.getWeightedAverageRow()+" "+pk.getWeightedAverageChan()+":"+pk.getNCells()+
+								  "x:"+pk.minX+"-"+pk.maxX+";y:"+pk.minY+"-"+pk.maxY+";z:"+pk.minZ+"-"+pk.maxZ+"-"+pk.maxZ+";Int-"+pk.getTotIntensity()+
+								  "; cutoff="+pk.backgroundIntensity+"\n").getBytes());
+					}
+				}
+				fout.close();
+			}catch( Exception ss){
+				
+			}
 			for(int i=0; i< V.size(); i++){
 				PeakInfo P =(PeakInfo)V.elementAt(i);
 				if( P != null)
-					
 				
 					for( int j=V.size()-1; j>i; j--){
 						PeakInfo P1=(PeakInfo)V.elementAt(j);
@@ -173,7 +188,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 		int nrows= grid.num_rows();
 	    int ncols=grid.num_cols();
 
-		float cutoff = grid.getData_entry(y,x).getY_values()[z];;
+		float cutoff = .8f*grid.getData_entry(y,x).getY_values()[z];;
 	    int nchan = DS.getData_entry(0).getY_values().length;
 	    PeakInfo PP = GetPeak.getPeakInfo( y, x, z, gridID, DS, cutoff);
 	    done = (PP==null);
