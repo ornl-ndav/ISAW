@@ -19,13 +19,13 @@ $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
 $ run_numbers         Array                  Run Number
 $ expname             String                 Experiment Name
-$ num_peaks           Integer(50)            Number of Peaks
+$ num_peaks           Integer(50)            Maximum Number of Peaks
 $ min_int             Integer(3)             Minimum Peak intensity
-$ min_time_chan       Integer(0)             Minimum time channel to use 
-$ max_time_chan       Integer(1000)          Maximum time channel to use 
+$ min_time_chan       Integer(0)             Minimum Time Channel
+$ max_time_chan       Integer(1000)          Maximum Time Channel 
 $ useCalibFile        BooleanEnable( [false,1,0])  Use the calibration file below
 $ calibfile           LoadFileString         Calibration File
-$ RowColKeep          IntList( 1:200)        Row,Col's to keep
+$ RowColKeep          IntList(1:128)         Row,Col's to keep
 $ inst                String("SCD0")         Instrument
 $ DatFileExtension    String(".RUN")         Extension on Data Files
 #calibfile = "/IPNShome/scd/instprm.dat"
