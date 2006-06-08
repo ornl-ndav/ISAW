@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2006/06/08 18:29:33  rmikk
+ * enableFormParams now calls the form's fire method after the enabling to get
+ *    the enabled status of the parameterGUI's affected by BooeanEnablePG's in
+ *   the correct state
+ *
  * Revision 1.21  2005/05/25 20:24:49  dennis
  * Now calls convenience method WindowShower.show() to show
  * the window, instead of instantiating a WindowShower object
@@ -136,7 +141,7 @@ import java.io.File;
 import java.io.IOException;
 
 import java.net.URL;
-
+import java.util.Vector;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -1125,10 +1130,14 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     private void enableFormParams( boolean enable ) {
       Form  f           = wizard.getCurrentForm(  );
       int[] var_indices = f.getVarParamIndices(  );
-
+      Vector<BooleanEnablePG> BoolEnablePGs= new Vector<BooleanEnablePG>();
       for( int j = 0; j < var_indices.length; j++ ) {
         ( ( IParameterGUI )f.getParameter( var_indices[j] ) ).setEnabled( enable );
+        if( f.getParameter( var_indices[j] ) instanceof BooleanEnablePG)
+        	BoolEnablePGs.add( (BooleanEnablePG)f.getParameter(var_indices[j]));
       }
-    }
+      for( int i=0; i<BoolEnablePGs.size(); i++)
+    	  BoolEnablePGs.elementAt(i).fire();
+    }//end enableFormParams
   }
 }
