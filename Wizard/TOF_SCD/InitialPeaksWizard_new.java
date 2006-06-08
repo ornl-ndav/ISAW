@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2006/06/08 19:36:02  rmikk
+ * Fixed an error in the linking of form parameters
+ *
  * Revision 1.7  2006/06/08 18:33:51  rmikk
  * Updated to correspond to the new scripts
  *
@@ -126,8 +129,8 @@ public class InitialPeaksWizard_new extends Wizard {
                        {-1, 7, 1, 0,-1,-1}, //init UB matrix
                        {-1,-1,-1, 5, 4,-1}, //Transformation
                        {-1,-1,-1,-1,11, 1},  //lsqrs UB matrix
-                       {1 ,5 , 6, 3,10, -1},//path
-                       {3 ,-1 ,7,-1, -1, 5}//expname
+                       {1 ,5 , 6, 3,10, 4},//path
+                       {3 ,-1 ,7,-1, -1,5}//expname
                      
                      };
      
