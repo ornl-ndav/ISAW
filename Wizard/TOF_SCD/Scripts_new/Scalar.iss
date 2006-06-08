@@ -24,7 +24,7 @@ $path      DataDirectoryString    Output Data Path
 $ShowLog   Boolean( false)        Pop Up scalar.log
 
 
-if Constr ="Identity"
+if Constr ="Use Identity Matrix"
    return "[[1,0,0],[0,1,0],[0,0,1]]"
 endif
 
