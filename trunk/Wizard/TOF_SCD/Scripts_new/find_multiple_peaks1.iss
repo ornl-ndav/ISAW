@@ -26,8 +26,8 @@ $ max_time_chan       Integer(1000)          Maximum Time Channel
 $ useCalibFile        BooleanEnable( [false,1,0])  Use the calibration file below
 $ calibfile           LoadFileString         Calibration File
 $ RowColKeep          IntList(1:128)         Row,Col's to keep
-$ inst                String("SCD0")         Instrument
-$ DatFileExtension    String(".RUN")         Extension on Data Files
+$ inst                String("SCD_E000005_R000")  Instrument
+$ DatFileExtension    String(".nx.hdf")         Extension on Data Files
 #calibfile = "/IPNShome/scd/instprm.dat"
 Display "Instrument="&inst
 Display "Calibration File ="&calibfile
