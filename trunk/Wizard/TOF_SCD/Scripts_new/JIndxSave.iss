@@ -15,17 +15,19 @@
 #@return   Finished
 
 $title=Index Peaks
-$peaks       PlaceHolder        Peaks
-$OrientMat   Array              Orientation Matrix
-$RestrRuns   IntList            Restrict Runs
-$Delta       Float(.20)         Deltas
+$peaks       PlaceHolder           Peaks
+$OrientMat   Array                 Orientation Matrix
+$RestrRuns   IntList               Restrict Runs
+$Deltah       Float(.20)           Delta h
+$Deltak       Float(.20)           Delta k
+$Deltal       Float(.20)           Delta l
 $path        DataDirectoryString   Output Data Path 
-$expName     String             Experiment Name
-$logfile     Boolean(false)     Pop Up Log Info 
+$expName     String                Experiment Name
+$logfile     Boolean(false)        Pop Up Log Info 
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 
-V = JIndex(peaks,OrientMat,RestrRuns, Delta,Delta,Delta)
+V = JIndex(peaks,OrientMat,RestrRuns, Deltah,Deltak,Deltal)
 
 
 WritePeaks(path&expName&".peaks", peaks)
