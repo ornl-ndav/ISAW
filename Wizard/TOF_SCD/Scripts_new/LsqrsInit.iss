@@ -23,22 +23,25 @@ $category=HiddenOperator
 $command=Lsqrs
 $title=Least Squares ( Optimize Orientation Matrix )
 
-$Peaks       PlaceHolder    Peaks
-$runnums     IntList        Only Use Run Numbers ( "" for all )
-$RestrSeq    IntList        Only Use Sequence Numbers( "" for all )
-$useScalar   BooleanEnable([true,1,0])  Use Scalar's Transformation Matrix
-$TransMat    String         Transformation Matrix From Scalar
-$TransMat1   String([[1,0,0],[0,1,0],[0,0,1]]) Enter Transformation Matrix
-$MatFileName SaveFile       Matrix to write to
-$MinIntens   Integer(0)     Minimum Peak Intensity Threshold
-$RowColKeep  IntList(0:128) Pixel Rows and Columns to Keep
+$Peaks       PlaceHolder                          Peaks
+$runnums     IntList                              Only Use Run Numbers ( "" for all )
+$RestrSeq    IntList                             Only Use Sequence Numbers( "" for all )
+$useUserMat   BooleanEnable([true,1,0])          Enter Matrix( instead of Scalar's)
+$TransMat1   String([[1,0,0],[0,1,0],[0,0,1]])   Enter Transformation Matrix
+$TransMat    String                              Transformation Matrix From Scalar
+$MatFileName SaveFile                            Matrix to write to
+$MinIntens   Integer(0)                          Minimum Peak Intensity Threshold
+$RowColKeep  IntList(0:128)                      Pixel Rows and Columns to Keep
 $Constr      ChoiceList( ["Triclinic","Monoclinic ( b unique )","Monoclinic ( a unique )","Monoclinic ( c unique )","Orthorhombic","Tetragonal","Rhombohedral","Hexagonal","Cubic"] )     Cell Type Constraint
-$SaveDir    DataDirectoryString     Directory to save files
-if useScalar
-  tMat = TransMat
+$SaveDir    DataDirectoryString                  Directory to save files
+
+
+if useUserMat
+  tMat = TransMat1
 else
-  tmat = TransMat1
+  tmat = TransMat
 endif
+
 JLsqrs(Peaks,runnums,RestrSeq,tMat,MatFilename,MinIntens,RowColKeep,Constr)
     
 return 
