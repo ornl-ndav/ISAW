@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.54  2006/06/08 18:27:38  rmikk
+ * Added code to declare valid parameters that were disabled by thee Boolean
+ *    enablePG( in validateself and done)
+ * Added a utillity method, fire, that gets all BooleanEnablePG's to set the enabled
+ *    status of the parameterGUI's that they are responsible for
+ *
  * Revision 1.53  2006/03/16 22:56:28  rmikk
  * Added code to implement the BooleanEnabled ParameterGUI Feature
  *
@@ -498,9 +504,36 @@ public abstract class Form extends Operator implements PropertyChanger {
       return false;
     }
 
+    int nT=-1; 
+    int nF=-1;
+    boolean check = true;
     for( int i = 0; i < totalParam; i++ ) {
+      if( nT >=0){
+    	  nT--;
+    	  if( nT <0){
+    		  check=!check;
+        	  nF--;
+        	  if(nF <0) 
+        		  check = true;
+    	  }
+      }else if(nF >=0){
+    	  nF--;
+    	  if( nF <0)
+    		  check = true;
+      }
+      
+      if( !check)
+    	  areSet++;
+      else
       if( ( ( IParameterGUI )this.getParameter( i ) ).getValid(  ) ) {
         areSet++;
+      }
+      if( getParameter(i) instanceof BooleanEnablePG){
+    	  BooleanEnablePG Bpg =(BooleanEnablePG)(getParameter(i));
+    	  check = ((Boolean)Bpg.getValue()).booleanValue();
+    	  nT =Bpg.getNSetIfTrue();
+    	  nF =Bpg.getNSetIfFalse();
+    	  
       }
     }
 
@@ -785,9 +818,25 @@ public abstract class Form extends Operator implements PropertyChanger {
     boolean allValid       = true;
     IParameterGUI badParam = null;
 
+    int nT = -1;
+    int nF =-1;
+    boolean check = true;
     for( int i = 0; i < var_indices.length; i++ ) {
       ipg = ( IParameterGUI )this.getParameter( var_indices[i] );
-
+      if( nT >=0){
+    	  nT--;
+    	  if( nT <0){
+    		  check = !check;
+    		  nF--;
+    		  if( nF < 0)
+    			  check = true;
+    	  }
+      }else if( nF >=0){
+    	  nF--;
+    	  if( nF <0)
+    		  check = true;
+      }
+      if( check )
       if( !ipg.getValid(  ) ) {
         ipg.validateSelf(  );
 
@@ -795,6 +844,12 @@ public abstract class Form extends Operator implements PropertyChanger {
           allValid   = false;
           badParam   = ipg;
         }
+      }
+      if( ipg instanceof BooleanEnablePG){
+    	  BooleanEnablePG bpg=(BooleanEnablePG)ipg;
+    	  nT = bpg.getNSetIfTrue();
+    	  nF =bpg.getNSetIfFalse();
+    	  check = bpg.getbooleanValue();
       }
     }
 
@@ -871,5 +926,13 @@ public abstract class Form extends Operator implements PropertyChanger {
     }
 
     return var_indices;
+  }
+  
+  public void fireBooleanPGs(){
+	  for( int i=0; i < getNum_parameters(); i++){
+		  if( getParameter(i) instanceof BooleanEnablePG)
+			  ((BooleanEnablePG)getParameter(i)).fire();
+		  
+	  }
   }
 }
