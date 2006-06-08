@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2006/06/08 22:36:21  dennis
+ * Now works OK if the user presses the "Cancel" button on the
+ * file dialog for writing a Peaks File.
+ *
  * Revision 1.28  2006/03/15 21:21:40  dennis
  * Added control to restrict peaks displayed to a specified
  * range of Q values.
@@ -3285,13 +3289,26 @@ private class WritePeaksFileListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
-    JFileChooser chooser = new JFileChooser();
-    int returnVal = chooser.showOpenDialog( scene_f );
-    if(returnVal == JFileChooser.APPROVE_OPTION)
-      WritePeakDataFile( chooser.getSelectedFile().toString() );
+    JFileChooser chooser   = new JFileChooser();
+    int          returnVal = chooser.showOpenDialog( scene_f );
+    String       file_name = "";
 
-    System.out.println("Wrote Peak Data to " + 
-                        chooser.getSelectedFile().toString() );
+    if(returnVal == JFileChooser.APPROVE_OPTION)
+    {
+      try
+      {
+        file_name = chooser.getSelectedFile().toString();
+        WritePeakDataFile( file_name );
+
+        System.out.println("Wrote Peak Data to " + file_name );
+      }
+      catch ( Exception io_exception )
+      {
+        SharedData.addmsg( "Couldn't write Peaks file: " + file_name );
+        SharedData.addmsg( "  " + io_exception.toString() );
+      }
+    }
+
     return;
   }
 }
