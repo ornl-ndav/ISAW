@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.110  2006/06/08 18:24:50  rmikk
+ * Incorporated code so that the BooleanEnablePG status was correct
+ *    after the form had finished executing
+ *
  * Revision 1.109  2006/03/20 16:33:05  hammonds
  * Make loadForms and writeForms public methods to allow extending this to scripts.
  *
@@ -1047,6 +1051,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
         worked = f.getResult(  );
 
         //}
+        f.fireBooleanPGs();
         if( 
           ( worked instanceof ErrorString ) ||
             ( worked instanceof Boolean &&
