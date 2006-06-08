@@ -27,16 +27,18 @@ $Peaks   PlaceHolder   Enter peaks
 
 $useFile  BooleanEnable([False,1,2])  Use Matrix From File
 $file1    LoadFile               Input Orientation Matrix File ( .mat )    
+
 $Seq      IntArray               Sequence Numbers For Blind
 $file     SaveFile               Output Orientation Matrix File ( .mat ) 
+
 $path     DataDirectoryString    Output Data Path 
 $ShowLog  Boolean( false)        Pop Up blind.log 
 
 if useFile
-  return readOrient( file)
+  return readOrient( file1 )
 endif
 
-X= JBlindB( Peaks, seq, file)
+X= JBlindB( Peaks, seq, file )
 
 if ShowLog
  

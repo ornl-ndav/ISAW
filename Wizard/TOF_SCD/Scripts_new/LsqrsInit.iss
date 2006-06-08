@@ -1,11 +1,12 @@
 #       LeastSquares on a set of runs
-#File: Wizard/TOF_SCD/Script_new/LSqrsInit.iss
 
 #@overview This does a least squares fit between indexed peaks and Q values 
 #for a set of runs producing an overall leastSquare orientation matrix.
 #The matrix is stored in the specified file.  This orientation matrix
 #does incorporate the transformation from scalar or the one specified 
 # by the user
+
+#File: Wizard/TOF_SCD/Script_new/LSqrsInit.iss
 #
 #
 #@param  Peaks        The Vector of Peaks to work with
@@ -25,9 +26,9 @@ $title=Least Squares ( Optimize Orientation Matrix )
 $Peaks       PlaceHolder    Peaks
 $runnums     IntList        Only Use Run Numbers ( "" for all )
 $RestrSeq    IntList        Only Use Sequence Numbers( "" for all )
-$useScalar   BooleanEnable([true,1,1])  Use Scalar's Transformation Matrix
+$useScalar   BooleanEnable([true,1,0])  Use Scalar's Transformation Matrix
 $TransMat    String         Transformation Matrix From Scalar
-$TransMat1   String([1,0,0],[0,1,0],[0,0,1]) Enter Transformation Matrix
+$TransMat1   String([[1,0,0],[0,1,0],[0,0,1]]) Enter Transformation Matrix
 $MatFileName SaveFile       Matrix to write to
 $MinIntens   Integer(0)     Minimum Peak Intensity Threshold
 $RowColKeep  IntList(0:128) Pixel Rows and Columns to Keep
