@@ -8,34 +8,34 @@
 # @param peaks     A Vector of peak-new objects
 # @param OrientMat   The orientation matrix as a Vector of Vector of floats
 # @param RestrRuns   the run numbers to restrict the indexing of peaks to 
-#                       as a String
-# @param deltah     delta h
-# @param deltak     delta k
-# @param deltal      delta l
-# @param path      path to where output information is sent
-# @param expname   the name of the experiment
-# @param ShowLog   If trueindex1.log will pop up in a window
+#                    as a String
+# @param deltah     Delta h
+# @param deltak     Delta k
+# @param deltal     Delta l
+# @param path       path to where output information is sent
+# @param expname    the name of the experiment
+# @param ShowLog    If trueindex1.log will pop up in a window
 #                   NOTE, the file can be viewed from the view menu 
 #                   using the view text submenu and selecting index1.log
 
-$title= Index Peaks
+$title= Index Peaks ( Using Initial Orientation Matrix )
 $peaks    PlaceHolder
  
 $OrientMat Array     Orientation matrix
  
-$RestrRuns  String the run numbers to restrict the indexing of peaks to.
+$RestrRuns String    Restrict Runs 
  
-$deltah  Float(.2) delta h
+$deltah    Float(.2) Delta h
  
-$deltak     Float(.2) delta k
+$deltak    Float(.2) Delta k
  
-$deltal    Float(.2) delta l
+$deltal    Float(.2) Delta l
 
-$path      DataDirectoryString   Path to save log information
+$path      DataDirectoryString   Output Data Path 
 
-$expname   String     Experiment Name
+$expname   String             Experiment Name
 
-$ShowLog   Boolean( false)    Show index1.log
+$ShowLog   Boolean(false)     Pop Up index1.log
 
 
 OpenLog( path&"index1.log");
@@ -51,5 +51,3 @@ endif
 Display "------------Finished Indexing -----------------------"
 
 return  "Success"
-
-

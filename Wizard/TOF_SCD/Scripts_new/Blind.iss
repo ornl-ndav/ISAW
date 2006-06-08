@@ -22,15 +22,15 @@
 #                   using the view text submenu and selecting blind.log
 #  @return   an orientation matrix either from blind or the file 
 
-$Title= Blind to find a basis
+$Title= Blind ( Get Initial Orientation Matrix ) 
 $Peaks   PlaceHolder   Enter peaks
 
-$useFile  BooleanEnable([False,1,2])  Use Matrix in file
-$file1    LoadFile  Filename(.mat) with an orientation matrix    
-$Seq     IntArray      Sequence numbers for Blind
-$file    SaveFile    file name to store matrix
-$path    DataDirectoryString    output path
-$ShowLog  Boolean( false)   Show blind.log
+$useFile  BooleanEnable([False,1,2])  Use Matrix From File
+$file1    LoadFile               Input Orientation Matrix File ( .mat )    
+$Seq      IntArray               Sequence Numbers For Blind
+$file     SaveFile               Output Orientation Matrix File ( .mat ) 
+$path     DataDirectoryString    Output Data Path 
+$ShowLog  Boolean( false)        Pop Up blind.log 
 
 if useFile
   return readOrient( file)

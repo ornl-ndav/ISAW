@@ -1,4 +1,4 @@
-#     Shell around Scalar  so
+#  Shell around Scalar  so
 #  that the identity matrix and a user defined matrix can be given
 #@overview  Scalar provides a transformation matrix to convert the given unit
 #           cell to one of the 14 Bravais Lattices
@@ -14,12 +14,13 @@
 #@param ShowLog       Show scalar.log. Note that this file can also be
 #                     easily accessed via the View menu, the View Text option
 #@return      The transformation matrix needed 
-$title=Scalar: Transform to Bravais Lattice
+
+$title=Scalar ( Generate Possible Transformations to Desired Cell ) 
 
 $UB   Array          UB Matrix
 $Delta  Float(.01)   Delta
 $Constr    Choice(["Identity", "No Restriction","Highest Symmetry","P - Cubic","F - Cubic","R - Hexagonal","I - Cubic","I - Tetragonal","I - Orthorombic","P - Tetragonal","P - Hexagonal","C - Orthorombic","C - Monoclinic","F - Orthorombic","P - Orthorombic","P - Monoclinic","P - Triclinic","R11 == R22 == R33","R11 == R22 != R33","R11 == R33 != R22","R11 != R22 != R33"])   Symmetry Constraints
-$path      DataDirectoryString      output path
+$path      DataDirectoryString    Output Data Path 
 $ShowLog   Boolean( false)        Show scalar.log
 
 

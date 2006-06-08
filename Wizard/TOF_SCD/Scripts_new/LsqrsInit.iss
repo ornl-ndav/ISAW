@@ -8,29 +8,29 @@
 # by the user
 #
 #
-#@param  Peaks the Vector of Peaks to work with
-#@param  expName  the name of the experiment(for use in filenames)
-#@param  runnums  Restrict run nums(blank for all) 
-#@param  RestrSeqNums the sequence nums to restrict
-#@param  SaveDir  The directory to save the mat files to
-#@param MinIntens  th minimum intenstity threshold
-#@param RowColKeep  Pixel Rows and columns to keep
+#@param  Peaks        The Vector of Peaks to work with
+#@param  expName      The name of the experiment(for use in filenames)
+#@param  runnums      Restrict run nums(blank for all) 
+#@param  RestrSeqNums The sequence nums to restrict
+#@param  SaveDir      The directory to save the mat files to
+#@param  MinIntens    The minimum intenstity threshold
+#@param  RowColKeep   Pixel Rows and columns to keep
 #
 #@return the orientation matrix for all the runs
 
 $category=HiddenOperator
 $command=Lsqrs
-$title=Least Squares
+$title=Least Squares ( Optimize Orientation Matrix )
 
-$Peaks    PlaceHolder    Peaks
-$runnums   IntList      Restrict Run Numbers ("" for all)
-$RestrSeq   IntList     Sequence numbers to use("" for all)
-$useScalar   BooleanEnable([true,1,1])  Use Scalar's transf matrix
-$TransMat    String       Transform Matrix fr Scalar
-$TransMat1   String       User supplied Transf Matrix
-$MatFileName   SaveFile    Matrix to write to
-$MinIntens  Integer(0)  Minimum Peak Intensity Threshold
-$RowColKeep  IntList(0:100) Pixel Rows and Columns to Keep
+$Peaks       PlaceHolder    Peaks
+$runnums     IntList        Only Use Run Numbers ( "" for all )
+$RestrSeq    IntList        Only Use Sequence Numbers( "" for all )
+$useScalar   BooleanEnable([true,1,1])  Use Scalar's Transformation Matrix
+$TransMat    String         Transformation Matrix From Scalar
+$TransMat1   String([1,0,0],[0,1,0],[0,0,1]) Enter Transformation Matrix
+$MatFileName SaveFile       Matrix to write to
+$MinIntens   Integer(0)     Minimum Peak Intensity Threshold
+$RowColKeep  IntList(0:128) Pixel Rows and Columns to Keep
 $Constr      ChoiceList( ["Triclinic","Monoclinic ( b unique )","Monoclinic ( a unique )","Monoclinic ( c unique )","Orthorhombic","Tetragonal","Rhombohedral","Hexagonal","Cubic"] )     Cell Type Constraint
 $SaveDir    DataDirectoryString     Directory to save files
 if useScalar

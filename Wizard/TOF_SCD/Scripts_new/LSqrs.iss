@@ -1,8 +1,8 @@
 #       LeastSquares on a set of runs
-#File: Wizard/TOF_SCD/Script_new/LSqrs.iss
+# File: Wizard/TOF_SCD/Script_new/LSqrs.iss
 #@overview This does several least squares on a set of runs, 
-#producing and overall leastSquare matrix and one for each of the runs.
-#The matrices are stored in files under the name ls[expName]runNum.mat
+# producing and overall leastSquare matrix and one for each of the runs.
+# The matrices are stored in files under the name ls[expName]runNum.mat
 # or ls[expName].mat
 #
 #@param  Peaks the Vector of Peaks to work with
@@ -34,7 +34,6 @@ for i in runnums
    endfor
    
    JLsqrs(Pk1,""&i,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep)
- 
 endfor
 
 S=""
@@ -54,10 +53,4 @@ endfor
 JLsqrs(Pk1,S,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep)
     
 return 
-
-   
-   
-
-
-
 
