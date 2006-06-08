@@ -34,6 +34,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/06/08 22:04:15  rmikk
+ * Eliminated debug printing to a file.
+ * Eliminated an unused variable
+ *
  * Revision 1.2  2006/06/08 15:50:59  rmikk
  * Fixed copyright.
  * Started first cutoff at 80% of the intensity at the startinf point
@@ -129,7 +133,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 				V.setElementAt( GetPeakR( DS,P),i);
 			}
 
-			try{
+			/*try{
 				java.io.FileOutputStream fout = new java.io.FileOutputStream("C:/xx.out");
 				for( int i=0; i< V.size(); i++){
 					if( V.elementAt(i)== null)
@@ -145,6 +149,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 			}catch( Exception ss){
 				
 			}
+			*/
 			for(int i=0; i< V.size(); i++){
 				PeakInfo P =(PeakInfo)V.elementAt(i);
 				if( P != null)
@@ -163,7 +168,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 				V.setElementAt( pk_n, i);
 			}
 			
-			boolean done =false;
+			
 			for( int i= V.size()-1; i >=0 ; i--){
 				if( V.elementAt(i) == null)
 					V.remove(i);
