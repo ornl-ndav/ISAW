@@ -5,6 +5,9 @@
 # First specify any parameters to the script, giving the variable name,
 # data type and prompt string.  A dialog box will prompt the user for values
 # for these parameters
+
+
+# File: Wizard/TOF_SCD/Script_new/integrate_multiple_runs.iss
 #
 # Assumptions:
 #  - Data of interest is in histogram 2
@@ -16,6 +19,7 @@ $ outpath             DataDirectoryString    Output Data Path
 $ run_numbers         Array                  Run Number
 $ expname             String                 Experiment Name
 $ centering           Choice(["primitive","a centered","b centered","c centered", "[f]ace centered","[i] body centered","[r]hombohedral centered" ])      Centering type
+$ useCalibFile        BooleanEnable( [false,1,0])  Use the calibration file below
 $ calibfile           LoadFileString         SCD Calibration File
 $ time_slice_range    String(-1:3)           Time-slice range
 $ increase            Integer(1)             Increase slice size by
@@ -26,6 +30,7 @@ $PeakAlg           Choice(["MaxIToSigI","Shoe Box","MaxIToSigI-old","TOFINT","EX
 $Xrange            Array([-3,3])            Range of x's around shoebox center
 $Yrange            Array([-3,3])               Range of y's around shoebox center
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
+$title=Integrate Peaks
 #$inst = "SCD"
 Display "Instrument = "&inst
 #Display "Calibration File ="&calibfile
