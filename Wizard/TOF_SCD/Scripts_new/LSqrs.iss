@@ -17,13 +17,13 @@
 $Title= Least Squares
 $category=HiddenOperator
 $command=Lsqrs
-$Peaks    PlaceHolder    Peaks
-$expName   String       Name of experiment
-$runnums   Array([])      Restrict Run Numbers ("" for all)
-$RestrSeq   IntList     Sequence numbers to use("" for all)
-$SaveDir    DataDirectoryString     Directory to save files
-$MinIntens  Integer(0)  Minimum Peak Intensity Threshold
-$RowColKeep  IntList(0:100) Pixel Rows and Columns to Keep
+$Peaks       PlaceHolder    Peaks
+$expName     String         Name of experiment
+$runnums     Array([])      Restrict Run Numbers ("" for all)
+$RestrSeq    IntList        Sequence numbers to use("" for all)
+$SaveDir     DataDirectoryString     Directory to save files
+$MinIntens   Integer(0)     Minimum Peak Intensity Threshold
+$RowColKeep  IntList(0:128) Pixel Rows and Columns to Keep
 
 N=ArrayLength(Peaks)
 for i in runnums
