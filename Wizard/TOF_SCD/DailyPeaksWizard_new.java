@@ -48,10 +48,11 @@ public class DailyPeaksWizard_new extends Wizard
      ,{1,-1,4,3,1}   //output path
      ,{2,-1,2,4,2}   //Runnums
      ,{3,-1,1,8,3}   //exp name
-     ,{12,0,0,0,-1}   //peaks
-     ,{10,-1,-1,-1,8} //instName
-     ,{11,-1,-1,-1,9} //FileExt
-     ,{8,-1,-1,-1,5}  //calibFilename
+     ,{13,0,0,0,-1}   //peaks
+     ,{11,-1,-1,-1,9} //instName
+     ,{12,-1,-1,-1,10} //FileExt
+     ,{9,-1,-1,-1,6}  //calibFilename
+     ,{8,-1,-1,-1,5}  //use Calib file
      
      ,{-1,2,-1,5,-1}  //RestrRuns ????
      ,{-1,4,-1,-1,-1}  //Filename to save peaks to ??
@@ -77,7 +78,7 @@ public class DailyPeaksWizard_new extends Wizard
      addForm( new ScriptForm(  path+"LSqrs.iss",new ArrayPG( "Result",null ),new int[]{0,1,2,4}));
      addForm( new ScriptForm(path+"JIndxSave2.iss", new PlaceHolderPG("Peaks",null),new int[]{0,3,4,8}));
      addForm( new ScriptForm(path+"integrate_multiple_runs.iss", new StringPG("Result",""),
-                   new int[]{0,1,2,3,5,8,9}));
+                   new int[]{0,1,2,3,5,6,9,10}));
      linkFormParameters( ParamTable );
     String S="" ;
     S+="This wizard does the following is the replacement for the";
