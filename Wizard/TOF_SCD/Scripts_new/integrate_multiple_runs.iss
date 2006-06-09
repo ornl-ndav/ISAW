@@ -22,13 +22,13 @@ $ centering           Choice(["primitive","a centered","b centered","c centered"
 $ useCalibFile        BooleanEnable( [false,1,0])  Use the calibration file below
 $ calibfile           LoadFileString         SCD Calibration File
 $ time_slice_range    String(-1:3)           Time-slice range
-$ increase            Integer(1)             Increase slice size by
+$ increase            Integer(1)             Amount to Increase Slice Size By
 $ inst                String("SCD0")         Instrument name
 $ FileExt             String(".nx.hdf")      FileExtension
-$ d_min             float(0.0)             Minimum d-spacing
-$PeakAlg           Choice(["MaxIToSigI","Shoe Box","MaxIToSigI-old","TOFINT","EXPERIMENTAL"])  Integ 1 peak algorithm
-$Xrange            Array([-3,3])            Range of x's around shoebox center
-$Yrange            Array([-3,3])               Range of y's around shoebox center
+$ d_min             float(0.0)               Minimum d-spacing
+$PeakAlg           Choice(["MaxIToSigI","Shoe Box","MaxIToSigI-old","TOFINT","EXPERIMENTAL"])  Integrage 1 peak algorithm
+$Xrange            Array([-3,3])             Box Delta x ( col ) Range
+$Yrange            Array([-3,3])             Box Delta y ( col ) Range 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 $title=Integrate Peaks
 #$inst = "SCD"

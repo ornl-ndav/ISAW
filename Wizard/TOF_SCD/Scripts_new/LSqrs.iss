@@ -26,6 +26,7 @@ $MinIntens   Integer(0)     Minimum Peak Intensity Threshold
 $RowColKeep  IntList(0:128) Pixel Rows and Columns to Keep
 
 N=ArrayLength(Peaks)
+Display "N="&N
 for i in runnums
    filename=SaveDir&"/ls"&expName&i&".mat"
    Pk1=[]

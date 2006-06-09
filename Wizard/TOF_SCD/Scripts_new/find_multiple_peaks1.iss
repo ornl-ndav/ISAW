@@ -1,6 +1,6 @@
 # 
 # Script to find peaks in multiple SCD or SXD files. 
-# $Date: 2004/07/12  $
+# $Date: 2006/06/09 $
 #
 # File: Wizard/TOF_SCD/Scripts_new/find_multiple_peaks.iss
 #
@@ -25,7 +25,7 @@ $ min_time_chan       Integer(0)             Minimum Time Channel
 $ max_time_chan       Integer(1000)          Maximum Time Channel 
 $ useCalibFile        BooleanEnable( [false,1,0])  Use the calibration file below
 $ calibfile           LoadFileString         Calibration File
-$ RowColKeep          IntList(1:128)         Row,Col's to keep
+$ RowColKeep          IntList(1:128)         Pixel Rows and Columns to Keep 
 $ inst                String("SCD_E000005_R000")  Instrument
 $ DatFileExtension    String(".nx.hdf")         Extension on Data Files
 #calibfile = "/IPNShome/scd/instprm.dat"
