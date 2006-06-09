@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.88  2006/06/09 16:13:02  rmikk
+ * Fixed a bug dealing with "" in a little used static method . It is currently being
+ *    used while parsing the initial value in a Scripts parameters
+ *
  * Revision 1.87  2006/04/12 19:15:35  rmikk
  * Eliminated this reference to static variables so warnings are reduced
  *
@@ -3892,10 +3896,10 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
                 if( (!quote) && (brclevel==0) && (SrchChars.indexOf(c)>=0) )
                     return i;
                 quote = !quote;
-                if( i >= 1)
-                    if( S.charAt( i - 1 )  =='\"' ){
-                        quote = !quote;
-                    }
+                //if( i >= 1)
+                //    if( S.charAt( i - 1 )  =='\"' ){
+                //       quote = !quote;
+               //     }
             }else if( quote ){
             }else if( SrchChars.indexOf( c ) >= 0 ){
                 if( brclevel == 0 )
