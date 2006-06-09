@@ -1,10 +1,10 @@
 #       LeastSquares on a set of runs
-# File: Wizard/TOF_SCD/Script_new/LSqrs.iss
 #@overview This does several least squares on a set of runs, 
 # producing and overall leastSquare matrix and one for each of the runs.
 # The matrices are stored in files under the name ls[expName]runNum.mat
 # or ls[expName].mat
 #
+# File: Wizard/TOF_SCD/Script_new/LSqrs.iss
 #@param  Peaks the Vector of Peaks to work with
 #@param  expName  the name of the experiment(for use in filenames)
 #@param  runnums  Restrict run nums(blank for all) 
@@ -14,7 +14,7 @@
 #@param RowColKeep  Pixel Rows and columns to keep
 #
 #@return the orientation matrix for all the runs
-
+$Title= Least Squares
 $category=HiddenOperator
 $command=Lsqrs
 $Peaks    PlaceHolder    Peaks
