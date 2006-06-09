@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/06/09 04:15:21  rmikk
+ * Fixed an error due to the position of the Initial Path length attribute in
+ *   a data set
+ *
  * Revision 1.4  2006/06/08 15:55:12  rmikk
  * Added GPL
  *
@@ -285,7 +289,7 @@ public class PeakInfo {
     	else 
     		T0 =T.floatValue();
     	xscl = DS.getData_entry(0).getX_scale();
-    	Float I = ((Float)DS.getAttributeValue( DataSetTools.dataset.Attribute.INITIAL_PATH));
+    	Float I = ((Float)DS.getData_entry(0).getAttributeValue( DataSetTools.dataset.Attribute.INITIAL_PATH));
     	if( I == null)
     		initialPath = 0f;
     	else
