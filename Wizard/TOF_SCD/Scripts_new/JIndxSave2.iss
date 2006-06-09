@@ -70,7 +70,7 @@ if logfile  AND peakfilename <>"NONE"
       S=""
    endif  
    
-   OpenLog( outputpath[0]&S&"index&.log")
+   OpenLog( outputpath[0]&S&"index.log")
     LogMsg( V)
   
 
