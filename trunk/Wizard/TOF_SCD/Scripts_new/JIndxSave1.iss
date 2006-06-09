@@ -1,6 +1,8 @@
-# This is a wrapper around JIndex(Vector Peaks... that allows for
+# This is a wrapper around JIndex(Vector Peaks...)that allows for
 # saving the peaks and displaying JIndex log information in the
 # status pane. This inputs the orientation matrix from a file
+
+#File: Wizard/TOF_SCD/Scripts_new/JIndxSave1.iss
 #@param  peaks   the Peaks Vector
 #@param  OrientMatFile   the orientation matrix
 #@param RestrRuns    Run numbers to not include
@@ -16,7 +18,7 @@ $peaks     PlaceHolder        Peaks
 $OrientMatFile   LoadFile     Orientation Matrix file name
 $RestrRuns   IntList          Restrict Runs
 $Delta       Float(.20)       Deltas
-$peakfilename    SaveFileString("NONE")   Filename to save peak to which contains directory for the index log file
+$peakfilename    SaveFileString("NONE")   Filename to save peaks
 $logfile    Boolean(true)   Show log info
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
@@ -36,7 +38,7 @@ if logfile  AND peakfilename <>"NONE"
    if EndsWith( outputpath[0],S)
       S=""
    endif 
-   OpenLog( outputpath[0]&S&index&".log")
+   OpenLog( outputpath[0]&S&"index&.log")
     LogMsg( V)
     
 
