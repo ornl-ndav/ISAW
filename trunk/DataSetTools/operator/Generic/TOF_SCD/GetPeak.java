@@ -33,232 +33,361 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/06/10 21:39:09  rmikk
+ * Added documentation
+ *
  * Revision 1.4  2006/06/08 15:55:12  rmikk
  * Added GPL
  *
  */
 package DataSetTools.operator.Generic.TOF_SCD;
 
-import java.lang.reflect.Array;
+
 
 import Command.ScriptUtil;
 import Command.Script_Class_List_Handler;
 import DataSetTools.dataset.*;
 
-
+/**
+ *  This class find a peak by growing it from a point first in the x direction
+ *  then in the y directions and finally in the z directions. 
+ * @author Ruth
+ *
+ */
 public class GetPeak {
+	
 	public static boolean debug = false; //level 1-Macro results, level 2-adds info about each cell 
+	
+	/**
+	 * Constructor
+	 * Not used because all the methods are static
+	 *
+	 */
     public GetPeak() { 
         super();
-        // TODO Auto-generated constructor stub
+        
     }
     
+    
+    
+    
     /**
-     * Calculates the information to find the extent, sum, center(weighted and non weighted of
-     * a peak around the point in question
+     * Finds the peakInfo that contains information about one peak.  This 
+     * information can be used to find the centroid, background, intensities
      * @param row    A row inside the peak
      * @param col    a col inside the peak
      * @param timeChan  a time channel inside the peak
-     * @param Detnum    The detector number associated with the row/col
+     * @param DetID   The detector number associated with the row/col
      * @param DS         the data set with the peak in it
-     * @return          The block of information to calculate the information needed.
+     * @param backIntensity  The cutoff value to determine when a cell is added
+     *                  to the peak. The average cell intensity of the cell and
+     *                  its nearest neighbbor must exceed this cutoff to be 
+     *                  included
+     *                  
+     * @return          The block of information to calculate the information 
+     *                   needed.
      */
-    public static PeakInfo getPeakInfo( int row, int col, int timeChan,int DetID, 
-                                                     DataSet DS, float backIntensity){
-        if(Float.isNaN(backIntensity)){
-            ScriptUtil.display("The background Intensity is NaN in getPeakInfo");
+    public static PeakInfo getPeakInfo( int row , int col , int timeChan , int DetID , 
+                                                     DataSet DS , float backIntensity ){
+    	
+        if( Float.isNaN( backIntensity) ){
+            ScriptUtil.display( "The background Intensity is NaN in getPeakInfo");
             return null;
         }
-        IDataGrid grid = Grid_util.getAreaGrid(DS, DetID);
-        if( grid == null){
-            ScriptUtil.display("There is no "+DetID+" for the DataSet "+DS+" in getPeakInfo");
+        
+        IDataGrid grid = Grid_util.getAreaGrid( DS , DetID );
+        if( grid == null ){
+            ScriptUtil.display( "There is no " + DetID + " for the DataSet " + DS + " in getPeakInfo" );
             return null;
         }
-        PeakInfo Pinf = new PeakInfo( DetID, grid, backIntensity, DS);
-        if( debug)
+        PeakInfo Pinf = new PeakInfo( DetID , grid , backIntensity , DS );
+        if( debug )
         	Pinf.debug = true;
-        int[] posMax= new int[6];
-        posMax[0]=-1;//y pos plus 1 line of max 
-        posMax[1] =-1;//y pos minus 1 line
-        posMax[2] =-1;//x pos plus 
-        posMax[3] =-1;//y pos plus 
-        posMax[4] =-1;//x pos minus 
-        posMax[5] =-1;//x pos minus
-        float[] MaxVal = new float[1];
-        MaxVal[0] =Float.MIN_VALUE;
-        return RecGetPeakInfo(row,col,timeChan, grid, 3,3,3,backIntensity,posMax,Pinf);
+        int[] posMax = new int[ 6 ];
+        Float x = null;
+        System.out.println( x.floatValue() );
+        posMax[ 0 ] = -1;//y pos plus 1 line of max 
+        posMax[ 1 ]  = -1;//y pos minus 1 line
+        posMax[ 2 ] = -1;//x pos plus 
+        posMax[ 3 ] = -1;//y pos plus 
+        posMax[ 4 ] = -1;//x pos minus 
+        posMax[ 5 ] = -1;//x pos minus
+        float[] MaxVal = new float[ 1 ];
+        MaxVal[ 0 ] = Float.MIN_VALUE;
+        return RecGetPeakInfo( row , col , timeChan , grid ,  3 , 3 , 3 , backIntensity , posMax , Pinf );
         
     }
     
-    private static PeakInfo RecGetPeakInfo( int row, int col, int timeChan,IDataGrid grid, int xdir, int ydir, int zdir,
-                            float backIntensity,int[] posMax,PeakInfo Pinf){
-        if( row <1) return Pinf;
-        if( col < 1) return Pinf;
-        if( row > grid.num_rows())return Pinf;
-        if( col > grid.num_cols()) return Pinf;
-        if( timeChan <0) return Pinf;
-        Data D = grid.getData_entry(row,col);
-        if( D==null)return Pinf;
-        if(D.getX_scale()==null)return Pinf;
-        if( timeChan >= D.getX_scale().getNum_x()) return Pinf;
-        float intensity= grid.getData_entry(row,col).getY_values()[timeChan];
+    
+    
+    
+    // Recursively grow the peak first in the x direction, then y direction then finally z direction. The growth
+    //   in any direction continues until the next cell 's average intensity with its nearest neighbors does
+    //   does not excede backIntensity
+    //@param row , col, timeChan   the starting cell for growing the peak
+    //@param grid   The grid for getting values
+    //@param xdir  0 means do not grow, 2 mins to grow in positive x direction, 1 means grow in negative x direction
+    //              3 means grow in both directions
+    //@param ydir, zdir  See xdir
+    //@param backIntensity  the cutoff point for the average intensity of a cell and nearest neighbors on this time
+    //                    slice  to be included in a peak
+    //@param  posMax  An array containing the positions of the max's in the other directions
+    //               posMax[0]- x position of strongest cell in positive y direction from this cell
+    //               posMax[2]- x position of strongest cell in negative y direction from this cell
+    //               posMax[3]- x position of strongest cell in positive z direction from this cell
+    //               posMax[4]- x position of strongest cell in negative z direction from this cell
+    //               posMax[5]- y position of strongest cell in positive z direction from this cell
+    //               posMax[6]- y position of strongest cell in negative z direction from this cell
+    private static PeakInfo RecGetPeakInfo( int row , int col , int timeChan , IDataGrid grid , int xdir , int ydir , int zdir ,
+                            float backIntensity , int[] posMax , PeakInfo Pinf ){
+        if( row < 1 ) 
+        	return Pinf;
+        if( col < 1 ) 
+        	return Pinf;
+        if( row > grid.num_rows() )
+        	return Pinf;
+        if( col > grid.num_cols() ) 
+        	return Pinf;
+        if( timeChan < 0 ) 
+        	return Pinf;
         
-        if( !Pinf.addPeak(row,col,timeChan,intensity))
+        Data D = grid.getData_entry( row , col );
+        if( D == null )
+        	return Pinf;
+        if( D.getX_scale() == null )
+        	return Pinf;
+        if( timeChan >= D.getX_scale().getNum_x() ) 
+        	return Pinf;
+
+        float intensity = grid.getData_entry( row , col ).getY_values()[ timeChan ];
+        
+        if( !Pinf.addPeak( row , col , timeChan , intensity ) )
             return Pinf;
+    
         
-        posMax=update(grid,posMax, row,col,timeChan,0,1);
-        posMax=update(grid,posMax,row,col,timeChan,0,-1);
-        posMax = update( grid, posMax, row, col,timeChan, 1,0);
-        posMax = update( grid, posMax, row, col,timeChan, -1,0);
-        if( xdir >=2){//go right
+        // Input values are in range so now proceed
+        
+        posMax = update( grid , posMax , row , col , timeChan , 0 , 1 );
+        posMax = update( grid , posMax , row , col , timeChan , 0 , -1 );
+        posMax = update( grid , posMax , row , col , timeChan , 1 , 0 );
+        posMax = update( grid , posMax , row , col , timeChan ,  -1 , 0 );
+        
+        if( xdir >= 2 ){//go right only
             
-            RecGetPeakInfo( row,col+1,timeChan,grid,2,0,0,backIntensity,posMax,Pinf);
-            xdir -=2;
+            RecGetPeakInfo( row , col + 1 , timeChan , grid , 2 , 0 , 0 , backIntensity , posMax , Pinf );
+            xdir -= 2;
         }
-        if(xdir >=1){
+        
+        
+        if( xdir >= 1 ){//go left only
 
             
-            RecGetPeakInfo( row,col-1,timeChan,grid,1,0,0,backIntensity,posMax,Pinf);
-            xdir -=1;
+            RecGetPeakInfo( row , col - 1 , timeChan , grid , 1 , 0 , 0 , backIntensity , posMax , Pinf );
+            xdir -= 1;
         }
-        int colplus = posMax[0], colminus=posMax[1];
+        
+        
+        int colplus = posMax[ 0 ] , 
+            colminus = posMax[ 1 ];
 
-        if( ydir >=2){
-            posMax[0]=posMax[1]=-1;
-            RecGetPeakInfo( row+1,colplus,timeChan,grid,3,2,0,backIntensity,posMax,Pinf);
+        if( ydir >= 2 ){ //go in pos y dir only and both directions in x dir
+            posMax[ 0 ] = posMax[ 1 ] = -1;
+            RecGetPeakInfo( row + 1 , colplus , timeChan , grid , 3 , 2 , 0 , backIntensity , posMax , Pinf );
             
-            ydir -=2;            
+            ydir -= 2;            
         }
 
-        if( ydir >=1){
-            posMax[0]=posMax[1]=-1;
-            RecGetPeakInfo( row-1,colminus,timeChan,grid,3,1,0,backIntensity,posMax,Pinf);
-            
-                        
+        if( ydir >= 1 ){//go down in the y direction
+            posMax[ 0 ] = posMax[ 1 ] = -1;
+            RecGetPeakInfo( row - 1 , colminus , timeChan , grid , 3 , 1 , 0 , backIntensity , posMax , Pinf );
+                       
         }   
         
-        int zplusy=posMax[2];
-        int zplusx=posMax[3];
-        int zminusy=posMax[4];
-        int zminusx=posMax[5];
+        int zplusy = posMax[ 2 ];
+        int zplusx = posMax[ 3 ];
+        int zminusy = posMax[ 4 ];
+        int zminusx = posMax[ 5 ];
         
         
-        if( zdir >=2){
+        if( zdir >= 2 ){ //go in the positive z direction only
             
-            java.util.Arrays.fill(posMax,-1);
-            RecGetPeakInfo( zplusy,zplusx,timeChan+1,grid,3,3,2,backIntensity,posMax,Pinf);
-            zdir -=2;
+            java.util.Arrays.fill( posMax ,  -1 );
+            RecGetPeakInfo( zplusy , zplusx , timeChan + 1 , grid , 3 , 3 , 2 , backIntensity , posMax , Pinf );
+            zdir -= 2;
         }
 
-        if( zdir >=1){
-            java.util.Arrays.fill(posMax,-1);
-            RecGetPeakInfo( zminusy,zminusx,timeChan-1,grid,3,3,1,backIntensity,posMax,Pinf);
-            zdir -=1;
+        if( zdir >= 1 ){  //go in the negative z direction
+            java.util.Arrays.fill( posMax , -1 );
+            RecGetPeakInfo( zminusy , zminusx , timeChan - 1 , grid , 3 , 3 , 1 , backIntensity , posMax , Pinf );
+            zdir -= 1;
         }
+        
         return Pinf;
     }
-    //diry and dirz are 0,1,or -1.  Only one can be nonzero
-    private static int[] update( IDataGrid grid, int[] posMax, int thisrow, int thiscol,int thischan,
-              int diry, int dirz){
-        if( thisrow+diry <1)return posMax;
-        if( thischan+dirz <0)return posMax;
-        if( thisrow+diry > grid.num_rows())return posMax;
+    
+    
+  
+    
+    
+    
+    // diry and dirz are 0,1,or -1.  Only one can be nonzero
+    // updates the position of the max in the next direction
+    private static int[] update( IDataGrid grid , int[] posMax , int thisrow , int thiscol , int thischan ,
+              int diry , int dirz ){
+    	
+        if( thisrow + diry < 1 )
+        	return posMax;
+        if( thischan + dirz < 0 )
+        	return posMax;
+        if( thisrow + diry > grid.num_rows() )
+        	return posMax;
         
-        if( thischan+dirz > grid.getData_entry( thisrow+diry, thiscol).getX_scale().getNum_x())
+        if( thischan + dirz > grid.getData_entry( thisrow + diry ,  thiscol ).getX_scale().getNum_x() )
              return posMax;
         
-        if( posMax[0] <0)if( diry !=0){
-            posMax[0] =thiscol;
+        if( posMax[ 0 ] < 0 )if( diry != 0 ){
+            posMax[ 0 ] = thiscol;
             return posMax;
         }
-        if( posMax[1] <0)if( diry !=0){
-            posMax[1] =thiscol;
-            return posMax;
-        }
-
-        if( posMax[2] <0)if( dirz !=0){
-            posMax[2] =thisrow;
-            posMax[3] =thiscol;
+        if( posMax[ 1 ] < 0 )if( diry != 0 ){
+            posMax[ 1 ] = thiscol;
             return posMax;
         }
 
-        if( posMax[4] <0)if( dirz !=0){
-            posMax[4] =thisrow;
-            posMax[5] =thiscol;
+        if( posMax[ 2 ] < 0 )if( dirz != 0 ){
+            posMax[ 2 ] = thisrow;
+            posMax[ 3 ] = thiscol;
             return posMax;
         }
-        if( diry !=0){
-            int k=0; if(diry < 0) k=1;
-            if( grid.getData_entry( thisrow+diry,thiscol).getY_values()[thischan] >
-                grid.getData_entry( thisrow+diry,posMax[k]).getY_values()[thischan])
-                posMax[k]= thiscol;
+
+        if( posMax[ 4 ] < 0 )if( dirz != 0 ){
+            posMax[ 4 ] = thisrow;
+            posMax[ 5 ] = thiscol;
+            return posMax;
+        }
+        
+        if( diry != 0 ){
+            int k = 0; if( diry < 0 ) k = 1;
+            if( grid.getData_entry( thisrow + diry , thiscol ).getY_values()[ thischan ] >
+                grid.getData_entry( thisrow + diry , posMax[ k ] ).getY_values()[ thischan ] )
+                posMax[ k ] = thiscol;
             return posMax;
             
         }
-        if( dirz ==0) return posMax;
-        int k=2;
-        if( dirz <0)k=4;
-        if( grid.getData_entry( thisrow,thiscol).getY_values()[thischan+dirz] >
-        grid.getData_entry( posMax[k],posMax[k+1]).getY_values()[thischan+dirz]){
-        posMax[k]= thisrow;
-        posMax[k+1] = thiscol;
+        
+        if( dirz == 0 ) 
+        	return posMax;
+        
+        int k = 2;
+        if( dirz < 0 )
+        	k = 4;
+        if( grid.getData_entry( thisrow , thiscol ).getY_values()[ thischan + dirz ] >
+                       grid.getData_entry( posMax[ k ] , posMax[ k + 1 ] ).getY_values()[ thischan + dirz ] ){
+           posMax[ k ] = thisrow;
+           posMax[ k + 1 ] = thiscol;
         }
+        
+        
         return posMax;
+        
     }
-    public static void ShowUsage(){
-        System.out.println("Enter the name of the file with the data set and the data set number");
-        System.exit(0);
-    }
-    /**
-     * @param args
+  
+    
+    
+    
+    /*
+     * Show the arguments needed on the command line to run this program 
      */
-    public static void main(String[] args) {
-       if( (args==null) ||(args.length<2))
-               GetPeak.ShowUsage();
-       DataSet DS=null;
-       try{
-          DataSet[] DSS =ScriptUtil.load( args[0]);
-          DS = DSS[ (new Integer(args[1])).intValue()];
-       }catch(Exception s){
-           s.printStackTrace();
-           System.exit(0);
+    public static void ShowUsage(){
+        System.out.println("Enter the name of the file with the data set and the data set number" );
+        System.exit(0 );
+    }
+    
+    
+    
+    
+    
+    /**
+     * Test program for this class
+     * @param args  Enter none to see what the arguments should be
+     */
+    public static void main( String[] args ) {
+    	
+       if( (args == null ) ||(args.length < 2 ) ){
+    	   
+            GetPeak.ShowUsage();
+            System.exit(0 );
        }
-       int row,col,timeChan,DetID;
+       
+       
+       DataSet DS = null;
+       try{
+    	   
+          DataSet[] DSS = ScriptUtil.load( args[ 0 ] );
+          DS = DSS[  ( new Integer( args[ 1 ] ) ).intValue() ];
+          
+       }catch( Exception s ){
+    	   
+           s.printStackTrace();
+           System.exit( 0 );
+           
+       }
+       
+       
+       int row ,
+           col ,
+           timeChan ,
+           DetID;
+       
        float backIntensity;
 
-       row=95; col=95; timeChan=11;DetID=19;backIntensity=2f;
-       while(true)
+       row = 95; 
+       col = 95; 
+       timeChan = 11;
+       DetID = 19;
+       backIntensity = 2f;
+       
+       while( true )
        {
            try{
-               System.out.print("Enter Row:");
-               row = (new Integer(Script_Class_List_Handler.getString())).intValue();
-               System.out.print("Enter Col:");
-               col = (new Integer(Script_Class_List_Handler.getString())).intValue();
-               System.out.print("Enter chan:");
-               timeChan = (new Integer(Script_Class_List_Handler.getString())).intValue();
-               System.out.print("Enter detID:");
-               DetID = (new Integer(Script_Class_List_Handler.getString())).intValue();
-               System.out.print("Enter backInt:");
-               backIntensity = (new Float(Script_Class_List_Handler.getString())).floatValue();
+        	   
+               System.out.print( "Enter Row:" );
+               row = ( new Integer( Script_Class_List_Handler.getString() ) ).intValue();
                
-           }catch(Exception s){
-               row=col=timeChan=DetID=-1;
+               System.out.print( "Enter Col:" );
+               col = ( new Integer( Script_Class_List_Handler.getString() ) ).intValue();
+               
+               System.out.print( "Enter chan:" );
+               timeChan = ( new Integer( Script_Class_List_Handler.getString() ) ).intValue();
+               
+               System.out.print( "Enter detID:" );
+               DetID = ( new Integer( Script_Class_List_Handler.getString() ) ).intValue();
+               
+               System.out.print( "Enter backInt:" );
+               backIntensity = ( new Float( Script_Class_List_Handler.getString() ) ).floatValue();
+               
+           }catch( Exception s ){
+        	   
+               row = col = timeChan = DetID = -1;
                backIntensity = Float.NaN;
            }
+           
            GetPeak.debug = true;
-           PeakInfo pk = GetPeak.getPeakInfo(row,col,timeChan,DetID,DS,backIntensity);
-           if( pk == null)
-               System.out.println("Result is null");
+           PeakInfo pk = GetPeak.getPeakInfo( row , col , timeChan , DetID , DS , backIntensity );
+           
+           if( pk == null )
+               System.out.println( "Result is null" );
            else{
-               System.out.println("Total Intensitywo/w background="+pk.TotIntensity+","+pk.getTotIntensity());
-               System.out.println("Max extent= x:"+pk.minX+"-"+pk.maxX+";y:"+pk.minY+"-"+pk.maxY+";z:"+
-            		   pk.minZ+"-"+pk.maxZ+"; TotExtentIntensity="+
-                        pk.TotExtentIntensity);
+        	   
+               System.out.println( "Total Intensitywo/w background=" + pk.TotIntensity + "," + pk.getTotIntensity() );
+               System.out.println( "Max extent= x:" + pk.minX + "-" + pk.maxX + ";y:" + pk.minY + "-" + pk.maxY + ";z:" + 
+            		   pk.minZ + "-" + pk.maxZ + "; TotExtentIntensity=" + 
+                        pk.TotExtentIntensity );
 
                
-               System.out.println("Middle pos ="+pk.getWeightedAverageCol()+","+pk.getWeightedAverageRow()+","+
-                       pk.getWeightedAverageChan());
-               System.out.println("number of cells/background intensity/cell="+pk.getNCells()+","+pk.background);
+               System.out.println( "Middle pos =" + pk.getWeightedAverageCol() + "," + pk.getWeightedAverageRow() + "," + 
+                       pk.getWeightedAverageChan() );
+               System.out.println( "number of cells/background intensity/cell=" + pk.getNCells() + "," +  pk.background );
            }
        
        }
