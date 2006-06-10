@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/06/10 23:22:46  rmikk
+ * Removed a statement designed to give an error
+ *
  * Revision 1.5  2006/06/10 21:39:09  rmikk
  * Added documentation
  *
@@ -104,8 +107,8 @@ public class GetPeak {
         if( debug )
         	Pinf.debug = true;
         int[] posMax = new int[ 6 ];
-        Float x = null;
-        System.out.println( x.floatValue() );
+     
+     
         posMax[ 0 ] = -1;//y pos plus 1 line of max 
         posMax[ 1 ]  = -1;//y pos minus 1 line
         posMax[ 2 ] = -1;//x pos plus 
