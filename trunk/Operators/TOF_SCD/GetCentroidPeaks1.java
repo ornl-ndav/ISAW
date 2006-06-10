@@ -32,8 +32,11 @@
  *
  *
  * Modified:
- *
+ 
  * $Log$
+ * Revision 1.4  2006/06/10 22:10:26  rmikk
+ * Improved the documentation
+ *
  * Revision 1.3  2006/06/08 22:04:15  rmikk
  * Eliminated debug printing to a file.
  * Eliminated an unused variable
@@ -49,40 +52,43 @@
  */
 package Operators.TOF_SCD;
 
-//import java.beans.java_awt_BorderLayout_PersistenceDelegate;
+
 
 import DataSetTools.operator.*;
 import DataSetTools.dataset.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import java.util.*;
-//import gov.anl.ipns.Util.Numeric.*;
-import DataSetTools.instruments.*;
+
 
 
 /*
  * This wrapped operator performs both find peaks and centroid peaks for a 
  * data set.  The peaks object, as Peak_new, are returned.  These Peak objects
  * have ALL the conversion information( except possibly the orientation matrix).
+ * The algorithm for centroiding one peak uses 
+ * DataSetTools.operator.Generic.TOF_SCD.GetPeak with varying cutoffs until
+ * certain conditions are obtained.
  */
 public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
   //~ Instance fields **********************************************************
 
   public DataSet DS; //Calibrated
   public float moncount ;
-  public int MaxNumPeaks =30;
-  public int MinPeakIntensity =10;
-  public int MinTimeChannel =0;
-  public int MaxTimeChannel =1000;
-  public IntListString PixelRows = new IntListString("0:100");
+  public int MaxNumPeaks = 30;
+  public int MinPeakIntensity = 10;
+  public int MinTimeChannel = 0;
+  public int MaxTimeChannel = 1000;
+  public IntListString PixelRows = new IntListString( "0:100" );
                               //  GridNums
 
   //~ Methods ******************************************************************
 
   /**
-   * Uncomment the lines below if you want to use your own command name.
-   * Normally the command name is the name of your class file (e.g.
-   * ArtsIntegrate) in all capital letters.
+   * Returns GetCentroidPeaks1, the command name used by the Scripting 
+   * language to invoke this operator
+   * 
+   * @return  GetCentroidPeaks1
    */
   public String getCommand(  ) {
     return "GetCentroidPeaks1";
@@ -94,142 +100,148 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
        StringBuffer s = new StringBuffer(  );
        s.append( "@overview This operator find's and centroids peaks in " );
        s.append( "a DataSet and returns them as a Vector of Peak_new entries" );
-       s.append( "@Uses the FindPeaks and CentroidPeaks operators to get " );
+       s.append( "@Uses the FindPeaks and an internal method to get " );
        s.append( "a Vector of Peak objects, then converts each to a Peak_new" );
        s.append( "entry ");
-       s.append( "@param DS the data set contianing the peak");       
-       s.append( "@param moncount  The total counts on the Corresponding ");
-       s.append( "monitor for the data set");         
-       s.append( "@param MaxNumPeaks The maximum number of peaks to fine");
-       s.append( "@param MinPeakIntensity the minimum intensity for a peak");
-       s.append( "@param MinTimeChannel The minimum time channel to use");
-       s.append( "@param MaxTimeChannel The maximum time channel to use");
-       s.append( "@param PixelRows The rows and columns to use");
+       s.append( "@param DS the data set contianing the peak" );       
+       s.append( "@param moncount  The total counts on the Corresponding " );
+       s.append( "monitor for the data set" );         
+       s.append( "@param MaxNumPeaks The maximum number of peaks to fine" );
+       s.append( "@param MinPeakIntensity the minimum intensity for a peak" );
+       s.append( "@param MinTimeChannel The minimum time channel to use" );
+       s.append( "@param MaxTimeChannel The maximum time channel to use" );
+       s.append( "@param PixelRows The rows and columns to use" );
        
-       s.append( "@return A Vector of Peak_new Objects with data entries ");
-       s.append( "cleared( no References to the DataSet) " );
+       s.append( "@return A Vector of Peak_new Objects with data entries " );
+       s.append( "cleared( no References to the DataSet) "  );
 
-       s.append( "@error No Area Grids. The DataSet must have area grids " );
+       s.append( "@error No Area Grids. The DataSet must have area grids "  );
        s.append( "@error index out of bounds if Grid Id's do not match grids" );
-       s.append(" @error null pointer exceptions, etc. See stack trace");
+       s.append( " @error null pointer exceptions, etc. See stack trace" );
        return s.toString(  );
   }
 
   /**
-	 *
+	 *  Finds the centroid peaks for this data set as follows:
+	 *  First it finds all peaks using the FindPeaks method. Next it 
+	 *  Centroids each of these peaks using GetPeaks with cutoffs changing
+	 *  by 50% between current cutoff and the background, until finished.
+	 *  Finished means that the extents are too large, the cutoff is too close
+	 *  to the background, etc. Next it eliminates peaks whose extents hit each other
+	 *  or that are null. Finally it converts the form of the peaks from
+	 *   GetPeaks to a Peak_new object and  returns it.
 	 */
 	public Object calculate() {
+		Object Res = null;
 		try {
 
-			Object O = (new FindPeaks(DS, moncount, MaxNumPeaks,
-					MinPeakIntensity, MinTimeChannel, MaxTimeChannel, PixelRows))
+			Object O = ( new FindPeaks( DS, moncount, MaxNumPeaks,
+					MinPeakIntensity, MinTimeChannel, MaxTimeChannel, PixelRows ) )
 					.getResult();
 
-			if (O instanceof ErrorString)
+			if ( O instanceof ErrorString )
 				return O;
 			Vector V = (Vector) O;
-			for(int i=0;i<V.size();i++){
-				Peak P=(Peak) (V.elementAt(i));
-				V.setElementAt( GetPeakR( DS,P),i);
+			for( int i = 0;i < V.size();i++ ){
+				Peak P =(Peak) ( V.elementAt( i ) );
+				V.setElementAt( GetPeakR( DS,P ),i );
 			}
-
-			/*try{
-				java.io.FileOutputStream fout = new java.io.FileOutputStream("C:/xx.out");
-				for( int i=0; i< V.size(); i++){
-					if( V.elementAt(i)== null)
-						fout.write((i+": null\n").getBytes());
-					else{
-						PeakInfo pk =(PeakInfo)V.elementAt(i);
-						fout.write((i+":"+pk.getWeightedAverageCol()+" "+pk.getWeightedAverageRow()+" "+pk.getWeightedAverageChan()+":"+pk.getNCells()+
-								  "x:"+pk.minX+"-"+pk.maxX+";y:"+pk.minY+"-"+pk.maxY+";z:"+pk.minZ+"-"+pk.maxZ+"-"+pk.maxZ+";Int-"+pk.getTotIntensity()+
-								  "; cutoff="+pk.backgroundIntensity+"\n").getBytes());
-					}
-				}
-				fout.close();
-			}catch( Exception ss){
+		
+			
+			for( int i = 0; i < V.size(); i++ ){
+				PeakInfo P =(PeakInfo)V.elementAt( i );
+				if( P != null )
 				
-			}
-			*/
-			for(int i=0; i< V.size(); i++){
-				PeakInfo P =(PeakInfo)V.elementAt(i);
-				if( P != null)
-				
-					for( int j=V.size()-1; j>i; j--){
-						PeakInfo P1=(PeakInfo)V.elementAt(j);
-						if(P1 != null)
-						if( P.hits(P1) )
-							V.remove(j);
+					for( int j = V.size() - 1; j > i; j-- ){
+						PeakInfo P1 = (PeakInfo)V.elementAt( j );
+						if( P1 != null )
+						if( P.hits( P1 ) )
+							V.remove( j );
 					}
 			}
 			//set up sequence numbers
-			for(int i=0; i < V.size(); i++){
-				Peak_new pk_n=((PeakInfo)V.elementAt(i)).makePeak();
+			for( int i = 0; i  < V.size(); i++ ){
+				Peak_new pk_n =((PeakInfo)V.elementAt( i ) ).makePeak();
 				
-				V.setElementAt( pk_n, i);
+				V.setElementAt( pk_n, i );
 			}
 			
 			
-			for( int i= V.size()-1; i >=0 ; i--){
-				if( V.elementAt(i) == null)
-					V.remove(i);
+			for( int i = V.size() - 1; i >= 0 ; i-- ){
+				if( V.elementAt( i ) == null )
+					V.remove( i );
 			}
 			
 			return V;
-		} catch (Exception ss) {
-			return new ErrorString(ss.toString());
+		} catch ( Exception ss ) {
+			
+			String[] S = Command.ScriptUtil.GetExceptionStackInfo( ss, true, 3 );
+			String SS = ss.toString() + "\n";
+			if( S !=  null )
+				for( int i = 0; i < S.length; i++ )
+					SS += S[ i ] + "\n";
+			Res = new ErrorString( SS );
+			
 		}
 		
-		
+		return Res;
 		
 	}
 	
+	
+	//Repeatedly runs DataSetTools.operator.Generic.TOF_SCD.GetPeak with 
+	//different cutoffs until done.
 	private PeakInfo GetPeakR( DataSet DS, Peak P ){
-		int x= (int)P.x();
-		int y= (int) P.y();
-		int z =(int)P.z();
-		boolean done  =false;
-		int gridID=P.detnum();
-		IDataGrid grid = Grid_util.getAreaGrid( DS, gridID); 
-		int nrows= grid.num_rows();
-	    int ncols=grid.num_cols();
+		
+		int x = (int)P.x();
+		int y = (int) P.y();
+		int z  = (int)P.z();
+		boolean done  = false;
+		int gridID = P.detnum();
+		IDataGrid grid = Grid_util.getAreaGrid( DS, gridID ); 
+		int nrows = grid.num_rows();
+	    int ncols = grid.num_cols();
 
-		float cutoff = .8f*grid.getData_entry(y,x).getY_values()[z];;
-	    int nchan = DS.getData_entry(0).getY_values().length;
-	    PeakInfo PP = GetPeak.getPeakInfo( y, x, z, gridID, DS, cutoff);
-	    done = (PP==null);
+		float cutoff = .8f*grid.getData_entry( y,x ).getY_values()[ z ];;
+	    int nchan = DS.getData_entry( 0 ).getY_values().length;
+	    
+	    PeakInfo PP = GetPeak.getPeakInfo( y, x, z, gridID, DS, cutoff );
+	    done = ( PP ==  null );
 	    PeakInfo PP2 = null;
-		while(!done){
-			if(PP==null)
+		while( !done ){
+			if( PP == null )
 				done = false;
-		    else if(Float.isNaN(PP.getCalcBackgroundLevel() ) )
+		    else if( Float.isNaN( PP.getCalcBackgroundLevel() ) )
 				done = false;
-			else if( PP.getNCells()<5)
+			else if( PP.getNCells() < 5 )
 				done = false;
-			else if( PP.getNCells() > .8*PP.getNCellsExtent())
-				done =false;
-			else if( (PP.maxX-PP.minX >.2*ncols)||(PP.maxY-PP.minY >.2*nrows)||(PP.maxZ-PP.minZ >.1*nchan)){
+			else if( PP.getNCells() > .8*PP.getNCellsExtent() )
+				done = false;
+			else if( ( PP.maxX - PP.minX > .2*ncols )||( PP.maxY - PP.minY > .2*nrows )||( PP.maxZ - PP.minZ > .1*nchan ) ){
 				done = true;
-				PP=PP2;
+				PP = PP2;
 			}
 				
-		    else if( cutoff<P.ipkobs()/200) done = true;
-			else if( cutoff - PP.getCalcBackgroundLevel() <.3)
-		   		done =true;
-			if(!done){
-				PP2=PP;
+		    else if( cutoff < P.ipkobs()/200 )
+		    	done = true;
+			else if( cutoff - PP.getCalcBackgroundLevel() < .3 )
+		   		done = true;
+			if( !done ){
+				PP2 = PP;
 				
-				float cutoff1 =(cutoff+PP.getCalcBackgroundLevel())/2.0f;
+				float cutoff1 = ( cutoff + PP.getCalcBackgroundLevel() )/2.0f;
 				
-				if( cutoff1 >= .95*cutoff) 
-					cutoff=cutoff/2f;
-				else if( Float.isNaN(cutoff1))
+				if( cutoff1 >= .95*cutoff ) 
+					cutoff = cutoff/2f;
+				else if( Float.isNaN( cutoff1 ) )
 					cutoff = cutoff/2.0f;
 				else
-					cutoff=cutoff1;
+					cutoff = cutoff1;
 					
-				PP = GetPeak.getPeakInfo( y, x, z, gridID, DS, cutoff);
+				PP = GetPeak.getPeakInfo( y, x, z, gridID, DS, cutoff );
 			}
 		}
+		
 		return PP;
 		
 	}
