@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2006/06/13 14:17:10  dennis
+ * Now includes a control to select specific detectors to display,
+ * project peaks, etc.
+ *
  * Revision 1.29  2006/06/08 22:36:21  dennis
  * Now works OK if the user presses the "Cancel" button on the
  * file dialog for writing a Peaks File.
@@ -299,6 +303,7 @@ public class GL_RecipPlaneView
   private float           rgb_colors[][];
       
   private TextRangeUI     q_range_control;
+  private TextIntListUI   det_choice_control;
   private JSlider         peak_threshold_slider;
   private JSlider         contour_threshold_slider;
 
@@ -411,6 +416,13 @@ public class GL_RecipPlaneView
     border.setTitleFont( FontUtil.BORDER_FONT );
     q_range_control.setBorder( border );
 
+    det_choice_control = new TextIntListUI( "Detector IDs:  ", "" );
+                border = new TitledBorder( LineBorder.createBlackLineBorder(),
+                                           "Detectors Shown");
+
+    border.setTitleFont( FontUtil.BORDER_FONT );
+    det_choice_control.setBorder( border );
+
     peak_threshold_slider = new JSlider(SLIDER_MIN,SLIDER_MAX,SLIDER_DEF);
     peak_threshold_slider.setMajorTickSpacing(20);
     peak_threshold_slider.setMinorTickSpacing(5);
@@ -478,6 +490,7 @@ public class GL_RecipPlaneView
 
     Box view_controls = new Box(BoxLayout.Y_AXIS);    
     view_controls.add( q_range_control );
+    view_controls.add( det_choice_control );
     view_controls.add( peak_threshold_slider );
     view_controls.add( contour_threshold_slider );
     view_controls.add( checkbox_panel );
@@ -545,6 +558,8 @@ public class GL_RecipPlaneView
     calc_fft_button.addActionListener( new CalcFFTButtonHandler() );
 
     q_range_control.addActionListener( new Q_Range_Listener() );
+    det_choice_control.addActionListener( new DetChoiceListener() );
+
     peak_threshold_slider.addChangeListener( new PeakThresholdScaleHandler() );
     vec_Q_space.getDisplayComponent().addMouseListener( 
                  new ViewMouseInputAdapter() );
@@ -814,6 +829,20 @@ public class GL_RecipPlaneView
   public void initialize( boolean extract_peaks )
   {
     makeVecQTransformers();
+
+    if ( vec_q_transformer != null )
+    {
+      int[] id_array = new int[ vec_q_transformer.size() ];
+      for ( int i = 0; i < vec_q_transformer.size(); i++ )
+      {
+        VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(i);
+        IDataGrid grid = transformer.getDataGrid();
+        id_array[i] = grid.ID();
+      }
+      String id_list_string = IntList.ToString( id_array );
+      det_choice_control.setListString( id_list_string );
+    } 
+
 
     if ( orientation_matrix != null )         // add the orientation matrix
     {                                         // to all DataSets and add HKL op
@@ -1129,6 +1158,7 @@ public class GL_RecipPlaneView
        return null;
   } 
 
+
 /* ------------------------ ExtractPeaks --------------------------- */
 
   private void ExtractPeaks()
@@ -1147,12 +1177,27 @@ public class GL_RecipPlaneView
       System.out.println("There are " + vec_q_transformer.size() + " grids");
     }
 
+    Hashtable id_table = new Hashtable();   // use to check if the current grid
+                                            // should be used.
+    int id_array[] = det_choice_control.getList();
+    for ( int i = 0; i < id_array.length; i++ )
+      id_table.put( new Integer(id_array[i]), new Integer(id_array[i]) );
+ 
     all_peaks = new Vector();
     for ( int i = 0; i < vec_q_transformer.size(); i++ )
     {
-      GL_Shape non_zero_objs[] = getPeaks( i, peak_threshold );
-      vec_Q_space.setObjects( PEAK_OBJECTS+i, non_zero_objs);
-      System.out.println("Found peaks : " + non_zero_objs.length );
+      VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(i);
+      IDataGrid grid = transformer.getDataGrid();
+      int id = grid.ID();
+      if ( id_table.get( new Integer(id) ) != null )
+      {
+        GL_Shape non_zero_objs[] = getPeaks( i, peak_threshold );
+        vec_Q_space.setObjects( PEAK_OBJECTS+i, non_zero_objs);
+        System.out.println("Found peaks : " + non_zero_objs.length );
+      }
+      else
+        vec_Q_space.removeObjects( PEAK_OBJECTS+i );
+      
     }
 
                                        // initialize the list of all q vectors
@@ -1202,6 +1247,8 @@ public class GL_RecipPlaneView
    *  Get an array of peaks from the specified grid, based on the specified
    *  threshold scale factor.
    *
+   *
+   *  @param index            The index of the DataGrid in the list. 
    *  @param index            The index of the DataGrid in the list. 
    *  @param peak_threshold   The absolute threshold in counts.
    *
@@ -3223,6 +3270,32 @@ private class PeakThresholdScaleHandler implements ChangeListener
   }
 
 
+/* ------------------------ det_choice_Listener --------------------------- */
+  
+  private class DetChoiceListener implements ActionListener
+  {
+     String last_list;
+
+     public DetChoiceListener()
+     {
+       last_list = det_choice_control.getListString();
+     }
+
+     public void actionPerformed(ActionEvent e) 
+     {
+       String list = det_choice_control.getListString();
+
+       if ( !list.equals( last_list ) )
+       {
+         scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+         ExtractPeaks();
+         vec_Q_space.Draw();
+         scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+       }
+     }
+  }
+
+
 /* -------------------- ContourThresholdScaleHandler ------------------- */
 
 private class ContourThresholdScaleHandler implements ChangeListener
@@ -3651,8 +3724,6 @@ private class FFTListener implements IObserver
         {
           viewer.peak_threshold = viewer.SLIDER_DEF;
           System.out.println("threshold less than " + viewer.SLIDER_MIN +
-                             " ignored, using default...");
-        }
         viewer.SetThresholdScale( (int)viewer.peak_threshold );
       }
       catch ( Exception e )
