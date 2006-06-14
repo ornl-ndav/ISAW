@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2006/06/14 15:31:23  rmikk
+ * Fixed an error in GetExceptionStackInfo so now the correct info is
+ * returned  when an internal error occurs
+ *
  * Revision 1.15  2006/05/19 16:02:23  rmikk
  * Added a static method ToVec that converts an Object to a Vector, converting
  * arrays and arrays of arrays to Vectors and Vector of Vectors, etc.
@@ -762,8 +766,8 @@ public class ScriptUtil{
     for(int i=0; (i < elts.length)&&(V.size()<nlines); i++){
       String C = elts[i].getClassName();
       if( C != null)
-      if( excludeJava &&!C.startsWith("java.")&&!C.startsWith("sun."))
-       {}
+      if( excludeJava &&(C.startsWith("java.")||C.startsWith("sun.")))
+       {} 
       else
         V.addElement( "class "+C+" at line "+ elts[i].getLineNumber());
           
