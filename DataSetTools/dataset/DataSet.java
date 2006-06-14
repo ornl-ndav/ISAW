@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.54  2006/06/14 15:56:49  rmikk
+ *  Set up the data grids in the XMLread for xml input for data sets
+ *
  *  Revision 1.53  2006/03/15 14:52:08  dennis
  *  Changed the addOperator() method to first remove any operator
  *  of the same type as the operator being added, to avoid getting
@@ -2507,7 +2510,20 @@ public class DataSet implements IAttributeList,
     DataSetList dsl = new DataSetList( this);
     if(!dsl.XMLread( stream) )
       return false;
-     
+    Vector grids = new Vector();
+    for( int i = 0 ; i < this.getNum_entries() ; i++ ){
+    	Data db = this.getData_entry( i );
+    	PixelInfoList pixInfo = (PixelInfoList) db.getAttributeValue( Attribute.PIXEL_INFO_LIST );
+    	if( ( pixInfo != null ) && ( pixInfo.num_pixels() > 0 )){
+    		IDataGrid grid = pixInfo.pixel(0).DataGrid();
+    		if( !grids.contains( grid ) )
+    			grids.addElement( grid );	
+    	}
+    		
+    }
+    
+    for( int i = 0 ; i < grids.size() ; i++ )
+    	((IDataGrid)( grids.elementAt( i ) ) ).setData_entries( this );
     return true;
   }
 
