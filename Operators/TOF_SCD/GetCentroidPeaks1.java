@@ -34,6 +34,9 @@
  * Modified:
  
  * $Log$
+ * Revision 1.5  2006/06/16 18:20:17  rmikk
+ * Fixed some errors that will cause the search routine to search almost all cells.
+ *
  * Revision 1.4  2006/06/10 22:10:26  rmikk
  * Improved the documentation
  *
@@ -133,6 +136,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 	 */
 	public Object calculate() {
 		Object Res = null;
+	
 		try {
 
 			Object O = ( new FindPeaks( DS, moncount, MaxNumPeaks,
@@ -146,7 +150,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 				Peak P =(Peak) ( V.elementAt( i ) );
 				V.setElementAt( GetPeakR( DS,P ),i );
 			}
-		
+		   
 			
 			for( int i = 0; i < V.size(); i++ ){
 				PeakInfo P =(PeakInfo)V.elementAt( i );
@@ -176,10 +180,10 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 		} catch ( Exception ss ) {
 			
 			String[] S = Command.ScriptUtil.GetExceptionStackInfo( ss, true, 3 );
-			String SS = ss.toString() + "\n";
+			String SS = ss.toString() + "\n  ";
 			if( S !=  null )
 				for( int i = 0; i < S.length; i++ )
-					SS += S[ i ] + "\n";
+					SS += S[ i ] + "\n  ";
 			Res = new ErrorString( SS );
 			
 		}
@@ -202,6 +206,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 		int nrows = grid.num_rows();
 	    int ncols = grid.num_cols();
 
+
 		float cutoff = .8f*grid.getData_entry( y,x ).getY_values()[ z ];;
 	    int nchan = DS.getData_entry( 0 ).getY_values().length;
 	    
@@ -217,7 +222,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 				done = false;
 			else if( PP.getNCells() > .8*PP.getNCellsExtent() )
 				done = false;
-			else if( ( PP.maxX - PP.minX > .2*ncols )||( PP.maxY - PP.minY > .2*nrows )||( PP.maxZ - PP.minZ > .1*nchan ) ){
+			else if( ( PP.maxX - PP.minX > .15*ncols )||( PP.maxY - PP.minY > .15*nrows )||( PP.maxZ - PP.minZ > .1*nchan ) ){
 				done = true;
 				PP = PP2;
 			}
@@ -231,10 +236,13 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 				
 				float cutoff1 = ( cutoff + PP.getCalcBackgroundLevel() )/2.0f;
 				
-				if( cutoff1 >= .95*cutoff ) 
-					cutoff = cutoff/2f;
-				else if( Float.isNaN( cutoff1 ) )
+				if( Float.isNaN( cutoff1 ) )
 					cutoff = cutoff/2.0f;
+				
+				else if( ( cutoff1 >= cutoff )&&( PP.getNCells() >1) ) // Getting into another peak
+					return PP2;
+				else if( cutoff1 >= cutoff)
+				   cutoff =  .9f*cutoff;
 				else
 					cutoff = cutoff1;
 					
