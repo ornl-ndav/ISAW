@@ -31,6 +31,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2006/06/16 18:16:01  rmikk
+ * Added an output Vector argument to the parameter list .  This vector has two
+ * Integer elements.  The first is the number indexed and the last is the number
+ * attempted to be indexed
+ *
  * Revision 1.9  2006/06/06 19:33:32  rmikk
  * Added documentation on the data written to a log file here.
  *
@@ -127,6 +132,22 @@ public class IndexJ_base extends    GenericTOF_SCD implements
    
   }
   
+  
+  /**
+   *  Construct operator to execute index.
+   *
+   *  @param peaks The Vector of peaks Objects to index. 
+   *  @param UB   Orientation matrix 
+   * @param RestrRuns   The int list of restricted runs
+   *  @param delta The error parameter for indexing peaks (h = k = l)
+   *  @param  Stats  output only. Returns number indexed(first element) and
+   *                  number that were tried(second element)
+   */
+  public IndexJ_base( Vector peaks, float[][] UB, String RestrRuns,float delta, Vector Stats){
+	  this( peaks,UB,RestrRuns,delta);
+	  getParameter(6).setValue( Stats );
+  }
+  
   /* ------------------------- setDefaultParmeters ----------------------- */
   /**
    *  Set the parameters to default values.
@@ -146,6 +167,7 @@ public class IndexJ_base extends    GenericTOF_SCD implements
     //5
     addParameter(new FloatPG("Delta l",0.20f));
     //6
+    addParameter( new ArrayPG("n indexed,n used", null));// output values for this operator
    
      }
   
@@ -172,6 +194,9 @@ public class IndexJ_base extends    GenericTOF_SCD implements
     sb.append("k value.");
     sb.append("@param delta_l the allowable uncertainty in the calculated ");
     sb.append("l value.");
+    sb .append( "@param Stats  Vector for output values. The first element ");
+    sb.append("is the number indexed and the 2nd is the number attempted\n");
+    sb.append("NOTE: to get these values you MUST supply an Array variable");
     // return
     sb.append("@return The log information. The peaks of parameter 1");
     sb.append("  are also indexed and the log information is also written to");
@@ -203,6 +228,8 @@ public class IndexJ_base extends    GenericTOF_SCD implements
      int         crystallite = 1;     // placeholder for future feature
     int[]       runs        = null;  // run numbers to index
     int[]       seqs        = null;  // sequence numbers to index
+    java.util.Vector   Stats ;
+    
    try{
     // get the peaks file name from the script and test it out
     peaks=(Vector)(getParameter(0).getValue());
@@ -278,7 +305,15 @@ public class IndexJ_base extends    GenericTOF_SCD implements
     }
 
     
-
+    Stats =(Vector)(getParameter(6).getValue());
+    if( Stats.size()<1)
+    	Stats.addElement( new Integer(0));
+    else
+    	Stats.setElementAt( new Integer(0),0);
+    if( Stats.size() < 2)
+    	Stats.addElement( new Integer(0));
+    else
+    	Stats.setElementAt( new Integer(0), 1);
   
     // have someone else read in our peaks file
     
@@ -324,12 +359,12 @@ public class IndexJ_base extends    GenericTOF_SCD implements
       log.append(peak.toString().substring(2)+"\n");
     }
 
-    SharedMessages.LOGaddmsg( IndexJ_base.getNumIndexed( peaks,runs,seqs )+"\n");
+    SharedMessages.LOGaddmsg( IndexJ_base.getNumIndexed( peaks,runs,seqs, Stats )+"\n");
     ShowLogInfo( log );
     
     // return the log file name and print the number of indexed peaks
-    SharedData.addmsg( IndexJ_base.getNumIndexed( peaks,runs,seqs ));
-    return log.toString();
+    SharedData.addmsg( IndexJ_base.getNumIndexed( peaks,runs,seqs, Stats ));
+    return IndexJ_base.getNumIndexed( peaks,runs,seqs, Stats)+"\n"+log.toString();
    }catch(Exception xx){
      xx.printStackTrace();
      return new ErrorString(xx);
@@ -387,7 +422,7 @@ public class IndexJ_base extends    GenericTOF_SCD implements
    * This method goes through a vector of peaks and counts the number
    * of peaks that have indices.
    */
-  private static String getNumIndexed(Vector peaks,int[]runs, int[]seqs){
+  private static String getNumIndexed(Vector peaks,int[]runs, int[]seqs, Vector Stats){
     Peak peak=null;
     int numIndexed=0;
     int numNotIndexed=0;
@@ -399,7 +434,8 @@ public class IndexJ_base extends    GenericTOF_SCD implements
          else
         	numNotIndexed++;
     }
-
+    Stats.setElementAt( new Integer( numIndexed),0);
+    Stats.setElementAt( new Integer( numIndexed + numNotIndexed) , 1);
     return "Indexed "+numIndexed+" of "+(numIndexed+numNotIndexed)+" peaks";
   }
 
