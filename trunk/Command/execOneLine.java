@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.89  2006/06/16 18:11:17  rmikk
+ * Returns line numbers and methods 3 levels deep where exceptions occure
+ *
  * Revision 1.88  2006/06/09 16:13:02  rmikk
  * Fixed a bug dealing with "" in a little used static method . It is currently being
  *    used while parsing the initial value in a Scripts parameters
@@ -865,9 +868,11 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
       }catch(Exception sss){
         String[] SS = ScriptUtil.GetExceptionStackInfo(sss,true,1);
         S ="";
-        if( SS != null) if(SS.length>0)
-           S= SS[0];
-        serror= sss.toString()+":"+ S;
+        if( SS != null) 
+          for(  i = 0 ; ( i < 3 ) && ( i < SS.length ) ;  i++){
+        	S +=  SS[i]+"\n  ";  
+          }
+        serror= sss.toString()+"\n  "+ S;
         perror = i;
         return i;
       }
@@ -2876,7 +2881,20 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
         if( op instanceof Customizer)
             ((Customizer)op).addPropertyChangeListener( this );
 
-        Result = op.getResult();
+        try{
+            
+		    Result = op.getResult();
+		    
+        }catch(Throwable s){
+          String[] SS = ScriptUtil.GetExceptionStackInfo( s,true,1);
+          String S="";
+          if( SS.length>0)
+             S = SS[0];
+          seterror (1000 ,  s.toString()+"in "+S);
+          return;
+        }
+        
+        
         op.setDefaultParameters();
         op = null;
 
