@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/06/16 18:22:50  rmikk
+ * Introduced code that sill not allow a peak to have and extend greater than
+ *    40% of the max for row and col and 20% of max for time
+ *
  * Revision 1.6  2006/06/10 21:38:44  rmikk
  * Added a lot more documentation
  *
@@ -88,6 +92,9 @@ public class PeakInfo {
     public float backgroundIntensity;
     
     public boolean debug = false;
+    int maxChannels,
+        maxRows,
+        maxCols;
     
     
     /**
@@ -125,6 +132,9 @@ public class PeakInfo {
     	initialPath = Float.NaN;
     	T0 = Float.NaN;
     	
+    	maxRows = grid.num_rows();
+    	maxCols = grid.num_cols();
+    	maxChannels = grid.getData_entry(1,1).getX_scale().getNum_x()-1;
     }  
        
 
@@ -177,7 +187,21 @@ public class PeakInfo {
             TotExtentIntensity  = intensity;
         }
         ncells++ ;
-        //-------------- update Total Extent ------------------------
+//      -------------- eliminate rambling through all the data  ------------------------
+        if( col -minX  > .4* maxCols)
+        	return false;
+        if( maxX -col > .4* maxCols)
+        	return false;
+        if( row - minY > .4* maxRows)
+        	return false;
+        if( maxY - row > .4*maxRows)
+        	 return false;
+        if( timeChan- minZ >.2*maxChannels)
+        	return false;
+        if( maxZ -timeChan > .2*maxChannels)
+        	return false;
+        
+//      -------------- update Total Extent ------------------------
         if( col > maxX ){
             for( int i = maxX + 1 ; i <= col ;  i++ )
                 for( int j = minY ; j <= maxY ; j++ )
