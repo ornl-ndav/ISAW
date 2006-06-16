@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/06/16 18:21:44  rmikk
+ * Did some more bounds checking
+ *
  * Revision 1.6  2006/06/10 23:22:46  rmikk
  * Removed a statement designed to give an error
  *
@@ -237,12 +240,24 @@ public class GetPeak {
     // updates the position of the max in the next direction
     private static int[] update( IDataGrid grid , int[] posMax , int thisrow , int thiscol , int thischan ,
               int diry , int dirz ){
+    	if( thiscol < 1)
+    		return posMax;
+    	if( thiscol > grid.num_cols())
+    		return posMax;
+    	if( thisrow < 1)
+    		return posMax;
     	
-        if( thisrow + diry < 1 )
-        	return posMax;
+    	if( thisrow > grid.num_rows())
+    		return posMax;
+    	if( thisrow + diry <1)
+   		   return posMax;
+   	    if( thisrow+diry > grid.num_rows())
+   		   return posMax;
+    	if( thischan < 0)
+    		return posMax;
+    	 if( thischan > grid.getData_entry( thisrow + diry ,  thiscol ).getX_scale().getNum_x() )
+             return posMax;
         if( thischan + dirz < 0 )
-        	return posMax;
-        if( thisrow + diry > grid.num_rows() )
         	return posMax;
         
         if( thischan + dirz > grid.getData_entry( thisrow + diry ,  thiscol ).getX_scale().getNum_x() )
