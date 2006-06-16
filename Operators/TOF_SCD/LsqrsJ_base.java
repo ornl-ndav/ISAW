@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2006/06/16 18:17:20  rmikk
+ * Now writes log information to the logging file at this time
+ *
  * Revision 1.9  2006/01/17 22:42:35  rmikk
  * Set the UB matrix to null and hkl values to zero for peaks that are not
  *   indexed because they are not in selected runs or sequences
@@ -73,6 +76,7 @@ package Operators.TOF_SCD;
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.Sys.SharedMessages;
 
 //import java.io.File;
 import java.io.FileOutputStream;
@@ -1175,7 +1179,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
    *
    */
   private static String writeLog( String logfile, String log ) {
-    FileOutputStream fout = null;
+   /* FileOutputStream fout = null;
     if( logfile == null){
    
        SharedData.addmsg(log+"\n");
@@ -1199,6 +1203,10 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     }
 
     return null;
+    */
+	gov.anl.ipns.Util.Sys.SharedMessages.LOGaddmsg( log );
+	
+	return null;
   }
   public Object clone(){
     LsqrsJ_base Res = new LsqrsJ_base();
