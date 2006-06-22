@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.75  2006/06/22 22:39:54  amoe
+ *  - Changed getDataSetView(..) 's call to new
+ *    DifferenceViewComponent, back to new FunctionViewComponent;
+ *    this is due to design issues.  (Un-doing the previous change)
+ *
  *  Revision 1.74  2006/06/22 20:50:39  amoe
  *  - Commented out '... = new FunctionViewComponent(...)' and added
  *   '... = new DifferenceViewComponent(...)'
@@ -532,8 +537,8 @@ public class ViewManager extends    JFrame
         {       
           VirtualArrayList1D varray = DataSetData.convertToVirtualArray(
 	                                                         tempDataSet );
-          //FunctionViewComponent viewComp = new FunctionViewComponent(varray);
-          FunctionViewComponent viewComp = new DifferenceViewComponent(varray);
+          FunctionViewComponent viewComp = new FunctionViewComponent(varray);
+          //FunctionViewComponent viewComp = new DifferenceViewComponent(varray);
           viewer = new DataSetViewerMaker(tempDataSet, state, varray, viewComp);
         }
         else if ( view_type.equals( TABLE)) //TABLE ) )
