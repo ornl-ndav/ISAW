@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.74  2006/06/22 20:50:39  amoe
+ *  - Commented out '... = new FunctionViewComponent(...)' and added
+ *   '... = new DifferenceViewComponent(...)'
+ *
  *  Revision 1.73  2006/06/02 21:44:06  rmikk
  *  Put pointed at Table view under the options menu
  *  Only a maximum of one of these are now available at any time
@@ -528,7 +532,8 @@ public class ViewManager extends    JFrame
         {       
           VirtualArrayList1D varray = DataSetData.convertToVirtualArray(
 	                                                         tempDataSet );
-          FunctionViewComponent viewComp = new FunctionViewComponent(varray);
+          //FunctionViewComponent viewComp = new FunctionViewComponent(varray);
+          FunctionViewComponent viewComp = new DifferenceViewComponent(varray);
           viewer = new DataSetViewerMaker(tempDataSet, state, varray, viewComp);
         }
         else if ( view_type.equals( TABLE)) //TABLE ) )
