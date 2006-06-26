@@ -31,6 +31,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.253  2006/06/26 16:32:45  amoe
+ *  Made the following changes to incorporate Difference Graph View
+ *  - added private static final String DIFFERENCE_VIEW_MI
+ *  - added JMenuItem diffView in setupMenuBar(), appended it to
+ *    vMenu, and added an action listener
+ *  - added DIFFERENCE_VIEW_MI scenario in if statement
+ *    actionPerformed(..)
+ *
  *  Revision 1.252  2006/06/09 21:06:48  dennis
  *  Changed version to 1.8.0 alpha 8
  *
@@ -752,6 +760,7 @@ public class Isaw
   private static final String SCROLL_VIEW_MI     = IViewManager.SCROLLED_GRAPHS;
   private static final String HKL_SLICE_VIEW_MI  = IViewManager.HKL_SLICE;
   private static final String SELECTED_VIEW_MI   = IViewManager.SELECTED_GRAPHS;
+  private static final String DIFFERENCE_VIEW_MI = IViewManager.DIFFERENCE_GRAPH;
   private static final String THREED_VIEW_MI     = IViewManager.THREE_D;
   private static final String TABLE_VIEW_MI      = IViewManager.TABLE;
   private static final String CONTOUR_VIEW_MI    = IViewManager.CONTOUR;
@@ -996,6 +1005,7 @@ public class Isaw
     JMenuItem hkl_slice_view = new JMenuItem( HKL_SLICE_VIEW_MI );
     JMenuItem s_graphView = new JMenuItem( SCROLL_VIEW_MI );
     JMenuItem graphView   = new JMenuItem( SELECTED_VIEW_MI );
+    JMenuItem diffView	  = new JMenuItem( DIFFERENCE_VIEW_MI );
     JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
     JMenuItem tableView = new JMenuItem( TABLE_VIEW_MI );
     JMenu Tables= new JMenu("Selected Table View");
@@ -1113,6 +1123,7 @@ public class Isaw
     vMenu.add(hkl_slice_view);
     vMenu.add(s_graphView);
     vMenu.add(graphView);
+    vMenu.add(diffView);
     
     vMenu.add( Tables );
     vMenu.add( tableView );
@@ -1165,7 +1176,8 @@ public class Isaw
     
     graphView.addActionListener(menu_item_handler); 
     hkl_slice_view.addActionListener(menu_item_handler); 
-    s_graphView.addActionListener(menu_item_handler); 
+    s_graphView.addActionListener(menu_item_handler);
+    diffView.addActionListener(menu_item_handler);
 
     threeDView.addActionListener(menu_item_handler); 
     imageView.addActionListener(menu_item_handler);  
@@ -1725,6 +1737,7 @@ public class Isaw
  
       if( s.equals(IMAGE_VIEW_MI)      || 
           s.equals(SELECTED_VIEW_MI)   ||
+          s.equals(DIFFERENCE_VIEW_MI) ||
           s.equals(HKL_SLICE_VIEW_MI)  ||
           s.equals(SCROLL_VIEW_MI)     || 
           s.equals(THREED_VIEW_MI)     ||
