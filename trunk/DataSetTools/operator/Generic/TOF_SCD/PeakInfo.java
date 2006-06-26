@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2006/06/26 20:16:07  rmikk
+ * Found the max intensity of a peak and reported it a peak.IOBS
+ * Subtracted the background intensity from the weighted x,y,z, and
+ *    intensity values instead of the cutoff intensity
+ *
  * Revision 1.7  2006/06/16 18:22:50  rmikk
  * Introduced code that sill not allow a peak to have and extend greater than
  *    40% of the max for row and col and 20% of max for time
@@ -80,7 +85,8 @@ public class PeakInfo {
         sumZ;
     float WsumX,
           WsumY,
-          WsumZ;
+          WsumZ,
+          MaxIntensity;
     float Wx,
           Wy,
           Wz;
@@ -111,7 +117,8 @@ public class PeakInfo {
         maxX = maxY = maxZ = - 1;
         sumX = sumY = sumZ = 0;
         minX = minY = minZ = Integer.MAX_VALUE;
-        WsumX = WsumY = WsumZ = Wx = Wy = Wz = TotIntensity = TotExtentIntensity = 0;
+        WsumX = WsumY = WsumZ = Wx = Wy = Wz = TotIntensity = 
+        	MaxIntensity = TotExtentIntensity = 0;
         this.detNum  = detNum;
         this.grid = grid;
         
@@ -174,19 +181,22 @@ public class PeakInfo {
         if( Intensity/Ncells < backgroundIntensity )
             return false;
         
-        
+        intensity = grid.getData_entry( row , col ).getY_values()[ timeChan ];
         
         if( debug )
         	 System.out.println( "new Cell ,row,col,timechan,intensity=" + row + "," + col + "," + timeChan + "," + intensity );
-        
+      
         if( ncells == 0 ){
             minY = maxY = row;
             minX = maxX = col;
             
             minZ = maxZ = timeChan;
             TotExtentIntensity  = intensity;
+            MaxIntensity = intensity;
         }
         ncells++ ;
+        if( intensity > MaxIntensity )
+        	MaxIntensity = intensity;
 //      -------------- eliminate rambling through all the data  ------------------------
         if( col -minX  > .4* maxCols)
         	return false;
@@ -390,8 +400,11 @@ public class PeakInfo {
     	
         if( ncells <= 0 )
             return Float.NaN;
-       
-       return (WsumX - backgroundIntensity*sumX )/(TotIntensity - ncells*backgroundIntensity );
+       float b =background;
+       if( Float.isNaN(b))
+       	b=backgroundIntensity;
+       //float b = backgroundIntensity;
+       return (WsumX - b*sumX )/(TotIntensity - ncells*b );
        
     }
 
@@ -406,8 +419,12 @@ public class PeakInfo {
     	
         if( ncells <= 0 )
             return Float.NaN;
-        
-       return (WsumY - backgroundIntensity*sumY )/(TotIntensity - ncells*backgroundIntensity );
+
+        float b =background;
+        if( Float.isNaN(b))
+        	b=backgroundIntensity;
+        //float b = backgroundIntensity; 
+       return (WsumY - b*sumY )/(TotIntensity - ncells*b );
        
     }
 
@@ -423,8 +440,12 @@ public class PeakInfo {
     	  
         if( ncells <= 0 )
             return Float.NaN;
-       
-       return ( WsumZ - backgroundIntensity*sumZ )/( TotIntensity - ncells*backgroundIntensity );
+
+        float b =background;
+        if( Float.isNaN(b))
+        	b=backgroundIntensity;
+        //float b = backgroundIntensity;
+       return ( WsumZ - b*sumZ )/( TotIntensity - ncells*b );
        
     }
     
@@ -486,7 +507,9 @@ public class PeakInfo {
      */
     
     public float getTotIntensity(){
-    	
+        float b = background;
+        if( Float.isNaN(b))
+        	b=backgroundIntensity;
         return  TotIntensity - ncells*backgroundIntensity;
         
     }
@@ -567,11 +590,9 @@ public class PeakInfo {
     	int y = (int)( .5 + getWeightedAverageRow() );
     	int z = (int)( .5 + getWeightedAverageChan() );
     	float peakIntensity = Float.NaN;
-    	try{
-    		peakIntensity = grid.getData_entry( y , x ).getY_values()[ z ];
-    	}catch( Exception ss ){
-    		peakIntensity = Float.NaN;
-    	}
+    
+        peakIntensity = MaxIntensity;
+        
     	PP.ipkobs( (int)( peakIntensity + .5 ) );
     	PP.inti( getTotIntensity() );
     	int[] runs = (int[])DS.getAttributeValue( Attribute.RUN_NUM );
