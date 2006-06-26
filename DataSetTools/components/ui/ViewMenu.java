@@ -29,6 +29,11 @@
 
  *
  * $Log$
+ * Revision 1.5  2006/06/26 16:28:42  amoe
+ * -added public static final String DIFFERENCE_VIEW_MI
+ * -added JMenuItem diff_mi and appended to main_menu
+ * -added code (difference) to ActionPerformed(..) for ViewMenu debugging
+ *
  * Revision 1.4  2004/01/22 02:05:38  bouzekc
  * Removed unused variables.
  *
@@ -58,6 +63,7 @@ public class ViewMenu
   private static final String IMAGE_VIEW_MI      = "Image View";
   private static final String SCROLL_VIEW_MI     = "Scrolled Graph View";
   private static final String SELECTED_VIEW_MI   = "Selected Graph View";
+  private static final String DIFFERENCE_VIEW_MI = "Difference Graph View";
   private static final String THREED_VIEW_MI     = "3D View";
 
   private DataSet[]  dss = null;
@@ -88,12 +94,15 @@ public class ViewMenu
               scroll_mi.addActionListener( listener );
     JMenuItem select_mi = new JMenuItem( SELECTED_VIEW_MI );  
               select_mi.addActionListener( listener );
+    JMenuItem diff_mi   = new JMenuItem( DIFFERENCE_VIEW_MI );
+    		  diff_mi.addActionListener( listener );
     JMenuItem threed_mi = new JMenuItem( THREED_VIEW_MI );
               threed_mi.addActionListener( listener );
 
     main_menu.add( image_mi );
     main_menu.add( scroll_mi );
     main_menu.add( select_mi );
+    main_menu.add( diff_mi );
     main_menu.add( threed_mi );
   }
 
@@ -118,6 +127,9 @@ public class ViewMenu
 
       if(  e.getActionCommand().equals( ViewManager.SELECTED_GRAPHS )   )
         System.out.println( "SELECTED_GRAPHS viewer invoked" );
+      
+      if( e.getActionCommand().equals( ViewManager.DIFFERENCE_GRAPH))
+    	  System.out.println( "DIFFERENCE_GRAPH viewer invoked" );
 
       if(  e.getActionCommand().equals( ViewManager.THREE_D )  )
         System.out.println( "THREE_D invoked" );
