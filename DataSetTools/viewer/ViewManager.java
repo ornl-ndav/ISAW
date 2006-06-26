@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.76  2006/06/26 16:30:25  amoe
+ *  - added code getDataSetView(..) so it would handle the Difference
+ *    Graph View
+ *  - added button for Difference Graph and appended to view_menu in
+ *    BuildViewMenu()
+ *
  *  Revision 1.75  2006/06/22 22:39:54  amoe
  *  - Changed getDataSetView(..) 's call to new
  *    DifferenceViewComponent, back to new FunctionViewComponent;
@@ -538,8 +544,15 @@ public class ViewManager extends    JFrame
           VirtualArrayList1D varray = DataSetData.convertToVirtualArray(
 	                                                         tempDataSet );
           FunctionViewComponent viewComp = new FunctionViewComponent(varray);
-          //FunctionViewComponent viewComp = new DifferenceViewComponent(varray);
+          
           viewer = new DataSetViewerMaker(tempDataSet, state, varray, viewComp);
+        }
+        else if ( view_type.equals( DIFFERENCE_GRAPH ))
+        {
+        	VirtualArrayList1D varray = DataSetData.convertToVirtualArray(
+                    tempDataSet );
+        	FunctionViewComponent viewComp = new DifferenceViewComponent(varray);
+        	viewer = new DataSetViewerMaker(tempDataSet, state, varray, viewComp);
         }
         else if ( view_type.equals( TABLE)) //TABLE ) )
            viewer = new TabView( tempDataSet, state ); 
@@ -977,6 +990,10 @@ private void BuildViewMenu()
   view_menu.add( button );
 
   button = new JMenuItem( SELECTED_GRAPHS );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+  
+  button = new JMenuItem( DIFFERENCE_GRAPH );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
