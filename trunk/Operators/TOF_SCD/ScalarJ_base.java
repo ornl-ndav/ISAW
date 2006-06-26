@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2006/06/26 19:32:50  rmikk
+ * Now reports the "correct" new orientation matrix along with the correct
+ *   interrelationships between the transformation, new and old orientation
+ *   matrix
+ *
  * Revision 1.6  2006/01/16 04:49:20  rmikk
  * Spelled Hexagonal correctly
  * Fixed the entries in the identity matrix
@@ -1139,25 +1144,39 @@ public class ScalarJ_base extends GenericTOF_SCD implements
         logBuffer.append(" TRANSFORMATION MATRIX "+i+"  IS\n\n" );
         i++;
         nflag = true;
+        double[][] transf_inv = new double[3][3];
         for( int m=1 ; m<=3 ; m++ ){ // create transformation matrix
-          for( int j=1 ; j<=3 ; j++ )
+          for( int j=1 ; j<=3 ; j++ ){
             transf[j-1][m-1]=trans[m+((j+3*k[n])*3)-13];
+            transf_inv[m-1][j-1] = transf[j-1][m-1];
+          }
         }
-        newmat=LinearAlgebra.mult(this.UB,transf);
+        if(!LinearAlgebra.invert(transf_inv)){
+        	 logBuffer.append( "Improper Transformation Matrix\n");
+             SharedMessages.LOGaddmsg(logBuffer.substring(start));
+             SharedMessages.LOGaddmsg("------------- End Scalar ---------------\n\n\n");
+             return;
+
+        }
+        newmat=LinearAlgebra.mult(this.UB,transf_inv);
         for( int ii=0 ; ii<3 ; ii++ ){ // print the matrices
           for( int jj=0 ; jj<3 ; jj++ ){
             logBuffer.append(Format.real(transf[jj][ii],4)+" ");
           }
           if(ii==1)
-            logBuffer.append(" x UB = ");
+            logBuffer.append(" x ");
           else
-            logBuffer.append("        ");
+            logBuffer.append("   ");
           for( int jj=0 ; jj<3 ; jj++ ){
             logBuffer.append(Format.real(newmat[jj][ii],10,6)+" ");
           }
+
+          if( ii==0)
+          	logBuffer.append("     T");
+          else if( ii==1) logBuffer.append(" = UB");
           logBuffer.append("\n");
         }
-        abc=Util.abc(LinearAlgebra.mult(this.UB,transf));
+        abc=Util.abc(LinearAlgebra.mult(this.UB,transf_inv));
         logBuffer.append("\n");
         logBuffer.append("      a          b          c        alpha       "
                            +"beta      gamma     cellvol\n");
