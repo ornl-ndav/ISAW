@@ -18,17 +18,18 @@ $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
 $ run_numbers         Array                  Run Number
 $ expname             String                 Experiment Name
-$ centering           Choice(["primitive","a centered","b centered","c centered", "[f]ace centered","[i] body centered","[r]hombohedral centered" ])      Centering type
+$ centering           Choice(["primitive","a centerped","b centered","c centered", "[f]ace centered","[i] body centered","[r]hombohedral centered" ])      Centering type
 $ useCalibFile        BooleanEnable( [false,1,0])  Use the calibration file below
 $ calibfile           LoadFileString         SCD Calibration File
 $ time_slice_range    String(-1:3)           Time-slice range
-$ increase            Integer(1)             Amount to Increase Slice Size By
+$ increase            Integer(1)             Increase slice size by
 $ inst                String("SCD0")         Instrument name
 $ FileExt             String(".nx.hdf")      FileExtension
-$ d_min             float(0.0)               Minimum d-spacing
-$PeakAlg           Choice(["MaxIToSigI","Shoe Box","MaxIToSigI-old","TOFINT","EXPERIMENTAL"])  Integrage 1 peak algorithm
-$Xrange            Array([-3,3])             Box Delta x ( col ) Range
-$Yrange            Array([-3,3])             Box Delta y ( col ) Range 
+$ d_min             float(0.0)             Minimum d-spacing
+$PeakAlg           Choice(["MaxIToSigI","Shoe Box","MaxIToSigI-old","TOFINT","EXPERIMENTAL"])  Integ 1 peak algorithm
+$Xrange            Array([-3,3])            Range of x's around shoebox center
+$Yrange            Array([-3,3])               Range of y's around shoebox center
+$ShowLog           Boolean(false)             Pop Up Integrate.log
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 $title=Integrate Peaks
 #$inst = "SCD"
@@ -40,7 +41,7 @@ Display "Instrument = "&inst
 
 first=true
 append=false
-
+OpenLog( outpath&"integrate.log")
 for i in run_numbers
   # load data
   filename=path&inst&i&FileExt
@@ -54,11 +55,11 @@ for i in run_numbers
 
   # integrate peaks
   #Display(ds[dsnum])
-
+  
   #Gets matrix file "lsxxxx.mat" for each run
   #The "1" means that every peak will be written to the integrate.log file.
   SCDIntegrate_new(ds[dsnum],outpath&expname&".integrate",outpath&"/ls"&expname&i&".mat",centering,time_slice_range,increase,d_min,1,append,PeakAlg,Xrange,Yrange)
-
+  Display "Through integrating run num "&i
   #Integrate
   # write out the results.Done in the integrate routine
   #WritePeaks(outpath&expname&"3.peaks",peaks,append)
@@ -67,11 +68,15 @@ for i in run_numbers
     append=true
   endif
 endfor
-
-Echo("--- integrate_multiple_runs is done. ---")
-# show the integrate file
-ViewASCII(outpath&expname&".integrate")
-Display("Peaks are listed in "&outpath&expname&".integrate")
-# close the dialog automatically
 CloseLog()
-ExitDialog()
+Echo("--- integrate_multiple_runs is done. ---")
+
+ViewASCII(outpath&expname&".integrate")
+
+if ShowLog
+  ViewASCII( outpath&"integrate.log")
+else
+   Display "The log file is in integrate.log. Use the View menu to open it"
+endif
+# close the dialog automatically
+
