@@ -6,7 +6,7 @@
 #does incorporate the transformation from scalar or the one specified 
 # by the user
 
-#File: Wizard/TOF_SCD/Script_new/LsqrsInit.iss
+#File: Wizard/TOF_SCD/Script_new/LSqrsInit.iss
 #
 #
 #@param  Peaks        The Vector of Peaks to work with
@@ -26,7 +26,7 @@ $title=Least Squares ( Optimize Orientation Matrix )
 $Peaks       PlaceHolder                         Peaks
 $runnums     IntList                             Only Use Run Numbers ( "" for all )
 $RestrSeq    IntList                             Only Use Sequence Numbers( "" for all )
-$useUserMat  BooleanEnable([true,1,0])           Enter Matrix( instead of Scalar's )
+$useUserMat   BooleanEnable([true,1,0])          Enter Matrix( instead of Scalar's)
 $TransMat1   String([[1,0,0],[0,1,0],[0,0,1]])   Enter Transformation Matrix
 $TransMat    String                              Transformation Matrix From Scalar
 $MatFileName SaveFile                            Matrix to write to
@@ -42,6 +42,14 @@ else
   tmat = TransMat
 endif
 
-JLsqrs(Peaks,runnums,RestrSeq,tMat,MatFilename,MinIntens,RowColKeep,Constr)
-    
-return 
+OpenLog( SaveDir&"lsqrs.log")
+R = JLsqrs(Peaks,runnums,RestrSeq,tMat,MatFilename,MinIntens,RowColKeep,Constr)
+CloseLog()   
+return R
+
+   
+   
+
+
+
+
