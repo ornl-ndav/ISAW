@@ -5,36 +5,41 @@
 # or ls[expName].mat
 #
 # File: Wizard/TOF_SCD/Script_new/LSqrs.iss
-#@param  Peaks the Vector of Peaks to work with
-#@param  expName  the name of the experiment(for use in filenames)
-#@param  runnums  Restrict run nums(blank for all) 
-#@param  RestrSeqNums the sequence nums to restrict
-#@param  SaveDir  The directory to save the mat files to
-#@param MinIntens  th minimum intenstity threshold
-#@param RowColKeep  Pixel Rows and columns to keep
+#@param  Peaks          the Vector of Peaks to work with
+#@param  expName        the name of the experiment(for use in filenames)
+#@param  runnums        Restrict run nums(blank for all) 
+#@param  RestrSeqNums   the sequence nums to restrict
+#@param  SaveDir        The directory to save the mat files to
+#@param  MinIntens      the minimum intenstity threshold
+#@param  RowColKeep     Pixel Rows and columns to keep
+#@param  ShowLog        pops up the lsqrs.log file
 #
-#@return the orientation matrix for all the runs
+#@return                "Success" or an ErrorString
+
 $Title= Least Squares
-$category=HiddenOperator
-$command=Lsqrs
-$Peaks       PlaceHolder    Peaks
-$expName     String         Name of experiment
-$runnums     Array([])      Restrict Run Numbers ("" for all)
-$RestrSeq    IntList        Sequence numbers to use("" for all)
-$SaveDir     DataDirectoryString     Directory to save files
-$MinIntens   Integer(0)     Minimum Peak Intensity Threshold
-$RowColKeep  IntList(0:128) Pixel Rows and Columns to Keep
+
+
+$Peaks       PlaceHolder          Peaks
+$expName     String               Name of experiment
+$runnums     Array([])            Restrict Run Numbers ("" for all)
+$RestrSeq    IntList              Sequence numbers to use("" for all)
+$SaveDir     DataDirectoryString  Directory to save files
+$MinIntens   Integer(0)           Minimum Peak Intensity Threshold
+$RowColKeep  IntList(0:100)       Pixel Rows and Columns to Keep
+$ShowLog     Boolean(false)       Pop Up lsqrs.log
+
 
 N=ArrayLength(Peaks)
-Display "N="&N
+OpenLog( SaveDir&"lsqrs.log")
 for i in runnums
-   filename=SaveDir&"/ls"&expName&i&".mat"
+   filename=SaveDir&"ls"&expName&i&".mat"
    Pk1=[]
    for j in [0:N-1]
       Pk1[j]= Peaks[j]
    endfor
    
-   JLsqrs(Pk1,""&i,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep)
+   JLsqrs(Pk1,""&i,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]", filename, MinIntens,RowColKeep)
+   LogMsg( "-----------After run num "& i&"-----------------------\n")
 endfor
 
 S=""
@@ -45,13 +50,23 @@ for i in [1:N1]
     S=S&","
   endif
 endfor
-filename=SaveDir&"/ls"&expName&".mat"
+
+filename=SaveDir&"ls"&expName&".mat"
 
 Pk1=[]
 for j in [0:N-1]
    Pk1[j]= Peaks[j]
 endfor
+
 JLsqrs(Pk1,S,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep)
-    
-return 
+   LogMsg( "-----------Finished Least Squares -----------------------\n")
+
+CloseLog()
+
+
+if ShowLog
+  ViewASCII( SaveDir&"lsqrs.log")
+endif
+ 
+return  "Success"
 
