@@ -24,24 +24,23 @@ $Deltal       Float(.20)           Delta l
 $path        DataDirectoryString   Output Data Path 
 $expName     String                Experiment Name
 $logfile     Boolean(false)        Pop Up Log Info 
+$peakFile    Boolean( false)       Pop Up Peaks File
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
-
+SS= path&"index.log"
+OpenLog( SS)
 V = JIndex(peaks,OrientMat,RestrRuns, Deltah,Deltak,Deltal)
-
+CloseLog()
 
 WritePeaks(path&expName&".peaks", peaks)
 Display "printed peaks to file"
 
-
-SS= path&"index.log"
-OpenLog( SS)
-
-LogMsg( V)
-CloseLog()
-
 if logfile
    ViewASCII( path&"index.log")
+endif
+
+if peakFile
+   ViewASCII( path&expName&".peaks")
 endif
 return "Finished"
   
