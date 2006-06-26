@@ -19,6 +19,8 @@
 #                   using the view text submenu and selecting index1.log
 
 $title= Index Peaks ( Using Initial Orientation Matrix )
+
+#------------------------ Parameters------------------------
 $peaks    PlaceHolder
  
 $OrientMat Array     Orientation matrix
@@ -37,17 +39,32 @@ $expname   String             Experiment Name
 
 $ShowLog   Boolean(false)     Pop Up index1.log
 
+$ShowPeaks Boolean(false)    Pop Up Peaks file
+$---------------------- Code-------------------------
 
-OpenLog( path&"index1.log");
-V = JIndex(peaks,OrientMat,RestrRuns, deltah,deltak,deltal)
+OpenLog( path&"index1.log")
+Stats = [0,0]
+V = JIndex(peaks,OrientMat,RestrRuns, deltah,deltak,deltal, Stats)
 CloseLog()
 
-OpenLog( path&expname&".log", true)
 if ShowLog
    ViewASCII(path&"index1.log")
 else
    Display "log information is in index1.log. Use the View menu to open"
 endif
+
+append = false
+WritePeaks(path&expname&".peaks",peaks,append)
+
+if ShowPeaks
+   ViewASCII(path&expname&".peaks")
+else
+   Display "The peak file is in "& expname&".peaks"
+endif
+
+Display "indexed "&Stats[0]&" out of " &Stats[1]
 Display "------------Finished Indexing -----------------------"
+
+
 
 return  "Success"
