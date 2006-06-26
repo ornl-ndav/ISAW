@@ -44,18 +44,17 @@ import DataSetTools.parameter.*;
 public class DailyPeaksWizard_new extends Wizard 
 {
      int[][] ParamTable= {   
-     {0,-1,-1,-1,0}  //PATH data
-     ,{1,-1,4,3,1}   //output path
-     ,{2,-1,2,4,2}   //Runnums
-     ,{3,-1,1,8,3}   //exp name
-     ,{13,0,0,0,-1}   //peaks
-     ,{11,-1,-1,-1,9} //instName
+     {0,  -1,-1,-1, 0}  //PATH data
+     ,{1,  6, 4, 4, 1}   //output path
+     ,{2, -1, 2, 5, 2}   //Runnums
+     ,{3,  7, 1, 8, 3}   //exp name
+     ,{13, 0, 0, 0,-1}   //peaks
+     ,{11,-1,-1,-1, 9} //instName
      ,{12,-1,-1,-1,10} //FileExt
-     ,{9,-1,-1,-1,6}  //calibFilename
-     ,{8,-1,-1,-1,5}  //use Calib file
-     
-     ,{-1,2,-1,5,-1}  //RestrRuns ????
-     ,{-1,4,-1,-1,-1}  //Filename to save peaks to ??
+     ,{9, -1,-1,-1, 6}  //calibFilename
+     ,{8, -1,-1,-1, 5}  //use Calib file
+     ,{-1, 2,-1, 6,-1}  //RestrRuns ????
+     ,{-1, 4,-1,-1,-1}  //Filename to save peaks to ??
    
 
             };
@@ -73,18 +72,27 @@ public class DailyPeaksWizard_new extends Wizard
         path +="/";
      path += "Wizard/TOF_SCD/Scripts_new/";
 
-     addForm( new ScriptForm(path+"find_multiple_peaks1.iss", new PlaceHolderPG("Peaks",null),new int[0]));
-     addForm( new ScriptForm(path+"JIndxSave1.iss", new ArrayPG("Result1",null),new int[]{0}));
-     addForm( new ScriptForm(  path+"LSqrs.iss",new ArrayPG( "Result",null ),new int[]{0,1,2,4}));
-     addForm( new ScriptForm(path+"JIndxSave2.iss", new PlaceHolderPG("Peaks",null),new int[]{0,3,4,8}));
-     addForm( new ScriptForm(path+"integrate_multiple_runs.iss", new StringPG("Result",""),
-                   new int[]{0,1,2,3,5,6,9,10}));
-     linkFormParameters( ParamTable );
+     addForm( new ScriptForm(path+"find_multiple_peaks1.iss", 
+    		            new PlaceHolderPG("Peaks",null),new int[0])); 
+     
+     addForm( new ScriptForm(path+"JIndxSave1.iss", 
+    		            new ArrayPG("Result1",null),new int[]{0,6,7}));
+     
+     addForm( new ScriptForm(  path+"LSqrs.iss",
+    		            new StringPG( "Result",null ),new int[]{0,1,2,4}));
+     
+     addForm( new ScriptForm(path+"JIndxSave2.iss", 
+    		            new PlaceHolderPG("Peaks",null),new int[]{0,4,5,6,8}));
+     
+     addForm( new ScriptForm(path+"integrate_multiple_runs.iss", 
+    		            new StringPG("Result",""),new int[]{0,1,2,3,5,6,9,10}));
+     
+    linkFormParameters( ParamTable );
     String S="" ;
-    S+="This wizard does the following is the replacement for the";
-    S+="initial Daily Peaks Wizard that assumes that the detector(s)";
-    S+="are perpendicular to the beam plane and centered at the";
-    S+="level of the sample";
+    S+="This wizard conducts the reduction of the daily peak data from SCD ";
+    S+=" instruments. It starts with a good orientation matrix, then repeatedly ";
+    S+="indexes the peaks and refines the per run orientation matrices until a ";
+    S+="sufficient number of peaks are indexed.  Then the peaks are integrated ";
     S+="  ";
     setHelpMessage( S);
 
