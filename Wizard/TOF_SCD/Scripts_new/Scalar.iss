@@ -19,22 +19,19 @@ $title=Scalar ( Generate Possible Transformations to Desired Cell )
 
 $UB   Array          UB Matrix
 $Delta  Float(.01)   Delta
-$Constr    Choice(["Use Identity Matrix", "No Restriction","Highest Symmetry","P - Cubic","F - Cubic","R - Hexagonal","I - Cubic","I - Tetragonal","I - Orthorombic","P - Tetragonal","P - Hexagonal","C - Orthorombic","C - Monoclinic","F - Orthorombic","P - Orthorombic","P - Monoclinic","P - Triclinic","R11 == R22 == R33","R11 == R22 != R33","R11 == R33 != R22","R11 != R22 != R33"])   Symmetry Constraints
+$Constr    Choice([ "No Restriction","Highest Symmetry","Use Identity Matrix","P - Cubic","F - Cubic","R - Hexagonal","I - Cubic","I - Tetragonal","I - Orthorombic","P - Tetragonal","P - Hexagonal","C - Orthorombic","C - Monoclinic","F - Orthorombic","P - Orthorombic","P - Monoclinic","P - Triclinic","R11 == R22 == R33","R11 == R22 != R33","R11 == R33 != R22","R11 != R22 != R33"])   Symmetry Constraints
 $path      DataDirectoryString    Output Data Path 
 $ShowLog   Boolean( false)        Pop Up scalar.log
 
 
+OpenLog( path&"scalar.log")
 if Constr ="Use Identity Matrix"
+
+   LogMsg("The identity is the transformation \n   It has the same scalars as the orientation matrix\n"
    return "[[1,0,0],[0,1,0],[0,0,1]]"
 endif
 
 
-if Constr = "User Specified"
-   
-   return UserTransf
-endif
-
-OpenLog( path&"scalar.log")
 X =JScalar( UB, Delta, Constr)
 CloseLog()
 
