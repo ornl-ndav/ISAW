@@ -1,5 +1,5 @@
 # 
-# Script to find peaks in multiple SCD or SXD files. 
+# Script to find peaks in multiple files with Single Crystal data. 
 # $Date: 2006/06/09 $
 #
 # File: Wizard/TOF_SCD/Scripts_new/find_multiple_peaks.iss
@@ -9,12 +9,15 @@
 # for these parameters
 #
 # Assumptions:
-#  - Data of interest is in histogram 1
-#  - The run number requires a '0' before it for SCD runs
+#  - Data of interest is in the last histogram 
+#  - The filenames are concatenations of the path, inst, run_numbers, then
+#    the DatFileExtension. Make sure that the /,\, and . are there
 #  - The Generic Calib operator is used to read the calibration file
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
-$Title=Find Peaks
+$ Title=Find Peaks
+
+#---------------------------Parameters---------------------
 $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
 $ run_numbers         Array                  Run Numbers
@@ -28,6 +31,8 @@ $ calibfile           LoadFileString         Calibration File
 $ RowColKeep          IntList(1:128)         Pixel Rows and Columns to Keep 
 $ inst                String("SCD_E000005_R000")  Instrument
 $ DatFileExtension    String(".nx.hdf")         Extension on Data Files
+#------------------------ Code ---------------------
+
 #calibfile = "/IPNShome/scd/instprm.dat"
 Display "Instrument="&inst
 Display "Calibration File ="&calibfile
@@ -70,8 +75,6 @@ Echo("--- find_multiple_peaks is done. ---")
 # show the peaks file
 ViewASCII(outpath&expname&".peaks")
 Display("Peaks are listed in "&outpath&expname&".peaks")
-
-
 
 return peaks
 
