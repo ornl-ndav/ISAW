@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2006/06/26 16:29:26  amoe
+ *  -added public static final String DIFFERENCE_GRAPH
+ *
  *  Revision 1.16  2006/05/31 14:29:27  rmikk
  *  Added a constant for the new POINTEDAT_TABLE view
  *
@@ -87,6 +90,7 @@ public interface IViewManager extends IObserver
   public static final String POINTEDAT_TABLE ="Pointed At Table View";
   public static final String SCROLLED_GRAPHS = "Scrolled Graph View";
   public static final String SELECTED_GRAPHS = "Selected Graph View";
+  public static final String DIFFERENCE_GRAPH= "Difference Graph View";
   public static final String TABLE           = "Table Generator";
   public static final String THREE_D         = "3D View";
   public static final String CONTOUR         = "Contour View";
