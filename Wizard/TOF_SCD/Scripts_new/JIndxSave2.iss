@@ -1,41 +1,51 @@
-# This is a wrapper around JIndex(Vector Peaks... that allows for
-# saving the peaks and displaying JIndex log information in the
-# status pane. This inputs the orientation matrix from a file
+#       Index, Show and Write Peaks per Run
+#@overview  This script will index the peaks in the peaks object using the
+#           per run least squares matrices.  These matrices must be stored
+#           in the directory specified by OrientFileDir. Their names must be
+#           in the form ls[expname][runNum].mat
 
 #File: Wizard/TOF_SCD/Scripts_new/JIndxSave2.iss
 
-#@param  peaks   the Peaks Vector
-#@param Delta  the error in h,k,and l's to allow
-#@param  UseLsqMats   if true indexes using each runs orientation matrix 
-#                     otherwise  indexes peaks using the total orientation matrix
-#@param OrientFileNames  Matrix Files to Load
-#@param   RunNums      Run Numbers
-#@param RestrRuns    Run numbers to not include
-#@param  peakfilename the name to save the peaks to(Use NONE if saving is not
-#                             desired)
-#@param  logfile     if true, the JIndex log file will be displayed in the
-#                    status pane
-#@param  expName    the name of the experiment(and part of the filename)
-#                   for some of the orientation matrices
-#@return   the Vector of peaks.
+#@param  peaks          the Peaks Vector
+#@param  Deltah         the allowed error in h to index
+#@param  Deltak         the allowed error in k to index 
+#@param  Deltal         the allowed error in l to index
+#@param  OrientFileDir  The directory with the orientation files
+#@param  RunNums        Run Numbers to use(blank if all)
+#@param  RestrRuns      Run numbers to not include
+#@param  logfile        if true, the JIndex log file will be displayed in the
+#                           status pane
+#@param  expName        the name of the experiment(and part of the filename)
+#                           for some of the orientation matrices
+#@return   the Vector of peaks( not used).
 
 
-$peaks     PlaceHolder        Peaks
-$Delta       Float(.20)       Deltas
-$UseLsqMats  Boolean(false)   Index by run orientation matrix
-#$OrientMat   Array          Orientation Matrix
-$OrientFileDir  DataDirectoryString        Dir with Matrices to Load
-$RunNums     Array          Run Numbers
-$RestrRuns   IntList          Restrict Runs
-$peakfilename    SaveFileString("NONE")   Filename to save peak 
-$logfile    Boolean(true)   Show log info 
-$expName    String          Experiment name
+$peaks          PlaceHolder           Peaks
+$Deltah         Float(.20)            Delta h
+$Deltak         Float(.20)            Delta k
+$Deltal         Float(.20)            Delta l
+
+$OrientFileDir  DataDirectoryString   Dir with Matrices to Load
+$RunNums        Array                 Run Numbers
+$RestrRuns      IntList               Restrict Runs
+
+$logfile        Boolean(true)         Show log info 
+$expName        String                Experiment name
+
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 $ Title = Index/Write Peaks
 
+Stats=[0,0]
+UseLsqMats = true
+
+path= OrientFileDir
+
+OpenLog( path&"index.log")
 if Not UseLsqMats 
   OrientMat = readOrient( OrientFileDir&"/ls"&expName&".mat")
-  V = JIndex(peaks,OrientMat,RestrRuns, Delta,Delta,Delta)
+  V = JIndex(peaks,OrientMat,RestrRuns, Deltah,Deltak,Deltal,Stats)
+  NIndexed = NIndexed+Stats[0]
+  NTried =NTried+Stats[1]
 else
    Display "RestrRuns="&RestrRuns
    RestrNums = IntListToVector( RestrRuns)
@@ -45,43 +55,32 @@ else
      RestrNums=  RunNums
    endif
    V="" 
+   NIndexed=0
+   NTried = 0
    for i in RestrNums
       Mat= readOrient( OrientFileDir&"/ls"&expName&i&".mat")
       Run = ""&i
       Display "Run ="&Run
-      W = JIndex(peaks,Mat,Run,Delta,Delta,Delta)
-      Display "Result of JIndex is "&W
+      W = JIndex(peaks,Mat,Run,Deltah,Deltak,Deltal,Stats)
+      NIndexed = NIndexed+Stats[0]
+      NTried =NTried+Stats[1]
+      #Display "Result of JIndex is "&W
       V =V & W
    endfor
-endif
-
-  
-  if peakfilename <>"NONE"
-     Display peakfilename
-     WritePeaks(peakfilename, peaks)
-    
-  endif
-
-
-if logfile  AND peakfilename <>"NONE"
-   outputpath =  fSplit(peakfilename)
-   S="/"
-   if EndsWith( outputpath[0],S)
-      S=""
-   endif  
+   Display "Indexed "&NIndexed&" out of "& NTried
    
-   OpenLog( outputpath[0]&S&"index.log")
-    LogMsg( V)
-  
+   LogMsg( "Indexed "&NIndexed&" out of "& NTried&"\n")
+endif
+CloseLog()
+filename = OrientFileDir&expName&".peaks" 
 
-else
-   Display "Log information"
-  
-endif
+WritePeaks(filename, peaks)
+
+ 
 if logfile
-  Display "-------------------  index log -------------------"
-  Display V
+  ViewASCII( path&"index.log")
 endif
+
 return peaks
   
 
