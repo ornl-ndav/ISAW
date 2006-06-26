@@ -30,6 +30,11 @@
  *
  *
  * $Log$
+ * Revision 1.20  2006/06/26 16:34:44  amoe
+ * -added if block in actionPerformed (inner class
+ *  IsawViewMenuListener) so the DIFFERENCE_GRAPH
+ *   scenario can be handled.
+ *
  * Revision 1.19  2005/08/24 16:36:02  dennis
  * Major revision of menus.  Removed items that did not currently
  * make sense.  Made distinction between nodes being  "highlighted"
@@ -785,6 +790,23 @@ public class JDataTreeRingmaster
             new ViewManager( ds, ViewManager.SELECTED_GRAPHS );
           }
         }  
+      }
+      if( e.getActionCommand().equals(ViewManager.DIFFERENCE_GRAPH))//
+      {
+          TreePath[] tps = null;
+          tps = tree.getSelectedNodePaths();
+     
+          MutableTreeNode node;
+          for( int i=0;  i<tps.length;  i++ )
+          {
+            node = (MutableTreeNode)tps[i].getLastPathComponent();
+            if( node instanceof DataSetMutableTreeNode )
+            {
+              DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)node;
+              DataSet ds = ds_node.getUserObject();
+              new ViewManager( ds, ViewManager.DIFFERENCE_GRAPH );
+            }
+          } 
       }
       if(  e.getActionCommand().equals( ViewManager.THREE_D )  )
       {
