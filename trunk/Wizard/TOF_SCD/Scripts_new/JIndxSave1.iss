@@ -1,52 +1,52 @@
 # This is a wrapper around JIndex(Vector Peaks...)that allows for
-# saving the peaks and displaying JIndex log information in the
-# status pane. This inputs the orientation matrix from a file
+# saving the peaks and displaying a pop up of JIndex log 
 
 #File: Wizard/TOF_SCD/Scripts_new/JIndxSave1.iss
-#@param  peaks   the Peaks Vector
+#@param  peaks           the Peaks Vector
 #@param  OrientMatFile   the orientation matrix
-#@param RestrRuns    Run numbers to not include
-#@param Delta  the error in h,k,and l's to allow
-#@param  peakfilename the name to save the peaks to(Use NONE if saving is not
-#                             desired)
-#@param  logfile     if true, the JIndex log file will be displayed in the
-#                    status pane
-#@return   The orientation matrix.  The peaks will be indexed
+#@param RestrRuns        Run numbers to not include
+#@param Deltah           the allowed error in h to index
+#@param Deltak           the allowed error in k to index
+#@param Deltal           the allowed error in l to index
+#@param  path            the path for output files
+#@param  expName         the name of the experiment
+#@param  logfile         Pops up the file index.log when true
+#@param peakFile         Pops up the indexed peaks file when true
+#@return   The orientation matrix.  Also the peaks will be indexed
 
 
-$peaks     PlaceHolder        Peaks
-$OrientMatFile   LoadFile     Orientation Matrix file name
-$RestrRuns   IntList          Restrict Runs
-$Delta       Float(.20)       Deltas
-$peakfilename    SaveFileString("NONE")   Filename to save peaks
-$logfile    Boolean(true)   Show log info
+$peaks           PlaceHolder          Peaks
+$OrientMatFile   LoadFile             Orientation Matrix file name
+$RestrRuns       IntList("")          Restrict Runs
+$Deltah          Float(.20)           Deltas h
+$Deltak          Float(.20)           Deltas k
+$Deltal          Float(.20)           Deltas l
+$path            DataDirectoryString  Directory for log information
+$expName         String               Experiment name
+$logfile         Boolean(false)       Pop up index.log
+$peakFile        Boolean(false)       Pop up Peaks File
 
-$ CATEGORY = operator,Instrument Type, TOF_NSCD
+
 $ Title = Index/Write Peaks
 OrientMat = readOrient( OrientMatFile)
-V = JIndex(peaks,OrientMat,RestrRuns, Delta,Delta,Delta)
-Display peakfilename
-if peakfilename <>"NONE"
- 
-  WritePeaks(peakfilename, peaks)
-endif
+OpenLog( path&"index.log")
 
-if logfile  AND peakfilename <>"NONE"
+V = JIndex(peaks,OrientMat,RestrRuns, Deltah,Deltak,Deltal)
+
+CloseLog()   
+
+peakfilename = path&expName&".peaks" 
+WritePeaks(peakfilename, peaks)
   
-   outputpath =  fSplit(peakfilename)
-   S="/"
-   if EndsWith( outputpath[0],S)
-      S=""
-   endif 
-   OpenLog( outputpath[0]&S&"index&.log")
-    LogMsg( V)
-    
-
-endif
 if logfile
-  Display "--------------- index log ---------------------"
-  Display V
-return OrientMat
+  ViewASCII( path&"index.log")
+endif 
+ 
+ if peakFile
+   ViewASCII( peakfilename )
+ endif 
+ 
+return "Success"
   
 
      
