@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.53  2006/07/10 22:28:35  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.52  2006/07/10 19:51:23  rmikk
  * Now catches the newly moved set of DataSetPG's
  *
@@ -286,25 +290,16 @@ package Command;
 
 import IsawGUI.*; 
 import DataSetTools.dataset.*; 
-import DataSetTools.util.*; 
+
 import DataSetTools.parameter.*; 
 import DataSetTools.components.ParametersGUI.*;
 
-import gov.anl.ipns.Parameters.ArrayPG;
-import gov.anl.ipns.Parameters.BooleanPG;
 import gov.anl.ipns.Parameters.BooleanEnablePG;
 import gov.anl.ipns.Parameters.ChoiceListPG;
-import gov.anl.ipns.Parameters.DataDirPG;
-import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Parameters.IParameter;
-import gov.anl.ipns.Parameters.InstNamePG;
-import gov.anl.ipns.Parameters.IntArrayPG;
-import gov.anl.ipns.Parameters.IntegerPG;
-import gov.anl.ipns.Parameters.LoadFilePG;
-import gov.anl.ipns.Parameters.PlaceHolderPG;
-import gov.anl.ipns.Parameters.RadioButtonPG;
+
 import gov.anl.ipns.Parameters.SaveFilePG;
-import gov.anl.ipns.Parameters.StringPG;
+
 import gov.anl.ipns.Parameters.StringListChoicePG;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.SpecialStrings.*;

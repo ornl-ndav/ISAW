@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2006/07/10 22:28:39  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.7  2006/07/10 16:26:13  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -66,7 +70,7 @@ import gov.anl.ipns.Parameters.FloatPG;
 import java.io.*;
 import java.util.Vector;
 import DataSetTools.wizard.*;
-import DataSetTools.parameter.*;
+
 
 /**
  *  This class defines a form for subtracting two numbers under the control

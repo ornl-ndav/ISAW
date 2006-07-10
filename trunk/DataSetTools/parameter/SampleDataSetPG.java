@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2006/07/10 22:28:36  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.15  2006/07/10 15:32:39  dennis
  * Removed as part of change over to new parameter GUIs in
  * gov.anl.ipns.Parameters
@@ -43,7 +47,6 @@
  */
 package DataSetTools.parameter;
 
-import gov.anl.ipns.Parameters.IParameter;
 import DataSetTools.dataset.Attribute;
 
 /**

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2006/07/10 22:28:39  dennis
+ *  Removed unused imports after refactoring to use new Parameter GUIs
+ *  in gov.anl.ipns.Parameters.
+ *
  *  Revision 1.14  2006/07/10 16:26:12  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -102,13 +106,10 @@ package Operators.TOF_SCD;
 
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.operator.*;
-import DataSetTools.parameter.*;
 import DataSetTools.trial.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
-
-import Operators.Example.*;
 
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Functions.*;

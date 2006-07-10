@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2006/07/10 22:28:39  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.15  2006/07/10 16:26:12  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -104,7 +108,6 @@ package Operators.TOF_SCD;
 
 import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 import DataSetTools.operator.Generic.TOF_SCD.*;
-import DataSetTools.parameter.*;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 import gov.anl.ipns.MathTools.LinearAlgebra;
