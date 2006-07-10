@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.52  2006/07/10 19:51:23  rmikk
+ * Now catches the newly moved set of DataSetPG's
+ *
  * Revision 1.51  2006/07/10 16:25:50  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -1690,7 +1693,12 @@ public class ScriptOperator  extends  GenericOperator
     	    DataType = DataType_C;
     	   
     		DataType_C = DataType_C.trim()+"PG";
-    		Class C = Class.forName( "gov.anl.ipns.Parameters."+DataType_C);
+         Class C = null;
+         try{
+    		   C = Class.forName( "gov.anl.ipns.Parameters."+DataType_C);
+         }catch( Exception SS){
+            C = Class.forName( "DataSetTools.parameter."+DataType_C);
+         }
     		Class[] argTypes = new Class[2];
     		argTypes[0] =  String.class;
     		argTypes[1] = Object.class;
