@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2006/07/10 22:10:20  dennis
+ *  Removed unused imports after refactoring to use new Parameter GUIs
+ *  in gov.anl.ipns.Parameters.
+ *
  *  Revision 1.16  2006/07/10 16:26:11  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -90,7 +94,6 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.operator.*;
 import  DataSetTools.operator.Generic.TOF_DG_Spectrometer.*;
-import  DataSetTools.parameter.*;
 import  DataSetTools.retriever.*;
 import  DataSetTools.viewer.*;
 

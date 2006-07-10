@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2006/07/10 22:10:21  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.4  2006/07/10 16:26:12  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -57,7 +61,6 @@ import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
 import java.util.Vector;
-import DataSetTools.parameter.*;
 import IPNSSrc.blind;
 //import DataSetTools.operator.Generic.TOF_SCD.*;
 /** 

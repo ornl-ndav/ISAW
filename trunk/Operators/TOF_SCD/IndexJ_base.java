@@ -31,6 +31,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2006/07/10 22:10:21  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.11  2006/07/10 16:26:12  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -97,7 +101,6 @@ import java.util.Vector;
 import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
-import DataSetTools.parameter.*;
 import DataSetTools.util.SharedData;
 import gov.anl.ipns.Util.Sys.*;
 /**

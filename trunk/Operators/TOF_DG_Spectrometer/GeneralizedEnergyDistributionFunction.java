@@ -31,6 +31,10 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.12  2006/07/10 22:10:20  dennis
+ *  Removed unused imports after refactoring to use new Parameter GUIs
+ *  in gov.anl.ipns.Parameters.
+ *
  *  Revision 1.11  2006/07/10 16:26:11  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -93,7 +97,6 @@ import  DataSetTools.retriever.*;
 import  DataSetTools.operator.*;
 import  DataSetTools.operator.Generic.TOF_DG_Spectrometer.*;
 import  DataSetTools.viewer.*;
-import  DataSetTools.parameter.*;
 
 /**
   *  Compute the Generalized Energy Distribution Function for a direct 

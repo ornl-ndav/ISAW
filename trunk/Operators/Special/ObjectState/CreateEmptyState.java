@@ -25,6 +25,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/07/10 22:10:19  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.2  2005/08/25 16:13:15  dennis
  * Added/moved to logical menu OBJECT_STATE_UTILS
  *
@@ -38,7 +42,6 @@
 package Operators.Special.ObjectState;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
-import DataSetTools.parameter.*;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 

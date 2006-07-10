@@ -31,6 +31,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2006/07/10 22:10:21  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.11  2006/07/10 16:26:12  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -86,11 +90,8 @@ import gov.anl.ipns.Parameters.SaveFilePG;
 import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
-import gov.anl.ipns.Util.Sys.SharedMessages;
 
 //import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Vector;
 
 import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
@@ -99,7 +100,6 @@ import DataSetTools.operator.Generic.TOF_SCD.Peak;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 //import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
 import DataSetTools.operator.Generic.TOF_SCD.Util;
-import DataSetTools.parameter.*;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 import DataSetTools.trial.*;
@@ -173,7 +173,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
     //5
     addParameter( 
-      new IntegerPG( "Minimum Peak Intensity Threshold", 0 ) );
+      new IntegerPG( "Minimum Peak Intensity Threshold", new Integer(0) ) );
 
     //6
     addParameter( 

@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2006/07/10 22:10:21  dennis
+ *  Removed unused imports after refactoring to use new Parameter GUIs
+ *  in gov.anl.ipns.Parameters.
+ *
  *  Revision 1.19  2006/07/10 16:26:13  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -122,7 +126,6 @@ import java.util.Vector;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Generic.Save.WriteGSAS;
-import DataSetTools.parameter.*;
 import DataSetTools.util.SharedData;
 import DataSetTools.wizard.Form;
 

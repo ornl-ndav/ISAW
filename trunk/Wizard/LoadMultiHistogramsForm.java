@@ -29,6 +29,10 @@
  *
  *
  * $Log$
+ * Revision 1.16  2006/07/10 22:10:21  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.15  2006/07/10 16:26:13  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -67,8 +71,6 @@ import DataSetTools.operator.Generic.Load.LoadMonitorDS;
 import DataSetTools.operator.Generic.Load.LoadOneHistogramDS;
 
 import DataSetTools.operator.Operator;
-
-import DataSetTools.parameter.*;
 
 import DataSetTools.util.*;
 
