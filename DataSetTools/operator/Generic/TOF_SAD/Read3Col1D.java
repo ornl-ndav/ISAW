@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2006/07/10 21:28:25  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.11  2006/07/10 16:26:00  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -78,7 +81,6 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 import java.io.*;
 import DataSetTools.dataset.*;
 import java.util.*;
-import DataSetTools.parameter.*;
 import Command.*;
 
 /**

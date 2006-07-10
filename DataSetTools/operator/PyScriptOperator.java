@@ -27,6 +27,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.13  2006/07/10 21:28:19  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.12  2006/07/10 16:25:52  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -79,7 +82,6 @@ import DataSetTools.dataset.*;
 
 import DataSetTools.operator.Generic.GenericOperator;
 
-import DataSetTools.parameter.*;
 
 import DataSetTools.util.*;
 

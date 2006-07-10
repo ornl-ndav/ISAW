@@ -32,6 +32,9 @@
  * Programmer:  Dennis Mikkelson
  *
  * $Log$
+ * Revision 1.10  2006/07/10 21:28:24  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.9  2006/07/10 16:25:58  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -73,7 +76,6 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.operator.Parameter;
-import  DataSetTools.parameter.*;
 import  DataSetTools.viewer.*;
 import  DataSetTools.retriever.*;
 

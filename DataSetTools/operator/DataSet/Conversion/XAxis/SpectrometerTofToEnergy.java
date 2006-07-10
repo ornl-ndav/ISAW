@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2006/07/10 21:28:21  dennis
+ *  Removed unused imports, after refactoring the PG concept.
+ *
  *  Revision 1.11  2006/07/10 16:25:54  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -81,7 +84,6 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.Conversion.XYAxis.*;
-import  DataSetTools.parameter.*;
 import  DataSetTools.viewer.*;
 import  DataSetTools.retriever.*;
 

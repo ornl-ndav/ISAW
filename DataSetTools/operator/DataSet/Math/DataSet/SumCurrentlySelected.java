@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2006/07/10 21:28:23  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.9  2006/07/10 16:25:57  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -74,7 +77,6 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
-import  DataSetTools.parameter.*;
 
 /**
   *  Replace Data blocks with the sum of the Data blocks.  Data blocks that 

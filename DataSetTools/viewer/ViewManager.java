@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.78  2006/07/10 21:28:25  dennis
+ *  Removed unused imports, after refactoring the PG concept.
+ *
  *  Revision 1.77  2006/07/10 16:26:01  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -282,7 +285,6 @@ import DataSetTools.viewer.Table.*;
 import DataSetTools.viewer.Contour.*;
 import DataSetTools.viewer.SCD_ReciprocalSpaceSlice.*;
 import DataSetTools.components.View.*;
-import DataSetTools.parameter.*;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;

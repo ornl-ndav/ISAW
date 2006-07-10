@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2006/07/10 21:28:19  dennis
+ *  Removed unused imports, after refactoring the PG concept.
+ *
  *  Revision 1.8  2006/07/10 16:25:52  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -51,7 +54,7 @@ package  DataSetTools.operator;
 import gov.anl.ipns.Parameters.IParameter;
 
 import java.io.*;
-import DataSetTools.parameter.*;
+
 
 /**
  * The class Parameter groups a name and generic object that is used to 

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2006/07/10 21:28:25  dennis
+ *  Removed unused imports, after refactoring the PG concept.
+ *
  *  Revision 1.9  2006/07/10 16:25:58  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -73,7 +76,6 @@ import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.operator.Parameter;
-import DataSetTools.parameter.*;
 
 /**
  * Operator to load all data sets from one IPNS runfile

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/10 21:28:25  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.3  2006/07/10 16:26:00  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -49,7 +52,6 @@ import java.util.Vector;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
-import DataSetTools.parameter.*;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Parameters.FloatPG;
 

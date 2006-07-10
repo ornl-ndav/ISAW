@@ -33,6 +33,9 @@
  * data set.
  *
  *  $Log$
+ *  Revision 1.10  2006/07/10 21:28:23  dennis
+ *  Removed unused imports, after refactoring the PG concept.
+ *
  *  Revision 1.9  2006/07/10 16:25:57  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -75,7 +78,6 @@ import  DataSetTools.viewer.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.*;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
-import  DataSetTools.parameter.*;
 
 /**
   *  Add a constant value to all data objects in a data set. 

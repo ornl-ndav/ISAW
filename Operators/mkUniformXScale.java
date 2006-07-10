@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/07/10 21:28:26  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.2  2006/07/10 16:26:06  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -43,9 +46,8 @@
  */
 
 package Operators;
-import DataSetTools.operator.*;
+
 import DataSetTools.operator.Generic.*;
-import DataSetTools.parameter.*;
 
 import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Parameters.IntegerPG;

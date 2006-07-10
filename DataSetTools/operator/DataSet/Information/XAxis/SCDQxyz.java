@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2006/07/10 21:28:22  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.16  2006/07/10 16:25:55  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -95,7 +98,6 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.instruments.*;
 import  DataSetTools.operator.Parameter;
-import  DataSetTools.parameter.*;
 
 /**
  *  This operator uses the chi, phi and omega attributes of a single crystal

@@ -25,6 +25,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2006/07/10 21:28:20  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.5  2006/07/10 16:25:53  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -62,7 +65,6 @@ import gov.anl.ipns.Util.Messaging.*;
 
 import java.io.Serializable;
 import java.util.Vector;
-import DataSetTools.parameter.*;
 import DataSetTools.operator.Parameter;
 
 import Command.*;

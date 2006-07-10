@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2006/07/10 21:28:20  dennis
+ *  Removed unused imports, after refactoring the PG concept.
+ *
  *  Revision 1.9  2006/07/10 16:25:52  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -73,7 +76,7 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.Parameter;
-import  DataSetTools.parameter.*;
+
 
 /**
   *  Allows the user to get attributes from the Data blocks in a DataSet

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/07/10 21:28:25  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.4  2006/07/10 16:26:00  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -53,7 +56,6 @@ package DataSetTools.operator.Generic.TOF_SAD;
 
 import java.util.Vector;
 
-import DataSetTools.parameter.*;
 import DataSetTools.components.View.*;
 
 import gov.anl.ipns.Parameters.LoadFilePG;
