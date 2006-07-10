@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.5  2004/01/30 02:46:52  bouzekc
  * Removed unused variable LOAD_FILE_TYPE.
  *
@@ -51,6 +54,8 @@ import DataSetTools.parameter.*;
 import DataSetTools.util.*;
 
 import DataSetTools.wizard.*;
+
+import gov.anl.ipns.Parameters.ArrayPG;
 
 import java.io.*;
 

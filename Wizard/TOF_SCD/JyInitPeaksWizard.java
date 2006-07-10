@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2006/07/10 16:26:14  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.4  2003/12/15 02:17:29  bouzekc
  * Removed unused imports.
  *
@@ -46,7 +49,7 @@
  */
 package Wizard.TOF_SCD;
 
-import DataSetTools.parameter.LoadFilePG;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import DataSetTools.wizard.JyScriptForm;
 import DataSetTools.wizard.OperatorForm;
 import DataSetTools.wizard.Wizard;
@@ -109,24 +112,24 @@ public class JyInitPeaksWizard extends Wizard {
       { -1, 2, 1, 0, -1, -1 }
     };  //matrix
     JyScriptForm peaksform = new JyScriptForm( 
-        "find_multiple_peaks2.py", new LoadFilePG( "Peaks file", null, false ) );
+        "find_multiple_peaks2.py", new LoadFilePG( "Peaks file", null ) );
 
     //the return types of all of these Operator Forms is LoadFilePG,
     //hence the "LoadFile"
     OperatorForm blindjform  = new OperatorForm( 
-        new BlindJ(  ), new LoadFilePG( "BlindJ log file", null, false ),
+        new BlindJ(  ), new LoadFilePG( "BlindJ log file", null ),
         new int[]{ 0 } );
     OperatorForm indexjform  = new OperatorForm( 
-        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null, false ),
+        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null ),
         new int[]{ 0, 1 } );
     OperatorForm scalarjform = new OperatorForm( 
-        new ScalarJ(  ), new LoadFilePG( "ScalarJ log file", null, false ),
+        new ScalarJ(  ), new LoadFilePG( "ScalarJ log file", null ),
         new int[]{ 0 } );
     OperatorForm lsqrsjform  = new OperatorForm( 
-        new LsqrsJ(  ), new LoadFilePG( "LsqrsJ log file", null, false ),
+        new LsqrsJ(  ), new LoadFilePG( "LsqrsJ log file", null ),
         new int[]{ 0 } );
     OperatorForm indexjform2 = new OperatorForm( 
-        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null, false ),
+        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null ),
         new int[]{ 0 } );
     this.addForm( peaksform );
     this.addForm( blindjform );

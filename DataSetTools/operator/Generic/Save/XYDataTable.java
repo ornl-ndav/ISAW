@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.11  2006/07/10 16:25:59  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.10  2004/07/01 19:19:26  rmikk
  * Removed unused Variable
  *
@@ -73,6 +76,7 @@ package DataSetTools.operator.Generic.Save;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.viewer.Table.*;
+import gov.anl.ipns.Parameters.IntArrayPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.*;

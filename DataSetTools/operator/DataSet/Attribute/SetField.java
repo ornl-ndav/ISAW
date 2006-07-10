@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2006/07/10 16:25:53  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.8  2005/10/03 03:07:20  dennis
  * Fixed bug.  Selection flags are now set by Group_ID, as documented,
  * rather than by index.
@@ -61,6 +64,7 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;

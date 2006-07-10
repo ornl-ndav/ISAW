@@ -38,6 +38,9 @@
 
 package Wizard.TOF_SCD;
 
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.PlaceHolderPG;
+import gov.anl.ipns.Parameters.StringPG;
 import DataSetTools.wizard.*;
 
 import DataSetTools.parameter.*;

@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.33  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.32  2006/02/26 00:08:37  dennis
  * Now uses the minimun run number width (used to pad the run number
  * in the matrix file name) from LsqrsJ, so that the code that reads
@@ -153,23 +156,24 @@
  */
 package Wizard.TOF_SCD;
 
+import gov.anl.ipns.Parameters.IParameterGUI;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.DataDirPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.RadioButtonPG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
-
+import gov.anl.ipns.Util.Messaging.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Vector;
 
-import DataSetTools.parameter.BooleanPG;
-import DataSetTools.parameter.DataDirPG;
-import DataSetTools.parameter.FloatPG;
-import DataSetTools.parameter.IParameter;
-import DataSetTools.parameter.IParameterGUI;
-import DataSetTools.parameter.IntArrayPG;
-import DataSetTools.parameter.LoadFilePG;
-import DataSetTools.parameter.RadioButtonPG;
-import DataSetTools.parameter.StringPG;
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.IParameterGUI;
 import DataSetTools.util.SharedData;
 import DataSetTools.wizard.Form;
 import Operators.TOF_SCD.IndexJ;
@@ -182,7 +186,7 @@ import Operators.TOF_SCD.IndexJ;
  * entire peaks file. Other than that, it functions in a similar manner to
  * IndexJ.
  */
-public class IndexJForm extends Form implements PropertyChangeListener {
+public class IndexJForm extends Form implements IObserver {
   //~ Static fields/initializers ***********************************************
 
   public static final String FROM_FILE  = "From a File";
@@ -257,26 +261,26 @@ public class IndexJForm extends Form implements PropertyChangeListener {
       initChoices(  );
     }
     parameters = new Vector(  );
-    addParameter( new IntArrayPG( "Run Numbers", null, false ) );  //0
-    addParameter( new DataDirPG( "Peaks File Path", null, false ) );  //1
-    addParameter( new StringPG( "Experiment Name", null, false ) );  //2
-    addParameter( new FloatPG( "Delta (h)", 0.10f, false ) );  //3
-    addParameter( new FloatPG( "Delta (k)", 0.10f, false ) );  //4
-    addParameter( new FloatPG( "Delta (l)", 0.10f, false ) );  //5
-    addParameter( new BooleanPG( "Update Peaks File", true, false ) );  //6
+    addParameter( new IntArrayPG( "Run Numbers", null ) );     //0
+    addParameter( new DataDirPG( "Peaks File Path", null ) );  //1
+    addParameter( new StringPG( "Experiment Name", null ) );   //2
+    addParameter( new FloatPG( "Delta (h)", 0.10f ) );         //3
+    addParameter( new FloatPG( "Delta (k)", 0.10f ) );         //4
+    addParameter( new FloatPG( "Delta (l)", 0.10f ) );         //5
+    addParameter( new BooleanPG( "Update Peaks File", true )); //6
 
     RadioButtonPG rpg = new RadioButtonPG( 
-        "Get Matrix File From: ", choices, false );
+        "Get Matrix File From: ", choices  );
 
     addParameter( rpg );  //7
     //have to do this because Operator clones the parameters
     rpg = ( ( RadioButtonPG )getParameter( 7 ) );
-    rpg.addPropertyChangeListener( IParameter.VALUE, this );
+    rpg.addIObserver( this );
     rpg.setValue( choices.get( 0 ) );
 
-    addParameter( new LoadFilePG( "Matrix File to Load", "", false ) );  //8
-    addParameter( new IntArrayPG( "Restrict Runs", "", false ) );  //9
-    setResultParam( new LoadFilePG( "JIndex Log", " ", false ) );  //10
+    addParameter( new LoadFilePG( "Matrix File to Load", "" ) );  //8
+    addParameter( new IntArrayPG( "Restrict Runs", "" ) );  //9
+    setResultParam( new LoadFilePG( "JIndex Log", " " ) );  //10
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
@@ -396,10 +400,10 @@ public class IndexJForm extends Form implements PropertyChangeListener {
 
     //#8 the matrix name will be validated later - setting it valid here
     //skips the Form's parameter checking for this parameter
-    ( ( IParameterGUI )getParameter( 8 ) ).setValid( true );
+    ( ( IParameterGUI )getParameter( 8 ) ).setValidFlag( true );
 
     //#9 the restrict runs value will be validated later
-    ( ( IParameterGUI )getParameter( 9 ) ).setValid( true );
+    ( ( IParameterGUI )getParameter( 9 ) ).setValidFlag( true );
 
     //peaks file name
     peaksName = peaksDir + expName + ".peaks";
@@ -433,14 +437,14 @@ public class IndexJForm extends Form implements PropertyChangeListener {
         return errorOut( 
           param, "ERROR: The specified matrix file does not exist." );
       } else {
-        param.setValid( true );
+        param.setValidFlag( true );
       }
 
       //validate the restrict runs value
       param          = ( IParameterGUI )super.getParameter( 9 );
       restrictRuns   = param.getValue(  )
                             .toString(  );
-      param.setValid( true );
+      param.setValidFlag( true );
       SharedData.addmsg( 
         "IndexJ is updating " + peaksName + " with " + matName );
       indexJOp.getParameter( 1 ).setValue( matName );
@@ -489,7 +493,7 @@ public class IndexJForm extends Form implements PropertyChangeListener {
     //set the indexj log file parameter
     param = ( IParameterGUI )getParameter( 10 );
     param.setValue( obj );
-    param.setValid( true );
+    param.setValidFlag( true );
     SharedData.addmsg( "--- IndexJForm finished. ---" );
 
     return obj.toString(  );
@@ -498,13 +502,13 @@ public class IndexJForm extends Form implements PropertyChangeListener {
   /**
    * Method to listen for changes on the RadioButtonPG.
    */
-  public void propertyChange( PropertyChangeEvent pce ) {
-    Object newVal = pce.getNewValue(  );
+  public void update( Object source, Object reason ) {
+    String newVal = ((IParameterGUI)source).getStringValue(  );
 
-    if( newVal == FROM_FILE ) {
+    if( newVal.equals(FROM_FILE) ) {
       ( ( IParameterGUI )getParameter( 8 ) ).setEnabled( true );
       ( ( IParameterGUI )getParameter( 9 ) ).setEnabled( true );
-    } else if( newVal == FROM_LSQRS ) {
+    } else if( newVal.equals(FROM_LSQRS) ) {
       ( ( IParameterGUI )getParameter( 8 ) ).setEnabled( false );
       ( ( IParameterGUI )getParameter( 9 ) ).setEnabled( false );
     }

@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2006/07/10 16:26:07  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.5  2006/03/31 05:28:19  dennis
  * No longer allocates space for the rows of the image, since
  * references to the array of values in the DataSet are used.
@@ -148,7 +151,6 @@ public class DisplayUtil
                                               // GROUP HAVE THE SAME NUMBER OF
                                               // BINS.  
     int n_groups = ds.getNum_entries();
-    int n_times  = ds.getData_entry(0).getY_values().length;
     XScale x_scale = ds.getData_entry(0).getX_scale();
 
     float arr[][] = new float[n_groups][];

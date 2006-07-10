@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2006/07/10 16:25:59  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.16  2006/02/08 19:07:53  hammonds
  * Refactor by Extract Method.  New method is ConvertDStoWL.
  * Rearrange some code to place Cadmium specific code together.
@@ -95,6 +98,9 @@
 package DataSetTools.operator.Generic.TOF_SAD;
 import DataSetTools.dataset.*;
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -193,17 +199,17 @@ public class CalcTransmission extends GenericTOF_SAD {
   */
   public Object getResult(){
      log = new StringBuffer(1000);
-     DataSet Sample = (DataSet)((MonitorDataSetPG)getParameter(0)).
-                              getDataSetValue();
+     DataSet Sample = (DataSet)((MonitorDataSetPG)getParameter(0)).getValue();
+     
      ((DataSetPG)getParameter(0)).clear();
 
-     DataSet Empty = ((DataSetPG)getParameter(1)).getDataSetValue();
+     DataSet Empty = (DataSet)((DataSetPG)getParameter(1)).getValue();
      ((DataSetPG)getParameter(1)).clear();
 
-     DataSet Cadmium = ((DataSetPG)getParameter(2)).getDataSetValue();
+     DataSet Cadmium = (DataSet)((DataSetPG)getParameter(2)).getValue();
      ((DataSetPG)getParameter(2)).clear();
 
-     DataSet SampleDs = ((SampleDataSetPG)getParameter(3)).getDataSetValue();
+     DataSet SampleDs = (DataSet)((SampleDataSetPG)getParameter(3)).getValue();
      ((DataSetPG)getParameter(3)).clear();
 
      boolean useCadmium = ((Boolean)(getParameter(4).getValue())).booleanValue();

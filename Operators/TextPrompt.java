@@ -28,6 +28,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2006/07/10 16:26:06  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.6  2004/03/15 19:36:53  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -52,6 +55,7 @@
 
 package Operators;
 
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -59,7 +63,6 @@ import java.io.*;
 import java.util.*;
 import  DataSetTools.operator.Operator;
 import  DataSetTools.operator.Generic.Batch.*;
-import  DataSetTools.parameter.StringPG;
 
 /**
  *   This class is intended to provide support for prompting users for input on 

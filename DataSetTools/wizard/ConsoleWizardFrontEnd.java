@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/07/10 16:26:03  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.4  2004/03/15 19:34:01  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -57,6 +60,7 @@ import DataSetTools.wizard.util.*;
 
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.Parameters.IParameterGUI;
 
 import java.io.File;
 
@@ -223,10 +227,10 @@ class ConsoleWizardFrontEnd implements IWizardFrontEnd {
 
     //now go through the form's parameters, displaying the name and value 
     //for each
-    ParameterGUI param = null;
+    IParameterGUI param = null;
 
     for( int i = 0; i < f.getNum_parameters(  ); i++ ) {
-      param = ( ParameterGUI )f.getParameter( i );
+      param = ( IParameterGUI )f.getParameter( i );
       System.out.print( ( i + 1 ) + " " + param.getName(  ) + "\t\t" );
       System.out.println( param.getValue(  ) );
     }

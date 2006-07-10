@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2006/07/10 16:25:54  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.11  2005/01/10 15:29:30  dennis
  * Removed some dead code.
  *
@@ -71,6 +74,7 @@ package DataSetTools.operator.DataSet.Conversion.YAxis;
 
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;

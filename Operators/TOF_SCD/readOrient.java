@@ -39,6 +39,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.parameter.*;
 
+import gov.anl.ipns.Parameters.DataDirPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;

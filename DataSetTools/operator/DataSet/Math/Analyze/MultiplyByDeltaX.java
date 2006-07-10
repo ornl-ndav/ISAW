@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/10 16:25:56  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.1  2005/10/13 18:53:01  dennis
  * Initial version of DataSetOperator to multiply each y value by a
  * corresponding delta_X value.  Currently units are handled by replacing
@@ -40,6 +43,7 @@
 
 package DataSetTools.operator.DataSet.Math.Analyze;
 
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 
 import  java.io.*;

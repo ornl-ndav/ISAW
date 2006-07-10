@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.15  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.14  2004/05/01 00:42:05  bouzekc
  * Now uses a result parameter in keeping with general Form contract.
  *
@@ -71,6 +74,12 @@ import DataSetTools.util.*;
 
 import DataSetTools.wizard.*;
 
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.DataDirPG;
+import gov.anl.ipns.Parameters.IParameterGUI;
+import gov.anl.ipns.Parameters.InstNamePG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
@@ -152,13 +161,13 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
-    addParameter( new IntArrayPG( "Run Numbers", "12358", false ) );
-    addParameter( new DataDirPG( "Location of runfiles", "", false ) );
-    addParameter( new InstNamePG( "Instrument Name", "GPPD", false ) );
-    addParameter( new IntegerPG( "Histogram number", 1, false ) );
-    addParameter( new IntArrayPG( "Group IDs to omit", "", false ) );
-    setResultParam( new ArrayPG( "Histogram List", new Vector(  ), false ) );
-    addParameter( new ArrayPG( "Monitor Run List", new Vector(  ), false ) );
+    addParameter( new IntArrayPG( "Run Numbers", "12358" ) );
+    addParameter( new DataDirPG( "Location of runfiles", "" ) );
+    addParameter( new InstNamePG( "Instrument Name", "GPPD" ) );
+    addParameter( new IntegerPG( "Histogram number", 1 ) );
+    addParameter( new IntArrayPG( "Group IDs to omit", "" ) );
+    setResultParam( new ArrayPG( "Histogram List", new Vector(  ) ) );
+    addParameter( new ArrayPG( "Monitor Run List", new Vector(  ) ) );
     setParamTypes( null, new int[]{ 0, 1, 2, 3, 4 }, new int[]{ 5, 6 } );
   }
 
@@ -298,8 +307,8 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
     }
 
     //for
-    histograms.setValid( true );
-    monitors.setValid( true );
+    histograms.setValidFlag( true );
+    monitors.setValidFlag( true );
 
     SharedData.addmsg( "Finished loading DataSets from runfiles.\n" );
 

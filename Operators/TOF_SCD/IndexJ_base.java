@@ -1,5 +1,5 @@
 /*
- * File:  IndexJ_base.java   
+ * File:  IndexJ_base.java    
  *
  * Copyright (C) 2004, Ruth Mikkelson,Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2006/07/10 16:26:12  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.10  2006/06/16 18:16:01  rmikk
  * Added an output Vector argument to the parameter list .  This vector has two
  * Integer elements.  The first is the number indexed and the last is the number
@@ -75,6 +78,11 @@
 
 package Operators.TOF_SCD;
 
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
@@ -214,7 +222,7 @@ public class IndexJ_base extends    GenericTOF_SCD implements
    */
   public String getCommand(){
     return "JIndex";
-  }
+  } 
   
   /* --------------------------- getResult ------------------------------- */
  
@@ -235,7 +243,7 @@ public class IndexJ_base extends    GenericTOF_SCD implements
     peaks=(Vector)(getParameter(0).getValue());
    
     // get the matrix filename
-    Vector V =(((ArrayPG)getParameter(1)).getVectorValue());
+    Vector V =(Vector)(((ArrayPG)getParameter(1)).getValue());
     matrix = new float[3][3];
     if( V.size() != 3)
       return new ErrorString("Incorrect dimension(1) for Orientation mattrix");

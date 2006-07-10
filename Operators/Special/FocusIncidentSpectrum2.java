@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2006/07/10 16:26:10  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.1  2004/05/07 17:57:00  dennis
  * Moved operators that extend GenericSpecial from Operators
  * to Operators/Special
@@ -68,6 +71,7 @@ package Operators.Special;
 
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.Parameters.IParameter;
 
 import java.util.Vector;
 
@@ -83,7 +87,6 @@ import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.Special.GenericSpecial;
 import DataSetTools.operator.Generic.Special.UpstreamMonitorID;
-import DataSetTools.parameter.IParameter;
 import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.util.SharedData;
 

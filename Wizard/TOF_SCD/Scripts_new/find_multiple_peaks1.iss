@@ -35,7 +35,9 @@ $ DatFileExtension    String(".nx.hdf")         Extension on Data Files
 
 #calibfile = "/IPNShome/scd/instprm.dat"
 Display "Instrument="&inst
-Display "Calibration File ="&calibfile
+if  useCalibFile
+  Display "Calibration File ="&calibfile
+endif
 # DataSet is number two
 # dsnum=1   //Changes depending on when the run file was made
 first=true
@@ -50,7 +52,9 @@ for i in run_numbers
   # -----Hack to get SXD's to run---------
   monct=100000.0
   #monct=IntegGrp(ds[0],1,0,50000)
-  Calib(ds[dsnum], calibfile)
+  if useCalibFile
+    Calib(ds[dsnum], calibfile)
+  endif
 
   #LoadSCDCalib(ds[dsnum],calibfile,-1,"")
   # find peaks
@@ -78,4 +82,3 @@ Display("Peaks are listed in "&outpath&expname&".peaks")
 
 return peaks
 
-ExitDialog()

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2006/07/10 16:26:00  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.10  2005/01/10 15:30:45  dennis
  * Removed empty statement.
  *
@@ -70,6 +73,8 @@ package DataSetTools.operator.Generic.TOF_SAD;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2006/07/10 16:25:52  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.7  2005/10/03 02:52:56  rmikk
  *  Fixed Error. SelectedIDs Field now returns the selected IDs instead of the
  *  indicies
@@ -58,6 +61,7 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 

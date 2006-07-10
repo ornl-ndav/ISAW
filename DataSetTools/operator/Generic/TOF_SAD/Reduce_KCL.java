@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.37  2006/07/10 16:26:00  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.36  2005/11/23 17:22:39  hammonds
  * Make small changes to take out edit only differences between Reduce_KCL and Reduce_LPSD.
  * The only variation from this is to change the variable tofs in Reduce_LPSD to xvals in order to more closely match the syntax in Reduce_KCL therby reducing differences in the files.
@@ -141,6 +144,10 @@
  */
 package DataSetTools.operator.Generic.TOF_SAD;
 
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.QbinsPG;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 

@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.38  2006/07/10 16:26:04  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.37  2004/03/15 03:29:04  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -133,15 +136,14 @@
  */
 package DataSetTools.wizard;
 
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Parameters.*;
 
 import java.util.Vector;
 
 import DataSetTools.operator.HiddenOperator;
 import DataSetTools.operator.Operator;
-import DataSetTools.parameter.IParameter;
-import DataSetTools.parameter.IParameterGUI;
-import DataSetTools.parameter.StringPG;
 import DataSetTools.util.SharedData;
 
 
@@ -245,7 +247,7 @@ public class OperatorForm extends Form implements HiddenOperator {
 
     // set the result parameter
     if( getResultParam(  ) == null ) {
-      setResultParam( new StringPG( "Result", null, false ) );
+      setResultParam( new StringPG( "Result", null ) );
     }
 
     //acquire the number of internal operator parameters
@@ -312,10 +314,10 @@ public class OperatorForm extends Form implements HiddenOperator {
 
     //draw all of the internal Operator parameters and our result parameter
     for( int i = 0; i < getNum_parameters(  ); i++ ) {
-      ( ( IParameterGUI )this.getParameter( i ) ).setDrawValid( true );
+      ( ( IParameterGUI )this.getParameter( i ) ).setValidFlag( true );
     }
 
-    getResultParam(  ).setDrawValid( true );
+    getResultParam().setValidFlag( true );
 
     /*set the parameter types so we can build the GUI
        the result parameter is one after the last variable parameter
@@ -380,7 +382,7 @@ public class OperatorForm extends Form implements HiddenOperator {
     if( form_op == null ) {
       return null;
     } else if( index < form_op.getNum_parameters(  ) ) {
-      return form_op.getParameter( index );
+      return (IParameter)form_op.getParameter( index );
     } else {
       return getResultParam(  );
     }

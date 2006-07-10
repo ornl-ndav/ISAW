@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2006/07/10 16:26:13  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.18  2004/05/01 00:42:05  bouzekc
  *  Now uses a result parameter in keeping with general Form contract.
  *
@@ -102,6 +105,13 @@
  */
 package Wizard;
 
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.DataDirPG;
+import gov.anl.ipns.Parameters.IParameterGUI;
+import gov.anl.ipns.Parameters.InstNamePG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.Util.Sys.StringUtil;
@@ -187,15 +197,15 @@ public class SaveAsGSASForm extends Form implements Serializable {
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
     addParameter( 
-      new ArrayPG( "Time focused histograms", new Vector(  ), false ) );
-    addParameter( new ArrayPG( "Monitor DataSets", new Vector(  ), false ) );
-    addParameter( new IntArrayPG( "Run Numbers", "12358", false ) );
-    addParameter( new InstNamePG( "InstrumentName", null, false ) );
+      new ArrayPG( "Time focused histograms", new Vector(  ) ) );
+    addParameter( new ArrayPG( "Monitor DataSets", new Vector(  ) ) );
+    addParameter( new IntArrayPG( "Run Numbers", "12358" ) );
+    addParameter( new InstNamePG( "InstrumentName", null ) );
     addParameter( 
-      new DataDirPG( "Directory to save GSAS files to", null, false ) );
-    addParameter( new BooleanPG( "Export Monitor DataSet", false, false ) );
-    addParameter( new BooleanPG( "Sequential bank numbering", false, false ) );
-    setResultParam( new StringPG( "Result ", null, false ) );
+      new DataDirPG( "Directory to save GSAS files to", null ) );
+    addParameter( new BooleanPG( "Export Monitor DataSet", false ) );
+    addParameter( new BooleanPG( "Sequential bank numbering", false ) );
+    setResultParam( new StringPG( "Result ", null ) );
     setParamTypes( new int[]{ 0, 1, 2, 3 }, new int[]{ 4, 5, 6 }, new int[]{ 7 } );
   }
 

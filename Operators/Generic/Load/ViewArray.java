@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2006/07/10 16:26:08  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.9  2005/06/15 22:20:28  rmikk
  * Now changes the Title of the Frame
  *
@@ -75,6 +78,9 @@ package Operators.Generic.Load;
 import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
 import DataSetTools.operator.Generic.Load.*;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.PlaceHolderPG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.ViewTools.Components.*;
 //import gov.anl.ipns.ViewTools.Components.TwoD.*;
 

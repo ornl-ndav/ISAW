@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/07/10 16:26:00  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.2  2005/01/10 15:28:50  dennis
  * Removed unused imports.
  *
@@ -48,6 +51,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.Parameters.FloatPG;
 
 public class SetL2  extends GenericTOF_SAD{
 

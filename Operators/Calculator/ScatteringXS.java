@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2006/07/10 16:26:06  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.3  2005/08/25 19:51:05  dennis
  *  Moved to logical menu category UTILS_ACTIVATE
  *
@@ -48,6 +51,8 @@ import DataSetTools.materials.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.MaterialPG;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
 import java.text.DecimalFormat;

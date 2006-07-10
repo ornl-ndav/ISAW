@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2006/07/10 16:26:12  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.8  2006/01/16 04:50:35  rmikk
  * Added documentation for the d_min argument
  *
@@ -223,6 +226,13 @@ import DataSetTools.retriever.RunfileRetriever;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.SaveFilePG;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import java.io.*;
 import java.util.Vector;
@@ -417,7 +427,7 @@ public class Integrate1 extends GenericTOF_SCD{
     if( choices==null || choices.size()==0 ) init_choices();
 
     // parameter(0)
-    addParameter( new DataSetPG("Data Set", null, false ) );
+    addParameter( new DataSetPG("Data Set", null ) );
 
     // parameter(1)
     SaveFilePG sfpg=new SaveFilePG("Integrate File",null);

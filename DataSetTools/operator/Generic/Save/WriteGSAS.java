@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/07/10 16:25:59  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.12  2005/05/03 18:48:59  hammonds
  * Update title to Save 10 Col GSAS
  *
@@ -80,6 +83,9 @@ import DataSetTools.dataset.*;
 import DataSetTools.parameter.*;
 import DataSetTools.writer.*;
 import DataSetTools.gsastools.*;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.SaveFilePG;
+
 import java.util.*;
  
 /**

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2006/07/10 16:25:52  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.8  2005/06/02 18:58:24  dennis
  *  If the value of any attribute is an array of ints or an array of floats,
  *  the ints (or floats) will now be returned in a Vector, so that they
@@ -65,6 +68,7 @@ import  java.io.*;
 import  java.util.Vector;
 import  java.lang.reflect.Array;
 
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  DataSetTools.dataset.*;

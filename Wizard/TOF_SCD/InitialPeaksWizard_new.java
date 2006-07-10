@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2006/07/10 16:26:14  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.9  2006/06/08 22:01:49  rmikk
  * Updated the links to conform with the changes in the scripts
  *
@@ -71,6 +74,10 @@
 package Wizard.TOF_SCD;
 
 import DataSetTools.wizard.*;
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.PlaceHolderPG;
+import gov.anl.ipns.Parameters.StringPG;
+
 import java.util.*;
 import DataSetTools.parameter.*;
 import Operators.TOF_SCD.*;

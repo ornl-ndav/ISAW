@@ -33,13 +33,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.1  2003/11/11 20:46:42  rmikk
  * Initial Checkin
  *
  */
 package Wizard.TOF_SAD;
 import java.beans.*;
-import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.*;
 import java.util.*;
 
 
@@ -51,7 +54,7 @@ import java.util.*;
 public class PChangeListener implements PropertyChangeListener{
   Vector V ;
   Object TrueValue;
-  public PChangeListener( ParameterGUI listener){
+  public PChangeListener( IParameterGUI listener){
      V = new Vector();
      V.addElement( listener);
      TrueValue = new Boolean(true);
@@ -64,7 +67,7 @@ public class PChangeListener implements PropertyChangeListener{
    *           when the new value of a PropertyChangeEvent is true. Otherwise the
    *           the ParameterGUI's will be disabled. 
    */
-  public PChangeListener( ParameterGUI[] listeners){
+  public PChangeListener( IParameterGUI[] listeners){
     V = new Vector();
     if( listeners == null)
       return;
@@ -83,7 +86,7 @@ public class PChangeListener implements PropertyChangeListener{
    *                       listeners will be enabled. Otherwise the 
    *                       ParameterGUI's will be disabled
    */
-  public PChangeListener(ParameterGUI[] listeners, Object TrueValue){
+  public PChangeListener(IParameterGUI[] listeners, Object TrueValue){
     V = new Vector();
     if( listeners == null)
       return;
@@ -101,7 +104,7 @@ public class PChangeListener implements PropertyChangeListener{
    *                       listeners will be enabled. Otherwise the 
    *                        ParameterGUI will be disabled
    */
-  public PChangeListener(ParameterGUI listeners, Object TrueValue){
+  public PChangeListener(IParameterGUI listeners, Object TrueValue){
      V = new Vector();
      if( listeners == null)
         return;
@@ -122,7 +125,7 @@ public class PChangeListener implements PropertyChangeListener{
         return;
      boolean set = value.equals( TrueValue);
      for( int i=0; i< V.size(); i++){
-        ParameterGUI PG = (ParameterGUI)(V.elementAt(i));
+        IParameterGUI PG = (IParameterGUI)(V.elementAt(i));
         PG.setEnabled( set);  
      }
 

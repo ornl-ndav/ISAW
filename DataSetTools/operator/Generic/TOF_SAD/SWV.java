@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/10 16:26:00  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.3  2005/05/25 20:24:41  dennis
  * Now calls convenience method WindowShower.show() to show
  * the window, instead of instantiating a WindowShower object
@@ -53,6 +56,7 @@ import java.util.Vector;
 import DataSetTools.parameter.*;
 import DataSetTools.components.View.*;
 
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.Sys.WindowShower;
 
 

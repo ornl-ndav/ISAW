@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2006/07/10 16:26:12  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.7  2006/06/26 19:32:50  rmikk
  * Now reports the "correct" new orientation matrix along with the correct
  *   interrelationships between the transformation, new and old orientation
@@ -86,6 +89,9 @@ import DataSetTools.parameter.*;
 //import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
@@ -279,7 +285,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
    * Uses the current values of the parameters to generate a result.
    */
   public Object getResult(){
-    Vector V =((ArrayPG)getParameter(0)).getVectorValue();
+    Vector V = (Vector)((ArrayPG)getParameter(0)).getValue();
     float[][] UB1= new float[3][3];
     if( V.size() != 3)
       return new ErrorString("Incorrect dimension(1) for Orientation mattrix");

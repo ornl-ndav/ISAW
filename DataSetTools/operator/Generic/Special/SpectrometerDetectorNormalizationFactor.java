@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2006/07/10 16:25:59  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.13  2005/01/28 21:28:13  dennis
  *  Added getCategoryList to place operator under TOF_NDGS category.
  *
@@ -80,6 +83,7 @@
 package DataSetTools.operator.Generic.Special;
 
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.Parameters.IParameter;
 
 import java.io.Serializable;
 import java.util.Vector;
@@ -91,7 +95,6 @@ import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.DataSetFactory;
 import DataSetTools.dataset.UniformXScale;
-import DataSetTools.parameter.IParameter;
 
 /**
  * This operator calculates detector normalization factors for a direct 

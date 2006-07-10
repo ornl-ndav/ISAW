@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2006/07/10 16:25:50  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.11  2004/01/21 17:58:09  bouzekc
  * main() now only creates a ParameterClassList and does not allocate
  * storage for it.
@@ -76,9 +79,10 @@
 
 package Command;
 
-import DataSetTools.parameter.IParameter;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.FilenameUtil;
+import gov.anl.ipns.Parameters.IParameter;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;

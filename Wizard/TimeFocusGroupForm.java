@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.18  2004/05/01 00:42:05  bouzekc
  * Now uses a result parameter in keeping with general Form contract.
  *
@@ -105,13 +108,18 @@ import DataSetTools.dataset.DataSet;
 
 import DataSetTools.operator.Operator;
 
-import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.*;
 
 import DataSetTools.util.*;
 
 import DataSetTools.wizard.Form;
 
 import Operators.TOF_Diffractometer.*;
+
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IParameterGUI;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.ViewTools.UI.*;
@@ -203,16 +211,16 @@ public class TimeFocusGroupForm extends Form implements Serializable {
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
-    addParameter( new ArrayPG( "Histograms", new Vector(  ), false ) );
+    addParameter( new ArrayPG( "Histograms", new Vector(  ) ) );
 
     for( int i = 0; i < NUM_BANKS; i++ ) {
-      addParameter( new IntArrayPG( "Focusing IDs", new String( "" ), false ) );
-      addParameter( new FloatPG( "Focusing angle", new Float( 0.5f ), false ) );
-      addParameter( new FloatPG( "New Path", new Float( 1.0f ), false ) );
+      addParameter( new IntArrayPG( "Focusing IDs", new String( "" ) ) );
+      addParameter( new FloatPG( "Focusing angle", new Float( 0.5f ) ) );
+      addParameter( new FloatPG( "New Path", new Float( 1.0f ) ) );
     }
 
     setResultParam( 
-      new ArrayPG( "Time focused histograms", new Vector(  ), false ) );
+      new ArrayPG( "Time focused histograms", new Vector(  ) ) );
 
     int[] editable_params = new int[NUM_BANKS * 3];
 
@@ -389,7 +397,7 @@ public class TimeFocusGroupForm extends Form implements Serializable {
       }
 
       //for( num_ds )
-      tfgr.setValid( true );
+      tfgr.setValidFlag( true );
       SharedData.addmsg( "Finished time focusing and grouping DataSets.\n" );
 
       return new Boolean( true );
@@ -428,24 +436,24 @@ public class TimeFocusGroupForm extends Form implements Serializable {
     sub_panel.setBorder( border );
 
     //multiple grid entry
-    sub_panel.setLayout( new GridLayout( 0, 3 ) );
+    sub_panel.setLayout( new GridLayout( 1,1 ) );
     ipgs = new IParameterGUI[num.length];
 
     //get the params
     for( int i = 0; i < num_params; i++ ) {
       IParameterGUI param = ( IParameterGUI )parameters.elementAt( num[i] );
 
-      param.initGUI( null );
+//      param.initGUI( null );
 
       ipgs[i] = param;
 
-      if( i < 3 ) {  //add the labels on this pass
-        sub_panel.add( param.getLabel(  ) );
-      }
+//      if( i < 3 ) {  //add the labels on this pass
+//        sub_panel.add( param.getLabel(  ) );
+//      }
     }
 
     for( int i = 0; i < num_params; i++ ) {
-      sub_panel.add( ipgs[i].getEntryWidget(  ) );
+      sub_panel.add( ipgs[i].getGUIPanel( true ) );
     }
 
     return sub_panel;
@@ -508,12 +516,12 @@ public class TimeFocusGroupForm extends Form implements Serializable {
           new_GID = 1;
         }
 
-        param.setValid( true );
+        param.setValidFlag( true );
 
         return focusing_GIDs;
       } else {
         new_GID = 1;
-        param.setValid( true );
+        param.setValidFlag( true );
 
         return "1";
       }
@@ -527,11 +535,11 @@ public class TimeFocusGroupForm extends Form implements Serializable {
 
       if( obj instanceof Float ) {
         angle = ( ( Float )obj );
-        param.setValid( true );
+        param.setValidFlag( true );
 
         return angle;
       } else {
-        param.setValid( true );
+        param.setValidFlag( true );
 
         return new Float( 1.0f );
       }
@@ -545,11 +553,11 @@ public class TimeFocusGroupForm extends Form implements Serializable {
 
       if( obj instanceof Float ) {
         path = ( ( Float )obj );
-        param.setValid( true );
+        param.setValidFlag( true );
 
         return path;
       } else {
-        param.setValid( true );
+        param.setValidFlag( true );
 
         return new Float( 1.0f );
       }

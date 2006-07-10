@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2006/07/10 16:25:50  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.16  2006/06/14 15:31:23  rmikk
  * Fixed an error in GetExceptionStackInfo so now the correct info is
  * returned  when an internal error occurs
@@ -90,8 +93,6 @@
 package Command;
 
 import DataSetTools.dataset.*;
-import DataSetTools.parameter.IParameter;
-import DataSetTools.parameter.IParameterGUI;
 import DataSetTools.operator.JavaWrapperOperator;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Generic.GenericOperator;
@@ -100,6 +101,8 @@ import DataSetTools.util.SharedData;
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;
 import DataSetTools.writer.*;
+import gov.anl.ipns.Parameters.IParameterGUI;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.SpecialStrings.SpecialString;
 import gov.anl.ipns.Util.Sys.StringUtil;
 
@@ -839,7 +842,8 @@ public class ScriptUtil{
          return null;
     int[] Res = null;
     if( val instanceof String){
-      val = DataSetTools.parameter.ArrayPG.StringtoArray((String)val);
+      val = gov.anl.ipns.Parameters.Conversions.get_RealArray( val, 
+    		  (new int[0]).getClass());
     }
     try{
          Res =(int[])DataSetTools.operator.JavaWrapperOperator.cvrt( (new int[0]).getClass(),

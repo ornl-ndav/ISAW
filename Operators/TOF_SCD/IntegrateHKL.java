@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/07/10 16:26:12  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.2  2006/03/16 18:04:42  dennis
  * Added suffix "f" to float parameters to FloatPG so it would
  * still compile and work under earlier versions.
@@ -49,6 +52,9 @@ import DataSetTools.operator.Generic.*;
 import DataSetTools.parameter.*;
 import DataSetTools.dataset.*;
 
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.SaveFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;

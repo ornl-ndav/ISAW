@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.54  2006/07/10 16:25:52  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.53  2005/08/25 19:50:15  dennis
  *  Added menu category UTILS_ACTIVATE
  *
@@ -183,9 +186,13 @@
 
 package DataSetTools.operator;
 
+import gov.anl.ipns.Parameters.IParameterGUI;
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.RealArrayPG;
+
 import java.util.Vector;
 import java.io.*;
-import DataSetTools.parameter.IParameter;
+import gov.anl.ipns.Parameters.IParameter;
 import DataSetTools.util.SharedData;
 import DataSetTools.parameter.*;
 import NetComm.RemoteOpExecClient;
@@ -463,7 +470,7 @@ abstract public class Operator implements Serializable
    {
       if(parameters==null)
          parameters=new Vector();
-       IParameter newParameter = (IParameter)parameter.clone();
+       IParameter newParameter = (IParameter)((IParameter)parameter).clone();
        parameters.addElement( newParameter );
    }
 

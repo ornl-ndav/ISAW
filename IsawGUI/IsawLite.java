@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2006/07/10 16:26:05  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.11  2004/03/15 03:31:25  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -77,10 +80,10 @@ import DataSetTools.components.ParametersGUI.JParametersDialog;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.PyScriptOperator;
-import DataSetTools.parameter.IParameter;
 import DataSetTools.parameter.DataSetPG;
-import DataSetTools.parameter.StringPG;
-import DataSetTools.parameter.ParamUsesString;
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.ParamUsesString;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.DataDirectoryString;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;

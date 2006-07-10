@@ -27,8 +27,8 @@ $ inst                String("SCD0")         Instrument name
 $ FileExt             String(".nx.hdf")      FileExtension
 $ d_min             float(0.0)             Minimum d-spacing
 $PeakAlg           Choice(["MaxIToSigI","Shoe Box","MaxIToSigI-old","TOFINT","EXPERIMENTAL"])  Integ 1 peak algorithm
-$Xrange            Array([-3,3])            Range of x's around shoebox center
-$Yrange            Array([-3,3])               Range of y's around shoebox center
+$Xrange            IntArray(-3,3)            Range of x's around shoebox center
+$Yrange            IntArray(-3,3)               Range of y's around shoebox center
 $ShowLog           Boolean(false)             Pop Up Integrate.log
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 $title=Integrate Peaks
@@ -51,13 +51,17 @@ for i in run_numbers
   dsnum = nn-1
   # The calibration file "instprm.dat" must be in the outpath directory.
   #LoadSCDCalib(ds[dsnum],outpath&"instprm.dat",-1,"")
-  Calib(ds[dsnum], calibfile)
+  if ( useCalibFile )
+    Calib(ds[dsnum], calibfile)
+  endif
 
   # integrate peaks
   #Display(ds[dsnum])
   
   #Gets matrix file "lsxxxx.mat" for each run
   #The "1" means that every peak will be written to the integrate.log file.
+  Display "XRange = " & Xrange
+  Display "YRange = " & Yrange
   SCDIntegrate_new(ds[dsnum],outpath&expname&".integrate",outpath&"/ls"&expname&i&".mat",centering,time_slice_range,increase,d_min,1,append,PeakAlg,Xrange,Yrange)
   Display "Through integrating run num "&i
   #Integrate

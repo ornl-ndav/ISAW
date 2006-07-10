@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  *  $Log$
+ *  Revision 1.15  2006/07/10 16:25:53  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.14  2004/03/15 06:10:46  dennis
  *  Removed unused import statements.
  *
@@ -80,6 +83,7 @@
 package DataSetTools.operator.DataSet.Conversion.XAxis;
 
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.ViewTools.UI.*;
 

@@ -32,12 +32,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.111  2006/07/10 16:26:04  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.110  2006/06/08 18:24:50  rmikk
  * Incorporated code so that the BooleanEnablePG status was correct
  *    after the form had finished executing
  *
  * Revision 1.109  2006/03/20 16:33:05  hammonds
- * Make loadForms and writeForms public methods to allow extending this to scripts.
+ * Make loadForms and writeForms public methods to allow extending this 
+ * to scripts.
  *
  * Revision 1.108  2006/03/16 20:47:36  dennis
  * No longer declare this to be abstract.  This allows wizards to
@@ -491,13 +495,13 @@
  */
 package DataSetTools.wizard;
 
-import DataSetTools.parameter.*;
-
 import DataSetTools.util.*;
+import DataSetTools.components.ParametersGUI.FilteredDocument;
 
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.Parameters.*;
 
 import java.beans.*;
 
@@ -790,7 +794,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
     forms.add( f );
 
     //add the listener (this) to the Form's parameters and progress bar
-    f.addPropertyChangeListener( IParameter.VALUE, this );
+    f.addPropertyChangeListener( FilteredDocument.VALUE, this );
   }
 
   /**
@@ -866,9 +870,18 @@ public class Wizard implements PropertyChangeListener, Serializable {
                 getForm( nonNegFormIndex ).getParameter( nonNegParamIndex )
                   .getName(  ) );
             }
+            Form form = getForm( colIndex );
+            IParameter param = (IParameter)getForm( nonNegFormIndex ).getParameter( nonNegParamIndex );
+            if ( form instanceof OperatorForm )
+               ((OperatorForm)form).setParameter(param, paramTable[rowIndex][colIndex] );
+             else
+              form.setParameter( param, paramTable[rowIndex][colIndex] );
+            	
+            /*            	
             getForm( colIndex ).setParameter( 
               getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ),
               paramTable[rowIndex][colIndex] );
+*/
           }
         }
       }
@@ -916,7 +929,8 @@ public class Wizard implements PropertyChangeListener, Serializable {
 
     File file;
 
-    if( getModified(  ) ) {
+//  if( getModified(  ) )
+//  {
       file = frontEnd.getFile( true );
 
       if( file == null ) {
@@ -927,7 +941,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
         return;
       }
       writeForms( file );
-    }
+//  }
   }
 
   /**
@@ -1143,7 +1157,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
       for( int k = 0; k < ( curForm.getNum_parameters(  ) + 1 ); k++ ) {
         ipg = ( IParameterGUI )curForm.getParameter( k );
 
-        if( ipg instanceof BrowsePG ) {
+        if( ipg instanceof IBrowsePG ) {
           ipg.setValue( getProjectsDirectory(  ) );
         }
       }
@@ -1192,7 +1206,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
     int typeEndInd;
     Form cur_form;
     IParameterGUI curParam;
-    boolean ignoreChanges   = false;
+//    boolean ignoreChanges   = false;
 
     //remove the newline characters
     st                      = new StringTokenizer( xml, "\n" );
@@ -1244,15 +1258,15 @@ public class Wizard implements PropertyChangeListener, Serializable {
         //set the parameter validity.  Read from the file, then check a few
         //types against certain criteria.
         //turn off property change checking for the parameter.
-        ignoreChanges = ( ( ParameterGUI )curParam ).getIgnorePropertyChange(  );
-        ( ( ParameterGUI )curParam ).setIgnorePropertyChange( true );
+//    ignoreChanges = ( ( ParameterGUI )curParam ).getIgnorePropertyChange(  );
+//      ( ( ParameterGUI )curParam ).setIgnorePropertyChange( true );
         validStartInd   = xml.indexOf( VALIDSTART );
         validEndInd     = xml.indexOf( VALIDEND );
         paramValidity   = xml.substring( 
             validStartInd + VALIDSTART.length(  ), validEndInd );
-        curParam.setValid( new Boolean( paramValidity ).booleanValue(  ) );
+        curParam.setValidFlag( new Boolean( paramValidity ).booleanValue(  ) );
 
-        if( !curParam.getValid(  ) ) {
+        if( !curParam.getValidFlag(  ) ) {
           curParam.validateSelf(  );
         }
 
@@ -1263,7 +1277,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
             typeEndInd + typeEnd.length(  ), xml.length(  ) );
 
         //set property change checking for the parameter back to the original.
-        ( ( ParameterGUI )curParam ).setIgnorePropertyChange( ignoreChanges );
+//      ( ( ParameterGUI )curParam ).setIgnorePropertyChange( ignoreChanges );
       }
 
       //end the Parameter parsing for the Form
@@ -1366,7 +1380,11 @@ public class Wizard implements PropertyChangeListener, Serializable {
           s.append( ipg.getName(  ) );
           s.append( "</Name>\n" );
           s.append( "<Value>" );
-          obj = ipg.getValue(  );
+          try{
+             obj = ipg.getValue(  );
+          }catch( Exception ss){
+        	  obj=null;
+          }
 
           if( ( obj == null ) || ( obj.toString(  ).length(  ) <= 0 ) ) {
             s.append( "emptyString" );
@@ -1376,7 +1394,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
           }
           s.append( "</Value>\n" );
           s.append( "<Valid>" );
-          s.append( ipg.getValid(  ) );
+          s.append( ipg.getValidFlag(  ) );
           s.append( "</Valid>\n" );
           s.append( "</" );
           s.append( ipg.getType(  ) );

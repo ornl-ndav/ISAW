@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/07/10 16:25:59  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.6  2005/08/25 15:18:25  dennis
  * Added/moved to menu category DATA_SET_TWEAK_MACROS
  *
@@ -58,6 +61,8 @@ import DataSetTools.operator.DataSet.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.LoadFilePG;
+
 import java.util.Vector;
 
 /** 

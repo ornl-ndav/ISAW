@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2006/07/10 16:26:06  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.3  2006/02/17 02:36:22  hammonds
  *  Change document to use html to show e^x to show as a superscript.
  *
@@ -47,6 +50,7 @@ package Operators.Calculator;
 
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
 import java.util.Vector;

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.51  2006/07/10 16:25:50  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.50  2006/06/08 18:23:07  rmikk
  * Redid the determination of the initial value(String form) for a parameter
  *    so quotes,(, and ) work
@@ -284,8 +287,23 @@ import DataSetTools.util.*;
 import DataSetTools.parameter.*; 
 import DataSetTools.components.ParametersGUI.*;
 
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.BooleanEnablePG;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.DataDirPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.InstNamePG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.PlaceHolderPG;
+import gov.anl.ipns.Parameters.RadioButtonPG;
+import gov.anl.ipns.Parameters.SaveFilePG;
+import gov.anl.ipns.Parameters.StringPG;
+import gov.anl.ipns.Parameters.StringListChoicePG;
 import gov.anl.ipns.Util.Messaging.*;
-import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
 
@@ -296,7 +314,7 @@ import DataSetTools.operator.Generic.*;
 import java.beans.*; 
 import java.util.Vector;
 import ExtTools.SwingWorker;
-
+import java.lang.reflect.*;
 
 /**
  * Lexes, parses and executes Structure statements( if, else, for, on error),
@@ -351,7 +369,7 @@ public class ScriptOperator  extends  GenericOperator
     this.script=new IssScript(TextFileName);
     setDefaultParameters();
   }
-  
+
   /**
   *     Constructor that uses the StringBuffer representation of the
   *     script
@@ -670,31 +688,62 @@ public class ScriptOperator  extends  GenericOperator
     seterror( -1, "");
     lerror = -1;
     
-    //--------------- Add Parameters to execOneLine -----------------    
+    //--------------- Add Parameters to execOneLine ----------------- 
+    int n1 = -1; 
+    int n2 = -1;
+    boolean enabled =false;
     for( i = 0 ; i < getNum_parameters() ; i++){
-      if(getParameter( i ).getValue() == null){
-        serror = "Undefined Parameter "+i;
-        perror =i;
-        lerror = i;
-        return new ErrorString( serror +" in "+getCommand() );
+      try{
+        if(getParameter( i ).getValue() == null){
+          serror = "Undefined Parameter "+i;
+          perror =i;
+          lerror = i;
+          return new ErrorString( serror +" in "+getCommand() );
+          
+        }else if( getParameter( i ).getValue() instanceof DataSet){
+          DataSet ds = (DataSet)(getParameter( i ).getValue());        
+          ExecLine.addParameterDataSet( ds , (String)vnames.elementAt(i));
+        }else if( getParameter(i).getValue() instanceof Vector){
+          Vector V = (Vector)( getParameter(i).getValue());
+          ExecLine.Assign((String)(vnames.elementAt(i)) , V );
         
-      }else if( getParameter( i ).getValue() instanceof DataSet){
-        DataSet ds = (DataSet)(getParameter( i ).getValue());        
-        ExecLine.addParameterDataSet( ds , (String)vnames.elementAt(i));
-      }else if( getParameter(i).getValue() instanceof Vector){
-        Vector V = (Vector)( getParameter(i).getValue());
-        ExecLine.Assign((String)(vnames.elementAt(i)) , V );
-      
-      }else if( getParameter(i).getValue() instanceof SpecialString){
-        ExecLine.Assign((String)(vnames.elementAt(i)),
-                        getParameter(i).getValue().toString());
+        }else if( getParameter(i).getValue() instanceof SpecialString){
+          ExecLine.Assign((String)(vnames.elementAt(i)),
+                         getParameter(i).getValue().toString());   
 
-      }else{
-        ExecLine.Assign((String)(vnames.elementAt(i)),
-                        getParameter(i).getValue());
+        }else{
+          ExecLine.Assign((String)(vnames.elementAt(i)),
+                          getParameter(i).getValue());
+        }
+        if( getParameter(i) instanceof BooleanEnablePG){
+          n1 = ((BooleanEnablePG)getParameter(i)).getNSetIfTrue();
+          n2 = ((BooleanEnablePG)getParameter(i)).getNSetIfFalse();
+          enabled  =((Boolean)( getParameter(i).getValue())).booleanValue();
+          if( n1 ==0) n1 =-1;
+          if( n2 == 0) n2 = -1;
+          
+        }else if( n1 >0){
+        	n1--;
+        	if( n1 ==0 )
+        		n1 = -1;
+        	
+        }else if( n2 >0){
+        	n2--;
+        	if( n2 ==0)
+        		n2 = -1;
+        }
+        
+        
+      }catch( Exception ss){//will not assign a value
+    	 if( ((n1 <0)&&( n2 <0 )) ||
+    		( enabled && (n1<=0 )) ||(!enabled && (n2 >=0)))
+    		seterror(0,"parameter "+ i+" is invalid");
+    	 
+    	 
       }
     }// for i=0 to Num_parameters
-
+    if( getErrorMessage() != null)if( getErrorMessage().length() >0 )
+    	return new ErrorString( getErrorMessage() );
     //-------------  Execute the script--------------------
     int k =lerror; 
     k = executeBlock( this.script,0 ,true ,0) ;
@@ -1415,7 +1464,7 @@ public class ScriptOperator  extends  GenericOperator
         return true; // legacy code. #$$ used to be parameter
     }
 
-    // Eliminate the #$ in the legacy parameter indicator
+    // Eliminate th #$ in the legacy parameter indicator
     index=line.indexOf("#$$");
     if(index>=0){
       buffer=new StringBuffer(line.substring(index+3).trim());
@@ -1451,7 +1500,7 @@ public class ScriptOperator  extends  GenericOperator
             return true;
     // get the Data Type and initial value
     
-    index = execOneLine.finddQuote( buffer.toString(),0,"( ","");
+    index = execOneLine.finddQuote( buffer.toString(),0,"( \t","");
     int nleft= buffer.length();
     if(index <0){
     	DataType = buffer.toString();
@@ -1487,9 +1536,40 @@ public class ScriptOperator  extends  GenericOperator
     // add name to list of variables
     if( !DataType.equals( "=" ))
       vnames.addElement( VarName );
-   
+    if( DataType.equals("INT"))
+    	DataType_C ="Integer";
+    else if( DataType.equals("DATADIRECTORYSTRING"))
+    	DataType_C = "DataDir";
+    else if( DataType.equals( "LOADFILESTRING"))
+    	DataType_C ="LoadFile";
+    else if( DataType.equals( "SAVEFILESTRING"))
+    	DataType_C = "SaveFile";
+    else if(DataType.equals( "INTLIST"))
+        DataType_C = "IntArray";
+    else if( DataType.equals( "INSTRUMENTNAMESTRING"))
+    	DataType_C = "InstName";
+    else if( DataType.equals("OBJECT"))
+    	DataType_C = "PlaceHolder";
+    else if( DataType.equals( "CHOICE"))
+    	DataType_C = "ChoiceList";
+    else if( DataType.equals( "INTEGER"))
+    	DataType_C ="Integer";
+    else if( DataType.equals( "FLOAT "))
+    	DataType_C ="Float";
+    else if( DataType.equals("BOOLEAN"))
+    	DataType_C ="Boolean";
+    else if( DataType.equals("ARRAY"))
+    	DataType_C ="Array";
+    else if( DataType.equals( "STRING"))
+    	DataType_C ="String";
+    else if( DataType.equals( "FLOAT"))
+    	DataType_C ="Float";
+    
+    
+    	
+    	
     // parse type and create a parameter
-    if( DataType.equals("=")){
+    /*if( DataType.equals("=")){
       // do nothing
     }else if( (DataType .equals( "INT") ) || ( DataType.equals( "INTEGER"))){
       if( InitValue == null)
@@ -1530,14 +1610,15 @@ public class ScriptOperator  extends  GenericOperator
      
       addParameter( new DataDirPG( Prompt, InitValue));
                                  //  new DataDirectoryString(EliminateQuotes(DirPath))));
-    }else if( DataType.equals("DSSETTABLEFIELDSTRING")){
+    }else */
+    if( DataType.equals("DSSETTABLEFIELDSTRING")){
       
       DSSettableFieldString dsf = new DSSettableFieldString();
       ChoiceListPG choice= new ChoiceListPG( Prompt, InitValue);
       for( int i = 0; i< dsf.num_strings(); i++)
         choice.addItem( dsf.getString(i));
       addParameter( choice);
-    }else if( DataType.equals("LOADFILESTRING")){ 
+    }/*else if( DataType.equals("LOADFILESTRING")){ 
      
       addParameter(new LoadFilePG(Prompt, EliminateQuotes(InitValue)));
     }else if( DataType.equals("SAVEFILESTRING")){ 
@@ -1550,7 +1631,7 @@ public class ScriptOperator  extends  GenericOperator
          addParameter( new IntArrayPG( Prompt, InitValue ));
 
 
-    }else if (DataType.equals( "DSFIELDSTRING")){
+    }*/else if (DataType.equals( "DSFIELDSTRING")){
       if( InitValue == null )
         addParameter( new Parameter( Prompt,new DSFieldString() ));
       else
@@ -1563,7 +1644,7 @@ public class ScriptOperator  extends  GenericOperator
          clpg.addItem( STS.getString(i));
                
       addParameter( new Parameter( Prompt , STS ));
-    }else if( DataType.equals( "INSTRUMENTNAMESTRING")){
+    }/*else if( DataType.equals( "INSTRUMENTNAMESTRING")){
       String Instrument_Name = null;
       if(InitValue != null && InitValue.length() > 0)
         Instrument_Name = EliminateQuotes(InitValue);
@@ -1574,7 +1655,7 @@ public class ScriptOperator  extends  GenericOperator
       addParameter(  new InstNamePG( Prompt, Instrument_Name ));
     }else if(DataType.equals("OBJECT")){
        addParameter( new PlaceHolderPG( Prompt, InitValue));
-    }else if( DataType.equals( "SERVERTYPESTRING")){
+    }*/else if( DataType.equals( "SERVERTYPESTRING")){
     
       ServerTypeString STS = new ServerTypeString();
       ChoiceListPG clpg = new ChoiceListPG( Prompt, EliminateQuotes(InitValue));
@@ -1583,7 +1664,7 @@ public class ScriptOperator  extends  GenericOperator
                
       addParameter( new Parameter( Prompt , STS ));
                 
-    }else if( (DataType.equals("CHOICE"))||(DataType.equals("CHOICELIST"))){
+    }/*else if( (DataType.equals("CHOICE"))||(DataType.equals("CHOICELIST"))){
       int nn = ExecLine.execute( InitValue, 0, InitValue.length()); 
       Vector V= new Vector();
       if( ExecLine.getErrorCharPos() <0)
@@ -1604,8 +1685,35 @@ public class ScriptOperator  extends  GenericOperator
     }else if ( DataType.equals( "MONITORDATASET") ){
      
       addParameter ( new MonitorDataSetPG( Prompt, null) );
-    }else{
-      IParameter param = param_types.getInstance( DataType_C);
+    }*/else if( !DataType_C.trim().equals( "=")){
+    	try{
+    	    DataType = DataType_C;
+    	   
+    		DataType_C = DataType_C.trim()+"PG";
+    		Class C = Class.forName( "gov.anl.ipns.Parameters."+DataType_C);
+    		Class[] argTypes = new Class[2];
+    		argTypes[0] =  String.class;
+    		argTypes[1] = Object.class;
+    		Constructor constr = C.getConstructor( argTypes );
+    		Object[] args = new Object[2];
+    		args[0] =Prompt;
+    		InitValue =EliminateQuotes( InitValue);
+    		Object Initt = InitValue;
+    		if( StringListChoicePG.class.isAssignableFrom( C))
+    			Initt = gov.anl.ipns.Parameters.Conversions.StringToVec( InitValue);
+    		args[1] = Initt;
+    		IParameter param = (IParameter)constr.newInstance( args);
+    		
+    		addParameter( param );		
+    	}catch( Exception s){
+    		DataSetTools.util.SharedData.addmsg( "Parameter Error="+s+
+    				 " in "+ getCommand());
+    		index=line.toUpperCase().indexOf(DataType);
+    	    seterror( index , "Data Type not supported " + DataType);
+    	    lerror = linenum;
+    	    return false; 
+    	}
+   /*   IParameter param = param_types.getInstance( DataType_C);
       if( param != null)//Need to do something with ChooserPG's
                         // InitValues should be addItem quantities BUT DataSetPG
         try{
@@ -1613,8 +1721,7 @@ public class ScriptOperator  extends  GenericOperator
              String O = EliminateQuotes(EliminateQuotes(InitValue));
              if( InitValue != null)
              if( O != null)
-             if(((param instanceof RadioButtonPG)||
-                                          (param instanceof ChooserPG))){
+             if(param instanceof StringListChoicePG){
                 ExecLine.execute( InitValue, 0, InitValue.length());                           
                 Vector V= new Vector();
                 if( ExecLine.getErrorCharPos() <0)
@@ -1636,6 +1743,7 @@ public class ScriptOperator  extends  GenericOperator
       seterror( index , "Data Type not supported " + DataType);
       lerror = linenum;
       return false; 
+    */
     }
       
     if( Debug)
@@ -1651,16 +1759,15 @@ public class ScriptOperator  extends  GenericOperator
     if( V.size() < 1)
       return;
     for ( int i=0; i< V.size(); i++)
-       if( param instanceof RadioButtonPG)
-         ((RadioButtonPG)param).addItem( V.elementAt(i));
-       else if( param instanceof ChooserPG)
-         ((ChooserPG)param).addItem( V.elementAt(i));
+       if( param instanceof StringListChoicePG)
+         ((StringListChoicePG)param).addItem( V.elementAt(i));
+       else if( param instanceof DataSetPG)
+         ((DataSetPG)param).addItem( V.elementAt(i));
        else
           return;
-          
-    
-    
   }
+  
+  
   //----------------------- Text Utilities ------------------
   private int nextLine( Script script, int line1 ){
     boolean done=false;

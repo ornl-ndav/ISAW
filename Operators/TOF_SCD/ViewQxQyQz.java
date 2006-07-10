@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2006/07/10 16:26:12  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.13  2005/05/25 19:37:56  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -87,6 +90,7 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.parameter.*;
 import DataSetTools.viewer.Contour.*;
 import DataSetTools.dataset.*;
+import gov.anl.ipns.Parameters.ChoiceListPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.WindowShower;
 

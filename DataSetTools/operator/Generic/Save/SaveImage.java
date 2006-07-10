@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/07/10 16:25:59  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.12  2005/10/05 02:32:05  dennis
  * Commented out debug print.
  * Converted from dos to unix text.
@@ -94,9 +97,13 @@
 
 package DataSetTools.operator.Generic.Save;
 
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.SaveFilePG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import java.awt.*;
 import DataSetTools.parameter.*;
+
 import java.util.*;
 import java.io.*;
 import java.awt.image.*;

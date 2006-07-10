@@ -28,6 +28,9 @@
  * number DMR-0218882.
  * 
  * $Log$
+ * Revision 1.45  2006/07/10 16:26:14  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.44  2006/02/26 00:09:38  dennis
  * Removed unused constant.
  *
@@ -185,13 +188,22 @@ import DataSetTools.instruments.InstrumentType;
 import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
 
 import DataSetTools.operator.Generic.Load.LoadOneHistogramDS;
+import DataSetTools.parameter.DataSetPG;
 
-import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.*;
 
 import DataSetTools.util.SharedData;
 
 import DataSetTools.wizard.Form;
 
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.DataDirPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
@@ -293,26 +305,26 @@ public class IntegrateMultiRunsForm extends Form {
     if( ( choices == null ) || ( choices.size(  ) == 0 ) ) {
       init_choices(  );
     }
-    addParameter( new DataDirPG( "Raw Data Path", "", false ) );           //0
-    addParameter( new DataDirPG( "Peaks File Output Path", "", false ) );  //1
-    addParameter( new IntArrayPG( "Run Numbers", "", false ) );            //2
-    addParameter( new StringPG( "Experiment name", "quartz", false ) );    //3
+    addParameter( new DataDirPG( "Raw Data Path", "" ) );           //0
+    addParameter( new DataDirPG( "Peaks File Output Path", "" ) );  //1
+    addParameter( new IntArrayPG( "Run Numbers", "" ) );            //2
+    addParameter( new StringPG( "Experiment name", "quartz" ) );    //3
 
-    ChoiceListPG clpg = new ChoiceListPG( 
-        "Centering Type", choices.elementAt( 0 ), false ); 
+    ChoiceListPG clpg = 
+        	  new ChoiceListPG("Centering Type", choices.elementAt( 0 )); 
     clpg.addItems( choices );
     addParameter( clpg );                                                  //4
 
-    addParameter( new LoadFilePG( "SCD Calibration File", null, false ) ); //5
-    addParameter( new IntArrayPG( "Time-Slice Range", "-1:3", false ) );   //6
+    addParameter( new LoadFilePG( "SCD Calibration File", null ) );        //5
+    addParameter( new IntArrayPG( "Time-Slice Range", "-1:3" ) );          //6
     addParameter( 
       new IntegerPG( 
-        "Amount to Increase Slice Size By", new Integer( 1 ), false ) );   //7
+        "Amount to Increase Slice Size By", new Integer( 1 ) ) );          //7
     addParameter( new FloatPG( "Minimum d-spacing", new Float(0) ) );      //8
     addParameter( 
       new IntegerPG( 
-        "SCD Calibration File Line to Use", new Integer( -1 ), false ) );      //9
-    addParameter( new BooleanPG( "Append to File?", Boolean.FALSE, false ) );  //10
+        "SCD Calibration File Line to Use", new Integer( -1 ) ) );         //9
+    addParameter( new BooleanPG( "Append to File?", Boolean.FALSE ) );   //10
 
     ChoiceListPG 
     clPG= new ChoiceListPG("Integrate 1 peak method",Integrate1.NEW_INTEGRATE);
@@ -320,11 +332,11 @@ public class IntegrateMultiRunsForm extends Form {
     clPG.addItem(Integrate1.TOFINT);
     clPG.addItem(Integrate1.EXPERIMENTAL);
     clPG.addItem( Integrate1.OLD_INTEGRATE);
-    addParameter(clPG);                                                          //11
+    addParameter(clPG);                                                   //11
 
-    addParameter( new IntArrayPG( "Box Delta x (col) Range", "-2:2", false ) );  //12
-    addParameter( new IntArrayPG( "Box Delta y (row) Range", "-2:2", false ) );  //13
-    setResultParam( new LoadFilePG( "Integrated Peaks File ", " ", false ) );    //14
+    addParameter( new IntArrayPG( "Box Delta x (col) Range", "-2:2" ) );  //12
+    addParameter( new IntArrayPG( "Box Delta y (row) Range", "-2:2" ) );  //13
+    setResultParam( new LoadFilePG( "Integrated Peaks File ", " " ) );    //14
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
@@ -435,7 +447,7 @@ public class IntegrateMultiRunsForm extends Form {
 
     if( obj != null ) {
       centerType = obj.toString(  );
-      param.setValid( true );
+      param.setValidFlag( true );
     } else {
       return errorOut( param, "ERROR: you must enter a valid centering type." );
     }
@@ -551,7 +563,7 @@ public class IntegrateMultiRunsForm extends Form {
     //set the integrate file name for the result
     param = ( IParameterGUI )getParameter( 14 );
     param.setValue( integName.toString(  ) );
-    param.setValid( true );
+    param.setValidFlag( true );
 
     gov.anl.ipns.Util.Sys.SharedMessages.closeLog( );
     //not really sure what to return

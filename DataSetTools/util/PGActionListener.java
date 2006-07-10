@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.5  2006/07/10 16:26:01  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.4  2004/03/15 03:28:53  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -49,6 +52,7 @@
 package DataSetTools.util;
 
 import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.VectorPG;
 import gov.anl.ipns.Util.Sys.*;
 
 import java.awt.event.ActionEvent;

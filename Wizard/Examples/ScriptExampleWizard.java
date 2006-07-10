@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.7  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.6  2003/12/15 02:44:08  bouzekc
  * Removed unused imports.
  *
@@ -52,7 +55,7 @@
  */
 package Wizard.Examples;
 
-import DataSetTools.parameter.LoadFilePG;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import DataSetTools.wizard.ScriptForm;
 import DataSetTools.wizard.Wizard;
 
@@ -112,10 +115,10 @@ public class ScriptExampleWizard extends Wizard {
       { 3, 3 }
     };  //experiment name
     ScriptForm peaks     = new ScriptForm( 
-        "/find_multiple_peaks.iss", new LoadFilePG( "Peaks File", null, false ) );
+        "/find_multiple_peaks.iss", new LoadFilePG( "Peaks File", null ) );
     ScriptForm integrate = new ScriptForm( 
         "/integrate_multiple_runs.iss",
-        new LoadFilePG( "Integrated Peaks File", null, false ),
+        new LoadFilePG( "Integrated Peaks File", null ),
         new int[]{ 0, 1, 2, 3 } );
     this.addForm( peaks );
     this.addForm( integrate );

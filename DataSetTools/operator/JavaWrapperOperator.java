@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.30  2006/07/10 16:25:51  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.29  2005/06/13 14:25:51  rmikk
  * If Object has the same class as the given class, the object is returned 
  *    quickly in cvrt routine with Class argument
@@ -152,6 +155,20 @@ import DataSetTools.operator.Generic.*;
 
 import DataSetTools.parameter.*;
 
+import gov.anl.ipns.Parameters.IParameterGUI;
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.DataDirPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.InstNamePG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.PrinterNamePG;
+import gov.anl.ipns.Parameters.RealArrayPG;
+import gov.anl.ipns.Parameters.SaveFilePG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.lang.reflect.*;
@@ -420,10 +437,10 @@ public class JavaWrapperOperator extends GenericOperator {
             addParameter( new DataSetPG( name, val ) );
           } else if( type == DataDirectoryString.class ) {
             addParameter( new DataDirPG( name, val ) );
-          } else if( type == UniformXScale.class ) {
-            addParameter( new UniformXScalePG( name, val ) );
-          } else if( type == VariableXScale.class ) {
-            addParameter( new VariableXScalePG( name, val ) );
+//          } else if( type == UniformXScale.class ) {
+//           addParameter( new UniformXScalePG( name, val ) );
+//          } else if( type == VariableXScale.class ) {
+//            addParameter( new VariableXScalePG( name, val ) );
           } else if( type == InstrumentNameString.class ) {
             addParameter( new InstNamePG( name, val ) );
           } else if( type == IntListString.class ) {
@@ -482,10 +499,10 @@ public class JavaWrapperOperator extends GenericOperator {
 
       //go through the parameter list, getting Objects for the calculate(...)
       //method.
-      ParameterGUI pg;
+      IParameterGUI pg;
 
       for( int i = 0; i < parameters.size(  ); i++ ) {
-        pg          = ( ParameterGUI )parameters.get( i );
+        pg          = ( IParameterGUI )parameters.get( i );
         values[i]   = pg.getValue(  );
 
         //at this point, we have the value, so we don't want excessive references to the 

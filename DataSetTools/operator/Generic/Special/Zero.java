@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2006/07/10 16:25:59  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.7  2005/08/24 20:11:30  dennis
  * Added/moved to Macros->Data Set->Edit List menu.
  *
@@ -62,6 +65,7 @@ package DataSetTools.operator.Generic.Special;
 import DataSetTools.operator.*;
 import DataSetTools.dataset.*;
 import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.*;

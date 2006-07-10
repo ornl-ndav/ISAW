@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2006/07/10 16:26:14  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.17  2005/03/06 00:40:15  dennis
  * Added more documentation explaining the two dimensional array of
  * integers that coordinates the parameters that are shared between
@@ -93,6 +96,7 @@
  */
 package Wizard.TOF_SCD;
 
+import gov.anl.ipns.Parameters.LoadFilePG;
 import DataSetTools.parameter.*;
 
 import DataSetTools.wizard.*;
@@ -152,19 +156,19 @@ public class InitialPeaksWizard extends Wizard {
     }; 
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
     OperatorForm blindjform         = new OperatorForm( 
-        new BlindJ(  ), new LoadFilePG( "BlindJ log file", null, false ),
+        new BlindJ(  ), new LoadFilePG( "BlindJ log file", null ),
         new int[]{ 0 } );
     OperatorForm indexjform         = new OperatorForm( 
-        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null, false ),
+        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null ),
         new int[]{ 0, 1 } );
     OperatorForm scalarjform        = new OperatorForm( 
-        new ScalarJ(  ), new LoadFilePG( "ScalarJ log file", null, false ),
+        new ScalarJ(  ), new LoadFilePG( "ScalarJ log file", null ),
         new int[]{ 0 } );
     OperatorForm lsqrsjform         = new OperatorForm( 
-        new LsqrsJ(  ), new LoadFilePG( "LsqrsJ log file", null, false ),
+        new LsqrsJ(  ), new LoadFilePG( "LsqrsJ log file", null ),
         new int[]{ 0 } );
     OperatorForm indexjform2        = new OperatorForm( 
-        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null, false ),
+        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null ),
         new int[]{ 0 } );
     this.addForm( peaksform );
     this.addForm( blindjform );

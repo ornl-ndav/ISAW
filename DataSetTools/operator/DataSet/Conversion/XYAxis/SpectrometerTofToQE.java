@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2006/07/10 16:25:54  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.15  2006/05/31 01:44:43  dennis
  * Changed to work from either time-of-flight or energy loss DataSet,
  * rather than from time-of-flight or final energy DataSet.  Updated
@@ -94,6 +97,8 @@
 package DataSetTools.operator.DataSet.Conversion.XYAxis;
 
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.SaveFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.ViewTools.UI.*;
 import gov.anl.ipns.Util.Numeric.*;

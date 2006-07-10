@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/07/10 16:25:59  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.12  2005/02/09 21:11:22  dennis
  * Changed the title of this operator to "Center".  This matches
  * the file name "Center.java" and the command name "Center".
@@ -83,6 +86,8 @@
 package DataSetTools.operator.Generic.TOF_SAD;
 import DataSetTools.dataset.*;
 import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.*;
@@ -164,10 +169,10 @@ public class Center extends GenericTOF_SAD{
   *       obtained by using the weighted Centers for each column
   */
   public Object getResult(){
-     DataSet DS = ((DataSetPG)getParameter(0)).getDataSetValue();
+     DataSet DS = (DataSet)((DataSetPG)getParameter(0)).getValue();
      ((DataSetPG)getParameter(0)).clear();
 
-     DataSet SensDS = ((DataSetPG)getParameter(1)).getDataSetValue();
+     DataSet SensDS = (DataSet)((DataSetPG)getParameter(1)).getValue();
      ((DataSetPG)getParameter(1)).clear();
 
      int StartTimeChan = ((IntegerPG)getParameter(2)).getintValue();

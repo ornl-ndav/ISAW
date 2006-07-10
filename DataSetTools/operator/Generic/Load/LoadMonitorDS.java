@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2006/07/10 16:25:58  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.9  2005/10/09 19:18:02  rmikk
  *  Replaced a generic parameter with the parameter GUI
  *
@@ -63,6 +66,8 @@
 
 package DataSetTools.operator.Generic.Load;
 
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.io.*;
