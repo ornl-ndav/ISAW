@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2006/07/10 15:32:38  dennis
+ * Removed as part of change over to new parameter GUIs in
+ * gov.anl.ipns.Parameters
+ *
  * Revision 1.16  2005/05/25 19:37:47  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -103,6 +107,7 @@ import DataSetTools.util.SharedData;
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;
 
+import gov.anl.ipns.Parameters.IParameterGUI;
 import gov.anl.ipns.Util.File.TextWriter;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.Util.Sys.WindowShower;

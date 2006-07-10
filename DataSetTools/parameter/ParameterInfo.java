@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/10 15:32:38  dennis
+ * Removed as part of change over to new parameter GUIs in
+ * gov.anl.ipns.Parameters
+ *
  * Revision 1.3  2005/06/14 18:45:34  rmikk
  * Returned "" in place of null
  *
@@ -46,11 +50,36 @@
 
 package DataSetTools.parameter;
 
-
-//import java.util.*;
+import gov.anl.ipns.Parameters.IntegerArrayPG;
+import gov.anl.ipns.Parameters.ArrayEntryJFrame;
 
 import Command.ParameterClassList;
 import DataSetTools.components.ParametersGUI.*;
+
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.DataDirPG;
+import gov.anl.ipns.Parameters.FloatArrayArrayPG;
+import gov.anl.ipns.Parameters.FloatArrayPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.FunctStringPG;
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.InstNamePG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFileArrayPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.MaterialPG;
+import gov.anl.ipns.Parameters.PlaceHolderPG;
+import gov.anl.ipns.Parameters.PrinterNamePG;
+import gov.anl.ipns.Parameters.Qbins1PG;
+import gov.anl.ipns.Parameters.QbinsPG;
+import gov.anl.ipns.Parameters.RadioButtonPG;
+import gov.anl.ipns.Parameters.RealArrayPG;
+import gov.anl.ipns.Parameters.SaveFilePG;
+import gov.anl.ipns.Parameters.StringArrayPG;
+import gov.anl.ipns.Parameters.StringPG;
 
 import java.awt.*;
 /**
@@ -111,7 +140,7 @@ public class ParameterInfo {
       FloatArrayArrayPG.class,
       FloatArrayPG.class,
       FloatPG.class,
-      FuncStringPG.class,
+      FunctStringPG.class,
       //HashPG.class,
       InstNamePG.class,
       IntArrayPG.class,
@@ -133,11 +162,9 @@ public class ParameterInfo {
       SaveFilePG.class,
       StringArrayPG.class,
       //StringEntryPG.class,
-      StringPG.class,
-      UniformXScalePG.class,
-      VariableXScalePG.class,
-     
+      StringPG.class,       
     };
+    
     static String[] Classes = {
       "Vector",//ArrayPG
       "Boolean",
@@ -212,8 +239,8 @@ public class ParameterInfo {
       true,//StringArrayPG.class,
      //true,//StringEntryPG.class,
       true,//StringPG.class,
-      false,//UniformXScalePG.class,
-      false,//VariableXScalePG.class,;
+//      false,//UniformXScalePG.class,
+//      false,//VariableXScalePG.class,;
     };
     static String[] GUIelements={
  
@@ -250,8 +277,8 @@ public class ParameterInfo {
       "JTextField,JList,JButtons",//StringArrayPG.class,
       //"JTextField",//StringEntryPG.class,
       "JTextField",//StringPG.class,
-      "JTextFields",//UniformXScalePG.class,
-      "JTextField",//VariableXScalePG.class,
+//      "JTextFields",//UniformXScalePG.class,
+//      "JTextField",//VariableXScalePG.class,
      
     }
     ;

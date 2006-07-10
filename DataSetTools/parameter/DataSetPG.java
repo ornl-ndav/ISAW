@@ -1,7 +1,7 @@
 /*
  * File:  DataSetPG.java
  *
- * Copyright (C) 2002, Peter F. Peterson
+ * Copyright (C) 2006, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,11 +17,10 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Peter F. Peterson <pfpeterson@anl.gov>
- *           Intense Pulsed Neutron Source Division
- *           Argonne National Laboratory
- *           9700 South Cass Avenue, Bldg 360
- *           Argonne, IL 60439-4845, USA
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -30,269 +29,258 @@
  *
  * Modified:
  *
- *  $Log$
- *  Revision 1.21  2004/05/27 14:22:56  dennis
- *  No longer implements IObserver, and no longer adds itself as
- *  an observer of the DataSets it has in it's list.  Making the
- *  DataSetPG an observer of it's DataSets created circular references
- *  between the DataSetPG and it's DataSets.  The circular references
- *  created problems for the garbage collector and led to memory leaks.
- *  Now, when a JParametersDialog box is popped up, a DataSetPG will get
- *  a snapshot of the available DataSets that will be used as long as
- *  that dialog box is active.  If a DataSet is deleted from the tree
- *  while the dialog box is up, the user will still be able to choose
- *  the DataSet deleted from the tree, until the dialog box is closed.
- *  This will NOT lead to an invalid reference, since the DataSet will
- *  continue to exist as long as the DataSetPG retains its reference to
- *  it.  When the dialog is closed, any DataSets deleted from the tree
- *  while the dialog was open can potentially be garbage collected, if
- *  there are no other references to them.
+ * $Log$
+ * Revision 1.22  2006/07/10 15:32:37  dennis
+ * Removed as part of change over to new parameter GUIs in
+ * gov.anl.ipns.Parameters
  *
- *  Revision 1.20  2004/05/21 22:02:01  dennis
- *  Fixed name of parameter in javadoc comment.
+ * Revision 1.1  2006/07/03 23:14:50  dennis
+ * Factored out and rearranged code from DataSetPG, so that this could
+ * serve as an abstract base class for all PG's that use a combo box
+ * to choose from a list of DataSets of some type.
  *
- *  Revision 1.19  2004/05/11 18:23:48  bouzekc
- *  Added/updated javadocs and reformatted for consistency.
+ * Revision 1.2  2006/06/29 21:54:23  rmikk
+ * Added or fixed the GPL
  *
- *  Revision 1.18  2004/05/09 17:48:53  bouzekc
- *  Added commments, recoded main(), reformatted.
- *
- *  Revision 1.17  2004/03/15 03:28:40  dennis
- *  Moved view components, math and utils to new source tree
- *  gov.anl.ipns.*
- *
- *  Revision 1.16  2003/12/15 01:51:44  bouzekc
- *  Removed unused imports.
- *
- *  Revision 1.15  2003/11/19 04:13:22  bouzekc
- *  Is now a JavaBean.
- *
- *  Revision 1.14  2003/10/11 19:22:11  bouzekc
- *  Removed clone() as the superclass now implements it using reflection.
- *
- *  Revision 1.13  2003/09/15 18:19:26  dennis
- *  Added test for this.vals != null in clone() method. (Ruth)
- *
- *  Revision 1.12  2003/09/13 23:29:46  bouzekc
- *  Moved calls from setValid(true) to validateSelf().
- *
- *  Revision 1.11  2003/09/09 23:06:28  bouzekc
- *  Implemented validateSelf().
- *
- *  Revision 1.10  2003/08/22 20:12:07  bouzekc
- *  Modified to work with getEntryWidget().
- *
- *  Revision 1.9  2003/08/15 23:50:04  bouzekc
- *  Modified to work with new IParameterGUI and ParameterGUI
- *  classes.  Commented out testbed main().
- *
- *  Revision 1.8  2003/03/26 23:19:37  pfpeterson
- *  Implements IObserver so can drop references to DESTROYed DataSets.
- *  Also improved error checking in addItem and setValue.
- *
- *  Revision 1.7  2003/03/25 19:40:47  pfpeterson
- *  Sets value to EMPTY_DATA_SET when attempt is made to set value to null.
- *
- *  Revision 1.6  2003/02/24 20:59:14  pfpeterson
- *  Now extends ChooserPG rather than ArrayPG.
- *
- *  Revision 1.5  2002/11/27 23:22:42  pfpeterson
- *  standardized header
- *
- *  Revision 1.4  2002/10/10 22:11:50  pfpeterson
- *  Fixed a bug with the clone method not getting the choices copied over.
- *
- *  Revision 1.3  2002/10/07 15:27:36  pfpeterson
- *  Another attempt to fix the clone() bug.
- *
- *  Revision 1.2  2002/09/30 15:20:46  pfpeterson
- *  Update clone method to return an object of this class.
- *
- *  Revision 1.1  2002/08/01 18:40:03  pfpeterson
- *  Added to CVS.
- *
- *
+ * Revision 1.1  2006/06/29 21:49:23  rmikk
+ * Initial checkin for DataSetPG that allows a user to select from a drop down
+ * combo of datasets
  */
 package DataSetTools.parameter;
 
-import DataSetTools.dataset.*;
-import DataSetTools.util.SharedData;
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.IParameterGUI;
+import gov.anl.ipns.Parameters.PG_ActionListener;
+import gov.anl.ipns.Parameters.ParameterGUI;
+
+import javax.swing.*;
+import java.util.*;
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.DataSet;
+import java.awt.*;
 
 /**
- * Class to deal with lists of DataSets.
+ * 
+ * Class to deal with lists of DataSets of any type
+ * @author Ruth Mikkelson
+ *
  */
-public class DataSetPG extends ChooserPG {
-  //~ Static fields/initializers ***********************************************
+public class DataSetPG extends DataSetPG_base {
 
-  private static String TYPE    = "DataSet";
-  protected static int DEF_COLS = ChooserPG.DEF_COLS;
+   protected Vector<DataSet> ds_list     = new Vector<DataSet>();
+   private   JPanel          entryWidget = null;
+   private   JComboBox       choices     = null;
+   private   String          my_type     = null;
 
-  //~ Constructors *************************************************************
 
-  /**
-   * Creates a new DataSetPG object.
-   *
-   * @param name The name of this DataSetPG.
-   * @param value The initial value.
-   */
-  public DataSetPG( String name, Object value ) {
-    super( name, value );
-    this.setType( TYPE );
+   /**
+    * Construct a generic DataSetPG, rather than a specific type
+    * such as MonitorDataSetPG, PulseHeightDataSetPG, etc.
+    *
+    * @param name   The Prompt for this data set
+    * @param val    An initial data set value
+    *  
+    * @throws IllegalArgumentException
+    */
+   public DataSetPG( String name, Object val )       
+                                  throws IllegalArgumentException {
+      this( name, val, null );
+   }
 
-    if( ( value == null ) || ( value == DataSet.EMPTY_DATA_SET ) ) {
-      return;
-    }
 
-    if( !( value instanceof DataSet ) ) {
-      SharedData.addmsg( 
-        "WARN: Non-" + this.getType(  ) + " in DataSetPG constructor" );
-    }
-  }
+   /**
+    * Constructor
+    *
+    * @param name   The Prompt for this data set
+    * @param val    An initial data set value
+    * @param type   String giving the type of the DataSet,
+    *               in the form listed in DataSetTools.dataset.Attribute,
+    *               or null to accept any type of DataSet.
+    *  
+    * @throws IllegalArgumentException
+    */
+   protected DataSetPG( String name, Object val, String type ) 
+                                  throws IllegalArgumentException {
+      super( name, null );
+      my_type = type;
 
-  /**
-   * Creates a new DataSetPG object.
-   *
-   * @param name The name of this DataSetPG.
-   * @param value The initial value.
-   * @param valid True to  consider this initially valid.
-   */
-  public DataSetPG( String name, Object value, boolean valid ) {
-    super( name, value, valid );
-    this.setType( TYPE );
+      ds_value = ToDataSet(val);   // this will throw an exception if
+                                   // the type of the DataSet is wrong
+      ds_list.addElement( ds_value );
+   }
 
-    if( ( value == null ) || ( value == DataSet.EMPTY_DATA_SET ) ) {
-      return;
-    }
 
-    if( !( value instanceof DataSet ) ) {
-      SharedData.addmsg( 
-        "WARN: Non-" + this.getType(  ) + " in DataSetPG constructor" );
-    }
-  }
+   /**
+    * Get a copy of this generic DataSetPG.  Derived classes MUST
+    * override this method, so that a copy of the specific derived
+    * class is obtained, rather than a generic DataSetPG. 
+    * 
+    * @see gov.anl.ipns.Parameters.IParameter#clone()
+    *
+    * @return a new DataSetPG, copied from the current one.
+    */
+   public Object clone() {
 
-  //~ Methods ******************************************************************
+      DataSetPG copy = new DataSetPG( getName(), ds_value );
 
-  /**
-   * Quick accessor method.
-   *
-   * @return The DataSet value (i.e. the currently selected DataSet).
-   */
-  public DataSet getDataSetValue(  ) {
-    Object value = this.getValue(  );
+      for( int i=0; i < ds_list.size(); i++)
+         copy.addItem( ds_list.elementAt( i ));
 
-    if( value instanceof DataSet ) {
-      return ( DataSet )value;
-    } else {
-      return null;
-    }
-  }
+      copy.setValidFlag( getValidFlag() );
 
-  /**
-   * Mutator method for the value.
-   *
-   * @param  value  The new DataSet value.  If this is null, it is set to
-   *                 DataSet.EMPTY_DATA_SET.
-   */
-  public void setValue( Object value ) {
-    if( value == null ) {
-      super.setValue( DataSet.EMPTY_DATA_SET );
-    } else {
-      if( value instanceof DataSet ) {
-        super.setValue( value );
-      } else {
-        throw new ClassCastException( value + " cannot be cast as a DataSet" );
-      }
-    }
-  }
+      return copy;
+   }
 
-  /**
-   * Add a single DataSet to the vector of choices. This calls the superclass's
-   * method once it confirms the value to be added is a DataSet.
-   *
-   * @param val The DataSet to add.
-   */
-  public void addItem( Object val ) {
-    if( val == null ) {
-      super.addItem( DataSet.EMPTY_DATA_SET );
-    } else {
-      if( val instanceof DataSet ) {
-        super.addItem( val );
-      } else {
-        throw new ClassCastException( val + " cannot be cast as a DataSet" );
-      }
-    }
-  }
 
-  /*
-   * Main method for testing purposes.
-   */
-  public static void main( String[] args ) {
-    DataSetPG fpg;
-    int y = 0;
+   /** 
+    * @see DataSetTools.parameter.DataSetPG_base#getWidgetValue()
+    */
+   public DataSet getWidgetValue() throws IllegalArgumentException {
 
-    // int dy          = 70;
-    String filename = null;
+     if( entryWidget == null) throw
+       new IllegalArgumentException("GUI is not available in " +
+                                     this.getClass() + ".getWidgetValue()" );
+     
+     return (DataSet)choices.getSelectedItem();
+   }
 
-    if( args.length == 1 ) {
-      filename = args[0];
-    }
 
-    fpg = new DataSetPG( "a", null );
-    fpg.initGUI( new java.util.Vector(  ) );
-    fpg.showGUIPanel( 0, y );
+   /** 
+    * @see DataSetPG_base#setWidgetValue(DataSetTools.dataset.DataSet)
+    */
+  public void setWidgetValue( DataSet value ) throws IllegalArgumentException {
+     
+      if( (entryWidget == null) || (choices == null) ) throw
+        new IllegalArgumentException("GUI is not available in " +
+                                       this.getClass() + ".setWidgetValue()" );
+      
+      if( !ds_list.contains( value ) ) throw
+        new IllegalArgumentException("DataSet not one of the choices in " + 
+                                       this.getClass() + ".setWidgetValue()" );
+      
+      choices.setSelectedItem( value );
+   }
 
-    DataSetTools.retriever.RunfileRetriever rr = new DataSetTools.retriever.RunfileRetriever( 
-        filename );
-    DataSet[] ds                               = new DataSet[rr.numDataSets(  )];
 
-    for( int k = 0; k < 20; k++ ) {
-      System.out.println( "Iteration " + k );
-      fpg.clear(  );
-      System.out.println( fpg );
+   /** 
+    * @see gov.anl.ipns.Parameters.ParameterGUI#getWidget()
+    */
+   public JPanel getWidget() {
+      
+      if( entryWidget != null)
+         return entryWidget;
+      
+      entryWidget = new JPanel( new GridLayout( 1, 2 ) );
+      
+      entryWidget.add( new JLabel( getName() ) );
+      
+      choices = new JComboBox( ds_list );
+      entryWidget.add( choices );
+      choices.setEditable( false );
+      choices.addActionListener( new PG_ActionListener( this ));
+      choices.setSelectedIndex( 0 );
+      
+      return entryWidget;
+   }
+   
 
-      for( int i = 0; i < rr.numDataSets(  ); i++ ) {
-        ds[i] = rr.getDataSet( i );
+   /** 
+    * @see gov.anl.ipns.Parameters.ParameterGUI#destroyWidget()
+    */
+   public void destroyWidget() {
+      
+     entryWidget = null;
+     choices = null;
+     ds_list.clear();
+    
+     ds_value = DataSet.EMPTY_DATA_SET;
+   }
 
-        try {
-          fpg.addItem( ds[i] );
-        } catch( ClassCastException cce ) {
-          //suppress it
-        }
-      }
-    }
-    /*
-       y+=dy;
-       fpg=new DataSetPG("b",ds[0]);
-       System.out.println(fpg);
-       fpg.setEnabled(false);
-       fpg.initGUI(ds);
-       fpg.showGUIPanel(0,y);
-       y+=dy;
-       fpg=new DataSetPG("c",ds[0],false);
-       System.out.println(fpg);
-       fpg.setEnabled(false);
-       fpg.initGUI(ds);
-       fpg.showGUIPanel(0,y);
-       y+=dy;
-       fpg=new DataSetPG("d",ds[0],true);
-       System.out.println(fpg);
-       fpg.setDrawValid(true);
-       fpg.initGUI(ds);
-       fpg.showGUIPanel(0,y);
-       y+=dy;*/
-  }
 
-  /**
-   * Validates this DataSetPG.  A DataSetPG is considered valid if its value is
-   * not null and is not a DataSet.EMPTY_DATA_SET.
-   */
-  public void validateSelf(  ) {
-    Object obj = getValue(  );
+   /**
+    * @see gov.anl.ipns.Parameters.IParameterGUI#setEnabled(boolean)
+    */
+   public void setEnabled( boolean on_off ) {
+      
+     if( entryWidget == null )
+        return;
 
-    if( ( obj != null ) && ( obj != DataSet.EMPTY_DATA_SET ) ) {
-      setValid( true );
-    } else {
-      setValid( false );
-    }
-  }
+     entryWidget.setEnabled( on_off );
+     entryWidget.getComponent( 0 ).setEnabled( on_off );
+     choices.setEnabled( on_off );
+   }
+
+
+   /*
+    * converts null data set to the empty data set and checks
+    * that obj is a data set of the correct type.
+    */
+   protected DataSet ToDataSet( Object obj ){
+
+      if( obj == null )
+         return  DataSetTools.dataset.DataSet.EMPTY_DATA_SET;
+
+      if( typeOK( obj ) )
+         return (DataSet)obj;
+
+      throw new IllegalArgumentException("Initial value must be "+
+               "correct type or null " + " in " + this.getClass() );
+   }
+   
+   
+   /**
+    * Adds the given object to the list of choices when the GUI
+    * appears.  Note that no new elements can be added
+    * after the entry widget is created.
+    * 
+    * @param obj   The new value to be added to the list of 
+    *               choices
+    */
+   public void addItem( Object obj ) {
+      
+      if( entryWidget != null )
+        return;
+      
+      if( obj == null )
+        return;
+
+      if( !typeOK( obj ) )    // quietly return, since this will
+        return;               // happen in the subclasses
+ 
+      if( !ds_list.contains( obj ) )
+         ds_list.addElement( (DataSet)obj );
+   }
+   
+
+   /**
+    * Checks that the given object is a DataSet of the correct type 
+    * based on it's DS_TYPE Attribute.  In the general case,
+    * DataSetPG, any type DataSet is acceptable.
+    *
+    * @param ds The Object to check against the above criteria.
+    *
+    * @return true if it is a DataSet.
+    */
+   protected boolean typeOK( Object ds ) {
+
+     if ( ds == null )
+       return true;
+
+     if ( ds == DataSet.EMPTY_DATA_SET )
+       return true;
+
+     if ( ds instanceof DataSet )
+     {
+       if ( my_type == null )         // accept all types
+         return true;
+
+       String type = (String)((DataSet)ds).getAttributeValue(Attribute.DS_TYPE);
+
+       if( ( type == null ) || type.equals( my_type ) )
+         return true;
+     }
+
+     return false;
+   }
+
 }
