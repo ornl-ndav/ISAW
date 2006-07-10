@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2006/07/10 21:28:25  dennis
+ *  Removed unused imports, after refactoring the PG concept.
+ *
  *  Revision 1.7  2006/07/10 16:25:59  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -104,7 +107,6 @@ import  java.util.Vector;
 
 import  DataSetTools.operator.*;
 import  DataSetTools.dataset.*;
-import  DataSetTools.parameter.*;
 
 /**
  * This operator calculates detector normalization factors for a direct 

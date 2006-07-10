@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.6  2006/07/10 21:28:25  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.5  2006/07/10 16:26:01  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -51,7 +54,6 @@
 
 package DataSetTools.util;
 
-import DataSetTools.parameter.*;
 import gov.anl.ipns.Parameters.VectorPG;
 import gov.anl.ipns.Util.Sys.*;
 

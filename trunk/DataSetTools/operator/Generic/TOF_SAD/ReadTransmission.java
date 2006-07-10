@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2006/07/10 21:28:25  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.7  2006/07/10 16:26:00  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -71,7 +74,7 @@ import gov.anl.ipns.Util.Sys.*;
 
 import java.util.*;
 import java.io.*;
-import DataSetTools.parameter.*;
+
 
 /**
 *    This operator reads in files written by the WriteFlood operator to produce

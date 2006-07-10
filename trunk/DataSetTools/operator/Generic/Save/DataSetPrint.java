@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2006/07/10 21:28:25  dennis
+ *  Removed unused imports, after refactoring the PG concept.
+ *
  *  Revision 1.2  2006/07/10 16:25:59  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -77,7 +80,6 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.components.ui.*;
 import  DataSetTools.operator.*;
 import  DataSetTools.operator.Generic.*;
-import  DataSetTools.parameter.*;
 
 /**
  * This operator converts Print data information.

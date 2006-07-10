@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  *  $Log$
+ *  Revision 1.16  2006/07/10 21:28:21  dennis
+ *  Removed unused imports, after refactoring the PG concept.
+ *
  *  Revision 1.15  2006/07/10 16:25:53  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -92,7 +95,6 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.operator.Parameter;
-import  DataSetTools.parameter.*;
 import  DataSetTools.gsastools.GsasCalib;
 import  DataSetTools.viewer.*;
 import  DataSetTools.retriever.*;

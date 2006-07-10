@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.12  2006/07/10 21:28:25  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.11  2006/07/10 16:25:59  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -81,7 +84,7 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.*;
 import  javax.swing.*;
-import DataSetTools.parameter.*;
+
 
 /** This class creates a operator that produces a table of x vs y vs errors.
  *  The table can be sent to the console, table, or file<P>

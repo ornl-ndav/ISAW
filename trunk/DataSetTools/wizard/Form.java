@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.56  2006/07/10 21:28:26  dennis
+ * Removed unused imports, after refactoring the PG concept.
+ *
  * Revision 1.55  2006/07/10 16:26:03  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -247,8 +250,6 @@
 package DataSetTools.wizard;
 
 import DataSetTools.operator.Operator;
-
-import DataSetTools.parameter.*;
 
 import DataSetTools.util.*;
 

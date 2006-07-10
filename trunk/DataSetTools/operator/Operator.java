@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.55  2006/07/10 21:28:19  dennis
+ *  Removed unused imports, after refactoring the PG concept.
+ *
  *  Revision 1.54  2006/07/10 16:25:52  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -192,9 +195,7 @@ import gov.anl.ipns.Parameters.RealArrayPG;
 
 import java.util.Vector;
 import java.io.*;
-import gov.anl.ipns.Parameters.IParameter;
 import DataSetTools.util.SharedData;
-import DataSetTools.parameter.*;
 import NetComm.RemoteOpExecClient;
 
 /**

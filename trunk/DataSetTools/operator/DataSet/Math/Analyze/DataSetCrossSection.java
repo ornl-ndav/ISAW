@@ -30,6 +30,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.10  2006/07/10 21:28:22  dennis
+ *  Removed unused imports, after refactoring the PG concept.
+ *
  *  Revision 1.9  2006/07/10 16:25:55  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -71,7 +74,6 @@ import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.Parameter;
-import  DataSetTools.parameter.*;
 
 /**
   *  Form a new DataSet that contains the integrated crossection of the
