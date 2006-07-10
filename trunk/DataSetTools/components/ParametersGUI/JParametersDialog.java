@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.67  2006/07/10 21:48:01  dennis
+ *  Removed unused imports after refactoring to use New Parameter
+ *  GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.66  2006/07/10 16:25:51  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -227,7 +231,6 @@ import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
-import gov.anl.ipns.Parameters.IParameterGUI;
 import javax.swing.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;

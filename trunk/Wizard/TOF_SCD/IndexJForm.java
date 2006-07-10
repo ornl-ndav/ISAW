@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.34  2006/07/10 21:48:02  dennis
+ * Removed unused imports after refactoring to use New Parameter
+ * GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.33  2006/07/10 16:26:13  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -167,13 +171,9 @@ import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.Util.Messaging.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Vector;
 
-import gov.anl.ipns.Parameters.IParameter;
-import gov.anl.ipns.Parameters.IParameterGUI;
 import DataSetTools.util.SharedData;
 import DataSetTools.wizard.Form;
 import Operators.TOF_SCD.IndexJ;

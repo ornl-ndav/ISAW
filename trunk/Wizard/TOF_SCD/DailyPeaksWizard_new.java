@@ -43,7 +43,6 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Parameters.StringPG;
 import DataSetTools.wizard.*;
 
-import DataSetTools.parameter.*;
 public class DailyPeaksWizard_new extends Wizard 
 {
      int[][] ParamTable= {   

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2006/07/10 21:48:01  dennis
+ *  Removed unused imports after refactoring to use New Parameter
+ *  GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.5  2006/07/10 16:25:58  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -81,7 +85,6 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
-import  DataSetTools.parameter.*;
 
 /**
   *  Sum Data blocks specified by an attribute to form a new DataSet

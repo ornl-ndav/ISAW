@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2006/07/10 21:48:02  dennis
+ * Removed unused imports after refactoring to use New Parameter
+ * GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.10  2006/07/10 16:26:14  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -79,8 +83,7 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Parameters.StringPG;
 
 import java.util.*;
-import DataSetTools.parameter.*;
-import Operators.TOF_SCD.*;
+
 /**
  * @author MikkelsonR
  *
