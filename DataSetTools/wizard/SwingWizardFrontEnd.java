@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2006/07/10 22:28:36  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.23  2006/07/10 16:26:04  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -139,7 +143,6 @@ import gov.anl.ipns.Parameters.BooleanEnablePG;
 import gov.anl.ipns.Parameters.IParameterGUI;
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Parameters.SaveFilePG;
-import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Parameters.VectorPG;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.Sys.*;

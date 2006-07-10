@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/07/10 22:28:36  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.4  2006/07/10 15:32:38  dennis
  * Removed as part of change over to new parameter GUIs in
  * gov.anl.ipns.Parameters
@@ -54,7 +58,6 @@ import gov.anl.ipns.Parameters.IntegerArrayPG;
 import gov.anl.ipns.Parameters.ArrayEntryJFrame;
 
 import Command.ParameterClassList;
-import DataSetTools.components.ParametersGUI.*;
 
 import gov.anl.ipns.Parameters.ArrayPG;
 import gov.anl.ipns.Parameters.BooleanPG;

@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.12  2006/07/10 22:28:36  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.11  2005/10/28 15:44:28  dennis
  * Minor fix to a javadoc comment.
  *
@@ -92,20 +96,16 @@ package Operators.Generic.Load;
 import java.io.*;
 import java.util.*;
 
-import Command.ScriptUtil;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
-import DataSetTools.instruments.*;
-import NexIO.*;
-import NexIO.Write.*;
+
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import java.util.regex.*;
 import DataSetTools.gsastools.*;
-import javax.xml.parsers.*;
-import org.w3c.dom.*;
+
 
 /**
  *  This class contains static method for Loading detector information

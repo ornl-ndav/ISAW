@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/10 22:28:38  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.3  2006/07/10 16:26:10  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -47,7 +51,6 @@
 package Operators.Generic.TypeConversion;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
-import DataSetTools.parameter.*;
 
 import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;

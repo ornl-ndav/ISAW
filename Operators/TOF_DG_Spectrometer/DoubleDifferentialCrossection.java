@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.15  2006/07/10 22:28:39  dennis
+ *  Removed unused imports after refactoring to use new Parameter GUIs
+ *  in gov.anl.ipns.Parameters.
+ *
  *  Revision 1.14  2006/07/10 16:26:11  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -104,7 +108,6 @@ import  DataSetTools.operator.Generic.TOF_DG_Spectrometer.*;
 import  DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import  DataSetTools.operator.DataSet.Math.Analyze.*;
 import  DataSetTools.viewer.*;
-import  DataSetTools.parameter.*;
 
 /**
   *  Compute the double differential crossection for a time-of-flight 
