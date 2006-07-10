@@ -32,6 +32,10 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.10  2006/07/10 22:10:21  dennis
+ *  Removed unused imports after refactoring to use new Parameter GUIs
+ *  in gov.anl.ipns.Parameters.
+ *
  *  Revision 1.9  2006/07/10 16:26:11  dennis
  *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -79,7 +83,6 @@ import gov.anl.ipns.Parameters.IParameter;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.*;
 import  DataSetTools.operator.Generic.TOF_Diffractometer.*;
-import  DataSetTools.parameter.*;
 
 
 /**

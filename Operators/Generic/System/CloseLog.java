@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/10 22:10:18  dennis
+ * Removed unused imports after refactoring to use new Parameter GUIs
+ * in gov.anl.ipns.Parameters.
+ *
  * Revision 1.1  2005/08/26 15:30:58  rmikk
  * Initial Checkin's
  *
@@ -40,9 +44,8 @@
  */
 
 package Operators.Generic.System;
-import DataSetTools.operator.*;
+
 import DataSetTools.operator.Generic.*;
-import DataSetTools.parameter.*;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 
