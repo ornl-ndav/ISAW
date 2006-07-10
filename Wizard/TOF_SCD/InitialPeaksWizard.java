@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2006/07/10 21:48:02  dennis
+ * Removed unused imports after refactoring to use New Parameter
+ * GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.18  2006/07/10 16:26:14  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -97,7 +101,6 @@
 package Wizard.TOF_SCD;
 
 import gov.anl.ipns.Parameters.LoadFilePG;
-import DataSetTools.parameter.*;
 
 import DataSetTools.wizard.*;
 

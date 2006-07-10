@@ -27,6 +27,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/07/10 21:48:02  dennis
+ * Removed unused imports after refactoring to use New Parameter
+ * GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.2  2006/07/10 16:26:07  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -45,7 +49,6 @@ package Operators.Example;
 import java.util.*;
 
 import DataSetTools.operator.Generic.*;
-import DataSetTools.parameter.*;
 
 import gov.anl.ipns.Parameters.ArrayPG;
 import gov.anl.ipns.Parameters.FloatPG;
@@ -64,7 +67,7 @@ public class Display_SCD_Reciprocal_Space extends GenericOperator{
    public void setDefaultParameters(){
       clearParametersVector();
       addParameter( new ArrayPG("Vector of DataSets", null));
-      addParameter( new FloatPG("Peak threshold", 50));
+      addParameter( new FloatPG("Peak threshold", new Float(50)));
    }
 
    public String getDocumentation(){
