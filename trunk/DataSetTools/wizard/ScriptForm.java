@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2006/07/10 16:26:04  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.16  2004/03/15 03:29:04  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -72,7 +75,7 @@ package DataSetTools.wizard;
 
 import Command.ScriptOperator;
 
-import DataSetTools.parameter.IParameterGUI;
+import gov.anl.ipns.Parameters.IParameterGUI;
 
 import DataSetTools.util.*;
 

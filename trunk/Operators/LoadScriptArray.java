@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2006/07/10 16:26:05  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.8  2005/03/23 02:13:26  dennis
  *  Removed unnecessary semicolons.
  *
@@ -60,6 +63,8 @@
 
 package Operators;
 
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
@@ -67,8 +72,6 @@ import gov.anl.ipns.Util.Sys.*;
 import  java.io.*;
 import  java.util.*;
 import  DataSetTools.operator.*;
-import  DataSetTools.parameter.LoadFilePG;
-import  DataSetTools.parameter.IntegerPG;
 import  DataSetTools.operator.Generic.Batch.*;
 //import  IPNS.Runfile.*;
 /**

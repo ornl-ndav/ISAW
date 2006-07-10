@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2006/07/10 16:25:52  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.13  2004/03/15 03:28:23  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -90,6 +93,7 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
@@ -106,7 +110,6 @@ import DataSetTools.dataset.FloatAttribute;
 import DataSetTools.dataset.StringAttribute;
 import DataSetTools.operator.DataSet.Information.XAxis.SCDhkl;
 import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
-import DataSetTools.parameter.LoadFilePG;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2006/07/10 16:25:56  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.10  2004/07/16 19:07:36  dennis
  * Fixed improper comparison with Float.NaN
  *
@@ -68,6 +71,7 @@
 package DataSetTools.operator.DataSet.Math.Analyze;
 
 import gov.anl.ipns.MathTools.Functions.*;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 

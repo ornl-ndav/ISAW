@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/10 16:26:08  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.1  2006/02/09 06:07:11  hammonds
  * New operator to substute macros in strings.
  *
@@ -43,6 +46,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.parameter.*;
 
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;

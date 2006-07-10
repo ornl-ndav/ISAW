@@ -30,6 +30,9 @@
  * Modified:
  *             
  * $Log$
+ * Revision 1.7  2006/07/10 16:25:56  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.6  2004/03/15 06:10:49  dennis
  * Removed unused import statements.
  *
@@ -54,6 +57,7 @@
 package DataSetTools.operator.DataSet.Math.Analyze;
 
 import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;

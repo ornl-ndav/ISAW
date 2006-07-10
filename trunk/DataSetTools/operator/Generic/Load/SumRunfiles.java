@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2006/07/10 16:25:58  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.11  2004/08/17 23:06:56  dennis
  *  If an exception is thrown while reading a file, the stack trace
  *  will now be printed.
@@ -73,6 +76,7 @@
 package DataSetTools.operator.Generic.Load;
 
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 

@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/10 16:26:08  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.1  2005/08/26 15:30:57  rmikk
  * Initial Checkin's
  *
@@ -44,6 +47,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.parameter.*;
 
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;

@@ -27,6 +27,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.12  2006/07/10 16:25:52  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.11  2005/10/09 19:15:44  rmikk
  * Made the Python interpreter transient
  *
@@ -80,6 +83,7 @@ import DataSetTools.parameter.*;
 
 import DataSetTools.util.*;
 
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;

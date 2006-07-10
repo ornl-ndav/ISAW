@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2006/07/10 16:26:04  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.22  2006/06/08 18:29:33  rmikk
  * enableFormParams now calls the form's fire method after the enabling to get
  *    the enabled status of the parameterGUI's affected by BooeanEnablePG's in
@@ -131,6 +134,13 @@ import ExtTools.SwingWorker;
 
 import IsawHelp.HelpSystem.HTMLizer;
 
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.BooleanEnablePG;
+import gov.anl.ipns.Parameters.IParameterGUI;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.SaveFilePG;
+import gov.anl.ipns.Parameters.StringPG;
+import gov.anl.ipns.Parameters.VectorPG;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.Sys.*;
 
@@ -592,7 +602,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
           return;
         }
 
-        val = iparam.getValue(  );
+  //      val = iparam.getValue(  );
 
         /*semi-sophisticated attempt at being able to view
            DataSets, Vectors of items, and files.  Things like
@@ -600,8 +610,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
            Form, should not be sent to the ParameterViewer. */
         if( ( iparam instanceof DataSetPG ) || ( iparam instanceof ArrayPG ) ||
             ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ||
-            ( iparam instanceof StringPG &&
-            ( val.toString(  ).indexOf( '.' ) > 0 ) ) ||
+  //         ( iparam instanceof StringPG && ( val.toString(  ).indexOf( '.' ) > 0 ) ) ||
             iparam instanceof VectorPG ) {
           jmi = new JMenuItem( iparam.getName(  ) );
           view_menu.add( jmi );

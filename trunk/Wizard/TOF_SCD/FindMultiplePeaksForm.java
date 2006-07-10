@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.36  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.35  2006/02/26 00:09:37  dennis
  * Removed unused constant.
  *
@@ -151,6 +154,13 @@
  */
 package Wizard.TOF_SCD;
 
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.DataDirPG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.StringPG;
+import gov.anl.ipns.Parameters.IParameterGUI;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
@@ -167,13 +177,7 @@ import DataSetTools.operator.Generic.TOF_SCD.FindPeaks;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
 import DataSetTools.operator.Generic.TOF_SCD.WriteExp;
 import DataSetTools.operator.Generic.TOF_SCD.WritePeaks;
-import DataSetTools.parameter.BooleanPG;
-import DataSetTools.parameter.DataDirPG;
-import DataSetTools.parameter.IParameterGUI;
-import DataSetTools.parameter.IntArrayPG;
-import DataSetTools.parameter.IntegerPG;
-import DataSetTools.parameter.LoadFilePG;
-import DataSetTools.parameter.StringPG;
+
 import DataSetTools.util.SharedData;
 import DataSetTools.wizard.Form;
 
@@ -287,51 +291,51 @@ public class FindMultiplePeaksForm extends Form {
   public void setDefaultParameters(  ) {
 
     parameters = new Vector(  );
-    addParameter( new DataDirPG( "Raw Data Path", null, false ) );           //0
+    addParameter( new DataDirPG( "Raw Data Path", null ) );           //0
     DATA_DIR_PARAM = 0;
 
-    addParameter( new DataDirPG( "Peaks File Output Path", null, false ) );  //1
+    addParameter( new DataDirPG( "Peaks File Output Path", null ) );  //1
     OUT_DIR_PARAM = 1;
 
-    addParameter( new IntArrayPG( "Run Numbers", "", false ) );              //2
+    addParameter( new IntArrayPG( "Run Numbers", "" ) );              //2
     RUN_NUM_PARAM = 2;
 
-    addParameter( new StringPG( "Experiment name", "", false ) );            //3
+    addParameter( new StringPG( "Experiment name", "" ) );            //3
     EXP_NAME_PARAM = 3;
 
     addParameter( 
-      new IntegerPG( "Maximum Number of Peaks", new Integer( 30 ), false ) );//4
+      new IntegerPG( "Maximum Number of Peaks", new Integer( 30 ) ) );//4
     NUM_PEAKS_PARAM = 4;
 
     addParameter( 
-      new IntegerPG( "Minimum Peak Intensity", new Integer( 10 ), false ) ); //5
+      new IntegerPG( "Minimum Peak Intensity", new Integer( 10 ) ) ); //5
     MIN_INTENS_PARAM = 5;
 
     addParameter( 
-      new IntegerPG( "Minimum Time Channel", new Integer( 0 ), false ) );    //6
+      new IntegerPG( "Minimum Time Channel", new Integer( 0 ) ) );    //6
     MIN_TIME_PARAM = 6;
 
     addParameter( 
-      new IntegerPG( "Maximum Time Channel", new Integer( 1000 ), false ) ); //7
+      new IntegerPG( "Maximum Time Channel", new Integer( 1000 ) ) ); //7
     MAX_TIME_PARAM = 7;
 
     addParameter( 
-      new BooleanPG( "Append Data to File?", new Boolean( false ), false ) );//8
+      new BooleanPG( "Append Data to File?", new Boolean( false ) ) );//8
     APPEND_PARAM = 8;
 
     addParameter( 
       new IntegerPG( 
-        "SCD Calibration File Line to Use", new Integer( -1 ), false ) );    //9
+        "SCD Calibration File Line to Use", new Integer( -1 ) ) );    //9
     CALIB_LINE_PARAM = 9;
 
-    addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );  //10
+    addParameter( new LoadFilePG( "SCD Calibration File", null ) );  //10
     CALIB_FILE_PARAM = 10;
 
     addParameter( 
-      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) ); //11
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100" ) ); //11
     ROWS_TO_KEEP_PARAM = 11;
 
-    setResultParam( new LoadFilePG( "Peaks File", " ", false ) );           //12
+    setResultParam( new LoadFilePG( "Peaks File", " " ) );           //12
     PEAK_FILE_PARAM = 12;
 
     // Now mark which parameters are constant, user specified, or results
@@ -664,7 +668,7 @@ public class FindMultiplePeaksForm extends Form {
     //set the peaks file name
     param = ( IParameterGUI )super.getParameter( PEAK_FILE_PARAM );
     param.setValue( saveName );
-    param.setValid( true );
+    param.setValidFlag( true );
 
     return saveName;
   }

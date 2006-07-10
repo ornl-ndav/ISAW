@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.36  2006/07/10 16:26:12  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.35  2006/01/16 04:47:59  rmikk
  * Fixed the documentation
  *
@@ -179,6 +182,13 @@
 package Operators.TOF_SCD;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.SaveFilePG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
@@ -192,13 +202,6 @@ import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
 import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
 import DataSetTools.operator.Generic.TOF_SCD.Util;
-import DataSetTools.parameter.IParameter;
-import DataSetTools.parameter.IntArrayPG;
-import DataSetTools.parameter.IntegerPG;
-import DataSetTools.parameter.LoadFilePG;
-import DataSetTools.parameter.SaveFilePG;
-import DataSetTools.parameter.ChoiceListPG;
-import DataSetTools.parameter.StringPG;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 import DataSetTools.trial.SCD_util;
@@ -266,11 +269,11 @@ public class LsqrsJ extends GenericTOF_SCD {
 
     //5
     addParameter( 
-      new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );
+      new IntegerPG( "Minimum Peak Intensity Threshold", 0 ) );
 
     //6
     addParameter( 
-      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100" ) );
       
     ChoiceListPG choices = new ChoiceListPG("Cell Type Constraint","Triclinic");
 
@@ -475,7 +478,7 @@ public class LsqrsJ extends GenericTOF_SCD {
     Peak peak = null;
 
     // trim out the peaks that are not in the list of selected sequence numbers
-    if( seq_nums != null ) {
+    if( seq_nums != null && seq_nums.length > 0 ) {
       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
         peak = ( Peak )peaks.elementAt( i );
 
@@ -495,7 +498,7 @@ public class LsqrsJ extends GenericTOF_SCD {
     }
 
     // trim out the ones that are not in the selected histograms
-    if( run_nums != null ) {
+    if( run_nums != null && run_nums.length > 0 ) {
       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
         peak = ( Peak )peaks.elementAt( i );
 
@@ -1040,9 +1043,14 @@ public class LsqrsJ extends GenericTOF_SCD {
       return null;
     }
 
-    result.delete( result.length(  ) - 2, result.length(  ) );
-    result.append( "]" );
-
+    if ( result.length() > 1 )     // only delete "," if it's there
+    {
+      result.delete( result.length(  ) - 2, result.length(  ) );
+      result.append( "]" );
+    }
+    else
+      return null;                 // for an empty int[], we need to return
+                                   // null or later stages don't work right
     return result.toString(  );
   }
 

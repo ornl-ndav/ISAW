@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2006/07/10 16:25:56  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.10  2004/03/15 19:33:50  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -67,6 +70,7 @@
 
 package DataSetTools.operator.DataSet.Math.DataSet;
 
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
@@ -74,7 +78,6 @@ import  java.util.Vector;
 import  DataSetTools.viewer.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.*;
-import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
 

@@ -42,6 +42,9 @@ else
   tmat = TransMat
 endif
 
+Display "runnums = :"&runnums&":"
+Display "seqnums = :"&RestrSeq&":"
+
 OpenLog( SaveDir&"lsqrs.log")
 R = JLsqrs(Peaks,runnums,RestrSeq,tMat,MatFilename,MinIntens,RowColKeep,Constr)
 CloseLog()   

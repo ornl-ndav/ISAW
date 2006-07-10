@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2006/07/10 16:26:01  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.6  2004/03/15 19:33:54  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -55,6 +58,7 @@ package DataSetTools.operator.Generic.TOF_SCD;
 
 import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;

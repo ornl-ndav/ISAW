@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2006/07/10 16:25:51  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.9  2004/02/10 05:30:56  bouzekc
  *  Uses IsawToolkit.beep() rather than Toolkit.beep().
  *
@@ -67,6 +70,8 @@
 package DataSetTools.components.ParametersGUI;
 
 import DataSetTools.parameter.*;
+
+import gov.anl.ipns.Parameters.IParameter;
 
 import java.beans.*;
 
@@ -211,7 +216,7 @@ public abstract class StringField extends JTextField {
 
         if( propBind != null ) {
           propBind.firePropertyChange( 
-            IParameter.VALUE, oldText, textBox.getText(  ) );
+            FilteredDocument.VALUE, oldText, textBox.getText(  ) );
         }
       } else {
         DataSetTools.util.IsawToolkit.beep(  );
@@ -232,7 +237,7 @@ public abstract class StringField extends JTextField {
       //System.out.println("value:"+oldText+"->"+textBox.getText());
       if( propBind != null ) {
         propBind.firePropertyChange( 
-          IParameter.VALUE, oldText, textBox.getText(  ) );
+          FilteredDocument.VALUE, oldText, textBox.getText(  ) );
       }
     }
   }

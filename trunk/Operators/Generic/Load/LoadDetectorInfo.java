@@ -28,6 +28,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/10 16:26:07  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.1  2005/08/05 20:57:45  dennis
  * Initial version of operator to "fix" DataSets read from most
  * LANSCE NeXus files, by reading in detector position informat
@@ -43,6 +46,7 @@ package Operators.Generic.Load;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.parameter.*;
 
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;

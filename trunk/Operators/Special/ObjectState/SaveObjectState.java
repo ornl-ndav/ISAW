@@ -25,6 +25,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/07/10 16:26:11  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.2  2005/08/25 16:13:18  dennis
  * Added/moved to logical menu OBJECT_STATE_UTILS
  *
@@ -39,6 +42,8 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.parameter.*;
 
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;

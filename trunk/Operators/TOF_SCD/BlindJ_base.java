@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2006/07/10 16:26:12  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.3  2006/01/16 04:45:30  rmikk
  * Changed the Command Name so that it would not be confused with
  *   the other JBlind
@@ -47,6 +50,9 @@ package Operators.TOF_SCD;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.util.SharedData;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.PlaceHolderPG;
+import gov.anl.ipns.Parameters.SaveFilePG;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 

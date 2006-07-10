@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/07/10 16:26:08  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.2  2006/06/06 22:35:56  rmikk
  * Added a new parameter to indicate whether the new data should be
  *    appended to the old data in the file or if false the old data is destroyed.
@@ -48,6 +51,8 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.parameter.*;
 
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;

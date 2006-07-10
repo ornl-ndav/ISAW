@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2006/07/10 16:25:53  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.18  2006/03/10 05:14:47  dennis
  * Fixed javadoc error.
  *
@@ -94,6 +97,7 @@ package DataSetTools.operator.DataSet.Attribute;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
@@ -118,7 +122,6 @@ import DataSetTools.dataset.UniformGrid;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.TOF_SCD.Util;
-import DataSetTools.parameter.IntegerPG;
 import DataSetTools.util.SharedData;
 
 

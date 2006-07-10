@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.6  2003/05/20 20:57:43  pfpeterson
  * Fixed imports.
  *
@@ -60,6 +63,8 @@
  */
 
 package Wizard;
+
+import gov.anl.ipns.Parameters.FloatPG;
 
 import java.io.*;
 import java.util.Vector;
@@ -92,12 +97,12 @@ public class MultiplierExampleForm extends    Form
   {
     parameters = new Vector();
 
-    addParameter(new FloatPG("Value 1", new Float(1), false));
-    addParameter(new FloatPG("Value 2", new Float(2), false));
-    addParameter(new FloatPG("Value 3", new Float(3), false));
-    addParameter(new FloatPG("Result 1", new Float(1), false));
-    addParameter(new FloatPG("Result 2", new Float(3), false));
-    addParameter(new FloatPG("Result 3", new Float(3), false));
+    addParameter(new FloatPG("Value 1", new Float(1) ));
+    addParameter(new FloatPG("Value 2", new Float(2) ));
+    addParameter(new FloatPG("Value 3", new Float(3) ));
+    addParameter(new FloatPG("Result 1", new Float(1) ));
+    addParameter(new FloatPG("Result 2", new Float(3) ));
+    addParameter(new FloatPG("Result 3", new Float(3) ));
     setParamTypes(new int[]{0,1,2,3}, null, new int[]{4,5});
   }
 
@@ -125,11 +130,11 @@ public class MultiplierExampleForm extends    Form
     for( int i = 0 ; i < const_indices.length ; i++ ){
         param=(FloatPG)super.getParameter( i );
         product *= param.getfloatValue();
-        param.setValid(true);
+        param.setValidFlag(true);
     }
 
     param = (FloatPG)super.getParameter( const_indices.length );
-    param.setfloatValue( product );
+    param.setValue( new Float(product) );
     return new Boolean(true);
   } 
 

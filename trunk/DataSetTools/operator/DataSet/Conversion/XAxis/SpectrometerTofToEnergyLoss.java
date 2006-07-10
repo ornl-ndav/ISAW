@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2006/07/10 16:25:54  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.8  2004/04/29 21:16:52  dennis
  *  Now adds the SpectrometerTofToQE() operator to the Energy Loss
  *  DataSet that is constructed.
@@ -62,6 +65,7 @@
 package DataSetTools.operator.DataSet.Conversion.XAxis;
 
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.IParameter;
 
 import  java.io.*;
 import  java.util.Vector;

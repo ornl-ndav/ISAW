@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.8  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.7  2003/12/15 02:17:30  bouzekc
  * Removed unused imports.
  *
@@ -54,7 +57,7 @@
  */
 package Wizard.Examples;
 
-import DataSetTools.parameter.LoadFilePG;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import DataSetTools.wizard.JyScriptForm;
 import DataSetTools.wizard.Wizard;
 
@@ -114,10 +117,10 @@ public class JythonExampleWizard extends Wizard {
       { 7, 5 }
     };  //SCD calibration file
     JyScriptForm peaks     = new JyScriptForm( 
-        "find_multiple_peaks2.py", new LoadFilePG( "Peaks File", null, false ) );
+        "find_multiple_peaks2.py", new LoadFilePG( "Peaks File", null ) );
     JyScriptForm integrate = new JyScriptForm( 
         "integrate_multiple_runs2.py",
-        new LoadFilePG( "Integrated Peaks File", null, false ),
+        new LoadFilePG( "Integrated Peaks File", null ),
         new int[]{ 0, 1, 2, 3, 5 } );
     this.addForm( peaks );
     this.addForm( integrate );

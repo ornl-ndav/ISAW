@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2006/07/10 16:25:58  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.4  2002/12/03 22:10:53  dennis
  *  Added getDocumentation() method and java docs for getResult().
  *  (Shannon Hintzman)
@@ -46,6 +49,8 @@
  */
 
 package DataSetTools.operator.Generic.Batch;
+
+import gov.anl.ipns.Parameters.IParameter;
 
 import  java.io.*;
 import  java.util.Vector;

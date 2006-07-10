@@ -26,6 +26,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.2  2006/07/10 16:25:57  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.1  2006/02/02 22:57:08  dennis
  *  Operators to add, subtract, mulitiply and divide a scalar
  *  with one specified Data block in a DataSet.
@@ -34,12 +37,13 @@
 
 package DataSetTools.operator.DataSet.Math.Scalar;
 
+import gov.anl.ipns.Parameters.IParameter;
+
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.viewer.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.*;
-import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
 

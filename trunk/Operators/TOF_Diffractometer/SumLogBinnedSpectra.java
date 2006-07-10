@@ -32,6 +32,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.9  2006/07/10 16:26:11  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.8  2006/05/01 18:58:35  hammonds
  *  Add run number attribute to each focused bank.
  *
@@ -69,6 +72,10 @@ import  java.io.*;
 import  java.util.Vector;
 
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.FloatArrayPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IParameter;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.*;
 import  DataSetTools.operator.Generic.TOF_Diffractometer.*;

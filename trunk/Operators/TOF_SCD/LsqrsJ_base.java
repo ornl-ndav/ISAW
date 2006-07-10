@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2006/07/10 16:26:12  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.10  2006/06/16 18:17:20  rmikk
  * Now writes log information to the logging file at this time
  *
@@ -74,6 +77,13 @@
 package Operators.TOF_SCD;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.PlaceHolderPG;
+import gov.anl.ipns.Parameters.SaveFilePG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.Util.Sys.SharedMessages;
@@ -163,11 +173,11 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
     //5
     addParameter( 
-      new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );
+      new IntegerPG( "Minimum Peak Intensity Threshold", 0 ) );
 
     //6
     addParameter( 
-      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100" ) );
 
     ChoiceListPG choices = new ChoiceListPG("Cell Type Constraint","Triclinic");
 
@@ -250,6 +260,11 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
      }                   
      int[] run_nums   = ( ( IntArrayPG )getParameter( 1 ) ).getArrayValue(  );
      int[] seq_nums   = ( ( IntArrayPG )getParameter( 2 ) ).getArrayValue(  );
+     if ( run_nums != null && run_nums.length < 1 )
+       run_nums = null;
+     if ( seq_nums != null && seq_nums.length < 1 )
+       seq_nums = null;
+       
      int threshold    = ( ( IntegerPG )getParameter( 5 ) ).getintValue(  );
      int[] keepRange  = ( ( IntArrayPG )getParameter( 6 ) ).getArrayValue(  );
      String cellType  = ((ChoiceListPG)getParameter( 7 )).getValue().toString();
@@ -934,8 +949,13 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       return null;
     }
 
-    result.delete( result.length(  ) - 2, result.length(  ) );
-    result.append( "]" );
+    if ( result.length() >= 2 )
+    {
+      result.delete( result.length(  ) - 2, result.length(  ) );
+      result.append( "]" );
+    }
+    else
+      return null;
 
     return result.toString(  );
   }

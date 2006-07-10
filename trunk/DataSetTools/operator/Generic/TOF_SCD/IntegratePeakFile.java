@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2006/07/10 16:26:01  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.4  2004/05/04 19:02:25  dennis
  * Now clears DataSetPG after getting value, to avoid memory leak.
  *
@@ -200,6 +203,11 @@ import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.instruments.*;
 import DataSetTools.util.*;
 import DataSetTools.retriever.RunfileRetriever;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.SaveFilePG;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -337,7 +345,7 @@ public class IntegratePeakFile extends GenericTOF_SCD{
     parameters = new Vector();
 
     // parameter(0)
-    addParameter( new DataSetPG("Data Set", null, false ) );
+    addParameter( new DataSetPG("Data Set", null ) );
 
     // parameter(1)
     LoadFilePG lfpg=new LoadFilePG("Peaks File to Integrate",null);

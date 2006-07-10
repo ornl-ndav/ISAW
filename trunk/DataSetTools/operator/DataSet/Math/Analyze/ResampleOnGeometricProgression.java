@@ -27,6 +27,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2006/07/10 16:25:56  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.1  2005/11/18 18:38:41  dennis
  *  Operator to resample a DataSet using a new set of "x" values that
  *  form a geometric progression: xk = x0 * r^k.
@@ -39,6 +42,7 @@
 
 package DataSetTools.operator.DataSet.Math.Analyze;
 
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 

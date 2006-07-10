@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2006/07/10 16:25:51  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.8  2004/03/15 03:27:21  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -57,12 +60,11 @@
  *  Revision 1.1  2002/06/06 16:09:24  pfpeterson
  *  Added to CVS.
  *
- *
- *
  */
  
 package DataSetTools.components.ParametersGUI;
 
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.StringFilter.*;
 
 import javax.swing.text.*; 
@@ -75,7 +77,9 @@ import DataSetTools.util.*;
  * PropertChange events to listeners. Should only be used from within
  * the package.
  */
-class FilteredDocument extends PlainDocument {
+public class FilteredDocument extends PlainDocument {
+    public static final String VALUE = "value";
+
     private JTextComponent        textBox;
     private PropertyChangeSupport propBind;
     private StringFilterer        filter;
@@ -127,7 +131,7 @@ class FilteredDocument extends PlainDocument {
     private void fireValueChange(String oldValue, String newValue){
         if(propBind!=null && newValue!=null && newValue.length()>0 
            && !oldValue.equals(newValue) ){
-            propBind.firePropertyChange(IParameter.VALUE,oldValue,newValue);
+            propBind.firePropertyChange(VALUE,oldValue,newValue);
         }
     }
 

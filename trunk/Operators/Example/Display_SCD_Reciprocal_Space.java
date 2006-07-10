@@ -27,6 +27,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/10 16:26:07  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.1  2005/06/20 16:33:29  dennis
  * Initial Version of Operator to display a list of SCD
  * DataSets in the reciprocal space viewer.  The DataSets
@@ -44,6 +47,8 @@ import java.util.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.parameter.*;
 
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;

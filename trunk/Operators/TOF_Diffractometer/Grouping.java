@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2006/07/10 16:26:11  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.13  2004/03/15 03:37:02  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -81,6 +84,9 @@
 package Operators.TOF_Diffractometer;
 
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
@@ -92,9 +98,6 @@ import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.TOF_Diffractometer.GenericTOF_Diffractometer;
-import DataSetTools.parameter.BooleanPG;
-import DataSetTools.parameter.IntegerPG;
-import DataSetTools.parameter.StringPG;
 import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;

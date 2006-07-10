@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2006/07/10 16:26:12  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.14  2004/03/15 03:37:03  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -105,6 +108,9 @@ import DataSetTools.parameter.*;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;

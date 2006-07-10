@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.66  2006/07/10 16:25:51  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.65  2006/03/16 22:54:43  rmikk
  *  Includes code for the BooleanEnable ParameterGUI
  *
@@ -216,11 +219,15 @@
 //         Use Command.opMenu to plug in
 package DataSetTools.components.ParametersGUI;
 
+import gov.anl.ipns.Parameters.BooleanEnablePG;
+import gov.anl.ipns.Parameters.EnableParamListener;
+import gov.anl.ipns.Parameters.IParameterGUI;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
-
+import gov.anl.ipns.Parameters.IParameterGUI;
 import javax.swing.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
@@ -358,11 +365,9 @@ public class JParametersDialog implements Serializable,
                 if( DSSS != null)
                 for( int k =0; k< DSSS.length; k++)
                     ((DataSetPG)iparam).addItem( DSSS[k]);
-                ((DataSetPG)iparam).initGUI((Vector)null);
-              }else
-                ((IParameterGUI)iparam).initGUI(null);
+              }
 
-              JComponent pp= ((IParameterGUI)iparam).getGUIPanel();
+              JComponent pp= ((IParameterGUI)iparam).getGUIPanel( false );
               if( pp == null)
                 {System.out.println("GUIPanel null" + iparam.getClass());
                  return;
@@ -776,22 +781,27 @@ public class JParametersDialog implements Serializable,
       }
 
       for(int i = 0; i < op.getNum_parameters(); i++)
-      {
-        if( vparamGUI.elementAt(i) == null)
-           s = s+" ";
-        else if( vparamGUI.elementAt(i) instanceof IParameter)
-            s=s+ ((IParameter)vparamGUI.elementAt(i)).getValue();
-        else{
-           pGUI = (JParameterGUI)vparamGUI.elementAt( i );
-           if( pGUI != null)
-           if(  pGUI.getParameter() != null  &&  
-                pGUI.getParameter().getValue() != null  )
-           {                  
-             op.setParameter( pGUI.getParameter(), i) ;
-             s = s + pGUI.getParameter().getValue();
-          
-           }
-        }
+      { try{
+         if( vparamGUI.elementAt(i) == null)
+            s = s+" ";
+         else if( vparamGUI.elementAt(i) instanceof IParameter)
+         	
+             s=s+ ((IParameter)vparamGUI.elementAt(i)).getValue();
+         else{
+            pGUI = (JParameterGUI)vparamGUI.elementAt( i );
+            if( pGUI != null)
+            if(  pGUI.getParameter() != null  &&  
+                 pGUI.getParameter().getValue() != null  )
+            {                  
+              op.setParameter( pGUI.getParameter(), i) ;
+              s = s + pGUI.getParameter().getValue();
+           
+            }
+         }
+      }catch(Exception ss){
+    	  s = s+ "disable" +
+    	  		"d";
+      }
         if (i < op.getNum_parameters() - 1)
             s = s + ", ";
       }

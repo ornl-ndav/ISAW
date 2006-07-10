@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2006/07/10 16:26:00  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.7  2004/04/08 15:18:09  dennis
  * Now uses "new" DataSetPGs consistently and calls clear() after getting the
  * value from the DataSetPG, to avoid memory leaks.
@@ -61,6 +64,8 @@
 package DataSetTools.operator.Generic.TOF_SAD;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.SaveFilePG;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -114,7 +119,7 @@ public class PrintFlood  extends GenericTOF_SAD{
    *   @return  "Success"  or an ErrorString
    */ 
    public Object getResult(){
-     DataSet Efficiency = ((DataSetPG)getParameter(0)).getDataSetValue();
+     DataSet Efficiency = (DataSet)((DataSetPG)getParameter(0)).getValue();
      ((DataSetPG)getParameter(0)).clear();
 
      String  Outfilename    =  ((SaveFilePG)getParameter(1)).getStringValue();

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2006/07/10 16:25:59  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.17  2005/05/25 19:37:45  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -105,6 +108,10 @@ import DataSetTools.operator.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.PrinterNamePG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
 
@@ -200,7 +207,7 @@ public class PrintImage extends GenericSave{
   */
   public Object getResult(){
   	
-     DataSet DS = ((DataSetPG)(getParameter(0))).getDataSetValue();
+     DataSet DS = (DataSet)((DataSetPG)(getParameter(0))).getValue();
      ((DataSetPG)(getParameter(0))).clear();  //needed to avoid memory leak
 
      String ViewName = getParameter(2).getValue().toString();

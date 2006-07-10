@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/07/10 16:26:07  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.4  2005/08/25 15:54:09  dennis
  * Now placed in logical menu category: OLD_OP_EXAMPLES
  *
@@ -69,8 +72,9 @@ package Operators.Example;
 
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Example.*;
-import DataSetTools.parameter.StringPG;
 import DataSetTools.util.SharedData;
+import gov.anl.ipns.Parameters.StringPG;
+
 import java.util.*;
 
 /** 

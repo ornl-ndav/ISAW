@@ -33,6 +33,9 @@
  * data set.
  *
  *  $Log$
+ *  Revision 1.9  2006/07/10 16:25:57  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.8  2006/02/02 21:46:08  dennis
  *  Corrected documentation to indicate that a String indicating
  *  successful completion of the operator is returned if the operator
@@ -64,12 +67,13 @@
 
 package DataSetTools.operator.DataSet.Math.Scalar;
 
+import gov.anl.ipns.Parameters.IParameter;
+
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.viewer.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.*;
-import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
 

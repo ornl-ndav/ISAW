@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2006/07/10 16:25:59  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.6  2005/01/28 21:27:32  dennis
  *  Changed operator title to SpectrometerDetectorNormalizationFactor_test,
  *  to distinguish it from SpectrometerDetectorNormalizationFactor in the
@@ -93,6 +96,7 @@
 package DataSetTools.operator.Generic.Special;
 
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;

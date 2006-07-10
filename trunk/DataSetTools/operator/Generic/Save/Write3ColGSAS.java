@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/10 16:25:59  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.3  2005/10/09 19:20:49  rmikk
  * Converted old parameters to ParameterGUI's
  *
@@ -48,6 +51,8 @@
 package DataSetTools.operator.Generic.Save;
 
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.SaveFilePG;
 import gov.anl.ipns.Util.Numeric.Format;
 
 import java.io.File;

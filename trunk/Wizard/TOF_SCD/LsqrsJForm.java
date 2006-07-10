@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.35  2006/07/10 16:26:14  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.34  2006/01/05 22:04:09  rmikk
  * Added spacing around parenthesis for Choices of the cell type for 
  *    constraining the optimization
@@ -161,12 +164,19 @@
  */
 package Wizard.TOF_SCD;
 
+import gov.anl.ipns.Parameters.ArrayPG;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.DataDirPG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
 import java.util.Vector;
 
-import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.*;
 import DataSetTools.util.SharedData;
 import DataSetTools.wizard.Form;
 import Operators.TOF_SCD.LsqrsJ;
@@ -249,13 +259,13 @@ public class LsqrsJForm extends Form {
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
-    addParameter( new IntArrayPG( "Run Numbers", null, false ) );  //0
-    addParameter( new DataDirPG( "Peaks File Path", null, false ) );  //1
-    addParameter( new StringPG( "Experiment Name", null, false ) );  //2
+    addParameter( new IntArrayPG( "Run Numbers", null ) );    //0
+    addParameter( new DataDirPG( "Peaks File Path", null ) ); //1
+    addParameter( new StringPG( "Experiment Name", null ) );  //2
     addParameter( 
       new IntArrayPG( 
-        "Restrict Peaks Sequence Numbers (blank for all)", null, false ) );  //3
-    addParameter( new ArrayPG( "Matrix Files", new Vector(  ), false ) );  //4
+        "Restrict Peaks Sequence Numbers (blank for all)", null ) );  //3
+    addParameter( new ArrayPG( "Matrix Files", new Vector(  ) ) );    //4
     
     ChoiceListPG choices = new ChoiceListPG("Cell Type Constraint","Triclinic");
 
@@ -268,10 +278,10 @@ public class LsqrsJForm extends Form {
     choices.addItem("Hexagonal");
     choices.addItem("Cubic");
     addParameter( choices) ;   
-    addParameter(  new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );  //5
+    addParameter(  new IntegerPG( "Minimum Peak Intensity Threshold", 0 ) );  //5
     addParameter( 
-      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );  //6
-    setResultParam( new LoadFilePG( "JLsqrs Log File", " ", false ) );  //7
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100" ) );  //6
+    setResultParam( new LoadFilePG( "JLsqrs Log File", " " ) );       //7
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
@@ -444,12 +454,12 @@ public class LsqrsJForm extends Form {
     //set the matrix file name vector parameter
     param = ( IParameterGUI )getParameter( 4 );
     param.setValue( matNamesVec );
-    param.setValid( true );
+    param.setValidFlag( true );
 
     //set the log file name parameter
     param = ( IParameterGUI )getParameter( 8 );
     param.setValue( obj.toString(  ) );
-    param.setValid( true );
+    param.setValidFlag( true );
     SharedData.addmsg( "--- LsqrsJForm finished. ---" );
 
     return obj.toString(  );

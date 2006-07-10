@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/10 16:26:10  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.1  2006/05/19 16:07:29  rmikk
  * Operator generated from the static method, Command.ScriptUtl.ToVec. It
  * attempts to convert Objects to Vectors by converting arrays and sub-arrays
@@ -44,6 +47,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.parameter.*;
 
+import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;

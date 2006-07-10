@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/07/10 16:25:53  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.12  2004/03/15 06:10:46  dennis
  * Removed unused import statements.
  *
@@ -74,6 +77,7 @@
 package DataSetTools.operator.DataSet.Conversion.XAxis;
 
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.ViewTools.UI.*;
 
 import  java.io.*;

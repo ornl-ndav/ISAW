@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.6  2003/05/20 20:57:43  pfpeterson
  * Fixed imports.
  *
@@ -57,6 +60,8 @@
  */
 
 package Wizard;
+
+import gov.anl.ipns.Parameters.FloatPG;
 
 import java.io.*;
 import java.util.Vector;
@@ -88,10 +93,10 @@ public class AdderExampleForm extends    Form
   {
     parameters = new Vector();
 
-    addParameter(new FloatPG("Enter Value 1", new Float(1), false));
-    addParameter(new FloatPG("Enter Value 2", new Float(2), false));
-    addParameter(new FloatPG("Enter Value 3", new Float(3), false));
-    addParameter(new FloatPG("Result 1", new Float(0), false));
+    addParameter(new FloatPG("Enter Value 1", new Float(1)));
+    addParameter(new FloatPG("Enter Value 2", new Float(2)));
+    addParameter(new FloatPG("Enter Value 3", new Float(3)));
+    addParameter(new FloatPG("Result 1", new Float(0)));
     setParamTypes(null,new int[]{0,1,2},new int[]{3});
   }
 
@@ -122,11 +127,11 @@ public class AdderExampleForm extends    Form
     {
       param = (FloatPG)super.getParameter(i);
       sum += param.getfloatValue();
-      param.setValid(true);
+      param.setValidFlag(true);
     } 
     
     param = (FloatPG)super.getParameter(edit_indices.length);
-    param.setfloatValue( sum );
+    param.setValue( new Float(sum) );
     return new Boolean(true);
   } 
 

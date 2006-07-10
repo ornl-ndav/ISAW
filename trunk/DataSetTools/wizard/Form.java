@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.55  2006/07/10 16:26:03  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.54  2006/06/08 18:27:38  rmikk
  * Added code to declare valid parameters that were disabled by thee Boolean
  *    enablePG( in validateself and done)
@@ -249,6 +252,10 @@ import DataSetTools.parameter.*;
 
 import DataSetTools.util.*;
 
+import gov.anl.ipns.Parameters.BooleanEnablePG;
+import gov.anl.ipns.Parameters.EnableParamListener;
+import gov.anl.ipns.Parameters.IParameterGUI;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -414,7 +421,7 @@ public abstract class Form extends Operator implements PropertyChanger {
    */
   public IParameter getParameter( int index ) {
     if( index < getNum_parameters(  ) ) {
-      return super.getParameter( index );
+      return (IParameter)super.getParameter( index );
     } else {
       return getResultParam(  );
     }
@@ -434,7 +441,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     result_param = resultPG;
 
     if( result_param != null ) {
-      result_param.setDrawValid( true );
+      result_param.setValidFlag( false );
     }
   }
 
@@ -525,7 +532,7 @@ public abstract class Form extends Operator implements PropertyChanger {
       if( !check)
     	  areSet++;
       else
-      if( ( ( IParameterGUI )this.getParameter( i ) ).getValid(  ) ) {
+      if( ( ( IParameterGUI )this.getParameter( i ) ).getValidFlag(  ) ) {
         areSet++;
       }
       if( getParameter(i) instanceof BooleanEnablePG){
@@ -537,7 +544,7 @@ public abstract class Form extends Operator implements PropertyChanger {
       }
     }
 
-    return ( ( areSet == totalParam ) && getResultParam(  ).getValid(  ) );
+    return ( ( areSet == totalParam ) && getResultParam(  ).getValidFlag(  ) );
   }
 
   /**
@@ -551,7 +558,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( this.getNum_parameters(  ) <= 0 ) {
       return;
     }
-    getResultParam(  ).setValid( false );
+    getResultParam(  ).setValidFlag( false );
   }
 
   /**
@@ -646,8 +653,7 @@ public abstract class Form extends Operator implements PropertyChanger {
 
     for( int i = 0; i < num.length; i++ ) {
       IParameterGUI param = ( IParameterGUI )getParameter( num[i] );
-      param.initGUI( null );
-      subBox.add( param.getGUIPanel(  ) );
+      subBox.add( param.getGUIPanel( true ) );
     }
     // implement BooleanEnabling of some of the parameters
         
@@ -736,7 +742,7 @@ public abstract class Form extends Operator implements PropertyChanger {
   protected Object errorOut( IParameterGUI param, Object errmessage ) {
     //do not change this method's signature.  At some point in time, we may not
     //want to return an ErrorString.
-    param.setValid( false );
+    param.setValidFlag( false );
 
     return this.errorOut( errmessage );
   }
@@ -777,10 +783,15 @@ public abstract class Form extends Operator implements PropertyChanger {
       }
     }
     this.enableParameters(  );
+    java.util.Vector V = new java.util.Vector();
+    for( int i= 0; i< this.getNum_parameters(); i++)
+    	V.addElement(  this.getParameter(i ));
+    
     for( int i=0; i< this.getNum_parameters(); i++){
         IParameterGUI param = ( IParameterGUI )getParameter( i );
         if( param instanceof BooleanEnablePG){
-            ((BooleanEnablePG)param).addPropertyChangeListener( new EnableParamListener( this, i));
+        	
+            ((BooleanEnablePG)param).addPropertyChangeListener( new EnableParamListener( V, i));
             ((BooleanEnablePG)param).fire();
         }
     }
@@ -837,10 +848,10 @@ public abstract class Form extends Operator implements PropertyChanger {
     		  check = true;
       }
       if( check )
-      if( !ipg.getValid(  ) ) {
+      if( !ipg.getValidFlag(  ) ) {
         ipg.validateSelf(  );
 
-        if( !ipg.getValid(  ) ) {
+        if( !ipg.getValidFlag(  ) ) {
           allValid   = false;
           badParam   = ipg;
         }

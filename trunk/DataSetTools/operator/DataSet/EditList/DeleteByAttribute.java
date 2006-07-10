@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2006/07/10 16:25:54  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.8  2005/08/19 17:54:37  dennis
  *   Delete will now be done more efficiently, since the DataSet is
  * now scanned one time to find all of the Data blocks that should
@@ -72,6 +75,7 @@
 
 package DataSetTools.operator.DataSet.EditList;
 
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 

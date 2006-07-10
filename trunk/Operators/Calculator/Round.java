@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2006/07/10 16:26:06  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.2  2005/05/25 18:39:21  dennis
  *  Removed unused imports.
  *
@@ -45,6 +48,8 @@ package Operators.Calculator;
 
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
+
+import gov.anl.ipns.Parameters.FloatPG;
 
 import java.util.Vector;
 

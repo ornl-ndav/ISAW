@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.10  2004/03/15 03:37:39  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -68,11 +71,14 @@
 
 package Wizard;
 
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.MaterialPG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
 import java.util.Vector;
 import DataSetTools.wizard.*;
-import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.*;
 import DataSetTools.util.SharedData;
 import Operators.Calculator.*;
 
@@ -126,14 +132,14 @@ public class ActivateForm extends Form{
   {
     parameters = new Vector();
 
-    addParameter(new MaterialPG("Sample composition", "La,Mn,O_3", false));
-    addParameter(new FloatPG("Sample mass", 1.0f, false));
-    addParameter(new FloatPG("Beam Current (in microAmp)", 16.0f, false));
+    addParameter(new MaterialPG("Sample composition", "La,Mn,O_3" ));
+    addParameter(new FloatPG("Sample mass", 1.0f ));
+    addParameter(new FloatPG("Beam Current (in microAmp)", 16.0f ));
     addParameter(new FloatPG("Instrument Factor (LANSCE HIPD=1.0)",
-                             1.0f, false));
-    addParameter(new StringPG("Contact Dose", "", false));
-    addParameter(new StringPG( "Storage Time", "", false));
-    addParameter(new StringPG( "Prompt Activation", "", false));
+                             1.0f ));
+    addParameter(new StringPG("Contact Dose", "" ));
+    addParameter(new StringPG( "Storage Time", "" ));
+    addParameter(new StringPG( "Prompt Activation", "" ));
     setParamTypes(null,new int[]{0,1,2,3},new int[]{4,5,6});
   }
 
@@ -159,38 +165,38 @@ public class ActivateForm extends Form{
 
         param=(IParameterGUI)super.getParameter(0);
         String material=(String)param.getValue();
-        param.setValid(true);
+        param.setValidFlag(true);
 
         param=(IParameterGUI)super.getParameter(1);
         float mass=((FloatPG)param).getfloatValue();
         if(mass<=0f){
-            param.setValid(false);
+            param.setValidFlag(false);
             DataSetTools.util.SharedData.addmsg("Invalid Mass Specified: "+mass);
             return new Boolean(false);
         }else{
-            param.setValid(true);
+            param.setValidFlag(true);
         }
 
         param=(IParameterGUI)super.getParameter(2);
         float current=((FloatPG)param).getfloatValue();
         if(current<=0f){
-            param.setValid(false);
+            param.setValidFlag(false);
             DataSetTools.util.SharedData.addmsg("Invalid Current Specified: "
                                          +current);
             return new Boolean(false);
         }else{
-            param.setValid(true);
+            param.setValidFlag(true);
         }
 
         param=(IParameterGUI)super.getParameter(3);
         float inst_fac=((FloatPG)param).getfloatValue();
         if(inst_fac<=0f){
-            param.setValid(false);
+            param.setValidFlag(false);
             DataSetTools.util.SharedData.addmsg("Invalid Instrument Factor "
                                          +"Specified: "+inst_fac);
             return new Boolean(false);
         }else{
-            param.setValid(true);
+            param.setValidFlag(true);
         }
 
         param=(IParameterGUI)super.getParameter(4);

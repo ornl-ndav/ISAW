@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/07/10 16:26:04  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.5  2005/06/17 13:35:37  rmikk
  * closed a file after reading and writing
  * Added the PlaceHolderPG for possible Result ParameterGUI
@@ -67,6 +70,9 @@ import DataSetTools.parameter.*;
 import javax.swing.event.*;
 import javax.swing.text.html.*;
 import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.Parameters.IParameterGUI;
+import gov.anl.ipns.Parameters.IParameter;
+
 /**
  * @author mikkelsonr
  *
@@ -802,7 +808,7 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
                JOptionPane.showMessageDialog( null, "Parameter is null");
                return;
             }
-            if( !(Par.param instanceof ParameterGUI)){
+            if( !(Par.param instanceof IParameterGUI)){
               JOptionPane.showMessageDialog( null, "Parameter is not a ParameterGUI");
               return;
             }

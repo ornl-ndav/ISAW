@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.9  2006/07/10 16:26:11  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.8  2006/04/27 22:23:19  taoj
  * Added flat plate code (test version).
  *
@@ -267,7 +270,7 @@ public class GLADAnalyze implements Wrappable, IWrappableWithCategoryList {
     float[] qlist, y_vals_n, e_vals_n, mul = null, abs_s = null, abs_c = null;
     int istart, iend;
     if (ds.getX_label() != "Q") System.out.println("******ERROR******");
-    if ((imask & 1) == 1) System.out.println("Sample effective density: "+smprun.effdensity+" Sample calibration constant: "+smprun.scatterern+"\n");
+ //   if ((imask & 1) == 1) System.out.println("Sample effective density: "+smprun.effdensity+" Sample calibration constant: "+smprun.scatterern+"\n");
     for (int i = 0; i < ds.getNum_entries(); i++) {
       dt = ds.getData_entry(i);
       attr_list_d = dt.getAttributeList();

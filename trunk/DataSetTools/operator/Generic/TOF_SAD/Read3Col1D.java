@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2006/07/10 16:26:00  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.10  2006/01/08 01:38:30  dennis
  * Minor fix of javadoc warnings that showed up when building with
  * the java 1.5.0_06 compiler.
@@ -67,6 +70,8 @@
  *
  */
 package DataSetTools.operator.Generic.TOF_SAD;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 

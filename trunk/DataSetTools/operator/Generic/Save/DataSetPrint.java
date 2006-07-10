@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2006/07/10 16:25:59  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.1  2005/01/10 15:25:00  dennis
  *  Moved into "Save" directory.
  *
@@ -62,6 +65,7 @@
 
 package DataSetTools.operator.Generic.Save;
 
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.UI.*;

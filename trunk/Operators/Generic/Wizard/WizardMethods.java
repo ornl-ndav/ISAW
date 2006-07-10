@@ -1,9 +1,10 @@
+
 package Operators.Generic.Wizard;
+
 import DataSetTools.wizard.*;
 import java.lang.reflect.*;
-import DataSetTools.parameter.*;
+import gov.anl.ipns.Parameters.*;
 import java.util.*;
-import java.util.zip.*;
 
 public class WizardMethods {
 

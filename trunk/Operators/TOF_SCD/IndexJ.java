@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.27  2006/07/10 16:26:12  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.26  2006/02/26 00:43:33  dennis
  * Back out change accidentally made to this file, instead
  * of to a file for the new portable "LANSCE" wizards. This
@@ -124,6 +127,11 @@
 
 package Operators.TOF_SCD;
 
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
@@ -141,11 +149,6 @@ import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
 import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
 import DataSetTools.operator.Generic.TOF_SCD.WritePeaks;
-import DataSetTools.parameter.BooleanPG;
-import DataSetTools.parameter.FloatPG;
-import DataSetTools.parameter.IParameter;
-import DataSetTools.parameter.IntArrayPG;
-import DataSetTools.parameter.LoadFilePG;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 

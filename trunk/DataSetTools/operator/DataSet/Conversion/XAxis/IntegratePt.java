@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2006/07/10 16:25:54  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.10  2006/03/15 14:53:48  dennis
  * Changed to use an array of floats instead of an array of ints,
  * to avoid having to make a new copy of the data as ints.
@@ -83,6 +86,8 @@ import DataSetTools.dataset.*;
 import Operators.TOF_SCD.*;
 import DataSetTools.operator.*;
 //import DataSetTools.operator.DataSet.*;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import java.util.*;
 import DataSetTools.parameter.*;

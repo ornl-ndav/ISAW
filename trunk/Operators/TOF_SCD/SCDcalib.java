@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2006/07/10 16:26:12  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.13  2006/01/18 21:29:38  dennis
  *  Added printout of detector position to the information dumped
  *  to the terminal.
@@ -109,6 +112,7 @@ import Operators.Example.*;
 
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Functions.*;
+import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;

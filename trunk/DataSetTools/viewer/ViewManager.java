@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.77  2006/07/10 16:26:01  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.76  2006/06/26 16:30:25  amoe
  *  - added code getDataSetView(..) so it would handle the Difference
  *    Graph View
@@ -281,6 +284,7 @@ import DataSetTools.viewer.SCD_ReciprocalSpaceSlice.*;
 import DataSetTools.components.View.*;
 import DataSetTools.parameter.*;
 import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.OneD.*;

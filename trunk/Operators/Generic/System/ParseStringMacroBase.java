@@ -27,7 +27,7 @@ public class ParseStringMacroBase {
 			return inStr;
 		StringBuffer inStrBuf = new StringBuffer(inStr);
 		int startIndex=0;
-		for(startIndex = inStrBuf.indexOf("$");(startIndex >=0)&&(startIndex < inStrBuf.length());){
+		for(startIndex = inStrBuf.indexOf("$");(startIndex >=0)&&(startIndex +1 < inStrBuf.length());){
 			if(inStrBuf.charAt(startIndex + 1) == '{' ) {
 				int lastIndex=0;
 				if (( lastIndex = inStrBuf.indexOf("}", startIndex)) != -1){

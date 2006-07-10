@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/07/10 16:26:13  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.6  2003/05/20 20:57:43  pfpeterson
  * Fixed imports.
  *
@@ -61,6 +64,8 @@
 
 package Wizard;
 
+import gov.anl.ipns.Parameters.FloatPG;
+
 import java.io.*;
 import java.util.Vector;
 import DataSetTools.wizard.*;
@@ -91,9 +96,9 @@ public class DividerExampleForm extends    Form
   {
     parameters = new Vector();
 
-    addParameter(new FloatPG("Value 2", new Float(2), false));
-    addParameter(new FloatPG("Result 2", new Float(0), false));
-    addParameter(new FloatPG("Result 4", new Float(0), false));
+    addParameter(new FloatPG("Value 2", new Float(2) ));
+    addParameter(new FloatPG("Result 2", new Float(0) ));
+    addParameter(new FloatPG("Result 4", new Float(0) ));
     setParamTypes(new int[]{0,1}, null, new int[]{2});
   }
 
@@ -130,7 +135,7 @@ public class DividerExampleForm extends    Form
     }
 
     param = (FloatPG)super.getParameter(2);
-    param.setfloatValue( quotient );
+    param.setValue( new Float(quotient) );
     return new Boolean(true);
   } 
 

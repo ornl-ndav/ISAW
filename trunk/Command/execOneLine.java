@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.90  2006/07/10 16:25:50  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.89  2006/06/16 18:11:17  rmikk
  * Returns line numbers and methods 3 levels deep where exceptions occure
  *
@@ -254,6 +257,7 @@
  *
 */
 package Command;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -447,6 +451,9 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
         ArrayInfo.clear();
         ArrayInfo = null;
         ArrayInfo=new Hashtable();
+        ObjectInfo.clear();
+        ObjectInfo = null;
+        ObjectInfo = new Hashtable();
         System.gc();
     }
    /**
@@ -3103,7 +3110,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
        for( int i=0; i < op.getNum_parameters(); i++){
           IParameter param = op.getParameter( i);
           if( param instanceof DataSetPG)
-            ((ChooserPG)param).clear();
+            ((DataSetPG)(param)).clear();
        }
 
     }

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/07/10 16:25:53  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.12  2005/09/27 16:36:13  dennis
  * Changed default "D" range for XScale to  0.1 to 4.0 Angstroms
  *
@@ -74,6 +77,7 @@
 
 package DataSetTools.operator.DataSet.Conversion.XAxis;
 
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.ViewTools.UI.*;
 

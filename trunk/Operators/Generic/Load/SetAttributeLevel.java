@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/10 16:26:08  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.1  2004/04/09 19:28:11  dennis
  * Initial version of operator to set retriever attribute level.
  *
@@ -42,6 +45,8 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Load.*;
 import DataSetTools.retriever.*;
 import DataSetTools.parameter.*;
+
+import gov.anl.ipns.Parameters.ChoiceListPG;
 
 import java.util.*;
 

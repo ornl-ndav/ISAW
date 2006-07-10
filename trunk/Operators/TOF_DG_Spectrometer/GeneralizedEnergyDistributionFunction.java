@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.11  2006/07/10 16:26:11  dennis
+ *  Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  *  Revision 1.10  2004/05/10 20:42:30  dennis
  *  Test program now just instantiates a ViewManager to diplay
  *  calculated DataSet, rather than keeping a reference to it.
@@ -78,6 +81,7 @@
 package Operators.TOF_DG_Spectrometer;
 
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 

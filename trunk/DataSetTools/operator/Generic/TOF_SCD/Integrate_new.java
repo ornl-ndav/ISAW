@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2006/07/10 16:26:01  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.8  2006/02/13 05:07:45  dennis
  * Now uses new constructor for VecQToTOF that takes a DataSet
  * and a DataGrid (ie. detector).  This fixes a problem with
@@ -261,6 +264,14 @@ import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.ChoiceListPG;
+import gov.anl.ipns.Parameters.FloatPG;
+import gov.anl.ipns.Parameters.IntArrayPG;
+import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.SaveFilePG;
+
 import java.io.*;
 import java.util.Vector;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
@@ -455,7 +466,7 @@ public class Integrate_new extends GenericTOF_SCD{
     if( choices==null || choices.size()==0 ) init_choices();
 
     // parameter(0)
-    addParameter( new DataSetPG("Data Set", null, false ) );
+    addParameter( new DataSetPG("Data Set", null ) );
 
     // parameter(1)
     SaveFilePG sfpg=new SaveFilePG("Integrate File",null);

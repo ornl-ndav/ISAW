@@ -25,6 +25,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2006/07/10 16:25:53  dennis
+ * Change to new Parameter GUIs in gov.anl.ipns.Parameters
+ *
  * Revision 1.4  2005/12/22 17:54:24  dennis
  * Replaced  clear == CLEAR  with  clear.equalsIgnoreCase(CLEAR),
  * so that the clear/set string works properly, using any string
@@ -52,6 +55,7 @@ package DataSetTools.operator.DataSet.Attribute;
 
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
+import gov.anl.ipns.Parameters.ChoiceListPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.Messaging.*;
