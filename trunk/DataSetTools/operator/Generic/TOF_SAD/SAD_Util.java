@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2006/07/11 21:20:17  dennis
+ * Fixed xDELTAQ problem in second location.
+ *
  * Revision 1.13  2006/07/11 19:57:06  dennis
  * Fixed typo that used xDELTAQ, where yDELTAQ should have been
  * used.  This would create problems, if the "Q" step size
@@ -384,7 +387,7 @@ public class SAD_Util
            Qy =  Q * Qxy[2];
 
            DNx = ((Qx -Qxmin)/xDELTAQ);
-           DNy = ((Qy -Qymin)/xDELTAQ);
+           DNy = ((Qy -Qymin)/yDELTAQ);
            Nx  = (int)java.lang.Math.floor( DNx );
            Ny  = (int)java.lang.Math.floor( DNy );
            if( Nx >=0       && Ny >= 0    &&
