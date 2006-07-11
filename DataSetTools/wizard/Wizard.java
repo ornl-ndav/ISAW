@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.112  2006/07/11 18:19:53  rmikk
+ * Invalidated next form after a given form is through so that the next
+ * form will execute
+ *
  * Revision 1.111  2006/07/10 16:26:04  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -1075,7 +1079,9 @@ public class Wizard implements PropertyChangeListener, Serializable {
           break;
         }
       }
+      invalidate( i + 1 );
     }
+
     invalidate( end + 1 );
   }
 
