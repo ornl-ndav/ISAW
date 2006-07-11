@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2006/07/11 17:00:45  dennis
+ *  Now adds ToQ2E operator, as well as the ToQE operator.
+ *
  *  Revision 1.10  2006/07/10 21:28:21  dennis
  *  Removed unused imports, after refactoring the PG concept.
  *
@@ -298,6 +301,7 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOp
                                       
                                      // add in the appropriate additional ops
     new_ds.addOperator( new SpectrometerTofToQE() );
+    new_ds.addOperator( new SpectrometerTofToQ2E() );
 
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
