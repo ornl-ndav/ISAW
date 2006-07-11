@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2006/07/11 14:26:42  rmikk
+ * Fixed the scalar to return the correct post transformation scalars
+ *
  * Revision 1.16  2006/07/10 22:28:39  dennis
  * Removed unused imports after refactoring to use new Parameter GUIs
  * in gov.anl.ipns.Parameters.
@@ -117,7 +120,7 @@ import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
-
+import gov.anl.ipns.Util.Sys.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Vector;
@@ -1197,32 +1200,50 @@ public class ScalarJ extends GenericTOF_SCD{
         logBuffer.append(" TRANSFORMATION MATRIX "+i+"  IS\n\n" );
         i++;
         nflag = true;
+
+        double[][] transf_inv = new double[3][3];
         for( int m=1 ; m<=3 ; m++ ){ // create transformation matrix
-          for( int j=1 ; j<=3 ; j++ )
+          for( int j=1 ; j<=3 ; j++ ){
             transf[j-1][m-1]=trans[m+((j+3*k[n])*3)-13];
+            transf_inv[m-1][j-1] = transf[j-1][m-1];
+          }
         }
-        newmat=LinearAlgebra.mult(this.UB,transf);
+
+        if(!LinearAlgebra.invert(transf_inv)){
+          logBuffer.append( "Improper Transformation Matrix\n");
+             SharedMessages.LOGaddmsg(logBuffer.substring(start));
+             SharedMessages.LOGaddmsg("------------- End Scalar ---------------\n\n\n");
+             return;
+
+        }
+        newmat=LinearAlgebra.mult(this.UB,transf_inv);
         for( int ii=0 ; ii<3 ; ii++ ){ // print the matrices
-          for( int jj=0 ; jj<3 ; jj++ ){
-            logBuffer.append(Format.real(transf[jj][ii],4)+" ");
-          }
-          if(ii==1)
-            logBuffer.append(" x UB = ");
-          else
-            logBuffer.append("        ");
-          for( int jj=0 ; jj<3 ; jj++ ){
-            logBuffer.append(Format.real(newmat[jj][ii],10,6)+" ");
-          }
-          logBuffer.append("\n");
-        }
-        abc=Util.abc(LinearAlgebra.mult(this.UB,transf));
-        logBuffer.append("\n");
-        logBuffer.append("      a          b          c        alpha       "
-                           +"beta      gamma     cellvol\n");
-        for( int ii=0 ; ii<abc.length ; ii++ )
-          logBuffer.append(Format.real(abc[ii],10,3)+" ");
-        logBuffer.append("\n");
-        System.out.print(logBuffer.substring(start));
+           for( int jj=0 ; jj<3 ; jj++ ){
+             logBuffer.append(Format.real(transf[jj][ii],4)+" ");
+           }
+           if(ii==1)
+             logBuffer.append(" x ");
+           else
+             logBuffer.append("   ");
+           for( int jj=0 ; jj<3 ; jj++ ){
+             logBuffer.append(Format.real(newmat[jj][ii],10,6)+" ");
+           }
+
+           if( ii==0)
+            logBuffer.append("     T");
+           else if( ii==1) logBuffer.append(" = UB");
+           logBuffer.append("\n");
+         }
+         abc=Util.abc(LinearAlgebra.mult(this.UB,transf_inv));
+         logBuffer.append("\n");
+         logBuffer.append("      a          b          c        alpha       "
+                            +"beta      gamma     cellvol\n");
+         for( int ii=0 ; ii<abc.length ; ii++ )
+           logBuffer.append(Format.real(abc[ii],10,3)+" ");
+         logBuffer.append("\n");
+         SharedMessages.LOGaddmsg(logBuffer.substring(start));
+         SharedMessages.LOGaddmsg("------------- End Scalar ---------------\n\n\n");
+         SharedMessages.addmsg(logBuffer.substring(start));
       }
     }
 
