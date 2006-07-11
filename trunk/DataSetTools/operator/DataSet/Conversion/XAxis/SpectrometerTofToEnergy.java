@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2006/07/11 17:00:45  dennis
+ *  Now adds ToQ2E operator, as well as the ToQE operator.
+ *
  *  Revision 1.12  2006/07/10 21:28:21  dennis
  *  Removed unused imports, after refactoring the PG concept.
  *
@@ -301,6 +304,7 @@ public class SpectrometerTofToEnergy extends    XAxisConversionOp
 
     // add in the appropriate additional ops
     new_ds.addOperator( new SpectrometerTofToQE() );
+    new_ds.addOperator( new SpectrometerTofToQ2E() );
 
                                      // get the energy scale parameters
     float min_E = ( (Float)(getParameter(0).getValue()) ).floatValue();

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.53  2006/07/11 17:00:45  dennis
+ *  Now adds ToQ2E operator, as well as the ToQE operator.
+ *
  *  Revision 1.52  2006/02/02 23:06:33  dennis
  *  Now adds operators to add, subtract, multiply and divide
  *  a specified Data block by a specified constant.
@@ -509,6 +512,7 @@ public class DataSetFactory implements Serializable
       ds.addOperator( new SumByAttributeNormSA() );
 //      ds.addOperator( new SpectrometerTofToQ() );
       ds.addOperator( new SpectrometerTofToQE() );
+      ds.addOperator( new SpectrometerTofToQ2E() );
       ds.addOperator( new TrueAngle() );
     }
     else if ( instrument_type == InstrumentType.TOF_IDG_SPECTROMETER )
