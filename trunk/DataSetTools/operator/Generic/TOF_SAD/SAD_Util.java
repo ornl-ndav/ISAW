@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/07/11 19:57:06  dennis
+ * Fixed typo that used xDELTAQ, where yDELTAQ should have been
+ * used.  This would create problems, if the "Q" step size
+ * in the x direction was different than the "Q" step size in
+ * the y direction.
+ *
  * Revision 1.12  2005/05/27 03:15:12  dennis
  * Changed to use get attribute method from AttrUtil, rather than
  * the old get attribute method from DataSet and Data
@@ -232,7 +238,7 @@ public class SAD_Util
          Qy =  Q * Qxy[2];
              
          DNx = ((Qx -Qxmin)/xDELTAQ);
-         DNy = ((Qy -Qymin)/xDELTAQ);
+         DNy = ((Qy -Qymin)/yDELTAQ);
          Nx  = (int)java.lang.Math.floor( DNx );
          Ny  = (int)java.lang.Math.floor( DNy );
 	 if( Nx >=0       && Ny >= 0    && 
