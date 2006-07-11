@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2006/07/11 19:12:10  rmikk
+ * Fixed error that occurs with an IllegalArgumentException caused by the
+ *    new ParameterGUI's
+ *
  * Revision 1.19  2005/01/02 18:03:19  rmikk
  * Added code to indicate the location of the source code for ISAW Script
  *    operators, PyscriptOperators, and Wrapped operators.
@@ -583,8 +587,12 @@ public class HTMLizer {
 
     for( int i = 0; i < num_params; i++ ) {
       //catch any getValue() == null stuff
-      ob = op.getParameter( i )
-             .getValue(  );
+       try{
+           ob = op.getParameter( i )
+                          .getValue(  );
+       }catch(Exception xx){
+          ob = null;
+       }
 
       if( ob == null ) {
         class_s = "";
