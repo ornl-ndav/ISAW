@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.113  2006/07/11 19:55:28  rmikk
+ * Fixed the fix to get the next form to execute after a given form
+ *
  * Revision 1.112  2006/07/11 18:19:53  rmikk
  * Invalidated next form after a given form is through so that the next
  * form will execute
@@ -1078,8 +1081,9 @@ public class Wizard implements PropertyChangeListener, Serializable {
 
           break;
         }
+        invalidate( i+1);
       }
-      invalidate( i + 1 );
+    
     }
 
     invalidate( end + 1 );
