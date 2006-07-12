@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/07/12 03:29:55  rmikk
+ * Included searching the gov.anl.ipns.Parameters directory for PG's
+ * Caught and IllegalArgumentExdeption for RealArray
+ *
  * Revision 1.12  2006/07/10 16:25:50  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -107,6 +111,8 @@ public class ParameterClassList{
   static       boolean   initialized = false;
   static final String    matchname   =
                        FilenameUtil.setForwardSlash("DataSetTools/parameter/");
+  static final String    matchname1   =
+     FilenameUtil.setForwardSlash("gov/anl/ipns/Parameters/");
 
 
   /**
@@ -267,6 +273,26 @@ public class ParameterClassList{
       filename=checkName(files[i].toString(),isaw_home.length());
       if(filename!=null) addParameter(filename);
     }
+    
+    
+
+    dir=FilenameUtil.setForwardSlash(isaw_home
+                                            +"gov/anl/ipns/Parameters/");
+
+    // check that the directory is okay to work with
+    if(DEBUG) System.out.println("Looking in "+dir);
+    paramDir=new File(dir);
+    if( !(paramDir.exists()) || !(paramDir.isDirectory()) )
+      throw new InstantiationError("Could not find directory " + dir);
+
+    // get the list of all possible classes
+    files=paramDir.listFiles();
+    filename=null;
+    for( int i=0 ; i<files.length ; i++ ){
+      filename=checkName(files[i].toString(),isaw_home.length());
+      if(filename!=null) addParameter(filename);
+    }
+
   }
 
   /**
@@ -279,7 +305,8 @@ public class ParameterClassList{
 
     // check that it is a possibility
     if(name==null || name.length()<=0) return null;
-    if(name.indexOf(matchname)<0) return null;
+    if(name.indexOf(matchname)<0) 
+       if( name.indexOf( matchname1) < 0) return null;
     if(! name.endsWith(".class") ) return null;
     if(name.indexOf("$")>name.lastIndexOf("/")) return null;
     
@@ -336,7 +363,12 @@ public class ParameterClassList{
     }
 
     // get the instance
-    IParameter param=getInstance(klass,DEBUG);
+    IParameter param= null;
+    try{
+        param = getInstance(klass,DEBUG);
+    }catch( Exception ss){
+       
+    }
 
     if( param == null ){
       return;
