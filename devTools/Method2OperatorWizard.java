@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2006/07/12 03:56:25  rmikk
+ * Fixed imports to include the new ParameterGUI directory in the new
+ * operator
+ *
  * Revision 1.13  2006/05/30 19:28:21  rmikk
  * Adds the help menu option for this program
  *
@@ -1570,6 +1574,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				fout.write(("package " + packge + ";\r\n").getBytes());
 				fout.write("import DataSetTools.operator.*;\r\n".getBytes());
 				fout.write("import DataSetTools.operator.Generic.*;\r\n".getBytes());
+            fout.write("import gov.anl.ipns.Parameters.*;\r\n".getBytes());
 				fout.write("import DataSetTools.parameter.*;\r\n\r\n".getBytes());
 				fout.write(
 					"import gov.anl.ipns.Util.SpecialStrings.*;\r\n\r\n".getBytes());
