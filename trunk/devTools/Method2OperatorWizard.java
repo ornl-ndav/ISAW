@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2006/07/13 22:12:38  rmikk
+ * Added a semicolon on the same line as the method call
+ *
  * Revision 1.15  2006/07/13 00:57:16  rmikk
  * Added a debug flag to print out stack traces for all exceptions
  * Added code to give better error messages when an exception occurs
@@ -1627,7 +1630,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				fout.write("   /**\r\n".getBytes());
 				fout.write("    * Gives the user the command for the operator.\r\n".getBytes());
 				fout.write("    *\r\n".getBytes());
-				fout.write("	* @return  The command for the operator, a String.\r\n".getBytes());
+				fout.write("	 * @return  The command for the operator, a String.\r\n".getBytes());
 				fout.write("    */\r\n".getBytes());
 				
 				//Write out the getCommand     
@@ -1667,7 +1670,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				fout.write("    * Writes a string for the documentation of the operator provided by\r\n".getBytes());
 				fout.write("    * the user.\r\n".getBytes());
 				fout.write("    *\r\n".getBytes());
-				fout.write("	* @return  The documentation for the operator.\r\n".getBytes());
+				fout.write("	 * @return  The documentation for the operator.\r\n".getBytes());
 				fout.write("    */\r\n".getBytes());
 				
 				// Write out the documentation
@@ -1787,10 +1790,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				for (int i = 0; i < CCS.length; i++)
 					fout.write(
 						(W.methData.get(i).varName + sepChar(i, CCS.length)).getBytes());
-                fout.write(")\r\n".getBytes());
+            fout.write(");\r\n".getBytes());
 				if (!MethReturnsVoid)
 					fout.write(
-						(";\r\n         return "
+						("\r\n         return "
 							+ MakeObj(FixUpClassName(W.methPanel.ResInf.getText().trim()))
 							+ ";\r\n       }catch(")
 							.getBytes());
