@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.69  2006/07/13 21:51:48  dennis
+ *  Removed old code referring to "tagging" subclasses for
+ *  Sample and Monitor data sets.
+ *
  *  Revision 1.68  2006/07/13 20:35:06  rmikk
  *  Added a destroyGUI method for all parameters
  *  Added a window listener to destroyGUI's when the window is closed without
@@ -449,68 +453,11 @@ public class JParametersDialog implements Serializable,
                  paramGUI = new JAttributeNameParameterGUI(param, attr_list);
                 }
 
-
-                //TODO: fix this so ds_src.getDataSets() is called every time
-                //      an operation is done (e.g. the 'Apply' button is pressed)
-
-              else if((param.getValue() instanceof SampleDataSet)  ){
-                 DataSet ds[]=ds_src.getDataSets();
-                 int num_sample=0;
-                 int num_ds=Array.getLength(ds);
-
-                 for( int count=num_ds-1 ; count>=0 ; count-- ){
-                    String type = (String)
-                       ds[count].getAttributeValue(Attribute.DS_TYPE);
-                   /* System.out.println("DataSet: "+ds[count].toString()
-                      +" "+type); */
-                    if(type.equals(Attribute.SAMPLE_DATA)){
-                       num_sample++;
-                       }
-                   }
-
-                 DataSet just_sample[]=new DataSet[num_sample];
-                 int countt=0;
-                 for( int count=num_ds-1 ; count>=0 ; count-- ){
-                    String type = (String)
-                       ds[count].getAttributeValue(Attribute.DS_TYPE);
-                    if(type.equals(Attribute.SAMPLE_DATA)){
-                       just_sample[countt]=ds[count];
-                       countt++;
-                       }
-                   }
-
-                 paramGUI = new JDataSetParameterGUI(  param,  just_sample );
-                }
-              else if((param.getValue() instanceof MonitorDataSet)  ){
-                 DataSet ds[]=ds_src.getDataSets();
-                 int num_mon=0;
-                 int num_ds=Array.getLength(ds);
-
-                 for( int count=num_ds-1 ; count>=0 ; count-- ){
-                   String type = (String)
-                       ds[count].getAttributeValue(Attribute.DS_TYPE);
-                   if(type.equals(Attribute.MONITOR_DATA)){
-                       num_mon++;
-                      }
-                   }
-
-                 DataSet just_mon[]=new DataSet[num_mon];
-                 int countt=0;
-                 for( int count=num_ds-1 ; count>=0 ; count-- ){
-                   String type = (String)
-                       ds[count].getAttributeValue(Attribute.DS_TYPE);
-                   if(type.equals(Attribute.MONITOR_DATA)){
-                       just_mon[countt]=ds[count];
-                       countt++;
-                      }
-                   }
-
-                 paramGUI = new JDataSetParameterGUI(  param,  just_mon );
-                }
               else if((param.getValue() instanceof DataSet)  ){
                  paramGUI = new JDataSetParameterGUI(  param, 
                                                      ds_src.getDataSets()  );
                  }
+              
               else if( param.getValue() instanceof DataDirectoryString )
                 { 
                   String DirPath=param.getValue().toString();
