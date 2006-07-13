@@ -32,6 +32,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.68  2006/07/13 20:35:06  rmikk
+ *  Added a destroyGUI method for all parameters
+ *  Added a window listener to destroyGUI's when the window is closed without
+ *    the exit button
+ *
  *  Revision 1.67  2006/07/10 21:48:01  dennis
  *  Removed unused imports after refactoring to use New Parameter
  *  GUIs in gov.anl.ipns.Parameters
@@ -345,7 +350,7 @@ public class JParametersDialog implements Serializable,
         int x = screenSize.width - size.width;
         //opDialog.setSize(570,450);
         opDialog.setLocation(x, y);
-        
+        opDialog.addWindowListener( new ExitButtonHandler());
 
         int num_param = op.getNum_parameters();
        
@@ -712,9 +717,28 @@ public class JParametersDialog implements Serializable,
     {
       return modal;
     }
-  public void addWindowListener(WindowListener l) 
-   { opDialog.addWindowListener( l );
-   }
+    
+
+    public void destroyGUIs() 
+    {
+       if( opDialog != null )
+           opDialog.dispose();
+       opDialog = null;
+      
+      for( int i=0; i< op.getNum_parameters(); i++){
+        IParameter iparam = op.getParameter(i);
+       if( iparam instanceof IParameterGUI)
+          ((IParameterGUI)iparam).destroyGUIPanel();    
+
+      }
+     
+       
+    }
+    
+
+    public void addWindowListener(WindowListener l) 
+     { opDialog.addWindowListener( l );
+     }
 /*        
   public class MyComponentListener extends ComponentAdapter
   {
@@ -757,6 +781,7 @@ public class JParametersDialog implements Serializable,
       OL.deleteIObservers();
     }
 
+    
     public void actionPerformed(ActionEvent ev) 
     {
              //  optionPane.setValue(btnString1);
@@ -960,24 +985,56 @@ public class JParametersDialog implements Serializable,
    }
   } 
     
-  public class ExitButtonHandler implements ActionListener
+  public class ExitButtonHandler implements ActionListener,
+                                            WindowListener
   {
     public void actionPerformed(ActionEvent ev) 
-    {
-      //Remove All DataSets from DataSetPG's
-      for( int i=0; i< op.getNum_parameters(); i++){
-        IParameter iparam = op.getParameter(i);
-        if( (iparam instanceof DataSetPG) && (DSSS != null))
-             ((DataSetPG)iparam).clear();
-           //for( int j = 0; j < DSSS.length; j++)
-              //((DataSetPG)iparam).removeItem( DSSS[j]);
+    {  
+       if( opDialog != null)
+          destroyGUIs();
+     }
+    public void windowOpened(WindowEvent e){
+      
+    }
+    
+    
+    public void windowClosing(WindowEvent e){
+       if( opDialog != null)
+          destroyGUIs();
        
+    }
+    
+    
+    public void windowClosed(WindowEvent e){
 
-      }
+       if( opDialog != null)
+          destroyGUIs();
+    }
+    
+    
+    public void windowIconified(WindowEvent e){
+       
+    }
+    
+    
+    public void windowDeiconified(WindowEvent e){
+       
+    }
+    
+    
+    public void windowActivated(WindowEvent e){
      
-      opDialog.dispose();     
-    } 
+       
+    }
+    
+    
+    public void windowDeactivated(WindowEvent e){
+       
+       
+    }
   }
+  
+  
   public void dispose(){
 
      opDialog.dispose();
@@ -1032,6 +1089,7 @@ public class JParametersDialog implements Serializable,
     }
     
     public void finish(){
+     
       try{
          this.finalize();
      }catch( Throwable ss){
