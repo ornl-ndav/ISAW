@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.34  2006/07/13 14:19:00  rmikk
+ * Fixed deleteNode() method to properly notify observers when experiments
+ * and full DataSets are deleted
+ *
  * Revision 1.33  2005/08/24 16:25:59  dennis
  * Minor format and documenation changes.
  *
@@ -587,22 +591,20 @@ public class JDataTree
     if( node instanceof Experiment )
     {
       Experiment exp = (Experiment)node;
-      if(  exp.toString().equals( MODIFIED_NODE_TITLE )  )
-        return null;
-      else
-      {
-        if(notify){ // notify DataSet IObservers that they are going away
-          Enumeration kids=exp.children();
-          while(kids.hasMoreElements()){
-            ds=((DataSetMutableTreeNode)kids.nextElement()).getUserObject();
-            ds.deleteIObserver(this);
-            ds.notifyIObservers(IObserver.DESTROY);
-//          ds.addIObserver(this);
-          }
+      if( ! exp.toString().equals( MODIFIED_NODE_TITLE )  )       
+      {                                  //Don't delete modified node
+        Enumeration kids=exp.children();
+        while(kids.hasMoreElements())
+        {
+          ds=((DataSetMutableTreeNode)kids.nextElement()).getUserObject();
+          ds.deleteIObserver(this);
+          ds.notifyIObservers(IObserver.DESTROY);
         }
+       
         getMyModel().removeNodeFromParent( node );
-        getMyModel().extinguishNode( node );
+        getMyModel().extinguishNode( node );       
       }
+      return null;
     }
 
     /* for DataSet objects, care must be taken that the object
@@ -618,14 +620,10 @@ public class JDataTree
     else if( node instanceof DataSetMutableTreeNode )
     {
      // System.out.println( "destroyed a DataSet object" );
-
-      if( notify )
-      {
-        ds = ( (DataSetMutableTreeNode)node ).getUserObject();
-        ds.deleteIObserver( this );
-        ds.notifyIObservers( IObserver.DESTROY );
-      }
-
+      ds = ( (DataSetMutableTreeNode)node ).getUserObject();           
+      ds.deleteIObserver( this );
+      ds.notifyIObservers( IObserver.DESTROY );
+      
       getMyModel().removeNodeFromParent( node );
       getMyModel().extinguishNode( node );
 
@@ -662,7 +660,10 @@ public class JDataTree
                  //we might have to notify it's 
                  //IObservers...
       if( notify )
+      {
         ds.notifyIObservers( IObserver.DATA_DELETED );
+        return null;
+      }
 
       return ds;
     }
