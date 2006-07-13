@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2006/07/13 00:57:16  rmikk
+ * Added a debug flag to print out stack traces for all exceptions
+ * Added code to give better error messages when an exception occurs
+ * Restore now initializes the initiaal values, varname, etc. of the first parameter
+ * The FileChooser for loading the cls file is now set
+ *
  * Revision 1.14  2006/07/12 03:56:25  rmikk
  * Fixed imports to include the new ParameterGUI directory in the new
  * operator
@@ -132,9 +138,9 @@ import javax.swing.border.*;
 import java.lang.reflect.*;
 import javax.swing.event.*;
 
-import DataSetTools.util.FilenameUtil;
+//import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.SysUtil;
+//import DataSetTools.util.SysUtil;
 
 import java.util.*;
 import DataSetTools.parameter.*;
@@ -163,7 +169,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 	FilePanel filePanel;
 	DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
 	MethInfData methData;
-  
+   public static boolean debug = false;
 	/**
 	 *  Constructor that initializes the Wizard elements 
 	 * @throws java.awt.HeadlessException
@@ -1310,6 +1316,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
               try{
                  W.finalize();
               }catch( Throwable s){
+                 if( debug)
+                    s.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Could not finish closing the window:"+s.toString());
               }
               
@@ -1388,6 +1396,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
            
            
           }catch(Exception s){
+            if( debug)
+               s.printStackTrace();
             JOptionPane.showMessageDialog(null, "Could not read file:"+s.toString());
           }
         
@@ -1406,6 +1416,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
            
                DocBuilder = DFact.newDocumentBuilder();
            }catch( Exception ss){
+
+              if( debug)
+                 ss.printStackTrace();
              JOptionPane.showMessageDialog(null, "Cannot Save Contact Info:"+ss.toString());
              return;
            }
@@ -1430,6 +1443,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
            D.setAttribute("Acknowl",Acknowl);
          
            }catch(Exception s3){
+
+              if( debug)
+                 s3.printStackTrace();
              JOptionPane.showMessageDialog( null,"Cannot Save:"+s3.toString());
              return;
            }
@@ -1443,6 +1459,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
             Trans.transform(DSource, output);
             JOptionPane.showMessageDialog (null, "Saved Contact Info to "+ F.getAbsolutePath());
           }catch(Exception s2){
+
+             if( debug)
+                s2.printStackTrace();
             JOptionPane.showMessageDialog(null, "Cannot Save ContactInfo :"+s2.toString());
             return;
           }
@@ -1788,17 +1807,21 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 							.getBytes());
 				}
 				fout.write(
-					" Throwable XXX){\r\n         return new ErrorString( XXX.toString()+\":\"\r\n             +ScriptUtil"
-						.getBytes());
-				fout.write(
-					".GetExceptionStackInfo(XXX,true,1)[0]);\r\n      }\r\n   }\r\n\r\n"
-						.getBytes());
-
-				fout.write("}\r\n\r\n\r\n".getBytes());
+					" Throwable XXX){\r\n".getBytes());
+            fout.write("        String[]Except = ScriptUtil.\r\n".getBytes());
+            fout.write("            GetExceptionStackInfo(XXX,true,1);\r\n".getBytes());
+            fout.write("        String mess=\"\";\r\n".getBytes());
+            fout.write("        if(Except == null) Except = new String[0];\r\n".getBytes());
+            fout.write("        for( int i =0; i< Except.length; i++)\r\n".getBytes());
+            fout.write("           mess += Except[i]+\"\\r\\n            \"; \r\n".getBytes());
+            fout.write("        return new ErrorString( XXX.toString()+\":\"\r\n             +mess);\r\n".getBytes());
+				fout.write("                }\r\n   }\r\n}\r\n\r\n\r\n\r\n".getBytes());
 
 				fout.close();
                 JOptionPane.showMessageDialog(null, "Saved Operator to"+W.opPanel.fileName.getText());
 			} catch (Exception s) {
+            if( debug)
+               s.printStackTrace();
 
 				JOptionPane.showMessageDialog(null, "Cannot Save file " + s.toString());
 			}
@@ -1829,6 +1852,9 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 							"\r\n                     };\r\n   }\r\n\r\n\r\n".getBytes());
 				}
 			} catch (Exception s) {
+
+            if( debug)
+               s.printStackTrace();
 				return;
 			}
 		}
@@ -1953,8 +1979,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 				}
 				Oout.writeObject(W.opPanel.CategoryList.getText().trim());
-                JOptionPane.showMessageDialog(null,"Saved Session to "+fileName);
+            JOptionPane.showMessageDialog(null,"Saved Session to "+fileName);
 			} catch (Exception s) {
+            if( debug)
+               s.printStackTrace();
 
 				JOptionPane.showMessageDialog(null, "Could not Save:" + s.toString());
 			}
@@ -1970,7 +1998,11 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		public void RestoreState(Method2OperatorWizard W) {
 
 			JFileChooser jf = new JFileChooser(System.getProperty("ISAW_HOME", ""));
-
+         gov.anl.ipns.Util.File.RobustFileFilter fil = new gov.anl.ipns.Util.File.RobustFileFilter();
+         Vector V = new Vector();
+         V.addElement( "cls");
+         fil.setExtensionList( V );
+         jf.setFileFilter( fil);
 			if (jf.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
 				return;
 			String fileName = jf.getSelectedFile().getAbsolutePath();
@@ -2051,6 +2083,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				W.methData = null;
                 W.docPanel.Params= new JTextArea[C];
                 W.methPanel.lastSelection = -1;
+
+            if( C > 0){
+               W.methPanel.Arguments.setSelectedIndex( 0 );
+            }
 				for (int i = 0; i < C; i++) {
           
 					m = new MethInfData(i);
@@ -2064,6 +2100,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					W.docPanel.Params[i].setText( (String) Oout.readObject());
 					if (mlast == null) {
 						W.methData = m;
+                  W.methPanel.VarName.setText( m.varName);
+                  W.methPanel.Prompt.setText( m.Prompt );
+                  W.methPanel.InitValue.setText( m.InitValue);
+                  W.methPanel.ParamGUI.setSelectedItem( m.GUIParm);
 					} else
 						mlast.Next = m;
 					mlast = m;
@@ -2071,6 +2111,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 				W.opPanel.CategoryList.setText((String) Oout.readObject());
 			} catch (Exception s) {
+            if( debug)
+               s.printStackTrace();
 
 				JOptionPane.showMessageDialog(null, "Could not Load:" + s.toString());
 			}
