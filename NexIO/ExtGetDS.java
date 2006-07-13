@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2006/07/13 20:05:26  dennis
+ * Replaced code using old style tagging subclasses SampleDataSet
+ * and MonitorDataSet.
+ *
  * Revision 1.28  2006/01/18 21:50:50  rmikk
  * Did not add the "dirrectory" / if there was no directory
  *
@@ -267,7 +271,7 @@ public class ExtGetDS{
      
        
    }else{
-      DS = new MonitorDataSet();
+      DS = new DataSet();
       DS.setAttributeList( AL ) ;
       DataSetFactory.addMonitorOperators( DS, instrType);
       DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType)); 

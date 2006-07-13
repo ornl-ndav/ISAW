@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2006/07/13 20:05:26  dennis
+ * Replaced code using old style tagging subclasses SampleDataSet
+ * and MonitorDataSet.
+ *
  * Revision 1.17  2004/03/15 03:28:39  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -96,7 +100,7 @@ import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
-import gov.anl.ipns.Util.SpecialStrings.SaveFileString;
+import gov.anl.ipns.Parameters.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -106,12 +110,11 @@ import java.util.Vector;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Operator;
-import DataSetTools.operator.Parameter;
 import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
 import DataSetTools.retriever.RunfileRetriever;
-import DataSetTools.util.MonitorDataSet;
-import DataSetTools.util.SampleDataSet;
+import DataSetTools.parameter.MonitorDataSetPG;
+import DataSetTools.parameter.SampleDataSetPG;
 import DataSetTools.util.SharedData;
 
 /** 
@@ -209,11 +212,11 @@ public class WriteExp extends GenericTOF_SCD{
    */
   public void setDefaultParameters(){
     parameters = new Vector();
-    addParameter( new Parameter("Data Set", new SampleDataSet() ) );
-    addParameter( new Parameter("Monitor", new MonitorDataSet() ) );
-    addParameter( new Parameter("Filename", new SaveFileString("")));
-    addParameter( new Parameter("Upstream Monitor ID", new Integer(1 )) );
-    addParameter( new Parameter("Append",   Boolean.FALSE));
+    addParameter( new SampleDataSetPG("Data Set", new DataSet() ) );
+    addParameter( new MonitorDataSetPG("Monitor", new DataSet() ) );
+    addParameter( new SaveFilePG("Filename", ""));
+    addParameter( new IntegerPG("Upstream Monitor ID", new Integer(1)) );
+    addParameter( new BooleanPG("Append",   Boolean.FALSE));
   }
   
   /* ----------------------------- getResult ------------------------------ */ 
