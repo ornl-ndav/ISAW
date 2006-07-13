@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2006/07/13 14:23:28  rmikk
+ * Removed commented out code
+ *
  * Revision 1.11  2006/07/10 21:48:02  dennis
  * Removed unused imports after refactoring to use New Parameter
  * GUIs in gov.anl.ipns.Parameters
@@ -120,9 +123,6 @@ public class InitialPeaksWizard_new extends Wizard {
      
      addForm( new ScriptForm(path+"Blind.iss",new ArrayPG("Orientation Matrix", null),
                        new int[]{0,6})); 
-    // addForm( new OperatorForm( new IndexJ_base(),
-   //              new StringPG("Log info", ""),
-  //               new int[]{0,1}));
      
      addForm( new ScriptForm(path+"JIndex_Init1.iss", new StringPG("Result",""),
     		 new int[]{0,1,6,7} ));
@@ -134,15 +134,14 @@ public class InitialPeaksWizard_new extends Wizard {
                  new int[]{0,5,10}));
      addForm( new ScriptForm(path+"JIndxSave.iss",
                     new StringPG("Result", ""),new int[]{0,1,6,7}));
-    /* addForm( new OperatorForm( new IndexJ_base(),
-                 new StringPG("Log info", "JIndxS"),
-                 new int[]{0,1}));
-     */            
+     
+     
+     
       int[][] Xlate= { {13, 0, 0,-1, 0, 0}, //peaks vector
                        {-1, 7, 1, 0,-1,-1}, //init UB matrix
                        {-1,-1,-1, 6, 5,-1}, //Transformation
                        {-1,-1,-1,-1,11, 1},  //lsqrs UB matrix
-                       {1 , 6 , 6, 3,10, 6},//path
+                       {1 , 6 ,6, 3,10, 6},//path
                        {3 ,-1 ,7,-1, -1,7}//expname
                      
                      };
