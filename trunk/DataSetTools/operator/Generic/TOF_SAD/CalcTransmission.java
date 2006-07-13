@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2006/07/13 20:05:26  dennis
+ * Replaced code using old style tagging subclasses SampleDataSet
+ * and MonitorDataSet.
+ *
  * Revision 1.17  2006/07/10 16:25:59  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -107,7 +111,6 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 import java.util.*;
 import DataSetTools.math.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
-import DataSetTools.util.*;
 import DataSetTools.parameter.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.EditList.*;
@@ -146,8 +149,7 @@ public class CalcTransmission extends GenericTOF_SAD {
   *    @param  downStreamID  The downstream monitor ID
   */
 
-  public CalcTransmission( MonitorDataSet Sample, MonitorDataSet Empty, MonitorDataSet Cadmium,
-                SampleDataSet SampleDS,
+  public CalcTransmission( DataSet Sample, DataSet Empty, DataSet Cadmium, DataSet SampleDS,
                 boolean useCadmium,float Neutron_Delay, int polyfitIndx1, int polyfitIndx2,
                 int degree, boolean weight, int upStreamID, int downStreamID){
      this();
