@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2006/07/13 21:10:02  dennis
+ * Now adds empty data set to list to guarantee that the
+ * list of choices in never empty.
+ *
  * Revision 1.23  2006/07/10 21:48:01  dennis
  * Removed unused imports after refactoring to use New Parameter
  * GUIs in gov.anl.ipns.Parameters
@@ -70,7 +74,7 @@ public class DataSetPG extends DataSetPG_base {
 
    protected Vector<DataSet> ds_list     = new Vector<DataSet>();
    private   JPanel          entryWidget = null;
-   private   JComboBox       choices     = null;
+   private   JComboBox       combobox    = null;
    private   String          my_type     = null;
 
 
@@ -107,6 +111,8 @@ public class DataSetPG extends DataSetPG_base {
 
       ds_value = ToDataSet(val);   // this will throw an exception if
                                    // the type of the DataSet is wrong
+                                   // or return the empty data set if 
+                                   // val is null.
       ds_list.addElement( ds_value );
    }
 
@@ -138,11 +144,11 @@ public class DataSetPG extends DataSetPG_base {
     */
    public DataSet getWidgetValue() throws IllegalArgumentException {
 
-     if( entryWidget == null) throw
+     if( entryWidget == null ) throw
        new IllegalArgumentException("GUI is not available in " +
                                      this.getClass() + ".getWidgetValue()" );
      
-     return (DataSet)choices.getSelectedItem();
+     return (DataSet)combobox.getSelectedItem();
    }
 
 
@@ -151,7 +157,7 @@ public class DataSetPG extends DataSetPG_base {
     */
   public void setWidgetValue( DataSet value ) throws IllegalArgumentException {
      
-      if( (entryWidget == null) || (choices == null) ) throw
+      if( entryWidget == null ) throw
         new IllegalArgumentException("GUI is not available in " +
                                        this.getClass() + ".setWidgetValue()" );
       
@@ -159,7 +165,7 @@ public class DataSetPG extends DataSetPG_base {
         new IllegalArgumentException("DataSet not one of the choices in " + 
                                        this.getClass() + ".setWidgetValue()" );
       
-      choices.setSelectedItem( value );
+      combobox.setSelectedItem( value );
    }
 
 
@@ -172,14 +178,14 @@ public class DataSetPG extends DataSetPG_base {
          return entryWidget;
       
       entryWidget = new JPanel( new GridLayout( 1, 2 ) );
+      combobox    = new JComboBox( ds_list );
       
       entryWidget.add( new JLabel( getName() ) );
-      
-      choices = new JComboBox( ds_list );
-      entryWidget.add( choices );
-      choices.setEditable( false );
-      choices.addActionListener( new PG_ActionListener( this ));
-      choices.setSelectedIndex( 0 );
+      entryWidget.add( combobox );
+
+      combobox.setEditable( false );
+      combobox.addActionListener( new PG_ActionListener( this ));
+      combobox.setSelectedIndex( 0 );
       
       return entryWidget;
    }
@@ -191,8 +197,9 @@ public class DataSetPG extends DataSetPG_base {
    public void destroyWidget() {
       
      entryWidget = null;
-     choices = null;
+     combobox    = null;
      ds_list.clear();
+     ds_list.add( DataSet.EMPTY_DATA_SET );
     
      ds_value = DataSet.EMPTY_DATA_SET;
    }
@@ -208,7 +215,7 @@ public class DataSetPG extends DataSetPG_base {
 
      entryWidget.setEnabled( on_off );
      entryWidget.getComponent( 0 ).setEnabled( on_off );
-     choices.setEnabled( on_off );
+     combobox.setEnabled( on_off );
    }
 
 
