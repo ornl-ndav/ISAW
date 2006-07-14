@@ -1,5 +1,5 @@
 #     Blind shell around JBlind_Base
-
+#
 #  File: Wizard/TOF_SCD/Scripts_new/Blind.iss
 #
 #  @overview  This determines the orientation matrix from the Blind program 
@@ -28,7 +28,7 @@
 $Title= Blind ( Get Initial Orientation Matrix ) 
 
 # ------Parameters ---------------------
-$Peaks   PlaceHolder   Enter peaks
+$Peaks   PlaceHolder                  Enter peaks
 
 $useFile  BooleanEnable([False,1,3])  Use Matrix From File
 $file1    LoadFile               Input Orientation Matrix File ( .mat )    
