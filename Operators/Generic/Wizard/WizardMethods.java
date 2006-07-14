@@ -41,13 +41,17 @@ public class WizardMethods {
 			InvocationTargetException{
 		Class c;
 		try {
-			c = Class.forName("DataSetTools.parameter."+retType + "PG");
+			c = Class.forName("gov.anl.ipns.Parameters."+retType + "PG");
 		
 		}
 		catch (ClassNotFoundException CNFEx){
-			System.out.println("Exception in addScriptForm");
-			CNFEx.printStackTrace();
-			throw new ClassNotFoundException("Trouble creating "+retType+"PG",CNFEx);
+         try{
+            c = Class.forName("DataSetTools.parameter."+retType + "PG");
+         }catch( ClassNotFoundException aaa){
+			   System.out.println("Exception in addScriptForm");
+			   CNFEx.printStackTrace();
+			   throw new ClassNotFoundException("Trouble creating "+retType+"PG",CNFEx);
+         }
 		}
 		
 		Class[] params = {(new String()).getClass(), (new Object()).getClass()};
