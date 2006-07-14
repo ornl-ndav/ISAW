@@ -30,11 +30,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/14 13:56:06  dennis
+ * Changed scale factor for normalization by solid angle, to 0.001f,
+ * in basic test code.
+ *
  * Revision 1.1  2006/07/12 14:33:17  dennis
  * Initial checkin of class with several examples of static methods
  * that can be used to generate an ISAW Operator.
- *
- *
  */
 package Operators.Example;
 
@@ -362,7 +364,8 @@ public class ExampleOperatorMethods
      DataSet hrcs_ds = rr.getDataSet(1);
      new ViewManager( hrcs_ds, IViewManager.IMAGE );
 
-     DataSet norm_ds = NormalizeBySolidAngle( hrcs_ds, 1000 );
+     float scale_factor = 0.001f;
+     DataSet norm_ds = NormalizeBySolidAngle( hrcs_ds, scale_factor );
      new ViewManager( norm_ds, IViewManager.IMAGE );
   }
 
