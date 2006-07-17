@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/17 02:22:06  dennis
+ * Converted from dos to unix text format.
+ *
  * Revision 1.1  2006/07/17 02:14:50  dennis
  * Operator to get a sequence of X, Y or Error values from
  * a Data block and return them in a Vector.  NOTE: This
@@ -38,7 +41,6 @@
  * individual values in the Data block.  If many values
  * in many Data blocks are needed, the operation should
  * be done in Java, not in a script.
- *
  *
  */
 
@@ -62,7 +64,7 @@ public class getValues extends GenericOperator{
 
 
    /**
-	* Constructor for the operator.  Calls the super class constructor.
+    * Constructor for the operator.  Calls the super class constructor.
     */
    public getValues(){
      super("getValues");
@@ -72,7 +74,7 @@ public class getValues extends GenericOperator{
    /**
     * Gives the user the command for the operator.
     *
-	 * @return  The command for the operator, a String.
+    * @return  The command for the operator, a String.
     */
    public String getCommand(){
       return "getValues";
@@ -101,7 +103,7 @@ public class getValues extends GenericOperator{
     * Writes a string for the documentation of the operator provided by
     * the user.
     *
-	 * @return  The documentation for the operator.
+    * @return  The documentation for the operator.
     */
    public String getDocumentation(){
       StringBuffer S = new StringBuffer();
@@ -186,6 +188,3 @@ public class getValues extends GenericOperator{
                 }
    }
 }
-
-
-
