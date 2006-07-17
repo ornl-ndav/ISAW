@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.12  2006/07/17 02:22:06  dennis
+ * Converted from dos to unix text format.
+ *
  * Revision 1.11  2005/06/17 13:12:07  rmikk
  * The calculate with arguments is now fully supported
  * If the time axis values are decreasing, they are reversed along with 
