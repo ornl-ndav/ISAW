@@ -30,6 +30,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/17 03:19:41  dennis
+ * Now adds message to the Operations log if the values are set.
+ * Cast vector entries to Number, rather than Float, so
+ * setValue() will work with arbitrary Vectors of numbers,
+ * not just Floats.
+ * Fixed javadoc on setValue() method.
+ *
  * Revision 1.1  2006/07/14 22:19:58  dennis
  * Class with utility methods for getting X, Y and Error
  * values from a Data block, and for setting the Y and Error
@@ -160,15 +167,15 @@ public class DataValueAccessMethods
    *  a contiguous block of values will be assigned, starting with the value
    *  corresponding to the specified X-value.
    *
-   *  @param  ds          The DataSet from which the values will be obtained.
-   *  @param  index       The index of the Data block from which the values
-   *                      will be obtained.
+   *  @param  ds          The DataSet into which the values will be set.
+   *  @param  index       The index of the Data block into which the values
+   *                      will be set.
    *  @param  min_x       The requested minimum X value. 
    *  @param  vals        Vector of float specifying a Contiguous list of 
    *                      values to be assigned to this Data block, starting
    *                      with the value corresponding to the specified min_x. 
    *  @param  which_vals  String "Y" or "Error" specifying which values
-   *                      are to be obtained.
+   *                      are to be set.
    *
    */
   public static String setValues( DataSet ds,
@@ -205,16 +212,24 @@ public class DataValueAccessMethods
                           "Must specify 'Y' or 'Error' in setValues()");
 
     for ( int i = 0; i < new_vals.size(); i++ )
-      vals[ min_index + i ] = ((Float)(new_vals.elementAt(i))).floatValue(); 
+      vals[ min_index + i ] = ((Number)(new_vals.elementAt(i))).floatValue(); 
 
+    int n_set = new_vals.size();
     if ( which_vals.equalsIgnoreCase("Error") )
     {
       data_block.setErrors( vals );
+      ds.addLog_entry("" + n_set +
+                       " errors set in Data block " + index +
+                       " starting at X = " + min_x ); 
       return "Error estimates set";
     }
     else
+    {
+      ds.addLog_entry("" + n_set +
+                       " Y-values set in Data block " + index +
+                       " starting at X = " + min_x ); 
       return "Y-Values set";                     // no need to set Y-values,
-                                                 // since we got a reference
+    }                                            // since we got a reference
   }
 
 
