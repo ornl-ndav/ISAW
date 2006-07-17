@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/07/17 03:20:07  dennis
+ * Clarified prompt string.
+ *
  * Revision 1.2  2006/07/17 02:22:06  dennis
  * Converted from dos to unix text format.
  *
@@ -86,7 +89,7 @@ public class getValues extends GenericOperator{
     */
    public void setDefaultParameters(){
       clearParametersVector();
-      addParameter( new DataSetPG("DataSet to change",null));
+      addParameter( new DataSetPG("DataSet to get values from",null));
       addParameter( new IntegerPG("Data block index",0));
       addParameter( new FloatPG("min X value",0));
       addParameter( new FloatPG("max X value",10000));
