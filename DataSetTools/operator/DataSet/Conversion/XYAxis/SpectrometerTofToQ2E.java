@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/18 01:11:12  dennis
+ * Finished revising documentation to indicate that this operator
+ * maps to S(Q^2,E), rather than to S(Q,E).
+ *
  * Revision 1.1  2006/07/11 16:57:58  dennis
  * First cut at mapping to S(Q^2,E), adapted from ToQE operator.
  * Documentation still needs to be revised, and operator needs to
@@ -62,26 +66,25 @@ import  DataSetTools.util.*;
   *  into a DataSet containing the rows of an S(Qsquared,E) image.  Each row 
   *  of the resulting image gives the scattering intensity at various 
   *  "Q-squared" values for a fixed energy loss.  That is, the Kth row 
-  *  contains S(Q-squared,Ek) and the
-  *  jth column contains S(Q-squaredj,E).  
+  *  contains S(Q-squared,Ek) and the jth column contains S(Q-squaredj,E).  
   *
-  *  The Q and E values corresponding to each bin center are calculated.
-  *  The counts from each bin are divided by the range of Q values covered
-  *  by the bin (delta_Q).  The counts are NOT divided by the range of E
+  *  The Q^2 and E values corresponding to each bin center are calculated.
+  *  The counts from each bin are divided by the range of Q^2 values covered
+  *  by the bin (delta_Q^2).  The counts are NOT divided by the range of E
   *  values covered by the bin (delta_E).  Division by delta_E is already
   *  done in the DSODE operator, so it is not needed when this is applied 
   *  to the result of the DSODE operator, or to the result of the Scattering
   *  Function operator.  (If this operator is applied to a time-of-flight
-  *  DataSet, the results will only give a rough idea of S(Q,E), since the
+  *  DataSet, the results will only give a rough idea of S(Q^2,E), since the
   *  corrections applied in the DSODE operator will not have been done.)
-  *  The scaled counts from each bin are then added to the bin in S(Q,E)
-  *  containing the calculated Q and E values.  The accumulated counts in
-  *  a particluar (Q,E) bin are divided by the number of bins that contribute
+  *  The scaled counts from each bin are then added to the bin in S(Q^2,E)
+  *  containing the calculated Q^2 and E values.  The accumulated counts in
+  *  a particluar (Q^2,E) bin are divided by the number of bins that contribute
   *  to it, producing an average intensity at that point in (Q,E) space. 
   *  
-  *  The resulting two dimensional array of averaged S(Q,E) values is 
-  *  then placed into in a DataData set, with the values S(Q,Ek) forming
-  *  the kth Data block in the DataSet.  The S(Q,E) values can also be
+  *  The resulting two dimensional array of averaged S(Q^2,E) values is 
+  *  then placed into in a DataData set, with the values S(Q^2,Ek) forming
+  *  the kth Data block in the DataSet.  The S(Q^2,E) values can also be
   *  written to a file.
   *
   *  NOTE: If the DSODE operator is applied before this ToQ2E operator,
@@ -89,7 +92,7 @@ import  DataSetTools.util.*;
   *  bins.  A large number of bins, eg. 1000-2000, reduces the artifacts
   *  introduced by first mapping the data in a small number of Energy 
   *  bins, and subsequently mapping them in to another small number of
-  *  (Q,E) bins.
+  *  (Q^2,E) bins.
   *
   *  @see XYAxisConversionOp
   */
@@ -120,10 +123,10 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
    *
    *  @param  ds          The time-of-flight or Energy loss DataSet to
    *                      which the operation will be applied
-   *  @param  min_Q2      The minimum Q to include
-   *  @param  max_Q2      The maximum Q to include
-   *  @param  n_Q2_bins   The number of "bins" to be used between min_Q and
-   *                      max_Q.
+   *  @param  min_Q2      The minimum Q^2 to include
+   *  @param  max_Q2      The maximum Q^2 to include
+   *  @param  n_Q2_bins   The number of "bins" to be used between min_Q2 and
+   *                      max_Q2.
    *  @param  min_E       The minimum E to include, in meV.  NOTE: This is the
    *                      actual energy value, not the energy loss value.
    *                      This parameter can be set to 0.
@@ -133,7 +136,7 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
    *                      incident energy.
    *  @param  n_E_bins    The number of "bins" to be used between min_E and
    *                      max_E.
-   *  @param  file_name   The name of the file to which the array of S(Q,E)
+   *  @param  file_name   The name of the file to which the array of S(Q^2,E)
    *                      values are written.  If the named file cannot be
    *                      opened, the file will not be written.  A zero 
    *                      length string, "", can be used to disable writing
@@ -231,11 +234,11 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
     StringBuffer s = new StringBuffer("");
     s.append("@overview This operator converts an energy loss or ");
     s.append("time-of-flight spectrum from a spectrometer, into a ");
-    s.append("DataSet containing the rows of an S(Q,E) image. ");
+    s.append("DataSet containing the rows of an S(Q^2,E) image. ");
     s.append("Each row of the resulting image gives the scattering ");
-    s.append("intensity at various Q values for a fixed energy loss. ");
-    s.append("That is, the kth row contains S(Q,Ek) and the ");
-    s.append("jth column contains S(Qj,E).  ");
+    s.append("intensity at various Q^2 values for a fixed energy loss. ");
+    s.append("That is, the kth row contains S(Q^2,Ek) and the ");
+    s.append("jth column contains S(Q^2j,E).  ");
     s.append("<p> ");
     s.append("NOTE: If the DSODE operator is applied before this ToQ2E ");
     s.append("operator, the DSODE operator should maintain a large number ");
@@ -243,50 +246,50 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
     s.append("reduces the artifacts introduced by first mapping the data ");
     s.append("into a small number of Energy bins using the DSODE operator ");
     s.append("and subsequently mapping ");
-    s.append("them in to another small number of (Q,E) bins.");
+    s.append("them in to another small number of (Q^2,E) bins.");
 
     s.append("@assumptions The DataSet must contain spectra with an ");
     s.append("attribute giving the detector position.  In addition, ");
     s.append("it is assumed that the XScale for the spectra represents ");
     s.append("either the time-of-flight from the sample to the detector ");
     s.append("or the energy loss, E_in - E. ");
-    s.append("Furthermore, a valid range of Q values must be specified, ");
+    s.append("Furthermore, a valid range of Q^2 values must be specified, ");
     s.append("and a valid delta_2theta attribute must be available from ");
     s.append("the DataSet.");
     s.append("<p> ");
 
-    s.append("@algorithm The Q and E values corresponding to each bin ");
+    s.append("@algorithm The Q^2 and E values corresponding to each bin ");
     s.append("center are calculated.  The counts from each bin are divided ");
-    s.append("by the range of Q values covered by the bin (delta_Q). ");
+    s.append("by the range of Q^2 values covered by the bin (delta_Q^2). ");
     s.append("The counts are NOT divided by the range of E values covered ");
     s.append("by the bin (delta_E).  Division by delta_E is already ");
     s.append("done in the DSODE operator, so it is not needed  ");
     s.append("when this is applied to the result of the DSODE operator, ");
     s.append("or to the result of the Scattering Function operator. ");
     s.append("(If this operator is applied to a time-of-flight DataSet, ");
-    s.append("the results will only give a rough idea of S(Q,E), since the ");
+    s.append("the results will only give a rough idea of S(Q^2,E), since the ");
     s.append("corrections applied in the DSODE operator will not have been ");
     s.append("done.) The scaled counts from each bin are then added to ");
-    s.append("the bin in S(Q,E) containing the calculated Q and E values.  ");
-    s.append("The accumulated counts in a particluar (Q,E) bin are divided ");
-    s.append("by the number of bins that contribute to it, producing an ");
-    s.append("average intensity at that point in (Q,E) space. ");
+    s.append("the bin in S(Q^2,E) containing the calculated Q^2 and E values.");
+    s.append(" The accumulated counts in a particluar (Q^2,E) bin are ");
+    s.append("divided by the number of bins that contribute to it, producing ");
+    s.append("an average intensity at that point in (Q^2,E) space. ");
     s.append("<p> ");
-    s.append("The resulting two dimensional array of averaged S(Q,E) values ");
-    s.append("is  then placed into in a DataSet, with the values ");
-    s.append("S(Q,Ek) forming the kth Data block in the DataSet. ");
-    s.append("The S(Q,E) values can also be written to a file. ");
+    s.append("The resulting two dimensional array of averaged S(Q^2,E) ");
+    s.append("values is  then placed into in a DataSet, with the values ");
+    s.append("S(Q^2,Ek) forming the kth Data block in the DataSet. ");
+    s.append("The S(Q^2,E) values can also be written to a file. ");
     s.append(" ");
     s.append(" ");
     s.append("@param ds The time-of-flight or Energy loss DataSet to ");
     s.append("which the operation will be applied. ");
 
-    s.append("@param min_Q The minimum Q value to include.\n");
+    s.append("@param min_Q2 The minimum Q^2 value to include.\n");
 
-    s.append("@param max_Q The maximum Q value to include.\n");
+    s.append("@param max_Q2 The maximum Q^2 value to include.\n");
 
-    s.append("@param n_Q_bins The number of \"bins\" to be used between ");
-    s.append("min_Q and max_Q.\n");
+    s.append("@param n_Q2_bins The number of \"bins\" to be used between ");
+    s.append("min_Q2 and max_Q2.\n");
 
     s.append("@param min_E The minimum energy value to include, in meV.  ");
     s.append("NOTE: This is the actual energy value, not the energy loss ");
@@ -301,14 +304,14 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
     s.append("min_E and max_E.\n");
 
     s.append("@param file_name The name of the file to which the array ");
-    s.append("of S(Q,E) values are written.  If the named file cannot be ");
+    s.append("of S(Q^2,E) values are written.  If the named file cannot be ");
     s.append("opened, the file will not be written.  A zero length string ");
     s.append("can be used to disable writing the file.");
 
     s.append("@return A new DataSet which is the result of converting the ");
-    s.append("input DataSet's X-axis units to Q values and its Y-axis units ");
-    s.append("to energy loss.\n");
-    s.append("@error Returns an error if no valid Q range is specified.\n");
+    s.append("input DataSet's X-axis units to inverse Angstroms squared ");
+    s.append("(Q^2) and its Y-axis units to meV (energy loss).\n");
+    s.append("@error Returns an error if no valid Q^2 range is specified.\n");
     s.append("@error Returns an error if no detector position attribute is ");
     s.append("available.\n");
     s.append("@error Returns an error if no delta_2theta attribute is ");
@@ -319,10 +322,10 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
 
  /* ---------------------------- getResult ------------------------------- */
  /**
-  *  Converts the input DataSet to a DataSet which is a S(Q,E) plot of the
+  *  Converts the input DataSet to a DataSet which is a S(Q^2,E) plot of the
   *  original DataSet.
   *
-  *  @return DataSet whose X-axis units have been converted to Q values and
+  *  @return DataSet whose X-axis units have been converted to Q^2 values and
   *  whose Y-axis units have been converted to energy.
   */
   public Object getResult()
@@ -332,7 +335,7 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
                                      // title, units, and operations as the
                                      // current DataSet, ds
 
-                                     // get the E and Q scale parameters
+                                     // get the E and Q^2 scale parameters
     float  min_Q2    = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float  max_Q2    = ( (Float)(getParameter(1).getValue()) ).floatValue();
     int    n_Q2_bins = ( (Integer)(getParameter(2).getValue()) ).intValue();
@@ -398,7 +401,7 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
     else
       Q2_scale = new UniformXScale( min_Q2, max_Q2, n_Q2_bins+1 );
 
-                                               // set up arrays for S(Q2,E),
+                                               // set up arrays for S(Q^2,E),
                                                // error estimates and counters.
     float Q2E_vals[][]   = new float[n_Q2_bins][n_E_bins] ;
     float err_vals[][]   = new float[n_Q2_bins][n_E_bins] ;
@@ -437,9 +440,9 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
                      errors[];
 
     //
-    // Now step along each time-of-flight spectrum, calculate the Q,E
+    // Now step along each time-of-flight spectrum, calculate the Q^2,E
     // coordinates for each bin and map the events in the bin to a point in
-    // the Q,E plane.
+    // the Q^2,E plane.
     //
     int num_data = ds.getNum_entries();
     for ( int i = 0; i < num_data; i++ )
@@ -455,7 +458,7 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
       if ( position == null )
       {
         ErrorString message = new ErrorString(
-                    "ERROR: no DETECTOR_POS attribute in Q2E operator");
+                    "ERROR: no DETECTOR_POS attribute in ToQ2E operator");
         return message;
       }
       spherical_coords = position.getSphericalCoords();
@@ -465,7 +468,7 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
       if ( delta_theta_obj == null )
       {
         ErrorString message = new ErrorString(
-                    "ERROR: no DELTA_2THETA attribute in Q2E operator");
+                    "ERROR: no DELTA_2THETA attribute in ToQ2E operator");
         return message;
       }
 
@@ -479,7 +482,7 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
 
                                              // Now get the x and y values from
                                              // the spectrum and map them to
-                                             // the Q,E plane
+                                             // the Q^2,E plane
       x_vals = data.getX_scale().getXs();
       y_vals = data.getY_values();
       errors = data.getErrors();
@@ -510,7 +513,7 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
           q2 = temp;
         }                               // use the average Q-squared value
         qsq_val = ( q1 + q2 ) / 2.0f;
-                                        // divide by the counts by delta Qsqr,
+                                        // divide by the counts by delta Q^2,
                                         // to get intensity  ( we assume that
                                         // the values have already been divided
                                         // by delta E and delta Omega as in the
@@ -520,7 +523,7 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
           err_val = errors[col] / (q2 - q1);
         else
           err_val = 0;
-                                        // now map the y(Q2,E) value to the
+                                        // now map the y(Q^2,E) value to the
                                         // array of values and add it with
                                         // any previous values
 
@@ -559,7 +562,7 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
     // #### must take care of the operation log... this starts with it empty
     DataSet new_ds = factory.getDataSet();
     new_ds.copyOp_log( ds );
-    new_ds.addLog_entry( "Converted to S(Q2,E)" );
+    new_ds.addLog_entry( "Converted to S(Q^2,E)" );
 
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
@@ -597,11 +600,11 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
                                      err_vals );
       if ( err != null )
       {
-        SharedData.addmsg( "Didn't write S(Q2,E), " + new_ds + ", to file" );
+        SharedData.addmsg( "Didn't write S(Q^2,E), " + new_ds + ", to file" );
         return new_ds;
       }
       else
-        SharedData.addmsg( "Wrote S(Q2,E), " + new_ds + ", to file "+file_name);
+        SharedData.addmsg( "Wrote S(Q^2,E), " +new_ds+ ", to file "+file_name);
     }
     
     return new_ds;
@@ -652,8 +655,8 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
      {
        buff.append("# Row:    " + Q2E_vals[0].length + "\n");
        buff.append("# Column: " + Q2E_vals.length + "\n");
-       buff.append("# X Label: Momentum Transfer \n");
-       buff.append("# X Units: inv(A) \n");
+       buff.append("# X Label: Momentum Transfer Squared \n");
+       buff.append("# X Units: inv(A^2) \n");
        buff.append("# Y Label: Energy Transfer \n");
        buff.append("# Y Units: meV \n");
        buff.append("# Z Label: Intensity \n");
@@ -703,7 +706,7 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
     maxE  = 250f;
     Ebins = 500;
     minQ2 = 0.225f;
-    maxQ2 = 3.2f;
+    maxQ2 = 10f;
     Q2bins = 500;
 
     String file_name = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run ";
