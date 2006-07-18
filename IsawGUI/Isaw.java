@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.254  2006/07/18 02:10:55  dennis
+ *  Changed version to 1.8.0 alpha 9
+ *
  *  Revision 1.253  2006/06/26 16:32:45  amoe
  *  Made the following changes to incorporate Difference Graph View
  *  - added private static final String DIFFERENCE_VIEW_MI
@@ -916,7 +919,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.8.0_a8";
+          version="1.8.0_a9";
         else
           version=SharedData.VERSION;
 
