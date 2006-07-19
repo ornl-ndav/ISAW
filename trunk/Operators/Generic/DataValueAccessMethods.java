@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/07/19 17:49:20  dennis
+ * Fixed minor javadoc error.
+ *
  * Revision 1.2  2006/07/17 03:19:41  dennis
  * Now adds message to the Operations log if the values are set.
  * Cast vector entries to Number, rather than Float, so
@@ -171,7 +174,7 @@ public class DataValueAccessMethods
    *  @param  index       The index of the Data block into which the values
    *                      will be set.
    *  @param  min_x       The requested minimum X value. 
-   *  @param  vals        Vector of float specifying a Contiguous list of 
+   *  @param  new_vals    Vector of float specifying a Contiguous list of 
    *                      values to be assigned to this Data block, starting
    *                      with the value corresponding to the specified min_x. 
    *  @param  which_vals  String "Y" or "Error" specifying which values
