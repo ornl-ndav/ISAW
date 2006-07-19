@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2006/07/19 18:07:15  dennis
+ * Removed unused imports.
+ *
  * Revision 1.29  2006/07/13 20:05:26  dennis
  * Replaced code using old style tagging subclasses SampleDataSet
  * and MonitorDataSet.
@@ -124,7 +127,6 @@ import NexIO.State.*;
 import NexIO.Process.*;
 import NexIO.Util.*;
 import NexIO.Query.*;
-import DataSetTools.util.*;
 
 /**  Class that retrieves DataSets from sources with an NxNode interface AND
  *  which

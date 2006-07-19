@@ -1,5 +1,4 @@
 package Operators.Generic.System;
-import java.lang.*;
 
 public class getSystemProperty{
   public getSystemProperty(){}

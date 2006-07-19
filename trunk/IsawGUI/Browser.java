@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2006/07/19 18:07:14  dennis
+ * Removed unused imports.
+ *
  * Revision 1.4  2006/03/15 21:15:32  rmikk
  * Added the cvs log tag to the GPL documentation
  *
@@ -38,28 +41,18 @@
 
 package IsawGUI;
 
-
-import javax.swing.*;
 import java.net.*;
 import java.awt.*;
-import java.awt.event.*;
-import javax.swing.event.*;
-import java.util.*;
-import java.io.*;
 import javax.swing.text.html.*;
-import javax.swing.text.*;
 import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.awt.print.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.util.Vector;
 import java.io.IOException;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.HyperlinkEvent;
@@ -69,9 +62,6 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
-
-import javax.swing.WindowConstants;
-
 
 
 public class Browser implements HyperlinkListener, 

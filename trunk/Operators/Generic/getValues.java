@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/19 18:07:15  dennis
+ * Removed unused imports.
+ *
  * Revision 1.3  2006/07/17 03:20:07  dennis
  * Clarified prompt string.
  *
@@ -50,7 +53,6 @@
 package Operators.Generic;
 
 import java.util.*;
-import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;

@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2006/07/19 18:07:16  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2005/05/05 02:06:10  taoj
  * added into the cvs
  *
@@ -44,7 +47,6 @@ package Operators.TOF_Diffractometer;
 
 import DataSetTools.operator.*;
 import DataSetTools.math.tof_calc;
-import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
@@ -52,7 +54,6 @@ import DataSetTools.dataset.IData;
 import DataSetTools.dataset.VariableXScale;
 import DataSetTools.dataset.XScale;
 import gov.anl.ipns.Util.Numeric.arrayUtil;
-import java.util.regex.Pattern;
 
 
 /**

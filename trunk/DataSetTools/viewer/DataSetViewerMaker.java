@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2006/07/19 18:07:14  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.23  2005/08/25 13:57:38  rmikk
  *  Removed the unused Split Pane so the bars will not show on the
  *     selected graph view
@@ -111,9 +114,7 @@ package DataSetTools.viewer;
 
 import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
-import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
-import gov.anl.ipns.ViewTools.UI.*;
 import gov.anl.ipns.ViewTools.Components.*;
 
 import javax.swing.*;

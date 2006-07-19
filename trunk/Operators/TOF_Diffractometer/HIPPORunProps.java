@@ -38,8 +38,6 @@ import DataSetTools.util.SharedData;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.ReferenceGrid;
-import Operators.Generic.Load.LoadUtil;
-import DataSetTools.retriever.RunfileRetriever;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.BufferedReader;

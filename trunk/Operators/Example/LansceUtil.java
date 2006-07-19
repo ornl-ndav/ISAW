@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.15  2006/07/19 18:07:15  dennis
+ * Removed unused imports.
+ *
  * Revision 1.14  2006/02/06 19:26:28  dennis
  * Removed debug print.
  *
@@ -97,18 +100,10 @@
  */
 package Operators.Example;
 
-import java.util.*;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
-import DataSetTools.viewer.*;
 import DataSetTools.instruments.*;
 import DataSetTools.trial.*;
-import DataSetTools.operator.Generic.TOF_SCD.*;
- 
-import gov.anl.ipns.Util.Sys.WindowShower;
-import gov.anl.ipns.Util.SpecialStrings.*;
-import gov.anl.ipns.ViewTools.Components.*;
-import gov.anl.ipns.ViewTools.Displays.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 
