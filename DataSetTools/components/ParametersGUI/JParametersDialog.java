@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.70  2006/07/19 18:07:14  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.69  2006/07/13 21:51:48  dennis
  *  Removed old code referring to "tagging" subclasses for
  *  Sample and Monitor data sets.
@@ -254,7 +257,6 @@ import java.util.*;
 import java.io.*;
 import DataSetTools.util.*;
 import javax.swing.text.*;
-import java.lang.reflect.Array;
 import javax.swing.text.html.*;
 import ExtTools.SwingWorker;
 

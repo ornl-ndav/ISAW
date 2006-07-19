@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2006/07/19 18:07:16  dennis
+ * Removed unused imports.
+ *
  * Revision 1.2  2005/05/05 02:06:10  taoj
  * added into the cvs
  *
@@ -42,7 +45,6 @@
  */
 package Operators.TOF_Diffractometer;
 
-import DataSetTools.dataset.Data;
 import DataSetTools.util.SharedData;
 import java.io.File;
 import java.io.BufferedReader;

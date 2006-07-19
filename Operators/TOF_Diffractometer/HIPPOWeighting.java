@@ -34,15 +34,10 @@ package Operators.TOF_Diffractometer;
 
 import DataSetTools.operator.*;
 import DataSetTools.math.tof_calc;
-import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
-import DataSetTools.dataset.IData;
-import DataSetTools.dataset.VariableXScale;
 import DataSetTools.dataset.XScale;
-import gov.anl.ipns.Util.Numeric.arrayUtil;
-import java.util.regex.Pattern;
 
 
 /**

@@ -34,7 +34,6 @@ package Operators.TOF_Diffractometer;
 import DataSetTools.operator.*;
 import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
 import DataSetTools.math.tof_calc;
-import java.io.IOException;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Float1DAttribute;
@@ -48,19 +47,12 @@ import DataSetTools.dataset.VariableXScale;
 import DataSetTools.dataset.XScale;
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import DataSetTools.retriever.NexusRetriever;
-import DataSetTools.retriever.RunfileRetriever;
-import DataSetTools.util.FilenameUtil;
-import gov.anl.ipns.Util.Sys.StringUtil;
 import gov.anl.ipns.Util.Numeric.arrayUtil;
-import IPNS.Runfile.InstrumentType;
-import IPNS.Runfile.Runfile;
 import gov.anl.ipns.ViewTools.UI.FontUtil;
 import java.util.ArrayList;
 import java.util.Vector;
-import Operators.Special.LowPassFilterDS0;
 import DataSetTools.viewer.ViewManager;
 import DataSetTools.viewer.IViewManager;
-import Operators.Generic.Load.LoadUtil;
 
 /**
  * This class preforms deadtime and delayed neutron corrections, calculates 

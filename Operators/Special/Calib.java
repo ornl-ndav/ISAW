@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2006/07/19 18:07:15  dennis
+ * Removed unused imports.
+ *
  * Revision 1.16  2006/01/16 04:42:54  rmikk
  * Removed the calibrated offset of 91.5 from omega
  *
@@ -99,7 +102,6 @@ import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import DataSetTools.math.*;
 import NexIO.Util.ConvertDataTypes;
-import DataSetTools.instruments.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
 import java.io.*;

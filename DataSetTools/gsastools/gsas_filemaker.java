@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2006/07/19 18:07:14  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.35  2006/03/30 22:05:46  hammonds
  *  Change due to the use of Vector<String> in favor of String[].
  *
@@ -131,7 +134,6 @@ import java.io.*;
 import java.util.*;
 import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.retriever.RunfileRetriever;
-import Operators.Generic.System.*;
 
 /**
  * Transfer diffractometer Data Set histogram to GSAS file

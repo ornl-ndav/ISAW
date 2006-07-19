@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2006/07/19 18:07:16  dennis
+ * Removed unused imports.
+ *
  * Revision 1.19  2006/07/10 16:26:13  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -107,8 +110,6 @@ package Wizard;
 import DataSetTools.dataset.DataSet;
 
 import DataSetTools.operator.Operator;
-
-import gov.anl.ipns.Parameters.*;
 
 import DataSetTools.util.*;
 

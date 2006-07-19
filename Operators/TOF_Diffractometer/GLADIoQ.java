@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2006/07/19 18:07:15  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2005/05/05 02:06:10  taoj
  * added into the cvs
  *
@@ -46,7 +49,6 @@ import DataSetTools.util.SharedData;
 import DataSetTools.dataset.Float1DAttribute;
 import java.util.ArrayList;
 import java.io.IOException;
-import java.io.StringReader;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
@@ -64,7 +66,6 @@ import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.util.FilenameUtil;
 import gov.anl.ipns.Util.Sys.StringUtil;
 import gov.anl.ipns.Util.Numeric.arrayUtil;
-import gov.anl.ipns.Util.Numeric.Format;
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;
 import IPNS.Runfile.InstrumentType;

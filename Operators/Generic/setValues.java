@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/19 18:07:15  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2006/07/17 03:23:19  dennis
  * Operator to setValues into a Data block in a DataSet.
  * Only the Y-values and Errors can be set and only Data
@@ -46,7 +49,6 @@ package Operators.Generic;
 
 import java.util.*;
 
-import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;

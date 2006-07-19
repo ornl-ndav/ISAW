@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2006/07/19 18:07:16  dennis
+ * Removed unused imports.
+ *
  * Revision 1.16  2006/07/13 22:12:38  rmikk
  * Added a semicolon on the same line as the method call
  *
@@ -142,7 +145,6 @@ import java.lang.reflect.*;
 import javax.swing.event.*;
 
 //import DataSetTools.util.FilenameUtil;
-import DataSetTools.util.SharedData;
 //import DataSetTools.util.SysUtil;
 
 import java.util.*;

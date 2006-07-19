@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2006/07/19 18:07:14  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.10  2006/07/10 21:28:25  dennis
  *  Removed unused imports, after refactoring the PG concept.
  *
@@ -74,7 +77,6 @@ package DataSetTools.operator.Generic.Load;
 import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
-import gov.anl.ipns.Util.Sys.WindowShower;
 
 import java.io.*;
 import java.util.*;
@@ -230,7 +232,7 @@ public class LoadSelDataSets extends    GenericLoad
      
      jbut.addActionListener( this);
      jf.getContentPane().add( new JScrollPane(jlist), BorderLayout.CENTER);
-      jf.validate();
+     jf.validate();
      jf.show();//Please do NOT use the WindowShower.  The program must halt at this
                // point.
      sel = jlist.getSelectedIndices();
