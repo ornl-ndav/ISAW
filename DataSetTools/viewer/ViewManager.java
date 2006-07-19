@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.79  2006/07/19 18:51:47  rmikk
+ *  Removed an unused string constatn
+ *
  *  Revision 1.78  2006/07/10 21:28:25  dennis
  *  Removed unused imports, after refactoring the PG concept.
  *
@@ -353,7 +356,6 @@ public class ViewManager extends    JFrame
 
    private static final String SHOW_ALL             = "Show All";
    private static final String LINK_VIEWS           = "Link Views";
-   private static final String SHOW_POINTEDAT_TABLE ="Show the Pointed At Table";
    private static final String NO_CONVERSION_OP     = "None";
    private static TableViewMenuComponents table_MenuComp   = null;
    private QuickTableViewer PointedAtView             =null;
