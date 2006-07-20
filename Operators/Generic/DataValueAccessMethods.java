@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/20 18:48:16  dennis
+ * Fixed bug.  The number of entries was accidentally decremented
+ * twice when calculating the largest possible index.
+ *
  * Revision 1.3  2006/07/19 17:49:20  dennis
  * Fixed minor javadoc error.
  *
@@ -89,7 +93,7 @@ public class DataValueAccessMethods
                                   float   max_x,
                                   String  which_vals )
   {
-    int num_entries = ds.getNum_entries() - 1;
+    int num_entries = ds.getNum_entries();
 
     if ( index < 0 || index > num_entries-1 )
       throw new IllegalArgumentException(
@@ -187,7 +191,7 @@ public class DataValueAccessMethods
                                   Vector  new_vals,
                                   String  which_vals )
   {
-    int num_entries = ds.getNum_entries() - 1;
+    int num_entries = ds.getNum_entries();
 
     if ( index < 0 || index > num_entries-1 )
       throw new IllegalArgumentException(
