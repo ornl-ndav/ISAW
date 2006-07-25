@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/25 00:07:36  rmikk
+ * Set the axis =1 if it was incorrect, so the time axis correct
+ *
  * Revision 1.3  2004/02/16 02:17:55  bouzekc
  * Removed unused imports.
  *
@@ -46,9 +49,12 @@
  */
 
 package NexIO.Query;
+import org.w3c.dom.Node;
+
 import NexIO.*;
 import NexIO.State.*;
 import NexIO.Process.*;
+import NexIO.Util.*;
 
 /**
  *   This class's getNxDataProcessor returns the correct IProcessNxData 
@@ -59,7 +65,8 @@ public class QueryNxEntry {
   
   /**
    *   Returns the proper IProcessNxData class that is also properly configured
-   *   @param State The linked list of state information
+   *   @param State The linked list of state information, Both file and NxEntry info's
+   *                 must be present
    *   @param NxDataNode  An NxNode with information on the NeXus NXdata class.
    *   @param NxInstrumentNode An NxNode with information on the NeXus 
    *                        NXinstrument class.
@@ -69,11 +76,34 @@ public class QueryNxEntry {
     
      if( State == null)
         return null;
-    
+     NxDataStateInfo dataState = NexUtils.getDataStateInfo( State);
+     NxEntryStateInfo EntryInfo = NexUtils.getEntryStateInfo( State );
+     NxDetectorStateInfo detStateInfo = NexUtils.getDetectorStateInfo( State );
+     NxfileStateInfo fileInfo = State;
      if( NxDataNode == null)
         return new ProcessNxEntry();
-     NxDataStateInfo dataState = new NxDataStateInfo(NxDataNode,NxInstrumentNode,
+     if( dataState == null){
+        dataState = new NxDataStateInfo(NxDataNode,NxInstrumentNode,
           State, startGroupID);
+         State.Push( dataState);
+     }
+     if( fileInfo.xmlDoc != null){
+        Node xx=  Util.getNXInfo(fileInfo.xmlDoc, "axis", "1", null,
+                null);
+        if( xx != null){
+           String S = xx.getNodeValue().trim();
+           if( dataState.axisName ==null)
+              dataState.axisName = new String[3];
+           dataState.axisName[0] = S;
+        }
+        xx=Util.getNXInfo(fileInfo.xmlDoc, "layout",null, null,
+                 null);
+       if( xx != null)if( detStateInfo != null){
+          String S = xx.getNodeValue().trim();
+          detStateInfo.hasLayout = S;
+       }
+           
+     }
      if( dataState.linkName == null)
         return new ProcessOldNxEntry();
      else
