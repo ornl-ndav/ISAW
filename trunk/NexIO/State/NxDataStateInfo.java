@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/07/25 00:05:57  rmikk
+ * Added code to update fields in a FixIt xml file in the same directory as
+ * the NeXus file
+ *
  * Revision 1.5  2005/12/29 23:04:11  rmikk
  * Now checks for the link attribute in every SDS child of an NXdata node
  *
@@ -135,7 +139,8 @@ public class NxDataStateInfo extends StateInfo{
            int[] l = child.getDimension();
            int axNum = ConvertDataTypes.intValue( child.getAttrValue("axis"));
            if( (axNum >=1) &&( axNum < 4))
-              axisName[axNum-1] = child.getNodeName();
+              if( axisName[axNum-1] == null)
+                   axisName[axNum-1] = child.getNodeName();
            if((axNum ==1)&&(l!= null)&&(l.length==1))
              xvals_length = l[0];
         
@@ -146,13 +151,18 @@ public class NxDataStateInfo extends StateInfo{
            labelName = ConvertDataTypes.StringValue( child.getAttrValue("label"));
            Object O= child.getAttrValue("axes");
            if( O instanceof String[]){
-             for( int j=0; j< ((String[])O).length;j++)
-                axisName[j]= ((String[])O)[j];
+              String S = (String)O;
+              S = S.trim();
+              if( S.startsWith("[")) S =S.substring(0);
+              if( S.endsWith("]")) S = S.substring(0,S.length()-1);
+              String[] SS = S.trim().split(":,");    
+             for( int j=0; j< SS.length;j++)
+                axisName[j]= SS[SS.length-j];
            }
               
         }else if( child.getNodeName().equals("id") || child.getNodeName().
             equals("detector_number")){
-                         
+                 
               Object O =child.getNodeValue();
               if( O != null)
               if( O instanceof int[]){                 
@@ -161,16 +171,52 @@ public class NxDataStateInfo extends StateInfo{
                     
          }//Node Class is SDS   
          String L = ConvertDataTypes.StringValue(child.getAttrValue("link")); 
+         if( L == null)
+            L = ConvertDataTypes.StringValue(child.getAttrValue("target"));
           
          if( L != null){
-             linkName = L;
+             linkName = FixUp(L, child);
+             
          }
         }  //for loop
+               
+           
         NexIO.Util.NexUtils.disFortranDimension(dimensions, xvals_length);
         
      }
       
   }
+   private String FixUp( String linkName, NxNode node){
+      if( node == null)
+         return null;
+      String Name = node.getNodeName().trim();
+      if( linkName != null){
+         if( linkName.endsWith("\\"+ Name))
+            linkName = linkName.substring( 0, linkName.length()-Name.length()-1);
+
+         else if( linkName.endsWith("/"+ Name))
+            linkName = linkName.substring( 0, linkName.length()-Name.length()-1);
+         else if( linkName.endsWith("."+ Name))
+            linkName = linkName.substring( 0, linkName.length()-Name.length()-1);
+         int k = linkName.lastIndexOf("/");
+         int k1 = linkName.lastIndexOf("\\");
+         int k2 =linkName.lastIndexOf(".");
+         if( k < 0)
+            k=k1;
+         if( k1 >=0)
+            if( k < 0) k = k1;
+            if( k < k1) k =k1;
+         if( k2 >0)
+            if( k < 0)  k = k2;
+            else if( k < k2)  k = k2;
+          if( k >=0) if( k+1 < linkName.length())
+            linkName = linkName.substring( k+1);
+         
+       }
+          
+      return linkName;  
+
+   }
   
 }
 
