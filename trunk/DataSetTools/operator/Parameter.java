@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2006/07/25 20:00:20  dennis
+ *  Minor fix to javadocs.
+ *
  *  Revision 1.9  2006/07/10 21:28:19  dennis
  *  Removed unused imports, after refactoring the PG concept.
  *
@@ -72,9 +75,9 @@ public class Parameter extends Object implements Serializable, IParameter
   /**
    *  Construct a Parameter object using the specified name an value
    *
-   * @param name  The new name string for this Parameter.
-   * @param object  An object of the correct type to use as the value of this
-   *                parameter.
+   * @param name   The new name string for this Parameter.
+   * @param value  An object of the correct type to use as the value of this
+   *               parameter.
    */
   public Parameter( String name, Object value )
   {

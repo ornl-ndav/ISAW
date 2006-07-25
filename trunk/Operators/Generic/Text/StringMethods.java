@@ -1,22 +1,37 @@
+/**
+ *  $Log$
+ *  Revision 1.3  2006/07/25 19:57:00  dennis
+ *  Minor fix to javadocs.
+ *
+ *
+ *  revision 1.2, date: 2006/04/03 18:53:56;  author: hammonds;  
+ *  New methods to add to scripting language.
+ *
+ *  revision 1.1, date: 2006/04/03 16:55:08;  author: hammonds; 
+ *  Methods added to allow changing the case of a string.
+ */
+
 package Operators.Generic.Text;
 
 public class StringMethods {
 
 	/**
-	 * Static method to be used to construct an operator to convert the characters in a 
-	 * text string to lower case.
+	 * Static method to be used to construct an operator to convert 
+         * the characters in a text string to lower case.
 	 * @param inStr
-	 * @return
+	 * @return A new String containing the lower case versions of the
+         *         specified String.
 	 */
 	public static String LowerCase(String inStr){
 		return inStr.toLowerCase();
 	}
 	
 	/**
-	 * Static method to be used to construct an operator to convert the characters in a 
-	 * text string to upper case.
+	 * Static method to be used to construct an operator to convert 
+         * the characters in a text string to upper case.
 	 * @param inStr
-	 * @return
+	 * @return A new String containing the upper case versions of the
+         *         specified String.
 	 */
 	public static String UpperCase(String inStr){
 		return inStr.toUpperCase();
@@ -63,9 +78,10 @@ public class StringMethods {
 	}
 
 	/**
-	 * return a substring of the original string.  The return string starts and the 
-	 * beginning index and ends at the ending index - 1.
-	 * @param inStr  the input string from which to extract the ending string
+	 * return a substring of the original string.  The return string starts
+	 * at the beginning index and ends at the ending index - 1.
+	 * @param inStr  the input string from which to extract the 
+         *               ending string
 	 * @param begIndx the beginning index of the substring
 	 * @param endIndx the ending index of the substring
 	 * @return a substring of the original string
