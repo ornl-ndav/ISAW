@@ -32,7 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/07/25 20:30:54  amoe
+ * Updated javadoc. (Dominic Kramer)
+ *
  * Revision 1.5  2004/06/04 23:27:59  kramer
+ *
  * Fixed some Javadoc errors.
  *
  * Revision 1.4  2004/05/26 20:37:55  kramer
@@ -340,7 +344,7 @@ public class InterfaceDefn
 
 	/**
 	 * Set the name of the package that this interface is a member of.
-	 * @return The interface's package's name.
+	 * @param str The interface's package's name.
 	 */	
 	public void setPackage_Name(String str)
 	{
