@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/07/25 00:10:34  rmikk
+ * Added code to include a missing or ne NXdetector.layout field
+ * Created new Info variables if they were not in the list.
+ *
  * Revision 1.4  2004/12/23 15:50:13  rmikk
  * Added extra spacing between lines
  *
@@ -52,6 +56,8 @@ import NexIO.*;
 import NexIO.State.*;
 import DataSetTools.dataset.*;
 import NexIO.Util.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 
 /**
  *   This class processes ONE NXdata class in a NeXus file, updating a DataSet.
@@ -92,43 +98,58 @@ public class Process1NxData implements IProcessNxData {
    *     @param startGroupID The starting Group ID for the NEW data blocks that are
    *                          added
    */
-  public boolean processDS( NxNode NxEntryNode ,NxNode NxDataNode , 
+  public boolean processDS( NxNode NxEntryNode ,NxNode NxDataNode ,
               NxNode NxInstrument, DataSet DS , NxfileStateInfo States,
               int startGroupID ){
                 
      int firstIndex = DS.getNum_entries();
-
-     NxDataStateInfo DataState = new NxDataStateInfo( NxDataNode, 
+     int npush =0;
+     NxDataStateInfo DataState = NexIO.Util.NexUtils.getDataStateInfo( States );
+     
+     if( DataState == null ){
+          DataState = new NxDataStateInfo( NxDataNode, 
              NxInstrument , States, startGroupID);
-
-     States.Push( DataState);
+           npush++;
+           States.Push( DataState);
+     }
      NxInstrumentStateInfo InstrumentState = new NxInstrumentStateInfo(
              NxInstrument, States);
 
      States.Push( InstrumentState);
        
-     NxEntryStateInfo EntryState = new NxEntryStateInfo(NxEntryNode, States);
-     States.Push( EntryState);
+     NxEntryStateInfo EntryState = NexIO.Util.NexUtils.getEntryStateInfo( States );
+     if( EntryState == null){
+          EntryState = new NxEntryStateInfo(NxEntryNode, States);
+         States.Push( EntryState);
+         npush++;
+     }
      NxNode NxDetectorNode = NexUtils.getCorrespondingNxDetector( DataState.linkName,
               NxInstrument);
               
      NxDetectorStateInfo DetState = null;
+     DetState = NexUtils.getDetectorStateInfo( States );
      if( NxDetectorNode == null){
         DataSetTools.util.SharedData.addmsg( "no NxDetector Node for "+
                        NxDataNode.getNodeName());
        
      }
-     else 
+     else if( DetState == null){
         DetState = new NxDetectorStateInfo(NxDetectorNode, States);
-     if( DetState != null)
+        if( DetState != null)
         States.Push( DetState);
-        
+        npush++;
+     }
+     if( States.xmlDoc != null){
+        Node xx=Util.getNXInfo(States.xmlDoc, "layout",null, null,
+                 null);
+        if( xx != null)
+           DetState.hasLayout = xx.getNodeValue().toString();
+     }
      NexUtils  nxut = new NexUtils();
      boolean res= nxut.setUpNxData (DS,NxDataNode,DataState.startGroupID,States);
      if( res){ 
        
-        States.Pop();States.Pop();States.Pop();
-        if(DetState != null)
+        for( int i=0; i< npush; i++)
            States.Pop();
         return setErrorMessage(nxut.getErrorMessage( ));
      }
@@ -137,8 +158,7 @@ public class Process1NxData implements IProcessNxData {
         res = nxut.setUpNXdetectorAttributes( DS, NxDataNode,NxDetectorNode,
                                          firstIndex, States);
                                          
-     States.Pop();States.Pop();States.Pop();
-     if(DetState != null)
+      for( int i=0; i< npush; i++)
         States.Pop();
           
      if( res)
