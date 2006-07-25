@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.71  2006/07/25 12:58:30  rmikk
+ *  Adjusted a few parameters to make the dialog box bigger with larger number
+ *     of parameters
+ *
  *  Revision 1.70  2006/07/19 18:07:14  dennis
  *  Removed unused imports.
  *
@@ -337,7 +341,7 @@ public class JParametersDialog implements Serializable,
         
         
         if( Size1 < 0)
-	    Size += 10;
+	    Size += 12;
         else
            Size += Size1;     
         APH = new ApplyButtonHandler();
@@ -604,7 +608,7 @@ public class JParametersDialog implements Serializable,
         opDialog.getContentPane().add( BB);
         //#
        
-        Size += (num_param  + 4 )*2 + 38;
+        Size += (num_param  + 4 )*3 + 42;
         
         opDialog.setSize((int)(.4* Width) , new Float(Size +.8).intValue());
         opDialog.validate();
