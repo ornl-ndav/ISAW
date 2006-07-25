@@ -32,7 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/07/25 20:37:11  amoe
+ * Fixed Javadoc. (Dominic Kramer)
+ *
  * Revision 1.4  2004/05/26 20:45:11  kramer
+ *
  * Modified the method that gets a shortened source code representation of an
  * interface to be able to have a tab placed in front of it.
  *
@@ -131,8 +135,6 @@ public class ASCIIPrintFileManager extends PrintManager
 		 * @param num The section number
 		 * @param len The number of characters in one line
 		 * @param title The section title
-		 * @return The string which is specially formatted so that
-		 * when pasted into an editor it looks like the description
 		 */
 		public void printSectionHeading(int num, int len, String title)
 		{
@@ -170,12 +172,15 @@ public class ASCIIPrintFileManager extends PrintManager
 		}
 		
 		/**
-		 * Creates the divider that signals the end of a project
+		 * Creates the divider that signals the end of a project.  That is 
+       * the divider:<br>
+       * <code>
+       * "\n===============\n"
+       * "\n===============\n"
+       * "\n===============\n"
+       * </code>
+       * 
 		 * @param len The number of characters in one line
-		 * @return  The divider 
-		 * "\n===============\n"
-		 * "\n===============\n"
-		 * "\n===============\n"
 		 */
 		public void printEndDivider(int len)
 		{
@@ -274,7 +279,6 @@ public class ASCIIPrintFileManager extends PrintManager
 		 * Returns a list of package names formatted for one package
 		 * per line
 		 * @param vec A vector of Interfaces
-		 * @return The formatted String
 		 */
 		public void printPackageList(int tabSize, Vector vec, ProgressGUI gui)
 		{
@@ -378,9 +382,8 @@ public class ASCIIPrintFileManager extends PrintManager
 		 *  the section's description.  numArr and stringVec must have the same number
 		 *  of elements.
 		 * @param tabSize The number of characters in a tab
-		*  @param numArr The array of section numbers
-		 *  * @param stringVec A vector of Strings each of which is a section description
-		 * @return The table of contents
+		 * @param numArr The array of section numbers
+		 * @param stringVec A vector of Strings each of which is a section description
 		 */
 		public void printTableOfContents(int tabSize, int[] numArr, Vector stringVec)
 		{
@@ -802,7 +805,6 @@ public class ASCIIPrintFileManager extends PrintManager
 	 * not be the correct size.
 	 * @param shortOther Set this to true if the java names in the data for the interface are to be shortened.  If you do not 
 	 * set the correct parameter here the sequence of dashes will not be the correct size.
-	 * @return A sequence of dashes.
 	 */
 	public void printSingleUML(Interface intF, boolean shortJava, boolean shortOther)
 	{
