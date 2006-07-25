@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/25 00:05:57  rmikk
+ * Added code to update fields in a FixIt xml file in the same directory as
+ * the NeXus file
+ *
  * Revision 1.3  2004/12/23 13:06:41  rmikk
  * Updated to version 1.0.  Added a version field
  *
@@ -49,6 +53,8 @@ package NexIO.State;
 
 import NexIO.*;
 import NexIO.Util.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 
 
 /**
@@ -63,12 +69,15 @@ public class NxEntryStateInfo extends StateInfo {
     public String description;
   
     public String version;
+    
+ 
 
     /**
      *   The Name of the NXentry node
      */
     public String Name;
-   
+    
+  
     /**
      *   Constructor
      *   @param NxEntryNode  an NxNode containing information on a NeXus NXentry
@@ -84,10 +93,19 @@ public class NxEntryStateInfo extends StateInfo {
         description = NexUtils.getStringFieldValue(NxEntryNode, "description");
         if (description == null)
             description = NexUtils.getStringFieldValue(NxEntryNode, "analysis");
+        if (description == null)
+           description = NexUtils.getStringFieldValue(NxEntryNode, "definition");
        
         else
             version = NexUtils.getStringAttributeValue(           
                         NxEntryNode.getChildNode("description"), "version");
+        
+       if( Params.xmlDoc != null){
+          Node N= Util.getNXInfo( Params.xmlDoc,"NXentry.definition",
+                       Name+".version", null, null);
+          if( N!= null)
+             version = N.getNodeValue();
+       }
      
     }
   
