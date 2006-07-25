@@ -32,7 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/07/25 20:38:32  amoe
+ * Fixed javadoc. (Dominic Kramer)
+ *
  * Revision 1.4  2004/05/26 20:55:14  kramer
+ *
  * Implemented the method
  *   public void printShortenedSource(Interface intf,
  *                                    boolean shortJava,
@@ -185,7 +189,6 @@ public class HTMLPrintFileManager extends PrintManager
 	 * @param intf This Interface whose data is to be analyzed.
 	 * @param shortJava Set this to true if java names are to be shortened.
 	 * @param shortOther Set this to true if non-java names are to be shortened.
-	 * @return The HTML code for a single UML diagram for the Interface supplied.
 	 */
 	public void printShortenedSource(Interface intf, boolean shortJava, boolean shortOther)
 	{
