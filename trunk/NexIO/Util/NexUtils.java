@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2006/07/25 12:40:48  rmikk
+ * Changed the NXgeometry.NXtranslate.distances field back to distances
+ *
  * Revision 1.13  2006/07/25 00:13:39  rmikk
  * Added code to update to the new standard.  Moved some code into
  * separate methods.
@@ -425,7 +428,7 @@ public class NexUtils implements INexUtils {
            if ( p > 0 ){
        
               NxNode node = geom.getChildNode( p );
-              node = node.getChildNode( "distance");
+              node = node.getChildNode( "distances");
               if(node!= null ){
                   
                    dd =  ConvertDataTypes.floatArrayValue( node.getNodeValue());
