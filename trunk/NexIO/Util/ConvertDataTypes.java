@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2006/07/25 00:04:28  rmikk
+ * Added metre as a unit.
+ * checked cm  before m
+ *
  * Revision 1.9  2005/03/23 01:56:49  dennis
  * Removed unnecessary semicolons.
  *
@@ -575,6 +579,10 @@ public class ConvertDataTypes{
            factor = 1;
         }
      OldUnits = OldUnits.substring(n);
+
+     if("mm;millim;millimeter;100um;100microm;".indexOf( OldUnits + ";" ) >= 0)
+        return factor*.001f;
+     
      if( "m;meter;met;".indexOf( OldUnits + ";" ) >= 0 )
         return factor*1;
     
@@ -582,8 +590,6 @@ public class ConvertDataTypes{
         .indexOf( OldUnits + ";" ) >= 0 )
         return factor*.01f;
     
-     if("mm;millim;millimeter;100um;100microm;".indexOf( OldUnits + ";" ) >= 0)
-        return factor*.001f;
     
      if( "um;umet;umeter;umeters;".indexOf( OldUnits ) >= 0 )
         return factor*.000001f;
