@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2006/07/25 00:11:25  rmikk
+ * Added a filename to the parameter list for a new NxfileStateInfo
+ *
  * Revision 1.30  2006/07/19 18:07:15  dennis
  * Removed unused imports.
  *
@@ -244,7 +247,7 @@ public class ExtGetDS{
     
    NxNode EntryNode= dsInf.NxentryNode;
    AttributeList AL = getGlobalAttributes( EntryNode ) ;
-   NxfileStateInfo FileState = new NxfileStateInfo( node);
+   NxfileStateInfo FileState = new NxfileStateInfo( node , filename );
    
    NxEntryStateInfo EntryState = new NxEntryStateInfo( EntryNode,FileState);
    
