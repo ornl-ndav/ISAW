@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2006/07/25 05:42:01  dennis
+ * Modified main test program to test dataChanged()
+ * method.
+ *
  * Revision 1.3  2005/08/03 16:43:26  dennis
  * Minor fix of javadocs.
  *
@@ -177,8 +181,50 @@ public class LoadGladData
     String detector_file = detector_path + "gladdets6.par";
 
     PhysicalArray3DList[] data = getTOF_Histogram( hdf_file, detector_file );
+
     System.out.println( "Number of  PhysicalArray3DLists found = " +
                          data.length );
+//
+    PhysicalArray3D[] data_1 = new PhysicalArray3D[ data.length ];
+
+    for ( int i = 0; i < data.length; i++ )
+    {
+      int n_points = data[i].getNumPoints();
+      Vector3D extents[] = data[i].getExtents(0,n_points-1);
+      Vector3D xaxes[]   = data[i].getXOrientations(0,n_points-1);
+      Vector3D yaxes[]   = data[i].getYOrientations(0,n_points-1);
+      Vector3D points[]  = data[i].getPoints();
+      float    values[]  = data[i].getValuesAtFrame( 1000 );
+      data_1[i] = new PhysicalArray3D( n_points, points, values,
+                                       extents, xaxes, yaxes );
+    }
+    Display3D display = new Display3D( data_1, 0, Display3D.CTRL_ALL, false );
+    WindowShower.show(display);
+
+    for (int i = 0; i < 200; i++ )
+    {
+      try
+      {
+        Thread.sleep( 100 );
+      }
+      catch (Exception e)
+      {}
+      System.out.println("**** Changing data");
+
+      float values[] = new float[100];
+      for ( int j = 0; j < 100; j++ )
+        values[j] = 200 + 2*j; 
+
+      data_1[i].setValues( 0, 40, values );
+
+      display.dataChanged();
+    }
+    System.out.println("Done changing");
+
+    
+//
+
+/*
     for ( int i = 0; i < data.length; i++ )
     {
        int      n_points         = data[i].getNumPoints();
@@ -201,7 +247,21 @@ public class LoadGladData
     for ( int i = 0; i < vals.length; i+=100 )
       System.out.println(" i, val = " + i + ", " + vals[i] );
 
-    Display3D display = new Display3D( data, 0, Display3D.CTRL_ALL );    
+    Display3D display = new Display3D( data, 0, Display3D.CTRL_ALL, true );    
     WindowShower.show(display);
+    for (int i = 0; i < 10; i++ )
+    {
+      try
+      {
+        Thread.sleep( 3000 );
+      }
+      catch (Exception e)
+      {}
+      System.out.println("**** Changing data");
+      display.dataChanged( data );
+    }
+    System.out.println("Done changing");
+*/
   }
+
 }
