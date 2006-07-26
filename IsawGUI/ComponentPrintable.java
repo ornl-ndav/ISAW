@@ -1,7 +1,7 @@
 /*
  * File: ComponentPrintable.java
  *
- * Copyright (C) 2001, Dennis Mikkelson
+ * Copyright (C) 2001, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,7 +17,7 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
@@ -28,6 +28,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2006/07/26 15:48:27  dennis
+ * Minor cleanup of javadocs and format before moving to the
+ * gov/anl/ipns/Util/Sys that contains other print utilities
+ * using this.
+ *
  * Revision 1.4  2005/12/10 16:05:54  rmikk
  * This class is now a Pageable. It can print JTextComponents to separate
  *    pages.  Pages should not split across lines or images(hopefully)
@@ -44,6 +49,7 @@
 //       view to model --> end page and start pages (use -1's to ensure fit)
 //       paint subrectangle of view:  in print with page
 //    4. Use Clip/translate to get correct region.
+
 package IsawGUI;
 
 import java.awt.*;
@@ -51,24 +57,27 @@ import java.awt.print.*;
 
 import javax.swing.*;
 import javax.swing.text.*;
-public class ComponentPrintable
-    implements Printable, Pageable {
+
+public class ComponentPrintable implements Printable, Pageable {
+
   private Component mComponent;
   private int[] posPages = null;
   
   /**
-   * Constructor for the pageable and printable object. JTextComponents are the only ones
-   * that are pageable.  viewToModel and modelToView methods are used to make pagebreaks
-   * hopefully not across lines or pictures
-   * @param c  The Component to be printed.  All but JTextComponents are printed on one page
+   * Constructor for the pageable and printable object. JTextComponents are 
+   * the only ones that are pageable.  viewToModel and modelToView methods 
+   * are used to make pagebreaks hopefully not across lines or pictures.
+   *
+   * @param c  The Component to be printed.  All but JTextComponents are 
+   *           printed on one page
    */
   public ComponentPrintable(Component c) {
     mComponent = c;
     
     if( c== null)
       return;
-    
     }
+
   
   /**
    *  Required for Printable interface.  Prints the page to the printer
@@ -80,8 +89,11 @@ public class ComponentPrintable
    
     if( mComponent == null)
       return Printable.NO_SUCH_PAGE;
-    if (pageIndex > 0) if(!(mComponent instanceof javax.swing.text.JTextComponent))
-      return NO_SUCH_PAGE;
+
+    if (pageIndex > 0)
+      if(!(mComponent instanceof javax.swing.text.JTextComponent))
+         return NO_SUCH_PAGE;
+
     Graphics2D g2 = (Graphics2D)g;
     
     double pageHeight = pageFormat.getImageableHeight();
@@ -97,7 +109,6 @@ public class ComponentPrintable
     if(yscale < xscale) 
       xscale= yscale;
        
-    
     double startPage = -pageIndex*pageHeight;
     Rectangle Clip=null;  
     if( mComponent instanceof javax.swing.text.JTextComponent){
@@ -136,12 +147,12 @@ public class ComponentPrintable
     return wasBuffered;
   }
   
+
   private void restoreDoubleBuffering(Component c, boolean wasBuffered) {
     
     if (c instanceof JComponent)
       ((JComponent)c).setDoubleBuffered(wasBuffered);
   }
-  
   
   
   /**
@@ -168,7 +179,6 @@ public class ComponentPrintable
   public Printable getPrintable(int page){
     return this; 
   }
-
 
 
   /**
@@ -209,14 +219,15 @@ public class ComponentPrintable
       if( Res.height <=0)
         return null;
       return Res;
-          
   }
   
   
   /* 
-   * TODO:  How do we determine this??????.   It can be set by the printer dialog box.
+   * TODO:  How do we determine this??????.   It can be set by the printer 
+   * dialog box.
    */
-  public PageFormat getPageFormat(int arg0) throws IndexOutOfBoundsException {
+  public PageFormat getPageFormat(int arg0) 
+                                 throws IndexOutOfBoundsException {
     return null;
   }  
   
