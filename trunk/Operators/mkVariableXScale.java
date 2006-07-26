@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/26 19:09:10  dennis
+ * Moved method to convert an Object to a VariableXScale, out
+ * of the VariableXScale class, into this class.
+ *
  * Revision 1.3  2006/07/10 21:48:01  dennis
  * Removed unused imports after refactoring to use New Parameter
  * GUIs in gov.anl.ipns.Parameters
@@ -49,12 +53,16 @@
 package Operators;
 
 import DataSetTools.operator.Generic.*;
+import DataSetTools.dataset.VariableXScale;
+import DataSetTools.operator.JavaWrapperOperator;
 
 import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
 public class mkVariableXScale extends GenericOperator{
+
    public mkVariableXScale(){
      super("make VariableXScale");
      }
@@ -94,11 +102,46 @@ public class mkVariableXScale extends GenericOperator{
    }
 
 
+  /**
+   *   Static method to create a VariableXScale.  This static method is 
+   * used by the Operator that creates a VariableXScale.
+   *
+   * @param vals  An Object containing a some type of list of values that can
+   *              be converted to a float[] then to a VariableXScale.
+   *
+   * @return  A VariableXScale or an ErrorString
+   */
+  public static Object createVariableXScale( Object vals )
+  {
+    if( vals == null)
+       return new ErrorString("There are no values");
+
+    float[] values=null;
+    try
+    {
+      values=(float[])JavaWrapperOperator.cvrt((new float[0]).getClass(), vals);
+    }
+    catch( Exception s )
+    {
+       return new ErrorString("Cannot convert data to float[]");
+    }
+
+    if( values == null )
+     return new ErrorString("Cannot convert data to float[]");
+
+    for( int i = 1; i < values.length; i++ )
+      if( values[i-1] >= values[i] )
+        return new ErrorString("Values are not increasing");
+
+    return new VariableXScale( values );
+  }
+
+
    public Object getResult(){
       try{
 
          java.lang.Object xvals = (java.lang.Object)(getParameter(0).getValue());
-         java.lang.Object Xres=DataSetTools.dataset.VariableXScale.createVariableXScale(xvals);
+         java.lang.Object Xres=createVariableXScale(xvals);
          return Xres;
        }catch( Throwable XXX){
          return new ErrorString( XXX.toString()+":"
