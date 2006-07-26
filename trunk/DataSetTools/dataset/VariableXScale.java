@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2006/07/26 19:10:15  dennis
+ *  Moved method to convert an Object to a VariableXScale, out
+ *  of the VariableXScale class, into
+ *  Operators/mkVariableXScale.java.
+ *
  *  Revision 1.20  2005/11/17 22:59:23  dennis
  *  Minor improvement in javadoc and formatting.
  *
@@ -85,8 +90,6 @@
 
 package DataSetTools.dataset;
 import gov.anl.ipns.Util.Numeric.*;
-import gov.anl.ipns.Util.SpecialStrings.*;
-import DataSetTools.operator.*;
 import java.io.*;
 import java.util.*;
 
@@ -159,41 +162,6 @@ public class VariableXScale extends XScale implements Serializable
     }  
   }
 
-
-  /**
-   *   Static method to create a VariableXScale.  This static method is 
-   * used by the Operator that creates a VariableXScale.
-   *
-   * @param vals  An Object containing a some type of list of values that can
-   *              be converted to a float[] then to a VariableXScale.
-   *
-   * @return  A VariableXScale or an ErrorString
-   */
-  public static Object createVariableXScale( Object vals )
-  {
-    if( vals == null)
-       return new ErrorString("There are no values");
-
-    float[] values=null;
-    try
-    {
-      values=(float[])JavaWrapperOperator.cvrt((new float[0]).getClass(), vals);
-    }
-    catch( Exception s )
-    {
-       return new ErrorString("Cannot convert data to float[]");
-    }
-
-    if( values == null )
-     return new ErrorString("Cannot convert data to float[]");
-
-    for( int i = 1; i < values.length; i++ )
-      if( values[i-1] >= values[i] )
-        return new ErrorString("Values are not increasing");
-
-    return new VariableXScale( values );
-  }
-  
   
   /**
    * Returns the array of "X" values specified when the constructor was called.
