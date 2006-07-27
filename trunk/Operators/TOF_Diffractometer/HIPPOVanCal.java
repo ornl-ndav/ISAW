@@ -28,6 +28,10 @@
  *
  * For further information, see <http://www.pns.anl.gov/computing/ISAW/>
  *
+ * $Log$
+ * Revision 1.2  2006/07/27 15:11:16  dennis
+ * Added logging tag, so future CVS commits will be
+ * recorded in the file.
  *
  */
 package Operators.TOF_Diffractometer;
