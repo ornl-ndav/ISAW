@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/07/27 18:32:49  rmikk
+ * Added extra spacing to make the code more readable
+ *
  * Revision 1.4  2006/07/25 00:05:57  rmikk
  * Added code to update fields in a FixIt xml file in the same directory as
  * the NeXus file
@@ -91,19 +94,21 @@ public class NxEntryStateInfo extends StateInfo {
         version = null;
      
         description = NexUtils.getStringFieldValue(NxEntryNode, "description");
-        if (description == null)
+        
+        if (description == null )
             description = NexUtils.getStringFieldValue(NxEntryNode, "analysis");
-        if (description == null)
+        
+        if (description == null )
            description = NexUtils.getStringFieldValue(NxEntryNode, "definition");
        
         else
             version = NexUtils.getStringAttributeValue(           
                         NxEntryNode.getChildNode("description"), "version");
         
-       if( Params.xmlDoc != null){
-          Node N= Util.getNXInfo( Params.xmlDoc,"NXentry.definition",
-                       Name+".version", null, null);
-          if( N!= null)
+       if( Params.xmlDoc != null ){
+          Node N = Util.getNXInfo( Params.xmlDoc , "NXentry.definition" ,
+                       Name + ".version" ,  null ,  null) ;
+          if( N != null )
              version = N.getNodeValue();
        }
      
