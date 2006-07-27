@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2006/07/27 19:26:05  dennis
+ *  Expanded javadocs to explain the difference between the
+ *  AttrUtil.getLabel() method and a Data block's getLabel()
+ *  method.
+ *
  *  Revision 1.4  2006/03/13 22:40:26  dennis
  *  Added method getFloatArray2DValue(), to get the value of an
  *  attribute that is a 2D array of floats.
@@ -393,13 +398,22 @@ public class AttrUtil
 
   /**
    * Get the value of the attribute specified by <code>Attribute.LABEL</code>
-   * or null if it can't be determined.
+   * or null if it can't be determined.  NOTE:  If the IAttributeList is 
+   * actually a Data object, the Data object's getLabel() method should
+   * be used directly, since the LABEL attribute may be used to point to
+   * the attribute that is actually to be displayed.  For example, if the
+   * LABEL is "Temperature" and the there is a "Temperature" attribute then
+   * the VALUE of the Temperature attribute can be used as the label, by
+   * calling the Data object's getLabel() method.  The Data object's
+   * getLabel() method is responsible for resolving the possible indirection.
+   * AttributeUtil.getLabel() will just directly return the value recorded as
+   * the LABEL.
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String that is the value of the LABEL attribute
+   * or <code>null</code> if a LABEL attribute has not been set.
    */
    public static String getLabel( IAttributeList attr_list )
    {
