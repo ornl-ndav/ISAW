@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.91  2006/07/27 13:55:25  rmikk
+ * Eliminated some javadoc warnings
+ *
  * Revision 1.90  2006/07/10 16:25:50  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -2237,7 +2240,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
     * @param RightValue    the second operand
     * @param operation     the operation to be executed
     *
-    * @return    Nothing. The Global variable Result will contain
+    *  The Global variable Result will contain
     *      the result
 
     * 
@@ -2845,8 +2848,9 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      * @param Args The vector of argument values
      * @param Command The command to be executed
      *
-     * @return The value in the variable Result<BR> An error if the
-     * operation is not defined or does not work
+     * The value in the variable Result<BR> An error if the
+     * operation is not defined or does not work are changed
+     * after this method is executed.
      */
     public void DoOperation( Vector Args, String Command ){
         if(Debug)
@@ -3368,7 +3372,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
     *                array variable name and the last characters represent 
     *                 the index
     * @param  Result  The value to be assigned to the variable
-    * @return  Error conditions set if the operation is not possible
+    * An error conditions set if the operation is not possible
     */
     public void AssignArray(String vname, Object Result){
         String S = vname;//fixx(S1);
@@ -3456,7 +3460,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
     *                   an array 
     *                variable name and the last characters represent the index
     *    @param  Result  The value to be assigned to the variable
-    *    @return  Error conditions set if the operation is not possible
+    *   An error conditions set if the operation is not possible
     */
     public void Assign(String vname, Object Result){
         int   i,j;
