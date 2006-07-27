@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.55  2006/07/27 13:56:23  rmikk
+ * Fixed a BooleanEnable error so it now works in wizards without giving a
+ * form error
+ *
  * Revision 1.54  2006/07/11 18:20:53  rmikk
  * Fixed error in catching errors to be ignored because of the BooleanEnablePG
  *
@@ -738,9 +742,9 @@ public class ScriptOperator  extends  GenericOperator
       }catch( Exception ss){//will not assign a value
     	 if( (n1 <0)&&( n2 <0 ))
                 seterror( 0,"parameter "+ i+" is invalid");
-       else if( enabled && (n1 <= 0))
+       else if( enabled && (n1 >= 0))
           seterror( 0,"parameter "+ i+" is invalid");
-       else if ( !enabled && (n2 <=0))
+       else if ( !enabled && ((n2 >= 0)&&(n1 <= 0 )))
     		seterror(0,"parameter "+ i+" is invalid");
     	 
     	 
