@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/07/27 20:01:38  dennis
+ * Replaced call to deprecated method show(), with call to
+ * setVisible(true)
+ *
  * Revision 1.1  2006/07/27 01:08:52  dennis
  * Moved to package devTools, from package ExtTools
  *
@@ -831,7 +835,7 @@ public class WizardWizard extends JFrame implements ActionListener, Serializable
             jed.setText( S);
              jf.getContentPane().add(jed);
              jf.setSize( new Dimension(200,300));
-             jf.show();
+             jf.setVisible(true);
               
               
           

@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2006/07/27 20:01:38  dennis
+ * Replaced call to deprecated method show(), with call to
+ * setVisible(true)
+ *
  * Revision 1.17  2006/07/19 18:07:16  dennis
  * Removed unused imports.
  *
@@ -528,7 +532,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 
 		W.setSize(600, 400);
         W.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE);
-		W.show();
+		W.setVisible(true);
     
 	}
 
