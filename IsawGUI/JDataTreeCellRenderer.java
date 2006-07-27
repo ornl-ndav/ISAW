@@ -29,7 +29,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  * $Log$
+ * Revision 1.4  2006/07/27 19:02:58  dennis
+ * Minor change to formatting to improve readability.
+ *
  * Revision 1.3  2004/07/30 16:01:51  kramer
+ *
  * Added methods to test if a DataSetMutableTreeNode represents a pulsed height
  * DataSet.  Now the renderer uses different icons for DataMutableTreeNodes
  * corresponding to a monitor, pulsed height histogram, and 'regular' histogram.
@@ -83,18 +87,23 @@ public class JDataTreeCellRenderer extends DefaultTreeCellRenderer
    
    /** The icon for the root node of the tree. */
    private static final ImageIcon ROOT_IMAGE          = getImageIconForName("session.png");
+
+   /** The icon for an Experiment tree node. */
+   private static final ImageIcon EXPERIMENT_IMAGE    = getImageIconForName("experiment.png");
+   
+   /** The icon for the tree's 'Modified' node. */
+   private static final ImageIcon MODIFIED_IMAGE      = getImageIconForName("modified.png");
+ 
    
    /** The icon for a node representing a DataSet that is representing a histogram. */
    private static final ImageIcon HISTOGRAM_IMAGE     = getImageIconForName("histogram.png");
+
    /** The icon for a node representing a Data object. */
    private static final ImageIcon DATA_IMAGE          = getImageIconForName("data.png");
+
    /** The icon for a node representing a Data object that is selected. */
    private static final ImageIcon SELECTED_DATA_IMAGE = getImageIconForName("data_selected.png");
    
-   /** The icon for an Experiment tree node. */
-   private static final ImageIcon EXPERIMENT_IMAGE    = getImageIconForName("experiment.png");
-   /** The icon for the tree's 'Modified' node. */
-   private static final ImageIcon MODIFIED_IMAGE      = getImageIconForName("modified.png");
    
    /** The icon for a pulse height DataSet. */
    private static final ImageIcon PULSE_HEIGHT_DATASET_IMAGE
@@ -108,6 +117,7 @@ public class JDataTreeCellRenderer extends DefaultTreeCellRenderer
    
    /** The icon for a node representing a DataSet that is representing a monitor. */
    private static final ImageIcon MONITOR_IMAGE       = getImageIconForName("monitor_dataset.png");
+
    /** The icon for a node representing a Data object in a monitor DataSet. */
    private static final ImageIcon MONITOR_DATA_BLOCK_IMAGE
                                                       = getImageIconForName("monitor_data_block.png");
@@ -256,6 +266,7 @@ public class JDataTreeCellRenderer extends DefaultTreeCellRenderer
       else
          return false;
    }
+
    /**
     * Get the ImageIcon corresponding to the icon in ISAW's image's 
     * directory with the specified name.
