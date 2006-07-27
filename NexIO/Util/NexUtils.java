@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2006/07/27 18:33:55  rmikk
+ * Added some documentations and some spacing in the code to make it more
+ * readable
+ *
  * Revision 1.14  2006/07/25 12:40:48  rmikk
  * Changed the NXgeometry.NXtranslate.distances field back to distances
  *
@@ -113,6 +117,11 @@ public class NexUtils implements INexUtils {
     /**
      *  return the NXdetector in NxInstrument with the given Name, LinkName. 
      *  If there is no node, null is returned.
+     *  @param LinkName the NXdetector name in NXinstruent
+     *  @param NxInstrumentNode  An NxNode that gives access to an NXinstrumetn class
+     *  
+     *  @return  the NxNode whose class is NxDetector with the given LinkName
+     *             or null if nonoe
      */
     public static NxNode getCorrespondingNxDetector( String LinkName , 
         NxNode NxInstrumentNode ) {
@@ -138,6 +147,9 @@ public class NexUtils implements INexUtils {
      *  @param startDSindex  the first GroupIndex to process
      *  @param States   The linked list of state information
      *  This method sets up grids with default ID's of 1,2,3,...
+     *  NOTE: This assumes the time axis is axis 1, and the order of the
+     *        next dimension represent col then row, then detectors. col
+     *        or row dimensions can be missing.
      */
     public boolean setUpNXdetectorAttributes( DataSet DS , NxNode NxDataNode , 
         NxNode NxDetector , int startDSindex , NxfileStateInfo States ) {
@@ -150,6 +162,7 @@ public class NexUtils implements INexUtils {
 
         if ( NxEntryState != null )
             version = NxEntryState.version;   
+        
         if ( dataState == null )
             return setErrorMessage( " No state for NXdata " +
                     NxDataNode.getNodeName() );
@@ -169,29 +182,36 @@ public class NexUtils implements INexUtils {
                 depth,
                 diameter,
                 orientation;
+        
         int[] widthDim, 
               heightDim, 
               depthDim,
               diameterDim,
-              orientationDim,
                x_dirDim;
         
         Vector3D[] x_dir = null,
-            y_dir = null;
-        width=height=depth=diameter = null;     
+                   y_dir = null;
+        
+        width= height= depth= diameter = null;   
+        String detType = "nxbox";
 
-        widthDim=heightDim=depthDim=diameterDim =x_dirDim = null;     
-        if ( (version == null) ) {
+        widthDim = heightDim = depthDim = diameterDim = x_dirDim = null;
+        
+        if ( (version == null) || ( detState.NxGeometryName == null) ) {
        
             width = NexUtils.getFloatArrayFieldValue( NxDetector , "width" );
             height = NexUtils.getFloatArrayFieldValue( NxDetector , "height" );
             depth = NexUtils.getFloatArrayFieldValue( NxDetector , "depth" );
+            
             if( width != null)
-               widthDim=  NxDetector.getChildNode( "width" ).getDimension();
+               widthDim=  Util.GetDimension( NxDetector.getChildNode( "width" ), dataState, 0);
+            
             if( height != null)
-                heightDim = NxDetector.getChildNode( "height" ).getDimension();
+                heightDim = Util.GetDimension( NxDetector.getChildNode( "height" ), dataState, 0);
+            
             if( depth != null)
-                  depthDim = NxDetector.getChildNode( "depth" ).getDimension();
+                  depthDim = Util.GetDimension( NxDetector.getChildNode( "depth" ), dataState, 0);
+            
             diameter = null;
             NxNode orientNode = NxDetector.getChildNode( "orientation" );
 
@@ -199,7 +219,10 @@ public class NexUtils implements INexUtils {
                 
                 orientation = ConvertDataTypes.floatArrayValue( orientNode.
                                                            getNodeValue() );
-                x_dirDim = orientNode.getDimension();
+                
+                x_dirDim = Util.GetDimension( orientNode,dataState, 0,1);
+                
+                
                 ConvertDataTypes.UnitsAdjust( orientation , ConvertDataTypes.
                     StringValue( orientNode.getAttrValue( "units" ) ) , "radians" ,
                     1.0f , 0.0f ); 
@@ -217,11 +240,12 @@ public class NexUtils implements INexUtils {
                     y_dir[ i ] = Rotate( orientation , i , 0 , 0 , 1 );
                 }
             }
-        } else {//data in NXgeometry
+        } else {//some or all data in in NXgeometry
        
             NxNode geom = NxDetector.getChildNode( detState.NxGeometryName );
             if( geom == null)
                geom = detState.NxGeometryNode_origin;
+            
             if ( geom == null ) {
          
                 width = height = depth = orientation = null;
@@ -232,17 +256,30 @@ public class NexUtils implements INexUtils {
                 height = NexUtils.getNxGeometryInfo( geom , "height" , detState );
                 depth = NexUtils.getNxGeometryInfo( geom , "width" , detState );
                 diameter = NexUtils.getNxGeometryInfo( geom , "diameter" , detState );
-                int p = NexUtils.getNextChildNode( geom , "NXshape" , 0 );
-                if( p <0)
-                   return setErrorMessage(" No NXshape in NXdetector");
-                NxNode shp = geom.getChildNode( p );
-                if( width != null)
-                   widthDim = heightDim = depthDim = shp.getChildNode( "size").getDimension();
-                else if( height != null)
-                   diameterDim=heightDim = shp.getChildNode( "size").getDimension();
-                else
-                   diameterDim =shp.getChildNode( "size").getDimension();
                 
+                int p = NexUtils.getNextChildNode( geom , "NXshape" , 0 );
+                if( p < 0){
+                   
+                     setErrorMessage(errormessage +":: No NXshape in NXdetector");
+                
+                } else {
+                   
+                    NxNode shp = geom.getChildNode( p );
+                    if( shp.getChildNode( "shape" ) != null )
+                       detType = ConvertDataTypes.StringValue( shp.getChildNode(
+                               "shape" ).getNodeValue() );   
+ 
+                    if( detType == null ) detType = "nxbox"; 
+                    if( width != null )
+                       widthDim = heightDim = depthDim = Util.GetDimension( shp
+                                .getChildNode( "size" ) , dataState , 0 , 1 );
+                    else if( height != null )
+                        diameterDim = heightDim = shp.getChildNode( "size" )
+                               .getDimension();
+                    else
+                       diameterDim = shp.getChildNode( "size" ).getDimension();
+
+                }
                 
                 float[] xx = NexUtils.getNxGeometryInfo( geom , "x_dir" , detState );
                 float[]yy = NexUtils.getNxGeometryInfo( geom , "y_dir"  , detState );                
@@ -263,96 +300,94 @@ public class NexUtils implements INexUtils {
                     }
                 }
             }
+            
             if( x_dir != null){
 
-               int p = NexUtils.getNextChildNode( geom , "NXorientation" , 0 );
-               if( p <0)
-                  return setErrorMessage(" No NXorientation in NXdetector");
-               NxNode shp = geom.getChildNode( p );
-               x_dirDim = shp.getChildNode( "value" ).getDimension();
+                int p = NexUtils.getNextChildNode( geom , "NXorientation" , 0 );
+                if( p <0)
+                    return setErrorMessage(" No NXorientation in NXdetector");
+                NxNode shp = geom.getChildNode( p );
+                x_dirDim = Util.GetDimension( shp.getChildNode("value"),
+                                                               dataState, 0,1);
             }
                
         }
         
         float[] x_offsets =NexUtils.getFloatArrayFieldValue( NxDetector , 
-                       "x_pixel_offset");
+                                                             "x_pixel_offset");
+        
         float[] y_offsets =NexUtils.getFloatArrayFieldValue( NxDetector , 
-                      "y_pixel_offset");
+                                                            "y_pixel_offset");
+        
         if( x_offsets != null) if( x_offsets.length != dataState.dimensions[1])
              x_offsets = null;
+        
         if( y_offsets != null) if( y_offsets.length != dataState.dimensions[2])
              y_offsets = null;
        
         int[] ids = NexUtils.getIntArrayFieldValue( NxDetector , 
-                                              detState.DetectorIDFieldName );
+                                                detState.DetectorIDFieldName );
      
         int NGroups = getNGroups( dataState.dimensions );
 
         if ( NGroups < 0 )
             return setErrorMessage( " Improper dimensions in " +
-                    NxDataNode.getNodeName() );
+                                                   NxDataNode.getNodeName() );
                                         
         NxNode dist = NxDetector.getChildNode( "distance" );
-        int[] distDimensions = dist.getDimension();
+        int[] distDimensions = Util.GetDimension(dist,dataState,0);
+        
         NxNode az = null;
      
         float[] distance , 
-            azimuth , 
-            polar; 
-        int[]  
-            azimuthDim , 
-            polarDim;
+                azimuth , 
+                polar; 
+        int[]  azimuthDim , 
+               polarDim;
              
         distance = azimuth = polar = null;
         azimuthDim = polarDim = null;
+        
         if ( dist != null ) {
             
-            distance = ConvertDataTypes.floatArrayValue( dist.getNodeValue() );
-            distDimensions = dist.getDimension();
+            distance = ConvertDataTypes.floatArrayValue( dist.getNodeValue() );           
         
             String Xunits = ConvertDataTypes.StringValue( 
-                                             dist.getAttrValue( "units"  ) );
+                                             dist.getAttrValue( "units"  ) );       
         
-            if ( distance != null ) {
-                ConvertDataTypes.UnitsAdjust( distance , Xunits , "m" , 1.0f , 0.0f );
-                az = NxDetector.getChildNode( "azimuthal_angle" );
-                if ( az != null ) {
-                
-                    azimuth = ConvertDataTypes.floatArrayValue( 
-                                                   az.getNodeValue() );
-                    if( azimuth != null)
-                        azimuthDim =az.getDimension();
-                    ConvertDataTypes.UnitsAdjust( azimuth , Xunits , "radians" ,
-                                                            1.0f , 0.0f );
-                 
-                    az = NxDetector.getChildNode( "polar_angle" );
-                    
-                    if ( az != null ) {
-                        polarDim = az.getDimension();
-                        polar = ConvertDataTypes.floatArrayValue(
-                                                      az.getNodeValue() );
-                        ConvertDataTypes.UnitsAdjust( polar , Xunits , "radians"
-                                                     , 1.0f , 0.0f );
-                    }
-                }
-            }
+            if ( distance != null ) 
+                ConvertDataTypes.UnitsAdjust( distance , Xunits , "m" , 
+                                                                1.0f , 0.0f );
             
-           
-                
-        }//dist != null
-        if( azimuth == null){
-           azimuth = new float[1];
-           azimuth[0] = 0;
         }
-        if( detState.hasLayout == null)        
-        if ( ( distance == null ) ||  ( polar == null ) )
-     
-            distance = azimuth = polar = null;
-         
-        else if (  ( distance.length != polar.length ) )
-                                  
-            distance = azimuth = polar = null;
-         
+        az = NxDetector.getChildNode( "azimuthal_angle" );
+                
+        if ( az != null ) {
+                
+            azimuth = ConvertDataTypes.floatArrayValue( 
+                                                         az.getNodeValue() );
+            String Xunits = ConvertDataTypes.StringValue( 
+                                                az.getAttrValue( "units"  ) );
+           
+            azimuthDim = Util.GetDimension(az,dataState,0);
+           
+            ConvertDataTypes.UnitsAdjust( azimuth , Xunits , "radians" ,
+                                                                1.0f , 0.0f );
+       }       
+        
+        az = NxDetector.getChildNode( "polar_angle" );
+                    
+        if ( az != null ) {
+            polarDim = Util.GetDimension( az, dataState, 0) ;
+            polar = ConvertDataTypes.floatArrayValue(
+                                                         az.getNodeValue() );
+            String Xunits = ConvertDataTypes.StringValue( 
+                                                az.getAttrValue( "units"  ) );
+           ConvertDataTypes.UnitsAdjust( polar , Xunits , "radians"
+                                                            , 1.0f , 0.0f );
+        }
+            
+        
         for ( int i = startDSindex; i < DS.getNum_entries(); i++ ) {
        
             Data db = DS.getData_entry( i );
@@ -376,6 +411,7 @@ public class NexUtils implements INexUtils {
         int  nrows , ncols;
         
         if( detState.hasLayout == null)
+           
         if ( distance == null )
             return false;
         
@@ -383,9 +419,8 @@ public class NexUtils implements INexUtils {
             //-----------------------for this NXdata--------x         
 
         int startGridNum = 1 + Maxx( DS , startDSindex );
-        int nDataDims , nDistDims;
         
-        if( detState.hasLayout == null){
+        //if( detState.hasLayout == null){
            if ( dataState == null ) {
         
                return setErrorMessage( "dataState is null" );
@@ -397,92 +432,136 @@ public class NexUtils implements INexUtils {
               return setErrorMessage( "distDimensions is null" );              
          
            }
-        }
+        //}
      
         
         
         String layout = detState.hasLayout;
-        int[] inf = get_nRowsCols( dataState,  widthDim, heightDim, depthDim, diameterDim,
-                  polarDim, azimuthDim,  distDimensions, x_dirDim,layout,detState, NxEntryState);
-        if( inf == null)
-           return true; 
+        int[] inf = get_nRowsCols( dataState ,  widthDim , heightDim , depthDim , 
+                              diameterDim , polarDim , azimuthDim ,  
+                              distDimensions , x_dirDim , layout , detState ,
+                                                               NxEntryState );
+        if( inf == null )
+           return true;  // get_nRowsCols sets the errormessage
+        
         nrows = inf[ 2 ];
         ncols = inf[ 1 ];
         int ngrids = inf[ 0 ];
         int row = 1, 
             col = 1, 
-            grid = 0;
+            grid = -1;
         IDataGrid Grid = null;
-       float[] dd;
+        float[] dd;
       
-       dd = null;
-        if( detState.hasLayout != null){
+        dd = null;
+        if( detState.hasLayout != null ){
            NxNode geom = detState.NxGeometryNode_geometry;
            
-           if( geom == null)
+           if( geom == null )
               geom = detState.NxGeometryNode_origin;
-           if( geom == null)
+           if( geom == null )
               return setErrorMessage( "Translationn information missing in NXgeometry");
            int p = NexUtils.getNextChildNode( geom , "NXtranslation" , 0 );
 
            if ( p > 0 ){
        
               NxNode node = geom.getChildNode( p );
-              node = node.getChildNode( "distances");
+              node = node.getChildNode( "distances" );
               if(node!= null ){
                   
                    dd =  ConvertDataTypes.floatArrayValue( node.getNodeValue());
-                   String Units =NexUtils.getStringAttributeValue( node, "units");
+                   String Units =NexUtils.getStringAttributeValue( node , "units" );
                    if( dd!= null) if( Units!= null)
-                      ConvertDataTypes.UnitsAdjust( dd, Units,"meters",1f,0f);
+                      ConvertDataTypes.UnitsAdjust( dd, Units , "meters" , 1f , 0f );
               }
            }
         }
+        dd = null;  //translation in NXgeometry does not affect distance,polar &
+                  //                      azimuthal angles
         
         int[] dims = dataState.dimensions;
-        for ( int i = startDSindex; i < DS.getNum_entries(); i++ ) {
+        
+        //Find number of dimensions for the detectors
+        int P = 1;
+        int i;
+        for(  i= 0 ; ( i <  dims.length -1 ) && ( P < ngrids ) ;  i++ ){
+            P *= dims[ i ];
+           
+        }
+        
+        if( P != ngrids ){
+           errormessage = "Dimensions are out of order";
+           return false;
+        }
+           
+        int[] detDig = new int[ i ];
+        java.util.Arrays.fill( detDig , 0 );
+       
+        for ( i = startDSindex ; i < DS.getNum_entries() ;  i++ ) {
        
             Data db = DS.getData_entry( i );
 
             if ( ( row == 1 ) && ( col == 1 )  ) {  
                                                    //set up new grid
-                                                   // after done with previous
+                                                  // after done with previous
+               
+                grid ++;
+                if( detDig.length > 0 ){ //increment w. carry detDig
+                   int kk = detDig.length - 1;
+                   detDig[ kk ]++;
+                   while( ( kk >=  0 ) &&(  detDig[ kk ] >= dataState.dimensions[ kk ])){
+                      detDig[kk]= 0;
+                      if( kk >= 1 )
+                         detDig[ kk - 1 ]++;
+                      kk--;
+                   }
+                }
+                
                 if ( Grid != null ) {
                     Grid.setData_entries( DS );
                 }
                 
                 Position3D center = null ;
-                if( detState.hasLayout == null)
+               // if( detState.hasLayout == null)
                    
                        center = ConvertDataTypes.convertToIsaw( 
-                            distance[ grid ] , polar[ grid ] , azimuth[ grid ] );
-                else
+                            Val( detDig , distance , distDimensions , dims , 0 , .5f )  , 
+                            Val( detDig , polar , polarDim , dims ,0,0f ) , 
+                            Val( detDig , azimuth , azimuthDim , dims , 0  , 0f) );
+               /* else  
                      if( dd != null){
                         
                          center = new Position3D( new Vector3D( dd[3*grid+2],dd[3*grid],dd[3*grid+1] ));
                 }
+                */
                 
                 Grid = null;
                 if ( ( x_dir != null ) && ( y_dir != null ) )
                  
                     Grid = getGrid( startGridNum + grid , "m" , 
-                               new Vector3D( center ) , Xval(x_dir,grid,ngrids,dims, 
-                               new Vector3D( 1f,0f,0f)) , 
-                               Xval(y_dir,grid,ngrids,dims, new Vector3D( 0f,1f,0f)) , 
-                               width  ,height  , depth , diameter, grid  ,nrows , 
-                               ncols, x_offsets, y_offsets );
+                               new Vector3D( center ) ,  
+                               Val( detDig , x_dir , x_dirDim , dims , 0 ),                                
+                               Val( detDig , y_dir , x_dirDim , dims , 0 ) , 
+                               Val( detDig , width , widthDim , dims , 0 , 1f )  ,
+                               Val(detDig , height  , heightDim , dims , 0 , 1f )  ,
+                               Val( detDig , depth , depthDim , dims , 0 , .1f )  , 
+                               Val( detDig , diameter , diameterDim , dims , 0,0f ),
+                               detType, nrows , ncols, x_offsets, y_offsets );
             }
             
             if ( Grid != null ) {
           
                 DetectorPixelInfo detPix = new DetectorPixelInfo( startGridNum 
                       + grid ,( short ) row , ( short ) col , Grid );
+                
                 DetectorPixelInfo[] piList = new DetectorPixelInfo[ 1 ];
 
                 piList[ 0 ] = detPix;
+                
                 db.setAttribute(  
                     new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST , 
                         new PixelInfoList( piList ) ) );
+                
                 db.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS ,
                         new DetectorPosition( Grid.position( row , col ) ) ) );
                      
@@ -490,73 +569,176 @@ public class NexUtils implements INexUtils {
         
                 ConvertDataTypes.addAttribute( db , ConvertDataTypes.
                          CreateDetPosAttribute(  Attribute.DETECTOR_POS , 
-                         ConvertDataTypes.convertToIsaw(  Xval(distance, grid, ngrids,dims ,1f),
-                            Xval(polar, grid, ngrids,dims,0f) , Xval(azimuth,grid,ngrids,dims,0f ) ) ));
+                         ConvertDataTypes.convertToIsaw(  
+                                         Val(detDig, distance , distDimensions, dims ,0,1f),
+                                         Val(  detDig, polar, polarDim, dims,0,0f) , 
+                                         Val( detDig, azimuth,azimuthDim ,dims,0, 0f ) 
+                                                       ) ));
           
             col++;
+            
             if ( col > ncols ) {
                 col = 1;
                 row++;
                 if ( row > nrows ) {
-                    row = 1;
-                    grid++;
+                    row = 1;                  
                 }
             }
-
         }
       
         return false;
     }
 
     
-    private float Xval( float[] data, int grid, int ngrids, int[] dims,float Default){
-       if( (data == null) ||(data.length <1))
+    
+    //
+    /**
+     * Finds the value of a list whose dims have -1 entries( * entries)
+     * @param grid  the "digits" in ALLDims to determine the position in the 
+     *                list
+     * @param list   the list of floats that contains the entry desired
+     * @param listDims  the dimensions of this list with -1 entries for "*"'s
+     * @param  AllDims  the longest dimension for trailing "*"'s
+     * @param nXtralistDims  The number of trailing entries of listDim that do 
+     *                    not correspond to entries in AllDims
+     * @param  Default the default value to return if the entry is not in the 
+     *           list.
+     */
+    private float Val( int[] grid, float[] list, int[] listDims, int[] AllDims, 
+                                             int nXtralistDims, float Default){
+       if( listDims == null )
           return Default;
-       if( grid < 0)if( grid >= ngrids)
+       
+       if( list.length < 1 )
           return Default;
-       if( data.length == ngrids)
-          return data[grid];
+       
+       if( list.length == 1 )
+          return list[ 0 ];
+       if( ( listDims == null ) || ( listDims.length < 1 ) )
+          return list[ 0 ];
+       
+       if( grid == null )
+          return list[ 0 ];
+       
+       if( grid.length < 1 )
+          return list[ 0 ];
+       
+       int indx = 0;
+       int mult = 1;
+       
+       for( int i = listDims.length - 1 ; i >= 0 ; i-- )
+          if( listDims[ i ] >= 0 ){
+             indx += mult* grid[ i ];
+             mult *= listDims[ i ];
+          }
+       
+       if( indx < list.length )
+          return list[ indx ];
+       else
+          return list[ list.length  - 1 ];
+    }
+    
+    
+    //Finds the value of a list whose dims have -1 entries( * entries)
+    // see float Val(...) documentation
+    private Vector3D Val( int[] grid , Vector3D[] list , int[] listDims ,  
+                                            int[] AllDims , int nXtralistDims){
+       if( listDims == null )
+          return new Vector3D();
+       
+       if( list.length < 1 )
+          return new Vector3D();
+       
+       if( list.length == 1 )
+          return list[ 0 ];
+       
+       if( ( listDims == null ) || ( listDims.length < 1 ) )
+          return list[ 0 ];
+       
+       int indx = 0;
+       int mult = 1;
+       
+       for( int i = listDims.length  - 1 ; i >= 0 ; i-- )
+          if( listDims[ i ] >= 0 ){
+             indx += mult * grid[ i ];
+             mult *= listDims[ i ];
+          }
+       
+       if( indx < list.length )
+          return list[ indx ];
+       else
+          return list[ list.length - 1 ];
+    }
+    
+    
+    //deprecated
+    private float Xval( float[] data , int grid , int ngrids , int[] dims ,
+                                                            float Default){
+       
+       if(  (data == null ) || ( data.length <1 ) )
+          return Default;
+       
+       if( grid < 0 )if( grid >= ngrids )
+          return Default;
+       
+       if( data.length == ngrids )
+          return data[ grid ];
+       
        int ndims_per_grid = 0;
-       int product =1;
-       int jump=1;
-       for( int i=0; (i< dims.length)&&(product < ngrids); i++){
-          product *=dims[ i];
-          if( product <= ngrids)
+       int product = 1;
+       int jump = 1;
+       for( int i= 0 ; ( i <  dims.length ) && ( product < ngrids ) ;  i++ ){
+          product *= dims[ i ];
+          if( product <=  ngrids )
              ndims_per_grid++;
-          if( i> data.length)
-             jump *= dims[i];
+          if( i > data.length )
+             jump *= dims[ i ];
        }
-       if( product != ngrids)
+       if( product != ngrids )
           return Default;
-       if( grid/jump < data.length)
-          return data[ grid/jump];
+       if( grid/jump < data.length )
+          return data[ grid/jump ];
        
        return Default;
     }
-    private Vector3D   Xval(Vector3D[] data,int grid, int ngrids, int[] dims,Vector3D Default){
-       if( (data == null) ||(data.length <1))
+    
+    
+    
+    //deprecated
+    private Vector3D   Xval(Vector3D[] data , int grid , int ngrids , 
+                                              int[] dims , Vector3D Default){
+       
+       if( ( data == null ) ||( data.length < 1 ) )
           return Default;
-       if( grid < 0)if( grid >= ngrids)
+       
+       if( grid < 0 )if( grid >= ngrids )
           return Default;
-       if( data.length == ngrids)
+          
+       if( data.length == ngrids )
           return data[grid];
+       
        int ndims_per_grid = 0;
-       int product =1;
-       int jump=1;
-       for( int i=0; (i< dims.length)&&(product < ngrids); i++){
-          product *=dims[ i];
-          if( product <= ngrids)
+       int product = 1;
+       int jump=  1;
+       for( int i = 0; ( i< dims.length ) && ( product < ngrids ) ;  i++ ){
+          product *= dims[ i ];
+          if( product <= ngrids )
              ndims_per_grid++;
-          if( i> data.length)
-             jump *= dims[i];
+          if( i> data.length )
+             jump *= dims[ i ];
        }
-       if( product != ngrids)
+       if( product != ngrids )
           return Default;
-       if( grid/jump < data.length)
-          return data[ grid/jump];
+       if( grid/jump < data.length )
+          return data[ grid/jump ];
        
        return Default;
     }
+    
+    
+    
+    
+    
     
     /**
      *  Tries to determine the grouping for this information across several conventions
@@ -572,94 +754,89 @@ public class NexUtils implements INexUtils {
      * @param detState   An information block with detector information
      * @return  a 1D array giving the  [#dets, #rows, #cols]
      */
-     public  int[] get_nRowsCols( NxDataStateInfo dataState,  int[] width,
-              int[] height, int[] depth, int[] diameter,
-              int[] polar, int[] azimuth, int[] distance, int[] x_dir,
-              String layout,
-              NxDetectorStateInfo detState, NxEntryStateInfo EntryInfo){
+     public  int[] get_nRowsCols( NxDataStateInfo dataState ,  int[] width,
+              int[] height , int[] depth, int[] diameter ,
+              int[] polar , int[] azimuth , int[] distance , int[] x_dir ,
+              String layout ,
+              NxDetectorStateInfo detState , NxEntryStateInfo EntryInfo){
         
-           boolean hasNXgeometry = (detState.NxGeometryNode_geometry != null) ||
-                        (detState.NxGeometryNode_origin != null);
-           int geomDimFix =0;
-           if( hasNXgeometry)
-              geomDimFix =1;
+           boolean hasNXgeometry = (detState.NxGeometryNode_geometry != null ) ||
+                        ( detState.NxGeometryNode_origin != null );
+           int geomDimFix = 0;
+           if( hasNXgeometry )
+              geomDimFix = 1;
            
-           int TotDims = dataState.dimensions.length -1;
+           int TotDims = dataState.dimensions.length - 1;
            int PolarDims = 0;
            if( polar != null)
                    PolarDims = polar.length;
-           if( PolarDims == 1)if( polar[0] ==1)
-                PolarDims =0;
-           if( azimuth != null)
+           if( PolarDims == 1 )if( polar[0] == 1 )
+                PolarDims = 0;
+           if( azimuth != null )
               if( azimuth.length > PolarDims )
-                 if(((azimuth.length >1))||( (azimuth.length ==1) &&(azimuth[0]>1)))
+                 if((( azimuth.length > 1 )) || ( ( azimuth.length == 1 ) &&( azimuth[0] > 1 )))
                    PolarDims = azimuth.length;
            
            if( distance != null)
               if( distance.length > PolarDims )
-                 if( ((distance.length >1))||( (distance.length ==1) &&(distance[0]>1)))
+                 if( (( distance.length > 1 )) || ( ( distance.length == 1 ) &&( distance[ 0 ] > 1 )))
                      PolarDims = distance.length;
            
            int widthDims = 0;
            
-           if( width != null)
-              if( width.length-geomDimFix > widthDims )
-                 if(((width.length-geomDimFix >1))||( (width.length-geomDimFix ==1) &&(width[0]>1)))
-                 widthDims =width.length-geomDimFix;
+           if( width != null )
+              if( width.length - geomDimFix > widthDims )
+                 if(((width.length - geomDimFix > 1 ))||( (width.length - geomDimFix == 1) &&(width[ 0 ] > 1 )))
+                 widthDims = width.length - geomDimFix;
              
            if( height != null)
-              if( height.length-geomDimFix  > widthDims )
-                 if(((height.length-geomDimFix >1))||( (height.length-geomDimFix ==1) &&(height[0]>1)))
-                 widthDims =height.length-geomDimFix ;
+              if( height.length - geomDimFix  > widthDims )
+                 if(((height.length - geomDimFix > 1 )) || ( (height.length - geomDimFix == 1) &&( height[ 0 ] > 1 )))
+                 widthDims = height.length - geomDimFix ;
              
            if( depth != null)
-              if( depth.length-geomDimFix > widthDims )
-                 if(((depth.length-geomDimFix >1))||(( depth.length-geomDimFix ==1) &&(depth[0]>1)))
-                 widthDims =depth.length;
+              if( depth.length - geomDimFix > widthDims )
+                 if((( depth.length - geomDimFix > 1 ))||(( depth.length - geomDimFix == 1 ) &&(depth[ 0 ] > 1 )))
+                 widthDims = depth.length;
              
-           /*if( diameter != null)
-              if( diameter.length-geomDimFix  > widthDims )
-                 if( (diameter.length ==1) &&(diameter[0]>1))
-                 widthDims =diameter.length-geomDimFix ;
-            */  //nxsphere does not have a dimension for which parameter
-                //while nxcylinder does
+  
               
-           if( x_dir != null)
-             if( x_dir.length -geomDimFix > widthDims )
-                if( (x_dir.length ==1) &&(x_dir[0]>1))
-                   widthDims =x_dir.length-geomDimFix ;
+           if( x_dir != null )
+             if( x_dir.length - geomDimFix > widthDims )
+                if( ( x_dir.length == 1 ) && ( x_dir[ 0 ] > 1 ) )
+                   widthDims = x_dir.length -  geomDimFix ;
           
-           if( layout == null)
-           if( PolarDims > TotDims)
-              return (int[])setErrorMessageReturnNull( "Too many dimensions for position info ");
-           if( layout == null)
-           if( widthDims > TotDims)
-              return (int[])setErrorMessageReturnNull( "Too many dimensions for position info ");
-           int NN = TotDims - Math.max( PolarDims,widthDims);
-           if( layout == null)
-           if( (NN < 0) || (NN > 2))
-              return (int[])setErrorMessageReturnNull( "Improper dimensions");
-           int[] Res = new int[3];
-           if( layout != null)
-           if( layout.equals("point"))
+           if( layout == null )
+           if( PolarDims > TotDims )
+              return (int[])setErrorMessageReturnNull( "Too many dimensions for position info ") ;
+           if( layout == null )
+           if( widthDims > TotDims )
+              return (int[])setErrorMessageReturnNull( "Too many dimensions for position info " ) ;
+           int NN = TotDims - Math.max( PolarDims , widthDims );
+           if( layout == null )
+           if( ( NN < 0 ) || ( NN > 2 ))
+              return (int[])setErrorMessageReturnNull( "Improper dimensions" );
+           int[] Res = new int[ 3 ];
+           if( layout != null )
+           if( layout.equals( "point" ) )
               NN = 0;
-           else if( layout.equals("linear"))
-              NN=1;
-           else if( layout.equals("area"))
-              NN=2;
-           if( NN == 0){
-              Res[2] = 1;
-              Res[1] = 1;
-              Res[0] = prod(dataState.dimensions, 0,TotDims -1);
-           }else if( NN ==1){
-              Res[2] = 1;
-              Res[1] = dataState.dimensions[TotDims -1];;
-              Res[0] = prod(dataState.dimensions, 0,TotDims -2);
+           else if( layout.equals( "linear" ) )
+              NN = 1;
+           else if( layout.equals( "area" ) )
+              NN = 2;
+           if( NN == 0 ){
+              Res[ 2 ] = 1;
+              Res[ 1 ] = 1;
+              Res[ 0 ] = prod( dataState.dimensions , 0 , TotDims - 1 );
+           }else if( NN == 1  ){
+              Res[ 2 ] = 1;
+              Res[ 1 ] = dataState.dimensions[ TotDims - 1 ];
+              Res[ 0 ] = prod(dataState.dimensions, 0 , TotDims - 2);
               
-           }else if ( NN == 2){
-              Res[2] = dataState.dimensions[TotDims -1];
-              Res[1] =dataState.dimensions[TotDims -2 ];
-              Res[0] = prod(dataState.dimensions, 0,TotDims -3);
+           }else if ( NN == 2 ){
+              Res[ 2 ] = dataState.dimensions[ TotDims - 1 ];
+              Res[ 1 ] = dataState.dimensions[ TotDims - 2  ];
+              Res[ 0 ] = prod( dataState.dimensions , 0 , TotDims - 3 ) ;
               
            }           
            return Res;
@@ -669,65 +846,62 @@ public class NexUtils implements INexUtils {
      
      
      
-     private int prod( int[] list, int ind1, int ind2){
-        if( list == null)
+     private int prod( int[] list , int ind1 , int ind2 ){
+        if( list == null )
            return 0;
-        if( ind2 >= list.length)
-           ind2 = list.length -1;
-        if( ind1 >= list.length)
-           ind1 = list.length -1;
+        if( ind2 >= list.length )
+           ind2 = list.length - 1;
+        if( ind1 >= list.length )
+           ind1 = list.length - 1;
         int Res = 1;
-        for( int i = ind1;  i<=ind2; i++)
-           Res *=list[i];
+        for( int i = ind1 ;  i<= ind2 ; i++ )
+           Res *= list[ i ];
         return Res;
         
      }
      
-     public static IDataGrid getGrid( int grid , String units , 
+     public static IDataGrid getGrid( int grid  , String units , 
               Vector3D  center , Vector3D x_dir , 
-              Vector3D y_dir , float[] width  , float[] height  ,
-              float[] depth , float[] diameter, int widthIndex  ,
+              Vector3D y_dir ,  float width  , float height  ,
+              float depth ,  float diameter, String type,
               int nrows , int ncols, float[] x_offsets, float[] y_offsets ){
-        String type = "nxbox";
-        float Width =1, Height =1;
-        float Depth =.1f;
-        if( width == null)
-           if( height != null){ //cylinder
-              type ="cylnder";
-              if( (x_offsets != null) && (widthIndex >=0) && 
-                       (widthIndex < x_offsets.length)){
-                 Width = x_offsets[ x_offsets.length-1]-2*x_offsets[0]+
-                    x_offsets[1];
+       
+        float Width = 1, 
+              Height = 1;
+        float Depth = .1f;
+        if( type.equals( "nxcylinder" )){
+           
+              if( ( x_offsets != null ) ){
+                 Width = x_offsets[  x_offsets.length -  1 ] -  2*x_offsets[ 0 ]+
+                    x_offsets[ 1 ];
               }
                  
-              if(  (height != null) && (widthIndex >=0) && 
-                       (widthIndex < height.length))
-                 Height = height[ widthIndex];
+             
+                 Height = height;
               
-           }else {
-              type = "sphere";
-              if( (x_offsets != null) && (widthIndex >=0) && 
-                       (widthIndex < x_offsets.length))
-                 Width = x_offsets[ x_offsets.length-1]-2*x_offsets[0]+
-                    x_offsets[1];
-             if( (y_offsets != null) && (widthIndex >=0) && 
-                      (widthIndex < y_offsets.length))
-                    Height = y_offsets[ y_offsets.length-1]-2*y_offsets[0]+
-                       y_offsets[1];
+           }else if( type .equals( "sphere" )){
+              if( ( x_offsets != null ) )
+                 Width = x_offsets[  x_offsets.length -  1 ] -  2*x_offsets[ 0 ]+
+                    x_offsets[ 1 ];
+             if( ( y_offsets != null) )
+                    Height = y_offsets[ y_offsets.length -  1 ] -  2 * y_offsets[ 0 ]+
+                       y_offsets[ 1 ];
            }else{
-           if( (width != null) && (widthIndex >=0) && 
-                    (widthIndex < width.length))
-              Width = width[ widthIndex];
-           if(  (height != null) && (widthIndex >=0) && 
-                    (widthIndex < height.length))
-              Height = height[ widthIndex];
+              
+                   Width = width;
+               
+                   Height = height;
         }
         
-        return new UniformGrid( grid, units, center, x_dir,y_dir, Width, Height, Depth, nrows,
-                    ncols );
+        return new UniformGrid( grid , units , center , x_dir , y_dir , Width, 
+                                               Height , Depth , nrows , ncols );
         
       
      }
+     
+     
+     
+     
     //Euler rotations , version null's orientation
     private Vector3D Rotate( float[] orientations , int grid , float x , float y ,
         float z ) {
@@ -897,12 +1071,14 @@ public class NexUtils implements INexUtils {
         if ( ( DataInf.axisName == null ) || ( DataInf.axisName.length < 1 ) ) 
             return setErrorMessage( "No axis 1 information in NXnode " + 
                     NxDataNode.getNodeName() );
-                      
-        NxNode tofNode = NxDataNode.getChildNode( DataInf.axisName[ 0 ] );
+        int n = 0;
+        if( DataInf.XlateAxes != null)
+           n = DataInf.XlateAxes[0]- 1;
+        NxNode tofNode = NxDataNode.getChildNode( DataInf.axisName[ n] );
 
         if ( tofNode == null )
             return setErrorMessage( "No tof axis named " + 
-                 DataInf.axisName[ 0 ] + "in SetupNxData" );
+                 DataInf.axisName[ n ] + "in SetupNxData" );
                  
         float[] xvals = ConvertDataTypes.floatArrayValue( tofNode.
                                                      getNodeValue() );
@@ -934,7 +1110,7 @@ public class NexUtils implements INexUtils {
     
         XScale xsc = new VariableXScale( xvals );
 
-        for ( int i = 0; i < NGroups; i++ ) {
+        for ( int i = 0 ; i < NGroups; i++ ) {
             int id = startGroupID + i;  //will have NXdetector change groupID
 
             if ( ( States.Spectra == null ) ||
@@ -947,7 +1123,7 @@ public class NexUtils implements INexUtils {
 
                 DS.addData_entry( DB );
             }
-            startGroupID++;
+            
         }  
      
         return false;
@@ -955,12 +1131,16 @@ public class NexUtils implements INexUtils {
 
     // returns the startGroupID + offfset entry in IDS 
     private int getGroupsID( int[] IDS , int startGroupID , int offset ) {
+       
         if ( IDS == null )
             return startGroupID + offset;
+        
         if ( IDS.length <= offset )
             return startGroupID + offset;
+        
         if ( offset < 0 )
             return startGroupID + offset;
+        
         return IDS[ offset ];
     }
 
@@ -1320,8 +1500,8 @@ public class NexUtils implements INexUtils {
             return null;
      
         for ( StateInfo inf = fileState; inf != null; inf = inf.getNext() ) {
-            if (inf instanceof NxDetectorStateInfo)
-                return (NxDetectorStateInfo) inf;
+            if ( inf instanceof NxDetectorStateInfo )
+                return ( NxDetectorStateInfo ) inf;
         }
    
         return null;
@@ -1454,6 +1634,8 @@ public class NexUtils implements INexUtils {
         return null;
     }
  
+    
+    
     /**
      * Returns the index of the next child node with index more than or equal
      * to startIndex that has the given class name.
