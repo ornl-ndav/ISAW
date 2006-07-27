@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/27 20:01:39  dennis
+ * Replaced call to deprecated method show(), with call to
+ * setVisible(true)
+ *
  * Revision 1.3  2004/03/12 19:46:14  bouzekc
  * Changes since 03/10.
  *
@@ -73,7 +77,7 @@ public class FileAlreadyExistsGUI extends JFrame
 		optionPane.setMessage("The file "+fileName+" already exists.");
 		optionPane.setOptions(optionsArr);
 		JDialog dialog = optionPane.createDialog(this,"Question");
-		dialog.show();
+		dialog.setVisible(true);
 		Object result = optionPane.getValue();
 		
 		return (String)result;

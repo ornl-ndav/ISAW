@@ -57,6 +57,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/07/27 20:01:38  dennis
+ * Replaced call to deprecated method show(), with call to
+ * setVisible(true)
+ *
  * Revision 1.3  2004/01/27 16:49:18  dennis
  * Move source citation information (Sun Java Tech Tips) to top of file
  * with other copyright and modification information.
@@ -280,6 +284,6 @@ public class Search extends JFrame {
     Search frame = new Search();
     // Center the window
     frame.setLocationRelativeTo(null);
-    frame.show();
+    frame.setVisible(true);
   }
 }

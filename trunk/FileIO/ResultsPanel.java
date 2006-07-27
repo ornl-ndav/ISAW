@@ -57,6 +57,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/07/27 20:01:38  dennis
+ * Replaced call to deprecated method show(), with call to
+ * setVisible(true)
+ *
  * Revision 1.5  2004/01/29 18:13:28  dennis
  * Fixed javadoc error.
  *
@@ -137,7 +141,7 @@ public class ResultsPanel extends JPanel {
     contentPane.add(progressBar);
     progress.setTitle("Search progress");
     progress.setSize(350,50);
-    progress.show();
+    progress.setVisible(true);
 // compose an output file name using legal file name characters
     char[] chary = searchPattern.toCharArray();
     char underscore = "_".charAt(0);
@@ -435,7 +439,7 @@ public class ResultsPanel extends JPanel {
 //          System.out.println("creating new dialog window");
           dialog.setSize(450, 300);
 //          System.out.println("showing dialog");
-          dialog.show();
+          dialog.setVisible(true);
         } catch (IOException ex) {
           System.err.println("Unable to show highlights");
         }

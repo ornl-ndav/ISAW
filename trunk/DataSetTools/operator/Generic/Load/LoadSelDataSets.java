@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2006/07/27 20:01:38  dennis
+ *  Replaced call to deprecated method show(), with call to
+ *  setVisible(true)
+ *
  *  Revision 1.11  2006/07/19 18:07:14  dennis
  *  Removed unused imports.
  *
@@ -233,8 +237,8 @@ public class LoadSelDataSets extends    GenericLoad
      jbut.addActionListener( this);
      jf.getContentPane().add( new JScrollPane(jlist), BorderLayout.CENTER);
      jf.validate();
-     jf.show();//Please do NOT use the WindowShower.  The program must halt at this
-               // point.
+     jf.setVisible(true);//Please do NOT use the WindowShower.  
+                         // The program must halt at this point.
      sel = jlist.getSelectedIndices();
 
     }catch(Exception ss){
