@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/07/27 18:32:12  rmikk
+ * Added code to translate incorrect axes numbers to correct axes numbers.
+ * Added more spacing around in the code
+ *
  * Revision 1.6  2006/07/25 00:05:57  rmikk
  * Added code to update fields in a FixIt xml file in the same directory as
  * the NeXus file
@@ -58,6 +62,8 @@
 package NexIO.State;
 import NexIO.*;
 import NexIO.Util.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 
 /**
  *   This class contains state information needed to process an NXdata entry
@@ -69,6 +75,8 @@ public class NxDataStateInfo extends StateInfo{
    *   This field is initialized to an array of 4 null strings
   */
   public String[] axisName; 
+  public int[] XlateAxes; //if used incorrect conventions this translates
+                         //from bad name to correct name
 
   /**
    *   The dimensions of the data entry as given by the NeXus file.
@@ -121,101 +129,152 @@ public class NxDataStateInfo extends StateInfo{
    *                       used if there is NO int id field in the corresponding
    *                       NXdetector 
    */
-  public NxDataStateInfo( NxNode NxDataNode, NxNode NxInstrumentNode, 
-                NxfileStateInfo Params, int startGroupID ){
+  public NxDataStateInfo( NxNode NxDataNode , NxNode NxInstrumentNode , 
+                NxfileStateInfo Params , int startGroupID ){
                   
      Name = NxDataNode.getNodeName();
-     axisName = new String[4];
-     axisName[0] = axisName[1]= axisName[2] = axisName[3] = null;
+     axisName = new String[ 4 ];
+     axisName[ 0 ] = axisName[ 1 ]= axisName[ 2 ] = axisName[ 3 ] = null;
      labelName = null;
      dimensions = null;
      hasIntIDField = false;
      this.startGroupID = startGroupID;
      int xvals_length = -1;
-     for( int i = 0; i < NxDataNode.getNChildNodes(); i++){
+     
+     //Find axes
+     for( int i = 0 ; i < NxDataNode.getNChildNodes() ; i++ ){
        
-        NxNode child = NxDataNode.getChildNode( i);
-        if( child.getNodeClass().equals("SDS")){
-           int[] l = child.getDimension();
-           int axNum = ConvertDataTypes.intValue( child.getAttrValue("axis"));
-           if( (axNum >=1) &&( axNum < 4))
-              if( axisName[axNum-1] == null)
-                   axisName[axNum-1] = child.getNodeName();
-           if((axNum ==1)&&(l!= null)&&(l.length==1))
-             xvals_length = l[0];
+        NxNode child = NxDataNode.getChildNode( i );
         
-          if( child.getNodeName().equals("data")){
+        if( child.getNodeClass().equals( "SDS" )){
+           int[] l = child.getDimension();
+           int axNum = ConvertDataTypes.intValue( child.getAttrValue( "axis" ) );
+           if( ( axNum >= 1 ) &&( axNum < 4 ) )
+              if( axisName[ axNum - 1 ] == null )
+                   axisName[ axNum - 1 ] = child.getNodeName();
+           if(( axNum == 1 )&&( l != null )&&( l.length == 1 ))
+               xvals_length = l[ 0 ];
+        
+          if( child.getNodeName().equals( "data" ) ){
              
-           dimensions = child.getDimension();
+            dimensions = child.getDimension();
              
-           labelName = ConvertDataTypes.StringValue( child.getAttrValue("label"));
-           Object O= child.getAttrValue("axes");
-           if( O instanceof String[]){
-              String S = (String)O;
-              S = S.trim();
-              if( S.startsWith("[")) S =S.substring(0);
-              if( S.endsWith("]")) S = S.substring(0,S.length()-1);
-              String[] SS = S.trim().split(":,");    
-             for( int j=0; j< SS.length;j++)
-                axisName[j]= SS[SS.length-j];
-           }
+            labelName = ConvertDataTypes.StringValue( child.getAttrValue( "label" ) );
+            Object O = child.getAttrValue( "axes" );
+            if( O instanceof String[] ){
+               String S = ( String )O;
+               S = S.trim();
+               if( S.startsWith( "[" ) ) S = S.substring( 0 );
+               if( S.endsWith( "]" ) ) S = S.substring( 0 , S.length() - 1 );
+               String[] SS = S.trim().split( ":," );    
+               for( int j = 0 ; j < SS.length ; j++ )
+                   axisName[ j ] = SS[ SS.length - j ];
+            }
               
-        }else if( child.getNodeName().equals("id") || child.getNodeName().
-            equals("detector_number")){
+          }else if( child.getNodeName().equals( "id" ) || child.getNodeName().
+            equals( "detector_number" ) ){
                  
-              Object O =child.getNodeValue();
-              if( O != null)
-              if( O instanceof int[]){                 
-                 hasIntIDField = true;
-              }
+            Object O = child.getNodeValue();
+            if( O != null )
+            if( O instanceof int[] ){                 
+               hasIntIDField = true;
+            }
                     
          }//Node Class is SDS   
-         String L = ConvertDataTypes.StringValue(child.getAttrValue("link")); 
-         if( L == null)
-            L = ConvertDataTypes.StringValue(child.getAttrValue("target"));
           
-         if( L != null){
-             linkName = FixUp(L, child);
+         //Find links for NXdata name
+         String L = ConvertDataTypes.StringValue( child.getAttrValue( "link" ) ); 
+         if( L == null )
+            L = ConvertDataTypes.StringValue( child.getAttrValue( "target" ) );
+          
+         if( L != null ){
+             linkName = FixUp( L , child );
              
          }
         }  //for loop
                
-           
-        NexIO.Util.NexUtils.disFortranDimension(dimensions, xvals_length);
+        XlateAxes = FindAxes( Params.xmlDoc );   
+        
+        NexIO.Util.NexUtils.disFortranDimension( dimensions , xvals_length );
         
      }
       
   }
-   private String FixUp( String linkName, NxNode node){
-      if( node == null)
+  
+  
+  
+   //Eliminates all but the trailing path part, unless it matches this nodes
+  // name, the return the previous path section.  Paths can be separated by
+  // ,./ or \
+  // NOTE: Version 2 requires pointing to an SDS field under a class
+   private String FixUp( String linkName , NxNode node ){
+      
+      if( node == null )
          return null;
+      
       String Name = node.getNodeName().trim();
-      if( linkName != null){
-         if( linkName.endsWith("\\"+ Name))
-            linkName = linkName.substring( 0, linkName.length()-Name.length()-1);
+      
+      if( linkName != null )if( linkName.length() > 0 ){
+         
+         if( linkName.endsWith( "/" ) || linkName.endsWith( "\\" ) || linkName.endsWith( "." ) )
+            linkName = linkName.substring( 0 , linkName.length() - 1 );
+         
+         if( linkName.endsWith( "\\" + Name ) )
+            linkName = linkName.substring( 0 , linkName.length() - Name.length() - 1);
 
-         else if( linkName.endsWith("/"+ Name))
-            linkName = linkName.substring( 0, linkName.length()-Name.length()-1);
-         else if( linkName.endsWith("."+ Name))
-            linkName = linkName.substring( 0, linkName.length()-Name.length()-1);
-         int k = linkName.lastIndexOf("/");
-         int k1 = linkName.lastIndexOf("\\");
-         int k2 =linkName.lastIndexOf(".");
-         if( k < 0)
-            k=k1;
-         if( k1 >=0)
-            if( k < 0) k = k1;
-            if( k < k1) k =k1;
-         if( k2 >0)
-            if( k < 0)  k = k2;
-            else if( k < k2)  k = k2;
-          if( k >=0) if( k+1 < linkName.length())
-            linkName = linkName.substring( k+1);
+         else if( linkName.endsWith( "/" + Name ) )
+            linkName = linkName.substring( 0 , linkName.length() - Name.length() - 1 );
+         
+         else if( linkName.endsWith( "." + Name ) )
+            linkName = linkName.substring( 0 , linkName.length() - Name.length() - 1 );
+         
+         //Now find last part of the path
+         int k = linkName.lastIndexOf( "/" );
+         int k1 = linkName.lastIndexOf( "\\" );
+         int k2 = linkName.lastIndexOf( "." );
+         if( k < 0 )
+            k = k1;
+         if( k1 >= 0 )
+            if( k < 0 ) 
+               k = k1;
+            if( k < k1 ) 
+               k = k1;
+         if( k2 > 0 )
+            if( k < 0 ) 
+               k = k2;
+            else if( k < k2 ) 
+               k = k2;
+          if( k >= 0 ) 
+             if( k + 1 < linkName.length() )
+                 linkName = linkName.substring( k + 1 );
          
        }
           
       return linkName;  
 
+   }
+   
+   
+   /**
+    *   Finds the axes from an XML file.  All it does is search for
+    *   <axes  , gets the string value and converts it to an array of
+    *   integers.
+    * @param xmlDoc  the xml parsed document in which to search for <axes
+    * @return   The value of the tag( if tail) returned as an int array
+    * 
+    */
+   public int[] FindAxes( Node xmlDoc ){
+      
+      Node res = Util.getNXInfo( xmlDoc , "axes" , null , null ,null );
+      
+      if( res == null )
+         return null;
+      
+      String S = res.getNodeValue();
+      if( S == null )
+         return null;
+      
+      return ConvertDataTypes.intArrayValue( S.split( "[ ]+" ) );
    }
   
 }
