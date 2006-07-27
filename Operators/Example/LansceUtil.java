@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.16  2006/07/27 20:17:42  dennis
+ * Commented out some unused variables and code, since the
+ * Nexus retriever automatically applies the required fixes.
+ *
  * Revision 1.15  2006/07/19 18:07:15  dennis
  * Removed unused imports.
  *
@@ -410,7 +414,7 @@ public class LansceUtil
                              // thickness
 //  float det_dist = 0.245f;
 //  float det_dist = 0.25f;
-    float det_dist = 0.265f;  // value from spreadsheet 
+//  float det_dist = 0.265f;  // value from spreadsheet 
 //  float det_dist = 0.275f;
 /*
     int run_[]   = { 725, 726, 727, 728, 729, 730, 731, 734, 735, 736, 737 };
@@ -420,12 +424,14 @@ public class LansceUtil
 */
     int run_[]   = { 725, 726, 727, 728, 729, 730, 731, 732, 733, 734, 735, 
                      736, 737 };
+    /*
     int omega_[] = { 125,  90,  60,  85,  72, 108,  35, 100,  78,  55, 130,
                      95,  60 };
     int phi_[]   = { 320, 335,   0,  10,  42,  50,   0, 300, 290, 280, 220, 
                      200, 200 };
     int chi_[]   = { 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 
                      120, 120 };
+*/
 /*
     // NOVEMBER LANSCE RUNS, detector distance 0.465 meter
     int run_[]   = { 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793,
@@ -456,7 +462,7 @@ public class LansceUtil
     String file_name;
     Retriever retriever;
 
-                                              // fix the data 
+/*                                              // fix the data 
     float det_width  = 0.20f; 
     float det_height = 0.20f; 
 //    float det_width  = 0.192f; 
@@ -473,6 +479,7 @@ public class LansceUtil
     float phi_sign   = 1;                     // set these to +-1 to change
     float chi_sign   = 1;                     // the direction of rotation
     float omega_sign = 1;
+*/
     DataSet one_ds;
     for ( int i = START; i < START+N_RUNS; i++ )
     {
@@ -480,7 +487,8 @@ public class LansceUtil
       retriever = new NexusRetriever( file_name );
       System.out.println("NOW LOADING RUN " + file_name );
       one_ds = retriever.getDataSet(3);
-/*
+/* 
+      // NOTE: Fix is no done in NexusRetriever
       one_ds = FixSCD_Data( one_ds, 
                             1500, 8000, 
                             det_width, det_height, 
@@ -534,7 +542,7 @@ public class LansceUtil
     for ( int i = 0; i < N_RUNS; i++ )
       ds_arr[i] = ds[i];
 
-    GL_RecipPlaneView recip_plane_view = new GL_RecipPlaneView( ds_arr, 30 );
+    new GL_RecipPlaneView( ds_arr, 30 );
 //  recip_plane_view.loadOrientationMatrix("/home/dennis/Ruby_1_12_06_D.mat");
 //  recip_plane_view.loadOrientationMatrix("/home/dennis/Ruby1.mat");
 
