@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/07/27 19:30:09  rmikk
+ * Eliminated a javadoc warning
+ *
  * Revision 1.2  2006/07/25 00:05:57  rmikk
  * Added code to update fields in a FixIt xml file in the same directory as
  * the NeXus file
@@ -84,6 +87,7 @@ public class NxfileStateInfo extends StateInfo{
     *                         of the NeXus file.
     */
    public NxfileStateInfo( NxNode NxfileNode , String filename){
+      
      NexusVersion =NexUtils.getStringAttributeValue( NxfileNode, "NeXus_version");
      HDFVersion = NexUtils.getStringAttributeValue( NxfileNode, "HDF_version");
      String time =NexUtils.getStringAttributeValue( NxfileNode, "file_time");
@@ -130,7 +134,8 @@ public class NxfileStateInfo extends StateInfo{
    *  Attempts to find the name of the facility from several sources. The return
    *  will be standardized to LANL, ANL, SNS, NIST, ISIS, 
    * @param topNode
-   * @return
+   * @return  The standardized name of the facility,LANL,ANL SNS, ISIS,
+   *             or  NIST, if possible, otherwize a null is returned.
    */
   public static String GetFacility( NxNode  topNode, NxNode InstrNode){
     int nattr = topNode.getNAttributes();
