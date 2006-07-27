@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2006/07/27 00:32:38  dennis
+ *  Moved ExcelAdapter to package ExtTools
+ *
  *  Revision 1.11  2005/07/19 19:04:08  rmikk
  *  Fixed Spelling error
  *
@@ -71,8 +74,9 @@ import gov.anl.ipns.Util.Sys.StringUtil;
 import javax.swing.*;
 import DataSetTools.viewer.*;
 import DataSetTools.dataset.*;
+import ExtTools.ExcelAdapter;
+
 import java.awt.*;
-import IsawGUI.*;
 import java.awt.event.*;
 import javax.swing.table.*;
 import java.io.*;

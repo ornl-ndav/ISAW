@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2006/07/27 00:32:38  dennis
+ * Moved ExcelAdapter to package ExtTools
+ *
  * Revision 1.5  2006/06/05 19:12:27  rmikk
  * Added a Print and a Save menu item
  * Now sends out Pointed At Changed messages to all iobservers
@@ -62,7 +65,7 @@ import javax.swing.*;
 
 import Command.ScriptUtil;
 import DataSetTools.dataset.*;
-import IsawGUI.ExcelAdapter;
+import ExtTools.ExcelAdapter;
 
 import java.awt.Point;
 import java.awt.event.*; 

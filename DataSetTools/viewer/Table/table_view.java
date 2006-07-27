@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.46  2006/07/27 00:32:37  dennis
+ * Moved ExcelAdapter to package ExtTools
+ *
  * Revision 1.45  2005/05/25 19:37:52  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -197,9 +200,8 @@ import java.util.*;
 import DataSetTools.util.*;
 import java.io.*;
 import javax.swing.table.*;
-import IsawGUI.*;
-
 import DataSetTools.components.ParametersGUI.*;
+import ExtTools.ExcelAdapter;
 
 
 /** A form of the table view that is run without any GUI

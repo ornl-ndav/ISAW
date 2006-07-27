@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.26  2006/07/27 00:32:37  dennis
+ * Moved ExcelAdapter to package ExtTools
+ *
  * Revision 1.25  2005/06/10 20:09:34  dennis
  * Added display of ISAW_HOME to System Properties panel.
  * Renamed "User Directory" to "Current Directory".
@@ -74,6 +77,8 @@ import java.awt.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.util.*;
+import ExtTools.ExcelAdapter;
+
 import java.io.*;
 import javax.swing.*;
 import javax.swing.text.*;

@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.21  2006/07/27 00:32:38  dennis
+ * Moved ExcelAdapter to package ExtTools
+ *
  * Revision 1.20  2005/05/25 19:37:51  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -119,9 +122,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import DataSetTools.viewer.*;
-import IsawGUI.*;
 import java.io.*;
 import DataSetTools.components.ui.*;
+import ExtTools.ExcelAdapter;
+
 import java.util.*;
 
 /** This class can be used as a Stub for all the special TableViewers in the old

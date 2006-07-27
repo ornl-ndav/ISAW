@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.20  2006/07/27 00:32:37  dennis
+ * Moved ExcelAdapter to package ExtTools
+ *
  * Revision 1.19  2005/10/30 22:37:32  dennis
  * The showAttributes() method now adds an instance of a RedrawPropertiesUI
  * object to the Swing event queue, to do the actual drawing.  This fixes
@@ -91,6 +94,7 @@
 package IsawGUI;
 
 import DataSetTools.dataset.*;
+import ExtTools.ExcelAdapter;
 import gov.anl.ipns.Util.Messaging.*;
 
 import java.awt.*;
