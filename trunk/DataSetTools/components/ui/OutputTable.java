@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/07/27 00:32:38  dennis
+ * Moved ExcelAdapter to package ExtTools
+ *
  * Revision 1.5  2004/01/22 02:06:03  bouzekc
  * Removed unused imports.
  *
@@ -90,7 +93,7 @@ public class OutputTable extends JFrame {
         
         final JTable table = new JTable(data, headings);
         table.setPreferredScrollableViewportSize(new Dimension(500, 650));
-        IsawGUI.ExcelAdapter el = new IsawGUI.ExcelAdapter(table);
+        ExtTools.ExcelAdapter el = new ExtTools.ExcelAdapter(table);
         
         if (DEBUG) {
             table.addMouseListener(new MouseAdapter() {

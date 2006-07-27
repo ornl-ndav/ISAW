@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2006/07/27 00:32:37  dennis
+ * Moved ExcelAdapter to package ExtTools
+ *
  * Revision 1.30  2005/05/25 15:10:22  dennis
  * Replaced variable name 'enum' with 'props_enum', since 'enum'
  * is a reserved word in java release 1.5.
@@ -125,6 +128,7 @@ import javax.swing.*;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Save.*;
+import ExtTools.ExcelAdapter;
 
 
 /**
