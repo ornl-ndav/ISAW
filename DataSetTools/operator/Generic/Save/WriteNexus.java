@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/07/31 13:27:43  rmikk
+ * Fixed a javadoc warning
+ *
  * Revision 1.6  2006/01/10 00:20:26  rmikk
  * Eliminated html markers in the description
  *
@@ -170,7 +173,7 @@ public Object clone()
   }
 /** Test program for this module.  
 * It just test to see if classpaths are correct, etc.
-*@return  "OKKK" to System.out if successful
+* Return  "OKKK" to System.out if successful
 */
 public static void main( String args[] )
  {
