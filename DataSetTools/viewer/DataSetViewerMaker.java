@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2006/08/09 19:21:56  amoe
+ *  Added code to redraw() so the graph cursor would be synchronized
+ *  with the other cursor(s).
+ *
  *  Revision 1.24  2006/07/19 18:07:14  dennis
  *  Removed unused imports.
  *
@@ -112,7 +116,9 @@
 
 package DataSetTools.viewer;
 
+import gov.anl.ipns.ViewTools.Panels.Graph.GraphJPanel;
 import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.Util.Numeric.floatPoint2D;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 import gov.anl.ipns.ViewTools.Components.*;
@@ -122,6 +128,9 @@ import javax.swing.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
 import java.awt.*;
+import gov.anl.ipns.Util.Messaging.*;
+
+import java.awt.event.*;
 
 import gov.anl.ipns.ViewTools.Components.OneD.VirtualArrayList1D;
 
@@ -172,6 +181,10 @@ public class DataSetViewerMaker  extends DataSetViewer
           viewComp.getDisplayPanel(), East, 1.00f);
      */
       the_pane.addAncestorListener( new ancestor_listener());
+      
+      //adding listener update cursor for all displayed graphs
+      //viewComp.addActionListener(new PointedAtListener());
+      
       add(the_pane);
       invalidate();
      }
@@ -187,7 +200,7 @@ public class DataSetViewerMaker  extends DataSetViewer
    }
 
 
-  public void redraw( String reason)
+   public void redraw( String reason)
     {
       if ( !validDataSet() )
         return;
@@ -195,12 +208,19 @@ public class DataSetViewerMaker  extends DataSetViewer
       {
         viewArray = DataSetData.convertToVirtualArray(getDataSet());
         viewComp.dataChanged(viewArray);
-        // viewComp.getGraphJPanel().repaint();
+        //viewComp.getGraphJPanel().repaint();
       }
       else if( reason.equals( "POINTED AT CHANGED" ))
-      {
+      {     	  
         viewArray.setPointedAtGraph( getDataSet().getPointedAtIndex() );
         viewComp.dataChanged();
+        
+        //updating cursor on SelectedGraphView
+        GraphJPanel gjp = ((GraphJPanel)viewComp.getDataPanel());
+        floatPoint2D fpt = new floatPoint2D();
+        fpt.x = getDataSet().getPointedAtX();
+        fpt.y = gjp.getY_value( fpt.x, 0 );        
+  	  	gjp.set_crosshair_WC( fpt );
       }
     }
     /**
@@ -257,5 +277,49 @@ public class DataSetViewerMaker  extends DataSetViewer
     public void ancestorMoved(AncestorEvent event){
     }
   }
+  
+  /*
+  private class PointedAtListener implements ActionListener
+  {
+	  boolean ignore_pointed_at = false;
+	  boolean isDoingZoomBox;
+	  int i = 0;
+	  
+	  public void actionPerformed(ActionEvent ae)
+	  {
+		  
+		  String message = ae.getActionCommand();
+		  
+		  isDoingZoomBox = ((GraphJPanel)viewComp.getDataPanel()).isDoingBox();
+		  
+		  //System.out.println("*DataSetViewerMaker.actionPerformed()\n\tmessage: "+
+			//message+"\n\td_box = "+isDoingZoomBox);	  
+		  
+		  
+		  float last_x = ds.getPointedAtX();
+		  float new_x = viewComp.getPointedAt().x;
+		  
+		  if( (message==GraphJPanel.CURSOR_MOVED) && 
+				  (ignore_pointed_at==false) &&
+				  (last_x!=new_x) &&
+				  (isDoingZoomBox == false) )
+		  {
+			  ignore_pointed_at = true;
+			  
+			  ds.setPointedAtIndex( viewComp.getArray().getPointedAtGraph() );
+			  ds.setPointedAtX( new_x );
+			  ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+			  ignore_pointed_at=false;
+		  }
+		  //else if(ignore_pointed_at==true)
+		  //{
+			//  ignore_pointed_at=false;
+		  //}
+		  
+		  //System.out.println("DataSetViewerMaker$PointedAtListener: "+message+" "+i+
+			//	  "\n\t*ActionEvent: "+ae.toString());
+		  i++;
+	  }
+  }*/
 
   }//DataSetViewerMaker
