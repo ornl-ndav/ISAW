@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.74  2006/08/10 22:13:32  dennis
+ * Changed message that is printed when a new version of
+ * Isaw is found, and the list of operators is rebuilt.
+ *
  * Revision 1.73  2006/03/16 13:46:04  rmikk
  * Added if in LoadDebug before some debug prints
  *
@@ -1725,7 +1729,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         assign(opList, opListCopy);
         
         if(!checkDates(opList)){
-          System.out.println("Dates did not check on Restore");
+          System.out.println("Found new ISAW version.  " +
+                             "Rebuilding operator cache...");
           opList.clear();
           SortOnFileName.clear();
           SortOnCommand.clear();
