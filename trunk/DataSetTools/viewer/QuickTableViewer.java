@@ -30,6 +30,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2006/08/10 13:01:32  rmikk
+ * Made attached the initial state
+ * Eliminated? the pointed at table from going behind another window when
+ * moved along with the main viewer
+ *
  * Revision 1.6  2006/07/27 00:32:38  dennis
  * Moved ExcelAdapter to package ExtTools
  *
@@ -118,7 +123,7 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 		JMenu jm = new JMenu("Options" );
 		ShowErrs= new JCheckBoxMenuItem( "Show Errors" );
 		ShowIndx = new JCheckBoxMenuItem( "Show Index" );
-		Hug = new JCheckBoxMenuItem( "Attach to parent" );
+		Hug = new JCheckBoxMenuItem( "Attach to parent" , true );
 		JMenuItem Exit = new JMenuItem( "Close" );
 		
 		jm.add( ShowErrs );
@@ -204,54 +209,59 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 	
 	//Moves the JFrame to the correct spot with the correct size
 	// and highlights the pointed at X
-	private void ShowTable(){
-		
-		  if( Hug == null )
-			  return;
-          
-          if( (Hug.isSelected() )&&( parent != null )&&hugg ){
-         	
-         	 java.awt.Rectangle D = parent.getBounds(); 
-         	 setBounds( D.x + D.width, D.y, ncols*80 , D.height );
-           }else{
-          	
- 		      setSize( ncols*80,(int)( getToolkit().getScreenSize().height*.8 ) );
-           }
-         
-          
-          table.invalidate();
-          table.repaint();
-          jscr.invalidate();
-          jscr.repaint();
-          invalidate();
-          repaint();
-          validate();
-          //pack();
-          jscr.invalidate();
-          jscr.repaint();
-          table.invalidate();
-          table.repaint();
-          
-          //Center the Viewport
-          if( PointedAtXindex >= 0 )if( jscr != null ){
-        	table.changeSelection( PointedAtXindex,0, false, false);  
-        	java.awt.Rectangle R = table.getCellRect( PointedAtXindex,0,false );        
-        	R.y = Math.max( 0,R.y-getSize().height/2 );
-        	JViewport vpt = jscr.getViewport();
-        	vpt.setViewPosition( new Point( R.x, R.y ) );
-        	jscr.setViewport( vpt );
-        	
-          }
-		 
-	}
+	private void ShowTable() {
+
+      if( Hug == null ) return;
+
+      if( ( Hug.isSelected() ) && ( parent != null ) && hugg ) {
+
+         java.awt.Rectangle D = parent.getBounds();
+         setBounds( D.x + D.width , D.y , ncols * 80 , D.height );
+      } else {
+
+         setSize( ncols * 80 ,
+                  (int) ( getToolkit().getScreenSize().height * .8 ) );
+      }
+
+
+      table.invalidate();
+      table.repaint();
+      jscr.invalidate();
+      jscr.repaint();
+      invalidate();
+      repaint();
+      validate();
+      // pack();
+      jscr.invalidate();
+      jscr.repaint();
+      table.invalidate();
+      table.repaint();
+
+      // Center the Viewport
+      if( PointedAtXindex >= 0 )
+         if( jscr != null ) {
+            table.changeSelection( PointedAtXindex , 0 , false , false );
+            java.awt.Rectangle R = table.getCellRect( PointedAtXindex , 0 ,
+                     false );
+            R.y = Math.max( 0 , R.y - getSize().height / 2 );
+            JViewport vpt = jscr.getViewport();
+            vpt.setViewPosition( new Point( R.x , R.y ) );
+            jscr.setViewport( vpt );
+
+         }
+      
+      this.toFront();
+ 
+   }
 	
 
 	
 	
 	/**
-	 * Attempts to remove all connections and destroy all resources for this JFrame
-	 *
-	 */
+    * Attempts to remove all connections and destroy all resources for this
+    * JFrame
+    * 
+    */
 	public void destroy(){
 		DS.deleteIObserver( this );
 		if( parent != null){
