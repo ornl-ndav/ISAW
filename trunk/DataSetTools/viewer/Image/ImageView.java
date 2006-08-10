@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.58  2006/08/10 17:05:13  dennis
+ *  In redraw() method, only redraw horizontal graph in case the
+ *  request to redraw came from outside of the ImageView.
+ *
  *  Revision 1.57  2005/09/01 02:32:35  dennis
  *  Small fixes to vertical scrolling behavior.
  *  Now preserves size of zoomed in region when vertical scrolling.
@@ -329,7 +333,6 @@ public void redraw( String reason )
     if ( image_Jpanel.isDoingBox() )    // don't interrupt the zoom in process
       return;
 
-    DrawSelectedHGraphs(); 
     float n_data = getDataSet().getNum_entries();
 
     if ( debug )
@@ -358,6 +361,11 @@ public void redraw( String reason )
         }
 
         image_Jpanel.set_crosshair_WC( pt );
+
+        floatPoint2D WC_xy = new floatPoint2D(x,0);
+        h_graph.set_crosshair_WC( WC_xy );
+        h_graph.repaint();
+
         getState().set_int( ViewerState.POINTED_AT_INDEX, index );
         getState().set_float( ViewerState.POINTED_AT_X, pt.x );
       }
