@@ -1,0 +1,36 @@
+
+Instructions on Installing the JOGL Stuff on Your Client Machine:
+=================================================================
+
+On Linux:
+
+	* copy the "jogl.jar" file into:
+
+		$JAVA_HOME/jre/lib/ext/
+
+	* copy the libraries "libjogl.so" and "libjogl_cg.so"
+		(from the "Linux/" subdirectory) into:
+
+		$JAVA_HOME/jre/lib/i386/
+
+	Note: $JAVA_HOME should be something like:
+	
+		/opt/sun-jdk-1.5.0.07/
+
+On Windows:
+
+	* copy the "jogl.jar" file into:
+
+		$JAVA_HOME\jre-VERSION\lib\ext\
+
+	* copy the libraries "jogl.dll" and "jogl_cg.dll"
+		(from the "Win32/" subdirectory) into:
+
+		$JAVA_HOME\jre-VERSION\bin\
+
+		(e.g. C:\Program Files\Java\jre1.5.0_07\bin\*)
+
+	Note: $JAVA_HOME should be something like:
+	
+		C:\Program Files\Java\
+
