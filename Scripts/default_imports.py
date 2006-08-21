@@ -31,6 +31,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.2  2006/08/21 14:41:33  hammonds
+# Add import for new Parameter location.
+#
 # Revision 1.1  2003/07/08 23:41:45  bouzekc
 # Added to CVS.
 #
@@ -42,6 +45,7 @@
 
 from DataSetTools.operator import *
 from DataSetTools.parameter import *
+from gov.anl.ipns.Parameters import *
 from DataSetTools.operator.Generic import GenericOperator
 from DataSetTools.operator.DataSet.Attribute import *
 from DataSetTools.operator.DataSet.Math.Analyze import *
