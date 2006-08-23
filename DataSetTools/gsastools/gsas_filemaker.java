@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2006/08/23 21:25:27  hammonds
+ *  Change order of writing ISAW version info into GSAS file to correct problem writing GSAS files.  Title and IParm file should be on first two lines.
+ *
  *  Revision 1.36  2006/07/19 18:07:14  dennis
  *  Removed unused imports.
  *
@@ -229,9 +232,9 @@ public class gsas_filemaker
      */
     public void write(){
         //long offset=System.currentTimeMillis();
-    this.printWriterInfo( );
     this.printRunTitle();
     this.printIParmFile();
+    this.printWriterInfo( );
 	this.printUserName();
 	this.printNumPulses();
 	this.printStartStopTimes();
