@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.8  2006/08/24 15:15:00  rmikk
+ * Set the parent "to Front" also so it will have the keyboard focus
+ *
  * Revision 1.7  2006/08/10 13:01:32  rmikk
  * Made attached the initial state
  * Eliminated? the pointed at table from going behind another window when
@@ -251,7 +254,8 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
          }
       
       this.toFront();
- 
+      if( parent != null)
+          parent.toFront(); 
    }
 	
 
@@ -331,31 +335,21 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 			if(parent != null)parent.removeWindowListener( this);
 			parent = null;
 			hugg = false;
+         destroy();
+         parent = null;
+         hugg = false;
+         
 		}
 		
 		parent = null;
 		hugg = false;
-		
-	}
+      }
 
 	
 	
 	public void windowClosing(WindowEvent e) {
 		
-		
-
-		if( e.getSource().equals( this)){
-		
-			destroy();
-			parent = null;
-			hugg = false;
-		}else{
-			if(parent != null)parent.removeWindowListener( this);
-			parent = null;
-			hugg = false;	
-		}
-		
-		
+		windowClosed( e);		
 		
 		
 	}
@@ -398,7 +392,8 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
         	return;
 		
 		hugg = true;
-		if( Hug.isSelected())ShowTable();
+		if( Hug.isSelected())
+           ShowTable();
 		
 	}
 
