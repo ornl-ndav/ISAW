@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2006/08/25 20:27:31  rmikk
+ *  Fixed the off by one error. The first and last rows and columns now show up
+ *  in the Conversions table when selected.
+ *
  *  Revision 1.34  2005/03/28 06:01:31  serumb
  *  Now uses new methods for instances of labelComboBox.
  *
@@ -670,13 +674,13 @@ public class ContourData
          c--;
       if( mode == 0)
         {
-         if( r <= 1 )
+         if( r <= 0 )
          return -1;
-         if( c <= 1 )
+         if( c <= 0 )
          return -1;
-         if( r > num_rows )
+         if( r >= num_rows )
           return -1;
-         if( c > num_cols )
+         if( c >= num_cols )
            return -1;
          //if( Groups[r][c] != grid.getData_entry(r,c))
            //System.out.println( "Grid<>Groups at "+r+","+c);
