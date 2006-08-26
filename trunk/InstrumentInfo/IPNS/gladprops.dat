@@ -96,7 +96,7 @@ GLAD.STD.FSILICA.SIZE = [0.0, 0.4415, 6.0]
 !number density;
 GLAD.STD.FSILICA.DENSITY = 0.0662
 !absorption crosssection of fused silica at 1.8 Angstrom;
-GLAD.STD.FSILICA.SIGMA_A = 0.0058
+GLAD.STD.FSILICA.SIGMA_A = 0.058
 !
 !vanadium cans:
 !
