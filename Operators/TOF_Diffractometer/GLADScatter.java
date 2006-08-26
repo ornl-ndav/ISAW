@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  * 
  * $Log$
+ * Revision 1.7  2006/08/26 02:32:47  taoj
+ * input absorption crosssection values in a configuration file now overwrite the calculated ones.
+ *
  * Revision 1.6  2006/04/27 22:36:49  taoj
  * Revision for the flat plate case; extra code handling the calculation of scc (sample calibration connstant, or the number of scatterers).
  *
@@ -46,8 +49,6 @@ import java.util.regex.Pattern;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.BufferedWriter;
-import java.io.StringWriter;
 
 /**
  * This class provides the IPNS GLAD instrument and experiment specific information
@@ -96,7 +97,7 @@ public class GLADScatter implements Cloneable {
   
   GLADScatter (GLADRunProps expsetup, int imask) {    
     
-    String key, expkeyh, analykeyh = "GLAD.ANALYSIS";
+    String expkeyh, analykeyh = "GLAD.ANALYSIS";
     float sigmavals[];
     Object obj;
     
@@ -149,7 +150,10 @@ public class GLADScatter implements Cloneable {
     else {
       sigmavals = MutCross.loadSigmaTable().getTargetSigmas(symbol, formula);
       sigma_s = sigmavals[0];
-      sigma_a = sigmavals[1];
+      if (sigma_a == 0.0f)
+        sigma_a = sigmavals[1];
+      else System.out.println("\n******WARNINGS******\n" +
+                       "use input value for the absorption crosssection sigma_a.\n");
       if (bbarsq == 0.0f) bbarsq = sigmavals[2];
     }
 
@@ -162,6 +166,11 @@ public class GLADScatter implements Cloneable {
       rad = new float[] { rad[0], rad[1] };           
       bwid = ((Float) expsetup.ExpConfiguration.get("GLAD.VAC1.BWID")).floatValue();
       bht = ((Float) expsetup.ExpConfiguration.get("GLAD.VAC1.BHT")).floatValue();
+      if (bht > sht) {
+        bht = sht;
+        System.out.println("\n******WARNINGS******\n" + 
+        "sample height less than beam height.");
+      }
       
       if ( (obj = expsetup.ExpConfiguration.get("GLAD.BEAM.PARAMS")) == null) { 
         beamparams = new float[9];
@@ -194,8 +203,11 @@ public class GLADScatter implements Cloneable {
 //use scatterern from this point on;                
 //        expsetup.ExpConfiguration.put("GLAD.ANALYSIS.SCC", new Float(scatterern));
       } 
-      if (scatterern != 0.0f)  System.out.println("sample effective density: "+effdensity
-                                                +" number of scatterers (10^24): "+scatterern);      
+      if (scatterern != 0.0f)  System.out.println("sample effective density: "+effdensity+"\n"
+                                                +"beam height: "+bht+"\n"
+                                                +"sample outer radius: "+rad[1]+"\n"
+                                                +"sample inner radius: "+rad[0]+"\n"
+                                                +"number of scatterers (10^24): "+scatterern);      
     }
     
   }//constructor;
@@ -242,14 +254,17 @@ public class GLADScatter implements Cloneable {
 
     }
     
-    if (scatterern == 0.0f) {
+//    if (scatterern == 0.0f) {
       if (isFlatPlate)  
         scatterern = (float)(effdensity*bwid*bht*tss[0]);
       else      
         scatterern = (float)(effdensity*bht*Math.PI*(comborad[1]*comborad[1]-comborad[0]*comborad[0])); 
-    } 
-    if (scatterern != 0.0f)  System.out.println("sample effective density: "+effdensity
-                                              +" number of scatterers (10^24): "+scatterern);      
+//    } 
+    if (scatterern != 0.0f)  System.out.println("sample effective density: "+effdensity+"\n"
+        +"beam height: "+bht+"\n"
+        +"sample outer radius: "+comborad[1]+"\n"
+        +"sample inner radius: "+comborad[0]+"\n"
+        +"number of scatterers (10^24): "+scatterern);
     combos.scatterern = scatterern;
     combos.muttable = inners.muttable + outers.muttable;
     combos.setAbsInput();
@@ -290,7 +305,6 @@ public class GLADScatter implements Cloneable {
     String oneline;
     int nw=0;
     float lambda, sigma_t;  
-    BufferedWriter bw = (new BufferedWriter(new StringWriter()));
     while ( (lambda = minw + dw * nw++) <  (maxw+0.000001f) ) {
       sigma_t = sigma_s+sigma_a*lambda/MutCross.RTLAMBDA;
       oneline = lambda + " " + sigma_t+"\n";
