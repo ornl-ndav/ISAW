@@ -59,7 +59,7 @@ ids = "1:384"
 tof_ds = OneDS( file_name, data_set_index, ids )
 
 #
-# Now "fix" the DataSet by loading the load the detector position 
+# Now "fix" the DataSet by loading the detector position 
 # information and optionally, the GSAS calibration information.
 # For now, we assume that the GSAS information is in a file in the
 # ISAW distribution, ending with _050207.  This should be changed 
