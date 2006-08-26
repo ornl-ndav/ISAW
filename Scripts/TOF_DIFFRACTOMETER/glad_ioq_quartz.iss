@@ -61,7 +61,8 @@ $ Category = Macros, Instrument Type, TOF_NGLAD
 
 #================= Parameters ======================================
 #configuration:
-$configfile LoadFileString("C:\Isaw\Databases\gladprops.dat") Configratuion file:
+#$configfile LoadFileString("C:\Isaw\Databases\gladprops.dat") Configratuion file:
+$configfile LoadFileString("/IPNShome/taoj/cvs/ISAW/InstrumentInfo/IPNS/gladprops.dat") Configratuion file:
 #$vanopt ChoiceList(["1: 3/8 inch vanadium rod", "2: 1/4 inch vanadium rod", "x: others"]) Which calibration rod?
 #$smpcomposition String("Si 1.0 O 2.0") Sample composition:
 #$smprho Float(0.0662) Sample density:
@@ -70,13 +71,16 @@ $configfile LoadFileString("C:\Isaw\Databases\gladprops.dat") Configratuion file
 #$canrho Float(0.07205) Can density:
 
 # run files:
-$VanFile	LoadFileString("C:\Isaw\SampleRuns\glad8094.run") Vanadium run file:
-$SmpFile        LoadFileString("C:\Isaw\SampleRuns\glad8095.run") Sample run file:
+#$VanFile	LoadFileString("C:\Isaw\SampleRuns\glad8094.run") Vanadium run file:
+#$SmpFile        LoadFileString("C:\Isaw\SampleRuns\glad8095.run") Sample run file:
 #$CanFile	LoadFileString("C:\Isaw\SampleRuns\glad9010.run")  Can run file:
-$BkgFile        LoadFileString("C:\Isaw\SampleRuns\glad8093.run") Background run file:
+#$BkgFile        LoadFileString("C:\Isaw\SampleRuns\glad8093.run") Background run file:
+$VanFile	LoadFileString("/IPNShome/glad/data/glad8094.run") Vanadium run file:
+$SmpFile        LoadFileString("/IPNShome/glad/data/glad8095.run") Sample run file:
+$BkgFile        LoadFileString("/IPNShome/glad/data/glad8093.run") Background run file:
 
 # dead detector list:
-$REDPAR LoadFileString("C:\Isaw\Databases\gladrun.par") Bad detector list file:
+$REDPAR LoadFileString("/IPNShome/glad/gladrun.par") Bad detector list file:
 $lcutoff Float(20.0) lower cutoff value to remove a data block:
 
 # VANCAL (vanadium calibration function) setup:
@@ -105,7 +109,7 @@ $DoMerge 	Boolean(true)	Merge data?
 
 $QCut	Float(25.0) Qcut:
 
-runinfo=GLAD_CONFIGURE("1", "Si 1 O 2", 0.0662, "1", 0, 0, configfile, false)
+runinfo=GLAD_CONFIGURE("1", "Si 1 O 2", 0.0662, "1", 0, configfile, false)
 
 mon_nrm_van=GLAD_CRUNCH(runinfo, VanFile, true, REDPAR)
 #mon_nrm_can=GLAD_CRUNCH(runinfo, CanFile)
