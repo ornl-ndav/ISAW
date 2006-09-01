@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.51  2006/09/01 23:18:19  taoj
+ * Qx and Qy values from the input data file are now read in and kept in arrays; Three get***() methods added to access them as well as the VitualArray2D object contained by this viewer class.
+ *
  * Revision 1.50  2005/06/02 22:34:18  dennis
  * Modified to just use IVirtualArray2D methods on a
  * VirtualArray2D object.
@@ -405,6 +408,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   // complete viewer, includes controls and ijp
   private transient SplitPaneWithState pane;
   private transient ImageViewComponent ivc;
+  private transient float[]  Qxs;
+  private transient float[]  Qys;
   private transient IVirtualArray2D data;
   private transient JMenuBar menu_bar;
   private transient DataSet data_set;
@@ -653,6 +658,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     // this assumes the data is from a 200x200 array.
     int NUM_ROWS = 200;
     int NUM_COLS = 200;
+    float[] qxs = null;
+    float[] qys = null;
     float[][] array = null;
     float[][] err_array = null;
     float qxmin = 0;
@@ -756,6 +763,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       
       //System.out.println("Num Rows/Columns: " + NUM_ROWS + "/" + NUM_COLS);
       // set sizes of the array
+      qxs = new float[NUM_ROWS];
+      qys = new float[NUM_COLS];
       array     = new float[NUM_ROWS][NUM_COLS];
       err_array = new float[NUM_ROWS][NUM_COLS];
       int row = NUM_ROWS - 1;
@@ -765,6 +774,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       StringTokenizer datarow = new StringTokenizer(reader.read_line());
       qxmin = (new Float( datarow.nextToken() )).floatValue();
       qymin = (new Float( datarow.nextToken() )).floatValue();
+      qxs[col] = qxmin;
+      qys[row] = qymin;
       array[row][col]     = (new Float( datarow.nextToken() )).floatValue();
       err_array[row][col] = (new Float( datarow.nextToken() )).floatValue();
     
@@ -779,6 +790,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
         datarow = new StringTokenizer(reader.read_line());
         qxmax = (new Float( datarow.nextToken() )).floatValue();
         qymax = (new Float( datarow.nextToken() )).floatValue();
+        qxs[col] = qxmax;
+        qys[row] = qymax;
         array[row][col] = (new Float( datarow.nextToken() )).floatValue();
         err_array[row][col] = (new Float( datarow.nextToken() )).floatValue();
 	//System.out.println("Row/Col: (" + row + "," + col + ")" );
@@ -822,6 +835,9 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
         	                    System.getProperty("file.separator") );
 	va2D.setTitle(filename.substring(separator_index + 1));
 	setData( va2D );
+  
+  Qxs = qxs;
+  Qys = qys;
       }
       // no file to be read, display file not found on empty jpanel.
       else
@@ -894,7 +910,34 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   {
     setData( new VirtualArray2D(array, err_array) );
   }
+
+  /**
+   * This method returns a reference to the array data contained by this object
+   *!!!!!!an ad hoc fix to expose the data for some outside use!!!!!!
+   */ 
+   public IVirtualArray2D getData()
+   {
+       return data;
+   }  
+
+   /**
+    * This method returns a reference to the Qx array contained by this object
+    *!!!!!!an ad hoc fix to expose the data for some outside use!!!!!!
+    */ 
+    public float[] getQxs()
+    {
+        return Qxs;
+    }  
  
+    /**
+     * This method returns a reference to the Qy array contained by this object
+     *!!!!!!an ad hoc fix to expose the data for some outside use!!!!!!
+     */ 
+     public float[] getQys()
+     {
+         return Qys;
+     }  
+    
  /**
   * This method sets the directory where data files can be found.
   *
