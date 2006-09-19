@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2006/09/19 21:49:29  rmikk
+ *  Fixed the getDocumentation documentation
+ *
  *  Revision 1.6  2005/08/24 20:29:22  dennis
  *  Added/Moved to menu DATA_SET_INFO_MACROS
  *
@@ -140,14 +143,11 @@ public class NumBins extends    GenericSpecial {
 	Res.append("@overview This operator determines what the number of ");
  	Res.append("bins of a given data block is over a specified range.");
 	
-	Res.append("@algorithm If no upstream monitor is found \"-1\" is ");
-    	Res.append("returned.  Otherwise the max and mins are compared to ");
-	Res.append("make sure the max is larger than the min and ");
-	Res.append("that the bounds do not go outside the ");
-	Res.append("DataSet.  If the range is the entire DataBlock then the ");
-	Res.append("total number of bins in the data block is returned.");
-	Res.append("If not, the data block is checked to see how many bins ");
-        Res.append("are in the given range.");
+	Res.append("@algorithm  Input values are first checked. Next");
+    	Res.append(" the number of bins that are completely between xmin and ");
+	Res.append("xmax  in the dataset's data block  with the specified id is ");
+	Res.append("calculated and returned. If xmax &lt; xmin they are rearranged.");
+	
 
 	Res.append("@param ds The DataSet to use.");
 	Res.append("@param id The group ID to use.");
