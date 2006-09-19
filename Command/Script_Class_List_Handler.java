@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.75  2006/09/19 18:04:22  rmikk
+ * Added new method to get DataSet operator position
+ *
  * Revision 1.74  2006/08/10 22:13:32  dennis
  * Changed message that is printed when a new version of
  * Isaw is found, and the list of operators is rebuilt.
@@ -701,6 +704,42 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return dsOpListI[index];
     }
 
+    
+    /** Gets the position in the dsListI list of the first operator
+     *   whose command name is CommName.
+   */
+   public int getDSOperatorPosition( String CommName){
+       int left = 0,
+           right = dsOpListI.length-1,
+           mid = 0;
+       if( CommName == null)
+          return -1;
+       boolean found = false;
+       while( (left <= right) && !found){
+          mid = (left+right)/2;
+          int R =(CommName.compareTo( dsOpListI[mid].getCommand()));
+          if( R > 0)  
+             left = mid+1;
+          else if (R < 0)
+             right = mid -1;
+          else
+             found = true;
+          
+       }
+       if( !found) return -1;
+       int i = mid;
+      
+       int j = i-1;
+       while( j >= 0 ){
+           if( dsOpListI[j].getCommand().equals(CommName)){
+               i = j;
+               j--;
+           }
+           else
+               return i;
+       }
+       return i;
+   }
     /** Gets the position in the master list of the first operator
       *   whose command name is CommName.
     */
