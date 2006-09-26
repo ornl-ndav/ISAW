@@ -31,6 +31,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2006/09/26 13:51:03  rmikk
+ * Fixed the calculation for the position of a word so that the highlighting is closer
+ *    in the search view for this word
+ *
  * Revision 1.1  2006/09/15 14:43:27  rmikk
  * Fixed another off by one error so that the top row now displays proper info
  *   in the conversions table when selecteed.
@@ -98,6 +102,7 @@ public class MakeSearchData {
 
          String filename = SCLH.getOperator( i ).getSource();
          String Command = SCLH.getOperator( i ).getCommand();
+         //System.out.println("-------------------"+Command+"----------------");
          update( "Generic" , Command , filename , doc );
 
 
@@ -154,8 +159,10 @@ public class MakeSearchData {
       
       String word;
       getWord( doc );
+      
       for( word = getNextWord() ; word != null ; word = getNextWord() ) {
          
+         //System.out.println("^^^^^^^^^^^^^^^^^^^^"+word+"^^^^^^^^^^^^^^^");
          int p = Viewpos - word.length();
          append( word , p , tag , Command , filename );
       }
@@ -185,7 +192,7 @@ public class MakeSearchData {
       if( pos < 0 ) 
           pos = 0;
       
-      Viewpos = 2;
+      Viewpos = 1;
    }
 
 
@@ -234,40 +241,51 @@ public class MakeSearchData {
          return null;
       
       boolean inDirective = false;
-
+    // System.out.println("              --------------------------------              ");
+    
       String S = "";
       char c = doc.charAt( pos++ );
-      if( c == '<' )
-         inDirective = true;
-      else
-         Viewpos++ ;
       S = null;
-      
+      boolean lastCharisSpace = false;
+      boolean startOfLine = false;
       while( ( ( c <= ' ' )
                || ( ( "<>/\\.,=?[]{}+-)(*&^%$#@!:;\"\'0123456789" ).indexOf( c ) >= 0 ) || inDirective )
                && ( pos < doc.length() ) ) {
          
-         c = doc.charAt( pos++ );
+       
          if( inDirective && ( S != null ) ) {
             if( c != '>' ) S += c;
             S = S.trim();
             if( S.length() > 0 )
                if( ( c == ' ' ) || ( c == '>' ) ) {
-                  if( ";p;br;/h1;/h2;/h3;li;hr;tr;/ol;/ul;/table;".indexOf( ";"
-                           + S + ";" ) >= 0 ) Viewpos++ ;
+                 
+                  if( ";p;br;body;/h1;/h2;/h3;li;/li;hr;tr;/ol;/ul;/table;".indexOf( ";"
+                           + S + ";" ) >= 0 ){ 
+                        if( ! lastCharisSpace )
+                            Viewpos++ ;
+                     lastCharisSpace = false;
+                     startOfLine = true;// leading spaces on a line are omitted
+                  }
                   S = null;
                }
          }
-         if( ! inDirective ) if( "\n\r".indexOf( c ) < 0 ) 
-            Viewpos++ ;
-         
-         if( c == '<' ) {
+          if( c == '<' ) {
             
             inDirective = true;
             S = "";
-            if( "\n\r".indexOf( c ) < 0 ) 
-               Viewpos-- ;
          }
+          
+         if( ! inDirective ) if( ( c ) >= ' ' ) {
+             if( !lastCharisSpace &&!( startOfLine &&(c ==' ')))
+                 Viewpos++ ;
+             if( c == ' ')
+                lastCharisSpace = true;
+             else 
+                lastCharisSpace = false;
+             
+             startOfLine = false;
+         }
+       
          
          if( c == '>' ) {
             
@@ -275,6 +293,8 @@ public class MakeSearchData {
             S = null;
             
          }
+         
+         c = doc.charAt( pos++ );
       }
 
       if( pos >= doc.length() ) 
@@ -283,6 +303,9 @@ public class MakeSearchData {
 
       S = "";
       S += c;
+      //System.out.print("       Viewpos:"+Viewpos);
+      Viewpos++;
+     
       c = doc.charAt( pos++ );
       while( ( ( ( c >= 'a' ) && ( c <= 'z' ) )
                || ( ( c >= 'A' ) && ( c <= 'Z' ) ) || ( c == '_' ) || ( ( c >= '0' ) && ( c <= '9' ) ) )
@@ -294,11 +317,15 @@ public class MakeSearchData {
 
       }
 
+      //System.out.println("-"+Viewpos+"="+S);
+     
       if( c == '<' ) {
          
          inDirective = true;
          pos-- ; // reread it for next word
-      } else
+      } else if( c==' ')
+         pos--;  //reread space in case two spaces
+      else
          Viewpos++ ;
 
       S = S.toLowerCase();
