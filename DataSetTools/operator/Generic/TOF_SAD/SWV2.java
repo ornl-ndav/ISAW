@@ -44,6 +44,7 @@ import DataSetTools.util.SharedData;
 
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.File.TextWriter;
 import gov.anl.ipns.Util.Sys.WindowShower;
@@ -74,9 +75,11 @@ public class SWV2  extends GenericTOF_SAD{
      {
       this();
       parameters = new Vector();
-      addParameter( new LoadFilePG( "Enter Filename", filename1));
-      addParameter( new LoadFilePG( "Enter Filename", filename2));
-      addParameter( new BooleanPG ("Subtract: ", true));
+      addParameter( new LoadFilePG( "Enter Filename", filename1) );
+      addParameter( new LoadFilePG( "Enter Filename", filename2) );
+      addParameter( new BooleanPG ("Subtract: ", true) );
+      addParameter ( new FloatPG ("a*(1): ", 1.0f ) );
+      addParameter ( new FloatPG ("b*(2): ", 1.0f ) );
     }
 
 
@@ -88,7 +91,8 @@ public class SWV2  extends GenericTOF_SAD{
       addParameter( new LoadFilePG( "Enter Filename", null));
       addParameter( new LoadFilePG( "Enter Filename", null));
       addParameter( new BooleanPG ("Subtract: ", true));
-     
+      addParameter ( new FloatPG ("a*(1): ", 1.0f ) );
+      addParameter ( new FloatPG ("b*(2): ", 1.0f ) );     
     }
 
   /* --------------------------- getCommand ------------------------------- */ 
@@ -113,7 +117,8 @@ public class SWV2  extends GenericTOF_SAD{
    {
      StringBuffer s = new StringBuffer("");                                        
      s.append("@overview  This operator loads two data files containing ");
-     s.append(" S(Qx,Qy), adds/subtracts the second set of data to/from the first one, ");
+     s.append(" S(Qx,Qy), rescale each by multiplying with different numbers, ");
+     s.append(" adds/subtracts the second set of data to/from the first one, ");
      s.append(" pops up a viewer showing the data.  Integration ");
      s.append(" over rings and wedges is supported by the viewer.");
 
@@ -134,8 +139,9 @@ public class SWV2  extends GenericTOF_SAD{
      s.append(" the pixel data.");
      s.append("@param String specifying the name of the second file containing ");
      s.append(" the pixel data.");
-     s.append("@param to sum ? ");
-     s.append("@param or to subtract ? ");
+     s.append("@param to sum or to subtract ? ");
+     s.append("@param multiply first data by a factor a: ");
+     s.append("@param multiply second data by a factor b: ");
      s.append("@return A string indicating that the file was displayed " );
      return s.toString();
    }
@@ -150,6 +156,8 @@ public class SWV2  extends GenericTOF_SAD{
         String filename1 =   getParameter(0).getValue().toString();
         String filename2 =   getParameter(1).getValue().toString();
         boolean doMinus = (Boolean) getParameter(2).getValue();
+        float a = (Float) getParameter(3).getValue();
+        float b = (Float) getParameter(4).getValue();
         float plusminus = -1.0f;
         String fout = filename1 + ((doMinus)?".m":".p");
         StringBuffer output = new StringBuffer();
@@ -176,9 +184,9 @@ public class SWV2  extends GenericTOF_SAD{
         float sigx, sigy;
         for (int j = 0; j < n; j++ ){
           for (int i = m-1; i > -1; i--){
-            a1[i][j] += plusminus*a2[i][j];
-            sigx = a1e[i][j];
-            sigy = a2e[i][j];
+            a1[i][j] = a*a1[i][j] + plusminus*b*a2[i][j];
+            sigx = a*a1e[i][j];
+            sigy = b*a2e[i][j];
             a1e[i][j] = ((Double)Math.sqrt(sigx*sigx+sigy*sigy)).floatValue();
             output.append(qxs[j]+" "+qys[i]+" "+a1[i][j]+" "+a1e[i][j]+"\n");
           }
