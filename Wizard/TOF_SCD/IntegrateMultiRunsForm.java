@@ -28,6 +28,9 @@
  * number DMR-0218882.
  * 
  * $Log$
+ * Revision 1.46  2006/09/28 23:21:48  rmikk
+ * Specifically set forward slashes on all filenames
+ *
  * Revision 1.45  2006/07/10 16:26:14  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -192,6 +195,7 @@ import DataSetTools.parameter.DataSetPG;
 
 import gov.anl.ipns.Parameters.*;
 
+import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 
 import DataSetTools.wizard.Form;
@@ -432,7 +436,7 @@ public class IntegrateMultiRunsForm extends Form {
     //get output directory
     param            = ( IParameterGUI )getParameter( 1 );
     outputDir        = param.getValue(  ).toString(  );
-
+    outputDir = FilenameUtil.setForwardSlash( outputDir );
     //gets the run numbers
     param            = ( IParameterGUI )super.getParameter( 2 );
     runsArray        = IntList.ToArray( param.getValue(  ).toString(  ) );
@@ -455,7 +459,7 @@ public class IntegrateMultiRunsForm extends Form {
     //get calibration file name
     param            = ( IParameterGUI )getParameter( 5 );
     calibFile        = param.getValue(  ).toString(  );
-
+    calibFile = FilenameUtil.setForwardSlash( calibFile );
     //get time slice range
     param            = ( IParameterGUI )getParameter( 6 );
     sliceRange       = param.getValue(  ).toString(  );
