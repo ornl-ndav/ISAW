@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2006/10/10 15:32:40  rmikk
+ * Eliminated some javadoc errors and one unused routine
+ *
  * Revision 1.18  2006/07/28 19:44:48  rmikk
  * Fixed it so y-offset is not all zeroes.
  * Reformatted a lot of the code.
@@ -618,7 +621,7 @@ public class NxWriteData {
     /**
      * Obsolete :Use this routine to determine interval lengths for both
      * histgram and function data
-     */
+    
     private float intlength( float xvals[] , int intnum , boolean histogram ) {
         int nfix = 1;
 
@@ -655,7 +658,7 @@ public class NxWriteData {
         return rendpt - lendpt;
     }
 
-
+   */
 
 
 
@@ -1015,41 +1018,41 @@ public class NxWriteData {
         float[] azim , float[] polar , float[][]orientation , float[] width , 
         float[] height , float[] depth , DataSet DS , float[] tof , int det ) {
                  
-        Inst_Type inst = new Inst_Type();
+        //Inst_Type inst = new Inst_Type();
         NxWriteNode node = util.writeIA_SDS( nxDetector , "detector_number" ,
-               id , inst.makeRankArray( id.length , -1 , -1 , -1 , -1 ) );
+               id , NexIO.Inst_Type.makeRankArray( id.length , -1 , -1 , -1 , -1 ) );
 
         if ( slot != null )
             node = util.writeIA_SDS( nxDetector , "slot" , slot ,
-                       inst.makeRankArray( slot.length , -1 , -1 , -1 , -1 ) );
+                     NexIO.Inst_Type.makeRankArray( slot.length , -1 , -1 , -1 , -1 ) );
         
         if ( crate != null )
             node = util.writeIA_SDS( nxDetector , "crate" , crate ,
-                      inst.makeRankArray( crate.length , -1 , -1 , -1 , -1 ) );
+                     NexIO.Inst_Type.makeRankArray( crate.length , -1 , -1 , -1 , -1 ) );
         
         if ( input != null )
             node = util.writeIA_SDS( nxDetector , "input" , input ,
-                      inst.makeRankArray( input.length , -1 , -1 , -1 , -1 ) );
+                     NexIO.Inst_Type.makeRankArray( input.length , -1 , -1 , -1 , -1 ) );
         
         node = util.writeFA_SDS( nxDetector , "distance" , distance ,
-                   inst.makeRankArray( distance.length , -1 , -1 , -1 , -1 ) );
+                 NexIO.Inst_Type.makeRankArray( distance.length , -1 , -1 , -1 , -1 ) );
         
         util.writeStringAttr( node , "units" , "meter" );
           
         node = util.writeFA_SDS( nxDetector , "azimuthal_angle" , azim ,
-                    inst.makeRankArray( azim.length , -1 , -1 , -1 , -1 ) );
+                 NexIO.Inst_Type.makeRankArray( azim.length , -1 , -1 , -1 , -1 ) );
         
         util.writeStringAttr( node , "units" , "radian" );
          
         node = util.writeFA_SDS( nxDetector , "polar_angle" , polar ,
-                    inst.makeRankArray( polar.length , -1 , -1 , -1 , -1 ) );
+                 NexIO.Inst_Type.makeRankArray( polar.length , -1 , -1 , -1 , -1 ) );
         
         util.writeStringAttr( node , "units" , "radian" );
      
         SetUpGridInfoNxDet( nxDetector , width , height , depth , orientation );
       
         node = util.writeFA_SDS( nxDetector , "time_of_flight" , tof ,  
-                        inst.makeRankArray( tof.length , -1 , -1 , -1 , -1 ) );
+                 NexIO.Inst_Type.makeRankArray( tof.length , -1 , -1 , -1 , -1 ) );
         
         util.writeIntAttr( node , "axis" , 1 );
         util.writeStringAttr( node , "units" , DS.getX_units() );
@@ -1494,7 +1497,7 @@ public class NxWriteData {
     private void SetUpGridInfoNxDet( NxWriteNode nxDetector , float[] width , 
         float[] height , float[] depth , float[][] orientation ) {
  
-        Inst_Type inst = new Inst_Type();
+        //Inst_Type inst = new Inst_Type();
         NxWriteNode geomNode = nxDetector.newChildNode( "geometry" , 
                                                               "NXgeometry" ); 
 
@@ -1514,12 +1517,12 @@ public class NxWriteData {
             NxWriteNode shapeNode = NxshapeNode.newChildNode( "shape" , "SDS" );
 
             shapeNode.setNodeValue( ( "nxbox" + ( char ) 0 ).getBytes() , 
-                      Types.Char , inst.makeRankArray( 6 , -1 , -1 , -1 , -1 ) );
+                      Types.Char , NexIO.Inst_Type.makeRankArray( 6 , -1 , -1 , -1 , -1 ) );
             
             shapeNode = null;
              
             NxWriteNode node = util.writeFA_SDS( NxshapeNode , "size" , size , 
-                     inst.makeRankArray( width.length , 3 , -1 , -1 , -1 ) );
+                     NexIO.Inst_Type.makeRankArray( width.length , 3 , -1 , -1 , -1 ) );
 
             util.writeStringAttr( node , "units" , "meter" );
      
@@ -1535,7 +1538,7 @@ public class NxWriteData {
             for ( int i = 0 ; i < orientation.length ; i++ )
                 System.arraycopy( orientation[ i ] , 0 , orientt , 6 * i , 6 );
             
-            util.writeFA_SDS( orientNode , "value" , orientt , inst. 
+            util.writeFA_SDS( orientNode , "value" , orientt , NexIO.Inst_Type. 
                      makeRankArray(orientation.length , 6 , -1 , -1 , -1 ) );                                                  
         }   
     }
@@ -1602,6 +1605,7 @@ public class NxWriteData {
      *          have a length of 1. 
      */
     public static int[] getAreaGrids( DataSet DS ) {
+       
         Vector V = new Vector( DS.getNum_entries() );
         UniformGrid grid = null;
 
@@ -1618,6 +1622,7 @@ public class NxWriteData {
                     grid = ( UniformGrid ) dgrid;
             }
         }
+        
         int[] Res = new int[ V.size() ];
 
         for ( int i = 0 ; i < Res.length ; i++ )
