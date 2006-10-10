@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/10/10 15:29:43  rmikk
+ * Fixed a null pointer exception when the monitor is null
+ *
  * Revision 1.12  2004/05/14 15:03:51  rmikk
  * Removed unused variables
  *
@@ -214,7 +217,9 @@ public class NxWriter{
    */
   public void Append( DataSet[] Monitors , DataSet[] Histogram){
     int n;
+    
    
+    
     int instrType = getInstrumentType( Monitors, Histogram);
     
     if( Histogram == null ) 
@@ -233,7 +238,7 @@ public class NxWriter{
     
     //There should only be one monitor
     if( Monitors !=null)
-      if( Monitors.length > 0){
+      if( (Monitors.length > 0) &&(Monitors[0] != null)){
         if( Monitors.length >1)
           SharedData.addmsg("Only one monitor is "
                            +"allowed for a set of data sets in Writer.Append");
