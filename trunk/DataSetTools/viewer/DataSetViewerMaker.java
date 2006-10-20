@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2006/10/20 05:28:33  amoe
+ *  Edited redraw() to sychronize the cursors, without using a GraphJPanel.
+ *
  *  Revision 1.25  2006/08/09 19:21:56  amoe
  *  Added code to redraw() so the graph cursor would be synchronized
  *  with the other cursor(s).
@@ -215,12 +218,10 @@ public class DataSetViewerMaker  extends DataSetViewer
         viewArray.setPointedAtGraph( getDataSet().getPointedAtIndex() );
         viewComp.dataChanged();
         
-        //updating cursor on SelectedGraphView
-        GraphJPanel gjp = ((GraphJPanel)viewComp.getDataPanel());
         floatPoint2D fpt = new floatPoint2D();
         fpt.x = getDataSet().getPointedAtX();
-        fpt.y = gjp.getY_value( fpt.x, 0 );        
-  	  	gjp.set_crosshair_WC( fpt );
+        fpt.y = 0;
+        viewComp.setPointedAt(fpt);
       }
     }
     /**
@@ -290,6 +291,8 @@ public class DataSetViewerMaker  extends DataSetViewer
 		  
 		  String message = ae.getActionCommand();
 		  
+		  //will have to work around the getDataPanel()
+		  //because it no longer exists
 		  isDoingZoomBox = ((GraphJPanel)viewComp.getDataPanel()).isDoingBox();
 		  
 		  //System.out.println("*DataSetViewerMaker.actionPerformed()\n\tmessage: "+
