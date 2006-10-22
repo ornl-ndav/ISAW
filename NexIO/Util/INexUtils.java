@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2006/10/22 18:18:26  rmikk
+ * Adds method to getErrorMessage
+ *
  * Revision 1.1  2003/11/16 21:47:21  rmikk
  * Initial Checkin
  *
@@ -101,7 +104,7 @@ public interface INexUtils{
  
   //public void setUpNX...Attributes, where ...=Beam,Sample, etc.
 
-    
+  public String getErrorMessage();
 
     
 }
