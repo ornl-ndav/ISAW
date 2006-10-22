@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2006/10/22 18:15:47  rmikk
+ * Convert to float Array and int Array now converts lists of strings separated
+ *   by spaces, comma, or semicolon to the corresponding array, if possible
+ *
  * Revision 1.10  2006/07/25 00:04:28  rmikk
  * Added metre as a unit.
  * checked cm  before m
@@ -105,9 +109,19 @@ public class ConvertDataTypes{
            Res[0] = ((Number)O).floatValue();
            return Res;
         }else if( O instanceof String){
-           float[] Res = new float[1];
-           Res[0] = (new Float( (String)O)).floatValue(); 
+           String[] substrings = ((String)O).trim().split("(\\s*[,;]\\s*)|\\s+");
+           
+           if( substrings == null)
+              return null;
+           
+           float[] Res = new float[substrings.length];
+           
+           for( int i=0; i<Res.length ; i++)
+              Res[i] = ( new Float( substrings[i])).floatValue();
+          
            return Res;
+  
+  
         }else if( O instanceof Vector){
             return floatArrayValue( ((Vector)O).toArray());
 
@@ -152,9 +166,17 @@ public class ConvertDataTypes{
            return Res;
            
         }else if( O instanceof String){
+           
+           String[] substrings = ((String)O).trim().split("(\\s*[,;]\\s*)|\\s+");
+           
+           if( substrings == null)
+              return null;
+           
+           int[] Res = new int[substrings.length];
+           
+           for( int i=0; i<Res.length ; i++)
+              Res[i] = ( new Integer( substrings[i])).intValue();
           
-           int[] Res = new int[1];
-           Res[0] = (new Integer( (String)O)).intValue(); 
            return Res;
   
         }
@@ -210,6 +232,9 @@ public class ConvertDataTypes{
      return Res;
 
   }
+  
+  
+  
   private static int findNext( char[] L, char[] F, int start){
     
      for( int i = start; (i >=0) && (i < L.length); i++){
@@ -229,6 +254,9 @@ public class ConvertDataTypes{
      
      return -1;
   }
+  
+  
+  
   /** end is not included
   */
   private static int countt( char[]L, char [] F, int start, int end){
