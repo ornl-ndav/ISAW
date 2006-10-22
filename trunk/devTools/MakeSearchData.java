@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2006/10/22 18:26:59  rmikk
+ * Changed directory where the presearched database info is stored
+ *
  * Revision 1.2  2006/09/26 13:51:03  rmikk
  * Fixed the calculation for the position of a word so that the highlighting is closer
  *    in the search view for this word
@@ -77,11 +80,11 @@ public class MakeSearchData {
       
       super();
       new DataSetTools.util.SharedData();
-      String HelpDir = System.getProperty( "Help_Directory" );
-      if( HelpDir == null ) exitt( " No Help directory in IsawProps.dat" );
+      String HelpDir = System.getProperty( "user.home" );
+      //f( HelpDir == null ) exitt( " No Help directory in IsawProps.dat" );
       HelpDir = HelpDir.replace( '\\' , '/' );
       if( ! HelpDir.endsWith( "/" ) ) HelpDir += "/";
-      HelpDir += "HelpSystem/SearchData/";
+      HelpDir += "ISAW/";
       
       
       fout1 = new FileOutputStream( HelpDir + "keys.txt" );
