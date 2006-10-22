@@ -31,6 +31,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2006/10/22 18:28:19  rmikk
+ * Changed directory where the presearched database info is stored to the
+ * user's home directory
+ *
  * Revision 1.1  2006/09/15 14:45:10  rmikk
  * Initial Checkin.  This is the search Engine that gets the information from the
  * index files produced by devTools.MakeSearchData
@@ -95,7 +99,7 @@ public class MemSearchEngine extends SearchEngine implements SearchListener {
    private void setup() {
 
       DataSetTools.util.SharedData Sdat = new DataSetTools.util.SharedData();
-      String path = System.getProperty( "Help_Directory" );
+      String path = System.getProperty( "user.home" );
       if( path == null ) {
 
          fout = null;
@@ -108,7 +112,7 @@ public class MemSearchEngine extends SearchEngine implements SearchListener {
       path = path.replace( '\\' , '/' );
       if( ! path.endsWith( "/" ) )
          path += '/';
-      path += "HelpSystem/SearchData/";
+      path += "ISAW/";
       java.io.File f1 = new java.io.File( path + "/data.txt" );
       if( ! f1.exists() ) {
 
