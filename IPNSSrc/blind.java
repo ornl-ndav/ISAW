@@ -53,6 +53,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2006/10/24 18:42:13  rmikk
+ * Added a routine blaue( float[][] orientation matrix) that will run an orientation
+ *    matrix through the later blind processing.
+ *
  * Revision 1.22  2004/07/14 17:15:49  rmikk
  * Fixed FindPeaks constructor to include the added parameters
  *
@@ -151,7 +155,7 @@ import DataSetTools.operator.DataSet.Attribute.*;
 import java.io.*;
 
 public class blind {
-  private static final boolean DEBUG=false;
+  private static final boolean DEBUG= false;
 
   public  double[][]   UB           = null;
   private String       errormessage = "";
@@ -168,6 +172,49 @@ public class blind {
     System.out.print(logBuffer.substring(start));
   }
 
+  /**
+   * It performs blind tasks using the Q vectors in the orientation matrix.
+   * This is to standardize a set of basis vectors gotten by some other means
+   * 
+   * @param orientMat  
+   * @return
+   */
+  public ErrorString blaue( float[][] orientMat){
+     double[] Qx,Qy,Qz;
+     Qx= new double[7];
+     Qy= new double[7];
+     Qz= new double[7];
+     Qx[0]= orientMat[0][0]+orientMat[0][1]+orientMat[0][2];
+     Qx[1]= 2*orientMat[0][1]+orientMat[0][1]+orientMat[0][2];
+     Qx[2]= orientMat[0][2]+2*orientMat[0][1]+orientMat[0][2];
+     Qx[3]= orientMat[0][0]+orientMat[0][1]+2*orientMat[0][2];
+
+     Qy[0]= orientMat[1][0]+orientMat[1][1]+orientMat[1][2];
+     Qy[1]= 2*orientMat[1][1]+orientMat[1][1]+orientMat[1][2];
+     Qy[2]= orientMat[1][2]+2*orientMat[1][1]+orientMat[1][2];
+     Qy[3]= orientMat[1][0]+orientMat[1][1]+2*orientMat[1][2];
+
+     Qz[0]= orientMat[2][0]+orientMat[2][1]+orientMat[2][2];
+     Qz[1]= 2*orientMat[2][1]+orientMat[2][1]+orientMat[2][2];
+     Qz[2]= orientMat[2][2]+2*orientMat[2][1]+orientMat[2][2];
+     Qz[3]= orientMat[2][0]+orientMat[2][1]+2*orientMat[2][2];
+
+     abid(Qx,Qy,Qz);
+
+     // return the error message if necessary
+     if( errormessage.length()>0)
+       return new ErrorString(errormessage);
+     int[] seqNums = new int[4];
+     for( int i=0; i<4; i++)
+        seqNums[i]=i+1;
+     
+     ErrorString error = bias(7, Qx,Qy,Qz, seqNums);
+     
+     if( error != null)
+        return error;
+     return null;
+  }
+  
   /**
    * Finds the basis of the smallest non coplanar in Qx,Qy,Qz peaks.
    * The basis is manipulated so that B*Transpose(B) is "about" a
@@ -281,7 +328,7 @@ public class blind {
    * in the first three positions of XX,YY, and ZZ. The other vectors
    * are all moved up d
    */
-  private void abid (double[] Qx, double[] Qy, double[] Qz ) {
+  public void abid (double[] Qx, double[] Qy, double[] Qz ) {
     int length=Qx.length-3; // -3 b/c a couple are added for new basis vectors
     double d=0.0;
     double[][] UB=new double[3][3]; // the ub matrix
@@ -289,7 +336,7 @@ public class blind {
     double [] za= new double[length];
     double [] xa= new double[length];
     int [] l=sortQ(Qx,Qy,Qz);
-
+    
     // initialize the sorted vector arrays
     for( int j=0 ; j<length ; j++ ){ 
       xa[j] = Qx[l[j]-1];
@@ -323,6 +370,7 @@ public class blind {
       }
 
       d=LinearAlgebra.determinant(UB);
+      System.out.println("d ="+d);
       if (Math.abs(d) >= 0.0001) break;
 
       // d is the determinant of the basis vectors if close to zero,
@@ -347,7 +395,7 @@ public class blind {
         swap(l,1,2);
       }
     }
-
+   
     //Manipulate b so that B*transpose(B) about diagonal
     aarr(UB);
 
