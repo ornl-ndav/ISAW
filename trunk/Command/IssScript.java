@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2006/10/26 14:56:04  rmikk
+ * Added some error checking to eliminate null pointer and other errors
+ *
  * Revision 1.11  2005/01/10 16:13:27  rmikk
  * Groupx Home are now replaced by the name followint GROUPx_NAME in
  *    IsawProps.dat
@@ -275,6 +278,9 @@ public class IssScript extends Script{
 
     // copy the docs into the buffer
     for( int i=0 ; i<lastdocline ; i++ ){
+      line=this.getLine(i);
+      if( line !=null)if(line.length()>=1)
+         if( line.startsWith("#")){
       line=this.getLine(i).substring(1).trim();
       if(line==null || line.length()<=0){
         if(pastfirst_nonempty)
@@ -283,10 +289,13 @@ public class IssScript extends Script{
         pastfirst_nonempty=true;
         docbuffer.append(line+"\n");
       }
+         }
     }
-
+    
     // set the doc string and return the result
     this.documentation=docbuffer.toString();
+    if( this.documentation != null)if( this.documentation.length()<1)
+         return null;
     return this.documentation;
   }
   
