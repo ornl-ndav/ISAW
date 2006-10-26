@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.260  2006/10/26 15:19:19  dennis
+ *  Modified closeISAW() method to restrict the width and height values
+ *  to be at least 50, when they are recorded in IsawProps.dat.  This
+ *  "fixes" a reported problem of users thinking that ISAW did not start
+ *  when they had previously shrunk the Isaw panel to be just a few
+ *  pixels high and wide.
+ *
  *  Revision 1.259  2006/10/08 02:03:24  dennis
  *  Set Version to 1.8.1_a1
  *
@@ -1308,8 +1315,23 @@ public class Isaw
    * Deals with closing up ISAW.  Saves the window size and exits the system.
    */
   void closeISAW(  ) {
-    gov.anl.ipns.Util.File.IsawPropsMutator.mutateIsawPropsKey( "Isaw_Height", this.getHeight(  ) + "", true );
-    gov.anl.ipns.Util.File.IsawPropsMutator.mutateIsawPropsKey( "Isaw_Width", this.getWidth(  )  + "", true );
+                                   // clamp the size stored in IsawProps.dat
+                                   // so when Isaw restarts, the control panel
+                                   // is at least still visible.
+    int  MIN_HEIGHT = 50;
+    int  MIN_WIDTH  = 50;
+
+    int  current_height = this.getHeight();
+    int  current_width  = this.getWidth();
+
+    if ( current_height < MIN_HEIGHT )
+      current_height = MIN_HEIGHT;
+
+    if ( current_width < MIN_WIDTH )
+      current_width = MIN_WIDTH;
+
+    gov.anl.ipns.Util.File.IsawPropsMutator.mutateIsawPropsKey( "Isaw_Height", current_height + "", true );
+    gov.anl.ipns.Util.File.IsawPropsMutator.mutateIsawPropsKey( "Isaw_Width", current_width  + "", true );
     gov.anl.ipns.Util.File.IsawPropsMutator.writeBackToFile(  );
     System.exit(0);
   }
