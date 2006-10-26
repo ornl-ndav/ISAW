@@ -32,6 +32,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.31  2006/10/26 21:59:39  rmikk
+ * Fixed problem with StringChoiceList parameters. The original choices must
+ * be retrieved for this choice list
+ *
  * Revision 1.30  2006/07/10 16:25:51  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -534,11 +538,26 @@ public class JavaWrapperOperator extends GenericOperator {
            }
           }else
           fieldParams[k].set(wrapped, values[k]);
-        } else if( 
+        
+        }else if( fieldParams[k].getType().equals( gov.anl.ipns.Util.SpecialStrings.StringChoiceList.class)){
+           Vector V= new Vector();
+           StringChoiceList L = (StringChoiceList)fieldParams[k].get( wrapped );
+          V = L.getStrings();
+          String[] SS = new String[V.size()];
+          for( int ii=0; ii< SS.length; ii++)
+             SS[ii] = V.elementAt(ii).toString();
+          L = new StringChoiceList( SS);
+          L.setString( values[k].toString());
+           
+           fieldParams[k].set( wrapped,L);
+           
+        }else if( 
+     
           SpecialString.class.isAssignableFrom( fieldParams[k].getType(  ) ) ) {
           try{
           
           SpecialString spStr = (SpecialString)(fieldParams[k].getType().newInstance());
+          
           spStr.setString( values[k].toString());
           fieldParams[k].set( wrapped,spStr);
           }catch(Exception ss8){
