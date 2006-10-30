@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/10/30 15:12:14  rmikk
+ * Changed the third parameter to a choice of C, java or FORTRAN format for the
+ *   resultant array
+ *
  * Revision 1.4  2005/05/16 20:17:42  rmikk
  * Got the indexing for Fortran arrays fixed.  May have to add C arrays later
  *
@@ -77,8 +81,12 @@ public class getDSArray implements Wrappable, IWrappableWithCategoryList {
     *  If true, a one dimension float array will be returned. The fastest
     *  changing dimension is time then col then row
     */
-   public boolean FortArray = false;
-   
+  // public boolean FortArray = false;
+  public StringChoiceList format = new StringChoiceList(
+            
+            new String[]{"C","java","FORTRAN"}
+            
+           );
 
   /**
    * Get an array of strings listing the operator category names  for 
@@ -132,10 +140,20 @@ public class getDSArray implements Wrappable, IWrappableWithCategoryList {
      int ntimes = grid.getData_entry(1,1).getY_values().length;
      float[][][] data = null ;
      float[]fdata = null;
-     if( FortArray)
+     boolean fort,jav,c;
+     fort=jav=c=false;
+     String Format = format.toString();
+     if( Format.equals("FORTRAN")){
         fdata =new float[ncols*nrows*ntimes];
-     else
+        fort = true;
+     }else if( Format.equals("java")){
         data = new float[nrows][ncols][ntimes];
+        jav = true;
+     }else if( Format.equals("C")){
+        fdata = new float[ncols*nrows*ntimes];
+        c = true;
+     }else
+        return new ErrorString( format +" is improper format for array");
         
     
      for( int i=0; i< nrows; i++)
@@ -148,10 +166,12 @@ public class getDSArray implements Wrappable, IWrappableWithCategoryList {
           
           for(int t=0; t < ntimes; t++ ){
           
-             if( FortArray )// C array??
+             if(fort )// C array??
                 fdata[(i)+(j)*nrows + t*nrows*ncols] = V[t];
-             else
+             else if( jav)
                 data[i][j][t] = V[t];
+             else
+                fdata[ t+ntimes*j+ntimes*ncols*i] = V[t];
           
            }
         }   
@@ -173,11 +193,9 @@ public class getDSArray implements Wrappable, IWrappableWithCategoryList {
      s.append("the y value. The result will be a 3 dimensional array with ");
      s.append("dimensions of row, col, and time ");  
  
-     s.append("@param FortArray  If false, a multidimensional Java ");
-     s.append("float array is returned with dimensions row, col, time");
-     s.append("If true, a one dimension float array will be returned. The ");
-     s.append("fastest changing dimension is time then col then row");
-   
+     s.append("@param format either java, C, or FORTRAN ");
+     s.append("The C and FORTRAN format yield linear float arrays in their standard");
+     s.append("order. The format, java, yields a 2D java float array that can be ragged,");
      s.append("@return The array in the proper format for one detector");
        
      return s.toString();
