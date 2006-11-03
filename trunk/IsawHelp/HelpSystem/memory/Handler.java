@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2006/11/03 20:41:35  rmikk
+ * Changed the package name to use the lower case m in memory
+ *
  * Revision 1.9  2005/05/25 18:01:28  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -66,7 +69,7 @@
  *
  *
  */
-package IsawHelp.HelpSystem.Memory;
+package IsawHelp.HelpSystem.memory;
 
 import java.net.*;
 import java.io.*;
