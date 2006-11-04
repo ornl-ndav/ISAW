@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.261  2006/11/04 16:45:34  rmikk
+ *  Added a "Update Search DataBase" Option to ISAW's Help Menu
+ *
  *  Revision 1.260  2006/10/26 15:19:19  dennis
  *  Modified closeISAW() method to restrict the width and height values
  *  to be at least 50, when they are recorded in IsawProps.dat.  This
@@ -741,6 +744,8 @@ import javax.swing.event.*;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.text.*;
 import javax.swing.tree.*;
+
+import devTools.MakeSearchData;
 //import SDDS.java.SDDSedit.*;
  
 
@@ -1098,6 +1103,7 @@ public class Isaw
     JMenuItem IsawPropLink    = new JMenuItem(ISAWPROPS_MI );
     JMenuItem ViewHelpLink    = new JMenuItem("Viewers");
     JMenuItem OpList          = new JMenuItem("Operator List");
+    JMenuItem SearchDB        = new JMenuItem("Update Search Data Base");
     JMenuItem OpWrite         = new JMenuItem( OPERATORINFO_MI);
     fMenu.add(fileLoadDataset);
     fileLoadDataset.add(Runfile);
@@ -1170,6 +1176,7 @@ public class Isaw
     hMenu.add( TutLink);
     hMenu.add( IsawPropLink);
     hMenu.add( OpList);
+    hMenu.add( SearchDB);
     hMenu.add( ViewHelpLink);
     JMenu Res= new JMenu("Resources on the Net");
     
@@ -1228,6 +1235,7 @@ public class Isaw
     TutLink.addActionListener(menu_item_handler);
     IsawPropLink.addActionListener(menu_item_handler); 
     OpList.addActionListener(menu_item_handler); 
+    SearchDB.addActionListener(menu_item_handler); 
     ViewHelpLink.addActionListener(menu_item_handler); 
     OpWrite.addActionListener(menu_item_handler);   
     menuBar.add(fMenu);
@@ -1863,6 +1871,20 @@ public class Isaw
           return;
         }
         
+      }
+      if( s.equals("Update Search Data Base")){
+         if( JOptionPane.showConfirmDialog(null, "This will take several minutes. Do you want to continue",
+                  "Continue?",
+                     JOptionPane.YES_NO_OPTION)==JOptionPane.NO_OPTION)
+                     return;
+         try {
+            new devTools.MakeSearchData();
+         } catch( Exception s3 ) {
+            JOptionPane.showMessageDialog( null, "Error:"+s3.toString());
+            return;
+         }
+         JOptionPane.showMessageDialog( null,"Done updating the Search Data Base for operators");
+         return;
       }
                 
       if( s.equals(COMMAND_PANE_MI) )
