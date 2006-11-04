@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2006/11/04 20:24:35  dennis
+ * Minor efficiency improvment for switch to new non-array Vector3D.
+ *
  * Revision 1.30  2006/06/13 14:17:10  dennis
  * Now includes a control to select specific detectors to display,
  * project peaks, etc.
@@ -1358,9 +1361,10 @@ public class GL_RecipPlaneView
                 pd.tof = t;
                 pd.row = row;
                 pd.col = col;
-                pd.qx  = pts[0].get()[0];
-                pd.qy  = pts[0].get()[1];
-                pd.qz  = pts[0].get()[2];
+                float temp[] = pts[0].get();
+                pd.qx  = temp[0];
+                pd.qy  = temp[1];
+                pd.qz  = temp[2];
                 pd.counts = ys[j];
                 pd.run_num = 
                   (int)(d.getAttribute(Attribute.RUN_NUM).getNumericValue());
