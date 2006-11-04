@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2006/11/04 20:24:35  dennis
+ * Minor efficiency improvment for switch to new non-array Vector3D.
+ *
  * Revision 1.27  2005/06/02 22:34:21  dennis
  * Modified to just use IVirtualArray2D methods on a
  * VirtualArray2D object.
@@ -770,9 +773,10 @@ public class RecipPlaneView
               pd.tof = t;
               pd.row = row;
               pd.col = col;
-              pd.qx  = pts[0].get()[0];
-              pd.qy  = pts[0].get()[1];
-              pd.qz  = pts[0].get()[2];
+              float temp[] = pts[0].get();
+              pd.qx = temp[0];
+              pd.qy = temp[1];
+              pd.qz = temp[2];
               pd.counts = ys[j];
               pd.run_num = 
                 (int)(d.getAttribute(Attribute.RUN_NUM).getNumericValue());
