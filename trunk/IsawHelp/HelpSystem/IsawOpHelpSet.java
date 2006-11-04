@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2006/11/04 16:17:46  rmikk
+ * The search tab is now active( if the search data base has been created)
+ *
  * Revision 1.15  2006/11/04 15:55:22  rmikk
  * Updated to use the new memory( with lower case M) directory and tto
  *    use the system property java.prorocol.handler.pkgs
@@ -115,7 +118,7 @@ public class IsawOpHelpSet extends HelpSet
   Script_Class_List_Handler  sh;
   static TOCView toc ;
   static FavoritesView fav;
-  //static SearchView search;
+  static SearchView search;
   boolean operatorsOnly;
 
   /**
@@ -140,7 +143,7 @@ public class IsawOpHelpSet extends HelpSet
      this.operatorsOnly = operatorsOnly;
      toc = new IsawTOC( this , "TOC" , "Operators" , null , sh , operatorsOnly);
      fav = new FavoritesView( this,"Favorites","Favorites", null);
-     //search = new MSearchView( this,"Search Ops", "Search", null);
+     search = new MSearchView( this,"Search Ops", "Search", null);
     }
 
   /**
@@ -177,8 +180,8 @@ public class IsawOpHelpSet extends HelpSet
         return toc;
      else if( name.equals("Favorites"))
          return fav;
-     //else if( name.equals("Search Ops"))
-     //   return search;
+     else if( name.equals("Search Ops"))
+        return search;
      else
         return null;
     }
@@ -189,10 +192,10 @@ public class IsawOpHelpSet extends HelpSet
   */
   public NavigatorView[] getNavigatorViews()
     {
-     NavigatorView[] Res = new NavigatorView[ 2 ];
+     NavigatorView[] Res = new NavigatorView[ 3 ];
      Res[ 0 ] = toc;
      Res[ 1 ] =fav;
-     //Res[2] =search;
+     Res[2] =search;
      return Res;
     }
 //----------------------------- Class opMap---------------------------------
