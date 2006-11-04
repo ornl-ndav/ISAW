@@ -31,6 +31,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2006/11/04 16:48:18  rmikk
+ * Added a message indicating how to update the search data base if this
+ *   data base does not exist.  If all the class files are recompiled, the data
+ *   base needs to be updated again too.
+ *
  * Revision 1.2  2006/10/22 18:28:19  rmikk
  * Changed directory where the presearched database info is stored to the
  * user's home directory
@@ -51,6 +56,7 @@ import java.security.InvalidParameterException;
 import java.util.*;
 import java.io.*;
 import javax.help.search.*;
+import javax.swing.JOptionPane;
 
 import Command.*;
 
@@ -396,6 +402,7 @@ public class MemSearchEngine extends SearchEngine implements SearchListener {
             return;
          }
          if( fout == null ) {
+            JOptionPane.showMessageDialog( null, "Update Search Data Base under IsawGUI's Help menu ");
             exitt( 2 , searchparams );
             return;
          }
