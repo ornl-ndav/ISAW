@@ -29,6 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2006/11/04 15:55:22  rmikk
+ * Updated to use the new memory( with lower case M) directory and tto
+ *    use the system property java.prorocol.handler.pkgs
+ * Also includes the favorites view( need the new jhall.jar for this to work
+ *   correctly)
+ * The search view will come soon
+ *
  * Revision 1.14  2006/03/15 20:40:07  rmikk
  * Fixed(semi) the tree problem caused by the hidden operators
  *
@@ -89,6 +96,7 @@ package IsawHelp.HelpSystem;
 import gov.anl.ipns.Util.Sys.*;
 
 import javax.help.*;
+
 import java.util.*;
 import java.net.*;
 import javax.swing.*;
@@ -106,6 +114,8 @@ public class IsawOpHelpSet extends HelpSet
  {
   Script_Class_List_Handler  sh;
   static TOCView toc ;
+  static FavoritesView fav;
+  //static SearchView search;
   boolean operatorsOnly;
 
   /**
@@ -119,14 +129,42 @@ public class IsawOpHelpSet extends HelpSet
      setTitle( "Isaw Operations" );
      setHomeID( "IsawOpHelp" );
      sh = new Script_Class_List_Handler();
+     setUpProtocolHandler( "IsawHelp.HelpSystem");
+    /* String s = System.getProperty("java.protocol.handler.pkgs","");
+     if( s.length()>0)
+        s +=';';
+     s+="IsawHelp.HelpSystem.Memory";
+     System.setProperty("java.protocol.handler.pkgs", s);
+     */
      setLocalMap( new opMap( "IsawOpHelp" ,  sh , this ) );
      this.operatorsOnly = operatorsOnly;
-     
      toc = new IsawTOC( this , "TOC" , "Operators" , null , sh , operatorsOnly);
-    
+     fav = new FavoritesView( this,"Favorites","Favorites", null);
+     //search = new MSearchView( this,"Search Ops", "Search", null);
     }
 
-
+  /**
+   * This method adds the URLhandler path to the list of paths where
+   * the URL class goes to look for protocol handlers.  Do not include
+   * the protocol name at the end of this path.
+   * 
+   * @param handlerClassPathPrefix  The new path to be added to the
+   *    list of url handler paths that are searched for protocols. It checks
+   *    to see if the path is already present. If so it is not added again
+   */
+ public static void setUpProtocolHandler( String handlerClassPathPrefix){
+     String S= System.getProperty("java.protocol.handler.pkgs", "");
+     if( handlerClassPathPrefix == null )
+        return;
+     
+     if((";"+S+";").indexOf(";"+handlerClassPathPrefix+";")>=0)
+        return;
+     if( S.length() >0)
+        S = S+";";
+     S+= handlerClassPathPrefix;
+     System.setProperty("java.protocol.handler.pkgs" , S);
+    
+ }
   /** Returns the Navigator view for this helpset.
   *
   * @param   name  the name of the view. Currently only the name TOC returns 
@@ -137,7 +175,11 @@ public class IsawOpHelpSet extends HelpSet
     {
      if( name.equals( "TOC" ) ) 
         return toc;
-     else 
+     else if( name.equals("Favorites"))
+         return fav;
+     //else if( name.equals("Search Ops"))
+     //   return search;
+     else
         return null;
     }
 
@@ -147,8 +189,10 @@ public class IsawOpHelpSet extends HelpSet
   */
   public NavigatorView[] getNavigatorViews()
     {
-     NavigatorView[] Res = new NavigatorView[ 1 ];
+     NavigatorView[] Res = new NavigatorView[ 2 ];
      Res[ 0 ] = toc;
+     Res[ 1 ] =fav;
+     //Res[2] =search;
      return Res;
     }
 //----------------------------- Class opMap---------------------------------
@@ -194,7 +238,7 @@ public class IsawOpHelpSet extends HelpSet
         sh = SH;
         this.HomeID = HomeID;
         this.hs = hs;
-        urlh = ( URLStreamHandler)( new IsawHelp.HelpSystem.Memory.Handler() );
+        //urlh = ( URLStreamHandler)( new IsawHelp.HelpSystem.memory.Handler() );
         ngeneric = SH.getNum_operators();
         ndataset = SH.getNumDataSetOperators(); 
         IDs = null;
@@ -368,7 +412,7 @@ public class IsawOpHelpSet extends HelpSet
      /** Returns a URL from the id value
      */
      public URL getURLFromID( javax.help.Map.ID id ) throws java.net.MalformedURLException
-       {
+       { 
         String host = "";
         
         if( id.id.startsWith( "Gen" ) ) 
@@ -398,7 +442,7 @@ public class IsawOpHelpSet extends HelpSet
         try{
            int opnum = ( new Integer( id.id.substring( 3 ).trim() ) ).intValue();
           
-           return new URL( "memory" , "Memory" , 322 , host+":"+opnum , urlh );
+           return new URL( "memory" , "memory" , 322 , host+"-"+opnum );
             }
         catch( Exception ss )
           {throw new java.net.MalformedURLException( "improper id number" );
@@ -427,8 +471,8 @@ public class IsawOpHelpSet extends HelpSet
 
      //Returns the Id associated with a given url.  It does not check if it is valid
      private String getIdfrURL( URL url )
-       {String S;
-
+       {String S = null;
+        
         if( url.getProtocol() .equals( "http") && !operatorsOnly)
 
           {
@@ -454,14 +498,23 @@ public class IsawOpHelpSet extends HelpSet
         else if( url.getProtocol().equals( "file")&& !operatorsOnly)
            S ="htm."+getFname( url.getFile());
 
-        else if( url.getProtocol().equals( "memory" ))
+        else if( url.getProtocol().equals( "memory" )){
+           String opnum;
+           String host = url.getFile();
+           if(host == null)
+              return null;
+           if( host.startsWith("/"))
+              host = host.substring(1);
+           opnum = host.substring( 8);
+           
+           if( host.startsWith("Generic"))
+             S ="Gen"+opnum;
 
-           if( url.getHost().equals("Generic"))
-             S ="Gen"+url.getPort();
-
-           else if( url.getHost().equals( "DataSet"))
-             S ="Dat"+url.getPort();
-         return null;
+           else if( host.startsWith( "DataSet"))
+             S ="Dat"+opnum;
+           return S;
+        }
+         return S;
           
        }
 
@@ -475,8 +528,20 @@ public class IsawOpHelpSet extends HelpSet
               return false;
            else
               return isValidID( getIdfrURL( url), hs) ;
-                 
-        if( url.getHost().equals( "Generic" ) )
+        String host = url.getFile();
+        if( host == null)
+           return false;
+        if( host.startsWith("/"))
+           host = host.substring(1);
+        
+        int opnum =-1;
+        try{
+           opnum =( new Integer( host.substring(8).trim())).intValue();
+           
+        }catch(Exception s){
+           return false;
+        }
+        if(host.startsWith( "Generic" ) )
 
           {int port = url.getPort();
            if( port < 0 ) 
@@ -487,7 +552,7 @@ public class IsawOpHelpSet extends HelpSet
 
           }
 
-        else if( url.getHost().equals( "DataSet")  )
+        else if(host.startsWith( "DataSet")  )
 
           {int port = url.getPort();
            if( port < 0 ) 
@@ -523,9 +588,22 @@ public class IsawOpHelpSet extends HelpSet
               return javax.help.Map.ID.create( id, hs);
              }
 
-       String host = url.getHost();
-       int port = url.getPort();
-       return  javax.help.Map.ID.create( host + port ,  hs );
+       String host = url.getFile();
+       if(host == null)
+          return null;
+       if( host.startsWith("/"))
+          host =host.substring( 1 );
+       String idhost =null;
+       if( host.startsWith("DataSet"))
+          idhost ="Dat";
+       else
+          idhost ="Gen";
+       String opnum;
+       
+       opnum = host.substring( 8);
+       
+      
+       return  javax.help.Map.ID.create( idhost+opnum ,  hs );
 
        }
 
@@ -619,6 +697,38 @@ public class IsawOpHelpSet extends HelpSet
     }
  }//class IsawOpHelpSet
 
+class MSearchView extends javax.help.SearchView{
+   HelpSet hs;
+   String name ,label;
+   public MSearchView(HelpSet hs, java.lang.String name, java.lang.String label, java.util.Hashtable params){
+      super( hs,name,label,params);
+      this.hs = hs;
+      this.name = name;
+      this.label = label;
+      
+   }
+   public MSearchView(HelpSet hs, java.lang.String name, java.lang.String label, java.util.Locale locale, java.util.Hashtable params){
+      super( hs,name,label,locale ,params);
+      this.hs = hs;
+      this.name = name;
+      this.label = label;
+      
+   }
+   public java.awt.Component createNavigator(HelpModel model){
+     
+     // URLStreamHandler urlh = ( URLStreamHandler)( new IsawHelp.HelpSystem.memory.Handler() );
+      try{
+         URL url = new URL( "memory" , "memory" , 322 ,""  );
+         url = hs.getHelpSetURL();
+         JHelpSearchNavigator jNag = new JHelpSearchNavigator( this, model);//new JHelpSearchNavigator( hs, name, label, url);
+         jNag.setSearchEngine( new MemSearchEngine( url, null));
+         return jNag;
+      }catch(Exception s){
+         return null;
+      }
+   }
+   
+}
 //------------------------------- class IsawTOC(Table of Contents)--------------
 /** This is the TOC view used by IsawOpHelpSet.  There is NO file.  The 
 *   information is created in memory
