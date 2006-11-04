@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2006/11/04 16:16:55  rmikk
+ * Eliminated the leading / in the url filename that the search engine puts in. Now
+ * the operators are found.
+ *
  * Revision 1.10  2006/11/03 20:41:35  rmikk
  * Changed the package name to use the lower case m in memory
  *
@@ -132,6 +136,9 @@ public class Handler extends URLStreamHandler
         Script_Class_List_Handler sh = new Script_Class_List_Handler();
         this.url=url;
         String c = url.getFile();
+        if( c != null)
+            if( c.startsWith("/"))
+               c = c.substring(1);
         int num = (new Integer(c.substring(8))).intValue();
         c = c.substring(0,7);
         
