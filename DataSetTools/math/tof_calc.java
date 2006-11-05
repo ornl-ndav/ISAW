@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.31  2006/11/05 02:06:19  dennis
+ *  Minor efficiency improvment when constructing Vector3D_d objects
+ *  from Vector3D objects.
+ *
  *  Revision 1.30  2004/03/15 06:10:40  dennis
  *  Removed unused import statements.
  *
@@ -847,8 +851,8 @@ public static float Omega( float two_theta )
  */
 public static float[] getEulerAngles( Vector3D u, Vector3D v )
 {
-  Vector3D_d u_double = new Vector3D_d( u.get()[0], u.get()[1], u.get()[2] );
-  Vector3D_d v_double = new Vector3D_d( v.get()[0], v.get()[1], v.get()[2] );
+  Vector3D_d u_double = new Vector3D_d(u);
+  Vector3D_d v_double = new Vector3D_d(v);
   double euler[] = tof_calc_d.getEulerAngles( u_double, v_double );
 
   float float_euler[] = new float[ euler.length ];
