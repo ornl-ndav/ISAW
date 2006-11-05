@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2006/11/05 01:52:31  dennis
+ * Minor efficiency improvement (eliminated redundant call to
+ * Vector3D.get() method.)
+ *
  * Revision 1.15  2006/02/12 21:13:11  dennis
  * First stage of clean up to finish evolution from original
  * IPNS specific peaks object, to more general, more clearly
@@ -207,7 +211,7 @@ public class Peak_new extends Peak {
          Vector3D pos = grid.position();
          float[] pp = pos.get();
          
-         detA2=( (float)(180.0f*Math.asin( pos.get()[2]/pos.length())/Math.PI));
+         detA2=( (float)(180.0f*Math.asin( pp[2]/pos.length())/Math.PI));
          
          detA=(float)(180*Math.atan2(pp[1],pp[0])/Math.PI);
          setUpRot( grid);
@@ -414,7 +418,7 @@ public class Peak_new extends Peak {
          Vector3D pos = grid.position();
          //pos.multiply( -1.0f);
          float[] pp = pos.get();
-         detA2=( (float)(180.0f*Math.asin( pos.get()[2]/pos.length())/Math.PI));
+         detA2=( (float)(180.0f*Math.asin( pp[2]/pos.length())/Math.PI));
          
          detA=(float)(180*Math.atan2(pp[1],pp[0])/Math.PI);
          setUpRot(grid);
