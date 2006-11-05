@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.16  2006/11/05 02:09:07  dennis
+ *  Minor efficiency improvement in use of Vector3D.get() in
+ *  SetOrientation() method.
+ *
  *  Revision 1.15  2005/07/11 21:00:04  dennis
  *  Removed num_points() method, since it is redundant.
  *
@@ -775,11 +779,14 @@ public class UniformGrid implements IDataGrid
     temp_y.normalize();                            // vectors
     temp_z.normalize();
                                                    // copy into local arrays
+    float x_coords[] = temp_x.get();
+    float y_coords[] = temp_y.get();
+    float z_coords[] = temp_z.get();
     for ( int i = 0; i < 3; i++ )
     {
-      this.x_vector[i] = temp_x.get()[i];
-      this.y_vector[i] = temp_y.get()[i];
-      this.z_vector[i] = temp_z.get()[i];
+      this.x_vector[i] = x_coords[i];
+      this.y_vector[i] = y_coords[i];
+      this.z_vector[i] = z_coords[i];
     }
     return true;
   }
