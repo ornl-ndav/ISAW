@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2006/11/05 02:03:03  dennis
+ * Minor efficiency improvement in use of Vector3D.
+ *
  * Revision 1.11  2006/07/10 21:28:22  dennis
  * Removed unused imports, after refactoring the PG concept.
  *
@@ -289,7 +292,8 @@ public class SCDQxyz_Dennis extends  XAxisInformationOp
      }
 
      combinedR.apply_to( pt, pt );
-     q_pos.setCartesianCoords(pt.get()[0], pt.get()[1], pt.get()[2]);
+     float temp[] = pt.get();
+     q_pos.setCartesianCoords(temp[0], temp[1], temp[2]);
 
      if ( debug )
      {
