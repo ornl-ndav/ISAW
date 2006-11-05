@@ -28,6 +28,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2006/11/05 02:00:22  dennis
+ * No longer modify vectors by using reference to array of components,
+ * so the code will still work with new Vector3D that does not use
+ * and array to hold its components.
+ *
  * Revision 1.13  2006/07/10 16:26:00  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -358,8 +363,10 @@ public class EfficiencyRatio extends GenericTOF_SAD
     //
     Vector3D detector_position = grid.position();
     System.out.println("detector position is " + detector_position );
-    detector_position.get()[1] += x_offset/100;         // shift detector so
-    detector_position.get()[2] -= y_offset/100;         // beam is centered
+    float temp[] = detector_position.get();
+    temp[1] += x_offset/100;                  // shift detector so
+    temp[2] -= y_offset/100;                  // beam is centered
+    detector_position.set(temp);
     grid.setCenter( detector_position );
 
     Grid_util.setEffectivePositions( ds, grid.ID() );
@@ -428,8 +435,10 @@ public class EfficiencyRatio extends GenericTOF_SAD
     // 
     System.out.println("Shifted Grid is " + grid );
     Vector3D beam_center = grid.position();
-    beam_center.get()[1] -= x_offset/100;  // in sample centered coords, det y
-    beam_center.get()[2] += y_offset/100;  // "up" and det x in -y direction
+    temp = beam_center.get();
+    temp[1] -= x_offset/100;        // in sample centered coords, det y
+    temp[2] += y_offset/100;        // "up" and det x is in the -y direction
+    beam_center.set( temp );
     for ( int row = 1; row <= n_rows; row++ )
       for ( int col = 1; col <= n_cols; col++ )
       {
