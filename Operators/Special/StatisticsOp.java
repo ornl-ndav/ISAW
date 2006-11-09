@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  *  $Log$
+ *  Revision 1.4  2006/11/09 20:59:11  dennis
+ *  Added command "Mode" to calculate the x-value of the point
+ *  or bin center where the largest value occurs. (Terry Farmer)
+ *
  *  Revision 1.3  2005/08/25 14:51:38  dennis
  *  Made/added to category DATA_SET_ANALYZE_MACROS.
  *
@@ -110,7 +114,8 @@ public class StatisticsOp implements Wrappable, IWrappableWithCategoryList
        s.append( "Please use the following commands for your particular " );
        s.append( "statistic.\n   Statistic = Op_code \n   mean = Mean \n   " );
        s.append( "maximum value = Max \n   minimum value = Min \n   " );
-       s.append( "standard deviation = StdDev" );
+       s.append( "standard deviation = StdDev \n" );
+       s.append( "mode = Mode \n" );
        
        s.append( "@param index is the Data Block in the Data Set you would " );
        s.append( "like to find the average of." ); 
@@ -140,25 +145,32 @@ public class StatisticsOp implements Wrappable, IWrappableWithCategoryList
        Data db = ds.getData_entry(index); // get my db if it is in the data set
        if(db != null) //check if i actually did get a data block
        {
-          float[] arr = db.getY_values();   //get y values to work with
+          float[] y_arr = db.getY_values(); //get y values to work with
 
-          if(arr.length <= 0)               //check to prevent errors
+          if(y_arr.length <= 0)               //check to prevent errors
             return new ErrorString("The Data Block is EMPTY and" + 
                 "therefore has no Y values to average."); //error message
 
           if(Op_Code.trim().equalsIgnoreCase("Mean")) // check Op_Code 
-            return new Float(gov.anl.ipns.MathTools.Statistics.mean(arr));
+            return new Float(gov.anl.ipns.MathTools.Statistics.mean(y_arr));
 
           if(Op_Code.trim().equalsIgnoreCase("Max")) // check Op_Code
-            return new Float(gov.anl.ipns.MathTools.Statistics.maximum(arr));
+            return new Float(gov.anl.ipns.MathTools.Statistics.maximum(y_arr));
 
           if(Op_Code.trim().equalsIgnoreCase("Min")) // check Op_Code
-            return new Float(gov.anl.ipns.MathTools.Statistics.minimum(arr));
-
+            return new Float(gov.anl.ipns.MathTools.Statistics.minimum(y_arr));
+          
           if(Op_Code.trim().equalsIgnoreCase("StdDev")) // check Op_Code
             return new 
-                   Float(gov.anl.ipns.MathTools.Statistics.std_deviation(arr));
-
+                  Float(gov.anl.ipns.MathTools.Statistics.std_deviation(y_arr));
+          
+          if(Op_Code.trim().equalsIgnoreCase("Mode")) // check Op_Code
+          {
+            float[] x_arr = db.getX_values();
+            return new
+                  Float(gov.anl.ipns.MathTools.Statistics.mode(x_arr,y_arr));
+          }
+          
           return new ErrorString("That is not a valid operation code or" +
              "you made a spelling error."); //error message
        }  
@@ -204,9 +216,16 @@ public class StatisticsOp implements Wrappable, IWrappableWithCategoryList
     stat_op.getParameter(1).setValue( "Max" );
     stat_op.getParameter(2).setValue( new Integer(1) );
     System.out.println( stat_op.getResult() );
+    
+    
 
     stat_op.getParameter(0).setValue( ds );
     stat_op.getParameter(1).setValue( "StdDev" );
+    stat_op.getParameter(2).setValue( new Integer(1) );
+    System.out.println( stat_op.getResult() );
+    
+    stat_op.getParameter(0).setValue( ds );
+    stat_op.getParameter(1).setValue( "Mode" );
     stat_op.getParameter(2).setValue( new Integer(1) );
     System.out.println( stat_op.getResult() );
   }
