@@ -26,6 +26,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/11/12 05:35:13  dennis
+ * Replaced call to vector.getCopy() with call to vector.get(), since
+ * with the new version of Vector3D that has the values in separate
+ * fields, the array returned by get() just has a copy of the values.
+ *
  * Revision 1.6  2006/02/06 00:09:49  dennis
  * Added method: DetectorToMinMaxHKL() to calculate the range of hkl values
  * covered by a particular detector and time-of-flight range, given the
@@ -477,8 +482,8 @@ public class SCD_util
                                             // now scan through the hkls to
                                             // find the min and max values
     float hkl_vals[];
-    float min_hkl_vals[] = hkl[0].getCopy(); 
-    float max_hkl_vals[] = hkl[0].getCopy(); 
+    float min_hkl_vals[] = hkl[0].get(); 
+    float max_hkl_vals[] = hkl[0].get(); 
     for ( int i = 1; i < hkl.length; i++ )
     {
       hkl_vals = hkl[i].get(); 
