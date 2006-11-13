@@ -31,6 +31,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2006/11/13 23:16:59  dennis
+ * Made the message in the dialog box telling the user to 'Update Search
+ * Data Base' more explanatory.
+ *
  * Revision 1.3  2006/11/04 16:48:18  rmikk
  * Added a message indicating how to update the search data base if this
  *   data base does not exist.  If all the class files are recompiled, the data
@@ -402,7 +406,9 @@ public class MemSearchEngine extends SearchEngine implements SearchListener {
             return;
          }
          if( fout == null ) {
-            JOptionPane.showMessageDialog( null, "Update Search Data Base under IsawGUI's Help menu ");
+            JOptionPane.showMessageDialog( null, 
+              "Please do: 'Update Search Data Base' on the Help Menu,\n" +
+              "wait for 'Done updating', then re-open the help window.");
             exitt( 2 , searchparams );
             return;
          }
