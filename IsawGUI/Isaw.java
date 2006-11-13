@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.262  2006/11/13 22:31:39  dennis
+ *  Set Version to 1.8.1_a2
+ *
  *  Revision 1.261  2006/11/04 16:45:34  rmikk
  *  Added a "Update Search DataBase" Option to ISAW's Help Menu
  *
@@ -945,7 +948,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.8.1_a1";
+          version="1.8.1_a2";
         else
           version=SharedData.VERSION;
 
