@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.263  2006/11/13 23:09:27  dennis
+ *  Made the message in the dialog box for "Update Search Data Base"
+ *  more explanatory.
+ *
  *  Revision 1.262  2006/11/13 22:31:39  dennis
  *  Set Version to 1.8.1_a2
  *
@@ -1876,7 +1880,9 @@ public class Isaw
         
       }
       if( s.equals("Update Search Data Base")){
-         if( JOptionPane.showConfirmDialog(null, "This will take several minutes. Do you want to continue",
+         if( JOptionPane.showConfirmDialog(null, 
+             "This will take several minutes. Do you want to continue?\n" +
+             "If so, press Yes and wait for the 'Done updating' pop up.",
                   "Continue?",
                      JOptionPane.YES_NO_OPTION)==JOptionPane.NO_OPTION)
                      return;
