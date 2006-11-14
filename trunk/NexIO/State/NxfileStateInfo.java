@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2006/11/14 16:40:38  rmikk
+ * Tries the new Data parser for ISO dates
+ *
  * Revision 1.3  2006/07/27 19:30:09  rmikk
  * Eliminated a javadoc warning
  *
@@ -91,12 +94,16 @@ public class NxfileStateInfo extends StateInfo{
      NexusVersion =NexUtils.getStringAttributeValue( NxfileNode, "NeXus_version");
      HDFVersion = NexUtils.getStringAttributeValue( NxfileNode, "HDF_version");
      String time =NexUtils.getStringAttributeValue( NxfileNode, "file_time");
-     Time = ConvertDataTypes.parse( time);
+     long Tmill = ConvertDataTypes.parse_new( time );
+     if( Tmill < 0 )
+         Time = ConvertDataTypes.parse( time);
+     else{
+        GregorianCalendar GCal = new GregorianCalendar();
+        GCal.setTimeInMillis( Tmill );
+        Time = GCal.getTime();
+     }
      Spectra = null;
      InstrumentNode = null;
-     for( int i =0; (i< NxfileNode.getNChildNodes()) && (InstrumentNode == null) ; i++)
-        if( NxfileNode.getChildNode( i).getClass().equals("NXinstrument"))
-           InstrumentNode = NxfileNode.getChildNode( i );
         
      facility = GetFacility( NxfileNode, InstrumentNode);
      this.filename = filename;
