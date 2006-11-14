@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/11/14 16:39:42  rmikk
+ * Added fields for InstrumentNode and facility to this state
+ *
  * Revision 1.5  2006/07/27 18:32:49  rmikk
  * Added extra spacing to make the code more readable
  *
@@ -53,11 +56,12 @@
 
 package NexIO.State;
 
-
+//NexIO.State.NxEntryStateInfo
 import NexIO.*;
 import NexIO.Util.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
+import DataSetTools.dataset.*;
 
 
 /**
@@ -73,13 +77,13 @@ public class NxEntryStateInfo extends StateInfo {
   
     public String version;
     
- 
+    NxNode InstrumentNode;
 
     /**
      *   The Name of the NXentry node
      */
     public String Name;
-    
+    public String facility;
   
     /**
      *   Constructor
@@ -111,8 +115,130 @@ public class NxEntryStateInfo extends StateInfo {
           if( N != null )
              version = N.getNodeValue();
        }
+       InstrumentNode = null;
+       for( int i =0; (i< NxEntryNode.getNChildNodes()) && (InstrumentNode == null) ; i++)
+          if( NxEntryNode.getChildNode( i).getNodeClass().equals("NXinstrument"))
+             InstrumentNode = NxEntryNode.getChildNode( i );
+       
+       facility = getFacility( InstrumentNode);
      
     }
-  
+    
+    public String getFacility( NxNode InstrNode){
+       NxNode NODE = null;
+       if( InstrNode == null)
+          return null;
+       for( int i=0;( i< InstrNode.getNChildNodes()) &&(NODE == null); i++){
+          NxNode node= InstrNode.getChildNode(i);
+          if( node.getNodeClass().equals("NXsource")){
+             NODE=node;
+             for( int k=0; k< NxfileStateInfo.Names.length; k++)
+                for( int m=0; m< NxfileStateInfo.Names[k].length; m++){
+                   int kk = node.getNodeName().indexOf( NxfileStateInfo.Names[k][m]);
+                   if( kk==0)
+                      return NxfileStateInfo.Names[k][0];
+                   if( kk > 0)if( kk +NxfileStateInfo.Names[k][m].length()+1 < node.getNodeName().length())
+                      if( " ;,.[+-(])&%$\t\n".indexOf( node.getNodeName().charAt( kk + 
+                               NxfileStateInfo.Names[k][m].length()+1))>=0)
+                         return NxfileStateInfo.Names[k][0];
+                 }
+            
+           }
+       
+            
+       }
+          
+       if( NODE != null)
+          for( int i=0; i < NODE.getNChildNodes(); i++)
+             if( NODE.getChildNode(i).getNodeName().equals("name")){
+                String nm = NODE.getChildNode(i).getNodeName();
+                String nm1 = ConvertDataTypes.StringValue( NODE.getChildNode(i).getNodeValue());
+                for( int k=0; k< NxfileStateInfo.Names.length; k++)
+                   for( int m=0; m< NxfileStateInfo.Names[k].length; m++){
+                      int kk = nm.indexOf( NxfileStateInfo.Names[k][m]);
+                      if( kk==0)
+                         return NxfileStateInfo.Names[k][0];
+                      if( kk > 0)if( kk +NxfileStateInfo.Names[k][m].length()+1 < nm.length())
+                         if( " ;,.[+-(])&%$\t\n".indexOf(nm.charAt( kk + NxfileStateInfo.Names[k][m].length()+1))>=0)
+                            return NxfileStateInfo.Names[k][0];
+
+                      kk = nm1.indexOf( NxfileStateInfo.Names[k][m]);
+                      if( kk==0)
+                         return NxfileStateInfo.Names[k][0];
+                      if( kk > 0)if( kk +NxfileStateInfo.Names[k][m].length()+1 < nm1.length())
+                         if( " ;,.[+-(])&%$\t\n".indexOf(nm1.charAt( kk + NxfileStateInfo.Names[k][m].length()+1))>=0)
+                            return NxfileStateInfo.Names[k][0];
+                    }  
+                return null;
+              } 
+       return  null;
+
+    }
+    
+    
+    public static void Compare( DataSet DS ){
+       int C1 =0;
+       int C2 = 0;
+       IDataGrid grid1 = NexIO.Write.NxWriteData.getDataGrid( DS.getData_entry(0));
+       IDataGrid grid2;
+       XScale xscl1,xscl2;
+       xscl1 = grid1.getData_entry(1,1).getX_scale();
+       for( int i = 0; i +1< DS.getNum_entries(); i++){
+           grid2 =  NexIO.Write.NxWriteData.getDataGrid( DS.getData_entry(i+1));
+           xscl2 = grid2.getData_entry(1,1).getX_scale();
+           
+           if( xscl1 == xscl2 ) C1++; else C2++;
+           grid1=grid2;
+           xscl1=xscl2;
+       }
+      System.out.println("C1 true, C2=false"+ C1+":"+C2);
+    }
+    public static void main( String[] args){
+       int C1=0, C2=0, D=0;
+       try{
+          DataSet[] DSS = Command.ScriptUtil.load( args[0]);
+          DataSet DS = DSS[DSS.length -1];
+          System.out.println("---------------Compare----------");
+          NxEntryStateInfo.Compare(DS);
+          System.out.println("--------------------------");
+          
+          int[] grids = NexIO.Write.NxWriteData.getAreaGrids( DS );
+          
+          IDataGrid grid1,grid2;
+          grid1 = NexIO.Write.NxWriteData.getAreaGrid( DS, grids[0]);
+          System.out.println(" grid1 is set"+ grid1.isData_entered() );
+          grid1.setData_entries( DS );
+          XScale xscl1,xscl2;
+          xscl1 = grid1.getData_entry(1,1).getX_scale();
+          int indx1,indx2;
+          indx1= DS.getIndex_of_data( grid1.getData_entry(1,1));
+          Data db1,db2;
+          db1= grid1.getData_entry(1,1);
+          for( int i = 0; i +1< grids.length; i++){
+              grid2 =  NexIO.Write.NxWriteData.getAreaGrid( DS, grids[i+1]);
+              grid2.setData_entries( DS );
+              indx2 = DS.getIndex_of_data( grid2.getData_entry(1,1));
+              xscl2 = grid2.getData_entry(1,1).getX_scale();
+
+              db2= grid2.getData_entry(1,1);
+              if( xscl1==xscl2) C1++; else C2++;
+              
+              if( (DS.getData_entry(indx2)!=db2)){
+                 System.out.println("Not equal "+ i);
+              }else{
+                 XScale xxscl1 = DS.getData_entry(indx2).getX_scale();
+                 if( xxscl1 != xscl2) D++;
+              }
+              grid1=grid2;
+              xscl1=xscl2;
+              indx1=indx2;
+          }
+          System.out.println("XXX"+C1+"::"+C2+"::"+D);
+       }catch( Exception s){
+          System.out.println("XXX"+C1+"::"+C2+"::"+D);
+          s.printStackTrace();
+          System.exit( 0 );
+       }
+    }
 }
 
