@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2006/11/14 16:48:02  rmikk
+ * Takes care of the out of order tuples by directiing processing to the class
+ *    that takes care of these
+ *
  * Revision 1.5  2006/07/25 00:10:34  rmikk
  * Added code to include a missing or ne NXdetector.layout field
  * Created new Info variables if they were not in the list.
@@ -71,7 +75,7 @@ import org.w3c.dom.*;
  
 public class Process1NxData implements IProcessNxData {
   String errormessage="";
-
+  public INexUtils  nxut  = new NexUtils();
 
   /**
    *  @return an errormessage or an empty string if there is no error
@@ -105,6 +109,60 @@ public class Process1NxData implements IProcessNxData {
      int firstIndex = DS.getNum_entries();
      int npush =0;
      NxDataStateInfo DataState = NexIO.Util.NexUtils.getDataStateInfo( States );
+     Node xmldoc = States.xmlDoc;
+     int timeDim=0,coldim=1,rowdim=2;
+     boolean dimChange = false;
+     if( DataState != null)
+     if( DataState.dimensions.length <= 1){
+         coldim = rowdim = -1;
+         if( xmldoc != null)
+            dimChange = true;
+     }else
+     if( xmldoc != null){
+        Node[] NN = Util.getxmlNXentryNodes( xmldoc, NxEntryNode.getNodeName(), States.filename);
+        for( int i=0; i< 4; i++){
+        Node Tnode = Util.getNXInfo( NN[i], "NXdata.time_dimension",
+                           DataState.Name,null,null);
+        if( Tnode != null){
+           try{
+              int Tdim = (new Integer(Util.getLeafNodeValues( Tnode).toString().trim())).intValue();
+              if( Tdim >=-3){
+                 timeDim = Tdim;
+                 dimChange = true;
+              }
+              Tnode = Util.getNXInfo( NN[i], "NXdata.col_dimension",
+                       DataState.Name,null,null);
+              if( Tnode != null){
+                 int Cdim = (new Integer(Util.getLeafNodeValues( Tnode).toString().trim())).intValue();
+                 if( Cdim >=-3){
+                    coldim = Cdim;
+                    dimChange = true;
+                 }
+                 Tnode = Util.getNXInfo( NN[i], "NXdata.row_dimension",
+                         DataState.Name,null,null);
+                 if( Tnode != null){
+                    int Rdim = (new Integer(Util.getLeafNodeValues( Tnode).toString().trim())).intValue();
+                    if( Rdim >-4){
+                       rowdim = Rdim;
+                       dimChange = true;
+                    }
+                 }
+              }
+           
+           }catch(Exception s){
+              dimChange = false;
+           }
+          
+        }
+        }//for i=0 to 4
+     }
+     
+     int x = Math.max(Math.max( rowdim , coldim ), timeDim) + 1;
+     if( DataState != null)
+     if( x >= DataState.dimensions.length)
+        x = -1;
+     if( dimChange)
+        nxut= new NexUtils_mixDims(timeDim, rowdim, coldim,x,1,2,3,4, States);   
      
      if( DataState == null ){
           DataState = new NxDataStateInfo( NxDataNode, 
@@ -112,6 +170,7 @@ public class Process1NxData implements IProcessNxData {
            npush++;
            States.Push( DataState);
      }
+     
      NxInstrumentStateInfo InstrumentState = new NxInstrumentStateInfo(
              NxInstrument, States);
 
@@ -145,7 +204,7 @@ public class Process1NxData implements IProcessNxData {
         if( xx != null)
            DetState.hasLayout = xx.getNodeValue().toString();
      }
-     NexUtils  nxut = new NexUtils();
+    
      boolean res= nxut.setUpNxData (DS,NxDataNode,DataState.startGroupID,States);
      if( res){ 
        
@@ -154,7 +213,7 @@ public class Process1NxData implements IProcessNxData {
         return setErrorMessage(nxut.getErrorMessage( ));
      }
          
-     if( NxDetectorNode != null)
+     if( (NxDetectorNode != null) || (States.xmlDoc != null))
         res = nxut.setUpNXdetectorAttributes( DS, NxDataNode,NxDetectorNode,
                                          firstIndex, States);
                                          
