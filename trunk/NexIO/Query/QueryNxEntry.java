@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2006/11/14 16:45:09  rmikk
+ * Used and xml Fixit file.
+ *
  * Revision 1.4  2006/07/25 00:07:36  rmikk
  * Set the axis =1 if it was incorrect, so the time axis correct
  *
@@ -71,44 +74,52 @@ public class QueryNxEntry {
    *   @param NxInstrumentNode An NxNode with information on the NeXus 
    *                        NXinstrument class.
    */
-  public static IProcessNxEntry getNxEntryProcessor(NxfileStateInfo State, 
-              NxNode NxDataNode, NxNode NxInstrumentNode, int startGroupID){
-    
-     if( State == null)
-        return null;
-     NxDataStateInfo dataState = NexUtils.getDataStateInfo( State);
-     NxEntryStateInfo EntryInfo = NexUtils.getEntryStateInfo( State );
-     NxDetectorStateInfo detStateInfo = NexUtils.getDetectorStateInfo( State );
-     NxfileStateInfo fileInfo = State;
-     if( NxDataNode == null)
-        return new ProcessNxEntry();
-     if( dataState == null){
-        dataState = new NxDataStateInfo(NxDataNode,NxInstrumentNode,
-          State, startGroupID);
-         State.Push( dataState);
-     }
-     if( fileInfo.xmlDoc != null){
-        Node xx=  Util.getNXInfo(fileInfo.xmlDoc, "axis", "1", null,
-                null);
-        if( xx != null){
-           String S = xx.getNodeValue().trim();
-           if( dataState.axisName ==null)
-              dataState.axisName = new String[3];
-           dataState.axisName[0] = S;
-        }
-        xx=Util.getNXInfo(fileInfo.xmlDoc, "layout",null, null,
-                 null);
-       if( xx != null)if( detStateInfo != null){
-          String S = xx.getNodeValue().trim();
-          detStateInfo.hasLayout = S;
-       }
-           
-     }
-     if( dataState.linkName == null)
-        return new ProcessOldNxEntry();
-     else
-        return new ProcessNxEntry();
-  }
+  public static IProcessNxEntry getNxEntryProcessor( NxfileStateInfo State ,
+            NxNode NxDataNode , NxNode NxInstrumentNode , int startGroupID ) {
+
+      if( State == null )
+         return null;
+      NxDataStateInfo dataState = NexUtils.getDataStateInfo( State );
+      NxEntryStateInfo EntryInfo = NexUtils.getEntryStateInfo( State );
+      NxDetectorStateInfo detStateInfo = NexUtils.getDetectorStateInfo( State );
+      NxfileStateInfo fileInfo = State;
+
+      if( NxDataNode == null )
+         return new ProcessNxEntry();
+      if( dataState == null ) {
+         dataState = new NxDataStateInfo( NxDataNode , NxInstrumentNode ,
+                  State , startGroupID );
+         State.Push( dataState );
+      }
+
+      if( fileInfo.xmlDoc != null ) {
+
+         Node xx = Util
+                  .getNXInfo( fileInfo.xmlDoc , "axis" , "1" , null , null );
+
+         if( xx != null ) {
+
+            String S = xx.getNodeValue().trim();
+            if( dataState.axisName == null )
+               dataState.axisName = new String[ 3 ];
+            dataState.axisName[ 0 ] = S;
+
+         }
+         xx = Util.getNXInfo( fileInfo.xmlDoc , "layout" , null , null , null );
+         if( xx != null )
+            if( detStateInfo != null ) {
+
+               String S = xx.getNodeValue().trim();
+               detStateInfo.hasLayout = S;
+            }
+
+      }
+
+      if( ( dataState.linkName == null ) && ( fileInfo.xmlDoc == null ) )
+         return new ProcessOldNxEntry();
+      else
+         return new ProcessNxEntry();
+   }
   
  }
 
