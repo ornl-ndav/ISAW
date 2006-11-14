@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2006/11/14 16:53:56  rmikk
+ * Used routine to parse an ISO time
+ * Checked if new xml Fixit file is present  before trying the old fix file
+ *
  * Revision 1.31  2006/07/25 00:11:25  rmikk
  * Added a filename to the parameter list for a new NxfileStateInfo
  *
@@ -270,7 +274,8 @@ public class ExtGetDS{
       DataSetFactory DSF = new DataSetFactory( "" ) ;
       DS = DSF.getTofDataSet(instrType) ; 
       DS.setAttributeList( AL ) ;
-      //DataSetFactory.addOperators( DS,instrType );
+      if( instrType >=0)
+         DataSetFactory.addOperators( DS,instrType );
       DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType)); 
       DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,Attribute.SAMPLE_DATA));
      
@@ -340,7 +345,7 @@ public class ExtGetDS{
                dir +="/";
           
            }
-           
+           if( FileState.xmlDoc == null)
            if( dt1.before(dt2))if( dir != null) 
            if( (progName.indexOf("LANSCE")>=0) ||(progName.indexOf("lanl")>=0))
              Operators.Special.Calib.FixLansceSCDDataFiles( DS,dir+"SCDfix.lanl" );
@@ -396,7 +401,15 @@ public class ExtGetDS{
          
     if( S != null){
       
-       Date D = NexIO.Util.ConvertDataTypes.parse(S);
+       Date D = null;
+       long T = NexIO.Util.ConvertDataTypes.parse_new( S );
+       if( T < 0)
+           D = NexIO.Util.ConvertDataTypes.parse(S);
+       else{
+         GregorianCalendar Gcal = new GregorianCalendar();
+         Gcal.setTimeInMillis( T );
+         D = Gcal.getTime();
+       }
        if( D != null){
          
          java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat();
