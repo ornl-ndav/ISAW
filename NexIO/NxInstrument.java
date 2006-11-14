@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2006/11/14 16:51:44  rmikk
+ * Added code to check the xml Fixit file for some of the fields
+ *
  * Revision 1.12  2004/05/14 15:03:27  rmikk
  * Removed unused variables
  *
@@ -70,8 +73,14 @@
 
 package NexIO;
 import DataSetTools.dataset.*;
+import NexIO.Util.NexUtils;
+import NexIO.State.*;
+import NexIO.Util.*;
 import java.lang.reflect.*;
 import java.util.*;
+import javax.xml.parsers.*;
+
+import org.w3c.dom.*;
 
 /**
  * This class is used to process the NXinstrument information in a
@@ -299,47 +308,79 @@ public class NxInstrument{
    * @return error status: true if there is an error otherwise false
    */
   public boolean processDS( NxNode node, DataSet DS ){
+     return processDS( node, DS, null);
+  } 
+  
+  
+  
+  public boolean processDS( NxNode node, DataSet DS, NexIO.State.NxfileStateInfo fileStateInfo){
     errormessage = "Improper inputs NxInstrument";
-    
-    if( node == null )
+    Node xmlDoc = null;
+    if( fileStateInfo != null)
+       xmlDoc = fileStateInfo.xmlDoc;
+    if( (node == null) && (xmlDoc == null) )
       return true;
     
     if( DS == null )
-      return true;
-
-    if( !node.getNodeClass().equals( "NXinstrument" ) )
-      return true;
-
+       return true;
+    String name = null;
     errormessage = "";
+    float distance = Float.NaN;
+    if( node != null ) {
+         if( ! node.getNodeClass().equals( "NXinstrument" ) )
+            return true;
 
-    NxNode X = node.getChildNode( "name" );
-    if( X != null ){
-      Object r = X.getNodeValue();
-      String S = new NxData_Gen().cnvertoString( r );
+         errormessage = "";
 
-      if( S != null )
-        DS.setAttribute( new StringAttribute( Attribute.INST_NAME, S.trim() ));
-    }
+         NxNode X = node.getChildNode( "name" );
+         if( X != null ) {
+            Object r = X.getNodeValue();
+            name = new NxData_Gen().cnvertoString( r );
 
-    //NXdetector stuff done in NXdata
-    for( int i = 0; i < node.getNChildNodes(); i++ ){
-      NxNode tnode = node.getChildNode( i );
+  
+         }
 
-      if( tnode.getNodeClass().equals( "NXsource" ) ){
-        NxNode tnode1 = tnode.getChildNode( "distance" );
-        if( tnode1 == null )
-          return false;
+         // NXdetector stuff done in NXdata
+         for( int i = 0 ; i < node.getNChildNodes() ; i++ ) {
+            NxNode tnode = node.getChildNode( i );
 
-        Object O = tnode1.getNodeValue();
-        if( O != null )if( O instanceof float[] )
-          if( Array.getLength( O ) == 1 ){
-            float f = ( ( float[] )O )[0];
+            if( tnode.getNodeClass().equals( "NXsource" ) ) {
+               NxNode tnode1 = tnode.getChildNode( "distance" );
+               if( tnode1 == null )
+                  return false;
 
-            DS.setAttribute( new FloatAttribute( Attribute.INITIAL_PATH,f ) );
-          }
+               Object O = tnode1.getNodeValue();
+               if( O != null )
+                  if( O instanceof float[] )
+                     if( Array.getLength( O ) == 1 ) {
+                        distance = ( (float[]) O )[ 0 ];
+
+                      
+                     }
+            }
+         }
       }
+    if( xmlDoc != null){
+       NxEntryStateInfo EntryState = NexUtils.getEntryStateInfo( fileStateInfo);
+       Node[] NN= NexIO.Util.Util.getxmlNXentryNodes( xmlDoc,EntryState.Name, fileStateInfo.filename);
+       for( int i=0; i<4;i++){
+         
+            String S = ConvertDataTypes.StringValue(Util.getLeafNodeValues( 
+                                   Util.getNXInfo( NN[i],"NXinstrument.name", null,null,null)));
+            if( S != null)
+               name = S;
+            float f =ConvertDataTypes.floatValue(Util.getLeafNodeValues( 
+                     Util.getNXInfo( NN[i],"NXsource.distance", null,null,null)));
+            if( !Float.isNaN( f ))
+               distance = f;
+       }
     }
-
+    if( name != null )
+       DS.setAttribute( new StringAttribute( Attribute.INST_NAME , name
+                .trim() ) );
+    if( ! Float.isNaN( distance ))
+       DS.setAttribute( new FloatAttribute(
+                Attribute.INITIAL_PATH , distance ) );
     if( errormessage.length() > 0 )
       return true;
     return false;
