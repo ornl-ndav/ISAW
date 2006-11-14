@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/11/14 16:50:23  rmikk
+ * Incorporated using the xml Fixit file
+ * Grouped detectors for LANSCE SCD data
+ *
  * Revision 1.6  2004/12/23 13:20:48  rmikk
  * Fixed indentations and spacings between lines
  *
@@ -56,11 +60,15 @@
 package NexIO.Process;
 
 
+import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
+
 import NexIO.*;
 import NexIO.State.*;
 import DataSetTools.dataset.*;
 import NexIO.Util.*;
 import NexIO.Query.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 
 
 /**
@@ -190,6 +198,9 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                         X.floatValue() * 30.f));
 
             //--------------Attributes from other NXentry children -----------
+        boolean checkedSample = false,
+                checkedBeam =false,
+                checkedInstr = false;
         for (int i = 0; i < NxEntryNode.getNChildNodes(); i++) {
         
             NxNode datanode = NxEntryNode.getChildNode(i);
@@ -199,27 +210,46 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                 NxInstrument nx = new NxInstrument();
         
                 if (!monitorDS)
-                    if (!nx.processDS(datanode, DS)) {// do nothing
+                    if (!nx.processDS(datanode, DS, States)) {// do nothing
+                       checkedInstr = true;
                     } else
                         errormessage += ":" + nx.getErrorMessage();
             } else  if (C.equals("NXsample")) {
                 NxSample ns = new NxSample();
         
-                if (!ns.processDS(datanode, DS)) {// do nothing
+                if (!ns.processDS(datanode, DS, States)) {// do nothing
+                   checkedSample = true;
                 } else
                     errormessage += ";" + ns.getErrorMessage();
             } else if (C.equals("NXbeam")) {
                 NxBeam nb = new NxBeam();
         
                 if (!monitorDS)
-                    if (nb.processDS(datanode, DS))
+                    if (nb.processDS(datanode, DS, States))
                         errormessage += ";" + nb.getErrorMessage();
+                    else
+                       checkedBeam = true;
             }
 
         }
-        if (errormessage != null)
-            if (errormessage.length() > 1)
-                return true;
+        // ------- In case the corresponding parts are not in the NeXus file -----
+        if(!checkedSample){
+           NxSample ns = new NxSample();
+           if( ns.processDS( null, DS, States))
+              errormessage +=";"+ns.getErrorMessage();
+        }
+        if(!checkedInstr){
+           NxInstrument nx = new NxInstrument();
+           if( nx.processDS( null, DS, States))
+              errormessage +=";"+nx.getErrorMessage();
+        }
+        if(!checkedBeam){
+           NxBeam nb = new NxBeam();
+           if( nb.processDS( null, DS, States))
+              errormessage +=";"+nb .getErrorMessage();
+        }
+        //----------------------------
+       
         
         Object X1 = DS.getAttributeValue(Attribute.RUN_NUM);
         int[] run_numm = null;
@@ -241,29 +271,102 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                 initial_path = ((Number) X1).floatValue();
                 initialPathSet = true;
             }
-
+       if( States != null){
+         if( States.xmlDoc != null){
+            Node NN = NexIO.Util.Util.getNXInfo( States.xmlDoc , "NXentry.NXsource.distance",
+                         null , null , null );
+            float initPath= Float.NaN;
+            if( NN != null )
+               initPath = ConvertDataTypes.floatValue( NexIO.Util.Util.getLeafNodeValues(NN));
+             if( !Float.isNaN( initPath)){
+                initialPathSet = true;
+                initial_path = initPath;
+                DS.setAttribute( new FloatAttribute( Attribute.INITIAL_PATH, initial_path));
+             }
+            
+         }
+       }
         for (int i = 0; i < DS.getNum_entries(); i++) {
       
             Data DB = DS.getData_entry(i);
 
             if (run_numm != null)
-                DB.setAttribute(new IntListAttribute(Attribute.RUN_NUM, run_numm));
+                DB.setAttribute(new IntListAttribute(Attribute.RUN_NUM, 
+                                                              run_numm));
         
             if (npulses >= 0)
-                DB.setAttribute(new IntAttribute(Attribute.NUMBER_OF_PULSES, npulses));
+                DB.setAttribute(new IntAttribute(Attribute.NUMBER_OF_PULSES, 
+                                                                     npulses));
         
             if (initialPathSet)
                 DB.setAttribute(new FloatAttribute(
                         Attribute.INITIAL_PATH, initial_path));
         }
   
+        //Now fixup LANSCE SCD data
+        String facility = States.facility;
+        NxEntryStateInfo NxEntryState = NexUtils.getEntryStateInfo( States);
+        if( facility == null)if( NxEntryState != null)
+           facility = NxEntryState.facility;
+        
+        if( States != null)if( facility != null)if( facility.equals("LANL"))
+           if( States.InstrumentName != null)if( States.InstrumentName.equals("SCD"))
+              FixUpLANL_SCD( DS );
+        
+        if (errormessage != null)
+           if (errormessage.length() > 1)
+               return true;
         return false;
         //Now Process Beam, etc.
     } 
+    
+    private void FixUpLANL_SCD( DataSet DS ){
+       int[] IDs = Grid_util.getAreaGridIDs( DS);
+       if( IDs == null)
+          return;
+       for( int i=0; i < IDs.length; i++){
+          IDataGrid grid = Grid_util.getAreaGrid( DS, IDs[i]);
+          if( !grid.isData_entered())
+             grid.setData_entries( DS );
+          UniformGrid grid1;
+          if( 2*(grid.num_cols()/2)!= grid.num_cols())
+             return;
+          if( 2*(grid.num_rows()/2)!= grid.num_rows())
+             return;
+          grid1= new UniformGrid(grid.ID(), grid.units(),grid.position(),
+                    grid.x_vec(),grid.y_vec(),grid.width(),grid.height(),
+                    grid.depth(),grid.num_rows()/2,grid.num_cols()/2);
+          for( int row =1; row<= grid1.num_rows();row++ )
+             for( int col=1; col<= grid1.num_cols();col++){
+                int r = 1+(row-1)*2;
+                int c = 1+(col-1)*2;
+                Data DB = grid.getData_entry( r,c);
+                float[] yvalues = DB.getY_values();
+                Data DB1=grid.getData_entry(r, c+1);
+                Data DB2=grid.getData_entry(r+1, c+1);
+                Data DB3=grid.getData_entry(r+1, c);
+                for( int t=0; t< yvalues.length; t++){
+                   yvalues[t] += DB1.getY_values()[t];
+                   yvalues[t] += DB2.getY_values()[t];
+                   yvalues[t] += DB3.getY_values()[t];
+                }
+                DS.removeData_entry_with_id( DB1.getGroup_ID());
+                DS.removeData_entry_with_id( DB2.getGroup_ID());
+                DS.removeData_entry_with_id( DB3.getGroup_ID());
+                
+                DB.setAttribute( new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST,
+                         new PixelInfoList( new DetectorPixelInfo( grid.ID(),
+                         (short) row,(short)col, grid1))));
+             }
+          grid.setData_entries( DS );
+          
+       }//for IDs
+       
+    }
 
     /**
-     *   Hook to add new fields to the class that are not in the processDS methods
-     *   parameters
+     *   Hook to add new fields to the class that are not in the processDS 
+     *   methods parameters
      */
     public void setNewInfo(String Name, Object value) {}
 
