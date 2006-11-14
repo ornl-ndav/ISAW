@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2006/11/14 01:58:47  dennis
+ * Fixed java doc error.
+ *
  * Revision 1.8  2006/06/26 20:16:07  rmikk
  * Found the max intensity of a peak and reported it a peak.IOBS
  * Subtracted the background intensity from the weighted x,y,z, and
@@ -303,8 +306,8 @@ public class PeakInfo {
 
     /**
      *  Returns whether a given Peak hits the extent of this peak
-     *  @peak    The peak to be tested
-     * @return   true if any cell the extent if peak is in this
+     *  @param   peak    The peak to be tested
+     *  @return  true if any cell the extent if peak is in this
      *           extent 
      */
     public boolean hits( PeakInfo peak ){
