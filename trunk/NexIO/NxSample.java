@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/11/14 16:51:44  rmikk
+ * Added code to check the xml Fixit file for some of the fields
+ *
  * Revision 1.6  2005/12/29 23:13:50  rmikk
  * Removed useless == comparisons with Float.NaN
  *
@@ -51,6 +54,11 @@ package NexIO;
 
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
+import NexIO.Util.*;
+import NexIO.State.*;
+import javax.xml.parsers.*;
+
+import org.w3c.dom.*;
 /**
  * This class is used to process the NxSample part of a Nexus datasource
  */
@@ -69,7 +77,9 @@ public class NxSample{
     return errormessage;
   }
 
-
+  public boolean processDS( NxNode node , DataSet DS ){
+     return processDS( node, DS, null);
+  }
   /**
    * Fills out an existing DataSet with information from the NXsample
    * section of a Nexus datasource
@@ -80,58 +90,115 @@ public class NxSample{
    *
    * @return error status: true if there is an error otherwise false
    */
-  public boolean processDS( NxNode node , DataSet DS ){
+  public boolean processDS( NxNode node , DataSet DS, NexIO.State.NxfileStateInfo fileStateInfo ){
     errormessage = "Improper NxSampel inputs";
-    if( node == null ) 
+
+    NxEntryStateInfo EntryState = NexUtils.getEntryStateInfo( fileStateInfo);
+    if( (node == null) && ( EntryState == null ) ) 
       return true;
     if( DS == null ) 
       return true;
+    if( node != null)
     if( !node.getNodeClass().equals( "NXsample" ) ) 
       return true;
     errormessage = "";
-    NxNode X = node.getChildNode( "name" );
-    if( X!= null ){
-      Object val = X.getNodeValue();
-      String S = new NxData_Gen().cnvertoString( val );
-      if(  S!=  null )
-        DS.setAttribute(  new StringAttribute( Attribute.SAMPLE_NAME , S ) ); 
-    }
-    X = node.getChildNode( "temperature" );
-    if( X!= null ){
-      Object val = X.getNodeValue();
-      if( val != null ){
-        Float S = new NxData_Gen().cnvertoFloat( val );
-        if( S!= null )
-          if( Float.isNaN(S.floatValue()) ) 
-            DS.setAttribute( new FloatAttribute( Attribute.TEMPERATURE,
-                                                 S.floatValue() ) );
-      } 
-    }
-    X = node.getChildNode( "pressure" );
-    if( X!= null ){
-      Object val = X.getNodeValue();
-      if( val != null ){
-        Float S = new NxData_Gen().cnvertoFloat( val );
-        if( S!= null )
-          if( !Float.isNaN(S.floatValue()) ) 
-            DS.setAttribute( new FloatAttribute( Attribute.PRESSURE,
-                                                 S.floatValue() ) );
-      } 
-    }
-    
-    float[] orientation = NexIO.Util.NexUtils.getFloatArrayFieldValue(node 
-                                        , "sample_orientation");
-    String units = NexIO.Util.NexUtils.getStringAttributeValue( node.
-            getChildNode( "sample_orientation"),"units");
-                                        
-    NexIO.Util.ConvertDataTypes.UnitsAdjust( orientation,units,"radians",
-           (float)(180.0/java.lang.Math.PI),0f );
-    if( orientation != null)
-        DS.setAttribute( new SampleOrientationAttribute( Attribute.SAMPLE_ORIENTATION,
-                                     new IPNS_SCD_SampleOrientation(orientation[0],
-                                                                   orientation[1],
-                                                                    orientation[2])));
+    NxNode X = null;
+    String sample_name=null;
+    float  temperature =Float.NaN,
+           pressure = Float.NaN;
+    float[] orientation=null;
+    if( node != null ) {
+         X = node.getChildNode( "name" );
 
+         if( X != null ) {
+            Object val = X.getNodeValue();
+            sample_name = new NxData_Gen().cnvertoString( val );
+           
+         }
+         X = node.getChildNode( "temperature" );
+         if( X != null ) {
+            Object val = X.getNodeValue();
+            if( val != null ) {
+               Float S = new NxData_Gen().cnvertoFloat( val );
+               if( S != null ){
+                  temperature = S.floatValue();
+                 
+                     
+                  }
+            }
+         }
+         X = node.getChildNode( "pressure" );
+         if( X != null ) {
+            Object val = X.getNodeValue();
+            if( val != null ) {
+               Float S = new NxData_Gen().cnvertoFloat( val );
+               if( S != null ){
+                  pressure = S.floatValue();
+               }
+            }
+         }
+
+         orientation = NexIO.Util.NexUtils.getFloatArrayFieldValue(
+                  node , "sample_orientation" );
+         String units = NexIO.Util.NexUtils.getStringAttributeValue( node
+                  .getChildNode( "sample_orientation" ) , "units" );
+
+         NexIO.Util.ConvertDataTypes.UnitsAdjust( orientation , units ,
+                  "radians" , (float) ( 180.0 / java.lang.Math.PI ) , 0f );
+        
+      }
+    
+    if( fileStateInfo != null)if( fileStateInfo.xmlDoc != null){
+      Node[] NN= NexIO.Util.Util.getxmlNXentryNodes( fileStateInfo.xmlDoc,EntryState.Name, fileStateInfo.filename);
+      for( int i=0; i<4; i++){
+         String S =ConvertDataTypes.StringValue(Util.getLeafNodeValues(
+                     Util.getNXInfo(NN[i],"NXsample.name",null,null,null)));
+         if( S != null)
+            sample_name = S;
+         Node N3=Util.getNXInfo(NN[i],"NXsample.temperature",null,null,null);
+         float T = ConvertDataTypes.floatValue(Util.getLeafNodeValues(
+                      N3));
+         if( !Float.isNaN( T ))
+            temperature = T;
+         N3=Util.getNXInfo(NN[i],"NXsample.pressure",null,null,null);
+         float P =ConvertDataTypes.floatValue(Util.getLeafNodeValues( N3
+                        ));
+         if( !Float.isNaN( P))
+            pressure = P;
+         N3 =Util.getNXInfo(NN[i],"NXsample.sample_orientation",null,null,null);
+         float[] Or =ConvertDataTypes.floatArrayValue(Util.getLeafNodeValues(
+                 N3 ));
+         if( Or != null)
+            orientation = Or;
+      }
+    }
+    if( sample_name!= null )
+       DS.setAttribute( new StringAttribute(
+                         Attribute.SAMPLE_NAME , sample_name ) );
+    if( !Float.isNaN( temperature ) )
+       DS.setAttribute( new FloatAttribute(
+                Attribute.TEMPERATURE ,temperature ) );
+    if( ! Float.isNaN( pressure ) )
+       DS.setAttribute( new FloatAttribute( Attribute.PRESSURE ,
+                pressure ) );
+    if( orientation != null ){
+       if( fileStateInfo != null)
+          if((fileStateInfo.facility != null) && ( fileStateInfo.facility.equals("LANL")))
+          if(( fileStateInfo.InstrumentName != null ) && (fileStateInfo.InstrumentName.equals("SCD"))){
+
+             DS.setAttribute( new SampleOrientationAttribute(
+                      Attribute.SAMPLE_ORIENTATION ,
+                      new LANSCE_SCD_SampleOrientation( orientation[ 0 ] ,
+                               orientation[ 1 ] , orientation[ 2 ] ) ) );
+             return false;
+          }
+             
+         DS.setAttribute( new SampleOrientationAttribute(
+                  Attribute.SAMPLE_ORIENTATION ,
+                  new IPNS_SCD_SampleOrientation( orientation[ 0 ] ,
+                           orientation[ 1 ] , orientation[ 2 ] ) ) );
+    }
     return false;  
-  }
+ 
+}
 }

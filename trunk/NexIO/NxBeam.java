@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2006/11/14 16:51:44  rmikk
+ * Added code to check the xml Fixit file for some of the fields
+ *
  * Revision 1.6  2005/12/29 23:14:06  rmikk
  * Removed useless == comparisons with Float.NaN
  *
@@ -46,8 +49,10 @@
 package NexIO;
 
 import DataSetTools.dataset.*;
-
-
+import NexIO.State.*;
+import NexIO.Util.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 public class NxBeam{
   String errormessage;
 
@@ -60,67 +65,91 @@ public class NxBeam{
   }
 
   public boolean processDS(  NxNode node,  DataSet DS){
+     return processDS(node,DS, null);
+  }
+  
+  public boolean processDS(  NxNode node,  DataSet DS, NxfileStateInfo State ){
     errormessage = "Improper inputs to NxBeam";
-    if( node == null)
+    NxEntryStateInfo EntryInfo = NexUtils.getEntryStateInfo( State );
+    Node xmlDoc =null;
+    if( State != null)
+       xmlDoc = State.xmlDoc;
+    if( (node == null) && (xmlDoc == null))
       return true;
     if( DS == null)
       return true;
-    if( !node.getNodeClass().equals( "NXbeam"))
-      return true;
-    errormessage = "";
-    NxData_Gen ng = new NxData_Gen();
-    NXData_util nu = new NXData_util();
-    NxNode n1 = node.getChildNode( "incident_energy");
-    if( n1 != null){
-      Object O = n1.getNodeValue();
-      float x[];
-      float f;
-      x = NXData_util.Arrayfloatconvert( O );
-      if( x!= null)
-        if( x.length > 0)
-          f = x[0];
-        else
-          f = Float.NaN;
-      else f = Float.NaN;
-      if( Float.isNaN(f)){
-        Float F = ng.cnvertoFloat( O );
-        if( F != null)
-          f = F.floatValue();
-      }
-      if( !Float.isNaN(f )){
-        FloatAttribute FA=new FloatAttribute(Attribute.NOMINAL_ENERGY_IN,(f));
-       
-        DS.setAttribute( FA );
-        FA = new FloatAttribute( Attribute.ENERGY_IN, (f));
+    errormessage ="";
+    float energy_in= Float.NaN,
+          energy_out= Float.NaN,
+          distance = Float.NaN;
+    if( node != null ) {
+         if( ! node.getNodeClass().equals( "NXbeam" ) )
+            return true;
+         errormessage = "";
+         NxData_Gen ng = new NxData_Gen();
+         NXData_util nu = new NXData_util();
+         NxNode n1 = node.getChildNode( "incident_energy" );
+         if( n1 != null ) {
+            Object O = n1.getNodeValue();
+            float x[];
+            float f;
+            x = NXData_util.Arrayfloatconvert( O );
+            if( x != null )
+               if( x.length > 0 )
+                  energy_in = x[ 0 ];
+               else
+                  energy_in = Float.NaN;
+            else
+               energy_in = Float.NaN;
         
-        DS.setAttribute( FA );
-      }
-    }      
+           
+         }
 
-    //  energy out
-    n1 = node.getChildNode( "final_energy");
-    if( n1 != null){
-      Object O = n1.getNodeValue();
-      float x[];
-      float f;
-      x = NXData_util.Arrayfloatconvert( O );
-      if( x!= null)
-        if( x.length > 0)
-          f = x[0];
-        else
-          f = Float.NaN;
-      else f = Float.NaN;
-      if( Float.isNaN(f)){
-        Float F = ng.cnvertoFloat( O );
-        if( F != null)
-          f = F.floatValue();
+         // energy out
+         n1 = node.getChildNode( "final_energy" );
+         if( n1 != null ) {
+            Object O = n1.getNodeValue();
+            float x[];
+            float f;
+            x = NXData_util.Arrayfloatconvert( O );
+            if( x != null )
+               if( x.length > 0 )
+                  energy_out = x[ 0 ];
+               else
+                  energy_out = Float.NaN;
+            else
+               energy_out = Float.NaN;
+            if( Float.isNaN( energy_out ) ) {
+               Float F = ng.cnvertoFloat( O );
+               if( F != null )
+                  energy_out = F.floatValue();
+            }
+         
+         }
+       
       }
-      if(!Float.isNaN( f)){
-        FloatAttribute FA = new FloatAttribute( Attribute.ENERGY_OUT,(f));
-        
-        DS.setAttribute( FA );
-      }
-    }    
+    
+    if( xmlDoc != null){
+       Node[] NN =Util.getxmlNXentryNodes( xmlDoc, EntryInfo.Name, State.filename);
+       for( int i=0; i< 3; i++){
+          
+       }
+    }
+    if( ! Float.isNaN( energy_in ) ) {
+       FloatAttribute FA = new FloatAttribute(
+                Attribute.NOMINAL_ENERGY_IN , ( energy_in) );
+
+       DS.setAttribute( FA );
+       FA = new FloatAttribute( Attribute.ENERGY_IN , ( energy_in ) );
+
+       DS.setAttribute( FA );
+    }
+    if( ! Float.isNaN( energy_out ) ) {
+       FloatAttribute FA = new FloatAttribute( Attribute.ENERGY_OUT ,
+                ( energy_out ) );
+
+       DS.setAttribute( FA );
+    }
     return false;  
   }//processDS
 }
