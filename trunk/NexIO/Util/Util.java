@@ -1,5 +1,8 @@
 package NexIO.Util;
 
+import java.lang.reflect.Array;
+import java.util.AbstractCollection;
+
 import javax.xml.parsers.*;
 
 import org.w3c.dom.*;
@@ -35,8 +38,54 @@ public class Util {
       
    }
    
-   
-   
+   /**
+    * Utility method to get starting( at NXentry) nodes of interest in an xmlDocument
+    * @param xmlDoc  The top node of an xmldocument in the proper format
+    * @param EntryName  The name of the NXentry node, for those NeXus files with
+    *                   several NXentries
+    * @param filename   The filename of the nexus file. It can include the path
+    * @return  An array of 4 Nodes, some may be null, giving Start of NXentries of
+    *          interest.  The Common without and with entry name and the Runs with
+    *          given filename without and with the entry name
+    */
+   public static Node[] getxmlNXentryNodes( Node xmlDoc, String EntryName, String filename){
+      Node[] Res = new Node[4];
+      Res[0]=Res[1]=Res[2]=Res[3] = null;
+      Node N = Util.getNXInfo( xmlDoc,"Common.NXentry",null,null,null);
+      while( N != null ) {
+         if( N.getNodeName().equals( "NXentry" ) ) {
+            String name = ConvertDataTypes.StringValue( Util
+                     .getXmlNodeAttributeValue( N , "name" ) );
+            if( name == null )
+               Res[ 0 ] = N;
+            else if( ( EntryName != null ) && ( name.equals( EntryName ) ) )
+               Res[ 1 ] = N;
+         }
+         N = N.getNextSibling();
+      }
+      if( filename == null)
+         return Res;
+      filename = filename.replace( '\\','/');
+      
+      int kk= filename.lastIndexOf('/');
+      if( kk >=0)
+         filename = filename.substring( kk+1);
+      N= Util.getNXInfo( xmlDoc,"Runs", null, null, null);
+      N= Util.getNXInfo( N,"Run.NXentry", null, null, filename);
+      while( N != null ) {
+         if( N.getNodeName().equals( "NXentry" ) ) {
+            String name = ConvertDataTypes.StringValue( Util
+                     .getXmlNodeAttributeValue( N , "name" ) );
+            if( name == null )
+               Res[ 2 ] = N;
+            else if( ( EntryName != null ) && ( name.equals( EntryName ) ) )
+               Res[ 3 ] = N;
+         }
+         N = N.getNextSibling();
+      }
+      return Res;
+      
+   }
    
    /**
     * Finds information in an XML document
@@ -48,7 +97,7 @@ public class Util {
     *                        be null( all will be considered) , or a set
     * @param fieldName      The specific field name( tag or name attribute) to search for
     * @param filename       The tag of the node must have a filename attribute corresponding to this filename 
-    * @return     String value of this node
+    * @return     The top node or the value if only one simple child
     */
    public static Node getNXInfo( Node xmlDoc , String NXclassPath , String NXclassNameList , String fieldName ,
             String filename ){
@@ -58,15 +107,18 @@ public class Util {
         
         NXclassPath = standardize_dot_sep_list( NXclassPath );
         NXclassNameList = standardize_dot_sep_list( NXclassNameList );
+        
         NodeList children = xmlDoc.getChildNodes();
+        if( children.getLength() ==1)if("data".equals(children.item(0).getNodeName())){
+           xmlDoc = children.item(0);
+           children = xmlDoc.getChildNodes();
+        }
+        
         if( ( NXclassPath == null ) &&( NXclassNameList == null )&&
                                   ( fieldName == null )&&( filename == null ) )
-           if( children.getLength() != 1 )
                 return xmlDoc;
         
-           else 
-                return xmlDoc.getFirstChild();
-        
+       
            
         for( int ik = 0 ; ik < children.getLength() ; ik++  ){
            
@@ -79,31 +131,39 @@ public class Util {
             String fname = null;
             boolean ClassHasName = false;
             boolean ClassHasFile = false;
-             if( NXclassNameList != null ){
-                
-               NamedNodeMap atts = NN.getAttributes();
-               String namess = NXclassNameList.substring( 1 , 
-                                            NXclassNameList.indexOf( "." , 1 ) );
+            NamedNodeMap atts = NN.getAttributes();
+            if( NXclassNameList != null ) {
+
+
+            String namess = NXclassNameList.substring( 1 , NXclassNameList
+                     .indexOf( "." , 1 ) );
+
+            if( namess != null )
+               if( namess.trim().length() > 0 )
+                  if( atts != null ) {
+
+                     Node attNode = atts.getNamedItem( "name" );
+                     if( attNode != null )
+                        ClassHasName = true;
+                     if( attNode != null )
+                        if( namess.equals( attNode.getNodeValue() ) )
+                           namee = namess;
+                  }
+         }
+
+         if( (filename != null) &&( atts != null) ) {
+
+            Node attNode = atts.getNamedItem( "filename" );
+            if( attNode != null )
+               if( filename.equals( attNode.getNodeValue() ) )
+                  fname = "xxx";
+
+            if( attNode != null )
+               ClassHasFile = true;
+
+         }
               
-               if( namess!= null ) if( namess.trim().length() > 0 )if( atts != null ){
-                  
-                    Node attNode = atts.getNamedItem( "name" );
-                    if( attNode != null ) ClassHasName = true;
-                   if( attNode != null )if( namess.equals( attNode.getNodeValue() ) )
-                      namee = namess;
-                   
-                  if( filename != null ){
-                     
-                      attNode = atts.getNamedItem( "filename" );
-                      if( attNode != null )if( filename.equals( attNode.getNodeValue() ) )
-                         fname = namess;
-                      
-                      if( attNode != null )
-                         ClassHasFile =  true;
-                      
-                   }
-               }
-             }
+            
              
              boolean OkToEnter = false;
              if( ( NXclassPath !=null )||( NXclassNameList != null ))
@@ -145,6 +205,9 @@ public class Util {
                  if( k >= 0 ) Clist = NXclassPath.substring( k );
               }
               
+              if( fname != null )
+                 filename = null;
+              
               if( namee != null ){
                  k = NXclassNameList.indexOf( "." +  namee + "." );
                  if( k >= 0  ){
@@ -166,12 +229,12 @@ public class Util {
                if( X != null )
                   return X;
                
-            }else{
+            }else{ //Do not check child nodes. Check if this fits
                
                if( fieldName != null )if( fieldName.equals( NN.getNodeName() ) )
                    return  NN;
                
-               NamedNodeMap  atts = NN.getAttributes();
+               atts = NN.getAttributes();
                if( atts != null ){
                   
                   Node attNode = atts.getNamedItem( "name" );
@@ -202,16 +265,37 @@ public class Util {
       
    }
    
+   //getValue works here
+   public static String getXmlNodeAttributeValue( Node NN, String AttrName){
+      if( NN == null )
+         return null;
+      if( AttrName == null)
+         return null;
+      if( AttrName.length() <1)
+         return null;
+      NamedNodeMap  atts = NN.getAttributes();
+      if( atts != null ){
+         
+         Node attNode = atts.getNamedItem( AttrName );
+         if(  attNode != null)
+           return attNode.getNodeValue();
+         return null;
+        
+      }else
+         return null;
+      
+   }
    
    
   
     //Must have one child that is a text node
-   private static Object getLeafNodeValue( Node NN ){
+   // unions the values of all text nodes
+   public static Object getLeafNodeValues( Node NN ){
        
        if( NN == null )
           return null;
        
-       NodeList children = NN.getChildNodes();
+      NodeList children = NN.getChildNodes();
       String Res = "";
       for( int i = 0 ; i< children.getLength() ; i++ ){
          
@@ -240,17 +324,26 @@ public class Util {
      * @param  node  The node in which to get the fixed up dimension
      * @param  dataState  the stateInfo for the NXdata. Gives dimensions and 
      *                    translations
+     * @param timeDim the position in dimension from the NeXus getDimension 
+     *                that represents time.  Position 0 is the rightmost
+     * @param colDim the position in dimension from the NeXus getDimension 
+     *                that represents column.  Position 0 is the rightmost
+     * @param rowDim the position in dimension from the NeXus getDimension 
+     *                that represents row.  Position 0 is the rightmost
+     *    
      *                    
-     * @param  The position in the multi dimension array corresponding to 
-     *        NXdata.data that represents time. The fastest changing dimension 
-     *       has position 0.
+     * @param  axisOffset  the number of rightmost dimensions to ignore from 
+     *           the node.getDimension
+     * 
      *        
-     * @return  The fixed up dimension that takes into account axes and reorderings.
+     * @return  The fixed up dimension that takes into account axes .
      *           -1 at a position means *.
+     * NOTE: rowDims and colDim are not used yet(?). The position corresponding
+     *      to the timeDim will have a -2 in it.
      */
-    public static int[] GetDimension( NxNode node , NxDataStateInfo dataState , 
-                                                   int timeDim , int axisOffset ){
-       
+    public static dimensionHandler GetDimension( NxNode node , NxDataStateInfo dataState , 
+                                                   int timeDim , int colDim, int rowDim, int axisOffset){
+        
          if( node == null )
             return null;
          
@@ -262,6 +355,7 @@ public class Util {
             return null;
         
          int[] dim = new int[ dim1.length - axisOffset ];
+        
          System.arraycopy( dim1 , 0 , dim , 0 , dim.length );
          
          int[] axes = null;
@@ -328,7 +422,126 @@ public class Util {
          
          
          if( axes == null )
-            return dim;
+            return new dimensionHandler( dim, timeDim, colDim, rowDim);
+         
+         if( timeDim + 1 == minAx )
+            minAx++;
+         
+         int[] ResDim = new int[ dataState.dimensions.length];//new int[ dataState.dimensions.length - minAx + 1 ];
+         java.util.Arrays.fill( ResDim , -1 );
+         
+         int L = ResDim.length-1 ;
+         
+         for( int i = 0 ; i < dim.length ;  i++ )
+            ResDim[ L - axes[ i ] +1 ] = dim[ i ];
+         
+         if( timeDim + 1 >= minAx )
+            ResDim[ L - timeDim ] = -2;
+       
+       return new dimensionHandler( ResDim, timeDim, colDim,rowDim);
+    }
+    
+    /**
+     * Returns an adjusted dimension node where * fields are replaced by -1,
+     * the time dim is replaced by -2 if not in the  trail.  The axis numbers
+     * (for *) are fixed uing NxDataStateInfo.XlateAxes. axes attribute is
+     * NOT used.
+     * 
+     * @param  node  The node in which to get the fixed up dimension
+     * @param  dataState  the stateInfo for the NXdata. Gives dimensions and 
+     *                    translations
+     *                    
+     * @param  time The position in the multi dimension array corresponding to 
+     *        NXdata.data that represents time. The fastest changing dimension 
+     *       has position 0.
+     * 
+     *  @param axisOffset  If trailing dimensions are to be ignored.
+     *        
+     * @return  The fixed up dimension that takes into account axes and reorderings.
+     *           -1 at a position means *.
+     */
+    public static int[] GetDimension( NxNode node , NxDataStateInfo dataState , 
+                                                   int timeDim , int axisOffset){
+          
+         if( node == null )
+            return null;
+         
+         int[] dim1 = node.getDimension();
+         if( dim1 == null )
+            return null;
+         
+         if( dim1.length - axisOffset < 0 )
+            return null;
+        
+         int[] dim = new int[ dim1.length - axisOffset ];
+        
+         System.arraycopy( dim1 , 0 , dim , 0 , dim.length );
+         
+         int[] axes = null;
+         int ax = ConvertDataTypes.intValue( node.getAttrValue( "axis" )  );
+         
+         if( ax != Integer.MIN_VALUE ){
+            
+            axes = new int[ 1 ];
+            if( dataState.XlateAxes != null )
+               ax = dataState.XlateAxes[ ax - 1 ];
+            axes[ 0 ] = ax;
+            
+         }else{// check fro axes attributes
+            
+            String S =( String )node.getAttrValue( "axes" );
+            if( S != null )if( S.length() > 0 ){
+               
+               S = S.trim();
+               if( S.startsWith( "[" ) )
+                  S = S.substring( 1 );
+               
+               if( S.endsWith( "]" ) )
+                  S = S.substring( 0 , S.length() - 1 );
+               
+               String[] SS = S.split( "[,:]" );
+               
+               axes = new int[ SS.length ];
+               for( int i = 0 ; ( i < axes.length ) &&( axes != null ) ; i++ ){
+                  
+                  int indx = -1;
+                  for( int k = 0 ; ( k < dataState.axisName.length )&&( indx < 0 ) ; k++ )
+                     if( SS[ i ].equals( dataState.axisName[ k ] ) )
+                        indx = k;
+                  
+                  if( indx < 0 )
+                     axes = null;
+                  
+                  else if( dataState.XlateAxes != null )
+                     if( indx < dataState.XlateAxes.length )
+                        indx = dataState.XlateAxes[ indx - 1 ];
+                     else{
+                        indx = -1;
+                        axes = null;
+                     }
+                  
+                  if( axes != null ) axes[ i ] = indx + 1;                 
+               }
+            }
+         }
+         
+         //Find min axis
+         int  minAx = dataState.dimensions.length;
+         if( axes == null )
+            
+            minAx = minAx - dim.length + 1;
+         
+         else{
+            
+            for( int i = 0 ; i < axes.length ; i++ )
+               if( axes[ i ] < minAx )
+                  minAx = axes[ i ];
+            
+         }
+         
+         
+         if( axes == null )
+            return  dim;
          
          if( timeDim + 1 == minAx )
             minAx++;
@@ -521,6 +734,8 @@ public class Util {
       }
          
       }
+   
+ 
  }
 
 
