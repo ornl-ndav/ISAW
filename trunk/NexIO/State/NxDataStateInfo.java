@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2006/11/14 16:38:24  rmikk
+ * Fixed Translate axis names by adding 1
+ * Search the xml fixit doc to link name
+ * Search for filename through xml fixit doc
+ *
  * Revision 1.7  2006/07/27 18:32:12  rmikk
  * Added code to translate incorrect axes numbers to correct axes numbers.
  * Added more spacing around in the code
@@ -62,6 +67,7 @@
 package NexIO.State;
 import NexIO.*;
 import NexIO.Util.*;
+
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
 
@@ -158,7 +164,7 @@ public class NxDataStateInfo extends StateInfo{
           if( child.getNodeName().equals( "data" ) ){
              
             dimensions = child.getDimension();
-             
+           
             labelName = ConvertDataTypes.StringValue( child.getAttrValue( "label" ) );
             Object O = child.getAttrValue( "axes" );
             if( O instanceof String[] ){
@@ -189,15 +195,56 @@ public class NxDataStateInfo extends StateInfo{
           
          if( L != null ){
              linkName = FixUp( L , child );
-             
          }
-        }  //for loop
-               
-        XlateAxes = FindAxes( Params.xmlDoc );   
+        }//child is SDS  
         
-        NexIO.Util.NexUtils.disFortranDimension( dimensions , xvals_length );
-        
+     } //for loop
+     
+     XlateAxes = FindAxes( Params.xmlDoc );  
+     if( XlateAxes == null){
+        XlateAxes = new int[dimensions.length];
+        for( int i = 0 ; i< XlateAxes.length ; i++)
+           XlateAxes[i]= i+1;
      }
+     if( axisName.length > dimensions.length){
+        String[] A = new String[ dimensions.length];
+        System.arraycopy( axisName,0,A,0,A.length);
+        axisName = A;
+     }
+     //Check xml for link name
+     if( Params.xmlDoc != null){
+        NxEntryStateInfo EntryState = NexUtils.getEntryStateInfo( Params );
+        String name = null;
+        if( EntryState != null)
+           name = EntryState.Name;
+        Node N = Util.getNXInfo( Params.xmlDoc,"Common.NXentry",null,null,null);
+        Node NN1[] = NexIO.Util.NexUtils_mixDims.getNxEntryNodes( N,name );
+        N = Util.getNXInfo( Params.xmlDoc,"Runs",null,null,null);
+        String filename = Params.filename;
+        Node NN2[]= new Node[2]; NN2[0]=NN2[1] = null;
+        if( filename != null){
+           filename = filename.replace('\\','/');
+           int kk= filename.lastIndexOf('/');
+           if( kk >=0)
+              filename = filename.substring(kk+1);
+        
+           N = Util.getNXInfo( N,"Run",null,null,filename);
+           NN2 = NexIO.Util.NexUtils_mixDims.getNxEntryNodes( N,name );
+        }
+        Node NNN[] = new Node[4];
+        NNN[0]=NN1[0]; NNN[1]=NN1[1];NNN[2]=NN2[0]; NNN[3]=NN2[1];
+        for( int i=0; i< 4; i++){
+           if( NNN[i] != null){
+              N=Util.getNXInfo( NNN[i],"NXdata.link",Name,null,null);
+              if( N != null){
+                 String S = ConvertDataTypes.StringValue( Util.getLeafNodeValues( N));
+                 if( S != null)
+                    linkName = S;
+              }
+           }
+        }
+     }
+     //NexIO.Util.NexUtils.disFortranDimension( dimensions , xvals_length );
       
   }
   
@@ -265,12 +312,12 @@ public class NxDataStateInfo extends StateInfo{
     */
    public int[] FindAxes( Node xmlDoc ){
       
-      Node res = Util.getNXInfo( xmlDoc , "axes" , null , null ,null );
+      Node res = Util.getNXInfo( xmlDoc , "NXdata.axes" , Name , null ,null );
       
       if( res == null )
          return null;
       
-      String S = res.getNodeValue();
+      String S = ConvertDataTypes.StringValue( Util.getLeafNodeValues( res ));
       if( S == null )
          return null;
       
