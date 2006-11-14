@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2006/11/14 16:26:22  rmikk
+ * Added a routine to parse a date that is in the full ISO format
+ *
  * Revision 1.11  2006/10/22 18:15:47  rmikk
  * Convert to float Array and int Array now converts lists of strings separated
  *   by spaces, comma, or semicolon to the corresponding array, if possible
@@ -77,6 +80,7 @@ import gov.anl.ipns.MathTools.Geometry.*;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.regex.*;
 
 /**
 *    This class contains methods to convert Objects to a specified
@@ -456,6 +460,124 @@ public class ConvertDataTypes{
     
      return NxNodeUtils.parse( DateString);
   }
+  
+  private static String Year ="[12][0-9][0-9][0-9]";
+  private static String MonthDay ="([0-1][0-9])[ \\-:/\\\\]([0-3][0-9])";
+  private static String Time ="([0-5][0-9])[ \\-:]([0-5][0-9])[ \\-:]([0-5][0-9])([.][0-9]*)?";
+  private static String Zone = "[+\\-]([0-2][0-9])[:]?([0-5][0-9])";
+  private static String pattern = "(("+Year+")[ \\-:/\\\\]("+MonthDay+"))(([ T]"+Time+")("+Zone+")?)?";
+  
+  private static long parse_neww( String DateString){
+     Matcher M = Pattern.compile( pattern).matcher( DateString );
+     if( !M.find())
+        return -1;
+     for( int i=0; i<= M.groupCount(); i++)
+        System.out.println( i+"::"+M.group(i));
+     return 0;
+  }
+  /**
+   * parses ISO dates only. They can have fractional seconds
+   * @param DateString  The String representing the Date
+   * @return  The time in milliseconds (GMT)
+   */
+  public static long parse_new( String DateString){
+     if( DateString == null)
+        return -1;
+     DateString = DateString.trim();
+     int year = -1;
+     int month = -1;
+     int day = -1;
+     int hour = 0;
+     int minute=0;
+     int second = 0;
+     float frac_second =0;
+     Pattern P1 = Pattern.compile( "[12][09][0-9][0-9][ :\\-/]");
+     Matcher M =P1.matcher( DateString);
+     if(!M.find())
+        return -1;
+     year = ( new Integer( DateString.substring(0,4))).intValue();
+     DateString = DateString.substring(5);
+     if( DateString.length() < 1)
+        return -1;
+     M =Pattern.compile("[0-1][0-9][ :\\-/]").matcher( DateString);
+     if(!M.find())
+        return -1;
+     month = (new Integer( DateString.substring(0,2))).intValue();
+     DateString = DateString.substring(3);
+     if( DateString.length() < 1)
+        return -1;
+     
+
+     M =Pattern.compile("[0-1][0-9][ :\\-/T]").matcher( DateString);
+     if(!M.find())
+        return -1;
+     day = (new Integer( DateString.substring(0,2))).intValue();
+     DateString = DateString.substring(3);
+     if( DateString.length() >1){
+        M =Pattern.compile("[0-2][0-9][ :\\-/]").matcher( DateString);
+        if(M.find()){
+          hour = (new Integer( DateString.substring(0,2))).intValue();
+          DateString = DateString.substring(3);
+          if( DateString.length() >1){
+             M =Pattern.compile("[0-2][0-9][ :\\-/]").matcher( DateString);
+             if( M.find(  )){
+                minute = (new Integer( DateString.substring(0,2))).intValue();
+                DateString = DateString.substring(3);
+                if( DateString.length() >1){
+                   M =Pattern.compile("[0-2][0-9]").matcher( DateString);
+                   if( M.find(  )){
+                      second = (new Integer( DateString.substring(0,2))).intValue();
+                      DateString = DateString.substring(2);
+                      if( DateString.length() >0){
+                        M=Pattern.compile("(.[0-9]+)?([+-][0-2][0-9][:-]?[0-6][0-9])?").matcher( DateString);
+                        if( M.find()){
+                           try{
+                              String S = M.group(1);
+                              if( S.length() >1){
+                                 int nn = (new Integer( S.substring(1))).intValue();
+                                 frac_second = (float)(nn/Math.pow(10f,S.length()-1)) ;
+                              }
+                                 
+                           }catch( Exception s3){
+                              frac_second = 0;
+                           }
+                           try{
+                              String S = M.group(2);
+                              if(S.length() >1){
+                                 int k= S.indexOf(":",1);
+                                 if( k < 0)  k= S.indexOf("-",1);
+                                 if( k >=0) k++;
+                                 else k=3;
+                                 int h = (new Integer( S.substring(1,3))).intValue();
+                                 int m =( new Integer( S.substring(k))).intValue();
+                                 int sgn=1;
+                                 if( S.startsWith("-"))sgn=-1;
+                                 hour +=sgn*h;
+                                 minute +=sgn*m;
+                                 //while( hour <0){hour +=24;
+                                 //while( minute < 0) minute +=60;
+                              }
+                           }catch( Exception s4){
+                              //No adjustments to get GMT
+                           }
+                        }
+                      }
+                }
+             }
+
+            }
+         }
+        }
+     }
+     System.out.println( year+":"+month+":"+day+":"+hour+":"+minute+":"+second+":"+frac_second);
+     GregorianCalendar GCal = new GregorianCalendar(year, month,day, hour, minute, second);
+     GCal.set( Calendar.MILLISECOND, (int)(frac_second*1000));
+    return GCal.getTimeInMillis();
+     
+     
+     
+     
+  }
 
   /**
    *    DataSet.addAttribute but att can be null. In the case where att
@@ -745,6 +867,16 @@ public class ConvertDataTypes{
      
      return S.length();
   }
+ 
+ public static void main( String[] args){
+    long T = ConvertDataTypes.parse_neww( args[0]);
+    
+    System.out.println( "Time in milliseconds is "+ T);
+    //GregorianCalendar calendar = new GregorianCalendar();
+    //calendar.setTimeInMillis(T);
+    //System.out.println("YEAR: " + calendar.get(Calendar.YEAR)); System.out.println("MONTH: " + calendar.get(Calendar.MONTH)); System.out.println("WEEK_OF_YEAR: " + calendar.get(Calendar.WEEK_OF_YEAR)); System.out.println("WEEK_OF_MONTH: " + calendar.get(Calendar.WEEK_OF_MONTH)); System.out.println("DATE: " + calendar.get(Calendar.DATE)); System.out.println("DAY_OF_MONTH: " + calendar.get(Calendar.DAY_OF_MONTH)); System.out.println("DAY_OF_YEAR: " + calendar.get(Calendar.DAY_OF_YEAR)); System.out.println("DAY_OF_WEEK: " + calendar.get(Calendar.DAY_OF_WEEK)); System.out.println("DAY_OF_WEEK_IN_MONTH: " + calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH)); System.out.println("AM_PM: " + calendar.get(Calendar.AM_PM)); System.out.println("HOUR: " + calendar.get(Calendar.HOUR)); System.out.println("HOUR_OF_DAY: " + calendar.get(Calendar.HOUR_OF_DAY)); System.out.println("MINUTE: " + calendar.get(Calendar.MINUTE)); System.out.println("SECOND: " + calendar.get(Calendar.SECOND)); System.out.println("MILLISECOND: " + calendar.get(Calendar.MILLISECOND));
+    
+ }
  
 }
   
