@@ -21,7 +21,8 @@
  *	Linux version:		January, 2002	A. J. Schultz
  *      Modified Subroutine Laue for axes change  
  *                              January  2003,  A.J.Schultz
- *      Converted to Java, eliminated Goto's, Fixed Do loops, added while loops,etc.
+ *      Converted to Java, eliminated Goto's, Fixed Do loops, added 
+ *      while loops,etc.
  *
  * Copyright (C) 2003, Ruth Mikkelson
  *
@@ -53,9 +54,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2006/11/14 02:14:12  dennis
+ * Fixed javadoc for method  blaue().
+ *
  * Revision 1.23  2006/10/24 18:42:13  rmikk
- * Added a routine blaue( float[][] orientation matrix) that will run an orientation
- *    matrix through the later blind processing.
+ * Added a routine blaue( float[][] orientation matrix) that will run an 
+ * orientation matrix through the later blind processing.
  *
  * Revision 1.22  2004/07/14 17:15:49  rmikk
  * Fixed FindPeaks constructor to include the added parameters
@@ -176,8 +180,8 @@ public class blind {
    * It performs blind tasks using the Q vectors in the orientation matrix.
    * This is to standardize a set of basis vectors gotten by some other means
    * 
-   * @param orientMat  
-   * @return
+   * @param orientMat  The orientation matrix  
+   * @return  An error message if something went wrong, or null otherwise.
    */
   public ErrorString blaue( float[][] orientMat){
      double[] Qx,Qy,Qz;
