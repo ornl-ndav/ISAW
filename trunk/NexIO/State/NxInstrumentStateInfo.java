@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2006/11/14 16:41:36  rmikk
+ * The Instrument Node is now stored in this State
+ *
  * Revision 1.2  2004/02/16 02:18:22  bouzekc
  * Removed unused imports.
  *
@@ -56,6 +59,8 @@ public class NxInstrumentStateInfo extends StateInfo{
    *  Examples Pulsed, Reactor etc
    */
    public String type; 
+   
+   public NxNode InstrumentNode;
   
    /**
     *   Constructor
@@ -65,7 +70,7 @@ public class NxInstrumentStateInfo extends StateInfo{
     */
    public NxInstrumentStateInfo( NxNode NxInstrumentNode , 
                 NxfileStateInfo Params){
-
+      this.InstrumentNode = NxInstrumentNode;
 
    }
   
