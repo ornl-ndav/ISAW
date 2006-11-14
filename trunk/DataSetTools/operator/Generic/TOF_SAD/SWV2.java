@@ -28,6 +28,12 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ * MODIFIED:
+ *
+ * $Log$
+ * Revision 1.3  2006/11/14 01:55:18  dennis
+ * Fixed java doc warning.
+ * Added logging tag.
  *
  */
 package DataSetTools.operator.Generic.TOF_SAD;
@@ -69,7 +75,8 @@ public class SWV2  extends GenericTOF_SAD{
    /* ---------------------------- Constructor  -------------------------- */
    /**
     *    Constructor for SWV.
-    *    @param  filename   the name of the file
+    *    @param  filename1   the name of the first file
+    *    @param  filename2   the name of the second file
     */
    public SWV2(String filename1, String filename2) 
      {
@@ -117,7 +124,7 @@ public class SWV2  extends GenericTOF_SAD{
    {
      StringBuffer s = new StringBuffer("");                                        
      s.append("@overview  This operator loads two data files containing ");
-     s.append(" S(Qx,Qy), rescale each by multiplying with different numbers, ");
+     s.append(" S(Qx,Qy), rescales each by multiplying with different numbers, ");
      s.append(" adds/subtracts the second set of data to/from the first one, ");
      s.append(" pops up a viewer showing the data.  Integration ");
      s.append(" over rings and wedges is supported by the viewer.");
