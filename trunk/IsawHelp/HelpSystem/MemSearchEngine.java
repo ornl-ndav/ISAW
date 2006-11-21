@@ -31,6 +31,14 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2006/11/21 16:01:41  rmikk
+ * The searc files in IsawHelp/HelpSystem/SearchData will be used if the search
+ * data has not been made. These files should come with the distribution.
+ *
+ * If a script operator or other operator has been changed since the last update
+ *   of the search data and if it has the same command name and filename, the
+ *   pages will be shown without the highlighted search words.
+ *
  * Revision 1.4  2006/11/13 23:16:59  dennis
  * Made the message in the dialog box telling the user to 'Update Search
  * Data Base' more explanatory.
@@ -126,12 +134,25 @@ public class MemSearchEngine extends SearchEngine implements SearchListener {
       java.io.File f1 = new java.io.File( path + "/data.txt" );
       if( ! f1.exists() ) {
 
+         
+         path = System.getProperty("Help_Directory" );
+         if( path != null){
+
+            path = path.replace( '\\' , '/' );
+            if( ! path.endsWith( "/" ) )
+               path += '/';
+            path += "HelpSystem/SearchData/";
+            
+            f1 = new java.io.File( path + "data.txt" ); 
+         }
+      }
+      if( !f1.exists()){
          fout = null;
          nWords = 0;
          Words = null;
          buffptrs = null;
          return;
-
+     
       }
       try {
 
@@ -448,14 +469,16 @@ public class MemSearchEngine extends SearchEngine implements SearchListener {
 
                while( Match( index , Command , filename , tag ) < 0 )
                   index++ ;
-
-               if( Match( index , Command , filename , tag ) == 0 ) {
+               int matchCode = Match( index , Command , filename , tag );
+               if( ( matchCode == 0) ||
+                        (matchCode == 10) ) {
                   
                   String host = "Generic";
                   if( ! tag.equals( "Generic" ) )
                      host = "DataSet";
-
-                  MSearchItem srchItem = new MSearchItem( url , Command ,
+                 if(matchCode ==10)
+                    Pos =0;
+                 MSearchItem srchItem = new MSearchItem( url , Command ,
                            Locale.US.toString() , host + "-" + index , 1.0 ,
                            Pos , Pos + searchparams.length() , new Vector() );
                   
@@ -530,7 +553,7 @@ public class MemSearchEngine extends SearchEngine implements SearchListener {
                if( ! FF.exists() )
                   return 2;
                if( FF.lastModified() > lastmodified )
-                  return 2;
+                  return 10;
                return 0;
                
 
@@ -568,7 +591,7 @@ public class MemSearchEngine extends SearchEngine implements SearchListener {
                   return 2;
                
                if( FF.lastModified() > lastmodified )
-                  return 2;
+                  return 10;
                
                return 0;
 
@@ -616,7 +639,7 @@ public class MemSearchEngine extends SearchEngine implements SearchListener {
                return 2;
             
             if( FF.lastModified() > lastmodified )
-               return 2;
+               return 10;
             
             return 0;
             
