@@ -31,6 +31,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2006/11/21 16:22:23  rmikk
+ * Print out error messages telling which operator was being processed when an
+ *    exception occurs
+ *
  * Revision 1.3  2006/10/22 18:26:59  rmikk
  * Changed directory where the presearched database info is stored
  *
@@ -79,74 +83,90 @@ public class MakeSearchData {
    public MakeSearchData() throws Exception {
       
       super();
-      new DataSetTools.util.SharedData();
-      String HelpDir = System.getProperty( "user.home" );
-      //f( HelpDir == null ) exitt( " No Help directory in IsawProps.dat" );
-      HelpDir = HelpDir.replace( '\\' , '/' );
-      if( ! HelpDir.endsWith( "/" ) ) HelpDir += "/";
-      HelpDir += "ISAW/";
-      
-      
-      fout1 = new FileOutputStream( HelpDir + "keys.txt" );
-      fout2 = new FileOutputStream( HelpDir + "data.txt" );
+      String ErrMess="";
+      try {
 
-      Words = new String[ 800 ];
-      buffptrs = new int[ 800 ];
-      ranks = new int[ 800 ];
-      NWords = 0;
-      file2Offset = 0;
-
-      Script_Class_List_Handler SCLH = new Script_Class_List_Handler();
-      HTMLizer mkHTM = new HTMLizer();
-      for( int i = 0 ; i < SCLH.getNum_operators() ; i++ ) {
-
-         DataSetTools.operator.Operator op = SCLH.getOperator( i );
-         String doc = mkHTM.createHTML( op );
-
-         String filename = SCLH.getOperator( i ).getSource();
-         String Command = SCLH.getOperator( i ).getCommand();
-         //System.out.println("-------------------"+Command+"----------------");
-         update( "Generic" , Command , filename , doc );
+         ErrMess = "at Start";
+         new DataSetTools.util.SharedData();
+         String HelpDir = System.getProperty( "user.home" );
+         // f( HelpDir == null ) exitt( " No Help directory in IsawProps.dat" );
+         HelpDir = HelpDir.replace( '\\' , '/' );
+         if( ! HelpDir.endsWith( "/" ) )
+            HelpDir += "/";
+         HelpDir += "ISAW/";
 
 
+         fout1 = new FileOutputStream( HelpDir + "keys.txt" );
+         fout2 = new FileOutputStream( HelpDir + "data.txt" );
+
+         Words = new String[ 800 ];
+         buffptrs = new int[ 800 ];
+         ranks = new int[ 800 ];
+         NWords = 0;
+         file2Offset = 0;
+
+         Script_Class_List_Handler SCLH = new Script_Class_List_Handler();
+         HTMLizer mkHTM = new HTMLizer();
+         for( int i = 0 ; i < SCLH.getNum_operators() ; i++ ) {
+            DataSetTools.operator.Operator op = SCLH.getOperator( i );
+            ErrMess = "processing Generic operator " + i + ":"
+                     + op.getCommand();
+            String doc = mkHTM.createHTML( op );
+
+            String filename = SCLH.getOperator( i ).getSource();
+            String Command = SCLH.getOperator( i ).getCommand();
+            // System.out.println("-------------------"+Command+"----------------");
+            update( "Generic" , Command , filename , doc );
+
+
+         }
+
+
+         for( int i = 0 ; i < SCLH.getNumDataSetOperators() ; i++ ) {
+
+            DataSetOperator dsOp = SCLH.getDataSetOperator( i );
+
+            ErrMess = "processing DataSet operator " + i + ":"
+                     + dsOp.getCommand();
+            String doc = mkHTM.createHTML( dsOp );
+            String Command = dsOp.getCommand();
+            String filename = dsOp.getSource();
+            update( "DataSet" , Command , filename , doc );
+
+         }
+
+         ErrMess = "after create data base 1";
+         fout2.close();
+
+         // Now write the file with the words and pointers to info
+         // on the first word in this list
+
+         fout1.write( ( System.currentTimeMillis() + "\n" ).getBytes() );
+         fout1.write( ( "" + NWords + "\n" ).getBytes() );
+         byte[] chArray = new byte[ 8 ];
+         for( int i = 0 ; i < NWords ; i++ ) {
+
+            Arrays.fill( chArray , (byte) 32 );
+            int NN = Words[ ranks[ i ] ].length();
+            NN = Math.min( NN , 8 );
+            System.arraycopy( Words[ ranks[ i ] ].getBytes() , 0 , chArray , 0 ,
+                     NN );
+            fout1.write( chArray );
+
+            String S = "" + buffptrs[ ranks[ i ] ];
+            Arrays.fill( chArray , (byte) 32 );
+            for( int k = 0 ; k < S.length() ; k++ )
+               chArray[ k ] = (byte) S.charAt( k );
+
+            fout1.write( chArray );
+
+         }
       }
-
-
-      for( int i = 0 ; i < SCLH.getNumDataSetOperators() ; i++ ) {
-         
-         DataSetOperator dsOp = SCLH.getDataSetOperator( i );
-         String doc = mkHTM.createHTML( dsOp );
-         String Command = dsOp.getCommand();
-         String filename = dsOp.getSource();
-         update( "DataSet" , Command , filename , doc );
-
+      catch( Exception w ) {
+         System.out.println( "Error in " + ErrMess );
+         w.printStackTrace();
       }
-
-
-      fout2.close();
-      
-      //Now write the file with the words and pointers to info
-      //   on the first word in this list
-      
-      fout1.write( ( System.currentTimeMillis() + "\n" ).getBytes() );
-      fout1.write( ( "" + NWords + "\n" ).getBytes() );
-      byte[] chArray = new byte[ 8 ];
-      for( int i = 0 ; i < NWords ; i++ ) {
-
-         Arrays.fill( chArray , (byte) 32 );
-         int NN = Words[ ranks[ i ] ].length();
-         NN = Math.min( NN , 8 );
-         System.arraycopy( Words[ ranks[ i ] ].getBytes() , 0 , chArray , 0 ,
-                  NN );
-         fout1.write( chArray );
          
-         String S = "" + buffptrs[ ranks[ i ] ];
-         Arrays.fill( chArray , (byte) 32 );
-         for( int k = 0 ; k < S.length() ; k++ )
-            chArray[ k ] = (byte) S.charAt( k );
-         
-         fout1.write( chArray );
-      }
    }
 
 
