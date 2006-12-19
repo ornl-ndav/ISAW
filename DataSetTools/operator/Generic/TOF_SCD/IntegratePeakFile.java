@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2006/12/19 05:24:40  dennis
+ * Fixed javadoc for getCommand() method.  The javadocs listed the
+ * wrong command name.
+ *
  * Revision 1.5  2006/07/10 16:26:01  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -327,9 +331,9 @@ public class IntegratePeakFile extends GenericTOF_SCD{
 
   /* --------------------------- getCommand ------------------------------- */ 
   /** 
-   * Get the name of this operator to use in scripts: SCDIntegrate
+   * Get the name of this operator to use in scripts: SCDIntegratePeakFile
    * 
-   * @return  "SCDIntegrate", the command used to invoke this 
+   * @return  "SCDIntegratePeakFile", the command used to invoke this 
    *           operator in Scripts
    */
   public String getCommand(){
