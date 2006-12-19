@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2006/12/19 16:55:28  dennis
+ * Added methods checkReal() and minmaxhkl() from Integrate1 class.
+ *
  * Revision 1.1  2006/12/19 05:16:28  dennis
  * Collection of static methods used by the various versions of the
  * SCD integrate operators.  These particular methods were factored
@@ -738,6 +741,27 @@ public class IntegrateUtils
 
 
   /**
+   * Determines whether the peak can be within the realspace limits specified
+   */
+  public static boolean checkReal(Peak peak, float[][] lim){
+    float wl=peak.wl();
+    if(wl==0f) return false;
+
+    float xcm=peak.xcm();
+    float ycm=peak.ycm();
+    if( xcm>=lim[0][0] && xcm<=lim[0][1] ){
+      if( ycm>=lim[1][0] && ycm<=lim[1][1] ){
+        if( wl>=lim[2][0] && wl<=lim[2][1] ){
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+
+  /**
    * Determine the edges of the detector in xcm, ycm, and wl. This
    * assumes that ids[0][0] and ids[maxrow][maxcol] are at
    * opposite corners of the detector
@@ -779,7 +803,6 @@ public class IntegrateUtils
         for( int k=0 ; k<2 ; k++ ){
           peak=pkfac.getPixelInstance(x_lim[i],y_lim[j],z_lim[k],
                                       time[k][0],time[k][1]);
-//          System.out.println(peak);
           real[0][i+2*j+4*k]=peak.xcm();
           real[1][i+2*j+4*k]=peak.ycm();
           real[2][i+2*j+4*k]=peak.wl();
@@ -805,6 +828,72 @@ public class IntegrateUtils
     }
 
     return real_lim;
+  }
+
+
+  /**
+   * Determine the edges of the detector in xcm, ycm, and wl. This
+   * assumes that ids[0][0] and ids[maxrow][maxcol] are at
+   * opposite corners of the detector
+   *
+   * @param pkfac A fully configure peak factory. It should contain
+   * all of the information necessary to go from hkl to pixel.
+   * @param ids The 2D matrix which maps row and column to the
+   * linear index of datas in DataSet
+   * @param times The detector is assumed to have the same x-axis for
+   * all pixels. This should be a safe assumption.
+   *
+   * @return A 3x2 matrix of the limits in hkl. 
+   */
+  public static int[][] minmaxhkl(PeakFactory pkfac, int[][] ids, XScale times){
+    // Determine the limits in pixel and time. This is set up as
+    // arrays to shorten later code in the method.
+    int[]     x_lim ={1,ids.length-1};
+    int[]     y_lim ={1,ids[0].length-1};
+    int[]     z_lim ={0,times.getNum_x()-1};
+    float[][] time  = {{times.getX(z_lim[0]),times.getX(z_lim[0]+1)},
+                       {times.getX(z_lim[1]-1),times.getX(z_lim[1])}};
+
+    // define a temporary peak that will be each of the corners
+    Peak peak=null;
+
+    // The hkls of the peaks will be stored in this matrix. The first
+    // index is h=0, k=1, and l=2. The second index is just the number
+    // of the peak, it just needs to be unique
+    int[][] hkl=new int[3][8];
+
+    // This looks scarier than it is. The three indices are x (i), y
+    // (j), and z (k). It is set up to reduce the amount of typing
+    // that needs to be done if there is an error in the code.
+    for( int i=0 ; i<2 ; i++ ){
+      for( int j=0 ; j<2 ; j++ ){
+        for( int k=0 ; k<2 ; k++ ){
+          peak=pkfac.getPixelInstance(x_lim[i],y_lim[j],z_lim[k],
+                                      time[k][0],time[k][1]);
+          hkl[0][i+2*j+4*k]=Math.round(peak.h());
+          hkl[1][i+2*j+4*k]=Math.round(peak.k());
+          hkl[2][i+2*j+4*k]=Math.round(peak.l());
+        }
+      }
+    }
+
+    // set the peak to null so the garbage collector can reclaim it
+    peak=null;
+
+    // the first index is h,k,l and the second index is min,max
+    int[][] hkl_lim={{hkl[0][0],hkl[0][0]},
+                     {hkl[1][0],hkl[1][0]},
+                     {hkl[2][0],hkl[2][0]}};
+
+    // sort out the min and max values
+    for( int i=1 ; i<8 ; i++ ){
+      for( int j=0 ; j<3 ; j++ ){
+        hkl_lim[j][0]=Math.min(hkl_lim[j][0],hkl[j][i]);
+        hkl_lim[j][1]=Math.max(hkl_lim[j][1],hkl[j][i]);
+      }
+    }
+
+    return hkl_lim;
   }
 
 
