@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.264  2007/01/03 14:56:22  rmikk
+ *  Added the user manual menu option to the help menu
+ *
  *  Revision 1.263  2006/11/13 23:09:27  dennis
  *  Made the message in the dialog box for "Update Search Data Base"
  *  more explanatory.
@@ -826,7 +829,7 @@ public class Isaw
 
   private static final String GLOSSARY_MI     = "Glossary";
   private static final String API_DOCS_MI     = "API Documentation";
-
+  private static final String USER_DOC_MI     = "User Documentation";
   private static final String HOME_LINK_MI    = "ISAW Homepage";
   private static final String FTP_LINK_MI     = "ISAW FTP Site";
   private static final String USERMAN_LINK_MI = "User/Ref Manuals";
@@ -1103,6 +1106,7 @@ public class Isaw
     JMenuItem helpCommandPane = new JMenuItem( COMMAND_PANE_MI );
     JMenuItem glossary        = new JMenuItem( GLOSSARY_MI );
     JMenuItem apiDocs         = new JMenuItem( API_DOCS_MI );
+    JMenuItem userDocs         = new JMenuItem( USER_DOC_MI );
     JMenuItem homeLink        = new JMenuItem( HOME_LINK_MI );
     JMenuItem ftpLink         = new JMenuItem( FTP_LINK_MI );
     JMenuItem docLink         = new JMenuItem( USERMAN_LINK_MI );
@@ -1183,6 +1187,7 @@ public class Isaw
     hMenu.add( TutLink);
     hMenu.add( IsawPropLink);
     hMenu.add( OpList);
+    hMenu.add( userDocs);
     hMenu.add( SearchDB);
     hMenu.add( ViewHelpLink);
     JMenu Res= new JMenu("Resources on the Net");
@@ -1235,6 +1240,7 @@ public class Isaw
     helpOperations.addActionListener(menu_item_handler);
     helpCommandPane.addActionListener(menu_item_handler);
     glossary.addActionListener(menu_item_handler);
+    userDocs.addActionListener(menu_item_handler);
     apiDocs.addActionListener(menu_item_handler);
     homeLink.addActionListener(menu_item_handler);
     ftpLink.addActionListener(menu_item_handler);
@@ -1945,7 +1951,14 @@ public class Isaw
                                          +" in web browser");
           }
       }
-
+      if( s.equals(USER_DOC_MI) ){
+        String S = DataSetTools.util.FilenameUtil.helpDir("menus/isaw_user_manual.pdf");
+              if( S != null){
+                  BrowserControl.displayURL(S);
+                  SharedData.addmsg("Displaying User documentation"
+                                             +" in web browser");
+              }
+          }
       if( s.equals(HOME_LINK_MI) ){
 	  SharedData.addmsg("Displaying ISAW homepage in"
 				     +" web browser");
