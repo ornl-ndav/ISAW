@@ -7,7 +7,7 @@
   <parent>
     <groupId>gov.ornl.sns</groupId>
     <artifactId>sns-asg-pom</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
   </parent>
   <groupId>ISAW</groupId>
   <artifactId>sns-isaw-subset</artifactId>
@@ -40,15 +40,17 @@
   </dependencies>
   <build>
     <plugins>
+      <!-- NOT NEEDED, defined in parent POM
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <!-- Commitment to use Java 1.5 sources and runtime. -->
+        
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
         </configuration>
       </plugin>      
+       -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -62,4 +64,36 @@
       </plugin>
     </plugins>
   </build>  
+  <developers>
+    <developer>
+      <id>y8y</id>
+      <name>James A. Kohl</name>
+      <email>kohlja@ornl.gov</email>
+      <organization>ORNL</organization>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>${scmConnectionBaseUrl}/ISAW/dummy/SNS_ISAW_SUBSET/trunk/SNS_ISAW_SUBSET</connection>
+    <developerConnection>scm:svn:https://flathead.ornl.gov/repos/ISAW/dummy/SNS_ISAW_SUBSET/trunk/SNS_ISAW_SUBSET</developerConnection>
+    <url>https://flathead.ornl.gov/trac/ISAW/browser/dummy/SNS_ISAW_SUBSET/trunk/SNS_ISAW_SUBSET</url>
+  </scm>
+  <ciManagement>
+    <system>continuum</system>
+    <url>https://flathead.ornl.gov/continuum/servlets/continuum</url>
+    <notifiers>
+      <notifier>
+        <type>mail</type>
+        <sendOnSuccess>true</sendOnSuccess>
+        <sendOnFailure>true</sendOnFailure>
+        <sendOnError>true</sendOnError>
+        <sendOnWarning>true</sendOnWarning>
+        <configuration>
+          <address>kohlja@ornl.gov</address>
+        </configuration>
+      </notifier>
+    </notifiers>
+  </ciManagement>
 </project>
