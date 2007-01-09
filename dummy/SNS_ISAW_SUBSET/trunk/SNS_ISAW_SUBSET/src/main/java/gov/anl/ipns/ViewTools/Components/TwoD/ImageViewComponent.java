@@ -1357,6 +1357,8 @@ public class ImageViewComponent implements IViewComponent2D,
     }
     Region[] reg = new Region[1];
     reg[0] = world_coord_region;
+	System.err.println( "addSelectedRegion( "
+		+ world_coord_region + ")" );
     ((SelectionOverlay)(transparencies.elementAt(1))).addRegions( reg );
     // if selection control is unchecked, turn it on.
     if( !((ControlCheckboxButton)controls[5]).isSelected() )
@@ -1393,6 +1395,8 @@ public class ImageViewComponent implements IViewComponent2D,
       if( counter == rgn.length )
         return;
       // If a valid Region exists, add it.
+	  System.err.println( "setSelectedRegions( "
+		  + rgn + ")" );
       ((SelectionOverlay)(transparencies.elementAt(1))).addRegions( rgn );
       // if selection control is unchecked, turn it on.
       if( !((ControlCheckboxButton)controls[5]).isSelected() )
@@ -1412,6 +1416,7 @@ public class ImageViewComponent implements IViewComponent2D,
     // If the original data passed in was null, do nothing.
     if( null_data )
       return new Region[0];
+	System.err.println( "ImageViewComponent: getSelectedRegions()..." );
     Vector regions = 
        ((SelectionOverlay)transparencies.elementAt(1)).getRegions();
     Region[] selectedregions = new Region[regions.size()];
