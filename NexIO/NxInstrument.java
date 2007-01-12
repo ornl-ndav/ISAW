@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2007/01/12 14:48:46  dennis
+ * Removed unused imports.
+ *
  * Revision 1.13  2006/11/14 16:51:44  rmikk
  * Added code to check the xml Fixit file for some of the fields
  *
@@ -78,7 +81,7 @@ import NexIO.State.*;
 import NexIO.Util.*;
 import java.lang.reflect.*;
 import java.util.*;
-import javax.xml.parsers.*;
+//import javax.xml.parsers.*;
 
 import org.w3c.dom.*;
 

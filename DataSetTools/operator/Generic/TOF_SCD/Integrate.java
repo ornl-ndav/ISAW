@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.40  2007/01/12 14:48:45  dennis
+ * Removed unused imports.
+ *
  * Revision 1.39  2006/12/20 16:37:09  dennis
  * Removed code that is common to various Integrate versions.  Now uses
  * those common methods from IntegrateUtils and SCD_LogUtils.
@@ -184,7 +187,6 @@
 package DataSetTools.operator.Generic.TOF_SCD;
 
 import DataSetTools.dataset.*;
-import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.instruments.*;
@@ -199,7 +201,6 @@ import gov.anl.ipns.Parameters.IntArrayPG;
 import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Parameters.SaveFilePG;
-import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.io.*;

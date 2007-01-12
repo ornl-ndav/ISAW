@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2007/01/12 14:48:47  dennis
+ * Removed unused imports.
+ *
  * Revision 1.6  2006/11/14 16:39:42  rmikk
  * Added fields for InstrumentNode and facility to this state
  *
@@ -59,7 +62,7 @@ package NexIO.State;
 //NexIO.State.NxEntryStateInfo
 import NexIO.*;
 import NexIO.Util.*;
-import javax.xml.parsers.*;
+//import javax.xml.parsers.*;
 import org.w3c.dom.*;
 import DataSetTools.dataset.*;
 

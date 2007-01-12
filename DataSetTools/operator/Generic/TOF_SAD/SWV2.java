@@ -31,6 +31,9 @@
  * MODIFIED:
  *
  * $Log$
+ * Revision 1.4  2007/01/12 14:48:45  dennis
+ * Removed unused imports.
+ *
  * Revision 1.3  2006/11/14 01:55:18  dennis
  * Fixed java doc warning.
  * Added logging tag.
@@ -38,24 +41,24 @@
  */
 package DataSetTools.operator.Generic.TOF_SAD;
 
-import java.io.IOException;
-import java.util.StringTokenizer;
+//import java.io.IOException;
+//import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
+//import javax.swing.JComponent;
+//import javax.swing.JLabel;
 
 import DataSetTools.components.View.*;
-import DataSetTools.util.SharedData;
+//import DataSetTools.util.SharedData;
 
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Parameters.BooleanPG;
 import gov.anl.ipns.Parameters.FloatPG;
-import gov.anl.ipns.Util.File.TextFileReader;
+//import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.File.TextWriter;
 import gov.anl.ipns.Util.Sys.WindowShower;
-import gov.anl.ipns.ViewTools.Components.AxisInfo;
-import gov.anl.ipns.ViewTools.Components.IVirtualArray2D;
+//import gov.anl.ipns.ViewTools.Components.AxisInfo;
+//import gov.anl.ipns.ViewTools.Components.IVirtualArray2D;
 import gov.anl.ipns.ViewTools.Components.VirtualArray2D;
 
 

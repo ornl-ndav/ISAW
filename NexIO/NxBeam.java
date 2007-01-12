@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2007/01/12 14:48:46  dennis
+ * Removed unused imports.
+ *
  * Revision 1.7  2006/11/14 16:51:44  rmikk
  * Added code to check the xml Fixit file for some of the fields
  *
@@ -51,7 +54,7 @@ package NexIO;
 import DataSetTools.dataset.*;
 import NexIO.State.*;
 import NexIO.Util.*;
-import javax.xml.parsers.*;
+//import javax.xml.parsers.*;
 import org.w3c.dom.*;
 public class NxBeam{
   String errormessage;
