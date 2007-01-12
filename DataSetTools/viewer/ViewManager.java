@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.80  2007/01/12 14:41:39  dennis
+ *  Added constructor that takes a third boolean parameter, show_now,
+ *  that controls whether or not the ViewManager is immediately
+ *  displayed when it is constructed.
+ *
  *  Revision 1.79  2006/07/19 18:51:47  rmikk
  *  Removed an unused string constatn
  *
@@ -375,8 +380,9 @@ public class ViewManager extends    JFrame
     *  @see DataSetTools.dataset.DataSet
     */
    public ViewManager(DataSet ds, String view_type )
-   {  this( ds,view_type, null);
-    }
+   { 
+      this( ds, view_type, null, true );
+   }
 
    /**  
     *  Accepts a DataSet and view type and creates an instance of a 
@@ -386,13 +392,40 @@ public class ViewManager extends    JFrame
     *  @param  view_type String describing the initial type of viewer to be 
     *                    used.  The valid strings are listed in the interface,
     *                    IViewManager
-    *  @param   state    The viewer state
+    *  @param  show_now  Flag indicating whether or not the ViewManager should
+    *                    be immediately visible.
+    * 
+    *  @see DataSetTools.viewer.IViewManager
+    *  @see DataSetTools.viewer.DataSetViewer
+    *  @see DataSetTools.dataset.DataSet
+    */
+   public ViewManager(DataSet ds, String view_type, boolean show_now )
+   {  
+      this( ds, view_type, null, show_now );
+   }
+
+
+   /**  
+    *  Accepts a DataSet and view type and creates an instance of a 
+    *  ViewManager for the data set.  
+    *
+    *  @param  ds        The DataSet to be viewed
+    *  @param  view_type String describing the initial type of viewer to be 
+    *                    used.  The valid strings are listed in the interface,
+    *                    IViewManager
+    *  @param  state     The viewer state
+    *  @param  show_now  Flag indicating whether or not the ViewManager should
+    *                    be immediately visible.
     * 
     *  @see DataSetTools.viewer.IViewManager
     *  @see DataSetTools.viewer.DataSetViewer
     *  @see DataSetTools.dataset.DataSet
     */  
-   public ViewManager(DataSet ds, String view_type, ViewerState state ){
+   public ViewManager(DataSet     ds, 
+                      String      view_type, 
+                      ViewerState state,
+                      boolean     show_now )
+   {
       super( ds.toString() );
       view_manager = this;
       setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -415,13 +448,14 @@ public class ViewManager extends    JFrame
       makeTempDataSet( true );
       this.state = state;
       setView( view_type ); 
-                                            // actually show the viewer from
-                                            // the Swing event handling thread
-      WindowShower.show( this );
+  
+      if ( show_now )                     // actually show the viewer from
+        WindowShower.show( this );        // the Swing event handling thread
       
       conversion_operator = null;
       System.gc();
    }
+
 
    /**
     *  Specify a new DataSet to be viewed.
