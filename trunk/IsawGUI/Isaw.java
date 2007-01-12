@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.265  2007/01/12 14:46:21  dennis
+ *  Set version number to 181_a1.
+ *
  *  Revision 1.264  2007/01/03 14:56:22  rmikk
  *  Added the user manual menu option to the help menu
  *
@@ -955,7 +958,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.8.1_a2";
+          version="1.8.1_a3";
         else
           version=SharedData.VERSION;
 
