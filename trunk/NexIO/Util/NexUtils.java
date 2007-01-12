@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2007/01/12 14:48:47  dennis
+ * Removed unused imports.
+ *
  * Revision 1.15  2006/07/27 18:33:55  rmikk
  * Added some documentations and some spacing in the code to make it more
  * readable
@@ -97,7 +100,7 @@ import NexIO.*;
 import NexIO.State.*;
 import DataSetTools.dataset.*;
 import gov.anl.ipns.MathTools.Geometry.*;
-import java.lang.reflect.*;
+//import java.lang.reflect.*;
 import java.util.*;
 
 

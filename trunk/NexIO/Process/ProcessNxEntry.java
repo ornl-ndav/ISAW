@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2007/01/12 14:48:46  dennis
+ * Removed unused imports.
+ *
  * Revision 1.7  2006/11/14 16:50:23  rmikk
  * Incorporated using the xml Fixit file
  * Grouped detectors for LANSCE SCD data
@@ -60,14 +63,14 @@
 package NexIO.Process;
 
 
-import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
+//import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
 
 import NexIO.*;
 import NexIO.State.*;
 import DataSetTools.dataset.*;
 import NexIO.Util.*;
 import NexIO.Query.*;
-import javax.xml.parsers.*;
+//import javax.xml.parsers.*;
 import org.w3c.dom.*;
 
 

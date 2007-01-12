@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2007/01/12 14:48:46  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.26  2006/10/20 05:28:33  amoe
  *  Edited redraw() to sychronize the cursors, without using a GraphJPanel.
  *
@@ -119,7 +122,7 @@
 
 package DataSetTools.viewer;
 
-import gov.anl.ipns.ViewTools.Panels.Graph.GraphJPanel;
+//import gov.anl.ipns.ViewTools.Panels.Graph.GraphJPanel;
 import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.Util.Numeric.floatPoint2D;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
@@ -131,9 +134,9 @@ import javax.swing.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
 import java.awt.*;
-import gov.anl.ipns.Util.Messaging.*;
+//import gov.anl.ipns.Util.Messaging.*;
 
-import java.awt.event.*;
+//import java.awt.event.*;
 
 import gov.anl.ipns.ViewTools.Components.OneD.VirtualArrayList1D;
 

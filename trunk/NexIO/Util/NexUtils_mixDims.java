@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/01/12 14:48:47  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2006/11/14 16:23:38  rmikk
  * Initial Checkin.  This class deals with NeXus files whose tuple positions do
  *   not correspond to the natural order [det.row.col,time]
@@ -47,8 +50,8 @@ import DataSetTools.dataset.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 
 import java.util.*;
-import javax.xml.parsers.*;
-import java.io.*;
+//import javax.xml.parsers.*;
+//import java.io.*;
 import org.w3c.dom.*;
 
 

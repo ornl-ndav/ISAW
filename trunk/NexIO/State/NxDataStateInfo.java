@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2007/01/12 14:48:46  dennis
+ * Removed unused imports.
+ *
  * Revision 1.8  2006/11/14 16:38:24  rmikk
  * Fixed Translate axis names by adding 1
  * Search the xml fixit doc to link name
@@ -68,7 +71,7 @@ package NexIO.State;
 import NexIO.*;
 import NexIO.Util.*;
 
-import javax.xml.parsers.*;
+//import javax.xml.parsers.*;
 import org.w3c.dom.*;
 
 /**

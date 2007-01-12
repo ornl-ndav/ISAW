@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2007/01/12 14:48:46  dennis
+ * Removed unused imports.
+ *
  * Revision 1.6  2006/11/14 16:48:02  rmikk
  * Takes care of the out of order tuples by directiing processing to the class
  *    that takes care of these
@@ -60,7 +63,7 @@ import NexIO.*;
 import NexIO.State.*;
 import DataSetTools.dataset.*;
 import NexIO.Util.*;
-import javax.xml.parsers.*;
+//import javax.xml.parsers.*;
 import org.w3c.dom.*;
 
 /**

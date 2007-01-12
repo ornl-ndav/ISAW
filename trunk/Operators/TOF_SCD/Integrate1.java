@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2007/01/12 14:48:47  dennis
+ * Removed unused imports.
+ *
  * Revision 1.10  2006/12/19 16:57:11  dennis
  * Removed code that is common to various Integrate versions.  Now uses
  * those common methods from IntegrateUtils and SCD_LogUtils.
@@ -225,11 +228,8 @@ import DataSetTools.parameter.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.instruments.*;
 import DataSetTools.util.*;
-import DataSetTools.math.*;
 import DataSetTools.retriever.RunfileRetriever;
-import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
-import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Parameters.BooleanPG;
 import gov.anl.ipns.Parameters.ChoiceListPG;
 import gov.anl.ipns.Parameters.FloatPG;
