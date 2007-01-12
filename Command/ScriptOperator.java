@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.56  2007/01/12 14:43:49  rmikk
+ * Commented out reference to ParameterClassList
+ *
  * Revision 1.55  2006/07/27 13:56:23  rmikk
  * Fixed a BooleanEnable error so it now works in wizards without giving a
  * form error
@@ -348,7 +351,7 @@ public class ScriptOperator  extends  GenericOperator
   private boolean Debug = false;
   private Vector vnames= new Vector();
   private IssScript script=null;
-  private ParameterClassList param_types = new ParameterClassList();
+  //private ParameterClassList param_types = new ParameterClassList();
 
   //--------------------------- Constructors ---------------------------
   
@@ -755,7 +758,18 @@ public class ScriptOperator  extends  GenericOperator
     //-------------  Execute the script--------------------
     int k =lerror; 
     k = executeBlock( this.script,0 ,true ,0) ;
-         
+     
+    if( k >=0) if( k < script.numLines() )if( getErrorCharPos() < 0){
+       String line = script.getLine( k );
+       if( line != null){
+          line = line.toUpperCase().trim();
+          if( line.startsWith("END")|| line.startsWith("ELSE")){
+             seterror(0,"Improper End of Script");
+             lerror = k;
+             return new ErrorString( getErrorMessage());
+          }
+       }
+    }
     // ------------- Check for errors -------------------
     if( getErrorMessage().startsWith(execOneLine.WN_Return))
       seterror( -1,"");
