@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2007/01/19 19:17:25  rmikk
+ * Fixed an error in setting data entries.  Used incorrect grid.
+ *
  * Revision 1.8  2007/01/12 14:48:46  dennis
  * Removed unused imports.
  *
@@ -361,7 +364,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                          new PixelInfoList( new DetectorPixelInfo( grid.ID(),
                          (short) row,(short)col, grid1))));
              }
-          grid.setData_entries( DS );
+          grid1.setData_entries( DS );
           
        }//for IDs
        
