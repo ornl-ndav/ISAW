@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.92  2007/02/03 21:11:30  rmikk
+ * Fixed a rare occurring logical error when testing for already used variables.
+ *
  * Revision 1.91  2006/07/27 13:55:25  rmikk
  * Eliminated some javadoc warnings
  *
@@ -3663,23 +3666,27 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
             seterror(1000, "Improper Data Type for variable "+vname);
             return;
          }if( findd(vname, Svalnames) >=0 ){
-         
-            if(findd(vname,Svalnames)>=Svalnames.length){
+            int ii =findd(vname,Svalnames);
+            if(ii < Svalnames.length)
+             if( Svalnames[ii] != null){
+            
+                seterror(1000, "Improper Data Type for variable "+vname);
+                return;
+            }
+         }if( findd(vname, Fvalnames) >=0 ){
+            int ii =findd(vname,Fvalnames);
+            if(ii < Fvalnames.length)
+             if( Fvalnames[ii] != null){
+               seterror(1000, "Improper Data Type for variable "+vname);
+               return;
+           }
+         } if( findd(vname, Ivalnames) >=0 ){
+            int ii =findd(vname,Ivalnames);
+            if(ii < Ivalnames.length)
+             if( Ivalnames[ii] != null){
             
                seterror(1000, "Improper Data Type for variable "+vname);
                return;
-            }
-         }if( findd(vname, Fvalnames) >=0 ){
-           if( findd(vname,Fvalnames)>=Fvalnames.length){
-           
-            seterror(1000, "Improper Data Type for variable "+vname);
-            return;
-           }
-         } if( findd(vname, Ivalnames) >=0 ){
-            if( findd(vname,Ivalnames)>=Ivalnames.length){
-            
-            seterror(1000, "Improper Data Type for variable "+vname);
-            return;
             }
          } 
          ObjectInfo.put(vname.toUpperCase().trim(), Result); 
