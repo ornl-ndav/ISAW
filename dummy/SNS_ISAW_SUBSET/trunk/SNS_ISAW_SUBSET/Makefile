@@ -9,7 +9,7 @@ update:
 
 install:
 	mvn clean install
-	mvn deploy
+	# mvn deploy  (no longer deploy, just install... :-])
 
 # redeploy:
 	# mvn tomcat:deploy
