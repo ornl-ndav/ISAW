@@ -478,7 +478,7 @@ public class ImageJPanel2 extends    CoordJPanel
       int start_col = Math.max( (int)(bounds.getX1() ), 0 );
       int end_col   = Math.min( (int)(bounds.getX2() ), data.getNumColumns()-1);
 
-      CoordBounds new_bounds = new CoordBounds(start_col+.001f,start_row+0.001f,
+      CoordBounds new_bounds = new CoordBounds(start_col,start_row,
                                                end_col+0.999f, end_row+0.999f );
       new_bounds = world_to_image.MapFrom( new_bounds );
       setLocalWorldCoords( new_bounds );
@@ -870,7 +870,7 @@ protected void LocalTransformChanged()
     CoordBounds     image_bounds;
 
     SetTransformsToWindowSize();
-    image_bounds = new CoordBounds( 0.001f, 0.001f, 
+    image_bounds = new CoordBounds( 0.0f, 0.0f, 
                                     data.getNumColumns()-0.001f,
 				    data.getNumRows()-0.001f );
     world_bounds = getGlobal_transform().getSource();
@@ -913,7 +913,7 @@ protected void LocalTransformChanged()
         gstart_col == start_col && gend_col == end_col )
       makeThumbnail = true;
     
-    CoordBounds new_bounds = new CoordBounds( start_col+.001f, start_row+0.001f,
+    CoordBounds new_bounds = new CoordBounds( start_col, start_row,
                                               end_col+0.999f, end_row+0.999f );
     new_bounds = world_to_image.MapFrom( new_bounds );
     setLocalWorldCoords( new_bounds );

@@ -1422,7 +1422,7 @@ public class ImageViewComponent implements IViewComponent2D,
       ((Region)regions.elementAt(i)).setWorldBounds(ijp.getGlobalWorldCoords());
       // Image bounds are consistent with those set in ImageJPanel.
       ((Region)regions.elementAt(i)).setImageBounds( new CoordBounds( 
-                                     0.001f, 0.001f,
+                                     0.0f, 0.0f,
                                      Varray2D.getNumColumns()-0.001f,
 				     Varray2D.getNumRows()-0.001f ) );
       selectedregions[i] = (Region)regions.elementAt(i);

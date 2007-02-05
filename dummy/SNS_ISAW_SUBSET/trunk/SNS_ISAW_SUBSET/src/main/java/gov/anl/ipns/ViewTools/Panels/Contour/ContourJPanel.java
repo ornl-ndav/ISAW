@@ -1612,8 +1612,8 @@ public class ContourJPanel extends CoordJPanel implements Serializable,
       //region which is what 'local_transform' describes).
         float delta = 0.001f;
       return new CoordTransform(
-                                new CoordBounds(delta, 
-                                                delta, 
+                                new CoordBounds(0.0f, 
+                                                0.0f, 
                                                 data2D.getNumColumns()-delta, 
                                                 data2D.getNumRows()-delta
                                                ),
