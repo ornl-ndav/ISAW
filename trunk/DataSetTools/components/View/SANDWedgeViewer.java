@@ -33,8 +33,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.52  2007/02/05 04:37:36  dennis
+ * Removed small adjustment by 0.001 to World Coordinate bounds, which
+ * was not necessary and caused problems with selections containing
+ * the 0th row or column.
+ *
  * Revision 1.51  2006/09/01 23:18:19  taoj
- * Qx and Qy values from the input data file are now read in and kept in arrays; Three get***() methods added to access them as well as the VitualArray2D object contained by this viewer class.
+ * Qx and Qy values from the input data file are now read in and kept 
+ * in arrays; Three get***() methods added to access them as well as the 
+ * VitualArray2D object contained by this viewer class.
  *
  * Revision 1.50  2005/06/02 22:34:18  dennis
  * Modified to just use IVirtualArray2D methods on a
@@ -820,8 +827,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	// set the source of the image_to_world transform
         // y min/max are swapped since IVC swaps them.
         image_to_world_tran.setDestination( qxmin, qymax, qxmax, qymin );
-	image_to_world_tran.setSource( 0.001f, 0.001f, array[0].length-0.001f,
-				       array.length-0.001f );
+	image_to_world_tran.setSource( 0, 0, array[0].length, array.length );
         IVirtualArray2D va2D = new VirtualArray2D( array, err_array );
         va2D.setAxisInfo( AxisInfo.X_AXIS, qxmin, qxmax, 
     		            xlabel, xunit, AxisInfo.LINEAR );
@@ -836,8 +842,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	va2D.setTitle(filename.substring(separator_index + 1));
 	setData( va2D );
   
-  Qxs = qxs;
-  Qys = qys;
+        Qxs = qxs;
+        Qys = qys;
       }
       // no file to be read, display file not found on empty jpanel.
       else
@@ -991,9 +997,10 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 						           xinfo.getMax(),
 						           yinfo.getMin() ) );
       // Image bounds are consistent with those set in ImageJPanel.
-      image_to_world_tran.setSource( 0.001f, 0.001f,
-                                     iva.getNumColumns()-0.001f,
-				     iva.getNumRows()-0.001f );
+      image_to_world_tran.setSource( 0, 
+                                     0,
+                                     iva.getNumColumns(),
+                                     iva.getNumRows() );
     }
     data = null;
     datafile = "";
