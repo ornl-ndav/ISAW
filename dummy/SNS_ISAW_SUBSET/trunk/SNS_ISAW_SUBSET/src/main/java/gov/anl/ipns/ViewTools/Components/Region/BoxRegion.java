@@ -138,7 +138,8 @@ public class BoxRegion extends Region
     // Set through box rowwise, getting points that are on the image.
     for( int row = topleft.x; row <= bottomright.x; row++ )
     {
-      for( int col = topleft.y; col <= bottomright.y; col++ )
+      // for( int col = topleft.y; col <= bottomright.y; col++ )
+      for( int col = bottomright.y; col >= topleft.y; col-- )
       {
         // add it to the array if the point is on the image.
         if( imagebounds.onXInterval(row) && imagebounds.onYInterval(col) )

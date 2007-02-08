@@ -163,7 +163,8 @@ public class EllipseRegion extends Region
     // if one pixel in x, and more than one in y is selected
     else if( xextent == 0 )
     {
-      for( int y = topleft.y; y <= bottomright.y; y++ ) 
+      // for( int y = topleft.y; y <= bottomright.y; y++ ) 
+      for( int y = bottomright.y; y >= topleft.y; y-- ) 
       {
 	// make sure point is on the image.
 	CoordBounds imagebounds = world_to_image.getDestination();
@@ -192,10 +193,11 @@ public class EllipseRegion extends Region
       float ydiff = 0;
       // using formula for ellipse: (x-h)^2/a^2 + (y-k)^2/b^2 = 1
       // where x,y is point, (h,k) is center, and a,b are x/y extent (radius)
-      for( int y = topleft.y; y <= bottomright.y; y++ )
-      {
 	for( int x = topleft.x; x <= bottomright.x; x++ )
 	{
+      // for( int y = topleft.y; y <= bottomright.y; y++ )
+      for( int y = bottomright.y; y >= topleft.y; y-- ) 
+      {
 	  xdiff = 0;
           ydiff = 0;
           // x/y diff represent x-h/y-k respectively

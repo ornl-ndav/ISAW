@@ -377,10 +377,10 @@ public class WedgeRegion extends Region
       // These two loops will check every point within the given quadrant
       // and test to see if the point is in the ellipse from which the
       // arc comes from.
-      for( int y = ystart; y >= ystop; y-- )
-      {
 	for( int x = xstart; x <= xstop; x++ )
 	{
+      for( int y = ystart; y >= ystop; y-- )
+      {
 	  xdiff = 0;
 	  ydiff = 0;
 	  // x/y diff represent x-h/y-k respectively

@@ -157,7 +157,8 @@ public class AnnularRegion extends Region
     // if one pixel in x, and more than one in y is selected
     else if( outxextent == 0 )
     {
-      for( int y = out_tl.y; y <= out_br.y; y++ ) 
+      // for( int y = out_tl.y; y <= out_br.y; y++ ) 
+      for( int y = out_br.y; y >= out_tl.y; y-- ) 
       { 
  	// make sure point is not within the inner ring.
  	if( y < in_tl.y || y > in_br.y )
@@ -183,10 +184,11 @@ public class AnnularRegion extends Region
       double ydiff = 0;
       // using formula for ellipse: (x-h)^2/a^2 + (y-k)^2/b^2 = 1
       // where x,y is point, (h,k) is center, and a,b are x/y extent (radius)
-      for( int y = out_tl.y; y <= out_br.y; y++ )
-      {
  	for( int x = out_tl.x; x <= out_br.x; x++ )
  	{
+      // for( int y = out_tl.y; y <= out_br.y; y++ )
+      for( int y = out_br.y; y >= out_tl.y; y-- ) 
+      {
  	  xdiff = 0;
           ydiff = 0;
           // x/y diff represent x-h/y-k respectively
