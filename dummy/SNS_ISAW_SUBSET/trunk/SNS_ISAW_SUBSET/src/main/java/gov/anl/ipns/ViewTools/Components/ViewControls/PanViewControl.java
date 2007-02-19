@@ -440,6 +440,9 @@ public class PanViewControl extends ViewControl
     setImageDimension();
     setAspectRatio();
     
+	if ( !isShowing() )
+		return;
+
     boolean validPanel = false;
     if( actual_cjp instanceof ImageJPanel2 )
     { 
