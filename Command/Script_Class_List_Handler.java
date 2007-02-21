@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.76  2007/02/21 20:31:41  rmikk
+ * Added patches(untested) to incorporate external operators
+ *
  * Revision 1.75  2006/09/19 18:04:22  rmikk
  * Added new method to get DataSet operator position
  *
@@ -895,6 +898,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                opnInf.lastmodified= F.lastModified();
           }
         }
+        InstallExternalOperators extOps = new InstallExternalOperators();
+        for( GenericOperator op =extOps.getNextOperator(); op != null; op =extOps.getNextOperator()){
+           add( new ExternalOpnInfo( op ));
+        }
         Save(true);
     }  // end of init()
 
@@ -1666,6 +1673,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return;
      }         
      
+     (new InstallExternalOperators()).Save();
+     
     }
     
     
@@ -1780,8 +1789,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
           return false;
           
         }
-        assign(SortOnFileName,(Vector)(Fin.readObject()));
-        assign(SortOnCommand,(Vector)(Fin.readObject( )));
+        assign1(SortOnFileName,(Vector)(Fin.readObject()), opList.size());
+        assign1(SortOnCommand,(Vector)(Fin.readObject( )), opList.size());
         Fin.close();    
                
       }catch(Throwable s){
@@ -1796,7 +1805,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
          RestoredFileNames = null;
          restored=false;
          return false;
-      }      
+      }
+      ExternalOpnInfo[] extOpInfo =(new InstallExternalOperators()).Restore();
+      if( extOpInfo != null)
+         for( int i=0; i < extOpInfo.length; i++)
+            add( extOpInfo[i] );
       restored=true;
       return true;
      
@@ -1806,8 +1819,28 @@ public class Script_Class_List_Handler  implements OperatorHandler{
       if( V== null)
          return;
       V.clear();
-      V.addAll( V1);
+      boolean done = false;
+      for(int i=0;(i<V1.size())&&(!done); i++) {
+         OpnInfo opInf = (OpnInfo)V1.elementAt(i);
+         if( opInf instanceof ExternalOpnInfo)
+            done = true;
+         else
+            V.addElement( opInf );
+         
+      }
+     // V.addAll( V1);
       
+    }
+    private static void assign1( Vector V, Vector V1, int maxInt){
+       V.clear();
+       if( V1 == null)
+          return;
+       for ( int i=0; i< V1.size(); i++){
+          int p = ((Integer)(V1.elementAt(i))).intValue();
+          if( p < maxInt)
+             V.addElement( new Integer( p ));
+       }
+          
     }
     
     private static boolean checkDates( Vector V){
