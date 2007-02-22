@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2007/02/22 16:28:54  rmikk
+ * Now uses the  IGrid3D structure instead of the IDataGrid structure
+ *
  * Revision 1.7  2006/06/16 18:21:44  rmikk
  * Did some more bounds checking
  *
@@ -74,7 +77,52 @@ public class GetPeak {
         
     }
     
-    
+    /**
+     * Finds the peakInfo that contains information about one peak.  This 
+     * information can be used to find the centroid, background, intensities
+     * @param row    A row inside the peak
+     * @param col    a col inside the peak
+     * @param timeChan  a time channel inside the peak
+     * @param DetID   The detector number associated with the row/col
+     * @param DS         the data set with the peak in it
+     * @param backIntensity  The cutoff value to determine when a cell is added
+     *                  to the peak. The average cell intensity of the cell and
+     *                  its nearest neighbbor must exceed this cutoff to be 
+     *                  included
+     * @param  PeakSpan  The max extent of peak in row,col, and time channel
+     *                   or -1 if there is none.
+     *                                   
+     * @return          The block of information to calculate the information 
+     *                   needed.
+     */
+    public static PeakInfo getPeakInfo( int row , int col , int timeChan ,  
+                                                     IGrid3D grid , float backIntensity ,int PeakSpan){
+       
+       if( Float.isNaN( backIntensity) ){
+          ScriptUtil.display( "The background Intensity is NaN in getPeakInfo");
+          return null;
+      }
+      
+     
+      PeakInfo Pinf = new PeakInfo( grid, backIntensity  );
+      Pinf.setMaxExtent( PeakSpan );
+      if( debug )
+         Pinf.debug = true;
+      int[] posMax = new int[ 6 ];
+   
+   
+      posMax[ 0 ] = -1;//y pos plus 1 line of max 
+      posMax[ 1 ]  = -1;//y pos minus 1 line
+      posMax[ 2 ] = -1;//x pos plus 
+      posMax[ 3 ] = -1;//y pos plus 
+      posMax[ 4 ] = -1;//x pos minus 
+      posMax[ 5 ] = -1;//x pos minus
+      float[] MaxVal = new float[ 1 ];
+      MaxVal[ 0 ] = Float.MIN_VALUE;
+      return RecGetPeakInfo( row , col , timeChan , grid ,  3 , 3 , 3 , backIntensity , posMax , Pinf );
+  
+       
+    }
     
     
     /**
@@ -94,34 +142,14 @@ public class GetPeak {
      *                   needed.
      */
     public static PeakInfo getPeakInfo( int row , int col , int timeChan , int DetID , 
-                                                     DataSet DS , float backIntensity ){
-    	
-        if( Float.isNaN( backIntensity) ){
-            ScriptUtil.display( "The background Intensity is NaN in getPeakInfo");
-            return null;
-        }
-        
-        IDataGrid grid = Grid_util.getAreaGrid( DS , DetID );
-        if( grid == null ){
-            ScriptUtil.display( "There is no " + DetID + " for the DataSet " + DS + " in getPeakInfo" );
-            return null;
-        }
-        PeakInfo Pinf = new PeakInfo( DetID , grid , backIntensity , DS );
-        if( debug )
-        	Pinf.debug = true;
-        int[] posMax = new int[ 6 ];
-     
-     
-        posMax[ 0 ] = -1;//y pos plus 1 line of max 
-        posMax[ 1 ]  = -1;//y pos minus 1 line
-        posMax[ 2 ] = -1;//x pos plus 
-        posMax[ 3 ] = -1;//y pos plus 
-        posMax[ 4 ] = -1;//x pos minus 
-        posMax[ 5 ] = -1;//x pos minus
-        float[] MaxVal = new float[ 1 ];
-        MaxVal[ 0 ] = Float.MIN_VALUE;
-        return RecGetPeakInfo( row , col , timeChan , grid ,  3 , 3 , 3 , backIntensity , posMax , Pinf );
-        
+                                                     DataSet DS , float backIntensity ,int PeakSpan){
+        DSGrid ds_grid =new DSGrid( DS, DetID);
+    	  PeakInfo pk = getPeakInfo( row,col,timeChan,ds_grid , backIntensity, PeakSpan);
+        if( pk == null) return null;
+        pk.DS =DS;
+        pk.grid =ds_grid.grid;
+        return pk;
+            
     }
     
     
@@ -144,7 +172,7 @@ public class GetPeak {
     //               posMax[4]- x position of strongest cell in negative z direction from this cell
     //               posMax[5]- y position of strongest cell in positive z direction from this cell
     //               posMax[6]- y position of strongest cell in negative z direction from this cell
-    private static PeakInfo RecGetPeakInfo( int row , int col , int timeChan , IDataGrid grid , int xdir , int ydir , int zdir ,
+    private static PeakInfo RecGetPeakInfo( int row , int col , int timeChan , IGrid3D grid , int xdir , int ydir , int zdir ,
                             float backIntensity , int[] posMax , PeakInfo Pinf ){
         if( row < 1 ) 
         	return Pinf;
@@ -157,15 +185,14 @@ public class GetPeak {
         if( timeChan < 0 ) 
         	return Pinf;
         
-        Data D = grid.getData_entry( row , col );
-        if( D == null )
+        int nchans = grid.num_channels( row , col );
+        if(nchans <=0 )
         	return Pinf;
-        if( D.getX_scale() == null )
-        	return Pinf;
-        if( timeChan >= D.getX_scale().getNum_x() ) 
+       
+        if( timeChan >= grid.num_channels( row, col) ) 
         	return Pinf;
 
-        float intensity = grid.getData_entry( row , col ).getY_values()[ timeChan ];
+        float intensity = grid.intensity( row , col, timeChan );
         
         if( !Pinf.addPeak( row , col , timeChan , intensity ) )
             return Pinf;
@@ -238,7 +265,7 @@ public class GetPeak {
     
     // diry and dirz are 0,1,or -1.  Only one can be nonzero
     // updates the position of the max in the next direction
-    private static int[] update( IDataGrid grid , int[] posMax , int thisrow , int thiscol , int thischan ,
+    private static int[] update( IGrid3D grid , int[] posMax , int thisrow , int thiscol , int thischan ,
               int diry , int dirz ){
     	if( thiscol < 1)
     		return posMax;
@@ -255,12 +282,12 @@ public class GetPeak {
    		   return posMax;
     	if( thischan < 0)
     		return posMax;
-    	 if( thischan > grid.getData_entry( thisrow + diry ,  thiscol ).getX_scale().getNum_x() )
+    	 if( thischan > grid.num_channels( thisrow + diry ,  thiscol ))
              return posMax;
         if( thischan + dirz < 0 )
         	return posMax;
         
-        if( thischan + dirz > grid.getData_entry( thisrow + diry ,  thiscol ).getX_scale().getNum_x() )
+        if( thischan + dirz > grid.num_channels( thisrow + diry ,  thiscol ) )
              return posMax;
         
         if( posMax[ 0 ] < 0 )if( diry != 0 ){
@@ -286,8 +313,8 @@ public class GetPeak {
         
         if( diry != 0 ){
             int k = 0; if( diry < 0 ) k = 1;
-            if( grid.getData_entry( thisrow + diry , thiscol ).getY_values()[ thischan ] >
-                grid.getData_entry( thisrow + diry , posMax[ k ] ).getY_values()[ thischan ] )
+            if( grid.intensity( thisrow + diry , thiscol,  thischan ) >
+                grid.intensity( thisrow + diry , posMax[ k ],  thischan ) )
                 posMax[ k ] = thiscol;
             return posMax;
             
@@ -299,8 +326,8 @@ public class GetPeak {
         int k = 2;
         if( dirz < 0 )
         	k = 4;
-        if( grid.getData_entry( thisrow , thiscol ).getY_values()[ thischan + dirz ] >
-                       grid.getData_entry( posMax[ k ] , posMax[ k + 1 ] ).getY_values()[ thischan + dirz ] ){
+        if( grid.intensity( thisrow , thiscol,  thischan + dirz ) >
+                       grid.intensity( posMax[ k ] , posMax[ k + 1 ] , thischan + dirz ) ){
            posMax[ k ] = thisrow;
            posMax[ k + 1 ] = thiscol;
         }
@@ -322,8 +349,7 @@ public class GetPeak {
     }
     
     
-    
-    
+   
     
     /**
      * Test program for this class
@@ -391,7 +417,7 @@ public class GetPeak {
            }
            
            GetPeak.debug = true;
-           PeakInfo pk = GetPeak.getPeakInfo( row , col , timeChan , DetID , DS , backIntensity );
+           PeakInfo pk = GetPeak.getPeakInfo( row , col , timeChan , DetID , DS , backIntensity, -1 );
            
            if( pk == null )
                System.out.println( "Result is null" );
@@ -410,5 +436,11 @@ public class GetPeak {
        
        }
     }
-
+  
+   
 }
+
+
+
+
+
