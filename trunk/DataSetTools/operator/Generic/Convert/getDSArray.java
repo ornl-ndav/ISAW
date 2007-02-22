@@ -1,5 +1,5 @@
 /*
- * File:  getDSArray.java 
+ * File: getDSArray.java 
  *             
  * Copyright (C) 2005, Ruth Mikkelson
  *
@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2007/02/22 19:46:40  rmikk
+ * Added an (output) vector as the last argument. If present, it will contain
+ *   the number of row, columns and channels for the given detector
+ *
  * Revision 1.5  2006/10/30 15:12:14  rmikk
  * Changed the third parameter to a choice of C, java or FORTRAN format for the
  *   resultant array
@@ -56,6 +60,7 @@ package DataSetTools.operator.Generic.Convert;
 import DataSetTools.operator.*;
 import DataSetTools.dataset.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
+import java.util.*;
 /**
  * This wrappable operator creates an array out of the y values from a
  * dataset. It has an option to create this array for FORTRAN jni programs
@@ -87,6 +92,8 @@ public class getDSArray implements Wrappable, IWrappableWithCategoryList {
             new String[]{"C","java","FORTRAN"}
             
            );
+  
+  public Vector OthData= new Vector();
 
   /**
    * Get an array of strings listing the operator category names  for 
@@ -129,8 +136,27 @@ public class getDSArray implements Wrappable, IWrappableWithCategoryList {
      }
      
      grid = NexIO.Write.NxWriteData.getAreaGrid( DS, DetectorId);
+
      if( grid == null)
        return new ErrorString( "Detector not found");
+     
+     if(OthData== null )
+        OthData = new Vector();
+     if( OthData.size()>=1)
+        OthData.setElementAt( new Integer(grid.num_rows()),0);
+     else
+        OthData.addElement( new Integer(grid.num_rows()));
+     if( OthData.size()>=2)
+        OthData.setElementAt( new Integer(grid.num_cols()),1);
+     else
+        OthData.addElement( new Integer(grid.num_cols()));
+     
+     int nzs = grid.getData_entry(1,1).getY_values().length;
+     
+     if( OthData.size()>=3)
+        OthData.setElementAt( new Integer(nzs),2);
+     else
+        OthData.addElement( new Integer(nzs));
        
      int nrows = grid.num_rows();
      int ncols =grid.num_cols() ;
@@ -196,6 +222,8 @@ public class getDSArray implements Wrappable, IWrappableWithCategoryList {
      s.append("@param format either java, C, or FORTRAN ");
      s.append("The C and FORTRAN format yield linear float arrays in their standard");
      s.append("order. The format, java, yields a 2D java float array that can be ragged,");
+     s.append("@param a vector containing the number of rows, columns, and time");
+     s.append(" channels for row 1 ,col 1 of the given grid.");
      s.append("@return The array in the proper format for one detector");
        
      return s.toString();
