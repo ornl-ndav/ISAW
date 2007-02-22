@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2007/02/22 16:24:55  rmikk
+ * Replaced IDataGrid by IGrid3D so this can be used by other detector
+ *    type information(i.e. arrays)
+ *
  * Revision 1.9  2006/11/14 01:58:47  dennis
  * Fixed java doc error.
  *
@@ -69,7 +73,7 @@ import DataSetTools.instruments.*;
  *
  */
 public class PeakInfo {
-	DataSet DS;
+	public DataSet DS;
 	SampleOrientation sampOrient;
 	XScale xscl;
 	float initialPath;
@@ -104,8 +108,40 @@ public class PeakInfo {
     int maxChannels,
         maxRows,
         maxCols;
+    IGrid3D C_Grid;
     
-    
+    int MaxExtent = -1;
+    int startRow = -1,
+        startCol = -1,
+        startChan = -1;
+    public PeakInfo( IGrid3D grid, float backgroundIntensity){
+
+       ncells = 0;
+       maxX = maxY = maxZ = - 1;
+       sumX = sumY = sumZ = 0;
+       minX = minY = minZ = Integer.MAX_VALUE;
+       WsumX = WsumY = WsumZ = Wx = Wy = Wz = TotIntensity = 
+         MaxIntensity = TotExtentIntensity = 0; 
+       if( !Float.isNaN( backgroundIntensity ) && ( backgroundIntensity  > 0 ) )
+            
+          background = this.backgroundIntensity = backgroundIntensity;
+      
+      else{
+         
+          backgroundIntensity = 0f;
+          background = 0f;
+          
+      }
+      C_Grid = grid;
+      DS =null;
+      xscl = null;
+      initialPath = Float.NaN;
+      T0 = Float.NaN;
+      
+      maxRows = C_Grid.num_rows();
+      maxCols = C_Grid.num_cols();
+      maxChannels = C_Grid.num_channels(1,1);
+    }
     /**
      * Constructor
      * @param detNum     The detector number
@@ -115,26 +151,11 @@ public class PeakInfo {
      */
     public PeakInfo( int detNum , IDataGrid grid , float backgroundIntensity , DataSet DS ) {
     	
-        super();
-        ncells = 0;
-        maxX = maxY = maxZ = - 1;
-        sumX = sumY = sumZ = 0;
-        minX = minY = minZ = Integer.MAX_VALUE;
-        WsumX = WsumY = WsumZ = Wx = Wy = Wz = TotIntensity = 
-        	MaxIntensity = TotExtentIntensity = 0;
+        this( new DSGrid(DS, detNum),backgroundIntensity);
         this.detNum  = detNum;
         this.grid = grid;
         
-        if( !Float.isNaN( backgroundIntensity ) && ( backgroundIntensity  > 0 ) )
-        	
-            background = this.backgroundIntensity = backgroundIntensity;
-        
-        else{
-        	
-            backgroundIntensity = 0f;
-            background = 0f;
-            
-        }
+      
         
         this.DS = DS;
     	sampOrient = null;
@@ -142,12 +163,17 @@ public class PeakInfo {
     	initialPath = Float.NaN;
     	T0 = Float.NaN;
     	
-    	maxRows = grid.num_rows();
-    	maxCols = grid.num_cols();
-    	maxChannels = grid.getData_entry(1,1).getX_scale().getNum_x()-1;
+    
     }  
        
-
+    /**
+     * Sets the maximum change from the starting coordinate of a peak
+     * or -1 if this is not to be used. 
+     * @param maxExtent
+     */
+    public void setMaxExtent( int maxDelta){
+       MaxExtent = maxDelta;
+    }
     
     /**
      * Adds the current cell to the peak if it is in bounds or large enough average intensity with
@@ -160,31 +186,40 @@ public class PeakInfo {
      * @return  true if it is added otherwise false
      */
     public boolean addPeak( int row , int col , int timeChan , float intensity ){
-    	
+    	  if( this.startRow < 0){
+          startRow = row;
+          startCol = col;
+          startChan = timeChan;
+        }
+        if( MaxExtent >0){
+           if( Math.abs( row - startRow)> MaxExtent) return false;
+           if( Math.abs( col - startCol)> MaxExtent) return false;
+           if( Math.abs( timeChan - startChan)> MaxExtent) return false;
+        }
         if( row < 1 ) 
         	return false;
         if( col < 1 ) 
         	return false;
         if( timeChan < 0 ) 
         	return false;
-        if( row > grid.num_rows() )
+        if( row > C_Grid.num_rows() )
         	return false;
-        if( col > grid.num_cols() )
+        if( col > C_Grid.num_cols() )
         	return false;
         
         float Intensity = 0;
         int Ncells = 0;
         for( int r = row - 1 ; r <= row + 1 ; r++ )
             for( int c = col - 1 ; c <= col + 1 ; c++ )
-                if( (  r > 0 ) &&( c > 0 )&&( r <= grid.num_rows() )&&( c <= grid.num_cols() ) ){
+                if( (  r > 0 ) &&( c > 0 )&&( r <= C_Grid.num_rows() )&&( c <= C_Grid.num_cols() ) ){
                     Ncells++ ;
-                    Intensity += grid.getData_entry( r , c ).getY_values()[ timeChan ];
+                    Intensity += C_Grid.intensity( r , c, timeChan );
                 }
         if( Ncells <= 0 )return false;
         if( Intensity/Ncells < backgroundIntensity )
             return false;
         
-        intensity = grid.getData_entry( row , col ).getY_values()[ timeChan ];
+        intensity = C_Grid.intensity( row , col, timeChan );
         
         if( debug )
         	 System.out.println( "new Cell ,row,col,timechan,intensity=" + row + "," + col + "," + timeChan + "," + intensity );
@@ -219,42 +254,42 @@ public class PeakInfo {
             for( int i = maxX + 1 ; i <= col ;  i++ )
                 for( int j = minY ; j <= maxY ; j++ )
                     for( int k = minZ ;  k <= maxZ ;  k++ )
-                        TotExtentIntensity += grid.getData_entry( j , i ).getY_values()[ k ];
+                        TotExtentIntensity += C_Grid.intensity( j , i , k );
              maxX = col;
         }
         if( row > maxY ) {
             for( int i = minX ; i <= maxX ; i++ )
                 for( int j = maxY + 1 ; j <= row ; j++ )
                     for( int k = minZ ; k <= maxZ ; k++ )
-                        TotExtentIntensity += grid.getData_entry( j , i ).getY_values()[ k ];
+                        TotExtentIntensity += C_Grid.intensity( j , i , k );
             maxY = row;
         }
         if( timeChan > maxZ ){
             for( int i = minX ; i <= maxX ; i++ )
                 for( int j = minY ; j <= maxY ; j++ )
                     for( int k = maxZ + 1 ; k <= timeChan ; k++ )
-                        TotExtentIntensity += grid.getData_entry( j , i ).getY_values()[ k ];
+                        TotExtentIntensity += C_Grid.intensity( j , i , k );
             maxZ = timeChan;
         }
         if( col < minX ) {
             for( int i = col ; i < minX ; i++ )
                 for( int j = minY ; j <= maxY ; j++ )
                     for( int k = minZ ; k <= maxZ ; k++ )
-                        TotExtentIntensity += grid.getData_entry( j , i ).getY_values()[ k ];
+                        TotExtentIntensity += C_Grid.intensity( j , i , k );
             minX = col;
         }
         if( row < minY ) {
             for( int i = minX ; i <= maxX ; i++ )
                 for( int j = row ; j < minY ; j++ )
                     for( int k = minZ ; k <= maxZ ; k++ )
-                        TotExtentIntensity += grid.getData_entry( j , i ).getY_values()[ k ];
+                        TotExtentIntensity += C_Grid.intensity( j , i , k );
             minY = row;
         }
         if( timeChan < minZ ) {
             for( int i = minX ; i <= maxX ; i++ )
                 for( int j = minY ; j <= maxY ; j++ )
                     for( int k = timeChan ; k < minZ ; k++ )
-                        TotExtentIntensity += grid.getData_entry( j , i ).getY_values()[ k ];
+                        TotExtentIntensity += C_Grid.intensity( j , i , k );
             minZ = timeChan;
         }
         
@@ -268,6 +303,9 @@ public class PeakInfo {
         Wx += intensity;
         Wy += intensity;
         Wz += intensity;
+        int xx;
+        if( Float.isNaN(intensity))
+            xx=1;
         TotIntensity += intensity;
         if( ncells  > 0 )
            background = ( TotExtentIntensity - TotIntensity )/( (1 + maxX - minX )*(1 + maxY - minY )*(1 + maxZ - minZ ) - ncells );
@@ -579,7 +617,8 @@ public class PeakInfo {
      * @return  a PeakObject
      */
     public Peak_new makePeak(){
-    	
+    	 if( DS == null)
+          return null;
     	setUpBasics();
     	if( ncells < 0 )
     		return null;
@@ -589,9 +628,7 @@ public class PeakInfo {
         	return null;
     	Peak_new PP = new Peak_new( getWeightedAverageCol() , getWeightedAverageRow() , getWeightedAverageChan() ,
     			     grid , sampOrient , T0 , xscl , initialPath );
-    	int x = (int)( getWeightedAverageCol() + .5 ); 
-    	int y = (int)( .5 + getWeightedAverageRow() );
-    	int z = (int)( .5 + getWeightedAverageChan() );
+  
     	float peakIntensity = Float.NaN;
     
         peakIntensity = MaxIntensity;
