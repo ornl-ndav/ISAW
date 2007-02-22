@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.26  2007/02/22 15:12:22  rmikk
+ * Added a static method to find the peaks in one detector
+ *
  * Revision 1.25  2005/03/30 02:17:31  dennis
  * Removed unused instance variable.
  * Fixed java constructor so that the list of pixel rows specified
@@ -105,6 +108,7 @@ import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.util.SharedData;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Numeric.*;
+import DataSetTools.dataset.IDataGrid;
 /** 
  * This operator is a small building block of an ISAW version of
  * A.J.Schultz's PEAKS program. While the original program found all
@@ -298,7 +302,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
    * This does the real work of finding a bunch of peaks for a given
    * detector number.
    */
-  private Vector findPeaks( PeakFactory pkfac,
+  private  Vector findPeaks( PeakFactory pkfac,
                             DataSet     data_set,
                             int         detNum,
                             int         minTimeChan,
@@ -451,9 +455,179 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     return peaks;
   }
   
+  /**
+   * This does the real work of finding a bunch of peaks for a given
+   * detector umber.
+   */
+ public static  Vector findDetectorPeaks( 
+                            DataSet     data_set,
+                            int         detNum,
+                            int         minTimeChan,
+                            int         maxTimeChan,
+                            int         maxNumPeaks,
+                            int          min_count,
+                            String PixelRow ) throws IllegalArgumentException{
+    PeakFactory pkfac;
+    if( data_set == null)
+       throw new IllegalArgumentException(" DataSet is null");
+    int run_num = ((int[])data_set.getData_entry(0).getAttributeValue( Attribute.RUN_NUM))[0];
+    float L1 = ((Float)data_set.getData_entry(0).getAttributeValue( Attribute.INITIAL_PATH)).floatValue();
+    
+    // position of detector center
+    float detA  = Util.detector_angle(data_set,detNum);
+    float detA2 = Util.detector_angle2(data_set,detNum);
+    float detD  = Util.detector_distance(data_set,detNum);
+    pkfac = new PeakFactory(run_num , detNum, L1, detD, detA, detA2  );
+    
+
+    // create an array of for indexing into the data
+   // int[][] ids=Util.createIdMap(data_set,detNum);
+    Data data=null;
+//    int minColumn=1000;
+ //   int maxColumn=0;
+//    int minRow=1000;
+//    int maxRow=0;
+    IDataGrid grid = DataSetTools.dataset.Grid_util.getAreaGrid( data_set, detNum);
+     if( grid == null)
+        throw new IllegalArgumentException("There is no such grid ID for this DataSet");
+
+    // determine the minimum and maximum row and columns
+/*    outer: for( int i=0 ; i<ids.length ; i++ ){
+      for( int j=0 ; j<ids[0].length ; j++ ){
+        if(ids[i][j]==-1) continue; // there is nothing here
+        minColumn=i;
+        minRow=j;
+        break outer;
+      }
+    }
+    outer: for( int i=ids.length-1 ; i>minColumn ; i-- ){
+      for( int j=ids[0].length-1 ; j>minRow ; j-- ){
+        if(ids[i][j]==-1) continue; // there is nothing here
+        maxColumn=i;
+        maxRow=j;
+        break outer;
+      }
+    }
+    */
+    data=grid.getData_entry(1,1);
+    maxTimeChan= Math.min( maxTimeChan, (data.getY_values()).length );
+
+    SharedData.addmsg("Columns("+1+"<"+grid.num_cols()
+                      +") Rows("+1+"<"+grid.num_rows()
+                      +") TimeIndices("+minTimeChan+"<"+maxTimeChan+")");
+    
+    float[] Dpp=null, Dtp=null, Dnp=null,
+            Dpt=null, Dtt=null, Dnt=null,
+       Dpn=null, Dtn=null, Dnn=null;
+    
+    Peak peak=null;
+    Vector peaks=new Vector();
+    int peakNum=0;
+    float[] calib=(float[])grid.getData_entry(1,1)
+      .getAttributeValue(Attribute.SCD_CALIB);
+    XScale xscale=grid.getData_entry(1,1)
+      .getX_scale();
+    pkfac.time(xscale);
+    pkfac.calib(calib);
+    pkfac.detA(detA);
+    pkfac.detA2(detA2);
+    pkfac.detD(detD);
+    int[] rowList= IntList.ToArray( PixelRow.toString());
+    java.util.Arrays.sort(rowList);
+    // stay off of the edges
+    for( int i=1+1 ; i< grid.num_cols()-1 ; i++ ){  // loop over column
+      for( int j=1+1 ; j<grid.num_rows()-1 ; j++ )
+      if( java.util.Arrays.binarySearch(rowList,i)>=0)
+      if( java.util.Arrays.binarySearch(rowList,j)>=0)
+      {      // loop over row
+        // set up datasets for adjacent pixels
+        Dpp=grid.getData_entry(j-1,i-1).getY_values();
+        Dpt=grid.getData_entry(j-1,i+0).getY_values();
+        Dpn=grid.getData_entry(j-1,i+1).getY_values();
+        Dtp=grid.getData_entry(j+0,i-1).getY_values();
+        Dtt=grid.getData_entry(j+0,i+0).getY_values();
+        Dtn=grid.getData_entry(j+0,i+1).getY_values();
+        Dnp=grid.getData_entry(j+1,i-1).getY_values();
+        Dnt=grid.getData_entry(j+1,i+0).getY_values();
+        Dnn=grid.getData_entry(j+1,i+1).getY_values();
+        for( int k=minTimeChan+1 ; k<maxTimeChan-1 ; k++ ){ // loop over times
+          float I=Dtt[k];
+          if(I>min_count){
+            if(I<Dpp[k-1]) continue;
+            if(I<Dpp[k+0]) continue;
+            if(I<Dpp[k+1]) continue;
+            
+            if(I<Dtp[k-1]) continue;
+            if(I<Dtp[k+0]) continue;
+            if(I<Dtp[k+1]) continue;
+            
+            if(I<Dnp[k-1]) continue;
+            if(I<Dnp[k+0]) continue;
+            if(I<Dnp[k+1]) continue;
+            
+            if(I<Dpt[k-1]) continue;
+            if(I<Dpt[k+0]) continue;
+            if(I<Dpt[k+1]) continue;
+            
+            if(I<Dtt[k-1]) continue;
+            // this is the current one
+            if(I<Dtt[k+1]) continue;
+            
+            if(I<Dnt[k-1]) continue;
+            if(I<Dnt[k+0]) continue;
+            if(I<Dnt[k+1]) continue;
+            
+            if(I<Dpn[k-1]) continue;
+            if(I<Dpn[k+0]) continue;
+            if(I<Dpn[k+1]) continue;
+            
+            if(I<Dtn[k-1]) continue;
+            if(I<Dtn[k+0]) continue;
+            if(I<Dtn[k+1]) continue;
+            
+            if(I<Dnn[k-1]) continue;
+            if(I<Dnn[k+0]) continue;
+            if(I<Dnn[k+1]) continue;
+            
+            peak=pkfac.getPixelInstance(i,j,k,0,0);
+            peak.seqnum(peakNum);
+            peak.ipkobs((int)Math.round(I));
+            peak.nearedge( 1,   grid.num_cols(),
+                           1,     grid.num_rows(),
+                           minTimeChan, maxTimeChan);
+            if(peak.nearedge()<3)
+              peak.reflag(2);
+            else
+              peak.reflag(1);
+            peaks.add(peak.clone());
+            peakNum++;
+          }
+          
+          
+        } // end of loop over timeslice
+      }     // end of loop over row
+    }         // end of loop over column
+    SharedData.addmsg("Found "+peaks.size()+" peaks (maximum number "+
+                      maxNumPeaks+")");
+    
+    SharedData.addmsg("Sorting peaks");
+    peaks=sort(peaks,maxNumPeaks);
+    
+    if(peaks.size()>maxNumPeaks){
+      for( int i=peaks.size()-1 ; i>=maxNumPeaks ; i-- ){
+        peaks.remove(i);
+      }
+      SharedData.addmsg("Keeping "+peaks.size()+" peaks");
+    }
+    
+    peaks=sortT(peaks);
+    return peaks;
+  }
+  
+
   
   /* ------------------------------- sort --------------------------------- */ 
-  private Vector sort(Vector peaks, int maxNumPeaks){
+  private static Vector sort(Vector peaks, int maxNumPeaks){
     Vector sortPeaks=new Vector();
     int origPeaksSize=peaks.size();
     Peak peak=new Peak();
@@ -482,7 +656,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   }
   
   /* ------------------------------- sortT -------------------------------- */ 
-  private Vector sortT(Vector peaks){
+  private static Vector sortT(Vector peaks){
     Vector sortPeaks=new Vector();
     int origPeaksSize=peaks.size();
     Peak peak=new Peak();
@@ -511,7 +685,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   }
   
   /* ---------------------------- getMaxPeak ------------------------------ */ 
-  private int getMaxPeak(Vector peaks){
+  private static int getMaxPeak(Vector peaks){
     int maxPeak=0;
     for( int i=0 ; i<peaks.size() ; i++ ){
       if(((Peak)peaks.elementAt(i)).ipkobs()>maxPeak){
@@ -522,7 +696,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   }
   
   /* ---------------------------- getMinT --------------------------------- */ 
-  private float getMinT(Vector peaks){
+  private static float getMinT(Vector peaks){
     float minT=10000f;
     for( int i=0 ; i<peaks.size() ; i++ ){
       if(((Peak)peaks.elementAt(i)).z()<minT){
@@ -575,4 +749,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     }
     System.exit(0);
   }
+  
+  
 }
