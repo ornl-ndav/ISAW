@@ -34,6 +34,11 @@
  * Modified:
  
  * $Log$
+ * Revision 1.6  2007/02/22 16:35:59  rmikk
+ * Incorporated IGrid3d structure instead of IDataGrid structure.
+ *
+ * Add public static methods to Centroid one peak
+ *
  * Revision 1.5  2006/06/16 18:20:17  rmikk
  * Fixed some errors that will cause the search routine to search almost all cells.
  *
@@ -83,6 +88,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
   public int MinTimeChannel = 0;
   public int MaxTimeChannel = 1000;
   public IntListString PixelRows = new IntListString( "0:100" );
+  public int PeakSpan = -1;
                               //  GridNums
 
   //~ Methods ******************************************************************
@@ -114,6 +120,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
        s.append( "@param MinTimeChannel The minimum time channel to use" );
        s.append( "@param MaxTimeChannel The maximum time channel to use" );
        s.append( "@param PixelRows The rows and columns to use" );
+       s.append( "@param PeakSpan Max num rows,cols,time channels in a peak" );
        
        s.append( "@return A Vector of Peak_new Objects with data entries " );
        s.append( "cleared( no References to the DataSet) "  );
@@ -148,7 +155,9 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 			Vector V = (Vector) O;
 			for( int i = 0;i < V.size();i++ ){
 				Peak P =(Peak) ( V.elementAt( i ) );
-				V.setElementAt( GetPeakR( DS,P ),i );
+            PeakInfo pk =GetPeakR( DS,P ); 
+            
+				V.setElementAt( pk,i );
 			}
 		   
 			
@@ -210,7 +219,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 		float cutoff = .8f*grid.getData_entry( y,x ).getY_values()[ z ];;
 	    int nchan = DS.getData_entry( 0 ).getY_values().length;
 	    
-	    PeakInfo PP = GetPeak.getPeakInfo( y, x, z, gridID, DS, cutoff );
+	    PeakInfo PP = GetPeak.getPeakInfo( y, x, z, gridID, DS, cutoff ,PeakSpan);
 	    done = ( PP ==  null );
 	    PeakInfo PP2 = null;
 		while( !done ){
@@ -246,11 +255,160 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 				else
 					cutoff = cutoff1;
 					
-				PP = GetPeak.getPeakInfo( y, x, z, gridID, DS, cutoff );
+				PP = GetPeak.getPeakInfo( y, x, z, gridID, DS, cutoff, PeakSpan );
 			}
 		}
 		
 		return PP;
 		
 	}
+   //Repeatedly runs DataSetTools.operator.Generic.TOF_SCD.GetPeak with 
+   //different cutoffs until done.
+   //Result in Centoid[0:2] -row, col, chan
+   private static void  CentroidPk( IGrid3D grid, int row, int col, int timeChan, float[] Centroid, int PeakSpan ){
+      
+      int x = col;
+      int y = row;
+      int z  = timeChan;
+      boolean done  = false;
+      
+      int nrows = grid.num_rows();
+       int ncols = grid.num_cols();
+
+
+      float cutoff = .8f*grid.intensity( y,x,z );
+       int nchan = grid.num_channels(1,1);
+       
+       PeakInfo PP = GetPeak.getPeakInfo( y, x, z, grid, cutoff ,PeakSpan);
+       done = ( PP ==  null );
+       PeakInfo PP2 = null;
+      while( !done ){
+         if( PP == null )
+            done = false;
+          else if( Float.isNaN( PP.getCalcBackgroundLevel() ) )
+            done = false;
+         else if( PP.getNCells() < 5 )
+            done = false;
+         else if( PP.getNCells() > .8*PP.getNCellsExtent() )
+            done = false;
+         else if( ( PP.maxX - PP.minX > .15*ncols )||( PP.maxY - PP.minY > .15*nrows )||( PP.maxZ - PP.minZ > .1*nchan ) ){
+            done = true;
+            PP = PP2;
+         }
+            
+          else if( cutoff < grid.intensity( y,x,z )/200 )
+            done = true;
+         else if( cutoff - PP.getCalcBackgroundLevel() < .3 )
+               done = true;
+         if( !done ){
+            PP2 = PP;
+            
+            float cutoff1 = ( cutoff + PP.getCalcBackgroundLevel() )/2.0f;
+            
+            if( Float.isNaN( cutoff1 ) )
+               cutoff = cutoff/2.0f;
+            
+            else if( ( cutoff1 >= cutoff )&&( PP.getNCells() >1) ) {// Getting into another peak
+               Centroid[0]=PP2.getWeightedAverageRow();
+               Centroid[1]=PP2.getWeightedAverageCol();
+               Centroid[2] = PP2.getWeightedAverageChan();
+               return;
+            }else if( cutoff1 >= cutoff)
+               cutoff =  .9f*cutoff;
+            else
+               cutoff = cutoff1;
+               
+            PP = GetPeak.getPeakInfo( y, x, z, grid , cutoff, PeakSpan );
+         }
+      }
+      if( PP2 != null){
+        Centroid[0]= PP2.getWeightedAverageRow();
+        Centroid[1]=PP2.getWeightedAverageCol();
+        Centroid[2] = PP2.getWeightedAverageChan();
+      }else{
+         Centroid[0]= y;
+         Centroid[1]=x;
+         Centroid[2] = z;
+         
+      }
+      return;
+      
+   }
+   
+   
+   /**
+    * Finds the Centroid of the peak at row, col, and timeChan for the given
+    * 3D array stored in standard C format for [row,col, timeChan]. Various 
+    * heuristics are used find the best cutoff points for these peaks
+    * 
+    * @param array  The linearlized 3D array
+    * @param nrows  The number of rows in array
+    * @param ncols  The number of columns in array
+    * @param nchans  The number of time channels in array
+    * @param row     The row with the peak
+    * @param col     The column with the peak
+    * @param timeChan  The time channel with the peak
+    * @param Centroid  A float[3] that stores the row, col, and time channel
+    *                 of the centroided peak. THE RESULT
+    * @param PeakSpan  The maximum span of the peak in rows, cols, and
+    *              time channels or -1 if none
+    */
+   public static void CentroidPeakC_Array(float[] array,int nrows, int ncols, 
+                                     int nchans, int row, int col, int timeChan, 
+                                     float[] Centroid, int PeakSpan ){
+      CentroidPk( new C_arrayGrid( array,nrows,ncols,nchans),row, col, timeChan,
+                   Centroid, PeakSpan);
+      
+   }
+   
+   
+   
+   /**
+    * Finds the Centroid of the peak at row, col, and timeChan for the given
+    * 3D array stored in standard FORTRAM format for [row,col, timeChan]. 
+    *  Various heuristics are used find the best cutoff points for these peaks
+    * 
+    * @param array  The linearlized 3D array
+    * @param nrows  The number of rows in array
+    * @param ncols  The number of columns in array
+    * @param nchans  The number of time channels in array
+    * @param row     The row with the peak
+    * @param col     The column with the peak
+    * @param timeChan  The time channel with the peak
+    * @param Centroid  A float[3] that stores the row, col, and time channel
+    *                 of the centroided peak. THE RESULT
+    * @param PeakSpan  The maximum span of the peak in rows, cols, and
+    *              time channels or -1 if none
+    */
+   public static void CentroidPeakF_Array(float[] array,int nrows, int ncols, 
+            int nchans, int row, int col, int timeChan, 
+            float[] Centroid, int PeakSpan ){
+      CentroidPk( new F_arrayGrid( array,nrows,ncols,nchans),row, col, timeChan,
+           Centroid, PeakSpan);
+
+   }
+   
+   
+   /**
+    * Finds the Centroid of the peak at row, col, and timeChan for the given
+    * Data Set Grid. 
+    *  Various heuristics are used find the best cutoff points for these peaks
+    * 
+    * @param DS  The linearlized 3D array
+    * @param GridID  The number of rows in array
+    * @param row     The row with the peak
+    * @param col     The column with the peak
+    * @param timeChan  The time channel with the peak
+    * @param Centroid  A float[3] that stores the row, col, and time channel
+    *                 of the centroided peak. THE RESULT
+    * @param PeakSpan  The maximum span of the peak in rows, cols, and
+    *              time channels or -1 if none
+    */
+   public static void CentroidPeakDS(DataSet DS, int GridID, 
+             int row, int col, int timeChan, 
+            float[] Centroid, int PeakSpan ){
+      CentroidPk( new DSGrid( DS,GridID),row, col, timeChan,
+             Centroid, PeakSpan);
+
+}
 }
