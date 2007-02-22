@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2007/02/22 15:14:43  rmikk
+ * Added a static utility method to create a Peak_new object from a data set,
+ *    detectorID, and col,row and timechan
+ *
  * Revision 1.16  2006/11/05 01:52:31  dennis
  * Minor efficiency improvement (eliminated redundant call to
  * Vector3D.get() method.)
@@ -103,6 +107,7 @@ import gov.anl.ipns.MathTools.Geometry.*;
 
 import java.text.DecimalFormat;
 
+import Command.ScriptUtil;
 import DataSetTools.dataset.*;
 import DataSetTools.math.tof_calc;
 import DataSetTools.instruments.*;
@@ -218,8 +223,95 @@ public class Peak_new extends Peak {
          update_xcm_ycm_wl();
       }
   }
-
-
+/**
+ *  Creates a new Peaks_new object from the information below
+ *  
+ * @param DS  The DataSet
+ * @param GridID  The detector ID for the grid
+ * @param x       The x posision, col, of the peak starting at 1
+ * @param y       The y position, row, of the peak starting at 1
+ * @param z       The time channel of the peak starting at 0
+ * @return      The newly created Peaks object
+ */
+ public static Peak_new getNewPeak_xyz( DataSet DS, int GridID, float x, float y, float z, int seqNum) throws IllegalArgumentException{
+    if(DS == null)
+       throw new IllegalArgumentException(" Null DataSet");
+    IDataGrid grid = Grid_util.getAreaGrid( DS, GridID);
+    if( grid == null){
+       throw new IllegalArgumentException(" No such Grid ID for this data set");
+      
+    }
+    SampleOrientation  sampOrient = ( SampleOrientation )DS.getAttributeValue(  DataSetTools.dataset.Attribute.SAMPLE_ORIENTATION );
+    if( sampOrient == null)
+       throw new IllegalArgumentException( "This Dataset has no Sample Orientation");
+    Float T = ((Float)DS.getAttributeValue( DataSetTools.dataset.Attribute.T0_SHIFT ) );
+    float T0, initialPath;
+    if( T == null )
+        T0 = 0f;
+     else 
+        T0 = T.floatValue();
+   XScale xscl = DS.getData_entry( 0 ).getX_scale();
+   if( xscl == null)
+      throw new IllegalArgumentException( "This DataSet does not have an XScale");
+   Float I = ((Float)DS.getData_entry( 0 ).getAttributeValue( DataSetTools.dataset.Attribute.INITIAL_PATH ) );
+   if( I == null )
+      initialPath = 0f;
+   else
+      initialPath = I.floatValue();
+   Peak_new Res = new Peak_new( x,y,z, grid, sampOrient, T0, xscl, initialPath);
+   
+   Res.seqnum( seqNum);
+   
+   int[] Runs = (int[])DS.getAttributeValue( Attribute.RUN_NUM);
+   if( (Runs == null) ||(Runs.length <=0))
+      Runs = (int[])DS.getData_entry(0).getAttributeValue( Attribute.RUN_NUM);
+   
+   if( Runs != null) if( Runs.length > 0)
+      Res.nrun( Runs[0]);
+   
+   int row = (int)(y+.5);
+   int col =(int) (x+.5);
+   int chan =(int)( z+.5);
+   float pkIntensity = 0;
+   if( (row >0))if( col >0) if( chan >=0)
+      if( row <=grid.num_rows())if( col <=grid.num_cols()){
+         Data D = grid.getData_entry(row, col);
+         float[] Ys= D.getY_values();
+         if( Ys != null)if( chan < Ys.length)
+            pkIntensity = Ys[chan];
+      }
+   Res.ipkobs((int) pkIntensity );  
+   
+   
+   return Res;
+   
+ }
+ /*
+public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k, float l, float[][]UB){
+    
+    IDataGrid grid = Grid_util.getAreaGrid( DS, GridID);
+    if( grid == null)
+       return null;
+    SampleOrientation  sampOrient = ( SampleOrientation )DS.getAttributeValue(  DataSetTools.dataset.Attribute.SAMPLE_ORIENTATION );
+    if( sampOrient == null)
+       return null;
+    Float T = ((Float)DS.getAttributeValue( DataSetTools.dataset.Attribute.T0_SHIFT ) );
+    float T0, initialPath;
+    if( T == null )
+        T0 = 0f;
+     else 
+        T0 = T.floatValue();
+   XScale xscl = DS.getData_entry( 0 ).getX_scale();
+   Float I = ((Float)DS.getData_entry( 0 ).getAttributeValue( DataSetTools.dataset.Attribute.INITIAL_PATH ) );
+   if( I == null )
+      initialPath = 0f;
+   else
+      initialPath = I.floatValue();
+   float[] Q = new float[3];
+   
+   return new Peak_new( x,y,z, grid, sampOrient, T0, xscl, initialPath);
+ }
+ */
  private void update_xcm_ycm_wl(){ 
    // NOTE xcm, ycm now calculated when needed
    this.wl =DataSetTools.math.tof_calc.Wavelength(
@@ -1092,8 +1184,35 @@ public class Peak_new extends Peak {
     return grid.position(y,x);
   }
     
-  
   public static void main( String[] args){
+     java.util.Vector peaks = (java.util.Vector)(new ReadPeaks( "tae70.integrate")).getResult();
+     if( peaks == null){
+        System.out.println("No Peaks");
+        return;
+     }
+     DataSet DS=null;
+     try{
+        DataSet[] DSS =ScriptUtil.load( "c:/Isaw/SampleRuns/scd011050.run");
+        DS = DSS[DSS.length-1];
+     }catch(Exception s){
+        System.out.println("Cannot read file "+s.toString());
+        return;
+     }
+     
+     for( int i=0; i< peaks.size(); i++){
+        Peak pk = (Peak)peaks.elementAt(i);
+        int gridNum = pk.detnum();
+        IDataGrid grid = Grid_util.getAreaGrid( DS, gridNum);
+        System.out.print(pk.h()+","+pk.k()+","+pk.l()+","+pk.xcm()+","+pk.ycm()+","+pk.wl()+",");
+        Vector3D v = grid.position( pk.y(), pk.x());
+        v.multiply(1/v.length());
+        float scatAng = (float)Math.acos(v.dot( new Vector3D(1.0f,0f,0f)));
+        double theta =2*180/Math.PI*Math.asin( Math.sin(scatAng/2)/2/pk.wl());
+        System.out.println( scatAng+","+theta);
+     }
+     
+  }
+  public static void main1( String[] args){
     
     DataSetTools.dataset.UniformXScale xscl= 
                          new DataSetTools.dataset.UniformXScale(200,950,100);
